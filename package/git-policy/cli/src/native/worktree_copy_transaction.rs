@@ -50,7 +50,7 @@ impl InstallRecorder for TransactionState {
     fn record_intents(&mut self, relative_paths: &[String]) -> Result<(), WorktreeCopyError> {
         let unclaimed: Vec<String> = relative_paths
             .iter()
-            .filter(|relative_path| !self.intended.contains(relative_path.as_str()))
+            .filter(|relative_path| return !self.intended.contains(relative_path.as_str()))
             .cloned()
             .collect();
         self.log.append_intents(unclaimed.as_slice())?;
@@ -62,12 +62,15 @@ impl InstallRecorder for TransactionState {
     fn record_creations(&mut self, entries: &[InstalledPath]) -> Result<(), WorktreeCopyError> {
         let unrecorded: Vec<InstalledPath> = entries
             .iter()
-            .filter(|entry| !self.created_paths.contains(entry.relative_path.as_str()))
+            .filter(|entry| return !self.created_paths.contains(entry.relative_path.as_str()))
             .cloned()
             .collect();
         self.log.append_creations(unrecorded.as_slice())?;
-        self.created_paths
-            .extend(unrecorded.into_iter().map(|entry| entry.relative_path));
+        self.created_paths.extend(
+            unrecorded
+                .into_iter()
+                .map(|entry| return entry.relative_path),
+        );
         return Ok(());
     }
 }
@@ -116,7 +119,7 @@ pub fn snapshot_from_journal(
         )?;
         let present: BTreeSet<&str> = entries
             .iter()
-            .map(|entry| entry.relative_path.as_str())
+            .map(|entry| return entry.relative_path.as_str())
             .collect();
         for claim in intended {
             if !present.contains(claim.as_str()) {
@@ -193,14 +196,14 @@ fn install_recorded(
         .journal
         .created_entries
         .iter()
-        .map(|entry| entry.relative_path.clone())
+        .map(|entry| return entry.relative_path.clone())
         .collect();
     created_paths.extend(
         opened
             .recorded
             .created
             .iter()
-            .map(|entry| entry.relative_path.clone()),
+            .map(|entry| return entry.relative_path.clone()),
     );
     let mut prior: Vec<InstalledPath> = pending.journal.created_entries.clone();
     prior.extend(opened.recorded.created.iter().cloned());
@@ -226,11 +229,13 @@ fn install_recorded(
         prior.as_slice(),
         &mut state,
     );
-    let TransactionState { pending, .. } = state;
+    let TransactionState {
+        pending: latest, ..
+    } = state;
     // `match` turns an installation failure into an outcome, and leaves journal faults as errors.
     match result {
-        Ok(copied) => return Ok((pending, Outcome::Installed(copied))),
-        Err(error) => return Ok((pending, Outcome::Ended(error))),
+        Ok(copied) => return Ok((latest, Outcome::Installed(copied))),
+        Err(error) => return Ok((latest, Outcome::Ended(error))),
     }
 }
 
@@ -275,12 +280,12 @@ pub fn synchronize_created_worktree(
         Err(error) => {
             // A failed removal replaces the journal failure, as the incumbent's cleanup throws its own error there.
             std::fs::remove_dir_all(snapshot.stage_container.as_path())
-                .map_err(|removal| raw_failure(&removal))?;
+                .map_err(|removal| return raw_failure(&removal))?;
             return Err(error);
         }
     };
     let staged: StagedSnapshot = snapshot.clone();
-    let outcome: Outcome = complete_journal(pending, &|_intended| Ok(staged.clone()))?;
+    let outcome: Outcome = complete_journal(pending, &|_intended| return Ok(staged.clone()))?;
     return match outcome {
         Outcome::Installed(copied) => Ok(copied),
         Outcome::Ended(error) => Err(error),

@@ -145,22 +145,24 @@ pub fn parse_owner(text: &str) -> Result<LockOwner, String> {
     let value: serde_json::Value =
         serde_json::from_str(text).map_err(|error| format!("not JSON ({error})"))?;
     let missing: &str = "missing or mistyped owner fields";
-    let object = value.as_object().ok_or_else(|| String::from(missing))?;
+    let object = value
+        .as_object()
+        .ok_or_else(|| return String::from(missing))?;
     let lease_token: &str = object
         .get("leaseToken")
         .and_then(serde_json::Value::as_str)
-        .filter(|token| !token.is_empty())
-        .ok_or_else(|| String::from(missing))?;
+        .filter(|token| return !token.is_empty())
+        .ok_or_else(|| return String::from(missing))?;
     let owner_pid: i64 = object
         .get("ownerPid")
         .and_then(serde_json::Value::as_i64)
-        .filter(|pid| *pid >= 1)
-        .ok_or_else(|| String::from(missing))?;
+        .filter(|pid| return *pid >= 1)
+        .ok_or_else(|| return String::from(missing))?;
     let birth: &str = object
         .get("ownerBirthIdentity")
         .and_then(serde_json::Value::as_str)
-        .filter(|identity| !identity.is_empty())
-        .ok_or_else(|| String::from(missing))?;
+        .filter(|identity| return !identity.is_empty())
+        .ok_or_else(|| return String::from(missing))?;
     if object
         .get("schemaVersion")
         .and_then(serde_json::Value::as_f64)
@@ -232,7 +234,7 @@ fn owner_alive(owner: &LockOwner) -> Result<bool, WorktreeCopyError> {
         owner_birth_identity: owner.owner_birth_identity.clone(),
         transaction_id: None,
     };
-    return owner_lock_holder_is_alive(&record).map_err(|error| raw_failure(&error));
+    return owner_lock_holder_is_alive(&record).map_err(|error| return raw_failure(&error));
 }
 
 /// What:
@@ -310,7 +312,7 @@ fn remove_lock_of(lock: &Path, lease_token: &str) -> Result<bool, WorktreeCopyEr
     let retired: PathBuf = PathBuf::from(format!(
         "{}.{}.stale",
         lock.to_string_lossy(),
-        random_uuid().map_err(|error| raw_failure(&error.0))?
+        random_uuid().map_err(|error| return raw_failure(&error.0))?
     ));
     // `match` on the rename: a vanished lock is simply not ours to remove; any other failure is fatal.
     match std::fs::rename(lock, retired.as_path()) {
@@ -324,7 +326,7 @@ fn remove_lock_of(lock: &Path, lease_token: &str) -> Result<bool, WorktreeCopyEr
         let _ignored: std::io::Result<()> = std::fs::rename(retired.as_path(), lock);
         return Ok(false);
     }
-    std::fs::remove_dir_all(retired.as_path()).map_err(|error| raw_failure(&error))?;
+    std::fs::remove_dir_all(retired.as_path()).map_err(|error| return raw_failure(&error))?;
     return Ok(true);
 }
 
@@ -344,7 +346,7 @@ fn publish_candidate(
     let candidate: PathBuf = PathBuf::from(format!(
         "{}.{}.pending",
         lock.to_string_lossy(),
-        random_uuid().map_err(|error| raw_failure(&error.0))?
+        random_uuid().map_err(|error| return raw_failure(&error.0))?
     ));
     write_candidate(candidate.as_path(), owner)?;
     match std::fs::rename(candidate.as_path(), lock) {
@@ -410,7 +412,7 @@ fn current_owner() -> Result<LockOwner, WorktreeCopyError> {
             Some(&error),
         );
     })?;
-    let token: String = random_uuid().map_err(|error| raw_failure(&error.0))?;
+    let token: String = random_uuid().map_err(|error| return raw_failure(&error.0))?;
     return Ok(LockOwner {
         lease_token: token,
         owner_pid: i64::from(std::process::id()),
@@ -429,7 +431,7 @@ fn current_owner() -> Result<LockOwner, WorktreeCopyError> {
 /// ```
 fn unit_random() -> Result<f64, WorktreeCopyError> {
     let mut bytes: [u8; 8] = [0; 8];
-    getrandom::fill(&mut bytes).map_err(|error| raw_failure(&error))?;
+    getrandom::fill(&mut bytes).map_err(|error| return raw_failure(&error))?;
     return Ok((u64::from_le_bytes(bytes) >> 11) as f64 / (1u64 << 53) as f64);
 }
 
@@ -548,7 +550,7 @@ pub fn acquire_worktree_copy_lock(
                     let line: String = live_holder_line(lock.as_path(), &holder);
                     stderr
                         .write_all(line.as_bytes())
-                        .map_err(|error| raw_failure(&error))?;
+                        .map_err(|error| return raw_failure(&error))?;
                 }
                 wait_while_owner_lives(lock.as_path(), &holder)?;
                 continue;
@@ -557,8 +559,10 @@ pub fn acquire_worktree_copy_lock(
             Attempt::Unproven(evidence) => Some(evidence),
         };
         let started: Instant = *unproven_since.get_or_insert_with(Instant::now);
-        if let Some(evidence) = unproven {
-            if started.elapsed() >= Duration::from_millis(UNPROVEN_OWNER_TIMEOUT_MS) {
+        if let Some(evidence) = unproven
+            .filter(|_| started.elapsed() >= Duration::from_millis(UNPROVEN_OWNER_TIMEOUT_MS))
+        {
+            {
                 let message: String = format!(
                     "cli-git: worktree-copy settlement lock {} stayed in place for {} ms and cli-git could not prove whether its owner is alive. Evidence: {}. cli-git left the lock in place; remove it only after confirming no cli-git process is using this repository.",
                     quote(lock.to_string_lossy().as_ref()),

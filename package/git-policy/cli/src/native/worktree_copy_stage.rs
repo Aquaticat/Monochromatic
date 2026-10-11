@@ -307,7 +307,7 @@ pub fn stage_ignored_snapshot(
         Err(error) => {
             // A failed removal replaces the copy failure, as the incumbent's cleanup throws its own error there.
             std::fs::remove_dir_all(stage_container.as_path())
-                .map_err(|removal| raw_failure(&removal))?;
+                .map_err(|removal| return raw_failure(&removal))?;
             return Err(words_for_source(error, source_root));
         }
     }

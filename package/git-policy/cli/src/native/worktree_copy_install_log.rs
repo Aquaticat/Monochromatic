@@ -105,12 +105,12 @@ fn parse_line(line: &str, path: &Path) -> Result<InstallLogRecords, WorktreeCopy
             None,
         );
     };
-    let value: serde_json::Value = serde_json::from_str(line).map_err(|_| corrupt())?;
+    let value: serde_json::Value = serde_json::from_str(line).map_err(|_| return corrupt())?;
     let object = value.as_object().ok_or_else(corrupt)?;
     if let Some(intended) = object.get("intended").and_then(serde_json::Value::as_array) {
         let names: Vec<String> = intended
             .iter()
-            .map(|item| item.as_str().map(str::to_string))
+            .map(|item| return item.as_str().map(str::to_string))
             .collect::<Option<Vec<String>>>()
             .ok_or_else(corrupt)?;
         for name in &names {
@@ -149,14 +149,14 @@ fn parse_line(line: &str, path: &Path) -> Result<InstallLogRecords, WorktreeCopy
 /// ```
 fn read_complete_records(path: &Path) -> Result<(InstallLogRecords, u64, u64), WorktreeCopyError> {
     assert_private_path(path, Role::JournalFile)?;
-    let content: Vec<u8> = std::fs::read(path).map_err(|error| raw_failure(&error))?;
+    let content: Vec<u8> = std::fs::read(path).map_err(|error| return raw_failure(&error))?;
     let complete_length: usize = content
         .iter()
-        .rposition(|byte| *byte == b'\n')
-        .map_or(0, |index| index + 1);
+        .rposition(|byte| return *byte == b'\n')
+        .map_or(0, |index| return index + 1);
     let text: String = String::from_utf8_lossy(&content[..complete_length]).into_owned();
     let mut records: InstallLogRecords = InstallLogRecords::default();
-    for line in text.split('\n').filter(|line| !line.is_empty()) {
+    for line in text.split('\n').filter(|line| return !line.is_empty()) {
         let parsed: InstallLogRecords = parse_line(line, path)?;
         records.intended.extend(parsed.intended);
         records.created.extend(parsed.created);
@@ -199,11 +199,12 @@ pub fn open_install_log(stage_container: &Path) -> Result<OpenedLog, WorktreeCop
     };
     if complete_length < total_length {
         file.set_len(complete_length)
-            .map_err(|error| raw_failure(&error))?;
-        file.sync_all().map_err(|error| raw_failure(&error))?;
+            .map_err(|error| return raw_failure(&error))?;
+        file.sync_all()
+            .map_err(|error| return raw_failure(&error))?;
     }
     if !existed {
-        sync_directory(stage_container).map_err(|error| raw_failure(&error))?;
+        sync_directory(stage_container).map_err(|error| return raw_failure(&error))?;
     }
     return Ok(OpenedLog {
         log: InstallLog { file, path },
@@ -217,7 +218,7 @@ impl InstallLog {
         let written: std::io::Result<()> = self
             .file
             .write_all(line.as_bytes())
-            .and_then(|()| self.file.sync_all());
+            .and_then(|()| return self.file.sync_all());
         return written.map_err(|error| {
             let message: String = format!(
                 "cli-git: could not persist worktree-copy install log {}.",

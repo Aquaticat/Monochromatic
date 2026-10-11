@@ -221,7 +221,7 @@ fn synchronize_after(
     );
     stderr
         .write_all(line.as_bytes())
-        .map_err(|error| raw_failure(&error))?;
+        .map_err(|error| return raw_failure(&error))?;
     return Ok(());
 }
 
@@ -300,10 +300,12 @@ fn settle_invocation(
     else {
         return forward_only(run_git);
     };
-    if let Some(token) = invocation.inherited_token.as_deref() {
-        if validate_inherited_lease(observation.common_dir.as_path(), token)? {
-            return forward_only(run_git);
-        }
+    let inherited: bool = match invocation.inherited_token.as_deref() {
+        Some(token) => validate_inherited_lease(observation.common_dir.as_path(), token)?,
+        None => false,
+    };
+    if inherited {
+        return forward_only(run_git);
     }
     if !invocation.creates_or_moves {
         recover_pending_worktree_copies(observation.common_dir.as_path(), stderr)?;

@@ -149,9 +149,8 @@ fn unproven_owner_fails_the_blocking_wait_and_keeps_lock() {
     let lock: PathBuf = lock_of(common.as_path());
     publish(lock.as_path(), "garbage");
     let mut stderr: Vec<u8> = Vec::new();
-    let failure: WorktreeCopyError = acquire_worktree_copy_lock(common.as_path(), &mut stderr)
-        .err()
-        .expect("timeout");
+    let failure: WorktreeCopyError =
+        acquire_worktree_copy_lock(common.as_path(), &mut stderr).expect_err("timeout");
     assert!(
         failure.0.contains("stayed in place for 1000 ms"),
         "{}",

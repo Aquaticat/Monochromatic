@@ -212,7 +212,10 @@ pub fn encode_installed_entry(entry: &InstalledPath) -> String {
 /// JSON.stringify(items)
 /// ```
 pub fn string_array(items: &[String]) -> String {
-    let quoted: Vec<String> = items.iter().map(|item| quote(item.as_str())).collect();
+    let quoted: Vec<String> = items
+        .iter()
+        .map(|item| return quote(item.as_str()))
+        .collect();
     return format!("[{}]", quoted.join(","));
 }
 
@@ -234,7 +237,7 @@ fn is_canonical_absolute(value: &str) -> bool {
     }
     return value[1..]
         .split('/')
-        .all(|component| !component.is_empty() && component != "." && component != "..");
+        .all(|component| return !component.is_empty() && component != "." && component != "..");
 }
 
 /// What:
@@ -251,7 +254,7 @@ fn decimal_identity(value: &serde_json::Value) -> Option<u64> {
     if text.is_empty() || (text.len() > 1 && text.starts_with('0')) {
         return None;
     }
-    if !text.bytes().all(|byte| byte.is_ascii_digit()) {
+    if !text.bytes().all(|byte| return byte.is_ascii_digit()) {
         return None;
     }
     return text.parse::<u64>().ok();
@@ -289,7 +292,7 @@ fn string_list(value: Option<&serde_json::Value>) -> Option<Vec<String>> {
     let array = value?.as_array()?;
     return array
         .iter()
-        .map(|item| item.as_str().map(str::to_string))
+        .map(|item| return item.as_str().map(str::to_string))
         .collect();
 }
 
@@ -365,17 +368,17 @@ pub fn parse_journal(
             None,
         ));
     }
-    for (field, value) in [
+    for (field, field_value) in [
         ("destinationRoot", journal.destination_root.as_str()),
         ("sourceRoot", journal.source_root.as_str()),
         ("stageContainer", journal.stage_container.as_str()),
         ("stageRoot", journal.stage_root.as_str()),
     ] {
-        if !is_canonical_absolute(value) {
+        if !is_canonical_absolute(field_value) {
             return Err(failure_with_cause(
                 format!(
                     "cli-git: worktree-copy journal has unsafe {field}: {}.",
-                    quote(value)
+                    quote(field_value)
                 )
                 .as_str(),
                 None,
@@ -386,7 +389,7 @@ pub fn parse_journal(
         == Path::new(journal.destination_root.as_str()).parent()
         && Path::new(journal.stage_container.as_str())
             .file_name()
-            .is_some_and(|name| name.to_string_lossy().starts_with(STAGE_PREFIX))
+            .is_some_and(|name| return name.to_string_lossy().starts_with(STAGE_PREFIX))
         && journal.stage_root == format!("{}/payload", journal.stage_container);
     if !stage_relation {
         return Err(failure_with_cause(
@@ -410,7 +413,7 @@ pub fn parse_journal(
     let created_paths: Vec<&str> = journal
         .created_entries
         .iter()
-        .map(|entry| entry.relative_path.as_str())
+        .map(|entry| return entry.relative_path.as_str())
         .collect();
     let duplicated: bool = has_duplicates(journal.selected_roots.as_slice())
         || has_duplicates(journal.intended_entries.as_slice())
@@ -439,7 +442,7 @@ pub fn parse_journal(
 /// ```
 fn has_duplicates<T: AsRef<str>>(items: &[T]) -> bool {
     let mut seen: std::collections::BTreeSet<&str> = std::collections::BTreeSet::new();
-    return items.iter().any(|item| !seen.insert(item.as_ref()));
+    return items.iter().any(|item| return !seen.insert(item.as_ref()));
 }
 
 /// What:
@@ -505,7 +508,7 @@ impl Role {
 pub fn assert_private_path(path: &Path, role: Role) -> Result<(), WorktreeCopyError> {
     use std::os::unix::fs::MetadataExt;
     let metadata: std::fs::Metadata =
-        std::fs::symlink_metadata(path).map_err(|error| raw_failure(&error))?;
+        std::fs::symlink_metadata(path).map_err(|error| return raw_failure(&error))?;
     let shape: bool = match role {
         Role::JournalFile => metadata.is_file() && metadata.nlink() == 1,
         Role::JournalDirectory | Role::PrivateStage => metadata.is_dir(),
@@ -513,7 +516,7 @@ pub fn assert_private_path(path: &Path, role: Role) -> Result<(), WorktreeCopyEr
     // SAFETY: `geteuid` has no preconditions and cannot fail.
     let effective_user: u32 = unsafe { libc::geteuid() };
     let canonical: bool = std::fs::canonicalize(path)
-        .map_err(|error| raw_failure(&error))?
+        .map_err(|error| return raw_failure(&error))?
         .as_path()
         == path;
     if !shape
@@ -611,10 +614,10 @@ pub fn write_journal(path: &Path, journal: &Journal) -> Result<(), WorktreeCopyE
     ));
     let persisted: std::io::Result<()> =
         write_exclusive_synced(temporary.as_path(), encode_journal(journal).as_bytes())
-            .and_then(|()| std::fs::rename(temporary.as_path(), path))
+            .and_then(|()| return std::fs::rename(temporary.as_path(), path))
             .and_then(|()| match path.parent() {
-                Some(parent) => sync_directory(parent),
-                None => Ok(()),
+                Some(parent) => return sync_directory(parent),
+                None => return Ok(()),
             });
     // A failed write removes its own temporary, so the directory keeps no partial journal.
     if let Err(error) = persisted {
@@ -646,7 +649,7 @@ pub fn create_journal(
     snapshot: &StagedSnapshot,
 ) -> Result<PendingJournal, WorktreeCopyError> {
     let root: PathBuf = ensure_journal_root(common_dir)?;
-    let unique: String = random_uuid().map_err(|error| raw_failure(&error.0))?;
+    let unique: String = random_uuid().map_err(|error| return raw_failure(&error.0))?;
     let path: PathBuf = root.join(format!("{unique}{JOURNAL_SUFFIX}"));
     let journal: Journal = Journal {
         created_entries: Vec::new(),
@@ -693,13 +696,13 @@ pub fn read_pending_journals(common_dir: &Path) -> Result<Vec<PendingJournal>, W
         return failure_with_cause(message.as_str(), Some(&error));
     })?;
     for listed in listing {
-        let entry: std::fs::DirEntry = listed.map_err(|error| raw_failure(&error))?;
+        let entry: std::fs::DirEntry = listed.map_err(|error| return raw_failure(&error))?;
         let name: String = entry.file_name().to_string_lossy().into_owned();
         if name.ends_with(JOURNAL_SUFFIX) {
             names.push(name);
         }
     }
-    names.sort_by(|left, right| js_order(left, right));
+    names.sort_by(|left, right| return js_order(left, right));
     let mut pending: Vec<PendingJournal> = Vec::new();
     for name in names {
         let path: PathBuf = root.join(name.as_str());
@@ -754,11 +757,14 @@ pub fn prepare_stage_removal(stage_container: &Path) -> Result<(), WorktreeCopyE
             continue;
         }
         std::fs::set_permissions(directory.as_path(), std::fs::Permissions::from_mode(0o700))
-            .map_err(|error| raw_failure(&error))?;
-        for listed in std::fs::read_dir(directory.as_path()).map_err(|error| raw_failure(&error))? {
-            let child: std::fs::DirEntry = listed.map_err(|error| raw_failure(&error))?;
-            let child_type: std::fs::FileType =
-                child.file_type().map_err(|error| raw_failure(&error))?;
+            .map_err(|error| return raw_failure(&error))?;
+        for listed in
+            std::fs::read_dir(directory.as_path()).map_err(|error| return raw_failure(&error))?
+        {
+            let child: std::fs::DirEntry = listed.map_err(|error| return raw_failure(&error))?;
+            let child_type: std::fs::FileType = child
+                .file_type()
+                .map_err(|error| return raw_failure(&error))?;
             if child_type.is_dir() {
                 pending.push(child.path());
             }
@@ -790,7 +796,7 @@ pub fn remove_pending_journal(pending: &PendingJournal) -> Result<(), WorktreeCo
     remove_file_if_present(pending.path.as_path())?;
     remove_unfinished_writes(pending.path.as_path())?;
     if let Some(parent) = pending.path.parent() {
-        sync_directory(parent).map_err(|error| raw_failure(&error))?;
+        sync_directory(parent).map_err(|error| return raw_failure(&error))?;
     }
     return Ok(());
 }
@@ -848,8 +854,8 @@ fn remove_unfinished_writes(path: &Path) -> Result<(), WorktreeCopyError> {
         "{}.",
         path.file_name().unwrap_or_default().to_string_lossy()
     );
-    for listed in std::fs::read_dir(parent).map_err(|error| raw_failure(&error))? {
-        let entry: std::fs::DirEntry = listed.map_err(|error| raw_failure(&error))?;
+    for listed in std::fs::read_dir(parent).map_err(|error| return raw_failure(&error))? {
+        let entry: std::fs::DirEntry = listed.map_err(|error| return raw_failure(&error))?;
         let name: String = entry.file_name().to_string_lossy().into_owned();
         if name.starts_with(prefix.as_str()) && name.ends_with(TEMPORARY_SUFFIX) {
             remove_file_if_present(entry.path().as_path())?;

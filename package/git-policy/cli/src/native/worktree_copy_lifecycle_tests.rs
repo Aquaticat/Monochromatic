@@ -116,14 +116,14 @@ fn added_worktree_receives_ignored_state_and_lock_is_released() {
             source_root.to_str().expect("utf8"),
         ],
     );
-    let source_root: PathBuf = std::fs::canonicalize(source_root).expect("canonical source");
-    std::fs::create_dir_all(source_root.join("cache")).expect("cache");
-    std::fs::write(source_root.join("cache/data"), b"payload").expect("data");
+    let source_canonical: PathBuf = std::fs::canonicalize(source_root).expect("canonical source");
+    std::fs::create_dir_all(source_canonical.join("cache")).expect("cache");
+    std::fs::write(source_canonical.join("cache/data"), b"payload").expect("data");
     let topic: PathBuf = root.join("topic");
     let identity: WorktreeIdentity = WorktreeIdentity::LinkedWorktree {
         common_dir: common.clone(),
         git_dir: common.join("worktrees").join("source"),
-        worktree_root: source_root.clone(),
+        worktree_root: source_canonical.clone(),
     };
     let mut stderr: Vec<u8> = Vec::new();
     let args: Vec<String> = vec![
@@ -137,15 +137,15 @@ fn added_worktree_receives_ignored_state_and_lock_is_released() {
     let settlement: Settlement = run_with_worktree_copy(
         &Invocation {
             identity: identity.clone(),
-            effective_cwd: source_root.clone(),
+            effective_cwd: source_canonical.clone(),
             creates_or_moves: true,
             opted_out: false,
             short_circuit: false,
             inherited_token: None,
             context: git_context(),
         },
-        &mut |_token| Ok(run_real(source_root.as_path(), args.as_slice())),
-        &mut || Ok(identity.clone()),
+        &mut |_token| return Ok(run_real(source_canonical.as_path(), args.as_slice())),
+        &mut || return Ok(identity.clone()),
         &mut stderr,
     )
     .expect("settled");
@@ -158,7 +158,7 @@ fn added_worktree_receives_ignored_state_and_lock_is_released() {
         String::from_utf8(stderr).expect("utf8"),
         format!(
             "cli-git: copied 2 ignored filesystem entries from {} into 1 new worktree.\n",
-            quote(source_root.to_string_lossy().as_ref())
+            quote(source_canonical.to_string_lossy().as_ref())
         )
     );
     assert!(
@@ -209,7 +209,7 @@ fn opted_out_invocation_skips_synchronization() {
                 ],
             ));
         },
-        &mut || Ok(identity.clone()),
+        &mut || return Ok(identity.clone()),
         &mut stderr,
     )
     .expect("settled");
@@ -245,7 +245,7 @@ fn main_worktree_invocation_is_not_applicable() {
             seen.push(token.map(str::to_string));
             return Ok(GitStatus { code: Some(7) });
         },
-        &mut || Ok(identity.clone()),
+        &mut || return Ok(identity.clone()),
         &mut Vec::new(),
     )
     .expect("settled");
@@ -286,7 +286,7 @@ fn non_worktree_command_runs_without_settlement() {
             seen.push(token.map(str::to_string));
             return Ok(GitStatus { code: Some(0) });
         },
-        &mut || Ok(identity.clone()),
+        &mut || return Ok(identity.clone()),
         &mut Vec::new(),
     )
     .expect("settled");
@@ -326,7 +326,7 @@ fn inherited_lease_forwards_without_settlement() {
             seen.push(lease.map(str::to_string));
             return Ok(GitStatus { code: Some(0) });
         },
-        &mut || Ok(identity.clone()),
+        &mut || return Ok(identity.clone()),
         &mut Vec::new(),
     )
     .expect("settled");

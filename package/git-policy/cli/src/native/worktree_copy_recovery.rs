@@ -266,7 +266,7 @@ pub fn report_recovered(
     stderr: &mut dyn Write,
 ) -> Result<(), WorktreeCopyError> {
     for notice in &report.notices {
-        writeln!(stderr, "{notice}").map_err(|error| raw_failure(&error))?;
+        writeln!(stderr, "{notice}").map_err(|error| return raw_failure(&error))?;
     }
     if report.recovered > 0 {
         let noun: &str = if report.recovered == 1 {
@@ -279,7 +279,7 @@ pub fn report_recovered(
             "cli-git: recovered ignored-state copies for {} worktree {noun}.",
             report.recovered
         )
-        .map_err(|error| raw_failure(&error))?;
+        .map_err(|error| return raw_failure(&error))?;
     }
     return Ok(());
 }

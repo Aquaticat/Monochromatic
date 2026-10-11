@@ -93,11 +93,7 @@ fn single_file_and_missing_selection() {
     let failure: WorktreeCopyError =
         collect_entry_manifest(root.as_path(), &[String::from("missing")], &[])
             .expect_err("missing");
-    assert!(
-        failure
-            .0
-            .contains("No such file or directory")
-    );
+    assert!(failure.0.contains("No such file or directory"));
     remove(root.as_path());
 }
 

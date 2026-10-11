@@ -165,10 +165,6 @@ fn listing_outside_a_repository_fails_with_cause() {
     let root: PathBuf = fixture("selection-not-repo");
     let failure: WorktreeCopyError =
         read_ignored_roots(&git_context(), root.as_path(), &[]).expect_err("not a repository");
-    assert!(
-        failure
-            .0
-            .contains("not a git repository")
-    );
+    assert!(failure.0.contains("not a git repository"));
     remove(root.as_path());
 }

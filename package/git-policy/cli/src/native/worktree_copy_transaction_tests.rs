@@ -71,19 +71,20 @@ fn completed_synchronization_leaves_no_journal_or_stage() {
             destination.to_str().expect("utf8"),
         ],
     );
-    let destination: PathBuf = std::fs::canonicalize(&destination).expect("canonical destination");
+    let destination_canonical: PathBuf =
+        std::fs::canonicalize(&destination).expect("canonical destination");
     let common: PathBuf = common_of(source.as_path());
     let copied: usize = synchronize_created_worktree(
         &git_context(),
         common.as_path(),
         source.as_path(),
-        destination.as_path(),
+        destination_canonical.as_path(),
         &[],
     )
     .expect("synchronized");
     assert_eq!(copied, 4);
     assert_eq!(
-        std::fs::read(destination.join("cache/deep/data")).expect("data"),
+        std::fs::read(destination_canonical.join("cache/deep/data")).expect("data"),
         b"payload"
     );
     assert!(
@@ -91,16 +92,16 @@ fn completed_synchronization_leaves_no_journal_or_stage() {
             .expect("pending")
             .is_empty()
     );
-    let leftovers: Vec<String> = std::fs::read_dir(destination.parent().expect("parent"))
+    let leftovers: Vec<String> = std::fs::read_dir(destination_canonical.parent().expect("parent"))
         .expect("list")
         .map(|entry| {
-            entry
+            return entry
                 .expect("entry")
                 .file_name()
                 .to_string_lossy()
-                .into_owned()
+                .into_owned();
         })
-        .filter(|name| name.starts_with(".cli-git-worktree-copy-"))
+        .filter(|name| return name.starts_with(".cli-git-worktree-copy-"))
         .collect();
     assert!(leftovers.is_empty(), "{leftovers:?}");
     remove(root.as_path());
@@ -158,8 +159,8 @@ fn failed_installation_never_stays_pending() {
     let pending: PendingJournal =
         create_journal(common.as_path(), destination.as_path(), &snapshot).expect("journal");
     let staged: StagedSnapshot = snapshot.clone();
-    let outcome: Outcome =
-        complete_journal(pending, &|_intended| Ok(staged.clone())).expect("journal fault-free");
+    let outcome: Outcome = complete_journal(pending, &|_intended| return Ok(staged.clone()))
+        .expect("journal fault-free");
     match outcome {
         Outcome::Ended(failure) => assert!(
             failure
@@ -218,11 +219,11 @@ fn interrupted_installation_resumes_from_its_log() {
         },
     )
     .expect("installing");
-    let pending: PendingJournal = read_pending_journals(common.as_path())
+    let resumable: PendingJournal = read_pending_journals(common.as_path())
         .expect("pending")
         .remove(0);
-    let stage_root: PathBuf = PathBuf::from(pending.journal.stage_root.as_str());
-    let outcome: Outcome = complete_journal(pending, &|intended| {
+    let stage_root: PathBuf = PathBuf::from(resumable.journal.stage_root.as_str());
+    let outcome: Outcome = complete_journal(resumable, &|intended| {
         return snapshot_from_journal(
             &read_pending_journals(common.as_path())
                 .expect("pending")

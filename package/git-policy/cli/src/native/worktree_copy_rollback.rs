@@ -97,7 +97,7 @@ pub fn rollback_created(
 ) -> Result<Vec<String>, WorktreeCopyError> {
     let selected_by_path: BTreeMap<&str, &WorktreeCopyEntry> = entries
         .iter()
-        .map(|entry| (entry.relative_path.as_str(), entry))
+        .map(|entry| return (entry.relative_path.as_str(), entry))
         .collect();
     let mut retained: Vec<String> = Vec::new();
     for installed in created.iter().rev() {
@@ -151,12 +151,14 @@ fn rollback_one(
     }
     // A directory keeps its private installation mode until modes are applied, and `rmdir` removes it only when empty,
     // so its identity is the whole proof; a file or link must still equal the stage.
-    if let Some(entry) = expected {
-        if entry.kind != EntryKind::Directory
-            && !entry_matches(stage_root, destination_root, entry)?
-        {
-            return Ok(Some(installed.relative_path.clone()));
+    let content_differs: bool = match expected {
+        Some(entry) if entry.kind != EntryKind::Directory => {
+            !entry_matches(stage_root, destination_root, entry)?
         }
+        _ => false,
+    };
+    if content_differs {
+        return Ok(Some(installed.relative_path.clone()));
     }
     // The identity is read again immediately before removal, to close the race with a replacement.
     let final_state: IdentityState = identity_state(destination_path, installed)?;
@@ -171,11 +173,12 @@ fn rollback_one(
             )));
         }
     }
-    let is_directory: bool =
-        expected.is_some_and(|entry| entry.kind == EntryKind::Directory) || !installed.selected;
+    let is_directory: bool = expected
+        .is_some_and(|entry| return entry.kind == EntryKind::Directory)
+        || !installed.selected;
     // The removal's own text is kept as the reason, as the incumbent reports it.
     remove_proven(destination_path, is_directory)
-        .map_err(|error| WorktreeCopyError(error.to_string()))?;
+        .map_err(|error| return WorktreeCopyError(error.to_string()))?;
     return Ok(None);
 }
 

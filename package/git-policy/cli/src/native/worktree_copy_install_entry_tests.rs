@@ -43,7 +43,7 @@ fn missing_parents_are_created_and_recorded() {
     .expect("parents");
     let paths: Vec<(&str, bool)> = created
         .iter()
-        .map(|installed| (installed.relative_path.as_str(), installed.selected))
+        .map(|installed| return (installed.relative_path.as_str(), installed.selected))
         .collect();
     assert_eq!(paths, vec![("a/b", false), ("a/b/c", false)]);
     assert!(root.join("a/b/c").is_dir());
@@ -164,11 +164,7 @@ fn existing_destination_file_is_not_replaced() {
         &entry(EntryKind::File, 0o644, "file"),
     )
     .expect_err("exists");
-    assert!(
-        failure
-            .0
-            .contains("File exists")
-    );
+    assert!(failure.0.contains("File exists"));
     assert_eq!(
         std::fs::read(destination.join("file")).expect("kept"),
         b"existing"

@@ -27,8 +27,12 @@ impl InstallRecorder for CountingRecorder {
     /// Counts one creation batch and fails the chosen call.
     fn record_creations(&mut self, entries: &[InstalledPath]) -> Result<(), WorktreeCopyError> {
         self.creations.push(entries.len());
-        if let Some((call, path)) = &self.tamper {
-            if *call == self.creations.len() {
+        if let Some((_, path)) = self
+            .tamper
+            .as_ref()
+            .filter(|(call, _)| *call == self.creations.len())
+        {
+            {
                 // Replacing the file gives it a new identity, as an editor's save or a foreign write would.
                 std::fs::remove_file(path).expect("detach the hard link");
                 std::fs::write(path, b"tampered").expect("tamper");

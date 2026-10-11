@@ -141,8 +141,8 @@ fn install_batch(
 ) -> Result<(), WorktreeCopyError> {
     let claims: Vec<String> = batch
         .iter()
-        .map(|entry| entry.relative_path.clone())
-        .filter(|relative_path| absent.contains(relative_path))
+        .map(|entry| return entry.relative_path.clone())
+        .filter(|relative_path| return absent.contains(relative_path))
         .collect();
     recorder.record_intents(claims.as_slice())?;
     let batch_start: usize = created.len();
@@ -198,7 +198,10 @@ pub fn install_snapshot(
             let suffix: String = if retained.is_empty() {
                 String::new()
             } else {
-                let names: Vec<String> = retained.iter().map(|path| quote(path.as_str())).collect();
+                let names: Vec<String> = retained
+                    .iter()
+                    .map(|path| return quote(path.as_str()))
+                    .collect();
                 format!(" Rollback retained: {}.", names.join(", "))
             };
             let message: String = format!(
@@ -242,7 +245,7 @@ fn install_all(
     apply_entry_modes(destination_root, entries)?;
     let selected: usize = created
         .iter()
-        .filter(|installed| installed.selected)
+        .filter(|installed| return installed.selected)
         .count();
     return Ok(selected);
 }

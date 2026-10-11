@@ -105,7 +105,7 @@ fn corrupt_line_fails_closed() {
     std::fs::create_dir(stage.as_path()).expect("stage");
     let path: PathBuf = stage.join(INSTALL_LOG_NAME);
     write_private_file(path.as_path(), b"{\"other\":1}\n").expect("log");
-    let failure: WorktreeCopyError = open_install_log(stage.as_path()).err().expect("corrupt");
+    let failure: WorktreeCopyError = open_install_log(stage.as_path()).expect_err("corrupt");
     assert_eq!(
         failure.0,
         format!(
@@ -129,7 +129,7 @@ fn unsafe_intent_is_refused() {
 ",
     )
     .expect("log");
-    let failure: WorktreeCopyError = open_install_log(stage.as_path()).err().expect("unsafe");
+    let failure: WorktreeCopyError = open_install_log(stage.as_path()).expect_err("unsafe");
     assert_eq!(
         failure.0,
         "cli-git: Git returned unsafe ignored path \"../up\"."
