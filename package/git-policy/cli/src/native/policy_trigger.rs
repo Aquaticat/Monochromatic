@@ -164,14 +164,14 @@ pub fn policy_runs_on(id: PolicyId, trigger: Trigger) -> bool {
 /// What:
 ///  Whether this executable implements the lifecycle a trigger belongs to.
 /// Why:
-///   The manual-push lifecycle needs a push probe that is not ported;
-///  the engine answers that trigger with a typed
-///       "unavailable" instead of running zero policies and looking clean.
-///  The post-commit lifecycle runs over the landed commit's own changes, which are ported.
+///  Every lifecycle is ported: the exhaustive match below answers true for each variant, and a new
+///  variant fails to compile until it is answered here.
+///  The engine still checks this before running a lifecycle, so a future unported variant gets a typed
+///  "unavailable" instead of running zero policies and looking clean.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// const ported = trigger !== 'manual-push';
+/// const ported = (trigger: Trigger): boolean => true;
 /// ```
 pub fn trigger_is_ported(trigger: Trigger) -> bool {
     match trigger {
