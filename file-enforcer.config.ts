@@ -1507,7 +1507,7 @@ const CARGO_SHARED_DEPENDENCIES: readonly CargoSharedDependency[] = [
   { table: 'dependencies', name: 'arbitrary', value: { version: '1', features: ['derive',], }, },
   { table: 'dependencies', name: 'clap', value: { version: '4', features: ['derive',], }, },
   { table: 'dependencies', name: 'gxhash', value: '3', },
-  { table: 'dependencies', name: 'i-slint-backend-winit', value: '1.17.0', },
+  { table: 'dependencies', name: 'i-slint-backend-winit', value: '1.18.1', },
   { table: 'dependencies', name: 'ignore', value: '0.4', },
   { table: 'dependencies', name: 'libfuzzer-sys', value: { version: '0.4', features: ['arbitrary-derive',], }, },
   { table: 'dependencies', name: 'memchr', value: '2', },
@@ -1524,13 +1524,13 @@ const CARGO_SHARED_DEPENDENCIES: readonly CargoSharedDependency[] = [
   {
     table: 'dependencies',
     name: 'slint',
-    value: { version: '1.17.0', features: ['backend-winit', 'renderer-femtovg', 'renderer-software',], },
+    value: { version: '1.18.1', features: ['backend-winit', 'renderer-femtovg', 'renderer-software',], },
   },
   { table: 'dependencies', name: 'symphonia', value: { version: '0.6', features: ['all',], }, },
   { table: 'dependencies', name: 'tracing', value: '0.1', },
   { table: 'dependencies', name: 'tracing-appender', value: '0.2', },
   { table: 'dependencies', name: 'tracing-subscriber', value: { version: '0.3', features: ['env-filter',], }, },
-  { table: 'build-dependencies', name: 'slint-build', value: '1.17.0', },
+  { table: 'build-dependencies', name: 'slint-build', value: '1.18.1', },
 ];
 
 /**

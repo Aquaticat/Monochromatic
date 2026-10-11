@@ -156,7 +156,7 @@ description = "Build --features slint/mcp (debug) and run HEADLESS with the embe
 usage = '''
 arg "[args]" var=#true help="File or folder paths to enqueue (loaded PAUSED)"
 '''
-# The embedded MCP server (Slint 1.17 `slint/mcp` feature, activated by
+# The embedded MCP server (Slint 1.18 `slint/mcp` feature, activated by
 # SLINT_MCP_PORT) exposes get_element_tree / find_elements_by_id / take_screenshot
 # / click_element / set_element_value etc. over MCP Streamable HTTP on
 # 127.0.0.1:<port>/mcp. The repo-root .mcp.json points Claude at that URL, so a
@@ -198,7 +198,7 @@ execFileSync(bin, extras, { stdio: 'inherit' })
 
 [tasks."lint:slint"]
 description = "Type-check ui/app.slint with slint-viewer --check (compiles the markup, opens no window, exits non-zero on error)"
-# slint-viewer is the same 1.17 compiler family as slint-build, and
+# slint-viewer is the same 1.18 compiler family as slint-build, and
 # SLINT_ENABLE_EXPERIMENTAL_FEATURES (from [env]) enables the FlexboxLayout builtin
 # the UI uses, so this catches .slint markup errors fast without a full Rust build.
 run = "slint-viewer --check ui/app.slint"

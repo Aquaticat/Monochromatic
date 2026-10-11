@@ -43,7 +43,7 @@ tree-house = { version = "0.4", default-features = false }
 # Slint's winit backend, the release slint already resolves to (no new package). As in the sibling
 # terminal and music player, the application installs it explicitly with a window-attributes hook that
 # stamps the Wayland app id before the window exists; Slint's default backend selection sets none.
-i-slint-backend-winit = "1.17.0"
+i-slint-backend-winit = "1.18.1"
 # Protocol file-watcher globs (`src/language/watched_files.rs`): helix-lsp already resolves globset 0.4,
 # so this line adds a direct edge only; helix-lsp's own handler drops relative patterns and kinds.
 globset = "0.4"
@@ -60,7 +60,7 @@ serde_json = "1"
 toml = "1.1"
 tokio = { version = "1.50", features = ["rt-multi-thread", "sync", "time", "process", "io-util", "macros"] }
 # Match the compiler/runtime release family used by the sibling native apps.
-slint = { version = "1.17.0", features = [ "backend-winit", "renderer-femtovg", "renderer-software", ], }
+slint = { version = "1.18.1", features = [ "backend-winit", "renderer-femtovg", "renderer-software", ], }
 tracing = "0.1"
 # The `log` facade helix-lsp writes through and its conversion to `tracing` events, used to re-label
 # helix-lsp records (`src/logging/relabel.rs`). tracing-subscriber already builds this exact crate with
@@ -77,7 +77,7 @@ tempfile = "3"
 i-slint-backend-testing = "=1.18.1"
 
 [build-dependencies]
-slint-build = "1.17.0"
+slint-build = "1.18.1"
 
 [lints.clippy]
 complexity = { level = "allow", priority = -1 }

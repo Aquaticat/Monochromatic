@@ -32,8 +32,8 @@ export component FirstRunPane inherits Rectangle {
     Flickable {
         width: parent.width;
         height: parent.height;
-        viewport-width: parent.width;
-        viewport-height: content.preferred-height;
+        content-width: parent.width;
+        content-height: content.preferred-height;
 
         content := VerticalLayout {
             width: root.width;
