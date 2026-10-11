@@ -1,0 +1,145 @@
+// Settings page that lists the two template rows under a Templates heading (D87, D99). The host supplies each row's
+// line from the applied template, and a tap reports which row to open. The page holds nothing else.
+import { Theme } from "theme.slint";
+
+// One row of the Templates section: the template's heading and the line it currently yields.
+export struct SettingsTemplateRow {
+    // Heading of the template, such as Track rows or Playing track.
+    label: string,
+    // Line the applied template yields for the first preview track, such as 3:20 −1.0 dBTP.
+    line: string,
+}
+
+// Draws the Settings header, the Templates heading and one tappable row per template.
+export component SettingsPage inherits Rectangle {
+    background: Theme.canvas;
+    clip: true;
+
+    // Template rows in list order. Each row shows its heading and the line it yields.
+    in property <[SettingsTemplateRow]> rows: [];
+    // Fires with the index of a row when that row is tapped, so the host opens that template's editor.
+    callback open-template(int);
+    // Fires when the Back target in the header is tapped.
+    callback back();
+
+    // Back arrow path on a 24 by 24 grid, copied from TemplateEditorIcons.kt.
+    property <string> back-path: "M20 11 H7.83 l5.59 -5.59 L12 4 l-8 8 8 8 l1.41 -1.41 L7.83 13 H20 v-2 Z";
+
+    // Header band with the Back target and the page title, as the Android destination header.
+    Rectangle {
+        x: 0px;
+        y: 0px;
+        width: root.width;
+        height: 72px;
+        background: Theme.surface-high;
+
+        back-touch := TouchArea {
+            x: 16px;
+            y: 12px;
+            width: 48px;
+            height: 48px;
+            clicked => { root.back(); }
+        }
+        Path {
+            x: 28px;
+            y: 24px;
+            width: 24px;
+            height: 24px;
+            viewbox-width: 24;
+            viewbox-height: 24;
+            commands: root.back-path;
+            fill: Theme.on-surface;
+        }
+        Text {
+            x: 72px;
+            y: 0px;
+            width: root.width - 72px - 16px;
+            height: 72px;
+            text: "Settings";
+            font-size: Theme.title-large;
+            color: Theme.on-surface;
+            vertical-alignment: center;
+            overflow: elide;
+        }
+    }
+
+    // Divider under the header, one logical pixel in the outline role.
+    Rectangle {
+        x: 0px;
+        y: 72px;
+        width: root.width;
+        height: 1px;
+        background: Theme.outline;
+    }
+
+    // Body below the header. The rows scroll when the text grows past the window.
+    Flickable {
+        x: 0px;
+        y: 73px;
+        width: root.width;
+        height: root.height - 73px;
+        viewport-width: root.width;
+        viewport-height: body.preferred-height;
+
+        body := VerticalLayout {
+            x: 0px;
+            y: 0px;
+            width: root.width;
+            spacing: 0px;
+
+            // Heading above the template rows.
+            Rectangle {
+                height: 40px;
+                Text {
+                    x: 16px;
+                    y: 16px;
+                    width: parent.width - 32px;
+                    height: 20px;
+                    text: "Templates";
+                    font-size: Theme.label-large;
+                    font-weight: 500;
+                    color: Theme.on-surface-variant;
+                }
+            }
+
+            // One template row: heading on top, the line it yields below, and a divider under it.
+            for row[index] in root.rows : Rectangle {
+                height: 65px;
+                Text {
+                    x: 16px;
+                    y: 10px;
+                    width: parent.width - 32px;
+                    height: 24px;
+                    text: row.label;
+                    font-size: Theme.body-large;
+                    color: Theme.on-surface;
+                    overflow: elide;
+                }
+                Text {
+                    x: 16px;
+                    y: 34px;
+                    width: parent.width - 32px;
+                    height: 20px;
+                    text: row.line;
+                    font-size: Theme.body-medium;
+                    color: Theme.on-surface-variant;
+                    overflow: elide;
+                }
+                Rectangle {
+                    x: 0px;
+                    y: 64px;
+                    width: parent.width;
+                    height: 1px;
+                    background: Theme.outline-variant;
+                }
+                TouchArea {
+                    x: 0px;
+                    y: 0px;
+                    width: parent.width;
+                    height: 64px;
+                    clicked => { root.open-template(index); }
+                }
+            }
+        }
+    }
+}

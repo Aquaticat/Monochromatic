@@ -1,0 +1,251 @@
+//! Pure library screen state and its projection into the window's view model.
+//!
+//! What: `ScreenState` holds the facts the engine has reported, and `view` turns them into the rows,
+//! picker and deck values the window shows.
+//! Why: the page rules (which folder is selected, which tracks the engine scopes to) are decided
+//! here without a Slint window, so they can be tested directly.
+
+use music_player::command::PlaybackMode;
+use music_player::pagination::{Page, page_identity, paginate};
+use music_player::player_content::{PlayerContentInput, build_player_content};
+use music_player::template_model::TrackFields;
+use music_player::track_entries::track_title_for;
+
+use crate::ui_screen_rows::{ListRow, Picker, current_row_position, list_rows, picker};
+use crate::ui_templates::{playing_subtitle, playing_track};
+use music_player::template_editor_state::TemplateEditorState;
+use music_player::template_model::DEFAULT_PLAYING_TEMPLATE;
+
+/// What: `Route` names the screen the window shows over the player.
+/// Why: the window's `route` property is an integer, and the Rust side keeps the names.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// type Route = "player" | "search" | "settings" | "templateEditor";
+/// ```
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+pub enum Route {
+    /// The player: folder list, track list and transport deck.
+    #[default]
+    Player,
+    /// The search page drawn over the player.
+    Search,
+    /// The settings page.
+    Settings,
+    /// The template editor drawn over the settings page.
+    TemplateEditor,
+}
+
+/// Methods of `Route`.
+impl Route {
+    /// What: `to_int` gives the integer the window's `route` property uses.
+    /// Why: Slint has no enum binding in this crate, so routes cross as 0 to 3.
+    pub fn to_int(self) -> i32 {
+        return match self {
+            Route::Player => 0,
+            Route::Search => 1,
+            Route::Settings => 2,
+            Route::TemplateEditor => 3,
+        };
+    }
+}
+
+/// What: `ScreenState` is the library and playback facts reported by the engine.
+/// Why: one value holds everything the view needs, so a projection never reads the window back.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// type ScreenState = {
+///   paths: string[]; names: string[]; currentIndex: number | null;
+///   selectedKey: string; pickerOpen: boolean; trackName: string; mode: PlaybackMode;
+///   playing: boolean; position: number; duration: number;
+/// };
+/// ```
+#[derive(Clone, Debug, Default, PartialEq)]
+pub struct ScreenState {
+    /// Absolute file paths of the queue, in queue order.
+    pub paths: Vec<std::path::PathBuf>,
+    /// Display names of the queue, in queue order.
+    pub names: Vec<String>,
+    /// Queue index of the playing track.
+    pub current_index: Option<usize>,
+    /// Identity of the selected folder page; empty selects the first page.
+    pub selected_key: String,
+    /// Whether the folder picker replaces the track list on the folded layout.
+    pub picker_open: bool,
+    /// Display name of the playing track, or empty when none is loaded.
+    pub track_name: String,
+    /// Playback mode from the engine.
+    pub mode: PlaybackMode,
+    /// Whether audio is playing.
+    pub playing: bool,
+    /// Playback position in seconds.
+    pub position: f64,
+    /// Duration of the playing track in seconds.
+    pub duration: f64,
+    /// Screen shown over the player.
+    pub route: Route,
+    /// Search query of the current Search visit; a new visit starts empty (D66).
+    pub search_query: String,
+    /// Queue index of the row whose track menu is open, or None.
+    pub menu_index: Option<usize>,
+    /// Whether the engine has reported the library at least once.
+    pub loaded: bool,
+    /// Saved track rows template text, or None for the default.
+    pub track_rows_template: Option<String>,
+    /// Saved playing track template text, or None for the default.
+    pub playing_template: Option<String>,
+    /// Template editor value while Settings or the editor is open.
+    pub editor: Option<TemplateEditorState>,
+}
+
+/// Methods of `ScreenState`.
+impl ScreenState {
+    /// What: `menu_target` gives the open track menu's queue index, display name and absolute path.
+    /// Why: a menu action runs on the row the menu was opened for, and that row can leave the queue meanwhile.
+    pub fn menu_target(&self) -> Option<(usize, String, std::path::PathBuf)> {
+        let index = self.menu_index?;
+        let name = self.names.get(index)?.clone();
+        let path = self.paths.get(index)?.clone();
+        return Some((index, name, path));
+    }
+}
+
+/// What: `ScreenView` is every value the window's folder, list and deck views show.
+/// Why: the window receives one value per projection, so its models are set together.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// type ScreenView = { folderTitle: string; rows: ListRow[]; scrollRow: number; picker: Picker; ... };
+/// ```
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct ScreenView {
+    /// Title of the selected folder page.
+    pub folder_title: String,
+    /// Rows of the selected folder page, headers included.
+    pub rows: Vec<ListRow>,
+    /// Flat-list position of the playing row, or -1 when it is not on this page.
+    pub scroll_row: i32,
+    /// Folder picker rail and names.
+    pub picker: Picker,
+    /// Title of the playing track on the deck, or empty.
+    pub deck_title: String,
+    /// Deck subtitle, such as "3 of 12", or empty.
+    pub deck_subtitle: String,
+    /// Folder label the shuffle-from-folder choice names.
+    pub shuffle_folder_label: String,
+}
+
+/// What: `pages` derives the folder pages from the queue names, in display order.
+/// Why: pages are the unit the picker selects and the engine scopes shuffle to.
+pub fn pages(state: &ScreenState) -> Vec<Page> {
+    return paginate(&state.names);
+}
+
+/// What: `selected_page_index` finds the page whose identity matches `key`, or the first page.
+/// Why: a queue rebuild keeps the same folder selected when its identity survives.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// const selectedPageIndex = (pages: Page[], key: string) =>
+///   Math.max(0, pages.findIndex((page) => pageIdentity(page) === key));
+/// ```
+pub fn selected_page_index(pages: &[Page], key: &str) -> usize {
+    return pages
+        .iter()
+        .position(|page| return page_identity(page) == key)
+        .unwrap_or(0);
+}
+
+/// What: `page_key_containing` gives the identity of the page holding queue index `index`.
+/// Why: a track that starts playing moves the picker to its folder ("follow" behaviour).
+pub fn page_key_containing(pages: &[Page], index: usize) -> Option<String> {
+    return pages
+        .iter()
+        .find(|page| return page.entries.iter().any(|entry| return entry.index == index))
+        .map(page_identity);
+}
+
+/// What: `selected_page_scope` gives the queue indices of the selected page, in page order.
+/// Why: the engine plays shuffle-this-page and in-order from the page the user is looking at.
+pub fn selected_page_scope(state: &ScreenState) -> Vec<usize> {
+    let all_pages = pages(state);
+    let selected = selected_page_index(&all_pages, &state.selected_key);
+    return all_pages
+        .get(selected)
+        .map_or_else(Vec::new, |page| return page.entries.iter().map(|entry| return entry.index).collect());
+}
+
+/// What: `view` projects the state into the window's models using the supporting-line function.
+/// Why: rows, picker and deck all come from the one shared `build_player_content` result.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// const view = (state: ScreenState, supportingLine: (t: TrackFields) => string | null): ScreenView => { ... };
+/// ```
+pub fn view(state: &ScreenState, supporting_line: &dyn Fn(&TrackFields) -> Option<String>) -> ScreenView {
+    let all_pages = pages(state);
+    let labels: Vec<String> = all_pages.iter().map(|page| return page.label.clone()).collect();
+    let selected = selected_page_index(&all_pages, &state.selected_key);
+    let page_items = all_pages
+        .get(selected)
+        .map_or_else(Vec::new, |page| return page.entries.clone());
+    let playing_position = page_items.iter().position(|item| return Some(item.index) == state.current_index);
+    let playing_count = page_items.len();
+    let playing_name = playing_position.and_then(|position| return page_items.get(position)).map(|item| return item.name.clone());
+    let input = PlayerContentInput {
+        page_labels: labels,
+        selected_page: selected,
+        page_items,
+        current_index: state.current_index,
+        playing: state.playing,
+        mode: state.mode,
+        position_sec: state.position,
+        duration_sec: state.duration,
+    };
+    let content = build_player_content(&input, supporting_line);
+    let rows = list_rows(&content.entries);
+    let scroll_row = current_row_position(&rows);
+    let picker_model = picker(&content.sections, &content.folder_title);
+    let deck_subtitle = match (playing_position, playing_name) {
+        (Some(position), Some(name)) => {
+            let template = state.playing_template.as_deref().unwrap_or(DEFAULT_PLAYING_TEMPLATE);
+            playing_subtitle(template, &playing_track(&name, position + 1, playing_count))
+                .unwrap_or_else(|| return content.deck.subtitle.clone())
+        }
+        _ => content.deck.subtitle.clone(),
+    };
+    let deck_title = if state.track_name.is_empty() {
+        String::new()
+    } else {
+        track_title_for(&state.track_name)
+    };
+    return ScreenView {
+        folder_title: content.folder_title,
+        rows,
+        scroll_row,
+        picker: picker_model,
+        deck_title,
+        deck_subtitle,
+        shuffle_folder_label: content.deck.shuffle_folder_label,
+    };
+}
+
+/// What: `select_folder_label` selects the first page named `label`, closes the picker, and returns its scope.
+/// Why: a folder pick changes the selected page and the engine scope together; an unknown label changes nothing.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// const selectFolderLabel = (state: ScreenState, label: string): number[] | null => { ... };
+/// ```
+pub fn select_folder_label(state: &mut ScreenState, label: &str) -> Option<Vec<usize>> {
+    let all_pages = pages(state);
+    let page = all_pages.iter().find(|page| return page.label == label)?;
+    state.selected_key = page_identity(page);
+    state.picker_open = false;
+    return Some(selected_page_scope(state));
+}
+
+#[cfg(test)]
+#[path = "ui_screen_view_tests.rs"]
+mod tests;

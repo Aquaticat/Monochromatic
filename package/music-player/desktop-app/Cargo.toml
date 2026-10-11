@@ -145,6 +145,8 @@ tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 # live in the shared crate. The privacy guarantee is unchanged: only `fingerprint (u64) ->
 # decision` rows hit disk, never a path.
 truepeak-core = { path = "../truepeak-core", features = ["service"] }
+trash = "5"
+arboard = "3"
 
 # Linux-only native backends. PipeWire (audio) and zbus (KDE taskbar progress)
 # have no macOS equivalent, so cargo compiles them only when target_os = linux;

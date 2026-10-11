@@ -1,0 +1,183 @@
+// Track list pane for one folder's flat list (D5, D6, D42). Track rows and subfolder headers share one
+// scrolling list, and the playing row can be scrolled into view as playback moves.
+import { Theme } from "theme.slint";
+
+// One entry of the flat list. A track row (kind 0) plays on tap; a subfolder header (kind 1) only labels the
+// tracks below it, with its name in `title` and its count text in `supporting`.
+export struct TrackListRow {
+    // 0 for a playable track row, 1 for a subfolder header.
+    kind: int,
+    // File name without its extension for a track, or the subfolder name for a header.
+    title: string,
+    // Second line of a track, such as a duration and peak line, or empty for none. For a header, the count text such as "3 tracks".
+    supporting: string,
+    // Whether this track is the playing track. Ignored for headers.
+    current: bool,
+    // Library index that `play` and `open-menu` report back. Ignored for headers.
+    index: int,
+}
+
+// Draws the rows of one folder's flat list. Rows are laid out with fixed heights so the pane can compute the
+// scroll offset of any row without waiting for the layout pass.
+export component TrackListPane inherits Rectangle {
+    background: Theme.canvas;
+    clip: true;
+
+    // Entries to draw, in list order.
+    in property <[TrackListRow]> rows: [];
+    // List position of the entry to bring to the top of the pane, such as the playing row. A change scrolls to it,
+    // and -1 leaves the scroll position alone.
+    in property <int> scroll-to-row: -1;
+    // Fires with the library index of a track row when the row is tapped without a long press.
+    callback play(int);
+    // Fires with the library index of a track row and the pointer position relative to this pane, on a right
+    // click or a 500 ms long press. The position is what the caller uses to place the menu.
+    callback open-menu(int, length, length);
+
+    // Height of a track row without a second line, which is the 48 px touch target.
+    property <length> row-min-height: 48px;
+    // Height of a track row with a second line.
+    property <length> row-two-line-height: 72px;
+    // Height of a subfolder header, which holds its 16 px top gap, name line and count line.
+    property <length> header-height: 54px;
+    // Horizontal inset of the row text from the pane edges, which keeps text clear of the current-row highlight.
+    property <length> text-inset: 16px;
+    // Hold time before a press opens the track menu.
+    property <duration> long-press-time: 500ms;
+
+    // Height of one entry from its kind and whether it has a second line.
+    pure function height-of(row: TrackListRow) -> length {
+        row.kind == 1 ? header-height : (row.supporting == "" ? row-min-height : row-two-line-height)
+    }
+
+    // Moves the list so the entry whose top is at the given offset sits at the top, clamped to the scrollable range.
+    function reveal(top: length) {
+        flick.viewport-y = max(min(0px, flick.height - flick.viewport-height), min(0px, -top));
+    }
+
+    flick := Flickable {
+        x: 0px;
+        y: 0px;
+        width: root.width;
+        height: root.height;
+
+        VerticalLayout {
+            width: root.width;
+
+            for row[i] in root.rows: Rectangle {
+                // Whether this entry is the one the scroll-to-row property names.
+                property <bool> is-target: root.scroll-to-row == i;
+                height: root.height-of(row);
+                background: row.kind == 0 && row.current ? Theme.current-row : transparent;
+
+                // Scrolls to this entry when it becomes the target, and again when layout first places it,
+                // because the target can be set before the entry has a y.
+                changed is-target => {
+                    if (self.is-target) {
+                        root.reveal(self.y);
+                    }
+                }
+                changed y => {
+                    if (self.is-target) {
+                        root.reveal(self.y);
+                    }
+                }
+
+                // Track rows: title and optional second line, both inset by the row padding.
+                if row.kind == 0 : VerticalLayout {
+                    padding-left: root.text-inset;
+                    padding-right: root.text-inset;
+                    padding-top: 12px;
+                    spacing: 2px;
+
+                    Text {
+                        text: row.title;
+                        height: 24px;
+                        font-size: Theme.body-large;
+                        font-weight: row.current ? 700 : 400;
+                        color: Theme.on-surface;
+                        vertical-alignment: center;
+                    }
+                    if row.supporting != "" : Text {
+                        text: row.supporting;
+                        height: 16px;
+                        font-size: Theme.body-small;
+                        color: Theme.on-surface-variant;
+                        vertical-alignment: center;
+                    }
+                }
+
+                // Subfolder headers: primary name over a count line, with a 16 px gap above.
+                if row.kind == 1 : VerticalLayout {
+                    padding-left: root.text-inset;
+                    padding-right: root.text-inset;
+                    padding-top: 16px;
+                    spacing: 2px;
+
+                    Text {
+                        text: row.title;
+                        height: 20px;
+                        font-size: Theme.label-large;
+                        font-weight: 500;
+                        color: Theme.primary;
+                        vertical-alignment: center;
+                    }
+                    Text {
+                        text: row.supporting;
+                        height: 16px;
+                        font-size: Theme.body-small;
+                        color: Theme.on-surface-variant;
+                        vertical-alignment: center;
+                    }
+                }
+
+                // Tap, right click and long press for track rows. Headers have no touch area.
+                if row.kind == 0 : row-touch := TouchArea {
+                    // Set when a right click or long press has opened the menu, so the release does not also play.
+                    property <bool> suppress: false;
+
+                    // Milliseconds between the press and the menu request.
+                    hold := Timer {
+                        interval: root.long-press-time;
+                        running: false;
+                        triggered => {
+                            self.stop();
+                            row-touch.suppress = true;
+                            root.open-menu(
+                                row.index,
+                                row-touch.absolute-position.x - root.absolute-position.x + row-touch.mouse-x,
+                                row-touch.absolute-position.y - root.absolute-position.y + row-touch.mouse-y,
+                            );
+                        }
+                    }
+
+                    pointer-event(event) => {
+                        // A right button press opens the menu immediately.
+                        if (event.button == PointerEventButton.right && event.kind == PointerEventKind.down) {
+                            self.suppress = true;
+                            root.open-menu(
+                                row.index,
+                                self.absolute-position.x - root.absolute-position.x + self.mouse-x,
+                                self.absolute-position.y - root.absolute-position.y + self.mouse-y,
+                            );
+                        }
+                        // A left press starts the hold timer; releasing or losing the press (a drag scrolls the list) stops it.
+                        if (event.button == PointerEventButton.left && event.kind == PointerEventKind.down) {
+                            self.suppress = false;
+                            hold.start();
+                        }
+                        if (event.kind == PointerEventKind.up || event.kind == PointerEventKind.cancel) {
+                            hold.stop();
+                        }
+                    }
+
+                    clicked => {
+                        if (!self.suppress) {
+                            root.play(row.index);
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

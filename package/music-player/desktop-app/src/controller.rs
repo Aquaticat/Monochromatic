@@ -1053,6 +1053,7 @@ impl Controller {
                 // ```ts
                 // this.emit({ kind: "queue", names: this.queue.displayPaths() });
                 // ```
+                self.emit(Update::Library(self.queue.tracks().to_vec()));
                 self.emit(Update::Queue(self.queue.display_paths()));
                 // What:     `self.start_queue_measurement();`. Pre-measure the whole queue
                 //           in the background (true-peak normalization cache).
@@ -1394,6 +1395,7 @@ impl Controller {
                 // ```ts
                 // this.emit({ kind: "queue", names: this.queue.displayPaths() });
                 // ```
+                self.emit(Update::Library(self.queue.tracks().to_vec()));
                 self.emit(Update::Queue(self.queue.display_paths()));
                 // What:     `self.emit(Update::Volume(volume));`. Mirror volume.
                 // Why:      Sync the slider.

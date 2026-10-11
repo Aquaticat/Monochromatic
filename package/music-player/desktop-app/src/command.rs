@@ -552,6 +552,23 @@ pub enum Update {
         Vec<String>,
     ),
     /// What:
+    ///      `Library(Vec<PathBuf>)` carries the queue's absolute file paths in queue order,
+    ///  one per `Queue` name at the same position.
+    /// Why:
+    ///       Display names are relative to the queue's common root and cannot be joined back
+    ///  into file paths,
+    ///  so the UI needs the real paths for the track menu actions.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// { kind: "library"; paths: string[] }
+    /// ```
+    Library(
+        /// What:
+        ///      Unnamed field `.0` of the `Library` variant: the absolute paths in queue order.
+        Vec<PathBuf>,
+    ),
+    /// What:
     ///      `NowPlaying { index, name, duration }` a STRUCT variant:
     ///  the current
     ///           track changed.

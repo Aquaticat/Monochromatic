@@ -1,0 +1,45 @@
+// Shared design tokens for the accepted player design. The desktop has no wallpaper-derived dynamic color, so the
+// accent is the fixed blue-lavender family the Fold captures were taken with (sampled from those captures:
+// dark primary #BAC5EE, secondary container #353B4D; light primary #4E5E8B, secondary container #DDE2F9).
+// Dark mode uses a true black canvas (D41) and a fixed #0A0A0D deck; light is flat with hairline seams (D34, D45).
+import { Palette } from "std-widgets.slint";
+
+export global Theme {
+    // 0 follows the system, 1 forces light, 2 forces dark. Previews, screenshots and tests set it.
+    in property <int> scheme-override: 0;
+    out property <bool> dark: root.scheme-override == 2 || (root.scheme-override == 0 && Palette.color-scheme == ColorScheme.dark);
+
+    // Surfaces.
+    out property <color> canvas: root.dark ? #000000 : #FFFFFF;
+    out property <color> deck: root.dark ? #0A0A0D : #F4F3FA;
+    out property <color> current-row: root.dark ? #121318 : #F4F3FA;
+    out property <color> seam: root.dark ? #000000 : #B0B1BC;
+
+    // Content.
+    out property <color> on-surface: root.dark ? #E4E5F0 : #30323B;
+    out property <color> on-surface-variant: root.dark ? #C5C6D0 : #5C5E6A;
+    out property <color> outline: root.dark ? #8E9099 : #757780;
+    out property <color> outline-variant: root.dark ? #44464F : #C5C6D0;
+
+    // Accent roles.
+    out property <color> primary: root.dark ? #BAC5EE : #4E5E8B;
+    out property <color> on-primary: root.dark ? #1F2D52 : #FFFFFF;
+    out property <color> secondary-container: root.dark ? #353B4D : #DDE2F9;
+    out property <color> on-secondary-container: root.dark ? #DDE2F9 : #161B2C;
+    out property <color> error: root.dark ? #FFB4AB : #BA1A1A;
+    // Material 3 error container pair, matching the captured feedback error colors (#8C1D18 dark, #F9DEDC light).
+    out property <color> error-container: root.dark ? #8C1D18 : #F9DEDC;
+    out property <color> on-error-container: root.dark ? #F9DEDC : #410E0B;
+    out property <color> surface-high: root.dark ? #1E1F25 : #E8E7EE;
+
+    // Type scale in logical pixels (Material 3 roles used by the design).
+    out property <length> body-large: 16px;
+    out property <length> body-medium: 14px;
+    out property <length> body-small: 12px;
+    out property <length> title-large: 22px;
+    out property <length> title-medium: 16px;
+    out property <length> label-large: 14px;
+
+    // The 48 logical pixel minimum for every interactive target (C1).
+    out property <length> touch-target: 48px;
+}

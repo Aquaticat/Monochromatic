@@ -1,0 +1,407 @@
+// Root window of the desktop player. Composes the finished components (cover and unfolded layouts, track list,
+// folder picker, transport deck, search, first run, scan indicator, feedback, track menu) and exposes the
+// engine-facing properties and callbacks that the Rust side binds. Width below 600 px uses the folded cover
+// layout; 600 px and wider uses the unfolded two-pane layout (D44, D47 to D77, D83 to D105).
+import { Palette } from "std-widgets.slint";
+import { Theme } from "theme.slint";
+import { TransportDeck } from "deck.slint";
+import { FolderPickerPane, FolderRailCell, FolderName } from "folders.slint";
+import { CoverTopRow, UnfoldedFoldersHeader, UnfoldedTrackHeader } from "bars.slint";
+import { TrackListPane, TrackListRow } from "tracks.slint";
+import { SearchPage, SearchRow } from "search.slint";
+import { ScanIndicator, FeedbackOverlay, FeedbackItem } from "overlays.slint";
+import { FirstRunPane } from "first_run.slint";
+import { TrackMenu, TrackMenuItem } from "menu.slint";
+import { SettingsPage, SettingsTemplateRow } from "settings.slint";
+import { TemplateEditor, EditorFieldRow, EditorPreviewRow } from "template_editor.slint";
+
+// Root window. Properties named after engine messages (track-name, position, duration, playing, volume,
+// playback-mode, current-index) are written from Rust; view models are pushed by the ui_* glue modules.
+export component AppWindow inherits Window {
+    // Window title mirrors the playing track while audio plays, and reverts to "Music Player" when paused or idle.
+    title: root.playing && root.track-name != "" ? root.track-name : "Music Player";
+    min-width: 360px;
+    preferred-width: 480px;
+    preferred-height: 600px;
+    background: Theme.canvas;
+
+    // Width at and above which the unfolded two-pane layout is used.
+    property <length> unfold-width: 600px;
+    property <bool> unfolded: root.width >= root.unfold-width;
+
+    // OS font tracking (ui_font_scale): base size is set from Rust, the resolved OS size is reported back.
+    in property <length> base-font-size;
+    default-font-size: root.base-font-size;
+    out property <length> os-font-size: 1rem;
+    callback probe-os-font(length);
+    changed os-font-size => {
+        root.probe-os-font(root.os-font-size);
+    }
+
+    // Engine-facing playback state (pushed from Update messages).
+    in property <string> track-name: "";
+    in-out property <float> position: 0;
+    in property <float> duration: 0;
+    in property <string> position-text: "0:00";
+    in property <string> duration-text: "0:00";
+    in property <bool> playing: false;
+    // Kept so the engine's Volume message still lands; no in-app volume control exists (D43).
+    in-out property <float> volume: 1.0;
+    // 0 Repeat, 1 In order, 2 Shuffle displayed page, 3 Shuffle all.
+    in property <int> playback-mode: 1;
+    in property <int> current-index: -1;
+
+    // Route: 0 player, 1 search. Settings and the template editor are added as further routes.
+    in property <int> route: 0;
+
+    // Folder picker and library view models.
+    in property <string> folder-title: "";
+    in-out property <bool> picker-open: false;
+    in property <bool> library-available: true;
+    in property <[FolderRailCell]> rail-cells: [];
+    in property <[FolderName]> folder-names: [];
+    in property <string> current-folder: "";
+    in property <string> current-cell: "";
+    in property <[TrackListRow]> track-rows: [];
+    in property <int> scroll-to-row: -1;
+
+    // Transport deck view model.
+    in property <string> deck-title: "";
+    in property <string> deck-subtitle: "";
+    in property <string> shuffle-folder-label: "";
+
+    // First run replaces the track area; 0 hides it.
+    in property <int> first-run-state: 0;
+    in property <string> first-run-folder-name: "";
+    in property <string> first-run-title: "";
+    in property <string> first-run-body: "";
+    in property <string> first-run-primary-label: "";
+    in property <[string]> first-run-secondary-labels: [];
+    in property <string> first-run-explanation: "";
+
+    // Search view model.
+    in property <[SearchRow]> search-rows: [];
+    in property <string> search-query: "";
+    in property <string> search-status-title: "";
+    in property <string> search-status-detail: "";
+
+    // Scan indicator and feedback view models.
+    in property <bool> scan-visible: false;
+    in property <string> scan-status-text: "";
+    in property <float> scan-fraction: -1;
+    in property <[FeedbackItem]> feedback-items: [];
+
+    // Settings and template editor view models; the Rust side fills them while either route is open.
+    in property <[SettingsTemplateRow]> settings-rows: [];
+    in property <string> editor-title: "";
+    in property <string> editor-text: "";
+    in property <[EditorPreviewRow]> editor-preview-rows: [];
+    in property <[string]> editor-mistakes: [];
+    in property <string> editor-help-signature: "";
+    in property <string> editor-help-description: "";
+    in property <bool> editor-has-help: false;
+    in property <[EditorFieldRow]> editor-fields: [];
+    in property <[string]> editor-notes: [];
+    in property <bool> editor-can-reset: false;
+
+    // Track menu view model; the popup is shown from the row's request.
+    in property <string> menu-title: "";
+    in property <[TrackMenuItem]> menu-items: [];
+    property <length> menu-x: 0px;
+    property <length> menu-y: 0px;
+
+    // Callbacks to Rust, one per user action.
+    callback toggle-play();
+    callback prev();
+    callback next();
+    callback seek(float);
+    callback select-mode(int);
+    callback select-index(int);
+    callback open-files();
+    callback toggle-picker();
+    callback select-folder(string);
+    callback open-search();
+    callback close-search();
+    callback search-query-edited(string);
+    callback search-open(int);
+    callback search-clear();
+    callback open-settings();
+    callback first-run-primary();
+    callback first-run-secondary(int);
+    callback feedback-dismiss(string);
+    callback feedback-action(string);
+    callback menu-request(int);
+    callback menu-select(int);
+    callback menu-dismiss();
+    callback settings-open-template(int);
+    callback settings-back();
+    callback editor-text-edited(string, int, int);
+    callback editor-focus-changed(bool);
+    callback editor-insert-field(int);
+    callback editor-reset();
+    callback editor-back();
+    // One key press in DOM-style names (Escape, ArrowLeft, ArrowRight, or the character) with the modifiers and the
+    // popup state; returns true when the player used the key, so the focused field does not receive it.
+    callback key-pressed(string, bool, bool, bool, bool, bool, bool) -> bool;
+
+    // Maps Slint's private key characters to the names the keymap reads.
+    function key-name(text: string) -> string {
+        if (text == Key.Escape) {
+            return "Escape";
+        }
+        if (text == Key.LeftArrow) {
+            return "ArrowLeft";
+        }
+        if (text == Key.RightArrow) {
+            return "ArrowRight";
+        }
+        return text;
+    }
+
+    // Shows the track menu popup at the given window position after Rust fills the menu model.
+    function show-track-menu(index: int, x: length, y: length) {
+        root.menu-request(index);
+        root.menu-x = x;
+        root.menu-y = y;
+        track-menu-popup.show();
+    }
+
+    // The key scope takes focus on start, because key events reach only ancestors of the focused element.
+    init => {
+        key-scope.focus();
+    }
+
+    // Root key scope: every key event passes through its capture handler before the focused field, so shortcuts
+    // reach the player while text fields keep the keys they type (D102).
+    key-scope := FocusScope {
+        x: 0px;
+        y: 0px;
+        width: root.width;
+        height: root.height;
+        focus-on-click: false;
+        focus-on-tab-navigation: false;
+        capture-key-pressed(event) => {
+            if (event.text == Key.Escape && track-menu-popup.is-open) {
+                track-menu-popup.close();
+                return accept;
+            }
+            if (root.key-pressed(root.key-name(event.text), event.modifiers.control, event.modifiers.meta, event.modifiers.alt, event.modifiers.shift, false, track-menu-popup.is-open)) {
+                return accept;
+            }
+            return reject;
+        }
+
+    // Rows of the playing list: the track list or, while the picker is open, the folder picker.
+    // The first-run pane replaces the track area when the library is empty or access is missing.
+    // Folded layout: cover top row, list area, transport deck (D44 deck takes its content height).
+    VerticalLayout {
+        visible: !root.unfolded;
+        CoverTopRow {
+            folder-title: root.folder-title;
+            picker-open: root.picker-open;
+            show-search: root.library-available;
+            toggle-picker => { root.toggle-picker(); }
+            open => { root.open-files(); }
+            settings => { root.open-settings(); }
+            search => { root.open-search(); }
+        }
+        if root.first-run-state != 0 : FirstRunPane {
+            vertical-stretch: 1;
+            state: root.first-run-state;
+            folder-name: root.first-run-folder-name;
+            title: root.first-run-title;
+            body: root.first-run-body;
+            primary-label: root.first-run-primary-label;
+            secondary-labels: root.first-run-secondary-labels;
+            explanation: root.first-run-explanation;
+            primary => { root.first-run-primary(); }
+            secondary(i) => { root.first-run-secondary(i); }
+        }
+        if root.first-run-state == 0 && root.picker-open : FolderPickerPane {
+            vertical-stretch: 1;
+            cells: root.rail-cells;
+            names: root.folder-names;
+            current-folder: root.current-folder;
+            current-cell: root.current-cell;
+            select-folder(name) => { root.select-folder(name); }
+        }
+        if root.first-run-state == 0 && !root.picker-open : TrackListPane {
+            vertical-stretch: 1;
+            rows: root.track-rows;
+            scroll-to-row: root.scroll-to-row;
+            play(i) => { root.select-index(i); }
+            open-menu(i, x, y) => { root.show-track-menu(i, x, y); }
+        }
+        deck := TransportDeck {
+            title: root.deck-title;
+            subtitle: root.deck-subtitle;
+            position-seconds: root.position;
+            duration-seconds: root.duration;
+            playing: root.playing;
+            mode: root.playback-mode;
+            shuffle-folder-label: root.shuffle-folder-label;
+            seek(s) => { root.seek(s); }
+            previous => { root.prev(); }
+            toggle-play => { root.toggle-play(); }
+            next => { root.next(); }
+            select-mode(m) => { root.select-mode(m); }
+        }
+    }
+
+    // Unfolded layout: left pane has the folder header, folder picker and transport deck; right pane has
+    // the track header and track list.
+    HorizontalLayout {
+        visible: root.unfolded;
+        VerticalLayout {
+            horizontal-stretch: 1;
+            UnfoldedFoldersHeader {
+                open => { root.open-files(); }
+            }
+            FolderPickerPane {
+                vertical-stretch: 1;
+                cells: root.rail-cells;
+                names: root.folder-names;
+                current-folder: root.current-folder;
+                current-cell: root.current-cell;
+                select-folder(name) => { root.select-folder(name); }
+            }
+            TransportDeck {
+                title: root.deck-title;
+                subtitle: root.deck-subtitle;
+                position-seconds: root.position;
+                duration-seconds: root.duration;
+                playing: root.playing;
+                mode: root.playback-mode;
+                shuffle-folder-label: root.shuffle-folder-label;
+                seek(s) => { root.seek(s); }
+                previous => { root.prev(); }
+                toggle-play => { root.toggle-play(); }
+                next => { root.next(); }
+                select-mode(m) => { root.select-mode(m); }
+            }
+        }
+        VerticalLayout {
+            horizontal-stretch: 1;
+            UnfoldedTrackHeader {
+                folder-title: root.folder-title;
+                show-search: root.library-available;
+                settings => { root.open-settings(); }
+                search => { root.open-search(); }
+            }
+            if root.first-run-state != 0 : FirstRunPane {
+                vertical-stretch: 1;
+                state: root.first-run-state;
+                folder-name: root.first-run-folder-name;
+                title: root.first-run-title;
+                body: root.first-run-body;
+                primary-label: root.first-run-primary-label;
+                secondary-labels: root.first-run-secondary-labels;
+                explanation: root.first-run-explanation;
+                primary => { root.first-run-primary(); }
+                secondary(i) => { root.first-run-secondary(i); }
+            }
+            if root.first-run-state == 0 : TrackListPane {
+                vertical-stretch: 1;
+                rows: root.track-rows;
+                scroll-to-row: root.scroll-to-row;
+                play(i) => { root.select-index(i); }
+                open-menu(i, x, y) => { root.show-track-menu(i, x, y); }
+            }
+        }
+    }
+
+    // Search route drawn over the player. Its content inset keeps it clear of the unfolded crease.
+    if root.route == 1 : SearchPage {
+        x: 0px;
+        y: 0px;
+        width: root.width;
+        height: root.height;
+        compact: !root.unfolded;
+        content-start-x: root.unfolded ? root.width / 2 : 16px;
+        rows: root.search-rows;
+        query: root.search-query;
+        status-title: root.search-status-title;
+        status-detail: root.search-status-detail;
+        query-edited(q) => { root.search-query-edited(q); }
+        back => { root.close-search(); }
+        clear => { root.search-clear(); }
+        open(i) => { root.search-open(i); }
+    }
+
+    // Settings route: the Templates rows, each opening its editor.
+    if root.route == 2 : SettingsPage {
+        x: 0px;
+        y: 0px;
+        width: root.width;
+        height: root.height;
+        rows: root.settings-rows;
+        open-template(i) => { root.settings-open-template(i); }
+        back => { root.settings-back(); }
+    }
+
+    // Template editor route: preview, fields and the template text for one template.
+    if root.route == 3 : TemplateEditor {
+        x: 0px;
+        y: 0px;
+        width: root.width;
+        height: root.height;
+        title: root.editor-title;
+        text: root.editor-text;
+        preview-rows: root.editor-preview-rows;
+        mistake-lines: root.editor-mistakes;
+        help-signature: root.editor-help-signature;
+        help-description: root.editor-help-description;
+        has-help: root.editor-has-help;
+        fields: root.editor-fields;
+        notes: root.editor-notes;
+        can-reset: root.editor-can-reset;
+        text-edited(t, start, end) => { root.editor-text-edited(t, start, end); }
+        focus-changed(focused) => { root.editor-focus-changed(focused); }
+        insert-field(i) => { root.editor-insert-field(i); }
+        reset => { root.editor-reset(); }
+        back => { root.editor-back(); }
+    }
+
+    // Scan indicator along the bottom while the library is analysed.
+    if root.scan-visible : ScanIndicator {
+        x: 0px;
+        y: root.height - self.height;
+        width: root.width;
+        visible-model: root.scan-visible;
+        status-text: root.scan-status-text;
+        fraction: root.scan-fraction;
+    }
+
+    // Feedback messages stack above the scan indicator (D29, D83).
+    FeedbackOverlay {
+        x: 12px;
+        y: root.height - self.preferred-height - 96px;
+        width: root.width - 24px;
+        available-width: root.width - 24px;
+        items: root.feedback-items;
+        dismiss(id) => { root.feedback-dismiss(id); }
+        action(id) => { root.feedback-action(id); }
+    }
+
+    }
+
+    // Track action menu, shown at the row position that requested it. Escape and outside clicks dismiss it.
+    track-menu-popup := PopupWindow {
+        x: root.menu-x;
+        y: root.menu-y;
+        width: 280px;
+        TrackMenu {
+            width: parent.width;
+            title: root.menu-title;
+            items: root.menu-items;
+            select(i) => {
+                root.menu-select(i);
+                track-menu-popup.close();
+            }
+            dismiss => {
+                root.menu-dismiss();
+                track-menu-popup.close();
+            }
+        }
+    }
+}

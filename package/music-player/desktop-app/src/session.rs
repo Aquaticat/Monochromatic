@@ -93,6 +93,10 @@ pub struct Session {
     pub playback_mode: PlaybackMode,
     /// Selected page-navigation treatment.
     pub page_control_style: PageControlStyle,
+    /// Track rows template text the user edited, or None to use the default.
+    pub track_rows_template: Option<String>,
+    /// Playing track template text the user edited, or None to use the default.
+    pub playing_template: Option<String>,
 }
 
 /// Private permissive input shape that recognizes current and former fields.
@@ -117,6 +121,10 @@ struct StoredSession {
     repeat_track: Option<bool>,
     /// Current page-control preference.
     page_control_style: PageControlStyle,
+    /// Track rows template text, when the user edited it.
+    track_rows_template: Option<String>,
+    /// Playing track template text, when the user edited it.
+    playing_template: Option<String>,
 }
 
 /// Supplies defaults for missing fields in the permissive input shape.
@@ -132,6 +140,8 @@ impl Default for StoredSession {
             shuffle: None,
             repeat_track: None,
             page_control_style: PageControlStyle::ChromiumTabs,
+            track_rows_template: None,
+            playing_template: None,
         };
     }
 }
@@ -147,6 +157,8 @@ impl Default for Session {
             volume: 1.0,
             playback_mode: PlaybackMode::InOrder,
             page_control_style: PageControlStyle::ChromiumTabs,
+            track_rows_template: None,
+            playing_template: None,
         };
     }
 }
@@ -185,6 +197,8 @@ impl Session {
                 volume: stored.volume,
                 playback_mode,
                 page_control_style: stored.page_control_style,
+                track_rows_template: stored.track_rows_template,
+                playing_template: stored.playing_template,
             },
             should_rewrite,
         );
@@ -229,6 +243,24 @@ impl Session {
     }
 
     /// Writes only the current session shape to the app config directory.
+    /// What: `load_templates` reads the two saved template texts, None where the user kept the default.
+    /// Why: the editor and the track list start from the saved texts on launch.
+    pub fn load_templates() -> (Option<String>, Option<String>) {
+        let session = Session::load();
+        return (session.track_rows_template, session.playing_template);
+    }
+
+    /// What: `save_templates` writes both template texts and keeps the playback fields as they are.
+    /// Why: the template editor saves here, and the playback record is rewritten by the controller separately.
+    pub fn save_templates(track_rows: Option<&str>, playing: Option<&str>) -> std::io::Result<()> {
+        let mut session = Session::load();
+        session.track_rows_template = track_rows.map(str::to_string);
+        session.playing_template = playing.map(str::to_string);
+        return session.save();
+    }
+
+    /// What: `save` writes the playback record as JSON to the session file.
+    /// Why: the controller and the template editor both persist through this one file.
     pub fn save(&self) -> std::io::Result<()> {
         let Some(path) = session_path() else {
             return Ok(());

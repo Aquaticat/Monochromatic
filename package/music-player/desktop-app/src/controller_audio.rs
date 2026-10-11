@@ -164,7 +164,7 @@ impl Controller {
         // ```ts
         // const pageControlStyle = Session.load().pageControlStyle;
         // ```
-        let page_control_style = Session::load().page_control_style;
+        let stored = Session::load();
         // What:     `Session { ... }`. Build the record from the Source Root + state.
         //           `self.source_root.clone()` copies the owned root option;
         //           `self.queue.current_path().cloned()` is the Selected Track's path (or
@@ -184,7 +184,9 @@ impl Controller {
             position_secs,
             volume: self.volume,
             playback_mode: self.queue.playback_mode(),
-            page_control_style,
+            page_control_style: stored.page_control_style,
+            track_rows_template: stored.track_rows_template,
+            playing_template: stored.playing_template,
         }
     }
 
@@ -292,6 +294,7 @@ impl Controller {
         // ```ts
         // this.emit({ kind: "reconciled", names, index, name, duration });
         // ```
+        self.emit(Update::Library(self.queue.tracks().to_vec()));
         self.emit(Update::Reconciled {
             names,
             index,

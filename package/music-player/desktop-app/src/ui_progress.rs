@@ -94,7 +94,8 @@ use music_player::progress::{ProgressDebouncer, ProgressUpdateKind};
 /// ```ts
 /// import { applyUpdate, AppWindow } from "./main";
 /// ```
-use crate::{apply_update, AppWindow};
+use crate::ui_screen::apply_update;
+use crate::AppWindow;
 
 /// What:
 ///      `fn progress_fraction(app: &AppWindow) -> f64`.

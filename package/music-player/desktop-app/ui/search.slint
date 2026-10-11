@@ -1,0 +1,330 @@
+// Search page for the folded cover and the right pane of the unfolded inner panel (D47 to D77). The caller
+// places the page and supplies the inset that keeps content clear of the crease, so this component draws only
+// its own header, status block and result rows.
+import { Theme } from "theme.slint";
+import { ListView } from "std-widgets.slint";
+
+// One piece of a result line. The Rust side splits every line at each visible query match, so a line is a
+// sequence of plain and emphasized pieces that together read as the full text.
+export struct SearchSegment {
+    // Text of this piece, including any trailing space.
+    text: string,
+    // Whether this piece is a query match, drawn bold on a primary tint (D59).
+    emphasized: bool,
+}
+
+// One Search result. kind 0 is a folder and kind 1 a track; a track's parent folder is its second line (D77).
+export struct SearchRow {
+    // 0 for a folder result, 1 for a track result.
+    kind: int,
+    // Title line: the folder name or the track file name without its extension, split into segments.
+    title-segments: [SearchSegment],
+    // Second line: the parent folder of a track, split into segments. Empty when `has-parent` is false.
+    parent-segments: [SearchSegment],
+    // Whether the second line is shown. A folder has none.
+    has-parent: bool,
+    // Whether this track is the current track. Reported to assistive technology only.
+    current: bool,
+    // Whether the current track is playing. Reported to assistive technology only.
+    playing: bool,
+    // Caller-chosen handle that `open` reports back, such as the library index of a track.
+    index: int,
+}
+
+// Search page. Shows the status block when `rows` is empty and the result list otherwise.
+export component SearchPage inherits Rectangle {
+    background: Theme.canvas;
+    clip: true;
+
+    // Result rows to draw, in the order the caller ranked them.
+    in property <[SearchRow]> rows: [];
+    // Current query text. Assigning it from the caller updates the field, which is how Search clears or restores it.
+    in property <string> query: "";
+    // Headline of the status block shown when `rows` is empty, such as "Search your music". Empty hides the block.
+    in property <string> status-title: "";
+    // Support line under the status headline, or empty for none.
+    in property <string> status-detail: "";
+    // Cover arrangement: centers the status block with a magnifier glyph. False aligns it to `content-start-x`.
+    in property <bool> compact: false;
+    // Left inset of the header, the Back target and the result rows, measured from this page's left edge. The
+    // inner caller sets it to half the crease plus the standard 16 px inset, and the cover leaves it at 16 px.
+    in property <length> content-start-x: 16px;
+    // Fires with each edit of the query text.
+    callback query-edited(string);
+    // Fires when the Back arrow is tapped.
+    callback back();
+    // Fires when the Clear control is tapped. The field is emptied before this fires.
+    callback clear();
+    // Fires with the `index` of a result row when the row is tapped.
+    callback open(int);
+
+    // Header height, the full-content Search header from the Android layout.
+    property <length> header-height: 72px;
+    // Minimum height of one result row.
+    property <length> row-height: 72px;
+    // Inset between the page's right edge and the Clear target.
+    property <length> end-inset: 16px;
+    // Nominal glyph size, drawn inside its 48 px target.
+    property <length> icon-size: 24px;
+    // Fill behind an emphasized match (D59), the primary role at 30 percent alpha.
+    property <color> match-fill: Theme.primary.with-alpha(0.3);
+
+    // Top of the region below the header and divider.
+    property <length> body-top: header-height + 1px;
+
+    // Glyph paths on a 24 by 24 grid, copied from the Android icon set.
+    property <string> back-path: "M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z";
+    property <string> clear-path: "M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z";
+    property <string> track-path: "M12 3v10.55c-0.59-0.34-1.27-0.55-2-0.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z";
+    property <string> folder-path: "M20 6 h-8 l-2 -2 L4 4 c-1.1 0 -1.99 0.9 -1.99 2 L2 18 c0 1.1 0.9 2 2 2 h16 c1.1 0 2 -0.9 2 -2 L22 8 c0 -1.1 -0.9 -2 -2 -2 ZM20 18 L4 18 L4 8 h16 v10 Z";
+    property <string> search-path: "M15.5 14 h-0.79 l-0.28 -0.27 C15.41 12.59 16 11.11 16 9.5 C16 5.91 13.09 3 9.5 3 S3 5.91 3 9.5 S5.91 16 9.5 16 c1.61 0 3.09 -0.59 4.23 -1.57 l0.27 0.28 v0.79 l5 4.99 L20.49 19 l-4.99 -5 ZM9.5 14 C7.01 14 5 11.99 5 9.5 S7.01 5 9.5 5 S14 7.01 14 9.5 S11.99 14 9.5 14 Z";
+
+    // Header: Back, the query field, and Clear. Back and each result share the same left inset (D58).
+    Rectangle {
+        x: 0px;
+        y: 0px;
+        width: root.width;
+        height: root.header-height;
+        background: Theme.surface-high;
+
+        back-touch := TouchArea {
+            x: root.content-start-x;
+            y: (parent.height - Theme.touch-target) / 2;
+            width: Theme.touch-target;
+            height: Theme.touch-target;
+            clicked => { root.back(); }
+        }
+        Path {
+            x: root.content-start-x + (Theme.touch-target - root.icon-size) / 2;
+            y: (parent.height - root.icon-size) / 2;
+            width: root.icon-size;
+            height: root.icon-size;
+            viewbox-width: 24;
+            viewbox-height: 24;
+            commands: root.back-path;
+            fill: Theme.on-surface;
+        }
+
+        field := TextInput {
+            x: root.content-start-x + Theme.touch-target;
+            y: (parent.height - Theme.touch-target) / 2;
+            width: root.width - root.content-start-x - Theme.touch-target - Theme.touch-target - root.end-inset;
+            height: Theme.touch-target;
+            font-size: Theme.body-large;
+            color: Theme.on-surface;
+            single-line: true;
+            vertical-alignment: center;
+            // Reports each user edit to the caller.
+            edited => {
+                root.query-edited(self.text);
+            }
+        }
+        // Placeholder shown only while the field is empty.
+        Text {
+            x: field.x;
+            y: field.y;
+            width: field.width;
+            height: field.height;
+            text: "Search music";
+            font-size: Theme.body-large;
+            color: Theme.on-surface-variant;
+            vertical-alignment: center;
+            visible: field.text == "";
+        }
+
+        // Clear appears only while the field has text (D65 keeps focus where it is).
+        clear-touch := TouchArea {
+            x: root.width - root.end-inset - Theme.touch-target;
+            y: (parent.height - Theme.touch-target) / 2;
+            width: Theme.touch-target;
+            height: Theme.touch-target;
+            visible: field.text != "";
+            clicked => {
+                field.text = "";
+                root.clear();
+            }
+        }
+        Path {
+            x: root.width - root.end-inset - Theme.touch-target + (Theme.touch-target - root.icon-size) / 2;
+            y: (parent.height - root.icon-size) / 2;
+            width: root.icon-size;
+            height: root.icon-size;
+            viewbox-width: 24;
+            viewbox-height: 24;
+            commands: root.clear-path;
+            fill: Theme.on-surface;
+            visible: field.text != "";
+        }
+    }
+
+    // Divider under the header, one logical pixel in the outline role.
+    Rectangle {
+        x: 0px;
+        y: root.header-height;
+        width: root.width;
+        height: 1px;
+        background: Theme.outline;
+    }
+
+    // Focus the field whenever the page is shown (D63, D75).
+    init => {
+        field.text = root.query;
+        field.focus();
+    }
+
+    // Keeps the field in step with a query the caller sets, such as a cleared query, and returns the list to its
+    // first row whenever the query changes.
+    changed query => {
+        if (field.text != root.query) {
+            field.text = root.query;
+        }
+        results.viewport-y = 0px;
+    }
+
+    // Status block for an empty result set. The cover centers it with a glyph; the inner panel aligns it left
+    // with 72 px above the headline.
+    if root.rows.length == 0 && root.status-title != "" : Rectangle {
+        x: 0px;
+        y: root.body-top;
+        width: root.width;
+        height: root.height - root.body-top;
+
+        // Cover status, centered horizontally and vertically in the body region.
+        if root.compact : VerticalLayout {
+            width: parent.width;
+            height: parent.height;
+            padding-left: root.end-inset;
+            padding-right: root.end-inset;
+            alignment: center;
+
+            HorizontalLayout {
+                alignment: center;
+                Path {
+                    height: root.icon-size;
+                    width: root.icon-size;
+                    viewbox-width: 24;
+                    viewbox-height: 24;
+                    commands: root.search-path;
+                    fill: Theme.on-surface-variant;
+                }
+            }
+            Rectangle { height: 24px; }
+            Text {
+                text: root.status-title;
+                height: 28px;
+                font-size: Theme.title-large;
+                font-weight: 600;
+                color: Theme.on-surface;
+                horizontal-alignment: center;
+                vertical-alignment: center;
+                overflow: elide;
+            }
+            if root.status-detail != "" : Rectangle { height: 8px; }
+            if root.status-detail != "" : Text {
+                text: root.status-detail;
+                height: 20px;
+                font-size: Theme.body-medium;
+                color: Theme.on-surface-variant;
+                horizontal-alignment: center;
+                vertical-alignment: center;
+                overflow: elide;
+            }
+        }
+
+        // Inner status, left aligned at the content inset with 72 px above the headline.
+        if !root.compact : VerticalLayout {
+            x: root.content-start-x;
+            width: root.width - root.content-start-x - root.end-inset;
+            height: parent.height;
+            padding-top: 72px;
+
+            Text {
+                text: root.status-title;
+                height: 28px;
+                font-size: Theme.title-large;
+                font-weight: 600;
+                color: Theme.on-surface;
+                vertical-alignment: center;
+                overflow: elide;
+            }
+            if root.status-detail != "" : Rectangle { height: 12px; }
+            if root.status-detail != "" : Text {
+                text: root.status-detail;
+                height: 20px;
+                font-size: Theme.body-medium;
+                color: Theme.on-surface-variant;
+                vertical-alignment: center;
+                overflow: elide;
+            }
+        }
+    }
+
+    // Result list below the header. Rows keep the fixed 72 px height, and the list returns to its first row when
+    // the query changes.
+    results := ListView {
+        x: 0px;
+        y: root.body-top;
+        width: root.width;
+        height: root.height - root.body-top;
+        visible: root.rows.length > 0;
+
+        for row[i] in root.rows: Rectangle {
+            width: results.width;
+            height: root.row-height;
+
+            // Tapping the whole row opens the result.
+            row-touch := TouchArea {
+                width: parent.width;
+                height: parent.height;
+                clicked => { root.open(row.index); }
+            }
+
+            // Glyph in the 48 px slot, centered on the same axis as the Back arrow.
+            Path {
+                x: root.content-start-x + (Theme.touch-target - root.icon-size) / 2;
+                y: (parent.height - root.icon-size) / 2;
+                width: root.icon-size;
+                height: root.icon-size;
+                viewbox-width: 24;
+                viewbox-height: 24;
+                commands: row.kind == 0 ? root.folder-path : root.track-path;
+                fill: Theme.on-surface-variant;
+            }
+
+            // Title and optional parent line, starting at the same inset as the query text (D58).
+            VerticalLayout {
+                x: root.content-start-x + Theme.touch-target;
+                width: parent.width - root.content-start-x - Theme.touch-target - root.end-inset;
+                height: parent.height;
+                alignment: center;
+
+                HorizontalLayout {
+                    alignment: start;
+                    for segment in row.title-segments: Rectangle {
+                        background: segment.emphasized ? root.match-fill : transparent;
+                        title-text := Text {
+                            text: segment.text;
+                            font-size: Theme.body-large;
+                            font-weight: segment.emphasized ? 700 : 400;
+                            color: Theme.on-surface;
+                            vertical-alignment: center;
+                        }
+                    }
+                }
+                if row.has-parent : HorizontalLayout {
+                    alignment: start;
+                    for segment in row.parent-segments: Rectangle {
+                        background: segment.emphasized ? root.match-fill : transparent;
+                        parent-text := Text {
+                            text: segment.text;
+                            font-size: Theme.body-medium;
+                            font-weight: segment.emphasized ? 700 : 400;
+                            color: Theme.on-surface-variant;
+                            vertical-alignment: center;
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
