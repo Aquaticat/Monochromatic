@@ -164,6 +164,26 @@ export const IDIOM_GLOSSARY: readonly CommunityTerm[] = [
     why: 'someone who stakes their own life to stop another, threatening to kill themselves; "threatened her life" '
       + 'says the other person\'s life was threatened',
   },
+  // TianqiChen66621 (2026-09-28) and TianqiChen66622 (2026-10-11) both shipped
+  // the farewell glow's 像朗照溪水的月色扑面而来 as moonlight sweeping "toward
+  // her" or "over her face", where the glow she cast comes at everyone she
+  // knew (owner, 2026-10-11: "Add a dictionary entry"). The pinned corpus
+  // carries the idiom on four pages, and on three of them (MocaKawai,
+  // lin10104, republic_o85611) pressure or loneliness washes over the person
+  // herself, so no rendering is refused: the target is whoever faces it.
+  {
+    term: '扑面而来',
+    renderings: [
+      'washed over',
+      'came rushing at',
+      'swept over',
+      'came crashing down on',
+      'met everyone',
+    ],
+    refusedForms: [],
+    why: 'coming straight at whoever faces it: a feeling or pressure that washes over the person feeling it, or, when '
+      + 'it describes what someone gives off, the people receiving it rather than the giver',
+  },
 ];
 
 //endregion Idiom renderings
