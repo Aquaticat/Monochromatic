@@ -13,27 +13,30 @@ import type { LaneContestBallot, } from './lane-contest-wire.ts';
 // rather than defaulted, and the standing still ships if the run-off ends
 // undecided.
 //
-// The owner's answer of 2026-10-11, "Majority flawed yes", moved the run-off
-// trigger to a strict majority of the usable ballots (`archiveFlawedByMajority`).
-// The forfeit of an eligible standing past an undecided gate still reads every
-// ballot (`archiveFlawedByEveryBallot`, owner answer 2026-09-27, "Slate's
-// choice"), so the two predicates answer two different questions.
+// The owner's answers of 2026-10-11 moved both readings of the contest to a
+// strict majority of the usable ballots: the run-off ("Majority flawed yes",
+// after TianqiChen66622 slice 4 kept an archive four of five ballots called
+// flawed) and the forfeit of an eligible standing past an undecided gate
+// ("Majority, like the run-off", which had read every ballot since 2026-09-27,
+// "Slate's choice"). One predicate answers both.
 
 /**
  Whether a strict majority of the usable contest ballots call the archive
- flawed on a contest that settled on neither lane, which runs off a tied slate
- over an eligible standing (owner answer 2026-10-11, "Majority flawed yes").
+ flawed on a contest that settled on neither lane. It runs off a tied slate
+ over an eligible standing, and forfeits that standing past an undecided gate
+ (owner answers 2026-10-11, "Majority flawed yes" and "Majority, like the
+ run-off").
 
  A STRICT MAJORITY OF EVERY USABLE BALLOT, NOT OF THE ANSWERS. A ballot that
  did not answer about the archive is not a flawed one, and it still counts in
  the denominator, so five ballots need three flawed voices and four need three
- as well: two of four is a tie and does not run off.
+ as well: two of four is a tie and does neither.
 
  @param verdict - what the contest recorded for this slice
 
  @param ballots - every usable ballot of that contest
 
- @returns Whether a tied slate over this slice's standing is run off
+ @returns Whether a tied slate over this slice's standing is run off, and an undecided gate forfeits it
 
  @example
  ```ts
@@ -58,87 +61,6 @@ export function archiveFlawedByMajority(
     return ballot.archive === 'flawed';
   },);
   return (flawed.length * 2) > ballots.length;
-}
-
-/**
- Whether every usable contest ballot called the archive flawed on a contest
- that settled on neither lane (owner answer 2026-09-27, "Slate's choice"),
- which decides whether an eligible standing is forfeit past an undecided gate.
-
- EVERY BALLOT, NOT THE SETTLED VERDICT. `settled-neither` with
- `archive: 'declined'` needs two flawed voices and a strict lead, which one
- publishable ballot among three still satisfies; the owner's rule is that no
- judge would publish the archive as it stands. A ballot that did not answer
- about the archive is not a flawed one. The run-off trigger does not read this
- predicate (`archiveFlawedByMajority`).
-
- @param verdict - what the contest recorded for this slice
-
- @param ballots - every usable ballot of that contest
-
- @returns Whether the standing is condemned by the whole contest
-
- @example
- ```ts
- const standingFlawedByAll = archiveFlawedByEveryBallot({ verdict: contest.verdict, ballots: contest.ballots, },);
- ```
- */
-export function archiveFlawedByEveryBallot(
-  {
-    verdict,
-    ballots,
-  }: {
-    readonly verdict: ArtifactContestVerdict;
-    readonly ballots: readonly LaneContestBallot[];
-  },
-): boolean {
-  if (verdict.kind !== 'settled-neither')
-    return false;
-  if (ballots.length === 0)
-    return false;
-  return ballots.every(function calledFlawed(ballot,): boolean {
-    return ballot.archive === 'flawed';
-  },);
-}
-
-/**
- The two flags a consolidation over one contest's slice carries: the run-off
- trigger, which reads a majority, and the forfeit, which reads every ballot.
- Both come from the same ballots, so the driver takes them as one pair.
-
- @param verdict - what the contest recorded for this slice
-
- @param ballots - every usable ballot of that contest
-
- @returns Whether a tied slate is run off, and whether the forfeit reads the whole contest
-
- @example
- ```ts
- const flags = archiveFlagsOf({ verdict: contest.verdict, ballots: contest.ballots, },);
- ```
- */
-export function archiveFlagsOf(
-  {
-    verdict,
-    ballots,
-  }: {
-    readonly verdict: ArtifactContestVerdict;
-    readonly ballots: readonly LaneContestBallot[];
-  },
-): {
-  readonly runoffOverStanding: boolean;
-  readonly standingFlawedByAll: boolean;
-} {
-  return {
-    runoffOverStanding: archiveFlawedByMajority({
-      verdict,
-      ballots,
-    },),
-    standingFlawedByAll: archiveFlawedByEveryBallot({
-      verdict,
-      ballots,
-    },),
-  };
 }
 
 //endregion Consolidate archive flawed

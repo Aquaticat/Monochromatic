@@ -45,16 +45,12 @@ type ConsolidationBuyInput = {
    */
   readonly laneTexts?: readonly LaneText[];
   /**
-   Whether a tied slate over an eligible standing is run off (class one
-   hundred six, 2026-09-24, widened to a strict majority on 2026-10-11).
+   Whether a strict majority of the contest ballots called the archive flawed,
+   so a tied slate over an eligible standing is run off (class one hundred six)
+   and an undecided gate over it ships the slate's choice (class one hundred
+   seventy-seven); both widened to the majority on 2026-10-11.
    */
   readonly runoffOverStanding?: boolean;
-  /**
-   Whether every usable contest ballot called the archive flawed, which lets
-   an undecided gate over an eligible standing ship the slate's choice (owner
-   answer 2026-09-27, "Slate's choice").
-   */
-  readonly standingFlawedByAll?: boolean;
   readonly signal: AbortSignal;
   readonly perCallTimeoutMs: number;
   readonly l: Logger;
@@ -144,7 +140,6 @@ async function buyConsolidationAttempt(
     standingFindings = [],
     laneTexts = [],
     runoffOverStanding = false,
-    standingFlawedByAll = false,
     signal,
     perCallTimeoutMs,
     l,
@@ -172,7 +167,6 @@ async function buyConsolidationAttempt(
     ...((standingRefusal === undefined) ? {} : { standingRefusal, }),
     laneTexts,
     runoffOverStanding,
-    standingFlawedByAll,
     signal,
     perCallTimeoutMs,
     l,

@@ -115,9 +115,10 @@ export function gateObjectionsOf(
  @param standingRefusal - why the deterministic gate refused the standing,
  shown to the gate judges so keeping it is not taken for the safe choice
 
- @param standingFlawedByAll - whether every contest ballot called the
- standing flawed, so an undecided gate ships the slate's choice over it
- (class one hundred seventy-seven)
+ @param standingFlawedByMajority - whether a strict majority of the contest
+ ballots called the standing flawed, so an undecided gate ships the slate's
+ choice over it (class one hundred seventy-seven; every ballot until the
+ owner's answer of 2026-10-11, "Majority, like the run-off")
 
  @param identity - front matter identity as the gate takes it
 
@@ -154,7 +155,7 @@ export async function gateAndShip(
     standingMayShip,
     standingEligible,
     standingRefusal,
-    standingFlawedByAll = false,
+    standingFlawedByMajority = false,
     identity,
     signal,
     perCallTimeoutMs,
@@ -174,7 +175,7 @@ export async function gateAndShip(
     readonly standingMayShip: boolean;
     readonly standingEligible: boolean;
     readonly standingRefusal?: string;
-    readonly standingFlawedByAll?: boolean;
+    readonly standingFlawedByMajority?: boolean;
     readonly identity: SettlementIdentity;
     readonly signal: AbortSignal;
     readonly perCallTimeoutMs: number;
@@ -211,7 +212,7 @@ export async function gateAndShip(
   const gated = shipPastForfeitStanding({
     outcome: gate,
     standingEligible,
-    standingFlawedByAll,
+    standingFlawedByMajority,
     l,
   },);
 

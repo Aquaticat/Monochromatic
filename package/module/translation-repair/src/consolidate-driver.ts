@@ -11,7 +11,7 @@ import {
   consolidateRunShape,
   consolidateSliceKey,
 } from './consolidate-key.ts';
-import { archiveFlagsOf, } from './consolidate-archive-flawed.ts';
+import { archiveFlawedByMajority, } from './consolidate-archive-flawed.ts';
 import { laneTextsForSlate, } from './consolidate-lane-offer.ts';
 import { persistConsolidationSettlement, } from './consolidate-persistence.ts';
 import type { ConsolidationSettlement, } from './consolidate-settle.ts';
@@ -528,12 +528,11 @@ export async function consolidateDocument(
                 ...((standingRefusal === undefined) ? {} : { standingRefusal, }),
                 standingFindings,
                 laneTexts,
-                // The run-off over this eligible standing reads a strict majority
-                // of the contest ballots (owner answer 2026-10-11, "Majority flawed
-                // yes"); the forfeit past an undecided gate reads every ballot
-                // (owner answer 2026-09-27, "Slate's choice"). Both derive from
-                // the ballots the key already carries.
-                ...archiveFlagsOf({
+                // The run-off over this eligible standing and its forfeit past an
+                // undecided gate both read a strict majority of the contest ballots
+                // (owner answers 2026-10-11, "Majority flawed yes" and "Majority,
+                // like the run-off"), from the ballots the key already carries.
+                runoffOverStanding: archiveFlawedByMajority({
                   verdict: contest.verdict,
                   ballots: contest.ballots,
                 },),

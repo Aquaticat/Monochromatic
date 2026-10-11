@@ -87,13 +87,15 @@ export const UNDECIDED_GATE_SHIPS_PROPOSAL_FINDING: string = 'undecided-gate-shi
 
 /**
  Finding recorded on a settlement whose gate settled on neither rendering
- over an eligible standing every contest ballot called flawed, so the
- proposal the slate chose shipped (class one hundred seventy-seven,
- TianqiChen66610 slice 13, owner answer 2026-09-27: "Slate's choice").
+ over an eligible standing a strict majority of contest ballots called
+ flawed, so the proposal the slate chose shipped (class one hundred
+ seventy-seven, TianqiChen66610 slice 13, owner answer 2026-09-27: "Slate's
+ choice"; every ballot until the owner's answer of 2026-10-11, "Majority, like
+ the run-off").
  */
 export const FLAWED_STANDING_GATE_SHIPS_PROPOSAL_FINDING: string = 'undecided-gate-ships-proposal (standing flawed '
-  + 'by every contest ballot): the gate settled on neither rendering over a standing every contest ballot called '
-  + 'flawed, so the proposal the slate judges chose ships';
+  + 'by a majority of contest ballots): the gate settled on neither rendering over a standing a majority of '
+  + 'contest ballots called flawed, so the proposal the slate judges chose ships';
 
 /**
  Finding recorded on a settlement whose gate preferred a standing the
@@ -257,7 +259,10 @@ export function keepTheArchive(
  ballot had called it flawed; the class one hundred six run-off ran, the slate
  chose a valid proposal, and the gate tied 2 to 2, so the condemned archive
  shipped. A standing the whole contest condemned is no conservative default
- either, so the same indecision ships the slate's choice there too.
+ either, so the same indecision ships the slate's choice there too. The owner
+ widened this to a strict majority of the contest ballots on 2026-10-11
+ ("Majority, like the run-off"), after TianqiChen66622 slice 4 kept an
+ archive four of five ballots called flawed.
 
  CLASS ONE HUNDRED EIGHTY-FIVE (TianqiChen66619 slice 9, 2026-09-27). The
  gate preferred an ineligible standing 2 of 4 over the slate's valid choice,
@@ -274,8 +279,9 @@ export function keepTheArchive(
 
  @param standingEligible - whether the standing passed the deterministic gate
 
- @param standingFlawedByAll - whether every contest ballot called the
- standing flawed (`consolidate-archive-flawed.ts`)
+ @param standingFlawedByMajority - whether a strict majority of the contest
+ ballots called the standing flawed (`archiveFlawedByMajority` in
+ `consolidate-archive-flawed.ts`)
 
  @param l - stage logger, told when the rule applies
 
@@ -284,19 +290,19 @@ export function keepTheArchive(
 
  @example
  ```ts
- const gated = shipPastForfeitStanding({ outcome, standingEligible, standingFlawedByAll, l, },);
+ const gated = shipPastForfeitStanding({ outcome, standingEligible, standingFlawedByMajority, l, },);
  ```
  */
 export function shipPastForfeitStanding(
   {
     outcome,
     standingEligible,
-    standingFlawedByAll = false,
+    standingFlawedByMajority = false,
     l,
   }: {
     readonly outcome: ConsolidateGateOutcome;
     readonly standingEligible: boolean;
-    readonly standingFlawedByAll?: boolean;
+    readonly standingFlawedByMajority?: boolean;
     readonly l: Logger;
   },
 ): ConsolidateGateOutcome {
@@ -325,15 +331,15 @@ export function shipPastForfeitStanding(
     return outcome;
   /**
    Whether the standing is no conservative default to keep: ineligible, or
-   condemned by every contest ballot.
+   condemned by a strict majority of the contest ballots.
    */
-  const standingForfeit = (!standingEligible) || standingFlawedByAll;
+  const standingForfeit = (!standingEligible) || standingFlawedByMajority;
   if (!standingForfeit)
     return outcome;
   /**
    Why the standing is not kept, for the log and the finding.
    */
-  const why = standingEligible ? 'a standing every contest ballot called flawed' : 'an ineligible standing';
+  const why = standingEligible ? 'a standing a majority of contest ballots called flawed' : 'an ineligible standing';
   l.warn(
     `consolidate gate: settled on neither over ${why}, so the proposal the slate chose ships (${
       String(outcome.usable,)

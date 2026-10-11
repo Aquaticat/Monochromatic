@@ -79,7 +79,7 @@ const FLOOR_KEYS: ReadonlySet<string> = new Set([
   'runoffOverStanding',
   'selfCertificationPermitted',
   'standingEligible',
-  'standingFlawedByAll',
+  'standingFlawedByMajority',
   'standingMayShip',
   'standingValid',
   'withdrawnSliceIndices',

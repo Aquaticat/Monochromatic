@@ -341,13 +341,9 @@ export type ConsolidationSettlement = {
  (`archiveFlawedByMajority` in `consolidate-archive-flawed.ts`, class one
  hundred six, 2026-09-24, widened to a majority by the owner on 2026-10-11,
  "Majority flawed yes"); the standing still ships where the run-off ends
- undecided
-
- @param standingFlawedByAll - whether every usable contest ballot called the
- archive flawed, which the driver sets from `archiveFlawedByEveryBallot`; an
- undecided gate over an eligible standing so condemned ships the slate's
- choice (owner answer 2026-09-27, "Slate's choice"). Read by the forfeit only,
- never by the run-off
+ undecided. The same flag forfeits that standing past an undecided gate, so
+ the gate ships the slate's choice (owner answers 2026-09-27, "Slate's choice",
+ and 2026-10-11, "Majority, like the run-off")
 
  @param signal - cancellation for the whole settlement
 
@@ -385,7 +381,6 @@ export async function settleConsolidation(
     standingRefusal,
     laneTexts = [],
     runoffOverStanding = false,
-    standingFlawedByAll = false,
     signal,
     perCallTimeoutMs,
     l,
@@ -407,7 +402,6 @@ export async function settleConsolidation(
     readonly standingRefusal?: string;
     readonly laneTexts?: readonly LaneText[];
     readonly runoffOverStanding?: boolean;
-    readonly standingFlawedByAll?: boolean;
     readonly signal: AbortSignal;
     readonly perCallTimeoutMs: number;
     readonly l: Logger;
@@ -712,7 +706,7 @@ export async function settleConsolidation(
     standingMayShip,
     standingEligible,
     ...((standingRefusal === undefined) ? {} : { standingRefusal, }),
-    standingFlawedByAll,
+    standingFlawedByMajority: runoffOverStanding,
     identity,
     signal,
     perCallTimeoutMs,

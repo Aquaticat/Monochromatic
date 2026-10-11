@@ -109,16 +109,18 @@ import type { LaneText, } from './translate-candidates.ts';
  which a proposal is held to, now look past a JSX comment, a stray quote mark
  and a lone backtick (ledger K7, `1873b23dc` and `dc325d847`).
 
- VERSION 21 (owner answers of 2026-10-11, "Majority flawed yes" and "Run off
- the tied finalists") changes two things a settlement records. A tied slate
- over an eligible standing is run off once over its tied finalists when the
- standing drew no ballot, where version 20 kept the standing unchallenged. The
- run-off over an eligible standing is also triggered by a strict majority of
- the contest ballots calling the archive flawed, where version 20 required
- every ballot. A settlement written under version 20 kept a standing no judge
- chose, and kept an archive a majority condemned, so it cannot resume as
- though it still answered the question. The forfeit past an undecided gate
- still reads every ballot, so its stored outcomes keep their meaning.
+ VERSION 21 (owner answers of 2026-10-11, "Majority flawed yes", "Run off
+ the tied finalists" and "Majority, like the run-off") changes three things a
+ settlement records. A tied slate over an eligible standing is run off once
+ over its tied finalists when the standing drew no ballot, where version 20
+ kept the standing unchallenged. The run-off over an eligible standing is
+ triggered by a strict majority of the contest ballots calling the archive
+ flawed, where version 20 required every ballot. And the same majority forfeits
+ that standing past an undecided gate, where version 20 again required every
+ ballot. A settlement written under version 20 kept a standing no judge chose,
+ and kept an archive a majority condemned, so it cannot resume as though it
+ still answered the question. The forfeit's move landed after 21 was set and
+ before any pass ran on it, so no settlement was stored under 21 without it.
 
  The glossary audit's corrections ride inside 20 too (ledger C3 to R16,
  `357f534b7`), checked on 2026-09-28 against the newest slice-cache file under
