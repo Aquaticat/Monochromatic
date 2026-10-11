@@ -145,8 +145,8 @@ fn index_mode_keeps_a_path_staged_by_another_process() {
     assert!(post.contains("\ta.txt"), "{post}");
     assert!(post.contains("\tother.txt"), "{post}");
     let landed = entries(scenario.repo.as_path(), scenario.landed_index.as_path());
-    let landed_a: Vec<&str> = landed.lines().filter(|line| line.ends_with("\ta.txt")).collect();
-    assert!(post.lines().any(|line| line == landed_a[0]));
+    let landed_a: Vec<&str> = landed.lines().filter(|line| { return line.ends_with("\ta.txt"); }).collect();
+    assert!(post.lines().any(|line| { return line == landed_a[0]; }));
     remove(&scenario.root);
 }
 
@@ -168,8 +168,11 @@ fn explicit_path_mode_resets_committed_paths_only() {
     compute(&scenario, TransactionMode::ExplicitPath, &["a.txt".to_string()], &[], false, base.as_str());
     let post = entries(scenario.repo.as_path(), scenario.post_index.as_path());
     let landed = entries(scenario.repo.as_path(), scenario.landed_index.as_path());
-    assert!(landed.lines().any(|line| line.ends_with("\ta.txt")));
-    assert!(post.lines().any(|line| line.ends_with("\ta.txt") && landed.lines().any(|l| l == line)), "{post}");
+    assert!(landed.lines().any(|line| { return line.ends_with("\ta.txt"); }));
+    assert!(
+        post.lines().any(|line| { return line.ends_with("\ta.txt") && landed.lines().any(|other| { return other == line; }); }),
+        "{post}"
+    );
     assert!(post.contains("\tother.txt"), "{post}");
     remove(&scenario.root);
 }

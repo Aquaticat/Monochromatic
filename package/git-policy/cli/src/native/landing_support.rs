@@ -63,7 +63,7 @@ pub fn landing_reflog_message(
 ) -> Result<String, GitFailure> {
     let request = GitRequest::new(cwd, &["show", "--no-patch", "--format=%s", oid]);
     let output: GitOutput = run_git(context, &request)
-        .map_err(|error| GitFailure(format!("git show {oid} could not start: {error}")))?;
+        .map_err(|error| { return GitFailure(format!("git show {oid} could not start: {error}")); })?;
     if !output.succeeded() {
         return Err(GitFailure(format!(
             "git show {oid} failed: {}",
@@ -71,7 +71,7 @@ pub fn landing_reflog_message(
         )));
     }
     let subject: String = String::from_utf8(output.stdout)
-        .map_err(|error| GitFailure(format!("git show {oid} printed non-UTF-8 text: {error}")))?;
+        .map_err(|error| { return GitFailure(format!("git show {oid} printed non-UTF-8 text: {error}")); })?;
     return Ok(format!("{} {}", landing_reflog_prefix(nonce), trim_javascript(&subject)));
 }
 
@@ -127,7 +127,7 @@ pub fn compare_and_swap_target(
     arguments.push(expected);
     let request = GitRequest::new(cwd, &arguments);
     return run_git(context, &request)
-        .map_err(|error| GitFailure(format!("git update-ref could not start: {error}")));
+        .map_err(|error| { return GitFailure(format!("git update-ref could not start: {error}")); });
 }
 
 /// Landing support controls stay out of the production code path.

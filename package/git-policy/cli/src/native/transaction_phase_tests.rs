@@ -6,7 +6,7 @@ use crate::test_support::{fixture, remove};
 /// The phases are named in transaction order, as the incumbent lists them.
 #[test]
 fn phases_are_named_in_transaction_order() {
-    let names: Vec<&str> = TRANSACTION_TEST_PHASES.iter().map(|phase| phase.name()).collect();
+    let names: Vec<&str> = TRANSACTION_TEST_PHASES.iter().map(|phase| { return phase.name(); }).collect();
     assert_eq!(
         names,
         [
@@ -39,9 +39,9 @@ fn kill_and_pause_with_absolute_directory_parse() {
     assert_eq!(signal.action, PhaseAction::Kill);
     assert_eq!(signal.directory.as_deref(), Some(directory.as_path()));
     let paused: String = format!("race-lost:pause:{}", directory.display());
-    let signal = parse_phase_signal(&paused).expect("valid pause");
-    assert_eq!(signal.phase, Phase::RaceLost);
-    assert_eq!(signal.action, PhaseAction::Pause);
+    let pause_signal = parse_phase_signal(&paused).expect("valid pause");
+    assert_eq!(pause_signal.phase, Phase::RaceLost);
+    assert_eq!(pause_signal.action, PhaseAction::Pause);
 }
 
 /// An empty directory after the action is no directory, as the incumbent's parser reads it.

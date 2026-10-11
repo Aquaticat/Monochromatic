@@ -17,9 +17,9 @@ fn shadow_commit(root: &Path, repo: &Path, parent: Option<&str>, message: &str) 
     let tree: String = git_text(repo, &["rev-parse", "HEAD^{tree}"]);
     let git_dir: String = format!("--git-dir={}", shadow.display());
     let mut arguments: Vec<&str> = vec![git_dir.as_str(), "commit-tree", tree.as_str(), "-m", message];
-    if let Some(parent) = parent {
+    if let Some(parent_oid) = parent {
         arguments.push("-p");
-        arguments.push(parent);
+        arguments.push(parent_oid);
     }
     let oid: String = git_text(root, &arguments);
     return (shadow, oid);

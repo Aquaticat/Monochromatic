@@ -81,13 +81,13 @@ impl Phase {
     /// ```
     pub fn name(self) -> &'static str {
         match self {
-            Phase::CaptureLocked => "capture-locked",
-            Phase::PreparationDone => "preparation-done",
-            Phase::LandingLocked => "landing-locked",
-            Phase::ObjectsMigrated => "objects-migrated",
-            Phase::RefUpdated => "ref-updated",
-            Phase::IndexInstalled => "index-installed",
-            Phase::RaceLost => "race-lost",
+            Phase::CaptureLocked => return "capture-locked",
+            Phase::PreparationDone => return "preparation-done",
+            Phase::LandingLocked => return "landing-locked",
+            Phase::ObjectsMigrated => return "objects-migrated",
+            Phase::RefUpdated => return "ref-updated",
+            Phase::IndexInstalled => return "index-installed",
+            Phase::RaceLost => return "race-lost",
         }
     }
 }
@@ -147,8 +147,8 @@ pub struct PhaseSignalError {
 impl std::fmt::Display for PhaseSignalError {
     fn fmt(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let quoted: String = json_string(self.value.as_str()).unwrap_or_else(|_| format!("{:?}", self.value));
-        let phases: Vec<&str> = TRANSACTION_TEST_PHASES.iter().map(|phase| phase.name()).collect();
-        write!(
+        let phases: Vec<&str> = TRANSACTION_TEST_PHASES.iter().map(|phase| { return phase.name(); }).collect();
+        return write!(
             formatter,
             "{PHASE_SIGNAL_VARIABLE}={quoted} is not <phase>:kill[:<absolute directory>] or <phase>:pause:<absolute directory> with a phase among {}.",
             phases.join(", ")
@@ -180,8 +180,8 @@ pub enum PhaseMarkerError {
 impl std::fmt::Display for PhaseMarkerError {
     fn fmt(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            PhaseMarkerError::Malformed(error) => write!(formatter, "{error}"),
-            PhaseMarkerError::Io(error) => write!(formatter, "transaction phase marker failed: {error}"),
+            PhaseMarkerError::Malformed(error) => return write!(formatter, "{error}"),
+            PhaseMarkerError::Io(error) => return write!(formatter, "transaction phase marker failed: {error}"),
         }
     }
 }
@@ -201,8 +201,10 @@ impl std::error::Error for PhaseMarkerError {}
 /// parsePhaseSignal(value);
 /// ```
 pub fn parse_phase_signal(value: &str) -> Result<PhaseSignal, PhaseSignalError> {
-    let refusal = || PhaseSignalError {
-        value: value.to_string(),
+    let refusal = || {
+        return PhaseSignalError {
+            value: value.to_string(),
+        };
     };
     let Some(phase_end) = value.find(':') else {
         return Err(refusal());
@@ -215,7 +217,7 @@ pub fn parse_phase_signal(value: &str) -> Result<PhaseSignal, PhaseSignalError> 
     let Some(phase) = TRANSACTION_TEST_PHASES
         .iter()
         .copied()
-        .find(|candidate| candidate.name() == &value[..phase_end])
+        .find(|candidate| { return candidate.name() == &value[..phase_end]; })
     else {
         return Err(refusal());
     };
@@ -301,10 +303,10 @@ pub(crate) fn reach_with_value(
     phase: Phase,
     occurrence: Option<u64>,
 ) -> Result<(), PhaseMarkerError> {
-    let Some(value) = value.filter(|text| !text.is_empty()) else {
+    let Some(armed) = value.filter(|text| { return !text.is_empty(); }) else {
         return Ok(());
     };
-    let signal: PhaseSignal = parse_phase_signal(value).map_err(PhaseMarkerError::Malformed)?;
+    let signal: PhaseSignal = parse_phase_signal(armed).map_err(PhaseMarkerError::Malformed)?;
     if signal.phase != phase {
         return Ok(());
     }
@@ -340,7 +342,7 @@ pub(crate) fn reach_with_value(
 /// await reachTransactionPhase({ phase: 'landing-locked' });
 /// ```
 pub fn reach_transaction_phase(phase: Phase, occurrence: Option<u64>) -> Result<(), PhaseMarkerError> {
-    let value: Option<String> = std::env::var_os(PHASE_SIGNAL_VARIABLE).map(|text: std::ffi::OsString| text.to_string_lossy().into_owned());
+    let value: Option<String> = std::env::var_os(PHASE_SIGNAL_VARIABLE).map(|text: std::ffi::OsString| { return text.to_string_lossy().into_owned(); });
     return reach_with_value(value.as_deref(), phase, occurrence);
 }
 

@@ -27,7 +27,7 @@ use super::transaction_git::{GitContext, GitFailure, GitOutput, GitRequest, run_
 use std::collections::HashMap;
 /// `OsString` is owned operating-system text; `Path`/`PathBuf` are filesystem paths.
 use std::ffi::OsString;
-use std::path::{Path, PathBuf};
+use std::path::Path;
 
 /// Module tag for diagnostics.
 const TAG: &str = "computeLandingPostIndex";
@@ -88,7 +88,7 @@ fn literal_pathspecs() -> Vec<(OsString, OsString)> {
 /// ```
 fn decode(bytes: &[u8]) -> Result<String, GitFailure> {
     return String::from_utf8(bytes.to_vec())
-        .map_err(|error| GitFailure(format!("Git output is not UTF-8: {error}")));
+        .map_err(|error| { return GitFailure(format!("Git output is not UTF-8: {error}")); });
 }
 
 /// What:
@@ -103,7 +103,7 @@ fn decode(bytes: &[u8]) -> Result<String, GitFailure> {
 fn records(bytes: &[u8]) -> Result<Vec<String>, GitFailure> {
     return Ok(decode(bytes)?
         .split('\0')
-        .filter(|record| !record.is_empty())
+        .filter(|record| { return !record.is_empty(); })
         .map(str::to_string)
         .collect());
 }
@@ -175,7 +175,7 @@ fn changed_since_captured(
     let mut request = GitRequest::new(cwd, &["write-tree"]);
     request.index = Some(captured.to_path_buf());
     let output: GitOutput = run_git(context, &request)
-        .map_err(|error| GitFailure(format!("git write-tree could not start: {error}")))?;
+        .map_err(|error| { return GitFailure(format!("git write-tree could not start: {error}")); })?;
     if !output.succeeded() {
         return Ok(Vec::new());
     }
@@ -204,7 +204,10 @@ fn merge_landed_entries(
     let landed = list_stages(context, cwd, artifacts.landed, changed)?;
     let untouched: Vec<&String> = changed
         .iter()
-        .filter(|path| captured.get(path.as_str()).map(Vec::as_slice).unwrap_or(&[]) == current.get(path.as_str()).map(Vec::as_slice).unwrap_or(&[]))
+        .filter(|path| {
+            return captured.get(path.as_str()).map(Vec::as_slice).unwrap_or(&[])
+                == current.get(path.as_str()).map(Vec::as_slice).unwrap_or(&[]);
+        })
         .collect();
     if untouched.is_empty() {
         return Ok(());
@@ -331,13 +334,13 @@ pub fn compute_landing_post_index(
         let outside: Vec<String> = input
             .guarded_paths
             .iter()
-            .filter(|path| !input.committed_paths.contains(path))
+            .filter(|path| { return !input.committed_paths.contains(path); })
             .cloned()
             .collect();
         return reset_guarded_paths(context, cwd, &artifacts, &outside);
     }
     if input.exact_private_index && files_equal(input.pre_landing_index, input.captured_index)
-        .map_err(|error| GitFailure(error.0))?
+        .map_err(|error| { return GitFailure(error.0); })?
     {
         copy(input.landed_index, input.post_index)?;
         return Ok(());
@@ -364,7 +367,7 @@ pub fn compute_landing_post_index(
 /// ```
 fn copy(source: &Path, destination: &Path) -> Result<(), GitFailure> {
     return copy_index_with_timestamps(source, destination)
-        .map_err(|error| GitFailure(format!("copying {} failed: {error}", source.display())));
+        .map_err(|error| { return GitFailure(format!("copying {} failed: {error}", source.display())); });
 }
 
 /// Post-index controls stay out of the production code path.

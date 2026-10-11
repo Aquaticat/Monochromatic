@@ -59,12 +59,12 @@ pub fn migrate_shadow_objects(
     index_request.input = Some(pack.stdout);
     let indexed = run_git_checked(context, &index_request)?;
     let report: String = String::from_utf8(indexed.stdout)
-        .map_err(|error| GitFailure(format!("git index-pack printed non-UTF-8 text: {error}")))?;
-    let report: &str = report.trim();
-    let Some((_, name)) = report.split_once('\t') else {
+        .map_err(|error| { return GitFailure(format!("git index-pack printed non-UTF-8 text: {error}")); })?;
+    let trimmed: &str = report.trim();
+    let Some((_, name)) = trimmed.split_once('\t') else {
         return Err(GitFailure(format!(
             "git index-pack reported no pack: {}",
-            serde_json::to_string(report).unwrap_or_default()
+            serde_json::to_string(trimmed).unwrap_or_default()
         )));
     };
     return Ok(name.to_string());
