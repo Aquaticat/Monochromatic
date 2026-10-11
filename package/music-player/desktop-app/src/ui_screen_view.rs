@@ -13,7 +13,8 @@ use music_player::track_entries::{deck_folder_label, track_title_for};
 use music_player::track_measure::{TrackMeasure, lookup_by_name};
 use std::collections::HashMap;
 
-use crate::ui_screen_rows::{ListRow, Picker, current_row_position, list_rows, picker};
+use crate::ui_screen_rows::{ListRow, Picker, list_rows, picker};
+use crate::ui_screen_scroll::ScrollRequest;
 use crate::ui_templates::{playing_subtitle, playing_track};
 use music_player::template_editor_state::TemplateEditorState;
 use music_player::template_model::DEFAULT_PLAYING_TEMPLATE;
@@ -107,6 +108,13 @@ pub struct ScreenState {
     pub root_known: bool,
     /// Display name of the opened folder, or `None` when no folder is open.
     pub source_root_name: Option<String>,
+    /// Scroll request set by a reveal action, used by the next projection and then cleared.
+    pub scroll_request: Option<ScrollRequest>,
+    /// Identity of the page shown by the last projection that had rows, or `None` before any such projection.
+    pub last_page_key: Option<String>,
+    /// Whether the one-time reveal of the restored playing track has happened or the user has already acted, so a
+    /// later change of the playing track never scrolls the list.
+    pub startup_reveal_done: bool,
 }
 
 /// Methods of `ScreenState`.
@@ -141,7 +149,7 @@ impl ScreenState {
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// type ScreenView = { folderTitle: string; rows: ListRow[]; scrollRow: number; picker: Picker; ... };
+/// type ScreenView = { folderTitle: string; rows: ListRow[]; pageKey: string; picker: Picker; ... };
 /// ```
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct ScreenView {
@@ -149,8 +157,8 @@ pub struct ScreenView {
     pub folder_title: String,
     /// Rows of the selected folder page, headers included.
     pub rows: Vec<ListRow>,
-    /// Flat-list position of the playing row, or -1 when it is not on this page.
-    pub scroll_row: i32,
+    /// Identity of the selected folder page, or empty when the queue has no pages.
+    pub page_key: String,
     /// Folder picker rail and names.
     pub picker: Picker,
     /// Title of the playing track on the deck, or empty.
@@ -161,8 +169,6 @@ pub struct ScreenView {
     pub shuffle_folder_label: String,
     /// Folder that directly holds the playing track, or empty when nothing plays.
     pub deck_folder: String,
-    /// Flat-list position the list scrolls to for the playing track's folder, or -1 when nothing plays.
-    pub folder_scroll_row: i32,
 }
 
 /// What: `pages` derives the folder pages from the queue names, in display order.
@@ -217,22 +223,6 @@ fn playing_page_label(all_pages: &[Page], index: Option<usize>) -> String {
         .map_or_else(String::new, |page| return page.label.clone());
 }
 
-/// What: `folder_scroll_row_for` gives the flat-list position the list scrolls to for the playing track's folder.
-/// Why: the folder request shows the subfolder header above the playing row; a track directly in the folder sits
-/// before every header, so the top of the list (position 0) is its folder row.
-///
-/// In TS you'd write (pseudocode):
-/// ```ts
-/// const folderScrollRow = (rows: ListRow[]) => { const p = rows.findIndex((r) => r.current); return p < 0 ? -1 : Math.max(0, rows.slice(0, p + 1).findLastIndex((r) => r.kind === 1)); };
-/// ```
-pub fn folder_scroll_row_for(rows: &[ListRow]) -> i32 {
-    let Some(playing) = rows.iter().position(|row| return row.current) else {
-        return -1;
-    };
-    let header = rows.iter().take(playing + 1).rposition(|row| return row.kind == 1);
-    return header.map_or(0, |position| return i32::try_from(position).unwrap_or(-1));
-}
-
 /// What: `view` projects the state into the window's models using the supporting-line function.
 /// Why: rows, picker and deck all come from the one shared `build_player_content` result.
 ///
@@ -264,8 +254,7 @@ pub fn view(state: &ScreenState, supporting_line: &dyn Fn(&TrackFields) -> Optio
     };
     let content = build_player_content(&input, supporting_line);
     let rows = list_rows(&content.entries);
-    let scroll_row = current_row_position(&rows);
-    let folder_scroll_row = folder_scroll_row_for(&rows);
+    let page_key = all_pages.get(selected).map_or_else(String::new, page_identity);
     let picker_model = picker(&content.sections, &content.folder_title);
     let deck_subtitle = match (playing_position, playing_name) {
         (Some(position), Some(name)) => {
@@ -284,13 +273,12 @@ pub fn view(state: &ScreenState, supporting_line: &dyn Fn(&TrackFields) -> Optio
     return ScreenView {
         folder_title: content.folder_title,
         rows,
-        scroll_row,
+        page_key,
         picker: picker_model,
         deck_title,
         deck_subtitle,
         shuffle_folder_label: content.deck.shuffle_folder_label,
         deck_folder,
-        folder_scroll_row,
     };
 }
 

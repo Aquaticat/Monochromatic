@@ -44,7 +44,7 @@ fn page_key_containing_finds_the_page_of_a_queue_index() {
 }
 
 #[test]
-fn view_marks_the_playing_row_and_scrolls_to_it() {
+fn view_marks_the_playing_row_and_names_the_selected_page() {
     let state = state_with(&["Abba/one.mp3", "Abba/two.mp3"], Some(1));
     let mut selected = state.clone();
     selected.selected_key = page_identity(&pages(&state)[0]);
@@ -52,7 +52,12 @@ fn view_marks_the_playing_row_and_scrolls_to_it() {
     let current_rows: Vec<&ListRow> = view.rows.iter().filter(|row| return row.current).collect();
     assert_eq!(current_rows.len(), 1);
     assert_eq!(current_rows[0].index, 1);
-    assert_eq!(view.scroll_row, view.rows.iter().position(|row| return row.current).map_or(-1, |p| return p as i32));
+    assert_eq!(view.page_key, page_identity(&pages(&state)[0]));
+}
+
+#[test]
+fn view_page_key_is_empty_without_pages() {
+    assert_eq!(view(&ScreenState::default(), &no_supporting_line).page_key, "");
 }
 
 #[test]
@@ -63,7 +68,6 @@ fn view_deck_title_is_the_playing_track_even_off_the_selected_page() {
     let view = view(&state, &no_supporting_line);
     assert_eq!(view.deck_title, "two");
     assert_eq!(view.deck_subtitle, "");
-    assert_eq!(view.scroll_row, -1);
 }
 
 #[test]
@@ -85,7 +89,6 @@ fn view_of_an_empty_queue_has_no_rows_and_no_picker_cells() {
     let view = view(&ScreenState::default(), &no_supporting_line);
     assert!(view.rows.is_empty());
     assert!(view.picker.cells.is_empty());
-    assert_eq!(view.scroll_row, -1);
 }
 
 #[test]
@@ -135,8 +138,6 @@ fn playing_state() -> ScreenState {
 fn view_fills_deck_folder_with_the_playing_tracks_folder() {
     let view = view(&playing_state(), &no_supporting_line);
     assert_eq!(view.deck_folder, "Live");
-    assert_eq!(view.folder_scroll_row, 1);
-    assert_eq!(view.scroll_row, 2);
 }
 
 #[test]
@@ -144,7 +145,6 @@ fn view_deck_folder_is_empty_without_a_playing_track() {
     let state = state_with(&["Abba/one.mp3"], None);
     let view = view(&state, &no_supporting_line);
     assert_eq!(view.deck_folder, "");
-    assert_eq!(view.folder_scroll_row, -1);
 }
 
 #[test]
@@ -152,46 +152,4 @@ fn view_deck_folder_of_a_root_track_is_its_page_label() {
     let mut state = state_with(&["Loose.flac"], Some(0));
     state.track_name = "Loose.flac".to_string();
     assert_eq!(view(&state, &no_supporting_line).deck_folder, "L");
-}
-
-/// What: `list_row(kind, current)` builds one plain list row for the folder scroll cases.
-/// Why: only the kind and the current flag decide the folder scroll position.
-fn list_row(kind: i32, current: bool) -> ListRow {
-    return ListRow {
-        kind,
-        title: String::new(),
-        supporting: String::new(),
-        current,
-        index: -1,
-    };
-}
-
-#[test]
-fn folder_scroll_row_is_minus_one_when_nothing_plays() {
-    let rows = vec![list_row(0, false), list_row(1, false)];
-    assert_eq!(folder_scroll_row_for(&rows), -1);
-}
-
-#[test]
-fn folder_scroll_row_is_zero_for_a_track_directly_in_the_folder() {
-    let rows = vec![list_row(0, true), list_row(1, false), list_row(0, false)];
-    assert_eq!(folder_scroll_row_for(&rows), 0);
-}
-
-#[test]
-fn folder_scroll_row_is_the_nearest_header_above_the_playing_row() {
-    let rows = vec![
-        list_row(0, false),
-        list_row(1, false),
-        list_row(0, false),
-        list_row(1, false),
-        list_row(0, true),
-    ];
-    assert_eq!(folder_scroll_row_for(&rows), 3);
-}
-
-#[test]
-fn folder_scroll_row_ignores_headers_below_the_playing_row() {
-    let rows = vec![list_row(0, false), list_row(1, false), list_row(0, true), list_row(1, false)];
-    assert_eq!(folder_scroll_row_for(&rows), 1);
 }

@@ -11,6 +11,7 @@ use music_player::engine::Engine;
 use music_player::keymap::{KeyboardPlatform, ShortcutAction, ShortcutOwner, ShortcutRequest, shortcut_action};
 
 use crate::ui_screen::{project, read_state, update_state};
+use crate::ui_screen_scroll::ScrollRequest;
 use crate::ui_screen_view::{Route, ScreenState, selected_page_scope};
 use crate::AppWindow;
 
@@ -153,31 +154,33 @@ fn cycle_mode(engine: &Engine) {
 }
 
 /// What: `reveal_playing` moves the list to the folder that holds the playing track, closes the picker and asks
-/// the list to scroll to the playing row again.
-/// Why: Ctrl+G and a click on the deck's title jump to the playing track; the folder view makes the row visible,
-/// and the request count makes the list scroll even when the folder and the row did not change.
+/// the list to scroll so the playing row is at the top.
+/// Why: Ctrl+G and a click on the deck's title jump to the playing track; the request makes the list scroll even
+/// when the folder and the row did not change.
 pub(crate) fn reveal_playing(window: &AppWindow) {
-    show_playing_page();
+    show_playing_page(ScrollRequest::PlayingRow);
     project(window);
-    window.set_reveal_tick(window.get_reveal_tick() + 1);
 }
 
 /// What: `reveal_playing_folder` moves the list to the folder that holds the playing track, closes the picker and
-/// asks the list to scroll to that folder's header, or to the top of the folder for a track directly in it.
-/// Why: a click on the deck's folder name shows the folder; the request count makes the list scroll even when the
-/// folder and the header did not change.
+/// asks the list to scroll so the subfolder header above the playing row is at the top, or the folder start for a
+/// track directly in it.
+/// Why: a click on the deck's folder name shows the folder; the request makes the list scroll even when the folder
+/// and the header did not change.
 pub(crate) fn reveal_playing_folder(window: &AppWindow) {
-    show_playing_page();
+    show_playing_page(ScrollRequest::PlayingFolder);
     project(window);
-    window.set_folder_tick(window.get_folder_tick() + 1);
 }
 
-/// What: `show_playing_page` selects the page that holds the playing track and closes the picker.
-/// Why: both reveal actions show the playing track's folder, so they share this state change.
-fn show_playing_page() {
+/// What: `show_playing_page` selects the page that holds the playing track, closes the picker, and queues the scroll
+/// request for the next projection when a track is playing.
+/// Why: both reveal actions show the playing track's folder, so they share this state change; with nothing playing
+/// there is no row to reveal, so the list keeps its position.
+fn show_playing_page(request: ScrollRequest) {
     update_state(|state| {
         state.picker_open = false;
         if let Some(index) = state.current_index {
+            state.scroll_request = Some(request);
             let page = crate::ui_screen_view::page_key_containing(&crate::ui_screen_view::pages(state), index);
             if let Some(page_key) = page {
                 state.selected_key = page_key;

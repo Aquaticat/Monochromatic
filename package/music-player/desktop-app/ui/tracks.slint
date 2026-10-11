@@ -26,16 +26,11 @@ export component TrackListPane inherits Rectangle {
 
     // Entries to draw, in list order.
     in property <[TrackListRow]> rows: [];
-    // List position of the entry to bring to the top of the pane, such as the playing row. A change scrolls to it,
-    // and -1 leaves the scroll position alone.
-    in property <int> scroll-to-row: -1;
-    // Counts requests to show the target row again, so a request while the target row is unchanged still scrolls to it.
-    in property <int> reveal-tick: 0;
-    // List position of the folder row to bring to the top, such as the playing track's subfolder header, or 0 for the top
-    // of the folder. A change of folder-tick scrolls to it, and -1 means nothing plays.
-    in property <int> folder-scroll-row: -1;
-    // Counts requests to show the playing track's folder again, so a repeated request scrolls to the folder row again.
-    in property <int> folder-tick: 0;
+    // Y offset from the top of the list of the row to bring to the top of the pane, or 0 for the top of the list. The pane
+    // reads it only when scroll-tick changes, so a change of the playing track or of the rows never moves the list.
+    in property <length> scroll-offset: 0px;
+    // Counts scroll requests. Each change scrolls the pane to scroll-offset, so a repeated request scrolls again.
+    in property <int> scroll-tick: 0;
     // Fires with the library index of a track row when the row is tapped without a long press.
     callback play(int);
     // Fires with the library index of a track row and the pointer position relative to this pane, on a right
@@ -63,6 +58,16 @@ export component TrackListPane inherits Rectangle {
         flick.viewport-y = max(min(0px, flick.height - flick.viewport-height), min(0px, -top));
     }
 
+    // Scrolls to the requested offset each time the Rust side bumps scroll-tick, and is the only place the list scrolls.
+    changed scroll-tick => {
+        root.reveal(root.scroll-offset);
+    }
+    // Restores the last requested offset when the pane is created, such as when the folder picker closes and the pane
+    // is drawn again, so the list shows the same position as before the pane went away.
+    init => {
+        root.reveal(root.scroll-offset);
+    }
+
     flick := Flickable {
         x: 0px;
         y: 0px;
@@ -73,41 +78,8 @@ export component TrackListPane inherits Rectangle {
             width: root.width;
 
             for row[i] in root.rows: Rectangle {
-                // Whether this entry is the one the scroll-to-row property names.
-                property <bool> is-target: root.scroll-to-row == i;
-                // Mirrors the reveal request count so a new request re-runs the scroll below.
-                property <int> reveal-seen: root.reveal-tick;
-                // Whether this entry is the folder row the folder-scroll-row property names.
-                property <bool> is-folder-target: root.folder-scroll-row == i;
-                // Mirrors the folder request count so only a new folder request scrolls to the folder row.
-                property <int> folder-seen: root.folder-tick;
                 height: root.height-of(row);
                 background: row.kind == 0 && row.current ? Theme.current-row : transparent;
-
-                // Scrolls to this entry when it becomes the target, and again when layout first places it,
-                // because the target can be set before the entry has a y.
-                changed is-target => {
-                    if (self.is-target) {
-                        root.reveal(self.y);
-                    }
-                }
-                changed reveal-seen => {
-                    if (self.is-target) {
-                        root.reveal(self.y);
-                    }
-                }
-                changed y => {
-                    if (self.is-target) {
-                        root.reveal(self.y);
-                    }
-                }
-                // Scrolls to the folder row when a folder request arrives. It does not follow the target's y or the
-                // playing-row target, so routine rebuilds of the list keep the playing row in view.
-                changed folder-seen => {
-                    if (self.is-folder-target) {
-                        root.reveal(self.y);
-                    }
-                }
 
                 // Whole-row tap target and its hover and pressed layer. The layer sits above the row fill and below
                 // the text rows, which take no pointer input, so the tap target covers the whole row.

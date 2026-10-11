@@ -65,6 +65,8 @@ mod ui_screen;
 
 mod ui_screen_rows;
 
+mod ui_screen_scroll;
+
 mod ui_screen_view;
 
 mod ui_search;

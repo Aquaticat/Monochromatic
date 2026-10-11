@@ -15,6 +15,7 @@ use music_player::track_supporting_line::supporting_line_from_template;
 use slint::{ModelRc, SharedString, VecModel};
 
 use crate::ui_playback::playback_mode_to_int;
+use crate::ui_screen_scroll::{ScrollRequest, next_scroll_request, scroll_offset_for};
 use crate::ui_screen_view::{ScreenState, ScreenView, page_key_containing, pages, view};
 use crate::{AppWindow, FolderName, FolderRailCell, TrackListRow, format_time};
 
@@ -130,18 +131,35 @@ fn follow_playing(index: Option<usize>) {
     });
 }
 
+/// What: `apply_scroll_request` moves the track list for one pending request by writing its offset and bumping the tick.
+/// Why: the offset is written before the tick, so the list reads the new offset when the tick changes; without a
+/// request the list keeps its scroll position.
+fn apply_scroll_request(app: &AppWindow, pending: Option<ScrollRequest>, rows: &[crate::ui_screen_rows::ListRow]) {
+    let Some(request) = pending else {
+        return;
+    };
+    app.set_scroll_offset(scroll_offset_for(request, rows));
+    app.set_scroll_tick(app.get_scroll_tick() + 1);
+}
+
 /// What: `project` rebuilds the window's view models from the state and writes them to the window.
 /// Why: every list, picker and deck value comes from one projection, so the window never mixes stale models.
 pub(crate) fn project(app: &AppWindow) {
-    let screen: ScreenView = SCREEN.with(|cell| {
-        let state = cell.borrow();
-        let supporting_line = supporting_line_from_template(state.track_rows_template.as_deref().unwrap_or(DEFAULT_TRACK_TEMPLATE));
-        return view(&state, &supporting_line);
+    let (screen, request): (ScreenView, Option<ScrollRequest>) = SCREEN.with(|cell| {
+        let mut state = cell.borrow_mut();
+        // The template text is copied so the supporting-line closure does not keep `state` borrowed while the
+        // scroll decision below needs it mutably.
+        let template = state.track_rows_template.clone().unwrap_or_else(|| return DEFAULT_TRACK_TEMPLATE.to_string());
+        let screen = {
+            let supporting_line = supporting_line_from_template(template.as_str());
+            view(&state, &supporting_line)
+        };
+        let request = next_scroll_request(&mut state, &screen);
+        return (screen, request);
     });
     app.set_folder_title(screen.folder_title.as_str().into());
     app.set_track_rows(model_of(screen.rows.iter().map(track_row).collect()));
-    app.set_scroll_to_row(screen.scroll_row);
-    app.set_folder_scroll_row(screen.folder_scroll_row);
+    apply_scroll_request(app, request, &screen.rows);
     app.set_rail_cells(model_of(
         screen
             .picker
