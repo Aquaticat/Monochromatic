@@ -380,7 +380,13 @@ All omissions are restored in `54575a9a`,
 with an empty scoped runtime diff against `7e7edd94`.
 The complete action-policy and policy-source suites passed `proc_417a`,
 with 29 successful result records.
-The full native suite is running as `proc_a3df`.
+Full native `proc_a3df` stopped in `default-payload-copy` because no review was returned.
+Its original exception was not retained,
+so no cause is established.
+The isolated native-default/copy pair passed `96a0c52e` / `proc_e195` without a runtime change;
+that later pass is not a diagnosis or fix.
+The complete native parent is running again as `proc_b1f3`,
+with retained batch exceptions and strict terminal-state checks.
 Earlier complete suites cover the pre-attachment checkpoint,
 not these changes.
 All original bounds and installation,
