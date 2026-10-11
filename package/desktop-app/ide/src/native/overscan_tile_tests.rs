@@ -188,9 +188,18 @@ fn leaving_the_overscan_tile_re_centers_on_the_worker_thread() {
     scroll_to(&window, target);
     let [renders, tiles, rows, images] = counts(&state);
     assert_eq!(renders, 1, "leaving the tile enters render once");
-    assert_eq!(tiles, 0, "the window thread paints no tile for a scroll re-center");
-    assert_eq!(rows, 0, "the window thread shapes no row for a scroll re-center");
-    assert_eq!(images, 0, "the window thread builds no image for a scroll re-center");
+    assert_eq!(
+        tiles, 0,
+        "the window thread paints no tile for a scroll re-center"
+    );
+    assert_eq!(
+        rows, 0,
+        "the window thread shapes no row for a scroll re-center"
+    );
+    assert_eq!(
+        images, 0,
+        "the window thread builds no image for a scroll re-center"
+    );
     settle_tile(&state);
     let [worker_tiles, worker_rows, applied, discarded] = worker_counts(&state);
     assert_eq!(worker_tiles, 1, "the worker answers exactly one re-center");

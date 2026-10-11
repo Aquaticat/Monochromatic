@@ -235,15 +235,15 @@ mod source_font_tests;
 /// Consumer window events exercise the actual markup and source-image bindings.
 #[cfg(test)]
 mod tests;
-/// Scroll re-center bounds and the window-thread step that swaps a finished tile in.
-mod tile;
-/// Source tile construction and the worker thread that runs it.
-mod tile_build;
 /// A live system color-scheme change repaints source ink,
 ///  find overlays,
 ///  and window chrome.
 #[cfg(test)]
 mod theme_tests;
+/// Scroll re-center bounds and the window-thread step that swaps a finished tile in.
+mod tile;
+/// Source tile construction and the worker thread that runs it.
+mod tile_build;
 /// Windowed rows must not redirect an in-progress click after scrolling.
 #[cfg(test)]
 mod tree_pointer_tests;

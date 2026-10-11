@@ -3,6 +3,8 @@
 
 /// Requested and displayed tile bounds travel with each job.
 use super::tile::TileBounds;
+/// Worker-start and build failures stay visible diagnostics.
+use anyhow::{Context, Result, bail};
 /// Visible hints and diagnostic marks are paint inputs of the tile.
 use ide_app::annotation::Visible;
 /// Hint and diagnostic inks, and the lay-out that places them beside the rows.
@@ -27,8 +29,6 @@ use ide_app::source_typography::SourceTypography;
 use ide_app::text_raster::{CodeColors, TextRaster};
 /// Pixel buffers that cross to the window thread.
 use slint::{Rgba8Pixel, SharedPixelBuffer};
-/// Worker-start and build failures stay visible diagnostics.
-use anyhow::{Context, Result, bail};
 /// Owned snapshots are shared between the UI and worker threads.
 use std::{
     sync::{
@@ -155,7 +155,9 @@ pub(super) fn build_tile(
 
 /// Whether two typographies make the same glyphs.
 fn same_typography(left: &SourceTypography, right: &SourceTypography) -> bool {
-    return left.weight == right.weight && left.italic == right.italic && left.features == right.features;
+    return left.weight == right.weight
+        && left.italic == right.italic
+        && left.features == right.features;
 }
 
 /// What:

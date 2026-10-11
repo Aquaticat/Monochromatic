@@ -3,7 +3,9 @@
 /// Virtual-row texts and diagnostic marks are positioned against the frame's shaped rows.
 /// Child modules can borrow their parent's private state and generated UI.
 use super::{
-    AppWindow, State, annotate, find::present::present, rows,
+    AppWindow, State, annotate,
+    find::present::present,
+    rows,
     tile::{self, TileBounds},
     tile_build::{TileJob, build_tile},
     ui::SourceSelection,
@@ -25,7 +27,9 @@ use ide_app::source_frame::FrameStamp;
 /// Native palette values retain syntax and selection contrast.
 use ide_app::text_raster::CodeColors;
 /// Toolkit images and models carry owned source presentation data.
-use slint::{ComponentHandle, Image, ModelRc, Rgba8Pixel, SharedPixelBuffer, SharedString, VecModel};
+use slint::{
+    ComponentHandle, Image, ModelRc, Rgba8Pixel, SharedPixelBuffer, SharedString, VecModel,
+};
 /// UI callbacks share state without cross-thread synchronization.
 use std::{cell::RefCell, rc::Rc, sync::Arc};
 
@@ -285,9 +289,7 @@ pub(super) fn render(window: &AppWindow, state: &Rc<RefCell<State>>) {
         tile::cancel(&mut current);
         let built_job = job(&current, requested, &paint);
         let result = {
-            let State {
-                shaper, raster, ..
-            } = &mut *current;
+            let State { shaper, raster, .. } = &mut *current;
             build_tile(shaper, raster, built_job)
         };
         match result {

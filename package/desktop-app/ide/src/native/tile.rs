@@ -132,7 +132,9 @@ fn apply(window: &AppWindow, state: &Rc<RefCell<State>>, reply: anyhow::Result<T
         Ok(built) => built,
         Err(error) => {
             tracing::error!(%error, "source tile build failed");
-            window.set_error_message(SharedString::from(format!("Cannot render source: {error:#}")));
+            window.set_error_message(SharedString::from(format!(
+                "Cannot render source: {error:#}"
+            )));
             return;
         }
     };

@@ -431,7 +431,11 @@ pub(super) struct Placement {
 /// ```
 pub(super) fn measure(current: &State, anchor_line: i32) -> Placement {
     let map = &current.row_map;
-    let last = current.shown.first.saturating_add(current.shown.count).min(map.lines());
+    let last = current
+        .shown
+        .first
+        .saturating_add(current.shown.count)
+        .min(map.lines());
     let mut tops = Vec::new();
     for line in current.shown.first..last {
         tops.push(map.code_top(line));
