@@ -21,11 +21,16 @@ import type {
   ShellWordSource,
 } from './types.ts';
 
-import { assignmentSource, assignmentValue, } from './assignment.ts';
+import {
+  assignmentSource,
+  assignmentValue,
+} from './assignment.ts';
 
 //region Redirect conversion
 
-/** Operators include file redirects, here-documents and here-strings. */
+/**
+ Operators include file redirects, here-documents and here-strings.
+ */
 type UnbashRedirectOperator = UnbashRedirect['operator'];
 
 /**
@@ -195,17 +200,25 @@ function redirectToInfo(redirect: ForeignBorrowed<UnbashRedirect>,): ShellRedire
    Parsed target text, when `unbash` produced one.
    */
   const targetWord = redirect.type === 'HereDoc' ? redirect.delimiter : redirect.target;
-  /** Parsed delimiter or target, never a here-document body interpreted as a path. */
+  /**
+   Parsed delimiter or target, never a here-document body interpreted as a path.
+   */
   const target = targetWord?.value;
   /**
    Original source spelling paired with parsed target value.
    */
   const targetSourceText = targetWord?.text;
-  /** Descriptor nodes distinguish numeric descriptors from allocated descriptor variables. */
-  const descriptor = redirect.descriptor;
-  /** Numeric descriptor, when explicitly supplied. */
+  /**
+   Descriptor nodes distinguish numeric descriptors from allocated descriptor variables.
+   */
+  const {descriptor} = redirect;
+  /**
+   Numeric descriptor, when explicitly supplied.
+   */
   const fileDescriptor = descriptor?.type === 'FileDescriptor' ? descriptor.value : undefined;
-  /** Allocated descriptor variable, when explicitly supplied. */
+  /**
+   Allocated descriptor variable, when explicitly supplied.
+   */
   const fileDescriptorVariable = descriptor?.type === 'FileDescriptorVariable' ? descriptor.name : undefined;
   /**
    Target classification.

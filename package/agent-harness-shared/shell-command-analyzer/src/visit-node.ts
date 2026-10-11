@@ -78,7 +78,10 @@ function visitNode(
       workItems: [{
         kind: 'node',
         node: node.command,
-        redirects: [...node.redirects, ...redirects,],
+        redirects: [
+          ...node.redirects,
+          ...redirects,
+        ],
         context,
       },],
     };
@@ -86,7 +89,10 @@ function visitNode(
   if ((node.type === 'Time') || (node.type === 'Negation')) {
     return {
       ...EMPTY_VISIT_RESULT,
-      workItems: node.command === undefined ? redirectWorkItems({ redirects, context, },) : [{
+      workItems: node.command === undefined ? redirectWorkItems({
+        redirects,
+        context,
+      },) : [{
         kind: 'node',
         node: node.command,
         redirects,

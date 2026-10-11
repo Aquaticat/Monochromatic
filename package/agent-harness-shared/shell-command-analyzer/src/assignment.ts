@@ -4,7 +4,10 @@
  @module
  */
 
-import type { Assignment, Word, } from 'unbash';
+import type {
+  Assignment,
+  Word,
+} from 'unbash';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 import type { ShellWordSource, } from './types.ts';
 
@@ -21,13 +24,17 @@ import type { ShellWordSource, } from './types.ts';
  ```
  */
 export function assignmentValue(assignment: ForeignBorrowed<Assignment>,): string {
-  /** Value discriminant distinguishes scalar words from array containers. */
+  /**
+   Value discriminant distinguishes scalar words from array containers.
+   */
   const { value, } = assignment;
   if (value.type === 'Word')
     return value.value;
-  return value.elements.map(function wordValue(word: ForeignBorrowed<Word>,): string {
+  return value.elements
+    .map(function wordValue(word: ForeignBorrowed<Word>,): string {
     return word.value;
-  },).join(' ',);
+  },)
+    .join(' ',);
 }
 
 /**
@@ -43,16 +50,28 @@ export function assignmentValue(assignment: ForeignBorrowed<Assignment>,): strin
  ```
  */
 export function assignmentSource(assignment: ForeignBorrowed<Assignment>,): ShellWordSource {
-  /** Parsed index remains an expression, not an evaluated array position. */
-  const index = assignment.index;
-  /** Destination spelling retains optional indexing. */
+  /**
+   Parsed index remains an expression, not an evaluated array position.
+   */
+  const {index} = assignment;
+  /**
+   Destination spelling retains optional indexing.
+   */
   const destination = `${assignment.name}${index === undefined ? '' : `[${index.value}]`}`;
-  /** Append assignments must not be reported as replacement assignments. */
+  /**
+   Append assignments must not be reported as replacement assignments.
+   */
   const operator = assignment.append === true ? '+=' : '=';
-  /** Parsed values keep substitutions unevaluated. */
+  /**
+   Parsed values keep substitutions unevaluated.
+   */
   const value = assignmentValue(assignment,);
-  /** Array delimiters distinguish an array argument from a scalar argument. */
-  const argumentValue = assignment.value.type === 'ArrayValue' ? `(${value})` : value;
+  /**
+   Array delimiters distinguish an array argument from a scalar argument.
+   */
+  const argumentValue = assignment.value
+    .type
+    === 'ArrayValue' ? `(${value})` : value;
   return {
     value: `${destination}${operator}${argumentValue}`,
     sourceText: assignment.text,

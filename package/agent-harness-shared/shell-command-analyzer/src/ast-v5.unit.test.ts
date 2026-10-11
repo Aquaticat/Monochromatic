@@ -40,7 +40,7 @@ await describe({
           name: 'keeps redirections separate from mixed command prefixes and suffixes',
           fn: async function testMixedCommandItems() {
             const result = analyzeShellCommand('> before.txt FIRST="one two" printf alpha 2> after.txt beta',);
-            const command = result.commands[0];
+            const [command,] = result.commands;
             expect(result.parsed,).toBe(true,);
             expect(command?.name,).toBe('printf',);
             expect(command?.args,).toEqual(['alpha', 'beta',],);
@@ -72,12 +72,45 @@ await describe({
           },
         },),
         ...[
+          { source: 'declare VALUES=("one two" three)', value: 'VALUES=(one two three)', },
+          { source: 'declare VALUES[2]+="more text"', value: 'VALUES[2]+=more text', },
+          { source: 'declare VALUES=()', value: 'VALUES=()', },
+        ].map(function assignmentArgument({ source, value, },) {
+          return it({
+            name: `preserves assignment argument ${source}`,
+            fn: async function testAssignmentArgument() {
+              const result = analyzeShellCommand(source,);
+              expect(result.parsed,).toBe(true,);
+              expect(result.commands[0]?.args,).toEqual([value,],);
+              expect(result.commands[0]?.argSources[0]?.sourceText,).toBe(source.slice('declare '.length,),);
+            },
+          },);
+        },),
+        ...[
+          `printf "\${value@Q}"`,
+          `printf "\${!prefix@}"`,
+          `printf "\${value^^}"`,
+        ].map(function parameterOperation(source,) {
+          return it({
+            name: `keeps parameter operation ${source} free of invented commands`,
+            fn: async function testParameterOperation() {
+              const result = analyzeShellCommand(source,);
+              expect(result.parsed,).toBe(true,);
+              expect(result.hasCommandSubstitution,).toBe(false,);
+              expect(result.commands.map(function commandName(command,) {
+                return command.name;
+              },),).toEqual(['printf',],);
+            },
+          },);
+        },),
+        ...[
           'values=($(printf array_value))',
           'values[$(printf array_index)]=literal',
           'declare values=($(printf declaration_value))',
           `printf "\${values[$(printf parameter_index)]}"`,
           `printf "\${value:-$(printf default_value)}"`,
           `printf "\${value#$(printf removal_pattern)}"`,
+          `printf "\${value^$(printf case_pattern)}"`,
           `printf "\${value/$(printf replace_pattern)/$(printf replacement)}"`,
           `printf "\${value:$(printf slice_offset):$(printf slice_length)}"`,
           'cat <<< "$(printf here_string)"',
@@ -90,10 +123,10 @@ await describe({
               expect(result.parsed,).toBe(true,);
               expect(result.hasCommandSubstitution,).toBe(true,);
               expect(result.commands.some(function hasNestedCommand(command,) {
-                return command.name === 'printf'
+                return (command.name === 'printf')
                   && command.args.some(function hasMarker(argument,) {
                     return argument.endsWith('_value',) || argument.endsWith('_index',)
-                      || argument.endsWith('_pattern',) || argument === 'replacement'
+                      || argument.endsWith('_pattern',) || (argument === 'replacement')
                       || argument.startsWith('slice_',) || argument.startsWith('here_',);
                   },);
               },),).toBe(true,);

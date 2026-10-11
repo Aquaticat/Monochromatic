@@ -86,8 +86,13 @@ function scriptFromExpansion(
   readonly script: ParsedUnbashScript;
   readonly parseErrors: readonly ShellParseError[]
 } | typeof NO_SCRIPT {
-  /** The parser owns nested-script parsing and its source positions in unbash 5. */
-  const innerLogger = tagged({ tag: scriptFromExpansion.name, l: moduleLogger, },);
+  /**
+   The parser owns nested-script parsing and its source positions in unbash 5.
+   */
+  const innerLogger = tagged({
+    tag: scriptFromExpansion.name,
+    l: moduleLogger,
+  },);
   if (expansion.script === undefined) {
     innerLogger.debug('unbash supplied no parsed nested script; retaining the substitution flag',);
     return NO_SCRIPT;
