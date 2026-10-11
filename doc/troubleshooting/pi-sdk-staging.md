@@ -273,7 +273,7 @@ Allowing new membership without changing those bindings would silently omit it f
 
 ### Bounded implementation and remaining gap
 
-The current hook observes appends only before the first original Session context-copy attachment.
+The completed initial checkpoint observed appends only before the first original Session context-copy attachment.
 It reuses the existing one-way `contextCopyAttached` state and manager input pool.
 It adds neither a temporary mute window nor authentication by native callsite.
 The source origin is `native-manager-initial-input`;
@@ -320,7 +320,8 @@ defer it silently to another request,
 or relax a retired receipt.
 Broader support needs coherent original-request and judgment source bindings,
 not just a freshness exception.
-No such contract change is implemented.
+That checkpoint implemented no such contract change.
+The subsequent handoff is described in "Current judgment sources without changing emitted material".
 
 This is private integration behavior,
 not an upstream SDK fault.
@@ -331,6 +332,160 @@ contribution acceptance,
 maintainer intent,
 and prototype conditions are not claimed.
 There is no external filing or additive upstream report.
+
+### Current judgment sources without changing emitted material
+
+Post-attachment required red `b650661` / `proc_72ea` completed a native request and assessment,
+but failed to retain an append hidden by a null context edit after Session attachment.
+Connected `6f71097` / `proc_dc02` passed that consumer using a separate judgment-source binding.
+The original receipt,
+request body,
+emission snapshot,
+and material contributions remain historical original observations.
+
+The private collector's existing `snapshots` ownership map authenticates both snapshots.
+The handoff requires unchanged policy/resource/base identities and copied material,
+unchanged non-retained run fields,
+and an exact original-reference prefix extended only by unregistered manager inputs.
+Judgment indexing,
+wire content,
+and manager input views use the bound current snapshot.
+The resource collector's strict check is not weakened.
+After binding,
+any further source change retires the original judgment.
+The emission-only `system-view.mjs` profile intentionally refuses the expanded source set.
+
+Run `mise --no-env --no-hooks run test:manager-live-paths`
+from private `contract/integration/native-batch`.
+`a4a7b43f` / `proc_9b65` passed hidden inputs,
+a host-called public `message_end`,
+post-emission text and system-tool inputs,
+and post-binding retirement.
+The checks require exact `originalRequestBody`,
+new sources in judgment/wire but not emission sources,
+and native assistant persistence in the current source set.
+All cases made no protected execution or provider requests.
+`proc_4412` passed owner and handoff controls,
+including irreversible failure,
+reentry,
+root/cancellation/generation changes,
+and the narrow profile's refusal.
+Its non-native reader and producer adapters are explicit;
+those controls are not additional native Session executions.
+
+### Handoff lifecycle and wiring sensitivity
+
+Native lifecycle `12ea892b` / `proc_83f6` passed the handoff clock positive control,
+expiry during source comparison before judgment publication,
+unchanged-view capture failure,
+shared occurrence exhaustion,
+and late reset,
+disposal,
+reload,
+and oversized input.
+The clock is an explicit fixture;
+the Session and judgment paths are native.
+The positive control retains the original 5000-millisecond deadline.
+Expired handoff work sends no assessment and publishes no judgment.
+`7e7edd94` / `proc_2872` also retained a post-emission append rejected by the private clone.
+No entry insertion,
+authority,
+or successful persistence is inferred from capturing that input.
+
+Constructed-input regression `e32496ec` / `proc_a9e3` passed 133 outputs with empty child stderr.
+The newly integrated lifecycle and clone cases still need the full native parent.
+Indexed-question positive control `fb444692` / `proc_4150` passed.
+Omitting observation or current message-source binding lost the original input.
+Omitting the handoff or current governing-source binding caused stale-snapshot failure.
+Omitting current indexing failed wire source/ordinal coherence.
+Omitting copied-material equality admitted changed adapter material.
+All omissions are restored in `54575a9a`,
+with an empty scoped runtime diff against `7e7edd94`.
+The complete action-policy and policy-source suites passed `proc_417a`,
+with 29 successful result records.
+Full native `proc_a3df` stopped in `default-payload-copy` because no review was returned.
+Its original exception was not retained,
+so no cause is established.
+The isolated native-default/copy pair passed `96a0c52e` / `proc_e195` without a runtime change;
+that later pass is not a diagnosis or fix.
+The second parent `proc_b1f3` stopped in the distinct `carrier-bound` case,
+whose original exception was also not retained.
+Both fixtures now retain batch errors and report total judgment-start to reviewed time.
+Repeated configurations passed `bef690b2` / `proc_a7bd`:
+carrier-bound totals were 4984.015445,
+5402.251908,
+and 5789.265434 milliseconds;
+copy-case totals were 971.362350,
+914.014512,
+and 1024.266656 milliseconds.
+These include work after evidence closure and are not deadline-failure measurements.
+Neither failed parent has an established cause or a claimed runtime fix.
+The complete native parent is running as `proc_05da` with both diagnostic fixtures.
+
+The governing-source omission first exposed no original reviewer error in judgment finalization.
+An `evidence-closed` record is not a completed policy review.
+A fixture-only batch wrapper retained the propagated exception:
+`PreparedBatchExecutionError` contains
+`SourceCollectionError: Native run prompt was replaced after this source snapshot`.
+The indexing omission separately retained
+`RuleAssessmentWireError: Selected clause differs from its complete source`.
+Do not merge these with capture-profile failures or infer causes from an empty failure field.
+
+### Preserve received system tool records
+
+Source review identified a separate omission:
+the manager system selector kept `content` and `sections`
+but dropped `toolsAdded` and `toolsRemoved`.
+Owner red `d8175179` / `proc_3b4d` reported `AssertionError [ERR_ASSERTION]`
+with the missing declaration description,
+schema prose,
+constrained-sampling configuration,
+and removal record in the expected source.
+This is a private selector error,
+not a Pi producer defect.
+
+Pi AI 1.1.0 already normalizes parameters before publishing its declaration:
+
+```javascript
+// Pi AI 1.1.0 dist/utils/transcript.js:106 to 113
+export function toToolDeclaration(tool) {
+    return {
+        name: tool.name,
+        description: tool.description,
+        parameters: JSON.parse(JSON.stringify(tool.parameters)),
+        ...(tool.constrainedSampling === undefined ? {} : { constrainedSampling: tool.constrainedSampling }),
+    };
+}
+```
+
+Private `1c6985cf` retains the received arrays under the existing manager copier budget,
+without calling that normalization again.
+The incumbent `native-content-json` encoding carries their complete supported JSON records.
+Accessors,
+proxies,
+negative zero,
+and undefined nested values fail the selected profile without changing native operation behavior.
+Manager initial/current phases share this selector;
+loaded,
+Agent prompt,
+and setter profiles are unchanged.
+`proc_88a2` passed the owner red after correction,
+and the real post-emission declaration/removal consumer passed `proc_9b65`.
+
+The complete native parent remains pending;
+action/source regressions and the wiring sensitivity in "Handoff lifecycle and wiring sensitivity" passed.
+Additional original fields can exhaust the unchanged source and aggregate bounds sooner.
+Upstream tool-definition inputs before declaration production,
+images,
+complete governing scope,
+and semantic qualification remain independent gaps.
+Do not replace the handoff with a freshness exception,
+role-based exclusion,
+source deduplication,
+or a new request encoding.
+Installed sources remain unchanged.
+The private-ownership filing decision in "Bounded implementation and remaining gap" still applies;
+there is no new upstream fault or filing artifact.
 
 ## Direct Agent state assignments bypass prompt and queue capture
 

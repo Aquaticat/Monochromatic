@@ -147,6 +147,10 @@ type TranscriptObject = {
    */
   readonly text?: unknown;
   /**
+   Summary text of a `thinking` content block.
+   */
+  readonly thinking?: unknown;
+  /**
    Kind of a transcript entry or content block.
    */
   readonly type?: unknown;
@@ -284,11 +288,29 @@ function isRecord(value: unknown,): value is TranscriptObject {
 }
 
 /**
+ Wraps a value in a list when it is a string.
+ 
+ @param value - parsed JSON field
+ 
+ @returns the string alone, or nothing for any other value
+ 
+ @example
+ ```ts
+ stringsOf('Compiling');
+ ```
+ */
+function stringsOf(value: unknown,): readonly string[] {
+  if ((typeof value) !== 'string')
+    return [];
+  return [value,];
+}
+
+/**
  Collects the prose of one assistant content block.
  
  @param block - parsed content block
  
- @returns the block's text for `text` blocks, otherwise nothing; thinking, tool_use, and tool_result blocks carry no prose for the user
+ @returns the block's text for `text` blocks and its summary for `thinking` blocks, otherwise nothing; tool_use and tool_result blocks carry no prose, and the thinking signature is an opaque token
  
  @example
  ```ts
@@ -298,27 +320,22 @@ function isRecord(value: unknown,): value is TranscriptObject {
 function proseOfBlock(block: unknown,): readonly string[] {
   if (!isRecord(block,))
     return [];
-  if (block.type !== 'text')
-    return [];
-
-  /**
-   Text of the block.
-   */
-  const { text, } = block;
-  if ((typeof text) !== 'string')
-    return [];
-  return [text,];
+  if (block.type === 'text')
+    return stringsOf(block.text,);
+  if (block.type === 'thinking')
+    return stringsOf(block.thinking,);
+  return [];
 }
 
 /**
  Collects the prose of an assistant JSONL entry.
  
- Tool calls, tool results, thinking blocks, and every non-assistant entry carry no words
- Claude said to the user, so they are ignored.
+ Text blocks and thinking summaries both describe what Claude is doing.
+ Tool calls, tool results, and every non-assistant entry carry no such words, so they are ignored.
  
  @param line - one transcript JSONL line
  
- @returns joined assistant text blocks, or empty string for other entries and unparsable lines
+ @returns joined assistant text and thinking blocks, or empty string for other entries and unparsable lines
  
  @example
  ```ts

@@ -296,9 +296,119 @@ Eleven-document rendering passed `proc_c7e4` before this final evidence update.
 
 The unassociated ordinary request domain and other unconsumed producer relationships remain explicit.
 
+## Current manager inputs at judgment start
+
+This private increment is under verification.
+The manager observes original `appendMessage` inputs both before and after Session context attachment.
+The current phase uses `native-manager-input`;
+the initial phase keeps its distinct origin.
+Actual argument frames remain input-only publications,
+without fabricated ordinals,
+authority,
+human attribution,
+or payload eligibility.
+
+The original request receipt,
+emitted body,
+emission snapshot,
+and material contributions remain unchanged.
+The existing collector owns a separate current judgment snapshot through its local `snapshots` map.
+Its one-time handoff requires unchanged resource,
+base,
+and policy identities,
+unchanged copied material and run fields,
+and an exact original-reference prefix extended only by unregistered manager inputs.
+Binding updates judgment indexing,
+assessment wire,
+and manager source views together.
+Later source changes remain strictly invalidating;
+failed or reentrant handoffs cannot revive eligibility.
+The original budget and cancellation still apply.
+Emission-only material associations are not transferred to newly captured input.
+The narrow `system-view.mjs` profile refuses source growth rather than claiming broader coverage.
+
+Required post-attachment red `b650661` / `proc_72ea` lost an appended input hidden by a context edit.
+Connected `6f71097` / `proc_dc02` passed that native consumer.
+Timing controls `a4a7b43f` / `proc_9b65` passed hidden input,
+host-called `message_end`,
+post-emission text and system-tool inputs,
+and post-binding retirement.
+They check the exact original request body and native response persistence:
+new inputs reach judgment and wire without appearing in the emission snapshot.
+No protected execution or provider requests occurred.
+
+Source review identified omitted system `toolsAdded` and `toolsRemoved` fields.
+Owner red `d8175179` / `proc_3b4d` demonstrated the loss;
+`1c6985cf` / `proc_88a2` preserved the received declaration and removal records.
+The manager selector uses one existing copier budget and `native-content-json`,
+without another normalization or request parse.
+Descriptions,
+schema prose,
+and constrained-sampling data remain unregistered source data.
+Invalid JSON values and accessor fields latch failure.
+Loaded,
+Agent prompt,
+and setter profiles are unchanged.
+
+Owner and handoff controls passed `proc_4412`,
+including the emission-only profile refusal with labelled adapters.
+Native lifecycle `12ea892b` / `proc_83f6` passed the handoff clock positive control,
+expiry during source comparison before judgment publication,
+unchanged-view capture failure,
+shared occurrence exhaustion,
+and late reset,
+disposal,
+reload,
+and oversized input.
+The clock is an explicit fixture;
+the Session and judgment paths are native.
+The positive control retains the original 5000-millisecond deadline.
+Expired handoff work sends no assessment and publishes no judgment.
+`7e7edd94` / `proc_2872` also retained a post-emission append rejected by the private clone.
+No entry insertion,
+authority,
+or successful persistence is inferred from capturing that input.
+
+Constructed-input regression `e32496ec` / `proc_a9e3` passed 133 outputs with empty child stderr.
+The newly integrated lifecycle and clone cases still need the full native parent.
+Indexed-question positive control `fb444692` / `proc_4150` passed.
+Omitting observation or current message-source binding lost the original input.
+Omitting the handoff or current governing-source binding caused stale-snapshot failure.
+Omitting current indexing failed wire source/ordinal coherence.
+Omitting copied-material equality admitted changed adapter material.
+All omissions are restored in `54575a9a`,
+with an empty scoped runtime diff against `7e7edd94`.
+The complete action-policy and policy-source suites passed `proc_417a`,
+with 29 successful result records.
+Full native `proc_a3df` stopped in `default-payload-copy` because no review was returned.
+Its original exception was not retained,
+so no cause is established.
+The isolated native-default/copy pair passed `96a0c52e` / `proc_e195` without a runtime change;
+that later pass is not a diagnosis or fix.
+The second parent `proc_b1f3` stopped in the distinct `carrier-bound` case,
+whose original exception was also not retained.
+Both fixtures now retain batch errors and report total judgment-start to reviewed time.
+Repeated configurations passed `bef690b2` / `proc_a7bd`:
+carrier-bound totals were 4984.015445,
+5402.251908,
+and 5789.265434 milliseconds;
+copy-case totals were 971.362350,
+914.014512,
+and 1024.266656 milliseconds.
+These include work after evidence closure and are not deadline-failure measurements.
+Neither failed parent has an established cause or a claimed runtime fix.
+The complete native parent is running as `proc_05da` with both diagnostic fixtures.
+Earlier complete suites cover the pre-attachment checkpoint,
+not these changes.
+All original bounds and installation,
+domain,
+delegation,
+and semantic-qualification holds remain.
+Tool-definition inputs before native declaration production remain a separate gap.
+
 ## Original manager messages before context attachment
 
-The current increment is limited to `appendMessage` calls before the manager's first
+The completed initial checkpoint was limited to `appendMessage` calls before the manager's first
 original Session context-copy observer attaches.
 It is not coverage of all current manager appends.
 
@@ -339,7 +449,7 @@ not a temporary mute window or a claim that native persistence is already accoun
 `740ffae` / `proc_22d7` passed the pre-attachment canonical consumer with two local requests,
 one assessment,
 and no protected execution/provider calls.
-Post-attachment direct and native appends remain unresolved.
+That checkpoint did not account for post-attachment direct or native appends.
 No request freshness or source-binding rule was relaxed.
 
 Canonical `ffa4e19` / `proc_f1e3` passed both hidden-input and private clone-rejection cases.
@@ -370,7 +480,7 @@ Post-clone placement `proc_1c79` preserved successful appends but lost rejected 
 Attachment-phase omission `proc_2dbc` reproduced the diagnosed pre-review snapshot failure.
 Content-profile omission `proc_a769` admitted an unsupported block.
 Every omission is restored;
-runtime diff against `9c9885b` is empty.
+the restoration's runtime diff against `9c9885b` was empty.
 Complete one-shot native parent `proc_9e75` passed in 624 seconds:
 81 successful JSON outputs,
 the 128-output constructed-input matrix,
