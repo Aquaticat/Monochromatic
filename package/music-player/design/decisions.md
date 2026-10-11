@@ -2962,6 +2962,65 @@ D8 stays the design for every source where the platform allows it.
 
 This is a platform-feasibility decision made during production implementation.
 
+### D106. Nearly every action has a keyboard shortcut, chosen as JetBrains would (2026-10-11)
+
+The human asked that nearly every action have a shortcut, for two reasons: better end-to-end testing through real key
+input, and a more keyboard-friendly app, and said that when in doubt the choice is whatever JetBrains would have picked.
+The orchestrator decided the table on the human's standing instruction to decide remaining questions.
+It extends D102, whose bindings all stay.
+Windows and Linux first; on macOS the same action takes the Command-based JetBrains macOS binding where D102 gives one,
+and otherwise Command in place of Ctrl and Option in place of Alt.
+
+Kept from D102: Search `Ctrl+F`, folder picker `Ctrl+O`, Settings `Ctrl+Alt+S`, jump to the playing track `Ctrl+G`,
+previous and next track `Ctrl+Left` and `Ctrl+Right`, play and pause `Space`, end-of-track mode `Ctrl+M`,
+`Escape` closes the innermost popup and otherwise leaves the current page.
+
+Playback:
+- Seek back and forward 10 seconds: `Alt+Left` and `Alt+Right` (JetBrains navigates back and forward with these);
+  60 seconds with `Shift` added.
+- Pick a playback mode directly: `Ctrl+Shift+1` to `Ctrl+Shift+4` (Repeat, In order, Shuffle the folder, Shuffle all).
+- Restart the track: `Ctrl+Home`.
+
+Browsing:
+- Previous and next folder: `Alt+Up` and `Alt+Down` (JetBrains moves to the previous and next member with these).
+- Jump to the folder of the playing track: `Ctrl+Shift+G`.
+- Focus the folder picker `Alt+1` and the track list `Alt+2`, the way JetBrains opens its tool windows.
+- Inside a focused list: `Up`, `Down`, `Home`, `End`, `PageUp`, `PageDown` move the focus ring, `Enter` plays the row,
+  `Space` on a list keeps play and pause, a letter key moves to the first folder starting with it.
+- Open a folder with the system dialog: `Ctrl+Shift+O`.
+- Rescan the library: `F5`.
+- Quit (desktop): `Ctrl+Q`.
+
+On the focused track row, or the row the menu is open on:
+- Open its menu: `Menu` key or `Shift+F10`.
+- Move to trash: `Delete`. Copy path: `Ctrl+Shift+C` (JetBrains copies the path with this).
+- Show in file manager: `Ctrl+Shift+E`. File details: `Alt+Enter`. Re-analyse: `Ctrl+Shift+F5`.
+- With the menu open, `Up`, `Down` and `Enter` choose a row and `Escape` closes it.
+
+Pages:
+- In Settings, `Enter` opens the focused row; in the template editor `Ctrl+Enter` applies and leaves, and `Escape`
+  leaves, and `Ctrl+Shift+Backspace` resets the template to its default.
+- In Search, `Up` and `Down` move through the results, `Enter` opens the focused result, `Escape` leaves.
+
+Search also opens on a double tap of `Shift` (JetBrains Search Everywhere): two presses and releases of Shift within
+400 ms with no other key between them, on the player page only. Settings and the template editor are modal pages
+where Search is not offered, so `Ctrl+F` and double Shift do nothing there (a human correction of 2026-10-11).
+
+Key hints (asked for by the human on 2026-10-11): while the modifiers of a shortcut are all held down, every control
+that has such a shortcut shows its key as a small badge on or beside it, for example `F` on the Search button while
+`Ctrl` is held, and `Alt+Left` style remainders such as `Left` and `Right` on the seek controls while `Alt` is held;
+holding more modifiers narrows the badges to the bindings that use them. The badges appear after the modifiers have
+been held for 300 ms, so quick chords never flash them, and disappear when any required modifier is released.
+Badges never take pointer input and do not move other content.
+
+Discoverability: the shortcut is shown in each menu row and in the tooltip of every button that has one.
+A command palette on `Ctrl+Shift+A` (JetBrains Find Action) that lists every action with its shortcut is wanted and
+is a later item, because it is a new screen.
+
+Bare keys never fire while a text field has focus, and the playback keys follow D102's focus rule.
+Every shortcut is covered by an end-to-end test that presses the real keys through the nested compositor and reads the
+resulting state, which is the second reason for this decision.
+
 ## Pending after the theme picks (2026-09-04)
 
 - **Order of remaining work** — my recommendation:

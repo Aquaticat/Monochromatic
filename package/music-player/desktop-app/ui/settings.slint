@@ -1,6 +1,9 @@
-// Settings page that lists the two template rows under a Templates heading (D87, D99). The host supplies each row's
-// line from the applied template, and a tap reports which row to open. The page holds nothing else.
+// Settings page that lists the two template rows under a Templates heading (D87, D99), drawn like the stock Android
+// Settings destination: a static header with a round tonal Back button, a primary section heading on the tinted page,
+// and each group's rows as separate rounded cards. The host supplies each row's line from the applied template, and a
+// tap reports which row to open. The page holds nothing else.
 import { Theme } from "theme.slint";
+import { StateLayer } from "state_layer.slint";
 
 // One row of the Templates section: the template's heading and the line it currently yields.
 export struct SettingsTemplateRow {
@@ -12,7 +15,7 @@ export struct SettingsTemplateRow {
 
 // Draws the Settings header, the Templates heading and one tappable row per template.
 export component SettingsPage inherits Rectangle {
-    background: Theme.canvas;
+    background: Theme.settings-page;
     clip: true;
 
     // Template rows in list order. Each row shows its heading and the line it yields.
@@ -25,24 +28,49 @@ export component SettingsPage inherits Rectangle {
     // Back arrow path on a 24 by 24 grid, copied from TemplateEditorIcons.kt.
     property <string> back-path: "M20 11 H7.83 l5.59 -5.59 L12 4 l-8 8 8 8 l1.41 -1.41 L7.83 13 H20 v-2 Z";
 
-    // Header band with the Back target and the page title, as the Android destination header.
-    Rectangle {
-        x: 0px;
-        y: 0px;
-        width: root.width;
-        height: 72px;
-        background: Theme.surface-high;
+    // Measured layout in dp, where one logical pixel is one dp. The Android captures put the header at 64 dp, the
+    // Back circle at 56 dp, rows at 72 dp, and the card corners at 14 dp for group ends.
+    property <length> header-height: 64px;
+    property <length> row-height: 72px;
+    // Gap between the rows of one group. The captures measure 4 physical pixels, which is 2 dp at 2.06 px per dp.
+    property <length> row-gap: 2px;
+    // Corner radius at the outer ends of a group, and at the joints between its rows (2 dp measured).
+    property <length> group-radius: 14px;
+    property <length> joint-radius: 2px;
+    // Content column: the full window width up to 640 dp, centered on wide windows so the rows stay readable.
+    property <length> column-width: min(root.width, 640px);
+    property <length> column-x: (root.width - root.column-width) / 2;
 
-        back-touch := TouchArea {
+    // Header band with the Back target and the page title, on the page background with no divider.
+    Rectangle {
+        x: root.column-x;
+        y: 0px;
+        width: root.column-width;
+        height: root.header-height;
+
+        // Round tonal Back button: a 56 dp circle 16 dp from the column edge, vertically centered in the header.
+        Rectangle {
             x: 16px;
-            y: 12px;
-            width: 48px;
-            height: 48px;
-            clicked => { root.back(); }
+            y: 4px;
+            width: 56px;
+            height: 56px;
+            border-radius: 28px;
+            background: Theme.back-tonal;
+        }
+        // Circular hover and pressed layer over the Back circle.
+        StateLayer {
+            x: 16px;
+            y: 4px;
+            width: 56px;
+            height: 56px;
+            radius: 28px;
+            tint: Theme.on-surface;
+            hovered: back-touch.has-hover;
+            pressed: back-touch.pressed;
         }
         Path {
-            x: 28px;
-            y: 24px;
+            x: 32px;
+            y: 20px;
             width: 24px;
             height: 24px;
             viewbox-width: 24;
@@ -50,11 +78,22 @@ export component SettingsPage inherits Rectangle {
             commands: root.back-path;
             fill: Theme.on-surface;
         }
+        back-touch := TouchArea {
+            x: 16px;
+            y: 4px;
+            width: 56px;
+            height: 56px;
+            mouse-cursor: pointer;
+            accessible-role: button;
+            accessible-label: "Back";
+            accessible-action-default => { root.back(); }
+            clicked => { root.back(); }
+        }
         Text {
-            x: 72px;
+            x: 98px;
             y: 0px;
-            width: root.width - 72px - 16px;
-            height: 72px;
+            width: parent.width - 98px - 16px;
+            height: root.header-height;
             text: "Settings";
             font-size: Theme.title-large;
             color: Theme.on-surface;
@@ -66,63 +105,119 @@ export component SettingsPage inherits Rectangle {
     // Body below the header. The rows scroll when the text grows past the window.
     Flickable {
         x: 0px;
-        y: 72px;
+        y: root.header-height;
         width: root.width;
-        height: root.height - 72px;
+        height: root.height - root.header-height;
         viewport-width: root.width;
         viewport-height: body.preferred-height;
 
         body := VerticalLayout {
-            x: 0px;
+            x: root.column-x;
             y: 0px;
-            width: root.width;
+            width: root.column-width;
             spacing: 0px;
+            padding-bottom: 18px;
 
-            // Heading above the template rows.
+            // Section heading: 16 dp above, the 14 sp primary label, then 8 dp before the group.
             Rectangle {
-                height: 40px;
+                height: 44px;
                 Text {
-                    x: 16px;
+                    x: 24px;
                     y: 16px;
-                    width: parent.width - 32px;
+                    width: parent.width - 48px;
                     height: 20px;
                     text: "Templates";
                     font-size: Theme.label-large;
                     font-weight: 500;
-                    color: Theme.on-surface-variant;
+                    color: Theme.primary;
                 }
             }
 
-            // One template row: heading on top and the line it yields below. No dividers: the header band and the spacing
-            // between rows already separate the parts.
-            for row[index] in root.rows : Rectangle {
-                height: 64px;
-                Text {
-                    x: 16px;
-                    y: 10px;
-                    width: parent.width - 32px;
-                    height: 24px;
-                    text: row.label;
-                    font-size: Theme.body-large;
-                    color: Theme.on-surface;
-                    overflow: elide;
-                }
-                Text {
-                    x: 16px;
-                    y: 34px;
-                    width: parent.width - 32px;
-                    height: 20px;
-                    text: row.line;
-                    font-size: Theme.body-medium;
-                    color: Theme.on-surface-variant;
-                    overflow: elide;
-                }
-                TouchArea {
-                    x: 0px;
-                    y: 0px;
-                    width: parent.width;
-                    height: 64px;
-                    clicked => { root.open-template(index); }
+            // One group of template cards. Each row is its own card with rounded corners; the gap between rows shows the
+            // page background, so no divider is drawn.
+            group := VerticalLayout {
+                padding-left: 16px;
+                padding-right: 16px;
+                spacing: root.row-gap;
+
+                // One template row: heading on top and the line it yields below, centered in the 72 dp card.
+                for row[index] in root.rows : Rectangle {
+                    height: root.row-height;
+                    background: Theme.settings-card;
+                    border-top-left-radius: index == 0 ? root.group-radius : root.joint-radius;
+                    border-top-right-radius: index == 0 ? root.group-radius : root.joint-radius;
+                    border-bottom-left-radius: index == root.rows.length - 1 ? root.group-radius : root.joint-radius;
+                    border-bottom-right-radius: index == root.rows.length - 1 ? root.group-radius : root.joint-radius;
+
+                    // Top half of the hover and pressed layer, clipped to the card's top half. Its radius is the card's top
+                    // radius, so the tint follows the top corners exactly.
+                    Rectangle {
+                        x: 0px;
+                        y: 0px;
+                        width: parent.width;
+                        height: root.row-height / 2;
+                        clip: true;
+                        StateLayer {
+                            x: 0px;
+                            y: 0px;
+                            width: parent.width;
+                            height: root.row-height;
+                            radius: index == 0 ? root.group-radius : root.joint-radius;
+                            tint: Theme.on-surface;
+                            hovered: row-touch.has-hover;
+                            pressed: row-touch.pressed;
+                        }
+                    }
+                    // Bottom half of the hover and pressed layer, clipped to the card's bottom half. Its radius is the card's
+                    // bottom radius, so the tint follows the bottom corners exactly.
+                    Rectangle {
+                        x: 0px;
+                        y: root.row-height / 2;
+                        width: parent.width;
+                        height: root.row-height / 2;
+                        clip: true;
+                        StateLayer {
+                            x: 0px;
+                            y: -(root.row-height / 2);
+                            width: parent.width;
+                            height: root.row-height;
+                            radius: index == root.rows.length - 1 ? root.group-radius : root.joint-radius;
+                            tint: Theme.on-surface;
+                            hovered: row-touch.has-hover;
+                            pressed: row-touch.pressed;
+                        }
+                    }
+                    Text {
+                        x: 16px;
+                        y: 14px;
+                        width: parent.width - 32px;
+                        height: 24px;
+                        text: row.label;
+                        font-size: Theme.body-large;
+                        color: Theme.on-surface;
+                        overflow: elide;
+                    }
+                    Text {
+                        x: 16px;
+                        y: 38px;
+                        width: parent.width - 32px;
+                        height: 20px;
+                        text: row.line;
+                        font-size: Theme.body-medium;
+                        color: Theme.on-surface-variant;
+                        overflow: elide;
+                    }
+                    row-touch := TouchArea {
+                        x: 0px;
+                        y: 0px;
+                        width: parent.width;
+                        height: root.row-height;
+                        mouse-cursor: pointer;
+                        accessible-role: button;
+                        accessible-label: row.label + ", " + row.line;
+                        accessible-action-default => { root.open-template(index); }
+                        clicked => { root.open-template(index); }
+                    }
                 }
             }
         }

@@ -1,6 +1,7 @@
 // Bottom-edge scan status bar and the transient feedback overlay (D83, D84, D26).
 // Both components take their data from the caller and never reflow the content beneath them.
 import { Theme } from "theme.slint";
+import { StateLayer } from "state_layer.slint";
 
 // Height of the scan bar, fixed so that showing or hiding it never changes the caller's layout (D13, D26).
 // The bar paints the progress line on its top edge and one status line below it, with no controls (D84).
@@ -150,6 +151,12 @@ export component FeedbackOverlay inherits Rectangle {
                 if item.action-label != "" : Rectangle {
                     width: max(48px, action-text.preferred-width + 16px);
                     height: 48px;
+                    // Rectangular hover and pressed layer over the action target, in the card's content color.
+                    StateLayer {
+                        tint: card.content;
+                        hovered: action-touch.has-hover;
+                        pressed: action-touch.pressed;
+                    }
                     action-text := Text {
                         text: item.action-label;
                         font-size: Theme.label-large;
@@ -158,7 +165,8 @@ export component FeedbackOverlay inherits Rectangle {
                         horizontal-alignment: center;
                         vertical-alignment: center;
                     }
-                    TouchArea {
+                    action-touch := TouchArea {
+                        mouse-cursor: pointer;
                         clicked => { root.action(item.id); }
                     }
                 }
@@ -167,6 +175,17 @@ export component FeedbackOverlay inherits Rectangle {
                 Rectangle {
                     width: 48px;
                     height: 48px;
+                    // Circular hover and pressed layer, 40 px centered in the 48 px dismiss target.
+                    StateLayer {
+                        x: 4px;
+                        y: 4px;
+                        width: 40px;
+                        height: 40px;
+                        radius: 20px;
+                        tint: card.content;
+                        hovered: dismiss-touch.has-hover;
+                        pressed: dismiss-touch.pressed;
+                    }
                     Path {
                         width: 24px;
                         height: 24px;
@@ -177,7 +196,8 @@ export component FeedbackOverlay inherits Rectangle {
                         commands: "M19 6.41 L17.59 5 L12 10.59 L6.41 5 L5 6.41 L10.59 12 L5 17.59 L6.41 19 L12 13.41 L17.59 19 L19 17.59 L13.41 12 Z";
                         fill: card.content;
                     }
-                    TouchArea {
+                    dismiss-touch := TouchArea {
+                        mouse-cursor: pointer;
                         clicked => { root.dismiss(item.id); }
                     }
                 }

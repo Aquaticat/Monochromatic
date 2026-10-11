@@ -81,6 +81,14 @@ pub(super) fn command() -> Command {
     isolate = isolate.help("Run the hosted app in a resource-controlled systemd scope");
     command = command.arg(isolate);
 
+    let mut launcher_log = Arg::new("launcher-log");
+    launcher_log = launcher_log.long("launcher-log").action(ArgAction::SetTrue);
+    launcher_log = launcher_log.help(
+        "Give the child a private session bus and record its taskbar progress; \
+         the launcher control commands read the record"
+    );
+    command = command.arg(launcher_log);
+
     let mut quota = Arg::new("app-cpu-quota");
     quota = quota.long("app-cpu-quota").value_name("PERCENT");
     // What: This parser returns u32, not a string or signed i32.

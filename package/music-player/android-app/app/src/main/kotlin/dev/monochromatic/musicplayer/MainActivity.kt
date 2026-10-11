@@ -687,6 +687,7 @@ import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import dev.monochromatic.musicplayer.core.folderGrantAttempts
+import dev.monochromatic.musicplayer.core.libraryDisplayName
 
 // What:     `import androidx.compose.runtime.LaunchedEffect` pulls in `LaunchedEffect`,
 //           the composable that runs a `suspend` side-effect block tied to a key (re-runs
@@ -2103,6 +2104,7 @@ private fun appRoot(
         onChooseFolder = onChooseFolder,
         feedback = feedback,
         firstRunContent = firstRunContent,
+        libraryName = libraryDisplayName(folderName),
     )
 }
 
@@ -2229,6 +2231,7 @@ internal fun rememberPlaybackProgress(controller: PlayerController): PlaybackPro
  *
  * @param feedback feedback queue that the player host draws and expires
  * @param firstRunContent first-run pane to draw over the player, or null when the player shows
+ * @param libraryName name of the opened folder, or the name of the MediaStore library, for the folder pane heading
  */
 @Composable
 fun playerScreen(
@@ -2236,6 +2239,7 @@ fun playerScreen(
     onChooseFolder: () -> Unit,
     feedback: FeedbackHostState,
     firstRunContent: (@Composable (onSettings: () -> Unit) -> Unit)?,
+    libraryName: String,
 ) {
     Scaffold(contentWindowInsets = WindowInsets(0, 0, 0, 0)) { innerPadding ->
         Box(modifier = Modifier.fillMaxSize().padding(innerPadding)) {
@@ -2244,6 +2248,7 @@ fun playerScreen(
                 feedback = feedback,
                 onChooseFolder = onChooseFolder,
                 firstRunContent = firstRunContent,
+                libraryName = libraryName,
                 emptyNotice = { state ->
                     if (state.queueSize == 0) {
                         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {

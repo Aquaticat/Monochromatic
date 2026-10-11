@@ -51,6 +51,8 @@ data class PlayerContentModel(
     val entries: List<TrackListEntry>,
     /** Snapshot the transport deck draws. */
     val deck: TransportDeckModel,
+    /** Name of the opened folder, or the name of the MediaStore library, which heads the unfolded folder pane. */
+    val libraryName: String = libraryDisplayName(null),
 )
 
 // What:     `fun buildPlayerContent(...)` turns the controller's page and playback values into the screen model.
@@ -72,6 +74,7 @@ fun buildPlayerContent(
     mode: PlaybackMode,
     positionSec: Double,
     durationSec: Double,
+    libraryName: String = libraryDisplayName(null),
 ): PlayerContentModel {
     /** Rail sections built from every page name, so the picker can list each page. */
     val sections: List<RailSection> = railFor(pageLabels)
@@ -84,15 +87,22 @@ fun buildPlayerContent(
         folder = pageFolderFor(folderTitle, pageItems),
         currentIndexInLibrary = currentIndex,
     )
+    /** Label of the playing page, or an empty text when the playing page index is outside the page list. */
+    val playingPageLabel: String = playingPageIndex?.let { index -> pageLabels.getOrNull(index) }.orEmpty()
     /** Playing track and its place in its own folder, which may differ from the folder on screen. */
     val place: PlayingPlace = playingPlaceOf(
-        folderTitle = playingPageIndex?.let { index -> pageLabels.getOrNull(index) }.orEmpty(),
+        folderTitle = playingPageLabel,
         playingItems = playingItems,
         currentIndex = currentIndex,
     )
     /** Title of the playing track, or an empty text when no track is playing. */
     val title: String = place.entry?.let { entry -> trackTitleFor(entry.name) }.orEmpty()
-    /** Transport deck snapshot with the playing title, its place in its folder, and the playback values. */
+    /** Folder that holds the playing track, or an empty text when no track is playing. */
+    val folderLabel: String = deckFolderLabelFor(
+        displayPath = place.entry?.name.orEmpty(),
+        pageLabel = playingPageLabel,
+    )
+    /** Transport deck snapshot with the playing folder and title, its place in its folder, and the playback values. */
     val deck = TransportDeckModel(
         title = title,
         subtitle = subtitleFor(rowPosition = place.rowPosition, pageTrackCount = place.folderTrackCount),
@@ -101,6 +111,7 @@ fun buildPlayerContent(
         playing = playing,
         mode = mode,
         shuffleFolderLabel = folderTitle,
+        folderLabel = folderLabel,
     )
     return PlayerContentModel(
         sections = sections,
@@ -108,6 +119,7 @@ fun buildPlayerContent(
         folderTitle = folderTitle,
         entries = entries,
         deck = deck,
+        libraryName = libraryName,
     )
 }
 

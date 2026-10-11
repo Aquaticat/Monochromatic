@@ -1,6 +1,7 @@
 // First-run pane for the declined and no-audio states (D101, D10, D27). The caller supplies the copy
 // prepared by the Rust module `first_run`, so this component only lays out text and buttons.
 import { Theme } from "theme.slint";
+import { StateLayer } from "state_layer.slint";
 
 // Pane that shows one first-run state as a scrollable column of copy and actions.
 export component FirstRunPane inherits Rectangle {
@@ -66,6 +67,13 @@ export component FirstRunPane inherits Rectangle {
                 background: Theme.primary;
                 border-radius: 24px;
 
+                // Hover and pressed layer over the filled pill, in the content color of the primary fill.
+                StateLayer {
+                    radius: 24px;
+                    tint: Theme.on-primary;
+                    hovered: primary-touch.has-hover;
+                    pressed: primary-touch.pressed;
+                }
                 primary-row := HorizontalLayout {
                     padding-left: 24px;
                     padding-right: 24px;
@@ -78,7 +86,8 @@ export component FirstRunPane inherits Rectangle {
                         vertical-alignment: center;
                     }
                 }
-                TouchArea {
+                primary-touch := TouchArea {
+                    mouse-cursor: pointer;
                     clicked => { root.primary(); }
                 }
             }
@@ -93,6 +102,13 @@ export component FirstRunPane inherits Rectangle {
                 border-width: 1px;
                 border-color: Theme.outline;
 
+                // Hover and pressed layer over the outlined pill, in the content color of the canvas beneath it.
+                StateLayer {
+                    radius: 24px;
+                    tint: Theme.on-surface;
+                    hovered: secondary-touch.has-hover;
+                    pressed: secondary-touch.pressed;
+                }
                 secondary-row := HorizontalLayout {
                     padding-left: 24px;
                     padding-right: 24px;
@@ -105,7 +121,8 @@ export component FirstRunPane inherits Rectangle {
                         vertical-alignment: center;
                     }
                 }
-                TouchArea {
+                secondary-touch := TouchArea {
+                    mouse-cursor: pointer;
                     clicked => { root.secondary(index); }
                 }
             }

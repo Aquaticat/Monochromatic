@@ -66,11 +66,22 @@ export component AppWindow inherits Window {
     in property <[FolderName]> folder-names: [];
     in property <string> current-folder: "";
     in property <string> current-cell: "";
+    // Name of the opened folder, which heads the unfolded folder pane.
+    in property <string> library-name: "Folders";
     in property <[TrackListRow]> track-rows: [];
-    in property <int> scroll-to-row: -1;
+    // Y offset of the row the track list scrolls to, set by the Rust side before it bumps scroll-tick.
+    in property <length> scroll-offset: 0px;
+    // Bumped by the Rust side on each scroll request, so a repeated request scrolls again.
+    in property <int> scroll-tick: 0;
+    // Fired when the deck's title is clicked; the Rust side switches to the playing track's folder and bumps the tick.
+    callback reveal-playing();
+    // Fired when the deck's folder name is clicked; the Rust side shows the folder and bumps the folder tick.
+    callback reveal-folder();
 
     // Transport deck view model.
     in property <string> deck-title: "";
+    // Folder of the playing track, shown before the title; empty when nothing plays.
+    in property <string> deck-folder: "";
     in property <string> deck-subtitle: "";
     in property <string> shuffle-folder-label: "";
 
@@ -239,12 +250,14 @@ export component AppWindow inherits Window {
         if root.first-run-state == 0 && !root.picker-open : TrackListPane {
             vertical-stretch: 1;
             rows: root.track-rows;
-            scroll-to-row: root.scroll-to-row;
+            scroll-offset: root.scroll-offset;
+            scroll-tick: root.scroll-tick;
             play(i) => { root.select-index(i); }
             open-menu(i, x, y) => { root.show-track-menu(i, x, y); }
         }
         deck := TransportDeck {
             title: root.deck-title;
+            folder: root.deck-folder;
             subtitle: root.deck-subtitle;
             position-seconds: root.position;
             duration-seconds: root.duration;
@@ -256,6 +269,9 @@ export component AppWindow inherits Window {
             toggle-play => { root.toggle-play(); }
             next => { root.next(); }
             select-mode(m) => { root.select-mode(m); }
+            reveal-playing => { root.reveal-playing(); }
+            reveal-folder => { root.reveal-folder(); }
+            reveal-enabled: root.route == 0;
         }
     }
 
@@ -272,6 +288,7 @@ export component AppWindow inherits Window {
             width: root.width / 2;
             height: root.height;
             UnfoldedFoldersHeader {
+                title: root.library-name;
                 open => { root.open-files(); }
             }
             FolderPickerPane {
@@ -284,6 +301,7 @@ export component AppWindow inherits Window {
             }
             TransportDeck {
                 title: root.deck-title;
+                folder: root.deck-folder;
                 subtitle: root.deck-subtitle;
                 position-seconds: root.position;
                 duration-seconds: root.duration;
@@ -295,6 +313,9 @@ export component AppWindow inherits Window {
                 toggle-play => { root.toggle-play(); }
                 next => { root.next(); }
                 select-mode(m) => { root.select-mode(m); }
+                reveal-playing => { root.reveal-playing(); }
+                reveal-folder => { root.reveal-folder(); }
+                reveal-enabled: root.route == 0;
             }
         }
         VerticalLayout {
@@ -323,21 +344,22 @@ export component AppWindow inherits Window {
             if root.first-run-state == 0 : TrackListPane {
                 vertical-stretch: 1;
                 rows: root.track-rows;
-                scroll-to-row: root.scroll-to-row;
+                scroll-offset: root.scroll-offset;
+                scroll-tick: root.scroll-tick;
                 play(i) => { root.select-index(i); }
                 open-menu(i, x, y) => { root.show-track-menu(i, x, y); }
             }
         }
     }
 
-    // Search route drawn over the player. Its content inset keeps it clear of the unfolded crease.
+    // Search route drawn over the player. Unfolded, it covers only the right pane, where the track list is, so the
+    // folder picker and the deck on the left stay visible and usable; folded, it covers the whole window.
     if root.route == 1 : SearchPage {
-        x: 0px;
+        x: root.unfolded ? root.width / 2 : 0px;
         y: 0px;
-        width: root.width;
+        width: root.unfolded ? root.width / 2 : root.width;
         height: root.height;
         compact: !root.unfolded;
-        content-start-x: root.unfolded ? root.width / 2 : 16px;
         rows: root.search-rows;
         query: root.search-query;
         status-title: root.search-status-title;

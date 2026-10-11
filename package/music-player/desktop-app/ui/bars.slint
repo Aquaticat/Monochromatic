@@ -1,6 +1,7 @@
 // Top bars for the player screens: the folded cover row, the unfolded Folders header, and the unfolded track header.
 // Ports PlayerTopBars.kt. Glyph path data is copied from PlayerIcons.kt on a 24 by 24 grid.
 import { Theme } from "theme.slint";
+import { StateLayer } from "state_layer.slint";
 
 // Magnifying glass glyph for the search action (PlayerIcons.kt SEARCH_PATH).
 component SearchGlyph inherits Path {
@@ -61,16 +62,28 @@ component IconTarget inherits Rectangle {
 
     width: 48px;
     height: 48px;
-    TouchArea {
+    // Circular hover and pressed layer, 40 px centered in the 48 px target.
+    StateLayer {
+        x: 4px;
+        y: 4px;
+        width: 40px;
+        height: 40px;
+        radius: 20px;
+        tint: Theme.on-surface;
+        hovered: touch.has-hover;
+        pressed: touch.pressed;
+    }
+    touch := TouchArea {
         accessible-role: button;
         accessible-label: root.label;
+        mouse-cursor: pointer;
         clicked => {
             root.clicked();
         }
     }
 }
 
-// Tonal pill with the folder glyph and the Open label: 40 px tall visible inside a 48 px target.
+// Tonal pill with the folder glyph and the Open dir label: 40 px tall visible inside a 48 px target.
 // Start padding 16 px, 18 px glyph, 8 px gap, 14 px label, and 24 px end padding, per the M3 tonal button with an icon.
 component OpenPill inherits Rectangle {
     // Invoked when the pill is tapped.
@@ -84,6 +97,13 @@ component OpenPill inherits Rectangle {
         width: parent.width;
         border-radius: 20px;
         background: Theme.secondary-container;
+        // Hover and pressed layer over the tonal pill, in the pill's own content color.
+        StateLayer {
+            radius: 20px;
+            tint: Theme.on-secondary-container;
+            hovered: open-touch.has-hover;
+            pressed: open-touch.pressed;
+        }
         FolderOpenGlyph {
             x: 16px;
             y: 11px;
@@ -92,16 +112,17 @@ component OpenPill inherits Rectangle {
             x: 42px;
             y: 0px;
             height: 40px;
-            text: "Open";
+            text: "Open dir";
             font-size: Theme.label-large;
             font-weight: 500;
             vertical-alignment: center;
             color: Theme.on-secondary-container;
         }
     }
-    TouchArea {
+    open-touch := TouchArea {
         accessible-role: button;
-        accessible-label: "Open";
+        accessible-label: "Open dir";
+        mouse-cursor: pointer;
         clicked => {
             root.clicked();
         }
@@ -165,17 +186,15 @@ export component CoverTopRow inherits Rectangle {
         y: 4px;
         height: 48px;
         width: max(0px, (root.show-search ? open-pill.x - 56px : open-pill.x) - 8px - 16px);
-        TouchArea {
-            accessible-role: button;
-            accessible-label: "Folder: " + root.folder-title;
-            accessible-expandable: true;
-            accessible-expanded: root.picker-open;
-            accessible-action-default => {
-                root.toggle-picker();
-            }
-            clicked => {
-                root.toggle-picker();
-            }
+        // Pill-shaped hover and pressed layer over the whole trigger, 40 px tall in the 48 px target.
+        StateLayer {
+            y: 4px;
+            width: parent.width;
+            height: 40px;
+            radius: 20px;
+            tint: Theme.on-surface;
+            hovered: trigger-touch.has-hover;
+            pressed: trigger-touch.pressed;
         }
         title := Text {
             x: 0px;
@@ -198,11 +217,26 @@ export component CoverTopRow inherits Rectangle {
             x: title.width;
             y: 12px;
         }
+        trigger-touch := TouchArea {
+            accessible-role: button;
+            accessible-label: "Folder: " + root.folder-title;
+            accessible-expandable: true;
+            accessible-expanded: root.picker-open;
+            accessible-action-default => {
+                root.toggle-picker();
+            }
+            mouse-cursor: pointer;
+            clicked => {
+                root.toggle-picker();
+            }
+        }
     }
 }
 
-// Unfolded left pane header: the Folders heading on the left and the Open pill on the right.
+// Unfolded left pane header: the opened folder's name on the left and the Open pill on the right.
 export component UnfoldedFoldersHeader inherits Rectangle {
+    // Name of the opened folder; elided before it would run under the Open pill.
+    in property <string> title: "Folders";
     // Invoked when the Open pill is tapped.
     callback open();
 
@@ -210,13 +244,17 @@ export component UnfoldedFoldersHeader inherits Rectangle {
     Text {
         x: 16px;
         y: 0px;
+        width: max(0px, root.width - 16px - 8px - open-pill.width - 8px);
         height: parent.height;
-        text: "Folders";
+        text: root.title;
         font-size: Theme.title-large;
         color: Theme.on-surface;
         vertical-alignment: center;
+        wrap: no-wrap;
+        overflow: elide;
+        accessible-role: text;
     }
-    OpenPill {
+    open-pill := OpenPill {
         x: root.width - 8px - self.width;
         y: 4px;
         clicked => {

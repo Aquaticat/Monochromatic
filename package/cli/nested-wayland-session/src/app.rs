@@ -61,10 +61,15 @@ use crate::{
     child::{register_exit_poll, spawn_child},
     cli::Config,
     control,
+    launcher_listen::LauncherLog,
+    private_bus::PrivateBus,
     render::redraw,
     state::Compositor,
     systemd::Isolation,
 };
+
+/// Shares the one private bus between the portal, the listener, and the compositor state.
+use std::sync::Arc;
 
 /// Build everything,
 ///  spawn the hosted client,
@@ -159,28 +164,56 @@ pub fn run(config: Config) -> Result<i32> {
     // Why:      Stop the loop when the hosted client exits.
     register_exit_poll(&loop_handle);
 
-    // Start private Settings portal only when deterministic nested appearance was requested.
-    let appearance_portal = config
-        .color_scheme
-        .map(AppearancePortal::start)
-        .transpose()
-        .context("starting isolated nested appearance")?;
+    // What:     `let private_bus = if ... { Some(Arc::new(PrivateBus::start()?)) } else { None };`.
+    //           Starts one private session bus when either option needs one.
+    // Why:      The appearance portal and the taskbar listener share this bus,
+    //           so the compositor starts only one `dbus-daemon`.
+    let private_bus = if config.color_scheme.is_some() || config.launcher_log {
+        Some(Arc::new(
+            PrivateBus::start().context("starting the private session bus")?,
+        ))
+    } else {
+        None
+    };
 
-    // What:     `.as_ref()` borrows the optional portal; `.map(...)` reads its address when
+    // Serve deterministic appearance on that bus only when `--color-scheme` was requested.
+    let appearance_portal = match config.color_scheme {
+        Some(preference) => {
+            let bus = private_bus
+                .as_ref()
+                .map(Arc::clone)
+                .context("the private session bus is missing for --color-scheme")?;
+            Some(AppearancePortal::start(preference, bus).context("starting isolated nested appearance")?)
+        }
+        None => None,
+    };
+
+    // The listener records taskbar progress for as long as the bus runs, so every bus has one.
+    let launcher = match private_bus.as_ref() {
+        Some(bus) => Some(
+            LauncherLog::start(bus, state.start_time)
+                .context("starting the taskbar progress listener")?,
+        ),
+        None => None,
+    };
+
+    // What:     `.as_ref()` borrows the optional bus; `.map(...)` reads its address when
     //           present; `.to_owned()` copies that borrowed text into an owned `String`.
-    // Why:      The portal moves into the state next, and the child spawn below borrows the
-    //           whole state mutably, so the address must not keep borrowing the portal.
+    // Why:      The bus moves into the state next, and the child spawn below borrows the
+    //           whole state mutably, so the address must not keep borrowing the bus.
     //
     // In TS you'd write (pseudocode):
     // ```ts
-    // const privateBusAddress = appearancePortal?.busAddress();
+    // const privateBusAddress = privateBus?.address();
     // ```
-    let private_bus_address = appearance_portal
+    let private_bus_address = private_bus
         .as_ref()
-        .map(|portal| return portal.bus_address().to_owned());
+        .map(|bus| return bus.address().to_owned());
 
-    // Keep the portal reachable from control commands and alive for the whole session.
+    // Keep the portal, bus, and listener reachable from control commands for the whole session.
     state.appearance_portal = appearance_portal;
+    state.private_bus = private_bus;
+    state.launcher = launcher;
 
     // What:     `let isolation = Isolation { enabled: config.isolate, cpu_quota_percent:
     //           config.app_cpu_quota, cpu_weight: config.app_cpu_weight };`. Assemble the

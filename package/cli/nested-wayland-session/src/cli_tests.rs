@@ -177,3 +177,13 @@ fn invalid_option_values_are_rejected() {
         assert!(error.to_string().contains(input[0]));
     }
 }
+
+/// The launcher log flag is off by default and turns on alone, without a color scheme.
+#[test]
+fn launcher_log_flag_is_off_by_default_and_parses_alone() {
+    assert!(!parse_args(&args(&["app"])).unwrap().launcher_log);
+    let config = parse_args(&args(&["--launcher-log", "--", "app"])).unwrap();
+    assert!(config.launcher_log);
+    assert_eq!(config.color_scheme, None);
+    assert_eq!(config.child_command, ["app"]);
+}

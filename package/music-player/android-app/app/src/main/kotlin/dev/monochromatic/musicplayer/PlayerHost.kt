@@ -112,6 +112,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import dev.monochromatic.musicplayer.core.TrackActionFailure
+import dev.monochromatic.musicplayer.core.libraryDisplayName
 import dev.monochromatic.musicplayer.core.TrackMenuAction
 import dev.monochromatic.musicplayer.core.TrashRecord
 import dev.monochromatic.musicplayer.core.TrashRoute
@@ -431,6 +432,7 @@ private fun hostKeyRouteOf(route: PlayerRoute): HostKeyRoute = when (route) {
  * @param emptyNotice Draws the notice over the player while the library is loading or holds no track.
  * @param firstRunContent Draws the first-run pane over the player when the open source needs it, given the
  *     callback that opens the Settings route; null when the player shows.
+ * @param libraryName Name of the opened folder, or of the MediaStore library, shown above the unfolded folders.
  */
 @Composable
 fun playerHost(
@@ -439,6 +441,7 @@ fun playerHost(
     onChooseFolder: () -> Unit,
     emptyNotice: @Composable (PlayerUiState) -> Unit = {},
     firstRunContent: (@Composable (onSettings: () -> Unit) -> Unit)? = null,
+    libraryName: String = libraryDisplayName(null),
 ) {
     /** Android context that the template preferences are read and written through. */
     val context: Context = LocalContext.current
@@ -460,6 +463,8 @@ fun playerHost(
     var searchFocusToken: Int by remember { mutableIntStateOf(0) }
     /** Count of reveal requests, read by the track list to scroll to and focus the playing row. */
     var revealToken: Int by remember { mutableIntStateOf(0) }
+    /** Count of folder reveal requests, read by the track list to scroll to the playing track's folder header. */
+    var folderRevealToken: Int by remember { mutableIntStateOf(0) }
     /** Focus requester of the host root, which takes the player's keys when no control holds focus. */
     val rootFocusRequester: FocusRequester = remember { FocusRequester() }
     /** Callback that the Search query field reports its focus through, kept across frames so readers stay valid. */
@@ -484,6 +489,7 @@ fun playerHost(
         mode = state.playbackMode,
         positionSec = playbackProgress.position,
         durationSec = playbackProgress.duration,
+        libraryName = libraryName,
     )
     /** Library tracks of the selected page, each keyed by the URI that its measure is stored under. */
     val pageTracks: List<Track> = state.pageItems.mapNotNull { entry ->
@@ -648,6 +654,62 @@ fun playerHost(
         }
     }
 
+    // What:     `val showPlayingFolder` closes the picker and selects the playing track's page.
+    // Why:      The picker replaces the list, and the playing track may sit in another folder, so the folder is
+    //           selected first. The row reveal and the folder reveal both need this step before they ask the list
+    //           to move.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const showPlayingFolder = () => {
+    //   setPickerOpen(false); if (page changed) selectPage(playing);
+    // };
+    // ```
+    /** Closes the folder picker and selects the playing track's page when another page is selected. */
+    val showPlayingFolder: () -> Unit = {
+        pickerOpen = false
+        /** Tab-order page of the playing track, or null when no track is playing. */
+        val playingPage: Int? = controller.uiState.playingPageIndex
+        if (playingPage != null && playingPage != controller.uiState.selectedPage) {
+            Log.i(LOG_TAG, "player host reveal shows playing folder page=$playingPage")
+            controller.selectPage(playingPage)
+        }
+    }
+
+    // What:     `val revealPlayingTrack` shows the playing track's folder and asks its list to focus the row.
+    // Why:      The picker replaces the list, and the playing track may sit in another folder, so the folder is
+    //           selected first, without starting a track, and then the row can take focus. Ctrl+G and a tap on the
+    //           deck's title both run it.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const revealPlayingTrack = () => {
+    //   showPlayingFolder(); bumpRevealToken();
+    // };
+    // ```
+    /** Shows the playing track's folder, then focuses the playing row without starting a track. */
+    val revealPlayingTrack: () -> Unit = {
+        showPlayingFolder()
+        revealToken += 1
+    }
+
+    // What:     `val revealPlayingFolder` shows the playing track's folder and asks its list to scroll to the folder.
+    // Why:      A tap on the folder part of the deck heading runs it. The list scrolls to the subfolder header that
+    //           holds the playing track, or to its top when the track sits directly in the folder, and no row takes
+    //           focus.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const revealPlayingFolder = () => {
+    //   showPlayingFolder(); bumpFolderRevealToken();
+    // };
+    // ```
+    /** Shows the playing track's folder, then scrolls its list to the playing track's subfolder header. */
+    val revealPlayingFolder: () -> Unit = {
+        showPlayingFolder()
+        folderRevealToken += 1
+    }
+
     // What:     `val deckActions` routes the transport actions to the controller.
     // Why:      The player deck and the deck under the Search page send the same actions, and a tapped control
     //           returns focus to the playback area.
@@ -675,6 +737,8 @@ fun playerHost(
             controller.setPlaybackMode(mode)
             returnFocusToPlayback()
         },
+        onRevealPlaying = revealPlayingTrack,
+        onRevealFolder = revealPlayingFolder,
     )
 
     // What:     `val playerActions` routes the player screen's actions.
@@ -1302,14 +1366,7 @@ fun playerHost(
         // ```
         /** Shows the playing track's folder, then focuses the playing row without starting a track. */
         override fun revealCurrent() {
-            pickerOpen = false
-            /** Tab-order page of the playing track, or null when no track is playing. */
-            val playingPage: Int? = controller.uiState.playingPageIndex
-            if (playingPage != null && playingPage != controller.uiState.selectedPage) {
-                Log.i(LOG_TAG, "player host reveal shows playing folder page=$playingPage")
-                controller.selectPage(playingPage)
-            }
-            revealToken += 1
+            revealPlayingTrack()
         }
 
         // What:     `override fun backFromSearch()` leaves Search by the same route rule as the system Back button.
@@ -1411,6 +1468,7 @@ fun playerHost(
         CompositionLocalProvider(
             HostKeyLocalSearchFocus provides searchFocusToken,
             HostKeyLocalReveal provides revealToken,
+            HostKeyLocalRevealFolder provides folderRevealToken,
             HostKeyLocalSearchField provides reportSearchFieldFocus,
         ) {
             when (route) {
@@ -1502,7 +1560,12 @@ fun playerHost(
                         onClear = { query = "" },
                         onOpenResult = { result -> openSearchResult(result) },
                         currentTrackIndex = state.currentIndex,
-                        deck = { transportDeck(model = model.deck, actions = deckActions) },
+                        deck = {
+                            transportDeck(
+                                model = model.deck,
+                                actions = deckActions.copy(onRevealPlaying = null, onRevealFolder = null),
+                            )
+                        },
                         isPlaying = state.playing,
                         folderBrowser = { browserModifier ->
                             folderPickerPane(

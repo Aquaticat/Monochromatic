@@ -1,6 +1,7 @@
 // Track context menu body (D7, D8, D26-era menu, Android TrackMenuPopup). The caller hosts it in a PopupWindow
 // anchored to the track row; this component draws the card, the heading, the rows and the dividers only.
 import { Theme } from "theme.slint";
+import { StateLayer } from "state_layer.slint";
 
 // One menu row. `icon` indexes the glyph: 0 play, 1 shuffle, 2 file details, 3 re-analyse, 4 show in file manager,
 // 5 copy filename, 6 move to trash.
@@ -108,6 +109,12 @@ export component TrackMenu inherits Rectangle {
                 property <color> foreground: item.destructive ? Theme.error : Theme.on-surface;
 
                 height: max(48px, row.preferred-height);
+                // Rectangular hover and pressed layer over the whole action row, below its glyph and label.
+                StateLayer {
+                    tint: Theme.on-surface;
+                    hovered: row-touch.has-hover;
+                    pressed: row-touch.pressed;
+                }
                 row := HorizontalLayout {
                     padding-left: 16px + root.start-inset;
                     padding-right: 16px;
@@ -154,7 +161,8 @@ export component TrackMenu inherits Rectangle {
                         }
                     }
                 }
-                TouchArea {
+                row-touch := TouchArea {
+                    mouse-cursor: pointer;
                     clicked => { root.select(index); }
                 }
             }

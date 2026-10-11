@@ -195,6 +195,32 @@ pub fn track_title_for(display_path: &str) -> String {
 }
 
 /// What:
+///      `pub fn deck_folder_label(display_path: &str, page_label: &str) -> String`.
+///  The folder that directly holds the track,
+///  or `page_label` when the path has no folder part.
+///  An empty path gives an empty label.
+/// Why:
+///       The deck names the track's own folder,
+///  and a root-level track has no folder of its own,
+///  so the label of the page it is listed under stands in.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// const deckFolderLabel = (p: string, pageLabel: string) => (p === "" ? "" : folderNameOf(p) || pageLabel);
+/// ```
+pub fn deck_folder_label(display_path: &str, page_label: &str) -> String {
+    if display_path.is_empty() {
+        return String::new();
+    }
+    let folder = folder_name_of(display_path);
+    return if folder.is_empty() {
+        page_label.to_string()
+    } else {
+        folder.to_string()
+    };
+}
+
+/// What:
 ///      `fn track_fields_for(display_path: &str) -> TrackFields`.
 ///  Builds the template fields for one track.
 /// Why:

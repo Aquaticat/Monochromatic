@@ -61,6 +61,8 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 
 // What:     Imports from `androidx.compose.ui` bring in modifiers, alignment, geometry, colors, and semantics.
@@ -273,6 +275,19 @@ internal fun cellKeyForFolder(sections: List<RailSection>, folder: String?): Str
     return cellsInOrder(sections).firstOrNull { cell -> folder in cell.names }?.key
 }
 
+// What:     `internal fun railHighlightKey(tappedKey, currentKey): String?` picks the rail cell to circle.
+// Why:      A tapped letter must show as selected at once, even though the current folder is still in another cell;
+//           the tap stands until the current folder changes.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// function railHighlightKey(tappedKey: string | null, currentKey: string | null): string | null {
+//   return tappedKey ?? currentKey;
+// }
+// ```
+/** Returns the tapped cell's key when a tap is pending, otherwise the key of the current folder's cell. */
+internal fun railHighlightKey(tappedKey: String?, currentKey: String?): String? = tappedKey ?: currentKey
+
 // What:     `internal fun firstNameForCell(sections, cellKey): String?` returns the first folder under a cell.
 // Why:      A rail tap scrolls the names to this name, so the list lands on the cell's first folder.
 //
@@ -355,11 +370,14 @@ fun folderPickerPane(
     )
     /** Coroutine scope that runs the scroll animation started by a rail tap. */
     val scope = rememberCoroutineScope()
+    /** Cell the user last tapped on the rail, forgotten when the current folder changes. */
+    val tappedCellKey = remember(currentFolder) { mutableStateOf<String?>(null) }
     Row(modifier = modifier.fillMaxSize()) {
         letterRail(
             sections = sections,
-            currentCellKey = currentCellKey,
+            currentCellKey = railHighlightKey(tappedKey = tappedCellKey.value, currentKey = currentCellKey),
             onCellSelected = { cellKey ->
+                tappedCellKey.value = cellKey
                 /** First folder name under the tapped cell, which the names list scrolls to. */
                 val firstName: String? = firstNameForCell(sections, cellKey)
                 /** List position of the cell that lists that first name. */

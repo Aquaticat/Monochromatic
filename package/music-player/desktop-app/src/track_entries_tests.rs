@@ -338,3 +338,45 @@ fn sampled_measure_gives_length_without_peak() {
     let entries = track_list_entries(&folder, None, &measures, &line);
     assert_eq!(supporting_text(&entries), Some("Some(20.0)|None".to_string()));
 }
+
+// What:     `#[test]` marks the next function as a test case.
+// Why:      The deck names the innermost folder that holds a nested track.
+#[test]
+fn deck_folder_names_the_innermost_directory() {
+    assert_eq!(deck_folder_label("Camellia/Live/Ghost.flac", "Camellia"), "Live");
+}
+
+// What:     `#[test]` marks the next function as a test case.
+// Why:      A track directly under the page folder names that folder.
+#[test]
+fn deck_folder_of_a_direct_child_is_its_folder() {
+    assert_eq!(deck_folder_label("Camellia/Ghost.flac", "Camellia"), "Camellia");
+}
+
+// What:     `#[test]` marks the next function as a test case.
+// Why:      A path with no directory part falls back to the page label.
+#[test]
+fn deck_folder_without_a_directory_uses_the_page_label() {
+    assert_eq!(deck_folder_label("Ghost.flac", "L"), "L");
+}
+
+// What:     `#[test]` marks the next function as a test case.
+// Why:      A single trailing component with no page label gives an empty folder.
+#[test]
+fn deck_folder_of_a_lone_trailing_component_without_page_label_is_empty() {
+    assert_eq!(deck_folder_label("Ghost.flac", ""), "");
+}
+
+// What:     `#[test]` marks the next function as a test case.
+// Why:      An empty path gives an empty folder even when a page label is given.
+#[test]
+fn deck_folder_of_an_empty_path_is_empty() {
+    assert_eq!(deck_folder_label("", "Camellia"), "");
+}
+
+// What:     `#[test]` marks the next function as a test case.
+// Why:      A trailing separator leaves the last directory as the folder.
+#[test]
+fn deck_folder_with_a_trailing_separator_names_the_last_directory() {
+    assert_eq!(deck_folder_label("Camellia/Live/", "Camellia"), "Live");
+}

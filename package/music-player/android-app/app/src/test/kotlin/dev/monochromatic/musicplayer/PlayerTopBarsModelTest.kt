@@ -140,6 +140,32 @@ class PlayerTopBarsModelTest {
         assertEquals("jpnあ", cellKeyForFolder(railFor(SAMPLE_FOLDERS), folder = "あいみょん"))
     }
 
+    // What:     `railHighlightPrefersTheTappedCell` checks that a tapped letter is the one circled.
+    // Why:      Tapping V while W is current must circle V, not leave W circled.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // test("tapped cell wins", () => expect(railHighlightKey("latinV", "latinW")).toBe("latinV"));
+    // ```
+    /** Confirms a pending tap overrides the current folder's cell. */
+    @Test
+    fun railHighlightPrefersTheTappedCell() {
+        assertEquals("latinV", railHighlightKey(tappedKey = "latinV", currentKey = "latinW"))
+    }
+
+    // What:     `railHighlightFallsBackToTheCurrentCell` checks the highlight with no pending tap.
+    // Why:      Before any tap, and after the current folder changes, the circle marks the current folder's cell.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // test("no tap uses current", () => expect(railHighlightKey(null, "latinW")).toBe("latinW"));
+    // ```
+    /** Confirms the current folder's cell is circled when no tap is pending. */
+    @Test
+    fun railHighlightFallsBackToTheCurrentCell() {
+        assertEquals("latinW", railHighlightKey(tappedKey = null, currentKey = "latinW"))
+    }
+
     // What:     `cellKeyForNullFolderIsNull` checks the lookup when no folder is current.
     // Why:      A null current folder must highlight nothing rather than match an empty name.
     //

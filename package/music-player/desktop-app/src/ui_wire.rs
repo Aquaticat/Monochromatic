@@ -27,17 +27,47 @@ pub(crate) fn wire(app: &AppWindow, engine: &Rc<Engine>) {
     crate::ui_search::wire(app, engine);
 }
 
+/// What: `mark_user_acted` records that the user has started to drive the player.
+/// Why: the one-time reveal of the restored playing track must not fire for a track the user starts themselves, which
+/// would scroll the list under them.
+fn mark_user_acted() {
+    update_state(|state| {
+        state.startup_reveal_done = true;
+    });
+}
+
 /// What: `wire_transport` registers play, previous, next, seek and mode callbacks.
 /// Why: the transport deck and the mode group send these without knowing the engine.
 fn wire_transport(app: &AppWindow, engine: &Rc<Engine>) {
     let toggle_engine = engine.clone();
-    app.on_toggle_play(move || toggle_engine.send(Command::TogglePlay));
+    app.on_toggle_play(move || {
+        mark_user_acted();
+        toggle_engine.send(Command::TogglePlay);
+    });
     let prev_engine = engine.clone();
-    app.on_prev(move || prev_engine.send(Command::Prev));
+    app.on_prev(move || {
+        mark_user_acted();
+        prev_engine.send(Command::Prev);
+    });
     let next_engine = engine.clone();
-    app.on_next(move || next_engine.send(Command::Next));
+    app.on_next(move || {
+        mark_user_acted();
+        next_engine.send(Command::Next);
+    });
     let seek_engine = engine.clone();
     app.on_seek(move |secs| seek_engine.send(Command::Seek(f64::from(secs))));
+    let reveal_weak = app.as_weak();
+    app.on_reveal_playing(move || {
+        if let Some(window) = reveal_weak.upgrade() {
+            crate::ui_keys::reveal_playing(&window);
+        }
+    });
+    let folder_reveal_weak = app.as_weak();
+    app.on_reveal_folder(move || {
+        if let Some(window) = folder_reveal_weak.upgrade() {
+            crate::ui_keys::reveal_playing_folder(&window);
+        }
+    });
     let mode_engine = engine.clone();
     let mode_weak = app.as_weak();
     app.on_select_mode(move |mode| {
@@ -56,6 +86,7 @@ fn wire_library(app: &AppWindow, engine: &Rc<Engine>) {
     let row_weak = app.as_weak();
     app.on_select_index(move |index| {
         if let Some(window) = row_weak.upgrade() {
+            mark_user_acted();
             play_row(&row_engine, usize::try_from(index).unwrap_or(usize::MAX));
             project(&window);
         }
@@ -73,6 +104,7 @@ fn wire_library(app: &AppWindow, engine: &Rc<Engine>) {
     let folder_weak = app.as_weak();
     app.on_select_folder(move |label| {
         if let Some(window) = folder_weak.upgrade() {
+            mark_user_acted();
             select_folder(&folder_engine, label.as_str());
             project(&window);
         }

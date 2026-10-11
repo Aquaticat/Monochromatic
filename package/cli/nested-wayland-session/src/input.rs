@@ -172,6 +172,12 @@ pub fn click(state: &mut Compositor, x: f64, y: f64, button: PointerButton) {
     // What:     `pointer.frame(state);`. End the release group.
     // Why:      Flush the release.
     pointer.frame(state);
+
+    // What:     `state.held_pointer_buttons.release(code);`. Forget the button in the record
+    //           `button down` keeps, because the release above also ends a held press.
+    // Why:      The record must match what the seat delivered, or a later `button up` would
+    //           answer `ok` for a button the seat no longer holds.
+    state.held_pointer_buttons.release(code);
 }
 
 /// Perform a press,

@@ -10,7 +10,7 @@
 // describe("protocol", () => { /* cases below */ });
 // ```
 
-use super::{format_response, parse_command, Command, KeyAction, PointerButton, Response};
+use super::{format_response, parse_command, ButtonAction, Command, KeyAction, PointerButton, Response};
 
 #[test]
 fn ping_and_quit_parse() {
@@ -203,4 +203,59 @@ fn record_parses_dir_fps_format_and_stop() {
     assert!(parse_command("record /tmp/f notanumber").is_err());
     assert!(parse_command("record stop extra").is_err());
     assert!(parse_command("record /tmp/f 60 png extra").is_err());
+}
+
+/// `move` takes two finite coordinates and nothing else.
+#[test]
+fn move_parses_coordinates_and_rejects_bad_input() {
+    assert_eq!(parse_command("move 10 20"), Ok(Command::Move { x: 10.0, y: 20.0 }));
+    assert_eq!(parse_command("move 1.5 -2"), Ok(Command::Move { x: 1.5, y: -2.0 }));
+    assert!(parse_command("move 10").is_err());
+    assert!(parse_command("move 10 20 30").is_err());
+    assert!(parse_command("move 10 20 quit").is_err());
+    assert!(parse_command("move a 2").is_err());
+    assert!(parse_command("move NaN 2").is_err());
+    assert!(parse_command("move 1 inf").is_err());
+}
+
+/// `button` names an action, then an optional button that defaults to left.
+#[test]
+fn button_parses_action_and_defaults_to_left() {
+    assert_eq!(parse_command("button down"), Ok(Command::Button { action: ButtonAction::Down, button: PointerButton::Left }));
+    assert_eq!(parse_command("button up right"), Ok(Command::Button { action: ButtonAction::Up, button: PointerButton::Right }));
+    assert_eq!(parse_command("button down middle"), Ok(Command::Button { action: ButtonAction::Down, button: PointerButton::Middle }));
+    assert!(parse_command("button").is_err());
+    assert!(parse_command("button press").is_err());
+    assert!(parse_command("button down purple").is_err());
+    assert!(parse_command("button down left extra").is_err());
+}
+
+/// The verbs without arguments reject any trailing token instead of ignoring it.
+#[test]
+fn argumentless_taskbar_and_window_verbs_reject_trailing_tokens() {
+    assert_eq!(parse_command("title"), Ok(Command::Title));
+    assert_eq!(parse_command("app-id"), Ok(Command::AppId));
+    assert_eq!(parse_command("launcher"), Ok(Command::Launcher));
+    assert_eq!(parse_command("launcher-clear"), Ok(Command::LauncherClear));
+    assert!(parse_command("title extra").is_err());
+    assert!(parse_command("app-id x").is_err());
+    assert!(parse_command("launcher 1").is_err());
+    assert!(parse_command("launcher-clear now").is_err());
+}
+
+/// `launcher-log` takes an optional count of at least one, defaulting to 64.
+#[test]
+fn launcher_log_parses_optional_count() {
+    assert_eq!(parse_command("launcher-log"), Ok(Command::LauncherLog { count: 64 }));
+    assert_eq!(parse_command("launcher-log 5"), Ok(Command::LauncherLog { count: 5 }));
+    assert!(parse_command("launcher-log 0").is_err());
+    assert!(parse_command("launcher-log -1").is_err());
+    assert!(parse_command("launcher-log x").is_err());
+    assert!(parse_command("launcher-log 5 6").is_err());
+}
+
+/// An empty title answers `ok ` with the trailing space the protocol documents.
+#[test]
+fn empty_payload_keeps_its_trailing_space() {
+    assert_eq!(format_response(&Response::OkWith(String::new())), "ok ");
 }

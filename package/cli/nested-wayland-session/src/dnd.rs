@@ -428,6 +428,11 @@ fn release_drag(state: &mut Compositor, button: u32) {
     );
     pointer.frame(state);
 
+    // What:     `state.held_pointer_buttons.release(button);`. Keep the `button down` record in
+    //           step with the release the drag just delivered.
+    // Why:      A later `button up` must not answer `ok` for a button the seat has let go.
+    state.held_pointer_buttons.release(button);
+
     // What:     `info!(...)`. Log the release.
     // Why:      Mark that the drop was delivered (the app's own log confirms receipt).
     info!("drop-file: released the drag; drop delivered to the app");

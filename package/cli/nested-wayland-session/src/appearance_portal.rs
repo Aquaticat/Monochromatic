@@ -3,18 +3,6 @@
 /// Imports setting maps returned by standard portal `ReadAll`.
 use std::collections::HashMap;
 
-/// Imports buffered address read from `dbus-daemon` stdout.
-use std::io::{BufRead, BufReader};
-
-/// Imports the owned OS-native string that carries the configuration path to `dbus-daemon`.
-use std::ffi::OsString;
-
-/// Imports owned scratch paths for private bus socket and cleanup.
-use std::path::PathBuf;
-
-/// Imports private-bus process and pipe construction.
-use std::process::{Child, ChildStdout, Command, Stdio};
-
 /// What:
 ///      A grouped `use` of thread-safe primitives.
 ///  `Arc<T>` is a shared owner of one heap
@@ -22,32 +10,28 @@ use std::process::{Child, ChildStdout, Command, Stdio};
 ///  freed when its last owner goes away (siblings:
 ///  single-owner `Box<T>`,
 ///           single-thread `Rc<T>`).
-///  `AtomicU32` and `AtomicU64` are integer cells several
-///           threads may read and write without a lock (sibling:
-///  `Mutex<u32>`,
+///  `AtomicU32` is an integer cell several threads may read and write without a lock
+///           (sibling: `Mutex<u32>`,
 ///  which locks).
 ///           `Ordering` selects how strictly those accesses are sequenced.
-///  `mpsc` is a
-///           channel between threads.
 /// Why:
 ///       The D-Bus service thread reads the served value while the compositor thread
 ///           switches it,
 ///  so both need the same cell.
-///  The sequence counter keeps fixture
-///           paths unique,
-///  and the channel bounds the private-bus address read.
+///  The shared bus is owned through an `Arc` too,
+///  because the portal and the compositor both hold it.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// // Arc<AtomicU32> ~ a Uint32Array over a SharedArrayBuffer, used through Atomics.
 /// ```
 use std::sync::{
-    atomic::{AtomicU32, AtomicU64, Ordering},
-    mpsc, Arc,
+    atomic::{AtomicU32, Ordering},
+    Arc,
 };
 
-/// Imports bounded startup duration for private daemon address.
-use std::time::Duration;
+/// The private bus this portal is served on, shared with the compositor.
+use crate::private_bus::PrivateBus;
 
 /// Imports shared error context and result channel.
 use anyhow::{Context, Result};
@@ -89,70 +73,6 @@ const APPEARANCE_NAMESPACE: &str = "org.freedesktop.appearance";
 
 /// Stores color-scheme setting key.
 const COLOR_SCHEME_KEY: &str = "color-scheme";
-
-/// Bounds time spent waiting for private bus startup address.
-const PRIVATE_BUS_ADDRESS_TIMEOUT: Duration = Duration::from_secs(2);
-
-/// Produces collision-free paths when tests start more than one private bus.
-static PRIVATE_BUS_SEQUENCE: AtomicU64 = AtomicU64::new(0);
-
-/// Configuration of the private bus:
-///  the stock session bus minus every service directory.
-///
-/// What:
-///      `const PRIVATE_BUS_CONFIG: &str = r#"..."#;`.
-///  A string baked into the binary.
-///           `r#"..."#` is a raw string literal:
-///  backslashes and quotes inside it are literal
-///           text,
-///  so the XML needs no escaping.
-///  It keeps the stock `session.conf` elements that
-///           make this a session bus (`<type>`,
-///  `<keep_umask/>`,
-///  `<auth>`,
-///  the allow-all
-///           policy) and omits `<standard_session_servicedirs/>`,
-///  every `<servicedir>`,
-///  and every
-///           `<include>`/`<includedir>`,
-///  which could add service directories back.
-/// Why:
-///       Without a service directory the daemon has no `.service` file to read,
-///  so a
-///           hosted client asking it to start a name (as `slint-viewer` did for `org.a11y.Bus`)
-///           gets `org.freedesktop.DBus.Error.ServiceUnknown` at once,
-///  and no host program is
-///           ever executed for it.
-///  `dbus-daemon` refuses a configuration without `<listen>`,
-///           so the element names a path that cannot be bound;
-///  the `--address` option,
-///  which
-///           the daemon documents as overriding `<listen>`,
-///  supplies the real socket.
-/// Gotcha:
-///    No path is interpolated into this text,
-///  so no XML escaping is needed.
-///  Adding one
-///           later would make the text a syntax boundary.
-///
-/// In TS you'd write (pseudocode):
-/// ```ts
-/// const PRIVATE_BUS_CONFIG = `<busconfig>...</busconfig>`;
-/// ```
-const PRIVATE_BUS_CONFIG: &str = r#"<!DOCTYPE busconfig PUBLIC "-//freedesktop//DTD D-Bus Bus Configuration 1.0//EN"
- "http://www.freedesktop.org/standards/dbus/1.0/busconfig.dtd">
-<busconfig>
-  <type>session</type>
-  <keep_umask/>
-  <listen>unix:path=/dev/null/replaced-by-the-address-option</listen>
-  <auth>EXTERNAL</auth>
-  <policy context="default">
-    <allow send_destination="*" eavesdrop="true"/>
-    <allow eavesdrop="true"/>
-    <allow own="*"/>
-  </policy>
-</busconfig>
-"#;
 
 /// Requested isolated color scheme.
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
@@ -281,158 +201,28 @@ fn namespaces_match_appearance(namespaces: &[String]) -> bool {
     });
 }
 
-/// Reads one printed private-bus address from daemon stdout.
-fn read_bus_address(stdout: ChildStdout) -> std::io::Result<String> {
-    let mut address = String::new();
-    BufReader::new(stdout).read_line(&mut address)?;
-    return Ok(address);
-}
-
-/// Owns private message-bus daemon and scratch directory.
-#[derive(Debug)]
-struct PrivateBus {
-    /// Running `dbus-daemon --config-file=... --nofork` process with no service directories.
-    daemon: Child,
-    /// Scratch directory containing bus socket.
-    directory: PathBuf,
-    /// Address inherited by hosted client.
-    address: String,
-}
-
-/// Starts isolated message bus used only by hosted client.
-impl PrivateBus {
-    /// Starts isolated session bus and reads its printed address.
-    fn start() -> Result<Self> {
-        let sequence = PRIVATE_BUS_SEQUENCE.fetch_add(1, Ordering::Relaxed);
-        let directory = std::env::temp_dir().join(format!(
-            "monochromatic-nested-wayland-session-{}-{sequence}",
-            std::process::id(),
-        ));
-        std::fs::create_dir(&directory)
-            .with_context(|| format!("creating private D-Bus directory: {}", directory.display()))?;
-        let socket_path = directory.join("bus");
-        let config_path = directory.join("bus.conf");
-        // Write the service-free configuration beside the socket; clean the directory on failure.
-        if let Err(error) = std::fs::write(&config_path, PRIVATE_BUS_CONFIG) {
-            if let Err(cleanup_error) = std::fs::remove_dir_all(&directory) {
-                tracing::warn!(
-                    %cleanup_error,
-                    path = %directory.display(),
-                    "failed to clean private D-Bus directory after configuration write error",
-                );
-            }
-            return Err(error)
-                .with_context(|| format!("writing private D-Bus configuration: {}", config_path.display()));
-        }
-        // What:     `OsString::from(...)` starts an owned OS-native string (sibling: UTF-8
-        //           `String`); `.push(&config_path)` appends the path's raw bytes, borrowed.
-        // Why:      The option is built without converting the path to UTF-8, so an unusual
-        //           temporary-directory name cannot be altered on its way to the daemon.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // const configArgument = "--config-file=" + configPath;
-        // ```
-        let mut config_argument = OsString::from("--config-file=");
-        config_argument.push(&config_path);
-        // `--config-file` replaces `--session`, which would load the stock service directories.
-        let daemon = Command::new("dbus-daemon")
-            .arg(config_argument)
-            .arg("--nofork")
-            .arg("--nopidfile")
-            .arg("--nosyslog")
-            .arg("--print-address=1")
-            .arg(format!("--address=unix:path={}", socket_path.display()))
-            .stdout(Stdio::piped())
-            .spawn()
-            .inspect_err(|_error| {
-                if let Err(cleanup_error) = std::fs::remove_dir_all(&directory) {
-                    tracing::warn!(
-                        %cleanup_error,
-                        path = %directory.display(),
-                        "failed to clean private D-Bus directory after spawn error",
-                    );
-                }
-            })
-            .context("starting private dbus-daemon for nested color scheme")?;
-        let mut bus = Self { daemon, directory, address: String::new() };
-        let stdout = bus
-            .daemon
-            .stdout
-            .take()
-            .context("private dbus-daemon did not expose address output")?;
-        let (sender, receiver) = mpsc::sync_channel(1);
-        let reader = std::thread::Builder::new()
-            .name("nested-bus-address".to_owned())
-            .spawn(move || {
-                if sender.send(read_bus_address(stdout)).is_err() {
-                    tracing::warn!("private D-Bus address receiver ended before reader");
-                }
-            })
-            .context("starting private D-Bus address reader")?;
-        let received = receiver.recv_timeout(PRIVATE_BUS_ADDRESS_TIMEOUT);
-        if let Err(error) = &received {
-            bus.stop();
-            if reader.join().is_err() {
-                tracing::warn!("private D-Bus address reader panicked during cleanup");
-            }
-            anyhow::bail!("private dbus-daemon did not provide its address in time: {error}")
-        }
-        let address_result = received.context("receiving private dbus-daemon address")?;
-        if reader.join().is_err() {
-            anyhow::bail!("private D-Bus address reader panicked")
-        }
-        let address = address_result.context("reading private dbus-daemon address")?;
-        bus.address = address.trim().to_owned();
-        if bus.address.is_empty() {
-            anyhow::bail!("private dbus-daemon returned an empty address")
-        }
-        return Ok(bus);
-    }
-
-    /// Stops and reaps daemon without warning when it already exited.
-    fn stop(&mut self) {
-        let status = self.daemon.try_wait();
-        if matches!(status, Ok(None)) {
-            if let Err(error) = self.daemon.kill() {
-                tracing::warn!(%error, "failed to stop private dbus-daemon");
-            }
-        } else if let Err(error) = status {
-            tracing::warn!(%error, "failed to inspect private dbus-daemon status");
-        }
-        if let Err(error) = self.daemon.wait() {
-            tracing::warn!(%error, "failed to reap private dbus-daemon");
-        }
-    }
-}
-
-/// Cleans up daemon and scratch socket even when portal setup fails.
-impl Drop for PrivateBus {
-    /// Stops private daemon and removes socket directory.
-    fn drop(&mut self) {
-        self.stop();
-        if let Err(error) = std::fs::remove_dir_all(&self.directory) {
-            tracing::warn!(%error, path = %self.directory.display(), "failed to remove private D-Bus directory");
-        }
-    }
-}
-
-/// Holds isolated bus and Settings service for hosted-client lifetime.
+/// Holds the Settings service on the private bus for the session lifetime.
 pub struct AppearancePortal {
     /// Live zbus service connection owning the portal name,
     /// dropped before its bus.
     connection: Connection,
     /// Portal value shared with the Settings interface served on `connection`.
     served_value: Arc<AtomicU32>,
-    /// Private bus lifetime owner.
-    bus: PrivateBus,
+    /// Private bus shared with the launcher listener; kept alive while the portal is served.
+    bus: Arc<PrivateBus>,
 }
 
 /// Starts portal service and exposes child-only bus address.
 impl AppearancePortal {
-    /// Starts private session bus and deterministic Settings service.
-    pub fn start(preference: ColorSchemePreference) -> Result<Self> {
-        let bus = PrivateBus::start()?;
+    /// Serves deterministic Settings on an already started private bus.
+    ///
+    /// What:
+    ///      `pub fn start(preference, bus: Arc<PrivateBus>) -> Result<Self>`.
+    ///  The caller starts the bus once,
+    ///  so the portal never starts a second daemon.
+    /// Why:
+    ///       `--color-scheme` and `--launcher-log` share one private bus.
+    pub fn start(preference: ColorSchemePreference, bus: Arc<PrivateBus>) -> Result<Self> {
         // What:     `Arc::new(AtomicU32::new(...))` allocates one shared integer cell holding the
         //           initial portal value. `Arc::clone(&served_value)` creates a second owner of
         //           that same cell, not a copy of the number; `&` lends the first owner.
@@ -445,7 +235,7 @@ impl AppearancePortal {
         // ```
         let served_value = Arc::new(AtomicU32::new(preference.portal_value()));
         let settings = PortalSettings { served_value: Arc::clone(&served_value) };
-        let connection = zbus::blocking::connection::Builder::address(bus.address.as_str())?
+        let connection = zbus::blocking::connection::Builder::address(bus.address())?
             .name(PORTAL_BUS_NAME)?
             .serve_at(PORTAL_OBJECT_PATH, settings)?
             .build()
@@ -529,7 +319,7 @@ impl AppearancePortal {
     /// Returns private session bus address for hosted-child environment.
     #[must_use]
     pub fn bus_address(&self) -> &str {
-        return self.bus.address.as_str();
+        return self.bus.address();
     }
 }
 

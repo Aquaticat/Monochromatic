@@ -2,6 +2,19 @@
 
 use super::*;
 
+/// Process spawning, the re-executed test helpers, and timing that the moved bus code no longer brings in.
+use std::{process::Command, sync::mpsc, time::Duration};
+
+/// Starts the portal on a fresh private bus that lives as long as the returned portal.
+///
+/// What:
+///      `fn start_portal(preference) -> anyhow::Result<AppearancePortal>`.
+/// Why:
+///       Production starts one bus and shares it; each test needs its own bus to stay isolated.
+fn start_portal(preference: ColorSchemePreference) -> anyhow::Result<AppearancePortal> {
+    return AppearancePortal::start(preference, Arc::new(PrivateBus::start()?))
+}
+
 /// Confirms CLI accepts exact supported scheme names and rejects others.
 #[test]
 fn color_scheme_parser_accepts_dark_and_light() {
@@ -13,8 +26,8 @@ fn color_scheme_parser_accepts_dark_and_light() {
 /// Confirms real private bus serves Slint's `ReadOne` method and cleans up.
 #[test]
 fn private_portal_serves_light_scheme_without_host_bus() -> anyhow::Result<()> {
-    let portal = AppearancePortal::start(ColorSchemePreference::Light)?;
-    let directory = portal.bus.directory.clone();
+    let portal = start_portal(ColorSchemePreference::Light)?;
+    let directory = portal.bus.directory().to_path_buf();
     let connection = zbus::blocking::connection::Builder::address(portal.bus_address())?.build()?;
     let proxy = zbus::blocking::Proxy::new(
         &connection,
@@ -34,7 +47,7 @@ fn private_portal_serves_light_scheme_without_host_bus() -> anyhow::Result<()> {
 /// Confirms standard `ReadAll` serves dark value for non-Slint portal clients.
 #[test]
 fn private_portal_serves_dark_scheme_through_read_all() -> anyhow::Result<()> {
-    let portal = AppearancePortal::start(ColorSchemePreference::Dark)?;
+    let portal = start_portal(ColorSchemePreference::Dark)?;
     let connection = zbus::blocking::connection::Builder::address(portal.bus_address())?.build()?;
     let proxy = zbus::blocking::Proxy::new(
         &connection,
@@ -57,7 +70,7 @@ fn private_portal_serves_dark_scheme_through_read_all() -> anyhow::Result<()> {
 /// Confirms unsupported settings return D-Bus errors instead of invented defaults.
 #[test]
 fn private_portal_rejects_unknown_setting() -> anyhow::Result<()> {
-    let portal = AppearancePortal::start(ColorSchemePreference::Dark)?;
+    let portal = start_portal(ColorSchemePreference::Dark)?;
     let connection = zbus::blocking::connection::Builder::address(portal.bus_address())?.build()?;
     let proxy = zbus::blocking::Proxy::new(
         &connection,
@@ -83,7 +96,7 @@ const PLANTED_SERVICE: &str = "org.example.MonochromaticPlantedService";
 ///  so these are the
 /// same requests that made the stock configuration try to execute `org.a11y.Bus`.
 fn run_planted_role() -> anyhow::Result<()> {
-    let portal = AppearancePortal::start(ColorSchemePreference::Dark)?;
+    let portal = start_portal(ColorSchemePreference::Dark)?;
     let connection = zbus::blocking::connection::Builder::address(portal.bus_address())?.build()?;
     let bus = zbus::blocking::fdo::DBusProxy::new(&connection)?;
     let mut activatable = Vec::new();
@@ -200,7 +213,7 @@ fn decode_setting_changed(message: &zbus::Message) -> anyhow::Result<(String, St
 ///  in both directions.
 #[test]
 fn runtime_switch_changes_value_served_by_every_read_method() -> anyhow::Result<()> {
-    let portal = AppearancePortal::start(ColorSchemePreference::Dark)?;
+    let portal = start_portal(ColorSchemePreference::Dark)?;
     let proxy = settings_proxy(&portal)?;
     assert_eq!(served_values(&proxy)?, [1, 1, 1]);
     assert_eq!(portal.set_color_scheme(ColorSchemePreference::Light)?, SwitchOutcome::Changed);
@@ -218,7 +231,7 @@ fn runtime_switch_changes_value_served_by_every_read_method() -> anyhow::Result<
 ///  its value would arrive before the value asserted next.
 #[test]
 fn runtime_switch_emits_setting_changed_only_for_real_changes() -> anyhow::Result<()> {
-    let portal = AppearancePortal::start(ColorSchemePreference::Dark)?;
+    let portal = start_portal(ColorSchemePreference::Dark)?;
     let proxy = settings_proxy(&portal)?;
     // Subscribe before switching, as Slint subscribes before its initial read.
     let signals = proxy.receive_signal("SettingChanged")?;
@@ -265,7 +278,7 @@ fn runtime_switch_emits_setting_changed_only_for_real_changes() -> anyhow::Resul
 /// Performs one complete private switch;
 ///  runs only inside the re-executed test process.
 fn run_switch_role() -> anyhow::Result<()> {
-    let portal = AppearancePortal::start(ColorSchemePreference::Dark)?;
+    let portal = start_portal(ColorSchemePreference::Dark)?;
     let proxy = settings_proxy(&portal)?;
     assert_eq!(portal.set_color_scheme(ColorSchemePreference::Light)?, SwitchOutcome::Changed);
     assert_eq!(served_values(&proxy)?, [2, 2, 2]);
@@ -291,7 +304,7 @@ fn runtime_switch_never_contacts_environment_session_bus() -> anyhow::Result<()>
         return run_switch_role();
     }
     let decoy = PrivateBus::start()?;
-    let watcher = zbus::blocking::connection::Builder::address(decoy.address.as_str())?.build()?;
+    let watcher = zbus::blocking::connection::Builder::address(decoy.address())?.build()?;
     let bus = zbus::blocking::fdo::DBusProxy::new(&watcher)?;
     let mut connections = bus.receive_name_owner_changed()?;
 
@@ -300,13 +313,13 @@ fn runtime_switch_never_contacts_environment_session_bus() -> anyhow::Result<()>
         .arg("appearance_portal::tests::runtime_switch_never_contacts_environment_session_bus")
         .arg("--nocapture")
         .env(SWITCH_ROLE_VARIABLE, "switch")
-        .env("DBUS_SESSION_BUS_ADDRESS", decoy.address.as_str())
+        .env("DBUS_SESSION_BUS_ADDRESS", decoy.address())
         .env_remove("DBUS_STARTER_ADDRESS")
         .env_remove("DBUS_STARTER_BUS_TYPE")
         .status()?;
     assert!(status.success(), "re-executed switch role failed: {status}");
 
-    let sentinel = zbus::blocking::connection::Builder::address(decoy.address.as_str())?.build()?;
+    let sentinel = zbus::blocking::connection::Builder::address(decoy.address())?.build()?;
     let sentinel_name = sentinel
         .unique_name()
         .context("sentinel connection has no unique name")?
