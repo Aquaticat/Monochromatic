@@ -195,6 +195,7 @@ fn handler_marks_a_signal_only_for_a_process_sender() {
 }
 
 /// Serializes the in-process tests that touch the relay statics (`CHILD_PID`, `PENDING`).
+#[cfg(unix)]
 static RELAY_STATICS: std::sync::Mutex<()> = std::sync::Mutex::new(());
 
 /// A signal caught before the child exists is relayed the moment the child's PID is published.
