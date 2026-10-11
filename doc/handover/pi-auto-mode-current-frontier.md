@@ -379,7 +379,18 @@ shares the 65,536-byte source bound.
 All manager inputs still share 64 source occurrences and the four-MiB serialized-record bound.
 Equal arrays and empty clears remain separate occurrences.
 
-Complete native/action/source regressions and final documentation verification remain pending.
+Complete native parent `proc_428d` passed in 719 seconds:
+81 successful JSON outputs,
+the 123-output constructed-input matrix,
+all six full-policy profiles,
+and the remaining native program cases.
+This is a passing one-shot parent invocation,
+not segmented coverage.
+All reported child matrices had empty stderr.
+Complete action-policy and policy-source suites passed `proc_b3aa`.
+Only documentation changed during these regressions.
+The private setter checkpoint is verified;
+final outcome documentation lint/render is pending.
 Constructor inputs,
 in-place changes to getter-returned arrays,
 state-object or descriptor replacement,

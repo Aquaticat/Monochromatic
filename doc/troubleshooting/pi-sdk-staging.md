@@ -187,6 +187,7 @@ and the preserved file retained zero bytes and its modification time.
 No index content,
 ref,
 or journal was restored.
+The scoped retry `proc_7a6b` completed as `b9f38eb1a4`.
 The creator and reason for the abandoned lock remain unknown.
 This follows the evidence-preserving procedure in
 [the separate empty-lock recovery](cli-git-superseded-index-recovery.md#separate-empty-index-lock-on-2026-10-09),
@@ -343,7 +344,11 @@ constructor state,
 and replacing state objects or descriptors remain separate gaps.
 All existing source limits and admission holds remain unchanged.
 Integrated and restored sensitivity checks passed.
-Complete native/action/source regressions and final documentation verification remain pending.
+Complete one-shot native parent `proc_428d` passed in 719 seconds,
+including the current constructed-input matrix and all six full-policy profiles.
+Complete action-policy and policy-source suites passed `proc_b3aa`.
+Only documentation changed during regression execution.
+Final outcome documentation lint/render remains pending.
 
 Nothing is proposed upstream.
 The SDK setter behaved as written;
