@@ -145,3 +145,18 @@ fn a_removal_after_an_addition_still_counts_the_old_side() {
     assert_eq!(next, 4);
     assert_eq!(lines[next], b"next\n".to_vec());
 }
+
+/// The format error displays exactly its message, so a caller that prints it names the malformed part.
+#[test]
+fn the_format_error_displays_its_message() {
+    let error: ReplayPatchFormatError = ReplayPatchFormatError(String::from("malformed hunk range -x"));
+    assert_eq!(error.to_string(), "malformed hunk range -x");
+}
+
+/// A needle that is exactly the haystack is found at zero, so the length guard admits equal lengths.
+#[test]
+fn a_needle_equal_to_the_haystack_is_found() {
+    assert_eq!(find_bytes(b" @@", b" @@", 0), Some(0));
+    assert_eq!(find_bytes(b"ab", b"ab", 0), Some(0));
+    assert_eq!(find_bytes(b"ab", b"abc", 0), None);
+}
