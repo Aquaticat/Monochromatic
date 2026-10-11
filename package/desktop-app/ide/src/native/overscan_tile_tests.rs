@@ -340,7 +340,8 @@ fn a_stopped_tile_worker_is_reported_once_and_replaced_on_the_next_re_center() {
         .close_for_test();
     let start = Instant::now();
     loop {
-        update_timers_and_animations();
+        // Poll directly: an idle poll timer stops, and the dead worker is then seen by the next poll or submission.
+        super::tile::poll(&window, &state);
         if state.borrow().tile_worker.is_none() {
             break;
         }
@@ -409,5 +410,51 @@ fn measure_worker_cold_start() {
     eprintln!(
         "COLD-START shaper_new_ms={shaper_ms:.1} fork_ms={fork_ms:.1} open_ready_ms={ready_ms:.1} first_reply_ms={first_ms:.1} warm_reply_ms={warm_ms:.1}"
     );
+    window.hide().expect("close headless source window");
+}
+
+/// Dropping a worker whose build is in flight returns at once; the build is held on a channel the test controls,
+/// so the bound measures the drop alone and not the build.
+#[test]
+fn dropping_a_worker_with_a_build_in_flight_does_not_wait_for_it() {
+    let (window, state) = open(&document());
+    let height = window.get_viewport_height();
+    scroll_to(&window, START);
+    settle_tile(&state);
+    let (release, gate) = std::sync::mpsc::channel();
+    *super::tile_build::BUILD_GATE
+        .lock()
+        .expect("the test build gate is free") = Some(gate);
+    scroll_to(&window, START + height);
+    // The build starts once the worker takes the job from the gate slot; wait until it has.
+    let start = Instant::now();
+    while super::tile_build::BUILD_GATE
+        .lock()
+        .expect("the test build gate is free")
+        .is_some()
+    {
+        update_timers_and_animations();
+        assert!(
+            start.elapsed() < PATIENCE,
+            "the tile worker did not start the held build within {PATIENCE:?}"
+        );
+        std::thread::sleep(Duration::from_millis(2));
+    }
+    let worker = state
+        .borrow_mut()
+        .tile_worker
+        .take()
+        .expect("the worker of the held build");
+    let started = Instant::now();
+    drop(worker);
+    let dropped = started.elapsed();
+    assert!(
+        dropped < Duration::from_millis(250),
+        "dropping the worker waited {dropped:?} for a build that is still in flight"
+    );
+    // Release the held build so the detached thread ends its loop instead of staying blocked.
+    release
+        .send(())
+        .expect("the held build is still waiting for its release");
     window.hide().expect("close headless source window");
 }

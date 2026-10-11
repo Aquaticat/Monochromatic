@@ -35,6 +35,7 @@ use std::{
         Arc,
         mpsc::{Receiver, SyncSender, TryRecvError, sync_channel},
     },
+    panic::{AssertUnwindSafe, catch_unwind},
     thread::{self, JoinHandle},
 };
 
@@ -222,6 +223,21 @@ enum WorkerReply {
     Built(Result<TileBuilt>),
 }
 
+/// Test-only gate: the next build waits for one message before it starts, so a test can hold a job in flight.
+#[cfg(test)]
+pub(super) static BUILD_GATE: std::sync::Mutex<Option<Receiver<()>>> = std::sync::Mutex::new(None);
+
+/// Wait on the test gate once, if a test installed one; the sender stays with the test.
+#[cfg(test)]
+fn hold_at_test_gate() {
+    let gate = BUILD_GATE.lock().ok().and_then(|mut slot| return slot.take());
+    if let Some(gate) = gate
+        && let Err(error) = gate.recv()
+    {
+        tracing::debug!(%error, "test build gate closed");
+    }
+}
+
 /// Own the blocking receive loop entirely outside native state.
 fn run(shaper: TextShaper, requests: Receiver<TileJob>, replies: SyncSender<WorkerReply>) {
     tracing::debug!("source tile worker started");
@@ -240,6 +256,8 @@ fn run(shaper: TextShaper, requests: Receiver<TileJob>, replies: SyncSender<Work
                 return;
             }
         };
+        #[cfg(test)]
+        hold_at_test_gate();
         let result = tiler.build(job);
         // A closed receiver means the window is gone; the thread stops instead of retrying.
         if let Err(error) = replies.send(WorkerReply::Built(result)) {
@@ -290,7 +308,14 @@ impl TileWorker {
         let worker = thread::Builder::new()
             .name("ide-source-tile".to_string())
             .spawn(move || {
-                run(shaper, request_receiver, reply_sender);
+                // What: `catch_unwind` (std::panic) stops an unwinding build at the thread boundary.
+                // Why: A detached thread has no join to report a panic, so the panic is logged here instead.
+                let outcome = catch_unwind(AssertUnwindSafe(|| {
+                    run(shaper, request_receiver, reply_sender);
+                }));
+                if outcome.is_err() {
+                    tracing::error!("source tile worker panicked; the next scroll re-center starts a new worker");
+                }
             })
             .context("Cannot start the source tile worker")?;
         return Ok(Self {
@@ -379,16 +404,13 @@ impl TileWorker {
 
 /// Close input before joining so the last bounded reply can complete.
 impl Drop for TileWorker {
-    /// End the owned thread and log an unexpected panic instead of detaching it.
+    /// Close the request channel and detach the thread, so closing the window never waits for a build in flight.
+    /// The detached thread ends after its current build, when the closed channel ends its loop.
     fn drop(&mut self) {
         self.requests.take();
-        let Some(worker) = self.thread.take() else {
-            return;
-        };
-        if let Err(error) = worker.join() {
-            tracing::error!(?error, "source tile worker panicked during shutdown");
-        } else {
-            tracing::debug!("source tile worker joined");
+        // Dropping the join handle detaches the thread; there is no cancellation point inside a build to stop it earlier.
+        if self.thread.take().is_some() {
+            tracing::debug!("source tile worker detached");
         }
     }
 }
