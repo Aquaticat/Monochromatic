@@ -126,11 +126,11 @@ pub fn read_admin_ids(admin_root: &Path) -> Result<BTreeSet<String>, WorktreeCop
             let mut names: BTreeSet<String> = BTreeSet::new();
             for entry in entries {
                 let listing: std::fs::DirEntry =
-                    entry.map_err(|error| inspect_failure(admin_root, &error))?;
+                    entry.map_err(|error| return inspect_failure(admin_root, &error))?;
                 // `file_type` does not follow symbolic links, as the incumbent's `Dirent` does not.
                 let is_directory: bool = listing
                     .file_type()
-                    .map_err(|error| inspect_failure(admin_root, &error))?
+                    .map_err(|error| return inspect_failure(admin_root, &error))?
                     .is_dir();
                 if is_directory {
                     names.insert(listing.file_name().to_string_lossy().into_owned());
@@ -247,17 +247,17 @@ fn read_linked_admin_id(root: &Path) -> Result<Option<String>, WorktreeCopyError
                 return Ok(None);
             };
             let raw_admin: PathBuf =
-                path_from_git_bytes(gitdir).ok_or_else(|| identity_failure(root, None))?;
+                path_from_git_bytes(gitdir).ok_or_else(|| return identity_failure(root, None))?;
             let admin_path: PathBuf = if raw_admin.is_absolute() {
                 raw_admin
             } else {
                 root.join(raw_admin)
             };
             let canonical: PathBuf = std::fs::canonicalize(admin_path.as_path())
-                .map_err(|error| identity_failure(root, Some(&error)))?;
+                .map_err(|error| return identity_failure(root, Some(&error)))?;
             return Ok(canonical
                 .file_name()
-                .map(|name| name.to_string_lossy().into_owned()));
+                .map(|name| return name.to_string_lossy().into_owned()));
         }
         Err(error) if error.kind() == std::io::ErrorKind::IsADirectory => {
             return Ok(None);
@@ -331,7 +331,7 @@ fn read_registered_worktrees(
         without_prefix: true,
         ..GitRequest::default()
     };
-    let output = run_git(context, &request).map_err(|error| automatic_failure(&error))?;
+    let output = run_git(context, &request).map_err(|error| return automatic_failure(&error))?;
     if !output.succeeded() {
         return Err(automatic_failure(&String::from_utf8_lossy(
             output.stderr.as_slice(),
@@ -339,13 +339,14 @@ fn read_registered_worktrees(
     }
     let mut roots: Vec<PathBuf> = Vec::new();
     let mut listed: Vec<PathBuf> = Vec::new();
-    for field in output.stdout.split(|byte| *byte == 0) {
-        // `strip_prefix` keeps only fields of the `worktree <path>` form.
-        if let Some(raw) = field.strip_prefix(b"worktree ") {
-            if let Some(path) = path_from_git_bytes(raw) {
-                listed.push(path);
-            }
-        }
+    // `filter_map` keeps only fields of the `worktree <path>` form.
+    for path in output
+        .stdout
+        .split(|byte| return *byte == 0)
+        .filter_map(|field| return field.strip_prefix(b"worktree "))
+        .filter_map(path_from_git_bytes)
+    {
+        listed.push(path);
     }
     for path in listed {
         if let Some(canonical) = canonical_registered_root(path.as_path())? {

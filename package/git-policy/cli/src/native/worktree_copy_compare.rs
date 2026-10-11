@@ -63,16 +63,16 @@ fn regular_file_bytes_equal(
     right_path: &Path,
 ) -> Result<bool, WorktreeCopyError> {
     let mut left: std::fs::File =
-        std::fs::File::open(left_path).map_err(|error| automatic_failure(&error))?;
+        std::fs::File::open(left_path).map_err(|error| return automatic_failure(&error))?;
     let mut right: std::fs::File =
-        std::fs::File::open(right_path).map_err(|error| automatic_failure(&error))?;
+        std::fs::File::open(right_path).map_err(|error| return automatic_failure(&error))?;
     let left_size: u64 = left
         .metadata()
-        .map_err(|error| automatic_failure(&error))?
+        .map_err(|error| return automatic_failure(&error))?
         .len();
     let right_size: u64 = right
         .metadata()
-        .map_err(|error| automatic_failure(&error))?
+        .map_err(|error| return automatic_failure(&error))?
         .len();
     if left_size != right_size {
         return Ok(false);
@@ -81,8 +81,9 @@ fn regular_file_bytes_equal(
     let mut right_buffer: Vec<u8> = vec![0; COMPARE_BUFFER_BYTES];
     let mut remaining: u64 = left_size;
     while remaining > 0 {
-        let length: usize = usize::try_from(remaining)
-            .map_or(COMPARE_BUFFER_BYTES, |size| size.min(COMPARE_BUFFER_BYTES));
+        let length: usize = usize::try_from(remaining).map_or(COMPARE_BUFFER_BYTES, |size| {
+            return size.min(COMPARE_BUFFER_BYTES);
+        });
         let left_chunk: &mut [u8] = &mut left_buffer[..length];
         let right_chunk: &mut [u8] = &mut right_buffer[..length];
         // `read_exact` reports a file that ended early as `UnexpectedEof`, which is a difference, not a failure.
@@ -115,7 +116,7 @@ fn regular_file_bytes_equal(
 /// await readlink(path)
 /// ```
 fn link_target(path: &Path) -> Result<PathBuf, WorktreeCopyError> {
-    return std::fs::read_link(path).map_err(|error| automatic_failure(&error));
+    return std::fs::read_link(path).map_err(|error| return automatic_failure(&error));
 }
 
 /// What:

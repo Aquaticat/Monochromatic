@@ -92,13 +92,13 @@ fn stage_mirrors_selected_entries_with_modes_and_links() {
         staged
             .selected_roots
             .iter()
-            .all(|path| !path.starts_with(".cli-git-worktree-copy-"))
+            .all(|path| return !path.starts_with(".cli-git-worktree-copy-"))
     );
     assert!(
         staged
             .entries
             .iter()
-            .any(|entry| entry.relative_path == "linked")
+            .any(|entry| return entry.relative_path == "linked")
     );
     remove(root.as_path());
 }
@@ -138,13 +138,13 @@ fn nested_registered_worktree_is_not_copied() {
         staged
             .entries
             .iter()
-            .all(|entry| !entry.relative_path.starts_with("nested/wt"))
+            .all(|entry| return !entry.relative_path.starts_with("nested/wt"))
     );
     assert!(
         staged
             .entries
             .iter()
-            .any(|entry| entry.relative_path == "nested/plain")
+            .any(|entry| return entry.relative_path == "nested/plain")
     );
     remove(root.as_path());
 }
@@ -179,13 +179,13 @@ fn failed_copy_removes_its_stage() {
     let leftovers: Vec<String> = std::fs::read_dir(root.as_path())
         .expect("list")
         .map(|entry| {
-            entry
+            return entry
                 .expect("entry")
                 .file_name()
                 .to_string_lossy()
-                .into_owned()
+                .into_owned();
         })
-        .filter(|name| name.starts_with(STAGE_PREFIX))
+        .filter(|name| return name.starts_with(STAGE_PREFIX))
         .collect();
     assert!(leftovers.is_empty(), "{leftovers:?}");
     remove(root.as_path());

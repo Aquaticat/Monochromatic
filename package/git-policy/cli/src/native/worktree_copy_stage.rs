@@ -72,7 +72,7 @@ fn create_private_tree(path: &Path) -> Result<(), WorktreeCopyError> {
         .recursive(true)
         .mode(0o700)
         .create(path)
-        .map_err(|error| automatic_failure(&error));
+        .map_err(|error| return automatic_failure(&error));
 }
 
 /// What:
@@ -133,15 +133,15 @@ fn try_clone(_source: &std::fs::File, _destination: &std::fs::File) -> bool {
 /// ```
 fn copy_file_exclusive(source: &Path, destination: &Path) -> Result<(), WorktreeCopyError> {
     let mut input: std::fs::File =
-        std::fs::File::open(source).map_err(|error| automatic_failure(&error))?;
+        std::fs::File::open(source).map_err(|error| return automatic_failure(&error))?;
     let mut output: std::fs::File = std::fs::OpenOptions::new()
         .write(true)
         .create_new(true)
         .open(destination)
-        .map_err(|error| automatic_failure(&error))?;
+        .map_err(|error| return automatic_failure(&error))?;
     // A successful clone already holds every byte, so only a refused clone copies them.
     if !try_clone(&input, &output) {
-        std::io::copy(&mut input, &mut output).map_err(|error| automatic_failure(&error))?;
+        std::io::copy(&mut input, &mut output).map_err(|error| return automatic_failure(&error))?;
     }
     return Ok(());
 }
@@ -175,7 +175,7 @@ fn copy_manifest_entries(
             EntryKind::Symlink => {
                 create_private_tree(parent_of(stage_path.as_path()).as_path())?;
                 let target: PathBuf = std::fs::read_link(source_path.as_path())
-                    .map_err(|error| automatic_failure(&error))?;
+                    .map_err(|error| return automatic_failure(&error))?;
                 symlink_at(target.as_path(), stage_path.as_path())?;
             }
         }
@@ -195,7 +195,7 @@ fn copy_manifest_entries(
 fn parent_of(path: &Path) -> PathBuf {
     return path
         .parent()
-        .map_or_else(|| path.to_path_buf(), Path::to_path_buf);
+        .map_or_else(|| return path.to_path_buf(), Path::to_path_buf);
 }
 
 /// What:
@@ -209,7 +209,8 @@ fn parent_of(path: &Path) -> PathBuf {
 /// ```
 #[cfg(unix)]
 fn symlink_at(target: &Path, link: &Path) -> Result<(), WorktreeCopyError> {
-    return std::os::unix::fs::symlink(target, link).map_err(|error| automatic_failure(&error));
+    return std::os::unix::fs::symlink(target, link)
+        .map_err(|error| return automatic_failure(&error));
 }
 
 /// What:
@@ -246,7 +247,7 @@ fn source_exclusions(
     exclusions.push(stage_container.to_path_buf());
     return exclusions
         .into_iter()
-        .filter(|root| root.as_path() != source_root && root.starts_with(source_root))
+        .filter(|root| return root.as_path() != source_root && root.starts_with(source_root))
         .collect();
 }
 
@@ -262,7 +263,7 @@ fn source_exclusions(
 fn names_private_stage(repository_path: &str) -> bool {
     return repository_path
         .split('/')
-        .any(|component| component.starts_with(STAGE_PREFIX));
+        .any(|component| return component.starts_with(STAGE_PREFIX));
 }
 
 /// What:
@@ -282,15 +283,15 @@ pub fn stage_ignored_snapshot(
 ) -> Result<StagedSnapshot, WorktreeCopyError> {
     let nested: Vec<PathBuf> = registered_roots
         .iter()
-        .filter(|root| root.as_path() != source_root && root.starts_with(source_root))
+        .filter(|root| return root.as_path() != source_root && root.starts_with(source_root))
         .cloned()
         .collect();
     let git_selected: Vec<String> = read_ignored_roots(context, source_root, nested.as_slice())?;
     let destination_parent: &Path = destination_root.parent().unwrap_or(destination_root);
-    let unique: String = random_uuid().map_err(|error| automatic_failure(&error.0))?;
+    let unique: String = random_uuid().map_err(|error| return automatic_failure(&error.0))?;
     let stage_container: PathBuf = destination_parent.join(format!("{STAGE_PREFIX}{unique}"));
     create_private_directory(stage_container.as_path())
-        .map_err(|error| automatic_failure(&error))?;
+        .map_err(|error| return automatic_failure(&error))?;
     let stage_root: PathBuf = stage_container.join(PAYLOAD_NAME);
     let staged: Result<StagedSnapshot, WorktreeCopyError> = stage_into(
         source_root,
@@ -332,7 +333,7 @@ fn stage_into(
         source_exclusions(source_root, registered_roots, stage_container);
     let selected_roots: Vec<String> = git_selected
         .into_iter()
-        .filter(|repository_path| !names_private_stage(repository_path.as_str()))
+        .filter(|repository_path| return !names_private_stage(repository_path.as_str()))
         .filter(|repository_path| {
             let source_path: PathBuf = match filesystem_path(source_root, repository_path.as_str())
             {
@@ -341,7 +342,7 @@ fn stage_into(
             };
             return !excluded_source_roots
                 .iter()
-                .any(|excluded| source_path.starts_with(excluded.as_path()));
+                .any(|excluded| return source_path.starts_with(excluded.as_path()));
         })
         .collect();
     let entries: Vec<WorktreeCopyEntry> = collect_entry_manifest(

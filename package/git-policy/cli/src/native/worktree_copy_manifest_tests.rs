@@ -32,7 +32,7 @@ fn manifest_is_parent_first_in_javascript_order_without_following_links() {
         collect_entry_manifest(root.as_path(), &[String::from("cache")], &[]).expect("manifest");
     let paths: Vec<&str> = entries
         .iter()
-        .map(|entry| entry.relative_path.as_str())
+        .map(|entry| return entry.relative_path.as_str())
         .collect();
     assert_eq!(
         paths,
@@ -65,9 +65,13 @@ fn excluded_roots_are_omitted_with_descendants() {
     assert!(
         entries
             .iter()
-            .all(|entry| !entry.relative_path.starts_with("cache/deep"))
+            .all(|entry| return !entry.relative_path.starts_with("cache/deep"))
     );
-    assert!(entries.iter().any(|entry| entry.relative_path == "cache/a"));
+    assert!(
+        entries
+            .iter()
+            .any(|entry| return entry.relative_path == "cache/a")
+    );
     remove(root.as_path());
 }
 

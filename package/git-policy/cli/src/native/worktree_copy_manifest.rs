@@ -170,12 +170,12 @@ pub fn collect_entry_manifest(
     while let Some(item) = pending.pop() {
         if excluded_roots
             .iter()
-            .any(|excluded| item.filesystem_path.starts_with(excluded.as_path()))
+            .any(|excluded| return item.filesystem_path.starts_with(excluded.as_path()))
         {
             continue;
         }
         let metadata: std::fs::Metadata = std::fs::symlink_metadata(item.filesystem_path.as_path())
-            .map_err(|error| automatic_failure(&error))?;
+            .map_err(|error| return automatic_failure(&error))?;
         let kind: EntryKind = entry_kind(metadata.file_type(), item.filesystem_path.as_path())?;
         entries.push(WorktreeCopyEntry {
             kind,
@@ -186,13 +186,14 @@ pub fn collect_entry_manifest(
             continue;
         }
         let mut names: Vec<String> = Vec::new();
-        for child in std::fs::read_dir(item.filesystem_path.as_path())
-            .map_err(|error| automatic_failure(&error))?
+        for listed in std::fs::read_dir(item.filesystem_path.as_path())
+            .map_err(|error| return automatic_failure(&error))?
         {
-            let child: std::fs::DirEntry = child.map_err(|error| automatic_failure(&error))?;
+            let child: std::fs::DirEntry =
+                listed.map_err(|error| return automatic_failure(&error))?;
             names.push(child.file_name().to_string_lossy().into_owned());
         }
-        names.sort_by(|left, right| js_order(left, right));
+        names.sort_by(|left, right| return js_order(left, right));
         for name in names.iter().rev() {
             let child_relative: String = format!("{}/{name}", item.relative_path);
             pending.push(WalkItem {
@@ -219,15 +220,17 @@ pub fn apply_entry_modes(
     entries: &[WorktreeCopyEntry],
 ) -> Result<(), WorktreeCopyError> {
     use std::os::unix::fs::PermissionsExt;
-    let files = entries.iter().filter(|entry| entry.kind == EntryKind::File);
+    let files = entries
+        .iter()
+        .filter(|entry| return entry.kind == EntryKind::File);
     let directories = entries
         .iter()
         .rev()
-        .filter(|entry| entry.kind == EntryKind::Directory);
+        .filter(|entry| return entry.kind == EntryKind::Directory);
     for entry in files.chain(directories) {
         let path: PathBuf = filesystem_path(root, entry.relative_path.as_str())?;
         std::fs::set_permissions(path.as_path(), std::fs::Permissions::from_mode(entry.mode))
-            .map_err(|error| automatic_failure(&error))?;
+            .map_err(|error| return automatic_failure(&error))?;
     }
     return Ok(());
 }
