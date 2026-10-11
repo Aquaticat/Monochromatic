@@ -4,11 +4,11 @@
  @module
  */
 
-import {
-  type ArithmeticCommandExpansion as UnbashArithmeticCommandExpansion,
-  type CommandExpansionPart as UnbashCommandExpansionPart,
-  type ProcessSubstitutionPart as UnbashProcessSubstitutionPart,
-  type Script as UnbashScript,
+import type {
+  ArithmeticCommandExpansion as UnbashArithmeticCommandExpansion,
+  CommandExpansionPart as UnbashCommandExpansionPart,
+  ProcessSubstitutionPart as UnbashProcessSubstitutionPart,
+  ParsedScript as UnbashScript,
 } from 'unbash';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
@@ -55,7 +55,7 @@ const moduleLogger = tagged({
  */
 function parseErrorsFromScript(script: ForeignBorrowed<UnbashScript>,): ShellParseError[] {
   return [
-    ...(((script as ParsedUnbashScript).errors) ?? []),
+    ...(script.errors ?? []),
   ]
     .map(function parseError(error,): ShellParseError {
       return {
@@ -94,7 +94,7 @@ function scriptFromExpansion(
   }
   innerLogger.debug('Using the original unbash nested script and diagnostics',);
   return {
-    script: expansion.script as ParsedUnbashScript,
+    script: expansion.script,
     parseErrors: parseErrorsFromScript(expansion.script,),
   };
 }

@@ -14,6 +14,11 @@ import type { ShellWordSource, } from './types.ts';
  @param assignment - original parsed assignment
 
  @returns scalar value or joined array elements, preserving the analyzer's value convention
+
+ @example
+ ```ts
+ assignmentValue(assignment);
+ ```
  */
 export function assignmentValue(assignment: ForeignBorrowed<Assignment>,): string {
   /** Value discriminant distinguishes scalar words from array containers. */
@@ -31,6 +36,11 @@ export function assignmentValue(assignment: ForeignBorrowed<Assignment>,): strin
  @param assignment - original suffix assignment received by a declaration builtin
 
  @returns quote-removed argument paired with unchanged source text
+
+ @example
+ ```ts
+ assignmentSource(assignment);
+ ```
  */
 export function assignmentSource(assignment: ForeignBorrowed<Assignment>,): ShellWordSource {
   /** Parsed index remains an expression, not an evaluated array position. */

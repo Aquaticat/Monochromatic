@@ -8,9 +8,8 @@ import type {
   ArithmeticExpression as UnbashArithmeticExpression,
   DoubleQuotedChild as UnbashDoubleQuotedChild,
   SyntaxNode as UnbashNode,
-  ParseError as UnbashParseError,
   Redirection as UnbashRedirect,
-  Script as UnbashScript,
+  ParsedScript as UnbashParsedScript,
   TestExpression as UnbashTestExpression,
   Word as UnbashWord,
   WordPart as UnbashWordPart,
@@ -25,12 +24,7 @@ import type {
 /**
  `unbash` script plus tolerant parser diagnostics.
  */
-type ParsedUnbashScript = ForeignBorrowed<UnbashScript> & {
-  /**
-   Recoverable parse errors reported by `unbash`.
-   */
-  readonly errors?: readonly ForeignBorrowed<UnbashParseError>[];
-};
+type ParsedUnbashScript = ForeignBorrowed<UnbashParsedScript>;
 
 /**
  Word part union reached from full words or quoted child lists.

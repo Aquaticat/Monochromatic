@@ -79,7 +79,7 @@ function tryParseScript(
     /**
      Parsed script with optional tolerant diagnostics.
      */
-    const script = parse(command,) as ParsedUnbashScript;
+    const script = parse(command,);
     /**
      Public parse diagnostics converted from parser result.
      */
