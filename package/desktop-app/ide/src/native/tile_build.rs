@@ -182,12 +182,13 @@ struct Tiler {
 
 /// Build one job with the worker's resources, clearing its row cache when styles or typography changed.
 impl Tiler {
-    /// Start with the default typography, which is what a window starts with.
-    fn new() -> Self {
+    /// Start from a shaper forked from the window's own, so the worker shares its fonts and typography.
+    fn new(shaper: TextShaper) -> Self {
+        let typography = shaper.typography().clone();
         return Self {
-            shaper: TextShaper::new(),
+            shaper,
             raster: TextRaster::new(),
-            typography: SourceTypography::default(),
+            typography,
             styles: None,
         };
     }
@@ -212,10 +213,23 @@ impl Tiler {
     }
 }
 
+/// What a worker sends back: once its shaper is ready, then one result per job.
+/// Why: The window thread can tell a warm worker from a cold one without waiting for a job.
+enum WorkerReply {
+    /// The worker's shaper and raster are ready to build.
+    Ready,
+    /// The finished tile or its failure.
+    Built(Result<TileBuilt>),
+}
+
 /// Own the blocking receive loop entirely outside native state.
-fn run(requests: Receiver<TileJob>, replies: SyncSender<Result<TileBuilt>>) {
+fn run(shaper: TextShaper, requests: Receiver<TileJob>, replies: SyncSender<WorkerReply>) {
     tracing::debug!("source tile worker started");
-    let mut tiler = Tiler::new();
+    let mut tiler = Tiler::new(shaper);
+    if let Err(error) = replies.send(WorkerReply::Ready) {
+        tracing::debug!(%error, "source tile reply receiver closed before the worker was ready");
+        return;
+    }
     loop {
         // What: `match` extracts either an owned job or the closed-channel condition.
         // Why: Closing the owner ends this thread without an unhandled channel error.
@@ -228,7 +242,7 @@ fn run(requests: Receiver<TileJob>, replies: SyncSender<Result<TileBuilt>>) {
         };
         let result = tiler.build(job);
         // A closed receiver means the window is gone; the thread stops instead of retrying.
-        if let Err(error) = replies.send(result) {
+        if let Err(error) = replies.send(WorkerReply::Built(result)) {
             tracing::debug!(%error, "source tile reply receiver closed");
             return;
         }
@@ -240,6 +254,7 @@ const _: fn() = || {
     fn assert_send<T: Send>() {}
     assert_send::<TileJob>();
     assert_send::<Result<TileBuilt>>();
+    assert_send::<TextShaper>();
 };
 
 /// What:
@@ -255,7 +270,9 @@ pub(super) struct TileWorker {
     /// Taking this sender closes the request channel before joining during Drop.
     requests: Option<SyncSender<TileJob>>,
     /// The window thread polls this receiver without blocking.
-    replies: Receiver<Result<TileBuilt>>,
+    replies: Receiver<WorkerReply>,
+    /// The worker has reported that its shaper is ready.
+    ready: bool,
     /// A job is running or its reply is unread.
     busy: bool,
     /// Newest job not yet sent; an older waiting job is dropped unbuilt.
@@ -266,19 +283,20 @@ pub(super) struct TileWorker {
 
 /// Requests replace each other; polling returns each finished tile in turn.
 impl TileWorker {
-    /// Start a named worker with one request slot and one reply slot.
-    pub(super) fn new() -> Result<Self> {
+    /// Start a named worker with one request slot and one reply slot, building with `shaper`.
+    pub(super) fn new(shaper: TextShaper) -> Result<Self> {
         let (request_sender, request_receiver) = sync_channel(1);
         let (reply_sender, reply_receiver) = sync_channel(1);
         let worker = thread::Builder::new()
             .name("ide-source-tile".to_string())
             .spawn(move || {
-                run(request_receiver, reply_sender);
+                run(shaper, request_receiver, reply_sender);
             })
             .context("Cannot start the source tile worker")?;
         return Ok(Self {
             requests: Some(request_sender),
             replies: reply_receiver,
+            ready: false,
             busy: false,
             waiting: None,
             thread: Some(worker),
@@ -289,6 +307,11 @@ impl TileWorker {
     pub(super) fn request(&mut self, job: TileJob) -> Result<()> {
         self.waiting = Some(job);
         return self.dispatch();
+    }
+
+    /// True once the worker has reported that its shaper is ready to build.
+    pub(super) fn is_ready(&self) -> bool {
+        return self.ready;
     }
 
     /// True while a job is running, its reply is unread, or a job waits; the poll must continue while this holds.
@@ -328,23 +351,29 @@ impl TileWorker {
 
     /// Poll without blocking; the inner result is the build's own success or failure.
     pub(super) fn poll(&mut self) -> Result<Option<Result<TileBuilt>>> {
-        let reply = match self.replies.try_recv() {
-            Ok(reply) => reply,
-            Err(TryRecvError::Empty) => {
-                return Ok(None);
+        loop {
+            match self.replies.try_recv() {
+                Ok(WorkerReply::Ready) => {
+                    self.ready = true;
+                }
+                Ok(WorkerReply::Built(reply)) => {
+                    self.busy = false;
+                    self.dispatch()?;
+                    return Ok(Some(reply));
+                }
+                Err(TryRecvError::Empty) => {
+                    return Ok(None);
+                }
+                Err(TryRecvError::Disconnected) => {
+                    self.busy = false;
+                    self.waiting = None;
+                    self.requests.take();
+                    bail!(
+                        "The source tile worker stopped unexpectedly; restart the application to scroll the source"
+                    );
+                }
             }
-            Err(TryRecvError::Disconnected) => {
-                self.busy = false;
-                self.waiting = None;
-                self.requests.take();
-                bail!(
-                    "The source tile worker stopped unexpectedly; restart the application to scroll the source"
-                );
-            }
-        };
-        self.busy = false;
-        self.dispatch()?;
-        return Ok(Some(reply));
+        }
     }
 }
 

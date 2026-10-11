@@ -64,31 +64,53 @@ pub(super) fn submit(
     job: TileJob,
 ) -> anyhow::Result<()> {
     let bounds = job.bounds;
+    warm(window, state, current)?;
     // What: `take` moves the worker out so `request` can run without a second borrow of the state.
     // Why: The worker is put back on every path, including a failed request.
-    let mut worker = match current.tile_worker.take() {
-        Some(worker) => worker,
-        None => TileWorker::new()?,
+    let Some(mut worker) = current.tile_worker.take() else {
+        anyhow::bail!("The source tile worker was not started; restart the application to scroll the source");
     };
     let sent = worker.request(job);
     current.tile_worker = Some(worker);
     sent?;
     current.tile_job = Some(bounds);
-    if !current.tile_poll.running() {
-        let weak_window = window.as_weak();
-        let weak_state = Rc::downgrade(state);
-        // The poll holds weak handles only, so the timer never keeps the window or its state alive.
-        current
-            .tile_poll
-            .start(TimerMode::Repeated, Duration::from_millis(20), move || {
-                let (Some(active), Some(shared)) = (weak_window.upgrade(), weak_state.upgrade())
-                else {
-                    return;
-                };
-                poll(&active, &shared);
-            });
+    start_poll(window, state, current);
+    return Ok(());
+}
+
+/// Start the tile worker with a shaper forked from the window's own, if none is running.
+/// What: The fork shares the font registry the window already scanned, so no font discovery runs on the worker.
+/// Why: Starting the worker when the first tile is shown keeps its start-up off the scroll path.
+pub(super) fn warm(
+    window: &AppWindow,
+    state: &Rc<RefCell<State>>,
+    current: &mut State,
+) -> anyhow::Result<()> {
+    if current.tile_worker.is_none() {
+        let worker = TileWorker::new(current.shaper.fork())?;
+        current.tile_worker = Some(worker);
+        start_poll(window, state, current);
     }
     return Ok(());
+}
+
+/// Start the repeated poll of the worker's replies unless it is already running.
+fn start_poll(window: &AppWindow, state: &Rc<RefCell<State>>, current: &mut State) {
+    if current.tile_poll.running() {
+        return;
+    }
+    let weak_window = window.as_weak();
+    let weak_state = Rc::downgrade(state);
+    // The poll holds weak handles only, so the timer never keeps the window or its state alive.
+    current
+        .tile_poll
+        .start(TimerMode::Repeated, Duration::from_millis(20), move || {
+            let (Some(active), Some(shared)) = (weak_window.upgrade(), weak_state.upgrade())
+            else {
+                return;
+            };
+            poll(&active, &shared);
+        });
 }
 
 /// Whether a finished tile still describes what is displayed, wanted, and the current view.

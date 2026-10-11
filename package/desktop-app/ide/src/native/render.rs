@@ -303,6 +303,11 @@ pub(super) fn render(window: &AppWindow, state: &Rc<RefCell<State>>) {
                 current.shaped = Some(built.view);
                 current.frame_stamp = Some(built.stamp);
                 pixels = Some(built.pixels);
+                // The first shown tile starts the worker, so a later scroll re-center does not wait for its start-up.
+                if let Err(error) = tile::warm(window, state, &mut current) {
+                    tracing::error!(%error, "source tile worker could not start");
+                    notice = Some(format!("{error:#}"));
+                }
                 matches_changed = true;
             }
             Err(error) => {
