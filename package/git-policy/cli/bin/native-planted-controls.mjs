@@ -52,6 +52,34 @@ const containerSource = '/work/package/git-policy/cli';
  */
 const plantedControls = [
   {
+    name: "post-commit disabled event runs nothing",
+    file: "src/native/post_commit_hook.rs",
+    from: "    if request.plan.disabled_events.iter().any(|name| {",
+    to: "    if false && request.plan.disabled_events.iter().any(|name| {",
+    failing: "post_commit_hook::tests::disabled_post_commit_runs_nothing",
+  },
+  {
+    name: "post-commit runs under the hook lock",
+    file: "src/native/post_commit_hook.rs",
+    from: "    let lock: Option<OwnerLock> = if request.plan.skip_hook_lock {",
+    to: "    let lock: Option<OwnerLock> = if true {",
+    failing: "post_commit_hook::tests::hook_runs_under_the_lock_with_the_native_environment",
+  },
+  {
+    name: "a failed copy stops post-landing before disposal",
+    file: "src/native/post_landing.rs",
+    from: "    .map_err(PostLandingError::Install)?;",
+    to: "    .map_err(PostLandingError::Install).ok().unwrap_or_default();",
+    failing: "post_landing::tests::an_install_failure_keeps_the_shadow_and_the_directory",
+  },
+  {
+    name: "a failed shadow removal stops disposal",
+    file: "src/native/landed_disposal.rs",
+    from: "    remove_shadow_repository(paths.shadow)?;",
+    to: "    let _ = remove_shadow_repository(paths.shadow);",
+    failing: "landed_disposal::tests::a_failed_shadow_removal_keeps_the_directory_and_the_records",
+  },
+  {
     name: 'self-exclusion by identity and content',
     file: 'src/native/real_git_candidate.rs',
     from: 'if same_file(candidate, own_executable) || identical_content(candidate, own_executable) {',
