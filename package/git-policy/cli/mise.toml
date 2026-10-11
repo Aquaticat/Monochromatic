@@ -49,7 +49,7 @@ description = "Run native unit tests matching `-- <filter>...` on the host while
 run = "cargo test --locked --offline --lib --"
 
 [tasks."native:test:binary:host"]
-description = "Run native binary-level tests matching `-- <filter>...` on the host while iterating; tests that start Git need the gate's Git 2.56.0"
+description = "Run the native binary-level tests matching `-- <filter>...` on the host against the host's Git; the gate's Git 2.56.0 stays the authority"
 run = "cargo test --locked --offline --test native_binary --"
 
 [tasks."test:git-image"]

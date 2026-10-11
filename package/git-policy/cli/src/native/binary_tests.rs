@@ -54,3 +54,5 @@ mod management;
 
 #[path = "binary_coordination_tests.rs"]
 mod coordination;
+#[path = "binary_hook_tests.rs"]
+mod hook;

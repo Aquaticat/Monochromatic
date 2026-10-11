@@ -426,6 +426,15 @@ pub mod transaction_git;
 /// The preparation and landing leases nested wrapper invocations inherit.
 pub mod transaction_lease;
 
+/// The dispatch plan of one commit transaction, its JSON spelling and the config reads it makes.
+pub mod hook_dispatch_plan;
+
+/// The hooks directory of one transaction: its plan and one entry per preparation event.
+pub mod hook_dispatch_entries;
+
+/// The hook dispatcher entered by a transaction's hook entry name, under the hook lock.
+pub mod hook_dispatch;
+
 /// No-follow file operations recovery and landing share.
 pub mod recovery_files;
 
