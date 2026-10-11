@@ -172,7 +172,24 @@ function mutationCommand({ scopes }) {
         scope,
       ];
     }),
+    ...baselineSkipArguments(),
   ];
+}
+
+/**
+ Test-path arguments that skip one named test in the baseline and every mutant run.
+
+ Opt-in through `NATIVE_MUTATION_BASELINE_SKIP`, which names one test path such as `module::tests::name`.
+ Unset, the campaign runs every test.
+
+ @returns {string[]} `['--', '--skip', name]` or no arguments
+ */
+function baselineSkipArguments() {
+  const name = process.env.NATIVE_MUTATION_BASELINE_SKIP;
+  if (name === undefined || name === '') return [];
+  if (!/^[a-z_][a-z0-9_]*(::[a-z_][a-z0-9_]*)+$/u.test(name))
+    throw new NativeVerificationError(`NATIVE_MUTATION_BASELINE_SKIP must be a test path, got ${name}.`);
+  return ['--', '--skip', name];
 }
 
 /** Build and run the tool over an immutable input image, then retain its complete report. */
