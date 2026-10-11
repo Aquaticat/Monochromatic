@@ -111,11 +111,19 @@ Packages 1 and 2 are pure logic with an existing reference; the rest need the sc
 - Desktop: the template, search, folder, keymap and overlay logic is ported to Rust and integrated into `desktop-app/src`
   (485 tests pass, clippy clean on the host; the container clippy task fails on the existing `truepeak-core` path dependency,
   which the container does not mount). The Slint components are being built next to the Android captures.
-- Open and next: keyboard wiring, the per-row peak source, the Slint UI composition for the desktop, then the final verification.
+- Real-app verification (2026-10-11): a scripted run of the real Android app on the owned Fold emulator (native library,
+  generated library) found five defects that the debug host had hidden: the track menu opened at the bottom instead of by its
+  row, the Settings line for track rows was empty, the light rail boundary line was missing, the deck blanked when the playing
+  track was on another page, and three keyboard behaviours needed the decisions recorded above. All were fixed and re-run; the
+  run ends 31 of 32 (the remaining step is Android's own permission prompt covering the app on the folded cover, as designed).
+  The same style of run on the desktop (Slint MCP headless and nested in `cage`) found missing per-row length and peak, wrong
+  first-run copy, dead shortcuts after leaving Search, and a menu clipped at the window edge; all were fixed.
+- Final state on `main` (2026-10-11): Android unit tests and detekt pass; desktop 577 tests pass and clippy is clean on the host.
+  What is not exercised is listed in `package/music-player/design/HANDOFF.md` under the production handoff.
 
 ## Queue
 
 - [x] Package 1.
 - [x] Package 2.
-- [ ] Packages 3 and 4 (on Haiku): player screens (cover and unfolded) and the folder picker, with a debug host for native captures.
-- [ ] Packages 5 to 12, each started only when the previous one it builds on is committed.
+- [x] Packages 3 to 12 landed on `main`; device-only and live-desktop behaviours remain unexercised (see the handoff).
+- [ ] Release builds, signing and distribution are outside this plan and were not touched.

@@ -25,13 +25,28 @@ The live record is `doc/planning/music-player-production-implementation.md`:
 its Log lists what landed, what was verified how, and the known gaps.
 Work happens in the worktree branch `feat/music-player-production` and each verified package is fast-forwarded into `main`.
 
-What is verified and what is not, as of this entry:
-Android unit tests, detekt and the debug APK pass for every landed piece, and native emulator captures of the player,
-the folder picker, Search, Settings and the template editor match the design.
-The trash flows, the file manager intent, the clipboard, the popup position, hardware-keyboard focus and the native library
-on a device have not been exercised.
-The desktop app has the same logic ported and tested (521 tests, clippy clean) and a new window composed from Slint components;
-the real window has not been run against a library, and its engine does not yet send per-track length, peak or sweep progress.
+What is verified and what is not, as of 2026-10-11 (everything is on `main`):
+
+Android, on the owned Fold emulator with the real `MainActivity`, the native library and a generated 13-track library
+(a scripted run, 31 of 32 steps passing, the one remaining step explained below):
+the library loads, rows show real length and true peak (`0:20 −21.1 dBTP`), tapping a row plays it and the deck follows,
+Ctrl+F opens Search and typing finds results, the long-press menu opens under its row, Move to trash through Android's own
+system dialog removes the row and Undo restores it (both panels), Settings opens, and the declined first-run state shows on the
+inner screen.
+On the folded cover the declined launch shows Android's own permission prompt first, which is the designed auto-request.
+Unit tests (about 600) and detekt pass.
+Not exercised: the trash flow for a folder opened through the picker (the copy-back route), Show in file manager, the clipboard,
+TalkBack, a physical device, and the release build.
+The debug APK built by Gradle alone has no native library: run the package's `build:native` task first.
+
+Desktop, running the real binary (577 tests, clippy clean on the host):
+the real window was driven through the Slint MCP server headless and nested in the `cage` compositor, with the same test library,
+in the cover and two-pane layouts, light and dark:
+rows with length and peak, the deck, the folder picker, Search with emphasis, Settings, the template editor, the track menu,
+the scan indicator with real sweep progress, and the empty-folder state.
+Not exercised: Re-analyse end to end in the window, the new first-run copy states in the window, key repeat (Slint 1.17 has no
+repeat flag), a session on the user's live desktop, and the macOS and Windows branches, which were never compiled.
+The container clippy and test tasks fail on the existing `truepeak-core` path dependency, which the container does not mount.
 
 ## Handoff: Settings withdrawn, template editor round open (2026-10-05)
 
