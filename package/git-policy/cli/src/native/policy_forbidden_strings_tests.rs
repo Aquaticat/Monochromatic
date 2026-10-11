@@ -28,6 +28,8 @@ use super::{
 };
 use crate::candidate_prediction::CandidateRequest;
 use crate::diagnostics::EngineFailureCode;
+/// The event form of a pathname.
+use crate::event_path::EventPath;
 use crate::policy_content::{ContentState, LifecycleContent};
 use crate::policy_engine::{PolicyFinding, PolicyOutcome};
 use crate::policy_test_support::{ScriptedFacts, main_worktree, scripted_facts};
@@ -85,7 +87,7 @@ fn content_match(path: &str, line: usize) -> PolicyFinding {
     return PolicyFinding {
         code: FORBIDDEN_STRING_CODE,
         message: format!("Forbidden string matched at line {line} (rule 0)."),
-        path: Some(String::from(path)),
+        path: Some(EventPath::display(path)),
         location: None,
         fix_available: false,
     };
@@ -199,7 +201,7 @@ fn missing_rules(work: &Path) {
         settings(None, None, false),
     ] {
         match check(repo.as_path(), &clean, &chosen) {
-            PolicyOutcome::Failed { code, message } => {
+            PolicyOutcome::Failed { code, message, .. } => {
                 assert_eq!(code, EngineFailureCode::PolicyIncomplete, "{chosen:?}");
                 assert!(
                     message.starts_with(
@@ -276,7 +278,7 @@ fn redacted_matches(work: &Path) {
             PolicyFinding {
                 code: FORBIDDEN_STRING_CODE,
                 message: String::from("Forbidden string matched in pathname segment 2 (rule 0)."),
-                path: Some(String::from("dir/[REDACTED]")),
+                path: Some(EventPath::from_git_bytes("dir/[REDACTED]".as_bytes())),
                 location: None,
                 fix_available: false,
             },
@@ -385,6 +387,7 @@ fn line_break(work: &Path) {
         PolicyOutcome::Failed {
             code: EngineFailureCode::PolicyIncomplete,
             message: String::from(LINE_BREAK_MESSAGE),
+            path: None,
         }
     );
 }
@@ -426,6 +429,7 @@ fn failure_findings_take_precedence_over_matches() {
             Some(PolicyOutcome::Failed {
                 code: EngineFailureCode::PolicyIncomplete,
                 message: String::from(message),
+                path: None,
             })
         );
         assert_eq!(match_finding(&finding, "x"), None);
@@ -435,7 +439,7 @@ fn failure_findings_take_precedence_over_matches() {
         Some(PolicyFinding {
             code: FORBIDDEN_STRING_CODE,
             message: String::from("Forbidden string matched at line 3 (rule named-rule)."),
-            path: Some(String::from("a.txt")),
+            path: Some(EventPath::from_git_bytes("a.txt".as_bytes())),
             location: None,
             fix_available: false,
         })
@@ -468,6 +472,7 @@ fn unknown_root(work: &Path) {
         PolicyOutcome::Failed {
             code: EngineFailureCode::ContentUnavailable,
             message: String::from("no location answer"),
+            path: None,
         }
     );
     let mut outside: ScriptedFacts = facts_in(repo.as_path());

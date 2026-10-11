@@ -13,10 +13,10 @@
 //!  The content policies read the lifecycle's candidates:
 //!  they report nothing
 //!      where a lifecycle has none.
-//!  The two content policies that are not ported are
-//!      unavailable wherever a lifecycle has candidates,
-//!  so an unchecked file can never
-//!      read as a clean one.
+//!  The content policy that is not ported is unavailable
+//!      wherever a lifecycle has candidates,
+//!  so an unchecked file can never read as a
+//!      clean one.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
@@ -37,6 +37,9 @@
 /// ```
 use super::diagnostics::EngineFailureCode;
 use super::effective_target::{EffectiveTarget, classify_effective_target};
+/// The Markdown autofix check,
+///  its state and the linter the executable gives it.
+use super::markdown_linter::executable_linter;
 /// What the lifecycle offers content policies,
 ///  and its prepared candidates.
 use super::policy_content::{ContentState, LifecycleContent};
@@ -49,6 +52,7 @@ use super::policy_forbidden_strings::{
     ScannerSettings, ScannerState, check_forbidden_strings, default_scanner_settings,
     unloaded_scanner,
 };
+use super::policy_markdown::{MarkdownState, check_markdown, markdown_state};
 use super::policy_registry::PolicyId;
 /// The optional root-context check over candidates.
 use super::policy_root_context::check_root_context;
@@ -85,9 +89,6 @@ use std::ffi::OsString;
 /// `PathBuf` is an owned filesystem path of raw bytes.
 use std::path::PathBuf;
 
-/// What the Markdown autofix policy needs that is not ported.
-pub const MARKDOWN_AUTOFIX_NEEDS: &str = "the native Markdown linter";
-
 /// What the dependent-version policy needs that is not ported.
 pub const DEPENDENT_VERSION_BUMP_NEEDS: &str = "planning dependent version bumps";
 
@@ -106,7 +107,7 @@ pub const DEPENDENT_VERSION_BUMP_NEEDS: &str = "planning dependent version bumps
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// type ShippedChecks<F extends RepositoryFacts> = { facts: F; arguments: string[]; candidates: LifecycleContent; allowedWorktreeDirs: string[]; content: ContentState };
+/// type ShippedChecks<F extends RepositoryFacts> = { facts: F; arguments: string[]; candidates: LifecycleContent; allowedWorktreeDirs: string[]; content: ContentState; markdown: MarkdownState };
 /// ```
 pub struct ShippedChecks<F: RepositoryFacts> {
     /// Where repository facts come from.
@@ -129,6 +130,9 @@ pub struct ShippedChecks<F: RepositoryFacts> {
     /// The forbidden-strings scanner once loaded,
     ///  shared by every later scan.
     pub scanner: ScannerState,
+    /// The Markdown autofix policy's options,
+    ///  linter and exclude patterns.
+    pub markdown: MarkdownState,
 }
 
 /// What:
@@ -158,6 +162,9 @@ pub fn shipped_checks<F: RepositoryFacts>(
         content: ContentState::new(),
         scanner_settings: default_scanner_settings(),
         scanner: unloaded_scanner(),
+        // An empty environment has no PATH: until a lifecycle gives the invocation's
+        // environment, a Markdown candidate fails as unchecked rather than passing.
+        markdown: markdown_state(Box::new(executable_linter(&[]))),
     };
 }
 
@@ -178,6 +185,8 @@ fn fact_unavailable(message: String) -> PolicyOutcome {
     return PolicyOutcome::Failed {
         code: EngineFailureCode::ContentUnavailable,
         message,
+        // `None`: a repository fact is about no single file.
+        path: None,
     };
 }
 
@@ -421,7 +430,13 @@ impl<F: RepositoryFacts> PolicyChecks for ShippedChecks<F> {
                 return check_root_context(&mut self.content, &self.candidates, &mut self.facts);
             }
             PolicyId::MarkdownAutofix => {
-                return unported_content(&self.candidates, MARKDOWN_AUTOFIX_NEEDS);
+                return check_markdown(
+                    &mut self.content,
+                    &self.candidates,
+                    &mut self.facts,
+                    &mut self.markdown,
+                    trigger,
+                );
             }
             PolicyId::DependentVersionBump => {
                 return unported_content(&self.candidates, DEPENDENT_VERSION_BUMP_NEEDS);

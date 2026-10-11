@@ -296,6 +296,77 @@ Eleven-document rendering passed `proc_c7e4` before this final evidence update.
 
 The unassociated ordinary request domain and other unconsumed producer relationships remain explicit.
 
+## Original direct Agent message and array prompts
+
+The next private increment extends the existing Agent call-frame owner beyond primitive strings.
+Single-message and message-array consumers first failed the required original-source assertion
+in `proc_4517` and `proc_1356`.
+Initial implementation `08389a1` / `proc_4ff8` passed both actual direct request consumers,
+with no Session input events,
+protected executions,
+or provider requests.
+
+Single-message inputs reuse selected content and companion metadata.
+An array retains selected message fields as one original call source in `native-content-json`.
+Its original arguments frame carries the input-only publication.
+Neither the array nor its messages acquire aliases or payload capability.
+Opaque provider/tool records are not copied.
+The array uses one shared incumbent copier budget,
+and wrapper fields plus escaped text count toward the original source-byte bound.
+
+Native `AgentSession.prompt` also forwards an array.
+The initial queue-role subset missed a system-section delta prepended by the Session.
+`proc_bc9b` exposed its capture failure before any request or assessment.
+The correction reuses the existing loaded-system content/sections profile,
+including null section deletion,
+without inspecting tool declarations or assigning system authority.
+Queue role support is unchanged.
+
+Owner controls `proc_fe45` and native normalization controls `proc_a349` passed
+before the system-section correction.
+The normalization delegate remains a labelled double,
+separate from actual request consumers.
+Corrected `e1fbda6` / `proc_e97e` passed owner system fields and real late,
+oversize,
+unchanged-view,
+and reset controls.
+Direct system-message and system-array canonical wire consumers passed `proc_f007`.
+System `inputFields` metadata and original section content remain unregistered.
+Integrated `proc_a44a` passed 116 outputs with empty child stderr.
+Non-string observation omission `proc_0e00` and system-section omission `proc_883a`
+lost the required original source.
+Proxy-guard omission `proc_7d1b` invoked a caller trap and propagated its `false` value.
+All guards were restored;
+the implementation has an empty scoped diff against `e1fbda6`.
+
+Every native case is verified across phases,
+not a single successful parent invocation:
+`proc_5868` completed the source prefix before its old full-policy fixture failed;
+`proc_45e7` passed the complete corrected runtime suffix.
+Diff inspection from `06ed9d3` shows only the full-policy fixture,
+its added standalone task,
+and progress notes changed between those runs.
+Full-policy `proc_b0c7` separately passed all six profiles.
+Complete action-policy `proc_4f7e` and policy-source `proc_0091` passed.
+The final document check is tracked in `current-progress.json`.
+
+System-role support does not close tool instruction-source ownership.
+Mixed/image content and unsupported shapes still fail guarded source use,
+including internal Session array forwarding.
+Every internal forwarding adds one original call occurrence and can exhaust unchanged limits sooner.
+Boxed strings and null inputs now latch unsupported-profile failure instead of remaining unobserved;
+normalization parity is checked separately.
+The native prompt body,
+borrowed inputs,
+source limits,
+and installed plugin remain unchanged.
+The evidence for this message/array increment is distinct from the primitive-string checkpoint.
+Other direct Agent state producers,
+tool instruction-source ownership,
+image governance,
+applicable scope/delegation,
+and complete domain accounting remain unfinished.
+
 ## Original direct Agent string prompts
 
 String-form `Agent.prompt(input, images)` is now observed before its active-run check and normalization.
@@ -323,8 +394,29 @@ Its normalization delegate is a labelled double;
 the canonical consumer separately exercises real request and busy-run behavior.
 No image governance or full producer coverage is inferred.
 
-The integrated string-prompt matrix is running.
-Observation sensitivity and complete regressions remain pending.
+The integrated string-prompt matrix passed `proc_0117` with 103 outputs and empty child stderr.
+It includes oversize input before transport,
+oversize busy rejection with an unchanged constructed view,
+and reset retiring the earlier review.
+Predicate omission `8e52673` / `proc_b636` poisoned non-string capture as expected;
+observation omission `0734902` / `proc_58f8` lost the original source.
+Both are restored.
+
+Full regression `proc_931a` stopped in preparation on retained import path spelling
+following a filesystem move.
+Build-only correction `b60415d` / `proc_0064` passed same-file alias and wrong-target controls,
+then actual SDK preparation.
+Target-check omission `e38b148` / `proc_cfc3` failed the equal-byte wrong-file control;
+the check is restored.
+Complete native `proc_6645` passed after restoration and the build-path correction,
+including the current 103-output input matrix with empty child stderr.
+Complete action-policy `proc_379b` and policy-source `proc_580e` passed.
+The separate earlier full-policy failure remains unattributed;
+these later passes establish no cause or fix.
+Fourteen-document lint and rendering passed `proc_4b01` with zero diagnostics
+using the current repository linter and per-path clean/error controls.
+The document runner was adapted after the old Markdown CLI was removed;
+that verification-only change does not replace the qualified runtime parser.
 All source limits,
 budgets,
 and installed files remain unchanged.

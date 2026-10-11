@@ -199,12 +199,13 @@ pub fn has_wrapper_marker(content: &[u8]) -> bool {
 ///  Other systems have no execute bit:
 ///  every regular file named by PATHEXT
 ///       can run.
+///  The Markdown policy's linter lookup applies the same test.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// function isExecutable(stats: Stats): boolean { return process.platform === 'win32' || (stats.mode & 0o111) !== 0; }
 /// ```
-fn is_executable(metadata: &std::fs::Metadata) -> bool {
+pub fn is_executable(metadata: &std::fs::Metadata) -> bool {
     #[cfg(unix)]
     {
         // The trait adds `.mode()`; `use` inside a block scopes it to this block.

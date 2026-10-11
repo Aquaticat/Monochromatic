@@ -36,6 +36,7 @@
 use super::action::ENGINE_FAILURE_EXIT_CODE;
 use super::config_schema::PolicyConfig;
 use super::diagnostics::EngineFailureCode;
+use super::event_path::EventPath;
 use super::policy_events::{FindingEvent, FindingLocation, PolicyEvent, event_blocks};
 use super::policy_registry::{PolicyId, Severity, policy_descriptor};
 use super::policy_trigger::{Trigger, policy_runs_on, trigger_is_ported};
@@ -70,7 +71,7 @@ pub const BLOCKED_EXIT_CODE: i32 = 1;
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// type PolicyFinding = { code: string; message: string; path?: string; location?: FindingLocation; patch?: PolicyPatch };
+/// type PolicyFinding = { code: string; message: string; path?: EventPath; location?: FindingLocation; patch?: PolicyPatch };
 /// ```
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct PolicyFinding {
@@ -81,7 +82,7 @@ pub struct PolicyFinding {
     pub message: String,
     /// The repository path the finding is about,
     ///  when it has one.
-    pub path: Option<String>,
+    pub path: Option<EventPath>,
     /// The byte range the finding is about,
     ///  when it has one.
     pub location: Option<FindingLocation>,
@@ -106,7 +107,7 @@ pub struct PolicyFinding {
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// type PolicyOutcome = { kind: 'findings'; findings: PolicyFinding[] } | { kind: 'unavailable'; needs: string } | { kind: 'failed'; code: EngineFailureCode; message: string };
+/// type PolicyOutcome = { kind: 'findings'; findings: PolicyFinding[] } | { kind: 'unavailable'; needs: string } | { kind: 'failed'; code: EngineFailureCode; message: string; path?: EventPath };
 /// ```
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum PolicyOutcome {
@@ -125,6 +126,12 @@ pub enum PolicyOutcome {
         ///  for the person who ran the command;
         ///  never a candidate's pathname.
         message: String,
+        /// The candidate the failure is about,
+        ///  when one file is responsible;
+        ///  the event
+        /// names it in its own field,
+        ///  never inside the message.
+        path: Option<EventPath>,
     },
 }
 
@@ -343,15 +350,18 @@ pub fn run_policy_stage(
                     }),
                 };
             }
-            PolicyOutcome::Failed { code, message } => {
+            PolicyOutcome::Failed {
+                code,
+                message,
+                path,
+            } => {
                 events.push(PolicyEvent::EngineFailure {
                     code,
                     message,
                     // `Some(x)` is the "present" case of `Option`.
                     trigger: Some(request.trigger),
                     policy: Some(*policy),
-                    // `None` is the "absent" case of `Option`.
-                    path: None,
+                    path,
                 });
                 return StageResult {
                     events,

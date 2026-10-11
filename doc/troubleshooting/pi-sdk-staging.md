@@ -1,5 +1,318 @@
 # Pi 0.87.1 nominal dependency inventory rejects the configured workspace graph
 
+## Private document verification still imported the deleted Markdown CLI
+
+### Symptom and owner change
+
+`proc_e70c` failed before linting or rendering:
+Node reported `MODULE_NOT_FOUND` for
+`@monochromatic-dev/cli-markdown-lint/ts/rule/index.ts`.
+Private `contract/native-docs/native-lint.mjs:17` still imported the former rule API.
+
+Main commit `5bc05682ec` deleted that package.
+The replacement is the installed `monochromatic-lint` 0.1.1 executable,
+not another location for the old TypeScript exports.
+The [unified-linter cutover](../handover/unified-linter-cutover.md) records the landing on 2026-10-10.
+
+### Correction and verification boundary
+
+The maintained `native-guidance-resumption-2026-10-07/documents.mjs` runner
+now invokes the current executable in stdin mode,
+with the actual document filename,
+current repository configuration,
+and concurrency one:
+
+```javascript
+// Private document runner, current CLI arguments
+['--config', join(main, 'monochromatic-lint.config.jsonc'),
+ '--stdin', '--stdin-filename', path, '--concurrency', '1']
+```
+
+Every document path first receives a clean heading control
+and a deliberately punctuated heading that must report `markdown/no-trailing-punctuation`.
+Actual source must produce zero findings and remain unchanged.
+Micromark still renders every checked document and verifies the written HTML.
+The qualified runtime policy parser is unchanged;
+this is only document verification.
+
+First current-linter run `proc_9685` reached the troubleshooting document
+and found `rust/require-rustdoc` warnings on its Mise source excerpts.
+The current executable also checks embedded Rust.
+Each excerpt now has a file-documentation sentence and its original authored file citation;
+the quoted executable code is unchanged.
+An intermediate run `proc_8c6e` reported `markdown/semantic-line-breaks`
+on commas in the citations when they were used directly as Rust documentation.
+The documentation sentence avoids that punctuation while retaining the exact citations.
+No warning filtering,
+rule suppression,
+or configuration weakening was added.
+Corrected `proc_4b01` passed all 14 documents with zero diagnostics,
+including per-path clean/error controls and written Micromark output.
+The command remains `mise --no-env --no-hooks run documents`
+in private `contract/collector/native-guidance-resumption-2026-10-07`.
+
+### Rejected remedies and filing decision
+
+Do not restore the deleted package,
+silently omit linting,
+or rewrite the runtime parser to solve this document-runner failure.
+The old adapter is retained for historical consumers,
+not represented as working against the current repository.
+
+Nothing is proposed upstream.
+This was an owned stale consumer after an accepted repository cutover,
+so the upstream-fault condition fails.
+Upstream fixability,
+supported-use,
+contribution,
+maintainer-intent,
+and upstream-prototype conditions are not claimed.
+
+## Private native build rejects retained imports after a filesystem move
+
+### Symptom and source trace
+
+Restoration `b6943a8` / `proc_931a` failed before tests in private `native-batch/prepare.mjs`:
+`NativeBatchBuildError: Native SDK edit does not have one matching location`.
+The missing literal named `native-script-value.mjs` under `/var/mnt/encrypted/temp/agent/`;
+the retained generated import used `/var/home/user/temp/agent/`.
+
+Both spellings still resolve to the same file,
+as checked with `realpath`.
+This is a build-time path-comparison failure,
+not a result from the restored prompt observation or the earlier full-policy incident.
+
+Private `contract/integration/native-batch/prepare.mjs:32` required exactly one textual match:
+
+```javascript
+// Private prepare.mjs, replaceOnce
+if(at<0||source.indexOf(from,at+from.length)!==-1)
+ throw new NativeBatchBuildError('Native SDK edit does not have one matching location: '+from);
+```
+
+The historical `native-return-consumer.mjs:2` import was generated from its original location.
+The fresh expected URL came from `import.meta.url` at the new canonical location.
+No native SDK source change was needed to reproduce the mismatch.
+
+### Consumer correction and verification
+
+Private `staged-import.mjs:7` selects exactly one generated named-import line.
+It decodes only that build-time module specifier,
+rejects query/fragment variants,
+and requires the existing file to resolve to the expected incumbent build input:
+
+```javascript
+// Private staged-import.mjs, expected target check
+if(realpathSync(fileURLToPath(observed))!==realpathSync(fileURLToPath(expected)))
+ throw new StagedImportError('Generated import differs from its expected local build input');
+```
+
+Only the fresh output buffer is rewritten.
+Historical artifacts,
+installed modules,
+request parsing,
+source capture,
+and runtime authority are unchanged.
+This check does not authenticate module contents or establish policy authority.
+
+`b60415d` / `proc_0064` passed `test:staged-import`:
+original and symlinked paths work;
+equal bytes in another file,
+duplicate declarations,
+missing files,
+query/fragment URLs,
+non-file URLs,
+and malformed declarations reject.
+The subsequent actual `prepare` passed with SDK 1.1.0 and unchanged installed sources.
+The task runs through `mise --no-env --no-hooks run test:staged-import`
+in private `contract/integration/native-batch`.
+
+### Tradeoffs and rejected approaches
+
+The retained alias must remain accessible for its untouched historical imports.
+This is not migration of the historical artifact graph.
+Fresh preparation adds filesystem checks and fails if either target cannot be resolved.
+Disposable aliases exercise both accepted spellings without replacing the real mount.
+
+Hardcoded alternatives for the old and new roots were not adopted:
+they would encode environment-specific path spelling without verifying the current target.
+Regenerating old hash-locked chains,
+rewriting historical files in place,
+or enabling symlink-preserving module loading was unnecessary.
+Target-guard omission `e38b148` / `proc_cfc3` failed `Missing expected exception (StagedImportError)`
+on the equal-byte wrong-file case.
+The guard was restored before complete native regression `proc_6645`,
+which passed including the import controls and complete runtime suffix.
+This repairs the measured preparation boundary without relocating the rest of the historical graph.
+
+### Upstream filing decision
+
+Nothing to file.
+The failure belongs to this private build generator,
+not Pi or Node.
+The upstream-fault condition fails;
+upstream fixability,
+supported-use,
+contribution,
+maintainer-intent,
+and upstream-prototype conditions are not claimed or investigated.
+The consumer correction remains private.
+
+## Native prompt arrays include a system-section delta
+
+### Symptom and deciding source
+
+The first direct message/array capture connected isolated consumers,
+but `proc_d774` never created the late review.
+Diagnostic `proc_8744` showed zero requests and assessments.
+`proc_bc9b` exposed the manager's `SessionInputCaptureError`,
+whose cause was `Native Agent input requires a supported text-message role`
+inside `agentPromptArray`.
+
+The owned mistake was reusing the queue role subset for every prompt-array member.
+Pi 1.1.0 `dist/core/agent-session.js:1307` builds a system-section delta:
+
+```javascript
+// Pi 1.1.0 dist/core/agent-session.js:1307 to 1308
+const sections = diffSystemPromptSections(getCurrentSystemMessage(messages)?.sections ?? {}, buildSystemPromptSections(options));
+return sections ? { role: "system", content: "", sections, timestamp: Date.now() } : undefined;
+```
+
+The same file at line 1628 prepends it before calling the Agent:
+
+```javascript
+// Pi 1.1.0 dist/core/agent-session.js:1628 to 1631
+if (updateMessage)
+    messages.unshift(updateMessage);
+preflightResult?.("started");
+await this._runAgentPrompt(messages);
+```
+
+Single user-message direct calls did not exercise that Session construction.
+Their earlier pass did not establish Session-array compatibility.
+
+### Correction and remaining verification
+
+Prompt capture now reuses the loaded-system selection and validation for content and sections.
+Null deletion remains original input data,
+not evidence of revoked instructions.
+The prompt role adds no authority,
+and tool definitions remain outside this selected prose representation.
+The queue profile is not expanded.
+
+The existing native review assertion stays intact.
+Owner system-field controls include absent,
+null,
+and named sections,
+plus zero reads of tool getters.
+An intermediate correction failed `proc_8936` because its loop-local `message` shadowed the array parameter.
+Renaming the selected element to `entry` preserved the receiver.
+Corrected `e1fbda6` / `proc_e97e` passed system owner controls
+and all eight real late/oversize/reset modes.
+Direct system-message and system-array canonical consumers passed `proc_f007`.
+Integrated `proc_a44a` passed 116 outputs with empty child stderr.
+Observation/section/proxy omissions `proc_0e00`,
+`proc_883a`,
+and `proc_7d1b` failed their intended controls and were restored.
+The full native case set is covered by the unchanged source prefix of `proc_5868`
+and corrected complete runtime suffix `proc_45e7`,
+not a passing one-shot parent invocation.
+Complete action-policy `proc_4f7e` and policy-source `proc_0091` passed.
+Run private `test:agent-message-prompt-owner` and `test:agent-message-prompt-paths`
+as separate `mise --no-env --no-hooks run` invocations.
+
+The separate `custom-trigger-bound-allowed` fixture initially checked its pre-run trigger
+only after another Session prompt forwarded its pending large messages as one array.
+`proc_3b98` then reported a terminal error instead of the expected stop.
+Correction `3f7d81f` / `proc_2853` preserves the original base-bound success and rejection checks,
+then explicitly verifies the later aggregate array exceeds the separate source bound before transport.
+Neither limit was enlarged.
+
+### Conversion hints do not imply image omission
+
+Full regression `proc_45f1` reached `retained-image`,
+which now fails the text-only prompt-array profile before policy review.
+The first fixture correction still expected `retained-image-hint` to reach review;
+`proc_21bd` disproved that expectation.
+
+Pi 1.1.0 `dist/utils/image-process.js` normalizes the valid GIF fixture
+from `image/x-gif` to PNG and returns both image data and a conversion hint.
+`dist/core/agent-session.js:1503` retains both:
+
+```javascript
+// Pi 1.1.0 dist/core/agent-session.js:1503 to 1504
+normalizedImages.push({ type: "image", data: processed.data, mimeType: processed.mimeType });
+hints.push(...processed.hints);
+```
+
+The fixture is converted-image-plus-text,
+not omitted-image hint-only text.
+Corrected `766f4d4` / `proc_a122` passed all four image/conversion modes:
+native image construction,
+actual conversion hint where applicable,
+text-profile failure,
+zero transport/assessments/executions,
+no text payload capability,
+and no revival after a later plain prompt.
+No runtime guard or limit changed.
+A genuinely omitted-image hint-only route is not claimed as exercised by these fixtures.
+
+### Keep full-policy gates independently reachable
+
+Complete native `proc_5868` reached full-policy verification.
+The single-policy case indexed 207 clauses and dispatched 414 legacy questions.
+The visible independent copy stopped before judgment construction.
+`proc_2bba` exposed the original capture cause:
+`Loaded session message content exceeds the original source byte bound`.
+The rendered prompt measured 64,559 bytes,
+but the encoded selected array crossed the separate 65,536-byte source limit.
+
+The fixture retains that original rejection.
+A second independent-copy case replaces only rendered project context,
+retaining both unchanged source inputs and requiring all 414 clauses at the existing clause gate.
+The first attempted empty override did not hide context:
+Pi's `dist/core/system-prompt.js:111` only applies truthy custom sections:
+
+```javascript
+// Pi 1.1.0 dist/core/system-prompt.js:111 to 114
+for (const [name, content] of Object.entries(customSections)) {
+    if (content)
+        promptSections[name] = content;
+}
+```
+
+The corrected case uses a nonempty rendering placeholder,
+not altered policy text.
+It checks the actual prompt during `originalStream`;
+checking `session.systemPrompt` after settlement instead sees the base prompt,
+as the getter selects `_runSystemPromptOptions ?? _baseSystemPromptOptions`
+at `dist/core/agent-session.js:1058`.
+
+The default-system cases also retain a separate direct Agent string call
+that reaches the original rendered-prompt byte guard without an aggregate array at API entry.
+`proc_b0c7` passed all six legacy/clause/content-use profiles:
+207-clause positives,
+visible aggregate-array rejections,
+414-clause rejections despite replaced rendering,
+and the default rendered-prompt rejection at 66,533 bytes.
+No source,
+question,
+wire,
+or time limit was enlarged.
+This is a diagnosed earlier capture-bound failure,
+not a cause or fix for the separate historical `proc_5939` incident.
+
+### Upstream filing decision
+
+Nothing is proposed upstream:
+native construction is intentional and the mismatch was in the private observer.
+The upstream-fault condition fails;
+upstream fixability,
+supported-use,
+contribution,
+maintainer-intent,
+and upstream-prototype conditions are not claimed.
+
 ## Pi 1.1.0 direct Agent string prompts bypass session text input capture
 
 ### Symptom and native boundary
@@ -54,9 +367,12 @@ not a provider or qualification trial.
 
 ### Remaining scope and upstream filing decision
 
-Integrated controls,
-observation sensitivity,
-and full regressions remain pending.
+Integrated `proc_0117` passed 103 outputs with empty child stderr.
+Predicate omission `proc_b636` poisoned non-string capture;
+observation omission `proc_58f8` lost the required original string source.
+Both were restored before complete native `proc_6645`,
+which passed after the separate build-path correction.
+Complete action-policy `proc_379b` and policy-source `proc_580e` also passed.
 Message/array prompt inputs,
 image governance,
 other state producers,
@@ -4372,6 +4688,7 @@ The deciding published `v2026.9.12` sources were inspected read-only.
 `src/cli/run.rs:1284` obtains the dependency graph's linearity:
 
 ```rust
+//! Source excerpt from Mise v2026.9.12.
 // Mise v2026.9.12, src/cli/run.rs:1284
 self.is_linear = tasks.is_linear();
 ```
@@ -4379,6 +4696,7 @@ self.is_linear = tasks.is_linear();
 `src/task/task_output_handler.rs:554` permits interleaved output for a linear graph without raw mode:
 
 ```rust
+//! Source excerpt from Mise v2026.9.12.
 // Mise v2026.9.12, src/task/task_output_handler.rs:554 to 558
 if self.raw(task) || self.jobs() == 1 || self.is_linear {
     TaskOutput::Interleave
@@ -4390,6 +4708,7 @@ if self.raw(task) || self.jobs() == 1 || self.is_linear {
 `src/task/task_executor.rs:1790` permits inherited descriptors when raw mode is false but redactions are empty:
 
 ```rust
+//! Source excerpt from Mise v2026.9.12.
 // Mise v2026.9.12, src/task/task_executor.rs:1790 to 1797
 } else if raw || redactions.is_empty() {
     if !task.silent.suppresses_stdout() {

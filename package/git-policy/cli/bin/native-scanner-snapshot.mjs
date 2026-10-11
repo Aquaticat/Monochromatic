@@ -97,13 +97,23 @@ export function scannerSnapshotEntries({ context }) {
  Vendor the copied wrapper's locked registry dependencies from the host's Cargo cache into the build context,
  and write the Cargo source mapping the image reads them through.
  Every archive the lockfile names must already be in that cache; Cargo fails the gate otherwise.
+ Another crate of the snapshot, such as the linter the Markdown policy runs, passes its own manifest and output
+ names, so each image stage reads only the sources its own lockfile names.
 
- @param {{ context: string }} request - build context holding the copied crates and receiving `vendor` and `cargo-config`
+ @param {{ context: string, manifest?: string, vendorName?: string, configName?: string }} request -
+   build context holding the copied crates, the manifest under it whose lockfile is vendored
+   (the wrapper's by default), and the directory names receiving the sources and the mapping
+   (`vendor` and `cargo-config` by default)
  */
-export async function vendorLockedDependencies({ context }) {
+export async function vendorLockedDependencies({
+  context,
+  manifest = 'package/git-policy/cli/Cargo.toml',
+  vendorName = 'vendor',
+  configName = 'cargo-config',
+}) {
   const vendor = join(
     context,
-    'vendor',
+    vendorName,
   );
   const vendored = await runCommand({
     command: 'cargo',
@@ -112,7 +122,7 @@ export async function vendorLockedDependencies({ context }) {
       '--manifest-path',
       join(
         context,
-        'package/git-policy/cli/Cargo.toml',
+        manifest,
       ),
       '--offline',
       '--locked',
@@ -131,7 +141,7 @@ export async function vendorLockedDependencies({ context }) {
     throw new NativeVerificationError('Cargo vendor did not provide the expected offline source mapping.');
   const configuration = join(
     context,
-    'cargo-config',
+    configName,
   );
   await mkdir(
     configuration,

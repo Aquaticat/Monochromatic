@@ -34,3 +34,6 @@ pub mod batch;
 ///  `rulesFile` values and final-newline bytes,
 ///  with their invariants.
 pub mod content;
+
+/// Linter output, event paths and the one-rule configuration of the Markdown policy, with their invariants.
+pub mod markdown;
