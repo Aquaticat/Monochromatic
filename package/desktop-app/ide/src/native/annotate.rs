@@ -191,7 +191,7 @@ pub(super) fn colors(window: &AppWindow) -> AnnotationColors {
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function visible(current: State): Visible;
+/// function visible(current: State, bounds: TileBounds): Visible;
 /// ```
 pub(super) fn visible(current: &State, bounds: super::tile::TileBounds) -> Arc<Visible> {
     let last = bounds.first.saturating_add(bounds.count);

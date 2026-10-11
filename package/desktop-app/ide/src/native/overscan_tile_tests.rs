@@ -47,7 +47,7 @@ fn scroll_to(window: &AppWindow, offset: f32) {
 
 /// Advance timers until no re-center is queued or shown, failing after `PATIENCE`.
 /// The displayed tile stays on screen while this waits, so the wait is never a blank frame.
-fn settle_tile(state: &Rc<RefCell<State>>) {
+pub(super) fn settle_tile(state: &Rc<RefCell<State>>) {
     let start = Instant::now();
     loop {
         update_timers_and_animations();

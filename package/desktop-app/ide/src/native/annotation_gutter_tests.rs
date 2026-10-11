@@ -424,6 +424,8 @@ fn the_letter_stands_the_same_gap_before_one_two_and_three_digit_numbers() {
     let top = reader.source.borrow().row_map.code_top(99);
     window.set_scroll_y(-(top - 100.0));
     update_timers_and_animations();
+    // A scroll re-center is built on the tile worker, so the frame is read only once it is swapped in.
+    super::overscan_tile_tests::settle_tile(&reader.source);
     let row_y = TEXT_TOP + top + window.get_scroll_y();
     let scrolled = frame(window);
     let (matching, _) = letter_cell(&scrolled, 99, row_y - TEXT_TOP, error, background);
