@@ -81,6 +81,19 @@ fn the_pushed_scope_lists_each_commit_once() {
     assert!(scope.trees.is_empty());
 }
 
+/// A pushed tip with no published base lists its whole tree once and no commit.
+#[test]
+fn the_pushed_scope_lists_each_final_tree_once() {
+    let tree = parse_object_id("b".repeat(40).as_bytes()).expect("object name");
+    let scopes = vec![
+        UpdateScope::FinalTree("b".repeat(40)),
+        UpdateScope::FinalTree("b".repeat(40)),
+    ];
+    let scope = pushed_scope(&scopes).expect("scope");
+    assert_eq!(scope.trees, vec![tree]);
+    assert!(scope.commits.is_empty());
+}
+
 /// A pushed commit whose base is published scans its own unpublished commits.
 #[test]
 fn a_push_of_an_unpublished_commit_scans_that_commit() {
