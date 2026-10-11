@@ -98,3 +98,13 @@ export {
 };
 
 export { renderStatusline, } from './render.ts';
+
+/**
+ Exposed so built-artifact tests reach the activity word reader.
+ 
+ @internal
+ */
+export {
+  assistantTextOfLine,
+  readActivityWord,
+} from './activity.ts';
