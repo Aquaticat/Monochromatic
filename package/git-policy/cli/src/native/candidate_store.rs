@@ -462,6 +462,52 @@ impl CandidateStore {
     }
 
     /// What:
+    ///  The records of one commit's own delta, each against every parent (or the empty tree for a root commit).
+    /// Why:
+    ///   A pushed commit's changes are the content a manual-push scan reads; the listing is the one the
+    ///  landed-delta source already uses.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// committedRecords(commit: ObjectId): CandidateRecord[]
+    /// ```
+    pub fn committed_records(
+        &mut self,
+        commit: &ObjectId,
+    ) -> Result<Vec<CandidateRecord>, CandidateError> {
+        let output: Vec<u8> = self.list_committed(commit)?;
+        return parse_raw_records(output.as_slice());
+    }
+
+    /// What:
+    ///  Every blob entry of one tree, as records that add each path.
+    /// Why:
+    ///   A push with no known published base scans the pushed tip's whole tree.
+    ///   Submodule entries are not listed: their content is a commit name, which no content policy reads.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// treeRecords(tree: ObjectId): CandidateRecord[] // ls-tree -r, every blob as added
+    /// ```
+    pub fn tree_records(
+        &mut self,
+        tree: &ObjectId,
+    ) -> Result<Vec<CandidateRecord>, CandidateError> {
+        let listing: Vec<u8> = self.run_listing(
+            "ls-tree",
+            &[
+                OsString::from("ls-tree"),
+                OsString::from("--full-tree"),
+                OsString::from("-r"),
+                OsString::from("-z"),
+                OsString::from(tree.as_str()),
+            ],
+        )?;
+        let raw: Vec<u8> = added_raw_from_ls_tree(listing.as_slice())?;
+        return parse_raw_records(raw.as_slice());
+    }
+
+    /// What:
     ///  The exact bytes a candidate holds in its version.
     ///       `Rc<[u8]>` is a shared read-only byte list.
     /// Why:
@@ -547,3 +593,48 @@ mod baseline_tests;
 #[cfg(test)]
 #[path = "candidate_store_failure_tests.rs"]
 mod failure_tests;
+
+/// What:
+///  Turn NUL-separated `ls-tree -r -z` records into raw diff records that add each blob.
+/// Why:
+///   The record parser is the one the diff listings use, so tree entries follow the same path and mode rules.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function addedRawFromLsTree(output: Uint8Array): Uint8Array;
+/// ```
+fn added_raw_from_ls_tree(output: &[u8]) -> Result<Vec<u8>, CandidateError> {
+    let mut raw: Vec<u8> = Vec::new();
+    for record in output
+        .split(|byte| {
+            return *byte == 0;
+        })
+        .filter(|record| {
+            return !record.is_empty();
+        })
+    {
+        let text = String::from_utf8_lossy(record);
+        let Some((metadata, path)) = text.split_once('\t') else {
+            return Err(CandidateError::new(
+                super::candidate_error::CandidateFailure::ListingMalformed,
+                "cli-git could not list the pushed tree: an entry lacks its path separator.",
+            ));
+        };
+        let fields: Vec<&str> = metadata.split(' ').collect();
+        if fields.len() != 3 {
+            return Err(CandidateError::new(
+                super::candidate_error::CandidateFailure::ListingMalformed,
+                "cli-git could not list the pushed tree: an entry lacks its mode, type or object name.",
+            ));
+        }
+        if fields[1] != "blob" {
+            continue;
+        }
+        let zeros = "0".repeat(fields[2].len());
+        raw.extend_from_slice(format!(":000000 {} {zeros} {} A", fields[0], fields[2]).as_bytes());
+        raw.push(0);
+        raw.extend_from_slice(path.as_bytes());
+        raw.push(0);
+    }
+    return Ok(raw);
+}

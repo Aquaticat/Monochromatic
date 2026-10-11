@@ -625,3 +625,27 @@ pub mod signal_relay;
 
 /// Exact removal of retired hk hook registrations from one explicit Git configuration scope.
 pub mod maintenance_hk_config;
+
+/// The per-branch push coordination file name: a reversible, flat, case-safe key.
+pub mod auto_push_branch_key;
+
+/// The per-branch `last-pushed` record: validation, tolerant reads and atomic publication.
+pub mod auto_push_record;
+
+/// Single-flight push coordination per branch: owner lock, record joins and the push itself.
+pub mod auto_push_single_flight;
+
+/// Post-commit auto-push of a landed commit: the push argv, the surfaced output and the failure reporting.
+pub mod auto_push;
+
+/// The post-commit gate over a landed commit: its events, its blocking and the backup it allows.
+pub mod post_commit;
+
+/// Authoritative manual-push updates discovered by a private dry-run push and confirmed with ls-remote.
+pub mod manual_push_probe;
+
+/// Published-set and range computation for manual-push scans: which pushed commits a remote does not have.
+pub mod manual_push_range;
+
+/// The manual-push candidate scope of one push: the commits and trees the destination lacks.
+pub mod manual_push_lifecycle;

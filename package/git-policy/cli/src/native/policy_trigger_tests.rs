@@ -93,9 +93,9 @@ fn every_policy_declares_the_incumbent_triggers() {
     }
 }
 
-/// Only the forwarded-command and direct-command lifecycles are ported.
+/// Every lifecycle is ported.
 #[test]
-fn only_three_lifecycles_are_ported() {
+fn every_lifecycle_is_ported() {
     let mut ported: Vec<Trigger> = Vec::<Trigger>::new();
     for trigger in ALL {
         if trigger_is_ported(trigger) {
@@ -106,6 +106,8 @@ fn only_three_lifecycles_are_ported() {
         ported,
         [
             Trigger::PreForward,
+            Trigger::PostCommit,
+            Trigger::ManualPush,
             Trigger::DirectCheck,
             Trigger::DirectFix
         ]

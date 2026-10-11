@@ -393,28 +393,3 @@ fn a_direct_check_applies_no_transform() {
     assert_eq!(unchanged.arguments, os_arguments(&["commit", "-a"]));
     assert_eq!(unchanged_asked, vec![String::from("location")]);
 }
-
-/// A trigger whose lifecycle is not ported is unavailable,
-///  never an empty clean pass.
-#[test]
-fn an_unported_lifecycle_is_unavailable() {
-    for trigger in [Trigger::PostCommit, Trigger::ManualPush] {
-        let (result, asked) = pass(
-            &request(trigger, no_controls()),
-            &["push"],
-            scripted_facts(),
-            LifecycleContent::None,
-        );
-        assert_eq!(
-            result,
-            PassResult {
-                arguments: os_arguments(&["push"]),
-                events: Vec::<PolicyEvent>::new(),
-                end: StageEnd::Unavailable(Unavailable::Lifecycle(trigger)),
-            },
-            "{trigger:?}"
-        );
-        assert_eq!(exit_code(&result), 2, "{trigger:?}");
-        assert_eq!(asked, Vec::<String>::new(), "{trigger:?}");
-    }
-}

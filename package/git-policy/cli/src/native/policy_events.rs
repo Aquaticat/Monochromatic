@@ -172,6 +172,12 @@ pub enum PolicyEvent {
         ///  in Git's byte order.
         changed_paths: Vec<String>,
     },
+    /// The landed commit whose automatic backup the post-commit gate stopped.
+    ///  The commit stays local; the event names it so the user can push it deliberately.
+    CommitLanded {
+        /// The exact landed commit object ID.
+        oid: String,
+    },
 }
 
 /// What:
@@ -193,7 +199,8 @@ pub fn event_blocks(event: &PolicyEvent) -> bool {
         PolicyEvent::CoreFinding { .. } => return true,
         PolicyEvent::WarnUnsafe { .. }
         | PolicyEvent::EngineFailure { .. }
-        | PolicyEvent::FixSummary { .. } => return false,
+        | PolicyEvent::FixSummary { .. }
+        | PolicyEvent::CommitLanded { .. } => return false,
     }
 }
 
@@ -323,6 +330,7 @@ fn event_type(event: &PolicyEvent) -> &'static str {
         PolicyEvent::CoreFinding { .. } => return "core-finding",
         PolicyEvent::EngineFailure { .. } => return "engine-failure",
         PolicyEvent::FixSummary { .. } => return "fix-summary",
+        PolicyEvent::CommitLanded { .. } => return "commit-landed",
     }
 }
 
@@ -399,6 +407,16 @@ pub fn render_policy_event(sequence: u64, event: &PolicyEvent) -> String {
                     path_array(changed_paths.as_slice())
                 )
                 .as_str(),
+            );
+        }
+        PolicyEvent::CommitLanded { oid } => {
+            push_text_field(&mut line, "oid", oid);
+            push_text_field(&mut line, "outcome", "post-commit-blocked");
+            push_text_field(
+                &mut line,
+                "message",
+                format!("Commit {oid} remains local; post-commit gate blocked automatic backup.")
+                    .as_str(),
             );
         }
     }

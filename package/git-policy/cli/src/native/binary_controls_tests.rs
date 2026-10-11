@@ -303,8 +303,9 @@ fn a_region_git_refuses_is_forwarded_unless_the_command_is_never_forwarded() {
     );
     let push: Observed = run_wrapped(&fixture, repo.as_path(), &["push", "--no-such-option"]);
     assert_eq!(push.code, Some(2));
+    // The probe asks Git, which refuses the unknown option; the push fails closed with a content-unavailable failure.
     assert!(
-        stderr_of(&push).contains("the manual-push policy lifecycle is not implemented"),
+        stderr_of(&push).contains("\"code\":\"content-unavailable\""),
         "{}",
         stderr_of(&push)
     );
