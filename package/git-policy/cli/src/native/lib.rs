@@ -521,3 +521,9 @@ pub mod index_writer_coordination;
 
 /// Running a coordinated forwarded index writer: the landing lock held while real Git runs as a child.
 pub mod index_writer_forward;
+
+/// Automatic maintenance decision: config record parsing and the enable and detach rules.
+pub mod maintenance_decision;
+
+/// Running automatic maintenance after a landing: the config read, then `git maintenance run --auto`.
+pub mod maintenance_run;
