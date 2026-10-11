@@ -101,6 +101,7 @@ pub fn parse_args(args: &[String]) -> Result<Config> {
         scale,
         color_scheme,
         isolate: matches.get_flag("isolate"),
+        launcher_log: matches.get_flag("launcher-log"),
         app_cpu_quota,
         app_cpu_weight,
     });

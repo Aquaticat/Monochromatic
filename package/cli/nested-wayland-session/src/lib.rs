@@ -72,6 +72,27 @@ pub mod control;
 /// Runtime appearance switching reaches only the private Settings portal.
 pub mod control_color_scheme;
 
+/// Taskbar progress verbs answer from the private-bus listener's history.
+pub mod control_launcher;
+
+/// Window title and app-ID verbs read the hosted toplevel as it stands now.
+pub mod control_window;
+
+/// Pointer hover and held-button injection through the nested seat.
+pub mod input_pointer;
+
+/// Taskbar progress answer text, including the one-line URI escaping.
+pub mod launcher_format;
+
+/// Bounded history of taskbar progress updates.
+pub mod launcher_history;
+
+/// Listens for taskbar progress signals on the private bus.
+pub mod launcher_listen;
+
+/// The private session bus shared by the appearance portal and the launcher listener.
+pub mod private_bus;
+
 /// What:
 ///      `pub mod dnd;`.
 ///  Declares the compositor-originated drag-and-drop module.

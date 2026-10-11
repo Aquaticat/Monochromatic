@@ -115,6 +115,17 @@ pub struct Config {
     ///  degrades to a direct launch when systemd is unavailable.
     pub isolate: bool,
 
+    /// Whether to start the private session bus so taskbar progress can be observed.
+    ///
+    /// What:
+    ///      `pub launcher_log: bool`.
+    ///  Set by `--launcher-log`.
+    /// Why:
+    ///       The hosted app then gets a private `DBUS_SESSION_BUS_ADDRESS` where its
+    ///  `LauncherEntry.Update` signals reach the compositor,
+    ///  and the host session bus never sees them.
+    pub launcher_log: bool,
+
     /// Optional hard CPU cap for the app,
     ///  in percent of one core (`--app-cpu-quota`).
     ///

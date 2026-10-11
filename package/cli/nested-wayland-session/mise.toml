@@ -793,3 +793,198 @@ runCargo(['build', '--release'])
 const args = parseUsageArgs(process.env.usage_args ?? '')
 execFileSync('./target/release/monochromatic-nested-wayland-session', args, { stdio: 'inherit' })
 """
+
+[tasks."inspect:pointer-title"]
+description = "Verify move, held button down and up with a long press, and live title and app-id answers against a Slint client's Wayland protocol log"
+shell = "node --input-type=module-typescript -e"
+run = '''
+const { spawn } = await import('node:child_process')
+const { once } = await import('node:events')
+const { mkdtempSync, mkdirSync, writeFileSync } = await import('node:fs')
+const { tmpdir } = await import('node:os')
+const { join } = await import('node:path')
+const { default: assert } = await import('node:assert/strict')
+// Runs inside the nested session as the hosted command.
+const client = async () => {
+{{vars.slint_scheme_probe}}
+  const [socketPath, evidence] = process.argv.slice(1)
+  // The scene starts with one title; a click on it changes the title at runtime.
+  const scene = join(evidence, 'pointer-scene.slint')
+  writeFileSync(scene, [
+    'export component Scene inherits Window {',
+    '    title: "first title";',
+    '    background: #204060;',
+    '    TouchArea { }',
+    '    Timer { interval: 6000ms; running: true; triggered => { root.title = "second title"; self.running = false; } }',
+    '}',
+    '',
+  ].join('\n'))
+  // WAYLAND_DEBUG makes the client's Wayland library print every event it receives on stderr.
+  // The empty screen is captured before the window exists, so the first committed frame is recognised.
+  const empty = await screenshot(socketPath, evidence, 'empty')
+  const viewer = spawn('slint-viewer', [scene], { stdio: ['ignore', 'pipe', 'pipe'], env: { ...process.env, WAYLAND_DEBUG: 'client' } })
+  const protocol = []
+  viewer.stderr.on('data', chunk => protocol.push(chunk))
+  const log = () => Buffer.concat(protocol).toString()
+  // Polls an asynchronous probe, such as a control answer, until it is truthy or the limit in milliseconds passes.
+  const untilAsync = async (label, probe, limit = 10000) => {
+    const started = performance.now()
+    while (performance.now() - started < limit) {
+      if (await probe()) return
+      await wait(25)
+    }
+    assert.fail("timed out waiting for " + label)
+  }
+  // Pointer events in the order the client received them, as kind plus its arguments.
+  const pointerEvents = () => [...log().matchAll(/wl_pointer[@#]\d+\.(enter|leave|motion|button)\(([^)]*)\)/g)]
+    .map(match => ({ kind: match[1], args: match[2].split(', ') }))
+  const near = (actual, expected) => Math.abs(Number(actual) - expected) < 0.01
+  // Every motion reported so far, as numbers in surface coordinates.
+  // Every pointer position reported so far: enter carries it as (serial, surface, x, y), motion as (time, x, y).
+  const motions = () => pointerEvents().filter(event => event.kind === 'motion' || event.kind === 'enter')
+    .map(event => event.kind === 'enter'
+      ? { x: Number(event.args[2]), y: Number(event.args[3]) }
+      : { x: Number(event.args[1]), y: Number(event.args[2]) })
+  // Button events carry (serial, time, button, state); state 1 is pressed and 0 is released.
+  const buttons = () => pointerEvents().filter(event => event.kind === 'button')
+    .map(event => ({ time: Number(event.args[1]), code: Number(event.args[2]), state: Number(event.args[3]) }))
+  try {
+    await until('the client to set its first title', () => log().includes('set_title("first title")'), 60000)
+    assert.equal(await control(socketPath, 'title'), 'ok first title')
+    // A pointer event needs a surface under it, and the window has none until its first frame is committed.
+    await untilAsync('the client to commit its first frame', async () => await screenshot(socketPath, evidence, 'first-frame') !== empty, 60000)
+    // The app ID is whatever the client's toolkit sent, so the answer must match the protocol log.
+    const sent = [...log().matchAll(/xdg_toplevel[@#]\d+\.set_app_id\("([^"]*)"\)/g)].map(match => match[1])
+    const expectedAppId = sent.at(-1) ?? ''
+    assert.equal(await control(socketPath, 'app-id'), expectedAppId === '' ? 'ok' : 'ok ' + expectedAppId)
+
+    // Hover: enter, then motion at the requested point, with no button event.
+    assert.equal(await control(socketPath, 'move 100 100'), 'ok')
+    await until('a pointer enter event', () => pointerEvents().some(event => event.kind === 'enter'))
+    await until('motion to 100,100', () => motions().some(point => near(point.x, 100) && near(point.y, 100)))
+    assert.equal(await control(socketPath, 'move 150 120'), 'ok')
+    await until('motion to 150,120', () => motions().some(point => near(point.x, 150) && near(point.y, 120)))
+    assert.equal(buttons().length, 0, 'a move pressed a button')
+
+    // Long press: down, a movement while held, a pause of 600 ms, then up.
+    assert.equal(await control(socketPath, 'button down'), 'ok')
+    assert.match(await control(socketPath, 'button down'), /^err left button is already down$/)
+    await until('the press event', () => buttons().some(button => button.code === 0x110 && button.state === 1))
+    assert.equal(await control(socketPath, 'move 160 130'), 'ok')
+    await until('motion to 160,130 while held', () => motions().some(point => near(point.x, 160) && near(point.y, 130)))
+    await wait(600)
+    assert.equal(await control(socketPath, 'button up'), 'ok')
+    assert.match(await control(socketPath, 'button up'), /^err left button is not down$/)
+    await until('the release event', () => buttons().some(button => button.code === 0x110 && button.state === 0))
+    const press = buttons().find(button => button.state === 1)
+    const release = buttons().find(button => button.state === 0)
+    assert(release.time - press.time >= 550, 'release came ' + (release.time - press.time) + ' ms after the press')
+
+    // The protocol order is enter at the first point, the hover motion, the press, the held motion, and the release.
+    const order = pointerEvents().map(event => event.kind + (event.kind === 'button' ? event.args[3] : ''))
+    const expected = ['enter', 'motion', 'button1', 'motion', 'button0']
+    let cursor = 0
+    for (const kind of order) {
+      if (kind === expected[cursor]) cursor += 1
+    }
+    assert.equal(cursor, expected.length, 'pointer events out of order: ' + order.join(' '))
+    // Live title: the client changes its title on a timer after the first check above, and the answer follows the change.
+    await untilAsync('the client title to change', async () => await control(socketPath, 'title') === 'ok second title', 60000)
+    console.log('pointer: enter, hover motion, press at ' + press.time + ' ms, release at ' + release.time + ' ms; title follows the change')
+  } finally {
+    viewer.kill()
+    writeFileSync(join(evidence, 'client-protocol.log'), log())
+    if (viewer.exitCode === null && viewer.signalCode === null) await once(viewer, 'exit')
+  }
+  console.log('Evidence: ' + evidence)
+}
+const binary = './target/release/monochromatic-nested-wayland-session'
+const evidence = mkdtempSync(join(tmpdir(), 'nested-pointer-title-'))
+const socketPath = join(evidence, 'control.sock')
+const session = spawn(binary, ['--size', '640x360', '--socket', socketPath, '--', 'node', '--input-type=module', '-e', 'await (' + client.toString() + ')()', '--', socketPath, evidence], { stdio: 'inherit' })
+const [code] = await once(session, 'exit')
+assert.equal(code, 0, 'pointer and title client failed')
+console.log('Pointer and title behaviour verified')
+'''
+
+[tasks."inspect:launcher"]
+description = "Verify taskbar progress updates emitted on the private bus: merged state, ordered launcher-log records, percent-encoded URIs, and launcher-clear"
+shell = "node --input-type=module-typescript -e"
+run = '''
+const { spawn, spawnSync } = await import('node:child_process')
+const { once } = await import('node:events')
+const { mkdtempSync } = await import('node:fs')
+const { tmpdir } = await import('node:os')
+const { join } = await import('node:path')
+const { default: assert } = await import('node:assert/strict')
+// Runs inside the nested session as the hosted command; its environment holds the private bus address.
+const client = async () => {
+{{vars.slint_scheme_probe}}
+  const [socketPath] = process.argv.slice(1)
+  assert.match(process.env.DBUS_SESSION_BUS_ADDRESS ?? '', /monochromatic-nested-wayland-session-/)
+  const untilAsync = async (label, probe) => {
+    const started = performance.now()
+    while (performance.now() - started < 10000) {
+      const value = await probe()
+      if (value) return value
+      await wait(25)
+    }
+    assert.fail('timed out waiting for ' + label)
+  }
+  // The number of updates the log holds, read from the first field of its answer.
+  const recorded = async () => Number((await control(socketPath, 'launcher-log')).split(' ')[1])
+  // Emits one update as the app would, then waits until the compositor has recorded it.
+  const emit = async (uri, properties) => {
+    const before = await recorded()
+    const result = spawnSync('gdbus', ['emit', '--session', '--object-path', '/com/canonical/unity/launcherentry/1',
+      '--signal', 'com.canonical.Unity.LauncherEntry.Update', uri, properties], { timeout: 3000 })
+    assert.equal(result.status, 0, result.stderr.toString())
+    await untilAsync('the update ' + properties + ' to be recorded', async () => await recorded() === before + 1)
+  }
+  const app = "'application://org.example.progress.desktop'"
+  const other = "'application://a b.desktop'"
+  assert.equal(await control(socketPath, 'launcher'), 'ok none')
+  assert.equal(await control(socketPath, 'launcher-log'), 'ok 0')
+  await emit(app, "{'progress': <0.25>, 'progress-visible': <true>}")
+  await emit(app, "{'progress': <0.5>}")
+  await emit(app, "{'count': <int64 3>, 'count-visible': <true>}")
+  await emit(app, "{'progress': <1.0>, 'progress-visible': <false>}")
+  await emit(other, "{'progress': <0.75>, 'progress-visible': <true>}")
+  // The latest answer encodes the space in the URI, and the other app's values stay its own.
+  assert.match(await control(socketPath, 'launcher'), /^ok uri=application:\/\/a%20b\.desktop progress=0\.7500 visible=true count=0 count-visible=false urgent=false age-ms=\d+$/)
+  await emit(app, "{'urgent': <true>}")
+  // Partial updates keep what the app sent before: progress, visibility, and count carry forward.
+  assert.match(await control(socketPath, 'launcher'), /^ok uri=application:\/\/org\.example\.progress\.desktop progress=1\.0000 visible=false count=3 count-visible=true urgent=true age-ms=\d+$/)
+
+  const parse = answer => {
+    // "ok <count> <record>; <record>": the count comes first, then the records separated by "; ".
+    const body = answer.slice(3)
+    const count = Number(body.split(" ")[0])
+    if (count === 0) return { count, records: [] }
+    const records = body.slice(body.indexOf(" ") + 1).split("; ").map(record => {
+      const [time, progress, visible] = record.split(" ")
+      return { time: Number(time.slice(2)), progress: Number(progress.slice(9)), visible: visible.slice(8) === "true" }
+    })
+    return { count, records }
+  }
+  const all = parse(await control(socketPath, 'launcher-log'))
+  assert.equal(all.count, 6)
+  assert.deepEqual(all.records.map(record => record.progress), [0.25, 0.5, 0.5, 1, 0.75, 1])
+  assert.deepEqual(all.records.map(record => record.visible), [true, true, true, false, true, false])
+  assert.deepEqual(all.records.map(record => record.time), [...all.records.map(record => record.time)].sort((a, b) => a - b))
+  const newest = parse(await control(socketPath, 'launcher-log 2'))
+  assert.deepEqual(newest.records.map(record => record.progress), [0.75, 1])
+  assert.match(await control(socketPath, 'launcher-log 0'), /^err launcher-log count must be at least 1$/)
+  assert.equal(await control(socketPath, 'launcher-clear'), 'ok')
+  assert.equal(await control(socketPath, 'launcher-log'), 'ok 0')
+  assert.equal(await control(socketPath, 'launcher'), 'ok none')
+  console.log('launcher: six updates in order with carried-forward state; launcher-clear emptied the history')
+}
+const binary = './target/release/monochromatic-nested-wayland-session'
+const evidence = mkdtempSync(join(tmpdir(), 'nested-launcher-'))
+const socketPath = join(evidence, 'control.sock')
+const session = spawn(binary, ['--size', '320x200', '--socket', socketPath, '--launcher-log', '--', 'node', '--input-type=module', '-e', 'await (' + client.toString() + ')()', '--', socketPath], { stdio: 'inherit' })
+const [code] = await once(session, 'exit')
+assert.equal(code, 0, 'launcher client failed')
+console.log('Taskbar progress observation verified')
+'''

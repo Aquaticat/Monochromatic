@@ -40,6 +40,16 @@ alternative considered are recorded in
 - Clicks at a point,
    presses keys,
    and types text into the app.
+- Moves the pointer without pressing anything,
+   so the app sees real hover (enter, motion, and leave) events.
+- Presses a mouse button and holds it across a pause or a movement,
+   then releases it,
+   so long-press and pressed-state behaviour can be tested.
+- Reports the window title and app ID the app set,
+   and follows each change the app makes at runtime.
+- Records the taskbar progress the app publishes on the private bus
+   (`com.canonical.Unity.LauncherEntry.Update`),
+   so a test can check the progress bar the app would show on its taskbar icon.
 - Provides an isolated clipboard through wlr-data-control and ext-data-control,
   sharing the nested seat's regular clipboard with `wl_data_device` clients.
 - Changes the nested screen size.
@@ -67,7 +77,7 @@ At run time (present on virtually every Linux desktop):
  `libEGL`,
  `libGLESv2`,
  `libdrm`,
- `dbus-daemon` when `--color-scheme` is used,
+ `dbus-daemon` when `--color-scheme` or `--launcher-log` is used,
  and a running parent
 Wayland session (this version is a nested winit client of an existing compositor).
 
@@ -101,7 +111,7 @@ Joined values such as `--size=800x600` are also accepted.
 
 ```txt
 monochromatic-nested-wayland-session [--socket PATH] [--size WIDTHxHEIGHT]
-    [--scale SCALE] [--color-scheme dark|light] [--isolate]
+    [--scale SCALE] [--color-scheme dark|light] [--launcher-log] [--isolate]
     [--app-cpu-quota PCT] [--app-cpu-weight N] [--] COMMAND [ARG...]
 ```
 
@@ -119,6 +129,11 @@ monochromatic-nested-wayland-session [--socket PATH] [--size WIDTHxHEIGHT]
   with deterministic appearance.
   It does not change the host desktop theme.
   The `color-scheme` control command switches it while the client runs.
+- `--launcher-log` gives the hosted client the private session bus without a color scheme,
+  and records the taskbar progress the client publishes on it.
+  The `launcher`, `launcher-log`, and `launcher-clear` control commands read that record;
+  see [Observe taskbar progress](#observe-taskbar-progress).
+  The record is kept whenever the private bus runs, so `--color-scheme` alone also records it.
 - `--isolate` launches the hosted app inside a resource-controlled systemd scope so a
   greedy app cannot starve the capture pipeline (see [60fps recording](#60fps-recording)).
   It degrades to a direct launch,
@@ -193,8 +208,10 @@ so a client's request to start a service fails at once with `org.freedesktop.DBu
 and no program named in a host `.service` file runs.
 Slint asks for the accessibility bus `org.a11y.Bus` this way and continues without it.
 Use this option for deterministic appearance tests whose client does not need those services.
-Without `--color-scheme`,
+Without `--color-scheme` or `--launcher-log`,
 the hosted client inherits its usual session bus.
+With `--launcher-log` alone the client gets the same private bus but no Settings portal,
+so a toolkit that asks for appearance receives `ServiceUnknown` there.
 
 Normal shutdown removes the private socket directory.
 A forced `SIGKILL` bypasses process cleanup and can leave its PID-named temporary directory behind.
@@ -223,8 +240,9 @@ and the new value as a variant holding an unsigned integer
 Requesting the value already served answers `ok unchanged` and emits nothing,
 because the portal defines that signal as emitted when a setting changes.
 
-The command only ever uses the private bus started by `--color-scheme`.
-A session started without that option has no private bus,
+The command only ever uses the private portal started by `--color-scheme`.
+A session started without that option has no appearance portal,
+even when `--launcher-log` started the private bus,
 so the command answers `err` and names the option to add;
 it never falls back to the session bus the compositor itself inherited.
 
@@ -362,6 +380,58 @@ It also requires that no scale switch resized the client,
 and that a frame recorded after a switch made during a recording has the new size and the client's drawing.
 It prints the directory holding its evidence.
 
+### Observe taskbar progress
+
+Start the session with `--launcher-log`, or with `--color-scheme`, to start the private session bus:
+
+```sh
+monochromatic-nested-wayland-session --socket /tmp/nws.sock --launcher-log -- my-app
+```
+
+The hosted app inherits `DBUS_SESSION_BUS_ADDRESS` pointing at that private bus.
+A taskbar progress sender emits `com.canonical.Unity.LauncherEntry.Update` there,
+with the URI of its launcher entry and the properties it changed.
+The compositor merges each update into the properties it last knew for that URI,
+and appends the merged state to a history of the newest 4096 updates.
+
+Senders may send only the properties that changed.
+A property left out keeps the value that URI last sent,
+and a property of the wrong D-Bus type is ignored with the previous value kept.
+A URI's first update starts from progress `0`, hidden, count `0`, hidden, and not urgent.
+
+The worked example below emits the update from the hosted app's own environment,
+which is where the private bus address is valid:
+
+```sh
+# Inside the hosted app: its environment already points at the private bus.
+gdbus emit --session --object-path /com/canonical/unity/launcherentry/1 \
+  --signal com.canonical.Unity.LauncherEntry.Update \
+  'application://my-app.desktop' "{'progress': <0.25>, 'progress-visible': <true>}"
+
+# From the test, on the control socket:
+printf 'launcher\n' | nc -U /tmp/nws.sock        # => ok uri=application://my-app.desktop progress=0.2500 visible=true count=0 count-visible=false urgent=false age-ms=8
+printf 'launcher-log 5\n' | nc -U /tmp/nws.sock  # => ok 1 t=1523 progress=0.2500 visible=true
+printf 'launcher-clear\n' | nc -U /tmp/nws.sock  # => ok
+```
+
+The `launcher` answer is `ok none` before any update has arrived.
+Its `uri` field is percent-encoded, so a space or `;` in the URI cannot split the line.
+The `age-ms` field is the time since that update, on the same clock as `t`.
+`t` in a `launcher-log` record is the milliseconds since the compositor started.
+
+The `launcher-log [N]` answer, default `N` of 64, starts with the number of records on that line,
+then lists them oldest first separated by `; `,
+so `ok 2 t=10 progress=0.1000 visible=true; t=20 progress=0.2000 visible=true` lists two updates.
+`ok 0` means the history is empty.
+`launcher-clear` empties the history and answers `ok`.
+
+All three answer `err no private session bus (start with --launcher-log or --color-scheme)`
+when the session has no private bus.
+
+Use `mise run //package/cli/nested-wayland-session:inspect:launcher` to verify the built release binary.
+It hosts a Slint client that emits these updates from inside the session and checks each answer
+against the values it sent, in order.
+
 ## Control protocol
 
 Requests are newline-delimited text,
@@ -378,6 +448,36 @@ one response line:
   see [Frame pacing](#frame-pacing) for what keeps that frame current.
 - `click X Y [left|right|middle]` moves the pointer to the logical point and clicks
   (button defaults to `left`).
+  It presses and releases at once and is unchanged by the `move` and `button` commands.
+- `move X Y` moves the pointer to the logical point without pressing a button.
+  The hosted client receives pointer enter, motion, and leave events,
+  so hover states can be observed.
+  Answers `ok`, and `err` for coordinates that are not finite numbers.
+- `button down|up [left|right|middle]` presses or releases a button at the current pointer position
+  (button defaults to `left`).
+  Move first with `move`, then send `button down`, pause or move, and send `button up`:
+  a movement while the button is down reaches the client as motion with the button held.
+  Answers `ok`, or `err` when the button is already down for `down`
+  or already up for `up`.
+  A `click` or `drop-file` release also clears a button that `button down` held,
+  so the answers stay true to what the client received.
+  A `button down` with no client surface under the pointer is still recorded as held,
+  but no client receives the press.
+- `title` answers `ok <title>` with the title the hosted client set on its toplevel,
+  or `ok ` with an empty payload when it set none.
+  The value follows each change the client makes at runtime.
+  A backslash, line feed, and carriage return are written as `\\`, `\n`, and `\r`,
+  so the answer stays on one line.
+- `app-id` answers `ok <app_id>` in the same form as `title`, for the app ID the client set.
+
+Use `mise run //package/cli/nested-wayland-session:inspect:pointer-title` to verify the built release binary.
+It hosts a Slint client, sends `move`, `button down`, a 600 ms pause, and `button up`,
+and checks each event in the client's Wayland protocol log.
+It also checks that `title` and `app-id` follow the client's own title change.
+- `launcher` answers the newest taskbar progress update, or `ok none`; see
+  [Observe taskbar progress](#observe-taskbar-progress).
+- `launcher-log [N]` answers `ok <count>` followed by the newest `N` updates, oldest first.
+- `launcher-clear` empties the taskbar progress history and answers `ok`.
 - `wheel X Y HORIZONTAL VERTICAL` moves the pointer to the logical point
   and delivers real wheel notches there.
   Positive counts scroll right and down.

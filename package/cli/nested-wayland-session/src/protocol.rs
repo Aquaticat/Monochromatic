@@ -49,6 +49,14 @@ mod color_scheme;
 #[path = "protocol_scale.rs"]
 mod scale;
 
+/// Pointer hover and held-button parsing sits beside the click grammar it extends.
+#[path = "protocol_pointer.rs"]
+mod pointer;
+
+/// Taskbar progress verbs parse their optional record count here.
+#[path = "protocol_launcher.rs"]
+mod launcher;
+
 /// What:
 ///      Import the output-scale value a `scale` request carries.
 /// Why:
@@ -129,6 +137,20 @@ impl PointerButton {
             PointerButton::Middle => return 0x112,
         }
     }
+
+    /// The lowercase name the control protocol uses for this button.
+    ///
+    /// What:
+    ///      `pub fn name(self) -> &'static str`.
+    /// Why:
+    ///       Error answers name the button the way the request spelled it.
+    pub fn name(self) -> &'static str {
+        match self {
+            PointerButton::Left => return "left",
+            PointerButton::Right => return "right",
+            PointerButton::Middle => return "middle",
+        }
+    }
 }
 
 /// What action a key request performs.
@@ -155,6 +177,27 @@ pub enum KeyAction {
     Tap,
 }
 
+/// What a `button` request does to a pointer button.
+///
+/// What:
+///      `pub enum ButtonAction { Down, Up }`.
+///  Two data-less variants.
+/// Why:
+///       A test holds a button across a pause and movement,
+///  so the press and the release arrive as separate requests.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// type ButtonAction = "down" | "up";
+/// ```
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum ButtonAction {
+    /// Press the button and keep it held.
+    Down,
+    /// Release a held button.
+    Up,
+}
+
 /// A parsed control command.
 ///
 /// What:
@@ -179,6 +222,10 @@ pub enum KeyAction {
 ///   | { kind: "dropFile"; path: string; x?: number; y?: number }
 ///   | { kind: "colorScheme"; preference: "dark" | "light" }
 ///   | { kind: "scale"; scale: OutputScale }
+///   | { kind: "move"; x: number; y: number }
+///   | { kind: "button"; action: "down" | "up"; button: PointerButton }
+///   | { kind: "title" } | { kind: "appId" }
+///   | { kind: "launcher" } | { kind: "launcherLog"; count: number } | { kind: "launcherClear" }
 ///   | { kind: "quit" };
 /// ```
 #[derive(Debug, Clone, PartialEq)]
@@ -254,6 +301,33 @@ pub enum Command {
     },
     /// Stop the running recording.
     RecordStop,
+    /// Move the pointer to a logical point without pressing a button.
+    Move {
+        /// Logical x coordinate.
+        x: f64,
+        /// Logical y coordinate.
+        y: f64,
+    },
+    /// Press or release a button at the current pointer position.
+    Button {
+        /// Whether the button goes down or comes up.
+        action: ButtonAction,
+        /// Which button.
+        button: PointerButton,
+    },
+    /// Report the title the hosted client set on its toplevel.
+    Title,
+    /// Report the app ID the hosted client set on its toplevel.
+    AppId,
+    /// Report the newest taskbar progress update.
+    Launcher,
+    /// Report the newest taskbar progress updates, oldest first.
+    LauncherLog {
+        /// How many of the newest updates to list.
+        count: usize,
+    },
+    /// Empty the taskbar progress history.
+    LauncherClear,
     /// Change the private appearance portal's color scheme while the client runs.
     ColorScheme(
         /// Appearance value the private portal serves from now on.
@@ -420,8 +494,36 @@ pub fn parse_command(raw: &str) -> Result<Command, String> {
         "record" => return parse_record(&mut tokens),
         "color-scheme" => return color_scheme::parse(&mut tokens),
         "scale" => return scale::parse(&mut tokens),
+        "move" => return pointer::parse_move(&mut tokens),
+        "button" => return pointer::parse_button_command(&mut tokens),
+        "title" => return no_arguments(&mut tokens, "title", Command::Title),
+        "app-id" => return no_arguments(&mut tokens, "app-id", Command::AppId),
+        "launcher" => return no_arguments(&mut tokens, "launcher", Command::Launcher),
+        "launcher-clear" => return no_arguments(&mut tokens, "launcher-clear", Command::LauncherClear),
+        "launcher-log" => return launcher::parse_log(&mut tokens),
         other => return Err(format!("unknown command: {other}")),
     }
+}
+
+/// Accept a verb that takes no arguments and reject any trailing token.
+///
+/// What:
+///      `fn no_arguments(tokens: &mut std::str::SplitWhitespace, verb: &str, command: Command)
+///           -> Result<Command, String>`.
+///  Returns `command` when no token follows the verb.
+/// Why:
+///       A request such as `title extra` must fail whole instead of being read as `title`.
+fn no_arguments(
+    tokens: &mut std::str::SplitWhitespace,
+    verb: &str,
+    command: Command,
+) -> Result<Command, String> {
+    // What:     `if tokens.next().is_some() { return Err(...); }`. Any leftover token is an error.
+    // Why:      The verb's meaning does not cover arguments it was not given.
+    if tokens.next().is_some() {
+        return Err(format!("{verb} takes no arguments"));
+    }
+    return Ok(command)
 }
 
 /// Parse the arguments of a `record` command (`<dir> [fps] [format]` or `stop`).
