@@ -420,7 +420,22 @@ copy-case totals were 971.362350,
 and 1024.266656 milliseconds.
 These include work after evidence closure and are not deadline-failure measurements.
 Neither failed parent has an established cause or a claimed runtime fix.
-The complete native parent is running as `proc_05da` with both diagnostic fixtures.
+Parent `proc_05da` passed 35 complete prefix outputs,
+including 142 constructed-input cases and 69 section cases,
+then stopped at an older original-judgment source-list expectation.
+`adfb8fd9` / `proc_a45e` passed the corrected source-list assertions in all four variants.
+The assertions retain exact manager source references,
+roles,
+content,
+and emission-versus-judgment membership.
+Prompt and handler fixtures also needed their newly captured persistence inputs counted.
+Those corrections passed `proc_5415` and `proc_7fa1` before the next boundary was reached.
+Diagnostic `9f8e832f` / `proc_b4f5` measured 69 frozen sources in a shared-session carrier case,
+exceeding the unchanged 64-source limit.
+Independent carrier cases now use disposable sessions;
+the original shared-session rejection is retained as a separate bound control.
+Runtime-suffix verification is running as `proc_5185`.
+There is not yet a complete native pass for this increment.
 
 The governing-source omission first exposed no original reviewer error in judgment finalization.
 An `evidence-closed` record is not a completed policy review.

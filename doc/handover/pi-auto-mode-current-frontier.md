@@ -397,7 +397,22 @@ copy-case totals were 971.362350,
 and 1024.266656 milliseconds.
 These include work after evidence closure and are not deadline-failure measurements.
 Neither failed parent has an established cause or a claimed runtime fix.
-The complete native parent is running as `proc_05da` with both diagnostic fixtures.
+Parent `proc_05da` passed 35 complete prefix outputs,
+including 142 constructed-input cases and 69 section cases,
+then stopped at an older original-judgment source-list expectation.
+`adfb8fd9` / `proc_a45e` passed the corrected source-list assertions in all four variants.
+The assertions retain exact manager source references,
+roles,
+content,
+and emission-versus-judgment membership.
+Prompt and handler fixtures also needed their newly captured persistence inputs counted.
+Those corrections passed `proc_5415` and `proc_7fa1` before the next boundary was reached.
+Diagnostic `9f8e832f` / `proc_b4f5` measured 69 frozen sources in a shared-session carrier case,
+exceeding the unchanged 64-source limit.
+Independent carrier cases now use disposable sessions;
+the original shared-session rejection is retained as a separate bound control.
+Runtime-suffix verification is running as `proc_5185`.
+There is not yet a complete native pass for this increment.
 Earlier complete suites cover the pre-attachment checkpoint,
 not these changes.
 All original bounds and installation,
@@ -405,6 +420,29 @@ domain,
 delegation,
 and semantic-qualification holds remain.
 Tool-definition inputs before native declaration production remain a separate gap.
+
+## Independent in-place message intake
+
+While manager-source verification runs,
+the next source gap has an independent native red.
+Pi agent-core 1.1.0 returns its live message array from the state getter;
+observing the setter does not observe element writes.
+`95ad85c6` / `proc_4292` inserted and removed original text with `push` and `pop`.
+`39d61ef4` / `proc_9e5b` repeated the loss with direct index insertion and deletion.
+Both restored the original array before prompting,
+completed native request/review,
+then failed the required source-retention assertion.
+Neither performed protected execution or provider requests.
+
+The standalone tests use the existing staged SDK without regenerating it.
+They remain intentionally outside the manager increment's passing suite.
+No proxy,
+array wrapper,
+constructor change,
+or replacement-state implementation is adopted.
+A later snapshot cannot recover the removed input from the restored array.
+Native event processing itself uses array writes,
+so a mutator name or callsite is not authorship or authority evidence.
 
 ## Original manager messages before context attachment
 
