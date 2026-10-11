@@ -1,5 +1,8 @@
 # harper:ignore
 
+# mise.toml is generated from mise.no-env.toml by file-enforcer (file-enforcer.config.ts, generateMiseToml).
+# Edit mise.no-env.toml and run file-enforcer; never hand-edit mise.toml.
+
 # mise configuration - replaces proto and moon
 # https://mise.jdx.dev/configuration.html
 # After cloning, run `mise trust` to mark this file as trustworthy.
@@ -112,6 +115,12 @@ cargo-binstall = "latest"
 # monochromatic-lint.config.jsonc. The cargo backend resolves through cargo-binstall
 # to the prebuilt release archive when one exists for the platform.
 "cargo:monochromatic-lint" = "0.1.1"
+
+# The nested Wayland compositor that hosts one GUI app for screenshots and synthetic input
+# (package/cli/nested-wayland-session). Not pinned: mise.lock records the resolved version. The crate's
+# cargo-binstall metadata points the cargo backend at the per-crate release archive, so no from-source
+# build runs. Releases carry Linux archives only.
+"cargo:monochromatic-nested-wayland-session" = "latest"
 
 # CMake for building vendored C libraries from Rust -sys crates. music-player's
 # `opus` dependency (pinned to opus-rs git HEAD in
