@@ -87,15 +87,22 @@ fun buildPlayerContent(
         folder = pageFolderFor(folderTitle, pageItems),
         currentIndexInLibrary = currentIndex,
     )
+    /** Label of the playing page, or an empty text when the playing page index is outside the page list. */
+    val playingPageLabel: String = playingPageIndex?.let { index -> pageLabels.getOrNull(index) }.orEmpty()
     /** Playing track and its place in its own folder, which may differ from the folder on screen. */
     val place: PlayingPlace = playingPlaceOf(
-        folderTitle = playingPageIndex?.let { index -> pageLabels.getOrNull(index) }.orEmpty(),
+        folderTitle = playingPageLabel,
         playingItems = playingItems,
         currentIndex = currentIndex,
     )
     /** Title of the playing track, or an empty text when no track is playing. */
     val title: String = place.entry?.let { entry -> trackTitleFor(entry.name) }.orEmpty()
-    /** Transport deck snapshot with the playing title, its place in its folder, and the playback values. */
+    /** Folder that holds the playing track, or an empty text when no track is playing. */
+    val folderLabel: String = deckFolderLabelFor(
+        displayPath = place.entry?.name.orEmpty(),
+        pageLabel = playingPageLabel,
+    )
+    /** Transport deck snapshot with the playing folder and title, its place in its folder, and the playback values. */
     val deck = TransportDeckModel(
         title = title,
         subtitle = subtitleFor(rowPosition = place.rowPosition, pageTrackCount = place.folderTrackCount),
@@ -104,6 +111,7 @@ fun buildPlayerContent(
         playing = playing,
         mode = mode,
         shuffleFolderLabel = folderTitle,
+        folderLabel = folderLabel,
     )
     return PlayerContentModel(
         sections = sections,

@@ -45,6 +45,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.geometry.Rect
@@ -154,6 +155,17 @@ private val HEADER_TOP_PADDING: Dp = 16.dp
 internal val LocalTrackRowMenuOpener: ProvidableCompositionLocal<((Int, MenuAnchorRect) -> Unit)?> =
     staticCompositionLocalOf { null }
 
+// What:     `val HostKeyLocalRevealFolder: ProvidableCompositionLocal<Int>` carries the folder reveal count.
+// Why:      The host bumps the count when the deck's folder part is tapped, and the track list scrolls to the playing
+//           track's subfolder header. It sits here, not beside HostKeyLocalReveal, because the list is its only reader.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// const HostKeyLocalRevealFolder = createContext(0);
+// ```
+/** Count of folder reveal requests, read by the track list to scroll to the playing track's folder header. */
+val HostKeyLocalRevealFolder: ProvidableCompositionLocal<Int> = compositionLocalOf { 0 }
+
 // What:     `fun trackListPane(...)` draws the folder's flat list and keeps the playing row in view.
 // Why:      The caller owns the entries and the playback action, so the pane keeps only its scroll state.
 //
@@ -197,6 +209,17 @@ fun trackListPane(
             currentRowFocus.requestFocus()
         }
     }
+    /** Count of folder reveal requests from the host, each of which scrolls to the playing track's folder header. */
+    val folderRevealToken: Int = HostKeyLocalRevealFolder.current
+    /** Folder reveal count when this list entered composition, so that entering the list never scrolls by itself. */
+    val folderRevealAtEntry: Int = remember { folderRevealToken }
+    /** Item a folder reveal scrolls to: the playing track's subfolder header, or the first item for a root track. */
+    val folderTargetIndex: Int = folderScrollIndexFor(entries)
+    LaunchedEffect(folderRevealToken) {
+        if (folderRevealToken != folderRevealAtEntry && currentPosition != null) {
+            listState.scrollToItem(folderTargetIndex)
+        }
+    }
     LazyColumn(state = listState, modifier = modifier) {
         items(items = entries, key = { entry -> keyOf(entry) }) { entry ->
             when (entry) {
@@ -232,6 +255,35 @@ private fun currentPositionOf(entries: List<TrackListEntry>): Int? {
         return null
     }
     return position
+}
+
+// What:     `internal fun folderScrollIndexFor(entries: List<TrackListEntry>): Int` finds the item the folder reveal
+//           scrolls to.
+// Why:      The folder's own tracks come before its subfolder headers, and each subfolder's tracks follow its header.
+//           So the nearest header above the playing row is the subfolder that holds it. A playing row with no header
+//           above it sits in the folder itself, and the first item is the target.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// const folderScrollIndexFor = (entries: TrackListEntry[]): number => {
+//   const current = currentPositionOf(entries);
+//   if (current === null) return 0;
+//   for (let i = current; i >= 0; i--) if (entries[i].kind === "header") return i;
+//   return 0;
+// };
+// ```
+/** Index of the subfolder header that holds the playing row, or 0 when no header holds it or no row is playing. */
+internal fun folderScrollIndexFor(entries: List<TrackListEntry>): Int {
+    /** Position of the playing row among the entries, or null when no row in this list is playing. */
+    val current: Int? = currentPositionOf(entries)
+    if (current == null) {
+        return 0
+    }
+    /** Index of the nearest header at or before the playing row, or null when no header comes before it. */
+    val headerIndex: Int? = (current downTo 0).firstOrNull { index ->
+        entries[index] is TrackListEntry.HeaderEntry
+    }
+    return headerIndex ?: 0
 }
 
 // What:     `private fun menuAnchorOfRect(bounds: Rect): MenuAnchorRect` converts window bounds to whole pixels.

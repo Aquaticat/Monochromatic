@@ -411,6 +411,66 @@ class PlayerContentModelTest {
         assertEquals("1 of 5", subtitleFor(rowPosition = 0, pageTrackCount = 5))
     }
 
+    // What:     `@Test fun deckFolderLabelIsThePlayingTracksDirectory()` checks the deck's folder label in a subfolder.
+    // Why:      The heading shows the folder of the playing track, which is the directory above its file name.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // test("deck folder label is the playing directory", () => { /* ... */ });
+    // ```
+    /** The deck's folder label is the directory directly holding the playing track. */
+    @Test
+    fun deckFolderLabelIsThePlayingTracksDirectory() {
+        /** Content for the Camellia page, whose second track sits in the Live subfolder. */
+        val content: PlayerContentModel = build(
+            labels = listOf("Camellia"),
+            selectedPage = 0,
+            items = listOf(pageEntry(index = 4, name = "Camellia/Live/Ghost.flac")),
+            currentIndex = 4,
+        )
+        assertEquals("Live", content.deck.folderLabel)
+    }
+
+    // What:     `@Test fun deckFolderLabelFallsBackToThePageForRootTracks()` checks a track at the page root.
+    // Why:      A track with no directory part has the page name as its folder in the deck heading.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // test("deck folder label falls back to the page", () => { /* ... */ });
+    // ```
+    /** A playing track at the root of its page gets the page label as its deck folder label. */
+    @Test
+    fun deckFolderLabelFallsBackToThePageForRootTracks() {
+        /** Content for the Camellia page, whose only track sits at the page root. */
+        val content: PlayerContentModel = build(
+            labels = listOf("Camellia"),
+            selectedPage = 0,
+            items = listOf(pageEntry(index = 0, name = "Ghost.flac")),
+            currentIndex = 0,
+        )
+        assertEquals("Camellia", content.deck.folderLabel)
+    }
+
+    // What:     `@Test fun deckFolderLabelIsEmptyWhenNothingPlays()` checks the deck folder label when nothing plays.
+    // Why:      With nothing playing the heading has no folder part, so the label must be empty.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // test("deck folder label is empty when nothing plays", () => { /* ... */ });
+    // ```
+    /** With no playing track the deck's folder label is an empty text. */
+    @Test
+    fun deckFolderLabelIsEmptyWhenNothingPlays() {
+        /** Content for the Camellia page with no playing track. */
+        val content: PlayerContentModel = build(
+            labels = listOf("Camellia"),
+            selectedPage = 0,
+            items = listOf(pageEntry(index = 0, name = "Camellia/Live/Ghost.flac")),
+            currentIndex = null,
+        )
+        assertEquals("", content.deck.folderLabel)
+    }
+
     // What:     `private companion object` holds the fixed playback values shared by every builder case.
     // Why:      The cases pass the same position and duration, so the constants are named once here.
     //

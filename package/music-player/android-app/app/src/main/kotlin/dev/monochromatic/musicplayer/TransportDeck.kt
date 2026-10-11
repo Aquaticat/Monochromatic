@@ -31,6 +31,7 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
@@ -45,6 +46,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemGestures
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
@@ -100,7 +102,9 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.traversalIndex
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.rememberTextMeasurer
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -145,6 +149,16 @@ private val CONTROL_SPACING: Dp = 8.dp
 // ```
 /** Minimum width and height of one mode segment touch target. */
 private val MIN_TARGET: Dp = 48.dp
+
+// What:     `private const val FOLDER_MAX_WIDTH_FRACTION: Float = 0.4f` caps the folder part of the heading.
+// Why:      The folder name may take at most 40 percent of the heading width, so the track title keeps the rest.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// const FOLDER_MAX_WIDTH_FRACTION = 0.4;
+// ```
+/** Largest share of the heading width the folder part may take before it is cut with an ellipsis. */
+private const val FOLDER_MAX_WIDTH_FRACTION: Float = 0.4f
 
 // What:     `private val SEGMENT_OVERLAP: Dp = (-1).dp` shares one hairline between adjacent segments.
 // Why:      Connected segments overlap by one dp so the outlines read as one control.
@@ -312,7 +326,8 @@ private const val SKIP_NEXT_PATH: String = "M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"
 // In TS you'd write (pseudocode):
 // ```ts
 // type TransportDeckModel = { title: string; subtitle: string; positionSec: number;
-//   durationSec: number; playing: boolean; mode: PlaybackMode; shuffleFolderLabel: string };
+//   durationSec: number; playing: boolean; mode: PlaybackMode; shuffleFolderLabel: string;
+//   folderLabel: string };
 // ```
 /** Snapshot of playback state rendered by [transportDeck]. */
 data class TransportDeckModel(
@@ -379,6 +394,15 @@ data class TransportDeckModel(
     // ```
     /** Folder name shown after the shuffle prefix in the shuffle-folder segment. */
     val shuffleFolderLabel: String,
+    // What:     `val folderLabel: String` is the folder that holds the playing track.
+    // Why:      The heading shows it before the track title, and an empty text means nothing is playing.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // folderLabel: string;
+    // ```
+    /** Name of the directory that holds the playing track, or an empty text when no track is playing. */
+    val folderLabel: String = "",
 )
 
 // What:     `data class TransportDeckActions(...)` bundles the callbacks the deck reports through.
@@ -387,7 +411,8 @@ data class TransportDeckModel(
 // In TS you'd write (pseudocode):
 // ```ts
 // type TransportDeckActions = { onSeek(sec: number): void; onPrevious(): void;
-//   onTogglePlay(): void; onNext(): void; onSelectMode(mode: PlaybackMode): void };
+//   onTogglePlay(): void; onNext(): void; onSelectMode(mode: PlaybackMode): void;
+//   onRevealPlaying?(): void; onRevealFolder?(): void };
 // ```
 /** Callbacks the deck invokes when the user acts on it. */
 data class TransportDeckActions(
@@ -446,6 +471,17 @@ data class TransportDeckActions(
     // ```
     /** Requests that the list shows the playing track, or null when the heading is not tappable. */
     val onRevealPlaying: (() -> Unit)? = null,
+    // What:     `val onRevealFolder: (() -> Unit)?` reports a tap on the folder part of the heading, or is null
+    //           for no tap target.
+    // Why:      A tap on the folder name scrolls the list to the playing track's subfolder, and the deck under Search
+    //           passes null so the folder name is plain text.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // onRevealFolder?: () => void;
+    // ```
+    /** Requests that the list shows the folder of the playing track, or null when the folder part is not tappable. */
+    val onRevealFolder: (() -> Unit)? = null,
 )
 
 // What:     `internal enum class ModeControlLayout` names the three arrangements of the mode control.
@@ -699,36 +735,100 @@ private fun deckContainerColor(): Color {
     return MaterialTheme.colorScheme.surfaceContainerLow
 }
 
-// What:     `@Composable private fun deckHeading(...)` draws the centered title and subtitle.
-// Why:      The heading names the playing track and the caller's preformatted status line; when the caller gives a
-//           tap action the whole heading is one 48dp-high button that reveals the track.
+// What:     `@Composable private fun deckHeading(...)` draws the centered `folder / title` line and the subtitle.
+// Why:      The line names the folder and the playing track, and the subtitle holds the caller's status text. Each
+//           part with a tap action is its own 48dp-high button, and a part without one is plain text. The folder
+//           takes at most 40 percent of the width, so the title keeps the rest.
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// function deckHeading(props: { title: string; subtitle: string; onReveal?: () => void }): UIElement;
+// function deckHeading(props: { folder: string; title: string; subtitle: string;
+//   onRevealFolder?: () => void; onRevealPlaying?: () => void }): UIElement;
 // ```
-/** Draws the centered playing title above the preformatted subtitle, tappable when [onReveal] is given. */
+/** Draws the centered folder and title line above the subtitle, with each tappable part as its own button. */
 @Composable
-private fun deckHeading(title: String, subtitle: String, onReveal: (() -> Unit)?) {
-    /** Heading modifier: a button with a 48dp minimum height when tappable, unchanged otherwise. */
-    val headingModifier: Modifier = if (onReveal == null) {
-        Modifier
-    } else {
-        Modifier
-            .defaultMinSize(minHeight = MIN_TARGET)
-            .clickable(onClickLabel = "Show playing track", role = Role.Button, onClick = onReveal)
-    }
+private fun deckHeading(
+    folder: String,
+    title: String,
+    subtitle: String,
+    onRevealFolder: (() -> Unit)?,
+    onRevealPlaying: (() -> Unit)?,
+) {
     Column(
-        modifier = headingModifier,
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
     ) {
-        Text(text = title, style = MaterialTheme.typography.titleMedium)
+        BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
+            /** Widest the folder part may be, which is the fixed share of the heading width. */
+            val folderMaxWidth: Dp = maxWidth * FOLDER_MAX_WIDTH_FRACTION
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center,
+            ) {
+                if (folder.isNotEmpty()) {
+                    deckHeadingPart(
+                        text = folder,
+                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Medium),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        onClick = onRevealFolder,
+                        clickLabel = "Show folder of playing track",
+                        modifier = Modifier.widthIn(max = folderMaxWidth),
+                    )
+                    Text(
+                        text = " / ",
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        style = MaterialTheme.typography.titleMedium,
+                        maxLines = 1,
+                    )
+                }
+                deckHeadingPart(
+                    text = title,
+                    style = MaterialTheme.typography.titleMedium,
+                    color = Color.Unspecified,
+                    onClick = onRevealPlaying,
+                    clickLabel = "Show playing track",
+                    modifier = Modifier.weight(1f, fill = false),
+                )
+            }
+        }
         Text(
             text = subtitle,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             style = MaterialTheme.typography.bodySmall,
         )
+    }
+}
+
+// What:     `@Composable private fun deckHeadingPart(...)` draws one single-line part of the heading.
+// Why:      The folder and the title share the same button rules, a 48dp minimum height with the Button role, so one
+//           helper draws both and each part stays its own tap target.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// function deckHeadingPart(props: { text: string; style: TextStyle; color: Color;
+//   onClick?: () => void; clickLabel: string }): UIElement;
+// ```
+/** Draws one single-line heading part, tappable with the given label when [onClick] is given. */
+@Composable
+private fun deckHeadingPart(
+    text: String,
+    style: TextStyle,
+    color: Color,
+    onClick: (() -> Unit)?,
+    clickLabel: String,
+    modifier: Modifier,
+) {
+    /** Part modifier: a button with a 48dp minimum height when tappable, unchanged otherwise. */
+    val partModifier: Modifier = if (onClick == null) {
+        modifier
+    } else {
+        modifier
+            .defaultMinSize(minHeight = MIN_TARGET)
+            .clickable(onClickLabel = clickLabel, role = Role.Button, onClick = onClick)
+    }
+    Box(modifier = partModifier, contentAlignment = Alignment.Center) {
+        Text(text = text, color = color, style = style, maxLines = 1, overflow = TextOverflow.Ellipsis)
     }
 }
 
@@ -1202,7 +1302,13 @@ fun transportDeck(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(DECK_GROUP_SPACING),
     ) {
-        deckHeading(title = model.title, subtitle = model.subtitle, onReveal = actions.onRevealPlaying)
+        deckHeading(
+            folder = model.folderLabel,
+            title = model.title,
+            subtitle = model.subtitle,
+            onRevealFolder = actions.onRevealFolder,
+            onRevealPlaying = actions.onRevealPlaying,
+        )
         CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
             seekRow(
                 positionSec = model.positionSec,
