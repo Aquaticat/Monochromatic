@@ -7,6 +7,52 @@ This current summary complements the
 [historical evidence ledger](pi-auto-mode-axiom-evaluation.md).
 Updated 2026-10-11.
 
+## Current delivery direction
+
+The user rejected describing delivery or installation as withheld,
+and rejected indefinite depth-first work.
+Those descriptions were the agent's framing,
+not a current user authorization barrier.
+Historical statements about separate cutover authorization do not override this correction.
+Missing implementation and verification are remaining work.
+
+The completion target is the working migration,
+not another private source-capture checkpoint.
+Use this finite delivery queue:
+
+- [ ] Integrate the current constructor-description change into the native regression parent.
+  Native parity `proc_9cc4`,
+  lifecycle and description consumers `proc_a37a`,
+  and action/source parents `proc_50d1` passed.
+  Reuse the established required reds rather than opening a duplicate omission campaign.
+- [ ] Complete the code-owned decision consumer.
+  Demonstrate justified approval,
+  denial,
+  eligible original approval requests,
+  unresolved premises,
+  and unspecified policy through the canonical native handler without injected final decisions.
+  Replace unconditional missing-premise placeholders with decision-specific evidence from existing owners.
+- [ ] Integrate the implementation into the maintained package and necessary host path.
+  The product must not depend on private scratch files.
+  Run package checks against that integration.
+- [ ] Build,
+  install,
+  and exercise the actual plugin through its host,
+  including native approval and cancellation.
+
+Further source work must fix a named failure of these delivery criteria;
+standalone inventory expansion is not the default next step.
+This direction does not turn absent coverage,
+authority,
+facts,
+or semantic admission into evidence.
+Preserve accepted governing-domain A and the models-estimate/code-decides boundary.
+Ask only when a concrete user-only input or unsettled acceptance choice is reached.
+
+Historical checkpoint sections retain their evidence and original scope.
+The current delivery queue supersedes their stale next-step ordering.
+
+
 ## Original rendered prompt-input contributions
 
 The serializer consumer now accounts for original host,
