@@ -1331,6 +1331,14 @@ or a grace read back in its launch note,
 are listed with their reasons.
 A calibration grace's `effectiveMs` and a note's `builtInMs` are not keys,
 since production only prints them.
+The scan keys a model card's `streamBoundMs` too,
+and reads a `createBedrockClient` imported from the built package under any local name
+whose options name no `streamBoundMsOverride`,
+since the client arms each card's own bound on the real clock around every attempt unless handed one;
+a stream bound of `'unbounded'` is left,
+as the override tests hand it (ledger B416).
+A test builds a Bedrock client with the override,
+`'unbounded'` unless the case reaches the bound.
 Open,
 as the follow-up merged on 2026-10-10 (UTC) left it (ledger B358,
 B378):
@@ -4687,6 +4695,12 @@ on its seat's line when the repair runs as a buy inside the map,
 and `corpus-run/run-seats-read.unit.test.ts` holds one line for a seat reading's stop (ledger B411,
 B412,
 B413);
+`repair-slice-buy.unit.test.ts` and `repair-refine-step.unit.test.ts` each hold the seat reading's refusal once,
+on the reading's own line,
+with their abandoned line bare,
+when the stop lands as the pass's own re-seat hook reads the bench (ledger B415);
+the three abort catches (`translate-slice-attempt.ts`,
+`repair-slice-buy.ts` and `repair-refine-step.ts`) write the same line for a marked failure;
 the lane drivers' tests (`consolidate-driver`,
 `lane-contest-driver`,
 `translate-document`,

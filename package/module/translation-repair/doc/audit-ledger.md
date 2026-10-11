@@ -34401,6 +34401,8 @@ and `streamBoundMs`,
 which `bedrock-client.ts` arms a stream with,
 is not a key of the real clock scan,
 though no test or fixture sets it.
+The stream bound was measured and closed on 2026-10-11 (UTC) by B416,
+which found three test files arming a card's bound.
 
 Open to the owner's veto:
 the drift opt-in is read ahead of the runs directory,
@@ -35048,6 +35050,8 @@ a second time in their "abandoned by the caller's abort" line;
 reaching it needs the dryness read to resolve as the stop lands,
 and no honest red case was built,
 so nothing was changed there.
+Closed on 2026-10-11 (UTC) by B415,
+which built the red cases.
 
 Recurrence:
 `mistake-prevention.md`,
@@ -35090,6 +35094,100 @@ and gives up the input order of a stopped call's lines.
 Recurrence:
 `mistake-prevention.md`,
 "Output decided by arrival order".
+
+### B415: a seat reading's refusal under a stop was written again by the repair buy and the refine step
+
+Red `0f8847e91f`,
+fixed in `5b0b8fef14`.
+
+Found on 2026-10-11 (UTC) as the open item B413 recorded.
+`buyRepairSlice` (`repair-slice-buy.ts`) and `refineSettledSlices` (`repair-refine-step.ts`) wrote their
+"abandoned by the caller's abort" line with the failure's words,
+even when the failure was the writing-bench refusal that `readDrynessPastShortBench` (`corpus-run/run-seats-read.ts`)
+had written and marked,
+so the refusal reached two lines when the stop landed as the checker stage or the recheck re-seated.
+By the agent's run on the base build,
+both modules,
+handed the pass's own `reseatHookFor` over a client whose dryness read stops the caller
+and then reports Bedrock alone wet,
+wrote the refusal's clauses inside the abandoned line.
+It can happen in production:
+the budget read answers from its cached reading without consulting the signal,
+and holds decay with the clock,
+so the gate can see a hold the reading no longer sees.
+
+The fix:
+both catches write the abandoned line without the failure's words when `failureWritten` reports it,
+as `translate-slice-attempt.ts` has since B412;
+an unmarked failure keeps its words.
+The three abort catches now agree on a marked failure.
+`repair-benchmark.ts` writes the one other such line;
+by reading its path no marked failure reaches it,
+since its repair gets no hook and runs at overlap one.
+The shared fixture `stop-landing-hook.test-fixture.ts` gained `stopLandingSeatReading`.
+
+Open to the owner's veto:
+the line for a marked failure is bare,
+where the alternative keeps the words and accepts the double;
+and the fixture sits in `stop-landing-hook.test-fixture.ts`,
+where the alternative is a fixture of its own.
+
+Recurrence:
+`mistake-prevention.md`,
+"Output decided by arrival order".
+
+### B416: tests armed a model card's stream bound on the real clock, which the real clock scan could not see
+
+Red `0f8847e91f`,
+fixed in `5b0b8fef14`.
+
+Found on 2026-10-11 (UTC) as the open item B401 recorded.
+The Bedrock client arms each card's `streamBoundMs` around every attempt unless handed `streamBoundMsOverride`,
+and the real clock scan keyed neither the card's field nor a client built without the override.
+By the agent's probe over one whole suite run,
+`bedrock-client.unit.test.ts`,
+`client-log-context.unit.test.ts` and `owner-body-rules.unit.test.ts` armed the Gemma cards' 60,000 ms bound in 14 attempts,
+the same length as the hang stop,
+so no case was cut;
+their timing rested on a production measurement that no scan or test showed.
+No test or fixture wrote `streamBoundMs`.
+
+The fix:
+the scan keys `streamBoundMs`,
+reads a `createBedrockClient` from the built package whose options name no override,
+and leaves a stream bound of `'unbounded'`;
+`streamBoundMsOverride` takes `'unbounded'`;
+the three files hand it,
+and one listed case reads the catalog for the gpt-oss card,
+which carries no bound,
+so the client's fallback to the card's bound is covered.
+The change is red on the base build only to the type checker,
+since the client already passed `'unbounded'` through.
+By the agent's control,
+setting the test helper's override back to a bound fails the case that asserts no timer is armed.
+Two same-family fields were read and left:
+`waitOutHold` takes a real hold wait in milliseconds that `budget-hold-wait.unit.test.ts` sets without the scan seeing it,
+and `holdMs` arms no timer.
+
+Open:
+`budget-hold-wait.unit.test.ts` calls `waitOutHold` with real waits of 6 and 50 milliseconds,
+which the scan does not key,
+since keying its `ms` parameter would catch many unrelated record fields;
+it is a hold wait and not a stream or request timer,
+and no run has measured it as a cause of a failure.
+
+Open to the owner's veto:
+`'unbounded'` in the tests,
+where the alternative is the hang stop,
+which needs no production change but keeps a real 60 second timer armed;
+the scan flags every test client built with no override,
+where the alternative reads only the two keys and misses the measured sites;
+and the scan leaves `'unbounded'`,
+where the alternative lists each such site.
+
+Recurrence:
+`mistake-prevention.md`,
+"Tests on the real clock".
 
 ## Process mistakes in this audit
 
