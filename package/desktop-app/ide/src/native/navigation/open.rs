@@ -164,6 +164,8 @@ pub(super) fn apply(
         current.document_width = 0.0;
         current.shaped = None;
         current.frame_stamp = None;
+        // A tile queued for the old file must not be swapped in for the new one.
+        crate::native::tile::cancel(&mut current);
         current.presented_revision = None;
         if let Some(syntax) = opened.syntax {
             apply_syntax(&mut current, syntax);

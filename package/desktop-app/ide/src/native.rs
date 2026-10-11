@@ -49,7 +49,7 @@ use ide_app::{cli::Options, workspace::Workspace};
 /// Source and display geometry use the same library interface tested headlessly.
 use ide_app::{document::Document, source_style::SourceStyles};
 /// Toolkit handles and models bridge owned Rust state to the window.
-use slint::{ComponentHandle, SharedString, VecModel};
+use slint::{ComponentHandle, SharedString, Timer, VecModel};
 /// What:
 ///  Rc shares one UI-thread owner;
 ///  RefCell permits checked mutable borrowing.
@@ -240,6 +240,10 @@ mod tests;
 ///  and window chrome.
 #[cfg(test)]
 mod theme_tests;
+/// Scroll re-center bounds and the window-thread step that swaps a finished tile in.
+mod tile;
+/// Source tile construction and the worker thread that runs it.
+mod tile_build;
 /// Windowed rows must not redirect an in-progress click after scrolling.
 #[cfg(test)]
 mod tree_pointer_tests;
@@ -266,6 +270,10 @@ mod write_wait_timer_tests;
 use input::{bind_keys, bind_pointer};
 /// Shared rendering entry point.
 use render::{bind_appearance, render};
+/// Tile bounds of the displayed and requested windows.
+use tile::TileBounds;
+/// The worker thread that builds scroll re-centers, held by the state.
+use tile_build::TileWorker;
 /// Bind viewport changes without line-snapping native scrolling.
 use viewport::bind_viewport;
 
@@ -409,6 +417,17 @@ struct State {
     ///  on change notifications,
     ///  or on a timer while unwatched.
     refresh: SourceRefresh,
+    /// Bounds of the tile on screen: the frame, its gutter, and its line numbers.
+    /// It stays on screen while a scroll re-center is built, so it can differ from the requested window.
+    shown: TileBounds,
+    /// Scroll re-center the reader's last viewport change asked for, until it is shown or superseded.
+    scroll_wanted: Option<TileBounds>,
+    /// Bounds of the tile last queued for the worker and not cancelled; its result is accepted only while set.
+    tile_job: Option<TileBounds>,
+    /// The tile worker thread, started on the first scroll re-center.
+    tile_worker: Option<TileWorker>,
+    /// Polls the tile worker's replies on the window thread while a re-center is queued.
+    tile_poll: Timer,
     /// What:
     ///  Calls of `render`, counted in debug builds for the structural tests of the overscan tile.
     /// Why:
@@ -429,6 +448,18 @@ struct State {
     /// Source images set on the window, counted in debug builds.
     #[cfg(debug_assertions)]
     images_set: u64,
+    /// Scroll re-center tiles completed by the tile worker, counted in debug builds when their result arrives.
+    #[cfg(debug_assertions)]
+    worker_tiles: u64,
+    /// Source rows shaped by the tile worker, counted in debug builds from its results.
+    #[cfg(debug_assertions)]
+    worker_rows_shaped: u64,
+    /// Worker tiles swapped in, counted in debug builds.
+    #[cfg(debug_assertions)]
+    tiles_applied: u64,
+    /// Worker tiles discarded as stale, counted in debug builds.
+    #[cfg(debug_assertions)]
+    tiles_discarded: u64,
 }
 
 /// Construct the same reading state for the application and headless native event tests.
@@ -470,6 +501,16 @@ impl State {
             outside_project: false,
             pending_jump: None,
             refresh: SourceRefresh::default(),
+            shown: TileBounds {
+                first: 0,
+                count: 32,
+                horizontal: 0.0,
+                width: 1044.0,
+            },
+            scroll_wanted: None,
+            tile_job: None,
+            tile_worker: None,
+            tile_poll: Timer::default(),
             #[cfg(debug_assertions)]
             renders: 0,
             #[cfg(debug_assertions)]
@@ -478,6 +519,14 @@ impl State {
             rows_shaped: 0,
             #[cfg(debug_assertions)]
             images_set: 0,
+            #[cfg(debug_assertions)]
+            worker_tiles: 0,
+            #[cfg(debug_assertions)]
+            worker_rows_shaped: 0,
+            #[cfg(debug_assertions)]
+            tiles_applied: 0,
+            #[cfg(debug_assertions)]
+            tiles_discarded: 0,
         };
     }
 }

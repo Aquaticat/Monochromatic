@@ -2,7 +2,10 @@
 
 /// Parent state owns the document and the currently displayed tile;
 ///  `rows` holds the map-based scroll rules.
-use super::{AppWindow, State, render, rows};
+use super::{
+    AppWindow, State, render, rows,
+    tile::{self, TileBounds},
+};
 /// Height of one code row:
 ///  the least a line can take,
 ///  which bounds how many lines a view can show.
@@ -61,11 +64,11 @@ const TILE_SPARE_LINES: usize = 2;
 /// ```ts
 /// function holds(current: State, view: number, height: number): boolean;
 /// ```
-fn holds(current: &State, view: f32, height: f32) -> bool {
+pub(super) fn holds(current: &State, bounds: TileBounds, view: f32, height: f32) -> bool {
     let lines = current.document.text().len_lines();
     let edge = RECENTER_EDGE_VIEWS * height;
-    let end = (current.first + current.count).min(lines);
-    let top_held = current.first == 0 || view >= current.row_map.block_top(current.first) + edge;
+    let end = (bounds.first + bounds.count).min(lines);
+    let top_held = bounds.first == 0 || view >= current.row_map.block_top(bounds.first) + edge;
     let bottom_held = end >= lines || view + height <= current.row_map.block_top(end) - edge;
     return top_held && bottom_held;
 }
@@ -100,6 +103,8 @@ pub(super) fn place(
     // Every caller that moves the view itself passes its new offset here first, so the offset the window
     // reports afterwards is recognized as not being the reader's own scrolling.
     current.offset = offset;
+    // Any placement supersedes a scroll re-center still waiting for the worker; `place_scrolled` sets it again.
+    current.scroll_wanted = None;
     let tile_x = ((horizontal.max(0.0) / 128.0).floor() * 128.0 - 128.0).max(0.0);
     let width = viewport_width.max(1.0);
     let view = offset.max(0.0);
@@ -126,7 +131,14 @@ pub(super) fn place(
     // ```ts
     // if (current.horizontal === tileX && current.width === width && holds(current, view, height)) return false;
     // ```
-    if current.horizontal == tile_x && current.width == width && holds(current, view, height) {
+    let shown = current.shown;
+    if shown.horizontal == tile_x && shown.width == width && holds(current, shown, view, height) {
+        // The displayed tile still holds the view, so nothing is wanted; the requested window is the displayed one.
+        tile::cancel(current);
+        current.first = shown.first;
+        current.count = shown.count;
+        current.horizontal = shown.horizontal;
+        current.width = shown.width;
         return false;
     }
     // What: The tile is re-centered on the view: one view height of overscan above it and one below.
@@ -145,6 +157,30 @@ pub(super) fn place(
     current.horizontal = tile_x;
     current.width = width;
     return true;
+}
+
+/// What:
+///  `place` for the reader's own scrolling: a tile it changes is a scroll re-center,
+///  which the worker may build while the displayed tile stays on screen.
+/// Why:
+///  Keyboard, pointer, and reveal moves call `place` directly and keep the synchronous path.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function placeScrolled(state: State, horizontal: number, offset: number, width: number, height: number): boolean;
+/// ```
+pub(super) fn place_scrolled(
+    current: &mut State,
+    horizontal: f32,
+    offset: f32,
+    viewport_width: f32,
+    height: f32,
+) -> bool {
+    let changed = place(current, horizontal, offset, viewport_width, height);
+    if changed {
+        current.scroll_wanted = Some(tile::requested(current));
+    }
+    return changed;
 }
 
 /// Retain pixel scrolling;
@@ -180,7 +216,7 @@ pub(super) fn bind_viewport(owner: &AppWindow, shared: &Rc<RefCell<State>>) {
             // `Some(Instant::now())` records this moment as the latest scroll.
             current.scrolled_at = Some(Instant::now());
         }
-        let changed = place(&mut current, horizontal, offset, viewport_width, height);
+        let changed = place_scrolled(&mut current, horizontal, offset, viewport_width, height);
         drop(current);
         if !changed {
             return;
