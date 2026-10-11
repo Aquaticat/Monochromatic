@@ -636,38 +636,55 @@ Trailing gates (owner decision, 2026-10-10; these trail the cutover and are not 
 - Release performance gates.
 - Mutation gating on non-core modules; the slice 3 files for locks, the index lock and coordination keep full gating.
 
-### Lane merges and slice 6 start (2026-10-11)
+### Slice 6 state (2026-10-11)
 
-Auto-push (`fed0f4afb5`) merged as `55c57757d8`; worktree-copy (`bc40904bf7`) merged as `ec597deb26`.
-Conflicts were additive: the mutation driver keeps the lane's `--timeout` option with the capture lane's
-300 second default (the default is now a named constant with its reason), and the planted-controls array and
-`lib.rs` module lists keep both sides.
-Container gate on `ec597deb26` (Git 2.56.0) exits 0; native Clippy exits 0.
+Merged into this branch: auto-push (`55c57757d8`), worktree-copy (`ec597deb26`), and the signal relay flake fix
+(`5451745557`, which replaces the earlier open item: the test child was a shell that absorbed SIGINT while it waited
+in the foreground; the fix runs the relayed child directly).
+Native Clippy and the container gate passed on `ec597deb26`; the host library tests pass except the ten recorded Git 2.55
+option-table comparisons.
 
-Slice 6, first increment (`4cf627081b`, `fee66598ac`, `0a9c6134cc`): `policy_patch_validate.rs` ports the
-incumbent `validatePolicyPatch` grammar (one ordinary text path, exact declared headers, one candidate-base index
-line, forbidden directives); `policy_patch.rs` ports `applyPrivatePatch` as `git apply --cached --3way` against
-the private index, writing `patch-<ordinal>.diff` exclusively with private permissions.
-Failures are `PatchError::Rejected` (grammar, Git never runs), `Conflict` (Git refused; the convergence loop maps
-this to `patch-conflict`) and `Failed` (I/O or process start).
-Controls on real repositories: the final-newline correction lands in the private index and leaves `HEAD` alone;
-a stale private index refuses the patch; a repeated ordinal is refused, not overwritten; each header and directive
-rule is rejected; each unsafe path is rejected by the path rule alone.
-The path control first passed with its mutant (the header rule rejected the same input), so it now uses
-well-formed headers for each unsafe path, and the mutant (`..` rule removed) fails it.
+Built, with controls (`src/native/`):
 
-Not yet ported for slice 6: the convergence wiring of these patches into `policy_convergence`, added-path
-admission (`assertAddablePath`, `installAddedWorktreeFiles`), the hook-staged change handling, the
-`commit-normalization/no-change` decision, the convergence snapshots, the binary acceptance cases
-(final-newline in the prepared tree, pre-commit reformat re-staged, added-path `patch-conflict`) and the
-differential JSONL against the incumbent.
-Capture's finding applies here: a hook config does not suppress `hooksPath` scripts on Git 2.55.0, so the
-pre-commit acceptance case must set the hooks directory explicitly.
+- `policy_patch_validate.rs`, `policy_patch.rs`: the incumbent's `validatePolicyPatch` grammar and `git apply --cached --3way`
+  on the private index. Not on the convergence path: the Rust content layer proposes byte corrections, not patch text,
+  so this module has no caller in the pipeline yet.
+- `candidate_prediction.rs`: `CandidateRequest::Staged` reads the index as it stands. `Direct` runs `git add --all` first,
+  which would overwrite corrections already written to the private index.
+- `policy_checks.rs`, `policy_final_newline.rs`: `ShippedChecks::can_apply_patches` lets a pass propose the final-newline
+  correction outside `DirectFix`; the commit path's convergence sets it.
+- `private_index_stage.rs`: writes a correction's bytes as a blob and an index entry in the private index.
+- `commit_convergence.rs`: the bounded convergence over the private index (the shared `converge` loop). Snapshots are
+  compared in memory as exact states; the incumbent also streams them to `candidate-N.state` files, which only serve that
+  comparison.
+- `commit_policy_preparation.rs`: converge, then either prepare the commit in the shadow (`prepare_native_commit`), report
+  a `commit-normalization/no-change` core finding with exit 1 when the corrected tree equals `HEAD`, or stop as blocked.
+  The no-change path installs the worktree copies (the direct-fix installer, which leaves the real index alone) and then
+  points each real-index entry at its corrected blob, only when the entry still names the uncorrected blob.
 
-Open item, not in slice 6: `signal_relay::tests::signal_during_start_is_relayed_after_the_child_starts` failed
-in 3 of 6 host runs (`helper did not exit`, the 20 second bound) and passed in the container gate.
-The cause is not identified; the relay sends a signal caught before the child exists once the child is
-spawned, so the next step is to trace that hand-off on the host. The signals lane owns that code.
+Acceptance cases:
+
+- Final-newline correction lands in the prepared tree: passes (`commit_preparation::tests::the_final_newline_correction_reaches_the_prepared_commit`).
+- Pre-commit hook re-stages a selected file and the change is kept: passes
+  (`commit_preparation::tests::a_pre_commit_hook_restaging_a_selected_file_is_kept_in_the_prepared_commit`); the hooks
+  directory is passed explicitly through `core.hooksPath`, which is the setting Git 2.55.0 needs.
+- No-change normalization: passes (`commit_preparation::tests::a_correction_that_restores_head_is_a_no_change_normalization`).
+- Added path failing admission ends in `patch-conflict`: accepted as not reachable in slice 6. The proof is the
+  shipped policy set: the content layer's `Correction` covers candidate paths only, and no shipped policy proposes a
+  path outside the candidate set (`rg` finds no added-path proposal in `policy_content.rs`, `policy_checks.rs` or the
+  policy modules). `assertAddablePath` and `installAddedWorktreeFiles` are not ported. The case returns when a policy
+  first proposes an added path; that change must port the admission rule with it. A `patch-conflict` control exists for a
+  correction whose blob cannot be written (`commit_convergence::tests::a_correction_the_index_cannot_take_is_a_patch_conflict`).
+- Differential JSONL against the incumbent and binary-level acceptance: moved to slice 9, where the native binary can commit.
+  The commit path is refused by the wrapper until then, and the incumbent is not installed under `/opt/cli-git` here.
+
+Slice 6 is accepted as library-level done with the admission case recorded above.
+
+Push state: at the last attempt, `git push` was refused by the manual-push policy. The `markdown/autofix` plugin
+reports that `mise.lock` needs `mise lock --upgrade`, a repository lockfile change outside this slice.
+Commits made after the last successful push are local until that is resolved.
+
+Slice 7 runs as two lanes started from this branch's head (landing, and post-landing completion).
 
 ### Slice 3 mutation results and trailing gates (2026-10-11)
 
