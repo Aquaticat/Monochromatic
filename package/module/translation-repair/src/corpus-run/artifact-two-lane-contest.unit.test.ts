@@ -21,10 +21,13 @@ import {
 import {
   contestEligibleIndexes,
   describeContestSlice,
+  describeSoleLaneSlice,
   type LaneContestBallot,
   type LaneContestOutcome,
+  soleLaneOf,
 } from '../../dist/final/node/index.mjs';
 import { ARCHIVE_NAP, catRow, } from '../two-lane-comparison-row.test-fixture.ts';
+import { insertionRow, } from '../sole-lane-comparison-row.test-fixture.ts';
 
 /**
  Wording the repair lane left.
@@ -246,6 +249,97 @@ await describe({
                 },),
               ],
             },),).toEqual([],);
+          },
+        },),
+      ],
+    },),
+
+    describe({
+      name: soleLaneOf.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'NAMES THE TRANSLATE LANE when only the repair lane recorded not-applicable, which is an insertion',
+          fn: async () => {
+            expect(soleLaneOf({
+              row: insertionRow({
+                sliceIndex: 0,
+                translateText: TRANSLATE_NAP,
+              },),
+            },),).toEqual({
+              kind: 'one-lane',
+              lane: 'translate',
+            },);
+          },
+        },),
+        it({
+          name: 'NAMES THE REPAIR LANE when only the translate lane recorded not-applicable',
+          fn: async () => {
+            expect(soleLaneOf({
+              row: {
+                ...catRow({
+                  sliceIndex: 0,
+                  repairText: REPAIR_NAP,
+                  translateText: TRANSLATE_NAP,
+                },),
+                translateOutcome: { kind: 'not-applicable', },
+              },
+            },),).toEqual({
+              kind: 'one-lane',
+              lane: 'repair',
+            },);
+          },
+        },),
+        it({
+          name: 'ANSWERS BOTH LANES when both lanes had a passage to work on, which leaves the question to the roster',
+          fn: async () => {
+            expect(soleLaneOf({
+              row: catRow({
+                sliceIndex: 0,
+                repairText: REPAIR_NAP,
+                translateText: TRANSLATE_NAP,
+              },),
+            },),).toEqual({ kind: 'both-lanes', },);
+          },
+        },),
+        it({
+          name: 'ANSWERS BOTH LANES when neither lane had a passage, since no such row is ever contested',
+          fn: async () => {
+            expect(soleLaneOf({
+              row: {
+                ...catRow({
+                  sliceIndex: 0,
+                  repairText: REPAIR_NAP,
+                  translateText: TRANSLATE_NAP,
+                },),
+                repairOutcome: { kind: 'not-applicable', },
+                translateOutcome: { kind: 'not-applicable', },
+              },
+            },),).toEqual({ kind: 'both-lanes', },);
+          },
+        },),
+      ],
+    },),
+
+    describe({
+      name: describeSoleLaneSlice.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'RECORDS THE SOLE LANE with no ballots and no voices behind it, so no roster reads as having been asked',
+          fn: async () => {
+            expect(describeSoleLaneSlice({
+              sliceIndex: 4,
+              lane: 'translate',
+            },),).toEqual({
+              sliceIndex: 4,
+              verdict: {
+                kind: 'sole-lane',
+                lane: 'translate',
+              },
+              ballots: [],
+              usable: 0,
+            },);
           },
         },),
       ],

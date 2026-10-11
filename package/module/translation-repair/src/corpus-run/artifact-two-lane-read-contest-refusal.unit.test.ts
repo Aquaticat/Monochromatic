@@ -26,6 +26,7 @@ type ArtifactComparisonRow,
   parseLaneSelection,
 } from '../../dist/final/node/index.mjs';
 import { ARCHIVE_NAP, catRow, } from '../two-lane-comparison-row.test-fixture.ts';
+import { insertionRow, } from '../sole-lane-comparison-row.test-fixture.ts';
 
 /**
  Wording the repair lane left.
@@ -112,6 +113,56 @@ function readOneSlice(
     comparison,
     path: SELECTION_PATH,
     keys: SLICE_SPELLED_KEYS,
+  },);
+}
+
+/**
+ Generation that records a sole-lane verdict at an archive-absent insertion.
+ */
+const SOLE_LANE_GENERATION = 15;
+
+/**
+ Generation before a sole-lane verdict existed.
+ */
+const ROSTER_ONLY_GENERATION = 14;
+
+/**
+ Reads a selection whose one slice carries whatever a test hands it, in the
+ generation the test names.
+
+ @param slice - recorded slice, valid or not
+
+ @param comparison - rows the contest is checked against
+
+ @param generation - artifact generation the file records
+
+ @returns Nothing a caller uses; every case here expects a throw or an answer
+
+ @example
+ ```ts
+ readOneSliceInGeneration({ slice, comparison, generation: SOLE_LANE_GENERATION, },);
+ ```
+ */
+function readOneSliceInGeneration(
+  {
+    slice,
+    comparison,
+    generation,
+  }: {
+    readonly slice: unknown;
+    readonly comparison: readonly ArtifactComparisonRow[];
+    readonly generation: 14 | 15;
+  },
+): void {
+  parseLaneSelection({
+    value: {
+      kind: 'contested',
+      slices: [slice,],
+    },
+    comparison,
+    path: SELECTION_PATH,
+    keys: SLICE_SPELLED_KEYS,
+    generation,
   },);
 }
 
@@ -304,6 +355,115 @@ await describe({
 
         expect(refusalOfReadOneSlice,).toBeInstanceOf(ArtifactParseError,);
         expect((refusalOfReadOneSlice as Error).message,).toContain(`${SELECTION_PATH}.slices[0].ballots[0].choice`,);
+      },
+    },),
+    it({
+      name:
+        'REFUSES A SOLE-LANE VERDICT in a generation that predates it, since that file asked the roster '
+        + 'at every insertion and a sole-lane record in it has no roster verdict behind it',
+      fn: async () => {
+        const refusal = caught(function act(): void {
+          readOneSliceInGeneration({
+            slice: {
+              sliceIndex: 0,
+              verdict: {
+                kind: 'sole-lane',
+                lane: 'translate',
+              },
+              ballots: [],
+              usable: 0,
+            },
+            comparison: [insertionRow({
+              sliceIndex: 0,
+              translateText: TRANSLATE_NAP,
+            },),],
+            generation: ROSTER_ONLY_GENERATION,
+          },);
+        },);
+        expect(String(refusal,),).toBe(
+          "ArtifactParseError: artifact parse failed at CatEntry1.laneSelection.slices[0].verdict.lane: expected no key here beyond kind.",
+        );
+      },
+    },),
+    it({
+      name:
+        'REFUSES A SOLE-LANE VERDICT on a slice both lanes worded, since a slice with two applicable lanes '
+        + 'is a question for the roster and no lane alone applies to it',
+      fn: async () => {
+        const refusal = caught(function act(): void {
+          readOneSliceInGeneration({
+            slice: {
+              sliceIndex: 0,
+              verdict: {
+                kind: 'sole-lane',
+                lane: 'translate',
+              },
+              ballots: [],
+              usable: 0,
+            },
+            comparison: ONE_CONTESTED,
+            generation: SOLE_LANE_GENERATION,
+          },);
+        },);
+        expect(String(refusal,),).toBe(
+          "ArtifactParseError: artifact parse failed at CatEntry1.laneSelection.slices[0].verdict.lane: expected no key here beyond kind.",
+        );
+      },
+    },),
+    it({
+      name:
+        'REFUSES A ROSTER VERDICT at an archive-absent insertion in a generation that records sole-lane, '
+        + 'since the one lane that applies needs no vote and the roster was never to be asked',
+      fn: async () => {
+        const refusal = caught(function act(): void {
+          readOneSliceInGeneration({
+            slice: {
+              sliceIndex: 0,
+              verdict: {
+                kind: 'lane-won',
+                lane: 'translate',
+              },
+              ballots: [],
+              usable: 0,
+            },
+            comparison: [insertionRow({
+              sliceIndex: 0,
+              translateText: TRANSLATE_NAP,
+            },),],
+            generation: SOLE_LANE_GENERATION,
+          },);
+        },);
+        expect(String(refusal,),).toBe(
+          "ArtifactParseError: artifact parse failed at CatEntry1.laneSelection.slices[0].verdict: expected sole-lane:translate, which is the one lane the comparison leaves applicable, rather than lane-won:translate.",
+        );
+      },
+    },),
+    it({
+      name:
+        'REFUSES BALLOTS CARRIED BY A SOLE-LANE VERDICT, since a slice no roster judged holds none, '
+        + 'and a stored ballot would be a vote nobody cast on that slice',
+      fn: async () => {
+        const refusal = caught(function act(): void {
+          readOneSliceInGeneration({
+            slice: {
+              sliceIndex: 0,
+              verdict: {
+                kind: 'sole-lane',
+                lane: 'translate',
+              },
+              ballots: [FOR_TRANSLATE,],
+              usable: 1,
+            },
+            comparison: [insertionRow({
+              sliceIndex: 0,
+              translateText: TRANSLATE_NAP,
+            },),],
+            generation: SOLE_LANE_GENERATION,
+          },);
+        },);
+        expect(String(refusal,),).toBe(
+          "ArtifactParseError: artifact parse failed at CatEntry1.laneSelection.slices[0].ballots: expected no ballots, since no roster was asked about a slice one lane applies to.",
+        );
       },
     },),
   ],

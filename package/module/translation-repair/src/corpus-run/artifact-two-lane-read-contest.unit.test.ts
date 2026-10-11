@@ -25,6 +25,17 @@ import {
   parseLaneSelection,
 } from '../../dist/final/node/index.mjs';
 import { ARCHIVE_NAP, catRow, } from '../two-lane-comparison-row.test-fixture.ts';
+import { insertionRow, } from '../sole-lane-comparison-row.test-fixture.ts';
+
+/**
+ Generation that records a sole-lane verdict at an archive-absent insertion.
+ */
+const SOLE_LANE_GENERATION = 15;
+
+/**
+ Generation before a sole-lane verdict existed, whose insertions asked the roster.
+ */
+const ROSTER_ONLY_GENERATION = 14;
 
 /**
  Wording the repair lane left.
@@ -243,6 +254,101 @@ await describe({
           },),).toEqual([
           'lane-won',
           'settled-neither',
+        ],);
+      },
+    },),
+    it({
+      name:
+        'ACCEPTS A SOLE-LANE VERDICT at an archive-absent insertion in a generation that records one, '
+        + 'with no ballots and no usable voices, since no roster was asked',
+      fn: async () => {
+        const selection = parseLaneSelection({
+          value: {
+            kind: 'contested',
+            slices: [
+              {
+                sliceIndex: 0,
+                verdict: {
+                  kind: 'sole-lane',
+                  lane: 'translate',
+                },
+                ballots: [],
+                usable: 0,
+              },
+            ],
+          },
+          comparison: [insertionRow({
+            sliceIndex: 0,
+            translateText: TRANSLATE_NAP,
+          },),],
+          path: SELECTION_PATH,
+          keys: SLICE_SPELLED_KEYS,
+          generation: SOLE_LANE_GENERATION,
+        },);
+        expect(selection,).toEqual({
+          kind: 'contested',
+          slices: [
+            {
+              sliceIndex: 0,
+              verdict: {
+                kind: 'sole-lane',
+                lane: 'translate',
+              },
+              ballots: [],
+              usable: 0,
+            },
+          ],
+        },);
+      },
+    },),
+    it({
+      name:
+        'READS A ROSTER CONTEST AT AN ARCHIVE-ABSENT INSERTION UNCHANGED in a generation before sole-lane, '
+        + 'since that file asked the roster and its verdict is the one its ballots settle',
+      fn: async () => {
+        const selection = parseLaneSelection({
+          value: {
+            kind: 'contested',
+            slices: [
+              {
+                sliceIndex: 0,
+                verdict: {
+                  kind: 'lane-won',
+                  lane: 'translate',
+                },
+                ballots: [
+                  FOR_TRANSLATE,
+                  FOR_TRANSLATE,
+                  FOR_TRANSLATE,
+                ],
+                usable: 3,
+              },
+            ],
+          },
+          comparison: [insertionRow({
+            sliceIndex: 0,
+            translateText: TRANSLATE_NAP,
+          },),],
+          path: SELECTION_PATH,
+          keys: SLICE_SPELLED_KEYS,
+          generation: ROSTER_ONLY_GENERATION,
+        },);
+        if (selection.kind !== 'contested')
+          throw new Error('reader returned a pending selection for a contested one',);
+        expect(selection.slices,).toEqual([
+          {
+            sliceIndex: 0,
+            verdict: {
+              kind: 'lane-won',
+              lane: 'translate',
+            },
+            ballots: [
+              FOR_TRANSLATE,
+              FOR_TRANSLATE,
+              FOR_TRANSLATE,
+            ],
+            usable: 3,
+          },
         ],);
       },
     },),

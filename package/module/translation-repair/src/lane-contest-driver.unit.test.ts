@@ -235,6 +235,75 @@ function catProjection(
 }
 
 /**
+ Builds one archive-absent insertion the translate lane filled, beside the
+ slices of `catProjection`: the repair lane has no translation there to mend,
+ so its ledger row is `not-applicable` and ships nothing.
+
+ @param translateText - wording the translate lane shipped at the insertion
+
+ @returns Projection whose slice 0 is the insertion
+
+ @example
+ ```ts
+ const projected = insertionProjection({ translateText: TRANSLATE_NAP, },);
+ ```
+ */
+function insertionProjection(
+  { translateText, }: { readonly translateText: string; },
+): ProjectedLanes {
+  return {
+    delivery: {
+      repair: [
+        {
+          sliceIndex: 0,
+          sourceText: SOURCE_NAP,
+          incumbentKind: 'absent',
+          incumbentText: '',
+          outcome: { kind: 'not-applicable', },
+          shippedText: '',
+          delivery: { kind: 'gap-remains', },
+        },
+      ],
+      translate: [
+        {
+          sliceIndex: 0,
+          sourceText: SOURCE_NAP,
+          incumbentKind: 'absent',
+          incumbentText: '',
+          outcome: {
+            kind: 'decided',
+            acceptedText: translateText,
+          },
+          shippedText: translateText,
+          delivery: { kind: 'replacement-shipped', },
+        },
+      ],
+    },
+    comparison: [
+      {
+        sliceIndex: 0,
+        incumbentKind: 'absent',
+        incumbentText: '',
+        repairText: '',
+        translateText,
+        laneRelation: 'translate-only',
+        repairOutcome: { kind: 'not-applicable', },
+        translateOutcome: {
+          kind: 'decided',
+          acceptedText: translateText,
+        },
+        decisionComparison: {
+          kind: 'not-comparable',
+          undecidedLanes: ['repair',],
+        },
+        repairDelivery: { kind: 'gap-remains', },
+        translateDelivery: { kind: 'replacement-shipped', },
+      },
+    ],
+  };
+}
+
+/**
  Builds one front matter question repeated at every requested position.
 
  BUILT FROM WHOLE ROWS, like every other projection here, rather than cast
@@ -783,6 +852,126 @@ await describe({
               kind: 'lane-won',
               lane: 'translate',
             },);
+          },
+        },),
+        it({
+          name: 'SHIPS THE TRANSLATE WORDING AT AN ARCHIVE-ABSENT INSERTION WITHOUT ASKING THE ROSTER, '
+            + 'since the repair lane has no translation there to mend and the question has one applicable lane',
+          fn: async () => {
+            /**
+             One insertion the translate lane filled and the repair lane could not mend.
+             */
+            const rig = await drive({
+              pairs: [
+                [
+                  '',
+                  TRANSLATE_NAP,
+                ],
+              ],
+              answering: true,
+              projected: insertionProjection({ translateText: TRANSLATE_NAP, },),
+            },);
+            expect(rig.calls,).toEqual([],);
+            expect(rig.persisted,).toEqual([],);
+            expect(rig.slices,).toEqual([
+              {
+                sliceIndex: 0,
+                verdict: {
+                  kind: 'sole-lane',
+                  lane: 'translate',
+                },
+                ballots: [],
+                usable: 0,
+              },
+            ],);
+          },
+        },),
+        it({
+          name: 'ASKS THE ROSTER ONLY about the contested slice when an insertion sits beside it, '
+            + 'so a one-lane slice never spends a roster read',
+          fn: async () => {
+            /**
+             Insertion at slice 0, and slice 1 where both lanes worded the passage differently.
+             */
+            const insertion = insertionProjection({ translateText: TRANSLATE_NAP, },);
+            const rig = await drive({
+              pairs: [
+                [
+                  '',
+                  TRANSLATE_NAP,
+                ],
+                [
+                  REPAIR_NAP,
+                  TRANSLATE_NAP,
+                ],
+              ],
+              answering: true,
+              projected: {
+                delivery: {
+                  repair: [
+                    ...insertion.delivery.repair,
+                    catLedgerRow({
+                      sliceIndex: 1,
+                      shippedText: REPAIR_NAP,
+                    },),
+                  ],
+                  translate: [
+                    ...insertion.delivery.translate,
+                    catLedgerRow({
+                      sliceIndex: 1,
+                      shippedText: TRANSLATE_NAP,
+                    },),
+                  ],
+                },
+                comparison: [
+                  ...insertion.comparison,
+                  catRow({
+                    sliceIndex: 1,
+                    repairText: REPAIR_NAP,
+                    translateText: TRANSLATE_NAP,
+                  },),
+                ],
+              },
+            },);
+            expect(rig.calls
+              .length,).toBe(ROSTER.length,);
+            expect(rig.slices
+              .map(function nameSlice(slice,): number {
+                return slice.sliceIndex;
+              },),).toEqual([
+              0,
+              1,
+            ],);
+          },
+        },),
+        it({
+          name: 'KEEPS THE ROSTER at an archive-absent insertion that is front matter, since the syntax admission '
+            + 'rule judges its candidates and records them, so no lane is named by rule alone',
+          fn: async () => {
+            /**
+             One insertion the translate lane filled, marked as the syntax-bearing slice.
+             */
+            const rig = await drive({
+              pairs: [
+                [
+                  '',
+                  TRANSLATE_NAP,
+                ],
+              ],
+              answering: true,
+              projected: insertionProjection({ translateText: TRANSLATE_NAP, },),
+              frontMatterSlices: new Set([0,]),
+            },);
+            expect(rig.calls
+              .length,).toBe(ROSTER.length,);
+            expect(rig.slices
+              .map(function nameSlice(slice,): number {
+                return slice.sliceIndex;
+              },),).toEqual([0,],);
+            expect(rig.slices
+              .at(0,)
+              ?.ballots
+              .length,).toBe(ROSTER.length,);
           },
         },),
         it({

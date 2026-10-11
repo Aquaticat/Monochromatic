@@ -482,6 +482,54 @@ await describe({
 
       it({
         name:
+          'SHIPS THE APPLICABLE LANE at a sole-lane slice, the archive-absent insertion the translate lane '
+          + 'filled, since no roster backed that verdict and the lane that applies is the wording it ships',
+        fn: async () => {
+          /**
+           Insertion both lanes read as absent from the archive, with only the translate lane applying.
+           */
+          const insertion = rowWith({
+            incumbentKind: 'absent',
+            incumbentText: '',
+            repairText: '',
+            laneRelation: 'translate-only',
+            repairOutcome: { kind: 'not-applicable', },
+            decisionComparison: {
+              kind: 'not-comparable',
+              undecidedLanes: ['repair',],
+            },
+            repairDelivery: { kind: 'gap-remains', },
+          },);
+          const reading = firstReadingOf({
+            source: sourceWith({
+              row: insertion,
+              laneSelection: {
+                kind: 'contested',
+                slices: [
+                  {
+                    sliceIndex: 0,
+                    verdict: {
+                      kind: 'sole-lane',
+                      lane: 'translate',
+                    },
+                    ballots: [],
+                    usable: 0,
+                  },
+                ],
+              },
+            },),
+          },);
+
+          expect(reading,).toEqual({
+            kind: 'wording',
+            text: TRANSLATE_NAP,
+            decidedBy: 'contest',
+          },);
+        },
+      },),
+
+      it({
+        name:
           'TAKES THE LANE THE CONTEST NAMED, on each side, since reading the winning lane off either '
           + 'lane ledger alone was wrong at every measurable row: 6 rows claimed replacement-shipped '
           + 'and 0 reached the page',

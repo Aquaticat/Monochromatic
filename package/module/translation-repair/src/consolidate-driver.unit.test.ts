@@ -517,6 +517,55 @@ function twoSliceDocument(): ProjectedLanes {
 }
 
 /**
+ Builds one archive-absent insertion, which only the translate lane applies to.
+
+ @returns Projection whose one slice the repair lane marked not-applicable
+
+ @example
+ ```ts
+ const projected = insertionDocument();
+ ```
+ */
+function insertionDocument(): ProjectedLanes {
+  /**
+   Translate lane's wording at the insertion, which is the only wording there.
+   */
+  const translateText = 'translate wording for slice 0';
+  return {
+    comparison: [
+      {
+        sliceIndex: 0,
+        incumbentKind: 'absent',
+        incumbentText: '',
+        repairText: '',
+        translateText,
+        laneRelation: 'translate-only',
+        repairOutcome: { kind: 'not-applicable', },
+        translateOutcome: {
+          kind: 'decided',
+          acceptedText: translateText,
+        },
+        decisionComparison: {
+          kind: 'not-comparable',
+          undecidedLanes: ['repair',],
+        },
+        repairDelivery: { kind: 'gap-remains', },
+        translateDelivery: { kind: 'replacement-shipped', },
+      },
+    ],
+    delivery: {
+      repair: [
+        {
+          sliceIndex: 0,
+          sourceText: '原文0',
+        },
+      ],
+      translate: [],
+    },
+  } as unknown as ProjectedLanes;
+}
+
+/**
  Builds two rows asking an identical consolidation question.
 
  @returns Projection whose position-free consolidation keys match
@@ -1216,6 +1265,51 @@ await describe({
               expect(calls.count,).toBeGreaterThan(0,);
               expect(String(raised,),).toContain('provider-unavailable',);
             },),);
+          },
+        },),
+        it({
+          name: 'SETTLES A SOLE-LANE SLICE EXACTLY AS A TRANSLATE WIN, asking the same prompts and shipping the same '
+            + 'slice, since the consolidation and its polish run on the lane that applies (ledger L6)',
+          fn: async () => {
+            /**
+             Consolidation over the insertion with the translate lane named by a sole-lane record.
+             */
+            const soleClient = scriptedClient();
+            const sole = await driveWith({
+              client: soleClient.client,
+              modelIds: WIDE_ROSTER,
+              projected: insertionDocument(),
+              contests: [{
+                sliceIndex: 0,
+                verdict: {
+                  kind: 'sole-lane',
+                  lane: 'translate',
+                },
+                ballots: [],
+                usable: 0,
+              },],
+            },);
+            /**
+             Consolidation over the same insertion with the translate lane named by a roster win.
+             */
+            const won = scriptedClient();
+            const wonRun = await driveWith({
+              client: won.client,
+              modelIds: WIDE_ROSTER,
+              projected: insertionDocument(),
+              contests: [{
+                sliceIndex: 0,
+                verdict: {
+                  kind: 'lane-won',
+                  lane: 'translate',
+                },
+                ballots: [],
+                usable: WIDE_ROSTER.length,
+              },],
+            },);
+            expect(sole.slices,).toEqual(wonRun.slices,);
+            expect(soleClient.requests,).toEqual(won.requests,);
+            expect(soleClient.requests.length,).toBeGreaterThan(0,);
           },
         },),
         it({
