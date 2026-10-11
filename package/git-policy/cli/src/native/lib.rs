@@ -223,6 +223,12 @@ pub mod policy_events;
 /// Ordered policy execution for one lifecycle point.
 pub mod policy_engine;
 
+/// Slice 6: the exact grammar of one policy-proposed Git patch (`commit-transaction-patch.ts`).
+pub mod policy_patch_validate;
+
+/// Slice 6: one policy patch applied to the private index with `git apply --cached --3way`.
+pub mod policy_patch;
+
 /// The bounded loop that repeats a pass after corrections changed candidate content.
 pub mod policy_convergence;
 
