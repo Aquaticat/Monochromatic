@@ -114,6 +114,35 @@ function isNativeSourceGlob(scope) {
   return true;
 }
 
+/** Test timeout, in seconds, that cargo-mutants applies to each mutant when no `--timeout` option is given. */
+const defaultTimeoutSeconds = 90;
+/** Largest test timeout, in seconds, a `--timeout` option may request. */
+const maximumTimeoutSeconds = 3600;
+
+/**
+ Split `--timeout <seconds>` from the repeated `--file` scopes; the timeout defaults to `defaultTimeoutSeconds`.
+
+ @param {readonly string[]} options - command-line arguments after the script path
+ @returns {{ timeoutSeconds: number, scopeOptions: string[] }} timeout and the arguments left for `parseScopes`
+ */
+function parseTimeout(options) {
+  let timeoutSeconds = defaultTimeoutSeconds;
+  /** @type {string[]} */
+  const scopeOptions = [];
+  for (let index = 0; index < options.length; index += 2) {
+    const flag = options[index];
+    const value = options[index + 1];
+    if (flag !== '--timeout') {
+      scopeOptions.push(flag ?? '', value ?? '');
+      continue;
+    }
+    if ((value === undefined) || !/^[1-9][0-9]*$/.test(value) || (Number(value) > maximumTimeoutSeconds))
+      throw new NativeVerificationError(`--timeout must be a whole number of seconds from 1 to ${maximumTimeoutSeconds}, got ${value}.`);
+    timeoutSeconds = Number(value);
+  }
+  return { timeoutSeconds, scopeOptions };
+}
+
 /**
  Accept only repeated `--file <glob>` scopes; anything else is a usage error.
 
@@ -138,10 +167,10 @@ function parseScopes(options) {
 /**
  cargo-mutants command the campaign image runs.
 
- @param {{ scopes: readonly string[] }} request - `src/native` file globs; empty mutates every file
+ @param {{ scopes: readonly string[], timeoutSeconds: number }} request - `src/native` file globs and per-mutant test limit
  @returns {string[]} complete argument array, also recorded in the manifest
  */
-function mutationCommand({ scopes }) {
+function mutationCommand({ scopes, timeoutSeconds }) {
   return [
     'cargo',
     'mutants',
@@ -152,7 +181,7 @@ function mutationCommand({ scopes }) {
     '--build-timeout',
     '300',
     '--timeout',
-    '90',
+    String(timeoutSeconds),
     '--no-config',
     '--no-shuffle',
     '--output',
@@ -177,8 +206,9 @@ function mutationCommand({ scopes }) {
 
 /** Build and run the tool over an immutable input image, then retain its complete report. */
 async function main() {
-  const scopes = parseScopes(process.argv
+  const { timeoutSeconds, scopeOptions } = parseTimeout(process.argv
     .slice(2));
+  const scopes = parseScopes(scopeOptions);
   await using context = await mkdtempDisposable(join(
     tmpdir(),
     'cli-git-native-mutation-',
@@ -240,7 +270,7 @@ async function main() {
       'cargo-mutants',
     ),
   );
-  const command = mutationCommand({ scopes });
+  const command = mutationCommand({ scopes, timeoutSeconds });
   await writeFile(
     join(
       context.path,
