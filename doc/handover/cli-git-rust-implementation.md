@@ -1545,6 +1545,13 @@ that is verification, not a decision for the user.
   Locks, journal, capture, shadow repository, preparation, policies, landing, replay, recovery and the worktree copy
   keep full mutation gating.
   Features do not trail: signals, automatic maintenance and the linked-worktree copy are part of the cutover.
+  Widened on 2026-10-11 (user: "I authorize moving more mutation to trail the cutover"):
+  the lane mutation campaigns that were in flight (capture, replay-core, worktree-copy, the auto-push timeout reruns
+  and the slice 3 rerun) were stopped and now trail the cutover too,
+  after each lane's container gate and planted controls.
+  Each lane's `Trailing gates` heading holds what ran (mutants done, survivors and the tests that killed them)
+  and the exact rerun commands.
+  Mutation for the serial slices 6, 7 and 9 and the closing gates stays in the cutover until the user widens it again.
   Each lane records what it skipped under a `Trailing gates` heading in its evidence file.
   Trailing is not stopping (user, 2026-10-10): the cutover does not end the work.
   Right after it, without a pause, the queue continues with these gates in the order listed
