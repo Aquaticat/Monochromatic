@@ -24,6 +24,9 @@ Phase 2: manual-push listings for the content policies with the push lifecycle.
 - `8c7ab5a150` manual-push candidate listing and the push lifecycle, natively.
 - `954f6a2805` planted guard removals for the new gates, and the control test update.
 - `63625b0802` empty duplicate of `954f6a2805`, created by the commit hook; no content.
+- `1ad7cc9617` refuses a remote ref deleted after negotiation; repoints two planted controls at the tests that kill them.
+- `6648ae7512` merge of `feat/cli-git-native-transactions` (one import conflict, resolved to the transactions side).
+- `e2bf4ba277` pins the final-tree scope of a pushed tip with no published base (closes a surviving mutant).
 
 ## Modules
 
@@ -74,14 +77,14 @@ Phase 2:
 
 ## Gates
 
-Image `localhost/git-policy-native-test:autopush` (Git 2.56.0 in the container) at head `63625b0802`:
-image id `8d602839e7559351f5e6d98d2b821e8dd3276d6b3cf9d80ef46aca3bbadbaea4`.
-Container tests: lib 937 passed, 3 ignored; binary 44 passed; doc and other targets passed.
-Container Clippy with `-D warnings`: passed.
+Image `localhost/git-policy-native-test:autopush` (Git 2.56.0 in the container) at head `e2bf4ba277`:
+image id prefix `cd09d902b879`.
+Container tests: lib 939 passed, 3 ignored; binary 44 passed; doc 1 passed; Clippy build finished.
+An earlier run at the same head failed three binary tests on the 5-second time bound while host load was about 44;
+the rerun passed.
 
-Host Git 2.55.0 (`native:test:host`, full lib run at the phase 2 commit): 927 passed, 10 failed, 3 ignored.
-All 10 failures expect Git 2.56-specific output and are listed under Git 2.55 differences.
-The new host `native:clippy` run is clean.
+Host Git 2.55.0 (`native:test:host`) at head `e2bf4ba277`: lib 929 passed, 10 failed, 3 ignored.
+The 10 failures are the Git 2.56-specific tests listed under Git 2.55 differences; the set is unchanged.
 
 ## Git 2.55 differences
 
@@ -99,28 +102,34 @@ attention before cutover.
 
 ## Mutation
 
-Scoped campaign over `manual_push_probe.rs`, `manual_push_range.rs`, `manual_push_lifecycle.rs`, `post_commit.rs` and
-`policy_trigger.rs` is run with `GIT_POLICY_NATIVE_IMAGE_TAG=autopush`. Results are recorded below when the run
-finishes. A first campaign used the default tag by mistake (`development`), was killed before any planted control
-completed, and created no image.
+Lane campaign (`native-mutation-VBPL00`) over `manual_push_probe.rs`, `manual_push_range.rs`,
+`manual_push_lifecycle.rs`, `post_commit.rs` and `policy_trigger.rs`, run at `6648ae7512`:
 
-Results: not yet recorded. At the drain, the scoped campaign (command below) was still waiting for a gate slot.
-Its output file is `~/temp/agent/autopush/mutation-2.txt`, which was empty at the drain; no planted control had completed.
-Rerun command (from the worktree root, after the ~/temp move):
+- Planted controls: 18 of 18 noticed (exit 101 each). The manual-push confirmation and single-flight join controls
+  were repointed in `1ad7cc9617`. The coordinated-Git lease control is noticed after the transactions merge.
+- cargo-mutants: 110 mutants; 33 caught, 21 unviable, 1 missed, 55 timeouts, 1 baseline success.
+- The missed mutant (`manual_push_lifecycle.rs:152`, `!trees.contains` in the final-tree branch) is killed by
+  `the_pushed_scope_lists_each_final_tree_once` (commit `e2bf4ba277`); the mutation fails that test.
+- The 55 timeouts are not verified kills. The test phase limit is 90 seconds (`--timeout 90` in
+  `bin/mutate-native-container.mjs`), and the unmutated baseline test phase took about 73 seconds under host load.
+  Rerun these mutants with a larger limit on an idle host to classify them.
 
-    node "$HOME/temp/agent/gate-slot.ts" env GIT_POLICY_NATIVE_IMAGE_TAG=autopush mise run //package/git-policy/cli:native:mutation:scoped -- --file src/native/manual_push_probe.rs --file src/native/manual_push_range.rs --file src/native/manual_push_lifecycle.rs --file src/native/post_commit.rs --file src/native/policy_trigger.rs
+Shared-module campaign (`native-mutation-gSluCG`) over `candidate_prediction.rs`, `candidate_store.rs`,
+`policy_events.rs` and `wrapped_command.rs` at `e2bf4ba277`:
 
-The campaign needs image `localhost/git-policy-native-test:autopush` (id `8d602839e755`) to exist; rerun `native:test:container` first if podman pruned it.
+- 93 mutants; 56 caught, 26 unviable, 0 missed, 11 timeouts, 1 baseline success.
+- The 11 timeouts have the same cause and the same unverified status as the lane timeouts.
+- The first attempt failed its baseline on the 5-second time bound under host load and was rerun.
 
 ## Trailing gates
 
-Skipped for this lane, per the brief's trailing-gate section:
+Not run yet for the auto-push-only modules (`auto_push.rs`, `auto_push_branch_key.rs`, `auto_push_record.rs`,
+`auto_push_single_flight.rs`); they trail the cutover:
 
-- Mutation campaigns over the auto-push modules (`auto_push`, `auto_push_branch_key`, `auto_push_record`,
-  `auto_push_single_flight`). Remaining: the scoped `native:mutation:scoped` run over those four files.
+- Mutation campaign over those four files: not run.
 - Fuzz campaigns: no fuzz target names auto-push or manual-push in the plan; none added.
-- The old-and-new interop matrix: one-direction fixtures for the incumbent's branch key and record formats are present.
-- Windows checks: the probe and auto-push code is unix-only (`0o700` modes, `set_permissions`); no cfg-gated branch was added.
+- Old-and-new interop matrix: only one-direction fixtures for the incumbent's branch key and record formats exist.
+- Windows checks: the probe and auto-push code is unix-only (`0o700` modes, `set_permissions`); no cfg-gated branch added.
 
 ## Open facts and choices to veto
 
@@ -142,9 +151,9 @@ Skipped for this lane, per the brief's trailing-gate section:
 
 ## Status
 
-Phase 1 is committed and gated (container and Clippy at head `63625b0802`).
-Post-commit gate is committed and gated at the same head.
-Phase 2 listing and lifecycle are committed; the container gate at head `63625b0802` passed.
-Drained at the coordinator request (~/temp move). In flight at the drain: the scoped mutation campaign (waiting for a slot).
-Not started: mutation for candidate_prediction.rs, candidate_store.rs, policy_events.rs and wrapped_command.rs (shared modules changed here, core, so full gating applies to the changed functions); the auto-push scoped run; the final container gate after any change made after the drain.
-Remaining work after the move: record the mutation results with justifications, run the scoped mutation for the shared candidate and policy changes, and run the final container gate.
+Committed through `e2bf4ba277`. The final container gate passed at that head (lib 939, binary 44, doc 1, Clippy).
+Lane mutation: 18 of 18 planted controls noticed; 1 surviving mutant closed; 55 lane timeouts unverified.
+Shared-module mutation: 0 missed; 11 timeouts unverified.
+Host Git 2.55 check: 929 passed, 10 documented Git 2.56-specific failures.
+Remaining: rerun the timeouts on an idle host with a larger limit; run the trailing mutation campaign for the four
+auto-push-only modules; record the interop and fuzz gaps if they are to close.
