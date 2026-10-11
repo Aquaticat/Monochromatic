@@ -5,6 +5,7 @@ import {
   shortestHold,
   waitOutHold,
 } from '../budget-hold-wait.ts';
+import { wordForCount, } from '../count-word.ts';
 import { exchangeFailureLogText, } from '../exchange-failure-text.ts';
 import { markFailureWritten, } from '../overlapped-map.ts';
 import type { BudgetView, } from '../provider-budget.ts';
@@ -12,6 +13,8 @@ import {
   PROVIDER_ORDER,
   providerRecord,
 } from '../provider-name.ts';
+import { RUN_SEATS, } from '../seat-tally.ts';
+import { SEAT_WITHHOLD_ASKS, } from '../stage-quorum.ts';
 import type { RunClient, } from './run-client-contract.ts';
 import {
   type JudgeSeats,
@@ -359,6 +362,24 @@ export async function readJudgeSeats(
   const states = PROVIDER_ORDER.map(function stateOf(provider,): string {
     return `${provider}=${dry[provider] ? 'dry' : 'wet'}`;
   },);
+  /**
+   Counts of the seats the run has withheld for throwing on every ask.
+   */
+  const withheldCounts = RUN_SEATS.withheld({ minAsks: SEAT_WITHHOLD_ASKS, },);
+  /**
+   Each withheld seat with the counts that withheld it, as the line names it.
+   */
+  const threwWithheld = withheldCounts.map(
+    function reasonOf(count,): string {
+      return `${count.modelId} (threw ${String(count.threw,)} of ${String(count.asked,)} ${
+        wordForCount({
+          count: count.asked,
+          one: 'ask',
+          many: 'asks',
+        },)
+      })`;
+    },
+  );
   l.info(
     `JUDGE SEATS phase=${phase} ${states.join(' ',)} wide=${String(wideSeats.length,)} `
       + `select=${String(selectJudges.length,)} late=${String(lateJudges.length,)} `
@@ -366,6 +387,7 @@ export async function readJudgeSeats(
       + `translators=${String(translators.length,)} readers=${String(readers.length,)} `
       + `writers=${String(writers.length,)} roster=${String(roster.length,)} `
       + `withheld=${(withheld.length === 0) ? 'none' : withheld.join(',',)} `
+      + `threw-withheld=${(threwWithheld.length === 0) ? 'none' : threwWithheld.join(',',)} `
       + `waited=${String(waitMs,)}ms`,
   );
   return seats;

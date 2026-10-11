@@ -28,6 +28,10 @@ import {
   StageRosterRepeatError,
 } from './stage-roster-repeat.ts';
 import { stageQuorumUnmetFinding, } from './stage-silence.ts';
+import {
+  RUN_SEATS,
+  type SeatTally,
+} from './seat-tally.ts';
 import type { RosterModelId, } from './synthetic-catalog.ts';
 
 //region Stage quorum
@@ -62,6 +66,21 @@ import type { RosterModelId, } from './synthetic-catalog.ts';
  deadlines.
  */
 export const STAGE_RETRY_ROUNDS = 3;
+
+/**
+ Asks a seat must have been given, every one of them thrown, before the run
+ stops asking it: the most asks one gather gives a lost seat, since each of its
+ rounds asks every seat not yet heard once (`STAGE_RETRY_ROUNDS` rounds after
+ the first). A seat that fails every one of those asks has failed a whole
+ gather's worth of asks, which is enough to tell it from a seat that merely
+ lost a round.
+
+ @example
+ ```ts
+ const withheld = RUN_SEATS.withheld({ minAsks: SEAT_WITHHOLD_ASKS, },);
+ ```
+ */
+export const SEAT_WITHHOLD_ASKS: number = STAGE_RETRY_ROUNDS + 1;
 
 /**
  One heard voice with its speaker.
@@ -241,6 +260,7 @@ export async function gatherStageVoices<ValueT,>(
     graceMs,
     fanOut = 'window',
     decision,
+    seatTally = RUN_SEATS,
   }: ForeignBorrowed<{
     readonly client: SyntheticClient;
     readonly modelIds: readonly RosterModelId[];
@@ -256,6 +276,7 @@ export async function gatherStageVoices<ValueT,>(
     readonly graceMs: number;
     readonly fanOut?: FanOutMode;
     readonly decision?: StageDecision;
+    readonly seatTally?: SeatTally;
   }>,
 ): Promise<StageGather<ValueT>> {
   /**
@@ -268,6 +289,40 @@ export async function gatherStageVoices<ValueT,>(
       stage,
       duplicated,
     },);
+
+  /**
+   Counts of the seats the tally has withheld for throwing on every ask they
+   were given. Those seats are neither asked nor counted in the bench this
+   gather sizes its quorum on, so the quorum is taken over the seats left.
+   */
+  const withheldCounts = seatTally.withheld({ minAsks: SEAT_WITHHOLD_ASKS, },);
+  /**
+   The withheld seats, as a set the gather checks each stage roster against.
+   */
+  const withheldSeats = new Set<RosterModelId>(withheldCounts.map(
+    function seatOf(count,): RosterModelId {
+      return count.modelId;
+    },
+  ),);
+
+  /**
+   The roster this gather seats: every model the stage named less the withheld.
+   */
+  const seated = modelIds.filter(function notWithheld(modelId,): boolean {
+    return !withheldSeats.has(modelId,);
+  },);
+  /**
+   Withheld seats the stage named, which the gather logs by name.
+   */
+  const withheldHere = modelIds.filter(function isWithheld(modelId,): boolean {
+    return withheldSeats.has(modelId,);
+  },);
+  if (withheldHere.length > 0) {
+    l.warn(
+      `${stage}: not asking ${withheldHere.join(', ',)}, withheld for throwing on every ask; `
+        + 'the quorum is sized on the seats left',
+    );
+  }
 
   /**
    Voices a quorum needs: at least half the roster, rounded up, sized on
@@ -293,7 +348,7 @@ export async function gatherStageVoices<ValueT,>(
      Quorum on the bench as read so far.
      */
     const quorumNow = reachableQuorum({
-      benchSize: modelIds.length,
+      benchSize: seated.length,
       unreachable,
     },);
     return quorumNow.needed;
@@ -357,7 +412,7 @@ export async function gatherStageVoices<ValueT,>(
      seat is tried before a seat that just failed.
      */
     let pending: readonly RosterModelId[] = rotatedBench({
-      modelIds,
+      modelIds: seated,
       messages,
     },);
 
@@ -475,7 +530,7 @@ export async function gatherStageVoices<ValueT,>(
      model whose voice is recoverable, since an answer arrived: whole with
      only the shape defeating the guard, or cut at the length limit.
      */
-    const unreadable = modelIds.filter(function stillUnreadable(modelId,): boolean {
+    const unreadable = seated.filter(function stillUnreadable(modelId,): boolean {
       return unreadableSeats.has(modelId,);
     },);
 
@@ -525,7 +580,7 @@ export async function gatherStageVoices<ValueT,>(
    Quorum the gather closes on, sized on the seats the router could serve.
    */
   const quorum = reachableQuorum({
-    benchSize: modelIds.length,
+    benchSize: seated.length,
     unreachable: unreachable.size,
   },);
 
@@ -544,14 +599,14 @@ export async function gatherStageVoices<ValueT,>(
       shortBenchStageFinding({
         stage,
         quorum,
-        benchSize: modelIds.length,
+        benchSize: seated.length,
       },),
     ]
     : [];
   if (quorum.short) {
     l.warn(
       `${stage}: bench short of quorum, reachable ${String(quorum.reachable,)} of ${
-        String(modelIds.length,)
+        String(seated.length,)
       }; closing on ${String(quorum.needed,)} ${
         wordForCount({
           count: quorum.needed,
@@ -571,7 +626,7 @@ export async function gatherStageVoices<ValueT,>(
   /**
    Models that were asked and never answered, in roster order.
    */
-  const unheard = modelIds.filter(function askedAndNeverHeard(modelId,): boolean {
+  const unheard = seated.filter(function askedAndNeverHeard(modelId,): boolean {
     if (!asked.has(modelId,))
       return false;
     return !voices.some(function isVoice(voice,): boolean {

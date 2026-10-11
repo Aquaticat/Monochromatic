@@ -47,6 +47,7 @@ import {
   RUN_SEATS,
   seatTallyClient,
 } from '../seat-tally.ts';
+import { SEAT_WITHHOLD_ASKS, } from '../stage-quorum.ts';
 import { refusingCulledSeats, } from '../culled-seat-guard.ts';
 import type { QuotaSnapshot, } from '../synthetic-quota.ts';
 import { resolveGit, } from './git-command.ts';
@@ -1222,6 +1223,9 @@ export function runClientFrom(
           : { store: promptPayloadStore({ dir: promptPayloadDir, },), }),
       },),
       tally: RUN_SEATS,
+      // A SEAT THAT THREW ON EVERY ASK IS WITHHELD: refused at this door, and
+      // left out of the gathers' benches, so no later stage asks it again.
+      minAsks: SEAT_WITHHOLD_ASKS,
     },),
     providerDryness: budgets.read,
     providerHolds: budgets.holds,

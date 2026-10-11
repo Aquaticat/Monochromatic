@@ -12,6 +12,7 @@ import type {
   DecisionReply,
   DecisionRequest,
 } from './decision-contract.ts';
+import { NoProviderForModelError, } from './no-provider-for-model-error.ts';
 import type { RosterModelId, } from './roster-id.ts';
 
 //region Seat tally
@@ -49,7 +50,8 @@ import type { RosterModelId, } from './roster-id.ts';
 
  `usable` is text returned or a JSON outcome of kind `ok`; `unusable` is a
  JSON outcome the guard rejected (refusal-shaped or off-schema); `threw` is a
- call that never returned an outcome at all.
+ call that never returned an outcome at all and was not abandoned by its
+ caller, since a call whose caller aborted its signal is not counted.
 
  @example
  ```ts
@@ -120,6 +122,18 @@ export type SeatTally = {
    Seats asked at least once that never produced a usable answer.
    */
   readonly dark: () => readonly SeatCount[];
+
+  /**
+   Seats asked at least `minAsks` times that threw on every one of those asks,
+   so no call they made ever returned an outcome.
+
+   @param args - the number of asks a seat must have been given before it counts
+
+   @returns Counts of the withheld seats, in first-asked order
+   */
+  readonly withheld: (args: {
+    readonly minAsks: number;
+  },) => readonly SeatCount[];
 
   /**
    Forgets every count, for a new command in the same process.
@@ -235,6 +249,12 @@ export function createSeatTally(): SeatTally {
           return (count.asked > 0) && (count.usable === 0);
         },);
     },
+    withheld({ minAsks, },): readonly SeatCount[] {
+      return snapshot()
+        .filter(function threwOnEveryAsk(count,): boolean {
+          return (count.asked >= minAsks) && (count.threw === count.asked);
+        },);
+    },
     reset(): void {
       counters.clear();
     },
@@ -258,24 +278,40 @@ export const RUN_SEATS: SeatTally = createSeatTally();
  the process ends is not counted as anything. The wrapped client is otherwise
  untouched: the same reply, the same outcome, the same throw.
 
+ A SEAT THE TALLY WITHHOLDS IS REFUSED BEFORE THE INNER CLIENT IS ASKED, with
+ a `NoProviderForModelError` that a stage reads as an unreachable seat. Such a
+ refusal is not an ask, so it leaves the counts as they were.
+
+ A CALL THE CALLER ABORTED RECORDS NOTHING WHEN IT THROWS. The abort is the
+ caller leaving the call, the same as a call the process ends before it
+ settles, so a seat its callers cut off after quorum is not counted as asked
+ and cannot be withheld for it.
+
  @param inner - client whose calls are counted
 
  @param tally - where the counts go
 
+ @param minAsks - asks a seat must have been given, all of them thrown, before
+ its calls are refused
+
  @returns Client with the same surface, counting into `tally`
+
+ @throws {@link NoProviderForModelError} when the seat is withheld
 
  @example
  ```ts
- const counted = seatTallyClient({ inner: client, tally: RUN_SEATS, },);
+ const counted = seatTallyClient({ inner: client, tally: RUN_SEATS, minAsks: 4, },);
  ```
  */
 export function seatTallyClient(
   {
     inner,
     tally,
+    minAsks,
   }: {
     readonly inner: SyntheticClient;
     readonly tally: SeatTally;
+    readonly minAsks: number;
   },
 ): SyntheticClient {
   /**
@@ -283,8 +319,76 @@ export function seatTallyClient(
    this function returns keeps the narrowing.
    */
   const innerDecide = inner.decide;
+
+  /**
+   Throws when the tally has withheld the seat, before any provider is asked.
+
+   @param modelId - seat a call names
+
+   @throws {@link NoProviderForModelError} when the seat is withheld
+
+   @example
+   ```ts
+   refuseWithheld({ modelId: request.modelId, },);
+   ```
+   */
+  function refuseWithheld({ modelId, }: { readonly modelId: RosterModelId; },): void {
+    /**
+     Counts of every seat the tally has withheld.
+     */
+    const withheldCounts = tally.withheld({ minAsks, },);
+    /**
+     The seat's counts when the tally has withheld it, or none.
+     */
+    const withheldCount = withheldCounts.find(function isThisSeat(count,): boolean {
+      return count.modelId === modelId;
+    },);
+    if (withheldCount === undefined)
+      return;
+    throw new NoProviderForModelError({
+      modelId,
+      reason: `the run withheld it after it threw on all ${String(withheldCount.asked,)} ${
+        wordForCount({
+          count: withheldCount.asked,
+          one: 'ask',
+          many: 'asks',
+        },)
+      } and does not ask it again`,
+    },);
+  }
+
+  /**
+   Counts a call that threw, unless the caller had aborted its signal: an abort
+   is the caller leaving the call (a straggler cut off after quorum, a stage
+   deadline, an entry stop), not the seat failing to answer, so it is not an ask.
+
+   @param modelId - seat the call went to
+
+   @param signal - signal the call was made with
+
+   @example
+   ```ts
+   recordThrow({ modelId: request.modelId, signal: request.signal, },);
+   ```
+   */
+  function recordThrow({
+    modelId,
+    signal,
+  }: {
+    readonly modelId: RosterModelId;
+    readonly signal: AbortSignal;
+  },): void {
+    if (signal.aborted)
+      return;
+    tally.record({
+      modelId,
+      outcome: 'threw',
+    },);
+  }
+
   return {
     async chatText(request: ForeignBorrowed<ChatTextRequest>,): Promise<ChatTextReply> {
+      refuseWithheld({ modelId: request.modelId, },);
       try {
         /**
          Reply from the wrapped client.
@@ -297,9 +401,9 @@ export function seatTallyClient(
         return reply;
       }
       catch (error) {
-        tally.record({
+        recordThrow({
           modelId: request.modelId,
-          outcome: 'threw',
+          signal: request.signal,
         },);
         throw error;
       }
@@ -307,6 +411,7 @@ export function seatTallyClient(
     async chatJson<ValueT,>(
       request: ForeignBorrowed<ChatJsonRequest<ValueT>>,
     ): Promise<ChatJsonOutcome<ValueT>> {
+      refuseWithheld({ modelId: request.modelId, },);
       try {
         /**
          Outcome from the wrapped client, usable only when `ok`.
@@ -319,9 +424,9 @@ export function seatTallyClient(
         return outcome;
       }
       catch (error) {
-        tally.record({
+        recordThrow({
           modelId: request.modelId,
-          outcome: 'threw',
+          signal: request.signal,
         },);
         throw error;
       }
@@ -334,6 +439,7 @@ export function seatTallyClient(
       ? {}
       : {
         decide: async function talliedDecide(request: ForeignBorrowed<DecisionRequest>,): Promise<DecisionReply> {
+          refuseWithheld({ modelId: request.modelId, },);
           try {
             /**
              Reply from the wrapped client.
@@ -346,9 +452,9 @@ export function seatTallyClient(
             return reply;
           }
           catch (error) {
-            tally.record({
+            recordThrow({
               modelId: request.modelId,
-              outcome: 'threw',
+              signal: request.signal,
             },);
             throw error;
           }
@@ -422,7 +528,8 @@ export function seatReportLines(
   } asked `
     + `produced nothing usable this run: ${named}. A seat that fails every call is a provider that `
     + 'cannot serve it, a key that was never injected, or a model that answers nothing readable; '
-    + 'the run log names which. Do not read this run as a comparison of the roster.';
+    + 'the run log names which, and writes each failed call\'s error text on a warn line "<stage> <model>: '
+    + '<error>, voice lost" (or "seat unreachable"). Do not read this run as a comparison of the roster.';
 
   return [
     ...perSeat,
