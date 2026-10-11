@@ -7,8 +7,10 @@ for `git add` and for the direct `git cli-git check` and `git cli-git fix` comma
 the built-in `final-newline`,
 `security/forbidden-strings`
 and `mono/forbidden-root-context`.
-`markdown/autofix` and `mono/dependent-version-bump` stay unported
-and keep refusing with exit 2 whenever they are enabled.
+`markdown/autofix` stays unported
+and keeps refusing with exit 2 whenever it is enabled and the lifecycle has candidates.
+`mono/dependent-version-bump` no longer refuses: on `feat/cli-git-native-dependent-version` it is wired
+(see `doc/handover/cli-git-native-dependent-version.md`, section "Wiring into the native executable").
 
 Paths starting with `src/` or `bin/` are relative to `package/git-policy/cli/`;
 every other path is repository-relative.
@@ -172,7 +174,10 @@ Commit `30ce6cab5`.
   the incumbent's code for the same failure.
 - `final-newline` (`src/native/policy_final_newline.rs`) and `mono/forbidden-root-context`
   (`src/native/policy_root_context.rs`) check the candidates with the incumbent's codes and messages.
-- `markdown/autofix` and `mono/dependent-version-bump` answer `Unavailable` wherever the lifecycle has candidates,
+- Superseded on `feat/cli-git-native-dependent-version`: `mono/dependent-version-bump` is wired
+  and no longer answers `Unavailable`.
+- At this commit, `markdown/autofix` and `mono/dependent-version-bump` answered `Unavailable`
+  wherever the lifecycle has candidates,
   naming "the native Markdown linter" and "planning dependent version bumps".
   `security/forbidden-strings` and a `direct-fix` correction did the same at this commit,
   until their own slices.
@@ -525,7 +530,8 @@ which does not convert;
 - `git add`,
   `git cli-git check` and `git cli-git fix` run `final-newline`,
   `mono/forbidden-root-context` and `security/forbidden-strings` and refuse nothing for them.
-- Whenever `markdown/autofix` or `mono/dependent-version-bump` is enabled
+- Whenever `markdown/autofix` or `mono/dependent-version-bump` was enabled at this commit
+  (the dependent-version refusal is superseded on `feat/cli-git-native-dependent-version`),
   and the lifecycle has candidates,
   the command still refuses with exit status 2 and the existing one-line notice,
   for example
@@ -703,7 +709,7 @@ none was fixed.
   it keeps refusing.
 - `mono/dependent-version-bump` needs native dependent-version planning,
   which another branch ports;
-  it keeps refusing,
+  it kept refusing at this commit (superseded on `feat/cli-git-native-dependent-version`, which wires it),
   and this branch did not touch those modules.
 - Manual-push listings,
   commit transactions and post-commit candidates are outside this branch.

@@ -61,6 +61,7 @@ pub struct ReadingRect {
 /// type ShapedRow = { row: number; top: number; sourceStart: number; projection: Projection; layout: Layout;
 ///   baseline: number; baselineShift: number };
 /// ```
+#[derive(Clone)]
 pub struct ShapedRow {
     /// Global logical source line.
     pub row: usize,

@@ -87,6 +87,13 @@ doc = false
 bench = false
 
 [[bin]]
+name = "dependent_version"
+path = "fuzz_targets/dependent_version.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
 name = "linter_output"
 path = "fuzz_targets/linter_output.rs"
 test = false

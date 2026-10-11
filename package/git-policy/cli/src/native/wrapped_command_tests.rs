@@ -25,7 +25,7 @@ use crate::config_file::CONFIG_FILE_NAME;
 use crate::diagnostics::EngineFailureCode;
 /// The event form of a pathname.
 use crate::event_path::EventPath;
-use crate::policy_checks::{DEPENDENT_VERSION_BUMP_NEEDS, ShippedChecks, shipped_checks};
+use crate::policy_checks::{ShippedChecks, shipped_checks};
 use crate::policy_content::LifecycleContent;
 use crate::policy_events::{FindingEvent, PolicyEvent, render_policy_events};
 use crate::policy_registry::{PolicyId, Severity};
@@ -123,11 +123,6 @@ fn not_at_root(root: &str, severity: Severity) -> PolicyEvent {
 /// The manual-push refusal.
 fn manual_push_refused() -> WrappedOutcome {
     return refuses(&Unported::Lifecycle(Trigger::ManualPush), "push");
-}
-
-/// The refusal of an unported content policy asked about what `git add` would stage.
-fn content_refused(policy: PolicyId, needs: &'static str) -> WrappedOutcome {
-    return refuses(&Unported::PolicyNeeds { policy, needs }, "add");
 }
 
 /// The failure of `final-newline` reading candidates the scripted facts cannot prepare.
@@ -469,10 +464,7 @@ fn configuration_selects_the_policies_of_a_guarded_command() {
     .expect("configuration");
     assert_eq!(
         run(&["add", "file"], at_root(root.as_path()), &[]),
-        (
-            content_refused(PolicyId::DependentVersionBump, DEPENDENT_VERSION_BUMP_NEEDS),
-            location_only()
-        )
+        (forwards(&["add", "file"]), location_only())
     );
     // That policy has no manual-push trigger, so a push is not gated by it.
     assert_eq!(

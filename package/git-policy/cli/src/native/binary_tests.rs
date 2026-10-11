@@ -60,3 +60,7 @@ mod event_path;
 /// The `git cli-git` management namespace.
 #[path = "binary_management_tests.rs"]
 mod management;
+
+/// The dependent-version policy on direct check and fix.
+#[path = "binary_dependent_version_tests.rs"]
+mod dependent_version;

@@ -10,6 +10,7 @@ import { cp, mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 
+import { dependentVersionPlants } from './planted-dependent-version.mjs';
 import { markdownPlants } from './planted-markdown.mjs';
 
 /** Preserve the failed verification boundary rather than masking it with a cleanup error. */
@@ -144,6 +145,7 @@ const plants = [
       to: 'if content_end < bytes.len() {',
     }],
   },
+  ...dependentVersionPlants,
   ...markdownPlants,
 ];
 

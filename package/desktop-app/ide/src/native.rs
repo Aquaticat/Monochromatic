@@ -160,6 +160,9 @@ mod navigation_reveal_tests;
 /// Native project callbacks exercise actual reader/timer and source replacement boundaries.
 #[cfg(test)]
 mod navigation_tests;
+/// Scrolling inside the overscan tile does no source work, and leaving it re-centers the tile once.
+#[cfg(test)]
+mod overscan_tile_tests;
 /// Real pointer events select by character,
 ///  word,
 ///  and line,
@@ -406,6 +409,26 @@ struct State {
     ///  on change notifications,
     ///  or on a timer while unwatched.
     refresh: SourceRefresh,
+    /// What:
+    ///  Calls of `render`, counted in debug builds for the structural tests of the overscan tile.
+    /// Why:
+    ///  A scroll inside the tile must not even enter `render`, which would still update models.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// renders?: number;
+    /// ```
+    #[cfg(debug_assertions)]
+    renders: u64,
+    /// Source tiles rasterized, counted in debug builds: one per re-center.
+    #[cfg(debug_assertions)]
+    tiles_painted: u64,
+    /// Source rows shaped, counted in debug builds: a row taken from the cache is not counted.
+    #[cfg(debug_assertions)]
+    rows_shaped: u64,
+    /// Source images set on the window, counted in debug builds.
+    #[cfg(debug_assertions)]
+    images_set: u64,
 }
 
 /// Construct the same reading state for the application and headless native event tests.
@@ -447,6 +470,14 @@ impl State {
             outside_project: false,
             pending_jump: None,
             refresh: SourceRefresh::default(),
+            #[cfg(debug_assertions)]
+            renders: 0,
+            #[cfg(debug_assertions)]
+            tiles_painted: 0,
+            #[cfg(debug_assertions)]
+            rows_shaped: 0,
+            #[cfg(debug_assertions)]
+            images_set: 0,
         };
     }
 }

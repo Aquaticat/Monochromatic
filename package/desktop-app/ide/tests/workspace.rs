@@ -3,9 +3,9 @@
 /// The same project boundary will serve tree and search navigation.
 use ide_app::workspace::Workspace;
 /// Native names and Unix symlinks exercise paths without UI-string normalization.
-use std::{fs, os::unix::fs::symlink, path::Path};
+use std::{ffi::OsString, fs, os::unix::fs::symlink, path::Path};
 
-/// Hidden entries and native names retain filesystem enumeration order and accurate directory kinds.
+/// Hidden entries and native names arrive in display order with accurate directory kinds.
 #[test]
 fn listing_matches_dirents_and_refreshes_from_disk() {
     let fixture = tempfile::tempdir().expect("disposable project");
@@ -13,10 +13,11 @@ fn listing_matches_dirents_and_refreshes_from_disk() {
     fs::write(fixture.path().join(".hidden"), "hidden").expect("hidden fixture");
     fs::write(fixture.path().join("猫 'quoted'.ts"), "const 猫 = 1;").expect("Unicode fixture");
     let project = Workspace::new(fixture.path()).expect("open project");
-    let expected = fs::read_dir(fixture.path())
-        .expect("reference dirents")
-        .map(|entry| return entry.expect("reference entry").file_name())
-        .collect::<Vec<_>>();
+    let expected = vec![
+        OsString::from(".hidden"),
+        OsString::from("src"),
+        OsString::from("猫 'quoted'.ts"),
+    ];
     let first = project.list(Path::new(".")).expect("initial listing");
     assert_eq!(
         first
@@ -35,6 +36,19 @@ fn listing_matches_dirents_and_refreshes_from_disk() {
     let second = project.list(Path::new(".")).expect("fresh listing");
     assert_eq!(second.len(), first.len() + 1);
     assert!(second.iter().any(|entry| return entry.name == "new.rs"));
+    assert_eq!(
+        second
+            .iter()
+            .map(|entry| return entry.name.clone())
+            .collect::<Vec<_>>(),
+        vec![
+            OsString::from(".hidden"),
+            OsString::from("new.rs"),
+            OsString::from("src"),
+            OsString::from("猫 'quoted'.ts"),
+        ],
+        "a new file takes its place in the display order"
+    );
 }
 
 /// Relative paths use the project root,

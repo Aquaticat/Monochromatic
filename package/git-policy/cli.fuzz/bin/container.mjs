@@ -22,6 +22,7 @@ const targets = [
   { name: 'stage_listing', dictionary: 'stage_listing.dict' },
   { name: 'rules_file', dictionary: 'rules_file.dict' },
   { name: 'final_newline', dictionary: 'final_newline.dict' },
+  { name: 'dependent_version', dictionary: 'dependent_version.dict' },
   { name: 'linter_output', dictionary: 'linter_output.dict' },
   { name: 'event_path', dictionary: 'event_path.dict' },
   { name: 'linter_config', dictionary: 'linter_config.dict' },
