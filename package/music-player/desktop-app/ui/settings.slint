@@ -1,6 +1,7 @@
 // Settings page that lists the two template rows under a Templates heading (D87, D99). The host supplies each row's
 // line from the applied template, and a tap reports which row to open. The page holds nothing else.
 import { Theme } from "theme.slint";
+import { StateLayer } from "state_layer.slint";
 
 // One row of the Templates section: the template's heading and the line it currently yields.
 export struct SettingsTemplateRow {
@@ -33,12 +34,16 @@ export component SettingsPage inherits Rectangle {
         height: 72px;
         background: Theme.surface-high;
 
-        back-touch := TouchArea {
-            x: 16px;
-            y: 12px;
-            width: 48px;
-            height: 48px;
-            clicked => { root.back(); }
+        // Circular hover and pressed layer, 40 px centered in the 48 px Back target.
+        StateLayer {
+            x: 20px;
+            y: 16px;
+            width: 40px;
+            height: 40px;
+            radius: 20px;
+            tint: Theme.on-surface;
+            hovered: back-touch.has-hover;
+            pressed: back-touch.pressed;
         }
         Path {
             x: 28px;
@@ -49,6 +54,14 @@ export component SettingsPage inherits Rectangle {
             viewbox-height: 24;
             commands: root.back-path;
             fill: Theme.on-surface;
+        }
+        back-touch := TouchArea {
+            x: 16px;
+            y: 12px;
+            width: 48px;
+            height: 48px;
+            mouse-cursor: pointer;
+            clicked => { root.back(); }
         }
         Text {
             x: 72px;
@@ -97,6 +110,12 @@ export component SettingsPage inherits Rectangle {
             // between rows already separate the parts.
             for row[index] in root.rows : Rectangle {
                 height: 64px;
+                // Rectangular hover and pressed layer over the whole template row, below its labels.
+                StateLayer {
+                    tint: Theme.on-surface;
+                    hovered: row-touch.has-hover;
+                    pressed: row-touch.pressed;
+                }
                 Text {
                     x: 16px;
                     y: 10px;
@@ -117,11 +136,12 @@ export component SettingsPage inherits Rectangle {
                     color: Theme.on-surface-variant;
                     overflow: elide;
                 }
-                TouchArea {
+                row-touch := TouchArea {
                     x: 0px;
                     y: 0px;
                     width: parent.width;
                     height: 64px;
+                    mouse-cursor: pointer;
                     clicked => { root.open-template(index); }
                 }
             }

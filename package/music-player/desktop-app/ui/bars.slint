@@ -1,6 +1,7 @@
 // Top bars for the player screens: the folded cover row, the unfolded Folders header, and the unfolded track header.
 // Ports PlayerTopBars.kt. Glyph path data is copied from PlayerIcons.kt on a 24 by 24 grid.
 import { Theme } from "theme.slint";
+import { StateLayer } from "state_layer.slint";
 
 // Magnifying glass glyph for the search action (PlayerIcons.kt SEARCH_PATH).
 component SearchGlyph inherits Path {
@@ -61,9 +62,21 @@ component IconTarget inherits Rectangle {
 
     width: 48px;
     height: 48px;
-    TouchArea {
+    // Circular hover and pressed layer, 40 px centered in the 48 px target.
+    StateLayer {
+        x: 4px;
+        y: 4px;
+        width: 40px;
+        height: 40px;
+        radius: 20px;
+        tint: Theme.on-surface;
+        hovered: touch.has-hover;
+        pressed: touch.pressed;
+    }
+    touch := TouchArea {
         accessible-role: button;
         accessible-label: root.label;
+        mouse-cursor: pointer;
         clicked => {
             root.clicked();
         }
@@ -84,6 +97,13 @@ component OpenPill inherits Rectangle {
         width: parent.width;
         border-radius: 20px;
         background: Theme.secondary-container;
+        // Hover and pressed layer over the tonal pill, in the pill's own content color.
+        StateLayer {
+            radius: 20px;
+            tint: Theme.on-secondary-container;
+            hovered: open-touch.has-hover;
+            pressed: open-touch.pressed;
+        }
         FolderOpenGlyph {
             x: 16px;
             y: 11px;
@@ -99,9 +119,10 @@ component OpenPill inherits Rectangle {
             color: Theme.on-secondary-container;
         }
     }
-    TouchArea {
+    open-touch := TouchArea {
         accessible-role: button;
         accessible-label: "Open dir";
+        mouse-cursor: pointer;
         clicked => {
             root.clicked();
         }
@@ -165,17 +186,15 @@ export component CoverTopRow inherits Rectangle {
         y: 4px;
         height: 48px;
         width: max(0px, (root.show-search ? open-pill.x - 56px : open-pill.x) - 8px - 16px);
-        TouchArea {
-            accessible-role: button;
-            accessible-label: "Folder: " + root.folder-title;
-            accessible-expandable: true;
-            accessible-expanded: root.picker-open;
-            accessible-action-default => {
-                root.toggle-picker();
-            }
-            clicked => {
-                root.toggle-picker();
-            }
+        // Pill-shaped hover and pressed layer over the whole trigger, 40 px tall in the 48 px target.
+        StateLayer {
+            y: 4px;
+            width: parent.width;
+            height: 40px;
+            radius: 20px;
+            tint: Theme.on-surface;
+            hovered: trigger-touch.has-hover;
+            pressed: trigger-touch.pressed;
         }
         title := Text {
             x: 0px;
@@ -197,6 +216,19 @@ export component CoverTopRow inherits Rectangle {
         if !root.picker-open: CaretDownGlyph {
             x: title.width;
             y: 12px;
+        }
+        trigger-touch := TouchArea {
+            accessible-role: button;
+            accessible-label: "Folder: " + root.folder-title;
+            accessible-expandable: true;
+            accessible-expanded: root.picker-open;
+            accessible-action-default => {
+                root.toggle-picker();
+            }
+            mouse-cursor: pointer;
+            clicked => {
+                root.toggle-picker();
+            }
         }
     }
 }

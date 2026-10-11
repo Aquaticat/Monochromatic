@@ -1,6 +1,7 @@
 // Folder picker pane: a one-column letter rail beside plain-text folder names, per D17, D28 and D31.
 // Ports FolderPickerPane.kt. Sizes are the Android logical-pixel values from the same file.
 import { Theme } from "theme.slint";
+import { StateLayer } from "state_layer.slint";
 
 // One rail cell. `key` identifies the cell in callbacks; `label` is the text drawn in the rail.
 export struct FolderRailCell {
@@ -83,6 +84,17 @@ export component FolderPickerPane inherits Rectangle {
                     border-radius: 16px;
                     background: cell.key == root.shown-cell ? Theme.secondary-container : transparent;
                 }
+                // Hover and pressed layer on the same 32 px circle, in the content color of the circle beneath it.
+                StateLayer {
+                    x: 8px;
+                    y: 8px;
+                    width: 32px;
+                    height: 32px;
+                    radius: 16px;
+                    tint: cell.key == root.shown-cell ? Theme.on-secondary-container : Theme.on-surface;
+                    hovered: cell-touch.has-hover;
+                    pressed: cell-touch.pressed;
+                }
                 Text {
                     width: parent.width;
                     height: parent.height;
@@ -92,11 +104,12 @@ export component FolderPickerPane inherits Rectangle {
                     font-size: Theme.label-large;
                     color: cell.key == root.shown-cell ? Theme.primary : Theme.on-surface-variant;
                 }
-                TouchArea {
+                cell-touch := TouchArea {
                     accessible-role: radio-button;
                     accessible-label: cell.label;
                     accessible-checkable: true;
                     accessible-checked: cell.key == root.shown-cell;
+                    mouse-cursor: pointer;
                     clicked => {
                         root.tapped-cell = cell.key;
                         root.request-scroll(cell.key);
@@ -131,7 +144,7 @@ export component FolderPickerPane inherits Rectangle {
                 flex-wrap: wrap;
                 // 8 px spacing plus 4 px text padding on each side gives a 16 px gap between names.
                 spacing-horizontal: 8px;
-                for row[index] in root.names: Rectangle {
+                for row[index] in root.names: name-row := Rectangle {
                     // Heading rows after the first add a 16 px gap above them, the section gap of the Android list.
                     property <length> section-gap: row.section-start && index > 0 ? 16px : 0px;
                     property <bool> selected: !row.section-start && row.name == root.current-folder;
@@ -145,6 +158,24 @@ export component FolderPickerPane inherits Rectangle {
                             names-flick.viewport-y = max(
                                 names-flick.height - names-column.preferred-height,
                                 min(0px, -(names-flow.y + self.y + self.section-gap)));
+                        }
+                    }
+                    // Name target for each name row: a rectangular hover and pressed layer and the tap area, under the labels.
+                    if !row.section-start: Rectangle {
+                        StateLayer {
+                            tint: Theme.on-surface;
+                            hovered: name-touch.has-hover;
+                            pressed: name-touch.pressed;
+                        }
+                        name-touch := TouchArea {
+                            accessible-role: button;
+                            accessible-label: row.name;
+                            accessible-checkable: true;
+                            accessible-checked: name-row.selected;
+                            mouse-cursor: pointer;
+                            clicked => {
+                                root.select-folder(row.name);
+                            }
                         }
                     }
                     // Heading label: title-large in primary, 8 px below the section gap, aligned with the names.
@@ -181,15 +212,6 @@ export component FolderPickerPane inherits Rectangle {
                         width: parent.width;
                         height: 2px;
                         background: Theme.primary;
-                    }
-                    if !row.section-start: TouchArea {
-                        accessible-role: button;
-                        accessible-label: row.name;
-                        accessible-checkable: true;
-                        accessible-checked: parent.selected;
-                        clicked => {
-                            root.select-folder(row.name);
-                        }
                     }
                 }
             }

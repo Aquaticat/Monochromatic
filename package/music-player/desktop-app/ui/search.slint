@@ -2,6 +2,7 @@
 // places the page and supplies the inset that keeps content clear of the crease, so this component draws only
 // its own header, status block and result rows.
 import { Theme } from "theme.slint";
+import { StateLayer } from "state_layer.slint";
 import { ListView } from "std-widgets.slint";
 
 // One piece of a result line. The Rust side splits every line at each visible query match, so a line is a
@@ -87,12 +88,16 @@ export component SearchPage inherits Rectangle {
         height: root.header-height;
         background: Theme.surface-high;
 
-        back-touch := TouchArea {
-            x: root.content-start-x;
-            y: (parent.height - Theme.touch-target) / 2;
-            width: Theme.touch-target;
-            height: Theme.touch-target;
-            clicked => { root.back(); }
+        // Circular hover and pressed layer, 40 px centered in the 48 px Back target.
+        StateLayer {
+            x: root.content-start-x + 4px;
+            y: (parent.height - Theme.touch-target) / 2 + 4px;
+            width: 40px;
+            height: 40px;
+            radius: 20px;
+            tint: Theme.on-surface;
+            hovered: back-touch.has-hover;
+            pressed: back-touch.pressed;
         }
         Path {
             x: root.content-start-x + (Theme.touch-target - root.icon-size) / 2;
@@ -103,6 +108,14 @@ export component SearchPage inherits Rectangle {
             viewbox-height: 24;
             commands: root.back-path;
             fill: Theme.on-surface;
+        }
+        back-touch := TouchArea {
+            x: root.content-start-x;
+            y: (parent.height - Theme.touch-target) / 2;
+            width: Theme.touch-target;
+            height: Theme.touch-target;
+            mouse-cursor: pointer;
+            clicked => { root.back(); }
         }
 
         field := TextInput {
@@ -133,16 +146,17 @@ export component SearchPage inherits Rectangle {
         }
 
         // Clear appears only while the field has text (D65 keeps focus where it is).
-        clear-touch := TouchArea {
-            x: root.width - root.end-inset - Theme.touch-target;
-            y: (parent.height - Theme.touch-target) / 2;
-            width: Theme.touch-target;
-            height: Theme.touch-target;
-            visible: field.text != "";
-            clicked => {
-                field.text = "";
-                root.clear();
-            }
+        // Circular hover and pressed layer, 40 px centered in the 48 px Clear target.
+        StateLayer {
+            x: root.width - root.end-inset - Theme.touch-target + 4px;
+            y: (parent.height - Theme.touch-target) / 2 + 4px;
+            width: 40px;
+            height: 40px;
+            radius: 20px;
+            tint: Theme.on-surface;
+            disabled: field.text == "";
+            hovered: clear-touch.has-hover;
+            pressed: clear-touch.pressed;
         }
         Path {
             x: root.width - root.end-inset - Theme.touch-target + (Theme.touch-target - root.icon-size) / 2;
@@ -154,6 +168,18 @@ export component SearchPage inherits Rectangle {
             commands: root.clear-path;
             fill: Theme.on-surface;
             visible: field.text != "";
+        }
+        clear-touch := TouchArea {
+            x: root.width - root.end-inset - Theme.touch-target;
+            y: (parent.height - Theme.touch-target) / 2;
+            width: Theme.touch-target;
+            height: Theme.touch-target;
+            visible: field.text != "";
+            mouse-cursor: pointer;
+            clicked => {
+                field.text = "";
+                root.clear();
+            }
         }
     }
 
@@ -272,11 +298,13 @@ export component SearchPage inherits Rectangle {
             width: results.width;
             height: root.row-height;
 
-            // Tapping the whole row opens the result.
-            row-touch := TouchArea {
+            // Hover and pressed layer over the whole row, below the glyph and the text.
+            StateLayer {
                 width: parent.width;
                 height: parent.height;
-                clicked => { root.open(row.index); }
+                tint: Theme.on-surface;
+                hovered: row-touch.has-hover;
+                pressed: row-touch.pressed;
             }
 
             // Glyph in the 48 px slot, centered on the same axis as the Back arrow.
@@ -324,6 +352,13 @@ export component SearchPage inherits Rectangle {
                         }
                     }
                 }
+            }
+            // Tapping the whole row opens the result.
+            row-touch := TouchArea {
+                width: parent.width;
+                height: parent.height;
+                mouse-cursor: pointer;
+                clicked => { root.open(row.index); }
             }
         }
     }
