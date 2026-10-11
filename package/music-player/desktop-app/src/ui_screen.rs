@@ -141,6 +141,7 @@ pub(crate) fn project(app: &AppWindow) {
     app.set_folder_title(screen.folder_title.as_str().into());
     app.set_track_rows(model_of(screen.rows.iter().map(track_row).collect()));
     app.set_scroll_to_row(screen.scroll_row);
+    app.set_folder_scroll_row(screen.folder_scroll_row);
     app.set_rail_cells(model_of(
         screen
             .picker
@@ -168,6 +169,7 @@ pub(crate) fn project(app: &AppWindow) {
     app.set_current_cell(screen.picker.current_cell.as_str().into());
     app.set_library_name(read_state(|state| return state.library_heading()).into());
     app.set_deck_title(screen.deck_title.as_str().into());
+    app.set_deck_folder(screen.deck_folder.as_str().into());
     app.set_deck_subtitle(screen.deck_subtitle.as_str().into());
     app.set_shuffle_folder_label(screen.shuffle_folder_label.as_str().into());
     app.set_picker_open(read_state(|state| return state.picker_open));

@@ -3,6 +3,7 @@
 // lays it out at the bottom of a pane and never clips it.
 import { Theme } from "theme.slint";
 import { DeckLabels } from "deck_labels.slint";
+import { StateLayer } from "state_layer.slint";
 
 // One connected segment of the mode control. The outline has square inner corners and rounds only
 // the corners the group exposes, so adjacent segments share one hairline.
@@ -48,6 +49,10 @@ component ModeSegment inherits Rectangle {
     in property <length> content-pad;
     // Spoken label for assistive technology, with the full folder name in the shuffle segment.
     in property <string> spoken;
+    // Content color of the segment's surface, which tints the hover and pressed layer.
+    property <color> layer-tint: root.selected ? Theme.on-secondary-container : Theme.on-surface;
+    // Opacity of the hover or pressed layer: 8 percent on hover and 12 percent while pressed, as StateLayer uses.
+    property <float> layer-alpha: segment-touch.pressed ? 0.12 : (segment-touch.has-hover ? 0.08 : 0);
     // Edge length of the check mark glyph.
     property <length> check-size: 18px;
     // Label width after clamping to the room left by the padding and the check mark.
@@ -57,11 +62,12 @@ component ModeSegment inherits Rectangle {
     // Left edge of the content, centered in the segment.
     property <length> content-x: max(0px, (root.width - root.content-width) / 2);
 
-    // Outline and selected fill. The half-pixel inset keeps the 1px stroke crisp inside the segment bounds.
+    // Outline, selected fill and hover tint. The tint is part of the fill because a segment's corners differ,
+    // and StateLayer takes one radius. The half-pixel inset keeps the 1px stroke crisp inside the segment bounds.
     Path {
         width: root.width;
         height: root.height;
-        fill: root.selected ? Theme.secondary-container : transparent;
+        fill: root.selected ? Theme.secondary-container.mix(root.layer-tint, 1 - root.layer-alpha) : root.layer-tint.with-alpha(root.layer-alpha);
         stroke: Theme.outline;
         stroke-width: 1px;
 
@@ -147,7 +153,7 @@ component ModeSegment inherits Rectangle {
     }
 
     // Whole segment is the touch target, never smaller than 48px tall because the parent sets the height.
-    TouchArea {
+    segment-touch := TouchArea {
         mouse-cursor: pointer;
         accessible-role: radio-button;
         accessible-label: root.spoken;
@@ -162,8 +168,10 @@ component ModeSegment inherits Rectangle {
 // The transport deck. Every size is in logical pixels, and `text-scale` multiplies only the fonts,
 // so the 200 percent text capture grows its labels while the 48px targets keep their size.
 export component TransportDeck inherits Rectangle {
-    // Title of the playing track, drawn bold and centered.
+    // Title of the playing track, drawn bold on the title line.
     in property <string> title;
+    // Folder that holds the playing track, drawn before the title with a separator; empty hides the folder part.
+    in property <string> folder;
     // Preformatted line under the title, such as the track index and loudness.
     in property <string> subtitle;
     // Playhead in seconds.
@@ -191,8 +199,10 @@ export component TransportDeck inherits Rectangle {
     callback next();
     // Requests selection of one playback mode, using the same 0 to 3 numbering as `mode`.
     callback select-mode(int);
-    // Requests that the track list shows the playing track; fired by a click on the title and subtitle.
+    // Requests that the track list shows the playing track; fired by a click on the title part of the heading.
     callback reveal-playing();
+    // Requests that the track list shows the folder of the playing track; fired by a click on the folder part of the heading.
+    callback reveal-folder();
     // False when there is no list to jump in (Search is open), so the heading is plain text with no click target.
     in property <bool> reveal-enabled: true;
 
@@ -243,19 +253,117 @@ export component TransportDeck inherits Rectangle {
         return max(0, min(1, x / root.slider-w));
     }
 
-    // ---- Heading: title and subtitle, centered. ----
-    // Title text; its preferred height sets the heading block height.
+    // ---- Heading: folder, separator and title on one centered title line, subtitle under it. ----
+    // Hidden probes measure the folder, separator and title so the title line can be centered and each part elided.
+    m-folder := Text {
+        opacity: 0;
+        accessible-role: none;
+        text: root.folder;
+        font-size: root.font-title;
+        font-family: root.font-family;
+        font-weight: 500;
+        wrap: no-wrap;
+    }
+    // Separator probe, measuring the same text the separator draws.
+    m-sep := Text {
+        opacity: 0;
+        accessible-role: none;
+        text: " / ";
+        font-size: root.font-title;
+        font-family: root.font-family;
+        wrap: no-wrap;
+    }
+    // Title probe at the title weight.
+    m-title := Text {
+        opacity: 0;
+        accessible-role: none;
+        text: root.title;
+        font-size: root.font-title;
+        font-family: root.font-family;
+        font-weight: 700;
+        wrap: no-wrap;
+    }
+
+    // Folder part width: its full text, capped at 40 percent of the deck width, and zero when no folder is shown.
+    property <length> folder-w: root.folder == "" ? 0px : min(m-folder.preferred-width, root.width * 0.4);
+    // Separator width, present only together with a folder part.
+    property <length> sep-w: root.folder == "" ? 0px : m-sep.preferred-width;
+    // Title part width: its full text, or the room left after the folder part and the separator.
+    property <length> title-w: min(m-title.preferred-width, max(0px, root.width - root.folder-w - root.sep-w));
+    // Width of the whole title line.
+    property <length> title-line-w: root.folder-w + root.sep-w + root.title-w;
+    // Left edge of the title line, which centers it in the deck.
+    property <length> title-line-x: max(0px, (root.width - root.title-line-w) / 2);
+    // Height of the title line click targets, from the deck's top edge and at least 48 px tall.
+    property <length> title-line-h: max(root.target, root.pad-y + title-text.height);
+
+    // Hover and pressed layer behind the folder part, drawn under its text.
+    StateLayer {
+        x: root.title-line-x;
+        y: 0px;
+        width: root.folder-w;
+        height: root.title-line-h;
+        radius: 8px;
+        hovered: folder-touch.has-hover;
+        pressed: folder-touch.pressed;
+        disabled: !root.reveal-enabled;
+        tint: Theme.on-surface-variant;
+    }
+    // Hover and pressed layer behind the title part, drawn under its text.
+    StateLayer {
+        x: root.title-line-x + root.folder-w + root.sep-w;
+        y: 0px;
+        width: root.title-w;
+        height: root.title-line-h;
+        radius: 8px;
+        hovered: title-touch.has-hover;
+        pressed: title-touch.pressed;
+        disabled: !root.reveal-enabled;
+        tint: Theme.on-surface;
+    }
+
+    // Folder part of the title line, elided at its end.
+    folder-text := Text {
+        x: root.title-line-x;
+        y: title-text.y;
+        width: root.folder-w;
+        height: title-text.height;
+        text: root.folder;
+        font-size: root.font-title;
+        font-family: root.font-family;
+        font-weight: 500;
+        color: Theme.on-surface-variant;
+        horizontal-alignment: left;
+        wrap: no-wrap;
+        overflow: elide;
+        visible: root.folder != "";
+    }
+    // Separator between the folder part and the title part.
+    sep-text := Text {
+        x: root.title-line-x + root.folder-w;
+        y: title-text.y;
+        width: root.sep-w;
+        height: title-text.height;
+        text: " / ";
+        font-size: root.font-title;
+        font-family: root.font-family;
+        color: Theme.on-surface-variant;
+        horizontal-alignment: left;
+        wrap: no-wrap;
+        visible: root.folder != "";
+    }
+    // Title part of the title line, elided at its end; its preferred height sets the heading block height.
     title-text := Text {
-        x: 0px;
+        x: root.title-line-x + root.folder-w + root.sep-w;
         y: root.pad-y;
-        width: root.width;
+        width: root.title-w;
         height: max(self.preferred-height, root.font-title * 1.5);
         text: root.title;
         font-size: root.font-title;
         font-family: root.font-family;
         font-weight: 700;
         color: Theme.on-surface;
-        horizontal-alignment: center;
+        horizontal-alignment: left;
         wrap: no-wrap;
         overflow: elide;
     }
@@ -274,12 +382,28 @@ export component TransportDeck inherits Rectangle {
         overflow: elide;
     }
 
-    // Click target over the whole heading, from the deck's top edge so it is at least 48 px high: jumps to the playing track.
-    reveal-touch := TouchArea {
-        x: 0px;
+    // Click target over the folder part of the title line, from the deck's top edge so it is at least 48 px high.
+    folder-touch := TouchArea {
+        x: root.title-line-x;
         y: 0px;
-        width: root.width;
-        height: max(root.target, root.pad-y + title-text.height + subtitle-text.height);
+        width: root.folder-w;
+        height: root.title-line-h;
+        visible: root.folder != "";
+        enabled: root.reveal-enabled;
+        mouse-cursor: root.reveal-enabled ? pointer : default;
+        accessible-role: button;
+        accessible-label: "Show folder of playing track";
+        clicked => {
+            root.reveal-folder();
+        }
+    }
+    // Click target over the title part of the title line, the same height as the folder target: jumps to the playing track.
+    title-touch := TouchArea {
+        x: root.title-line-x + root.folder-w + root.sep-w;
+        y: 0px;
+        width: root.title-w;
+        height: root.title-line-h;
+        visible: root.title != "";
         enabled: root.reveal-enabled;
         mouse-cursor: root.reveal-enabled ? pointer : default;
         accessible-role: button;
@@ -386,17 +510,18 @@ export component TransportDeck inherits Rectangle {
         border-radius: 2px;
         background: Theme.primary;
     }
-    // Thumb drawn as a thin vertical bar at the playhead.
+    // Thumb drawn as a thin vertical bar at the playhead; it widens slightly while the pointer is over the track.
     Rectangle {
-        x: root.thumb-x - root.thumb-w / 2;
+        x: root.thumb-x - self.width / 2;
         y: root.seek-y + (root.target - root.thumb-h) / 2;
-        width: root.thumb-w;
+        width: root.thumb-w + (seek-touch.has-hover ? 2px : 0px);
         height: root.thumb-h;
-        border-radius: root.thumb-w / 2;
+        border-radius: self.width / 2;
         background: Theme.primary;
+        animate width { duration: 100ms; }
     }
     // Pointer area over the track; a press or a drag reports the absolute seek position.
-    TouchArea {
+    seek-touch := TouchArea {
         x: root.slider-x;
         y: root.seek-y;
         width: root.slider-w;
@@ -424,7 +549,7 @@ export component TransportDeck inherits Rectangle {
     property <length> transport-x: (root.width - (root.target * 3 + root.control-gap * 2)) / 2;
 
     // Previous button: outlined circle in a 48px target.
-    TouchArea {
+    prev-touch := TouchArea {
         x: root.transport-x;
         y: root.transport-y;
         width: root.target;
@@ -445,6 +570,17 @@ export component TransportDeck inherits Rectangle {
         border-width: 1px;
         border-color: Theme.on-surface;
     }
+    // Hover and pressed layer over the previous circle.
+    StateLayer {
+        x: root.transport-x + (root.target - root.circle) / 2;
+        y: root.transport-y + (root.target - root.circle) / 2;
+        width: root.circle;
+        height: root.circle;
+        radius: root.circle / 2;
+        hovered: prev-touch.has-hover;
+        pressed: prev-touch.pressed;
+        tint: Theme.on-surface;
+    }
     Path {
         x: root.transport-x + (root.target - root.icon-size) / 2;
         y: root.transport-y + (root.target - root.icon-size) / 2;
@@ -457,7 +593,7 @@ export component TransportDeck inherits Rectangle {
     }
 
     // Play or pause button: filled primary circle in a 48px target.
-    TouchArea {
+    play-touch := TouchArea {
         x: root.transport-x + root.target + root.control-gap;
         y: root.transport-y;
         width: root.target;
@@ -476,6 +612,17 @@ export component TransportDeck inherits Rectangle {
         height: root.circle;
         border-radius: root.circle / 2;
         background: Theme.primary;
+    }
+    // Hover and pressed layer over the play or pause circle, tinted with its own content color.
+    StateLayer {
+        x: root.transport-x + root.target + root.control-gap + (root.target - root.circle) / 2;
+        y: root.transport-y + (root.target - root.circle) / 2;
+        width: root.circle;
+        height: root.circle;
+        radius: root.circle / 2;
+        hovered: play-touch.has-hover;
+        pressed: play-touch.pressed;
+        tint: Theme.on-primary;
     }
     Path {
         visible: !root.playing;
@@ -501,7 +648,7 @@ export component TransportDeck inherits Rectangle {
     }
 
     // Next button: outlined circle in a 48px target.
-    TouchArea {
+    next-touch := TouchArea {
         x: root.transport-x + 2 * (root.target + root.control-gap);
         y: root.transport-y;
         width: root.target;
@@ -521,6 +668,17 @@ export component TransportDeck inherits Rectangle {
         border-radius: root.circle / 2;
         border-width: 1px;
         border-color: Theme.on-surface;
+    }
+    // Hover and pressed layer over the next circle.
+    StateLayer {
+        x: root.transport-x + 2 * (root.target + root.control-gap) + (root.target - root.circle) / 2;
+        y: root.transport-y + (root.target - root.circle) / 2;
+        width: root.circle;
+        height: root.circle;
+        radius: root.circle / 2;
+        hovered: next-touch.has-hover;
+        pressed: next-touch.pressed;
+        tint: Theme.on-surface;
     }
     Path {
         x: root.transport-x + 2 * (root.target + root.control-gap) + (root.target - root.icon-size) / 2;

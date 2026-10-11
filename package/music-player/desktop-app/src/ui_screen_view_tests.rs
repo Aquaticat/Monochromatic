@@ -122,3 +122,76 @@ fn library_heading_falls_back_to_folders_without_an_opened_folder() {
     state.source_root_name = Some("  ".to_string());
     assert_eq!(state.library_heading(), "Folders");
 }
+
+/// What: `playing_state` builds a state whose playing track is the first queue entry in a subfolder.
+/// Why: the deck folder and the folder scroll row both read the playing track's directory.
+fn playing_state() -> ScreenState {
+    let mut state = state_with(&["Camellia/Live/Ghost.flac", "Camellia/Ghost.flac"], Some(0));
+    state.track_name = "Camellia/Live/Ghost.flac".to_string();
+    return state;
+}
+
+#[test]
+fn view_fills_deck_folder_with_the_playing_tracks_folder() {
+    let view = view(&playing_state(), &no_supporting_line);
+    assert_eq!(view.deck_folder, "Live");
+    assert_eq!(view.folder_scroll_row, 1);
+    assert_eq!(view.scroll_row, 2);
+}
+
+#[test]
+fn view_deck_folder_is_empty_without_a_playing_track() {
+    let state = state_with(&["Abba/one.mp3"], None);
+    let view = view(&state, &no_supporting_line);
+    assert_eq!(view.deck_folder, "");
+    assert_eq!(view.folder_scroll_row, -1);
+}
+
+#[test]
+fn view_deck_folder_of_a_root_track_is_its_page_label() {
+    let mut state = state_with(&["Loose.flac"], Some(0));
+    state.track_name = "Loose.flac".to_string();
+    assert_eq!(view(&state, &no_supporting_line).deck_folder, "L");
+}
+
+/// What: `list_row(kind, current)` builds one plain list row for the folder scroll cases.
+/// Why: only the kind and the current flag decide the folder scroll position.
+fn list_row(kind: i32, current: bool) -> ListRow {
+    return ListRow {
+        kind,
+        title: String::new(),
+        supporting: String::new(),
+        current,
+        index: -1,
+    };
+}
+
+#[test]
+fn folder_scroll_row_is_minus_one_when_nothing_plays() {
+    let rows = vec![list_row(0, false), list_row(1, false)];
+    assert_eq!(folder_scroll_row_for(&rows), -1);
+}
+
+#[test]
+fn folder_scroll_row_is_zero_for_a_track_directly_in_the_folder() {
+    let rows = vec![list_row(0, true), list_row(1, false), list_row(0, false)];
+    assert_eq!(folder_scroll_row_for(&rows), 0);
+}
+
+#[test]
+fn folder_scroll_row_is_the_nearest_header_above_the_playing_row() {
+    let rows = vec![
+        list_row(0, false),
+        list_row(1, false),
+        list_row(0, false),
+        list_row(1, false),
+        list_row(0, true),
+    ];
+    assert_eq!(folder_scroll_row_for(&rows), 3);
+}
+
+#[test]
+fn folder_scroll_row_ignores_headers_below_the_playing_row() {
+    let rows = vec![list_row(0, false), list_row(1, false), list_row(0, true), list_row(1, false)];
+    assert_eq!(folder_scroll_row_for(&rows), 1);
+}

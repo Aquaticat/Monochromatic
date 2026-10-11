@@ -1,6 +1,7 @@
 // Track list pane for one folder's flat list (D5, D6, D42). Track rows and subfolder headers share one
 // scrolling list, and the playing row can be scrolled into view as playback moves.
 import { Theme } from "theme.slint";
+import { StateLayer } from "state_layer.slint";
 
 // One entry of the flat list. A track row (kind 0) plays on tap; a subfolder header (kind 1) only labels the
 // tracks below it, with its name in `title` and its count text in `supporting`.
@@ -30,6 +31,11 @@ export component TrackListPane inherits Rectangle {
     in property <int> scroll-to-row: -1;
     // Counts requests to show the target row again, so a request while the target row is unchanged still scrolls to it.
     in property <int> reveal-tick: 0;
+    // List position of the folder row to bring to the top, such as the playing track's subfolder header, or 0 for the top
+    // of the folder. A change of folder-tick scrolls to it, and -1 means nothing plays.
+    in property <int> folder-scroll-row: -1;
+    // Counts requests to show the playing track's folder again, so a repeated request scrolls to the folder row again.
+    in property <int> folder-tick: 0;
     // Fires with the library index of a track row when the row is tapped without a long press.
     callback play(int);
     // Fires with the library index of a track row and the pointer position relative to this pane, on a right
@@ -71,6 +77,10 @@ export component TrackListPane inherits Rectangle {
                 property <bool> is-target: root.scroll-to-row == i;
                 // Mirrors the reveal request count so a new request re-runs the scroll below.
                 property <int> reveal-seen: root.reveal-tick;
+                // Whether this entry is the folder row the folder-scroll-row property names.
+                property <bool> is-folder-target: root.folder-scroll-row == i;
+                // Mirrors the folder request count so only a new folder request scrolls to the folder row.
+                property <int> folder-seen: root.folder-tick;
                 height: root.height-of(row);
                 background: row.kind == 0 && row.current ? Theme.current-row : transparent;
 
@@ -89,6 +99,78 @@ export component TrackListPane inherits Rectangle {
                 changed y => {
                     if (self.is-target) {
                         root.reveal(self.y);
+                    }
+                }
+                // Scrolls to the folder row when a folder request arrives. It does not follow the target's y or the
+                // playing-row target, so routine rebuilds of the list keep the playing row in view.
+                changed folder-seen => {
+                    if (self.is-folder-target) {
+                        root.reveal(self.y);
+                    }
+                }
+
+                // Whole-row tap target and its hover and pressed layer. The layer sits above the row fill and below
+                // the text rows, which take no pointer input, so the tap target covers the whole row.
+                if row.kind == 0 : Rectangle {
+                    width: parent.width;
+                    height: parent.height;
+
+                    StateLayer {
+                        width: parent.width;
+                        height: parent.height;
+                        hovered: row-touch.has-hover;
+                        pressed: row-touch.pressed;
+                        tint: Theme.on-surface;
+                    }
+
+                    // Tap, right click and long press for track rows. Headers have no touch area.
+                    row-touch := TouchArea {
+                        // Set when a right click or long press has opened the menu, so the release does not also play.
+                        property <bool> suppress: false;
+                        width: parent.width;
+                        height: parent.height;
+                        mouse-cursor: pointer;
+
+                        // Milliseconds between the press and the menu request.
+                        hold := Timer {
+                            interval: root.long-press-time;
+                            running: false;
+                            triggered => {
+                                self.stop();
+                                row-touch.suppress = true;
+                                root.open-menu(
+                                    row.index,
+                                    row-touch.absolute-position.x - root.absolute-position.x + row-touch.mouse-x,
+                                    row-touch.absolute-position.y - root.absolute-position.y + row-touch.mouse-y,
+                                );
+                            }
+                        }
+
+                        pointer-event(event) => {
+                            // A right button press opens the menu immediately.
+                            if (event.button == PointerEventButton.right && event.kind == PointerEventKind.down) {
+                                self.suppress = true;
+                                root.open-menu(
+                                    row.index,
+                                    self.absolute-position.x - root.absolute-position.x + self.mouse-x,
+                                    self.absolute-position.y - root.absolute-position.y + self.mouse-y,
+                                );
+                            }
+                            // A left press starts the hold timer; releasing or losing the press (a drag scrolls the list) stops it.
+                            if (event.button == PointerEventButton.left && event.kind == PointerEventKind.down) {
+                                self.suppress = false;
+                                hold.start();
+                            }
+                            if (event.kind == PointerEventKind.up || event.kind == PointerEventKind.cancel) {
+                                hold.stop();
+                            }
+                        }
+
+                        clicked => {
+                            if (!self.suppress) {
+                                root.play(row.index);
+                            }
+                        }
                     }
                 }
 
@@ -137,53 +219,6 @@ export component TrackListPane inherits Rectangle {
                         font-size: Theme.body-small;
                         color: Theme.on-surface-variant;
                         vertical-alignment: center;
-                    }
-                }
-
-                // Tap, right click and long press for track rows. Headers have no touch area.
-                if row.kind == 0 : row-touch := TouchArea {
-                    // Set when a right click or long press has opened the menu, so the release does not also play.
-                    property <bool> suppress: false;
-
-                    // Milliseconds between the press and the menu request.
-                    hold := Timer {
-                        interval: root.long-press-time;
-                        running: false;
-                        triggered => {
-                            self.stop();
-                            row-touch.suppress = true;
-                            root.open-menu(
-                                row.index,
-                                row-touch.absolute-position.x - root.absolute-position.x + row-touch.mouse-x,
-                                row-touch.absolute-position.y - root.absolute-position.y + row-touch.mouse-y,
-                            );
-                        }
-                    }
-
-                    pointer-event(event) => {
-                        // A right button press opens the menu immediately.
-                        if (event.button == PointerEventButton.right && event.kind == PointerEventKind.down) {
-                            self.suppress = true;
-                            root.open-menu(
-                                row.index,
-                                self.absolute-position.x - root.absolute-position.x + self.mouse-x,
-                                self.absolute-position.y - root.absolute-position.y + self.mouse-y,
-                            );
-                        }
-                        // A left press starts the hold timer; releasing or losing the press (a drag scrolls the list) stops it.
-                        if (event.button == PointerEventButton.left && event.kind == PointerEventKind.down) {
-                            self.suppress = false;
-                            hold.start();
-                        }
-                        if (event.kind == PointerEventKind.up || event.kind == PointerEventKind.cancel) {
-                            hold.stop();
-                        }
-                    }
-
-                    clicked => {
-                        if (!self.suppress) {
-                            root.play(row.index);
-                        }
                     }
                 }
             }

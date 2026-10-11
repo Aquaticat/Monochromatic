@@ -157,6 +157,24 @@ fn cycle_mode(engine: &Engine) {
 /// Why: Ctrl+G and a click on the deck's title jump to the playing track; the folder view makes the row visible,
 /// and the request count makes the list scroll even when the folder and the row did not change.
 pub(crate) fn reveal_playing(window: &AppWindow) {
+    show_playing_page();
+    project(window);
+    window.set_reveal_tick(window.get_reveal_tick() + 1);
+}
+
+/// What: `reveal_playing_folder` moves the list to the folder that holds the playing track, closes the picker and
+/// asks the list to scroll to that folder's header, or to the top of the folder for a track directly in it.
+/// Why: a click on the deck's folder name shows the folder; the request count makes the list scroll even when the
+/// folder and the header did not change.
+pub(crate) fn reveal_playing_folder(window: &AppWindow) {
+    show_playing_page();
+    project(window);
+    window.set_folder_tick(window.get_folder_tick() + 1);
+}
+
+/// What: `show_playing_page` selects the page that holds the playing track and closes the picker.
+/// Why: both reveal actions show the playing track's folder, so they share this state change.
+fn show_playing_page() {
     update_state(|state| {
         state.picker_open = false;
         if let Some(index) = state.current_index {
@@ -166,8 +184,6 @@ pub(crate) fn reveal_playing(window: &AppWindow) {
             }
         }
     });
-    project(window);
-    window.set_reveal_tick(window.get_reveal_tick() + 1);
 }
 
 #[cfg(test)]

@@ -44,6 +44,12 @@ fn wire_transport(app: &AppWindow, engine: &Rc<Engine>) {
             crate::ui_keys::reveal_playing(&window);
         }
     });
+    let folder_reveal_weak = app.as_weak();
+    app.on_reveal_folder(move || {
+        if let Some(window) = folder_reveal_weak.upgrade() {
+            crate::ui_keys::reveal_playing_folder(&window);
+        }
+    });
     let mode_engine = engine.clone();
     let mode_weak = app.as_weak();
     app.on_select_mode(move |mode| {

@@ -72,11 +72,19 @@ export component AppWindow inherits Window {
     in property <int> scroll-to-row: -1;
     // Bumped by the Rust side on each request to show the playing track, so a repeated request scrolls again.
     in property <int> reveal-tick: 0;
+    // List position of the folder row the list scrolls to on a folder request, or -1 when nothing plays.
+    in property <int> folder-scroll-row: -1;
+    // Bumped by the Rust side on each request to show the playing track's folder, so a repeated request scrolls again.
+    in property <int> folder-tick: 0;
     // Fired when the deck's title is clicked; the Rust side switches to the playing track's folder and bumps the tick.
     callback reveal-playing();
+    // Fired when the deck's folder name is clicked; the Rust side shows the folder and bumps the folder tick.
+    callback reveal-folder();
 
     // Transport deck view model.
     in property <string> deck-title: "";
+    // Folder of the playing track, shown before the title; empty when nothing plays.
+    in property <string> deck-folder: "";
     in property <string> deck-subtitle: "";
     in property <string> shuffle-folder-label: "";
 
@@ -247,11 +255,14 @@ export component AppWindow inherits Window {
             rows: root.track-rows;
             scroll-to-row: root.scroll-to-row;
             reveal-tick: root.reveal-tick;
+            folder-scroll-row: root.folder-scroll-row;
+            folder-tick: root.folder-tick;
             play(i) => { root.select-index(i); }
             open-menu(i, x, y) => { root.show-track-menu(i, x, y); }
         }
         deck := TransportDeck {
             title: root.deck-title;
+            folder: root.deck-folder;
             subtitle: root.deck-subtitle;
             position-seconds: root.position;
             duration-seconds: root.duration;
@@ -264,6 +275,7 @@ export component AppWindow inherits Window {
             next => { root.next(); }
             select-mode(m) => { root.select-mode(m); }
             reveal-playing => { root.reveal-playing(); }
+            reveal-folder => { root.reveal-folder(); }
             reveal-enabled: root.route == 0;
         }
     }
@@ -294,6 +306,7 @@ export component AppWindow inherits Window {
             }
             TransportDeck {
                 title: root.deck-title;
+                folder: root.deck-folder;
                 subtitle: root.deck-subtitle;
                 position-seconds: root.position;
                 duration-seconds: root.duration;
@@ -306,6 +319,7 @@ export component AppWindow inherits Window {
                 next => { root.next(); }
                 select-mode(m) => { root.select-mode(m); }
                 reveal-playing => { root.reveal-playing(); }
+                reveal-folder => { root.reveal-folder(); }
                 reveal-enabled: root.route == 0;
             }
         }
@@ -337,6 +351,8 @@ export component AppWindow inherits Window {
                 rows: root.track-rows;
                 scroll-to-row: root.scroll-to-row;
                 reveal-tick: root.reveal-tick;
+                folder-scroll-row: root.folder-scroll-row;
+                folder-tick: root.folder-tick;
                 play(i) => { root.select-index(i); }
                 open-menu(i, x, y) => { root.show-track-menu(i, x, y); }
             }
