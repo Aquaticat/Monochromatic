@@ -254,3 +254,99 @@ For a serial slice with crash-consistency requirements, send the lane to a Sonne
 When a Haiku agent reports the state of the repository (committed, staged, clean), read the repository
 (`git log`, `git status`) before acting on the report.
 A brief that says "do not hand back until done" did not hold a Haiku agent to it.
+
+## Slint IDE scroll pipeline and soft wrap (2026-10-11)
+
+### Goal
+
+Make the source view of the read-only Slint IDE (`package/desktop-app/ide`) scroll smoothly even under extreme host
+load, then wrap long lines like IntelliJ does.
+Haiku subagents did the stage 1 overscan tile, the old-versus-new scroll measurements, the stage 2 worker thread tile
+build, the code surveys, the Parley research, and the wrap shaping measurement.
+The plans are `doc/planning/slint-ide-scroll-pipeline.md` and `doc/planning/slint-ide-soft-wrap.md`.
+
+### Files involved
+
+- `package/desktop-app/ide/src/native/tile.rs` and `tile_build.rs`: the stage 2 worker.
+- `/home/user/temp/agent/ide-scroll-new-vs-old/ide-scroll-build-compare.mjs`: the measurement harness a Haiku agent
+  wrote.
+- `/home/user/temp/agent/ide-wrap-measure/`: the wrap shaping measurement.
+
+### Mistakes
+
+#### A measurement harness whose denominator made a healthy result look broken
+
+The harness a Haiku agent wrote counts the 1.5 s idle wait after the last wheel step as "possible frames".
+Even perfect painting of the 1.9 s input phase therefore scores about 115 of 204.
+The agent reported "about half of the possible frames painted" for every renderer and both builds,
+with no positive control that could show a better number,
+and the orchestrator repeated it in a plan, the handover and a landing message before a second Haiku agent read the
+harness source and found the denominator.
+A rerun restricted to the input phase painted 103 of 115 slots.
+The same agent's `rendersInScroll` counts a log line for viewport tile presentations, not paints, which the report did
+not say.
+The agent also never wrote the summary step of its brief.
+
+#### Interim hand-backs, more than twenty of them
+
+The stage 2 implementer was told to send one final report only when everything had finished.
+It ended its turn while its own gate units were still running more than twenty times;
+each time the harness delivered a notice that carried no report ("has not reported yet"),
+and each one woke the orchestrator.
+Waiting for a gate belongs in one blocking command (an `until` loop on the unit), not in ending the turn.
+
+#### Chained gate commands with a missing argument, and lint failures on its own code
+
+The guard tasks need a Cargo target cache argument.
+The agent's chain ran `inspect:sidebar-guards` and `inspect:theme-guards` without it and they failed with
+"Missing required arg: <cache>";
+`inspect:find-guards` failed in the same chain without it and passed with it.
+Its first full lint run also failed clippy, rustfmt and the release lint on the new worker code,
+because it had not run the lints before reporting the feature as built.
+
+#### Deferred a known defect, and a drop that blocks the window close
+
+The worker's error arm kept the dead worker and re-logged every 20 ms.
+The agent listed the fix as planned and deferred it because a gate was compiling;
+the orchestrator found the defect in review and had it fixed.
+Dropping the worker joined its thread, so closing the window waited for a tile build in flight;
+the `inspect:bundle` close timeouts were consistent with that.
+The agent had flagged neither in its design doubts as a close-path risk until asked.
+
+#### A test that was never shown to fail, and that would have hung
+
+The first version of the drop test dropped the worker inline.
+With the join restored it would have hung the suite instead of failing.
+This surfaced only when the orchestrator asked for the negative control;
+the agent then rewrote the test to drop on its own thread with a bounded receive and showed it failing.
+
+#### Lost its own work product, and refused a report file
+
+The wrap shaping measurement agent copied its test file to the scratch directory in parallel with
+`git worktree remove --force`, the copy failed on a name clash, and the file was lost;
+it rebuilt the file from memory and said so.
+Its first full run failed on two errors of its own: a missing `mut` and a control that read `full_width()` of an
+unbroken layout, which is 0.
+It left 966 rows with an advance wider than the width unexplained.
+The Parley research agent declined to write the report as a Markdown file ("my agent rules forbid writing report .md
+files") although the brief asked for it, so the orchestrator wrote the doc from the hand-back.
+
+### What went well
+
+The stage 1 implementer landed the overscan tile with a structural test and a guard that was seen failing.
+The survey agents gave file and line evidence and marked what they could not verify,
+which made the stage 2 design reviewable.
+The stage 2 implementer reproduced the edit test flake (5 of 20 failures under load), measured the cold start cost
+instead of accepting the orchestrator's hypothesis, found the real cause (the poll timer stopping while a cancelled job
+was in flight), and proved the fix (0 of 30).
+It reported its flakes and its own mistakes plainly.
+
+### Lesson
+
+Send work that spans many modules or needs a design judgment (the soft wrap rows model, the worker integration, keys
+and pointer) to a Sonnet subagent from the start; keep Haiku for surveys, measurements and mechanical fixes with an
+explicit step list.
+Before trusting a Haiku measurement, read what the harness counts and ask for a positive control that can show the
+good number.
+Tell a Haiku agent to wait inside one blocking command and to run every task with its documented arguments,
+and read `git log`, the gate JSON and the unit state yourself before acting on its report.
