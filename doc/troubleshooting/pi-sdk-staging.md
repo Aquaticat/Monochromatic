@@ -158,6 +158,48 @@ maintainer-intent,
 and upstream-prototype conditions are not claimed or investigated.
 The consumer correction remains private.
 
+## Empty Git index lock interrupted setter documentation
+
+On 2026-10-11,
+main documentation process `proc_8254` stopped before `git add`.
+Cli-git emitted `index-lock-unproven-owner` after its 1000 ms unproven-owner budget.
+The existing user-owned lock was empty,
+device 55,
+inode 237840036,
+with modification time `2026-10-11T15:09:26.069Z`.
+
+Current-user process inspection found Git filesystem monitors,
+not an active Git writer.
+A first shell descriptor probe did not expose a holder and was not treated as a valid null control.
+Managed `proc_64ca` kept the parent shell alive after `fuser`;
+the positive control reported its PID 2340389.
+After that process exited,
+`fuser` reported no holder.
+
+The recovery rechecked the exact device,
+inode,
+size,
+user ID,
+and modification time before a non-overwriting move.
+The empty record was preserved as `~/temp/agent/auto-mode-main-index-lock-237840036.empty`.
+The source lock was then absent,
+and the preserved file retained zero bytes and its modification time.
+No index content,
+ref,
+or journal was restored.
+The creator and reason for the abandoned lock remain unknown.
+This follows the evidence-preserving procedure in
+[the separate empty-lock recovery](cli-git-superseded-index-recovery.md#separate-empty-index-lock-on-2026-10-09),
+not a generic permission to remove live locks.
+
+An earlier read-only status invocation emitted the logger's
+`sink verification failed for entry 3: Timed out after 5000ms: sink 3 verify`
+diagnostic before the command runner's ten-second timeout.
+A subsequent managed status completed.
+These observations do not prove the logger caused the lock or that its delay was fixed;
+see [the logger diagnostic](cli-git-logger-sink-verify-timeout.md).
+Neither incident is a failure of native setter capture.
+
 ## Direct Agent state assignments bypass prompt and queue capture
 
 ### Symptom and native setter
@@ -228,6 +270,70 @@ and unexpected observer errors.
 Run private `test:agent-state-native` and `test:agent-state-paths`
 as separate `mise --no-env --no-hooks run` invocations.
 
+### Retained-projection fixture reconciliation
+
+Restored `8cb4a62` / `proc_d6c9` exposed a legacy fixture that used public assignment
+to imitate native projection refresh.
+Its expected request count was four,
+but only two requests completed.
+Diagnostic `d36500e` / `proc_8730` checked the capture latch immediately after assignment
+and exposed `Native Agent input requires a supported text-message role`.
+This was profile rejection,
+not merely a changed occurrence count.
+
+The selected public-input profile rejects unsupported roles in `loaded-inputs.mjs:33`.
+The fixture instead needs native projection behavior.
+Pi 1.1.0 `dist/core/agent-session.js:1016` provides it:
+
+```javascript
+// Pi 1.1.0 dist/core/agent-session.js:1016 to 1018
+refreshContext() {
+    this._refreshFinalizedContext();
+}
+```
+
+The declaration in `dist/core/agent-session.d.ts:388` is synchronous:
+
+```typescript
+// Pi 1.1.0 dist/core/agent-session.d.ts:388
+refreshContext(): void;
+```
+
+Private `37124ab` uses that real method for compaction/edit/fork projection fixtures.
+The explicit stale-path clear remains an ordinary observed assignment,
+with its new empty-array source asserted.
+`proc_eff0` passed all 43 expanded/retained modes with empty child stderr.
+The separate direct-equal-projection negative remains in `agent-state-native.test.mjs`.
+No text profile,
+source count,
+or byte bound was relaxed.
+
+The tradeoff is intentional:
+public assignment of a derived projection is still a fresh host input,
+whereas native refresh identifies a maintained internal derivation.
+After adding an observation point,
+inspect maintained fixture writes to distinguish those operations before broad regression runs.
+
+### Setter sensitivity and fixed owner
+
+All five omissions failed their intended assertions:
+`proc_0ef3` lost erased input,
+`proc_b838` accepted a forged token,
+`proc_4a25` bypassed a replacement setter,
+`proc_8953` reminted constructor projection,
+and `proc_c53f` reached a config getter before capability rejection.
+All guards were restored.
+Both scoped runtime diff and exhaustive changed-path inventory were checked against `7d42311`.
+
+Extended native `69deaca` / `proc_be71` passed shared count and serialized-byte bounds,
+native assignment despite expected profile failure,
+direct constructor-callback writes,
+and real direct Sessions sharing one attached Agent.
+An unqualified second Session does not receive or replace the first Agent's attachment.
+Its ordinary writes are observed by that Agent's fixed original input owner.
+This does not authenticate the calling Session or transfer governing scope.
+Multi-Session sharing is not claimed as qualified execution.
+
 ### Limits and filing decision
 
 The internal route identifies its operation only.
@@ -236,9 +342,8 @@ In-place array mutation,
 constructor state,
 and replacing state objects or descriptors remain separate gaps.
 All existing source limits and admission holds remain unchanged.
-Integrated,
-sensitivity,
-and complete regression checks are still pending.
+Integrated and restored sensitivity checks passed.
+Complete native/action/source regressions and final documentation verification remain pending.
 
 Nothing is proposed upstream.
 The SDK setter behaved as written;

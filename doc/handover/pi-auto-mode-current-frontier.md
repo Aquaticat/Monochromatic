@@ -5,7 +5,7 @@
 Resume the axiom-based migration without reopening settled choices or replaying completed phases.
 This current summary complements the
 [historical evidence ledger](pi-auto-mode-axiom-evaluation.md).
-Updated 2026-10-09.
+Updated 2026-10-11.
 
 ## Original rendered prompt-input contributions
 
@@ -340,9 +340,46 @@ and error controls.
 `proc_7faa` passed erased/late/oversize/reset/disposal paths,
 including original cancellation cause and zero protected execution/provider requests.
 
-Integrated,
-sensitivity,
-and full regression verification remain pending.
+Integrated `proc_a3d0` passed 123 constructed-input outputs with empty child stderr.
+The observation,
+token identity,
+setter identity,
+constructor routing,
+and constructor-validation omissions each failed their intended control.
+All were restored in `8cb4a62`.
+The runtime diff against `7d42311` is empty;
+the exhaustive changed-path inventory contains only tests,
+task configuration,
+and documentation.
+
+The legacy compaction fixture directly assigned a manager projection,
+which now correctly failed the public setter's selected text-message profile.
+Diagnostic `proc_8730` exposed the unsupported-role cause.
+The fixture now uses actual synchronous `Session.refreshContext()`,
+not a public-write exemption.
+Reconciled `proc_eff0` passed all 43 expanded/retained modes;
+the intentional stale-path clear still has its own captured occurrence.
+
+Extended `69deaca` / `proc_be71` passed shared loaded/queued/setter occupancy,
+serialized-record overflow,
+and direct setter calls inside real constructor callbacks.
+It also exercised real direct Sessions sharing an attached Agent.
+Without the original private constructor argument,
+the second Session's writes take the ordinary observed route.
+They stay with the Agent's fixed input owner and do not establish caller identity,
+transfer scope,
+or acquire authority.
+Shared-Agent multi-Session execution remains outside the qualified profile.
+
+The setter requires an ordinary dense array using the existing selected message fields.
+Non-text content and unsupported message roles latch capture failure without replacing native assignment.
+The selected array,
+including JSON wrappers and escaping,
+shares the 65,536-byte source bound.
+All manager inputs still share 64 source occurrences and the four-MiB serialized-record bound.
+Equal arrays and empty clears remain separate occurrences.
+
+Complete native/action/source regressions and final documentation verification remain pending.
 Constructor inputs,
 in-place changes to getter-returned arrays,
 state-object or descriptor replacement,
