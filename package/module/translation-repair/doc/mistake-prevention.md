@@ -4578,6 +4578,19 @@ so every failure but the first in input order was lost (ledger B403).
 The sibling round had been fixed for the same shape;
 this fan-out was found by a census of the callers,
 after the ledger had recorded it as an open reading.
+That census,
+run over every caller,
+found two more fan-outs with no line:
+the vision readers,
+where the abort guard stood before the only place a rejected settlement was written,
+and a pinned reference read (ledger B404,
+B405);
+the same pass found the required-provider gate
+and the meter line reading the caller's own stop as a meter failure,
+with the provider's words dropped (ledger B407).
+One site stays open:
+the overlapped map,
+whose jobs fail in the code they call (ledger B405).
 
 The rule:
 what a command prints,
@@ -4649,6 +4662,14 @@ and two directories that cannot be listed in the order they were named (ledger B
 with the later-listed seat's first,
 none for a re-ask ending in the caller's own reason,
 and the first failure in input order thrown (ledger B403).
+`image-reading-pair.unit.test.ts` holds a reader's line in roster order,
+with one that ended before the stop,
+`fidelity-reference-read.unit.test.ts` the line of each pinned page,
+`corpus-run/required-providers.unit.test.ts` the gate's refusal with the caller's own reason and no line for it,
+and `provider-meter-state.unit.test.ts` the meter's status and the provider's words and a stopped read written as stopped
+(ledger B404,
+B405,
+B407).
 When a fix closes one fan-out of a shape,
 the same change lists every other caller of the helper that rethrows unwritten under a stop,
 and says which are covered;

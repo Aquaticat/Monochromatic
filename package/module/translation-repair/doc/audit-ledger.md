@@ -34548,6 +34548,10 @@ and are unread beyond that.
 `gateProvider` writes the caller's own reason as a meter that could not be read,
 and `meterRecordOf` names the failure's class alone,
 dropping the provider's words.
+Closed in B404 to B407,
+which ran each;
+`overlapped-map.ts` is the one site that stays open,
+recorded in B405.
 
 Open to the owner's veto:
 the line reads "as the caller stopped the repair",
@@ -34561,6 +34565,197 @@ and a first failure on the translate path may be written twice,
 once here and once by `translate-slice-attempt.ts`,
 which is the agent's inference from reading both,
 not run.
+
+Recurrence:
+`mistake-prevention.md`,
+"Output decided by arrival order".
+
+### B404: a vision reader's own failure under the caller's stop reached no line
+
+Red in `2a41fd28808237ce5a6441f41d3688ce9a2c8ded`,
+fixed in `93850c5d3eb1bae2f7a0d023a731f24fa5b5650a`.
+
+Found on 2026-10-11 (UTC) as the open item B403 recorded.
+`readImagePair` (`image-reading-pair.ts`) reads its readers under `Promise.allSettled`
+and called `signal.throwIfAborted()` before `contained`,
+the one place a rejected settlement was written,
+so a deadline or a provider's refusal a reader ended in as the caller stopped reached no line.
+`readImageAsset` holds no `try`,
+and `readPastRefusal` throws the caller's reason between asks.
+Two red cases in `image-reading-pair.unit.test.ts` run it.
+In the first,
+three readers end as the caller stops:
+the later-listed one first,
+with a refusal and its words;
+the first-listed one after it,
+with another;
+and a middle one in the caller's own reason.
+In the second,
+one reader is refused before the stop lands.
+Against the unchanged code each fails with no line where the case expects one per failing reader.
+By the agent's control,
+removing the check that the failure is not the caller's reason fails both with an extra line.
+
+The fix:
+`contained` writes a failed reader's line through `exchangeFailureLogText`,
+"failed outright (the failure),
+and the caller stopped the reading",
+when the caller has aborted and the failure is not the caller's reason,
+and the abort guard now stands after `contained`,
+so the thrown error is unchanged.
+The lines follow roster order whichever reader ended first,
+and a failure that ended before the stop is written too,
+which a catch inside each reader would have missed.
+
+Open to the owner's veto:
+roster order,
+where the round and the repair write in completion order at the member;
+the guard moved after `contained`,
+where a separate loop over the settlements needed a file split under the line limit;
+and the line's wording.
+
+Recurrence:
+`mistake-prevention.md`,
+"Output decided by arrival order".
+
+### B405: a pinned reference page's own failure under the caller's stop reached no line
+
+Red and fixed in the same commits as B404.
+
+Found on 2026-10-11 (UTC) as the open item B403 recorded.
+`readReviewedFidelityReferences` (`fidelity-reference-read.ts`) reads a reference's two pages under `Promise.allSettled`
+and threw the caller's reason in place of both,
+though `readCorpusFile` takes no signal,
+so either read's failure is always its own,
+and the module held no logger.
+Only the exported API reaches it:
+`judge-fidelity-probe-run.ts` passes no signal.
+The red case,
+in `fidelity-reference-read.unit.test.ts`,
+stops the read while both pages of a disposable clone fail as missing,
+and fails with no line where two are expected.
+
+The fix:
+a root logger tagged `readReference` writes one line per failed page,
+the source page's before the archive page's,
+through `exchangeFailureLogText`,
+when the caller has aborted and the failure is not the caller's reason,
+then throws the reason as before.
+
+`mapOverlapped` (`overlapped-map.ts`) was read too.
+A job's exchange failure under a stop is written by the code the job calls,
+by `askOnce`,
+`repairOneCandidate`,
+`readImagePair`,
+and the abort catches of `translate-slice-attempt.ts`,
+`repair-slice-buy.ts` and `repair-refine-step.ts`.
+
+Open:
+a job's failure of another kind,
+such as `ConsolidationLedgerGapError`,
+a hook,
+a roster refusal or a cache write,
+ending as the stop lands while a lower job throws the reason,
+is dropped at the helper's throw with no line,
+in the consolidation,
+contest,
+translate,
+refine,
+repair and insertion-admission lanes when the overlap exceeds one.
+This is the agent's reading of the source,
+not run.
+The fix is the caller's signal threaded into `mapOverlapped`,
+writing each failure it does not throw unless it is that signal's reason,
+and nine caller modules outside the change would pass it.
+
+Open to the owner's veto:
+the module root logger,
+where the alternative is a logger the probe passes;
+the check against the caller's reason,
+which no input reaches while the reads take no signal,
+and which stays so the line remains right if a read starts honouring the signal;
+and the line's wording.
+
+Recurrence:
+`mistake-prevention.md`,
+"Output decided by arrival order".
+
+### B406: the census of fan-outs that read a caller's stop
+
+Run on 2026-10-11 (UTC) as B403 asked of a fix of this shape.
+Of 56 production files calling `Promise.all`,
+`Promise.allSettled`,
+`Promise.race`,
+`allInInputOrder` or `mapOverlapped`,
+36 hold no signal.
+Of the 20 sites that do,
+each member's own failure under a stop is written:
+by `askOnce` for the gather round,
+its race and the recovery round;
+by `repairOneCandidate` for the repair;
+by `meterRecordOf` and `gateProvider` for the meters;
+and by the catches of the cited reference and work title lookups.
+Two sites wrote none:
+`readImagePair` (B404)
+and the reference read (B405).
+The settled buy passes a signal that never aborts.
+`attemptStageCall` has two production callers,
+`stage-round.ts` and `translate-repair.ts`,
+as B403 counted,
+and `attemptDecisionCall` has one,
+`attemptStageCall` itself.
+Every model exchange outside the clients and their decorators reaches one of those lines.
+
+Open:
+the `mapOverlapped` residual B405 records.
+The lookups for cited references and work titles write the caller's own reason as a fetch failure
+and answer it as data,
+which is the shape B407 fixed in the gate;
+this is the agent's inference from reading,
+not run.
+
+Recurrence:
+`mistake-prevention.md`,
+"Output decided by arrival order".
+
+### B407: the required-provider gate read the caller's stop as a meter failure, and the meter line dropped the provider's words
+
+Red and fixed in the same commits as B404.
+
+Found on 2026-10-11 (UTC) as the open item B403 recorded.
+`gateProvider` (`corpus-run/required-providers.ts`) caught the caller's own reason,
+wrote it as a meter that could not be read,
+and refused the arm as `meter unavailable`.
+By the red case,
+with the stop landing while two meter reads ran,
+it wrote "synthetic meter could not be read:
+refused by Error"
+and threw `RequiredProviderError` naming synthetic.
+Only the exported API reaches it:
+the pass's own call passes a signal that never aborts.
+`meterRecordOf` (`provider-meters.ts`) wrote the failure's class alone,
+"budget unreadable,
+treating as spendable (SyntheticHttpError)",
+dropping the status and the provider's words,
+on every meter read a run makes,
+and wrote a stopped read the same way.
+
+The fix:
+`gateProvider` takes the signal
+and rethrows the caller's reason unchanged and unwritten,
+still writing a read's own failure with the provider's words;
+`meterRecordOf` takes the signal,
+writes a stopped read as "budget not read,
+since the caller stopped the reading",
+and renders any other failure through `exchangeFailureLogText`.
+A stopped read still records `unreadable`,
+since the reading is shared and its first caller's stop resolves it for every sharer (`takeReading`).
+
+Open to the owner's veto:
+the gate still refusing as `meter unavailable` when a meter fails of its own under a stop;
+a stopped read recorded `unreadable` in the `METERS` line,
+which rests on the TSDoc of `takeReading` and on no ledger ruling;
+and the stop line's wording.
 
 Recurrence:
 `mistake-prevention.md`,
