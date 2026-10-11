@@ -41,3 +41,11 @@ Evidence skeleton written; no implementation yet.
 ## Trailing gates
 
 (filled at the end)
+
+## Status at handback
+
+Groundwork only.
+Uncommitted: `src/native/transaction_phase.rs`, `src/native/transaction_phase_tests.rs`, and the additive `pub mod transaction_phase;` line in `src/native/lib.rs`.
+The host unit run (`cargo test --lib -- transaction_phase`, log under `${HOME}/temp/agent/phase-test.log`) had no result line when the run ended.
+Not started: landing support, object migration, post-index, real index lock install and `index-lock-<n>.json`, the landing attempt and outcome enum, the landing loop, acceptance tests, container gate, Clippy, Git 2.55.0 probe, and mutation.
+Next action: confirm the phase tests, run Clippy, commit the phase module with explicit pathspecs, then read the TypeScript sources listed in the coordinator brief before porting.
