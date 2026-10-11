@@ -71,7 +71,9 @@ they would encode environment-specific path spelling without verifying the curre
 Regenerating old hash-locked chains,
 rewriting historical files in place,
 or enabling symlink-preserving module loading was unnecessary.
-The exact file-target guard is undergoing omission sensitivity before complete regressions.
+Target-guard omission `e38b148` / `proc_cfc3` failed `Missing expected exception (StagedImportError)`
+on the equal-byte wrong-file case.
+The guard is restored before the resumed complete regression.
 
 ### Upstream filing decision
 
@@ -140,9 +142,11 @@ not a provider or qualification trial.
 
 ### Remaining scope and upstream filing decision
 
-Integrated controls,
-observation sensitivity,
-and full regressions remain pending.
+Integrated `proc_0117` passed 103 outputs with empty child stderr.
+Predicate omission `proc_b636` poisoned non-string capture;
+observation omission `proc_58f8` lost the required original string source.
+Both were restored before the full regression,
+which remains pending after the separate build-path correction.
 Message/array prompt inputs,
 image governance,
 other state producers,
