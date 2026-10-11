@@ -28,12 +28,14 @@ Each item names the IntelliJ source it comes from
   a line number on the first visual row of a logical line only
   (`EditorGutterComponentImpl`, the `startsWithSoftWrap()` test);
   continuation rows show no number and carry the wrap indicator instead.
-  The indicator is a small down-and-right arrow in the soft-wrap sign color
-  (IntelliJ's `c0c0c0` in the light scheme, `SOFT_WRAP_SIGN_COLOR`),
-  drawn as a vector shape so it needs no font glyph;
-  shape and color are two channels.
-  Its look gets built screenshots before the user is asked, because it is a UI decision the user left to JetBrains
-  only in general.
+  The indicator follows IntelliJ's own mark for a row that starts after a soft wrap
+  (`CompositeSoftWrapPainter`, `ArrowSoftWrapPainter`, `EditorColors.SOFT_WRAP_SIGN_COLOR`):
+  the first of U+2925, U+21B3, U+2937, and U+21AA that the font can display, drawn in the editor font at the row's
+  baseline, and a drawn arrow when none can be displayed.
+  Its color is `c0c0c0` in the Default scheme; the Darcula scheme has `parent_scheme="Default"` and no override,
+  so dark uses the same value.
+  Shape and color are two channels.
+  The user's instruction to follow IntelliJ settles the look; only the place (the gutter) comes from the user.
 - Wrap width: the text area's width (view minus gutter, scrollbar, and caret room),
   no minimum; with zero width, wrapping waits (`SoftWrapApplianceManager`).
 - Where a row breaks (`SoftWrapEngine`, `GenericLineWrapPositionStrategy`):
@@ -138,7 +140,7 @@ Read from the crate source that matches `Cargo.lock` (checksum verified), withou
 1. Layout model: wrap width into the row key, Parley breaking with the IntelliJ rules and indent,
    visual row counts in `RowMap`, whole-file height measurement.
 2. Geometry readback: per visual line y in `ShapedRow` (`range`, `hit`, `caret_x`), affinity in `ReadingPosition`.
-3. Gutter and scrolling: numbers on first rows only, the wrap indicator (after the user picks its look from screenshots),
+3. Gutter and scrolling: numbers on first rows only, the wrap indicator (IntelliJ's glyph chain and color),
    removal of horizontal scrolling.
 4. Keys and pointer: Home, End, Up, Down, PageUp, PageDown, click, drag, triple click.
 5. Annotations, find, and selection on visual rows.
@@ -150,8 +152,6 @@ Read from the crate source that matches `Cargo.lock` (checksum verified), withou
 
 ## Not decided here
 
-- The gutter indicator's exact look: arrow shape and weight, and its color in the dark scheme
-  (IntelliJ's dark value was not read). Built screenshots of the options come first.
 - Whether a "soft wrap" toggle exists. The user said always, so none is planned.
 
 ## Smoothness requirement that applies to all of it
