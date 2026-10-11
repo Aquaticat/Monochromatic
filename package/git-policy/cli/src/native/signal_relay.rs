@@ -333,17 +333,26 @@ impl SignalGuard {
     /// async runChild(command: SpawnOptions): Promise<ChildOutcome>
     /// ```
     pub fn run_child(&self, command: &mut Command) -> io::Result<ChildOutcome> {
-        let mut child: std::process::Child = command.spawn()?;
-        let pid: libc::pid_t = libc::pid_t::try_from(child.id())
-            .map_err(|error| return io::Error::other(error))?;
-        CHILD_PID.store(pid, std::sync::atomic::Ordering::SeqCst);
-        relay_pending();
-        let waited: io::Result<()> = wait_without_reaping(pid);
-        CHILD_PID.store(0, std::sync::atomic::Ordering::SeqCst);
-        let status: ExitStatus = child.wait()?;
-        waited?;
-        return Ok(super::forwarding::outcome_of(status));
+        return run_relayed(command);
     }
+}
+
+/// Spawns the child, then relays any signal that was caught before the child existed.
+///
+/// A handler that runs before the spawn keeps its signal in `PENDING` and finds no child.
+/// The PID is published before the drain, so that signal is relayed here, not lost.
+#[cfg(unix)]
+fn run_relayed(command: &mut Command) -> io::Result<ChildOutcome> {
+    let mut child: std::process::Child = command.spawn()?;
+    let pid: libc::pid_t = libc::pid_t::try_from(child.id())
+        .map_err(|error| return io::Error::other(error))?;
+    CHILD_PID.store(pid, std::sync::atomic::Ordering::SeqCst);
+    relay_pending();
+    let waited: io::Result<()> = wait_without_reaping(pid);
+    CHILD_PID.store(0, std::sync::atomic::Ordering::SeqCst);
+    let status: ExitStatus = child.wait()?;
+    waited?;
+    return Ok(super::forwarding::outcome_of(status));
 }
 
 /// Restore the previous dispositions and release the process-wide slot.

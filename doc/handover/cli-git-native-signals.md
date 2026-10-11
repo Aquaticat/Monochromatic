@@ -20,6 +20,10 @@ Neither module is wired into the commit refusal (`Unported::CommitTransaction` i
 - `1595a4ed0c` `feat(git-policy-cli): relay process signals to the waiting Git child and port the hk config cleanup`
 - `385ab5b80b` `fix(git-policy-cli): satisfy clippy in the signal guard, hk parser and signal tests`
 - `1262241dc7` `test(git-policy-cli): prove the signal sender check and correct the hk prefix control`
+- `5d5ca284c1` `fix(git-policy-cli): make the early-signal test's child a direct sleep and add a pre-spawn relay regression test`
+  (on `feat/cli-git-native-signals-fix`, not on this lane's branch; see `Early-signal test flake` below)
+- `4a525a744c` `test(git-policy-cli): gate the relay statics lock to unix, where the tests that use it are compiled`
+  (same branch, follows `5d5ca284c1`)
 
 ## What was built
 
@@ -79,7 +83,7 @@ Neither module is wired into the commit refusal (`Unported::CommitTransaction` i
 - `maintenance_hk_config_tests.rs`: 12 tests.
   Parser cases; real Git runs for the local and global scopes and for idempotence;
   a damaged configuration; a missing working directory.
-- `signal_relay_tests.rs`: 10 tests.
+- `signal_relay_tests.rs`: 11 tests.
   Handlers are process-wide, so the signal tests re-run the test executable as a helper (`helper_entry`)
   with a scenario in the environment.
   - `handler_marks_a_signal_only_for_a_process_sender`: calls the handler directly with a terminal and a process
@@ -88,6 +92,10 @@ Neither module is wired into the commit refusal (`Unported::CommitTransaction` i
   - `process_signal_is_relayed_and_the_child_outcome_is_reported`: `SIGTERM` from a process reaches the child;
     the wrapper survives and reports `signaled 15`.
   - `signal_during_start_is_relayed_after_the_child_starts`: a signal sent between installation and spawn is relayed.
+    The helper's child is a direct `sleep 30`; see `Early-signal test flake`.
+  - `a_signal_pending_before_spawn_is_relayed_when_the_pid_is_published`: the relay path itself, without a helper.
+    It sets a pending `SIGTERM`, spawns `sleep 30` through `run_relayed`, and requires the child to end by `SIGTERM`
+    within 10 seconds.
   - `terminal_interrupt_is_not_relayed_a_second_time`: the helper runs its child on a pseudo-terminal.
     The test writes `^C` to the master side; the child's trap counts the interrupt, and the count stays at one after
     300 ms.
@@ -103,7 +111,73 @@ Neither module is wired into the commit refusal (`Unported::CommitTransaction` i
 
 Test counts by filter, run with `mise run //package/git-policy/cli:native:test:host` on host Git 2.55.0:
 the `maintenance` filter passed 36 (decision 14, run 10, hk 12) on `385ab5b80b`;
-the `signal_relay` filter passed 9 on `1595a4ed0c` and the new `handler_marks...` test passed on `1262241dc7`.
+the `signal_relay` filter passed 9 on `1595a4ed0c` and the new `handler_marks...` test passed on `1262241dc7`;
+on `5d5ca284c1` the `signal_relay` filter passed 11, including the new pre-spawn test.
+
+## Early-signal test flake
+
+Branch `feat/cli-git-native-signals-fix`, worktree `.claude/worktrees/cli-git-lane-signals-fix`,
+cut from `c2f4219acb`, the head of `feat/cli-git-native-transactions` when the work started.
+Fix commit `5d5ca284c1`.
+
+Symptom: `signal_relay::tests::signal_during_start_is_relayed_after_the_child_starts` failed with
+`helper did not exit` after the 20 second bound.
+It failed on the host in 3 of 6 earlier full-filter runs and in 3 of 20 and 5 of 20 runs of the unfixed code
+in this investigation; it passed in the container gate.
+
+Cause: the helper's child was `/bin/sh -c 'touch <dir>/started; exec sleep 30'`.
+The relay reached the shell, not the `sleep`.
+A shell that waits on a foreground command, here `touch`, absorbs `SIGINT` until that command ends, then `exec`s
+`sleep` with the signal already consumed, so the `sleep` runs its full 30 seconds.
+The relay lands during the `touch` only when the timing falls there, so the failure is intermittent.
+Why the container gate passed was not measured; the timing of the `touch` is the likely reason.
+The wrapper's relay itself was correct.
+
+Evidence:
+- Trace bytes written by the helper in a failing run read `A B R C S P`:
+  the spawn finished, the PID was published, the pending drain found nothing, the handler ran,
+  the sender check accepted the signal, and `kill` was sent.
+  At the timeout the child showed no pending signal, default dispositions, and the `sleep 30` still running.
+  The trace code was temporary and is not in the commit.
+- A probe from a Node parent, so that `SIGINT` is not inherited as ignored, sent `SIGINT` 400 ms after start:
+  a foreground wait in `/bin/sh` survived and exited 0; `sh -c 'sleep 1; exec sleep 0.3'` survived and exited 0;
+  `exec sleep 1` ended by `SIGINT`.
+
+Fix:
+- For the early-signal case the helper runs `sleep 30` directly (`helper_command` mode `early`).
+- The new test `a_signal_pending_before_spawn_is_relayed_when_the_pid_is_published` covers the path the early test
+  meant to cover: it sets `PENDING[1]` to `SIGTERM`, runs `run_relayed` with `sleep 30`, and requires
+  `Signaled(15)` within 10 seconds.
+- `run_child` now delegates to `run_relayed`, a free function with the same body, so the test can drive the
+  spawn path without a `SignalGuard`.
+  Behavior is unchanged.
+- The in-process tests that touch `PENDING` or `CHILD_PID` take a shared lock, `RELAY_STATICS`, which is compiled
+  only on unix with the tests that use it (`4a525a744c`).
+
+Proof:
+- The new test is the guard for the relay after publication.
+  With that relay removed, the test fails: `the pending SIGTERM reaches the child`, after `finished in 30.04s`.
+  The fixed file was restored byte for byte.
+- Host: 50 consecutive runs of the `signal_relay` filter, driven by a scratch `.ts` script through the slot
+  limiter, all passed (0 failed).
+- Host, final source: the `signal_relay` filter passed 11 of 11.
+- Container gate: `GIT_POLICY_NATIVE_IMAGE_TAG=signals-fix mise run //package/git-policy/cli:native:test:container`
+  through the slot limiter exited 0.
+  Its image is `9e96ae6ff3fe464b4fc2e3ffa6b00ff8906d899d25523b30a028f3b698c3d242` on base
+  `6ec87f6d290a2f59bda5b3ffd4197058fe0749d02b4978c877e8edf6dc38802a`.
+  All test result lines passed; the library run reported 1321 passed and 4 ignored.
+  The Clippy step passed in the same run.
+  The image was built before a comment-only edit above `run_relayed`; the host run above covers that edit.
+
+Windows: `native:clippy:windows` on `4a525a744c` exits 101 before it reaches the signal files.
+It reports six errors in `src/native/auto_push_single_flight.rs` and `src/native/manual_push_probe.rs`, which call
+unix-only `std::os::unix` APIs without a `cfg`.
+Both files are unchanged from `c2f4219acb`, so the failure is on the base branch and is not this fix.
+No reported error names `signal_relay.rs` or `signal_relay_tests.rs`, and the `#[cfg(not(unix))]` guard branch
+was not type-checked to a clean result because the crate-level failure stops the run.
+
+Not claimed: the production hand-off was not changed, and no lost-relay race was reproduced in it.
+The wrapper signals the child it spawned, so this flake was a property of the test helper's `sh -c` child.
 
 ## Gate results
 
