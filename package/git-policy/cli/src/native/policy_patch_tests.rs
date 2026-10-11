@@ -175,7 +175,7 @@ fn header_and_directive_violations_are_rejected() {
         good.replace(&format!("index {BASE}..{PROPOSED} 100644"), &format!("index {PROPOSED}..{PROPOSED} 100644")),
         good.replace(" 100644\n", " 100000\n"),
         good.replace("--- a/f.txt\n", "rename from f.txt\n--- a/f.txt\n"),
-        good.replace("index ", "index ").replace(&format!("{PROPOSED} 100644"), &format!("{}G{} 100644", &PROPOSED[..1], &PROPOSED[2..])),
+        good.replace(&format!("{PROPOSED} 100644"), &format!("{}G{} 100644", &PROPOSED[..1], &PROPOSED[2..])),
     ];
     for text in variants {
         let patch: PolicyPatch = PolicyPatch { target_id: String::from("t"), path: String::from("f.txt"), bytes: text.clone().into_bytes() };
