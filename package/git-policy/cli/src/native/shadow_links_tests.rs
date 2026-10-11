@@ -124,3 +124,58 @@ fn linked_worktree_without_a_shared_info_directory_still_links() {
     );
     remove(root.as_path());
 }
+
+/// A template entry the shadow already holds is replaced by the real link, whether it is a file or a directory.
+#[cfg(unix)]
+#[test]
+fn existing_shadow_entries_are_replaced_by_links() {
+    let root: PathBuf = fixture("shadow-links-replace");
+    let repo: PathBuf = repository(root.as_path(), "repo");
+    let common: PathBuf = repo.join(".git");
+    let shadow: PathBuf = root.join("shadow");
+    std::fs::create_dir_all(shadow.join("hooks")).expect("template hooks");
+    std::fs::write(shadow.join("hooks").join("sample"), "x").expect("sample");
+    std::fs::write(shadow.join("description"), "template\n").expect("template description");
+    link_shadow_entries(shadow.as_path(), common.as_path(), common.as_path()).expect("link");
+    assert_eq!(std::fs::read_link(shadow.join("hooks")).expect("hooks link"), common.join("hooks"));
+    assert_eq!(
+        std::fs::read_link(shadow.join("description")).expect("description link"),
+        common.join("description")
+    );
+    remove(root.as_path());
+}
+
+/// A location whose metadata cannot be read, other than an absent one, is an error and not an absent file.
+#[test]
+fn an_unreadable_sparse_location_is_an_error() {
+    let root: PathBuf = fixture("shadow-links-unreadable");
+    let repo: PathBuf = repository(root.as_path(), "repo");
+    let linked: PathBuf = root.join("linked");
+    git(repo.as_path(), &["worktree", "add", "--quiet", "-b", "feature", linked.to_str().expect("fixture")]);
+    let common: PathBuf = repo.join(".git");
+    let git_dir: PathBuf = common.join("worktrees").join("linked");
+    std::fs::write(git_dir.join("info"), "not a directory").expect("info as a file");
+    let shadow: PathBuf = root.join("shadow");
+    std::fs::create_dir(&shadow).expect("shadow");
+    assert!(link_shadow_entries(shadow.as_path(), common.as_path(), git_dir.as_path()).is_err());
+    remove(root.as_path());
+}
+
+/// A shared `info` location that is not a directory is an error, because only an absent one is tolerated.
+#[test]
+fn a_shared_info_that_is_not_a_directory_is_an_error() {
+    let root: PathBuf = fixture("shadow-links-shared-info-file");
+    let repo: PathBuf = repository(root.as_path(), "repo");
+    let linked: PathBuf = root.join("linked");
+    git(repo.as_path(), &["worktree", "add", "--quiet", "-b", "feature", linked.to_str().expect("fixture")]);
+    let common: PathBuf = repo.join(".git");
+    let git_dir: PathBuf = common.join("worktrees").join("linked");
+    std::fs::create_dir_all(git_dir.join("info")).expect("worktree info");
+    std::fs::write(git_dir.join("info").join("sparse-checkout"), "/*\n").expect("sparse");
+    std::fs::remove_dir_all(common.join("info")).expect("remove shared info");
+    std::fs::write(common.join("info"), "not a directory").expect("shared info as a file");
+    let shadow: PathBuf = root.join("shadow");
+    std::fs::create_dir(&shadow).expect("shadow");
+    assert!(link_shadow_entries(shadow.as_path(), common.as_path(), git_dir.as_path()).is_err());
+    remove(root.as_path());
+}

@@ -200,3 +200,18 @@ fn shadow_and_its_parents_are_private() {
     }
     remove(root.as_path());
 }
+
+/// The config and alternates that creation overwrites in the shadow are private files.
+#[cfg(unix)]
+#[test]
+fn overwritten_shadow_files_are_private() {
+    use std::os::unix::fs::PermissionsExt;
+    let root: PathBuf = fixture("shadow-create-file-modes");
+    let repo: PathBuf = repository(root.as_path(), "repo");
+    let (shadow, _transaction, _capture) = create(repo.as_path(), root.as_path(), TRANSACTION);
+    for file in [shadow.join("config"), shadow.join("objects").join("info").join("alternates")] {
+        let mode: u32 = std::fs::metadata(&file).expect("metadata").permissions().mode() & 0o777;
+        assert_eq!(mode, 0o600, "{}", file.display());
+    }
+    remove(root.as_path());
+}
