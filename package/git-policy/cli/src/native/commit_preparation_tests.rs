@@ -12,7 +12,23 @@ use crate::shadow_create::create_shadow_repository;
 use crate::test_support::{fixture, git, git_context, git_text, remove, repository};
 use crate::transaction_journal::TransactionMode;
 use crate::transaction_journal_parse::parse_prepared;
+use crate::candidate_prediction::CandidateRequest;
+use crate::command_test_support::os_arguments;
+use crate::commit_convergence::{CommitConvergence, CommitConvergenceInput, converge_commit_policies};
+use crate::config_schema::PolicyConfig;
+use crate::policy_checks::shipped_checks;
+use crate::policy_content::{Correction, LifecycleContent};
+use crate::policy_convergence::Convergence;
+use crate::policy_engine::StageRequest;
+use crate::policy_trigger::Trigger;
+use crate::private_index_stage::{PrivateStage, stage_correction};
+use crate::candidate_object::CandidateMode;
+use crate::repository_facts::git_facts;
+use crate::test_support::REAL_GIT;
+use crate::wrapper_controls::no_controls;
+use std::ffi::OsString;
 use std::path::PathBuf;
+use std::rc::Rc;
 
 /// A fixed transaction ID of the shape the registry accepts.
 const TRANSACTION: &str = "0b6c2c1e-6f5b-4d0e-9a55-3f5d8e2f6a10";
@@ -301,5 +317,100 @@ fn signature_is_read_from_the_header_block_only() {
     let prepared: PreparedCommit = read_prepared_commit(&git_context(), shadow.as_path()).expect("read");
     assert_eq!(prepared.oid, head);
     assert!(!prepared.signed);
+    remove(root.as_path());
+}
+
+/// The shadow object store of a fixture, where the commit path writes its corrected blobs.
+fn shadow_objects(fixture: &Fixture) -> PathBuf {
+    return fixture.shadow.join("objects");
+}
+
+/// The exact bytes the prepared commit's tree holds for a path, read from the shadow repository.
+fn shadow_text(fixture: &Fixture, commit: &str, path: &str) -> String {
+    let shadow: String = fixture.shadow.display().to_string();
+    let output: std::process::Output = git(
+        fixture.repo.as_path(),
+        &["--git-dir", shadow.as_str(), "show", format!("{commit}:{path}").as_str()],
+    );
+    return String::from_utf8_lossy(output.stdout.as_slice()).into_owned();
+}
+
+/// Runs the commit path's convergence over the fixture's private commit index.
+fn converge_fixture(fixture: &Fixture) -> CommitConvergence {
+    let objects: PathBuf = shadow_objects(fixture);
+    let overlay: Vec<(OsString, OsString)> = vec![
+        (OsString::from("GIT_DIR"), fixture.repo.join(".git").into_os_string()),
+        (OsString::from("GIT_WORK_TREE"), fixture.repo.as_os_str().to_os_string()),
+        (OsString::from("GIT_INDEX_FILE"), fixture.commit_index.as_os_str().to_os_string()),
+        (OsString::from("GIT_OBJECT_DIRECTORY"), objects.as_os_str().to_os_string()),
+    ];
+    let facts = git_facts(std::path::Path::new(REAL_GIT), &[], overlay.as_slice());
+    let mut checks = shipped_checks(
+        facts,
+        os_arguments(&[]),
+        LifecycleContent::Requested(CandidateRequest::Staged(vec![OsString::from("a.txt")])),
+        Vec::<PathBuf>::new(),
+    );
+    let request: StageRequest = StageRequest {
+        trigger: Trigger::PreForward,
+        config: PolicyConfig::defaults(),
+        controls: no_controls(),
+        selected: Vec::new(),
+    };
+    return converge_commit_policies(CommitConvergenceInput {
+        request: &request,
+        checks: &mut checks,
+        stage: PrivateStage {
+            context: &git_context(),
+            cwd: fixture.repo.as_path(),
+            index: fixture.commit_index.as_path(),
+            object_directory: Some(objects.as_path()),
+        },
+    });
+}
+
+/// The final-newline correction the commit path writes reaches the prepared commit's tree.
+#[test]
+fn the_final_newline_correction_reaches_the_prepared_commit() {
+    let root: PathBuf = fixture("preparation-final-newline");
+    let mut prepared_for: Fixture = prepared_fixture(root.as_path(), None);
+    let objects: PathBuf = shadow_objects(&prepared_for);
+    let uncorrected: Correction = Correction {
+        path: b"a.txt".to_vec(),
+        mode: CandidateMode::Regular,
+        before: Rc::from(b"changed\n".as_slice()),
+        after: Rc::from(b"changed".as_slice()),
+    };
+    let stage: PrivateStage<'_> = PrivateStage {
+        context: &git_context(),
+        cwd: prepared_for.repo.as_path(),
+        index: prepared_for.commit_index.as_path(),
+        object_directory: Some(objects.as_path()),
+    };
+    assert_eq!(stage_correction(&stage, &uncorrected), Ok(()), "the uncorrected bytes are staged");
+    let outcome: CommitConvergence = converge_fixture(&prepared_for);
+    assert_eq!(outcome.convergence, Convergence::Settled { changed_passes: 1 }, "{:?}", outcome.pass.events);
+    prepared_for.intended_tree = write_private_tree(
+        &git_context(),
+        prepared_for.repo.as_path(),
+        prepared_for.commit_index.as_path(),
+        objects.as_path(),
+    )
+    .expect("the corrected tree");
+    let prepared: PreparedCommit = prepare(&prepared_for, &["--quiet", "-m", "corrected"])
+        .expect("the corrected commit prepares");
+    assert_eq!(shadow_text(&prepared_for, prepared.oid.as_str(), "a.txt"), "changed\n");
+    remove(root.as_path());
+}
+
+/// A pre-commit hook that re-stages a selected file changes the prepared commit, and the change is kept.
+/// The hooks directory is passed explicitly, because Git 2.55.0 runs `hooksPath` scripts even when the enable config is off.
+#[test]
+fn a_pre_commit_hook_restaging_a_selected_file_is_kept_in_the_prepared_commit() {
+    let root: PathBuf = fixture("preparation-hook-restage");
+    let script: &str = "#!/bin/sh\nblob=$(printf 'reformatted\\n' | git hash-object -w --stdin) && git update-index --cacheinfo 100644,\"$blob\",a.txt\n";
+    let hooked: Fixture = prepared_fixture(root.as_path(), Some(("pre-commit", script)));
+    let prepared: PreparedCommit = prepare(&hooked, &["--quiet", "-m", "hooked"]).expect("the hooked commit prepares");
+    assert_eq!(shadow_text(&hooked, prepared.oid.as_str(), "a.txt"), "reformatted\n");
     remove(root.as_path());
 }
