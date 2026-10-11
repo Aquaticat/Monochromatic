@@ -103,3 +103,175 @@ fn a_lock_with_one_mismatched_identity_field_is_refused() {
     lock.release().expect("the real lock releases");
     remove(root.as_path());
 }
+
+/// A transaction directory beside the index of a fresh fixture.
+fn transaction_in(root: &Path) -> PathBuf {
+    let directory: PathBuf = root.join("transaction");
+    std::fs::create_dir(&directory).expect("transaction directory");
+    return directory;
+}
+
+/// A landing lock journals its identity in `index-lock-<n>.json`, with the incumbent's bytes,
+///  and announces this process through the PID file.
+#[test]
+#[cfg(unix)]
+fn a_landing_lock_journals_its_identity_and_announces_the_process() {
+    let (root, index): (PathBuf, PathBuf) = index_in("real-lock-journal");
+    let directory: PathBuf = transaction_in(root.as_path());
+    let lock: RealIndexLock = acquire_landing_index_lock(index.as_path(), directory.as_path(), 3, 100, "landed nothing")
+        .expect("a free index is lockable");
+    let bytes: Vec<u8> = std::fs::read(directory.join("index-lock-3.json")).expect("the record exists");
+    let expected: String = encode_index_lock(&IndexLockRecord { attempt: 3, lock: lock.identity().clone() });
+    assert_eq!(String::from_utf8(bytes).expect("UTF-8 record"), expected);
+    assert_eq!(
+        std::fs::read_to_string(real_pid_path(index.as_path())).expect("PID file"),
+        format!("pid {}\n", std::process::id())
+    );
+    lock.release_after_landing().expect("release");
+    remove(root.as_path());
+}
+
+/// The journal is written before the PID file: a journal that cannot be written leaves neither the lock
+///  nor a PID file, and the failure is a stop.
+#[test]
+#[cfg(unix)]
+fn a_failed_journal_write_leaves_no_lock_and_no_pid_file() {
+    let (root, index): (PathBuf, PathBuf) = index_in("real-lock-journal-fails");
+    let directory: PathBuf = transaction_in(root.as_path());
+    std::fs::write(directory.join("index-lock-1.json"), b"an earlier record").expect("blocking record");
+    let failure: CoordinationFailure =
+        match acquire_landing_index_lock(index.as_path(), directory.as_path(), 1, 100, "landed nothing") {
+            Ok(_) => panic!("the record cannot be written twice"),
+            Err(found) => found,
+        };
+    assert!(matches!(&failure, CoordinationFailure::Stop(text) if text.contains("index-lock-1.json")), "{failure:?}");
+    assert!(!real_lock_path(index.as_path()).exists());
+    assert!(!real_pid_path(index.as_path()).exists());
+    assert_eq!(std::fs::read(directory.join("index-lock-1.json")).expect("kept"), b"an earlier record");
+    remove(root.as_path());
+}
+
+/// A PID file that already exists is left alone, as the incumbent leaves it, and the lock is still held.
+#[test]
+#[cfg(unix)]
+fn an_existing_pid_file_is_left_alone() {
+    let (root, index): (PathBuf, PathBuf) = index_in("real-lock-pid-exists");
+    let directory: PathBuf = transaction_in(root.as_path());
+    std::fs::write(real_pid_path(index.as_path()), "pid 2147483646\n").expect("foreign PID file");
+    let lock: RealIndexLock = acquire_landing_index_lock(index.as_path(), directory.as_path(), 1, 100, "landed nothing")
+        .expect("the lock is free");
+    assert_eq!(std::fs::read_to_string(real_pid_path(index.as_path())).expect("PID file"), "pid 2147483646\n");
+    assert!(real_lock_path(index.as_path()).exists());
+    lock.release_after_landing().expect("release");
+    assert!(real_pid_path(index.as_path()).exists(), "a PID file that names another process stays");
+    assert!(!real_lock_path(index.as_path()).exists());
+    remove(root.as_path());
+}
+
+/// A dead foreign owner exhausts the budget before anything is journaled.
+#[test]
+#[cfg(unix)]
+fn a_landing_lock_behind_a_dead_owner_writes_no_record() {
+    let (root, index): (PathBuf, PathBuf) = index_in("real-lock-landing-dead");
+    let directory: PathBuf = transaction_in(root.as_path());
+    std::fs::write(real_lock_path(index.as_path()), b"").expect("foreign lock");
+    std::fs::write(real_pid_path(index.as_path()), "pid 2147483646\n").expect("dead PID file");
+    let failure: CoordinationFailure =
+        match acquire_landing_index_lock(index.as_path(), directory.as_path(), 1, 50, "landed nothing") {
+            Ok(_) => panic!("a dead owner must not be overtaken"),
+            Err(found) => found,
+        };
+    assert!(matches!(failure, CoordinationFailure::UnprovenOwner(_)));
+    assert!(!directory.join("index-lock-1.json").exists());
+    assert!(real_lock_path(index.as_path()).exists());
+    remove(root.as_path());
+}
+
+/// An install writes the post-index through the held lock, so the new index is the lock file itself,
+///  then removes the lock and this process's PID file.
+#[test]
+#[cfg(unix)]
+fn an_install_replaces_the_index_with_the_lock_file_and_releases_everything() {
+    use std::os::unix::fs::MetadataExt;
+    let (root, index): (PathBuf, PathBuf) = index_in("real-lock-install");
+    let directory: PathBuf = transaction_in(root.as_path());
+    std::fs::write(index.as_path(), b"old index").expect("old index");
+    let post: PathBuf = directory.join("post-1.index");
+    std::fs::write(post.as_path(), b"post index").expect("post index");
+    let lock: RealIndexLock = acquire_landing_index_lock(index.as_path(), directory.as_path(), 1, 100, "landed nothing")
+        .expect("a free index is lockable");
+    let lock_inode: u64 = std::fs::symlink_metadata(real_lock_path(index.as_path())).expect("lock").ino();
+    lock.install(post.as_path()).expect("install");
+    assert_eq!(std::fs::read(index.as_path()).expect("installed index"), b"post index");
+    assert_eq!(std::fs::symlink_metadata(index.as_path()).expect("index").ino(), lock_inode);
+    assert!(!real_lock_path(index.as_path()).exists());
+    assert!(!real_pid_path(index.as_path()).exists());
+    remove(root.as_path());
+}
+
+/// An install through a lock another process replaced refuses, changes nothing, and leaves the replacement.
+#[test]
+#[cfg(unix)]
+fn an_install_through_a_replaced_lock_is_refused() {
+    let (root, index): (PathBuf, PathBuf) = index_in("real-lock-install-replaced");
+    let directory: PathBuf = transaction_in(root.as_path());
+    std::fs::write(index.as_path(), b"old index").expect("old index");
+    let post: PathBuf = directory.join("post-1.index");
+    std::fs::write(post.as_path(), b"post index").expect("post index");
+    let lock: RealIndexLock = acquire_landing_index_lock(index.as_path(), directory.as_path(), 1, 100, "landed nothing")
+        .expect("a free index is lockable");
+    let path: PathBuf = real_lock_path(index.as_path());
+    std::fs::remove_file(&path).expect("remove the created lock");
+    std::fs::write(&path, b"another process's lock").expect("replacement");
+    let refusal: RecoveryError = lock.install(post.as_path()).expect_err("a replaced lock must not be written");
+    assert!(refusal.0.contains("identity changed"), "{refusal:?}");
+    assert_eq!(std::fs::read(index.as_path()).expect("old index kept"), b"old index");
+    assert_eq!(std::fs::read(&path).expect("replacement kept"), b"another process's lock");
+    remove(root.as_path());
+}
+
+/// Releasing after a landing removes the lock and the PID file.
+#[test]
+#[cfg(unix)]
+fn releasing_after_a_landing_removes_the_lock_and_the_pid_file() {
+    let (root, index): (PathBuf, PathBuf) = index_in("real-lock-release-after");
+    let directory: PathBuf = transaction_in(root.as_path());
+    let lock: RealIndexLock = acquire_landing_index_lock(index.as_path(), directory.as_path(), 1, 100, "landed nothing")
+        .expect("a free index is lockable");
+    lock.release_after_landing().expect("release");
+    assert!(!real_lock_path(index.as_path()).exists());
+    assert!(!real_pid_path(index.as_path()).exists());
+    remove(root.as_path());
+}
+
+/// A replaced lock stays where it is when the landing releases, and this process's PID file still goes,
+///  as the incumbent's disposal warns and carries on.
+#[test]
+#[cfg(unix)]
+fn releasing_after_a_landing_leaves_a_replaced_lock() {
+    let (root, index): (PathBuf, PathBuf) = index_in("real-lock-release-replaced");
+    let directory: PathBuf = transaction_in(root.as_path());
+    let lock: RealIndexLock = acquire_landing_index_lock(index.as_path(), directory.as_path(), 1, 100, "landed nothing")
+        .expect("a free index is lockable");
+    let path: PathBuf = real_lock_path(index.as_path());
+    std::fs::remove_file(&path).expect("remove the created lock");
+    std::fs::write(&path, b"another process's lock").expect("replacement");
+    lock.release_after_landing().expect("a replaced lock only warns");
+    assert_eq!(std::fs::read(&path).expect("replacement kept"), b"another process's lock");
+    assert!(!real_pid_path(index.as_path()).exists());
+    remove(root.as_path());
+}
+
+/// A lock that vanished before the release only warns, and the PID file goes.
+#[test]
+#[cfg(unix)]
+fn releasing_after_a_landing_tolerates_a_vanished_lock() {
+    let (root, index): (PathBuf, PathBuf) = index_in("real-lock-release-vanished");
+    let directory: PathBuf = transaction_in(root.as_path());
+    let lock: RealIndexLock = acquire_landing_index_lock(index.as_path(), directory.as_path(), 1, 100, "landed nothing")
+        .expect("a free index is lockable");
+    std::fs::remove_file(real_lock_path(index.as_path())).expect("remove the created lock");
+    lock.release_after_landing().expect("an absent lock only warns");
+    assert!(!real_pid_path(index.as_path()).exists());
+    remove(root.as_path());
+}

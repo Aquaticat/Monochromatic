@@ -19,8 +19,16 @@
 //! await using lock = await openRealIndexLock({ realIndexPath, timeoutMs });
 //! ```
 
-/// The lock identity record the transaction journal stores.
-use super::transaction_journal::LockIdentity;
+/// The lock identity record the transaction journal stores, and the numbered record's name.
+use super::transaction_journal::{IndexLockRecord, LockIdentity, index_lock_record_filename};
+/// The record's exact bytes.
+use super::transaction_journal_encode::encode_index_lock;
+/// Debug and warning text to the diagnostic log.
+use super::diagnostic_log::{debug, warn};
+/// The recovery install of a recorded post-index through the exact owned lock, and the release of that lock.
+use super::recovery_files::{LockRelease, install_recovered_index, lock_release_name, release_owned_lock};
+/// Recovery failures, which the install reports.
+use super::recovery_error::RecoveryError;
 #[cfg(unix)]
 use super::transaction_journal::FileIdentity;
 /// The waiting coordination and its failure.
@@ -28,10 +36,13 @@ use super::index_writer_coordination::{CoordinationFailure, wait_for_lock};
 /// The filesystem identity of the worktree's volume.
 #[cfg(unix)]
 use super::filesystem_identity::filesystem_identity;
-/// Announcing this process through the PID file.
-use super::private_storage::write_private_file;
+/// Announcing this process through the PID file, the journal record, and the lock's mode.
+use super::private_storage::{protect_path, sync_directory, write_private_file};
 /// `Path` and `PathBuf` are borrowed and owned filesystem paths.
 use std::path::{Path, PathBuf};
+
+/// Module tag for diagnostics.
+const TAG: &str = "acquireRealIndexLock";
 
 /// What:
 ///  A real `index.lock` created by this process.
@@ -47,6 +58,9 @@ pub struct RealIndexLock {
     /// The lock path,
     ///  `<real index>.lock`.
     lock_path: PathBuf,
+    /// The real index the lock guards,
+    ///  which an install replaces.
+    real_index: PathBuf,
     /// The PID file path,
     ///  `<real index>~pid.lock`.
     pid_path: PathBuf,
@@ -125,6 +139,60 @@ impl RealIndexLock {
         self.assert_identity()?;
         if let Err(error) = std::fs::remove_file(&self.lock_path) {
             return Err(error.to_string());
+        }
+        return remove_own_pid_file(self.pid_path.as_path());
+    }
+
+    /// What:
+    ///  Install a computed index through the held lock,
+    ///  consuming the lock,
+    ///  then remove this process's PID file.
+    /// Why:
+    ///   `installIndex`:
+    ///  the bytes are written into the lock this process created,
+    ///  the lock is linked under a private name beside the post-index,
+    ///  and that name is renamed over the real index,
+    ///  so the new index keeps the lock's owner.
+    ///  The lock is not released here on failure:
+    ///  once the landing record is durable,
+    ///  recovery completes the install through the same lock.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// await lock.installIndex(postIndexPath);
+    /// ```
+    pub fn install(self, post_index: &Path) -> Result<(), RecoveryError> {
+        install_recovered_index(
+            self.lock_path.as_path(),
+            self.real_index.as_path(),
+            post_index,
+            &self.identity,
+        )?;
+        debug(TAG, format!("installed {} through {}", self.real_index.display(), self.lock_path.display()).as_str());
+        return remove_own_pid_file(self.pid_path.as_path()).map_err(RecoveryError);
+    }
+
+    /// What:
+    ///  Release a lock a landing leaves without installing:
+    ///  the lock is removed only while it is still the file this process created,
+    ///  and the PID file goes either way.
+    /// Why:
+    ///   The incumbent's disposal warns when the lock is gone or another owner's now
+    ///  and still removes its own PID file,
+    ///  and throws only for an operating-system error.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// await lock[Symbol.asyncDispose]();
+    /// ```
+    pub fn release_after_landing(self) -> Result<(), String> {
+        match release_owned_lock(&self.identity, self.lock_path.as_path()) {
+            Ok(LockRelease::Released) => {}
+            Ok(other) => warn(
+                TAG,
+                format!("index lock was not this transaction's at release ({}): {}", lock_release_name(other), self.lock_path.display()).as_str(),
+            ),
+            Err(error) => return Err(error.0),
         }
         return remove_own_pid_file(self.pid_path.as_path());
     }
@@ -287,6 +355,41 @@ fn remove_own_pid_file(pid_path: &Path) -> Result<(), String> {
 }
 
 /// What:
+///  Create the lock exclusively,
+///  waiting for a foreign holder under the classification rules,
+///  and read the identity of the file created.
+/// Why:
+///   `openLockWaiting` plus the identity step of the landing;
+///  a lock whose identity cannot be recorded is removed again,
+///  because nothing proves it is ours.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// const handle = await openLockWaiting({ realIndexPath, timeoutMs });
+/// ```
+fn create_identified_lock(
+    real_index: &Path,
+    timeout_ms: u64,
+    consequence: &str,
+) -> Result<(PathBuf, LockIdentity), CoordinationFailure> {
+    let lock_path: PathBuf = real_lock_path(real_index);
+    loop {
+        match create_exclusive(lock_path.as_path()) {
+            Ok(true) => break,
+            Ok(false) => wait_for_lock(real_index, timeout_ms, consequence)?,
+            Err(reason) => return Err(CoordinationFailure::Stop(reason)),
+        }
+    }
+    match created_identity(lock_path.as_path(), real_index) {
+        Ok(identity) => return Ok((lock_path, identity)),
+        Err(reason) => {
+            let _ = std::fs::remove_file(lock_path.as_path());
+            return Err(CoordinationFailure::Stop(reason));
+        }
+    }
+}
+
+/// What:
 ///  Take the real index lock,
 ///  waiting for a foreign holder under the classification rules,
 ///  then
@@ -303,21 +406,7 @@ pub fn acquire_real_index_lock(
     timeout_ms: u64,
     consequence: &str,
 ) -> Result<RealIndexLock, CoordinationFailure> {
-    let lock_path: PathBuf = real_lock_path(real_index);
-    loop {
-        match create_exclusive(lock_path.as_path()) {
-            Ok(true) => break,
-            Ok(false) => wait_for_lock(real_index, timeout_ms, consequence)?,
-            Err(reason) => return Err(CoordinationFailure::Stop(reason)),
-        }
-    }
-    let identity: LockIdentity = match created_identity(lock_path.as_path(), real_index) {
-        Ok(found) => found,
-        Err(reason) => {
-            let _ = std::fs::remove_file(lock_path.as_path());
-            return Err(CoordinationFailure::Stop(reason));
-        }
-    };
+    let (lock_path, identity): (PathBuf, LockIdentity) = create_identified_lock(real_index, timeout_ms, consequence)?;
     let pid_path: PathBuf = real_pid_path(real_index);
     if let Err(error) = write_private_file(pid_path.as_path(), format!("pid {}\n", std::process::id()).as_bytes()) {
         let _ = std::fs::remove_file(lock_path.as_path());
@@ -325,9 +414,110 @@ pub fn acquire_real_index_lock(
     }
     return Ok(RealIndexLock {
         lock_path,
+        real_index: real_index.to_path_buf(),
         pid_path,
         identity,
     });
+}
+
+/// What:
+///  Write `index-lock-<n>.json` for a lock just created,
+///  then make the directory entry durable.
+/// Why:
+///   Recovery can prove ownership of the lock before any landing record exists,
+///  so the record must be durable before the PID file announces the lock.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// await writeJournalRecord({ directory: transactionDirectory, filename: indexLockRecordFilename(attempt), record });
+/// ```
+fn write_lock_record(transaction_directory: &Path, attempt: i64, identity: &LockIdentity) -> Result<(), String> {
+    let record: IndexLockRecord = IndexLockRecord {
+        attempt,
+        lock: identity.clone(),
+    };
+    let path: PathBuf = transaction_directory.join(index_lock_record_filename(attempt));
+    if let Err(error) = write_private_file(path.as_path(), encode_index_lock(&record).as_bytes()) {
+        return Err(format!("writing {} failed: {error}", path.display()));
+    }
+    if let Err(error) = sync_directory(transaction_directory) {
+        return Err(format!("syncing {} failed: {error}", transaction_directory.display()));
+    }
+    return Ok(());
+}
+
+/// What:
+///  Take the real index lock for a landing attempt:
+///  create it,
+///  journal its identity in `index-lock-<n>.json`,
+///  fix its mode,
+///  and only then announce this process through the PID file.
+/// Why:
+///   `acquireRealIndexLock`:
+///  the journal comes before the PID file,
+///  so a crash never leaves a PID file naming a lock that recovery cannot prove ours;
+///  an existing PID file is left alone,
+///  as the incumbent does.
+///  A failure after the lock exists removes the lock again.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// await using lock = await acquireRealIndexLock({ realIndexPath, transactionDirectory, attempt, timeoutMs });
+/// ```
+pub fn acquire_landing_index_lock(
+    real_index: &Path,
+    transaction_directory: &Path,
+    attempt: i64,
+    timeout_ms: u64,
+    consequence: &str,
+) -> Result<RealIndexLock, CoordinationFailure> {
+    let (lock_path, identity): (PathBuf, LockIdentity) = create_identified_lock(real_index, timeout_ms, consequence)?;
+    let announced: Result<(), String> = announce_landing_lock(real_index, transaction_directory, attempt, lock_path.as_path(), &identity);
+    if let Err(reason) = announced {
+        let _ = std::fs::remove_file(lock_path.as_path());
+        return Err(CoordinationFailure::Stop(reason));
+    }
+    return Ok(RealIndexLock {
+        lock_path,
+        real_index: real_index.to_path_buf(),
+        pid_path: real_pid_path(real_index),
+        identity,
+    });
+}
+
+/// What:
+///  The steps between creating a landing's lock and holding it:
+///  journal record,
+///  mode,
+///  PID file.
+/// Why:
+///   One failure path removes the lock,
+///  whichever step failed.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// await writeJournalRecord(...); await protectPath({ path: lockPath, directory: false }); await writeOwnPidFile(pidPath);
+/// ```
+fn announce_landing_lock(
+    real_index: &Path,
+    transaction_directory: &Path,
+    attempt: i64,
+    lock_path: &Path,
+    identity: &LockIdentity,
+) -> Result<(), String> {
+    write_lock_record(transaction_directory, attempt, identity)?;
+    if let Err(error) = protect_path(lock_path, 0o600) {
+        return Err(format!("protecting {} failed: {error}", lock_path.display()));
+    }
+    let pid_path: PathBuf = real_pid_path(real_index);
+    match write_private_file(pid_path.as_path(), format!("pid {}\n", std::process::id()).as_bytes()) {
+        Ok(()) => return Ok(()),
+        Err(error) if error.kind() == std::io::ErrorKind::AlreadyExists => {
+            debug(TAG, format!("a PID file already exists beside the lock: {}", pid_path.display()).as_str());
+            return Ok(());
+        }
+        Err(error) => return Err(format!("writing {} failed: {error}", pid_path.display())),
+    }
 }
 
 /// Real-lock controls stay out of the release executable.
