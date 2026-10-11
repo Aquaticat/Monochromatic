@@ -120,6 +120,14 @@ Packages 1 and 2 are pure logic with an existing reference; the rest need the sc
   first-run copy, dead shortcuts after leaving Search, and a menu clipped at the window edge; all were fixed.
 - Final state on `main` (2026-10-11): Android unit tests and detekt pass; desktop 577 tests pass and clippy is clean on the host.
   What is not exercised is listed in `package/music-player/design/HANDOFF.md` under the production handoff.
+- Desktop polish after live use (2026-10-11): the window font is Inter Variable, bundled from `ui/fonts/InterVariable.ttf`
+  (the app had fallen back to Noto Sans; sizes were already 16, 14 and 12 logical pixels, measured against a 16px
+  browser reference); the Settings page lost its header line and row lines on both platforms; the Folders panel no longer
+  re-wraps or moves the Open pill when the selection changes, because every folder name is sized by a hidden copy at the
+  selected weight and the desktop panes are placed at exactly half the window. Inter has no grade axis (only `opsz` and
+  `wght`) and Slint 1.17 has no font-variation property, so reserving the heavier width is the available fix.
+  Checked with real-text renders of the old and new code (old re-wraps, new moves only the two names whose color changes),
+  the desktop and Android unit tests and lints; the Android Folders change has no on-device capture yet.
 
 ## Queue
 
