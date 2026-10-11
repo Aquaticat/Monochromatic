@@ -205,12 +205,23 @@ Owner system-field controls include absent,
 null,
 and named sections,
 plus zero reads of tool getters.
-Corrected late-path,
-integrated,
+An intermediate correction failed `proc_8936` because its loop-local `message` shadowed the array parameter.
+Renaming the selected element to `entry` preserved the receiver.
+Corrected `e1fbda6` / `proc_e97e` passed system owner controls
+and all eight real late/oversize/reset modes.
+Direct system-message and system-array canonical consumers passed `proc_f007`.
+Integrated,
 sensitivity,
 and full regression results remain pending.
 Run private `test:agent-message-prompt-owner` and `test:agent-message-prompt-paths`
 as separate `mise --no-env --no-hooks run` invocations.
+
+The separate `custom-trigger-bound-allowed` fixture initially checked its pre-run trigger
+only after another Session prompt forwarded its pending large messages as one array.
+`proc_3b98` then reported a terminal error instead of the expected stop.
+Correction `3f7d81f` / `proc_2853` preserves the original base-bound success and rejection checks,
+then explicitly verifies the later aggregate array exceeds the separate source bound before transport.
+Neither limit was enlarged.
 
 Nothing is proposed upstream:
 native construction is intentional and the mismatch was in the private observer.

@@ -326,14 +326,22 @@ Owner controls `proc_fe45` and native normalization controls `proc_a349` passed
 before the system-section correction.
 The normalization delegate remains a labelled double,
 separate from actual request consumers.
-Corrected late-source paths,
-integrated fixture reconciliation,
+Corrected `e1fbda6` / `proc_e97e` passed owner system fields and real late,
+oversize,
+unchanged-view,
+and reset controls.
+Direct system-message and system-array canonical wire consumers passed `proc_f007`.
+System `inputFields` metadata and original section content remain unregistered.
+Integrated fixture reconciliation,
 sensitivity,
 and complete regressions remain in progress.
 
 System-role support does not close tool instruction-source ownership.
 Mixed/image content and unsupported shapes still fail guarded source use,
 including internal Session array forwarding.
+Every internal forwarding adds one original call occurrence and can exhaust unchanged limits sooner.
+Boxed strings and null inputs now latch unsupported-profile failure instead of remaining unobserved;
+normalization parity is checked separately.
 The native prompt body,
 borrowed inputs,
 source limits,
