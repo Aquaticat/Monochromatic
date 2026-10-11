@@ -52,7 +52,7 @@ Replaces Claude Code's built-in spinner verbs,
 with no relation to what Claude is actually doing
 ([anthropics/claude-code#33057](https://github.com/anthropics/claude-code/issues/33057)).
 
-The statusline extracts a gerund from the newest assistant prose at the end of the session transcript instead.
+The statusline extracts a gerund from the newest assistant prose and thinking summaries at the end of the session transcript instead.
 Since Claude's prose naturally contains gerunds that describe its current activity
 ("Let me search for...",
  "I'll try refactoring..."),
@@ -68,8 +68,8 @@ the displayed word reflects what Claude was most recently talking about.
 4. Lines are visited newest first;
     only lines containing `"type":"assistant"` are passed to `JSON.parse`,
     so only a handful of entries are ever parsed
-5. Only `text` content blocks of assistant entries are scanned;
-    thinking,
+5. Only `text` and `thinking` content blocks of assistant entries are scanned
+    (the thinking signature is not);
     tool calls,
     tool results,
     attachments,
@@ -156,7 +156,7 @@ Disable the built-in spinner verbs and tips so they don't compete with the statu
   When the newest assistant text sits behind more than that
    (for example a very large tool result),
    it is not seen and the remembered word is shown.
-- The word reflects the most recent gerund in assistant prose,
+- The word reflects the most recent gerund in assistant prose and thinking summaries,
   which may lag behind the current activity by one or more tool calls.
 - At the start of a session (empty transcript),
    the fallback "Thinking" is shown.

@@ -139,10 +139,10 @@ await describe({
       name: assistantTextOfLine.name,
       children: [
         it({
-          name: 'joins text blocks and ignores thinking and tool_use blocks',
+          name: 'joins text blocks and thinking summaries, ignoring signatures and tool_use blocks',
           fn: async function testBlocks(): Promise<void> {
             /**
-             Assistant entry mixing prose with non-prose blocks.
+             Assistant entry mixing prose, a thinking summary, and a tool call.
              */
             const line = assistantLine([
               { type: 'thinking', thinking: 'Pondering', signature: 'Jazzy-nibbling', },
@@ -150,7 +150,7 @@ await describe({
               { type: 'tool_use', name: 'Running', input: { command: 'Searching', }, },
               { type: 'text', text: 'Testing', },
             ],);
-            expect(assistantTextOfLine(line,),).toBe('Compiling\nTesting',);
+            expect(assistantTextOfLine(line,),).toBe('Pondering\nCompiling\nTesting',);
           },
         },),
         it({
@@ -207,8 +207,16 @@ await describe({
                 type: 'attachment',
                 attachment: { text: 'Wild-nibbling spinner', },
               },),
-              assistantLine([{ type: 'thinking', thinking: 'Cherry-picking', },],),
             ],),).toBe('Compiling',);
+          },
+        },),
+        it({
+          name: 'counts a newer thinking summary over older assistant text',
+          fn: async function testThinkingSummary(): Promise<void> {
+            expect(await activityWordOfLines([
+              assistantTextLine('Now compiling',),
+              assistantLine([{ type: 'thinking', thinking: 'Cherry-picking the fix', signature: 'Jazzy-nibbling', },],),
+            ],),).toBe('Cherry-picking',);
           },
         },),
         it({
