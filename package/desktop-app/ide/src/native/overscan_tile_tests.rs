@@ -300,3 +300,61 @@ fn an_edit_during_a_re_center_discards_the_worker_result() {
         .hide()
         .expect("close fresh headless source window");
 }
+
+/// A tile worker that stops is reported once, the poll timer goes quiet, and the next scroll re-center starts a fresh worker.
+#[test]
+fn a_stopped_tile_worker_is_reported_once_and_replaced_on_the_next_re_center() {
+    let (window, state) = open(&document());
+    let height = window.get_viewport_height();
+    scroll_to(&window, START);
+    settle_tile(&state);
+    // Closing the request channel of the idle worker ends its thread, so the next poll finds it disconnected.
+    state
+        .borrow_mut()
+        .tile_worker
+        .as_mut()
+        .expect("the first re-center started the worker")
+        .close_for_test();
+    let start = Instant::now();
+    loop {
+        update_timers_and_animations();
+        if state.borrow().tile_worker.is_none() {
+            break;
+        }
+        assert!(
+            start.elapsed() < PATIENCE,
+            "the stopped tile worker was not released within {PATIENCE:?}"
+        );
+        std::thread::sleep(Duration::from_millis(2));
+    }
+    assert!(
+        window
+            .get_error_message()
+            .to_string()
+            .contains("stopped unexpectedly"),
+        "the stopped worker is named in the diagnostics"
+    );
+    assert!(
+        !state.borrow().tile_poll.running(),
+        "the poll timer stops when no re-center is queued"
+    );
+    for _ in 0..5 {
+        update_timers_and_animations();
+    }
+    assert!(
+        state.borrow().tile_worker.is_none(),
+        "no worker is restarted without a re-center"
+    );
+    reset(&state);
+    scroll_to(&window, START + height);
+    settle_tile(&state);
+    let [worker_tiles, _, applied, discarded] = worker_counts(&state);
+    assert_eq!(worker_tiles, 1, "a fresh worker builds the next re-center");
+    assert_eq!(applied, 1, "the fresh worker's tile is swapped in");
+    assert_eq!(discarded, 0, "no fresh tile is discarded");
+    assert!(
+        state.borrow().tile_worker.is_some(),
+        "the re-center started a new worker"
+    );
+    window.hide().expect("close headless source window");
+}

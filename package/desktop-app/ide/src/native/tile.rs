@@ -107,10 +107,19 @@ pub(super) fn poll(window: &AppWindow, state: &Rc<RefCell<State>>) {
     let polled = {
         let mut current = state.borrow_mut();
         let Some(mut worker) = current.tile_worker.take() else {
+            current.tile_poll.stop();
             return;
         };
         let polled = worker.poll();
-        current.tile_worker = Some(worker);
+        match &polled {
+            Ok(_) => current.tile_worker = Some(worker),
+            // A stopped worker is dropped here, so its thread is joined; the next re-center starts a fresh one.
+            Err(_) => {
+                current.tile_job = None;
+                current.scroll_wanted = None;
+            }
+        }
+        stop_when_idle(&mut current);
         polled
     };
     let reply = match polled {
@@ -123,6 +132,15 @@ pub(super) fn poll(window: &AppWindow, state: &Rc<RefCell<State>>) {
         }
     };
     apply(window, state, reply);
+}
+
+/// Stop the poll timer when no re-center is queued; `submit` starts it again.
+/// What: `Timer::stop` ends the repeated callback; the timer is restarted on the next submission.
+/// Why: A stopped worker or an idle queue must not report the same error on every 20 ms tick.
+fn stop_when_idle(current: &mut State) {
+    if current.tile_job.is_none() {
+        current.tile_poll.stop();
+    }
 }
 
 /// Swap a finished tile in, or count it as discarded.

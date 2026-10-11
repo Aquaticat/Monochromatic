@@ -291,6 +291,12 @@ impl TileWorker {
         return self.dispatch();
     }
 
+    /// Close the request channel so the idle worker thread ends, as a crashed worker would; test-only.
+    #[cfg(test)]
+    pub(super) fn close_for_test(&mut self) {
+        self.requests.take();
+    }
+
     /// Drop the waiting job; a running job finishes and its reply is left for the caller to discard.
     pub(super) fn cancel(&mut self) {
         self.waiting = None;
