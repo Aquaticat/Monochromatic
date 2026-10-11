@@ -4588,9 +4588,12 @@ B405);
 the same pass found the required-provider gate
 and the meter line reading the caller's own stop as a meter failure,
 with the provider's words dropped (ledger B407).
-One site stays open:
+The last site,
 the overlapped map,
-whose jobs fail in the code they call (ledger B405).
+whose jobs fail in the code they call,
+was then run red in six of its nine callers and fixed in the helper (ledger B408);
+the same run found the lookups for cited references and work titles writing the caller's own reason as a fetch failure
+and answering it as data (ledger B409).
 
 The rule:
 what a command prints,
@@ -4670,6 +4673,24 @@ and `provider-meter-state.unit.test.ts` the meter's status and the provider's wo
 (ledger B404,
 B405,
 B407).
+`overlapped-map.unit.test.ts` holds each failure the helper does not throw,
+written in position order whichever ended first,
+none for the thrown one or for the caller's reason,
+none while the caller has not stopped,
+and no second line for a buy's failure the twin memo wrote;
+the lane drivers' tests (`consolidate-driver`,
+`lane-contest-driver`,
+`translate-document`,
+`refine-phase`,
+`repair-translation` and `corpus-run/pass-insertion-admission`) each land the stop inside a later job's hook
+through `stop-landing-hook.test-fixture.ts`,
+and `work-title-lookup.unit.test.ts` and `cited-reference.unit.test.ts` hold the lookups refusing with the caller's reason
+while a member's own failure keeps its line (ledger B408,
+B409).
+A helper that reads many jobs takes the caller's signal and logger as required parameters,
+so a caller cannot leave the stop unread;
+a failure that a lower layer wrote is marked there,
+and the helper skips marked failures instead of guessing from their class.
 When a fix closes one fan-out of a shape,
 the same change lists every other caller of the helper that rethrows unwritten under a stop,
 and says which are covered;

@@ -34668,6 +34668,9 @@ The fix is the caller's signal threaded into `mapOverlapped`,
 writing each failure it does not throw unless it is that signal's reason,
 and nine caller modules outside the change would pass it.
 
+Closed on 2026-10-11 (UTC) by B408,
+which ran the reading red in six of the nine callers and found the other three unable to drop a failure.
+
 Open to the owner's veto:
 the module root logger,
 where the alternative is a logger the probe passes;
@@ -34714,6 +34717,12 @@ which is the shape B407 fixed in the gate;
 this is the agent's inference from reading,
 not run.
 
+Closed on 2026-10-11 (UTC):
+the `mapOverlapped` residual by B408,
+and the lookups by B409,
+which ran the inference and found it true.
+The sentence on this entry's census that the lookups' catches write a member's own failure holds only for a failure that is not the caller's reason.
+
 Recurrence:
 `mistake-prevention.md`,
 "Output decided by arrival order".
@@ -34756,6 +34765,125 @@ the gate still refusing as `meter unavailable` when a meter fails of its own und
 a stopped read recorded `unreadable` in the `METERS` line,
 which rests on the TSDoc of `takeReading` and on no ledger ruling;
 and the stop line's wording.
+
+Recurrence:
+`mistake-prevention.md`,
+"Output decided by arrival order".
+
+### B408: an overlapped job's own failure under the caller's stop reached no line
+
+Red `7781cbaaa7`,
+fixed in `63a4a35f0a`.
+
+Found on 2026-10-11 (UTC) as the open item B405 recorded.
+`mapOverlapped` (`overlapped-map.ts`) kept each job's failure by position
+and threw the lowest position's,
+so once the caller stopped,
+a higher job's own failure reached no line when a lower job ended in the caller's reason.
+By the red cases on the build of `e241a7be6`,
+the consolidation,
+contest,
+translate,
+refine,
+repair and insertion-admission lanes each threw the reason at overlap two
+and wrote nothing for a later slice refused by its hook,
+by a re-seated roster with no translator,
+or by an outcome naming no prepared slice.
+The panel stage,
+the judge fidelity probe and the reference read run one lane,
+so they cannot drop one.
+A buy's failure was already written by the twin memo,
+and the abort catches of `translate-slice-attempt.ts`,
+`repair-slice-buy.ts` and `repair-refine-step.ts` throw the reason.
+B405 named a cache write among the dropped kinds;
+that holds for neither the consolidation nor the contest,
+where the persist runs inside the buy and the twin memo writes its failure.
+
+The fix:
+`mapOverlapped` takes the caller's signal,
+a logger and an item namer,
+all required,
+and once every lane has ended and the signal has aborted,
+writes each failure it does not throw,
+in position order,
+through `exchangeFailureLogText`,
+except the signal's reason and a failure marked written through `markFailureWritten`,
+which the twin memo calls after its own line.
+The thrown error is unchanged.
+Twelve cases hold it:
+four in `overlapped-map.unit.test.ts`,
+one per lane driver,
+and the two lookup cases of B409.
+A new fixture,
+`stop-landing-hook.test-fixture.ts`,
+lets a case land the stop inside a job's hook.
+
+Open to the owner's veto:
+the required item namer;
+the caller's logger rather than the root;
+position order once every lane has ended;
+the module `WeakSet` marker,
+set by the twin memo and not by `repairOneCandidate`;
+a never-aborting signal in the reference read when its caller gave none;
+the refine case's `UnpreparedSliceError`;
+and the line's wording.
+
+Recurrence:
+`mistake-prevention.md`,
+"Output decided by arrival order".
+
+### B409: the work-title and cited-reference lookups wrote the caller's stop as a failed fetch
+
+Red `7781cbaaa7`,
+fixed in `63a4a35f0a`.
+
+Found on 2026-10-11 (UTC) as the open item B406 recorded.
+`workTitleLookupLines` (`work-title-lookup.ts`) and `citedReferenceBlock` (`cited-reference-lookup.ts`)
+caught the caller's own reason in each member,
+wrote it as a lookup that failed or a page that could not be fetched,
+and answered it as data:
+by the agent's probe on the build of `e241a7be6`,
+"refused by Error" for the member ending in the reason,
+and the call resolved.
+No ruling or caller holds a data answer under a stop.
+
+The fix:
+each member rethrows a failure that is the signal's reason while the signal has aborted,
+unwritten,
+so the call refuses with that one reason whichever member ended first;
+every other failure keeps its line and its data answer.
+The two scan entries now read `shared-abort`,
+resting on `aborted` and `reason`.
+
+Open to the owner's veto:
+preparation now fails with the reason at the lookups,
+where it went on with unfetched lines.
+
+Recurrence:
+`mistake-prevention.md`,
+"Output decided by arrival order".
+
+### B410: the census of other fan-outs found none open, and four defects beside them
+
+Run on 2026-10-11 (UTC) beside B408.
+Every caller of `mapOverlapped`,
+the twin memo
+and both lookups were read for a member's own failure under a stop that reaches no line,
+on top of B406's census;
+none remains.
+
+Open,
+found by that reading:
+the twin memo writes the caller's reason as an abandoned buy on the translate and repair paths,
+since its catch holds no signal (`twin-memo.ts`,
+read);
+a repair seat's failure under a stop is written by both `repairOneCandidate` and the twin memo in the consolidation,
+the agent's reading,
+not run;
+two failures without a stop still drop the higher one,
+which the owner's rule on a stop does not cover;
+and the cited-reference block writes its per-page lines in completion order,
+which its case hides by sorting.
 
 Recurrence:
 `mistake-prevention.md`,
