@@ -6,6 +6,7 @@ import { frontMatterRepairOutcome, } from './front-matter-repair.ts';
 import type { ChunkPair, } from './chunk-document.ts';
 import type { PreparedDocumentPair, } from './document-preparation.ts';
 import { exchangeFailureLogText, } from './exchange-failure-text.ts';
+import { failureWritten, } from './overlapped-map.ts';
 import { cacheRefusalsOf, } from './repair-cache-gate.ts';
 import { repairChunk, } from './repair-chunk.ts';
 import type {
@@ -163,9 +164,16 @@ export async function buyRepairSlice(
       // A provider fault under a live signal keeps its own identity.
       if (!signal.aborted)
         throw error;
-      l.warn(
-        `chunk ${String(sliceIndex,)}: abandoned by the caller's abort (${exchangeFailureLogText({ error, },)})`,
-      );
+      // A FAILURE A LOWER LAYER ALREADY WROTE keeps its words on that line
+      // alone, such as the refusal the seat reading writes when the checker
+      // stage's re-seat stops the entry (ledger B413 left this open, B415 ran
+      // it); this line then says only that the chunk was abandoned, as the
+      // translate attempt's does (`translate-slice-attempt.ts`).
+      /**
+       What surfaced, in parentheses, where no lower layer wrote it.
+       */
+      const surfaced = failureWritten({ error, },) ? '' : ` (${exchangeFailureLogText({ error, },)})`;
+      l.warn(`chunk ${String(sliceIndex,)}: abandoned by the caller's abort${surfaced}`,);
       throw signal.reason;
     }
   })();

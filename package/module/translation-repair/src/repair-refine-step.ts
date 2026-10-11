@@ -5,6 +5,7 @@ import type { ChunkPair, } from './chunk-document.ts';
 import type { SyntheticClient, } from './chat-contract.ts';
 import type { SliceCache, } from './slice-cache.ts';
 import { exchangeFailureLogText, } from './exchange-failure-text.ts';
+import { failureWritten, } from './overlapped-map.ts';
 import { assertSettledRecordAgrees, } from './slice-record-agreement.ts';
 import {
   type RefinePhaseResult,
@@ -167,7 +168,16 @@ export async function refineSettledSlices(
     catch (error) {
       if (!signal.aborted)
         throw error;
-      l.warn(`refinement abandoned by the caller's abort (${exchangeFailureLogText({ error, },)})`,);
+      // A FAILURE A LOWER LAYER ALREADY WROTE keeps its words on that line
+      // alone, such as the refusal the seat reading writes when the recheck's
+      // re-seat stops the entry (ledger B413 left this open, B415 ran it);
+      // this line then says only that the refinement was abandoned, as the
+      // translate attempt's does (`translate-slice-attempt.ts`).
+      /**
+       What surfaced, in parentheses, where no lower layer wrote it.
+       */
+      const surfaced = failureWritten({ error, },) ? '' : ` (${exchangeFailureLogText({ error, },)})`;
+      l.warn(`refinement abandoned by the caller's abort${surfaced}`,);
       throw signal.reason;
     }
   })();
