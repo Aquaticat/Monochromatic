@@ -24,6 +24,12 @@ The work happens on the branch `feat/music-player-production`, in the worktree `
 - Model choice: Haiku 5.5 by default.
   The human gave the authority (2026-10-10) to elevate to Sonnet 5.5 whenever its results show Haiku is not good enough;
   the orchestrator decides that from the results, and records each elevation and its reason here.
+- Routing authority, given by the human on 2026-10-11 after the Haiku failures recorded in `doc/limitation/haiku.md`:
+  the orchestrator decides itself which tasks go to Sonnet 5.5, without proof on the specific task.
+  Applied rule: diagnosis, cross-system debugging, performance and audio engineering, search and database integration,
+  the keyboard map with its end-to-end runs, and polish fixes that need judgment go to Sonnet;
+  pure-logic ports with a tested reference, mechanical renames, comment sweeps and verification runs stay on Haiku.
+  Every brief names `doc/troubleshooting/` as the first search and requires the build or run, not only a linter, as its verdict.
 - Trust, set by the human on 2026-10-10: once there is enough evidence that Haiku is good enough for a specific kind of task,
   the orchestrator does not repeat that kind of work as if it distrusted them.
   Evidence so far: pure-logic ports with a tested reference (packages 1 and 2) compiled, mirrored every case, passed the unit
