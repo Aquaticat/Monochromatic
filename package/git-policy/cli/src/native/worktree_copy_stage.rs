@@ -131,7 +131,7 @@ fn try_clone(_source: &std::fs::File, _destination: &std::fs::File) -> bool {
 /// ```ts
 /// await copyFile(sourcePath, stagePath, COPYFILE_EXCL | COPYFILE_FICLONE);
 /// ```
-fn copy_file_exclusive(source: &Path, destination: &Path) -> Result<(), WorktreeCopyError> {
+pub fn copy_file_exclusive(source: &Path, destination: &Path) -> Result<(), WorktreeCopyError> {
     let mut input: std::fs::File =
         std::fs::File::open(source).map_err(|error| return automatic_failure(&error))?;
     let mut output: std::fs::File = std::fs::OpenOptions::new()

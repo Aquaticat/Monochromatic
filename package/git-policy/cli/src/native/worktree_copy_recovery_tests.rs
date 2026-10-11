@@ -1,0 +1,252 @@
+//! Recovery checks against real Git repositories: registration, discards with their notices, and resumption.
+
+use super::*;
+use crate::test_support::{fixture, git, git_context, remove, repository};
+use crate::worktree_copy_journal::{
+    Journal, create_journal, ensure_journal_root, read_pending_journals, write_journal,
+};
+use crate::worktree_copy_lock::{SETTLEMENT_LOCK_NAME, acquire_worktree_copy_lock};
+use crate::worktree_copy_stage::stage_ignored_snapshot;
+
+/// A repository with an ignored `cache` file and a linked worktree at `topic` that the copy would fill.
+fn linked_source(root: &Path) -> (PathBuf, PathBuf) {
+    let source: PathBuf = repository(root, "source");
+    std::fs::write(source.join(".gitignore"), b"cache/\n").expect("gitignore");
+    std::fs::create_dir_all(source.join("cache")).expect("cache");
+    std::fs::write(source.join("cache/data"), b"payload").expect("data");
+    let topic: PathBuf = root.join("topic");
+    git(
+        source.as_path(),
+        &[
+            "worktree",
+            "add",
+            "--quiet",
+            "-b",
+            "topic",
+            topic.to_str().expect("utf8"),
+        ],
+    );
+    return (
+        std::fs::canonicalize(source).expect("canonical source"),
+        std::fs::canonicalize(topic).expect("canonical topic"),
+    );
+}
+
+/// Creates a staged journal for a destination, as an interrupted copy would have left it.
+fn staged_journal(source: &Path, destination: &Path) -> PendingJournal {
+    let common: PathBuf = std::fs::canonicalize(source.join(".git")).expect("common");
+    let snapshot: StagedSnapshot =
+        stage_ignored_snapshot(&git_context(), source, destination, &[]).expect("staged");
+    return create_journal(common.as_path(), destination, &snapshot).expect("journal");
+}
+
+/// A linked worktree of the repository is registered; a removed or re-pointed one is not.
+#[cfg(unix)]
+#[test]
+fn registration_follows_the_linked_pointer() {
+    let root: PathBuf = fixture("recovery-registration");
+    let (source, topic) = linked_source(root.as_path());
+    let common: PathBuf = std::fs::canonicalize(source.join(".git")).expect("common");
+    assert_eq!(
+        destination_registration(common.as_path(), topic.as_path()).expect("registered"),
+        Registration::Registered
+    );
+    let absent: PathBuf = root.join("absent");
+    assert_eq!(
+        destination_registration(common.as_path(), absent.as_path()).expect("absent"),
+        Registration::Unregistered
+    );
+    let other: PathBuf = root.join("other");
+    std::fs::create_dir(other.as_path()).expect("other");
+    std::fs::write(other.join(".git"), b"gitdir: /nonexistent/admin\n").expect("dangling pointer");
+    assert_eq!(
+        destination_registration(common.as_path(), other.as_path()).expect("dangling"),
+        Registration::Unregistered
+    );
+    let plain: PathBuf = root.join("plain");
+    std::fs::create_dir(plain.as_path()).expect("plain");
+    std::fs::write(plain.join(".git"), b"not a pointer\n").expect("plain pointer");
+    assert_eq!(
+        destination_registration(common.as_path(), plain.as_path()).expect("plain"),
+        Registration::Unregistered
+    );
+    remove(root.as_path());
+}
+
+/// A journal whose destination is no longer registered is discarded with the notice, and its stage goes too.
+#[cfg(unix)]
+#[test]
+fn unregistered_destination_is_discarded_with_notice() {
+    let root: PathBuf = fixture("recovery-unregistered");
+    let (source, topic) = linked_source(root.as_path());
+    let pending: PendingJournal = staged_journal(source.as_path(), topic.as_path());
+    let stage: PathBuf = PathBuf::from(pending.journal.stage_container.as_str());
+    git(
+        source.as_path(),
+        &[
+            "worktree",
+            "remove",
+            "--force",
+            topic.to_str().expect("utf8"),
+        ],
+    );
+    let common: PathBuf = std::fs::canonicalize(source.join(".git")).expect("common");
+    let report: RecoveryReport =
+        recover_worktree_copy_transactions(common.as_path()).expect("recovered");
+    assert_eq!(report.recovered, 0);
+    assert_eq!(
+        report.notices,
+        vec![format!(
+            "cli-git: discarded an interrupted ignored-state copy for {}, which is no longer a registered worktree.",
+            quote(topic.to_string_lossy().as_ref())
+        )]
+    );
+    assert!(!stage.exists());
+    assert!(
+        read_pending_journals(common.as_path())
+            .expect("pending")
+            .is_empty()
+    );
+    remove(root.as_path());
+}
+
+/// A journal whose stage is gone is discarded with the incomplete-ignored-files notice.
+#[cfg(unix)]
+#[test]
+fn missing_stage_is_discarded_with_notice() {
+    let root: PathBuf = fixture("recovery-missing-stage");
+    let (source, topic) = linked_source(root.as_path());
+    let pending: PendingJournal = staged_journal(source.as_path(), topic.as_path());
+    std::fs::remove_dir_all(pending.journal.stage_container.as_str()).expect("stage removed");
+    let common: PathBuf = std::fs::canonicalize(source.join(".git")).expect("common");
+    let report: RecoveryReport =
+        recover_worktree_copy_transactions(common.as_path()).expect("recovered");
+    assert_eq!(
+        report.notices,
+        vec![format!(
+            "cli-git: discarded an interrupted ignored-state copy into {} because its private stage is missing; ignored files there may be incomplete.",
+            quote(topic.to_string_lossy().as_ref())
+        )]
+    );
+    assert!(
+        read_pending_journals(common.as_path())
+            .expect("pending")
+            .is_empty()
+    );
+    remove(root.as_path());
+}
+
+/// A journal left in the installing phase with an intact stage is resumed and completed.
+#[cfg(unix)]
+#[test]
+fn interrupted_installation_is_resumed() {
+    let root: PathBuf = fixture("recovery-resume");
+    let (source, topic) = linked_source(root.as_path());
+    let pending: PendingJournal = staged_journal(source.as_path(), topic.as_path());
+    let installing: Journal = Journal {
+        phase: Phase::Installing,
+        ..pending.journal.clone()
+    };
+    write_journal(pending.path.as_path(), &installing).expect("installing phase");
+    let common: PathBuf = std::fs::canonicalize(source.join(".git")).expect("common");
+    let report: RecoveryReport =
+        recover_worktree_copy_transactions(common.as_path()).expect("recovered");
+    assert_eq!(report.recovered, 1);
+    assert!(report.notices.is_empty(), "{:?}", report.notices);
+    assert_eq!(
+        std::fs::read(topic.join("cache/data")).expect("resumed copy"),
+        b"payload"
+    );
+    assert!(
+        read_pending_journals(common.as_path())
+            .expect("pending")
+            .is_empty()
+    );
+    remove(root.as_path());
+}
+
+/// A journal already marked complete only has its cleanup finished, and counts as recovered.
+#[cfg(unix)]
+#[test]
+fn completed_journal_only_cleans_up() {
+    let root: PathBuf = fixture("recovery-complete");
+    let (source, topic) = linked_source(root.as_path());
+    let pending: PendingJournal = staged_journal(source.as_path(), topic.as_path());
+    write_journal(
+        pending.path.as_path(),
+        &Journal {
+            phase: Phase::Complete,
+            ..pending.journal.clone()
+        },
+    )
+    .expect("complete phase");
+    let common: PathBuf = std::fs::canonicalize(source.join(".git")).expect("common");
+    let report: RecoveryReport =
+        recover_worktree_copy_transactions(common.as_path()).expect("recovered");
+    assert_eq!(report.recovered, 1);
+    assert!(!topic.join("cache").exists());
+    assert!(
+        read_pending_journals(common.as_path())
+            .expect("pending")
+            .is_empty()
+    );
+    remove(root.as_path());
+}
+
+/// Recovery skips the settlement lock when no journal is pending, and skips recovery while a live owner holds it.
+#[cfg(unix)]
+#[test]
+fn pending_check_takes_the_lock_only_for_a_journal() {
+    let root: PathBuf = fixture("recovery-pending-check");
+    let (source, topic) = linked_source(root.as_path());
+    let common: PathBuf = std::fs::canonicalize(source.join(".git")).expect("common");
+    recover_pending_worktree_copies(common.as_path(), &mut Vec::new()).expect("nothing pending");
+    assert!(
+        !ensure_journal_root(common.as_path())
+            .expect("root")
+            .join(SETTLEMENT_LOCK_NAME)
+            .exists()
+    );
+    let pending: PendingJournal = staged_journal(source.as_path(), topic.as_path());
+    let mut stderr: Vec<u8> = Vec::new();
+    let held = acquire_worktree_copy_lock(common.as_path(), &mut stderr).expect("held by us");
+    recover_pending_worktree_copies(common.as_path(), &mut Vec::new())
+        .expect("held by a live owner");
+    assert!(
+        pending.path.exists(),
+        "a live owner keeps the journal for itself"
+    );
+    held.release().expect("released");
+    remove(root.as_path());
+}
+
+/// The summary line counts transactions with the singular or plural noun, after the notices.
+#[test]
+fn report_writes_notices_then_summary() {
+    let mut out: Vec<u8> = Vec::new();
+    report_recovered(
+        &RecoveryReport {
+            recovered: 1,
+            notices: vec![String::from("cli-git: notice.")],
+        },
+        &mut out,
+    )
+    .expect("written");
+    assert_eq!(
+        String::from_utf8(out).expect("utf8"),
+        "cli-git: notice.\ncli-git: recovered ignored-state copies for 1 worktree transaction.\n"
+    );
+    let mut plural: Vec<u8> = Vec::new();
+    report_recovered(
+        &RecoveryReport {
+            recovered: 2,
+            notices: Vec::new(),
+        },
+        &mut plural,
+    )
+    .expect("written");
+    assert_eq!(
+        String::from_utf8(plural).expect("utf8"),
+        "cli-git: recovered ignored-state copies for 2 worktree transactions.\n"
+    );
+}
