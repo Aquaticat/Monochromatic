@@ -42,6 +42,14 @@ fn helper_entry() {
 /// The child each helper scenario runs under the guard.
 fn helper_command(mode: &str, directory: &Path) -> Command {
     let mut command: Command = match mode {
+        // A direct `sleep`, with no shell in front of it: the relay reaches the process that will wait.
+        // A shell that runs a foreground command first ignores SIGINT until that command ends,
+        // so an early relay could be absorbed and the child would then `exec` without it.
+        "early" => {
+            let mut built: Command = Command::new("sleep");
+            built.arg("30");
+            built
+        }
         // Long-lived child: records its start, then waits to be signaled.
         "relay" => {
             let mut built: Command = Command::new("/bin/sh");
@@ -163,6 +171,7 @@ fn guard_catches_the_four_signals() {
 #[cfg(unix)]
 #[test]
 fn handler_marks_a_signal_only_for_a_process_sender() {
+    let _statics: std::sync::MutexGuard<'_, ()> = RELAY_STATICS.lock().expect("relay statics lock");
     // SAFETY: a zeroed `siginfo_t` is a valid buffer; only its header fields are written below.
     let mut info: libc::siginfo_t = unsafe { std::mem::zeroed() };
     let header: *mut SignalHeader = (&mut info as *mut libc::siginfo_t).cast::<SignalHeader>();
@@ -183,6 +192,36 @@ fn handler_marks_a_signal_only_for_a_process_sender() {
         "a process sender is marked for relay"
     );
     PENDING[0].store(0, std::sync::atomic::Ordering::SeqCst);
+}
+
+/// Serializes the in-process tests that touch the relay statics (`CHILD_PID`, `PENDING`).
+static RELAY_STATICS: std::sync::Mutex<()> = std::sync::Mutex::new(());
+
+/// A signal caught before the child exists is relayed the moment the child's PID is published.
+///
+/// The pending slot is set directly, as the handler would set it, and no child is recorded yet.
+/// Without the relay after publication the child runs its full 30 seconds and exits normally,
+/// so the assertion names the outcome and the bound instead of waiting for the sleep to end.
+#[cfg(unix)]
+#[test]
+fn a_signal_pending_before_spawn_is_relayed_when_the_pid_is_published() {
+    let _statics: std::sync::MutexGuard<'_, ()> = RELAY_STATICS.lock().expect("relay statics lock");
+    // Slot 1 is SIGTERM; the handler test uses slot 0, so the two tests never read each other's slot.
+    PENDING[1].store(libc::SIGTERM, std::sync::atomic::Ordering::SeqCst);
+    let mut command: Command = Command::new("sleep");
+    command.arg("30");
+    let started: Instant = Instant::now();
+    let outcome: ChildOutcome = run_relayed(&mut command).expect("child runs");
+    assert_eq!(
+        outcome,
+        ChildOutcome::Signaled(libc::SIGTERM),
+        "the pending SIGTERM reaches the child"
+    );
+    assert!(
+        started.elapsed() < Duration::from_secs(10),
+        "the child was signaled at once, not after its sleep"
+    );
+    PENDING[1].store(0, std::sync::atomic::Ordering::SeqCst);
 }
 
 /// One guard may be active at a time in a process.
@@ -219,7 +258,7 @@ fn process_signal_is_relayed_and_the_child_outcome_is_reported() {
 #[test]
 fn signal_during_start_is_relayed_after_the_child_starts() {
     let root: PathBuf = fixture("signal-early");
-    let helper: Child = spawn_helper("relay", root.as_path());
+    let helper: Child = spawn_helper("early", root.as_path());
     let pid: u32 = helper.id();
     wait_for(root.join("installed").as_path());
     send(pid, libc::SIGINT);
