@@ -153,11 +153,12 @@ fn a_single_path_patch_passes_the_grammar() {
     assert_eq!(validate_policy_patch(PatchCheck { patch: &patch, expected_revision: BASE }), Ok(()));
 }
 
-/// Every unsafe path is rejected before the patch text is read.
+/// Every unsafe path is rejected by the path rule itself, even when its headers name that path well-formed.
 #[test]
-fn unsafe_paths_are_rejected_before_the_patch_text_is_read() {
+fn unsafe_paths_are_rejected_by_the_path_rule() {
     for path in ["../f.txt", "a/./f.txt", "/f.txt", "a\nf.txt", "a\rf.txt", "a/../f.txt"] {
-        let patch: PolicyPatch = PolicyPatch { target_id: String::from("t"), path: String::from(path), bytes: Vec::new() };
+        let text: String = format!("diff --git a/{path} b/{path}\nindex {BASE}..{PROPOSED} 100644\n--- a/{path}\n+++ b/{path}\n@@ -1 +1 @@\n-a\n+b\n");
+        let patch: PolicyPatch = PolicyPatch { target_id: String::from("t"), path: String::from(path), bytes: text.into_bytes() };
         let outcome: Result<(), PatchError> = validate_policy_patch(PatchCheck { patch: &patch, expected_revision: BASE });
         assert!(matches!(outcome, Err(PatchError::Rejected(_))), "{path}: {outcome:?}");
     }
