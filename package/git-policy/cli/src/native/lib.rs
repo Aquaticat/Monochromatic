@@ -469,6 +469,48 @@ pub mod capture_store;
 ///  their recording and pruning.
 pub mod capture_records;
 
+/// Replay: the unified-diff parser of subsumption (`replay_patch`).
+pub mod replay_patch;
+
+/// Replay: the exact strict reverse check of subsumption (`replay_reverse_apply`).
+pub mod replay_reverse_apply;
+
+/// Replay: the one-sided extension of subsumption over zero-context hunks (`replay_containment`).
+pub mod replay_containment;
+
+/// Replay: raw commit objects as bytes, the unsigned rewrite and signed-rebuild inputs (`replay_object`).
+pub mod replay_object;
+
+/// Replay: capture order over the landed first-parent history and the per-path decision (`replay_capture_order`).
+pub mod replay_capture_order;
+
+/// Replay: the starvation reservation of the next landing slot (`replay_reservation`).
+pub mod replay_reservation;
+
+/// Replay: the shadow-repository Git runner that every replay step uses (`replay_shadow`).
+pub mod replay_shadow;
+
+/// Replay: shared paths of the landed history and the prepared commit, with their three entries (`replay_shared_paths`).
+pub mod replay_shared_paths;
+
+/// Replay: the text half of subsumption over index-named blobs and hunks (`replay_subsumption_text`).
+pub mod replay_subsumption_text;
+
+/// Replay: subsumption rules and the synthetic merge base (`replay_subsumption`).
+pub mod replay_subsumption;
+
+/// Replay: capture-order history and the per-path decisions from the transaction's and landed records (`replay_capture_history`).
+pub mod replay_capture_history;
+
+/// Replay: the merge tree, the first conflicting landed commit, and the replayed commit rebuild (`replay_merge`).
+pub mod replay_merge;
+
+/// Replay: the replayed index, the shadow HEAD move, and the pre-commit re-run decision of revalidation (`replay_revalidation`).
+pub mod replay_revalidation;
+
+/// Replay: one replay of a prepared commit onto a moved target, the integrator's replay result (`replay_commit`).
+pub mod replay_commit;
+
 /// Loading many blobs through one `git cat-file --batch`.
 pub mod blob_batch;
 
