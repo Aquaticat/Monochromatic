@@ -418,10 +418,14 @@ export component TransportDeck inherits Rectangle {
     property <length> heading-h: title-text.height + subtitle-text.height;
     // Top of the seek row.
     property <length> seek-y: root.pad-y + root.heading-h + root.group-gap;
-    // Top of the transport row.
-    property <length> transport-y: root.seek-y + root.target + root.group-gap;
-    // Top of the mode control.
-    property <length> mode-y: root.transport-y + root.target + root.group-gap;
+    // Top of the transport row when it has its own line; on the shared line it is the top of that line.
+    property <length> row-y: root.seek-y + root.target + root.group-gap;
+    // Height of the shared line when the controls fit on one line: the mode control or a 48px target, whichever is taller.
+    property <length> line-h: max(root.target, root.mode-h);
+    // Top of the transport buttons, centered on the shared line when the controls fit on one line.
+    property <length> transport-y: root.one-line ? root.row-y + (root.line-h - root.target) / 2 : root.row-y;
+    // Top of the mode control, centered on the shared line when the controls fit on one line, otherwise below the transport row.
+    property <length> mode-y: root.one-line ? root.row-y + (root.line-h - root.mode-h) / 2 : root.row-y + root.target + root.group-gap;
 
     // ---- Seek row: elapsed time, slider, total time. ----
     // Elapsed clock label, sized to its text.
@@ -544,9 +548,9 @@ export component TransportDeck inherits Rectangle {
         }
     }
 
-    // ---- Transport row: previous, play or pause, next, centered. ----
-    // Left edge of the three 48px targets with 8px gaps, centered in the deck.
-    property <length> transport-x: (root.width - (root.target * 3 + root.control-gap * 2)) / 2;
+    // ---- Transport row: previous, play or pause, next, centered, or left of the mode control on the shared line. ----
+    // Left edge of the three 48px targets with 8px gaps: centered in the deck, or with the mode control when they share a line.
+    property <length> transport-x: root.one-line ? (root.width - root.pair-w) / 2 : (root.width - root.transport-w) / 2;
 
     // Previous button: outlined circle in a 48px target.
     prev-touch := TouchArea {
@@ -775,6 +779,14 @@ export component TransportDeck inherits Rectangle {
     property <bool> two-fits: root.avail >= 2 * root.target - 1px && max(max(root.seg-w-0, root.seg-w-1), max(root.seg-w-2, root.seg-w-3)) <= root.two-cell;
     // Number of rows the mode control uses: one, two or four.
     property <int> rows: root.one-fits ? 1 : (root.two-fits ? 2 : 4);
+    // Width of the transport group: three 48px targets with two 8px gaps.
+    property <length> transport-w: root.target * 3 + root.control-gap * 2;
+    // Gap between the transport group and the mode control when they share a line.
+    property <length> one-gap: 24px;
+    // Width of the shared line: the transport group, the gap and the one-row mode control at its natural width.
+    property <length> pair-w: root.transport-w + root.one-gap + root.one-sum;
+    // True when the transport group and the one-row mode control fit side by side in the width minus the outer inset.
+    property <bool> one-line: root.avail >= root.pair-w;
     // Height of one segment: the 48px target or the label height plus padding, whichever is taller.
     property <length> seg-h: max(root.target, m-repeat.preferred-height + 2 * root.seg-vpad);
     // Total height of the mode control for the chosen rows.
@@ -783,14 +795,14 @@ export component TransportDeck inherits Rectangle {
     property <length> outer-max: 20px;
     // Outside corner radius: a full pill for one row, capped at outer-max when stacked.
     property <length> outer-r: root.rows == 1 ? root.seg-h / 2 : min(root.outer-max, root.seg-h / 2);
-    // Height of the whole deck, which the deck reports as its own height.
-    property <length> content-h: root.mode-y + root.mode-h + root.pad-y;
+    // Height of the whole deck, which the deck reports as its own height; the shared line replaces the transport row and the mode row.
+    property <length> content-h: root.one-line ? root.row-y + root.line-h + root.pad-y : root.mode-y + root.mode-h + root.pad-y;
 
-    // Mode control container, positioned at the inset below the transport row.
+    // Mode control container, at the inset below the transport row, or right of the transport group on the shared line.
     Rectangle {
-        x: root.pad-x;
+        x: root.one-line ? root.transport-x + root.transport-w + root.one-gap : root.pad-x;
         y: root.mode-y;
-        width: root.avail;
+        width: root.one-line ? root.one-sum : root.avail;
         height: root.mode-h;
 
         // Left edge of the first one-row segment, centering the connected group.
