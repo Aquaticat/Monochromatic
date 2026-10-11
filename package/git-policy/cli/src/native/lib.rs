@@ -238,6 +238,12 @@ pub mod commit_convergence;
 /// Slice 6: the commit path's preparation: converge, then prepare the commit or report a no-change normalization.
 pub mod commit_policy_preparation;
 
+/// Slice 9 skeleton: the commit transaction in the incumbent's order (recovery, landing lock, shadow, preparation); not reachable until landing is merged.
+pub mod commit_transaction;
+
+/// Slice 9 skeleton: the order around a landed commit and a guarded Git child; not reachable until landing is merged.
+pub mod commit_lifecycle;
+
 /// The bounded loop that repeats a pass after corrections changed candidate content.
 pub mod policy_convergence;
 
