@@ -72,6 +72,25 @@ import type { StageSettings, } from './stage-settings.ts';
 // memoized, so its twin asks again exactly as a warm run would.
 
 /**
+ Names a contested slice on the line the overlapped map writes for its own
+ failure under the caller's stop.
+
+ @param item - contested row and its contest
+
+ @returns The slice by its index
+
+ @example
+ ```ts
+ contestedSliceName({ item: { row: { sliceIndex: 3, }, }, },); // 'slice 3'
+ ```
+ */
+function contestedSliceName(
+  { item: { row, }, }: { readonly item: { readonly row: { readonly sliceIndex: number; }; }; },
+): string {
+  return `slice ${String(row.sliceIndex,)}`;
+}
+
+/**
  Asks the roster for a third rendering at every slice the contest was asked
  about, settled or not; a slice the contest left with no standing text is
  settled as `no-standing-text` without a producer being asked.
@@ -272,6 +291,9 @@ export async function consolidateDocument(
   return await mapOverlapped({
     items: eligibleRows,
     overlap,
+    signal,
+    l: dl,
+    nameOf: contestedSliceName,
     oneItem: async function consolidateOne({
       item: {
         row,

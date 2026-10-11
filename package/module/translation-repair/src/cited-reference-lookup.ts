@@ -192,6 +192,10 @@ export function referenceLineOf(
  the catch that turns one page's failed fetch into a line, so a cache
  directory that cannot be read stops the entry and buys nothing
 
+ @throws The caller's reason, unchanged and unwritten, when `signal` aborts and
+ a page's fetch ends in it; a fetch that fails of its own as the stop lands is
+ still written, and may be written after this rejects
+
  @example
  ```ts
  const referenceContext = await citedReferenceBlock({ sourceText, apiKey, dir, signal, fetchFn: fetch, now: () => new Date(), logger: l, },);
@@ -319,6 +323,15 @@ export async function citedReferenceBlock(
         record,
       },);
     } catch (error) {
+      // THE CALLER'S OWN STOP IS NO PAGE THAT COULD NOT BE FETCHED (ledger
+      // B406): written as one, it read as a fetch failure and the page was
+      // answered as unfetched in a block the sheets read. It goes on unchanged
+      // and unwritten, and every fetch the stop ends rethrows the same reason,
+      // so the block refuses with it whichever ended first. A fetch's own
+      // failure, such as a transport dropping as the stop landed, is still
+      // written and keeps its line.
+      if (signal.aborted && (error === signal.reason))
+        throw error;
       // `refusalText`, never the caught value's own words: a contents body
       // that is not JSON fails as V8's `SyntaxError`, whose message quotes it.
       rl.warn(`reference ${String(index,)} ${url} could not be fetched: ${refusalText({ error, },)}`,);

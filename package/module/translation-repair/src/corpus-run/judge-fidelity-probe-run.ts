@@ -116,6 +116,26 @@ function requestedSpecs(
 }
 
 /**
+ Names a planned row on the line the overlapped map writes for its own
+ failure under the caller's stop, by the trial it runs.
+
+ @param item - planned row, named by its trial
+
+ @returns The trial by its handle
+
+ @example
+ ```ts
+ plannedTrialName({ item: row, },); // 'trial tabby-nap-clean-first'
+ ```
+ */
+function plannedTrialName(
+  { item, }: { readonly item: { readonly trial: { readonly trialId: string; }; }; },
+): string {
+  return `trial ${item.trial
+    .trialId}`;
+}
+
+/**
  Runs only source-reviewed, hash-locked comparisons through the production
  selector. Individual ballots are retained; a singleton judge's underweight
  merged verdict is not a quality score. This never changes role admission itself.
@@ -328,6 +348,11 @@ export async function runFidelityProbe(
   const rows = await mapOverlapped({
     items: bound.planned,
     overlap: 1,
+    // The probe never stops its own exchanges, so this signal never aborts and
+    // nothing is written for a row; one row runs at a time in any case.
+    signal: controller.signal,
+    l: log,
+    nameOf: plannedTrialName,
     oneItem: async function runReviewedTrial({
       item: row,
       position,

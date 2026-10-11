@@ -299,6 +299,10 @@ export function namesWork(
  @returns Lines in title order, empty when the original names no work or no
  key is set
 
+ @throws The caller's reason, unchanged and unwritten, when `signal` aborts and
+ a lookup ends in it; a lookup that fails of its own as the stop lands is still
+ written, and may be written after this rejects
+
  @example
  ```ts
  const lines = await workTitleLookupLines({ sourceText, apiKey, dir, signal, fetchFn: fetch, now: () => new Date(), logger: l, },);
@@ -373,6 +377,14 @@ export async function workTitleLookupLines(
         record,
       },);
     } catch (error) {
+      // THE CALLER'S OWN STOP IS NO FAILED LOOKUP (ledger B406): written as
+      // one, it read as a search that failed and was answered as a title with
+      // no evidence. It goes on unchanged and unwritten, and every lookup the
+      // stop ends rethrows the same reason, so the lookups refuse with it
+      // whichever ended first. A search's own failure, such as a transport
+      // dropping as the stop landed, is still written and contributes no line.
+      if (signal.aborted && (error === signal.reason))
+        throw error;
       // `refusalText`, never the caught value's own words: a search body that
       // is not JSON fails as V8's `SyntaxError`, whose message quotes it.
       wl.warn(`lookup for ${title} failed and contributes no line: ${refusalText({ error, },)}`,);

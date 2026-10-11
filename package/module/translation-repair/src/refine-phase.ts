@@ -71,6 +71,23 @@ export type RefinePhaseResult = {
 };
 
 /**
+ Names an accuracy outcome's slice on the line the overlapped map writes for
+ its own failure under the caller's stop.
+
+ @param item - accuracy outcome, named by the slice it settled
+
+ @returns The slice by its index
+
+ @example
+ ```ts
+ outcomeSliceName({ item: outcome, },); // 'slice 3'
+ ```
+ */
+function outcomeSliceName({ item, }: { readonly item: { readonly sliceIndex: number; }; },): string {
+  return `slice ${String(item.sliceIndex,)}`;
+}
+
+/**
  Runs naturalness lane over every accuracy-settled slice.
 
  @param client - injected model client
@@ -221,6 +238,9 @@ export async function runRefinePhase(
   const settlements = await mapOverlapped({
     items: outcomes,
     overlap,
+    signal,
+    l,
+    nameOf: outcomeSliceName,
     oneItem: async function settleOne({ item: outcome, },) {
       // UNDER THE SLICE'S LOG CONTEXT, as the accuracy pass settles each slice
       // (ledger A11): refinement runs slices side by side under overlap, and

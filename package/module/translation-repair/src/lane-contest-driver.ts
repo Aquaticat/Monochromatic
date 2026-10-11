@@ -197,6 +197,23 @@ export async function persistLaneContestOutcome(
 }
 
 /**
+ Names a compared slice on the line the overlapped map writes for its own
+ failure under the caller's stop.
+
+ @param item - comparison row of the slice
+
+ @returns The slice by its index
+
+ @example
+ ```ts
+ comparedSliceName({ item: { sliceIndex: 3, }, },); // 'slice 3'
+ ```
+ */
+function comparedSliceName({ item, }: { readonly item: { readonly sliceIndex: number; }; },): string {
+  return `slice ${String(item.sliceIndex,)}`;
+}
+
+/**
  Asks the roster which lane should ship, at every slice the two lanes worded
  differently.
 
@@ -370,6 +387,9 @@ export async function contestDocumentLanes(
   return await mapOverlapped({
     items: eligibleRows,
     overlap,
+    signal,
+    l: dl,
+    nameOf: comparedSliceName,
     oneItem: async function contestOne({ item: row, }): Promise<ArtifactContestSlice> {
       return await inSliceLogContext({
         lane: 'contest',

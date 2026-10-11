@@ -203,6 +203,27 @@ function describePanelReasons(issue: AdjudicatedIssue,): readonly string[] {
 }
 
 /**
+ Names a packet on the line the overlapped map writes for its own failure
+ under the caller's stop, by the cluster it reviews, which reveals no
+ proposer.
+
+ @param item - packet, named by its cluster
+
+ @returns The cluster by its identity
+
+ @example
+ ```ts
+ packetClusterName({ item: packet, },); // 'cluster C2'
+ ```
+ */
+function packetClusterName(
+  { item, }: { readonly item: { readonly cluster: { readonly clusterId: string; }; }; },
+): string {
+  return `cluster ${item.cluster
+    .clusterId}`;
+}
+
+/**
  Reviews precomputed clusters independently within one fixed panel stage.
  Ballots cannot create another packet or change its membership. Sequential
  packet execution bounds provider fan-out; the existing model window and
@@ -312,6 +333,9 @@ export async function runPanelStage(
   const outcomes = await mapOverlapped({
     items: packets,
     overlap: 1,
+    signal,
+    l: pl,
+    nameOf: packetClusterName,
     oneItem: async function reviewPacket(
       { item: packet, }: OverlappedRow<PanelPacket>,
     ): Promise<PanelPacketResult> {

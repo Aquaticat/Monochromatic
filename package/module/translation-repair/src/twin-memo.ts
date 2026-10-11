@@ -1,6 +1,7 @@
 import type { Logger, } from '@monochromatic-dev/module-logger/ts';
 
 import { exchangeFailureLogText, } from './exchange-failure-text.ts';
+import { markFailureWritten, } from './overlapped-map.ts';
 
 //region Twin memo
 // In-run memoization of slices asking the same question, safe under overlap.
@@ -167,6 +168,10 @@ export async function reuseTwinOrBuy<Settled, Bought,>(
             exchangeFailureLogText({ error, },)
           }), so any twin waiting on it asks for itself`,
         );
+        // THIS IS THE FAILURE'S LINE. The buyer throws the same failure on its
+        // own path, and where the caller's stop leaves it unthrown the
+        // overlapped map would write it a second time (ledger B405).
+        markFailureWritten({ error, },);
         return { kind: 'nothing', };
       }
     })(),

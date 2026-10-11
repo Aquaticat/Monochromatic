@@ -69,6 +69,26 @@ type SettledSlice = {
 };
 
 /**
+ Names a prepared slice on the line the overlapped map writes for its own
+ failure under the caller's stop.
+
+ @param item - slice pair, named by its placement in the translation
+
+ @returns The slice by its index
+
+ @example
+ ```ts
+ pairedSliceName({ item: slice, },); // 'slice 3'
+ ```
+ */
+function pairedSliceName(
+  { item, }: { readonly item: { readonly target: { readonly sliceIndex: number; }; }; },
+): string {
+  return `slice ${String(item.target
+    .sliceIndex,)}`;
+}
+
+/**
  Repairs one already prepared document pair.
 
  @param client - injected model client
@@ -239,6 +259,9 @@ export async function repairPreparedDocument(
   const settled = await mapOverlapped({
     items: slices,
     overlap,
+    signal,
+    l: rl,
+    nameOf: pairedSliceName,
     oneItem: async function settleOne({
       item: slice,
       position: slicePosition,

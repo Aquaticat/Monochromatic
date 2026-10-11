@@ -25,6 +25,23 @@ import { mapOverlapped, } from './overlapped-map.ts';
 const l = contextRoot({ tag: 'translation-repair', },);
 
 /**
+ Names a reviewed reference on the line the overlapped map writes for its own
+ failure under the caller's stop.
+
+ @param item - manifest entry, named by its reference
+
+ @returns The reference by its identity
+
+ @example
+ ```ts
+ specReferenceName({ item: spec, },); // 'reference tabby-nap'
+ ```
+ */
+function specReferenceName({ item, }: { readonly item: { readonly id: string; }; },): string {
+  return `reference ${item.id}`;
+}
+
+/**
  Reads reviewed reference inputs from their immutable corpus pin.
  Custom manifests are explicit caller-owned review evidence; this loader proves byte identity,
  not semantic correctness of arbitrary supplied prose.
@@ -78,6 +95,11 @@ export async function readReviewedFidelityReferences({
   return await mapOverlapped({
     items: selected,
     overlap: 1,
+    // A caller that passes no signal cannot stop the read, which is what a
+    // signal that never aborts says; one reference is read at a time in any case.
+    signal: signal ?? new AbortController().signal,
+    l,
+    nameOf: specReferenceName,
     oneItem: async function readReference({ item: spec, },): Promise<ReviewedFidelityReference> {
       signal?.throwIfAborted();
       if (fixedPin.commitSha !== spec.corpusSha)

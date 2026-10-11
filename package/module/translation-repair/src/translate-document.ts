@@ -60,6 +60,26 @@ import type { StageSettings, } from './stage-settings.ts';
 // records the cache would expose to a warm run.
 
 /**
+ Names a prepared slice on the line the overlapped map writes for its own
+ failure under the caller's stop.
+
+ @param item - slice pair, named by its placement in the translation
+
+ @returns The slice by its index
+
+ @example
+ ```ts
+ pairedSliceName({ item: slice, },); // 'slice 3'
+ ```
+ */
+function pairedSliceName(
+  { item, }: { readonly item: { readonly target: { readonly sliceIndex: number; }; }; },
+): string {
+  return `slice ${String(item.target
+    .sliceIndex,)}`;
+}
+
+/**
  Translates every slice of a prepared document pair and reassembles it.
 
  @param client - injected model client
@@ -245,6 +265,9 @@ export async function translateDocument(
   const settlements = await mapOverlapped({
     items: prepared.slices,
     overlap,
+    signal,
+    l: tl,
+    nameOf: pairedSliceName,
     oneItem: async function settleOne({
       item: slice,
       position: slicePosition,

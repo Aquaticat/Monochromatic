@@ -39,6 +39,23 @@ import type { StageSettings, } from '../stage-settings.ts';
 // roster still throws, as infrastructure failure.
 
 /**
+ Names a source-only candidate on the line the overlapped map writes for its
+ own failure under the caller's stop.
+
+ @param item - candidate, named by its slice
+
+ @returns The slice by its index
+
+ @example
+ ```ts
+ candidateSliceName({ item: candidate, },); // 'slice 3'
+ ```
+ */
+function candidateSliceName({ item, }: { readonly item: { readonly sliceIndex: number; }; },): string {
+  return `slice ${String(item.sliceIndex,)}`;
+}
+
+/**
  Decides which source-only slices a corpus pass may ask translators to fill.
 
  @param client - provider client shared with pass stages
@@ -189,6 +206,9 @@ export async function decidePassInsertionAdmission(
   const initialRows = await mapOverlapped({
     items: semanticCandidates,
     overlap,
+    signal,
+    l: al,
+    nameOf: candidateSliceName,
     oneItem: async function readCandidate({ item: candidate, },): Promise<InsertionCoverageRow> {
       /**
        Candidate fields used by both evidence readers.

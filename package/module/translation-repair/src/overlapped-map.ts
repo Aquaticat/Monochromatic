@@ -1,4 +1,10 @@
+import {
+  type Logger,
+  tagged,
+} from '@monochromatic-dev/module-logger/ts';
 import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
+
+import { exchangeFailureLogText, } from './exchange-failure-text.ts';
 
 //region Overlapped map
 // Runs one job per item with a bounded number in flight, and hands the results
@@ -25,6 +31,61 @@ import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 // NOT `p-limit`, which the calibration uses. Its queue keeps draining after
 // one job fails, so a pass that lost an entry to a fault would go on buying
 // every remaining slice of it.
+//
+// WHAT A STOP LEAVES UNTHROWN IS WRITTEN HERE (ledger B405 left this open).
+// Once the caller has stopped, a lower job often ends in the caller's reason
+// while a higher one ends in a failure of its own: a hook's refusal, a roster
+// refusal, a ledger gap, a cache write. Only the lowest position's failure is
+// thrown, so the higher one reached no line. Each failure the helper does not
+// throw is written, in position order whichever ended first, through
+// `exchangeFailureLogText`, unless it is the caller's reason itself, or a
+// lower layer already wrote it and said so through `markFailureWritten` (the
+// twin memo does, for every failed buy). While the caller has not stopped,
+// nothing is written, as before, since the rule this follows speaks of a stop
+// alone (`mistake-prevention.md`, "Output decided by arrival order").
+
+/**
+ Failures a lower layer already wrote on a line of their own, held by identity
+ so the failure itself is untouched and nothing is kept alive by being listed.
+ */
+const writtenFailures = new WeakSet<Error>();
+
+/**
+ Records that a failure already stands on a line of its own, so the
+ overlapped map does not write it again when the caller's stop leaves it
+ unthrown.
+
+ A failure that is no `Error` is not recorded, so the map would write it
+ again; the writers that call this write errors their own code caught.
+
+ @param error - caught value just written by the caller of this
+
+ @example
+ ```ts
+ l.warn(`the buy was abandoned (${exchangeFailureLogText({ error, },)})`,);
+ markFailureWritten({ error, },);
+ ```
+ */
+export function markFailureWritten({ error, }: { readonly error: unknown; },): void {
+  if (Error.isError(error,))
+    writtenFailures.add(error,);
+}
+
+/**
+ Whether a lower layer already wrote a failure on a line of its own.
+
+ @param error - failure a job ended in
+
+ @returns Whether {@link markFailureWritten} recorded it
+
+ @example
+ ```ts
+ if (!failureWritten({ error: failure, },)) ml.warn(text,);
+ ```
+ */
+function failureWritten({ error, }: { readonly error: unknown; },): boolean {
+  return Error.isError(error,) && writtenFailures.has(error,);
+}
 
 /**
  Refusal for an overlap that cannot bound anything.
@@ -97,13 +158,25 @@ export type OverlappedRow<Item,> = {
  result must not be nullish, since a missing result is indistinguishable from
  a job that never ran
 
+ @param signal - caller's stop, which decides whether a failure left unthrown
+ is written and whose reason is never written, being the stop itself
+
+ @param l - caller's logger, so the line for a failure left unthrown carries
+ the caller's tags
+
+ @param nameOf - names an item on that line, since the line is written outside
+ the job and no slice context of the job's reaches it
+
  @returns One result per item, in item order
 
  @throws OverlapRefusedError when `overlap` is not a whole number of at least
  one
 
  @throws Whatever the lowest-positioned failing job threw, once every job
- already in flight has finished; no job past it is started
+ already in flight has finished; no job past it is started. When `signal`
+ has aborted, every other failure is first written on a line naming its item,
+ in item order, unless it is the signal's reason or a lower layer marked it
+ written (`markFailureWritten`)
 
  @example
  ```ts
@@ -113,6 +186,11 @@ export type OverlappedRow<Item,> = {
    oneItem: async function settleOne({ item, position, },) {
      return await settleSlice({ slice: item, slicePosition: position, },);
    },
+   signal,
+   l,
+   nameOf: function sliceName({ item, },) {
+     return `slice ${String(item.target.sliceIndex,)}`;
+   },
  },);
  ```
  */
@@ -121,10 +199,16 @@ export async function mapOverlapped<Item, Result,>(
     items,
     overlap,
     oneItem,
+    signal,
+    l,
+    nameOf,
   }: {
     readonly items: readonly Item[];
     readonly overlap: number;
     readonly oneItem: (row: OverlappedRow<Item>,) => Promise<Result>;
+    readonly signal: AbortSignal;
+    readonly l: Logger;
+    readonly nameOf: (row: OverlappedRow<Item>,) => string;
   },
 ): Promise<readonly Result[]> {
   assertOverlap({ overlap, },);
@@ -202,7 +286,38 @@ export async function mapOverlapped<Item, Result,>(
      loop would have thrown.
      */
     const earliest = Math.min(...failures.keys(),);
-    throw failures.get(earliest,);
+    /**
+     The failure thrown, which reaches the caller's own catch.
+     */
+    const thrown = failures.get(earliest,);
+    // Read once every lane has ended, so a failure that ended before the stop
+    // arrived is written too, and in position order, whichever ended first.
+    if (signal.aborted) {
+      /**
+       Logger naming this helper beneath the caller's tags.
+       */
+      const ml = tagged({
+        tag: mapOverlapped.name,
+        l,
+      },);
+      for (const row of rows) {
+        /**
+         What this row's job ended in, absent where it finished or never ran.
+         */
+        const failure = failures.get(row.position,);
+        if (failures.has(row.position,)
+          && (failure !== thrown)
+          && (failure !== signal.reason)
+          && (!failureWritten({ error: failure, },))) {
+          ml.warn(
+            `${nameOf(row,)} failed (${exchangeFailureLogText({ error: failure, },)}), and the caller stopped the work`,
+          );
+          // The same failure at a later position is the same line.
+          markFailureWritten({ error: failure, },);
+        }
+      }
+    }
+    throw thrown;
   }
 
   return rows.map(function toResult(row,): Result {
