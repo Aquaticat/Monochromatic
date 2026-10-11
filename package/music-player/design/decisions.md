@@ -3002,6 +3002,16 @@ Pages:
   leaves, and `Ctrl+Shift+Backspace` resets the template to its default.
 - In Search, `Up` and `Down` move through the results, `Enter` opens the focused result, `Escape` leaves.
 
+Search also opens on a double tap of `Shift` (JetBrains Search Everywhere): two presses and releases of Shift within
+400 ms with no other key between them, anywhere in the app, including while another page is open.
+
+Key hints (asked for by the human on 2026-10-11): while the modifiers of a shortcut are all held down, every control
+that has such a shortcut shows its key as a small badge on or beside it, for example `F` on the Search button while
+`Ctrl` is held, and `Alt+Left` style remainders such as `Left` and `Right` on the seek controls while `Alt` is held;
+holding more modifiers narrows the badges to the bindings that use them. The badges appear after the modifiers have
+been held for 300 ms, so quick chords never flash them, and disappear when any required modifier is released.
+Badges never take pointer input and do not move other content.
+
 Discoverability: the shortcut is shown in each menu row and in the tooltip of every button that has one.
 A command palette on `Ctrl+Shift+A` (JetBrains Find Action) that lists every action with its shortcut is wanted and
 is a later item, because it is a new screen.
