@@ -71,7 +71,7 @@ await describe({
         + 'the figures it prints are',
       fn: async () => {
         expect(HYPER_PRICE_READ_ON,)
-          .toBe('2026-09-11',);
+          .toBe('2026-10-11',);
       },
     },),
 
@@ -149,7 +149,8 @@ await describe({
           completionTokens: 0,
         },),)
           .toEqual({
-            inputCredits: 1.22,
+            // Half of the 1.96 credits per million read on 2026-10-11.
+            inputCredits: 0.98,
             outputCredits: 0,
           },);
       },

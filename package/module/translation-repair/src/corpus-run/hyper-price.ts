@@ -2,7 +2,10 @@
 // WHAT A CHARM HYPER TOKEN COSTS, as of the date this table was read.
 //
 // PRICES ARE AN OBSERVATION, NOT A CONSTANT. The 2026-09-11 public model-list
-// read verified every previous row and added the newly listed models. Hyper's
+// read verified every previous row and added the newly listed models. The
+// 2026-10-11 read (keyless, after TianqiChen66622's spend report disagreed with
+// Hyper's balance) found three rows moved and re-priced them; the rows of
+// models the list no longer carries keep their 2026-09-11 rates. Hyper's
 // models documentation and FAQ define one hypercredit as USD 0.05, so these
 // per-million-token credit quotes equal the API's USD rates multiplied by 20.
 // The dated snapshot prices usage; it is not a wire-reported debit.
@@ -23,12 +26,13 @@
 // bill in and would inflate any total that mixed the two.
 
 /**
- Date every retained rate was verified against the public model-list API.
+ Date every rate of a model the public model-list API still lists was last
+ verified against it.
 
  SHIPPED WITH THE RATES rather than left to a comment, because every report
  that prints a credit figure has to be able to say how old it is.
  */
-export const HYPER_PRICE_READ_ON = '2026-09-11';
+export const HYPER_PRICE_READ_ON = '2026-10-11';
 
 /**
  What one model costs, in credits per million tokens.
@@ -75,9 +79,10 @@ const RATE_UNIT_TOKENS = 1_000_000;
  reader comparing seats can see what an unseated model would have cost.
  */
 const HYPER_CREDIT_RATES = {
+  // Read 2026-10-11: USD 0.33 in and 1.31 out (was 0.30 and 1.20 on 2026-09-11).
   'deepseek-v4.1-flash': {
-    input: 6,
-    output: 24,
+    input: 6.6,
+    output: 26.2,
     cacheCreate: 0,
     cacheHit: 0.6,
   },
@@ -118,11 +123,13 @@ const HYPER_CREDIT_RATES = {
     cacheCreate: 0,
     cacheHit: 0.958144,
   },
+  // Read 2026-10-11: USD 0.098 in, 0.334 out, 0.049 cache hit (was 0.122, 0.42
+  // and 0.061 on 2026-09-11).
   'gemma-4-26b-a4b-it': {
-    input: 2.44,
-    output: 8.4,
+    input: 1.96,
+    output: 6.68,
     cacheCreate: 0,
-    cacheHit: 1.22,
+    cacheHit: 0.98,
   },
   'glm-5': {
     input: 17.2,
@@ -196,11 +203,13 @@ const HYPER_CREDIT_RATES = {
     cacheCreate: 0,
     cacheHit: 2.74,
   },
+  // Read 2026-10-11: USD 0.484 in, 1.852 out, 0.242 cache hit (was 0.404, 1.496
+  // and 0.202 on 2026-09-11).
   'minimax-m2.7': {
-    input: 8.08,
-    output: 29.92,
+    input: 9.68,
+    output: 37.04,
     cacheCreate: 0,
-    cacheHit: 4.04,
+    cacheHit: 4.84,
   },
   'minimax-m3': {
     input: 6.5328,

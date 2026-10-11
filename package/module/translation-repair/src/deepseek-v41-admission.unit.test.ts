@@ -29,8 +29,8 @@ const MODEL: string = SEAT_HYPER_OPENROUTER_UNMEASURED;
 /** Hyper's price of one credit in USD, from its models documentation and FAQ. */
 const USD_PER_HYPER_CREDIT = 0.05;
 
-/** This model's live Hyper quote in USD per million tokens, read on `HYPER_PRICE_READ_ON`. */
-const QUOTED_USD_PER_MILLION = { input: 0.3, output: 1.2 } as const;
+/** This model's live Hyper quote in USD per million tokens, read on `HYPER_PRICE_READ_ON` (0.3 and 1.2 on 2026-09-11). */
+const QUOTED_USD_PER_MILLION = { input: 0.33, output: 1.31 } as const;
 
 /** Tokens one quoted rate covers. */
 const TOKENS_PER_QUOTE = 1_000_000;

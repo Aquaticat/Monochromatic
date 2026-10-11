@@ -110,9 +110,9 @@ const COMMANDS: readonly GuardedCommand[] = [
       code: 0,
       stdout: [
         'spend-report: 1 log, 1 line, 1 seat',
-        'metered seats, priced at rates read 2026-09-11:',
-        '  gemma-4-26b-a4b-it: 10.84 credits (100.0%) over 1 call, in 1000000=2.44 out 1000000=8.40',
-        'metered run total: 10.84 credits',
+        'metered seats, priced at rates read 2026-10-11:',
+        '  gemma-4-26b-a4b-it: 8.64 credits (100.0%) over 1 call, in 1000000=1.96 out 1000000=6.68',
+        'metered run total: 8.64 credits',
         '',
       ].join('\n',),
       stderr: '',

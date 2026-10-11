@@ -204,9 +204,9 @@ await describe({
             'spend-report: 2 logs, 4 lines, 2 seats',
             '1 line carried the marker and would not parse, so this report\'s totals are short by whatever '
             + 'those calls cost',
-            'metered seats, priced at rates read 2026-09-11:',
-            '  gemma-4-26b-a4b-it: 10.84 credits (100.0%) over 1 call, in 1000000=2.44 out 1000000=8.40',
-            'metered run total: 10.84 credits',
+            'metered seats, priced at rates read 2026-10-11:',
+            '  gemma-4-26b-a4b-it: 8.64 credits (100.0%) over 1 call, in 1000000=1.96 out 1000000=6.68',
+            'metered run total: 8.64 credits',
             'subscription seats, which bill no credits and are metered as a percentage of a weekly allowance on '
             + 'the METERS line:',
             '  hf:zai-org/GLM-5.3-Flash: 1 call, in 300 out 40',
@@ -243,7 +243,7 @@ await describe({
         expect(captured,).toEqual({
           lines: [
             'spend-report: 1 log, 2 lines, 1 seat',
-            'metered seats, priced at rates read 2026-09-11:',
+            'metered seats, priced at rates read 2026-10-11:',
             '  qwen3.8-max: 200.00 credits (100.0%) over 2 calls, in 2000000=80.00 out 1000000=120.00, '
             + '2 of them reckoned rather than reported',
             'metered run total: 200.00 credits',
@@ -278,7 +278,7 @@ await describe({
         expect(captured,).toEqual({
           lines: [
             'spend-report: 1 log, 1 line, 1 seat',
-            'metered seats, priced at rates read 2026-09-11:',
+            'metered seats, priced at rates read 2026-10-11:',
             '  qwen3.8-max: 100.00 credits (100.0%) over 1 call, in 1000000=40.00 out 500000=60.00, '
             + '1 of them reckoned rather than reported',
             'metered run total: 100.00 credits',
@@ -313,7 +313,7 @@ await describe({
         expect(captured,).toEqual({
           lines: [
             'spend-report: 1 log, 1 line, 1 seat',
-            'metered seats, priced at rates read 2026-09-11:',
+            'metered seats, priced at rates read 2026-10-11:',
             '  qwen3.8-max: 0.00 credits (n/a) over 1 call, in 0=0.00 out 0=0.00',
             'metered run total: 0.00 credits',
             'FLOOR, NOT A TOTAL: 1 call reported no usage block, so its tokens are in no figure of this report',

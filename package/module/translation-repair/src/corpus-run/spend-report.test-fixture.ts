@@ -33,7 +33,7 @@ export const HYPER_DEAR: string = loggedSpend({
 
 /**
  A metered call on a model the price table prices cheap: a million of each
- come to 10.84 credits.
+ come to 8.64 credits at the rates read 2026-10-11 (10.84 at those of 2026-09-11).
  */
 export const HYPER_CHEAP: string = loggedSpend({
   record: 'SPEND provider=hyper model=gemma-4-26b-a4b-it prompt=1000000 completion=1000000',

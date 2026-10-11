@@ -88,12 +88,12 @@ await describe({
           stdout: [
             'spend-report: 1 log, 8 lines, 5 seats',
             '1 line carried the marker and would not parse, so this report\'s totals are short by whatever those calls cost',
-            'metered seats, priced at rates read 2026-09-11:',
-            '  qwen3.8-max: 200.00 credits (94.9%) over 2 calls, in 2000000=80.00 out 1000000=120.00, '
+            'metered seats, priced at rates read 2026-10-11:',
+            '  qwen3.8-max: 200.00 credits (95.9%) over 2 calls, in 2000000=80.00 out 1000000=120.00, '
             + '1 of them reckoned rather than reported',
-            '  gemma-4-26b-a4b-it: 10.84 credits (5.1%) over 1 call, in 1000000=2.44 out 1000000=8.40',
-            'metered run total: 210.84 credits',
-            'UNPRICED, and not free: 1 metered seat has no row in the price table read 2026-09-11. '
+            '  gemma-4-26b-a4b-it: 8.64 credits (4.1%) over 1 call, in 1000000=1.96 out 1000000=6.68',
+            'metered run total: 208.64 credits',
+            'UNPRICED, and not free: 1 metered seat has no row in the price table read 2026-10-11. '
             + 'This report\'s total omits whatever cost this seat would add',
             '  whisker-mini-9: 1 call, in 10 out 20',
             'OpenRouter seats, billed in USD per token, each priced from the cost= its own lines carried:',
@@ -141,9 +141,9 @@ await describe({
           code: 0,
           stdout: [
             'spend-report: 1 log, 1 line, 1 seat',
-            'metered seats, priced at rates read 2026-09-11:',
-            '  gemma-4-26b-a4b-it: 10.84 credits (100.0%) over 1 call, in 1000000=2.44 out 1000000=8.40',
-            'metered run total: 10.84 credits',
+            'metered seats, priced at rates read 2026-10-11:',
+            '  gemma-4-26b-a4b-it: 8.64 credits (100.0%) over 1 call, in 1000000=1.96 out 1000000=6.68',
+            'metered run total: 8.64 credits',
             '',
           ].join('\n',),
           stderr: '',

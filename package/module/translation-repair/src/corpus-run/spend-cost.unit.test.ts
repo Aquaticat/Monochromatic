@@ -57,8 +57,8 @@ await describe({
   children: [
     it({
       name: 'ORDERS priced seats by what they cost, not by the token order the '
-        + 'tally handed over: the seat with ten times the tokens here is a '
-        + 'quarter of the bill',
+        + 'tally handed over: the seat with ten times the tokens here is about '
+        + 'a sixth of the bill',
       fn: async () => {
         expect(
           priceTally({
@@ -76,7 +76,7 @@ await describe({
         )
           .toEqual([
             'kimi-k3 32.664',
-            'gemma-4-26b-a4b-it 8.4',
+            'gemma-4-26b-a4b-it 6.68',
           ],);
       },
     },),
