@@ -161,6 +161,31 @@ run all at once.
 - A Sonnet agent reviews the committed desktop app as a user and lists everything lacking polish. Next: triage, fix by
   area, re-check.
 
+### Polish review of the desktop app (Sonnet agent, 2026-10-11)
+
+The full report with screenshots is under `~/temp/agent/agent-polish/` (a handover copy of the findings follows; the
+reviewer ran headless, so hover and cursor findings come from source). Work packages, each one file group so agents do
+not collide:
+
+- Deck stability (agent running): fixed-width time labels so the seek bar stops moving every second, a reserved check slot
+  in every mode segment, whole-pixel segment edges without the notch, a 16 px inset around the title row.
+- Route pages and keys (after the scroll fix lands, files `app_window.slint`, `keymap.rs`, `ui_keys.rs`): a full-page
+  input absorber under Search, Settings and the editor, because clicks currently fall through to the hidden player
+  (Search "No results" started a track; a header click toggled the folder picker); Escape leaves Settings and the editor;
+  Search results usable with arrow keys and Enter.
+- Overlays: the scan bar covers the mode control and its indeterminate phase never animates; toasts cover the transport and
+  clip three-line errors.
+- List text: ellipsis on long track titles, second lines, subfolder headers, Search results and picker names.
+- Labels and state: loose root tracks live in a letter bucket named after the letter ("L") and the deck labels follow the
+  browsed folder, not the playing track; first-run shows a dead deck with an enabled Play.
+- Consistency and copy: header heights, the cover Search glyph color, the "time dBTP" separator, template preview versus real
+  deck disagreement, three unrelated button styles, jargon in template errors, "Re-analyse" versus "analysis" spelling.
+- Accessibility: nothing is reachable by Tab and there is no focus ring; many controls lack accessible labels and roles
+  (rows, back buttons, menu rows, first-run buttons, toast actions); the playing row state is not exposed.
+- Motion: no transitions on the picker, menu, toasts, route changes or mode check.
+- Contrast: dark deck against canvas is 1.06 to 1, the light seek track against the deck is 1.17 to 1, the playing-row tint
+  is 1.1 to 1; these follow the sampled Android captures (D41 true black), so any change is a design decision.
+
 ### Not started
 
 - Taskbar progress jumps (KDE LauncherEntry). A private-bus recording harness is in `~/temp/agent/taskbar-check`; the first
