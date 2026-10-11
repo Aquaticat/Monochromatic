@@ -109,7 +109,8 @@ the `signal_relay` filter passed 9 on `1595a4ed0c` and the new `handler_marks...
 
 Container test gate, `GIT_POLICY_NATIVE_IMAGE_TAG=signals mise run //package/git-policy/cli:native:test:container`.
 At commit `385ab5b80b`, image `fc8fd07481526bc1fc09873e1e72f2994dd38b900ba3ba23a6b0fc1ca3627035`.
-At commit `1262241dc7` (the final test change), image `dbcc6a616f0afdb253c79292dc136bb33adea5cd7fecabbd16de20ce70414bb2`.
+At commit `1262241dc7` (the final test change), image
+`dbcc6a616f0afdb253c79292dc136bb33adea5cd7fecabbd16de20ce70414bb2`.
 Both images use the base `6ec87f6d290a2f59bda5b3ffd4197058fe0749d02b4978c877e8edf6dc38802a` (Git 2.56.0).
 The test step passed at both commits.
 At `385ab5b80b` it reported 942 tests passed, 2 ignored, 0 failed across five test result lines
