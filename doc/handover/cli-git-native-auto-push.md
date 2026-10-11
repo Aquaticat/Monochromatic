@@ -77,14 +77,16 @@ Phase 2:
 
 ## Gates
 
-Image `localhost/git-policy-native-test:autopush` (Git 2.56.0 in the container) at head `e2bf4ba277`:
+Image `localhost/git-policy-native-test:autopush` (Git 2.56.0 in the container) at head `15cc6dfd70`:
 image id prefix `cd09d902b879`.
 Container tests: lib 939 passed, 3 ignored; binary 44 passed; doc 1 passed; Clippy build finished.
-An earlier run at the same head failed three binary tests on the 5-second time bound while host load was about 44;
-the rerun passed.
+Earlier runs at the same code failed three binary tests on the 5-second time bound while host load was about 44;
+the reruns passed.
 
 Host Git 2.55.0 (`native:test:host`) at head `e2bf4ba277`: lib 929 passed, 10 failed, 3 ignored.
 The 10 failures are the Git 2.56-specific tests listed under Git 2.55 differences; the set is unchanged.
+Commits after `e2bf4ba277` change only the mutation script's option parsing (`7b621481d7`) and a doc comment
+(`15cc6dfd70`), and the gate ran after both.
 
 ## Git 2.55 differences
 
@@ -123,13 +125,33 @@ Shared-module campaign (`native-mutation-gSluCG`) over `candidate_prediction.rs`
 
 ## Trailing gates
 
-Not run yet for the auto-push-only modules (`auto_push.rs`, `auto_push_branch_key.rs`, `auto_push_record.rs`,
-`auto_push_single_flight.rs`); they trail the cutover:
+Per the user decision of 2026-10-11, lane mutation campaigns and the auto-push-only modules trail the cutover.
 
-- Mutation campaign over those four files: not run.
-- Fuzz campaigns: no fuzz target names auto-push or manual-push in the plan; none added.
-- Old-and-new interop matrix: only one-direction fixtures for the incumbent's branch key and record formats exist.
-- Windows checks: the probe and auto-push code is unix-only (`0o700` modes, `set_permissions`); no cfg-gated branch added.
+Results so far (scoped runs with `--timeout 300`, one file at a time through `gate-slot.ts`):
+
+- `policy_trigger.rs`: 9 mutants; 6 caught, 1 unviable, 1 missed, 1 baseline success.
+  The missed mutant (`replace trigger_is_ported -> bool with true`) is equivalent: the exhaustive match over the five
+  `Trigger` variants already answers true for each, so no test can kill it. The doc comment that still said manual
+  push was unported was corrected in `15cc6dfd70`.
+- `post_commit.rs`: 6 mutants; 2 caught, 4 unviable, 0 missed, 0 timeouts. The 90-second timeout is caught at 300 seconds.
+- Not yet rerun at 300 seconds. Their 90-second timeouts are unverified, not kills:
+  - `manual_push_probe.rs`: 26 timeouts (the rerun was stopped by the user decision; nothing recorded).
+  - `manual_push_range.rs`: 26 timeouts.
+  - `manual_push_lifecycle.rs`: 1 timeout.
+  - `policy_events.rs` (shared): 11 timeouts.
+  Of the 66 timeouts recorded before the reruns, 2 are resolved (`policy_trigger.rs`, `post_commit.rs`) and 64 are unresolved.
+
+Exact rerun commands, one at a time (run from the worktree root, after the previous unit has stopped):
+
+    cd package/git-policy/cli
+    systemd-run --user --unit=autopush-timeout-<name> --collect --property=MemoryMax=12G --working-directory=$PWD --setenv=GIT_POLICY_NATIVE_IMAGE_TAG=autopush node "$HOME/temp/agent/gate-slot.ts" mise run //package/git-policy/cli:native:mutation:scoped -- --timeout 300 --file src/native/<file>
+
+With `<name>` and `<file>` set to `manual-push-probe` and `manual_push_probe.rs`, `manual-push-range` and `manual_push_range.rs`,
+`manual-push-lifecycle` and `manual_push_lifecycle.rs`, `policy-events` and `policy_events.rs`.
+
+Auto-push-only modules (not run): mutation over `auto_push.rs`, `auto_push_branch_key.rs`, `auto_push_record.rs` and
+`auto_push_single_flight.rs`; fuzz (none names auto-push or manual-push); the interop matrix beyond one-direction fixtures;
+Windows checks (the probe and auto-push code is unix-only).
 
 ## Open facts and choices to veto
 
@@ -151,9 +173,7 @@ Not run yet for the auto-push-only modules (`auto_push.rs`, `auto_push_branch_ke
 
 ## Status
 
-Committed through `e2bf4ba277`. The final container gate passed at that head (lib 939, binary 44, doc 1, Clippy).
-Lane mutation: 18 of 18 planted controls noticed; 1 surviving mutant closed; 55 lane timeouts unverified.
-Shared-module mutation: 0 missed; 11 timeouts unverified.
+Gated commit: `15cc6dfd70` (container gate passed there: lib 939, binary 44, doc 1, Clippy).
+Planted controls: 18 of 18 noticed in the lane run. The one surviving lane mutant from the first run is closed in `e2bf4ba277`.
+Mutation: the trailing rerun results are above; 64 of 66 timeouts are unverified.
 Host Git 2.55 check: 929 passed, 10 documented Git 2.56-specific failures.
-Remaining: rerun the timeouts on an idle host with a larger limit; run the trailing mutation campaign for the four
-auto-push-only modules; record the interop and fuzz gaps if they are to close.
