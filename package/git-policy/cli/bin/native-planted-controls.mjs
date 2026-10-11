@@ -131,8 +131,8 @@ const plantedControls = [
   {
     name: 'worktree copy rollback content proof',
     file: 'src/native/worktree_copy_rollback.rs',
-    from: '&& !entry_matches(stage_root, destination_root, entry)?',
-    to: '&& false',
+    from: '            !entry_matches(stage_root, destination_root, entry)?',
+    to: '            false',
     failing: 'worktree_copy_rollback::tests::edited_file_is_retained_by_path',
   },
   {
