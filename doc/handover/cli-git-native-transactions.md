@@ -636,6 +636,71 @@ Trailing gates (owner decision, 2026-10-10; these trail the cutover and are not 
 - Release performance gates.
 - Mutation gating on non-core modules; the slice 3 files for locks, the index lock and coordination keep full gating.
 
+### Slice 3 mutation results and trailing gates (2026-10-11)
+
+Mutation rerun 1 ran over `src/native/index_lock_*.rs`, `index_writer_*.rs`, `real_index_lock*.rs`,
+`landing_location*.rs`, `process_start*.rs`, `git_version*.rs` and `forwarded_command*.rs` on the snapshot of
+`883950ab8e`: 277 mutants, 155 caught, 27 unviable, 14 missed and 81 timeouts.
+The missed mutants were `check_git_version` constants (5), `is_pid_name` and `is_digit` (2), the ctime rounding
+`+` in `read_lock_metadata`, `io_text`, `release_quietly`, the `||` operators and the `Ok(())` body of
+`same_file_identity`, plus the macOS and Windows holder scans (4).
+Commit `b911c98f5b` adds controls for each non-platform survivor: the process check is compared with a direct
+query of Git, digit names and digit bytes are checked, the change time is compared with its
+whole-millisecond formula, a wrong device or inode alone is refused, a quiet release frees the landing lock, and
+an unreadable lock path reports the operating system text.
+The 81 timeouts are hangs that the 90 second bound ended, not assertion failures; they are reported as such and
+are not counted as clean kills.
+Most of them sit in the index lock wait and holder scan, where a mutant can make a bounded wait unbounded.
+
+Mutation rerun 2 ran over the six files that gained controls, on the snapshot of `b911c98f5b`.
+It was stopped by the coordinator's trailing-gate decision after 18 timeouts, with its `io_text` mutant
+running, so it is partial.
+Its four missed mutants are all inside platform-gated code that the Linux gate cannot compile:
+`scan_lsof_holders` is under `#[cfg(target_os = "macos")]` in `src/native/index_lock_holders.rs`, and
+`scan_restart_manager_holders` is under `#[cfg(windows)]` in the same file.
+The Linux test binary contains neither function, so no Linux test can observe a mutant of them.
+The same holds for the `#[cfg(not(unix))]` `same_file_identity` in `src/native/real_index_lock.rs`, whose
+Linux build does not contain the mutated body.
+These survivors are justified by the cfg attributes, and a macOS or Windows mutation run is a trailing gate.
+
+Holder race, fixed in `2ab2269238`: the real-child holder test polled until `/proc/<pid>/fd/3` existed.
+The dynamic loader opens shared libraries on descriptor 3 before the shell's `exec 3<"$0"` runs, so the
+readiness check passed early and the scan ran before the lock was open.
+A probe that scanned as soon as descriptor 3 existed missed 12 to 17 of 300 spawns under CPU stress in the
+mutation image; at the miss, descriptor 3 pointed to `libc.so.6` or did not exist yet.
+Waiting until descriptor 3 has the lock's device and inode missed 0 of 300 under the same stress.
+The podman limits of the test and mutation runners are identical (`--init`, `--network=none`, `--memory=2g`,
+`--cpus=2`, `--pids-limit=128`, user 1000:1000), so the flags are not the cause.
+The unstressed test passed in both images in every run.
+Because a flaky pass can turn a mutant into a false kill, the surviving controls are rerun above after the fix.
+
+Merges into `feat/cli-git-native-transactions`, each with the lane's head:
+hooks (`f9080ca713`) as `349b28d5c4`, replay-core (`fd054ff503`) as `98090bbbbb`,
+capture (`a6102a184a`) as `d62795fa27`, signals (`1cb4b1e9d6`) as `d9f3136fd8`.
+The replay-core merge left a planted entry unclosed; `519cfc61a5` closes it after the merge had been pushed, and
+the later merges do not reintroduce it.
+Conflicts were additive in `mise.toml`, `binary_tests.rs`, `lib.rs` and `native-planted-controls.mjs`; both sides
+were kept.
+Dependent-version, auto-push and worktree-copy are not merged yet.
+
+Clippy: the reported `action.rs` large enum variant is already boxed (`ForwardCoordinated`); the other reported
+findings are gone on this head.
+Host Clippy and Windows Clippy both exit 0 on the merged head.
+Host library tests on the merged head: 1119 passed and 10 failed, the 10 being the recorded Git 2.55 option-table
+comparisons.
+The container gate on the merged head (Git 2.56.0) exits 0 with 1129 library tests passing.
+
+#### Trailing gates, mutation reruns
+
+Owner decision 2026-10-11: mutation for slices 6, 7 and 9 and the lane campaigns stay gated;
+the user may widen this set later.
+The rerun commands, run from the worktree root, are:
+
+- `node ${HOME}/temp/agent/gate-slot.ts env MISE_AUTO_INSTALL=0 MISE_EXEC_AUTO_INSTALL=0 GIT_POLICY_NATIVE_IMAGE_TAG=transactions mise run //package/git-policy/cli:native:test:container`
+  rebuilds the snapshot that the mutation campaign reads, and must run before any campaign.
+- `node ${HOME}/temp/agent/gate-slot.ts env MISE_AUTO_INSTALL=0 MISE_EXEC_AUTO_INSTALL=0 GIT_POLICY_NATIVE_IMAGE_TAG=transactions mise run //package/git-policy/cli:native:mutation:scoped -- --file 'src/native/git_version.rs' --file 'src/native/index_lock_evidence.rs' --file 'src/native/index_lock_holders.rs' --file 'src/native/index_lock_wait_host.rs' --file 'src/native/index_writer_coordination.rs' --file 'src/native/real_index_lock.rs'`
+  reruns the six files that gained controls; expect the macOS and Windows survivors above and the timeouts.
+
 ### Drain record (2026-10-10, before the scratch move)
 
 In flight from this run: nothing of this lane's.
