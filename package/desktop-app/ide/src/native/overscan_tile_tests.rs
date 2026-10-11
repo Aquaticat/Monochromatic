@@ -445,16 +445,20 @@ fn dropping_a_worker_with_a_build_in_flight_does_not_wait_for_it() {
         .tile_worker
         .take()
         .expect("the worker of the held build");
-    let started = Instant::now();
-    drop(worker);
-    let dropped = started.elapsed();
-    assert!(
-        dropped < Duration::from_millis(250),
-        "dropping the worker waited {dropped:?} for a build that is still in flight"
-    );
-    // Release the held build so the detached thread ends its loop instead of staying blocked.
+    // The drop runs on its own thread, so a drop that waits fails the bound below instead of hanging the test.
+    let (dropped_sender, dropped_receiver) = std::sync::mpsc::channel();
+    std::thread::spawn(move || {
+        drop(worker);
+        let _ = dropped_sender.send(());
+    });
+    let dropped = dropped_receiver.recv_timeout(Duration::from_millis(250));
+    // Release the held build so the worker thread ends its loop whatever the outcome.
     release
         .send(())
         .expect("the held build is still waiting for its release");
+    assert!(
+        dropped.is_ok(),
+        "dropping the worker waited for a build that is still in flight"
+    );
     window.hide().expect("close headless source window");
 }
