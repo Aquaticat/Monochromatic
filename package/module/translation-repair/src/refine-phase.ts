@@ -71,8 +71,8 @@ export type RefinePhaseResult = {
 };
 
 /**
- Names an accuracy outcome's slice on the line the overlapped map writes for
- its own failure under the caller's stop.
+ Names an accuracy outcome's slice on the lines the overlapped map writes
+ about a failure it leaves unthrown.
 
  @param item - accuracy outcome, named by the slice it settled
 

@@ -1,7 +1,10 @@
 import type { Logger, } from '@monochromatic-dev/module-logger/ts';
 
 import { exchangeFailureLogText, } from './exchange-failure-text.ts';
-import { markFailureWritten, } from './overlapped-map.ts';
+import {
+  failureWritten,
+  markFailureWritten,
+} from './overlapped-map.ts';
 
 //region Twin memo
 // In-run memoization of slices asking the same question, safe under overlap.
@@ -84,10 +87,16 @@ export type TwinOrBought<Settled, Bought,> = {
 
  @param l - logger for a purchase that failed while twins waited on it
 
+ @param signal - caller's stop, the one `buy` honours, whose reason a failed
+ purchase may end in and which is no failure of the purchase, so it gets no
+ line
+
  @returns Twin's record, or the purchase
 
  @throws Whatever `buy` throws; a waiting twin sees nothing stored and buys
- its own, or throws under the same abort
+ its own, or throws under the same abort. The failure is written once on an
+ abandoned-buy line unless it is the stopped caller's reason or a lower layer
+ already wrote it (`markFailureWritten`)
 
  @example
  ```ts
@@ -101,6 +110,7 @@ export type TwinOrBought<Settled, Bought,> = {
      return bought.persisted ? { kind: 'stored', record: bought.record, } : { kind: 'nothing', };
    },
    l,
+   signal,
  },);
  ```
  */
@@ -111,12 +121,14 @@ export async function reuseTwinOrBuy<Settled, Bought,>(
     buy,
     persistedOf,
     l,
+    signal,
   }: {
     readonly key: string;
     readonly memo: TwinMemo<Settled>;
     readonly buy: () => Promise<Bought>;
     readonly persistedOf: (bought: Bought,) => TwinStored<Settled>;
     readonly l: Logger;
+    readonly signal: AbortSignal;
   },
 ): Promise<TwinOrBought<Settled, Bought>> {
   for (
@@ -163,14 +175,28 @@ export async function reuseTwinOrBuy<Settled, Bought,>(
         // path, and a twin waiting here must go and ask for itself, or throw
         // under the same abort when it tries.
         memo.delete(key,);
+        // THE CALLER'S OWN STOP IS NO ABANDONED BUY (ledger B411): written as
+        // one, every translate and repair buy the stop ended read as a buy
+        // that failed. The withdrawal stands, so a waiting twin still asks for
+        // itself, and its own buy meets the same stop.
+        if (signal.aborted && (error === signal.reason))
+          return { kind: 'nothing', };
+        // A FAILURE A LOWER LAYER ALREADY WROTE keeps that line alone, such as
+        // a repair re-ask `repairOneCandidate` wrote with its seat as the
+        // caller stopped the consolidation (ledger B412). This line would add
+        // the failure's words a second time; what it adds besides, that a
+        // waiting twin asks for itself, holds for every withdrawn key and is
+        // this function's documented behaviour.
+        if (failureWritten({ error, },))
+          return { kind: 'nothing', };
         l.warn(
           `twin memo: the buy for a shared key was abandoned (${
             exchangeFailureLogText({ error, },)
           }), so any twin waiting on it asks for itself`,
         );
         // THIS IS THE FAILURE'S LINE. The buyer throws the same failure on its
-        // own path, and where the caller's stop leaves it unthrown the
-        // overlapped map would write it a second time (ledger B405).
+        // own path, and the overlapped map would write it a second time where
+        // it goes unthrown (ledger B405).
         markFailureWritten({ error, },);
         return { kind: 'nothing', };
       }

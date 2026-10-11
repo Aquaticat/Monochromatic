@@ -15,6 +15,7 @@ import {
 } from './disputed-wording.ts';
 import { CONTRIBUTOR_AUTHORITY_FINDING, } from './contributor-translation-guard.ts';
 import { exchangeFailureLogText, } from './exchange-failure-text.ts';
+import { markFailureWritten, } from './overlapped-map.ts';
 import { producedVolumeBound, } from './produced-volume-bound.ts';
 import {
   attemptStageCall,
@@ -138,7 +139,8 @@ function unrevisedFate({ contributorViolation, }: { readonly contributorViolatio
  any writer is asked (ledger B43, B45)
 
  @throws Whatever the follow-up exchange raised, once the caller aborted,
- having written it on this seat's line unless it is the caller's reason itself
+ having written it on this seat's line and marked it written
+ (`markFailureWritten`) unless it is the caller's reason itself
 
  @example
  ```ts
@@ -330,6 +332,11 @@ async function repairOneCandidate(
         rl.warn(
           `${REPAIR_STAGE} ${voice.modelId}: ${exchangeFailureLogText({ error, },)}, as the caller stopped the repair`,
         );
+        // MARKED AS WRITTEN, so the layers this failure passes through on its
+        // way out, the twin memo around a consolidation buy, the translate
+        // attempt's abort line and the overlapped map, leave its words to
+        // this line (ledger B412).
+        markFailureWritten({ error, },);
       }
       throw error;
     }

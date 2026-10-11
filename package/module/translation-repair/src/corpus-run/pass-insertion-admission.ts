@@ -39,8 +39,8 @@ import type { StageSettings, } from '../stage-settings.ts';
 // roster still throws, as infrastructure failure.
 
 /**
- Names a source-only candidate on the line the overlapped map writes for its
- own failure under the caller's stop.
+ Names a source-only candidate on the lines the overlapped map writes about a
+ failure it leaves unthrown.
 
  @param item - candidate, named by its slice
 

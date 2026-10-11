@@ -116,8 +116,8 @@ function requestedSpecs(
 }
 
 /**
- Names a planned row on the line the overlapped map writes for its own
- failure under the caller's stop, by the trial it runs.
+ Names a planned row on the lines the overlapped map writes about a failure it
+ leaves unthrown, by the trial it runs.
 
  @param item - planned row, named by its trial
 
@@ -348,8 +348,8 @@ export async function runFidelityProbe(
   const rows = await mapOverlapped({
     items: bound.planned,
     overlap: 1,
-    // The probe never stops its own exchanges, so this signal never aborts and
-    // nothing is written for a row; one row runs at a time in any case.
+    // The probe never stops its own exchanges, so this signal never aborts;
+    // one row runs at a time, so no failure is left unthrown to be written.
     signal: controller.signal,
     l: log,
     nameOf: plannedTrialName,

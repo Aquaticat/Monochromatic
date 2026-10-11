@@ -197,8 +197,8 @@ export async function persistLaneContestOutcome(
 }
 
 /**
- Names a compared slice on the line the overlapped map writes for its own
- failure under the caller's stop.
+ Names a compared slice on the lines the overlapped map writes about a failure
+ it leaves unthrown.
 
  @param item - comparison row of the slice
 
@@ -624,6 +624,7 @@ export async function contestDocumentLanes(
               },
               persistedOf: storedContestOf,
               l: dl,
+              signal,
             },);
             if (asked.kind === 'reused')
               return asked.twin;

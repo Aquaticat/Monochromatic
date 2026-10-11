@@ -6,6 +6,7 @@ import {
   waitOutHold,
 } from '../budget-hold-wait.ts';
 import { exchangeFailureLogText, } from '../exchange-failure-text.ts';
+import { markFailureWritten, } from '../overlapped-map.ts';
 import type { BudgetView, } from '../provider-budget.ts';
 import {
   PROVIDER_ORDER,
@@ -66,6 +67,47 @@ export type SeatReadingClient = Pick<RunClient, 'providerDryness' | 'providerHol
  */
 function wetWhenUnread(): boolean {
   return false;
+}
+
+/**
+ Refusal for a writing bench that stops the entry, marked as already written,
+ since the reading writes its own `JUDGE SEATS` line before throwing it.
+
+ MARKED SO NO OUTER LAYER WRITES IT AGAIN (ledger B413). The reading runs in
+ the per-slice hook of every slice-by-slice phase, so two slices side by side
+ can each stop the entry; the overlapped map throws the lower one and wrote
+ the higher one a second line under the caller's stop, and would write one
+ without a stop too.
+
+ @param phase - phase the reading was taken for
+
+ @param clauses - one clause per writing bench below its floor
+
+ @returns The refusal to throw
+
+ @example
+ ```ts
+ throw writtenRefusal({ phase: 'lanes', clauses: ['editors 0 of 3 reachable, floor 2',], },);
+ ```
+ */
+function writtenRefusal(
+  {
+    phase,
+    clauses,
+  }: {
+    readonly phase: JudgeSeatPhase;
+    readonly clauses: readonly string[];
+  },
+): WritingBenchUnreachableError {
+  /**
+   The refusal the entry stops with.
+   */
+  const refusal = new WritingBenchUnreachableError({
+    phase,
+    clauses,
+  },);
+  markFailureWritten({ error: refusal, },);
+  return refusal;
 }
 
 /**
@@ -174,7 +216,7 @@ async function readDrynessPastShortBench(
       // THE FIFTEENTH CLASS: a writing bench below its floor with nothing to
       // wait for stops the entry rather than writing a one-writer page.
       l.error(`JUDGE SEATS phase=${phase} writing bench unreachable: ${unreachable.join('; ',)}; stopping the entry`,);
-      throw new WritingBenchUnreachableError({
+      throw writtenRefusal({
         phase,
         clauses: unreachable,
       },);
@@ -231,7 +273,7 @@ async function readDrynessPastShortBench(
       `JUDGE SEATS phase=${phase} writing bench unreachable after waiting ${String(waitMs,)}ms: `
         + `${stillUnreachable.join('; ',)}; stopping the entry`,
     );
-    throw new WritingBenchUnreachableError({
+    throw writtenRefusal({
       phase,
       clauses: stillUnreachable,
     },);

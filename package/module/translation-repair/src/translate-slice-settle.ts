@@ -449,6 +449,7 @@ export async function resumeReuseOrBuyTranslateSlice(
     },
     persistedOf: storedRecord,
     l,
+    signal,
   },);
   if (asked.kind === 'reused') {
     cost.left({ exit: 'resumed', },);

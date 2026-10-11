@@ -203,8 +203,8 @@ function describePanelReasons(issue: AdjudicatedIssue,): readonly string[] {
 }
 
 /**
- Names a packet on the line the overlapped map writes for its own failure
- under the caller's stop, by the cluster it reviews, which reveals no
+ Names a packet on the lines the overlapped map writes about a failure it
+ leaves unthrown, by the cluster it reviews, which reveals no
  proposer.
 
  @param item - packet, named by its cluster

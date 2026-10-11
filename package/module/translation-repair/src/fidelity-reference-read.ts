@@ -25,8 +25,8 @@ import { mapOverlapped, } from './overlapped-map.ts';
 const l = contextRoot({ tag: 'translation-repair', },);
 
 /**
- Names a reviewed reference on the line the overlapped map writes for its own
- failure under the caller's stop.
+ Names a reviewed reference on the lines the overlapped map writes about a
+ failure it leaves unthrown.
 
  @param item - manifest entry, named by its reference
 

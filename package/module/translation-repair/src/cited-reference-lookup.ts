@@ -164,12 +164,108 @@ export function referenceLineOf(
 }
 
 /**
+ What one cited page's lookup came to: its line in the block beside the log
+ line saying how it was come by, or the caller's stop it ended in.
+
+ WRITTEN BY THE BLOCK, NOT THE LOOKUP (ledger B414). The lookups run at once,
+ and a log line written inside one landed in the order the lookups ended.
+
+ @example
+ ```ts
+ const page: PageOutcome = { kind: 'page', line, level: 'info', note: 'REFERENCE 1 https://cats.example/: success, 9 chars, bought', };
+ ```
+ */
+type PageOutcome = {
+  readonly kind: 'page';
+
+  /**
+   The page's line in the block.
+   */
+  readonly line: string;
+
+  /**
+   Level of the log line: a page read is information, a page that could not
+   be fetched a warning.
+   */
+  readonly level: 'info' | 'warn';
+
+  /**
+   The log line.
+   */
+  readonly note: string;
+} | {
+  readonly kind: 'stopped';
+
+  /**
+   The caller's reason the lookup ended in.
+   */
+  readonly reason: unknown;
+};
+
+/**
+ What a page's failed lookup comes to: the caller's stop, unwritten, or a
+ page that could not be fetched, with the failure as `refusalText` renders it.
+
+ THE CALLER'S OWN STOP IS NO PAGE THAT COULD NOT BE FETCHED (ledger B406):
+ written as one, it read as a fetch failure and the page was answered as
+ unfetched in a block the sheets read. A fetch's own failure, such as a
+ transport dropping as the stop landed, keeps its line.
+
+ @param error - what the lookup threw
+
+ @param signal - the entry's abort
+
+ @param index - page's position among the references, from one
+
+ @param url - page as the original links it
+
+ @returns The stop, or the unfetched page and its warning
+
+ @example
+ ```ts
+ const outcome = failedPageOutcome({ error, signal, index: 1, url, },);
+ ```
+ */
+function failedPageOutcome(
+  {
+    error,
+    signal,
+    index,
+    url,
+  }: {
+    readonly error: unknown;
+    readonly signal: AbortSignal;
+    readonly index: number;
+    readonly url: string;
+  },
+): PageOutcome {
+  if (signal.aborted && (error === signal.reason)) {
+    return {
+      kind: 'stopped',
+      reason: error,
+    };
+  }
+  return {
+    kind: 'page',
+    line: `${referenceLineHead({
+      index,
+      url,
+    },)}: ${REFERENCE_UNFETCHED}`,
+    level: 'warn',
+    // `refusalText`, never the caught value's own words: a contents body
+    // that is not JSON fails as V8's `SyntaxError`, whose message quotes it.
+    note: `reference ${String(index,)} ${url} could not be fetched: ${refusalText({ error, },)}`,
+  };
+}
+
+/**
  Block of reference lines for one original: what every page it links says,
  bought once and cached, one line per page in order of citation. Empty when
  the original links nowhere or no key is set. A page that could not be
  fetched keeps a line saying so, and its failure is logged as `refusalText`
  renders it, its message where its class declares the message free of quoted
- text and its class name otherwise.
+ text and its class name otherwise. Every page's log line is written once
+ every lookup has ended, in order of citation, whichever ended first.
 
  @param sourceText - original document
 
@@ -193,8 +289,8 @@ export function referenceLineOf(
  directory that cannot be read stops the entry and buys nothing
 
  @throws The caller's reason, unchanged and unwritten, when `signal` aborts and
- a page's fetch ends in it; a fetch that fails of its own as the stop lands is
- still written, and may be written after this rejects
+ a page's fetch ends in it, once every lookup has ended and every other page's
+ line is written, a fetch that failed of its own as the stop landed among them
 
  @example
  ```ts
@@ -272,13 +368,13 @@ export async function citedReferenceBlock(
    */
   const cachedCount = hits.length;
   /**
-   Line per url, bought together; a failure is logged and yields a line
-   saying so, so the sheet still names the page.
+   What each page's lookup came to, bought together; a failure yields a line
+   saying so, so the sheet still names the page, and no lookup rejects.
    */
-  const lines = await Promise.all(urls.map(async function lineFor(
+  const outcomes = await Promise.all(urls.map(async function outcomeFor(
     url,
     at,
-  ): Promise<string> {
+  ): Promise<PageOutcome> {
     /**
      Position among the references, from one.
      */
@@ -307,8 +403,14 @@ export async function citedReferenceBlock(
        Page text, for its length.
        */
       const { text, } = record;
-      rl.info(
-        `REFERENCE ${String(index,)} ${url}: ${record.status}, ${String(text.length,)} ${
+      return {
+        kind: 'page',
+        line: referenceLineOf({
+          index,
+          record,
+        },),
+        level: 'info',
+        note: `REFERENCE ${String(index,)} ${url}: ${record.status}, ${String(text.length,)} ${
           wordForCount({
             count: text.length,
             one: 'char',
@@ -317,30 +419,42 @@ export async function citedReferenceBlock(
         }${
           wasHeld ? ', cached' : ', bought'
         }`,
-      );
-      return referenceLineOf({
-        index,
-        record,
-      },);
+      };
     } catch (error) {
-      // THE CALLER'S OWN STOP IS NO PAGE THAT COULD NOT BE FETCHED (ledger
-      // B406): written as one, it read as a fetch failure and the page was
-      // answered as unfetched in a block the sheets read. It goes on unchanged
-      // and unwritten, and every fetch the stop ends rethrows the same reason,
-      // so the block refuses with it whichever ended first. A fetch's own
-      // failure, such as a transport dropping as the stop landed, is still
-      // written and keeps its line.
-      if (signal.aborted && (error === signal.reason))
-        throw error;
-      // `refusalText`, never the caught value's own words: a contents body
-      // that is not JSON fails as V8's `SyntaxError`, whose message quotes it.
-      rl.warn(`reference ${String(index,)} ${url} could not be fetched: ${refusalText({ error, },)}`,);
-      return `${referenceLineHead({
+      return failedPageOutcome({
+        error,
+        signal,
         index,
         url,
-      },)}: ${REFERENCE_UNFETCHED}`;
+      },);
     }
   },),);
+  // IN ORDER OF CITATION, from what each lookup returned, whichever ended
+  // first (`mistake-prevention.md`, "Output decided by arrival order"); a page
+  // read or refused before the stop keeps its line.
+  for (const outcome of outcomes) {
+    if (outcome.kind === 'page') {
+      if (outcome.level === 'warn')
+        rl.warn(outcome.note,);
+      else
+        rl.info(outcome.note,);
+    }
+  }
+  // The caller's reason goes on unchanged and unwritten: every lookup the stop
+  // ended returned the same reason, so the block refuses with it whichever
+  // ended first.
+  for (const outcome of outcomes) {
+    if (outcome.kind === 'stopped')
+      throw outcome.reason;
+  }
+  /**
+   Line per url, in order of citation.
+   */
+  const lines = outcomes.map(function lineOf(outcome,): string {
+    if (outcome.kind === 'stopped')
+      throw new Error('unreachable: a stopped lookup was left after the block refused with the caller\'s reason',);
+    return outcome.line;
+  },);
   rl.info(
     `REFERENCES cited=${String(urls.length,)} cached=${String(cachedCount,)} bought=${
       String(urls.length - cachedCount,)

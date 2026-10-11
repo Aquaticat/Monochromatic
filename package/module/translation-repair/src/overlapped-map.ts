@@ -32,17 +32,19 @@ import { exchangeFailureLogText, } from './exchange-failure-text.ts';
 // one job fails, so a pass that lost an entry to a fault would go on buying
 // every remaining slice of it.
 //
-// WHAT A STOP LEAVES UNTHROWN IS WRITTEN HERE (ledger B405 left this open).
-// Once the caller has stopped, a lower job often ends in the caller's reason
-// while a higher one ends in a failure of its own: a hook's refusal, a roster
-// refusal, a ledger gap, a cache write. Only the lowest position's failure is
-// thrown, so the higher one reached no line. Each failure the helper does not
-// throw is written, in position order whichever ended first, through
-// `exchangeFailureLogText`, unless it is the caller's reason itself, or a
-// lower layer already wrote it and said so through `markFailureWritten` (the
-// twin memo does, for every failed buy). While the caller has not stopped,
-// nothing is written, as before, since the rule this follows speaks of a stop
-// alone (`mistake-prevention.md`, "Output decided by arrival order").
+// WHAT IS LEFT UNTHROWN IS WRITTEN HERE (ledger B405 left this open under a
+// stop, B413 without one). Once the caller has stopped, a lower job often
+// ends in the caller's reason while a higher one ends in a failure of its
+// own: a hook's refusal, a roster refusal, a ledger gap, a cache write. And
+// with no stop, two jobs in flight can each fail of their own. Only the lowest
+// position's failure is thrown, so the higher one reached no line. Each
+// failure the helper does not throw is written, in position order whichever
+// ended first, through `exchangeFailureLogText`, unless it is the stopped
+// caller's reason itself, or a lower layer already wrote it and said so
+// through `markFailureWritten` (the twin memo does for a failed buy it writes,
+// `repairOneCandidate` for a re-ask it writes under a stop, and the seat
+// reading for a writing bench it stops the entry over). The rule this follows
+// is `mistake-prevention.md`, "Output decided by arrival order".
 
 /**
  Failures a lower layer already wrote on a line of their own, held by identity
@@ -52,8 +54,8 @@ const writtenFailures = new WeakSet<Error>();
 
 /**
  Records that a failure already stands on a line of its own, so the
- overlapped map does not write it again when the caller's stop leaves it
- unthrown.
+ overlapped map, and any outer layer that would write the same failure
+ again, leaves it to that line.
 
  A failure that is no `Error` is not recorded, so the map would write it
  again; the writers that call this write errors their own code caught.
@@ -74,7 +76,7 @@ export function markFailureWritten({ error, }: { readonly error: unknown; },): v
 /**
  Whether a lower layer already wrote a failure on a line of its own.
 
- @param error - failure a job ended in
+ @param error - failure a job, a buy or an attempt ended in
 
  @returns Whether {@link markFailureWritten} recorded it
 
@@ -83,7 +85,7 @@ export function markFailureWritten({ error, }: { readonly error: unknown; },): v
  if (!failureWritten({ error: failure, },)) ml.warn(text,);
  ```
  */
-function failureWritten({ error, }: { readonly error: unknown; },): boolean {
+export function failureWritten({ error, }: { readonly error: unknown; },): boolean {
   return Error.isError(error,) && writtenFailures.has(error,);
 }
 
@@ -158,8 +160,9 @@ export type OverlappedRow<Item,> = {
  result must not be nullish, since a missing result is indistinguishable from
  a job that never ran
 
- @param signal - caller's stop, which decides whether a failure left unthrown
- is written and whose reason is never written, being the stop itself
+ @param signal - caller's stop, whose reason is never written, being the stop
+ itself, and which the line for a failure left unthrown names as the ending
+ once it has aborted
 
  @param l - caller's logger, so the line for a failure left unthrown carries
  the caller's tags
@@ -173,10 +176,10 @@ export type OverlappedRow<Item,> = {
  one
 
  @throws Whatever the lowest-positioned failing job threw, once every job
- already in flight has finished; no job past it is started. When `signal`
- has aborted, every other failure is first written on a line naming its item,
- in item order, unless it is the signal's reason or a lower layer marked it
- written (`markFailureWritten`)
+ already in flight has finished; no job past it is started. Every other
+ failure is first written on a line naming its item, in item order, whether
+ or not `signal` has aborted, unless it is the aborted signal's reason or a
+ lower layer marked it written (`markFailureWritten`)
 
  @example
  ```ts
@@ -290,31 +293,36 @@ export async function mapOverlapped<Item, Result,>(
      The failure thrown, which reaches the caller's own catch.
      */
     const thrown = failures.get(earliest,);
-    // Read once every lane has ended, so a failure that ended before the stop
-    // arrived is written too, and in position order, whichever ended first.
-    if (signal.aborted) {
+    /**
+     Logger naming this helper beneath the caller's tags.
+     */
+    const ml = tagged({
+      tag: mapOverlapped.name,
+      l,
+    },);
+    /**
+     Why the work ended, as each line about an unthrown failure says it: the
+     caller's stop, or the failure thrown, named by its item.
+     */
+    const ending = signal.aborted
+      ? 'and the caller stopped the work'
+      : `and the failure thrown is ${nameOf(nonNullishOrThrow(rows[earliest],),)}'s, which comes before it`;
+    // Read once every lane has ended, so every failure is written in position
+    // order whichever ended first, including one that ended before a stop.
+    for (const row of rows) {
       /**
-       Logger naming this helper beneath the caller's tags.
+       What this row's job ended in, absent where it finished or never ran.
        */
-      const ml = tagged({
-        tag: mapOverlapped.name,
-        l,
-      },);
-      for (const row of rows) {
-        /**
-         What this row's job ended in, absent where it finished or never ran.
-         */
-        const failure = failures.get(row.position,);
-        if (failures.has(row.position,)
-          && (failure !== thrown)
-          && (failure !== signal.reason)
-          && (!failureWritten({ error: failure, },))) {
-          ml.warn(
-            `${nameOf(row,)} failed (${exchangeFailureLogText({ error: failure, },)}), and the caller stopped the work`,
-          );
-          // The same failure at a later position is the same line.
-          markFailureWritten({ error: failure, },);
-        }
+      const failure = failures.get(row.position,);
+      if (failures.has(row.position,)
+        && (failure !== thrown)
+        // Only a stopped caller has a reason; an unstopped signal's reads as
+        // `undefined`, which a job may throw of its own.
+        && (!(signal.aborted && (failure === signal.reason)))
+        && (!failureWritten({ error: failure, },))) {
+        ml.warn(`${nameOf(row,)} failed (${exchangeFailureLogText({ error: failure, },)}), ${ending}`,);
+        // The same failure at a later position is the same line.
+        markFailureWritten({ error: failure, },);
       }
     }
     throw thrown;

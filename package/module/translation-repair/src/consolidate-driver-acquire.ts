@@ -50,11 +50,14 @@ export type AcquiredConsolidation = {
 
  @param l - driver logger
 
+ @param signal - entry's stop, the one `buy` honours, whose reason the twin
+ memo writes no abandoned-buy line for
+
  @returns Settlement and how it was come by
 
  @example
  ```ts
- const acquired = await acquireConsolidation({ key, cache, twins, buy, l: dl, },);
+ const acquired = await acquireConsolidation({ key, cache, twins, buy, l: dl, signal, },);
  ```
  */
 export async function acquireConsolidation(
@@ -64,12 +67,14 @@ export async function acquireConsolidation(
     twins,
     buy,
     l,
+    signal,
   }: {
     readonly key: string;
     readonly cache: SliceCache<ConsolidationSettlement>;
     readonly twins: TwinMemo<ConsolidationSettlement>;
     readonly buy: () => Promise<BoughtConsolidation>;
     readonly l: Logger;
+    readonly signal: AbortSignal;
   },
 ): Promise<AcquiredConsolidation> {
   /**
@@ -94,6 +99,7 @@ export async function acquireConsolidation(
     buy,
     persistedOf: storedConsolidationOf,
     l,
+    signal,
   },);
   if (asked.kind === 'reused') {
     return {

@@ -69,8 +69,8 @@ type SettledSlice = {
 };
 
 /**
- Names a prepared slice on the line the overlapped map writes for its own
- failure under the caller's stop.
+ Names a prepared slice on the lines the overlapped map writes about a failure
+ it leaves unthrown.
 
  @param item - slice pair, named by its placement in the translation
 

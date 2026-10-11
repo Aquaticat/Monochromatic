@@ -72,8 +72,8 @@ import type { StageSettings, } from './stage-settings.ts';
 // memoized, so its twin asks again exactly as a warm run would.
 
 /**
- Names a contested slice on the line the overlapped map writes for its own
- failure under the caller's stop.
+ Names a contested slice on the lines the overlapped map writes about a
+ failure it leaves unthrown.
 
  @param item - contested row and its contest
 
@@ -563,6 +563,7 @@ export async function consolidateDocument(
               };
             },
             l: dl,
+            signal,
           },);
           /**
            What the slice settled, polish included, before artifact projection.

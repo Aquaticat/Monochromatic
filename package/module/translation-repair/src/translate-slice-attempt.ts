@@ -7,6 +7,7 @@ import type { ChunkPair, } from './chunk-document.ts';
 import { isInsertionChunk, } from './chunk-placement.ts';
 import { exchangeFailureLogText, } from './exchange-failure-text.ts';
 import type { PreparedDocumentPair, } from './document-preparation.ts';
+import { failureWritten, } from './overlapped-map.ts';
 import {
   TranslateAbsenceError,
   type TranslateAbsenceReason,
@@ -180,9 +181,17 @@ export async function attemptTranslateSlice(
     // apart from a provider fault by identity alone, and only one of those is
     // worth retrying the entry over.
     if (signal.aborted) {
+      // A FAILURE A LOWER LAYER ALREADY WROTE keeps its words on that line
+      // alone, such as a repair re-ask `repairOneCandidate` wrote with its
+      // seat (ledger B403 left this open as a reading, B412 ran it); this
+      // line then says only that the slice was abandoned.
+      /**
+       What surfaced, in parentheses, where no lower layer wrote it.
+       */
+      const surfaced = failureWritten({ error, },) ? '' : ` (${exchangeFailureLogText({ error, },)})`;
       l.warn(
         `slice ${String(slice.target
-          .sliceIndex,)}: abandoned by the caller's abort (${exchangeFailureLogText({ error, },)})`,
+          .sliceIndex,)}: abandoned by the caller's abort${surfaced}`,
       );
       throw signal.reason;
     }

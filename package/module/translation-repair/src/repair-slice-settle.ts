@@ -297,6 +297,7 @@ export async function settleRepairSlice(
     },
     persistedOf: storedOutcome,
     l,
+    signal,
   },);
   if (asked.kind === 'reused') {
     cost.left({ exit: 'resumed', },);

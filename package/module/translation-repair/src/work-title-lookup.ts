@@ -277,10 +277,95 @@ export function namesWork(
 }
 
 /**
+ What one title's lookup came to: its evidence lines, a failure to write, or
+ the caller's stop it ended in.
+
+ WRITTEN BY THE CALLER, NOT THE LOOKUP (ledger B414). The lookups run at
+ once, and a failure written inside one landed in the order the lookups
+ ended.
+
+ @example
+ ```ts
+ const outcome: TitleOutcome = { kind: 'failed', note: 'lookup for 《猫》 failed and contributes no line: search responded 401', };
+ ```
+ */
+type TitleOutcome = {
+  readonly kind: 'lines';
+
+  /**
+   Evidence lines for the title.
+   */
+  readonly lines: readonly string[];
+} | {
+  readonly kind: 'failed';
+
+  /**
+   The warning naming the title and its failure.
+   */
+  readonly note: string;
+} | {
+  readonly kind: 'stopped';
+
+  /**
+   The caller's reason the lookup ended in.
+   */
+  readonly reason: unknown;
+};
+
+/**
+ What a title's failed lookup comes to: the caller's stop, unwritten, or a
+ lookup that contributes no line, with the failure as `refusalText` renders
+ it.
+
+ THE CALLER'S OWN STOP IS NO FAILED LOOKUP (ledger B406): written as one, it
+ read as a search that failed and was answered as a title with no evidence.
+ A search's own failure, such as a transport dropping as the stop landed,
+ keeps its line.
+
+ @param error - what the lookup threw
+
+ @param signal - the entry's abort
+
+ @param title - work looked up
+
+ @returns The stop, or the failure's warning
+
+ @example
+ ```ts
+ const outcome = failedTitleOutcome({ error, signal, title: '《猫》', },);
+ ```
+ */
+function failedTitleOutcome(
+  {
+    error,
+    signal,
+    title,
+  }: {
+    readonly error: unknown;
+    readonly signal: AbortSignal;
+    readonly title: string;
+  },
+): TitleOutcome {
+  if (signal.aborted && (error === signal.reason)) {
+    return {
+      kind: 'stopped',
+      reason: error,
+    };
+  }
+  return {
+    kind: 'failed',
+    // `refusalText`, never the caught value's own words: a search body that
+    // is not JSON fails as V8's `SyntaxError`, whose message quotes it.
+    note: `lookup for ${title} failed and contributes no line: ${refusalText({ error, },)}`,
+  };
+}
+
+/**
  Evidence lines for every work an original names, each title looked up once
  and cached; a failed lookup contributes no line and is logged as
  `refusalText` renders it, its message where its class declares the message
- free of quoted text and its class name otherwise.
+ free of quoted text and its class name otherwise. Every failure is logged
+ once every lookup has ended, in title order, whichever ended first.
 
  @param sourceText - original document
 
@@ -300,8 +385,8 @@ export function namesWork(
  key is set
 
  @throws The caller's reason, unchanged and unwritten, when `signal` aborts and
- a lookup ends in it; a lookup that fails of its own as the stop lands is still
- written, and may be written after this rejects
+ a lookup ends in it, once every lookup has ended and every other failure is
+ written, a lookup that failed of its own as the stop landed among them
 
  @example
  ```ts
@@ -357,9 +442,9 @@ export async function workTitleLookupLines(
     return [];
   }
   /**
-   Lines per title, bought together; a failure is logged and yields none.
+   What each title's lookup came to, bought together; no lookup rejects.
    */
-  const perTitle = await Promise.all(titles.map(async function linesFor(title,): Promise<readonly string[]> {
+  const outcomes = await Promise.all(titles.map(async function outcomeFor(title,): Promise<TitleOutcome> {
     try {
       /**
        Record for this title, cached or fresh.
@@ -372,29 +457,43 @@ export async function workTitleLookupLines(
         fetchFn,
         now,
       },);
-      return lookupLinesOf({
-        title,
-        record,
-      },);
+      return {
+        kind: 'lines',
+        lines: lookupLinesOf({
+          title,
+          record,
+        },),
+      };
     } catch (error) {
-      // THE CALLER'S OWN STOP IS NO FAILED LOOKUP (ledger B406): written as
-      // one, it read as a search that failed and was answered as a title with
-      // no evidence. It goes on unchanged and unwritten, and every lookup the
-      // stop ends rethrows the same reason, so the lookups refuse with it
-      // whichever ended first. A search's own failure, such as a transport
-      // dropping as the stop landed, is still written and contributes no line.
-      if (signal.aborted && (error === signal.reason))
-        throw error;
-      // `refusalText`, never the caught value's own words: a search body that
-      // is not JSON fails as V8's `SyntaxError`, whose message quotes it.
-      wl.warn(`lookup for ${title} failed and contributes no line: ${refusalText({ error, },)}`,);
-      return [];
+      return failedTitleOutcome({
+        error,
+        signal,
+        title,
+      },);
     }
   },),);
+  // IN TITLE ORDER, from what each lookup returned, whichever ended first
+  // (`mistake-prevention.md`, "Output decided by arrival order"); a lookup
+  // that failed before the stop keeps its line.
+  for (const outcome of outcomes) {
+    if (outcome.kind === 'failed')
+      wl.warn(outcome.note,);
+  }
+  // The caller's reason goes on unchanged and unwritten: every lookup the stop
+  // ended returned the same reason, so the lookups refuse with it whichever
+  // ended first.
+  for (const outcome of outcomes) {
+    if (outcome.kind === 'stopped')
+      throw outcome.reason;
+  }
   /**
-   Every line, in title order.
+   Every line, in title order; a failed lookup contributes none.
    */
-  const lines = perTitle.flat();
+  const lines = outcomes.flatMap(function linesOf(outcome,): readonly string[] {
+    if (outcome.kind === 'stopped')
+      throw new Error('unreachable: a stopped lookup was left after the lookups refused with the caller\'s reason',);
+    return (outcome.kind === 'lines') ? outcome.lines : [];
+  },);
   wl.info(`${String(titles.length,)} work ${
     wordForCount({
       count: titles.length,
