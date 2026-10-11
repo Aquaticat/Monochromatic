@@ -38,6 +38,12 @@ fn wire_transport(app: &AppWindow, engine: &Rc<Engine>) {
     app.on_next(move || next_engine.send(Command::Next));
     let seek_engine = engine.clone();
     app.on_seek(move |secs| seek_engine.send(Command::Seek(f64::from(secs))));
+    let reveal_weak = app.as_weak();
+    app.on_reveal_playing(move || {
+        if let Some(window) = reveal_weak.upgrade() {
+            crate::ui_keys::reveal_playing(&window);
+        }
+    });
     let mode_engine = engine.clone();
     let mode_weak = app.as_weak();
     app.on_select_mode(move |mode| {

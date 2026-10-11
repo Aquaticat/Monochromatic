@@ -68,6 +68,10 @@ export component AppWindow inherits Window {
     in property <string> current-cell: "";
     in property <[TrackListRow]> track-rows: [];
     in property <int> scroll-to-row: -1;
+    // Bumped by the Rust side on each request to show the playing track, so a repeated request scrolls again.
+    in property <int> reveal-tick: 0;
+    // Fired when the deck's title is clicked; the Rust side switches to the playing track's folder and bumps the tick.
+    callback reveal-playing();
 
     // Transport deck view model.
     in property <string> deck-title: "";
@@ -240,6 +244,7 @@ export component AppWindow inherits Window {
             vertical-stretch: 1;
             rows: root.track-rows;
             scroll-to-row: root.scroll-to-row;
+            reveal-tick: root.reveal-tick;
             play(i) => { root.select-index(i); }
             open-menu(i, x, y) => { root.show-track-menu(i, x, y); }
         }
@@ -256,6 +261,7 @@ export component AppWindow inherits Window {
             toggle-play => { root.toggle-play(); }
             next => { root.next(); }
             select-mode(m) => { root.select-mode(m); }
+            reveal-playing => { root.reveal-playing(); }
         }
     }
 
@@ -295,6 +301,7 @@ export component AppWindow inherits Window {
                 toggle-play => { root.toggle-play(); }
                 next => { root.next(); }
                 select-mode(m) => { root.select-mode(m); }
+                reveal-playing => { root.reveal-playing(); }
             }
         }
         VerticalLayout {
@@ -324,6 +331,7 @@ export component AppWindow inherits Window {
                 vertical-stretch: 1;
                 rows: root.track-rows;
                 scroll-to-row: root.scroll-to-row;
+                reveal-tick: root.reveal-tick;
                 play(i) => { root.select-index(i); }
                 open-menu(i, x, y) => { root.show-track-menu(i, x, y); }
             }

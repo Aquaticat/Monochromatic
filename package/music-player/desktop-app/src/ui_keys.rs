@@ -152,9 +152,11 @@ fn cycle_mode(engine: &Engine) {
     engine.send(Command::SetPlaybackMode(next_mode(mode)));
 }
 
-/// What: `reveal_playing` moves the list to the folder that holds the playing track and closes the picker.
-/// Why: Ctrl+G jumps to the playing track, and the folder view is what makes that row visible.
-fn reveal_playing(window: &AppWindow) {
+/// What: `reveal_playing` moves the list to the folder that holds the playing track, closes the picker and asks
+/// the list to scroll to the playing row again.
+/// Why: Ctrl+G and a click on the deck's title jump to the playing track; the folder view makes the row visible,
+/// and the request count makes the list scroll even when the folder and the row did not change.
+pub(crate) fn reveal_playing(window: &AppWindow) {
     update_state(|state| {
         state.picker_open = false;
         if let Some(index) = state.current_index {
@@ -165,6 +167,7 @@ fn reveal_playing(window: &AppWindow) {
         }
     });
     project(window);
+    window.set_reveal_tick(window.get_reveal_tick() + 1);
 }
 
 #[cfg(test)]

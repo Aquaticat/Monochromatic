@@ -28,6 +28,8 @@ export component TrackListPane inherits Rectangle {
     // List position of the entry to bring to the top of the pane, such as the playing row. A change scrolls to it,
     // and -1 leaves the scroll position alone.
     in property <int> scroll-to-row: -1;
+    // Counts requests to show the target row again, so a request while the target row is unchanged still scrolls to it.
+    in property <int> reveal-tick: 0;
     // Fires with the library index of a track row when the row is tapped without a long press.
     callback play(int);
     // Fires with the library index of a track row and the pointer position relative to this pane, on a right
@@ -67,12 +69,19 @@ export component TrackListPane inherits Rectangle {
             for row[i] in root.rows: Rectangle {
                 // Whether this entry is the one the scroll-to-row property names.
                 property <bool> is-target: root.scroll-to-row == i;
+                // Mirrors the reveal request count so a new request re-runs the scroll below.
+                property <int> reveal-seen: root.reveal-tick;
                 height: root.height-of(row);
                 background: row.kind == 0 && row.current ? Theme.current-row : transparent;
 
                 // Scrolls to this entry when it becomes the target, and again when layout first places it,
                 // because the target can be set before the entry has a y.
                 changed is-target => {
+                    if (self.is-target) {
+                        root.reveal(self.y);
+                    }
+                }
+                changed reveal-seen => {
                     if (self.is-target) {
                         root.reveal(self.y);
                     }

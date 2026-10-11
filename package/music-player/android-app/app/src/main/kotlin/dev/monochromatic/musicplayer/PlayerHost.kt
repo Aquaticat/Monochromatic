@@ -648,6 +648,27 @@ fun playerHost(
         }
     }
 
+    // What:     `val revealPlayingTrack` shows the playing track's folder and asks its list to focus the row.
+    // Why:      The picker replaces the list, and the playing track may sit in another folder, so the folder is
+    //           selected first, without starting a track, and then the row can take focus. Ctrl+G and a tap on the
+    //           deck's title both run it.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const revealPlayingTrack = () => { setPickerOpen(false); if (page changed) selectPage(playing); bumpRevealToken(); };
+    // ```
+    /** Shows the playing track's folder, then focuses the playing row without starting a track. */
+    val revealPlayingTrack: () -> Unit = {
+        pickerOpen = false
+        /** Tab-order page of the playing track, or null when no track is playing. */
+        val playingPage: Int? = controller.uiState.playingPageIndex
+        if (playingPage != null && playingPage != controller.uiState.selectedPage) {
+            Log.i(LOG_TAG, "player host reveal shows playing folder page=$playingPage")
+            controller.selectPage(playingPage)
+        }
+        revealToken += 1
+    }
+
     // What:     `val deckActions` routes the transport actions to the controller.
     // Why:      The player deck and the deck under the Search page send the same actions, and a tapped control
     //           returns focus to the playback area.
@@ -675,6 +696,7 @@ fun playerHost(
             controller.setPlaybackMode(mode)
             returnFocusToPlayback()
         },
+        onRevealPlaying = revealPlayingTrack,
     )
 
     // What:     `val playerActions` routes the player screen's actions.
@@ -1302,14 +1324,7 @@ fun playerHost(
         // ```
         /** Shows the playing track's folder, then focuses the playing row without starting a track. */
         override fun revealCurrent() {
-            pickerOpen = false
-            /** Tab-order page of the playing track, or null when no track is playing. */
-            val playingPage: Int? = controller.uiState.playingPageIndex
-            if (playingPage != null && playingPage != controller.uiState.selectedPage) {
-                Log.i(LOG_TAG, "player host reveal shows playing folder page=$playingPage")
-                controller.selectPage(playingPage)
-            }
-            revealToken += 1
+            revealPlayingTrack()
         }
 
         // What:     `override fun backFromSearch()` leaves Search by the same route rule as the system Back button.
@@ -1502,7 +1517,7 @@ fun playerHost(
                         onClear = { query = "" },
                         onOpenResult = { result -> openSearchResult(result) },
                         currentTrackIndex = state.currentIndex,
-                        deck = { transportDeck(model = model.deck, actions = deckActions) },
+                        deck = { transportDeck(model = model.deck, actions = deckActions.copy(onRevealPlaying = null)) },
                         isPlaying = state.playing,
                         folderBrowser = { browserModifier ->
                             folderPickerPane(

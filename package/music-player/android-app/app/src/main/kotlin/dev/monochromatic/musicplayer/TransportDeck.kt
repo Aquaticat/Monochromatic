@@ -30,6 +30,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
@@ -435,6 +436,16 @@ data class TransportDeckActions(
     // ```
     /** Requests selection of one playback mode. */
     val onSelectMode: (PlaybackMode) -> Unit,
+    // What:     `val onRevealPlaying: (() -> Unit)?` reports a tap on the playing title, or is null for no tap target.
+    // Why:      A tap on the playing track's name jumps the list to that track; the deck under Search has no list to
+    //           jump in, so it passes null and draws the heading as plain text.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // onRevealPlaying?: () => void;
+    // ```
+    /** Requests that the list shows the playing track, or null when the heading is not tappable. */
+    val onRevealPlaying: (() -> Unit)? = null,
 )
 
 // What:     `internal enum class ModeControlLayout` names the three arrangements of the mode control.
@@ -689,16 +700,29 @@ private fun deckContainerColor(): Color {
 }
 
 // What:     `@Composable private fun deckHeading(...)` draws the centered title and subtitle.
-// Why:      The heading names the playing track and the caller's preformatted status line.
+// Why:      The heading names the playing track and the caller's preformatted status line; when the caller gives a
+//           tap action the whole heading is one 48dp-high button that reveals the track.
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// function deckHeading(props: { title: string; subtitle: string }): UIElement;
+// function deckHeading(props: { title: string; subtitle: string; onReveal?: () => void }): UIElement;
 // ```
-/** Draws the centered playing title above the preformatted subtitle. */
+/** Draws the centered playing title above the preformatted subtitle, tappable when [onReveal] is given. */
 @Composable
-private fun deckHeading(title: String, subtitle: String) {
-    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+private fun deckHeading(title: String, subtitle: String, onReveal: (() -> Unit)?) {
+    /** Heading modifier: a button with a 48dp minimum height when tappable, unchanged otherwise. */
+    val headingModifier: Modifier = if (onReveal == null) {
+        Modifier
+    } else {
+        Modifier
+            .defaultMinSize(minHeight = MIN_TARGET)
+            .clickable(onClickLabel = "Show playing track", role = Role.Button, onClick = onReveal)
+    }
+    Column(
+        modifier = headingModifier,
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center,
+    ) {
         Text(text = title, style = MaterialTheme.typography.titleMedium)
         Text(
             text = subtitle,
@@ -1178,7 +1202,7 @@ fun transportDeck(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(DECK_GROUP_SPACING),
     ) {
-        deckHeading(title = model.title, subtitle = model.subtitle)
+        deckHeading(title = model.title, subtitle = model.subtitle, onReveal = actions.onRevealPlaying)
         CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
             seekRow(
                 positionSec = model.positionSec,

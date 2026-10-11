@@ -191,6 +191,8 @@ export component TransportDeck inherits Rectangle {
     callback next();
     // Requests selection of one playback mode, using the same 0 to 3 numbering as `mode`.
     callback select-mode(int);
+    // Requests that the track list shows the playing track; fired by a click on the title and subtitle.
+    callback reveal-playing();
 
     // Minimum touch target for every control, matching the Theme token.
     property <length> target: Theme.touch-target;
@@ -268,6 +270,20 @@ export component TransportDeck inherits Rectangle {
         horizontal-alignment: center;
         wrap: no-wrap;
         overflow: elide;
+    }
+
+    // Click target over the whole heading, from the deck's top edge so it is at least 48 px high: jumps to the playing track.
+    reveal-touch := TouchArea {
+        x: 0px;
+        y: 0px;
+        width: root.width;
+        height: max(root.target, root.pad-y + title-text.height + subtitle-text.height);
+        mouse-cursor: pointer;
+        accessible-role: button;
+        accessible-label: "Show playing track";
+        clicked => {
+            root.reveal-playing();
+        }
     }
 
     // ---- Vertical rhythm, derived from the heading and the mode control heights. ----
