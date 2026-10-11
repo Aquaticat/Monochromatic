@@ -32,6 +32,13 @@ export global Theme {
     out property <color> on-error-container: root.dark ? #F9DEDC : #410E0B;
     out property <color> surface-high: root.dark ? #1E1F25 : #E8E7EE;
 
+    // Android Settings surfaces, sampled from the Pixel 9 Pro Fold captures: the tinted page, the grouped row cards,
+    // and the tonal fill of the round Back button. The Back fill steps against the page in each scheme (light
+    // #E1E2ED is darker than the page, dark #23252E is lighter than it), so it is a measured value, not a tint rule.
+    out property <color> settings-page: root.dark ? #181920 : #EEEDF6;
+    out property <color> settings-card: root.dark ? #2A2C34 : #FAF8FE;
+    out property <color> back-tonal: root.dark ? #23252E : #E1E2ED;
+
     // Type scale in logical pixels (Material 3 roles used by the design).
     out property <length> body-large: 16px;
     out property <length> body-medium: 14px;
