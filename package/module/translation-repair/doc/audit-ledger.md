@@ -35169,12 +35169,14 @@ Two same-family fields were read and left:
 `waitOutHold` takes a real hold wait in milliseconds that `budget-hold-wait.unit.test.ts` sets without the scan seeing it,
 and `holdMs` arms no timer.
 
-Open:
-`budget-hold-wait.unit.test.ts` calls `waitOutHold` with real waits of 6 and 50 milliseconds,
-which the scan does not key,
-since keying its `ms` parameter would catch many unrelated record fields;
-it is a hold wait and not a stream or request timer,
-and no run has measured it as a cause of a failure.
+Read and left:
+`budget-hold-wait.unit.test.ts` calls `waitOutHold` with a real wait of 6 milliseconds
+and asserts only a lower bound of 5 on the time it took,
+and with a wait of 50 milliseconds under a signal that has already aborted,
+which ends before any wait;
+both follow the real clock rule in `mistake-prevention.md`.
+The scan does not key the `ms` parameter,
+since keying it would catch many unrelated record fields.
 
 Open to the owner's veto:
 `'unbounded'` in the tests,
