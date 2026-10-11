@@ -408,8 +408,19 @@ Its original exception was not retained,
 so no cause is established.
 The isolated native-default/copy pair passed `96a0c52e` / `proc_e195` without a runtime change;
 that later pass is not a diagnosis or fix.
-The complete native parent is running again as `proc_b1f3`,
-with retained batch exceptions and strict terminal-state checks.
+The second parent `proc_b1f3` stopped in the distinct `carrier-bound` case,
+whose original exception was also not retained.
+Both fixtures now retain batch errors and report total judgment-start to reviewed time.
+Repeated configurations passed `bef690b2` / `proc_a7bd`:
+carrier-bound totals were 4984.015445,
+5402.251908,
+and 5789.265434 milliseconds;
+copy-case totals were 971.362350,
+914.014512,
+and 1024.266656 milliseconds.
+These include work after evidence closure and are not deadline-failure measurements.
+Neither failed parent has an established cause or a claimed runtime fix.
+The complete native parent is running as `proc_05da` with both diagnostic fixtures.
 
 The governing-source omission first exposed no original reviewer error in judgment finalization.
 An `evidence-closed` record is not a completed policy review.
