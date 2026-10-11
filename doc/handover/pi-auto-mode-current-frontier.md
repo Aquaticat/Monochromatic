@@ -337,7 +337,12 @@ Build-only correction `b60415d` / `proc_0064` passed same-file alias and wrong-t
 then actual SDK preparation.
 Target-check omission `e38b148` / `proc_cfc3` failed the equal-byte wrong-file control;
 the check is restored.
-The resumed complete native regression remains pending.
+Complete native `proc_6645` passed after restoration and the build-path correction,
+including the current 103-output input matrix with empty child stderr.
+Complete action-policy `proc_379b` and policy-source `proc_580e` passed.
+The separate earlier full-policy failure remains unattributed;
+these later passes establish no cause or fix.
+The remaining closeout check is final document rendering.
 All source limits,
 budgets,
 and installed files remain unchanged.

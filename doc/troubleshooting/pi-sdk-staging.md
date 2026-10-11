@@ -73,7 +73,9 @@ rewriting historical files in place,
 or enabling symlink-preserving module loading was unnecessary.
 Target-guard omission `e38b148` / `proc_cfc3` failed `Missing expected exception (StagedImportError)`
 on the equal-byte wrong-file case.
-The guard is restored before the resumed complete regression.
+The guard was restored before complete native regression `proc_6645`,
+which passed including the import controls and complete runtime suffix.
+This repairs the measured preparation boundary without relocating the rest of the historical graph.
 
 ### Upstream filing decision
 
@@ -145,8 +147,9 @@ not a provider or qualification trial.
 Integrated `proc_0117` passed 103 outputs with empty child stderr.
 Predicate omission `proc_b636` poisoned non-string capture;
 observation omission `proc_58f8` lost the required original string source.
-Both were restored before the full regression,
-which remains pending after the separate build-path correction.
+Both were restored before complete native `proc_6645`,
+which passed after the separate build-path correction.
+Complete action-policy `proc_379b` and policy-source `proc_580e` also passed.
 Message/array prompt inputs,
 image governance,
 other state producers,
