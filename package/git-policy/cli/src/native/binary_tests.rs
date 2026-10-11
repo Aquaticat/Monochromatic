@@ -56,3 +56,9 @@ mod management;
 mod coordination;
 #[path = "binary_hook_tests.rs"]
 mod hook;
+#[path = "binary_landing_support.rs"]
+mod landing_support;
+#[path = "binary_landing_tests.rs"]
+mod landing;
+#[path = "binary_landing_crash_tests.rs"]
+mod landing_crash;

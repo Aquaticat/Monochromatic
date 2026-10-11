@@ -471,6 +471,12 @@ pub mod landing_objects;
 /// Post-index a landing installs, computed against the real index at landing.
 pub mod landing_index;
 
+/// One landing attempt inside the landing critical section, and its outcome.
+pub mod landing_attempt;
+
+/// The `concurrent-commit` finding for a landing that landed nothing.
+pub mod landing_findings;
+
 /// Git commands run against a transaction's shadow repository.
 pub mod shadow_git;
 
