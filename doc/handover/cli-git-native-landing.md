@@ -42,10 +42,14 @@ Evidence skeleton written; no implementation yet.
 
 (filled at the end)
 
-## Status at handback
+## Status
 
-Groundwork only.
-Uncommitted: `src/native/transaction_phase.rs`, `src/native/transaction_phase_tests.rs`, and the additive `pub mod transaction_phase;` line in `src/native/lib.rs`.
-The host unit run (`cargo test --lib -- transaction_phase`, log under `${HOME}/temp/agent/phase-test.log`) had no result line when the run ended.
-Not started: landing support, object migration, post-index, real index lock install and `index-lock-<n>.json`, the landing attempt and outcome enum, the landing loop, acceptance tests, container gate, Clippy, Git 2.55.0 probe, and mutation.
-Next action: confirm the phase tests, run Clippy, commit the phase module with explicit pathspecs, then read the TypeScript sources listed in the coordinator brief before porting.
+Done and verified (host `cargo test --lib -- landing_`, 36 passed; phase markers, 11 passed with 1 ignored child helper run by the kill control):
+- `transaction_phase.rs`: phase markers.
+- `landing_support.rs`: target comparison, nonce reflog message, compare-and-swap.
+- `landing_objects.rs`: migration of shadow objects into a kept pack.
+- `landing_index.rs`: post-index against the then-current real index, both modes.
+
+Not started: real index lock install and `index-lock-<n>.json` (extend `real_index_lock.rs`; plan: reuse `recovery_files::install_recovered_index`, then remove the PID file), the landing attempt and outcome enum, `landing-<n>.json`, acceptance tests, container gate, Clippy, Git 2.55.0 probe, mutation.
+
+Rerun: `cd -- <worktree>/package/git-policy/cli && cargo test --locked --offline --lib -- landing_` (through `gate-slot.ts`).
