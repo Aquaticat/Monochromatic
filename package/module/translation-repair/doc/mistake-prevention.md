@@ -2003,6 +2003,11 @@ A fix commit that changed a doc went out without the Markdown lint,
 which then found three findings in its paragraph (ledger M133):
 the Markdown lint runs on every doc a commit touches,
 a code commit's included.
+A docs commit went out after its findings were fixed without the lint running again,
+and one flagged line was left
+(the 2026-10-11 recurrence of ledger M133):
+the lint's last run before a commit is after the last edit,
+and its output holds no finding.
 The merge of a patch written at `f3c2bae13` ran its own files by name,
 the scans and the lint,
 and left the whole suite to the gate;

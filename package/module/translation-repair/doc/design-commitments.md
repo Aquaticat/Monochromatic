@@ -506,8 +506,11 @@ Part of [the package README](../README.md).
   the forfeit of an undecided gate
   (2026-09-27,
   "Slate's choice")
-  still asks every ballot,
-  an open question for the owner until answered.
+  moves to majority too
+  (owner,
+  2026-10-11:
+  "Majority,
+  like the run-off").
 - **A tie the standing drew no ballot in is run off among the tied.**
   Owner,
   2026-10-11,
@@ -528,7 +531,14 @@ Part of [the package README](../README.md).
   (or a refrain pattern)
   and apply it to all,
   respecting slices where context calls for different wording.
-- **The past-tense rule gets a deterministic aid, never a deterministic verdict.**
+  An occurrence in a slice where the archive stands is replaced too,
+  when the judged rendering passes every floor there
+  (owner,
+  2026-10-11:
+  "Yes,
+  replace it").
+- **The past-tense rule gets a deterministic aid,
+  never a deterministic verdict.**
   Owner,
   2026-10-11:
   "as for tense I suppose some deterministic code can mitigate the problem to some extent."
@@ -541,10 +551,14 @@ Part of [the package README](../README.md).
   never used to refuse a wording or to call a text flawed;
   pages that record no death are skipped.
   Decided for quality,
-  open to the owner's veto.
+  and confirmed by the owner the same day:
+  "Candidates to judges,
+  as described".
 - **A dictionary entry for 扑面而来.**
   Owner,
   2026-10-11:
   "Add a dictionary entry".
   The entry says the target is whoever faces it and refuses no form,
-  since three of the idiom's four occurrences in the corpus wash over the person herself (ledger M148).
+  since three of the idiom's four occurrences in the corpus wash over the person herself (ledger M148);
+  told of the corrected sense,
+  the owner kept it so ("Keep the entry as written").

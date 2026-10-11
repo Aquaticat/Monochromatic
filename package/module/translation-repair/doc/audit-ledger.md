@@ -37425,6 +37425,13 @@ whatever else the commit holds
 (`mise run //:lint:markdown <paths>`).
 `mistake-prevention.md`,
 "Lint and edits".
+Recurred on 2026-10-11 (UTC) in `ee0706879`:
+the lead fixed the findings of a lint run and committed without running the lint again,
+and one line the run had flagged was left unfixed in `doc/design-commitments.md`
+(a bold item title broken after its comma by the next commit).
+The rule now reads:
+the lint's last run before a commit is after the last edit,
+and its output holds no finding.
 
 ### M134: a package task started from the repository root, where it was not found
 
