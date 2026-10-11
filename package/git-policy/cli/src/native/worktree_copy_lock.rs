@@ -15,7 +15,7 @@ use super::json_record::quote;
 use super::owner_lock_record::{OwnerLockRecord, owner_lock_holder_is_alive};
 use super::process_identity::current_birth_identity;
 use super::random_id::random_uuid;
-use super::worktree_copy_error::{WorktreeCopyError, automatic_failure, failure_with_cause};
+use super::worktree_copy_error::{WorktreeCopyError, failure_with_cause, raw_failure};
 use crate::worktree_copy_journal::ensure_journal_root;
 use std::io::Write;
 use std::path::{Path, PathBuf};
@@ -203,7 +203,7 @@ fn read_published(lock: &Path) -> Result<Published, WorktreeCopyError> {
                         quote(owner_path.to_string_lossy().as_ref())
                     )))
                 }
-                _ => Err(automatic_failure(&error)),
+                _ => Err(raw_failure(&error)),
             };
         }
     };
@@ -232,7 +232,7 @@ fn owner_alive(owner: &LockOwner) -> Result<bool, WorktreeCopyError> {
         owner_birth_identity: owner.owner_birth_identity.clone(),
         transaction_id: None,
     };
-    return owner_lock_holder_is_alive(&record).map_err(|error| automatic_failure(&error));
+    return owner_lock_holder_is_alive(&record).map_err(|error| raw_failure(&error));
 }
 
 /// What:
@@ -310,13 +310,13 @@ fn remove_lock_of(lock: &Path, lease_token: &str) -> Result<bool, WorktreeCopyEr
     let retired: PathBuf = PathBuf::from(format!(
         "{}.{}.stale",
         lock.to_string_lossy(),
-        random_uuid().map_err(|error| automatic_failure(&error.0))?
+        random_uuid().map_err(|error| raw_failure(&error.0))?
     ));
     // `match` on the rename: a vanished lock is simply not ours to remove; any other failure is fatal.
     match std::fs::rename(lock, retired.as_path()) {
         Ok(()) => {}
         Err(error) if error.kind() == std::io::ErrorKind::NotFound => return Ok(false),
-        Err(error) => return Err(automatic_failure(&error)),
+        Err(error) => return Err(raw_failure(&error)),
     }
     let moved: Published = read_published(retired.as_path())?;
     if !matches!(&moved, Published::Owner(owner) if owner.lease_token == lease_token) {
@@ -324,7 +324,7 @@ fn remove_lock_of(lock: &Path, lease_token: &str) -> Result<bool, WorktreeCopyEr
         let _ignored: std::io::Result<()> = std::fs::rename(retired.as_path(), lock);
         return Ok(false);
     }
-    std::fs::remove_dir_all(retired.as_path()).map_err(|error| automatic_failure(&error))?;
+    std::fs::remove_dir_all(retired.as_path()).map_err(|error| raw_failure(&error))?;
     return Ok(true);
 }
 
@@ -344,7 +344,7 @@ fn publish_candidate(
     let candidate: PathBuf = PathBuf::from(format!(
         "{}.{}.pending",
         lock.to_string_lossy(),
-        random_uuid().map_err(|error| automatic_failure(&error.0))?
+        random_uuid().map_err(|error| raw_failure(&error.0))?
     ));
     write_candidate(candidate.as_path(), owner)?;
     match std::fs::rename(candidate.as_path(), lock) {
@@ -363,7 +363,7 @@ fn publish_candidate(
             {
                 return Ok(None);
             }
-            return Err(automatic_failure(&error));
+            return Err(raw_failure(&error));
         }
     }
 }
@@ -389,7 +389,7 @@ fn write_candidate(candidate: &Path, owner: &LockOwner) -> Result<(), WorktreeCo
     })();
     if let Err(error) = written {
         let _ignored: std::io::Result<()> = std::fs::remove_dir_all(candidate);
-        return Err(automatic_failure(&error));
+        return Err(raw_failure(&error));
     }
     return Ok(());
 }
@@ -410,7 +410,7 @@ fn current_owner() -> Result<LockOwner, WorktreeCopyError> {
             Some(&error),
         );
     })?;
-    let token: String = random_uuid().map_err(|error| automatic_failure(&error.0))?;
+    let token: String = random_uuid().map_err(|error| raw_failure(&error.0))?;
     return Ok(LockOwner {
         lease_token: token,
         owner_pid: i64::from(std::process::id()),
@@ -429,7 +429,7 @@ fn current_owner() -> Result<LockOwner, WorktreeCopyError> {
 /// ```
 fn unit_random() -> Result<f64, WorktreeCopyError> {
     let mut bytes: [u8; 8] = [0; 8];
-    getrandom::fill(&mut bytes).map_err(|error| automatic_failure(&error))?;
+    getrandom::fill(&mut bytes).map_err(|error| raw_failure(&error))?;
     return Ok((u64::from_le_bytes(bytes) >> 11) as f64 / (1u64 << 53) as f64);
 }
 
@@ -548,7 +548,7 @@ pub fn acquire_worktree_copy_lock(
                     let line: String = live_holder_line(lock.as_path(), &holder);
                     stderr
                         .write_all(line.as_bytes())
-                        .map_err(|error| automatic_failure(&error))?;
+                        .map_err(|error| raw_failure(&error))?;
                 }
                 wait_while_owner_lives(lock.as_path(), &holder)?;
                 continue;

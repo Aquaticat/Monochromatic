@@ -168,7 +168,7 @@ fn listing_outside_a_repository_fails_with_cause() {
     assert!(
         failure
             .0
-            .starts_with("cli-git: automatic ignored-state worktree copy failed. Cause: ")
+            .contains("not a git repository")
     );
     remove(root.as_path());
 }

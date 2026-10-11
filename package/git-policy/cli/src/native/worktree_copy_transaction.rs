@@ -12,7 +12,7 @@
 //! ```
 
 use super::transaction_git::GitContext;
-use super::worktree_copy_error::WorktreeCopyError;
+use super::worktree_copy_error::{WorktreeCopyError, raw_failure};
 use super::worktree_copy_install::{InstallRecorder, install_snapshot};
 use super::worktree_copy_install_entry::InstalledPath;
 use super::worktree_copy_install_log::{InstallLog, open_install_log};
@@ -273,8 +273,9 @@ pub fn synchronize_created_worktree(
     let pending: PendingJournal = match create_journal(common_dir, destination_root, &snapshot) {
         Ok(pending) => pending,
         Err(error) => {
-            let _ignored_removal: std::io::Result<()> =
-                std::fs::remove_dir_all(snapshot.stage_container.as_path());
+            // A failed removal replaces the journal failure, as the incumbent's cleanup throws its own error there.
+            std::fs::remove_dir_all(snapshot.stage_container.as_path())
+                .map_err(|removal| raw_failure(&removal))?;
             return Err(error);
         }
     };

@@ -13,7 +13,7 @@
 
 use super::json_record::quote;
 use super::private_storage::sync_directory;
-use super::worktree_copy_error::{WorktreeCopyError, automatic_failure, failure_with_cause};
+use super::worktree_copy_error::{WorktreeCopyError, failure_with_cause, raw_failure};
 use super::worktree_copy_install_entry::InstalledPath;
 use super::worktree_copy_journal::{
     Role, assert_private_path, encode_installed_entry, installed_entry, string_array,
@@ -149,7 +149,7 @@ fn parse_line(line: &str, path: &Path) -> Result<InstallLogRecords, WorktreeCopy
 /// ```
 fn read_complete_records(path: &Path) -> Result<(InstallLogRecords, u64, u64), WorktreeCopyError> {
     assert_private_path(path, Role::JournalFile)?;
-    let content: Vec<u8> = std::fs::read(path).map_err(|error| automatic_failure(&error))?;
+    let content: Vec<u8> = std::fs::read(path).map_err(|error| raw_failure(&error))?;
     let complete_length: usize = content
         .iter()
         .rposition(|byte| *byte == b'\n')
@@ -199,11 +199,11 @@ pub fn open_install_log(stage_container: &Path) -> Result<OpenedLog, WorktreeCop
     };
     if complete_length < total_length {
         file.set_len(complete_length)
-            .map_err(|error| automatic_failure(&error))?;
-        file.sync_all().map_err(|error| automatic_failure(&error))?;
+            .map_err(|error| raw_failure(&error))?;
+        file.sync_all().map_err(|error| raw_failure(&error))?;
     }
     if !existed {
-        sync_directory(stage_container).map_err(|error| automatic_failure(&error))?;
+        sync_directory(stage_container).map_err(|error| raw_failure(&error))?;
     }
     return Ok(OpenedLog {
         log: InstallLog { file, path },

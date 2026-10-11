@@ -167,7 +167,7 @@ fn existing_destination_file_is_not_replaced() {
     assert!(
         failure
             .0
-            .starts_with("cli-git: automatic ignored-state worktree copy failed. Cause: ")
+            .contains("File exists")
     );
     assert_eq!(
         std::fs::read(destination.join("file")).expect("kept"),

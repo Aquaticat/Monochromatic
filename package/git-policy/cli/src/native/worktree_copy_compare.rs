@@ -11,7 +11,7 @@
 //! await assertFinalSourceEquivalence({ sourceRoot, stageRoot, selectedRoots, excludedSourceRoots, stagedEntries });
 //! ```
 
-use super::worktree_copy_error::{WorktreeCopyError, automatic_failure, failure_with_cause};
+use super::worktree_copy_error::{WorktreeCopyError, failure_with_cause, raw_failure};
 use super::worktree_copy_manifest::{
     EntryKind, WorktreeCopyEntry, collect_entry_manifest, retained_mode,
 };
@@ -45,7 +45,7 @@ pub fn lstat_or_absent(path: &Path) -> Result<Option<std::fs::Metadata>, Worktre
     match std::fs::symlink_metadata(path) {
         Ok(metadata) => return Ok(Some(metadata)),
         Err(error) if error.kind() == std::io::ErrorKind::NotFound => return Ok(None),
-        Err(error) => return Err(automatic_failure(&error)),
+        Err(error) => return Err(raw_failure(&error)),
     }
 }
 
@@ -63,16 +63,16 @@ fn regular_file_bytes_equal(
     right_path: &Path,
 ) -> Result<bool, WorktreeCopyError> {
     let mut left: std::fs::File =
-        std::fs::File::open(left_path).map_err(|error| return automatic_failure(&error))?;
+        std::fs::File::open(left_path).map_err(|error| return raw_failure(&error))?;
     let mut right: std::fs::File =
-        std::fs::File::open(right_path).map_err(|error| return automatic_failure(&error))?;
+        std::fs::File::open(right_path).map_err(|error| return raw_failure(&error))?;
     let left_size: u64 = left
         .metadata()
-        .map_err(|error| return automatic_failure(&error))?
+        .map_err(|error| return raw_failure(&error))?
         .len();
     let right_size: u64 = right
         .metadata()
-        .map_err(|error| return automatic_failure(&error))?
+        .map_err(|error| return raw_failure(&error))?
         .len();
     if left_size != right_size {
         return Ok(false);
@@ -95,7 +95,7 @@ fn regular_file_bytes_equal(
                 return Ok(false);
             }
             (Err(error), _) | (_, Err(error)) => {
-                return Err(automatic_failure(&error));
+                return Err(raw_failure(&error));
             }
         }
         if left_chunk != right_chunk {
@@ -116,7 +116,7 @@ fn regular_file_bytes_equal(
 /// await readlink(path)
 /// ```
 fn link_target(path: &Path) -> Result<PathBuf, WorktreeCopyError> {
-    return std::fs::read_link(path).map_err(|error| return automatic_failure(&error));
+    return std::fs::read_link(path).map_err(|error| return raw_failure(&error));
 }
 
 /// What:

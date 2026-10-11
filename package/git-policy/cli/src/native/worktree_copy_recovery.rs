@@ -12,7 +12,7 @@
 //! ```
 
 use super::json_record::quote;
-use super::worktree_copy_error::{WorktreeCopyError, automatic_failure, failure_with_cause};
+use super::worktree_copy_error::{WorktreeCopyError, failure_with_cause, raw_failure};
 use super::worktree_copy_lock::try_acquire_worktree_copy_lock;
 use super::worktree_copy_stage::StagedSnapshot;
 use super::worktree_copy_transaction::{Outcome, complete_journal, snapshot_from_journal};
@@ -266,7 +266,7 @@ pub fn report_recovered(
     stderr: &mut dyn Write,
 ) -> Result<(), WorktreeCopyError> {
     for notice in &report.notices {
-        writeln!(stderr, "{notice}").map_err(|error| automatic_failure(&error))?;
+        writeln!(stderr, "{notice}").map_err(|error| raw_failure(&error))?;
     }
     if report.recovered > 0 {
         let noun: &str = if report.recovered == 1 {
@@ -279,7 +279,7 @@ pub fn report_recovered(
             "cli-git: recovered ignored-state copies for {} worktree {noun}.",
             report.recovered
         )
-        .map_err(|error| automatic_failure(&error))?;
+        .map_err(|error| raw_failure(&error))?;
     }
     return Ok(());
 }

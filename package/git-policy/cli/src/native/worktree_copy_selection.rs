@@ -13,7 +13,7 @@
 //! ```
 
 use super::transaction_git::{GitContext, GitRequest, run_git};
-use super::worktree_copy_error::{WorktreeCopyError, automatic_failure};
+use super::worktree_copy_error::{WorktreeCopyError, raw_failure};
 use crate::json_record::quote;
 use std::cmp::Ordering;
 use std::path::{Path, PathBuf};
@@ -163,13 +163,13 @@ fn is_ignored_special_path(
         without_prefix: true,
         ..GitRequest::default()
     };
-    let output = run_git(context, &request).map_err(|error| return automatic_failure(&error))?;
+    let output = run_git(context, &request).map_err(|error| return raw_failure(&error))?;
     // `match` on the exit code: 0 is ignored, 1 is not ignored, anything else is a failure.
     match output.code {
         Some(0) => return Ok(true),
         Some(1) => return Ok(false),
         _ => {
-            return Err(automatic_failure(&String::from_utf8_lossy(
+            return Err(raw_failure(&String::from_utf8_lossy(
                 output.stderr.as_slice(),
             )));
         }
@@ -215,10 +215,9 @@ fn special_entries(
             filesystem_path(source_root, current.as_str())?
         };
         let listing = std::fs::read_dir(directory_path.as_path())
-            .map_err(|error| return automatic_failure(&error))?;
+            .map_err(|error| return raw_failure(&error))?;
         for listed in listing {
-            let entry: std::fs::DirEntry =
-                listed.map_err(|error| return automatic_failure(&error))?;
+            let entry: std::fs::DirEntry = listed.map_err(|error| return raw_failure(&error))?;
             let name: String = entry.file_name().to_string_lossy().into_owned();
             let repository_path: String = if current == "." {
                 name
@@ -240,7 +239,7 @@ fn special_entries(
             }
             let file_type: std::fs::FileType = entry
                 .file_type()
-                .map_err(|error| return automatic_failure(&error))?;
+                .map_err(|error| return raw_failure(&error))?;
             // A directory is walked; a file or symbolic link is already selected by Git's listing;
             // anything else is a special entry that needs Git's own ignore answer.
             if file_type.is_dir() {
@@ -287,9 +286,9 @@ pub fn read_ignored_roots(
         without_prefix: true,
         ..GitRequest::default()
     };
-    let output = run_git(context, &request).map_err(|error| return automatic_failure(&error))?;
+    let output = run_git(context, &request).map_err(|error| return raw_failure(&error))?;
     if output.code != Some(0) {
-        return Err(automatic_failure(&String::from_utf8_lossy(
+        return Err(raw_failure(&String::from_utf8_lossy(
             output.stderr.as_slice(),
         )));
     }

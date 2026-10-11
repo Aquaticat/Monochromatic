@@ -13,7 +13,7 @@
 //! await applyEntryModes({ root: stageRoot, entries });
 //! ```
 
-use super::worktree_copy_error::automatic_failure;
+use super::worktree_copy_error::raw_failure;
 use super::worktree_copy_error::{WorktreeCopyError, failure_with_cause};
 use super::worktree_copy_selection::{filesystem_path, js_order};
 use crate::json_record::quote;
@@ -175,7 +175,7 @@ pub fn collect_entry_manifest(
             continue;
         }
         let metadata: std::fs::Metadata = std::fs::symlink_metadata(item.filesystem_path.as_path())
-            .map_err(|error| return automatic_failure(&error))?;
+            .map_err(|error| return raw_failure(&error))?;
         let kind: EntryKind = entry_kind(metadata.file_type(), item.filesystem_path.as_path())?;
         entries.push(WorktreeCopyEntry {
             kind,
@@ -187,10 +187,9 @@ pub fn collect_entry_manifest(
         }
         let mut names: Vec<String> = Vec::new();
         for listed in std::fs::read_dir(item.filesystem_path.as_path())
-            .map_err(|error| return automatic_failure(&error))?
+            .map_err(|error| return raw_failure(&error))?
         {
-            let child: std::fs::DirEntry =
-                listed.map_err(|error| return automatic_failure(&error))?;
+            let child: std::fs::DirEntry = listed.map_err(|error| return raw_failure(&error))?;
             names.push(child.file_name().to_string_lossy().into_owned());
         }
         names.sort_by(|left, right| return js_order(left, right));
@@ -230,7 +229,7 @@ pub fn apply_entry_modes(
     for entry in files.chain(directories) {
         let path: PathBuf = filesystem_path(root, entry.relative_path.as_str())?;
         std::fs::set_permissions(path.as_path(), std::fs::Permissions::from_mode(entry.mode))
-            .map_err(|error| return automatic_failure(&error))?;
+            .map_err(|error| return raw_failure(&error))?;
     }
     return Ok(());
 }

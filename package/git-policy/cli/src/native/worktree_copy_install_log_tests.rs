@@ -78,8 +78,11 @@ fn unfinished_trailing_append_is_truncated() {
     let stage: PathBuf = root.join("stage");
     std::fs::create_dir(stage.as_path()).expect("stage");
     let complete: &str = "{\"intended\":[\"kept\"]}\n";
-    write_private_file(stage.join(INSTALL_LOG_NAME).as_path(), format!("{complete}{{\"intended\":[\"half").as_bytes())
-        .expect("log");
+    write_private_file(
+        stage.join(INSTALL_LOG_NAME).as_path(),
+        format!("{complete}{{\"intended\":[\"half").as_bytes(),
+    )
+    .expect("log");
     let mut opened: OpenedLog = open_install_log(stage.as_path()).expect("reopen");
     assert_eq!(opened.recorded.intended, vec![String::from("kept")]);
     opened
@@ -120,8 +123,12 @@ fn unsafe_intent_is_refused() {
     let root: PathBuf = fixture("install-log-unsafe");
     let stage: PathBuf = root.join("stage");
     std::fs::create_dir(stage.as_path()).expect("stage");
-    write_private_file(stage.join(INSTALL_LOG_NAME).as_path(), b"{\"intended\":[\"../up\"]}
-").expect("log");
+    write_private_file(
+        stage.join(INSTALL_LOG_NAME).as_path(),
+        b"{\"intended\":[\"../up\"]}
+",
+    )
+    .expect("log");
     let failure: WorktreeCopyError = open_install_log(stage.as_path()).err().expect("unsafe");
     assert_eq!(
         failure.0,

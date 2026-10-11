@@ -96,7 +96,7 @@ fn single_file_and_missing_selection() {
     assert!(
         failure
             .0
-            .starts_with("cli-git: automatic ignored-state worktree copy failed. Cause: ")
+            .contains("No such file or directory")
     );
     remove(root.as_path());
 }

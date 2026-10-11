@@ -15,7 +15,7 @@
 //! ```
 
 use super::worktree_copy_compare::lstat_or_absent;
-use super::worktree_copy_error::{WorktreeCopyError, automatic_failure, failure_with_cause};
+use super::worktree_copy_error::{WorktreeCopyError, failure_with_cause, raw_failure};
 use super::worktree_copy_manifest::{EntryKind, WorktreeCopyEntry};
 use super::worktree_copy_selection::filesystem_path;
 use super::worktree_copy_stage::copy_file_exclusive;
@@ -88,7 +88,7 @@ pub fn capture_installed_path(
     selected: bool,
 ) -> Result<InstalledPath, WorktreeCopyError> {
     let metadata: std::fs::Metadata =
-        std::fs::symlink_metadata(destination_path).map_err(|error| automatic_failure(&error))?;
+        std::fs::symlink_metadata(destination_path).map_err(|error| raw_failure(&error))?;
     return Ok(InstalledPath {
         device: metadata.dev(),
         inode: metadata.ino(),
@@ -130,7 +130,7 @@ pub fn ensure_parents(
             }
             None => {
                 std::fs::create_dir(destination_path.as_path())
-                    .map_err(|error| automatic_failure(&error))?;
+                    .map_err(|error| raw_failure(&error))?;
                 created.push(capture_installed_path(
                     destination_path.as_path(),
                     current.as_str(),
@@ -175,7 +175,7 @@ fn install_file(
     match std::fs::hard_link(stage_path, destination_path) {
         Ok(()) => return Ok(()),
         Err(error) if is_link_unsupported(&error) => {}
-        Err(error) => return Err(automatic_failure(&error)),
+        Err(error) => return Err(raw_failure(&error)),
     }
     copy_file_exclusive(stage_path, destination_path)?;
     let applied: std::io::Result<()> = std::fs::set_permissions(
@@ -185,7 +185,7 @@ fn install_file(
     if let Err(error) = applied {
         // A copy that cannot take its mode is removed, so the next attempt starts from the absent path.
         let _ignored_removal: std::io::Result<()> = std::fs::remove_file(destination_path);
-        return Err(automatic_failure(&error));
+        return Err(raw_failure(&error));
     }
     return Ok(());
 }
@@ -213,16 +213,16 @@ pub fn create_selected_entry(
             return std::fs::DirBuilder::new()
                 .mode(PRIVATE_DIRECTORY_MODE)
                 .create(destination_path.as_path())
-                .map_err(|error| automatic_failure(&error));
+                .map_err(|error| raw_failure(&error));
         }
         EntryKind::File => {
             return install_file(stage_path.as_path(), destination_path.as_path(), entry.mode);
         }
         EntryKind::Symlink => {
-            let target: PathBuf = std::fs::read_link(stage_path.as_path())
-                .map_err(|error| automatic_failure(&error))?;
+            let target: PathBuf =
+                std::fs::read_link(stage_path.as_path()).map_err(|error| raw_failure(&error))?;
             return std::os::unix::fs::symlink(target, destination_path.as_path())
-                .map_err(|error| automatic_failure(&error));
+                .map_err(|error| raw_failure(&error));
         }
     }
 }

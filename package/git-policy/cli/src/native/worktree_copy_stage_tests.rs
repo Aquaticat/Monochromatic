@@ -222,10 +222,6 @@ fn staging_under_a_missing_parent_fails_with_cause() {
         &[],
     )
     .expect_err("missing parent");
-    assert!(
-        failure
-            .0
-            .starts_with("cli-git: automatic ignored-state worktree copy failed. Cause: ")
-    );
+    assert!(failure.0.contains("No such file or directory"));
     remove(root.as_path());
 }

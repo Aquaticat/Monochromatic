@@ -18,7 +18,7 @@
 
 use super::json_record::quote;
 use super::transaction_git::GitContext;
-use super::worktree_copy_error::{WorktreeCopyError, automatic_failure};
+use super::worktree_copy_error::{WorktreeCopyError, lifecycle_failure, raw_failure};
 use super::worktree_copy_lock::{acquire_worktree_copy_lock, validate_inherited_lease};
 use super::worktree_copy_recovery::{
     recover_pending_worktree_copies, recover_worktree_copy_transactions, report_recovered,
@@ -221,7 +221,7 @@ fn synchronize_after(
     );
     stderr
         .write_all(line.as_bytes())
-        .map_err(|error| automatic_failure(&error))?;
+        .map_err(|error| raw_failure(&error))?;
     return Ok(());
 }
 
@@ -267,6 +267,25 @@ fn settle_under_lock(
 /// await runGitWithWorktreeCopy({ args, gitPath, identity, command, environment });
 /// ```
 pub fn run_with_worktree_copy(
+    invocation: &Invocation,
+    run_git: &mut GitRunner,
+    identity_after_lock: &mut dyn FnMut() -> Result<WorktreeIdentity, WorktreeCopyError>,
+    stderr: &mut dyn Write,
+) -> Result<Settlement, WorktreeCopyError> {
+    return settle_invocation(invocation, run_git, identity_after_lock, stderr)
+        .map_err(lifecycle_failure);
+}
+
+/// What:
+///  The settlement of one invocation, before the lifecycle words its raw failures.
+/// Why:
+///   Only the top of the lifecycle words raw failures, as the incumbent's `asWorktreeCopyError` does.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// // body of runGitWithWorktreeCopy
+/// ```
+fn settle_invocation(
     invocation: &Invocation,
     run_git: &mut GitRunner,
     identity_after_lock: &mut dyn FnMut() -> Result<WorktreeIdentity, WorktreeCopyError>,

@@ -63,17 +63,60 @@ pub fn failure_with_cause(
 }
 
 /// What:
-///  The lifecycle's wrapper for a failure that is not a copy failure yet.
+///  A failure from the operating system or from a process, carried as its own text with no wrapper sentence.
 /// Why:
-///   Unknown failures surface as the generic sentence with their cause,
-///  so no raw operating-system text reaches the user without the sentence in front of it.
+///   Every step that does not own a wording of its own leaves the raw text to the nearest enclosing wrapper.
+///   Messages cli-git owns always start with `cli-git:`, so a raw text can be told apart without another flag.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// new WorktreeCopyError('cli-git: automatic ignored-state worktree copy failed.', error)
+/// error // a non-WorktreeCopyError propagates unchanged to the caller that wraps it
 /// ```
-pub fn automatic_failure(cause: &dyn std::fmt::Display) -> WorktreeCopyError {
-    return failure_with_cause(AUTOMATIC_FAILURE_MESSAGE, Some(cause));
+pub fn raw_failure(cause: &dyn std::fmt::Display) -> WorktreeCopyError {
+    return WorktreeCopyError(cause.to_string());
+}
+
+/// What:
+///  Whether a failure is raw text that an enclosing wrapper still has to word.
+/// Why:
+///   The incumbent wraps only failures that are not already its own `WorktreeCopyError`, and cli-git's own messages always start with its prefix.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// !(error instanceof WorktreeCopyError)
+/// ```
+pub fn is_raw_failure(error: &WorktreeCopyError) -> bool {
+    return !error.0.starts_with("cli-git:");
+}
+
+/// What:
+///  Words a raw failure with the given message, and leaves an owned failure as it is.
+/// Why:
+///   Each wrapping step names the input it was handling, and never hides a message cli-git already wrote.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// error instanceof WorktreeCopyError ? error : new WorktreeCopyError(message, error)
+/// ```
+pub fn wrap_raw(error: WorktreeCopyError, message: &str) -> WorktreeCopyError {
+    // `if` keeps owned messages untouched and words only raw text.
+    if is_raw_failure(&error) {
+        return failure_with_cause(message, Some(&error.0));
+    }
+    return error;
+}
+
+/// What:
+///  The lifecycle's wording for a raw failure that reached the top of a copy.
+/// Why:
+///   The user sees the generic sentence once, with the underlying cause after it.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function asWorktreeCopyError(error: unknown): WorktreeCopyError;
+/// ```
+pub fn lifecycle_failure(error: WorktreeCopyError) -> WorktreeCopyError {
+    return wrap_raw(error, AUTOMATIC_FAILURE_MESSAGE);
 }
 
 /// Error message controls stay out of the release executable.

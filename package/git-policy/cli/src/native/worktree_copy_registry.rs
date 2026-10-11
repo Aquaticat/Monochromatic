@@ -16,7 +16,7 @@
 
 use super::git_metadata::{path_from_git_bytes, strip_git_line};
 use super::transaction_git::{GitContext, GitRequest, run_git};
-use super::worktree_copy_error::{WorktreeCopyError, automatic_failure, failure_with_cause};
+use super::worktree_copy_error::{WorktreeCopyError, failure_with_cause, raw_failure};
 use super::worktree_identity::WorktreeIdentity;
 use crate::json_record::quote;
 use std::collections::{BTreeMap, BTreeSet};
@@ -300,7 +300,7 @@ fn canonical_registered_root(root: &Path) -> Result<Option<PathBuf>, WorktreeCop
     match std::fs::canonicalize(root) {
         Ok(canonical) => return Ok(Some(canonical)),
         Err(error) if error.kind() == std::io::ErrorKind::NotFound => return Ok(None),
-        Err(error) => return Err(automatic_failure(&error)),
+        Err(error) => return Err(raw_failure(&error)),
     }
 }
 
@@ -331,9 +331,9 @@ fn read_registered_worktrees(
         without_prefix: true,
         ..GitRequest::default()
     };
-    let output = run_git(context, &request).map_err(|error| return automatic_failure(&error))?;
+    let output = run_git(context, &request).map_err(|error| return raw_failure(&error))?;
     if !output.succeeded() {
-        return Err(automatic_failure(&String::from_utf8_lossy(
+        return Err(raw_failure(&String::from_utf8_lossy(
             output.stderr.as_slice(),
         )));
     }

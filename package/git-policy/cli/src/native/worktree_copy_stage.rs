@@ -15,11 +15,12 @@ use super::private_storage::create_private_directory;
 use super::random_id::random_uuid;
 use super::transaction_git::GitContext;
 use super::worktree_copy_compare::assert_final_source_equivalence;
-use super::worktree_copy_error::{WorktreeCopyError, automatic_failure};
+use super::worktree_copy_error::{WorktreeCopyError, raw_failure, wrap_raw};
 use super::worktree_copy_manifest::{
     EntryKind, WorktreeCopyEntry, apply_entry_modes, collect_entry_manifest,
 };
 use super::worktree_copy_selection::{STAGE_PREFIX, filesystem_path, read_ignored_roots};
+use crate::json_record::quote;
 use std::path::{Path, PathBuf};
 
 /// What:
@@ -72,7 +73,7 @@ fn create_private_tree(path: &Path) -> Result<(), WorktreeCopyError> {
         .recursive(true)
         .mode(0o700)
         .create(path)
-        .map_err(|error| return automatic_failure(&error));
+        .map_err(|error| return raw_failure(&error));
 }
 
 /// What:
@@ -86,7 +87,7 @@ fn create_private_tree(path: &Path) -> Result<(), WorktreeCopyError> {
 /// ```
 #[cfg(not(unix))]
 fn create_private_tree(path: &Path) -> Result<(), WorktreeCopyError> {
-    return std::fs::create_dir_all(path).map_err(|error| automatic_failure(&error));
+    return std::fs::create_dir_all(path).map_err(|error| raw_failure(&error));
 }
 
 /// What:
@@ -133,15 +134,15 @@ fn try_clone(_source: &std::fs::File, _destination: &std::fs::File) -> bool {
 /// ```
 pub fn copy_file_exclusive(source: &Path, destination: &Path) -> Result<(), WorktreeCopyError> {
     let mut input: std::fs::File =
-        std::fs::File::open(source).map_err(|error| return automatic_failure(&error))?;
+        std::fs::File::open(source).map_err(|error| return raw_failure(&error))?;
     let mut output: std::fs::File = std::fs::OpenOptions::new()
         .write(true)
         .create_new(true)
         .open(destination)
-        .map_err(|error| return automatic_failure(&error))?;
+        .map_err(|error| return raw_failure(&error))?;
     // A successful clone already holds every byte, so only a refused clone copies them.
     if !try_clone(&input, &output) {
-        std::io::copy(&mut input, &mut output).map_err(|error| return automatic_failure(&error))?;
+        std::io::copy(&mut input, &mut output).map_err(|error| return raw_failure(&error))?;
     }
     return Ok(());
 }
@@ -175,7 +176,7 @@ fn copy_manifest_entries(
             EntryKind::Symlink => {
                 create_private_tree(parent_of(stage_path.as_path()).as_path())?;
                 let target: PathBuf = std::fs::read_link(source_path.as_path())
-                    .map_err(|error| return automatic_failure(&error))?;
+                    .map_err(|error| return raw_failure(&error))?;
                 symlink_at(target.as_path(), stage_path.as_path())?;
             }
         }
@@ -209,8 +210,7 @@ fn parent_of(path: &Path) -> PathBuf {
 /// ```
 #[cfg(unix)]
 fn symlink_at(target: &Path, link: &Path) -> Result<(), WorktreeCopyError> {
-    return std::os::unix::fs::symlink(target, link)
-        .map_err(|error| return automatic_failure(&error));
+    return std::os::unix::fs::symlink(target, link).map_err(|error| return raw_failure(&error));
 }
 
 /// What:
@@ -224,7 +224,7 @@ fn symlink_at(target: &Path, link: &Path) -> Result<(), WorktreeCopyError> {
 /// ```
 #[cfg(not(unix))]
 fn symlink_at(_target: &Path, _link: &Path) -> Result<(), WorktreeCopyError> {
-    return Err(automatic_failure(&std::io::Error::other(
+    return Err(raw_failure(&std::io::Error::other(
         "symbolic links are not staged on this platform",
     )));
 }
@@ -288,11 +288,12 @@ pub fn stage_ignored_snapshot(
         .collect();
     let git_selected: Vec<String> = read_ignored_roots(context, source_root, nested.as_slice())?;
     let destination_parent: &Path = destination_root.parent().unwrap_or(destination_root);
-    let unique: String = random_uuid().map_err(|error| return automatic_failure(&error.0))?;
+    let unique: String = random_uuid().map_err(|error| return raw_failure(&error.0))?;
     let stage_container: PathBuf = destination_parent.join(format!("{STAGE_PREFIX}{unique}"));
     create_private_directory(stage_container.as_path())
-        .map_err(|error| return automatic_failure(&error))?;
+        .map_err(|error| return raw_failure(&error))?;
     let stage_root: PathBuf = stage_container.join(PAYLOAD_NAME);
+    create_private_tree(stage_root.as_path())?;
     let staged: Result<StagedSnapshot, WorktreeCopyError> = stage_into(
         source_root,
         registered_roots,
@@ -304,12 +305,29 @@ pub fn stage_ignored_snapshot(
     match staged {
         Ok(snapshot) => return Ok(snapshot),
         Err(error) => {
-            // A failed removal is secondary to the copy failure that caused it, so it is dropped here.
-            let _ignored_removal: Result<(), std::io::Error> =
-                std::fs::remove_dir_all(stage_container.as_path());
-            return Err(error);
+            // A failed removal replaces the copy failure, as the incumbent's cleanup throws its own error there.
+            std::fs::remove_dir_all(stage_container.as_path())
+                .map_err(|removal| raw_failure(&removal))?;
+            return Err(words_for_source(error, source_root));
         }
     }
+}
+
+/// What:
+///  Words a raw failure of the staging steps with the source it was copying.
+/// Why:
+///   The user learns which worktree's ignored state could not be staged.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// new WorktreeCopyError(`cli-git: could not stage ignored state from ${JSON.stringify(sourceRoot)}.`, error)
+/// ```
+fn words_for_source(error: WorktreeCopyError, source_root: &Path) -> WorktreeCopyError {
+    let message: String = format!(
+        "cli-git: could not stage ignored state from {}.",
+        quote(source_root.to_string_lossy().as_ref())
+    );
+    return wrap_raw(error, message.as_str());
 }
 
 /// What:
@@ -328,7 +346,6 @@ fn stage_into(
     stage_root: &Path,
     git_selected: Vec<String>,
 ) -> Result<StagedSnapshot, WorktreeCopyError> {
-    create_private_tree(stage_root)?;
     let excluded_source_roots: Vec<PathBuf> =
         source_exclusions(source_root, registered_roots, stage_container);
     let selected_roots: Vec<String> = git_selected

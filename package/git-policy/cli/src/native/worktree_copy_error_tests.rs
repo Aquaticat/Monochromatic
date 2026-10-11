@@ -21,13 +21,26 @@ fn cause_follows_message_with_separator() {
     assert_eq!(failure.0, "cli-git: could not inspect. Cause: disk gone");
 }
 
-/// Unknown failures are wrapped with the generic sentence and their cause.
+/// A raw failure keeps its own text, and an owned message is never worded again.
 #[test]
-fn automatic_failure_uses_generic_sentence() {
+fn raw_failures_are_worded_only_once() {
     let cause: std::io::Error = std::io::Error::other("boom");
-    let failure: WorktreeCopyError = automatic_failure(&cause);
+    let raw: WorktreeCopyError = raw_failure(&cause);
+    assert_eq!(raw.0, "boom");
+    assert!(is_raw_failure(&raw));
+    let worded: WorktreeCopyError = wrap_raw(raw, "cli-git: could not inspect.");
+    assert_eq!(worded.0, "cli-git: could not inspect. Cause: boom");
+    assert_eq!(wrap_raw(worded.clone(), "cli-git: other."), worded);
+}
+
+/// The lifecycle words a raw failure with the generic sentence, and leaves an owned message as it is.
+#[test]
+fn lifecycle_uses_generic_sentence_for_raw_failures_only() {
+    let raw: WorktreeCopyError = raw_failure(&std::io::Error::other("boom"));
     assert_eq!(
-        failure.0,
+        lifecycle_failure(raw).0,
         "cli-git: automatic ignored-state worktree copy failed. Cause: boom"
     );
+    let owned: WorktreeCopyError = WorktreeCopyError(String::from("cli-git: owned."));
+    assert_eq!(lifecycle_failure(owned.clone()), owned);
 }
