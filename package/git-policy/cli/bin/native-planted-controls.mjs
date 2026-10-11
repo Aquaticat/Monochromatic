@@ -204,6 +204,7 @@ const plantedControls = [
     from: '    create_private_directory(hooks_directory).map_err(|error| {',
     to: '    std::fs::create_dir_all(hooks_directory).map_err(|error| {',
     failing: 'hook_dispatch_entries::tests::an_existing_hooks_directory_is_refused',
+  },
 
   {
     name: 'strict reverse check line match guard',
