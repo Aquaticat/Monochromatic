@@ -13,10 +13,8 @@
 //!  The content policies read the lifecycle's candidates:
 //!  they report nothing
 //!      where a lifecycle has none.
-//!  The content policy that is not ported is unavailable
-//!      wherever a lifecycle has candidates,
-//!  so an unchecked file can never read as a
-//!      clean one.
+//!  The Markdown policy checks the candidates it is given
+//!      with the native Markdown linter.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
@@ -36,6 +34,8 @@
 /// import { decideRequireRoot, resolveRequireRoot } from './rule_require_root.ts';
 /// ```
 use super::diagnostics::EngineFailureCode;
+/// Which worktree a command targets,
+///  for the linked-worktree rule.
 use super::effective_target::{EffectiveTarget, classify_effective_target};
 /// The Markdown autofix check,
 ///  its state and the linter the executable gives it.
@@ -43,6 +43,10 @@ use super::markdown_linter::executable_linter;
 /// What the lifecycle offers content policies,
 ///  and its prepared candidates.
 use super::policy_content::{ContentState, LifecycleContent};
+/// The dependent-version check over the candidate state.
+use super::policy_dependent_version::check_dependent_version;
+/// The engine's check interface,
+///  findings and outcomes.
 use super::policy_engine::{PolicyChecks, PolicyFinding, PolicyOutcome};
 /// The built-in final-newline check over candidates.
 use super::policy_final_newline::check_final_newline;
@@ -53,24 +57,34 @@ use super::policy_forbidden_strings::{
     unloaded_scanner,
 };
 use super::policy_markdown::{MarkdownState, check_markdown, markdown_state};
+/// The typed policy identities.
 use super::policy_registry::PolicyId;
 /// The optional root-context check over candidates.
 use super::policy_root_context::check_root_context;
+/// The lifecycle points.
 use super::policy_trigger::Trigger;
+/// The facts interface every check asks.
 use super::repository_facts::RepositoryFacts;
+/// Where a command runs,
+///  and the directory Git works in.
 use super::repository_location::{RepositoryLocation, effective_directory};
+/// The add-explicit rule core.
 use super::rule_add_explicit::{BULK_ADD_CODE, decide_add_explicit};
+/// The branch-worktree rule core.
 use super::rule_branch_worktree::{
     BRANCH_CREATION_CODE, BranchWorktreeDecision, branch_creation_message, decide_branch_worktree,
 };
+/// The linked-worktree rule core.
 use super::rule_linked_worktree::{
     LINKED_WORKTREE_REQUIRED_CODE, LinkedWorktreeDecision, decide_linked_worktree,
     resolve_linked_worktree,
 };
+/// The require-root rule core.
 use super::rule_require_root::{
     NOT_AT_ROOT_CODE, RequireRootDecision, RequireRootFacts, RequireRootVerdict,
     decide_require_root, resolve_require_root,
 };
+/// The worktree's top level.
 use super::worktree_identity::worktree_root;
 /// What:
 ///  `OsString` is owned operating-system text of raw bytes.
@@ -88,9 +102,6 @@ use super::worktree_identity::worktree_root;
 use std::ffi::OsString;
 /// `PathBuf` is an owned filesystem path of raw bytes.
 use std::path::PathBuf;
-
-/// What the dependent-version policy needs that is not ported.
-pub const DEPENDENT_VERSION_BUMP_NEEDS: &str = "planning dependent version bumps";
 
 /// What:
 ///  The shipped policies over one invocation.
@@ -367,28 +378,6 @@ fn check_add_explicit(arguments: &[OsString]) -> PolicyOutcome {
 }
 
 /// What:
-///  The check of a content policy that is not ported.
-///  `&LifecycleContent` borrows
-///       what the lifecycle offers;
-///  `needs` names what is missing.
-/// Why:
-///   No candidates means no findings;
-///  candidates nobody can check mean the policy
-///       cannot answer,
-///  which refuses the command instead of letting it through.
-///
-/// In TS you'd write (pseudocode):
-/// ```ts
-/// const unportedContent = (candidates, needs) => candidates.kind === 'none' ? clean() : { kind: 'unavailable', needs };
-/// ```
-fn unported_content(candidates: &LifecycleContent, needs: &'static str) -> PolicyOutcome {
-    match candidates {
-        LifecycleContent::None => return clean(),
-        LifecycleContent::Requested(_) => return PolicyOutcome::Unavailable(needs),
-    }
-}
-
-/// What:
 ///  `impl<F: RepositoryFacts> PolicyChecks for ShippedChecks<F>` provides the engine's
 ///       interface for the shipped policies,
 ///  for any facts provider `F`.
@@ -401,6 +390,15 @@ fn unported_content(candidates: &LifecycleContent, needs: &'static str) -> Polic
 /// check(policy: PolicyId, trigger: PolicyTrigger): Promise<PolicyOutcome> { switch (policy) { /* ... */ } }
 /// ```
 impl<F: RepositoryFacts> PolicyChecks for ShippedChecks<F> {
+    /// What:
+    ///  The outcome of one policy at one lifecycle point.
+    /// Why:
+    ///   Each arm calls the one check that owns the policy.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// check(policy: PolicyId, trigger: PolicyTrigger): PolicyOutcome;
+    /// ```
     fn check(&mut self, policy: PolicyId, trigger: Trigger) -> PolicyOutcome {
         // `&mut self.facts` lends the provider for writing; `.as_slice()` lends a list.
         match policy {
@@ -439,7 +437,12 @@ impl<F: RepositoryFacts> PolicyChecks for ShippedChecks<F> {
                 );
             }
             PolicyId::DependentVersionBump => {
-                return unported_content(&self.candidates, DEPENDENT_VERSION_BUMP_NEEDS);
+                return check_dependent_version(
+                    &mut self.content,
+                    &self.candidates,
+                    &mut self.facts,
+                    trigger,
+                );
             }
             PolicyId::ForbiddenStrings => {
                 return check_forbidden_strings(

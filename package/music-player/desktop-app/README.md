@@ -483,6 +483,16 @@ Leave it unset to follow the operating system's scheme.
 Any other value is logged and ignored, so the window follows the system.
 Verification runs use it to capture both schemes without changing the host's theme.
 
+## Typeface
+
+The window draws its text in Inter Variable, bundled from `ui/fonts/InterVariable.ttf`
+and registered by the `import` at the top of `ui/app_window.slint`,
+so Latin text looks the same on every machine.
+Inter has no CJK glyphs, so Japanese and other scripts still fall back to a system font.
+Inter is licensed under the SIL Open Font License 1.1 (`LICENSES/OFL-1.1.txt`).
+Text sizes are the logical pixel sizes in `ui/theme.slint`, and main text is 16px.
+The template editor's code fields keep `Noto Sans Mono`.
+
 ## Page navigation UX choices
 
 Wide windows show the full page-control grid beside the selected page's rows as two independent scroll containers,

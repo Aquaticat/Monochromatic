@@ -2,6 +2,9 @@
 // folder picker, transport deck, search, first run, scan indicator, feedback, track menu) and exposes the
 // engine-facing properties and callbacks that the Rust side binds. Width below 600 px uses the folded cover
 // layout; 600 px and wider uses the unfolded two-pane layout (D44, D47 to D77, D83 to D105).
+// Inter Variable (SIL OFL 1.1, see LICENSES/OFL-1.1.txt) is bundled so the text looks the same on every machine;
+// importing the file registers its family for `default-font-family` below.
+import "fonts/InterVariable.ttf";
 import { Palette } from "std-widgets.slint";
 import { Theme } from "theme.slint";
 import { TransportDeck } from "deck.slint";
@@ -32,6 +35,7 @@ export component AppWindow inherits Window {
     // OS font tracking (ui_font_scale): base size is set from Rust, the resolved OS size is reported back.
     in property <length> base-font-size;
     default-font-size: root.base-font-size;
+    default-font-family: "Inter Variable";
     out property <length> os-font-size: 1rem;
     callback probe-os-font(length);
     changed os-font-size => {
@@ -257,10 +261,16 @@ export component AppWindow inherits Window {
 
     // Unfolded layout: left pane has the folder header, folder picker and transport deck; right pane has
     // the track header and track list.
-    HorizontalLayout {
+    // Both panes are placed at exactly half the window each. A horizontal layout would hand out the space beyond each
+    // pane's preferred width, and the left pane's preferred width follows its folder names, so the split (and the
+    // Open pill with it) moved whenever the selected folder changed.
+    Rectangle {
         visible: root.unfolded;
         VerticalLayout {
-            horizontal-stretch: 1;
+            x: 0px;
+            y: 0px;
+            width: root.width / 2;
+            height: root.height;
             UnfoldedFoldersHeader {
                 open => { root.open-files(); }
             }
@@ -288,7 +298,10 @@ export component AppWindow inherits Window {
             }
         }
         VerticalLayout {
-            horizontal-stretch: 1;
+            x: root.width / 2;
+            y: 0px;
+            width: root.width / 2;
+            height: root.height;
             UnfoldedTrackHeader {
                 folder-title: root.folder-title;
                 show-search: root.library-available;

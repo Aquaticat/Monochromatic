@@ -127,7 +127,7 @@ export component FolderPickerPane inherits Rectangle {
                     property <bool> selected: !row.section-start && row.name == root.current-folder;
                     // Mirrors the root scroll request so a changed tick re-runs the scroll check below.
                     property <int> tick: root.scroll-tick;
-                    width: row.section-start ? names-flow.width : max(48px, name-label.preferred-width + 8px);
+                    width: row.section-start ? names-flow.width : max(48px, name-measure.preferred-width + 8px);
                     height: row.section-start ? self.section-gap + 38px : 48px;
                     changed tick => {
                         // Heading rows of the requested cell scroll the names so the heading sits at the top.
@@ -144,6 +144,14 @@ export component FolderPickerPane inherits Rectangle {
                         text: row.heading;
                         font-size: Theme.title-large;
                         color: Theme.primary;
+                    }
+                    // Width probe: the name at the heavier selected weight, never shown. Every name is sized by this one,
+                    // so selecting a name (which draws it heavier) never changes its width and the flow never re-wraps.
+                    name-measure := Text {
+                        visible: false;
+                        text: row.section-start ? "" : row.name;
+                        font-size: Theme.body-large;
+                        font-weight: 500;
                     }
                     // Name label: plain text in the 48 px target, empty for heading rows.
                     name-label := Text {

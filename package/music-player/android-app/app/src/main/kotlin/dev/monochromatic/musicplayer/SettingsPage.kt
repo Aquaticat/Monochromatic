@@ -39,15 +39,14 @@ import androidx.compose.foundation.layout.windowInsetsTopHeight
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 
-// What:     Imports from `androidx.compose.material3` and `androidx.compose.ui` bring in the list row, divider,
+// What:     Imports from `androidx.compose.material3` and `androidx.compose.ui` bring in the list row,
 //           colour, and semantics the page uses.
 // Why:      The rows are the platform's own list items, so they follow the theme and announce as buttons.
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// import { ListItem, HorizontalDivider, MaterialTheme, Modifier, Color, Role } from "material3";
+// import { ListItem, MaterialTheme, Modifier, Color, Role } from "material3";
 // ```
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
@@ -86,7 +85,6 @@ fun settingsPageContent(
         // ```
         Box(modifier = Modifier.fillMaxWidth().windowInsetsTopHeight(WindowInsets.statusBars))
         destinationHeader(title = "Settings", backDescription = "Back to player", onBack = onBack)
-        HorizontalDivider(thickness = DESTINATION_HAIRLINE, color = MaterialTheme.colorScheme.outline)
         // What:     `verticalScroll` lets the rows move when text is large, and the navigation-bar inset keeps the
         //           last row clear of the system bar.
         // Why:      Larger text grows the rows, so the list must scroll rather than clip.
@@ -106,7 +104,6 @@ fun settingsPageContent(
                     line = templateLines[template].orEmpty(),
                     onOpen = { onOpenTemplate(template) },
                 )
-                HorizontalDivider(thickness = DESTINATION_HAIRLINE, color = MaterialTheme.colorScheme.outlineVariant)
             }
         }
     }

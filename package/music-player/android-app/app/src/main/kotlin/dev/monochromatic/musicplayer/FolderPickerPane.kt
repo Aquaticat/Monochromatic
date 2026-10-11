@@ -77,6 +77,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -563,6 +564,20 @@ private fun folderNameTarget(name: String, selected: Boolean, onClick: () -> Uni
             },
         contentAlignment = Alignment.Center,
     ) {
+        // What:     A transparent copy of the name at the selected weight sets the target's width for every name.
+        // Why:      The selected name is drawn heavier and so wider; sizing each target by the heavier copy keeps
+        //           the flow's line breaks the same whichever folder is selected.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // <span style={{ fontWeight: 500, color: 'transparent' }} aria-hidden>{name}</span>
+        // ```
+        Text(
+            text = name,
+            modifier = Modifier.padding(horizontal = NAME_TEXT_PADDING).clearAndSetSemantics {},
+            color = Color.Transparent,
+            style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Medium),
+        )
         Text(
             text = name,
             modifier = Modifier.padding(horizontal = NAME_TEXT_PADDING),

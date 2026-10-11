@@ -158,6 +158,364 @@ maintainer-intent,
 and upstream-prototype conditions are not claimed or investigated.
 The consumer correction remains private.
 
+## Empty Git index lock interrupted setter documentation
+
+On 2026-10-11,
+main documentation process `proc_8254` stopped before `git add`.
+Cli-git emitted `index-lock-unproven-owner` after its 1000 ms unproven-owner budget.
+The existing user-owned lock was empty,
+device 55,
+inode 237840036,
+with modification time `2026-10-11T15:09:26.069Z`.
+
+Current-user process inspection found Git filesystem monitors,
+not an active Git writer.
+A first shell descriptor probe did not expose a holder and was not treated as a valid null control.
+Managed `proc_64ca` kept the parent shell alive after `fuser`;
+the positive control reported its PID 2340389.
+After that process exited,
+`fuser` reported no holder.
+
+The recovery rechecked the exact device,
+inode,
+size,
+user ID,
+and modification time before a non-overwriting move.
+The empty record was preserved as `~/temp/agent/auto-mode-main-index-lock-237840036.empty`.
+The source lock was then absent,
+and the preserved file retained zero bytes and its modification time.
+No index content,
+ref,
+or journal was restored.
+The scoped retry `proc_7a6b` completed as `b9f38eb1a4`.
+The creator and reason for the abandoned lock remain unknown.
+This follows the evidence-preserving procedure in
+[the separate empty-lock recovery](cli-git-superseded-index-recovery.md#separate-empty-index-lock-on-2026-10-09),
+not a generic permission to remove live locks.
+
+An earlier read-only status invocation emitted the logger's
+`sink verification failed for entry 3: Timed out after 5000ms: sink 3 verify`
+diagnostic before the command runner's ten-second timeout.
+A subsequent managed status completed.
+These observations do not prove the logger caused the lock or that its delay was fixed;
+see [the logger diagnostic](cli-git-logger-sink-verify-timeout.md).
+Neither incident is a failure of native setter capture.
+
+## Manager append capture invalidates emission-time policy sources
+
+### Original input loss before construction
+
+Pi 1.1.0 `dist/core/sdk.js:84` reads the manager's resolved context:
+
+```javascript
+// Pi 1.1.0 dist/core/sdk.js:84
+const existingSession = sessionManager.buildSessionContext();
+```
+
+The same function passes `existingSession.messages` into a literal Agent `initialState`.
+An original message can already be absent from that context.
+Required red `4c74fc7` / `proc_5d44` appended user text to an owned in-memory manager,
+then hid it with `appendContextEdit(id,null)`.
+Native delivery succeeded,
+but review failed
+`The original manager append input must survive a pre-construction context edit`.
+
+The original append API has a pre-body observation point:
+
+```javascript
+// Pi 1.1.0 dist/core/session-manager.js:827 to 837
+appendMessage(message) {
+    const entry = {
+        type: "message",
+        id: generateId(this.byId),
+        parentId: this.leafId,
+        timestamp: new Date().toISOString(),
+        message,
+    };
+    this._appendEntry(entry);
+    return entry.id;
+}
+```
+
+The selected fields must be captured before the incumbent private copy can reject the input.
+Installed `_appendEntry` does not perform that clone;
+private `contract/integration/native-batch/root-source.mjs` adds it.
+A private clone-rejection control is not installed-SDK clone parity.
+
+### Unrestricted capture conflicts with current source bindings
+
+Private `bf5aff8` observed every append invocation.
+The first consumer `proc_0975` stopped before review with
+`Observed request is no longer current`.
+Diagnostic `0f05a19` / `proc_323e` retained the original subscribed judgment-start error.
+It had cause
+`Native run prompt was replaced after this source snapshot`.
+There was one request,
+zero assessments,
+and no latched content-profile failure.
+
+Native Session persistence appended the assistant response before judgment start.
+The manager's new constructed input caused the run owner to publish a new retained-input view.
+The existing resource collector requires the original view:
+
+```javascript
+// Private contract/collector/rule-relevance-sdk-copy/stage-private/resource-owner.mjs:204
+if(readSessionRun(session)!==saved.run)
+  throw new SourceCollectionError('Native run prompt was replaced after this source snapshot');
+```
+
+Changing that check alone is not a remedy.
+Private `governing-source.mjs`,
+`registered-authority.mjs`,
+`run-messages.mjs`,
+and the judgment's rule index all use `receipt.sources`.
+Allowing new membership without changing those bindings would silently omit it from policy review.
+
+### Bounded implementation and remaining gap
+
+The completed initial checkpoint observed appends only before the first original Session context-copy attachment.
+It reuses the existing one-way `contextCopyAttached` state and manager input pool.
+It adds neither a temporary mute window nor authentication by native callsite.
+The source origin is `native-manager-initial-input`;
+the `managerInput` location has method metadata and no fabricated ordinal.
+
+Narrowed `740ffae` / `proc_22d7` passed the canonical pre-attachment consumer.
+Run private `test:manager-append-source` through `mise --no-env --no-hooks run`.
+The original hidden input remained available without appearing in the original model-request body
+or gaining authority or payload eligibility.
+`ffa4e19` / `proc_f1e3` also passed private clone rejection:
+no entry was inserted,
+but the original input still reached review.
+
+Owner `9c9885b` / `proc_0d67` passed profile and shared-bound controls.
+Its negative-zero red exposed argument normalization by JSON serialization;
+the profile now rejects negative zero and undefined argument values,
+while a positive-zero control passes.
+Native `3e4dfd2` / `proc_7543` passed actual strict frames,
+private-copy/reentry/getter/proxy parity,
+original unexpected errors,
+and attachment/reset lifetime controls.
+Its comparison removes only the new hook from a disposable private generated manager.
+It does not claim installed-SDK cloning parity.
+Integrated `proc_4882` passed 128 constructed-input outputs with empty child stderr.
+
+All four deliberate omissions failed their intended controls:
+`proc_d58c` lost original input,
+`proc_1c79` lost clone-rejected input,
+`proc_2dbc` reproduced the pre-review snapshot failure,
+and `proc_a769` admitted an unsupported content block.
+All guards are restored,
+with empty runtime diff against `9c9885b`.
+Complete one-shot native `proc_9e75` passed in 624 seconds,
+with the 128-output constructed-input matrix and all six full-policy profiles.
+Complete action-policy and policy-source suites passed `proc_3bea`.
+Only documentation changed during those runs.
+Outcome document checkpoint `proc_a64d` passed all 14 documents with zero diagnostics.
+
+This does not account for post-attachment manager appends.
+Those potentially governing inputs remain unresolved.
+Do not infer that native persistence is nongoverning,
+drop it by role,
+defer it silently to another request,
+or relax a retired receipt.
+Broader support needs coherent original-request and judgment source bindings,
+not just a freshness exception.
+That checkpoint implemented no such contract change.
+The subsequent handoff is described in "Current judgment sources without changing emitted material".
+
+This is private integration behavior,
+not an upstream SDK fault.
+Upstream fault is not established;
+upstream fixability,
+supported-use,
+contribution acceptance,
+maintainer intent,
+and prototype conditions are not claimed.
+There is no external filing or additive upstream report.
+
+### Current judgment sources without changing emitted material
+
+Post-attachment required red `b650661` / `proc_72ea` completed a native request and assessment,
+but failed to retain an append hidden by a null context edit after Session attachment.
+Connected `6f71097` / `proc_dc02` passed that consumer using a separate judgment-source binding.
+The original receipt,
+request body,
+emission snapshot,
+and material contributions remain historical original observations.
+
+The private collector's existing `snapshots` ownership map authenticates both snapshots.
+The handoff requires unchanged policy/resource/base identities and copied material,
+unchanged non-retained run fields,
+and an exact original-reference prefix extended only by unregistered manager inputs.
+Judgment indexing,
+wire content,
+and manager input views use the bound current snapshot.
+The resource collector's strict check is not weakened.
+After binding,
+any further source change retires the original judgment.
+The emission-only `system-view.mjs` profile intentionally refuses the expanded source set.
+
+Run `mise --no-env --no-hooks run test:manager-live-paths`
+from private `contract/integration/native-batch`.
+`a4a7b43f` / `proc_9b65` passed hidden inputs,
+a host-called public `message_end`,
+post-emission text and system-tool inputs,
+and post-binding retirement.
+The checks require exact `originalRequestBody`,
+new sources in judgment/wire but not emission sources,
+and native assistant persistence in the current source set.
+All cases made no protected execution or provider requests.
+`proc_4412` passed owner and handoff controls,
+including irreversible failure,
+reentry,
+root/cancellation/generation changes,
+and the narrow profile's refusal.
+Its non-native reader and producer adapters are explicit;
+those controls are not additional native Session executions.
+
+### Handoff lifecycle and wiring sensitivity
+
+Native lifecycle `12ea892b` / `proc_83f6` passed the handoff clock positive control,
+expiry during source comparison before judgment publication,
+unchanged-view capture failure,
+shared occurrence exhaustion,
+and late reset,
+disposal,
+reload,
+and oversized input.
+The clock is an explicit fixture;
+the Session and judgment paths are native.
+The positive control retains the original 5000-millisecond deadline.
+Expired handoff work sends no assessment and publishes no judgment.
+`7e7edd94` / `proc_2872` also retained a post-emission append rejected by the private clone.
+No entry insertion,
+authority,
+or successful persistence is inferred from capturing that input.
+
+Constructed-input regression `e32496ec` / `proc_a9e3` passed 133 outputs with empty child stderr.
+The newly integrated lifecycle and clone cases still need the full native parent.
+Indexed-question positive control `fb444692` / `proc_4150` passed.
+Omitting observation or current message-source binding lost the original input.
+Omitting the handoff or current governing-source binding caused stale-snapshot failure.
+Omitting current indexing failed wire source/ordinal coherence.
+Omitting copied-material equality admitted changed adapter material.
+All omissions are restored in `54575a9a`,
+with an empty scoped runtime diff against `7e7edd94`.
+The complete action-policy and policy-source suites passed `proc_417a`,
+with 29 successful result records.
+Full native `proc_a3df` stopped in `default-payload-copy` because no review was returned.
+Its original exception was not retained,
+so no cause is established.
+The isolated native-default/copy pair passed `96a0c52e` / `proc_e195` without a runtime change;
+that later pass is not a diagnosis or fix.
+The second parent `proc_b1f3` stopped in the distinct `carrier-bound` case,
+whose original exception was also not retained.
+Both fixtures now retain batch errors and report total judgment-start to reviewed time.
+Repeated configurations passed `bef690b2` / `proc_a7bd`:
+carrier-bound totals were 4984.015445,
+5402.251908,
+and 5789.265434 milliseconds;
+copy-case totals were 971.362350,
+914.014512,
+and 1024.266656 milliseconds.
+These include work after evidence closure and are not deadline-failure measurements.
+Neither failed parent has an established cause or a claimed runtime fix.
+Parent `proc_05da` passed 35 complete prefix outputs,
+including 142 constructed-input cases and 69 section cases,
+then stopped at an older original-judgment source-list expectation.
+`adfb8fd9` / `proc_a45e` passed the corrected source-list assertions in all four variants.
+The assertions retain exact manager source references,
+roles,
+content,
+and emission-versus-judgment membership.
+Prompt and handler fixtures also needed their newly captured persistence inputs counted.
+Those corrections passed `proc_5415` and `proc_7fa1` before the next boundary was reached.
+Diagnostic `9f8e832f` / `proc_b4f5` measured 69 frozen sources in a shared-session carrier case,
+exceeding the unchanged 64-source limit.
+Independent carrier cases now use disposable sessions;
+the original shared-session rejection is retained as a separate bound control.
+Runtime suffix `eaa78d4a` / `proc_5185` passed all 39 result records,
+including the retained bound rejection and all six full-policy profiles.
+The final one-shot native parent `3ea75e62` / `proc_d937` then passed:
+82 complete result records,
+142 constructed-input cases,
+69 section cases,
+and all six full-policy profiles.
+The parent had no nonroutine stderr;
+child matrices reported empty stderr.
+Complete action-policy and policy-source verification passed `proc_417a`.
+All deliberate omissions remain restored.
+Only documentation and standalone,
+non-wired intake tests changed during the final parent.
+The earlier unattributed parent failures remain historical failures,
+not explained by this later pass.
+
+The governing-source omission first exposed no original reviewer error in judgment finalization.
+An `evidence-closed` record is not a completed policy review.
+A fixture-only batch wrapper retained the propagated exception:
+`PreparedBatchExecutionError` contains
+`SourceCollectionError: Native run prompt was replaced after this source snapshot`.
+The indexing omission separately retained
+`RuleAssessmentWireError: Selected clause differs from its complete source`.
+Do not merge these with capture-profile failures or infer causes from an empty failure field.
+
+### Preserve received system tool records
+
+Source review identified a separate omission:
+the manager system selector kept `content` and `sections`
+but dropped `toolsAdded` and `toolsRemoved`.
+Owner red `d8175179` / `proc_3b4d` reported `AssertionError [ERR_ASSERTION]`
+with the missing declaration description,
+schema prose,
+constrained-sampling configuration,
+and removal record in the expected source.
+This is a private selector error,
+not a Pi producer defect.
+
+Pi AI 1.1.0 already normalizes parameters before publishing its declaration:
+
+```javascript
+// Pi AI 1.1.0 dist/utils/transcript.js:106 to 113
+export function toToolDeclaration(tool) {
+    return {
+        name: tool.name,
+        description: tool.description,
+        parameters: JSON.parse(JSON.stringify(tool.parameters)),
+        ...(tool.constrainedSampling === undefined ? {} : { constrainedSampling: tool.constrainedSampling }),
+    };
+}
+```
+
+Private `1c6985cf` retains the received arrays under the existing manager copier budget,
+without calling that normalization again.
+The incumbent `native-content-json` encoding carries their complete supported JSON records.
+Accessors,
+proxies,
+negative zero,
+and undefined nested values fail the selected profile without changing native operation behavior.
+Manager initial/current phases share this selector;
+loaded,
+Agent prompt,
+and setter profiles are unchanged.
+`proc_88a2` passed the owner red after correction,
+and the real post-emission declaration/removal consumer passed `proc_9b65`.
+
+The complete native parent,
+action/source regressions,
+and wiring sensitivity in "Handoff lifecycle and wiring sensitivity" passed.
+Additional original fields can exhaust the unchanged source and aggregate bounds sooner.
+Upstream tool-definition inputs before declaration production,
+images,
+complete governing scope,
+and semantic qualification remain independent gaps.
+Do not replace the handoff with a freshness exception,
+role-based exclusion,
+source deduplication,
+or a new request encoding.
+Installed sources remain unchanged.
+The private-ownership filing decision in "Bounded implementation and remaining gap" still applies;
+there is no new upstream fault or filing artifact.
+
 ## Direct Agent state assignments bypass prompt and queue capture
 
 ### Symptom and native setter
@@ -228,6 +586,70 @@ and unexpected observer errors.
 Run private `test:agent-state-native` and `test:agent-state-paths`
 as separate `mise --no-env --no-hooks run` invocations.
 
+### Retained-projection fixture reconciliation
+
+Restored `8cb4a62` / `proc_d6c9` exposed a legacy fixture that used public assignment
+to imitate native projection refresh.
+Its expected request count was four,
+but only two requests completed.
+Diagnostic `d36500e` / `proc_8730` checked the capture latch immediately after assignment
+and exposed `Native Agent input requires a supported text-message role`.
+This was profile rejection,
+not merely a changed occurrence count.
+
+The selected public-input profile rejects unsupported roles in `loaded-inputs.mjs:33`.
+The fixture instead needs native projection behavior.
+Pi 1.1.0 `dist/core/agent-session.js:1016` provides it:
+
+```javascript
+// Pi 1.1.0 dist/core/agent-session.js:1016 to 1018
+refreshContext() {
+    this._refreshFinalizedContext();
+}
+```
+
+The declaration in `dist/core/agent-session.d.ts:388` is synchronous:
+
+```typescript
+// Pi 1.1.0 dist/core/agent-session.d.ts:388
+refreshContext(): void;
+```
+
+Private `37124ab` uses that real method for compaction/edit/fork projection fixtures.
+The explicit stale-path clear remains an ordinary observed assignment,
+with its new empty-array source asserted.
+`proc_eff0` passed all 43 expanded/retained modes with empty child stderr.
+The separate direct-equal-projection negative remains in `agent-state-native.test.mjs`.
+No text profile,
+source count,
+or byte bound was relaxed.
+
+The tradeoff is intentional:
+public assignment of a derived projection is still a fresh host input,
+whereas native refresh identifies a maintained internal derivation.
+After adding an observation point,
+inspect maintained fixture writes to distinguish those operations before broad regression runs.
+
+### Setter sensitivity and fixed owner
+
+All five omissions failed their intended assertions:
+`proc_0ef3` lost erased input,
+`proc_b838` accepted a forged token,
+`proc_4a25` bypassed a replacement setter,
+`proc_8953` reminted constructor projection,
+and `proc_c53f` reached a config getter before capability rejection.
+All guards were restored.
+Both scoped runtime diff and exhaustive changed-path inventory were checked against `7d42311`.
+
+Extended native `69deaca` / `proc_be71` passed shared count and serialized-byte bounds,
+native assignment despite expected profile failure,
+direct constructor-callback writes,
+and real direct Sessions sharing one attached Agent.
+An unqualified second Session does not receive or replace the first Agent's attachment.
+Its ordinary writes are observed by that Agent's fixed original input owner.
+This does not authenticate the calling Session or transfer governing scope.
+Multi-Session sharing is not claimed as qualified execution.
+
 ### Limits and filing decision
 
 The internal route identifies its operation only.
@@ -236,9 +658,12 @@ In-place array mutation,
 constructor state,
 and replacing state objects or descriptors remain separate gaps.
 All existing source limits and admission holds remain unchanged.
-Integrated,
-sensitivity,
-and complete regression checks are still pending.
+Integrated and restored sensitivity checks passed.
+Complete one-shot native parent `proc_428d` passed in 719 seconds,
+including the current constructed-input matrix and all six full-policy profiles.
+Complete action-policy and policy-source suites passed `proc_b3aa`.
+Only documentation changed during regression execution.
+Outcome document checkpoint `proc_99f8` passed all 14 documents with zero diagnostics.
 
 Nothing is proposed upstream.
 The SDK setter behaved as written;

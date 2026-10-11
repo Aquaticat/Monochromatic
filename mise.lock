@@ -448,6 +448,10 @@ backend = "cargo:fd-find"
 version = "0.1.1"
 backend = "cargo:monochromatic-lint"
 
+[[tools."cargo:monochromatic-nested-wayland-session"]]
+version = "0.1.2"
+backend = "cargo:monochromatic-nested-wayland-session"
+
 [[tools."cargo:slint-lsp"]]
 version = "1.18.1"
 backend = "cargo:slint-lsp"

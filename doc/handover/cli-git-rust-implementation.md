@@ -989,8 +989,9 @@ Evidence in `doc/handover/cli-git-native-content-policies.md`.
   `final-newline`,
   `security/forbidden-strings` (with the `rulesFile` option, then `FORBIDDEN_STRINGS_RULES`, then the default file)
   and `mono/forbidden-root-context`.
-  It still refuses, with exit 2 and one line, whenever `markdown/autofix` or `mono/dependent-version-bump` is enabled
-  and there are candidates.
+  It still refuses, with exit 2 and one line, whenever `markdown/autofix` is enabled and there are candidates.
+  `mono/dependent-version-bump` no longer refuses: it is wired on `feat/cli-git-native-dependent-version`
+  (see `doc/handover/cli-git-native-dependent-version.md`, section "Wiring into the native executable").
 - `git add` costs a fixed 6 Git processes and a direct command 5, for 1, 20 or 200 files.
 - Failures carry `content-unavailable` or `policy-incomplete` by cause,
   and engine-failure events never carry a candidate pathname.
@@ -1544,6 +1545,13 @@ that is verification, not a decision for the user.
   Locks, journal, capture, shadow repository, preparation, policies, landing, replay, recovery and the worktree copy
   keep full mutation gating.
   Features do not trail: signals, automatic maintenance and the linked-worktree copy are part of the cutover.
+  Widened on 2026-10-11 (user: "I authorize moving more mutation to trail the cutover"):
+  the lane mutation campaigns that were in flight (capture, replay-core, worktree-copy, the auto-push timeout reruns
+  and the slice 3 rerun) were stopped and now trail the cutover too,
+  after each lane's container gate and planted controls.
+  Each lane's `Trailing gates` heading holds what ran (mutants done, survivors and the tests that killed them)
+  and the exact rerun commands.
+  Mutation for the serial slices 6, 7 and 9 and the closing gates stays in the cutover until the user widens it again.
   Each lane records what it skipped under a `Trailing gates` heading in its evidence file.
   Trailing is not stopping (user, 2026-10-10): the cutover does not end the work.
   Right after it, without a pause, the queue continues with these gates in the order listed

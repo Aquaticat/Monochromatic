@@ -35,5 +35,7 @@ pub mod batch;
 ///  with their invariants.
 pub mod content;
 
+/// Generated manifests and raw text through the dependent-version rewrite and specifier scan.
+pub mod dependent_version;
 /// Linter output, event paths and the one-rule configuration of the Markdown policy, with their invariants.
 pub mod markdown;
