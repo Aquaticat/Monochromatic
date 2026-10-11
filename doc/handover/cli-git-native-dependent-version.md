@@ -1198,3 +1198,31 @@ Not done yet:
   Any timed-out mutant is rerun alone with `--timeout 300` (temporary runner edit, restored afterwards, as before).
 - Lint: `format:monochromatic-lint` reports `rust/no-anonymous-functions` warnings in `policy_dependent_version.rs`
   (lines 226, 311, 312) and `policy_dependent_version_tests.rs` (lines 50, 289). Not addressed.
+
+## Lint refactor, gate and scoped mutation on 3186bb316c
+
+The Rust linter (`format:monochromatic-lint`) reported `rust/no-anonymous-functions` for five closures in
+`policy_dependent_version.rs` and its tests. Commit `3186bb316c` names them: `unreadable_failure`,
+`is_listed_change` and `candidate_path` in the planner, `dependency_block` and `b_patch_conflict` in the tests.
+The linter reports nothing for those two files afterwards.
+
+Gate on `3186bb316c`, evidence `package/git-policy/cli/target/verification/native-5aXXmC`
+(`passed.json`: tests and Clippy true; run through `~/temp/agent/gate-slot.ts`, log `~/temp/agent/dv-gate/gate6.log`):
+736 unit passed, 1 ignored; 49 binary passed; 1 consumer passed.
+
+Scoped mutation over `src/native/policy_checks.rs` and `src/native/policy_dependent_version.rs` on the same gate image
+(evidence `native-mutation-oI9441`, log `~/temp/agent/dv-gate/mutation-8.log`):
+`cargo mutants` ran 34 mutants: 10 caught, 21 unviable, 3 missed, 0 timeouts.
+No timeout occurred, so no solo rerun was needed.
+
+The 3 missed mutants are in `is_listed_change` (`policy_dependent_version.rs:204`), the helper that the lint refactor
+created from the filter that section "The surviving mutant is equivalent after the candidate fix" justifies:
+`is_listed_change -> true`, `is_listed_change -> false` and `!= -> ==` in it.
+The same proof applies unchanged, because the helper is the same filter and has the same single reader (the `UNLISTED` loop).
+On every route that reaches the planner the listing check cannot refuse, so no mutant of the filter changes an outcome.
+The earlier campaign on `1899e041ef` recorded the same survivor at the old line 255.
+
+Rerun commands, for a later rerun after a land or a merge:
+
+- Gate: `GIT_POLICY_NATIVE_IMAGE_TAG=dependent-version node ~/temp/agent/gate-slot.ts mise run //package/git-policy/cli:native:test:container`
+- Mutation: `GIT_POLICY_NATIVE_IMAGE_TAG=dependent-version node ~/temp/agent/gate-slot.ts mise run //package/git-policy/cli:native:mutation:scoped -- --file 'src/native/policy_checks.rs' --file 'src/native/policy_dependent_version.rs'`
