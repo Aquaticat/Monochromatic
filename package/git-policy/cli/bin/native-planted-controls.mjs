@@ -119,7 +119,7 @@ const plantedControls = [
     file: 'src/native/signal_relay.rs',
     from: 'if !is_process_sender(code) {',
     to: 'if false {',
-    failing: 'signal_relay::tests::terminal_interrupt_is_not_relayed_a_second_time',
+    failing: 'signal_relay::tests::handler_marks_a_signal_only_for_a_process_sender',
   },
   {
     name: 'signal relay in the handler',
@@ -159,8 +159,8 @@ const plantedControls = [
   {
     name: 'hk exact prefix',
     file: 'src/native/maintenance_hk_config.rs',
-    from: 'pair[1].starts_with(HK_HOOK_PREFIX)',
-    to: 'pair[1].starts_with("hook.")',
+    from: 'key.starts_with(HK_HOOK_PREFIX)',
+    to: 'key.starts_with("hook.")',
     failing: 'maintenance_hk_config::tests::prefix_match_is_exact',
   },
 ];

@@ -157,6 +157,34 @@ fn guard_catches_the_four_signals() {
     );
 }
 
+/// The handler marks a signal for relay only when a process sent it, so a terminal sender leaves the slot empty.
+///
+/// The handler runs directly with no child recorded, so nothing is sent and the slot shows the decision.
+#[cfg(unix)]
+#[test]
+fn handler_marks_a_signal_only_for_a_process_sender() {
+    // SAFETY: a zeroed `siginfo_t` is a valid buffer; only its header fields are written below.
+    let mut info: libc::siginfo_t = unsafe { std::mem::zeroed() };
+    let header: *mut SignalHeader = (&mut info as *mut libc::siginfo_t).cast::<SignalHeader>();
+    // SAFETY: `header` points into the live `info` buffer above.
+    unsafe { (*header).code = libc::SI_KERNEL };
+    relay_handler(libc::SIGINT, &mut info, std::ptr::null_mut());
+    assert_eq!(
+        PENDING[0].load(std::sync::atomic::Ordering::SeqCst),
+        0,
+        "a terminal sender is not marked for relay"
+    );
+    // SAFETY: as above.
+    unsafe { (*header).code = libc::SI_USER };
+    relay_handler(libc::SIGINT, &mut info, std::ptr::null_mut());
+    assert_eq!(
+        PENDING[0].load(std::sync::atomic::Ordering::SeqCst),
+        libc::SIGINT,
+        "a process sender is marked for relay"
+    );
+    PENDING[0].store(0, std::sync::atomic::Ordering::SeqCst);
+}
+
 /// One guard may be active at a time in a process.
 #[test]
 fn a_second_guard_is_refused_until_the_first_is_dropped() {
