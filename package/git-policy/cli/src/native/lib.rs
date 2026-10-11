@@ -521,3 +521,21 @@ pub mod index_writer_coordination;
 
 /// Running a coordinated forwarded index writer: the landing lock held while real Git runs as a child.
 pub mod index_writer_forward;
+
+/// The one failure type of the linked-worktree ignored-state copy and its diagnostics.
+pub mod worktree_copy_error;
+
+/// Which linked worktrees a worktree-creating Git command registered, before and after it ran.
+pub mod worktree_copy_registry;
+
+/// The ignored source paths a linked-worktree copy selects, and the path validation every selection passes.
+pub mod worktree_copy_selection;
+
+/// The deterministic parent-first manifest of a copy, and the mode application to a staged copy.
+pub mod worktree_copy_manifest;
+
+/// Exact comparison of manifest entries against the filesystem, and the source stability check after staging.
+pub mod worktree_copy_compare;
+
+/// The private, validated stage of one source's ignored state beside a destination worktree.
+pub mod worktree_copy_stage;
