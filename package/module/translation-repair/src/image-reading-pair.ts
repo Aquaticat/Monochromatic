@@ -307,7 +307,9 @@ export function isResumableReading({ reading, }: { readonly reading: PairedReadi
  @returns Corroborated readings, or why none may be used
 
  @throws {@link DOMException} when `signal` aborts, since a run told to stop
- must not settle a document on the readings that beat the stop. Every other
+ must not settle a document on the readings that beat the stop, once every
+ reader has ended and each one's own failure, other than the caller's reason
+ itself, is written on a line naming it, in roster order. Every other
  failure a reader raises, the deterministic reader and each model alike, is
  contained: a model reader as an unavailable reading for that reader alone, the
  deterministic reader as an unavailable gate, after which the models are asked
@@ -418,14 +420,6 @@ export async function readImagePair(
     };
   },),);
 
-  // The entry's own abort has to stay a FAILURE rather than become two
-  // unreadable pictures. `allSettled` swallows every ask a teardown rejected,
-  // so a stop arriving mid-reading would otherwise return `no-reader-available`
-  // and let the document settle without the readings the run was told to stop
-  // gathering. This is the guard `runGatherRound` places after its own
-  // `allSettled`, for the same reason.
-  signal.throwIfAborted();
-
   /**
    What every reader made of the picture, with a reader that failed outright
    carrying its failure rather than taking the others down with it.
@@ -473,11 +467,22 @@ export async function readImagePair(
           String(index,)
         }, though each settlement is the ask the roster slot at its own index made`,
       );
-    rl.warn(
-      `${assetName}: ${modelId} failed outright, so it contributes no reading (${
-        exchangeFailureLogText({ error: result.reason, },)
-      })`,
-    );
+    /**
+     The reader's own failure as a log line carries it: a refusal with its
+     status and the provider's words.
+     */
+    const failure = exchangeFailureLogText({ error: result.reason, },);
+    // UNDER THE CALLER'S STOP the reader's own failure is still written, here,
+    // since the stop is raised once every settlement is read and no catch past
+    // it sees this one; the caller's own reason is the stop itself and is not
+    // written. Written from the settlements rather than inside each reader as
+    // it ends, so the lines follow roster order whichever reader ended first
+    // (`mistake-prevention.md`, "Output decided by arrival order"), and a
+    // failure that ended before the stop arrived is written as well.
+    if (signal.aborted && (result.reason !== signal.reason))
+      rl.warn(`${assetName}: ${modelId} failed outright (${failure}), and the caller stopped the reading`,);
+    if (!signal.aborted)
+      rl.warn(`${assetName}: ${modelId} failed outright, so it contributes no reading (${failure})`,);
     return {
       modelId,
       reading: {
@@ -486,6 +491,16 @@ export async function readImagePair(
       },
     };
   },);
+
+  // The entry's own abort has to stay a FAILURE rather than become two
+  // unreadable pictures. `allSettled` swallows every ask a teardown rejected,
+  // so a stop arriving mid-reading would otherwise return `no-reader-available`
+  // and let the document settle without the readings the run was told to stop
+  // gathering. This is the guard `runGatherRound` places after its own
+  // `allSettled`, for the same reason. It stands after `contained`, which
+  // only renders each settlement and writes a failed reader's line, so every
+  // reader's own failure is written before the stop is raised.
+  signal.throwIfAborted();
 
   /**
    Readings that arrived, labelled by model.

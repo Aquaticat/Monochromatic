@@ -13,7 +13,7 @@ import {
   syntheticMeterLevel,
 } from './budget-routing.ts';
 import type { SyntheticClient, } from './chat-contract.ts';
-import { errorName, } from './error-name.ts';
+import { exchangeFailureLogText, } from './exchange-failure-text.ts';
 import type { HyperClient, } from './hyper-client.ts';
 import type { OpenRouterClient, } from './openrouter-client.ts';
 import type {
@@ -124,11 +124,15 @@ export type MeterRecord = {
 
  @param readLevel - meter read, which may reject
 
- @returns What that meter said and was reading, or that it could not be read
+ @param signal - signal the read honours, whose own reason is the caller's
+ stop rather than a meter that could not be read
+
+ @returns What that meter said and was reading, or that it could not be read,
+ a read the caller stopped included
 
  @example
  ```ts
- const meter = await meterRecordOf({ name: 'hyper', readLevel, },);
+ const meter = await meterRecordOf({ name: 'hyper', readLevel, signal, },);
  ```
 
  @internal
@@ -137,9 +141,11 @@ export async function meterRecordOf(
   {
     name,
     readLevel,
+    signal,
   }: {
     readonly name: ProviderName;
     readonly readLevel: () => Promise<MeterLevel>;
+    readonly signal: AbortSignal;
   },
 ): Promise<MeterRecord> {
   /**
@@ -165,9 +171,24 @@ export async function meterRecordOf(
   } catch (error) {
     // A monitoring failure must not become an outage: the router's failover
     // still recovers a real refusal, and a false dry stops calls that work.
+    //
+    // THE CALLER'S OWN STOP IS NAMED AS ONE, not as a meter that could not
+    // be read: the meter said nothing because nobody waited for it (ledger
+    // B403 left this open). It still records `unreadable`, since the reading
+    // is shared and its first caller's stop resolves it for every sharer
+    // (`takeReading` in `provider-budget.ts`).
+    if (signal.aborted && (error === signal.reason)) {
+      rl.warn(`${name}: budget not read, since the caller stopped the reading; treating as spendable`,);
+      return {
+        state: 'unreadable',
+        fields: [],
+      };
+    }
+    // Rendered as a stage's lost voice is, so a refusal keeps its status and
+    // the provider's words, the key masked where the transport built it.
     rl.warn(
       `${name}: budget unreadable, treating as spendable (${
-        errorName({ error, },)
+        exchangeFailureLogText({ error, },)
       })`,
     );
     return {
@@ -235,6 +256,7 @@ export async function readEveryMeter(
       ? Promise.resolve(UNCONFIGURED_METER,)
       : meterRecordOf({
         name: 'synthetic',
+        signal,
         readLevel: async function readQuota(): Promise<MeterLevel> {
           /**
            Snapshot the verdict and the numbers are both drawn from.
@@ -251,6 +273,7 @@ export async function readEveryMeter(
       ? Promise.resolve(UNCONFIGURED_METER,)
       : meterRecordOf({
         name: 'hyper',
+        signal,
         readLevel: async function readCredits(): Promise<MeterLevel> {
           /**
            Balance the verdict and the number are both drawn from.
@@ -267,6 +290,7 @@ export async function readEveryMeter(
       ? Promise.resolve(UNCONFIGURED_METER,)
       : meterRecordOf({
         name: 'bedrock',
+        signal,
         readLevel: async function readBedrockCredits(): Promise<MeterLevel> {
           /**
            Ledger reading the verdict and the number are both drawn from.
@@ -283,6 +307,7 @@ export async function readEveryMeter(
       ? Promise.resolve(UNCONFIGURED_METER,)
       : meterRecordOf({
         name: 'openrouter',
+        signal,
         readLevel: async function readOpenRouterCredits(): Promise<MeterLevel> {
           /**
            Credits the verdict and the number are both drawn from.

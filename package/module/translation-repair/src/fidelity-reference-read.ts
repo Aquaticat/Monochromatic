@@ -1,7 +1,10 @@
+import { tagged, } from '@monochromatic-dev/module-logger/ts';
+
 import {
   type CorpusPin,
   readCorpusFile,
 } from './corpus-source.ts';
+import { exchangeFailureLogText, } from './exchange-failure-text.ts';
 import { buildReviewedFidelityReference, } from './fidelity-reference-build.ts';
 import { FidelityReferenceError, } from './fidelity-reference-error.ts';
 import { REVIEWED_FIDELITY_REFERENCES, } from './fidelity-reference-manifest.ts';
@@ -10,10 +13,16 @@ import type {
   ReviewedFidelityReference,
 } from './fidelity-reference-model.ts';
 import { selectReviewedFidelitySpecs, } from './fidelity-reference-select.ts';
+import { contextRoot, } from './log-context.ts';
 import { mapOverlapped, } from './overlapped-map.ts';
 
 //region Pinned reviewed-reference acquisition
 // Calibration owns a fixed reviewed manifest, not an opportunistic first-long-archive selection.
+
+/**
+ Logger root for the reference read, which takes no logger of its own.
+ */
+const l = contextRoot({ tag: 'translation-repair', },);
 
 /**
  Reads reviewed reference inputs from their immutable corpus pin.
@@ -33,6 +42,10 @@ import { mapOverlapped, } from './overlapped-map.ts';
  @throws {@link FidelityReferenceError} for unreviewed filters, pin drift or invalid metadata
 
  @throws {@link CorpusReadError} when a pinned file is unavailable
+
+ @throws The caller's reason when `signal` aborts, once a reference's two page
+ reads have settled and each one's own failure is written on a line naming the
+ reference and the page
 
  @example
  ```ts
@@ -99,6 +112,44 @@ export async function readReviewedFidelityReferences({
           relPath: `people/${spec.entryId}/page.en.md`,
         },),
       ],);
+      // A PAGE'S OWN FAILURE IS WRITTEN BEFORE THE STOP IS RAISED, since the
+      // stop throws in place of both reads and no catch past it sees either.
+      // The reads take no signal, so a failure here is always the read's own;
+      // written once both have settled, the source page's first, whichever
+      // ended first (`mistake-prevention.md`, "Output decided by arrival
+      // order").
+      if (signal?.aborted === true) {
+        /**
+         Logger tagged with this reference read.
+         */
+        const rl = tagged({
+          tag: readReference.name,
+          l,
+        },);
+        for (
+          const {
+            page,
+            read,
+          } of [
+            {
+              page: 'source page',
+              read: sourceRead,
+            },
+            {
+              page: 'archive page',
+              read: archiveRead,
+            },
+          ]
+        ) {
+          if ((read.status === 'rejected') && (read.reason !== signal.reason)) {
+            rl.warn(
+              `${spec.id}: the ${page} could not be read, and the caller stopped the read: ${
+                exchangeFailureLogText({ error: read.reason, },)
+              }`,
+            );
+          }
+        }
+      }
       signal?.throwIfAborted();
       if (sourceRead.status === 'rejected')
         throw sourceRead.reason;

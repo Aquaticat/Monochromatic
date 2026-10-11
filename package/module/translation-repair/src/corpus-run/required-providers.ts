@@ -134,20 +134,28 @@ export function readRequiredProviders(
 
  @param readDry - live meter read answering whether the provider is dry
 
+ @param signal - caller's signal the meter read honours, whose own reason is
+ the caller's stop rather than a meter that could not be read
+
  @throws {@link RequiredProviderError} when the meter reads dry or cannot be read
+
+ @throws The caller's reason unchanged, with no line, when the read ended in
+ it, since the caller stopping the gate says nothing about the meter
 
  @example
  ```ts
- await gateProvider({ provider: 'hyper', readDry, },);
+ await gateProvider({ provider: 'hyper', readDry, signal, },);
  ```
  */
 async function gateProvider(
   {
     provider,
     readDry,
+    signal,
   }: {
     readonly provider: ProviderName;
     readonly readDry: () => Promise<boolean>;
+    readonly signal: AbortSignal;
   },
 ): Promise<void> {
   /**
@@ -157,6 +165,14 @@ async function gateProvider(
     try {
       return await readDry();
     } catch (error) {
+      // THE CALLER'S OWN STOP IS NO METER FAILURE (ledger B403 left this
+      // open): written as one, it read as a meter that could not be read and
+      // refused the arm as `meter unavailable` in place of the stop. It goes
+      // on unchanged and unwritten, as a stage call's does. A failure of the
+      // read's own, a deadline or a refusal that landed as the stop arrived,
+      // is still written with the provider's words and refuses the arm.
+      if (signal.aborted && (error === signal.reason))
+        throw error;
       // Every meter failure refuses the arm alike, and the refusal names only
       // the provider, so what failed is written to the log here (ledger T8).
       /**
@@ -196,6 +212,11 @@ async function gateProvider(
  @param signal - meter cancellation
 
  @throws {@link RequiredProviderError} before model call when requirement fails
+
+ @throws The caller's reason when `signal` aborts and the first required
+ provider in order ends its meter read in it; a meter read that fails of its
+ own as the stop lands is written with the provider's words and refuses as
+ any unreadable meter does
 
  @example
  ```ts
@@ -261,6 +282,7 @@ export async function assertRequiredProvidersReady(
           readDry: async function readQuota(): Promise<boolean> {
             return syntheticIsDry({ quota: await client.quotas({ signal, },), },);
           },
+          signal,
         },);
         return;
       }
@@ -277,6 +299,7 @@ export async function assertRequiredProvidersReady(
           readDry: async function readCredits(): Promise<boolean> {
             return hyperIsDry({ credits: await client.credits({ signal, },), },);
           },
+          signal,
         },);
         return;
       }
@@ -294,6 +317,7 @@ export async function assertRequiredProvidersReady(
           readDry: async function readBedrockCredits(): Promise<boolean> {
             return bedrockIsDry({ credits: await client.credits({ signal, },), },);
           },
+          signal,
         },);
         return;
       }
@@ -309,6 +333,7 @@ export async function assertRequiredProvidersReady(
         readDry: async function readOpenRouterCredits(): Promise<boolean> {
           return openRouterIsDry({ credits: await client.credits({ signal, },), },);
         },
+        signal,
       },);
     },),
   },);
