@@ -2,6 +2,9 @@
 // folder picker, transport deck, search, first run, scan indicator, feedback, track menu) and exposes the
 // engine-facing properties and callbacks that the Rust side binds. Width below 600 px uses the folded cover
 // layout; 600 px and wider uses the unfolded two-pane layout (D44, D47 to D77, D83 to D105).
+// Inter Variable (SIL OFL 1.1, see LICENSES/OFL-1.1.txt) is bundled so the text looks the same on every machine;
+// importing the file registers its family for `default-font-family` below.
+import "fonts/InterVariable.ttf";
 import { Palette } from "std-widgets.slint";
 import { Theme } from "theme.slint";
 import { TransportDeck } from "deck.slint";
@@ -32,6 +35,7 @@ export component AppWindow inherits Window {
     // OS font tracking (ui_font_scale): base size is set from Rust, the resolved OS size is reported back.
     in property <length> base-font-size;
     default-font-size: root.base-font-size;
+    default-font-family: "Inter Variable";
     out property <length> os-font-size: 1rem;
     callback probe-os-font(length);
     changed os-font-size => {
