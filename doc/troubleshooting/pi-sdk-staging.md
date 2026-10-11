@@ -348,7 +348,7 @@ Complete one-shot native parent `proc_428d` passed in 719 seconds,
 including the current constructed-input matrix and all six full-policy profiles.
 Complete action-policy and policy-source suites passed `proc_b3aa`.
 Only documentation changed during regression execution.
-Final outcome documentation lint/render remains pending.
+Outcome document checkpoint `proc_99f8` passed all 14 documents with zero diagnostics.
 
 Nothing is proposed upstream.
 The SDK setter behaved as written;

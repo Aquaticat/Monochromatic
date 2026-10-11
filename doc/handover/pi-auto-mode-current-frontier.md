@@ -389,8 +389,8 @@ not segmented coverage.
 All reported child matrices had empty stderr.
 Complete action-policy and policy-source suites passed `proc_b3aa`.
 Only documentation changed during these regressions.
-The private setter checkpoint is verified;
-final outcome documentation lint/render is pending.
+The private setter checkpoint is verified.
+Outcome document checkpoint `proc_99f8` passed all 14 documents with zero diagnostics.
 Constructor inputs,
 in-place changes to getter-returned arrays,
 state-object or descriptor replacement,
