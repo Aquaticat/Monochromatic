@@ -10,9 +10,13 @@ on a host with a one-minute load of 35 to 87,
 with only runs in which the frame recorder dropped nothing counted.
 
 - Vello starts and draws in the nested compositor (it needs no compositor change; the compositor already has a dmabuf GPU path),
-  but FemtoVG, software, Vello, and the default (FemtoVG) painted the same share of frames,
-  about half of the possible ones, with a longest pause of 50 to 67 ms in every cell.
-  The renderer is not the bottleneck, so Vello is not adopted.
+  but FemtoVG, software, Vello, and the default (FemtoVG) showed the same frame cadence, with a longest pause of 50 to
+  67 ms in every cell.
+  (The "about half of the possible frames" figure first reported here was a harness artifact:
+  the harness counts the 1.5 s idle tail after the last wheel step as possible frames,
+  so even perfect painting of the 1.9 s input phase scores about 115 of 204.
+  Restricted to the input phase, a rerun painted 103 of 115 frame slots.)
+  The measurements gave no sign that the renderer is the bottleneck, so Vello is not adopted.
 - In the app, `render()` ran 1.7 times per wheel step, and every call was a full repaint:
   it reshaped all 30 viewport rows (no row cache), rasterized the whole tile on the CPU, and built and set a new
   `Image`.

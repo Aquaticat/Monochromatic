@@ -126,5 +126,6 @@ and whether a Flickable whose content width equals its width also blocks shift-w
 The user ruled that choppy scrolling is not excusable even under extreme host load.
 Wrapping adds layout work, so the same rule binds it:
 a scroll step must not wait on shaping, rasterizing, or layout on the UI thread.
-The scroll measurements of 2026-10-10 (all renderers painted only about half the possible frames;
-app renders had a median of 2 ms but a p95 near 30 ms and spikes of 60 to 77 ms) are the baseline to beat.
+The scroll measurements of 2026-10-10 (app renders had a median of 2 ms but a p95 near 30 ms and spikes of 60 to
+77 ms; the first reading that only half the possible frames painted was a harness denominator artifact, see
+`doc/planning/slint-ide-scroll-pipeline.md`) are the baseline to beat.
