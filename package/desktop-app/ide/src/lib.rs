@@ -36,6 +36,8 @@ pub mod row_map;
 ///  hit-test,
 ///  and range geometry.
 pub mod shaped_row;
+/// Shaped source rows kept by line, so a re-centered tile shapes only lines it has not shaped.
+pub mod shaped_row_cache;
 
 /// Shared shaping for mixed-script source rows,
 ///  caret,
@@ -126,6 +128,9 @@ mod selection_paint;
 /// Selected-text ink follows the selection background's lightness,
 ///  not the color scheme.
 pub mod selection_ink;
+
+/// Sibling names in the file tree sort mixed, case folded, with numbers compared by value.
+pub mod name_order;
 
 /// One local project boundary exposes directory snapshots without mutation operations.
 pub mod workspace;

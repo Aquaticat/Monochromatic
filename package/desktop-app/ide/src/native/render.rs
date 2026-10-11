@@ -102,6 +102,10 @@ fn model_rows(rectangles: &[ReadingRect]) -> Vec<SourceSelection> {
 /// Render shared shaped rows,
 ///  releasing state before any Slint setter can reenter.
 pub(super) fn render(window: &AppWindow, state: &Rc<RefCell<State>>) {
+    #[cfg(debug_assertions)]
+    {
+        state.borrow_mut().renders += 1;
+    }
     let factor = window.window().scale_factor();
     // The palette's selection ink follows the color scheme while its selection fill does not,
     // so the ink is chosen from the fill that is actually drawn behind the selected glyphs.
@@ -180,6 +184,8 @@ pub(super) fn render(window: &AppWindow, state: &Rc<RefCell<State>>) {
     .with_annotations(Arc::clone(&shown), inks);
     // Match rectangles change only together with the frame, never on caret-only updates.
     let mut rendered_matches = None;
+    #[cfg(debug_assertions)]
+    let shaped_before = current.shaper.shaped_rows();
     if current.frame_stamp.as_ref() != Some(&stamp) {
         // Destructure the mutable borrow so caches can update while source is lent read-only.
         let State {
@@ -206,6 +212,10 @@ pub(super) fn render(window: &AppWindow, state: &Rc<RefCell<State>>) {
         // Propagate raster failure visibly rather than retaining misleading old source pixels.
         match raster.paint(&view, colors, horizontal) {
             Ok(image) => {
+                #[cfg(debug_assertions)]
+                {
+                    current.tiles_painted += 1;
+                }
                 rendered_pixels = Some(image);
             }
             Err(error) => {
@@ -221,6 +231,10 @@ pub(super) fn render(window: &AppWindow, state: &Rc<RefCell<State>>) {
         }
         current.shaped = Some(view);
         current.frame_stamp = Some(stamp);
+        #[cfg(debug_assertions)]
+        {
+            current.rows_shaped += current.shaper.shaped_rows() - shaped_before;
+        }
     } else {
         // What: Destructuring lends the cached frame for change and the map for reading at once.
         // Why: The materialized lines are unchanged, but rows above them may not be: the frame then keeps
@@ -275,6 +289,10 @@ pub(super) fn render(window: &AppWindow, state: &Rc<RefCell<State>>) {
         notices.push(message.as_str());
     }
     let diagnostic = notices.join("\n");
+    #[cfg(debug_assertions)]
+    if rendered_pixels.is_some() {
+        current.images_set += 1;
+    }
     let placement = rows::measure(&current, anchor_line);
     drop(current);
 

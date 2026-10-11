@@ -1301,6 +1301,32 @@ nothing else multiplies a row number by a row height.
 Blocks come from `Annotations::assemble` (`src/annotation/blocks.rs`),
 which packs a line's hints once per snapshot and scale and counts message rows without shaping.
 
+### Overscan tile
+
+The materialized lines span three view heights:
+one view height above the view, the view, and one view height below it.
+`viewport::place` keeps that tile while the view stays inside it with `RECENTER_EDGE_VIEWS` (0.25 view heights)
+of room at each edge, and re-centers it only when that room runs out,
+so a re-center comes after about 0.75 view heights of scrolling.
+The first line of a re-centered tile starts one view height above the view's top line,
+and the tile runs `TILE_SPARE_LINES` (2) lines past its bottom edge.
+The window's scroll moves the image on its own:
+a `viewport-changed` callback for a view inside the tile returns before any shaping, painting, or model update.
+Syntax-highlight and text changes still render at once, because their own callbacks call `render`.
+The frame stamp keeps the tile's first line, line count, and width, so it does not change inside the tile.
+A diagnostic or hint inside the tile repaints the tile once, even when it is above the view.
+The document position's viewport line follows the view's top line on every scroll step,
+so reload anchoring and navigation see the line the reader is looking at.
+
+Shaped rows are cached by line (`src/shaped_row_cache.rs`) for one text revision and display scale.
+A re-centered tile shapes only the lines it did not hold,
+and the cache keeps at most `ROW_CACHE_LINES` (256) lines, evicting those farthest from the view.
+A change of syntax styles clears the cache (`TextShaper::forget_rows`).
+`overscan_tile_tests` counts renders, painted tiles, shaped rows, and images:
+all four stay at zero while the view moves inside the tile,
+renders, painted tiles, and images each change once per re-center,
+and shaped rows change only for the lines the cache did not hold.
+
 ### Stability
 
 Rows arrive after the text is shown,
