@@ -477,13 +477,6 @@ UPN:
  never bare):
  a bare upgrade installs unrelated toolchains and rewrites lockfiles that every session's builds share.
 
-OWR:
- Repair a broken install with the manager that owns it;
- never uninstall through one manager and reinstall through another.
-User-owned shared state:
- propose the repair,
- let the user run it.
-
 TRB:
  External tool fails with a diagnostic:
  `rg` its message in `doc/troubleshooting/` before any workaround;
