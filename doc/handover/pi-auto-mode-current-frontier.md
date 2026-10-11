@@ -392,10 +392,18 @@ and indexed assessment questions.
 Schema,
 executable,
 and other opaque fields are not inspected.
-Detailed native constructor parity,
-lifecycle,
-sensitivity,
-and complete regressions remain pending.
+Native constructor parity passed `93c75a07` / `proc_9cc4`.
+The getter counters matched the baseline,
+including zero construction-time reads of `execute`,
+and separate positive reads verified the counters.
+Lifecycle and declared/hidden/replaced/raw-mutated description consumers passed `proc_a37a`.
+Action/source parents passed `proc_50d1`;
+all 154 integrated input cases passed `proc_a226`;
+original-judgment variants passed `proc_d5fb`;
+the runtime suffix passed 39 complete outputs in `proc_f646`.
+The complete native parent remains to pass after the fixture corrections.
+Required pre-implementation description-loss reds are retained;
+no duplicate omission campaign is opened.
 The first parity baseline `proc_0081` stopped at an unresolved relative module import before execution;
 its fresh copy now keeps the original staged-module targets.
 
@@ -553,6 +561,17 @@ and semantic-qualification holds remain.
 Tool-definition inputs before native declaration production remain a separate gap.
 
 ## Independent in-place message intake
+
+The user subsequently selected receipt at host processing boundaries.
+The historical requirement to retain undone direct state edits is superseded,
+not a remaining release prerequisite.
+Controls `a3387df9` / `proc_c726` passed push/pop and direct-index exclusion
+plus an actual Agent queue receipt followed by clearing.
+Only the genuine API receipt is retained and indexed.
+This changes no authority assignment or completeness claim.
+State actually processed by the host still requires accounting.
+The following intake records explain the superseded assumption.
+
 
 While manager-source verification runs,
 the next source gap has an independent native red.
