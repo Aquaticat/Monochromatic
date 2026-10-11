@@ -210,9 +210,14 @@ Renaming the selected element to `entry` preserved the receiver.
 Corrected `e1fbda6` / `proc_e97e` passed system owner controls
 and all eight real late/oversize/reset modes.
 Direct system-message and system-array canonical consumers passed `proc_f007`.
-Integrated,
-sensitivity,
-and full regression results remain pending.
+Integrated `proc_a44a` passed 116 outputs with empty child stderr.
+Observation/section/proxy omissions `proc_0e00`,
+`proc_883a`,
+and `proc_7d1b` failed their intended controls and were restored.
+The full native case set is covered by the unchanged source prefix of `proc_5868`
+and corrected complete runtime suffix `proc_45e7`,
+not a passing one-shot parent invocation.
+Complete action-policy `proc_4f7e` and policy-source `proc_0091` passed.
 Run private `test:agent-message-prompt-owner` and `test:agent-message-prompt-paths`
 as separate `mise --no-env --no-hooks run` invocations.
 

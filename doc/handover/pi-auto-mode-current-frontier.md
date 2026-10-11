@@ -332,9 +332,23 @@ unchanged-view,
 and reset controls.
 Direct system-message and system-array canonical wire consumers passed `proc_f007`.
 System `inputFields` metadata and original section content remain unregistered.
-Integrated fixture reconciliation,
-sensitivity,
-and complete regressions remain in progress.
+Integrated `proc_a44a` passed 116 outputs with empty child stderr.
+Non-string observation omission `proc_0e00` and system-section omission `proc_883a`
+lost the required original source.
+Proxy-guard omission `proc_7d1b` invoked a caller trap and propagated its `false` value.
+All guards were restored;
+the implementation has an empty scoped diff against `e1fbda6`.
+
+Every native case is verified across phases,
+not a single successful parent invocation:
+`proc_5868` completed the source prefix before its old full-policy fixture failed;
+`proc_45e7` passed the complete corrected runtime suffix.
+Diff inspection from `06ed9d3` shows only the full-policy fixture,
+its added standalone task,
+and progress notes changed between those runs.
+Full-policy `proc_b0c7` separately passed all six profiles.
+Complete action-policy `proc_4f7e` and policy-source `proc_0091` passed.
+The final document check is tracked in `current-progress.json`.
 
 System-role support does not close tool instruction-source ownership.
 Mixed/image content and unsupported shapes still fail guarded source use,
@@ -346,7 +360,12 @@ The native prompt body,
 borrowed inputs,
 source limits,
 and installed plugin remain unchanged.
-The primitive-string checkpoint's full passes do not verify this new increment.
+The evidence for this message/array increment is distinct from the primitive-string checkpoint.
+Other direct Agent state producers,
+tool instruction-source ownership,
+image governance,
+applicable scope/delegation,
+and complete domain accounting remain unfinished.
 
 ## Original direct Agent string prompts
 
