@@ -201,6 +201,109 @@ These observations do not prove the logger caused the lock or that its delay was
 see [the logger diagnostic](cli-git-logger-sink-verify-timeout.md).
 Neither incident is a failure of native setter capture.
 
+## Manager append capture invalidates emission-time policy sources
+
+### Original input loss before construction
+
+Pi 1.1.0 `dist/core/sdk.js:84` reads the manager's resolved context:
+
+```javascript
+// Pi 1.1.0 dist/core/sdk.js:84
+const existingSession = sessionManager.buildSessionContext();
+```
+
+The same function passes `existingSession.messages` into a literal Agent `initialState`.
+An original message can already be absent from that context.
+Required red `4c74fc7` / `proc_5d44` appended user text to an owned in-memory manager,
+then hid it with `appendContextEdit(id,null)`.
+Native delivery succeeded,
+but review failed
+`The original manager append input must survive a pre-construction context edit`.
+
+The original append API has a pre-body observation point:
+
+```javascript
+// Pi 1.1.0 dist/core/session-manager.js:827 to 836
+appendMessage(message) {
+    const entry = {
+        type: "message",
+        id: generateId(this.byId),
+        parentId: this.leafId,
+        timestamp: new Date().toISOString(),
+        message,
+    };
+    this._appendEntry(entry);
+```
+
+The selected fields must be captured before the incumbent private copy can reject the input.
+Installed `_appendEntry` does not perform that clone;
+private `contract/integration/native-batch/root-source.mjs` adds it.
+A private clone-rejection control is not installed-SDK clone parity.
+
+### Unrestricted capture conflicts with current source bindings
+
+Private `bf5aff8` observed every append invocation.
+The first consumer `proc_0975` stopped before review with
+`Observed request is no longer current`.
+Diagnostic `0f05a19` / `proc_323e` retained the original subscribed judgment-start error.
+It had cause
+`Native run prompt was replaced after this source snapshot`.
+There was one request,
+zero assessments,
+and no latched content-profile failure.
+
+Native Session persistence appended the assistant response before judgment start.
+The manager's new constructed input caused the run owner to publish a new retained-input view.
+The existing resource collector requires the original view:
+
+```javascript
+// Private contract/collector/rule-relevance-sdk-copy/stage-private/resource-owner.mjs:204
+if(readSessionRun(session)!==saved.run)
+  throw new SourceCollectionError('Native run prompt was replaced after this source snapshot');
+```
+
+Changing that check alone is not a remedy.
+Private `governing-source.mjs`,
+`registered-authority.mjs`,
+`run-messages.mjs`,
+and the judgment's rule index all use `receipt.sources`.
+Allowing new membership without changing those bindings would silently omit it from policy review.
+
+### Bounded implementation and remaining gap
+
+The current hook observes appends only before the first original Session context-copy attachment.
+It reuses the existing one-way `contextCopyAttached` state and manager input pool.
+It adds neither a temporary mute window nor authentication by native callsite.
+The source origin is `native-manager-initial-input`;
+the `managerInput` location has method metadata and no fabricated ordinal.
+
+Narrowed `740ffae` / `proc_22d7` passed the canonical pre-attachment consumer.
+Run private `test:manager-append-source` through `mise --no-env --no-hooks run`.
+The original hidden input remained available without transport,
+authority,
+or payload eligibility.
+Private clone-rejection and broader controls remain pending.
+
+This does not account for post-attachment manager appends.
+Those potentially governing inputs remain unresolved.
+Do not infer that native persistence is nongoverning,
+drop it by role,
+defer it silently to another request,
+or relax a retired receipt.
+Broader support needs coherent original-request and judgment source bindings,
+not just a freshness exception.
+No such contract change is implemented.
+
+This is private integration behavior,
+not an upstream SDK fault.
+Upstream fault is not established;
+upstream fixability,
+supported-use,
+contribution acceptance,
+maintainer intent,
+and prototype conditions are not claimed.
+There is no external filing or additive upstream report.
+
 ## Direct Agent state assignments bypass prompt and queue capture
 
 ### Symptom and native setter

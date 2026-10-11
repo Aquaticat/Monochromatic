@@ -296,6 +296,62 @@ Eleven-document rendering passed `proc_c7e4` before this final evidence update.
 
 The unassociated ordinary request domain and other unconsumed producer relationships remain explicit.
 
+## Original manager messages before context attachment
+
+The current increment is limited to `appendMessage` calls before the manager's first
+original Session context-copy observer attaches.
+It is not coverage of all current manager appends.
+
+Required red `4c74fc7` / `proc_5d44` appended original user text to an owned in-memory manager,
+hid it with a null context edit,
+then constructed the real SDK session.
+The native request and assessment completed,
+but canonical review lacked the original append input.
+Capturing another constructor snapshot would only see the edited context.
+
+The pre-body hook retains the actual `arguments` frame through the existing manager source owner.
+Its origin is `native-manager-initial-input`,
+with metadata-only `managerInput` location,
+no invented entry ordinal,
+and no message or payload alias.
+All existing source and copier bounds remain shared.
+The selected content profile keeps admitted text/thinking/tool-call fields,
+including opaque signatures and argument data,
+without assigning meaning,
+authority,
+or execution facts.
+Prompt/setter text-only profiles are unchanged.
+Image blocks,
+unknown fields,
+and unsupported roles still latch guarded failure.
+
+The unrestricted first implementation `bf5aff8` failed before review.
+Diagnostic `0f05a19` / `proc_323e` showed one request,
+zero assessments,
+and no content-profile failure.
+Native response persistence changed retained input membership,
+which republished the run view and correctly invalidated the original request snapshot.
+Policy source binding and rule indexing also read that original snapshot,
+so merely tolerating new retained inputs would not make them enter policy review.
+
+The narrowed hook uses the existing one-way `contextCopyAttached` lifetime state,
+not a temporary mute window or a claim that native persistence is already accounted for.
+`740ffae` / `proc_22d7` passed the pre-attachment canonical consumer with two local requests,
+one assessment,
+and no protected execution/provider calls.
+Post-attachment direct and native appends remain unresolved.
+No request freshness or source-binding rule was relaxed.
+
+Private clone-rejection,
+block-profile,
+lifetime,
+sensitivity,
+and complete regression checks are pending.
+The incumbent private manager copy performs `structuredClone`;
+the installed native manager does not.
+Parity claims must distinguish those baselines.
+The completed setter checkpoint predates this new runtime change.
+
 ## Original Agent state assignments
 
 Direct `agent.state.messages` assignments use a native setter,
