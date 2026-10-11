@@ -52,7 +52,9 @@ impl Ord for Piece {
                     length: other_length,
                     digits: other_digits,
                 },
-            ) => length.cmp(other_length).then_with(|| return digits.cmp(other_digits)),
+            ) => length
+                .cmp(other_length)
+                .then_with(|| return digits.cmp(other_digits)),
             _ => Ordering::Equal,
         };
     }

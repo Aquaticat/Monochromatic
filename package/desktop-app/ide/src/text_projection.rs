@@ -28,6 +28,7 @@ use helix_core::{RopeSlice, graphemes::next_grapheme_boundary};
 /// ```ts
 /// type Projection = { text: string; sourceToByte: number[]; byteToSource: number[]; tabs: number[] };
 /// ```
+#[derive(Clone)]
 pub struct Projection {
     /// Text passed to the shaper,
     ///  with each tab replaced by one space and terminators excluded.
