@@ -236,6 +236,7 @@ pub fn check_final_newline<F: RepositoryFacts>(
     lifecycle: &LifecycleContent,
     facts: &mut F,
     trigger: Trigger,
+    can_apply_patches: bool,
 ) -> PolicyOutcome {
     let version: Rc<CandidateVersion> = match content.version(lifecycle, facts) {
         Ok(Some(found)) => found,
@@ -255,7 +256,7 @@ pub fn check_final_newline<F: RepositoryFacts>(
         let Some(normalized) = normalized_final_newline(&bytes) else {
             continue;
         };
-        let corrects: bool = trigger == Trigger::DirectFix;
+        let corrects: bool = trigger == Trigger::DirectFix || can_apply_patches;
         if corrects {
             content.propose(Correction {
                 path: candidate.path.clone(),

@@ -229,6 +229,12 @@ pub mod policy_patch_validate;
 /// Slice 6: one policy patch applied to the private index with `git apply --cached --3way`.
 pub mod policy_patch;
 
+/// Slice 6: writes one corrected file into the private commit index as a blob and an index entry.
+pub mod private_index_stage;
+
+/// Slice 6: the commit path's bounded policy convergence over the private index.
+pub mod commit_convergence;
+
 /// The bounded loop that repeats a pass after corrections changed candidate content.
 pub mod policy_convergence;
 

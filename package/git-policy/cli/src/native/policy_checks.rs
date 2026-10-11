@@ -109,6 +109,8 @@ pub const DEPENDENT_VERSION_BUMP_NEEDS: &str = "planning dependent version bumps
 /// type ShippedChecks<F extends RepositoryFacts> = { facts: F; arguments: string[]; candidates: LifecycleContent; allowedWorktreeDirs: string[]; content: ContentState };
 /// ```
 pub struct ShippedChecks<F: RepositoryFacts> {
+    /// Whether a pass may propose corrections that its caller applies; the commit path's convergence sets it.
+    pub can_apply_patches: bool,
     /// Where repository facts come from.
     pub facts: F,
     /// The command's arguments without wrapper controls;
@@ -151,6 +153,7 @@ pub fn shipped_checks<F: RepositoryFacts>(
     allowed_worktree_dirs: Vec<PathBuf>,
 ) -> ShippedChecks<F> {
     return ShippedChecks {
+        can_apply_patches: false,
         facts,
         arguments,
         candidates,
@@ -415,6 +418,7 @@ impl<F: RepositoryFacts> PolicyChecks for ShippedChecks<F> {
                     &self.candidates,
                     &mut self.facts,
                     trigger,
+                    self.can_apply_patches,
                 );
             }
             PolicyId::ForbiddenRootContext => {

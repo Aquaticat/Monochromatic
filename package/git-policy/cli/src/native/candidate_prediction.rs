@@ -111,6 +111,12 @@ pub enum CandidateRequest {
         ///  `--all` is `:/`.
         Vec<OsString>,
     ),
+    /// The entries the index already holds for the pathspecs, read without staging the worktree first.
+    ///  The commit path uses it, so corrections already written to the private index are the candidates.
+    Staged(
+        /// The pathspecs of the scope.
+        Vec<OsString>,
+    ),
     /// The changes a manual push publishes: each newly published commit's own delta and the whole tree
     ///  of each tip with no known published base.
     Pushed(
@@ -434,6 +440,22 @@ fn projected_scope(
         overlay,
         "read the selected worktree files",
     )?;
+    return staged_scope(store, pathspecs);
+}
+
+/// What:
+///  The candidates of the entries the index already holds for these pathspecs, against `HEAD`.
+/// Why:
+///   The direct and the staged requests both end here; only the direct one stages the worktree first.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// scopeCandidates(await stageRecords(pathspecs), await headRecords(pathspecs));
+/// ```
+fn staged_scope(
+    store: &mut CandidateStore,
+    pathspecs: &[OsString],
+) -> Result<Vec<CandidateRecord>, CandidateError> {
     let entries: Vec<StageRecord> = store.stage_records(pathspecs)?;
     if entries.is_empty() {
         // Nothing selected: no baseline is needed and no object reader starts.
@@ -480,6 +502,7 @@ pub fn prepare_candidates(
     let purpose: &str = match request {
         CandidateRequest::Add(_) => "predict what git add stages",
         CandidateRequest::Direct(_) => "read the selected worktree files",
+        CandidateRequest::Staged(_) => "read the staged index entries",
         CandidateRequest::Landed(_) => "read the landed commit changes",
         CandidateRequest::Pushed(_) => "read the pushed commit changes",
     };
@@ -556,6 +579,12 @@ pub fn prepare_candidates(
                 private_overlay.as_slice(),
                 pathspecs.as_slice(),
             )?;
+            (scope_store, selected)
+        }
+        CandidateRequest::Staged(pathspecs) => {
+            let mut scope_store: CandidateStore =
+                CandidateStore::new(real_git, global_prefix, private_overlay.as_slice());
+            let selected: Vec<CandidateRecord> = staged_scope(&mut scope_store, pathspecs.as_slice())?;
             (scope_store, selected)
         }
     };
