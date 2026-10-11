@@ -73,7 +73,14 @@ import {
   SEAT_SYNTHETIC_VISION_WITHHELD,
 } from './roster-seats.test-fixture.ts';
 import { HANG_STOP_MS, } from './hang-stop.test-fixture.ts';
+import { rejectionOf, } from './rejecting-call.test-fixture.ts';
 import { SCRIPTED_STAGE_SETTINGS, } from './stage-settings.test-fixture.ts';
+import {
+  BENCH_UNREACHABLE,
+  stopLandingHook,
+  throwBenchUnreachable,
+  UNASKED_CLIENT,
+} from './stop-landing-hook.test-fixture.ts';
 
 /**
  Logger the driver writes through, whose output is not under test.
@@ -2369,6 +2376,58 @@ await describe({
               keptMatches: true,
               polishedDiffers: true,
             },);
+          },
+        },),
+
+        it({
+          name: 'WRITES A LATER SLICE\'S OWN FAILURE UNDER THE CALLER\'S STOP, its hook refused by an unreachable '
+            + 'bench as the stop landed while the first slice ended in the caller\'s reason, and refuses with that '
+            + 'reason',
+          fn: async () => {
+            /**
+             Every line the driver wrote.
+             */
+            const messages: string[] = [];
+            /**
+             The caller's steering, which the later slice's hook stops.
+             */
+            const steering = new AbortController();
+            /**
+             Why the caller stopped the consolidation.
+             */
+            const reason = new Error('the owner called the cats in',);
+            /**
+             What the driver refused with.
+             */
+            const refusal = await rejectionOf(async function consolidatesUnderTheStop(): Promise<unknown> {
+              return await driveWith({
+                contests: [
+                  contestSettling({
+                    sliceIndex: 0,
+                    lane: 'repair',
+                  },),
+                  contestSettling({
+                    sliceIndex: 1,
+                    lane: 'translate',
+                  },),
+                ],
+                client: UNASKED_CLIENT,
+                overlap: 2,
+                beforeSlice: stopLandingHook<ConsolidateSliceSeating>({
+                  steering,
+                  reason,
+                  afterStop: throwBenchUnreachable,
+                },),
+                messages,
+                signal: steering.signal,
+              },);
+            },);
+            expect(refusal,).toBe(reason,);
+            expect(messages,).toEqual([
+              '[consolidateDocument] consolidation: 2 contested slices to settle',
+              `[consolidateDocument] [mapOverlapped] slice 1 failed (${BENCH_UNREACHABLE.message}), and the caller stopped `
+                + 'the work',
+            ],);
           },
         },),
       ],

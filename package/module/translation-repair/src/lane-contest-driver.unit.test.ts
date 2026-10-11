@@ -49,7 +49,14 @@ import {
 } from './roster-seats.test-fixture.ts';
 import { ARCHIVE_NAP, catRow, } from './two-lane-comparison-row.test-fixture.ts';
 import { HANG_STOP_MS, } from './hang-stop.test-fixture.ts';
+import { rejectionOf, } from './rejecting-call.test-fixture.ts';
 import { SCRIPTED_STAGE_SETTINGS, } from './stage-settings.test-fixture.ts';
+import {
+  BENCH_UNREACHABLE,
+  stopLandingHook,
+  throwBenchUnreachable,
+  UNASKED_CLIENT,
+} from './stop-landing-hook.test-fixture.ts';
 
 /**
  Roster of three, the smallest that can produce a two-to-one split.
@@ -1421,6 +1428,58 @@ await describe({
               movedDiffers: true,
               keptMatches: true,
             },);
+          },
+        },),
+        it({
+          name: 'WRITES A LATER SLICE\'S OWN FAILURE UNDER THE CALLER\'S STOP, its hook refused by an unreachable '
+            + 'bench as the stop landed while the first slice ended in the caller\'s reason, and refuses with that '
+            + 'reason',
+          fn: async () => {
+            /**
+             Every line the driver wrote.
+             */
+            const messages: string[] = [];
+            /**
+             The caller's steering, which the later slice's hook stops.
+             */
+            const steering = new AbortController();
+            /**
+             What the driver refused with.
+             */
+            const refusal = await rejectionOf(async function contestsUnderTheStop(): Promise<unknown> {
+              return await contestDocumentLanes({
+                client: UNASKED_CLIENT,
+                projected: catProjection({
+                  pairs: [
+                    [REPAIR_NAP, TRANSLATE_NAP,],
+                    [REPAIR_NAP, TRANSLATE_NAP,],
+                  ],
+                },),
+                modelIds: ROSTER,
+                frontMatterSlices: new Set(),
+                lineStructuredSlices: new Set(),
+                cache: {
+                  resumed: new Map(),
+                  persist: async function keepNothing(): Promise<void> {},
+                },
+                signal: steering.signal,
+                perCallTimeoutMs: HANG_STOP_MS,
+                overlap: 2,
+                l: capturingLogger({ messages, },),
+                beforeSlice: stopLandingHook<BenchSeating>({
+                  steering,
+                  reason: CONTEST_ABORT,
+                  afterStop: throwBenchUnreachable,
+                },),
+                stageSettings: SCRIPTED_STAGE_SETTINGS,
+              },);
+            },);
+            expect(refusal,).toBe(CONTEST_ABORT,);
+            expect(messages,).toEqual([
+              '[contestDocumentLanes] lane contest: slices that differ: 2 of 2',
+              `[contestDocumentLanes] [mapOverlapped] slice 1 failed (${BENCH_UNREACHABLE.message}), and the caller `
+                + 'stopped the work',
+            ],);
           },
         },),
       ],

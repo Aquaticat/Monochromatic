@@ -15,6 +15,7 @@
 
 import { writeFile, } from 'node:fs/promises';
 import { join, } from 'node:path';
+import { setImmediate as turnOfTheLoop, } from 'node:timers/promises';
 
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import {
@@ -50,7 +51,9 @@ import {
   writeCachedReference,
 } from '../dist/final/node/index.mjs';
 import { capturingLoggerPair, } from './capturing-logger.test-fixture.ts';
+import { rejectionOf, } from './rejecting-call.test-fixture.ts';
 import { scratchDir, } from './scratch-dir.test-fixture.ts';
+import { untilAborted, } from './stage-trivial-reply.test-fixture.ts';
 
 /**
  Abort signal that never fires.
@@ -708,6 +711,78 @@ await describe({
             expect(logged,).toEqual([
               `[citedReferenceBlock] reference 1 ${POST_URL} could not be fetched: contents responded 429`,
               '[citedReferenceBlock] REFERENCES cited=1 cached=0 bought=1',
+            ],);
+          },
+        },),
+        it({
+          name: 'REFUSES WITH THE CALLER\'S REASON once the caller stops the block, writing no unfetched page for a '
+            + 'fetch that ended in that reason, and still writes a fetch\'s own failure that landed as the stop did',
+          fn: async () => {
+            const {
+              logger,
+              lines: logged,
+            } = capturingLoggerPair();
+            await using scratch = await scratchDir({ prefix: 'reference-block-stopped-', },);
+            /**
+             Second page the invented original cites.
+             */
+            const dotUrl = 'https://cats.example/posts/mittens-and-the-red-dot';
+            /**
+             The caller's steering, which the first page's fetch stops.
+             */
+            const steering = new AbortController();
+            /**
+             Why the caller stopped the block.
+             */
+            const reason = new Error('the owner called the cats in',);
+            /**
+             Transport whose fetch of the first page stops the caller and then drops, and whose fetch of the
+             second waits for the stop and rejects with the request signal's reason, as `fetch` does.
+
+             @param _input - endpoint, unread
+
+             @param init - request, whose body names the page and whose signal is the caller's
+
+             @returns Never; every fetch rejects
+             */
+            async function stoppedTransport(_input: string | URL | Request, init?: RequestInit,): Promise<Response> {
+              /**
+               Body as sent, which names the page asked for.
+               */
+              const sent = init?.body;
+              if (((typeof sent) === 'string') && sent.includes(POST_URL,)) {
+                steering.abort(reason,);
+                throw new TypeError('fetch failed',);
+              }
+              /**
+               The request's signal, which `fetch` honours.
+               */
+              const signal = init?.signal ?? SIGNAL;
+              await untilAborted({ signal, },);
+              signal.throwIfAborted();
+              throw new Error('unreachable: a fetch that waited for its abort was handed a signal that had not aborted',);
+            }
+            /**
+             What the block refused with.
+             */
+            const refusal = await rejectionOf(async function readsUnderTheStop(): Promise<unknown> {
+              return await citedReferenceBlock({
+                sourceText: `见 ${POST_URL} 和 ${dotUrl}`,
+                apiKey: 'whisker-key',
+                dir: scratch.path,
+                signal: steering.signal,
+                fetchFn: stoppedTransport,
+                now: () => NOW,
+                logger,
+              },);
+            },);
+            // The fetch that dropped writes its line as it ends, which can be
+            // after the block refused; every scripted failure waits on nothing
+            // but a microtask, so a turn of the event loop later both have ended.
+            await turnOfTheLoop();
+            expect(refusal,).toBe(reason,);
+            expect(logged,).toEqual([
+              `[citedReferenceBlock] reference 1 ${POST_URL} could not be fetched: refused by TypeError`,
             ],);
           },
         },),

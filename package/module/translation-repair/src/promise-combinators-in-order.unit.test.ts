@@ -2215,10 +2215,11 @@ const LISTED_CALLS: readonly ListedSite[] = [
   {
     site: 'cited-reference-lookup.ts#citedReferenceBlock',
     combinator: 'all',
-    reason: 'catches-own',
-    restsOn: [CATCH_ANCHOR,],
-    note: 'lineFor holds the lookup and the line it builds in a try whose catch logs the failure through refusalText '
-      + 'and answers an unfetched line',
+    reason: 'shared-abort',
+    restsOn: ['aborted', 'reason',],
+    note: 'lineFor holds the lookup and the line it builds in a try whose catch rethrows a failure only when the '
+      + 'signal has aborted and the failure is its reason, so every rejection is that one reason, and logs any '
+      + 'other failure through refusalText and answers an unfetched line',
   },
   {
     site: 'corpus-run/attribution-read.ts#gatherAttributionEntries',
@@ -2287,7 +2288,7 @@ const LISTED_CALLS: readonly ListedSite[] = [
     reason: 'catches-own',
     restsOn: ['drain',],
     note: 'every lane runs drain, whose catch records a job failure by position, and mapOverlapped throws the lowest '
-      + 'position\'s failure once every lane has ended',
+      + 'position\'s failure once every lane has ended, having written each other failure under the caller\'s stop',
   },
   {
     site: 'provider-meters.ts#readEveryMeter',
@@ -2342,9 +2343,11 @@ const LISTED_CALLS: readonly ListedSite[] = [
   {
     site: 'work-title-lookup.ts#workTitleLookupLines',
     combinator: 'all',
-    reason: 'catches-own',
-    restsOn: [CATCH_ANCHOR,],
-    note: 'linesFor holds the lookup in a try whose catch logs the failure through refusalText and answers no lines',
+    reason: 'shared-abort',
+    restsOn: ['aborted', 'reason',],
+    note: 'linesFor holds the lookup in a try whose catch rethrows a failure only when the signal has aborted and the '
+      + 'failure is its reason, so every rejection is that one reason, and logs any other failure through '
+      + 'refusalText and answers no lines',
   },
 ];
 

@@ -37,8 +37,16 @@ import {
   SEAT_SYNTHETIC_VISION_WITHHELD,
 } from './roster-seats.test-fixture.ts';
 import { proposerIdsOf, } from './claim-attribution-proposer-ids.test-fixture.ts';
+import { capturingLogger, } from './capturing-logger.test-fixture.ts';
 import { HANG_STOP_MS, } from './hang-stop.test-fixture.ts';
+import { rejectionOf, } from './rejecting-call.test-fixture.ts';
 import { SCRIPTED_STAGE_SETTINGS, } from './stage-settings.test-fixture.ts';
+import {
+  BENCH_UNREACHABLE,
+  stopLandingHook,
+  throwBenchUnreachable,
+  UNASKED_CLIENT,
+} from './stop-landing-hook.test-fixture.ts';
 
 /**
  Original document of the fixture pair.
@@ -1280,6 +1288,50 @@ Meow meow meow meow.
         // AT LEAST ONCE PER SLICE: the checker stage asks again (class one hundred nine).
         expect(before.calls,).toBeGreaterThanOrEqual(prepared.slices.length,);
         expect(prepared.slices.length,).toBeGreaterThan(0,);
+      },
+    },),
+
+    it({
+      name: 'WRITES A LATER SLICE\'S OWN FAILURE UNDER THE CALLER\'S STOP, its hook refused by an unreachable bench '
+        + 'as the stop landed while the first slice ended in the caller\'s reason, and refuses with that reason',
+      fn: async () => {
+        /**
+         Every line the driver wrote.
+         */
+        const messages: string[] = [];
+        /**
+         The caller's steering, which the later slice's hook stops.
+         */
+        const steering = new AbortController();
+        /**
+         What the driver refused with.
+         */
+        const refusal = await rejectionOf(async function repairsUnderTheStop(): Promise<unknown> {
+          return await repairPreparedDocument({
+            client: UNASKED_CLIENT,
+            prepared: prepareDocumentPair({
+              sourceText: SOURCE_TWO_SECTIONS,
+              targetText: TARGET_TWO_SECTIONS,
+            },),
+            models: MODELS,
+            signal: steering.signal,
+            perCallTimeoutMs: HANG_STOP_MS,
+            overlap: 2,
+            beforeSlice: stopLandingHook<RepairSliceSeating>({
+              steering,
+              reason: ENTRY_DEADLINE_FAILURE,
+              afterStop: throwBenchUnreachable,
+            },),
+            parentLogger: capturingLogger({ messages, },),
+            stageSettings: SCRIPTED_STAGE_SETTINGS,
+          },);
+        },);
+        expect(refusal,).toBe(ENTRY_DEADLINE_FAILURE,);
+        expect(messages,).toEqual([
+          '[repairPreparedDocument] 2 aligned units, 2 slices, 0 alignment findings',
+          `[repairPreparedDocument] [mapOverlapped] slice 1 failed (${BENCH_UNREACHABLE.message}), and the caller `
+            + 'stopped the work',
+        ],);
       },
     },),
 

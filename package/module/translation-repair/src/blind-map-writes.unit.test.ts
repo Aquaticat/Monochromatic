@@ -599,10 +599,6 @@ const ALLOWED_BLIND_SETS: ReadonlyMap<string, string> = new Map<string, string>(
     'the model ids are the own keys of one record, which holds each once',
   ],
   [
-    'overlapped-map.ts#drain: failures.set(row.position,...)',
-    'a shared cursor hands each row to one lane, and a position names one row',
-  ],
-  [
     'pairing-pictures.ts#pairingPictureContext: reduced.set(assetName,...)',
     'the loop reads a map keyed by picture name',
   ],

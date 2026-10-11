@@ -10,6 +10,7 @@
  */
 
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
+import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 import {
   DEFAULT_CONCURRENCY,
   describe,
@@ -41,7 +42,14 @@ import {
   SEAT_SYNTHETIC_VISION_WITHHELD,
 } from '../roster-seats.test-fixture.ts';
 import { HANG_STOP_MS, } from '../hang-stop.test-fixture.ts';
+import { rejectionOf, } from '../rejecting-call.test-fixture.ts';
 import { SCRIPTED_STAGE_SETTINGS, } from '../stage-settings.test-fixture.ts';
+import {
+  BENCH_UNREACHABLE,
+  stopLandingHook,
+  throwBenchUnreachable,
+  UNASKED_CLIENT,
+} from '../stop-landing-hook.test-fixture.ts';
 
 /**
  Production-shaped test roster.
@@ -817,6 +825,76 @@ await describe({
       name: decidePassInsertionAdmission.name,
       concurrency: DEFAULT_CONCURRENCY,
       children: [
+        it({
+          name: 'WRITES A LATER CANDIDATE\'S OWN FAILURE UNDER THE CALLER\'S STOP, its hook refused by an unreachable '
+            + 'bench as the stop landed while the first candidate ended in the caller\'s reason, and refuses with '
+            + 'that reason',
+          fn: async () => {
+            /**
+             Every line the admission wrote.
+             */
+            const messages: string[] = [];
+            /**
+             The caller's steering, which the later candidate's hook stops.
+             */
+            const steering = new AbortController();
+            /**
+             Why the caller stopped the admission.
+             */
+            const reason = new Error('the owner called the cats in',);
+            /**
+             Preparation holding one source-only passage.
+             */
+            const gap = preparedGap({
+              sourcePassage: '猫在院子里追蝴蝶。',
+              targetText: LONG_TARGET,
+            },);
+            /**
+             That passage's slice, which a second slice repeats so both are prose candidates.
+             */
+            const first = nonNullishOrThrow(gap.slices[0],);
+            /**
+             What the admission refused with.
+             */
+            const refusal = await rejectionOf(async function admitsUnderTheStop(): Promise<unknown> {
+              return await decidePassInsertionAdmission({
+                client: UNASKED_CLIENT,
+                prepared: {
+                  ...gap,
+                  slices: [
+                    first,
+                    {
+                      source: {
+                        ...first.source,
+                        sliceIndex: 1,
+                      },
+                      target: makeInsertionChunk({
+                        sliceIndex: 1,
+                        offset: 0,
+                      },),
+                    },
+                  ],
+                },
+                modelIds: ROSTER,
+                overlap: 2,
+                signal: steering.signal,
+                perCallTimeoutMs: HANG_STOP_MS,
+                l: capturingLogger({ messages, },),
+                beforeCandidate: stopLandingHook<BenchSeating>({
+                  steering,
+                  reason,
+                  afterStop: throwBenchUnreachable,
+                },),
+                stageSettings: SCRIPTED_STAGE_SETTINGS,
+              },);
+            },);
+            expect(refusal,).toBe(reason,);
+            expect(messages,).toEqual([
+              `[decidePassInsertionAdmission] [mapOverlapped] slice 1 failed (${BENCH_UNREACHABLE.message}), and the `
+                + 'caller stopped the work',
+            ],);
+          },
+        },),
         it({
           name: 'ADMITS a linked factual passage on destination evidence when roster says whole passage is absent, '
             + 'even though unrelated verbosity makes whole page look long enough',

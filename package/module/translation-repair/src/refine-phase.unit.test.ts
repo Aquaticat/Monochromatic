@@ -6,6 +6,8 @@
  @module
  */
 
+import { setImmediate as turnOfTheLoop, } from 'node:timers/promises';
+
 import { wait, } from '@monochromatic-dev/module-async-time/ts';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import {
@@ -43,8 +45,11 @@ import {
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   SEAT_SYNTHETIC_VISION_WITHHELD,
 } from './roster-seats.test-fixture.ts';
+import { capturingLogger, } from './capturing-logger.test-fixture.ts';
 import { HANG_STOP_MS, } from './hang-stop.test-fixture.ts';
+import { rejectionOf, } from './rejecting-call.test-fixture.ts';
 import { SCRIPTED_STAGE_SETTINGS, } from './stage-settings.test-fixture.ts';
+import { untilAborted, } from './stage-trivial-reply.test-fixture.ts';
 
 /**
  Logger for the phase under test.
@@ -1464,6 +1469,78 @@ await describe({
               stageSettings: SCRIPTED_STAGE_SETTINGS,
             },),).rejects.toThrow(Error,);
             expect(stored.size,).toBe(0,);
+          },
+        },),
+
+
+        it({
+          name: 'WRITES A LATER SLICE\'S OWN FAILURE UNDER THE CALLER\'S STOP, an outcome naming no prepared slice '
+            + 'refused before the stop landed while the first slice\'s rewriters ended in the caller\'s reason, and '
+            + 'refuses with that reason',
+          fn: async () => {
+            /**
+             Every line the phase wrote.
+             */
+            const messages: string[] = [];
+            /**
+             The caller's steering.
+             */
+            const steering = new AbortController();
+            /**
+             Why the caller stopped the refinement.
+             */
+            const reason = new Error('the owner called the cats in',);
+            /**
+             Slice the later outcome names, which no preparation produced.
+             */
+            const unprepared = SLICES.length + 2;
+            /**
+             The phase, started and left waiting on the first slice's rewriters.
+             */
+            const phase = rejectionOf(async function refinesUnderTheStop(): Promise<unknown> {
+              return await runRefinePhase({
+                declaredNames: [],
+                client: {
+                  chatText: async () => {
+                    throw new Error('chatText unused',);
+                  },
+                  chatJson: async (request) => {
+                    await untilAborted({ signal: request.signal, },);
+                    request.signal
+                      .throwIfAborted();
+                    throw new Error('unreachable: a rewriter that waited for its abort was handed a signal that had not aborted',);
+                  },
+                  quotas: async () => {
+                    throw new Error('quotas unused',);
+                  },
+                },
+                targetText: REPAIRED_TEXT,
+                slices: SLICES,
+                outcomes: [
+                  settledOutcome({ resolvedIssueIds: [], authorship: NO_MODEL_WROTE_THE_FIXTURE, },),
+                  {
+                    ...settledOutcome({ resolvedIssueIds: [], authorship: NO_MODEL_WROTE_THE_FIXTURE, },),
+                    sliceIndex: unprepared,
+                  },
+                ],
+                models: MODELS,
+                signal: steering.signal,
+                perCallTimeoutMs: HANG_STOP_MS,
+                overlap: 2,
+                l: capturingLogger({ messages, },),
+                stageSettings: SCRIPTED_STAGE_SETTINGS,
+              },);
+            },);
+            await turnOfTheLoop();
+            steering.abort(reason,);
+            expect(await phase,).toBe(reason,);
+            /**
+             What the refusal of the later outcome says of itself.
+             */
+            const { message: unpreparedText, } = new UnpreparedSliceError({ sliceIndex: unprepared, },);
+            expect(messages,).toEqual([
+              `[mapOverlapped] slice ${String(unprepared,)} failed (${unpreparedText}), and the caller stopped the work`,
+            ],);
           },
         },),
 

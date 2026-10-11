@@ -5,8 +5,10 @@
  at a higher overlap items start in item order and never more than the
  overlap at once; results come back in item order whatever order the items
  finished in; a failure stops further items from starting, lets the ones in
- flight finish, and throws the lowest position's error; and an overlap that
- cannot bound anything is refused before any item runs.
+ flight finish, and throws the lowest position's error; once the caller has
+ stopped, every other failure is written in position order, except the
+ caller's reason and a failure the twin memo already wrote; and an overlap
+ that cannot bound anything is refused before any item runs.
 
  Every item waits at a gate the test opens, so completion order is the
  test's to choose rather than the scheduler's.
@@ -24,7 +26,15 @@ import {
 import {
   mapOverlapped,
   OverlapRefusedError,
+  reuseTwinOrBuy,
+  SyntheticHttpError,
+  type TwinMemo,
+  type TwinStored,
 } from '../dist/final/node/index.mjs';
+import {
+  capturingLoggerPair,
+  levelCapturingLogger,
+} from './capturing-logger.test-fixture.ts';
 
 //region Fixtures
 // Gated items: each item's job records that it started, counts itself in
@@ -167,6 +177,32 @@ async function collected({ run, }: { readonly run: Promise<unknown>; },): Promis
   }
 }
 
+/**
+ Caller's signal for the cases where nobody stops the work.
+ */
+const NEVER_STOPPED = new AbortController().signal;
+
+/**
+ Logger for the cases that read no line.
+ */
+const QUIET = capturingLoggerPair().logger;
+
+/**
+ Names an item in the line its failure under a stop is written on.
+
+ @param row - item and its position
+
+ @returns The item as a cat's name
+
+ @example
+ ```ts
+ catName({ item: 'b', position: 1, },); // 'cat b'
+ ```
+ */
+function catName({ item, }: { readonly item: string; readonly position: number; },): string {
+  return `cat ${item}`;
+}
+
 //endregion Fixtures
 
 await describe({
@@ -183,6 +219,9 @@ await describe({
           ),
           overlap: 1,
           oneItem: run.oneItem,
+          signal: NEVER_STOPPED,
+          l: QUIET,
+          nameOf: catName,
         },);
         await settle();
         expect(run.started,).toEqual([0,],);
@@ -221,6 +260,9 @@ await describe({
           items: ITEMS,
           overlap: 2,
           oneItem: run.oneItem,
+          signal: NEVER_STOPPED,
+          l: QUIET,
+          nameOf: catName,
         },);
         await settle();
         expect(run.started,).toEqual([
@@ -261,6 +303,9 @@ await describe({
           items: ITEMS,
           overlap: 2,
           oneItem: run.oneItem,
+          signal: NEVER_STOPPED,
+          l: QUIET,
+          nameOf: catName,
         },);
         await settle();
 
@@ -297,6 +342,9 @@ await describe({
             items: ITEMS,
             overlap: 2,
             oneItem: run.oneItem,
+            signal: NEVER_STOPPED,
+            l: QUIET,
+            nameOf: catName,
           },),
         },);
         await settle();
@@ -333,6 +381,9 @@ await describe({
             items: ITEMS,
             overlap: 2,
             oneItem: run.oneItem,
+            signal: NEVER_STOPPED,
+            l: QUIET,
+            nameOf: catName,
           },),
         },);
         await settle();
@@ -368,6 +419,9 @@ await describe({
           ),
           overlap: 5,
           oneItem: run.oneItem,
+          signal: NEVER_STOPPED,
+          l: QUIET,
+          nameOf: catName,
         },);
         await settle();
         expect(run.started,).toEqual([
@@ -408,6 +462,9 @@ await describe({
               ),
               overlap,
               oneItem: run.oneItem,
+              signal: NEVER_STOPPED,
+              l: QUIET,
+              nameOf: catName,
             },),
           },);
           expect(refusal,).toBeInstanceOf(OverlapRefusedError,);
@@ -425,8 +482,229 @@ await describe({
           items: [],
           overlap: 3,
           oneItem: run.oneItem,
+          signal: NEVER_STOPPED,
+          l: QUIET,
+          nameOf: catName,
         },),).toEqual([],);
         expect(run.started,).toEqual([],);
+      },
+    },),
+
+    it({
+      name: 'WRITES EACH JOB\'S OWN FAILURE THE CALLER\'S STOP LEFT UNTHROWN, in position order whichever ended '
+        + 'first, with the provider\'s words, writes none for a job ending in the caller\'s own reason at any '
+        + 'position, and throws that reason',
+      fn: async () => {
+        const run = gatedRun({ count: 4, },);
+        /**
+         Every line the helper wrote, behind its level.
+         */
+        const lines: string[] = [];
+        /**
+         The caller's steering.
+         */
+        const steering = new AbortController();
+        /**
+         Why the caller stopped the work.
+         */
+        const reason = new Error('the owner called the cats in',);
+        const failure = collected({
+          run: mapOverlapped({
+            items: ITEMS,
+            overlap: 4,
+            oneItem: run.oneItem,
+            signal: steering.signal,
+            l: levelCapturingLogger({ lines, },),
+            nameOf: catName,
+          },),
+        },);
+        await settle();
+        steering.abort(reason,);
+        nonNullishOrThrow(run.gates[3],).reject(new SyntheticHttpError({
+          status: 503,
+          bodyText: 'the fourth cat is napping in the sun',
+        },),);
+        await settle();
+        nonNullishOrThrow(run.gates[2],).reject(reason,);
+        await settle();
+        nonNullishOrThrow(run.gates[1],).reject(new SyntheticHttpError({
+          status: 429,
+          bodyText: 'the second cat is out of treats',
+        },),);
+        await settle();
+        nonNullishOrThrow(run.gates[0],).reject(reason,);
+        expect(await failure,).toBe(reason,);
+        expect(lines,).toEqual([
+          'warn [mapOverlapped] cat b failed (refused by SyntheticHttpError with HTTP 429 (the provider said: "the '
+          + 'second cat is out of treats")), and the caller stopped the work',
+          'warn [mapOverlapped] cat d failed (refused by SyntheticHttpError with HTTP 503 (the provider said: "the '
+          + 'fourth cat is napping in the sun")), and the caller stopped the work',
+        ],);
+      },
+    },),
+
+    it({
+      name: 'WRITES NO LINE FOR THE FAILURE IT THROWS under the caller\'s stop, nor for a later job ending in the '
+        + 'caller\'s reason, and writes a job\'s own failure that ended before the stop arrived',
+      fn: async () => {
+        const run = gatedRun({ count: 3, },);
+        /**
+         Every line the helper wrote, behind its level.
+         */
+        const lines: string[] = [];
+        /**
+         The caller's steering.
+         */
+        const steering = new AbortController();
+        /**
+         Why the caller stopped the work.
+         */
+        const reason = new Error('the owner called the cats in',);
+        /**
+         What the first item throws, after the stop.
+         */
+        const firstRefusal = new SyntheticHttpError({
+          status: 500,
+          bodyText: 'the first cat knocked the bowl over',
+        },);
+        const failure = collected({
+          run: mapOverlapped({
+            items: ITEMS.slice(
+              0,
+              3,
+            ),
+            overlap: 3,
+            oneItem: run.oneItem,
+            signal: steering.signal,
+            l: levelCapturingLogger({ lines, },),
+            nameOf: catName,
+          },),
+        },);
+        await settle();
+        nonNullishOrThrow(run.gates[1],).reject(new SyntheticHttpError({
+          status: 429,
+          bodyText: 'the second cat is out of treats',
+        },),);
+        await settle();
+        steering.abort(reason,);
+        nonNullishOrThrow(run.gates[2],).reject(reason,);
+        await settle();
+        nonNullishOrThrow(run.gates[0],).reject(firstRefusal,);
+        expect(await failure,).toBe(firstRefusal,);
+        expect(lines,).toEqual([
+          'warn [mapOverlapped] cat b failed (refused by SyntheticHttpError with HTTP 429 (the provider said: "the '
+          + 'second cat is out of treats")), and the caller stopped the work',
+        ],);
+      },
+    },),
+
+    it({
+      name: 'WRITES NOTHING WHILE THE CALLER HAS NOT STOPPED, though a failure past the lowest position goes '
+        + 'unthrown, and throws the lowest position\'s failure',
+      fn: async () => {
+        const run = gatedRun({ count: 2, },);
+        /**
+         Every line the helper wrote, behind its level.
+         */
+        const lines: string[] = [];
+        /**
+         What the first item throws, second in time.
+         */
+        const earlier = new Error('the first item broke after it',);
+        const failure = collected({
+          run: mapOverlapped({
+            items: ITEMS.slice(
+              0,
+              2,
+            ),
+            overlap: 2,
+            oneItem: run.oneItem,
+            signal: NEVER_STOPPED,
+            l: levelCapturingLogger({ lines, },),
+            nameOf: catName,
+          },),
+        },);
+        await settle();
+        nonNullishOrThrow(run.gates[1],).reject(new Error('the second item broke first',),);
+        await settle();
+        nonNullishOrThrow(run.gates[0],).reject(earlier,);
+        expect(await failure,).toBe(earlier,);
+        expect(lines,).toEqual([],);
+      },
+    },),
+
+    it({
+      name: 'WRITES ONCE a buy\'s own failure under the caller\'s stop, on the line the twin memo wrote as the buy '
+        + 'ended, and adds no line of its own for it',
+      fn: async () => {
+        const run = gatedRun({ count: 2, },);
+        /**
+         Every line the memo and the helper wrote, behind its level.
+         */
+        const lines: string[] = [];
+        /**
+         Logger both write through.
+         */
+        const l = levelCapturingLogger({ lines, },);
+        /**
+         The caller's steering.
+         */
+        const steering = new AbortController();
+        /**
+         Why the caller stopped the work.
+         */
+        const reason = new Error('the owner called the cats in',);
+        /**
+         Buys of this run by question.
+         */
+        const memo: TwinMemo<string> = new Map();
+        const failure = collected({
+          run: mapOverlapped({
+            items: ITEMS.slice(
+              0,
+              2,
+            ),
+            overlap: 2,
+            oneItem: async function waitsOrBuys(row,): Promise<string> {
+              if (row.position === 0)
+                return await run.oneItem(row,);
+              /**
+               The second item's buy under the memo.
+               */
+              const asked = await reuseTwinOrBuy({
+                key: 'the sunny windowsill',
+                memo,
+                buy: async function buyTheWindowsill(): Promise<string> {
+                  return await run.oneItem(row,);
+                },
+                persistedOf: function stored(bought: string,): TwinStored<string> {
+                  return {
+                    kind: 'stored',
+                    record: bought,
+                  };
+                },
+                l,
+              },);
+              return (asked.kind === 'reused') ? asked.twin : asked.bought;
+            },
+            signal: steering.signal,
+            l,
+            nameOf: catName,
+          },),
+        },);
+        await settle();
+        steering.abort(reason,);
+        nonNullishOrThrow(run.gates[1],).reject(new SyntheticHttpError({
+          status: 503,
+          bodyText: 'the second cat is napping in the sun',
+        },),);
+        await settle();
+        nonNullishOrThrow(run.gates[0],).reject(reason,);
+        expect(await failure,).toBe(reason,);
+        expect(lines,).toEqual([
+          'warn twin memo: the buy for a shared key was abandoned (refused by SyntheticHttpError with HTTP 503 (the '
+          + 'provider said: "the second cat is napping in the sun")), so any twin waiting on it asks for itself',
+        ],);
       },
     },),
   ],

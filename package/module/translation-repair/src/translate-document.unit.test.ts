@@ -40,6 +40,7 @@ import {
   type TranslateSliceSeating,
 } from '../dist/final/node/index.mjs';
 import { capturingLogger, } from './capturing-logger.test-fixture.ts';
+import { rejectionOf, } from './rejecting-call.test-fixture.ts';
 import {
   SEAT_HYPER_OPENROUTER_UNMEASURED,
   SEAT_HYPER_VISION,
@@ -51,6 +52,10 @@ import {
 import { candidateCarrying, } from './translate-ballot.test-fixture.ts';
 import { HANG_STOP_MS, } from './hang-stop.test-fixture.ts';
 import { SCRIPTED_STAGE_SETTINGS, } from './stage-settings.test-fixture.ts';
+import {
+  stopLandingHook,
+  UNASKED_CLIENT,
+} from './stop-landing-hook.test-fixture.ts';
 
 /**
  Logger for the driver under test.
@@ -1620,6 +1625,57 @@ The cat is doing the sleeping on the windowsill.
         },),).toStrictEqual([
           true,
           true,
+        ],);
+      },
+    },),
+
+    it({
+      name: 'WRITES A LATER SLICE\'S OWN FAILURE UNDER THE CALLER\'S STOP, the roster its hook re-seated with no '
+        + 'translator refused as the stop landed while the first slice ended in the caller\'s reason, and refuses '
+        + 'with that reason',
+      fn: async () => {
+        /**
+         Every line the driver wrote.
+         */
+        const messages: string[] = [];
+        /**
+         The caller's steering, which the later slice's hook stops.
+         */
+        const steering = new AbortController();
+        /**
+         What the driver refused with.
+         */
+        const refusal = await rejectionOf(async function translatesUnderTheStop(): Promise<unknown> {
+          return await translateDocument({
+            client: UNASKED_CLIENT,
+            prepared: prepareDocumentPair({
+              sourceText: SOURCE_TEXT,
+              targetText: TARGET_TEXT,
+            },),
+            models: MODELS,
+            signal: steering.signal,
+            perCallTimeoutMs: HANG_STOP_MS,
+            overlap: 2,
+            beforeSlice: stopLandingHook<TranslateSliceSeating>({
+              steering,
+              reason: ENTRY_DEADLINE_FAILURE,
+              afterStop: function seatNoTranslator(): TranslateSliceSeating {
+                return {
+                  translateModels: {
+                    ...MODELS,
+                    translatorModelIds: [],
+                  },
+                };
+              },
+            },),
+            l: capturingLogger({ messages, },),
+            stageSettings: SCRIPTED_STAGE_SETTINGS,
+          },);
+        },);
+        expect(refusal,).toBe(ENTRY_DEADLINE_FAILURE,);
+        expect(messages,).toEqual([
+          '[translateDocument] [mapOverlapped] slice 1 failed (refused by RosterConfigurationError), and the caller '
+          + 'stopped the work',
         ],);
       },
     },),

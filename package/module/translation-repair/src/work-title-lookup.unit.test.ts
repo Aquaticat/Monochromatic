@@ -11,6 +11,8 @@
  @module
  */
 
+import { setImmediate as turnOfTheLoop, } from 'node:timers/promises';
+
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import {
   DEFAULT_CONCURRENCY,
@@ -44,6 +46,7 @@ import {
 import { WHISKER_KEY, } from './quoting-failure.test-fixture.ts';
 import { rejectionOf, } from './rejecting-call.test-fixture.ts';
 import { scratchDir, } from './scratch-dir.test-fixture.ts';
+import { untilAborted, } from './stage-trivial-reply.test-fixture.ts';
 
 /**
  What a request that failed before any answer came back says it can be.
@@ -798,6 +801,74 @@ await describe({
             expect(logged,).toEqual([
               `[workTitleLookupLines] lookup for 《猫的午睡》 failed and contributes no line: search request to ${EXA_SEARCH_URL} ${TAIL}`,
               '[workTitleLookupLines] 1 work title looked up, 0 lines',
+            ],);
+          },
+        },),
+        it({
+          name: 'REFUSES WITH THE CALLER\'S REASON once the caller stops the lookups, writing no failed lookup for a '
+            + 'search that ended in that reason, and still writes a search\'s own failure that landed as the stop did',
+          fn: async () => {
+            await using scratch = await scratchDir({ prefix: 'work-title-lookup-', },);
+            const {
+              logger,
+              lines: logged,
+            } = capturingLoggerPair();
+            /**
+             The caller's steering, which the first title's search stops.
+             */
+            const steering = new AbortController();
+            /**
+             Why the caller stopped the lookups.
+             */
+            const reason = new Error('the owner called the cats in',);
+            /**
+             Transport whose search for the nap stops the caller and then drops, and whose search for the
+             supper waits for the stop and rejects with the request signal's reason, as `fetch` does.
+
+             @param _input - endpoint, unread
+
+             @param init - request, whose body names the title and whose signal is the caller's
+
+             @returns Never; every search rejects
+             */
+            async function stoppedTransport(_input: string | URL | Request, init?: RequestInit,): Promise<Response> {
+              /**
+               Body as sent, which names the title asked about.
+               */
+              const sent = init?.body;
+              if (((typeof sent) === 'string') && sent.includes('猫的午睡',)) {
+                steering.abort(reason,);
+                throw new TypeError('fetch failed',);
+              }
+              /**
+               The request's signal, which `fetch` honours.
+               */
+              const signal = init?.signal ?? SIGNAL;
+              await untilAborted({ signal, },);
+              signal.throwIfAborted();
+              throw new Error('unreachable: a search that waited for its abort was handed a signal that had not aborted',);
+            }
+            /**
+             What the lookups refused with.
+             */
+            const refusal = await rejectionOf(async function looksUpUnderTheStop(): Promise<unknown> {
+              return await workTitleLookupLines({
+                sourceText: '她读《猫的午睡》，又读《猫的晚餐》。',
+                apiKey: 'test-key',
+                dir: scratch.path,
+                signal: steering.signal,
+                fetchFn: stoppedTransport,
+                now: () => NOW,
+                logger,
+              },);
+            },);
+            // The search that dropped writes its line as it ends, which can be
+            // after the lookups refused; every scripted failure waits on nothing
+            // but a microtask, so a turn of the event loop later both have ended.
+            await turnOfTheLoop();
+            expect(refusal,).toBe(reason,);
+            expect(logged,).toEqual([
+              '[workTitleLookupLines] lookup for 《猫的午睡》 failed and contributes no line: refused by TypeError',
             ],);
           },
         },),
