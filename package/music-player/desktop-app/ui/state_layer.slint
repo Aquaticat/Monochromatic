@@ -1,0 +1,23 @@
+// Material 3 state layer for clickable elements: a tint over the element that shows hover (8 percent) and pressed
+// (12 percent), so every control answers the pointer. Put it inside the clickable element, above its fill and below
+// its content, and bind `hovered` and `pressed` to the element's TouchArea `has-hover` and `pressed`.
+import { Theme } from "theme.slint";
+
+// Overlay that fills its parent. `tint` is the content color of the surface it sits on (on-surface for plain
+// surfaces, the role's own content color for tonal fills), and `radius` must match the parent's corner radius.
+export component StateLayer inherits Rectangle {
+    // True while the pointer is over the element.
+    in property <bool> hovered: false;
+    // True while the pointer button is held on the element.
+    in property <bool> pressed: false;
+    // True when the element is disabled, which shows no state.
+    in property <bool> disabled: false;
+    // Content color of the surface the layer sits on.
+    in property <color> tint: Theme.on-surface;
+    // Corner radius of the element, so the tint does not poke out of rounded corners.
+    in property <length> radius: 0px;
+
+    border-radius: root.radius;
+    background: root.disabled ? transparent : root.pressed ? root.tint.with-alpha(0.12) : root.hovered ? root.tint.with-alpha(0.08) : transparent;
+    animate background { duration: 100ms; }
+}
