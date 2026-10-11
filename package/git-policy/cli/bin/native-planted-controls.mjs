@@ -177,6 +177,20 @@ const plantedControls = [
     to: "if false {",
     failing: "capture_invocation::tests::conclusion_markers_decide_the_kind",
   },
+  {
+    name: "a failed interactive selection is reported",
+    file: "src/native/commit_index.rs",
+    from: "    if !status.success() {",
+    to: "    if false {",
+    failing: "commit_index::tests::interactive_selection_reports_a_failed_git_add",
+  },
+  {
+    name: "a missing shared info directory is tolerated",
+    file: "src/native/shadow_links.rs",
+    from: "        Err(error) if error.kind() == std::io::ErrorKind::NotFound => {}",
+    to: "        Err(error) if false => {}",
+    failing: "shadow_links::tests::linked_worktree_without_a_shared_info_directory_still_links",
+  },
 ];
 
 /**

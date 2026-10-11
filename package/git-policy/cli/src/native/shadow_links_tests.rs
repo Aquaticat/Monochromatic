@@ -80,3 +80,47 @@ fn private_names_cover_conclusion_state_and_locks() {
         assert!(!is_private_shadow_entry(name), "{name}");
     }
 }
+
+/// The private `info` directory of a linked worktree is private to the account.
+#[cfg(unix)]
+#[test]
+fn private_info_directory_is_private() {
+    use std::os::unix::fs::PermissionsExt;
+    let root: PathBuf = fixture("shadow-links-info-mode");
+    let repo: PathBuf = repository(root.as_path(), "repo");
+    let linked: PathBuf = root.join("linked");
+    git(repo.as_path(), &["worktree", "add", "--quiet", "-b", "feature", linked.to_str().expect("fixture")]);
+    let common: PathBuf = repo.join(".git");
+    let git_dir: PathBuf = common.join("worktrees").join("linked");
+    std::fs::create_dir_all(git_dir.join("info")).expect("worktree info");
+    std::fs::write(git_dir.join("info").join("sparse-checkout"), "/*\n").expect("sparse");
+    let shadow: PathBuf = root.join("shadow");
+    std::fs::create_dir(&shadow).expect("shadow");
+    link_shadow_entries(shadow.as_path(), common.as_path(), git_dir.as_path()).expect("link");
+    let mode: u32 = std::fs::metadata(shadow.join("info")).expect("info").permissions().mode() & 0o777;
+    assert_eq!(mode, 0o700);
+    remove(root.as_path());
+}
+
+/// A linked worktree whose common directory has no shared `info` directory still links,
+///  with its own sparse checkout copied in.
+#[test]
+fn linked_worktree_without_a_shared_info_directory_still_links() {
+    let root: PathBuf = fixture("shadow-links-no-info");
+    let repo: PathBuf = repository(root.as_path(), "repo");
+    let linked: PathBuf = root.join("linked");
+    git(repo.as_path(), &["worktree", "add", "--quiet", "-b", "feature", linked.to_str().expect("fixture")]);
+    let common: PathBuf = repo.join(".git");
+    let git_dir: PathBuf = common.join("worktrees").join("linked");
+    std::fs::create_dir_all(git_dir.join("info")).expect("worktree info");
+    std::fs::write(git_dir.join("info").join("sparse-checkout"), "/*\n").expect("sparse");
+    std::fs::remove_dir_all(common.join("info")).expect("remove shared info");
+    let shadow: PathBuf = root.join("shadow");
+    std::fs::create_dir(&shadow).expect("shadow");
+    link_shadow_entries(shadow.as_path(), common.as_path(), git_dir.as_path()).expect("link");
+    assert_eq!(
+        std::fs::read_to_string(shadow.join("info").join("sparse-checkout")).expect("sparse copy"),
+        "/*\n"
+    );
+    remove(root.as_path());
+}

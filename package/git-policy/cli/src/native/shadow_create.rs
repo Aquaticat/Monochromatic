@@ -86,7 +86,7 @@ fn set_private_file(_path: &Path) -> std::io::Result<()> {
 fn create_parent(shadow: &Path) -> std::io::Result<()> {
     let parent: &Path = shadow.parent().unwrap_or(shadow);
     if let Some(grandparent) = parent.parent().filter(|grandparent| { return !grandparent.exists(); }) {
-        std::fs::create_dir_all(grandparent)?;
+        create_private_directory(grandparent)?;
     }
     if !parent.exists() {
         create_private_directory(parent)?;

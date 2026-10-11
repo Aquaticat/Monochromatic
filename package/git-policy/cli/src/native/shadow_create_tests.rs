@@ -181,3 +181,22 @@ fn sha256_and_reftable_repositories_get_matching_shadows() {
     assert_eq!(shadow_text(reftable_shadow.as_path(), &["rev-parse", "HEAD"]), reftable_head);
     remove(root.as_path());
 }
+
+/// The shadow and the directories above it are private, as the incumbent's recursive private mkdir makes them.
+#[cfg(unix)]
+#[test]
+fn shadow_and_its_parents_are_private() {
+    use std::os::unix::fs::PermissionsExt;
+    let root: PathBuf = fixture("shadow-create-modes");
+    let repo: PathBuf = repository(root.as_path(), "repo");
+    let (shadow, _transaction, _capture) = create(repo.as_path(), root.as_path(), TRANSACTION);
+    for directory in [
+        shadow.clone(),
+        shadow.parent().expect("parent").to_path_buf(),
+        shadow.parent().expect("parent").parent().expect("grandparent").to_path_buf(),
+    ] {
+        let mode: u32 = std::fs::metadata(&directory).expect("metadata").permissions().mode() & 0o777;
+        assert_eq!(mode, 0o700, "{}", directory.display());
+    }
+    remove(root.as_path());
+}
