@@ -32424,6 +32424,8 @@ and the other reaches no line;
 this is the agent's reading,
 not run.
 It waits for a GitHub issue or a later change.
+Closed in B403,
+which ran it.
 `runPick` under a stop still prints its slice as refused by `AbortError` and returns `refused`,
 unchanged from the base,
 which tells a log reader the stop ended the arms.
@@ -34484,6 +34486,85 @@ where moving them is the alternative.
 Recurrence:
 `mistake-prevention.md`,
 "Tests on the real clock".
+
+### B403: a repair re-ask's own failure under the caller's stop reached no line
+
+Red in `4cafeda7ee47f30bc19a1f110085dbe91d9bf3ac`,
+fixed in `689064b25cf82602a3a1d2ed17a2e2c063cedb82`.
+
+Found on 2026-10-10 (UTC) as the open item B365 recorded:
+`repairInvalidCandidates` (`translate-repair.ts`) starts one `repairOneCandidate` per invalid candidate
+and reads them through `allInInputOrder`,
+and each calls `attemptStageCall`,
+which rethrows a failure without writing it once the caller's signal has aborted.
+So when two invalid candidates' re-asks both fail as the caller stops,
+the call throws only the first failure in input order,
+and a deadline or a provider's refusal the other seat's re-ask ended in reached no line.
+B365 gave that as the agent's reading,
+not run;
+the red case runs it.
+By the agent's census of production calls to `attemptStageCall`,
+there are two:
+the seat of a gather round in `stage-round.ts`,
+which B365 covers by the line `askOnce` writes,
+and this one,
+which had none.
+
+The red case,
+in `translate-repair.unit.test.ts`,
+sends back three candidates whose re-asks end as the caller stops:
+the later-listed seat's first,
+with a provider refusal carrying its words,
+the first-listed seat's after it,
+with another,
+and a middle seat's in the caller's own reason.
+It asserts one line per failing seat with that seat's own words,
+no line for the seat that ended in the caller's reason,
+and the first failure in input order as the thrown error.
+Against the unchanged code it fails with the log holding three lines where five are expected.
+By the agent's control,
+removing the check that the failure is not the caller's reason fails the case with an extra line.
+
+The fix:
+`repairOneCandidate` catches the failure of its stage call,
+and when the caller has aborted and the failure is not the caller's reason,
+writes it on a `translate-repair` line naming the seat,
+through `exchangeFailureLogText`,
+as the stage round does,
+then rethrows it unchanged.
+The thrown error is the same as before.
+Lines land in the order the re-asks end,
+which the TSDoc `@throws` of both functions now says.
+
+Open:
+`readImagePair` (`image-reading-pair.ts`) reads its readers under `Promise.allSettled`
+and calls `signal.throwIfAborted()` before `contained` logs a rejected settlement,
+so a reader's own failure under a stop reaches no line;
+the agent read it in the source,
+and no case runs it.
+Two lesser sites hold the same shape,
+`fidelity-reference-read.ts` and `overlapped-map.ts`,
+and are unread beyond that.
+`gateProvider` writes the caller's own reason as a meter that could not be read,
+and `meterRecordOf` names the failure's class alone,
+dropping the provider's words.
+
+Open to the owner's veto:
+the line reads "as the caller stopped the repair",
+where the stage round's reads "as the caller stopped the round";
+the stage label is the constant `REPAIR_STAGE`,
+shared with the exchange's own lines;
+the line carries the logger's `repairOneCandidate` tag,
+where the round's `askOnce` line carries none;
+the case waits one turn of the event loop for the later lines;
+and a first failure on the translate path may be written twice,
+once here and once by `translate-slice-attempt.ts`,
+which is the agent's inference from reading both,
+not run.
+
+Recurrence:
+`mistake-prevention.md`,
+"Output decided by arrival order".
 
 ## Process mistakes in this audit
 

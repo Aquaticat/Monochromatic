@@ -4572,6 +4572,12 @@ The editor standing read listed its directories and read its artifacts under `Pr
 and printed each "no artifacts under",
 off-roster or refused line from inside the member that found it,
 so one set of archives gave its stderr lines in completion order (ledger B392).
+The repair of invalid candidates re-asked each author and read the re-asks in input order,
+but wrote no line for a re-ask that failed as the caller stopped,
+so every failure but the first in input order was lost (ledger B403).
+The sibling round had been fixed for the same shape;
+this fan-out was found by a census of the callers,
+after the ledger had recorded it as an open reading.
 
 The rule:
 what a command prints,
@@ -4639,6 +4645,14 @@ in input order when the later member ends first (ledger B388).
 `corpus-run/editor-standing-read-run.unit.test.ts` holds each refused artifact in the order its archive was named
 when the later archive's read ends first,
 and two directories that cannot be listed in the order they were named (ledger B392).
+`translate-repair.unit.test.ts` holds the line each failing re-ask writes as the caller stops the repair,
+with the later-listed seat's first,
+none for a re-ask ending in the caller's own reason,
+and the first failure in input order thrown (ledger B403).
+When a fix closes one fan-out of a shape,
+the same change lists every other caller of the helper that rethrows unwritten under a stop,
+and says which are covered;
+the census is part of the fix.
 No scan finds a result ordered by arrival,
 nor a line logged from inside a member.
 
