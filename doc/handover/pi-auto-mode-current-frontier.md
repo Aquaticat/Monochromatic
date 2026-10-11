@@ -298,7 +298,10 @@ The unassociated ordinary request domain and other unconsumed producer relations
 
 ## Current manager inputs at judgment start
 
-This private increment is under verification.
+This private increment passed native,
+action-policy,
+and policy-source verification;
+final documentation closeout remains.
 The manager observes original `appendMessage` inputs both before and after Session context attachment.
 The current phase uses `native-manager-input`;
 the initial phase keeps its distinct origin.
@@ -411,8 +414,21 @@ Diagnostic `9f8e832f` / `proc_b4f5` measured 69 frozen sources in a shared-sessi
 exceeding the unchanged 64-source limit.
 Independent carrier cases now use disposable sessions;
 the original shared-session rejection is retained as a separate bound control.
-Runtime-suffix verification is running as `proc_5185`.
-There is not yet a complete native pass for this increment.
+Runtime suffix `eaa78d4a` / `proc_5185` passed all 39 result records,
+including the retained bound rejection and all six full-policy profiles.
+The final one-shot native parent `3ea75e62` / `proc_d937` then passed:
+82 complete result records,
+142 constructed-input cases,
+69 section cases,
+and all six full-policy profiles.
+The parent had no nonroutine stderr;
+child matrices reported empty stderr.
+Complete action-policy and policy-source verification passed `proc_417a`.
+All deliberate omissions remain restored.
+Only documentation and standalone,
+non-wired intake tests changed during the final parent.
+The earlier unattributed parent failures remain historical failures,
+not explained by this later pass.
 Earlier complete suites cover the pre-attachment checkpoint,
 not these changes.
 All original bounds and installation,
