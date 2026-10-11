@@ -1536,6 +1536,33 @@ that is verification, not a decision for the user.
   and the remaining serial slices (6 preparation policies, 7 landing, 9 integration) follow.
   Heavy gates run through `~/temp/agent/gate-slot.ts` (four host-wide slots).
   At most five delegates run at once.
+  Status on 2026-10-11:
+  all six lanes (`hooks`, `replay-core`, `capture`, `signals`, `auto-push`, `worktree-copy`) are merged into
+  `feat/cli-git-native-transactions`; the container gate and native Clippy exit 0 on the merged head `ec597deb26`
+  (Git 2.56.0 image).
+  Each lane's evidence doc `doc/handover/cli-git-native-<lane>.md` holds its gates and a `Trailing gates` heading
+  with the mutation campaigns that now trail the cutover and their exact rerun commands.
+  The transactions branch also fixed the real-child holder race in the index-lock scan (`2ab2269238`);
+  a mutation-container baseline skip option exists (`NATIVE_MUTATION_BASELINE_SKIP`, `fb10924147`).
+  Slice 6 (preparation policy convergence) has its first increment on the transactions branch:
+  `policy_patch_validate.rs` and `policy_patch.rs` (the patch grammar and the private index apply).
+  Still to do in slice 6: convergence wiring, added-path admission, hook-staged changes,
+  `commit-normalization/no-change`, convergence snapshots, the three binary acceptance cases and the differential
+  JSONL; capture's finding applies (a hook config does not suppress `hooksPath` scripts on Git 2.55.0).
+  Slice 7 was split into two parallel lanes started from the transactions head `c2f4219acb`:
+  `landing` (phase markers and the landing loop: branch `feat/cli-git-native-landing`)
+  and `post-landing` (post-landing completion: branch `feat/cli-git-native-post-landing`).
+  A `signals-fix` lane (`feat/cli-git-native-signals-fix`) chases a host-only flake in
+  `signal_relay::tests::signal_during_start_is_relayed_after_the_child_starts` (3 of 6 host runs failed;
+  the container gate passes).
+  After those: merge the three branches, slice 9 (the transaction boundary replaces the commit refusal),
+  the incumbent's `e2e/` scenarios against the native executable, the closing gates, the translated repository
+  configuration, coordinated native installation, consumer migration, documentation and retirement of the TypeScript.
+  Process note (user, 2026-10-11): the harness often fails to return subagent reports and some agents look stuck,
+  so a session watchdog checks every twenty minutes (agents with no commit, file change or live gate for
+  forty-five minutes are stopped and resumed from the repository state);
+  every lane writes its final state into its evidence doc instead of relying on its report.
+  Two agents that had finished (`hooks` and `replay-core`) were terminated by the user; their work is merged.
 - [ ] Gates that trail the cutover (user decision 2026-10-10: the code ships first, the gate runs afterward):
   the Windows checks and the release-artifact performance gates;
   the old-and-new wrapper interop matrix (one-direction fixtures where the incumbent writes and native reads stay);
