@@ -95,10 +95,43 @@ Option A shapes every line at the wrap width when text, width, scale, or annotat
 Option B estimates heights and corrects them as lines are shaped, using the existing keep-view-still machinery.
 The first slice measures A on a large file; B is the fallback if A costs too much.
 
-Also to verify before building:
-the style properties `TextWrapMode`, `OverflowWrap`, and `WordBreak` on Parley 0.11.1
-(only the 0.10 source has been read),
-and whether a Flickable whose content width equals its width also blocks shift-wheel motion.
+## Parley 0.11.1 findings
+
+Read from the crate source that matches `Cargo.lock` (checksum verified), without running code.
+
+- Style properties exist (defined in `parlance` 0.1.0, re-exported by Parley):
+  `TextWrapMode` (`Wrap` default, `NoWrap`), `OverflowWrap` (`Normal` default, `Anywhere`, `BreakWord`),
+  `WordBreak` (`Normal`, `BreakAll`, `KeepAll`).
+  They are set with `push_default` or `push` on the ranged builder.
+  A token longer than the width breaks only with `OverflowWrap::Anywhere` or `BreakWord`, per cluster;
+  with `Normal` it overflows the width.
+  `break_all_lines(Some(width))` takes the width in layout units (the scale passed to the builder).
+- Where a row breaks: Parley uses ICU line breaking (UAX 14) and keeps the rightmost fitting candidate,
+  an overflowing space hangs on the upper row.
+  ICU differs from IntelliJ: it does not break after `,`, `;`, `)` before a letter, nor before `(` or `.`.
+  CJK ideographs do break between each other.
+  The hook `set_line_break_override` on the builder (a function of the code point pair) can force or suppress a boundary,
+  so the IntelliJ rules can be added as an override; whether an override that splits a grapheme is safe is unverified.
+  The `complex-scripts` feature is off, so Thai, Lao, Khmer, and Myanmar get no dictionary breaking.
+- Reading rows: `layout.lines()` gives each visual row with its byte range and metrics (`block_min_coord`,
+  `block_max_coord`, `line_height`); the row index is only available by enumerating.
+  `Cursor::from_byte_index(layout, byte, affinity).geometry(...)` gives row and x;
+  at a soft break `Upstream` draws at the end of the upper row and `Downstream` at the start of the lower row,
+  which confirms the affinity bit.
+  `Cursor::from_point` gives index and affinity.
+  `Selection::geometry` returns one rectangle per visual row.
+  The existing note `doc/troubleshooting/parley-cursor-from-point-inside-grapheme.md` still applies.
+- Continuation indent: `Layout::set_text_indent(amount, IndentOptions { each_line: false, hanging: true })` indents every
+  row but the first and takes one amount per layout, so a layout per logical line works;
+  the indent becomes the row offset in `align()`, so `align` must run after breaking (unverified at runtime).
+  The breaker also exposes per row `set_line_x` and `set_line_max_advance`; its glyph shift is unverified.
+  The plan's earlier note that a per row width is impossible was wrong (a narrower width is possible).
+- Trailing whitespace: an overflowing space hangs on the upper row and is part of its range and advance;
+  `Layout::width()` excludes it and `full_width()` includes it. A tab does not hang.
+- Tabs: Parley 0.11.1 has no tab stops; `src/tab_layout.rs` measures them on an unbroken layout and corrects with
+  letter spacing, which must be redone per row (see `doc/troubleshooting/parley-tab-stops.md`).
+- Still unverified: runtime behavior of the indent and the breaker setters, the UAX 14 class of a tab, and whether
+  Flickable blocks shift-wheel motion when its content width equals its width.
 
 ## Order of work
 
