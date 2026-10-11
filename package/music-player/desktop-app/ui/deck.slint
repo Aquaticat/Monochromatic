@@ -282,7 +282,7 @@ export component TransportDeck inherits Rectangle {
         height: max(root.target, root.pad-y + title-text.height + subtitle-text.height);
         enabled: root.reveal-enabled;
         mouse-cursor: root.reveal-enabled ? pointer : default;
-        accessible-role: root.reveal-enabled ? button : none;
+        accessible-role: button;
         accessible-label: "Show playing track";
         clicked => {
             root.reveal-playing();
