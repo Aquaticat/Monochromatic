@@ -561,7 +561,6 @@ async function settleWith(
     standingRefusal,
     laneTexts = [],
     runoffOverStanding = false,
-    standingFlawedByAll = false,
     served = {
       judge: 0,
       gate: 0,
@@ -602,16 +601,11 @@ async function settleWith(
     /**
      Whether a strict majority of the contest ballots called the archive
      flawed, so a tied slate over an eligible standing is run off (class one
-     hundred six, owner answer 2026-10-11).
+     hundred six) and an undecided gate over it ships the slate's choice (class
+     one hundred seventy-seven); the owner put both on the majority on
+     2026-10-11.
      */
     readonly runoffOverStanding?: boolean;
-
-    /**
-     Whether every contest ballot called the archive flawed, so an undecided
-     gate over an eligible standing ships the slate's choice (class one hundred
-     seventy-seven).
-     */
-    readonly standingFlawedByAll?: boolean;
 
     /**
      Calls each route served, which every case asserts on; a case expecting
@@ -660,7 +654,6 @@ async function settleWith(
     ...((standingRefusal === undefined) ? {} : { standingRefusal, }),
     laneTexts,
     runoffOverStanding,
-    standingFlawedByAll,
     l,
     stageSettings: SCRIPTED_STAGE_SETTINGS,
   },);
@@ -1193,7 +1186,9 @@ await describe({
     it({
       name: 'SHIPS THE PROPOSAL THE SLATE CHOSE when the gate settles on neither over an eligible standing '
         + 'every contest ballot called flawed (class one hundred seventy-seven, one entry\'s slice 13, '
-        + 'owner answer 2026-09-27: "Slate\'s choice"); a gate that refuses the proposal still keeps the standing',
+        + 'owner answer 2026-09-27: "Slate\'s choice"; read from the same majority flag as the run-off since '
+        + 'the owner answer of 2026-10-11, "Majority, like the run-off"); a gate that refuses the proposal '
+        + 'still keeps the standing',
       fn: async () => {
         const { settled, } = await settleWith({
           voices: [voiceOf({ modelId: ROSTER[0], translation: FRESH, },),],
@@ -1201,13 +1196,12 @@ await describe({
           judgeReply: judgeBallot({ best: positionOfText({ texts: [FRESH,], wanted: FRESH, },), },),
           gateReply: ballot({ choice: 'neither', },),
           runoffOverStanding: true,
-          standingFlawedByAll: true,
         },);
         expect(settled.terminal,).toBe('consolidated',);
         expect(settled.text.replaceAll('\n', ' ',),).toBe(FRESH,);
         expect(settled.gate?.choice,).toBe('neither',);
         expect(settled.findings.some(function namesFlawedStanding(finding,): boolean {
-          return finding.startsWith('undecided-gate-ships-proposal (standing flawed by every contest ballot)',);
+          return finding.startsWith('undecided-gate-ships-proposal (standing flawed by a majority of contest ballots)',);
         },),).toBe(true,);
 
         const refused = await settleWith({
@@ -1216,7 +1210,6 @@ await describe({
           judgeReply: judgeBallot({ best: positionOfText({ texts: [FRESH,], wanted: FRESH, },), },),
           gateReply: ballot({ choice: 'standing', },),
           runoffOverStanding: true,
-          standingFlawedByAll: true,
         },);
         expect(refused.settled.terminal,).toBe('gate-kept-standing',);
         expect(refused.settled.text,).toBe(STANDING,);
@@ -1604,21 +1597,31 @@ await describe({
       },
     },),
     it({
-      name: 'KEEPS THE STANDING ON AN UNDECIDED GATE when a strict majority but not every contest ballot '
-        + 'called the archive flawed, since the forfeit still reads every ballot (owner answer 2026-09-27, '
-        + '"Slate\'s choice")',
+      name: 'KEEPS THE STANDING ON AN UNDECIDED GATE when no majority of contest ballots called the archive '
+        + 'flawed, and ships the slate\'s choice when one did though not every ballot did (owner answer '
+        + '2026-10-11, "Majority, like the run-off"; TianqiChen66622 slice 4 had four of five)',
       fn: async () => {
-        const { settled, } = await settleWith({
+        const kept = await settleWith({
+          voices: [voiceOf({ modelId: ROSTER[0], translation: FRESH, },),],
+          validity: [validityOf({ modelId: ROSTER[0], valid: true, },),],
+          judgeReply: judgeBallot({ best: positionOfText({ texts: [FRESH,], wanted: FRESH, },), },),
+          gateReply: ballot({ choice: 'neither', },),
+          runoffOverStanding: false,
+        },);
+        expect(kept.settled.terminal,).toBe('gate-kept-standing',);
+        expect(kept.settled.text,).toBe(STANDING,);
+        expect(kept.settled.findings.includes(FLAWED_STANDING_GATE_SHIPS_PROPOSAL_FINDING,),).toBe(false,);
+
+        const forfeit = await settleWith({
           voices: [voiceOf({ modelId: ROSTER[0], translation: FRESH, },),],
           validity: [validityOf({ modelId: ROSTER[0], valid: true, },),],
           judgeReply: judgeBallot({ best: positionOfText({ texts: [FRESH,], wanted: FRESH, },), },),
           gateReply: ballot({ choice: 'neither', },),
           runoffOverStanding: true,
-          standingFlawedByAll: false,
         },);
-        expect(settled.terminal,).toBe('gate-kept-standing',);
-        expect(settled.text,).toBe(STANDING,);
-        expect(settled.findings.includes(FLAWED_STANDING_GATE_SHIPS_PROPOSAL_FINDING,),).toBe(false,);
+        expect(forfeit.settled.terminal,).toBe('consolidated',);
+        expect(forfeit.settled.text.replaceAll('\n', ' ',),).toBe(FRESH,);
+        expect(forfeit.settled.findings.includes(FLAWED_STANDING_GATE_SHIPS_PROPOSAL_FINDING,),).toBe(true,);
       },
     },),
     it({
