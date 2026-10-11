@@ -36,7 +36,7 @@ the `Flickable` moves the existing image on its own.
    whether the view still lies inside the tile; if it does, it returns before any shaping, painting, or model update.
    Line numbers, selection, find, and annotation rectangles are in content coordinates and need no update either.
 3. Re-centering: when the view reaches the edge region of the tile, a new tile is built.
-   First on the UI thread (stage 1), then on a worker thread (stage 2),
+   First on the UI thread (stage 1, built), then on a worker thread (stage 2, built in `src/native/tile_build.rs`),
    which shapes and rasterizes off the UI thread and hands back the image, the shaped rows, and the rectangles;
    the UI thread only swaps them, image and offset in the same step, so the picture does not jump.
    Fast scrolling past the tile shows the stale tile until the new one arrives, never a blank.
@@ -50,6 +50,7 @@ the `Flickable` moves the existing image on its own.
 ## Order
 
 1. Stage 1: the overscan tile with hysteresis, the early return, the row cache, and the structural test and guard.
-2. Stage 2: the worker thread for tile building.
+2. Stage 2: the worker thread for tile building (built: scroll re-centers only, with the structural test
+   `leaving_the_overscan_tile_re_centers_on_the_worker_thread` and the guard `recenter-on-window-thread`).
 3. Soft wrap (`doc/planning/slint-ide-soft-wrap.md`) lands on this pipeline, not before it:
    wrapping needs the row cache, per-line heights, and the tile build that stage 2 moves off the UI thread.

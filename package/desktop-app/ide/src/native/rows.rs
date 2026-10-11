@@ -431,9 +431,9 @@ pub(super) struct Placement {
 /// ```
 pub(super) fn measure(current: &State, anchor_line: i32) -> Placement {
     let map = &current.row_map;
-    let last = current.first.saturating_add(current.count).min(map.lines());
+    let last = current.shown.first.saturating_add(current.shown.count).min(map.lines());
     let mut tops = Vec::new();
-    for line in current.first..last {
+    for line in current.shown.first..last {
         tops.push(map.code_top(line));
     }
     // What: `vec![0; n]` is a list of n zeros; `partition_point` is a binary search for the first block at or
@@ -448,19 +448,19 @@ pub(super) fn measure(current: &State, anchor_line: i32) -> Placement {
     let mut marks = vec![0; tops.len()];
     let from = current
         .blocks
-        .partition_point(|block| return block.line < current.first);
+        .partition_point(|block| return block.line < current.shown.first);
     for block in &current.blocks[from..] {
         if block.line >= last {
             break;
         }
         // `first()` lends the worst message row, or nothing for a block without messages.
         if let Some(worst) = block.messages.first() {
-            marks[block.line - current.first] = i32::from(rank(worst.severity)) + 1;
+            marks[block.line - current.shown.first] = i32::from(rank(worst.severity)) + 1;
         }
     }
     return Placement {
         extent: map.height(),
-        first: current.first,
+        first: current.shown.first,
         tops,
         // `Rc::clone` copies the pointer to the shared model, not its rows.
         model: Rc::clone(&current.line_tops),

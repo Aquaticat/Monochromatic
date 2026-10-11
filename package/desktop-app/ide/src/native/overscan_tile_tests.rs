@@ -1,12 +1,17 @@
 //! Scrolling inside the overscan tile enters no render, paints no tile, shapes no row, and sets no image;
-//!  leaving the tile re-centers it exactly once, and the visible pixels equal a fresh render at that offset.
+//!  leaving the tile re-centers it on the tile worker, the window thread only swaps the finished tile in,
+//!  and the visible pixels equal a fresh render at that offset.
 
 /// Reuse production viewport callbacks, appearance callbacks, and the raster presentation.
 use super::{AppWindow, State, bind_appearance, bind_viewport, render};
 /// Toolkit windows and component ownership stay on the test's event-loop thread.
-use slint::{ComponentHandle, platform::update_timers_and_animations};
+use slint::{ComponentHandle, Model, platform::update_timers_and_animations};
 /// UI state is shared between the window callbacks and the test.
-use std::{cell::RefCell, rc::Rc};
+use std::{
+    cell::RefCell,
+    rc::Rc,
+    time::{Duration, Instant},
+};
 
 /// Lines of the disposable document; the scrolls in these tests stay far from its end.
 const LINES: usize = 5000;
@@ -14,6 +19,8 @@ const LINES: usize = 5000;
 const START: f32 = 40_000.0;
 /// Logical pixels of one small wheel step.
 const STEP: f32 = 3.0;
+/// Longest wait for the tile worker to answer one re-center; the host can be under heavy load.
+const PATIENCE: Duration = Duration::from_secs(10);
 
 /// Five thousand numbered lines, each ending with a line feed.
 fn document() -> String {
@@ -38,6 +45,42 @@ fn scroll_to(window: &AppWindow, offset: f32) {
     update_timers_and_animations();
 }
 
+/// Advance timers until no re-center is queued or shown, failing after `PATIENCE`.
+/// The displayed tile stays on screen while this waits, so the wait is never a blank frame.
+fn settle_tile(state: &Rc<RefCell<State>>) {
+    let start = Instant::now();
+    loop {
+        update_timers_and_animations();
+        {
+            let current = state.borrow();
+            if current.tile_job.is_none() && current.scroll_wanted.is_none() {
+                return;
+            }
+        }
+        assert!(
+            start.elapsed() < PATIENCE,
+            "the source tile worker did not finish the re-center within {PATIENCE:?}"
+        );
+        std::thread::sleep(Duration::from_millis(2));
+    }
+}
+
+/// Advance timers until the worker has answered one more request than `before`, failing after `PATIENCE`.
+fn until_worker_reply(state: &Rc<RefCell<State>>, before: u64) {
+    let start = Instant::now();
+    loop {
+        update_timers_and_animations();
+        if state.borrow().worker_tiles > before {
+            return;
+        }
+        assert!(
+            start.elapsed() < PATIENCE,
+            "the source tile worker did not answer within {PATIENCE:?}"
+        );
+        std::thread::sleep(Duration::from_millis(2));
+    }
+}
+
 /// Zero the test counters so the assertions count only what follows.
 fn reset(state: &Rc<RefCell<State>>) {
     let mut current = state.borrow_mut();
@@ -45,9 +88,13 @@ fn reset(state: &Rc<RefCell<State>>) {
     current.tiles_painted = 0;
     current.rows_shaped = 0;
     current.images_set = 0;
+    current.worker_tiles = 0;
+    current.worker_rows_shaped = 0;
+    current.tiles_applied = 0;
+    current.tiles_discarded = 0;
 }
 
-/// Renders, painted tiles, shaped rows, and images set since the last reset, in that order.
+/// Renders, painted tiles, shaped rows, and images set on the window thread since the last reset, in that order.
 fn counts(state: &Rc<RefCell<State>>) -> [u64; 4] {
     let current = state.borrow();
     return [
@@ -55,6 +102,17 @@ fn counts(state: &Rc<RefCell<State>>) -> [u64; 4] {
         current.tiles_painted,
         current.rows_shaped,
         current.images_set,
+    ];
+}
+
+/// Tiles the worker answered, rows it shaped, tiles swapped in, and tiles discarded, since the last reset.
+fn worker_counts(state: &Rc<RefCell<State>>) -> [u64; 4] {
+    let current = state.borrow();
+    return [
+        current.worker_tiles,
+        current.worker_rows_shaped,
+        current.tiles_applied,
+        current.tiles_discarded,
     ];
 }
 
@@ -87,6 +145,7 @@ fn scrolling_inside_the_overscan_tile_does_no_source_work() {
     let (window, state) = open(&document());
     let height = window.get_viewport_height();
     scroll_to(&window, START);
+    settle_tile(&state);
     reset(&state);
     // Half a view height each way stays inside the tile, which holds the view until about 0.75 view heights.
     let steps = (height * 0.5 / STEP) as usize;
@@ -116,31 +175,116 @@ fn scrolling_inside_the_overscan_tile_does_no_source_work() {
     window.hide().expect("close headless source window");
 }
 
-/// Leaving the tile re-centers it exactly once, shapes only the lines it did not have,
-/// and shows the same pixels as a fresh render at the same offset.
+/// Leaving the tile queues one re-center for the worker: the window thread shapes, paints, and builds no image
+/// during the scroll, the worker does the work, and the swapped-in image, its offset, and its gutter belong to one tile.
+#[test]
+fn leaving_the_overscan_tile_re_centers_on_the_worker_thread() {
+    let (window, state) = open(&document());
+    let height = window.get_viewport_height();
+    scroll_to(&window, START);
+    settle_tile(&state);
+    reset(&state);
+    let target = START + height;
+    scroll_to(&window, target);
+    let [renders, tiles, rows, images] = counts(&state);
+    assert_eq!(renders, 1, "leaving the tile enters render once");
+    assert_eq!(tiles, 0, "the window thread paints no tile for a scroll re-center");
+    assert_eq!(rows, 0, "the window thread shapes no row for a scroll re-center");
+    assert_eq!(images, 0, "the window thread builds no image for a scroll re-center");
+    settle_tile(&state);
+    let [worker_tiles, worker_rows, applied, discarded] = worker_counts(&state);
+    assert_eq!(worker_tiles, 1, "the worker answers exactly one re-center");
+    assert_eq!(applied, 1, "the finished tile is swapped in once");
+    assert_eq!(discarded, 0, "no fresh tile is discarded");
+    let current = state.borrow();
+    let count = current.count as u64;
+    assert!(
+        worker_rows > 0 && worker_rows < count,
+        "the worker shaped {worker_rows} rows of {count}; lines it shares with the previous tile must come from its cache"
+    );
+    let view = current.shaped.as_ref().expect("swapped-in source view");
+    assert_eq!(
+        (current.shown.first, current.shown.count),
+        (view.viewport.first, view.viewport.count),
+        "the gutter and line numbers describe the tile whose rows are shown"
+    );
+    assert_eq!(
+        window.get_first_line() as usize,
+        view.viewport.first,
+        "the first line number belongs to the swapped-in tile"
+    );
+    assert_eq!(
+        window.get_line_tops().row_count(),
+        (view.viewport.first + view.viewport.count).min(current.document.text().len_lines())
+            - view.viewport.first,
+        "one line-number row per materialized line of the swapped-in tile"
+    );
+    assert_eq!(
+        window.get_image_y(),
+        view.origin,
+        "the image offset is the origin of the swapped-in tile"
+    );
+    drop(current);
+    window.hide().expect("close headless source window");
+}
+
+/// The re-centered pixels equal a fresh render at the same offset.
 #[test]
 fn leaving_the_overscan_tile_re_centers_once_with_fresh_pixels() {
     let text = document();
     let (window, state) = open(&text);
     let height = window.get_viewport_height();
     scroll_to(&window, START);
-    reset(&state);
+    settle_tile(&state);
     let target = START + height;
     scroll_to(&window, target);
-    let [renders, tiles, rows, images] = counts(&state);
-    assert_eq!(renders, 1, "leaving the tile enters render once");
-    assert_eq!(tiles, 1, "leaving the tile paints exactly one new tile");
-    assert_eq!(images, 1, "leaving the tile sets exactly one new image");
-    let count = state.borrow().count as u64;
-    assert!(
-        rows > 0 && rows < count,
-        "the re-centered tile shaped {rows} rows of {count}; lines it shares with the previous tile must come from the cache"
-    );
-    let (fresh_window, _fresh) = open(&text);
+    settle_tile(&state);
+    let (fresh_window, fresh) = open(&text);
     scroll_to(&fresh_window, target);
+    settle_tile(&fresh);
     assert!(
         shown(&window) == shown(&fresh_window),
         "the visible pixels after scrolling differ from a fresh render at offset {target}"
+    );
+    window.hide().expect("close headless source window");
+    fresh_window
+        .hide()
+        .expect("close fresh headless source window");
+}
+
+/// A tile queued for the worker is discarded when an edit renders the tile synchronously first,
+/// and the image then matches a fresh render of the edited text at the same offset.
+#[test]
+fn an_edit_during_a_re_center_discards_the_worker_result() {
+    let text = document();
+    let (window, state) = open(&text);
+    let height = window.get_viewport_height();
+    scroll_to(&window, START);
+    settle_tile(&state);
+    reset(&state);
+    let target = START + height;
+    scroll_to(&window, target);
+    let edited = format!("edited first line\n{text}");
+    let reload = state.borrow().document.prepare_reload(&edited);
+    assert!(
+        state.borrow_mut().document.apply_reload(reload),
+        "the edit is accepted at the current revision"
+    );
+    render(&window, &state);
+    let worker_before = state.borrow().worker_tiles;
+    until_worker_reply(&state, worker_before);
+    let [_, _, applied, discarded] = worker_counts(&state);
+    assert_eq!(
+        discarded, 1,
+        "the worker result built before the edit is discarded"
+    );
+    assert_eq!(applied, 0, "no stale result is swapped in");
+    let (fresh_window, fresh) = open(&edited);
+    scroll_to(&fresh_window, target);
+    settle_tile(&fresh);
+    assert!(
+        shown(&window) == shown(&fresh_window),
+        "after an edit during a re-center, the visible pixels differ from a fresh render of the edited text at offset {target}"
     );
     window.hide().expect("close headless source window");
     fresh_window

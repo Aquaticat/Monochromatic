@@ -428,6 +428,11 @@ impl TextShaper {
         return self.shaped_rows;
     }
 
+    /// Typography this shaper was built with, so a second shaper can produce the same glyphs.
+    pub fn typography(&self) -> &SourceTypography {
+        return &self.typography;
+    }
+
     /// Forget the cached rows, after a change the cache key does not describe, such as new syntax styles.
     pub fn forget_rows(&mut self) {
         self.rows.clear();

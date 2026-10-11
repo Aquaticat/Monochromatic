@@ -1322,10 +1322,24 @@ Shaped rows are cached by line (`src/shaped_row_cache.rs`) for one text revision
 A re-centered tile shapes only the lines it did not hold,
 and the cache keeps at most `ROW_CACHE_LINES` (256) lines, evicting those farthest from the view.
 A change of syntax styles clears the cache (`TextShaper::forget_rows`).
-`overscan_tile_tests` counts renders, painted tiles, shaped rows, and images:
-all four stay at zero while the view moves inside the tile,
-renders, painted tiles, and images each change once per re-center,
-and shaped rows change only for the lines the cache did not hold.
+
+A re-center caused by the reader's own scrolling is built on a worker thread (`src/native/tile_build.rs`).
+The window thread queues an owned job with a document snapshot, the styles, the row map, and the paint inputs.
+The worker keeps its own `TextShaper` and `TextRaster`, and it builds only the newest queued job.
+A `slint::Timer` polls the worker every 20 ms (`src/native/tile.rs`).
+The displayed tile stays on screen until the result arrives, so a scroll never shows a blank frame.
+A result is swapped in only when it still holds the view and its paint inputs still match,
+and the image, its offset, the line numbers, and the rectangles arrive in one step.
+A result that no longer matches is discarded, and the next scroll queues a new job.
+Every other tile change builds on the window thread as before:
+edits, reloads, selections, find, theme, scale, annotation changes, keyboard and pointer moves,
+and reveal or follow.
+
+`overscan_tile_tests` counts renders, painted tiles, shaped rows, and images on the window thread.
+All four stay at zero while the view moves inside the tile and during a scroll re-center,
+and the worker's own counts rise for each re-center.
+A swapped-in tile matches a fresh render at the same offset,
+and a result built before an edit is discarded.
 
 ### Stability
 

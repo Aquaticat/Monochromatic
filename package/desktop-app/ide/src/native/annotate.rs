@@ -193,12 +193,12 @@ pub(super) fn colors(window: &AppWindow) -> AnnotationColors {
 /// ```ts
 /// function visible(current: State): Visible;
 /// ```
-pub(super) fn visible(current: &State) -> Arc<Visible> {
-    let last = current.first.saturating_add(current.count);
+pub(super) fn visible(current: &State, bounds: super::tile::TileBounds) -> Arc<Visible> {
+    let last = bounds.first.saturating_add(bounds.count);
     // `partition_point` is a binary search for the first block at or below the first materialized line.
     let from = current
         .blocks
-        .partition_point(|block| return block.line < current.first);
+        .partition_point(|block| return block.line < bounds.first);
     let mut blocks = Vec::new();
     for block in &current.blocks[from..] {
         if block.line >= last {
@@ -210,7 +210,7 @@ pub(super) fn visible(current: &State) -> Arc<Visible> {
     let marks = current.annotations.marks(
         displayed(current),
         current.document.text(),
-        current.first,
+        bounds.first,
         last,
     );
     return Arc::new(Visible { blocks, marks });
