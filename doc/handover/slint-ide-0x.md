@@ -241,7 +241,8 @@ the items after it are the record of 2026-10-05 and older.
     (`src/name_order.rs`; before, it kept raw `read_dir` order).
   - Vello was tried (`SLINT_BACKEND=winit-vello`, approved by the user) and not adopted:
     it draws in the nested compositor, but FemtoVG, software, and Vello all painted about half of the possible frames.
-    The experiment stays on the branch `feat/ide-vello-trial`.
+    The experiment (the `renderer-vello` feature and per-phase timings in `src/native/render.rs`) is kept only as a
+    patch at `~/temp/agent/ide-render-phases/vello-trial-uncommitted.patch`; its branch and worktree are removed.
   - The measured cause was in the app: `render()` ran about twice per wheel step and every call was a full repaint.
     Stage 1 of `doc/planning/slint-ide-scroll-pipeline.md` is built:
     an overscan tile of about three view heights, an early return while the view stays inside it,
