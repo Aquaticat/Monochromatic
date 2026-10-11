@@ -380,7 +380,7 @@ Complete action-policy and policy-source suites passed `proc_3bea`.
 Only documentation changed during these regressions.
 This verifies the bounded pre-attachment checkpoint,
 not later manager-input accounting.
-Final outcome documentation lint/render is pending.
+Outcome document checkpoint `proc_a64d` passed all 14 documents with zero diagnostics.
 The incumbent private manager copy performs `structuredClone`;
 the installed native manager does not.
 Parity claims must distinguish those baselines.

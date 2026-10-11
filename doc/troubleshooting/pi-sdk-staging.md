@@ -310,7 +310,7 @@ Complete one-shot native `proc_9e75` passed in 624 seconds,
 with the 128-output constructed-input matrix and all six full-policy profiles.
 Complete action-policy and policy-source suites passed `proc_3bea`.
 Only documentation changed during those runs.
-Final outcome documentation lint/render is pending.
+Outcome document checkpoint `proc_a64d` passed all 14 documents with zero diagnostics.
 
 This does not account for post-attachment manager appends.
 Those potentially governing inputs remain unresolved.
