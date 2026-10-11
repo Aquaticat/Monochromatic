@@ -186,6 +186,35 @@ fn conflict(path: &str, reason: &str) -> PolicyOutcome {
 }
 
 /// What:
+///  The planner's failure for an unreadable tracked file,
+///  coded as `content-unavailable`.
+/// Why:
+///   The failure names the file the listing could not read,
+///  so the policy reports it instead of guessing.
+fn unreadable_failure(error: ContentUnavailable) -> PolicyOutcome {
+    return plan_failure(&PlanError::ContentUnavailable(error));
+}
+
+/// What:
+///  Whether a candidate changes its path,
+///  so the tracked listing must hold it.
+/// Why:
+///   A deleted path is absent from the index by definition and is not required there.
+fn is_listed_change(candidate: &&Candidate) -> bool {
+    return candidate.change != CandidateChange::Deleted;
+}
+
+/// What:
+///  The path of a candidate,
+///  copied for the tracked listing.
+/// Why:
+///   The listing keeps owned pathnames,
+///  so each candidate's path is copied once.
+fn candidate_path(candidate: &Candidate) -> Vec<u8> {
+    return candidate.path.clone();
+}
+
+/// What:
 ///  The correction a direct fix applies for one bump,
 ///  after checking a file the fix
 ///       did not select.
@@ -223,13 +252,10 @@ fn correction_of(
         return Ok(correction);
     };
     let shown: String = display_path(bump.path.as_slice());
-    let unreadable = |error: ContentUnavailable| {
-        return plan_failure(&PlanError::ContentUnavailable(error));
-    };
-    let Some(index) = workspace.index_entry(&bump.path).map_err(unreadable)? else {
+    let Some(index) = workspace.index_entry(&bump.path).map_err(unreadable_failure)? else {
         return Err(conflict(shown.as_str(), ADDED_PATH_STAGED_REASON));
     };
-    let head = workspace.head_entry(&bump.path).map_err(unreadable)?;
+    let head = workspace.head_entry(&bump.path).map_err(unreadable_failure)?;
     let head_file_mode: CandidateMode = match head_mode(head.as_ref(), &index) {
         Ok(found) => found,
         Err(reason) => return Err(conflict(shown.as_str(), reason)),
@@ -308,8 +334,8 @@ pub fn check_dependent_version<F: RepositoryFacts>(
     };
     let listed: Vec<Vec<u8>> = candidates
         .iter()
-        .filter(|candidate: &&Candidate| return candidate.change != CandidateChange::Deleted)
-        .map(|candidate: &Candidate| return candidate.path.clone())
+        .filter(is_listed_change)
+        .map(candidate_path)
         .collect();
     let Some((store, corrected)) = content.store_with_corrections() else {
         return failed(

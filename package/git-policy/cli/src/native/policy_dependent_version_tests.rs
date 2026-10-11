@@ -45,11 +45,14 @@ use std::path::{Path, PathBuf};
 /// Shared byte handles.
 use std::rc::Rc;
 
+/// The dependencies block of a manifest that names one workspace package.
+fn dependency_block(depended: &str) -> String {
+    return format!(",\n  \"dependencies\": {{\n    \"{depended}\": \"workspace:*\"\n  }}");
+}
+
 /// A manifest as two-space JSON with a final newline.
 fn manifest(name: &str, version: &str, dependency: Option<&str>) -> String {
-    let dependencies: String = dependency.map_or_else(String::new, |depended: &str| {
-        return format!(",\n  \"dependencies\": {{\n    \"{depended}\": \"workspace:*\"\n  }}");
-    });
+    let dependencies: String = dependency.map_or_else(String::new, dependency_block);
     return format!(
         "{{\n  \"name\": \"{name}\",\n  \"version\": \"{version}\"{dependencies}\n}}\n"
     );
@@ -283,31 +286,33 @@ fn staged_mode(repo: &Path) {
     git(repo, &["add", path_of("b").as_str()]);
 }
 
+/// The `patch-conflict` outcome of dependent `b` for one reason.
+fn b_patch_conflict(reason: &str) -> PolicyOutcome {
+    return PolicyOutcome::Failed {
+        code: EngineFailureCode::PatchConflict,
+        message: crate::policy_added_path::added_path_message(&path_of("b"), reason),
+        path: None,
+    };
+}
+
 /// Each way an unselected dependent can differ from `HEAD` is a `patch-conflict` naming it.
 #[test]
 fn a_narrow_fix_refuses_unselected_dependents_that_differ_from_head() {
-    let expected = |reason: &str| {
-        return PolicyOutcome::Failed {
-            code: EngineFailureCode::PatchConflict,
-            message: crate::policy_added_path::added_path_message(&path_of("b"), reason),
-            path: None,
-        };
-    };
     assert_eq!(
         narrow_conflict("dependent-unstaged", unstaged_edit),
-        expected("its worktree copy has unstaged changes")
+        b_patch_conflict("its worktree copy has unstaged changes")
     );
     assert_eq!(
         narrow_conflict("dependent-staged", staged_edit),
-        expected("HEAD does not hold it as the ordinary file the fix was computed against")
+        b_patch_conflict("HEAD does not hold it as the ordinary file the fix was computed against")
     );
     assert_eq!(
         narrow_conflict("dependent-missing", missing_copy),
-        expected("its worktree copy is missing")
+        b_patch_conflict("its worktree copy is missing")
     );
     assert_eq!(
         narrow_conflict("dependent-mode", staged_mode),
-        expected("it has staged changes")
+        b_patch_conflict("it has staged changes")
     );
 }
 
