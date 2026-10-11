@@ -649,3 +649,56 @@ pub mod manual_push_range;
 
 /// The manual-push candidate scope of one push: the commits and trees the destination lacks.
 pub mod manual_push_lifecycle;
+/// The one failure type of the linked-worktree ignored-state copy and its diagnostics.
+pub mod worktree_copy_error;
+
+/// Which linked worktrees a worktree-creating Git command registered, before and after it ran.
+pub mod worktree_copy_registry;
+
+/// The ignored source paths a linked-worktree copy selects, and the path validation every selection passes.
+pub mod worktree_copy_selection;
+
+/// The deterministic parent-first manifest of a copy, and the mode application to a staged copy.
+pub mod worktree_copy_manifest;
+
+/// Exact comparison of manifest entries against the filesystem, and the source stability check after staging.
+pub mod worktree_copy_compare;
+
+/// The private, validated stage of one source's ignored state beside a destination worktree.
+pub mod worktree_copy_stage;
+
+/// The exclusive creation of one destination entry from the stage, and the identity captured after it.
+#[cfg(unix)]
+pub mod worktree_copy_install_entry;
+
+/// Installation of a validated stage into a new worktree, with preflight, batches and rollback on failure.
+#[cfg(unix)]
+pub mod worktree_copy_install;
+
+/// Removal of the paths a failed installation created, only where their identity and content still prove them cli-git's own.
+#[cfg(unix)]
+pub mod worktree_copy_rollback;
+
+/// The durable journal of one copy: exact encoding, strict validation, private storage and removal.
+#[cfg(unix)]
+pub mod worktree_copy_journal;
+
+/// The append-only install log of one stage: per-batch intents and creations, with resumption.
+#[cfg(unix)]
+pub mod worktree_copy_install_log;
+
+/// One journaled installation to an end, resumption from the log, and synchronization of a created worktree.
+#[cfg(unix)]
+pub mod worktree_copy_transaction;
+
+/// The settlement lock that serializes copy installation and recovery, its owner record, and inherited leases.
+#[cfg(unix)]
+pub mod worktree_copy_lock;
+
+/// Recovery of interrupted copies: registration checks, discards with notices, resumption, and the pending check.
+#[cfg(unix)]
+pub mod worktree_copy_recovery;
+
+/// The linked-worktree ignored-state copy around one forwarded Git invocation: the integrator's entry point.
+#[cfg(unix)]
+pub mod worktree_copy;
