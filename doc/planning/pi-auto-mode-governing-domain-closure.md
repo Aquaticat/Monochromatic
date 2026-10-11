@@ -166,13 +166,12 @@ new provider trials,
 production qualification policy,
 or installed activation.
 
-## Input receipt boundary under review
+## Accepted input receipt boundary
 
+The user selected receipt at host processing boundaries (choice 1).
 The accepted all-host-input domain remains in force.
-A separate meaning question surfaced during the implementation:
-when does text written into live SDK state become an original instruction input?
-This section proposes a clarification,
-not a decision or a new source-authority policy.
+This resolves when text written into live SDK state becomes an original instruction input;
+it does not assign source authority or prove complete coverage.
 
 The in-place array intake inserted an instruction into `session.agent.state.messages`,
 then removed it before the next prompt.
@@ -228,12 +227,10 @@ while preserving the required native behavior.
 The current collectors do not establish this proof.
 A judgment-time snapshot cannot substitute for it.
 
-Ranking:
-processing-boundary receipt > every-write receipt,
-because the former defines a concrete host input contract
-while still retaining every originally received instruction.
-This is a recommendation awaiting the user,
-not permission to silently exclude a missing origin.
+The user accepted the recommended processing-boundary receipt definition.
+Every-write receipt remains the alternative that was not selected.
+The selected contract retains every originally received instruction;
+it does not authorize silently excluding a missing origin after actual receipt.
 Both choices retain unregistered potentially governing inputs once received;
 neither switches to registered-roots-only domain B.
 Unknown domain membership does not become automatic approval,
