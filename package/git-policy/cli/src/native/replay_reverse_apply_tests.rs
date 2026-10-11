@@ -3,7 +3,7 @@
 //!  `git apply --reverse --check` on the same real repository bytes.
 
 use super::*;
-use crate::replay_patch::{PatchHunk, parse_indexed_patch, split_keeping_newlines};
+use crate::replay_patch::{PatchHunk, PatchLine, parse_indexed_patch, split_keeping_newlines};
 use crate::test_support::{fixture, git, git_output, remove, repository};
 use std::collections::BTreeMap;
 use std::path::{Path, PathBuf};
@@ -243,4 +243,27 @@ fn strict_reverse_agrees_with_git_apply_on_seeded_cases() {
     }
     remove(root.as_path());
     assert!(applied > 0 && rejected > 0, "applied {applied}, rejected {rejected}");
+}
+
+/// An incomplete preimage line does not match an image line that merely starts with it: the extra content differs.
+#[test]
+fn an_incomplete_preimage_line_does_not_match_a_longer_image_line() {
+    let hunks: Vec<PatchHunk> = hunks_between("reverse-longer-line", b"x\nb", b"y\nb", 3);
+    assert!(!reverse_applies(&hunks, b"y\nbc\n"));
+}
+
+/// A hunk whose match lies after its expected line is found by widening the search forward, past the start of the image.
+#[test]
+fn a_hunk_is_found_by_walking_forward_past_the_expected_line() {
+    let hunk: PatchHunk = PatchHunk {
+        old_start: 1,
+        new_start: 2,
+        lines: vec![
+            PatchLine { op: b' ', text: b"a\n".to_vec() },
+            PatchLine { op: b'+', text: b"b\n".to_vec() },
+            PatchLine { op: b' ', text: b"c\n".to_vec() },
+        ],
+    };
+    assert!(reverse_applies(std::slice::from_ref(&hunk), b"z\na\nb\nc\n"));
+    assert!(!reverse_applies(std::slice::from_ref(&hunk), b"z\na\nb\nd\n"));
 }

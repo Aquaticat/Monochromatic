@@ -123,3 +123,17 @@ fn malformed_identities_fail() {
     let open_only: RawCommit = parse_raw_commit(b"tree 1\nauthor A <a 1 +0000\n\nm\n").expect("commit");
     assert!(identity_environment(&open_only, "author").is_err());
 }
+
+/// A header with no value keeps its whole name, so the name is the bytes before the newline.
+#[test]
+fn a_header_without_a_value_keeps_its_whole_name() {
+    let commit: RawCommit = parse_raw_commit(b"tree 1111\nfoo\n\nmessage\n").expect("commit");
+    assert_eq!(dropped_replay_headers(&commit), vec![String::from("foo")]);
+}
+
+/// The object error displays exactly its message.
+#[test]
+fn the_object_error_displays_its_message() {
+    let error: ReplayObjectError = ReplayObjectError(String::from("Commit object has no tree header."));
+    assert_eq!(error.to_string(), "Commit object has no tree header.");
+}

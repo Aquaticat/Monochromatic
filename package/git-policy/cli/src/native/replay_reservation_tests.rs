@@ -156,3 +156,34 @@ fn a_landing_takes_the_landing_lock_once_the_reservation_is_free() {
     lock.release().expect("released landing lock");
     remove(root.as_path());
 }
+
+/// Releasing a reservation whose request file is already gone is not an error.
+#[test]
+fn releasing_without_a_request_file_is_quiet() {
+    let (root, registry) = registry_of("replay-reservation-release-absent");
+    let directory: PathBuf = transaction(&registry, FIRST, "2026-10-10T00:00:00.000Z", true);
+    LandingReservation::open(&registry, &directory, FIRST, false)
+        .release()
+        .expect("an absent request is not an error");
+    remove(root.as_path());
+}
+
+/// A free reservation is not granted to a transaction that is not the oldest live requester.
+#[test]
+fn a_free_reservation_is_not_granted_to_a_younger_requester() {
+    let (root, registry) = registry_of("replay-reservation-younger");
+    let older: PathBuf = transaction(&registry, FIRST, "2026-10-10T00:00:00.000Z", true);
+    std::fs::write(older.join(RESERVATION_REQUEST_FILENAME), reservation_request_bytes(1)).expect("older request");
+    let younger: PathBuf = transaction(&registry, SECOND, "2026-10-10T00:00:01.000Z", true);
+    let registry_for_thread: PathBuf = registry.clone();
+    let younger_for_thread: PathBuf = younger.clone();
+    std::thread::spawn(move || {
+        let mut reservation: LandingReservation =
+            LandingReservation::open(&registry_for_thread, &younger_for_thread, SECOND, false);
+        // The younger request waits for the older one; the result is not checked, the thread only records a grant on disk.
+        let _ignored = reservation.reserve(1);
+    });
+    std::thread::sleep(std::time::Duration::from_millis(300));
+    assert!(!registry.join(RESERVATION_LOCK_NAME).exists());
+    remove(root.as_path());
+}

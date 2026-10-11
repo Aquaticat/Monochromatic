@@ -159,3 +159,25 @@ fn no_landed_change_is_contained() {
     assert!(contains_landed_change(&[], &landed_b(), &base()));
     assert!(!contains_landed_change(&landed_b(), &[], &base()));
 }
+
+/// A suffix match needs the prepared hunk to end where the landed change ends; a prepared hunk ending later does not qualify.
+#[test]
+fn a_suffix_match_needs_the_prepared_hunk_to_end_at_the_landed_end() {
+    let landed: Vec<PatchHunk> = vec![hunk(2, 2, &[(b'-', "b\n"), (b'-', "c\n"), (b'+', "B\n"), (b'+', "C\n")])];
+    let prepared: Vec<PatchHunk> = vec![hunk(
+        1,
+        1,
+        &[
+            (b'-', "a\n"),
+            (b'-', "b\n"),
+            (b'-', "c\n"),
+            (b'-', "d\n"),
+            (b'-', "e\n"),
+            (b'+', "X\n"),
+            (b'+', "Y\n"),
+            (b'+', "B\n"),
+            (b'+', "C\n"),
+        ],
+    )];
+    assert!(!contains_landed_change(&landed, &prepared, &base()));
+}

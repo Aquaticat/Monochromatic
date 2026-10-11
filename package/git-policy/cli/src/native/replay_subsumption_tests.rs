@@ -228,3 +228,21 @@ fn identical_gitlinks_and_binary_blobs_are_subsumed_only_when_identical() {
     assert_eq!(outcome.subsumed_paths, vec!["bin1.dat", "sub1"]);
     remove(root.as_path());
 }
+
+/// A pair that is not all regular files takes the landed mode, even when the base has another mode.
+#[test]
+fn a_non_regular_triple_takes_the_landed_mode() {
+    let link: SharedPath = shared(entry("100644", "aa"), entry("120000", "bb"), entry("120000", "cc"));
+    assert_eq!(subsumed_record(&link), b"120000 bb\tp.txt\0".to_vec());
+}
+
+/// An absent prepared entry is written as zeros of the width of the present entries.
+#[test]
+fn the_exact_record_width_follows_the_present_entries() {
+    let partial: SharedPath = shared(entry("100644", "aaaa"), entry("100644", "bbbb"), None);
+    let edit: BaseEdit = BaseEdit {
+        shared: partial,
+        rule: BaseRule::Landed,
+    };
+    assert_eq!(base_record(&edit), b"0 0000\tp.txt\0".to_vec());
+}
