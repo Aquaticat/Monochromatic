@@ -44,6 +44,7 @@ import {
 import { scratchDir, } from '../scratch-dir.test-fixture.ts';
 import { lineOf, } from './command-line.test-fixture.ts';
 import { HANG_STOP_MS, } from '../hang-stop.test-fixture.ts';
+import { untilAborted, } from '../stage-trivial-reply.test-fixture.ts';
 
 /**
  Each provider's key environment name.
@@ -354,6 +355,61 @@ await describe({
             expect(warned,).toEqual([
               `[gateProvider] hyper meter could not be read: ${statusFailureLogText({ status: 401, },)}`,
             ],);
+          },
+        },),
+        it({
+          name: 'REFUSES WITH THE CALLER\'S OWN REASON AS IT STOPS THE GATE, writing no line for a meter ending in that '
+            + 'reason, and the status and the provider\'s words for a meter refused as the stop landed',
+          fn: async () => {
+            /**
+             Why the caller stopped the gate.
+             */
+            const reason = new Error('the owner called the cats in',);
+            /**
+             The caller's steering.
+             */
+            const steering = new AbortController();
+            /**
+             Meter reads that have begun, by URL, in the order they began.
+             */
+            const begun: string[] = [];
+
+            const { result, warned, } = await warnLinesDuring({
+              run: async function gateAsTheCallerStops(): Promise<unknown> {
+                return gateOutcome(async function gateStopped() {
+                  await assertRequiredProvidersReady({
+                    required: ['synthetic', 'hyper',],
+                    env: {
+                      [KEY_NAMES.synthetic]: 'test-synthetic',
+                      [KEY_NAMES.hyper]: 'test-hyper',
+                    },
+                    transport: async function transport(exchange,) {
+                      begun.push(exchange.url,);
+                      // THE STOP LANDS ONCE BOTH METERS ARE ASKED, so it reaches
+                      // each read in flight.
+                      if (begun.length === 2)
+                        steering.abort(reason,);
+                      await untilAborted({ signal: exchange.signal, },);
+                      if (exchange.url === HYPER_CREDITS_URL)
+                        return { status: 401, bodyText: 'this cat has no collar tag', };
+                      exchange.signal.throwIfAborted();
+                      throw new Error('unreachable: a meter read that waited for its abort was handed a signal that '
+                        + 'had not aborted',);
+                    },
+                    signal: AbortSignal.any([
+                      steering.signal,
+                      AbortSignal.timeout(HANG_STOP_MS,),
+                    ],),
+                  },);
+                },);
+              },
+            },);
+
+            expect(warned,).toEqual([
+              '[gateProvider] hyper meter could not be read: refused by SyntheticHttpError with HTTP 401 (the '
+              + 'provider said: "this cat has no collar tag")',
+            ],);
+            expect(result,).toBe(reason,);
           },
         },),
         it({

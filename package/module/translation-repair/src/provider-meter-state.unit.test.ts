@@ -20,7 +20,10 @@ import {
 import {
   meterRecordOf,
   routesAsDry,
+  SyntheticHttpError,
 } from '../dist/final/node/index.mjs';
+import { warnLinesDuring, } from './console-warn-lines.test-fixture.ts';
+import { HANG_STOP_MS, } from './hang-stop.test-fixture.ts';
 
 /**
  Error a meter read rejects with when its endpoint cannot be reached.
@@ -35,7 +38,9 @@ await describe({
   children: [
     describe({
       name: meterRecordOf.name,
-      concurrency: DEFAULT_CONCURRENCY,
+      // ONE CASE AT A TIME: two cases divert `console.warn` across an await to
+      // read what the package's root logger wrote.
+      concurrency: 1,
       children: [
         it({
           name: 'reads a meter reporting budget left as wet',
@@ -45,6 +50,7 @@ await describe({
              */
             const meter = await meterRecordOf({
               name: 'synthetic',
+              signal: AbortSignal.timeout(HANG_STOP_MS,),
               readLevel: async () => ({
                 dry: false,
                 fields: ['syntheticWeekly=97%',],
@@ -63,6 +69,7 @@ await describe({
              */
             const meter = await meterRecordOf({
               name: 'synthetic',
+              signal: AbortSignal.timeout(HANG_STOP_MS,),
               readLevel: async () => ({
                 dry: true,
                 fields: ['syntheticWeekly=0%',],
@@ -83,6 +90,7 @@ await describe({
              */
             const meter = await meterRecordOf({
               name: 'hyper',
+              signal: AbortSignal.timeout(HANG_STOP_MS,),
               readLevel: async () => ({
                 dry: true,
                 fields: ['hyperBalance=0',],
@@ -102,6 +110,7 @@ await describe({
              */
             const meter = await meterRecordOf({
               name: 'hyper',
+              signal: AbortSignal.timeout(HANG_STOP_MS,),
               readLevel: async () => {
                 throw new MeterUnreachableError('endpoint refused the connection',);
               },
@@ -120,12 +129,79 @@ await describe({
              */
             const meter = await meterRecordOf({
               name: 'hyper',
+              signal: AbortSignal.timeout(HANG_STOP_MS,),
               readLevel: async () => {
                 throw new MeterUnreachableError('endpoint refused the connection',);
               },
             },);
 
             expect(meter.fields,).toEqual([],);
+          },
+        },),
+
+        it({
+          name: 'WARNS A METER THE PROVIDER REFUSED with its status and the provider\'s words, and records it '
+            + 'unreadable with no numbers',
+          fn: async () => {
+            const { result: meter, warned, } = await warnLinesDuring({
+              run: async function readRefusedMeter() {
+                return await meterRecordOf({
+                  name: 'hyper',
+                  signal: AbortSignal.timeout(HANG_STOP_MS,),
+                  readLevel: async () => {
+                    throw new SyntheticHttpError({
+                      status: 401,
+                      bodyText: 'this cat has no collar tag',
+                    },);
+                  },
+                },);
+              },
+            },);
+
+            expect(warned,).toEqual([
+              '[translation-repair] [meterRecordOf] hyper: budget unreadable, treating as spendable (refused by '
+              + 'SyntheticHttpError with HTTP 401 (the provider said: "this cat has no collar tag"))',
+            ],);
+            expect(meter,).toEqual({
+              state: 'unreadable',
+              fields: [],
+            },);
+          },
+        },),
+
+        it({
+          name: 'WARNS A METER READ THE CALLER STOPPED AS STOPPED, not as a meter that could not be read, and still '
+            + 'records it unreadable with no numbers, which every sharer of the reading routes as spendable',
+          fn: async () => {
+            /**
+             Why the caller stopped the reading.
+             */
+            const reason = new Error('the owner called the cats in',);
+            /**
+             The caller's steering, stopped before the meter answers.
+             */
+            const steering = new AbortController();
+            steering.abort(reason,);
+            const { result: meter, warned, } = await warnLinesDuring({
+              run: async function readStoppedMeter() {
+                return await meterRecordOf({
+                  name: 'synthetic',
+                  signal: steering.signal,
+                  readLevel: async () => {
+                    throw reason;
+                  },
+                },);
+              },
+            },);
+
+            expect(warned,).toEqual([
+              '[translation-repair] [meterRecordOf] synthetic: budget not read, since the caller stopped the '
+              + 'reading; treating as spendable',
+            ],);
+            expect(meter,).toEqual({
+              state: 'unreadable',
+              fields: [],
+            },);
           },
         },),
       ],

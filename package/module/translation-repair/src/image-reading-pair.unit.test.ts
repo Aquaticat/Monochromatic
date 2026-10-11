@@ -23,6 +23,8 @@
  @module
  */
 
+import { setImmediate as turnOfTheLoop, } from 'node:timers/promises';
+
 import {
   DEFAULT_CONCURRENCY,
   describe,
@@ -34,21 +36,26 @@ import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import {
   isResumableReading,
   readImagePair,
+  SyntheticHttpError,
   type ChatTextRequest,
   type PairedReading,
   type RosterModelId,
   type SyntheticClient,
 } from '../dist/final/node/index.mjs';
 import { levelCapturingLogger, } from './capturing-logger.test-fixture.ts';
+import { rejectionOf, } from './corpus-run/rejection-of.test-fixture.ts';
 import {
   refusedClient,
   statusFailureLogText,
 } from './provider-status-failure.test-fixture.ts';
+import { refusalOrder, } from './refusal-order.test-fixture.ts';
 import {
+  SEAT_HYPER_VISION,
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   SEAT_SYNTHETIC_VISION_WITHHELD,
 } from './roster-seats.test-fixture.ts';
 import { HANG_STOP_MS, } from './hang-stop.test-fixture.ts';
+import { untilAborted, } from './stage-trivial-reply.test-fixture.ts';
 
 /**
  Logger the stage writes its progress to.
@@ -904,6 +911,184 @@ await describe({
             }
 
             expect(escaped,).toBe('AbortError',);
+          },
+        },),
+
+        it({
+          name: 'WRITES EACH READER\'S OWN FAILURE AS THE CALLER STOPS THE READING, on a line naming the picture, the '
+            + 'reader and the provider\'s words, in roster order though the later-listed reader failed first, writes '
+            + 'none for a reader ending in the caller\'s own reason, and refuses with that reason',
+          fn: async () => {
+            /**
+             Why the caller stopped the reading.
+             */
+            const reason = new Error('the owner called the cats in',);
+            /**
+             The caller's steering.
+             */
+            const steering = new AbortController();
+            /**
+             What the first-listed reader ends in, once the later-listed reader has ended.
+             */
+            const firstRefusal = new SyntheticHttpError({
+              status: 429,
+              bodyText: 'the first cat is out of treats',
+            },);
+            /**
+             What the later-listed reader ends in, first.
+             */
+            const laterRefusal = new SyntheticHttpError({
+              status: 503,
+              bodyText: 'the later cat is napping in the sun',
+            },);
+            /**
+             The later-listed reader's failure at once, the first-listed reader's after it.
+             */
+            const { refuseAtOnce, refuseAfterThat, } = refusalOrder();
+            /**
+             Readers in roster order: the first-listed, the one ending in the caller's own reason, and the
+             later-listed.
+             */
+            const readers: readonly RosterModelId[] = [
+              SEAT_SYNTHETIC_VISION_WITHHELD,
+              SEAT_HYPER_VISION,
+              SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+            ];
+            /**
+             Readers whose exchange has begun, in the order they began.
+             */
+            const begun: RosterModelId[] = [];
+            /**
+             Lines the pair logged.
+             */
+            const lines: string[] = [];
+            /**
+             The reading, refused once every reader has ended.
+             */
+            const refusal = await rejectionOf({
+              promise: readImagePair({
+                client: {
+                  chatText: async (request,) => {
+                    /**
+                     Request as this package's own contract describes it.
+                     */
+                    const { modelId, signal: readerSignal, } = request as ChatTextRequest;
+                    begun.push(modelId,);
+                    // THE STOP LANDS ONCE EVERY READER IS ASKED, so it reaches each
+                    // exchange in flight and never the gate before them.
+                    if (begun.length === readers.length)
+                      steering.abort(reason,);
+                    await untilAborted({ signal: readerSignal, },);
+                    if (modelId === SEAT_SYNTHETIC_VISION_WITHHELD)
+                      return await refuseAfterThat(firstRefusal,);
+                    if (modelId === SEAT_SYNTHETIC_VISION_NO_OPENROUTER)
+                      return await refuseAtOnce(laterRefusal,);
+                    readerSignal.throwIfAborted();
+                    throw new Error('unreachable: a reader that waited for its abort was handed a signal that had not '
+                      + 'aborted',);
+                  },
+                  chatJson: async () => {
+                    throw new Error('chatJson unused by the reading stage',);
+                  },
+                  quotas: async () => {
+                    throw new Error('quotas unused by the reading stage',);
+                  },
+                },
+                readOcr: found,
+                readerModelIds: readers,
+                bytes: bytesOf({ length: 64, },),
+                assetName: 'noticeboard.webp',
+                signal: AbortSignal.any([
+                  steering.signal,
+                  AbortSignal.timeout(HANG_STOP_MS,),
+                ],),
+                perCallTimeoutMs: HANG_STOP_MS,
+                l: levelCapturingLogger({ lines, },),
+              },),
+            },);
+
+            expect(refusal,).toBe(reason,);
+            expect(begun,).toEqual(readers,);
+            expect(lines,).toEqual([
+              `warn [readImagePair] noticeboard.webp: ${SEAT_SYNTHETIC_VISION_WITHHELD} failed outright (refused by `
+              + 'SyntheticHttpError with HTTP 429 (the provider said: "the first cat is out of treats")), and the '
+              + 'caller stopped the reading',
+              `warn [readImagePair] noticeboard.webp: ${SEAT_SYNTHETIC_VISION_NO_OPENROUTER} failed outright (refused `
+              + 'by SyntheticHttpError with HTTP 503 (the provider said: "the later cat is napping in the sun")), and '
+              + 'the caller stopped the reading',
+            ],);
+          },
+        },),
+
+        it({
+          name: 'WRITES A READER\'S OWN FAILURE THAT ENDED BEFORE THE CALLER STOPPED THE READING, which a line written '
+            + 'inside the reader as it ended would miss, since no stop stood then, and refuses with the caller\'s '
+            + 'reason',
+          fn: async () => {
+            /**
+             Why the caller stopped the reading.
+             */
+            const reason = new Error('the owner called the cats in',);
+            /**
+             The caller's steering.
+             */
+            const steering = new AbortController();
+            /**
+             Lines the pair logged.
+             */
+            const lines: string[] = [];
+            /**
+             The reading, refused once both readers have ended.
+             */
+            const refusal = await rejectionOf({
+              promise: readImagePair({
+                client: {
+                  chatText: async (request,) => {
+                    /**
+                     Request as this package's own contract describes it.
+                     */
+                    const { modelId, signal: readerSignal, } = request as ChatTextRequest;
+                    if (modelId === SEAT_SYNTHETIC_VISION_WITHHELD) {
+                      throw new SyntheticHttpError({
+                        status: 401,
+                        bodyText: 'this cat has no collar tag',
+                      },);
+                    }
+                    // A TURN OF THE EVENT LOOP LATER the first reader's failure has
+                    // travelled through every await of its reader, since only
+                    // microtasks stand between them, and the stop lands after it.
+                    await turnOfTheLoop();
+                    steering.abort(reason,);
+                    readerSignal.throwIfAborted();
+                    throw new Error('unreachable: a reader whose caller has just aborted was handed a signal that '
+                      + 'had not aborted',);
+                  },
+                  chatJson: async () => {
+                    throw new Error('chatJson unused by the reading stage',);
+                  },
+                  quotas: async () => {
+                    throw new Error('quotas unused by the reading stage',);
+                  },
+                },
+                readOcr: found,
+                readerModelIds: READERS,
+                bytes: bytesOf({ length: 64, },),
+                assetName: 'noticeboard.webp',
+                signal: AbortSignal.any([
+                  steering.signal,
+                  AbortSignal.timeout(HANG_STOP_MS,),
+                ],),
+                perCallTimeoutMs: HANG_STOP_MS,
+                l: levelCapturingLogger({ lines, },),
+              },),
+            },);
+
+            expect(refusal,).toBe(reason,);
+            expect(lines,).toEqual([
+              `warn [readImagePair] noticeboard.webp: ${SEAT_SYNTHETIC_VISION_WITHHELD} failed outright (refused by `
+              + 'SyntheticHttpError with HTTP 401 (the provider said: "this cat has no collar tag")), and the caller '
+              + 'stopped the reading',
+            ],);
           },
         },),
 

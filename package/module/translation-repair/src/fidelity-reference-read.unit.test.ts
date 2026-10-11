@@ -36,6 +36,7 @@ import {
   makeNamingArchive,
   namingFixtureGit,
 } from './archive-naming.test-fixture.ts';
+import { warnLinesDuring, } from './console-warn-lines.test-fixture.ts';
 import {
   expectRefusal,
   REVIEW_REFERENCE,
@@ -502,6 +503,52 @@ await describe({
               referenceId: 'unreviewed-cat',
               operation: 'request',
             },);
+          },
+        },),
+      ],
+    },),
+    describe({
+      name: 'the lines a stopped reference read writes',
+      // ONE CASE AT A TIME: the case diverts `console.warn` across an await to
+      // read what the package's root logger wrote.
+      concurrency: 1,
+      children: [
+        it({
+          name: 'WRITES EACH PINNED PAGE\'S OWN FAILURE AS THE CALLER STOPS THE READ, the source page\'s before the '
+            + 'archive page\'s, each with the corpus read\'s own refusal, and refuses with the caller\'s reason',
+          fn: async () => {
+            const fixture = reviewedFixture();
+            await using corpus = await makeNamingArchive({
+              after: fixture.archiveFile,
+              relPath: 'people/other-cat/page.en.md',
+            },);
+            const controller = new AbortController();
+            const reason = new Error('the owner called the cats in',);
+            const { result: refusal, warned, } = await warnLinesDuring({
+              run: async function readAsTheCallerStops(): Promise<unknown> {
+                // Both page reads are in flight when the call returns its
+                // promise, so the stop lands while they run.
+                const reading = readReviewedFidelityReferences({
+                  pin: corpus.pin,
+                  specs: [{
+                    ...fixture.spec,
+                    corpusSha: corpus.pin.commitSha,
+                  },],
+                  signal: controller.signal,
+                },);
+                controller.abort(reason,);
+                return await settledRefusal(reading,);
+              },
+            },);
+            expect(refusal,).toBe(reason,);
+            expect(warned,).toEqual([
+              `[translation-repair] [readReference] invented-reference: the source page could not be read, and the `
+              + `caller stopped the read: corpus read failed for ${corpus.pin.commitSha}:${SOURCE_PAGE} `
+              + '(missing-object); the commit has no such path: check the path, or pin a commit that has it.',
+              `[translation-repair] [readReference] invented-reference: the archive page could not be read, and the `
+              + `caller stopped the read: corpus read failed for ${corpus.pin.commitSha}:people/starlit-cat/page.en.md `
+              + '(missing-object); the commit has no such path: check the path, or pin a commit that has it.',
+            ],);
           },
         },),
       ],
