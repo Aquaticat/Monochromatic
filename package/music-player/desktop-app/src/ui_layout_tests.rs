@@ -6,7 +6,7 @@
 //! Note: element lookup by type name needs `SLINT_EMIT_DEBUG_INFO=1` at build time, which the repo test task sets.
 
 use i_slint_backend_testing::ElementHandle;
-use slint::{ComponentHandle, Global};
+use slint::ComponentHandle;
 
 use crate::AppWindow;
 use crate::ui_screen_view::Route;

@@ -14,7 +14,8 @@ use music_player::feedback::{FeedbackKind, FeedbackMessage, FeedbackQueue};
 use slint::ComponentHandle;
 
 use crate::ui_files::{FileActionError, restore_from_trash};
-use crate::ui_overlays_model::{feedback_rows, first_run_view};
+use crate::ui_overlays_model::{feedback_rows, first_run_view, scan_fraction, scan_view};
+use music_player::scan_indicator::scan_indicator_status_text;
 use crate::ui_screen::{model_of, read_state};
 use crate::{AppWindow, FeedbackItem};
 
@@ -134,7 +135,17 @@ fn expire(window: &AppWindow) {
 
 /// What: `project` pushes the feedback rows and the first-run pane to the window.
 /// Why: both sit above the track area, so they are projected from the same state read.
+/// What: `project_scan` writes the scan indicator's visibility, status text and fill to the window.
+/// Why: the sweep reports progress often, so the bar is updated on its own instead of rebuilding every overlay.
+pub(crate) fn project_scan(window: &AppWindow) {
+    let model = read_state(|state| return scan_view(state.analysis));
+    window.set_scan_visible(model.visible());
+    window.set_scan_status_text(scan_indicator_status_text(&model).as_str().into());
+    window.set_scan_fraction(scan_fraction(&model));
+}
+
 pub(crate) fn project(window: &AppWindow) {
+    project_scan(window);
     let rows = OVERLAYS.with(|cell| return feedback_rows(&cell.borrow().queue));
     window.set_feedback_items(model_of(
         rows.into_iter()

@@ -51,6 +51,7 @@ fn build(labels: &[&str], selected_page: usize, items: Vec<PageEntry>, current_i
         mode: PlaybackMode::InOrder,
         position_sec: FIXTURE_POSITION_SEC,
         duration_sec: FIXTURE_DURATION_SEC,
+        measures: HashMap::new(),
     };
     return build_player_content(&input, &no_line);
 }
@@ -193,6 +194,7 @@ fn deck_passes_playback_values_through() {
         mode: PlaybackMode::ShuffleAll,
         position_sec: FIXTURE_POSITION_SEC,
         duration_sec: FIXTURE_DURATION_SEC,
+        measures: HashMap::new(),
     };
     let content = build_player_content(&input, &no_line);
     let deck = &content.deck;

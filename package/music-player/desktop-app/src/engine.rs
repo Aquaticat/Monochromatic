@@ -62,6 +62,7 @@ use std::sync::mpsc::{self, Receiver, Sender, TryRecvError};
 /// // JoinHandle ~ a Worker + exit promise; Thread ~ a WorkerRef you can post "wake" to
 /// ```
 use std::thread::{self, JoinHandle, Thread};
+use std::sync::Arc;
 
 /// What:
 ///      `use std::time::Duration;`.
@@ -697,6 +698,24 @@ fn run(
         tx: self_tx,
         worker: thread::current(),
     };
+    // What:     `controller.sweep_sink = Arc::new(move |report| sweep_sender.send(Command::SweepReport(report)));`.
+    //           Route every sweep and re-analysis report back through this engine's command channel.
+    // Why:      Sweep threads cannot call the update callback, but they can send a command that wakes this loop.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // controller.sweepSink = (report) => selfSender.send({ kind: "sweepReport", report });
+    // ```
+    let sweep_sender = self_sender.clone();
+    controller.sweep_sink = Arc::new(move |report| return sweep_sender.send(Command::SweepReport(report)));
+    // What:     `controller.emit_source_root();`. Tell the window whether a folder is open before any command runs.
+    // Why:      With no saved folder and no music directory nothing else is sent, so the first-run copy needs this signal.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // controller.emitSourceRoot();
+    // ```
+    controller.emit_source_root();
     // What:     `controller.watcher = crate::watch::SourceWatcher::new(move || self_sender.send(Command::Rescan));`.
     //           Create the file watcher (or `None` if the OS watcher fails) with a change
     //           callback that enqueues `Rescan` and wakes this worker. The closure owns

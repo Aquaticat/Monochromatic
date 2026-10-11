@@ -10,6 +10,7 @@ use std::rc::Rc;
 
 use music_player::command::Update;
 use music_player::template_model::DEFAULT_TRACK_TEMPLATE;
+use music_player::track_measure::merge_measures;
 use music_player::track_supporting_line::supporting_line_from_template;
 use slint::{ModelRc, SharedString, VecModel};
 
@@ -73,6 +74,25 @@ pub(crate) fn apply_update(app: &AppWindow, update: &Update) {
             app.set_playing(*on);
         }
         Update::Volume(volume) => app.set_volume(*volume),
+        Update::Measures(measures) => {
+            update_state(|state| {
+                state.measures = merge_measures(&state.measures, measures);
+            });
+            project(app);
+        }
+        Update::Analysis { done, total } => {
+            update_state(|state| {
+                state.analysis = (done < total).then_some((*done, *total));
+            });
+            crate::ui_overlays::project_scan(app);
+        }
+        Update::SourceRoot(name) => {
+            update_state(|state| {
+                state.root_known = true;
+                state.source_root_name = name.clone();
+            });
+            project(app);
+        }
         Update::PlaybackMode(mode) => {
             update_state(|state| {
                 state.mode = *mode;

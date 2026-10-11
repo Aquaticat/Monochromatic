@@ -10,6 +10,8 @@ use music_player::pagination::{Page, page_identity, paginate};
 use music_player::player_content::{PlayerContentInput, build_player_content};
 use music_player::template_model::TrackFields;
 use music_player::track_entries::track_title_for;
+use music_player::track_measure::{TrackMeasure, lookup_by_name};
+use std::collections::HashMap;
 
 use crate::ui_screen_rows::{ListRow, Picker, current_row_position, list_rows, picker};
 use crate::ui_templates::{playing_subtitle, playing_track};
@@ -97,6 +99,14 @@ pub struct ScreenState {
     pub playing_template: Option<String>,
     /// Template editor value while Settings or the editor is open.
     pub editor: Option<TemplateEditorState>,
+    /// Length and peak of each library path, as the engine has reported them.
+    pub measures: HashMap<std::path::PathBuf, TrackMeasure>,
+    /// The true-peak sweep's `(done, total)` while it runs, or `None` once it has finished.
+    pub analysis: Option<(usize, usize)>,
+    /// Whether the engine has reported the opened folder, even when it reported that none is open.
+    pub root_known: bool,
+    /// Display name of the opened folder, or `None` when no folder is open.
+    pub source_root_name: Option<String>,
 }
 
 /// Methods of `ScreenState`.
@@ -193,6 +203,7 @@ pub fn view(state: &ScreenState, supporting_line: &dyn Fn(&TrackFields) -> Optio
     let playing_position = page_items.iter().position(|item| return Some(item.index) == state.current_index);
     let playing_count = page_items.len();
     let playing_name = playing_position.and_then(|position| return page_items.get(position)).map(|item| return item.name.clone());
+    let measures = lookup_by_name(&state.names, &state.paths, &state.measures);
     let input = PlayerContentInput {
         page_labels: labels,
         selected_page: selected,
@@ -202,6 +213,7 @@ pub fn view(state: &ScreenState, supporting_line: &dyn Fn(&TrackFields) -> Optio
         mode: state.mode,
         position_sec: state.position,
         duration_sec: state.duration,
+        measures,
     };
     let content = build_player_content(&input, supporting_line);
     let rows = list_rows(&content.entries);
@@ -210,7 +222,7 @@ pub fn view(state: &ScreenState, supporting_line: &dyn Fn(&TrackFields) -> Optio
     let deck_subtitle = match (playing_position, playing_name) {
         (Some(position), Some(name)) => {
             let template = state.playing_template.as_deref().unwrap_or(DEFAULT_PLAYING_TEMPLATE);
-            playing_subtitle(template, &playing_track(&name, position + 1, playing_count))
+            playing_subtitle(template, &playing_track(&name, position + 1, playing_count, input.measures.get(&name)))
                 .unwrap_or_else(|| return content.deck.subtitle.clone())
         }
         _ => content.deck.subtitle.clone(),

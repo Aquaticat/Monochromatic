@@ -26,6 +26,9 @@
 /// ```
 use std::path::PathBuf;
 
+use crate::sweep_report::SweepReport;
+use crate::track_measure::TrackMeasure;
+
 /// What:
 ///      `use serde::{Deserialize, Serialize};` imports two DERIVE MACROS.
 ///  A
@@ -479,6 +482,26 @@ pub enum Command {
     /// { kind: "quit" }
     /// ```
     Quit,
+    /// What:
+    ///      `SweepReport(SweepReport)` carries one report from a background sweep or re-analysis.
+    /// Why:
+    ///       Sweep threads cannot reach the update callback, so they send their reports through the command channel.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// { kind: "sweepReport"; report: SweepReport }
+    /// ```
+    SweepReport(SweepReport),
+    /// What:
+    ///      `ReanalyseTrack(PathBuf)` asks for one track's decision to be discarded and measured again.
+    /// Why:
+    ///       The track menu's Re-analyse action sends this for the track it names.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// { kind: "reanalyseTrack"; path: string }
+    /// ```
+    ReanalyseTrack(PathBuf),
 }
 
 /// What:
@@ -813,5 +836,46 @@ pub enum Update {
     PlaybackMode(
         /// Current four-state mode.
         PlaybackMode,
+    ),
+    /// What:
+    ///      `Measures(Vec<(PathBuf, TrackMeasure)>)` carries the length and peak of some library paths.
+    /// Why:
+    ///       Rows and the deck subtitle show these values, and they arrive as the sweep learns them.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// { kind: "measures"; measures: [string, TrackMeasure][] }
+    /// ```
+    Measures(
+        /// Each library path with its newest measure.
+        Vec<(PathBuf, TrackMeasure)>,
+    ),
+    /// What:
+    ///      `Analysis { done, total }` is the true-peak sweep's progress; `done >= total` means it has finished.
+    /// Why:
+    ///       The scan bar shows the count while the sweep runs and leaves once it finishes (D26).
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// { kind: "analysis"; done: number; total: number }
+    /// ```
+    Analysis {
+        /// Tracks the sweep has visited so far.
+        done: usize,
+        /// Tracks the sweep will visit.
+        total: usize,
+    },
+    /// What:
+    ///      `SourceRoot(Option<String>)` names the opened folder, or `None` when no folder is open.
+    /// Why:
+    ///       The first-run copy names the folder that has no audio, and says so when no folder is open.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// { kind: "sourceRoot"; name: string | null }
+    /// ```
+    SourceRoot(
+        /// The folder's display name, or `None`.
+        Option<String>,
     ),
 }

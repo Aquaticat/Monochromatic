@@ -8,6 +8,8 @@
 use music_player::template_model::{PlayingTrackFields, TrackFields, playing_template_fields};
 use music_player::template_eval::evaluate_template;
 use music_player::track_entries::track_title_for;
+use music_player::track_measure::{TrackMeasure, fields_with_measure};
+use std::collections::HashMap;
 
 /// What: `track_fields` builds the template fields of one track from its display path.
 /// Why: the display path is the only track identity the window has; the length and peak stay unknown until the engine reports them.
@@ -36,24 +38,24 @@ pub fn track_fields(display_path: &str) -> TrackFields {
     };
 }
 
-/// What: `playing_track` adds the place and total of one track to its fields.
-/// Why: the playing template reads `track` and `total`, which are the place in the list and the list size.
-pub fn playing_track(display_path: &str, place: usize, total: usize) -> PlayingTrackFields {
+/// What: `playing_track` adds the place and total of one track to its fields, with its measure when known.
+/// Why: the playing template reads `track` and `total`, which are the place in the list and the list size; the measure supplies `len` and `peak`.
+pub fn playing_track(display_path: &str, place: usize, total: usize, measure: Option<&TrackMeasure>) -> PlayingTrackFields {
     return PlayingTrackFields {
-        track: track_fields(display_path),
+        track: fields_with_measure(track_fields(display_path), measure),
         place_in_folder: Some(place),
         tracks_in_folder: Some(total),
     };
 }
 
 /// What: `editor_library` lists every queue name as a preview track for the template editor.
-/// Why: the editor's preview reads the library in queue order, with the place and total of the whole queue.
-pub fn editor_library(names: &[String]) -> Vec<PlayingTrackFields> {
+/// Why: the editor's preview reads the library in queue order, with the place and total of the whole queue, and each track's known measure.
+pub fn editor_library(names: &[String], measures: &HashMap<String, TrackMeasure>) -> Vec<PlayingTrackFields> {
     let total = names.len();
     return names
         .iter()
         .enumerate()
-        .map(|(position, name)| return playing_track(name, position + 1, total))
+        .map(|(position, name)| return playing_track(name, position + 1, total, measures.get(name)))
         .collect();
 }
 

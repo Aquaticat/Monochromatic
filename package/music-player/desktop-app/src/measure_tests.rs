@@ -21,6 +21,18 @@ use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
 // What:     `fn temp_cache(tag: &str) -> PathBuf`. A fresh throwaway cache-file path.
 // Why:      Point the cache at disposable state, never the real config dir.
+/// What: `fn sweep_job(tracks, cache) -> SweepJob` builds a sweep with no current track and no sink.
+/// Why: the sweep tests check the cache, not the reports, so the reports go nowhere.
+fn sweep_job(tracks: Vec<PathBuf>, cache: CacheHandle) -> SweepJob {
+    return SweepJob {
+        tracks,
+        current: None,
+        cache,
+        sink: crate::sweep_report::noop_sink(),
+        generation: 1,
+    };
+}
+
 fn temp_cache(tag: &str) -> PathBuf {
     // What:     `let nanos = ...as_nanos();`. Nanoseconds since 1970 for uniqueness.
     // Why:      Avoid collisions across tests/runs.
@@ -55,7 +67,7 @@ fn spawn_queue_measurement_populates_cache() {
     // What:     `spawn_queue_measurement(vec![fixture.clone()], Arc::clone(&cache));`.
     //           Start the detached sweep over a one-track queue.
     // Why:      The behaviour under test.
-    spawn_queue_measurement(vec![fixture.clone()], cache.clone());
+    spawn_queue_measurement(sweep_job(vec![fixture.clone()], cache.clone()));
 
     // What:     `let key = peakcache::fingerprint(&fixture).unwrap();`. The cache key.
     // Why:      Poll for it.
@@ -127,7 +139,7 @@ fn parallel_sweep_measures_every_track() {
 
     // What:     run the parallel sweep over all tracks.
     // Why:      The behaviour under test.
-    spawn_queue_measurement(tracks.clone(), cache.clone());
+    spawn_queue_measurement(sweep_job(tracks.clone(), cache.clone()));
 
     // What:     every track's fingerprint must become cached within the poll window.
     // Why:      Confirm no worker dropped a track and every upsert landed.

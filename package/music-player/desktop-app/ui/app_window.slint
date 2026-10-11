@@ -171,6 +171,13 @@ export component AppWindow inherits Window {
         key-scope.focus();
     }
 
+    // Returning to the player destroys the focused page field (search, settings, editor), so the key scope takes focus again.
+    changed route => {
+        if (root.route == 0) {
+            key-scope.focus();
+        }
+    }
+
     // Root key scope: every key event passes through its capture handler before the focused field, so shortcuts
     // reach the player while text fields keep the keys they type (D102).
     key-scope := FocusScope {
@@ -387,10 +394,11 @@ export component AppWindow inherits Window {
 
     // Track action menu, shown at the row position that requested it. Escape and outside clicks dismiss it.
     track-menu-popup := PopupWindow {
-        x: root.menu-x;
-        y: root.menu-y;
+        // The menu opens at the click point, pulled back so the whole card stays inside the window.
+        x: max(0px, min(root.menu-x, root.width - 280px));
+        y: max(0px, min(root.menu-y, root.height - menu-card.height));
         width: 280px;
-        TrackMenu {
+        menu-card := TrackMenu {
             width: parent.width;
             title: root.menu-title;
             items: root.menu-items;

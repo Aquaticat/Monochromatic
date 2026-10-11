@@ -86,9 +86,7 @@ fn run_action(window: &AppWindow, engine: &Engine, action: TrackMenuAction) {
         TrackMenuAction::Play => crate::ui_wire::play_row(engine, index),
         TrackMenuAction::ShuffleFromHere => shuffle_from_here(engine, index),
         TrackMenuAction::Details => {}
-        TrackMenuAction::ReanalyseTruePeak => {
-            show_error(window, "Re-analysis of one track is not available in this version.");
-        }
+        TrackMenuAction::ReanalyseTruePeak => engine.send(Command::ReanalyseTrack(path)),
         TrackMenuAction::ShowInFileManager => {
             if let Err(error) = show_in_file_manager(&path) {
                 show_file_error(window, &error);

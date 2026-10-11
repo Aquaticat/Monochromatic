@@ -9,6 +9,7 @@ use music_player::session::Session;
 use music_player::template_editor_state::TemplateEditorState;
 use music_player::template_editor::TemplateEditorEdit;
 use music_player::template_model::TemplateKind;
+use music_player::track_measure::lookup_by_name;
 use slint::ComponentHandle;
 
 use crate::ui_screen::{model_of, project, read_state, update_state};
@@ -86,7 +87,8 @@ fn wire_editor(app: &AppWindow) {
 /// What: `build_editor` starts the editor on the queue with the saved templates applied.
 /// Why: a saved template that still applies becomes the editor's draft and applied text; others fall back to the default.
 pub(crate) fn build_editor(state: &ScreenState) -> TemplateEditorState {
-    let mut editor = TemplateEditorState::initial(&editor_library(&state.names));
+    let measures = lookup_by_name(&state.names, &state.paths, &state.measures);
+    let mut editor = TemplateEditorState::initial(&editor_library(&state.names, &measures));
     for (kind, saved) in [
         (TemplateKind::TrackRows, state.track_rows_template.as_deref()),
         (TemplateKind::PlayingTrack, state.playing_template.as_deref()),

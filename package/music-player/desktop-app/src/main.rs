@@ -41,6 +41,8 @@ mod slint_generated;
 /// Imports every public Slint binding from the generated-only lint boundary.
 use slint_generated::*;
 
+use music_player::color_scheme::{COLOR_SCHEME_ENV, FOLLOW_SYSTEM, scheme_override};
+
 /// What:
 ///      `mod ui_progress;` loads the sibling `ui_progress.rs` module into this
 ///           binary crate.
@@ -758,6 +760,36 @@ fn music_dir() -> Option<PathBuf> {
 }
 
 /// What:
+///      `fn color_scheme_from_env() -> i32`.
+///  The `Theme.scheme-override` value that `MUSIC_PLAYER_COLOR_SCHEME` selects.
+/// Why:
+///       A mistyped value is logged and the window follows the system, so the app still opens.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function colorSchemeFromEnv(): number {
+///   try { return schemeOverride(process.env.MUSIC_PLAYER_COLOR_SCHEME); } catch (error) { warn(error); return FOLLOW_SYSTEM; }
+/// }
+/// ```
+fn color_scheme_from_env() -> i32 {
+    // What:     `scheme_override(value.as_deref())`. Map the variable's text to the override.
+    // Why:      An absent variable is `None`, which follows the system.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const value = process.env.MUSIC_PLAYER_COLOR_SCHEME;
+    // ```
+    let value = std::env::var(COLOR_SCHEME_ENV).ok();
+    return match scheme_override(value.as_deref()) {
+        Ok(scheme) => scheme,
+        Err(error) => {
+            tracing::warn!(error = %error, "ignoring the color scheme override");
+            FOLLOW_SYSTEM
+        }
+    };
+}
+
+/// What:
 ///      `fn main() -> Result<()>`.
 ///  The entry point.
 ///  The return type is
@@ -915,6 +947,15 @@ fn main() -> Result<()> {
     // const app = new AppWindow();
     // ```
     let app = AppWindow::new()?;
+    // What:     `app.global::<Theme>().set_scheme_override(color_scheme_from_env());`.
+    //           Apply the color scheme override before the first frame.
+    // Why:      Verification runs fix the scheme with MUSIC_PLAYER_COLOR_SCHEME; unset follows the system.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // app.theme.schemeOverride = colorSchemeFromEnv();
+    // ```
+    app.global::<Theme>().set_scheme_override(color_scheme_from_env());
 
     // What:     `let weak = app.as_weak();`. `.as_weak()` makes a WEAK handle to the
     //           window: it does not keep the window alive, and can be sent to other

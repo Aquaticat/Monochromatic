@@ -80,6 +80,17 @@ fn temp_cache(tag: &str) -> PathBuf {
 
 // What:     `#[test]` marks the next function as a Rust unit test.
 // Why:      The test runner discovers and runs this case.
+/// What: `fn test_decision(gain: f32) -> Decision` builds a placeholder decision for the pending-peak results.
+/// Why: the result carries the decision, and these tests only check the gain.
+fn test_decision(gain: f32) -> truepeak_core::Decision {
+    return truepeak_core::Decision {
+        gain,
+        kind: truepeak_core::DecisionKind::ShortFullScan,
+        measured_peak: 0.5,
+        duration_secs: 1.0,
+    };
+}
+
 #[test]
 fn timeout_keeps_fallback_then_later_result_swaps_gain() {
     // What:     `let mut controller = test_controller();`. Build mutable test state.
@@ -121,6 +132,8 @@ fn timeout_keeps_fallback_then_later_result_swaps_gain() {
         .send(PeakGainResult {
             generation: 1,
             gain: 0.5,
+            path: PathBuf::from("/music/current.flac"),
+            decision: test_decision(0.5),
         })
         .expect("pending peak receiver should remain connected");
     // What:     `assert!(controller.poll_pending_peak());`. Poll and expect a live
@@ -164,6 +177,8 @@ fn stale_generation_result_is_ignored() {
         .send(PeakGainResult {
             generation: 1,
             gain: 0.5,
+            path: PathBuf::from("/music/current.flac"),
+            decision: test_decision(0.5),
         })
         .expect("pending peak receiver should remain connected");
 
@@ -206,6 +221,8 @@ fn play_start_waits_for_pending_peak_result() {
         .send(PeakGainResult {
             generation: 3,
             gain: 0.5,
+            path: PathBuf::from("/music/current.flac"),
+            decision: test_decision(0.5),
         })
         .expect("pending peak receiver should remain connected");
 

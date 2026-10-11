@@ -1,6 +1,8 @@
 //! Tests for the pure template helpers in `ui_templates`.
 
 use super::*;
+use music_player::template_model::DEFAULT_TRACK_TEMPLATE;
+use music_player::track_supporting_line::supporting_line_from_template;
 
 #[test]
 fn track_fields_split_folder_file_stem_and_extension() {
@@ -31,9 +33,28 @@ fn hidden_file_without_stem_keeps_its_whole_name() {
 #[test]
 fn editor_library_numbers_each_track_within_the_queue() {
     let names = vec!["a/one.mp3".to_string(), "a/two.mp3".to_string()];
-    let library = editor_library(&names);
+    let library = editor_library(&names, &HashMap::new());
     assert_eq!(library[1].place_in_folder, Some(2));
     assert_eq!(library[1].tracks_in_folder, Some(2));
+}
+
+#[test]
+fn exact_measure_renders_length_and_peak_in_the_default_row_template() {
+    let measure = TrackMeasure {
+        duration_secs: Some(20.0),
+        peak_dbtp: Some(-21.1),
+        peak_exact: true,
+    };
+    let fields = fields_with_measure(track_fields("a/one.flac"), Some(&measure));
+    let line = supporting_line_from_template(DEFAULT_TRACK_TEMPLATE)(&fields);
+    assert_eq!(line, Some("0:20 \u{2212}21.1 dBTP".to_string()));
+}
+
+#[test]
+fn unmeasured_track_renders_no_peak_in_the_default_row_template() {
+    let fields = fields_with_measure(track_fields("a/one.flac"), None);
+    let line = supporting_line_from_template(DEFAULT_TRACK_TEMPLATE)(&fields);
+    assert_eq!(line.unwrap_or_default().trim(), "");
 }
 
 #[test]

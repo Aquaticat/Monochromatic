@@ -1,151 +1,376 @@
-//! Parallel background queue true-peak measurement.
+//! Parallel background queue true-peak measurement, with progress and per-track reports.
 //!
-//! On every queue load the controller starts a background sweep over the queue's
-//! non-current tracks.
-//!  The sweep fans out one worker per logical core;
-//!  each worker
-//! claims tracks from a shared atomic cursor,
-//!  skips the ones already cached,
-//!  and
-//! decodes the rest to measure their true peak,
+//! On every queue load the controller starts a background sweep over the queue.
+//!  The sweep runs in two
+//! phases.
+//!  First, a peek reads each track's cached decision and header length and reports
+//! them at once, so rows show their length before any decode.
+//!  Then the measure phase fans out one worker per
+//! logical core over the non-current tracks:
+//!  each worker claims tracks from a shared atomic cursor,
+//!  skips the
+//! ones already cached,
+//!  and decodes the rest to measure their true peak,
 //!  storing each result through the
-//! `CacheHandle`.
+//! `CacheHandle` and reporting it to the window.
 //!  Workers run at idle OS scheduling priority,
-//!  so they saturate every
-//! core when the machine is otherwise free yet yield to the realtime audio thread
+//!  so they
+//! saturate every core when the machine is otherwise free yet yield to the realtime audio thread
 //! and the UI.
-//!  There is no inter-track sleep (the old throttle that fought "finish
-//! as fast as possible") and no flush bookkeeping:
-//!  the cache actor commits each
-//! write durably.
-//!  Sweeps are never cancelled:
-//!  re-opening a directory finds most
-//! peaks already cached (via the one key-set snapshot) and returns quickly.
-//!  The
-//! current track is handled by `peak_swap`,
+//!  Every reply goes through a `SweepSink` tagged with the sweep's generation, so the
+//! controller drops reports from a sweep that a newer queue load has replaced.
+//!  Sweeps are never
+//! cancelled.
+//!  The current track is handled by `peak_swap`,
 //!  because playback may wait briefly for
 //! that one visible result.
 
 /// What:
 ///      `use std::collections::HashSet;`.
-///  A set of `u64` fingerprints.
+///  The set of exact fingerprints the sweep skips.
 /// Why:
-///       The skip-check reads one snapshot of every already-exact fingerprint.
-///
-/// In TS you'd write (pseudocode):
-/// ```ts
-/// type HashSet = Set<string>;
-/// ```
+///       The skip-check is one lookup against a snapshot taken when the sweep starts.
 use std::collections::HashSet;
 
 /// What:
-///      `use std::path::PathBuf;`.
-///  Owned filesystem path buffer.
+///      `use std::path::{Path, PathBuf};`.
+///  Track paths, borrowed and owned.
 /// Why:
-///       The detached workers need paths that outlive the caller.
-///
-/// In TS you'd write (pseudocode):
-/// ```ts
-/// type PathBuf = string;
-/// ```
-use std::path::PathBuf;
+///       The sweep hands owned paths to its reports and borrows them while it decodes.
+use std::path::{Path, PathBuf};
 
 /// What:
 ///      `use std::sync::Arc;`.
-///  Thread-safe shared owner (atomic refcount).
+///  Shared ownership for the sweep's inputs.
 /// Why:
-///       Workers share the track list,
-///  the cursor,
-///  and the key-set snapshot.
-///
-/// In TS you'd write (pseudocode):
-/// ```ts
-/// // Arc<T> ~ a shared, cloneable handle to one T
-/// ```
+///       Every worker reads the same track list, cursor and snapshot.
 use std::sync::Arc;
 
 /// What:
 ///      `use std::sync::atomic::{AtomicUsize, Ordering};`.
-///  A shared integer with
-///           atomic operations,
-///  plus the memory-ordering selector.
+///  The shared cursor and visit counter.
 /// Why:
-///       The cursor is a lock-free counter workers `fetch_add` to claim work.
-///
-/// In TS you'd write (pseudocode):
-/// ```ts
-/// // AtomicUsize ~ an integer with atomic fetchAdd
-/// ```
+///       Workers claim tracks and count visits without a lock.
 use std::sync::atomic::{AtomicUsize, Ordering};
 
 /// What:
-///      `use std::thread;`.
-///  Thread spawning and `available_parallelism`.
+///      `use std::thread;` and `use std::time::{Duration, Instant};`.
+///  Spawning workers and throttling progress reports.
 /// Why:
-///       The coordinator spawns one worker per logical core.
-///
-/// In TS you'd write (pseudocode):
-/// ```ts
-/// // std::thread ~ Web Workers
-/// ```
+///       Progress is reported at most every quarter second so the window is not flooded.
 use std::thread;
+use std::time::{Duration, Instant};
 
 /// What:
-///      `use crate::peakcache::{self, CacheHandle};`.
-///  The cache module (for
-///           `peakcache::fingerprint`) and the synchronous handle type.
+///      `use crate::measure_peek::peek_measures;` and `use crate::peakcache::{self, CacheHandle};`.
+///  The read-only peek and the cache handle the sweep stores through.
 /// Why:
-///       Compute keys and store measured peaks.
-///
-/// In TS you'd write (pseudocode):
-/// ```ts
-/// import * as peakcache from "./peakcache";
-/// import { CacheHandle } from "./peakcache";
-/// ```
+///       The sweep peeks before it measures, and its fingerprints come from the peak cache module.
+use crate::measure_peek::peek_measures;
 use crate::peakcache::{self, CacheHandle};
 
 /// What:
-///      `use crate::truepeak::resolve_full;`.
-///  The always-exact full-scan resolver.
+///      `use crate::sweep_report::{SweepJob, SweepReport, SweepSink};`.
+///  The job the controller starts and the reports the sweep sends back.
 /// Why:
-///       Warming workers upgrade uncached-or-probe tracks to an EXACT decision,
-///  which the
-///           cache's exact-over-probe precedence then keeps.
-///
-/// In TS you'd write (pseudocode):
-/// ```ts
-/// import { resolveFull } from "./truepeak";
-/// ```
+///       One job description keeps the spawn signature small.
+use crate::sweep_report::{SweepJob, SweepReport, SweepSink};
+
+/// What:
+///      `use crate::track_measure::{TrackMeasure, measure_from_decision};`.
+///  The measure a finished decode reports.
+/// Why:
+///       A decode yields a decision, and the window needs its length and peak.
+use crate::track_measure::measure_from_decision;
+
+/// What:
+///      `use crate::truepeak::resolve_full;`.
+///  The full-file decode that produces a decision.
+/// Why:
+///       The measure phase and the re-analysis both decode through this one entry point.
 use crate::truepeak::resolve_full;
 
 /// What:
-///      `pub(crate) fn spawn_queue_measurement(tracks: Vec<PathBuf>, cache: CacheHandle)`.
-///           Start a detached coordinator that measures every uncached track in `tracks`
-///           in parallel,
-///  storing results through `cache`.
-///  Takes ownership of both
-///           arguments.
-///  `pub(crate)` for the controller.
+///      `const MEASURE_REPORT_CHUNK: usize = 128;`.
+///  How many peeked tracks go into one report.
 /// Why:
-///       Pre-warm the cache for the whole queue so later track changes are instant.
+///       Large libraries are announced in batches, so the window is updated a few times, not once per track.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function spawnQueueMeasurement(tracks: string[], cache: CacheHandle): void { ... }
+/// const MEASURE_REPORT_CHUNK = 128;
 /// ```
-pub(crate) fn spawn_queue_measurement(tracks: Vec<PathBuf>, cache: CacheHandle) {
-    // What:     `thread::spawn(move || run_sweep(tracks, cache));`. Spawn the detached
-    //           coordinator; the closure TAKES OWNERSHIP of both arguments. We drop the
-    //           `JoinHandle`: the coordinator runs to completion on its own and is killed
-    //           at process exit (each cache write already committed durably).
-    // Why:      Background work that does not block the engine and needs no join/cancel.
+const MEASURE_REPORT_CHUNK: usize = 128;
+
+/// What:
+///      `const PROGRESS_INTERVAL: Duration = Duration::from_millis(250);`.
+///  The minimum time between two progress reports from one worker.
+/// Why:
+///       A quarter second keeps the count moving without a report per skipped track.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// const PROGRESS_INTERVAL_MS = 250;
+/// ```
+const PROGRESS_INTERVAL: Duration = Duration::from_millis(250);
+
+/// What:
+///      `pub(crate) fn spawn_queue_measurement(job: SweepJob)`.
+///  Starts one detached sweep for a queue load.
+/// Why:
+///       The engine never waits on a sweep, and each report carries the job's generation.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function spawnQueueMeasurement(job: SweepJob): void { startWorker(() => runSweep(job)); }
+/// ```
+pub(crate) fn spawn_queue_measurement(job: SweepJob) {
+    // What:     `thread::spawn(move || run_sweep(job));`. Spawn the detached coordinator; the
+    //           closure takes the whole job. The handle is dropped: the sweep runs to completion.
+    // Why:      Background work that does not block the engine and needs no join or cancel.
     //
     // In TS you'd write (pseudocode):
     // ```ts
-    // startWorker(() => runSweep(tracks, cache)); // fire and forget
+    // startWorker(() => runSweep(job));
     // ```
-    thread::spawn(move || run_sweep(tracks, cache));
+    thread::spawn(move || run_sweep(job));
 }
+
+/// What:
+///      `pub(crate) fn spawn_track_measurement(...)`.
+///  Decodes one track in a detached thread, stores the decision, and reports its measure.
+/// Why:
+///       Re-analysis measures one track on request, outside the sweep's known-set skip.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function spawnTrackMeasurement(path: string, key: bigint, cache: CacheHandle, sink: SweepSink, generation: number): void { ... }
+/// ```
+pub(crate) fn spawn_track_measurement(
+    path: PathBuf,
+    key: u64,
+    cache: CacheHandle,
+    sink: SweepSink,
+    generation: u64,
+) {
+    // What:     `thread::spawn(move || run_track_measurement(...));`. Detach one decode.
+    // Why:      The request returns at once; the window hears the result through the sink.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // startWorker(() => runTrackMeasurement(path, key, cache, sink, generation));
+    // ```
+    thread::spawn(move || run_track_measurement(path, key, cache, sink, generation));
+}
+
+/// What:
+///      `fn run_track_measurement(...)`.
+///  Decodes one track, upserts its decision, and reports the measure; a decode failure is logged.
+/// Why:
+///       A failed decode leaves the earlier cache state in place, so the window keeps what it showed.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function runTrackMeasurement(path: string, key: bigint, cache: CacheHandle, sink: SweepSink, generation: number): void { ... }
+/// ```
+fn run_track_measurement(
+    path: PathBuf,
+    key: u64,
+    cache: CacheHandle,
+    sink: SweepSink,
+    generation: u64,
+) {
+    // What:     `match resolve_full(&path) { ... }`. Decode the whole file once.
+    // Why:      Re-analysis is user-initiated, so it runs at normal priority and reports its own failure.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // try { const d = resolveFull(path); cache.upsert(key, d); sink(...); } catch (e) { warn(e); }
+    // ```
+    match resolve_full(&path) {
+        Ok(decision) => {
+            cache.upsert(key, decision);
+            tracing::info!(key, "re-analysis stored a decision");
+            sink(SweepReport::Measures {
+                generation,
+                measures: vec![(path, measure_from_decision(&decision))],
+            });
+        }
+        Err(error) => tracing::warn!(path = %path.display(), error = %error, "re-analysis could not decode the track"),
+    }
+}
+
+/// What:
+///      `struct SweepShared { tracks, cursor, visited, cache, known, sink, generation }`.
+///  The state every worker of one sweep reads and updates.
+/// Why:
+///       One shared value keeps the worker signature to one argument and makes the sweep's inputs explicit.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// type SweepShared = { tracks: readonly string[]; cursor: AtomicInt; visited: AtomicInt; cache: CacheHandle; known: Set<bigint>; sink: SweepSink; generation: number };
+/// ```
+struct SweepShared {
+    /// Non-current tracks in queue order, shared read-only.
+    tracks: Arc<[PathBuf]>,
+    /// Next index a worker will claim.
+    cursor: AtomicUsize,
+    /// Tracks visited so far, whether skipped, measured, or failed.
+    visited: AtomicUsize,
+    /// Handle the decisions are stored through.
+    cache: CacheHandle,
+    /// Exact fingerprints present when the sweep started.
+    known: HashSet<u64>,
+    /// Where reports go, tagged with the generation.
+    sink: SweepSink,
+    /// Generation of the queue load that started this sweep.
+    generation: u64,
+}
+
+/// What:
+///      `fn run_sweep(job: SweepJob)`.
+///  The detached coordinator: peek every track, then measure the non-current ones with a fan-out.
+/// Why:
+///       The peek makes lengths and cached peaks visible at once; the fan-out measures the rest.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function runSweep(job: SweepJob): void { peekAll(job); measureAll(job); }
+/// ```
+fn run_sweep(job: SweepJob) {
+    // What:     `report_peeked_measures(&job);`. Announce every track's cached peak and length.
+    // Why:      Rows get their lengths before any decode starts.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // peekAll(job);
+    // ```
+    report_peeked_measures(&job);
+    // What:     `let measure_tracks = job.tracks minus the current track`. The tracks the fan-out visits.
+    // Why:      The current track is measured by `peak_swap`, so the sweep leaves it alone.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const measureTracks = job.tracks.filter((p) => p !== job.current);
+    // ```
+    let measure_tracks: Vec<PathBuf> = job
+        .tracks
+        .iter()
+        .filter(|path| return job.current.as_ref() != Some(*path))
+        .cloned()
+        .collect();
+    // What:     `let shared = Arc::new(SweepShared { ... })`. Snapshot the known set and build the shared state.
+    // Why:      One snapshot serves every worker; the cursor and visit counter start at zero.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const shared = { tracks, cursor: 0, visited: 0, cache, known: cache.knownFingerprints(), sink, generation };
+    // ```
+    let total = measure_tracks.len();
+    let shared = Arc::new(SweepShared {
+        tracks: measure_tracks.into(),
+        cursor: AtomicUsize::new(0),
+        visited: AtomicUsize::new(0),
+        cache: job.cache.clone(),
+        known: job.cache.known_fingerprints(),
+        sink: Arc::clone(&job.sink),
+        generation: job.generation,
+    });
+    // What:     `report_progress(&shared, 0)` when there is work. Show the bar as the analysis starts.
+    // Why:      D26: the scan bar appears when analysis starts and leaves when it finishes.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // if (total > 0) sink({ kind: "progress", done: 0, total });
+    // ```
+    if total > 0 {
+        report_progress(&shared, 0);
+    }
+    // What:     `let workers = worker_count(total);`. The fan-out width.
+    // Why:      One per core, never more than there are tracks.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const workers = workerCount(total);
+    // ```
+    let workers = worker_count(total);
+    tracing::info!(tracks = total, workers, generation = job.generation, "warming sweep started");
+    // What:     `handles = (0..workers).map(|_| thread::spawn(...))`. Start the workers.
+    // Why:      Every worker shares the same `SweepShared`.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const handles = range(workers).map(() => startWorker(() => runWorker(shared)));
+    // ```
+    let handles: Vec<_> = (0..workers)
+        .map(|_| {
+            let worker_shared = Arc::clone(&shared);
+            return thread::spawn(move || run_worker(worker_shared));
+        })
+        .collect();
+    // What:     join every worker, logging a panicked one.
+    // Why:      One bad thread must not poison the sweep; the final progress report runs after all joins.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // for (const h of handles) await h;
+    // ```
+    for handle in handles {
+        if handle.join().is_err() {
+            tracing::error!("a warming worker panicked");
+        }
+    }
+    // What:     `report_progress(&shared, total)` after the joins when there was work.
+    // Why:      The final report always reaches the total, so the bar leaves even when a worker panicked.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // if (total > 0) sink({ kind: "progress", done: total, total });
+    // ```
+    if total > 0 {
+        report_progress(&shared, total);
+    }
+    tracing::info!(generation = job.generation, "warming sweep finished");
+}
+
+/// What:
+///      `fn report_peeked_measures(job: &SweepJob)`.
+///  Sends every track's cached decision and header length in chunks.
+/// Why:
+///       Rows get lengths and cached peaks before any decode, and chunks keep the window updates few.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function reportPeekedMeasures(job: SweepJob): void { for (const chunk of chunks(job.tracks)) job.sink(peekMeasures(chunk)); }
+/// ```
+fn report_peeked_measures(job: &SweepJob) {
+    for chunk in job.tracks.chunks(MEASURE_REPORT_CHUNK) {
+        let measures = peek_measures(chunk, &job.cache);
+        (job.sink)(SweepReport::Measures {
+            generation: job.generation,
+            measures,
+        });
+    }
+}
+
+/// What:
+///      `fn report_progress(shared: &SweepShared, done: usize)`.
+///  Sends one progress report for the sweep's generation.
+/// Why:
+///       The window shows `done` of `total` while the sweep runs.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// const reportProgress = (shared: SweepShared, done: number) => shared.sink({ kind: "progress", done, total: shared.tracks.length });
+/// ```
+fn report_progress(shared: &SweepShared, done: usize) {
+    (shared.sink)(SweepReport::Progress {
+        generation: shared.generation,
+        done,
+        total: shared.tracks.len(),
+    });
+}
+
 
 /// What:
 ///      `#[cfg(target_os = "linux")] fn lower_current_thread_to_idle()`.
@@ -347,112 +572,6 @@ fn lower_current_thread_to_idle() {
 fn lower_current_thread_to_idle() {}
 
 /// What:
-///      `fn run_sweep(tracks: Vec<PathBuf>, cache: CacheHandle)`.
-///  The detached
-///           coordinator:
-///  take one key-set snapshot,
-///  fan out workers over a shared cursor,
-///           and join them.
-///  Takes ownership of both args.
-///  Module-private.
-/// Why:
-///       One place owns the fan-out and the shared state the workers read.
-///
-/// In TS you'd write (pseudocode):
-/// ```ts
-/// function runSweep(tracks: string[], cache: CacheHandle): void { ... }
-/// ```
-fn run_sweep(tracks: Vec<PathBuf>, cache: CacheHandle) {
-    // What:     `let known = Arc::new(cache.known_fingerprints());`. One snapshot of every
-    //           already-EXACT fingerprint, shared read-only with all workers.
-    // Why:      The skip-check reads this instead of querying the cache per track; within a
-    //           sweep each track is unique, so a single snapshot is enough. Probe-only tracks
-    //           are absent, so warming re-scans and upgrades them to exact.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // const known = cache.knownFingerprints();
-    // ```
-    let known = Arc::new(cache.known_fingerprints());
-    // What:     `let shared_tracks: Arc<[PathBuf]> = tracks.into();`. Move the list into a
-    //           shared, immutable slice the workers index by position. The shared slice gets
-    //           its own name so the worker clones below never shadow the parameter.
-    // Why:      Share the paths without cloning the whole vec per worker.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // const tracks = Object.freeze(tracksArray);
-    // ```
-    let shared_tracks: Arc<[PathBuf]> = tracks.into();
-    // What:     `let cursor = Arc::new(AtomicUsize::new(0));`. The shared next-index counter.
-    // Why:      Workers `fetch_add` it to claim the next track, lock-free and load-balanced.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // const cursor = new AtomicUsize(0);
-    // ```
-    let cursor = Arc::new(AtomicUsize::new(0));
-    // What:     `let workers = worker_count(tracks.len());`. How many threads to spawn.
-    // Why:      One per logical core, never more than there are tracks.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // const workers = workerCount(tracks.length);
-    // ```
-    let workers = worker_count(shared_tracks.len());
-    // The sweep is fanning out; log its size and worker count.
-    tracing::info!(tracks = shared_tracks.len(), workers, "warming sweep started");
-    // What:     `let handles: Vec<_> = (0..workers).map(|_| { ... }).collect();`. Spawn the
-    //           workers, each with its own clones of the shared handles.
-    // Why:      Run decodes in parallel across every core.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // const handles = range(workers).map(() => startWorker(...));
-    // ```
-    let handles: Vec<_> = (0..workers)
-        .map(|_| {
-            // What:     Clone the four shared handles for this worker's closure. Each clone
-            //           gets a `worker_` name so none shadows the shared handle it clones.
-            // Why:      Each `Arc::clone` bumps a refcount; `cache.clone()` copies the senders.
-            //
-            // In TS you'd write (pseudocode):
-            // ```ts
-            // const [t, c, ca, k] = [tracks, cursor, cache, known];
-            // ```
-            let worker_tracks = Arc::clone(&shared_tracks);
-            let worker_cursor = Arc::clone(&cursor);
-            let worker_cache = cache.clone();
-            let worker_known = Arc::clone(&known);
-            // What:     Spawn the worker thread. Tail of the closure -> its `JoinHandle`.
-            // Why:      Collected so the coordinator can join them.
-            //
-            // In TS you'd write (pseudocode):
-            // ```ts
-            // return startWorker(() => runWorker(t, c, ca, k));
-            // ```
-            return thread::spawn(move || run_worker(worker_tracks, worker_cursor, worker_cache, worker_known))
-        })
-        .collect();
-    // What:     `for handle in handles { let _ = handle.join(); }`. Wait for every worker;
-    //           ignore a worker panic (one bad thread must not poison the coordinator).
-    // Why:      Keep the coordinator alive until the sweep is fully done.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // for (const handle of handles) await handle;
-    // ```
-    for handle in handles {
-        // Ignore a worker panic (one bad thread must not poison the sweep), but log it.
-        if handle.join().is_err() {
-            tracing::error!("a warming worker panicked");
-        }
-    }
-    // Every worker joined; the sweep is complete.
-    tracing::info!("warming sweep finished");
-}
-
-/// What:
 ///      `fn worker_count(track_count: usize) -> usize`.
 ///  The number of decode workers to
 ///           spawn:
@@ -502,133 +621,121 @@ fn worker_count(track_count: usize) -> usize {
 }
 
 /// What:
-///      `fn run_worker(tracks: Arc<[PathBuf]>, cursor: Arc<AtomicUsize>, cache: CacheHandle, known: Arc<HashSet<u64>>)`.
-///           One worker:
-///  drop to idle priority,
-///  then claim and full-scan tracks until the
-///           cursor passes the end.
-///  Module-private.
+///      `fn run_worker(shared: Arc<SweepShared>)`.
+///  One worker: drop to idle priority, then claim tracks until the cursor runs out.
 /// Why:
-///       The per-thread decode loop,
-///  shared by every spawned worker.
+///       Each claimed track is visited once, and progress is throttled per worker.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function runWorker(tracks, cursor, cache, known) { ... }
+/// function runWorker(shared: SweepShared): void { lowerToIdle(); while (...) { measureOne(next()); } }
 /// ```
-fn run_worker(
-    tracks: Arc<[PathBuf]>,
-    cursor: Arc<AtomicUsize>,
-    cache: CacheHandle,
-    known: Arc<HashSet<u64>>,
-) {
-    // What:     `lower_current_thread_to_idle();`. Drop this worker to idle scheduling
-    //           priority before any decoding (no-op off Linux/macOS/Windows).
-    // Why:      Keep the whole sweep non-disruptive: its CPU-heavy decoding yields to audio,
-    //           the UI, and everything else, even with every core busy.
+fn run_worker(shared: Arc<SweepShared>) {
+    // What:     `lower_current_thread_to_idle();`. Give the decode the idle scheduling class.
+    // Why:      The sweep yields to the realtime audio thread and the UI.
     //
     // In TS you'd write (pseudocode):
     // ```ts
     // lowerCurrentThreadToIdle();
     // ```
     lower_current_thread_to_idle();
-    // What:     `loop { ... }`. Claim-and-measure until the cursor is past the end.
-    // Why:      Pull work dynamically so fast and slow files balance across workers.
+    // What:     `let mut last_report = Instant::now();`. The time of this worker's last progress report.
+    // Why:      Each worker throttles its own reports, so no lock is needed.
     //
     // In TS you'd write (pseudocode):
     // ```ts
-    // while (true) { ... }
+    // let lastReport = performance.now();
     // ```
+    let mut last_report = Instant::now();
     loop {
-        // What:     `let index = cursor.fetch_add(1, Ordering::Relaxed);`. Atomically claim
-        //           the next index and advance the cursor. `Relaxed` is enough: only the
-        //           counter's atomicity matters; the cache actor handles any cross-thread
-        //           visibility of stored peaks.
-        // Why:      Lock-free, load-balanced work distribution.
+        // What:     claim the next index; stop when the cursor is past the end.
+        // Why:      `fetch_add` hands each track to exactly one worker.
         //
         // In TS you'd write (pseudocode):
         // ```ts
-        // const index = cursor.fetchAdd(1);
+        // const path = shared.tracks[shared.cursor++];
+        // if (path === undefined) break;
         // ```
-        let index = cursor.fetch_add(1, Ordering::Relaxed);
-        // What:     `let Some(path) = tracks.get(index) else { break };`. Stop once the cursor
-        //           runs past the slice.
-        // Why:      End the worker when there is no more work.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // const path = tracks[index]; if (!path) break;
-        // ```
-        let Some(path) = tracks.get(index) else {
+        let index = shared.cursor.fetch_add(1, Ordering::Relaxed);
+        let Some(path) = shared.tracks.get(index) else {
             break;
         };
-        // What:     `let Some(key) = peakcache::fingerprint(path) else { continue };`. Compute
-        //           the cache key, or skip a file that cannot be stat'd.
-        // Why:      No key -> cannot cache it; move on.
+        measure_one(path, &shared);
+        // What:     count this visit, whatever its outcome, and report when the interval has passed.
+        // Why:      Skipped, failed, and measured tracks all move the bar; the throttle keeps reports sparse.
         //
         // In TS you'd write (pseudocode):
         // ```ts
-        // const key = fingerprint(path); if (!key) continue;
+        // const done = ++shared.visited;
         // ```
-        let Some(key) = peakcache::fingerprint(path) else {
-            tracing::debug!(path = %path.display(), "skip: no fingerprint");
-            continue;
-        };
-        // What:     `if known.contains(&key) { continue; }`. Skip tracks that ALREADY carry an
-        //           exact decision when the sweep started (the warm-restart fast path); a probe
-        //           estimate or no row is NOT in `known`, so it gets re-scanned and upgraded.
-        // Why:      Avoid redundant exact scans; still upgrade probe estimates to exact.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // if (known.has(key)) continue;
-        // ```
-        if known.contains(&key) {
-            tracing::debug!(key, "skip: already exact");
-            continue;
+        let done = shared.visited.fetch_add(1, Ordering::Relaxed) + 1;
+        if last_report.elapsed() >= PROGRESS_INTERVAL {
+            report_progress(&shared, done);
+            last_report = Instant::now();
         }
-        // What:     `let decision = match resolve_full(path) { Ok(d) => d, Err(error) => { ...;
-        //           continue; } };`. Full-scan to an exact decision; log and skip files that
-        //           fail to decode (the cause was previously discarded by the `let Ok ... else`).
-        // Why:      One bad file must not stop the worker; warming produces exact decisions.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // let decision; try { decision = resolveFull(path); } catch (error) { logger.debug(error); continue; }
-        // ```
-        let decision = match resolve_full(path) {
-            Ok(decision) => decision,
-            Err(error) => {
-                tracing::debug!(path = %path.display(), cause = %error, "skip: decode failed");
-                continue;
-            }
-        };
-        // What:     `cache.upsert(key, decision);`. Fire-and-forget the exact decision to the
-        //           cache actor, which commits it durably (upgrading any prior probe estimate).
-        // Why:      Memoize the exact gain without blocking this worker on persistence.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // cache.upsert(key, decision);
-        // ```
-        cache.upsert(key, decision);
-        // The exact decision is queued to the cache actor.
-        tracing::debug!(key, "measured; upsert queued");
     }
 }
 
 /// What:
-///      `#[cfg(test)] #[path = "measure_tests.rs"] mod tests;` declares a test-only
-///           submodule whose code lives in the sibling file `measure_tests.rs`.
+///      `fn measure_one(path: &Path, shared: &SweepShared)`.
+///  Measures one track unless it is already exact in the cache, storing and reporting the result.
 /// Why:
-///       Keep `measure.rs` to production code;
-///  the tests live beside it without inflating
-///           this file or its max-lines budget (sibling `*_tests.rs` files are exempt).
+///       A track that cannot be fingerprinted or decoded is logged and left out, and the sweep moves on.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// // measure.unit.test.ts, run only by the test runner
+/// function measureOne(path: string, shared: SweepShared): void { ... }
 /// ```
+fn measure_one(path: &Path, shared: &SweepShared) {
+    // What:     `let Some(key) = peakcache::fingerprint(path) else { ... };`. Key the track.
+    // Why:      A file without a fingerprint cannot be cached, so there is nothing to store.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const key = fingerprint(path); if (key === null) return;
+    // ```
+    let Some(key) = peakcache::fingerprint(path) else {
+        tracing::debug!(path = %path.display(), "skip: no fingerprint");
+        return;
+    };
+    // What:     skip when the snapshot already holds an exact decision.
+    // Why:      The snapshot makes a warm restart a quick pass over the queue.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // if (shared.known.has(key)) return;
+    // ```
+    if shared.known.contains(&key) {
+        tracing::debug!(key, "skip: already exact");
+        return;
+    }
+    // What:     `let decision = match resolve_full(path) { ... };`. Decode the whole file.
+    // Why:      A decode failure is logged, and the sweep continues with the next track.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // let decision; try { decision = resolveFull(path); } catch (e) { return; }
+    // ```
+    let decision = match resolve_full(path) {
+        Ok(decision) => decision,
+        Err(error) => {
+            tracing::debug!(path = %path.display(), cause = %error, "skip: decode failed");
+            return;
+        }
+    };
+    shared.cache.upsert(key, decision);
+    tracing::debug!(key, "measured; upsert queued");
+    (shared.sink)(SweepReport::Measures {
+        generation: shared.generation,
+        measures: vec![(path.to_path_buf(), measure_from_decision(&decision))],
+    });
+}
+
+/// What:
+///      `#[cfg(test)] #[path = "measure_tests.rs"] mod tests;`.
+///  Declares the sibling test file.
+/// Why:
+///       Keep the sweep tests beside the module without inflating its code.
 #[cfg(test)]
 #[path = "measure_tests.rs"]
 mod tests;

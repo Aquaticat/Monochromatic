@@ -6,6 +6,7 @@
 
 use music_player::feedback::{FeedbackKind, FeedbackQueue};
 use music_player::first_run::{ANALYSIS_EXPLANATION, FirstRunState, first_run_copy};
+use music_player::scan_indicator::{ScanIndicatorModel, scan_indicator_for};
 
 use crate::ui_screen_view::ScreenState;
 
@@ -38,10 +39,12 @@ pub struct FirstRunView {
 /// const firstRunView = (s: ScreenState): FirstRunView | null => s.loaded && s.names.length === 0 ? copy : null;
 /// ```
 pub fn first_run_view(state: &ScreenState) -> Option<FirstRunView> {
-    if !state.loaded || !state.names.is_empty() {
+    if !state.names.is_empty() {
         return None;
     }
-    let copy = first_run_copy(FirstRunState::SystemNoAudio, None).ok()?;
+    let kind = first_run_kind(state)?;
+    let folder_name = state.source_root_name.as_deref();
+    let copy = first_run_copy(kind, folder_name).ok()?;
     return Some(FirstRunView {
         title: copy.title,
         body: copy.body,
@@ -51,13 +54,43 @@ pub fn first_run_view(state: &ScreenState) -> Option<FirstRunView> {
     });
 }
 
-/// What: `FeedbackRow` is one visible feedback message as plain values.
-/// Why: the overlay takes an id, text, a kind number and an action label per message.
-///
-/// In TS you'd write (pseudocode):
-/// ```ts
-/// type FeedbackRow = { id: string; text: string; kind: 0 | 1; actionLabel: string };
-/// ```
+/// What: `first_run_kind` chooses the first-run state that matches the opened folder.
+/// Why: no folder open gets the choose-a-folder copy; an opened folder with no tracks names itself; before the engine reports, nothing shows.
+fn first_run_kind(state: &ScreenState) -> Option<FirstRunState> {
+    if !state.root_known {
+        return None;
+    }
+    return match (&state.source_root_name, state.loaded) {
+        (None, _) => Some(FirstRunState::NoFolderOpen),
+        (Some(_), true) => Some(FirstRunState::FolderNoAudio),
+        (Some(_), false) => None,
+    };
+}
+
+/// What: `scan_view` chooses the scan indicator's model from the sweep's progress.
+/// Why: the bar shows while the sweep runs and is hidden with no progress, using the same rules as the scan indicator module.
+pub fn scan_view(analysis: Option<(usize, usize)>) -> ScanIndicatorModel {
+    return match analysis {
+        Some((done, total)) => scan_indicator_for(false, saturating_count(done), saturating_count(total)),
+        None => scan_indicator_for(false, 0, 0),
+    };
+}
+
+/// What: `scan_fraction` gives the bar's fill as a share of the total, or `-1` for an indeterminate bar.
+/// Why: the Slint bar draws a determinate fill for values from zero to one and a sliding bar for any negative value.
+pub fn scan_fraction(model: &ScanIndicatorModel) -> f32 {
+    if model.total <= 0 {
+        return -1.0;
+    }
+    return model.done as f32 / model.total as f32;
+}
+
+/// What: `saturating_count` converts a count to the signed width the scan indicator uses.
+/// Why: a count above the signed range is clamped rather than wrapped.
+fn saturating_count(value: usize) -> i32 {
+    return i32::try_from(value).unwrap_or(i32::MAX);
+}
+
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct FeedbackRow {
     /// Stable key the window reports dismiss and action with.

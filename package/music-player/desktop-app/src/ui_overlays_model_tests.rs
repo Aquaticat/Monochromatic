@@ -2,6 +2,7 @@
 
 use super::*;
 use music_player::feedback::FeedbackMessage;
+use music_player::scan_indicator::scan_indicator_status_text;
 
 #[test]
 fn first_run_is_hidden_before_the_library_loads() {
@@ -19,16 +20,64 @@ fn first_run_is_hidden_when_the_library_has_tracks() {
 }
 
 #[test]
-fn first_run_shows_open_folder_and_settings_for_an_empty_loaded_library() {
+fn first_run_shows_open_folder_and_settings_when_no_folder_is_open() {
+    let state = ScreenState {
+        root_known: true,
+        ..ScreenState::default()
+    };
+    let view = first_run_view(&state).expect("a start with no folder open shows the first-run pane");
+    assert_eq!(view.title, "No folder is open");
+    assert_eq!(view.primary_label, "Open a folder");
+    assert_eq!(view.secondary_labels, vec!["Settings".to_string()]);
+    assert!(view.explanation.is_empty());
+}
+
+#[test]
+fn first_run_names_the_opened_folder_when_it_has_no_audio() {
+    let state = ScreenState {
+        root_known: true,
+        loaded: true,
+        source_root_name: Some("Albums".to_string()),
+        ..ScreenState::default()
+    };
+    let view = first_run_view(&state).expect("an opened folder with no audio shows the first-run pane");
+    assert_eq!(view.title, "No audio found in Albums");
+    assert_eq!(view.primary_label, "Open a folder");
+}
+
+#[test]
+fn first_run_waits_for_the_opened_folder_to_load() {
+    let state = ScreenState {
+        root_known: true,
+        loaded: false,
+        source_root_name: Some("Albums".to_string()),
+        ..ScreenState::default()
+    };
+    assert_eq!(first_run_view(&state), None);
+}
+
+#[test]
+fn first_run_is_hidden_until_the_engine_reports_the_folder() {
     let state = ScreenState {
         loaded: true,
         ..ScreenState::default()
     };
-    let view = first_run_view(&state).expect("an empty loaded library shows the first-run pane");
-    assert_eq!(view.primary_label, "Open a folder");
-    assert_eq!(view.secondary_labels, vec!["Settings".to_string()]);
-    assert!(!view.title.is_empty());
-    assert!(view.explanation.is_empty());
+    assert_eq!(first_run_view(&state), None);
+}
+
+#[test]
+fn scan_view_shows_the_count_while_the_sweep_runs() {
+    let model = scan_view(Some((412, 1218)));
+    assert!(model.visible());
+    assert_eq!(scan_indicator_status_text(&model), "Analysing true peak \u{00B7} 412 of 1,218");
+    assert!((scan_fraction(&model) - 412.0 / 1218.0).abs() < 1e-6);
+}
+
+#[test]
+fn scan_view_is_hidden_without_progress() {
+    let model = scan_view(None);
+    assert!(!model.visible());
+    assert!(scan_fraction(&model) < 0.0);
 }
 
 #[test]
