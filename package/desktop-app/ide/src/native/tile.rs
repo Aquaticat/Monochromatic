@@ -68,7 +68,9 @@ pub(super) fn submit(
     // What: `take` moves the worker out so `request` can run without a second borrow of the state.
     // Why: The worker is put back on every path, including a failed request.
     let Some(mut worker) = current.tile_worker.take() else {
-        anyhow::bail!("The source tile worker was not started; restart the application to scroll the source");
+        anyhow::bail!(
+            "The source tile worker was not started; restart the application to scroll the source"
+        );
     };
     let sent = worker.request(job);
     current.tile_worker = Some(worker);
@@ -105,8 +107,7 @@ fn start_poll(window: &AppWindow, state: &Rc<RefCell<State>>, current: &mut Stat
     current
         .tile_poll
         .start(TimerMode::Repeated, Duration::from_millis(20), move || {
-            let (Some(active), Some(shared)) = (weak_window.upgrade(), weak_state.upgrade())
-            else {
+            let (Some(active), Some(shared)) = (weak_window.upgrade(), weak_state.upgrade()) else {
                 return;
             };
             poll(&active, &shared);
@@ -160,7 +161,10 @@ pub(super) fn poll(window: &AppWindow, state: &Rc<RefCell<State>>) {
 /// What: `Timer::stop` ends the repeated callback; the timer is restarted on the next submission.
 /// Why: A cancelled job's reply is still unread while the worker is busy, so the timer must keep polling until it is taken.
 fn stop_when_idle(current: &mut State) {
-    let in_flight = current.tile_worker.as_ref().is_some_and(TileWorker::is_busy);
+    let in_flight = current
+        .tile_worker
+        .as_ref()
+        .is_some_and(TileWorker::is_busy);
     if current.tile_job.is_none() && !in_flight {
         current.tile_poll.stop();
     }

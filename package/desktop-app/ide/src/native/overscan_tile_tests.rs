@@ -387,26 +387,26 @@ fn a_stopped_tile_worker_is_reported_once_and_replaced_on_the_next_re_center() {
 /// Each run is a new process, so the first worker and its first font discovery are cold.
 #[test]
 fn measure_worker_cold_start() {
-    let started = Instant::now();
+    let shaper_start = Instant::now();
     let shaper = ide_app::shaped_text::TextShaper::new();
-    let shaper_ms = started.elapsed().as_secs_f64() * 1000.0;
-    let started = Instant::now();
+    let shaper_ms = shaper_start.elapsed().as_secs_f64() * 1000.0;
+    let fork_start = Instant::now();
     let forked = shaper.fork();
-    let fork_ms = started.elapsed().as_secs_f64() * 1000.0;
+    let fork_ms = fork_start.elapsed().as_secs_f64() * 1000.0;
     drop(forked);
     drop(shaper);
-    let started = Instant::now();
+    let open_start = Instant::now();
     let (window, state) = open(&document());
-    let ready_ms = started.elapsed().as_secs_f64() * 1000.0;
+    let ready_ms = open_start.elapsed().as_secs_f64() * 1000.0;
     let height = window.get_viewport_height();
-    let started = Instant::now();
+    let first_start = Instant::now();
     scroll_to(&window, START);
     settle_tile(&state);
-    let first_ms = started.elapsed().as_secs_f64() * 1000.0;
-    let started = Instant::now();
+    let first_ms = first_start.elapsed().as_secs_f64() * 1000.0;
+    let warm_start = Instant::now();
     scroll_to(&window, START + height);
     settle_tile(&state);
-    let warm_ms = started.elapsed().as_secs_f64() * 1000.0;
+    let warm_ms = warm_start.elapsed().as_secs_f64() * 1000.0;
     eprintln!(
         "COLD-START shaper_new_ms={shaper_ms:.1} fork_ms={fork_ms:.1} open_ready_ms={ready_ms:.1} first_reply_ms={first_ms:.1} warm_reply_ms={warm_ms:.1}"
     );

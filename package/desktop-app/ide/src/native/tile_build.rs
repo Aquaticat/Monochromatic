@@ -31,11 +31,11 @@ use ide_app::text_raster::{CodeColors, TextRaster};
 use slint::{Rgba8Pixel, SharedPixelBuffer};
 /// Owned snapshots are shared between the UI and worker threads.
 use std::{
+    panic::{AssertUnwindSafe, catch_unwind},
     sync::{
         Arc,
         mpsc::{Receiver, SyncSender, TryRecvError, sync_channel},
     },
-    panic::{AssertUnwindSafe, catch_unwind},
     thread::{self, JoinHandle},
 };
 
@@ -220,7 +220,7 @@ enum WorkerReply {
     /// The worker's shaper and raster are ready to build.
     Ready,
     /// The finished tile or its failure.
-    Built(Result<TileBuilt>),
+    Built(Box<Result<TileBuilt>>),
 }
 
 /// Test-only gate: the next build waits for one message before it starts, so a test can hold a job in flight.
@@ -230,9 +230,12 @@ pub(super) static BUILD_GATE: std::sync::Mutex<Option<Receiver<()>>> = std::sync
 /// Wait on the test gate once, if a test installed one; the sender stays with the test.
 #[cfg(test)]
 fn hold_at_test_gate() {
-    let gate = BUILD_GATE.lock().ok().and_then(|mut slot| return slot.take());
-    if let Some(gate) = gate
-        && let Err(error) = gate.recv()
+    let gate = BUILD_GATE
+        .lock()
+        .ok()
+        .and_then(|mut slot| return slot.take());
+    if let Some(pending) = gate
+        && let Err(error) = pending.recv()
     {
         tracing::debug!(%error, "test build gate closed");
     }
@@ -260,7 +263,7 @@ fn run(shaper: TextShaper, requests: Receiver<TileJob>, replies: SyncSender<Work
         hold_at_test_gate();
         let result = tiler.build(job);
         // A closed receiver means the window is gone; the thread stops instead of retrying.
-        if let Err(error) = replies.send(WorkerReply::Built(result)) {
+        if let Err(error) = replies.send(WorkerReply::Built(Box::new(result))) {
             tracing::debug!(%error, "source tile reply receiver closed");
             return;
         }
@@ -290,6 +293,7 @@ pub(super) struct TileWorker {
     /// The window thread polls this receiver without blocking.
     replies: Receiver<WorkerReply>,
     /// The worker has reported that its shaper is ready.
+    #[cfg(test)]
     ready: bool,
     /// A job is running or its reply is unread.
     busy: bool,
@@ -314,13 +318,16 @@ impl TileWorker {
                     run(shaper, request_receiver, reply_sender);
                 }));
                 if outcome.is_err() {
-                    tracing::error!("source tile worker panicked; the next scroll re-center starts a new worker");
+                    tracing::error!(
+                        "source tile worker panicked; the next scroll re-center starts a new worker"
+                    );
                 }
             })
             .context("Cannot start the source tile worker")?;
         return Ok(Self {
             requests: Some(request_sender),
             replies: reply_receiver,
+            #[cfg(test)]
             ready: false,
             busy: false,
             waiting: None,
@@ -335,6 +342,7 @@ impl TileWorker {
     }
 
     /// True once the worker has reported that its shaper is ready to build.
+    #[cfg(test)]
     pub(super) fn is_ready(&self) -> bool {
         return self.ready;
     }
@@ -379,12 +387,15 @@ impl TileWorker {
         loop {
             match self.replies.try_recv() {
                 Ok(WorkerReply::Ready) => {
-                    self.ready = true;
+                    #[cfg(test)]
+                    {
+                        self.ready = true;
+                    }
                 }
                 Ok(WorkerReply::Built(reply)) => {
                     self.busy = false;
                     self.dispatch()?;
-                    return Ok(Some(reply));
+                    return Ok(Some(*reply));
                 }
                 Err(TryRecvError::Empty) => {
                     return Ok(None);
