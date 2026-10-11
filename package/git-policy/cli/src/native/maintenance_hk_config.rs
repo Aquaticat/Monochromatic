@@ -172,9 +172,12 @@ pub fn hk_keys_in_scope(
     }
     // `mut` lets the keys be sorted and deduplicated in place.
     let mut keys: Vec<String> = Vec::new();
-    for pair in fields.chunks_exact(2) {
-        if pair[0] == scope.listing_name() && pair[1].starts_with(HK_HOOK_PREFIX) {
-            keys.push(String::from(pair[1]));
+    for pair in fields.chunks(2) {
+        match pair {
+            [scope_field, key] if *scope_field == scope.listing_name() && key.starts_with(HK_HOOK_PREFIX) => {
+                keys.push(String::from(*key));
+            }
+            _ => {}
         }
     }
     keys.sort_by(|left, right| return left.encode_utf16().cmp(right.encode_utf16()));

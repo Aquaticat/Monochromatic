@@ -27,6 +27,7 @@
 //!  could reach a recycled PID.
 
 /// `c_int` is the C integer type signal numbers and status codes use.
+#[cfg(unix)]
 use std::ffi::c_int;
 /// `io` is the input and output error type the spawn and wait calls return.
 use std::io;
@@ -72,13 +73,6 @@ const PROCESS_SENDER_CODES: [c_int; 2] = [libc::SI_USER, libc::SI_QUEUE];
 pub const RELAYED_SIGNALS: [c_int; 4] = [libc::SIGINT, libc::SIGTERM, libc::SIGHUP, libc::SIGQUIT];
 
 /// What:
-///  One zero-initialized atomic, used to fill the pending-signal array.
-/// Why:
-///   An array repeat expression needs a `const` value.
-#[cfg(unix)]
-const ATOMIC_ZERO: std::sync::atomic::AtomicI32 = std::sync::atomic::AtomicI32::new(0);
-
-/// What:
 ///  PID of the Git child being waited for, or zero when none is.
 /// Why:
 ///   The handler runs asynchronously, so it can only read state through atomics.
@@ -90,7 +84,8 @@ static CHILD_PID: std::sync::atomic::AtomicI32 = std::sync::atomic::AtomicI32::n
 /// Why:
 ///   A signal that arrives before the child exists is relayed as soon as its PID is recorded.
 #[cfg(unix)]
-static PENDING: [std::sync::atomic::AtomicI32; 4] = [ATOMIC_ZERO; 4];
+static PENDING: [std::sync::atomic::AtomicI32; 4] =
+    [const { std::sync::atomic::AtomicI32::new(0) }; 4];
 
 /// What:
 ///  Whether a guard is installed in this process.

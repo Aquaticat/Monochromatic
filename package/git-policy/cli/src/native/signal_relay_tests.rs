@@ -212,8 +212,7 @@ fn signal_during_start_is_relayed_after_the_child_starts() {
 #[test]
 fn terminal_interrupt_is_not_relayed_a_second_time() {
     let root: PathBuf = fixture("signal-terminal");
-    let (master, helper): (std::fs::File, Child) = spawn_terminal_helper(root.as_path());
-    let mut master: std::fs::File = master;
+    let (mut master, helper): (std::fs::File, Child) = spawn_terminal_helper(root.as_path());
     wait_for(root.join("started").as_path());
     std::io::Write::write_all(&mut master, b"\x03").expect("interrupt character written");
     wait_for(root.join("interrupts").as_path());
