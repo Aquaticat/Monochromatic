@@ -80,7 +80,22 @@ the displayed word reflects what Claude was most recently talking about.
     adjectives,
     phase-implying verbs)
 8. The last surviving match of the newest entry that has one is capitalized and displayed
-9. Falls back to "Thinking" when no gerund is found or the transcript is unavailable
+9. When no gerund is found,
+    the word from an earlier render of the same session is shown instead;
+    see Memory below
+10. Falls back to "Thinking" when the session has never produced a gerund or the transcript is unavailable
+
+### Memory
+
+The statusline command is a new process on every render,
+ so the last word is kept on disk:
+ `~/.claude/statusline-activity/<session id>.txt`,
+ where the session id is the transcript file name without `.jsonl`.
+A freshly extracted word replaces the stored one,
+ and the file is only written when the word changed.
+A stored file that is not exactly one word the extractor could produce is ignored,
+ and an unwritable directory never blocks rendering.
+Files are tiny and are not pruned.
 
 ### Noise filter categories
 
@@ -140,7 +155,7 @@ Disable the built-in spinner verbs and tips so they don't compete with the statu
 - Only the final 64KB is read.
   When the newest assistant text sits behind more than that
    (for example a very large tool result),
-   it is not seen and the fallback is shown.
+   it is not seen and the remembered word is shown.
 - The word reflects the most recent gerund in assistant prose,
   which may lag behind the current activity by one or more tool calls.
 - At the start of a session (empty transcript),

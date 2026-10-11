@@ -108,3 +108,13 @@ export {
   assistantTextOfLine,
   readActivityWord,
 } from './activity.ts';
+
+/**
+ Exposed so built-artifact tests reach the per-session activity memory.
+ 
+ @internal
+ */
+export {
+  memoryPathOf,
+  readRememberedActivityWord,
+} from './activity-memory.ts';
