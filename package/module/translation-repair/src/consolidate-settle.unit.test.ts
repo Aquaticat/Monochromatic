@@ -32,6 +32,7 @@ import {
   buildTranslateCandidates,
   createSyntheticClient,
   describeSlate,
+  FLAWED_STANDING_GATE_SHIPS_PROPOSAL_FINDING,
   INELIGIBLE_STANDING_WITHHELD_FINDING,
   UNDECIDED_GATE_SHIPS_PROPOSAL_FINDING,
   rotateCandidates,
@@ -256,6 +257,42 @@ function positionOfText(
   if (found === undefined)
     throw new Error('the wanted rendering never reached the slate, so the fixture is wrong',);
   return found.index;
+}
+
+/**
+ One-based number of the candidate block carrying a rendering on the sheet a
+ judge was shown, or zero when absent. Read off the sheet because a run-off
+ round renumbers the finalists.
+
+ @param sent - serialised request a judge was shown
+
+ @param wanted - fragment of the rendering whose number is sought
+
+ @returns One-based candidate number, or zero
+
+ @example
+ ```ts
+ const best = numberedOn({ sent, wanted: FRESH_MARK, },);
+ ```
+ */
+function numberedOn(
+  { sent, wanted, }: { readonly sent: string; readonly wanted: string; },
+): number {
+  /**
+   Candidate heading marker.
+   */
+  const marker = 'CANDIDATE ';
+  for (let cursor = sent.indexOf(marker,); cursor >= 0;) {
+    /**
+     Start of the candidate block whose marker follows this one, or the sheet's end.
+     */
+    const next = sent.indexOf(marker, cursor + marker.length,);
+    if (sent.slice(cursor, (next === (-1)) ? sent.length : next,)
+      .includes(wanted,))
+      return Number(sent.charAt(cursor + marker.length,),);
+    cursor = next;
+  }
+  return 0;
 }
 
 /**
@@ -524,6 +561,7 @@ async function settleWith(
     standingRefusal,
     laneTexts = [],
     runoffOverStanding = false,
+    standingFlawedByAll = false,
     served = {
       judge: 0,
       gate: 0,
@@ -562,10 +600,18 @@ async function settleWith(
     readonly laneTexts?: readonly LaneText[];
 
     /**
-     Whether every contest ballot called the archive flawed, so a tied slate
-     over an eligible standing is run off (class one hundred six).
+     Whether a strict majority of the contest ballots called the archive
+     flawed, so a tied slate over an eligible standing is run off (class one
+     hundred six, owner answer 2026-10-11).
      */
     readonly runoffOverStanding?: boolean;
+
+    /**
+     Whether every contest ballot called the archive flawed, so an undecided
+     gate over an eligible standing ships the slate's choice (class one hundred
+     seventy-seven).
+     */
+    readonly standingFlawedByAll?: boolean;
 
     /**
      Calls each route served, which every case asserts on; a case expecting
@@ -614,6 +660,7 @@ async function settleWith(
     ...((standingRefusal === undefined) ? {} : { standingRefusal, }),
     laneTexts,
     runoffOverStanding,
+    standingFlawedByAll,
     l,
     stageSettings: SCRIPTED_STAGE_SETTINGS,
   },);
@@ -1154,6 +1201,7 @@ await describe({
           judgeReply: judgeBallot({ best: positionOfText({ texts: [FRESH,], wanted: FRESH, },), },),
           gateReply: ballot({ choice: 'neither', },),
           runoffOverStanding: true,
+          standingFlawedByAll: true,
         },);
         expect(settled.terminal,).toBe('consolidated',);
         expect(settled.text.replaceAll('\n', ' ',),).toBe(FRESH,);
@@ -1168,6 +1216,7 @@ await describe({
           judgeReply: judgeBallot({ best: positionOfText({ texts: [FRESH,], wanted: FRESH, },), },),
           gateReply: ballot({ choice: 'standing', },),
           runoffOverStanding: true,
+          standingFlawedByAll: true,
         },);
         expect(refused.settled.terminal,).toBe('gate-kept-standing',);
         expect(refused.settled.text,).toBe(STANDING,);
@@ -1311,7 +1360,7 @@ await describe({
       },
     },),
     it({
-      name: 'RUNS THE RUN-OFF OVER AN ELIGIBLE STANDING when every contest ballot called the archive '
+      name: 'RUNS THE RUN-OFF OVER AN ELIGIBLE STANDING when a strict majority of contest ballots called the archive '
         + 'flawed (class one hundred six, one entry\'s slice 9, 2026-09-24): the tie is challenged and a '
         + 'round that decides ships its choice; a run-off that stays undecided ships the standing '
         + 'rather than stopping the slice',
@@ -1330,28 +1379,6 @@ await describe({
          Wording the challenge round's task carries and the first round's does not.
          */
         const CHALLENGE_MARKER = 'A prior panel declined this exact slate';
-        /**
-         One-based number of the candidate block carrying a rendering on the
-         sheet a judge was shown, or zero when absent; read off the sheet
-         because a run-off round renumbers the finalists.
-         */
-        function numberedOn({ sent, wanted, }: { readonly sent: string; readonly wanted: string; },): number {
-          /**
-           Candidate heading marker.
-           */
-          const marker = 'CANDIDATE ';
-          for (let cursor = sent.indexOf(marker,); cursor >= 0;) {
-            /**
-             Start of the next candidate block, or the sheet's end.
-             */
-            const next = sent.indexOf(marker, cursor + marker.length,);
-            if (sent.slice(cursor, (next === (-1)) ? sent.length : next,)
-              .includes(wanted,))
-              return Number(sent.charAt(cursor + marker.length,),);
-            cursor = next;
-          }
-          return 0;
-        }
         /**
          Ballots: the first round splits one voice each way between the two
          proposals and a third declines; the challenge round backs the fresh
@@ -1418,6 +1445,180 @@ await describe({
         expect(undecided.judgeSheets.some(function challenged(sheet,): boolean {
           return sheet.includes(CHALLENGE_MARKER,);
         },),).toBe(true,);
+      },
+    },),
+    it({
+      name: 'RUNS OFF THE TIED FINALISTS when an eligible standing drew no ballot in a three-way tie, so the '
+        + 'same panel decides between the tied proposals (owner answer 2026-10-11, "Run off the tied finalists"): '
+        + 'the run-off names the finalist it backs and the consolidation ships it',
+      fn: async () => {
+        /**
+         Three proposals, one per roster voice, so the three-way tie leaves the
+         standing at zero ballots, as the live slice did.
+         */
+        const OTHER = 'The cat naps on the sill each afternoon.';
+        /**
+         Third proposal, the one the run-off backs.
+         */
+        const THIRD = 'The cat dozes in a patch of sun, then wakes at four.';
+        /**
+         Fragment naming the third proposal on a sheet.
+         */
+        const THIRD_MARK = 'patch of sun';
+        /**
+         Fragments naming the first two proposals on a sheet.
+         */
+        const FRESH_MARK = 'beside the window';
+        const OTHER_MARK = 'naps on the sill';
+        /**
+         Wording the challenge round's task carries and the first round's does not.
+         */
+        const CHALLENGE_MARKER = 'A prior panel declined this exact slate';
+        /**
+         Ballots: the first round gives each proposal one voice, so no candidate
+         leads; the run-off round votes for the third proposal.
+         */
+        function splitThenThird(sent: string, call: number,): string {
+          if (sent.includes(CHALLENGE_MARKER,))
+            return judgeBallot({ best: numberedOn({ sent, wanted: THIRD_MARK, },), },);
+          return judgeBallot({
+            best: [
+              numberedOn({ sent, wanted: FRESH_MARK, },),
+              numberedOn({ sent, wanted: OTHER_MARK, },),
+              numberedOn({ sent, wanted: THIRD_MARK, },),
+            ][call % 3] ?? 0,
+          },);
+        }
+        const decided = await settleWith({
+          voices: [
+            voiceOf({ modelId: ROSTER[0], translation: FRESH, },),
+            voiceOf({ modelId: ROSTER[1], translation: OTHER, },),
+            voiceOf({ modelId: ROSTER[2], translation: THIRD, },),
+          ],
+          validity: [
+            validityOf({ modelId: ROSTER[0], valid: true, },),
+            validityOf({ modelId: ROSTER[1], valid: true, },),
+            validityOf({ modelId: ROSTER[2], valid: true, },),
+          ],
+          judgeReply: splitThenThird,
+          gateReply: ballot({ choice: 'consolidated', },),
+        },);
+        expect(decided.settled.terminal,).toBe('consolidated',);
+        expect(decided.settled.findings.includes('translate-declined-retried',),).toBe(true,);
+        expect(decided.judgeSheets.some(function challenged(sheet,): boolean {
+          return sheet.includes(CHALLENGE_MARKER,);
+        },),).toBe(true,);
+      },
+    },),
+    it({
+      name: 'KEEPS THE SINGLE-ROUND TIE when the standing drew a ballot in it, so no second ask is bought '
+        + 'for a tie the standing took part in (owner answer 2026-10-11, "Run off the tied finalists")',
+      fn: async () => {
+        /**
+         Fragment naming the standing on a sheet.
+         */
+        const STANDING_MARK = 'by the window';
+        /**
+         Fragments naming the two proposals on a sheet.
+         */
+        const FRESH_MARK = 'beside the window';
+        const OTHER_MARK = 'naps on the sill';
+        const OTHER = 'The cat naps on the sill each afternoon.';
+        /**
+         Wording the challenge round's task carries and the first round's does not.
+         */
+        const CHALLENGE_MARKER = 'A prior panel declined this exact slate';
+        /**
+         Ballots: the first judge backs the fresh proposal, the second the
+         standing and the third the other proposal, so the standing draws a
+         ballot and the tie is the single round's own.
+         */
+        function splitWithStanding(sent: string, call: number,): string {
+          return judgeBallot({
+            best: [
+              numberedOn({ sent, wanted: FRESH_MARK, },),
+              numberedOn({ sent, wanted: STANDING_MARK, },),
+              numberedOn({ sent, wanted: OTHER_MARK, },),
+            ][call % 3] ?? 0,
+          },);
+        }
+        const { settled, served, judgeSheets, } = await settleWith({
+          voices: [
+            voiceOf({ modelId: ROSTER[0], translation: FRESH, },),
+            voiceOf({ modelId: ROSTER[1], translation: OTHER, },),
+          ],
+          validity: [
+            validityOf({ modelId: ROSTER[0], valid: true, },),
+            validityOf({ modelId: ROSTER[1], valid: true, },),
+          ],
+          judgeReply: splitWithStanding,
+          gateReply: ballot({ choice: 'consolidated', },),
+        },);
+        expect(settled.terminal,).toBe('slate-declined-standing',);
+        expect(settled.text,).toBe(STANDING,);
+        expect(served.judge,).toBe(3,);
+        expect(judgeSheets.some(function challenged(sheet,): boolean {
+          return sheet.includes(CHALLENGE_MARKER,);
+        },),).toBe(false,);
+      },
+    },),
+    it({
+      name: 'KEEPS THE STANDING when the run-off over the tied finalists ties again, after exactly one '
+        + 'run-off ask, so the standing ships as it did before the run-off (owner answer 2026-10-11, '
+        + '"Run off the tied finalists")',
+      fn: async () => {
+        const OTHER = 'The cat naps on the sill each afternoon.';
+        const THIRD = 'The cat dozes in a patch of sun, then wakes at four.';
+        const FRESH_MARK = 'beside the window';
+        const OTHER_MARK = 'naps on the sill';
+        const THIRD_MARK = 'patch of sun';
+        /**
+         Ballots that split three ways on every round, so the run-off ties too.
+         */
+        function splitThroughout(sent: string, call: number,): string {
+          return judgeBallot({
+            best: [
+              numberedOn({ sent, wanted: FRESH_MARK, },),
+              numberedOn({ sent, wanted: OTHER_MARK, },),
+              numberedOn({ sent, wanted: THIRD_MARK, },),
+            ][call % 3] ?? 0,
+          },);
+        }
+        const { settled, served, } = await settleWith({
+          voices: [
+            voiceOf({ modelId: ROSTER[0], translation: FRESH, },),
+            voiceOf({ modelId: ROSTER[1], translation: OTHER, },),
+            voiceOf({ modelId: ROSTER[2], translation: THIRD, },),
+          ],
+          validity: [
+            validityOf({ modelId: ROSTER[0], valid: true, },),
+            validityOf({ modelId: ROSTER[1], valid: true, },),
+            validityOf({ modelId: ROSTER[2], valid: true, },),
+          ],
+          judgeReply: splitThroughout,
+          gateReply: ballot({ choice: 'consolidated', },),
+        },);
+        expect(settled.terminal,).toBe('slate-declined-standing',);
+        expect(settled.text,).toBe(STANDING,);
+        expect(served.judge,).toBe(6,);
+      },
+    },),
+    it({
+      name: 'KEEPS THE STANDING ON AN UNDECIDED GATE when a strict majority but not every contest ballot '
+        + 'called the archive flawed, since the forfeit still reads every ballot (owner answer 2026-09-27, '
+        + '"Slate\'s choice")',
+      fn: async () => {
+        const { settled, } = await settleWith({
+          voices: [voiceOf({ modelId: ROSTER[0], translation: FRESH, },),],
+          validity: [validityOf({ modelId: ROSTER[0], valid: true, },),],
+          judgeReply: judgeBallot({ best: positionOfText({ texts: [FRESH,], wanted: FRESH, },), },),
+          gateReply: ballot({ choice: 'neither', },),
+          runoffOverStanding: true,
+          standingFlawedByAll: false,
+        },);
+        expect(settled.terminal,).toBe('gate-kept-standing',);
+        expect(settled.text,).toBe(STANDING,);
+        expect(settled.findings.includes(FLAWED_STANDING_GATE_SHIPS_PROPOSAL_FINDING,),).toBe(false,);
       },
     },),
     it({

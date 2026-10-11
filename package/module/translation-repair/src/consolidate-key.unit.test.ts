@@ -306,7 +306,8 @@ await describe({
         + 'metadata contributor spelling, final body polish, target body contributor authority, and '
         + 'source-grammar calque removal, absolute naturalness review, required correction mode, and second bounded correction, then on 2026-08-29 for '
         + 'render-aware absolute review, rejected-base correction prompts, absolute correction eligibility, exact-half participation, continuous correction, distinct confirmation responsibility, rejected-strategy threading, durable payload replay, and contributor authority flooring, '
-        + 'and on 2026-09-28 for the slate judges beside the writers (ledger X11). These policies are not text fields, '
+        + 'and on 2026-09-28 for the slate judges beside the writers (ledger X11), and on 2026-10-11 for the run-off '
+        + 'rules (version 21). These policies are not text fields, '
         + 'so comparing two calls would not notice a stale settlement, which is why this pins a value',
       fn: async () => {
         // THE LITERAL MOVED TWICE ON 2026-08-29. Its fixture roster first
@@ -330,8 +331,11 @@ await describe({
         // Version 20 carries every floor, sheet and quorum change made after 19.
         // On 2026-09-28 the run shape took the slate judges beside the writers
         // (ledger X11), which moved this literal inside 20.
+        // Version 21 (2026-10-11) runs off a tied slate whose standing drew no
+        // ballot, and runs off on a strict majority of the archive-flawed ballots,
+        // which moved this literal to the value this expectation names.
         expect(consolidateSliceKey(SLICE,),).toBe(
-          'a064184d393fb07074c43421adbc8ff6d6c71bbdbe808f0de34244f3bade9467',
+          'a45f213f26e6ed83e97a21a718579cc987c35c68e5bd17d4cc8943045c773cf8',
         );
       },
     },),
