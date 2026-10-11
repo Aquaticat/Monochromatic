@@ -459,6 +459,9 @@ pub mod recovery_completion;
 /// The `.keep` files protecting a landing's migrated pack.
 pub mod pack_keep;
 
+/// Test-only transaction phase markers, compiled into the release executable and armed only by an environment variable.
+pub mod transaction_phase;
+
 /// Git commands run against a transaction's shadow repository.
 pub mod shadow_git;
 
