@@ -34566,6 +34566,9 @@ once here and once by `translate-slice-attempt.ts`,
 which is the agent's inference from reading both,
 not run.
 
+The double on the translate path was run on 2026-10-11 (UTC) and held;
+B412 fixed it.
+
 Recurrence:
 `mistake-prevention.md`,
 "Output decided by arrival order".
@@ -34697,7 +34700,9 @@ by `askOnce` for the gather round,
 its race and the recovery round;
 by `repairOneCandidate` for the repair;
 by `meterRecordOf` and `gateProvider` for the meters;
-and by the catches of the cited reference and work title lookups.
+and by the cited reference and work title lookups
+(their catches then,
+their returned outcomes since B414).
 Two sites wrote none:
 `readImagePair` (B404)
 and the reference read (B405).
@@ -34828,6 +34833,10 @@ a never-aborting signal in the reference read when its caller gave none;
 the refine case's `UnpreparedSliceError`;
 and the line's wording.
 
+Changed on 2026-10-11 (UTC) by B412 and B413:
+`repairOneCandidate` now marks its failure too,
+and the map writes its unthrown failures whether or not the caller has stopped.
+
 Recurrence:
 `mistake-prevention.md`,
 "Output decided by arrival order".
@@ -34859,6 +34868,10 @@ Open to the owner's veto:
 preparation now fails with the reason at the lookups,
 where it went on with unfetched lines.
 
+Changed on 2026-10-11 (UTC) by B414:
+the members no longer reject,
+so the two scan entries read `catches-own` and rest on the outcome readers.
+
 Recurrence:
 `mistake-prevention.md`,
 "Output decided by arrival order".
@@ -34884,6 +34897,195 @@ two failures without a stop still drop the higher one,
 which the owner's rule on a stop does not cover;
 and the cited-reference block writes its per-page lines in completion order,
 which its case hides by sorting.
+
+Closed on 2026-10-11 (UTC) by B411 to B414,
+which ran each reading red on the build of `06ca2a85ca`.
+All four held,
+and the run of the second found the translate path doubled as well.
+
+Recurrence:
+`mistake-prevention.md`,
+"Output decided by arrival order".
+
+### B411: the twin memo wrote the caller's stop as an abandoned buy
+
+Red `142ed0e987`,
+fixed in `6c39c45556`.
+
+Found on 2026-10-11 (UTC) as the open item B410 recorded.
+`reuseTwinOrBuy` (`twin-memo.ts`) caught a buy's failure with no signal in reach,
+and wrote the caller's own reason as "the buy for a shared key was abandoned (refused by Error)",
+on every translate and repair buy the stop ended,
+since their abort catches throw the reason.
+By the red case on the base build,
+a buy and the twin waiting on it each wrote that line.
+
+The fix:
+`reuseTwinOrBuy` takes the caller's signal,
+required,
+and `acquireConsolidation` with it;
+the four production callers pass the signal their buy honours
+(`consolidate-driver.ts`,
+`lane-contest-driver.ts`,
+`translate-slice-settle.ts` and `repair-slice-settle.ts`),
+and no `AbortSignal.any` sits on those paths.
+A failure that is the stopped caller's reason withdraws the key and writes nothing,
+and the waiting twin still asks for itself,
+its own buy meeting the same stop,
+which the case shows by two buys started.
+Every other failure keeps its line and the provider's words.
+
+Recurrence:
+`mistake-prevention.md`,
+"Output decided by arrival order".
+
+### B412: a repair re-ask's failure under a stop was written twice
+
+Red `142ed0e987`,
+fixed in `6c39c45556`.
+
+Found on 2026-10-11 (UTC) as the open item B410 recorded,
+and on the translate path as the inference B403 left open.
+In the consolidation,
+`repairOneCandidate` wrote a seat's own failure as the caller stopped,
+and the twin memo wrote the same failure again as an abandoned buy;
+on the translate path,
+`attemptTranslateSlice` wrote it again as the slice's abandoned line,
+the memo then seeing only the caller's reason.
+Both fail red on the base build.
+
+The fix:
+`repairOneCandidate` marks the failure it writes through `markFailureWritten`;
+the twin memo writes no line for a failure that `failureWritten` reports;
+the translate attempt writes its abandoned line without the failure's words when the failure is marked;
+`mapOverlapped` already skipped marked failures.
+The seat's line was kept because it names the seat and the stage,
+is the only writer for every seat after the first in input order
+and for callers with no memo,
+and is written first.
+Dropping the memo's clause "so any twin waiting on it asks for itself" loses no fact of the event:
+it holds for every withdrawn key and is the documented behaviour of `reuseTwinOrBuy`.
+By the agent's control,
+restoring the memo's line for a marked failure fails the composed case with a third line.
+
+Open to the owner's veto:
+the memo writes nothing for a marked failure,
+where the alternative is a short line with no failure text saying only that the key was withdrawn;
+the translate attempt's line for a marked failure is bare,
+where the alternative keeps the words and accepts the double;
+and the marker stays in `overlapped-map.ts`,
+now imported by the twin memo,
+`translate-repair.ts`,
+`translate-slice-attempt.ts` and `corpus-run/run-seats-read.ts`,
+where the alternative is a module of its own.
+
+Reversed by this entry:
+B408's choice that the twin memo sets the marker and `repairOneCandidate` does not.
+
+Recurrence:
+`mistake-prevention.md`,
+"Output decided by arrival order".
+
+### B413: an overlapped job's own failure with no stop reached no line, and the seat reading's was written twice
+
+Red `142ed0e987`,
+fixed in `6c39c45556`.
+
+Found on 2026-10-11 (UTC) as the open item B410 recorded.
+`mapOverlapped` (`overlapped-map.ts`) wrote nothing while the caller had not stopped,
+so of two jobs failing of their own the higher one's failure reached no line;
+and `readDrynessPastShortBench` (`corpus-run/run-seats-read.ts`) wrote its writing-bench stop
+and threw it unmarked from the per-slice hook,
+so under a stop the map wrote it a second time.
+Both fail red on the base build.
+
+The fix:
+the map writes each failure it does not throw,
+in position order,
+stopped or not,
+skipping the thrown one,
+a failure marked written
+and the aborted signal's reason;
+a line with no stop names the item whose failure is thrown;
+the seat reading marks its refusal.
+The check that the signal has aborted stays,
+since an unstopped signal's reason is `undefined`,
+which a job can throw;
+by the agent's control,
+dropping it fails the case of a failure that is no error at all.
+The case that pinned the old behaviour,
+"WRITES NOTHING WHILE THE CALLER HAS NOT STOPPED",
+is rewritten into the case that writes each unthrown failure with no stop.
+From reading the source,
+not running each caller,
+the census of the nine callers' jobs found the hook refusals marked,
+the buy failures written by the twin memo,
+and a few kinds nothing wrote that the map now writes
+(a consolidation ledger gap,
+a roster refusal,
+an unprepared slice,
+and the stage and cache failures of the refine phase);
+the panel stage,
+the judge fidelity probe and the reference read run one lane and cannot leave a failure unthrown.
+Of the catch blocks that both write and throw,
+the writers reaching a job's end were the twin memo,
+the seat reading and `repairOneCandidate`,
+all now marked;
+the scan's reach is limited to writes within eight lines of the throw.
+
+Open to the owner's veto:
+the map writes without a stop,
+where the alternative is writing only under a stop,
+which drops the higher failure;
+and the no-stop line's wording,
+"and the failure thrown is X's,
+which comes before it".
+
+Open:
+under a stop,
+`repair-slice-buy.ts` and `repair-refine-step.ts` would write a marked seat-reading refusal from the hook
+a second time in their "abandoned by the caller's abort" line;
+reaching it needs the dryness read to resolve as the stop lands,
+and no honest red case was built,
+so nothing was changed there.
+
+Recurrence:
+`mistake-prevention.md`,
+"Output decided by arrival order".
+
+### B414: the cited-reference and work-title lookups wrote their per-member lines in completion order
+
+Red `142ed0e987`,
+fixed in `6c39c45556`.
+
+Found on 2026-10-11 (UTC) as the open item B410 recorded for `citedReferenceBlock`,
+and beside it for `workTitleLookupLines`.
+Each lookup wrote its `REFERENCE` line,
+its page that could not be fetched
+or its failed lookup
+from inside its member,
+as the member ended,
+and the cited-reference case hid it by sorting.
+With a later page or title ending first,
+both fail red on the base build.
+
+The fix:
+no member rejects;
+each returns a named outcome (`PageOutcome`,
+`TitleOutcome`),
+the caller's reason as a stop;
+once every lookup has ended,
+the lines are written in input order from what each returned,
+and the first stop's reason is thrown unchanged;
+the cases assert the order exactly;
+the scan entries now read `catches-own`,
+resting on `failedPageOutcome` and `failedTitleOutcome`.
+B409's stop case needs no wait for the line any more.
+
+Open to the owner's veto:
+a stopped call now waits for every lookup before refusing,
+where the alternative refuses at the first lookup that ends in the reason
+and gives up the input order of a stopped call's lines.
 
 Recurrence:
 `mistake-prevention.md`,

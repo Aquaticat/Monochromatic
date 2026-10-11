@@ -4676,8 +4676,17 @@ B407).
 `overlapped-map.unit.test.ts` holds each failure the helper does not throw,
 written in position order whichever ended first,
 none for the thrown one or for the caller's reason,
-none while the caller has not stopped,
+the same with no stop at all,
+including a failure that is no error,
 and no second line for a buy's failure the twin memo wrote;
+`twin-memo.unit.test.ts` holds no abandoned-buy line for a buy ending in the caller's reason,
+with the key withdrawn and the waiting twin asking for itself,
+and the line with the provider's words for a buy's own failure;
+`translate-repair.unit.test.ts` and `translate-slice-attempt.unit.test.ts` hold a re-ask's failure once
+on its seat's line when the repair runs as a buy inside the map,
+and `corpus-run/run-seats-read.unit.test.ts` holds one line for a seat reading's stop (ledger B411,
+B412,
+B413);
 the lane drivers' tests (`consolidate-driver`,
 `lane-contest-driver`,
 `translate-document`,
@@ -4685,12 +4694,22 @@ the lane drivers' tests (`consolidate-driver`,
 `repair-translation` and `corpus-run/pass-insertion-admission`) each land the stop inside a later job's hook
 through `stop-landing-hook.test-fixture.ts`,
 and `work-title-lookup.unit.test.ts` and `cited-reference.unit.test.ts` hold the lookups refusing with the caller's reason
-while a member's own failure keeps its line (ledger B408,
-B409).
+while a member's own failure keeps its line,
+and each page's or title's line in input order when a later one ends first (ledger B408,
+B409,
+B414).
 A helper that reads many jobs takes the caller's signal and logger as required parameters,
 so a caller cannot leave the stop unread;
 a failure that a lower layer wrote is marked there,
+by every writer that lets it out (the twin memo,
+`repairOneCandidate` and the seat reading),
 and the helper skips marked failures instead of guessing from their class.
+A member that writes a line returns an outcome instead of writing from inside the member,
+so the lines are written once every member has ended,
+in input order.
+A layer that holds the caller's signal and sees the caller's own reason writes nothing for it:
+the reason is the caller's,
+never the member's failure.
 When a fix closes one fan-out of a shape,
 the same change lists every other caller of the helper that rethrows unwritten under a stop,
 and says which are covered;
