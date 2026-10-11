@@ -1,6 +1,6 @@
 [package]
 name = "monochromatic-nested-wayland-session"
-version = "0.1.1"
+version = "0.1.2"
 categories = ["command-line-utilities", "development-tools::testing"]
 edition = "2024"
 homepage = "https://github.com/Aquaticat/Monochromatic/tree/main/package/cli/nested-wayland-session"
@@ -16,6 +16,16 @@ license = "LGPL-3.0-or-later"
 readme = "README.md"
 repository = "https://github.com/Aquaticat/Monochromatic.git"
 description = "Minimal single-app nested Wayland compositor for GUI testing: hosts one Wayland client fullscreen on the GPU (dmabuf) path, screenshots the framebuffer, and injects synthetic input over a Unix-socket control API."
+
+# cargo-binstall's default URL is {repo}/releases/download/v{version}/{name}-{target}-v{version},
+# but this repository tags each crate's release monochromatic-nested-wayland-session-v<version> and names the
+# archive monochromatic-nested-wayland-session-<version>-<target>, so without this table mise falls back to
+# compiling from source. Releases carry Linux archives only (x86_64 and aarch64, tar.gz).
+# doc/troubleshooting/mise-cargo-binstall-falls-back-to-compiling.md has the evidence.
+[package.metadata.binstall]
+pkg-url = "{ repo }/releases/download/{ name }-v{ version }/{ name }-{ version }-{ target }{ archive-suffix }"
+bin-dir = "{ name }-{ version }-{ target }/{ bin }{ binary-ext }"
+pkg-fmt = "tgz"
 
 [lints.clippy]
 complexity = { level = "allow", priority = -1 }
