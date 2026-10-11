@@ -240,8 +240,9 @@ the items after it are the record of 2026-10-05 and older.
   - The file tree is sorted mixed (directories and files together), case folded, with digit runs compared by value
     (`src/name_order.rs`; before, it kept raw `read_dir` order).
   - Vello was tried (`SLINT_BACKEND=winit-vello`, approved by the user) and not adopted:
-    it draws in the nested compositor, but FemtoVG, software, and Vello all painted about half of the possible frames.
-    The experiment stays on the branch `feat/ide-vello-trial`.
+    it draws in the nested compositor, and FemtoVG, software, and Vello showed the same frame cadence.
+    The experiment (the `renderer-vello` feature and per-phase timings in `src/native/render.rs`) is kept only as a
+    patch at `~/temp/agent/ide-render-phases/vello-trial-uncommitted.patch`; its branch and worktree are removed.
   - The measured cause was in the app: `render()` ran about twice per wheel step and every call was a full repaint.
     Stage 1 of `doc/planning/slint-ide-scroll-pipeline.md` is built:
     an overscan tile of about three view heights, an early return while the view stays inside it,
@@ -249,8 +250,12 @@ the items after it are the record of 2026-10-05 and older.
     Old build against new build in the nested compositor, valid runs only, host load 27 to 77:
     renders during a scroll fell from about 165 to 220 to 7 to 12 (median 0 per step),
     and application CPU in the scroll window from 0.4 to 0.5 s to 0.2 to 0.3 s.
-    The painted share of possible frames (about half), p95 latency, and the longest gap did not improve;
-    their run-to-run spread is as large as the difference, so the cause of the missing frames is still open.
+    P95 latency and the longest gap between painted frames did not improve (the longest gap read higher);
+    their run-to-run spread is as large as the difference, and the stage 1 tile rebuild still runs on the UI thread.
+    The "painted share of possible frames, about half" first reported here was a harness artifact:
+    the harness counts its 1.5 s idle tail as possible frames, so perfect painting of the input phase scores about
+    115 of 204, and a rerun restricted to the input phase painted 103 of 115 frame slots.
+    The `rendersInScroll` counter counts viewport tile presentations (a log line), not paints.
   - Gate at the landed IDE tree: lint:clippy, lint:rustfmt, lint:slint, lint:release, test, test:cli,
     test:native 126 of 126, bundle, inspect:bundle, inspect:bundle-guards,
     and the source, find, annotation, sidebar, theme, search, and watch guards.

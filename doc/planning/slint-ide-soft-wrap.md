@@ -28,12 +28,14 @@ Each item names the IntelliJ source it comes from
   a line number on the first visual row of a logical line only
   (`EditorGutterComponentImpl`, the `startsWithSoftWrap()` test);
   continuation rows show no number and carry the wrap indicator instead.
-  The indicator is a small down-and-right arrow in the soft-wrap sign color
-  (IntelliJ's `c0c0c0` in the light scheme, `SOFT_WRAP_SIGN_COLOR`),
-  drawn as a vector shape so it needs no font glyph;
-  shape and color are two channels.
-  Its look gets built screenshots before the user is asked, because it is a UI decision the user left to JetBrains
-  only in general.
+  The indicator follows IntelliJ's own mark for a row that starts after a soft wrap
+  (`CompositeSoftWrapPainter`, `ArrowSoftWrapPainter`, `EditorColors.SOFT_WRAP_SIGN_COLOR`):
+  the first of U+2925, U+21B3, U+2937, and U+21AA that the font can display, drawn in the editor font at the row's
+  baseline, and a drawn arrow when none can be displayed.
+  Its color is `c0c0c0` in the Default scheme; the Darcula scheme has `parent_scheme="Default"` and no override,
+  so dark uses the same value.
+  Shape and color are two channels.
+  The user's instruction to follow IntelliJ settles the look; only the place (the gutter) comes from the user.
 - Wrap width: the text area's width (view minus gutter, scrollbar, and caret room),
   no minimum; with zero width, wrapping waits (`SoftWrapApplianceManager`).
 - Where a row breaks (`SoftWrapEngine`, `GenericLineWrapPositionStrategy`):
@@ -95,17 +97,50 @@ Option A shapes every line at the wrap width when text, width, scale, or annotat
 Option B estimates heights and corrects them as lines are shaped, using the existing keep-view-still machinery.
 The first slice measures A on a large file; B is the fallback if A costs too much.
 
-Also to verify before building:
-the style properties `TextWrapMode`, `OverflowWrap`, and `WordBreak` on Parley 0.11.1
-(only the 0.10 source has been read),
-and whether a Flickable whose content width equals its width also blocks shift-wheel motion.
+## Parley 0.11.1 findings
+
+Read from the crate source that matches `Cargo.lock` (checksum verified), without running code.
+
+- Style properties exist (defined in `parlance` 0.1.0, re-exported by Parley):
+  `TextWrapMode` (`Wrap` default, `NoWrap`), `OverflowWrap` (`Normal` default, `Anywhere`, `BreakWord`),
+  `WordBreak` (`Normal`, `BreakAll`, `KeepAll`).
+  They are set with `push_default` or `push` on the ranged builder.
+  A token longer than the width breaks only with `OverflowWrap::Anywhere` or `BreakWord`, per cluster;
+  with `Normal` it overflows the width.
+  `break_all_lines(Some(width))` takes the width in layout units (the scale passed to the builder).
+- Where a row breaks: Parley uses ICU line breaking (UAX 14) and keeps the rightmost fitting candidate,
+  an overflowing space hangs on the upper row.
+  ICU differs from IntelliJ: it does not break after `,`, `;`, `)` before a letter, nor before `(` or `.`.
+  CJK ideographs do break between each other.
+  The hook `set_line_break_override` on the builder (a function of the code point pair) can force or suppress a boundary,
+  so the IntelliJ rules can be added as an override; whether an override that splits a grapheme is safe is unverified.
+  The `complex-scripts` feature is off, so Thai, Lao, Khmer, and Myanmar get no dictionary breaking.
+- Reading rows: `layout.lines()` gives each visual row with its byte range and metrics (`block_min_coord`,
+  `block_max_coord`, `line_height`); the row index is only available by enumerating.
+  `Cursor::from_byte_index(layout, byte, affinity).geometry(...)` gives row and x;
+  at a soft break `Upstream` draws at the end of the upper row and `Downstream` at the start of the lower row,
+  which confirms the affinity bit.
+  `Cursor::from_point` gives index and affinity.
+  `Selection::geometry` returns one rectangle per visual row.
+  The existing note `doc/troubleshooting/parley-cursor-from-point-inside-grapheme.md` still applies.
+- Continuation indent: `Layout::set_text_indent(amount, IndentOptions { each_line: false, hanging: true })` indents every
+  row but the first and takes one amount per layout, so a layout per logical line works;
+  the indent becomes the row offset in `align()`, so `align` must run after breaking (unverified at runtime).
+  The breaker also exposes per row `set_line_x` and `set_line_max_advance`; its glyph shift is unverified.
+  The plan's earlier note that a per row width is impossible was wrong (a narrower width is possible).
+- Trailing whitespace: an overflowing space hangs on the upper row and is part of its range and advance;
+  `Layout::width()` excludes it and `full_width()` includes it. A tab does not hang.
+- Tabs: Parley 0.11.1 has no tab stops; `src/tab_layout.rs` measures them on an unbroken layout and corrects with
+  letter spacing, which must be redone per row (see `doc/troubleshooting/parley-tab-stops.md`).
+- Still unverified: runtime behavior of the indent and the breaker setters, the UAX 14 class of a tab, and whether
+  Flickable blocks shift-wheel motion when its content width equals its width.
 
 ## Order of work
 
 1. Layout model: wrap width into the row key, Parley breaking with the IntelliJ rules and indent,
    visual row counts in `RowMap`, whole-file height measurement.
 2. Geometry readback: per visual line y in `ShapedRow` (`range`, `hit`, `caret_x`), affinity in `ReadingPosition`.
-3. Gutter and scrolling: numbers on first rows only, the wrap indicator (after the user picks its look from screenshots),
+3. Gutter and scrolling: numbers on first rows only, the wrap indicator (IntelliJ's glyph chain and color),
    removal of horizontal scrolling.
 4. Keys and pointer: Home, End, Up, Down, PageUp, PageDown, click, drag, triple click.
 5. Annotations, find, and selection on visual rows.
@@ -117,8 +152,6 @@ and whether a Flickable whose content width equals its width also blocks shift-w
 
 ## Not decided here
 
-- The gutter indicator's exact look: arrow shape and weight, and its color in the dark scheme
-  (IntelliJ's dark value was not read). Built screenshots of the options come first.
 - Whether a "soft wrap" toggle exists. The user said always, so none is planned.
 
 ## Smoothness requirement that applies to all of it
@@ -126,5 +159,6 @@ and whether a Flickable whose content width equals its width also blocks shift-w
 The user ruled that choppy scrolling is not excusable even under extreme host load.
 Wrapping adds layout work, so the same rule binds it:
 a scroll step must not wait on shaping, rasterizing, or layout on the UI thread.
-The scroll measurements of 2026-10-10 (all renderers painted only about half the possible frames;
-app renders had a median of 2 ms but a p95 near 30 ms and spikes of 60 to 77 ms) are the baseline to beat.
+The scroll measurements of 2026-10-10 (app renders had a median of 2 ms but a p95 near 30 ms and spikes of 60 to
+77 ms; the first reading that only half the possible frames painted was a harness denominator artifact, see
+`doc/planning/slint-ide-scroll-pipeline.md`) are the baseline to beat.

@@ -377,6 +377,8 @@ fn rows_arriving_above_the_view_move_no_visible_pixel() {
     let offset = 100.0 * 24.0 + 7.0;
     window.set_scroll_y(-offset);
     update_timers_and_animations();
+    // The scroll re-centers the tile on the worker; the frames are compared only once it is swapped in.
+    super::overscan_tile_tests::settle_tile(&reader.source);
     let before = frame(window);
     // The overscan tile may repaint when a diagnostic inside it changes; only visible pixels are asserted here.
     let row = BLOCK_GAP + ROW_HEIGHT;
@@ -469,6 +471,8 @@ fn rows_above_the_view_wait_until_scrolling_has_stopped() {
     idle();
     window.set_scroll_y(-offset);
     update_timers_and_animations();
+    // The scroll re-centers the tile on the worker; the frames are compared only once it is swapped in.
+    super::overscan_tile_tests::settle_tile(&reader.source);
     let before = frame(window);
     // What: A closure that scrolls one pixel away and back, as the reader's wheel would.
     // Why: Taking a frame takes time; the scroll the rows must wait for has to be the latest thing that

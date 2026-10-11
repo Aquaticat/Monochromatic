@@ -428,6 +428,25 @@ impl TextShaper {
         return self.shaped_rows;
     }
 
+    /// Typography this shaper was built with, so a second shaper can produce the same glyphs.
+    pub fn typography(&self) -> &SourceTypography {
+        return &self.typography;
+    }
+
+    /// A shaper with this one's fonts and typography and its own layout context and empty caches.
+    /// What: `FontContext::clone` copies the scanned font registry instead of discovering system fonts again.
+    /// Why: A second font discovery takes as long as the first, and a worker would otherwise pay it on its first tile.
+    pub fn fork(&self) -> Self {
+        return Self {
+            fonts: self.fonts.clone(),
+            layouts: LayoutContext::new(),
+            typography: self.typography.clone(),
+            space: None,
+            rows: RowCache::default(),
+            shaped_rows: 0,
+        };
+    }
+
     /// Forget the cached rows, after a change the cache key does not describe, such as new syntax styles.
     pub fn forget_rows(&mut self) {
         self.rows.clear();
