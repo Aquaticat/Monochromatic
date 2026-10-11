@@ -36,7 +36,30 @@ fn open(text: &str) -> (AppWindow, Rc<RefCell<State>>) {
     window.show().expect("show headless source window");
     render(&window, &state);
     update_timers_and_animations();
+    await_worker_ready(&state);
     return (window, state);
+}
+
+/// Advance timers until the tile worker has started and reported ready, failing after `PATIENCE`.
+/// The first shown tile starts the worker, so every scroll in these tests finds it warm.
+fn await_worker_ready(state: &Rc<RefCell<State>>) {
+    let start = Instant::now();
+    loop {
+        update_timers_and_animations();
+        if state
+            .borrow()
+            .tile_worker
+            .as_ref()
+            .is_some_and(|worker| return worker.is_ready())
+        {
+            return;
+        }
+        assert!(
+            start.elapsed() < PATIENCE,
+            "the source tile worker did not report ready within {PATIENCE:?}, after the first tile was shown"
+        );
+        std::thread::sleep(Duration::from_millis(2));
+    }
 }
 
 /// Scroll to `offset` and let the toolkit deliver the viewport-changed callback.
@@ -366,8 +389,14 @@ fn measure_worker_cold_start() {
     let started = Instant::now();
     let shaper = ide_app::shaped_text::TextShaper::new();
     let shaper_ms = started.elapsed().as_secs_f64() * 1000.0;
+    let started = Instant::now();
+    let forked = shaper.fork();
+    let fork_ms = started.elapsed().as_secs_f64() * 1000.0;
+    drop(forked);
     drop(shaper);
+    let started = Instant::now();
     let (window, state) = open(&document());
+    let ready_ms = started.elapsed().as_secs_f64() * 1000.0;
     let height = window.get_viewport_height();
     let started = Instant::now();
     scroll_to(&window, START);
@@ -378,7 +407,7 @@ fn measure_worker_cold_start() {
     settle_tile(&state);
     let warm_ms = started.elapsed().as_secs_f64() * 1000.0;
     eprintln!(
-        "COLD-START shaper_new_ms={shaper_ms:.1} first_reply_ms={first_ms:.1} warm_reply_ms={warm_ms:.1}"
+        "COLD-START shaper_new_ms={shaper_ms:.1} fork_ms={fork_ms:.1} open_ready_ms={ready_ms:.1} first_reply_ms={first_ms:.1} warm_reply_ms={warm_ms:.1}"
     );
     window.hide().expect("close headless source window");
 }
