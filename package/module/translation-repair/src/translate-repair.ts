@@ -14,13 +14,18 @@ import {
   disputedWordingFindings,
 } from './disputed-wording.ts';
 import { CONTRIBUTOR_AUTHORITY_FINDING, } from './contributor-translation-guard.ts';
+import { exchangeFailureLogText, } from './exchange-failure-text.ts';
 import { producedVolumeBound, } from './produced-volume-bound.ts';
-import { attemptStageCall, } from './stage-call.ts';
+import {
+  attemptStageCall,
+  type StageVoice,
+} from './stage-call.ts';
 import type { HeardVoice, } from './stage-quorum.ts';
 import {
   buildTranslateRepairMessages,
   isTranslateRepairWire,
   TRANSLATE_REPAIR_RESPONSE_FORMAT,
+  type TranslateRepairWire,
 } from './translate-repair-wire.ts';
 import { requireComparedVerdict, } from './translate-floor-ground.ts';
 import { validateTranslatedSlice, } from './translate-validate.ts';
@@ -42,6 +47,12 @@ import { sameWording, } from './wording-key.ts';
 // The INCUMBENT never passes through here. It is the fallback and the thing
 // being defended, so a validator that could drop it would be a validator that
 // could delete the archive.
+
+/**
+ Stage label of the follow-up turn, which the exchange's own lines and the
+ line a re-ask's failure under the caller's stop leaves both open with.
+ */
+const REPAIR_STAGE = 'translate-repair';
 
 /**
  One translator's final text after validation, with what happened to it.
@@ -125,6 +136,9 @@ function unrevisedFate({ contributorViolation, }: { readonly contributorViolatio
  @throws {@link import('./translate-floor-ground.ts').FloorGroundDisagreementError}
  when the floor says it compared nothing, which both callers rule out before
  any writer is asked (ledger B43, B45)
+
+ @throws Whatever the follow-up exchange raised, once the caller aborted,
+ having written it on this seat's line unless it is the caller's reason itself
 
  @example
  ```ts
@@ -277,28 +291,49 @@ async function repairOneCandidate(
   /**
    The author's answer to its own findings.
    */
-  const answer = await attemptStageCall({
-    client,
-    modelId: voice.modelId,
-    messages: buildTranslateRepairMessages({
-      priorMessages,
-      priorTranslation: voice.value
-        .translation,
-      findings: validation.findings,
-    },),
-    signal,
-    exchangeTimeoutMs: perCallTimeoutMs,
-    // THE SAME BOUND AS PRODUCING, over more material. This call re-renders the
-    // same slice, so the slice still bounds it; it also argues with the
-    // findings, which producing never had to do.
-    maxAnswerChars: producedVolumeBound({
-      materialChars: sourceText.length + findingsChars,
-    },),
-    responseFormat: TRANSLATE_REPAIR_RESPONSE_FORMAT,
-    validate: isTranslateRepairWire,
-    stage: 'translate-repair',
-    l: rl,
-  },);
+  const answer = await (async function asked(): Promise<StageVoice<TranslateRepairWire>> {
+    try {
+      return await attemptStageCall({
+        client,
+        modelId: voice.modelId,
+        messages: buildTranslateRepairMessages({
+          priorMessages,
+          priorTranslation: voice.value
+            .translation,
+          findings: validation.findings,
+        },),
+        signal,
+        exchangeTimeoutMs: perCallTimeoutMs,
+        // THE SAME BOUND AS PRODUCING, over more material. This call re-renders
+        // the same slice, so the slice still bounds it; it also argues with the
+        // findings, which producing never had to do.
+        maxAnswerChars: producedVolumeBound({
+          materialChars: sourceText.length + findingsChars,
+        },),
+        responseFormat: TRANSLATE_REPAIR_RESPONSE_FORMAT,
+        validate: isTranslateRepairWire,
+        stage: REPAIR_STAGE,
+        l: rl,
+      },);
+    }
+    catch (error) {
+      // A FAILURE OF THE RE-ASK'S OWN IS WRITTEN HERE, inside the member, as
+      // it ends. `attemptStageCall` rethrows unwritten once the caller has
+      // aborted, and `repairInvalidCandidates` throws only the first failure
+      // in input order, so a deadline or a provider's refusal another seat's
+      // re-ask ended in as the stop arrived would reach no line (ledger B365
+      // left this open). Rendered as the round's seats are (`askOnce` in
+      // `stage-round.ts`), so a refusal keeps its status and the provider's
+      // words; the caller's own reason is no failure of this seat and is not
+      // written. Lines land in the order the re-asks end.
+      if (signal.aborted && (error !== signal.reason)) {
+        rl.warn(
+          `${REPAIR_STAGE} ${voice.modelId}: ${exchangeFailureLogText({ error, },)}, as the caller stopped the repair`,
+        );
+      }
+      throw error;
+    }
+  })();
   if (!answer.heard) {
     rl.warn(`${voice.modelId} gave no usable answer to its findings, so ${fate}`,);
     return {
@@ -428,6 +463,11 @@ async function repairOneCandidate(
  @throws {@link import('./translate-floor-ground.ts').FloorGroundDisagreementError}
  when the floor says it compared nothing, which both callers rule out before
  any writer is asked (ledger B43, B45)
+
+ @throws Whatever the first failing candidate's turn raised, in input order,
+ once the caller aborted. Each follow-up exchange that fails of its own as
+ the caller stops writes that failure on its seat's line as it ends, which
+ for a later-listed seat still in flight can be after this rejects
 
  @example
  ```ts
