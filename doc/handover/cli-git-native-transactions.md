@@ -636,6 +636,39 @@ Trailing gates (owner decision, 2026-10-10; these trail the cutover and are not 
 - Release performance gates.
 - Mutation gating on non-core modules; the slice 3 files for locks, the index lock and coordination keep full gating.
 
+### Lane merges and slice 6 start (2026-10-11)
+
+Auto-push (`fed0f4afb5`) merged as `55c57757d8`; worktree-copy (`bc40904bf7`) merged as `ec597deb26`.
+Conflicts were additive: the mutation driver keeps the lane's `--timeout` option with the capture lane's
+300 second default (the default is now a named constant with its reason), and the planted-controls array and
+`lib.rs` module lists keep both sides.
+Container gate on `ec597deb26` (Git 2.56.0) exits 0; native Clippy exits 0.
+
+Slice 6, first increment (`4cf627081b`, `fee66598ac`, `0a9c6134cc`): `policy_patch_validate.rs` ports the
+incumbent `validatePolicyPatch` grammar (one ordinary text path, exact declared headers, one candidate-base index
+line, forbidden directives); `policy_patch.rs` ports `applyPrivatePatch` as `git apply --cached --3way` against
+the private index, writing `patch-<ordinal>.diff` exclusively with private permissions.
+Failures are `PatchError::Rejected` (grammar, Git never runs), `Conflict` (Git refused; the convergence loop maps
+this to `patch-conflict`) and `Failed` (I/O or process start).
+Controls on real repositories: the final-newline correction lands in the private index and leaves `HEAD` alone;
+a stale private index refuses the patch; a repeated ordinal is refused, not overwritten; each header and directive
+rule is rejected; each unsafe path is rejected by the path rule alone.
+The path control first passed with its mutant (the header rule rejected the same input), so it now uses
+well-formed headers for each unsafe path, and the mutant (`..` rule removed) fails it.
+
+Not yet ported for slice 6: the convergence wiring of these patches into `policy_convergence`, added-path
+admission (`assertAddablePath`, `installAddedWorktreeFiles`), the hook-staged change handling, the
+`commit-normalization/no-change` decision, the convergence snapshots, the binary acceptance cases
+(final-newline in the prepared tree, pre-commit reformat re-staged, added-path `patch-conflict`) and the
+differential JSONL against the incumbent.
+Capture's finding applies here: a hook config does not suppress `hooksPath` scripts on Git 2.55.0, so the
+pre-commit acceptance case must set the hooks directory explicitly.
+
+Open item, not in slice 6: `signal_relay::tests::signal_during_start_is_relayed_after_the_child_starts` failed
+in 3 of 6 host runs (`helper did not exit`, the 20 second bound) and passed in the container gate.
+The cause is not identified; the relay sends a signal caught before the child exists once the child is
+spawned, so the next step is to trace that hand-off on the host. The signals lane owns that code.
+
 ### Slice 3 mutation results and trailing gates (2026-10-11)
 
 Mutation rerun 1 ran over `src/native/index_lock_*.rs`, `index_writer_*.rs`, `real_index_lock*.rs`,
