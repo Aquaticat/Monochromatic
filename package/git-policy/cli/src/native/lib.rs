@@ -510,6 +510,37 @@ pub mod replay_revalidation;
 
 /// Replay: one replay of a prepared commit onto a moved target, the integrator's replay result (`replay_commit`).
 pub mod replay_commit;
+/// The invocation capture:
+///  repository layout, symbolic `HEAD`, conclusion kind, ref backend and base.
+pub mod capture_invocation;
+
+/// The capture under capture order:
+///  the capture lock, the store identity, the sequence and `captured.json`.
+pub mod capture_order;
+
+/// The shadow repository `config` file and the copied repository format.
+pub mod shadow_config;
+
+/// The shadow repository links to the real shared entries.
+pub mod shadow_links;
+
+/// The shadow ref store: snapshot, private target, symbolic refs and `HEAD`.
+pub mod shadow_refs;
+
+/// The shadow conclusion copies at preparation.
+pub mod conclusion_copy;
+
+/// Argument transforms of native preparation: normalisation, global split, `-a` removal and private arguments.
+pub mod commit_args;
+
+/// The private commit index: copies, selection modes, pathspec files and listings.
+pub mod commit_index;
+
+/// Native `git commit` in the shadow, the prepared commit read back and `prepared.json`.
+pub mod commit_preparation;
+
+/// Creation of the shadow repository of one transaction.
+pub mod shadow_create;
 
 /// Loading many blobs through one `git cat-file --batch`.
 pub mod blob_batch;
