@@ -252,6 +252,51 @@ and no revival after a later plain prompt.
 No runtime guard or limit changed.
 A genuinely omitted-image hint-only route is not claimed as exercised by these fixtures.
 
+### Keep full-policy gates independently reachable
+
+Complete native `proc_5868` reached full-policy verification.
+The single-policy case indexed 207 clauses and dispatched 414 legacy questions.
+The visible independent copy stopped before judgment construction.
+`proc_2bba` exposed the original capture cause:
+`Loaded session message content exceeds the original source byte bound`.
+The rendered prompt measured 64,559 bytes,
+but the encoded selected array crossed the separate 65,536-byte source limit.
+
+The fixture retains that original rejection.
+A second independent-copy case replaces only rendered project context,
+retaining both unchanged source inputs and requiring all 414 clauses at the existing clause gate.
+The first attempted empty override did not hide context:
+Pi's `dist/core/system-prompt.js:111` only applies truthy custom sections:
+
+```javascript
+// Pi 1.1.0 dist/core/system-prompt.js:111 to 114
+for (const [name, content] of Object.entries(customSections)) {
+    if (content)
+        promptSections[name] = content;
+}
+```
+
+The corrected case uses a nonempty rendering placeholder,
+not altered policy text.
+It checks the actual prompt during `originalStream`;
+checking `session.systemPrompt` after settlement instead sees the base prompt,
+as the getter selects `_runSystemPromptOptions ?? _baseSystemPromptOptions`
+at `dist/core/agent-session.js:1058`.
+
+The default-system cases also retain a separate direct Agent string call
+that reaches the original rendered-prompt byte guard without an aggregate array at API entry.
+`proc_b0c7` passed all six legacy/clause/content-use profiles:
+207-clause positives,
+visible aggregate-array rejections,
+414-clause rejections despite replaced rendering,
+and the default rendered-prompt rejection at 66,533 bytes.
+No source,
+question,
+wire,
+or time limit was enlarged.
+This is a diagnosed earlier capture-bound failure,
+not a cause or fix for the separate historical `proc_5939` incident.
+
 ### Upstream filing decision
 
 Nothing is proposed upstream:
