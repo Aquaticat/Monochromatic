@@ -434,8 +434,21 @@ Diagnostic `9f8e832f` / `proc_b4f5` measured 69 frozen sources in a shared-sessi
 exceeding the unchanged 64-source limit.
 Independent carrier cases now use disposable sessions;
 the original shared-session rejection is retained as a separate bound control.
-Runtime-suffix verification is running as `proc_5185`.
-There is not yet a complete native pass for this increment.
+Runtime suffix `eaa78d4a` / `proc_5185` passed all 39 result records,
+including the retained bound rejection and all six full-policy profiles.
+The final one-shot native parent `3ea75e62` / `proc_d937` then passed:
+82 complete result records,
+142 constructed-input cases,
+69 section cases,
+and all six full-policy profiles.
+The parent had no nonroutine stderr;
+child matrices reported empty stderr.
+Complete action-policy and policy-source verification passed `proc_417a`.
+All deliberate omissions remain restored.
+Only documentation and standalone,
+non-wired intake tests changed during the final parent.
+The earlier unattributed parent failures remain historical failures,
+not explained by this later pass.
 
 The governing-source omission first exposed no original reviewer error in judgment finalization.
 An `evidence-closed` record is not a completed policy review.
@@ -487,8 +500,9 @@ and setter profiles are unchanged.
 `proc_88a2` passed the owner red after correction,
 and the real post-emission declaration/removal consumer passed `proc_9b65`.
 
-The complete native parent remains pending;
-action/source regressions and the wiring sensitivity in "Handoff lifecycle and wiring sensitivity" passed.
+The complete native parent,
+action/source regressions,
+and wiring sensitivity in "Handoff lifecycle and wiring sensitivity" passed.
 Additional original fields can exhaust the unchanged source and aggregate bounds sooner.
 Upstream tool-definition inputs before declaration production,
 images,
@@ -3031,6 +3045,66 @@ Counting only reached states repaired that assertion without changing an executi
 A successful inert fixture does not qualify semantic estimates,
 authority interpretation,
 or production permission.
+
+### Constructor-description capture follows native loadout metadata
+
+This is the active private increment;
+the completed manager checkpoint predates this runtime change.
+Native `prepareLoadout` can replace declared descriptions,
+and hidden tools need not appear in a model request.
+The original definition text remains a separate potentially governing input.
+
+Declared-description control `7414bed9` / `proc_2d95` passed.
+Hidden `proc_fc39` and replaced `proc_acbd` completed native request and review,
+then failed the original-description retention assertion.
+The first setup attempt `proc_8d89` instead expected an unaugmented declaration;
+the native Codemode call/output hint is preserved,
+not removed.
+
+Private `67a2a405` observes the actual Session constructor frame after its original manager assignment,
+before reading `customTools` or running loadout callbacks.
+It selects ordinary `name` and `description` data fields under one aggregate copier budget.
+The existing manager source owner retains an input-only publication on that frame,
+not on the borrowed config,
+list,
+or definition objects.
+The distinct `native-tool-description-input` kind and `customTools` location add no message role,
+ordinal,
+authority,
+or payload capability.
+Absent input and an explicit empty list remain different.
+The original occurrence,
+content,
+and serialized-record bounds are unchanged.
+
+Owner controls and declared/hidden/replaced native consumers passed
+`d1e67271` / `proc_1456`.
+They require the constructor-specific view,
+original source/publication references,
+unchanged request bytes,
+and indexed assessment questions.
+Schema,
+executable,
+and other opaque fields are not inspected.
+Detailed native constructor parity,
+lifecycle,
+sensitivity,
+and complete regressions remain pending.
+The first parity baseline `proc_0081` stopped at an unresolved relative module import before execution;
+its fresh copy now keeps the original staged-module targets.
+
+This covers selected constructor descriptions,
+not earlier SDK option mutations,
+extension registrations,
+schemas and other metadata,
+deep mutation,
+or applicability across manager-root resets.
+The manager-only post-emission growth predicate is unchanged.
+Constructor-source additions after emission cannot silently gain that handoff.
+No installed activation,
+semantic qualification,
+or governing-domain closure follows.
+
 
 ### Native loadout description preservation
 

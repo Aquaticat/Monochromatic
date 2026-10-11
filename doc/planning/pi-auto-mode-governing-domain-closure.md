@@ -154,6 +154,10 @@ operation coverage,
 and semantic admission remain separate premises.
 
 The accepted exact same-source incorporation policy is unchanged.
+Historical scope note:
+the later user correction makes installation part of delivery;
+see the current direction in `doc/handover/pi-auto-mode-current-frontier.md`.
+The original option comparison did not independently authorize the following changes.
 No option authorizes a second request parse,
 request re-encoding,
 a duplicate tools or message inventory,
@@ -161,3 +165,74 @@ a model completeness oracle,
 new provider trials,
 production qualification policy,
 or installed activation.
+
+## Accepted input receipt boundary
+
+The user selected receipt at host processing boundaries (choice 1).
+The accepted all-host-input domain remains in force.
+This resolves when text written into live SDK state becomes an original instruction input;
+it does not assign source authority or prove complete coverage.
+
+The in-place array intake inserted an instruction into `session.agent.state.messages`,
+then removed it before the next prompt.
+The array identity and prior contents were restored;
+no prompt/setter call or manager append received that instruction.
+The native review completed unresolved before the test required retention of the erased text.
+That proves the existing observers do not retain this transient write.
+It does not independently prove that this write belongs to the accepted governing domain,
+or that an unauthorized operation executed.
+The required-retention assertion encoded the agent's interpretation of input receipt.
+
+Installed core `createMutableAgentState` returns its live message array
+and copies replacements through the `messages` setter.
+The disposable interception probe found that method wrappers miss borrowed methods and direct writes;
+a proxy on an array does not observe writes through an earlier raw alias or a borrowed nested object.
+Those observations reject the tested implementations,
+not every possible earlier observation mechanism.
+
+### Receipt at host processing boundaries
+
+Count original configuration arguments,
+loaded entries,
+API/setter arguments,
+and extension/event inputs or outputs when the host receives them through their processing boundary.
+A received instruction remains accounted for when later hidden,
+transformed,
+rejected,
+or omitted from transmission.
+Under this clarification,
+direct live-state writes enter the domain when the host processes that state;
+a write undone before that processing does not independently enter it.
+
+Benefit:
+this gives the consumer an explicit input contract
+without treating every transient memory edit as a submitted instruction.
+Cost:
+it deliberately excludes undone direct writes even though the array belongs to the SDK.
+That exclusion is a scope decision,
+not something the absence of a capture proves.
+
+### Receipt at every live-state write
+
+Also count every insertion or mutation of exposed instruction-bearing state at write time,
+even when the host never processes the value before it is erased.
+The push/pop and direct-index intake cases then remain required retention failures.
+
+Benefit:
+this preserves that broad interpretation of the live state surface.
+Cost:
+it requires observation or enforceable ownership of those write paths,
+including borrowed aliases,
+while preserving the required native behavior.
+The current collectors do not establish this proof.
+A judgment-time snapshot cannot substitute for it.
+
+The user accepted the recommended processing-boundary receipt definition.
+Every-write receipt remains the alternative that was not selected.
+The selected contract retains every originally received instruction;
+it does not authorize silently excluding a missing origin after actual receipt.
+Both choices retain unregistered potentially governing inputs once received;
+neither switches to registered-roots-only domain B.
+Unknown domain membership does not become automatic approval,
+denial,
+or a new approval request.
