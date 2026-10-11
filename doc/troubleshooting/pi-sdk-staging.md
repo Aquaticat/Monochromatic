@@ -158,6 +158,98 @@ maintainer-intent,
 and upstream-prototype conditions are not claimed or investigated.
 The consumer correction remains private.
 
+## Direct Agent state assignments bypass prompt and queue capture
+
+### Symptom and native setter
+
+Required red `cd5fd32` / `proc_896e` assigned text through the native setter,
+cleared it before a request,
+and failed `The original native input must survive handling or expansion`.
+The request itself completed.
+No installed code was changed.
+
+Pi 1.1.0 core `dist/agent.js:51` copies the incoming array:
+
+```javascript
+// Pi agent-core 1.1.0 dist/agent.js:51 to 53
+set messages(nextMessages) {
+    messages = nextMessages.slice();
+}
+```
+
+The closure owns the state,
+so the setter receiver does not establish a different message owner.
+Native Agent reset and Session `_refreshFinalizedContext` also assign through it.
+Observing every internal projection as a fresh text-only host input would misclassify derived content
+and add unsupported accumulated histories to that profile.
+
+### Private implementation and verification
+
+The private generator observes actual public setter arguments before native `slice`.
+A per-state private token identifies only original native setter invocations from maintained internal sites.
+A target or descriptor mismatch falls back to ordinary assignment.
+Replacement setters never receive the token,
+and normal reentrant calls have no token.
+The implementation does not mute observation dynamically.
+
+The internal function is obtained from the existing one-time Agent attachment
+and validated against that Agent before storage in a private Session field.
+It is passed as a separate constructor argument,
+not a new getter on borrowed options.
+
+Post-construction Session attachment was rejected.
+The constructor reaches `_applyToolLoadout`,
+which calls user code at `dist/core/agent-session.js:1178`:
+
+```javascript
+// Pi 1.1.0 dist/core/agent-session.js:1178
+const changes = definition.prepareLoadout?.(loadout);
+```
+
+That callback can use the already-bound extension interface to append a custom message,
+which refreshes projected state.
+`proc_91c7` exercised this path through real `pi.sendMessage`,
+retained its original custom input,
+and asserted no new state-input publication for the native projection.
+
+Initial canonical `proc_1f5b`,
+native `proc_67c2`,
+constructor `proc_91c7`,
+and live lifetime/bound `proc_7faa` controls passed.
+Native tests cover shallow copies,
+strict/unmapped frames,
+reentry,
+forged extra arguments,
+descriptor replacement/flags,
+foreign targets,
+native falsy slice failures,
+proxy read parity,
+and unexpected observer errors.
+Run private `test:agent-state-native` and `test:agent-state-paths`
+as separate `mise --no-env --no-hooks run` invocations.
+
+### Limits and filing decision
+
+The internal route identifies its operation only.
+Unknown manager/model content is not authenticated or silently declared covered.
+In-place array mutation,
+constructor state,
+and replacing state objects or descriptors remain separate gaps.
+All existing source limits and admission holds remain unchanged.
+Integrated,
+sensitivity,
+and complete regression checks are still pending.
+
+Nothing is proposed upstream.
+The SDK setter behaved as written;
+this is private source observation.
+The upstream-fault condition fails;
+upstream fixability,
+supported-use,
+contribution,
+maintainer-intent,
+and upstream-prototype conditions are not claimed.
+
 ## Native prompt arrays include a system-section delta
 
 ### Symptom and deciding source

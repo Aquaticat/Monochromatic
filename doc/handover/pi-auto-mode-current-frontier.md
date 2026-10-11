@@ -296,6 +296,61 @@ Eleven-document rendering passed `proc_c7e4` before this final evidence update.
 
 The unassociated ordinary request domain and other unconsumed producer relationships remain explicit.
 
+## Original Agent state assignments
+
+Direct `agent.state.messages` assignments use a native setter,
+not a `replaceMessages` method in Pi 1.1.0.
+Required red `cd5fd32` / `proc_896e` assigned original text,
+verified the native shallow copy,
+cleared it,
+and then lost the input in canonical review.
+
+Private `7d42311` / `proc_1f5b` now retains the actual setter arguments frame before native `slice`.
+It reuses the existing Agent observer,
+manager input owner,
+array-content profile,
+and shared limits.
+The borrowed array and message references are unchanged;
+the frame's input-only publication grants no payload capability or authority.
+
+Native reset and Session projection assignments use an instance-local internal function.
+It supplies a private invocation token only to the exact original state setter,
+after checking target and descriptor identities/flags.
+A changed descriptor takes ordinary native assignment,
+without receiving the token.
+There is no dynamic mute flag:
+reentrant ordinary writes are still captured.
+This identifies native derivation,
+not authorship or complete source coverage.
+
+The existing one-time Agent attachment returns that function.
+SDK construction passes it as a separate validated constructor argument before user callbacks can run.
+No new borrowed constructor-option getter or global registry is added.
+The early installation matters:
+`prepareLoadout` can call `pi.sendMessage` during Session construction.
+
+Native `proc_67c2` passed frame/copy,
+reentry,
+forged-token,
+descriptor,
+foreign-target,
+proxy,
+and error controls.
+`proc_91c7` exercised real constructor reentry without reminting the native projection.
+`proc_7faa` passed erased/late/oversize/reset/disposal paths,
+including original cancellation cause and zero protected execution/provider requests.
+
+Integrated,
+sensitivity,
+and full regression verification remain pending.
+Constructor inputs,
+in-place changes to getter-returned arrays,
+state-object or descriptor replacement,
+and broader model/tool/image instruction sources remain unfinished.
+No domain closure,
+human origin,
+or new policy admission is inferred.
+
 ## Original direct Agent message and array prompts
 
 The next private increment extends the existing Agent call-frame owner beyond primitive strings.
