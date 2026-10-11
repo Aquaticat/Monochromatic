@@ -513,6 +513,26 @@ NXR:
  never repeat the same synchronous call;
  rerun in background or with a bound.
 
+INH:
+ A user-interrupted tool call (`Request interrupted`,
+ `doesn't want to proceed`) may be half-applied,
+ not refused:
+ inspect the files,
+ processes,
+ and installs it touched before acting.
+
+UPN:
+ Upgrades name their tool (`mise upgrade <tool>`,
+ never bare):
+ a bare upgrade installs unrelated toolchains and rewrites lockfiles that every session's builds share.
+
+OWR:
+ Repair a broken install with the manager that owns it;
+ never uninstall through one manager and reinstall through another.
+User-owned shared state:
+ propose the repair,
+ let the user run it.
+
 TRB:
  External tool fails with a diagnostic:
  `rg` its message in `doc/troubleshooting/` before any workaround;
