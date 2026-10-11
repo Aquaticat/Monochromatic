@@ -123,8 +123,10 @@ export {
 } from './lane-contest-eligibility.ts';
 export {
   contestDocumentLanes,
-  persistLaneContestOutcome,
 } from './lane-contest-driver.ts';
+export {
+  persistLaneContestOutcome,
+} from './lane-contest-persist.ts';
 export {
   LANE_CONTEST_CACHE_VERSION,
   laneContestRunShape,

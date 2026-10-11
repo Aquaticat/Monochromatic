@@ -15,6 +15,8 @@ import {
   type ArtifactLaneSelection,
   contestEligibleIndexes,
   describeContestSlice,
+  describeSoleLaneSlice,
+  soleLaneOf,
 } from './artifact-two-lane-contest.ts';
 import { parseContestBallot, } from './artifact-two-lane-read-contest-ballot.ts';
 import {
@@ -27,6 +29,7 @@ import type { ArtifactKeyVocabulary, } from '../artifact-key-vocabulary.ts';
 import {
   ARTIFACT_SCHEMA_VERSION_V6,
   ARTIFACT_SCHEMA_VERSION_V7,
+  artifactGenerationSettlesSoleLane,
   type TwoLaneArtifactGeneration,
 } from './artifact-two-lane-contract.ts';
 
@@ -50,6 +53,84 @@ const SELECTION_KINDS: Readonly<Record<ArtifactLaneSelection['kind'], true>> = {
   'pending-human-decision': true,
   contested: true,
 };
+
+/**
+ Reads one slice a single lane applies to, which carries no roster record.
+
+ Refuses any ballot and any usable voice, since a roster was never asked about
+ this slice and a record claiming otherwise would be a vote nobody cast. The
+ verdict is re-derived from the comparison row alone and must be the one the
+ file records.
+
+ @param slice - recorded slice, already proven to carry the expected keys
+
+ @param sliceIndex - slice index the record names, already read
+
+ @param lane - lane the comparison row says applies alone
+
+ @param path - dotted path of that slice
+
+ @returns Slice record, proven to name the lane the row names
+
+ @throws {@link ArtifactParseError} when the slice carries a ballot or a usable
+ voice, or when its verdict is not the sole-lane one
+
+ @example
+ ```ts
+ const slice = parseSoleLaneSlice({ slice, sliceIndex, lane, path, },);
+ ```
+ */
+function parseSoleLaneSlice(
+  {
+    slice,
+    sliceIndex,
+    lane,
+    path,
+  }: {
+    readonly slice: Readonly<Record<string, unknown>>;
+    readonly sliceIndex: number;
+    readonly lane: 'repair' | 'translate';
+    readonly path: string;
+  },
+): ArtifactContestSlice {
+  /**
+   Ballots this slice carries, which must be none.
+   */
+  const ballots = requireArray({
+    value: slice.ballots,
+    path: `${path}.ballots`,
+  },);
+  if (ballots.length > 0)
+    throw new ArtifactParseError({
+      path: `${path}.ballots`,
+      reason: 'no ballots, since no roster was asked about a slice one lane applies to',
+    },);
+  /**
+   Voices the record claims, which must be none.
+   */
+  const usable = requireCount({
+    value: slice.usable,
+    path: `${path}.usable`,
+  },);
+  if (usable !== 0)
+    throw new ArtifactParseError({
+      path: `${path}.usable`,
+      reason: `0, since no roster was asked about a slice one lane applies to, rather than ${String(usable,)}`,
+    },);
+  /**
+   Verdict the comparison row settles on, which is the one the record must state.
+   */
+  const derived = describeSoleLaneSlice({
+    sliceIndex,
+    lane,
+  },);
+  assertContestVerdictMatches({
+    value: slice.verdict,
+    derived: derived.verdict,
+    path: `${path}.verdict`,
+  },);
+  return derived;
+}
 
 /**
  Reads one contested slice and re-derives its verdict from its own ballots.
@@ -127,6 +208,35 @@ function parseContestSlice(
     throw new ArtifactParseError({
       path: `${path}.${keys.sliceIndex}`,
       reason: 'an index naming a slice the recomputed comparison holds',
+    },);
+  }
+  /**
+   Lane alone applying to this slice, absent where both lanes or neither did.
+   */
+  const sole = soleLaneOf({ row, },);
+
+  /**
+   Whether the generation records a sole-lane verdict at all.
+   */
+  const recordsSoleLane = artifactGenerationSettlesSoleLane({ generation, },);
+
+  // A RECORD CARRYING ELIGIBILITY IS A ROSTER RECORD, which the writer makes for
+  // every syntax-bearing slice whatever lanes apply, so it is read as one.
+  /**
+   Whether the record is a roster record by carrying eligibility.
+   */
+  const isRosterRecord = slice.eligibility !== undefined;
+  /**
+   Whether this slice takes the sole-lane path: its lane alone applies, the
+   generation records that verdict, and the record is not a roster record.
+   */
+  const soleLaneRecorded = recordsSoleLane && (!isRosterRecord);
+  if ((sole.kind === 'one-lane') && soleLaneRecorded) {
+    return parseSoleLaneSlice({
+      slice,
+      sliceIndex,
+      lane: sole.lane,
+      path,
     },);
   }
   /**

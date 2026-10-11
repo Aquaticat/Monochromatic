@@ -27,7 +27,7 @@ import type { ArtifactContestVerdict, } from './artifact-two-lane-contest.ts';
 function allowedVerdictKeys(
   { derived, }: { readonly derived: ArtifactContestVerdict; },
 ): readonly string[] {
-  if (derived.kind === 'lane-won') {
+  if ((derived.kind === 'lane-won') || (derived.kind === 'sole-lane')) {
     return [
       'kind',
       'lane',
@@ -57,7 +57,7 @@ function allowedVerdictKeys(
 function renderContestVerdict(
   { verdict, }: { readonly verdict: ArtifactContestVerdict; },
 ): string {
-  if (verdict.kind === 'lane-won')
+  if ((verdict.kind === 'lane-won') || (verdict.kind === 'sole-lane'))
     return `${verdict.kind}:${verdict.lane}`;
   if ((verdict.kind === 'settled-neither') && (verdict.archive !== undefined))
     return `${verdict.kind}:${verdict.archive}`;
@@ -92,7 +92,10 @@ function renderRecordedVerdict(
   if (recorded.lane !== undefined) {
     return `${requireOneOf({
       value: recorded.kind,
-      allowed: ['lane-won',],
+      allowed: [
+        'lane-won',
+        'sole-lane',
+      ],
       path: `${path}.kind`,
     },)}:${requireOneOf({
       value: recorded.lane,
@@ -180,7 +183,9 @@ export function assertContestVerdictMatches(
   if (claimed !== settled) {
     throw new ArtifactParseError({
       path,
-      reason: `${settled}, which is what these ballots settle on, rather than ${claimed}`,
+      reason: (derived.kind === 'sole-lane')
+        ? `${settled}, which is the one lane the comparison leaves applicable, rather than ${claimed}`
+        : `${settled}, which is what these ballots settle on, rather than ${claimed}`,
     },);
   }
 }

@@ -129,7 +129,7 @@ export function finalSelectionFindings(
        Contest verdict deciding whether baseline had prior endorsement.
        */
       const { verdict, } = contest;
-      if (verdict.kind === 'lane-won')
+      if ((verdict.kind === 'lane-won') || (verdict.kind === 'sole-lane'))
         return [];
       if (archiveWasEndorsed({ verdict, },))
         return [];

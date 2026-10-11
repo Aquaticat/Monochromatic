@@ -3,7 +3,6 @@ import {
   tagged,
 } from '@monochromatic-dev/module-logger/ts';
 import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
-import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 import type { DeclaredNamePair, } from './linked-title-declared-name.ts';
 
 import type { SyntheticClient, } from './chat-contract.ts';
@@ -20,13 +19,19 @@ import {
   type ArtifactContestSlice,
   contestEligibleIndexes,
   describeContestSlice,
+  describeSoleLaneSlice,
+  soleLaneOf,
 } from './corpus-run/artifact-two-lane-contest.ts';
 import type { ProjectedLanes, } from './corpus-run/artifact-two-lane-derive.ts';
 import {
   contestLaneSlice,
-  LANE_CONTEST_QUORUM,
   type LaneContestOutcome,
 } from './lane-contest-stage.ts';
+import {
+  type BoughtLaneContest,
+  persistLaneContestOutcome,
+  storedContestOf,
+} from './lane-contest-persist.ts';
 import type { FanOutMode, } from './stage-fanout-window.ts';
 import {
   laneContestRunShape,
@@ -38,7 +43,6 @@ import type { RosterModelId, } from './synthetic-catalog.ts';
 import {
   reuseTwinOrBuy,
   type TwinMemo,
-  type TwinStored,
 } from './twin-memo.ts';
 import type { StageSettings, } from './stage-settings.ts';
 
@@ -72,131 +76,6 @@ const CONTEST_CANDIDATES = [
 ] as const;
 
 /**
- Whether a bought outcome is worth keeping across runs.
-
- SETTLED VERDICTS ONLY. An unheard roster is a transient fact about a provider
- on one night, not a property of the question, and writing it to the cache
- would freeze that night into every later resume of the entry. The ballots
- that did arrive are discarded with it, which is the point: half a panel is
- not an answer, and re-asking is what the quorum is for.
-
- @param outcome - what the roster settled
-
- @param choiceMayShip - whether selected lane passes publication invariants
-
- @returns Whether to persist it
-
- @example
- ```ts
- const keep = worthResuming({ outcome, },);
- ```
- */
-function worthResuming(
-  {
-    outcome,
-    choiceMayShip = true,
-  }: {
-    readonly outcome: LaneContestOutcome;
-    readonly choiceMayShip?: boolean;
-  },
-): boolean {
-  return choiceMayShip && (outcome.usable >= LANE_CONTEST_QUORUM);
-}
-
-/**
- Fresh contest outcome beside whether it became warm-run evidence.
-
- @example
- ```ts
- const bought: BoughtLaneContest = { outcome, persisted: true, };
- ```
- */
-type BoughtLaneContest = {
-  readonly outcome: LaneContestOutcome;
-  readonly persisted: boolean;
-};
-
-/**
- Reads cache-eligible record from fresh contest purchase.
-
- @param bought - fresh result beside persistence status
-
- @returns Record a twin may reuse, or deliberate nothing
-
- @example
- ```ts
- const stored = storedContestOf({ outcome, persisted: true, },);
- ```
- */
-function storedContestOf(
-  bought: BoughtLaneContest,
-): TwinStored<LaneContestOutcome> {
-  return bought.persisted
-    ? {
-      kind: 'stored',
-      record: bought.outcome,
-    }
-    : { kind: 'nothing', };
-}
-
-/**
- Persists a bought contest only when caller remains live and quorum made its
- ballots reusable.
-
- Kept as a testable boundary because gather rounds normally surface an abort
- before returning, making the final pre-write defense unreachable in a
- transport fixture.
-
- @param key - exact contest question this outcome answers
-
- @param outcome - bought ballots and their settled choice
-
- @param cache - contest persistence boundary
-
- @param choiceMayShip - whether selected lane passes publication invariants
-
- @param signal - caller abort checked before write
-
- @returns Whether outcome was persisted and may be reused by a twin
-
- @throws Whatever caller abort reason or persistence throws
-
- @example
- ```ts
- await persistLaneContestOutcome({ key, outcome, cache, signal, },);
- ```
-
- @internal
- */
-export async function persistLaneContestOutcome(
-  {
-    key,
-    outcome,
-    cache,
-    choiceMayShip = true,
-    signal,
-  }: ForeignBorrowed<{
-    readonly key: string;
-    readonly outcome: LaneContestOutcome;
-    readonly cache: SliceCache<LaneContestOutcome>;
-    readonly choiceMayShip?: boolean;
-    readonly signal: AbortSignal;
-  }>,
-): Promise<boolean> {
-  signal.throwIfAborted();
-  if (!worthResuming({
-    outcome,
-    choiceMayShip,
-  },))
-    return false;
-  await cache.persist({
-    key,
-    serialized: JSON.stringify(outcome,),
-  },);
-  return true;
-}
-
-/**
  Names a compared slice on the lines the overlapped map writes about a failure
  it leaves unthrown.
 
@@ -215,7 +94,9 @@ function comparedSliceName({ item, }: { readonly item: { readonly sliceIndex: nu
 
 /**
  Asks the roster which lane should ship, at every slice the two lanes worded
- differently.
+ differently and both had a passage to work on. A slice only one lane applies
+ to is settled by rule as a `sole-lane` verdict, with no roster asked (ledger
+ L6).
 
  @param client - synthetic chat client
 
@@ -395,6 +276,28 @@ export async function contestDocumentLanes(
         lane: 'contest',
         sliceIndex: row.sliceIndex,
         run: async function contestInContext(): Promise<ArtifactContestSlice> {
+          // ONE APPLICABLE LANE NEEDS NO ROSTER (ledger L6). Checked before the
+          // bench is read or the cache is asked, so a one-lane slice costs no
+          // call, no seating and no cache write. A syntax-bearing slice stays on
+          // the roster, since its candidates are admitted one by one by the
+          // source-backed rule and the record must carry that admission.
+          /**
+           Lane that applies alone at this slice, absent where both lanes did.
+           */
+          const sole = soleLaneOf({ row, },);
+          /**
+           Whether this slice is syntax-bearing, which keeps it on the roster.
+           */
+          const syntaxBearing = frontMatterSlices.has(row.sliceIndex,);
+          if ((sole.kind === 'one-lane') && (!syntaxBearing)) {
+            dl.info(
+              `slice ${String(row.sliceIndex,)}: the ${sole.lane} lane is the only one with a passage here; the roster is not asked`,
+            );
+            return describeSoleLaneSlice({
+              sliceIndex: row.sliceIndex,
+              lane: sole.lane,
+            },);
+          }
           // A SLICE RUNS ON THE JUDGES ITS HOOK HANDS OVER (ledger X12,
           // 2026-09-28), as the lanes' and the consolidation's slices do: the
           // contest read its judges once, so a dry-out inside it left every

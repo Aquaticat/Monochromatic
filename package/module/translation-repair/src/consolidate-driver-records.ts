@@ -66,7 +66,9 @@ export function storedConsolidationOf(
 export function laneChoiceOf(
   { verdict, }: { readonly verdict: ArtifactContestVerdict; },
 ): LaneChoice {
-  if (verdict.kind === 'lane-won')
+  // A SOLE LANE IS A WIN FOR THAT LANE (ledger L6): the consolidation and its
+  // polish run on it exactly as on a contest the lane won.
+  if ((verdict.kind === 'lane-won') || (verdict.kind === 'sole-lane'))
     return verdict.lane;
   return 'neither';
 }

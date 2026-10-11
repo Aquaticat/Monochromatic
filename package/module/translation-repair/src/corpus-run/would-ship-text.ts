@@ -651,10 +651,11 @@ export function wouldShipTextFor(
     return lanesAgreedOn({ row, },);
 
   /**
-   Whether a lane carried the voices, and which one.
+   Whether a lane carried the voices, or was the only one with a passage here
+   (ledger L6), and which one.
    */
   const { verdict, } = contested;
-  if (verdict.kind === 'lane-won')
+  if ((verdict.kind === 'lane-won') || (verdict.kind === 'sole-lane'))
     return {
       kind: 'wording',
       text: (verdict.lane === 'repair') ? row.repairText : row.translateText,

@@ -62,12 +62,27 @@ export const ARTIFACT_SCHEMA_VERSION_V12 = 12;
 export const ARTIFACT_SCHEMA_VERSION_V13 = 13;
 
 /**
- Generation fourteen, the one the pass writes (`artifact-two-lane-build.ts`,
- `pass-schema-guard.ts`): it records the effective wider bench for every
+ Generation fourteen: it records the effective wider bench for every
  naturalness review, so windowed and confirmation rounds retain their runtime
  quorum.
  */
 export const ARTIFACT_SCHEMA_VERSION_V14 = 14;
+
+/**
+ Generation fifteen, the one the pass writes (`artifact-two-lane-build.ts`,
+ `pass-schema-guard.ts`): a slice where the repair lane recorded
+ `not-applicable` (an archive-absent insertion) and the translate lane
+ therefore alone had a passage to work on is recorded as a `sole-lane`
+ contest verdict, with no ballots and no roster asked.
+
+ WHAT MOVED FROM FOURTEEN: such a slice used to go to the roster like any
+ other contest, and a roster that missed quorum left the passage unshipped
+ (ledger L6). A reader of this generation takes the `sole-lane` verdict from
+ the comparison row and refuses a roster verdict on it. A reader of fourteen
+ or earlier takes the contest exactly as recorded, since those files asked
+ the roster and the verdict is derived from its ballots.
+ */
+export const ARTIFACT_SCHEMA_VERSION_V15 = 15;
 
 /**
  Generation before archive-original spans were sealed; the archive's front
@@ -176,6 +191,7 @@ export const TWO_LANE_GENERATIONS: readonly number[] = [
   ARTIFACT_SCHEMA_VERSION_V12,
   ARTIFACT_SCHEMA_VERSION_V13,
   ARTIFACT_SCHEMA_VERSION_V14,
+  ARTIFACT_SCHEMA_VERSION_V15,
 ];
 
 /**
@@ -199,7 +215,8 @@ export type TwoLaneArtifactGeneration =
   | typeof ARTIFACT_SCHEMA_VERSION_V11
   | typeof ARTIFACT_SCHEMA_VERSION_V12
   | typeof ARTIFACT_SCHEMA_VERSION_V13
-  | typeof ARTIFACT_SCHEMA_VERSION_V14;
+  | typeof ARTIFACT_SCHEMA_VERSION_V14
+  | typeof ARTIFACT_SCHEMA_VERSION_V15;
 
 /**
  Narrows numeric artifact version to known two-lane generation.
@@ -291,6 +308,25 @@ export function artifactGenerationReviewsEveryBodyBlock(
   { generation, }: { readonly generation: TwoLaneArtifactGeneration; },
 ): boolean {
   return generation >= ARTIFACT_SCHEMA_VERSION_V10;
+}
+
+/**
+ Reports whether generation settles a slice that only one lane applies to by
+ rule, with no roster asked, rather than by a contest over both lanes.
+
+ @param generation - known two-lane artifact generation
+
+ @returns Whether a sole-lane contest verdict is recorded and expected
+
+ @example
+ ```ts
+ artifactGenerationSettlesSoleLane({ generation: 15, });
+ ```
+ */
+export function artifactGenerationSettlesSoleLane(
+  { generation, }: { readonly generation: TwoLaneArtifactGeneration; },
+): boolean {
+  return generation >= ARTIFACT_SCHEMA_VERSION_V15;
 }
 
 /**
@@ -602,7 +638,7 @@ export type SettledArtifact = {
    Which generation this is, stated rather than inferred from which fields
    happen to be present.
    */
-  readonly artifactSchemaVersion: typeof ARTIFACT_SCHEMA_VERSION_V14;
+  readonly artifactSchemaVersion: typeof ARTIFACT_SCHEMA_VERSION_V15;
 
   /**
    Corpus entry this covers.

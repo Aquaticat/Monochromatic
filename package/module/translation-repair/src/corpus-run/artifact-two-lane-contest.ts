@@ -66,6 +66,19 @@ export type ArtifactContestVerdict =
      and the slice is not evidence about either lane.
      */
     readonly kind: 'quorum-not-met';
+  }
+  | {
+    /**
+     Only one lane had a passage to work on here, so the lane named ships by
+     the rule `soleLaneOf` states and no roster was asked.
+     */
+    readonly kind: 'sole-lane';
+
+    /**
+     Lane that applies, which is the one the other lane marked
+     `not-applicable`.
+     */
+    readonly lane: 'repair' | 'translate';
   };
 
 /**
@@ -216,6 +229,121 @@ export function describeContestSlice(
 }
 
 /**
+ Which lane a slice applies to alone, or that the rule names neither.
+
+ @example
+ ```ts
+ const reading: SoleLaneReading = { kind: 'one-lane', lane: 'translate', };
+ ```
+ */
+export type SoleLaneReading =
+  | {
+    /**
+     Exactly one lane had a passage here; the other recorded `not-applicable`.
+     */
+    readonly kind: 'one-lane';
+
+    /**
+     Lane that applies.
+     */
+    readonly lane: 'repair' | 'translate';
+  }
+  | {
+    /**
+     Both lanes or neither had a passage, so the roster is the question.
+     */
+    readonly kind: 'both-lanes';
+  };
+
+/**
+ Names the one lane a slice applies to, when the other lane recorded
+ `not-applicable` there.
+
+ THE RECORDED OUTCOME DECIDES, NOT THE TEXT. A lane that tried and filled
+ nothing also ships nothing, and a roster is still the right question for a
+ slice where both lanes had a passage to work on. Only `not-applicable` says
+ the lane had no passage at all (`repair-slice-settle.ts`, an insertion chunk).
+
+ NEITHER OR BOTH NOT APPLICABLE ANSWERS `both-lanes` rather than throwing,
+ because a reader hands this the comparison rows of a file on disk. Such a row
+ never reaches the contest (`contestEligibleIndexes` needs differing texts), so
+ the reader's coverage check refuses a record that names it.
+
+ @param row - comparison row of one slice
+
+ @returns Lane that applies alone, or `both-lanes` when neither or both lanes
+ are `not-applicable`
+
+ @example
+ ```ts
+ const sole = soleLaneOf({ row, },);
+ ```
+ */
+export function soleLaneOf(
+  { row, }: { readonly row: ArtifactComparisonRow; },
+): SoleLaneReading {
+  /**
+   What the repair lane recorded at this slice.
+   */
+  const { kind: repairKind, } = row.repairOutcome;
+
+  /**
+   What the translate lane recorded at this slice.
+   */
+  const { kind: translateKind, } = row.translateOutcome;
+  if ((repairKind === 'not-applicable') === (translateKind === 'not-applicable'))
+    return { kind: 'both-lanes', };
+  if (repairKind === 'not-applicable')
+    return {
+      kind: 'one-lane',
+      lane: 'translate',
+    };
+  return {
+    kind: 'one-lane',
+    lane: 'repair',
+  };
+}
+
+/**
+ Records one slice a single lane applies to, which no roster was asked about.
+
+ BALLOTS AND USABLE ARE EMPTY AND ZERO rather than absent, so the record keeps
+ the exact key set every contested slice carries and a reader needs no second
+ shape. Zero usable voices is also what keeps such a slice out of every
+ consolidation rule that counts ballots.
+
+ @param sliceIndex - slice this answers
+
+ @param lane - lane that applies, from {@link soleLaneOf}
+
+ @returns Record naming the applicable lane with no ballots behind it
+
+ @example
+ ```ts
+ const slice = describeSoleLaneSlice({ sliceIndex: 4, lane: 'translate', },);
+ ```
+ */
+export function describeSoleLaneSlice(
+  {
+    sliceIndex,
+    lane,
+  }: {
+    readonly sliceIndex: number;
+    readonly lane: 'repair' | 'translate';
+  },
+): ArtifactContestSlice {
+  return {
+    sliceIndex,
+    verdict: {
+      kind: 'sole-lane',
+      lane,
+    },
+    ballots: [],
+    usable: 0,
+  };
+}
+
+/**
  Names the slices a contest is meaningful at, which are those where the two
  lanes left different wording.
 
@@ -268,7 +396,8 @@ export type ArtifactLaneSelection =
   }
   | {
     /**
-     The roster answered every slice where the lanes offer different wording.
+     Every slice where the lanes offer different wording was settled: by the
+     roster, or by rule where one lane alone applies (`sole-lane`).
      */
     readonly kind: 'contested';
 

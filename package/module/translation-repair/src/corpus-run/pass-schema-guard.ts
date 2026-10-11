@@ -7,7 +7,7 @@ import { contextRoot, } from '../log-context.ts';
 import { refusalText, } from '../refusal-text.ts';
 import { StatedRefusalError, } from '../stated-refusal.ts';
 import { artifactFileNameOf, } from './artifact-file-name.ts';
-import { ARTIFACT_SCHEMA_VERSION_V14, } from './artifact-two-lane-contract.ts';
+import { ARTIFACT_SCHEMA_VERSION_V15, } from './artifact-two-lane-contract.ts';
 import { parseSettledTwoLaneArtifact, } from './artifact-two-lane-read.ts';
 import { UnplaceableArtifactError, } from './pass-generation-guard.ts';
 import {
@@ -457,7 +457,7 @@ async function assertBodyMatchesLabel(
 export async function assertResumableSchemaGeneration(
   {
     artifactsDir,
-    writes = ARTIFACT_SCHEMA_VERSION_V14,
+    writes = ARTIFACT_SCHEMA_VERSION_V15,
   }: {
     readonly artifactsDir: string;
     readonly writes?: number;

@@ -69,6 +69,9 @@ export {
   type ArtifactLaneSelection,
   contestEligibleIndexes,
   describeContestSlice,
+  describeSoleLaneSlice,
+  soleLaneOf,
+  type SoleLaneReading,
 } from './corpus-run/artifact-two-lane-contest.ts';
 export {
   projectLanes,
