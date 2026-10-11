@@ -97,6 +97,15 @@ export component FolderPickerPane inherits Rectangle {
         }
     }
 
+    // D34: in light mode a 1 px boundary line separates the rail from the names; dark mode relies on the black canvas.
+    Rectangle {
+        x: 48px;
+        width: 1px;
+        height: root.height;
+        background: Theme.outline-variant;
+        visible: !Theme.dark;
+    }
+
     // Names column: the wrapped flow of name rows, offset past the rail by 48 px.
     names-flick := Flickable {
         x: 48px;
