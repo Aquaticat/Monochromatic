@@ -3003,7 +3003,8 @@ Pages:
 - In Search, `Up` and `Down` move through the results, `Enter` opens the focused result, `Escape` leaves.
 
 Search also opens on a double tap of `Shift` (JetBrains Search Everywhere): two presses and releases of Shift within
-400 ms with no other key between them, anywhere in the app, including while another page is open.
+400 ms with no other key between them, on the player page only. Settings and the template editor are modal pages
+where Search is not offered, so `Ctrl+F` and double Shift do nothing there (a human correction of 2026-10-11).
 
 Key hints (asked for by the human on 2026-10-11): while the modifiers of a shortcut are all held down, every control
 that has such a shortcut shows its key as a small badge on or beside it, for example `F` on the Search button while
