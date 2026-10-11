@@ -144,6 +144,36 @@ data class HostKeyInput(
     val repeat: Boolean,
 )
 
+// What:     `enum class HostKeyLayout` names the two layouts that the keyboard rules tell apart.
+// Why:      The folder picker is part of the folded cover only, so its shortcut depends on which layout is drawn.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// type HostKeyLayout = "folded-cover" | "unfolded";
+// ```
+/** Layouts of the player screen that the keyboard rules distinguish. */
+enum class HostKeyLayout {
+    // What:     `FOLDED_COVER` is the single-column cover layout.
+    // Why:      Only this layout shows the folder picker that Ctrl+O toggles.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // "folded-cover"
+    // ```
+    /** The single-column folded cover, which shows the folder picker. */
+    FOLDED_COVER,
+
+    // What:     `UNFOLDED` is the two-pane layout on wide screens.
+    // Why:      The folder picker is not drawn here, so Ctrl+O has no meaning on this layout.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // "unfolded"
+    // ```
+    /** The two-pane unfolded layout, which draws no folder picker. */
+    UNFOLDED,
+}
+
 // What:     `data class HostKeyContext(...)` is the host state that decides who owns a key and what a command may do.
 // Why:      The owner, the route rules, and the mode cycle all read the same snapshot, so one value carries them.
 //
@@ -151,7 +181,7 @@ data class HostKeyInput(
 // ```ts
 // type HostKeyContext = {
 //   route: HostKeyRoute; menuOpen: boolean; textFieldFocused: boolean; rootFocused: boolean;
-//   currentRowShown: boolean; playbackMode: PlaybackMode;
+//   playbackMode: PlaybackMode; layout: HostKeyLayout;
 // };
 // ```
 /** The host state that the keyboard rules read for one key press. */
@@ -196,16 +226,6 @@ data class HostKeyContext(
     /** True while the playback area, which is the host's own focusable root, holds focus. */
     val rootFocused: Boolean,
 
-    // What:     `val currentRowShown: Boolean` is true when the playing track is on the displayed folder.
-    // Why:      Reveal focuses a row, so it has nothing to do when the playing track is on another folder.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // currentRowShown: boolean;
-    // ```
-    /** True when the playing track is one of the rows of the folder on screen. */
-    val currentRowShown: Boolean,
-
     // What:     `val playbackMode: PlaybackMode` is the end-of-track mode that the host shows now.
     // Why:      The mode cycle moves from this value to the next one.
     //
@@ -215,6 +235,16 @@ data class HostKeyContext(
     // ```
     /** The end-of-track mode that is in effect now. */
     val playbackMode: PlaybackMode,
+
+    // What:     `val layout: HostKeyLayout` is the layout the screen draws at the current width.
+    // Why:      The folder picker exists only on the folded cover, so its shortcut must know the layout.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // layout: HostKeyLayout;
+    // ```
+    /** The layout the screen draws now, which decides whether the folder picker shortcut applies. */
+    val layout: HostKeyLayout,
 )
 
 // What:     `data class HostKeyPress(...)` joins one key-down with the host state that it arrived in.
@@ -605,19 +635,23 @@ private fun hostKeySearchCommandFor(press: HostKeyPress): HostKeyCommand = when 
     else -> HostKeyCommand.OpenSearch
 }
 
-// What:     `private fun hostKeyPickerCommandFor(press: HostKeyPress): HostKeyCommand` allows the picker on the player
-//           only.
-// Why:      The picker is part of the cover layout, so toggling it elsewhere would change state nobody can see.
+// What:     `private fun hostKeyPickerCommandFor(press: HostKeyPress): HostKeyCommand` allows the picker on the folded
+//           cover player only.
+// Why:      The picker is drawn only on the folded cover, so toggling it on the unfolded layout would change state
+//           nobody can see.
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// const hostKeyPickerCommandFor = (p) => p.route === "player" ? "toggle-picker" : "unhandled";
+// const hostKeyPickerCommandFor = (p) =>
+//   p.route === "player" && p.layout === "folded-cover" ? "toggle-picker" : "unhandled";
 // ```
-/** Chooses the folder picker command for the route that received the key. */
-private fun hostKeyPickerCommandFor(press: HostKeyPress): HostKeyCommand = when (press.context.route) {
-    HostKeyRoute.PLAYER -> HostKeyCommand.ToggleFolderPicker
-    HostKeyRoute.SEARCH, HostKeyRoute.SETTINGS, HostKeyRoute.EDITOR -> HostKeyCommand.Unhandled
-}
+/** Chooses the folder picker command for the route and layout that received the key. */
+private fun hostKeyPickerCommandFor(press: HostKeyPress): HostKeyCommand =
+    if (press.context.route == HostKeyRoute.PLAYER && press.context.layout == HostKeyLayout.FOLDED_COVER) {
+        HostKeyCommand.ToggleFolderPicker
+    } else {
+        HostKeyCommand.Unhandled
+    }
 
 // What:     `private fun hostKeySettingsCommandFor(press: HostKeyPress): HostKeyCommand` opens Settings unless already
 //           open.
@@ -637,15 +671,15 @@ private fun hostKeySettingsCommandFor(press: HostKeyPress): HostKeyCommand = whe
 
 // What:     `private fun hostKeyRevealCommandFor(press: HostKeyPress): HostKeyCommand` reveals the playing row on the
 //           player.
-// Why:      Reveal focuses a row, so it needs the player route and a playing track on the folder on screen.
+// Why:      Reveal works on the player route, and the host moves to the playing track's folder when it is elsewhere.
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// const hostKeyRevealCommandFor = (p) => p.route === "player" && p.currentRowShown ? "reveal" : "unhandled";
+// const hostKeyRevealCommandFor = (p) => p.route === "player" ? "reveal" : "unhandled";
 // ```
-/** Chooses the reveal command for the route and the folder that the host shows. */
+/** Chooses the reveal command for the route that received the key. */
 private fun hostKeyRevealCommandFor(press: HostKeyPress): HostKeyCommand =
-    if (press.context.route == HostKeyRoute.PLAYER && press.context.currentRowShown) {
+    if (press.context.route == HostKeyRoute.PLAYER) {
         HostKeyCommand.RevealCurrent
     } else {
         HostKeyCommand.Unhandled

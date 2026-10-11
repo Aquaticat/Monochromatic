@@ -1978,6 +1978,8 @@ class PlayerController(private val engine: AudioEngine) {
         //   loading: this.isLoading,
         // };
         // ```
+        /** Tab-order index of the page that holds the current track, or null when no track is current. */
+        val playingPage: Int? = current?.let { index -> pageOfIndex(pages, index) }
         uiState = PlayerUiState(
             // What:     `pageLabels = pages.map { it.label }` passes the page-tab labels by
             //           name; `pages.map { it.label }` maps each `Page` to its `label`
@@ -2019,6 +2021,15 @@ class PlayerController(private val engine: AudioEngine) {
             // currentIndex: current,
             // ```
             currentIndex = current,
+            // What:     `playingPageIndex` and `playingItems` pass the playing track's own folder by name.
+            // Why:      The deck names the playing track even when its folder is not the one on screen.
+            //
+            // In TS you'd write (pseudocode):
+            // ```ts
+            // playingItems: pages[pageOfIndex(pages, current)]?.entries ?? [],
+            // ```
+            playingPageIndex = playingPage,
+            playingItems = playingPage?.let { page -> pages[page].entries } ?: emptyList(),
             // What:     `playing = isPlaying` passes the play/pause flag by name.
             // Why:      The play vs pause icon.
             //

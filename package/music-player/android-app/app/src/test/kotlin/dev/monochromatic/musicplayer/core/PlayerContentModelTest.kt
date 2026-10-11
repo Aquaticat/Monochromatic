@@ -68,12 +68,50 @@ class PlayerContentModelTest {
         pageLabels = labels,
         selectedPage = selectedPage,
         pageItems = items,
+        playingItems = items,
+        playingPageIndex = selectedPage,
         currentIndex = currentIndex,
         playing = playing,
         mode = mode,
         positionSec = FIXTURE_POSITION_SEC,
         durationSec = FIXTURE_DURATION_SEC,
     )
+
+    // What:     `fun deckNamesPlayingTrackFromItsOwnFolder()` checks the deck with the playing folder off screen.
+    // Why:      The deck must keep the playing title and its `N of M` from the playing folder, not the folder shown.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // test("deck from playing folder", () => expect(build(shownOther, playingAlbum).deck.subtitle).toBe("2 of 3"));
+    // ```
+    /** With another folder on screen, the deck names the playing track and its place in its own folder. */
+    @Test
+    fun deckNamesPlayingTrackFromItsOwnFolder() {
+        /** Entries of the folder on screen, which holds no playing track. */
+        val shownItems: List<PageEntry> = listOf(pageEntry(0, "Other/One.flac"))
+        /** Entries of the playing folder, whose second track is the playing one. */
+        val playingItems: List<PageEntry> = listOf(
+            pageEntry(1, "Album/First.flac"),
+            pageEntry(2, "Album/Second.flac"),
+            pageEntry(3, "Album/Third.flac"),
+        )
+        /** Player model with the Other folder on screen and the playing track in the Album folder. */
+        val model: PlayerContentModel = buildPlayerContent(
+            pageLabels = listOf("Other", "Album"),
+            selectedPage = 0,
+            pageItems = shownItems,
+            playingItems = playingItems,
+            playingPageIndex = 1,
+            currentIndex = 2,
+            playing = true,
+            mode = PlaybackMode.IN_ORDER,
+            positionSec = 0.0,
+            durationSec = 0.0,
+        )
+        assertEquals("Second", model.deck.title)
+        assertEquals("2 of 3", model.deck.subtitle)
+        assertEquals("Other", model.folderTitle)
+    }
 
     // What:     `private fun rowKeys(entries: List<TrackListEntry>): List<String>` names each entry for comparison.
     // Why:      A row is compared by its load-order index and a header by its name and count, in one readable list.

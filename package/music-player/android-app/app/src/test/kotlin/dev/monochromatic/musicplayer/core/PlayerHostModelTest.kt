@@ -121,12 +121,25 @@ private fun albumModel(): PlayerContentModel = buildPlayerContent(
     pageLabels = listOf("Album"),
     selectedPage = 0,
     pageItems = ALBUM_ITEMS,
+    playingItems = ALBUM_ITEMS,
+    playingPageIndex = 0,
     currentIndex = PLAYING_INDEX,
     playing = true,
     mode = PlaybackMode.IN_ORDER,
     positionSec = 0.0,
     durationSec = 0.0,
 )
+
+// What:     `private fun albumPlaceFor(currentIndex: Int?): PlayingPlace` gives the playing place in the Album folder.
+// Why:      The host passes the playing folder's place to the template builder, and every template case needs one.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// const albumPlaceFor = (current: number | null) => playingPlaceOf("Album", ALBUM_ITEMS, current);
+// ```
+/** Builds the playing place of the Album folder for one playing index. */
+private fun albumPlaceFor(currentIndex: Int?): PlayingPlace =
+    playingPlaceOf(folderTitle = "Album", playingItems = ALBUM_ITEMS, currentIndex = currentIndex)
 
 // What:     `private fun resultsOf(query: String): List<SearchResult>` returns the Search results for one query.
 // Why:      The folder and track checks read the same results, and an empty list stands for no results.
@@ -357,6 +370,8 @@ class PlayerHostModelTest {
             base = albumModel(),
             pageItems = ALBUM_ITEMS,
             currentIndex = PLAYING_INDEX,
+            playingPlace = albumPlaceFor(PLAYING_INDEX),
+            playingMeasure = null,
             durationSec = 0.0,
             trackRowsTemplate = DEFAULT_TRACK_TEMPLATE,
             playingTemplate = "\$mi(track)\$ of \$mi(total)\$ \$mi(peak)\$",
@@ -379,6 +394,8 @@ class PlayerHostModelTest {
             base = albumModel(),
             pageItems = ALBUM_ITEMS,
             currentIndex = PLAYING_INDEX,
+            playingPlace = albumPlaceFor(PLAYING_INDEX),
+            playingMeasure = null,
             durationSec = 0.0,
             trackRowsTemplate = DEFAULT_TRACK_TEMPLATE,
             playingTemplate = "\$mi(nothing)\$",
@@ -401,6 +418,8 @@ class PlayerHostModelTest {
             base = albumModel(),
             pageItems = ALBUM_ITEMS,
             currentIndex = PLAYING_INDEX,
+            playingPlace = albumPlaceFor(PLAYING_INDEX),
+            playingMeasure = null,
             durationSec = 0.0,
             trackRowsTemplate = "\$mi(title)\$ in \$mi(folder)\$",
             playingTemplate = TemplateKind.PLAYING_TRACK.defaultTemplate,
@@ -432,24 +451,78 @@ class PlayerHostModelTest {
     }
 
     // What:     `fun editorPreviewFromLibraryBuildsSettingsLines()` checks that library preview tracks give every line.
-    // Why:      Real tracks have no duration or peak before analysis, yet Settings must show every line.
+    // Why:      A library preview with a read duration yields every Settings line, with no peak yet.
     //
     // In TS you'd write (pseudocode):
     // ```ts
     // test("library preview lines", () => expect(Object.keys(editor.settingsLines)).toHaveLength(2));
     // ```
-    /** A page preview with no duration or peak yields a Settings line for every template without a refusal. */
+    /** A page preview with a read duration and no peak yields a Settings line for every template. */
     @Test
     fun editorPreviewFromLibraryBuildsSettingsLines() {
-        /** Editor previewing the first two tracks of the Album page. */
+        /** Measures of the first Album row, with a known duration and no peak yet. */
+        val measures: Map<Int, TrackMeasure> = mapOf(
+            ALBUM_ITEMS.first().index to TrackMeasure(durationSec = KNOWN_DURATION_SEC),
+        )
+        /** Editor previewing the first two tracks of the Album page with their measures. */
         val editor: TemplateEditorState = PlayerHostModel.editorWithPreview(
             editor = PlayerHostModel.restoredEditor(defaultTemplates()),
             pageItems = ALBUM_ITEMS,
+            measuresByIndex = measures,
         )
         assertFalse(editor.usesSampleValues)
         assertEquals(2, editor.previewTracks.size)
         assertEquals(1, editor.previewTracks.first().placeInFolder)
         assertEquals(TemplateKind.entries.toSet(), editor.settingsLines.keys)
+    }
+
+    // What:     `fun editorPreviewSettingsLineShowsMeasuresWhenPresent()` checks that measured rows fill Settings.
+    // Why:      The Track rows line came out empty while the rows showed duration and peak; this fails if it returns.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // test("settings line has measures", () => expect(editor.settingsLine("track")).toBe("4:35 −1.2 dBTP"));
+    // ```
+    /** A measured first row gives the Track rows line its duration and peak, never an empty text. */
+    @Test
+    fun editorPreviewSettingsLineShowsMeasuresWhenPresent() {
+        /** Measure of the Album page's first row, with a 275 second duration and an exact −1.2 dBTP peak. */
+        val measures: Map<Int, TrackMeasure> = mapOf(
+            ALBUM_ITEMS.first().index to
+                TrackMeasure(durationSec = KNOWN_DURATION_SEC, peakDbtp = -1.2, peakExact = true),
+        )
+        /** Editor previewing the Album page with its measures. */
+        val editor: TemplateEditorState = PlayerHostModel.editorWithPreview(
+            editor = PlayerHostModel.restoredEditor(defaultTemplates()),
+            pageItems = ALBUM_ITEMS,
+            measuresByIndex = measures,
+        )
+        assertFalse(editor.usesSampleValues)
+        assertEquals("4:35 −1.2 dBTP", editor.settingsLine(TemplateKind.TRACK_ROWS))
+        assertTrue(editor.settingsLine(TemplateKind.TRACK_ROWS).isNotEmpty())
+    }
+
+    // What:     `fun editorPreviewUnreadTracksUseStandInsWithNote()` checks the fallback before any track is read.
+    // Why:      With tracks but no read measure the Settings lines must not be empty, and the note must not claim
+    //           the library is empty.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // test("unread uses stand-ins", () => expect(editorWithPreview(editor, page, {}).sampleNote).toBe(UNREAD));
+    // ```
+    /** Tracks with no measure yet show the stand-in lines and a note that says the values are not read yet. */
+    @Test
+    fun editorPreviewUnreadTracksUseStandInsWithNote() {
+        /** Editor previewing the Album page before any measure exists. */
+        val editor: TemplateEditorState = PlayerHostModel.editorWithPreview(
+            editor = PlayerHostModel.restoredEditor(defaultTemplates()),
+            pageItems = ALBUM_ITEMS,
+            measuresByIndex = emptyMap(),
+        )
+        assertTrue(editor.usesSampleValues)
+        assertEquals(TEMPLATE_UNREAD_NOTE, editor.sampleNote)
+        assertEquals(listOf(TEMPLATE_UNREAD_NOTE), editor.previewNotes)
+        assertTrue(editor.settingsLine(TemplateKind.TRACK_ROWS).isNotEmpty())
     }
 
     // What:     `fun deckLineShowsDurationWhenKnown()` checks that a known duration reaches the playing template.
@@ -467,6 +540,8 @@ class PlayerHostModelTest {
             base = albumModel(),
             pageItems = ALBUM_ITEMS,
             currentIndex = PLAYING_INDEX,
+            playingPlace = albumPlaceFor(PLAYING_INDEX),
+            playingMeasure = null,
             durationSec = KNOWN_DURATION_SEC,
             trackRowsTemplate = DEFAULT_TRACK_TEMPLATE,
             playingTemplate = "\$tf(mi(len), m:ss)\$",
@@ -489,6 +564,8 @@ class PlayerHostModelTest {
             base = albumModel(),
             pageItems = ALBUM_ITEMS,
             currentIndex = OFF_PAGE_INDEX,
+            playingPlace = albumPlaceFor(OFF_PAGE_INDEX),
+            playingMeasure = null,
             durationSec = 0.0,
             trackRowsTemplate = DEFAULT_TRACK_TEMPLATE,
             playingTemplate = TemplateKind.PLAYING_TRACK.defaultTemplate,

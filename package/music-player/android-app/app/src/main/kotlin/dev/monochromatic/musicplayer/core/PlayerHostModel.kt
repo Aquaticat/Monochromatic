@@ -196,6 +196,8 @@ object PlayerHostModel {
         durationSec: Double,
         trackRowsTemplate: String,
         playingTemplate: String,
+        playingPlace: PlayingPlace,
+        playingMeasure: TrackMeasure?,
         measuresByIndex: Map<Int, TrackMeasure> = emptyMap(),
     ): PlayerContentModel {
         /** Track rows and subfolder headers of the selected page, each row carrying its template supporting line. */
@@ -205,21 +207,15 @@ object PlayerHostModel {
             template = trackRowsTemplate,
             measuresByIndex = measuresByIndex,
         )
-        /** Position of the playing row among the track rows, or -1 when the playing track is not on this page. */
-        val rowPosition: Int = entries
-            .filterIsInstance<TrackListEntry.RowEntry>()
-            .indexOfFirst { entry -> entry.row.isCurrent }
-        /** Page entry of the playing track, or null when the playing track is not on this page. */
-        val playingEntry: PageEntry? = pageItems.firstOrNull { item -> item.index == currentIndex }
-        /** Deck subtitle from the playing template, or the built line when the template is refused. */
+        /** Deck subtitle from the playing template for the playing folder, or the built line when refused. */
         val subtitle: String = deckSubtitleFor(
-            playingEntry = playingEntry,
-            rowPosition = rowPosition,
-            pageTrackCount = pageItems.size,
+            playingEntry = playingPlace.entry,
+            rowPosition = playingPlace.rowPosition,
+            pageTrackCount = playingPlace.folderTrackCount,
             durationSec = durationSec,
             template = playingTemplate,
             fallback = base.deck.subtitle,
-            measure = playingEntry?.let { entry -> measuresByIndex[entry.index] },
+            measure = playingMeasure,
         )
         return base.copy(entries = entries, deck = base.deck.copy(subtitle = subtitle))
     }
@@ -244,23 +240,46 @@ object PlayerHostModel {
     // ```ts
     // function editorWithPreview(editor, page): EditorState { /* first two rows, or stand-ins */ }
     // ```
-    /** Sets the editor preview to the first track rows of the selected page, or to the stand-ins for an empty page. */
-    fun editorWithPreview(editor: TemplateEditorState, pageItems: List<PageEntry>): TemplateEditorState {
-        /** Preview fields of the first track rows of the page, each with its place in the page. */
-        val fields: List<PlayingTrackFields> = pageItems
-            .take(TEMPLATE_PREVIEW_ROW_COUNT)
-            .mapIndexed { index, entry ->
-                playingFieldsOf(
-                    displayPath = entry.name,
-                    placeInFolder = index + 1,
-                    tracksInFolder = pageItems.size,
-                    lengthSec = null,
-                )
-            }
-        if (fields.isEmpty()) {
-            return editor.copy(previewTracks = TEMPLATE_SAMPLE_TRACKS, usesSampleValues = true)
+    /**
+     * Sets the editor preview to the first track rows of the selected page, with each row's measured duration and peak.
+     *
+     * Stand-in values replace the rows when the page is empty, and when none of the previewed rows has a measure yet,
+     * so the Settings lines never come out blank for a template that has text.
+     */
+    fun editorWithPreview(
+        editor: TemplateEditorState,
+        pageItems: List<PageEntry>,
+        measuresByIndex: Map<Int, TrackMeasure> = emptyMap(),
+    ): TemplateEditorState {
+        /** Index-ordered preview rows of the page, the ones the editor's preview and Settings lines read. */
+        val previewRows: List<PageEntry> = pageItems.take(TEMPLATE_PREVIEW_ROW_COUNT)
+        if (previewRows.isEmpty()) {
+            return editor.copy(
+                previewTracks = TEMPLATE_SAMPLE_TRACKS,
+                usesSampleValues = true,
+                sampleNote = TEMPLATE_SAMPLE_NOTE,
+            )
         }
-        return editor.copy(previewTracks = fields, usesSampleValues = false)
+        if (previewRows.none { entry -> measuresByIndex.containsKey(entry.index) }) {
+            return editor.copy(
+                previewTracks = TEMPLATE_SAMPLE_TRACKS,
+                usesSampleValues = true,
+                sampleNote = TEMPLATE_UNREAD_NOTE,
+            )
+        }
+        /** Preview fields of the first page rows, each with its place, measured duration, and peak. */
+        val fields: List<PlayingTrackFields> = previewRows.mapIndexed { index, entry ->
+            /** Measure of this preview row, or null while the row's track has not been read. */
+            val measure: TrackMeasure? = measuresByIndex[entry.index]
+            playingFieldsOf(
+                displayPath = entry.name,
+                placeInFolder = index + 1,
+                tracksInFolder = pageItems.size,
+                lengthSec = measure?.durationSec,
+                measure = measure,
+            )
+        }
+        return editor.copy(previewTracks = fields, usesSampleValues = false, sampleNote = TEMPLATE_SAMPLE_NOTE)
     }
 
     // What:     `fun playingFieldsOf(...)` builds the playing-track fields of one track.

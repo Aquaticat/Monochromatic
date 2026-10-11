@@ -180,6 +180,11 @@ import dev.monochromatic.musicplayer.core.PlayerContentModel
 import dev.monochromatic.musicplayer.core.HostKeyActions
 import dev.monochromatic.musicplayer.core.HostKeyContext
 import dev.monochromatic.musicplayer.core.HostKeyDispatcher
+import dev.monochromatic.musicplayer.core.HostKeyLayout
+import dev.monochromatic.musicplayer.core.MenuAnchorRect
+import dev.monochromatic.musicplayer.core.PlayingPlace
+import dev.monochromatic.musicplayer.core.playingPlaceOf
+import androidx.compose.ui.platform.LocalConfiguration
 import dev.monochromatic.musicplayer.core.HostKeyRoute
 import dev.monochromatic.musicplayer.core.PlaybackMode
 import dev.monochromatic.musicplayer.core.PlayerHostModel
@@ -385,6 +390,16 @@ private fun loadStoredTemplates(context: Context): Map<TemplateKind, String> =
 /** Inset between the feedback overlay and the start, end, and bottom edges of the player, and above the scan bar. */
 private val PLAYER_HOST_FEEDBACK_INSET: Dp = 16.dp
 
+// What:     `private val TRACK_MENU_INNER_INSET: Dp = 12.dp` is the track menu's start inset on the inner panes.
+// Why:      The inner panes keep 12dp at their start edge, so the menu's leftmost position leaves that inset clear.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// const TRACK_MENU_INNER_INSET = 12; // dp
+// ```
+/** Start inset of the track menu on the unfolded inner panes, where the cover uses no inset. */
+private val TRACK_MENU_INNER_INSET: Dp = 12.dp
+
 // What:     `private fun hostKeyRouteOf(route: PlayerRoute): HostKeyRoute` names the keyboard route of a host route.
 // Why:      The keyboard rules have their own route kinds, so each host route maps to one of them here.
 //
@@ -462,6 +477,8 @@ fun playerHost(
         pageLabels = state.pageLabels,
         selectedPage = state.selectedPage,
         pageItems = state.pageItems,
+        playingItems = state.playingItems,
+        playingPageIndex = state.playingPageIndex,
         currentIndex = state.currentIndex,
         playing = state.playing,
         mode = state.playbackMode,
@@ -494,6 +511,16 @@ fun playerHost(
             publish = { updates -> controller.mergeMeasures(updates) },
         )
     }
+    /** Playing track and its place in its own folder, which the deck reads even when that folder is not on screen. */
+    val playingPlace: PlayingPlace = playingPlaceOf(
+        folderTitle = state.playingPageIndex?.let { index -> state.pageLabels.getOrNull(index) }.orEmpty(),
+        playingItems = state.playingItems,
+        currentIndex = state.currentIndex,
+    )
+    /** Measure of the playing track, read from the library-wide measures so the deck shows it on any folder. */
+    val playingMeasure: TrackMeasure? = state.currentIndex
+        ?.let { index -> controller.uriAt(index) }
+        ?.let { uri -> state.measures[uri] }
     /** Player model with the saved track-row and playing-track templates applied. */
     val model: PlayerContentModel = PlayerHostModel.contentWithTemplates(
         base = builtModel,
@@ -502,10 +529,16 @@ fun playerHost(
         durationSec = playbackProgress.duration,
         trackRowsTemplate = templates.lastValid.getValue(TemplateKind.TRACK_ROWS),
         playingTemplate = templates.lastValid.getValue(TemplateKind.PLAYING_TRACK),
+        playingPlace = playingPlace,
+        playingMeasure = playingMeasure,
         measuresByIndex = pageMeasures,
     )
-    /** Editor view with the preview drawn from the selected page, for Settings and the editor. */
-    val editor: TemplateEditorState = PlayerHostModel.editorWithPreview(templates, state.pageItems)
+    /** Editor view with the preview drawn from the selected page and its measured durations and peaks, for Settings. */
+    val editor: TemplateEditorState = PlayerHostModel.editorWithPreview(
+        editor = templates,
+        pageItems = state.pageItems,
+        measuresByIndex = pageMeasures,
+    )
 
     // What:     `fun go(next: PlayerRoute)` moves the host to one destination and saves its token.
     // Why:      Every route change goes through here, so each one is logged and saved the same way.
@@ -600,8 +633,24 @@ fun playerHost(
         go(PlayerRoute.Player)
     }
 
+    // What:     `fun returnFocusToPlayback()` gives focus back to the playback area after a tap on the player.
+    // Why:      Shortcuts reach the host only along the focused path, so a tapped row or control must not keep focus.
+    //           Search and the editor keep their own focus, so the request runs only on the player route.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // function returnFocusToPlayback(): void { if (route === "player") rootRef.focus(); }
+    // ```
+    /** Gives focus to the playback area after a tap on the player, and leaves focus alone on other routes. */
+    fun returnFocusToPlayback() {
+        if (route == PlayerRoute.Player) {
+            rootFocusRequester.requestFocus()
+        }
+    }
+
     // What:     `val deckActions` routes the transport actions to the controller.
-    // Why:      The player deck and the deck under the Search page send the same actions.
+    // Why:      The player deck and the deck under the Search page send the same actions, and a tapped control
+    //           returns focus to the playback area.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -610,10 +659,22 @@ fun playerHost(
     /** Transport actions the player deck and the Search deck send to the controller. */
     val deckActions = TransportDeckActions(
         onSeek = { position -> controller.seek(position) },
-        onPrevious = { controller.prev() },
-        onTogglePlay = { controller.togglePlay() },
-        onNext = { controller.next() },
-        onSelectMode = { mode -> controller.setPlaybackMode(mode) },
+        onPrevious = {
+            controller.prev()
+            returnFocusToPlayback()
+        },
+        onTogglePlay = {
+            controller.togglePlay()
+            returnFocusToPlayback()
+        },
+        onNext = {
+            controller.next()
+            returnFocusToPlayback()
+        },
+        onSelectMode = { mode ->
+            controller.setPlaybackMode(mode)
+            returnFocusToPlayback()
+        },
     )
 
     // What:     `val playerActions` routes the player screen's actions.
@@ -625,11 +686,20 @@ fun playerHost(
     // ```
     /** Actions the player screen invokes, routed to the controller or to the host's own state. */
     val playerActions = PlayerContentActions(
-        onToggleFolderPicker = { pickerOpen = !pickerOpen },
-        onSelectFolder = { folder -> selectFolder(folder) },
+        onToggleFolderPicker = {
+            pickerOpen = !pickerOpen
+            returnFocusToPlayback()
+        },
+        onSelectFolder = { folder ->
+            selectFolder(folder)
+            returnFocusToPlayback()
+        },
         onOpen = onChooseFolder,
         onSettings = { go(PlayerRoute.Settings) },
-        onPlay = { index -> controller.playIndex(index) },
+        onPlay = { index ->
+            controller.playIndex(index)
+            returnFocusToPlayback()
+        },
         deck = deckActions,
         onSearch = {
             query = ""
@@ -650,6 +720,8 @@ fun playerHost(
     val mediaStoreTrash: TrashMediaStoreRequest? = LocalTrashMediaStoreRequest.current
     /** Track whose context menu is open, bound to its URI at open time, or null when no menu is open. */
     var menuTarget: TrackMenuTarget? by remember { mutableStateOf<TrackMenuTarget?>(null) }
+    /** Window-space bounds of the row that opened the menu, or null when no row has reported its bounds. */
+    var menuAnchor: MenuAnchorRect? by remember { mutableStateOf<MenuAnchorRect?>(null) }
 
     // What:     `fun openMenu(index: Int)` binds the menu to the track at a library index.
     // Why:      The track is read once here, so a later rescan that moves the index cannot redirect the action.
@@ -658,8 +730,11 @@ fun playerHost(
     // ```ts
     // openMenu(index: number): void { menuTarget = { indexInLibrary: index, track: library[index] }; }
     // ```
-    /** Opens the context menu for the track at the given library index, logging when the index is out of range. */
-    fun openMenu(index: Int) {
+    /**
+     * Opens the context menu for the track at the given library index, anchored to the row's window bounds, and
+     * logs when the index is out of range.
+     */
+    fun openMenu(index: Int, anchor: MenuAnchorRect) {
         /** Track at the index in load order, or null when the index is out of range. */
         val track: Track? = controller.libraryTracks().getOrNull(index)
         if (track == null) {
@@ -668,6 +743,7 @@ fun playerHost(
         }
         Log.i(LOG_TAG, "player host menu opened index=$index")
         menuTarget = TrackMenuTarget(indexInLibrary = index, track = track)
+        menuAnchor = anchor
     }
 
     // What:     `fun showFailure(failure: TrackActionFailure, name: String)` shows one failure in the overlay.
@@ -1079,12 +1155,25 @@ fun playerHost(
         }
     }
 
-    // What:     `val keyContext: HostKeyContext` is the host state that the keyboard rules read for this frame.
-    // Why:      The owner, the route rules, and the mode cycle each need the route, popup, focus, and mode together.
+    // What:     `val keyLayout: HostKeyLayout` names the layout the screen draws at the current width.
+    // Why:      Ctrl+O opens the folder picker only on the folded cover, so the keyboard rules need the layout.
     //
     // In TS you'd write (pseudocode):
     // ```ts
-    // const keyContext = { route, menuOpen: menu != null, rootFocused, textFieldFocused, currentRowShown, mode };
+    // const keyLayout = isCoverLayout(window.innerWidth) ? "folded-cover" : "unfolded";
+    // ```
+    /** Layout the screen draws at the current window width, which the keyboard rules read. */
+    val keyLayout: HostKeyLayout = if (isCoverLayout(LocalConfiguration.current.screenWidthDp.toFloat())) {
+        HostKeyLayout.FOLDED_COVER
+    } else {
+        HostKeyLayout.UNFOLDED
+    }
+    // What:     `val keyContext: HostKeyContext` is the host state that the keyboard rules read for this frame.
+    // Why:      The owner, the route rules, the layout, and the mode cycle each need the route, popup, focus, and mode.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const keyContext = { route, menuOpen: menu != null, rootFocused, textFieldFocused, layout, mode };
     // ```
     /** Host state that the keyboard rules read for each key-down in this frame. */
     val keyContext = HostKeyContext(
@@ -1093,9 +1182,8 @@ fun playerHost(
         textFieldFocused = (route == PlayerRoute.Search && searchFieldFocused) ||
             (route is PlayerRoute.TemplateEditor && templates.fieldFocused),
         rootFocused = rootFocused,
-        currentRowShown = state.currentIndex != null &&
-            state.pageItems.any { entry -> entry.index == state.currentIndex },
         playbackMode = state.playbackMode,
+        layout = keyLayout,
     )
 
     // What:     `val keyActions: HostKeyActions` runs each keyboard command through its on-screen control's path.
@@ -1204,16 +1292,23 @@ fun playerHost(
             go(PlayerRoute.Settings)
         }
 
-        // What:     `override fun revealCurrent()` shows the list and asks it to focus the playing row.
-        // Why:      The picker replaces the list, so the list must be shown before the row can take focus.
+        // What:     `override fun revealCurrent()` shows the playing track's folder and asks its list to focus the row.
+        // Why:      The picker replaces the list, and the playing track may sit in another folder, so the folder is
+        //           selected first, without starting a track, and then the row can take focus.
         //
         // In TS you'd write (pseudocode):
         // ```ts
-        // revealCurrent(): void { setPickerOpen(false); setRevealToken(revealToken + 1); }
+        // revealCurrent(): void { setPickerOpen(false); if (page changed) selectPage(playing); bumpRevealToken(); }
         // ```
-        /** Shows the track list and focuses the playing row without starting a track. */
+        /** Shows the playing track's folder, then focuses the playing row without starting a track. */
         override fun revealCurrent() {
             pickerOpen = false
+            /** Tab-order page of the playing track, or null when no track is playing. */
+            val playingPage: Int? = controller.uiState.playingPageIndex
+            if (playingPage != null && playingPage != controller.uiState.selectedPage) {
+                Log.i(LOG_TAG, "player host reveal shows playing folder page=$playingPage")
+                controller.selectPage(playingPage)
+            }
             revealToken += 1
         }
 
@@ -1333,20 +1428,30 @@ fun playerHost(
                         if (firstRunContent != null) {
                             firstRunContent { go(PlayerRoute.Settings) }
                         } else {
-                            CompositionLocalProvider(LocalTrackRowMenuOpener provides { index -> openMenu(index) }) {
+                            CompositionLocalProvider(
+                                LocalTrackRowMenuOpener provides { index, anchor -> openMenu(index, anchor) },
+                            ) {
                                 playerContent(model = model, pickerOpen = pickerOpen, actions = playerActions)
                             }
                             emptyNotice(state)
                         }
-                        // The menu is anchored to the player box, not to the row it was opened from; its position is
-                        //   unverified.
+                        /** Start inset of the track menu: none on the folded cover, the inner-pane inset otherwise. */
+                        val menuStartInset: Dp = if (keyLayout == HostKeyLayout.FOLDED_COVER) {
+                            0.dp
+                        } else {
+                            TRACK_MENU_INNER_INSET
+                        }
                         /** Track whose context menu is open in this frame, or null when no menu is shown. */
                         val openTarget: TrackMenuTarget? = menuTarget
                         if (openTarget != null) {
+                            // The menu sits under the row it opened from, and the window origin stands in when no row
+                            // has reported its bounds.
                             trackMenuPopup(
                                 actions = trackMenuActionsFor(),
                                 title = trackFileNameOf(openTarget.track.displayPath),
                                 detailsValue = measureDetailsValue(state.measures[openTarget.track.uri]),
+                                anchor = menuAnchor ?: MenuAnchorRect(left = 0, top = 0, right = 0, bottom = 0),
+                                startInset = menuStartInset,
                                 onSelect = { action ->
                                     menuTarget = null
                                     runMenuAction(action = action, target = openTarget)

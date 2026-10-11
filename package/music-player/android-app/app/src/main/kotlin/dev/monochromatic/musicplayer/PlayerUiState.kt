@@ -65,6 +65,12 @@ data class PlayerUiState(
     /** Current track's load-order index, or null when nothing is selected. */
     val currentIndex: Int? = null,
 
+    /** Tab-order index of the page that holds the current track, or null when nothing is selected. */
+    val playingPageIndex: Int? = null,
+
+    /** Every row of the page that holds the current track, which is the folder the deck's title and count read. */
+    val playingItems: List<PageEntry> = emptyList(),
+
     /** Whether audio is currently advancing. */
     val playing: Boolean = false,
 

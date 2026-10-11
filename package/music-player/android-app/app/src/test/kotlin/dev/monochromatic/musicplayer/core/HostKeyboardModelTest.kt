@@ -190,14 +190,14 @@ private class HostKeyRecordingActions : HostKeyActions {
 // ```ts
 // const hostKeyPlayerContext = (): HostKeyContext => ({ route: "player", rootFocused: true, ... });
 // ```
-/** The player screen with the playback area focused, a row shown, and the in-order mode. */
+/** The player screen with the playback area focused, on the folded cover, and in the in-order mode. */
 private fun hostKeyPlayerContext(): HostKeyContext = HostKeyContext(
     route = HostKeyRoute.PLAYER,
     menuOpen = false,
     textFieldFocused = false,
     rootFocused = true,
-    currentRowShown = true,
     playbackMode = PlaybackMode.IN_ORDER,
+    layout = HostKeyLayout.FOLDED_COVER,
 )
 
 // What:     `private fun hostKeySearchContext(): HostKeyContext` is the Search page with focus on a result, not the
@@ -952,7 +952,7 @@ class HostKeyboardModelTest {
     //
     // In TS you'd write (pseudocode):
     // ```ts
-    // expect(commandFor("Ctrl+g", { route: "player", currentRowShown: true })).toBe("reveal");
+    // expect(commandFor("Ctrl+g", { route: "player", layout: "folded-cover" })).toBe("reveal");
     // ```
     /** Control plus G on the player reveals the playing row and runs no transport command. */
     @Test
@@ -962,20 +962,53 @@ class HostKeyboardModelTest {
         assertEquals(HostKeyCommand.RevealCurrent, hostKeyCommandFor(press))
     }
 
-    // What:     `fun ctrlGWithoutShownRowIsNotConsumed()` checks that reveal needs the playing track on screen.
-    // Why:      A row on another folder cannot be focused, so reveal does nothing there.
+    // What:     `fun ctrlGRevealsPlayingTrackOnAnotherFolder()` checks that reveal is consumed when the playing track
+    //           sits in another folder, because the host then shows that folder first.
+    // Why:      Reveal used to do nothing off the shown folder; now it moves the folder and then focuses the row.
     //
     // In TS you'd write (pseudocode):
     // ```ts
-    // expect(commandFor("Ctrl+g", { route: "player", currentRowShown: false })).toBe("unhandled");
+    // expect(commandFor("Ctrl+g", { route: "player", layout: "folded-cover" })).toBe("reveal");
     // ```
-    /** Control plus G with the playing track on another folder is not consumed. */
+    /** Control plus G on the player is consumed for the playing track even when its folder is not on screen. */
     @Test
-    fun ctrlGWithoutShownRowIsNotConsumed() {
-        /** Host state under test, built from a fixture with the one field this case changes. */
-        val context = hostKeyPlayerContext().copy(currentRowShown = false)
+    fun ctrlGRevealsPlayingTrackOnAnotherFolder() {
+        /** Key press under test, with the player state of a playing track on another folder. */
+        val press = HostKeyPress(key = hostKeyPlainInput("g").copy(ctrl = true), context = hostKeyPlayerContext())
+        assertEquals(HostKeyCommand.RevealCurrent, hostKeyCommandFor(press))
+    }
+
+    // What:     `fun ctrlGRevealsOnUnfoldedLayout()` checks that reveal works on the unfolded layout too.
+    // Why:      Reveal focuses a row in the track list, which both layouts draw, so only Ctrl+O depends on layout.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // expect(commandFor("Ctrl+g", { route: "player", layout: "unfolded" })).toBe("reveal");
+    // ```
+    /** Control plus G on the unfolded player reveals the playing row. */
+    @Test
+    fun ctrlGRevealsOnUnfoldedLayout() {
+        /** Host state under test, built from the player fixture with the unfolded layout. */
+        val context = hostKeyPlayerContext().copy(layout = HostKeyLayout.UNFOLDED)
         /** Key press under test, with its key and the host state it arrives in. */
         val press = HostKeyPress(key = hostKeyPlainInput("g").copy(ctrl = true), context = context)
+        assertEquals(HostKeyCommand.RevealCurrent, hostKeyCommandFor(press))
+    }
+
+    // What:     `fun ctrlOIsNotConsumedOnUnfoldedLayout()` checks that the picker chord needs the folded cover.
+    // Why:      The folder picker is drawn only on the folded cover, so Ctrl+O must not toggle hidden state.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // expect(commandFor("Ctrl+o", { route: "player", layout: "unfolded" })).toBe("unhandled");
+    // ```
+    /** Control plus O on the unfolded player is not consumed. */
+    @Test
+    fun ctrlOIsNotConsumedOnUnfoldedLayout() {
+        /** Host state under test, built from the player fixture with the unfolded layout. */
+        val context = hostKeyPlayerContext().copy(layout = HostKeyLayout.UNFOLDED)
+        /** Key press under test, with its key and the host state it arrives in. */
+        val press = HostKeyPress(key = hostKeyPlainInput("o").copy(ctrl = true), context = context)
         assertEquals(HostKeyCommand.Unhandled, hostKeyCommandFor(press))
     }
 

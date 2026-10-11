@@ -26,6 +26,7 @@ import dev.monochromatic.musicplayer.core.RailSection
 // import { LazyColumn, verticalScroll, selectable } from "compose/foundation";
 // ```
 import androidx.compose.foundation.background
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -120,6 +121,16 @@ private val RAIL_HIGHLIGHT_SIZE: Dp = 32.dp
 // ```
 /** Thickness of the hairline drawn between writing-system sections of the rail. */
 private val SECTION_HAIRLINE_HEIGHT: Dp = 1.dp
+
+// What:     `private val RAIL_BOUNDARY_WIDTH: Dp = 1.dp` is the thickness of the rule between the rail and the names.
+// Why:      D34 specifies a one-pixel rule so the letter targets read as separate from the folder names.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// const RAIL_BOUNDARY_WIDTH = 1;
+// ```
+/** Width of the vertical rule drawn between the letter rail and the folder names in light mode. */
+private val RAIL_BOUNDARY_WIDTH: Dp = 1.dp
 
 // What:     `private val NAME_TARGET_MIN: Dp = 48.dp` is the minimum width and height of one folder name target.
 // Why:      Each name stays a 48dp target even though it takes only its natural text width.
@@ -357,6 +368,21 @@ fun folderPickerPane(
                 }
             },
         )
+        // What:     The light-mode rail boundary is a one-pixel rule in the outline-variant role.
+        // Why:      D34 keeps a visible rail line in light mode, and the dark theme keeps its stable black surfaces.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // if (!dark) rail.append(<div style={{ width: 1, background: scheme.outlineVariant }} />);
+        // ```
+        if (!isSystemInDarkTheme()) {
+            Box(
+                modifier = Modifier
+                    .width(RAIL_BOUNDARY_WIDTH)
+                    .fillMaxHeight()
+                    .background(MaterialTheme.colorScheme.outlineVariant),
+            )
+        }
         LazyColumn(
             state = listState,
             modifier = Modifier
