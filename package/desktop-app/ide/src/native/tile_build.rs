@@ -291,6 +291,11 @@ impl TileWorker {
         return self.dispatch();
     }
 
+    /// True while a job is running, its reply is unread, or a job waits; the poll must continue while this holds.
+    pub(super) fn is_busy(&self) -> bool {
+        return self.busy || self.waiting.is_some();
+    }
+
     /// Close the request channel so the idle worker thread ends, as a crashed worker would; test-only.
     #[cfg(test)]
     pub(super) fn close_for_test(&mut self) {

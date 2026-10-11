@@ -134,11 +134,12 @@ pub(super) fn poll(window: &AppWindow, state: &Rc<RefCell<State>>) {
     apply(window, state, reply);
 }
 
-/// Stop the poll timer when no re-center is queued; `submit` starts it again.
+/// Stop the poll timer when no re-center is queued and the worker has nothing in flight; `submit` starts it again.
 /// What: `Timer::stop` ends the repeated callback; the timer is restarted on the next submission.
-/// Why: A stopped worker or an idle queue must not report the same error on every 20 ms tick.
+/// Why: A cancelled job's reply is still unread while the worker is busy, so the timer must keep polling until it is taken.
 fn stop_when_idle(current: &mut State) {
-    if current.tile_job.is_none() {
+    let in_flight = current.tile_worker.as_ref().is_some_and(TileWorker::is_busy);
+    if current.tile_job.is_none() && !in_flight {
         current.tile_poll.stop();
     }
 }
