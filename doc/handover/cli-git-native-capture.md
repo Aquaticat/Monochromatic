@@ -235,3 +235,52 @@ Remaining work, in order:
 2. Rerun any file whose mutants timed out, once alone, with the same command and only that `--file`.
 3. Justify each missed mutant with a code-based proof, or add a test that catches it.
 4. Record the mutation totals (caught, missed, unviable, timeout) and each justification in this section.
+
+## Final gate and mutation status
+
+Final container gate on `437837d82b`, image `localhost/git-policy-native-test:capture` id `67961f3e8041`:
+library suite 942 passed, 2 ignored, 0 failed, and the binary and other suites passed.
+Clippy errors appear only in `entry_tests.rs`, `index_lock_wait_tests.rs` and `index_writer_coordination_tests.rs`.
+Those files are outside this lane, and the coordinator says the transactions branch is fixing them.
+
+Planted controls: 20 in `bin/native-planted-controls.mjs`, the 9 earlier ones and 9 added for this lane,
+plus 2 more for the interactive failure and the tolerated missing shared `info`.
+The first full run noticed all 18 registered controls once the shadow-links control named its test correctly.
+
+Mutation, first scoped run over the ten files (image `95cd1be38f39`, code at `53a43e7ca4`-era, 254 mutants):
+caught 225, missed 7, timed out 5, unviable 17.
+The 5 timeouts are `capture_order.rs:339` (two `staged_entries` mutants returning a fixed map, which loop in the
+list functions) and `commit_args.rs` (three mutants: `+=` to `-=` in `split_commit_invocation`, and `==` to `!=`
+and `&&` to `||` in `private_explicit_commit_args`).
+The 7 misses were all in `shadow_links.rs` and `shadow_create.rs`, and tests were added for each (below),
+except the equivalent mutant described next.
+
+Justified equivalent mutant: `shadow_links.rs` `set_private_directory` in the `#[cfg(windows)]` branch,
+`return Ok(())` replaced by `return Ok(())`. The mutated body is identical to the original, and the
+branch is not compiled on Linux, so no test can distinguish it on this platform.
+
+Second run over `shadow_create.rs` and `shadow_links.rs` at `ee4f8614f1` (image `cd971b00a143`, 67 mutants):
+caught 60, missed 6, unviable 1, timed out 0.
+The 6 misses were `remove_entry` (2 mutants), the `NotFound` guard in `regular_file_exists`,
+the `NotFound` guard in `link_shadow_entries`, `set_private_directory` (the same Windows equivalent as above),
+and `set_private_file` in `shadow_create.rs`.
+Tests were then added at `437837d82b` for every non-equivalent one: `existing_shadow_entries_are_replaced_by_links`,
+`an_unreadable_sparse_location_is_an_error`, `a_shared_info_that_is_not_a_directory_is_an_error`,
+`private_info_directory_is_private`, and `overwritten_shadow_files_are_private`.
+The earlier code fix `ee4f8614f1` also makes the shadow's parent directories private (`create_parent`),
+which the incumbent does with a recursive 0700 mkdir.
+
+Not yet verified:
+- The missed mutants above with their new tests, and the `shadow_create` mutants after the parent-mode fix.
+- The 5 timed-out mutants, which must be rerun once alone, per file (`capture_order.rs`, then `commit_args.rs`).
+
+Blocker: every mutation baseline since image `67961f3e8041` fails before any mutant is tested.
+The failing test is `index_lock_holders::tests::a_real_child_holding_the_lock_is_found_on_linux`, which belongs to
+another lane. In the mutation container its scan returns `HolderEvidence { method: "proc-fd", holders: [] }`,
+and it passes in the container test gate. The baseline failed on three attempts for `shadow_create`
+and `shadow_links`. Run A's baseline passed on the earlier image `cd971b00a143`.
+This lane has not changed that test or the harness.
+
+Commands to finish once the baseline passes:
+`systemd-run --user --unit=<name> --collect --property=MemoryMax=12G --working-directory=<worktree> node <gate-slot> env GIT_POLICY_NATIVE_IMAGE_TAG=capture mise run //package/git-policy/cli:native:mutation:scoped -- --file src/native/shadow_create.rs --file src/native/shadow_links.rs`,
+then the same with `--file src/native/capture_order.rs` alone, then `--file src/native/commit_args.rs` alone.
