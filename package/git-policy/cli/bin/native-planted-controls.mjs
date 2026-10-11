@@ -114,6 +114,55 @@ const plantedControls = [
     to: 'if ticks > i64::MAX {',
     failing: 'process_start::tests::a_start_tick_beyond_the_safe_integers_is_refused',
   },
+  {
+    name: 'signal relay sender check',
+    file: 'src/native/signal_relay.rs',
+    from: 'if !is_process_sender(code) {',
+    to: 'if false {',
+    failing: 'signal_relay::tests::terminal_interrupt_is_not_relayed_a_second_time',
+  },
+  {
+    name: 'signal relay in the handler',
+    file: 'src/native/signal_relay.rs',
+    from: 'PENDING[slot].store(signal, std::sync::atomic::Ordering::SeqCst);',
+    to: 'let _ = signal;',
+    failing: 'signal_relay::tests::process_signal_is_relayed_and_the_child_outcome_is_reported',
+  },
+  {
+    name: 'automatic maintenance detach retry',
+    file: 'src/native/maintenance_run.rs',
+    from: 'if result_code != USAGE_EXIT_CODE {',
+    to: 'if true {',
+    failing: 'maintenance_run::tests::rejected_detach_retries_without_the_flag',
+  },
+  {
+    name: 'gc.auto positive threshold',
+    file: 'src/native/maintenance_decision.rs',
+    from: 'Some(value) => javascript_number(value.as_str()) > 0.0,',
+    to: 'Some(value) => javascript_number(value.as_str()) != 0.0,',
+    failing: 'maintenance_decision::tests::non_positive_gc_auto_disables',
+  },
+  {
+    name: 'gc.autodetach fallback',
+    file: 'src/native/maintenance_decision.rs',
+    from: '.or_else(|| return config.get("gc.autodetach"));',
+    to: '.or_else(|| return None);',
+    failing: 'maintenance_decision::tests::gc_autodetach_false_runs_in_the_foreground',
+  },
+  {
+    name: 'hk listing field pairing',
+    file: 'src/native/maintenance_hk_config.rs',
+    from: 'if fields.len() % 2 != 0 {',
+    to: 'if false {',
+    failing: 'maintenance_hk_config::tests::scope_without_key_is_malformed',
+  },
+  {
+    name: 'hk exact prefix',
+    file: 'src/native/maintenance_hk_config.rs',
+    from: 'pair[1].starts_with(HK_HOOK_PREFIX)',
+    to: 'pair[1].starts_with("hook.")',
+    failing: 'maintenance_hk_config::tests::prefix_match_is_exact',
+  },
 ];
 
 /**
