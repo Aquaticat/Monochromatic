@@ -646,6 +646,30 @@ pub mod track_menu;
 /// ```
 pub mod feedback;
 
+/// What: `pub mod track_measure;` the per-track length and true peak, and their formatting.
+/// Why: the rows and the deck read these values through the template fields.
+pub mod track_measure;
+
+/// What: `pub mod duration_probe;` reads a file length from its container header.
+/// Why: rows show lengths before the slow true-peak measurement finishes.
+pub mod duration_probe;
+
+/// What: `pub mod measure_peek;` reads each track's cached decision and header length without decoding.
+/// Why: the sweep reports lengths and cached peaks as soon as a queue loads.
+pub mod measure_peek;
+
+/// What: `pub mod sweep_report;` the reports a background sweep sends to the engine.
+/// Why: the controller needs the generation of each report to drop stale ones.
+pub mod sweep_report;
+
+/// What: `pub mod color_scheme;` the environment override of the window color scheme.
+/// Why: verification runs need a fixed light or dark window.
+pub mod color_scheme;
+
+/// What: `pub mod controller_measures;` the controller side of the per-track measures.
+/// Why: sweep reports are filtered by queue generation there, before they reach the window.
+pub mod controller_measures;
+
 /// What:
 ///      `pub mod scan_indicator;` the library scan progress indicator model (`src/scan_indicator.rs`).
 /// Why:

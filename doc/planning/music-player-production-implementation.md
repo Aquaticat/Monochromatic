@@ -90,17 +90,40 @@ Packages 1 and 2 are pure logic with an existing reference; the rest need the sc
   trash, the file-manager intent, the clipboard and the popup position are not yet exercised on a device.
   Native captures of the Search, Settings and template editor routes (40 views) found one more content-color gap in the debug
   host only (the production root has a Surface); the Search result title now sets its own color.
-- Known gaps: per-row duration and peak (no JNI accessor yet, so template lines show without them), Re-analyse and file details
-  (no per-track cache invalidation or peak read-back from Kotlin), keyboard wiring, a folder-scan failure that the library source
-  swallows (it reports an empty folder), and the Settings page on the inner screen spanning the full width.
+- Per-row duration and true peak landed on the branch (`4bdbfe3b0`, `8fdadbe51`): the shared core gained a per-track decision
+  removal and a peak kind, the JNI crate gained `nativePeekPeak` and `nativeInvalidateTrack`, and Kotlin reads duration from
+  MediaStore or `MediaMetadataRetriever` (cached by fingerprint) and the exact peak from the native cache. Rows show only exact
+  peaks; File details shows sampled ones with a marker. Re-analyse invalidates one track and re-measures it.
+- Keyboard wiring (D102) on the host: a root key handler over the classifier with 52 unit tests; not yet exercised on a device.
+  Decisions of the orchestrator on the agent's questions: Escape stays as D102 words it (popup and Search only); one map for
+  Windows and Linux chords; Ctrl+O is unhandled off the cover layout; Ctrl+G switches to the playing track's folder; a tap on a
+  row returns focus to the playback area.
+- Known gaps on Android: a folder-scan failure that the library source swallows (it reports an empty folder), the Settings page
+  on the inner screen spanning the full width, and every device-only behaviour (trash flows, file manager intent, clipboard,
+  popup position, keyboard focus). The debug APK built by Gradle alone carries no native library; the package's `build:native`
+  task (cargo-ndk, both ABIs) must run first.
+- Desktop composition (2026-10-10): the new `AppWindow` (cover layout below 600 px, two panes from 600 px) replaced the old
+  page-tab UI and its five experimental page styles; Rust glue modules bind the engine to the components; Settings, template
+  editor, search, menu, overlays and keyboard are wired; 521 tests pass and clippy is clean on the host. Not done: sweep
+  progress for the scan indicator, per-track length and peak from the engine (rows show no second line yet), the first-run copy
+  for desktop, the opened root's name for the no-audio state, key repeat (Slint 1.17 has no repeat flag), macOS and Windows
+  branches never compiled.
 - Desktop: the template, search, folder, keymap and overlay logic is ported to Rust and integrated into `desktop-app/src`
   (485 tests pass, clippy clean on the host; the container clippy task fails on the existing `truepeak-core` path dependency,
   which the container does not mount). The Slint components are being built next to the Android captures.
-- Open and next: keyboard wiring, the per-row peak source, the Slint UI composition for the desktop, then the final verification.
+- Real-app verification (2026-10-11): a scripted run of the real Android app on the owned Fold emulator (native library,
+  generated library) found five defects that the debug host had hidden: the track menu opened at the bottom instead of by its
+  row, the Settings line for track rows was empty, the light rail boundary line was missing, the deck blanked when the playing
+  track was on another page, and three keyboard behaviours needed the decisions recorded above. All were fixed and re-run; the
+  run ends 31 of 32 (the remaining step is Android's own permission prompt covering the app on the folded cover, as designed).
+  The same style of run on the desktop (Slint MCP headless and nested in `cage`) found missing per-row length and peak, wrong
+  first-run copy, dead shortcuts after leaving Search, and a menu clipped at the window edge; all were fixed.
+- Final state on `main` (2026-10-11): Android unit tests and detekt pass; desktop 577 tests pass and clippy is clean on the host.
+  What is not exercised is listed in `package/music-player/design/HANDOFF.md` under the production handoff.
 
 ## Queue
 
 - [x] Package 1.
 - [x] Package 2.
-- [ ] Packages 3 and 4 (on Haiku): player screens (cover and unfolded) and the folder picker, with a debug host for native captures.
-- [ ] Packages 5 to 12, each started only when the previous one it builds on is committed.
+- [x] Packages 3 to 12 landed on `main`; device-only and live-desktop behaviours remain unexercised (see the handoff).
+- [ ] Release builds, signing and distribution are outside this plan and were not touched.

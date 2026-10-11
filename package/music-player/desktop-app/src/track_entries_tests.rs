@@ -124,7 +124,7 @@ fn rows_follow_folder_order_with_library_indexes() {
         track("Camellia/Album/c.flac"),
     ]);
     assert_eq!(
-        track_list_entries(&folder, None, &no_line),
+        track_list_entries(&folder, None, &HashMap::new(), &no_line),
         vec![
             plain_row(0, "b", false),
             plain_row(1, "a", false),
@@ -146,7 +146,7 @@ fn current_flag_marks_only_the_matching_index() {
         track("Camellia/b.flac"),
         track("Camellia/c.flac"),
     ]);
-    let entries = track_list_entries(&folder, Some(1), &no_line);
+    let entries = track_list_entries(&folder, Some(1), &HashMap::new(), &no_line);
     let flags: Vec<bool> = rows(&entries).iter().map(|row| return row.is_current).collect();
     assert_eq!(flags, vec![false, true, false]);
 }
@@ -156,7 +156,7 @@ fn current_flag_marks_only_the_matching_index() {
 #[test]
 fn current_index_outside_folder_marks_no_row() {
     let folder = only_folder(vec![track("Camellia/a.flac"), track("Camellia/b.flac")]);
-    let entries = track_list_entries(&folder, Some(99), &no_line);
+    let entries = track_list_entries(&folder, Some(99), &HashMap::new(), &no_line);
     let flags: Vec<bool> = rows(&entries).iter().map(|row| return row.is_current).collect();
     assert_eq!(flags, vec![false, false]);
 }
@@ -170,7 +170,7 @@ fn header_counts_only_direct_tracks() {
         track("Camellia/Album/y.flac"),
     ]);
     assert_eq!(
-        track_list_entries(&folder, None, &no_line),
+        track_list_entries(&folder, None, &HashMap::new(), &no_line),
         vec![
             TrackListEntry::HeaderEntry {
                 name: "Album".to_string(),
@@ -192,7 +192,7 @@ fn header_counts_only_direct_tracks() {
 fn default_template_with_unknown_length_and_peak_gives_no_line() {
     let folder = only_folder(vec![track("Camellia/Song.flac")]);
     let default_line = supporting_line_from_template(DEFAULT_TRACK_TEMPLATE);
-    let entries = track_list_entries(&folder, None, &default_line);
+    let entries = track_list_entries(&folder, None, &HashMap::new(), &default_line);
     assert_eq!(only_row(&entries).supporting_line, None);
 }
 
@@ -202,7 +202,7 @@ fn default_template_with_unknown_length_and_peak_gives_no_line() {
 fn length_only_template_gives_no_line() {
     let folder = only_folder(vec![track("Camellia/Song.flac")]);
     let length_line = supporting_line_from_template("$tf(mi(len), m:ss)$");
-    let entries = track_list_entries(&folder, None, &length_line);
+    let entries = track_list_entries(&folder, None, &HashMap::new(), &length_line);
     assert_eq!(only_row(&entries).supporting_line, None);
 }
 
@@ -212,7 +212,7 @@ fn length_only_template_gives_no_line() {
 fn peak_only_template_gives_no_line() {
     let folder = only_folder(vec![track("Camellia/Song.flac")]);
     let peak_line = supporting_line_from_template("$mi(peak)$");
-    let entries = track_list_entries(&folder, None, &peak_line);
+    let entries = track_list_entries(&folder, None, &HashMap::new(), &peak_line);
     assert_eq!(only_row(&entries).supporting_line, None);
 }
 
@@ -222,7 +222,7 @@ fn peak_only_template_gives_no_line() {
 fn custom_template_shows_folder_and_file_name() {
     let folder = only_folder(vec![track("Camellia/Album/01 Song.flac")]);
     let folder_and_file = supporting_line_from_template("$mi(folder)$ / $mi(file)$");
-    let entries = track_list_entries(&folder, None, &folder_and_file);
+    let entries = track_list_entries(&folder, None, &HashMap::new(), &folder_and_file);
     assert_eq!(only_row(&entries).supporting_line.as_deref(), Some("Album / 01 Song"));
 }
 
@@ -232,7 +232,7 @@ fn custom_template_shows_folder_and_file_name() {
 fn custom_template_trims_blank_from_unknown_field() {
     let folder = only_folder(vec![track("Camellia/01 Song.flac")]);
     let trailing_blank = supporting_line_from_template("$mi(file)$ $mi(peak)$");
-    let entries = track_list_entries(&folder, None, &trailing_blank);
+    let entries = track_list_entries(&folder, None, &HashMap::new(), &trailing_blank);
     assert_eq!(only_row(&entries).supporting_line.as_deref(), Some("01 Song"));
 }
 
@@ -242,7 +242,7 @@ fn custom_template_trims_blank_from_unknown_field() {
 fn invalid_template_gives_no_line() {
     let folder = only_folder(vec![track("Camellia/Song.flac")]);
     let not_shown = supporting_line_from_template("$nosuch(mi(file))$");
-    let entries = track_list_entries(&folder, None, &not_shown);
+    let entries = track_list_entries(&folder, None, &HashMap::new(), &not_shown);
     assert_eq!(only_row(&entries).supporting_line, None);
 }
 
@@ -253,7 +253,7 @@ fn root_file_folder_field_gives_no_line() {
     let folder = only_folder(vec![track("Loose.flac")]);
     assert_eq!(folder.name, UNFILED_FOLDER_NAME);
     let folder_field = supporting_line_from_template("$mi(folder)$");
-    let entries = track_list_entries(&folder, None, &folder_field);
+    let entries = track_list_entries(&folder, None, &HashMap::new(), &folder_field);
     assert_eq!(only_row(&entries).supporting_line, None);
 }
 
@@ -263,7 +263,7 @@ fn root_file_folder_field_gives_no_line() {
 fn nested_folder_field_shows_innermost_name() {
     let folder = only_folder(vec![track("Camellia/Album/Disc 1/03 X.flac")]);
     let folder_field = supporting_line_from_template("$mi(folder)$");
-    let entries = track_list_entries(&folder, None, &folder_field);
+    let entries = track_list_entries(&folder, None, &HashMap::new(), &folder_field);
     assert_eq!(only_row(&entries).supporting_line.as_deref(), Some("Disc 1"));
 }
 
@@ -276,7 +276,7 @@ fn empty_folder_gives_empty_list() {
         items: Vec::new(),
         track_count: 0,
     };
-    assert_eq!(track_list_entries(&folder, None, &no_line), Vec::<TrackListEntry>::new());
+    assert_eq!(track_list_entries(&folder, None, &HashMap::new(), &no_line), Vec::<TrackListEntry>::new());
 }
 
 // What:     `#[test]` marks the next function as a test case.
@@ -288,7 +288,7 @@ fn header_track_count_matches_subfolder_size() {
         track("Camellia/Album/b.flac"),
         track("Camellia/Album/c.flac"),
     ]);
-    let entries = track_list_entries(&folder, None, &no_line);
+    let entries = track_list_entries(&folder, None, &HashMap::new(), &no_line);
     assert_eq!(
         entries.into_iter().take(1).collect::<Vec<TrackListEntry>>(),
         vec![TrackListEntry::HeaderEntry {
@@ -296,4 +296,45 @@ fn header_track_count_matches_subfolder_size() {
             track_count: 3,
         }],
     );
+}
+
+// What:     `fn supporting_text(entries: &[TrackListEntry]) -> Option<String>` reads the first row's supporting line.
+// Why:      The measure cases assert on the line the closure produced, not on the whole entry.
+fn supporting_text(entries: &[TrackListEntry]) -> Option<String> {
+    return match entries.first() {
+        Some(TrackListEntry::RowEntry(row)) => row.supporting_line.clone(),
+        _ => None,
+    };
+}
+
+// What:     `#[test] fn exact_measure_reaches_the_supporting_line_fields()` checks that length and exact peak arrive.
+// Why:      Positive control: the row's template fields must carry the measure looked up by display name.
+#[test]
+fn exact_measure_reaches_the_supporting_line_fields() {
+    let folder = only_folder(vec![track("Song.flac")]);
+    let measure = TrackMeasure {
+        duration_secs: Some(20.0),
+        peak_dbtp: Some(-21.1),
+        peak_exact: true,
+    };
+    let measures = HashMap::from([("Song.flac".to_string(), measure)]);
+    let line = |fields: &TrackFields| return Some(format!("{:?}|{:?}", fields.len, fields.peak));
+    let entries = track_list_entries(&folder, None, &measures, &line);
+    assert_eq!(supporting_text(&entries), Some("Some(20.0)|Some(\"\u{2212}21.1 dBTP\")".to_string()));
+}
+
+// What:     `#[test] fn sampled_measure_gives_length_without_peak()` checks that a sampled peak is left out of the row.
+// Why:      Only exact peaks show in rows, so the sampled case must carry the length alone.
+#[test]
+fn sampled_measure_gives_length_without_peak() {
+    let folder = only_folder(vec![track("Song.flac")]);
+    let measure = TrackMeasure {
+        duration_secs: Some(20.0),
+        peak_dbtp: Some(-21.1),
+        peak_exact: false,
+    };
+    let measures = HashMap::from([("Song.flac".to_string(), measure)]);
+    let line = |fields: &TrackFields| return Some(format!("{:?}|{:?}", fields.len, fields.peak));
+    let entries = track_list_entries(&folder, None, &measures, &line);
+    assert_eq!(supporting_text(&entries), Some("Some(20.0)|None".to_string()));
 }

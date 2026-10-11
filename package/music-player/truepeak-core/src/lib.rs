@@ -114,7 +114,7 @@ pub use crate::bucketpolicy::{BucketProbe, BucketTable, TrackProvenance};
 pub use crate::bones::{BonesError, bones_hot_bins, flac_bones_profile};
 
 /// Re-exports the gain decision and its kind.
-pub use crate::decision::{Decision, DecisionKind};
+pub use crate::decision::{Decision, DecisionKind, PeakKind};
 
 /// Re-exports the policy resolver,
 ///  its provenance-aware form,

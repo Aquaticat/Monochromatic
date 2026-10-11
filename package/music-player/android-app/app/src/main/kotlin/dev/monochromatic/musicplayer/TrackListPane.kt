@@ -41,7 +41,17 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.ProvidableCompositionLocal
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.snapshotFlow
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.staticCompositionLocalOf
+import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.layout.boundsInWindow
+import androidx.compose.ui.layout.onGloballyPositioned
+import kotlin.math.roundToInt
+import dev.monochromatic.musicplayer.core.MenuAnchorRect
 
 // What:     Imports from `androidx.compose.ui` bring in the modifier, color, font weight, semantics, and dp units.
 // Why:      The current row is bold, uses the surface role as its background, and publishes its selected state.
@@ -51,6 +61,8 @@ import androidx.compose.runtime.staticCompositionLocalOf
 // import { Modifier, Color, FontWeight, Role, Dp } from "compose/ui";
 // ```
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.KeyEventType
@@ -65,6 +77,7 @@ import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
+import kotlinx.coroutines.flow.first
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -138,7 +151,8 @@ private val HEADER_TOP_PADDING: Dp = 16.dp
 // const LocalTrackRowMenuOpener = createContext<((index: number) => void) | null>(null);
 // ```
 /** Composition local holding the track menu opener, or null when no host provides one. */
-internal val LocalTrackRowMenuOpener: ProvidableCompositionLocal<((Int) -> Unit)?> = staticCompositionLocalOf { null }
+internal val LocalTrackRowMenuOpener: ProvidableCompositionLocal<((Int, MenuAnchorRect) -> Unit)?> =
+    staticCompositionLocalOf { null }
 
 // What:     `fun trackListPane(...)` draws the folder's flat list and keeps the playing row in view.
 // Why:      The caller owns the entries and the playback action, so the pane keeps only its scroll state.
@@ -157,7 +171,7 @@ internal val LocalTrackRowMenuOpener: ProvidableCompositionLocal<((Int) -> Unit)
 fun trackListPane(
     entries: List<TrackListEntry>,
     onPlay: (Int) -> Unit,
-    onOpenMenu: ((Int) -> Unit)? = LocalTrackRowMenuOpener.current,
+    onOpenMenu: ((Int, MenuAnchorRect) -> Unit)? = LocalTrackRowMenuOpener.current,
     modifier: Modifier = Modifier,
 ) {
     /** Scroll state of the list, which the current-row effect moves. */
@@ -169,10 +183,29 @@ fun trackListPane(
             listState.animateScrollToItem(currentPosition)
         }
     }
+    /** Count of reveal requests from the host, each of which scrolls to and focuses the playing row. */
+    val revealToken: Int = HostKeyLocalReveal.current
+    /** Reveal count when this list entered composition, so that entering the list never reveals by itself. */
+    val revealAtEntry: Int = remember { revealToken }
+    /** Focus requester attached to the playing row, so a reveal can focus it once the row is composed. */
+    val currentRowFocus: FocusRequester = remember { FocusRequester() }
+    LaunchedEffect(revealToken) {
+        if (revealToken != revealAtEntry && currentPosition != null) {
+            listState.scrollToItem(currentPosition)
+            snapshotFlow { listState.layoutInfo.visibleItemsInfo.any { item -> item.index == currentPosition } }
+                .first { visible -> visible }
+            currentRowFocus.requestFocus()
+        }
+    }
     LazyColumn(state = listState, modifier = modifier) {
         items(items = entries, key = { entry -> keyOf(entry) }) { entry ->
             when (entry) {
-                is TrackListEntry.RowEntry -> trackRow(row = entry.row, onPlay = onPlay, onOpenMenu = onOpenMenu)
+                is TrackListEntry.RowEntry -> trackRow(
+                    row = entry.row,
+                    onPlay = onPlay,
+                    onOpenMenu = onOpenMenu,
+                    focus = if (entry.row.isCurrent) currentRowFocus else null,
+                )
                 is TrackListEntry.HeaderEntry -> subfolderHeader(name = entry.name, trackCount = entry.trackCount)
             }
         }
@@ -201,6 +234,21 @@ private fun currentPositionOf(entries: List<TrackListEntry>): Int? {
     return position
 }
 
+// What:     `private fun menuAnchorOfRect(bounds: Rect): MenuAnchorRect` converts window bounds to whole pixels.
+// Why:      The placement rule works on integer pixels, and rounding happens once here at the Compose boundary.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// const menuAnchorOfRect = (b: Rect): MenuAnchorRect => ({ left: Math.round(b.left), top: Math.round(b.top), ... });
+// ```
+/** Converts window-space float bounds of a row into the whole-pixel rectangle the menu placement reads. */
+private fun menuAnchorOfRect(bounds: Rect): MenuAnchorRect = MenuAnchorRect(
+    left = bounds.left.roundToInt(),
+    top = bounds.top.roundToInt(),
+    right = bounds.right.roundToInt(),
+    bottom = bounds.bottom.roundToInt(),
+)
+
 // What:     `private fun keyOf(entry: TrackListEntry): String` gives each entry a stable list key.
 // Why:      Keys keep row state with its track as the list changes, and the prefixes keep rows and headers apart.
 //
@@ -227,7 +275,12 @@ private fun keyOf(entry: TrackListEntry): String = when (entry) {
  * Tap plays the row; long press, a secondary-button press, or the menu key opens its context menu.
  */
 @Composable
-private fun trackRow(row: TrackRowModel, onPlay: (Int) -> Unit, onOpenMenu: ((Int) -> Unit)?) {
+private fun trackRow(
+    row: TrackRowModel,
+    onPlay: (Int) -> Unit,
+    onOpenMenu: ((Int, MenuAnchorRect) -> Unit)?,
+    focus: FocusRequester?,
+) {
     /** Surface role behind the current row (D42), and transparent behind every other row. */
     val rowBackground: Color = if (row.isCurrent) {
         MaterialTheme.colorScheme.surfaceContainerLow
@@ -236,13 +289,23 @@ private fun trackRow(row: TrackRowModel, onPlay: (Int) -> Unit, onOpenMenu: ((In
     }
     /** Weight of the title, bold for the current row and the body default for the rest. */
     val titleWeight: FontWeight? = if (row.isCurrent) FontWeight.Bold else null
-    /** Long-press action that opens this row's menu, or null when no menu opener is provided. */
-    val openMenuForRow: (() -> Unit)? = onOpenMenu?.let { open -> { open(row.indexInLibrary) } }
+    /** Window-space bounds of this row from its last layout, or null before the row is first placed. */
+    var rowBounds: MenuAnchorRect? by remember { mutableStateOf<MenuAnchorRect?>(null) }
+    /** Action that opens this row's menu anchored to the row, or null when no menu opener is provided. */
+    val openMenuForRow: (() -> Unit)? = onOpenMenu?.let { open ->
+        {
+            rowBounds?.let { bounds -> open(row.indexInLibrary, bounds) }
+        }
+    }
+    /** Focus modifier that lets a reveal focus this row, or an empty modifier when no reveal targets it. */
+    val focusModifier: Modifier = focus?.let { requester -> Modifier.focusRequester(requester) } ?: Modifier
     Column(
         modifier = Modifier
             .fillMaxWidth()
             .heightIn(min = ROW_MIN_HEIGHT)
+            .onGloballyPositioned { coordinates -> rowBounds = menuAnchorOfRect(coordinates.boundsInWindow()) }
             .background(rowBackground)
+            .then(focusModifier)
             .combinedClickable(
                 role = Role.Button,
                 onClick = { onPlay(row.indexInLibrary) },

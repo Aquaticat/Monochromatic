@@ -107,7 +107,10 @@ import androidx.compose.runtime.saveable.rememberSaveable
 // ```
 import android.net.Uri
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.onFocusChanged
 import dev.monochromatic.musicplayer.core.TrackActionFailure
 import dev.monochromatic.musicplayer.core.TrackMenuAction
 import dev.monochromatic.musicplayer.core.TrashRecord
@@ -118,6 +121,11 @@ import dev.monochromatic.musicplayer.core.trackActionFailureMessage
 import dev.monochromatic.musicplayer.core.trackMenuActionsFor
 import dev.monochromatic.musicplayer.core.trashRouteFor
 import dev.monochromatic.musicplayer.core.trashUndoMessage
+import dev.monochromatic.musicplayer.core.TRACK_REANALYSE_ID
+import dev.monochromatic.musicplayer.core.TrackMeasure
+import dev.monochromatic.musicplayer.core.measureDetailsValue
+import dev.monochromatic.musicplayer.core.measuresByIndex
+import dev.monochromatic.musicplayer.core.trackReanalysingMessage
 import java.util.UUID
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -169,6 +177,16 @@ import androidx.compose.ui.platform.LocalContext
 // import { PlayerHostModel, SearchActivation } from "./core/PlayerHostModel";
 // ```
 import dev.monochromatic.musicplayer.core.PlayerContentModel
+import dev.monochromatic.musicplayer.core.HostKeyActions
+import dev.monochromatic.musicplayer.core.HostKeyContext
+import dev.monochromatic.musicplayer.core.HostKeyDispatcher
+import dev.monochromatic.musicplayer.core.HostKeyLayout
+import dev.monochromatic.musicplayer.core.MenuAnchorRect
+import dev.monochromatic.musicplayer.core.PlayingPlace
+import dev.monochromatic.musicplayer.core.playingPlaceOf
+import androidx.compose.ui.platform.LocalConfiguration
+import dev.monochromatic.musicplayer.core.HostKeyRoute
+import dev.monochromatic.musicplayer.core.PlaybackMode
 import dev.monochromatic.musicplayer.core.PlayerHostModel
 import dev.monochromatic.musicplayer.core.SearchActivation
 import dev.monochromatic.musicplayer.core.SearchResult
@@ -372,6 +390,31 @@ private fun loadStoredTemplates(context: Context): Map<TemplateKind, String> =
 /** Inset between the feedback overlay and the start, end, and bottom edges of the player, and above the scan bar. */
 private val PLAYER_HOST_FEEDBACK_INSET: Dp = 16.dp
 
+// What:     `private val TRACK_MENU_INNER_INSET: Dp = 12.dp` is the track menu's start inset on the inner panes.
+// Why:      The inner panes keep 12dp at their start edge, so the menu's leftmost position leaves that inset clear.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// const TRACK_MENU_INNER_INSET = 12; // dp
+// ```
+/** Start inset of the track menu on the unfolded inner panes, where the cover uses no inset. */
+private val TRACK_MENU_INNER_INSET: Dp = 12.dp
+
+// What:     `private fun hostKeyRouteOf(route: PlayerRoute): HostKeyRoute` names the keyboard route of a host route.
+// Why:      The keyboard rules have their own route kinds, so each host route maps to one of them here.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// const hostKeyRouteOf = (route: PlayerRoute): HostKeyRoute => (route.kind === "template" ? "editor" : route.kind);
+// ```
+/** Maps a host route to the route kind that the keyboard rules use. */
+private fun hostKeyRouteOf(route: PlayerRoute): HostKeyRoute = when (route) {
+    PlayerRoute.Player -> HostKeyRoute.PLAYER
+    PlayerRoute.Search -> HostKeyRoute.SEARCH
+    PlayerRoute.Settings -> HostKeyRoute.SETTINGS
+    is PlayerRoute.TemplateEditor -> HostKeyRoute.EDITOR
+}
+
 // What:     `@Composable fun playerHost(...)` draws the destination of the current route over the controller state.
 // Why:      The player, Search, Settings, and the editor share one route and one set of template texts, so the host
 //           holds them together and routes each action to the controller or to its own state.
@@ -407,6 +450,20 @@ fun playerHost(
     var query: String by rememberSaveable { mutableStateOf("") }
     /** Whether the folder picker is open on the folded cover. */
     var pickerOpen: Boolean by rememberSaveable { mutableStateOf(false) }
+    /** Whether the playback area, which is the host's own focusable root, holds focus itself. */
+    var rootFocused: Boolean by remember { mutableStateOf(false) }
+    /** Whether the host root or any control inside it holds focus. */
+    var hostHasFocus: Boolean by remember { mutableStateOf(false) }
+    /** Whether the Search query field holds focus, as the Search page reports it. */
+    var searchFieldFocused: Boolean by remember { mutableStateOf(false) }
+    /** Count of same-visit Search refocus requests, read by the Search page's query field. */
+    var searchFocusToken: Int by remember { mutableIntStateOf(0) }
+    /** Count of reveal requests, read by the track list to scroll to and focus the playing row. */
+    var revealToken: Int by remember { mutableIntStateOf(0) }
+    /** Focus requester of the host root, which takes the player's keys when no control holds focus. */
+    val rootFocusRequester: FocusRequester = remember { FocusRequester() }
+    /** Callback that the Search query field reports its focus through, kept across frames so readers stay valid. */
+    val reportSearchFieldFocus: (Boolean) -> Unit = remember { { focused: Boolean -> searchFieldFocused = focused } }
     /** Both templates as typed and as last applied, loaded from the store when the host first composes. */
     var templates: TemplateEditorState by remember {
         mutableStateOf(PlayerHostModel.restoredEditor(stored = loadStoredTemplates(context)))
@@ -420,12 +477,50 @@ fun playerHost(
         pageLabels = state.pageLabels,
         selectedPage = state.selectedPage,
         pageItems = state.pageItems,
+        playingItems = state.playingItems,
+        playingPageIndex = state.playingPageIndex,
         currentIndex = state.currentIndex,
         playing = state.playing,
         mode = state.playbackMode,
         positionSec = playbackProgress.position,
         durationSec = playbackProgress.duration,
     )
+    /** Library tracks of the selected page, each keyed by the URI that its measure is stored under. */
+    val pageTracks: List<Track> = state.pageItems.mapNotNull { entry ->
+        controller.uriAt(entry.index)?.let { uri -> Track(uri = uri, displayPath = entry.name) }
+    }
+    /** Measures of the selected page's tracks keyed by load-order index, which is how the rows name their tracks. */
+    val pageMeasures: Map<Int, TrackMeasure> = measuresByIndex(
+        pageIndices = state.pageItems.map { entry -> entry.index },
+        uriAt = controller::uriAt,
+        measures = state.measures,
+    )
+    // What:     `LaunchedEffect(pageTracks, SweepProgress.snapshot.done)` reads the page's unmeasured tracks.
+    // Why:      A new page or a sweep step (the sweep reports every few tracks) re-checks the peaks shown on the page,
+    //           and the batches land on screen as each one is read.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // useEffect(() => { refreshPage(pageTracks, () => measures, publish); }, [pageTracks, sweepDone]);
+    // ```
+    LaunchedEffect(pageTracks, SweepProgress.snapshot.done) {
+        TrackMeasures.refreshPage(
+            context = context,
+            tracks = pageTracks,
+            known = { controller.uiState.measures },
+            publish = { updates -> controller.mergeMeasures(updates) },
+        )
+    }
+    /** Playing track and its place in its own folder, which the deck reads even when that folder is not on screen. */
+    val playingPlace: PlayingPlace = playingPlaceOf(
+        folderTitle = state.playingPageIndex?.let { index -> state.pageLabels.getOrNull(index) }.orEmpty(),
+        playingItems = state.playingItems,
+        currentIndex = state.currentIndex,
+    )
+    /** Measure of the playing track, read from the library-wide measures so the deck shows it on any folder. */
+    val playingMeasure: TrackMeasure? = state.currentIndex
+        ?.let { index -> controller.uriAt(index) }
+        ?.let { uri -> state.measures[uri] }
     /** Player model with the saved track-row and playing-track templates applied. */
     val model: PlayerContentModel = PlayerHostModel.contentWithTemplates(
         base = builtModel,
@@ -434,9 +529,16 @@ fun playerHost(
         durationSec = playbackProgress.duration,
         trackRowsTemplate = templates.lastValid.getValue(TemplateKind.TRACK_ROWS),
         playingTemplate = templates.lastValid.getValue(TemplateKind.PLAYING_TRACK),
+        playingPlace = playingPlace,
+        playingMeasure = playingMeasure,
+        measuresByIndex = pageMeasures,
     )
-    /** Editor view with the preview drawn from the selected page, for Settings and the editor. */
-    val editor: TemplateEditorState = PlayerHostModel.editorWithPreview(templates, state.pageItems)
+    /** Editor view with the preview drawn from the selected page and its measured durations and peaks, for Settings. */
+    val editor: TemplateEditorState = PlayerHostModel.editorWithPreview(
+        editor = templates,
+        pageItems = state.pageItems,
+        measuresByIndex = pageMeasures,
+    )
 
     // What:     `fun go(next: PlayerRoute)` moves the host to one destination and saves its token.
     // Why:      Every route change goes through here, so each one is logged and saved the same way.
@@ -531,8 +633,24 @@ fun playerHost(
         go(PlayerRoute.Player)
     }
 
+    // What:     `fun returnFocusToPlayback()` gives focus back to the playback area after a tap on the player.
+    // Why:      Shortcuts reach the host only along the focused path, so a tapped row or control must not keep focus.
+    //           Search and the editor keep their own focus, so the request runs only on the player route.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // function returnFocusToPlayback(): void { if (route === "player") rootRef.focus(); }
+    // ```
+    /** Gives focus to the playback area after a tap on the player, and leaves focus alone on other routes. */
+    fun returnFocusToPlayback() {
+        if (route == PlayerRoute.Player) {
+            rootFocusRequester.requestFocus()
+        }
+    }
+
     // What:     `val deckActions` routes the transport actions to the controller.
-    // Why:      The player deck and the deck under the Search page send the same actions.
+    // Why:      The player deck and the deck under the Search page send the same actions, and a tapped control
+    //           returns focus to the playback area.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -541,10 +659,22 @@ fun playerHost(
     /** Transport actions the player deck and the Search deck send to the controller. */
     val deckActions = TransportDeckActions(
         onSeek = { position -> controller.seek(position) },
-        onPrevious = { controller.prev() },
-        onTogglePlay = { controller.togglePlay() },
-        onNext = { controller.next() },
-        onSelectMode = { mode -> controller.setPlaybackMode(mode) },
+        onPrevious = {
+            controller.prev()
+            returnFocusToPlayback()
+        },
+        onTogglePlay = {
+            controller.togglePlay()
+            returnFocusToPlayback()
+        },
+        onNext = {
+            controller.next()
+            returnFocusToPlayback()
+        },
+        onSelectMode = { mode ->
+            controller.setPlaybackMode(mode)
+            returnFocusToPlayback()
+        },
     )
 
     // What:     `val playerActions` routes the player screen's actions.
@@ -556,11 +686,20 @@ fun playerHost(
     // ```
     /** Actions the player screen invokes, routed to the controller or to the host's own state. */
     val playerActions = PlayerContentActions(
-        onToggleFolderPicker = { pickerOpen = !pickerOpen },
-        onSelectFolder = { folder -> selectFolder(folder) },
+        onToggleFolderPicker = {
+            pickerOpen = !pickerOpen
+            returnFocusToPlayback()
+        },
+        onSelectFolder = { folder ->
+            selectFolder(folder)
+            returnFocusToPlayback()
+        },
         onOpen = onChooseFolder,
         onSettings = { go(PlayerRoute.Settings) },
-        onPlay = { index -> controller.playIndex(index) },
+        onPlay = { index ->
+            controller.playIndex(index)
+            returnFocusToPlayback()
+        },
         deck = deckActions,
         onSearch = {
             query = ""
@@ -581,6 +720,8 @@ fun playerHost(
     val mediaStoreTrash: TrashMediaStoreRequest? = LocalTrashMediaStoreRequest.current
     /** Track whose context menu is open, bound to its URI at open time, or null when no menu is open. */
     var menuTarget: TrackMenuTarget? by remember { mutableStateOf<TrackMenuTarget?>(null) }
+    /** Window-space bounds of the row that opened the menu, or null when no row has reported its bounds. */
+    var menuAnchor: MenuAnchorRect? by remember { mutableStateOf<MenuAnchorRect?>(null) }
 
     // What:     `fun openMenu(index: Int)` binds the menu to the track at a library index.
     // Why:      The track is read once here, so a later rescan that moves the index cannot redirect the action.
@@ -589,8 +730,11 @@ fun playerHost(
     // ```ts
     // openMenu(index: number): void { menuTarget = { indexInLibrary: index, track: library[index] }; }
     // ```
-    /** Opens the context menu for the track at the given library index, logging when the index is out of range. */
-    fun openMenu(index: Int) {
+    /**
+     * Opens the context menu for the track at the given library index, anchored to the row's window bounds, and
+     * logs when the index is out of range.
+     */
+    fun openMenu(index: Int, anchor: MenuAnchorRect) {
         /** Track at the index in load order, or null when the index is out of range. */
         val track: Track? = controller.libraryTracks().getOrNull(index)
         if (track == null) {
@@ -599,6 +743,7 @@ fun playerHost(
         }
         Log.i(LOG_TAG, "player host menu opened index=$index")
         menuTarget = TrackMenuTarget(indexInLibrary = index, track = track)
+        menuAnchor = anchor
     }
 
     // What:     `fun showFailure(failure: TrackActionFailure, name: String)` shows one failure in the overlay.
@@ -917,6 +1062,35 @@ fun playerHost(
         }
     }
 
+    // What:     `fun reanalyseTrack(target: TrackMenuTarget)` measures one track again and reports the outcome.
+    // Why:     The user asked for a fresh peak, so the notice shows while the file is read and the row updates when
+    //           done.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // async function reanalyseTrack(target: TrackMenuTarget): Promise<void> { ... }
+    // ```
+    /**
+     * Shows a re-analysing notice, measures the track again on the host scope, then publishes its measure or a failure.
+     */
+    fun reanalyseTrack(target: TrackMenuTarget) {
+        /** Name of the track, used in the notice and any failure message. */
+        val name: String = trackFileNameOf(target.track.displayPath)
+        feedback.showFeedback(trackReanalysingMessage(name))
+        scope.launch {
+            /** New measure of the track, or null when the file could not be measured again. */
+            val measure: TrackMeasure? = TrackMeasures.reanalyse(context = context, track = target.track)
+            feedback.dismiss(TRACK_REANALYSE_ID)
+            if (measure == null) {
+                Log.w(LOG_TAG, "player host re-analysis failed index=${target.indexInLibrary}")
+                showFailure(TrackActionFailure.REANALYSE_FAILED, name)
+                return@launch
+            }
+            controller.mergeMeasures(mapOf(target.track.uri to measure))
+            Log.i(LOG_TAG, "player host re-analysis published index=${target.indexInLibrary}")
+        }
+    }
+
     // What:     `fun runMenuAction(...)` routes one selected menu action to its implementation.
     // Why:      Each action has one owner, and the two file-moving actions run on the host's scope while the rest run
     //           here.
@@ -934,8 +1108,9 @@ fun playerHost(
             TrackMenuAction.PLAY -> controller.playIndex(target.indexInLibrary)
             TrackMenuAction.SHUFFLE_FROM_HERE ->
                 shuffleFromHere(controller = controller, indexInLibrary = target.indexInLibrary)
-            TrackMenuAction.DETAILS -> showFailure(TrackActionFailure.DETAILS_UNAVAILABLE, name)
-            TrackMenuAction.REANALYSE_TRUE_PEAK -> showFailure(TrackActionFailure.REANALYSE_UNAVAILABLE, name)
+            TrackMenuAction.DETAILS ->
+                Log.i(LOG_TAG, "player host file details shown inline index=${target.indexInLibrary}")
+            TrackMenuAction.REANALYSE_TRUE_PEAK -> reanalyseTrack(target)
             TrackMenuAction.SHOW_IN_FILE_MANAGER ->
                 attempt(name) { showInFileManager(context = context, track = target.track) }
             TrackMenuAction.COPY_FILENAME -> attempt(name) { copyFilename(context = context, track = target.track) }
@@ -980,6 +1155,228 @@ fun playerHost(
         }
     }
 
+    // What:     `val keyLayout: HostKeyLayout` names the layout the screen draws at the current width.
+    // Why:      Ctrl+O opens the folder picker only on the folded cover, so the keyboard rules need the layout.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const keyLayout = isCoverLayout(window.innerWidth) ? "folded-cover" : "unfolded";
+    // ```
+    /** Layout the screen draws at the current window width, which the keyboard rules read. */
+    val keyLayout: HostKeyLayout = if (isCoverLayout(LocalConfiguration.current.screenWidthDp.toFloat())) {
+        HostKeyLayout.FOLDED_COVER
+    } else {
+        HostKeyLayout.UNFOLDED
+    }
+    // What:     `val keyContext: HostKeyContext` is the host state that the keyboard rules read for this frame.
+    // Why:      The owner, the route rules, the layout, and the mode cycle each need the route, popup, focus, and mode.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const keyContext = { route, menuOpen: menu != null, rootFocused, textFieldFocused, layout, mode };
+    // ```
+    /** Host state that the keyboard rules read for each key-down in this frame. */
+    val keyContext = HostKeyContext(
+        route = hostKeyRouteOf(route),
+        menuOpen = menuTarget != null,
+        textFieldFocused = (route == PlayerRoute.Search && searchFieldFocused) ||
+            (route is PlayerRoute.TemplateEditor && templates.fieldFocused),
+        rootFocused = rootFocused,
+        playbackMode = state.playbackMode,
+        layout = keyLayout,
+    )
+
+    // What:     `val keyActions: HostKeyActions` runs each keyboard command through its on-screen control's path.
+    // Why:      A shortcut must do exactly what its button does, so each operation reuses that control's own call.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const keyActions = { togglePlayback: () => controller.togglePlay(), openSearch: () => go("search"), ... };
+    // ```
+    /** Host operations that the keyboard commands run, each through the same path as its on-screen control. */
+    val keyActions: HostKeyActions = object : HostKeyActions {
+        // What:     `override fun togglePlayback()` runs the deck's play and pause call.
+        // Why:      Space and the deck's play button share one controller call.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // togglePlayback(): void { controller.togglePlay(); }
+        // ```
+        /** Plays or pauses the player, as the deck's play button does. */
+        override fun togglePlayback() {
+            controller.togglePlay()
+        }
+
+        // What:     `override fun previousTrack()` runs the deck's previous call.
+        // Why:      The backward chord and the deck's previous button share one controller call.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // previousTrack(): void { controller.prev(); }
+        // ```
+        /** Moves to the previous track, as the deck's previous button does. */
+        override fun previousTrack() {
+            controller.prev()
+        }
+
+        // What:     `override fun nextTrack()` runs the deck's next call.
+        // Why:      The forward chord and the deck's next button share one controller call.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // nextTrack(): void { controller.next(); }
+        // ```
+        /** Moves to the next track, as the deck's next button does. */
+        override fun nextTrack() {
+            controller.next()
+        }
+
+        // What:     `override fun cycleMode(mode: PlaybackMode)` runs the deck's mode call with the computed mode.
+        // Why:      The mode segments and the chord both set the mode through the same controller call.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // cycleMode(mode: PlaybackMode): void { controller.setPlaybackMode(mode); }
+        // ```
+        /** Applies the end-of-track mode that the chord computed. */
+        override fun cycleMode(mode: PlaybackMode) {
+            controller.setPlaybackMode(mode)
+        }
+
+        // What:     `override fun openSearch()` starts a new Search visit with an empty query.
+        // Why:      The Search button clears the query and opens Search, and the chord must do the same.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // openSearch(): void { setQuery(""); go("search"); }
+        // ```
+        /** Opens Search as a new visit with an empty query, as the Search button does. */
+        override fun openSearch() {
+            query = ""
+            go(PlayerRoute.Search)
+        }
+
+        // What:     `override fun focusSearch()` asks the Search page to refocus its field without clearing it.
+        // Why:      A repeated Search chord keeps the query, so only the focus moves.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // focusSearch(): void { searchFocusToken += 1; }
+        // ```
+        /** Asks the open Search page to refocus its query field, keeping the query text. */
+        override fun focusSearch() {
+            searchFocusToken += 1
+        }
+
+        // What:     `override fun toggleFolderPicker()` flips the picker flag, as the folder button does.
+        // Why:      The picker button and the chord share one flag, so either one closes what the other opened.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // toggleFolderPicker(): void { setPickerOpen(!pickerOpen); }
+        // ```
+        /** Opens or closes the folder picker, as the folder button does. */
+        override fun toggleFolderPicker() {
+            pickerOpen = !pickerOpen
+        }
+
+        // What:     `override fun openSettings()` moves the host to the Settings route.
+        // Why:      The Settings button and the chord move to the same destination.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // openSettings(): void { go("settings"); }
+        // ```
+        /** Opens the Settings page, as the Settings button does. */
+        override fun openSettings() {
+            go(PlayerRoute.Settings)
+        }
+
+        // What:     `override fun revealCurrent()` shows the playing track's folder and asks its list to focus the row.
+        // Why:      The picker replaces the list, and the playing track may sit in another folder, so the folder is
+        //           selected first, without starting a track, and then the row can take focus.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // revealCurrent(): void { setPickerOpen(false); if (page changed) selectPage(playing); bumpRevealToken(); }
+        // ```
+        /** Shows the playing track's folder, then focuses the playing row without starting a track. */
+        override fun revealCurrent() {
+            pickerOpen = false
+            /** Tab-order page of the playing track, or null when no track is playing. */
+            val playingPage: Int? = controller.uiState.playingPageIndex
+            if (playingPage != null && playingPage != controller.uiState.selectedPage) {
+                Log.i(LOG_TAG, "player host reveal shows playing folder page=$playingPage")
+                controller.selectPage(playingPage)
+            }
+            revealToken += 1
+        }
+
+        // What:     `override fun backFromSearch()` leaves Search by the same route rule as the system Back button.
+        // Why:      Escape and Back must lead to the same destination, so both call the one route rule.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // backFromSearch(): void { go(backFrom(route)); }
+        // ```
+        /** Leaves Search by the route rule that the system Back handler uses. */
+        override fun backFromSearch() {
+            go(PlayerRouteRules.backFrom(route))
+        }
+
+        // What:     `override fun closePopup()` clears the bound track so the menu closes.
+        // Why:      The menu closes the same way when its dismiss callback runs.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // closePopup(): void { setMenuTarget(null); }
+        // ```
+        /** Closes the open track menu, as its dismiss callback does. */
+        override fun closePopup() {
+            menuTarget = null
+        }
+    }
+
+    // What:     `val keyDispatcher: HostKeyDispatcher` runs the command that each consumed key-down resolves to.
+    // Why:      The root keyboard modifier hands each command to this dispatcher, which calls the actions above.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const keyDispatcher = new HostKeyDispatcher(keyActions);
+    // ```
+    /** Runs the host command for each consumed key-down. */
+    val keyDispatcher = HostKeyDispatcher(actions = keyActions)
+
+    // What:     `val keyBinding: HostKeyBinding` joins the root requester, the host state, and the dispatcher.
+    // Why:      The root modifier reads one binding per frame, so each key-down sees the current state.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const keyBinding = { focusRequester: rootRef, context: keyContext, dispatcher: keyDispatcher };
+    // ```
+    /** Focus requester, host state, and dispatcher that the root keyboard modifier reads. */
+    val keyBinding = HostKeyBinding(
+        focusRequester = rootFocusRequester,
+        context = keyContext,
+        dispatcher = keyDispatcher,
+    )
+
+    // What:     `LaunchedEffect(route, menuTarget == null)` gives focus to the playback area when the player shows.
+    // Why:      Key events reach the host only along the focused path, so the root must hold focus on the player.
+    //           It takes focus only when no control holds it, so buttons and rows keep their own focus, and it is
+    //           declared before the page, so a page that asks for focus (the Search field) still wins.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // useEffect(() => { if (route === "player" && !hostHasFocus) rootRef.focus(); }, [route, menuOpen]);
+    // ```
+    /** Requests focus for the playback area when the player is shown and no control holds focus. */
+    LaunchedEffect(route, menuTarget == null) {
+        if (route == PlayerRoute.Player && !hostHasFocus) {
+            rootFocusRequester.requestFocus()
+        }
+    }
+
     BackHandler(enabled = route != PlayerRoute.Player) {
         go(PlayerRouteRules.backFrom(route))
     }
@@ -1000,110 +1397,145 @@ fun playerHost(
         }
     }
 
-    when (route) {
-        PlayerRoute.Player -> {
-            /**
-             * Scan indicator for this frame, idle while the first-run pane holds the screen because no sweep runs then.
-             */
-            val scanModel: ScanIndicatorModel = scanIndicatorFor(
-                loading = state.loading && firstRunContent == null,
-                measured = SweepProgress.snapshot.done,
-                total = SweepProgress.snapshot.total,
-            )
-            Box(modifier = Modifier.fillMaxSize()) {
-                if (firstRunContent != null) {
-                    firstRunContent { go(PlayerRoute.Settings) }
-                } else {
-                    CompositionLocalProvider(LocalTrackRowMenuOpener provides { index -> openMenu(index) }) {
-                        playerContent(model = model, pickerOpen = pickerOpen, actions = playerActions)
+    // Root of the player host: it holds the playback-area focus and the keyboard rules, and it provides the
+    // Search refocus, reveal, and field-focus locals that the pages read.
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .onFocusChanged { focusState ->
+                rootFocused = focusState.isFocused
+                hostHasFocus = focusState.hasFocus
+            }
+            .hostKeyboard(binding = keyBinding),
+    ) {
+        CompositionLocalProvider(
+            HostKeyLocalSearchFocus provides searchFocusToken,
+            HostKeyLocalReveal provides revealToken,
+            HostKeyLocalSearchField provides reportSearchFieldFocus,
+        ) {
+            when (route) {
+                PlayerRoute.Player -> {
+                    /**
+                     * Scan indicator for this frame, idle while the first-run pane holds the screen
+                     *     because no sweep runs then.
+                     */
+                    val scanModel: ScanIndicatorModel = scanIndicatorFor(
+                        loading = state.loading && firstRunContent == null,
+                        measured = SweepProgress.snapshot.done,
+                        total = SweepProgress.snapshot.total,
+                    )
+                    Box(modifier = Modifier.fillMaxSize()) {
+                        if (firstRunContent != null) {
+                            firstRunContent { go(PlayerRoute.Settings) }
+                        } else {
+                            CompositionLocalProvider(
+                                LocalTrackRowMenuOpener provides { index, anchor -> openMenu(index, anchor) },
+                            ) {
+                                playerContent(model = model, pickerOpen = pickerOpen, actions = playerActions)
+                            }
+                            emptyNotice(state)
+                        }
+                        /** Start inset of the track menu: none on the folded cover, the inner-pane inset otherwise. */
+                        val menuStartInset: Dp = if (keyLayout == HostKeyLayout.FOLDED_COVER) {
+                            0.dp
+                        } else {
+                            TRACK_MENU_INNER_INSET
+                        }
+                        /** Track whose context menu is open in this frame, or null when no menu is shown. */
+                        val openTarget: TrackMenuTarget? = menuTarget
+                        if (openTarget != null) {
+                            // The menu sits under the row it opened from, and the window origin stands in when no row
+                            // has reported its bounds.
+                            trackMenuPopup(
+                                actions = trackMenuActionsFor(),
+                                title = trackFileNameOf(openTarget.track.displayPath),
+                                detailsValue = measureDetailsValue(state.measures[openTarget.track.uri]),
+                                anchor = menuAnchor ?: MenuAnchorRect(left = 0, top = 0, right = 0, bottom = 0),
+                                startInset = menuStartInset,
+                                onSelect = { action ->
+                                    menuTarget = null
+                                    runMenuAction(action = action, target = openTarget)
+                                },
+                                onDismiss = { menuTarget = null },
+                            )
+                        }
+                        // The overlay and the scan bar share one bottom column, so the overlay sits above the bar and
+                        // neither one changes the layout of the player beneath.
+                        Column(modifier = Modifier.align(Alignment.BottomStart).fillMaxWidth()) {
+                            /**
+                             * Messages in display order, Undo above Error, drawn only while at least one is visible.
+                             */
+                            val messages: List<FeedbackMessage> = feedback.queue.visible()
+                            if (messages.isNotEmpty()) {
+                                feedbackOverlay(
+                                    messages = messages,
+                                    onDismiss = { id -> feedback.dismiss(id) },
+                                    onAction = { id ->
+                                        Log.i(LOG_TAG, "feedback action id=$id")
+                                        startUndo(id)
+                                    },
+                                    modifier = Modifier.padding(
+                                        start = PLAYER_HOST_FEEDBACK_INSET,
+                                        end = PLAYER_HOST_FEEDBACK_INSET,
+                                        bottom = PLAYER_HOST_FEEDBACK_INSET,
+                                    ),
+                                )
+                            }
+                            scanIndicator(model = scanModel, modifier = Modifier.fillMaxWidth())
+                        }
                     }
-                    emptyNotice(state)
                 }
-                // The menu is anchored to the player box, not to the row it was opened from; its position is
-                //   unverified.
-                /** Track whose context menu is open in this frame, or null when no menu is shown. */
-                val openTarget: TrackMenuTarget? = menuTarget
-                if (openTarget != null) {
-                    trackMenuPopup(
-                        actions = trackMenuActionsFor(),
-                        title = trackFileNameOf(openTarget.track.displayPath),
-                        detailsValue = null,
-                        onSelect = { action ->
-                            menuTarget = null
-                            runMenuAction(action = action, target = openTarget)
+                PlayerRoute.Search -> {
+                    /**
+                     * Library tracks in load order, rebuilt once per controller snapshot so each index is a load index.
+                     */
+                    val tracks: List<Track> = remember(state) { controller.libraryTracks() }
+                    /** Search state for the typed query over the library tracks. */
+                    val results: SearchState = remember(query, tracks) {
+                        searchLibrary(query = query, tracks = tracks, available = true)
+                    }
+                    searchPage(
+                        state = results,
+                        query = query,
+                        onQueryChange = { text -> query = text },
+                        onBack = { go(PlayerRoute.Player) },
+                        onClear = { query = "" },
+                        onOpenResult = { result -> openSearchResult(result) },
+                        currentTrackIndex = state.currentIndex,
+                        deck = { transportDeck(model = model.deck, actions = deckActions) },
+                        isPlaying = state.playing,
+                        folderBrowser = { browserModifier ->
+                            folderPickerPane(
+                                sections = model.sections,
+                                currentFolder = model.currentFolder,
+                                onSelectFolder = { folder -> selectFolder(folder) },
+                                modifier = browserModifier,
+                            )
                         },
-                        onDismiss = { menuTarget = null },
                     )
                 }
-                // The overlay and the scan bar share one bottom column, so the overlay sits above the bar and
-                // neither one changes the layout of the player beneath.
-                Column(modifier = Modifier.align(Alignment.BottomStart).fillMaxWidth()) {
-                    /** Messages in display order, Undo above Error, drawn only while at least one is visible. */
-                    val messages: List<FeedbackMessage> = feedback.queue.visible()
-                    if (messages.isNotEmpty()) {
-                        feedbackOverlay(
-                            messages = messages,
-                            onDismiss = { id -> feedback.dismiss(id) },
-                            onAction = { id ->
-                                Log.i(LOG_TAG, "feedback action id=$id")
-                                startUndo(id)
-                            },
-                            modifier = Modifier.padding(
-                                start = PLAYER_HOST_FEEDBACK_INSET,
-                                end = PLAYER_HOST_FEEDBACK_INSET,
-                                bottom = PLAYER_HOST_FEEDBACK_INSET,
-                            ),
-                        )
-                    }
-                    scanIndicator(model = scanModel, modifier = Modifier.fillMaxWidth())
+                PlayerRoute.Settings -> settingsPageContent(
+                    templateLines = editor.settingsLines,
+                    onBack = { go(PlayerRoute.Player) },
+                    onOpenTemplate = { kind -> openTemplate(kind) },
+                )
+                is PlayerRoute.TemplateEditor -> {
+                    /**
+                     * Editor view opened on the route's template, which differs from the stored editor after a restore.
+                     */
+                    val opened: TemplateEditorState = if (editor.kind == route.kind) editor else editor.open(route.kind)
+                    templateEditor(
+                        state = opened,
+                        actions = TemplateEditorActions(
+                            onEdit = { edit -> applyTemplateChange(opened.withEdit(edit)) },
+                            onFocusChanged = { focused -> templates = opened.withFocus(focused) },
+                            onInsertField = { mode -> applyTemplateChange(opened.insertField(mode)) },
+                            onReset = { applyTemplateChange(opened.resetToDefault()) },
+                            onBack = { go(PlayerRoute.Settings) },
+                        ),
+                    )
                 }
             }
-        }
-        PlayerRoute.Search -> {
-            /** Library tracks in load order, rebuilt once per controller snapshot so each index is a load index. */
-            val tracks: List<Track> = remember(state) { controller.libraryTracks() }
-            /** Search state for the typed query over the library tracks. */
-            val results: SearchState = remember(query, tracks) {
-                searchLibrary(query = query, tracks = tracks, available = true)
-            }
-            searchPage(
-                state = results,
-                query = query,
-                onQueryChange = { text -> query = text },
-                onBack = { go(PlayerRoute.Player) },
-                onClear = { query = "" },
-                onOpenResult = { result -> openSearchResult(result) },
-                currentTrackIndex = state.currentIndex,
-                deck = { transportDeck(model = model.deck, actions = deckActions) },
-                isPlaying = state.playing,
-                folderBrowser = { browserModifier ->
-                    folderPickerPane(
-                        sections = model.sections,
-                        currentFolder = model.currentFolder,
-                        onSelectFolder = { folder -> selectFolder(folder) },
-                        modifier = browserModifier,
-                    )
-                },
-            )
-        }
-        PlayerRoute.Settings -> settingsPageContent(
-            templateLines = editor.settingsLines,
-            onBack = { go(PlayerRoute.Player) },
-            onOpenTemplate = { kind -> openTemplate(kind) },
-        )
-        is PlayerRoute.TemplateEditor -> {
-            /** Editor view opened on the route's template, which differs from the stored editor after a restore. */
-            val opened: TemplateEditorState = if (editor.kind == route.kind) editor else editor.open(route.kind)
-            templateEditor(
-                state = opened,
-                actions = TemplateEditorActions(
-                    onEdit = { edit -> applyTemplateChange(opened.withEdit(edit)) },
-                    onFocusChanged = { focused -> templates = opened.withFocus(focused) },
-                    onInsertField = { mode -> applyTemplateChange(opened.insertField(mode)) },
-                    onReset = { applyTemplateChange(opened.resetToDefault()) },
-                    onBack = { go(PlayerRoute.Settings) },
-                ),
-            )
         }
     }
 }

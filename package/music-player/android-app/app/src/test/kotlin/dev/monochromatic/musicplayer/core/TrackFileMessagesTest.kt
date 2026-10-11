@@ -176,6 +176,44 @@ class TrackFileMessagesTest {
         assertTrue(trackActionFailureMessage(TrackActionFailure.COPY_FAILED, SAMPLE_NAME).text.contains("Nothing was moved"))
     }
 
+    // What:     `@Test fun reanalyseFailureNamesFileAsErrorWithFixedId()` checks the failure path of an unreadable
+    //           file.
+    // Why:      A track whose file cannot be measured again must say so in the error line, under the shared error id.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // test("reanalyse failure", () => expect(message(REANALYSE_FAILED, name).text).toContain(name));
+    // ```
+    /** The re-analysis failure is an error that names the file and reuses the shared error id. */
+    @Test
+    fun reanalyseFailureNamesFileAsErrorWithFixedId() {
+        /** Error message shown when one track cannot be measured again. */
+        val message: FeedbackMessage = trackActionFailureMessage(TrackActionFailure.REANALYSE_FAILED, SAMPLE_NAME)
+        assertTrue(message.text.startsWith("Could not re-analyse $SAMPLE_NAME."))
+        assertEquals(FeedbackKind.ERROR, message.kind)
+        assertEquals(TRASH_ERROR_ID, message.id)
+    }
+
+    // What:     `@Test fun reanalysingNoticeNamesFileAsNoticeWithItsOwnId()` checks the notice shown during a re-
+    //           analysis.
+    // Why:     The notice must name the file, carry no action, and keep its own id so the error line is not replaced by
+    //           it.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // test("reanalysing notice", () => expect(reanalysingMessage(name).text).toBe(`Re-analysing ${name}`));
+    // ```
+    /** The re-analysing notice reads as the spec's copy, is a notice kind, and has no action. */
+    @Test
+    fun reanalysingNoticeNamesFileAsNoticeWithItsOwnId() {
+        /** Notice shown while one track is measured again. */
+        val message: FeedbackMessage = trackReanalysingMessage(SAMPLE_NAME)
+        assertEquals("Re-analysing $SAMPLE_NAME", message.text)
+        assertEquals(FeedbackKind.NOTICE, message.kind)
+        assertEquals(TRACK_REANALYSE_ID, message.id)
+        assertEquals(null, message.actionLabel)
+    }
+
     // What:     `sampleRecord(...)` builds a pending record for the message tests.
     // Why:      Each message test changes one name or id, so one helper keeps the baseline in one place.
     //

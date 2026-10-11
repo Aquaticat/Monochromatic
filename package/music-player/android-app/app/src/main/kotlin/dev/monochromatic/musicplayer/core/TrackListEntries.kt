@@ -139,12 +139,14 @@ private fun extensionOf(fileName: String): String {
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// function trackFieldsFor(displayPath: string): TrackFields {
-//   return { title, file: title, ext, folder, path: displayPath, len: undefined, peak: undefined };
+// function trackFieldsFor(displayPath: string, measure?: TrackMeasure): TrackFields {
+//   return { title, file: title, ext, folder, path: displayPath, len: measure?.durationSec, peak: peakText(measure) };
 // }
 // ```
-/** Builds the template fields of one track from its display path, with duration and peak left unknown. */
-private fun trackFieldsFor(displayPath: String): TrackFields {
+/**
+ * Builds the template fields of one track from its display path, with duration and exact peak taken from its measure.
+ */
+private fun trackFieldsFor(displayPath: String, measure: TrackMeasure?): TrackFields {
     /** The file name, which is the last segment of the display path. */
     val fileName: String = displayPath.substringAfterLast(TRACK_PATH_SEPARATOR)
     /** The folder path that holds the file, empty for a file at the library root. */
@@ -159,8 +161,8 @@ private fun trackFieldsFor(displayPath: String): TrackFields {
         ext = extensionOf(fileName),
         folder = folderName,
         path = displayPath,
-        len = null,
-        peak = null,
+        len = measure?.durationSec,
+        peak = measurePeakText(measure),
     )
 }
 
@@ -198,16 +200,22 @@ private fun supportingLineFor(template: String, fields: TrackFields): String? {
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// function rowFor(row: FolderTrackRow, current: number | null, template: string): TrackRowModel { /* ... */ }
+// function rowFor(row: FolderTrackRow, current: number | null, template: string, measures: Map<number, TrackMeasure>):
+//   TrackRowModel { /* ... */ }
 // ```
 /** Maps one folder track to a row with its title, supporting line, and current flag. */
-private fun rowFor(row: FolderTrackRow, currentIndexInLibrary: Int?, template: String): TrackRowModel {
+private fun rowFor(
+    row: FolderTrackRow,
+    currentIndexInLibrary: Int?,
+    template: String,
+    measuresByIndex: Map<Int, TrackMeasure>,
+): TrackRowModel {
     /** Display path of the track, which supplies the title and the template fields. */
     val displayPath: String = row.track.displayPath
     return TrackRowModel(
         indexInLibrary = row.indexInLibrary,
         title = trackTitleFor(displayPath),
-        supportingLine = supportingLineFor(template, trackFieldsFor(displayPath)),
+        supportingLine = supportingLineFor(template, trackFieldsFor(displayPath, measuresByIndex[row.indexInLibrary])),
         isCurrent = row.indexInLibrary == currentIndexInLibrary,
     )
 }
@@ -224,9 +232,15 @@ private fun rowFor(row: FolderTrackRow, currentIndexInLibrary: Int?, template: S
 // }
 // ```
 /** Maps one folder list item to a track row or a subfolder header entry. */
-private fun entryFor(item: FolderListItem, currentIndexInLibrary: Int?, template: String): TrackListEntry =
+private fun entryFor(
+    item: FolderListItem,
+    currentIndexInLibrary: Int?,
+    template: String,
+    measuresByIndex: Map<Int, TrackMeasure>,
+): TrackListEntry =
     when (item) {
-        is FolderListItem.TrackItem -> TrackListEntry.RowEntry(rowFor(item.row, currentIndexInLibrary, template))
+        is FolderListItem.TrackItem ->
+            TrackListEntry.RowEntry(rowFor(item.row, currentIndexInLibrary, template, measuresByIndex))
         is FolderListItem.SubfolderHeader -> TrackListEntry.HeaderEntry(item.name, item.trackCount)
     }
 
@@ -245,4 +259,5 @@ fun trackListEntries(
     folder: FolderEntry,
     currentIndexInLibrary: Int?,
     template: String = DEFAULT_TRACK_TEMPLATE,
-): List<TrackListEntry> = folder.items.map { item -> entryFor(item, currentIndexInLibrary, template) }
+    measuresByIndex: Map<Int, TrackMeasure> = emptyMap(),
+): List<TrackListEntry> = folder.items.map { item -> entryFor(item, currentIndexInLibrary, template, measuresByIndex) }

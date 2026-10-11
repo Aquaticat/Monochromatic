@@ -196,27 +196,26 @@ object PlayerHostModel {
         durationSec: Double,
         trackRowsTemplate: String,
         playingTemplate: String,
+        playingPlace: PlayingPlace,
+        playingMeasure: TrackMeasure?,
+        measuresByIndex: Map<Int, TrackMeasure> = emptyMap(),
     ): PlayerContentModel {
         /** Track rows and subfolder headers of the selected page, each row carrying its template supporting line. */
         val entries: List<TrackListEntry> = trackListEntries(
             folder = pageFolderFor(folderTitle = base.folderTitle, pageItems = pageItems),
             currentIndexInLibrary = currentIndex,
             template = trackRowsTemplate,
+            measuresByIndex = measuresByIndex,
         )
-        /** Position of the playing row among the track rows, or -1 when the playing track is not on this page. */
-        val rowPosition: Int = entries
-            .filterIsInstance<TrackListEntry.RowEntry>()
-            .indexOfFirst { entry -> entry.row.isCurrent }
-        /** Page entry of the playing track, or null when the playing track is not on this page. */
-        val playingEntry: PageEntry? = pageItems.firstOrNull { item -> item.index == currentIndex }
-        /** Deck subtitle from the playing template, or the built line when the template is refused. */
+        /** Deck subtitle from the playing template for the playing folder, or the built line when refused. */
         val subtitle: String = deckSubtitleFor(
-            playingEntry = playingEntry,
-            rowPosition = rowPosition,
-            pageTrackCount = pageItems.size,
+            playingEntry = playingPlace.entry,
+            rowPosition = playingPlace.rowPosition,
+            pageTrackCount = playingPlace.folderTrackCount,
             durationSec = durationSec,
             template = playingTemplate,
             fallback = base.deck.subtitle,
+            measure = playingMeasure,
         )
         return base.copy(entries = entries, deck = base.deck.copy(subtitle = subtitle))
     }
@@ -241,23 +240,46 @@ object PlayerHostModel {
     // ```ts
     // function editorWithPreview(editor, page): EditorState { /* first two rows, or stand-ins */ }
     // ```
-    /** Sets the editor preview to the first track rows of the selected page, or to the stand-ins for an empty page. */
-    fun editorWithPreview(editor: TemplateEditorState, pageItems: List<PageEntry>): TemplateEditorState {
-        /** Preview fields of the first track rows of the page, each with its place in the page. */
-        val fields: List<PlayingTrackFields> = pageItems
-            .take(TEMPLATE_PREVIEW_ROW_COUNT)
-            .mapIndexed { index, entry ->
-                playingFieldsOf(
-                    displayPath = entry.name,
-                    placeInFolder = index + 1,
-                    tracksInFolder = pageItems.size,
-                    lengthSec = null,
-                )
-            }
-        if (fields.isEmpty()) {
-            return editor.copy(previewTracks = TEMPLATE_SAMPLE_TRACKS, usesSampleValues = true)
+    /**
+     * Sets the editor preview to the first track rows of the selected page, with each row's measured duration and peak.
+     *
+     * Stand-in values replace the rows when the page is empty, and when none of the previewed rows has a measure yet,
+     * so the Settings lines never come out blank for a template that has text.
+     */
+    fun editorWithPreview(
+        editor: TemplateEditorState,
+        pageItems: List<PageEntry>,
+        measuresByIndex: Map<Int, TrackMeasure> = emptyMap(),
+    ): TemplateEditorState {
+        /** Index-ordered preview rows of the page, the ones the editor's preview and Settings lines read. */
+        val previewRows: List<PageEntry> = pageItems.take(TEMPLATE_PREVIEW_ROW_COUNT)
+        if (previewRows.isEmpty()) {
+            return editor.copy(
+                previewTracks = TEMPLATE_SAMPLE_TRACKS,
+                usesSampleValues = true,
+                sampleNote = TEMPLATE_SAMPLE_NOTE,
+            )
         }
-        return editor.copy(previewTracks = fields, usesSampleValues = false)
+        if (previewRows.none { entry -> measuresByIndex.containsKey(entry.index) }) {
+            return editor.copy(
+                previewTracks = TEMPLATE_SAMPLE_TRACKS,
+                usesSampleValues = true,
+                sampleNote = TEMPLATE_UNREAD_NOTE,
+            )
+        }
+        /** Preview fields of the first page rows, each with its place, measured duration, and peak. */
+        val fields: List<PlayingTrackFields> = previewRows.mapIndexed { index, entry ->
+            /** Measure of this preview row, or null while the row's track has not been read. */
+            val measure: TrackMeasure? = measuresByIndex[entry.index]
+            playingFieldsOf(
+                displayPath = entry.name,
+                placeInFolder = index + 1,
+                tracksInFolder = pageItems.size,
+                lengthSec = measure?.durationSec,
+                measure = measure,
+            )
+        }
+        return editor.copy(previewTracks = fields, usesSampleValues = false, sampleNote = TEMPLATE_SAMPLE_NOTE)
     }
 
     // What:     `fun playingFieldsOf(...)` builds the playing-track fields of one track.
@@ -274,8 +296,9 @@ object PlayerHostModel {
         placeInFolder: Int?,
         tracksInFolder: Int?,
         lengthSec: Double?,
+        measure: TrackMeasure? = null,
     ): PlayingTrackFields = PlayingTrackFields(
-        track = trackFieldsOf(displayPath = displayPath, lengthSec = lengthSec),
+        track = trackFieldsOf(displayPath = displayPath, lengthSec = lengthSec, measure = measure),
         placeInFolder = placeInFolder,
         tracksInFolder = tracksInFolder,
     )
@@ -296,6 +319,7 @@ object PlayerHostModel {
         durationSec: Double,
         template: String,
         fallback: String,
+        measure: TrackMeasure?,
     ): String {
         if (playingEntry == null || rowPosition < 0) {
             return ""
@@ -305,7 +329,8 @@ object PlayerHostModel {
             displayPath = playingEntry.name,
             placeInFolder = rowPosition + 1,
             tracksInFolder = pageTrackCount,
-            lengthSec = lengthOf(durationSec),
+            lengthSec = lengthOf(durationSec) ?: measure?.durationSec,
+            measure = measure,
         )
         /** Outcome of evaluating the playing template for the playing track. */
         val result: TemplateResult = evaluateTemplate(template, fields, TemplateKind.PLAYING_TRACK.fields)
@@ -326,14 +351,16 @@ object PlayerHostModel {
     private fun lengthOf(durationSec: Double): Double? = if (durationSec > 0.0) durationSec else null
 
     // What:     `private fun trackFieldsOf(...)` gathers the template fields of one track from its display path.
-    // Why:      The playing template needs the same fields as a track row, and the peak is not known to the host.
+    // Why:     The playing template needs the same fields as a track row, and the exact peak comes from the track's
+    //           measure.
     //
     // In TS you'd write (pseudocode):
     // ```ts
-    // function trackFieldsOf(path: string, len?: number): TrackFields { /* title, file, ext, folder, path */ }
+    // function trackFieldsOf(path: string, len?: number, measure?: TrackMeasure): TrackFields { /* title, file, ext,
+    //   folder, path, peak */ }
     // ```
-    /** Builds the template fields of one track from its display path, with the peak left unknown. */
-    private fun trackFieldsOf(displayPath: String, lengthSec: Double?): TrackFields {
+    /** Builds the template fields of one track from its display path, its duration, and its exact peak. */
+    private fun trackFieldsOf(displayPath: String, lengthSec: Double?, measure: TrackMeasure?): TrackFields {
         /** File name, which is the last segment of the display path. */
         val fileName: String = displayPath.substringAfterLast(PATH_SEPARATOR)
         /** Folder path that holds the file, empty for a file at the library root. */
@@ -349,7 +376,7 @@ object PlayerHostModel {
             folder = folderName,
             path = displayPath,
             len = lengthSec,
-            peak = null,
+            peak = measurePeakText(measure),
         )
     }
 

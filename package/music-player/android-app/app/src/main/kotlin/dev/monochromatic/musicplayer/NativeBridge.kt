@@ -273,6 +273,36 @@ object NativeBridge {
      */
     external fun nativeFingerprint(path: String, size: Long, mtimeNanos: Long): Long
 
+    // What:     `external fun nativePeekPeak(handle: Long, fingerprint: Long): FloatArray?` reads the cached true
+    //           peak of one track without starting a measurement. The reply holds two floats: the peak in dBTP
+    //           (negative infinity for silence), then the kind code (1 for an exact full scan, 0 for a sampled
+    //           estimate). It is null when no decision is cached for the fingerprint, or the handle is null.
+    // Why:      The track rows and the details menu show a peak only when it is already known, so the read must
+    //           never decode a file.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // declare function nativePeekPeak(handle: bigint, fingerprint: bigint): Float32Array | null;
+    // ```
+    /**
+     * Reads the cached true peak and its kind for a track fingerprint, or null when none is cached.
+     */
+    external fun nativePeekPeak(handle: Long, fingerprint: Long): FloatArray?
+
+    // What:     `external fun nativeInvalidateTrack(handle: Long, fingerprint: Long): Boolean` removes the cached
+    //           decision of one track, so its next resolve or warm measures it again. It returns true when a row
+    //           was removed, and false when none was stored or the handle is null.
+    // Why:      A re-analysis clears one track and no other, and the removal completes before the caller measures.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // declare function nativeInvalidateTrack(handle: bigint, fingerprint: bigint): boolean;
+    // ```
+    /**
+     * Removes the cached decision of one track fingerprint, returning true when a row was removed.
+     */
+    external fun nativeInvalidateTrack(handle: Long, fingerprint: Long): Boolean
+
     // What:     `external fun nativeEngineCreate(): Long` is a JNI native function returning a `Long`
     //           (64-bit signed integer). The `Long` is an OPAQUE HANDLE: a native pointer/address
     //           the Rust engine owns, passed back on every later call. Sibling `Int` (32-bit) is

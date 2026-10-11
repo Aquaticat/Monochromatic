@@ -123,6 +123,8 @@ use crate::decode::{AudioSpec, Source};
 /// import { spawnQueueMeasurement } from "./measure";
 /// ```
 use crate::measure::spawn_queue_measurement;
+use crate::sweep_report::{SweepJob, SweepSink, noop_sink};
+use std::sync::Arc;
 
 /// What:
 ///      `use crate::output::Output;`.
@@ -409,6 +411,10 @@ pub(crate) struct Controller {
     /// positionFrames: number;
     /// ```
     pub(crate) position_frames: u64,
+    /// Where background sweeps and re-analyses send their reports.
+    pub(crate) sweep_sink: SweepSink,
+    /// Generation of the newest queue load; reports from older generations are dropped.
+    pub(crate) analysis_generation: u64,
     /// What:
     ///      `last_emit_secs: f64`.
     ///  Position (seconds) at the last `Position` update.
@@ -506,6 +512,8 @@ impl Controller {
             pending_peak: None,
             peaks,
             position_frames: 0,
+            sweep_sink: noop_sink(),
+            analysis_generation: 0,
             last_emit_secs: 0.0,
             pending: Vec::new(),
             pending_pos: 0,
@@ -677,6 +685,7 @@ impl Controller {
             // ```
             PendingPeakStatus::Ready(result) => {
                 self.pending_peak = None;
+                self.publish_decision_measure(&result.path, &result.decision);
                 return self.apply_peak_result(result)
             }
             // What:     `PendingPeakStatus::Pending => false`. No result yet.
@@ -947,7 +956,7 @@ impl Controller {
     }
 
     /// What:
-    ///      `fn start_queue_measurement(&self)`.
+    ///      `fn start_queue_measurement(&mut self)`.
     ///  Kick off the background sweep that
     ///           pre-measures every non-current track in the current queue into the
     ///           shared cache.
@@ -961,44 +970,38 @@ impl Controller {
     /// ```ts
     /// startQueueMeasurement(): void { ... }
     /// ```
-    fn start_queue_measurement(&self) {
-        // What:     `let current = self.queue.current_path().cloned();`. Read the
-        //           current path and clone it into an owned `PathBuf` if present.
-        // Why:      The background sweep must skip this path so the current-track
-        //           swap worker owns it.
+    fn start_queue_measurement(&mut self) {
+        // What:     `self.analysis_generation = self.analysis_generation.wrapping_add(1);`.
+        //           Advance the generation so reports from the sweep this load replaces are dropped.
+        // Why:      Sweeps are never cancelled, so the generation is the only way to tell them apart.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // this.analysisGeneration += 1;
+        // ```
+        self.analysis_generation = self.analysis_generation.wrapping_add(1);
+        // What:     `let current = self.queue.current_path().cloned();`. The track playback is on.
+        // Why:      The fan-out skips it, because the current-track worker owns that one.
         //
         // In TS you'd write (pseudocode):
         // ```ts
         // const current = this.queue.currentPath();
         // ```
         let current = self.queue.current_path().cloned();
-        // What:     `let tracks = self.queue.tracks().iter().filter(...).cloned().collect();`.
-        //           Iterate borrowed queue paths, keep every path that is not the current
-        //           one, clone the survivors, and collect them into a `Vec<PathBuf>`.
-        // Why:      Give the detached sweep owned inputs while avoiding duplicate current
-        //           track measurement.
+        // What:     `spawn_queue_measurement(SweepJob { ... });`. Start the sweep over every queue track.
+        // Why:      The sweep peeks all tracks for rows, and measures the non-current ones.
         //
         // In TS you'd write (pseudocode):
         // ```ts
-        // const tracks = this.queue.tracks().filter((path) => path !== current);
+        // spawnQueueMeasurement({ tracks: this.queue.tracks(), current, cache: this.peaks, sink: this.sweepSink, generation: this.analysisGeneration });
         // ```
-        let tracks = self
-            .queue
-            .tracks()
-            .iter()
-            .filter(|path| return current.as_ref() != Some(*path))
-            .cloned()
-            .collect();
-        // What:     `spawn_queue_measurement(tracks, self.peaks.clone());`. Spawn the
-        //           detached sweep. `self.peaks.clone()` copies the cache handle's channel
-        //           senders (cheap; same actor).
-        // Why:      Hand the sweep its own track list and a handle to the shared cache.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // spawnQueueMeasurement(tracks, this.peaks);
-        // ```
-        spawn_queue_measurement(tracks, self.peaks.clone());
+        spawn_queue_measurement(SweepJob {
+            tracks: self.queue.tracks().to_vec(),
+            current,
+            cache: self.peaks.clone(),
+            sink: Arc::clone(&self.sweep_sink),
+            generation: self.analysis_generation,
+        });
     }
 
     /// What:
@@ -1053,7 +1056,9 @@ impl Controller {
                 // ```ts
                 // this.emit({ kind: "queue", names: this.queue.displayPaths() });
                 // ```
+                self.emit(Update::Library(self.queue.tracks().to_vec()));
                 self.emit(Update::Queue(self.queue.display_paths()));
+                self.emit_source_root();
                 // What:     `self.start_queue_measurement();`. Pre-measure the whole queue
                 //           in the background (true-peak normalization cache).
                 // Why:      Every queue load (open or auto-load) warms the peak cache.
@@ -1394,7 +1399,9 @@ impl Controller {
                 // ```ts
                 // this.emit({ kind: "queue", names: this.queue.displayPaths() });
                 // ```
+                self.emit(Update::Library(self.queue.tracks().to_vec()));
                 self.emit(Update::Queue(self.queue.display_paths()));
+                self.emit_source_root();
                 // What:     `self.emit(Update::Volume(volume));`. Mirror volume.
                 // Why:      Sync the slider.
                 //
@@ -1597,6 +1604,8 @@ impl Controller {
             // ```ts
             // case "quit": break; // handled in run()'s drain loop
             // ```
+            Command::SweepReport(report) => self.handle_sweep_report(report),
+            Command::ReanalyseTrack(path) => self.reanalyse_track(path),
             Command::Quit => {}
         }
     }

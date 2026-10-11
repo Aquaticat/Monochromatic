@@ -27,6 +27,8 @@ use crate::track::Track;
 use crate::track_entries::{TrackListEntry, TrackRowModel, track_list_entries, track_title_for};
 /// Template fields that the supporting-line function reads.
 use crate::template_model::TrackFields;
+use crate::track_measure::TrackMeasure;
+use std::collections::HashMap;
 
 /// What:
 ///      `pub struct TransportDeckModel`.
@@ -93,6 +95,8 @@ pub struct PlayerContentInput {
     pub position_sec: f64,
     /// Track duration in seconds.
     pub duration_sec: f64,
+    /// Length and exact peak of each track, keyed by its display name.
+    pub measures: HashMap<String, TrackMeasure>,
 }
 
 /// What:
@@ -163,7 +167,7 @@ pub fn build_player_content(input: &PlayerContentInput, supporting_line: &dyn Fn
     let current_folder: Option<String> = input.page_labels.get(input.selected_page).cloned();
     let folder_title: String = current_folder.clone().unwrap_or_default();
     let folder: FolderEntry = page_folder_for(&folder_title, &input.page_items);
-    let entries: Vec<TrackListEntry> = track_list_entries(&folder, input.current_index, supporting_line);
+    let entries: Vec<TrackListEntry> = track_list_entries(&folder, input.current_index, &input.measures, supporting_line);
     let row_position: Option<usize> = entries.iter().filter_map(row_entry).position(|row| return row.is_current);
     let playing_title: String = input
         .page_items

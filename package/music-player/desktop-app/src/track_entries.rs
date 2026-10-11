@@ -14,6 +14,10 @@
 use crate::folder_index::{FolderEntry, FolderListItem, FolderTrackRow};
 /// Template fields that the supporting-line function reads.
 use crate::template_model::TrackFields;
+/// Measures keyed by display name, supplying each row's length and exact peak.
+use crate::track_measure::{TrackMeasure, fields_with_measure};
+/// The map type the measures arrive in.
+use std::collections::HashMap;
 
 /// What:
 ///      `const TRACK_PATH_SEPARATOR: char = '/';`.
@@ -231,8 +235,8 @@ fn track_fields_for(display_path: &str) -> TrackFields {
 /// const text = supportingLine(fields)?.trim();
 /// return text ? text : null;
 /// ```
-fn supporting_line_for(display_path: &str, supporting_line: &dyn Fn(&TrackFields) -> Option<String>) -> Option<String> {
-    let fields = track_fields_for(display_path);
+fn supporting_line_for(display_path: &str, measures: &HashMap<String, TrackMeasure>, supporting_line: &dyn Fn(&TrackFields) -> Option<String>) -> Option<String> {
+    let fields = fields_with_measure(track_fields_for(display_path), measures.get(display_path));
     return supporting_line(&fields)
         .map(|text| return text.trim().to_string())
         .filter(|text| return !text.is_empty());
@@ -248,12 +252,12 @@ fn supporting_line_for(display_path: &str, supporting_line: &dyn Fn(&TrackFields
 /// ```ts
 /// const rowFor = (row, current) => ({ indexInLibrary: row.indexInLibrary, title: trackTitleFor(row.track.displayPath), supportingLine, isCurrent: row.indexInLibrary === current });
 /// ```
-fn row_for(row: &FolderTrackRow, current_index: Option<usize>, supporting_line: &dyn Fn(&TrackFields) -> Option<String>) -> TrackRowModel {
+fn row_for(row: &FolderTrackRow, current_index: Option<usize>, measures: &HashMap<String, TrackMeasure>, supporting_line: &dyn Fn(&TrackFields) -> Option<String>) -> TrackRowModel {
     let display_path = row.track.display_path.as_str();
     return TrackRowModel {
         index_in_library: row.index_in_library,
         title: track_title_for(display_path),
-        supporting_line: supporting_line_for(display_path, supporting_line),
+        supporting_line: supporting_line_for(display_path, measures, supporting_line),
         is_current: current_index == Some(row.index_in_library),
     };
 }
@@ -270,9 +274,9 @@ fn row_for(row: &FolderTrackRow, current_index: Option<usize>, supporting_line: 
 /// ```ts
 /// item.kind === "track" ? { kind: "row", row: rowFor(item.row) } : { kind: "header", name: item.name, trackCount: item.trackCount };
 /// ```
-fn entry_for(item: &FolderListItem, current_index: Option<usize>, supporting_line: &dyn Fn(&TrackFields) -> Option<String>) -> TrackListEntry {
+fn entry_for(item: &FolderListItem, current_index: Option<usize>, measures: &HashMap<String, TrackMeasure>, supporting_line: &dyn Fn(&TrackFields) -> Option<String>) -> TrackListEntry {
     return match item {
-        FolderListItem::TrackItem(row) => TrackListEntry::RowEntry(row_for(row, current_index, supporting_line)),
+        FolderListItem::TrackItem(row) => TrackListEntry::RowEntry(row_for(row, current_index, measures, supporting_line)),
         FolderListItem::SubfolderHeader { name, track_count } => TrackListEntry::HeaderEntry {
             name: name.clone(),
             track_count: *track_count,
@@ -293,11 +297,11 @@ fn entry_for(item: &FolderListItem, current_index: Option<usize>, supporting_lin
 ///   return folder.items.map((item) => entryFor(item, current, supportingLine));
 /// }
 /// ```
-pub fn track_list_entries(folder: &FolderEntry, current_index_in_library: Option<usize>, supporting_line: &dyn Fn(&TrackFields) -> Option<String>) -> Vec<TrackListEntry> {
+pub fn track_list_entries(folder: &FolderEntry, current_index_in_library: Option<usize>, measures: &HashMap<String, TrackMeasure>, supporting_line: &dyn Fn(&TrackFields) -> Option<String>) -> Vec<TrackListEntry> {
     return folder
         .items
         .iter()
-        .map(|item| return entry_for(item, current_index_in_library, supporting_line))
+        .map(|item| return entry_for(item, current_index_in_library, measures, supporting_line))
         .collect();
 }
 

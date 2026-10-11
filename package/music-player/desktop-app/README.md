@@ -475,6 +475,14 @@ If that compositor cannot provide a required test feature,
 add the feature to `nested-wayland-session` rather than mutating host-wide desktop settings.
 Restore any app-local fixture state after capture.
 
+## Environment overrides
+
+`MUSIC_PLAYER_COLOR_SCHEME` forces the window's color scheme.
+Set it to `light` or `dark`.
+Leave it unset to follow the operating system's scheme.
+Any other value is logged and ignored, so the window follows the system.
+Verification runs use it to capture both schemes without changing the host's theme.
+
 ## Page navigation UX choices
 
 Wide windows show the full page-control grid beside the selected page's rows as two independent scroll containers,

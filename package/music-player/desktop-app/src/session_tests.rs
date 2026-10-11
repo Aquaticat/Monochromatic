@@ -13,6 +13,8 @@ fn current_json_round_trip_preserves_fields() {
         volume: 0.7,
         playback_mode: PlaybackMode::ShufflePage,
         page_control_style: PageControlStyle::Md1Tabs,
+        track_rows_template: Some("$mi(title)$".to_string()),
+        playing_template: None,
     };
     let json = serde_json::to_string(&original).expect("current session should serialize");
     let restored = Session::from_json(&json).expect("serialized session should parse");

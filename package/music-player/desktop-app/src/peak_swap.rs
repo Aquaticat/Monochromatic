@@ -103,6 +103,7 @@ use crate::peakcache::{self, CacheHandle};
 /// import { normalizationGain, resolveCurrent } from "./truepeak";
 /// ```
 use crate::truepeak::{normalization_gain, resolve_current};
+use truepeak_core::Decision;
 
 /// What:
 ///      `const PEAK_SWAP_WAIT_SECS: u64 = 1;`.
@@ -134,7 +135,7 @@ const PEAK_SWAP_WAIT_SECS: u64 = 1;
 // ```ts
 // type PeakGainResult = { generation: number; gain: number };
 // ```
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Debug)]
 /// What:
 ///      `pub(crate) struct PeakGainResult { ... }`.
 ///  A crate-visible result
@@ -164,6 +165,16 @@ pub(crate) struct PeakGainResult {
     /// generation: number;
     /// ```
     pub(crate) generation: u64,
+    /// What:
+    ///      `pub(crate) path: PathBuf`. The track this measurement belongs to.
+    /// Why:
+    ///       The window's row for this track takes the measure from the decision, keyed by path.
+    pub(crate) path: PathBuf,
+    /// What:
+    ///      `pub(crate) decision: Decision`. The full decision the measurement stored in the cache.
+    /// Why:
+    ///       The result carries the decision itself, so the row can show it without a racing cache read.
+    pub(crate) decision: Decision,
     /// What:
     ///      `pub(crate) gain: f32`.
     ///  Linear playback gain from true-peak
@@ -714,7 +725,7 @@ fn spawn_current_track_measurement(
         // ```ts
         // const gain = measureAndStoreGain(path, cache, fingerprint); if (gain != null) { ... }
         // ```
-        if let Some(gain) = measure_and_store_gain(&path, &cache, fingerprint) {
+        if let Some(decision) = measure_and_store_gain(&path, &cache, fingerprint) {
             // What:     `let _ = sender.send(PeakGainResult { generation, gain });`.
             //           Send the result; `let _ =` discards the error if the controller
             //           already moved to another track and dropped the receiver.
@@ -725,7 +736,12 @@ fn spawn_current_track_measurement(
             // ```ts
             // try { sender.send({ generation, gain }); } catch {}
             // ```
-            let _ = sender.send(PeakGainResult { generation, gain });
+            let _ = sender.send(PeakGainResult {
+                generation,
+                gain: decision.gain,
+                path,
+                decision,
+            });
         }
         // What:     `worker.unpark();`. Wake the controller/engine thread after the
         //           measurement either sent a value or ended without one.
@@ -750,11 +766,11 @@ fn spawn_current_track_measurement(
 }
 
 /// What:
-///      `fn measure_and_store_gain(...) -> Option<f32>`.
+///      `fn measure_and_store_gain(...) -> Option<Decision>`.
 ///  Resolve the current track's
 ///           decision (probe-or-full),
 ///  cache it if a fingerprint exists,
-///  and return its gain.
+///  and return the decision.
 /// Why:
 ///       Shared worker body for the current-track async path.
 ///
@@ -766,7 +782,7 @@ fn measure_and_store_gain(
     path: &Path,
     cache: &CacheHandle,
     fingerprint: Option<u64>,
-) -> Option<f32> {
+) -> Option<Decision> {
     // What:     `let decision = resolve_current(path).ok()?;`. Resolve the foreground
     //           decision and convert `Result` to `Option`; `?` returns `None` on failure.
     // Why:      A failed measurement should not replace the fallback gain.
@@ -806,7 +822,7 @@ fn measure_and_store_gain(
     // ```ts
     // return decision.gain;
     // ```
-    return Some(decision.gain)
+    return Some(decision)
 }
 
 /// What:

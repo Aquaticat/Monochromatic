@@ -1,0 +1,163 @@
+// Track context menu body (D7, D8, D26-era menu, Android TrackMenuPopup). The caller hosts it in a PopupWindow
+// anchored to the track row; this component draws the card, the heading, the rows and the dividers only.
+import { Theme } from "theme.slint";
+
+// One menu row. `icon` indexes the glyph: 0 play, 1 shuffle, 2 file details, 3 re-analyse, 4 show in file manager,
+// 5 copy filename, 6 move to trash.
+export struct TrackMenuItem {
+    // Visible label of the action, for example `Start shuffle from here`.
+    label: string,
+    // Glyph index from the list above.
+    icon: int,
+    // True for the destructive action; the row uses the error role for its glyph and label.
+    destructive: bool,
+    // True when a divider is drawn above this row, marking a new group.
+    divider-before: bool,
+    // Inline secondary value, drawn after the label as ` · value` (for File details); empty draws nothing.
+    value: string,
+}
+
+// Track action menu with a one-line heading, grouped rows and a destructive row.
+export component TrackMenu inherits Rectangle {
+    // Track name shown as the one-line heading; longer names end in an ellipsis.
+    in property <string> title: "";
+    // Rows in display order, one per action.
+    in property <[TrackMenuItem]> items: [];
+    // Extra start inset for the heading, rows and dividers; 12px on the inner panel, 0px on the cover.
+    in property <length> start-inset: 0px;
+
+    // Fired with the row index when a row is pressed; the menu never closes itself on selection.
+    callback select(int);
+    // Fired when Escape is pressed while the menu has focus; the caller closes the popup.
+    callback dismiss();
+
+    // Card width is the content width, capped at 280px (the Android menu maximum).
+    width: min(280px, column.preferred-width);
+    height: column.preferred-height;
+    background: Theme.surface-high;
+    border-radius: 12px;
+    clip: true;
+    forward-focus: keys;
+
+    // Escape dismisses through the caller; other keys are left to the host.
+    keys := FocusScope {
+        key-pressed(event) => {
+            if (event.text == Key.Escape) {
+                root.dismiss();
+                return accept;
+            }
+            return reject;
+        }
+    }
+
+    // Glyph path data for each icon index, copied from TrackMenuIcons.kt on a 24 by 24 grid.
+    function icon-commands(icon: int) -> string {
+        if (icon == 0) {
+            return "M8 5 v14 l11 -7 Z";
+        }
+        if (icon == 1) {
+            return "M10.59 9.17 L5.41 4 L4 5.41 l5.17 5.17 l1.42 -1.41 Z M14.5 4 l2.04 2.04 L4 18.59 L5.41 20 L17.96 7.46 L20 9.5 L20 4 h-5.5 Z M14.83 13.41 l-1.41 1.41 l3.13 3.13 L14.5 20 L20 20 v-5.5 l-2.04 2.04 l-3.13 -3.13 Z";
+        }
+        if (icon == 2) {
+            return "M11 7 h2 v2 h-2 Z M11 11 h2 v6 h-2 Z M12 2 C6.48 2 2 6.48 2 12 s4.48 10 10 10 s10 -4.48 10 -10 S17.52 2 12 2 Z M12 20 c-4.41 0 -8 -3.59 -8 -8 s3.59 -8 8 -8 s8 3.59 8 8 s-3.59 8 -8 8 Z";
+        }
+        if (icon == 3) {
+            return "M17.65 6.35 C16.2 4.9 14.21 4 12 4 c-4.42 0 -7.99 3.58 -7.99 8 s3.57 8 7.99 8 c3.73 0 6.84 -2.55 7.73 -6 h-2.08 c-0.82 2.33 -3.04 4 -5.65 4 c-3.31 0 -6 -2.69 -6 -6 s2.69 -6 6 -6 c1.66 0 3.14 0.69 4.22 1.78 L13 11 h7 V4 l-2.35 2.35 Z";
+        }
+        if (icon == 4) {
+            return "M20 6 h-8 l-2 -2 L4 4 c-1.1 0 -1.99 0.9 -1.99 2 L2 18 c0 1.1 0.9 2 2 2 h16 c1.1 0 2 -0.9 2 -2 L22 8 c0 -1.1 -0.9 -2 -2 -2 Z M20 18 L4 18 L4 8 h16 v10 Z";
+        }
+        if (icon == 5) {
+            return "M16 1 L4 1 c-1.1 0 -2 0.9 -2 2 v14 h2 L4 3 h12 L16 1 Z M19 5 L8 5 c-1.1 0 -2 0.9 -2 2 v14 c0 1.1 0.9 2 2 2 h11 c1.1 0 2 -0.9 2 -2 L21 7 c0 -1.1 -0.9 -2 -2 -2 Z M19 21 L8 21 L8 7 h11 v14 Z";
+        }
+        return "M16 9 v10 H8 V9 h8 m-1.5 -6 h-5 l-1 1 H5 v2 h14 V4 h-3.5 l-1 -1 Z M18 7 H6 v12 c0 1.1 0.9 2 2 2 h8 c1.1 0 2 -0.9 2 -2 V7 Z";
+    }
+
+    column := VerticalLayout {
+        // Heading: the track name, one line, ellipsized, in the secondary role.
+        HorizontalLayout {
+            padding-left: 16px + root.start-inset;
+            padding-right: 16px;
+            padding-top: 8px;
+            padding-bottom: 8px;
+            Text {
+                text: root.title;
+                color: Theme.on-surface-variant;
+                font-size: Theme.body-small;
+                wrap: no-wrap;
+                overflow: elide;
+                vertical-alignment: center;
+            }
+        }
+
+        for item[index] in root.items : VerticalLayout {
+            // Group divider, inset 8px from the card edges (plus the start inset) with 5px margins.
+            if item.divider-before : Rectangle {
+                height: 11px;
+                Rectangle {
+                    x: 8px + root.start-inset;
+                    y: 5px;
+                    width: parent.width - self.x - 8px;
+                    height: 1px;
+                    background: Theme.outline-variant;
+                }
+            }
+
+            // One action row, 48px minimum, pressed as a whole.
+            row-card := Rectangle {
+                property <color> foreground: item.destructive ? Theme.error : Theme.on-surface;
+
+                height: max(48px, row.preferred-height);
+                row := HorizontalLayout {
+                    padding-left: 16px + root.start-inset;
+                    padding-right: 16px;
+                    padding-top: 8px;
+                    padding-bottom: 8px;
+                    spacing: 12px;
+                    alignment: start;
+
+                    // Glyph cell stretches to the row height so the 24px glyph centres on the label line.
+                    Rectangle {
+                        width: 24px;
+                        Path {
+                            width: 24px;
+                            height: 24px;
+                            y: (parent.height - self.height) / 2;
+                            viewbox-width: 24;
+                            viewbox-height: 24;
+                            commands: root.icon-commands(item.icon);
+                            fill: row-card.foreground;
+                        }
+                    }
+
+                    // Label and inline value share a zero-spacing row so the middle dot sits tight to the label.
+                    HorizontalLayout {
+                        horizontal-stretch: 0;
+                        spacing: 0px;
+                        alignment: start;
+
+                        Text {
+                            horizontal-stretch: 0;
+                            text: item.label;
+                            color: row-card.foreground;
+                            font-size: Theme.label-large;
+                            vertical-alignment: center;
+                        }
+
+                        // Inline value, in the secondary role, separated by a middle dot.
+                        if item.value != "" : Text {
+                            horizontal-stretch: 0;
+                            text: " · " + item.value;
+                            color: Theme.on-surface-variant;
+                            font-size: Theme.label-large;
+                            vertical-alignment: center;
+                        }
+                    }
+                }
+                TouchArea {
+                    clicked => { root.select(index); }
+                }
+            }
+        }
+    }
+}

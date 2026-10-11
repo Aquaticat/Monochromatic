@@ -7,27 +7,37 @@
 // ```
 package dev.monochromatic.musicplayer
 
-// What:     Imports from `dev.monochromatic.musicplayer.core` bring in the action type and its wording.
-// Why:      The popup renders the closed action list and the accepted labels without owning either.
+// What:     Imports from `dev.monochromatic.musicplayer.core` bring in the action type, its wording, and the placement.
+// Why:      The popup renders the closed action list and the accepted labels without owning either, and it places
+//           itself with the pure placement rule.
 //
 // In TS you'd write (pseudocode):
 // ```ts
 // import { TrackMenuAction, label } from "core/TrackMenuAction";
+// import { MenuAnchorRect, menuAnchorOffset } from "core/MenuAnchor";
 // ```
+import dev.monochromatic.musicplayer.core.MenuAnchorOffset
+import dev.monochromatic.musicplayer.core.MenuAnchorRect
+import dev.monochromatic.musicplayer.core.MenuAnchorRequest
 import dev.monochromatic.musicplayer.core.TrackMenuAction
 import dev.monochromatic.musicplayer.core.label
+import dev.monochromatic.musicplayer.core.menuAnchorOffset
 
-// What:     Imports from `androidx.compose.foundation` bring in the layout size and shape helpers.
-// Why:      The popup caps its width, gives each row a 48dp target, and rounds the menu container.
+// What:     Imports from `androidx.compose.foundation` bring in layout size, shape, scrolling, and the layout column.
+// Why:      The popup caps its width, gives each row a 48dp target, scrolls long lists, and rounds the container.
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// import { widthIn, heightIn, padding, roundedCorners } from "compose/foundation";
+// import { widthIn, heightIn, padding, roundedCorners, verticalScroll } from "compose/foundation";
 // ```
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 
 // What:     Imports from `androidx.compose.foundation.layout` bring in the row content padding type.
 // Why:      Each row reads its content with the 16dp side and 8dp vertical insets of the accepted study.
@@ -38,48 +48,56 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 // ```
 import androidx.compose.foundation.layout.PaddingValues
 
-// What:     Imports from `androidx.compose.material3` bring in the classic dropdown menu and its item defaults.
-// Why:      The classic menu provides native popup placement, scrolling, and outside or Back dismissal.
+// What:     Imports from `androidx.compose.material3` bring in the surface, dividers, items, icons, and text.
+// Why:      The menu container is a tonal surface, and each row is a menu item that takes the theme's colors.
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// import { DropdownMenu, DropdownMenuItem, HorizontalDivider, Icon, Text } from "material3";
+// import { Surface, DropdownMenuItem, HorizontalDivider, Icon, Text } from "material3";
 // ```
-import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MenuDefaults
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 
-// What:     Imports from `androidx.compose.runtime` bring in the composable declaration marker.
-// Why:      The popup emits UI and therefore must be a composable function.
+// What:     Imports from `androidx.compose.runtime` bring in the composable marker and the remembered provider.
+// Why:      The popup emits UI, and it keeps one position provider for each row anchor and inset.
 //
 // In TS you'd write (pseudocode):
 // ```ts
 // // Composable functions are plain functions in pseudocode.
 // ```
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 
-// What:     Imports from `androidx.compose.ui` bring in the modifier and the Dp layout distance type.
-// Why:      The popup accepts a caller modifier and converts its named constants to density-independent units.
+// What:     Imports from `androidx.compose.ui` bring in the modifier, the density, and the geometry and unit types.
+// Why:      The popup accepts a caller modifier, reads the density for the inset, and returns its window offset.
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// import { Modifier, Dp } from "compose/ui";
+// import { Modifier, Dp, IntOffset } from "compose/ui";
 // ```
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.unit.IntRect
+import androidx.compose.ui.unit.IntSize
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 
-// What:     Imports from `androidx.compose.ui.window` bring in the popup properties.
-// Why:      The popup states its focus and dismissal flags explicitly so Escape and Back cannot be turned off silently.
+// What:     Imports from `androidx.compose.ui.window` bring in the popup, its position provider, and its properties.
+// Why:      The menu is its own popup window positioned at its row, and it states its focus and dismissal flags.
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// import { PopupProperties } from "compose/ui/window";
+// import { Popup, PopupPositionProvider, PopupProperties } from "compose/ui/window";
 // ```
+import androidx.compose.ui.window.Popup
+import androidx.compose.ui.window.PopupPositionProvider
 import androidx.compose.ui.window.PopupProperties
 
 // What:     Imports from `androidx.compose.ui.text` bring in annotated text, a color span, and ellipsis overflow.
@@ -93,15 +111,6 @@ import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
-
-// What:     Import of `fillMaxWidth` lets the heading span the full menu width.
-// Why:      The heading must wrap or ellipsize against the menu width, not its intrinsic width.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// import { fillMaxWidth } from "compose/foundation/layout";
-// ```
-import androidx.compose.foundation.layout.fillMaxWidth
 
 // What:     `private val MENU_MAX_WIDTH: Dp = 280.dp` caps the menu width.
 // Why:      The accepted candidate keeps the menu narrower than the full panel.
@@ -122,6 +131,16 @@ private val MENU_MAX_WIDTH: Dp = 280.dp
 // ```
 /** Corner radius of the popup container. */
 private val MENU_CORNER_RADIUS: Dp = 12.dp
+
+// What:     `private val MENU_ELEVATION: Dp = 3.dp` lifts the menu container above the rows behind it.
+// Why:      The menu is a floating surface, so it casts a shadow the way the platform menus do.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// const MENU_ELEVATION = 3;
+// ```
+/** Shadow elevation of the popup container. */
+private val MENU_ELEVATION: Dp = 3.dp
 
 // What:     `private val ITEM_MIN_TARGET: Dp = 48.dp` is the minimum touch target of one action row.
 // Why:      Every action keeps a 48dp minimum target, matching the touch-target rule of the design study.
@@ -199,40 +218,100 @@ internal fun trackMenuDividerFlags(actions: List<TrackMenuAction>): List<Boolean
 internal fun trackMenuDetailsSuffix(detailsValue: String?): String =
     if (detailsValue.isNullOrBlank()) "" else " · $detailsValue"
 
-// What:     `fun trackMenuPopup(...)` draws the stateless track menu anchored at its call site.
-// Why:      The caller decides when the menu is open and where it anchors; this composable only renders and reports.
+// What:     `internal fun trackMenuPositionProvider(...)` returns the provider that places the menu at its row.
+// Why:      The popup window is placed by this provider, which feeds the measured menu size to the placement rule.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// const trackMenuPositionProvider = (anchor, startInsetPx) => (popupSize, window) =>
+//   menuAnchorOffset({ anchor, popupWidth: popupSize.w, popupHeight: popupSize.h, windowWidth: window.w,
+//     windowHeight: window.h, startInset: startInsetPx });
+// ```
+/**
+ * Returns a provider that places the menu below its row, above it when it would overflow, and inside the window.
+ *
+ * The provider takes the row bounds from [anchor] and ignores the parent bounds that the popup reports, because the
+ * popup is composed in the host and not inside the row. Both are in window pixels.
+ */
+internal fun trackMenuPositionProvider(anchor: MenuAnchorRect, startInsetPx: Int): PopupPositionProvider =
+    object : PopupPositionProvider {
+        // What:     `override fun calculatePosition(...)` returns the window offset of the menu for this measurement.
+        // Why:      The popup asks for its position after measuring its content, so the menu size is known here.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // calculatePosition(parent, window, dir, popupSize): Offset { return menuAnchorOffset(...); }
+        // ```
+        /** Window offset of the menu's top-left corner for the measured container size. */
+        override fun calculatePosition(
+            anchorBounds: IntRect,
+            windowSize: IntSize,
+            layoutDirection: LayoutDirection,
+            popupContentSize: IntSize,
+        ): IntOffset {
+            /** Placement of the menu computed from the row, the measured menu, and the window. */
+            val placed: MenuAnchorOffset = menuAnchorOffset(
+                MenuAnchorRequest(
+                    anchor = anchor,
+                    popupWidth = popupContentSize.width,
+                    popupHeight = popupContentSize.height,
+                    windowWidth = windowSize.width,
+                    windowHeight = windowSize.height,
+                    startInset = startInsetPx,
+                ),
+            )
+            return IntOffset(x = placed.x, y = placed.y)
+        }
+    }
+
+// What:     `fun trackMenuPopup(...)` draws the stateless track menu anchored at its row.
+// Why:      The caller decides when the menu is open and where its row sits; this composable only renders and reports.
 //
 // In TS you'd write (pseudocode):
 // ```ts
 // function trackMenuPopup(input: {
 //   actions: readonly TrackMenuAction[];
+//   anchor: MenuAnchorRect;
 //   onSelect: (action: TrackMenuAction) => void;
 //   onDismiss: () => void;
 // }): UIElement;
 // ```
 /**
- * Draws the track context menu over the composable that encloses this call.
+ * Draws the track context menu in its own popup window, placed against the row bounds in [anchor].
  *
- * Escape and Back dismiss through the popup window, which calls `PopupLayout.dispatchKeyEvent` in
- * `ui-android` 1.11.2 and then `onDismissRequest` when `dismissOnBackPress` is true, as set here.
- * Outside taps dismiss through `dismissOnClickOutside`. Selecting an action only reports it.
+ * Escape and Back dismiss through the popup window, which calls `onDismiss` when `dismissOnBackPress` is true, as set
+ * here. Outside taps dismiss through `dismissOnClickOutside`. Selecting an action only reports it.
  *
  * @param title Track name shown as the one-line heading; longer text ends in an ellipsis.
  * @param detailsValue Peak value drawn after File details in the secondary role; null draws nothing.
- * @param startInset Extra start inset for the heading, rows, and dividers; 12dp on the inner panel, 0 on the cover.
- * @param expanded Opens or closes the menu; keep the composable composed while false so the exit animation runs.
+ * @param anchor Window-space bounds of the row that opened the menu, which the menu sits under or over.
+ * @param startInset Extra start inset for the heading, rows, dividers, and the leftmost edge of the menu;
+ *     12dp on the inner panel, 0 on the cover.
+ * @param expanded Opens or closes the menu; a closed menu draws nothing.
  */
 @Composable
 fun trackMenuPopup(
     actions: List<TrackMenuAction>,
     title: String,
     detailsValue: String?,
+    anchor: MenuAnchorRect,
     onSelect: (TrackMenuAction) -> Unit,
     onDismiss: () -> Unit,
     startInset: Dp = 0.dp,
     expanded: Boolean = true,
     modifier: Modifier = Modifier,
 ) {
+    if (!expanded) {
+        return
+    }
+    /** Density used to turn the start inset from density-independent units into pixels. */
+    val density = LocalDensity.current
+    /** Start inset in window pixels, which the placement rule uses as the menu's leftmost edge. */
+    val startInsetPx: Int = with(density) { startInset.roundToPx() }
+    /** Position provider that places the menu at its row, rebuilt only when the row or the inset changes. */
+    val positionProvider: PopupPositionProvider = remember(anchor, startInsetPx) {
+        trackMenuPositionProvider(anchor = anchor, startInsetPx = startInsetPx)
+    }
     // What:     `val dividers` holds one divider flag per action for this render pass.
     // Why:      Each row reads its own flag, so the divider decision is computed once.
     //
@@ -251,86 +330,93 @@ fun trackMenuPopup(
     // ```
     /** Secondary text color used for the dB value on the File details row. */
     val secondary = MaterialTheme.colorScheme.onSurfaceVariant
-    DropdownMenu(
-        expanded = expanded,
+    Popup(
+        popupPositionProvider = positionProvider,
         onDismissRequest = onDismiss,
-        modifier = modifier.widthIn(max = MENU_MAX_WIDTH),
-        shape = RoundedCornerShape(MENU_CORNER_RADIUS),
         properties = PopupProperties(focusable = true, dismissOnBackPress = true, dismissOnClickOutside = true),
     ) {
-        // What:     `Text` draws the track name as the heading above the action rows.
-        // Why:      D7 headed the menu with the track name, kept to one line with an ellipsis.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // heading({ text: title, maxLines: 1, overflow: "ellipsis" });
-        // ```
-        Text(
-            text = title,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.fillMaxWidth().padding(
-                start = ROW_HORIZONTAL_PADDING + startInset,
-                end = ROW_HORIZONTAL_PADDING,
-                top = ROW_VERTICAL_PADDING,
-                bottom = ROW_VERTICAL_PADDING,
-            ),
-        )
-        for ((index, action) in actions.withIndex()) {
-            if (dividers[index]) {
-                HorizontalDivider(
-                    modifier = Modifier.padding(
-                        start = DIVIDER_HORIZONTAL_INSET + startInset,
-                        end = DIVIDER_HORIZONTAL_INSET,
-                        top = DIVIDER_VERTICAL_INSET,
-                        bottom = DIVIDER_VERTICAL_INSET,
+        Surface(
+            modifier = modifier.widthIn(max = MENU_MAX_WIDTH),
+            shape = RoundedCornerShape(MENU_CORNER_RADIUS),
+            color = MaterialTheme.colorScheme.surfaceContainer,
+            shadowElevation = MENU_ELEVATION,
+        ) {
+            Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
+                // What:     `Text` draws the track name as the heading above the action rows.
+                // Why:      D7 headed the menu with the track name, kept to one line with an ellipsis.
+                //
+                // In TS you'd write (pseudocode):
+                // ```ts
+                // heading({ text: title, maxLines: 1, overflow: "ellipsis" });
+                // ```
+                Text(
+                    text = title,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.fillMaxWidth().padding(
+                        start = ROW_HORIZONTAL_PADDING + startInset,
+                        end = ROW_HORIZONTAL_PADDING,
+                        top = ROW_VERTICAL_PADDING,
+                        bottom = ROW_VERTICAL_PADDING,
                     ),
                 )
-            }
-            // What:     `val foreground` selects the text and icon role for one row.
-            // Why:      The destructive row uses the error role in addition to its label and trash glyph.
-            //
-            // In TS you'd write (pseudocode):
-            // ```ts
-            // const foreground = action.destructive ? scheme.error : scheme.onSurface;
-            // ```
-            /** Text and icon color role of this row; the error role marks the destructive action. */
-            val foreground = if (action.destructive) {
-                MaterialTheme.colorScheme.error
-            } else {
-                MaterialTheme.colorScheme.onSurface
-            }
-            // What:     `val rowText` appends the dB value to File details in the secondary role.
-            // Why:      Other rows have a single plain label, so only the details row builds a span.
-            //
-            // In TS you'd write (pseudocode):
-            // ```ts
-            // const rowText = [label(action), action === "details" ? span(secondary, suffix) : null];
-            // ```
-            /** Visible text of this row, with the File details value in the secondary role. */
-            val rowText = buildAnnotatedString {
-                append(label(action))
-                if (action == TrackMenuAction.DETAILS) {
-                    withStyle(SpanStyle(color = secondary)) {
-                        append(trackMenuDetailsSuffix(detailsValue))
+                for ((index, action) in actions.withIndex()) {
+                    if (dividers[index]) {
+                        HorizontalDivider(
+                            modifier = Modifier.padding(
+                                start = DIVIDER_HORIZONTAL_INSET + startInset,
+                                end = DIVIDER_HORIZONTAL_INSET,
+                                top = DIVIDER_VERTICAL_INSET,
+                                bottom = DIVIDER_VERTICAL_INSET,
+                            ),
+                        )
                     }
+                    // What:     `val foreground` selects the text and icon role for one row.
+                    // Why:      The destructive row uses the error role in addition to its label and trash glyph.
+                    //
+                    // In TS you'd write (pseudocode):
+                    // ```ts
+                    // const foreground = action.destructive ? scheme.error : scheme.onSurface;
+                    // ```
+                    /** Text and icon color role of this row; the error role marks the destructive action. */
+                    val foreground = if (action.destructive) {
+                        MaterialTheme.colorScheme.error
+                    } else {
+                        MaterialTheme.colorScheme.onSurface
+                    }
+                    // What:     `val rowText` appends the dB value to File details in the secondary role.
+                    // Why:      Other rows have a single plain label, so only the details row builds a span.
+                    //
+                    // In TS you'd write (pseudocode):
+                    // ```ts
+                    // const rowText = [label(action), action === "details" ? span(secondary, suffix) : null];
+                    // ```
+                    /** Visible text of this row, with the File details value in the secondary role. */
+                    val rowText = buildAnnotatedString {
+                        append(label(action))
+                        if (action == TrackMenuAction.DETAILS) {
+                            withStyle(SpanStyle(color = secondary)) {
+                                append(trackMenuDetailsSuffix(detailsValue))
+                            }
+                        }
+                    }
+                    DropdownMenuItem(
+                        text = { Text(text = rowText) },
+                        onClick = { onSelect(action) },
+                        leadingIcon = { Icon(imageVector = trackMenuIcon(action), contentDescription = null) },
+                        colors = MenuDefaults.itemColors(textColor = foreground, leadingIconColor = foreground),
+                        contentPadding = PaddingValues(
+                            start = ROW_HORIZONTAL_PADDING + startInset,
+                            end = ROW_HORIZONTAL_PADDING,
+                            top = ROW_VERTICAL_PADDING,
+                            bottom = ROW_VERTICAL_PADDING,
+                        ),
+                        modifier = Modifier.widthIn(min = ITEM_MIN_TARGET).heightIn(min = ITEM_MIN_TARGET),
+                    )
                 }
             }
-            DropdownMenuItem(
-                text = { Text(text = rowText) },
-                onClick = { onSelect(action) },
-                leadingIcon = { Icon(imageVector = trackMenuIcon(action), contentDescription = null) },
-                colors = MenuDefaults.itemColors(textColor = foreground, leadingIconColor = foreground),
-                contentPadding = PaddingValues(
-                    start = ROW_HORIZONTAL_PADDING + startInset,
-                    end = ROW_HORIZONTAL_PADDING,
-                    top = ROW_VERTICAL_PADDING,
-                    bottom = ROW_VERTICAL_PADDING,
-                ),
-                modifier = Modifier.widthIn(min = ITEM_MIN_TARGET).heightIn(min = ITEM_MIN_TARGET),
-            )
         }
     }
 }

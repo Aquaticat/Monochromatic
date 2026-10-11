@@ -28,6 +28,12 @@ const val TEMPLATE_PREVIEW_ROW_COUNT: Int = 2
 /** Note drawn under the preview while the open library holds no track. */
 const val TEMPLATE_SAMPLE_NOTE: String = "Your library has no tracks yet. These are sample values."
 
+// What:     `const val TEMPLATE_UNREAD_NOTE: String` says the preview shows stand-in values until the tracks are read.
+// Why:      A library with tracks but no read duration or peak must not claim it is empty, so it says what is missing.
+//
+/** Note drawn under the preview while the open library's tracks have no duration or peak read yet. */
+const val TEMPLATE_UNREAD_NOTE: String = "Track durations and peaks are not read yet. These are sample values."
+
 // What:     `const val TEMPLATE_LIBRARY_NOTE: String` says the preview rows come from the open library.
 // Why:      The user should know whose tracks the preview is showing.
 //
@@ -181,6 +187,8 @@ data class TemplateEditorState(
     val previewTracks: List<PlayingTrackFields>,
     /** Whether the preview shows stand-in values because the open library holds no track. */
     val usesSampleValues: Boolean,
+    /** Note drawn under the preview while it shows stand-in values, which says why they are shown. */
+    val sampleNote: String = TEMPLATE_SAMPLE_NOTE,
 ) {
     // What:     `val text: String` is the open template's current text.
     // Why:      The field, the validation and the help all read the same text.
@@ -249,7 +257,7 @@ data class TemplateEditorState(
     /** Notes under the preview: its source first, then the kept-template note while a mistake stands. */
     val previewNotes: List<String>
         get() = buildList {
-            add(if (usesSampleValues) TEMPLATE_SAMPLE_NOTE else TEMPLATE_LIBRARY_NOTE)
+            add(if (usesSampleValues) sampleNote else TEMPLATE_LIBRARY_NOTE)
             if (!isValid) {
                 add(TEMPLATE_KEPT_NOTE)
             }

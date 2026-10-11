@@ -79,12 +79,14 @@ pub enum FirstRunState {
     SystemNoAudio,
     /// The chosen folder was read completely and holds no supported audio file.
     FolderNoAudio,
+    /// No folder is open, so the desktop asks the user to choose one.
+    NoFolderOpen,
 }
 
 /// Methods of `FirstRunState`.
 impl FirstRunState {
     /// What:
-    ///      `pub const ALL` lists the three screens in declaration order.
+    ///      `pub const ALL` lists the four screens in declaration order.
     /// Why:
     ///      Tests walk every state,
     ///  and this list keeps that walk exhaustive.
@@ -93,10 +95,11 @@ impl FirstRunState {
     /// ```ts
     /// const ALL: readonly FirstRunState[] = ["DECLINED", "SYSTEM_NO_AUDIO", "FOLDER_NO_AUDIO"];
     /// ```
-    pub const ALL: [FirstRunState; 3] = [
+    pub const ALL: [FirstRunState; 4] = [
         FirstRunState::Declined,
         FirstRunState::SystemNoAudio,
         FirstRunState::FolderNoAudio,
+        FirstRunState::NoFolderOpen,
     ];
 }
 
@@ -212,6 +215,7 @@ pub fn first_run_copy(
             explains_analysis: false,
         }),
         FirstRunState::FolderNoAudio => folder_no_audio_copy(folder_name),
+        FirstRunState::NoFolderOpen => Ok(no_folder_open_copy()),
     };
 }
 
@@ -226,6 +230,30 @@ pub fn first_run_copy(
 /// ```ts
 /// case "FOLDER_NO_AUDIO": return { title: `No audio found in ${folderName}`, ... };
 /// ```
+/// What:
+///      `fn no_folder_open_copy() -> FirstRunCopy`.
+///  The desktop copy for a start with no folder open: says so and offers `Open a folder`.
+/// Why:
+///       The desktop has no device library to open, so the only way to start is to choose a folder.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// const noFolderOpenCopy = (): FirstRunCopy => ({ title: "No folder is open", primaryAction: "Open a folder", secondaryActions: ["Settings"] });
+/// ```
+fn no_folder_open_copy() -> FirstRunCopy {
+    return FirstRunCopy {
+        title: "No folder is open".to_owned(),
+        body: concat!(
+            "Open a folder to start. Its audio files and the audio files in its subfolders ",
+            "become the music source.",
+        )
+        .to_owned(),
+        primary_action: Some(OPEN_FOLDER_LABEL),
+        secondary_actions: vec![SETTINGS_LABEL],
+        explains_analysis: false,
+    };
+}
+
 fn folder_no_audio_copy(folder_name: Option<&str>) -> Result<FirstRunCopy, FirstRunError> {
     let name = non_blank_folder_name(folder_name)?;
     return Ok(FirstRunCopy {

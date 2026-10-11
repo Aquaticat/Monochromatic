@@ -29,6 +29,17 @@ internal const val FEEDBACK_ERROR_DURATION_MS: Long = 4_000L
 /** Default visible time of one Undo message in milliseconds, before any platform accessibility adjustment. */
 internal const val FEEDBACK_UNDO_DURATION_MS: Long = 4_000L
 
+// What:     `internal const val FEEDBACK_NOTICE_DURATION_MS: Long = 4_000L` is the default visible time of a notice.
+// Why:     A notice reports progress that the user can watch in the row itself, so it uses the same short time as an
+//           error.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// const FEEDBACK_NOTICE_DURATION_MS = 4000;
+// ```
+/** Default visible time of one notice message in milliseconds, before any platform accessibility adjustment. */
+internal const val FEEDBACK_NOTICE_DURATION_MS: Long = 4_000L
+
 // What:     `internal const val FEEDBACK_MAX_DURATION_MS: Long = 60_000L` bounds any caller-supplied visible time.
 // Why:      Feedback is transient by D83, and the bound keeps the expiry sum far from Long overflow.
 //
@@ -87,6 +98,17 @@ enum class FeedbackKind(
     // ```
     /** A successful reversible operation that offers an Undo action. */
     UNDO(FEEDBACK_UNDO_DURATION_MS),
+
+    // What:     `NOTICE` names an operation in progress or a neutral status, with no action.
+    // Why:     A progress line such as re-analysing a track is neither an error nor an Undo, and must not replace
+    //           either.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // NOTICE = "NOTICE";
+    // ```
+    /** A neutral status message about an operation in progress, which offers no action. */
+    NOTICE(FEEDBACK_NOTICE_DURATION_MS),
 }
 
 // What:     `data class FeedbackMessage` holds one message's stable id, text, kind and optional action label.

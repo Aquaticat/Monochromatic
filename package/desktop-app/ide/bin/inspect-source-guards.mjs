@@ -73,6 +73,8 @@ const cases = [
   { name: 'observer-scope-not-a-stop', file: 'ui/app.slint', before: '        focus-on-tab-navigation: false;\n', after: '', native: true, test: 'tab_cycles_tree_divider_and_source_while_find_is_closed', failure: 'Tab must cycle tree, divider, and source only' },
   { name: 'find-scope-not-a-stop', file: 'ui/find.slint', before: '        focus-on-tab-navigation: false;\n', after: '', native: true, test: 'tab_visits_tree_source_and_open_find_bar_in_reading_order', failure: 'Tab order with an open find bar' },
   { name: 'back-tab-leaves-source', file: 'ui/app.slint', before: ' || event.text == Key.Backtab', after: '', native: true, test: 'tab_cycles_tree_divider_and_source_while_find_is_closed', failure: 'the dedicated back-tab key did not leave the source view' },
+  // Overscan tile: a view still inside the tile must not reach render, so it spends no tile, row, or image.
+  { name: 'overscan-early-return', file: 'src/native/viewport.rs', before: '        if !changed {\n            return;\n        }', after: '        if false {\n            return;\n        }', native: true, test: 'scrolling_inside_the_overscan_tile_does_no_source_work', failure: 'scrolling inside the overscan tile must not enter render' },
 ];
 // An optional comma-separated list reruns only the named guards, for example after adding one.
 const only = process.env.usage_only ? new Set(process.env.usage_only.split(',')) : undefined;

@@ -41,6 +41,8 @@ mod slint_generated;
 /// Imports every public Slint binding from the generated-only lint boundary.
 use slint_generated::*;
 
+use music_player::color_scheme::{COLOR_SCHEME_ENV, FOLLOW_SYSTEM, scheme_override};
+
 /// What:
 ///      `mod ui_progress;` loads the sibling `ui_progress.rs` module into this
 ///           binary crate.
@@ -56,22 +58,43 @@ use slint_generated::*;
 /// ```
 mod ui_progress;
 
-/// What:
-///      `mod ui_page;` loads the sibling `ui_page.rs` module into this binary crate.
-/// Why:
-///       The queue/now-playing projection helpers use generated Slint types,
-///  so they belong
-///           beside `main.rs`,
-///  not in the reusable library crate.
-///
-/// In TS you'd write (pseudocode):
-/// ```ts
-/// import * as uiPage from "./ui_page";
-/// ```
-mod ui_page;
-
 /// Playback mode conversion and displayed-page scope projection.
 mod ui_playback;
+
+mod ui_screen;
+
+mod ui_screen_rows;
+
+mod ui_screen_view;
+
+mod ui_search;
+
+mod ui_settings;
+
+mod ui_settings_model;
+
+mod ui_templates;
+
+mod ui_search_model;
+
+mod ui_wire;
+
+mod ui_files;
+
+mod ui_keys;
+
+mod ui_menu;
+
+mod ui_menu_model;
+
+mod ui_overlays;
+
+mod ui_overlays_model;
+
+/// Headless layout tests for the composed window at the cover and unfolded widths.
+#[cfg(test)]
+#[path = "ui_layout_tests.rs"]
+mod ui_layout_tests;
 
 /// What:
 ///      `mod ui_font_scale;` loads the sibling `ui_font_scale.rs` module.
@@ -87,42 +110,6 @@ mod ui_playback;
 /// import * as uiFontScale from "./ui_font_scale";
 /// ```
 mod ui_font_scale;
-
-/// What:
-///      `mod ui_led_rows;` loads measured LED row-membership adapter.
-/// Why:
-///       Slint owns full-width plate paint while Rust derives cap end corners from
-///           actual wrapped positions through generated `LedRowGeometry` interface.
-///
-/// In TS you'd write (pseudocode):
-/// ```ts
-/// import * as uiLedRows from "./ui_led_rows";
-/// ```
-mod ui_led_rows;
-
-/// What:
-///      `mod ui_led_palette;` loads runtime LED pigment derivation.
-/// Why:
-///       Slint delegates color-coordinate changes to Rust so every derived pigment
-///           is mixed in OKLCH rather than RGB or HSV.
-///
-/// In TS you'd write (pseudocode):
-/// ```ts
-/// import * as uiLedPalette from "./ui_led_palette";
-/// ```
-mod ui_led_palette;
-
-/// What:
-///      `mod ui_page_style;` loads the sibling settings-persistence bridge.
-/// Why:
-///       Page-control preference wiring uses generated `AppWindow` methods and stays
-///           separate so `main.rs` remains under its code-line limit.
-///
-/// In TS you'd write (pseudocode):
-/// ```ts
-/// import * as uiPageStyle from "./ui_page_style";
-/// ```
-mod ui_page_style;
 
 /// What:
 ///      `#[cfg(test)] #[path = "ui_binding_tests.rs"] mod ui_binding_tests;` loads
@@ -143,10 +130,6 @@ mod ui_page_style;
 /// // test-only import, tree-shaken from production builds
 /// import "./ui_binding_tests.test";
 /// ```
-#[cfg(test)]
-#[path = "ui_binding_tests.rs"]
-mod ui_binding_tests;
-
 /// What:
 ///      `use std::path::PathBuf;`.
 ///  The OWNED filesystem path type:
@@ -310,7 +293,7 @@ use std::time::Instant;
 /// ```ts
 /// import { Command, PlaybackMode, Update } from "music-player/command";
 /// ```
-use music_player::command::{Command, Update};
+use music_player::command::Command;
 
 /// What:
 ///      `use music_player::cli::Cli;`.
@@ -362,25 +345,6 @@ use music_player::progress::ProgressDebouncer;
 /// import { Session } from "music-player/session";
 /// ```
 use music_player::session::Session;
-
-/// What:
-///      `use music_player::pagination;`.
-///  The pure queue-pagination module.
-///           Importing the MODULE (not its items) so calls read `pagination::paginate`
-///           / `pagination::page_of_index`,
-///  keeping the origin obvious at the call.
-/// Why:
-///       The binary groups the queue's display paths into pages:
-///  one per top-
-///           level folder for subfolder tracks,
-///  A-Z + `#` letter pages for root-
-///           level tracks.
-///
-/// In TS you'd write (pseudocode):
-/// ```ts
-/// import * as pagination from "music-player/pagination";
-/// ```
-use music_player::pagination;
 
 /// What:
 ///      `use music_player::launcher::{self, Launcher};`.
@@ -469,23 +433,7 @@ use i_slint_backend_winit::Backend;
 /// ```ts
 /// import { ComponentHandle, Model, SharedString, VecModel } from "slint";
 /// ```
-use slint::{ComponentHandle, Model, SharedString, VecModel};
-
-/// What:
-///      `use ui_page::{set_now_playing, set_queue_model, PageNav};`.
-///  The sibling module's
-///           page-navigation intent type and the property-setter helpers.
-/// Why:
-///       `refresh_page` and `apply_update` below project engine `Update`s onto Slint
-///           properties through these.
-///
-/// In TS you'd write (pseudocode):
-/// ```ts
-/// import { setNowPlaying, setQueueModel, PageNav } from "./ui_page";
-/// ```
-use ui_page::{set_now_playing, set_queue_model, PageNav};
-/// Playback-mode conversion and displayed-page scope helpers.
-use ui_playback::{int_to_playback_mode, kept_page, page_scope, playback_mode_to_int};
+use slint::ComponentHandle;
 
 /// What:
 ///      `fn format_time(secs: f64) -> String`.
@@ -536,470 +484,6 @@ pub(crate) fn format_time(secs: f64) -> String {
     return format!("{}:{:02}", whole / 60, whole % 60)
 }
 
-/// What:
-///      `fn refresh_page(app: &AppWindow, target: PageNav)`.
-///  Rebuild the
-///           page-tab list and the visible page from the full `queue` property.
-///           `app: &AppWindow` is a BORROWED,
-///  read-only reference to the window (we
-///           only call its getters/setters,
-///  we do not own it).
-///  `target` is a `PageNav`:
-///           `Show(page)` to show a specific page,
-///  `Follow` to jump to the current
-///           track's page,
-///  or `Keep` to preserve the page already shown.
-///  No `-> ...`,
-///  so
-///           it returns `()` (the unit type,
-///  like TS `void`).
-///  Runs on the UI thread.
-/// Why:
-///       One place derives the pagination view,
-///  so the tabs,
-///  the visible rows,
-///           and the selected tab can never disagree.
-///
-/// In TS you'd write (pseudocode):
-/// ```ts
-/// function refreshPage(app: AppWindow, target: PageNav): void { ... }
-/// ```
-fn refresh_page(app: &AppWindow, target: PageNav) {
-    // What:     `let names: Vec<String> = app.get_queue().iter().map(|s| s.to_string()).collect();`.
-    //           `app.get_queue()` returns the full-list model (`ModelRc<SharedString>`);
-    //           `.iter()` (from the `Model` trait) walks it yielding `SharedString`;
-    //           `.map(|s| s.to_string())` copies each into an OWNED `String` (the
-    //           `|s| ...` is a closure, `.to_string()` allocates); `.collect()`
-    //           gathers them into the `Vec<String>` named by the annotation (a
-    //           heap-allocated growable array; sibling `&[String]` is a borrowed view).
-    // Why:      Re-read the canonical full list to regroup it into pages; owned
-    //           `String`s because `paginate` keeps them past the borrowed model.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // const names: string[] = [...app.queue];
-    // ```
-    let names: Vec<String> = app.get_queue().iter().map(|s| return s.to_string()).collect();
-    // What:     `let pages = pagination::paginate(&names);`. Call the module function,
-    //           passing `&names` which BORROWS the vector (lends it read-only without
-    //           giving up ownership). Returns the grouped pages (folder pages, then
-    //           A-Z letter pages, then `#`).
-    // Why:      The single source of the tabs and page contents; borrowing avoids
-    //           copying the whole list into the callee.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // const pages = pagination.paginate(names);
-    // ```
-    let pages = pagination::paginate(&names);
-    let kept_page = kept_page(app, &pages);
-
-    // What:     `let labels: Vec<SharedString> = pages.iter().map(|page| SharedString::from(page.label.as_str())).collect();`.
-    //           `.iter()` borrows each `page`; the closure takes its `label` (a
-    //           `String`), `.as_str()` borrows it as `&str`, and `SharedString::from`
-    //           builds the Slint string the model holds. `.collect()` gathers them
-    //           into a `Vec<SharedString>`.
-    // Why:      The tab captions, one per page, in page order.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // const labels = pages.map((page) => page.label);
-    // ```
-    let labels: Vec<SharedString> = pages
-        .iter()
-        .map(|page| return SharedString::from(page.label.as_str()))
-        .collect();
-    // What:     `app.set_page_labels(Rc::new(VecModel::from(labels)).into());`.
-    //           `VecModel::from(labels)` wraps the vector in a list model;
-    //           `Rc::new(...)` puts it behind a shared-ownership pointer; `.into()`
-    //           converts that `Rc<VecModel>` into the `ModelRc` the setter wants;
-    //           `set_page_labels` is the generated setter for the `page-labels`
-    //           property.
-    // Why:      Push the tab list to the UI.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // app.pageLabels = labels;
-    // ```
-    app.set_page_labels(Rc::new(VecModel::from(labels)).into());
-
-    // What:     `let requested: i32 = match target { ... };`. A `match` used as an
-    //           EXPRESSION assigned to `requested`. Decides which page to show: the
-    //           explicit one, the page already shown, or the page of the current track.
-    // Why:      `Show` carries an explicit page; `Keep` preserves the current page; `Follow`
-    //           computes the current track's page.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // const requested: number = target.kind === "show" ? target.page : target.kind === "keep" ? app.selectedPage : pageOfCurrent();
-    // ```
-    let requested: i32 = match target {
-        // What:     `PageNav::Show(page) => page`. Destructure the explicit page and yield it.
-        // Why:      Honour the explicitly clicked tab (or page 0 on a fresh open).
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // if (target.kind === "show") return target.page;
-        // ```
-        PageNav::Show(page) => page,
-        // What:     `PageNav::Keep => app.get_selected_page()`. Yield the page already shown.
-        // Why:      A rescan reconcile must not move the user's tab; clamping below still keeps
-        //           it in range if the page count shrank.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // if (target.kind === "keep") return app.selectedPage;
-        // ```
-        PageNav::Keep => kept_page,
-        // What:     `PageNav::Follow => { ... }`. The follow arm; its `{ ... }` block computes
-        //           the page to follow the current track.
-        // Why:      Keep the playing row visible after a track change.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // /* compute from current track */
-        // ```
-        PageNav::Follow => {
-            // What:     `let index = app.get_current_index();`. The playing track's
-            //           load-order index, or `-1` when nothing is playing.
-            // Why:      We map it onto a page.
-            //
-            // In TS you'd write (pseudocode):
-            // ```ts
-            // const index = app.currentIndex;
-            // ```
-            let index = app.get_current_index();
-            // What:     `if index < 0 { app.get_selected_page() } else { ... }`. An
-            //           `if/else` EXPRESSION (both arms yield an `i32`). With no
-            //           current track (-1), keep the page the user is already viewing;
-            //           otherwise find the page holding that track.
-            // Why:      Do not yank the view to page 0 when nothing is playing.
-            //
-            // In TS you'd write (pseudocode):
-            // ```ts
-            // return index < 0 ? app.selectedPage : (pageOfIndex(pages, index) ?? app.selectedPage);
-            // ```
-            if index < 0 {
-                app.get_selected_page()
-            } else {
-                // What:     `match pagination::page_of_index(&pages, index as usize) { ... }`.
-                //           `index as usize` casts the `i32` to `usize` (the pointer-
-                //           sized unsigned index type std collections want; siblings
-                //           `u32`/`u64`); `page_of_index` returns `Option<usize>`
-                //           (`Some(page)` or `None`).
-                // Why:      Locate the current track's page.
-                //
-                // In TS you'd write (pseudocode):
-                // ```ts
-                // const found = pageOfIndex(pages, index);
-                // ```
-                match pagination::page_of_index(&pages, index as usize) {
-                    // What:     `Some(page) => page as i32`. Destructure the found
-                    //           page index (`usize`) and `as i32` widens it back to the
-                    //           property's signed type.
-                    // Why:      Show that page.
-                    //
-                    // In TS you'd write (pseudocode):
-                    // ```ts
-                    // if (found !== null) return found;
-                    // ```
-                    Some(page) => page as i32,
-                    // What:     `None => app.get_selected_page()`. Not found (stale
-                    //           index mid-update); keep the current view.
-                    // Why:      Safe fallback.
-                    //
-                    // In TS you'd write (pseudocode):
-                    // ```ts
-                    // return app.selectedPage;
-                    // ```
-                    None => app.get_selected_page(),
-                }
-            }
-        }
-    };
-
-    // What:     `let clamped: i32 = if pages.is_empty() { 0 } else { requested.clamp(0, pages.len() as i32 - 1) };`.
-    //           An `if/else` EXPRESSION. With no pages, page 0; otherwise
-    //           `i32::clamp(lo, hi)` returns the nearest bound when `requested` is
-    //           outside `[0, len-1]`. `pages.len()` is a `usize` count, `as i32`
-    //           narrows it.
-    // Why:      A stale or out-of-range page index must not index past the pages.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // const clamped = pages.length ? Math.min(Math.max(requested, 0), pages.length - 1) : 0;
-    // ```
-    let clamped: i32 = if pages.is_empty() {
-        0
-    } else {
-        requested.clamp(0, pages.len() as i32 - 1)
-    };
-
-    // What:     `let items: Vec<PageItem> = match pages.get(clamped as usize) { ... };`.
-    //           `clamped as usize` casts the index; `pages.get(i)` returns
-    //           `Option<&Page>` (`None` when out of range, instead of panicking like
-    //           `pages[i]` would). A `match` builds the selected page's rows as the
-    //           generated `PageItem` struct.
-    // Why:      The ListView shows only this page's tracks.
-    // Gotcha:   `.get(i)` is the SAFE indexer returning an `Option`; `pages[i]`
-    //           would panic on an out-of-range index. Prefer `.get` for fallbacks.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // const items = (pages[clamped]?.entries ?? []).map((e) => ({ name: e.name, index: e.index }));
-    // ```
-    let items: Vec<PageItem> = match pages.get(clamped as usize) {
-        // What:     `Some(page) => page.entries.iter().map(|entry| PageItem { name: pagination::row_display(&page.label, &entry.name).into(), index: entry.index as i32 }).collect()`.
-        //           Destructure the present page; `.iter()` borrows its entries; the closure
-        //           builds a Slint `PageItem`. `pagination::row_display(&page.label, &entry.name)`
-        //           lends the page LABEL and the full display NAME read-only (each `&` borrows,
-        //           transferring no ownership) and returns a `&str` VIEW: the name with the
-        //           `<label>/` folder prefix stripped on folder pages, or the whole name on
-        //           letter / `#` pages. `.into()` then converts that `&str` into the
-        //           `SharedString` field (copying it). `entry.index as i32` narrows the index.
-        //           `.collect()` gathers into the `Vec<PageItem>`.
-        // Why:      Show the path BELOW the folder tab (the folder name is already the tab
-        //           caption), while still carrying the real queue index so a click maps back
-        //           correctly.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // page.entries.map((entry) => ({ name: rowDisplay(page.label, entry.name), index: entry.index }));
-        // ```
-        Some(page) => page
-            .entries
-            .iter()
-            .map(|entry| return PageItem {
-                name: pagination::row_display(&page.label, &entry.name).into(),
-                index: entry.index as i32,
-            })
-            .collect(),
-        // What:     `None => Vec::new()`. `Vec::new()` constructs an empty vector (no
-        //           page, e.g. empty queue): no rows.
-        // Why:      Show an empty list.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // [];
-        // ```
-        None => Vec::new(),
-    };
-    // What:     `app.set_page_items(Rc::new(VecModel::from(items)).into());`. Same
-    //           `VecModel` -> `Rc` -> `.into()` -> `ModelRc` wrapping as the labels
-    //           above; `set_page_items` sets the `page-items` property.
-    // Why:      Render the selected page's rows.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // app.pageItems = items;
-    // ```
-    app.set_page_items(Rc::new(VecModel::from(items)).into());
-    let selected_page_key = pages.get(clamped as usize).map(pagination::page_identity).unwrap_or_default();
-    app.set_selected_page_key(selected_page_key.into());
-    // What:     `app.set_selected_page(clamped);`. Set the `selected-page` property
-    //           to mark which tab is active.
-    // Why:      Highlight the visible tab.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // app.selectedPage = clamped;
-    // ```
-    app.set_selected_page(clamped);
-}
-
-/// What:
-///      `fn apply_update(app: &AppWindow, update: &Update)`.
-///  Apply one engine
-///           update to the window's properties.
-///  `app` is a borrowed window handle;
-///           `update` is BORROWED (`&Update`) so the progress-debounce wrapper can forward
-///           the very same value without rebuilding it.
-///  The match reads the payload by
-///           reference.
-///  Runs on the event-loop thread.
-/// Why:
-///       Keep the on-screen state mirroring the engine's state.
-///
-/// In TS you'd write (pseudocode):
-/// ```ts
-/// function applyUpdate(app: AppWindow, update: Update): void { ... }
-/// ```
-fn apply_update(app: &AppWindow, update: &Update) {
-    // What:     `match update { ... }`. Pattern-match (and destructure) the update
-    //           enum's variant; exhaustive over every `Update` case.
-    // Why:      Each variant maps to one or more property setters.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // switch (update.kind) { ... }
-    // ```
-    match update {
-        // What:     `Update::Queue(names) => { ... }`. Tuple-variant pattern: binds
-        //           the variant's single payload (the `Vec<String>` of names) to
-        //           `names`, moving it out of `update`.
-        // Why:      Render the filenames.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // case "queue": { const { names } = update; ... }
-        // ```
-        Update::Queue(names) => {
-            // What:     `set_queue_model(app, names);`. Store the full list (consuming `names`).
-            // Why:      The canonical full list; the visible rows come from the paginated
-            //           `page-items` set inside `refresh_page` just below.
-            //
-            // In TS you'd write (pseudocode):
-            // ```ts
-            // setQueueModel(app, names);
-            // ```
-            set_queue_model(app, names);
-            // What:     `refresh_page(app, PageNav::Show(0));`. Rebuild the tabs and show the
-            //           first page. A fresh queue (open/restore) resets to page 0; the
-            //           `NowPlaying` update that follows a restore then jumps to the current
-            //           track's page.
-            // Why:      A fresh queue starts at the first tab.
-            //
-            // In TS you'd write (pseudocode):
-            // ```ts
-            // refreshPage(app, { kind: "show", page: 0 });
-            // ```
-            refresh_page(app, PageNav::Show(0));
-        }
-        // What:     `Update::NowPlaying { index, name, duration } => { ... }`. A
-        //           STRUCT-variant pattern: destructures the variant's named fields
-        //           directly into the locals `index`, `name`, `duration`.
-        // Why:      Update the now-playing label, highlight, and seek-bar max.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // case "nowPlaying": { const { index, name, duration } = update; ... }
-        // ```
-        Update::NowPlaying {
-            index,
-            name,
-            duration,
-        } => {
-            // What:     `set_now_playing(app, index, name, duration);`. Mirror the title, seek-bar
-            //           maximum and total-time label, and the highlighted row.
-            // Why:      A track change refreshes the now-playing view.
-            //
-            // In TS you'd write (pseudocode):
-            // ```ts
-            // setNowPlaying(app, index, name, duration);
-            // ```
-            set_now_playing(app, *index, name, *duration);
-            // What:     `refresh_page(app, PageNav::Follow);`. FOLLOW the now-playing track:
-            //           switch the visible page to the one holding it so the highlighted row
-            //           stays on screen after Next / auto-advance / a row selection.
-            // Why:      Keep the playing track visible across track changes.
-            //
-            // In TS you'd write (pseudocode):
-            // ```ts
-            // refreshPage(app, { kind: "follow" });
-            // ```
-            refresh_page(app, PageNav::Follow);
-        }
-        // What:     `Update::Reconciled { names, index, name, duration } => { ... }`. A live
-        //           rescan reconciled the queue with disk: refresh the list AND the now-playing
-        //           view, but keep the user's current tab.
-        // Why:      An on-disk change to other files must not move the selected tab or track.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // case "reconciled": { const { names, index, name, duration } = update; ... }
-        // ```
-        Update::Reconciled {
-            names,
-            index,
-            name,
-            duration,
-        } => {
-            // What:     `set_queue_model(app, names);`. Replace the full list with the reconciled
-            //           paths (rows may have been added or removed).
-            // Why:      The list must reflect the new on-disk contents.
-            //
-            // In TS you'd write (pseudocode):
-            // ```ts
-            // setQueueModel(app, names);
-            // ```
-            set_queue_model(app, names);
-            // What:     `set_now_playing(app, index, name, duration);`. Refresh the title and the
-            //           highlighted row (the current track's index may have shifted).
-            // Why:      The same track stays selected; only its position in the list may differ.
-            //
-            // In TS you'd write (pseudocode):
-            // ```ts
-            // setNowPlaying(app, index, name, duration);
-            // ```
-            set_now_playing(app, *index, name, *duration);
-            // What:     `refresh_page(app, PageNav::Keep);`. Repaginate but KEEP the current tab.
-            // Why:      A reconcile must not yank the user off the page they are browsing, even
-            //           when the queue or the current track's page changed.
-            //
-            // In TS you'd write (pseudocode):
-            // ```ts
-            // refreshPage(app, { kind: "keep" });
-            // ```
-            refresh_page(app, PageNav::Keep);
-        }
-        // What:     `Update::Position(secs) => { ... }`. Tuple-variant pattern binding
-        //           the live playback position (`f64` seconds) to `secs`.
-        // Why:      Move the seek bar and update the elapsed label.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // case "position": { const { secs } = update; ... }
-        // ```
-        Update::Position(secs) => {
-            // What:     `app.set_position(secs as f32);`. `as f32` narrows to Slint's
-            //           float for the slider thumb position.
-            // Why:      Slider thumb position.
-            //
-            // In TS you'd write (pseudocode):
-            // ```ts
-            // app.position = secs;
-            // ```
-            app.set_position(*secs as f32);
-            // What:     `app.set_position_text(format_time(secs).into());`. Format the
-            //           elapsed seconds and `.into()` to `SharedString`.
-            // Why:      Elapsed-time label.
-            //
-            // In TS you'd write (pseudocode):
-            // ```ts
-            // app.positionText = formatTime(secs);
-            // ```
-            app.set_position_text(format_time(*secs).into());
-        }
-        // What:     `Update::Playing(on) => app.set_playing(on)`. One-line arm: bind
-        //           the play/pause boolean `on` and set the `playing` property.
-        // Why:      Toggle the button label.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // case "playing": app.playing = on; break;
-        // ```
-        Update::Playing(on) => app.set_playing(*on),
-        // What:     `Update::Volume(v) => app.set_volume(v)`. Bind the volume `v`
-        //           (already an `f32`) and set the `volume` property.
-        // Why:      Sync the slider.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // case "volume": app.volume = v; break;
-        // ```
-        Update::Volume(v) => app.set_volume(*v),
-        // What:     `Update::Shuffle(mode) => app.set_playback_mode_mode(playback_mode_to_int(mode))`.
-        //           Bind the `PlaybackMode`, encode it to an int via the helper, and
-        //           set the radio group's property.
-        // Why:      Highlight the selected shuffle radio.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // case "shuffle": app.shuffleMode = shuffleToInt(mode); break;
-        // ```
-        Update::PlaybackMode(mode) => app.set_playback_mode(playback_mode_to_int(*mode)),
-    }
-}
 
 
 
@@ -1276,6 +760,36 @@ fn music_dir() -> Option<PathBuf> {
 }
 
 /// What:
+///      `fn color_scheme_from_env() -> i32`.
+///  The `Theme.scheme-override` value that `MUSIC_PLAYER_COLOR_SCHEME` selects.
+/// Why:
+///       A mistyped value is logged and the window follows the system, so the app still opens.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function colorSchemeFromEnv(): number {
+///   try { return schemeOverride(process.env.MUSIC_PLAYER_COLOR_SCHEME); } catch (error) { warn(error); return FOLLOW_SYSTEM; }
+/// }
+/// ```
+fn color_scheme_from_env() -> i32 {
+    // What:     `scheme_override(value.as_deref())`. Map the variable's text to the override.
+    // Why:      An absent variable is `None`, which follows the system.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const value = process.env.MUSIC_PLAYER_COLOR_SCHEME;
+    // ```
+    let value = std::env::var(COLOR_SCHEME_ENV).ok();
+    return match scheme_override(value.as_deref()) {
+        Ok(scheme) => scheme,
+        Err(error) => {
+            tracing::warn!(error = %error, "ignoring the color scheme override");
+            FOLLOW_SYSTEM
+        }
+    };
+}
+
+/// What:
 ///      `fn main() -> Result<()>`.
 ///  The entry point.
 ///  The return type is
@@ -1433,6 +947,15 @@ fn main() -> Result<()> {
     // const app = new AppWindow();
     // ```
     let app = AppWindow::new()?;
+    // What:     `app.global::<Theme>().set_scheme_override(color_scheme_from_env());`.
+    //           Apply the color scheme override before the first frame.
+    // Why:      Verification runs fix the scheme with MUSIC_PLAYER_COLOR_SCHEME; unset follows the system.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // app.theme.schemeOverride = colorSchemeFromEnv();
+    // ```
+    app.global::<Theme>().set_scheme_override(color_scheme_from_env());
 
     // What:     `let weak = app.as_weak();`. `.as_weak()` makes a WEAK handle to the
     //           window: it does not keep the window alive, and can be sent to other
@@ -1468,13 +991,10 @@ fn main() -> Result<()> {
     // ```ts
     // applyLedRowGeometry(app);
     // ```
-    ui_led_rows::apply(&app);
 
     // Derive every runtime LED pigment through OKLCH coordinates.
-    ui_led_palette::apply(&app);
 
     // Restore page-control preference and register settings persistence.
-    ui_page_style::apply(&app);
 
     // What:     `let launcher = Launcher::new();`. Construct the KDE taskbar-progress
     //           emitter (a cheap-to-clone session-bus handle, or a no-op without a
@@ -1617,352 +1137,8 @@ fn main() -> Result<()> {
             }
         });
     }));
+    ui_wire::wire(&app, &engine);
 
-    // What:     `app.on_toggle_play({ let engine = engine.clone(); move || engine.send(Command::TogglePlay) });`.
-    //           Register the play/pause handler. The `{ ... }` BLOCK EXPRESSION clones
-    //           the `Rc<Engine>` and evaluates to a `move` closure that owns the
-    //           clone. `on_toggle_play` is the generated registrar for the
-    //           `toggle-play` callback.
-    // Why:      Button press -> engine command.
-    // Gotcha:   the `{ let engine = ...; move || ... }` block is a common Rust idiom
-    //           to clone a capture BEFORE moving it into the closure, so the original
-    //           `engine` stays usable for the next handler.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // app.onTogglePlay(() => engine.send(Command.TogglePlay));
-    // ```
-    app.on_toggle_play({
-        // What:     `let handler_engine = engine.clone();`. A shared-owner clone of the
-        //           `Rc` for this closure (cheap: bumps the reference count), named
-        //           apart so it never shadows the shared `engine`.
-        // Why:      The closure must own an engine handle that outlives this scope.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // const e = engine;
-        // ```
-        let handler_engine = engine.clone();
-        // What:     `move || handler_engine.send(Command::TogglePlay)`. A zero-argument
-        //           MOVE closure (the `|| ...` is the param list) that owns the cloned
-        //           engine handle and sends the toggle command.
-        // Why:      Ask the engine to toggle play/pause.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // () => engine.send(Command.TogglePlay)
-        // ```
-        move || handler_engine.send(Command::TogglePlay)
-    });
-
-    // What:     `app.on_prev({ ... })`. Register the previous-track handler, same
-    //           clone-then-move-closure idiom as `on_toggle_play`.
-    // Why:      Prev button -> `Command::Prev`.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // app.onPrev(() => engine.send(Command.Prev));
-    // ```
-    app.on_prev({
-        // What:     `let handler_engine = engine.clone();`. Clone the `Rc<Engine>` for
-        //           this handler's closure (refcount bump), named apart so it never
-        //           shadows the shared `engine`.
-        // Why:      The closure needs its own owning handle.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // const e = engine;
-        // ```
-        let handler_engine = engine.clone();
-        // What:     `move || handler_engine.send(Command::Prev)`. Zero-arg move closure
-        //           that sends the previous-track command.
-        // Why:      One Prev click -> one `Prev` command.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // () => engine.send(Command.Prev)
-        // ```
-        move || handler_engine.send(Command::Prev)
-    });
-
-    // What:     `app.on_next({ ... })`. Register the next-track handler.
-    // Why:      Next button -> `Command::Next`.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // app.onNext(() => engine.send(Command.Next));
-    // ```
-    app.on_next({
-        // What:     `let handler_engine = engine.clone();`. Clone the `Rc<Engine>` for
-        //           this handler's closure, named apart so it never shadows the shared
-        //           `engine`.
-        // Why:      The closure needs its own owning handle.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // const e = engine;
-        // ```
-        let handler_engine = engine.clone();
-        // What:     `move || handler_engine.send(Command::Next)`. Zero-arg move closure
-        //           that sends the next-track command.
-        // Why:      One Next click -> one `Next` command.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // () => engine.send(Command.Next)
-        // ```
-        move || handler_engine.send(Command::Next)
-    });
-
-    // What:     `app.on_seek({ ... })`. Register the seek handler; its closure takes
-    //           the slider value `secs: f32` and forwards it as `f64` seconds.
-    // Why:      Dragging the seek bar jumps playback.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // app.onSeek((secs) => engine.send(Command.Seek(secs)));
-    // ```
-    app.on_seek({
-        // What:     `let handler_engine = engine.clone();`. Clone the `Rc<Engine>` for
-        //           this handler's closure, named apart so it never shadows the shared
-        //           `engine`.
-        // Why:      The closure needs its own owning handle.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // const e = engine;
-        // ```
-        let handler_engine = engine.clone();
-        // What:     `move |secs| handler_engine.send(Command::Seek(secs as f64))`. A move
-        //           closure taking one `f32` parameter `secs`; `as f64` WIDENS it to
-        //           the seconds type `Command::Seek` carries.
-        // Why:      One seek drag -> one `Seek` command at the dragged position.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // (secs) => engine.send(Command.Seek(secs))
-        // ```
-        move |secs| handler_engine.send(Command::Seek(secs as f64))
-    });
-
-    // What:     `app.on_set_volume({ ... })`. Register the volume handler; its closure
-    //           takes the gain `v: f32`.
-    // Why:      Volume slider -> `Command::SetVolume`.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // app.onSetVolume((v) => engine.send(Command.SetVolume(v)));
-    // ```
-    app.on_set_volume({
-        // What:     `let handler_engine = engine.clone();`. Clone the `Rc<Engine>` for
-        //           this handler's closure, named apart so it never shadows the shared
-        //           `engine`.
-        // Why:      The closure needs its own owning handle.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // const e = engine;
-        // ```
-        let handler_engine = engine.clone();
-        // What:     `move |v| handler_engine.send(Command::SetVolume(v))`. A move closure
-        //           taking one `f32` gain `v` and forwarding it.
-        // Why:      One slider change -> one `SetVolume` command.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // (v) => engine.send(Command.SetVolume(v))
-        // ```
-        move |v| handler_engine.send(Command::SetVolume(v))
-    });
-
-    // What:     `app.on_set_playback_mode_mode({ ... })`. Register the shuffle radio
-    //           handler; the clicked radio passes its mode integer `m: i32` (0/1/2).
-    //           Map it back to the enum and send. No property read needed: the radio
-    //           carries the target mode directly.
-    // Why:      Selecting a shuffle radio sets that exact mode.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // app.onSetPlaybackMode((m) => engine.send(Command.SetPlaybackMode(intToShuffle(m))));
-    // ```
-    app.on_set_playback_mode({
-        // The handler's own engine clone and window handle, named apart so neither
-        // shadows the shared `engine` or the outer `app`/`weak`.
-        let mode_engine = engine.clone();
-        let mode_weak = app.as_weak();
-        move |mode| {
-            if let Some(window) = mode_weak.upgrade() {
-                mode_engine.send(Command::SetPageScope(page_scope(
-                    &window,
-                    window.get_selected_page(),
-                )));
-                mode_engine.send(Command::SetPlaybackMode(int_to_playback_mode(mode)));
-            }
-        }
-    });
-
-    // What:     `app.on_select_index({ ... })`. Register the row-select handler; its
-    //           closure takes the queue row `i: i32` and sends it as a `usize` index.
-    // Why:      A single click on an unselected row selects it (Rust loads it
-    //           paused); the UI sends `TogglePlay` instead when the clicked row is
-    //           already current, so this only ever carries a select.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // app.onSelectIndex((i) => engine.send(Command.SelectIndex(i)));
-    // ```
-    app.on_select_index({
-        // What:     `let handler_engine = engine.clone();`. Clone the `Rc<Engine>` for
-        //           this handler's closure, named apart so it never shadows the shared
-        //           `engine`.
-        // Why:      The closure needs its own owning handle.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // const e = engine;
-        // ```
-        let handler_engine = engine.clone();
-        // What:     `move |i| handler_engine.send(Command::SelectIndex(i as usize))`. A
-        //           move closure taking the row `i: i32`; `as usize` casts it to the
-        //           pointer-sized index type the command carries.
-        // Why:      One row click -> one `SelectIndex` command.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // (i) => engine.send(Command.SelectIndex(i))
-        // ```
-        move |i| handler_engine.send(Command::SelectIndex(i as usize))
-    });
-    // What:     `app.on_select_page({ ... })`. Register the tab-click handler; the
-    //           closure takes the page index `p: i32`. It does NOT touch the engine:
-    //           pagination is a pure display concern, so it just re-renders the
-    //           chosen page from the existing `queue` property. Needs a weak handle
-    //           to read/write properties.
-    // Why:      Clicking a tab filters the list to that folder (or letter) page.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // app.onSelectPage((p) => refreshPage(app, p));
-    // ```
-    app.on_select_page({
-        // What:     `let page_weak = app.as_weak();`. A WEAK handle the `'static` closure
-        //           can hold (it cannot borrow `app`, which would not live long
-        //           enough), named apart so it never shadows the engine callback's weak.
-        // Why:      `refresh_page` needs the window to read `queue` and set the page.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // const w = app; // WeakRef so the closure does not keep the window alive
-        // ```
-        let page_weak = app.as_weak();
-        let page_engine = engine.clone();
-        // What:     `move |p| { if let Some(window) = page_weak.upgrade() { refresh_page(&window, PageNav::Show(p)); } }`.
-        //           A move closure taking the page `p`; `page_weak.upgrade()` yields
-        //           `Option<AppWindow>`, the `if let Some(window)` runs only if the window
-        //           still exists, and `refresh_page(&window, PageNav::Show(p))` lends the
-        //           window and requests that EXACT page (not the follow-current or keep paths).
-        // Why:      Show the clicked tab's tracks.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // (p) => { const app = weak.deref(); if (app) refreshPage(app, { kind: "show", page: p }); }
-        // ```
-        move |p| {
-            if let Some(window) = page_weak.upgrade() {
-                refresh_page(&window, PageNav::Show(p));
-                page_engine.send(Command::SetPageScope(page_scope(&window, p)));
-            }
-        }
-    });
-
-    // What:     `app.on_open_files({ ... })`. Register the Open-button handler. It
-    //           opens the FOLDER picker on a SEPARATE thread (the dialog blocks) and
-    //           sends the chosen directory.
-    // Why:      A blocking dialog must not freeze the UI event loop. The XDG portal
-    //           treats files and folders as separate dialog modes, so this player
-    //           picks a folder and scans it recursively (individual files are still
-    //           openable via command-line arguments).
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // app.onOpenFiles(() => { showFolderPickerAsync().then((dir) => tx.send(openPaths([dir], false))); });
-    // ```
-    app.on_open_files({
-        // What:     `let tx = engine.sender();`. `.sender()` returns a `Send`
-        //           `CommandSender` (the command channel's send end bundled with the
-        //           worker handle) for the picker thread, because the `Rc<Engine>`
-        //           itself is `!Send` (single-thread only).
-        // Why:      The thread cannot hold the `Rc`; it holds the sender instead, and
-        //           sending through it also wakes the worker.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // const tx = engine.sender();
-        // ```
-        let tx = engine.sender();
-        // What:     `move || { ... }`. The zero-argument move handler closure that owns
-        //           `tx`.
-        // Why:      Launch the picker when the Open button fires.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // () => { ... }
-        // ```
-        move || {
-            // What:     `let picker_tx = tx.clone();`. Clone the sender for this
-            //           invocation, named apart so it never shadows the captured sender.
-            // Why:      Each open spawns a fresh thread that owns its own sender.
-            //
-            // In TS you'd write (pseudocode):
-            // ```ts
-            // const t = tx;
-            // ```
-            let picker_tx = tx.clone();
-            // What:     `std::thread::spawn(move || { ... });`. `thread::spawn` starts
-            //           a NEW OS thread running the move closure (which owns `tx`).
-            // Why:      Run the blocking dialog off the UI thread so the UI stays
-            //           responsive while it is open.
-            //
-            // In TS you'd write (pseudocode):
-            // ```ts
-            // runInWorker(() => { ... });
-            // ```
-            std::thread::spawn(move || {
-                // What:     `if let Some(dir) = rfd::FileDialog::new().pick_folder() { ... }`.
-                //           `FileDialog::new().pick_folder()` shows a folder picker (XDG
-                //           portal on Wayland) and returns `Option<PathBuf>`: `Some(dir)`
-                //           if the user confirmed, `None` if cancelled. The `if let
-                //           Some(dir)` runs the body only on confirm.
-                // Why:      Let the user enqueue a whole folder.
-                //
-                // In TS you'd write (pseudocode):
-                // ```ts
-                // const dir = await showOpenDialog({ directory: true });
-                // if (dir) { ... }
-                // ```
-                if let Some(dir) = rfd::FileDialog::new().pick_folder() {
-                    // What:     `picker_tx.send(Command::OpenRoot { root: dir, select: None, play: false });`.
-                    //           The picked folder becomes the Source Root; `select: None`
-                    //           opens with nothing cued; `play: false` loads PAUSED (only a
-                    //           `--start-playing` command-line launch auto-plays).
-                    //           `CommandSender::send` swallows a send error (engine gone)
-                    //           internally, then wakes the worker; the engine scans the root.
-                    // Why:      Replace the queue with the folder's tracks without surprise
-                    //           playback; the user presses play.
-                    //
-                    // In TS you'd write (pseudocode):
-                    // ```ts
-                    // tx.send(Command.OpenRoot({ root: dir, select: null, play: false }));
-                    // ```
-                    picker_tx.send(Command::OpenRoot {
-                        root: dir,
-                        select: None,
-                        play: false,
-                    });
-                }
-            });
-        }
-    });
 
     // What:     `match cli.path { Some(path) => ..., None => ... }`. The single optional
     //           positional path was parsed into `cli` at the top of `main`. A CLI path

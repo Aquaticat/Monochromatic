@@ -204,3 +204,27 @@ fn analysis_explanation_is_exact() {
         "True peak is measured automatically for every audio file. Analysis uses CPU and battery; playback remains available while it runs."
     );
 }
+
+// What:     `#[test] fn no_folder_open_title_is_exact()` checks the desktop no-folder headline word for word.
+// Why:      The start with no folder open is shown only on desktop, so its copy is pinned here.
+#[test]
+fn no_folder_open_title_is_exact() {
+    assert_eq!(copy_of(FirstRunState::NoFolderOpen, None).title, "No folder is open");
+}
+
+// What:     `#[test] fn no_folder_open_offers_open_folder_then_settings()` checks the filled and outlined actions.
+// Why:      Choosing a folder is the only way to start, so it is the filled action.
+#[test]
+fn no_folder_open_offers_open_folder_then_settings() {
+    let copy = copy_of(FirstRunState::NoFolderOpen, None);
+    assert_eq!(copy.primary_action, Some(OPEN_FOLDER_LABEL));
+    assert_eq!(copy.secondary_actions, vec![SETTINGS_LABEL]);
+    assert!(!copy.explains_analysis);
+}
+
+// What:     `#[test] fn no_folder_open_ignores_a_folder_name()` checks that the no-folder copy takes no name.
+// Why:      No folder exists in this state, so a supplied name must not leak into the copy.
+#[test]
+fn no_folder_open_ignores_a_folder_name() {
+    assert_eq!(copy_of(FirstRunState::NoFolderOpen, Some("Albums")).title, "No folder is open");
+}

@@ -206,6 +206,7 @@ import androidx.compose.ui.platform.LocalContext
 // ```ts
 // import { paginate, type Page } from "./core/Pagination";
 // ```
+import dev.monochromatic.musicplayer.core.MenuAnchorRect
 import dev.monochromatic.musicplayer.core.Page
 import dev.monochromatic.musicplayer.core.PlaybackMode
 import dev.monochromatic.musicplayer.core.PlayerContentModel
@@ -689,6 +690,8 @@ private fun ProductionScreenHost(startWithPicker: Boolean, scene: String) {
         pageLabels = SAMPLE_PAGE_LABELS,
         selectedPage = selectedPage,
         pageItems = SAMPLE_PAGES.getOrNull(selectedPage)?.entries.orEmpty(),
+        playingItems = SAMPLE_PAGES.getOrNull(selectedPage)?.entries.orEmpty(),
+        playingPageIndex = selectedPage,
         currentIndex = SAMPLE_CURRENT_INDEX,
         playing = true,
         mode = PlaybackMode.IN_ORDER,
@@ -928,6 +931,7 @@ private fun sampleTrackMenuScene(
             actions = trackMenuActionsFor(),
             title = trackFileNameOf(SAMPLE_CAMELLIA_SECOND_PATH),
             detailsValue = null,
+            anchor = MenuAnchorRect(left = 0, top = 0, right = 0, bottom = 0),
             onSelect = {},
             onDismiss = {},
         )
