@@ -47,7 +47,6 @@ import {
   referenceCachePath,
   referenceLineOf,
   type ReferenceRecord,
-  textsInCodePointOrder,
   writeCachedReference,
 } from '../dist/final/node/index.mjs';
 import { capturingLoggerPair, } from './capturing-logger.test-fixture.ts';
@@ -776,10 +775,8 @@ await describe({
                 logger,
               },);
             },);
-            // The fetch that dropped writes its line as it ends, which can be
-            // after the block refused; every scripted failure waits on nothing
-            // but a microtask, so a turn of the event loop later both have ended.
-            await turnOfTheLoop();
+            // The fetch that dropped has its line written before the block
+            // refuses, since the block waits for every lookup to end.
             expect(refusal,).toBe(reason,);
             expect(logged,).toEqual([
               `[citedReferenceBlock] reference 1 ${POST_URL} could not be fetched: refused by TypeError`,
@@ -830,15 +827,79 @@ await describe({
               urls: [ARCHIVE_URL,],
               text: { maxCharacters: REFERENCE_TEXT_CHARACTERS, },
             },);
-            // In code-point order: the two pages are looked up at once, so
-            // which line lands first is not part of the contract.
-            expect(textsInCodePointOrder({ texts: logged, },),).toEqual(textsInCodePointOrder({
-              texts: [
-                `[citedReferenceBlock] REFERENCE 1 ${POST_URL}: success, 28 chars, cached`,
-                `[citedReferenceBlock] REFERENCE 2 ${ARCHIVE_URL}: success, 57 chars, bought`,
-                '[citedReferenceBlock] REFERENCES cited=2 cached=1 bought=1',
-              ],
-            },),);
+            // In order of citation, whichever page's lookup ended first.
+            expect(logged,).toEqual([
+              `[citedReferenceBlock] REFERENCE 1 ${POST_URL}: success, 28 chars, cached`,
+              `[citedReferenceBlock] REFERENCE 2 ${ARCHIVE_URL}: success, 57 chars, bought`,
+              '[citedReferenceBlock] REFERENCES cited=2 cached=1 bought=1',
+            ],);
+          },
+        },),
+        it({
+          name: 'WRITES EACH PAGE\'S LINE IN ORDER OF CITATION when a later page ends first, the earlier page\'s '
+            + 'REFERENCE line before the later page\'s failure, and returns the block in that order',
+          fn: async () => {
+            const {
+              logger,
+              lines: logged,
+            } = capturingLoggerPair();
+            await using scratch = await scratchDir({ prefix: 'reference-block-later-first-', },);
+            /**
+             Second page the invented original cites, whose fetch is refused at once.
+             */
+            const dotUrl = 'https://cats.example/posts/mittens-and-the-red-dot';
+            /**
+             Opened once the second page's fetch has been refused, which the first page's fetch waits for.
+             */
+            const laterFailed = Promise.withResolvers<undefined>();
+            /**
+             Transport refusing the second page at once and answering the first once that refusal has run its course.
+
+             @param _input - endpoint, unread
+
+             @param init - request, whose body names the page
+
+             @returns A refusal for the second page, the readable body for the first
+             */
+            async function laterFirst(_input: string | URL | Request, init?: RequestInit,): Promise<Response> {
+              /**
+               Body as sent, which names the page asked for.
+               */
+              const sent = init?.body;
+              if (((typeof sent) === 'string') && sent.includes(dotUrl,)) {
+                laterFailed.resolve(undefined,);
+                return new Response(
+                  'closed',
+                  { status: 503, },
+                );
+              }
+              await laterFailed.promise;
+              // Nothing but microtasks lies between the second page's failure
+              // and its member's end, so a turn of the event loop later it has
+              // ended.
+              await turnOfTheLoop();
+              return Response.json(
+                READABLE_BODY,
+                { status: 200, },
+              );
+            }
+            expect((await citedReferenceBlock({
+              sourceText: `见 ${POST_URL} 和 ${dotUrl}`,
+              apiKey: 'whisker-key',
+              dir: scratch.path,
+              signal: SIGNAL,
+              fetchFn: laterFirst,
+              now: () => NOW,
+              logger,
+            },)).split('\n',),).toEqual([
+              `- reference 1 ${POST_URL} ("In memory of Mittens"): Mittens had an older sister. The sister was also a tabby.`,
+              `- reference 2 ${dotUrl}: could not be fetched`,
+            ],);
+            expect(logged,).toEqual([
+              `[citedReferenceBlock] REFERENCE 1 ${POST_URL}: success, 57 chars, bought`,
+              `[citedReferenceBlock] reference 2 ${dotUrl} could not be fetched: contents responded 503`,
+              '[citedReferenceBlock] REFERENCES cited=2 cached=0 bought=2',
+            ],);
           },
         },),
       ],

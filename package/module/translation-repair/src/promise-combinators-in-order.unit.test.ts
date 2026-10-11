@@ -2215,11 +2215,11 @@ const LISTED_CALLS: readonly ListedSite[] = [
   {
     site: 'cited-reference-lookup.ts#citedReferenceBlock',
     combinator: 'all',
-    reason: 'shared-abort',
-    restsOn: ['aborted', 'reason',],
-    note: 'lineFor holds the lookup and the line it builds in a try whose catch rethrows a failure only when the '
-      + 'signal has aborted and the failure is its reason, so every rejection is that one reason, and logs any '
-      + 'other failure through refusalText and answers an unfetched line',
+    reason: 'catches-own',
+    restsOn: ['failedPageOutcome',],
+    note: 'outcomeFor holds the lookup and the line it builds in a try whose catch answers a named outcome through '
+      + 'failedPageOutcome, the caller\'s reason as a stop and any other failure as an unfetched page, so no member '
+      + 'rejects; the block writes every page\'s line in order of citation and then throws the first stop\'s reason',
   },
   {
     site: 'corpus-run/attribution-read.ts#gatherAttributionEntries',
@@ -2288,7 +2288,7 @@ const LISTED_CALLS: readonly ListedSite[] = [
     reason: 'catches-own',
     restsOn: ['drain',],
     note: 'every lane runs drain, whose catch records a job failure by position, and mapOverlapped throws the lowest '
-      + 'position\'s failure once every lane has ended, having written each other failure under the caller\'s stop',
+      + 'position\'s failure once every lane has ended, having written each other failure, stopped or not',
   },
   {
     site: 'provider-meters.ts#readEveryMeter',
@@ -2343,11 +2343,11 @@ const LISTED_CALLS: readonly ListedSite[] = [
   {
     site: 'work-title-lookup.ts#workTitleLookupLines',
     combinator: 'all',
-    reason: 'shared-abort',
-    restsOn: ['aborted', 'reason',],
-    note: 'linesFor holds the lookup in a try whose catch rethrows a failure only when the signal has aborted and the '
-      + 'failure is its reason, so every rejection is that one reason, and logs any other failure through '
-      + 'refusalText and answers no lines',
+    reason: 'catches-own',
+    restsOn: ['failedTitleOutcome',],
+    note: 'outcomeFor holds the lookup in a try whose catch answers a named outcome through failedTitleOutcome, the '
+      + 'caller\'s reason as a stop and any other failure as a warning, so no member rejects; the lookups write every '
+      + 'failure in title order and then throw the first stop\'s reason',
   },
 ];
 

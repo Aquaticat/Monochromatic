@@ -21,13 +21,20 @@ import {
   isInsertionChunk,
   makeInsertionChunk,
   prepareDocumentPair,
+  SyntheticHttpError,
   TranslationRepairInterruptedError,
+  validateTranslatedSlice,
+  type ChatJsonOutcome,
+  type ChatJsonRequest,
   type ChunkPair,
   type PreparedDocumentPair,
   type SyntheticClient,
   type TranslateModels,
 } from '../dist/final/node/index.mjs';
-import { levelCapturingLogger, } from './capturing-logger.test-fixture.ts';
+import {
+  levelCapturingLogger,
+  warningRecordingLogger,
+} from './capturing-logger.test-fixture.ts';
 import { rejectionOf, } from './rejecting-call.test-fixture.ts';
 import {
   statusFailureLogText,
@@ -337,6 +344,124 @@ await describe({
             }, as the caller stopped the round`;
           },),
           `warn slice ${String(slice.target.sliceIndex,)}: abandoned by the caller's abort (refused by AbortError)`,
+        ],);
+      },
+    },),
+
+    it({
+      name: 'WRITES A RE-ASK\'S OWN FAILURE ONCE when the caller stops the slice during the repair of an invalid '
+        + 'candidate: on the seat\'s line with the provider\'s words, and the slice\'s abandoned line without them',
+      fn: async () => {
+        /**
+         Why the caller stopped the slice.
+         */
+        const reason = new Error('the owner called the cats in',);
+        /**
+         The caller's steering.
+         */
+        const stop = new AbortController();
+        /**
+         What the first seat's re-ask ends in, of its own.
+         */
+        const refusal = new SyntheticHttpError({
+          status: 503,
+          bodyText: 'the cat is napping in the sun',
+        },);
+        /**
+         Content slice of the fixture pair.
+         */
+        const prepared = await pairWithInsertion();
+        const slice = prepared.slices.find(function isContent(candidate,): boolean {
+          return !isInsertionChunk(candidate.target,);
+        },);
+        if (slice === undefined)
+          throw new Error('the fixture pair carries no content slice',);
+
+        /**
+         Every warning the attempt wrote; the round's timing line goes to the
+         shared logger, since its milliseconds are the clock's.
+         */
+        const warnings: string[] = [];
+        /**
+         Re-asks the client has seen, the first of which the provider refuses.
+         */
+        const reasked = { count: 0, };
+        const refused = await rejectionOf(async function attemptUnderStop() {
+          return attemptTranslateSlice({
+            client: {
+              chatText: async () => {
+                throw new Error('chatText unused by the translate lane',);
+              },
+              quotas: async () => {
+                throw new Error('quotas unused by the translate lane',);
+              },
+              chatJson: async <ValueT,>(
+                request: ChatJsonRequest<ValueT>,
+              ): Promise<ChatJsonOutcome<ValueT>> => {
+                /**
+                 A translator's answer that merged the heading away, which the
+                 publication rule sends back to its author.
+                 */
+                const merged = { translation: 'Section one: the cat dozes on the windowsill.', };
+                if (request.validate(merged,)) {
+                  return {
+                    kind: 'ok',
+                    value: merged,
+                    rawText: JSON.stringify(merged,),
+                  };
+                }
+                reasked.count += 1;
+                stop.abort(reason,);
+                if (reasked.count === 1)
+                  throw refusal;
+                // A real client forwards the aborted request's reason.
+                request.signal.throwIfAborted();
+                throw new Error('unreachable: a re-ask asked after the stop was handed a signal that had not aborted',);
+              },
+            },
+            slice,
+            prepared,
+            models: MODELS,
+            neighbouringIncumbentText: '',
+            neighbouringSourceText: '',
+            pictureContext: '',
+            pictureFindings: [],
+            signal: stop.signal,
+            perCallTimeoutMs: HANG_STOP_MS,
+            l: warningRecordingLogger({
+              base: l,
+              warnings,
+            },),
+            stageSettings: SCRIPTED_STAGE_SETTINGS,
+          },);
+        },);
+
+        /**
+         What the publication rule finds in each sent-back candidate.
+         */
+        const verdict = validateTranslatedSlice({
+          sourceText: slice.source.text,
+          candidateText: 'Section one: the cat dozes on the windowsill.',
+          pageText: slice.target.text,
+        },);
+        if (verdict.kind !== 'invalid')
+          throw new Error(`the fixture's candidate must fail the publication rule, and the floor said ${verdict.kind}`,);
+        expect(refused,).toBe(reason,);
+        // Seats in the order the stage hands them to the repair, the first of
+        // which is re-asked first and refused.
+        expect(warnings,).toEqual([
+          ...[
+            SEAT_HYPER_OPENROUTER_VISION_EDITOR,
+            SEAT_HYPER_VISION,
+            SEAT_SYNTHETIC_VISION_WITHHELD,
+          ].map(function askedLine(seat,): string {
+            return `[produceTranslateSlate] [repairOneCandidate] ${seat}: candidate fails the publication rule, so its `
+              + `author is asked about it: ${verdict.findings.join(' ',)}`;
+          },),
+          `[produceTranslateSlate] [repairOneCandidate] translate-repair ${SEAT_HYPER_OPENROUTER_VISION_EDITOR}: `
+          + 'refused by SyntheticHttpError with HTTP 503 (the provider said: "the cat is napping in the sun"), as the '
+          + 'caller stopped the repair',
+          `slice ${String(slice.target.sliceIndex,)}: abandoned by the caller's abort`,
         ],);
       },
     },),

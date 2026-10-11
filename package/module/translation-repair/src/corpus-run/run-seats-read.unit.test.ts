@@ -20,6 +20,7 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
+  mapOverlapped,
   reachableSeats,
   readJudgeSeats,
   rosterQuorumSize,
@@ -417,6 +418,81 @@ await describe({
             },);
             expect(returns.counter.reads,).toBe(2,);
             expect(seats.translators,).toEqual(RUN_TRANSLATORS,);
+          },
+        },),
+        it({
+          name: 'WRITES ONE LINE FOR EACH OVERLAPPED SLICE WHOSE SEAT READING STOPS THE ENTRY, its own, whether or '
+            + 'not the caller has stopped, and the overlapped map adds none for the stop it does not throw',
+          fn: async () => {
+            /**
+             Runs two slices side by side, each reading its seats before it
+             starts as the per-slice hook does, on Bedrock alone.
+
+             @param signal - caller's stop, aborted or not
+
+             @returns Every line written, and what the slices refused with
+             */
+            async function overlappedReadings(
+              { signal, }: { readonly signal: AbortSignal; },
+            ): Promise<{
+              readonly lines: readonly string[];
+              readonly refusal: unknown;
+            }> {
+              const { logger, lines, } = capturingLoggerPair();
+              try {
+                await mapOverlapped({
+                  items: [
+                    'the windowsill',
+                    'the sofa',
+                  ],
+                  overlap: 2,
+                  signal,
+                  l: logger,
+                  nameOf: function sliceName({ item, },): string {
+                    return item;
+                  },
+                  oneItem: async function readSeatsFirst(): Promise<string> {
+                    await readJudgeSeats({
+                      client: viewClient({ providerDryness: scriptedViews({ views: [BEDROCK_ALONE,], },).read, },),
+                      phase: 'lanes',
+                      signal,
+                      l: logger,
+                      pollMs: 5,
+                    },);
+                    throw new Error('unreachable: a reading on Bedrock alone seated the lanes',);
+                  },
+                },);
+                throw new Error('unreachable: two slices whose readings stop the entry both finished',);
+              }
+              catch (refusal) {
+                return {
+                  lines,
+                  refusal,
+                };
+              }
+            }
+            /**
+             Reading under a caller that stopped before the slices started.
+             */
+            const stopping = new AbortController();
+            stopping.abort(new Error('the owner called the cats in',),);
+            /**
+             Each slice's own line, the same for both since both read one view.
+             */
+            const stopLine = 'JUDGE SEATS phase=lanes writing bench unreachable: editors 0 of 3 reachable, floor 2; '
+              + 'refiners 0 of 3 reachable, floor 2; stopping the entry';
+            for (const signal of [
+              stopping.signal,
+              new AbortController().signal,
+            ]) {
+              // oxlint-disable-next-line no-await-in-loop -- each caller's run is checked in turn
+              const { lines, refusal, } = await overlappedReadings({ signal, },);
+              expect(refusal,).toBeInstanceOf(WritingBenchUnreachableError,);
+              expect(lines,).toEqual([
+                stopLine,
+                stopLine,
+              ],);
+            }
           },
         },),
       ],

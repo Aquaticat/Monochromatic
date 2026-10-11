@@ -805,6 +805,64 @@ await describe({
           },
         },),
         it({
+          name: 'WRITES EACH FAILED LOOKUP IN TITLE ORDER when a later title\'s search fails first, the earlier '
+            + 'title\'s line before the later title\'s',
+          fn: async () => {
+            await using scratch = await scratchDir({ prefix: 'work-title-lookup-', },);
+            const {
+              logger,
+              lines: logged,
+            } = capturingLoggerPair();
+            /**
+             Opened once the later title's search has failed, which the earlier title's search waits for.
+             */
+            const laterFailed = Promise.withResolvers<undefined>();
+            /**
+             Transport dropping the search for the supper at once and refusing the search for the nap once that
+             failure has run its course.
+
+             @param _input - endpoint, unread
+
+             @param init - request, whose body names the title
+
+             @returns A refusal, for the nap
+             */
+            async function laterFirst(_input: string | URL | Request, init?: RequestInit,): Promise<Response> {
+              /**
+               Body as sent, which names the title asked about.
+               */
+              const sent = init?.body;
+              if (((typeof sent) === 'string') && sent.includes('猫的晚餐',)) {
+                laterFailed.resolve(undefined,);
+                throw new TypeError('fetch failed',);
+              }
+              await laterFailed.promise;
+              // Nothing but microtasks lies between the later search's failure
+              // and its member's end, so a turn of the event loop later it has
+              // ended.
+              await turnOfTheLoop();
+              return new Response(
+                'the cat is not here',
+                { status: 401, },
+              );
+            }
+            expect(await workTitleLookupLines({
+              sourceText: '她读《猫的午睡》，又读《猫的晚餐》。',
+              apiKey: 'test-key',
+              dir: scratch.path,
+              signal: SIGNAL,
+              fetchFn: laterFirst,
+              now: () => NOW,
+              logger,
+            },),).toEqual([],);
+            expect(logged,).toEqual([
+              '[workTitleLookupLines] lookup for 《猫的午睡》 failed and contributes no line: search responded 401',
+              `[workTitleLookupLines] lookup for 《猫的晚餐》 failed and contributes no line: search request to ${EXA_SEARCH_URL} ${TAIL}`,
+              '[workTitleLookupLines] 2 work titles looked up, 0 lines',
+            ],);
+          },
+        },),
+        it({
           name: 'REFUSES WITH THE CALLER\'S REASON once the caller stops the lookups, writing no failed lookup for a '
             + 'search that ended in that reason, and still writes a search\'s own failure that landed as the stop did',
           fn: async () => {
@@ -862,10 +920,8 @@ await describe({
                 logger,
               },);
             },);
-            // The search that dropped writes its line as it ends, which can be
-            // after the lookups refused; every scripted failure waits on nothing
-            // but a microtask, so a turn of the event loop later both have ended.
-            await turnOfTheLoop();
+            // The search that dropped has its line written before the lookups
+            // refuse, since they wait for every lookup to end.
             expect(refusal,).toBe(reason,);
             expect(logged,).toEqual([
               '[workTitleLookupLines] lookup for 《猫的午睡》 failed and contributes no line: refused by TypeError',

@@ -27,13 +27,16 @@ import type { ChatMessage, } from '@monochromatic-dev/module-llm-type/ts';
 import {
   buildTranslateCandidates,
   FloorGroundDisagreementError,
+  mapOverlapped,
   messageText,
   repairInvalidCandidates,
+  reuseTwinOrBuy,
   SyntheticHttpError,
   validateTranslatedSlice,
   type ChatJsonOutcome,
   type ChatJsonRequest,
   type SyntheticClient,
+  type TwinMemo,
   type VisionMessage,
 } from '../dist/final/node/index.mjs';
 import { capturingLogger, } from './capturing-logger.test-fixture.ts';
@@ -439,6 +442,131 @@ await describe({
           + 'caller stopped the repair',
           `[repairOneCandidate] translate-repair ${TRANSLATOR}: refused by SyntheticHttpError with HTTP 429 (the `
           + 'provider said: "the first cat is out of treats"), as the caller stopped the repair',
+        ],);
+      },
+    },),
+
+    it({
+      name: 'WRITES A RE-ASK\'S OWN FAILURE ONCE, on its seat\'s line, when the repair runs as a buy under the twin '
+        + 'memo inside the overlapped map and the caller stops it: no abandoned-buy line and no line of the map\'s',
+      fn: async () => {
+        /**
+         Every message the repair, the memo and the map logged, in one sink.
+         */
+        const said: string[] = [];
+        /**
+         Logger all three write through.
+         */
+        const sink = capturingLogger({ messages: said, },);
+        /**
+         Why the caller stopped the work.
+         */
+        const reason = new Error('the owner called the cats in',);
+        /**
+         The caller's steering.
+         */
+        const steering = new AbortController();
+        /**
+         What the seat's re-ask ends in, of its own, once the stop has landed.
+         */
+        const refusal = new SyntheticHttpError({
+          status: 503,
+          bodyText: 'the cat is napping in the sun',
+        },);
+        /**
+         Buys of this run by question, as a consolidation keeps them.
+         */
+        const memo: TwinMemo<string> = new Map();
+        /**
+         Two slices: the first ends in the caller's own reason, and the second
+         buys a repair whose re-ask ends in a failure of its own.
+         */
+        const work = rejectionOf({
+          promise: mapOverlapped({
+            items: [
+              'the windowsill',
+              'the sofa',
+            ],
+            overlap: 2,
+            signal: steering.signal,
+            l: sink,
+            nameOf: function sliceName({ item, },): string {
+              return item;
+            },
+            oneItem: async function settleOne({ item, position, },): Promise<string> {
+              if (position === 0) {
+                await untilAborted({ signal: steering.signal, },);
+                steering.signal.throwIfAborted();
+                throw new Error('unreachable: a slice that waited for its abort was handed a signal that had not aborted',);
+              }
+              /**
+               The slice's buy under the memo, which runs the repair.
+               */
+              const asked = await reuseTwinOrBuy({
+                key: item,
+                memo,
+                buy: async function buyTheRepair(): Promise<string> {
+                  /**
+                   What the repair settled, which this case never reaches.
+                   */
+                  const repaired = await repairInvalidCandidates({
+                    client: {
+                      chatText: async () => {
+                        throw new Error('chatText unused',);
+                      },
+                      chatJson: async <ValueT,>(
+                        request: ChatJsonRequest<ValueT>,
+                      ): Promise<ChatJsonOutcome<ValueT>> => {
+                        await untilAborted({ signal: request.signal, },);
+                        throw refusal;
+                      },
+                      quotas: async () => {
+                        throw new Error('quotas unused',);
+                      },
+                    },
+                    voices: [
+                      {
+                        modelId: TRANSLATOR,
+                        value: { translation: MERGED_TEXT, },
+                      },
+                    ],
+                    sourceText: SOURCE_TEXT,
+                    incumbentText: '',
+                    pageText: HEADED_PAGE,
+                    priorMessages: PRIOR_MESSAGES,
+                    signal: steering.signal,
+                    perCallTimeoutMs: HANG_STOP_MS,
+                    l: sink,
+                  },);
+                  return repaired.findings.join(' ',);
+                },
+                persistedOf: function storedNothing() {
+                  return { kind: 'nothing', } as const;
+                },
+                l: sink,
+                signal: steering.signal,
+              },);
+              return (asked.kind === 'reused') ? asked.twin : asked.bought;
+            },
+          },),
+        },);
+        steering.abort(reason,);
+        expect(await work,).toBe(reason,);
+        /**
+         What the publication rule finds in the sent-back candidate.
+         */
+        const verdict = validateTranslatedSlice({
+          sourceText: SOURCE_TEXT,
+          candidateText: MERGED_TEXT,
+          pageText: HEADED_PAGE,
+        },);
+        if (verdict.kind !== 'invalid')
+          throw new Error(`the fixture's candidate must fail the publication rule, and the floor said ${verdict.kind}`,);
+        expect(said,).toEqual([
+          `[repairOneCandidate] ${TRANSLATOR}: candidate fails the publication rule, so its author is asked about `
+          + `it: ${verdict.findings.join(' ',)}`,
+          `[repairOneCandidate] translate-repair ${TRANSLATOR}: refused by SyntheticHttpError with HTTP 503 (the `
+          + 'provider said: "the cat is napping in the sun"), as the caller stopped the repair',
         ],);
       },
     },),

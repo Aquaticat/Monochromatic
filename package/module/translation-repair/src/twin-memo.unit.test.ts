@@ -5,7 +5,9 @@
  twin arriving during that buy waits and reuses what was stored; a twin
  arriving during a buy that stored nothing asks for itself; a third twin
  waits for the second rather than buying beside it; a failed buy withdraws
- its entry, warns, and leaves the waiting twin to ask for itself; and a
+ its entry, warns, and leaves the waiting twin to ask for itself; a buy
+ ending in the caller's own reason withdraws its entry and writes nothing,
+ while a buy's own failure under the caller's stop keeps its line; and a
  different key never waits.
 
  Every purchase finishes when the test opens its gate, so which twin is
@@ -133,6 +135,11 @@ function persistedOf(bought: Purchase,): TwinStored<string> {
 }
 
 /**
+ Caller's signal for the cases where nobody stops the work.
+ */
+const NEVER_STOPPED = new AbortController().signal;
+
+/**
  Asks under the memo with the fixture's buyer.
 
  @param memo - shared memo
@@ -140,6 +147,8 @@ function persistedOf(bought: Purchase,): TwinStored<string> {
  @param shop - buyer
 
  @param key - question asked
+
+ @param signal - caller's stop, never stopped unless a case steers it
 
  @returns What came of asking
 
@@ -153,10 +162,12 @@ async function asking(
     memo,
     shop,
     key = 'shared',
+    signal = NEVER_STOPPED,
   }: {
     readonly memo: TwinMemo<string>;
     readonly shop: Buyer;
     readonly key?: string;
+    readonly signal?: AbortSignal;
   },
 ): Promise<TwinOrBought<string, Purchase>> {
   return await reuseTwinOrBuy({
@@ -165,6 +176,7 @@ async function asking(
     buy: shop.buy,
     persistedOf,
     l: shop.l,
+    signal,
   },);
 }
 
@@ -480,6 +492,89 @@ await describe({
           persisted: true,
         },);
         await second;
+      },
+    },),
+
+    it({
+      name: 'WRITES NO ABANDONED-BUY LINE for a buy ending in the caller\'s own reason once the caller has stopped, '
+        + 'still withdraws the key so the waiting twin asks for itself, and leaves the buyer to throw that reason',
+      fn: async () => {
+        const memo: TwinMemo<string> = new Map();
+        const shop = buyer();
+        /**
+         The caller's steering.
+         */
+        const steering = new AbortController();
+        /**
+         Why the caller stopped the work.
+         */
+        const reason = new Error('the owner called the cats in',);
+        const first = collected({
+          run: asking({
+            memo,
+            shop,
+            signal: steering.signal,
+          },),
+        },);
+        await settle();
+        const second = collected({
+          run: asking({
+            memo,
+            shop,
+            signal: steering.signal,
+          },),
+        },);
+        await settle();
+
+        steering.abort(reason,);
+        nonNullishOrThrow(shop.gates[0],).reject(reason,);
+        expect(await first,).toBe(reason,);
+        await settle();
+        // The key was withdrawn, so the waiting twin started a buy of its own,
+        // which the real buyers end in the same reason under the same stop.
+        expect(shop.gates,).toHaveLength(2,);
+
+        nonNullishOrThrow(shop.gates[1],).reject(reason,);
+        expect(await second,).toBe(reason,);
+        expect(memo.has('shared',),).toBe(false,);
+        expect(shop.warned,).toEqual([],);
+      },
+    },),
+
+    it({
+      name: 'KEEPS THE ABANDONED-BUY LINE, with the provider\'s words, for a buy\'s own failure that ends once the '
+        + 'caller has stopped',
+      fn: async () => {
+        const memo: TwinMemo<string> = new Map();
+        const shop = buyer();
+        /**
+         The caller's steering.
+         */
+        const steering = new AbortController();
+        const first = collected({
+          run: asking({
+            memo,
+            shop,
+            signal: steering.signal,
+          },),
+        },);
+        await settle();
+
+        steering.abort(new Error('the owner called the cats in',),);
+        /**
+         What the buy ends in, of its own.
+         */
+        const refusal = new SyntheticHttpError({
+          status: 503,
+          bodyText: 'the cat is napping in the sun',
+        },);
+        nonNullishOrThrow(shop.gates[0],).reject(refusal,);
+        expect(await first,).toBe(refusal,);
+        await settle();
+        expect(shop.warned,).toEqual([
+          'twin memo: the buy for a shared key was abandoned (refused by SyntheticHttpError with HTTP 503 '
+          + '(the provider said: "the cat is napping in the sun")), so any twin waiting on it asks for itself',
+        ],);
       },
     },),
 
