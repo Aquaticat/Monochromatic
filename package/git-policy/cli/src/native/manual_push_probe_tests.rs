@@ -294,6 +294,22 @@ fn confirmation_refuses_a_remote_ref_that_changed_after_negotiation() {
     remove(repo.parent().expect("root"));
 }
 
+/// A remote ref deleted after negotiation is refused: the advertised tip no longer exists.
+#[test]
+fn confirmation_refuses_a_remote_ref_deleted_after_negotiation() {
+    let (repo, origin, base) = repository_with_origin("mp-confirm-deleted");
+    let deleted = ProbedUpdate {
+        local_ref: "refs/heads/main".to_owned(),
+        local_oid: head_of(&repo),
+        remote_name: "origin".to_owned(),
+        remote_location: origin.to_str().expect("utf-8").to_owned(),
+        remote_ref: "refs/heads/gone".to_owned(),
+        advertised_remote_oid: base,
+    };
+    assert!(confirm_group(&git_for(&repo), origin.to_str().expect("utf-8"), &[deleted]).is_err());
+    remove(repo.parent().expect("root"));
+}
+
 /// The scratch guard removes its directory when it is dropped, on every path.
 #[test]
 fn the_scratch_guard_removes_the_probe_directory() {

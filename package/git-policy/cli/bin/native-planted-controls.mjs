@@ -154,14 +154,14 @@ const plantedControls = [
     file: 'src/native/manual_push_probe.rs',
     from: 'if authoritative.is_none() != advertised_absent {',
     to: 'if false {',
-    failing: 'manual_push_probe::tests::confirmation_refuses_a_remote_ref_that_changed_after_negotiation',
+    failing: 'manual_push_probe::tests::confirmation_refuses_a_remote_ref_deleted_after_negotiation',
   },
   {
     name: 'single-flight joins a live push that covered the commit',
     file: 'src/native/auto_push_single_flight.rs',
     from: 'LastPushedRead::Absent => true,',
     to: 'LastPushedRead::Absent => false,',
-    failing: 'auto_push_single_flight::tests::waits_for_a_live_pusher_and_joins_its_successful_push_when_it_covers_the_commit',
+    failing: 'auto_push_single_flight::tests::waits_for_a_live_pusher_and_reports_its_failed_push_when_it_covered_the_commit',
   },
   {
     name: 'post-commit gate blocks the backup on a blocking event',
