@@ -158,6 +158,69 @@ maintainer-intent,
 and upstream-prototype conditions are not claimed or investigated.
 The consumer correction remains private.
 
+## Native prompt arrays include a system-section delta
+
+### Symptom and deciding source
+
+The first direct message/array capture connected isolated consumers,
+but `proc_d774` never created the late review.
+Diagnostic `proc_8744` showed zero requests and assessments.
+`proc_bc9b` exposed the manager's `SessionInputCaptureError`,
+whose cause was `Native Agent input requires a supported text-message role`
+inside `agentPromptArray`.
+
+The owned mistake was reusing the queue role subset for every prompt-array member.
+Pi 1.1.0 `dist/core/agent-session.js:1307` builds a system-section delta:
+
+```javascript
+// Pi 1.1.0 dist/core/agent-session.js:1307 to 1308
+const sections = diffSystemPromptSections(getCurrentSystemMessage(messages)?.sections ?? {}, buildSystemPromptSections(options));
+return sections ? { role: "system", content: "", sections, timestamp: Date.now() } : undefined;
+```
+
+The same file at line 1628 prepends it before calling the Agent:
+
+```javascript
+// Pi 1.1.0 dist/core/agent-session.js:1628 to 1631
+if (updateMessage)
+    messages.unshift(updateMessage);
+preflightResult?.("started");
+await this._runAgentPrompt(messages);
+```
+
+Single user-message direct calls did not exercise that Session construction.
+Their earlier pass did not establish Session-array compatibility.
+
+### Correction and remaining verification
+
+Prompt capture now reuses the loaded-system selection and validation for content and sections.
+Null deletion remains original input data,
+not evidence of revoked instructions.
+The prompt role adds no authority,
+and tool definitions remain outside this selected prose representation.
+The queue profile is not expanded.
+
+The existing native review assertion stays intact.
+Owner system-field controls include absent,
+null,
+and named sections,
+plus zero reads of tool getters.
+Corrected late-path,
+integrated,
+sensitivity,
+and full regression results remain pending.
+Run private `test:agent-message-prompt-owner` and `test:agent-message-prompt-paths`
+as separate `mise --no-env --no-hooks run` invocations.
+
+Nothing is proposed upstream:
+native construction is intentional and the mismatch was in the private observer.
+The upstream-fault condition fails;
+upstream fixability,
+supported-use,
+contribution,
+maintainer-intent,
+and upstream-prototype conditions are not claimed.
+
 ## Pi 1.1.0 direct Agent string prompts bypass session text input capture
 
 ### Symptom and native boundary

@@ -296,6 +296,50 @@ Eleven-document rendering passed `proc_c7e4` before this final evidence update.
 
 The unassociated ordinary request domain and other unconsumed producer relationships remain explicit.
 
+## Original direct Agent message and array prompts
+
+The next private increment extends the existing Agent call-frame owner beyond primitive strings.
+Single-message and message-array consumers first failed the required original-source assertion
+in `proc_4517` and `proc_1356`.
+Initial implementation `08389a1` / `proc_4ff8` passed both actual direct request consumers,
+with no Session input events,
+protected executions,
+or provider requests.
+
+Single-message inputs reuse selected content and companion metadata.
+An array retains selected message fields as one original call source in `native-content-json`.
+Its original arguments frame carries the input-only publication.
+Neither the array nor its messages acquire aliases or payload capability.
+Opaque provider/tool records are not copied.
+The array uses one shared incumbent copier budget,
+and wrapper fields plus escaped text count toward the original source-byte bound.
+
+Native `AgentSession.prompt` also forwards an array.
+The initial queue-role subset missed a system-section delta prepended by the Session.
+`proc_bc9b` exposed its capture failure before any request or assessment.
+The correction reuses the existing loaded-system content/sections profile,
+including null section deletion,
+without inspecting tool declarations or assigning system authority.
+Queue role support is unchanged.
+
+Owner controls `proc_fe45` and native normalization controls `proc_a349` passed
+before the system-section correction.
+The normalization delegate remains a labelled double,
+separate from actual request consumers.
+Corrected late-source paths,
+integrated fixture reconciliation,
+sensitivity,
+and complete regressions remain in progress.
+
+System-role support does not close tool instruction-source ownership.
+Mixed/image content and unsupported shapes still fail guarded source use,
+including internal Session array forwarding.
+The native prompt body,
+borrowed inputs,
+source limits,
+and installed plugin remain unchanged.
+The primitive-string checkpoint's full passes do not verify this new increment.
+
 ## Original direct Agent string prompts
 
 String-form `Agent.prompt(input, images)` is now observed before its active-run check and normalization.
