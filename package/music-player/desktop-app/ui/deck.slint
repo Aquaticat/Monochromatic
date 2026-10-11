@@ -193,6 +193,8 @@ export component TransportDeck inherits Rectangle {
     callback select-mode(int);
     // Requests that the track list shows the playing track; fired by a click on the title and subtitle.
     callback reveal-playing();
+    // False when there is no list to jump in (Search is open), so the heading is plain text with no click target.
+    in property <bool> reveal-enabled: true;
 
     // Minimum touch target for every control, matching the Theme token.
     property <length> target: Theme.touch-target;
@@ -278,8 +280,9 @@ export component TransportDeck inherits Rectangle {
         y: 0px;
         width: root.width;
         height: max(root.target, root.pad-y + title-text.height + subtitle-text.height);
-        mouse-cursor: pointer;
-        accessible-role: button;
+        enabled: root.reveal-enabled;
+        mouse-cursor: root.reveal-enabled ? pointer : default;
+        accessible-role: root.reveal-enabled ? button : none;
         accessible-label: "Show playing track";
         clicked => {
             root.reveal-playing();

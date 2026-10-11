@@ -262,6 +262,7 @@ export component AppWindow inherits Window {
             next => { root.next(); }
             select-mode(m) => { root.select-mode(m); }
             reveal-playing => { root.reveal-playing(); }
+            reveal-enabled: root.route == 0;
         }
     }
 
@@ -302,6 +303,7 @@ export component AppWindow inherits Window {
                 next => { root.next(); }
                 select-mode(m) => { root.select-mode(m); }
                 reveal-playing => { root.reveal-playing(); }
+                reveal-enabled: root.route == 0;
             }
         }
         VerticalLayout {
@@ -338,14 +340,14 @@ export component AppWindow inherits Window {
         }
     }
 
-    // Search route drawn over the player. Its content inset keeps it clear of the unfolded crease.
+    // Search route drawn over the player. Unfolded, it covers only the right pane, where the track list is, so the
+    // folder picker and the deck on the left stay visible and usable; folded, it covers the whole window.
     if root.route == 1 : SearchPage {
-        x: 0px;
+        x: root.unfolded ? root.width / 2 : 0px;
         y: 0px;
-        width: root.width;
+        width: root.unfolded ? root.width / 2 : root.width;
         height: root.height;
         compact: !root.unfolded;
-        content-start-x: root.unfolded ? root.width / 2 : 16px;
         rows: root.search-rows;
         query: root.search-query;
         status-title: root.search-status-title;
