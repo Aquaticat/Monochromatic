@@ -107,14 +107,20 @@ the `signal_relay` filter passed 9 on `1595a4ed0c` and the new `handler_marks...
 
 ## Gate results
 
-Container test gate, `GIT_POLICY_NATIVE_IMAGE_TAG=signals mise run //package/git-policy/cli:native:test:container`,
-at commit `385ab5b80b`:
-image `fc8fd07481526bc1fc09873e1e72f2994dd38b900ba3ba23a6b0fc1ca3627035`,
-base `6ec87f6d290a2f59bda5b3ffd4197058fe0749d02b4978c877e8edf6dc38802a` (Git 2.56.0).
-The test step passed: 942 tests passed, 2 ignored, 0 failed across five test result lines
+Container test gate, `GIT_POLICY_NATIVE_IMAGE_TAG=signals mise run //package/git-policy/cli:native:test:container`.
+At commit `385ab5b80b`, image `fc8fd07481526bc1fc09873e1e72f2994dd38b900ba3ba23a6b0fc1ca3627035`.
+At commit `1262241dc7` (the final test change), image `dbcc6a616f0afdb253c79292dc136bb33adea5cd7fecabbd16de20ce70414bb2`.
+Both images use the base `6ec87f6d290a2f59bda5b3ffd4197058fe0749d02b4978c877e8edf6dc38802a` (Git 2.56.0).
+The test step passed at both commits.
+At `385ab5b80b` it reported 942 tests passed, 2 ignored, 0 failed across five test result lines
 (the library run alone was 901 passed and 2 ignored).
-The Clippy step failed on findings in base files that this lane did not change (see below).
-The container gate was re-run on the final commit; its result is in the final report.
+At `1262241dc7` the library run reported 902 passed and 2 ignored, including the new handler test,
+and the other test result lines were all passing.
+The Clippy step failed at `385ab5b80b` on the base-file findings listed below.
+The Clippy step at `1262241dc7` was still running when this lane's report was written;
+its log is `~/temp/agent/signals-gate-final.log` (the line `container-exit=` ends it).
+The only change since `385ab5b80b` is test code in `signal_relay_tests.rs` and two registry entries,
+so the same base-file findings are expected there.
 
 Clippy with `-D warnings` on the host (`native:clippy`) and in the container gives the same findings:
 - Library tests: `forward_after` is never used (`src/native/entry_tests.rs:114`);
