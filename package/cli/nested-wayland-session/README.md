@@ -314,6 +314,10 @@ Take evidence after the client has settled,
 for example once two consecutive screenshots are identical.
 
 The nested window on the host is the framebuffer.
+The window is minimized as soon as it exists, on every launch, so the fixture never covers the desktop.
+Winit sends `xdg_toplevel.set_minimized` on Wayland and cannot undo it there;
+the parent compositor may ignore the request.
+A minimized window is not presented, so captures rely on the pacing described in the Frame pacing section.
 A new size or scale asks the parent compositor for a window that covers the physical size,
 counted in the parent's own logical pixels and rounded up,
 then applies the size the window has.

@@ -163,6 +163,20 @@ pub fn init_backend(
     let (mut backend, winit) = winit::init_from_attributes::<GlesRenderer>(attributes)
         .map_err(|err| anyhow::anyhow!("winit backend init failed: {err}"))?;
 
+    // What:     `backend.window().set_minimized(true);`. Asks the parent compositor to minimize
+    //           the new window; winit sends the request for `xdg_toplevel.set_minimized` on
+    //           Wayland and ignores un-minimize there. The parent may ignore the request.
+    // Why:      The nested session is a fixture, not something the user watches; it launches
+    //           minimized so it never covers the desktop. Capture does not depend on the parent
+    //           presenting the window: the frame pacing timer and the recorder's own timer
+    //           (see `frame_pacing.rs` and the README's Frame pacing section) keep the hosted app drawing.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // window.setMinimized(true);
+    // ```
+    backend.window().set_minimized(true);
+
     // What:     `let mode = Mode { size: (config.width, config.height).into(), refresh:
     //           OUTPUT_REFRESH_MHZ };`. The output's video mode. `(w, h).into()` builds
     //           a `Size<i32, Physical>` from the tuple.
