@@ -52,6 +52,16 @@ Ask only when a concrete user-only input or unsettled acceptance choice is reach
 Historical checkpoint sections retain their evidence and original scope.
 The current delivery queue supersedes their stale next-step ordering.
 
+The user chose to leave `AGENTS.md` unchanged for now,
+not to adopt the proposed `PXQ` replacement.
+[Issue #677](https://github.com/Aquaticat/Monochromatic/issues/677) records the observed failure,
+exact corrections,
+existing and proposed rules,
+technical evidence,
+and open design questions.
+It is a separate workflow investigation,
+not a gate on migration delivery.
+
 
 ## Original rendered prompt-input contributions
 
