@@ -614,3 +614,14 @@ pub mod index_writer_forward;
 /// The real index.lock a landing creates,
 ///  identifies and releases only while it is the same file.
 pub mod real_index_lock;
+/// Automatic maintenance decision: config record parsing and the enable and detach rules.
+pub mod maintenance_decision;
+
+/// Running automatic maintenance after a landing: the config read, then `git maintenance run --auto`.
+pub mod maintenance_run;
+
+/// Catching SIGINT, SIGTERM, SIGHUP and SIGQUIT while a Git child runs, and relaying only process-sent signals.
+pub mod signal_relay;
+
+/// Exact removal of retired hk hook registrations from one explicit Git configuration scope.
+pub mod maintenance_hk_config;
