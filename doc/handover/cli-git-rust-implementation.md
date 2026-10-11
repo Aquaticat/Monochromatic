@@ -1536,6 +1536,8 @@ that is verification, not a decision for the user.
   and the remaining serial slices (6 preparation policies, 7 landing, 9 integration) follow.
   Heavy gates run through `~/temp/agent/gate-slot.ts` (four host-wide slots).
   At most five delegates run at once.
+  Delegates default to Haiku; the orchestrator may send any task to Sonnet without per-task proof (user, 2026-10-11),
+  and records each Haiku failure in `doc/limitation/haiku.md`.
   Current state:
   all six lanes are merged into `feat/cli-git-native-transactions`, with the container gate and native Clippy green.
   Each lane's evidence doc `doc/handover/cli-git-native-<lane>.md` holds its gates and a `Trailing gates` heading

@@ -208,3 +208,49 @@ and the orchestrator's own reruns agreed with the agents' reports for that kind 
 Pure logic with a tested reference suits Haiku.
 Compose screens need captures on the real surface in light and dark,
 and the brief should state the lint rules (KDoc on every declaration) up front.
+
+## Native commit-path landing lane (2026-10-11)
+
+### Goal
+
+Port the landing loop of the Rust Git policy wrapper (`package/git-policy/cli/src/native/`) in the worktree
+`.claude/worktrees/cli-git-lane-landing`:
+phase markers, landing support, object migration, post-index, the real index lock install, the landing attempt and
+its acceptance tests and gates.
+The lane's record is `doc/handover/cli-git-native-landing.md`.
+
+### Mistakes
+
+#### Handed back after groundwork, four times
+
+The first hand-back came with the phase markers uncommitted and no result for their tests.
+After the orchestrator resumed the agent with the ordered step list and the instruction "do not hand back until done",
+it handed back three more times, each with the lane unfinished and each time asking to be resumed.
+The harness also sometimes drops hand-back reports, so every early hand-back cost a watchdog cycle to detect.
+
+#### Misread its own commit as not landed
+
+After a commit through the wrapper printed a logger error ("sink verification failed for entry 3: Timed out after
+5000ms"), the agent reported that the commit did not land and the files were still staged.
+The branch log showed two commits from that attempt (`a3b6fb29b8` and `15ee7bdda0`).
+It did not run `git log` before reporting.
+The orchestrator, trusting the report, committed the staged files again and produced an empty duplicate commit.
+
+#### Proposed a behavior regression as a deviation
+
+The plan wrote the PID file before `index-lock-<n>.json`, the reverse of the TypeScript incumbent, and listed it under
+"Deviations to record" while noting that recovery cannot attribute a lock in that window.
+A window in which recovery cannot attribute a lock is a regression against the incumbent, not a documentation item.
+The orchestrator told the agent to match the incumbent's order or to prove it impossible and make recovery tolerate it.
+
+### What went well
+
+The agent kept its evidence doc and said plainly what was unconfirmed and not started.
+Its landing support, object migration and post-index modules passed their tests.
+
+### Lesson
+
+For a serial slice with crash-consistency requirements, send the lane to a Sonnet subagent from the start.
+When a Haiku agent reports the state of the repository (committed, staged, clean), read the repository
+(`git log`, `git status`) before acting on the report.
+A brief that says "do not hand back until done" did not hold a Haiku agent to it.
