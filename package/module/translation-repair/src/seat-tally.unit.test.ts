@@ -145,6 +145,83 @@ function innerClient(
   };
 }
 
+/**
+ Runs one call and hands back what it threw, or `undefined` when it resolved.
+
+ @param call - call to run
+
+ @returns The thrown value, or `undefined`
+
+ @example
+ ```ts
+ const thrown = await thrownBy(function ask() { return client.chatText(request,); },);
+ ```
+ */
+async function thrownBy(call: () => Promise<unknown>,): Promise<unknown> {
+  try {
+    await call();
+    return undefined;
+  }
+  catch (error) {
+    return error;
+  }
+}
+
+/**
+ Makes four calls to the seat, alternating the text and JSON surfaces twice,
+ and hands back what each one threw, in order.
+
+ @param client - client under test
+
+ @param signal - signal every call is made with
+
+ @returns What each call threw
+
+ @example
+ ```ts
+ const thrown = await askFourTimes({ client, signal: SIGNAL, },);
+ ```
+ */
+async function askFourTimes(
+  {
+    client,
+    signal,
+  }: {
+    readonly client: SyntheticClient;
+    readonly signal: AbortSignal;
+  },
+): Promise<unknown[]> {
+  /**
+   One text call and one JSON call, what each threw in call order.
+
+   @returns What the two calls threw
+   */
+  async function askTextAndJson(): Promise<unknown[]> {
+    return await Promise.all([
+      thrownBy(function askText(): Promise<unknown> {
+        return client.chatText({ modelId: SEAT_HYPER_VISION, messages: MESSAGES, signal, },);
+      },),
+      thrownBy(function askJson(): Promise<unknown> {
+        return client.chatJson({
+          modelId: SEAT_HYPER_VISION,
+          messages: MESSAGES,
+          signal,
+          validate: isCatVerdict,
+        },);
+      },),
+    ],);
+  }
+  /**
+   What the first pair threw.
+   */
+  const first = await askTextAndJson();
+  /**
+   What the second pair threw.
+   */
+  const second = await askTextAndJson();
+  return [...first, ...second,];
+}
+
 //endregion Fixtures
 
 await describe({
@@ -216,6 +293,36 @@ await describe({
         },),
 
         it({
+          name: 'NAMES as withheld only a seat asked at least the given number of times that threw on every '
+            + 'call, never a seat that answered once or was asked too few times to tell',
+          fn: async () => {
+            /** Tally with one withheld seat and three seats that are not. */
+            const tally = createSeatTally();
+            tally.record({ modelId: SEAT_HYPER_VISION, outcome: 'threw', },);
+            tally.record({ modelId: SEAT_HYPER_VISION, outcome: 'threw', },);
+            tally.record({ modelId: SEAT_HYPER_VISION, outcome: 'threw', },);
+            tally.record({ modelId: SEAT_HYPER_VISION, outcome: 'threw', },);
+            tally.record({ modelId: SEAT_HYPER_OPENROUTER_VISION_EDITOR, outcome: 'threw', },);
+            tally.record({ modelId: SEAT_HYPER_OPENROUTER_VISION_EDITOR, outcome: 'threw', },);
+            tally.record({ modelId: SEAT_HYPER_OPENROUTER_VISION_EDITOR, outcome: 'threw', },);
+            tally.record({ modelId: SEAT_SYNTHETIC_TEXT_EVERYWHERE, outcome: 'threw', },);
+            tally.record({ modelId: SEAT_SYNTHETIC_TEXT_EVERYWHERE, outcome: 'threw', },);
+            tally.record({ modelId: SEAT_SYNTHETIC_TEXT_EVERYWHERE, outcome: 'threw', },);
+            tally.record({ modelId: SEAT_SYNTHETIC_TEXT_EVERYWHERE, outcome: 'threw', },);
+            tally.record({ modelId: SEAT_SYNTHETIC_TEXT_EVERYWHERE, outcome: 'usable', },);
+            tally.record({ modelId: SEAT_HYPER_TEXT_BEDROCK, outcome: 'threw', },);
+            tally.record({ modelId: SEAT_HYPER_TEXT_BEDROCK, outcome: 'threw', },);
+            tally.record({ modelId: SEAT_HYPER_TEXT_BEDROCK, outcome: 'threw', },);
+            tally.record({ modelId: SEAT_HYPER_TEXT_BEDROCK, outcome: 'threw', },);
+            tally.record({ modelId: SEAT_HYPER_TEXT_BEDROCK, outcome: 'unusable', },);
+
+            expect(tally.withheld({ minAsks: 4, },).map(function toId(count,): string {
+              return count.modelId;
+            },),).toStrictEqual([SEAT_HYPER_VISION,],);
+          },
+        },),
+
+        it({
           name: 'SHARES one run-wide tally, which every client the factory builds counts into',
           fn: async () => {
             RUN_SEATS.reset();
@@ -244,6 +351,7 @@ await describe({
             const client = seatTallyClient({
               inner: innerClient({ text: '喵。', },),
               tally,
+              minAsks: 4,
             },);
 
             /** Reply as the caller sees it. */
@@ -273,6 +381,7 @@ await describe({
             const client = seatTallyClient({
               inner: innerClient({ text: '{"verdict":"purr"}', },),
               tally,
+              minAsks: 4,
             },);
 
             /** Outcome as the caller sees it. */
@@ -305,6 +414,7 @@ await describe({
             const client = seatTallyClient({
               inner: innerClient({ text: '{"nap":"spot"}', },),
               tally,
+              minAsks: 4,
             },);
 
             /** Outcome as the caller sees it. */
@@ -335,6 +445,7 @@ await describe({
             const client = seatTallyClient({
               inner: innerClient({ text: '', failing: true, },),
               tally,
+              minAsks: 4,
             },);
 
             /** What the text surface threw. */
@@ -378,6 +489,125 @@ await describe({
         },),
 
         it({
+          name: 'REFUSES a withheld seat on every surface before any call reaches the inner client, naming it '
+            + 'unreachable, and leaves its counts as they were',
+          fn: async () => {
+            /** Tally where one seat threw on each of its four asks. */
+            const tally = createSeatTally();
+            tally.record({ modelId: SEAT_HYPER_TEXT_BEDROCK, outcome: 'threw', },);
+            tally.record({ modelId: SEAT_HYPER_TEXT_BEDROCK, outcome: 'threw', },);
+            tally.record({ modelId: SEAT_HYPER_TEXT_BEDROCK, outcome: 'threw', },);
+            tally.record({ modelId: SEAT_HYPER_TEXT_BEDROCK, outcome: 'threw', },);
+            /** Client under test, whose inner client would answer every call. */
+            const client = seatTallyClient({
+              inner: innerClient({ text: '{"verdict":"purr"}', },),
+              tally,
+              minAsks: 4,
+            },);
+
+            /** What the text surface threw. */
+            let fromText: unknown;
+            try {
+              await client.chatText({
+                modelId: SEAT_HYPER_TEXT_BEDROCK,
+                messages: MESSAGES,
+                signal: SIGNAL,
+              },);
+            }
+            catch (error) {
+              fromText = error;
+            }
+
+            /** What the JSON surface threw. */
+            let fromJson: unknown;
+            try {
+              await client.chatJson({
+                modelId: SEAT_HYPER_TEXT_BEDROCK,
+                messages: MESSAGES,
+                signal: SIGNAL,
+                validate: isCatVerdict,
+              },);
+            }
+            catch (error) {
+              fromJson = error;
+            }
+
+            expect(String(fromText,),).toBe(
+              'NoProviderForModelError: no provider can take gemma-4-26b-a4b-it: the run withheld it after it '
+              + 'threw on all 4 asks and does not ask it again',
+            );
+            expect(String(fromJson,),).toBe(String(fromText,),);
+            expect(tally.counts(),).toStrictEqual([{
+              modelId: SEAT_HYPER_TEXT_BEDROCK,
+              asked: 4,
+              usable: 0,
+              unusable: 0,
+              threw: 4,
+            },],);
+          },
+        },),
+
+        it({
+          name: 'RECORDS NOTHING for four calls a caller aborted and that then threw, so a seat cut off after quorum '
+            + 'is not counted as asked and is not withheld',
+          fn: async () => {
+            /** Tally the wrapper counts into. */
+            const tally = createSeatTally();
+            /** Client under test, failing every call it is asked. */
+            const client = seatTallyClient({
+              inner: innerClient({ text: '', failing: true, },),
+              tally,
+              minAsks: 4,
+            },);
+            /** Signal the caller aborted before any call was made. */
+            const aborted = new AbortController();
+            aborted.abort();
+
+            /** What each of the four calls threw, in order. */
+            const thrown = await askFourTimes({
+              client,
+              signal: aborted.signal,
+            },);
+
+            expect(thrown,).toStrictEqual([FAILURE, FAILURE, FAILURE, FAILURE,],);
+            expect(tally.counts(),).toStrictEqual([],);
+            expect(tally.withheld({ minAsks: 4, },),).toStrictEqual([],);
+          },
+        },),
+
+        it({
+          name: 'WITHHOLDS a seat whose four calls all threw with the caller still waiting on each one',
+          fn: async () => {
+            /** Tally the wrapper counts into. */
+            const tally = createSeatTally();
+            /** Client under test, failing every call it is asked. */
+            const client = seatTallyClient({
+              inner: innerClient({ text: '', failing: true, },),
+              tally,
+              minAsks: 4,
+            },);
+
+            /** What each of the four calls threw, in order. */
+            const thrown = await askFourTimes({
+              client,
+              signal: SIGNAL,
+            },);
+
+            expect(thrown,).toStrictEqual([FAILURE, FAILURE, FAILURE, FAILURE,],);
+            expect(tally.counts(),).toStrictEqual([{
+              modelId: SEAT_HYPER_VISION,
+              asked: 4,
+              usable: 0,
+              unusable: 0,
+              threw: 4,
+            },],);
+            expect(tally.withheld({ minAsks: 4, },).map(function toId(count,): string {
+              return count.modelId;
+            },),).toStrictEqual([SEAT_HYPER_VISION,],);
+          },
+        },),
+
+        it({
           name: 'FORWARDS quotas as the very same function, since the meter is not a seat',
           fn: async () => {
             /** Inner client whose meter identity is checked. */
@@ -386,6 +616,7 @@ await describe({
             const client = seatTallyClient({
               inner,
               tally: createSeatTally(),
+              minAsks: 4,
             },);
 
             expect(client.quotas,).toBe(inner.quotas,);
@@ -414,6 +645,7 @@ await describe({
                 },
               },
               tally,
+              minAsks: 4,
             },);
             /** Client under test, whose decision seat throws. */
             const failing = seatTallyClient({
@@ -424,6 +656,7 @@ await describe({
                 },
               },
               tally,
+              minAsks: 4,
             },);
 
             expect(await answering.decide?.(request,),).toBe(reply,);
@@ -438,6 +671,7 @@ await describe({
             expect(seatTallyClient({
               inner: innerClient({ text: '喵。', },),
               tally,
+              minAsks: 4,
             },).decide,).toBeUndefined();
           },
         },),
@@ -489,8 +723,9 @@ await describe({
               'SEATS DARK: 2 of 3 seats asked produced nothing usable this run: '
                 + 'gemma-4-26b-a4b-it (asked 2, unusable 0, threw 2); minimax-m3 (asked 1, unusable 1, threw 0). '
                 + 'A seat that fails every call is a provider that cannot serve it, a key that was never '
-                + 'injected, or a model that answers nothing readable; the run log names which. '
-                + 'Do not read this run as a comparison of the roster.',
+                + 'injected, or a model that answers nothing readable; the run log names which, and writes each '
+                + 'failed call\'s error text on a warn line "<stage> <model>: <error>, voice lost" (or "seat '
+                + 'unreachable"). Do not read this run as a comparison of the roster.',
             );
           },
         },),

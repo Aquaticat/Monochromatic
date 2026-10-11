@@ -24,6 +24,7 @@ import {
   reachableSeats,
   readJudgeSeats,
   rosterQuorumSize,
+  RUN_SEATS,
   RUN_TRANSLATORS,
   RUN_WIDE_SEATS,
   SyntheticHttpError,
@@ -32,10 +33,12 @@ import {
 } from '../../dist/final/node/index.mjs';
 import {
   capturingLoggerPair,
+  levelCapturingLogger,
   warningRecordingLogger,
 } from '../capturing-logger.test-fixture.ts';
 import { quotingFailure, } from '../quoting-failure.test-fixture.ts';
 import { SEAT_SYNTHETIC_VISION_NO_OPENROUTER, } from '../roster-seats.test-fixture.ts';
+import { withFreshRunSeats, } from './fresh-run-seats.test-fixture.ts';
 
 //region Seat reading tests
 
@@ -189,6 +192,46 @@ await describe({
             },);
             expect(unread.dry,).toEqual(ALL_WET,);
             expect(unread.wideSeats.includes(QWEN,),).toBe(true,);
+          },
+        },),
+        it({
+          name: 'NAMES IN THE JUDGE SEATS LINE each seat the run has withheld for throwing on every ask, with its '
+            + 'counts, and names none while a seat that threw some asks and answered others stays seated',
+          fn: async () => {
+            using _fresh = withFreshRunSeats();
+            for (let ask = 0; ask < 4; ask += 1)
+              RUN_SEATS.record({ modelId: QWEN, outcome: 'threw', },);
+            /** Lines the reading writes at the info level. */
+            const lines: string[] = [];
+            await readJudgeSeats({
+              client: viewClient({ providerDryness: async () => ALL_WET, },),
+              phase: 'lanes',
+              signal: new AbortController().signal,
+              l: levelCapturingLogger({ lines, },),
+            },);
+            expect(lines,).toEqual([
+              'info JUDGE SEATS phase=lanes synthetic=wet bedrock=wet hyper=wet openrouter=wet wide=7 select=8 '
+              + 'late=8 slate=8 checkers=3 translators=8 readers=6 writers=9 roster=9 withheld=none '
+              + 'threw-withheld=hf:Qwen/Qwen3.8-27B (threw 4 of 4 asks) waited=0ms',
+            ],);
+
+            /** Lines of a second reading, for a seat that answered on some asks. */
+            const mixedLines: string[] = [];
+            RUN_SEATS.reset();
+            for (let ask = 0; ask < 3; ask += 1)
+              RUN_SEATS.record({ modelId: QWEN, outcome: 'threw', },);
+            RUN_SEATS.record({ modelId: QWEN, outcome: 'usable', },);
+            await readJudgeSeats({
+              client: viewClient({ providerDryness: async () => ALL_WET, },),
+              phase: 'lanes',
+              signal: new AbortController().signal,
+              l: levelCapturingLogger({ lines: mixedLines, },),
+            },);
+            expect(mixedLines,).toEqual([
+              'info JUDGE SEATS phase=lanes synthetic=wet bedrock=wet hyper=wet openrouter=wet wide=7 select=8 '
+              + 'late=8 slate=8 checkers=3 translators=8 readers=6 writers=9 roster=9 withheld=none '
+              + 'threw-withheld=none waited=0ms',
+            ],);
           },
         },),
         it({

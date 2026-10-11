@@ -24,6 +24,7 @@ import {
 import {
   gatherStageVoices,
   NoProviderForModelError,
+  createSeatTally,
   StageRosterRepeatError,
   CUT_SHORT_RECOVERY_NUDGE,
   OFF_SHAPE_RECOVERY_NUDGE,
@@ -169,6 +170,61 @@ function dryBenchClient(
         },);
       }
       if (request.modelId === failingSeat)
+        throw new Error('scripted transport failure',);
+
+      /**
+       Scripted payload for the answering call.
+       */
+      const scripted: unknown = { meow: request.modelId, };
+
+      if (!request.validate(scripted,))
+        throw new Error('scripted payload failed the guard',);
+
+      return {
+        kind: 'ok',
+        value: scripted,
+        rawText: JSON.stringify(scripted,),
+      };
+    },
+    quotas: async () => {
+      throw new Error('quotas unused',);
+    },
+  };
+}
+
+/**
+ Client that answers only the seats named, and whose every other seat fails in
+ transport, recording how often each seat was asked.
+
+ @param answeringSeats - seats that answer
+
+ @param calls - call count per model, written as the gather asks
+
+ @returns Client honouring that script
+
+ @example
+ ```ts
+ const client = answeringBenchClient({ answeringSeats: [SEAT_HYPER_VISION,], calls, },);
+ ```
+ */
+function answeringBenchClient(
+  {
+    answeringSeats,
+    calls,
+  }: {
+    readonly answeringSeats: readonly string[];
+    readonly calls: Record<string, number>;
+  },
+): SyntheticClient {
+  return {
+    chatText: async () => {
+      throw new Error('chatText unused',);
+    },
+    chatJson: async <ValueT,>(
+      request: ChatJsonRequest<ValueT>,
+    ): Promise<ChatJsonOutcome<ValueT>> => {
+      calls[request.modelId] = (calls[request.modelId] ?? 0) + 1;
+      if (!answeringSeats.includes(request.modelId,))
         throw new Error('scripted transport failure',);
 
       /**
@@ -606,6 +662,61 @@ await describe({
         );
         for (const seat of DRY_SEVEN)
           expect(calls[seat],).toBe(1,);
+      },
+    },),
+
+    it({
+      name: 'SIZES THE QUORUM ON THE SEATS LEFT once the run has withheld a seat for throwing on every ask: with '
+        + 'two of ten seats withheld the bench is eight, the quorum four, and neither withheld seat is asked again',
+      fn: async () => {
+        /** Tally holding two seats withheld, each recorded as having thrown on four asks and answered none. */
+        const seatTally = createSeatTally();
+        const withheldSeats: readonly RosterModelId[] = [SEAT_BEDROCK_ONLY_TEXT, SEAT_OPENROUTER_ONLY,];
+        for (const seat of withheldSeats) {
+          seatTally.record({ modelId: seat, outcome: 'threw', },);
+          seatTally.record({ modelId: seat, outcome: 'threw', },);
+          seatTally.record({ modelId: seat, outcome: 'threw', },);
+          seatTally.record({ modelId: seat, outcome: 'threw', },);
+        }
+        /** Call count per model. */
+        const calls: Record<string, number> = {};
+        /** Gather over ten seats, of which four answer and the rest fail in transport. */
+        const gather = await gatherStageVoices({
+          client: answeringBenchClient({
+            answeringSeats: [
+              SEAT_HYPER_OPENROUTER_VISION_EDITOR,
+              SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+              SEAT_SYNTHETIC_VISION_WITHHELD,
+              SEAT_HYPER_VISION,
+            ],
+            calls,
+          },),
+          modelIds: [
+            SEAT_HYPER_OPENROUTER_VISION_EDITOR,
+            SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+            SEAT_SYNTHETIC_VISION_WITHHELD,
+            SEAT_HYPER_VISION,
+            SEAT_SYNTHETIC_TEXT_EVERYWHERE,
+            SEAT_HYPER_OPENROUTER_UNMEASURED,
+            SEAT_BEDROCK_ONLY_VISION_UNSEATED,
+            SEAT_HYPER_ONLY,
+            ...withheldSeats,
+          ],
+          messages: [{ role: 'user', content: 'meow', },],
+          signal: new AbortController().signal,
+          exchangeTimeoutMs: HANG_STOP_MS,
+          responseFormat: MEOW_FORMAT,
+          validate: isMeowReply,
+          stage: 'archive-block-review',
+          l,
+          graceMs: HANG_STOP_MS,
+          seatTally,
+        },);
+        expect(gather.quorum,).toBe(4,);
+        expect(gather.quorumMet,).toBe(true,);
+        expect(gather.voices,).toHaveLength(4,);
+        for (const seat of withheldSeats)
+          expect(calls[seat],).toBeUndefined();
       },
     },),
 
