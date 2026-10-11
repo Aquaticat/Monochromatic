@@ -223,6 +223,37 @@ Correction `3f7d81f` / `proc_2853` preserves the original base-bound success and
 then explicitly verifies the later aggregate array exceeds the separate source bound before transport.
 Neither limit was enlarged.
 
+### Conversion hints do not imply image omission
+
+Full regression `proc_45f1` reached `retained-image`,
+which now fails the text-only prompt-array profile before policy review.
+The first fixture correction still expected `retained-image-hint` to reach review;
+`proc_21bd` disproved that expectation.
+
+Pi 1.1.0 `dist/utils/image-process.js` normalizes the valid GIF fixture
+from `image/x-gif` to PNG and returns both image data and a conversion hint.
+`dist/core/agent-session.js:1503` retains both:
+
+```javascript
+// Pi 1.1.0 dist/core/agent-session.js:1503 to 1504
+normalizedImages.push({ type: "image", data: processed.data, mimeType: processed.mimeType });
+hints.push(...processed.hints);
+```
+
+The fixture is converted-image-plus-text,
+not omitted-image hint-only text.
+Corrected `766f4d4` / `proc_a122` passed all four image/conversion modes:
+native image construction,
+actual conversion hint where applicable,
+text-profile failure,
+zero transport/assessments/executions,
+no text payload capability,
+and no revival after a later plain prompt.
+No runtime guard or limit changed.
+A genuinely omitted-image hint-only route is not claimed as exercised by these fixtures.
+
+### Upstream filing decision
+
 Nothing is proposed upstream:
 native construction is intentional and the mismatch was in the private observer.
 The upstream-fault condition fails;
