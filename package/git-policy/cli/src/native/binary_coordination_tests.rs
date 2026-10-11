@@ -30,6 +30,10 @@ use std::time::Duration;
 /// How long a holder keeps the lock in the controls before the test releases it.
 const HOLD: Duration = Duration::from_millis(400);
 
+/// How long a live owner keeps the lock:
+///  long enough for a loaded host to start the wrapper and reach the wait.
+const LIVE_HOLD: Duration = Duration::from_millis(3000);
+
 /// Hold the landing lock as this live process until the returned lock is released.
 fn hold_landing(repo: &Path) -> git_policy_cli::owner_lock::OwnerLock {
     let registry: PathBuf = repo.join(".git/cli-git-transactions");
@@ -86,10 +90,14 @@ fn a_nested_git_add_inside_rebase_does_not_deadlock() {
     let repo: PathBuf = repository(&fixture, std::ffi::OsStr::new("repo"));
     commit_file(&fixture, repo.as_path(), "a.txt", "one\n");
     commit_file(&fixture, repo.as_path(), "b.txt", "two\n");
+    // `git rebase` puts its own libexec directory first on PATH for exec steps, so a bare `git` there
+    // is real Git and never reaches the wrapper; the exec step names the wrapper's path instead.
+    let wrapper_path: String = fixture.root.join("bin/git").display().to_string();
+    let exec_step: String = format!("{wrapper_path} add -- b.txt");
     let mut command: Command = wrapped(&fixture);
     command
         .current_dir(&repo)
-        .args(["rebase", "--exec", "git add -- b.txt", "HEAD~1"]);
+        .args(["rebase", "--exec", exec_step.as_str(), "HEAD~1"]);
     let output: Output = finish(command.stdin(Stdio::null()).stdout(Stdio::piped()).stderr(Stdio::piped()).spawn().expect("start the wrapped rebase"));
     assert_eq!(
         output.status.code(),
@@ -131,10 +139,14 @@ fn a_live_foreign_owner_is_waited_for_and_named() {
     std::fs::write(repo.join("a.txt"), b"content\n").expect("file to add");
     let lock: PathBuf = repo.join(".git/index.lock");
     // The owner starts before it takes the lock, as Git does, so its start precedes the lock's change.
+    // The holder's output goes nowhere and it execs its sleep, so killing it leaves no orphan holding a pipe.
     let mut holder: Child = Command::new("sh")
+        .stdin(Stdio::null())
+        .stdout(Stdio::null())
+        .stderr(Stdio::null())
         .args([
             "-c",
-            "while [ ! -e \"$0\" ]; do sleep 0.05; done; exec 3<\"$0\"; sleep 30",
+            "while [ ! -e \"$0\" ]; do sleep 0.05; done; exec 3<\"$0\"; exec sleep 30",
             lock.to_str().expect("UTF-8 path"),
         ])
         .spawn()
@@ -146,7 +158,9 @@ fn a_live_foreign_owner_is_waited_for_and_named() {
     let mut command: Command = wrapped(&fixture);
     command.current_dir(&repo).args(["add", "--", "a.txt"]);
     let child: Child = command.stdin(Stdio::null()).stdout(Stdio::piped()).stderr(Stdio::piped()).spawn().expect("start the wrapped add");
-    std::thread::sleep(HOLD);
+    // A loaded host can start the wrapper slower than the usual hold, so the owner keeps the lock longer
+    // here; the test then proves the wrapper waited for the owner rather than racing its release.
+    std::thread::sleep(LIVE_HOLD);
     let _ = holder.kill();
     let _ = holder.wait();
     std::fs::remove_file(&lock).expect("the owner released the lock");

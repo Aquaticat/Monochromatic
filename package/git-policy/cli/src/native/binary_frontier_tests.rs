@@ -29,8 +29,7 @@ use super::support::{
 };
 use git_policy_cli::policy_checks::{DEPENDENT_VERSION_BUMP_NEEDS, MARKDOWN_AUTOFIX_NEEDS};
 use git_policy_cli::policy_registry::PolicyId;
-
-use git_policy_cli::refusal_frontier::LEASE_VARIABLES;
+use git_policy_cli::refusal_frontier::REFUSED_LEASE_VARIABLES;
 use git_policy_cli::unported::{Unported, unported_notice};
 use std::ffi::OsStr;
 use std::path::{Path, PathBuf};
@@ -474,8 +473,8 @@ fn leftover_state_and_leases_refuse_guarded_commands() {
         silent_success()
     );
     std::fs::remove_file(journals.join("0123.json")).expect("remove journal");
-    // Each lease variable stops the guarded command, and none stops a read-only one.
-    for variable in LEASE_VARIABLES {
+    // Each unported lease variable stops the guarded command, and none stops a read-only one.
+    for variable in REFUSED_LEASE_VARIABLES {
         assert_eq!(
             observe(
                 wrapped(&fixture)
@@ -500,6 +499,17 @@ fn leftover_state_and_leases_refuse_guarded_commands() {
             "{variable}"
         );
     }
+    // The landing lease does not stop a guarded command that writes no index: coordination honours it.
+    assert_eq!(
+        observe(
+            wrapped(&fixture)
+                .current_dir(&repo)
+                .env("CLI_GIT_LANDING_LEASE", "inherited")
+                .args(guarded),
+            b""
+        ),
+        silent_success()
+    );
     assert_eq!(
         stderr_of(&run_wrapped(&fixture, repo.as_path(), &guarded)),
         ""

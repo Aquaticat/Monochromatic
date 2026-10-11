@@ -182,7 +182,7 @@ fn an_unlistable_proc_root_is_partial() {
 /// Start a child process that holds `lock` open on descriptor 3 until it is killed.
 fn start_holder(lock: &Path) -> Child {
     return Command::new("sh")
-        .args(["-c", "exec 3<\"$0\"; sleep 30", lock.to_str().expect("UTF-8 lock path")])
+        .args(["-c", "exec 3<\"$0\"; exec sleep 30", lock.to_str().expect("UTF-8 lock path")])
         .stdin(Stdio::null())
         .stdout(Stdio::null())
         .stderr(Stdio::null())

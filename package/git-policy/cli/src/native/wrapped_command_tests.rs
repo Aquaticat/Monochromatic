@@ -313,12 +313,12 @@ fn read_only_commands_skip_configuration_and_refusals() {
 fn a_guarded_command_is_prepared_in_order() {
     let root: PathBuf = configured("wrapped-order", "this is not JSONC");
     let registry: PathBuf = registered(root.as_path(), true);
-    let lease: [(&str, &str); 1] = [("CLI_GIT_LANDING_LEASE", "")];
-    // 1. A lease stops the command before Git is asked anything.
+    let lease: [(&str, &str); 1] = [("CLI_GIT_PREPARATION_LEASE", "")];
+    // 1. A preparation lease stops the command before Git is asked anything.
     assert_eq!(
         run(&["commit", "-m", "x"], unanswerable(), &lease),
         (
-            refuses(&Unported::InheritedLease("CLI_GIT_LANDING_LEASE"), "commit"),
+            refuses(&Unported::InheritedLease("CLI_GIT_PREPARATION_LEASE"), "commit"),
             Vec::<String>::new()
         )
     );
