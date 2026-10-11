@@ -1602,7 +1602,7 @@ const CARGO_PROFILE_BENCH: CargoProfileSpec = {
  ```
  */
 const CARGO_PROFILE_MUSIC: CargoProfileSpec = {
-  release: { strip: 'symbols', lto: true, },
+  release: { strip: 'symbols', lto: 'thin', },
 };
 
 /**

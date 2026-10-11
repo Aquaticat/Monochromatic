@@ -244,16 +244,14 @@ winresource = "0.1"
 # no .debug_* sections are emitted in release anyway). "symbols" keeps unwind
 # info intact, so panic backtraces and Drop-on-panic are unchanged. Mandatory.
 strip = "symbols"
-# Fat LTO: whole-program inlining and dead-code elimination across the entire
-# dependency graph (Slint, symphonia-all, zbus). This is what actually shrinks
-# .text; thin LTO was measured to give ~no gain over strip alone on this crate.
-# Measured here: fat LTO + default 16 codegen-units -> ~17.5 MB at ~2m06s.
-# codegen-units = 1 reaches ~16.4 MB at about the SAME build time (fat LTO's
-# serial whole-program link dominates either way, so one unit buys no speed-up),
-# but that extra ~1.1 MB is not worth carrying an extra knob, so codegen-units
-# stays at the default. Release builds run ~2 min vs ~10s unoptimised; the
-# run-debug mise task is the fast-iteration path. panic stays "unwind" (default).
-lto = true
+# Thin LTO: cross-crate inlining per codegen unit instead of one whole-program module. Fat LTO spent 287 of the
+# 302 s of rustc time for this crate in the single `LLVM_fatlto` pass (rustc -Ztime-passes), so rebuilding only
+# this crate took ~300 s with fat LTO and ~60 s with thin LTO (two runs each, within 3 s of each other, on a
+# loaded 16-core host). The binary grows from 41.6 MB to 46.4 MB (+11.6%) and runtime speed was not measured.
+# Switched to thin on 2026-10-11 at the maintainer's request; fat LTO is `lto = true`. An earlier measurement
+# here (fat LTO + default codegen-units -> ~17.5 MB at ~2m06s) predates the production UI and its dependencies.
+# The run-quick mise task skips LTO entirely (~17 s rebuilds). panic stays "unwind" (default).
+lto = "thin"
 
 # Standalone crate: its own workspace root, so no ancestor Cargo.toml can absorb it.
 # Enforced by file-enforcer (doc/planning/cargo-toml-file-enforcer.md).

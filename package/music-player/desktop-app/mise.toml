@@ -334,8 +334,8 @@ description = "Release-optimised build WITHOUT link-time optimisation, then run 
 usage = '''
 arg "[args]" var=#true help="File or folder paths to enqueue"
 '''
-# Middle path between `run` (fat LTO, the distributed binary) and `run-debug` (unoptimised, too slow to analyse a
-# library). Measured on this crate on a loaded 16-core host (load average 27 to 43, so compare the settings with each
+# Middle path between `run` (thin LTO since 2026-10-11, the distributed binary) and `run-debug` (unoptimised, too slow
+# to analyse a library). Measured on this crate on a loaded 16-core host (load average 27 to 43, so compare the settings with each
 # other, not the absolute numbers): rebuilding only this crate took ~300 s with fat LTO, ~60 s with thin LTO and
 # ~17 s with LTO off (two runs each, within 3 s of each other); the binary is 41.6 MB, 46.4 MB and 46.7 MB. Fat LTO
 # spends 287 of the 302 s of rustc time in `LLVM_fatlto` (rustc -Ztime-passes), not in compiling this crate's code.
