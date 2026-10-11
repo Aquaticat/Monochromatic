@@ -190,7 +190,7 @@ private fun openButton(onOpen: () -> Unit) {
             modifier = Modifier.size(ButtonDefaults.IconSize),
         )
         Box(modifier = Modifier.width(ButtonDefaults.IconSpacing))
-        Text(text = "Open")
+        Text(text = "Open dir")
     }
 }
 

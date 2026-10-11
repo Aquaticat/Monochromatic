@@ -70,7 +70,7 @@ component IconTarget inherits Rectangle {
     }
 }
 
-// Tonal pill with the folder glyph and the Open label: 40 px tall visible inside a 48 px target.
+// Tonal pill with the folder glyph and the Open dir label: 40 px tall visible inside a 48 px target.
 // Start padding 16 px, 18 px glyph, 8 px gap, 14 px label, and 24 px end padding, per the M3 tonal button with an icon.
 component OpenPill inherits Rectangle {
     // Invoked when the pill is tapped.
@@ -92,7 +92,7 @@ component OpenPill inherits Rectangle {
             x: 42px;
             y: 0px;
             height: 40px;
-            text: "Open";
+            text: "Open dir";
             font-size: Theme.label-large;
             font-weight: 500;
             vertical-alignment: center;
@@ -101,7 +101,7 @@ component OpenPill inherits Rectangle {
     }
     TouchArea {
         accessible-role: button;
-        accessible-label: "Open";
+        accessible-label: "Open dir";
         clicked => {
             root.clicked();
         }
