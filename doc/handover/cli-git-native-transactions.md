@@ -686,27 +686,34 @@ Commits made after the last successful push are local until that is resolved.
 
 Slice 7 runs as two lanes started from this branch's head (landing, and post-landing completion).
 
-### Slice 9 plan (2026-10-11)
+### Slice 9 state and handover (2026-10-11)
 
-Done in slice 9 (commit `2ce0f83d0b`):
+Built in this branch (commit `2ce0f83d0b`, corrected in the next commit):
 
-- `commit_transaction.rs`: the transaction in the incumbent's order: recovery on start, the landing lock, the transaction
-  directory and shadow repository, the seeded private index, then the policy preparation. The lock is released before
-  the result is returned. `transaction_paths` gives the caller the commit index and object store that the policy checks
-  must read, so both sides agree on the paths.
-- `commit_lifecycle.rs`: the order around a landed commit (automatic maintenance, then post-commit; a maintenance failure
-  stops the sequence) and around a guarded Git child (install the signal guard, run the child, release the locks and the
-  transaction, drop the guard, return `forwarding::exit_code`). Release failures are reported after the child ends.
+- `commit_transaction.rs`: recovery on start, then the transaction directory and shadow repository, the seeded private
+  index, and the policy preparation. It does not take the landing lock. The incumbent takes the landing lock inside the
+  landing attempt, held until the attempt returns (`src/policy-engine/commit-landing.ts`, `landTransaction`, `await using
+  _landingLock`); holding it through preparation would serialize concurrent commits and break the bystander and
+  concurrent-paths scenarios. Recovery takes what it needs itself, as the incumbent's recovery scan does
+  (`src/policy-engine/commit-transaction-recovery-scan.ts`). `transaction_paths` gives the caller the commit index and
+  object store the policy checks read.
+- `commit_lifecycle.rs`: only the guarded-child order: install the signal guard, run the child, release the locks and
+  the transaction, drop the guard, then exit with `forwarding::exit_code`. Release failures are reported after the child
+  ends. The order after a landed commit is not here: the incumbent runs automatic maintenance and then always runs the
+  post-commit hook, without stopping on a maintenance failure (`src/policy-engine/commit-transaction-conclusion.ts`,
+  around `runAutoMaintenance` and `runPostCommitHook`). The post-landing lane owns that sequence.
 
 Not reachable yet: nothing calls either module, and the wrapper still refuses `git commit`.
 
-Open until the landing lane is merged:
+Stop of feature work in this branch. The remaining slice 8 work and the slice 9 wiring (command path to
+`run_commit_transaction`, landing, the post-landing lane's API, the command frontier change) move to a separate
+integrator on `feat/cli-git-native-integration`, which merges this branch. The post-landing order is on
+`feat/cli-git-native-post-landing` (`post_landing.rs`, `landed_disposal.rs`, `post_commit_hook.rs`) and is not merged here.
 
-- Connect `commit` in the command path to `run_commit_transaction`, then to landing, then to `run_after_landing`,
-  then enable the command in the command frontier and remove the refusal.
-- Decide whether the landing lock is held through preparation, as the skeleton does now. Preparation can be long, so the
-  landing lane's design of lock scope decides it; the skeleton changes with that decision.
-- The landing lane owns the phase markers (`CLI_GIT_TEST_ONLY_PHASE_SIGNAL`) that the kill scenarios use.
+Still open for the integrator:
+
+- The phase markers (`CLI_GIT_TEST_ONLY_PHASE_SIGNAL`) that the phase-kill scenarios use belong to the landing lane.
+- The end-to-end inventory and the native-executable runner design below stay as the plan.
 
 End-to-end inventory (incumbent, under `package/git-policy/cli/e2e`):
 
@@ -719,7 +726,7 @@ End-to-end inventory (incumbent, under `package/git-policy/cli/e2e`):
 - Phase kill: `scenario-phase-kill-fixture.ts` runs five landing phases (`preparation-done`, `landing-locked`,
   `objects-migrated`, `ref-updated`, `index-installed`). Each phase has three steps: the victim reaches the phase, the
   bystander succeeds, and a follow-up commit succeeds. The victim is paused through `CLI_GIT_TEST_ONLY_PHASE_SIGNAL` and
-  killed as a process group. The landing lane owns these phase markers.
+  killed as a process group.
 - SIGKILL: `scenario-sigkill-fixture.ts` has two scenarios (bystander succeeds, follow-up commit succeeds).
 - Replay plumbing (measured with `rg`): twelve scenarios declare `replayPlumbing: 'unused'` and two declare `'absent'`;
   the rest keep the default `'required'`, which skips them on Git 2.39.5.
@@ -728,9 +735,9 @@ Running the suite against the native executable (design, not yet built):
 
 - The incumbent suite installs the packed npm wrapper into `concurrent-commits.Containerfile` and selects Git by `PATH`
   order (Git 2.39.5, 2.40.0 and 2.55.0 under `/opt/git/<version>`). The native executable goes in the same place, as the
-  \`git\` on \`PATH\` ahead of the real Git, so each scenario's Git choice is unchanged.
+  `git` on `PATH` ahead of the real Git, so each scenario's Git choice is unchanged.
 - The native executable must degrade on Git 2.39.5 the way the incumbent does: a commit that loses a landing race fails
-  fast with \`concurrent-commit/head-moved\`.
+  fast with `concurrent-commit/head-moved`.
 - Every scenario runs in the container with the same seeds as the incumbent, and the invariant checker judges the native run.
   A differential compares the JSONL events of each scenario against the incumbent's on the same seed.
 
