@@ -102,7 +102,20 @@ fn other_phases_are_ignored_and_malformed_markers_fail_everywhere() {
     remove(&root);
 }
 
-/// A pause writes the reached marker with the process ID, then waits for the release file.
+/// Reach a phase on a thread and fail instead of hanging when the wait never ends,
+///  so a defect in the wait is a failure and not a timeout.
+fn reach_bounded(value: String, phase: Phase, occurrence: Option<u64>) -> Result<(), PhaseMarkerError> {
+    let (sender, receiver) = std::sync::mpsc::channel();
+    std::thread::spawn(move || {
+        let _ = sender.send(reach_with_value(Some(value.as_str()), phase, occurrence));
+    });
+    return receiver
+        .recv_timeout(std::time::Duration::from_secs(30))
+        .expect("the phase was reached instead of waiting for ever");
+}
+
+/// A pause writes the reached marker with the process ID, then waits for the release file:
+///  it does not return before the file exists.
 #[test]
 fn pause_waits_for_the_release_file() {
     let root: PathBuf = fixture("phase-pause");
@@ -113,9 +126,13 @@ fn pause_waits_for_the_release_file() {
         while !reached.exists() {
             std::thread::sleep(std::time::Duration::from_millis(5));
         }
+        std::thread::sleep(std::time::Duration::from_millis(200));
         std::fs::write(releaser_root.join("landing-locked.release"), b"").expect("release file");
     });
-    reach_with_value(Some(value.as_str()), Phase::LandingLocked, None).expect("released");
+    let started: std::time::Instant = std::time::Instant::now();
+    reach_bounded(value, Phase::LandingLocked, None).expect("released");
+    assert!(started.elapsed() >= std::time::Duration::from_millis(150), "the pause returned before the release");
+    assert!(root.join("landing-locked.release").exists());
     releaser.join().expect("releaser");
     let reached: String = std::fs::read_to_string(root.join("landing-locked.reached")).expect("reached");
     assert_eq!(reached, std::process::id().to_string());
@@ -128,7 +145,7 @@ fn repeatable_phase_numbers_its_files() {
     let root: PathBuf = fixture("phase-occurrence");
     let value: String = format!("race-lost:pause:{}", root.display());
     std::fs::write(root.join("race-lost-2.release"), b"").expect("release file");
-    reach_with_value(Some(value.as_str()), Phase::RaceLost, Some(2)).expect("second occurrence");
+    reach_bounded(value, Phase::RaceLost, Some(2)).expect("second occurrence");
     assert!(root.join("race-lost-2.reached").exists());
     assert!(!root.join("race-lost.reached").exists());
     remove(&root);

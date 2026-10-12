@@ -111,6 +111,20 @@ fn transaction_in(root: &Path) -> PathBuf {
     return directory;
 }
 
+/// Take a landing lock on a thread and fail instead of hanging when the acquisition never ends,
+///  so a defect that makes it wait for ever is a failure and not a timeout.
+fn acquire_bounded(index: &Path, directory: &Path) -> Result<RealIndexLock, CoordinationFailure> {
+    let (sender, receiver) = std::sync::mpsc::channel();
+    let index: PathBuf = index.to_path_buf();
+    let directory: PathBuf = directory.to_path_buf();
+    std::thread::spawn(move || {
+        let _ = sender.send(acquire_landing_index_lock(index.as_path(), directory.as_path(), 1, 100, "landed nothing"));
+    });
+    return receiver
+        .recv_timeout(std::time::Duration::from_secs(30))
+        .expect("the acquisition ended instead of waiting for ever");
+}
+
 /// A landing lock journals its identity in `index-lock-<n>.json`, with the incumbent's bytes,
 ///  and announces this process through the PID file.
 #[test]
@@ -321,5 +335,33 @@ fn a_pid_file_that_cannot_be_created_fails_the_acquisition() {
         };
     assert!(matches!(&failure, CoordinationFailure::Stop(text) if text.contains("~pid.lock")), "{failure:?}");
     assert!(!real_lock_path(index.as_path()).exists(), "the lock is removed again");
+    remove(root.as_path());
+}
+
+/// A free index is locked at once: the acquisition never waits when nobody holds the lock.
+#[test]
+#[cfg(unix)]
+fn a_free_index_is_locked_without_waiting() {
+    let (root, index): (PathBuf, PathBuf) = index_in("real-lock-no-wait");
+    let directory: PathBuf = transaction_in(root.as_path());
+    let lock: RealIndexLock = acquire_bounded(index.as_path(), directory.as_path()).expect("a free index is lockable");
+    assert!(real_lock_path(index.as_path()).exists());
+    lock.release_after_landing().expect("release");
+    remove(root.as_path());
+}
+
+/// A lock that cannot be created for a reason other than being held (here, no directory to hold it)
+///  is a stop at once, never a wait for a holder that does not exist.
+#[test]
+#[cfg(unix)]
+fn a_lock_that_cannot_be_created_is_a_stop_and_not_a_wait() {
+    let root: PathBuf = crate::test_support::fixture("real-lock-no-directory");
+    let directory: PathBuf = transaction_in(root.as_path());
+    let index: PathBuf = root.join("missing").join("index");
+    let failure: CoordinationFailure = match acquire_bounded(index.as_path(), directory.as_path()) {
+        Ok(_) => panic!("there is no directory for the lock"),
+        Err(found) => found,
+    };
+    assert!(matches!(failure, CoordinationFailure::Stop(_)), "{failure:?}");
     remove(root.as_path());
 }
