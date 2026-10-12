@@ -287,12 +287,16 @@ impl TextShaper {
         // ```
         let first_text = request
             .text
-            .find(|character| !is_blank(character))
+            .find(|character| {
+                return !is_blank(character);
+            })
             .unwrap_or(request.text.len());
         let first_row_in_blanks = layout
             .lines()
             .next()
-            .is_some_and(|line| line.text_range().end <= first_text);
+            .is_some_and(|line| {
+                return line.text_range().end <= first_text;
+            });
         if indent > space && layout.len() > 1 && first_row_in_blanks {
             return self.build_line(request, space);
         }

@@ -230,6 +230,15 @@ run = """
 runCargo(['test', '--no-default-features', '--lib', '--tests'])
 """
 
+[tasks."test:wrap"]
+description = "Run the soft-wrap break rule unit tests and the wrapping integration tests in the bounded container"
+shell = "node --input-type=module-typescript -e"
+run = """
+{{vars.cargo}}
+runCargo(['test', '--no-default-features', '--lib', 'wrap::'])
+runCargo(['test', '--no-default-features', '--test', 'wrap'])
+"""
+
 [tasks."test:native"]
 depends = ["runtime", "notices"]
 description = "Exercise native window events and fonts in process-isolated headless tests"

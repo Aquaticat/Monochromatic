@@ -158,7 +158,9 @@ fn wrapped_spacings(
         }
         naturals.push(x_before(layout, *byte) - applied_on_row);
         rows.push(row);
-        let extra = applied.get(index).map_or(0.0, |(_, extra)| *extra);
+        let extra = applied.get(index).map_or(0.0, |(_, extra)| {
+            return *extra;
+        });
         applied_on_row += extra * scale;
     }
     let mut spacings = Vec::new();
@@ -183,7 +185,9 @@ fn same_spacings(left: &[(usize, f32)], right: &[(usize, f32)]) -> bool {
         && left
             .iter()
             .zip(right)
-            .all(|(first, second)| first.0 == second.0 && (first.1 - second.1).abs() <= SPACING_TOLERANCE);
+            .all(|(first, second)| {
+                return first.0 == second.0 && (first.1 - second.1).abs() <= SPACING_TOLERANCE;
+            });
 }
 
 /// Shape `projection` broken at `width` with each tab widened to its stop on its own visual row.
@@ -204,14 +208,14 @@ pub(crate) fn layout_wrapped_with_tabs(
     roles: &[(usize, usize, u32)],
 ) -> Layout<u32> {
     let mut spacings: Vec<(usize, f32)> = Vec::new();
-    let request = LineRequest {
+    let first_request = LineRequest {
         text: &projection.text,
         scale,
         roles,
         spacings: &spacings,
         wrap: Some(width),
     };
-    let mut layout = shaper.wrapped_line_layout(request);
+    let mut layout = shaper.wrapped_line_layout(first_request);
     if projection.tabs.is_empty() {
         return layout;
     }
@@ -222,14 +226,14 @@ pub(crate) fn layout_wrapped_with_tabs(
             break;
         }
         spacings = next;
-        let request = LineRequest {
+        let corrected = LineRequest {
             text: &projection.text,
             scale,
             roles,
             spacings: &spacings,
             wrap: Some(width),
         };
-        layout = shaper.wrapped_line_layout(request);
+        layout = shaper.wrapped_line_layout(corrected);
     }
     return layout;
 }

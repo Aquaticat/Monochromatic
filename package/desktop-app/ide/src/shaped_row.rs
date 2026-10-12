@@ -127,7 +127,9 @@ impl ShapedRow {
             .layout
             .lines()
             .next()
-            .map_or(CODE_ROW * scale, |line| line.metrics().line_height);
+            .map_or(CODE_ROW * scale, |line| {
+                return line.metrics().line_height;
+            });
         return index as f32 * height / scale;
     }
 
@@ -202,7 +204,9 @@ impl ShapedRow {
             .layout
             .lines()
             .nth(row)
-            .is_some_and(|line| line.text_range().start == byte);
+            .is_some_and(|line| {
+                return line.text_range().start == byte;
+            });
         if matches!(affinity, Affinity::Upstream) && row > 0 && starts_row {
             row -= 1;
         }
@@ -323,7 +327,9 @@ impl ShapedRow {
             .layout
             .lines()
             .next()
-            .map_or(0.0, |line| line.metrics().block_min_coord + line.metrics().line_height / 2.0);
+            .map_or(0.0, |line| {
+                return line.metrics().block_min_coord + line.metrics().line_height / 2.0;
+            });
     }
 
     /// Logical x of the caret standing before global source character `position` on this row,
@@ -349,10 +355,10 @@ impl ShapedRow {
     pub fn caret_at(&self, position: usize, affinity: ReadingAffinity, scale: f32) -> VisualCaret {
         let local = position.saturating_sub(self.source_start).min(self.source_len());
         let byte = self.projection.source_to_byte[local];
-        let affinity = engine_affinity(affinity);
+        let engine = engine_affinity(affinity);
         return VisualCaret {
-            x: self.cursor_x(byte, affinity) / scale,
-            row: self.visual_row_of(byte, affinity),
+            x: self.cursor_x(byte, engine) / scale,
+            row: self.visual_row_of(byte, engine),
         };
     }
 
