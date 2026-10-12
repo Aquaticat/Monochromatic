@@ -11,6 +11,8 @@ use crate::native::{
     ui::ReferenceEntry,
     viewport,
 };
+/// A jump target is placed on the default side of a wrap offset.
+use ide_app::document::ReadingAffinity;
 /// Validated locations and their refusals.
 use ide_app::language::reply::Target;
 /// Generated list rows carry toolkit strings.
@@ -91,6 +93,7 @@ pub(in crate::native) fn place(window: &AppWindow, source: &Rc<RefCell<State>>, 
     let mut position = current.document.position();
     position.anchor = start;
     position.head = start;
+    position.affinity = ReadingAffinity::Downstream;
     current.document.select(position);
     // `drop` ends the mutable loan before scrolling borrows the state again.
     drop(current);

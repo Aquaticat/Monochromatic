@@ -55,6 +55,8 @@ fn laid_out(source: &str, visible: &Visible) -> (Document, ShapedView, Annotatio
         count: 8,
         width: 900.0,
         scale: 1.0,
+        wrap: None,
+        clip: None,
     };
     let view = shaper.prepare(&document, viewport, &[]);
     let frame = lay_out(&view, visible, &mut shaper, COLORS);
@@ -85,6 +87,7 @@ fn message(start: usize, continued: bool, severity: Severity, text: &str) -> Mes
         start,
         continued,
         severity,
+        gap: None,
         text: text.to_string(),
     };
 }
@@ -115,7 +118,7 @@ fn with_block(
     let document = Document::new(source);
     let mut shaper = TextShaper::new();
     let row = shaper.row(&document, line, 1.0);
-    let (hint_rows, hints) = pack(&row, labels, &mut shaper, 1.0);
+    let (hint_rows, hints) = pack(&row, labels, &mut shaper, 1.0, None);
     let block = Arc::new(Block {
         line,
         hint_rows,
@@ -129,6 +132,8 @@ fn with_block(
         count: 8,
         width: 900.0,
         scale: 1.0,
+        wrap: None,
+        clip: None,
     };
     let view = shaper.prepare_rows(&document, viewport, &[], &map);
     let visible = Visible {

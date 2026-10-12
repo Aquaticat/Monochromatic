@@ -11,7 +11,21 @@
 /// ```ts
 /// import { RopeSlice, nextGraphemeBoundary } from 'helix-core';
 /// ```
-use helix_core::{RopeSlice, graphemes::next_grapheme_boundary};
+use helix_core::{Rope, RopeSlice, graphemes::next_grapheme_boundary};
+
+/// What:
+///  Longest line, in bytes, whose caret stops are found by walking the line as one flat string.
+/// Why:
+///  A string viewed as a rope slice is one chunk, and finding a character in a chunk scans the chunk,
+///  so a walk over a long line would scan it once for every grapheme: work that grows with the square of the length.
+///  A line past this length is copied into a rope, whose chunks are about a kilobyte,
+///  so each lookup scans one chunk.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// const FLAT_LINE_BYTES = 1024;
+/// ```
+const FLAT_LINE_BYTES: usize = 1024;
 
 /// What:
 ///  Own display text and maps between its bytes and source characters;
@@ -54,17 +68,44 @@ pub struct Projection {
 /// function caretStops(source: string, visible: number): number[];
 /// ```
 fn caret_stops(source: &str, visible: usize) -> Vec<usize> {
-    // What: `RopeSlice::from` views the borrowed string as rope text without copying it.
+    return caret_stops_visiting(source, visible, |_, _| {});
+}
+
+/// What:
+///  The caret stops of `source`, calling `visit` with the rope view and the position before each lookup.
+///  The production caller passes a closure that does nothing.
+/// Why:
+///  The structural test counts the bytes each lookup has to scan through this hook,
+///  and so proves the walk's work is bounded without timing it.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function caretStopsVisiting(source: string, visible: number, visit: (slice: RopeSlice, position: number) => void): number[];
+/// ```
+fn caret_stops_visiting(
+    source: &str,
+    visible: usize,
+    mut visit: impl FnMut(RopeSlice<'_>, usize),
+) -> Vec<usize> {
+    // What: `RopeSlice::from` views the borrowed string as rope text without copying it; a long line is copied
+    //       into a rope first, which keeps it in chunks.
     // Why: Helix's grapheme functions take rope views, and the same functions move the keyboard caret.
     //
     // In TS you'd write (pseudocode):
     // ```ts
-    // const slice = RopeSlice.from(source);
+    // const slice = source.length <= FLAT_LINE_BYTES ? RopeSlice.from(source) : Rope.from(source).slice();
     // ```
-    let slice = RopeSlice::from(source);
+    let rope;
+    let slice = if source.len() <= FLAT_LINE_BYTES {
+        RopeSlice::from(source)
+    } else {
+        rope = Rope::from_str(source);
+        rope.slice(..)
+    };
     let mut stops = vec![0];
     let mut position = 0;
     while position < visible {
+        visit(slice, position);
         // A grapheme never spans the visible text and the terminator, so the walk ends exactly at `visible`.
         position = next_grapheme_boundary(slice, position).min(visible);
         stops.push(position);
@@ -117,3 +158,7 @@ pub fn project_line(source: &str) -> Projection {
         stops,
     };
 }
+
+#[cfg(test)]
+#[path = "text_projection_tests.rs"]
+mod tests;

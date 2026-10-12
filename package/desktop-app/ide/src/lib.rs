@@ -24,10 +24,18 @@ pub mod text_projection;
 /// Pixel tab stops at multiples of two space advances,
 ///  independent of the preceding script.
 pub mod tab_stop;
+/// Soft-wrap break rules from IntelliJ, as Parley line-break overrides,
+///  and the continuation indent of a wrapped line.
+pub mod wrap;
+/// The wrap indicator of the gutter:
+///  IntelliJ's symbol chain checked against the fonts, its color, and the arrow drawn when no symbol fits.
+pub mod wrap_sign;
 
 /// Two-pass shaping that widens each tab's stand-in space to its stop.
 mod tab_layout;
 
+/// How many visual rows each source line takes, in chunks that copies share.
+pub mod line_rows;
 /// The one mapping between vertical pixels and source lines,
 ///  with blocks of virtual rows above annotated lines.
 pub mod row_map;
@@ -49,6 +57,9 @@ pub mod shaped_text;
 ///  line,
 ///  and document caret movement over source characters.
 pub mod caret_motion;
+
+/// Home and End on the visual rows of a soft-wrapped line.
+pub mod line_boundary;
 
 /// Up,
 ///  Down,

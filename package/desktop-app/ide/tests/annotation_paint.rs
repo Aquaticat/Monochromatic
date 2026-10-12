@@ -61,6 +61,8 @@ fn painted(source: &str, visible: &Visible, inks: AnnotationColors) -> (ShapedVi
         count: 2,
         width: 700.0,
         scale: 1.0,
+        wrap: None,
+        clip: None,
     };
     // Rows are placed by the vertical mapping the visible blocks call for.
     let mut raised = Vec::new();
@@ -110,13 +112,14 @@ fn block(
         position: hint.0,
         text: hint.1.to_string(),
     }];
-    let (hint_rows, hints) = pack(&row, &labels, &mut shaper, 1.0);
+    let (hint_rows, hints) = pack(&row, &labels, &mut shaper, 1.0, None);
     let mut rows = Vec::new();
     for (start, severity, text) in messages {
         rows.push(MessageRow {
             start: *start,
             continued: false,
             severity: *severity,
+            gap: None,
             text: (*text).to_string(),
         });
     }
@@ -394,6 +397,7 @@ fn selected_underlines_take_the_selected_ink() {
         anchor: 0,
         head: 9,
         viewport: 0,
+        affinity: ide_app::document::ReadingAffinity::Downstream,
     });
     let mut shaper = TextShaper::new();
     let viewport = Viewport {
@@ -401,6 +405,8 @@ fn selected_underlines_take_the_selected_ink() {
         count: 2,
         width: 700.0,
         scale: 1.0,
+        wrap: None,
+        clip: None,
     };
     let mut view = shaper.prepare(&document, viewport, &[]);
     let visible = Visible {

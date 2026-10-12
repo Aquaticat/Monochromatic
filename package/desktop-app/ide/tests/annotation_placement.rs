@@ -289,9 +289,10 @@ fn inline_hint_changes_where_down_lands() {
             anchor: position,
             head: position,
             viewport: 0,
+            affinity: ide_app::document::ReadingAffinity::Downstream,
         });
         // `None` means no remembered column: the aim is the caret's own x on hint-free geometry.
-        let plain = vertical(&mut shaper, &moving, 1.0, 1, None).head;
+        let plain = vertical(&mut shaper, &moving, 1.0, 0.0, 1, None).head;
         // With inline hints the aim is the painted caret x, which includes every label before it.
         let aim = painted.caret_x(*widened_at, 1.0);
         let inline = target.hit(aim, 1.0);

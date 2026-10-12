@@ -203,7 +203,7 @@ pub(super) fn annotate(reader: &Reader) {
 pub(super) fn point(reader: &Reader, line: usize, x: f32) -> LogicalPosition {
     let top = reader.source.borrow().row_map.code_top(line);
     return LogicalPosition::new(
-        TEXT_LEFT + x + reader.window.get_scroll_x(),
+        TEXT_LEFT + x,
         TEXT_TOP + top + 12.0 + reader.window.get_scroll_y(),
     );
 }
@@ -221,7 +221,7 @@ pub(super) fn point(reader: &Reader, line: usize, x: f32) -> LogicalPosition {
 pub(super) fn above(reader: &Reader, line: usize, x: f32, rise: f32) -> LogicalPosition {
     let top = reader.source.borrow().row_map.code_top(line);
     return LogicalPosition::new(
-        TEXT_LEFT + x + reader.window.get_scroll_x(),
+        TEXT_LEFT + x,
         TEXT_TOP + top - rise + reader.window.get_scroll_y(),
     );
 }
@@ -561,6 +561,9 @@ fn caret_problems_follow_the_caret_and_are_spelled_out_in_full() {
         "the problems stayed after leaving the range"
     );
     key(window, Key::DownArrow);
+    // Home goes to the first non-blank character of the line (past its tab) and a second Home to the line start.
+    key(window, Key::Home);
+    assert_eq!(position(&reader), (25, 25));
     key(window, Key::Home);
     for _ in 0..5 {
         key(window, Key::RightArrow);

@@ -54,3 +54,5 @@ the `Flickable` moves the existing image on its own.
    `leaving_the_overscan_tile_re_centers_on_the_worker_thread` and the guard `recenter-on-window-thread`).
 3. Soft wrap (`doc/planning/slint-ide-soft-wrap.md`) lands on this pipeline, not before it:
    wrapping needs the row cache, per-line heights, and the tile build that stage 2 moves off the UI thread.
+   Built on 2026-10-11 on `feat/ide-soft-wrap`: the row cache is keyed by wrap width,
+   a new wrap width is a worker re-center, and the same worker measures the whole text between tile jobs.
