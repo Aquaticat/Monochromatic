@@ -8,10 +8,15 @@ import {
   REFRAIN_SLOT_MINIMUM,
 } from './repeat-groups-bounds.ts';
 import { compareFoundRepeats, } from './repeat-groups-order.ts';
+import { disjointRepeatsOf, } from './repeat-groups-overlap.ts';
 import {
   clausesOf,
   refrainFramesOf,
 } from './repeat-groups-refrain.ts';
+import {
+  quotedCountsOf,
+  touchesQuotation,
+} from './repeat-groups-quotation.ts';
 import { maximalRunsOf, } from './repeat-groups-runs.ts';
 import type {
   FoundRepeat,
@@ -145,8 +150,8 @@ function lineOf(
 }
 
 /**
- Whether a repeat counts: no occurrence begins inside quoted speech, and its
- occurrences do not all sit on one line.
+ Whether a repeat counts: no occurrence touches quoted speech anywhere, the
+ quotation marks included, and its occurrences do not all sit on one line.
 
  @param spans - places the repeat stands
 
@@ -306,13 +311,19 @@ function placedRepeat(
  Finds every repeat of source wording in a page, body paragraphs only, and
  places each occurrence in the slice that holds it.
 
- Repeats are returned in page order of their first occurrence; where two start
- at the same offset a maximal repeat lists before a refrain, then the one whose
- first occurrence ends sooner, then by the later occurrences' starts, so the
- order depends on the page alone. A group holding a quoted occurrence, or whose
- occurrences all sit on one line, is left out.
- A repeat contained in a longer one is reported on its own where its occurrences
- differ, as the design's census counts them.
+ Repeats are returned in page order of their first occurrence. A group is left
+ out when any character of any occurrence is quoted speech or a quotation mark,
+ wherever the occurrence begins, or when its occurrences all sit on one line.
+
+ No two groups claim the same text: an occurrence of one group never overlaps
+ an occurrence of another, placed or not, so a pass that splices one rendering into
+ every occurrence of a group never splices two into one span. Where groups would
+ overlap (periodic text, a repeat inside a longer one that fewer places share,
+ a refrain frame over clauses a maximal repeat covers), the one whose
+ occurrences cover more of the page stays and the others are dropped whole. A
+ tie goes to the group listed first: the earlier first occurrence, then a
+ maximal repeat before a refrain, then the first occurrence that ends sooner,
+ then the earlier of the later occurrences.
 
  AN OCCURRENCE NO SLICE HOLDS WHOLE IS LISTED, NOT DROPPED AND NOT REFUSED.
  The slices a pass reads cover a page only in part: a section the alignment
@@ -365,6 +376,12 @@ export function repeatGroupsOf(
   const stream = wording.chars;
 
   /**
+   Quoted characters before each place in the stream, so each run is asked in one subtraction
+   whether any character of it touches quoted speech.
+   */
+  const quotedCounts = quotedCountsOf({ wording, },);
+
+  /**
    Maximal repeats, each place a run stands with its quotation flag.
    */
   const maximal: FoundRepeat[] = maximalRunsOf({ stream, },)
@@ -386,7 +403,12 @@ export function repeatGroupsOf(
             wording,
             index: last,
           },),
-          quoted: nonNullishOrThrow(wording.depths[start],) > 0,
+          quoted: touchesQuotation({
+            counts: quotedCounts,
+            start,
+            end: start + run.length,
+          },),
+          width: run.length,
           slotStartOffset: nonNullishOrThrow(wording.offsets[start],),
           slotEndOffset: wordingEndAt({
             wording,
@@ -424,6 +446,7 @@ export function repeatGroupsOf(
               index: last,
             },),
             quoted: clause.quoted,
+            width: clause.end - clause.start,
             slotStartOffset: nonNullishOrThrow(wording.offsets[clause.start + frame.prefixLength],),
             slotEndOffset: wordingEndAt({
               wording,
@@ -435,16 +458,20 @@ export function repeatGroupsOf(
     },
   );
 
-  return [
+  /**
+   Repeats that count, before any two that overlap are told apart: a repeat left out for quoted speech or
+   for standing on one line must not take a place from one that stays.
+   */
+  const reported = [
     ...maximal,
     ...refrain,
-  ]
-    .filter(function reportedOnly(repeat,): boolean {
-      return isReported({
-        spans: repeat.spans,
-        lineStarts,
-      },);
-    },)
+  ].filter(function reportedOnly(repeat,): boolean {
+    return isReported({
+      spans: repeat.spans,
+      lineStarts,
+    },);
+  },);
+  return disjointRepeatsOf({ repeats: reported, },)
     .toSorted(function inPageOrder(
       a,
       b,

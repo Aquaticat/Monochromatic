@@ -6,6 +6,8 @@ import {
   CONTROL_ENTRY_ID,
   CONTROL_MAXIMAL_LINES,
   CONTROL_REFRAIN_LINES,
+  type ControlReading,
+  controlReadingOf,
   coversAllLines,
   occupiedLinesOf,
 } from './repeat-census-control.ts';
@@ -69,6 +71,46 @@ export function packageGroupsOfPage({ text, }: { readonly text: string; },): rea
 }
 
 /**
+ Reads the positive control off the package's own detection: the groups of the
+ live case's entry.
+
+ @param entries - each entry's groups
+
+ @returns `absent` where the control entry is not among them, else whether each control held
+
+ @example
+ ```ts
+ const reading = packageControlOf({ entries, },);
+ ```
+ */
+export function packageControlOf({ entries, }: { readonly entries: readonly EntryGroups[]; },): ControlReading {
+  /**
+   Positive control: the groups of the live case's entry.
+   */
+  const control = entries.find(function isControl(entry,): boolean {
+    return entry.id === CONTROL_ENTRY_ID;
+  },);
+  if (control === undefined)
+    return 'absent';
+  return controlReadingOf({
+    refrain: control.groups
+      .some(function coversRefrain(group,): boolean {
+      return (group.kind === 'refrain') && coversAllLines({
+        held: occupiedLinesOf({ occurrences: group.occurrences, },),
+        lines: CONTROL_REFRAIN_LINES,
+      },);
+    },),
+    maximal: control.groups
+      .some(function coversMaximal(group,): boolean {
+      return (group.kind === 'maximal') && coversAllLines({
+        held: occupiedLinesOf({ occurrences: group.occurrences, },),
+        lines: CONTROL_MAXIMAL_LINES,
+      },);
+    },),
+  },);
+}
+
+/**
  Builds the printed summary of the package's groups over the corpus.
 
  @param entries - each entry's groups
@@ -92,13 +134,6 @@ export function packageSummary({ entries, }: { readonly entries: readonly EntryG
         group,
       };
     },);
-  },);
-
-  /**
-   Positive control: the groups of the live case's entry.
-   */
-  const control = entries.find(function isControl(entry,): boolean {
-    return entry.id === CONTROL_ENTRY_ID;
   },);
   return {
     groups: placed.length,
@@ -143,24 +178,7 @@ export function packageSummary({ entries, }: { readonly entries: readonly EntryG
         },),
       };
     },),
-    control: (control === undefined)
-      ? 'absent'
-      : {
-        refrainCoversLines17To37: control.groups
-          .some(function coversRefrain(group,): boolean {
-          return (group.kind === 'refrain') && coversAllLines({
-            held: occupiedLinesOf({ occurrences: group.occurrences, },),
-            lines: CONTROL_REFRAIN_LINES,
-          },);
-        },),
-        maximalCoversLines35And55: control.groups
-          .some(function coversMaximal(group,): boolean {
-          return (group.kind === 'maximal') && coversAllLines({
-            held: occupiedLinesOf({ occurrences: group.occurrences, },),
-            lines: CONTROL_MAXIMAL_LINES,
-          },);
-        },),
-      },
+    control: packageControlOf({ entries, },),
   };
 }
 

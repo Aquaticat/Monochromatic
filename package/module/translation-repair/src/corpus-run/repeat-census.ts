@@ -8,18 +8,18 @@ import {
 import { allInInputOrder, } from '../all-in-input-order.ts';
 import { reportingRefusals, } from './cli-refusal.ts';
 import {
-  type EntryCensus,
-  summarise,
-} from './repeat-census-summary.ts';
-import { packageGroupsOfPage, } from './repeat-census-package.ts';
-import { censusOfPage, } from './repeat-census-page.ts';
+  censusEntryOf,
+  reportRepeatCensus,
+} from './repeat-census-report.ts';
+import type { EntryCensus, } from './repeat-census-summary.ts';
 import { readRunCorpusPinSetting, } from './run-config.ts';
 
 //region Repeat census
-// The repeated-wording census as a command: the wiring and the printed summary
-// only. The line reading is `repeat-census-lines.ts`, and the corpus pin is the
-// one every corpus read resolves against. READ-ONLY and keyless: it reads git
-// objects at the pin and calls no model.
+// The repeated-wording census as a command: the wiring only. The line reading is
+// `repeat-census-lines.ts`, what is printed and when the command declines is
+// `repeat-census-report.ts`, and the corpus pin is the one every corpus read
+// resolves against. READ-ONLY and keyless: it reads git objects at the pin and
+// calls no model.
 
 /**
  Reads the page of every entry at the pin, leaving out an entry without one.
@@ -80,11 +80,15 @@ async function readPages(
 }
 
 /**
- Reads the pinned corpus, runs the census over each page, and prints the summary.
+ Reads the pinned corpus, runs the census over each page, and prints the summary
+ whole; then declines, so the command exits non-zero, when a positive control
+ read false or could not be read.
 
  @param pin - corpus clone and commit
 
  @throws {@link Error} when a corpus read fails for a reason other than a missing page
+
+ @throws {@link StatedRefusalError} when a positive control of the census did not hold, after the whole summary is printed
 
  @example
  ```ts
@@ -107,17 +111,12 @@ async function runRepeatCensus(
    Census of every page.
    */
   const entries: EntryCensus[] = pages.map(function censusOf(page,): EntryCensus {
-    return {
+    return censusEntryOf({
       id: page.id,
-      census: censusOfPage({ text: page.text, },),
-      groups: packageGroupsOfPage({ text: page.text, },),
-    };
+      text: page.text,
+    },);
   },);
-  console.log(JSON.stringify(
-    summarise({ entries, },),
-    null,
-    1,
-  ),);
+  reportRepeatCensus({ entries, },);
 }
 
 if (import.meta.main)

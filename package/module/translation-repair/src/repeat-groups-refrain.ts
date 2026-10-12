@@ -9,6 +9,10 @@ import {
   REFRAIN_SLOT_MINIMUM,
   REFRAIN_SUFFIX_MINIMUM,
 } from './repeat-groups-bounds.ts';
+import {
+  quotedCountsOf,
+  touchesQuotation,
+} from './repeat-groups-quotation.ts';
 import type {
   Clause,
   WordingStream,
@@ -48,6 +52,13 @@ export function clausesOf(
   const clauses: Clause[] = [];
 
   /**
+   Quoted characters before each place in the stream. Every quotation mark is a clause boundary,
+   so no clause holds one and the depth is the same at every character of a clause: no case can
+   tell this reading from one at the clause's first character, and it is the one every finder shares.
+   */
+  const quotedCounts = quotedCountsOf({ wording, },);
+
+  /**
    Stream index where the clause being read begins.
    */
   let start = 0;
@@ -71,7 +82,11 @@ export function clausesOf(
         end: index,
         points,
         text: points.join('',),
-        quoted: nonNullishOrThrow(wording.depths[start],) > 0,
+        quoted: touchesQuotation({
+          counts: quotedCounts,
+          start,
+          end: index,
+        },),
       },);
     }
     start = index + 1;

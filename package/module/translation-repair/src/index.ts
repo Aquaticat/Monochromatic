@@ -287,6 +287,7 @@ export * from './editor-runner-barrel.ts';
 export * from './calibrate-bench-barrel.ts';
 export * from './window-trial-probe-barrel.ts';
 export * from './slice-census-barrel.ts';
+export * from './repeat-census-barrel.ts';
 export * from './judge-fidelity-probe-barrel.ts';
 export * from './settled-audit-run-barrel.ts';
 export * from './consistency-barrel.ts';

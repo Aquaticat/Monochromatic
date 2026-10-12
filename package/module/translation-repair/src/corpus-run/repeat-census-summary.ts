@@ -7,6 +7,8 @@ import {
   CONTROL_ENTRY_ID,
   CONTROL_MAXIMAL_LINES,
   CONTROL_REFRAIN_LINES,
+  type ControlReading,
+  controlReadingOf,
   coversAllLines,
   occupiedLinesOf,
 } from './repeat-census-control.ts';
@@ -171,6 +173,48 @@ function detailOf(
 }
 
 /**
+ Reads the positive control off the line reading: the entry whose refrain and
+ sentence the design reads as the live case.
+
+ @param entries - each entry's census
+
+ @returns `absent` where the control entry is not among them, else whether each control held
+
+ @example
+ ```ts
+ const reading = lineControlOf({ entries, },);
+ ```
+ */
+export function lineControlOf({ entries, }: { readonly entries: readonly EntryCensus[]; },): ControlReading {
+  /**
+   Positive control: the entry whose refrain and sentence the design reads as the live case.
+   */
+  const control = entries.find(function isControl(entry,): boolean {
+    return entry.id === CONTROL_ENTRY_ID;
+  },);
+  if (control === undefined)
+    return 'absent';
+  return controlReadingOf({
+    refrain: control.census
+      .refrain
+      .some(function coversLines(group,): boolean {
+      return coversAllLines({
+        held: occupiedLinesOf({ occurrences: group.occurrences, },),
+        lines: CONTROL_REFRAIN_LINES,
+      },);
+    },),
+    maximal: control.census
+      .maximal
+      .some(function coversLines(group,): boolean {
+      return coversAllLines({
+        held: occupiedLinesOf({ occurrences: group.occurrences, },),
+        lines: CONTROL_MAXIMAL_LINES,
+      },);
+    },),
+  },);
+}
+
+/**
  Builds the summary the census prints.
 
  @param entries - each entry's census
@@ -228,13 +272,6 @@ export function summarise({ entries, }: { readonly entries: readonly EntryCensus
       .every(function notNonBody(flag,): boolean {
       return !NON_BODY_FLAGS.has(flag,);
     },);
-  },);
-
-  /**
-   Positive control: the entry whose refrain and sentence the design reads as the live case.
-   */
-  const control = entries.find(function isControl(entry,): boolean {
-    return entry.id === CONTROL_ENTRY_ID;
   },);
   return {
     entries: entries.length,
@@ -319,26 +356,7 @@ export function summarise({ entries, }: { readonly entries: readonly EntryCensus
         .includes('list',);
     },)
       .length,
-    control: (control === undefined)
-      ? 'absent'
-      : {
-        refrainCoversLines17To37: control.census
-          .refrain
-          .some(function coversLines(group,): boolean {
-          return coversAllLines({
-            held: occupiedLinesOf({ occurrences: group.occurrences, },),
-            lines: CONTROL_REFRAIN_LINES,
-          },);
-        },),
-        maximalCoversLines35And55: control.census
-          .maximal
-          .some(function coversLines(group,): boolean {
-          return coversAllLines({
-            held: occupiedLinesOf({ occurrences: group.occurrences, },),
-            lines: CONTROL_MAXIMAL_LINES,
-          },);
-        },),
-      },
+    control: lineControlOf({ entries, },),
   };
 }
 

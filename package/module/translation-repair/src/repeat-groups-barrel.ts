@@ -19,10 +19,15 @@ export {
   URL_SCHEMES,
 } from './repeat-groups-bounds.ts';
 export { compareFoundRepeats, } from './repeat-groups-order.ts';
+export { disjointRepeatsOf, } from './repeat-groups-overlap.ts';
 export {
   clausesOf,
   refrainFramesOf,
 } from './repeat-groups-refrain.ts';
+export {
+  quotedCountsOf,
+  touchesQuotation,
+} from './repeat-groups-quotation.ts';
 export { maximalRunsOf, } from './repeat-groups-runs.ts';
 export {
   blankedAt,

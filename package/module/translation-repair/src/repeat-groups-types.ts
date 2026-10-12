@@ -255,7 +255,7 @@ export type Span = {
   readonly endOffset: number;
 
   /**
-   Whether the span begins inside an open quotation.
+   Whether any character of the span is quoted speech or a quotation mark.
    */
   readonly quoted: boolean;
 };
@@ -290,7 +290,7 @@ export type Clause = {
   readonly text: string;
 
   /**
-   Whether the clause begins inside an open quotation.
+   Whether any character of the clause is quoted speech or a quotation mark.
    */
   readonly quoted: boolean;
 };
@@ -335,10 +335,17 @@ export type FoundRepeat = {
 
  @example
  ```ts
- const found: FoundSpan = { startOffset: 0, endOffset: 12, quoted: false, slotStartOffset: 0, slotEndOffset: 12, };
+ const found: FoundSpan = { startOffset: 0, endOffset: 12, quoted: false, width: 12, slotStartOffset: 0, slotEndOffset: 12, };
  ```
  */
 export type FoundSpan = Span & {
+  /**
+   Wording characters the place holds, one per code point, counting no space and
+   nothing a reader does not see, so a character beyond the basic plane is one
+   and a comment inside the place adds none.
+   */
+  readonly width: number;
+
   /**
    Offset of the slot's first character, or the span's start for a maximal repeat.
    */
