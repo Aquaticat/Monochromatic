@@ -174,3 +174,44 @@ fn non_ordinary_modes_get_no_completion() {
     assert_eq!(ordinary_git_mode(CandidateMode::Symlink), None);
     assert_eq!(ordinary_git_mode(CandidateMode::Gitlink), None);
 }
+
+/// A correction whose index entry changed mode, or whose bytes equal the original, is not recorded.
+#[test]
+fn a_changed_mode_or_an_unchanged_blob_gets_no_completion() {
+    let root: PathBuf = fixture("worktree-records-skips");
+    let repo: PathBuf = repository(root.as_path(), "repo");
+    std::fs::write(repo.join("same.txt"), b"same").expect("same");
+    std::fs::write(repo.join("moded.txt"), b"moded").expect("moded");
+    git(repo.as_path(), &["add", "--", "same.txt", "moded.txt"]);
+    // `same.txt` keeps its bytes in the index; `moded.txt` gets other bytes and an executable mode.
+    let blob = |bytes: &[u8]| -> String {
+        let mut child = std::process::Command::new(REAL_GIT)
+            .current_dir(&repo)
+            .args(["hash-object", "-w", "--stdin"])
+            .stdin(std::process::Stdio::piped())
+            .stdout(std::process::Stdio::piped())
+            .spawn()
+            .expect("hash-object");
+        std::io::Write::write_all(&mut child.stdin.take().expect("stdin"), bytes).expect("write");
+        return String::from_utf8_lossy(child.wait_with_output().expect("output").stdout.as_slice()).trim().to_string();
+    };
+    git(repo.as_path(), &["update-index", "--cacheinfo", "100755", blob(b"moded\n").as_str(), "moded.txt"]);
+    let change = |name: &str, original: &[u8], replacement: &[u8]| {
+        return InstallChange {
+            path: name.as_bytes().to_vec(),
+            mode: CandidateMode::Regular,
+            original: Rc::from(original),
+            replacement: Rc::from(replacement),
+        };
+    };
+    let records: Vec<AddedPath> = selected_worktree_records(
+        &context(),
+        repo.as_path(),
+        repo.as_path(),
+        repo.join(".git/index").as_path(),
+        &[change("same.txt", b"same", b"same\n"), change("moded.txt", b"moded", b"moded\n")],
+    )
+    .expect("records");
+    assert_eq!(records, Vec::<AddedPath>::new());
+    remove(root.as_path());
+}

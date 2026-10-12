@@ -62,3 +62,10 @@ fn a_pathspec_is_not_a_cluster() {
     assert!(replay_options(&args(&["tmp", "-n"])).no_verify);
     assert!(replay_options(&args(&["-", "-n"])).no_verify);
 }
+
+/// A long option is never read as a cluster of short letters: `--no-edit` and `--dry-run` contain an `n`.
+#[test]
+fn a_long_option_is_not_a_cluster() {
+    assert!(!replay_options(&args(&["--no-edit"])).no_verify);
+    assert!(!replay_options(&args(&["--dry-run", "-m", "x"])).no_verify);
+}

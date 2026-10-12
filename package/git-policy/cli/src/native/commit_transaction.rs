@@ -367,6 +367,22 @@ pub fn private_checks<'a, F: RepositoryFacts>(
 }
 
 /// What:
+///  How many passes changed the state when the convergence settled; any other ending counts none.
+/// Why:
+///   The fix summary names the passes of a settled convergence only.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// convergence.kind === 'settled' ? convergence.changedPasses : 0
+/// ```
+pub fn settled_passes(convergence: &Convergence) -> u64 {
+    return match convergence {
+        Convergence::Settled { changed_passes } => *changed_passes as u64,
+        _ => 0,
+    };
+}
+
+/// What:
 ///  The candidate request for the paths a private index changes against the recorded base.
 /// Why:
 ///   The policies check exactly the paths the commit changes; each path is literal and rooted at the top level, so a
@@ -438,10 +454,7 @@ fn converge<G: RepositoryFacts>(
             object_directory: Some(workspace.object_directory.as_path()),
         },
     });
-    let changed_passes: u64 = match outcome.convergence {
-        Convergence::Settled { changed_passes } => changed_passes as u64,
-        _ => 0,
-    };
+    let changed_passes: u64 = settled_passes(&outcome.convergence);
     return Converged {
         pass: outcome.pass,
         changed_passes,

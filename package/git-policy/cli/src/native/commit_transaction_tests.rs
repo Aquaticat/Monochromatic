@@ -163,3 +163,13 @@ fn the_base_object_follows_the_capture() {
     );
     assert!(base_object(&capture(Base::Commit(String::from("nope")))).is_err());
 }
+
+/// A settled convergence counts its changed passes; every other ending counts none.
+#[test]
+fn only_a_settled_convergence_counts_passes() {
+    assert_eq!(settled_passes(&Convergence::Settled { changed_passes: 3 }), 3);
+    assert_eq!(settled_passes(&Convergence::Settled { changed_passes: 0 }), 0);
+    assert_eq!(settled_passes(&Convergence::Blocked), 0);
+    assert_eq!(settled_passes(&Convergence::FixCycle), 0);
+    assert_eq!(settled_passes(&Convergence::FixPassLimit), 0);
+}

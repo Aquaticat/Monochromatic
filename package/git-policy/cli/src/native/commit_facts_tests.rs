@@ -79,14 +79,16 @@ fn rule_facts_are_the_wrapped_providers() {
     assert_eq!(facts.remote_guess_creates_branch(OsStr::new("feature")), Ok(true));
     assert_eq!(facts.remote_guess_creates_branch(OsStr::new("nothing")), Ok(false));
     assert_eq!(facts.transaction_context().real_git, PathBuf::from(REAL_GIT));
-    // A mutable borrow answers like the provider it borrows.
-    let borrowed = &mut facts;
-    assert_eq!(borrowed.location().expect("borrowed"), location);
-    assert!(borrowed.asked_location().is_some());
-    assert_eq!(borrowed.transaction_context().real_git, PathBuf::from(REAL_GIT));
-    assert!(borrowed.index_vs_head().is_ok());
-    assert!(borrowed.sequencer_state().is_ok());
-    assert_eq!(borrowed.remote_guess_creates_branch(OsStr::new("feature")), Ok(true));
-    assert_eq!(borrowed.remote_guess_creates_branch(OsStr::new("nothing")), Ok(false));
+    // A mutable borrow answers like the provider it borrows; the trait is named so that the impl for the borrow runs.
+    let mut borrowed = &mut facts;
+    assert_eq!(RepositoryFacts::location(&mut borrowed).expect("borrowed"), location);
+    assert!(RepositoryFacts::asked_location(&borrowed).is_some());
+    assert_eq!(RepositoryFacts::transaction_context(&borrowed).real_git, PathBuf::from(REAL_GIT));
+    assert!(RepositoryFacts::index_vs_head(&mut borrowed).is_ok());
+    assert!(RepositoryFacts::sequencer_state(&mut borrowed).is_ok());
+    assert_eq!(RepositoryFacts::remote_guess_creates_branch(&mut borrowed, OsStr::new("feature")), Ok(true));
+    assert_eq!(RepositoryFacts::remote_guess_creates_branch(&mut borrowed, OsStr::new("nothing")), Ok(false));
+    let request: CandidateRequest = CandidateRequest::StagedAtBase { base: None, pathspecs: Vec::new() };
+    assert!(RepositoryFacts::candidates(&mut borrowed, &request).is_ok());
     remove(root.as_path());
 }

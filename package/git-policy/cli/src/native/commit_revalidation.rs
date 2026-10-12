@@ -17,7 +17,7 @@ use super::commit_convergence::{CommitConvergence, CommitConvergenceInput, conve
 use super::commit_facts::PrivateIndexFacts;
 use super::commit_index::{list_changed_index_paths, write_private_tree};
 use super::commit_preparation::{NATIVE_UNSET_VARIABLES, install_guard_when_free};
-use super::commit_transaction::{CommitInvocation, TransactionStop, failed, staged_at_base};
+use super::commit_transaction::{CommitInvocation, TransactionStop, failed, settled_passes, staged_at_base};
 use super::commit_workspace::CommitWorkspace;
 use super::commit_worktree_records::{HookChanges, describe_hook_changes};
 use super::diagnostic_log::debug;
@@ -26,7 +26,6 @@ use super::signal_relay::SignalGuard;
 use super::hook_dispatch_plan::SILENCED_HOOK_EVENTS;
 use super::policy_checks::ShippedChecks;
 use super::policy_content::{ContentState, LifecycleContent};
-use super::policy_convergence::Convergence;
 use super::policy_engine::{StageRequest, pass_exit_code};
 use super::policy_events::PolicyEvent;
 use super::policy_pass::{PassResult, run_policy_pass};
@@ -205,10 +204,7 @@ pub fn revalidate_replay<F: RepositoryFacts>(
                 object_directory: Some(workspace.object_directory.as_path()),
             },
         });
-        let passes: u64 = match outcome.convergence {
-            Convergence::Settled { changed_passes } => changed_passes as u64,
-            _ => 0,
-        };
+        let passes: u64 = settled_passes(&outcome.convergence);
         (outcome.pass, passes, outcome.changed_paths)
     };
     let code: i32 = pass_exit_code(pass.events.as_slice(), pass.end);
