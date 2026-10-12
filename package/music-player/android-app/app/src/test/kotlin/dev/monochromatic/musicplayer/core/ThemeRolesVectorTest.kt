@@ -29,12 +29,13 @@ import org.junit.Test
 // describe("shared theme vector", () => { test("kotlin equals rust", () => { ... }); });
 // ```
 /**
- * Verifies that `deriveRoles` reproduces the Rust roles for 40 roots in both schemes.
+ * Verifies that `deriveRoles` reproduces the Rust roles for every root of the vector, in both schemes.
  *
- * The tolerance is one 8-bit step per channel. The two implementations evaluate the same formulas in 64-bit floats, but
- * `Math.cbrt` and `Math.pow` on the JVM and `f64::cbrt` and `f64::powf` in Rust's system math library may differ in
- * the last bit; when a value lies within that error of a rounding boundary, one channel rounds to the neighbouring
- * step. The measured maximum is printed by `everyRoleMatchesRustWithinOneStep` and asserted below.
+ * The tolerance is zero: every channel of every role equals the Rust value. The two implementations evaluate the same
+ * formulas in 64-bit floats, but `Math.cbrt` and `Math.pow` on the JVM and `f64::cbrt` and `f64::powf` in Rust's system
+ * math library could differ in the last bit and round one channel to the neighbouring step; the measured maximum is
+ * printed by `everyRoleMatchesRustExactly` and asserted below. The desktop crate has the other half of the check: its
+ * test `theme_roles::fixture_tests` requires every line of the same file to equal what `derive_roles` computes.
  */
 class ThemeRolesVectorTest {
     /** One line of the vector: a root and the 19 role values of one scheme. */
@@ -73,7 +74,7 @@ class ThemeRolesVectorTest {
     private fun channelDistance(first: Srgb8, second: Srgb8): Int =
         maxOf(abs(first.red - second.red), abs(first.green - second.green), abs(first.blue - second.blue))
 
-    /** Confirms the vector covers at least 30 roots in both schemes and every named case of the task. */
+    /** Confirms the vector covers at least 40 roots in both schemes and every named case of the task. */
     @Test
     fun theVectorCoversTheRequiredRoots() {
         val lines: List<VectorLine> = readVector()
@@ -86,12 +87,13 @@ class ThemeRolesVectorTest {
         }
         assertTrue("no near-gray root", names.any { name -> name.startsWith("gray") })
         assertEquals(12, names.count { name -> name.startsWith("sweep-mid-") })
+        assertEquals(12, names.count { name -> name.startsWith("sweep-deep-") })
         assertTrue(lines.all { line -> line.roles.size == EXPECTED_ROLE_COUNT })
     }
 
-    /** Confirms every role of every line equals the Rust value within one step and reports the largest difference. */
+    /** Confirms every role of every line equals the Rust value exactly and reports the largest difference. */
     @Test
-    fun everyRoleMatchesRustWithinOneStep() {
+    fun everyRoleMatchesRustExactly() {
         var largest = 0
         var exact = 0
         var total = 0
@@ -135,10 +137,10 @@ class ThemeRolesVectorTest {
         /** Number of roles per line. */
         const val EXPECTED_ROLE_COUNT: Int = 19
 
-        /** Fewest roots the task requires. */
-        const val MINIMUM_ROOTS: Int = 30
+        /** Fewest roots the vector must hold, each in both schemes. */
+        const val MINIMUM_ROOTS: Int = 40
 
         /** Accepted difference per channel, in 8-bit steps. */
-        const val TOLERANCE: Int = 1
+        const val TOLERANCE: Int = 0
     }
 }
