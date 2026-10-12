@@ -341,6 +341,49 @@ impl ShapedRow {
         return self.hit_physical(x * scale, y * scale);
     }
 
+    /// What:
+    ///  The side of a soft-wrap offset a click at logical `y` below the top of this line's first row put the caret on:
+    ///  `Upstream` when the click was on the upper row and landed on the offset where the lower row starts,
+    ///  otherwise `Downstream`.
+    /// Why:
+    ///  A click right of the last character of a wrapped row puts the caret at the end of that row,
+    ///  not at the start of the next one, although both are the same offset (IntelliJ keeps the clicked side).
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// clickAffinity(position: number, y: number, scale: number): 'upstream' | 'downstream';
+    /// ```
+    pub fn click_affinity(&self, position: usize, y: f32, scale: f32) -> ReadingAffinity {
+        let row = self.row_at_physical(y * scale);
+        let local = position
+            .saturating_sub(self.source_start)
+            .min(self.source_len());
+        let byte = self.projection.source_to_byte[local];
+        let starts_next = self
+            .layout
+            .lines()
+            .nth(row + 1)
+            .is_some_and(|next| return next.text_range().start == byte);
+        if starts_next {
+            return ReadingAffinity::Upstream;
+        }
+        return ReadingAffinity::Downstream;
+    }
+
+    /// Logical x of the caret before global source character `position`, standing on visual row `row`.
+    /// A position that is not on that row gets the nearest side of it.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// xOnRow(position: number, row: number, scale: number): number;
+    /// ```
+    pub fn x_on_row(&self, position: usize, row: usize, scale: f32) -> f32 {
+        let local = position
+            .saturating_sub(self.source_start)
+            .min(self.source_len());
+        return self.physical_x_on_row(local, row) / scale;
+    }
+
     /// Physical middle of the first visual row, the probe `hit` uses on a wrapped line.
     fn first_row_middle(&self) -> f32 {
         return self.layout.lines().next().map_or(0.0, |line| {

@@ -242,16 +242,17 @@ pub(super) fn drag_to(window: &AppWindow, target: f32) {
     settle(window);
 }
 
-/// A 1100 by 660 window with a visible project of `rows` files and a displayed source of long lines.
+/// A 1100 by 660 window with a visible project of `rows` files and a displayed source of short lines.
 pub(super) fn fixture(rows: usize) -> Fixture {
     // What: `String::new()` is an empty owned string; `push_str(&line)` appends a borrowed string.
-    // Why: 120 lines of 160 columns overflow the source view in both directions.
+    // Why: 120 lines overflow the source view vertically; 20 columns fit the narrowest source column
+    //      (240 px), so no line wraps and line `n` stands on row `n` at every width.
     //
     // In TS you'd write (pseudocode):
     // ```ts
-    // const text = `${'0123456789'.repeat(16)}\n`.repeat(120);
+    // const text = `${'0123456789'.repeat(2)}\n`.repeat(120);
     // ```
-    let line = "0123456789".repeat(16);
+    let line = "0123456789".repeat(2);
     let mut text = String::new();
     for _ in 0..120 {
         text.push_str(&line);

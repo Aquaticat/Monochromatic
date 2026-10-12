@@ -14,15 +14,12 @@ use super::annotate::{displayed, set_annotations};
 ///  the painted-record counts,
 ///  and the text origin shared with the behavior tests.
 use super::annotation_tests::{
-    FIXTURE, TEXT_LEFT, TEXT_TOP, annotate, hint, painted as shown, problem,
+    FIXTURE, TEXT_LEFT, TEXT_TOP, annotate, painted as shown, problem,
 };
 /// The complete reader fixture.
 use super::find_tests::{Reader, reader};
 /// Snapshot records.
-use ide_app::language::{
-    diagnostics::{DiagnosticsSnapshot, Severity, SourceGroup},
-    hints::HintsSnapshot,
-};
+use ide_app::language::diagnostics::{DiagnosticsSnapshot, Severity, SourceGroup};
 /// The heights virtual rows are built from.
 use ide_app::virtual_row::{BLOCK_GAP, ROW_HEIGHT};
 /// What:
@@ -272,43 +269,6 @@ fn only_visible_annotation_changes_repaint() {
     assert_eq!(shown(&reader), (0, 1, 1));
     set_annotations(window, &reader.source, None, inside);
     assert_eq!(painted(), repainted, "the same snapshots repainted");
-}
-
-/// A hint or message that ends past the widest line widens the scroll range,
-///  so it can be scrolled into view.
-#[test]
-fn rows_past_the_widest_line_extend_the_scroll_range() {
-    let (_directory, reader) = fixture_reader("a much wider first line of source text\nshort\n");
-    let window = &reader.window;
-    let plain = window.get_document_width();
-    let stamp = displayed(&reader.source.borrow());
-    // The hint stands above the end of the first line, so its label runs past the widest line.
-    let hints = Some(Arc::new(HintsSnapshot {
-        stamp,
-        first_line: 0,
-        last_line: 3,
-        hints: vec![hint(38, ": a rather long inferred type label")],
-    }));
-    set_annotations(window, &reader.source, hints, None);
-    let widened = window.get_document_width();
-    let source = reader.source.borrow();
-    let rows = source
-        .shaped
-        .as_ref()
-        .expect("shaped")
-        .annotations
-        .as_ref()
-        .expect("annotation frame");
-    let label = &rows.texts[0];
-    println!(
-        "scroll width {plain} without the label, {widened} with it; label ends at {}",
-        label.x + label.width
-    );
-    assert!(
-        widened >= label.x + label.width,
-        "the label is outside the scroll range"
-    );
-    assert!(widened > plain);
 }
 
 /// At twice the display scale every virtual row keeps its logical place:

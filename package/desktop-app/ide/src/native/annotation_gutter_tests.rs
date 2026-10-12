@@ -308,7 +308,7 @@ fn gutter_letters_show_the_worst_severity_in_front_of_the_line_number() {
         update_timers_and_animations();
         let shown = frame(window);
         // `iter().collect()` copies the window's list into a plain list.
-        let marks: Vec<i32> = window.get_line_marks().iter().collect();
+        let marks: Vec<i32> = window.get_row_marks().iter().collect();
         assert_eq!(
             &marks[..4],
             [1, 2, 3, 0],
@@ -364,7 +364,7 @@ fn gutter_letters_show_the_worst_severity_in_front_of_the_line_number() {
         };
         set_annotations(window, &reader.source, None, Some(Arc::new(only_hint)));
         update_timers_and_animations();
-        let hint_marks: Vec<i32> = window.get_line_marks().iter().collect();
+        let hint_marks: Vec<i32> = window.get_row_marks().iter().collect();
         assert_eq!(&hint_marks[..4], [0, 0, 0, 4], "{scheme:?}: a hint's mark");
         let hinted = frame(window);
         let last_top = reader.source.borrow().row_map.code_top(3);

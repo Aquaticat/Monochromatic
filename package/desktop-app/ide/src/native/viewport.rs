@@ -10,6 +10,8 @@ use super::{
 ///  the least a line can take,
 ///  which bounds how many lines a view can show.
 use ide_app::row_map::CODE_ROW;
+/// A wrap width must be a positive number of pixels.
+use ide_app::wrap::has_wrap_width;
 /// ComponentHandle supplies weak references for callback lifetimes.
 use slint::ComponentHandle;
 /// Checked shared ownership remains confined to the UI thread;
@@ -74,23 +76,48 @@ pub(super) fn holds(current: &State, bounds: TileBounds, view: f32, height: f32)
 }
 
 /// What:
+///  Room kept at the right edge of the text area, in logical pixels, for a caret standing after the last glyph
+///  of a full row.
+/// Why:
+///  There is no horizontal scrolling, so the caret bar (2 px wide) must fit inside the view;
+///  the view has no scrollbar element, so this is the only term besides the gutter.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// const CARET_ROOM = 2;
+/// ```
+pub(super) const CARET_ROOM: f32 = 2.0;
+
+/// What:
+///  The wrap width for a text area `viewport_width` logical pixels wide:
+///  the width without the caret room,
+///  or nothing when that is not positive.
+/// Why:
+///  A width of zero or less means the view is not laid out yet;
+///  wrapping then waits and the last width is kept, as IntelliJ's `SoftWrapApplianceManager` does.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function wrapWidth(viewportWidth: number): number | undefined;
+/// ```
+pub(super) fn wrap_width(viewport_width: f32) -> Option<f32> {
+    let width = viewport_width - CARET_ROOM;
+    return has_wrap_width(width).then_some(width);
+}
+
+/// What:
 ///  `&mut State` lends the source state mutably;
 ///  `f32` is a 32-bit float of logical pixels;
 /// the `bool` answer says whether the materialized tile changed.
 /// Why:
-///  Native scrolling and programmatic reveal must agree on which rows and columns are materialized.
+///  Native scrolling and programmatic reveal must agree on which rows are materialized;
+///  the wrap width joins the tile's identity, so a resize asks for a new tile.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function place(current: State, horizontal: number, offset: number, width: number, height: number): boolean;
+/// function place(current: State, offset: number, width: number, height: number): boolean;
 /// ```
-pub(super) fn place(
-    current: &mut State,
-    horizontal: f32,
-    offset: f32,
-    viewport_width: f32,
-    height: f32,
-) -> bool {
+pub(super) fn place(current: &mut State, offset: f32, viewport_width: f32, height: f32) -> bool {
     // What: The map names the line at the view's top edge; `as usize` truncates a non-negative float to an
     //       address-sized index (sibling `u32`).
     // Why: Row indices address rope lines, whose interfaces use `usize`. Every line takes at least one code
@@ -105,8 +132,11 @@ pub(super) fn place(
     current.offset = offset;
     // Any placement supersedes a scroll re-center still waiting for the worker; `place_scrolled` sets it again.
     current.scroll_wanted = None;
-    let tile_x = ((horizontal.max(0.0) / 128.0).floor() * 128.0 - 128.0).max(0.0);
-    let width = viewport_width.max(1.0);
+    // A width that cannot wrap keeps the last one.
+    if let Some(wrap) = wrap_width(viewport_width) {
+        current.width = wrap;
+    }
+    let width = current.width;
     let view = offset.max(0.0);
     // What: The document position's viewport line follows the view's top edge on every scroll step.
     // Why: Reload anchoring and navigation read that line, and it must not lag behind the view while the tile holds.
@@ -129,15 +159,14 @@ pub(super) fn place(
     //
     // In TS you'd write (pseudocode):
     // ```ts
-    // if (current.horizontal === tileX && current.width === width && holds(current, view, height)) return false;
+    // if (current.width === width && holds(current, view, height)) return false;
     // ```
     let shown = current.shown;
-    if shown.horizontal == tile_x && shown.width == width && holds(current, shown, view, height) {
+    if shown.width == width && holds(current, shown, view, height) {
         // The displayed tile still holds the view, so nothing is wanted; the requested window is the displayed one.
         tile::cancel(current);
         current.first = shown.first;
         current.count = shown.count;
-        current.horizontal = shown.horizontal;
         current.width = shown.width;
         return false;
     }
@@ -154,7 +183,6 @@ pub(super) fn place(
     let last = current.row_map.line_at(tile_end);
     current.first = first;
     current.count = last.saturating_sub(first) + 1 + TILE_SPARE_LINES;
-    current.horizontal = tile_x;
     current.width = width;
     return true;
 }
@@ -167,24 +195,25 @@ pub(super) fn place(
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function placeScrolled(state: State, horizontal: number, offset: number, width: number, height: number): boolean;
+/// function placeScrolled(state: State, offset: number, width: number, height: number): boolean;
 /// ```
 pub(super) fn place_scrolled(
     current: &mut State,
-    horizontal: f32,
     offset: f32,
     viewport_width: f32,
     height: f32,
 ) -> bool {
-    let changed = place(current, horizontal, offset, viewport_width, height);
-    if changed {
+    let changed = place(current, offset, viewport_width, height);
+    // The first width the view reports replaces a tile that was never wrapped; it is built at once, so the
+    // window never shows long lines unwrapped.
+    if changed && current.shown.width > 0.0 {
         current.scroll_wanted = Some(tile::requested(current));
     }
     return changed;
 }
 
 /// Retain pixel scrolling;
-///  update the raster only at viewport tile boundaries.
+///  update the raster only at viewport tile boundaries and when the wrap width changes.
 pub(super) fn bind_viewport(owner: &AppWindow, shared: &Rc<RefCell<State>>) {
     // What: `Rc::clone` copies the pointer to the shared state; `as_weak` does not keep the window alive.
     // Why: The stored callback outlives this binding function.
@@ -200,15 +229,15 @@ pub(super) fn bind_viewport(owner: &AppWindow, shared: &Rc<RefCell<State>>) {
     //
     // In TS you'd write (pseudocode):
     // ```ts
-    // owner.onViewportChanged((horizontal, offset, width, height) => { ... });
+    // owner.onViewportChanged((offset, width, height) => { ... });
     // ```
-    owner.on_viewport_changed(move |horizontal, offset, viewport_width, height| {
+    owner.on_viewport_changed(move |offset, viewport_width, height| {
         // What: `borrow_mut` lends the state mutably; `&mut current` passes that loan to `place`.
         // Why: The loan must end before rendering borrows the state again.
         //
         // In TS you'd write (pseudocode):
         // ```ts
-        // const changed = place(state.current, horizontal, offset, width, height);
+        // const changed = place(state.current, offset, width, height);
         // ```
         let mut current = state.borrow_mut();
         // An offset nobody announced is the reader scrolling: by wheel, by touch, or by a drag past an edge.
@@ -216,7 +245,7 @@ pub(super) fn bind_viewport(owner: &AppWindow, shared: &Rc<RefCell<State>>) {
             // `Some(Instant::now())` records this moment as the latest scroll.
             current.scrolled_at = Some(Instant::now());
         }
-        let changed = place_scrolled(&mut current, horizontal, offset, viewport_width, height);
+        let changed = place_scrolled(&mut current, offset, viewport_width, height);
         drop(current);
         if !changed {
             return;
@@ -234,14 +263,52 @@ pub(super) fn bind_viewport(owner: &AppWindow, shared: &Rc<RefCell<State>>) {
     });
 }
 
+/// What:
+///  How many visual rows below the first row of its line the character `position` is drawn,
+///  on the side of a soft wrap the caret's affinity names.
+///  A line outside the materialized rows is shaped on the spot.
+/// Why:
+///  Keeping the caret in view means keeping its visual row in view, not only its line.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function rowsDown(current: State, position: number, scale: number): number;
+/// ```
+fn rows_down(current: &mut State, position: usize, scale: f32) -> usize {
+    let line = current
+        .document
+        .text()
+        .char_to_line(position.min(current.document.text().len_chars()));
+    let affinity = current.affinity_at(position);
+    if let Some(view) = &current.shaped {
+        for row in &view.rows {
+            if row.row == line {
+                return row.caret_at(position, affinity, view.viewport.scale).row;
+            }
+        }
+    }
+    if !has_wrap_width(current.width) {
+        return 0;
+    }
+    let State {
+        document,
+        shaper,
+        width,
+        ..
+    } = current;
+    return shaper
+        .wrapped_row(document, line, scale, *width)
+        .caret_at(position, affinity, scale)
+        .row;
+}
+
 /// Render after a keyboard caret movement and keep the caret visible with the smallest possible scroll.
 ///
 /// `paged` first moves the view by that many logical pixels,
 ///  so a page key keeps the caret's place on screen.
-/// A caret above the view becomes the top line,
-///  one below the bottom line;
-///  a visible caret keeps the offsets.
-/// Horizontally the caret gets up to 48 px of room on the side it left the view.
+/// A caret above the view becomes the top row,
+///  one below the bottom row;
+///  a visible caret keeps the offset.
 /// Offsets are assigned directly,
 ///  like other programmatic reveals;
 ///  native wheel easing is unaffected.
@@ -253,109 +320,58 @@ pub(super) fn bind_viewport(owner: &AppWindow, shared: &Rc<RefCell<State>>) {
 pub(super) fn follow(window: &AppWindow, state: &Rc<RefCell<State>>, paged: f32) {
     let height = window.get_viewport_height();
     let width = window.get_viewport_width();
-    let horizontal = -window.get_scroll_x();
     let before = -window.get_scroll_y();
+    let scale = window.window().scale_factor();
     let mut current = state.borrow_mut();
-    let text = current.document.text();
-    let row = text.char_to_line(current.document.position().head);
+    let head = current.document.position().head;
+    let row = current.document.text().char_to_line(head);
+    let down = rows_down(&mut current, head, scale);
     let limit = rows::limit(&current.row_map, height);
     let paged_offset = (before + paged).clamp(0.0, limit);
-    let mut offset = rows::showing(&current.row_map, row, paged_offset, height).clamp(0.0, limit);
+    let mut offset =
+        rows::showing(&current.row_map, row, down, paged_offset, height).clamp(0.0, limit);
     // A fractional offset left by smooth scrolling is kept while the caret stays in view.
     if offset != before {
         offset = offset.round();
     }
-    place(&mut current, horizontal, offset, width, height);
+    place(&mut current, offset, width, height);
     drop(current);
     if offset != before {
         window.set_scroll_y(-offset);
     }
     render(window, state);
-    let mut shown = state.borrow_mut();
-    let mut left = horizontal;
-    // The caret's x comes from shaped glyph geometry, available only after its row is rendered.
-    if let Some(view) = &shown.shaped {
-        let caret = view.caret(&shown.document);
-        let room = 48.0_f32.min(width / 4.0);
-        if caret.x < horizontal {
-            left = caret.x - room;
-        } else if caret.x + caret.width > horizontal + width {
-            left = caret.x + caret.width + room - width;
-        }
-    }
-    let widest = (shown.document_width - width).max(0.0);
-    left = left.clamp(0.0, widest).round();
-    tracing::debug!(
-        row,
-        vertical = offset,
-        horizontal = left,
-        "followed source caret"
-    );
-    if left == horizontal {
-        return;
-    }
-    place(&mut shown, left, offset, width, height);
-    drop(shown);
-    window.set_scroll_x(-left);
-    render(window, state);
+    tracing::debug!(row, vertical = offset, "followed source caret");
 }
 
 /// Scroll a source character range into view and render it.
-/// A visible range keeps its offsets;
-///  a hidden row is centered;
-///  a hidden column starts 48 px from the left.
+/// A visible range keeps its offset;
+///  a hidden row is centered.
 /// Offsets are assigned directly,
 ///  like other programmatic reveals;
 ///  native wheel easing is unaffected.
 pub(super) fn reveal(window: &AppWindow, state: &Rc<RefCell<State>>, start: usize, end: usize) {
     let height = window.get_viewport_height();
     let width = window.get_viewport_width();
-    let horizontal = -window.get_scroll_x();
     let before = -window.get_scroll_y();
+    let scale = window.window().scale_factor();
     let mut offset = before;
     let mut current = state.borrow_mut();
     let text = current.document.text();
-    let row = text.char_to_line(start.min(text.len_chars()));
-    let top = current.row_map.code_top(row);
+    let bounded = start.min(text.len_chars());
+    let row = text.char_to_line(bounded);
+    let down = rows_down(&mut current, bounded, scale);
+    let top = current.row_map.code_top(row) + down as f32 * CODE_ROW;
     if top < offset || top + CODE_ROW > offset + height {
         let limit = rows::limit(&current.row_map, height);
         offset = (top - ((height - CODE_ROW) / 2.0).max(0.0))
             .clamp(0.0, limit)
             .round();
     }
-    place(&mut current, horizontal, offset, width, height);
+    place(&mut current, offset, width, height);
     drop(current);
     if offset != before {
         window.set_scroll_y(-offset);
     }
     render(window, state);
-    let mut shown = state.borrow_mut();
-    let mut left = horizontal;
-    // What: `if let Some(view)` runs only when shaped rows exist; `first()` is the range's first rectangle.
-    // Why: Horizontal position comes from shaped glyph geometry, available only after the row is rendered.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // const rectangle = shown.shaped?.range(start, end)[0];
-    // ```
-    if let Some(view) = &shown.shaped
-        && let Some(rectangle) = view.range(start, end).first()
-        && (rectangle.x < horizontal || rectangle.x + rectangle.width > horizontal + width)
-    {
-        let limit = (shown.document_width - width).max(0.0);
-        left = (rectangle.x - 48.0).clamp(0.0, limit).round();
-    }
-    tracing::debug!(
-        row,
-        vertical = offset,
-        horizontal = left,
-        "revealed source range"
-    );
-    if left == horizontal {
-        return;
-    }
-    place(&mut shown, left, offset, width, height);
-    drop(shown);
-    window.set_scroll_x(-left);
-    render(window, state);
+    tracing::debug!(row, vertical = offset, end, "revealed source range");
 }

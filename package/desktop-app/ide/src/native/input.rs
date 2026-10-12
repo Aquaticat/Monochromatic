@@ -6,8 +6,8 @@
 use super::{AppWindow, State, render, viewport::follow};
 /// Geometry-free caret movement over source characters.
 use ide_app::caret_motion::{Motion, moved};
-/// Source offsets remain independent of rendered pixels.
-use ide_app::document::ReadingPosition;
+/// Source offsets remain independent of rendered pixels, and the side of a soft-wrap offset is part of a click.
+use ide_app::document::{ReadingAffinity, ReadingPosition};
 /// Click counting and unit-wise drag extension.
 use ide_app::pointer_selection::{ClickCounter, Granularity, extended, unit};
 /// Line-wise movement by shaped pixel position with a remembered column.
@@ -56,27 +56,38 @@ struct Drag {
 ///  `usize` is an address-sized index (siblings `u32`,
 ///  `u64`);
 /// `f32` is a 32-bit float (sibling `f64`).
+///  The answer is the character position under the pointer and the side of a soft-wrap offset it was clicked on.
 /// Why:
 ///  A drag can leave the materialized rows;
-///  such a line is shaped on demand
+///  such a line is shaped on demand, at the wrap width,
 /// so the pointer still resolves by glyph geometry instead of falling back to the line start.
+///  `y` is the logical distance below the top of the line's first visual row,
+///  so a click on a continuation row resolves in that row.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function pointerPosition(current: State, line: number, x: number, scale: number): number;
+/// function pointerPosition(current: State, line: number, x: number, y: number, scale: number): [number, Affinity];
 /// ```
-fn pointer_position(current: &mut State, line: usize, x: f32, scale: f32) -> usize {
-    // What: Destructuring `&mut State` lends three fields separately.
+fn pointer_position(
+    current: &mut State,
+    line: usize,
+    point: (f32, f32),
+    scale: f32,
+) -> (usize, ReadingAffinity) {
+    let (x, y) = point;
+    let within = (y - current.row_map.code_top(line)).max(0.0);
+    // What: Destructuring `&mut State` lends fields separately.
     // Why: The shaper must be mutable while the document and the shaped view are only read.
     //
     // In TS you'd write (pseudocode):
     // ```ts
-    // const { document, shaper, shaped } = current;
+    // const { document, shaper, shaped, width } = current;
     // ```
     let State {
         document,
         shaper,
         shaped,
+        width,
         ..
     } = current;
     // What: `if let Some(view)` runs only when a viewport has been shaped.
@@ -89,11 +100,15 @@ fn pointer_position(current: &mut State, line: usize, x: f32, scale: f32) -> usi
     if let Some(view) = shaped {
         for candidate in &view.rows {
             if candidate.row == line {
-                return candidate.hit(x, view.viewport.scale);
+                let hit = candidate.hit_at(x, within, view.viewport.scale);
+                let side = candidate.click_affinity(hit, within, view.viewport.scale);
+                return (hit, side);
             }
         }
     }
-    return shaper.row(document, line, scale).hit(x, scale);
+    let shaped_line = shaper.wrapped_row(document, line, scale, *width);
+    let hit = shaped_line.hit_at(x, within, scale);
+    return (hit, shaped_line.click_affinity(hit, within, scale));
 }
 
 /// Bind pointer selection without letting the UI mutate source text.
@@ -141,7 +156,12 @@ pub(super) fn bind_pointer(owner: &AppWindow, shared: &Rc<RefCell<State>>) {
         let mut current = press_state.borrow_mut();
         // A press on a line's virtual rows acts on that line: the rows belong to the code row beneath them.
         let line = current.row_map.line_at(y);
-        let hit = pointer_position(&mut current, line, x, window.window().scale_factor());
+        let (hit, side) = pointer_position(
+            &mut current,
+            line,
+            (x, y),
+            window.window().scale_factor(),
+        );
         let mut position = current.document.position();
         let mut pressed = press_drag.borrow_mut();
         if extend {
@@ -175,6 +195,8 @@ pub(super) fn bind_pointer(owner: &AppWindow, shared: &Rc<RefCell<State>>) {
         );
         drop(pressed);
         current.document.select(position);
+        // A caret at a soft-wrap offset stays on the side that was clicked.
+        current.caret_affinity = (position.head == hit).then_some((hit, side));
         drop(current);
         render(&window, &press_state);
     });
@@ -187,7 +209,12 @@ pub(super) fn bind_pointer(owner: &AppWindow, shared: &Rc<RefCell<State>>) {
         let mut current = state.borrow_mut();
         // A drag over virtual rows extends to the line they belong to, like a press there.
         let line = current.row_map.line_at(y);
-        let hit = pointer_position(&mut current, line, x, window.window().scale_factor());
+        let (hit, side) = pointer_position(
+            &mut current,
+            line,
+            (x, y),
+            window.window().scale_factor(),
+        );
         let pressed = drag.borrow();
         let (anchor, head) = extended(
             current.document.text().slice(..),
@@ -200,6 +227,7 @@ pub(super) fn bind_pointer(owner: &AppWindow, shared: &Rc<RefCell<State>>) {
         position.anchor = anchor;
         position.head = head;
         current.document.select(position);
+        current.caret_affinity = (head == hit).then_some((hit, side));
         drop(current);
         // A drag past an edge of the view scrolls just far enough to show where the selection now ends.
         follow(&window, &state, 0.0);

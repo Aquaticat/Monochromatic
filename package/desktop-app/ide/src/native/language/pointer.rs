@@ -141,12 +141,16 @@ pub(super) fn character_at(state: &State, y: f32, x: f32) -> Option<usize> {
         .find(|candidate| return candidate.row == line)?;
     let length = row.source_len();
     let end = row.source_start + length;
-    if length == 0 || x >= row.caret_x(end, scale) {
+    // The pointer is on one visual row of a wrapped line; the end of that row, not of the line, is where text stops.
+    let visual = state.row_map.visual_row_at(line, y);
+    let within = (y - state.row_map.code_top(line)).max(0.0);
+    let row_end = row.source_start + row.visual_row_sources(visual)?.end;
+    if length == 0 || x >= row.x_on_row(row_end, visual, scale) {
         return None;
     }
-    let boundary = row.hit(x, scale);
+    let boundary = row.hit_at(x, within, scale);
     // The nearest boundary right of the point means the character before it is under the point.
-    let character = if boundary > row.source_start && x < row.caret_x(boundary, scale) {
+    let character = if boundary > row.source_start && x < row.x_on_row(boundary, visual, scale) {
         boundary - 1
     } else {
         boundary

@@ -381,7 +381,7 @@ pub(super) fn escape(reader: &LanguageReader) {
 pub(super) fn point(reader: &LanguageReader, line: usize, x: f32) -> LogicalPosition {
     let top = reader.source.borrow().row_map.code_top(line);
     return LogicalPosition::new(
-        TEXT_LEFT + x + reader.window.get_scroll_x(),
+        TEXT_LEFT + x,
         TEXT_TOP + top + 12.0 + reader.window.get_scroll_y(),
     );
 }
@@ -401,7 +401,7 @@ pub(super) fn point(reader: &LanguageReader, line: usize, x: f32) -> LogicalPosi
 pub(super) fn above(reader: &LanguageReader, line: usize, x: f32, rise: f32) -> LogicalPosition {
     let top = reader.source.borrow().row_map.code_top(line);
     return LogicalPosition::new(
-        TEXT_LEFT + x + reader.window.get_scroll_x(),
+        TEXT_LEFT + x,
         TEXT_TOP + top - rise + reader.window.get_scroll_y(),
     );
 }

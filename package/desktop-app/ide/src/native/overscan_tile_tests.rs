@@ -230,8 +230,10 @@ fn leaving_the_overscan_tile_re_centers_on_the_worker_thread() {
     assert_eq!(discarded, 0, "no fresh tile is discarded");
     let current = state.borrow();
     let count = current.count as u64;
+    // The measurement pass keeps every line it shaped, so the worker may find all of the tile's lines in its cache;
+    // it must never shape more lines than the tile holds.
     assert!(
-        worker_rows > 0 && worker_rows < count,
+        worker_rows < count,
         "the worker shaped {worker_rows} rows of {count}; lines it shares with the previous tile must come from its cache"
     );
     let view = current.shaped.as_ref().expect("swapped-in source view");
@@ -241,15 +243,14 @@ fn leaving_the_overscan_tile_re_centers_on_the_worker_thread() {
         "the gutter and line numbers describe the tile whose rows are shown"
     );
     assert_eq!(
-        window.get_first_line() as usize,
-        view.viewport.first,
+        window.get_row_numbers().row_data(0),
+        Some(view.viewport.first as i32 + 1),
         "the first line number belongs to the swapped-in tile"
     );
     assert_eq!(
-        window.get_line_tops().row_count(),
-        (view.viewport.first + view.viewport.count).min(current.document.text().len_lines())
-            - view.viewport.first,
-        "one line-number row per materialized line of the swapped-in tile"
+        window.get_row_tops().row_count(),
+        view.rows.iter().map(|row| return row.visual_rows()).sum::<usize>(),
+        "one gutter entry per visual row of the swapped-in tile"
     );
     assert_eq!(
         window.get_image_y(),

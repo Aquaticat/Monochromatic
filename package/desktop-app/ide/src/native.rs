@@ -21,6 +21,10 @@ mod ui {
 use anyhow::{Context, bail};
 /// Hint and diagnostic snapshots with their position index.
 use ide_app::annotation::Annotations;
+/// The side of a soft-wrap offset a position is read on.
+use ide_app::document::ReadingAffinity;
+/// The stamp naming a displayed text.
+use ide_app::language::identity::DocumentStamp;
 /// Accepted in-file matches carry the file generation and revision they describe.
 use ide_app::find_navigation::FindResults;
 /// The Language module's handle,
@@ -34,6 +38,8 @@ use ide_app::logging::{self, background};
 /// The displayed file is reread on change notifications,
 ///  or on the old timer while unwatched.
 use ide_app::refresh_policy::SourceRefresh;
+/// Visual rows of every line, as far as measured.
+use ide_app::line_rows::LineRows;
 /// The one vertical mapping between pixels and source lines.
 use ide_app::row_map::RowMap;
 /// Shared shaping replaces terminal-column assumptions in native hit testing.
@@ -244,6 +250,8 @@ mod theme_tests;
 mod tile;
 /// Source tile construction and the worker thread that runs it.
 mod tile_build;
+/// The background measurement of every line at the wrap width.
+mod tile_pass;
 /// Windowed rows must not redirect an in-progress click after scrolling.
 #[cfg(test)]
 mod tree_pointer_tests;
@@ -252,6 +260,14 @@ mod tree_pointer_tests;
 mod tree_scroll_tests;
 /// Fractional viewport movement and bounded tile materialization.
 mod viewport;
+/// Always-on soft wrap in the window:
+///  the wrap width,
+///  the gutter's indicator,
+///  the worker's measurement of every line,
+///  resizes,
+///  and clicks on continuation rows.
+#[cfg(test)]
+mod wrap_tests;
 /// An ignored measurement of watch counts and staleness when a changed folder is scrolled into view.
 #[cfg(test)]
 mod watch_scope_tests;
@@ -270,8 +286,12 @@ mod write_wait_timer_tests;
 use input::{bind_keys, bind_pointer};
 /// Shared rendering entry point.
 use render::{bind_appearance, render};
+/// The wrap indicator's symbol.
+use ide_app::wrap_sign::Sign;
 /// Tile bounds of the displayed and requested windows.
 use tile::TileBounds;
+/// What a background measurement is valid for.
+use tile_pass::PassKey;
 /// The worker thread that builds scroll re-centers, held by the state.
 use tile_build::TileWorker;
 /// Bind viewport changes without line-snapping native scrolling.
@@ -304,13 +324,31 @@ struct State {
     first: usize,
     /// Bounded number of materialized source lines.
     count: usize,
-    /// Logical width of the visible code area.
+    /// What:
+    ///  The wrap width in logical pixels every line is broken at, or zero before the window reported one.
+    /// Why:
+    ///  The text area's width minus the caret room; a width of zero or less keeps the last width.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// width: number; // 0 until the view has a width
+    /// ```
     width: f32,
-    /// Horizontal tile origin;
-    ///  native Flickable supplies fractional movement.
-    horizontal: f32,
-    /// Widest measured line of the current document.
-    document_width: f32,
+    /// How many visual rows every line takes, as far as it is known:
+    ///  exact for lines measured at `width`, the last known count for the rest, one for a line never measured.
+    wrap_rows: LineRows,
+    /// The text `wrap_rows` describes.
+    wrap_text: Option<DocumentStamp>,
+    /// Counter of changes to `wrap_rows`, part of the row key.
+    wrap_version: u64,
+    /// What the pass last posted to the worker was for, and the syntax snapshot it used.
+    pass_posted: Option<(PassKey, usize)>,
+    /// The caret's affinity at the caret position it belongs to, set by a pointer press at a soft-wrap offset.
+    caret_affinity: Option<(usize, ReadingAffinity)>,
+    /// The symbol the gutter shows on a continuation row, chosen once from the fonts.
+    sign: Option<Sign>,
+    /// The display scale the gutter's sign image was painted for.
+    sign_scale: Option<u32>,
     /// Reusable paragraph/font resources.
     shaper: TextShaper,
     /// Reusable outline raster resources.
@@ -375,30 +413,41 @@ struct State {
     ///  `Rc<VecModel<f32>>` is a shared,
     ///  growable toolkit list of floats.
     /// Why:
-    ///  The window draws one line number per entry at that vertical position;
-    ///  the list is updated in
-    ///      place while scrolling.
+    ///  The window draws one gutter entry per visual row of the frame at that vertical position;
+    ///  the list is updated in place while scrolling.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
-    /// lineTops: ArrayModel<number>;
+    /// rowTops: ArrayModel<number>;
     /// ```
-    line_tops: Rc<VecModel<f32>>,
+    row_tops: Rc<VecModel<f32>>,
     /// What:
-    ///  `Rc<VecModel<i32>>` is a shared toolkit list of 32-bit integers (sibling `f32` for the tops).
+    ///  `Rc<VecModel<i32>>` is a shared toolkit list of 32-bit integers.
     /// Why:
-    ///  Per materialized line,
-    ///  the gutter's severity letter:
+    ///  Per gutter entry,
+    ///  the one-based line number on the first visual row of a line and zero on a continuation row,
+    ///  where the wrap indicator stands instead.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// rowNumbers: ArrayModel<number>;
+    /// ```
+    row_numbers: Rc<VecModel<i32>>,
+    /// What:
+    ///  `Rc<VecModel<i32>>` is a shared toolkit list of 32-bit integers.
+    /// Why:
+    ///  Per gutter entry,
+    ///  the severity letter:
     ///  0 for none,
     ///  otherwise one more than the rank of
-    ///      the worst diagnostic starting on the line.
-    ///  Updated in place like the line tops.
+    ///      the worst diagnostic starting on the line;
+    ///  only the first visual row of a line carries one.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
-    /// lineMarks: ArrayModel<number>;
+    /// rowMarks: ArrayModel<number>;
     /// ```
-    line_marks: Rc<VecModel<i32>>,
+    row_marks: Rc<VecModel<i32>>,
     /// Accepted in-file matches;
     ///  painted only while they describe the displayed file and revision.
     find: Option<FindResults>,
@@ -460,15 +509,40 @@ struct State {
     /// Worker tiles discarded as stale, counted in debug builds.
     #[cfg(debug_assertions)]
     tiles_discarded: u64,
+    /// Outputs of the background pass applied on the window thread, counted in debug builds.
+    #[cfg(debug_assertions)]
+    pass_applied: u64,
+    /// Most lines of the pass's output applied in one window-thread callback, counted in debug builds.
+    #[cfg(debug_assertions)]
+    pass_most_lines: usize,
+    /// Lines of the pass's output applied on the window thread, counted in debug builds.
+    #[cfg(debug_assertions)]
+    pass_lines: u64,
+    /// Lines the worker shaped for the pass, counted in debug builds from its outputs.
+    #[cfg(debug_assertions)]
+    pass_shaped: u64,
+    /// Kept rows the worker broke again for the pass, counted in debug builds from its outputs.
+    #[cfg(debug_assertions)]
+    pass_rebroken: u64,
 }
 
 /// Construct the same reading state for the application and headless native event tests.
 impl State {
+    /// The side of a soft-wrap offset the caret at `position` is drawn on:
+    ///  the one a pointer press chose for that very position, otherwise downstream.
+    fn affinity_at(&self, position: usize) -> ReadingAffinity {
+        return match self.caret_affinity {
+            Some((head, affinity)) if head == position => affinity,
+            _ => ReadingAffinity::Downstream,
+        };
+    }
+
     /// Retain source ownership and initialize viewport resources without changing the filesystem.
     fn new(source: &str, file_path: Option<PathBuf>) -> Self {
         let document = Document::new(source);
         // A new text has no virtual rows yet: every line starts at its number times one code row.
-        let row_map = RowMap::plain(document.text().len_lines());
+        let lines = document.text().len_lines();
+        let row_map = RowMap::plain(lines);
         return Self {
             document,
             file_path,
@@ -480,9 +554,14 @@ impl State {
             styles: SourceStyles::from([]),
             first: 0,
             count: 32,
-            width: 1044.0,
-            horizontal: 0.0,
-            document_width: 0.0,
+            width: 0.0,
+            wrap_rows: LineRows::plain(lines),
+            wrap_text: None,
+            wrap_version: 0,
+            pass_posted: None,
+            caret_affinity: None,
+            sign: None,
+            sign_scale: None,
             shaper: TextShaper::new(),
             raster: TextRaster::new(),
             shaped: None,
@@ -493,8 +572,9 @@ impl State {
             row_key: None,
             offset: 0.0,
             scrolled_at: None,
-            line_tops: rows::line_model(),
-            line_marks: rows::mark_model(),
+            row_tops: rows::top_model(),
+            row_numbers: rows::mark_model(),
+            row_marks: rows::mark_model(),
             find: None,
             language_reload: None,
             annotations: Annotations::default(),
@@ -504,8 +584,7 @@ impl State {
             shown: TileBounds {
                 first: 0,
                 count: 32,
-                horizontal: 0.0,
-                width: 1044.0,
+                width: 0.0,
             },
             scroll_wanted: None,
             tile_job: None,
@@ -527,6 +606,16 @@ impl State {
             tiles_applied: 0,
             #[cfg(debug_assertions)]
             tiles_discarded: 0,
+            #[cfg(debug_assertions)]
+            pass_applied: 0,
+            #[cfg(debug_assertions)]
+            pass_most_lines: 0,
+            #[cfg(debug_assertions)]
+            pass_lines: 0,
+            #[cfg(debug_assertions)]
+            pass_shaped: 0,
+            #[cfg(debug_assertions)]
+            pass_rebroken: 0,
         };
     }
 }

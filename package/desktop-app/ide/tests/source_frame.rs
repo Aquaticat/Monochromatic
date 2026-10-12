@@ -147,7 +147,6 @@ fn materialization_scale_theme_and_syntax_invalidate() {
             != FrameStamp::new(
                 &document,
                 viewport(),
-                0.0,
                 colors(),
                 SourceStyles::from(styles)
             )

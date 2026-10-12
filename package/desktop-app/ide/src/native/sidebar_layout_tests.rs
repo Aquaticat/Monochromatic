@@ -30,8 +30,7 @@ use std::{cell::Cell, rc::Rc};
 
 /// What:
 ///  `&AppWindow` lends the window;
-///  the `bool` answer says whether the source image spans the whole
-/// visible source width at the current horizontal scroll offset.
+///  the `bool` answer says whether the source image spans the whole visible source width.
 /// Why:
 ///  A stale raster tile shows as blank source at the right edge after the source column widens.
 ///
@@ -40,10 +39,7 @@ use std::{cell::Cell, rc::Rc};
 /// function covers(window: AppWindow): boolean;
 /// ```
 fn covers(window: &AppWindow) -> bool {
-    let left = -window.get_scroll_x();
-    let right = left + window.get_viewport_width();
-    let start = window.get_image_x();
-    return start <= left && start + window.get_image_width() >= right;
+    return window.get_image_width() >= window.get_viewport_width();
 }
 
 /// Shrinking and widening the sidebar repaints the source tile at its new width and keeps hit testing.
@@ -78,9 +74,11 @@ fn source_relayouts_and_repaints_after_a_sidebar_resize() {
     // ```ts
     // const tile = source.current.width;
     // ```
+    // The wrap width follows the text width; the worker builds the tile for it and the picture is swapped in.
+    super::overscan_tile_tests::settle_tile(&shared.source);
     assert_eq!(
-        shared.source.borrow().width,
-        widened,
+        shared.source.borrow().shown.width,
+        widened - super::viewport::CARET_ROOM,
         "the raster tile kept the previous source width"
     );
     assert!(
@@ -103,19 +101,14 @@ fn source_relayouts_and_repaints_after_a_sidebar_resize() {
         (caret - 92.0).abs() <= 6.0,
         "a source click 92px into its line placed the caret at {caret}px after the resize"
     );
-    window.set_scroll_x(-300.0);
-    settle(window);
     drag_to(window, 500.0);
     assert_eq!(
         window.get_viewport_width(),
         1100.0 - 500.0 - DIVIDER - GUTTER,
         "the source did not give up the width the sidebar took"
     );
-    assert_eq!(
-        window.get_scroll_x(),
-        -300.0,
-        "resizing the sidebar moved the horizontal reading position"
-    );
+    // The wrap width follows the new text width: the worker builds the tile for it and the picture is swapped in.
+    super::overscan_tile_tests::settle_tile(&shared.source);
     assert!(
         covers(window),
         "the source image does not span the scrolled source view after the resize"

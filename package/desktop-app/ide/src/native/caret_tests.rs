@@ -333,24 +333,27 @@ fn caret_in_view(reader: &Reader) -> bool {
     let window = &reader.window;
     let reading = reader.source.borrow();
     let head = reading.document.position().head;
-    let top = reading.document.text().char_to_line(head) as f32 * 24.0;
+    // The caret bar stands 2 px inside its visual row, so its row is the 24 px around it.
+    let top = window.get_caret_y() - 2.0;
     let offset = -window.get_scroll_y();
+    assert_eq!(
+        reading.document.text().char_to_line(head),
+        reading.row_map.line_at(top),
+        "the caret is drawn on its own line"
+    );
     return top >= offset && top + 24.0 <= offset + window.get_viewport_height();
 }
 
 /// Moving past an edge scrolls by the smallest amount;
-///  document keys reach both ends;
-///  long lines scroll sideways.
+///  document keys reach both ends.
 #[test]
 fn view_follows_the_caret_with_the_smallest_scroll() {
     let fixture = tempfile::tempdir().expect("disposable caret project");
-    let wide = "x".repeat(400);
-    let text = format!("{wide}\n{}", tall(200));
+    let text = format!("a short first line\n{}", tall(200));
     fs::write(fixture.path().join("follow.txt"), &text).expect("caret fixture");
     let reader = reader(fixture.path(), "follow.txt");
     let window = &reader.window;
     let height = window.get_viewport_height();
-    let width = window.get_viewport_width();
     let visible = (height / 24.0).floor() as usize;
     // The last fully visible line is `visible - 1`; one more Down must scroll, and only by what is missing.
     repeat(window, Key::DownArrow, visible - 1);
@@ -389,26 +392,43 @@ fn view_follows_the_caret_with_the_smallest_scroll() {
         0.0,
         "Ctrl+Home must scroll to the start"
     );
+    assert_eq!(window.get_source_text(), text.as_str());
+    window.hide().expect("close caret window");
+}
+
+/// A caret on a continuation row of a long wrapped line scrolls its own visual row into view, not only the line.
+#[test]
+fn view_follows_the_caret_across_the_visual_rows_of_a_wrapped_line() {
+    let fixture = tempfile::tempdir().expect("disposable caret project");
+    // A token without break opportunities breaks at the width, so this line is taller than the view.
+    let wide = "x".repeat(6000);
+    let text = format!("{}{wide}\nlast\n", "short\n".repeat(3));
+    fs::write(fixture.path().join("wrapped.txt"), &text).expect("caret fixture");
+    let reader = reader(fixture.path(), "wrapped.txt");
+    let window = &reader.window;
+    let height = window.get_viewport_height();
+    repeat(window, Key::DownArrow, 3);
+    assert_eq!(window.get_caret_y(), 3.0 * 24.0 + 2.0, "the caret is on the wide line's first row");
     key(window, Key::End);
-    let horizontal = -window.get_scroll_x();
-    let caret = window.get_caret_x();
+    let caret = window.get_caret_y() - 2.0;
+    assert!(caret > height, "the end of the line is on a row below the first view");
+    let offset = -window.get_scroll_y();
     assert!(
-        horizontal > 0.0 && caret >= horizontal && caret + 2.0 <= horizontal + width,
-        "End on a long line must show the whole caret: caret {caret}, view {horizontal} to {}",
-        horizontal + width
+        caret >= offset && caret + 24.0 <= offset + height,
+        "End must scroll the caret's visual row into view: row at {caret}, view {offset} to {}",
+        offset + height
     );
-    key(window, Key::LeftArrow);
     assert_eq!(
-        -window.get_scroll_x(),
-        horizontal,
-        "moving inside the view must not scroll sideways"
+        offset,
+        (caret + 24.0 - height).round(),
+        "the view moves only by what is missing"
     );
     key(window, Key::Home);
-    assert_eq!(
-        window.get_scroll_x(),
-        0.0,
-        "Home must scroll back to the line start"
+    let home_offset = -window.get_scroll_y();
+    let home_caret = window.get_caret_y() - 2.0;
+    assert!(
+        home_caret >= home_offset && home_caret + 24.0 <= home_offset + height,
+        "Home brings the first row back"
     );
-    assert_eq!(window.get_source_text(), text.as_str());
     window.hide().expect("close caret window");
 }

@@ -3,8 +3,14 @@
 //!  hits and selection ink on continuation rows, and the wrap indicator.
 //! No window is opened.
 
+/// The marks that become underlines, laid out against the frame's rows.
+use ide_app::annotation::{Mark, Visible};
+/// Underline runs, with their inks.
+use ide_app::annotation_layout::{AnnotationColors, lay_out};
 /// Canonical source of the lines under test and the position that selects a range.
 use ide_app::document::{Document, ReadingAffinity, ReadingPosition};
+/// The severity that picks an underline's line style.
+use ide_app::language::diagnostics::Severity;
 /// The visual row counts and the map built from them.
 use ide_app::line_rows::LineRows;
 /// The vertical mapping under test.
@@ -399,4 +405,72 @@ fn the_sign_image_is_painted_in_the_sign_color() {
             assert!(inked > 4, "{sign:?} at scale {scale} has ink");
         }
     }
+}
+
+/// An underline across a wrap break is laid out once for each visual row it crosses, each on its own row.
+#[test]
+fn underlines_across_a_wrap_break_stand_on_their_own_rows() {
+    let document = Document::new(CODE);
+    let mut shaper = TextShaper::new();
+    let plain = RowMap::plain(1);
+    let view = shaper.prepare_rows(&document, viewport(0, 1, 200.0), &[], &plain);
+    let row = &view.rows[0];
+    let second = row.visual_row_sources(1).expect("second row").start;
+    let mark = Mark {
+        start: second - 3,
+        end: second + 3,
+        severity: Severity::Error,
+    };
+    let visible = Visible {
+        blocks: Vec::new(),
+        marks: vec![mark],
+    };
+    let colors = AnnotationColors {
+        hint: [1, 2, 3, 255],
+        error: [200, 0, 0, 255],
+        warning: [200, 100, 0, 255],
+        information: [0, 0, 200, 255],
+        suggestion: [90, 90, 90, 255],
+    };
+    let frame = lay_out(&view, &visible, &mut shaper, colors);
+    let mut offsets: Vec<f32> = frame.underlines.iter().map(|run| return run.offset).collect();
+    offsets.sort_by(f32::total_cmp);
+    assert_eq!(offsets.len(), 2, "one run for each visual row the mark crosses");
+    assert_eq!(offsets[0], 0.0, "the run on the upper row stays on the first row");
+    assert_eq!(
+        offsets[1], CODE_ROW,
+        "the run on the lower row is not drawn on its own visual row"
+    );
+    // Painted, the lower run's ink lands in the lower row's pixel band and none of it in the rows below.
+    let pixels = TextRaster::new()
+        .paint(
+            &{
+                let mut framed = shaper.prepare_rows(&document, viewport(0, 1, 200.0), &[], &plain);
+                framed.annotations = Some(frame);
+                framed
+            },
+            CodeColors {
+                foreground: [0, 0, 0, 255],
+                selected: [255, 255, 255, 255],
+                dark: false,
+            },
+            0.0,
+        )
+        .expect("raster");
+    let width = pixels.width as usize;
+    let mut red_rows = Vec::new();
+    for y in 0..pixels.height as usize {
+        let mut red = 0;
+        for x in 0..width {
+            let at = (y * width + x) * 4;
+            if pixels.bytes[at] > 150 && pixels.bytes[at + 1] < 60 && pixels.bytes[at + 3] > 150 {
+                red += 1;
+            }
+        }
+        if red > 0 {
+            red_rows.push(y / CODE_ROW as usize);
+        }
+    }
+    red_rows.dedup();
+    assert_eq!(red_rows, vec![0, 1], "the error ink stands on exactly the two rows the mark crosses");
 }

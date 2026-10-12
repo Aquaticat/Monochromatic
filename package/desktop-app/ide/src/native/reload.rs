@@ -127,7 +127,6 @@ fn apply(window: &AppWindow, state: &Rc<RefCell<State>>, reply: ReloadReply) {
         let position = current.document.position();
         let first = current.document.text().char_to_line(position.viewport);
         current.first = first.saturating_sub(1);
-        current.document_width = 0.0;
         // Cleared styles change the shaped rows of every line, and the row cache key does not include them.
         current.shaper.forget_rows();
         current.styles = SourceStyles::from([]);

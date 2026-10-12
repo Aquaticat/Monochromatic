@@ -203,7 +203,7 @@ pub(super) fn annotate(reader: &Reader) {
 pub(super) fn point(reader: &Reader, line: usize, x: f32) -> LogicalPosition {
     let top = reader.source.borrow().row_map.code_top(line);
     return LogicalPosition::new(
-        TEXT_LEFT + x + reader.window.get_scroll_x(),
+        TEXT_LEFT + x,
         TEXT_TOP + top + 12.0 + reader.window.get_scroll_y(),
     );
 }
@@ -221,7 +221,7 @@ pub(super) fn point(reader: &Reader, line: usize, x: f32) -> LogicalPosition {
 pub(super) fn above(reader: &Reader, line: usize, x: f32, rise: f32) -> LogicalPosition {
     let top = reader.source.borrow().row_map.code_top(line);
     return LogicalPosition::new(
-        TEXT_LEFT + x + reader.window.get_scroll_x(),
+        TEXT_LEFT + x,
         TEXT_TOP + top - rise + reader.window.get_scroll_y(),
     );
 }
