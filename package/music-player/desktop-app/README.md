@@ -712,6 +712,8 @@ every output stream of the app, and stops at once if one links elsewhere), never
 prints one pass, fail or not-injectable line per shortcut. State is read from the app's `ui_state` log lines, from
 screenshots and from files; `E2E_ONLY` (a check id or group prefix), `E2E_OUT` (default `target/e2e`, with
 screenshots and `e2e-summary.json`), `E2E_TMP` and `E2E_LIBRARY_GENERATOR` tune it. Run it alone.
+The runner itself is the `package/music-player/desktop-e2e` package (see its `README.md`);
+the task only builds the release binary and calls that package's command from this directory.
 
 ## Environment overrides
 
