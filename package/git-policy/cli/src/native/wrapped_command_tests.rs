@@ -310,12 +310,12 @@ fn read_only_commands_skip_configuration_and_refusals() {
 fn a_guarded_command_is_prepared_in_order() {
     let root: PathBuf = configured("wrapped-order", "this is not JSONC");
     let registry: PathBuf = registered(root.as_path(), true);
-    let lease: [(&str, &str); 1] = [("CLI_GIT_PREPARATION_LEASE", "")];
-    // 1. A preparation lease stops the command before Git is asked anything.
+    let lease: [(&str, &str); 1] = [("CLI_GIT_WORKTREE_COPY_LEASE", "")];
+    // 1. A worktree copy lease stops the command before Git is asked anything.
     assert_eq!(
         run(&["commit", "-m", "x"], unanswerable(), &lease),
         (
-            refuses(&Unported::InheritedLease("CLI_GIT_PREPARATION_LEASE"), "commit"),
+            refuses(&Unported::InheritedLease("CLI_GIT_WORKTREE_COPY_LEASE"), "commit"),
             Vec::<String>::new()
         )
     );
@@ -363,21 +363,6 @@ fn a_guarded_command_is_prepared_in_order() {
             assert_eq!(stderr.matches('\n').count(), 1, "{stderr}");
         }
         WrappedOutcome::Forward { .. } => panic!("an invalid configuration never forwards"),
-    }
-    // 5. With a valid configuration the commit itself is refused, before any policy runs.
-    std::fs::write(root.join(CONFIG_FILE_NAME), "{}").expect("configuration");
-    let root_text: &str = root.to_str().expect("fixture path is UTF-8");
-    for location in [
-        main_worktree(root_text, ""),
-        main_worktree(root_text, "sub/"),
-    ] {
-        assert_eq!(
-            run(&["commit", "-a", "-m", "x"], located(location), &[]),
-            (
-                refuses(&Unported::CommitTransaction, "commit"),
-                location_only()
-            )
-        );
     }
     remove(root.as_path());
 }

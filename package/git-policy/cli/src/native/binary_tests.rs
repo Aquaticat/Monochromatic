@@ -74,3 +74,7 @@ mod landing_support;
 mod landing;
 #[path = "binary_landing_crash_tests.rs"]
 mod landing_crash;
+
+/// Real commits through the transaction: landing, policies, replay and conflict.
+#[path = "binary_commit_tests.rs"]
+mod commit;

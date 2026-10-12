@@ -32,11 +32,6 @@ fn notice(subject: &str, command: &str) -> String {
 fn every_reason_names_what_is_missing() {
     for (what, command, subject) in [
         (
-            Unported::CommitTransaction,
-            "commit",
-            "the commit transaction that every git commit except a dry run goes through",
-        ),
-        (
             Unported::WorktreeCopy,
             "worktree",
             "copying ignored files into a worktree created or moved from a linked worktree or a bare repository (--no-worktree-copy skips the copy)",

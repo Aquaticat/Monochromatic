@@ -94,11 +94,11 @@ const plantedControls = [
     failing: 'resolution::different_wrapper_build_stops_instead_of_looping',
   },
   {
-    name: 'commit refusal frontier',
-    file: 'src/native/refusal_frontier.rs',
-    from: 'return Some(Unported::CommitTransaction);',
-    to: 'return None;',
-    failing: 'frontier::a_real_commit_is_refused',
+    name: 'dry-run commit classification',
+    file: 'src/native/wrapped_command.rs',
+    from: 'if region.dry_run {',
+    to: 'if false {',
+    failing: 'commit::a_dry_run_commits_nothing',
   },
   {
     name: 'unknown top-level key rejection',

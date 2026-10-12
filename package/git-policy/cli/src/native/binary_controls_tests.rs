@@ -24,7 +24,7 @@ use super::support::{
     silent_success, stderr_of,
 };
 use git_policy_cli::policy_registry::PolicyId;
-use git_policy_cli::unported::{Unported, unported_notice};
+
 use git_policy_cli::wrapper_controls::{CONTROL_SPELLINGS, ControlMeaning};
 use std::ffi::OsStr;
 use std::path::{Path, PathBuf};
@@ -292,14 +292,10 @@ fn a_region_git_refuses_is_forwarded_unless_the_command_is_never_forwarded() {
             "{wrapped_arguments:?}"
         );
     }
-    // A commit, and a push that may publish, are refused whatever their options say.
-    assert_eq!(
-        stderr_of(&run_wrapped(
-            &fixture,
-            repo.as_path(),
-            &["commit", "--no-such-option"]
-        )),
-        unported_notice(&Unported::CommitTransaction, "commit")
+    // A commit whose options Git refuses is never committed, and a push that may publish is refused.
+    assert_ne!(
+        run_wrapped(&fixture, repo.as_path(), &["commit", "--no-such-option"]).code,
+        Some(0)
     );
     let push: Observed = run_wrapped(&fixture, repo.as_path(), &["push", "--no-such-option"]);
     assert_eq!(push.code, Some(2));

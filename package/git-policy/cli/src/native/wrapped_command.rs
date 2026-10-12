@@ -64,6 +64,8 @@ use super::repository_facts::RepositoryFacts;
 use super::repository_location::RepositoryLocation;
 /// Startup recovery as a command step.
 use super::transaction_gate::{Gate, recover_for_command};
+/// A valid preparation lease marks a command started by a hook of a live transaction.
+use super::transaction_lease::has_valid_preparation_lease;
 use super::unported::{Unported, unported_from_unavailable, unported_notice};
 use super::worktree_identity::worktree_root;
 use super::wrapper_invocation::{StrippedInvocation, command_region, command_word};
@@ -286,13 +288,16 @@ fn prepare_guarded_command<F: RepositoryFacts>(
     // Dead transactions are recovered before configuration loads. A live transaction no longer
     // refuses a guarded command: an index writer waits for its landing lock when it is forwarded,
     // and a commit still stops at its own frontier below.
-    match recover_for_command(&checks.facts.transaction_context(), &location.identity) {
-        Gate::Clear | Gate::Live(_) => {}
-        Gate::Stop(stderr) => {
-            return Err(WrappedOutcome::Exit {
-                code: ENGINE_FAILURE_EXIT_CODE,
-                stderr,
-            });
+    // A command inside a live transaction's hook inherits its preparation lease; recovery would only find that live owner.
+    if !has_valid_preparation_lease(environment) {
+        match recover_for_command(&checks.facts.transaction_context(), &location.identity) {
+            Gate::Clear | Gate::Live(_) => {}
+            Gate::Stop(stderr) => {
+                return Err(WrappedOutcome::Exit {
+                    code: ENGINE_FAILURE_EXIT_CODE,
+                    stderr,
+                });
+            }
         }
     }
     if let Some(what) = pending_state(&location.identity, stripped.controls.skip_worktree_copy) {
@@ -471,7 +476,10 @@ pub fn run_wrapped_command<F: RepositoryFacts>(
     if let Some(ending) = stage_ending(pass.events.as_slice(), pass.end, command.as_str()) {
         return ending;
     }
-    if skips_config && let Some(ending) = recover_before_read_only(checks) {
+    if skips_config
+        && !has_valid_preparation_lease(environment)
+        && let Some(ending) = recover_before_read_only(checks)
+    {
         return ending;
     }
     // `mut` allows the push gate to append its events.

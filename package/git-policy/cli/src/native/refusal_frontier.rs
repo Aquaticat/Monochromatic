@@ -86,16 +86,19 @@ pub const LEASE_VARIABLES: &[&str] = &[
 ///  command.
 ///  The landing lease is not here:
 ///  an index writer honours it through coordination.
+///  The preparation lease is not here either:
+///  a command inside a transaction's hook proceeds, and recovery is skipped when the lease is valid.
 /// Why:
 ///   A nested `git add` inside a coordinated `git rebase --exec` inherits the landing lease and must
 ///   proceed;
 ///  refusing it would deadlock the rebase.
+///  A nested `git add` inside a `pre-commit` hook inherits the preparation lease and must proceed too.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// const REFUSED_LEASE_VARIABLES = ['CLI_GIT_PREPARATION_LEASE', 'CLI_GIT_WORKTREE_COPY_LEASE'];
+/// const REFUSED_LEASE_VARIABLES = ['CLI_GIT_WORKTREE_COPY_LEASE'];
 /// ```
-pub const REFUSED_LEASE_VARIABLES: &[&str] = &["CLI_GIT_PREPARATION_LEASE", "CLI_GIT_WORKTREE_COPY_LEASE"];
+pub const REFUSED_LEASE_VARIABLES: &[&str] = &["CLI_GIT_WORKTREE_COPY_LEASE"];
 
 /// What:
 ///  The first lease variable present in the environment,

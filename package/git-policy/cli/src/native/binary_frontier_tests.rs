@@ -58,45 +58,15 @@ fn repository_with_linked_worktree(fixture: &Fixture) -> (PathBuf, PathBuf) {
     return (repo, linked);
 }
 
-/// Every `git commit` except a dry run is refused;
+/// A dry run is forwarded, with the commit-only insertion, and commits nothing;
 ///  the index and `HEAD` stay as they were.
 #[test]
-fn a_real_commit_is_refused() {
+fn a_dry_run_commit_is_forwarded_and_commits_nothing() {
     let fixture: Fixture = fixture("frontier-commit");
     let repo: PathBuf = repository(&fixture, OsStr::new("repo"));
-    let nested: PathBuf = repo.join("nested");
-    std::fs::create_dir(&nested).expect("nested directory");
     std::fs::write(repo.join("file.txt"), b"content\n").expect("file");
     git(&fixture, repo.as_path(), &["add", "--", "file.txt"]);
     let head_before: String = head(&fixture, repo.as_path());
-    let refused: Observed =
-        stopped_with(unported_notice(&Unported::CommitTransaction, "commit").as_str());
-    for arguments in [
-        vec!["commit", "-m", "refused"],
-        vec!["commit", "-m", "refused", "--", "file.txt"],
-        vec!["commit", "--allow-empty", "--message=refused"],
-        vec!["commit", "-a", "-m", "refused"],
-        vec!["commit", "--amend", "--no-edit"],
-        vec!["commit", "--no-enforce-only", "-m", "refused"],
-        vec!["commit", "--dry-run", "--no-dry-run", "-m", "refused"],
-        vec!["commit", "--no-such-option"],
-        vec!["-c", "user.name=Other", "commit", "-m", "refused"],
-        vec!["--cli-git-keep-going", "commit", "-m", "refused"],
-    ] {
-        assert_eq!(
-            run_wrapped(&fixture, repo.as_path(), arguments.as_slice()),
-            refused,
-            "{arguments:?}"
-        );
-    }
-    // The refusal comes before any policy: below the top level it is still the commit refusal.
-    assert_eq!(
-        run_wrapped(&fixture, nested.as_path(), &["commit", "-m", "refused"]),
-        refused
-    );
-    assert_eq!(head(&fixture, repo.as_path()), head_before);
-    assert_eq!(porcelain(&fixture, repo.as_path()), "A  file.txt\n");
-    // Positive control: a dry run is forwarded, with the commit-only insertion, and commits nothing.
     let native: Observed = run_direct(
         &fixture,
         repo.as_path(),

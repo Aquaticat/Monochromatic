@@ -24,7 +24,7 @@ use crate::config_file::CONFIG_FILE_NAME;
 use crate::management_arguments::MANAGEMENT_HELP;
 use crate::real_git::{Platform, ResolutionInputs};
 use crate::test_support::{REAL_GIT, executable, fixture, remove, repository};
-use crate::unported::{Unported, unported_notice};
+
 use std::ffi::OsString;
 use std::path::{Path, PathBuf};
 
@@ -419,14 +419,15 @@ fn policy_commands_outside_a_worktree_use_defaults() {
             "{rest:?}"
         );
     }
-    // A commit is refused wherever it is typed.
-    assert_eq!(
-        stopped(plan_invocation(
-            in_directory(plain.as_path(), &["commit", "-m", "x"]).as_slice(),
-            &[],
-            &resolution,
-        )),
-        unported_notice(&Unported::CommitTransaction, "commit")
-    );
+    // A commit outside a repository ends on Git's own refusal to find one, and creates nothing.
+    match plan_invocation(
+        in_directory(plain.as_path(), &["commit", "-m", "x"]).as_slice(),
+        &[],
+        &resolution,
+    ) {
+        Action::Exit { code, .. } => assert_eq!(code, 1),
+        other => panic!("expected the commit to end, got {other:?}"),
+    }
+    assert!(!plain.join(".git").exists());
     remove(root.as_path());
 }
