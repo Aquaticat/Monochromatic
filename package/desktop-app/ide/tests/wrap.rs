@@ -303,10 +303,17 @@ fn range_yields_one_rectangle_per_visual_row() {
         for rectangle in &rectangles {
             assert!((rectangle.height - CODE_ROW).abs() < 0.001);
         }
-        let ys: Vec<f32> = rectangles.iter().map(|rectangle| rectangle.y).collect();
+        let ys: Vec<f32> = rectangles
+            .iter()
+            .map(|rectangle| {
+                return rectangle.y;
+            })
+            .collect();
         for index in 0..row.visual_rows() {
             let expected = row.visual_row_offset(index, scale);
-            assert!(ys.iter().any(|y| (*y - expected).abs() < 0.001), "row {index} has a rectangle at {expected}");
+            assert!(ys.iter().any(|y| {
+                return (*y - expected).abs() < 0.001;
+            }), "row {index} has a rectangle at {expected}");
         }
     }
 }
