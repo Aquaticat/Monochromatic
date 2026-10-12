@@ -444,6 +444,29 @@ and on an allowance past 2,000 lines or one no longer needed.
 A part that would pass the limit is split at a heading into a new part listed after it in the index.
 `doc/mistake-prevention.md` holds the rule under "Docs that only grow".
 
+### M164: the lead checked the split's test edits without the source scans
+
+Status:
+happened on 2026-10-12 (UTC).
+Before committing the docs split,
+the lead ran the seven tests that read the docs,
+the package lint and the Markdown lint,
+but not the source scans,
+though the shared facts every brief cites name them as a step after any edit under `src`.
+The split exported `withParts` from `living-docs.test-fixture.ts`
+while only that module calls it,
+and gate g81 failed the dead-declaration scan (ledger B118) on it.
+Fixed in `33f4599514`.
+
+Prevention:
+the lead's own edits under `src`,
+fixtures and tests included,
+take the same final measurement as a brief asks of an agent:
+the touched files by name,
+the source scans,
+the lint,
+then the whole suite or a gate.
+
 ### M79: a coverage census measuring compressed code
 
 Status:
