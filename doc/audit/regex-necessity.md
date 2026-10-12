@@ -3,6 +3,10 @@
 Repo-wide audit of regex use against one criterion,
  with one GitHub issue filed per unnecessary site.
 
+Tracker entry points:
+ issue #680 is the index of every site issue,
+ and issue #679 tracks the gate coverage that let most sites through unreviewed.
+
 ## Criterion
 
 A regex site is unnecessary when the feature it implements can be written without regex
@@ -13,38 +17,46 @@ Code length,
  a bounded,
  backtracking-free pattern that a string API answers directly is still unnecessary.
 
-Two classes survive the criterion:
+Two classes survive the criterion,
+ and neither is filed:
 
-- The feature **is** regex semantics on an arbitrary pattern supplied by someone else
-  (a user-typed `/.../` filter,
-  a Jest-compatible `toMatch(string)` that must compile to a `RegExp` for chai).
-- The value must **be** a `RegExp`,
-  because an API,
+- The feature is regex semantics over an arbitrary pattern somebody else supplies,
+  such as a user-typed `/.../` filter in `deps-cube`,
+  a user CLI pattern in `watch-restart`,
+  or the `RegExp` branch of a Jest-compatible `toMatch`.
+  This is a contract exception rather than a computational impossibility:
+  a general regex engine could be written,
+  but writing one is not "the same feature at similar complexity".
+- The value must be a `RegExp` because an API,
   a type,
-  or a test subject requires that type
-  (`expect.stringMatching(pattern: RegExp)`,
+  or a test subject requires that type:
+  `expect.stringMatching(pattern: RegExp)`,
   upstream pify's `Array<string | RegExp>` include list,
   `regExpOrThrow` inputs,
   deepmerge leaf values,
-  the `no-regex` rule's own fixtures).
+  the `no-regex` rule's own fixtures,
+  and the `module/es` regexp tooling constructors.
 
-Everything else is a fixed pattern over a known alphabet,
- which a linear scan answers.
+A repo-owned annotation is not an external contract.
+`readonly RegExp[]` in this repo's own source records a choice,
+ so it does not by itself make a site necessary;
+ the audit asks what the consumer requires,
+ which is why `pi-plugin/auto-mode`'s secret patterns are filed as replaceable predicates.
 
 ## Method
 
 Enumeration had to see justified sites too,
  so suppression directives could not simply be honoured.
 
-1. Mirror every tracked and untracked `.ts`,
+1. Mirror every `.ts`,
    `.tsx`,
    `.mts`,
    `.cts`,
    `.js`,
    `.jsx`,
    `.mjs`,
-   and `.cjs` file into a scratch tree
-   (`node build-mirror.mjs`,
+   and `.cjs` file in the working tree into a scratch tree
+   (`build-mirror.mjs`,
    6996 files),
    rewriting `oxlint-disable` to `oxlint-xisable` and `oxlint-enable` to `oxlint-xnable`.
    Both replacements are the same byte length,
@@ -53,19 +65,23 @@ Enumeration had to see justified sites too,
    scratch config whose `ignorePatterns` is empty and whose only enabled rule is `no-regex`.
    The detector is therefore the parser-backed rule the gate uses,
    not a text search.
-3. Map each diagnostic back to the original path,
-   slice the exact source text on UTF-8 byte offsets
-   (oxlint spans are byte offsets,
-   so slicing code units drifts on any file containing non-ASCII),
-   and dedupe on `(offset, length)`.
+3. Map each diagnostic back to the original path and slice the exact source text on UTF-8
+   byte offsets.
+   oxlint spans are byte offsets,
+   so slicing code units drifts on any file containing non-ASCII;
+   an early version of this harness had that bug and mis-sliced every pattern in
+   `package/music-player/design/settings-pane.mjs`.
+4. Dedupe on `(offset, length)`.
    Chained calls such as `md.replaceAll(/a/, '').replaceAll(/b/, '')` report one diagnostic
    per call with the same start offset and different lengths,
    and the regex belonging to a given call is the last literal inside its span.
-4. Recompute directive ranges from the original text
+   Keying on line and column instead collapsed 14 distinct sites into 4 and would have
+   published duplicate issue bodies.
+5. Recompute directive ranges from the original text
    (block `disable` to matching `enable` or end of file,
    plus `disable-next-line` and `disable-line`),
    so each site is attributed to the justification that actually covers it.
-5. Classify each site as necessary or unnecessary,
+6. Classify necessity,
    derive the replacement shape from a tokenizer over the pattern body
    (literals,
    character classes,
@@ -75,77 +91,149 @@ Enumeration had to see justified sites too,
    boundaries,
    lookbehind),
    and resolve the owning package from the nearest `mise.toml` and `package.json`.
-
-Result:
- 1631 unique regex sites repo-wide.
+7. Cover the surfaces a JavaScript rule cannot see:
+   extract every `<script>` block from tracked HTML,
+   Vue,
+   and Astro files into mirror `.js` files and scan them with the same rule
+   (`extract-html.mjs`,
+   102 blocks from 162 files),
+   and enumerate Kotlin and inline YAML script strings by text search with each hit read
+   individually.
 
 ## Results
 
-- **278 unnecessary sites in tracked first-party code**:
-  221 in active packages,
-  57 in `package-paused/`.
-  One issue each.
-- **118 necessary sites** under the criterion
-  (38 active,
-  80 paused),
-  each with the reason recorded in the audit data.
+1631 unique JS and TS regex sites,
+ plus 28 on surfaces the rule cannot reach.
+
+- **308 unnecessary sites in tracked first-party code**,
+  one issue each:
+  249 in active trees and 59 in `package-paused/`.
+  By surface:
+  280 JS and TS,
+  22 inside HTML `<script>` blocks,
+  5 Kotlin,
+  1 inline YAML script.
+- **105 of the 308 carry a disable justification**,
+  drawn from 40 distinct justification texts.
+  Each of those issues quotes the justification and answers it.
+- **116 necessary sites** under the criterion,
+  each with a recorded reason and no issue.
+  Two sites were moved out of the necessary set on individual review,
+  which is why the count is not the 118 a directory-prefix exemption produced:
+  the metacharacter escape pass inside `module/es`'s `toRegExp`
+  (the constructor beside it stays necessary),
+  and the string branch of `toMatch` in
+  `package/module/test-expect/src/expect-matchers-core.ts:294`.
 - **1069 sites in untracked files**:
   gitignored local artifacts,
   dominated by `src/canary-lint/<model>/<probe>/canary.ts`,
   which `package-paused/dev-script/inference-canary/README.md` documents as generated model
-  outputs that are gitignored but preserved locally.
-  Editing them would falsify a measurement record,
-  so they are out of scope.
+  outputs,
+  gitignored but preserved locally.
+  Editing them would falsify a measurement record.
 - **165 sites in `package/module/deepmerge-ts.fuzz/src/declared-type-soundness.generated.ts`**:
-  generated corpus data ("Do not edit"),
+  generated corpus data marked "Do not edit",
   where each `new RegExp("x", "gu")` is a leaf value the merge must handle.
-  Necessary on both counts.
+  Excluded as generated and classified necessary.
 - **1 site in `package/module/conf-fork.fuzz/upstream-conf/index.ts`**:
   a vendored upstream snapshot under `@ts-nocheck`,
   whose value is that it matches upstream.
+- **20 tracked files in directories the mirror skipped** (`bundle`,
+  `dist`,
+  `.pi`):
+  committed build output of first-party source that was itself scanned,
+  plus `.pi/settings.json`.
+  Recorded as a decision,
+  not an oversight:
+  fixing generated bundles is fixing the generator.
 
-Replacement shapes across the 278:
- 88 field extractions between literal delimiters,
- 54 literal-plus-character-run scans,
- 24 ordered literal and class sequences,
- 23 alternations over a fixed candidate set,
- 21 literal prefix tests,
- 21 word-boundary substring tests,
- 10 literal substring tests,
- 8 runtime-compiled patterns,
- 8 fixed-count character runs,
- 8 small token grammars,
- 5 literal global replacements,
- 4 anchored literals,
- 4 lookbehind escape-parity scans.
+Replacement shapes across the 308,
+ derived from the pattern tokenizer:
+ field extractions between literal delimiters,
+ literal-plus-character-run scans,
+ ordered literal and class sequences,
+ alternations over a fixed candidate set,
+ literal prefix tests,
+ word-boundary substring tests,
+ literal substring tests,
+ runtime-compiled patterns,
+ fixed-count character runs,
+ small token grammars,
+ literal global replacements,
+ anchored literals,
+ and lookbehind escape-parity scans.
+Each issue states the shape it derived,
+ and states that the shape is a proposal from the pattern syntax rather than a verified
+ equivalent,
+ with differential fixtures as an acceptance criterion.
 
 ## Measured refutations of recorded justifications
 
 The audit did not accept a disable justification as evidence of necessity.
 Where a justification made a checkable claim,
- the claim was checked.
+ the claim was checked,
+ and two early probes were rebuilt after they turned out not to exercise the case they
+ claimed to test.
+All timings are Node v26.11.1 on this machine,
+ three runs per input size,
+ reported as doubling series rather than absolute claims.
 
 - `package/typeface/aquaticat/src/parse-svg.ts:150` claims the element tokenizer is
   "Linear:
   every char is visited at most twice across the alternation".
-  Measured on unterminated `<rect ` openers,
-  one `exec` over the input takes 39 to 47 ms at 32 KB,
-  153 to 165 ms at 64 KB,
-  and 617 to 649 ms at 128 KB,
-  three runs per size:
+  On a synthetic adversarial input,
+  `"<rect "` repeated with no `/>` terminator anywhere,
+  one `exec` call takes 9.3 ms at 15996 characters,
+  37 ms at 31998,
+  148 ms at 63996,
+  and 589 ms at 127998:
   about four times per doubling,
-  which is quadratic,
-  with roughly 10% run-to-run spread.
-  Each opener starts a lazy `[^>]*?` scan that reaches end of input before failing.
+  so quadratic,
+  with roughly 3% spread.
+  The proposed cursor replacement on the same input takes 0.1 ms,
+  0 ms,
+  0.1 ms,
+  and 0.2 ms.
+  This is a constructed worst case,
+  not an observed Figma truncation.
+- `package/oxlint-plugin/no-restricted-syntax/src/rule/prefer-describe-function-ref-name.ts`
+  has two measured findings.
+  Its re-export matcher `export\s*\{[^}]*\bNAME\b[^}]*\}\s*from\s*['"]` takes 10.4 ms over
+  15 KB,
+  28.7 ms over 30 KB,
+  118 ms over 60 KB,
+  and 460 ms over 120 KB of many unterminated `export {` openers,
+  about four times per doubling,
+  because each opener rescans the brace-free remainder.
+  An earlier probe put the filler before a single opener and measured 0.16 ms,
+  which is linear by construction and proved nothing;
+  the corrected input is the one quoted here.
+  Its `u`-flag claim was probed against all four production patterns and six identifiers
+  with a positive control confirming six matching combinations:
+  no result differed between the flagged and unflagged forms,
+  so the honest statement is that no difference was observed for parser-produced
+  identifiers,
+  not that the claim is disproved for every possible input.
+  The same probe surfaced a separate defect:
+  an identifier containing `$`,
+  which is a legal identifier character and an interpolated anchor,
+  never matches in either mode.
 - `package/cli/wg-quicker/src/config-parse-values.ts:128` calls `/^[0-9.]+$/u` an
   "Anchored IPv4 token classification".
+  The function documents its own contract as "True when token is digits/dots or contains
+  IPv6 colon",
+  and the code matches that contract,
+  so the justification mislabels a lexical classifier as an IP validator.
   Measured,
-  it accepts `...`,
+  the pattern accepts `...`,
   `.`,
   `1..2`,
-  `1.2.3.4.5.6.7.8.9`,
-  and `999.999.999.999`.
-  What it tests is "every character is a digit or a dot".
+  `1.2.3.4.5`,
+  and `999.999.999.999`,
+  and rejects `dns.google`.
+  No octet-validation change is proposed;
+  that would be a behaviour change,
+  and this audit only asks for the regex to go.
 - `package/ssg/aquati.cat/src/lib/git-dates.ts:199` parses `owner/repo` with
   `[^/]+\/[^/.]+`.
   The `[^/.]` class excludes dots from repository names,
@@ -153,89 +241,109 @@ Where a justification made a checkable claim,
   `https://github.com/owner/dot.repo`,
   and `git@github.com:owner/repo.name.git`,
   while `gh api repos/socketio/socket.io` confirms dotted repository names are real.
-  The caller then returns its ABSENT sentinel,
-  silently dropping commit dates.
+  The traced consequence:
+  `getGithubSlug` feeds `resolveGitDatesContext().githubSlug`,
+  which `git-dates.ts:446` documents as required when shallow and `git-dates.ts:358`
+  interpolates into `repos/<slug>/commits?path=...`,
+  so a dotted-name remote leaves the shallow-clone date path without a slug.
+  Fixing that is a behaviour change and is kept separate from the regex removal.
 - `package-paused/webapp-forge/server/src/storage/write-buffer.unit.test.ts:107` states
   "expect API requires a RegExp".
-  This repository's expect does not:
-  `toMatch: (expected: string | RegExp,) => void`
-  (`package/module/test-expect/src/expect-matchers.ts:87`),
-  with an existing test named `toMatch works with string`
-  (`package/module/test-expect/src/expect.unit.test.ts:311`).
+  The site uses `.toThrow`,
+  whose signature is
+  `toThrow: (expected?: string | RegExp | (abstract new(...args: never) => unknown),) => void`
+  (`package/module/test-expect/src/expect-matchers.ts:91-93`),
+  and whose implementation passes the value straight to chai's `.throw`
+  (`expect-matchers-core.ts:131-146`),
+  where a string is a message-inclusion check.
+  So the string form removes the regex from the feature entirely.
+  `.toMatch` is different:
+  its string form compiles `new RegExp(expected)` at `expect-matchers-core.ts:294`,
+  which is why that site is filed as a separate finding about the string branch.
 - Seven rolldown configs justify `/^node:/u` and `/^electron(\/|$)/u` as anchored tests
   the bundler needs.
-  Rolldown's `external` accepts a plain string or a predicate:
+  Rolldown's `external` accepts a string or a predicate:
   `type ExternalOption = StringOrRegExp | StringOrRegExp[] | ExternalOptionFunction` and
   `type ExternalOptionFunction = (id, parentId, isResolved) => NullValue<boolean>`
   (`node_modules/rolldown/dist/shared/define-config-CGhm2DU-.d.mts:3415-3417`).
-  For the same reason,
-  `escapePackageNameForRegExp` in `package/config/rolldown/src/package-externals.ts:89`
-  exists only to feed the `new RegExp` at line 111,
-  and both disappear under a predicate.
-- `package/oxlint-plugin/no-restricted-syntax/src/rule/prefer-describe-function-ref-name.ts`
-  omits the `u` flag on four interpolated patterns because "u-mode's code-point semantics
-  plus stricter escape parsing could alter how that interpolated value matches".
-  Measured over six parser-produced identifiers,
-  including `$dollar`,
-  `_under`,
-  digits,
-  and mixed case,
-  the flagged and unflagged forms give identical results:
-  an identifier contains only characters that are literals in both modes.
-  The same file's re-export matcher `export\s*\{[^}]*\bNAME\b[^}]*\}\s*from\s*['"]` was
-  also measured on a 256 KB brace-free region and stayed linear (0.16 ms),
-  so the cost argument does not rescue it either;
-  the shape is the problem.
+  The predicate replaces the whole option value rather than one array entry,
+  so the seven sites plus `anchoredExternal` and `escapePackageNameForRegExp` in
+  `package/config/rolldown/src/package-externals.ts` must migrate as one change,
+  and each issue in that group says so.
 - `package-paused/module/es/.../t typeof/.../index.ts:135` and `:138` claim
   "no string API exposes the Unicode upper-letter set".
   Case mapping is a string API carrying the same Unicode data.
   Measured over 15 samples,
-  `char.toLowerCase() !== char && char.toUpperCase() === char` agrees with `\p{Upper}`
-  everywhere except U+1D2C and U+1D43 (category Lm).
-  These two sites are therefore recorded as a judgement call rather than a settled finding:
-  the regex is only necessary if modifier letters must classify by Unicode property,
-  and the justification does not say that.
-- Runtime compilation cost was checked and did **not** support a hot-path argument:
+  the uppercase comparison showed no divergence from case mapping,
+  and the lowercase comparison diverged on U+1D2C and U+1D43 (category Lm).
+  A 15-sample probe cannot establish that those are the only divergences,
+  so both sites are filed as judgement calls:
+  an exact property-table lookup is a regex-free implementation at the same complexity,
+  and which semantics the classifier wants is an owner decision the justification does not
+  state.
+- Two cost claims were tested and **rejected**,
+  and no issue rests on them.
+  Runtime compilation is not a win:
   1000 iterations of `new RegExp(source)` plus a test took 32.6 ms against 32.3 ms for a
   literal,
-  and 5000 iterations took 168.1 ms against 160.4 ms,
-  differences inside run-to-run spread.
-  No issue in this audit claims a compilation-cost win.
+  and 5000 took 168.1 ms against 160.4 ms,
+  inside run-to-run spread.
+  The markdown-stream fence pattern is not quadratic either:
+  a lazy `A[\s\S]*?A` with the global flag consumes through each terminator,
+  so a single trailing unmatched opener costs one extra full scan
+  (0.1 ms over 128 KB) and many matched pairs cost 0.4 ms over 128 KB.
+  An earlier probe described its input as unmatched openers when it was adjacent pairs,
+  and that claim is withdrawn.
+  Both sites are filed on necessity alone.
 
 ## Gate coverage
 
-175 of the 278 unnecessary sites carry no justification at all,
- because the gate never reaches them:
+202 of the 308 unnecessary sites carry no justification,
+ because no gate can ask for one.
+Issue #679 carries the full breakdown and the deciding evidence;
+ in summary:
+ 163 JS and TS sites in packages with no `lint:oxlint` task,
+ which the `fanout_packages` variable in `mise.toml` cannot reach because it builds its
+ target list from the tasks that exist;
+ 10 in `doc/` scripts no package task covers;
+ 1 in a `.cjs` file that `package/config/oxlint/src/config-base.ts:63` excludes through
+ `ignorePatterns`;
+ and 28 on surfaces a JavaScript rule cannot express
+ (22 HTML script blocks,
+ 5 Kotlin,
+ 1 inline YAML script).
+No CI workflow runs a workspace-wide lint,
+ so there is no second net.
 
-- 163 sites are in packages with no `lint:oxlint` task.
-  Measured with `mise tasks ls --all`:
-  `//package/desktop-app/ide`,
-  `//package/music-player`,
-  `//package/linter/monochromatic-lint`,
-  `//package/git-policy/cli.fuzz`,
-  `//package/linter/monochromatic-lint.fuzz`,
-  `//package/cli/forbidden-strings`,
-  and `//package/music-player/truepeak-core.bench` each list zero such tasks.
-  Positive control:
-  `//package/pi-plugin/auto-mode`,
-  `//package/ssg/aquati.cat`,
-  `//package/typeface/aquaticat`,
-  `//package/cli/wg-quicker`,
-  and `//package/config/oxlint` each list one,
-  so the probe can show a task when one exists.
-- 10 sites are in `doc/handover/` and `doc/troubleshooting/` scripts,
-  which no package task covers.
-- 1 site is in a `.js` or `.cjs` file,
-  which `package/config/oxlint/src/config-base.ts:63` excludes through `ignorePatterns`.
-- 1 site is reached and is red:
-  `mise run //package/git-policy/cli:lint:oxlint` reports 75 errors and 65 warnings,
-  one of them the `no-regex` error at
-  `package/git-policy/cli/bin/build-git-test-image.mjs:61`.
-  That contradicts the "sweep complete,
-  green for every non-paused package" status in `doc/handover/no-regex.md`.
+One further site is reached and is red:
+ `package/git-policy/cli/bin/build-git-test-image.mjs:61`,
+ where `mise run //package/git-policy/cli:lint:oxlint` reports 75 errors and 65 warnings
+ (measured 2026-10-12),
+ one of them that `no-regex` error,
+ before aborting on an unrelated tsgo panic inside
+ `plugin-prefer-readonly-parameter-type`.
 
-The coverage gap is filed as its own issue,
- because closing 175 per-site issues still leaves the gate blind to the next one.
+`doc/handover/no-regex.md` records the sweep as complete and green for every non-paused
+package.
+That was written at its own revision and is not called false here.
+What is measurable now is drift plus a scope gap:
+ the cross-check could only have covered packages that define an oxlint task,
+ which is narrower than "every non-paused package".
+
+## Unresolved classification
+
+One site is recorded as unresolved rather than necessary or unnecessary:
+ `package/desktop-app/ide/src/find.rs:170` escapes a user's find text and builds a
+ case-insensitive Unicode matcher with the `regex` crate.
+The feature is case-insensitive literal search with Unicode case folding.
+A folded literal search with source-offset accounting is a plausible regex-free
+ implementation at comparable complexity,
+ and the code already bounds query length,
+ so the asymptotic argument for keeping the crate is not settled.
+Resolving it needs the crate's exact folding semantics,
+ the matcher's non-overlap and truncation rules,
+ and a real literal-search algorithm rather than a naive comparison at every position.
+No issue is filed for it until that work is done.
 
 ## Relationship to the earlier sweep
 
@@ -244,60 +352,43 @@ The coverage gap is filed as its own issue,
  `doc/audit/regex-replacement-perf.md` audited the performance of the parsers that sweep
  introduced,
  and listed "regex deliberately kept with a justified disable" as out of scope.
-This audit covers exactly that excluded set plus every site the gate cannot see,
+This audit covers exactly that excluded set plus every site no gate can see,
  so the two documents are complementary rather than overlapping.
-
-## Non-JS surfaces checked
-
-The detector is a JavaScript rule,
- so the other languages and the config layer were checked separately.
-
-- **Rust**:
-  outside the two crates whose product is a regex engine
-  (`package/rust-module/forbidden-regex`,
-  `package/cli/forbidden-strings`),
-  the only tracked construction site is
-  `package/desktop-app/ide/src/find.rs:170`,
-  which escapes a user's find text and builds a case-insensitive Unicode matcher.
-  Classified necessary:
-  the feature is case-insensitive literal search with full Unicode case folding,
-  and the `regex` crate supplies both the folding and a literal-optimized matcher.
-  A hand-rolled scanner would need its own folding table and would compare at every
-  position instead of using the crate's literal search.
-  `doc/audit/resharp-fuzz-2026-06-19/tool/anchor_denot.rs` also imports the crate,
-  as a one-off tool whose subject is regex denotations.
-  No Rust lint rule polices regex use,
-  so this surface has no gate equivalent to `no-regex`.
-- **Kotlin**:
-  zero `Regex(` and zero `toRegex(` sites across 246 tracked `.kt` files.
-- **Config and data files**:
-  no regex-shaped strings in tracked JSON,
-  JSONC,
-  TOML,
-  or YAML config.
-  Stylelint is removed (`doc/decision/remove-stylelint.md`),
-  so the regex-shaped stylelint strings recorded in `doc/handover/no-regex.md` are gone.
-- **Regex as data**:
-  `package/cli/mutation-test/src/engine/enumerate.unit.test.ts` holds regex source text
-  as string fixtures for the quantifier mutators,
-  and `package/dev-script/deps-cube/src/script/filter.ts` holds user search strings.
-  Both are inputs to a feature whose subject is regex,
-  not regex use.
 
 ## Reproducing
 
-The scratch harness lives outside the repository,
- in `${HOME}/temp/agent/regex-audit/`,
- and is not committed:
-`build-mirror.mjs`,
+The harness is committed beside this document in
+[`regex-necessity/`](regex-necessity/),
+ so the classification is reproducible from the repository rather than from one machine's
+ scratch directory:
+
+- `build-mirror.mjs` mirrors the tree with directives neutralised at equal byte length.
+- `scan.config.json` enables only `no-restricted-syntax/no-regex` with empty
+  `ignorePatterns`.
+- `sites3.mjs` dedupes spans,
+  slices patterns on byte offsets,
+  and attributes directives.
+- `extract-html.mjs` extracts HTML script blocks and enumerates the YAML surface.
+- `pipeline.mjs` classifies necessity,
+  resolves scopes,
+  and finds enclosing declarations.
+- `pattern-analysis.mjs` tokenizes pattern bodies and derives replacement shapes.
+- `rebuttals.mjs` holds the per-justification answers.
+- `supplement.mjs` adds the Kotlin,
+  HTML,
+  and YAML sites and the two reclassifications.
+- `generate.mjs` writes one issue payload per site.
+- `reconcile.mjs` corrects already-filed issues in place and files the rest.
+- `evidence.mjs` and `evidence2.mjs` hold the measurements,
+  with `evidence2.mjs` superseding the two mis-constructed probes in `evidence.mjs`.
+
+Run order:
+ `build-mirror.mjs`,
+ the oxlint scan into `scan.json`,
  `sites3.mjs`,
+ `extract-html.mjs` and its scan,
  `pipeline.mjs`,
- `pattern-analysis.mjs`,
- `rebuttals.mjs`,
- `generate.mjs`,
- `evidence.mjs`,
- and `spread.mjs`.
-The measurements quoted here come from `evidence.mjs` and `spread.mjs` run under
- Node v26.11.1 on this machine;
- timings are single-machine and are reported as doubling series with per-size repeats
- rather than as absolute claims.
+ `supplement.mjs`,
+ `generate.mjs`.
+Timings quoted here are single-machine and are reported as doubling series with per-size
+ repeats.
