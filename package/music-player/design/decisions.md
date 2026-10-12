@@ -3240,6 +3240,50 @@ Two questions left open by earlier work, decided by the orchestrator on the huma
   3.99 s instead of 8.9 s in one sandbox, but made a cold dependency build 12.5 minutes instead of about 4, and that
   cold build hits every fresh worktree and CI run. Revisit if the suite grows.
 
+### D117. A focus ring is only a ring, drawn the way Firefox draws it but hugging the element (2026-10-12)
+
+The human asked that focus rings look like what HTML and CSS draw, except that CSS rings are rectangles and ours hug the
+element, that a focus ring be merely a ring with no other change such as a background color, and, when told that browser
+default outlines are broken lines, that the app follow whatever the latest Firefox desktop source does. The source
+(mozilla-firefox/firefox, `layout/style/res/ua.css` rule `:focus-visible { outline: 1px auto; }`, painted by
+`Theme::PaintAutoStyleOutline` in `widget/Theme.cpp`) draws two solid rings, not a broken line. This replaces the
+"2 px ring plus the state layer" wording of D106 and the focus fill of the earlier focus work.
+
+- The ring is the pair Firefox paints: an inner ring 2 px (dp on Android) wide in the `primary` role, flush against the
+  element's edge (Firefox's default `outline-offset` is 0, so there is no gap), and an outer ring 1 px wide in the
+  `on-primary` role around it, which keeps the ring readable on any surface because `on-primary` contrasts with
+  `primary`.
+- Both rings are solid and follow the element's own shape: the inner ring's inner radius is the element's corner radius
+  and each ring's outer radius is the radius plus the widths inside it, so a pill stays a pill, a circle a circle and a
+  rounded rectangle keeps its curve; an element with square corners gets a 2 px outer radius, as in Firefox.
+- The ring is drawn outside the element, is never clipped by a parent and never moves content.
+- It appears for keyboard focus only (CSS `:focus-visible`).
+- Focus adds no fill, tint, state layer, bold or size change. Hover and pressed keep their own state layers.
+- The human chose Firefox over Chromium on 2026-10-12. Chromium draws the same two solid rings (2 px next to the element,
+  1 px outside, flush) in a neutral focus color with a white or #101010 outer ring; it was rejected because it carries no
+  accent and its neutral pair conflicts with D118.
+
+### D118. Grays are always accented unless the root color is completely neutral (2026-10-12)
+
+The human decided that every gray the app draws carries the accent's hue, unless the root color itself has no hue at all.
+This narrows D108's near-gray rule and D41's stable neutrals.
+
+- A root is completely neutral only when it has no chroma at all (its three 8-bit channels are equal). Then every gray is
+  a true gray. A root with any chroma, however small, gives every gray the root's hue; a nearly gray root is not
+  treated as gray.
+- The tint of a gray is the role's own tint (it does not shrink when the root is weakly chromatic and does not grow when
+  it is vivid); accent roles still scale with the root's chroma.
+- Pure black and pure white (the canvas of D109) are not grays and stay as they are. The dark deck, the rail seam, the
+  outlines, the surfaces and the text variants are grays and take the tint, in both schemes and on both platforms, from
+  the same derivation and the shared fixture.
+
+### D119. Context menus sit on the pure canvas color (2026-10-12)
+
+The human decided that the background of a context menu is pure white in the light scheme and pure black in the dark
+scheme, the same canvas color as D109, with no tint. The menu stays distinguishable from the content under it by its
+existing boundary (outline or shadow), not by a fill; if it has none, it gets a 1 px outline in the `outline-variant`
+role, because a pure black menu over a pure black page would otherwise have no edge.
+
 ## Pending after the theme picks (2026-09-04)
 
 - **Order of remaining work** — my recommendation:

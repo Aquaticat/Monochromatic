@@ -110,6 +110,23 @@ export {
 } from './activity.ts';
 
 /**
+ Exposed so built-artifact tests reach the gerund scanner.
+ 
+ @internal
+ */
+export {
+  findGerundInText,
+  scanGerundMatches,
+} from './gerund.ts';
+
+/**
+ Exposed so built-artifact tests reach the model display formatter.
+ 
+ @internal
+ */
+export { formatModelDisplay, } from './model.ts';
+
+/**
  Exposed so built-artifact tests reach the per-session activity memory.
  
  @internal

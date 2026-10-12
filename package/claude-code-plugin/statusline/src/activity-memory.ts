@@ -18,10 +18,8 @@ import {
   join,
 } from 'node:path';
 
-import {
-  findGerundInText,
-  readActivityWord,
-} from './activity.ts';
+import { readActivityWord, } from './activity.ts';
+import { findGerundInText, } from './gerund.ts';
 
 //region Memory file
 
