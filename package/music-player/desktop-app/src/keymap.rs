@@ -178,7 +178,7 @@ pub enum ShortcutAction {
     Settings,
     /// Focuses the current track row without a transport action.
     Reveal,
-    /// Returns from Search to the player.
+    /// Returns from Search or Settings to the player.
     Back,
     /// No shortcut applies.
     Unbound,
@@ -235,7 +235,7 @@ impl ShortcutAction {
 /// type ShortcutRequest = {
 ///   platform: KeyboardPlatform; key: string; ctrl: boolean; meta: boolean; alt: boolean;
 ///   shift: boolean; repeat: boolean; owner: ShortcutOwner; inPopup: boolean;
-///   inSearch: boolean; composing: boolean;
+///   inSearch: boolean; inSettings: boolean; composing: boolean;
 /// };
 /// ```
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -263,6 +263,9 @@ pub struct ShortcutRequest {
     pub in_popup: bool,
     /// True while Search is open.
     pub in_search: bool,
+    /// True while the Settings page is the visible page and no text field is editing a template line,
+    ///  so Escape closes Settings (D110).
+    pub in_settings: bool,
     /// True while an input method is composing text.
     pub composing: bool,
 }
@@ -390,7 +393,7 @@ fn reveal_action(request: &ShortcutRequest) -> Option<ShortcutAction> {
 
 /// What:
 ///      `owner_action` decides keys by who owns focus:
-///  Escape back from Search,
+///  Escape back from Search or from Settings,
 ///  editors and controls,
 ///      and any non-player surface.
 /// Why:
@@ -400,14 +403,14 @@ fn reveal_action(request: &ShortcutRequest) -> Option<ShortcutAction> {
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// function ownerAction(request: ShortcutRequest): ShortcutAction | null {
-///   if (request.key === "Escape" && request.inSearch) return "back";
+///   if (request.key === "Escape" && (request.inSearch || request.inSettings)) return "back";
 ///   if (owner === "editor" || owner === "control") return "owner";
 ///   if (owner !== "player") return "unbound";
 ///   return null;
 /// }
 /// ```
 fn owner_action(request: &ShortcutRequest) -> Option<ShortcutAction> {
-    if request.key == "Escape" && request.in_search {
+    if request.key == "Escape" && (request.in_search || request.in_settings) {
         return Some(ShortcutAction::Back);
     }
     if matches!(request.owner, ShortcutOwner::Editor | ShortcutOwner::Control) {

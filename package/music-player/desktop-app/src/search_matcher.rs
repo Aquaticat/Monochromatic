@@ -45,7 +45,7 @@ use crate::non_spacing_mark::is_non_spacing_mark;
 /// ```ts
 /// const WORD_SEPARATORS = new Set([" ", "-", "_", ".", "(", "[", "/"]);
 /// ```
-const WORD_SEPARATORS: [char; 7] = [' ', '-', '_', '.', '(', '[', '/'];
+pub(crate) const WORD_SEPARATORS: [char; 7] = [' ', '-', '_', '.', '(', '[', '/'];
 
 /// What:
 ///      `pub const TIER_WHOLE_NAME: i32 = 0`.
@@ -392,13 +392,27 @@ fn merge_overlapping(ranges: Vec<SearchHighlight>) -> Vec<SearchHighlight> {
 /// function highlightRanges(text: string, query: string): Range[] { /* word-start hits, mapped back */ }
 /// ```
 pub fn highlight_ranges(text: &str, query: &str) -> Vec<SearchHighlight> {
-    let terms: Vec<String> = search_terms(query);
+    return highlight_ranges_for_terms(text, &search_terms(query));
+}
+
+/// What:
+///      `pub fn highlight_ranges_for_terms(text: &str, terms: &[String]) -> Vec<SearchHighlight>`.
+///  The highlight ranges of a text for terms that are already normalized.
+/// Why:
+///       The Search index highlights up to five hundred rows per query,
+///  and splitting the query once instead of once per row keeps that loop to the highlight work itself.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function highlightRangesForTerms(text: string, terms: string[]): Range[] { /* word-start hits, mapped back */ }
+/// ```
+pub fn highlight_ranges_for_terms(text: &str, terms: &[String]) -> Vec<SearchHighlight> {
     if terms.is_empty() {
         return Vec::new();
     }
     let normalized: NormalizedText = normalize_with_origins(text);
     let mut ranges: Vec<SearchHighlight> = Vec::new();
-    for term in &terms {
+    for term in terms {
         let term_chars: Vec<char> = chars_of(term);
         for occurrence in word_start_occurrences(&normalized.chars, &term_chars) {
             let last: usize = occurrence + term_chars.len() - 1;

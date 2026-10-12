@@ -10,13 +10,13 @@ use std::rc::Rc;
 
 use music_player::command::Update;
 use music_player::template_model::DEFAULT_TRACK_TEMPLATE;
-use music_player::track_measure::merge_measures;
+use music_player::track_measure::apply_measures;
 use music_player::track_supporting_line::supporting_line_from_template;
 use slint::{ModelRc, SharedString, VecModel};
 
 use crate::ui_playback::playback_mode_to_int;
 use crate::ui_screen_scroll::{ScrollRequest, next_scroll_request, scroll_offset_for};
-use crate::ui_screen_view::{ScreenState, ScreenView, page_key_containing, pages, view};
+use crate::ui_screen_view::{ScreenState, ScreenView, view};
 use crate::{AppWindow, FolderName, FolderRailCell, TrackListRow, format_time};
 
 thread_local! {
@@ -41,12 +41,18 @@ pub(crate) fn apply_update(app: &AppWindow, update: &Update) {
             });
         }
         Update::Queue(names) => {
+            let mut shared = None;
             update_state(|state| {
-                state.names = names.clone();
+                shared = Some(state.set_names(names));
                 state.selected_key = String::new();
                 state.loaded = true;
             });
+            if let Some(library) = shared {
+                tracing::info!(names = library.len(), "queue applied; the library rows are projected next");
+                crate::ui_search::feed_library_names(library);
+            }
             project(app);
+            tracing::info!("queue projected");
         }
         Update::NowPlaying { index, name, duration } => {
             set_now_playing(app, *index, name, *duration);
@@ -54,10 +60,14 @@ pub(crate) fn apply_update(app: &AppWindow, update: &Update) {
             project(app);
         }
         Update::Reconciled { names, index, name, duration } => {
+            let mut shared = None;
             update_state(|state| {
-                state.names = names.clone();
+                shared = Some(state.set_names(names));
                 state.loaded = true;
             });
+            if let Some(library) = shared {
+                crate::ui_search::feed_library_names(library);
+            }
             set_now_playing(app, *index, name, *duration);
             project(app);
         }
@@ -76,10 +86,14 @@ pub(crate) fn apply_update(app: &AppWindow, update: &Update) {
         }
         Update::Volume(volume) => app.set_volume(*volume),
         Update::Measures(measures) => {
+            let mut shown_changed = false;
             update_state(|state| {
-                state.measures = merge_measures(&state.measures, measures);
+                apply_measures(&mut state.measures, measures);
+                shown_changed = state.measures_touch_selected_page(measures);
             });
-            project(app);
+            if shown_changed {
+                crate::ui_screen_throttle::project_soon(app);
+            }
         }
         // The window draws no analysis indicator (D107); the system indicator takes this update in main.rs.
         Update::Analysis { .. } => {}
@@ -90,6 +104,8 @@ pub(crate) fn apply_update(app: &AppWindow, update: &Update) {
             });
             project(app);
         }
+        // The Search index takes scan batches on the engine thread (main.rs); the window has nothing to draw for them.
+        Update::ScanBatch { .. } => {}
         Update::PlaybackMode(mode) => {
             update_state(|state| {
                 state.mode = *mode;
@@ -120,7 +136,7 @@ fn follow_playing(index: Option<usize>) {
         return;
     };
     update_state(|state| {
-        let page = page_key_containing(&pages(state), queue_index);
+        let page = state.page_key_of_index(queue_index);
         if let Some(page_key) = page {
             state.selected_key = page_key;
         }

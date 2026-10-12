@@ -475,3 +475,62 @@ fn shuffle_page_uses_displayed_page_and_keeps_current() {
     }
     assert_eq!(seen, std::collections::HashSet::from([2, 3]));
 }
+
+#[test]
+fn peek_next_natural_on_an_empty_queue_is_none() {
+    let mut q = Queue::with_rng_seed(1);
+    assert_eq!(q.peek_next_natural(), None);
+}
+
+#[test]
+fn peek_next_natural_in_order_names_the_next_track_without_moving() {
+    let mut q = Queue::with_rng_seed(1);
+    q.set_tracks(paths(3));
+    assert_eq!(q.peek_next_natural(), Some(1));
+    assert_eq!(q.current_index(), Some(0));
+    assert_eq!(q.advance(true), Some(1));
+    assert_eq!(q.peek_next_natural(), Some(2));
+    assert_eq!(q.advance(true), Some(2));
+    // The last track wraps to the first, exactly as `advance` does.
+    assert_eq!(q.peek_next_natural(), Some(0));
+    assert_eq!(q.current_index(), Some(2));
+    assert_eq!(q.advance(true), Some(0));
+}
+
+#[test]
+fn peek_next_natural_repeat_names_the_same_track() {
+    let mut q = Queue::with_rng_seed(1);
+    q.set_tracks(paths(3));
+    q.set_playback_mode(PlaybackMode::Repeat);
+    assert_eq!(q.peek_next_natural(), Some(0));
+    assert_eq!(q.advance(true), Some(0));
+}
+
+#[test]
+fn peek_next_natural_in_shuffle_commits_the_pick_that_advance_then_takes() {
+    for mode in [PlaybackMode::ShuffleAll, PlaybackMode::ShufflePage] {
+        let mut q = Queue::with_rng_seed(777);
+        q.set_tracks(paths(6));
+        q.set_playback_mode(mode);
+        for _ in 0..12 {
+            let before = q.current_index();
+            let peeked = q.peek_next_natural();
+            assert_eq!(q.current_index(), before, "peeking must not move the cursor");
+            // Peeking again without advancing names the same track: the pick is committed once.
+            assert_eq!(q.peek_next_natural(), peeked);
+            assert_eq!(q.advance(true), peeked);
+        }
+    }
+}
+
+#[test]
+fn peek_next_natural_follows_the_history_after_prev() {
+    let mut q = Queue::with_rng_seed(5);
+    q.set_tracks(paths(6));
+    q.set_playback_mode(PlaybackMode::ShuffleAll);
+    let first = q.advance(false);
+    let second = q.advance(false);
+    assert_eq!(q.prev(), first);
+    assert_eq!(q.peek_next_natural(), second);
+    assert_eq!(q.advance(true), second);
+}

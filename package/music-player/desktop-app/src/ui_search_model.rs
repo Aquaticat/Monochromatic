@@ -6,7 +6,10 @@
 use music_player::search_page_model::{
     is_current_track_result, search_emphasis_spans, search_row_second_line, search_status_line,
 };
-use music_player::search_results::{SearchResult, SearchResultKind, SearchState, search_library};
+use music_player::search_results::{SearchResult, SearchResultKind, SearchState};
+#[cfg(test)]
+use music_player::search_results::search_library;
+#[cfg(test)]
 use music_player::track::Track;
 
 /// What: `Segment` is one piece of a result line, plain or emphasized (a query match).
@@ -115,16 +118,37 @@ fn row_view(result: &SearchResult, position: usize, current_index: Option<usize>
     };
 }
 
-/// What: `search_view` runs the query over the library and returns the rows or the status block.
-/// Why: an empty query, an empty library and a query with no match each show a different status claim.
+/// What: `SEARCH_SCANNING_TITLE` is the status headline while the library is still being scanned and nothing matched yet.
+/// Why: a partial scan cannot establish that no name matches (D69), so the page says it is still looking instead of
+/// claiming "no results" or "no music". This copy is new with D111 and is open for the human's review.
+pub const SEARCH_SCANNING_TITLE: &str = "Still looking through your library";
+
+/// What: `SEARCH_SCANNING_DETAIL` is the support line under `SEARCH_SCANNING_TITLE`.
+/// Why: it tells the user that the list will fill in by itself, so no retry is needed.
+pub const SEARCH_SCANNING_DETAIL: &str = "Results appear here as more music is found.";
+
+/// What: `status_for` gives the status block for a state, or none when results are shown.
+/// Why: an unfinished scan turns the two "nothing here" verdicts into the scanning copy (D69, D111).
+fn status_for(state: &SearchState, complete: bool) -> (String, String) {
+    let unfinished_nothing = !complete && matches!(state, SearchState::NoMatch(_) | SearchState::EmptyInventory);
+    if unfinished_nothing {
+        return (SEARCH_SCANNING_TITLE.to_string(), SEARCH_SCANNING_DETAIL.to_string());
+    }
+    return match search_status_line(state) {
+        Some(line) => (line.title, line.detail.unwrap_or("").to_string()),
+        None => (String::new(), String::new()),
+    };
+}
+
+/// What: `search_view_of` turns a ranked state into the rows or the status block.
+/// Why: the index answers on a worker thread; this part runs on the window thread and only formats.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// const searchView = (query: string, tracks: Track[], current?: number, playing?: boolean): SearchView => { ... };
+/// const searchViewOf = (state: SearchState, current?: number, playing?: boolean, complete?: boolean): SearchView => { ... };
 /// ```
-pub fn search_view(query: &str, tracks: &[Track], current_index: Option<usize>, playing: bool) -> SearchView {
-    let state = search_library(query, tracks, true);
-    let results: Vec<SearchResult> = match &state {
+pub fn search_view_of(state: &SearchState, current_index: Option<usize>, playing: bool, complete: bool) -> SearchView {
+    let results: Vec<SearchResult> = match state {
         SearchState::Results { items, .. } => items.clone(),
         _ => Vec::new(),
     };
@@ -133,16 +157,26 @@ pub fn search_view(query: &str, tracks: &[Track], current_index: Option<usize>, 
         .enumerate()
         .map(|(position, result)| return row_view(result, position, current_index, playing))
         .collect();
-    let (status_title, status_detail) = match search_status_line(&state) {
-        Some(line) => (line.title, line.detail.unwrap_or("").to_string()),
-        None => (String::new(), String::new()),
-    };
+    let (status_title, status_detail) = status_for(state, complete);
     return SearchView {
         rows,
         status_title,
         status_detail,
         results,
     };
+}
+
+/// What: `search_view` runs the query over a track list and returns the rows or the status block.
+/// Why: an empty query, an empty library and a query with no match each show a different status claim. The window
+/// uses `search_view_of` on an answer from the shared index; this form builds a throwaway index for tests.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// const searchView = (query: string, tracks: Track[], current?: number, playing?: boolean): SearchView => { ... };
+/// ```
+#[cfg(test)]
+pub fn search_view(query: &str, tracks: &[Track], current_index: Option<usize>, playing: bool) -> SearchView {
+    return search_view_of(&search_library(query, tracks, true), current_index, playing, true);
 }
 
 #[cfg(test)]

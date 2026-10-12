@@ -1,6 +1,9 @@
 // Template editor page for one open template (D89, D91, D94, D96, D98). The host owns the template text, the
 // preview rows, the mistake lines, the help and the field list. This page draws them and reports edits, caret
 // moves, focus, field taps, Reset and Back. The whole body scrolls as one page, so the preview scrolls with it (D91).
+// On a wide window the page is embedded in Settings' right pane (D110): it then has no header band, divider or Back
+// target (the Settings header owns Back) and shows only the template's name as the pane title; the host fades it in
+// each time the selected template changes.
 import { Theme } from "theme.slint";
 import { StateLayer } from "state_layer.slint";
 
@@ -26,6 +29,7 @@ export struct EditorPreviewRow {
 export component TemplateEditor inherits Rectangle {
     background: Theme.canvas;
     clip: true;
+    opacity: root.pane-opacity;
 
     // Heading of the page header, which names the open template, such as Track rows.
     in property <string> title;
@@ -47,6 +51,11 @@ export component TemplateEditor inherits Rectangle {
     in property <[string]> notes: [];
     // Whether the Reset to default control is offered, which is when the text differs from the default.
     in property <bool> can-reset: false;
+    // True when the page sits in Settings' right pane: no header band, divider or Back, just the pane title.
+    in property <bool> embedded: false;
+    // Opacity of the whole page, 1 at rest. The host lowers it to 0 when the selected template changes and raises it
+    // back to 1 over 150 ms, which is the cross-fade between the old and the new template.
+    in property <float> pane-opacity: 1;
 
     // Fires after each edit and each caret or selection move. Arguments are the whole text, then the selection
     // start and end as UTF-8 byte offsets into that text. Slint 1.17 has no substring call, so the host converts
@@ -68,6 +77,8 @@ export component TemplateEditor inherits Rectangle {
     property <string> error-path: "M12 2 C6.48 2 2 6.48 2 12 s4.48 10 10 10 s10 -4.48 10 -10 S17.52 2 12 2 Z "
         + "M13 17 h-2 v-2 h2 v2 Z M13 13 h-2 L11 7 h2 v6 Z";
 
+    // Height of the header area above the body: the Settings pane title row, or the editor page's band and divider.
+    property <length> header-extent: root.embedded ? 64px : 73px;
     // Keeps the field in step with a text the host sets, such as a reset or an inserted field. Typed text
     // already matches the host's copy, so the comparison leaves the caret alone while the user types.
     changed text => {
@@ -91,8 +102,21 @@ export component TemplateEditor inherits Rectangle {
         ? root.mistake-lines.length * 16px
         : (root.has-help ? 16px + help-description.preferred-height : 0px);
 
+    // Pane title when embedded: the template's name in the title role, 64 px tall like the Settings header beside it.
+    if root.embedded : Text {
+        x: 16px;
+        y: 0px;
+        width: root.width - 32px;
+        height: 64px;
+        text: root.title;
+        font-size: Theme.title-large;
+        color: Theme.on-surface;
+        vertical-alignment: center;
+        overflow: elide;
+    }
+
     // Header band with the Back target and the page title, as the Android destination header.
-    Rectangle {
+    if !root.embedded : Rectangle {
         x: 0px;
         y: 0px;
         width: root.width;
@@ -142,7 +166,7 @@ export component TemplateEditor inherits Rectangle {
     }
 
     // Divider under the header, one logical pixel in the outline role.
-    Rectangle {
+    if !root.embedded : Rectangle {
         x: 0px;
         y: 72px;
         width: root.width;
@@ -153,9 +177,9 @@ export component TemplateEditor inherits Rectangle {
     // Body that scrolls below the header. Its content height is the stacked sections below.
     flick := Flickable {
         x: 0px;
-        y: 73px;
+        y: root.header-extent;
         width: root.width;
-        height: root.height - 73px;
+        height: root.height - root.header-extent;
         content-width: root.width;
         content-height: body.preferred-height;
 

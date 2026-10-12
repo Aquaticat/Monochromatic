@@ -93,12 +93,6 @@ pub struct RoleSet {
     pub seam: Srgb8,
     /// Menus, search header and snackbar surface.
     pub surface_high: Srgb8,
-    /// Settings page background.
-    pub settings_page: Srgb8,
-    /// Settings grouped card background.
-    pub settings_card: Srgb8,
-    /// Round Back button fill.
-    pub back_tonal: Srgb8,
     /// Primary text and icons.
     pub on_surface: Srgb8,
     /// Secondary text and icons.
@@ -220,9 +214,6 @@ struct SchemeSpec {
     current_row: Role,
     seam: Role,
     surface_high: Role,
-    settings_page: Role,
-    settings_card: Role,
-    back_tonal: Role,
     on_surface: Role,
     on_surface_variant: Role,
     outline: Role,
@@ -245,9 +236,6 @@ const DARK_SPEC: SchemeSpec = SchemeSpec {
     seam: fixed(0x00, 0x00, 0x00),
     current_row: neutral(0.1879, 0.0103, 7.9),
     surface_high: neutral(0.2408, 0.0115, 9.4),
-    settings_page: neutral(0.2155, 0.0138, 10.2),
-    settings_card: neutral(0.2944, 0.0148, 5.8),
-    back_tonal: neutral(0.2663, 0.0170, 6.8),
     on_surface: neutral(0.9244, 0.0149, 13.4),
     on_surface_variant: neutral(0.8288, 0.0139, 12.9),
     outline: neutral(0.6546, 0.0135, 7.4),
@@ -269,9 +257,6 @@ const LIGHT_SPEC: SchemeSpec = SchemeSpec {
     seam: neutral(0.7630, 0.0156, 13.3),
     current_row: neutral(0.9669, 0.0093, 24.2),
     surface_high: neutral(0.9308, 0.0094, 24.2),
-    settings_page: neutral(0.9495, 0.0120, 22.7),
-    settings_card: neutral(0.9824, 0.0082, 32.8),
-    back_tonal: neutral(0.9152, 0.0149, 13.4),
     on_surface: neutral(0.3188, 0.0162, 7.0),
     on_surface_variant: neutral(0.4844, 0.0193, 9.6),
     outline: neutral(0.5706, 0.0140, 7.3),
@@ -462,7 +447,7 @@ fn container_layers(container: Srgb8, content: Srgb8) -> (Srgb8, Srgb8) {
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// const spec = scheme === "dark" ? DARK_SPEC : LIGHT_SPEC;
-/// const surfaces = [canvas, deck, currentRow, surfaceHigh, settingsPage, settingsCard, backTonal].map(resolve);
+/// const surfaces = [canvas, deck, currentRow, surfaceHigh].map(resolve);
 /// // fit onSecondaryContainer, onSurface, onSurfaceVariant, outline, primary, onPrimary, then derive matchFill
 /// ```
 pub fn derive_scheme(terms: RootTerms, scheme: Scheme) -> RoleSet {
@@ -480,12 +465,8 @@ pub fn derive_scheme(terms: RootTerms, scheme: Scheme) -> RoleSet {
     let current_row: Srgb8 = resolve_srgb(spec.current_row, terms);
     let seam: Srgb8 = resolve_srgb(spec.seam, terms);
     let surface_high: Srgb8 = resolve_srgb(spec.surface_high, terms);
-    let settings_page: Srgb8 = resolve_srgb(spec.settings_page, terms);
-    let settings_card: Srgb8 = resolve_srgb(spec.settings_card, terms);
-    let back_tonal: Srgb8 = resolve_srgb(spec.back_tonal, terms);
-    let surfaces: [Srgb8; 7] = [canvas, deck, current_row, surface_high, settings_page, settings_card, back_tonal];
-    // The Back button fill carries only an icon, so secondary and accent text are fitted on the other six.
-    let text_surfaces: [Srgb8; 6] = [canvas, deck, current_row, surface_high, settings_page, settings_card];
+    // Settings has no surface of its own (D109): it is drawn on the canvas, so no further surface needs fitting.
+    let surfaces: [Srgb8; 4] = [canvas, deck, current_row, surface_high];
 
     // Selected fill and its content: the content is fitted against the fill and both state layers.
     let secondary_container: Srgb8 = resolve_srgb(spec.secondary_container, terms);
@@ -510,7 +491,7 @@ pub fn derive_scheme(terms: RootTerms, scheme: Scheme) -> RoleSet {
         resolve_oklch(spec.on_surface_variant, terms),
         toward_text,
         &|candidate| {
-            return legible_on(candidate, &text_surfaces, on_surface, HOVER_ALPHA, TEXT_TARGET_RATIO);
+            return legible_on(candidate, &surfaces, on_surface, HOVER_ALPHA, TEXT_TARGET_RATIO);
         },
     );
     let on_surface_variant: Srgb8 = oklch_to_srgb8(variant_fit);
@@ -531,7 +512,7 @@ pub fn derive_scheme(terms: RootTerms, scheme: Scheme) -> RoleSet {
         Scheme::Light => Some(resolve_srgb(spec.on_primary, terms)),
     };
     let primary_fit: Oklch = fit_lightness("primary", primary_start, toward_text, &|candidate| {
-        if !legible_on(candidate, &text_surfaces, on_surface, HOVER_ALPHA, TEXT_TARGET_RATIO) {
+        if !legible_on(candidate, &surfaces, on_surface, HOVER_ALPHA, TEXT_TARGET_RATIO) {
             return false;
         }
         let fills: [Srgb8; 1] = [secondary_container];
@@ -579,9 +560,6 @@ pub fn derive_scheme(terms: RootTerms, scheme: Scheme) -> RoleSet {
         current_row,
         seam,
         surface_high,
-        settings_page,
-        settings_card,
-        back_tonal,
         on_surface,
         on_surface_variant,
         outline,

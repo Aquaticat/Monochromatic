@@ -26,6 +26,7 @@ fn base_request() -> ShortcutRequest {
         owner: ShortcutOwner::Player,
         in_popup: false,
         in_search: false,
+        in_settings: false,
         composing: false,
     };
 }
@@ -284,4 +285,33 @@ fn wire_names_match_the_prototype_spelling() {
     assert_eq!(ShortcutAction::ClosePopup.wire_name(), "close-popup");
     assert_eq!(ShortcutAction::Toggle.wire_name(), "toggle");
     assert_eq!(KeyboardPlatform::Mac.stored_name(), "mac");
+}
+
+// What:     `#[test] fn escape_closes_settings_only_while_settings_is_visible_and_no_line_is_edited()`
+//           checks the Settings meaning of Escape (D110).
+// Why:      Escape leaves the Settings page from either form, but never while a template line is being edited, and a
+//           popup still takes Escape first.
+#[test]
+fn escape_closes_settings_only_while_settings_is_visible_and_no_line_is_edited() {
+    let escape = || return "Escape".to_owned();
+    assert_action(
+        "settings: Escape on the visible Settings page goes back",
+        ShortcutAction::Back,
+        &ShortcutRequest { key: escape(), owner: ShortcutOwner::Control, in_settings: true, ..base_request() },
+    );
+    assert_action(
+        "settings: Escape while a template line is edited stays with the field",
+        ShortcutAction::Owner,
+        &ShortcutRequest { key: escape(), owner: ShortcutOwner::Editor, in_settings: false, ..base_request() },
+    );
+    assert_action(
+        "settings: Escape in an open popup closes the popup first",
+        ShortcutAction::ClosePopup,
+        &ShortcutRequest { key: escape(), owner: ShortcutOwner::Control, in_settings: true, in_popup: true, ..base_request() },
+    );
+    assert_action(
+        "settings: another key on the Settings page stays with the page",
+        ShortcutAction::Owner,
+        &ShortcutRequest { key: "ArrowDown".to_owned(), owner: ShortcutOwner::Control, in_settings: true, ..base_request() },
+    );
 }

@@ -28,7 +28,7 @@ use crate::template_model::{
 ///  imports the formula tree types and the template splitter.
 /// Why:
 ///  Evaluation walks the parsed parts in order.
-use crate::template_parse::{CallNode, FormulaNode, TemplatePart, parse_template};
+use crate::template_parse::{CallNode, FormulaNode, ParsedTemplate, TemplatePart, parse_template};
 
 /// What:
 ///  `struct TemplateEvaluation` evaluates formula trees for one track and one allowed field set,
@@ -294,9 +294,23 @@ fn arity_message(definition: &TemplateFunction) -> String {
 /// function evaluateTemplate(text: string, track: TemplateTrack, fields = trackFields): TemplateResult { ... }
 /// ```
 pub fn evaluate_template(text: &str, track: &dyn TemplateTrack, fields: &[TemplateField]) -> TemplateResult {
-    let parsed = parse_template(text);
+    return evaluate_parsed_template(&parse_template(text), track, fields);
+}
+
+/// What:
+///  `pub fn evaluate_parsed_template(parsed: &ParsedTemplate, track: &dyn TemplateTrack, fields: &[TemplateField]) -> TemplateResult`
+///  shows an already parsed template's text for one track, or the mistakes that refuse it.
+/// Why:
+///  A list of rows shows one template for every track, and parsing it again for each row cost about 2.7 microseconds a row,
+///  most of a 30,000-row page's projection; `evaluate_template` parses and calls this, so both give one result.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function evaluateParsedTemplate(parsed: ParsedTemplate, track: TemplateTrack, fields = trackFields): TemplateResult { ... }
+/// ```
+pub fn evaluate_parsed_template(parsed: &ParsedTemplate, track: &dyn TemplateTrack, fields: &[TemplateField]) -> TemplateResult {
     if !parsed.errors.is_empty() {
-        return TemplateResult::Refused(parsed.errors);
+        return TemplateResult::Refused(parsed.errors.clone());
     }
     let mut evaluation = TemplateEvaluation {
         track,

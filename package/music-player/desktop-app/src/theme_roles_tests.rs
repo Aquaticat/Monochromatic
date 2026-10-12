@@ -27,9 +27,6 @@ fn old_fixed_values() -> Vec<(&'static str, u32, u32)> {
         ("secondary-container", 0x353B4D, 0xDDE2F9),
         ("on-secondary-container", 0xDDE2F9, 0x161B2C),
         ("surface-high", 0x1E1F25, 0xE8E7EE),
-        ("settings-page", 0x181920, 0xEEEDF6),
-        ("settings-card", 0x2A2C34, 0xFAF8FE),
-        ("back-tonal", 0x23252E, 0xE1E2ED),
         ("error", 0xFFB4AB, 0xBA1A1A),
         ("error-container", 0x8C1D18, 0xF9DEDC),
         ("on-error-container", 0xF9DEDC, 0x410E0B),
@@ -45,9 +42,6 @@ fn named_roles(set: &RoleSet) -> Vec<(&'static str, Srgb8)> {
         ("current-row", set.current_row),
         ("seam", set.seam),
         ("surface-high", set.surface_high),
-        ("settings-page", set.settings_page),
-        ("settings-card", set.settings_card),
-        ("back-tonal", set.back_tonal),
         ("on-surface", set.on_surface),
         ("on-surface-variant", set.on_surface_variant),
         ("outline", set.outline),
@@ -95,9 +89,10 @@ fn swept_roots() -> Vec<Srgb8> {
     return roots;
 }
 
-/// What: `surfaces_of(set)` lists the seven surfaces text is drawn on.
+/// What: `surfaces_of(set)` lists the four surfaces text is drawn on.
+/// Why:  Settings has no surface of its own (D109), so the canvas stands for it.
 fn surfaces_of(set: &RoleSet) -> Vec<Srgb8> {
-    return vec![set.canvas, set.deck, set.current_row, set.surface_high, set.settings_page, set.settings_card, set.back_tonal];
+    return vec![set.canvas, set.deck, set.current_row, set.surface_high];
 }
 
 /// What: `assert_text_contrast(label, foreground, background, minimum)` fails with the names in the message.
@@ -114,9 +109,9 @@ fn check_scheme_contrast(label: &str, set: &RoleSet) {
         let pressed: Srgb8 = composite_over(set.on_surface, PRESSED_ALPHA, *surface);
         assert_ratio(&format!("{label} on-surface pressed"), set.on_surface, pressed, 4.5);
     }
-    // Secondary and accent text sit on the six surfaces that carry text (the Back button fill carries an icon only),
-    // at rest and under the hover layer. The pressed layer lasts only while the button is held.
-    for surface in &surfaces[..6] {
+    // Secondary and accent text sit on every surface, at rest and under the hover layer. The pressed layer lasts
+    // only while the button is held.
+    for surface in &surfaces {
         let hovered: Srgb8 = composite_over(set.on_surface, HOVER_ALPHA, *surface);
         assert_ratio(&format!("{label} on-surface-variant"), set.on_surface_variant, *surface, 4.5);
         assert_ratio(&format!("{label} on-surface-variant hovered"), set.on_surface_variant, hovered, 4.5);
@@ -286,9 +281,9 @@ fn derived_targets_before_quantizing_are_inside_the_gamut_after_mapping() {
 fn a_vivid_root_does_not_tint_the_neutral_surfaces_beyond_the_baseline() {
     let baseline: ThemePalette = derive_roles(None);
     let vivid: ThemePalette = derive_roles(Some(hex(0xFF0000)));
-    // Chroma of the settings card under a saturated red root is the baseline's, only the hue differs.
-    let baseline_chroma: f64 = srgb_to_oklch(baseline.dark.settings_card).chroma;
-    let vivid_chroma: f64 = srgb_to_oklch(vivid.dark.settings_card).chroma;
+    // Chroma of the menu surface under a saturated red root is the baseline's, only the hue differs.
+    let baseline_chroma: f64 = srgb_to_oklch(baseline.dark.surface_high).chroma;
+    let vivid_chroma: f64 = srgb_to_oklch(vivid.dark.surface_high).chroma;
     assert!((vivid_chroma - baseline_chroma).abs() < 0.004, "{vivid_chroma} vs {baseline_chroma}");
 }
 
@@ -382,7 +377,7 @@ fn every_swept_root_keeps_accent_roles_in_gamut_with_the_hue_kept_not_clipped() 
         let terms: RootTerms = root_terms(Some(root));
         for spec in [DARK_SPEC, LIGHT_SPEC] {
             for role in [
-                spec.current_row, spec.surface_high, spec.settings_page, spec.settings_card, spec.back_tonal, spec.on_surface,
+                spec.current_row, spec.surface_high, spec.on_surface,
                 spec.on_surface_variant, spec.outline, spec.outline_variant, spec.primary, spec.on_primary,
                 spec.secondary_container, spec.on_secondary_container, spec.deck, spec.seam,
             ] {
@@ -401,4 +396,39 @@ fn every_swept_root_keeps_accent_roles_in_gamut_with_the_hue_kept_not_clipped() 
         }
     }
     assert!(checked > 1000, "the hue check ran on only {checked} roles");
+}
+
+#[test]
+fn settings_has_no_role_of_its_own_and_is_drawn_on_the_canvas_alone() {
+    // D109: the page, the header and the rows share the canvas, which is pure white in light and pure black in dark.
+    let baseline: ThemePalette = derive_roles(None);
+    assert_eq!(baseline.light.canvas, hex(0xFFFFFF));
+    assert_eq!(baseline.dark.canvas, hex(0x000000));
+    for (name, _) in named_roles(&baseline.dark) {
+        assert!(
+            !name.starts_with("settings") && name != "back-tonal",
+            "the role {name} belongs to the removed Settings tints"
+        );
+    }
+}
+
+#[test]
+fn the_settings_row_pairs_hold_aa_under_every_swept_root() {
+    // The Settings rows draw on the canvas: title in on-surface, line in on-surface-variant, both under the hover and
+    // pressed layers; the selected row draws on the secondary container with on-secondary-container, and its icon
+    // circle is that same container with the same content color.
+    for root in swept_roots() {
+        let palette: ThemePalette = derive_roles(Some(root));
+        for (label, set) in [("dark", &palette.dark), ("light", &palette.light)] {
+            let hovered: Srgb8 = composite_over(set.on_surface, HOVER_ALPHA, set.canvas);
+            let pressed: Srgb8 = composite_over(set.on_surface, PRESSED_ALPHA, set.canvas);
+            assert_ratio(&format!("{label} title on the canvas {root:?}"), set.on_surface, set.canvas, 4.5);
+            assert_ratio(&format!("{label} title pressed {root:?}"), set.on_surface, pressed, 4.5);
+            assert_ratio(&format!("{label} line on the canvas {root:?}"), set.on_surface_variant, set.canvas, 4.5);
+            assert_ratio(&format!("{label} line hovered {root:?}"), set.on_surface_variant, hovered, 4.5);
+            for fill in [set.secondary_container, set.secondary_container_hovered, set.secondary_container_pressed] {
+                assert_ratio(&format!("{label} selected row {root:?}"), set.on_secondary_container, fill, 4.5);
+            }
+        }
+    }
 }

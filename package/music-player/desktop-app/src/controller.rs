@@ -169,6 +169,30 @@ use crate::peak_swap::{
 use crate::playback::expand_paths;
 
 /// What:
+///      `use crate::playback_clock::PlaybackClock;`.
+///  The audible-position counters.
+/// Why:
+///       The `clock` field and `Controller::new` name it.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import { PlaybackClock } from "./playbackClock";
+/// ```
+use crate::playback_clock::PlaybackClock;
+
+/// What:
+///      `use crate::controller_audio::StagedTrack;`.
+///  The next track, opened early so it can follow the current one without a gap.
+/// Why:
+///       The `staged` field and `Controller::new` name it.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import { StagedTrack } from "./controllerAudio";
+/// ```
+use crate::controller_audio::StagedTrack;
+
+/// What:
 ///      `use crate::queue::Queue;`.
 ///  The pure play-queue model.
 /// Why:
@@ -197,7 +221,7 @@ use crate::queue::Queue;
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// class Controller { onUpdate; output; queue; source; producer; spec; playing; volume; trackGain; peakGeneration; pendingPeak; peaks; positionFrames; lastEmitSecs; pending; pendingPos; }
+/// class Controller { onUpdate; output; queue; source; producer; spec; playing; volume; trackGain; peakGeneration; pendingPeak; peaks; clock; staged; pending; pendingPos; }
 /// ```
 pub(crate) struct Controller {
     /// What:
@@ -387,33 +411,38 @@ pub(crate) struct Controller {
     /// ```
     pub(crate) peaks: CacheHandle,
     /// What:
-    ///      `position_frames: u64`.
-    ///  Frames pushed for the current track so far.
-    ///  `u64`
-    ///           because long tracks exceed `u32` frame counts.
+    ///      `clock: PlaybackClock`.
+    ///  The audible position of the current ring buffer:
+    ///  frames pushed minus frames the output has not consumed yet,
+    ///  plus the track frame the ring started at,
+    ///  and the end-of-track drain flag.
     /// Why:
-    ///       Position seconds = frames / rate.
+    ///       The decoder runs up to one ring ahead of the speakers,
+    ///  so position and the track-end decision must follow what the output consumed,
+    ///  not what was pushed.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
-    /// positionFrames: number;
+    /// clock: PlaybackClock;
     /// ```
-    pub(crate) position_frames: u64,
+    pub(crate) clock: PlaybackClock,
+    /// What:
+    ///      `staged: Option<StagedTrack>`.
+    ///  The next track when it was opened while the current one is still audible
+    ///  (same sample rate and channels, so it plays on in the same ring buffer), else `None`.
+    /// Why:
+    ///       The queue keeps pointing at the audible track until the output consumes its last frame;
+    ///  this field is what tells the controller a join is waiting to be announced.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// staged: StagedTrack | null;
+    /// ```
+    pub(crate) staged: Option<StagedTrack>,
     /// Where background sweeps and re-analyses send their reports.
     pub(crate) sweep_sink: SweepSink,
     /// Generation of the newest queue load; reports from older generations are dropped.
     pub(crate) analysis_generation: u64,
-    /// What:
-    ///      `last_emit_secs: f64`.
-    ///  Position (seconds) at the last `Position` update.
-    /// Why:
-    ///       Throttle update frequency.
-    ///
-    /// In TS you'd write (pseudocode):
-    /// ```ts
-    /// lastEmitSecs: number;
-    /// ```
-    pub(crate) last_emit_secs: f64,
     /// What:
     ///      `pending: Vec<f32>`.
     ///  Gained samples decoded but not yet fully pushed.
@@ -482,7 +511,7 @@ impl Controller {
         // ```ts
         // return { onUpdate, output, queue: new Queue(), source: null, producer: null,
         //          spec: null, playing: false, volume: 1, trackGain: 1, peaks,
-        //          positionFrames: 0, lastEmitSecs: 0, pending: [], pendingPos: 0 };
+        //          clock: new PlaybackClock(), staged: null, pending: [], pendingPos: 0 };
         // ```
         return Controller {
             on_update,
@@ -499,10 +528,10 @@ impl Controller {
             peak_generation: 0,
             pending_peak: None,
             peaks,
-            position_frames: 0,
+            clock: PlaybackClock::new(),
+            staged: None,
             sweep_sink: noop_sink(),
             analysis_generation: 0,
-            last_emit_secs: 0.0,
             pending: Vec::new(),
             pending_pos: 0,
         }
@@ -528,6 +557,15 @@ impl Controller {
         // ```ts
         // this.onUpdate(update);
         // ```
+        //
+        // What:     `match &update { ... }`. Log the two updates that tell the listener where playback is.
+        // Why:      Comparing these lines with the recorded audio is how the audible position was measured;
+        //           `debug` keeps the default `info` log quiet.
+        match &update {
+            Update::Position(secs) => tracing::debug!(secs = *secs, "position update emitted"),
+            Update::NowPlaying { name, .. } => tracing::debug!(name = %name, "now playing emitted"),
+            _ => {}
+        }
         (self.on_update)(update);
     }
 

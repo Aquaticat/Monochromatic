@@ -878,4 +878,22 @@ pub enum Update {
         /// The folder's display name, or `None`.
         Option<String>,
     ),
+    /// What:
+    ///      `ScanBatch { first_index, names }` reports tracks the folder walk has found while it is still walking.
+    /// Why:
+    ///       D111: Search must work while the library is still being scanned. A track's position in the walk is its
+    ///  position in the queue, so `first_index` places the batch; `first_index == 0` starts a new library. The final
+    ///  `Queue` update follows when the walk ends. The window does nothing with this update; the Search index
+    ///  takes it on the engine thread.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// { kind: "scanBatch"; firstIndex: number; names: string[] }
+    /// ```
+    ScanBatch {
+        /// Queue position of the first name in `names`.
+        first_index: usize,
+        /// Names of the new tracks, relative to the opened folder.
+        names: Vec<String>,
+    },
 }

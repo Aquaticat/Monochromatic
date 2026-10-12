@@ -595,14 +595,23 @@ impl Queue {
     /// }
     /// ```
     pub fn set_tracks(&mut self, tracks: Vec<PathBuf>) {
-        let previous_names = self.display_paths();
-        let previous_pages = crate::pagination::paginate(&previous_names);
+        // What:     with no page selected there is nothing to carry over, so the new list is stored and the order rebuilt.
+        // Why:      the carry-over below rebuilds the display names and the pages of the whole list, about a second at one
+        //           million tracks, and its result is an empty scope when no page was selected.
+        if self.page_scope.is_empty() {
+            self.tracks = tracks;
+            self.page_scope = Vec::new();
+            self.rebuild_scope_order(Some(0));
+            return;
+        }
+        let previous_pages = crate::page_index::PageIndex::build(&self.display_paths());
         let previous_page = self
             .page_scope
             .first()
-            .and_then(|index| return crate::pagination::page_of_index(&previous_pages, *index));
-        let previous_page_identity =
-            previous_page.map(|page| return crate::pagination::page_identity(&previous_pages[page]));
+            .and_then(|index| return previous_pages.page_of_index(*index));
+        let previous_page_identity = previous_page
+            .and_then(|page| return previous_pages.page(page))
+            .map(|page| return page.identity.clone());
         // What:     `self.tracks = tracks;` moves the new vector in, dropping (freeing) the
         //           old one.
         // Why:      Adopt the new track list.
@@ -612,22 +621,18 @@ impl Queue {
         // this.tracks = tracks;
         // ```
         self.tracks = tracks;
-        let rebuilt_names = self.display_paths();
-        let rebuilt_pages = crate::pagination::paginate(&rebuilt_names);
+        let rebuilt_pages = crate::page_index::PageIndex::build(&self.display_paths());
         let rebuilt_page = previous_page_identity
-            .and_then(|identity| {
-                return rebuilt_pages
-                    .iter()
-                    .find(|page| return crate::pagination::page_identity(page) == identity);
-            })
+            .and_then(|identity| return rebuilt_pages.position_of_identity(&identity))
             .or_else(|| {
                 return previous_page.and_then(|page| {
-                    let fallback = page.min(rebuilt_pages.len().saturating_sub(1));
-                    return rebuilt_pages.get(fallback);
+                    let fallback = page.min(rebuilt_pages.page_count().saturating_sub(1));
+                    return (fallback < rebuilt_pages.page_count()).then_some(fallback);
                 });
             });
         self.page_scope = rebuilt_page
-            .map(|page| return page.entries.iter().map(|entry| return entry.index).collect())
+            .and_then(|position| return rebuilt_pages.page(position))
+            .map(|page| return page.indices().iter().map(|index| return *index as usize).collect())
             .unwrap_or_default();
         // What:     `self.rebuild_scope_order(Some(0));` builds the scope order around the
         //           first track. `Some(0)` wraps index 0; the helper handles the empty queue
@@ -723,55 +728,12 @@ impl Queue {
         if !self.page_scope.is_empty() {
             return self.page_scope.clone();
         }
-        // What:     `let names = self.display_paths();`. The relative display strings, one
-        //           per track, in load order.
-        // Why:      Pagination groups these into pages.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // const names = this.displayPaths();
-        // ```
-        let names = self.display_paths();
-        // What:     `let pages = crate::pagination::paginate(&names);`. Group the names into
-        //           pages (the same pure function the UI tab bar uses, so the playback scope
-        //           and the visible page can never drift). `&names` lends the vector.
-        // Why:      We need the set of indices sharing the anchor's page.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // const pages = paginate(names);
-        // ```
-        let pages = crate::pagination::paginate(&names);
-        // What:     `match crate::pagination::page_of_index(&pages, anchor) { ... }`. Find
-        //           which page holds the anchor; returns `Option<usize>`.
-        // Why:      That page IS the scope.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // const p = pageOfIndex(pages, anchor);
-        // ```
-        match crate::pagination::page_of_index(&pages, anchor) {
-            // What:     `Some(p) => pages[p].entries.iter().map(|e| e.index).collect()`. Found
-            //           the page at position `p`; `.entries.iter()` borrows each `PageEntry`;
-            //           `.map(|e| e.index)` pulls the load-order index out; `.collect()`
-            //           gathers them into a `Vec<usize>`. Entries are already in ascending
-            //           load order (pagination preserves order). Tail of the arm.
-            // Why:      The page's track indices form the confined scope.
-            //
-            // In TS you'd write (pseudocode):
-            // ```ts
-            // return pages[p].entries.map((e) => e.index);
-            // ```
-            Some(p) => return pages[p].entries.iter().map(|e| return e.index).collect(),
-            // What:     `None => (0..self.tracks.len()).collect()`. The anchor was not found
-            //           on any page (only happens for an empty/invalid anchor); fall back to
-            //           the whole queue.
-            // Why:      Defensive: never produce an empty scope for a real track.
-            //
-            // In TS you'd write (pseudocode):
-            // ```ts
-            // return [...Array(this.tracks.length).keys()];
-            // ```
+        // What:     the positions on the anchor's page come from `relpath::page_scope_for_anchor`, which compares page
+        //           keys track by track instead of grouping every display name into pages.
+        // Why:      the playback scope and the visible page still agree (same grouping rules, tested against
+        //           `paginate`), without the allocation per name that cost over a second at one million tracks.
+        match crate::relpath::page_scope_for_anchor(&self.tracks, anchor) {
+            Some(indices) => return indices,
             None => return (0..self.tracks.len()).collect(),
         }
     }
@@ -1146,10 +1108,8 @@ impl Queue {
             return None;
         }
         if !self.page_scope.contains(&track) {
-            let names = self.display_paths();
-            let pages = crate::pagination::paginate(&names);
-            self.page_scope = match crate::pagination::page_of_index(&pages, track) {
-                Some(page) => pages[page].entries.iter().map(|entry| return entry.index).collect(),
+            self.page_scope = match crate::relpath::page_scope_for_anchor(&self.tracks, track) {
+                Some(indices) => indices,
                 None => (0..self.tracks.len()).collect(),
             };
         }
@@ -1384,6 +1344,47 @@ impl Queue {
         // ```ts
         // return this.order[0];
         // ```
+        return Some(self.order[self.sequential_start])
+    }
+
+    /// What:
+    ///      `pub fn peek_next_natural(&mut self) -> Option<usize>`.
+    ///  The load-order index that `advance(true)` will return next, without moving the cursor.
+    ///  In the shuffle modes, when the history has no forward entry, the random pick is appended to the
+    ///  history now (the cursor stays), so the later `advance(true)` steps onto exactly this pick.
+    /// Why:
+    ///       The player opens the next track a moment before the current one ends so the two play without a gap,
+    ///  but the queue must keep pointing at the track that is still audible until then.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// peekNextNatural(): number | null {
+    ///   if (this.pos === null) return null;
+    ///   if (this.repeatTrack) return this.order[this.pos];
+    ///   if (this.shuffle) { if (this.pos + 1 >= this.order.length) this.order.push(this.pickNextShuffle(this.order[this.pos])); return this.order[this.pos + 1]; }
+    ///   if (this.sequentialStart > 0 && this.pos < this.sequentialStart) return this.order[this.sequentialStart];
+    ///   return this.order[this.pos + 1 < this.order.length ? this.pos + 1 : this.sequentialStart];
+    /// }
+    /// ```
+    pub fn peek_next_natural(&mut self) -> Option<usize> {
+        let pos = self.pos?;
+        if self.mode == PlaybackMode::Repeat {
+            return Some(self.order[pos]);
+        }
+        if self.mode == PlaybackMode::ShufflePage || self.mode == PlaybackMode::ShuffleAll {
+            if pos + 1 >= self.order.len() {
+                let current = self.order[pos];
+                let pick = self.pick_next_shuffle(current);
+                self.order.push(pick);
+            }
+            return Some(self.order[pos + 1]);
+        }
+        if self.sequential_start > 0 && pos < self.sequential_start {
+            return Some(self.order[self.sequential_start]);
+        }
+        if pos + 1 < self.order.len() {
+            return Some(self.order[pos + 1]);
+        }
         return Some(self.order[self.sequential_start])
     }
 

@@ -40,6 +40,16 @@ export component AppWindow inherits Window {
     // Width at and above which the unfolded two-pane layout is used.
     property <length> unfold-width: 600px;
     property <bool> unfolded: root.width >= root.unfold-width;
+    // Reports a change of the unfolded flag, so the host can fold a template editor page that a widening window
+    // would otherwise leave full width (the two-pane Settings shows that editor in its right pane instead).
+    callback layout-changed(bool);
+    changed unfolded => {
+        root.layout-changed(root.unfolded);
+    }
+
+    // Settings on a wide window (D110): the list pane takes the default split ratio 0.3636 of the window width, rounded
+    // to a whole pixel, and the editor pane takes the rest. A desktop has no crease, so no band is cleared between them.
+    property <length> settings-list-width: root.unfolded ? Math.round(root.width / 1px * 0.3636) * 1px : root.width;
 
     // OS font tracking (ui_font_scale): base size is set from Rust, the resolved OS size is reported back.
     in property <length> base-font-size;
@@ -108,12 +118,35 @@ export component AppWindow inherits Window {
     in property <string> search-query: "";
     in property <string> search-status-title: "";
     in property <string> search-status-detail: "";
+    // Scroll position of the Search result list, shared two-way so Rust can read it before it re-ranks the list.
+    in-out property <length> search-scroll-y: 0px;
+    // Offset, in pixels from the top, that the Search list scrolls to when `search-anchor-tick` changes.
+    in property <length> search-anchor-offset: 0px;
+    // Bumped by Rust after a refresh re-ranks the list, so the first visible row keeps its place (D111).
+    in property <int> search-anchor-tick: 0;
 
     // Feedback view model.
     in property <[FeedbackItem]> feedback-items: [];
 
     // Settings and template editor view models; the Rust side fills them while either route is open.
     in property <[SettingsTemplateRow]> settings-rows: [];
+    // Index of the selected Settings row, which is the template the right pane edits on a wide window.
+    in property <int> settings-selected: 0;
+    // Opacity of the right pane, 1 at rest. A new selection drops it to 0 at once and animates it back to 1 over 150 ms,
+    // linear. The drop is made with a zero-length animation, because an `animate` block would otherwise also animate the
+    // drop. Slint 1.18 exposes no reduced-motion setting, so the fade is always this short.
+    out property <float> settings-pane-opacity: 1;
+    property <bool> settings-fade-reset: false;
+    animate settings-pane-opacity {
+        duration: root.settings-fade-reset ? 0ms : 150ms;
+        easing: linear;
+    }
+    changed settings-selected => {
+        root.settings-fade-reset = true;
+        root.settings-pane-opacity = 0;
+        root.settings-fade-reset = false;
+        root.settings-pane-opacity = 1;
+    }
     in property <string> editor-title: "";
     in property <string> editor-text: "";
     in property <[EditorPreviewRow]> editor-preview-rows: [];
@@ -155,6 +188,7 @@ export component AppWindow inherits Window {
     callback menu-select(int);
     callback menu-dismiss();
     callback settings-open-template(int);
+    callback settings-select-template(int);
     callback settings-back();
     callback editor-text-edited(string, int, int);
     callback editor-focus-changed(bool);
@@ -222,8 +256,10 @@ export component AppWindow inherits Window {
     // Rows of the playing list: the track list or, while the picker is open, the folder picker.
     // The first-run pane replaces the track area when the library is empty or access is missing.
     // Folded layout: cover top row, list area, transport deck (D44 deck takes its content height).
+    // Both player layouts are hidden while Settings or its editor is open: those pages draw over them, and the wide
+    // Settings fades its right pane in over the bare canvas, so no player control shows through or takes a stray click.
     VerticalLayout {
-        visible: !root.unfolded;
+        visible: !root.unfolded && root.route < 2;
         CoverTopRow {
             folder-title: root.folder-title;
             picker-open: root.picker-open;
@@ -287,7 +323,7 @@ export component AppWindow inherits Window {
     // pane's preferred width, and the left pane's preferred width follows its folder names, so the split (and the
     // Open pill with it) moved whenever the selected folder changed.
     Rectangle {
-        visible: root.unfolded;
+        visible: root.unfolded && root.route < 2;
         VerticalLayout {
             x: 0px;
             y: 0px;
@@ -370,24 +406,57 @@ export component AppWindow inherits Window {
         query: root.search-query;
         status-title: root.search-status-title;
         status-detail: root.search-status-detail;
+        scroll-y <=> root.search-scroll-y;
+        anchor-offset: root.search-anchor-offset;
+        anchor-tick: root.search-anchor-tick;
         query-edited(q) => { root.search-query-edited(q); }
         back => { root.close-search(); }
         clear => { root.search-clear(); }
         open(i) => { root.search-open(i); }
     }
 
-    // Settings route: the Templates rows, each opening its editor.
+    // Settings route: the Templates rows. Narrow, a tap opens that template's editor page. Wide, the page is the left pane
+    // and a row selects the template that the right pane edits in place.
     if root.route == 2 : SettingsPage {
         x: 0px;
         y: 0px;
-        width: root.width;
+        width: root.settings-list-width;
         height: root.height;
         rows: root.settings-rows;
+        wide: root.unfolded;
+        selected-index: root.settings-selected;
         open-template(i) => { root.settings-open-template(i); }
+        select-template(i) => { root.settings-select-template(i); }
         back => { root.settings-back(); }
     }
 
-    // Template editor route: preview, fields and the template text for one template.
+    // Right pane of the wide Settings: the editor of the selected row, shown in place. It has no header band or Back of
+    // its own, and fades in when the selection changes.
+    if root.route == 2 && root.unfolded : TemplateEditor {
+        x: root.settings-list-width;
+        y: 0px;
+        width: root.width - root.settings-list-width;
+        height: root.height;
+        embedded: true;
+        pane-opacity: root.settings-pane-opacity;
+        title: root.editor-title;
+        text: root.editor-text;
+        preview-rows: root.editor-preview-rows;
+        mistake-lines: root.editor-mistakes;
+        help-signature: root.editor-help-signature;
+        help-description: root.editor-help-description;
+        has-help: root.editor-has-help;
+        fields: root.editor-fields;
+        notes: root.editor-notes;
+        can-reset: root.editor-can-reset;
+        text-edited(t, start, end) => { root.editor-text-edited(t, start, end); }
+        focus-changed(focused) => { root.editor-focus-changed(focused); }
+        insert-field(i) => { root.editor-insert-field(i); }
+        reset => { root.editor-reset(); }
+        back => { root.editor-back(); }
+    }
+
+    // Template editor route (narrow window): preview, fields and the template text for one template.
     if root.route == 3 : TemplateEditor {
         x: 0px;
         y: 0px;

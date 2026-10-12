@@ -22,12 +22,6 @@ export struct RoleSet {
     seam: color,
     // Menus, search header and snackbar surface.
     surface-high: color,
-    // Settings page background.
-    settings-page: color,
-    // Settings grouped card background.
-    settings-card: color,
-    // Round Back button fill.
-    back-tonal: color,
     // Primary text and icons.
     on-surface: color,
     // Secondary text and icons.
@@ -78,9 +72,6 @@ export global Theme {
         current-row: #121318,
         seam: #000000,
         surface-high: #1E1F25,
-        settings-page: #181920,
-        settings-card: #2A2C34,
-        back-tonal: #23252E,
         on-surface: #E4E5F0,
         on-surface-variant: #C5C6D0,
         outline: #8E9099,
@@ -102,9 +93,6 @@ export global Theme {
         current-row: #F4F3FA,
         seam: #B0B1BC,
         surface-high: #E8E7EE,
-        settings-page: #EEEDF6,
-        settings-card: #FAF8FE,
-        back-tonal: #E1E2ED,
         on-surface: #30323B,
         on-surface-variant: #5C5E6A,
         outline: #757780,
@@ -149,10 +137,6 @@ export global Theme {
     out property <color> error-container: root.roles.error-container;
     out property <color> on-error-container: root.roles.on-error-container;
 
-    // Android Settings surfaces: the tinted page, the grouped row cards, and the tonal fill of the round Back button.
-    out property <color> settings-page: root.roles.settings-page;
-    out property <color> settings-card: root.roles.settings-card;
-    out property <color> back-tonal: root.roles.back-tonal;
 
     // Type scale in logical pixels (Material 3 roles used by the design).
     out property <length> body-large: 16px;

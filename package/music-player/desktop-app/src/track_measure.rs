@@ -12,6 +12,9 @@ use truepeak_core::{Decision, PeakKind, peak_dbtp};
 
 use crate::template_model::TrackFields;
 
+/// The in-place writer and the page lookup, kept in a sibling file to keep this one short.
+pub use crate::track_measure_page::{apply_measures, lookup_for_positions};
+
 /// What:
 ///      `const PEAK_UNIT: &str = "dBTP";`.
 ///  The unit printed after every peak value.

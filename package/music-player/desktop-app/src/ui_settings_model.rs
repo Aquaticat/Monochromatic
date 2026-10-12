@@ -11,7 +11,7 @@ use music_player::template_model::TemplateKind;
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// type SettingsRow = { label: string; line: string };
+/// type SettingsRow = { label: string; line: string; icon: string };
 /// ```
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct SettingsRow {
@@ -19,6 +19,8 @@ pub struct SettingsRow {
     pub label: String,
     /// Applied line for the first preview track, or empty when none applies.
     pub line: String,
+    /// Name of the Material Symbols icon the row leads with, as `icon_name` gives it.
+    pub icon: &'static str,
 }
 
 /// What: `EditorField` is one insertable field row of the editor.
@@ -69,6 +71,22 @@ pub fn kind_of_index(index: usize) -> Option<TemplateKind> {
     return TemplateKind::all().get(index).copied();
 }
 
+/// What: `index_of_kind` gives the Settings row index of a template, the inverse of `kind_of_index`.
+/// Why: the window marks the row of the template the editor is open on as the selected one.
+pub fn index_of_kind(kind: TemplateKind) -> usize {
+    return TemplateKind::all().iter().position(|candidate| return *candidate == kind).unwrap_or(0);
+}
+
+/// What: `icon_name` gives the Material Symbols icon a template's row leads with (D109).
+/// Why: the Track rows template is a list of rows (`queue_music`) and the Playing track template is the deck line of
+/// what plays (`play_circle`); the window draws the embedded path of the named icon.
+pub fn icon_name(kind: TemplateKind) -> &'static str {
+    return match kind {
+        TemplateKind::TrackRows => "queue_music",
+        TemplateKind::PlayingTrack => "play_circle",
+    };
+}
+
 /// What: `settings_rows` gives the Templates rows for Settings.
 /// Why: each row shows the applied line for the first preview track; a template that no longer applies shows an empty line.
 pub fn settings_rows(editor: &TemplateEditorState) -> Vec<SettingsRow> {
@@ -77,6 +95,7 @@ pub fn settings_rows(editor: &TemplateEditorState) -> Vec<SettingsRow> {
         .map(|kind| return SettingsRow {
             label: kind.label().to_string(),
             line: editor.settings_line(kind).unwrap_or_default(),
+            icon: icon_name(kind),
         })
         .collect();
 }

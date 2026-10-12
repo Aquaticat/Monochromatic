@@ -12,7 +12,7 @@ fn first_run_is_hidden_before_the_library_loads() {
 fn first_run_is_hidden_when_the_library_has_tracks() {
     let state = ScreenState {
         loaded: true,
-        names: vec!["Abba/one.mp3".to_string()],
+        names: std::sync::Arc::new(vec!["Abba/one.mp3".to_string()]),
         ..ScreenState::default()
     };
     assert_eq!(first_run_view(&state), None);

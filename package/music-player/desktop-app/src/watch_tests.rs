@@ -51,6 +51,7 @@ fn watcher_fires_on_file_creation() {
     // What:     `watcher.watch(&dir);`. Start watching the throwaway directory.
     // Why:      Arm the watch before creating a file.
     watcher.watch(&dir);
+    assert!(watcher.wait_until_registered(1, Duration::from_secs(10)), "the watch should be registered");
 
     // What:     `std::thread::sleep(Duration::from_millis(ARM_SLACK_MS));`. Brief pause so the
     //           inotify/FSEvents watch is fully armed before the write.
@@ -77,6 +78,97 @@ fn watcher_fires_on_file_creation() {
     // What:     `drop(watcher);` then `std::fs::remove_dir_all(&dir).ok();`. Stop the watcher
     //           and clean up the scratch directory.
     // Why:      Release the OS watch and leave no test droppings.
+    drop(watcher);
+    std::fs::remove_dir_all(&dir).ok();
+}
+
+// What:     Reading a watched directory does not request a rescan, and a real change afterwards does.
+// Why:      The rescan's own walk reads every directory. When reads counted as changes each rescan requested another,
+//           and at one million tracks that kept a core busy. The change at the end is the positive control: it proves
+//           the watcher was able to report anything at all during the quiet period.
+#[test]
+fn reading_a_watched_directory_is_not_a_change_but_writing_is() {
+    let nanos = SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .expect("system clock should be after Unix epoch")
+        .as_nanos();
+    let dir = std::env::temp_dir().join(format!("mp_watch_reads_{nanos}"));
+    std::fs::create_dir_all(dir.join("sub")).expect("watch fixture directory should be created");
+    std::fs::write(dir.join("sub").join("a.flac"), b"x").expect("fixture file should be written");
+    let (tx, rx) = mpsc::channel::<()>();
+    let mut watcher = SourceWatcher::new(move || {
+        let _ = tx.send(());
+    })
+    .expect("OS watcher should start");
+    watcher.watch(&dir);
+    assert!(watcher.wait_until_registered(1, Duration::from_secs(10)), "the watch should be registered");
+    assert!(rx.recv_timeout(Duration::from_secs(10)).is_ok(), "the registration asks for one catch-up rescan");
+    for _ in 0..3 {
+        let walked: usize = std::fs::read_dir(&dir).expect("root reads").count() + std::fs::read_dir(dir.join("sub")).expect("subfolder reads").count();
+        assert_eq!(walked, 2);
+        let contents: Vec<u8> = std::fs::read(dir.join("sub").join("a.flac")).expect("file reads");
+        assert_eq!(contents, b"x");
+    }
+    assert!(
+        rx.recv_timeout(Duration::from_millis(2 * DEBOUNCE_MS + 500)).is_err(),
+        "reading directories and files must not request a rescan"
+    );
+    std::fs::write(dir.join("sub").join("b.flac"), b"y").expect("watched fixture should be written");
+    assert!(rx.recv_timeout(Duration::from_secs(10)).is_ok(), "a created file must request a rescan");
+    drop(watcher);
+    std::fs::remove_dir_all(&dir).ok();
+}
+
+// What:     A burst of changes requests one rescan, not one per change.
+// Why:      Copying an album writes many files; each rescan walks the whole library.
+#[test]
+fn a_burst_of_changes_requests_one_rescan() {
+    let nanos = SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .expect("system clock should be after Unix epoch")
+        .as_nanos();
+    let dir = std::env::temp_dir().join(format!("mp_watch_burst_{nanos}"));
+    std::fs::create_dir_all(&dir).expect("watch fixture directory should be created");
+    let (tx, rx) = mpsc::channel::<()>();
+    let mut watcher = SourceWatcher::new(move || {
+        let _ = tx.send(());
+    })
+    .expect("OS watcher should start");
+    watcher.watch(&dir);
+    assert!(watcher.wait_until_registered(1, Duration::from_secs(10)), "the watch should be registered");
+    assert!(rx.recv_timeout(Duration::from_secs(10)).is_ok(), "the registration asks for one catch-up rescan");
+    for number in 0..20 {
+        std::fs::write(dir.join(format!("{number}.flac")), b"x").expect("burst fixture should be written");
+    }
+    assert!(rx.recv_timeout(Duration::from_secs(10)).is_ok(), "the burst must request a rescan");
+    assert!(rx.recv_timeout(Duration::from_millis(2 * DEBOUNCE_MS)).is_err(), "and only one");
+    drop(watcher);
+    std::fs::remove_dir_all(&dir).ok();
+}
+
+// What:     Registering a watch is followed by exactly one rescan request, with no change made.
+// Why:      A change made while the registration was still running is not seen by the watch; at one million tracks the
+//           registration ends long after the scan, so the one rescan catches up. A second request would mean the
+//           rescan's own reads are being counted as changes again.
+#[test]
+fn a_registration_is_followed_by_exactly_one_catch_up_rescan() {
+    let nanos = SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .expect("system clock should be after Unix epoch")
+        .as_nanos();
+    let dir = std::env::temp_dir().join(format!("mp_watch_catchup_{nanos}"));
+    std::fs::create_dir_all(dir.join("sub")).expect("watch fixture directory should be created");
+    std::fs::write(dir.join("sub").join("a.flac"), b"x").expect("fixture file should be written");
+    let (tx, rx) = mpsc::channel::<()>();
+    let mut watcher = SourceWatcher::new(move || {
+        let _ = tx.send(());
+    })
+    .expect("OS watcher should start");
+    watcher.watch(&dir);
+    assert!(rx.recv_timeout(Duration::from_secs(10)).is_ok(), "one catch-up rescan follows the registration");
+    // The rescan this triggers reads every directory, as the real one does.
+    assert_eq!(std::fs::read_dir(dir.join("sub")).expect("subfolder reads").count(), 1);
+    assert!(rx.recv_timeout(Duration::from_millis(2 * DEBOUNCE_MS + 500)).is_err(), "and no second one");
     drop(watcher);
     std::fs::remove_dir_all(&dir).ok();
 }

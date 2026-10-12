@@ -6,11 +6,13 @@
 //! here without a Slint window, so they can be tested directly.
 
 use music_player::command::PlaybackMode;
-use music_player::pagination::{Page, page_identity, paginate};
+use music_player::pagination::PageEntry;
+use music_player::page_index::PageIndex;
+use std::sync::Arc;
 use music_player::player_content::{PlayerContentInput, build_player_content};
 use music_player::template_model::TrackFields;
 use music_player::track_entries::{deck_folder_label, track_title_for};
-use music_player::track_measure::{TrackMeasure, lookup_by_name};
+use music_player::track_measure::{TrackMeasure, lookup_for_positions};
 use std::collections::HashMap;
 
 use crate::ui_screen_rows::{ListRow, Picker, list_rows, picker};
@@ -68,8 +70,14 @@ impl Route {
 pub struct ScreenState {
     /// Absolute file paths of the queue, in queue order.
     pub paths: Vec<std::path::PathBuf>,
-    /// Display names of the queue, in queue order.
-    pub names: Vec<String>,
+    /// Display names of the queue, in queue order. Shared with the Search feeder; assign through `set_names`.
+    pub names: Arc<Vec<String>>,
+    /// Pages of `names`, built when the queue arrives.
+    pub page_index: PageIndex,
+    /// Number of queues received; the page index and the watched page are valid for one value of it.
+    pub queue_generation: u64,
+    /// Paths of the selected page, for deciding whether a measure report changes what is shown.
+    pub watched_page: Option<crate::ui_screen_pages::WatchedPage>,
     /// Queue index of the playing track.
     pub current_index: Option<usize>,
     /// Identity of the selected folder page; empty selects the first page.
@@ -90,6 +98,8 @@ pub struct ScreenState {
     pub route: Route,
     /// Search query of the current Search visit; a new visit starts empty (D66).
     pub search_query: String,
+    /// What the Search page shows and the newest query sequence, kept between answers.
+    pub search_ui: crate::ui_search_apply::SearchUi,
     /// Queue index of the row whose track menu is open, or None.
     pub menu_index: Option<usize>,
     /// Whether the engine has reported the library at least once.
@@ -169,55 +179,12 @@ pub struct ScreenView {
     pub deck_folder: String,
 }
 
-/// What: `pages` derives the folder pages from the queue names, in display order.
-/// Why: pages are the unit the picker selects and the engine scopes shuffle to.
-pub fn pages(state: &ScreenState) -> Vec<Page> {
-    return paginate(&state.names);
-}
-
-/// What: `selected_page_index` finds the page whose identity matches `key`, or the first page.
-/// Why: a queue rebuild keeps the same folder selected when its identity survives.
-///
-/// In TS you'd write (pseudocode):
-/// ```ts
-/// const selectedPageIndex = (pages: Page[], key: string) =>
-///   Math.max(0, pages.findIndex((page) => pageIdentity(page) === key));
-/// ```
-pub fn selected_page_index(pages: &[Page], key: &str) -> usize {
-    return pages
-        .iter()
-        .position(|page| return page_identity(page) == key)
-        .unwrap_or(0);
-}
-
-/// What: `page_key_containing` gives the identity of the page holding queue index `index`.
-/// Why: a track that starts playing moves the picker to its folder ("follow" behaviour).
-pub fn page_key_containing(pages: &[Page], index: usize) -> Option<String> {
-    return pages
-        .iter()
-        .find(|page| return page.entries.iter().any(|entry| return entry.index == index))
-        .map(page_identity);
-}
-
-/// What: `selected_page_scope` gives the queue indices of the selected page, in page order.
-/// Why: the engine plays shuffle-this-page and in-order from the page the user is looking at.
-pub fn selected_page_scope(state: &ScreenState) -> Vec<usize> {
-    let all_pages = pages(state);
-    let selected = selected_page_index(&all_pages, &state.selected_key);
-    return all_pages
-        .get(selected)
-        .map_or_else(Vec::new, |page| return page.entries.iter().map(|entry| return entry.index).collect());
-}
-
 /// What: `playing_page_label` gives the label of the page that holds queue index `index`, or empty when none does.
 /// Why: a root-level track has no folder of its own, so the deck falls back to the label of the page it is listed under.
-fn playing_page_label(all_pages: &[Page], index: Option<usize>) -> String {
-    let Some(key) = index.and_then(|position| return page_key_containing(all_pages, position)) else {
-        return String::new();
-    };
-    return all_pages
-        .iter()
-        .find(|page| return page_identity(page) == key)
+fn playing_page_label(pages: &PageIndex, index: Option<usize>) -> String {
+    return index
+        .and_then(|position| return pages.page_of_index(position))
+        .and_then(|page| return pages.page(page))
         .map_or_else(String::new, |page| return page.label.clone());
 }
 
@@ -229,16 +196,24 @@ fn playing_page_label(all_pages: &[Page], index: Option<usize>) -> String {
 /// const view = (state: ScreenState, supportingLine: (t: TrackFields) => string | null): ScreenView => { ... };
 /// ```
 pub fn view(state: &ScreenState, supporting_line: &dyn Fn(&TrackFields) -> Option<String>) -> ScreenView {
-    let all_pages = pages(state);
-    let labels: Vec<String> = all_pages.iter().map(|page| return page.label.clone()).collect();
-    let selected = selected_page_index(&all_pages, &state.selected_key);
-    let page_items = all_pages
-        .get(selected)
-        .map_or_else(Vec::new, |page| return page.entries.clone());
+    let all_pages = state.current_pages();
+    let labels: Vec<String> = all_pages.pages().map(|page| return page.label.clone()).collect();
+    let selected = state.selected_page_position();
+    let page_items: Vec<PageEntry> = all_pages.page(selected).map_or_else(Vec::new, |page| {
+        return page
+            .indices()
+            .iter()
+            .map(|index| return PageEntry {
+                index: *index as usize,
+                name: state.names.get(*index as usize).cloned().unwrap_or_default(),
+            })
+            .collect();
+    });
     let playing_position = page_items.iter().position(|item| return Some(item.index) == state.current_index);
     let playing_count = page_items.len();
     let playing_name = playing_position.and_then(|position| return page_items.get(position)).map(|item| return item.name.clone());
-    let measures = lookup_by_name(&state.names, &state.paths, &state.measures);
+    let positions: Vec<usize> = page_items.iter().map(|item| return item.index).collect();
+    let measures = lookup_for_positions(&positions, &state.names, &state.paths, &state.measures);
     let input = PlayerContentInput {
         page_labels: labels,
         selected_page: selected,
@@ -252,7 +227,7 @@ pub fn view(state: &ScreenState, supporting_line: &dyn Fn(&TrackFields) -> Optio
     };
     let content = build_player_content(&input, supporting_line);
     let rows = list_rows(&content.entries);
-    let page_key = all_pages.get(selected).map_or_else(String::new, page_identity);
+    let page_key = all_pages.page(selected).map_or_else(String::new, |page| return page.identity.clone());
     let picker_model = picker(&content.sections, &content.folder_title);
     let deck_subtitle = match (playing_position, playing_name) {
         (Some(position), Some(name)) => {
@@ -280,20 +255,8 @@ pub fn view(state: &ScreenState, supporting_line: &dyn Fn(&TrackFields) -> Optio
     };
 }
 
-/// What: `select_folder_label` selects the first page named `label`, closes the picker, and returns its scope.
-/// Why: a folder pick changes the selected page and the engine scope together; an unknown label changes nothing.
-///
-/// In TS you'd write (pseudocode):
-/// ```ts
-/// const selectFolderLabel = (state: ScreenState, label: string): number[] | null => { ... };
-/// ```
-pub fn select_folder_label(state: &mut ScreenState, label: &str) -> Option<Vec<usize>> {
-    let all_pages = pages(state);
-    let page = all_pages.iter().find(|page| return page.label == label)?;
-    state.selected_key = page_identity(page);
-    state.picker_open = false;
-    return Some(selected_page_scope(state));
-}
+/// Page selection helpers live in `ui_screen_pages.rs` and keep their old paths here.
+pub use crate::ui_screen_pages::{select_folder_label, selected_page_scope};
 
 #[cfg(test)]
 #[path = "ui_screen_view_tests.rs"]
