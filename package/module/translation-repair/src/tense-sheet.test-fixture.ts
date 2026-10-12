@@ -40,4 +40,31 @@ export function tenseBlocksOf({ content, }: { readonly content: string; },): rea
     },);
 }
 
+/**
+ Labels of the tense groups each slice record carries, so a round trip case
+ states which texts a writer found a candidate in without restating the groups.
+
+ @param slices - records a writer returned, each with the finding or without
+
+ @returns Per record the labels of its groups in recorded order, an empty list for a record without the finding
+
+ @example
+ ```ts
+ const labels = tenseLabelsOf({ slices: recorded, },);
+ ```
+ */
+export function tenseLabelsOf(
+  { slices, }: {
+    readonly slices: readonly {
+      readonly tenseCandidates?: readonly { readonly label: string; }[];
+    }[];
+  },
+): readonly (readonly string[])[] {
+  return slices.map(function labelsOfSlice({ tenseCandidates = [], },): readonly string[] {
+    return tenseCandidates.map(function labelOf({ label, },): string {
+      return label;
+    },);
+  },);
+}
+
 //endregion Tense sheet fixture

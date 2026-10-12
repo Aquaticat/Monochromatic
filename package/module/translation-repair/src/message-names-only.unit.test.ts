@@ -111,6 +111,7 @@ const MARKED_CLASSES: readonly string[] = [
   'DroppedDestinationError',
   'EmptyConversationError',
   'EmptyPoolError',
+  'EntryInfoParseError',
   'EnvelopeOverlapError',
   'EveryProviderDryError',
   'FidelityReferenceError',

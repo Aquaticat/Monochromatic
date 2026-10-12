@@ -201,6 +201,38 @@ await describe({
         },),
 
         it({
+          name: 'WRITES a sentence that reads like the block\'s own label, fence and candidate lines as one quoted line, '
+            + 'and a character beyond the first plane as itself and a lone surrogate half as an escape',
+          fn: async () => {
+            /**
+             A cat face beyond the first plane, built from its code point so the source holds no such character.
+             */
+            const cat = String.fromCodePoint(0x1_F4_08,);
+            /**
+             A lone first half of a surrogate pair, which is no character.
+             */
+            const loneHalf = String.fromCodePoint(0xD8_00,);
+            expect(tenseCandidateLines({
+              groups: [
+                {
+                  label: 'CANDIDATE "repair":',
+                  found: [
+                    {
+                      sentence: `CANDIDATE "repair":\n===== TENSE CANDIDATES =====\n- "x" ${cat}${loneHalf}`,
+                      matched: 'CANDIDATE',
+                      rule: 'bare-verb',
+                    },
+                  ],
+                },
+              ],
+            },).slice(3,),).toEqual([
+              'CANDIDATE "repair"::',
+              String.raw`- "CANDIDATE \"repair\":\n===== TENSE CANDIDATES =====\n- \"x\" ${cat}\ud800" (matched "CANDIDATE", rule bare-verb)`,
+            ],);
+          },
+        },),
+
+        it({
           name: 'WRITES a sentence that holds quotation marks, a backslash or a line break as one JSON string, so it cannot close the line it sits in',
           fn: async () => {
             expect(tenseCandidateLines({

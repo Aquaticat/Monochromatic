@@ -1,9 +1,11 @@
 /**
- Tests for reading the tense candidates a contest slice records.
+ Tests for reading the tense candidates a slice records.
 
  WHAT IS UNDER TEST is what the reader refuses. The finding is an audit trail
  for a page read, so a record that the writer could not have produced must stop
- the read at its own path rather than reach a count as a candidate.
+ the read at its own path rather than reach a count as a candidate: a list with
+ no group, a group with no candidate, and a label the slice never offers its
+ judges, repeated or out of the order the sheet prints them in.
 
  Fixtures are cat-themed invention. No corpus content appears here.
 
@@ -29,6 +31,15 @@ import {
 const TENSE_PATH = 'CatEntry1.tenseCandidates';
 
 /**
+ Labels a contest slice offers its judges, in the order the sheet prints them.
+ */
+const CONTEST_LABELS = [
+  'ARCHIVE RENDERING',
+  'CANDIDATE "repair"',
+  'CANDIDATE "translate"',
+];
+
+/**
  One candidate as the writer records it.
  */
 const NAPS = {
@@ -42,6 +53,8 @@ const NAPS = {
 
  @param value - recorded value handed to the reader
 
+ @param labels - labels the slice offers, the contest's unless a case says otherwise
+
  @returns What the reader threw
 
  @example
@@ -49,11 +62,20 @@ const NAPS = {
  const refusal = refusalOf({ value: 'naps', },);
  ```
  */
-function refusalOf({ value, }: { readonly value: unknown; },): unknown {
+function refusalOf(
+  {
+    value,
+    labels = CONTEST_LABELS,
+  }: {
+    readonly value: unknown;
+    readonly labels?: readonly string[];
+  },
+): unknown {
   return caught(function readRecorded() {
     return parseRecordedTenseCandidates({
       value,
       path: TENSE_PATH,
+      labels,
     },);
   },);
 }
@@ -63,6 +85,8 @@ function refusalOf({ value, }: { readonly value: unknown; },): unknown {
 
  @param value - recorded value handed to the reader
 
+ @param labels - labels the slice offers, the contest's unless a case says otherwise
+
  @returns The refusal as text, class name first
 
  @example
@@ -70,9 +94,25 @@ function refusalOf({ value, }: { readonly value: unknown; },): unknown {
  const text = refusalTextOf({ value: 'naps', },);
  ```
  */
-function refusalTextOf({ value, }: { readonly value: unknown; },): string {
-  return String(refusalOf({ value, },),);
+function refusalTextOf(
+  {
+    value,
+    labels = CONTEST_LABELS,
+  }: {
+    readonly value: unknown;
+    readonly labels?: readonly string[];
+  },
+): string {
+  return String(refusalOf({
+    value,
+    labels,
+  },),);
 }
+
+/**
+ What a refusal of a label reads, for the contest's labels.
+ */
+const CONTEST_LABEL_REASON = 'a label from ARCHIVE RENDERING, CANDIDATE "repair", CANDIDATE "translate", each once and in that order';
 
 //region Recorded tense candidates tests
 
@@ -85,12 +125,8 @@ await describe({
       concurrency: DEFAULT_CONCURRENCY,
       children: [
         it({
-          name: 'READS an empty record and a group of candidates as they were written, in recorded order, naming each of the four rules',
+          name: 'READS groups of candidates as they were written, in recorded order, naming each of the four rules',
           fn: async () => {
-            expect(parseRecordedTenseCandidates({
-              value: [],
-              path: TENSE_PATH,
-            },),).toEqual([],);
             /**
              A group holding one candidate under each rule the detector writes.
              */
@@ -108,21 +144,23 @@ await describe({
                 };
               },),
             };
+            /**
+             The archive's group, which the sheet prints before the lanes'.
+             */
+            const archiveGroup = {
+              label: 'ARCHIVE RENDERING',
+              found: [NAPS,],
+            };
             expect(parseRecordedTenseCandidates({
               value: [
+                archiveGroup,
                 group,
-                {
-                  label: 'ARCHIVE RENDERING',
-                  found: [],
-                },
               ],
               path: TENSE_PATH,
+              labels: CONTEST_LABELS,
             },),).toEqual([
+              archiveGroup,
               group,
-              {
-                label: 'ARCHIVE RENDERING',
-                found: [],
-              },
             ],);
           },
         },),
@@ -133,6 +171,16 @@ await describe({
             expect(refusalOf({ value: 'naps', },),).toBeInstanceOf(ArtifactParseError,);
             expect(refusalTextOf({ value: 'naps', },),).toBe(
               'ArtifactParseError: artifact parse failed at CatEntry1.tenseCandidates: expected an array.',
+            );
+          },
+        },),
+
+        it({
+          name: 'REFUSES an empty list, which the writer never records since a slice carries the finding only where a text has a candidate',
+          fn: async () => {
+            expect(refusalTextOf({ value: [], },),).toBe(
+              'ArtifactParseError: artifact parse failed at CatEntry1.tenseCandidates: '
+                + 'expected at least one group, since a slice records the finding only where a text has a candidate.',
             );
           },
         },),
@@ -150,7 +198,65 @@ await describe({
         },),
 
         it({
-          name: 'REFUSES a group whose candidates are not a list, and a candidate that is not an object',
+          name: 'REFUSES a label the slice never offers its judges, one repeated and one out of the order the sheet prints them',
+          fn: async () => {
+            expect(refusalTextOf({
+              value: [{
+                label: 'CANDIDATE "consolidated"',
+                found: [NAPS,],
+              },],
+            },),).toBe(
+              `ArtifactParseError: artifact parse failed at CatEntry1.tenseCandidates[0].label: expected ${CONTEST_LABEL_REASON}.`,
+            );
+            expect(refusalTextOf({
+              value: [
+                {
+                  label: 'ARCHIVE RENDERING',
+                  found: [NAPS,],
+                },
+                {
+                  label: 'ARCHIVE RENDERING',
+                  found: [NAPS,],
+                },
+              ],
+            },),).toBe(
+              `ArtifactParseError: artifact parse failed at CatEntry1.tenseCandidates[1].label: expected ${CONTEST_LABEL_REASON}.`,
+            );
+            expect(refusalTextOf({
+              value: [
+                {
+                  label: 'CANDIDATE "translate"',
+                  found: [NAPS,],
+                },
+                {
+                  label: 'CANDIDATE "repair"',
+                  found: [NAPS,],
+                },
+              ],
+            },),).toBe(
+              `ArtifactParseError: artifact parse failed at CatEntry1.tenseCandidates[1].label: expected ${CONTEST_LABEL_REASON}.`,
+            );
+          },
+        },),
+
+        it({
+          name: 'REFUSES a label of the other shipped wording on a slice that offers one label alone',
+          fn: async () => {
+            expect(refusalTextOf({
+              value: [{
+                label: 'ARCHIVE RENDERING',
+                found: [NAPS,],
+              },],
+              labels: ['CANDIDATE "consolidated"',],
+            },),).toBe(
+              'ArtifactParseError: artifact parse failed at CatEntry1.tenseCandidates[0].label: '
+                + 'expected a label from CANDIDATE "consolidated", each once and in that order.',
+            );
+          },
+        },),
+
+        it({
+          name: 'REFUSES a group whose candidates are not a list, a list with no candidate, and a candidate that is not an object',
           fn: async () => {
             expect(refusalTextOf({
               value: [{
@@ -159,6 +265,15 @@ await describe({
               },],
             },),).toBe(
               'ArtifactParseError: artifact parse failed at CatEntry1.tenseCandidates[0].found: expected an array.',
+            );
+            expect(refusalTextOf({
+              value: [{
+                label: 'ARCHIVE RENDERING',
+                found: [],
+              },],
+            },),).toBe(
+              'ArtifactParseError: artifact parse failed at CatEntry1.tenseCandidates[0].found: '
+                + 'expected at least one candidate, since a text without one contributes no group.',
             );
             expect(refusalTextOf({
               value: [{

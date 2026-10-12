@@ -433,6 +433,64 @@ await describe({
             ],);
           },
         },),
+
+        it({
+          name: 'matches a declared name written in a script without letter case, as it matches a Latin one',
+          fn: async () => {
+            expect(presentTenseCandidates({
+              text: '猫猫 is loud. Mittens is loud.',
+              subjectNames: [
+                '猫猫',
+                'Mittens',
+              ],
+              died: true,
+            },),).toEqual([
+              {
+                sentence: '猫猫 is loud.',
+                matched: '猫猫 is',
+                rule: 'copula-or-auxiliary',
+              },
+              {
+                sentence: 'Mittens is loud.',
+                matched: 'Mittens is',
+                rule: 'copula-or-auxiliary',
+              },
+            ],);
+          },
+        },),
+
+        it({
+          name: 'matches a declared name written beyond the first plane, as it matches a Latin one',
+          fn: async () => {
+            /**
+             A cat name in Deseret letters, built from code points so the source holds no such character.
+             */
+            const deseretName = String.fromCodePoint(
+              0x1_04_28,
+              0x1_04_29,
+              0x1_04_2A,
+            );
+            expect(presentTenseCandidates({
+              text: `${deseretName} naps by the door. Mittens naps by the door.`,
+              subjectNames: [
+                deseretName,
+                'Mittens',
+              ],
+              died: true,
+            },),).toEqual([
+              {
+                sentence: `${deseretName} naps by the door.`,
+                matched: `${deseretName} naps`,
+                rule: 's-ending-verb',
+              },
+              {
+                sentence: 'Mittens naps by the door.',
+                matched: 'Mittens naps',
+                rule: 's-ending-verb',
+              },
+            ],);
+          },
+        },),
       ],
     },),
   ],

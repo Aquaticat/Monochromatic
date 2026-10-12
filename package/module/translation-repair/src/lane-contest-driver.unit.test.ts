@@ -901,6 +901,81 @@ await describe({
           },
         },),
         it({
+          name: 'KEYS THE PURCHASE by the death and the names the sheet shows, so ballots bought for other names are never '
+            + 'served, and keys an entry that records no death the same whatever names it carries',
+          fn: async () => {
+            /**
+             One contested slice, which every drive buys once.
+             */
+            const pairs = [
+              [
+                'Mittens naps in the bookshop attic.',
+                TRANSLATE_NAP,
+              ],
+            ] as const;
+            /**
+             Keys the driver persisted for an entry that records a death and names one subject.
+             */
+            const oneName = await drive({
+              pairs,
+              answering: true,
+              lifeEnded: true,
+              subjectNames: ['Mittens',],
+            },);
+            /**
+             Keys it persisted for the same entry once its translation declares an alias.
+             */
+            const withAlias = await drive({
+              pairs,
+              answering: true,
+              lifeEnded: true,
+              subjectNames: [
+                'Mittens',
+                'Whiskers',
+              ],
+            },);
+            /**
+             Keys it persisted for an entry that records a death and names no subject.
+             */
+            const noName = await drive({
+              pairs,
+              answering: true,
+              lifeEnded: true,
+            },);
+            /**
+             Keys it persisted for an entry that records no death and is given no names.
+             */
+            const unrecorded = await drive({
+              pairs,
+              answering: true,
+            },);
+            /**
+             Keys it persisted for an entry that records no death and is given a name all the same.
+             */
+            const unrecordedWithName = await drive({
+              pairs,
+              answering: true,
+              subjectNames: ['Mittens',],
+            },);
+            /**
+             The key each drive bought its one slice under.
+             */
+            const keys = [
+              oneName,
+              withAlias,
+              noName,
+              unrecorded,
+            ].map(function keyOf(rig,): string {
+              return rig.persisted.join('\n',);
+            },);
+            expect(keys.every(function holdsOneKey(key,): boolean {
+              return (key !== '') && (!key.includes('\n',));
+            },),).toBe(true,);
+            expect(new Set(keys,).size,).toBe(keys.length,);
+            expect(unrecordedWithName.persisted,).toEqual(unrecorded.persisted,);
+          },
+        },),
+        it({
           name: 'ASKS ONLY the slices that differ, leaving the agreed ones out of the record entirely',
           fn: async () => {
             /**

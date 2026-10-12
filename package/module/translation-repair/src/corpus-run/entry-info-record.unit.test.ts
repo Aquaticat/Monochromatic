@@ -20,7 +20,10 @@ import {
   prepareDocumentPair,
   readEntryInfoRecord,
 } from '../../dist/final/node/index.mjs';
-import { capturingLogger, } from '../capturing-logger.test-fixture.ts';
+import {
+  capturingLogger,
+  levelCapturingLogger,
+} from '../capturing-logger.test-fixture.ts';
 
 /**
  Pin the cases read at; the reader never touches the clone itself, since the test reader answers.
@@ -226,7 +229,8 @@ await describe({
         },),
 
         it({
-          name: 'REFUSES an info.yml that is not YAML by throwing, rather than recording no death',
+          name: 'REFUSES an info.yml that is not YAML with an error naming the entry and where the parser stopped, '
+            + 'quoting none of the file and carrying no parser error that does',
           fn: async () => {
             /**
              What the reader threw, if anything.
@@ -245,7 +249,118 @@ await describe({
             catch (error) {
               caught = error;
             }
-            expect(Error.isError(caught,),).toBe(true,);
+            expect(String(caught,),).toBe(
+              'EntryInfoParseError: The info.yml of entry mittens at the pin refused to parse at line 2 column 1 (BAD_INDENT); '
+                + 'corpus metadata parses upstream, so this signals corruption.',
+            );
+            expect(Error.isError(caught,) && (caught.cause === undefined),).toBe(true,);
+            expect(Error.isError(caught,) && ('messageNamesOnly' in caught) && (caught.messageNamesOnly === true),).toBe(true,);
+          },
+        },),
+
+        it({
+          name: 'WARNS, naming the entry, the field and the kind, of a death YAML reads as a truth value, a list, a record or '
+            + 'a number that is not finite, and still records the file as read',
+          fn: async () => {
+            await Promise.all([
+              [
+                'true',
+                'a truth value',
+              ],
+              [
+                '[2025, 2026]',
+                'a list',
+              ],
+              [
+                '{ year: 2025 }',
+                'a record',
+              ],
+              [
+                '.nan',
+                'a number that is not finite',
+              ],
+              [
+                '-.inf',
+                'a number that is not finite',
+              ],
+            ].map(async function readUnreadableKind([written, kind,],): Promise<void> {
+              /**
+               Lines the reader wrote at their levels.
+               */
+              const lines: string[] = [];
+              /**
+               What the reader answered for this kind.
+               */
+              const record = await readEntryInfoRecord({
+                pin: PIN,
+                entryId: 'mittens',
+                readFile: async function readKind() {
+                  return `info:\n  died: ${written}\n`;
+                },
+                l: levelCapturingLogger({ lines, },),
+              },);
+              expect(record.kind,).toBe('read',);
+              expect(lines,).toEqual([
+                `warn ENTRY INFO entry=mittens: info.died is ${kind}, which is neither text nor a finite number, `
+                + 'so no death is recorded for it',
+              ],);
+            },),);
+          },
+        },),
+
+        it({
+          name: 'SAYS NOTHING of a death that is text, a finite number, a blank value or absent, since each is a record or an '
+            + 'absence and no unreadable kind',
+          fn: async () => {
+            await Promise.all([
+              '\'2025-02-26\'',
+              '2025',
+              'null',
+              '\'\'',
+            ].map(async function readQuietKind(written,): Promise<void> {
+              /**
+               Lines the reader wrote at their levels.
+               */
+              const lines: string[] = [];
+              await readEntryInfoRecord({
+                pin: PIN,
+                entryId: 'mittens',
+                readFile: async function readKind() {
+                  return `info:\n  died: ${written}\n`;
+                },
+                l: levelCapturingLogger({ lines, },),
+              },);
+              expect(lines,).toEqual([],);
+            },),);
+            /**
+             Lines the reader wrote for an info record that holds no death at all.
+             */
+            const absentLines: string[] = [];
+            await readEntryInfoRecord({
+              pin: PIN,
+              entryId: 'mittens',
+              readFile: async function readNoDeath() {
+                return 'info:\n  born: \'2019-05-02\'\n';
+              },
+              l: levelCapturingLogger({ lines: absentLines, },),
+            },);
+            expect(absentLines,).toEqual([],);
+          },
+        },),
+
+        it({
+          name: 'READS an unreadable death in silence when no logger is given, as a command with pinned terminal output reads it',
+          fn: async () => {
+            expect(await readEntryInfoRecord({
+              pin: PIN,
+              entryId: 'mittens',
+              readFile: async function readTruthValue() {
+                return 'info:\n  died: true\n';
+              },
+            },),).toEqual({
+              kind: 'read',
+              info: { info: { died: true, }, },
+            },);
           },
         },),
       ],

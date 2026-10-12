@@ -127,6 +127,62 @@ await describe({
             expect(declaredSubjectNames({ data: { desc: 'a tabby', }, },),).toEqual([],);
           },
         },),
+
+        it({
+          name: 'KEEPS a name that holds a comma as one name, since only an alias is a comma-joined list, and an alias that '
+            + 'holds a slash as one alias, since the corpus joins aliases with commas alone',
+          fn: async () => {
+            expect(declaredSubjectNames({
+              data: {
+                name: 'Mittens, Jr',
+                info: { alias: 'Whiskers/Tom, Tabby', },
+              },
+            },),).toEqual([
+              'Mittens, Jr',
+              'Whiskers/Tom',
+              'Tabby',
+            ],);
+          },
+        },),
+
+        it({
+          name: 'LISTS an alias that repeats the name in another letter case as its own name, since the detector folds case and a repeat is harmless',
+          fn: async () => {
+            expect(declaredSubjectNames({
+              data: {
+                name: 'Mittens',
+                info: { alias: 'mittens', },
+              },
+            },),).toEqual([
+              'Mittens',
+              'mittens',
+            ],);
+          },
+        },),
+
+        it({
+          name: 'READS a name written in a script without letter case and an alias beyond the first plane like any other',
+          fn: async () => {
+            /**
+             An alias in Deseret letters, built from code points so the source holds no such character.
+             */
+            const deseretAlias = String.fromCodePoint(
+              0x1_04_28,
+              0x1_04_29,
+              0x1_04_2A,
+            );
+            expect(declaredSubjectNames({
+              data: {
+                name: '猫猫',
+                info: { alias: `${deseretAlias}，Tom`, },
+              },
+            },),).toEqual([
+              '猫猫',
+              deseretAlias,
+              'Tom',
+            ],);
+          },
+        },),
       ],
     },),
   ],

@@ -31,6 +31,26 @@ import {
  */
 const NO_BREAK_SPACE = String.fromCodePoint(0xA0,);
 
+/**
+ A cat name in a script with no letter case.
+ */
+const CASELESS_CAT_NAME = '猫猫';
+
+/**
+ A cat name in a cased script whose letters sit beyond the first plane (Deseret), built from code points so the
+ source holds no such character.
+ */
+const ASTRAL_CAT_NAME = String.fromCodePoint(
+  0x1_04_28,
+  0x1_04_29,
+  0x1_04_2A,
+);
+
+/**
+ A lone first half of a surrogate pair, which is no character.
+ */
+const LONE_HIGH_SURROGATE = String.fromCodePoint(0xD8_00,);
+
 //region Present-tense words tests
 
 await describe({
@@ -84,6 +104,35 @@ await describe({
           fn: async () => {
             expect(wordsOf({ sentence: '', },),).toEqual([],);
             expect(wordsOf({ sentence: '... 42 !?', },),).toEqual([],);
+          },
+        },),
+
+        it({
+          name: 'READS a word in a script without letter case and one beyond the first plane as one word each, '
+            + 'with offsets in UTF-16 units, and no word from a lone surrogate half',
+          fn: async () => {
+            expect(wordsOf({
+              sentence: `${CASELESS_CAT_NAME} ${ASTRAL_CAT_NAME} ${LONE_HIGH_SURROGATE} naps`,
+            },),).toEqual([
+              {
+                text: CASELESS_CAT_NAME,
+                folded: CASELESS_CAT_NAME,
+                start: 0,
+                end: 2,
+              },
+              {
+                text: ASTRAL_CAT_NAME,
+                folded: ASTRAL_CAT_NAME,
+                start: 3,
+                end: 9,
+              },
+              {
+                text: 'naps',
+                folded: 'naps',
+                start: 12,
+                end: 16,
+              },
+            ],);
           },
         },),
       ],
@@ -234,6 +283,39 @@ await describe({
             },),).toBe(false,);
           },
         },),
+
+        it({
+          name: 'MATCHES a declared name in a script without letter case and one beyond the first plane, as it matches a Latin one',
+          fn: async () => {
+            expect(namesAt({
+              sentence: `${CASELESS_CAT_NAME} naps`,
+              start: 0,
+              name: CASELESS_CAT_NAME,
+            },),).toBe(true,);
+            expect(namesAt({
+              sentence: `${ASTRAL_CAT_NAME} naps`,
+              start: 0,
+              name: ASTRAL_CAT_NAME,
+            },),).toBe(true,);
+          },
+        },),
+
+        it({
+          name: 'REFUSES a name followed by a letter in a script without letter case or beyond the first plane, '
+            + 'as it refuses one followed by a Latin letter',
+          fn: async () => {
+            expect(namesAt({
+              sentence: `Mittens${CASELESS_CAT_NAME} naps`,
+              start: 0,
+              name: 'Mittens',
+            },),).toBe(false,);
+            expect(namesAt({
+              sentence: `Mittens${ASTRAL_CAT_NAME} naps`,
+              start: 0,
+              name: 'Mittens',
+            },),).toBe(false,);
+          },
+        },),
       ],
     },),
 
@@ -258,6 +340,25 @@ await describe({
               true,
               false,
               false,
+              false,
+              false,
+            ],);
+          },
+        },),
+
+        it({
+          name: 'TAKES the letters of a script without letter case and of one beyond the first plane for letters, and a digit for none',
+          fn: async () => {
+            expect([
+              `${CASELESS_CAT_NAME}s`,
+              `${ASTRAL_CAT_NAME}s`,
+              `${CASELESS_CAT_NAME}1s`,
+              `${ASTRAL_CAT_NAME}${LONE_HIGH_SURROGATE}s`,
+            ].map(function asked(word,): boolean {
+              return isSEndingWord({ word, },);
+            },),).toEqual([
+              true,
+              true,
               false,
               false,
             ],);

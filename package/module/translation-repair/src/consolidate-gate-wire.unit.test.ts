@@ -409,6 +409,32 @@ await describe({
             ],);
           },
         },),
+
+        it({
+          name: 'FENCES THE TENSE BLOCK with a fence longer than any run of the fence character inside it, though reading '
+            + 'a sentence drops the star between two shorter runs of it',
+          fn: async () => {
+            expect(tenseBlocksOf({
+              content: exchangeFor({
+                subject: {
+                  ...TENSE_SUBJECT,
+                  incumbentText: 'The cat sleeps.',
+                  standingText: 'She naps ===*=== by the window.',
+                  lifeEnded: true,
+                  subjectNames: ['Mittens',],
+                },
+              },),
+            },),).toEqual([
+              [
+                '======= TENSE CANDIDATES =======',
+                TENSE_EXPLANATION,
+                'CANDIDATE "standing":',
+                '- "She naps ====== by the window." (matched "She naps", rule s-ending-verb)',
+                '=======',
+              ].join('\n',),
+            ],);
+          },
+        },),
       ],
     },),
 

@@ -87,6 +87,26 @@ function artifactAt({ corpusSha, }: { readonly corpusSha: string; },): string {
 }
 
 /**
+ Settled artifact of the entry restamped as the generation before the one that tells the death, whose run read
+ no `info.yml`.
+
+ @param corpusSha - commit the artifact says its texts were read at
+
+ @returns The artifact's JSON text
+
+ @example
+ ```ts
+ const text = artifactOfGenerationFourteen({ corpusSha: 'c'.repeat(40,), },);
+ ```
+ */
+function artifactOfGenerationFourteen({ corpusSha, }: { readonly corpusSha: string; },): string {
+  return JSON.stringify({
+    ...JSON.parse(artifactAt({ corpusSha, },),),
+    artifactSchemaVersion: 14,
+  },);
+}
+
+/**
  Declines the entry in a runs directory and leaves a page standing for it, as
  a crash between the page write and the decline record leaves one.
 
@@ -243,6 +263,133 @@ await describe({
           'publish: wrote 2 slices into a page of 81 characters',
           'REPUBLISHED entry=CatEntry1 why=missing: page rewritten from its artifact',
           'republish: 1 settled page judged, 1 rewritten, 0 left',
+        ],);
+      },
+    },),
+    it({
+      name: 'READS NO info.yml FOR AN ARTIFACT OF GENERATION FOURTEEN, whose run told its models no death, so a damaged '
+        + 'one refuses no page and none is named in the log',
+      fn: async () => {
+        await using clone = await makeCorpusPassClone({ entries: [{
+          id: ENTRY,
+          sourceText: SOURCE_DOC,
+          targetText: TARGET_DOC,
+          infoYml: 'info: [\n',
+        },], },);
+        await using scratch = await scratchDir({ prefix: 'pass-republish-', },);
+        const layout = await prepareRunsLayout({ runsDir: scratch.path, },);
+        await writeFile(
+          join(
+            layout.artifactsDir,
+            `${ENTRY}.json`,
+          ),
+          artifactOfGenerationFourteen({ corpusSha: clone.commitSha, },),
+        );
+        /**
+         Lines the step logged.
+         */
+        const messages: string[] = [];
+
+        await republishRunPages({
+          runsDir: scratch.path,
+          artifactsDir: layout.artifactsDir,
+          declinedDir: layout.declinedDir,
+          publishDir: layout.publishDir,
+          cloneDir: clone.cloneDir,
+          l: capturingLogger({ messages, },),
+        },);
+
+        expect(await readFile(
+          join(
+            layout.publishDir,
+            'people',
+            ENTRY,
+            'page.en.md',
+          ),
+          'utf8',
+        ),).toBe(TARGET_DOC,);
+        expect(messages,).toEqual([
+          'publish: wrote 2 slices into a page of 81 characters',
+          'REPUBLISHED entry=CatEntry1 why=missing: page rewritten from its artifact',
+          'republish: 1 settled page judged, 1 rewritten, 0 left',
+        ],);
+      },
+    },),
+    it({
+      name: 'SAYS NOTHING OF AN ABSENT info.yml FOR AN ARTIFACT OF GENERATION FOURTEEN, which asked the entry for none',
+      fn: async () => {
+        await using clone = await makeCorpusPassClone({ entries: [{
+          id: ENTRY,
+          sourceText: SOURCE_DOC,
+          targetText: TARGET_DOC,
+        },], },);
+        await using scratch = await scratchDir({ prefix: 'pass-republish-', },);
+        const layout = await prepareRunsLayout({ runsDir: scratch.path, },);
+        await writeFile(
+          join(
+            layout.artifactsDir,
+            `${ENTRY}.json`,
+          ),
+          artifactOfGenerationFourteen({ corpusSha: clone.commitSha, },),
+        );
+        /**
+         Lines the step logged.
+         */
+        const messages: string[] = [];
+
+        await republishRunPages({
+          runsDir: scratch.path,
+          artifactsDir: layout.artifactsDir,
+          declinedDir: layout.declinedDir,
+          publishDir: layout.publishDir,
+          cloneDir: clone.cloneDir,
+          l: capturingLogger({ messages, },),
+        },);
+
+        expect(messages,).toEqual([
+          'publish: wrote 2 slices into a page of 81 characters',
+          'REPUBLISHED entry=CatEntry1 why=missing: page rewritten from its artifact',
+          'republish: 1 settled page judged, 1 rewritten, 0 left',
+        ],);
+      },
+    },),
+    it({
+      name: 'LEAVES THE PAGE ABSENT AND NAMES THE ENTRY when the info.yml of an artifact of the generation that reads it '
+        + 'is damaged, quoting none of the file',
+      fn: async () => {
+        await using clone = await makeCorpusPassClone({ entries: [{
+          id: ENTRY,
+          sourceText: SOURCE_DOC,
+          targetText: TARGET_DOC,
+          infoYml: 'info: [\n',
+        },], },);
+        await using scratch = await scratchDir({ prefix: 'pass-republish-', },);
+        const layout = await prepareRunsLayout({ runsDir: scratch.path, },);
+        await writeFile(
+          join(
+            layout.artifactsDir,
+            `${ENTRY}.json`,
+          ),
+          artifactAt({ corpusSha: clone.commitSha, },),
+        );
+        /**
+         Lines the step logged.
+         */
+        const messages: string[] = [];
+
+        await republishRunPages({
+          runsDir: scratch.path,
+          artifactsDir: layout.artifactsDir,
+          declinedDir: layout.declinedDir,
+          publishDir: layout.publishDir,
+          cloneDir: clone.cloneDir,
+          l: capturingLogger({ messages, },),
+        },);
+
+        expect(messages,).toEqual([
+          'REPUBLISH LEFT entry=CatEntry1 why=missing: page left as it was; because=The info.yml of entry CatEntry1 at the '
+          + 'pin refused to parse at line 2 column 1 (BAD_INDENT); corpus metadata parses upstream, so this signals corruption.',
+          'republish: 1 settled page judged, 0 rewritten, 1 left',
         ],);
       },
     },),

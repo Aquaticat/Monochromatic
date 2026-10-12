@@ -22,6 +22,7 @@ import {
   type ArtifactComparisonRow,
   ArtifactParseError,
   describeContestSlice,
+  describeSoleLaneSlice,
   type LaneContestBallot,
   SLICE_SPELLED_KEYS,
   parseLaneSelection,
@@ -29,6 +30,7 @@ import {
 } from '../../dist/final/node/index.mjs';
 import { ARCHIVE_NAP, catRow, } from '../two-lane-comparison-row.test-fixture.ts';
 import { insertionRow, } from '../sole-lane-comparison-row.test-fixture.ts';
+import { tenseLabelsOf, } from '../tense-sheet.test-fixture.ts';
 
 /**
  Generation that records a sole-lane verdict at an archive-absent insertion.
@@ -445,6 +447,119 @@ await describe({
           path: SELECTION_PATH,
           keys: SLICE_SPELLED_KEYS,
           generation: 15,
+        },),).toEqual({
+          kind: 'contested',
+          slices: recorded,
+        },);
+      },
+    },),
+
+    it({
+      name: 'READS WHAT THE WRITER RECORDS for a lane that won, a slice the archive stands at and a slice one lane applies '
+        + 'to alone, the finding on the first two and none on the third',
+      fn: async () => {
+        /**
+         Ballot backing the repair lane, typed as the stage returns it.
+         */
+        const forRepair: LaneContestBallot = {
+          choice: 'repair',
+          unsupported: [],
+          unsupportedRaw: [],
+          dropped: [],
+          droppedRaw: [],
+          reason: 'keeps the bookshop, which the original names',
+        };
+        /**
+         Ballot backing neither lane, typed as the stage returns it.
+         */
+        const forNeither: LaneContestBallot = {
+          choice: 'neither',
+          unsupported: [
+            'repair',
+            'translate',
+          ],
+          unsupportedRaw: ['both add an attic the original does not mention',],
+          dropped: [],
+          droppedRaw: [],
+          reason: 'both candidates invent a detail',
+        };
+        /**
+         Rows of the three slices: two the lanes worded differently, and an insertion only the translate lane filled.
+         */
+        const comparison: readonly ArtifactComparisonRow[] = [
+          CONTESTED_ROW,
+          catRow({
+            sliceIndex: 1,
+            repairText: REPAIR_NAP,
+            translateText: TRANSLATE_NAP,
+          },),
+          insertionRow({
+            sliceIndex: 2,
+            translateText: TRANSLATE_NAP,
+          },),
+        ];
+        /**
+         The three records as the contest driver writes them, with the finding added.
+         */
+        const recorded = withTenseCandidates({
+          slices: [
+            describeContestSlice({
+              sliceIndex: 0,
+              outcome: {
+                choice: 'repair',
+                ballots: [
+                  forRepair,
+                  forRepair,
+                  forRepair,
+                ],
+                usable: 3,
+                findings: [],
+              },
+            },),
+            describeContestSlice({
+              sliceIndex: 1,
+              outcome: {
+                choice: 'neither',
+                ballots: [
+                  forNeither,
+                  forNeither,
+                  forNeither,
+                ],
+                usable: 3,
+                findings: [],
+              },
+            },),
+            describeSoleLaneSlice({
+              sliceIndex: 2,
+              lane: 'translate',
+            },),
+          ],
+          comparison,
+          lifeEnded: true,
+          subjectNames: ['The cat',],
+        },);
+        expect(tenseLabelsOf({ slices: recorded, },),).toEqual([
+          [
+            'ARCHIVE RENDERING',
+            'CANDIDATE "repair"',
+            'CANDIDATE "translate"',
+          ],
+          [
+            'ARCHIVE RENDERING',
+            'CANDIDATE "repair"',
+            'CANDIDATE "translate"',
+          ],
+          [],
+        ],);
+        expect(parseLaneSelection({
+          value: {
+            kind: 'contested',
+            slices: recorded,
+          },
+          comparison,
+          path: SELECTION_PATH,
+          keys: SLICE_SPELLED_KEYS,
+          generation: SOLE_LANE_GENERATION,
         },),).toEqual({
           kind: 'contested',
           slices: recorded,

@@ -14,6 +14,7 @@
 
 import {
   mkdir,
+  readFile,
   symlink,
   writeFile,
 } from 'node:fs/promises';
@@ -740,6 +741,60 @@ await describe({
             expect(recorded.prepared.lifeEnded,).toBe(true,);
             expect(recorded.prepared.identityContext,).toBe(carved.identityContext,);
             expect(carved.identityContext?.includes('"2025-02-26"',),).toBe(true,);
+          },
+        },),
+        it({
+          name: 'READS NO info.yml FOR AN ARTIFACT OF GENERATION FOURTEEN, whose run told its models no death, so a damaged '
+            + 'one refuses nothing and the carve is the run\'s',
+          fn: async () => {
+            // A DAMAGED info.yml: a carve that read it for this artifact would be refused.
+            await using damaged = await throwawayCorpus({ infoYml: 'info: [\n', },);
+            await using runs = await scratchDir({ prefix: 'whiskers-settled-runs-', },);
+            /**
+             How the run carved the pair, knowing no death.
+             */
+            const carved = prepareDocumentPair({
+              sourceText: SOURCE_PAGE,
+              targetText: TARGET_PAGE,
+            },);
+            await writeArtifact({
+              runsDir: runs.path,
+              prepared: carved,
+              corpusSha: damaged.commitSha,
+              strip: [],
+            },);
+            /**
+             Where the artifact stands in the runs directory.
+             */
+            const artifactPath = join(
+              runs.path,
+              'artifacts',
+              `${ENTRY_ID}.json`,
+            );
+            // Restamped as the generation before the one that tells the death.
+            await writeFile(
+              artifactPath,
+              JSON.stringify({
+                ...JSON.parse(await readFile(
+                  artifactPath,
+                  'utf8',
+                ),),
+                artifactSchemaVersion: 14,
+              },),
+            );
+            /**
+             Carve of the entry whose info.yml is damaged.
+             */
+            const carve = await carveSettled({
+              entryId: ENTRY_ID,
+              runsDir: runs.path,
+              cloneDir: damaged.cloneDir,
+              readFile: readCorpusFile,
+            },);
+            if (carve.kind !== 'settled')
+              throw new Error(`expected a settled carve, got ${carve.kind}`,);
+            expect(carve.prepared.lifeEnded,).toBe(false,);
+            expect(carve.prepared.identityContext,).toBe(carved.identityContext,);
           },
         },),
         it({

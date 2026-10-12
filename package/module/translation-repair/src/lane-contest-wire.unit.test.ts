@@ -333,6 +333,34 @@ await describe({
         },),
 
         it({
+          name: 'FENCES THE TENSE BLOCK with a fence longer than any run of the fence character inside it, though reading '
+            + 'a sentence drops the star between two shorter runs of it',
+          fn: async () => {
+            expect(tenseBlocksOf({
+              content: buildLaneContestMessages({
+                subject: {
+                  ...TENSE_SUBJECT,
+                  incumbentText: 'The cat sleeps.',
+                  translateText: 'She naps ===*=== by the window.',
+                  lifeEnded: true,
+                  subjectNames: ['Mittens',],
+                },
+              },)
+                .at(1,)
+                ?.content ?? '',
+            },),).toEqual([
+              [
+                '======= TENSE CANDIDATES =======',
+                TENSE_EXPLANATION,
+                'CANDIDATE "translate":',
+                '- "She naps ====== by the window." (matched "She naps", rule s-ending-verb)',
+                '=======',
+              ].join('\n',),
+            ],);
+          },
+        },),
+
+        it({
           name: 'SHOWS THE DISPUTE NOTE after both candidates on a disputed slice, and no such heading elsewhere (class one hundred eight, one entry\'s slice 3, 2026-09-24)',
           fn: async () => {
             // THE FAILURE THIS CLOSES. One entry's slice 3: a contest ballot

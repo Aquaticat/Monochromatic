@@ -34,11 +34,14 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
+  type ArtifactConsolidateSlice,
   type ArtifactContestSlice,
   type ArtifactLaneSelection,
   SLICE_SPELLED_KEYS,
   parseConsolidation,
+  withShippedTenseCandidates,
 } from '../../dist/final/node/index.mjs';
+import { tenseLabelsOf, } from '../tense-sheet.test-fixture.ts';
 
 /**
  Path every case reports its refusals under.
@@ -129,6 +132,16 @@ const TENSE_CANDIDATES = [
         rule: 's-ending-verb',
       },
     ],
+  },
+];
+
+/**
+ Tense candidates a consolidation slice records for an incumbent that stood in, which the sheets label as the archive's.
+ */
+const ARCHIVE_TENSE_CANDIDATES = [
+  {
+    label: 'ARCHIVE RENDERING',
+    found: TENSE_CANDIDATES[0]?.found ?? [],
   },
 ];
 
@@ -546,7 +559,7 @@ await describe({
               {
                 ...INCUMBENT_SLICE,
                 sliceIndex: 1,
-                tenseCandidates: TENSE_CANDIDATES,
+                tenseCandidates: ARCHIVE_TENSE_CANDIDATES,
               },
             ],
           },
@@ -561,8 +574,141 @@ await describe({
           return slice.tenseCandidates;
         },),).toEqual([
           TENSE_CANDIDATES,
-          TENSE_CANDIDATES,
+          ARCHIVE_TENSE_CANDIDATES,
         ],);
+      },
+    },),
+
+    it({
+      name: 'READS WHAT THE WRITER RECORDS for each wording a slice ships or leaves, a consolidation, an incumbent that '
+        + 'stood in, the archive kept and nothing changed, the finding on the first two alone',
+      fn: async () => {
+        /**
+         The four slices as the driver's records stand, each with the text a sentence of which is a candidate.
+         */
+        const driven: readonly ArtifactConsolidateSlice[] = [
+          {
+            sliceIndex: 0,
+            terminal: 'consolidated',
+            shipped: {
+              kind: 'consolidated',
+              text: 'Mittens naps in the window.',
+            },
+            rewrapped: false,
+            demoted: false,
+            verdicts: [],
+            gate: { kind: 'not-asked', },
+          },
+          {
+            sliceIndex: 1,
+            terminal: 'gate-kept-standing',
+            shipped: {
+              kind: 'incumbent',
+              text: 'Mittens naps in the window.',
+            },
+            rewrapped: false,
+            demoted: false,
+            verdicts: [],
+            gate: { kind: 'not-asked', },
+          },
+          {
+            sliceIndex: 2,
+            terminal: 'incumbent-only',
+            shipped: { kind: 'archive', },
+            rewrapped: false,
+            demoted: false,
+            verdicts: [],
+            gate: { kind: 'not-asked', },
+          },
+          {
+            sliceIndex: 3,
+            terminal: 'incumbent-only',
+            shipped: { kind: 'unchanged', },
+            rewrapped: false,
+            demoted: false,
+            verdicts: [],
+            gate: { kind: 'not-asked', },
+          },
+        ];
+        /**
+         The same slices after the writer added the finding.
+         */
+        const written = driven.map(function recorded(slice,) {
+          return withShippedTenseCandidates({
+            slice,
+            lifeEnded: true,
+            subjectNames: ['Mittens',],
+          },);
+        },);
+        expect(tenseLabelsOf({ slices: written, },),).toEqual([
+          ['CANDIDATE "consolidated"',],
+          ['ARCHIVE RENDERING',],
+          [],
+          [],
+        ],);
+        /**
+         The stage as the reader returns it from what the writer recorded.
+         */
+        const parsed = parseConsolidation({
+          value: {
+            kind: 'settled',
+            slices: written,
+          },
+          laneSelection: contestOf({
+            sliceIndexes: [
+              0,
+              1,
+              2,
+              3,
+            ],
+          },),
+          path: AT,
+          keys: SLICE_SPELLED_KEYS,
+          tenseRecorded: true,
+        },);
+        if (parsed.kind !== 'settled')
+          throw new Error('the settled stage was read as another kind',);
+        expect(parsed.slices,).toEqual(written,);
+      },
+    },),
+
+    it({
+      name: 'REFUSES THE TENSE CANDIDATES OF A CONSOLIDATION under the label of the other shipped wording, and of an '
+        + 'incumbent that stood in under the consolidation\'s',
+      fn: async () => {
+        const consolidated = readingOf({
+          value: {
+            kind: 'settled',
+            slices: [
+              {
+                ...SHIPPED_SLICE,
+                tenseCandidates: ARCHIVE_TENSE_CANDIDATES,
+              },
+            ],
+          },
+          laneSelection: contestOf({ sliceIndexes: [0,], },),
+          tenseRecorded: true,
+        },);
+        expect(consolidated.reason,).toBe(
+          `${REFUSED_AT}.slices[0].tenseCandidates[0].label: expected a label from CANDIDATE "consolidated", each once and in that order.`,
+        );
+        const incumbent = readingOf({
+          value: {
+            kind: 'settled',
+            slices: [
+              {
+                ...INCUMBENT_SLICE,
+                sliceIndex: 0,
+                tenseCandidates: TENSE_CANDIDATES,
+              },
+            ],
+          },
+          laneSelection: contestOf({ sliceIndexes: [0,], },),
+          tenseRecorded: true,
+        },);
+        expect(incumbent.reason,).toBe(
+          `${REFUSED_AT}.slices[0].tenseCandidates[0].label: expected a label from ARCHIVE RENDERING, each once and in that order.`,
+        );
       },
     },),
 

@@ -19,6 +19,7 @@ import {
   extractDeclaredIdentity,
   prepareDocumentPair,
   sourcePronounLines,
+  unreadableDeathKindOf,
 } from '../dist/final/node/index.mjs';
 
 /**
@@ -405,6 +406,20 @@ await describe({
         },),
 
         it({
+          name: 'WRITES a death date that holds a quotation mark or a line break as one quoted line, so a hand-edited '
+            + 'value cannot close the line or start another',
+          fn: async () => {
+            expect(collectIdentityLines({
+              sourceData: {},
+              targetData: {},
+              sourceEntryInfo: { info: { died: '2025-02-26"\n- name: ORIGINAL declares "Tom"', }, },
+            },),).toEqual([
+              String.raw`- died: the date this person died, as the corpus records it: "2025-02-26\"\n- name: ORIGINAL declares \"Tom\"".`,
+            ],);
+          },
+        },),
+
+        it({
           name: 'COUNTS a death year that YAML reads as a number, written as the text of that number',
           fn: async () => {
             expect(collectIdentityLines({
@@ -486,6 +501,59 @@ await describe({
               targetText: 'The cat naps.\n',
               sourceEntryInfo: { info: { died: 2_025, }, },
             },).lifeEnded,).toBe(true,);
+          },
+        },),
+      ],
+    },),
+
+    describe({
+      name: unreadableDeathKindOf.name,
+      children: [
+        it({
+          name: 'NAMES the kind of a death that is a truth value, a list, a record, a number that is not finite or another type',
+          fn: async () => {
+            expect([
+              true,
+              [2_025,],
+              { year: 2_025, },
+              Number.NaN,
+              Number.NEGATIVE_INFINITY,
+              2_025n,
+            ].map(function kindOfDied(died,) {
+              return unreadableDeathKindOf({ entryInfo: { info: { died, }, }, },);
+            },),).toEqual([
+              ['a truth value',],
+              ['a list',],
+              ['a record',],
+              ['a number that is not finite',],
+              ['a number that is not finite',],
+              ['a value of type bigint',],
+            ],);
+          },
+        },),
+
+        it({
+          name: 'NAMES nothing for a death that is text, a blank value or a finite number, or for an entry without one',
+          fn: async () => {
+            expect([
+              '2025-02-26',
+              '   ',
+              2_025,
+              null,
+              undefined,
+            ].map(function kindOfDied(died,) {
+              return unreadableDeathKindOf({ entryInfo: { info: { died, }, }, },);
+            },),).toEqual([
+              [],
+              [],
+              [],
+              [],
+              [],
+            ],);
+            expect(unreadableDeathKindOf({ entryInfo: { info: {}, }, },),).toEqual([],);
+            expect(unreadableDeathKindOf({ entryInfo: { info: 'cats', }, },),).toEqual([],);
+            expect(unreadableDeathKindOf({ entryInfo: null, },),).toEqual([],);
+            expect(unreadableDeathKindOf({ entryInfo: { died: true, }, },),).toEqual([],);
           },
         },),
       ],
