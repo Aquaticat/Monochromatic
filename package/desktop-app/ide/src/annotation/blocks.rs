@@ -78,38 +78,69 @@ fn fit_messages(
     let mut broken: u64 = 0;
     let narrowest = ROW_TEXT;
     let mut fitted: Vec<MessageRow> = Vec::new();
-    for (row, natural) in rows.iter().zip(widths) {
-        let indent = if row.continued {
+    let mut from = 0;
+    while from < rows.len() {
+        // What: A line of the message is the row that starts it and the rows that follow it softly.
+        // Why: The rows of one line were cut at 80 columns; breaking each of them alone would leave a short tail
+        //      on every one, so a line with a row wider than the limit is joined and broken again as a whole.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // const line = rows.slice(from, rows.findIndex((row, i) => i > from && row.gap === undefined));
+        // ```
+        let mut to = from + 1;
+        while to < rows.len() && rows[to].gap.is_some() {
+            to += 1;
+        }
+        let head = &rows[from];
+        let indent = if head.continued {
             CONTINUATION_INDENT
         } else {
             0.0
         };
-        if indent + natural <= limit {
-            fitted.push(row.clone());
+        let fits = (from..to).all(|index| {
+            let own = if rows[index].continued {
+                CONTINUATION_INDENT
+            } else {
+                0.0
+            };
+            return own + widths[index] <= limit;
+        });
+        if fits {
+            fitted.extend_from_slice(&rows[from..to]);
+            from = to;
             continue;
         }
-        broken += 1;
-        let mut pieces = shaper.wrap_row_text(&row.text, scale, (limit - indent).max(narrowest));
-        if !row.continued && pieces.len() > 1 {
-            // The rest of the row starts a continuation, which is indented, so it breaks again at its own width.
-            let rest = row.text[pieces[0].len()..].trim_start();
+        broken += (to - from) as u64;
+        let mut joined = head.text.clone();
+        for row in &rows[from + 1..to] {
+            joined.push_str(row.gap.unwrap_or(" "));
+            joined.push_str(&row.text);
+        }
+        let mut pieces = shaper.wrap_row_text(&joined, scale, (limit - indent).max(narrowest));
+        if !head.continued && pieces.len() > 1 {
+            // The rest of the line starts a continuation, which is indented, so it breaks again at its own width.
+            let rest = joined[pieces[0].len()..].trim_start();
             let tail =
                 shaper.wrap_row_text(rest, scale, (limit - CONTINUATION_INDENT).max(narrowest));
             pieces.truncate(1);
             pieces.extend(tail);
         }
         if pieces.is_empty() {
-            fitted.push(row.clone());
+            fitted.extend_from_slice(&rows[from..to]);
+            from = to;
             continue;
         }
         for (index, piece) in pieces.into_iter().enumerate() {
             fitted.push(MessageRow {
-                start: row.start,
-                continued: row.continued || index > 0,
-                severity: row.severity,
+                start: head.start,
+                continued: head.continued || index > 0,
+                severity: head.severity,
+                gap: if index == 0 { head.gap } else { Some(" ") },
                 text: piece,
             });
         }
+        from = to;
     }
     // Each message is its first row and the continued rows after it.
     let mut capped = Vec::new();

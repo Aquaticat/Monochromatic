@@ -209,6 +209,7 @@ fn block_height_and_row_positions() {
             start: 0,
             continued: false,
             severity: Severity::Error,
+            gap: None,
             text: text.to_string(),
         };
     };

@@ -708,3 +708,59 @@ fn a_new_width_applies_to_the_lines_near_the_view_first() {
     );
     assert!(!annotations.stale_in(Some(500.0), &everywhere()));
 }
+
+/// A message line cut at 80 columns is joined and broken again as a whole, so no row but its last is a short tail,
+///  and a word that was cut is joined without a blank.
+#[test]
+fn a_message_line_is_broken_again_as_a_whole() {
+    let long = "alpha beta gamma delta epsilon zeta eta theta iota kappa lambda mu nu xi omicron pi rho sigma tau upsilon phi chi psi omega alpha beta gamma delta";
+    let word = "x".repeat(150);
+    let (mut annotations, document) = store(
+        CODE,
+        Vec::new(),
+        vec![error(4, 9, long), error(10, 15, &word)],
+    );
+    let mut shaper = TextShaper::new();
+    let limit = 300.0;
+    let blocks = annotations.assemble(
+        SHOWN,
+        &document,
+        &mut shaper,
+        1.0,
+        Some(limit),
+        &everywhere(),
+    );
+    let rows = &blocks[0].messages;
+    // The first message: every row but its last holds most of the width.
+    let first_end = rows
+        .iter()
+        .skip(1)
+        .position(|row| return !row.continued)
+        .map_or(rows.len(), |index| return index + 1);
+    assert!(
+        first_end >= 3,
+        "the message takes several rows: {first_end}"
+    );
+    for row in &rows[..first_end - 1] {
+        let indent = if row.continued {
+            CONTINUATION_INDENT
+        } else {
+            0.0
+        };
+        let width = shaper.row_layout(&row.text, 1.0).full_width();
+        assert!(
+            indent + width >= limit * 0.6,
+            "`{}` is a short row of {width} px before the end of its message",
+            row.text
+        );
+    }
+    // The cut word stays whole: the pieces of the second message hold it without a blank inside.
+    let second: String = rows[first_end..]
+        .iter()
+        .map(|row| return row.text.as_str())
+        .collect();
+    assert!(
+        second.contains(&word),
+        "the cut word was split by a blank: {second}"
+    );
+}

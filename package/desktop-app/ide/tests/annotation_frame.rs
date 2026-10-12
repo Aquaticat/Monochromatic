@@ -67,6 +67,7 @@ fn block(label: &str, message: &str, held: f32) -> Block {
             start: 0,
             continued: false,
             severity: Severity::Error,
+            gap: None,
             text: message.to_string(),
         }],
         held: (0.0, held),

@@ -87,6 +87,7 @@ fn message(start: usize, continued: bool, severity: Severity, text: &str) -> Mes
         start,
         continued,
         severity,
+        gap: None,
         text: text.to_string(),
     };
 }

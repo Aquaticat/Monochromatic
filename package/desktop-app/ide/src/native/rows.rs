@@ -83,19 +83,19 @@ const SCROLL_QUIET: Duration = Duration::from_millis(200);
 ///  the annotation store's change counter,
 ///  the display scale as exact bits,
 ///  the counter of changes to the measured visual rows,
-///  the wrap width as exact bits (zero while the view has none),
-///  and whether a line near the view still holds blocks made for another width;
+///  and whether a line near the view still holds blocks made for another wrap width;
 ///  `type` names the tuple once.
 /// Why:
-///  Blocks are assembled again only when the stamp, the version, the scale, the width, or the staleness changed,
-///  because a hint stands where its character is drawn and a message breaks to the text area;
-///  the map is rebuilt when any of the six did.
+///  Blocks are assembled again only when the stamp, the version, the scale, or the staleness changed:
+///  a hint stands where its character is drawn and a message breaks to the text area,
+///  so a new width matters exactly when a line near the view holds blocks made for another one;
+///  the map is rebuilt when any of the five did.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// type RowKey = [stamp: DocumentStamp, version: number, scale: number, measured: number, width: number, stale: boolean];
+/// type RowKey = [stamp: DocumentStamp, version: number, scale: number, measured: number, stale: boolean];
 /// ```
-pub(super) type RowKey = (DocumentStamp, u64, u32, u64, u32, bool);
+pub(super) type RowKey = (DocumentStamp, u64, u32, u64, bool);
 
 /// What:
 ///  A freshly assembled vertical layout that is not installed yet:
@@ -191,7 +191,6 @@ fn wanted_key(current: &State, scale: f32) -> RowKey {
         current.annotations.version(),
         scale.to_bits(),
         current.wrap_version,
-        wrap_of(current).map_or(0, f32::to_bits),
         current
             .annotations
             .stale_in(wrap_of(current), &focus_of(current)),
@@ -227,8 +226,7 @@ fn rebuilt(current: &mut State, scale: f32) -> Option<Rebuilt> {
         return None;
     }
     let blocks_current = current.row_key.is_some_and(|known| {
-        return (known.0, known.1, known.2, known.4, known.5)
-            == (key.0, key.1, key.2, key.4, key.5);
+        return (known.0, known.1, known.2, known.4) == (key.0, key.1, key.2, key.4);
     });
     // What: Destructuring `&mut State` lends fields separately.
     // Why: Assembly changes the store's packing cache and uses the shaper while the document is only read.
@@ -265,7 +263,6 @@ fn rebuilt(current: &mut State, scale: f32) -> Option<Rebuilt> {
         key.1,
         key.2,
         key.3,
-        key.4,
         annotations.stale_in(wrap, &focus),
     );
     return Some(Rebuilt {

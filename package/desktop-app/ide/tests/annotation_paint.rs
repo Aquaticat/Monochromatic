@@ -119,6 +119,7 @@ fn block(
             start: *start,
             continued: false,
             severity: *severity,
+            gap: None,
             text: (*text).to_string(),
         });
     }
