@@ -1,11 +1,12 @@
 //! What:
-//!  The commit transaction's skeleton, in the incumbent's order:
-//!       recovery on start, the landing lock, the shadow repository, the seeded private index,
+//!  The commit transaction's skeleton: recovery on start, the shadow repository, the seeded private index,
 //!       then the policy preparation.
 //! Why:
-//!  Every later step (landing, post-landing) runs after this order is fixed.
-//!  The landing lock is taken before the preparation, as the incumbent does, and released before
-//!  the result is returned, so a prepared commit never holds it across the caller's next step.
+//!  The incumbent takes the landing lock inside the landing attempt, not during preparation
+//!  (`src/policy-engine/commit-landing.ts`, `landTransaction`, `await using _landingLock`).
+//!  Holding it through preparation would serialize concurrent commits, so this skeleton never takes it.
+//!  Recovery takes what it needs itself, as the incumbent's recovery scan does
+//!  (`src/policy-engine/commit-transaction-recovery-scan.ts`).
 //!  Nothing calls this yet: the command path keeps refusing `git commit` until landing is merged.
 //!
 //! In TS you'd write (pseudocode):
@@ -20,8 +21,6 @@ use super::commit_policy_preparation::{
     CommitPreparationError, CommitPreparationInput, CommitPreparationOutcome, NativeCommit, prepare_commit_policies,
 };
 use super::commit_preparation::PreparationHooks;
-use super::index_writer_coordination::hold_landing_lock;
-use super::owner_lock::OwnerLock;
 use super::policy_checks::ShippedChecks;
 use super::policy_engine::StageRequest;
 use super::repository_facts::RepositoryFacts;
@@ -45,7 +44,7 @@ use std::path::{Path, PathBuf};
 pub struct CommitTransactionInput<'a, F: RepositoryFacts> {
     /// Git executable and overlay.
     pub context: &'a GitContext,
-    /// Worktree identity the landing lock and recovery are keyed by.
+    /// Worktree identity recovery is keyed by.
     pub identity: &'a WorktreeIdentity,
     /// Invocation capture the shadow is built from.
     pub capture: &'a InvocationCapture,
@@ -121,8 +120,6 @@ pub fn transaction_paths(registry_root: &Path, common_dir: &Path, transaction_id
 pub enum CommitTransactionError {
     /// Recovery found a live or unrecoverable transaction, or could not run.
     Recovery(String),
-    /// The landing lock could not be taken or released.
-    Lock(String),
     /// The shadow repository, its directory or the seeded index could not be created.
     Setup(String),
     /// The policy preparation failed.
@@ -133,7 +130,7 @@ pub enum CommitTransactionError {
 ///  Run the commit transaction up to the prepared commit.
 /// Why:
 ///   Recovery runs first so a stale transaction never blocks the new one, and the
-///       shadow is created only after the landing lock is held.
+///       shadow is created after recovery.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -143,14 +140,7 @@ pub fn run_commit_transaction<F: RepositoryFacts>(
     input: CommitTransactionInput<'_, F>,
 ) -> Result<CommitPreparationOutcome, CommitTransactionError> {
     recover_first(input.context, input.identity)?;
-    let lock: Option<OwnerLock> = take_landing_lock(input.context, input.identity)?;
-    let outcome: Result<CommitPreparationOutcome, CommitTransactionError> = prepare_under_lock(input);
-    if let Some(held) = lock {
-        if let Err(error) = held.release() {
-            return Err(CommitTransactionError::Lock(format!("releasing the landing lock failed: {error:?}")));
-        }
-    }
-    return outcome;
+    return prepare_without_landing_lock(input);
 }
 
 /// What:
@@ -174,26 +164,7 @@ fn recover_first(context: &GitContext, identity: &WorktreeIdentity) -> Result<()
 }
 
 /// What:
-///  Take the landing lock for the preparation.
-/// Why:
-///   A worktree without a registry takes no lock; the coordination's failure keeps its stderr text.
-///
-/// In TS you'd write (pseudocode):
-/// ```ts
-/// const lock = await acquireLanding(identity);
-/// ```
-fn take_landing_lock(
-    context: &GitContext,
-    identity: &WorktreeIdentity,
-) -> Result<Option<OwnerLock>, CommitTransactionError> {
-    return match hold_landing_lock(context, identity) {
-        Ok(held) => Ok(held),
-        Err(failure) => Err(CommitTransactionError::Lock(failure.stderr())),
-    };
-}
-
-/// What:
-///  Create the shadow, seed the private index and prepare the commit, under the landing lock.
+///  Create the shadow, seed the private index and prepare the commit, without the landing lock.
 /// Why:
 ///   The shadow and the index live in the transaction directory, so a failure removes nothing outside it.
 ///
@@ -201,7 +172,7 @@ fn take_landing_lock(
 /// ```ts
 /// const shadow = await createShadow(capture, transactionId); await seedIndex(selection); return prepare();
 /// ```
-fn prepare_under_lock<F: RepositoryFacts>(
+fn prepare_without_landing_lock<F: RepositoryFacts>(
     input: CommitTransactionInput<'_, F>,
 ) -> Result<CommitPreparationOutcome, CommitTransactionError> {
     let Some(top_level) = worktree_root(input.identity) else {

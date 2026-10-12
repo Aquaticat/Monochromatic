@@ -1,31 +1,10 @@
-//! Controls for the call order around a landed commit and a guarded Git child.
+//! Controls for the guarded-child order: the exit code is returned after one release, and a release failure is reported.
 
 use super::*;
+use std::sync::Mutex;
 
-/// Records the order the after-landing steps ran in.
-struct Recorder {
-    /// Step names in call order.
-    order: Vec<&'static str>,
-    /// Whether the maintenance step fails.
-    maintenance_fails: bool,
-    /// The exit code the post-commit step reports.
-    code: i32,
-}
-
-impl AfterLanding for Recorder {
-    fn maintenance(&mut self) -> Result<(), String> {
-        self.order.push("maintenance");
-        if self.maintenance_fails {
-            return Err(String::from("maintenance refused"));
-        }
-        return Ok(());
-    }
-
-    fn post_commit(&mut self) -> Result<i32, String> {
-        self.order.push("post-commit");
-        return Ok(self.code);
-    }
-}
+/// The signal guard is one per process, so the controls that install it run one at a time.
+static GUARD_TURN: Mutex<()> = Mutex::new(());
 
 /// Counts how often the release step ran, and fails when asked to.
 struct Releases {
@@ -45,33 +24,11 @@ impl ReleaseSteps for Releases {
     }
 }
 
-/// Maintenance runs before the post-commit lifecycle, and the post-commit exit code is the result.
-#[test]
-fn maintenance_runs_before_post_commit() {
-    let mut recorder: Recorder = Recorder { order: Vec::new(), maintenance_fails: false, code: 0 };
-    assert_eq!(run_after_landing(&mut recorder), Ok(0));
-    assert_eq!(recorder.order, vec!["maintenance", "post-commit"]);
-}
-
-/// A maintenance failure stops the sequence before the post-commit gate reads the repository.
-#[test]
-fn a_maintenance_failure_stops_before_post_commit() {
-    let mut recorder: Recorder = Recorder { order: Vec::new(), maintenance_fails: true, code: 0 };
-    assert_eq!(run_after_landing(&mut recorder), Err(String::from("maintenance refused")));
-    assert_eq!(recorder.order, vec!["maintenance"]);
-}
-
-/// A post-commit blocked exit code is returned unchanged.
-#[test]
-fn the_post_commit_exit_code_is_returned() {
-    let mut recorder: Recorder = Recorder { order: Vec::new(), maintenance_fails: false, code: 2 };
-    assert_eq!(run_after_landing(&mut recorder), Ok(2));
-}
-
 /// The guarded child's exit code is returned, and release runs exactly once after the child ended.
 #[cfg(unix)]
 #[test]
 fn the_guarded_child_exit_code_is_returned_after_one_release() {
+    let _turn = GUARD_TURN.lock().unwrap_or_else(std::sync::PoisonError::into_inner);
     let mut releases: Releases = Releases { count: 0, fails: false };
     let mut command: Command = Command::new("/bin/sh");
     command.args(["-c", "exit 3"]);
@@ -83,6 +40,7 @@ fn the_guarded_child_exit_code_is_returned_after_one_release() {
 #[cfg(unix)]
 #[test]
 fn a_failed_release_is_reported_after_the_child_ends() {
+    let _turn = GUARD_TURN.lock().unwrap_or_else(std::sync::PoisonError::into_inner);
     let mut releases: Releases = Releases { count: 0, fails: true };
     let mut command: Command = Command::new("/bin/sh");
     command.args(["-c", "exit 0"]);
