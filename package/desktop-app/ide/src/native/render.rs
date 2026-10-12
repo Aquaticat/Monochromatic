@@ -36,7 +36,7 @@ use slint::{
     ComponentHandle, Image, ModelRc, Rgba8Pixel, SharedPixelBuffer, SharedString, VecModel,
 };
 /// UI callbacks share state without cross-thread synchronization.
-use std::{cell::RefCell, rc::Rc, sync::Arc};
+use std::{cell::RefCell, rc::Rc, sync::Arc, time::Instant};
 
 /// What:
 ///  Logical pixels the raster extends past the wrap width.
@@ -444,6 +444,7 @@ pub(super) fn render(window: &AppWindow, state: &Rc<RefCell<State>>) {
         }
     } else {
         // Any other change builds the requested tile here, and any tile still queued for the worker is dropped.
+        let build_started = Instant::now();
         tile::cancel(&mut current);
         // The map learns the heights of the lines the tile holds first, so the tile and the map agree.
         let (settled, moved) = measure_requested(&mut current, factor, view_now, scrolled);
@@ -460,6 +461,13 @@ pub(super) fn render(window: &AppWindow, state: &Rc<RefCell<State>>) {
                     current.tiles_painted += 1;
                     current.rows_shaped += built.rows_shaped;
                 }
+                tracing::debug!(
+                    elapsed_us = build_started.elapsed().as_micros() as u64,
+                    first = settled.first,
+                    count = settled.count,
+                    clipped = settled.clip.is_some(),
+                    "window thread measured and built a tile"
+                );
                 current.shown = settled;
                 let mut view = built.view;
                 view.rebase(&current.row_map);
