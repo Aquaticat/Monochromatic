@@ -44,17 +44,37 @@ const l = tagged({ tag: 'auto-mode-authorization-requirements', },);
  @returns conjunctive constraint state
  
  @throws {@link InstructionResolutionInputError} for unsupported or duplicate facts
+ 
+ @example
+ ```ts
+ inspectAuthorizationRequirements([{ id: 'confirm', applicability: 'applies', satisfaction: 'unsatisfied', channel: 'incumbent-approval' }]);
+ ```
  */
 export function inspectAuthorizationRequirements(input: unknown,): AuthorizationInspection {
+  /**
+   Trace constraint composition without logging instruction content.
+   */
   const rl = tagged({
     tag: inspectAuthorizationRequirements.name,
     l,
   },);
   rl.debug('inspecting internal authorization requirements',);
+  /**
+   Requirement identities must remain unambiguous within this program.
+   */
   const ids = new Set<string>();
+  /**
+   Unknown applicability, fulfillment or channel sufficiency prevents authorization.
+   */
   const pendingRequirementIds: string[] = [];
+  /**
+   These requirements already have independently established scoped-approval sufficiency.
+   */
   const approvalRequirementIds: string[] = [];
   for (const entry of readPolicyArray(input,)) {
+    /**
+     Validate every primitive before using a requirement as an internal constraint.
+     */
     const requirement = readAuthorizationRequirement(entry,);
     if (ids.has(requirement.id,))
       throw new InstructionResolutionInputError('Authorization requirement identities must be unique',);
@@ -68,6 +88,9 @@ export function inspectAuthorizationRequirements(input: unknown,): Authorization
     }
     approvalRequirementIds.push(requirement.id,);
   }
+  /**
+   Unknown requirements take precedence over otherwise eligible approval requirements.
+   */
   const state = pendingRequirementIds.length > 0
     ? 'unresolved'
     : approvalRequirementIds.length > 0

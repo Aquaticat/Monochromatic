@@ -13,6 +13,9 @@ import { tagged, } from '@monochromatic-dev/module-logger/ts';
  Unsupported internal policy input.
  */
 export class InstructionResolutionInputError extends Error {
+  /**
+   Stable diagnostic identity distinguishes input-shape failures from policy uncertainty.
+   */
   override readonly name = 'InstructionResolutionInputError';
 }
 
@@ -42,6 +45,11 @@ const l = tagged({ tag: 'auto-mode-policy-data', },);
  @returns owned field values
  
  @throws {@link InstructionResolutionInputError} for unsupported record shapes
+ 
+ @example
+ ```ts
+ readPolicyRecord({ input: { id: 'policy' }, fields: ['id'] });
+ ```
  */
 export function readPolicyRecord(
   {
@@ -52,6 +60,9 @@ export function readPolicyRecord(
     readonly fields: readonly string[]
   },
 ): Readonly<Record<string, unknown>> {
+  /**
+   Trace structural validation without logging candidate values.
+   */
   const rl = tagged({
     tag: readPolicyRecord.name,
     l,
@@ -61,10 +72,16 @@ export function readPolicyRecord(
     || isProxy(input,)
     || (Object.getPrototypeOf(input,) !== Object.prototype))
     throw new InstructionResolutionInputError('Policy facts require an ordinary non-proxy record',);
+  /**
+   Only supported own data values enter the owned record.
+   */
   const result: Record<string, unknown> = {};
   for (const key of Reflect.ownKeys(input,)) {
     if (((typeof key) !== 'string') || (!fields.includes(key,)))
       throw new InstructionResolutionInputError('Policy record contains an unsupported field',);
+    /**
+     Inspect property shape without invoking an accessor.
+     */
     const field = Object.getOwnPropertyDescriptor(
       input,
       key,
@@ -74,6 +91,9 @@ export function readPolicyRecord(
       'value',
     )))
       throw new InstructionResolutionInputError('Policy facts must use enumerable data properties',);
+    /**
+     Keep the copied value untrusted until its domain-specific reader narrows it.
+     */
     const value: unknown = field.value;
     result[key] = value;
   }
@@ -88,8 +108,16 @@ export function readPolicyRecord(
  @returns owned entries requiring their separate fact validation
  
  @throws {@link InstructionResolutionInputError} for unsupported arrays
+ 
+ @example
+ ```ts
+ readPolicyArray([{ id: 'policy' }]);
+ ```
  */
 export function readPolicyArray(input: unknown,): readonly unknown[] {
+  /**
+   Trace array validation without logging contained facts.
+   */
   const rl = tagged({
     tag: readPolicyArray.name,
     l,
@@ -103,8 +131,14 @@ export function readPolicyArray(input: unknown,): readonly unknown[] {
       !== (input.length
       + 1)))
     throw new InstructionResolutionInputError('Policy facts require a bounded dense non-proxy array',);
+  /**
+   Capture each actual occurrence without deduplication or borrowed-array freezing.
+   */
   const entries: unknown[] = [];
   for (let index = 0; index < input.length; index++) {
+    /**
+     A dense sequence requires an enumerable data property at every index.
+     */
     const entry = Object.getOwnPropertyDescriptor(
       input,
       String(index,),
@@ -114,6 +148,9 @@ export function readPolicyArray(input: unknown,): readonly unknown[] {
       'value',
     )))
       throw new InstructionResolutionInputError('Policy array contains a missing or accessor-backed entry',);
+    /**
+     Nested values still require their separate closed-record validation.
+     */
     const value: unknown = entry.value;
     entries.push(value,);
   }
@@ -128,12 +165,40 @@ export function readPolicyArray(input: unknown,): readonly unknown[] {
  @returns identifier within existing UTF-8 bound
  
  @throws {@link InstructionResolutionInputError} for missing or oversized identities
+ 
+ @example
+ ```ts
+ readPolicyIdentity('policy');
+ ```
  */
 export function readPolicyIdentity(input: unknown,): string {
   if (((typeof input) !== 'string') || (input.length === 0)
     || (Buffer.byteLength(input,) > POLICY_ID_MAX_BYTES))
     throw new InstructionResolutionInputError('Policy fact identity is missing or exceeds its bound',);
   return input;
+}
+
+/**
+ Flush the package-owned logger instance used by the policy kernel.
+ Synchronous conformance consumers can await sink verification before producing a burst,
+ and drain the same instance before exiting.
+
+ @internal
+
+ @returns after bounded verification and queued diagnostic delivery finish
+
+ @example
+ ```ts
+ await flushPolicyDiagnostics();
+ ```
+ */
+export async function flushPolicyDiagnostics(): Promise<void> {
+  /**
+   Retain the function boundary on the final diagnostic before draining.
+   */
+  const rl = tagged({ tag: flushPolicyDiagnostics.name, l, },);
+  rl.debug('flushing policy diagnostics',);
+  await rl.flush();
 }
 
 //endregion Closed data shapes

@@ -4,7 +4,7 @@
 
  @module
  */
-import { type InstructionEffect, type InstructionRule, resolveInstructionEffects, } from '@monochromatic-dev/pi-plugin-auto-mode';
+import { flushPolicyDiagnostics, type InstructionEffect, type InstructionRule, resolveInstructionEffects, } from '@monochromatic-dev/pi-plugin-auto-mode';
 import { describe, expect, it, } from '@monochromatic-dev/module-test/ts';
 
 //region Independent complete-world enumeration
@@ -73,9 +73,9 @@ await describe({
     it({
       name: 'agrees with every completion in the retained bounded partial-fact domain',
       fn: async function checkCompleteWorlds() {
+        await flushPolicyDiagnostics();
         const choices = variants();
-        let programs = 0;
-        let completeWorlds = 0;
+        const counts = { programs: 0, completeWorlds: 0, };
         for (const left of choices) {
           for (const right of choices) {
             for (const third of [undefined, ...choices,]) {
@@ -91,7 +91,7 @@ await describe({
                 for (const second of completions(secondRule,)) {
                   for (const last of thirdWorlds) {
                     worlds.add(completeReference(last === undefined ? [first, second,] : [first, second, last,],),);
-                    completeWorlds++;
+                    counts.completeWorlds++;
                   }
                 }
               }
@@ -100,12 +100,13 @@ await describe({
               const result = resolveInstructionEffects(rules,);
               const actual = result.state === 'resolved' ? `resolved:${result.effect}` : result.state;
               expect(actual,).toBe(expected,);
-              programs++;
+              counts.programs++;
             }
           }
         }
-        expect(programs,).toBe(14_400,);
-        expect(completeWorlds,).toBe(112_896,);
+        expect(counts.programs,).toBe(14_400,);
+        expect(counts.completeWorlds,).toBe(112_896,);
+        await flushPolicyDiagnostics();
       },
     },),
   ],

@@ -57,8 +57,16 @@ const MAX_PRIORITY = 255;
  @returns owned immutable rule
  
  @throws {@link InstructionResolutionInputError} for unsupported facts
+ 
+ @example
+ ```ts
+ readInstructionRule({ id: 'policy', priority: 0, effect: 'permit', applicability: 'applies' });
+ ```
  */
 export function readInstructionRule(input: unknown,): InstructionRule {
+  /**
+   Closed field selection rejects model metadata masquerading as rule facts.
+   */
   const values = readPolicyRecord({
     input,
     fields: [
@@ -68,11 +76,17 @@ export function readInstructionRule(input: unknown,): InstructionRule {
       'applicability',
     ],
   },);
+  /**
+   Narrow each primitive independently; record shape does not authenticate its meaning.
+   */
   const {
     priority,
     effect,
     applicability,
   } = values;
+  /**
+   Bounded identity correlates diagnostics, never authority.
+   */
   const id = readPolicyIdentity(values.id,);
   if (((typeof priority) !== 'number') || (!Number.isInteger(priority,))
     || (priority < 0)

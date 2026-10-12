@@ -21,7 +21,9 @@ await describe({
       return it({
         name: `rejects unsupported program shape ${index}`,
         fn: async function checkInvalidProgram() {
-          expect(function resolveInvalid() { resolveGuardOutcome(input,); },).toThrow(InstructionResolutionInputError,);
+          expect(function resolveInvalid() {
+            resolveGuardOutcome(input,);
+          },).toThrow(InstructionResolutionInputError,);
         },
       },);
     },),
@@ -37,13 +39,15 @@ await describe({
       { ...policyRule(), effect: 'approve', },
       { ...policyRule(), applicability: 0.99, },
       { ...policyRule(), probability: 0.99, },
-      { ...policyRule(), [Symbol('unmodeled',)]: true, },
+      { ...policyRule(), [Symbol('unsupported field in policy fixture',)]: true, },
       { id: 'missing', effect: 'permit', applicability: 'applies', },
     ].map(function invalidRule(input, index,) {
       return it({
         name: `rejects unsupported rule facts ${index}`,
         fn: async function checkInvalidRule() {
-          expect(function resolveInvalid() { resolveInstructionEffects([input,],); },).toThrow(InstructionResolutionInputError,);
+          expect(function resolveInvalid() {
+            resolveInstructionEffects([input,],);
+          },).toThrow(InstructionResolutionInputError,);
         },
       },);
     },),
@@ -57,7 +61,9 @@ await describe({
       return it({
         name: `rejects unsupported authorization facts ${index}`,
         fn: async function checkInvalidRequirement() {
-          expect(function inspectInvalid() { inspectAuthorizationRequirements([input,],); },).toThrow(InstructionResolutionInputError,);
+          expect(function inspectInvalid() {
+            inspectAuthorizationRequirements([input,],);
+          },).toThrow(InstructionResolutionInputError,);
         },
       },);
     },),
@@ -73,19 +79,32 @@ await describe({
         expect(resolveInstructionEffects(rules,).state,).toBe('resolved',);
         expect(inspectAuthorizationRequirements(requirements,).state,).toBe('requires-approval',);
         expect(resolveInstructionEffects([policyRule({ id: '🙂'.repeat(64,), },),],).state,).toBe('resolved',);
-        expect(function tooManyRules() { resolveInstructionEffects([...rules, policyRule(),],); },).toThrow(InstructionResolutionInputError,);
-        expect(function tooManyRequirements() { inspectAuthorizationRequirements([...requirements, policyRequirement(),],); },).toThrow(InstructionResolutionInputError,);
+        expect(function tooManyRules() {
+          resolveInstructionEffects([...rules, policyRule(),],);
+        },).toThrow(InstructionResolutionInputError,);
+        expect(function tooManyRequirements() {
+          inspectAuthorizationRequirements([...requirements, policyRequirement(),],);
+        },).toThrow(InstructionResolutionInputError,);
       },
     },),
     it({
       name: 'rejects duplicate identities, sparse arrays and extra array fields',
       fn: async function checkArrayShapes() {
-        expect(function duplicateRules() { resolveInstructionEffects([policyRule(), policyRule(),],); },).toThrow(InstructionResolutionInputError,);
-        expect(function duplicateRequirements() { inspectAuthorizationRequirements([policyRequirement(), policyRequirement(),],); },).toThrow(InstructionResolutionInputError,);
-        const sparse = new Array(1,);
-        expect(function sparseRules() { resolveInstructionEffects(sparse,); },).toThrow(InstructionResolutionInputError,);
+        expect(function duplicateRules() {
+          resolveInstructionEffects([policyRule(), policyRule(),],);
+        },).toThrow(InstructionResolutionInputError,);
+        expect(function duplicateRequirements() {
+          inspectAuthorizationRequirements([policyRequirement(), policyRequirement(),],);
+        },).toThrow(InstructionResolutionInputError,);
+        const sparse: unknown[] = [];
+        sparse.length = 1;
+        expect(function sparseRules() {
+          resolveInstructionEffects(sparse,);
+        },).toThrow(InstructionResolutionInputError,);
         const decorated = Object.defineProperty([policyRule(),], 'extra', { value: true, },);
-        expect(function decoratedRules() { resolveInstructionEffects(decorated,); },).toThrow(InstructionResolutionInputError,);
+        expect(function decoratedRules() {
+          resolveInstructionEffects(decorated,);
+        },).toThrow(InstructionResolutionInputError,);
       },
     },),
 
@@ -96,48 +115,68 @@ await describe({
     it({
       name: 'rejects proxies before reflection at every nested policy boundary',
       fn: async function checkProxies() {
-        let traps = 0;
+        const traps: object[] = [];
         const handler = {
-          getPrototypeOf(target: object,): object | null {
-            traps++;
-            return Reflect.getPrototypeOf(target,);
+          getPrototypeOf(target: object,): object {
+            traps.push(target,);
+            return Array.isArray(target,) ? Array.prototype : Object.prototype;
           },
         };
         const programProxy = new Proxy({ premises: 'complete', rules: [], }, handler,);
         const ruleProxy = new Proxy(policyRule(), handler,);
         const arrayProxy = new Proxy([policyRule(),], handler,);
         const requirementProxy = new Proxy(policyRequirement(), handler,);
-        expect(function program() { resolveGuardOutcome(programProxy,); },).toThrow(InstructionResolutionInputError,);
-        expect(function rule() { resolveInstructionEffects([ruleProxy,],); },).toThrow(InstructionResolutionInputError,);
-        expect(function array() { resolveInstructionEffects(arrayProxy,); },).toThrow(InstructionResolutionInputError,);
-        expect(function requirement() { inspectAuthorizationRequirements([requirementProxy,],); },).toThrow(InstructionResolutionInputError,);
-        expect(function requirementArray() { inspectAuthorizationRequirements(arrayProxy,); },).toThrow(InstructionResolutionInputError,);
-        expect(traps,).toBe(0,);
+        expect(function program() {
+          resolveGuardOutcome(programProxy,);
+        },).toThrow(InstructionResolutionInputError,);
+        expect(function rule() {
+          resolveInstructionEffects([ruleProxy,],);
+        },).toThrow(InstructionResolutionInputError,);
+        expect(function array() {
+          resolveInstructionEffects(arrayProxy,);
+        },).toThrow(InstructionResolutionInputError,);
+        expect(function requirement() {
+          inspectAuthorizationRequirements([requirementProxy,],);
+        },).toThrow(InstructionResolutionInputError,);
+        expect(function requirementArray() {
+          inspectAuthorizationRequirements(arrayProxy,);
+        },).toThrow(InstructionResolutionInputError,);
+        expect(traps.length,).toBe(0,);
         Reflect.getPrototypeOf(ruleProxy,);
-        expect(traps,).toBe(1,);
+        expect(traps.length,).toBe(1,);
       },
     },),
     it({
       name: 'rejects getters and hidden fields without evaluating them',
       fn: async function checkAccessors() {
-        let reads = 0;
+        const reads: string[] = [];
         const rule = Object.defineProperty(policyRule(), 'effect', {
           enumerable: true,
-          get() { reads++;
-          return 'permit'; },
+          get() {
+            reads.push('rule effect',);
+            return 'permit';
+          },
         },);
         const array = Object.defineProperty([policyRule(),], '0', {
           enumerable: true,
-          get() { reads++;
-          return policyRule(); },
+          get() {
+            reads.push('array entry',);
+            return policyRule();
+          },
         },);
         const hidden = Object.defineProperty(policyRule(), 'id', { enumerable: false, },);
-        expect(function getterRule() { resolveInstructionEffects([rule,],); },).toThrow(InstructionResolutionInputError,);
-        expect(function getterArray() { resolveInstructionEffects(array,); },).toThrow(InstructionResolutionInputError,);
-        expect(function hiddenField() { resolveInstructionEffects([hidden,],); },).toThrow(InstructionResolutionInputError,);
-        expect(reads,).toBe(0,);
+        expect(function getterRule() {
+          resolveInstructionEffects([rule,],);
+        },).toThrow(InstructionResolutionInputError,);
+        expect(function getterArray() {
+          resolveInstructionEffects(array,);
+        },).toThrow(InstructionResolutionInputError,);
+        expect(function hiddenField() {
+          resolveInstructionEffects([hidden,],);
+        },).toThrow(InstructionResolutionInputError,);
+        expect(reads.length,).toBe(0,);
         Reflect.get(rule, 'effect',);
-        expect(reads,).toBe(1,);
+        expect(reads.length,).toBe(1,);
       },
     },),
 

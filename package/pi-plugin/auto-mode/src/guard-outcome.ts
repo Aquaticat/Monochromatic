@@ -66,13 +66,24 @@ const l = tagged({ tag: 'auto-mode-guard-outcome', },);
  @returns internal outcome requiring original native dependency and approval checks before execution
  
  @throws {@link InstructionResolutionInputError} for unsupported internal programs
+ 
+ @example
+ ```ts
+ resolveGuardOutcome({ premises: 'complete', rules: [] });
+ ```
  */
 export function resolveGuardOutcome(program: unknown,): GuardOutcome {
+  /**
+   Trace the outcome branch without exposing instruction text.
+   */
   const rl = tagged({
     tag: resolveGuardOutcome.name,
     l,
   },);
   rl.debug('resolving internal guard outcome',);
+  /**
+   Reject unsupported fields before interpreting the internal program.
+   */
   const values = readPolicyRecord({
     input: program,
     fields: [
@@ -81,6 +92,9 @@ export function resolveGuardOutcome(program: unknown,): GuardOutcome {
       'authorizationRequirements',
     ],
   },);
+  /**
+   Absence of an established premise state remains incomplete.
+   */
   const {
     rules,
     premises = 'incomplete',
@@ -94,15 +108,30 @@ export function resolveGuardOutcome(program: unknown,): GuardOutcome {
       reason: 'Governing instructions or complete operation facts are not established',
     },);
   }
+  /**
+   Only an omitted requirements field means an empty constraint set.
+   */
   const requirements = Object.hasOwn(
     values,
     'authorizationRequirements',
   ) ? values.authorizationRequirements : [];
+  /**
+   Prerequisites remain independent from permissions and prohibitions.
+   */
   const authorization = inspectAuthorizationRequirements(requirements,);
+  /**
+   Directive precedence must be resolved separately from prerequisite fulfillment.
+   */
   const resolution = resolveInstructionEffects(rules,);
   // Validated requirement presence is equivalent to nonempty retained requirement diagnostics
   // only for unresolved/approval cases; satisfied nonempty requirements still need diagnostics.
+  /**
+   Preserve diagnostics even for nonempty requirements that are already satisfied.
+   */
   const hasRequirements = Array.isArray(requirements,) && (requirements.length > 0);
+  /**
+   Attach constraint diagnostics only when the input actually supplied requirements.
+   */
   const constraints = hasRequirements ? { authorizationRequirements: authorization, } : {};
   if (resolution.state !== 'resolved') {
     if ((resolution.state === 'unspecified') && (authorization.state !== 'satisfied')) {
@@ -119,6 +148,9 @@ export function resolveGuardOutcome(program: unknown,): GuardOutcome {
       ...constraints,
     },) : resolution;
   }
+  /**
+   Retain the same directive and constraint calculations across outcome branches.
+   */
   const common = {
     state: 'resolved' as const,
     resolution,

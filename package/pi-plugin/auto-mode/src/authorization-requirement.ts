@@ -44,8 +44,16 @@ export type AuthorizationRequirement = {
  @returns owned immutable requirement
  
  @throws {@link InstructionResolutionInputError} for unsupported requirement facts
+ 
+ @example
+ ```ts
+ readAuthorizationRequirement({ id: 'confirm', applicability: 'applies', satisfaction: 'unsatisfied', channel: 'incumbent-approval' });
+ ```
  */
 export function readAuthorizationRequirement(input: unknown,): AuthorizationRequirement {
+  /**
+   Closed field selection prevents unrelated metadata from becoming authorization facts.
+   */
   const values = readPolicyRecord({
     input,
     fields: [
@@ -55,11 +63,17 @@ export function readAuthorizationRequirement(input: unknown,): AuthorizationRequ
       'channel',
     ],
   },);
+  /**
+   Applicability, fulfillment and approval sufficiency are separate propositions.
+   */
   const {
     applicability,
     satisfaction,
     channel,
   } = values;
+  /**
+   Bounded identity correlates this requirement without establishing permission.
+   */
   const id = readPolicyIdentity(values.id,);
   if ((applicability !== 'applies') && (applicability !== 'does-not-apply')
     && (applicability !== 'unresolved'))
