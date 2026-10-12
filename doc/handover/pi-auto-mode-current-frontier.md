@@ -7,6 +7,30 @@ This current summary complements the
 [historical evidence ledger](pi-auto-mode-axiom-evaluation.md).
 Updated 2026-10-12.
 
+## Paused for a break
+
+The user asked to update the handover and then take a break on 2026-10-12.
+Finish only this handover update and its document checks,
+then stop.
+Do not restart the migration because a background completion notification arrives.
+Resume implementation when the user returns to it.
+
+At pause intake,
+the process manager reported no running jobs,
+and the restricted slice reported `pids.current=0`.
+No build,
+formatter,
+test,
+or agent is intentionally left running.
+The remaining work is not blocked on generic delivery authorization.
+
+The recent execution was not reliable enough.
+Agent-authored command and fixture mistakes,
+a formatter termination,
+and excessive supporting work delayed integration.
+The latest passing build and type check do not change the unfinished delivery status.
+Do not turn the break into another investigation queue.
+
 ## Current delivery direction
 
 The user rejected describing delivery or installation as withheld,
@@ -72,14 +96,164 @@ generated lockfile refresh `e801aa1e5f`,
 and the 18-document check `proc_b14d`.
 Documentation is committed in `7135c69304`.
 
+### Landed code and verification
+
 The deterministic directive resolver,
 authorization constraints,
-and outcome calculation are being moved into `package/pi-plugin/auto-mode/src/`.
-Their established semantics remain separate from source admission and execution permission.
-The package port does not discharge the native compiler's unconditional domain premise.
-The native path also still lacks the approval-context connection to its existing approval binder.
-These are remaining delivery integrations,
-not additional user authorization gates or reasons to reopen source-inventory campaigns.
+and outcome calculation now live in `package/pi-plugin/auto-mode/src/`:
+
+- `afa2268e1d` adds `policy-data.ts`,
+  `instruction-rule.ts`,
+  `instruction-resolution.ts`,
+  `authorization-requirement.ts`,
+  `authorization-requirements.ts`,
+  `guard-outcome.ts`,
+  and their `public-api.ts` exports.
+- `2b05330473` adds `policy-test-fixture.ts`,
+  `policy-resolution.unit.test.ts`,
+  `policy-data.unit.test.ts`,
+  and `policy-conformance.unit.test.ts`.
+  Tests import the maintained built package.
+  The conformance test carries the existing bounded complete-world oracle,
+  not a new provider trial.
+- `c34e4acfb5` fixes the computed Symbol-key syntax reported by TypeScript `TS1109`,
+  removes redundant field-count branches,
+  and separates the identity-byte limit from the fact-count limit.
+- `dd9cd4570f` adds explicit path argument decoding to the package's existing Oxlint tasks,
+  using the existing mise helpers and unchanged lint rules.
+  That new argument route has not yet been exercised successfully.
+
+The rebuilt artifact and package type check passed `proc_4615` with exit zero.
+Despite that process's name,
+its command contained only `build` and `lint:types`:
+it did not run unit tests.
+The new kernel tests,
+formatter completion,
+and lint remain unverified.
+The pure resolver does not establish source authority,
+coverage,
+human approval,
+or execution permission.
+Its explicit internal premises flag is not a native admission boundary.
+No migrated host/plugin was installed.
+
+### Recent failures and resource state
+
+`proc_3f44` never ran Oxlint.
+The agent appended paths to an inline Node task without an argument-consumption contract,
+producing `ERR_INVALID_TYPESCRIPT_SYNTAX`.
+The initial package build then succeeded in `proc_55f3`,
+but its type check found the agent-authored `TS1109` fixture error.
+That syntax error is fixed,
+and the later build/type run passed.
+
+The no-argument package formatter `proc_0d52` reached the configuration build,
+then terminated with `SIGTERM` without an Oxlint report or source changes.
+The shared restricted slice recorded `oom 1` and `oom_kill 1`.
+A kernel-journal query returned no matching entries;
+the killed process and exact causal chain have not been established.
+Do not call that run a lint pass,
+or attribute it to the earlier systemd transport failures.
+No successful resource-tuning workaround has been verified.
+
+All shell commands and process startups remain subject to the requested aggregate limits:
+2 GiB memory,
+CPU quota 200%,
+256 tasks,
+and no swap.
+Use the verified `systemd-run` wrapper with `piwork3285273.slice`;
+never retry unrestricted.
+Recheck the slice's runtime limits and child inheritance if the environment changes or restarts.
+The Pi host itself was not moved into that slice.
+No subagents or further Advisor calls.
+The deferred `PXQ` proposal remains unadopted.
+
+### Working locations and command wrapper
+
+The maintained repository is `${HOME}/Monochromatic`.
+The private implementation and progress record are under
+`${HOME}/temp/agent/auto-mode-consumer-contract.mDLkyNoP`.
+Its canonical progress file is `contract/lifecycle/runtime-continuation/current-progress.json`.
+Recent process logs are in `/tmp/pi-processes-rZNk8G/`;
+those logs are temporary,
+so the results and limitations in this handover are the durable summary.
+
+Every shell command and process startup in this session uses this launcher,
+including Git and diagnostic commands:
+
+```sh
+# Read-only repository status through the verified restricted launcher.
+exec /usr/bin/systemd-run \
+  --user --scope --quiet --collect --expand-environment=no \
+  --slice=piwork3285273.slice \
+  --property=MemoryMax=2G --property=MemorySwapMax=0 \
+  --property=CPUQuota=200% --property=TasksMax=256 \
+  /usr/bin/bash --noprofile --norc -c \
+  'cd -- "$HOME/Monochromatic" && git status --short'
+```
+
+The slice also needs its verified aggregate runtime limits;
+per-command limits alone do not bound concurrent jobs together.
+Do not assume that runtime slice configuration survives a restart.
+The empty `direct` child cgroup was never used as an alternate launcher.
+
+### Resume from these concrete gaps
+
+First finish the maintained kernel's built-artifact tests and lint under those limits.
+The changed Oxlint task's explicit file selection needs an actual invocation;
+selected-file success would not prove package-wide lint coverage.
+Do not rerun the full private native parent merely because a new session starts.
+
+Then complete the existing native decision consumer,
+rather than creating another standalone inventory:
+
+- In private `contract/integration/action-policy/premises.mjs`,
+  `inspectPolicyPremises` still unconditionally adds `request-source-domain`.
+  `compiler.mjs` therefore keeps the native program incomplete.
+  Replace the placeholder only with decision-specific evidence from existing owners.
+- In private `contract/integration/action-policy/evaluate.mjs`,
+  `evaluateOriginalPolicy` does not supply `approvalContext` to `evaluatePolicy`.
+  The runtime,
+  handler,
+  and reviewer do not carry that context either.
+  The existing `finishWithApproval` and incumbent original-group binder are not connected to the canonical path.
+- Production runtime and host integration still depend on the private generated graph.
+  The prior static scan reached 115 modules,
+  but was not a complete packaging inventory.
+  The maintained pure kernel removes none of the remaining host-constructor integration obligations.
+
+Preserve accepted all-host-input domain A and receipt at host processing boundaries.
+Already-received inputs remain accounted for after hiding,
+transformation,
+rejection,
+or non-transmission.
+Unprocessed edits undone before receipt are excluded.
+Unregistered potentially governing inputs remain unresolved;
+roles and filenames do not establish authority.
+Unknown premises do not become permission or automatic approval requests.
+No operative instruction remains `unspecified`.
+Prerequisite fulfillment grants no permission and overrides no prohibition.
+
+Keep the original budgets,
+source limits,
+failure retirement,
+native cancellation,
+and Allow/Deny/Stop behavior.
+No new hash locks,
+request re-encoding,
+parallel source registries,
+provider trials,
+or speculative source-capture campaigns.
+Complete maintained integration,
+then build,
+install,
+and exercise the actual host/plugin.
+
+For resumption,
+inspect the maintained files and the named native consumer gaps,
+not every historical checkpoint in this document.
+Report actual executed checks and the remaining delivery boundary.
+Ask only for a concrete user-only input or genuinely unsettled acceptance choice.
 
 ## Original rendered prompt-input contributions
 

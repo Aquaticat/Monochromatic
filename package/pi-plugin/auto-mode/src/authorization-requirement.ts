@@ -41,8 +41,6 @@ export function readAuthorizationRequirement(input: unknown,): AuthorizationRequ
     throw new InstructionResolutionInputError('Authorization satisfaction needs an admitted fact or explicit uncertainty',);
   if (channel !== 'incumbent-approval' && channel !== 'unsupported' && channel !== 'unresolved')
     throw new InstructionResolutionInputError('Authorization channel eligibility needs an admitted fact or explicit uncertainty',);
-  if (Object.keys(values,).length !== 4)
-    throw new InstructionResolutionInputError('Authorization requirement requires every supported field',);
   return Object.freeze({ id, applicability, satisfaction, channel, },);
 }
 

@@ -17,6 +17,9 @@ export class InstructionResolutionInputError extends Error {
 /** Shared clause and authorization-requirement bound. */
 export const POLICY_FACT_LIMIT = 256;
 
+/** Independent UTF-8 bound for program-local identities. */
+const POLICY_ID_MAX_BYTES = 256;
+
 /** Structural validation logger. */
 const l = tagged({ tag: 'auto-mode-policy-data', },);
 
@@ -83,7 +86,7 @@ export function readPolicyArray(input: unknown,): readonly unknown[] {
  @throws {@link InstructionResolutionInputError} for missing or oversized identities
  */
 export function readPolicyIdentity(input: unknown,): string {
-  if (typeof input !== 'string' || input.length === 0 || Buffer.byteLength(input,) > POLICY_FACT_LIMIT)
+  if (typeof input !== 'string' || input.length === 0 || Buffer.byteLength(input,) > POLICY_ID_MAX_BYTES)
     throw new InstructionResolutionInputError('Policy fact identity is missing or exceeds its bound',);
   return input;
 }

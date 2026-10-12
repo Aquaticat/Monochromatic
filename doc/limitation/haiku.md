@@ -380,3 +380,47 @@ The orchestrator stopped the agent and handed the lane to a Sonnet agent.
 
 Check the dated state of the repository (`git log`, file modification times) against the evidence doc before trusting
 either; a Haiku agent's doc can lag its commits by hours.
+
+## Slint IDE soft wrap, slice 1: library pieces (2026-10-11)
+
+### Goal
+
+IntelliJ's break rules as a Parley override, the continuation indent, wrapped shaping of one logical line, multi-row
+geometry in `ShapedRow`, and the caret affinity bit, with no UI change.
+The branch is `feat/ide-soft-wrap`; the brief required a seen-failing check per rule.
+
+### Mistakes
+
+#### Replayed a commit and produced duplicates
+
+A chained commit landed, the agent then retried it in the foreground, and the wrapper replayed it onto a new base
+after a landing race.
+The branch holds two commits (`4c41c7150d` and `7bf157b370`) with identical content.
+The brief said never to repeat a commit command that seems to hang and to check `git log` first.
+
+#### Mutation evidence with gaps it only partly named
+
+The agent inverted every predicate in `src/wrap.rs` at once and counted 9 of 15 unit tests failing.
+Two tests (the grapheme guard precedence and the pairs without a rule) still passed under inversion,
+so they do not isolate their predicate;
+the integration tests were not run under mutation because the library run stopped first.
+It said so, but the brief asked for every rule seen failing, and that was not met.
+
+#### Gate runs in a loop
+
+It ran the gate six times, fixing clippy implicit returns, shadowing and rustfmt one round at a time,
+because it did not run the lints before the first gate.
+
+### What went well
+
+It stopped on a real conflict (adding a field to `ReadingPosition` breaks about 47 struct literals in existing tests,
+and the brief forbade editing them) and asked, instead of editing the tests.
+Its list of differences between the plan and IntelliJ's Java source was specific (identifier rule, both-sided space
+and tab breaks, BMP-only eastern rule, the indent from the first non-blank x), and it named what Parley cannot
+reproduce (the weight product, the look-back, the beyond-width fallback).
+
+### Lesson
+
+Run each lint locally before the first gate and make mutation evidence per rule, with the test that failed named for
+each; a combined inversion hides tests that do not isolate their rule.
+When a commit seems to hang, read `git log` before retrying.
