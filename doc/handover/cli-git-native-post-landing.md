@@ -29,7 +29,7 @@ Incumbent sources:
 ## Status
 
 The three modules are complete, registered in `src/native/lib.rs`, and green on the host and in the container gate.
-The scoped mutation campaign over the three files is running; Progress records its state.
+The scoped mutation campaign over the three files finished with no missed mutant and no timeout.
 
 ## Progress
 
@@ -78,19 +78,27 @@ Container gate at `517a6896cb`, image tag `post-landing`, image id
 
 ### Mutation
 
-The campaign over the three modules runs as one scoped invocation (command under Rerun commands), because each
-invocation first replays every planted guard removal of the repository (61 containers, hours under the current host load).
-An earlier invocation with the default 300 second timeout noticed every planted control, then stopped at its unmutated
-baseline with exit 4: the baseline hit the 300 second limit under a host load average near 90, and
+Scoped campaign over `src/native/landed_disposal.rs`, `src/native/post_commit_hook.rs` and `src/native/post_landing.rs`
+against the container image `867e6cbcf2514d6d0fa883fcc863c0798774e8fb19791d166ca534ecc7667250` (source at `517a6896cb`),
+one invocation with `--timeout 1200`, evidence directory `target/verification/native-mutation-jA77aw` (not committed):
+all 61 planted guard removals noticed, unmutated baseline passed, 19 mutants tested, 16 caught, 0 missed, 0 timeouts,
+3 unviable.
+
+The three unviable mutants replace a function body with `Ok(Default::default())` and do not compile, because
+`PostCommitHookOutcome`, `OwnerLock` and `PostLandingOutcome` do not implement `Default`.
+Nothing survives, so no survivor needs a justification.
+
+An earlier invocation with the default 300 second timeout noticed every planted control and then stopped at its
+unmutated baseline with exit 4: the baseline hit the 300 second limit under a host load average near 90, and
 `auto_push::concurrency_tests::a_joined_push_failure_is_reported_by_every_commit_it_covered` failed in that run.
-The rerun uses `--timeout 1200`.
-There are 19 mutants in the three files (`cargo mutants --list`); results are recorded here once the run ends.
+That test belongs to the auto-push lane; it passed in the container gate and in the baseline of the final campaign.
+Each invocation replays all planted controls first (hours under heavy host load), so run the three files together.
 
 ### Trailing gates
 
 Skipped as the lane brief trails them: the old-and-new wrapper interop matrix, long fuzz campaigns (this lane adds no
 fuzz target), Windows checks, and the release-artifact performance gates.
-Maintenance and hook plumbing mutation is a trailing gate in the brief; the campaign above is run anyway.
+Mutation of maintenance and hook plumbing trails in the brief; the campaign above was run anyway, so nothing remains.
 
 ### Rerun commands
 
