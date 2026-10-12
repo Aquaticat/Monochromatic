@@ -3080,6 +3080,15 @@ the list is full width with no maximum column width and no centering (this repla
 earlier redesign), 16 dp side margin so a card is the page width minus 32 dp, rows 72 dp tall with a 40 dp circular icon
 at x = 32 dp and the title at x = 84 dp, 2 dp between rows of one group and 16 dp between groups, with the group corner
 rounding already built.
+The human then rejected Google's tinted backgrounds ("the non-transparent gray-ish bg is uncalled for; everything should
+be in one color, white or black"): the page, the header, the cards and the rows all use the one canvas color of the
+player, pure white in light (D34) and pure black in dark (D41), with no separate page tint, card fill or header band
+(this removes the `settings-page`, `settings-card` and header-band tokens of the earlier redesign).
+Groups and rows are therefore separated by the spacing above and by their text and icons alone, with no fill, border or
+divider line (the divider lines were already removed on 2026-10-11), and the group corner rounding survives only as the
+shape of the pressed, hovered and selected states.
+Fills that carry state or an icon are not backgrounds in this sense and stay: the 40 dp icon circle and the selection fill
+of D110, each a role derived from the accent under D108.
 The music player's template rows (D87 and D99) had no icon; the human asked that an icon be picked for each from
 Material Symbols and embedded, so every row has the stock leading icon and keeps the 72 dp two-line height.
 The orchestrator picked `queue_music` for the Track rows template and `play_circle` for the Playing track template, in
@@ -3088,6 +3097,37 @@ the Outlined style at weight 400 on the 24 px grid, drawn in a 40 dp circle fill
 They are embedded as vector path data in each app, with no icon font, no download and no network access at run time,
 the way the app already embeds its other icons; the Material Symbols license (Apache 2.0) text goes under `LICENSES/`
 and the README names the source.
+
+### D110. Settings is two panes of half the screen each when unfolded, and its text dodges the crease (2026-10-12)
+
+The human has seen Google's two-pane Settings and does not fully agree with it, and decided that this player's Settings
+still takes two panes on the unfolded screen, each exactly half of the screen, with text kept out of the crease.
+This replaces D109's "one form on every width" for the wide case; D109's measurements, row geometry and icons stand for
+the list.
+
+- Wide means the same condition under which the player shows two panes (the unfolded Fold inner display on Android, a
+  window of 600 px or more on desktop). Below that, Settings stays the single full-width page of D109, where a tap on a row
+  opens that template's editor page and Back returns.
+- Wide: the left pane is the Settings list of D109 (heading, rows with icons, 72 dp rows, group rounding) and the right
+  pane is the editor of the selected row (D89 to D99), shown in place so selecting a row never navigates.
+  On a device with a crease the panes are exactly half of the window each. The human then added that a device without a
+  crease does not need that: whether the device has a crease is detected through the platform API (on Android the
+  Jetpack WindowManager `FoldingFeature` of a vertical fold or hinge, from `WindowInfoTracker`; the desktop has none), and
+  without one the split follows the platform default ratio, which the orchestrator reads as the stock Settings value
+  `config_activity_embed_split_ratio` = 0.3636 for the list pane that the stock Settings APK ships (the human's wording
+  was "the default ratio"; this reading is a one-constant change).
+  No row or editor moves when the selection changes (the same stability as the Folders panel).
+  The selected row is shown with a filled selection shape in the secondary container role plus a bold title (two
+  channels, not color alone), and the first row, Track rows, is selected when Settings opens so the right pane is never
+  empty.
+- Crease: only on a device where the API reports a crease. E2 governs there. Text, labels and other informative marks in either pane keep a
+  clearance of `max(7.5 mm, crease width)` in total across the center, shared half to each pane, measured in physical
+  units and never stored as a fixed dp value; backgrounds, row and card containers, hit regions and the selection fill may
+  span the center. Where a row's title would reach the band, it ends before the band (ellipsis) and the right pane's
+  content starts after it.
+  Desktop windows have no crease, so there the split follows the default ratio and the clearance is the pane's ordinary
+  16 dp inset. The same holds for a tablet or any other large screen whose API reports no crease.
+- Back closes Settings in the wide form and in the single form alike, and in the wide form Escape closes it too.
 
 ## Pending after the theme picks (2026-09-04)
 
