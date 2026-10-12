@@ -22,6 +22,10 @@ run = "cargo mutants --list --no-config"
 description = "Generate the standalone native wrapper Cargo lockfile"
 run = "cargo generate-lockfile --offline"
 
+[tasks."native:config:differential"]
+description = "Compare the incumbent's and the native wrapper's policy decisions under the repository's real cli-git configuration; run native:build first, `-- <options>` are passed on"
+run = "node bin/differential-repository-config.mjs"
+
 [tasks."native:format"]
 description = "Format native wrapper Rust source without changing TypeScript"
 run = "cargo fmt"
