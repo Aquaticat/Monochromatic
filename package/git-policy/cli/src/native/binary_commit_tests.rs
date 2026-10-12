@@ -362,3 +362,34 @@ fn a_termination_signal_during_a_hook_ends_the_commit_and_leaves_nothing() {
     assert_nothing_left(&fixture, repo.as_path());
     remove(&fixture);
 }
+
+/// `git commit --patch` stages the hunks chosen on standard input into the private index, and only those land.
+#[test]
+fn a_patch_selection_lands_the_chosen_hunk() {
+    let fixture: Fixture = fixture("commit-patch");
+    let repo: PathBuf = edited_repository(&fixture, "repo");
+    let landed: Observed = observe(
+        &mut wrapped_commit(&fixture, repo.as_path(), &["commit", "--patch", "--message=chosen"]),
+        b"y\n",
+    );
+    assert_eq!(landed.code, Some(0), "{}", stderr_of(&landed));
+    assert_eq!(git_text(&fixture, repo.as_path(), &["show", "HEAD:a.txt"]), "one\ntwo\n");
+    assert_eq!(git_text(&fixture, repo.as_path(), &["log", "-1", "--format=%s"]).trim(), "chosen");
+    assert_nothing_left(&fixture, repo.as_path());
+    remove(&fixture);
+}
+
+/// `git commit --interactive` runs the file menu against the private index the same way.
+#[test]
+fn an_interactive_selection_lands_the_chosen_file() {
+    let fixture: Fixture = fixture("commit-interactive");
+    let repo: PathBuf = edited_repository(&fixture, "repo");
+    let landed: Observed = observe(
+        &mut wrapped_commit(&fixture, repo.as_path(), &["commit", "--interactive", "--message=chosen"]),
+        b"u\n1\n\nq\n",
+    );
+    assert_eq!(landed.code, Some(0), "{}{}", stderr_of(&landed), String::from_utf8_lossy(landed.stdout.as_slice()));
+    assert_eq!(git_text(&fixture, repo.as_path(), &["show", "HEAD:a.txt"]), "one\ntwo\n");
+    assert_nothing_left(&fixture, repo.as_path());
+    remove(&fixture);
+}
