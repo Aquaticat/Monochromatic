@@ -212,3 +212,33 @@ its reported width is the width of its bounds,
 and the clearance is `max(7.5 mm, reported width)`.
 Until the first layout report the `android.hardware.sensor.hinge_angle` system feature stands in.
 Settings and Search read the same answer.
+
+## Search and a library of a million tracks
+
+Search answers from an in-memory index (D112), never from composition.
+[`core/SearchService.kt`](app/src/main/kotlin/dev/monochromatic/musicplayer/core/SearchService.kt) owns the index and a
+worker thread that answers each query,
+and [`SearchHost.kt`](app/src/main/kotlin/dev/monochromatic/musicplayer/SearchHost.kt) hands the newest answer to the
+Search page.
+The index keeps the normalized track and top-level folder names in one array,
+buckets of word starts by their first, first two and first three UTF-16 units,
+and a cached best-500 list per first character (`core/SearchIndex*.kt`).
+A term of up to three units is answered from the buckets alone,
+and a longer term is verified on the narrowed candidates.
+Answers equal the old matcher's (tier, kind, name, library index, count, truncated flag and highlight ranges):
+the old implementation is kept as a test oracle in `src/test/.../core/ReferenceSearch.kt`,
+and `SearchIndexParityTest` and `ScaleSearchTest` compare the two on randomized and synthetic libraries up to 1,000,000
+tracks.
+
+A scan never blocks the screen (D111).
+`LibraryScanner` hands each batch of found tracks to `LibraryIngest`, which sorts, derives the pages and builds the
+Search index on its own thread, then gives the main thread a finished `BuiltLibrary` to swap in.
+Search receives the new tracks after the player shows them and signals the open Search page,
+which re-answers in place:
+the query, the caret and the scroll position stay,
+and results are keyed by track so a row the user is about to tap does not move.
+While a scan runs an empty answer reads "Still looking through your library" and the Search button stays enabled.
+
+`./gradlew :app:testDebugUnitTest` includes the 1,000,000-track cases, so its test JVM runs with a 3 GiB heap and the
+serial collector (`app/build.gradle.kts`): G1's loop strip mining made short counted loops about twenty times slower on
+the development host, which made timings measure the collector.

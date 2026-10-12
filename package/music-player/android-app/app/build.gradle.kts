@@ -63,6 +63,16 @@ android {
     }
 }
 
+// The 1,000,000-track Search and scale tests (D112) hold a whole synthetic library, its index and the old matcher's
+// oracle copy in one JVM, which does not fit Gradle's default 512 MiB test heap.
+// The serial collector is also chosen on purpose: with the default G1 collector, HotSpot's loop strip mining made every
+// short counted loop (a 24-character name scan) cost about 240 ns instead of 12 ns on the development host, which made
+// the timings of the index tests measure the collector, not the index.
+tasks.withType<Test>().configureEach {
+    maxHeapSize = "3g"
+    jvmArgs("-XX:+UseSerialGC")
+}
+
 dependencies {
 
     val composeBom = platform("androidx.compose:compose-bom:2026.09.00")

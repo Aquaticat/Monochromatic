@@ -191,13 +191,16 @@ import dev.monochromatic.musicplayer.core.HostKeyRoute
 import dev.monochromatic.musicplayer.core.PlaybackMode
 import dev.monochromatic.musicplayer.core.PlayerHostModel
 import dev.monochromatic.musicplayer.core.SearchActivation
+import dev.monochromatic.musicplayer.core.SearchAnswer
 import dev.monochromatic.musicplayer.core.SearchResult
 import dev.monochromatic.musicplayer.core.SearchState
 import dev.monochromatic.musicplayer.core.TemplateEditorState
 import dev.monochromatic.musicplayer.core.TemplateKind
 import dev.monochromatic.musicplayer.core.FeedbackMessage
 import dev.monochromatic.musicplayer.core.buildPlayerContent
-import dev.monochromatic.musicplayer.core.searchLibrary
+import dev.monochromatic.musicplayer.core.SearchResultKind
+import dev.monochromatic.musicplayer.core.playingResultId
+import dev.monochromatic.musicplayer.core.searchStateFor
 
 // What:     `sealed interface PlayerRoute` names the four destinations the host can show.
 // Why:      One closed type lets the host draw exactly one destination and makes Back a total function.
@@ -619,11 +622,31 @@ fun playerHost(
     // ```ts
     // const openSearchResult = (result: SearchResult) => { /* activation, then back to player */ };
     // ```
+    /**
+     * Returns a track result with its load-order index in the library the player holds now, found by the track's URI.
+     *
+     * The index of a result is the track's number in the Search index, which is its arrival number while a scan runs
+     * and so differs from its position in the sorted library. A track the library no longer holds comes back without an
+     * index, which the activation rules answer by staying in Search (D74).
+     */
+    fun locateInLibrary(result: SearchResult): SearchResult {
+        if (result.kind != SearchResultKind.TRACK) {
+            return result
+        }
+        /** URI of the result's track, or null for an index built without URIs. */
+        val uri: String = result.trackUri ?: return result.copy(indexInLibrary = null)
+        /** Position of that URI in the library now, or -1. */
+        val position: Int = controller.indexOfUri(uri)
+        return result.copy(indexInLibrary = if (position < 0) null else position)
+    }
+
     /** Acts on one Search result, then returns to the player unless the result could not be opened. */
     fun openSearchResult(result: SearchResult) {
+        /** The result with its track located in the library as it is now, or without a position when it is gone. */
+        val located: SearchResult = locateInLibrary(result)
         /** What activating this result does to the player, decided from the result and the playing track. */
         val activation: SearchActivation = PlayerHostModel.searchActivationFor(
-            result = result,
+            result = located,
             pageLabels = state.pageLabels,
             currentIndex = state.currentIndex,
         )
@@ -804,7 +827,7 @@ fun playerHost(
      */
     fun openMenu(index: Int, anchor: MenuAnchorRect) {
         /** Track at the index in load order, or null when the index is out of range. */
-        val track: Track? = controller.libraryTracks().getOrNull(index)
+        val track: Track? = controller.trackAt(index)
         if (track == null) {
             Log.w(LOG_TAG, "player host menu index out of range index=$index")
             return
@@ -877,7 +900,7 @@ fun playerHost(
     suspend fun reconcile() {
         /** Tracks read from the current library after the change. */
         val tracks: List<Track> = withContext(Dispatchers.IO) { LibrarySource.load(context) }
-        controller.reconcileLibrary(tracks)
+        controller.reconcileFromScan(tracks)
         Log.i(LOG_TAG, "player host library reconciled tracks=${tracks.size}")
     }
 
@@ -1563,14 +1586,22 @@ fun playerHost(
                     }
                 }
                 PlayerRoute.Search -> {
-                    /**
-                     * Library tracks in load order, rebuilt once per controller snapshot so each index is a load index.
-                     */
-                    val tracks: List<Track> = remember(state) { controller.libraryTracks() }
-                    /** Search state for the typed query over the library tracks. */
-                    val results: SearchState = remember(query, tracks) {
-                        searchLibrary(query = query, tracks = tracks, available = true)
-                    }
+                    /** The process's Search service, or null when nothing can search. */
+                    val searchHost: SearchHost? = controller.searchHost
+                    // Each visit starts clean (D66), and each edit of the query asks the service for an answer on
+                    // its own worker thread, so no keystroke ranks anything in composition.
+                    LaunchedEffect(searchHost) { searchHost?.beginVisit() }
+                    LaunchedEffect(searchHost, query) { searchHost?.ask(query) }
+                    /** Newest answer of this visit, which keeps the page current as a scan adds tracks (D111). */
+                    val answer: SearchAnswer? = searchHost?.shownAnswer
+                    /** State the page draws for the typed query. */
+                    val results: SearchState = searchStateFor(
+                        query = query,
+                        answer = answer,
+                        hasService = searchHost != null,
+                    )
+                    /** Playing track's URI, which marks its row among the results. */
+                    val playingUri: String? = state.currentIndex?.let { index -> controller.uriAt(index) }
                     searchPage(
                         creaseWidthPx = creaseWidthPx,
                         state = results,
@@ -1579,7 +1610,7 @@ fun playerHost(
                         onBack = { go(PlayerRoute.Player) },
                         onClear = { query = "" },
                         onOpenResult = { result -> openSearchResult(result) },
-                        currentTrackIndex = state.currentIndex,
+                        currentTrackIndex = playingResultId(results, playingUri),
                         deck = {
                             transportDeck(
                                 model = model.deck,
@@ -1587,6 +1618,7 @@ fun playerHost(
                             )
                         },
                         isPlaying = state.playing,
+                        complete = answer?.complete ?: true,
                         folderBrowser = { browserModifier ->
                             folderPickerPane(
                                 sections = model.sections,

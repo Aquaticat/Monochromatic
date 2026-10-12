@@ -563,3 +563,54 @@ class SearchPageModelTest {
         assertEquals(0, SEARCH_RESTORED_RESULT_INDEX)
     }
 }
+
+/** Verifies the scan-aware status lines and the helpers that map a Search answer to what the page draws (D69, D111). */
+class SearchScanStatusTest {
+    /** Builds an answer around a state. */
+    private fun answer(state: SearchState, complete: Boolean = true): SearchAnswer =
+        SearchAnswer(1L, "q", state, 0, complete, false, 0L, 0.0)
+
+    /** An unfinished scan turns the two nothing-here verdicts into the scanning copy and leaves the rest alone. */
+    @Test
+    fun anUnfinishedScanIsNotAVerdict() {
+        val scanning = searchStatusLine(SearchState.NoMatch("zz"), complete = false)
+        assertEquals(SEARCH_SCANNING_TITLE, scanning?.title)
+        assertEquals(SEARCH_SCANNING_DETAIL, scanning?.detail)
+        assertEquals(SEARCH_SCANNING_TITLE, searchStatusLine(SearchState.EmptyInventory, complete = false)?.title)
+        assertEquals(SEARCH_EMPTY_INVENTORY_TITLE, searchStatusLine(SearchState.EmptyInventory, complete = true)?.title)
+        assertEquals(SEARCH_NO_MATCH_PREFIX + "zz" + SEARCH_NO_MATCH_SUFFIX, searchStatusLine(SearchState.NoMatch("zz"))?.title)
+        assertEquals(SEARCH_PROMPT_TITLE, searchStatusLine(SearchState.EmptyQuery, complete = false)?.title)
+        assertNull(searchStatusLine(SearchState.Results(emptyList(), false), complete = false))
+    }
+
+    /** A blank query is the invitation at once; a query without an answer draws an empty list; no service is unavailable. */
+    @Test
+    fun theStateDrawnFollowsTheQueryAndTheAnswer() {
+        assertEquals(SearchState.EmptyQuery, searchStateFor("  ", null, hasService = true))
+        assertEquals(SearchState.Unavailable, searchStateFor("a", null, hasService = false))
+        assertEquals(SearchState.Results(emptyList(), false), searchStateFor("a", null, hasService = true))
+        assertEquals(
+            SearchState.Results(emptyList(), false),
+            searchStateFor("a", answer(SearchState.EmptyQuery), hasService = true),
+        )
+        val noMatch = SearchState.NoMatch("a")
+        assertEquals(noMatch, searchStateFor("a", answer(noMatch), hasService = true))
+    }
+
+    /** The playing row is found by URI among the shown results, whatever number the index gave it. */
+    @Test
+    fun thePlayingRowIsFoundByUri() {
+        val rows = SearchState.Results(
+            items = listOf(
+                SearchResult(SearchResultKind.FOLDER, "F", null, null, "F", 0, emptyList(), emptyList()),
+                SearchResult(SearchResultKind.TRACK, "t", "F", 41, "F", 1, emptyList(), emptyList(), "u-41"),
+                SearchResult(SearchResultKind.TRACK, "t2", "F", 97, "F", 2, emptyList(), emptyList(), "u-97"),
+            ),
+            truncated = false,
+        )
+        assertEquals(97, playingResultId(rows, "u-97"))
+        assertNull(playingResultId(rows, "u-1"))
+        assertNull(playingResultId(rows, null))
+        assertNull(playingResultId(SearchState.EmptyQuery, "u-97"))
+    }
+}

@@ -867,6 +867,8 @@ internal fun searchHighlightedText(
  * @param creaseWidthPx Width of the window's crease in physical pixels as the platform reports it, or null when the
  *   window has no crease, in which case the inner arrangement keeps no extra clearance (E2, D110).
  * @param isPlaying Playing state of the current track, or null when the page does not know it.
+ * @param complete Whether the library scan has finished; while it has not, a no-match or empty answer is not final
+ *   and the page says it is still looking (D69, D111).
  * @param folderBrowser Draws the retained folder browser in the upper-left region of the inner layout.
  */
 @Composable
@@ -882,6 +884,7 @@ fun searchPage(
     deck: @Composable () -> Unit,
     modifier: Modifier = Modifier,
     isPlaying: Boolean? = null,
+    complete: Boolean = true,
     folderBrowser: @Composable (Modifier) -> Unit = {},
 ) {
     /** Whether the system is in dark mode, which selects the true-black canvas and dark emphasis. */
@@ -898,11 +901,11 @@ fun searchPage(
     BoxWithConstraints(modifier = modifier.fillMaxSize().background(canvas)) {
         if (isCoverLayout(maxWidth.value)) {
             searchCoverPage(state = state, query = query, actions = actions, canvas = canvas,
-                currentTrackIndex = currentTrackIndex, isPlaying = isPlaying)
+                currentTrackIndex = currentTrackIndex, isPlaying = isPlaying, complete = complete)
         } else {
             searchInnerPage(creaseWidthPx = creaseWidthPx, state = state, query = query, actions = actions,
-                canvas = canvas, currentTrackIndex = currentTrackIndex, isPlaying = isPlaying, deck = deck,
-                folderBrowser = folderBrowser)
+                canvas = canvas, currentTrackIndex = currentTrackIndex, isPlaying = isPlaying, complete = complete,
+                deck = deck, folderBrowser = folderBrowser)
         }
     }
 }
@@ -923,13 +926,14 @@ private fun searchCoverPage(
     canvas: Color,
     currentTrackIndex: Int?,
     isPlaying: Boolean?,
+    complete: Boolean,
 ) {
     Column(modifier = Modifier.fillMaxSize().background(canvas)) {
         Box(modifier = Modifier.fillMaxWidth().windowInsetsTopHeight(WindowInsets.statusBars))
         searchHeader(query = query, actions = actions, startInset = SEARCH_EDGE_INSET, endInset = SEARCH_EDGE_INSET)
         HorizontalDivider(thickness = SEARCH_SEAM, color = MaterialTheme.colorScheme.outline)
         /** Status line for this state, or null when the state draws a result list. */
-        val line: SearchStatusLine? = searchStatusLine(state)
+        val line: SearchStatusLine? = searchStatusLine(state, complete)
         if (line != null) {
             searchCoverStatus(line = line, modifier = Modifier.weight(1f).fillMaxWidth())
         } else if (state is SearchState.Results) {
@@ -965,6 +969,7 @@ private fun searchInnerPage(
     canvas: Color,
     currentTrackIndex: Int?,
     isPlaying: Boolean?,
+    complete: Boolean,
     deck: @Composable () -> Unit,
     folderBrowser: @Composable (Modifier) -> Unit,
 ) {
@@ -973,7 +978,7 @@ private fun searchInnerPage(
     /** Half the crease in dp, which is the clear zone that keeps information off the fold (E2). */
     val halfCrease: Dp = searchCreaseHalfDp(densityPerDp = density.density, creaseWidthPx = creaseWidthPx).dp
     /** Status line for this state, or null when the state draws a result list. */
-    val line: SearchStatusLine? = searchStatusLine(state)
+    val line: SearchStatusLine? = searchStatusLine(state, complete)
     Row(modifier = Modifier.fillMaxSize().background(canvas).imePadding()) {
         Column(modifier = Modifier.weight(1f).fillMaxHeight()) {
             Box(modifier = Modifier.weight(1f).fillMaxWidth()) {

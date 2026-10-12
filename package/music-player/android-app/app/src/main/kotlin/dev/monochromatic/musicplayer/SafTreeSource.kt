@@ -96,7 +96,7 @@ import android.provider.DocumentsContract.Document
 // ```
 import android.util.Log
 
-// What:     `import dev.monochromatic.musicplayer.core.BatchEmitGate` imports the app's
+// What:     `import dev.monochromatic.musicplayer.core.LibraryDeltaGate` imports the app's
 //           own `BatchEmitGate` CLASS from the sibling `.core` package: the pure rule
 //           that decides when a streaming scan has accumulated enough new tracks to emit
 //           another sorted-so-far batch.
@@ -107,7 +107,7 @@ import android.util.Log
 // ```ts
 // import { BatchEmitGate } from "./core/BatchEmitGate";
 // ```
-import dev.monochromatic.musicplayer.core.BatchEmitGate
+import dev.monochromatic.musicplayer.core.LibraryDeltaGate
 
 // What:     `import dev.monochromatic.musicplayer.core.LIBRARY_BATCH_SIZE` imports the
 //           app's own top-level `Int` constant (the shared streaming threshold, around
@@ -323,10 +323,10 @@ object SafTreeSource {
     //           tracks sorted by display path. The caller must hold a read grant for
     //           `treeUri`; listing the root without one throws (which the caller treats
     //           as a fall-back signal, not a crash). `suspend` keeps the cursor I/O off
-    //           the UI thread. When `onBatch` is supplied, the scan also emits growing,
-    //           already-sorted batches AS IT RUNS so the screen can fill in early; when it
-    //           is null (the default), the scan stays atomic and only the final list is
-    //           returned.
+    //           the UI thread. When `onBatch` is supplied, the scan also emits the tracks
+    //           found since the previous batch, in the order found and NOT sorted, AS IT
+    //           RUNS (the caller sorts, see `LibraryIngest`); when it is null (the
+    //           default), the scan stays atomic and only the final sorted list is returned.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -404,8 +404,7 @@ object SafTreeSource {
          * Defines gate value for this music-player component; the TypeScript-oriented notes above explain its
          * source and use.
          */
-        val gate: BatchEmitGate<Track> =
-            BatchEmitGate(LIBRARY_BATCH_SIZE) { left, right -> compareByCodePoint(left.displayPath, right.displayPath) }
+        val gate: LibraryDeltaGate<Track> = LibraryDeltaGate(LIBRARY_BATCH_SIZE)
         // What:     `val rootDocumentId: String = DocumentsContract.getTreeDocumentId(treeUri)`
         //           declares a read-only `String` local `rootDocumentId`.
         //           `getTreeDocumentId(treeUri)` extracts the granted tree's root
@@ -583,6 +582,7 @@ object SafTreeSource {
         // ```ts
         // console.info(`[${SOURCE_TAG}] scanned ${tracks.length} audio files under ${treeUri}`);
         // ```
+        emitLibraryTail(onBatch = onBatch, gate = gate, tracks = tracks)
         Log.i(SOURCE_TAG, "scanned ${tracks.size} audio files under $treeUri")
         // What:     `tracks.sortedWith { left, right -> compareByCodePoint(left.displayPath, right.displayPath) }`
         //           is the TAIL EXPRESSION of the `withContext` lambda (no trailing `;`), so
@@ -647,7 +647,7 @@ object SafTreeSource {
     //   pending: Frame[],
     //   tracks: Track[],
     //   onBatch: ((batch: readonly Track[]) => Promise<void>) | null,
-    //   gate: BatchEmitGate<Track>,
+    //   gate: LibraryDeltaGate<Track>,
     // ): Promise<void> { ... }
     // ```
     /**
@@ -716,9 +716,9 @@ object SafTreeSource {
         //
         // In TS you'd write (pseudocode):
         // ```ts
-        // gate: BatchEmitGate<Track>,
+        // gate: LibraryDeltaGate<Track>,
         // ```
-        gate: BatchEmitGate<Track>,
+        gate: LibraryDeltaGate<Track>,
     ) {
         // What:     `val childrenUri: Uri = DocumentsContract.buildChildDocumentsUriUsingTree(treeUri,
         //           frame.documentId)`

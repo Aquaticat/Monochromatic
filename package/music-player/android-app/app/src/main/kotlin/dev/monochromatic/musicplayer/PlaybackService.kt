@@ -334,6 +334,12 @@ class PlaybackService : MediaSessionService() {
      */
     private val scope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
 
+    /** The process's Search service and its answers, which every library change feeds. */
+    private val searchHost: SearchHost = SearchHost()
+
+    /** Runs scans through the ingest; created with the controller. */
+    private lateinit var scanner: LibraryScanner
+
     // What:     `private var loadJob: Job? = null` declares a private, reassignable field
     //           of the NULLABLE handle type `Job?` (a running coroutine, or null),
     //           initialised `null`.
@@ -557,6 +563,8 @@ class PlaybackService : MediaSessionService() {
         // this.controller.onPersist = () => this.saveSession();
         // ```
         controller.onPersist = { saveSession() }
+        controller.searchHost = searchHost
+        scanner = LibraryScanner(controller, searchHost)
         // What:     `val built: MediaSession = MediaSession.Builder(this, brainPlayer).build()`
         //           declares a read-only `MediaSession` local `built`. `MediaSession.Builder(this, brainPlayer)`
         //           constructs a builder seeded with the service context and the projected
@@ -789,36 +797,40 @@ class PlaybackService : MediaSessionService() {
         // });
         // ```
         loadJob = scope.launch {
-            // What:     `val tracks = LibrarySource.load(this@PlaybackService) { batch -> withContext(Dispatchers.Main)
-            //           { controller.reconcileLibrary(batch) } }`
-            //           declares a read-only local `tracks` (type INFERRED as `List<Track>`) from
-            //           the `suspend` `load`, NOW passing a STREAMING callback. The trailing lambda
-            //           `{ batch -> ... }` is the `onBatch`: the scan calls it on its background
-            //           thread for each growing, sorted batch, and `withContext(Dispatchers.Main) { ... }`
-            //           hops to the main thread before `controller.reconcileLibrary(batch)` touches
-            //           the Compose state. `this@PlaybackService` is QUALIFIED `this` (the service,
-            //           not the coroutine receiver), passed as the context.
-            // Why:      Stream the cold-start load: each batch makes the queue non-empty and grows
-            //           the on-screen list, so the user sees music almost immediately. Reusing
-            //           `reconcileLibrary` adopts each batch, re-points a tapped track by URI, and
-            //           leaves settings and the loading flag alone.
+            // What:     `val outcome = scanner.scan(source = { onBatch -> LibrarySource.load(this, onBatch) },
+            //           publish = { built -> controller.reconcileBuilt(built, feedSearch = false) })`
+            //           declares a read-only local `outcome` (a `ScanOutcome`) from the `suspend` `scan`.
+            //           The `source` lambda runs the scan with `onBatch`, which receives the tracks found
+            //           since the previous batch, in the order found and not sorted. The `publish` lambda
+            //           is called on the main thread with a finished `BuiltLibrary`.
+            // Why:      Stream the cold-start load without blocking the screen (D111): the scanner's
+            //           ingest sorts, derives the pages and builds the Search index on its own thread,
+            //           and the main thread only swaps in the finished library, so the user sees music
+            //           almost immediately and a batch never costs a frame. Search is fed after the
+            //           player shows each batch. `feedSearch = false` because the scanner feeds it.
             // Gotcha:   The callback is a SUSPENSION POINT on the scan thread; cancelling this load
             //           (a newer load supersedes it) surfaces there as a `CancellationException`,
             //           which the SAF source re-throws so the superseded scan stops emitting.
             //
             // In TS you'd write (pseudocode):
             // ```ts
-            // const tracks = await LibrarySource.load(this, async (batch) => {
-            //   await withContext(Dispatchers.Main, () => this.controller.reconcileLibrary(batch));
+            // const outcome = await scanner.scan({
+            //   source: (onBatch) => LibrarySource.load(this, onBatch),
+            //   publish: (built) => this.controller.reconcileBuilt(built, false),
             // });
             // ```
             /**
              * Defines tracks value for this music-player component; the TypeScript-oriented notes above explain
              * its source and use.
              */
-            val tracks = LibrarySource.load(this@PlaybackService) { batch ->
-                withContext(Dispatchers.Main) { controller.reconcileLibrary(batch) }
-            }
+            val outcome: ScanOutcome = scanner.scan(
+                source = { onBatch -> LibrarySource.load(this@PlaybackService, onBatch) },
+                publish = { built -> controller.reconcileBuilt(built, feedSearch = false) },
+            )
+            /** The complete library built by the ingest, or null when the source and the ingest disagreed. */
+            val final = outcome.final
+            /** The source's own sorted list, used when the ingest could not be trusted. */
+            val tracks: List<Track> = outcome.returned
             // What:     `val result = controller.finishLoad(tracks, session)` declares a read-only
             //           `FinishLoadResult` local. `finishLoad` runs the terminal step: it keeps a
             //           mid-load tap if one happened, otherwise reselects the saved track at the
@@ -835,7 +847,11 @@ class PlaybackService : MediaSessionService() {
              * Defines result value for this music-player component; the TypeScript-oriented notes above explain
              * its source and use.
              */
-            val result = controller.finishLoad(tracks, session)
+            val result = if (final != null) {
+                controller.finishBuilt(final.built, session, feedSearch = false).also { outcome.ingest.complete(final) }
+            } else {
+                controller.finishLoad(tracks, session)
+            }
             // What:     `sessionRestored = true` flips the save gate AFTER `finishLoad` returns.
             // Why:      Until now `saveSession` was a no-op (protecting the saved session). On the
             //           no-tap path the engine has NOT yet applied the async seek, so saving right
@@ -954,7 +970,12 @@ class PlaybackService : MediaSessionService() {
              * Defines tracks value for this music-player component; the TypeScript-oriented notes above explain
              * its source and use.
              */
-            val tracks = LibrarySource.scanRoot(this@PlaybackService, treeUri)
+            val outcome: ScanOutcome = scanner.scan(
+                source = { onBatch -> LibrarySource.scanRoot(this@PlaybackService, treeUri, onBatch) },
+                publish = { built -> controller.openBuilt(built, feedSearch = false) },
+            )
+            /** The source's own sorted list of the picked folder. */
+            val tracks: List<Track> = outcome.returned
             // What:     `sessionRestored = true` flips the save gate just BEFORE delivering the
             //           picked folder.
             // Why:      A folder pick has no saved-position restore, so there is no async-seek
@@ -978,7 +999,14 @@ class PlaybackService : MediaSessionService() {
             // ```ts
             // this.controller.openLibrary(tracks);
             // ```
-            controller.openLibrary(tracks)
+            /** The complete library built by the ingest, or null when the source and the ingest disagreed. */
+            val final = outcome.final
+            if (final != null) {
+                controller.openBuilt(final.built, feedSearch = false)
+                outcome.ingest.complete(final)
+            } else {
+                controller.openLibrary(tracks)
+            }
             // What:     `Log.i(LOG_TAG, "PlaybackService loaded ${tracks.size} tracks from picked folder")`
             //           logs the picked-folder load count.
             // Why:      Record the re-pick load for verification.
@@ -1068,7 +1096,7 @@ class PlaybackService : MediaSessionService() {
             // ```ts
             // this.controller.reconcileLibrary(tracks);
             // ```
-            controller.reconcileLibrary(tracks)
+            controller.reconcileFromScan(tracks)
             // What:     `Log.i(...)` records the reconcile count for verification.
             // Why:      Trace the live-update path.
             //
@@ -1168,6 +1196,8 @@ class PlaybackService : MediaSessionService() {
         //   this.session.release();
         // }
         // ```
+        scanner.supersede()
+        searchHost.close()
         session?.run {
             // What:     `player.release()` releases the session's underlying player (frees
             //           audio focus, buffers, file handles). `player` resolves against the

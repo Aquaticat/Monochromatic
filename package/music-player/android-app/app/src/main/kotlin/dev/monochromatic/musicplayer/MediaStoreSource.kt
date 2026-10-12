@@ -117,7 +117,7 @@ import dev.monochromatic.musicplayer.core.isAppleDoubleSidecar
 // ```ts
 // import { BatchEmitGate } from "./core/BatchEmitGate";
 // ```
-import dev.monochromatic.musicplayer.core.BatchEmitGate
+import dev.monochromatic.musicplayer.core.LibraryDeltaGate
 
 // What:     Imports the top-level `Int` constant `LIBRARY_BATCH_SIZE` (the shared streaming
 //           threshold, around 128) from `core`.
@@ -212,9 +212,10 @@ object MediaStoreSource {
     //           single expression on the right (here the `withContext { ... }` block).
     // Why:      This is the one public entry point: hand it a resolver, get back the device's
     //           music tracks. `suspend` lets it do IO without blocking the UI thread. When
-    //           `onBatch` is supplied, the scan ALSO emits growing, already-sorted batches as
-    //           it reads the cursor so the screen fills in early; when null (the default), the
-    //           scan stays atomic and only the final list returns.
+    //           `onBatch` is supplied, the scan ALSO emits the tracks found since the previous
+    //           batch, in the order found and not sorted, as it reads the cursor (the caller
+    //           sorts, see `LibraryIngest`); when null (the default), the scan stays atomic
+    //           and only the final sorted list returns.
     // Gotcha:   `List<Track>` is READ-ONLY (no `.add`); the mutable cousin is `MutableList`.
     //           A `suspend` function looks synchronous but can only be called from a coroutine.
     //
@@ -282,8 +283,7 @@ object MediaStoreSource {
          * Defines gate value for this music-player component; the TypeScript-oriented notes above explain its
          * source and use.
          */
-        val gate: BatchEmitGate<Track> =
-            BatchEmitGate(LIBRARY_BATCH_SIZE) { left, right -> compareByCodePoint(left.displayPath, right.displayPath) }
+        val gate: LibraryDeltaGate<Track> = LibraryDeltaGate(LIBRARY_BATCH_SIZE)
         // What:     `val hasRelativePath: Boolean = Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q`
         //           declares an unreassignable local `Boolean`. `Build.VERSION.SDK_INT` is the
         //           device's Android API level as an `Int`; `Build.VERSION_CODES.Q` is the
@@ -628,6 +628,7 @@ object MediaStoreSource {
         // ```ts
         // console.info(`[${SOURCE_TAG}] queried ${tracks.length} music tracks from MediaStore`);
         // ```
+        emitLibraryTail(onBatch = onBatch, gate = gate, tracks = tracks)
         Log.i(SOURCE_TAG, "queried ${tracks.size} music tracks from MediaStore")
         // What:     `tracks.sortedWith { left, right -> compareByCodePoint(left.displayPath, right.displayPath) }`.
         //           `sortedWith { ... }` returns a NEW sorted `List<Track>` (it does not mutate
