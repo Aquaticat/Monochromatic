@@ -710,6 +710,10 @@ Built in this branch (commit `2ce0f83d0b`, corrected in the next commit):
 
 Not reachable yet: nothing calls either module, and the wrapper still refuses `git commit`.
 
+Gates at head `7b6ebfe46c` (committed code, run through `gate-slot.ts`): native Clippy exit 0; container gate (`native:test:container`, Git 2.56.0) exit 0 with 1331 library tests passing. The host library run passes except the ten recorded Git 2.55 option-table comparisons.
+
+Slice 6 mutation: the scoped run over `commit_convergence.rs`, `commit_policy_preparation.rs`, `private_index_stage.rs`, `candidate_prediction.rs`, `policy_patch_validate.rs` and `policy_patch.rs` was still running at this head; its results are not recorded here until it ends.
+
 Stop of feature work in this branch. The remaining slice 8 work and the slice 9 wiring (command path to
 `run_commit_transaction`, landing, the post-landing lane's API, the command frontier change) move to a separate
 integrator on `feat/cli-git-native-integration`, which merges this branch. The post-landing order is on
