@@ -35673,7 +35673,7 @@ the earlier group wins an overlap,
 though the groups are disjoint since B435.
 Changed by the lead's decision,
 in work still open when this entry was written:
-the ten modules the pass's tests reached only through callers get tests of their own;
+the ten modules the pass's tests reached only through callers get tests of their own (B437);
 `ConsistencyInvariantError` carries its message;
 the consistency sheet shows the tense candidates (B419).
 
@@ -35788,6 +35788,141 @@ fixed in `36ada23b21`.
 then ends at the stated refusal code naming each control that read false,
 an absent control entry counting as failed (`failedControlsOf`,
 with tests of its own).
+
+### B437: ten modules of the consistency pass were tested only through their callers
+
+Red `f134107681`,
+fixed in `a7a2a62c28`.
+
+`artifact-two-lane-read-consistency-coherence.ts`,
+`-fit.ts`,
+`-occurrence.ts`,
+`-parts.ts`,
+`-verdict.ts`,
+`pass-consistency-apply.ts`,
+`-ask.ts`,
+`-cache.ts`,
+`-settle.ts` and `pass-settlement.ts`
+stood on the own-test allowlist of `own-unit-tests.unit.test.ts`,
+the shape that hid the defects of B103 and B430.
+Each now has a test of its own and its allowlist line is gone.
+Two fixtures serve them:
+`consistency-group.test-fixture.ts` holds valid recorded groups changed one place per case,
+and `consistency-refusal.test-fixture.ts` the whole text of an artifact refusal.
+Every refusal case breaks one valid record one way and pins the whole message.
+A mutation run over the ten modules left one equivalent mutant
+(a located rendering carries no reason,
+so the reason check throws either way)
+and one choice no case can tell apart without the real clock
+(the gather's grace is the round's window).
+The cases found the defects of B438 to B440.
+
+### B438: the consistency reader passed groups its writer never writes
+
+Red `f134107681`,
+fixed in `a7a2a62c28`.
+
+`assertGroupFits` compared "is a frame" with "both slot offsets present",
+so a place of a repeated run carrying one slot offset alone gave false against false and passed;
+each offset is now held to the kind of repeat on its own.
+It refused a group of two or more places under `too-few-placed`,
+but not fewer than two under a verdict the writer gives only to two or more,
+since `dispositionOf` answers `too-few-placed` first;
+it now refuses fewer than two places under any verdict but `too-few-placed` and `failed`.
+The writer sets both offsets or neither and never writes either shape,
+so only a damaged file reached them.
+
+### B439: the consistency cache resumed a stored gather whose quorum no gather closes on
+
+Red `f134107681`,
+fixed in `a7a2a62c28`.
+
+`isConsistencyRecord` tested only `Number.isInteger(quorum)`,
+so a stored quorum of -1,
+0 or 2 to the 60th resumed,
+as did a record of fewer voices than its quorum.
+The bench stores a gather only when its quorum is met,
+and a quorum is at least one.
+A resumed quorum of -1 was written into the group's verdict,
+and the artifact reader then refused the run's own artifact.
+A record now resumes only with an integer quorum of at least one and no fewer voices,
+which also bounds it by what JSON carries exactly;
+any other is asked again (the B249 shape).
+
+### B440: the reader of an unplaced occurrence took a place with no bounds
+
+Red `f134107681`,
+fixed in `a7a2a62c28`.
+
+`parseConsistencyUnplaced` took any three counts,
+where the reader of a placed occurrence refuses a place ending at or before its start,
+or on a line before the first.
+One `requirePlaceBounds` (`artifact-two-lane-read-consistency-parts.ts`) now states the rule for both.
+
+Found by the same work and changed by the lead's decision,
+in work still open when this entry was written:
+`reasonContradicted` (`artifact-two-lane-read-consistency-located.ts`) reads a place recorded
+`not-found`,
+`ambiguous`,
+`slot-not-found` or `slot-ambiguous` as fine whatever the ballots quote;
+and the region comment of `pass-consistency-apply.ts` says a replacement meant for a refused slice is recorded
+`kept-floor`,
+where one already `overlapped` stays `overlapped`.
+Kept by the lead under the owner's instruction of 2026-10-11:
+a `failed` group reads with any count of places;
+the reader checks no slot order or containment,
+which the writer cannot get wrong without failing its own splice.
+
+### B441: a damaged info.yml stopped its entry and refused its replays
+
+Red `a08a6634b7`,
+fixed in `62a07ceeb9`.
+
+Found on 2026-10-12 (UTC) by the lead's decision on B433,
+against the owner's rule that a run always ships.
+`readEntryInfoRecord` threw `EntryInfoParseError` for an `info.yml` that refused to parse,
+so `preparePassEntry` stopped the entry before any paid call and its page did not ship,
+and `readSettledEntryInfo` threw for the carve,
+the audit and the republish of its artifact.
+The reader now answers an `unreadable` record carrying the refusal,
+which names the entry and where the parser stopped and quotes none of the file,
+and warns when given a logger;
+every consumer reads any record that is not `read` as no death,
+so the entry goes on exactly as one whose `info.yml` records none.
+`entryInfoFindingsOf` puts the refusal on the preparation's findings,
+which the artifact records,
+so a reader tells an unreadable record from an absent one with no new generation 15 key.
+The replays read it the same way,
+since the run recorded no death,
+and warn only where the caller passes a logger:
+the republish does,
+the carve and the audit stay silent as their pinned output requires.
+No cache key moved,
+since the keys fold in an ended life only when there is one.
+Changed by the lead's decision,
+in work still open when this entry was written:
+a `died` of a kind that is neither text nor a finite number,
+which B433 logs,
+also puts a finding on the artifact.
+
+### B442: the window trial judged on sheets with no death and no tense block
+
+Red `a08a6634b7`,
+fixed in `62a07ceeb9`.
+
+`runSliceArms` called `judgeTranslateSlate` with no ended life,
+and `drawEntry` prepared the pair with no `sourceEntryInfo` and never read `info.yml`,
+so the instrument measured sheets the pass does not ask.
+`drawEntry` now reads the entry's `info.yml` after both pages
+and returns the page facts of its preparation,
+which `runWindowTrial`,
+`runPick` and `runSliceArms` pass on as a required parameter;
+the judges get all of them,
+and the translators the identity block,
+as the pass gives them.
+`TRIAL_PROTOCOL_VERSION` is 2,
+so a ledger bought on the older sheets is not resumed;
+the trial reads no slice cache.
 
 ## Process mistakes in this audit
 
@@ -38845,6 +38980,27 @@ Prevention:
 "Shell commands" for the first,
 and "Claims without their evidence" for the third,
 whose rule that a count is read from its source before it is written this repeats.
+
+### M155: an agent capped and chained shell commands against its brief
+
+Status:
+happened on 2026-10-12 (UTC) in the work of B437 to B440;
+disclosed by the agent in its hand-back,
+and no result it reported rests on the capped output.
+The agent piped orientation and verification commands through `head`
+and chained shell steps with `;`,
+both of which its brief forbids.
+Its final measurements (the named run,
+the scans,
+lint and the whole suite) were taken uncapped,
+and the lead's own named run on the merged head confirmed them.
+
+Prevention:
+the brief's rules stand as written;
+the lead reruns every count an agent hands back on the merged head before relying on it,
+as here.
+`mistake-prevention.md`,
+"Shell commands".
 
 ### M79: a coverage census measuring compressed code
 
