@@ -3021,6 +3021,48 @@ Bare keys never fire while a text field has focus, and the playback keys follow 
 Every shortcut is covered by an end-to-end test that presses the real keys through the nested compositor and reads the
 resulting state, which is the second reason for this decision.
 
+### D107. True-peak analysis progress is a system notification, never an in-app banner (2026-10-11)
+
+The human said the analysis banner should never block anything, changed their mind about the bar, and asked for a
+system notification with a progress bar, noting that both Android and KDE can show one.
+This supersedes D26's 56dp bottom bar and D13's appearance and disappearance of that bar on both platforms:
+the player screen draws no analysis indicator and reserves no space for one, so nothing it shows can cover or move content.
+
+The orchestrator decided the details on the human's standing instruction to decide remaining questions:
+
+- The notification is titled `Analyzing true peak`, its text is the count `412 of 1,218`, and it shows a determinate
+  progress bar.
+  It is silent, low priority and ongoing while analysis runs, and it is removed when analysis finishes.
+- D26's Pause and Resume control stays as the action button on the notification, with the same temporary-pause reading
+  that D84 records.
+- Android posts it on its own low-importance channel. Android 13 and later need the notification permission: the app asks
+  for it once, when the first analysis starts, and if it is declined the analysis runs without any indicator.
+- Linux desktop on KDE Plasma reports it as a Plasma job through `org.kde.kuiserver` (the job view that Dolphin's
+  compress action uses and that the human's own `compress-to-sqfs` service menu script drives): the notifications applet
+  shows the app's name and icon, the title `Analyzing true peak`, the count as the info line, a determinate bar with the
+  percent, and a native Pause button (the job is suspendable, not killable, because D84 keeps analysis non-optional).
+  Where `org.kde.kuiserver` is absent, Linux falls back to one freedesktop notification replaced in place, with the
+  progress hint, updated at a limited rate. Where neither answers, analysis runs without an indicator.
+  macOS and Windows get the same behavior through their own notification APIs in a later step.
+- The taskbar progress of the desktop app (the `LauncherEntry` hint) keeps its own meaning and is not changed here.
+
+### D108. The OS accent is the theme root and every derived color is computed in OKLCH (2026-10-11)
+
+The human confirmed that the desktop has to follow the OS accent as A3 says (it did not: `ui/theme.slint` used fixed
+primaries), and stated that every color manipulation after a root color is obtained must be done in OKLCH.
+Obtaining the root color is not a manipulation, and it is the only thing taken from the platform on either system:
+the desktop root is the portal, Windows or macOS accent that Slint 1.18 exposes, and the Android root is the system accent
+(on API 31 and later the middle tone of the system accent palette, `android.R.color.system_accent1_500`; the human
+corrected an earlier reading of this record that kept the platform's own `dynamicLightColorScheme` and
+`dynamicDarkColorScheme` roles, so Android's HCT-derived roles are not used).
+From the root, on both platforms, everything the app derives (tonal steps, container and on-container roles, hover and pressed layers,
+mixes with neutral, match highlights as in D59, gradients and any lightening or darkening) is computed by moving
+lightness, chroma and hue in OKLCH and converting back to sRGB with gamut handling.
+It is never computed by sRGB mixing or by HSV or HSL operations, such as `Color.brighter`, `Color.darker` or `Color.mix` in
+Slint, or `lerp` and `copy(alpha)` on sRGB values in Compose.
+When no accent is available the fixed baseline from the Fold captures is the root and the same derivation applies.
+Alpha-only layering (state layers over a surface) is allowed because it does not change a color's lightness, chroma or hue.
+
 ## Pending after the theme picks (2026-09-04)
 
 - **Order of remaining work** — my recommendation:

@@ -40,9 +40,16 @@ The documented working launch has no such flag.
 It also wrapped the headless emulator in `xvfb-run` and capped the container at 2 CPUs and 6 GiB
 while giving the guest 2 cores and 4 GiB,
 and it used `-no-snapshot`, which forces a cold boot every run.
-Whether these flags caused the ANRs is not yet established: a comparison run with the corrected flags was requested.
+The orchestrator asked for a comparison run with corrected flags,
+and the agent still had not completed the task when it was stopped on 2026-10-12,
+2.8 hours after its first transcript record (measured from the transcript timestamps, 21:51 to 00:39 UTC),
+while it was still trying to make the Developer options navigation script wait long enough.
+The user's observation: GPT models never had a problem using the emulator,
+and the difference is that they always launched it headfully (with its window),
+whereas every launch in this task was headless.
 The failure recorded here is that the agent never compared its launch against `doc/troubleshooting/`
-before attributing three separate failures to one external cause.
+before attributing three separate failures to one external cause,
+and kept refining scripts around a headless setup that other sessions had avoided.
 
 #### Left the unexplained Build number taps unexplained
 
@@ -350,3 +357,26 @@ Before trusting a Haiku measurement, read what the harness counts and ask for a 
 good number.
 Tell a Haiku agent to wait inside one blocking command and to run every task with its documented arguments,
 and read `git log`, the gate JSON and the unit state yourself before acting on its report.
+
+## Native commit-path post-landing lane (2026-10-11)
+
+### Goal
+
+Port the post-landing completion of the Rust Git policy wrapper (added-path copies, shadow and transaction removal,
+automatic maintenance, the `post-commit` hook under the hook lock, capture-record pruning).
+The lane's record is `doc/handover/cli-git-native-post-landing.md`.
+
+### Mistakes
+
+#### Went silent for almost an hour with a stale record
+
+After two commits (`136cf6d0fd`, `89d0fc7a0c`) the agent made no commit, no file change and no gate run for 57 minutes
+while the harness still listed it as running.
+Its evidence doc still said "Nothing is committed beyond the skeleton yet" and "Modules written, not yet green",
+so a reader of the doc alone would have believed the lane was a different, earlier state.
+The orchestrator stopped the agent and handed the lane to a Sonnet agent.
+
+### Lesson
+
+Check the dated state of the repository (`git log`, file modification times) against the evidence doc before trusting
+either; a Haiku agent's doc can lag its commits by hours.

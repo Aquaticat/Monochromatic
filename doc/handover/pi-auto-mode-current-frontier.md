@@ -5,7 +5,7 @@
 Resume the axiom-based migration without reopening settled choices or replaying completed phases.
 This current summary complements the
 [historical evidence ledger](pi-auto-mode-axiom-evaluation.md).
-Updated 2026-10-11.
+Updated 2026-10-12.
 
 ## Current delivery direction
 
@@ -20,7 +20,8 @@ The completion target is the working migration,
 not another private source-capture checkpoint.
 Use this finite delivery queue:
 
-- [ ] Integrate the current constructor-description change into the native regression parent.
+- [x] Integrate the current constructor-description change into the native regression parent.
+  Full native `proc_7042` passed all 82 outputs and 157 integrated input cases.
   Native parity `proc_9cc4`,
   lifecycle and description consumers `proc_a37a`,
   and action/source parents `proc_50d1` passed.
@@ -62,6 +63,23 @@ and open design questions.
 It is a separate workflow investigation,
 not a gate on migration delivery.
 
+
+## Maintained-package integration in progress
+
+The shared AST adapter repair is complete:
+issue #593 is closed after rebuilt consumer checks,
+generated lockfile refresh `e801aa1e5f`,
+and the 18-document check `proc_b14d`.
+Documentation is committed in `7135c69304`.
+
+The deterministic directive resolver,
+authorization constraints,
+and outcome calculation are being moved into `package/pi-plugin/auto-mode/src/`.
+Their established semantics remain separate from source admission and execution permission.
+The package port does not discharge the native compiler's unconditional domain premise.
+The native path also still lacks the approval-context connection to its existing approval binder.
+These are remaining delivery integrations,
+not additional user authorization gates or reasons to reopen source-inventory campaigns.
 
 ## Original rendered prompt-input contributions
 
@@ -401,7 +419,11 @@ Action/source parents passed `proc_50d1`;
 all 154 integrated input cases passed `proc_a226`;
 original-judgment variants passed `proc_d5fb`;
 the runtime suffix passed 39 complete outputs in `proc_f646`.
-The complete native parent remains to pass after the fixture corrections.
+Complete native parent `89a504de` / `proc_7042` passed in 860 seconds:
+82 complete outputs,
+157 integrated input cases,
+and 69 section-source cases.
+This is the restored implementation with the accepted processing-receipt controls.
 Required pre-implementation description-loss reds are retained;
 no duplicate omission campaign is opened.
 The first parity baseline `proc_0081` stopped at an unresolved relative module import before execution;
