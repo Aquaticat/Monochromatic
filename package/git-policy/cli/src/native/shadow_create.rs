@@ -85,13 +85,27 @@ fn set_private_file(_path: &Path) -> std::io::Result<()> {
 /// ```
 fn create_parent(shadow: &Path) -> std::io::Result<()> {
     let parent: &Path = shadow.parent().unwrap_or(shadow);
-    if let Some(grandparent) = parent.parent().filter(|grandparent| { return !grandparent.exists(); }) {
-        create_private_directory(grandparent)?;
+    if let Some(grandparent) = parent.parent() {
+        ensure_private_directory(grandparent)?;
     }
-    if !parent.exists() {
-        create_private_directory(parent)?;
+    return ensure_private_directory(parent);
+}
+
+/// What:
+///  Create a private directory unless another process made it first.
+/// Why:
+///   Concurrent commits of one repository race to create the shared `cli-git/shadow` parents; whoever loses has
+///   nothing left to do. A path that exists as anything but a directory is still a failure.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// await mkdir(directory, { mode: 0o700 }).catch((error) => { if (error.code !== 'EEXIST') throw error; });
+/// ```
+pub fn ensure_private_directory(directory: &Path) -> std::io::Result<()> {
+    match create_private_directory(directory) {
+        Err(error) if error.kind() == std::io::ErrorKind::AlreadyExists && directory.is_dir() => return Ok(()),
+        other => return other,
     }
-    return Ok(());
 }
 
 /// What:

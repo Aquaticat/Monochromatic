@@ -215,3 +215,34 @@ fn overwritten_shadow_files_are_private() {
     }
     remove(root.as_path());
 }
+
+/// A directory that exists already is accepted, a file in its place is not, and a missing parent fails.
+#[test]
+fn an_existing_private_directory_is_accepted_and_a_file_is_not() {
+    let root: PathBuf = fixture("shadow-ensure");
+    let directory: PathBuf = root.join("shadow");
+    ensure_private_directory(directory.as_path()).expect("created");
+    ensure_private_directory(directory.as_path()).expect("already there");
+    std::fs::write(root.join("file"), b"").expect("file");
+    assert!(ensure_private_directory(root.join("file").as_path()).is_err());
+    assert!(ensure_private_directory(root.join("missing/child").as_path()).is_err());
+    remove(root.as_path());
+}
+
+/// Many commits creating the shared parents at once all succeed.
+#[test]
+fn concurrent_creators_of_the_shared_parents_all_succeed() {
+    let root: PathBuf = fixture("shadow-parents-race");
+    let shadow: PathBuf = root.join("cli-git/shadow/one");
+    let workers: Vec<std::thread::JoinHandle<std::io::Result<()>>> = (0..16)
+        .map(|_| {
+            let target: PathBuf = shadow.clone();
+            return std::thread::spawn(move || { return create_parent(target.as_path()); });
+        })
+        .collect();
+    for worker in workers {
+        worker.join().expect("worker").expect("every creator succeeds");
+    }
+    assert!(root.join("cli-git/shadow").is_dir());
+    remove(root.as_path());
+}
