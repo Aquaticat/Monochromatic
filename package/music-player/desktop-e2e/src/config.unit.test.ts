@@ -63,7 +63,7 @@ await describe({
     it({
       name: 'pins the compositor version the checks were probed on',
       fn: async ({ expect, }) => {
-        expect(PINNED_COMPOSITOR_VERSION,).toBe('0.3.0',);
+        expect(PINNED_COMPOSITOR_VERSION,).toBe('0.4.0',);
       },
     },),
   ],

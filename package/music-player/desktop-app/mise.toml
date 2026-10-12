@@ -206,7 +206,7 @@ run = "slint-viewer --check ui/app.slint"
 [tasks."test:e2e"]
 description = "Release build, then press every D106 shortcut as a real key event in the nested compositor (own PipeWire null sink, scratch XDG dirs)"
 # One task builds, then runs the end-to-end suite, in this order, so a stale binary is never exercised. The suite is the
-# package/music-player/desktop-e2e package: it hosts the release binary in monochromatic-nested-wayland-session 0.3.0,
+# package/music-player/desktop-e2e package: it hosts the release binary in monochromatic-nested-wayland-session 0.4.0,
 # presses keys through the compositor's control socket, and reads state from the app's `ui_state` log lines (the release
 # build has no MCP server), from screenshots, files and the nested clipboard. The command runs in this directory, where
 # it finds target/release/music-player and writes screenshots and e2e-summary.json to target/e2e.

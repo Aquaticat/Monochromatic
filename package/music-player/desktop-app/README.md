@@ -648,15 +648,14 @@ pointer input and move no content; they are drawn from `Theme` roles.
 
 ### Known limits
 
-- The Menu key cannot be pressed through the nested compositor 0.3.0 (`err unknown key`); the window tests press it,
-  and the end-to-end run marks it as not injectable.
+- The end-to-end run presses the Menu key through the nested compositor 0.4.0; the window tests press it too.
 - Ctrl+Shift+3 and 4 may be taken by the screenshot shortcuts of macOS, and the digit chords assume a layout where
   Shift+digit gives the usual symbol; neither is verified here, and the macOS and Windows key mapping is untested.
 
 ### End-to-end run
 
 `mise run //package/music-player/desktop-app:test:e2e` builds the release binary, then hosts it in the nested
-compositor 0.3.0 with scratch XDG directories and a generated library (the 1k scale library plus tone tracks), and
+compositor 0.4.0 with scratch XDG directories and a generated library (the 1k scale library plus tone tracks), and
 presses every shortcut as a real key event. It plays into its own PipeWire null sink (checked by node id against
 every output stream of the app, and stops at once if one links elsewhere), never touches another player process, and
 prints one pass, fail or not-injectable line per shortcut. State is read from the app's `ui_state` log lines, from

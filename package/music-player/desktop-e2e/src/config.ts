@@ -22,7 +22,7 @@ import { join, } from 'node:path';
  The compositor version the checks were probed on. The control API and the key names the checks use belong to this
  version; it answers "unknown key" for Menu, and another version could change that.
  */
-export const PINNED_COMPOSITOR_VERSION = '0.3.0';
+export const PINNED_COMPOSITOR_VERSION = '0.4.0';
 
 /**
  Everything the run needs to know about its surroundings.
