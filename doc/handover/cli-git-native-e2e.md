@@ -1,18 +1,17 @@
 # Native end-to-end lane: the incumbent's e2e suite against the native executable
 
-Branch `feat/cli-git-native-e2e`, based on the transactions head `13f60ef1b1`.
+Branch `feat/cli-git-native-e2e`, based on the transactions head `13f60ef1b1`, merged into the integration branch.
 This file holds the current state only; when the state changes, replace the text instead of appending.
 
 ## State in one paragraph
 
-The incumbent's end-to-end suite (`package/git-policy/cli/e2e`) now runs unchanged against the native executable
+The incumbent's end-to-end suite (`package/git-policy/cli/e2e`) runs unchanged against the native executable
 with `E2E_WRAPPER=native`.
-All 38 catalog scenarios were run on Git 2.55.0 with seed 1: one passes vacuously, two skip by design, and 35 fail
-because the commit path is still refused (`Unported::CommitTransaction`, exit 2).
-No failure has another root cause.
+On the integration branch, with the commit path enabled, all 38 catalog scenarios were run on Git 2.55.0 with seed 1:
+36 pass and 2 skip by design (the `replay-unavailable-*` scenarios, which exist only for Git below 2.40.0).
 The non-commit commands that the scenarios send through the wrapper behave identically in the incumbent and the
 native executable (25 of 25 commands agree).
-When the refusal is removed, the suite is run with the commands under "Commit-path run".
+The integration document `doc/handover/cli-git-native-integration.md` holds the run and its rerun commands.
 
 ## What was built
 
@@ -97,77 +96,17 @@ node "${HOME}/temp/agent/gate-slot.ts" podman run --memory=2g --cpus=2 --rm --ne
   localhost/cli-git-concurrent-e2e:latest node /fixture/e2e/concurrent-e2e-consumer.ts
 ```
 
-## Results on the refused commit path
+## Results with the commit path enabled
 
-Seed 1, Git 2.55.0, 38 scenarios (the catalog has 38; the "about 70" in the transactions document counts `name:`
-fields of expectations, not scenarios; with three Git versions it is 114 runs).
-Wall time of the full run including the cached image step: 65 s
-(nothing waits for a hook that never starts, so no scenario hit its 180 s timeout).
+Seed 1, Git 2.55.0, 38 scenarios (the catalog has 38; with three Git versions it would be 114 runs, but the native
+floor is Git 2.55.0, so the native run uses `--git 2.55.0` only).
+36 scenarios pass, including the five `sigkill-phase-*` scenarios, the reservation scenario and every replay
+scenario; 2 skip: `replay-unavailable-fails-fast` and `replay-unavailable-disjoint-burst` run only on Git 2.39.5
+(`replayPlumbing: 'absent'`), which the native executable refuses.
 Native workload digests equal the incumbent's for the three scenarios both ran (`f5c1d30bb33a` for
 `baseline-explicit-commit`, `520136487c60` for `baseline-sigkill-post-commit`, `52025dfc1bc6` for
 `baseline-checker-positive-control`), so the seeded workload does not depend on the wrapper.
-
-Root cause class of every failure below is "scenario needs commit path": the first wrapper `git commit` exits 2 with
-`cli-git: the commit transaction that every git commit except a dry run goes through is not implemented in this native
-development executable`.
-No failure is a native bug outside the commit path and none is a harness gap.
-
-### Pass
-
-- `branch-switch-during-commit`: passes vacuously.
-  Its expectation is that the branch switch and the held commit do not both exit 0.
-  The switch exits 0 (the surface probe shows it identical to the incumbent) and the commit exits 2, so the
-  expectation holds without testing anything.
-  It needs the commit path to mean anything.
-
-### Skipped
-
-- `replay-unavailable-fails-fast` and `replay-unavailable-disjoint-burst`: by design they run only on Git 2.39.5
-  (`replayPlumbing: 'absent'`); on 2.55.0 the harness skips them.
-  See "Git floor" for why the native executable never runs them.
-
-### Fail, needs the commit path (first failing assertion)
-
-Baseline commit fixture: `baseline-explicit-commit`, `baseline-index-commit`, `baseline-trace-sequential`
-fail `all-commits-succeed` (the first commit exited 2).
-
-Baseline amend fixture: `baseline-amend`, `baseline-lint-staged` fail `all-commits-succeed`.
-
-Baseline hook fixture: `baseline-hooks-hookdir`, `baseline-hooks-config`, `baseline-ssh-signing` fail
-`all-commits-succeed`; `baseline-sigkill-post-commit` fails `follow-up-commit-succeeds`;
-`baseline-checker-positive-control` fails `positive-control` (the checker's planted violations differ because the
-wrapper commit that should land exited 2).
-
-Concurrent paths fixture: `concurrent-disjoint-paths`, `concurrent-trace-replay` fail `all-commits-succeed`.
-
-Shared file fixture: `shared-file-non-overlapping-hunks` fails `all-commits-succeed`; `shared-file-overlapping-hunks`
-fails `one-lands`.
-
-Subsumption fixture: `shared-file-adjacent-edits` fails `all-commits-succeed`.
-
-Index writer fixture: `interleaved-index-writers` fails `all-commits-succeed`.
-Its `git add` runs through the native wrapper succeeded; the checker reports no staged-entry violation.
-
-Hooked fixture: `hooks-hookdir-concurrent`, `hooks-config-concurrent`, `ssh-signing-concurrent`,
-`lint-staged-stash-concurrent` fail `all-commits-succeed`.
-
-Amend and switch fixture: `amend-during-commits` fails `bystanders-succeed`.
-
-Reservation fixture: `reservation-after-lost-races` fails `all-commits-succeed`.
-
-Lock and GC fixture: `foreign-index-lock-holder`, `gc-prune-during-commits` fail `all-commits-succeed`.
-The foreign real-Git commit in `foreign-index-lock-holder` exits 0.
-
-Foreign unproven fixture: `foreign-index-lock-unproven` fails
-`bystanders-land-or-report-unproven-owner` (each agent exited 2 without the `index-lock-unproven-owner` finding).
-
-Sigkill fixture: `sigkill-pre-commit`, `sigkill-prepare-commit-msg`, `sigkill-commit-msg`, `sigkill-post-commit`,
-`sigkill-offset` fail `bystander-succeeds`.
-The `recovery status` (`git status --short`, must succeed) exits 0 through the native wrapper.
-
-Phase kill fixture: `sigkill-phase-preparation-done`, `sigkill-phase-landing-locked`,
-`sigkill-phase-objects-migrated`, `sigkill-phase-ref-updated`, `sigkill-phase-index-installed` fail
-`victim-reached-phase` (the victim settled before the phase marker; the marker is not implemented, see below).
+`branch-switch-during-commit` is a real pass now: its held commit exits 1 with the `branch-switched` finding.
 
 ## Non-commit surface: no native bug found
 
@@ -212,35 +151,24 @@ So on those two versions the harness's own first wrapper command fails and the s
 (`baseline-explicit-commit` and `baseline-index-commit` observed, seed 1).
 Consequences: runs on 2.39.5 and 2.40.0 and both `replay-unavailable-*` scenarios (they prove degradation on 2.39.5)
 are out of scope for the native executable.
-The sentence in `doc/handover/cli-git-native-transactions.md` ("the native executable must degrade on Git 2.39.5 the
-way the incumbent does") conflicts with the settled floor and should be corrected there; this lane does not edit that
-file.
-`doc/handover/cli-git-rust-implementation.md` has no decision about Git older than 2.55.0 (searched for `2.39`,
-`2.40` and `degrad`).
+`doc/handover/cli-git-native-transactions.md` states the floor and no longer asks for degradation on Git 2.39.5.
 
-### Phase markers are not implemented
+### Phase markers
 
-`rg CLI_GIT_TEST_ONLY_PHASE_SIGNAL src/native` finds nothing.
-The five `sigkill-phase-*` scenarios and the `race-lost` pause in `reservation-after-lost-races` need the landing
-lane to implement the incumbent's protocol: the variable value `<phase>:kill`, `<phase>:kill:<directory>` and
-`<phase>:pause:<directory>`; `<directory>/<phase>.reached` written at the phase; `<directory>/<phase>.release` waited
-for under `pause`; `race-lost-<n>.reached` and `race-lost-<n>.release` for the occurrence; a malformed value fails the
-invocation.
-The phases in order: `capture-locked`, `preparation-done`, `landing-locked`, `objects-migrated`, `ref-updated`,
-`index-installed`, and `race-lost` (the scenarios use all but `capture-locked`).
-Whether the variable reaches hooks and nested wrapper calls is not checked by this lane; the incumbent's does, and a
-scenario arms it only on commits whose hooks start no nested commit.
+`src/native/transaction_phase.rs` implements the incumbent's protocol: `<phase>:kill`, `<phase>:kill:<directory>` and
+`<phase>:pause:<directory>`, with `<directory>/<phase>.reached` written at the phase, `<directory>/<phase>.release`
+waited for under `pause`, and `race-lost-<n>` files for the occurrence.
+The five `sigkill-phase-*` scenarios and the `race-lost` pause in `reservation-after-lost-races` pass with it.
 
-### Not yet done, needs the commit path
+### Not yet done
 
-The slice 9 differential (JSONL events of each scenario against the incumbent on the same seed) and the concurrency
-runs with both wrappers mixed.
-The seeds and workload digests already agree between wrappers, so the comparison needs only the commit path.
+The concurrency runs with both wrappers mixed (a trailing gate).
+The JSONL comparison against the incumbent is `mise run //package/git-policy/cli:native:differential:commit`.
 
-## Commit-path run
+## Scenarios and rerun
 
-Which scenarios need it, grouped by fixture file under `package/git-policy/cli/e2e` (every scenario below, all 36
-non-skipped ones on 2.55.0; none can pass without it except the vacuous one):
+The scenarios, grouped by fixture file under `package/git-policy/cli/e2e` (all 36 non-skipped ones on 2.55.0 need the
+commit path):
 
 - `scenario-baseline-commit-fixture.ts`: `baseline-explicit-commit`, `baseline-index-commit`,
   `baseline-trace-sequential`.
@@ -254,19 +182,19 @@ non-skipped ones on 2.55.0; none can pass without it except the vacuous one):
 - `scenario-hooked-fixture.ts`: `hooks-hookdir-concurrent`, `hooks-config-concurrent`, `ssh-signing-concurrent`,
   `lint-staged-stash-concurrent`.
 - `scenario-amend-switch-fixture.ts`: `amend-during-commits`, `branch-switch-during-commit`.
-- `scenario-reservation-fixture.ts`: `reservation-after-lost-races` (also needs the `race-lost` markers).
+- `scenario-reservation-fixture.ts`: `reservation-after-lost-races` (uses the `race-lost` markers).
 - `scenario-lock-gc-fixture.ts`: `foreign-index-lock-holder`, `gc-prune-during-commits`.
 - `scenario-foreign-unproven-fixture.ts`: `foreign-index-lock-unproven`.
 - `scenario-sigkill-fixture.ts`: `sigkill-pre-commit`, `sigkill-prepare-commit-msg`, `sigkill-commit-msg`,
   `sigkill-post-commit`, `sigkill-offset`.
 - `scenario-phase-kill-fixture.ts`: `sigkill-phase-preparation-done`, `sigkill-phase-landing-locked`,
   `sigkill-phase-objects-migrated`, `sigkill-phase-ref-updated`, `sigkill-phase-index-installed`
-  (also need the phase markers).
+  (use the phase markers).
 - `scenario-replay-degradation-fixture.ts`: `replay-unavailable-fails-fast`, `replay-unavailable-disjoint-burst`
   (Git 2.39.5 only; out of scope for the native executable, see "Git floor").
 
-The command that runs all of them once the refusal is removed and the image is rebuilt from the merged sources
-(a full run takes far longer than today's 65 s, so start it as its own unit with a memory cap and wait for its log):
+The command that runs all of them (a full run takes about 33 minutes under host load, so start it as its own unit with a
+memory cap and wait for its log):
 
 ```sh
 # repository root
@@ -278,7 +206,7 @@ systemd-run --user --unit=e2e-native-full --collect --property=MemoryMax=3G \
   mise run //package/git-policy/cli:test:e2e:concurrent:native --seed 1 --git 2.55.0
 ```
 
-Only the sigkill-phase scenarios (needs the phase markers):
+Only the sigkill-phase scenarios:
 
 ```sh
 # repository root
@@ -302,8 +230,7 @@ the same `--seed`.
 - `bin/e2e-native-container.mjs` copies the snapshot file list of `bin/test-native-container.mjs` and
   `bin/interop-native-container.mjs` (a third copy); extracting one shared function would touch scripts other lanes
   edit, so it is left for the integrator.
-- The seed 1 run covers one interleaving of the free-running scenarios; the commit-path run should add seeds 2 and 3
-  as the incumbent's README does.
+- The seed 1 run covers one interleaving of the free-running scenarios; the integration document records the further seeds.
 
 ## Trailing gates
 
