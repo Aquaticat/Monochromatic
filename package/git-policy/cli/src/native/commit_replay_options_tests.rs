@@ -54,3 +54,11 @@ fn later_options_keep_or_clear_the_key_and_a_value_is_consumed_once() {
     assert!(replay_options(&args(&["-m", "x", "-n"])).no_verify);
     assert!(replay_options(&args(&["--message", "x", "--no-verify"])).no_verify);
 }
+
+/// A pathspec before an option is not a cluster: it consumes nothing.
+#[test]
+fn a_pathspec_is_not_a_cluster() {
+    assert!(replay_options(&args(&["a.txt", "-n"])).no_verify);
+    assert!(replay_options(&args(&["tmp", "-n"])).no_verify);
+    assert!(replay_options(&args(&["-", "-n"])).no_verify);
+}

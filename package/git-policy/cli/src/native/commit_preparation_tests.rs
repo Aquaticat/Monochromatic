@@ -529,3 +529,73 @@ fn real_index_blob(repo: &Path, index: &Path) -> String {
     let _mode = fields.next();
     return fields.next().expect("the index names a blob").to_string();
 }
+
+/// The wait for the guard ends with the first success, passes over only the "already active" failure, and gives up
+///  after the limit with the failure itself.
+#[test]
+fn the_guard_wait_retries_only_while_another_holder_is_active() {
+    let delay = std::time::Duration::from_millis(1);
+    let active = || { return std::io::Error::other("a signal guard is already active in this process"); };
+    let mut calls: u32 = 0;
+    let waited: std::io::Result<u32> = retry_while_active(
+        || { calls += 1; if calls < 3 { return Err(active()); } return Ok(calls); },
+        5,
+        delay,
+    );
+    assert_eq!(waited.expect("success after two active failures"), 3);
+    let mut other_calls: u32 = 0;
+    let other: std::io::Result<u32> = retry_while_active(
+        || { other_calls += 1; return Err(std::io::Error::other("no handler could be installed")); },
+        5,
+        delay,
+    );
+    assert!(other.is_err());
+    assert_eq!(other_calls, 1, "another failure is not retried");
+    let mut limited_calls: u32 = 0;
+    let limited: std::io::Result<u32> = retry_while_active(|| { limited_calls += 1; return Err(active()); }, 3, delay);
+    assert!(limited.is_err());
+    assert_eq!(limited_calls, 4, "the first try and three retries");
+}
+
+/// Both signature header spellings mark the prepared commit as signed, and a signature-looking message line does not.
+#[test]
+fn either_signature_header_marks_the_commit_signed() {
+    let root: PathBuf = fixture("commit-preparation-headers");
+    let repo: PathBuf = repository(root.as_path(), "repo");
+    let tree: String = git_text(repo.as_path(), &["rev-parse", "HEAD^{tree}"]);
+    let parent: String = git_text(repo.as_path(), &["rev-parse", "HEAD"]);
+    let shadow: PathBuf = root.join("shadow");
+    std::fs::create_dir(&shadow).expect("shadow");
+    git(&shadow, &["init", "--bare", "--quiet", "--template="]);
+    std::fs::write(
+        shadow.join("objects").join("info").join("alternates"),
+        format!("{}\n", repo.join(".git").join("objects").display()),
+    )
+    .expect("alternates");
+    git(&shadow, &["symbolic-ref", "HEAD", "refs/heads/main"]);
+    let commit_with = |extra: &str, message: &str| -> String {
+        let raw: String = format!(
+            "tree {}\nparent {}\nauthor A <a@example.invalid> 1 +0000\ncommitter A <a@example.invalid> 1 +0000\n{extra}\n{message}\n",
+            tree.trim(),
+            parent.trim()
+        );
+        let mut child = std::process::Command::new(REAL_GIT)
+            .current_dir(&repo)
+            .args(["hash-object", "-t", "commit", "-w", "--stdin"])
+            .stdin(std::process::Stdio::piped())
+            .stdout(std::process::Stdio::piped())
+            .spawn()
+            .expect("hash-object");
+        std::io::Write::write_all(&mut child.stdin.take().expect("stdin"), raw.as_bytes()).expect("raw commit");
+        return String::from_utf8_lossy(child.wait_with_output().expect("output").stdout.as_slice()).trim().to_string();
+    };
+    let signed_with = |extra: &str, message: &str| -> bool {
+        let oid: String = commit_with(extra, message);
+        git(&shadow, &["update-ref", "refs/heads/main", oid.as_str()]);
+        return read_prepared_commit(&git_context(), shadow.as_path()).expect("read").signed;
+    };
+    assert!(signed_with("gpgsig -----BEGIN PGP SIGNATURE-----\n -----END PGP SIGNATURE-----\n", "m"));
+    assert!(signed_with("gpgsig-sha256 -----BEGIN PGP SIGNATURE-----\n -----END PGP SIGNATURE-----\n", "m"));
+    assert!(!signed_with("", "gpgsig in the message\n\ngpgsig-sha256 too"));
+    remove(root.as_path());
+}

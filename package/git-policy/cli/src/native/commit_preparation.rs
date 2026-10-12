@@ -180,13 +180,36 @@ fn native_commit_arguments(request: &PreparationRequest) -> Vec<String> {
 /// const guard = installSignalGuard();
 /// ```
 pub fn install_guard_when_free() -> std::io::Result<SignalGuard> {
+    return retry_while_active(SignalGuard::install, GUARD_WAIT_LIMIT, GUARD_WAIT_DELAY);
+}
+
+/// The most times the guard installation is retried while another thread holds the guard.
+const GUARD_WAIT_LIMIT: u32 = 1_200;
+
+/// The pause between two tries of the guard installation.
+const GUARD_WAIT_DELAY: std::time::Duration = std::time::Duration::from_millis(50);
+
+/// What:
+///  Run `install` again while it fails only because another holder is active, up to `limit` more times.
+/// Why:
+///   Any other failure, and a holder that never lets go, end the wait with the failure itself.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// for (let attempt = 0; ; attempt += 1) { try { return install(); } catch (e) { if (!isActive(e) || attempt >= limit) throw e; await wait(delay); } }
+/// ```
+pub fn retry_while_active<Value>(
+    mut install: impl FnMut() -> std::io::Result<Value>,
+    limit: u32,
+    delay: std::time::Duration,
+) -> std::io::Result<Value> {
     let mut attempts: u32 = 0;
     loop {
-        match SignalGuard::install() {
-            Ok(guard) => return Ok(guard),
-            Err(error) if error.to_string().contains("already active") && attempts < 1_200 => {
+        match install() {
+            Ok(value) => return Ok(value),
+            Err(error) if error.to_string().contains("already active") && attempts < limit => {
                 attempts += 1;
-                std::thread::sleep(std::time::Duration::from_millis(50));
+                std::thread::sleep(delay);
             }
             Err(error) => return Err(error),
         }

@@ -146,7 +146,8 @@ fn scan_token(state: ScanState, token: &str) -> ScanState {
             ..state
         };
     }
-    if token.starts_with('-') && !token.starts_with("--") && token.len() > 1 {
+    // A lone dash is a cluster without letters, which changes nothing.
+    if token.starts_with('-') && !token.starts_with("--") {
         return scan_cluster(&state, token);
     }
     return state;
