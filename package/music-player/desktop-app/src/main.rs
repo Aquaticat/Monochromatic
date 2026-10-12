@@ -99,6 +99,18 @@ mod ui_overlays_model;
 mod ui_layout_tests;
 
 /// What:
+///      `mod ui_theme;` loads the sibling `ui_theme.rs` module.
+/// Why:
+///       It writes the OKLCH-derived theme roles into the generated `Theme` global and follows accent changes,
+///           so it needs the generated window type and stays out of `main.rs`.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import * as uiTheme from "./ui_theme";
+/// ```
+mod ui_theme;
+
+/// What:
 ///      `mod ui_font_scale;` loads the sibling `ui_font_scale.rs` module.
 /// Why:
 ///       The OS-font-tracking scale handler uses the generated `AppWindow`,
@@ -985,6 +997,19 @@ fn main() -> Result<()> {
     // app.theme.schemeOverride = colorSchemeFromEnv();
     // ```
     app.global::<Theme>().set_scheme_override(color_scheme_from_env());
+    // What:     `ui_theme::apply_accent_override_from_env(&app);` then `ui_theme::install_accent_tracking(&app);`.
+    //           Apply the optional accent override, derive the theme roles for the current root (the system accent,
+    //           or the baseline when none exists), and register the callback that re-derives them on an accent change.
+    // Why:      A3 and D108: the OS accent is the theme root and every other color is derived from it in OKLCH.
+    //           The override comes first so the first derivation already uses it.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // applyAccentOverrideFromEnv(app);
+    // installAccentTracking(app);
+    // ```
+    ui_theme::apply_accent_override_from_env(&app);
+    ui_theme::install_accent_tracking(&app);
 
     // What:     `let weak = app.as_weak();`. `.as_weak()` makes a WEAK handle to the
     //           window: it does not keep the window alive, and can be sent to other

@@ -689,6 +689,18 @@ pub mod sweep_report;
 /// Why: verification runs need a fixed light or dark window.
 pub mod color_scheme;
 
+/// What: `pub mod oklch;` OKLCH color math, gamut mapping and WCAG contrast (D108).
+/// Why: every derived theme color is computed there, in one pure place.
+pub mod oklch;
+
+/// What: `pub mod accent_override;` the environment override of the theme root color.
+/// Why: renders and verification runs need a deterministic accent.
+pub mod accent_override;
+
+/// What: `pub mod theme_roles;` the theme roles derived from one root color (A3, D108).
+/// Why: the accent-following palette and its contrast guarantee are pure logic that is unit-tested.
+pub mod theme_roles;
+
 /// What: `pub mod controller_measures;` the controller side of the per-track measures.
 /// Why: sweep reports are filtered by queue generation there, before they reach the window.
 pub mod controller_measures;

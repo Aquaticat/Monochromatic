@@ -28,6 +28,15 @@ export component AppWindow inherits Window {
     preferred-height: 600px;
     background: Theme.canvas;
 
+    // Theme root tracking (ui_theme): the Rust side derives every role from the accent and writes them into Theme,
+    // at startup and again whenever this callback reports a new root. `changed` fires on change, not on the first
+    // value, so the first derivation is made by the Rust side at startup.
+    callback accent-changed(color);
+    property <color> theme-accent: Theme.accent-source;
+    changed theme-accent => {
+        root.accent-changed(root.theme-accent);
+    }
+
     // Width at and above which the unfolded two-pane layout is used.
     property <length> unfold-width: 600px;
     property <bool> unfolded: root.width >= root.unfold-width;

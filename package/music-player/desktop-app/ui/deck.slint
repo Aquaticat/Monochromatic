@@ -51,9 +51,10 @@ component ModeSegment inherits Rectangle {
     in property <length> content-pad;
     // Spoken label for assistive technology, with the full folder name in the shuffle segment.
     in property <string> spoken;
-    // Content color of the segment's surface, which tints the hover and pressed layer.
-    property <color> layer-tint: root.selected ? Theme.on-secondary-container : Theme.on-surface;
-    // Opacity of the hover or pressed layer: 8 percent on hover and 12 percent while pressed, as StateLayer uses.
+    // Content color of the segment's surface, which tints the hover and pressed layer of an unselected segment.
+    property <color> layer-tint: Theme.on-surface;
+    // Opacity of the hover or pressed layer of an unselected segment: 8 percent on hover and 12 percent while pressed,
+    // as StateLayer uses. A selected segment steps to the theme's OKLCH-derived hovered and pressed fills instead.
     property <float> layer-alpha: segment-touch.pressed ? 0.12 : (segment-touch.has-hover ? 0.08 : 0);
     // Edge length of the check mark glyph.
     property <length> check-size: 18px;
@@ -76,7 +77,7 @@ component ModeSegment inherits Rectangle {
     Path {
         width: root.width;
         height: root.height;
-        fill: root.selected ? Theme.secondary-container.mix(root.layer-tint, 1 - root.layer-alpha) : root.layer-tint.with-alpha(root.layer-alpha);
+        fill: root.selected ? (segment-touch.pressed ? Theme.secondary-container-pressed : (segment-touch.has-hover ? Theme.secondary-container-hovered : Theme.secondary-container)) : root.layer-tint.with-alpha(root.layer-alpha);
         stroke: Theme.outline;
         stroke-width: 1px;
 

@@ -67,8 +67,9 @@ export component SearchPage inherits Rectangle {
     property <length> end-inset: 16px;
     // Nominal glyph size, drawn inside its 48 px target.
     property <length> icon-size: 24px;
-    // Fill behind an emphasized match (D59), the primary role at 30 percent alpha.
-    property <color> match-fill: Theme.primary.with-alpha(0.3);
+    // Fill behind an emphasized match (D59), the theme's OKLCH-derived match role (the primary moved toward the neutral
+    // end, kept legible under both text roles).
+    property <color> match-fill: Theme.match-fill;
 
     // Top of the region below the header and divider.
     property <length> body-top: header-height + 1px;
