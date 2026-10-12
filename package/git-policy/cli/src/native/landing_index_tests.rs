@@ -189,3 +189,109 @@ fn explicit_path_mode_keeps_a_guarded_path_restaged_since_invocation() {
     assert!(post.contains(&format!("{restaged}")), "{post}");
     remove(&scenario.root);
 }
+
+/// A guarded path that still holds its invocation entry is reset to the landed tree.
+#[test]
+fn explicit_path_mode_resets_a_guarded_path_that_nobody_restaged() {
+    let scenario = scenario("landing-index-guarded-reset");
+    let base = scenario.initial.clone();
+    compute(&scenario, TransactionMode::ExplicitPath, &[], &["a.txt".to_string()], false, base.as_str());
+    let post = entries(scenario.repo.as_path(), scenario.post_index.as_path());
+    let landed = entries(scenario.repo.as_path(), scenario.landed_index.as_path());
+    assert!(
+        post.lines().any(|line| { return line.ends_with("\ta.txt") && landed.lines().any(|other| { return other == line; }); }),
+        "{post}"
+    );
+    assert!(post.contains("\tother.txt"), "{post}");
+    remove(&scenario.root);
+}
+
+/// The landing names its paths literally even when the caller asked Git for literal pathspecs globally,
+///  which would otherwise read the `:(top,literal)` prefix as part of the file name.
+#[test]
+fn explicit_paths_are_reset_with_literal_pathspecs_disabled_for_the_magic_prefix() {
+    let scenario = scenario("landing-index-literal");
+    let mut context = git_context();
+    context.overlay.push((std::ffi::OsString::from("GIT_LITERAL_PATHSPECS"), std::ffi::OsString::from("1")));
+    compute_landing_post_index(
+        &context,
+        scenario.repo.as_path(),
+        &PostIndexInput {
+            mode: TransactionMode::ExplicitPath,
+            pre_landing_index: scenario.pre_landing_index.as_path(),
+            captured_index: scenario.captured_index.as_path(),
+            landed_index: scenario.landed_index.as_path(),
+            post_index: scenario.post_index.as_path(),
+            landed_tree: scenario.landed_tree.as_str(),
+            base_revision: scenario.initial.as_str(),
+            committed_paths: &["a.txt".to_string()],
+            guarded_paths: &[],
+            exact_private_index: false,
+        },
+    )
+    .expect("post-index");
+    let post = entries(scenario.repo.as_path(), scenario.post_index.as_path());
+    let landed = entries(scenario.repo.as_path(), scenario.landed_index.as_path());
+    assert!(
+        post.lines().any(|line| { return line.ends_with("\ta.txt") && landed.lines().any(|other| { return other == line; }); }),
+        "{post}"
+    );
+    remove(&scenario.root);
+}
+
+/// A path staged at invocation that the landed tree no longer holds (a hook reverted it) is removed from the
+///  post-index, while another process's staging stays.
+#[test]
+fn index_mode_removes_a_captured_path_the_landed_tree_dropped() {
+    let root = fixture("landing-index-captured-drop");
+    let repo = repository(root.as_path(), "repo");
+    let initial = git_text(repo.as_path(), &["rev-parse", "HEAD"]);
+    let two = blob(repo.as_path(), root.as_path(), "a-two.txt", "two\n");
+    let captured_index = private_index(repo.as_path(), root.as_path(), "captured.index", &[("a.txt", two.as_str())]);
+    let landed_index = root.join("landed.index");
+    std::fs::copy(repo.join(".git/index"), &landed_index).expect("landed index");
+    let landed_tree = git_with_index(repo.as_path(), landed_index.as_path(), &["write-tree"]);
+    let other = blob(repo.as_path(), root.as_path(), "other.txt", "other\n");
+    let pre_landing_index = private_index(repo.as_path(), root.as_path(), "pre-landing.index", &[("a.txt", two.as_str()), ("other.txt", other.as_str())]);
+    let scenario = Scenario {
+        post_index: root.join("post.index"),
+        root: root.clone(),
+        repo: repo.clone(),
+        initial: initial.clone(),
+        landed_tree,
+        landed_index,
+        captured_index,
+        pre_landing_index,
+    };
+    compute(&scenario, TransactionMode::Index, &[], &[], false, initial.as_str());
+    let post = entries(repo.as_path(), scenario.post_index.as_path());
+    assert!(!post.contains("\ta.txt"), "{post}");
+    assert!(post.contains("\tother.txt"), "{post}");
+    remove(&root);
+}
+
+/// An invocation-time index that cannot form a tree (unmerged entries) adds no paths and does not fail the landing.
+#[test]
+fn index_mode_tolerates_a_captured_index_that_cannot_form_a_tree() {
+    let scenario = scenario("landing-index-captured-unmerged");
+    let conflict = blob(scenario.repo.as_path(), scenario.root.as_path(), "conflict.txt", "conflict\n");
+    let mut update = std::process::Command::new(REAL_GIT)
+        .current_dir(scenario.repo.as_path())
+        .env("GIT_INDEX_FILE", scenario.captured_index.as_path())
+        .args(["update-index", "--index-info"])
+        .stdin(std::process::Stdio::piped())
+        .spawn()
+        .expect("update-index starts");
+    {
+        use std::io::Write;
+        let mut input = update.stdin.take().expect("piped input");
+        input.write_all(format!("100644 {conflict} 1\tconflict.txt\n100644 {conflict} 2\tconflict.txt\n").as_bytes()).expect("input");
+    }
+    assert!(update.wait().expect("update-index ends").success());
+    let base = scenario.initial.clone();
+    compute(&scenario, TransactionMode::Index, &[], &[], false, base.as_str());
+    let post = entries(scenario.repo.as_path(), scenario.post_index.as_path());
+    assert!(post.contains("\ta.txt"), "{post}");
+    assert!(post.contains("\tother.txt"), "{post}");
+    remove(&scenario.root);
+}
