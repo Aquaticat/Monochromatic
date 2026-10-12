@@ -363,3 +363,8 @@ pub fn load_repository_config(repository_root: &Path) -> Result<LoadedConfig, Co
 #[cfg(test)]
 #[path = "config_file_tests.rs"]
 mod tests;
+
+/// Controls on the repository's own configuration file stay out of the release executable.
+#[cfg(test)]
+#[path = "config_repository_tests.rs"]
+mod repository_tests;

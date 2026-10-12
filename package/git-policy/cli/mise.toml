@@ -25,6 +25,9 @@ run = "cargo generate-lockfile --offline"
 [tasks."native:lock:members"]
 description = "Record a changed dependency list of the native wrapper in its lockfile without moving any other locked version"
 run = "cargo update --offline --workspace"
+[tasks."native:config:differential"]
+description = "Compare the incumbent's and the native wrapper's policy decisions under the repository's real cli-git configuration; run native:build first, `-- <options>` are passed on"
+run = "node bin/differential-repository-config.mjs"
 
 [tasks."native:format"]
 description = "Format native wrapper Rust source without changing TypeScript"
