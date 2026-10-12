@@ -1,7 +1,8 @@
 /**
  Guards ledger X18: what the preparation's evidence rounds report (the
- reference attestation's findings, the page title lexicon's, and the finding for
- an entry whose info.yml was unreadable) reaches the entry's findings on every
+ reference attestation's findings, the page title lexicon's, and the findings for
+ an entry whose info.yml was unreadable or whose death was of a kind nobody can
+ read) reaches the entry's findings on every
  way out of the preparation. The way out through a
  corrected archive once rebuilt its findings from the re-preparation and
  dropped the attestation's.
@@ -27,6 +28,7 @@ import {
   ARCHIVE_BLOCK_REVIEW_RESPONSE_FORMAT,
   type ChatJsonOutcome,
   type ChatJsonRequest,
+  type EntryInfoRecord,
   PAGE_TITLE_LEXICON_RESPONSE_FORMAT,
   type PipelineDigest,
   preparePassEntry,
@@ -87,6 +89,28 @@ const REFERENCE_LINES = '- reference 1 https://cats.example/posts/mittens ("Mitt
  */
 const UNREADABLE_REFUSAL = 'The info.yml of entry CatEntry at the pin refused to parse at line 2 column 1 (BAD_INDENT); '
   + 'corpus metadata parses upstream, so this signals corruption.';
+
+/**
+ What the info.yml reader answers for a file that refused to parse.
+ */
+const UNREADABLE_RECORD: EntryInfoRecord = {
+  kind: 'unreadable',
+  refusal: UNREADABLE_REFUSAL,
+};
+
+/**
+ What the info.yml reader answers for a file whose death is a truth value.
+ */
+const TRUTH_VALUE_RECORD: EntryInfoRecord = {
+  kind: 'read',
+  info: { info: { died: true, }, },
+};
+
+/**
+ The one finding a death that is a truth value puts on the artifact.
+ */
+const TRUTH_VALUE_FINDING = 'entry info: info.died is a truth value, which is neither text nor a finite number. '
+  + 'No death is recorded for the entry.';
 
 /**
  How the archive reviewers answer an unclaimed block.
@@ -183,20 +207,24 @@ function evidenceClient(
 
  @param review - how the reviewers answer an unclaimed block
 
+ @param entryInfo - what the entry's info.yml came to
+
  @returns Prepared archive, findings and the sheets asked
 
  @example
  ```ts
- const run = await prepared({ targetText: RENDERED, review: 'revise', },);
+ const run = await prepared({ targetText: RENDERED, review: 'revise', entryInfo: UNREADABLE_RECORD, },);
  ```
  */
 async function prepared(
   {
     targetText,
     review,
+    entryInfo,
   }: {
     readonly targetText: string;
     readonly review: Review;
+    readonly entryInfo: EntryInfoRecord;
   },
 ) {
   /**
@@ -225,10 +253,7 @@ async function prepared(
     outsideReads: {
       ...NO_OUTSIDE_READS,
       references: async () => REFERENCE_LINES,
-      entryInfo: async () => ({
-        kind: 'unreadable',
-        refusal: UNREADABLE_REFUSAL,
-      } as const),
+      entryInfo: async () => entryInfo,
     },
     stageSettings: SCRIPTED_STAGE_SETTINGS,
   },);
@@ -263,6 +288,24 @@ function evidenceReported({ findings, }: { readonly findings: readonly string[];
   };
 }
 
+/**
+ The findings the info.yml reader's record put on the preparation.
+
+ @param findings - the preparation's findings
+
+ @returns The findings that begin with the info.yml reader's label
+
+ @example
+ ```ts
+ const own = entryInfoFindingsIn({ findings, },);
+ ```
+ */
+function entryInfoFindingsIn({ findings, }: { readonly findings: readonly string[]; },): readonly string[] {
+  return findings.filter(function isEntryInfoFinding(finding,): boolean {
+    return finding.startsWith('entry info:',);
+  },);
+}
+
 await describe({
   name: 'preparePassEntry keeps its evidence findings on every way out (ledger X18)',
   children: [
@@ -272,7 +315,7 @@ await describe({
         /**
          Preparation over an archive the pairing claims whole.
          */
-        const claimed = await prepared({ targetText: RENDERED, review: 'revise', },);
+        const claimed = await prepared({ targetText: RENDERED, review: 'revise', entryInfo: UNREADABLE_RECORD, },);
         expect({
           reviewed: claimed.reviewed,
           ...evidenceReported({ findings: claimed.findings, },),
@@ -290,7 +333,7 @@ await describe({
         /**
          Preparation whose review claims support the original lacks.
          */
-        const retained = await prepared({ targetText: `${RENDERED}\n\nAside A`, review: 'unanchored', },);
+        const retained = await prepared({ targetText: `${RENDERED}\n\nAside A`, review: 'unanchored', entryInfo: UNREADABLE_RECORD, },);
         expect({
           reviewed: retained.reviewed,
           archiveStands: retained.targetText.includes('Aside A',),
@@ -310,7 +353,7 @@ await describe({
         /**
          Preparation whose review revises the unclaimed block.
          */
-        const corrected = await prepared({ targetText: `${RENDERED}\n\nAside A`, review: 'revise', },);
+        const corrected = await prepared({ targetText: `${RENDERED}\n\nAside A`, review: 'revise', entryInfo: UNREADABLE_RECORD, },);
         expect({
           reviewed: corrected.reviewed,
           corrected: corrected.targetText.includes('Aside B',),
@@ -321,6 +364,66 @@ await describe({
           attestation: true,
           pageTitles: true,
           unreadableEntryInfo: true,
+        },);
+      },
+    },),
+    it({
+      name: 'KEEPS THE FINDING OF A died THAT IS A TRUTH VALUE when the archive leaves no block unclaimed, and asks no review',
+      fn: async () => {
+        /**
+         Preparation over an archive the pairing claims whole.
+         */
+        const claimed = await prepared({ targetText: RENDERED, review: 'revise', entryInfo: TRUTH_VALUE_RECORD, },);
+        expect({
+          reviewed: claimed.reviewed,
+          entryInfoFindings: entryInfoFindingsIn({ findings: claimed.findings, },),
+        },).toEqual({
+          reviewed: false,
+          entryInfoFindings: [TRUTH_VALUE_FINDING,],
+        },);
+      },
+    },),
+    it({
+      name: 'KEEPS THE FINDING OF A died THAT IS A TRUTH VALUE when the review leaves the archive as it stands',
+      fn: async () => {
+        /**
+         Preparation whose review claims support the original lacks.
+         */
+        const retained = await prepared({
+          targetText: `${RENDERED}\n\nAside A`,
+          review: 'unanchored',
+          entryInfo: TRUTH_VALUE_RECORD,
+        },);
+        expect({
+          reviewed: retained.reviewed,
+          archiveStands: retained.targetText.includes('Aside A',),
+          entryInfoFindings: entryInfoFindingsIn({ findings: retained.findings, },),
+        },).toEqual({
+          reviewed: true,
+          archiveStands: true,
+          entryInfoFindings: [TRUTH_VALUE_FINDING,],
+        },);
+      },
+    },),
+    it({
+      name: 'KEEPS THE FINDING OF A died THAT IS A TRUTH VALUE when the review corrects the archive and the preparation runs again',
+      fn: async () => {
+        /**
+         Preparation whose review revises the unclaimed block.
+         */
+        const corrected = await prepared({
+          targetText: `${RENDERED}\n\nAside A`,
+          review: 'revise',
+          entryInfo: TRUTH_VALUE_RECORD,
+        },);
+        expect({
+          reviewed: corrected.reviewed,
+          corrected: corrected.targetText.includes('Aside B',),
+          entryInfoFindings: entryInfoFindingsIn({ findings: corrected.findings, },),
+        },).toEqual({
+          reviewed: true,
+          corrected: true,
+          entryInfoFindings: [TRUTH_VALUE_FINDING,],
         },);
       },
     },),

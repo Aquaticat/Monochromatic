@@ -1059,6 +1059,141 @@ async function artifactNames(
 }
 
 /**
+ What settling the entry with one `info.yml` wrote, beside what settling it with none wrote.
+ */
+type SettledBesideNoInfoFile = {
+  /**
+   Artifact filenames the settling wrote.
+   */
+  readonly artifacts: readonly string[];
+
+  /**
+   The published page.
+   */
+  readonly page: string;
+
+  /**
+   The published page of the entry settled with no `info.yml`.
+   */
+  readonly referencePage: string;
+
+  /**
+   The preparation's findings the artifact recorded.
+   */
+  readonly findings: readonly string[];
+
+  /**
+   The findings the artifact of the entry settled with no `info.yml` recorded.
+   */
+  readonly referenceFindings: readonly string[];
+};
+
+/**
+ Settles the entry once with an `info.yml` read through the real reader and once with none, so what the
+ file changes shows against an entry whose record holds no death.
+
+ @param infoFile - text of the entry's `info.yml` at the pin
+
+ @returns What both settlings wrote
+
+ @example
+ ```ts
+ const settled = await settledBesideNoInfoFile({ infoFile: 'info:\n  died: true\n', },);
+ ```
+ */
+async function settledBesideNoInfoFile(
+  { infoFile, }: { readonly infoFile: string; },
+): Promise<SettledBesideNoInfoFile> {
+  await using dirs = await throwawayDirs();
+  await using reference = await throwawayDirs();
+  await settleEntry({
+    client: entryClient({ served: [], },),
+    entry: ENTRY,
+    artifactsDir: reference.artifactsDir,
+    publishDir: reference.publishDir,
+    declinedDir: reference.declinedDir,
+    sliceCacheDir: reference.sliceCacheDir,
+    tip: 'a'.repeat(40,),
+    pipelineDigest: DIGEST,
+    pin: ENTRY_PIN,
+    outsideReads: NO_OUTSIDE_READS,
+    pictureSources: NO_PICTURE_SOURCES,
+    hardCapMs: HANG_STOP_MS,
+    baseSignal: new AbortController().signal,
+    overlap: PASS_FALLBACK_OVERLAP,
+    stageSettings: SCRIPTED_STAGE_SETTINGS,
+  },);
+  await settleEntry({
+    client: entryClient({ served: [], },),
+    entry: ENTRY,
+    artifactsDir: dirs.artifactsDir,
+    publishDir: dirs.publishDir,
+    declinedDir: dirs.declinedDir,
+    sliceCacheDir: dirs.sliceCacheDir,
+    tip: 'a'.repeat(40,),
+    pipelineDigest: DIGEST,
+    pin: ENTRY_PIN,
+    outsideReads: {
+      ...NO_OUTSIDE_READS,
+      entryInfo: function fileEntryInfo({ entryId, l, },) {
+        return readEntryInfoRecord({
+          pin: ENTRY_PIN,
+          entryId,
+          readFile: async function fileAtPin() {
+            return infoFile;
+          },
+          l,
+        },);
+      },
+    },
+    pictureSources: NO_PICTURE_SOURCES,
+    hardCapMs: HANG_STOP_MS,
+    baseSignal: new AbortController().signal,
+    overlap: PASS_FALLBACK_OVERLAP,
+    stageSettings: SCRIPTED_STAGE_SETTINGS,
+  },);
+  /**
+   Artifact the entry wrote, through the production parser.
+   */
+  const artifact = parseSettledTwoLaneArtifact({
+    value: JSON.parse(await readFile(
+      join(dirs.artifactsDir, 'CatEntry1.json',),
+      'utf8',
+    ),),
+  },);
+  /**
+   Artifact the entry wrote with no info.yml.
+   */
+  const referenceArtifact = parseSettledTwoLaneArtifact({
+    value: JSON.parse(await readFile(
+      join(reference.artifactsDir, 'CatEntry1.json',),
+      'utf8',
+    ),),
+  },);
+  return {
+    artifacts: await artifactNames({ artifactsDir: dirs.artifactsDir, },),
+    page: await readFile(
+      fixedPagePath({
+        publishDir: dirs.publishDir,
+        entryId: ENTRY.id,
+      },),
+      'utf8',
+    ),
+    referencePage: await readFile(
+      fixedPagePath({
+        publishDir: reference.publishDir,
+        entryId: ENTRY.id,
+      },),
+      'utf8',
+    ),
+    findings: artifact.preparation
+      .alignmentFindings,
+    referenceFindings: referenceArtifact.preparation
+      .alignmentFindings,
+  };
+}
+
+/**
  Console method a capture diverts: `log` for the pass's printed lines, `warn`
  for the warnings its entry loggers write.
  */
@@ -1618,94 +1753,33 @@ await describe({
       name: 'SHIPS THE PAGE OF AN ENTRY WHOSE info.yml IS DAMAGED, read through the real info.yml reader, and records on '
         + 'the artifact that the record was unreadable and no death was told to the models (the owner\'s rule: a run always ships)',
       fn: async () => {
-        await using dirs = await throwawayDirs();
-        await using reference = await throwawayDirs();
-        // THE ENTRY AS ONE WHOSE info.yml RECORDS NO DEATH, which the damaged file must leave it exactly as.
-        await settleEntry({
-          client: entryClient({ served: [], },),
-          entry: ENTRY,
-          artifactsDir: reference.artifactsDir,
-          publishDir: reference.publishDir,
-          declinedDir: reference.declinedDir,
-          sliceCacheDir: reference.sliceCacheDir,
-          tip: 'a'.repeat(40,),
-          pipelineDigest: DIGEST,
-          pin: ENTRY_PIN,
-          outsideReads: NO_OUTSIDE_READS,
-          pictureSources: NO_PICTURE_SOURCES,
-          hardCapMs: HANG_STOP_MS,
-          baseSignal: new AbortController().signal,
-          overlap: PASS_FALLBACK_OVERLAP,
-          stageSettings: SCRIPTED_STAGE_SETTINGS,
-        },);
-        await settleEntry({
-          client: entryClient({ served: [], },),
-          entry: ENTRY,
-          artifactsDir: dirs.artifactsDir,
-          publishDir: dirs.publishDir,
-          declinedDir: dirs.declinedDir,
-          sliceCacheDir: dirs.sliceCacheDir,
-          tip: 'a'.repeat(40,),
-          pipelineDigest: DIGEST,
-          pin: ENTRY_PIN,
-          outsideReads: {
-            ...NO_OUTSIDE_READS,
-            entryInfo: function damagedEntryInfo({ entryId, l, },) {
-              return readEntryInfoRecord({
-                pin: ENTRY_PIN,
-                entryId,
-                readFile: async function damagedFile() {
-                  return 'info: [\n';
-                },
-                l,
-              },);
-            },
-          },
-          pictureSources: NO_PICTURE_SOURCES,
-          hardCapMs: HANG_STOP_MS,
-          baseSignal: new AbortController().signal,
-          overlap: PASS_FALLBACK_OVERLAP,
-          stageSettings: SCRIPTED_STAGE_SETTINGS,
-        },);
-
-        expect(await artifactNames({ artifactsDir: dirs.artifactsDir, },),).toEqual(['CatEntry1.json',],);
-        expect(await readFile(
-          fixedPagePath({
-            publishDir: dirs.publishDir,
-            entryId: ENTRY.id,
-          },),
-          'utf8',
-        ),).toBe(await readFile(
-          fixedPagePath({
-            publishDir: reference.publishDir,
-            entryId: ENTRY.id,
-          },),
-          'utf8',
-        ),);
         /**
-         Artifact the entry wrote, through the production parser.
+         What settling the entry with the damaged file wrote, beside the entry with none.
          */
-        const artifact = parseSettledTwoLaneArtifact({
-          value: JSON.parse(await readFile(
-            join(dirs.artifactsDir, 'CatEntry1.json',),
-            'utf8',
-          ),),
-        },);
-        /**
-         Artifact the entry wrote with no info.yml, whose findings the damaged entry's keep and add one to.
-         */
-        const referenceArtifact = parseSettledTwoLaneArtifact({
-          value: JSON.parse(await readFile(
-            join(reference.artifactsDir, 'CatEntry1.json',),
-            'utf8',
-          ),),
-        },);
-        expect(artifact.preparation
-          .alignmentFindings,).toEqual([
-          ...referenceArtifact.preparation
-            .alignmentFindings,
+        const settled = await settledBesideNoInfoFile({ infoFile: 'info: [\n', },);
+        expect(settled.artifacts,).toEqual(['CatEntry1.json',],);
+        expect(settled.page,).toBe(settled.referencePage,);
+        expect(settled.findings,).toEqual([
+          ...settled.referenceFindings,
           'entry info: The info.yml of entry CatEntry1 at the pin refused to parse at line 2 column 1 (BAD_INDENT); '
           + 'corpus metadata parses upstream, so this signals corruption. No death is recorded for the entry.',
+        ],);
+      },
+    },),
+    it({
+      name: 'SHIPS THE PAGE OF AN ENTRY WHOSE info.yml HOLDS A died THAT IS A TRUTH VALUE, read through the real info.yml reader, '
+        + 'and records on the artifact the key and the kind it held, so the artifact tells it from an entry that records no death',
+      fn: async () => {
+        /**
+         What settling the entry with a truth value for its death wrote, beside the entry with no info.yml.
+         */
+        const settled = await settledBesideNoInfoFile({ infoFile: 'info:\n  died: true\n', },);
+        expect(settled.artifacts,).toEqual(['CatEntry1.json',],);
+        expect(settled.page,).toBe(settled.referencePage,);
+        expect(settled.findings,).toEqual([
+          ...settled.referenceFindings,
+          'entry info: info.died is a truth value, which is neither text nor a finite number. '
+          + 'No death is recorded for the entry.',
         ],);
       },
     },),

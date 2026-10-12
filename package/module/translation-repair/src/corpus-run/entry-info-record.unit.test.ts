@@ -469,6 +469,66 @@ await describe({
         },),
 
         it({
+          name: 'SAYS THE KEY AND THE KIND of a death that is a truth value, a list, a record or a number that is not finite, '
+            + 'quoting no value, so a reader of the artifact can tell it from an entry that records no death',
+          fn: async () => {
+            /**
+             Each `died` the feature cannot read, with the kind the finding names.
+             */
+            const unreadableKinds: readonly (readonly [unknown, string,])[] = [
+              [
+                true,
+                'a truth value',
+              ],
+              [
+                ['whiskers-secret', 2_026,],
+                'a list',
+              ],
+              [
+                { handle: 'whiskers-secret', },
+                'a record',
+              ],
+              [
+                Number.NaN,
+                'a number that is not finite',
+              ],
+              [
+                Number.NEGATIVE_INFINITY,
+                'a number that is not finite',
+              ],
+            ];
+            await Promise.all(unreadableKinds.map(async function findUnreadableKind([died, kind,],): Promise<void> {
+              expect(entryInfoFindingsOf({
+                entryInfo: {
+                  kind: 'read',
+                  info: { info: { died, }, },
+                },
+              },),).toEqual([
+                `entry info: info.died is ${kind}, which is neither text nor a finite number. No death is recorded for the entry.`,
+              ],);
+            },),);
+          },
+        },),
+
+        it({
+          name: 'SAYS NOTHING OF A DEATH THAT IS TEXT, A FINITE NUMBER, A BLANK VALUE OR ABSENT, which each record a death or '
+            + 'an entry with none and no unreadable kind',
+          fn: async () => {
+            await Promise.all([
+              { info: { died: '2025-02-26', }, },
+              { info: { died: 2_025, }, },
+              { info: { died: null, }, },
+              { info: { died: '', }, },
+              { info: { born: '2019-05-02', }, },
+              { died: true, },
+              'cats',
+            ].map(async function findQuietKind(info,): Promise<void> {
+              expect(entryInfoFindingsOf({ entryInfo: { kind: 'read', info, }, },),).toEqual([],);
+            },),);
+          },
+        },),
+
+        it({
           name: 'SAYS NOTHING OF AN ABSENT FILE or of a parsed one, which each record what they hold and no unreadable record',
           fn: async () => {
             expect(entryInfoFindingsOf({ entryInfo: { kind: 'absent', }, },),).toEqual([],);
