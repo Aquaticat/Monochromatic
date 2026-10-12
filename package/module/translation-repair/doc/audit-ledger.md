@@ -35831,6 +35831,9 @@ since `dispositionOf` answers `too-few-placed` first;
 it now refuses fewer than two places under any verdict but `too-few-placed` and `failed`.
 The writer sets both offsets or neither and never writes either shape,
 so only a damaged file reached them.
+(Changed on 2026-10-12 (UTC) by B448:
+a `failed` group needs two places too,
+since only a group put to the bench can fail and the bench is asked only with two.)
 
 ### B439: the consistency cache resumed a stored gather whose quorum no gather closes on
 
@@ -35872,6 +35875,10 @@ Kept by the lead under the owner's instruction of 2026-10-11:
 a `failed` group reads with any count of places;
 the reader checks no slot order or containment,
 which the writer cannot get wrong without failing its own splice.
+(Both changed on 2026-10-12 (UTC):
+the reader now refuses a `failed` group of fewer than two places (B448)
+and a slot that does not start before it ends or lies outside its place (B444);
+`reasonContradicted` was settled by B444 and the region comment by B448.)
 
 ### B441: a damaged info.yml stopped its entry and refused its replays
 
@@ -36030,6 +36037,57 @@ every way out of `preparePassEntry` carries it,
 and a case pins each.
 Findings reach no key and no sheet,
 so no cache key or schema version moved.
+
+### B448: the consistency pass would have asked again a gather of one voice it had stored itself
+
+Red `f0f542a9c8`,
+fixed in `85ed31f072`.
+
+Found on 2026-10-12 (UTC) in reconciling B437 to B440 with B443 to B446 after both merged (M156).
+B443's `recordFits` refused a stored gather whose quorum was below `min(2, bench size)`,
+yet a gather closes on one voice when the seated bench has one or two seats,
+the run having withheld the others (B420):
+`reachableQuorum` applies its floor of two only to a short bench,
+and a bench that is not short closes on `rosterQuorumSize`,
+which is `max(1, ceil(n / 2))`.
+The key names the whole bench,
+so on resume the pass would have asked every seat again,
+at paid calls,
+for a gather it had stored.
+Cases red at `f42d69c2fe` run the real gather for a bench of two,
+and for a bench of three after the run withheld two seats,
+and feed back what it stored;
+both asked every seat again.
+`recordFits` now checks only that each seat is heard once and sits on the bench;
+the quorum and the ballot count stay with `isConsistencyRecord` (B439),
+which every production read of the cache passes first.
+
+The same work brought four test files to the merged rules:
+the reader's merged refusal sentences,
+the reason vocabulary grown by `markup`,
+`overlaps-another` and `slot-whole`,
+and the one-based `ConsistencyInvariantError` sentences;
+the case that read a `failed` group with no place now refuses one of no place or one,
+since `settleFailed` runs only for a group the bench was asked about,
+and `dispositionOf` sends fewer than two places to a skip.
+New cases pin the slot bounds,
+two places of one slice said to read alike,
+each refrain quote's slot,
+and the death and names in the consistency key.
+The region comment of `pass-consistency-apply.ts` now says a replacement already left out as overlapping stays `overlapped`.
+
+Kept by the lead under the owner's instruction of 2026-10-11:
+`recordFits` states no quorum bound,
+since the cache is built only through `openConsistencyCache`,
+whose reader states them;
+the reader keeps the slot-bounds check,
+which refuses only what no writer writes.
+Changed by the lead in `4002dc006e`:
+the comments on `MIN_STAGE_VOICES` said no stage is decided by a single model,
+whatever the bench;
+they now say the floor is a short bench's,
+and that a bench of one or two seats closes on one voice,
+which the code has always done.
 
 ## Process mistakes in this audit
 
@@ -39132,6 +39190,25 @@ or one brief owns those files and the other only reads them;
 separating test files is not separating the work.
 `mistake-prevention.md`,
 "Work merged from parallel briefs".
+
+### M157: two agents broke their briefs' edit and shell rules
+
+Status:
+happened on 2026-10-12 (UTC) in the work of B447 and B448;
+disclosed by each agent in its hand-back,
+and the lead's named run and gate on the merged head confirmed every result they reported.
+The agent behind B447 edited three files through `python3` heredoc scripts and one `sed --in-place` deletion,
+where its brief allowed the Edit tool only.
+The agent behind B448 chained one shell call with `;`,
+put more than three `&&` steps in four calls,
+and used short flags where long ones exist.
+
+Prevention:
+the briefs' rules stand as written;
+the lead reruns what an agent reports on the merged head before relying on it,
+as here.
+`mistake-prevention.md`,
+"Shell commands".
 
 ### M79: a coverage census measuring compressed code
 
