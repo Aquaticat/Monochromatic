@@ -44,3 +44,13 @@ fn the_signing_key_is_read_from_the_long_spelling_only() {
     assert_eq!(replay_options(&args(&["-nSabc"])).signing_key, None);
     assert!(replay_options(&args(&["-nSabc"])).no_verify);
 }
+
+/// A later message option keeps the key, a later bare `-S` clears it (the incumbent's rule), and an option value is
+///  consumed once: the token after it is an option again.
+#[test]
+fn later_options_keep_or_clear_the_key_and_a_value_is_consumed_once() {
+    assert_eq!(replay_options(&args(&["--gpg-sign=k", "-m", "x"])).signing_key, Some(String::from("k")));
+    assert_eq!(replay_options(&args(&["--gpg-sign=k", "-S"])).signing_key, None);
+    assert!(replay_options(&args(&["-m", "x", "-n"])).no_verify);
+    assert!(replay_options(&args(&["--message", "x", "--no-verify"])).no_verify);
+}

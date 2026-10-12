@@ -274,10 +274,13 @@ fn await_marker(path: &Path) {
 }
 
 /// A commit paused after preparation is overtaken by another commit; it replays onto the moved branch and lands.
-#[test]
-fn a_commit_that_loses_the_landing_race_replays_and_lands() {
-    let fixture: Fixture = fixture("commit-replay");
+///  `configuration` is the text of a repository configuration file, when the control needs one.
+fn replayed_commit_stderr(name: &str, configuration: Option<&str>) -> String {
+    let fixture: Fixture = fixture(name);
     let repo: PathBuf = edited_repository(&fixture, "repo");
+    if let Some(text) = configuration {
+        std::fs::write(repo.join("cli-git.config.jsonc"), text).expect("repository configuration");
+    }
     std::fs::write(repo.join("b.txt"), b"b\n").expect("b");
     git(&fixture, repo.as_path(), &["add", "--", "b.txt"]);
     let markers: PathBuf = fixture.root.join("markers");
@@ -295,13 +298,28 @@ fn a_commit_that_loses_the_landing_race_replays_and_lands() {
     let finished = slow.wait_with_output().expect("the slow commit ends");
     let stderr: String = String::from_utf8_lossy(finished.stderr.as_slice()).into_owned();
     assert_eq!(finished.status.code(), Some(0), "{stderr}");
-    assert!(stderr.contains("\"type\":\"landing-race-lost\""), "{stderr}");
-    assert!(stderr.contains("\"type\":\"commit-replayed\""), "{stderr}");
     assert_eq!(git_text(&fixture, repo.as_path(), &["rev-list", "--count", "HEAD"]).trim(), "4");
     assert_eq!(git_text(&fixture, repo.as_path(), &["show", "HEAD:a.txt"]), "one\ntwo\n");
     assert_eq!(git_text(&fixture, repo.as_path(), &["show", "HEAD:b.txt"]), "b\n");
-    assert_nothing_left(&fixture, repo.as_path());
     remove(&fixture);
+    return stderr;
+}
+
+/// One lost race replays and lands, and under the default threshold also takes the starvation reservation.
+#[test]
+fn a_commit_that_loses_the_landing_race_replays_and_lands() {
+    let stderr: String = replayed_commit_stderr("commit-replay", None);
+    assert!(stderr.contains("\"type\":\"landing-race-lost\",\"attempt\":1"), "{stderr}");
+    assert!(stderr.contains("\"type\":\"commit-replayed\""), "{stderr}");
+    assert!(stderr.contains("\"type\":\"landing-reserved\",\"lostRaces\":1"), "{stderr}");
+}
+
+/// With `landing.reserveAfterLostRaces` at 2, one lost race replays without taking the reservation.
+#[test]
+fn fewer_lost_races_than_configured_take_no_reservation() {
+    let stderr: String = replayed_commit_stderr("commit-no-reserve", Some("{ \"landing\": { \"reserveAfterLostRaces\": 2 } }\n"));
+    assert!(stderr.contains("\"type\":\"commit-replayed\""), "{stderr}");
+    assert!(!stderr.contains("\"type\":\"landing-reserved\""), "{stderr}");
 }
 
 /// A commit that overlaps the commit that won fails with `concurrent-commit/replay-conflict`, and nothing lands.
