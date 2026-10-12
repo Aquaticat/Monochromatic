@@ -7,13 +7,18 @@ This current summary complements the
 [historical evidence ledger](pi-auto-mode-axiom-evaluation.md).
 Updated 2026-10-12.
 
-## Paused for a break
+## Resumed after the break
 
-The user asked to update the handover and then take a break on 2026-10-12.
-Finish only this handover update and its document checks,
-then stop.
-Do not restart the migration because a background completion notification arrives.
-Resume implementation when the user returns to it.
+The user explicitly resumed implementation on 2026-10-12.
+The requested break was completed;
+its stop instruction is now historical.
+The resource limits and no-subagent restriction remain unchanged.
+The resumption probe found the expected slice limits,
+no active managed jobs,
+and no additional OOM kills beyond the recorded count of one.
+The maintained kernel files have no intervening package commits since the pause.
+Resume built-artifact tests and lint,
+then the named native decision and approval integrations.
 
 At pause intake,
 the process manager reported no running jobs,
@@ -127,9 +132,11 @@ The rebuilt artifact and package type check passed `proc_4615` with exit zero.
 Despite that process's name,
 its command contained only `build` and `lint:types`:
 it did not run unit tests.
-The new kernel tests,
-formatter completion,
-and lint remain unverified.
+After resumption,
+`proc_a39e` rebuilt the artifact and passed all three new kernel test files,
+including the retained 14,400-program and 112,896-completion oracle.
+Formatter completion and lint remain unverified;
+the selected-file task is running under the unchanged cgroup limits.
 The pure resolver does not establish source authority,
 coverage,
 human approval,
