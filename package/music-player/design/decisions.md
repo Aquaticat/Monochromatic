@@ -3254,6 +3254,20 @@ the "2 px ring plus the state layer" wording of D106 and the focus fill of the e
 - Focus adds no fill, tint, state layer, bold or size change. Hover and pressed keep their own state layers.
 - The ring and the element boundary are the two visible channels (position and shape, plus color), not a fill.
 
+### D118. Grays are always accented unless the root color is completely neutral (2026-10-12)
+
+The human decided that every gray the app draws carries the accent's hue, unless the root color itself has no hue at all.
+This narrows D108's near-gray rule and D41's stable neutrals.
+
+- A root is completely neutral only when it has no chroma at all (its three 8-bit channels are equal). Then every gray is
+  a true gray. A root with any chroma, however small, gives every gray the root's hue; a nearly gray root is not
+  treated as gray.
+- The tint of a gray is the role's own tint (it does not shrink when the root is weakly chromatic and does not grow when
+  it is vivid); accent roles still scale with the root's chroma.
+- Pure black and pure white (the canvas of D109) are not grays and stay as they are. The dark deck, the rail seam, the
+  outlines, the surfaces and the text variants are grays and take the tint, in both schemes and on both platforms, from
+  the same derivation and the shared fixture.
+
 ## Pending after the theme picks (2026-09-04)
 
 - **Order of remaining work** — my recommendation:
