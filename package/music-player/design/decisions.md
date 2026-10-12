@@ -3129,6 +3129,21 @@ the list.
   16 dp inset. The same holds for a tablet or any other large screen whose API reports no crease.
 - Back closes Settings in the wide form and in the single form alike, and in the wide form Escape closes it too.
 
+### D111. Search works while scanning is still running (hard requirement, 2026-10-12)
+
+The human stated it as a hard requirement on Search: it must still be functional while the library is still being scanned.
+It binds both platforms and whatever engine D47 to D74 end up on:
+
+- Search is available from the moment any track is known. It is never disabled, hidden or replaced by a scanning state,
+  and the analysis sweep (D84) never gates it either.
+- Each keystroke searches every track known at that moment. While the scan keeps adding tracks, the open Search page
+  refreshes its results in place, keeping the query, the caret and the scroll position, and without moving a row the user
+  is about to tap.
+- Neither the scan nor the sweep blocks a keystroke: the index takes track additions incrementally in small batches, no lock
+  or transaction is held across a scan batch, and the per-keystroke latency target holds while scanning, as it does at rest.
+- The requirement is tested with a scan that is deliberately slow, on both platforms, by typing while tracks arrive and
+  checking that results appear for the tracks already known and later for the new ones.
+
 ## Pending after the theme picks (2026-09-04)
 
 - **Order of remaining work** — my recommendation:
