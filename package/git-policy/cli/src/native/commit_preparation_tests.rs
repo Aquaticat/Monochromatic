@@ -417,30 +417,60 @@ fn a_pre_commit_hook_restaging_a_selected_file_is_kept_in_the_prepared_commit() 
 }
 
 /// The wait for the guard ends with the first success, passes over only the "already active" failure, and gives up
-///  after the limit with the failure itself.
+///  after the limit with the failure itself. Every closure panics past its call cap, so a mutated guard that retries
+///  too often fails the test at once instead of looping.
 #[test]
 fn the_guard_wait_retries_only_while_another_holder_is_active() {
     let delay = std::time::Duration::from_millis(1);
     let active = || { return std::io::Error::other("a signal guard is already active in this process"); };
     let mut calls: u32 = 0;
     let waited: std::io::Result<u32> = retry_while_active(
-        || { calls += 1; if calls < 3 { return Err(active()); } return Ok(calls); },
+        || {
+            calls += 1;
+            assert!(calls <= 3, "the success on the third call ends the wait");
+            if calls < 3 { return Err(active()); }
+            return Ok(calls);
+        },
         5,
         delay,
     );
     assert_eq!(waited.expect("success after two active failures"), 3);
     let mut other_calls: u32 = 0;
     let other: std::io::Result<u32> = retry_while_active(
-        || { other_calls += 1; return Err(std::io::Error::other("no handler could be installed")); },
+        || {
+            other_calls += 1;
+            assert!(other_calls <= 1, "another failure is returned at once, never retried");
+            return Err(std::io::Error::other("no handler could be installed"));
+        },
         5,
         delay,
     );
     assert!(other.is_err());
-    assert_eq!(other_calls, 1, "another failure is not retried");
+    assert_eq!(other_calls, 1);
     let mut limited_calls: u32 = 0;
-    let limited: std::io::Result<u32> = retry_while_active(|| { limited_calls += 1; return Err(active()); }, 3, delay);
+    let limited: std::io::Result<u32> = retry_while_active(
+        || {
+            limited_calls += 1;
+            assert!(limited_calls <= 4, "the first try and three retries are all there is");
+            return Err(active());
+        },
+        3,
+        delay,
+    );
     assert!(limited.is_err());
     assert_eq!(limited_calls, 4, "the first try and three retries");
+    let mut zero_calls: u32 = 0;
+    let zero: std::io::Result<u32> = retry_while_active(
+        || {
+            zero_calls += 1;
+            assert!(zero_calls <= 1, "a limit of zero allows no retry");
+            return Err(active());
+        },
+        0,
+        delay,
+    );
+    assert!(zero.is_err());
+    assert_eq!(zero_calls, 1);
 }
 
 /// Both signature header spellings mark the prepared commit as signed, and a signature-looking message line does not.
