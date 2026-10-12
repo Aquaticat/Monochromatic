@@ -7,7 +7,7 @@ import {
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
-import { terminalTitlePath, } from './index.ts';
+import { terminalTitlePath, } from '@monochromatic-dev/agent-harness-shared-terminal-title';
 
 await describe({
   name: terminalTitlePath.name,

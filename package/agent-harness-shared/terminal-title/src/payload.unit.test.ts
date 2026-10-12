@@ -12,7 +12,7 @@ import {
   safeTerminalTitlePayload,
   sanitizeTerminalTitleText,
   terminalTitleUtf8ByteLength,
-} from './index.ts';
+} from '@monochromatic-dev/agent-harness-shared-terminal-title';
 
 await describe({
   name: safeTerminalTitlePayload.name,

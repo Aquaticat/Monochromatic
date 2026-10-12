@@ -90,12 +90,30 @@ Places that must change, silent failures first:
 8. `src/tab_layout.rs`: tab stops are measured on an unbroken layout and then used on a wrapped one.
 9. `src/row_map.rs`: every height, `locate`, `page`, `extent`, and `block_top` assumes one code row per line.
 
-Open engineering question, settled by measurement and not by the user:
+Open engineering question, settled by measurement of 2026-10-11 (a throwaway release test in the IDE's container,
+two CPUs, host load 36 to 120; the test source is kept at `~/temp/agent/ide-wrap-measure/tests-wrap_measure.rs`):
 the vertical map needs every line's wrapped height before it can answer `locate` or the scroll extent,
 but the code shapes only materialized lines.
-Option A shapes every line at the wrap width when text, width, scale, or annotations change.
-Option B estimates heights and corrects them as lines are shaped, using the existing keep-view-still machinery.
-The first slice measures A on a large file; B is the fallback if A costs too much.
+Option A, shaping every line at the wrap width, is affordable on a worker thread:
+
+- Shaping 50,000 lines of Rust at widths 600, 900, and 1400 and scales 1 and 2 took 1.0 to 2.2 s of worker time
+  (median of five passes), 14 to 18 microseconds per line at the median and under 100 at the 99th percentile;
+  5,000 lines took 80 to 150 ms; 20,000 lines with five 3,000 character lines took 0.3 to 0.9 s.
+- Re-breaking all kept layouts at a new width, which a window resize needs, took 40 to 80 ms for 50,000 lines,
+  about one microsecond per line.
+- The kept layouts held about 158 MB for 50,000 lines (3.2 KB per line).
+- Parley's `OverflowWrap::Anywhere` and `set_line_break_override` behaved as assumed, no row start fell inside a grapheme
+  in the cases tried, and the layout width scales with the builder scale (use `width * scale`).
+  The syntax brush runs of production were not pushed, so shaping cost is a lower bound.
+  966 of 57,938 rows reported an advance wider than the width at width 600; the cause is not investigated
+  (a hanging space or the indent are the candidates).
+
+The decision follows from the numbers and from the smoothness requirement:
+shaping and re-breaking run on the worker in chunks, starting at the viewport and spreading outward;
+lines not yet shaped count as one row (or their last known height) in the vertical map, and each finished chunk
+corrects the map with the existing keep-view-still machinery, so the first full pass of a very large file never
+blocks a frame and the scroll extent settles as the pass completes.
+Option B's estimate is therefore only the starting value of that map, not a separate design.
 
 ## Parley 0.11.1 findings
 
