@@ -65,6 +65,19 @@ PXF:
  render result side-by-side at matching scale.
 Memory isn't evidence.
 
+DRW:
+ UI work is done only after the running app was driven like a person uses it:
+ hover,
+ press,
+ keyboard,
+ light and dark,
+ every screen;
+ passing tests or lint is not that.
+
+NCV:
+ Verifying or measuring a GUI app hosts it in the nested compositor and reads state through its control protocol;
+ bare runs and headless harnesses only check logic.
+
 M1T:
  Multi-row Material Design 1 tabs:
  each label one content-width line plus horizontal padding;
