@@ -4,6 +4,7 @@ import {
   requireOneOf,
 } from '../artifact-exact-guard.ts';
 import {
+  ArtifactParseError,
   requireArray,
   requireCount,
   requireRecord,
@@ -114,6 +115,49 @@ export function parseConsistencyRepeat(
 }
 
 /**
+ Refuses a place that does not end after it starts or that stands on a line
+ before the first, which no repeat the detector finds does.
+
+ SHARED BY THE TWO READERS OF A PLACE, the one a slice holds whole and the one
+ no slice does, so the rule is stated once.
+
+ @param startOffset - offset where the place starts
+
+ @param endOffset - exclusive offset where it ends
+
+ @param line - one-based line it starts on
+
+ @param path - where the place sits, for the parse error
+
+ @throws {@link ArtifactParseError} when the place ends at or before its start, or its line is zero
+
+ @example
+ ```ts
+ requirePlaceBounds({ startOffset: 6, endOffset: 18, line: 3, path: `${path}.unplaced[0]`, },);
+ ```
+ */
+export function requirePlaceBounds(
+  {
+    startOffset,
+    endOffset,
+    line,
+    path,
+  }: {
+    readonly startOffset: number;
+    readonly endOffset: number;
+    readonly line: number;
+    readonly path: string;
+  },
+): void {
+  if ((endOffset <= startOffset) || (line < 1)) {
+    throw new ArtifactParseError({
+      path,
+      reason: 'a place that ends after it starts, on a line counted from one',
+    },);
+  }
+}
+
+/**
  Reads one place no slice holds whole.
 
  @param value - recorded place
@@ -122,7 +166,8 @@ export function parseConsistencyRepeat(
 
  @returns The place
 
- @throws {@link ArtifactParseError} when it is the wrong shape
+ @throws {@link ArtifactParseError} when it is the wrong shape, or ends at or
+ before its start, or its line is zero
 
  @example
  ```ts
@@ -155,19 +200,37 @@ export function parseConsistencyUnplaced(
     ],
     path,
   },);
+  /**
+   Where the place starts and ends in the original.
+   */
+  const startOffset = requireCount({
+    value: record.startOffset,
+    path: `${path}.startOffset`,
+  },);
+  /**
+   Exclusive end of the place in the original.
+   */
+  const endOffset = requireCount({
+    value: record.endOffset,
+    path: `${path}.endOffset`,
+  },);
+  /**
+   One-based line.
+   */
+  const line = requireCount({
+    value: record.line,
+    path: `${path}.line`,
+  },);
+  requirePlaceBounds({
+    startOffset,
+    endOffset,
+    line,
+    path,
+  },);
   return {
-    startOffset: requireCount({
-      value: record.startOffset,
-      path: `${path}.startOffset`,
-    },),
-    endOffset: requireCount({
-      value: record.endOffset,
-      path: `${path}.endOffset`,
-    },),
-    line: requireCount({
-      value: record.line,
-      path: `${path}.line`,
-    },),
+    startOffset,
+    endOffset,
+    line,
     reason: requireKeyOf({
       value: record.reason,
       record: UNPLACED_REASONS,

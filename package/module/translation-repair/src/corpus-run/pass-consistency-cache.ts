@@ -51,6 +51,13 @@ export type ConsistencyRecord = {
 /**
  Whether a stored value is a gather's record.
 
+ A STORED RECORD IS AN OUTSIDE READ, so it must be one the persistence rule
+ writes: a gather is stored only once it reached its quorum, and a quorum is
+ at least one (a negative one is refused by the artifact reader, which would
+ leave the run's own artifact unreadable), so a record of a quorum below one,
+ or of fewer voices than its quorum, is no gather's and is asked again. A
+ quorum beyond what JSON carries exactly is refused by the voice count.
+
  @param value - parsed stored record
 
  @returns Whether it can be counted again
@@ -62,8 +69,13 @@ export type ConsistencyRecord = {
  */
 function isConsistencyRecord(value: unknown,): value is ConsistencyRecord {
   return isJsonRecord(value,)
+    && ((typeof value.quorum) === 'number')
     && Number.isInteger(value.quorum,)
+    && (value.quorum >= 1)
     && isJsonArray(value.voices,)
+    && (value.voices
+      .length
+      >= value.quorum)
     && value.voices
     .every(function isVoice(voice,): boolean {
         return isJsonRecord(voice,) && ((typeof voice.seat) === 'string')

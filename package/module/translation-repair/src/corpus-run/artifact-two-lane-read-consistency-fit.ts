@@ -90,8 +90,8 @@ function assertNotAskedFits(
 
  @param sliceIndexes - slices the artifact's comparison names
 
- @throws {@link ArtifactParseError} when a label, a slice, a slot or an outcome
- does not fit
+ @throws {@link ArtifactParseError} when a label, a slice, a slot, an outcome or
+ the number of places does not fit
 
  @example
  ```ts
@@ -140,7 +140,10 @@ export function assertGroupFits(
     const framed = group.repeat
       .kind
       === 'refrain';
-    if (framed !== ((occurrence.slotStartOffset !== undefined) && (occurrence.slotEndOffset !== undefined))) {
+    // EACH OFFSET IS HELD TO THE KIND OF REPEAT ON ITS OWN: a place of a run
+    // that carries one slot offset alone says something no run has.
+    if ((framed !== (occurrence.slotStartOffset !== undefined))
+      || (framed !== (occurrence.slotEndOffset !== undefined))) {
       throw new ArtifactParseError({
         path: here,
         reason: 'slot offsets on a place of a frame, and on no other',
@@ -161,6 +164,26 @@ export function assertGroupFits(
     group,
     path,
   },);
+  // A GROUP OF FEWER THAN TWO PLACES IS SKIPPED FOR TOO FEW, whatever else the
+  // bench would say: the pass asks a group, or finds its places already alike
+  // or without English, only with two places or more. A group whose handling
+  // failed is the one verdict a reader has always read with any number.
+  if ((group.occurrences
+    .length
+    < 2)
+    && (group.verdict
+      .kind
+      !== 'failed')
+    && (!((group.verdict
+      .kind
+      === 'not-asked') && (group.verdict
+        .reason
+        === 'too-few-placed')))) {
+    throw new ArtifactParseError({
+      path: `${path}.occurrences`,
+      reason: 'at least two places, since a group with fewer is skipped for too few',
+    },);
+  }
 }
 
 //endregion Artifact consistency fit

@@ -4,7 +4,6 @@ import {
   requireOneOf,
 } from '../artifact-exact-guard.ts';
 import {
-  ArtifactParseError,
   requireCount,
   requireRecord,
   requireString,
@@ -15,6 +14,7 @@ import {
   type ArtifactConsistencyRendering,
   CONSISTENCY_OCCURRENCE_OUTCOMES,
 } from './artifact-two-lane-consistency.ts';
+import { requirePlaceBounds, } from './artifact-two-lane-read-consistency-parts.ts';
 
 //region Artifact consistency occurrence reading
 // Reading one place of a recorded group, key by key.
@@ -192,12 +192,12 @@ export function parseConsistencyOccurrence(
     value: record.line,
     path: `${path}.line`,
   },);
-  if ((endOffset <= startOffset) || (line < 1)) {
-    throw new ArtifactParseError({
-      path,
-      reason: 'a place that ends after it starts, on a line counted from one',
-    },);
-  }
+  requirePlaceBounds({
+    startOffset,
+    endOffset,
+    line,
+    path,
+  },);
   return {
     label: requireString({
       value: record.label,
