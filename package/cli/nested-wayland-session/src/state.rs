@@ -105,6 +105,35 @@ use smithay::{
     },
 };
 
+/// Key repeat rate announced to clients unless `--repeat-rate` says otherwise,
+///  in repeats per second.
+///
+/// What:
+///      `pub const DEFAULT_REPEAT_RATE: i32 = 25;`.
+/// Why:
+///       The value earlier versions announced,
+///  and winit's own default.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// const DEFAULT_REPEAT_RATE = 25;
+/// ```
+pub const DEFAULT_REPEAT_RATE: i32 = 25;
+
+/// Key repeat delay announced to clients unless `--repeat-delay` says otherwise,
+///  in milliseconds.
+///
+/// What:
+///      `pub const DEFAULT_REPEAT_DELAY_MS: i32 = 200;`.
+/// Why:
+///       The value earlier versions announced.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// const DEFAULT_REPEAT_DELAY_MS = 200;
+/// ```
+pub const DEFAULT_REPEAT_DELAY_MS: i32 = 200;
+
 /// The whole compositor,
 ///  carried by the calloop event loop as its shared data.
 ///
@@ -489,6 +518,24 @@ pub struct Compositor {
     ///           has only `&mut Compositor`,
     ///  so the payload must be reachable from state.
     pub pending_dnd_uri_list: Option<Vec<u8>>,
+
+    /// Toplevel surfaces,
+    ///  most recently focused first;
+    ///  focus returns through this list when the focused toplevel goes away.
+    pub focus_order: Vec<smithay::reexports::wayland_server::protocol::wl_surface::WlSurface>,
+
+    /// The private accessibility bus services,
+    ///  when `--accessibility` was given.
+    pub a11y: Option<crate::a11y_service::A11yService>,
+
+    /// The cursor the hosted client last asked for.
+    pub cursor_image: smithay::input::pointer::CursorImageStatus,
+
+    /// Keeps the `wp_cursor_shape_manager_v1` global alive.
+    pub _cursor_shape: smithay::wayland::cursor_shape::CursorShapeManagerState,
+
+    /// The announced key repeat pair as `(rate per second, delay in milliseconds)`.
+    pub repeat_info: (i32, i32),
 }
 
 /// Owning bundle of the pieces the winit backend produces before the state exists.
@@ -617,6 +664,7 @@ impl Compositor {
         let clipboard = ClipboardProtocols::new(&dh);
         // Register the fractional-scale and viewporter globals with the starting geometry.
         let screen = ScreenState::new(&dh, pieces.geometry);
+        let cursor_shape = smithay::wayland::cursor_shape::CursorShapeManagerState::new::<Self>(&dh);
 
         // What:     `PopupManager::default()`. Builds an empty popup tracker.
         // Why:      Ready to track any popups the app opens.
@@ -628,7 +676,7 @@ impl Compositor {
         // Why:      The single seat all synthetic input is routed through.
         let mut seat: Seat<Self> = seat_state.new_wl_seat(&dh, "winit");
 
-        // What:     `seat.add_keyboard(Default::default(), 200, 25).unwrap();`.
+        // What:     `seat.add_keyboard(Default::default(), DEFAULT_REPEAT_DELAY_MS, DEFAULT_REPEAT_RATE).unwrap();`.
         //           `Default::default()` supplies a default `XkbConfig` (US layout);
         //           `200, 25` are the key repeat delay (ms) and rate (keys/s).
         //           `.unwrap()` panics if keymap compilation fails (it should not with
@@ -724,6 +772,11 @@ impl Compositor {
             recorder: None,
             loop_handle,
             pending_dnd_uri_list: None,
+            focus_order: Vec::new(),
+            a11y: None,
+            cursor_image: smithay::input::pointer::CursorImageStatus::default_named(),
+            _cursor_shape: cursor_shape,
+            repeat_info: (DEFAULT_REPEAT_RATE, DEFAULT_REPEAT_DELAY_MS),
         }
     }
 
