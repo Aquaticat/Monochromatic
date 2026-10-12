@@ -374,6 +374,8 @@ fn hints_far_from_the_view_are_packed_again_when_the_view_comes_near() {
 
 /// A hint that arrives while the worker builds the tile for a new width makes that tile stale; the window asks for
 ///  another instead of waiting for an event that may never come, and ends with a tile of the new width and the hint.
+/// The measurement pass of a resize may render the window again and so hide a stranded wait, which is why the guard
+///  `discarded-tile-asked-again` runs the language reader tests (`native::language::hover_tests`), where none runs.
 #[test]
 fn a_hint_arriving_while_a_resized_tile_is_built_does_not_strand_the_window() {
     let (_project, opened) = open(&long_text(8));
