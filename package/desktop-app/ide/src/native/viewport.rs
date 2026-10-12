@@ -131,6 +131,9 @@ pub(super) fn place(current: &mut State, offset: f32, viewport_width: f32, heigh
     // reports afterwards is recognized as not being the reader's own scrolling.
     current.offset = offset;
     // Any placement supersedes a scroll re-center still waiting for the worker; `place_scrolled` sets it again.
+    // A re-center that waits for the worker and is still needed under new bounds (a measurement moved the rows,
+    // or the width changed again) stays a worker re-center, never a build on the window thread.
+    let waiting = current.scroll_wanted.is_some();
     current.scroll_wanted = None;
     // A width that cannot wrap keeps the last one.
     if let Some(wrap) = wrap_width(viewport_width) {
@@ -184,6 +187,9 @@ pub(super) fn place(current: &mut State, offset: f32, viewport_width: f32, heigh
     current.first = first;
     current.count = last.saturating_sub(first) + 1 + TILE_SPARE_LINES;
     current.width = width;
+    if waiting && shown.width > 0.0 {
+        current.scroll_wanted = Some(tile::requested(current));
+    }
     return true;
 }
 

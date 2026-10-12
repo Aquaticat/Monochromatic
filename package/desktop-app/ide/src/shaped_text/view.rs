@@ -146,11 +146,8 @@ impl ShapedView {
             let row_end = shaped.source_start + shaped.source_len();
             if start <= row_end && end > row_end {
                 // The end of the text is on the last visual row of the line.
-                let caret = shaped.caret_at(
-                    row_end,
-                    ReadingAffinity::Upstream,
-                    self.viewport.scale,
-                );
+                let caret =
+                    shaped.caret_at(row_end, ReadingAffinity::Upstream, self.viewport.scale);
                 result.push(ReadingRect {
                     x: caret.x,
                     y: shaped.top + shaped.visual_row_offset(caret.row, self.viewport.scale),

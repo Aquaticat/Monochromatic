@@ -310,6 +310,8 @@ pub(super) fn reader_with(
     window.show().expect("show language window");
     render(&window, &source);
     window.window().take_snapshot().expect("initial layout");
+    // The layout gave the view its width; a tile for it may still be on the worker.
+    crate::native::overscan_tile_tests::settle_tile(&source);
     window.invoke_focus_source();
     return LanguageReader {
         window,

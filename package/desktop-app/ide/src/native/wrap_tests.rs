@@ -4,12 +4,12 @@
 //!  and pointer placement on continuation rows.
 //! Nothing here waits on the window thread: every wait advances timers and lets the workers answer.
 
-/// The production window and its state.
-use super::{AppWindow, State};
 /// The complete reader fixture and its disposable project.
 use super::find_tests::{Reader, memory_project, reader};
 /// Window resizing and layout settling for exact sizes.
 use super::sidebar_tests::{GUTTER, HEADER, TEXT_LEFT, resize};
+/// The production window and its state.
+use super::{AppWindow, State};
 /// The wrap width rule and the worker's gates and limits.
 use super::{
     tile::current_key,
@@ -128,13 +128,7 @@ fn expected_extent(state: &Rc<RefCell<State>>, scale: f32) -> f32 {
     let current = state.borrow();
     let lines = current.document.text().len_lines();
     let mut shaper = TextShaper::new();
-    let found = shaper.measure_lines(
-        &current.document,
-        0..lines,
-        scale,
-        Some(current.width),
-        &[],
-    );
+    let found = shaper.measure_lines(&current.document, 0..lines, scale, Some(current.width), &[]);
     let mut rows = current.row_map.line_rows().clone();
     rows.apply(found.lines);
     return RowMap::plain(lines).with_rows(&rows).height();
@@ -149,7 +143,11 @@ fn the_wrap_width_is_the_text_area_minus_the_caret_room_and_zero_keeps_the_last(
     assert_eq!(width, window.get_viewport_width() - CARET_ROOM);
     assert_eq!(wrap_width(0.0), None, "a view without width cannot wrap");
     assert_eq!(wrap_width(-5.0), None);
-    assert_eq!(wrap_width(CARET_ROOM), None, "no width is left after the caret room");
+    assert_eq!(
+        wrap_width(CARET_ROOM),
+        None,
+        "no width is left after the caret room"
+    );
     assert_eq!(wrap_width(500.0), Some(500.0 - CARET_ROOM));
     {
         let mut current = opened.source.borrow_mut();
@@ -170,7 +168,10 @@ fn the_gutter_numbers_first_rows_and_marks_continuation_rows() {
     let tops: Vec<f32> = window.get_row_tops().iter().collect();
     assert_eq!(numbers.len(), tops.len());
     assert_eq!(numbers.first(), Some(&1));
-    assert!(numbers.iter().any(|number| return *number == 0), "continuation rows exist");
+    assert!(
+        numbers.iter().any(|number| return *number == 0),
+        "continuation rows exist"
+    );
     let current = opened.source.borrow();
     let view = current.shaped.as_ref().expect("shaped view");
     let mut entry = 0;
@@ -179,7 +180,10 @@ fn the_gutter_numbers_first_rows_and_marks_continuation_rows() {
         for visual in 0..row.visual_rows() {
             let expected = if visual == 0 { row.row as i32 + 1 } else { 0 };
             assert_eq!(numbers[entry], expected, "line {} row {visual}", row.row);
-            assert_eq!(tops[entry], current.row_map.code_top(row.row) + visual as f32 * 24.0);
+            assert_eq!(
+                tops[entry],
+                current.row_map.code_top(row.row) + visual as f32 * 24.0
+            );
             entry += 1;
         }
     }
@@ -245,7 +249,11 @@ fn rows_above_the_view_changing_height_move_no_visible_pixel() {
             && current.shown.first <= 320;
     });
     // The tile holds exact heights; the line number at the view's top stays under the pointer.
-    let top_line = opened.source.borrow().row_map.line_at(-window.get_scroll_y());
+    let top_line = opened
+        .source
+        .borrow()
+        .row_map
+        .line_at(-window.get_scroll_y());
     let screen = |state: &Rc<RefCell<State>>| {
         return state.borrow().row_map.code_top(top_line) + window.get_scroll_y();
     };
@@ -295,17 +303,27 @@ fn the_extent_settles_as_chunks_arrive() {
     settled(&opened);
     extents.push(opened.source.borrow().row_map.height());
     for pair in extents.windows(2) {
-        assert!(pair[1] >= pair[0], "the extent never shrinks while lines are measured: {extents:?}");
+        assert!(
+            pair[1] >= pair[0],
+            "the extent never shrinks while lines are measured: {extents:?}"
+        );
     }
     assert!(
         extents.last() > extents.first(),
         "unmeasured lines count as one row, so the extent grew: {extents:?}"
     );
     assert!(
-        extents.windows(2).filter(|pair| return pair[1] > pair[0]).count() >= 2,
+        extents
+            .windows(2)
+            .filter(|pair| return pair[1] > pair[0])
+            .count()
+            >= 2,
         "the extent grew in more than one step: {extents:?}"
     );
-    assert_eq!(*extents.last().expect("extent"), expected_extent(&opened.source, scale));
+    assert_eq!(
+        *extents.last().expect("extent"),
+        expected_extent(&opened.source, scale)
+    );
     window.hide().expect("close wrap window");
 }
 
@@ -334,14 +352,21 @@ fn opening_fifty_thousand_lines_never_blocks_the_window_thread() {
     for _ in 0..4000 {
         let _ = release.send(());
     }
-    until("the worker did not measure ahead of the window", || {
-        return opened
-            .source
-            .borrow()
-            .tile_worker
-            .as_ref()
-            .is_some_and(|worker| return worker.pending_pass_lines() > TAKE_LIMIT + TAKE_LIMIT / 2);
-    });
+    // No timer runs while waiting, so the window takes nothing and the worker's output piles up.
+    let waiting = Instant::now();
+    while !opened
+        .source
+        .borrow()
+        .tile_worker
+        .as_ref()
+        .is_some_and(|worker| return worker.pending_pass_lines() > TAKE_LIMIT + TAKE_LIMIT / 2)
+    {
+        assert!(
+            waiting.elapsed() < PATIENCE,
+            "the worker did not measure ahead of the window"
+        );
+        std::thread::sleep(Duration::from_millis(20));
+    }
     let mut slowest = Duration::ZERO;
     for _ in 0..40 {
         let tick = Instant::now();
@@ -400,8 +425,14 @@ fn a_resize_breaks_kept_rows_again_without_shaping() {
         "the resize broke only {} kept rows again",
         current.pass_rebroken - rebroken
     );
-    assert_eq!(current.rows_shaped, window_rows, "the window thread shaped lines for the resize");
-    assert_eq!(current.worker_rows_shaped, tile_rows, "the worker's tile shaped lines for the resize");
+    assert_eq!(
+        current.rows_shaped, window_rows,
+        "the window thread shaped lines for the resize"
+    );
+    assert_eq!(
+        current.worker_rows_shaped, tile_rows,
+        "the worker's tile shaped lines for the resize"
+    );
     drop(current);
     assert_eq!(
         opened.source.borrow().row_map.height(),
@@ -438,14 +469,21 @@ fn a_recenter_while_the_pass_runs_is_built_on_the_worker() {
     {
         let current = opened.source.borrow();
         assert_eq!(current.tiles_painted, 0, "the window thread painted a tile");
-        assert_eq!(current.rows_shaped, 0, "the window thread shaped lines for a re-center");
+        assert_eq!(
+            current.rows_shaped, 0,
+            "the window thread shaped lines for a re-center"
+        );
         assert_eq!(current.images_set, 0, "the window thread set an image");
     }
     until("the worker's tile was not swapped in", || {
-        return opened.source.borrow().tiles_applied == 1 || opened.source.borrow().tiles_discarded > 0;
+        return opened.source.borrow().tiles_applied == 1
+            || opened.source.borrow().tiles_discarded > 0;
     });
     let current = opened.source.borrow();
-    assert_eq!(current.tiles_discarded, 0, "the worker's tile was discarded");
+    assert_eq!(
+        current.tiles_discarded, 0,
+        "the worker's tile was discarded"
+    );
     assert_eq!(current.tiles_applied, 1);
     assert_eq!(current.tiles_painted, 0);
     assert_eq!(current.rows_shaped, 0);
@@ -506,14 +544,18 @@ fn a_click_on_a_continuation_row_places_the_caret_in_that_row() {
     let rows = opened.source.borrow().row_map.rows_of(0);
     assert!(rows >= 3, "the first line wraps to {rows} rows");
     for visual in 0..rows {
+        // A quick second press on the same line would be a double click, which selects a word.
+        std::thread::sleep(Duration::from_millis(520));
         window.window().dispatch_event(WindowEvent::PointerPressed {
             position: point(window, visual, 40.0),
             button: PointerEventButton::Left,
         });
-        window.window().dispatch_event(WindowEvent::PointerReleased {
-            position: point(window, visual, 40.0),
-            button: PointerEventButton::Left,
-        });
+        window
+            .window()
+            .dispatch_event(WindowEvent::PointerReleased {
+                position: point(window, visual, 40.0),
+                button: PointerEventButton::Left,
+            });
         update_timers_and_animations();
         let current = opened.source.borrow();
         let head = current.document.position().head;
@@ -525,7 +567,11 @@ fn a_click_on_a_continuation_row_places_the_caret_in_that_row() {
             "a click on visual row {visual} placed the caret at {head}, outside {sources:?}"
         );
         drop(current);
-        assert_eq!(window.get_caret_y(), visual as f32 * 24.0 + 2.0, "caret row {visual}");
+        assert_eq!(
+            window.get_caret_y(),
+            visual as f32 * 24.0 + 2.0,
+            "caret row {visual}"
+        );
     }
     // Far right of the first row: the caret stands at the end of that row, not at the start of the next.
     let far = LogicalPosition::new(TEXT_LEFT + 750.0, HEADER + 12.0 + window.get_scroll_y());
@@ -533,12 +579,18 @@ fn a_click_on_a_continuation_row_places_the_caret_in_that_row() {
         position: far,
         button: PointerEventButton::Left,
     });
-    window.window().dispatch_event(WindowEvent::PointerReleased {
-        position: far,
-        button: PointerEventButton::Left,
-    });
+    window
+        .window()
+        .dispatch_event(WindowEvent::PointerReleased {
+            position: far,
+            button: PointerEventButton::Left,
+        });
     update_timers_and_animations();
-    assert_eq!(window.get_caret_y(), 2.0, "the caret stays on the upper row at its end");
+    assert_eq!(
+        window.get_caret_y(),
+        2.0,
+        "the caret stays on the upper row at its end"
+    );
     window.hide().expect("close wrap window");
 }
 
@@ -552,11 +604,13 @@ fn shift_wheel_does_not_scroll_and_there_is_no_horizontal_motion() {
     window.window().dispatch_event(WindowEvent::KeyPressed {
         text: Key::Shift.into(),
     });
-    window.window().dispatch_event(WindowEvent::PointerScrolled {
-        position: at,
-        delta_x: 0.0,
-        delta_y: -300.0,
-    });
+    window
+        .window()
+        .dispatch_event(WindowEvent::PointerScrolled {
+            position: at,
+            delta_x: 0.0,
+            delta_y: -300.0,
+        });
     for _ in 0..40 {
         update_timers_and_animations();
         std::thread::sleep(Duration::from_millis(10));
@@ -565,11 +619,13 @@ fn shift_wheel_does_not_scroll_and_there_is_no_horizontal_motion() {
         text: Key::Shift.into(),
     });
     assert_eq!(window.get_scroll_y(), 0.0, "Shift+wheel scrolled the view");
-    window.window().dispatch_event(WindowEvent::PointerScrolled {
-        position: at,
-        delta_x: 0.0,
-        delta_y: -300.0,
-    });
+    window
+        .window()
+        .dispatch_event(WindowEvent::PointerScrolled {
+            position: at,
+            delta_x: 0.0,
+            delta_y: -300.0,
+        });
     until("a plain wheel turn did not scroll the view", || {
         return window.get_scroll_y() < 0.0;
     });

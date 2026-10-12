@@ -24,10 +24,10 @@ use ide_app::selection_ink::{legible_ink, luminance};
 use ide_app::shaped_text::{ReadingRect, Viewport};
 /// Exact paint inputs exclude collapsed caret movement.
 use ide_app::source_frame::FrameStamp;
-/// A wrap width must be a positive number of pixels.
-use ide_app::wrap::has_wrap_width;
 /// Native palette values retain syntax and selection contrast.
 use ide_app::text_raster::CodeColors;
+/// A wrap width must be a positive number of pixels.
+use ide_app::wrap::has_wrap_width;
 /// Toolkit images and models carry owned source presentation data.
 use slint::{
     ComponentHandle, Image, ModelRc, Rgba8Pixel, SharedPixelBuffer, SharedString, VecModel,
@@ -163,7 +163,9 @@ pub(super) fn viewport_of(bounds: TileBounds, scale: f32) -> Viewport {
     return Viewport {
         first: bounds.first,
         count: bounds.count,
-        width: wrap.map_or(UNWRAPPED_RASTER_WIDTH, |width| return width + RASTER_MARGIN),
+        width: wrap.map_or(UNWRAPPED_RASTER_WIDTH, |width| {
+            return (width + RASTER_MARGIN).ceil();
+        }),
         scale,
         wrap,
     };

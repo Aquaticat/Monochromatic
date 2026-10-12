@@ -181,7 +181,10 @@ impl LineRows {
             return false;
         };
         for index in from..self.chunks.len() {
-            let sum: usize = self.chunks[index].iter().map(|extra| return *extra as usize).sum();
+            let sum: usize = self.chunks[index]
+                .iter()
+                .map(|extra| return *extra as usize)
+                .sum();
             self.before[index + 1] = self.before[index] + sum;
         }
         return true;

@@ -291,6 +291,8 @@ pub(super) fn fixture(rows: usize) -> Fixture {
     resize(&window, 1100.0, 660.0);
     render(&window, &source);
     settle(&window);
+    // The layout gave the view its width; a tile for it may still be on the worker.
+    super::overscan_tile_tests::settle_tile(&source);
     return Fixture {
         window,
         source,

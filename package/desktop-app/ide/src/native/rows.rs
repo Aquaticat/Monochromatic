@@ -422,13 +422,7 @@ pub(super) fn anchored(previous: &RowMap, next: &RowMap, offset: f32) -> f32 {
 /// ```ts
 /// function showing(map: RowMap, row: number, rowsDown: number, offset: number, height: number): number;
 /// ```
-pub(super) fn showing(
-    map: &RowMap,
-    row: usize,
-    rows_down: usize,
-    offset: f32,
-    height: f32,
-) -> f32 {
+pub(super) fn showing(map: &RowMap, row: usize, rows_down: usize, offset: f32, height: f32) -> f32 {
     let top = map.code_top(row) + rows_down as f32 * CODE_ROW;
     let mut wanted = offset;
     if top < offset {

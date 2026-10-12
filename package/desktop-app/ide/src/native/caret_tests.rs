@@ -408,10 +408,17 @@ fn view_follows_the_caret_across_the_visual_rows_of_a_wrapped_line() {
     let window = &reader.window;
     let height = window.get_viewport_height();
     repeat(window, Key::DownArrow, 3);
-    assert_eq!(window.get_caret_y(), 3.0 * 24.0 + 2.0, "the caret is on the wide line's first row");
+    assert_eq!(
+        window.get_caret_y(),
+        3.0 * 24.0 + 2.0,
+        "the caret is on the wide line's first row"
+    );
     key(window, Key::End);
     let caret = window.get_caret_y() - 2.0;
-    assert!(caret > height, "the end of the line is on a row below the first view");
+    assert!(
+        caret > height,
+        "the end of the line is on a row below the first view"
+    );
     let offset = -window.get_scroll_y();
     assert!(
         caret >= offset && caret + 24.0 <= offset + height,

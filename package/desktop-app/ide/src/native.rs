@@ -23,14 +23,16 @@ use anyhow::{Context, bail};
 use ide_app::annotation::Annotations;
 /// The side of a soft-wrap offset a position is read on.
 use ide_app::document::ReadingAffinity;
-/// The stamp naming a displayed text.
-use ide_app::language::identity::DocumentStamp;
 /// Accepted in-file matches carry the file generation and revision they describe.
 use ide_app::find_navigation::FindResults;
+/// The stamp naming a displayed text.
+use ide_app::language::identity::DocumentStamp;
 /// The Language module's handle,
 ///  its startup rule,
 ///  and the reload record.
 use ide_app::language::{LanguageWorker, enter_project_directory, sync::DocumentReload};
+/// Visual rows of every line, as far as measured.
+use ide_app::line_rows::LineRows;
 /// The log filter,
 ///  the subscriber with the helix-lsp bridge,
 ///  and the writer thread.
@@ -38,8 +40,6 @@ use ide_app::logging::{self, background};
 /// The displayed file is reread on change notifications,
 ///  or on the old timer while unwatched.
 use ide_app::refresh_policy::SourceRefresh;
-/// Visual rows of every line, as far as measured.
-use ide_app::line_rows::LineRows;
 /// The one vertical mapping between pixels and source lines.
 use ide_app::row_map::RowMap;
 /// Shared shaping replaces terminal-column assumptions in native hit testing.
@@ -260,6 +260,13 @@ mod tree_pointer_tests;
 mod tree_scroll_tests;
 /// Fractional viewport movement and bounded tile materialization.
 mod viewport;
+/// An ignored measurement of watch counts and staleness when a changed folder is scrolled into view.
+#[cfg(test)]
+mod watch_scope_tests;
+/// External changes reach the tree and source through inotify notifications,
+///  faster than polling could.
+#[cfg(test)]
+mod watch_tests;
 /// Always-on soft wrap in the window:
 ///  the wrap width,
 ///  the gutter's indicator,
@@ -268,13 +275,6 @@ mod viewport;
 ///  and clicks on continuation rows.
 #[cfg(test)]
 mod wrap_tests;
-/// An ignored measurement of watch counts and staleness when a changed folder is scrolled into view.
-#[cfg(test)]
-mod watch_scope_tests;
-/// External changes reach the tree and source through inotify notifications,
-///  faster than polling could.
-#[cfg(test)]
-mod watch_tests;
 /// A save in progress is not shown before it finishes;
 ///  an ignored measurement finds the pause that is.
 #[cfg(test)]
@@ -282,18 +282,18 @@ mod write_wait_tests;
 /// An ignored measurement of saves that begin when the safety sweep comes due.
 #[cfg(test)]
 mod write_wait_timer_tests;
+/// The wrap indicator's symbol.
+use ide_app::wrap_sign::Sign;
 /// Bind caret and selection callbacks.
 use input::{bind_keys, bind_pointer};
 /// Shared rendering entry point.
 use render::{bind_appearance, render};
-/// The wrap indicator's symbol.
-use ide_app::wrap_sign::Sign;
 /// Tile bounds of the displayed and requested windows.
 use tile::TileBounds;
-/// What a background measurement is valid for.
-use tile_pass::PassKey;
 /// The worker thread that builds scroll re-centers, held by the state.
 use tile_build::TileWorker;
+/// What a background measurement is valid for.
+use tile_pass::PassKey;
 /// Bind viewport changes without line-snapping native scrolling.
 use viewport::bind_viewport;
 

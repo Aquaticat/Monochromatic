@@ -291,22 +291,26 @@ fn hold_at_test_gate() {
     }
 }
 
-/// Wait for one token of the pass gate, if a test installed one; a closed gate lets the pass run freely.
+/// Whether the next chunk of the pass may run: always, unless a test installed a gate and holds back its token.
+/// A token lets one chunk run; a closed gate lets the pass run freely. The worker keeps serving tile jobs meanwhile.
 #[cfg(test)]
-fn hold_at_pass_gate() {
-    let gate = PASS_GATE
-        .lock()
-        .ok()
-        .and_then(|mut slot| return slot.take());
-    if let Some(pending) = gate {
-        match pending.recv() {
-            Ok(()) => {
-                if let Ok(mut slot) = PASS_GATE.lock() {
-                    *slot = Some(pending);
-                }
-            }
-            Err(error) => tracing::debug!(%error, "test pass gate closed"),
+fn pass_gate_open() -> bool {
+    let Ok(mut slot) = PASS_GATE.lock() else {
+        return true;
+    };
+    let Some(pending) = slot.take() else {
+        return true;
+    };
+    match pending.try_recv() {
+        Ok(()) => {
+            *slot = Some(pending);
+            return true;
         }
+        Err(TryRecvError::Empty) => {
+            *slot = Some(pending);
+            return false;
+        }
+        Err(TryRecvError::Disconnected) => return true,
     }
 }
 
@@ -399,7 +403,11 @@ fn run(
         }
         if let Some(run) = pass.as_mut() {
             #[cfg(test)]
-            hold_at_pass_gate();
+            if !pass_gate_open() {
+                // A held-back chunk waits for its token without keeping tile jobs waiting.
+                std::thread::sleep(std::time::Duration::from_millis(1));
+                continue;
+            }
             let output = run.step(&mut tiler.shaper);
             let finished = output.done;
             shared.outbox.push(output);

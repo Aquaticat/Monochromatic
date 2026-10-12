@@ -185,7 +185,11 @@ pub(super) fn sync_pass(
     };
     match worker.post_pass(job) {
         Ok(()) => {
-            tracing::debug!(wrap = current.width, focus = current.shown.first, "posted the measurement pass");
+            tracing::debug!(
+                wrap = current.width,
+                focus = current.shown.first,
+                "posted the measurement pass"
+            );
             current.pass_posted = Some((key, styles));
             start_poll(window, state, current);
         }
@@ -266,7 +270,10 @@ fn apply_pass(window: &AppWindow, state: &Rc<RefCell<State>>, output: PassOutput
     let factor = window.window().scale_factor();
     let mut current = state.borrow_mut();
     if output.key != current_key(&current, factor) {
-        tracing::debug!(lines = output.lines.len(), "dropped a measurement for another text or width");
+        tracing::debug!(
+            lines = output.lines.len(),
+            "dropped a measurement for another text or width"
+        );
         return;
     }
     let held = current.shown.first..current.shown.first + current.shown.count;
@@ -330,11 +337,7 @@ fn apply(window: &AppWindow, state: &Rc<RefCell<State>>, reply: anyhow::Result<T
     // Why: The tile was painted with those heights; the map must agree before the tile can be shown.
     //      A change above the view moves the offset with it, even while the reader scrolls.
     let height = window.get_viewport_height();
-    let view_now = (
-        -window.get_scroll_y(),
-        window.get_viewport_width(),
-        height,
-    );
+    let view_now = (-window.get_scroll_y(), window.get_viewport_width(), height);
     let mut scrolled = None;
     let mut remapped = false;
     if built.key == current_key(&current, factor) {

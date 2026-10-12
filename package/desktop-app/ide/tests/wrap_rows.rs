@@ -75,7 +75,11 @@ fn wrapped_lines_push_later_lines_down() {
     assert_eq!(map.code_top(0), 0.0);
     assert_eq!(map.code_top(2), 48.0, "nothing above line 2 moved");
     assert_eq!(map.code_bottom(2), 48.0 + 3.0 * CODE_ROW);
-    assert_eq!(map.block_top(3), 48.0 + 72.0, "line 3 starts under line 2's three rows");
+    assert_eq!(
+        map.block_top(3),
+        48.0 + 72.0,
+        "line 3 starts under line 2's three rows"
+    );
     assert_eq!(map.code_top(3), 120.0 + 26.0);
     assert_eq!(map.code_bottom(3), 120.0 + 26.0 + 48.0);
     assert_eq!(map.code_top(4), 194.0);
@@ -105,10 +109,20 @@ fn every_pixel_belongs_to_one_line_with_wrapped_lines() {
         y += 0.5;
     }
     assert_eq!(previous, 9);
-    assert_eq!(map.locate(map.code_top(2) + 40.0), Place { line: 2, in_block: false });
+    assert_eq!(
+        map.locate(map.code_top(2) + 40.0),
+        Place {
+            line: 2,
+            in_block: false
+        }
+    );
     assert_eq!(map.visual_row_at(2, map.code_top(2) + 40.0), 1);
     assert_eq!(map.visual_row_at(2, map.code_top(2) + 71.9), 2);
-    assert_eq!(map.visual_row_at(2, map.code_top(2) + 500.0), 2, "below the rows is the last row");
+    assert_eq!(
+        map.visual_row_at(2, map.code_top(2) + 500.0),
+        2,
+        "below the rows is the last row"
+    );
     assert_eq!(map.visual_row_at(2, -5.0), 0);
 }
 
@@ -158,14 +172,21 @@ fn a_frame_places_wrapped_rows_by_their_own_heights() {
     let view = shaper.prepare_rows(&document, viewport(0, 6, 300.0), &[], &plain);
     let mut expected_top = 0.0;
     for row in &view.rows {
-        assert_eq!(row.top, expected_top, "row {} sits right under the row before it", row.row);
+        assert_eq!(
+            row.top, expected_top,
+            "row {} sits right under the row before it",
+            row.row
+        );
         assert_eq!(view.map.rows_of(row.row), row.visual_rows());
         expected_top += row.visual_rows() as f32 * CODE_ROW;
     }
     assert!(view.rows[1].visual_rows() > 1, "the long line wraps");
     assert_eq!(view.origin, 0.0);
     assert_eq!(view.height as f32, view.map.block_top(6).max(CODE_ROW));
-    assert!(view.map != plain, "the frame's map carries the measured rows");
+    assert!(
+        view.map != plain,
+        "the frame's map carries the measured rows"
+    );
 }
 
 /// Bringing lines in shapes them once, and asking again at the same width shapes nothing.
@@ -205,11 +226,20 @@ fn a_new_width_breaks_kept_rows_again_without_shaping() {
     let shaped_before = kept.shaped_rows();
     for width in [300.0, 180.0, 640.0, 90.0] {
         let moved = kept.measure_lines(&document, 0..count, 1.0, Some(width), &[]);
-        assert_eq!(moved.shaped, 0, "width {width}: no line may be shaped again");
-        assert_eq!(moved.rebroken as usize, count, "width {width}: every kept row is broken again");
+        assert_eq!(
+            moved.shaped, 0,
+            "width {width}: no line may be shaped again"
+        );
+        assert_eq!(
+            moved.rebroken as usize, count,
+            "width {width}: every kept row is broken again"
+        );
         fresh.forget_rows();
         let wanted = fresh.measure_lines(&document, 0..count, 1.0, Some(width), &[]);
-        assert_eq!(moved.lines, wanted.lines, "width {width}: row counts equal a fresh shaping");
+        assert_eq!(
+            moved.lines, wanted.lines,
+            "width {width}: row counts equal a fresh shaping"
+        );
         // The rows the cache now holds are the re-broken ones; a fresh shaping must agree with each of them.
         let plain = RowMap::plain(count);
         let view = kept.prepare_rows(&document, viewport(0, count, width), &[], &plain);
@@ -223,12 +253,18 @@ fn a_new_width_breaks_kept_rows_again_without_shaping() {
                     "width {width}, line {}, row {index}: same break",
                     kept_row.row
                 );
-                let start = kept_row.visual_row_sources(index).expect("row").start + kept_row.source_start;
+                let start =
+                    kept_row.visual_row_sources(index).expect("row").start + kept_row.source_start;
                 let (left, right) = (
                     kept_row.caret_at(start, ReadingAffinity::Downstream, 1.0),
                     fresh_row.caret_at(start, ReadingAffinity::Downstream, 1.0),
                 );
-                assert!((left.x - right.x).abs() < 0.01, "width {width}: row start x {} vs {}", left.x, right.x);
+                assert!(
+                    (left.x - right.x).abs() < 0.01,
+                    "width {width}: row start x {} vs {}",
+                    left.x,
+                    right.x
+                );
             }
         }
     }
@@ -259,7 +295,11 @@ fn hits_and_carets_on_continuation_rows_resolve_in_their_row() {
     // The caret at the first character of the second row is on that row, one code row down.
     let second = row.visual_row_sources(1).expect("second row").start;
     let mut moved = Document::new(CODE);
-    moved.select(ReadingPosition { anchor: second, head: second, viewport: 0 });
+    moved.select(ReadingPosition {
+        anchor: second,
+        head: second,
+        viewport: 0,
+    });
     let lower = view.caret_with(&moved, ReadingAffinity::Downstream);
     let upper = view.caret_with(&moved, ReadingAffinity::Upstream);
     assert_eq!(lower.y, CODE_ROW + 2.0, "downstream draws on the lower row");
@@ -272,13 +312,25 @@ fn hits_and_carets_on_continuation_rows_resolve_in_their_row() {
 fn selected_ink_reaches_continuation_rows() {
     let mut document = Document::new(CODE);
     let end = document.text().len_chars();
-    document.select(ReadingPosition { anchor: 0, head: end, viewport: 0 });
+    document.select(ReadingPosition {
+        anchor: 0,
+        head: end,
+        viewport: 0,
+    });
     let mut shaper = TextShaper::new();
     let plain = RowMap::plain(1);
     let view = shaper.prepare_rows(&document, viewport(0, 1, 200.0), &[], &plain);
     assert!(view.rows[0].visual_rows() >= 3);
-    assert_eq!(view.selections.len(), view.rows[0].visual_rows(), "one rectangle per visual row");
-    let colors = CodeColors { foreground: [0, 0, 0, 255], selected: [255, 0, 0, 255], dark: false };
+    assert_eq!(
+        view.selections.len(),
+        view.rows[0].visual_rows(),
+        "one rectangle per visual row"
+    );
+    let colors = CodeColors {
+        foreground: [0, 0, 0, 255],
+        selected: [255, 0, 0, 255],
+        dark: false,
+    };
     let pixels = TextRaster::new().paint(&view, colors, 0.0).expect("raster");
     let width = pixels.width as usize;
     for index in 0..view.rows[0].visual_rows() {
@@ -322,7 +374,11 @@ fn tab_correction_settles_at_every_width() {
                 let row = shaper.wrapped_row(&document, 0, scale, width);
                 for byte in row.projection.tabs.clone() {
                     let source_after = row.projection.byte_to_source[byte + 1];
-                    let end = row.caret_at(row.source_start + source_after, ReadingAffinity::Upstream, scale);
+                    let end = row.caret_at(
+                        row.source_start + source_after,
+                        ReadingAffinity::Upstream,
+                        scale,
+                    );
                     let start_row = {
                         let mut found = 0;
                         for index in 0..row.visual_rows() {
@@ -345,7 +401,11 @@ fn tab_correction_settles_at_every_width() {
             }
         }
     }
-    assert!(broken.is_empty(), "{} tabs ended off their stops: {broken:?}", broken.len());
+    assert!(
+        broken.is_empty(),
+        "{} tabs ended off their stops: {broken:?}",
+        broken.len()
+    );
 }
 
 /// The wrap indicator is the first pair both of whose symbols the fonts display, else an arrow.
@@ -355,7 +415,8 @@ fn the_sign_is_the_first_displayable_pair_or_an_arrow() {
     assert_eq!(choose_sign(all), Sign::Glyph('\u{2925}'));
     let without_first = |character: char| return character != '\u{2926}';
     assert_eq!(choose_sign(without_first), Sign::Glyph('\u{21B3}'));
-    let only_last_pair = |character: char| return SIGN_PAIRS[3].0 == character || SIGN_PAIRS[3].1 == character;
+    let only_last_pair =
+        |character: char| return SIGN_PAIRS[3].0 == character || SIGN_PAIRS[3].1 == character;
     assert_eq!(choose_sign(only_last_pair), Sign::Glyph('\u{21AA}'));
     let after_only = |character: char| return character == '\u{2925}';
     assert_eq!(
@@ -373,7 +434,10 @@ fn coverage_is_read_from_the_shaped_glyphs() {
     let mut shaper = TextShaper::new();
     assert!(shaper.can_display('A', 1.0));
     assert!(shaper.can_display('\u{2192}', 1.0) || !shaper.can_display('\u{10FFFE}', 1.0));
-    assert!(!shaper.can_display('\u{10FFFE}', 1.0), "a noncharacter has no glyph in any font");
+    assert!(
+        !shaper.can_display('\u{10FFFE}', 1.0),
+        "a noncharacter has no glyph in any font"
+    );
 }
 
 /// The sign image carries ink in the sign color, for a symbol and for the drawn arrow, at both scales.
@@ -384,7 +448,9 @@ fn the_sign_image_is_painted_in_the_sign_color() {
     let chosen = shaper.choose_sign(1.0);
     for sign in [chosen, Sign::Arrow] {
         for scale in [1.0_f32, 2.0] {
-            let pixels = shaper.sign_pixels(&mut raster, sign, scale, 12.0).expect("sign");
+            let pixels = shaper
+                .sign_pixels(&mut raster, sign, scale, 12.0)
+                .expect("sign");
             assert_eq!(pixels.height as f32, CODE_ROW * scale);
             let mut inked = 0;
             for chunk in pixels.bytes.chunks(4) {
@@ -433,10 +499,21 @@ fn underlines_across_a_wrap_break_stand_on_their_own_rows() {
         suggestion: [90, 90, 90, 255],
     };
     let frame = lay_out(&view, &visible, &mut shaper, colors);
-    let mut offsets: Vec<f32> = frame.underlines.iter().map(|run| return run.offset).collect();
+    let mut offsets: Vec<f32> = frame
+        .underlines
+        .iter()
+        .map(|run| return run.offset)
+        .collect();
     offsets.sort_by(f32::total_cmp);
-    assert_eq!(offsets.len(), 2, "one run for each visual row the mark crosses");
-    assert_eq!(offsets[0], 0.0, "the run on the upper row stays on the first row");
+    assert_eq!(
+        offsets.len(),
+        2,
+        "one run for each visual row the mark crosses"
+    );
+    assert_eq!(
+        offsets[0], 0.0,
+        "the run on the upper row stays on the first row"
+    );
     assert_eq!(
         offsets[1], CODE_ROW,
         "the run on the lower row is not drawn on its own visual row"
@@ -472,5 +549,9 @@ fn underlines_across_a_wrap_break_stand_on_their_own_rows() {
         }
     }
     red_rows.dedup();
-    assert_eq!(red_rows, vec![0, 1], "the error ink stands on exactly the two rows the mark crosses");
+    assert_eq!(
+        red_rows,
+        vec![0, 1],
+        "the error ink stands on exactly the two rows the mark crosses"
+    );
 }

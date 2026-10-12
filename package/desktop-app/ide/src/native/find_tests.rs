@@ -147,6 +147,8 @@ pub(super) fn reader(root: &Path, name: &str) -> Reader {
     window.show().expect("show find window");
     render(&window, &source);
     window.window().take_snapshot().expect("initial layout");
+    // The layout gave the view its width; a tile for it may still be on the worker.
+    super::overscan_tile_tests::settle_tile(&source);
     window.invoke_focus_source();
     return Reader {
         window,
@@ -504,7 +506,8 @@ fn native_find_paints_visible_matches_only_and_reveals_far_rows() {
         rectangle.y
     );
     assert!(
-        rectangle.y >= offset && rectangle.y + rectangle.height <= offset + window.get_viewport_height(),
+        rectangle.y >= offset
+            && rectangle.y + rectangle.height <= offset + window.get_viewport_height(),
         "the active match is outside the viewport: row at {}, view {offset} to {}",
         rectangle.y,
         offset + window.get_viewport_height()

@@ -13,9 +13,7 @@ use super::annotate::{displayed, set_annotations};
 ///  the fixture,
 ///  the painted-record counts,
 ///  and the text origin shared with the behavior tests.
-use super::annotation_tests::{
-    FIXTURE, TEXT_LEFT, TEXT_TOP, annotate, painted as shown, problem,
-};
+use super::annotation_tests::{FIXTURE, TEXT_LEFT, TEXT_TOP, annotate, painted as shown, problem};
 /// The complete reader fixture.
 use super::find_tests::{Reader, reader};
 /// Snapshot records.

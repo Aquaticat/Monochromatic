@@ -155,18 +155,34 @@ Read from the crate source that matches `Cargo.lock` (checksum verified), withou
 
 ## Order of work
 
-1. Layout model: wrap width into the row key, Parley breaking with the IntelliJ rules and indent,
-   visual row counts in `RowMap`, whole-file height measurement.
-2. Geometry readback: per visual line y in `ShapedRow` (`range`, `hit`, `caret_x`), affinity in `ReadingPosition`.
-3. Gutter and scrolling: numbers on first rows only, the wrap indicator (IntelliJ's glyph chain and color),
-   removal of horizontal scrolling.
-4. Keys and pointer: Home, End, Up, Down, PageUp, PageDown, click, drag, triple click.
-5. Annotations, find, and selection on visual rows.
-6. Tests, guards, and the README: the tests and guards that assert horizontal scrolling or one row per line
-   (`caret_tests`, `find_tests`, `sidebar_layout_tests`, `annotation_paint_tests`, `find_paint`, `row_map`,
-   `vertical_motion`, `reading_boundaries`, `annotation_layout`, `tab_geometry`, and the guards
-   `horizontal-resets-column`, `caret-room`, `horizontal-tile`, `scroll-extent`) are rewritten to wrap,
-   and each new guard is seen failing.
+Status as of 2026-10-11 (the branch `feat/ide-soft-wrap`):
+
+1. Layout model: **built.**
+   The wrap width is part of the row cache (every kept row carries the width it is broken at),
+   the tile's `Viewport` and `FrameStamp`, and the tile job;
+   Parley breaks with the IntelliJ rules and indent (`src/wrap.rs`, `src/shaped_text.rs`);
+   `RowMap` holds the visual rows of every line (`src/line_rows.rs`, `src/row_map.rs`);
+   the tile worker measures the whole text at the wrap width in chunks from the view outward
+   (`src/native/tile_pass.rs`), and breaks its kept rows again on a resize instead of shaping them.
+2. Geometry readback: **built.**
+   Caret, selection, find rectangles, underlines, and the terminator mark are placed on their visual row;
+   hits resolve the visual row (`hit_at`); a click keeps the clicked side of a wrap offset in
+   `State::caret_affinity`, not yet in `ReadingPosition`.
+3. Gutter and scrolling: **built.**
+   One gutter entry per visual row, the number on first rows only, the wrap indicator (IntelliJ's symbol chain checked
+   against the fonts, `c0c0c0`, or a drawn arrow) on continuation rows;
+   horizontal scrolling is gone.
+4. Keys and pointer: **partly built.**
+   Click placement, hover, and Ctrl+click resolve the visual row; the caret scrolls its visual row into view.
+   Home, End, Up, Down, PageUp, PageDown, and drag semantics beyond placement are not built.
+5. Annotations, find, and selection on visual rows: **partly built.**
+   Underlines, find rectangles, and selection ink are per visual row.
+   Hints and message rows still stand above the first visual row of their line and are cut at the right edge of
+   the text area; wrapping them is not built.
+6. Tests, guards, and the README: **built** for what is built above.
+   The guards `caret-room`, `find-match-visual-rows`, and `underline-visual-row` replace `caret-room`,
+   `horizontal-tile`, and `scroll-extent`; `horizontal-resets-column` guards the Left and Right keys,
+   not scrolling, and stays.
 
 ## Not decided here
 

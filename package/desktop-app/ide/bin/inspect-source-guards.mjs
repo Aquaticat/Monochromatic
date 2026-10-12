@@ -86,7 +86,7 @@ const cases = [
   // Overscan tile: a view still inside the tile must not reach render, so it spends no tile, row, or image.
   { name: 'overscan-early-return', file: 'src/native/viewport.rs', before: '        if !changed {\n            return;\n        }', after: '        if false {\n            return;\n        }', native: true, test: 'scrolling_inside_the_overscan_tile_does_no_source_work', failure: 'scrolling inside the overscan tile must not enter render' },
   // Scroll re-center: a reader's re-center that the worker should build must not reach the window thread's shaping and painting.
-  { name: 'recenter-on-window-thread', file: 'src/native/viewport.rs', before: '    if changed {\n        current.scroll_wanted', after: '    if false {\n        current.scroll_wanted', native: true, test: 'leaving_the_overscan_tile_re_centers_on_the_worker_thread', failure: 'the window thread paints no tile for a scroll re-center' },
+  { name: 'recenter-on-window-thread', file: 'src/native/viewport.rs', before: '    if changed && current.shown.width > 0.0 {\n        current.scroll_wanted', after: '    if false {\n        current.scroll_wanted', native: true, test: 'leaving_the_overscan_tile_re_centers_on_the_worker_thread', failure: 'the window thread paints no tile for a scroll re-center' },
 ];
 // An optional comma-separated list reruns only the named guards, for example after adding one.
 const only = process.env.usage_only ? new Set(process.env.usage_only.split(',')) : undefined;

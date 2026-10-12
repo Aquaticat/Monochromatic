@@ -156,12 +156,8 @@ pub(super) fn bind_pointer(owner: &AppWindow, shared: &Rc<RefCell<State>>) {
         let mut current = press_state.borrow_mut();
         // A press on a line's virtual rows acts on that line: the rows belong to the code row beneath them.
         let line = current.row_map.line_at(y);
-        let (hit, side) = pointer_position(
-            &mut current,
-            line,
-            (x, y),
-            window.window().scale_factor(),
-        );
+        let (hit, side) =
+            pointer_position(&mut current, line, (x, y), window.window().scale_factor());
         let mut position = current.document.position();
         let mut pressed = press_drag.borrow_mut();
         if extend {
@@ -209,12 +205,8 @@ pub(super) fn bind_pointer(owner: &AppWindow, shared: &Rc<RefCell<State>>) {
         let mut current = state.borrow_mut();
         // A drag over virtual rows extends to the line they belong to, like a press there.
         let line = current.row_map.line_at(y);
-        let (hit, side) = pointer_position(
-            &mut current,
-            line,
-            (x, y),
-            window.window().scale_factor(),
-        );
+        let (hit, side) =
+            pointer_position(&mut current, line, (x, y), window.window().scale_factor());
         let pressed = drag.borrow();
         let (anchor, head) = extended(
             current.document.text().slice(..),

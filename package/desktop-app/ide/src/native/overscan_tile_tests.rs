@@ -249,7 +249,10 @@ fn leaving_the_overscan_tile_re_centers_on_the_worker_thread() {
     );
     assert_eq!(
         window.get_row_tops().row_count(),
-        view.rows.iter().map(|row| return row.visual_rows()).sum::<usize>(),
+        view.rows
+            .iter()
+            .map(|row| return row.visual_rows())
+            .sum::<usize>(),
         "one gutter entry per visual row of the swapped-in tile"
     );
     assert_eq!(

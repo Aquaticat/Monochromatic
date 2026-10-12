@@ -124,32 +124,20 @@ fn materialization_scale_theme_and_syntax_invalidate() {
     );
     let mut palette = colors();
     palette.dark = false;
-    assert!(
-        original != FrameStamp::new(&document, viewport(), palette, SourceStyles::from([]))
-    );
+    assert!(original != FrameStamp::new(&document, viewport(), palette, SourceStyles::from([])));
     palette = colors();
     palette.foreground = [0, 0, 0, 255];
-    assert!(
-        original != FrameStamp::new(&document, viewport(), palette, SourceStyles::from([]))
-    );
+    assert!(original != FrameStamp::new(&document, viewport(), palette, SourceStyles::from([])));
     palette = colors();
     palette.selected = [0, 0, 0, 255];
-    assert!(
-        original != FrameStamp::new(&document, viewport(), palette, SourceStyles::from([]))
-    );
+    assert!(original != FrameStamp::new(&document, viewport(), palette, SourceStyles::from([])));
     let styles = [StyleSpan {
         start: 0,
         end: 1,
         style: 1,
     }];
     assert!(
-        original
-            != FrameStamp::new(
-                &document,
-                viewport(),
-                colors(),
-                SourceStyles::from(styles)
-            )
+        original != FrameStamp::new(&document, viewport(), colors(), SourceStyles::from(styles))
     );
 }
 
