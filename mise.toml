@@ -1,6 +1,9 @@
 # Generated from mise.no-env.toml by file-enforcer.
 # harper:ignore
 
+# mise.toml is generated from mise.no-env.toml by file-enforcer (file-enforcer.config.ts, generateMiseToml).
+# Edit mise.no-env.toml and run file-enforcer; never hand-edit mise.toml.
+
 # mise configuration - replaces proto and moon
 # https://mise.jdx.dev/configuration.html
 # After cloning, run `mise trust` to mark this file as trustworthy.
@@ -113,6 +116,12 @@ cargo-binstall = "latest"
 # monochromatic-lint.config.jsonc. The cargo backend resolves through cargo-binstall
 # to the prebuilt release archive when one exists for the platform.
 "cargo:monochromatic-lint" = "0.1.1"
+
+# The nested Wayland compositor that hosts one GUI app for screenshots and synthetic input
+# (package/cli/nested-wayland-session). Not pinned: mise.lock records the resolved version. The crate's
+# cargo-binstall metadata points the cargo backend at the per-crate release archive, so no from-source
+# build runs. Releases carry Linux archives only.
+"cargo:monochromatic-nested-wayland-session" = "latest"
 
 # CMake for building vendored C libraries from Rust -sys crates. music-player's
 # `opus` dependency (pinned to opus-rs git HEAD in
@@ -1257,15 +1266,27 @@ _.path = [
   "node_modules/.bin",
   "package/agent-harness-shared/search-fetch/node_modules/.bin",
   "package/agent-harness-shared/truncate/node_modules/.bin",
+  "package/claude-code-plugin/bash-output-filter/node_modules/.bin",
+  "package/claude-code-plugin/claude-spawn/node_modules/.bin",
+  "package/claude-code-plugin/correction-reminder/node_modules/.bin",
+  "package/claude-code-plugin/guardrail/node_modules/.bin",
+  "package/claude-code-plugin/prompt-time/node_modules/.bin",
+  "package/claude-code-plugin/session-start-housekeeping/node_modules/.bin",
+  "package/claude-code-plugin/stop-reminder/node_modules/.bin",
+  "package/claude-code-plugin/terminal-title/node_modules/.bin",
   "package/cli/unused-export/node_modules/.bin",
   "package/config/pnpr/node_modules/.bin",
   "package/desktop-app/electron-counter/node_modules/.bin",
   "package/desktop-app/electron-infra/node_modules/.bin",
   "package/desktop-app/file-manager-electron/node_modules/.bin",
   "package/dev-script/deps-update/node_modules/.bin",
+  "package/dev-script/file-enforcer/node_modules/.bin",
+  "package/git-policy/cli/node_modules/.bin",
   "package/kwin/key-helper/node_modules/.bin",
+  "package/mcp/mvm/node_modules/.bin",
   "package/module/conf-fork.fuzz/node_modules/.bin",
   "package/module/conf-fork/node_modules/.bin",
+  "package/module/css-edit.bench/node_modules/.bin",
   "package/module/pnpm-workspace-catalog/node_modules/.bin",
   "package/module/token-count/node_modules/.bin",
   "package/pi-plugin/advisor/node_modules/.bin",
@@ -1287,7 +1308,9 @@ _.path = [
   "package/pi-shared/model-review/node_modules/.bin",
   "package/pi-shared/model-selection/node_modules/.bin",
   "package/ssg/aquati.cat/node_modules/.bin",
+  "package/stub/throwing/node_modules/.bin",
   "package/typeface/aquaticat/node_modules/.bin",
+  "package/webapp-productivity/done-postcss/node_modules/.bin",
   "package/webapp-productivity/wc/node_modules/.bin",
 ]
 

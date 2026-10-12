@@ -48,19 +48,6 @@ use std::path::{Path, PathBuf};
 use std::thread;
 
 /// What:
-///      `use std::time::Duration;`.
-///  A monotonic span of time.
-/// Why:
-///       Unit tests and the start path pass explicit wait windows to the peak
-///           swap helper.
-///
-/// In TS you'd write (pseudocode):
-/// ```ts
-/// type Duration = number;
-/// ```
-use std::time::Duration;
-
-/// What:
 ///      `use ringbuf::HeapProd;`.
 ///  The WRITE half of a heap ring buffer.
 /// Why:
@@ -123,6 +110,9 @@ use crate::decode::{AudioSpec, Source};
 /// import { spawnQueueMeasurement } from "./measure";
 /// ```
 use crate::measure::spawn_queue_measurement;
+use crate::sweep_gate::SweepGate;
+use crate::sweep_report::{SweepJob, SweepSink, noop_sink};
+use std::sync::Arc;
 
 /// What:
 ///      `use crate::output::Output;`.
@@ -159,11 +149,11 @@ use crate::peakcache::CacheHandle;
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// import { fallbackTrackGain, peakSwapWait, prepareTrackGain } from "./peak_swap";
+/// import { fallbackTrackGain, prepareTrackGain } from "./peak_swap";
 /// ```
 use crate::peak_swap::{
-    fallback_track_gain, peak_swap_wait, prepare_track_gain, PeakGainResult,
-    PendingPeakMeasurement, PendingPeakStatus, TrackGainResolution,
+    fallback_track_gain, prepare_track_gain, PeakGainResult, PendingPeakMeasurement,
+    PendingPeakStatus, TrackGainResolution,
 };
 
 /// What:
@@ -409,6 +399,10 @@ pub(crate) struct Controller {
     /// positionFrames: number;
     /// ```
     pub(crate) position_frames: u64,
+    /// Where background sweeps and re-analyses send their reports.
+    pub(crate) sweep_sink: SweepSink,
+    /// Generation of the newest queue load; reports from older generations are dropped.
+    pub(crate) analysis_generation: u64,
     /// What:
     ///      `last_emit_secs: f64`.
     ///  Position (seconds) at the last `Position` update.
@@ -506,6 +500,8 @@ impl Controller {
             pending_peak: None,
             peaks,
             position_frames: 0,
+            sweep_sink: noop_sink(),
+            analysis_generation: 0,
             last_emit_secs: 0.0,
             pending: Vec::new(),
             pending_pos: 0,
@@ -651,7 +647,7 @@ impl Controller {
     ///      `fn handle_peak_status(&mut self, status: PendingPeakStatus) -> bool`.
     ///           Convert a pending measurement status into controller state updates.
     /// Why:
-    ///       Polling and timed waiting share the same ready/pending/closed handling.
+    ///       Polling applies one ready/pending/closed handling for every status.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -677,6 +673,7 @@ impl Controller {
             // ```
             PendingPeakStatus::Ready(result) => {
                 self.pending_peak = None;
+                self.publish_decision_measure(&result.path, &result.decision);
                 return self.apply_peak_result(result)
             }
             // What:     `PendingPeakStatus::Pending => false`. No result yet.
@@ -745,98 +742,13 @@ impl Controller {
         };
         // What:     `self.handle_peak_status(status)`. Apply common status handling.
         //           Tail expression returns whether a current gain was applied.
-        // Why:      Share logic with the timed wait path.
+        // Why:      Keeps the status handling in one place.
         //
         // In TS you'd write (pseudocode):
         // ```ts
         // return this.handlePeakStatus(status);
         // ```
         return self.handle_peak_status(status)
-    }
-
-    /// What:
-    ///      `pub(crate) fn wait_for_pending_peak(&mut self, timeout: Duration)`.
-    ///           Give an in-flight current-track measurement a bounded chance to finish.
-    /// Why:
-    ///       Playback starts should wait briefly for exact gain,
-    ///  then swap to
-    ///           fallback instead of blocking indefinitely.
-    ///
-    /// In TS you'd write (pseudocode):
-    /// ```ts
-    /// waitForPendingPeak(timeoutMs: number): void { ... }
-    /// ```
-    pub(crate) fn wait_for_pending_peak(&mut self, timeout: Duration) {
-        // What:     `if self.poll_pending_peak() { return; }`. First handle any result
-        //           that already landed without waiting.
-        // Why:      Avoid sleeping for the full timeout on a ready channel.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // if (this.pollPendingPeak()) return;
-        // ```
-        if self.poll_pending_peak() {
-            return;
-        }
-        // What:     `let status = match self.pending_peak.as_ref() { ... }`. If still
-        //           pending, wait on the receiver for the caller's bounded duration.
-        // Why:      This is the one-second swap wait, with shorter values available to tests.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // const status = this.pendingPeak?.waitResult(timeoutMs); if (!status) return;
-        // ```
-        let status = match self.pending_peak.as_ref() {
-            // What:     `Some(pending) => pending.wait_result(timeout)`. Wait for the
-            //           measurement or timeout.
-            // Why:      Give exact gain a short chance before fallback playback.
-            //
-            // In TS you'd write (pseudocode):
-            // ```ts
-            // status = pending.waitResult(timeoutMs);
-            // ```
-            Some(pending) => pending.wait_result(timeout),
-            // What:     `None => return`. The first poll cleared the pending state.
-            // Why:      Nothing left to wait for.
-            //
-            // In TS you'd write (pseudocode):
-            // ```ts
-            // return;
-            // ```
-            None => return,
-        };
-        // What:     `self.handle_peak_status(status);`. Apply result/timeout/closed
-        //           handling and ignore the boolean here.
-        // Why:      A timeout deliberately leaves fallback gain and pending state intact.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // this.handlePeakStatus(status);
-        // ```
-        self.handle_peak_status(status);
-    }
-
-    /// What:
-    ///      `pub(crate) fn wait_for_pending_peak_before_start(&mut self)`.
-    ///  Use the
-    ///           standard one-second swap window before starting playback.
-    /// Why:
-    ///       All start paths share the same wait/fallback behavior.
-    ///
-    /// In TS you'd write (pseudocode):
-    /// ```ts
-    /// waitForPendingPeakBeforeStart(): void { this.waitForPendingPeak(1000); }
-    /// ```
-    pub(crate) fn wait_for_pending_peak_before_start(&mut self) {
-        // What:     `self.wait_for_pending_peak(peak_swap_wait());`. Call the generic
-        //           wait helper with the configured one-second duration.
-        // Why:      Keep the literal timeout in `peak_swap`, not scattered through controller code.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // this.waitForPendingPeak(peakSwapWait());
-        // ```
-        self.wait_for_pending_peak(peak_swap_wait());
     }
 
     /// What:
@@ -850,20 +762,15 @@ impl Controller {
     /// setPlaying(on: boolean): void { ... }
     /// ```
     fn set_playing(&mut self, on: bool) {
-        // What:     `if on && !self.playing { self.wait_for_pending_peak_before_start(); }`.
-        //           When the caller starts playback from a paused state, run the
-        //           one-second peak swap wait before audio output is marked playing.
-        // Why:      CLI start, the Play button, and explicit Play commands get the
-        //           wait-then-fallback behavior, while track changes that are already
-        //           playing wait in `install_source` and do not wait twice.
+        // What:     No wait before marking playback on. A pending true-peak measurement
+        //           keeps the fallback gain, and the engine loop swaps the exact gain in later.
+        // Why:      Play from pause must not add up to a second of silence while the
+        //           measurement runs, since the ring buffer is empty at that point.
         //
         // In TS you'd write (pseudocode):
         // ```ts
-        // if (on && !this.playing) this.waitForPendingPeakBeforeStart();
+        // // no wait: the fallback gain is already in place
         // ```
-        if on && !self.playing {
-            self.wait_for_pending_peak_before_start();
-        }
         // What:     `self.playing = on;`. Update the gate.
         // Why:      Pump respects it.
         //
@@ -947,7 +854,7 @@ impl Controller {
     }
 
     /// What:
-    ///      `fn start_queue_measurement(&self)`.
+    ///      `fn start_queue_measurement(&mut self)`.
     ///  Kick off the background sweep that
     ///           pre-measures every non-current track in the current queue into the
     ///           shared cache.
@@ -961,44 +868,39 @@ impl Controller {
     /// ```ts
     /// startQueueMeasurement(): void { ... }
     /// ```
-    fn start_queue_measurement(&self) {
-        // What:     `let current = self.queue.current_path().cloned();`. Read the
-        //           current path and clone it into an owned `PathBuf` if present.
-        // Why:      The background sweep must skip this path so the current-track
-        //           swap worker owns it.
+    fn start_queue_measurement(&mut self) {
+        // What:     `self.analysis_generation = self.analysis_generation.wrapping_add(1);`.
+        //           Advance the generation so reports from the sweep this load replaces are dropped.
+        // Why:      Sweeps are never cancelled, so the generation is the only way to tell them apart.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // this.analysisGeneration += 1;
+        // ```
+        self.analysis_generation = self.analysis_generation.wrapping_add(1);
+        // What:     `let current = self.queue.current_path().cloned();`. The track playback is on.
+        // Why:      The fan-out skips it, because the current-track worker owns that one.
         //
         // In TS you'd write (pseudocode):
         // ```ts
         // const current = this.queue.currentPath();
         // ```
         let current = self.queue.current_path().cloned();
-        // What:     `let tracks = self.queue.tracks().iter().filter(...).cloned().collect();`.
-        //           Iterate borrowed queue paths, keep every path that is not the current
-        //           one, clone the survivors, and collect them into a `Vec<PathBuf>`.
-        // Why:      Give the detached sweep owned inputs while avoiding duplicate current
-        //           track measurement.
+        // What:     `spawn_queue_measurement(SweepJob { ... });`. Start the sweep over every queue track.
+        // Why:      The sweep peeks all tracks for rows, and measures the non-current ones.
         //
         // In TS you'd write (pseudocode):
         // ```ts
-        // const tracks = this.queue.tracks().filter((path) => path !== current);
+        // spawnQueueMeasurement({ tracks: this.queue.tracks(), current, cache: this.peaks, sink: this.sweepSink, generation: this.analysisGeneration });
         // ```
-        let tracks = self
-            .queue
-            .tracks()
-            .iter()
-            .filter(|path| return current.as_ref() != Some(*path))
-            .cloned()
-            .collect();
-        // What:     `spawn_queue_measurement(tracks, self.peaks.clone());`. Spawn the
-        //           detached sweep. `self.peaks.clone()` copies the cache handle's channel
-        //           senders (cheap; same actor).
-        // Why:      Hand the sweep its own track list and a handle to the shared cache.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // spawnQueueMeasurement(tracks, this.peaks);
-        // ```
-        spawn_queue_measurement(tracks, self.peaks.clone());
+        spawn_queue_measurement(SweepJob {
+            tracks: self.queue.tracks().to_vec(),
+            current,
+            cache: self.peaks.clone(),
+            sink: Arc::clone(&self.sweep_sink),
+            generation: self.analysis_generation,
+            gate: SweepGate::shared(),
+        });
     }
 
     /// What:
@@ -1053,7 +955,9 @@ impl Controller {
                 // ```ts
                 // this.emit({ kind: "queue", names: this.queue.displayPaths() });
                 // ```
+                self.emit(Update::Library(self.queue.tracks().to_vec()));
                 self.emit(Update::Queue(self.queue.display_paths()));
+                self.emit_source_root();
                 // What:     `self.start_queue_measurement();`. Pre-measure the whole queue
                 //           in the background (true-peak normalization cache).
                 // Why:      Every queue load (open or auto-load) warms the peak cache.
@@ -1394,7 +1298,9 @@ impl Controller {
                 // ```ts
                 // this.emit({ kind: "queue", names: this.queue.displayPaths() });
                 // ```
+                self.emit(Update::Library(self.queue.tracks().to_vec()));
                 self.emit(Update::Queue(self.queue.display_paths()));
+                self.emit_source_root();
                 // What:     `self.emit(Update::Volume(volume));`. Mirror volume.
                 // Why:      Sync the slider.
                 //
@@ -1597,6 +1503,8 @@ impl Controller {
             // ```ts
             // case "quit": break; // handled in run()'s drain loop
             // ```
+            Command::SweepReport(report) => self.handle_sweep_report(report),
+            Command::ReanalyseTrack(path) => self.reanalyse_track(path),
             Command::Quit => {}
         }
     }

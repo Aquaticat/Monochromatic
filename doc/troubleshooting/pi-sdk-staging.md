@@ -1,5 +1,835 @@
 # Pi 0.87.1 nominal dependency inventory rejects the configured workspace graph
 
+## Private document verification still imported the deleted Markdown CLI
+
+### Symptom and owner change
+
+`proc_e70c` failed before linting or rendering:
+Node reported `MODULE_NOT_FOUND` for
+`@monochromatic-dev/cli-markdown-lint/ts/rule/index.ts`.
+Private `contract/native-docs/native-lint.mjs:17` still imported the former rule API.
+
+Main commit `5bc05682ec` deleted that package.
+The replacement is the installed `monochromatic-lint` 0.1.1 executable,
+not another location for the old TypeScript exports.
+The [unified-linter cutover](../handover/unified-linter-cutover.md) records the landing on 2026-10-10.
+
+### Correction and verification boundary
+
+The maintained `native-guidance-resumption-2026-10-07/documents.mjs` runner
+now invokes the current executable in stdin mode,
+with the actual document filename,
+current repository configuration,
+and concurrency one:
+
+```javascript
+// Private document runner, current CLI arguments
+['--config', join(main, 'monochromatic-lint.config.jsonc'),
+ '--stdin', '--stdin-filename', path, '--concurrency', '1']
+```
+
+Every document path first receives a clean heading control
+and a deliberately punctuated heading that must report `markdown/no-trailing-punctuation`.
+Actual source must produce zero findings and remain unchanged.
+Micromark still renders every checked document and verifies the written HTML.
+The qualified runtime policy parser is unchanged;
+this is only document verification.
+
+First current-linter run `proc_9685` reached the troubleshooting document
+and found `rust/require-rustdoc` warnings on its Mise source excerpts.
+The current executable also checks embedded Rust.
+Each excerpt now has a file-documentation sentence and its original authored file citation;
+the quoted executable code is unchanged.
+An intermediate run `proc_8c6e` reported `markdown/semantic-line-breaks`
+on commas in the citations when they were used directly as Rust documentation.
+The documentation sentence avoids that punctuation while retaining the exact citations.
+No warning filtering,
+rule suppression,
+or configuration weakening was added.
+Corrected `proc_4b01` passed all 14 documents with zero diagnostics,
+including per-path clean/error controls and written Micromark output.
+The command remains `mise --no-env --no-hooks run documents`
+in private `contract/collector/native-guidance-resumption-2026-10-07`.
+
+### Rejected remedies and filing decision
+
+Do not restore the deleted package,
+silently omit linting,
+or rewrite the runtime parser to solve this document-runner failure.
+The old adapter is retained for historical consumers,
+not represented as working against the current repository.
+
+Nothing is proposed upstream.
+This was an owned stale consumer after an accepted repository cutover,
+so the upstream-fault condition fails.
+Upstream fixability,
+supported-use,
+contribution,
+maintainer-intent,
+and upstream-prototype conditions are not claimed.
+
+## Private native build rejects retained imports after a filesystem move
+
+### Symptom and source trace
+
+Restoration `b6943a8` / `proc_931a` failed before tests in private `native-batch/prepare.mjs`:
+`NativeBatchBuildError: Native SDK edit does not have one matching location`.
+The missing literal named `native-script-value.mjs` under `/var/mnt/encrypted/temp/agent/`;
+the retained generated import used `/var/home/user/temp/agent/`.
+
+Both spellings still resolve to the same file,
+as checked with `realpath`.
+This is a build-time path-comparison failure,
+not a result from the restored prompt observation or the earlier full-policy incident.
+
+Private `contract/integration/native-batch/prepare.mjs:32` required exactly one textual match:
+
+```javascript
+// Private prepare.mjs, replaceOnce
+if(at<0||source.indexOf(from,at+from.length)!==-1)
+ throw new NativeBatchBuildError('Native SDK edit does not have one matching location: '+from);
+```
+
+The historical `native-return-consumer.mjs:2` import was generated from its original location.
+The fresh expected URL came from `import.meta.url` at the new canonical location.
+No native SDK source change was needed to reproduce the mismatch.
+
+### Consumer correction and verification
+
+Private `staged-import.mjs:7` selects exactly one generated named-import line.
+It decodes only that build-time module specifier,
+rejects query/fragment variants,
+and requires the existing file to resolve to the expected incumbent build input:
+
+```javascript
+// Private staged-import.mjs, expected target check
+if(realpathSync(fileURLToPath(observed))!==realpathSync(fileURLToPath(expected)))
+ throw new StagedImportError('Generated import differs from its expected local build input');
+```
+
+Only the fresh output buffer is rewritten.
+Historical artifacts,
+installed modules,
+request parsing,
+source capture,
+and runtime authority are unchanged.
+This check does not authenticate module contents or establish policy authority.
+
+`b60415d` / `proc_0064` passed `test:staged-import`:
+original and symlinked paths work;
+equal bytes in another file,
+duplicate declarations,
+missing files,
+query/fragment URLs,
+non-file URLs,
+and malformed declarations reject.
+The subsequent actual `prepare` passed with SDK 1.1.0 and unchanged installed sources.
+The task runs through `mise --no-env --no-hooks run test:staged-import`
+in private `contract/integration/native-batch`.
+
+### Tradeoffs and rejected approaches
+
+The retained alias must remain accessible for its untouched historical imports.
+This is not migration of the historical artifact graph.
+Fresh preparation adds filesystem checks and fails if either target cannot be resolved.
+Disposable aliases exercise both accepted spellings without replacing the real mount.
+
+Hardcoded alternatives for the old and new roots were not adopted:
+they would encode environment-specific path spelling without verifying the current target.
+Regenerating old hash-locked chains,
+rewriting historical files in place,
+or enabling symlink-preserving module loading was unnecessary.
+Target-guard omission `e38b148` / `proc_cfc3` failed `Missing expected exception (StagedImportError)`
+on the equal-byte wrong-file case.
+The guard was restored before complete native regression `proc_6645`,
+which passed including the import controls and complete runtime suffix.
+This repairs the measured preparation boundary without relocating the rest of the historical graph.
+
+### Upstream filing decision
+
+Nothing to file.
+The failure belongs to this private build generator,
+not Pi or Node.
+The upstream-fault condition fails;
+upstream fixability,
+supported-use,
+contribution,
+maintainer-intent,
+and upstream-prototype conditions are not claimed or investigated.
+The consumer correction remains private.
+
+## Empty Git index lock interrupted setter documentation
+
+On 2026-10-11,
+main documentation process `proc_8254` stopped before `git add`.
+Cli-git emitted `index-lock-unproven-owner` after its 1000 ms unproven-owner budget.
+The existing user-owned lock was empty,
+device 55,
+inode 237840036,
+with modification time `2026-10-11T15:09:26.069Z`.
+
+Current-user process inspection found Git filesystem monitors,
+not an active Git writer.
+A first shell descriptor probe did not expose a holder and was not treated as a valid null control.
+Managed `proc_64ca` kept the parent shell alive after `fuser`;
+the positive control reported its PID 2340389.
+After that process exited,
+`fuser` reported no holder.
+
+The recovery rechecked the exact device,
+inode,
+size,
+user ID,
+and modification time before a non-overwriting move.
+The empty record was preserved as `~/temp/agent/auto-mode-main-index-lock-237840036.empty`.
+The source lock was then absent,
+and the preserved file retained zero bytes and its modification time.
+No index content,
+ref,
+or journal was restored.
+The scoped retry `proc_7a6b` completed as `b9f38eb1a4`.
+The creator and reason for the abandoned lock remain unknown.
+This follows the evidence-preserving procedure in
+[the separate empty-lock recovery](cli-git-superseded-index-recovery.md#separate-empty-index-lock-on-2026-10-09),
+not a generic permission to remove live locks.
+
+An earlier read-only status invocation emitted the logger's
+`sink verification failed for entry 3: Timed out after 5000ms: sink 3 verify`
+diagnostic before the command runner's ten-second timeout.
+A subsequent managed status completed.
+These observations do not prove the logger caused the lock or that its delay was fixed;
+see [the logger diagnostic](cli-git-logger-sink-verify-timeout.md).
+Neither incident is a failure of native setter capture.
+
+## Manager append capture invalidates emission-time policy sources
+
+### Original input loss before construction
+
+Pi 1.1.0 `dist/core/sdk.js:84` reads the manager's resolved context:
+
+```javascript
+// Pi 1.1.0 dist/core/sdk.js:84
+const existingSession = sessionManager.buildSessionContext();
+```
+
+The same function passes `existingSession.messages` into a literal Agent `initialState`.
+An original message can already be absent from that context.
+Required red `4c74fc7` / `proc_5d44` appended user text to an owned in-memory manager,
+then hid it with `appendContextEdit(id,null)`.
+Native delivery succeeded,
+but review failed
+`The original manager append input must survive a pre-construction context edit`.
+
+The original append API has a pre-body observation point:
+
+```javascript
+// Pi 1.1.0 dist/core/session-manager.js:827 to 837
+appendMessage(message) {
+    const entry = {
+        type: "message",
+        id: generateId(this.byId),
+        parentId: this.leafId,
+        timestamp: new Date().toISOString(),
+        message,
+    };
+    this._appendEntry(entry);
+    return entry.id;
+}
+```
+
+The selected fields must be captured before the incumbent private copy can reject the input.
+Installed `_appendEntry` does not perform that clone;
+private `contract/integration/native-batch/root-source.mjs` adds it.
+A private clone-rejection control is not installed-SDK clone parity.
+
+### Unrestricted capture conflicts with current source bindings
+
+Private `bf5aff8` observed every append invocation.
+The first consumer `proc_0975` stopped before review with
+`Observed request is no longer current`.
+Diagnostic `0f05a19` / `proc_323e` retained the original subscribed judgment-start error.
+It had cause
+`Native run prompt was replaced after this source snapshot`.
+There was one request,
+zero assessments,
+and no latched content-profile failure.
+
+Native Session persistence appended the assistant response before judgment start.
+The manager's new constructed input caused the run owner to publish a new retained-input view.
+The existing resource collector requires the original view:
+
+```javascript
+// Private contract/collector/rule-relevance-sdk-copy/stage-private/resource-owner.mjs:204
+if(readSessionRun(session)!==saved.run)
+  throw new SourceCollectionError('Native run prompt was replaced after this source snapshot');
+```
+
+Changing that check alone is not a remedy.
+Private `governing-source.mjs`,
+`registered-authority.mjs`,
+`run-messages.mjs`,
+and the judgment's rule index all use `receipt.sources`.
+Allowing new membership without changing those bindings would silently omit it from policy review.
+
+### Bounded implementation and remaining gap
+
+The completed initial checkpoint observed appends only before the first original Session context-copy attachment.
+It reuses the existing one-way `contextCopyAttached` state and manager input pool.
+It adds neither a temporary mute window nor authentication by native callsite.
+The source origin is `native-manager-initial-input`;
+the `managerInput` location has method metadata and no fabricated ordinal.
+
+Narrowed `740ffae` / `proc_22d7` passed the canonical pre-attachment consumer.
+Run private `test:manager-append-source` through `mise --no-env --no-hooks run`.
+The original hidden input remained available without appearing in the original model-request body
+or gaining authority or payload eligibility.
+`ffa4e19` / `proc_f1e3` also passed private clone rejection:
+no entry was inserted,
+but the original input still reached review.
+
+Owner `9c9885b` / `proc_0d67` passed profile and shared-bound controls.
+Its negative-zero red exposed argument normalization by JSON serialization;
+the profile now rejects negative zero and undefined argument values,
+while a positive-zero control passes.
+Native `3e4dfd2` / `proc_7543` passed actual strict frames,
+private-copy/reentry/getter/proxy parity,
+original unexpected errors,
+and attachment/reset lifetime controls.
+Its comparison removes only the new hook from a disposable private generated manager.
+It does not claim installed-SDK cloning parity.
+Integrated `proc_4882` passed 128 constructed-input outputs with empty child stderr.
+
+All four deliberate omissions failed their intended controls:
+`proc_d58c` lost original input,
+`proc_1c79` lost clone-rejected input,
+`proc_2dbc` reproduced the pre-review snapshot failure,
+and `proc_a769` admitted an unsupported content block.
+All guards are restored,
+with empty runtime diff against `9c9885b`.
+Complete one-shot native `proc_9e75` passed in 624 seconds,
+with the 128-output constructed-input matrix and all six full-policy profiles.
+Complete action-policy and policy-source suites passed `proc_3bea`.
+Only documentation changed during those runs.
+Outcome document checkpoint `proc_a64d` passed all 14 documents with zero diagnostics.
+
+This does not account for post-attachment manager appends.
+Those potentially governing inputs remain unresolved.
+Do not infer that native persistence is nongoverning,
+drop it by role,
+defer it silently to another request,
+or relax a retired receipt.
+Broader support needs coherent original-request and judgment source bindings,
+not just a freshness exception.
+That checkpoint implemented no such contract change.
+The subsequent handoff is described in "Current judgment sources without changing emitted material".
+
+This is private integration behavior,
+not an upstream SDK fault.
+Upstream fault is not established;
+upstream fixability,
+supported-use,
+contribution acceptance,
+maintainer intent,
+and prototype conditions are not claimed.
+There is no external filing or additive upstream report.
+
+### Current judgment sources without changing emitted material
+
+Post-attachment required red `b650661` / `proc_72ea` completed a native request and assessment,
+but failed to retain an append hidden by a null context edit after Session attachment.
+Connected `6f71097` / `proc_dc02` passed that consumer using a separate judgment-source binding.
+The original receipt,
+request body,
+emission snapshot,
+and material contributions remain historical original observations.
+
+The private collector's existing `snapshots` ownership map authenticates both snapshots.
+The handoff requires unchanged policy/resource/base identities and copied material,
+unchanged non-retained run fields,
+and an exact original-reference prefix extended only by unregistered manager inputs.
+Judgment indexing,
+wire content,
+and manager input views use the bound current snapshot.
+The resource collector's strict check is not weakened.
+After binding,
+any further source change retires the original judgment.
+The emission-only `system-view.mjs` profile intentionally refuses the expanded source set.
+
+Run `mise --no-env --no-hooks run test:manager-live-paths`
+from private `contract/integration/native-batch`.
+`a4a7b43f` / `proc_9b65` passed hidden inputs,
+a host-called public `message_end`,
+post-emission text and system-tool inputs,
+and post-binding retirement.
+The checks require exact `originalRequestBody`,
+new sources in judgment/wire but not emission sources,
+and native assistant persistence in the current source set.
+All cases made no protected execution or provider requests.
+`proc_4412` passed owner and handoff controls,
+including irreversible failure,
+reentry,
+root/cancellation/generation changes,
+and the narrow profile's refusal.
+Its non-native reader and producer adapters are explicit;
+those controls are not additional native Session executions.
+
+### Handoff lifecycle and wiring sensitivity
+
+Native lifecycle `12ea892b` / `proc_83f6` passed the handoff clock positive control,
+expiry during source comparison before judgment publication,
+unchanged-view capture failure,
+shared occurrence exhaustion,
+and late reset,
+disposal,
+reload,
+and oversized input.
+The clock is an explicit fixture;
+the Session and judgment paths are native.
+The positive control retains the original 5000-millisecond deadline.
+Expired handoff work sends no assessment and publishes no judgment.
+`7e7edd94` / `proc_2872` also retained a post-emission append rejected by the private clone.
+No entry insertion,
+authority,
+or successful persistence is inferred from capturing that input.
+
+Constructed-input regression `e32496ec` / `proc_a9e3` passed 133 outputs with empty child stderr.
+The newly integrated lifecycle and clone cases still need the full native parent.
+Indexed-question positive control `fb444692` / `proc_4150` passed.
+Omitting observation or current message-source binding lost the original input.
+Omitting the handoff or current governing-source binding caused stale-snapshot failure.
+Omitting current indexing failed wire source/ordinal coherence.
+Omitting copied-material equality admitted changed adapter material.
+All omissions are restored in `54575a9a`,
+with an empty scoped runtime diff against `7e7edd94`.
+The complete action-policy and policy-source suites passed `proc_417a`,
+with 29 successful result records.
+Full native `proc_a3df` stopped in `default-payload-copy` because no review was returned.
+Its original exception was not retained,
+so no cause is established.
+The isolated native-default/copy pair passed `96a0c52e` / `proc_e195` without a runtime change;
+that later pass is not a diagnosis or fix.
+The second parent `proc_b1f3` stopped in the distinct `carrier-bound` case,
+whose original exception was also not retained.
+Both fixtures now retain batch errors and report total judgment-start to reviewed time.
+Repeated configurations passed `bef690b2` / `proc_a7bd`:
+carrier-bound totals were 4984.015445,
+5402.251908,
+and 5789.265434 milliseconds;
+copy-case totals were 971.362350,
+914.014512,
+and 1024.266656 milliseconds.
+These include work after evidence closure and are not deadline-failure measurements.
+Neither failed parent has an established cause or a claimed runtime fix.
+Parent `proc_05da` passed 35 complete prefix outputs,
+including 142 constructed-input cases and 69 section cases,
+then stopped at an older original-judgment source-list expectation.
+`adfb8fd9` / `proc_a45e` passed the corrected source-list assertions in all four variants.
+The assertions retain exact manager source references,
+roles,
+content,
+and emission-versus-judgment membership.
+Prompt and handler fixtures also needed their newly captured persistence inputs counted.
+Those corrections passed `proc_5415` and `proc_7fa1` before the next boundary was reached.
+Diagnostic `9f8e832f` / `proc_b4f5` measured 69 frozen sources in a shared-session carrier case,
+exceeding the unchanged 64-source limit.
+Independent carrier cases now use disposable sessions;
+the original shared-session rejection is retained as a separate bound control.
+Runtime suffix `eaa78d4a` / `proc_5185` passed all 39 result records,
+including the retained bound rejection and all six full-policy profiles.
+The final one-shot native parent `3ea75e62` / `proc_d937` then passed:
+82 complete result records,
+142 constructed-input cases,
+69 section cases,
+and all six full-policy profiles.
+The parent had no nonroutine stderr;
+child matrices reported empty stderr.
+Complete action-policy and policy-source verification passed `proc_417a`.
+All deliberate omissions remain restored.
+Only documentation and standalone,
+non-wired intake tests changed during the final parent.
+The earlier unattributed parent failures remain historical failures,
+not explained by this later pass.
+
+The governing-source omission first exposed no original reviewer error in judgment finalization.
+An `evidence-closed` record is not a completed policy review.
+A fixture-only batch wrapper retained the propagated exception:
+`PreparedBatchExecutionError` contains
+`SourceCollectionError: Native run prompt was replaced after this source snapshot`.
+The indexing omission separately retained
+`RuleAssessmentWireError: Selected clause differs from its complete source`.
+Do not merge these with capture-profile failures or infer causes from an empty failure field.
+
+### Preserve received system tool records
+
+Source review identified a separate omission:
+the manager system selector kept `content` and `sections`
+but dropped `toolsAdded` and `toolsRemoved`.
+Owner red `d8175179` / `proc_3b4d` reported `AssertionError [ERR_ASSERTION]`
+with the missing declaration description,
+schema prose,
+constrained-sampling configuration,
+and removal record in the expected source.
+This is a private selector error,
+not a Pi producer defect.
+
+Pi AI 1.1.0 already normalizes parameters before publishing its declaration:
+
+```javascript
+// Pi AI 1.1.0 dist/utils/transcript.js:106 to 113
+export function toToolDeclaration(tool) {
+    return {
+        name: tool.name,
+        description: tool.description,
+        parameters: JSON.parse(JSON.stringify(tool.parameters)),
+        ...(tool.constrainedSampling === undefined ? {} : { constrainedSampling: tool.constrainedSampling }),
+    };
+}
+```
+
+Private `1c6985cf` retains the received arrays under the existing manager copier budget,
+without calling that normalization again.
+The incumbent `native-content-json` encoding carries their complete supported JSON records.
+Accessors,
+proxies,
+negative zero,
+and undefined nested values fail the selected profile without changing native operation behavior.
+Manager initial/current phases share this selector;
+loaded,
+Agent prompt,
+and setter profiles are unchanged.
+`proc_88a2` passed the owner red after correction,
+and the real post-emission declaration/removal consumer passed `proc_9b65`.
+
+The complete native parent,
+action/source regressions,
+and wiring sensitivity in "Handoff lifecycle and wiring sensitivity" passed.
+Additional original fields can exhaust the unchanged source and aggregate bounds sooner.
+Upstream tool-definition inputs before declaration production,
+images,
+complete governing scope,
+and semantic qualification remain independent gaps.
+Do not replace the handoff with a freshness exception,
+role-based exclusion,
+source deduplication,
+or a new request encoding.
+Installed sources remain unchanged.
+The private-ownership filing decision in "Bounded implementation and remaining gap" still applies;
+there is no new upstream fault or filing artifact.
+
+## Direct Agent state assignments bypass prompt and queue capture
+
+### Symptom and native setter
+
+Required red `cd5fd32` / `proc_896e` assigned text through the native setter,
+cleared it before a request,
+and failed `The original native input must survive handling or expansion`.
+The request itself completed.
+No installed code was changed.
+
+Pi 1.1.0 core `dist/agent.js:51` copies the incoming array:
+
+```javascript
+// Pi agent-core 1.1.0 dist/agent.js:51 to 53
+set messages(nextMessages) {
+    messages = nextMessages.slice();
+}
+```
+
+The closure owns the state,
+so the setter receiver does not establish a different message owner.
+Native Agent reset and Session `_refreshFinalizedContext` also assign through it.
+Observing every internal projection as a fresh text-only host input would misclassify derived content
+and add unsupported accumulated histories to that profile.
+
+### Private implementation and verification
+
+The private generator observes actual public setter arguments before native `slice`.
+A per-state private token identifies only original native setter invocations from maintained internal sites.
+A target or descriptor mismatch falls back to ordinary assignment.
+Replacement setters never receive the token,
+and normal reentrant calls have no token.
+The implementation does not mute observation dynamically.
+
+The internal function is obtained from the existing one-time Agent attachment
+and validated against that Agent before storage in a private Session field.
+It is passed as a separate constructor argument,
+not a new getter on borrowed options.
+
+Post-construction Session attachment was rejected.
+The constructor reaches `_applyToolLoadout`,
+which calls user code at `dist/core/agent-session.js:1178`:
+
+```javascript
+// Pi 1.1.0 dist/core/agent-session.js:1178
+const changes = definition.prepareLoadout?.(loadout);
+```
+
+That callback can use the already-bound extension interface to append a custom message,
+which refreshes projected state.
+`proc_91c7` exercised this path through real `pi.sendMessage`,
+retained its original custom input,
+and asserted no new state-input publication for the native projection.
+
+Initial canonical `proc_1f5b`,
+native `proc_67c2`,
+constructor `proc_91c7`,
+and live lifetime/bound `proc_7faa` controls passed.
+Native tests cover shallow copies,
+strict/unmapped frames,
+reentry,
+forged extra arguments,
+descriptor replacement/flags,
+foreign targets,
+native falsy slice failures,
+proxy read parity,
+and unexpected observer errors.
+Run private `test:agent-state-native` and `test:agent-state-paths`
+as separate `mise --no-env --no-hooks run` invocations.
+
+### Retained-projection fixture reconciliation
+
+Restored `8cb4a62` / `proc_d6c9` exposed a legacy fixture that used public assignment
+to imitate native projection refresh.
+Its expected request count was four,
+but only two requests completed.
+Diagnostic `d36500e` / `proc_8730` checked the capture latch immediately after assignment
+and exposed `Native Agent input requires a supported text-message role`.
+This was profile rejection,
+not merely a changed occurrence count.
+
+The selected public-input profile rejects unsupported roles in `loaded-inputs.mjs:33`.
+The fixture instead needs native projection behavior.
+Pi 1.1.0 `dist/core/agent-session.js:1016` provides it:
+
+```javascript
+// Pi 1.1.0 dist/core/agent-session.js:1016 to 1018
+refreshContext() {
+    this._refreshFinalizedContext();
+}
+```
+
+The declaration in `dist/core/agent-session.d.ts:388` is synchronous:
+
+```typescript
+// Pi 1.1.0 dist/core/agent-session.d.ts:388
+refreshContext(): void;
+```
+
+Private `37124ab` uses that real method for compaction/edit/fork projection fixtures.
+The explicit stale-path clear remains an ordinary observed assignment,
+with its new empty-array source asserted.
+`proc_eff0` passed all 43 expanded/retained modes with empty child stderr.
+The separate direct-equal-projection negative remains in `agent-state-native.test.mjs`.
+No text profile,
+source count,
+or byte bound was relaxed.
+
+The tradeoff is intentional:
+public assignment of a derived projection is still a fresh host input,
+whereas native refresh identifies a maintained internal derivation.
+After adding an observation point,
+inspect maintained fixture writes to distinguish those operations before broad regression runs.
+
+### Setter sensitivity and fixed owner
+
+All five omissions failed their intended assertions:
+`proc_0ef3` lost erased input,
+`proc_b838` accepted a forged token,
+`proc_4a25` bypassed a replacement setter,
+`proc_8953` reminted constructor projection,
+and `proc_c53f` reached a config getter before capability rejection.
+All guards were restored.
+Both scoped runtime diff and exhaustive changed-path inventory were checked against `7d42311`.
+
+Extended native `69deaca` / `proc_be71` passed shared count and serialized-byte bounds,
+native assignment despite expected profile failure,
+direct constructor-callback writes,
+and real direct Sessions sharing one attached Agent.
+An unqualified second Session does not receive or replace the first Agent's attachment.
+Its ordinary writes are observed by that Agent's fixed original input owner.
+This does not authenticate the calling Session or transfer governing scope.
+Multi-Session sharing is not claimed as qualified execution.
+
+### Limits and filing decision
+
+The internal route identifies its operation only.
+Unknown manager/model content is not authenticated or silently declared covered.
+In-place array mutation,
+constructor state,
+and replacing state objects or descriptors remain separate gaps.
+All existing source limits and admission holds remain unchanged.
+Integrated and restored sensitivity checks passed.
+Complete one-shot native parent `proc_428d` passed in 719 seconds,
+including the current constructed-input matrix and all six full-policy profiles.
+Complete action-policy and policy-source suites passed `proc_b3aa`.
+Only documentation changed during regression execution.
+Outcome document checkpoint `proc_99f8` passed all 14 documents with zero diagnostics.
+
+Nothing is proposed upstream.
+The SDK setter behaved as written;
+this is private source observation.
+The upstream-fault condition fails;
+upstream fixability,
+supported-use,
+contribution,
+maintainer-intent,
+and upstream-prototype conditions are not claimed.
+
+## Native prompt arrays include a system-section delta
+
+### Symptom and deciding source
+
+The first direct message/array capture connected isolated consumers,
+but `proc_d774` never created the late review.
+Diagnostic `proc_8744` showed zero requests and assessments.
+`proc_bc9b` exposed the manager's `SessionInputCaptureError`,
+whose cause was `Native Agent input requires a supported text-message role`
+inside `agentPromptArray`.
+
+The owned mistake was reusing the queue role subset for every prompt-array member.
+Pi 1.1.0 `dist/core/agent-session.js:1307` builds a system-section delta:
+
+```javascript
+// Pi 1.1.0 dist/core/agent-session.js:1307 to 1308
+const sections = diffSystemPromptSections(getCurrentSystemMessage(messages)?.sections ?? {}, buildSystemPromptSections(options));
+return sections ? { role: "system", content: "", sections, timestamp: Date.now() } : undefined;
+```
+
+The same file at line 1628 prepends it before calling the Agent:
+
+```javascript
+// Pi 1.1.0 dist/core/agent-session.js:1628 to 1631
+if (updateMessage)
+    messages.unshift(updateMessage);
+preflightResult?.("started");
+await this._runAgentPrompt(messages);
+```
+
+Single user-message direct calls did not exercise that Session construction.
+Their earlier pass did not establish Session-array compatibility.
+
+### Correction and remaining verification
+
+Prompt capture now reuses the loaded-system selection and validation for content and sections.
+Null deletion remains original input data,
+not evidence of revoked instructions.
+The prompt role adds no authority,
+and tool definitions remain outside this selected prose representation.
+The queue profile is not expanded.
+
+The existing native review assertion stays intact.
+Owner system-field controls include absent,
+null,
+and named sections,
+plus zero reads of tool getters.
+An intermediate correction failed `proc_8936` because its loop-local `message` shadowed the array parameter.
+Renaming the selected element to `entry` preserved the receiver.
+Corrected `e1fbda6` / `proc_e97e` passed system owner controls
+and all eight real late/oversize/reset modes.
+Direct system-message and system-array canonical consumers passed `proc_f007`.
+Integrated `proc_a44a` passed 116 outputs with empty child stderr.
+Observation/section/proxy omissions `proc_0e00`,
+`proc_883a`,
+and `proc_7d1b` failed their intended controls and were restored.
+The full native case set is covered by the unchanged source prefix of `proc_5868`
+and corrected complete runtime suffix `proc_45e7`,
+not a passing one-shot parent invocation.
+Complete action-policy `proc_4f7e` and policy-source `proc_0091` passed.
+Run private `test:agent-message-prompt-owner` and `test:agent-message-prompt-paths`
+as separate `mise --no-env --no-hooks run` invocations.
+
+The separate `custom-trigger-bound-allowed` fixture initially checked its pre-run trigger
+only after another Session prompt forwarded its pending large messages as one array.
+`proc_3b98` then reported a terminal error instead of the expected stop.
+Correction `3f7d81f` / `proc_2853` preserves the original base-bound success and rejection checks,
+then explicitly verifies the later aggregate array exceeds the separate source bound before transport.
+Neither limit was enlarged.
+
+### Conversion hints do not imply image omission
+
+Full regression `proc_45f1` reached `retained-image`,
+which now fails the text-only prompt-array profile before policy review.
+The first fixture correction still expected `retained-image-hint` to reach review;
+`proc_21bd` disproved that expectation.
+
+Pi 1.1.0 `dist/utils/image-process.js` normalizes the valid GIF fixture
+from `image/x-gif` to PNG and returns both image data and a conversion hint.
+`dist/core/agent-session.js:1503` retains both:
+
+```javascript
+// Pi 1.1.0 dist/core/agent-session.js:1503 to 1504
+normalizedImages.push({ type: "image", data: processed.data, mimeType: processed.mimeType });
+hints.push(...processed.hints);
+```
+
+The fixture is converted-image-plus-text,
+not omitted-image hint-only text.
+Corrected `766f4d4` / `proc_a122` passed all four image/conversion modes:
+native image construction,
+actual conversion hint where applicable,
+text-profile failure,
+zero transport/assessments/executions,
+no text payload capability,
+and no revival after a later plain prompt.
+No runtime guard or limit changed.
+A genuinely omitted-image hint-only route is not claimed as exercised by these fixtures.
+
+### Keep full-policy gates independently reachable
+
+Complete native `proc_5868` reached full-policy verification.
+The single-policy case indexed 207 clauses and dispatched 414 legacy questions.
+The visible independent copy stopped before judgment construction.
+`proc_2bba` exposed the original capture cause:
+`Loaded session message content exceeds the original source byte bound`.
+The rendered prompt measured 64,559 bytes,
+but the encoded selected array crossed the separate 65,536-byte source limit.
+
+The fixture retains that original rejection.
+A second independent-copy case replaces only rendered project context,
+retaining both unchanged source inputs and requiring all 414 clauses at the existing clause gate.
+The first attempted empty override did not hide context:
+Pi's `dist/core/system-prompt.js:111` only applies truthy custom sections:
+
+```javascript
+// Pi 1.1.0 dist/core/system-prompt.js:111 to 114
+for (const [name, content] of Object.entries(customSections)) {
+    if (content)
+        promptSections[name] = content;
+}
+```
+
+The corrected case uses a nonempty rendering placeholder,
+not altered policy text.
+It checks the actual prompt during `originalStream`;
+checking `session.systemPrompt` after settlement instead sees the base prompt,
+as the getter selects `_runSystemPromptOptions ?? _baseSystemPromptOptions`
+at `dist/core/agent-session.js:1058`.
+
+The default-system cases also retain a separate direct Agent string call
+that reaches the original rendered-prompt byte guard without an aggregate array at API entry.
+`proc_b0c7` passed all six legacy/clause/content-use profiles:
+207-clause positives,
+visible aggregate-array rejections,
+414-clause rejections despite replaced rendering,
+and the default rendered-prompt rejection at 66,533 bytes.
+No source,
+question,
+wire,
+or time limit was enlarged.
+This is a diagnosed earlier capture-bound failure,
+not a cause or fix for the separate historical `proc_5939` incident.
+
+### Upstream filing decision
+
+Nothing is proposed upstream:
+native construction is intentional and the mismatch was in the private observer.
+The upstream-fault condition fails;
+upstream fixability,
+supported-use,
+contribution,
+maintainer-intent,
+and upstream-prototype conditions are not claimed.
+
 ## Pi 1.1.0 direct Agent string prompts bypass session text input capture
 
 ### Symptom and native boundary
@@ -54,9 +884,12 @@ not a provider or qualification trial.
 
 ### Remaining scope and upstream filing decision
 
-Integrated controls,
-observation sensitivity,
-and full regressions remain pending.
+Integrated `proc_0117` passed 103 outputs with empty child stderr.
+Predicate omission `proc_b636` poisoned non-string capture;
+observation omission `proc_58f8` lost the required original string source.
+Both were restored before complete native `proc_6645`,
+which passed after the separate build-path correction.
+Complete action-policy `proc_379b` and policy-source `proc_580e` also passed.
 Message/array prompt inputs,
 image governance,
 other state producers,
@@ -2212,6 +3045,78 @@ Counting only reached states repaired that assertion without changing an executi
 A successful inert fixture does not qualify semantic estimates,
 authority interpretation,
 or production permission.
+
+### Constructor-description capture follows native loadout metadata
+
+This is the active private increment;
+the completed manager checkpoint predates this runtime change.
+Native `prepareLoadout` can replace declared descriptions,
+and hidden tools need not appear in a model request.
+The original definition text remains a separate potentially governing input.
+
+Declared-description control `7414bed9` / `proc_2d95` passed.
+Hidden `proc_fc39` and replaced `proc_acbd` completed native request and review,
+then failed the original-description retention assertion.
+The first setup attempt `proc_8d89` instead expected an unaugmented declaration;
+the native Codemode call/output hint is preserved,
+not removed.
+
+Private `67a2a405` observes the actual Session constructor frame after its original manager assignment,
+before reading `customTools` or running loadout callbacks.
+It selects ordinary `name` and `description` data fields under one aggregate copier budget.
+The existing manager source owner retains an input-only publication on that frame,
+not on the borrowed config,
+list,
+or definition objects.
+The distinct `native-tool-description-input` kind and `customTools` location add no message role,
+ordinal,
+authority,
+or payload capability.
+Absent input and an explicit empty list remain different.
+The original occurrence,
+content,
+and serialized-record bounds are unchanged.
+
+Owner controls and declared/hidden/replaced native consumers passed
+`d1e67271` / `proc_1456`.
+They require the constructor-specific view,
+original source/publication references,
+unchanged request bytes,
+and indexed assessment questions.
+Schema,
+executable,
+and other opaque fields are not inspected.
+Native constructor parity passed `93c75a07` / `proc_9cc4`.
+The getter counters matched the baseline,
+including zero construction-time reads of `execute`,
+and separate positive reads verified the counters.
+Lifecycle and declared/hidden/replaced/raw-mutated description consumers passed `proc_a37a`.
+Action/source parents passed `proc_50d1`;
+all 154 integrated input cases passed `proc_a226`;
+original-judgment variants passed `proc_d5fb`;
+the runtime suffix passed 39 complete outputs in `proc_f646`.
+Complete native parent `89a504de` / `proc_7042` passed in 860 seconds:
+82 complete outputs,
+157 integrated input cases,
+and 69 section-source cases.
+This is the restored implementation with the accepted processing-receipt controls.
+Required pre-implementation description-loss reds are retained;
+no duplicate omission campaign is opened.
+The first parity baseline `proc_0081` stopped at an unresolved relative module import before execution;
+its fresh copy now keeps the original staged-module targets.
+
+This covers selected constructor descriptions,
+not earlier SDK option mutations,
+extension registrations,
+schemas and other metadata,
+deep mutation,
+or applicability across manager-root resets.
+The manager-only post-emission growth predicate is unchanged.
+Constructor-source additions after emission cannot silently gain that handoff.
+No installed activation,
+semantic qualification,
+or governing-domain closure follows.
+
 
 ### Native loadout description preservation
 
@@ -4372,6 +5277,7 @@ The deciding published `v2026.9.12` sources were inspected read-only.
 `src/cli/run.rs:1284` obtains the dependency graph's linearity:
 
 ```rust
+//! Source excerpt from Mise v2026.9.12.
 // Mise v2026.9.12, src/cli/run.rs:1284
 self.is_linear = tasks.is_linear();
 ```
@@ -4379,6 +5285,7 @@ self.is_linear = tasks.is_linear();
 `src/task/task_output_handler.rs:554` permits interleaved output for a linear graph without raw mode:
 
 ```rust
+//! Source excerpt from Mise v2026.9.12.
 // Mise v2026.9.12, src/task/task_output_handler.rs:554 to 558
 if self.raw(task) || self.jobs() == 1 || self.is_linear {
     TaskOutput::Interleave
@@ -4390,6 +5297,7 @@ if self.raw(task) || self.jobs() == 1 || self.is_linear {
 `src/task/task_executor.rs:1790` permits inherited descriptors when raw mode is false but redactions are empty:
 
 ```rust
+//! Source excerpt from Mise v2026.9.12.
 // Mise v2026.9.12, src/task/task_executor.rs:1790 to 1797
 } else if raw || redactions.is_empty() {
     if !task.silent.suppresses_stdout() {

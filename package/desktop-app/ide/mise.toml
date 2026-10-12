@@ -568,8 +568,16 @@ description = "Check the native UI declaration"
 # so the first command checks it too.
 run = ["slint-viewer --check ui/app.slint", "slint-viewer --check ui/tree.slint", "slint-viewer --check ui/search.slint", "slint-viewer --check ui/find.slint", "slint-viewer --check ui/query-input.slint", "slint-viewer --check ui/divider.slint", "slint-viewer --check ui/hover.slint", "slint-viewer --check ui/references.slint"]
 
+[tasks."lint:rustfmt"]
+description = "Check that application-owned Rust sources are formatted as cargo fmt writes them"
+shell = "node --input-type=module-typescript -e"
+run = """
+{{vars.cargo}}
+runCargo(['fmt', '--check'])
+"""
+
 [tasks.lint]
-run = ["mise run //package/desktop-app/ide:lint:clippy", "mise run //:lint:monochromatic-lint -- package/desktop-app/ide", "mise run //package/desktop-app/ide:lint:slint"]
+run = ["mise run //package/desktop-app/ide:lint:clippy", "mise run //package/desktop-app/ide:lint:rustfmt", "mise run //:lint:monochromatic-lint -- package/desktop-app/ide", "mise run //package/desktop-app/ide:lint:slint"]
 
 [tasks."format:rust"]
 description = "Format application-owned Rust sources"

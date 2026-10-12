@@ -55,6 +55,8 @@ pub(super) fn apply_syntax(current: &mut State, reply: SyntaxReply) -> bool {
         return false;
     }
     current.syntax_revision = Some(reply.revision);
+    // New styles change the shaped rows of every line, and the row cache key does not include them.
+    current.shaper.forget_rows();
     match reply.result {
         Ok(Some(styles)) => {
             current.styles = styles;
@@ -126,6 +128,8 @@ fn apply(window: &AppWindow, state: &Rc<RefCell<State>>, reply: ReloadReply) {
         let first = current.document.text().char_to_line(position.viewport);
         current.first = first.saturating_sub(1);
         current.document_width = 0.0;
+        // Cleared styles change the shaped rows of every line, and the row cache key does not include them.
+        current.shaper.forget_rows();
         current.styles = SourceStyles::from([]);
         current.syntax_revision = None;
         current.syntax_error = None;

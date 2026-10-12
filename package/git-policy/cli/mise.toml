@@ -22,6 +22,10 @@ run = "cargo mutants --list --no-config"
 description = "Generate the standalone native wrapper Cargo lockfile"
 run = "cargo generate-lockfile --offline"
 
+[tasks."native:lock:members"]
+description = "Record a changed dependency list of the native wrapper in its lockfile without moving any other locked version"
+run = "cargo update --offline --workspace"
+
 [tasks."native:format"]
 description = "Format native wrapper Rust source without changing TypeScript"
 run = "cargo fmt"
@@ -51,6 +55,10 @@ run = "cargo test --locked --offline --lib --"
 [tasks."native:test:binary:host"]
 description = "Run the native binary-level tests matching `-- <filter>...` on the host against the host's Git; the gate's Git 2.56.0 stays the authority"
 run = "cargo test --locked --offline --test native_binary --"
+
+[tasks."native:differential:dependent-version"]
+description = "Compare the incumbent TypeScript dependent-version planner with the native one: `-- record`, `-- check`, or `-- corpus [--seed n] [--count n] [--probes n] [--plant name]`"
+run = "node bin/dependent-version-differential.mjs"
 
 [tasks."test:git-image"]
 description = "Build the audited Git 2.56.0 release in the bounded Rust test image"

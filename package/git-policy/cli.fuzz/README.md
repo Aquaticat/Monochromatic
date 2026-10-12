@@ -178,6 +178,39 @@ and a proper prefix of a landing record must be refused.
 An accepted record restated by the encoder must parse to the same record,
 a landing record is a commit exactly when it names its new commit,
 and the sequence reader accepts exactly a canonical decimal and a newline.
+### `dependent_version`
+
+Runs the dependent-version planner's two text scanners over three views of every input.
+The first builds a manifest from the input bytes:
+members before and after one top-level `version` key,
+chosen from look-alikes
+(a nested `version` key,
+`"version"` as a value,
+escaped quotes,
+slashes and closing brackets inside strings),
+in a byte-chosen layout,
+together with the text the rewrite must produce,
+assembled from the same parts with the new version.
+The rewrite must produce exactly that text.
+The second splits the input at its first two NUL bytes into `from`,
+`to`,
+and raw manifest text.
+A successful rewrite must replace exactly one occurrence of the quoted `from` with the quoted `to`,
+and rewriting back must restore the input;
+a refusal must be a manifest shape problem;
+and when the manifest reader accepts the text and it holds exactly one plainly spelled top-level version equal to `from`,
+the rewrite must succeed and the reader must then see `to` with every other fact unchanged.
+The third splits the input at its first NUL byte into a package name and source text,
+and requires the specifier scan to agree with a restatement of its rule written with index loops,
+including for an empty name.
+The controls rewrite every generated layout of every single-byte fill,
+every sequence of up to four manifest tokens,
+and scan every sequence of up to four specifier tokens for three names.
+The planted controls add three defects:
+a nested `version` key rewritten,
+a subpath import missed,
+and an escaped quote that ends a string literal
+(`bin/planted-dependent-version.mjs`).
 
 ## Controls
 

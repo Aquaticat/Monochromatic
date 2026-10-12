@@ -153,3 +153,70 @@ pub struct Decision {
     /// ```
     pub duration_secs: f64,
 }
+
+/// What:
+///      `#[derive(Clone, Copy, Debug, PartialEq, Eq)] pub enum PeakKind`.
+///  Whether a stored peak is the exact true peak or a sampled estimate.
+/// Why:
+///       A reader of a cached peak must know if the value is a full-scan maximum
+///  or a probe's lower bound before showing it as the track's true peak.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// type PeakKind = "exact" | "sampled";
+/// ```
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum PeakKind {
+    /// What:
+    ///      `Exact`.
+    ///  The peak came from a full scan (short or full).
+    /// Why:
+    ///       The value is the track's true peak.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// "exact"
+    /// ```
+    Exact,
+    /// What:
+    ///      `Sampled`.
+    ///  The peak came from a proportional probe and may sit below the true peak.
+    /// Why:
+    ///       The value is an estimate until a warming scan replaces it.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// "sampled"
+    /// ```
+    Sampled,
+}
+
+impl Decision {
+    /// What:
+    ///      `pub fn peak_kind(&self) -> PeakKind`.
+    ///  Classify the decision's peak as exact or sampled from its kind.
+    /// Why:
+    ///       Callers read the kind without matching the three decision tags themselves.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// peakKind(): PeakKind { return this.kind === "probeEstimate" ? "sampled" : "exact"; }
+    /// ```
+    pub fn peak_kind(&self) -> PeakKind {
+        // What:     `match self.kind { ... }`. The two full scans are exact; the probe is sampled.
+        // Why:      Only the probe carries the margin and the sampled-peak basis.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // switch (this.kind) { case "probeEstimate": return "sampled"; default: return "exact"; }
+        // ```
+        match self.kind {
+            DecisionKind::ShortFullScan | DecisionKind::FullScanExact => return PeakKind::Exact,
+            DecisionKind::ProbeEstimate => return PeakKind::Sampled,
+        }
+    }
+}
+
+#[cfg(test)]
+#[path = "decision_tests.rs"]
+mod tests;

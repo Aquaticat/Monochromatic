@@ -162,6 +162,30 @@ pub mod output;
 pub mod output;
 
 /// What:
+///      `pub mod audio_meter;` the underrun and late-callback counters (`src/audio_meter.rs`)
+///           that the realtime output writes and the engine thread reports once a second.
+/// Why:
+///       Stutter must be measurable; the counters live apart from PipeWire so they compile on every platform.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// export * as audioMeter from "./audioMeter";
+/// ```
+pub mod audio_meter;
+
+/// What:
+///      `pub mod thread_priority;` the decode thread's nice-level request to rtkit (Linux)
+///           (`src/thread_priority.rs`).
+/// Why:
+///       Keeps the scheduling call in one place, with a no-op body on platforms without nice levels.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// export * as threadPriority from "./threadPriority";
+/// ```
+pub mod thread_priority;
+
+/// What:
 ///      `pub mod playback;` the device-free playback helpers (`src/playback.rs`):
 ///           the per-sample gain/clamp stage,
 ///  frame->seconds conversion,
@@ -228,9 +252,8 @@ pub mod measure;
 ///           (`src/peak_swap.rs`).
 /// Why:
 ///       Cache misses now start with a safe temporary gain,
-///  wait briefly at
-///           playback start,
-///  then swap to the measured gain when it lands.
+///  start playback at once,
+///           then swap to the measured gain when it lands.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -342,3 +365,372 @@ pub mod launcher;
 /// export * as logging from "./logging";
 /// ```
 pub mod logging;
+
+/// What:
+///      `pub mod template_model;` the supporting-text template vocabulary (`src/template_model.rs`):
+///  fields,
+///  the two templates and their defaults,
+///  the function table,
+///  track value sources,
+///  and results.
+/// Why:
+///       Every other template module reads these shared definitions,
+///  and `TrackFields` is the one track value type.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// export * as templateModel from "./template_model";
+/// ```
+pub mod template_model;
+
+/// What:
+///      `pub mod template_format;` the JavaScript number text,
+///  `tf` formatting,
+///  and code-point cuts
+///  (`src/template_format.rs`).
+/// Why:
+///       `tf` and `tc` must match the reference's number rules exactly.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// export * as templateFormat from "./template_format";
+/// ```
+pub mod template_format;
+
+/// What:
+///      `pub mod template_tokens;` splits one formula's text into tokens (`src/template_tokens.rs`).
+/// Why:
+///       Token offsets are UTF-16 positions in the whole template,
+///  as the editor needs them.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// export * as templateTokens from "./template_tokens";
+/// ```
+pub mod template_tokens;
+
+/// What:
+///      `pub mod template_parse;` builds formula trees and splits a template into parts
+///  (`src/template_parse.rs`).
+/// Why:
+///       Evaluation and help walk the same trees and parts.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// export * as templateParse from "./template_parse";
+/// ```
+pub mod template_parse;
+
+/// What:
+///      `pub mod template_eval;` shows a template's text for one track,
+///  or the mistakes that refuse it
+///  (`src/template_eval.rs`).
+/// Why:
+///       Evaluation is the only place that reads field values and runs functions.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// export * as templateEval from "./template_eval";
+/// ```
+pub mod template_eval;
+
+/// What:
+///      `pub mod template_help;` finds the call and argument under the caret (`src/template_help.rs`).
+/// Why:
+///       The typing help is a pure function of the text and the caret.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// export * as templateHelp from "./template_help";
+/// ```
+pub mod template_help;
+
+/// What:
+///      `pub mod template_editor;` the editor values,
+///  constants,
+///  and shared helpers (`src/template_editor.rs`).
+/// Why:
+///       The editor state imports them from one module.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// export * as templateEditor from "./template_editor";
+/// ```
+pub mod template_editor;
+
+/// What:
+///      `pub mod template_editor_state;` the editor state and its immutable transitions
+///  (`src/template_editor_state.rs`).
+/// Why:
+///       Its fields stay private so the preview track list is never empty.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// export * as templateEditorState from "./template_editor_state";
+/// ```
+pub mod template_editor_state;
+
+/// What:
+///      `#[cfg(test)] mod template_fixtures;` the shared track and editor fixtures (`src/template_fixtures.rs`).
+/// Why:
+///       The module is compiled only under `cargo test`,
+///  so the fixtures never reach the binary.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// // templateFixtures.ts, imported only by the test runner
+/// ```
+#[cfg(test)]
+mod template_fixtures;
+
+/// What:
+///      `pub mod track_supporting_line;` builds the supporting-line function from a track rows template
+///  (`src/track_supporting_line.rs`).
+/// Why:
+///       `track_list_entries` and `build_player_content` take this function,
+///  so the template engine
+///  is reached through one place.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// export * as trackSupportingLine from "./track_supporting_line";
+/// ```
+pub mod track_supporting_line;
+
+/// What:
+///      `pub mod track;` the one-track value (`src/track.rs`) with its URI and display path.
+/// Why:
+///       Folder and search modules group tracks by display path,
+///  so they share this record.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// export * as track from "./track";
+/// ```
+pub mod track;
+
+/// What:
+///      `pub mod display_path;` joins and sanitizes display paths (`src/display_path.rs`).
+/// Why:
+///       Folder rows and search results both show the same `/`-joined path text.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// export * as displayPath from "./display_path";
+/// ```
+pub mod display_path;
+
+/// What:
+///      `pub mod folder_rail;` the folder rail sections and collation keys (`src/folder_rail.rs`).
+/// Why:
+///       The folder picker and the search page both sort folder names with the same collation rule.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// export * as folderRail from "./folder_rail";
+/// ```
+pub mod folder_rail;
+
+/// What:
+///      `pub mod folder_index;` groups the library into folders and their flat track lists (`src/folder_index.rs`).
+/// Why:
+///       The folder picker,
+///  the search page,
+///  and the player content all read the same folder layout.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// export * as folderIndex from "./folder_index";
+/// ```
+pub mod folder_index;
+
+/// What:
+///      `pub mod track_entries;` the flat track rows for one folder,
+///  with titles and supporting lines
+///  (`src/track_entries.rs`).
+/// Why:
+///       The pane draws rows in folder order,
+///  and the supporting line comes from `track_supporting_line`.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// export * as trackEntries from "./track_entries";
+/// ```
+pub mod track_entries;
+
+/// What:
+///      `pub mod player_content;` the pure builder for the player's rail,
+///  folder rows,
+///  and deck text
+///  (`src/player_content.rs`).
+/// Why:
+///       One builder derives every player surface from the same inputs,
+///  so the screen updates in one step.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// export * as playerContent from "./player_content";
+/// ```
+pub mod player_content;
+
+/// What:
+///      `pub mod non_spacing_mark;` tests for non-spacing marks,
+///  used by the search matcher
+///  (`src/non_spacing_mark.rs`).
+/// Why:
+///       Search ignores combining marks when it compares text,
+///  so the matcher needs this predicate.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// export * as nonSpacingMark from "./non_spacing_mark";
+/// ```
+pub mod non_spacing_mark;
+
+/// What:
+///      `pub mod search_matcher;` the case- and mark-insensitive search matcher (`src/search_matcher.rs`).
+/// Why:
+///       Search results and the search page both need the same match and highlight offsets.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// export * as searchMatcher from "./search_matcher";
+/// ```
+pub mod search_matcher;
+
+/// What:
+///      `pub mod search_results;` the ranked search results and their state (`src/search_results.rs`).
+/// Why:
+///       The search page renders these results,
+///  and their order and limit are fixed here.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// export * as searchResults from "./search_results";
+/// ```
+pub mod search_results;
+
+/// What:
+///      `pub mod search_page_model;` the search page's view model (`src/search_page_model.rs`).
+/// Why:
+///       One pure builder turns the query and results into the rows and states the page draws.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// export * as searchPageModel from "./search_page_model";
+/// ```
+pub mod search_page_model;
+
+/// What:
+///      `pub mod keymap;` the keyboard shortcut map (`src/keymap.rs`).
+/// Why:
+///       Shortcuts are data,
+///  so the platform-specific bindings stay in one tested module.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// export * as keymap from "./keymap";
+/// ```
+pub mod keymap;
+
+/// What:
+///      `pub mod first_run;` the first-run walkthrough state (`src/first_run.rs`).
+/// Why:
+///       The walkthrough's steps and their persistence are pure logic,
+///  so they are unit-tested.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// export * as firstRun from "./first_run";
+/// ```
+pub mod first_run;
+
+/// What:
+///      `pub mod track_menu;` the per-track action menu model (`src/track_menu.rs`).
+/// Why:
+///       The menu's actions and their enabled states are decided here,
+///  not in the UI code.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// export * as trackMenu from "./track_menu";
+/// ```
+pub mod track_menu;
+
+/// What:
+///      `pub mod feedback;` the transient feedback message queue (`src/feedback.rs`).
+/// Why:
+///       Messages expire by time,
+///  and the queue's order and expiry rules are pure logic.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// export * as feedback from "./feedback";
+/// ```
+pub mod feedback;
+
+/// What: `pub mod track_measure;` the per-track length and true peak, and their formatting.
+/// Why: the rows and the deck read these values through the template fields.
+pub mod track_measure;
+
+/// What: `pub mod duration_probe;` reads a file length from its container header.
+/// Why: rows show lengths before the slow true-peak measurement finishes.
+pub mod duration_probe;
+
+/// What: `pub mod measure_peek;` reads each track's cached decision and header length without decoding.
+/// Why: the sweep reports lengths and cached peaks as soon as a queue loads.
+pub mod measure_peek;
+
+/// What: `pub mod sweep_report;` the reports a background sweep sends to the engine.
+/// Why: the controller needs the generation of each report to drop stale ones.
+pub mod sweep_report;
+
+/// What: `pub mod color_scheme;` the environment override of the window color scheme.
+/// Why: verification runs need a fixed light or dark window.
+pub mod color_scheme;
+
+/// What: `pub mod oklch;` OKLCH color math, gamut mapping and WCAG contrast (D108).
+/// Why: every derived theme color is computed there, in one pure place.
+pub mod oklch;
+
+/// What: `pub mod accent_override;` the environment override of the theme root color.
+/// Why: renders and verification runs need a deterministic accent.
+pub mod accent_override;
+
+/// What: `pub mod theme_roles;` the theme roles derived from one root color (A3, D108).
+/// Why: the accent-following palette and its contrast guarantee are pure logic that is unit-tested.
+pub mod theme_roles;
+
+/// What: `pub mod controller_measures;` the controller side of the per-track measures.
+/// Why: sweep reports are filtered by queue generation there, before they reach the window.
+pub mod controller_measures;
+
+/// What:
+///      `pub mod scan_indicator;` the library scan progress indicator model (`src/scan_indicator.rs`).
+/// Why:
+///       The indicator's text and visibility follow the scan state,
+///  which is pure logic.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// export * as scanIndicator from "./scan_indicator";
+/// ```
+pub mod scan_indicator;
+
+/// What: `pub mod sweep_gate;` the pause gate of the background true-peak sweep (`src/sweep_gate.rs`).
+/// Why: the analysis indicator's Pause and Resume stop and restart the sweep workers through it (D107).
+pub mod sweep_gate;
+
+/// What: `pub mod analysis_notification_logic;` the pure rules of the analysis indicator.
+/// Why: what to show, when to send it and when to open, pause or close it need no bus, so they are tested without one.
+pub mod analysis_notification_logic;
+
+/// What: `pub mod analysis_notification_wire;` the D-Bus messages of the analysis indicator, Linux only.
+/// Why: the Plasma job view and the freedesktop notification exist only on Linux desktops; `zbus` is a Linux-only
+/// dependency.
+#[cfg(target_os = "linux")]
+pub mod analysis_notification_wire;
+
+/// What: `pub mod analysis_notification;` the analysis indicator's handle and its D-Bus thread (D107).
+/// Why: the system notification replaces the in-app banner; off Linux the handle does nothing.
+pub mod analysis_notification;

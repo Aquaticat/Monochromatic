@@ -1,6 +1,6 @@
 [package]
 name = "monochromatic-nested-wayland-session"
-version = "0.1.1"
+version = "0.3.0"
 categories = ["command-line-utilities", "development-tools::testing"]
 edition = "2024"
 homepage = "https://github.com/Aquaticat/Monochromatic/tree/main/package/cli/nested-wayland-session"
@@ -16,6 +16,16 @@ license = "LGPL-3.0-or-later"
 readme = "README.md"
 repository = "https://github.com/Aquaticat/Monochromatic.git"
 description = "Minimal single-app nested Wayland compositor for GUI testing: hosts one Wayland client fullscreen on the GPU (dmabuf) path, screenshots the framebuffer, and injects synthetic input over a Unix-socket control API."
+
+# cargo-binstall's default URL is {repo}/releases/download/v{version}/{name}-{target}-v{version},
+# but this repository tags each crate's release monochromatic-nested-wayland-session-v<version> and names the
+# archive monochromatic-nested-wayland-session-<version>-<target>, so without this table mise falls back to
+# compiling from source. Releases carry Linux archives only (x86_64 and aarch64, tar.gz).
+# doc/troubleshooting/mise-cargo-binstall-falls-back-to-compiling.md has the evidence.
+[package.metadata.binstall]
+pkg-url = "{ repo }/releases/download/{ name }-v{ version }/{ name }-{ version }-{ target }{ archive-suffix }"
+bin-dir = "{ name }-{ version }-{ target }/{ bin }{ binary-ext }"
+pkg-fmt = "tgz"
 
 [lints.clippy]
 complexity = { level = "allow", priority = -1 }
@@ -106,6 +116,12 @@ features = [
   "desktop",
   "use_system_lib",
 ]
+
+# Test-only: parses Plasma's interface XML for tests/fake_services/contract.rs, so the fake's
+# introspected names and signatures are compared with the real files instead of a hand-written copy.
+# It is maintained by the zbus project and already shares winnow, zvariant, and zbus_names with zbus.
+[dev-dependencies]
+zbus_xml = "5"
 
 # Release profile mirrors the sibling desktop apps: a small, fast, stripped
 # fixture binary. overflow-checks stays on so an arithmetic wrap in the layout or

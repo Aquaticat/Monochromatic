@@ -49,6 +49,12 @@ getrandom = "0.4"
 # Already in the lockfile through the scanner's dependencies.
 [target.'cfg(unix)'.dependencies]
 libc = "0.2"
+# The `markdown/autofix` policy's `exclude` patterns are gitignore syntax; the linter it runs and the
+# scanner above match them with this crate's gitignore matcher, already locked through the scanner.
+ignore = "0.4"
+# The policy's one-rule linter configuration, and the linter child's input and output, are files created
+# by this crate's exclusive, private temporary-file calls; it is already locked through the scanner's `gix-tempfile`.
+tempfile = "3"
 
 [lints.clippy]
 complexity = { level = "allow", priority = -1 }

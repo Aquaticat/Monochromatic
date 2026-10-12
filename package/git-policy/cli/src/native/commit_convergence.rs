@@ -200,7 +200,7 @@ fn patch_conflict_pass(arguments: &[OsString], path: &str, message: String) -> P
             message: format!("Policy patch for {path} does not apply to the private index: {message}"),
             trigger: Some(Trigger::PreForward),
             policy: None,
-            path: Some(path.to_string()),
+            path: Some(super::event_path::EventPath::from_git_bytes(path.as_bytes())),
         }],
         end: StageEnd::Failed,
     };

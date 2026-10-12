@@ -25,6 +25,10 @@ const targets = [
   { name: 'owner_records', dictionary: 'owner_records.dict' },
   { name: 'transaction_records', dictionary: 'transaction_records.dict' },
   { name: 'index_lock_records', dictionary: 'index_lock_records.dict' },
+  { name: 'dependent_version', dictionary: 'dependent_version.dict' },
+  { name: 'linter_output', dictionary: 'linter_output.dict' },
+  { name: 'event_path', dictionary: 'event_path.dict' },
+  { name: 'linter_config', dictionary: 'linter_config.dict' },
 ];
 const secondsPerTarget = 30;
 const maxInputBytes = 4096;

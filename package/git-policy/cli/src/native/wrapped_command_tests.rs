@@ -23,7 +23,9 @@ use super::{WrappedOutcome, run_wrapped_command};
 use crate::command_test_support::os_arguments;
 use crate::config_file::CONFIG_FILE_NAME;
 use crate::diagnostics::EngineFailureCode;
-use crate::policy_checks::{MARKDOWN_AUTOFIX_NEEDS, ShippedChecks, shipped_checks};
+/// The event form of a pathname.
+use crate::event_path::EventPath;
+use crate::policy_checks::{ShippedChecks, shipped_checks};
 use crate::policy_content::LifecycleContent;
 use crate::policy_events::{FindingEvent, PolicyEvent, render_policy_events};
 use crate::policy_registry::{PolicyId, Severity};
@@ -140,11 +142,6 @@ fn not_at_root(root: &str, severity: Severity) -> PolicyEvent {
         location: None,
         fix_available: false,
     });
-}
-
-/// The refusal of an unported content policy asked about what `git add` would stage.
-fn content_refused(policy: PolicyId, needs: &'static str) -> WrappedOutcome {
-    return refuses(&Unported::PolicyNeeds { policy, needs }, "add");
 }
 
 /// The failure of `final-newline` reading candidates the scripted facts cannot prepare.
@@ -511,14 +508,41 @@ fn configuration_selects_the_policies_of_a_guarded_command() {
     );
     std::fs::write(
         root.join(CONFIG_FILE_NAME),
+        r#"{ "policies": { "final-newline": "off", "mono/dependent-version-bump": "error" } }"#,
+    )
+    .expect("configuration");
+    assert_eq!(
+        run(&["add", "file"], at_root(root.as_path()), &[]),
+        (forwards(&["add", "file"]), location_only())
+    );
+    // That policy has no manual-push trigger, so a push is not gated by it.
+    assert_eq!(
+        run(&["push", "origin"], at_root(root.as_path()), &[]),
+        (forwards(&["push", "--atomic", "origin"]), location_only())
+    );
+    // A listed Markdown policy reads what the add stages, and gates a push.
+    std::fs::write(
+        root.join(CONFIG_FILE_NAME),
         r#"{ "policies": { "final-newline": "off", "markdown/autofix": "error" } }"#,
     )
     .expect("configuration");
     assert_eq!(
         run(&["add", "file"], at_root(root.as_path()), &[]),
         (
-            content_refused(PolicyId::MarkdownAutofix, MARKDOWN_AUTOFIX_NEEDS),
-            location_only()
+            WrappedOutcome::Exit {
+                code: 2,
+                stderr: render_policy_events(
+                    0,
+                    &[PolicyEvent::EngineFailure {
+                        code: EngineFailureCode::ContentUnavailable,
+                        message: String::from("the scripted facts prepare no candidates"),
+                        trigger: Some(Trigger::PreForward),
+                        policy: Some(PolicyId::MarkdownAutofix),
+                        path: None,
+                    }]
+                ),
+            },
+            location_and_candidates()
         )
     );
     // The probe finds no updates in a fixture without a repository, so the push fails closed with exit 2.
@@ -742,7 +766,7 @@ fn add_findings_come_from_what_the_add_would_stage() {
         severity: Severity::Warn,
         code: "noncanonical-final-newline",
         message: String::from("Non-empty text file must end with exactly one LF byte."),
-        path: Some(String::from("a.txt")),
+        path: Some(EventPath::from_git_bytes("a.txt".as_bytes())),
         location: None,
         fix_available: false,
     });
@@ -762,7 +786,7 @@ fn add_findings_come_from_what_the_add_would_stage() {
         severity: Severity::Error,
         code: "root-context-forbidden",
         message: String::from("Root CONTEXT.md is forbidden; read source code directly."),
-        path: Some(String::from("CONTEXT.md")),
+        path: Some(EventPath::from_git_bytes("CONTEXT.md".as_bytes())),
         location: None,
         fix_available: false,
     });

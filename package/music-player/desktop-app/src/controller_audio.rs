@@ -93,6 +93,18 @@ use crate::decode::Source;
 use crate::playback::{expand_paths, file_name_of, frames_to_secs, process_sample};
 
 /// What:
+///      `use crate::audio_meter::MeterReporter;`.
+///  The once-a-second reporter for the output's underrun counters.
+/// Why:
+///       The engine loop owns one and passes it to `report_audio_meters`.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import { MeterReporter } from "./audioMeter";
+/// ```
+use crate::audio_meter::MeterReporter;
+
+/// What:
 ///      `use crate::session::Session;`.
 ///  The serializable saved-state record.
 /// Why:
@@ -164,7 +176,7 @@ impl Controller {
         // ```ts
         // const pageControlStyle = Session.load().pageControlStyle;
         // ```
-        let page_control_style = Session::load().page_control_style;
+        let stored = Session::load();
         // What:     `Session { ... }`. Build the record from the Source Root + state.
         //           `self.source_root.clone()` copies the owned root option;
         //           `self.queue.current_path().cloned()` is the Selected Track's path (or
@@ -184,7 +196,9 @@ impl Controller {
             position_secs,
             volume: self.volume,
             playback_mode: self.queue.playback_mode(),
-            page_control_style,
+            page_control_style: stored.page_control_style,
+            track_rows_template: stored.track_rows_template,
+            playing_template: stored.playing_template,
         }
     }
 
@@ -292,6 +306,7 @@ impl Controller {
         // ```ts
         // this.emit({ kind: "reconciled", names, index, name, duration });
         // ```
+        self.emit(Update::Library(self.queue.tracks().to_vec()));
         self.emit(Update::Reconciled {
             names,
             index,
@@ -727,19 +742,16 @@ impl Controller {
         // this.emit({ kind: "position", secs: 0 });
         // ```
         self.emit(Update::Position(0.0));
-        // What:     `if self.playing { self.wait_for_pending_peak_before_start(); }`.
-        //           When a track change happens during active playback, wait up to the
-        //           one-second swap window before decoding new-track samples.
-        // Why:      Next/prev while playing and natural auto-advance get the same
-        //           wait-then-fallback behavior as an explicit Play command.
+        // What:     No wait here. Decoding starts at once with the fallback gain that
+        //           `prepare_peak_for_path` set; the engine loop swaps in the exact gain
+        //           when the measurement lands.
+        // Why:      On a cache miss the new stream's ring buffer is empty, so waiting here
+        //           for the measurement was an audible gap at every track change.
         //
         // In TS you'd write (pseudocode):
         // ```ts
-        // if (this.playing) this.waitForPendingPeakBeforeStart();
+        // // nothing to wait for: the fallback gain is already in place
         // ```
-        if self.playing {
-            self.wait_for_pending_peak_before_start();
-        }
     }
 
     /// What:
@@ -1112,6 +1124,40 @@ impl Controller {
         // return true;
         // ```
         return true
+    }
+
+    /// What:
+    ///      `pub(crate) fn report_audio_meters(&self, reporter: &mut MeterReporter)`.
+    ///  Logs the output's underrun counters once a second, and only when they moved.
+    /// Why:
+    ///       The realtime callback only counts; this runs on the engine thread, where logging is allowed.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// reportAudioMeters(reporter: MeterReporter): void { ... }
+    /// ```
+    pub(crate) fn report_audio_meters(&self, reporter: &mut MeterReporter) {
+        let Some(output) = self.output.as_ref() else {
+            return;
+        };
+        let Some(change) = reporter.take_change(std::time::Instant::now(), || return output.meter_snapshot()) else {
+            return;
+        };
+        if change.short_callbacks > 0 {
+            tracing::warn!(
+                short_callbacks = change.short_callbacks,
+                silent_frames = change.silent_frames,
+                requested_frames = change.last_requested_frames,
+                buffer_frames = change.last_buffer_frames,
+                "audio output underran in the last second"
+            );
+            return;
+        }
+        tracing::info!(
+            requested_frames = change.last_requested_frames,
+            buffer_frames = change.last_buffer_frames,
+            "audio output buffer sizes"
+        );
     }
 
     /// What:

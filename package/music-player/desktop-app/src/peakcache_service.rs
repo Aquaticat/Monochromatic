@@ -239,7 +239,25 @@ pub(super) struct Upsert {
 }
 
 /// What:
-///      `pub(super) fn spawn(path: Option<PathBuf>) -> (UnboundedSender<Read>, UnboundedSender<Upsert>)`.
+///      `/// What:
+///      `pub(super) enum Write { Put(Upsert), Remove(u64) }`.
+///  One request on the write channel: store a decision, or delete one track's decision.
+/// Why:
+///       Both writes share one ordered channel, so a removal lands before the upsert that follows it.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// type Write = { kind: "put"; upsert: Upsert } | { kind: "remove"; fingerprint: bigint };
+/// ```
+pub(super) enum Write {
+    /// Store or replace one track's decision.
+    Put(Upsert),
+    /// Delete the decision of one track by its fingerprint.
+    Remove(u64),
+}
+
+/// What:
+///      `pub(super) fn spawn(path: Option<PathBuf>) -> (UnboundedSender<Read>, UnboundedSender<Write>)`.
 ///           Start the actor thread for the database at `path` (`None` => degraded,
 ///  no
 ///           persistence) and hand back the read and write senders.
@@ -248,9 +266,9 @@ pub(super) struct Upsert {
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function spawn(path: string | null): [Sender<Read>, Sender<Upsert>] { ... }
+/// function spawn(path: string | null): [Sender<Read>, Sender<Write>] { ... }
 /// ```
-pub(super) fn spawn(path: Option<PathBuf>) -> (UnboundedSender<Read>, UnboundedSender<Upsert>) {
+pub(super) fn spawn(path: Option<PathBuf>) -> (UnboundedSender<Read>, UnboundedSender<Write>) {
     // What:     Create the two unbounded channels (reads, writes).
     // Why:      Separate queues let the actor bias reads ahead of writes.
     //
@@ -259,7 +277,7 @@ pub(super) fn spawn(path: Option<PathBuf>) -> (UnboundedSender<Read>, UnboundedS
     // const [readTx, readRx] = channel(); const [writeTx, writeRx] = channel();
     // ```
     let (read_tx, read_rx) = mpsc::unbounded_channel::<Read>();
-    let (write_tx, write_rx) = mpsc::unbounded_channel::<Upsert>();
+    let (write_tx, write_rx) = mpsc::unbounded_channel::<Write>();
     // What:     Spawn the detached actor thread: build a current-thread runtime (the Step-0
     //           spike confirmed it drives Turso's local futures) and block on `run`.
     // Why:      Keep all async off every other thread; the engine stays synchronous.
@@ -307,7 +325,7 @@ pub(super) fn spawn(path: Option<PathBuf>) -> (UnboundedSender<Read>, UnboundedS
 async fn run(
     path: Option<PathBuf>,
     mut read_rx: UnboundedReceiver<Read>,
-    mut write_rx: UnboundedReceiver<Upsert>,
+    mut write_rx: UnboundedReceiver<Write>,
 ) {
     // What:     `let cache = open_cache(path).await;`. The open cache, or `None` when
     //           degraded (no path or open failure).
@@ -343,7 +361,7 @@ async fn run(
         tokio::select! {
             biased;
             Some(request) = read_rx.recv() => serve_read(cache.as_ref(), identity, request).await,
-            Some(request) = write_rx.recv() => put(cache.as_ref(), identity, request).await,
+            Some(request) = write_rx.recv() => write(cache.as_ref(), identity, request).await,
             else => break,
         }
     }
@@ -553,6 +571,34 @@ async fn known(cache: Option<&DecisionCache>, identity: CacheIdentity) -> HashSe
 /// ```ts
 /// async function put(cache, identity, request) { ... }
 /// ```
+async fn write(cache: Option<&DecisionCache>, identity: CacheIdentity, request: Write) {
+    match request {
+        Write::Put(upsert) => return put(cache, identity, upsert).await,
+        Write::Remove(fingerprint) => return remove(cache, identity, fingerprint).await,
+    }
+}
+
+/// What:
+///      `async fn remove(cache, identity, fingerprint)`.
+///  Deletes the one decision stored under `fingerprint` for this identity, if any.
+/// Why:
+///       Re-analysis clears a track's decision before measuring it again; a missing row is normal.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// async function remove(cache: DecisionCache | null, identity: CacheIdentity, fingerprint: bigint): Promise<void> { ... }
+/// ```
+async fn remove(cache: Option<&DecisionCache>, identity: CacheIdentity, fingerprint: u64) {
+    let Some(decision_cache) = cache else {
+        return;
+    };
+    match decision_cache.remove(fingerprint, identity).await {
+        Ok(true) => tracing::info!(fingerprint, "cache decision removed"),
+        Ok(false) => tracing::debug!(fingerprint, "cache remove found no decision"),
+        Err(error) => tracing::warn!(error = %error, "cache remove failed; decision kept"),
+    }
+}
+
 async fn put(cache: Option<&DecisionCache>, identity: CacheIdentity, request: Upsert) {
     // What:     `let Some(decision_cache) = cache else { return; };`. Degraded run drops the
     //           write. The present reference gets its own name so it never shadows the

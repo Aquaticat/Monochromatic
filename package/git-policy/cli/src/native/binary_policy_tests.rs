@@ -472,7 +472,7 @@ fn forbidden_strings_scan_candidates_from_each_rules_source() {
 ///  reports only its summary,
 ///  and never changes the
 /// index;
-///  an unported policy listed for the fix refuses it before any file changes.
+///  a listed dependent-version policy plans nothing for this worktree, so the fix proceeds.
 #[test]
 fn direct_fix_corrects_only_worktree_files() {
     let fixture: Fixture = fixture("direct-fix");
@@ -492,17 +492,6 @@ fn direct_fix_corrects_only_worktree_files() {
     git(&fixture, repo.as_path(), &["add", "s.txt"]);
     std::fs::write(repo.join("s.txt"), b"s\n").expect("worktree");
     let index_before: Vec<u8> = std::fs::read(repo.join(".git/index")).expect("index");
-    // An unported policy listed for the fix refuses it, and nothing changes.
-    std::fs::write(
-        repo.join(CONFIG_FILE_NAME),
-        "{ \"policies\": { \"markdown/autofix\": \"warn\" } }\n",
-    )
-    .expect("configuration");
-    let refused: Observed = run_wrapped(&fixture, repo.as_path(), &["cli-git", "fix", "--all"]);
-    assert_eq!(refused.code, Some(2));
-    assert_eq!(refused.stdout, Vec::<u8>::new());
-    assert_eq!(std::fs::read(repo.join("u.txt")).expect("u"), b"u");
-    std::fs::remove_file(repo.join(CONFIG_FILE_NAME)).expect("no configuration");
     // The fix itself.
     assert_eq!(
         run_wrapped(&fixture, repo.as_path(), &["cli-git", "fix", "--all"]),

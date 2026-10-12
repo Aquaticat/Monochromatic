@@ -20,6 +20,8 @@ use crate::row_map::{CODE_ROW, RowMap};
 /// export { ReadingRect, ShapedRow } from './shaped-row';
 /// ```
 pub use crate::shaped_row::{ReadingRect, ShapedRow};
+/// Shaped rows kept by line for one text revision and scale.
+use crate::shaped_row_cache::RowCache;
 /// Syntax classifications stay independent of pixels.
 use crate::source_style::StyleSpan;
 /// Immutable font requests validate continuous weights before shaping.
@@ -146,6 +148,11 @@ pub struct TextShaper {
     ///  typography is immutable,
     ///  so only the scale can change it.
     space: Option<(f32, f32)>,
+    /// Shaped rows by line for the last synced text revision and scale;
+    ///  `prepare_rows` reads and fills it.
+    rows: RowCache,
+    /// Source rows shaped by this shaper, never reset.
+    shaped_rows: u64,
 }
 
 /// Constructing a default shaper registers the bundled source font.
@@ -192,6 +199,8 @@ impl TextShaper {
             layouts: LayoutContext::new(),
             typography,
             space: None,
+            rows: RowCache::default(),
+            shaped_rows: 0,
         });
     }
 
@@ -383,7 +392,7 @@ impl TextShaper {
         styles: &[StyleSpan],
     ) -> ShapedView {
         let map = RowMap::plain(document.text().len_lines());
-        return self.prepare_rows(document, viewport, styles, &map);
+        return self.prepare_view(document, viewport, styles, &map, false);
     }
 
     /// What:
@@ -409,16 +418,99 @@ impl TextShaper {
         styles: &[StyleSpan],
         map: &RowMap,
     ) -> ShapedView {
+        return self.prepare_view(document, viewport, styles, map, true);
+    }
+
+    /// Source rows shaped since this shaper was made:
+    ///  a row taken from the cache is not counted.
+    /// The structural tests compare it before and after a scroll to prove that no row was shaped.
+    pub fn shaped_rows(&self) -> u64 {
+        return self.shaped_rows;
+    }
+
+    /// Typography this shaper was built with, so a second shaper can produce the same glyphs.
+    pub fn typography(&self) -> &SourceTypography {
+        return &self.typography;
+    }
+
+    /// A shaper with this one's fonts and typography and its own layout context and empty caches.
+    /// What: `FontContext::clone` copies the scanned font registry instead of discovering system fonts again.
+    /// Why: A second font discovery takes as long as the first, and a worker would otherwise pay it on its first tile.
+    pub fn fork(&self) -> Self {
+        return Self {
+            fonts: self.fonts.clone(),
+            layouts: LayoutContext::new(),
+            typography: self.typography.clone(),
+            space: None,
+            rows: RowCache::default(),
+            shaped_rows: 0,
+        };
+    }
+
+    /// Forget the cached rows, after a change the cache key does not describe, such as new syntax styles.
+    pub fn forget_rows(&mut self) {
+        self.rows.clear();
+    }
+
+    /// What:
+    ///  Prepare the viewport rows,
+    ///  taking a row from the cache when `cached` allows it and the row was shaped for this text revision and scale.
+    /// Why:
+    ///  A re-centered tile shares most of its lines with the previous one,
+    ///  and shaping is the expensive part of preparing a tile.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// function prepareView(document: Document, viewport: Viewport, styles: StyleSpan[], map: RowMap, cached: boolean): ShapedView;
+    /// ```
+    fn prepare_view(
+        &mut self,
+        document: &Document,
+        viewport: Viewport,
+        styles: &[StyleSpan],
+        map: &RowMap,
+        cached: bool,
+    ) -> ShapedView {
         let text = document.text();
         let last = viewport
             .first
             .saturating_add(viewport.count)
             .min(text.len_lines());
         let baseline = self.baseline(viewport.scale);
+        if cached {
+            self.rows.sync(document.revision(), viewport.scale);
+        }
         let mut rows = Vec::new();
         for row in viewport.first..last {
-            let place = (row, map.code_top(row));
-            rows.push(self.shape_row(document, place, viewport.scale, styles, baseline));
+            let top = map.code_top(row);
+            // What: A cached row is copied and placed at this map's top; a miss is shaped once and kept.
+            // Why: Shaping ignores the vertical position, so the same row serves every map.
+            //
+            // In TS you'd write (pseudocode):
+            // ```ts
+            // const shaped = cache.get(row) ?? shapeAndKeep(row);
+            // ```
+            let hit = if cached {
+                self.rows.get(row).cloned()
+            } else {
+                None
+            };
+            let shaped = match hit {
+                Some(shaped) => shaped,
+                None => {
+                    let fresh =
+                        self.shape_row(document, (row, 0.0), viewport.scale, styles, baseline);
+                    self.shaped_rows += 1;
+                    if cached {
+                        self.rows.insert(fresh.clone());
+                    }
+                    fresh
+                }
+            };
+            rows.push(ShapedRow { top, ..shaped });
+        }
+        if cached {
+            self.rows.trim(viewport.first + viewport.count / 2);
         }
         let width = (viewport.width.max(1.0) * viewport.scale).ceil() as u32;
         // The raster spans every materialized line with its block; an empty frame is still one row tall.

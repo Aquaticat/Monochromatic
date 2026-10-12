@@ -180,6 +180,16 @@ mod truepeak;
 /// ```
 mod service;
 /// What:
+///      `mod peak_cache;` declares the peek and invalidate JNI entries (`peak_cache.rs`).
+/// Why:
+///       Keeps the per-track peak reads out of the service module, which is near its line budget.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import * as peakCache from "./peak_cache";
+/// ```
+mod peak_cache;
+/// What:
 ///      `mod bench;` declares the decode-benchmark submodule (the sibling file
 ///           `bench.rs`).
 ///  `mod NAME;` pulls that file in as a private child module.
@@ -211,6 +221,18 @@ mod bench;
 /// import * as logging from "./logging";
 /// ```
 mod logging;
+/// What:
+///      `mod jni_call;` declares the JNI environment helper submodule (the sibling file
+///           `jni_call.rs`).
+/// Why:
+///       jni 0.22 only lends an `Env` inside a closure;
+///  the helper keeps that closure plumbing and the failure logging in one place.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import * as jniCall from "./jni_call";
+/// ```
+mod jni_call;
 
 /// What:
 ///      `use std::os::fd::RawFd;` imports the Unix raw-file-descriptor type.
@@ -283,8 +305,8 @@ use jni::objects::{JClass, JFloatArray, JString};
 ///  `jdouble` a 64-bit float (Java `double`),
 ///  `jfloat` a 32-bit
 ///           float (Java `float`),
-///  `jboolean` an 8-bit unsigned byte where 0 is false
-///           and non-zero is true (Java `boolean`).
+///  `jboolean` an alias of Rust `bool` since jni 0.22 (Java `boolean`,
+///           one byte on the wire that the JVM always sets to 0 or 1).
 ///  Siblings a reader might expect on
 ///           the Rust side are `u32`/`i64`/`f64`/`f32`/`bool`;
 ///  we use the `j*` aliases
@@ -301,27 +323,28 @@ use jni::objects::{JClass, JFloatArray, JString};
 /// type jlong = number;    // 64-bit signed
 /// type jdouble = number;  // 64-bit float
 /// type jfloat = number;   // 32-bit float
-/// type jboolean = number; // 0 = false, non-zero = true
+/// type jboolean = boolean; // a Rust bool since jni 0.22 (one byte on the wire, 0 or 1)
 /// ```
 use jni::sys::{jboolean, jdouble, jfloat, jint, jlong};
 /// What:
-///      `use jni::JNIEnv;` imports the per-call interface pointer the JVM hands
-///           every native method.
-///  `JNIEnv<'local>` is the gateway object you call to
-///           touch JVM state (read a string,
-///  throw,
-///  etc.);
-///  it is valid only for the
+///      `use jni::EnvUnowned;` imports the per-call interface pointer the JVM hands
+///           every native method (jni 0.22 renamed the former `EnvUnowned` argument type).
+///  `EnvUnowned<'local>` is the raw argument;
+///  the JNI calls (read a string,
+///  copy an array,
+///  throw) live on the `Env` that `jni_call::run_with_env` lends inside a closure.
+///  It is valid only for the
 ///           duration of one native call and only on the calling thread.
 /// Why:
-///       The string-taking entry point uses it (`env.get_string(...)`) to pull a
-///           Rust string out of the `JString`.
+///       The string and array entry points pass it to `run_with_env` to pull a
+///           Rust string or float slice out of the JVM handles.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// type JNIEnv = RuntimeContext; // per-call handle to talk to the host runtime
+/// type EnvUnowned = RuntimeContext; // per-call handle to talk to the host runtime
 /// ```
-use jni::JNIEnv;
+use jni::EnvUnowned;
+use crate::jni_call::run_with_env;
 
 // What:     `#[unsafe(no_mangle)]` is an ATTRIBUTE (a compiler annotation, written
 //           `#[...]`) telling the compiler "do NOT rename this function's symbol".
@@ -367,12 +390,12 @@ use jni::JNIEnv;
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// export function nativePing(_env: JNIEnv, _class: JClass): number {
+/// export function nativePing(_env: EnvUnowned, _class: JClass): number {
 ///   return 42;
 /// }
 /// ```
 pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativePing<'local>(
-    _env: JNIEnv<'local>,
+    _env: EnvUnowned<'local>,
     _class: JClass<'local>,
 ) -> jint {
     // What:     `42` is a bare literal at the end of the function body with no `;`.
@@ -410,10 +433,10 @@ pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativePin
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// export function nativeOpusSelfTest(_env: JNIEnv, _class: JClass): number { ... }
+/// export function nativeOpusSelfTest(_env: EnvUnowned, _class: JClass): number { ... }
 /// ```
 pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeOpusSelfTest<'local>(
-    _env: JNIEnv<'local>,
+    _env: EnvUnowned<'local>,
     _class: JClass<'local>,
 ) -> jint {
     // What:     `match ::opus::Decoder::new(48_000, ::opus::Channels::Stereo) { ... }`
@@ -484,10 +507,10 @@ pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeOpu
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// export function nativeSymphoniaSelfTest(_env: JNIEnv, _class: JClass): number { ... }
+/// export function nativeSymphoniaSelfTest(_env: EnvUnowned, _class: JClass): number { ... }
 /// ```
 pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeSymphoniaSelfTest<'local>(
-    _env: JNIEnv<'local>,
+    _env: EnvUnowned<'local>,
     _class: JClass<'local>,
 ) -> jint {
     // What:     `std::hint::black_box(symphonia::default::get_probe());`. The inner
@@ -556,16 +579,16 @@ pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeSym
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// export function nativeDecodeBenchmark(env: JNIEnv, _class: JClass, path: JString): number { ... }
+/// export function nativeDecodeBenchmark(env: EnvUnowned, _class: JClass, path: JString): number { ... }
 /// ```
 pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeDecodeBenchmark<'local>(
-    mut env: JNIEnv<'local>,
+    mut env: EnvUnowned<'local>,
     _class: JClass<'local>,
     path: JString<'local>,
 ) -> jdouble {
     // What:     The `env` parameter is declared `mut` right in the signature, so the
-    //           `get_string` call below (which takes `&mut self`) can borrow it mutably.
-    // Why:      The `jni` API mutates the env to read a string. Declaring the parameter
+    //           `run_with_env` call below (which takes `&mut EnvUnowned`) can borrow it mutably.
+    // Why:      The `jni` API needs a mutable borrow to lend the `Env`. Declaring the parameter
     //           mutable carries that need directly instead of rebinding `env` to a new
     //           mutable local of the same name.
     // Gotcha:   `mut` here is NOT a copy of the JVM env; the function still holds the same
@@ -575,12 +598,13 @@ pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeDec
     // ```ts
     // // (no-op in TS; env is already reassignable)
     // ```
-    // What:     `let path_str: String = match env.get_string(&path) { ... };`. We call
-    //           `env.get_string(&path)` to pull the Java string into Rust; `&path`
-    //           BORROWS the `JString` handle (read-only loan, no ownership transfer).
-    //           The call returns a `Result`, so we `match` on it and assign the chosen
-    //           arm's value into the explicitly-typed local `path_str: String` (an
-    //           OWNED, heap, growable UTF-8 string; sibling `&str` is a borrowed view
+    // What:     `let Some(path_str) = run_with_env(&mut env, ..., |jni_env| ...) else { ... };` with the
+    //           closure body `return path.try_to_string(jni_env)`.
+    //           `run_with_env` lends the `Env` to the closure, where `path.try_to_string(env)`
+    //           pulls the Java string into Rust; `path` is BORROWED (read-only loan, no
+    //           ownership transfer). The helper returns `None` after logging when the
+    //           read fails, so the `else` arm returns the sentinel. `path_str` is an
+    //           OWNED, heap, growable UTF-8 string (sibling `&str` is a borrowed view
     //           we cannot use here because the string must outlive the JVM handle).
     // Why:      Convert the opaque JVM string into a real owned Rust `String` we can
     //           build a `Path` from.
@@ -590,33 +614,18 @@ pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeDec
     // let pathStr: string;
     // try { pathStr = env.getString(path); } catch { return -1.0; }
     // ```
-    let path_str: String = match env.get_string(&path) {
-        // What:     `Ok(value) => value.into()`. `Ok(value)` destructures the success
-        //           variant, binding the JVM-string wrapper to `value`. `value.into()`
-        //           is a conversion call: `.into()` asks Rust to turn `value` into
-        //           whatever the target type is (here `String`, inferred from the
-        //           `path_str: String` annotation). The arm yields that `String`.
-        // Why:      Take the successfully-read string and convert it to an owned
-        //           `String`.
-        // Gotcha:   `.into()` picks its target type from context (the declared
-        //           `String`); it is a type-directed conversion, not a method on a
-        //           fixed type.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // pathStr = String(value);
-        // ```
-        Ok(value) => value.into(),
-        // What:     `Err(_) => return -1.0`. Failure variant, error discarded with `_`;
-        //           `return -1.0` exits the whole function with the "-1 bad path string"
-        //           sentinel.
+    let Some(path_str) = run_with_env(&mut env, "nativeDecodeBenchmark path", |jni_env| {
+        return path.try_to_string(jni_env);
+    }) else {
+        // What:     The `else` arm `return -1.0` exits the whole function with the
+        //           "-1 bad path string" sentinel; `run_with_env` already logged the cause.
         // Why:      If the JVM string could not be read, report the bad-path code.
         //
         // In TS you'd write (pseudocode):
         // ```ts
         // catch { return -1.0; }
         // ```
-        Err(_) => return -1.0,
+        return -1.0;
     };
     // What:     `let source = match decode::open(Path::new(&path_str)) { ... };`.
     //           `Path::new(&path_str)` wraps a read-only BORROW of `path_str` (`&`) in
@@ -696,10 +705,10 @@ pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeDec
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// export function nativeDecodeFdBenchmark(_env: JNIEnv, _class: JClass, fd: number): number { ... }
+/// export function nativeDecodeFdBenchmark(_env: EnvUnowned, _class: JClass, fd: number): number { ... }
 /// ```
 pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeDecodeFdBenchmark<'local>(
-    _env: JNIEnv<'local>,
+    _env: EnvUnowned<'local>,
     _class: JClass<'local>,
     fd: jint,
 ) -> jdouble {
@@ -803,7 +812,7 @@ pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeDec
 /// export function nativeTruePeakSynthetic(env, _class, samples: number[], channels: number): number { ... }
 /// ```
 pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeTruePeakSynthetic<'local>(
-    env: JNIEnv<'local>,
+    mut env: EnvUnowned<'local>,
     _class: JClass<'local>,
     samples: JFloatArray<'local>,
     channels: jint,
@@ -820,28 +829,30 @@ pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeTru
     if channels <= 0 {
         return 0.0;
     }
-    // What:     `let len = match env.get_array_length(&samples) { Ok(n) => n, Err(_)`
-    //           `=> return -1.0 };`. Ask the JVM how many floats the array holds.
-    //           `get_array_length` borrows the array (`&samples`) and returns
-    //           `Result<jsize>`; on error we bail with the `-1.0` read-error sentinel.
+    // What:     `let Some(len) = run_with_env(..., |jni_env| samples.len(jni_env)) else {`
+    //           `return -1.0 };`. Ask the JVM how many floats the array holds.
+    //           `JFloatArray::len` borrows the array and returns `Result<usize>`
+    //           (jni 0.22 returns `usize`, not `jsize`); on error `run_with_env` logs and
+    //           we bail with the `-1.0` read-error sentinel.
     // Why:      We must size the destination buffer before copying the elements out.
     //
     // In TS you'd write (pseudocode):
     // ```ts
     // const len = samples.length;
     // ```
-    let len = match env.get_array_length(&samples) {
-        Ok(n) => n,
-        Err(_) => return -1.0,
+    let Some(len) = run_with_env(&mut env, "nativeTruePeakSynthetic length", |jni_env| {
+        return samples.len(jni_env);
+    }) else {
+        return -1.0;
     };
-    // What:     `if len <= 0 { return 0.0; }`. An empty array measures as silence.
+    // What:     `if len == 0 { return 0.0; }`. An empty array measures as silence.
     // Why:      No samples means no peak; `0.0` maps to unity gain on the Kotlin side.
     //
     // In TS you'd write (pseudocode):
     // ```ts
     // if (len <= 0) return 0.0;
     // ```
-    if len <= 0 {
+    if len == 0 {
         return 0.0;
     }
     // What:     `let mut buf = vec![0.0f32; len as usize];`. Allocate a zeroed
@@ -853,17 +864,20 @@ pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeTru
     // ```ts
     // const buf = new Float32Array(len);
     // ```
-    let mut buf = vec![0.0f32; len as usize];
-    // What:     `if env.get_float_array_region(&samples, 0, &mut buf).is_err() {`
-    //           `return -1.0; }`. Copy all `len` floats from index 0 of the JVM
-    //           array into `buf`; on any JNI error, bail with the `-1.0` sentinel.
+    let mut buf = vec![0.0f32; len];
+    // What:     `let copied = run_with_env(..., |jni_env| samples.get_region(jni_env, 0, &mut buf));`
+    //           then `if copied.is_none() { return -1.0; }`. Copy all `len` floats from index 0 of
+    //           the JVM array into `buf`; on any JNI error, bail with the `-1.0` sentinel.
     // Why:      Brings the synthetic PCM into Rust so the meter can scan it.
     //
     // In TS you'd write (pseudocode):
     // ```ts
     // // copy samples[0..len] into buf
     // ```
-    if env.get_float_array_region(&samples, 0, &mut buf).is_err() {
+    let copied = run_with_env(&mut env, "nativeTruePeakSynthetic copy", |jni_env| {
+        return samples.get_region(jni_env, 0, &mut buf);
+    });
+    if copied.is_none() {
         return -1.0;
     }
     // What:     `truepeak::true_peak_interleaved(&buf, channels as usize)`. Run the
@@ -904,10 +918,10 @@ pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeTru
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// export function nativeOutputLatencyProbe(_env: JNIEnv, _class: JClass): number { ... }
+/// export function nativeOutputLatencyProbe(_env: EnvUnowned, _class: JClass): number { ... }
 /// ```
 pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeOutputLatencyProbe<'local>(
-    _env: JNIEnv<'local>,
+    _env: EnvUnowned<'local>,
     _class: JClass<'local>,
 ) -> jdouble {
     // What:     `output::measure_output_latency_ms().unwrap_or(-1.0)`. The call returns an
@@ -954,10 +968,10 @@ pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeOut
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// export function nativeEngineCreate(_env: JNIEnv, _class: JClass): number { ... }
+/// export function nativeEngineCreate(_env: EnvUnowned, _class: JClass): number { ... }
 /// ```
 pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeEngineCreate<'local>(
-    _env: JNIEnv<'local>,
+    _env: EnvUnowned<'local>,
     _class: JClass<'local>,
 ) -> jlong {
     // What:     `match engine::Engine::new() { ... }`. `Engine::new()` is the
@@ -1032,8 +1046,7 @@ pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeEng
 ///           opaque engine handle from create),
 ///  `fd: jint` (the file descriptor),
 ///  and
-///           `play: jboolean` (0 = false,
-///  non-zero = true,
+///           `play: jboolean` (a Rust `bool`,
 ///  whether to start playing).
 ///           Returns `jint` (0 ok,
 ///  or a negative error code).
@@ -1053,7 +1066,7 @@ pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeEng
 /// export function nativeEngineLoad(_env, _class, handle: number, fd: number, play: number): number { ... }
 /// ```
 pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeEngineLoad<'local>(
-    _env: JNIEnv<'local>,
+    _env: EnvUnowned<'local>,
     _class: JClass<'local>,
     handle: jlong,
     fd: jint,
@@ -1102,20 +1115,20 @@ pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeEng
     // const engineRef = handleTable.get(handle); // assume valid; no compiler check
     // ```
     let engine_ref = unsafe { &mut *(handle as *mut engine::Engine) };
-    // What:     `match engine_ref.load(fd as RawFd, play != 0) { ... }`. We call the
+    // What:     `match engine_ref.load(fd as RawFd, play) { ... }`. We call the
     //           engine's `load` method. `fd as RawFd` casts the JVM int to the fd
-    //           alias. `play != 0` converts the `jboolean` byte into a real Rust `bool`
-    //           (any non-zero byte becomes `true`). `load` returns `Result<(),
-    //           PlayerError>` (success carries the empty tuple `()` = "nothing"). The
+    //           alias. `play` is already a Rust `bool` (jni 0.22 makes `jboolean` an alias
+    //           of `bool`). `load` returns `Result<(), PlayerError>` (success carries the empty
+    //           tuple `()` = "nothing"). The
     //           `match` is the tail expression, so its value is returned.
     // Why:      Hand the fd and play-intent to the engine and translate its result into
     //           the integer code contract.
     //
     // In TS you'd write (pseudocode):
     // ```ts
-    // try { engineRef.load(fd, play !== 0); return 0; } catch { return -2; }
+    // try { engineRef.load(fd, play); return 0; } catch { return -2; }
     // ```
-    match engine_ref.load(fd as RawFd, play != 0) {
+    match engine_ref.load(fd as RawFd, play) {
         // What:     `Ok(()) => 0`. Success arm. `Ok(())` matches the success variant
         //           whose inner value is the empty tuple `()` (i.e. "succeeded, no
         //           payload"). The arm yields `0`, the success code.
@@ -1164,10 +1177,10 @@ pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeEng
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// export function nativeEnginePlay(_env: JNIEnv, _class: JClass, handle: number): void { ... }
+/// export function nativeEnginePlay(_env: EnvUnowned, _class: JClass, handle: number): void { ... }
 /// ```
 pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeEnginePlay<'local>(
-    _env: JNIEnv<'local>,
+    _env: EnvUnowned<'local>,
     _class: JClass<'local>,
     handle: jlong,
 ) {
@@ -1224,10 +1237,10 @@ pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeEng
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// export function nativeEnginePause(_env: JNIEnv, _class: JClass, handle: number): void { ... }
+/// export function nativeEnginePause(_env: EnvUnowned, _class: JClass, handle: number): void { ... }
 /// ```
 pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeEnginePause<'local>(
-    _env: JNIEnv<'local>,
+    _env: EnvUnowned<'local>,
     _class: JClass<'local>,
     handle: jlong,
 ) {
@@ -1283,7 +1296,7 @@ pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeEng
 /// export function nativeEngineSeek(_env, _class, handle: number, positionSec: number): void { ... }
 /// ```
 pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeEngineSeek<'local>(
-    _env: JNIEnv<'local>,
+    _env: EnvUnowned<'local>,
     _class: JClass<'local>,
     handle: jlong,
     position_sec: jdouble,
@@ -1340,7 +1353,7 @@ pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeEng
 /// export function nativeEngineSetVolume(_env, _class, handle: number, volume: number): void { ... }
 /// ```
 pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeEngineSetVolume<'local>(
-    _env: JNIEnv<'local>,
+    _env: EnvUnowned<'local>,
     _class: JClass<'local>,
     handle: jlong,
     volume: jfloat,
@@ -1398,7 +1411,7 @@ pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeEng
 /// export function nativeEngineSetNormalizationGain(_env, _class, handle: number, gain: number): void { ... }
 /// ```
 pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeEngineSetNormalizationGain<'local>(
-    _env: JNIEnv<'local>,
+    _env: EnvUnowned<'local>,
     _class: JClass<'local>,
     handle: jlong,
     gain: jfloat,
@@ -1450,10 +1463,10 @@ pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeEng
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// export function nativeEnginePositionSec(_env: JNIEnv, _class: JClass, handle: number): number { ... }
+/// export function nativeEnginePositionSec(_env: EnvUnowned, _class: JClass, handle: number): number { ... }
 /// ```
 pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeEnginePositionSec<'local>(
-    _env: JNIEnv<'local>,
+    _env: EnvUnowned<'local>,
     _class: JClass<'local>,
     handle: jlong,
 ) -> jdouble {
@@ -1507,10 +1520,10 @@ pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeEng
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// export function nativeEngineDurationSec(_env: JNIEnv, _class: JClass, handle: number): number { ... }
+/// export function nativeEngineDurationSec(_env: EnvUnowned, _class: JClass, handle: number): number { ... }
 /// ```
 pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeEngineDurationSec<'local>(
-    _env: JNIEnv<'local>,
+    _env: EnvUnowned<'local>,
     _class: JClass<'local>,
     handle: jlong,
 ) -> jdouble {
@@ -1555,36 +1568,33 @@ pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeEng
 #[unsafe(no_mangle)]
 /// What:
 ///      JNI entry declaration taking the engine `handle: jlong` and returning a
-///           `jboolean` (8-bit JVM boolean:
-///  0 = false,
-///  non-zero = true).
+///           `jboolean` (a Rust `bool` since jni 0.22;
+///  the JVM sees one byte, 0 or 1).
 /// Why:
 ///       Kotlin reads this to know if audio is actually coming out right now.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// export function nativeEngineIsPlaying(_env: JNIEnv, _class: JClass, handle: number): boolean { ... }
+/// export function nativeEngineIsPlaying(_env: EnvUnowned, _class: JClass, handle: number): boolean { ... }
 /// ```
 pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeEngineIsPlaying<'local>(
-    _env: JNIEnv<'local>,
+    _env: EnvUnowned<'local>,
     _class: JClass<'local>,
     handle: jlong,
 ) -> jboolean {
-    // What:     `if handle == 0 { return jboolean::from(false); }`. Guard: with no
-    //           engine, report "not playing". `jboolean::from(false)` is a CONVERSION
-    //           constructor: `::from(...)` builds a `jboolean` (the JVM's 0/1 byte)
-    //           out of a Rust `bool`, here `false` -> 0.
-    // Why:      We must return the JVM's byte form, not a Rust `bool`; convert
-    //           explicitly.
-    // Gotcha:   `jboolean` is a byte, not a Rust `bool`; you cannot return `false`
-    //           directly, hence `jboolean::from(...)`.
+    // What:     `if handle == 0 { return false; }`. Guard: with no
+    //           engine, report "not playing" by returning `false`.
+    // Why:      `jboolean` is a Rust `bool` alias since jni 0.22, so the value is
+    //           returned directly with no conversion.
+    // Gotcha:   Before jni 0.22 `jboolean` was a byte and needed `jboolean::from(...)`;
+    //           a no-op `from` is now a clippy `useless_conversion` finding.
     //
     // In TS you'd write (pseudocode):
     // ```ts
     // if (handle === 0) return false;
     // ```
     if handle == 0 {
-        return jboolean::from(false);
+        return false;
     }
     // What:     `let engine_ref = unsafe { &mut *(handle as *mut engine::Engine) };`.
     //           Same handle-to-mutable-reference reconstruction inside `unsafe`.
@@ -1595,16 +1605,15 @@ pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeEng
     // const engineRef = handleTable.get(handle);
     // ```
     let engine_ref = unsafe { &mut *(handle as *mut engine::Engine) };
-    // What:     `jboolean::from(engine_ref.is_playing())`. `engine_ref.is_playing()`
-    //           returns a Rust `bool`; `jboolean::from(...)` converts it to the JVM
-    //           0/1 byte. Tail expression (no `;`), so the converted value is returned.
-    // Why:      Report the engine's sounding state in the JVM-friendly byte form.
+    // What:     `engine_ref.is_playing()` returns a Rust `bool`, which is the
+    //           `jboolean` type. Tail expression (no `;`), so the value is returned.
+    // Why:      Report the engine's sounding state.
     //
     // In TS you'd write (pseudocode):
     // ```ts
     // return engineRef.isPlaying();
     // ```
-    return jboolean::from(engine_ref.is_playing())
+    return engine_ref.is_playing()
 }
 
 // What:     `#[unsafe(no_mangle)]`: keep the symbol name for JVM lookup.
@@ -1617,30 +1626,29 @@ pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeEng
 #[unsafe(no_mangle)]
 /// What:
 ///      JNI entry declaration taking the engine `handle: jlong` and returning a
-///           `jboolean` (8-bit JVM boolean).
+///           `jboolean` (a Rust `bool` since jni 0.22).
 /// Why:
 ///       Kotlin reads this to know when to advance to the next track.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// export function nativeEngineIsEnded(_env: JNIEnv, _class: JClass, handle: number): boolean { ... }
+/// export function nativeEngineIsEnded(_env: EnvUnowned, _class: JClass, handle: number): boolean { ... }
 /// ```
 pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeEngineIsEnded<'local>(
-    _env: JNIEnv<'local>,
+    _env: EnvUnowned<'local>,
     _class: JClass<'local>,
     handle: jlong,
 ) -> jboolean {
-    // What:     `if handle == 0 { return jboolean::from(false); }`. Guard: with no
-    //           engine, report "not ended". `jboolean::from(false)` converts the Rust
-    //           `bool` `false` to the JVM 0 byte.
-    // Why:      Return the JVM byte form for "no engine -> not ended".
+    // What:     `if handle == 0 { return false; }`. Guard: with no
+    //           engine, report "not ended" by returning `false`.
+    // Why:      `jboolean` is a Rust `bool` alias, so no conversion is needed.
     //
     // In TS you'd write (pseudocode):
     // ```ts
     // if (handle === 0) return false;
     // ```
     if handle == 0 {
-        return jboolean::from(false);
+        return false;
     }
     // What:     `let engine_ref = unsafe { &mut *(handle as *mut engine::Engine) };`.
     //           Same handle-to-mutable-reference reconstruction inside `unsafe`.
@@ -1651,16 +1659,15 @@ pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeEng
     // const engineRef = handleTable.get(handle);
     // ```
     let engine_ref = unsafe { &mut *(handle as *mut engine::Engine) };
-    // What:     `jboolean::from(engine_ref.is_ended())`. Read the Rust `bool` from
-    //           `is_ended()` and convert it to the JVM 0/1 byte. Tail expression, so it
-    //           is returned.
-    // Why:      Report end-of-track in the JVM-friendly byte form.
+    // What:     `engine_ref.is_ended()`. Read the Rust `bool` from
+    //           `is_ended()`. Tail expression, so it is returned.
+    // Why:      Report end-of-track.
     //
     // In TS you'd write (pseudocode):
     // ```ts
     // return engineRef.isEnded();
     // ```
-    return jboolean::from(engine_ref.is_ended())
+    return engine_ref.is_ended()
 }
 
 // What:     `#[unsafe(no_mangle)]`: keep the symbol name for JVM lookup.
@@ -1673,7 +1680,7 @@ pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeEng
 #[unsafe(no_mangle)]
 /// What:
 ///      JNI entry declaration taking the engine `handle: jlong` and returning a
-///           `jboolean` (8-bit JVM boolean).
+///           `jboolean` (a Rust `bool` since jni 0.22).
 /// Why:
 ///       Kotlin reads this "playWhenReady" intent (true from a play/load-and-play
 ///           request until a pause),
@@ -1681,24 +1688,23 @@ pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeEng
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// export function nativeEnginePlayWhenReady(_env: JNIEnv, _class: JClass, handle: number): boolean { ... }
+/// export function nativeEnginePlayWhenReady(_env: EnvUnowned, _class: JClass, handle: number): boolean { ... }
 /// ```
 pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeEnginePlayWhenReady<'local>(
-    _env: JNIEnv<'local>,
+    _env: EnvUnowned<'local>,
     _class: JClass<'local>,
     handle: jlong,
 ) -> jboolean {
-    // What:     `if handle == 0 { return jboolean::from(false); }`. Guard: with no
-    //           engine, report "no play intent". `jboolean::from(false)` converts the
-    //           Rust `bool` `false` to the JVM 0 byte.
-    // Why:      Return the JVM byte form for "no engine -> no intent".
+    // What:     `if handle == 0 { return false; }`. Guard: with no
+    //           engine, report "no play intent" by returning `false`.
+    // Why:      `jboolean` is a Rust `bool` alias, so no conversion is needed.
     //
     // In TS you'd write (pseudocode):
     // ```ts
     // if (handle === 0) return false;
     // ```
     if handle == 0 {
-        return jboolean::from(false);
+        return false;
     }
     // What:     `let engine_ref = unsafe { &mut *(handle as *mut engine::Engine) };`.
     //           Same handle-to-mutable-reference reconstruction inside `unsafe`.
@@ -1709,16 +1715,15 @@ pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeEng
     // const engineRef = handleTable.get(handle);
     // ```
     let engine_ref = unsafe { &mut *(handle as *mut engine::Engine) };
-    // What:     `jboolean::from(engine_ref.play_when_ready())`. Read the Rust `bool`
-    //           from `play_when_ready()` and convert it to the JVM 0/1 byte. Tail
-    //           expression, so it is returned.
-    // Why:      Report the play-intent flag in the JVM-friendly byte form.
+    // What:     `engine_ref.play_when_ready()`. Read the Rust `bool`
+    //           from `play_when_ready()`. Tail expression, so it is returned.
+    // Why:      Report the play-intent flag.
     //
     // In TS you'd write (pseudocode):
     // ```ts
     // return engineRef.playWhenReady();
     // ```
-    return jboolean::from(engine_ref.play_when_ready())
+    return engine_ref.play_when_ready()
 }
 
 // What:     `#[unsafe(no_mangle)]`: keep the symbol name for JVM lookup.
@@ -1742,10 +1747,10 @@ pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeEng
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// export function nativeEngineRelease(_env: JNIEnv, _class: JClass, handle: number): void { ... }
+/// export function nativeEngineRelease(_env: EnvUnowned, _class: JClass, handle: number): void { ... }
 /// ```
 pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeEngineRelease<'local>(
-    _env: JNIEnv<'local>,
+    _env: EnvUnowned<'local>,
     _class: JClass<'local>,
     handle: jlong,
 ) {

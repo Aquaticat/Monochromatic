@@ -62,6 +62,7 @@ use std::sync::mpsc::{self, Receiver, Sender, TryRecvError};
 /// // JoinHandle ~ a Worker + exit promise; Thread ~ a WorkerRef you can post "wake" to
 /// ```
 use std::thread::{self, JoinHandle, Thread};
+use std::sync::Arc;
 
 /// What:
 ///      `use std::time::Duration;`.
@@ -100,6 +101,8 @@ use crate::command::{Command, Update};
 /// ```ts
 /// import { Controller } from "./controller";
 /// ```
+use crate::audio_meter::MeterReporter;
+use crate::thread_priority::raise_current_thread_for_decode;
 use crate::controller::Controller;
 
 /// What:
@@ -635,6 +638,16 @@ fn run(
     self_tx: Sender<Command>,
     cache: CacheHandle,
 ) {
+    // What:     `raise_current_thread_for_decode();`. Ask rtkit to raise this thread's nice level
+    //           so decoding keeps up when the machine is busy.
+    // Why:      Decoding runs on this thread. Under load at normal priority it can get too little
+    //           CPU, and the ring buffer runs dry. Refusal is logged and playback continues.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // raiseCurrentThreadForDecode();
+    // ```
+    raise_current_thread_for_decode();
     // What:     `let output = match Output::new(thread::current()) { ... };`. Try to start
     //           PipeWire, handing it a handle to THIS thread. `thread::current()` returns
     //           the running thread's `Thread` handle; it is the same thread `Engine`
@@ -697,6 +710,24 @@ fn run(
         tx: self_tx,
         worker: thread::current(),
     };
+    // What:     `controller.sweep_sink = Arc::new(move |report| sweep_sender.send(Command::SweepReport(report)));`.
+    //           Route every sweep and re-analysis report back through this engine's command channel.
+    // Why:      Sweep threads cannot call the update callback, but they can send a command that wakes this loop.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // controller.sweepSink = (report) => selfSender.send({ kind: "sweepReport", report });
+    // ```
+    let sweep_sender = self_sender.clone();
+    controller.sweep_sink = Arc::new(move |report| return sweep_sender.send(Command::SweepReport(report)));
+    // What:     `controller.emit_source_root();`. Tell the window whether a folder is open before any command runs.
+    // Why:      With no saved folder and no music directory nothing else is sent, so the first-run copy needs this signal.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // controller.emitSourceRoot();
+    // ```
+    controller.emit_source_root();
     // What:     `controller.watcher = crate::watch::SourceWatcher::new(move || self_sender.send(Command::Rescan));`.
     //           Create the file watcher (or `None` if the OS watcher fails) with a change
     //           callback that enqueues `Rescan` and wakes this worker. The closure owns
@@ -718,6 +749,15 @@ fn run(
     // ```ts
     // while (true) { ... }
     // ```
+    // What:     `let mut meter_reporter = MeterReporter::new();`. Tracks when the underrun
+    //           counters were last logged, so the log shows at most one line a second.
+    // Why:      Created once per worker, outside the loop, so its cadence survives iterations.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const meterReporter = new MeterReporter();
+    // ```
+    let mut meter_reporter = MeterReporter::new();
     loop {
         // What:     `let mut quitting = false;`. Flag set when a quit/disconnect is seen
         //           while draining commands.
@@ -825,6 +865,16 @@ fn run(
         // const didWork = controller.pumpAudio();
         // ```
         let did_work = controller.pump_audio();
+
+        // What:     `controller.report_audio_meters(&mut meter_reporter);`. Log the output's
+        //           underrun counters if a second has passed and they moved.
+        // Why:      Logging happens here, on the worker thread, never in the realtime callback.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // controller.reportAudioMeters(meterReporter);
+        // ```
+        controller.report_audio_meters(&mut meter_reporter);
 
         // What:     `if !applied_peak && !did_work { thread::park_timeout(Duration::from_millis(IDLE_PARK_FALLBACK_MS)); }`.
         //           When neither a peak swap nor audio pumping did work, PARK: block the

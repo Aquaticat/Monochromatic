@@ -11,7 +11,7 @@ use crate::policy_checks::shipped_checks;
 use crate::policy_content::LifecycleContent;
 use crate::policy_engine::StageRequest;
 use crate::repository_facts::git_facts;
-use crate::test_support::{REAL_GIT, fixture, git, git_context, git_text, remove, repository};
+use crate::test_support::{REAL_GIT, fixture, git, git_context, remove, repository};
 use crate::transaction_git::{GitRequest, run_git};
 use crate::wrapper_controls::no_controls;
 use std::path::{Path, PathBuf};
@@ -119,7 +119,7 @@ fn a_settled_private_index_is_left_unchanged() {
 /// Whether an engine failure event names a patch conflict on the path.
 fn names_conflict(events: &[PolicyEvent], path_name: &str) -> bool {
     for event in events {
-        if let PolicyEvent::EngineFailure { code: EngineFailureCode::PatchConflict, path: Some(path), .. } = event && path == path_name {
+        if let PolicyEvent::EngineFailure { code: EngineFailureCode::PatchConflict, path: Some(path), .. } = event && path.text() == path_name {
             return true;
         }
     }

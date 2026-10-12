@@ -570,12 +570,16 @@ pub fn prepare_candidates(
             unreachable!("landed and pushed requests return before the staged match");
         }
         CandidateRequest::Direct(pathspecs) => {
+            // The same magic-enabled prefix as the add arm: the staging and the listings must read
+            // `:/` and the selected pathspecs alike, so literal mode cannot split them.
+            let mut scope_prefix: Vec<OsString> = global_prefix.to_vec();
+            scope_prefix.push(OsString::from("--no-literal-pathspecs"));
             let mut scope_store: CandidateStore =
-                CandidateStore::new(real_git, global_prefix, private_overlay.as_slice());
+                CandidateStore::new(real_git, scope_prefix.as_slice(), private_overlay.as_slice());
             let selected: Vec<CandidateRecord> = projected_scope(
                 &mut scope_store,
                 real_git,
-                global_prefix,
+                scope_prefix.as_slice(),
                 private_overlay.as_slice(),
                 pathspecs.as_slice(),
             )?;

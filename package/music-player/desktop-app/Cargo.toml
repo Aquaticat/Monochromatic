@@ -28,7 +28,7 @@ path = "src/main.rs"
 anyhow = "1"
 # Slint 1.17.0 is the first crates.io release with Flickable mouse-wheel
 # animation (slint-ui/slint#11338, fixing #11312), so this package no longer
-# needs the former master-revision pin. Keep slint, i-slint-backend-winit, and
+# needs the former master-revision pin. Slint is now on 1.18.1. Keep slint, i-slint-backend-winit, and
 # slint-build on the same release family because the runtime, explicit winit
 # backend, and markup compiler are versioned together.
 # Command-line argument parsing (src/cli.rs). The `derive` feature lets the `Cli`
@@ -36,7 +36,7 @@ anyhow = "1"
 # `#[derive(Parser)]`, replacing hand-rolled argv scanning and generating
 # `--help` / `--version` for free. 4.x is the current major line.
 clap = { version = "4", features = ["derive"] }
-directories = "5"
+directories = "6"
 # True-peak cache fingerprint hashing (src/peakcache.rs). We call the one-shot
 # `gxhash64(bytes, seed)` to derive the opaque cache key from (path, size, mtime),
 # replacing the hand-rolled FNV-1a. Pinned to major 3: gxhash guarantees its output
@@ -57,16 +57,18 @@ gxhash = "3"
 # taskbar progress to the running window. Its re-exported `winit`
 # (`i_slint_backend_winit::winit`) is reused for the WindowAttributes ext trait,
 # so no separate `winit` dependency is added.
-# "1.17.0" here is Cargo's default caret requirement (">=1.17.0, <2.0.0"), not an
+# "1.18.1" here is Cargo's default caret requirement (">=1.18.1, <2.0.0"), not an
 # exact pin: unlike pnpm, where a bare version string pins the exact release,
-# Cargo already lets `cargo update` move to any newer 1.x release past 1.17.0.
-i-slint-backend-winit = "1.17.0"
+# Cargo already lets `cargo update` move to any newer 1.x release past 1.18.1.
+i-slint-backend-winit = "1.18.1"
 # Not called from our code: a feature-unification shim. icu_provider reaches the
 # tree transitively (slint -> parley -> icu_segmenter -> icu_provider). With its
 # `logging` feature OFF, a DEBUG build routes ICU's internal `warn!` to a raw
-# `std::eprintln!` (icu_provider 2.2 src/lib.rs:194), so opening a folder with
+# `std::eprintln!` (icu_provider 2.3.1 src/lib.rs:188-202; re-checked at that release, the
+# mechanism is unchanged from 2.2), so opening a folder with
 # Japanese (or Thai/Khmer/etc.) filenames floods stderr with
-# "ICU4X data error: No segmentation model for language: ja" once per layout pass:
+# "ICU4X data error: No segmentation model for complex script: Chinese/Japanese" (icu_segmenter 2.3;
+# 2.2 printed "No segmentation model for language: ja") once per layout pass:
 # parley builds LineSegmenter::new_for_non_complex_scripts, which bundles no CJK
 # dictionary, so icu_segmenter warns it cannot dictionary-segment the run (text
 # still renders, breaking between graphemes). Release builds already no-op those
@@ -83,29 +85,29 @@ icu_provider = { version = "2", features = ["logging"] }
 # inotify on Linux, FSEvents on macOS, ReadDirectoryChangesW on Windows. Pulls
 # notify as a transitive dep.
 notify-debouncer-mini = "0.7"
-# Pinned to opus-rs git HEAD (post-0.3.1) instead of the crates.io 0.3.1 release.
-# 0.3.1 depends on audiopus_sys 0.2.2, whose BUNDLED libopus (commit 7b05f44)
-# declares cmake_minimum_required(VERSION 3.1); CMake 4.x removed compatibility
-# with < 3.5 and aborts configuring it (seen on Windows with CMake 4.3.3). opus-rs
-# HEAD replaced audiopus_sys with opusic-sys 0.7.3, which bundles libopus 1.6.1
+# The crates.io 0.4.0 release (2026-08-23) is the opus-rs backend that replaced
+# audiopus_sys. The former 0.3.1 release depended on audiopus_sys 0.2.2, whose BUNDLED
+# libopus (commit 7b05f44) declares cmake_minimum_required(VERSION 3.1); CMake 4.x removed
+# compatibility with < 3.5 and aborts configuring it (seen on Windows with CMake 4.3.3).
+# 0.4.0 depends on opusic-sys ^0.7.3, which bundles libopus 1.6.1
 # (cmake_minimum_required(VERSION 3.16)), so it configures cleanly under CMake 4
 # with no CMAKE_POLICY_VERSION_MINIMUM override. opusic-sys's `bundled` feature is
 # ON by default and the `opus` crate pulls it with default features, so libopus is
 # compiled from source via cmake on EVERY platform (this is why the Containerfile
 # now installs cmake; macOS and Windows already have it). The public `opus` API
-# (Decoder/Channels/decode_float/reset_state/Error) is unchanged at this rev, so
-# src/opus.rs and error.rs need no edits. The rev is pinned (not branch=master) so
-# `cargo update` cannot move it, and the committed Cargo.lock records the resolved
-# git source. Revert to a crates.io `version` once a release with the opusic-sys backend ships.
+# (Decoder/Channels/decode_float/reset_state/Error) is unchanged from the former git
+# revision (opus-rs master at that revision plus the readme, `cargo update` and version
+# bump commits became v0.4.0), so src/opus.rs and error.rs need no edits. This replaces
+# the former git revision pin; the committed Cargo.lock records the resolved registry source.
 # See ../../../doc/troubleshooting/audiopus-cmake4-libopus-min-version.md.
-opus = { git = "https://github.com/SpaceManiac/opus-rs", rev = "559876660603dc8079a053e03e6438766f669e69" }
-rfd = "0.15"
-ringbuf = "0.4"
+opus = "0.4"
+rfd = "0.17"
+ringbuf = "0.5"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
-# "1.17.0" here is Cargo's default caret requirement (">=1.17.0, <2.0.0"), not an
+# "1.18.1" here is Cargo's default caret requirement (">=1.18.1, <2.0.0"), not an
 # exact pin, the same as i-slint-backend-winit and slint-build in this file.
-slint = { version = "1.17.0", features = ["backend-winit", "renderer-femtovg", "renderer-software"] }
+slint = { version = "1.18.1", features = [ "backend-winit", "renderer-femtovg", "renderer-software", ], }
 symphonia = { version = "0.6", features = ["all"] }
 # Drives the Turso cache async API from the cache-service actor thread
 # (src/peakcache.rs). The actor owns ONE current-thread runtime
@@ -118,6 +120,11 @@ symphonia = { version = "0.6", features = ["all"] }
 # queued writes). NOT `rt-multi-thread`: one actor thread is enough and the spike
 # confirmed a current-thread runtime drives Turso's local futures.
 tokio = { version = "1", features = ["rt", "sync", "macros"] }
+# Unicode normalization for search and folder collation (src/folder_rail.rs, src/search_matcher.rs,
+# src/non_spacing_mark.rs). NFD decomposition plus the combining-mark test let accented and
+# decomposed names sort and match the same way the Kotlin app does, so the search page and the
+# folder rail agree on which tracks match a query.
+unicode-normalization = "0.1"
 # The logging facade and its subscriber (src/logging.rs). tracing mirrors the shared
 # truepeak-core logging; tracing-subscriber installs the stderr sink with an env-filter
 # (RUST_LOG, default `info`). Both already resolve transitively (turso -> tracing), so this
@@ -140,6 +147,8 @@ tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 # live in the shared crate. The privacy guarantee is unchanged: only `fingerprint (u64) ->
 # decision` rows hit disk, never a path.
 truepeak-core = { path = "../truepeak-core", features = ["service"] }
+trash = "5"
+arboard = "3"
 
 # Linux-only native backends. PipeWire (audio) and zbus (KDE taskbar progress)
 # have no macOS equivalent, so cargo compiles them only when target_os = linux;
@@ -150,9 +159,11 @@ truepeak-core = { path = "../truepeak-core", features = ["service"] }
 # the host's newer PipeWire/SPA headers. libspa-sys 0.8 emitted an opaque
 # `spa_pod_builder` against PipeWire 1.6.x, breaking the `libspa` wrapper's
 # `.data`/`.size` access.
-pipewire = "0.10"
-# Already in the tree transitively (Slint's color-scheme watcher, rfd's portal
-# picker). Used directly to emit the com.canonical.Unity.LauncherEntry `Update`
+# `v0_3_49` exposes `Buffer::requested()`, the quantum the graph asks each callback for;
+# the underrun meter in src/output_pipewire.rs compares it with the frames it fills.
+pipewire = { version = "0.10", features = ["v0_3_49"] }
+# Already in the tree transitively (Slint's color-scheme watcher; rfd 0.17 no longer
+# uses it for its portal picker). Used directly to emit the com.canonical.Unity.LauncherEntry `Update`
 # signal that drives the KDE taskbar progress. Default features include the
 # blocking API and async-io backend. macOS has no D-Bus session bus, so it is
 # gated to Linux alongside the launcher integration it powers.
@@ -211,16 +222,16 @@ windows = { version = "0.62", features = ["Win32_Foundation", "Win32_System_Com"
 # imperative write, freezing the seek bar). The default testing backend simulates a
 # windowing system with a mock renderer, so these run with no X/Wayland/display.
 # This crate is "preliminary" and does NOT follow semver, so it MUST be pinned with
-# `=` to the exact slint release family (1.17.0) it is versioned against.
+# `=` to the exact slint release family (1.18.1) it is versioned against.
 [dev-dependencies]
-i-slint-backend-testing = "=1.17.0"
+i-slint-backend-testing = "=1.18.1"
 
 [build-dependencies]
 # Must match the `slint` release family used for this crate's slint and
 # i-slint-backend-winit dependencies because the compiler and runtime are
-# versioned together. "1.17.0" here is Cargo's default caret requirement
-# (">=1.17.0, <2.0.0"), not an exact pin.
-slint-build = "1.17.0"
+# versioned together. "1.18.1" here is Cargo's default caret requirement
+# (">=1.18.1, <2.0.0"), not an exact pin.
+slint-build = "1.18.1"
 
 # Windows-only build dependency: embeds asset/music-player.ico into the .exe so
 # Explorer, the taskbar, and Alt-Tab show the app icon (the macOS icon lives in
@@ -237,16 +248,14 @@ winresource = "0.1"
 # no .debug_* sections are emitted in release anyway). "symbols" keeps unwind
 # info intact, so panic backtraces and Drop-on-panic are unchanged. Mandatory.
 strip = "symbols"
-# Fat LTO: whole-program inlining and dead-code elimination across the entire
-# dependency graph (Slint, symphonia-all, zbus). This is what actually shrinks
-# .text; thin LTO was measured to give ~no gain over strip alone on this crate.
-# Measured here: fat LTO + default 16 codegen-units -> ~17.5 MB at ~2m06s.
-# codegen-units = 1 reaches ~16.4 MB at about the SAME build time (fat LTO's
-# serial whole-program link dominates either way, so one unit buys no speed-up),
-# but that extra ~1.1 MB is not worth carrying an extra knob, so codegen-units
-# stays at the default. Release builds run ~2 min vs ~10s unoptimised; the
-# run-debug mise task is the fast-iteration path. panic stays "unwind" (default).
-lto = true
+# Thin LTO: cross-crate inlining per codegen unit instead of one whole-program module. Fat LTO spent 287 of the
+# 302 s of rustc time for this crate in the single `LLVM_fatlto` pass (rustc -Ztime-passes), so rebuilding only
+# this crate took ~300 s with fat LTO and ~60 s with thin LTO (two runs each, within 3 s of each other, on a
+# loaded 16-core host). The binary grows from 41.6 MB to 46.4 MB (+11.6%) and runtime speed was not measured.
+# Switched to thin on 2026-10-11 at the maintainer's request; fat LTO is `lto = true`. An earlier measurement
+# here (fat LTO + default codegen-units -> ~17.5 MB at ~2m06s) predates the production UI and its dependencies.
+# The run-quick mise task skips LTO entirely (~17 s rebuilds). panic stays "unwind" (default).
+lto = "thin"
 
 # Standalone crate: its own workspace root, so no ancestor Cargo.toml can absorb it.
 # Enforced by file-enforcer (doc/planning/cargo-toml-file-enforcer.md).

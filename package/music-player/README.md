@@ -560,3 +560,17 @@ and emulator constraints are retained in
 ## License
 
 Music Player is licensed under the [GNU Lesser General Public License, version 3 or later](../../LICENSE).
+
+### Third-party icons
+
+The Settings rows of the Android app, and later of the desktop app, carry Material Symbols icons.
+They come from the [`google/material-design-icons`](https://github.com/google/material-design-icons) repository,
+which is licensed under the Apache License, Version 2.0 (`LICENSES/Apache-2.0.txt` at the repository root).
+Each icon is the Outlined style at weight 400, grade 0 and optical size 24, unfilled, from
+`symbols/web/<name>/materialsymbolsoutlined/<name>_24px.svg` at commit `49d4db35df873165d6bd6ba09b063c7dafbac2f4`:
+
+- `queue_music`, for the Track rows template.
+- `play_circle`, for the Playing track template.
+
+Each app embeds the path data as vector code, with no icon font and no network access at run time.
+The Android copy is `android-app/app/src/main/kotlin/dev/monochromatic/musicplayer/SettingsIcons.kt`.

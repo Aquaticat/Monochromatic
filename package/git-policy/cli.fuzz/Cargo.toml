@@ -98,8 +98,36 @@ doc = false
 bench = false
 
 [[bin]]
+name = "dependent_version"
+path = "fuzz_targets/dependent_version.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
 name = "transaction_records"
 path = "fuzz_targets/transaction_records.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "linter_output"
+path = "fuzz_targets/linter_output.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "event_path"
+path = "fuzz_targets/event_path.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "linter_config"
+path = "fuzz_targets/linter_config.rs"
 test = false
 doc = false
 bench = false

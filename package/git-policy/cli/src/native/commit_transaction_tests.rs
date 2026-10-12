@@ -61,7 +61,7 @@ fn a_selected_change_prepares_a_commit_outside_head() {
     )
     .expect("identity of the fixture");
     let capture = capture_invocation_layout(&context, repo.as_path(), false)
-        .and_then(|layout| capture_invocation_base(&context, repo.as_path(), layout))
+        .and_then(|layout| return capture_invocation_base(&context, repo.as_path(), layout))
         .expect("capture of the fixture");
     let registry: PathBuf = root.join("registry");
     let transaction_id: &str = "0b6c2c1e-6f5b-4d0e-9a55-3f5d8e2f6a20";
@@ -136,7 +136,7 @@ fn a_commit_outside_a_worktree_stops_before_any_directory_is_created() {
     let repo: PathBuf = changed_repository(root.as_path());
     let context: GitContext = fixture_context(repo.as_path());
     let capture = capture_invocation_layout(&context, repo.as_path(), false)
-        .and_then(|layout| capture_invocation_base(&context, repo.as_path(), layout))
+        .and_then(|layout| return capture_invocation_base(&context, repo.as_path(), layout))
         .expect("capture of the fixture");
     let registry: PathBuf = root.join("registry");
     let pathspecs: Vec<String> = vec![String::from("a.txt")];

@@ -1301,6 +1301,46 @@ nothing else multiplies a row number by a row height.
 Blocks come from `Annotations::assemble` (`src/annotation/blocks.rs`),
 which packs a line's hints once per snapshot and scale and counts message rows without shaping.
 
+### Overscan tile
+
+The materialized lines span three view heights:
+one view height above the view, the view, and one view height below it.
+`viewport::place` keeps that tile while the view stays inside it with `RECENTER_EDGE_VIEWS` (0.25 view heights)
+of room at each edge, and re-centers it only when that room runs out,
+so a re-center comes after about 0.75 view heights of scrolling.
+The first line of a re-centered tile starts one view height above the view's top line,
+and the tile runs `TILE_SPARE_LINES` (2) lines past its bottom edge.
+The window's scroll moves the image on its own:
+a `viewport-changed` callback for a view inside the tile returns before any shaping, painting, or model update.
+Syntax-highlight and text changes still render at once, because their own callbacks call `render`.
+The frame stamp keeps the tile's first line, line count, and width, so it does not change inside the tile.
+A diagnostic or hint inside the tile repaints the tile once, even when it is above the view.
+The document position's viewport line follows the view's top line on every scroll step,
+so reload anchoring and navigation see the line the reader is looking at.
+
+Shaped rows are cached by line (`src/shaped_row_cache.rs`) for one text revision and display scale.
+A re-centered tile shapes only the lines it did not hold,
+and the cache keeps at most `ROW_CACHE_LINES` (256) lines, evicting those farthest from the view.
+A change of syntax styles clears the cache (`TextShaper::forget_rows`).
+
+A re-center caused by the reader's own scrolling is built on a worker thread (`src/native/tile_build.rs`).
+The window thread queues an owned job with a document snapshot, the styles, the row map, and the paint inputs.
+The worker keeps its own `TextShaper` and `TextRaster`, and it builds only the newest queued job.
+A `slint::Timer` polls the worker every 20 ms (`src/native/tile.rs`).
+The displayed tile stays on screen until the result arrives, so a scroll never shows a blank frame.
+A result is swapped in only when it still holds the view and its paint inputs still match,
+and the image, its offset, the line numbers, and the rectangles arrive in one step.
+A result that no longer matches is discarded, and the next scroll queues a new job.
+Every other tile change builds on the window thread as before:
+edits, reloads, selections, find, theme, scale, annotation changes, keyboard and pointer moves,
+and reveal or follow.
+
+`overscan_tile_tests` counts renders, painted tiles, shaped rows, and images on the window thread.
+All four stay at zero while the view moves inside the tile and during a scroll re-center,
+and the worker's own counts rise for each re-center.
+A swapped-in tile matches a fresh render at the same offset,
+and a result built before an edit is discarded.
+
 ### Stability
 
 Rows arrive after the text is shown,

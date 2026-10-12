@@ -98,3 +98,23 @@ export {
 };
 
 export { renderStatusline, } from './render.ts';
+
+/**
+ Exposed so built-artifact tests reach the activity word reader.
+ 
+ @internal
+ */
+export {
+  assistantTextOfLine,
+  readActivityWord,
+} from './activity.ts';
+
+/**
+ Exposed so built-artifact tests reach the per-session activity memory.
+ 
+ @internal
+ */
+export {
+  memoryPathOf,
+  readRememberedActivityWord,
+} from './activity-memory.ts';

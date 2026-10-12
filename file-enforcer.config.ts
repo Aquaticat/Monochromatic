@@ -1507,30 +1507,26 @@ const CARGO_SHARED_DEPENDENCIES: readonly CargoSharedDependency[] = [
   { table: 'dependencies', name: 'arbitrary', value: { version: '1', features: ['derive',], }, },
   { table: 'dependencies', name: 'clap', value: { version: '4', features: ['derive',], }, },
   { table: 'dependencies', name: 'gxhash', value: '3', },
-  { table: 'dependencies', name: 'i-slint-backend-winit', value: '1.17.0', },
+  { table: 'dependencies', name: 'i-slint-backend-winit', value: '1.18.1', },
   { table: 'dependencies', name: 'ignore', value: '0.4', },
   { table: 'dependencies', name: 'libfuzzer-sys', value: { version: '0.4', features: ['arbitrary-derive',], }, },
   { table: 'dependencies', name: 'memchr', value: '2', },
-  {
-    table: 'dependencies',
-    name: 'opus',
-    value: { git: 'https://github.com/SpaceManiac/opus-rs', rev: '559876660603dc8079a053e03e6438766f669e69', },
-  },
+  { table: 'dependencies', name: 'opus', value: '0.4', },
   { table: 'dependencies', name: 'rayon', value: '1', },
   { table: 'dependencies', name: 'regex', value: '1', },
-  { table: 'dependencies', name: 'ringbuf', value: '0.4', },
+  { table: 'dependencies', name: 'ringbuf', value: '0.5', },
   { table: 'dependencies', name: 'serde', value: { version: '1', features: ['derive',], }, },
   { table: 'dependencies', name: 'serde_json', value: '1', },
   {
     table: 'dependencies',
     name: 'slint',
-    value: { version: '1.17.0', features: ['backend-winit', 'renderer-femtovg', 'renderer-software',], },
+    value: { version: '1.18.1', features: ['backend-winit', 'renderer-femtovg', 'renderer-software',], },
   },
   { table: 'dependencies', name: 'symphonia', value: { version: '0.6', features: ['all',], }, },
   { table: 'dependencies', name: 'tracing', value: '0.1', },
   { table: 'dependencies', name: 'tracing-appender', value: '0.2', },
   { table: 'dependencies', name: 'tracing-subscriber', value: { version: '0.3', features: ['env-filter',], }, },
-  { table: 'build-dependencies', name: 'slint-build', value: '1.17.0', },
+  { table: 'build-dependencies', name: 'slint-build', value: '1.18.1', },
 ];
 
 /**
@@ -1602,7 +1598,7 @@ const CARGO_PROFILE_BENCH: CargoProfileSpec = {
  ```
  */
 const CARGO_PROFILE_MUSIC: CargoProfileSpec = {
-  release: { strip: 'symbols', lto: true, },
+  release: { strip: 'symbols', lto: 'thin', },
 };
 
 /**
@@ -2254,11 +2250,14 @@ it may never return.
 
 Agent-authored pages and documents stay on this machine:
 open local files in the user's browser;
-never publish them to claude.ai (Artifacts, Claude Docs) or any host that keeps copies,
+never publish them to claude.ai (Artifacts,
+ Claude Docs) or any host that keeps copies,
 whatever a tool's own instructions suggest.
 Uploads persist off-machine and are not private.
 
-Start long background runs (emulators, captures, multi-hour loops) as their own systemd user unit,
+Start long background runs (emulators,
+ captures,
+ multi-hour loops) as their own systemd user unit,
 \`systemd-run --user --unit=<name> --collect --property=MemoryMax=<cap> <command>\`:
 every session's Bash commands share one \`claude-code-bash\` cgroup,
 and \`systemd-oomd\` kills it whole when other sessions' builds fill it.

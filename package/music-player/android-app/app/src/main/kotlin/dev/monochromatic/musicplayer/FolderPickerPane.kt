@@ -26,6 +26,7 @@ import dev.monochromatic.musicplayer.core.RailSection
 // import { LazyColumn, verticalScroll, selectable } from "compose/foundation";
 // ```
 import androidx.compose.foundation.background
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -60,6 +61,8 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 
 // What:     Imports from `androidx.compose.ui` bring in modifiers, alignment, geometry, colors, and semantics.
@@ -76,6 +79,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -120,6 +124,16 @@ private val RAIL_HIGHLIGHT_SIZE: Dp = 32.dp
 // ```
 /** Thickness of the hairline drawn between writing-system sections of the rail. */
 private val SECTION_HAIRLINE_HEIGHT: Dp = 1.dp
+
+// What:     `private val RAIL_BOUNDARY_WIDTH: Dp = 1.dp` is the thickness of the rule between the rail and the names.
+// Why:      D34 specifies a one-pixel rule so the letter targets read as separate from the folder names.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// const RAIL_BOUNDARY_WIDTH = 1;
+// ```
+/** Width of the vertical rule drawn between the letter rail and the folder names in light mode. */
+private val RAIL_BOUNDARY_WIDTH: Dp = 1.dp
 
 // What:     `private val NAME_TARGET_MIN: Dp = 48.dp` is the minimum width and height of one folder name target.
 // Why:      Each name stays a 48dp target even though it takes only its natural text width.
@@ -261,6 +275,19 @@ internal fun cellKeyForFolder(sections: List<RailSection>, folder: String?): Str
     return cellsInOrder(sections).firstOrNull { cell -> folder in cell.names }?.key
 }
 
+// What:     `internal fun railHighlightKey(tappedKey, currentKey): String?` picks the rail cell to circle.
+// Why:      A tapped letter must show as selected at once, even though the current folder is still in another cell;
+//           the tap stands until the current folder changes.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// function railHighlightKey(tappedKey: string | null, currentKey: string | null): string | null {
+//   return tappedKey ?? currentKey;
+// }
+// ```
+/** Returns the tapped cell's key when a tap is pending, otherwise the key of the current folder's cell. */
+internal fun railHighlightKey(tappedKey: String?, currentKey: String?): String? = tappedKey ?: currentKey
+
 // What:     `internal fun firstNameForCell(sections, cellKey): String?` returns the first folder under a cell.
 // Why:      A rail tap scrolls the names to this name, so the list lands on the cell's first folder.
 //
@@ -343,11 +370,14 @@ fun folderPickerPane(
     )
     /** Coroutine scope that runs the scroll animation started by a rail tap. */
     val scope = rememberCoroutineScope()
+    /** Cell the user last tapped on the rail, forgotten when the current folder changes. */
+    val tappedCellKey = remember(currentFolder) { mutableStateOf<String?>(null) }
     Row(modifier = modifier.fillMaxSize()) {
         letterRail(
             sections = sections,
-            currentCellKey = currentCellKey,
+            currentCellKey = railHighlightKey(tappedKey = tappedCellKey.value, currentKey = currentCellKey),
             onCellSelected = { cellKey ->
+                tappedCellKey.value = cellKey
                 /** First folder name under the tapped cell, which the names list scrolls to. */
                 val firstName: String? = firstNameForCell(sections, cellKey)
                 /** List position of the cell that lists that first name. */
@@ -357,6 +387,21 @@ fun folderPickerPane(
                 }
             },
         )
+        // What:     The light-mode rail boundary is a one-pixel rule in the outline-variant role.
+        // Why:      D34 keeps a visible rail line in light mode, and the dark theme keeps its stable black surfaces.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // if (!dark) rail.append(<div style={{ width: 1, background: scheme.outlineVariant }} />);
+        // ```
+        if (!isSystemInDarkTheme()) {
+            Box(
+                modifier = Modifier
+                    .width(RAIL_BOUNDARY_WIDTH)
+                    .fillMaxHeight()
+                    .background(MaterialTheme.colorScheme.outlineVariant),
+            )
+        }
         LazyColumn(
             state = listState,
             modifier = Modifier
@@ -537,6 +582,20 @@ private fun folderNameTarget(name: String, selected: Boolean, onClick: () -> Uni
             },
         contentAlignment = Alignment.Center,
     ) {
+        // What:     A transparent copy of the name at the selected weight sets the target's width for every name.
+        // Why:      The selected name is drawn heavier and so wider; sizing each target by the heavier copy keeps
+        //           the flow's line breaks the same whichever folder is selected.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // <span style={{ fontWeight: 500, color: 'transparent' }} aria-hidden>{name}</span>
+        // ```
+        Text(
+            text = name,
+            modifier = Modifier.padding(horizontal = NAME_TEXT_PADDING).clearAndSetSemantics {},
+            color = Color.Transparent,
+            style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Medium),
+        )
         Text(
             text = name,
             modifier = Modifier.padding(horizontal = NAME_TEXT_PADDING),

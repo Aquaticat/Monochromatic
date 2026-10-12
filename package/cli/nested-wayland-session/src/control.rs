@@ -469,6 +469,47 @@ pub fn execute(state: &mut Compositor, command: Command) -> Response {
             // ```
             return crate::control_color_scheme::switch(state.appearance_portal.as_ref(), preference);
         }
+        Command::AccentColor(color) => {
+            return crate::control_accent::switch(state.appearance_portal.as_ref(), color);
+        }
+        Command::Notification(verb) => {
+            return crate::control_notification::run(state.notifications.as_ref(), &verb);
+        }
+        Command::Job(verb) => {
+            return crate::control_job::run(state.notifications.as_ref(), &verb);
+        }
+        Command::Move { x, y } => {
+            // What:     `input_pointer::move_pointer(state, x, y)`. Moves the pointer with no
+            //           button, mapping a failure to an `err` line.
+            // Why:      Hover is the only effect; the hosted client sees enter and motion events.
+            match crate::input_pointer::move_pointer(state, x, y) {
+                Ok(()) => return Response::Ok,
+                Err(err) => return Response::Err(format!("{err:#}")),
+            }
+        }
+        Command::Button { action, button } => {
+            // What:     `input_pointer::button(state, action, button)`. Presses or releases at
+            //           the current pointer position; a repeated state answers `err`.
+            // Why:      Lets a test hold a press across a pause and a movement.
+            match crate::input_pointer::button(state, action, button) {
+                Ok(()) => return Response::Ok,
+                Err(err) => return Response::Err(format!("{err:#}")),
+            }
+        }
+        Command::Title => return crate::control_window::title_response(state),
+        Command::AppId => return crate::control_window::app_id_response(state),
+        Command::Launcher => {
+            // What:     `control_launcher::latest(state.launcher.as_ref(), state.start_time)`.
+            //           Reads the newest update from the listener, or refuses without a bus.
+            // Why:      The start time is the clock every update is stamped with.
+            return crate::control_launcher::latest(state.launcher.as_ref(), state.start_time);
+        }
+        Command::LauncherLog { count } => {
+            return crate::control_launcher::log(state.launcher.as_ref(), count);
+        }
+        Command::LauncherClear => {
+            return crate::control_launcher::clear(state.launcher.as_ref());
+        }
         Command::Quit => {
             // Ask hosted client to close before tearing down its Wayland connection.
             child::request_hosted_client_shutdown(state);

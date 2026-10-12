@@ -84,6 +84,15 @@ import androidx.compose.runtime.setValue
 // ```
 import dev.monochromatic.musicplayer.core.Page
 
+// What:     `import dev.monochromatic.musicplayer.core.PlayerHostModel` brings in the pure library rebuild.
+// Why:      `libraryTracks()` delegates the load-order rebuild to the pure rule, which is unit-tested.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// import { libraryTracksFrom } from "./core/PlayerHostModel";
+// ```
+import dev.monochromatic.musicplayer.core.PlayerHostModel
+
 // What:     `import dev.monochromatic.musicplayer.core.Queue` imports the ported `Queue`
 //           type (the play queue: ordered tracks plus a cursor, with shuffle/repeat).
 // Why:      The controller owns a `Queue`.
@@ -138,6 +147,15 @@ import dev.monochromatic.musicplayer.core.pageIdentity
 // import { paginate } from "./core/Pagination";
 // ```
 import dev.monochromatic.musicplayer.core.paginate
+
+// What:     `import dev.monochromatic.musicplayer.core.TrackMeasure` imports the per-track duration and peak value.
+// Why:      The controller publishes the measures the library rows read.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// import type { TrackMeasure } from "./core/TrackMeasure";
+// ```
+import dev.monochromatic.musicplayer.core.TrackMeasure
 
 // What:     `class PlayerController(private val engine: AudioEngine) { ... }` declares a
 //           class with a PRIMARY CONSTRUCTOR. `private val engine: AudioEngine` is a
@@ -1453,6 +1471,43 @@ class PlayerController(private val engine: AudioEngine) {
      */
     fun durationSec(): Double = engine.durationSec()
 
+    // What:     `fun libraryTracks(): List<Track>` returns every library track in load order.
+    // Why:      Search and the template preview read the library as tracks, and each track's position in the list
+    //           is its load-order index, which playback uses.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // libraryTracks(): Track[] { return libraryTracksFrom(this.uris, this.pages); }
+    // ```
+    /** Returns every library track in load order, rebuilt from the stored URIs and the page entries. */
+    fun libraryTracks(): List<Track> = PlayerHostModel.libraryTracksFrom(uris = uris, pages = pages)
+
+    // What:     `fun uriAt(index: Int): String?` returns the URI of the track at one load-order index, or null
+    //           when the index is outside the library.
+    // Why:      The measures are keyed by URI, while the rows and the page name their tracks by index.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // uriAt(index: number): string | null { return this.uris[index] ?? null; }
+    // ```
+    /** Returns the URI of the track at a load-order index, or null when the index is outside the library. */
+    fun uriAt(index: Int): String? = uris.getOrNull(index)
+
+    // What:     `fun mergeMeasures(updates: Map<String, TrackMeasure>)` publishes newly read measures.
+    // Why:      The refresh reads tracks in batches, and each batch replaces only its own keys.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // mergeMeasures(updates): void { this.uiState = { ...this.uiState, measures: { ...old, ...updates } }; }
+    // ```
+    /** Publishes measures read for some tracks, keeping the measures of every other track unchanged. */
+    fun mergeMeasures(updates: Map<String, TrackMeasure>) {
+        if (updates.isEmpty()) {
+            return
+        }
+        uiState = uiState.copy(measures = uiState.measures + updates)
+    }
+
     // What:     `fun snapshot(): PlaybackSnapshot { ... }` declares a public method, block
     //           body, returning a `PlaybackSnapshot`.
     // Why:      Point-in-time view of the current scope and transport for the `MediaSession`
@@ -1923,6 +1978,8 @@ class PlayerController(private val engine: AudioEngine) {
         //   loading: this.isLoading,
         // };
         // ```
+        /** Tab-order index of the page that holds the current track, or null when no track is current. */
+        val playingPage: Int? = current?.let { index -> pageOfIndex(pages, index) }
         uiState = PlayerUiState(
             // What:     `pageLabels = pages.map { it.label }` passes the page-tab labels by
             //           name; `pages.map { it.label }` maps each `Page` to its `label`
@@ -1964,6 +2021,15 @@ class PlayerController(private val engine: AudioEngine) {
             // currentIndex: current,
             // ```
             currentIndex = current,
+            // What:     `playingPageIndex` and `playingItems` pass the playing track's own folder by name.
+            // Why:      The deck names the playing track even when its folder is not the one on screen.
+            //
+            // In TS you'd write (pseudocode):
+            // ```ts
+            // playingItems: pages[pageOfIndex(pages, current)]?.entries ?? [],
+            // ```
+            playingPageIndex = playingPage,
+            playingItems = playingPage?.let { page -> pages[page].entries } ?: emptyList(),
             // What:     `playing = isPlaying` passes the play/pause flag by name.
             // Why:      The play vs pause icon.
             //
@@ -1983,6 +2049,14 @@ class PlayerController(private val engine: AudioEngine) {
             // volume: this.uiState.volume,
             // ```
             volume = uiState.volume,
+            // What:     `measures = uiState.measures` carries the read track measures forward by name.
+            // Why:      A rebuild of the snapshot must not drop the peaks and durations already read.
+            //
+            // In TS you'd write (pseudocode):
+            // ```ts
+            // measures: this.uiState.measures,
+            // ```
+            measures = uiState.measures,
             // What:     `queueSize = queue.len()` passes the total track count by name.
             // Why:      Lets the UI tell "empty" from "has tracks".
             //

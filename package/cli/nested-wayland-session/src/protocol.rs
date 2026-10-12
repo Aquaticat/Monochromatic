@@ -49,6 +49,44 @@ mod color_scheme;
 #[path = "protocol_scale.rs"]
 mod scale;
 
+/// Pointer hover and held-button parsing sits beside the click grammar it extends.
+#[path = "protocol_pointer.rs"]
+mod pointer;
+
+/// Taskbar progress verbs parse their optional record count here.
+#[path = "protocol_launcher.rs"]
+mod launcher;
+
+/// The `record` verb has the longest argument list and is parsed beside the others,
+///  not among them.
+#[path = "protocol_record.rs"]
+mod record;
+
+/// Notification verbs parse their ids,
+///  reasons,
+///  and action keys here.
+#[path = "protocol_notification.rs"]
+mod notification;
+
+/// Plasma job verbs parse their job ids here.
+#[path = "protocol_job.rs"]
+mod job;
+
+/// The runtime accent color verb shares the startup option's grammar.
+#[path = "protocol_accent.rs"]
+mod accent;
+
+/// Job verbs are matched by the executor,
+///  so their type is part of the protocol's interface.
+pub use job::JobCommand;
+
+/// Notification verbs are matched by the executor,
+///  so their type is part of the protocol's interface.
+pub use notification::NotificationCommand;
+
+/// The accent color a runtime `accent-color` request carries.
+use crate::accent_color::AccentColor;
+
 /// What:
 ///      Import the output-scale value a `scale` request carries.
 /// Why:
@@ -129,6 +167,20 @@ impl PointerButton {
             PointerButton::Middle => return 0x112,
         }
     }
+
+    /// The lowercase name the control protocol uses for this button.
+    ///
+    /// What:
+    ///      `pub fn name(self) -> &'static str`.
+    /// Why:
+    ///       Error answers name the button the way the request spelled it.
+    pub fn name(self) -> &'static str {
+        match self {
+            PointerButton::Left => return "left",
+            PointerButton::Right => return "right",
+            PointerButton::Middle => return "middle",
+        }
+    }
 }
 
 /// What action a key request performs.
@@ -155,6 +207,27 @@ pub enum KeyAction {
     Tap,
 }
 
+/// What a `button` request does to a pointer button.
+///
+/// What:
+///      `pub enum ButtonAction { Down, Up }`.
+///  Two data-less variants.
+/// Why:
+///       A test holds a button across a pause and movement,
+///  so the press and the release arrive as separate requests.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// type ButtonAction = "down" | "up";
+/// ```
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum ButtonAction {
+    /// Press the button and keep it held.
+    Down,
+    /// Release a held button.
+    Up,
+}
+
 /// A parsed control command.
 ///
 /// What:
@@ -179,6 +252,12 @@ pub enum KeyAction {
 ///   | { kind: "dropFile"; path: string; x?: number; y?: number }
 ///   | { kind: "colorScheme"; preference: "dark" | "light" }
 ///   | { kind: "scale"; scale: OutputScale }
+///   | { kind: "move"; x: number; y: number }
+///   | { kind: "button"; action: "down" | "up"; button: PointerButton }
+///   | { kind: "title" } | { kind: "appId" }
+///   | { kind: "launcher" } | { kind: "launcherLog"; count: number } | { kind: "launcherClear" }
+///   | { kind: "accentColor"; color: AccentColor }
+///   | { kind: "notification"; command: NotificationCommand } | { kind: "job"; command: JobCommand }
 ///   | { kind: "quit" };
 /// ```
 #[derive(Debug, Clone, PartialEq)]
@@ -254,6 +333,34 @@ pub enum Command {
     },
     /// Stop the running recording.
     RecordStop,
+    /// Move the pointer to a logical point without pressing a button.
+    Move {
+        /// Logical x coordinate.
+        x: f64,
+        /// Logical y coordinate.
+        y: f64,
+    },
+    /// Press or release a button at the current pointer position.
+    Button {
+        /// Whether the button goes down or comes up.
+        action: ButtonAction,
+        /// Which button.
+        button: PointerButton,
+    },
+    /// Report the title the hosted client set on its toplevel.
+    Title,
+    /// Report the app ID the hosted client set on its toplevel.
+    AppId,
+    /// Report the newest taskbar progress update.
+    Launcher,
+    /// Report the newest taskbar progress updates,
+    ///  oldest first.
+    LauncherLog {
+        /// How many of the newest updates to list.
+        count: usize,
+    },
+    /// Empty the taskbar progress history.
+    LauncherClear,
     /// Change the private appearance portal's color scheme while the client runs.
     ColorScheme(
         /// Appearance value the private portal serves from now on.
@@ -263,6 +370,21 @@ pub enum Command {
     Scale(
         /// Scale every hosted surface is told to render at from now on.
         OutputScale,
+    ),
+    /// Change the private appearance portal's accent color while the client runs.
+    AccentColor(
+        /// Accent color the private portal serves from now on.
+        AccentColor,
+    ),
+    /// Read or drive the fake notification service.
+    Notification(
+        /// The notification verb and its arguments.
+        NotificationCommand,
+    ),
+    /// Read or drive the fake Plasma job view server.
+    Job(
+        /// The job verb and its arguments.
+        JobCommand,
     ),
     /// Stop the compositor.
     Quit,
@@ -393,6 +515,16 @@ pub fn parse_command(raw: &str) -> Result<Command, String> {
         return Ok(Command::Screenshot(PathBuf::from(path)));
     }
 
+    // What:     `notification-action` takes the rest of the line as the action key, so it is
+    //           handled before tokenising, like `type`.
+    // Why:      Action keys are chosen by the app and may contain spaces.
+    if let Some(rest) = line.strip_prefix("notification-action ") {
+        return notification::parse_action(rest);
+    }
+    if line == "notification-action" {
+        return Err("notification-action requires an id and an action key".to_string());
+    }
+
     // What:     `let mut tokens = line.split_whitespace();`. Lazy iterator over
     //           whitespace-separated tokens (collapses runs of spaces). `mut` because we
     //           consume it with `.next()`.
@@ -417,71 +549,46 @@ pub fn parse_command(raw: &str) -> Result<Command, String> {
         "key" => return parse_key(&mut tokens),
         "resize" => return parse_resize(&mut tokens),
         "drop-file" => return parse_drop_file(&mut tokens),
-        "record" => return parse_record(&mut tokens),
+        "record" => return record::parse(&mut tokens),
         "color-scheme" => return color_scheme::parse(&mut tokens),
         "scale" => return scale::parse(&mut tokens),
+        "move" => return pointer::parse_move(&mut tokens),
+        "button" => return pointer::parse_button_command(&mut tokens),
+        "title" => return no_arguments(&mut tokens, "title", Command::Title),
+        "app-id" => return no_arguments(&mut tokens, "app-id", Command::AppId),
+        "launcher" => return no_arguments(&mut tokens, "launcher", Command::Launcher),
+        "launcher-clear" => return no_arguments(&mut tokens, "launcher-clear", Command::LauncherClear),
+        "launcher-log" => return launcher::parse_log(&mut tokens),
+        "accent-color" => return accent::parse(&mut tokens),
+        "notifications" | "notification-log" | "notification-clear" | "notification-close" => {
+            return notification::parse(verb, &mut tokens);
+        }
+        "jobs" | "job-log" | "job-clear" | "job-suspend" | "job-resume" | "job-cancel" | "job-refresh" => {
+            return job::parse(verb, &mut tokens);
+        }
         other => return Err(format!("unknown command: {other}")),
     }
 }
 
-/// Parse the arguments of a `record` command (`<dir> [fps] [format]` or `stop`).
+/// Accept a verb that takes no arguments and reject any trailing token.
 ///
 /// What:
-///      `fn parse_record(tokens: &mut std::str::SplitWhitespace) -> Result<Command,
-///           String>`.
-///  The first token is either `stop` (stop recording) or the output
-///           directory,
-///  optionally followed by an fps and a format name.
+///      `fn no_arguments(tokens: &mut std::str::SplitWhitespace, verb: &str, command: Command)
+///           -> Result<Command, String>`.
+///  Returns `command` when no token follows the verb.
 /// Why:
-///       Isolate the recorder command grammar.
-fn parse_record(tokens: &mut std::str::SplitWhitespace) -> Result<Command, String> {
-    // What:     `let first = tokens.next().ok_or_else(|| "record requires a directory or
-    //           'stop'".to_string())?;`. Require the first token.
-    // Why:      A bare `record` is ambiguous.
-    let first = tokens
-        .next()
-        .ok_or_else(|| return "record requires a directory or 'stop'".to_string())?;
-
-    // What:     `if first == "stop" { if tokens.next().is_some() { return Err(...); } return
-    //           Ok(Command::RecordStop); }`. Handle the stop form (which takes no more args).
-    // Why:      `record stop` ends the recording.
-    if first == "stop" {
-        if tokens.next().is_some() {
-            return Err("record stop takes no arguments".to_string());
-        }
-        return Ok(Command::RecordStop);
-    }
-
-    // What:     `let dir = PathBuf::from(first);`. The output directory (no spaces).
-    // Why:      Where the frame sequence is written.
-    let dir = PathBuf::from(first);
-
-    // What:     `let fps = match tokens.next() { Some(text) => text.parse::<f64>()
-    //           .map_err(|_| "record fps is not a number".to_string())?, None => 60.0 };`.
-    //           Optional fps, defaulting to 60.
-    // Why:      The requested capture rate.
-    let fps = match tokens.next() {
-        Some(text) => text
-            .parse::<f64>()
-            .map_err(|_| return "record fps is not a number".to_string())?,
-        None => 60.0,
-    };
-
-    // What:     `let format = tokens.next().unwrap_or("png").to_string();`. Optional format
-    //           name, defaulting to `png`; validated later by the encoder.
-    // Why:      Choose the output codec.
-    let format = tokens.next().unwrap_or("png").to_string();
-
-    // What:     `if tokens.next().is_some() { return Err(...); }`. Reject extra tokens.
-    // Why:      `record` takes at most dir, fps, format.
+///       A request such as `title extra` must fail whole instead of being read as `title`.
+fn no_arguments(
+    tokens: &mut std::str::SplitWhitespace,
+    verb: &str,
+    command: Command,
+) -> Result<Command, String> {
+    // What:     `if tokens.next().is_some() { return Err(...); }`. Any leftover token is an error.
+    // Why:      The verb's meaning does not cover arguments it was not given.
     if tokens.next().is_some() {
-        return Err("record takes at most a directory, fps, and format".to_string());
+        return Err(format!("{verb} takes no arguments"));
     }
-
-    // What:     `Ok(Command::Record { dir, fps, format })`. Build the command (tail
-    //           expression).
-    // Why:      Return the parsed record request.
-    return Ok(Command::Record { dir, fps, format })
+    return Ok(command)
 }
 
 /// Parse the arguments of a `click` command.

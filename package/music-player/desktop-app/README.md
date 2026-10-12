@@ -242,6 +242,19 @@ The crate is a library plus a thin binary so the pure logic is unit-testable wit
    and Windows `THREAD_PRIORITY_IDLE`,
    with a
   no-op on any other target.
+- `src/sweep_gate.rs`:
+   the pause gate of the background sweep (D107).
+   Every sweep worker asks the gate for admission before it claims the next track,
+   so Pause stops new claims, a track already being decoded finishes, Resume wakes the parked workers,
+   and closing the gate at shutdown releases them.
+- `src/analysis_notification_logic.rs`, `src/analysis_notification_wire.rs`, `src/analysis_notification.rs`:
+   the true-peak analysis indicator (D107), which replaced the in-app banner.
+   On KDE it is a Plasma job (`org.kde.kuiserver`) with a native Pause button;
+   elsewhere it is one freedesktop notification replaced in place; with neither, analysis runs without an indicator.
+   The logic file holds the pure rules (rate limit of two updates a second, skipping repeats, pause and dismissal),
+   the wire file holds the D-Bus messages (Linux only),
+   and the handle runs them on its own thread so the window and the sweep workers never wait on the bus.
+   Protocol facts and pitfalls: `doc/troubleshooting/plasma-job-view-progress-protocol.md`.
 - `src/peak_swap.rs`:
    current-track peak swap orchestration.
    Cache hits return the measured gain immediately;
@@ -448,16 +461,10 @@ The crate is a library plus a thin binary so the pure logic is unit-testable wit
    The window title shows the playing track's list path (the same
   `folder/.../file` string the queue row shows) while audio plays,
    and reverts to "Music Player" when paused.
-  The custom controls (radio group,
-   checkbox,
-   scrollbar,
-   row highlight) take their colours from the Slint system
-  palette rather than hardcoded values,
+  The custom controls take their colours from the `Theme` roles in `ui/theme.slint`
+   rather than hardcoded values,
    so they follow the OS accent colour
-  and the light/dark theme:
-   the highlighted row and the checked checkbox use the accent,
-   the same as the active
-  page tab's primary button.
+  and the light/dark theme (see "Theme colours").
   Seek-bar movement and platform taskbar progress updates (KDE LauncherEntry on Linux,
    ITaskbarList3 on Windows)
   are debounced through the same Rust helper,
@@ -474,6 +481,55 @@ Run theme-dependent and other isolated GUI checks inside the repo-owned composit
 If that compositor cannot provide a required test feature,
 add the feature to `nested-wayland-session` rather than mutating host-wide desktop settings.
 Restore any app-local fixture state after capture.
+
+## Theme colours
+
+The operating system's accent colour is the theme root (A3, D108), and it is the only thing taken from the platform.
+Slint reports it through `SlintInternal.accent-color`: the XDG portal `org.freedesktop.appearance` `accent-color` on
+Linux (live, through the portal's `SettingChanged` signal), DWM colorization on Windows and `NSColor` accent on macOS.
+A transparent accent (alpha 0) means none is available, and the root is then the Fold capture baseline `#4E5E8B`.
+`SlintInternal` needs Slint's experimental-features switch (`SLINT_ENABLE_EXPERIMENTAL_FEATURES`), which the package
+`mise.toml` and the repo `.cargo/config.toml` already set.
+
+Every other colour is derived from the root in OKLCH by `src/theme_roles.rs` (math in `src/oklch.rs`):
+each role has a lightness target, a chroma share and a hue offset, converted to sRGB with chroma reduction at constant
+lightness and hue (a binary search, never per-channel clipping, which would shift the hue).
+Text roles are then moved in lightness until WCAG AA holds on every surface they are drawn on and under the hover layer,
+so contrast holds for any accent.
+The dark canvas, the rail seam and the deck stay the fixed neutrals of D41, the light canvas stays white,
+and the error roles are constants that follow no accent.
+Hover and pressed fills of the selected segment and the search match fill (D59) are OKLCH roles too;
+state layers over a surface stay alpha-only.
+The Rust side (`src/ui_theme.rs`) writes both schemes into `Theme.dark-roles` and `Theme.light-roles` at startup and
+again whenever the accent changes; the light or dark choice stays inside Slint.
+The literals in `ui/theme.slint` are the baseline roles, so a Slint viewer without Rust still renders the baseline;
+a test fails when they differ from the derivation and says what to paste.
+No `.slint` file may call `mix`, `brighter`, `darker` or `transparentize` (a test scans for them).
+
+## Environment overrides
+
+`MUSIC_PLAYER_COLOR_SCHEME` forces the window's color scheme.
+Set it to `light` or `dark`.
+Leave it unset to follow the operating system's scheme.
+Any other value is logged and ignored, so the window follows the system.
+Verification runs use it to capture both schemes without changing the host's theme.
+
+`MUSIC_PLAYER_ACCENT` replaces the system accent as the theme root.
+Set it to six hex digits such as `6060C0` or `#6060C0`.
+Leave it unset to follow the system accent.
+Any other value is logged and ignored.
+It sets `Theme.accent-override`, which previews and tests can also set (transparent follows the system).
+Verification runs use it to capture several accents without changing the host's theme.
+
+## Typeface
+
+The window draws its text in Inter Variable, bundled from `ui/fonts/InterVariable.ttf`
+and registered by the `import` at the top of `ui/app_window.slint`,
+so Latin text looks the same on every machine.
+Inter has no CJK glyphs, so Japanese and other scripts still fall back to a system font.
+Inter is licensed under the SIL Open Font License 1.1 (`LICENSES/OFL-1.1.txt`).
+Text sizes are the logical pixel sizes in `ui/theme.slint`, and main text is 16px.
+The template editor's code fields keep `Noto Sans Mono`.
 
 ## Page navigation UX choices
 
@@ -610,12 +666,11 @@ ignore it.
  A freshly installed `.desktop` file may need one login cycle before the shell associates it.
 
 The same Slint XDG-portal watcher that supplies the dark/light colour scheme also reads
-`org.freedesktop.appearance accent-color` and live-updates on change,
- so the UI follows the system accent colour
-through the Slint palette with no extra wiring.
- When the desktop environment or portal exposes no accent-color
-setting,
- Slint falls back to its default accent,
+`org.freedesktop.appearance accent-color` and live-updates on change.
+ The app reads that accent through `SlintInternal.accent-color` (not through the Slint palette,
+ which keeps only its own lightness) and derives every theme colour from it in OKLCH, see "Theme colours" above.
+ When the desktop environment or portal exposes no accent-color setting,
+ Slint reports a transparent accent and the app uses its Fold baseline root instead,
  so the feature degrades gracefully rather than failing.
 
 The image installs `google-noto-sans-cjk-fonts`.

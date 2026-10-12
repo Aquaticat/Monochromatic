@@ -3,7 +3,9 @@
 /// Owned filesystem paths survive argument parsing.
 use std::path::PathBuf;
 /// Existing private-portal appearance values.
-use crate::appearance_portal::ColorSchemePreference;
+use crate::{
+    accent_color::AccentColor, appearance_portal::ColorSchemePreference, notification_mode::NotificationMode,
+};
 /// Validated output scale shared with the runtime `scale` verb.
 use crate::screen_geometry::OutputScale;
 
@@ -104,6 +106,25 @@ pub struct Config {
     ///       `Some` starts private Settings portal without changing host desktop theme.
     pub color_scheme: Option<ColorSchemePreference>,
 
+    /// Optional isolated portal accent color for hosted client.
+    ///
+    /// What:
+    ///      `pub accent_color: Option<AccentColor>`.
+    /// Why:
+    ///       `Some` starts the private Settings portal and serves `org.freedesktop.appearance` `accent-color`.
+    pub accent_color: Option<AccentColor>,
+
+    /// Which fake notification services the private bus serves (`--notifications`).
+    ///
+    /// What:
+    ///      `pub notifications: NotificationMode`.
+    /// Why:
+    ///       Anything but `None` starts the private bus and records the calls a hosted app makes
+    ///  to `org.freedesktop.Notifications` and,
+    ///  in `kde` mode,
+    ///  to Plasma's job view server.
+    pub notifications: NotificationMode,
+
     /// Whether to launch the hosted app inside a resource-controlled systemd scope.
     ///
     /// What:
@@ -114,6 +135,17 @@ pub struct Config {
     ///           starve it;
     ///  degrades to a direct launch when systemd is unavailable.
     pub isolate: bool,
+
+    /// Whether to start the private session bus so taskbar progress can be observed.
+    ///
+    /// What:
+    ///      `pub launcher_log: bool`.
+    ///  Set by `--launcher-log`.
+    /// Why:
+    ///       The hosted app then gets a private `DBUS_SESSION_BUS_ADDRESS` where its
+    ///  `LauncherEntry.Update` signals reach the compositor,
+    ///  and the host session bus never sees them.
+    pub launcher_log: bool,
 
     /// Optional hard CPU cap for the app,
     ///  in percent of one core (`--app-cpu-quota`).

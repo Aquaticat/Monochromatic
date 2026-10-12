@@ -32,18 +32,19 @@
 //!  rather than the former hex string.
 
 /// What:
-///      `use jni::JNIEnv;` imports the per-call interface pointer the JVM hands
-///           every native method (the gateway used to read the Java string and build
-///           the returned one).
+///      `use jni::EnvUnowned;` imports the per-call interface pointer the JVM hands
+///           every native method (jni 0.22 renamed the former `EnvUnowned` argument type;
+///           the JNI calls live on the `Env` that `run_with_env` lends in a closure).
 /// Why:
-///       `native_fingerprint` reads its `JString` argument and allocates the
-///           result string through this handle.
+///       `native_fingerprint` reads its `JString` argument through this handle.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// type JNIEnv = RuntimeContext; // per-call handle to talk to the host runtime
+/// type EnvUnowned = RuntimeContext; // per-call handle to talk to the host runtime
 /// ```
-use jni::JNIEnv;
+use jni::EnvUnowned;
+
+use crate::jni_call::run_with_env;
 
 /// What:
 ///      `use jni::objects::{JClass, JString};`.
@@ -253,16 +254,17 @@ fn compute(path: &str, size: u64, mtime_nanos: u128) -> u64 {
 /// export function nativeFingerprint(env, _class, path: JString, size: bigint, mtimeNanos: bigint): jlong { ... }
 /// ```
 pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeFingerprint<'local>(
-    mut env: JNIEnv<'local>,
+    mut env: EnvUnowned<'local>,
     _class: JClass<'local>,
     path: JString<'local>,
     size: jlong,
     mtime_nanos: jlong,
 ) -> jlong {
-    // What:     `let path_str: String = match env.get_string(&path) { Ok(value) => value.into(), Err(_) => return 0 };`.
-    //           `env.get_string(&path)` borrows the `JString` (`&path`) and returns a
-    //           `Result`; `Ok(value) => value.into()` converts the JVM-string wrapper
-    //           into an owned `String`; `Err(_) => return 0` bails with the `0` sentinel.
+    // What:     `let Some(path_str) = run_with_env(&mut env, ..., |jni_env| ...) else { return 0 };` with the
+    //           closure body `return path.try_to_string(jni_env)`.
+    //           `path.try_to_string(env)` borrows the `JString` and returns an owned
+    //           `String`; `run_with_env` logs a failure and yields `None`, so the `else`
+    //           arm bails with the `0` sentinel.
     // Why:      Turn the opaque Java string into an owned Rust `String` to hash; a valid
     //           Kotlin `String` never fails here, so the sentinel path is unreachable in
     //           practice but keeps the boundary panic-free.
@@ -272,9 +274,10 @@ pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeFin
     // let pathStr: string;
     // try { pathStr = env.getString(path); } catch { return 0n; }
     // ```
-    let path_str: String = match env.get_string(&path) {
-        Ok(value) => value.into(),
-        Err(_) => return 0,
+    let Some(path_str) = run_with_env(&mut env, "nativeFingerprint path", |jni_env| {
+        return path.try_to_string(jni_env);
+    }) else {
+        return 0;
     };
     // What:     `let fingerprint = compute(&path_str, size as u64, mtime_nanos as u64 as u128);`.
     //           `&path_str` lends the string read-only. `size as u64` reinterprets the

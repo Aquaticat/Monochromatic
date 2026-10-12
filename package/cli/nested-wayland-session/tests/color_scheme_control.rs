@@ -23,7 +23,8 @@ fn switch_without_private_portal_is_refused_with_its_remedy() {
 /// A real private portal reports whether hosted clients were notified.
 #[test]
 fn switch_reports_changed_only_when_the_served_value_changes() -> anyhow::Result<()> {
-    let portal = AppearancePortal::start(ColorSchemePreference::Dark)?;
+    let bus = std::sync::Arc::new(nested_wayland_session::private_bus::PrivateBus::start()?);
+    let portal = AppearancePortal::start(ColorSchemePreference::Dark, bus)?;
     let changed = Response::OkWith("changed".to_string());
     let unchanged = Response::OkWith("unchanged".to_string());
     assert_eq!(switch(Some(&portal), ColorSchemePreference::Dark), unchanged);

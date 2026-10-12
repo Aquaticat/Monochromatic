@@ -217,6 +217,7 @@ use ringbuf::{HeapProd, HeapRb};
 /// ```ts
 /// import { PlayerError } from "./error";
 /// ```
+use crate::audio_meter::MeterSnapshot;
 use crate::error::PlayerError;
 
 /// What:
@@ -752,5 +753,20 @@ impl Output {
         // Atomics.store(playingFlag, 0, on ? 1 : 0);
         // ```
         self.playing.store(on, Ordering::Relaxed);
+    }
+
+    /// What:
+    ///      `pub fn meter_snapshot(&self) -> MeterSnapshot`.
+    ///  Returns zeroed counters: this output does not count underruns yet.
+    /// Why:
+    ///       Keeps the engine's report call compiling on macOS and Windows without
+    ///           claiming a measurement this platform does not make.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// meterSnapshot(): MeterSnapshot { return emptyMeterSnapshot(); }
+    /// ```
+    pub fn meter_snapshot(&self) -> MeterSnapshot {
+        return MeterSnapshot::default();
     }
 }

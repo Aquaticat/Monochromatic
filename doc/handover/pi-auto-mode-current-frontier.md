@@ -5,7 +5,255 @@
 Resume the axiom-based migration without reopening settled choices or replaying completed phases.
 This current summary complements the
 [historical evidence ledger](pi-auto-mode-axiom-evaluation.md).
-Updated 2026-10-09.
+Updated 2026-10-12.
+
+## Paused for a break
+
+The user asked to update the handover and then take a break on 2026-10-12.
+Finish only this handover update and its document checks,
+then stop.
+Do not restart the migration because a background completion notification arrives.
+Resume implementation when the user returns to it.
+
+At pause intake,
+the process manager reported no running jobs,
+and the restricted slice reported `pids.current=0`.
+No build,
+formatter,
+test,
+or agent is intentionally left running.
+The remaining work is not blocked on generic delivery authorization.
+
+The recent execution was not reliable enough.
+Agent-authored command and fixture mistakes,
+a formatter termination,
+and excessive supporting work delayed integration.
+The latest passing build and type check do not change the unfinished delivery status.
+Do not turn the break into another investigation queue.
+
+## Current delivery direction
+
+The user rejected describing delivery or installation as withheld,
+and rejected indefinite depth-first work.
+Those descriptions were the agent's framing,
+not a current user authorization barrier.
+Historical statements about separate cutover authorization do not override this correction.
+Missing implementation and verification are remaining work.
+
+The completion target is the working migration,
+not another private source-capture checkpoint.
+Use this finite delivery queue:
+
+- [x] Integrate the current constructor-description change into the native regression parent.
+  Full native `proc_7042` passed all 82 outputs and 157 integrated input cases.
+  Native parity `proc_9cc4`,
+  lifecycle and description consumers `proc_a37a`,
+  and action/source parents `proc_50d1` passed.
+  Reuse the established required reds rather than opening a duplicate omission campaign.
+- [ ] Complete the code-owned decision consumer.
+  Demonstrate justified approval,
+  denial,
+  eligible original approval requests,
+  unresolved premises,
+  and unspecified policy through the canonical native handler without injected final decisions.
+  Replace unconditional missing-premise placeholders with decision-specific evidence from existing owners.
+- [ ] Integrate the implementation into the maintained package and necessary host path.
+  The product must not depend on private scratch files.
+  Run package checks against that integration.
+- [ ] Build,
+  install,
+  and exercise the actual plugin through its host,
+  including native approval and cancellation.
+
+Further source work must fix a named failure of these delivery criteria;
+standalone inventory expansion is not the default next step.
+This direction does not turn absent coverage,
+authority,
+facts,
+or semantic admission into evidence.
+Preserve accepted governing-domain A and the models-estimate/code-decides boundary.
+Ask only when a concrete user-only input or unsettled acceptance choice is reached.
+
+Historical checkpoint sections retain their evidence and original scope.
+The current delivery queue supersedes their stale next-step ordering.
+
+The user chose to leave `AGENTS.md` unchanged for now,
+not to adopt the proposed `PXQ` replacement.
+[Issue #677](https://github.com/Aquaticat/Monochromatic/issues/677) records the observed failure,
+exact corrections,
+existing and proposed rules,
+technical evidence,
+and open design questions.
+It is a separate workflow investigation,
+not a gate on migration delivery.
+
+
+## Maintained-package integration in progress
+
+The shared AST adapter repair is complete:
+issue #593 is closed after rebuilt consumer checks,
+generated lockfile refresh `e801aa1e5f`,
+and the 18-document check `proc_b14d`.
+Documentation is committed in `7135c69304`.
+
+### Landed code and verification
+
+The deterministic directive resolver,
+authorization constraints,
+and outcome calculation now live in `package/pi-plugin/auto-mode/src/`:
+
+- `afa2268e1d` adds `policy-data.ts`,
+  `instruction-rule.ts`,
+  `instruction-resolution.ts`,
+  `authorization-requirement.ts`,
+  `authorization-requirements.ts`,
+  `guard-outcome.ts`,
+  and their `public-api.ts` exports.
+- `2b05330473` adds `policy-test-fixture.ts`,
+  `policy-resolution.unit.test.ts`,
+  `policy-data.unit.test.ts`,
+  and `policy-conformance.unit.test.ts`.
+  Tests import the maintained built package.
+  The conformance test carries the existing bounded complete-world oracle,
+  not a new provider trial.
+- `c34e4acfb5` fixes the computed Symbol-key syntax reported by TypeScript `TS1109`,
+  removes redundant field-count branches,
+  and separates the identity-byte limit from the fact-count limit.
+- `dd9cd4570f` adds explicit path argument decoding to the package's existing Oxlint tasks,
+  using the existing mise helpers and unchanged lint rules.
+  That new argument route has not yet been exercised successfully.
+
+The rebuilt artifact and package type check passed `proc_4615` with exit zero.
+Despite that process's name,
+its command contained only `build` and `lint:types`:
+it did not run unit tests.
+The new kernel tests,
+formatter completion,
+and lint remain unverified.
+The pure resolver does not establish source authority,
+coverage,
+human approval,
+or execution permission.
+Its explicit internal premises flag is not a native admission boundary.
+No migrated host/plugin was installed.
+
+### Recent failures and resource state
+
+`proc_3f44` never ran Oxlint.
+The agent appended paths to an inline Node task without an argument-consumption contract,
+producing `ERR_INVALID_TYPESCRIPT_SYNTAX`.
+The initial package build then succeeded in `proc_55f3`,
+but its type check found the agent-authored `TS1109` fixture error.
+That syntax error is fixed,
+and the later build/type run passed.
+
+The no-argument package formatter `proc_0d52` reached the configuration build,
+then terminated with `SIGTERM` without an Oxlint report or source changes.
+The shared restricted slice recorded `oom 1` and `oom_kill 1`.
+A kernel-journal query returned no matching entries;
+the killed process and exact causal chain have not been established.
+Do not call that run a lint pass,
+or attribute it to the earlier systemd transport failures.
+No successful resource-tuning workaround has been verified.
+
+All shell commands and process startups remain subject to the requested aggregate limits:
+2 GiB memory,
+CPU quota 200%,
+256 tasks,
+and no swap.
+Use the verified `systemd-run` wrapper with `piwork3285273.slice`;
+never retry unrestricted.
+Recheck the slice's runtime limits and child inheritance if the environment changes or restarts.
+The Pi host itself was not moved into that slice.
+No subagents or further Advisor calls.
+The deferred `PXQ` proposal remains unadopted.
+
+### Working locations and command wrapper
+
+The maintained repository is `${HOME}/Monochromatic`.
+The private implementation and progress record are under
+`${HOME}/temp/agent/auto-mode-consumer-contract.mDLkyNoP`.
+Its canonical progress file is `contract/lifecycle/runtime-continuation/current-progress.json`.
+Recent process logs are in `/tmp/pi-processes-rZNk8G/`;
+those logs are temporary,
+so the results and limitations in this handover are the durable summary.
+
+Every shell command and process startup in this session uses this launcher,
+including Git and diagnostic commands:
+
+```sh
+# Read-only repository status through the verified restricted launcher.
+exec /usr/bin/systemd-run \
+  --user --scope --quiet --collect --expand-environment=no \
+  --slice=piwork3285273.slice \
+  --property=MemoryMax=2G --property=MemorySwapMax=0 \
+  --property=CPUQuota=200% --property=TasksMax=256 \
+  /usr/bin/bash --noprofile --norc -c \
+  'cd -- "$HOME/Monochromatic" && git status --short'
+```
+
+The slice also needs its verified aggregate runtime limits;
+per-command limits alone do not bound concurrent jobs together.
+Do not assume that runtime slice configuration survives a restart.
+The empty `direct` child cgroup was never used as an alternate launcher.
+
+### Resume from these concrete gaps
+
+First finish the maintained kernel's built-artifact tests and lint under those limits.
+The changed Oxlint task's explicit file selection needs an actual invocation;
+selected-file success would not prove package-wide lint coverage.
+Do not rerun the full private native parent merely because a new session starts.
+
+Then complete the existing native decision consumer,
+rather than creating another standalone inventory:
+
+- In private `contract/integration/action-policy/premises.mjs`,
+  `inspectPolicyPremises` still unconditionally adds `request-source-domain`.
+  `compiler.mjs` therefore keeps the native program incomplete.
+  Replace the placeholder only with decision-specific evidence from existing owners.
+- In private `contract/integration/action-policy/evaluate.mjs`,
+  `evaluateOriginalPolicy` does not supply `approvalContext` to `evaluatePolicy`.
+  The runtime,
+  handler,
+  and reviewer do not carry that context either.
+  The existing `finishWithApproval` and incumbent original-group binder are not connected to the canonical path.
+- Production runtime and host integration still depend on the private generated graph.
+  The prior static scan reached 115 modules,
+  but was not a complete packaging inventory.
+  The maintained pure kernel removes none of the remaining host-constructor integration obligations.
+
+Preserve accepted all-host-input domain A and receipt at host processing boundaries.
+Already-received inputs remain accounted for after hiding,
+transformation,
+rejection,
+or non-transmission.
+Unprocessed edits undone before receipt are excluded.
+Unregistered potentially governing inputs remain unresolved;
+roles and filenames do not establish authority.
+Unknown premises do not become permission or automatic approval requests.
+No operative instruction remains `unspecified`.
+Prerequisite fulfillment grants no permission and overrides no prohibition.
+
+Keep the original budgets,
+source limits,
+failure retirement,
+native cancellation,
+and Allow/Deny/Stop behavior.
+No new hash locks,
+request re-encoding,
+parallel source registries,
+provider trials,
+or speculative source-capture campaigns.
+Complete maintained integration,
+then build,
+install,
+and exercise the actual host/plugin.
+
+For resumption,
+inspect the maintained files and the named native consumer gaps,
+not every historical checkpoint in this document.
+Report actual executed checks and the remaining delivery boundary.
+Ask only for a concrete user-only input or genuinely unsettled acceptance choice.
 
 ## Original rendered prompt-input contributions
 
@@ -296,6 +544,516 @@ Eleven-document rendering passed `proc_c7e4` before this final evidence update.
 
 The unassociated ordinary request domain and other unconsumed producer relationships remain explicit.
 
+## Original Session constructor tool descriptions
+
+This is the active private increment;
+the completed manager checkpoint predates this runtime change.
+Native `prepareLoadout` can replace declared descriptions,
+and hidden tools need not appear in a model request.
+The original definition text remains a separate potentially governing input.
+
+Declared-description control `7414bed9` / `proc_2d95` passed.
+Hidden `proc_fc39` and replaced `proc_acbd` completed native request and review,
+then failed the original-description retention assertion.
+The first setup attempt `proc_8d89` instead expected an unaugmented declaration;
+the native Codemode call/output hint is preserved,
+not removed.
+
+Private `67a2a405` observes the actual Session constructor frame after its original manager assignment,
+before reading `customTools` or running loadout callbacks.
+It selects ordinary `name` and `description` data fields under one aggregate copier budget.
+The existing manager source owner retains an input-only publication on that frame,
+not on the borrowed config,
+list,
+or definition objects.
+The distinct `native-tool-description-input` kind and `customTools` location add no message role,
+ordinal,
+authority,
+or payload capability.
+Absent input and an explicit empty list remain different.
+The original occurrence,
+content,
+and serialized-record bounds are unchanged.
+
+Owner controls and declared/hidden/replaced native consumers passed
+`d1e67271` / `proc_1456`.
+They require the constructor-specific view,
+original source/publication references,
+unchanged request bytes,
+and indexed assessment questions.
+Schema,
+executable,
+and other opaque fields are not inspected.
+Native constructor parity passed `93c75a07` / `proc_9cc4`.
+The getter counters matched the baseline,
+including zero construction-time reads of `execute`,
+and separate positive reads verified the counters.
+Lifecycle and declared/hidden/replaced/raw-mutated description consumers passed `proc_a37a`.
+Action/source parents passed `proc_50d1`;
+all 154 integrated input cases passed `proc_a226`;
+original-judgment variants passed `proc_d5fb`;
+the runtime suffix passed 39 complete outputs in `proc_f646`.
+Complete native parent `89a504de` / `proc_7042` passed in 860 seconds:
+82 complete outputs,
+157 integrated input cases,
+and 69 section-source cases.
+This is the restored implementation with the accepted processing-receipt controls.
+Required pre-implementation description-loss reds are retained;
+no duplicate omission campaign is opened.
+The first parity baseline `proc_0081` stopped at an unresolved relative module import before execution;
+its fresh copy now keeps the original staged-module targets.
+
+This covers selected constructor descriptions,
+not earlier SDK option mutations,
+extension registrations,
+schemas and other metadata,
+deep mutation,
+or applicability across manager-root resets.
+The manager-only post-emission growth predicate is unchanged.
+Constructor-source additions after emission cannot silently gain that handoff.
+No installed activation,
+semantic qualification,
+or governing-domain closure follows.
+
+## Current manager inputs at judgment start
+
+This private checkpoint passed native,
+action-policy,
+policy-source,
+and sixteen-document verification in its selected scope.
+The manager observes original `appendMessage` inputs both before and after Session context attachment.
+The current phase uses `native-manager-input`;
+the initial phase keeps its distinct origin.
+Actual argument frames remain input-only publications,
+without fabricated ordinals,
+authority,
+human attribution,
+or payload eligibility.
+
+The original request receipt,
+emitted body,
+emission snapshot,
+and material contributions remain unchanged.
+The existing collector owns a separate current judgment snapshot through its local `snapshots` map.
+Its one-time handoff requires unchanged resource,
+base,
+and policy identities,
+unchanged copied material and run fields,
+and an exact original-reference prefix extended only by unregistered manager inputs.
+Binding updates judgment indexing,
+assessment wire,
+and manager source views together.
+Later source changes remain strictly invalidating;
+failed or reentrant handoffs cannot revive eligibility.
+The original budget and cancellation still apply.
+Emission-only material associations are not transferred to newly captured input.
+The narrow `system-view.mjs` profile refuses source growth rather than claiming broader coverage.
+
+Required post-attachment red `b650661` / `proc_72ea` lost an appended input hidden by a context edit.
+Connected `6f71097` / `proc_dc02` passed that native consumer.
+Timing controls `a4a7b43f` / `proc_9b65` passed hidden input,
+host-called `message_end`,
+post-emission text and system-tool inputs,
+and post-binding retirement.
+They check the exact original request body and native response persistence:
+new inputs reach judgment and wire without appearing in the emission snapshot.
+No protected execution or provider requests occurred.
+
+Source review identified omitted system `toolsAdded` and `toolsRemoved` fields.
+Owner red `d8175179` / `proc_3b4d` demonstrated the loss;
+`1c6985cf` / `proc_88a2` preserved the received declaration and removal records.
+The manager selector uses one existing copier budget and `native-content-json`,
+without another normalization or request parse.
+Descriptions,
+schema prose,
+and constrained-sampling data remain unregistered source data.
+Invalid JSON values and accessor fields latch failure.
+Loaded,
+Agent prompt,
+and setter profiles are unchanged.
+
+Owner and handoff controls passed `proc_4412`,
+including the emission-only profile refusal with labelled adapters.
+Native lifecycle `12ea892b` / `proc_83f6` passed the handoff clock positive control,
+expiry during source comparison before judgment publication,
+unchanged-view capture failure,
+shared occurrence exhaustion,
+and late reset,
+disposal,
+reload,
+and oversized input.
+The clock is an explicit fixture;
+the Session and judgment paths are native.
+The positive control retains the original 5000-millisecond deadline.
+Expired handoff work sends no assessment and publishes no judgment.
+`7e7edd94` / `proc_2872` also retained a post-emission append rejected by the private clone.
+No entry insertion,
+authority,
+or successful persistence is inferred from capturing that input.
+
+Constructed-input regression `e32496ec` / `proc_a9e3` passed 133 outputs with empty child stderr.
+The newly integrated lifecycle and clone cases still need the full native parent.
+Indexed-question positive control `fb444692` / `proc_4150` passed.
+Omitting observation or current message-source binding lost the original input.
+Omitting the handoff or current governing-source binding caused stale-snapshot failure.
+Omitting current indexing failed wire source/ordinal coherence.
+Omitting copied-material equality admitted changed adapter material.
+All omissions are restored in `54575a9a`,
+with an empty scoped runtime diff against `7e7edd94`.
+The complete action-policy and policy-source suites passed `proc_417a`,
+with 29 successful result records.
+Full native `proc_a3df` stopped in `default-payload-copy` because no review was returned.
+Its original exception was not retained,
+so no cause is established.
+The isolated native-default/copy pair passed `96a0c52e` / `proc_e195` without a runtime change;
+that later pass is not a diagnosis or fix.
+The second parent `proc_b1f3` stopped in the distinct `carrier-bound` case,
+whose original exception was also not retained.
+Both fixtures now retain batch errors and report total judgment-start to reviewed time.
+Repeated configurations passed `bef690b2` / `proc_a7bd`:
+carrier-bound totals were 4984.015445,
+5402.251908,
+and 5789.265434 milliseconds;
+copy-case totals were 971.362350,
+914.014512,
+and 1024.266656 milliseconds.
+These include work after evidence closure and are not deadline-failure measurements.
+Neither failed parent has an established cause or a claimed runtime fix.
+Parent `proc_05da` passed 35 complete prefix outputs,
+including 142 constructed-input cases and 69 section cases,
+then stopped at an older original-judgment source-list expectation.
+`adfb8fd9` / `proc_a45e` passed the corrected source-list assertions in all four variants.
+The assertions retain exact manager source references,
+roles,
+content,
+and emission-versus-judgment membership.
+Prompt and handler fixtures also needed their newly captured persistence inputs counted.
+Those corrections passed `proc_5415` and `proc_7fa1` before the next boundary was reached.
+Diagnostic `9f8e832f` / `proc_b4f5` measured 69 frozen sources in a shared-session carrier case,
+exceeding the unchanged 64-source limit.
+Independent carrier cases now use disposable sessions;
+the original shared-session rejection is retained as a separate bound control.
+Runtime suffix `eaa78d4a` / `proc_5185` passed all 39 result records,
+including the retained bound rejection and all six full-policy profiles.
+The final one-shot native parent `3ea75e62` / `proc_d937` then passed:
+82 complete result records,
+142 constructed-input cases,
+69 section cases,
+and all six full-policy profiles.
+The parent had no nonroutine stderr;
+child matrices reported empty stderr.
+Complete action-policy and policy-source verification passed `proc_417a`.
+All deliberate omissions remain restored.
+Only documentation and standalone,
+non-wired intake tests changed during the final parent.
+The earlier unattributed parent failures remain historical failures,
+not explained by this later pass.
+Earlier complete suites cover the pre-attachment checkpoint,
+not these changes.
+All original bounds and installation,
+domain,
+delegation,
+and semantic-qualification holds remain.
+Tool-definition inputs before native declaration production remain a separate gap.
+
+## Independent in-place message intake
+
+The user subsequently selected receipt at host processing boundaries.
+The historical requirement to retain undone direct state edits is superseded,
+not a remaining release prerequisite.
+Controls `a3387df9` / `proc_c726` passed push/pop and direct-index exclusion
+plus an actual Agent queue receipt followed by clearing.
+Only the genuine API receipt is retained and indexed.
+This changes no authority assignment or completeness claim.
+State actually processed by the host still requires accounting.
+The following intake records explain the superseded assumption.
+
+
+While manager-source verification runs,
+the next source gap has an independent native red.
+Pi agent-core 1.1.0 returns its live message array from the state getter;
+observing the setter does not observe element writes.
+`95ad85c6` / `proc_4292` inserted and removed original text with `push` and `pop`.
+`39d61ef4` / `proc_9e5b` repeated the loss with direct index insertion and deletion.
+Both restored the original array before prompting,
+completed native request/review,
+then failed the required source-retention assertion.
+Neither performed protected execution or provider requests.
+
+The standalone tests use the existing staged SDK without regenerating it.
+They remain intentionally outside the manager increment's passing suite.
+No proxy,
+array wrapper,
+constructor change,
+or replacement-state implementation is adopted.
+A later snapshot cannot recover the removed input from the restored array.
+Native event processing itself uses array writes,
+so a mutator name or callsite is not authorship or authority evidence.
+
+## Original manager messages before context attachment
+
+The completed initial checkpoint was limited to `appendMessage` calls before the manager's first
+original Session context-copy observer attaches.
+It is not coverage of all current manager appends.
+
+Required red `4c74fc7` / `proc_5d44` appended original user text to an owned in-memory manager,
+hid it with a null context edit,
+then constructed the real SDK session.
+The native request and assessment completed,
+but canonical review lacked the original append input.
+Capturing another constructor snapshot would only see the edited context.
+
+The pre-body hook retains the actual `arguments` frame through the existing manager source owner.
+Its origin is `native-manager-initial-input`,
+with metadata-only `managerInput` location,
+no invented entry ordinal,
+and no message or payload alias.
+All existing source and copier bounds remain shared.
+The selected content profile keeps admitted text/thinking/tool-call fields,
+including opaque signatures and argument data,
+without assigning meaning,
+authority,
+or execution facts.
+Prompt/setter text-only profiles are unchanged.
+Image blocks,
+unknown fields,
+and unsupported roles still latch guarded failure.
+
+The unrestricted first implementation `bf5aff8` failed before review.
+Diagnostic `0f05a19` / `proc_323e` showed one request,
+zero assessments,
+and no content-profile failure.
+Native response persistence changed retained input membership,
+which republished the run view and correctly invalidated the original request snapshot.
+Policy source binding and rule indexing also read that original snapshot,
+so merely tolerating new retained inputs would not make them enter policy review.
+
+The narrowed hook uses the existing one-way `contextCopyAttached` lifetime state,
+not a temporary mute window or a claim that native persistence is already accounted for.
+`740ffae` / `proc_22d7` passed the pre-attachment canonical consumer with two local requests,
+one assessment,
+and no protected execution/provider calls.
+That checkpoint did not account for post-attachment direct or native appends.
+No request freshness or source-binding rule was relaxed.
+
+Canonical `ffa4e19` / `proc_f1e3` passed both hidden-input and private clone-rejection cases.
+A rejected append inserts no entry,
+but its original selected text still reaches review.
+Owner `9c9885b` / `proc_0d67` passed block/companion selection,
+opaque-getter exclusion,
+malformed inputs,
+shared bounds,
+original errors,
+and JSON-value preservation.
+The negative-zero red required rejection of an argument that serialization would change to zero.
+
+Native `3e4dfd2` / `proc_7543` passed actual unmapped frames,
+private owned-copy preservation,
+clone reentry,
+getter/proxy error parity,
+unexpected falsy observer errors,
+and root-reset/one-way attachment controls.
+Its baseline is a disposable private generated manager with only the new observation hook removed,
+not the installed manager's different aliasing behavior.
+Post-attachment coverage and qualified continuation are not claimed.
+
+Integrated `b62201f` / `proc_4882` passed 128 constructed-input outputs with empty child stderr,
+including the hidden assistant block consumer.
+Observation omission `proc_d58c` lost the original source.
+Post-clone placement `proc_1c79` preserved successful appends but lost rejected input.
+Attachment-phase omission `proc_2dbc` reproduced the diagnosed pre-review snapshot failure.
+Content-profile omission `proc_a769` admitted an unsupported block.
+Every omission is restored;
+the restoration's runtime diff against `9c9885b` was empty.
+Complete one-shot native parent `proc_9e75` passed in 624 seconds:
+81 successful JSON outputs,
+the 128-output constructed-input matrix,
+all six full-policy profiles,
+and empty reported child stderr.
+Complete action-policy and policy-source suites passed `proc_3bea`.
+Only documentation changed during these regressions.
+This verifies the bounded pre-attachment checkpoint,
+not later manager-input accounting.
+Outcome document checkpoint `proc_a64d` passed all 14 documents with zero diagnostics.
+The incumbent private manager copy performs `structuredClone`;
+the installed native manager does not.
+Parity claims must distinguish those baselines.
+The completed setter checkpoint predates this new runtime change.
+
+## Original Agent state assignments
+
+Direct `agent.state.messages` assignments use a native setter,
+not a `replaceMessages` method in Pi 1.1.0.
+Required red `cd5fd32` / `proc_896e` assigned original text,
+verified the native shallow copy,
+cleared it,
+and then lost the input in canonical review.
+
+Private `7d42311` / `proc_1f5b` now retains the actual setter arguments frame before native `slice`.
+It reuses the existing Agent observer,
+manager input owner,
+array-content profile,
+and shared limits.
+The borrowed array and message references are unchanged;
+the frame's input-only publication grants no payload capability or authority.
+
+Native reset and Session projection assignments use an instance-local internal function.
+It supplies a private invocation token only to the exact original state setter,
+after checking target and descriptor identities/flags.
+A changed descriptor takes ordinary native assignment,
+without receiving the token.
+There is no dynamic mute flag:
+reentrant ordinary writes are still captured.
+This identifies native derivation,
+not authorship or complete source coverage.
+
+The existing one-time Agent attachment returns that function.
+SDK construction passes it as a separate validated constructor argument before user callbacks can run.
+No new borrowed constructor-option getter or global registry is added.
+The early installation matters:
+`prepareLoadout` can call `pi.sendMessage` during Session construction.
+
+Native `proc_67c2` passed frame/copy,
+reentry,
+forged-token,
+descriptor,
+foreign-target,
+proxy,
+and error controls.
+`proc_91c7` exercised real constructor reentry without reminting the native projection.
+`proc_7faa` passed erased/late/oversize/reset/disposal paths,
+including original cancellation cause and zero protected execution/provider requests.
+
+Integrated `proc_a3d0` passed 123 constructed-input outputs with empty child stderr.
+The observation,
+token identity,
+setter identity,
+constructor routing,
+and constructor-validation omissions each failed their intended control.
+All were restored in `8cb4a62`.
+The runtime diff against `7d42311` is empty;
+the exhaustive changed-path inventory contains only tests,
+task configuration,
+and documentation.
+
+The legacy compaction fixture directly assigned a manager projection,
+which now correctly failed the public setter's selected text-message profile.
+Diagnostic `proc_8730` exposed the unsupported-role cause.
+The fixture now uses actual synchronous `Session.refreshContext()`,
+not a public-write exemption.
+Reconciled `proc_eff0` passed all 43 expanded/retained modes;
+the intentional stale-path clear still has its own captured occurrence.
+
+Extended `69deaca` / `proc_be71` passed shared loaded/queued/setter occupancy,
+serialized-record overflow,
+and direct setter calls inside real constructor callbacks.
+It also exercised real direct Sessions sharing an attached Agent.
+Without the original private constructor argument,
+the second Session's writes take the ordinary observed route.
+They stay with the Agent's fixed input owner and do not establish caller identity,
+transfer scope,
+or acquire authority.
+Shared-Agent multi-Session execution remains outside the qualified profile.
+
+The setter requires an ordinary dense array using the existing selected message fields.
+Non-text content and unsupported message roles latch capture failure without replacing native assignment.
+The selected array,
+including JSON wrappers and escaping,
+shares the 65,536-byte source bound.
+All manager inputs still share 64 source occurrences and the four-MiB serialized-record bound.
+Equal arrays and empty clears remain separate occurrences.
+
+Complete native parent `proc_428d` passed in 719 seconds:
+81 successful JSON outputs,
+the 123-output constructed-input matrix,
+all six full-policy profiles,
+and the remaining native program cases.
+This is a passing one-shot parent invocation,
+not segmented coverage.
+All reported child matrices had empty stderr.
+Complete action-policy and policy-source suites passed `proc_b3aa`.
+Only documentation changed during these regressions.
+The private setter checkpoint is verified.
+Outcome document checkpoint `proc_99f8` passed all 14 documents with zero diagnostics.
+Constructor inputs,
+in-place changes to getter-returned arrays,
+state-object or descriptor replacement,
+and broader model/tool/image instruction sources remain unfinished.
+No domain closure,
+human origin,
+or new policy admission is inferred.
+
+## Original direct Agent message and array prompts
+
+The next private increment extends the existing Agent call-frame owner beyond primitive strings.
+Single-message and message-array consumers first failed the required original-source assertion
+in `proc_4517` and `proc_1356`.
+Initial implementation `08389a1` / `proc_4ff8` passed both actual direct request consumers,
+with no Session input events,
+protected executions,
+or provider requests.
+
+Single-message inputs reuse selected content and companion metadata.
+An array retains selected message fields as one original call source in `native-content-json`.
+Its original arguments frame carries the input-only publication.
+Neither the array nor its messages acquire aliases or payload capability.
+Opaque provider/tool records are not copied.
+The array uses one shared incumbent copier budget,
+and wrapper fields plus escaped text count toward the original source-byte bound.
+
+Native `AgentSession.prompt` also forwards an array.
+The initial queue-role subset missed a system-section delta prepended by the Session.
+`proc_bc9b` exposed its capture failure before any request or assessment.
+The correction reuses the existing loaded-system content/sections profile,
+including null section deletion,
+without inspecting tool declarations or assigning system authority.
+Queue role support is unchanged.
+
+Owner controls `proc_fe45` and native normalization controls `proc_a349` passed
+before the system-section correction.
+The normalization delegate remains a labelled double,
+separate from actual request consumers.
+Corrected `e1fbda6` / `proc_e97e` passed owner system fields and real late,
+oversize,
+unchanged-view,
+and reset controls.
+Direct system-message and system-array canonical wire consumers passed `proc_f007`.
+System `inputFields` metadata and original section content remain unregistered.
+Integrated `proc_a44a` passed 116 outputs with empty child stderr.
+Non-string observation omission `proc_0e00` and system-section omission `proc_883a`
+lost the required original source.
+Proxy-guard omission `proc_7d1b` invoked a caller trap and propagated its `false` value.
+All guards were restored;
+the implementation has an empty scoped diff against `e1fbda6`.
+
+Every native case is verified across phases,
+not a single successful parent invocation:
+`proc_5868` completed the source prefix before its old full-policy fixture failed;
+`proc_45e7` passed the complete corrected runtime suffix.
+Diff inspection from `06ed9d3` shows only the full-policy fixture,
+its added standalone task,
+and progress notes changed between those runs.
+Full-policy `proc_b0c7` separately passed all six profiles.
+Complete action-policy `proc_4f7e` and policy-source `proc_0091` passed.
+The final document check is tracked in `current-progress.json`.
+
+System-role support does not close tool instruction-source ownership.
+Mixed/image content and unsupported shapes still fail guarded source use,
+including internal Session array forwarding.
+Every internal forwarding adds one original call occurrence and can exhaust unchanged limits sooner.
+Boxed strings and null inputs now latch unsupported-profile failure instead of remaining unobserved;
+normalization parity is checked separately.
+The native prompt body,
+borrowed inputs,
+source limits,
+and installed plugin remain unchanged.
+The evidence for this message/array increment is distinct from the primitive-string checkpoint.
+Other direct Agent state producers,
+tool instruction-source ownership,
+image governance,
+applicable scope/delegation,
+and complete domain accounting remain unfinished.
+
 ## Original direct Agent string prompts
 
 String-form `Agent.prompt(input, images)` is now observed before its active-run check and normalization.
@@ -323,8 +1081,29 @@ Its normalization delegate is a labelled double;
 the canonical consumer separately exercises real request and busy-run behavior.
 No image governance or full producer coverage is inferred.
 
-The integrated string-prompt matrix is running.
-Observation sensitivity and complete regressions remain pending.
+The integrated string-prompt matrix passed `proc_0117` with 103 outputs and empty child stderr.
+It includes oversize input before transport,
+oversize busy rejection with an unchanged constructed view,
+and reset retiring the earlier review.
+Predicate omission `8e52673` / `proc_b636` poisoned non-string capture as expected;
+observation omission `0734902` / `proc_58f8` lost the original source.
+Both are restored.
+
+Full regression `proc_931a` stopped in preparation on retained import path spelling
+following a filesystem move.
+Build-only correction `b60415d` / `proc_0064` passed same-file alias and wrong-target controls,
+then actual SDK preparation.
+Target-check omission `e38b148` / `proc_cfc3` failed the equal-byte wrong-file control;
+the check is restored.
+Complete native `proc_6645` passed after restoration and the build-path correction,
+including the current 103-output input matrix with empty child stderr.
+Complete action-policy `proc_379b` and policy-source `proc_580e` passed.
+The separate earlier full-policy failure remains unattributed;
+these later passes establish no cause or fix.
+Fourteen-document lint and rendering passed `proc_4b01` with zero diagnostics
+using the current repository linter and per-path clean/error controls.
+The document runner was adapted after the old Markdown CLI was removed;
+that verification-only change does not replace the qualified runtime parser.
 All source limits,
 budgets,
 and installed files remain unchanged.

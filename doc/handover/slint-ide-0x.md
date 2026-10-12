@@ -216,14 +216,81 @@ the items after it are the record of 2026-10-05 and older.
   The other nine guard scripts passed at `bd1ad9ad4`, which differs from the landed tree in one test file.
   One `inspect:bundle` run at load 40 failed `lone-copy-highlights`
   (the application took longer than the compositor's 2 s to close) and three reruns passed.
-- Left for the user to decide or for later:
-  - The IDE package has no `cargo fmt --check` task, so `:lint` does not catch formatter drift
-    (`package/linter/monochromatic-lint/mise.toml` has `lint:rustfmt`).
+- Landed on `main` as `0b81ef2da1` (first parent chain through `25b52185f3`):
+  a `lint:rustfmt` task (`cargo fmt --check`) in the package's `lint` task, the user's answer of 2026-10-10.
+  It passes on the clean tree and fails, printing the diff, with a misformatted function appended to
+  `src/launcher.rs` (restored afterwards).
+  The merge kept main's `monochromatic-lint` step beside it.
+  Gate on IDE tree `dc5a8828df8594a874b27eada1f0639f9029f055`:
+  lint:clippy, lint:rustfmt, lint:slint, lint:release, test, test:cli, test:native 124 of 124, bundle,
+  inspect:bundle, inspect:bundle-guards.
+- The package's combined `lint` task is red on `main` since the linter cutover of another session:
+  `monochromatic-lint package/desktop-app/ide` exits 1 with 570 `markdown/semantic-line-breaks` errors
+  and 821 `rust/no-anonymous-functions` warnings.
+  None of it comes from the IDE work of this handover; the cutover owns it.
+- The user approved installing into the real home on 2026-10-10:
+  `bin/install.mjs` put `dist/monochromatic-ide` at `~/.local/bin/monochromatic-ide`
+  (identical bytes, hash checked) and the launcher entry at `~/.local/share/applications/monochromatic.ide.desktop`
+  (`desktop-file-validate` accepts it).
+  `inspect:bundle` against the installed file passed 10 of 10.
+- The cutover changed the git policy configuration, so git in the landing worktree stopped with
+  `config-changed`; with the user's approval and after reading the diff of `cli-git.config.ts`,
+  `git cli-git trust --yes` was run in `.claude/worktrees/ide-land` only.
+- Source view choppiness, requests of 2026-10-10 (the user ruled it is not excusable even under extreme host load):
+  - The file tree is sorted mixed (directories and files together), case folded, with digit runs compared by value
+    (`src/name_order.rs`; before, it kept raw `read_dir` order).
+  - Vello was tried (`SLINT_BACKEND=winit-vello`, approved by the user) and not adopted:
+    it draws in the nested compositor, and FemtoVG, software, and Vello showed the same frame cadence.
+    The experiment (the `renderer-vello` feature and per-phase timings in `src/native/render.rs`) is kept only as a
+    patch at `~/temp/agent/ide-render-phases/vello-trial-uncommitted.patch`; its branch and worktree are removed.
+  - The measured cause was in the app: `render()` ran about twice per wheel step and every call was a full repaint.
+    Stage 1 of `doc/planning/slint-ide-scroll-pipeline.md` is built:
+    an overscan tile of about three view heights, an early return while the view stays inside it,
+    and a row cache (`src/shaped_row_cache.rs`).
+    Old build against new build in the nested compositor, valid runs only, host load 27 to 77:
+    renders during a scroll fell from about 165 to 220 to 7 to 12 (median 0 per step),
+    and application CPU in the scroll window from 0.4 to 0.5 s to 0.2 to 0.3 s.
+    P95 latency and the longest gap between painted frames did not improve (the longest gap read higher);
+    their run-to-run spread is as large as the difference, and the stage 1 tile rebuild still runs on the UI thread.
+    The "painted share of possible frames, about half" first reported here was a harness artifact:
+    the harness counts its 1.5 s idle tail as possible frames, so perfect painting of the input phase scores about
+    115 of 204, and a rerun restricted to the input phase painted 103 of 115 frame slots.
+    The `rendersInScroll` counter counts viewport tile presentations (a log line), not paints.
+  - Gate at the landed IDE tree: lint:clippy, lint:rustfmt, lint:slint, lint:release, test, test:cli,
+    test:native 126 of 126, bundle, inspect:bundle, inspect:bundle-guards,
+    and the source, find, annotation, sidebar, theme, search, and watch guards.
+    The `rebase-frame` guard now matches the shared failure prefix, because the first assertion of its test no longer
+    sees the removed rebase while the second still does.
+  - Stage 2 is landed on `main` as merge `2c62b1feb6` (IDE tree `55ad110cd030e8f4c7b6b7a1c241edd73a05850d`):
+    a scroll that nears the tile edge re-centers it on a worker thread (`src/native/tile.rs`, `tile_build.rs`),
+    the worker shapes with a shaper forked from the window's fonts, a failed worker is replaced on the next re-center,
+    and closing the window does not wait for a build in flight.
+    Gate on that tree, at host load 47 to 85: lint:clippy, lint:rustfmt, lint:slint, lint:release, test, test:cli,
+    test:native 131 of 131, bundle, inspect:bundle 10 of 10, inspect:bundle-guards, and the source (33 of 33), find,
+    annotation, sidebar, theme, search, and watch guards, all passing.
+    The landing message lists them as still running because they were; they finished green afterwards.
+    A release profile tile build was never timed (the test builds are debug and take about 600 ms each).
+  - The installed single file at `~/.local/bin/monochromatic-ide` predates stages 1 and 2; reinstalling it is a
+    separate action in the user's real home.
+  - Soft wrap is in progress on the branch `feat/ide-soft-wrap` (worktree `.claude/worktrees/ide-wrap`), not landed:
+    slice 1 (IntelliJ break rules, wrapped shaping, multi-row geometry; library only) is committed and gated;
+    slice 2 (wrap width, row heights, worker shaping in chunks, painting, no horizontal scrolling, gutter with the
+    indicator) is with a Sonnet subagent; slice 3 is keys, pointer, and the affinity bit in `ReadingPosition`
+    (a field added with a mechanical edit of the existing struct literals); slice 4 is annotations, find, and
+    selection per visual fragment, plus the remaining tests and guards.
+    The plan `doc/planning/slint-ide-soft-wrap.md` holds the decisions: the layout (option A on the worker), the
+    indicator (IntelliJ's glyph chain and color, in the gutter), and the Parley findings.
+  - The nested compositor now launches minimized (`package/cli/nested-wayland-session`, the user confirmed it works),
+    version 0.1.2 is published on crates.io with a GitHub release of Linux archives, and the repository's mise tool
+    list installs it through cargo-binstall as `cargo:monochromatic-nested-wayland-session` (source:
+    `mise.no-env.toml`; `mise.toml` is generated from it by file-enforcer).
+  - Haiku subagent failures of this work are recorded in `doc/limitation/haiku.md`.
+- Still open:
   - Lazy server lookup was measured and not built:
     locating servers is 12 ms of a 210 ms registry build.
   - Fixtures of other native tests still use `tempfile::tempdir()` on btrfs.
-  - A consumer check of the installed single file needs the user's approval to install into the real home.
-  - Finished worktrees whose branches are pushed can be removed.
+  - The `.claude/worktrees/ide-integrate` worktree was removed with its half finished merge of `main`
+    (git there was blocked by the same `config-changed` stop); the branch `integrate/ide-language-core` remains.
 - Inotify:
   on 2026-10-06 about 478000 of the host's 524288 inotify watches were in use,
   about 462000 of them by `git fsmonitor--daemon` processes

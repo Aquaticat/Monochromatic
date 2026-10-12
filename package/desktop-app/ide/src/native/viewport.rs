@@ -2,7 +2,10 @@
 
 /// Parent state owns the document and the currently displayed tile;
 ///  `rows` holds the map-based scroll rules.
-use super::{AppWindow, State, render, rows};
+use super::{
+    AppWindow, State, render, rows,
+    tile::{self, TileBounds},
+};
 /// Height of one code row:
 ///  the least a line can take,
 ///  which bounds how many lines a view can show.
@@ -12,6 +15,63 @@ use slint::ComponentHandle;
 /// Checked shared ownership remains confined to the UI thread;
 ///  `Instant` times the reader's scrolling.
 use std::{cell::RefCell, rc::Rc, time::Instant};
+
+/// What:
+///  The materialized tile spans this many view heights: one above the view, the view, and one below.
+/// Why:
+///  A view inside the tile's middle band needs no new pixels, so scrolling inside it does no source work.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// const TILE_VIEWS = 3;
+/// ```
+const TILE_VIEWS: f32 = 3.0;
+
+/// What:
+///  How close, in view heights, the view's edge may come to the tile's edge before the tile is re-centered.
+/// Why:
+///  The view starts a re-center with one view height of room on each side, so it may scroll
+///  `1 - RECENTER_EDGE_VIEWS` = 0.75 view heights before the next re-center: about one view height,
+///  and the tile edge never reaches the view.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// const RECENTER_EDGE_VIEWS = 0.25;
+/// ```
+const RECENTER_EDGE_VIEWS: f32 = 0.25;
+
+/// What:
+///  Lines materialized past the last line of the tile's bottom edge, as a margin against rounding.
+/// Why:
+///  A line's block can be taller than one code row when it carries virtual rows,
+///  so the line count of the tile is not the tile's pixel height divided by one code row.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// const TILE_SPARE_LINES = 2;
+/// ```
+const TILE_SPARE_LINES: usize = 2;
+
+/// What:
+///  Whether the materialized tile still holds the view:
+///  the view's top edge is at least `RECENTER_EDGE_VIEWS` view heights below the tile's top edge,
+///  and its bottom edge is as far above the tile's bottom edge.
+///  A side that touches the first or last line of the text is always held.
+/// Why:
+///  Edges come from the live vertical mapping, so rows that appear above the tile move them with the rows.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function holds(current: State, view: number, height: number): boolean;
+/// ```
+pub(super) fn holds(current: &State, bounds: TileBounds, view: f32, height: f32) -> bool {
+    let lines = current.document.text().len_lines();
+    let edge = RECENTER_EDGE_VIEWS * height;
+    let end = (bounds.first + bounds.count).min(lines);
+    let top_held = bounds.first == 0 || view >= current.row_map.block_top(bounds.first) + edge;
+    let bottom_held = end >= lines || view + height <= current.row_map.block_top(end) - edge;
+    return top_held && bottom_held;
+}
 
 /// What:
 ///  `&mut State` lends the source state mutably;
@@ -43,27 +103,84 @@ pub(super) fn place(
     // Every caller that moves the view itself passes its new offset here first, so the offset the window
     // reports afterwards is recognized as not being the reader's own scrolling.
     current.offset = offset;
-    let first = current.row_map.line_at(offset.max(0.0));
-    let count = (height.max(0.0) / CODE_ROW).ceil() as usize + 3;
+    // Any placement supersedes a scroll re-center still waiting for the worker; `place_scrolled` sets it again.
+    current.scroll_wanted = None;
     let tile_x = ((horizontal.max(0.0) / 128.0).floor() * 128.0 - 128.0).max(0.0);
     let width = viewport_width.max(1.0);
-    if current.first == first.saturating_sub(1)
-        && current.count == count
-        && current.horizontal == tile_x
-        && current.width == width
-    {
+    let view = offset.max(0.0);
+    // What: The document position's viewport line follows the view's top edge on every scroll step.
+    // Why: Reload anchoring and navigation read that line, and it must not lag behind the view while the tile holds.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // position.viewport = text.lineToChar(map.lineAt(view));
+    // ```
+    let view_line = current.row_map.line_at(view);
+    let text = current.document.text();
+    let line = view_line.min(text.len_lines().saturating_sub(1));
+    let viewport_char = text.line_to_char(line);
+    if current.document.position().viewport != viewport_char {
+        let mut position = current.document.position();
+        position.viewport = viewport_char;
+        current.document.select(position);
+    }
+    // What: A view inside the tile's middle band keeps the tile, so the frame stamp and the raster do not change.
+    // Why: Scrolling inside the tile must not cost a shaping pass, a raster, or an image upload.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // if (current.horizontal === tileX && current.width === width && holds(current, view, height)) return false;
+    // ```
+    let shown = current.shown;
+    if shown.horizontal == tile_x && shown.width == width && holds(current, shown, view, height) {
+        // The displayed tile still holds the view, so nothing is wanted; the requested window is the displayed one.
+        tile::cancel(current);
+        current.first = shown.first;
+        current.count = shown.count;
+        current.horizontal = shown.horizontal;
+        current.width = shown.width;
         return false;
     }
-    current.first = first.saturating_sub(1);
-    current.count = count;
+    // What: The tile is re-centered on the view: one view height of overscan above it and one below.
+    // Why: Re-centering then happens only after the view has traveled about one view height inside the tile.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const tileStart = Math.max(0, view + height / 2 - (TILE_VIEWS * height) / 2);
+    // ```
+    let tile_start = (view + height * 0.5 - height * TILE_VIEWS * 0.5).max(0.0);
+    let tile_end = view + height * 0.5 + height * TILE_VIEWS * 0.5;
+    let first = current.row_map.line_at(tile_start);
+    let last = current.row_map.line_at(tile_end);
+    current.first = first;
+    current.count = last.saturating_sub(first) + 1 + TILE_SPARE_LINES;
     current.horizontal = tile_x;
     current.width = width;
-    let text = current.document.text();
-    let line = first.min(text.len_lines().saturating_sub(1));
-    let mut position = current.document.position();
-    position.viewport = text.line_to_char(line);
-    current.document.select(position);
     return true;
+}
+
+/// What:
+///  `place` for the reader's own scrolling: a tile it changes is a scroll re-center,
+///  which the worker may build while the displayed tile stays on screen.
+/// Why:
+///  Keyboard, pointer, and reveal moves call `place` directly and keep the synchronous path.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function placeScrolled(state: State, horizontal: number, offset: number, width: number, height: number): boolean;
+/// ```
+pub(super) fn place_scrolled(
+    current: &mut State,
+    horizontal: f32,
+    offset: f32,
+    viewport_width: f32,
+    height: f32,
+) -> bool {
+    let changed = place(current, horizontal, offset, viewport_width, height);
+    if changed {
+        current.scroll_wanted = Some(tile::requested(current));
+    }
+    return changed;
 }
 
 /// Retain pixel scrolling;
@@ -99,7 +216,7 @@ pub(super) fn bind_viewport(owner: &AppWindow, shared: &Rc<RefCell<State>>) {
             // `Some(Instant::now())` records this moment as the latest scroll.
             current.scrolled_at = Some(Instant::now());
         }
-        let changed = place(&mut current, horizontal, offset, viewport_width, height);
+        let changed = place_scrolled(&mut current, horizontal, offset, viewport_width, height);
         drop(current);
         if !changed {
             return;
