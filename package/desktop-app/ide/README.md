@@ -1559,6 +1559,8 @@ Measured on 2026-10-12 with the release bundle (`dist/monochromatic-ide`, sha1 `
 `9151379037`) in the nested compositor at 1100 by 660 pixels, with the debug lines of `tile.rs` and `render.rs` timing
 the window-thread functions.
 The host's load was 37 to 43 throughout, so the numbers are not those of an idle machine.
+The later commit `ff16f9a3d9` changes only what the window does after it discards a stale tile (it renders again),
+which none of these sessions did, and the numbers were not measured again.
 Only sessions in which the frame recorder dropped nothing count; all 10 sessions were counted and none was discarded.
 Each session opened the file, waited for the pass to finish, scrolled 60 wheel notches down and 60 up with a 16 ms wait
 after each notch and the recorder running,
