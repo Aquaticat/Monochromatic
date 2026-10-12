@@ -38,6 +38,15 @@ It is excluded from the audit population:
 - `generate.mjs` writes one issue payload per site.
 - `reconcile.mjs` corrects already-filed issues in place,
   then files the rest.
+- `fix-html-patterns.mjs` resolves each HTML script-block site to its own regex
+  literal,
+  slicing the extracted block on byte offsets.
+- `repair-titles.mjs` re-titles and re-bodies the issues affected by corrections made
+  after a filing round.
+- `verify.mjs` reconciles the ledger against the tracker:
+  duplicates,
+  missing sites,
+  and a tracker-side count by title.
 - `repair-labels.mjs` re-applies issue labels after a pass that removed and added
   labels in one `gh issue edit` call,
   because GitHub applies the removals last.

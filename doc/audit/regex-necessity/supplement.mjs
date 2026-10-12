@@ -86,9 +86,16 @@ function packageContextOf(repoPath) {
     }
   }
   if (scope === null) {
-    scope = packageDir === null
-      ? (repoPath.startsWith('doc/') ? `docs(${repoPath.split('/')[1]})` : 'repo')
-      : packageDir.replace(/^package\//, '').replaceAll('/', '-');
+    if (packageDir === null) {
+      // `doc/<family>/...` takes the family as its scope; a file directly under
+      // `doc/` has no family segment, so it is plain `docs`.
+      const segments = repoPath.split('/');
+      scope = repoPath.startsWith('doc/')
+        ? (segments.length > 2 ? `docs(${segments[1]})` : 'docs')
+        : 'repo';
+    } else {
+      scope = packageDir.replace(/^package\//, '').replaceAll('/', '-');
+    }
   }
   const context = { scope, packageDir, };
   packageCache.set(repoPath, context);

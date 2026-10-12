@@ -106,9 +106,25 @@ function pathSuffixFor(finding, budget) {
   return chosen ?? `${segments.at(-1)}:${finding.line}`;
 }
 
-function titleFor(finding) {
+/**
+ Short readable form of a pattern, for disambiguating titles when one line carries
+ several distinct regex sites (chained calls report one diagnostic each at the same
+ start position).
+ */
+function patternTag(finding) {
+  const cleaned = finding.pattern.replaceAll('`', "'").replaceAll('\n', ' ').trim();
+  return cleaned.length <= 26 ? cleaned : `${cleaned.slice(0, 26)}...`;
+}
+
+function titleFor(finding, group) {
   const prefix = TITLE_PREFIX.replace('%s', finding.scope);
-  return `${prefix}${pathSuffixFor(finding, TITLE_LIMIT - prefix.length)}`;
+  const suffix = pathSuffixFor(finding, TITLE_LIMIT - prefix.length);
+  const tag = group === null ? '' : ` [${patternTag(finding)}]`;
+  const budget = TITLE_LIMIT - tag.length;
+  if (`${prefix}${suffix}`.length <= budget) return `${prefix}${suffix}${tag}`;
+  // The path suffix has to shrink to make room for the tag.
+  const base = `${finding.repoPath.slice(finding.repoPath.lastIndexOf('/') + 1)}:${finding.line}`;
+  return `${prefix}${base}${tag}`;
 }
 
 function shapeSentence(finding) {
@@ -324,14 +340,26 @@ const labelsFor = (finding) => {
 const INDEX_PLACEHOLDER = 'INDEX';
 const GATE_PLACEHOLDER = 'GATE';
 
+/**
+ Sites sharing a file and line are distinct regex uses (chained calls, or several
+ literals on one source line), so their titles need a discriminator.
+ */
+const lineGroupSizes = new Map();
+for (const finding of findings) {
+  const key = `${finding.repoPath}:${finding.line}`;
+  lineGroupSizes.set(key, (lineGroupSizes.get(key) ?? 0) + 1);
+}
+
 const payloads = [];
 for (const finding of findings) {
+  const groupKey = `${finding.repoPath}:${finding.line}`;
+  const group = (lineGroupSizes.get(groupKey) ?? 0) > 1 ? groupKey : null;
   // Chained calls share a line and column, so the slug carries the span identity
   // enumeration deduped on; otherwise distinct sites overwrite one payload file.
   const slug = `${finding.repoPath.replaceAll('/', '__')}:${finding.line}:${finding.column}:${finding.offset}-${finding.length}`;
   payloads.push({
     file: join(OUT, `${slug.replaceAll(' ', '_')}.json`),
-    title: titleFor(finding),
+    title: titleFor(finding, group),
     labels: labelsFor(finding),
     body: bodyFor(finding, { indexIssue: INDEX_PLACEHOLDER, gateIssue: GATE_PLACEHOLDER, }),
     repoPath: finding.repoPath,

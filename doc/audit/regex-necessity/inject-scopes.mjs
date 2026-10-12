@@ -6,7 +6,15 @@ import { homedir, } from 'node:os';
 const AUDIT = process.env.REGEX_AUDIT_WORK ?? `${homedir()}/temp/agent/regex-audit`;
 
 const payloads = JSON.parse(readFileSync(join(AUDIT, 'payloads.json'), 'utf8'));
-const scopeOf = (payload) => payload.title.slice(payload.title.indexOf('(') + 1, payload.title.indexOf(')'));
+/**
+ Scope from a generated title. The scope itself can contain parentheses
+ (`docs(handover)`), so the cut runs to the last `)` before the subject.
+ */
+const scopeOf = (payload) => {
+  const start = payload.title.indexOf('(') + 1;
+  const end = payload.title.indexOf('): drop the unnecessary regex');
+  return end === -1 ? payload.title.slice(start) : payload.title.slice(start, end);
+};
 
 const groups = new Map();
 for (const payload of payloads) {

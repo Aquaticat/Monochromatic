@@ -15,7 +15,15 @@ const ledger = existsSync(join(AUDIT, 'filed2.jsonl'))
   : [];
 
 const numberBySiteId = new Map(ledger.map((entry) => [entry.siteId, Number(entry.number), ]));
-const scopeOf = (payload) => payload.title.slice(payload.title.indexOf('(') + 1, payload.title.indexOf(')'));
+/**
+ Scope from a generated title. The scope itself can contain parentheses
+ (`docs(handover)`), so the cut runs to the last `)` before the subject.
+ */
+const scopeOf = (payload) => {
+  const start = payload.title.indexOf('(') + 1;
+  const end = payload.title.indexOf('): drop the unnecessary regex');
+  return end === -1 ? payload.title.slice(start) : payload.title.slice(start, end);
+};
 
 const groups = new Map();
 for (const payload of payloads) {
