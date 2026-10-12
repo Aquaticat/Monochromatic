@@ -182,12 +182,9 @@ fn wrapped_spacings(
 /// Whether two correction lists name the same tabs with the same extra advance, within `SPACING_TOLERANCE`.
 fn same_spacings(left: &[(usize, f32)], right: &[(usize, f32)]) -> bool {
     return left.len() == right.len()
-        && left
-            .iter()
-            .zip(right)
-            .all(|(first, second)| {
-                return first.0 == second.0 && (first.1 - second.1).abs() <= SPACING_TOLERANCE;
-            });
+        && left.iter().zip(right).all(|(first, second)| {
+            return first.0 == second.0 && (first.1 - second.1).abs() <= SPACING_TOLERANCE;
+        });
 }
 
 /// Shape `projection` broken at `width` with each tab widened to its stop on its own visual row.

@@ -3,6 +3,8 @@
 //!  pointer hit,
 //!  and range rectangles.
 
+/// Which side of a soft-wrap offset a reading position stands on.
+use crate::document::ReadingAffinity;
 /// Range rectangles are as tall as one code row.
 use crate::row_map::CODE_ROW;
 /// Source/display byte maps keep tabs and Unicode out of hit-test heuristics.
@@ -21,8 +23,6 @@ use crate::text_projection::Projection;
 /// import { Affinity, Cursor, Layout, Selection } from 'parley';
 /// ```
 use parley::{Affinity, Cursor, Layout, Selection};
-/// Which side of a soft-wrap offset a reading position stands on.
-use crate::document::ReadingAffinity;
 /// Half-open ranges of visual rows and source characters.
 use std::ops::Range;
 
@@ -123,13 +123,9 @@ impl ShapedRow {
     /// visualRowOffset(index: number, scale: number): number;
     /// ```
     pub fn visual_row_offset(&self, index: usize, scale: f32) -> f32 {
-        let height = self
-            .layout
-            .lines()
-            .next()
-            .map_or(CODE_ROW * scale, |line| {
-                return line.metrics().line_height;
-            });
+        let height = self.layout.lines().next().map_or(CODE_ROW * scale, |line| {
+            return line.metrics().line_height;
+        });
         return index as f32 * height / scale;
     }
 
@@ -200,13 +196,9 @@ impl ShapedRow {
         // ```ts
         // if (affinity === 'upstream' && row > 0 && rowStart(row) === byte) row -= 1;
         // ```
-        let starts_row = self
-            .layout
-            .lines()
-            .nth(row)
-            .is_some_and(|line| {
-                return line.text_range().start == byte;
-            });
+        let starts_row = self.layout.lines().nth(row).is_some_and(|line| {
+            return line.text_range().start == byte;
+        });
         if matches!(affinity, Affinity::Upstream) && row > 0 && starts_row {
             row -= 1;
         }
@@ -323,13 +315,9 @@ impl ShapedRow {
 
     /// Physical middle of the first visual row, the probe `hit` uses on a wrapped line.
     fn first_row_middle(&self) -> f32 {
-        return self
-            .layout
-            .lines()
-            .next()
-            .map_or(0.0, |line| {
-                return line.metrics().block_min_coord + line.metrics().line_height / 2.0;
-            });
+        return self.layout.lines().next().map_or(0.0, |line| {
+            return line.metrics().block_min_coord + line.metrics().line_height / 2.0;
+        });
     }
 
     /// Logical x of the caret standing before global source character `position` on this row,
@@ -341,7 +329,9 @@ impl ShapedRow {
     /// caretX(position: number, scale: number): number;
     /// ```
     pub fn caret_x(&self, position: usize, scale: f32) -> f32 {
-        return self.caret_at(position, ReadingAffinity::Downstream, scale).x;
+        return self
+            .caret_at(position, ReadingAffinity::Downstream, scale)
+            .x;
     }
 
     /// Logical x and visual row of the caret before global source character `position`,
@@ -353,7 +343,9 @@ impl ShapedRow {
     /// caretAt(position: number, affinity: 'upstream' | 'downstream', scale: number): { x: number; row: number };
     /// ```
     pub fn caret_at(&self, position: usize, affinity: ReadingAffinity, scale: f32) -> VisualCaret {
-        let local = position.saturating_sub(self.source_start).min(self.source_len());
+        let local = position
+            .saturating_sub(self.source_start)
+            .min(self.source_len());
         let byte = self.projection.source_to_byte[local];
         let engine = engine_affinity(affinity);
         return VisualCaret {

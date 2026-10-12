@@ -3,15 +3,15 @@
 
 /// Rope and grapheme boundaries from the editor's own text model, so grapheme checks match editing.
 use helix_core::{Rope, graphemes::next_grapheme_boundary};
-/// The break predicate under test, and the continuation indent it is measured against.
-use ide_app::wrap::{continuation_indent, intellij_break};
 /// Canonical source of the lines under test.
 use ide_app::document::{Document, ReadingAffinity};
 /// The row map's code row height, the step between visual rows.
 use ide_app::row_map::CODE_ROW;
+use ide_app::shaped_row::ShapedRow;
 /// Shaper and shaped row under test.
 use ide_app::shaped_text::TextShaper;
-use ide_app::shaped_row::ShapedRow;
+/// The break predicate under test, and the continuation indent it is measured against.
+use ide_app::wrap::{continuation_indent, intellij_break};
 
 /// Text used for the long-line table: words and punctuation with ordinary break opportunities.
 const LONG_LINE: &str = "let value = compute_total(first_item, second_item); // a long comment that keeps going, \
@@ -110,13 +110,25 @@ fn long_ascii_line_wraps_at_several_widths() {
         let row = wrapped(LONG_LINE, width, 1.0);
         assert!(row.visual_rows() > 1, "width {width} should wrap");
         assert!(rows_tile_the_text(&row), "rows tile at width {width}");
-        assert!(rows_fit_width(&row, width, 1.0), "rows fit at width {width}");
-        assert!(boundaries_are_break_opportunities(&row), "breaks follow the rules at width {width}");
-        assert!(rows_start_on_graphemes(&row), "no grapheme split at width {width}");
+        assert!(
+            rows_fit_width(&row, width, 1.0),
+            "rows fit at width {width}"
+        );
+        assert!(
+            boundaries_are_break_opportunities(&row),
+            "breaks follow the rules at width {width}"
+        );
+        assert!(
+            rows_start_on_graphemes(&row),
+            "no grapheme split at width {width}"
+        );
     }
     let narrow = wrapped(LONG_LINE, 90.0, 1.0);
     assert!(rows_tile_the_text(&narrow), "rows tile at width 90");
-    assert!(rows_start_on_graphemes(&narrow), "no grapheme split at width 90");
+    assert!(
+        rows_start_on_graphemes(&narrow),
+        "no grapheme split at width 90"
+    );
 }
 
 /// A line that fits the width keeps one visual row, and a line exactly the width keeps one too.
@@ -127,7 +139,11 @@ fn a_line_that_fits_keeps_one_row() {
     assert_eq!(unwrapped.visual_rows(), 1);
     let exact = unwrapped.caret_x(text.chars().count(), 1.0);
     let row = wrapped(text, exact, 1.0);
-    assert_eq!(row.visual_rows(), 1, "a line exactly the width does not wrap");
+    assert_eq!(
+        row.visual_rows(),
+        1,
+        "a line exactly the width does not wrap"
+    );
 }
 
 /// A 200 character token with no break opportunity breaks where the width is exceeded.
@@ -149,7 +165,10 @@ fn cjk_text_breaks_between_ideographs() {
     let row = wrapped(&text, 120.0, 1.0);
     assert!(row.visual_rows() > 1, "CJK text wraps");
     assert!(rows_tile_the_text(&row));
-    assert!(boundaries_are_break_opportunities(&row), "CJK boundaries are opportunities");
+    assert!(
+        boundaries_are_break_opportunities(&row),
+        "CJK boundaries are opportunities"
+    );
     assert!(rows_start_on_graphemes(&row));
 }
 
@@ -177,7 +196,12 @@ fn continuation_row_starts_at_the_indent() {
     let start = row.visual_row_sources(1).expect("second row").start;
     let caret = row.caret_at(start, ReadingAffinity::Downstream, scale);
     assert_eq!(caret.row, 1);
-    assert!((caret.x - expected).abs() < 0.01, "indent {} vs {}", caret.x, expected);
+    assert!(
+        (caret.x - expected).abs() < 0.01,
+        "indent {} vs {}",
+        caret.x,
+        expected
+    );
 }
 
 /// Tab-bearing lines wrap, and the tiling holds with tabs in the rows.
@@ -202,7 +226,11 @@ fn tabs_on_a_wrapped_row_end_on_their_stops() {
     let stop = space_advance(scale) * 2.0;
     for byte in row.projection.tabs.clone() {
         let source_after = row.projection.byte_to_source[byte + 1];
-        let end = row.caret_at(row.source_start + source_after, ReadingAffinity::Downstream, scale);
+        let end = row.caret_at(
+            row.source_start + source_after,
+            ReadingAffinity::Downstream,
+            scale,
+        );
         // A tab that ends a visual row leaves the next row at its indent, so only tabs ending on their own row have a stop to check.
         let tab_row = row_of_byte(&row, byte);
         if end.row != tab_row {
@@ -224,7 +252,11 @@ fn an_empty_line_has_one_row() {
     assert_eq!(empty.visual_rows(), 1);
     assert_eq!(empty.visual_row_bytes(0), Some(0..0));
     let terminated = wrapped("abc\n", 100.0, 1.0);
-    assert_eq!(terminated.visual_rows(), 1, "the terminator is not a visual row");
+    assert_eq!(
+        terminated.visual_rows(),
+        1,
+        "the terminator is not a visual row"
+    );
     assert_eq!(terminated.projection.text, "abc");
 }
 
@@ -233,10 +265,18 @@ fn an_empty_line_has_one_row() {
 fn width_zero_means_no_wrapping_and_tiny_width_wraps_per_cluster() {
     for width in [0.0, -4.0, f32::NAN, f32::INFINITY] {
         let row = wrapped(LONG_LINE, width, 1.0);
-        assert_eq!(row.visual_rows(), 1, "width {width} keeps the unbroken line");
+        assert_eq!(
+            row.visual_rows(),
+            1,
+            "width {width} keeps the unbroken line"
+        );
     }
     let tiny = wrapped("abcd", 0.5, 1.0);
-    assert_eq!(tiny.visual_rows(), 4, "a tiny width puts each character on its own row");
+    assert_eq!(
+        tiny.visual_rows(),
+        4,
+        "a tiny width puts each character on its own row"
+    );
     assert!(rows_tile_the_text(&tiny));
 }
 
@@ -249,7 +289,10 @@ fn row_steps_are_one_code_row_at_both_scales() {
         assert_eq!(row.visual_row_offset(0, scale), 0.0);
         for index in 1..row.visual_rows() {
             let offset = row.visual_row_offset(index, scale);
-            assert!((offset - CODE_ROW * index as f32).abs() < 0.01, "row {index} at scale {scale}: {offset}");
+            assert!(
+                (offset - CODE_ROW * index as f32).abs() < 0.01,
+                "row {index} at scale {scale}: {offset}"
+            );
         }
     }
 }
@@ -263,10 +306,23 @@ fn caret_at_a_wrap_offset_follows_its_affinity() {
         let position = row.source_start + row.visual_row_sources(1).expect("second row").start;
         let upstream = row.caret_at(position, ReadingAffinity::Upstream, scale);
         let downstream = row.caret_at(position, ReadingAffinity::Downstream, scale);
-        assert_eq!(upstream.row, 0, "upstream draws on the upper row at scale {scale}");
-        assert_eq!(downstream.row, 1, "downstream draws on the lower row at scale {scale}");
-        assert!(upstream.x > downstream.x, "upstream is at the end of the upper row at scale {scale}");
-        assert_eq!(row.caret_x(position, scale), downstream.x, "caret_x keeps its downstream meaning");
+        assert_eq!(
+            upstream.row, 0,
+            "upstream draws on the upper row at scale {scale}"
+        );
+        assert_eq!(
+            downstream.row, 1,
+            "downstream draws on the lower row at scale {scale}"
+        );
+        assert!(
+            upstream.x > downstream.x,
+            "upstream is at the end of the upper row at scale {scale}"
+        );
+        assert_eq!(
+            row.caret_x(position, scale),
+            downstream.x,
+            "caret_x keeps its downstream meaning"
+        );
     }
 }
 
@@ -278,9 +334,15 @@ fn hit_probes_the_visual_row_under_the_point() {
         assert!(row.visual_rows() > 1);
         let boundary = row.source_start + row.visual_row_sources(1).expect("second row").start;
         let lower = row.hit_at(0.0, CODE_ROW * 1.5, scale);
-        assert!(lower >= boundary, "lower row hit {lower} at scale {scale} is on the lower row, from {boundary}");
+        assert!(
+            lower >= boundary,
+            "lower row hit {lower} at scale {scale} is on the lower row, from {boundary}"
+        );
         let upper = row.hit_at(0.0, CODE_ROW * 0.5, scale);
-        assert_eq!(upper, row.source_start, "upper row hit at its start at scale {scale}");
+        assert_eq!(
+            upper, row.source_start,
+            "upper row hit at its start at scale {scale}"
+        );
     }
 }
 
@@ -299,7 +361,10 @@ fn range_yields_one_rectangle_per_visual_row() {
     for scale in [1.0, 2.0] {
         let row = wrapped(LONG_LINE, 160.0, scale);
         let rectangles = row.range(row.source_start, row.source_start + row.source_len(), scale);
-        assert!(rectangles.len() >= row.visual_rows(), "one rectangle per row at scale {scale}");
+        assert!(
+            rectangles.len() >= row.visual_rows(),
+            "one rectangle per row at scale {scale}"
+        );
         for rectangle in &rectangles {
             assert!((rectangle.height - CODE_ROW).abs() < 0.001);
         }
@@ -311,9 +376,12 @@ fn range_yields_one_rectangle_per_visual_row() {
             .collect();
         for index in 0..row.visual_rows() {
             let expected = row.visual_row_offset(index, scale);
-            assert!(ys.iter().any(|y| {
-                return (*y - expected).abs() < 0.001;
-            }), "row {index} has a rectangle at {expected}");
+            assert!(
+                ys.iter().any(|y| {
+                    return (*y - expected).abs() < 0.001;
+                }),
+                "row {index} has a rectangle at {expected}"
+            );
         }
     }
 }

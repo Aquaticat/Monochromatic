@@ -8,6 +8,8 @@
 //! Parley asks for a decision per pair and takes the rightmost fitting opportunity,
 //!  so IntelliJ's weights and its ten-character look-back are not reproduced.
 
+/// IntelliJ's tab stops, so a continuation indent counts a leading tab at its stop.
+use crate::tab_stop::tab_advance;
 /// What:
 ///  `pub use` names Parley's line-break override types under this module.
 /// Why:
@@ -18,8 +20,6 @@
 /// import { LineBreakContext, LineBreakOverrideFn } from 'parley';
 /// ```
 use parley::{LineBreakContext, LineBreakOverrideFn};
-/// IntelliJ's tab stops, so a continuation indent counts a leading tab at its stop.
-use crate::tab_stop::tab_advance;
 
 /// First code point that IntelliJ's `canWrapLineAtOffset` treats as Eastern text.
 const EASTERN_FIRST: u32 = 0x2F00;
@@ -89,7 +89,9 @@ fn is_regional(character: char) -> bool {
 ///
 /// A zero width joiner never ends a cluster, and a regional indicator pair is one flag.
 pub fn joins_grapheme(before: char, after: char) -> bool {
-    return joins_previous(after) || before == '\u{200D}' || (is_regional(before) && is_regional(after));
+    return joins_previous(after)
+        || before == '\u{200D}'
+        || (is_regional(before) && is_regional(after));
 }
 
 /// IntelliJ leaves the blanks after a closing symbol on the upper row, so no break sits between them.

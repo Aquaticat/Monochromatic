@@ -28,11 +28,13 @@ use crate::source_style::StyleSpan;
 use crate::source_typography::SourceTypography;
 /// Tabs end on pixel tab stops,
 ///  whatever script precedes them.
-use crate::tab_layout::{layout_wrapped_with_tabs, layout_with_tabs};
+use crate::tab_layout::{layout_with_tabs, layout_wrapped_with_tabs};
 /// Source/display byte maps keep tabs and Unicode out of hit-test heuristics.
 use crate::text_projection::project_line;
 /// Height and text size of the virtual rows above annotated lines.
 use crate::virtual_row::{ROW_HEIGHT, ROW_TEXT};
+/// IntelliJ's break rules as a Parley override, and the continuation indent of a wrapped line.
+use crate::wrap::{INTELLIJ_LINE_BREAK, continuation_indent, has_wrap_width, is_blank};
 /// Construction failures identify unsupported source typography.
 use anyhow::Result;
 /// Font and paragraph layout are supplied by the same Parley stack Slint uses.
@@ -43,8 +45,6 @@ use parley::{
 };
 /// Font bytes are shared immutably across the font database.
 use std::borrow::Cow;
-/// IntelliJ's break rules as a Parley override, and the continuation indent of a wrapped line.
-use crate::wrap::{INTELLIJ_LINE_BREAK, continuation_indent, has_wrap_width, is_blank};
 
 /// Reading geometry of a prepared frame:
 ///  hits,
@@ -291,12 +291,9 @@ impl TextShaper {
                 return !is_blank(character);
             })
             .unwrap_or(request.text.len());
-        let first_row_in_blanks = layout
-            .lines()
-            .next()
-            .is_some_and(|line| {
-                return line.text_range().end <= first_text;
-            });
+        let first_row_in_blanks = layout.lines().next().is_some_and(|line| {
+            return line.text_range().end <= first_text;
+        });
         if indent > space && layout.len() > 1 && first_row_in_blanks {
             return self.build_line(request, space);
         }
@@ -306,9 +303,9 @@ impl TextShaper {
     /// Build and break one line with the shared font setup.
     /// `indent` is the continuation indent in logical pixels and is used only when the request wraps.
     fn build_line(&mut self, request: LineRequest<'_>, indent: f32) -> Layout<u32> {
-        let mut builder = self
-            .layouts
-            .ranged_builder(&mut self.fonts, request.text, request.scale, true);
+        let mut builder =
+            self.layouts
+                .ranged_builder(&mut self.fonts, request.text, request.scale, true);
         builder.push_default(StyleProperty::FontFamily(FontFamily::Source(
             Cow::Borrowed("JetBrains Mono"),
         )));
@@ -524,7 +521,14 @@ impl TextShaper {
     ) -> ShapedRow {
         let last = document.text().len_lines().saturating_sub(1);
         let baseline = self.baseline(scale);
-        return self.shape_row(document, (row.min(last), 0.0), scale, &[], baseline, Some(width));
+        return self.shape_row(
+            document,
+            (row.min(last), 0.0),
+            scale,
+            &[],
+            baseline,
+            Some(width),
+        );
     }
 
     /// Prepare a visible viewport of a text without virtual rows:
@@ -642,8 +646,14 @@ impl TextShaper {
             let shaped = match hit {
                 Some(shaped) => shaped,
                 None => {
-                    let fresh =
-                        self.shape_row(document, (row, 0.0), viewport.scale, styles, baseline, None);
+                    let fresh = self.shape_row(
+                        document,
+                        (row, 0.0),
+                        viewport.scale,
+                        styles,
+                        baseline,
+                        None,
+                    );
                     self.shaped_rows += 1;
                     if cached {
                         self.rows.insert(fresh.clone());
