@@ -48,19 +48,6 @@ use std::path::{Path, PathBuf};
 use std::thread;
 
 /// What:
-///      `use std::time::Duration;`.
-///  A monotonic span of time.
-/// Why:
-///       Unit tests and the start path pass explicit wait windows to the peak
-///           swap helper.
-///
-/// In TS you'd write (pseudocode):
-/// ```ts
-/// type Duration = number;
-/// ```
-use std::time::Duration;
-
-/// What:
 ///      `use ringbuf::HeapProd;`.
 ///  The WRITE half of a heap ring buffer.
 /// Why:
@@ -161,11 +148,11 @@ use crate::peakcache::CacheHandle;
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// import { fallbackTrackGain, peakSwapWait, prepareTrackGain } from "./peak_swap";
+/// import { fallbackTrackGain, prepareTrackGain } from "./peak_swap";
 /// ```
 use crate::peak_swap::{
-    fallback_track_gain, peak_swap_wait, prepare_track_gain, PeakGainResult,
-    PendingPeakMeasurement, PendingPeakStatus, TrackGainResolution,
+    fallback_track_gain, prepare_track_gain, PeakGainResult, PendingPeakMeasurement,
+    PendingPeakStatus, TrackGainResolution,
 };
 
 /// What:
@@ -659,7 +646,7 @@ impl Controller {
     ///      `fn handle_peak_status(&mut self, status: PendingPeakStatus) -> bool`.
     ///           Convert a pending measurement status into controller state updates.
     /// Why:
-    ///       Polling and timed waiting share the same ready/pending/closed handling.
+    ///       Polling applies one ready/pending/closed handling for every status.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -754,98 +741,13 @@ impl Controller {
         };
         // What:     `self.handle_peak_status(status)`. Apply common status handling.
         //           Tail expression returns whether a current gain was applied.
-        // Why:      Share logic with the timed wait path.
+        // Why:      Keeps the status handling in one place.
         //
         // In TS you'd write (pseudocode):
         // ```ts
         // return this.handlePeakStatus(status);
         // ```
         return self.handle_peak_status(status)
-    }
-
-    /// What:
-    ///      `pub(crate) fn wait_for_pending_peak(&mut self, timeout: Duration)`.
-    ///           Give an in-flight current-track measurement a bounded chance to finish.
-    /// Why:
-    ///       Playback starts should wait briefly for exact gain,
-    ///  then swap to
-    ///           fallback instead of blocking indefinitely.
-    ///
-    /// In TS you'd write (pseudocode):
-    /// ```ts
-    /// waitForPendingPeak(timeoutMs: number): void { ... }
-    /// ```
-    pub(crate) fn wait_for_pending_peak(&mut self, timeout: Duration) {
-        // What:     `if self.poll_pending_peak() { return; }`. First handle any result
-        //           that already landed without waiting.
-        // Why:      Avoid sleeping for the full timeout on a ready channel.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // if (this.pollPendingPeak()) return;
-        // ```
-        if self.poll_pending_peak() {
-            return;
-        }
-        // What:     `let status = match self.pending_peak.as_ref() { ... }`. If still
-        //           pending, wait on the receiver for the caller's bounded duration.
-        // Why:      This is the one-second swap wait, with shorter values available to tests.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // const status = this.pendingPeak?.waitResult(timeoutMs); if (!status) return;
-        // ```
-        let status = match self.pending_peak.as_ref() {
-            // What:     `Some(pending) => pending.wait_result(timeout)`. Wait for the
-            //           measurement or timeout.
-            // Why:      Give exact gain a short chance before fallback playback.
-            //
-            // In TS you'd write (pseudocode):
-            // ```ts
-            // status = pending.waitResult(timeoutMs);
-            // ```
-            Some(pending) => pending.wait_result(timeout),
-            // What:     `None => return`. The first poll cleared the pending state.
-            // Why:      Nothing left to wait for.
-            //
-            // In TS you'd write (pseudocode):
-            // ```ts
-            // return;
-            // ```
-            None => return,
-        };
-        // What:     `self.handle_peak_status(status);`. Apply result/timeout/closed
-        //           handling and ignore the boolean here.
-        // Why:      A timeout deliberately leaves fallback gain and pending state intact.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // this.handlePeakStatus(status);
-        // ```
-        self.handle_peak_status(status);
-    }
-
-    /// What:
-    ///      `pub(crate) fn wait_for_pending_peak_before_start(&mut self)`.
-    ///  Use the
-    ///           standard one-second swap window before starting playback.
-    /// Why:
-    ///       All start paths share the same wait/fallback behavior.
-    ///
-    /// In TS you'd write (pseudocode):
-    /// ```ts
-    /// waitForPendingPeakBeforeStart(): void { this.waitForPendingPeak(1000); }
-    /// ```
-    pub(crate) fn wait_for_pending_peak_before_start(&mut self) {
-        // What:     `self.wait_for_pending_peak(peak_swap_wait());`. Call the generic
-        //           wait helper with the configured one-second duration.
-        // Why:      Keep the literal timeout in `peak_swap`, not scattered through controller code.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // this.waitForPendingPeak(peakSwapWait());
-        // ```
-        self.wait_for_pending_peak(peak_swap_wait());
     }
 
     /// What:
@@ -859,20 +761,15 @@ impl Controller {
     /// setPlaying(on: boolean): void { ... }
     /// ```
     fn set_playing(&mut self, on: bool) {
-        // What:     `if on && !self.playing { self.wait_for_pending_peak_before_start(); }`.
-        //           When the caller starts playback from a paused state, run the
-        //           one-second peak swap wait before audio output is marked playing.
-        // Why:      CLI start, the Play button, and explicit Play commands get the
-        //           wait-then-fallback behavior, while track changes that are already
-        //           playing wait in `install_source` and do not wait twice.
+        // What:     No wait before marking playback on. A pending true-peak measurement
+        //           keeps the fallback gain, and the engine loop swaps the exact gain in later.
+        // Why:      Play from pause must not add up to a second of silence while the
+        //           measurement runs, since the ring buffer is empty at that point.
         //
         // In TS you'd write (pseudocode):
         // ```ts
-        // if (on && !this.playing) this.waitForPendingPeakBeforeStart();
+        // // no wait: the fallback gain is already in place
         // ```
-        if on && !self.playing {
-            self.wait_for_pending_peak_before_start();
-        }
         // What:     `self.playing = on;`. Update the gate.
         // Why:      Pump respects it.
         //

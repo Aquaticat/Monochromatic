@@ -159,7 +159,9 @@ arboard = "3"
 # the host's newer PipeWire/SPA headers. libspa-sys 0.8 emitted an opaque
 # `spa_pod_builder` against PipeWire 1.6.x, breaking the `libspa` wrapper's
 # `.data`/`.size` access.
-pipewire = "0.10"
+# `v0_3_49` exposes `Buffer::requested()`, the quantum the graph asks each callback for;
+# the underrun meter in src/output_pipewire.rs compares it with the frames it fills.
+pipewire = { version = "0.10", features = ["v0_3_49"] }
 # Already in the tree transitively (Slint's color-scheme watcher; rfd 0.17 no longer
 # uses it for its portal picker). Used directly to emit the com.canonical.Unity.LauncherEntry `Update`
 # signal that drives the KDE taskbar progress. Default features include the

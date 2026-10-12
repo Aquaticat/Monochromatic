@@ -101,6 +101,8 @@ use crate::command::{Command, Update};
 /// ```ts
 /// import { Controller } from "./controller";
 /// ```
+use crate::audio_meter::MeterReporter;
+use crate::thread_priority::raise_current_thread_for_decode;
 use crate::controller::Controller;
 
 /// What:
@@ -636,6 +638,16 @@ fn run(
     self_tx: Sender<Command>,
     cache: CacheHandle,
 ) {
+    // What:     `raise_current_thread_for_decode();`. Ask rtkit to raise this thread's nice level
+    //           so decoding keeps up when the machine is busy.
+    // Why:      Decoding runs on this thread. Under load at normal priority it can get too little
+    //           CPU, and the ring buffer runs dry. Refusal is logged and playback continues.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // raiseCurrentThreadForDecode();
+    // ```
+    raise_current_thread_for_decode();
     // What:     `let output = match Output::new(thread::current()) { ... };`. Try to start
     //           PipeWire, handing it a handle to THIS thread. `thread::current()` returns
     //           the running thread's `Thread` handle; it is the same thread `Engine`
@@ -737,6 +749,15 @@ fn run(
     // ```ts
     // while (true) { ... }
     // ```
+    // What:     `let mut meter_reporter = MeterReporter::new();`. Tracks when the underrun
+    //           counters were last logged, so the log shows at most one line a second.
+    // Why:      Created once per worker, outside the loop, so its cadence survives iterations.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const meterReporter = new MeterReporter();
+    // ```
+    let mut meter_reporter = MeterReporter::new();
     loop {
         // What:     `let mut quitting = false;`. Flag set when a quit/disconnect is seen
         //           while draining commands.
@@ -844,6 +865,16 @@ fn run(
         // const didWork = controller.pumpAudio();
         // ```
         let did_work = controller.pump_audio();
+
+        // What:     `controller.report_audio_meters(&mut meter_reporter);`. Log the output's
+        //           underrun counters if a second has passed and they moved.
+        // Why:      Logging happens here, on the worker thread, never in the realtime callback.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // controller.reportAudioMeters(meterReporter);
+        // ```
+        controller.report_audio_meters(&mut meter_reporter);
 
         // What:     `if !applied_peak && !did_work { thread::park_timeout(Duration::from_millis(IDLE_PARK_FALLBACK_MS)); }`.
         //           When neither a peak swap nor audio pumping did work, PARK: block the

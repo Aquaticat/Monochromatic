@@ -22,7 +22,7 @@
 //!  Sweeps are never
 //! cancelled.
 //!  The current track is handled by `peak_swap`,
-//!  because playback may wait briefly for
+//!  because the track change must not wait for
 //! that one visible result.
 
 /// What:
@@ -238,6 +238,15 @@ struct SweepShared {
 /// function runSweep(job: SweepJob): void { peekAll(job); measureAll(job); }
 /// ```
 fn run_sweep(job: SweepJob) {
+    // What:     `lower_current_thread_to_idle();`. Put the sweep coordinator in the idle class.
+    // Why:      It probes every track at normal priority before any worker starts. Idle keeps
+    //           that probe pass and the workers it starts behind playback.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // lowerCurrentThreadToIdle();
+    // ```
+    lower_current_thread_to_idle();
     // What:     `report_peeked_measures(&job);`. Announce every track's cached peak and length.
     // Why:      Rows get their lengths before any decode starts.
     //

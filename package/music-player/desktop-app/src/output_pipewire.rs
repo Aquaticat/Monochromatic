@@ -317,6 +317,7 @@ use ringbuf::{HeapCons, HeapProd, HeapRb};
 /// import { PlayerError } from "./error";
 /// ```
 use crate::error::PlayerError;
+use crate::audio_meter::{AudioMeter, MeterSnapshot};
 
 /// What:
 ///      `const F32_BYTES: usize = size_of::<f32>();`.
@@ -423,6 +424,17 @@ struct ProcessData {
     /// worker: WorkerRef;
     /// ```
     worker: Thread,
+    /// What:
+    ///      `meter: Arc<AudioMeter>`.
+    ///  The shared underrun counters this callback writes.
+    /// Why:
+    ///       Counting here and reporting from the engine thread keeps logging off the realtime path.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// meter: AudioMeter;
+    /// ```
+    meter: Arc<AudioMeter>,
 }
 
 /// What:
@@ -541,6 +553,17 @@ pub struct Output {
     /// worker: WorkerRef;
     /// ```
     worker: Thread,
+    /// What:
+    ///      `meter: Arc<AudioMeter>`.
+    ///  Underrun counters shared with every stream this output creates.
+    /// Why:
+    ///       The engine thread reads them once a second to report stutter.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// meter: AudioMeter;
+    /// ```
+    meter: Arc<AudioMeter>,
 }
 
 /// What:
@@ -672,6 +695,7 @@ impl Output {
             thread_loop,
             playing,
             worker,
+            meter: Arc::new(AudioMeter::new()),
         })
     }
 
@@ -761,6 +785,7 @@ impl Output {
             scratch: Vec::new(),
             playing: Arc::clone(&self.playing),
             worker: self.worker.clone(),
+            meter: Arc::clone(&self.meter),
         };
 
         // What:     `let guard = self.thread_loop.lock();`. Lock the audio loop: while held,
@@ -868,6 +893,16 @@ impl Output {
                     // else { ... }
                     // ```
                     Some(mut buffer) => {
+                        // What:     `let requested_frames = buffer.requested();`. The frame count
+                        //           the graph asks for in this cycle (0 when it has not set one).
+                        // Why:      Recorded with the buffer size so the log shows the quantum.
+                        //
+                        // In TS you'd write (pseudocode):
+                        // ```ts
+                        // const requestedFrames = buffer.requested;
+                        // ```
+                        let requested_frames = buffer.requested();
+
                         // What:     `let datas = buffer.datas_mut();`. A buffer can hold
                         //           several data planes; `datas_mut()` borrows them mutably
                         //           as a slice.
@@ -951,6 +986,17 @@ impl Output {
                                 // ```
                                 let want = avail_frames * pd.channels;
 
+                                // What:     `pd.meter.record_buffer(requested_frames, avail_frames as u64);`.
+                                //           Store the requested and filled frame counts.
+                                // Why:      The engine thread logs them, so the quantum and the
+                                //           buffer size can be checked against each other.
+                                //
+                                // In TS you'd write (pseudocode):
+                                // ```ts
+                                // meter.recordBuffer(requestedFrames, availFrames);
+                                // ```
+                                pd.meter.record_buffer(requested_frames, avail_frames as u64);
+
                                 // What:     `if pd.scratch.len() < want { pd.scratch.resize(want, 0.0); }`.
                                 //           Grow the scratch buffer if needed, filling new
                                 //           slots with `0.0`.
@@ -1019,6 +1065,21 @@ impl Output {
                                 // ```
                                 if got > 0 {
                                     pd.worker.unpark();
+                                }
+
+                                // What:     `if playing && got < want { pd.meter.record_short(...); }`.
+                                //           When audio should be flowing but the ring buffer held
+                                //           fewer samples than this buffer needs, count the callback
+                                //           and the silent frames that will be written below.
+                                // Why:      This is the ring-buffer underrun that the stutter
+                                //           analysis is built on.
+                                //
+                                // In TS you'd write (pseudocode):
+                                // ```ts
+                                // if (playing && got < want) meter.recordShort((want - got) / channels);
+                                // ```
+                                if playing && got < want {
+                                    pd.meter.record_short(((want - got) / pd.channels) as u64);
                                 }
 
                                 // What:     `for s in pd.scratch[got..want].iter_mut() { *s = 0.0; }`.
@@ -1356,6 +1417,20 @@ impl Output {
         // Atomics.store(playingFlag, 0, on ? 1 : 0);
         // ```
         self.playing.store(on, Ordering::Relaxed);
+    }
+
+    /// What:
+    ///      `pub fn meter_snapshot(&self) -> MeterSnapshot`.
+    ///  Reads the underrun counters the realtime callback has written so far.
+    /// Why:
+    ///       The engine thread calls it once a second and logs what changed.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// meterSnapshot(): MeterSnapshot { ... }
+    /// ```
+    pub fn meter_snapshot(&self) -> MeterSnapshot {
+        return self.meter.snapshot();
     }
 }
 

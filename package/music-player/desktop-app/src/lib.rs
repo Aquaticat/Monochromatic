@@ -162,6 +162,30 @@ pub mod output;
 pub mod output;
 
 /// What:
+///      `pub mod audio_meter;` the underrun and late-callback counters (`src/audio_meter.rs`)
+///           that the realtime output writes and the engine thread reports once a second.
+/// Why:
+///       Stutter must be measurable; the counters live apart from PipeWire so they compile on every platform.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// export * as audioMeter from "./audioMeter";
+/// ```
+pub mod audio_meter;
+
+/// What:
+///      `pub mod thread_priority;` the decode thread's nice-level request to rtkit (Linux)
+///           (`src/thread_priority.rs`).
+/// Why:
+///       Keeps the scheduling call in one place, with a no-op body on platforms without nice levels.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// export * as threadPriority from "./threadPriority";
+/// ```
+pub mod thread_priority;
+
+/// What:
 ///      `pub mod playback;` the device-free playback helpers (`src/playback.rs`):
 ///           the per-sample gain/clamp stage,
 ///  frame->seconds conversion,
@@ -228,9 +252,8 @@ pub mod measure;
 ///           (`src/peak_swap.rs`).
 /// Why:
 ///       Cache misses now start with a safe temporary gain,
-///  wait briefly at
-///           playback start,
-///  then swap to the measured gain when it lands.
+///  start playback at once,
+///           then swap to the measured gain when it lands.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

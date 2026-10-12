@@ -7,7 +7,7 @@
 //! the current track,
 //!  immediately use the safe -1 dBTP ceiling gain,
 //!  and let the
-//! controller wait up to one second when playback is about to start.
+//! controller apply it on the next poll, so playback never waits for it.
 //!  If the
 //! measurement finishes later,
 //!  the controller swaps future decoded samples to the
@@ -31,12 +31,11 @@
 use std::path::{Path, PathBuf};
 
 /// What:
-///      `use std::sync::mpsc::{self, Receiver, RecvTimeoutError, TryRecvError};`.
+///      `use std::sync::mpsc::{self, Receiver, TryRecvError};`.
 ///           Rust's multi-producer/single-consumer channel module plus the receive
-///           half and two error enums.
+///           half and an error enum.
 ///  `Receiver<T>` is the owned read end;
-///           `TryRecvError` reports non-blocking empty/disconnected states;
-///           `RecvTimeoutError` reports timeout/disconnected states.
+///           `TryRecvError` reports non-blocking empty/disconnected states.
 /// Why:
 ///       The measurement worker sends exactly one result back to the controller
 ///           without blocking the audio thread.
@@ -45,7 +44,7 @@ use std::path::{Path, PathBuf};
 /// ```ts
 /// const channel = makeOneShotChannel<PeakGainResult>();
 /// ```
-use std::sync::mpsc::{self, Receiver, RecvTimeoutError, TryRecvError};
+use std::sync::mpsc::{self, Receiver, TryRecvError};
 
 /// What:
 ///      `use std::thread;`.
@@ -59,18 +58,6 @@ use std::sync::mpsc::{self, Receiver, RecvTimeoutError, TryRecvError};
 /// const worker = new Worker("measure-current-track.js");
 /// ```
 use std::thread;
-
-/// What:
-///      `use std::time::Duration;`.
-///  A monotonic span of time.
-/// Why:
-///       The controller waits for at most the CSS-font-style swap window.
-///
-/// In TS you'd write (pseudocode):
-/// ```ts
-/// type Duration = number;
-/// ```
-use std::time::Duration;
 
 /// What:
 ///      `use crate::peakcache::{self, CacheHandle};`.
@@ -104,26 +91,6 @@ use crate::peakcache::{self, CacheHandle};
 /// ```
 use crate::truepeak::{normalization_gain, resolve_current};
 use truepeak_core::Decision;
-
-/// What:
-///      `const PEAK_SWAP_WAIT_SECS: u64 = 1;`.
-///  One second,
-///  stored as the
-///           unsigned integer width `Duration::from_secs` expects.
-///  Siblings would
-///           be `u32` or `usize`,
-///  but the constructor takes `u64`.
-/// Why:
-///       This is the borrowed-from-CSS-fonts swap window:
-///  wait briefly for the
-///           measured peak,
-///  then play with the fallback gain if it is still absent.
-///
-/// In TS you'd write (pseudocode):
-/// ```ts
-/// const PEAK_SWAP_WAIT_SECS = 1;
-/// ```
-const PEAK_SWAP_WAIT_SECS: u64 = 1;
 
 // What:     `#[derive(Clone, Copy, Debug)]` auto-generates cheap copying and debug
 //           formatting for `PeakGainResult`. `Copy` is valid because both fields
@@ -199,8 +166,7 @@ pub(crate) struct PeakGainResult {
 ///  still pending,
 ///           or the worker ended without sending.
 /// Why:
-///       The controller needs the same state machine for polling and for the
-///           one-second start wait.
+///       The controller needs one state machine for polling the measurement.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -270,7 +236,7 @@ pub(crate) enum PendingPeakStatus {
 ///  The controller's
 ///           handle to one in-flight current-track measurement.
 /// Why:
-///       Encapsulates the channel receiver so command handling can poll or wait
+///       Encapsulates the channel receiver so command handling can poll
 ///           without knowing mpsc error details.
 ///
 /// In TS you'd write (pseudocode):
@@ -284,7 +250,7 @@ pub(crate) struct PendingPeakMeasurement {
     ///           one-shot channel.
     ///  The sibling write end lives in the measurement thread.
     /// Why:
-    ///       Poll or wait for the measured gain.
+    ///       Poll for the measured gain.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -302,7 +268,7 @@ pub(crate) struct PendingPeakMeasurement {
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// class PendingPeakMeasurement { /* fromReceiver, tryResult, waitResult */ }
+/// class PendingPeakMeasurement { /* fromReceiver, tryResult */ }
 /// ```
 impl PendingPeakMeasurement {
     /// What:
@@ -380,57 +346,6 @@ impl PendingPeakMeasurement {
             Err(TryRecvError::Disconnected) => return PendingPeakStatus::Closed,
         }
     }
-
-    /// What:
-    ///      `pub(crate) fn wait_result(&self, timeout: Duration) -> PendingPeakStatus`.
-    ///           Wait for a result until the timeout expires.
-    /// Why:
-    ///       The start path gives the current-track measurement a one-second chance
-    ///           before swapping to fallback playback.
-    ///
-    /// In TS you'd write (pseudocode):
-    /// ```ts
-    /// waitResult(timeoutMs: number): PendingPeakStatus { return this.receiver.readWithTimeout(timeoutMs); }
-    /// ```
-    pub(crate) fn wait_result(&self, timeout: Duration) -> PendingPeakStatus {
-        // What:     `match self.receiver.recv_timeout(timeout) { ... }`. Blocking
-        //           receive with a maximum duration.
-        // Why:      Wait briefly without risking an indefinite playback stall.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // switch (await this.receiver.readWithTimeout(timeoutMs)) { /* value, timeout, closed */ }
-        // ```
-        match self.receiver.recv_timeout(timeout) {
-            // What:     `Ok(result) => PendingPeakStatus::Ready(result)`. The worker
-            //           finished inside the swap window.
-            // Why:      The track can start with its exact measured gain.
-            //
-            // In TS you'd write (pseudocode):
-            // ```ts
-            // return { kind: "ready", result };
-            // ```
-            Ok(result) => return PendingPeakStatus::Ready(result),
-            // What:     `Err(RecvTimeoutError::Timeout) => PendingPeakStatus::Pending`.
-            //           The one-second window expired.
-            // Why:      Start with fallback now and keep polling for the later swap.
-            //
-            // In TS you'd write (pseudocode):
-            // ```ts
-            // return { kind: "pending" };
-            // ```
-            Err(RecvTimeoutError::Timeout) => return PendingPeakStatus::Pending,
-            // What:     `Err(RecvTimeoutError::Disconnected) => PendingPeakStatus::Closed`.
-            //           The worker ended without sending a result.
-            // Why:      Clear the pending handle and keep the fallback gain.
-            //
-            // In TS you'd write (pseudocode):
-            // ```ts
-            // return { kind: "closed" };
-            // ```
-            Err(RecvTimeoutError::Disconnected) => return PendingPeakStatus::Closed,
-        }
-    }
 }
 
 /// What:
@@ -498,11 +413,11 @@ pub(crate) enum TrackGainResolution {
         ///  wrapping the channel receiver).
         ///  Not a raw `Receiver`:
         ///  the
-        ///           wrapper hides the mpsc error details behind poll/wait methods.
+        ///           wrapper hides the mpsc error details behind the poll method.
         /// Why:
         ///       Lets the controller start with fallback gain while the worker
         ///           decodes,
-        ///  then poll or wait on this handle for the measured gain.
+        ///  then poll this handle for the measured gain.
         ///
         /// In TS you'd write (pseudocode):
         /// ```ts
@@ -510,29 +425,6 @@ pub(crate) enum TrackGainResolution {
         /// ```
         PendingPeakMeasurement,
     ),
-}
-
-/// What:
-///      `pub(crate) fn peak_swap_wait() -> Duration`.
-///  Return the configured
-///           one-second swap window as a `Duration` value.
-/// Why:
-///       The controller calls this at every playback-start boundary.
-///
-/// In TS you'd write (pseudocode):
-/// ```ts
-/// function peakSwapWait(): number { return PEAK_SWAP_WAIT_SECS * 1000; }
-/// ```
-pub(crate) fn peak_swap_wait() -> Duration {
-    // What:     `Duration::from_secs(PEAK_SWAP_WAIT_SECS)`. Build a `Duration` from
-    //           an integer second count. Tail expression returns it.
-    // Why:      Avoid repeating the conversion at call sites.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // return PEAK_SWAP_WAIT_SECS * 1000;
-    // ```
-    return Duration::from_secs(PEAK_SWAP_WAIT_SECS)
 }
 
 /// What:
@@ -607,7 +499,7 @@ pub(crate) fn cached_track_gain(path: &Path, cache: &CacheHandle) -> Option<f32>
 /// Why:
 ///       A cache hit returns exact gain now;
 ///  a miss starts measurement and lets
-///           playback begin with fallback after the one-second start wait.
+///           playback begin at once with the fallback gain until the result lands.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -684,7 +576,7 @@ pub(crate) fn prepare_track_gain(
 /// Why:
 ///       Current-track measurement must not block load,
 ///  but it should run at normal
-///           priority because playback may wait briefly for it.
+///           priority so the exact gain lands soon after a track change.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
