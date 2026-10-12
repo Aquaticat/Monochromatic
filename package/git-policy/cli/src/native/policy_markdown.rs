@@ -337,9 +337,9 @@ fn top_level<F: RepositoryFacts>(facts: &mut F) -> Result<PathBuf, PolicyOutcome
 /// const ruleList = (options) => options.rules.join(', ');
 /// ```
 fn rule_list(options: &MarkdownAutofixOptions) -> String {
-    let mut names: Vec<&str> = Vec::new();
+    let mut names: Vec<String> = Vec::new();
     for rule in &options.rules {
-        names.push(markdown_rule_name(*rule));
+        names.push(format!("markdown/{}", markdown_rule_name(*rule)));
     }
     return names.join(", ");
 }
@@ -403,7 +403,7 @@ fn candidate_findings(
         findings.push(PolicyFinding {
             code: MARKDOWN_AUTOFIX_CODE,
             message: format!(
-                "markdown-lint --fix ({}) rewrites {}.",
+                "monochromatic-lint --fix ({}) rewrites {}.",
                 rule_list(options),
                 path.text()
             ),

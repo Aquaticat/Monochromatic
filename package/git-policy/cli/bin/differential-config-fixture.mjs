@@ -243,7 +243,7 @@ export async function createFixture({
   // The native wrapper reads `rulesFile` alone: no environment variable names the rules file for it.
   const nativeEnvironment = hermeticEnvironment({
     home,
-    path: `${nativeBin}:/usr/bin:/bin`,
+    path: `${nativeBin}:/usr/bin:/bin${lintPath}`,
   });
   const incumbentEntry = join(
     packageDirectory,
