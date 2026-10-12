@@ -241,6 +241,7 @@ await describe({
               'translate lane',
               'lane contest',
               'consolidation',
+              'page consistency',
             ] as const;
             expect(
               Object.fromEntries(phases.map(function benchesOf(phase,) {
@@ -254,7 +255,47 @@ await describe({
               'translate lane': ['translators', 'select',],
               'lane contest': ['wide',],
               consolidation: ['slate', 'wide',],
+              'page consistency': ['wide', 'translators',],
             },);
+          },
+        },),
+        it({
+          name: 'NAMES THE WRITER BENCH BESIDE THE WIDE BENCH when the page consistency phase starts with Bedrock '
+            + 'alone wet, since its carry asks the translate stage\'s writers after its judges, and names nothing '
+            + 'when every provider is wet',
+          fn: async () => {
+            /**
+             Wide seats Bedrock serves under that view.
+             */
+            const wideReachable = reachableSeats({
+              seats: RUN_WIDE_SEATS,
+              dry: BEDROCK_ALONE,
+            },).length;
+            /**
+             Writers Bedrock serves under that view.
+             */
+            const writersReachable = reachableSeats({
+              seats: RUN_TRANSLATORS,
+              dry: BEDROCK_ALONE,
+            },).length;
+            expect(writersReachable,).toBeLessThan(rosterQuorumSize({ rosterSize: RUN_TRANSLATORS.length, },),);
+            expect(shortBenches({
+              benches: benchesUnder({ dry: BEDROCK_ALONE, },),
+              names: phaseBenches({ phase: 'page consistency', },),
+              dry: BEDROCK_ALONE,
+            },),).toEqual([
+              `wide ${String(wideReachable,)} of ${String(RUN_WIDE_SEATS.length,)} reachable, quorum ${
+            String(rosterQuorumSize({ rosterSize: RUN_WIDE_SEATS.length, },),)
+          }`,
+              `translators ${String(writersReachable,)} of ${String(RUN_TRANSLATORS.length,)} reachable, quorum ${
+            String(rosterQuorumSize({ rosterSize: RUN_TRANSLATORS.length, },),)
+          }`,
+            ],);
+            expect(shortBenches({
+              benches: benchesUnder({ dry: ALL_WET, },),
+              names: phaseBenches({ phase: 'page consistency', },),
+              dry: ALL_WET,
+            },),).toEqual([],);
           },
         },),
       ],
