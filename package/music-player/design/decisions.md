@@ -2992,9 +2992,9 @@ Browsing:
 - Quit (desktop): `Ctrl+Q`.
 
 On the focused track row, or the row the menu is open on:
-- Open its menu: `Menu` key or `Shift+F10`.
+- Open its menu: `Menu` key or `Alt+Enter` (D114 replaced `Shift+F10`, which is Run in JetBrains).
 - Move to trash: `Delete`. Copy path: `Ctrl+Shift+C` (JetBrains copies the path with this).
-- Show in file manager: `Ctrl+Shift+E`. File details: `Alt+Enter`. No re-analyse binding (D113).
+- Show in file manager: `Ctrl+Shift+E`. File details has no dedicated key (D114: reach it through the menu).
 - With the menu open, `Up`, `Down` and `Enter` choose a row and `Escape` closes it.
 
 Pages:
@@ -3197,6 +3197,19 @@ the D106 rows `F5` (rescan) and `Ctrl+Shift+F5` (re-analyse).
   that failed to decode is retried when the library next changes or the app next starts, and a failure is reported once
   per file in plain words (D83) instead of offering a retry button.
 - The D107 notification stays the only analysis surface.
+
+### D114. The track menu opens with Menu or Alt+Enter, and every menu row has an access key (2026-10-12)
+
+The human noticed that `Shift+F10` is Run in JetBrains' keymap, which D106 uses as its tie-breaker. Decided by the human:
+
+- The track row's menu opens with the `Menu` key or `Alt+Enter` (JetBrains' key for the actions on the item under the
+  cursor). `Shift+F10` is not bound.
+- File details has no dedicated key; the menu reaches it.
+- Every menu row has an access key, as JetBrains and desktop menus do: one letter per row, drawn underlined in the row
+  label (a second channel besides the letter itself is the underline), and pressing the letter while the menu is open runs
+  that row and closes the menu. Letters are unique within the menu, chosen from the row's own words (for example Play,
+  Shuffle from here, Details, Copy filename, Show in file manager, Move to trash), and the rows' `Up`, `Down`, `Enter`,
+  `Escape` keys stay. On Android the access keys work with an attached keyboard.
 
 ## Pending after the theme picks (2026-09-04)
 
