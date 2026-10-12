@@ -331,3 +331,34 @@ fn a_commit_that_overlaps_the_winner_ends_in_a_replay_conflict() {
     assert_eq!(git_text(&fixture, repo.as_path(), &["rev-parse", "HEAD"]).trim(), winning.trim());
     remove(&fixture);
 }
+
+/// A termination signal sent to the wrapper while a `pre-commit` hook runs ends the hook's Git, leaves no
+///  transaction behind, and exits with 128 plus the signal number.
+#[test]
+fn a_termination_signal_during_a_hook_ends_the_commit_and_leaves_nothing() {
+    let fixture: Fixture = fixture("commit-signal");
+    let repo: PathBuf = edited_repository(&fixture, "repo");
+    let started: PathBuf = fixture.root.join("hook-started");
+    super::support::executable(
+        repo.join(".git/hooks/pre-commit").as_path(),
+        format!("#!/bin/sh\ntouch '{}'\nsleep 60\n", started.display()).as_bytes(),
+    );
+    let head: String = git_text(&fixture, repo.as_path(), &["rev-parse", "HEAD"]);
+    let child: Child = wrapped_commit(&fixture, repo.as_path(), &["commit", "--message=x", "a.txt"])
+        .stdout(Stdio::null())
+        .stderr(Stdio::piped())
+        .spawn()
+        .expect("the commit starts");
+    await_marker(started.as_path());
+    let signalled = Command::new("kill")
+        .args(["-s", "TERM"])
+        .arg(child.id().to_string())
+        .status()
+        .expect("kill starts");
+    assert!(signalled.success());
+    let finished = child.wait_with_output().expect("the commit ends");
+    assert_eq!(finished.status.code(), Some(143), "{}", String::from_utf8_lossy(finished.stderr.as_slice()));
+    assert_eq!(git_text(&fixture, repo.as_path(), &["rev-parse", "HEAD"]), head);
+    assert_nothing_left(&fixture, repo.as_path());
+    remove(&fixture);
+}

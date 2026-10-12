@@ -27,6 +27,7 @@ use super::shadow_git::remove_shadow_repository;
 /// The shadow request and the real-Git command builder.
 use super::shadow_git::shadow_request;
 use super::forwarding::git_command;
+use super::signal_relay::SignalGuard;
 /// Context, one required Git start and failure text.
 use super::transaction_git::{GitContext, GitFailure, GitOutput, run_git_checked};
 /// `OsString` is owned operating-system text.
@@ -191,10 +192,14 @@ pub fn run_native_commit(
     for name in NATIVE_UNSET_VARIABLES {
         command.env_remove(name);
     }
-    let status: std::process::ExitStatus = command.status().map_err(|error| {
+    // A signal sent to the wrapper while Git runs reaches Git when a process sent it; Git's ending decides the status.
+    let guard: SignalGuard = SignalGuard::install().map_err(|error| {
+        return PreparationError::Git(GitFailure(format!("installing the signal guard failed: {error}")));
+    })?;
+    let outcome = guard.run_child(&mut command).map_err(|error| {
         return PreparationError::Git(GitFailure(format!("git commit could not start: {error}")));
     })?;
-    return Ok(status.code().unwrap_or(1));
+    return Ok(super::forwarding::exit_code(outcome));
 }
 
 /// What:

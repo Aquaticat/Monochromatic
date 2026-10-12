@@ -22,7 +22,8 @@ use super::commit_transaction::{CommitInvocation, TransactionStop, failed};
 use super::commit_workspace::CommitWorkspace;
 use super::commit_worktree_records::{HookChanges, describe_hook_changes};
 use super::diagnostic_log::debug;
-use super::forwarding::git_command;
+use super::forwarding::{exit_code, git_command};
+use super::signal_relay::SignalGuard;
 use super::hook_dispatch_plan::SILENCED_HOOK_EVENTS;
 use super::policy_checks::ShippedChecks;
 use super::policy_content::{ContentState, LifecycleContent};
@@ -137,11 +138,13 @@ fn rerun_pre_commit(
     for name in NATIVE_UNSET_VARIABLES {
         command.env_remove(name);
     }
-    let status = command
-        .status()
+    let guard: SignalGuard = SignalGuard::install()
+        .map_err(|error| { return failed(format!("installing the signal guard failed: {error}")); })?;
+    let outcome = guard
+        .run_child(&mut command)
         .map_err(|error| { return TransactionStop::Message(format!("git hook run could not start: {error}")); })?;
-    debug(TAG, format!("pre-commit re-run exited {:?}", status.code()).as_str());
-    if !status.success() {
+    debug(TAG, format!("pre-commit re-run ended {outcome:?}").as_str());
+    if exit_code(outcome) != 0 {
         return Err(TransactionStop::NativeExit(HOOK_REJECTION_EXIT));
     }
     return Ok(());
