@@ -19,19 +19,20 @@ The native executable commits for real.
 The incumbent's end-to-end suite passes against the native executable on Git 2.55.0 (seed 1): 36 of 38 scenarios pass
 and 2 skip by design.
 The commit differential against the incumbent (from source) finds 10 of 10 cases equal.
-The gates on the final head, the mutation campaign and the fuzz smoke are still to run (see `Remaining`).
+The container gate, Clippy and the fuzz smoke are green on the final head; the mutation campaigns are recorded under
+`Mutation` (see `Remaining` for what is still running).
 
 ### Merged lanes
 
 Merged into this branch, in order:
 
 - `main` (`30cdbc2311`): the dependent-version wiring and the `mise.lock` revision 2 upgrade.
-- `feat/cli-git-native-landing` (`d3a14689e5`): slice 7a.
-- `feat/cli-git-native-post-landing` (`cda16d1341`): slice 7b.
+- `feat/cli-git-native-landing`: slice 7a, merged again at `13fe865399` (its mutation record).
+- `feat/cli-git-native-post-landing`: slice 7b, merged again at `b1d14c268c` (the commit path calls
+  `post_landing.rs` for the after-landing order; there is no second ordering).
 - `feat/cli-git-native-config` (`1bc75f16fd`): `cli-git.config.jsonc` and the differential.
 - `feat/cli-git-native-e2e`: the `E2E_WRAPPER` selector, merged again at its finished head `b307a723d0`.
-- `feat/cli-git-native-transactions`: merged at `44abe6639a`; its agent still adds mutation controls (test files
-  only), so it is merged again before the final gates.
+- `feat/cli-git-native-transactions`: merged at `44abe6639a`, its head when the final gates ran.
 
 ### What was built here
 
@@ -81,11 +82,23 @@ New modules (each with its `*_tests.rs` where it has pure logic; the transaction
   `--allow-empty`, a concurrent replay with the phase marker, and a commit blocked by commit-only are equal in exit
   code, events, resulting commit, index and worktree. With `--native /usr/bin/git` the same run reports the expected
   differences, so the comparison can fail.
-- End-to-end, seed 1, Git 2.55.0, image tag `integration`: 36 pass, 2 skip (about 33 minutes under load).
+- End-to-end, seeds 1 and 2, Git 2.55.0, image tag `integration`: 36 pass, 2 skip each (about 33 minutes under load).
   Including `sigkill-phase-*`, `reservation-after-lost-races`, `branch-switch-during-commit` (now a real pass),
   the hook and lint-staged scenarios.
-- Host binary tests: `commit::*` 13 pass. The only failing host tests are the Git 2.55.0 vs 2.56.0 comparisons and
-  the two tests that need the built linter, the same as before this branch.
+- Container gate (`native:test:container`, Git 2.56.0 image tag `integration`, Clippy `-D warnings` included): green on
+  the final head: 1608 library tests, 98 binary tests. Two earlier runs on a host with load average 40 to 75 failed
+  `markdown::the_real_linter_rewrites_through_add_check_and_fix` (and once
+  `coordination::a_dead_foreign_lock_is_refused_and_left_in_place`) on the 5-second command bound; both pass when the
+  host is quieter, and the bound was not changed.
+- Git 2.55.0 probe (host Git 2.55.0): the library tests fail only the 2.56.0 comparisons
+  (`command_options::git_tests`, `command_branch_create::git_tests`, `command_add` table, `git_metadata`, `global_arguments`)
+  and the test that needs the built linter; the binary tests fail only `forwarding::version_is_identical_to_native_git`,
+  the three `resolution::` tests (all compare the `git version` text with 2.56.0) and the real-linter test. Every
+  `commit::` and `coordination::` test passes, and the end-to-end suite above runs on Git 2.55.0.
+- Fuzz smoke (`mise run //package/git-policy/cli.fuzz:smoke`): green, 15 targets exit 0. The generator control
+  `generated_arguments_reach_every_frontier_ending` needed two changes: a real commit prints its own text, so its
+  ending carries none, and a commit region that Git's option table refuses is forwarded so Git reports the refusal.
+- Clippy: `mise run //package/git-policy/cli:native:clippy` clean.
 
 ## Choices open to veto
 
