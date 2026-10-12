@@ -229,3 +229,266 @@ fn a_disabled_post_commit_still_completes_the_rest() {
     );
     scene.finish();
 }
+
+/// Writes a blob with `content` into the real object store, then moves its loose file into the shadow's object store,
+/// so only `shadow/objects` can serve it, as it does for an object a transaction wrote before landing.
+fn blob_only_in_shadow(scene: &Scene, content: &str) -> String {
+    let source: PathBuf = scene.root.join("blob-source");
+    std::fs::write(source.as_path(), content).expect("blob source");
+    let oid: String = git_text(
+        scene.repo.as_path(),
+        &[
+            "hash-object",
+            "-w",
+            "--",
+            source.to_str().expect("UTF-8 path"),
+        ],
+    );
+    let (fan_out, rest): (&str, &str) = oid.split_at(2);
+    let from: PathBuf = scene.git_dir.join("objects").join(fan_out).join(rest);
+    let to_directory: PathBuf = scene.shadow.join("objects").join(fan_out);
+    std::fs::create_dir_all(to_directory.as_path()).expect("shadow fan-out");
+    std::fs::rename(from, to_directory.join(rest)).expect("moved loose object");
+    return oid;
+}
+
+/// A record whose worktree copy holds `original` and whose landed bytes are `intended`, both served by the shadow only.
+fn shadow_record(scene: &Scene, path: &str, original: &str, intended: &str) -> AddedPath {
+    std::fs::write(scene.repo.join(path), original).expect("worktree copy");
+    return AddedPath {
+        path: String::from(path),
+        git_mode: String::from("100644"),
+        original_oid: blob_only_in_shadow(scene, original),
+        intended_oid: blob_only_in_shadow(scene, intended),
+    };
+}
+
+/// Both record lists are completed, the added paths and the worktree records, from the shadow's objects,
+/// and the shadow is removed only afterwards.
+#[test]
+fn both_record_lists_are_copied_from_the_shadow_before_it_is_removed() {
+    let scene: Scene = Scene::new("post-landing-copies", false);
+    let (stand_in, _log): (PathBuf, PathBuf) = logging_git(scene.root.as_path(), 0);
+    let mut context = git_context();
+    context.real_git = stand_in;
+    let lock: PathBuf = scene.git_dir.join("cli-git").join("hook.lock");
+    let hook_plan: HookDispatchPlan = plan(lock.as_path(), &["post-commit"]);
+    let mut transaction: LandedTransaction = landed(&scene, Vec::new());
+    transaction.added_paths = vec![shadow_record(
+        &scene,
+        "added.txt",
+        "added before\n",
+        "added after\n",
+    )];
+    transaction.worktree_records = vec![shadow_record(
+        &scene,
+        "fixed.txt",
+        "fixed before\n",
+        "fixed after\n",
+    )];
+    let outcome: PostLandingOutcome = complete_landed_transaction(PostLandingRequest {
+        context: &context,
+        plan: &hook_plan,
+        landed: &transaction,
+    })
+    .expect("completed");
+    assert_eq!(
+        outcome.worktree.rewritten,
+        vec![String::from("added.txt"), String::from("fixed.txt")]
+    );
+    assert!(outcome.worktree.conflicted.is_empty());
+    assert_eq!(
+        std::fs::read_to_string(scene.repo.join("added.txt")).expect("added copy"),
+        "added after\n"
+    );
+    assert_eq!(
+        std::fs::read_to_string(scene.repo.join("fixed.txt")).expect("fixed copy"),
+        "fixed after\n"
+    );
+    assert!(!scene.shadow.exists());
+    scene.finish();
+}
+
+/// A copy the user changed meanwhile is kept and reported, and the completion still disposes and runs the hook.
+#[test]
+fn a_concurrently_changed_copy_is_kept_without_failing_the_commit() {
+    let scene: Scene = Scene::new("post-landing-conflict", false);
+    let (stand_in, _log): (PathBuf, PathBuf) = logging_git(scene.root.as_path(), 0);
+    let mut context = git_context();
+    context.real_git = stand_in;
+    let lock: PathBuf = scene.git_dir.join("cli-git").join("hook.lock");
+    let hook_plan: HookDispatchPlan = plan(lock.as_path(), &[]);
+    let mut transaction: LandedTransaction = landed(&scene, Vec::new());
+    let record: AddedPath = shadow_record(&scene, "edited.txt", "before\n", "after\n");
+    std::fs::write(scene.repo.join("edited.txt"), "the user's edit\n").expect("user edit");
+    transaction.added_paths = vec![record];
+    let outcome: PostLandingOutcome = complete_landed_transaction(PostLandingRequest {
+        context: &context,
+        plan: &hook_plan,
+        landed: &transaction,
+    })
+    .expect("completed");
+    assert_eq!(
+        outcome.worktree.conflicted,
+        vec![String::from("edited.txt")]
+    );
+    assert!(outcome.worktree.rewritten.is_empty());
+    assert_eq!(
+        std::fs::read_to_string(scene.repo.join("edited.txt")).expect("kept edit"),
+        "the user's edit\n"
+    );
+    assert!(!scene.directory.exists());
+    assert_eq!(outcome.hook, PostCommitHookOutcome::Ran(0));
+    scene.finish();
+}
+
+/// A shadow that cannot be removed fails the completion before maintenance and the hook start.
+#[cfg(unix)]
+#[test]
+fn a_disposal_failure_stops_before_maintenance_and_the_hook() {
+    use std::os::unix::fs::PermissionsExt;
+    let scene: Scene = Scene::new("post-landing-dispose-fails", false);
+    std::fs::create_dir_all(scene.shadow.join("objects")).expect("shadow");
+    let (stand_in, log): (PathBuf, PathBuf) = logging_git(scene.root.as_path(), 0);
+    let mut context = git_context();
+    context.real_git = stand_in;
+    let lock: PathBuf = scene.git_dir.join("cli-git").join("hook.lock");
+    let hook_plan: HookDispatchPlan = plan(lock.as_path(), &[]);
+    let transaction: LandedTransaction = landed(&scene, Vec::new());
+    let parent: PathBuf = scene.shadow.parent().expect("shadow parent").to_path_buf();
+    std::fs::set_permissions(parent.as_path(), std::fs::Permissions::from_mode(0o555))
+        .expect("read-only parent");
+    let result = complete_landed_transaction(PostLandingRequest {
+        context: &context,
+        plan: &hook_plan,
+        landed: &transaction,
+    });
+    std::fs::set_permissions(parent.as_path(), std::fs::Permissions::from_mode(0o755))
+        .expect("restored parent");
+    let failure: PostLandingError = result.expect_err("disposal failure");
+    assert!(
+        matches!(failure, PostLandingError::Dispose(_)),
+        "{failure:?}"
+    );
+    assert!(scene.directory.exists());
+    let lines: Vec<String> = sequence(log.as_path());
+    assert!(
+        position(lines.as_slice(), "maintenance run").is_none(),
+        "{lines:?}"
+    );
+    assert!(
+        position(lines.as_slice(), "hook run").is_none(),
+        "{lines:?}"
+    );
+    scene.finish();
+}
+
+/// Maintenance whose config output cannot be decoded is logged and skipped; the hook still runs and the commit stands.
+#[test]
+fn an_undecodable_maintenance_config_is_skipped_and_the_hook_still_runs() {
+    let scene: Scene = Scene::new("post-landing-maintenance-undecodable", false);
+    std::fs::create_dir_all(scene.shadow.join("objects")).expect("shadow");
+    let log: PathBuf = scene.root.join("calls.log");
+    let path: PathBuf = scene.root.join("git");
+    executable(
+        path.as_path(),
+        format!(
+            "#!/bin/sh\nprintf '%s\\n' \"$*\" >> '{}'\ncase \" $* \" in *\" config \"*) printf '\\377\\376'; exit 0;; esac\nexec {} \"$@\"\n",
+            log.display(),
+            crate::test_support::REAL_GIT,
+        )
+        .as_bytes(),
+    );
+    let mut context = git_context();
+    context.real_git = path;
+    let lock: PathBuf = scene.git_dir.join("cli-git").join("hook.lock");
+    let hook_plan: HookDispatchPlan = plan(lock.as_path(), &[]);
+    let transaction: LandedTransaction = landed(&scene, Vec::new());
+    let outcome: PostLandingOutcome = complete_landed_transaction(PostLandingRequest {
+        context: &context,
+        plan: &hook_plan,
+        landed: &transaction,
+    })
+    .expect("completed despite maintenance");
+    assert_eq!(outcome.maintenance, None);
+    assert_eq!(outcome.hook, PostCommitHookOutcome::Ran(0));
+    let lines: Vec<String> = sequence(log.as_path());
+    assert!(
+        position(lines.as_slice(), "maintenance run").is_none(),
+        "{lines:?}"
+    );
+    scene.finish();
+}
+
+/// A hook that exits non-zero is reported in the outcome and never fails the landed commit.
+#[test]
+fn a_failing_hook_never_fails_the_landed_commit() {
+    let scene: Scene = Scene::new("post-landing-hook-exits", false);
+    std::fs::create_dir_all(scene.shadow.join("objects")).expect("shadow");
+    executable(
+        scene.git_dir.join("hooks").join("post-commit").as_path(),
+        b"#!/bin/sh\nexit 3\n",
+    );
+    let context = git_context();
+    let lock: PathBuf = scene.git_dir.join("cli-git").join("hook.lock");
+    let hook_plan: HookDispatchPlan = plan(lock.as_path(), &[]);
+    let transaction: LandedTransaction = landed(&scene, Vec::new());
+    let outcome: PostLandingOutcome = complete_landed_transaction(PostLandingRequest {
+        context: &context,
+        plan: &hook_plan,
+        landed: &transaction,
+    })
+    .expect("completed");
+    assert_eq!(outcome.hook, PostCommitHookOutcome::Ran(3));
+    assert!(!scene.directory.exists());
+    scene.finish();
+}
+
+/// An author lookup that fails is reported after disposal and maintenance, and the hook never starts.
+#[test]
+fn an_unreadable_landed_commit_fails_after_disposal_and_maintenance() {
+    let scene: Scene = Scene::new("post-landing-author-fails", false);
+    std::fs::create_dir_all(scene.shadow.join("objects")).expect("shadow");
+    let (stand_in, log): (PathBuf, PathBuf) = logging_git(scene.root.as_path(), 0);
+    let mut context = git_context();
+    context.real_git = stand_in;
+    let lock: PathBuf = scene.git_dir.join("cli-git").join("hook.lock");
+    let hook_plan: HookDispatchPlan = plan(lock.as_path(), &[]);
+    let mut transaction: LandedTransaction = landed(&scene, Vec::new());
+    transaction.landed_oid = String::from("0123456789abcdef0123456789abcdef01234567");
+    let failure: PostLandingError = complete_landed_transaction(PostLandingRequest {
+        context: &context,
+        plan: &hook_plan,
+        landed: &transaction,
+    })
+    .expect_err("author lookup failure");
+    assert!(matches!(failure, PostLandingError::Hook(_)), "{failure:?}");
+    assert!(!scene.directory.exists());
+    let lines: Vec<String> = sequence(log.as_path());
+    assert!(
+        position(lines.as_slice(), "maintenance run").is_some(),
+        "{lines:?}"
+    );
+    assert!(
+        position(lines.as_slice(), "hook run").is_none(),
+        "{lines:?}"
+    );
+    scene.finish();
+}
+
+/// Each failure variant prints its own message without a step prefix, as the incumbent prints a thrown error.
+#[test]
+fn failures_display_their_message_alone() {
+    assert_eq!(
+        PostLandingError::Install(RecoveryError(String::from("copy"))).to_string(),
+        "copy"
+    );
+    assert_eq!(
+        PostLandingError::Dispose(RecoveryError(String::from("remove"))).to_string(),
+        "remove"
+    );
+    assert_eq!(
+        PostLandingError::Hook(PostCommitHookError(String::from("hook"))).to_string(),
+        "hook"
+    );
+}

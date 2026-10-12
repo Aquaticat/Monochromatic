@@ -286,3 +286,40 @@ fn the_run_starts_show_then_the_hook_runner_with_the_global_options() {
     );
     remove(root.as_path());
 }
+
+/// A hook lock a live owner holds delays the hook until the owner releases it, so concurrent commits' hooks never overlap.
+#[test]
+fn the_hook_waits_while_another_owner_holds_the_lock() {
+    let root: PathBuf = fixture("post-commit-waits");
+    let repo: PathBuf = repository(root.as_path(), "repo");
+    let lock: PathBuf = repo.join(".git").join("cli-git").join("hook.lock");
+    let record: PathBuf = root.join("hook.txt");
+    install_hook(repo.as_path(), lock.as_path(), record.as_path(), 0);
+    let landed: String = git_text(repo.as_path(), &["rev-parse", "HEAD"]);
+    std::fs::create_dir_all(lock.parent().expect("lock parent")).expect("lock parent");
+    let holder: OwnerLock =
+        acquire_owner_lock(lock.as_path(), DEFAULT_POLL_DELAY, &mut SilentWait).expect("held");
+    let waiter_repo: PathBuf = repo.clone();
+    let waiter_lock: PathBuf = lock.clone();
+    let waiter = std::thread::spawn(move || {
+        let locked_plan: HookDispatchPlan = plan(waiter_lock.as_path(), false, &[]);
+        let context = git_context();
+        return run_post_commit_hook(PostCommitHookRequest {
+            context: &context,
+            worktree: waiter_repo.as_path(),
+            real_index: waiter_repo.join(".git").join("index").as_path(),
+            landed_oid: landed.as_str(),
+            plan: &locked_plan,
+        });
+    });
+    std::thread::sleep(std::time::Duration::from_millis(600));
+    assert!(
+        !record.exists(),
+        "the hook must not run while another owner holds the lock"
+    );
+    holder.release().expect("released");
+    let outcome = waiter.join().expect("waiter thread").expect("run");
+    assert_eq!(outcome, PostCommitHookOutcome::Ran(0));
+    assert!(recorded(record.as_path()).contains("locked=yes"));
+    remove(root.as_path());
+}

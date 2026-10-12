@@ -112,3 +112,46 @@ fn a_failed_shadow_removal_keeps_the_directory_and_the_records() {
     );
     scene.finish();
 }
+
+/// A directory that cannot be removed fails disposal after the shadow went, and no landed record is pruned,
+/// so a recovery that finds the directory still has the records it needs.
+#[cfg(unix)]
+#[test]
+fn a_failed_directory_removal_keeps_the_records() {
+    use std::os::unix::fs::PermissionsExt;
+    let scene: Scene = Scene::new("landed-disposal-directory-fails", false);
+    write_captured(&scene);
+    assert!(
+        record_landed_capture(
+            scene.git_dir.as_path(),
+            scene.directory.as_path(),
+            ID,
+            LANDED,
+        )
+        .expect("recorded")
+    );
+    std::fs::create_dir_all(scene.shadow.join("objects")).expect("shadow");
+    std::fs::set_permissions(
+        scene.registry.as_path(),
+        std::fs::Permissions::from_mode(0o555),
+    )
+    .expect("read-only registry");
+    let failed: bool = dispose_landed_transaction(paths(&scene)).is_err();
+    std::fs::set_permissions(
+        scene.registry.as_path(),
+        std::fs::Permissions::from_mode(0o755),
+    )
+    .expect("restored registry");
+    assert!(failed);
+    assert!(
+        !scene.shadow.exists(),
+        "the shadow goes before the directory"
+    );
+    assert!(scene.directory.exists());
+    assert!(
+        landed_record_directory(scene.git_dir.as_path())
+            .join(format!("{LANDED}.json"))
+            .exists()
+    );
+    scene.finish();
+}
