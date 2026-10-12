@@ -229,3 +229,44 @@ fn scrolling_inside_a_built_tile_of_a_wrapped_file_does_no_source_work() {
         window.hide().expect("close wrap window");
     }
 }
+
+/// A range on a late row of a wrapped last line is revealed in full even when the background measurement has not
+///  reached that line: the map counts such a line as one row, and the offset must not be limited by that count.
+#[test]
+fn revealing_a_late_row_of_an_unmeasured_last_line_puts_it_in_view() {
+    let text = format!("{}{}", "short line\n".repeat(200), "word ".repeat(600));
+    let (_project, opened) = open(&text);
+    settled(&opened);
+    let window = &opened.window;
+    let scale = window.window().scale_factor();
+    let last = 200;
+    // Forget what the measurement found for the last line, as it is before the measurement reaches it.
+    {
+        let mut current = opened.source.borrow_mut();
+        let known = current.row_map.rows_of(last);
+        assert!(known > 4, "the last line wraps to {known} rows");
+        assert!(super::rows::absorb(&mut current, [(last, 1)]));
+        let view = (
+            -window.get_scroll_y(),
+            window.get_viewport_width(),
+            window.get_viewport_height(),
+        );
+        super::rows::settle(&mut current, scale, view, true);
+        assert_eq!(current.row_map.rows_of(last), 1, "the line is unmeasured");
+    }
+    let start = text.chars().count() - 10;
+    super::viewport::reveal(window, &opened.source, start, start + 4);
+    let current = opened.source.borrow();
+    let view = current.shaped.as_ref().expect("shaped view");
+    let rectangle = view.range(start, start + 4)[0];
+    let offset = -window.get_scroll_y();
+    assert!(
+        rectangle.y >= offset
+            && rectangle.y + rectangle.height <= offset + window.get_viewport_height(),
+        "the revealed range is outside the view: row at {}, view {offset} to {}",
+        rectangle.y,
+        offset + window.get_viewport_height()
+    );
+    drop(current);
+    window.hide().expect("close wrap window");
+}

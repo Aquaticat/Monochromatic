@@ -127,6 +127,7 @@ const cases = [
   { name: 'drag-visual-row', file: 'src/native/input.rs', before: 'let hit = candidate.hit_at(x, within, view.viewport.scale);', after: 'let hit = candidate.hit_at(x, 0.0, view.viewport.scale);', native: true, test: 'a_drag_selects_across_visual_rows', failure: 'the drag reaches the third row' },
   { name: 'triple-click-whole-line', file: 'src/pointer_selection.rs', before: 'return line_range(text, position);', after: 'return word_range(text, position);', native: true, test: 'double_and_triple_clicks_work_on_wrapped_lines', failure: 'the triple click takes the whole line' },
   { name: 'view-follows-visual-row', file: 'src/native/viewport.rs', before: 'return row.caret_at(position, affinity, view.viewport.scale).row;', after: 'return 0;', native: true, test: 'the_view_follows_the_caret_through_every_visual_row', failure: 'left the caret row out of view' },
+  { name: 'reveal-measures-its-line', file: 'src/native/viewport.rs', before: '    if down > 0 && has_wrap_width(current.width) {', after: '    if false {', native: true, test: 'revealing_a_late_row_of_an_unmeasured_last_line_puts_it_in_view', failure: 'the revealed range is outside the view' },
 ];
 // An optional comma-separated list reruns only the named guards, for example after adding one.
 const only = process.env.usage_only ? new Set(process.env.usage_only.split(',')) : undefined;

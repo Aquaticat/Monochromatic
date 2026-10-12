@@ -461,6 +461,34 @@ pub(super) fn reveal(window: &AppWindow, state: &Rc<RefCell<State>>, start: usiz
     let row = text.char_to_line(bounded);
     // A range to reveal is not the caret, so its start stands on the default side of a wrap offset.
     let down = rows_down(&mut current, bounded, ReadingAffinity::Downstream, scale);
+    // What: The target line's own visual rows go into the map before the offset is limited by its extent.
+    // Why: A line the background measurement has not reached counts as one row, so a match on a late row of the
+    //      last line would be clamped out of the view, and nothing moves the view again once the rows are known.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // absorb(state, measureLines(row, row + 1)); settle(state);
+    // ```
+    if down > 0 && has_wrap_width(current.width) {
+        let wrap = current.width;
+        let measured = {
+            let State {
+                shaper,
+                document,
+                styles,
+                ..
+            } = &mut *current;
+            shaper.measure_lines(document, row..row + 1, scale, Some(wrap), styles)
+        };
+        if rows::absorb(&mut current, measured.lines) {
+            tracing::debug!(
+                row,
+                down,
+                "measured the revealed line before limiting the offset"
+            );
+            rows::settle(&mut current, scale, (before, width, height), true);
+        }
+    }
     let top = current.row_map.code_top(row) + down as f32 * CODE_ROW;
     if top < offset || top + CODE_ROW > offset + height {
         let limit = rows::limit(&current.row_map, height);

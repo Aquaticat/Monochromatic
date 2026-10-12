@@ -1536,6 +1536,10 @@ A tile of lines taller than that is clipped instead of refused (`Viewport::clip`
 - `TextRaster::draw` already skips the visual rows of a layout that lie outside the raster,
   so a line of thousands of rows costs only the rows in the clip.
   The gutter lists only the rows in the clip (`rows::measure`).
+- A reveal (a search result, a jump target) measures the visual rows of its own line first (`viewport::reveal`),
+  so a match on a late row of a wrapped last line that the background measurement has not reached is not cut off by
+  the extent the map has for it; `native_find_paints_visible_matches_only_and_reveals_far_rows` failed 3 times in 16 runs
+  on the tree before this slice for that reason.
 - A view so tall that it and a quarter of its height on each side pass the cap can never be held,
   so such a tile is placed again at every scroll step; a window that tall has no better answer.
 - The raster still refuses a tile past the limit with its diagnostic, for a caller that did not clip.
