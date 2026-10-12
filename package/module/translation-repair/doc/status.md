@@ -20,9 +20,9 @@ TianqiChen66622 on 2026-10-11 and TianqiChen66623 on 2026-10-12
 reads each).
 The next waits for the rebuild of how the page-level consistency pass reads agreement and carries the bench's
 choice (ledger B449,
-B450),
-and for the Gemma seats' credential,
-which had expired.
+B450).
+The two Bedrock Gemma seats answer with an expired token and are withheld after their first failed calls;
+no launch waits on them.
 
 Landed late on 2026-09-27,
 each with a guard shown red first and the full suite green after:

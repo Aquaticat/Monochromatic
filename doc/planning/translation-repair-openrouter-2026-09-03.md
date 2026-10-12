@@ -8121,7 +8121,10 @@ and voices never heard to 146 from 753 (`run-timing-report`).
 That TianqiChen66622's Gemma failures had the same cause is likely,
 not shown:
 its stderr is lost.
-Renewing the credential is the owner's.
+The message names an expired token,
+not spent credit;
+the owner does not top up Bedrock (2026-09-07),
+and with both seats withheld after their first calls no launch waits on them.
 
 ### Time and spend
 

@@ -71,8 +71,13 @@ each choice an agent left open is recorded beside its ledger entry.
   through writers and the bench,
   with a run-off on a tie),
   owning every consistency file.
-- FOR THE OWNER.
-  The Gemma seats' credential has expired and needs renewing before the next launch.
+- THE GEMMA SEATS.
+  Bedrock answers both with HTTP 401 for an expired token.
+  The owner does not top up Bedrock (2026-09-07),
+  and nothing waits on them:
+  the run withholds both after their first failed calls.
+  A new key would bring them back,
+  and is the owner's to issue or not.
 - NEXT.
   Merge that work,
   gate the merged head,
