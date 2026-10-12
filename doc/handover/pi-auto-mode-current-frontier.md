@@ -638,7 +638,13 @@ The shared input parent then hit its actual 64-occurrence limit in an accumulate
 (`proc_cc4b`).
 Independent failure cases now use fresh fixture roots;
 no source limit or native behavior is loosened.
-Queue and prompt-owner verification is pending.
+Queue parity passed in `proc_7a73` before its prompt-owner assertion exposed extra native follow-up loadouts.
+Those separate received loadouts are now accounted for explicitly.
+`proc_bade` passed prompt/run/handler ownership,
+original judgment and bootstrap cleanup,
+publication controls,
+and all 169 integrated input cases.
+The input parent reported empty child stderr and zero provider requests.
 
 These receipts close a named input loss,
 not complete governing-domain coverage or maintained host installation.
