@@ -51,10 +51,28 @@ for (const entry of samples) {
   console.log(`SAMPLE ${JSON.stringify(view)}`);
 }
 
-// Independent count from the tracker side: every open issue carrying the audit marker.
-const search = execFileSync('gh', ['issue', 'list', '--state', 'open', '--limit', '1000', '--search', 'drop the unnecessary regex in:title', '--json', 'number', '--jq', '[.number]'], { cwd: ROOT, encoding: 'utf8', timeout: 180_000, });
-const numbers = JSON.parse(search);
-console.log(`TRACKER open issues titled "drop the unnecessary regex": ${numbers.length}`);
+// Independent count from the tracker side, in one query: every open issue carrying
+// the audit title marker, with its labels.
+const search = execFileSync('gh', ['issue', 'list', '--state', 'open', '--limit', '1000', '--search', 'drop the unnecessary regex in:title', '--json', 'number,title,labels'], { cwd: ROOT, encoding: 'utf8', timeout: 300_000, });
+const tracked = JSON.parse(search);
 const ledgerNumbers = new Set(ledger.map((entry) => Number(entry.number)));
-const orphans = numbers.filter((number) => ledgerNumbers.has(number) === false);
-console.log(`in tracker but not in ledger: ${orphans.length} ${orphans.slice(0, 10).join(',')}`);
+const closedExcluded = ledger.filter((entry) => payloadBySiteId.has(entry.siteId) === false).map((entry) => Number(entry.number));
+const orphans = tracked.filter((issue) => ledgerNumbers.has(issue.number) === false);
+const incomplete = tracked.filter((issue) => {
+  const names = issue.labels.map((label) => label.name);
+  return names.includes('enhancement') === false
+    || names.includes('needs-triage') === false
+    || names.some((name) => name.startsWith('difficulty:')) === false;
+});
+const titleCounts = new Map();
+for (const issue of tracked) titleCounts.set(issue.title, (titleCounts.get(issue.title) ?? 0) + 1);
+console.log(JSON.stringify({
+  trackerOpenAuditIssues: tracked.length,
+  expectedLiveSites: payloads.length,
+  closedAsExcluded: closedExcluded.length,
+  inTrackerButNotInLedger: orphans.length,
+  orphans: orphans.slice(0, 10).map((issue) => issue.number),
+  labelIncomplete: incomplete.length,
+  incompleteSample: incomplete.slice(0, 10).map((issue) => `#${issue.number} ${issue.labels.map((label) => label.name).join('|')}`),
+  duplicateTitles: [...titleCounts.entries()].filter(([, count]) => count > 1).length,
+}, null, 2));

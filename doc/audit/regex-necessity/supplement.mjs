@@ -5,21 +5,8 @@ import { readFileSync, writeFileSync, existsSync, } from 'node:fs';
 import { join, dirname, } from 'node:path';
 import { splitPattern, tokenize, deriveSketch, } from './pattern-analysis.mjs';
 
-import { homedir, } from 'node:os';
-import { fileURLToPath, } from 'node:url';
-
-/**
- Repository root, derived from this file's committed location rather than a
- hardcoded path, so the harness runs from any clone.
- */
-const ROOT = fileURLToPath(new URL('../../../..', import.meta.url)).replace(/\/$/, '');
-
-/**
- Scratch working directory. The harness writes mirrors and ledgers here, never
- into the repository. Override with REGEX_AUDIT_WORK.
- */
-const AUDIT = process.env.REGEX_AUDIT_WORK ?? `${homedir()}/temp/agent/regex-audit`;
-
+const ROOT = '/var/home/user/Monochromatic';
+const AUDIT = '/home/user/temp/agent/regex-audit';
 
 const allFindings = JSON.parse(readFileSync(join(AUDIT, 'audit.json'), 'utf8'));
 
@@ -152,6 +139,23 @@ function analyse(pattern) {
   return { ...derived, flags, dynamic, };
 }
 
+/**
+ Provenance exclusions found by tracing generators and directory ownership rather
+ than by a filename marker. Each entry records the evidence that decided it.
+ */
+const PROVENANCE_EXCLUSIONS = [
+  {
+    match: (site) => site.repoPath === 'package/music-player/design/questions/template-editor.html',
+    reason: 'generated output: `package/music-player/design/template-editor.mjs:121` writes this 18 MB file from `template-editor.template.html`, which is scanned separately and carries its own issues. Fixing a generated file means fixing its template.',
+  },
+  {
+    match: (site) => site.repoPath.includes('/uploads/'),
+    reason: 'user-provided reference material: `package/music-player/design/HANDOFF.md:3208` describes `uploads/` as "the user\'s own mockup, screenshots and reference images", so it is audit input rather than first-party code.',
+  },
+];
+
+const excludedByProvenance = [];
+
 const added = [];
 
 // Kotlin: the audit's JS detector cannot see these, so they were enumerated by a
@@ -202,6 +206,11 @@ for (const site of kotlinSites) {
 // HTML script blocks: extracted into mirror .js files and scanned with the same
 // parser-backed rule, then mapped back by block start line.
 for (const site of htmlSites) {
+  const provenance = PROVENANCE_EXCLUSIONS.find((entry) => entry.match(site));
+  if (provenance !== undefined) {
+    excludedByProvenance.push({ repoPath: site.repoPath, line: site.line, reason: provenance.reason, });
+    continue;
+  }
   const lines = linesOf(site.repoPath);
   const derived = analyse(site.pattern);
   const context = packageContextOf(site.repoPath);
@@ -275,7 +284,9 @@ const yamlSite = {
 
 const all = [...findings, ...added];
 writeFileSync(join(AUDIT, 'to-file2.json'), JSON.stringify(all, null, 2), 'utf8');
+writeFileSync(join(AUDIT, 'provenance-exclusions.json'), JSON.stringify(excludedByProvenance, null, 2), 'utf8');
 console.log(JSON.stringify({
+  excludedByProvenance: excludedByProvenance.length,
   previousUnnecessary: findings.length,
   added,
   total: all.length,

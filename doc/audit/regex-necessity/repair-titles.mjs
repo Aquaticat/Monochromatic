@@ -38,8 +38,9 @@ let failed = 0;
 for (const entry of ledger) {
   const payload = payloadBySiteId.get(entry.siteId);
   if (payload === undefined) {
-    console.error(`no payload for ${entry.siteId}`);
-    failed += 1;
+    // The site was excluded after filing (provenance), so its issue is closed
+    // separately rather than retitled.
+    skipped += 1;
     continue;
   }
   const needsBody = payload.repoPath.endsWith('.html');

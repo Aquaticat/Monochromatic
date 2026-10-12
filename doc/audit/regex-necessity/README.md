@@ -43,6 +43,9 @@ It is excluded from the audit population:
   slicing the extracted block on byte offsets.
 - `repair-titles.mjs` re-titles and re-bodies the issues affected by corrections made
   after a filing round.
+- `close-excluded.mjs` closes the issues filed for sites later excluded on
+  provenance,
+  with the evidence in the closing comment.
 - `verify.mjs` reconciles the ledger against the tracker:
   duplicates,
   missing sites,
