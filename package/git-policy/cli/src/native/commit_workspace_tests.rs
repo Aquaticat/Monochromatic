@@ -95,3 +95,15 @@ fn disposal_removes_unless_a_landing_record_handed_the_directory_to_recovery() {
     assert!(!directory.exists());
     remove(root.as_path());
 }
+
+/// Each failing step keeps its own words in the message.
+#[test]
+fn each_failure_displays_its_own_words() {
+    assert_eq!(
+        WorkspaceError::Registry(crate::recovery_error::RecoveryError(String::from("registry words"))).to_string(),
+        "registry words"
+    );
+    assert_eq!(WorkspaceError::Random(String::from("random words")).to_string(), "random words");
+    let identity: String = WorkspaceError::Identity(crate::process_identity::ProcessIdentityError::MalformedStat { pid: 7 }).to_string();
+    assert!(identity.contains("MalformedStat") && identity.contains('7'), "{identity}");
+}

@@ -59,6 +59,11 @@ fn candidates_come_from_the_private_index_and_follow_a_replacement() {
 fn rule_facts_are_the_wrapped_providers() {
     let root: PathBuf = fixture("commit-facts-rules");
     let repo: PathBuf = repository(root.as_path(), "repo");
+    // A remote that has a branch the local repository lacks: checking out its name would create the branch.
+    let upstream: PathBuf = repository(root.as_path(), "upstream");
+    git(upstream.as_path(), &["branch", "feature"]);
+    git(repo.as_path(), &["remote", "add", "origin", upstream.to_str().expect("path")]);
+    git(repo.as_path(), &["fetch", "--quiet", "origin"]);
     let inner = git_facts(
         Path::new(REAL_GIT),
         &[OsString::from("-C"), repo.as_os_str().to_os_string()],
@@ -71,7 +76,8 @@ fn rule_facts_are_the_wrapped_providers() {
     assert_eq!(facts.location().expect("again"), location);
     assert!(facts.index_vs_head().is_ok());
     assert!(facts.sequencer_state().is_ok());
-    assert!(facts.remote_guess_creates_branch(OsStr::new("nothing")).is_ok());
+    assert_eq!(facts.remote_guess_creates_branch(OsStr::new("feature")), Ok(true));
+    assert_eq!(facts.remote_guess_creates_branch(OsStr::new("nothing")), Ok(false));
     assert_eq!(facts.transaction_context().real_git, PathBuf::from(REAL_GIT));
     // A mutable borrow answers like the provider it borrows.
     let borrowed = &mut facts;
@@ -80,6 +86,7 @@ fn rule_facts_are_the_wrapped_providers() {
     assert_eq!(borrowed.transaction_context().real_git, PathBuf::from(REAL_GIT));
     assert!(borrowed.index_vs_head().is_ok());
     assert!(borrowed.sequencer_state().is_ok());
-    assert!(borrowed.remote_guess_creates_branch(OsStr::new("nothing")).is_ok());
+    assert_eq!(borrowed.remote_guess_creates_branch(OsStr::new("feature")), Ok(true));
+    assert_eq!(borrowed.remote_guess_creates_branch(OsStr::new("nothing")), Ok(false));
     remove(root.as_path());
 }
