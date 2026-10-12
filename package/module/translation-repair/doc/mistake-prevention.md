@@ -1635,6 +1635,13 @@ A guard for such a scan runs its text in a script beyond the first plane
 and compares the result with the same text in Latin letters.
 A shared reader gets a unit test of its own when it is extracted,
 with lone surrogate halves among its cases.
+The rule recurred twice in new work on 2026-10-12 (UTC):
+the tense detector took a letter to be a character whose cases differ,
+read one UTF-16 unit at a time,
+so 14 of the corpus's declared aliases could never match (ledger B432);
+and the first draft of the repeat-overlap pass weighed text in UTF-16 units (ledger B435).
+Any scan that tests a letter or weighs text applies this rule,
+not only one that names a script.
 
 What enforces it:
 `src/code-points.unit.test.ts` and `src/cased-letters.unit.test.ts` pin the readers themselves,
@@ -4503,6 +4510,18 @@ so a sole-lane record would have been read with the key dropped (ledger B419).
 A key a reader accepts on one path of its function is read on every path that accepts it,
 or refused on the paths that do not read it,
 and the writer writes it only where the reader reads it.
+
+The tense review found the same reader taking an empty list and any label the writer never writes
+(ledger B433),
+and a replay reading `info.yml` for a generation whose run never read it.
+Two pieces of work that both changed what generation 15 holds were merged onto one head,
+and five test fixtures of one built that generation by hand without the other's section,
+or restamped it as 14 with the section still in it (ledger M153).
+A reader accepts only what its writer writes,
+and a replay reads an input only for the generations whose run read it.
+When two pieces of work change one record generation,
+the second merge runs every test that writes that generation by hand,
+and a fixture restamps a generation through `generation-restamp.test-fixture.ts`.
 
 The rule:
 a file this package writes and a later run parses is written through `writeFileAtomic`.

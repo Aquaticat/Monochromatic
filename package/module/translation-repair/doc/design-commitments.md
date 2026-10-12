@@ -541,8 +541,10 @@ Part of [the package README](../README.md).
   (owner,
   2026-10-11:
   "Leave quoted repeats out").
-  The repeats are located by ledger B423;
-  the pass that judges them is still being built.
+  The repeats are located by ledger B423,
+  with a repeat that touches quoted speech anywhere left out (B434)
+  and no two groups claiming one span (B435);
+  the pass that judges them and carries the choice to every place is ledger B431.
 - **The past-tense rule gets a deterministic aid,
   never a deterministic verdict.**
   Owner,

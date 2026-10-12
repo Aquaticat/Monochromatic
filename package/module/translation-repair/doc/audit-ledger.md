@@ -35624,6 +35624,171 @@ as the owner's answer of 2026-10-11 reads;
 no two groups claim overlapping text;
 the census fails when a positive control fails.
 
+### B431: a repeated source line could ship rendered several ways on one page
+
+Red `f59e887105`,
+fixed in `c08beb9682`.
+
+Found on 2026-10-11 (UTC) in the read of TianqiChen66622,
+whose page rendered one refrain four ways and one sentence two ways;
+the owner asked for a page-level consistency pass the same day.
+
+The fix:
+after the slices settle and the consolidation runs,
+`runPassSettlement` (`corpus-run/pass-settlement.ts`) runs `runPassConsistency`.
+For each repeat group (B423) whose places read differently,
+it asks the wide bench one sheet,
+reason before choice,
+and counts the ballots in code (`consistency-count.ts`,
+`consistency-majority.ts`).
+A strict majority's quote,
+located exactly once in each place's English,
+or its refrain pattern carrying the place's own slot,
+replaces the other places by code (`consistency-splice.ts`);
+no model writes text.
+A place the majority keeps for its context,
+a tie,
+no majority,
+a gather below quorum
+and an unlocated quote
+leave the page as it stands,
+recorded.
+Each changed slice passes every floor with its current wording as incumbent,
+a slice where the archive stands included,
+or keeps its wording with a warning and a finding.
+Any trouble inside the pass is contained and the page ships.
+Artifact generation 15 carries the `consistency` section,
+which joined the generation before any pass wrote one,
+so the number did not move;
+the reader recounts it from the ballots and refuses it in generation 14 and earlier.
+The would-ship reader ranks the pass's text under the page assembly and over the polish.
+The pass has its own cache namespace at `CONSISTENCY_CACHE_VERSION` 1.
+
+Kept by the lead under the owner's instruction of 2026-10-11 to decide without asking:
+the floors here are Markdown only,
+since no repeat group holds front matter;
+no second quoted-passage guard,
+since the publication rule already refuses a lost quoted passage;
+the earlier group wins an overlap,
+though the groups are disjoint since B435.
+Changed by the lead's decision,
+in work still open when this entry was written:
+the ten modules the pass's tests reached only through callers get tests of their own;
+`ConsistencyInvariantError` carries its message;
+the consistency sheet shows the tense candidates (B419).
+
+### B432: the tense detector read letters by case mapping, one UTF-16 unit at a time
+
+Red `dd4d201aa2`,
+fixed in `9f936b2c2a`.
+
+Found on 2026-10-12 (UTC) by an independent review of B419.
+`present-tense-words.ts` took a letter to be a character whose lower and upper case differ,
+read by `charAt`,
+so a name in Han or another caseless script,
+or beyond the first plane,
+never opened a word:
+14 of the 131 aliases the pinned translations declare could never match.
+`wordsOf`,
+`namesAt` and `isSEndingWord` now read whole code points by general category.
+All 131 aliases and 92 names match;
+the candidate count per page did not move on the corpus.
+
+### B433: tense records and sheets the review found loose
+
+Red `dd4d201aa2`,
+fixed in `9f936b2c2a`.
+
+The same review found five more.
+The pass republish read `info.yml` for every artifact it replays,
+where the other replays read it only for generation 15 and later,
+so a damaged file beside a generation 14 artifact left its page unrepublished;
+`readSettledEntryInfo` is now the one gate.
+A damaged `info.yml` threw the parser's own error,
+which names no entry and quotes the person's metadata;
+it now throws `EntryInfoParseError`,
+which names the entry and where the parser stopped,
+quotes nothing and carries no cause.
+A `died` of a kind that is neither text nor a finite number
+(a truth value,
+a list,
+a record,
+a number that is not finite)
+switched the feature off without a word;
+it is now logged once per entry.
+The contest and gate sheets chose the tense block's fence without the block's own lines,
+which can hold a longer run of `=` than any text they came from.
+The `died` identity line interpolated the raw value;
+it is now a JSON string,
+byte-identical for every date the corpus records,
+so no key moved.
+The reader accepted records the writer never writes:
+an empty list,
+empty groups,
+any label;
+it now requires the labels the slice's sheet gave,
+once each and in order,
+and the labels live in `tense-candidate-labels.ts`.
+
+Measured on the pinned corpus:
+89 of the 92 `info.yml` files record `died` as a date string and 3 record none;
+the detector finds 113 candidates on 41 of the 89 pages that record a death.
+
+Kept by the lead under the owner's instruction of 2026-10-11:
+the unreadable-`died` warning sits in the entry reader;
+a blank `died` and a top-level one stay silent;
+aliases match with case folded;
+an alias joined by a slash stays one name;
+the detector reads top-level paragraphs only;
+the keys name no detector version,
+since a change to the detector moves the version of each stage it reaches by the cached-decisions rule.
+Changed by the lead's decision,
+in work still open when this entry was written:
+a damaged `info.yml` is logged and the entry ships with no death recorded,
+by the owner's rule that a run always ships;
+the window-trial instrument shows the tense block as the pass does.
+
+### B434: a repeat that carried quoted speech was reported when its run began in narration
+
+Red `c5a5e78991`,
+fixed in `36ada23b21`.
+
+The owner answered on 2026-10-11 (UTC) to leave quoted repeats out,
+yet `repeatGroupsOf` judged a run quoted only by where it began,
+so a run that began in narration and carried speech was reported,
+and the consistency pass (B431) could have rewritten part of a quotation.
+Every character of every occurrence is now asked,
+the marks themselves included,
+for maximal repeats and refrains alike (`repeat-groups-quotation.ts`).
+No group of the pinned corpus left.
+
+### B435: repeat groups could claim overlapping text
+
+Red `c5a5e78991`,
+fixed in `36ada23b21`.
+
+Periodic text,
+a repeat nested in a longer one that fewer places share,
+and a refrain frame over clauses a maximal repeat covers
+each yielded groups whose occurrences overlap,
+so the consistency pass would have spliced two renderings into one span.
+`disjointRepeatsOf` (`repeat-groups-overlap.ts`) keeps the group covering the most wording code points,
+drops any group whose occurrence shares a character with a kept one,
+breaks ties by the stated group order,
+and runs after the quoted and same-line filter and before placement.
+The first draft weighed UTF-16 units and so counted text beyond the first plane double.
+The pinned corpus held no overlapping group before or after.
+
+### B436: the repeat census printed its positive controls and exited 0 whatever they read
+
+Red `c5a5e78991`,
+fixed in `36ada23b21`.
+
+`repeat-census` now prints its whole summary,
+then ends at the stated refusal code naming each control that read false,
+an absent control entry counting as failed (`failedControlsOf`,
+with tests of its own).
+
 ## Process mistakes in this audit
 
 These are the agent's own mistakes while fixing,
@@ -38631,6 +38796,55 @@ agent worktrees are created with `--no-worktree-copy` from a shell whose `git` i
 and only then set up by the script.
 `mistake-prevention.md`,
 "Shell commands".
+
+### M153: features built apart broke each other's fixtures when merged onto one head
+
+Status:
+happened on 2026-10-12 (UTC);
+both caught by a gate or a named run before any pass,
+and fixed in `c5d6f1d2d6` and `24a4377fed`.
+The tense work (B419,
+B433) and the consistency pass (B431) were built in separate worktrees from older heads,
+and both changed what artifact generation 15 holds.
+Each merged with no textual conflict in code,
+yet five of the tense work's replay cases built artifacts by hand:
+two wrote generation 15 without the `consistency` section its reader requires,
+and three restamped a generation 15 artifact as 14 with the section still in it,
+which the older reader refuses.
+The lead's gate g76 caught the first three,
+and the named run after the next merge caught the other two.
+
+Prevention:
+when two pieces of work both change what one record generation holds,
+the second merge runs every test that writes that generation by hand before its commit,
+and a fixture that restamps a generation does it through one helper
+(`generation-restamp.test-fixture.ts`) that knows what each generation lacks.
+`mistake-prevention.md`,
+"Files a later run reads back".
+
+### M154: the lead's slips in merging B426 to B436
+
+Status:
+happened on 2026-10-12 (UTC);
+none reached a commit.
+
+- A call reading the source-scan counts chained its steps with `;`,
+  which the shell rules forbid (M1).
+- The shared restamp fixture was first written importing package source,
+  where a test fixture imports the built output,
+  and with a type assertion from `any`;
+  lint refused both,
+  and the fixture was rewritten before its commit.
+- The briefs for the consistency follow-ups first named twelve modules on the own-test allowlist,
+  taking the builder's count,
+  where the allowlist holds ten;
+  the lead read the allowlist and corrected both briefs before either agent started.
+
+Prevention:
+`mistake-prevention.md`,
+"Shell commands" for the first,
+and "Claims without their evidence" for the third,
+whose rule that a count is read from its source before it is written this repeats.
 
 ### M79: a coverage census measuring compressed code
 
