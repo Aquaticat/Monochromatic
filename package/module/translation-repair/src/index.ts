@@ -52,6 +52,17 @@ export {
   type SectionAlignment,
 } from './chunk-document.ts';
 export {
+  type MaximalRepeatGroup,
+  type RefrainGroup,
+  type RefrainOccurrence,
+  type RepeatGroup,
+  type RepeatOccurrence,
+  type UnplacedOccurrence,
+  type UnplacedReason,
+} from './repeat-groups-types.ts';
+export { repeatGroupsOf, } from './repeat-groups.ts';
+export { maximalRunsOf, } from './repeat-groups-runs.ts';
+export {
   type MaskedCommentRegion,
   maskHtmlComments,
 } from './mask-html-comments.ts';

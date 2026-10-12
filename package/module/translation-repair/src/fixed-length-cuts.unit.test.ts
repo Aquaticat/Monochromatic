@@ -63,6 +63,10 @@ const KEPT_CUTS: ReadonlyMap<string, string> = new Map([
     'a tail compared unit for unit with the buffer it came from',
   ],
   [
+    'repeat-groups-runs.ts#REFRAIN_PREFIX_MINIMUM',
+    'a list of code points, one per element, so no character can be split',
+  ],
+  [
     'corpus-run/slice-census-unpaired.ts#UNPAIRED_ENTRIES_LISTED',
     'a list of entries',
   ],

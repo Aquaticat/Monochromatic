@@ -66,6 +66,7 @@ export type CommandLines = {
   readonly 'probe-verify': CommandLineSpec<never, never, never>;
   readonly 'producer-calibrate': CommandLineSpec<'candidates', never, 'candidates-alone'>;
   readonly 'recall-benchmark': CommandLineSpec<never, never, 'plan'>;
+  readonly 'repeat-census': CommandLineSpec<never, never, never>;
   readonly 'rendering-audit-settled': CommandLineSpec<'archive' | 'clone' | 'only' | 'cap', never, never>;
   readonly 'rendering-audit-settled-report': CommandLineSpec<'run' | 'against', never, never>;
   readonly 'roster-bench': CommandLineSpec<never, never, never>;
@@ -257,6 +258,7 @@ export const COMMAND_LINES: CommandLines = {
     ...NO_ARGUMENTS,
     switches: { plan: true, },
   },
+  'repeat-census': NO_ARGUMENTS,
   'rendering-audit-settled': {
     ...NO_ARGUMENTS,
     valued: {

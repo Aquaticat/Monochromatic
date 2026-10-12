@@ -172,6 +172,10 @@ export const nodeEntries: ReadonlyMap<string, string> = new Map([
     './src/corpus-run/ledger-report.ts',
   ],
   [
+    'repeat-census',
+    './src/corpus-run/repeat-census.ts',
+  ],
+  [
     'run-timing-report',
     './src/corpus-run/run-timing-report.ts',
   ],

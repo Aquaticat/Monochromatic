@@ -119,6 +119,12 @@ depends = ["build"]
 env.TRANSLATION_REPAIR_STARTED_BY = "coverage-control-probe"
 run = "node dist/final/node/coverage-control-probe.mjs"
 
+[tasks."repeat-census"]
+description = "Measure the repeated source wording of the pinned corpus: maximal runs and refrain frames under the main, loose and tight settings, with the body-only groups counted apart; READ-ONLY, SPENDS NO QUOTA"
+depends = ["build"]
+env.TRANSLATION_REPAIR_STARTED_BY = "repeat-census"
+run = "node dist/final/node/repeat-census.mjs"
+
 [tasks."run-timing-report"]
 description = "Read back where a run's wall-clock went, splitting every round into the time it worked and the time it waited on a straggler, and counting how many calls were in flight at once; SPENDS NO QUOTA (name one or more log paths after --)"
 depends = ["build"]

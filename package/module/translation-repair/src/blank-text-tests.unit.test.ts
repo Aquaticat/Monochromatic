@@ -2091,6 +2091,22 @@ const HELD_TESTS: Readonly<Record<string, {
     tests: 1,
     why: SETTING,
   },
+  'corpus-run/repeat-census-lines.ts#lineRole': {
+    tests: 1,
+    why: PARSED,
+  },
+  'corpus-run/repeat-census-refrain.ts#censusClausesOf': {
+    tests: 1,
+    why: SCANNER,
+  },
+  'repeat-groups-wording.ts#cutEndAt': {
+    tests: 1,
+    why: SCANNER,
+  },
+  'repeat-groups-wording.ts#wordingStreamOf': {
+    tests: 1,
+    why: SCANNER,
+  },
 };
 
 //endregion Listed tests

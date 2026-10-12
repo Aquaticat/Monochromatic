@@ -670,6 +670,19 @@ const ALLOWLIST: readonly string[] = [
   'src/corpus-run/rendering-audit-settled-digest.ts',
   'src/corpus-run/rendering-audit-settled-relocation.ts',
   'src/corpus-run/rendering-audit-settled-runs.ts',
+  // The repeat census splits (the command `repeat-census.ts` is a runner entry and exempt):
+  // a read-only measurement of the pinned corpus. Their logic runs in the command's own
+  // pass, whose printed summary carries a positive control (the live case's refrain and
+  // sentence lines must be found by the line reading and by the package's detection), and
+  // the detection it runs has its own cases in `repeat-groups.unit.test.ts`. Each line goes
+  // when its module gains an own test.
+  'src/corpus-run/repeat-census-control.ts',
+  'src/corpus-run/repeat-census-lines.ts',
+  'src/corpus-run/repeat-census-maximal.ts',
+  'src/corpus-run/repeat-census-package.ts',
+  'src/corpus-run/repeat-census-page.ts',
+  'src/corpus-run/repeat-census-refrain.ts',
+  'src/corpus-run/repeat-census-summary.ts',
   'src/corpus-run/roster-card-ask.ts',
   'src/corpus-run/run-config-error.ts',
   'src/corpus-run/run-providers.ts',
@@ -768,6 +781,12 @@ const ALLOWLIST: readonly string[] = [
   'src/repair-scorecard.ts',
   'src/repair-slice-settle.ts',
   'src/repair-stage-findings.ts',
+  // The splits of `repeat-groups.ts` (its constants, its finders and its wording reader):
+  // every case of `repeat-groups.unit.test.ts` reaches them through `repeatGroupsOf`, the
+  // one export. Each line goes when its module gains an own test.
+  'src/repeat-groups-bounds.ts',
+  'src/repeat-groups-runs.ts',
+  'src/repeat-groups-wording.ts',
   'src/resolution-authorship.ts',
   'src/restore-ellipsis.ts',
   'src/retry-stated-wait.ts',
