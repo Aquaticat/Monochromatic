@@ -13,8 +13,12 @@ import { RUN_ROSTER, } from './run-config.ts';
 
  Folded into the protocol digest, so a change here stops a later run resuming
  rows bought under the older meaning rather than silently pooling them.
+
+ Version 2: the arms are judged on the sheets the pass asks, carrying the
+ identity block, the date of death and the tense candidates where the entry
+ records one, where version 1 judged on sheets without any of them.
  */
-const TRIAL_PROTOCOL_VERSION = 1;
+const TRIAL_PROTOCOL_VERSION = 2;
 
 /**
  Digest of everything this run buys under.

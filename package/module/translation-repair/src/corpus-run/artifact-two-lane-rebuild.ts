@@ -483,11 +483,11 @@ export function rebuildPreparation(
 
  @param readFile - document reader at the pin
 
- @param l - logger the absence is named on, left out by a command whose terminal output is pinned, which then records the absence in silence
+ @param l - logger the absence and a file that refuses to parse are named on, left out by a command whose terminal output is pinned, which then records both in silence
 
- @returns The parsed record, or the absence for an entry with no `info.yml` and for an earlier generation, which is not read at all
+ @returns The parsed record, or the absence for an entry with no `info.yml` and for an earlier generation, which is not read at all, or the unreadable record for a file that refuses to parse; the last two record no death, as the run that settled the artifact recorded none for a file it could not read
 
- @throws {@link Error} when the file exists but is not readable or not YAML, for a generation that reads it
+ @throws {@link Error} when the file exists but cannot be read, for a generation that reads it
 
  @example
  ```ts

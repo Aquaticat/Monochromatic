@@ -15,7 +15,11 @@ import { refusalText, } from '../refusal-text.ts';
 // THE ENTRY'S `info.yml` AT THE PIN, read where a preparation reads the entry's
 // pages, because the date of death lives only there (`info.died`) and never in
 // front matter. A missing file is a known state of the corpus (one entry has
-// none), so it is named at info and recorded as no death, never thrown. The
+// none), so it is named at info and recorded as no death, never thrown. A file
+// that is there and refuses to parse is recorded as no death too, as its own kind
+// so a later reader can tell it from the absence, and named at warn: the owner's
+// rule is that a run always ships, so a record the models were never told is
+// the entry's page shipped without the tense block, not the entry stopped. The
 // YAML is read with the same `yaml` parser the package reads front matter with.
 
 /**
@@ -37,11 +41,26 @@ export type EntryInfoRecord = {
    */
   readonly kind: 'read';
   readonly info: unknown;
+} | {
+  /**
+   The entry has an `info.yml` at the pin that refuses to parse as YAML, so it
+   records no death; kept apart from the absence so the artifact can say the
+   record was unreadable.
+   */
+  readonly kind: 'unreadable';
+
+  /**
+   The refusal's sentence: it names the entry and where the parser stopped, and
+   quotes nothing the file says.
+   */
+  readonly refusal: string;
 };
 
 /**
  Signals an entry's `info.yml` that refuses to parse as YAML; corpus metadata
- parses upstream, so failure here indicates corruption.
+ parses upstream, so failure here indicates corruption. {@link readEntryInfoRecord}
+ turns it into the unreadable record, and the sentence it carries is the one the
+ warning and the artifact's finding repeat.
 
  @example
  ```ts
@@ -133,7 +152,7 @@ function parseEntryInfoYaml(
 
 /**
  Reads one entry's `info.yml` at the pin and parses it, saying so when its
- `died` holds a value the feature cannot read.
+ `died` holds a value the feature cannot read or the file refuses to parse.
 
  @param pin - corpus checkout and commit the entry is read at
 
@@ -141,13 +160,12 @@ function parseEntryInfoYaml(
 
  @param readFile - document reader at the pin
 
- @param l - logger the absence, and a `died` of an unreadable kind, are named on,
- left out by a command whose terminal output is pinned (the settled replays),
- which then reads both in silence
+ @param l - logger the absence, a file that refuses to parse and a `died` of an unreadable kind
+ are named on, left out by a command whose terminal output is pinned (the settled
+ replays), which then reads all three in silence
 
- @returns The parsed record, or the absence when the entry has no `info.yml`
-
- @throws {@link EntryInfoParseError} when the file exists and is not YAML
+ @returns The parsed record, the absence when the entry has no `info.yml`, or the
+ unreadable record when the file is there and is not YAML; the last two record no death
 
  @throws {@link Error} when the file exists but cannot be read
 
@@ -200,11 +218,48 @@ export async function readEntryInfoRecord(
     };
   }
   catch (error) {
+    if (error instanceof EntryInfoParseError) {
+      /**
+       The refusal's sentence, which the class declares safe to forward.
+       */
+      const refusal = refusalText({ error, },);
+      l?.warn(
+        `ENTRY INFO entry=${entryId}: ${refusal} No death is recorded for the entry, and it goes on as one whose `
+          + 'info.yml records none',
+      );
+      return {
+        kind: 'unreadable',
+        refusal,
+      };
+    }
     if (!isMissingCorpusObject(error,))
       throw error;
     l?.info(`ENTRY INFO entry=${entryId}: no info.yml at the pin (${refusalText({ error, },)}), so no death is recorded for it`,);
     return { kind: 'absent', };
   }
+}
+
+/**
+ The findings the artifact records for what the entry's `info.yml` came to, so a
+ later reader can tell an entry that records no death from one whose record was
+ unreadable. They ride the preparation's alignment findings, the channel every
+ artifact already records.
+
+ @param entryInfo - what the pass read of the entry's `info.yml`
+
+ @returns One finding for an unreadable record, none for a record or an absence
+
+ @example
+ ```ts
+ const findings = entryInfoFindingsOf({ entryInfo: { kind: 'absent', }, },);
+ ```
+ */
+export function entryInfoFindingsOf(
+  { entryInfo, }: { readonly entryInfo: EntryInfoRecord; },
+): readonly string[] {
+  if (entryInfo.kind !== 'unreadable')
+    return [];
+  return [`entry info: ${entryInfo.refusal} No death is recorded for the entry.`,];
 }
 
 //endregion Entry info record

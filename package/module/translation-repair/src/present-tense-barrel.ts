@@ -52,6 +52,7 @@ export {
 export {
   EntryInfoParseError,
   type EntryInfoRecord,
+  entryInfoFindingsOf,
   readEntryInfoRecord,
 } from './corpus-run/entry-info-record.ts';
 

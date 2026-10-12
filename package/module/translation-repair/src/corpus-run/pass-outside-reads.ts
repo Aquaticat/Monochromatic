@@ -84,7 +84,8 @@ export type PassWorkTitleReader = (
 export type PassCorpusNameReader = () => Promise<readonly CorpusName[]>;
 
 /**
- Reads an entry's `info.yml` at the pin, which carries the date of death.
+ Reads an entry's `info.yml` at the pin, which carries the date of death; a file
+ that refuses to parse is answered as the unreadable record, never thrown.
 
  @example
  ```ts

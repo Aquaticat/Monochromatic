@@ -181,7 +181,8 @@ export async function runWindowTrial(
   for (const entryId of await listPeople({ pin, },)) {
     /* oxlint-disable no-await-in-loop -- entries are walked in order so a kill leaves a prefix */
     /**
-     Slices this entry contributes, with the preparation they index into.
+     Slices this entry contributes, with the preparation they index into and
+     the page facts of that preparation.
      */
     const drawn = await drawEntry({
       entryId,
@@ -215,6 +216,7 @@ export async function runWindowTrial(
         signal,
         perCallTimeoutMs,
         l,
+        sheetFacts: drawn.sheetFacts,
         stageSettings,
       },);
       /* oxlint-enable no-await-in-loop */

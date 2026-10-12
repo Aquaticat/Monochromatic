@@ -9,6 +9,11 @@ import { classifyDisplacement, } from '../displacement-class.ts';
 import { sliceSizesOf, } from '../displacement-ratio.ts';
 import { prepareDocumentPair, } from '../document-preparation.ts';
 import {
+  type PreparedSheetFacts,
+  preparedSheetFactsOf,
+} from '../prepared-sheet-facts.ts';
+import { readEntryInfoRecord, } from './entry-info-record.ts';
+import {
   controlSlices,
   flaggedSlices,
   type TrialSlice,
@@ -20,6 +25,11 @@ import {
 // drawn with their controls. Moved out of `window-trial-probe.ts`, which keeps
 // the wiring. The corpus is reached through a reader the caller passes, so a
 // case scripts the pages and the command passes `readCorpusFile`.
+//
+// THE ENTRY'S `info.yml` IS READ TOO, after both pages, because the date of death
+// lives only there and the sheets the pass asks tell the judges of it: a trial
+// whose preparation never saw it would measure sheets without the tense block.
+// A file that is absent or not YAML records no death, as in the pass (`entry-info-record.ts`).
 
 /**
  Controls drawn per entry that contributes any flagged slice.
@@ -87,7 +97,7 @@ type PairTexts = {
 
  @example
  ```ts
- const drawn: DrawnEntry = { picks: [], slices: [], };
+ const drawn: DrawnEntry = { picks: [], sheetFacts: {}, slices: [], };
  ```
  */
 export type DrawnEntry = {
@@ -95,6 +105,15 @@ export type DrawnEntry = {
    Slices to buy, flagged then controls.
    */
   readonly picks: readonly TrialSlice[];
+
+  /**
+   What the preparation tells every judging sheet of the page as a whole: the
+   declared names, whether the entry records a death and the names the
+   translation declares for its subject. Empty for an entry that was not read.
+   The preparation reads no work titles, corpus names or cited pages, so its
+   identity block holds the page's own declarations and the death alone.
+   */
+  readonly sheetFacts: PreparedSheetFacts;
 
   /**
    Every prepared slice of the entry, which a pick's index points into.
@@ -165,10 +184,11 @@ async function readPairTexts(
 
  @param readPage - reader of one corpus page
 
- @param l - logger the skip of an entry with one side is told to
+ @param l - logger the skip of an entry with one side is told to, and the
+ absence or damage of its `info.yml`
 
- @returns Slices to buy and the preparation they index into, empty when the
- entry cannot be read or the screen flagged nothing
+ @returns Slices to buy, the preparation they index into and its page facts,
+ no slices when the entry cannot be read and no picks when the screen flagged nothing
 
  @throws Whatever the read threw, when it was not a corpus read failure
 
@@ -202,9 +222,20 @@ export async function drawEntry(
   if (texts.kind === 'missing') {
     return {
       picks: [],
+      sheetFacts: {},
       slices: [],
     };
   }
+
+  /**
+   The entry's `info.yml` at the pin, which records the date of death.
+   */
+  const entryInfo = await readEntryInfoRecord({
+    pin,
+    entryId,
+    readFile: readPage,
+    l,
+  },);
 
   /**
    Slices exactly as the lanes would see them.
@@ -212,7 +243,13 @@ export async function drawEntry(
   const prepared = prepareDocumentPair({
     sourceText: texts.source,
     targetText: texts.target,
+    ...((entryInfo.kind === 'read') ? { sourceEntryInfo: entryInfo.info, } : {}),
   },);
+
+  /**
+   What that preparation tells every judging sheet of the page.
+   */
+  const sheetFacts = preparedSheetFactsOf({ prepared, },);
 
   /**
    What the screen makes of their sizes.
@@ -231,6 +268,7 @@ export async function drawEntry(
   if (flagged.length === 0) {
     return {
       picks: [],
+      sheetFacts,
       slices: prepared.slices,
     };
   }
@@ -247,6 +285,7 @@ export async function drawEntry(
         wanted: CONTROLS_PER_ENTRY,
       },),
     ],
+    sheetFacts,
     slices: prepared.slices,
   };
 }

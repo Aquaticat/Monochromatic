@@ -13,6 +13,7 @@ import {
   openPairingCache,
   openSectionPairingCache,
 } from './slice-cache-store.ts';
+import { entryInfoFindingsOf, } from './entry-info-record.ts';
 import { repairArchiveBlocks, } from './archive-block-repair.ts';
 import { archiveBlockSourceContexts, } from './archive-block-source-context.ts';
 import { passArchiveText, } from './pass-archive.ts';
@@ -231,7 +232,8 @@ export async function preparePassEntry(
   );
   /**
    The entry's `info.yml` at the pin, which records the date of death; absent
-   when the entry has none, which records no death.
+   when the entry has none, which records no death, and unreadable when the file
+   refuses to parse, which records none either and is said on the artifact.
    */
   const entryInfo = await outsideReads.entryInfo({
     entryId,
@@ -240,7 +242,7 @@ export async function preparePassEntry(
 
   /**
    Parsed `info.yml` every preparation of this entry reads, absent when the
-   entry has no such file.
+   entry has no such file or one that refuses to parse.
    */
   const sourceEntryInfo = (entryInfo.kind === 'read')
     ? entryInfo.info
@@ -480,6 +482,7 @@ export async function preparePassEntry(
   const passFindings = [
     ...relabel.findings,
     ...evidenceFindings,
+    ...entryInfoFindingsOf({ entryInfo, },),
   ];
   /**
    Unclaimed blocks not already licensed unchanged.

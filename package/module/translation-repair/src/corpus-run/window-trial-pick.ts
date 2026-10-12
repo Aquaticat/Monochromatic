@@ -3,6 +3,7 @@ import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-forei
 
 import type { SyntheticClient, } from '../chat-contract.ts';
 import type { ChunkPair, } from '../chunk-document.ts';
+import type { PreparedSheetFacts, } from '../prepared-sheet-facts.ts';
 import { exchangeFailureLogText, } from '../exchange-failure-text.ts';
 import type { RosterModelId, } from '../synthetic-catalog.ts';
 import type { TrialSlice, } from './window-trial-draw.ts';
@@ -78,6 +79,9 @@ export type PickOutcome = {
 
  @param l - run logger
 
+ @param sheetFacts - what the entry's preparation tells every judging sheet of
+ the page, handed to the arms
+
  @param stageSettings - straggler windows and contest ledger the entry file
  read for this launch (`StageSettings`)
 
@@ -101,6 +105,7 @@ export async function runPick(
     signal,
     perCallTimeoutMs,
     l,
+    sheetFacts,
     stageSettings,
   }: ForeignBorrowed<{
     readonly client: SyntheticClient;
@@ -117,6 +122,7 @@ export async function runPick(
     readonly signal: AbortSignal;
     readonly perCallTimeoutMs: number;
     readonly l: Logger;
+    readonly sheetFacts: PreparedSheetFacts;
     readonly stageSettings: StageSettings;
   }>,
 ): Promise<PickOutcome> {
@@ -136,6 +142,7 @@ export async function runPick(
         signal,
         perCallTimeoutMs,
         l,
+        sheetFacts,
         stageSettings,
       },),
     };

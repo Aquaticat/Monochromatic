@@ -2,6 +2,7 @@ import type { Logger, } from '@monochromatic-dev/module-logger/ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
 import type { ChunkPair, } from '../chunk-document.ts';
+import type { PreparedSheetFacts, } from '../prepared-sheet-facts.ts';
 import type { SyntheticClient, } from '../chat-contract.ts';
 import { isInsertionChunk, } from '../chunk-placement.ts';
 import { neighbouringSource, } from '../fidelity-window.ts';
@@ -67,6 +68,10 @@ import type { StageSettings, } from '../stage-settings.ts';
 
  @param l - run logger
 
+ @param sheetFacts - what the entry's preparation tells every judging sheet of
+ the page, so the sheets carry the tense block and the identity block the pass's
+ do; the translators are told the identity block alone, as in the pass
+
  @param stageSettings - straggler windows and contest ledger the entry file
  read for this launch (`StageSettings`)
 
@@ -98,6 +103,7 @@ export async function runSliceArms(
     signal,
     perCallTimeoutMs,
     l,
+    sheetFacts,
     stageSettings,
   }: ForeignBorrowed<{
     readonly client: SyntheticClient;
@@ -115,6 +121,7 @@ export async function runSliceArms(
     readonly signal: AbortSignal;
     readonly perCallTimeoutMs: number;
     readonly l: Logger;
+    readonly sheetFacts: PreparedSheetFacts;
     readonly stageSettings: StageSettings;
   }>,
 ): Promise<readonly WindowTrialRow[]> {
@@ -229,6 +236,7 @@ export async function runSliceArms(
       .text,
     incumbentText: slice.target
       .text,
+    ...((sheetFacts.identityContext === undefined) ? {} : { identityContext: sheetFacts.identityContext, }),
     lineStructured: TRIAL_TREATS_ITS_SLICES_AS_PROSE,
     signal,
     perCallTimeoutMs,
@@ -254,6 +262,10 @@ export async function runSliceArms(
       incumbentText: slice.target
         .text,
       incumbentKind: isInsertionChunk(slice.target,) ? 'absent' : 'present',
+      // THE PAGE FACTS EVERY ARM SHARES, so the sheets differ in the window alone
+      // and carry what the pass's do: the declared names, the death with the
+      // tense candidates of the ballot texts, and the subject's names.
+      ...sheetFacts,
       ...((arm === TRIAL_ARMS.wide) ? { neighbouringSourceText, } : {}),
       lineStructured: TRIAL_TREATS_ITS_SLICES_AS_PROSE,
       signal,
