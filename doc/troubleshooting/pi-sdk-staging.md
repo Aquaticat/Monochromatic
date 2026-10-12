@@ -3095,7 +3095,11 @@ Action/source parents passed `proc_50d1`;
 all 154 integrated input cases passed `proc_a226`;
 original-judgment variants passed `proc_d5fb`;
 the runtime suffix passed 39 complete outputs in `proc_f646`.
-The complete native parent remains to pass after the fixture corrections.
+Complete native parent `89a504de` / `proc_7042` passed in 860 seconds:
+82 complete outputs,
+157 integrated input cases,
+and 69 section-source cases.
+This is the restored implementation with the accepted processing-receipt controls.
 Required pre-implementation description-loss reds are retained;
 no duplicate omission campaign is opened.
 The first parity baseline `proc_0081` stopped at an unresolved relative module import before execution;
