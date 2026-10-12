@@ -3,7 +3,6 @@ import {
   tagged,
 } from '@monochromatic-dev/module-logger/ts';
 
-import { allInInputOrder, } from '../all-in-input-order.ts';
 import {
   exchangeFailureLogText,
   exchangeFailureText,
@@ -18,7 +17,8 @@ import {
   type ConsistencyCacheValue,
   openConsistencyCache,
 } from './pass-consistency-cache.ts';
-import { carryToPlace, } from './pass-consistency-carry.ts';
+import { carryAll, } from './pass-consistency-carry.ts';
+import { keptWordsOf, } from './pass-consistency-carry-units.ts';
 import {
   type ConsistencyPlace,
   occurrenceViewOf,
@@ -27,10 +27,14 @@ import {
 import { askRunOff, } from './pass-consistency-run-off.ts';
 import {
   countAsked,
+  runOffReasonOf,
   settleAsked,
   settleCarried,
 } from './pass-consistency-settle.ts';
-import type { SettledGroup, } from './pass-consistency-types.ts';
+import type {
+  CarryWriters,
+  SettledGroup,
+} from './pass-consistency-types.ts';
 import {
   settleFailed,
   unplacedOf,
@@ -38,7 +42,7 @@ import {
 import type { PipelineDigest, } from './pipeline-digest.ts';
 import type { RunClient, } from './run-client-contract.ts';
 import { RUN_PER_CALL_TIMEOUT_MS, } from './run-config.ts';
-import { readJudgeSeats, } from './run-seats-read.ts';
+import { readPhaseSeats, } from './run-seats-read.ts';
 import type { RepeatGroup, } from '../repeat-groups-types.ts';
 
 //region Pass consistency bench
@@ -76,7 +80,7 @@ export type PreparedGroup = {
 
  @param modelIds - judge bench asked
 
- @param writerModelIds - the translate stage's writer bench, which carries the chosen rendering
+ @param writers - whether the translate stage's writer bench carries the chosen rendering, and which seats
 
  @param text - whole original
 
@@ -108,14 +112,14 @@ export type PreparedGroup = {
 
  @example
  ```ts
- const settled = await settleAskedGroup({ client, modelIds, writerModelIds, text, prepared, cache, declared: [], declaredNames: [], signal, l, stageSettings, },);
+ const settled = await settleAskedGroup({ client, modelIds, writers, text, prepared, cache, declared: [], declaredNames: [], signal, l, stageSettings, },);
  ```
  */
 async function settleAskedGroup(
   {
     client,
     modelIds,
-    writerModelIds,
+    writers,
     text,
     prepared,
     cache,
@@ -131,7 +135,7 @@ async function settleAskedGroup(
   }: {
     readonly client: RunClient;
     readonly modelIds: readonly RosterModelId[];
-    readonly writerModelIds: readonly RosterModelId[];
+    readonly writers: CarryWriters;
     readonly text: string;
     readonly prepared: PreparedGroup;
     readonly cache: SliceCache<ConsistencyCacheValue>;
@@ -203,6 +207,14 @@ async function settleAskedGroup(
       places: prepared.places,
       asked,
     },);
+    if (count.finalists
+      .length
+      > 0) {
+      gl.info(`asking the bench once more: ${runOffReasonOf({
+        count,
+        asked,
+      },)}`,);
+    }
     /**
      The bench asked once more among the places that tied for first, absent when none tied.
      */
@@ -240,31 +252,27 @@ async function settleAskedGroup(
       decided,
       carried: (chosen === undefined)
         ? []
-        : await allInInputOrder({
-          members: decided.receivers
-            .map(async function carryOne(receiver,) {
-              return await carryToPlace({
-                context: {
-                  client,
-                  writerModelIds,
-                  judgeModelIds: modelIds,
-                  cache,
-                  text,
-                  ...((identityContext === undefined) ? {} : { identityContext, }),
-                  ...((referenceContext === undefined) ? {} : { referenceContext, }),
-                  ...((lifeEnded === undefined) ? {} : { lifeEnded, }),
-                  ...((subjectNames === undefined) ? {} : { subjectNames, }),
-                  declared,
-                  declaredNames,
-                  signal,
-                  l: gl,
-                  stageSettings,
-                },
-                repeat,
-                chosen,
-                receiver,
-              },);
-            },),
+        : await carryAll({
+          context: {
+            client,
+            writers,
+            judgeModelIds: modelIds,
+            cache,
+            text,
+            ...((identityContext === undefined) ? {} : { identityContext, }),
+            ...((referenceContext === undefined) ? {} : { referenceContext, }),
+            ...((lifeEnded === undefined) ? {} : { lifeEnded, }),
+            ...((subjectNames === undefined) ? {} : { subjectNames, }),
+            declared,
+            declaredNames,
+            signal,
+            l: gl,
+            stageSettings,
+          },
+          repeat,
+          chosen,
+          receivers: decided.receivers,
+          kept: keptWordsOf({ decided, },),
         },),
     },);
   }
@@ -302,6 +310,48 @@ function groupAskedName(
   },
 ): string {
   return `group ${String(position + 1,)} asked`;
+}
+
+/**
+ Whether the translate stage's writer bench carries the chosen rendering, and
+ which seats, or why the writers are not asked.
+
+ @param translators - the writer bench as the seat reading left it
+
+ @param unreachableWriters - clauses naming each writing bench below its floor that no provider has named the return of
+
+ @returns The writers to ask, or why they are not asked
+
+ @example
+ ```ts
+ const writers = writersOf({ translators, unreachableWriters: [], },);
+ ```
+ */
+export function writersOf(
+  {
+    translators,
+    unreachableWriters,
+  }: {
+    readonly translators: readonly RosterModelId[];
+    readonly unreachableWriters: readonly string[];
+  },
+): CarryWriters {
+  if (unreachableWriters.length > 0) {
+    return {
+      kind: 'not-asked',
+      why: `${unreachableWriters.join('; ',)}; no provider has named its return`,
+    };
+  }
+  if (translators.length === 0) {
+    return {
+      kind: 'not-asked',
+      why: 'the translators bench seats no model',
+    };
+  }
+  return {
+    kind: 'asked',
+    modelIds: translators,
+  };
 }
 
 /**
@@ -385,13 +435,24 @@ export async function askAll(
   if (toAsk.length === 0)
     return [];
   /**
-   This phase's judge benches, read now and only when someone is to be asked.
+   This phase's benches, read now and only when someone is to be asked, and the
+   writing benches below their floor that the phase goes on without.
    */
-  const seats = await readJudgeSeats({
+  const {
+    seats,
+    unreachableWriters,
+  } = await readPhaseSeats({
     client,
     phase: 'page consistency',
     signal,
     l,
+  },);
+  /**
+   Whether the writers are asked, and which seats.
+   */
+  const writers = writersOf({
+    translators: seats.translators,
+    unreachableWriters,
   },);
   /**
    Store earlier answers are read from.
@@ -407,7 +468,7 @@ export async function askAll(
       return await settleAskedGroup({
         client,
         modelIds: seats.lateJudges,
-        writerModelIds: seats.translators,
+        writers,
         text,
         prepared: item,
         cache,

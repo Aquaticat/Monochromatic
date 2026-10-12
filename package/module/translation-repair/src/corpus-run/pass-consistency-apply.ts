@@ -30,12 +30,20 @@ import { ConsistencyInvariantError, } from '../consistency-invariant-error.ts';
 // was judged over the English as it stood when the pass began, so two groups
 // can address one slice, and a replacement of one can overlap a replacement of
 // another. Replacements are applied slice by slice, the earlier group winning
-// wherever two overlap (the later is recorded `overlapped`), and the slice
-// with its replacements made is put through every floor as one text: a slice
-// the floors refuse keeps the wording it had, and every replacement made in it
-// is recorded `kept-floor` (the owner's ruling of 2026-10-11). A replacement
-// already left out for overlapping an earlier one stays `overlapped`, whether
-// the floors then pass or refuse its slice.
+// wherever two overlap (the later is recorded `overlapped` for every place it
+// carried), and the slice with its replacements made is put through every floor
+// as one text: a slice the floors refuse keeps the wording it had, and every
+// place a replacement made in it carried is recorded `kept-floor` (the owner's
+// ruling of 2026-10-11). A replacement already left out for overlapping an
+// earlier one stays `overlapped`, whether the floors then pass or refuse its
+// slice. `OVERLAPPED` NEVER NAMES A PLACE OF THE REPLACEMENT'S OWN GROUP: the
+// places of one group that a block holds are carried by one replacement
+// (`pass-consistency-carry.ts`), so no two replacements of a group address the
+// same words.
+//
+// A REPLACEMENT CARRIES SEVERAL PLACES WHEN A WRITER'S BLOCK DOES: the block is
+// rewritten once for every receiving place in it, so the replacement is named by
+// all of them and its outcome is every one of theirs.
 
 /**
  What the pass came to once the replacements were applied.
@@ -64,20 +72,53 @@ export type AppliedConsistency = {
 
 /**
  The name a replacement is reported under, in the words an operator reads the
- pass's log in: the group counted from one and the receiving place's label.
+ pass's log in: the group counted from one and the labels of the receiving
+ places it carries.
 
  @param group - position of the group on the page, from zero
 
- @param place - position of the receiving place in the group, from zero
+ @param places - positions of the receiving places in the group, from zero
 
  @returns Name unique across the page's replacements
 
  @example
  ```ts
- const id = editId({ group: 0, place: 1, },); // 'group 1 OCCURRENCE 2'
+ const id = editId({ group: 0, places: [1, 2,], },); // 'group 1 OCCURRENCE 2 and OCCURRENCE 3'
  ```
  */
 function editId(
+  {
+    group,
+    places,
+  }: {
+    readonly group: number;
+    readonly places: readonly number[];
+  },
+): string {
+  return `group ${String(group + 1,)} ${
+    places
+      .map(function labelOf(place,): string {
+        return consistencyLabel({ position: place, },);
+      },)
+      .join(' and ',)
+  }`;
+}
+
+/**
+ The key a place's final outcome is kept under.
+
+ @param group - position of the group on the page, from zero
+
+ @param place - position of the place in the group, from zero
+
+ @returns The key
+
+ @example
+ ```ts
+ const key = placeKey({ group: 0, place: 1, },); // '0:1'
+ ```
+ */
+function placeKey(
   {
     group,
     place,
@@ -86,7 +127,7 @@ function editId(
     readonly place: number;
   },
 ): string {
-  return `group ${String(group + 1,)} ${consistencyLabel({ position: place, },)}`;
+  return `${String(group,)}:${String(place,)}`;
 }
 
 /**
@@ -209,7 +250,7 @@ export function applyConsistency(
     l,
   },);
   /**
-   Final outcome of every replacement, by name.
+   Final outcome of every place a replacement carried, by group and place.
    */
   const outcomes = new Map<string, ConsistencyOccurrenceOutcome>();
   /**
@@ -220,7 +261,40 @@ export function applyConsistency(
    What the pass reports beside its groups.
    */
   const findings: string[] = [];
+  /**
+   Records what became of a replacement for every place it carried.
+
+   @param carriers - replacements with the places each carries
+
+   @param ids - names of the replacements
+
+   @param outcome - what became of them
+   */
+  function recordOutcome(
+    {
+      carriers,
+      ids,
+      outcome,
+    }: {
+      readonly carriers: ReadonlyMap<string, readonly string[]>;
+      readonly ids: readonly string[];
+      readonly outcome: ConsistencyOccurrenceOutcome;
+    },
+  ): void {
+    for (const id of ids) {
+      for (const key of carriers.get(id,) ?? []) {
+        outcomes.set(
+          key,
+          outcome,
+        );
+      }
+    }
+  }
   for (const facts of slices) {
+    /**
+     Places each of this slice's replacements carries, by the replacement's name.
+     */
+    const carriers = new Map<string, readonly string[]>();
     /**
      This slice's replacements, earlier groups first.
      */
@@ -233,11 +307,25 @@ export function applyConsistency(
           return edit.sliceIndex === facts.sliceIndex;
         },)
         .map(function named(edit,): ConsistencyEdit {
+          /**
+           Name of the replacement.
+           */
+          const id = editId({
+            group: groupPosition,
+            places: edit.placePositions,
+          },);
+          carriers.set(
+            id,
+            edit.placePositions
+              .map(function keyOf(place,): string {
+                return placeKey({
+                  group: groupPosition,
+                  place,
+                },);
+              },),
+          );
           return {
-            id: editId({
-              group: groupPosition,
-              place: edit.placePosition,
-            },),
+            id,
             start: edit.start,
             end: edit.end,
             text: edit.text,
@@ -260,11 +348,11 @@ export function applyConsistency(
       english: currentText,
       edits,
     },);
-    for (const id of made.overlapped)
-      outcomes.set(
-        id,
-        'overlapped',
-      );
+    recordOutcome({
+      carriers,
+      ids: made.overlapped,
+      outcome: 'overlapped',
+    },);
     /**
      What the floors make of the slice as it would ship.
      */
@@ -276,22 +364,22 @@ export function applyConsistency(
       declaredNames,
     },);
     if (verdict.kind === 'passes') {
-      for (const id of made.applied)
-        outcomes.set(
-          id,
-          'replaced',
-        );
+      recordOutcome({
+        carriers,
+        ids: made.applied,
+        outcome: 'replaced',
+      },);
       changed.push({
         sliceIndex: facts.sliceIndex,
         text: made.text,
       },);
       continue;
     }
-    for (const id of made.applied)
-      outcomes.set(
-        id,
-        'kept-floor',
-      );
+    recordOutcome({
+      carriers,
+      ids: made.applied,
+      outcome: 'kept-floor',
+    },);
     al.warn(
       `slice ${String(facts.sliceIndex,)}: the floors refused the consistency replacement, so the slice keeps its wording: ${
         verdict.findings
@@ -333,7 +421,7 @@ export function applyConsistency(
             /**
              What the replacements and the floors made of this place's replacement, if it had one.
              */
-            const decided = outcomes.get(editId({
+            const decided = outcomes.get(placeKey({
               group: groupPosition,
               place: position,
             },),);

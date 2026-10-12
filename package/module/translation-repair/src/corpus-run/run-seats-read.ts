@@ -21,11 +21,14 @@ import {
   judgeSeatsFor,
 } from './run-seats.ts';
 import {
+  belowFloorWritingBenches,
   benchesOf,
+  PHASES_WITHOUT_WRITER_STOP,
   unreachableWritingBenches,
   WritingBenchUnreachableError,
 } from './run-seats-floor.ts';
 import {
+  type BenchName,
   type JudgeSeatPhase,
   phaseBenches,
   shortBenches,
@@ -119,10 +122,13 @@ function writtenRefusal(
  serves, and reading again after the wait; when a judge bench is short and
  no provider has named its return, the reading says so and seats what it
  read; when a writing bench is below its floor with nothing to wait for, or
- still below it after the wait, the entry stops.
+ still below it after the wait, the entry stops, except in a phase that goes on
+ without its writers (`PHASES_WITHOUT_WRITER_STOP`), where the reading says so in
+ one error line naming the bench and returns the benches below the floor.
 
  @throws {@link WritingBenchUnreachableError} when a writing bench the phase
- leans on cannot write a slate and no hold promises it back
+ leans on cannot write a slate and no hold promises it back, in a phase that
+ stops for it
 
  @param client - run client whose dryness view and holds are the router's own
 
@@ -134,7 +140,9 @@ function writtenRefusal(
 
  @param pollMs - how often the wait checks for abort
 
- @returns Dryness the phase seats on, and how long was waited for it
+ @returns Dryness the phase seats on, how long was waited for it, and one clause
+ for each writing bench of a phase that goes on without its writers that is below
+ its floor
 
  @example
  ```ts
@@ -158,6 +166,7 @@ async function readDrynessPastShortBench(
 ): Promise<{
   readonly dry: BudgetView;
   readonly waitMs: number;
+  readonly unreachableWriters: readonly string[];
 }> {
   /**
    Reads which providers are dry, or none when the view could not be read.
@@ -208,14 +217,19 @@ async function readDrynessPastShortBench(
     names,
     dry: first,
   },);
+  /**
+   Whether this phase goes on when a writing bench it leans on is below its floor.
+   */
+  const goesOn = PHASES_WITHOUT_WRITER_STOP.has(phase,);
   if ((short.length === 0) && (unreachable.length === 0)) {
     return {
       dry: first,
       waitMs: 0,
+      unreachableWriters: [],
     };
   }
   if (shortest === 0) {
-    if (unreachable.length > 0) {
+    if ((unreachable.length > 0) && (!goesOn)) {
       // THE FIFTEENTH CLASS: a writing bench below its floor with nothing to
       // wait for stops the entry rather than writing a one-writer page.
       l.error(`JUDGE SEATS phase=${phase} writing bench unreachable: ${unreachable.join('; ',)}; stopping the entry`,);
@@ -224,20 +238,52 @@ async function readDrynessPastShortBench(
         clauses: unreachable,
       },);
     }
-    // SAID EVEN WHEN THERE IS NOTHING TO WAIT FOR. The seventh hakureico
-    // launch (2026-09-08, Bedrock alone) printed `readers=4 roster=10
-    // withheld=none` at the pictures with three providers dry, since
-    // `withheld=` names only the seats the slowness and cost rules take, and
-    // stopped INCOMPLETE twenty seconds later with no reader reachable. A
-    // spent balance names no return, so the phase runs on what is reachable;
-    // the line says so before it starts.
-    l.warn(
-      `JUDGE SEATS phase=${phase} short of quorum: ${short.join('; ',)}; `
-        + 'no provider has named its return, so the phase runs on what is reachable',
-    );
+    if (unreachable.length > 0) {
+      // A PHASE THAT GOES ON WITHOUT ITS WRITERS says so once, naming the
+      // bench, and never says the entry stops, since it does not.
+      l.error(
+        `JUDGE SEATS phase=${phase} writing bench unreachable: ${unreachable.join('; ',)}; `
+          + 'no provider has named its return, so the phase goes on without its writers',
+      );
+    }
+    /**
+     Writing benches below the floor, which the error line of a phase that goes on has named.
+     */
+    const belowFloor = new Set(belowFloorWritingBenches({
+      benches,
+      names,
+      dry: first,
+    },)
+      .map(function nameOf({ name, },): BenchName {
+        return name;
+      },),);
+    /**
+     Benches short of quorum that no error line has named.
+     */
+    const shortElsewhere = shortBenches({
+      benches,
+      names: names.filter(function isNotNamedAbove(name,): boolean {
+        return !(goesOn && belowFloor.has(name,));
+      },),
+      dry: first,
+    },);
+    if (shortElsewhere.length > 0) {
+      // SAID EVEN WHEN THERE IS NOTHING TO WAIT FOR. The seventh hakureico
+      // launch (2026-09-08, Bedrock alone) printed `readers=4 roster=10
+      // withheld=none` at the pictures with three providers dry, since
+      // `withheld=` names only the seats the slowness and cost rules take, and
+      // stopped INCOMPLETE twenty seconds later with no reader reachable. A
+      // spent balance names no return, so the phase runs on what is reachable;
+      // the line says so before it starts.
+      l.warn(
+        `JUDGE SEATS phase=${phase} short of quorum: ${shortElsewhere.join('; ',)}; `
+          + 'no provider has named its return, so the phase runs on what is reachable',
+      );
+    }
     return {
       dry: first,
       waitMs: 0,
+      unreachableWriters: unreachable,
     };
   }
   /**
@@ -271,7 +317,7 @@ async function readDrynessPastShortBench(
     names,
     dry: again,
   },);
-  if (stillUnreachable.length > 0) {
+  if ((stillUnreachable.length > 0) && (!goesOn)) {
     l.error(
       `JUDGE SEATS phase=${phase} writing bench unreachable after waiting ${String(waitMs,)}ms: `
         + `${stillUnreachable.join('; ',)}; stopping the entry`,
@@ -281,16 +327,24 @@ async function readDrynessPastShortBench(
       clauses: stillUnreachable,
     },);
   }
+  if (stillUnreachable.length > 0) {
+    l.error(
+      `JUDGE SEATS phase=${phase} writing bench unreachable after waiting ${String(waitMs,)}ms: `
+        + `${stillUnreachable.join('; ',)}; the phase goes on without its writers`,
+    );
+  }
   return {
     dry: again,
     waitMs,
+    unreachableWriters: stillUnreachable,
   };
 }
 
 /**
  Reads every provider's dryness and derives the benches for one phase of
  one entry, waiting out a named hold first when a bench the phase leans on
- would otherwise sit short of its quorum.
+ would otherwise sit short of its quorum, and says which writing benches of a
+ phase that goes on without its writers are below their floor.
 
  @param client - run client whose dryness view and holds are the router's own
 
@@ -302,14 +356,18 @@ async function readDrynessPastShortBench(
 
  @param pollMs - how often a wait checks for abort
 
- @returns Benches for this phase
+ @returns Benches for this phase, and one clause for each writing bench below the
+ floor that the phase goes on without; none for a phase that stops for it
+
+ @throws {@link WritingBenchUnreachableError} when a writing bench the phase
+ leans on cannot write a slate, no hold promises it back, and the phase stops for it
 
  @example
  ```ts
- const seats = await readJudgeSeats({ client, phase: 'lanes', signal, l, },);
+ const { seats, unreachableWriters, } = await readPhaseSeats({ client, phase: 'page consistency', signal, l, },);
  ```
  */
-export async function readJudgeSeats(
+export async function readPhaseSeats(
   {
     client,
     phase,
@@ -323,13 +381,17 @@ export async function readJudgeSeats(
     readonly l: Logger;
     readonly pollMs?: number;
   },
-): Promise<JudgeSeats> {
+): Promise<{
+  readonly seats: JudgeSeats;
+  readonly unreachableWriters: readonly string[];
+}> {
   /**
    Dryness this phase seats on, any named hold waited out.
    */
   const {
     dry,
     waitMs,
+    unreachableWriters,
   } = await readDrynessPastShortBench({
     client,
     phase,
@@ -390,7 +452,61 @@ export async function readJudgeSeats(
       + `threw-withheld=${(threwWithheld.length === 0) ? 'none' : threwWithheld.join(',',)} `
       + `waited=${String(waitMs,)}ms`,
   );
-  return seats;
+  return {
+    seats,
+    unreachableWriters,
+  };
+}
+
+/**
+ Reads every provider's dryness and derives the benches for one phase of
+ one entry, waiting out a named hold first when a bench the phase leans on
+ would otherwise sit short of its quorum.
+
+ @param client - run client whose dryness view and holds are the router's own
+
+ @param phase - phase about to start, which the reading seats
+
+ @param signal - entry abort
+
+ @param l - entry logger, which records the reading and the bench
+
+ @param pollMs - how often a wait checks for abort
+
+ @returns Benches for this phase
+
+ @throws {@link WritingBenchUnreachableError} when a writing bench the phase
+ leans on cannot write a slate and no hold promises it back, in a phase that
+ stops for it
+
+ @example
+ ```ts
+ const seats = await readJudgeSeats({ client, phase: 'lanes', signal, l, },);
+ ```
+ */
+export async function readJudgeSeats(
+  {
+    client,
+    phase,
+    signal,
+    l,
+    pollMs = HOLD_POLL_MS,
+  }: {
+    readonly client: SeatReadingClient;
+    readonly phase: JudgeSeatPhase;
+    readonly signal: AbortSignal;
+    readonly l: Logger;
+    readonly pollMs?: number;
+  },
+): Promise<JudgeSeats> {
+  return (await readPhaseSeats({
+    client,
+    phase,
+    signal,
+    l,
+    pollMs,
+  },))
+    .seats;
 }
 
 //endregion Seat readings past a named hold

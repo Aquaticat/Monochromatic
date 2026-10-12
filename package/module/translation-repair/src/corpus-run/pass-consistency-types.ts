@@ -1,6 +1,7 @@
 import type { Logger, } from '@monochromatic-dev/module-logger/ts';
 
 import type { SyntheticClient, } from '../chat-contract.ts';
+import type { CarryBlock, } from '../consistency-carry.ts';
 import type { ConsistencyRendering, } from '../consistency-count-types.ts';
 import type { ConsistencyPlan, } from '../consistency-splice.ts';
 import type { DeclaredNamePair, } from '../linked-title-declared-name.ts';
@@ -27,14 +28,16 @@ import type { ConsistencyPlace, } from './pass-consistency-group.ts';
 
  @example
  ```ts
- const edit: PendingEdit = { placePosition: 1, sliceIndex: 3, start: 0, end: 12, text: 'the cat naps', };
+ const edit: PendingEdit = { placePositions: [1,], sliceIndex: 3, start: 0, end: 12, text: 'the cat naps', };
  ```
  */
 export type PendingEdit = {
   /**
-   Position of the receiving place among the group's places.
+   Positions, among the group's places, of the receiving places this replacement
+   carries the chosen rendering to: one for the words of a code splice, every
+   receiving place of the block for a writer's block, which is rewritten once.
    */
-  readonly placePosition: number;
+  readonly placePositions: readonly number[];
 
   /**
    Slice the replacement is made in.
@@ -42,17 +45,18 @@ export type PendingEdit = {
   readonly sliceIndex: number;
 
   /**
-   Offset in the slice's English where the replaced words start.
+   Offset in the slice's English where the replaced text starts: the words of a
+   splice, or a writer's whole block.
    */
   readonly start: number;
 
   /**
-   Exclusive offset where they end.
+   Exclusive offset where it ends.
    */
   readonly end: number;
 
   /**
-   The words that go in.
+   The text that goes in.
    */
   readonly text: string;
 };
@@ -103,21 +107,64 @@ export type CarryReceiver = LocatedPlace & {
 };
 
 /**
- How a receiving place's carry ended.
+ The receiving places that one rewrite of one stretch of the English carries the
+ chosen rendering to. Places are grouped by the stretch that holds them: the
+ innermost block, a paragraph or a heading, that holds the words of each, or the
+ whole English of the slice for words that lie in no single block. The writers
+ rewrite the block once, with every receiving place in it, and the bench chooses
+ once among the current block, the code splice of every place in it and each
+ writer's block.
 
  @example
  ```ts
- const carried: PlaceCarried = { carry, edits: [], findings: [], };
+ const unit: CarryUnit = { block, writable: true, receivers: [receiver,], keeping: [], };
  ```
  */
-export type PlaceCarried = {
+export type CarryUnit = {
   /**
-   The record of the carry: candidates, ballots and decision.
+   The stretch of the slice's English the candidates replace.
    */
-  readonly carry: ArtifactConsistencyCarry;
+  readonly block: CarryBlock;
 
   /**
-   The replacement the winning candidate makes, none when the English stands.
+   Whether the block is a paragraph or a heading a writer can be given: false for
+   the whole English of a slice, which holds words that lie in no single block,
+   and which only the code splice and the current English stand for.
+   */
+  readonly writable: boolean;
+
+  /**
+   The receiving places in the block, in page order, at least one.
+   */
+  readonly receivers: readonly CarryReceiver[];
+
+  /**
+   The English words of the group's other places inside the block that must come
+   out of any rewrite as they went in: the chosen place's words when it stands
+   in the block, and the words of a place the majority keeps for its context or
+   that already reads as the chosen place does.
+   */
+  readonly keeping: readonly string[];
+};
+
+/**
+ How the carry to the receiving places of one block ended.
+
+ @example
+ ```ts
+ const carried: UnitCarried = { carries: [carry,], edits: [], findings: [], };
+ ```
+ */
+export type UnitCarried = {
+  /**
+   The record of the carry, candidates, ballots and decision, once for each
+   receiving place of the block in the order of the unit's receivers: the places
+   of a block share one choice, so each label carries the same record.
+   */
+  readonly carries: readonly ArtifactConsistencyCarry[];
+
+  /**
+   The replacements the winning candidate makes, none when the English stands.
    */
   readonly edits: readonly PendingEdit[];
 
@@ -128,11 +175,44 @@ export type PlaceCarried = {
 };
 
 /**
+ Who is asked to write the receiving places' blocks.
+
+ @example
+ ```ts
+ const writers: CarryWriters = { kind: 'not-asked', why: 'translators 0 of 8 reachable, floor 2', };
+ ```
+ */
+export type CarryWriters =
+  | {
+    /**
+     The translate stage's writer bench is asked.
+     */
+    readonly kind: 'asked';
+
+    /**
+     The writer bench, as the seat reading left it, in roster order.
+     */
+    readonly modelIds: readonly RosterModelId[];
+  }
+  | {
+    /**
+     The writers are not asked: the carry goes on with the current English and
+     the code splice.
+     */
+    readonly kind: 'not-asked';
+
+    /**
+     Why, naming the bench and what the seat reading found of it.
+     */
+    readonly why: string;
+  };
+
+/**
  What a carry reads beside the two places.
 
  @example
  ```ts
- const context: CarryContext = { client, writerModelIds, judgeModelIds, cache, text, declared: [], declaredNames: [], signal, l, stageSettings, };
+ const context: CarryContext = { client, writers, judgeModelIds, cache, text, declared: [], declaredNames: [], signal, l, stageSettings, };
  ```
  */
 export type CarryContext = {
@@ -142,9 +222,9 @@ export type CarryContext = {
   readonly client: SyntheticClient;
 
   /**
-   The translate stage's writer bench, as the seat reading left it.
+   Whether the translate stage's writer bench is asked, and which seats.
    */
-  readonly writerModelIds: readonly RosterModelId[];
+  readonly writers: CarryWriters;
 
   /**
    The judge bench that chooses among the candidates.

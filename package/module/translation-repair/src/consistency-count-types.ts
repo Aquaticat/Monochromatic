@@ -140,7 +140,7 @@ export type ConsistencyWinner =
 
  @example
  ```ts
- const count: ConsistencyCount = { usable: 0, renderings: [], kept: [], winner: { kind: 'none', reason: 'no-quorum', }, };
+ const count: ConsistencyCount = { usable: 0, renderings: [], kept: [], winner: { kind: 'none', reason: 'no-quorum', }, finalists: [], };
  ```
  */
 export type ConsistencyCount = {

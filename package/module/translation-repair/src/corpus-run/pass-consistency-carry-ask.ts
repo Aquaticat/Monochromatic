@@ -13,6 +13,7 @@ import {
   CONSISTENCY_CHOICE_RESPONSE_FORMAT,
   usableChoiceFor,
 } from '../consistency-choice.ts';
+import { codePointLength, } from '../code-points.ts';
 import { producedVolumeBound, } from '../produced-volume-bound.ts';
 import type { SliceCache, } from '../slice-cache.ts';
 import type { StageSettings, } from '../stage-settings.ts';
@@ -200,12 +201,26 @@ export async function askCarryWriters(
     signal,
     exchangeTimeoutMs,
     // A TRANSLATION IS ABOUT THREE TIMES ITS CHINESE SOURCE, so the original
-    // block of the receiving place bounds what a paragraph written for it can
-    // legitimately be (`produced-volume-bound.ts`).
-    maxAnswerChars: producedVolumeBound({ materialChars: subject.receiving
-      .view
-      .paragraph
-      .length, },),
+    // blocks of the receiving places bound what a paragraph written for them can
+    // legitimately be (`produced-volume-bound.ts`), counted in code points as the
+    // bound's ratio was measured; places that share one original block count it once.
+    maxAnswerChars: producedVolumeBound({
+      materialChars: [
+        ...new Set(subject.receiving
+          .map(function paragraphOf({ view, },): string {
+            return view.paragraph;
+          },),),
+      ]
+        .reduce(
+          function summed(
+            total: number,
+            paragraph,
+          ): number {
+            return total + codePointLength({ text: paragraph, },);
+          },
+          0,
+        ),
+    },),
     responseFormat: TRANSLATE_RESPONSE_FORMAT,
     validate: isTranslateReportWire,
     stage: 'page-consistency-writers',

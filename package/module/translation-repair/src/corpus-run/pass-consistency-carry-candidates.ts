@@ -4,6 +4,7 @@ import {
 } from '@monochromatic-dev/module-logger/ts';
 
 import type { CarryBlock, } from '../consistency-carry.ts';
+import { standsOf, } from '../consistency-fold.ts';
 import { exchangeFailureLogText, } from '../exchange-failure-text.ts';
 import type { DeclaredNamePair, } from '../linked-title-declared-name.ts';
 import { wrapReplacementText, } from '../semantic-wrap.ts';
@@ -192,14 +193,60 @@ function shippingParagraphOf(
 }
 
 /**
+ The words of other places that a writer's paragraph no longer holds.
+
+ @param paragraph - the writer's paragraph as it would ship
+
+ @param block - the block it replaces
+
+ @param keeping - English words that must stay as they are, one entry for each place
+
+ @returns The entries the paragraph holds fewer times than the block does, in order
+
+ @example
+ ```ts
+ const lost = keptWordsLost({ paragraph, block, keeping: ['The cat naps',], },);
+ ```
+ */
+function keptWordsLost(
+  {
+    paragraph,
+    block,
+    keeping,
+  }: {
+    readonly paragraph: string;
+    readonly block: CarryBlock;
+    readonly keeping: readonly string[];
+  },
+): readonly string[] {
+  return keeping.filter(function isLost(words,): boolean {
+    return standsOf({
+      haystack: paragraph,
+      words,
+    },) < standsOf({
+      haystack: block.text,
+      words,
+    },);
+  },);
+}
+
+/**
  The paragraphs the writers wrote that every floor passes, each as the slice
  would ship.
 
+ THE GROUND IS READ ONCE, before any reply is judged: the floors run on the
+ slice's own text standing in for a candidate, so a throw from the source or the
+ current side (a fault of the pass, or of a page no reader reads) is raised once
+ for the block and charged to no writer. What a reply raises after that is the
+ reply's own, and is recorded for its seat alone.
+
  @param voices - the writers' replies with their seats, in roster order
 
- @param english - the receiving place's slice English
+ @param english - the receiving places' slice English
 
  @param block - the block of it the writers rewrote
+
+ @param keeping - English words of other places inside the block that must stay as they are
 
  @param facts - the slice
 
@@ -211,9 +258,11 @@ function shippingParagraphOf(
 
  @returns Each surviving writer's paragraph, and a finding per reply withheld
 
+ @throws Whatever the floors throw on the slice's own text, which the pass contains
+
  @example
  ```ts
- const { written, findings, } = writtenParagraphsOf({ voices, english, block, facts, declared, declaredNames, l, },);
+ const { written, findings, } = writtenParagraphsOf({ voices, english, block, keeping: [], facts, declared, declaredNames, l, },);
  ```
  */
 export function writtenParagraphsOf(
@@ -221,6 +270,7 @@ export function writtenParagraphsOf(
     voices,
     english,
     block,
+    keeping,
     facts,
     declared,
     declaredNames,
@@ -229,6 +279,7 @@ export function writtenParagraphsOf(
     readonly voices: readonly ConsistencyWriterVoice[];
     readonly english: string;
     readonly block: CarryBlock;
+    readonly keeping: readonly string[];
     readonly facts: ConsistencySliceFacts;
     readonly declared: readonly DeclaredNamePair[];
     readonly declaredNames: readonly string[];
@@ -247,6 +298,15 @@ export function writtenParagraphsOf(
   const wl = tagged({
     tag: writtenParagraphsOf.name,
     l,
+  },);
+  // The slice's own text stands in for a candidate: the floors read the source
+  // and the current side once, here, and what they throw on those is not a writer's.
+  floorRefusalOf({
+    facts,
+    currentText: english,
+    candidateText: english,
+    declared,
+    declaredNames,
   },);
   /**
    Each reply beside what became of it: its paragraph, or why it was withheld.
@@ -270,6 +330,21 @@ export function writtenParagraphsOf(
         translation,
         lineStructured: facts.lineStructured,
       },);
+      /**
+       The words of other places that this paragraph no longer holds as many times as the block did.
+       */
+      const lost = keptWordsLost({
+        paragraph: text,
+        block,
+        keeping,
+      },);
+      if (lost.length > 0) {
+        wl.warn(`withheld ${seat} from the bench: its paragraph no longer holds the words of another place that must stay`,);
+        return {
+          kept: [],
+          finding: [`consistency-candidate-refused (${seat}): the paragraph no longer holds the words of another place that must stay as they are`,],
+        };
+      }
       /**
        What the floors find against the slice carrying it, none when they pass it.
        */

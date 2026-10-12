@@ -2,9 +2,16 @@ import type { ChatMessage, } from '@monochromatic-dev/module-llm-type/ts';
 
 import { citedReferenceBlockText, } from './cited-reference-rule.ts';
 import {
-  type ConsistencyOccurrenceView,
+  aroundBlocksOf,
+  type CarryChosenPlace,
+  type CarryReceivingPlace,
+  chosenEnglishBlocksOf,
+  keepingBlockOf,
+  originalBlocksOf,
+  receivingLabel,
+} from './consistency-carry-sheet-parts.ts';
+import {
   type ConsistencyRepeat,
-  markedParagraph,
   repeatBlockOf,
   repeatedTextOf,
   selectMarks,
@@ -24,13 +31,14 @@ import {
 import { TRANSLATE_LINE_STRUCTURE_RULE, } from './translate-wire.ts';
 
 //region Consistency carry writer sheet
-// THE SHEET A WRITER READS TO CARRY THE CHOSEN RENDERING TO ONE PLACE. The
-// writers are the translate stage's writer bench, asked for the same reply the
-// translate stage asks (`{"translation": "..."}`), but the passage they rewrite
-// is one paragraph of a settled page, and what they change in it is bounded:
-// only the words that render the repeated wording, and only as far as this
-// place's own ORIGINAL allows. A model writes the paragraph; the floors and the
-// bench's choice decide whether any of it reaches the page.
+// THE SHEET A WRITER READS TO CARRY THE CHOSEN RENDERING TO THE RECEIVING PLACES
+// OF ONE BLOCK. The writers are the translate stage's writer bench, asked for the
+// same reply the translate stage asks (`{"translation": "..."}`), but the
+// passage they rewrite is one paragraph of a settled page, and what they change
+// in it is bounded: only the words that render the repeated wording in each
+// receiving place of the paragraph, and only as far as that place's own ORIGINAL
+// allows. A model writes the paragraph; the floors and the bench's choice decide
+// whether any of it reaches the page.
 
 /**
  The reply-format instruction, kept last in the assembled sheet.
@@ -39,32 +47,11 @@ const WRITER_REPLY_RULE =
   'Reply with ONLY a JSON object of shape {"translation": "..."}, where the translation is the whole rewritten paragraph and nothing else. No prose, no code fences, no commentary.';
 
 /**
- What the sheet needs of one place.
- */
-type WriterPlace = {
-  /**
-   The place as the consistency sheet shows it: its paragraph and where the
-   repeated wording stands in it.
-   */
-  readonly view: ConsistencyOccurrenceView;
-
-  /**
-   The words of the place's English that render the repeated wording.
-   */
-  readonly span: string;
-
-  /**
-   The English paragraph that holds those words.
-   */
-  readonly paragraph: string;
-};
-
-/**
  Everything a writer's sheet shows.
 
  @example
  ```ts
- const subject: CarryWriterSubject = { repeat, chosen, receiving, lineStructured: false, };
+ const subject: CarryWriterSubject = { repeat, chosen, receiving: [place,], paragraph, keeping: [], lineStructured: false, };
  ```
  */
 export type CarryWriterSubject = {
@@ -76,27 +63,40 @@ export type CarryWriterSubject = {
   /**
    The place every place should follow.
    */
-  readonly chosen: WriterPlace;
+  readonly chosen: CarryChosenPlace;
 
   /**
-   The place the writer rewrites the paragraph of.
+   The receiving places whose paragraph the writer rewrites, in page order, at
+   least one; places of one paragraph are rewritten together.
    */
-  readonly receiving: WriterPlace;
+  readonly receiving: readonly CarryReceivingPlace[];
 
   /**
-   The original block before the receiving place's block, where it has one in
+   The English paragraph that holds the receiving places' words.
+   */
+  readonly paragraph: string;
+
+  /**
+   English words of the group's other places inside that paragraph that must
+   come out of the rewrite exactly as they went in, such as the chosen place's
+   own words when it stands in the same paragraph.
+   */
+  readonly keeping: readonly string[];
+
+  /**
+   The original block before the receiving places' block, where it has one in
    its slice.
    */
   readonly before?: string;
 
   /**
-   The original block after the receiving place's block, where it has one in
+   The original block after the receiving places' block, where it has one in
    its slice.
    */
   readonly after?: string;
 
   /**
-   Whether the line-structure rule governs the receiving place's slice.
+   Whether the line-structure rule governs the receiving places' slice.
    */
   readonly lineStructured: boolean;
 
@@ -128,37 +128,67 @@ export type CarryWriterSubject = {
 
  @param marks - marks the paragraphs carry
 
+ @param several - whether the paragraph holds the repeated wording in several receiving places
+
+ @param keeping - whether the paragraph holds words of other places that must stay
+
  @returns Rule text, ending in the house rules and the reply format
 
  @example
  ```ts
- const rules = writerRules({ lineStructured: false, marks, },);
+ const rules = writerRules({ lineStructured: false, marks, several: false, keeping: false, },);
  ```
  */
 function writerRules(
   {
     lineStructured,
     marks,
+    several,
+    keeping,
   }: {
     readonly lineStructured: boolean;
     readonly marks: {
       readonly open: string;
       readonly close: string;
     };
+    readonly several: boolean;
+    readonly keeping: boolean;
   },
 ): string {
+  /**
+   The places the task is about, in the sheet's words.
+   */
+  const places = several
+    ? 'each of THIS PLACE 1, THIS PLACE 2 and so on, which the same paragraph holds'
+    : 'this place';
+  /**
+   Whose ORIGINAL decides what may be adapted, in the sheet's words.
+   */
+  const own = several ? 'each of those places\'' : 'THIS place\'s';
+  /**
+   The words to replace, in the sheet's words.
+   */
+  const toReplace = several
+    ? 'THE WORDS TO REPLACE 1, THE WORDS TO REPLACE 2 and so on, one for each of those places'
+    : 'THE WORDS TO REPLACE';
+  /**
+   The rule about the words of other places inside the paragraph.
+   */
+  const keepingRule = keeping
+    ? '\n- The paragraph also holds words of other places of the same repeat (WORDS OF OTHER PLACES TO KEEP EXACTLY). They stay exactly as they are, character for character, wherever they stand.'
+    : '';
   return [
     `You are a bilingual Chinese-to-English translator working on a memorial archive.
 
-One Chinese wording is repeated in several places of one page. The English of the page was settled one passage at a time, so the places render it differently, and a reader who meets all of them reads the difference as a mistake. A panel of judges has chosen which place's rendering the whole page should follow: the CHOSEN RENDERING. Your task is to make the place you are shown follow it.
+One Chinese wording is repeated in several places of one page. The English of the page was settled one passage at a time, so the places render it differently, and a reader who meets all of them reads the difference as a mistake. A panel of judges has chosen which place's rendering the whole page should follow: the CHOSEN RENDERING. Your task is to make ${places} follow it.
 
-Rewrite the CURRENT ENGLISH PARAGRAPH of this place and return the whole paragraph. The words that now render the repeated wording here (THE WORDS TO REPLACE) must come out rendered as the CHOSEN RENDERING renders it, so that the same Chinese wording reads as the same English in both places. In each ORIGINAL the repeated wording is enclosed between ${marks.open} and ${marks.close}; the marks are not part of the text.
+Rewrite the CURRENT ENGLISH PARAGRAPH and return the whole paragraph. The words that now render the repeated wording in ${places} (${toReplace}) must come out rendered as the CHOSEN RENDERING renders it, so that the same Chinese wording reads as the same English in every place. In each ORIGINAL the repeated wording is enclosed between ${marks.open} and ${marks.close}; the marks are not part of the text.
 
 Rules:
 - Change only the words that render the repeated wording. Every other word of the CURRENT ENGLISH PARAGRAPH stays exactly as it is: its names, its tense, its punctuation, its line breaks and its Markdown, apart from what the next rules allow.
-- Adapt only what THIS place's own ORIGINAL requires. The CHOSEN RENDERING may carry a word that renders Chinese standing outside the repeated wording in the chosen place, such as an "also" that renders a word standing before the repeated wording there. Never carry such a word here: a word renders ORIGINAL in this place only where this place's ORIGINAL has the Chinese it renders, so the repeated wording is rendered as the chosen place renders it without that word, and a word of this paragraph that renders ORIGINAL outside the repeated wording stays as this paragraph has it.
-- In a frame with a slot, the slot content is this place's own: the SLOT IN THE ORIGINAL of this place is rendered with this place's own words, placed where the chosen place's frame places its slot, in grammatical English, and the frame words around it follow the CHOSEN RENDERING.
-- The surrounding ORIGINAL blocks are context for this place, not part of the paragraph: render nothing of them.
+- Adapt only what ${own} own ORIGINAL requires. The CHOSEN RENDERING may carry a word that renders Chinese standing outside the repeated wording in the chosen place, such as an "also" that renders a word standing before the repeated wording there. Never carry such a word here: a word renders ORIGINAL in a place only where that place's ORIGINAL has the Chinese it renders, so the repeated wording is rendered as the chosen place renders it without that word, and a word of this paragraph that renders ORIGINAL outside the repeated wording stays as this paragraph has it.
+- In a frame with a slot, the slot content is each place's own: the SLOT IN THE ORIGINAL of a place is rendered with that place's own words, placed where the chosen place's frame places its slot (CHOSEN PLACE: ENGLISH SLOT, where it is shown), in grammatical English, and the frame words around it follow the CHOSEN RENDERING.
+- The surrounding ORIGINAL blocks are context for this place, not part of the paragraph: render nothing of them.${keepingRule}
 - ONE TENSE, IN THIS ORDER: where TENSE CANDIDATES are shown, the entry records a death, and the life of a person who has died is told in the past tense by the house rule; a line of it told in the present is moved to the past. Then the tense the page holds for what is still true as it is read. Never let one sentence start in one tense and finish in another.
 - Do not add content the ORIGINAL does not support and do not drop content it states.
 - Names, handles and place names already used by this paragraph and by DECLARED NAMES are authoritative; keep them exactly. ${NAME_FORM_SCOPE_RULE}
@@ -175,58 +205,10 @@ Rules:
 }
 
 /**
- The fenced blocks that show one place to a writer.
+ Builds the exchange asking one writer to carry the chosen rendering to the
+ receiving places of one block.
 
- @param place - the place
-
- @param name - what the blocks call the place, such as `THIS PLACE`
-
- @param fence - fence no shown text contains
-
- @param marks - marks the paragraph carries
-
- @returns The blocks of its ORIGINAL, its slot where it has one, and its words
-
- @example
- ```ts
- const blocks = placeBlocksOf({ place, name: 'THIS PLACE', fence, marks, },);
- ```
- */
-function placeBlocksOf(
-  {
-    place,
-    name,
-    fence,
-    marks,
-  }: {
-    readonly place: WriterPlace;
-    readonly name: string;
-    readonly fence: string;
-    readonly marks: {
-      readonly open: string;
-      readonly close: string;
-    };
-  },
-): string {
-  /**
-   The place's slot, for a frame.
-   */
-  const slot = (place.view
-    .slotSource
-    === undefined)
-    ? ''
-    : `${fence} ${name}: SLOT IN THE ORIGINAL ${fence}\n${place.view
-      .slotSource}\n`;
-  return `${fence} ${name}: ORIGINAL ${fence}\n${markedParagraph({
-    view: place.view,
-    marks,
-  },)}\n${slot}`;
-}
-
-/**
- Builds the exchange asking one writer to carry the chosen rendering to one place.
-
- @param subject - the repeated wording, the chosen place and the receiving place
+ @param subject - the repeated wording, the chosen place and the receiving places
 
  @returns Messages for one exchange
 
@@ -249,8 +231,7 @@ export function buildCarryWriterMessages(
       texts: [
         {
           label: 'CURRENT ENGLISH PARAGRAPH',
-          text: subject.receiving
-            .paragraph,
+          text: subject.paragraph,
         },
         {
           label: 'CHOSEN PLACE: ENGLISH PARAGRAPH',
@@ -270,9 +251,16 @@ export function buildCarryWriterMessages(
     subject.referenceContext ?? '',
     subject.before ?? '',
     subject.after ?? '',
+    subject.paragraph,
+    ...subject.keeping,
+    subject.chosen
+      .paragraph,
+    subject.chosen
+      .slot
+      ?? '',
     ...[
       subject.chosen,
-      subject.receiving,
+      ...subject.receiving,
     ].flatMap(function textsOf(place,): readonly string[] {
       return [
         place.view
@@ -281,7 +269,6 @@ export function buildCarryWriterMessages(
           .slotSource
           ?? '',
         place.span,
-        place.paragraph,
       ];
     },),
   ];
@@ -308,24 +295,60 @@ export function buildCarryWriterMessages(
     ...((subject.referenceContext === undefined) ? {} : { referenceContext: subject.referenceContext, }),
   },);
   /**
-   The blocks around the receiving place's paragraph in its slice.
-   */
-  const around = [
-    (subject.before === undefined) ? '' : `${fence} ORIGINAL BEFORE THIS PLACE ${fence}\n${subject.before}\n`,
-    (subject.after === undefined) ? '' : `${fence} ORIGINAL AFTER THIS PLACE ${fence}\n${subject.after}\n`,
-  ].join('',);
-  /**
    The tense block, fenced like the other blocks, or nothing when no paragraph has a candidate.
    */
   const tenseBlock = (tenseLines.length === 0)
     ? ''
     : `${fence} TENSE CANDIDATES ${fence}\n${tenseLines.join('\n',)}\n${fence}\n`;
+  /**
+   The ORIGINAL of each receiving place.
+   */
+  const receivingBlocks = subject.receiving
+    .map(function blocksOf(
+      place,
+      position,
+    ): string {
+      return originalBlocksOf({
+        view: place.view,
+        name: receivingLabel({
+          name: 'THIS PLACE',
+          position,
+          count: subject.receiving
+            .length,
+        },),
+        fence,
+        marks,
+      },);
+    },);
+  /**
+   The words each receiving place's English renders the repeated wording with.
+   */
+  const replaceBlocks = subject.receiving
+    .map(function replaceBlockOf(
+      place,
+      position,
+    ): string {
+      return `${fence} ${
+        receivingLabel({
+          name: 'THE WORDS TO REPLACE',
+          position,
+          count: subject.receiving
+            .length,
+        },)
+      } ${fence}\n${place.span}\n`;
+    },);
   return [
     {
       role: 'system',
       content: `${writerRules({
         lineStructured: subject.lineStructured,
         marks,
+        several: subject.receiving
+          .length
+          > 1,
+        keeping: subject.keeping
+          .length
+          > 0,
       },)}${(identityBlock === '') ? '' : `\n\n${DECLARED_IDENTITY_RULES}`}`,
     },
     {
@@ -335,29 +358,31 @@ export function buildCarryWriterMessages(
           repeat: subject.repeat,
           fence,
         },)
-      }${
-        placeBlocksOf({
-          place: subject.receiving,
-          name: 'THIS PLACE',
+      }${receivingBlocks.join('',)}${
+        aroundBlocksOf({
+          ...((subject.before === undefined) ? {} : { before: subject.before, }),
+          ...((subject.after === undefined) ? {} : { after: subject.after, }),
           fence,
-          marks,
         },)
-      }${around}${
-        placeBlocksOf({
-          place: subject.chosen,
+      }${
+        originalBlocksOf({
+          view: subject.chosen
+            .view,
           name: 'CHOSEN PLACE',
           fence,
           marks,
         },)
-      }${fence} CHOSEN RENDERING ${fence}\n${subject.chosen
-        .span}\n${fence} CHOSEN PLACE: ENGLISH PARAGRAPH ${fence}\n${
-        subject.chosen
-          .paragraph
-      }\n${fence} THE WORDS TO REPLACE ${fence}\n${subject.receiving
-        .span}\n${fence} CURRENT ENGLISH PARAGRAPH ${fence}\n${
-        subject.receiving
-          .paragraph
-      }\n${tenseBlock}${fence} END ${fence}`,
+      }${
+        chosenEnglishBlocksOf({
+          chosen: subject.chosen,
+          fence,
+        },)
+      }${
+        keepingBlockOf({
+          keeping: subject.keeping,
+          fence,
+        },)
+      }${replaceBlocks.join('',)}${fence} CURRENT ENGLISH PARAGRAPH ${fence}\n${subject.paragraph}\n${tenseBlock}${fence} END ${fence}`,
     },
   ];
 }

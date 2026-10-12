@@ -4,8 +4,6 @@ import {
 } from '@monochromatic-dev/module-logger/ts';
 
 import type { SyntheticClient, } from '../chat-contract.ts';
-import { wordForCount, } from '../count-word.ts';
-import { exchangeFailureLogText, } from '../exchange-failure-text.ts';
 import type { ConsistencyVoice, } from '../consistency-count-types.ts';
 import {
   buildConsistencyMessages,
@@ -18,7 +16,7 @@ import {
   usableConsistencyBallotFor,
 } from '../consistency-wire.ts';
 import type { SliceCache, } from '../slice-cache.ts';
-import { gatherStageVoices, } from '../stage-quorum.ts';
+import type { HeardVoice, } from '../stage-quorum.ts';
 import type { StageSettings, } from '../stage-settings.ts';
 import type { RosterModelId, } from '../synthetic-catalog.ts';
 import {
@@ -26,13 +24,14 @@ import {
   consistencyKey,
   type ConsistencyRecord,
 } from './pass-consistency-cache.ts';
-import { recordFits, } from './pass-consistency-gather.ts';
+import { gatherThroughCache, } from './pass-consistency-gather.ts';
 
 //region Pass consistency ask
-// ASKING THE BENCH ONCE ABOUT ONE REPEATED WORDING, or resuming what it said.
-// The quorum helper is `gatherStageVoices`, the one the page title stage asks
-// through; its seats, quorum and retry rounds are the ones every judging stage
-// has. A gather that reached its quorum is stored; one that did not is asked
+// ASKING THE BENCH ONCE ABOUT ONE REPEATED WORDING, or resuming what it said,
+// through the one cache protocol every question of the pass shares
+// (`pass-consistency-gather.ts`): the quorum helper is `gatherStageVoices`, the
+// one the page title stage asks through, with its seats, quorum and retry
+// rounds. A gather that reached its quorum is stored; one that did not is asked
 // again on a resume, since a short bench may come back.
 
 /**
@@ -87,6 +86,66 @@ function voiceOf(
       },),
     choice: ballot.choice,
     keep: [...ballot.keep,],
+  };
+}
+
+/**
+ Reads a stored value as a first-round record, which is the one kind that has
+ no `kind`.
+
+ @param value - what the cache holds under a key
+
+ @returns The record as a list of one, none when the value is another kind
+
+ @example
+ ```ts
+ const [record,] = storedBallots(value,);
+ ```
+ */
+function storedBallots(value: ConsistencyCacheValue,): readonly ConsistencyRecord[] {
+  return ('kind' in value) ? [] : [value,];
+}
+
+/**
+ Builds the record of a first-round gather, voices in roster order, each ballot
+ copied field by field with the roster's seat (ledger B443).
+
+ @param quorum - voices the gather closed on
+
+ @param voices - the ballots heard with their seats
+
+ @param findings - what the gather reported
+
+ @returns The record, as the cache keeps it
+
+ @example
+ ```ts
+ const record = ballotRecordOf({ quorum: 2, voices, findings: [], },);
+ ```
+ */
+function ballotRecordOf(
+  {
+    quorum,
+    voices,
+    findings,
+  }: {
+    readonly quorum: number;
+    readonly voices: readonly HeardVoice<ConsistencyBallotWire>[];
+    readonly findings: readonly string[];
+  },
+): ConsistencyRecord {
+  return {
+    quorum,
+    voices: voices.map(function toVoice({
+      modelId,
+      value,
+    },): ConsistencyVoice {
+      return voiceOf({
+        seat: modelId,
+        ballot: value,
+      },);
+    },),
+    findings,
   };
 }
 
@@ -151,115 +210,41 @@ export async function askConsistencyBench(
    */
   const messages = buildConsistencyMessages({ subject, },);
   /**
-   This question's identity.
+   The ballots' record, and whether the cache supplied it.
    */
-  const key = consistencyKey({
-    stage: 'ballots',
-    messages,
-    modelIds,
-    ...((subject.lifeEnded === undefined) ? {} : { lifeEnded: subject.lifeEnded, }),
-    ...((subject.subjectNames === undefined) ? {} : { subjectNames: subject.subjectNames, }),
-  },);
-  /**
-   The value an earlier run stored under this question's key.
-   */
-  const value = cache.resumed
-    .get(key,);
-  /**
-   The stored answer as a first-round record, none when the value is another kind.
-   */
-  const stored = ((value === undefined) || ('kind' in value)) ? undefined : value;
-  /**
-   The stored answer, when it is one this bench could have given.
-   */
-  const cached = ((stored !== undefined) && recordFits({
-    record: stored,
-    modelIds,
-  },)) ? stored : undefined;
-  if ((value !== undefined) && (cached === undefined)) {
-    al.warn(
-      'the stored ballots cannot be an answer of this bench (a seat heard twice, or a seat the bench does not have), so the question is asked again',
-    );
-  }
-  if (cached !== undefined) {
-    al.info(
-      `resumed ${String(cached.voices
-        .length,)} ${
-        wordForCount({
-          count: cached.voices
-            .length,
-          one: 'ballot',
-          many: 'ballots',
-        },)
-      }`,
-    );
-    return {
-      ...cached,
-      resumed: true,
-    };
-  }
-  /**
-   Quorum-bounded replies; a reply that cannot be counted against the places the
-   sheet showed is asked again like one that is not a ballot.
-   */
-  const gather = await gatherStageVoices({
+  const {
+    record,
+    resumed,
+  } = await gatherThroughCache({
     client,
     modelIds,
     messages,
     signal,
     exchangeTimeoutMs,
     responseFormat: CONSISTENCY_RESPONSE_FORMAT,
+    // A reply that cannot be counted against the places the sheet showed is
+    // asked again like one that is not a ballot.
     validate: usableConsistencyBallotFor({ labels: consistencyLabels({ count: subject.occurrences
       .length, },), },),
     stage: 'page-consistency',
-    l: al,
     graceMs: stageSettings
       .grace
       .roundMs,
+    cache,
+    key: consistencyKey({
+      stage: 'ballots',
+      messages,
+      modelIds,
+      ...((subject.lifeEnded === undefined) ? {} : { lifeEnded: subject.lifeEnded, }),
+      ...((subject.subjectNames === undefined) ? {} : { subjectNames: subject.subjectNames, }),
+    },),
+    readStored: storedBallots,
+    recordOf: ballotRecordOf,
+    l: al,
   },);
-  /**
-   Voices in roster order, so a stored record does not depend on arrival.
-   */
-  const voices = gather.voices
-    .toSorted(function byRoster(
-      left,
-      right,
-    ): number {
-      return modelIds.indexOf(left.modelId,) - modelIds.indexOf(right.modelId,);
-    },)
-    .map(function toVoice(voice,): ConsistencyVoice {
-      return voiceOf({
-        seat: voice.modelId,
-        ballot: voice.value,
-      },);
-    },);
-  /**
-   What this gather comes to, stored whole.
-   */
-  const record: ConsistencyRecord = {
-    quorum: gather.quorum,
-    voices,
-    findings: gather.findings,
-  };
-  // A GATHER THAT MISSED ITS QUORUM IS NOT AN ANSWER and is not stored: the
-  // bench was short, not undecided, and storing that would keep the page
-  // unsettled on every resume.
-  if (gather.quorumMet) {
-    try {
-      await cache.persist({
-        key,
-        serialized: JSON.stringify(record,),
-      },);
-    }
-    catch (error) {
-      // A STORE THAT REFUSES COSTS THE RESUME, NOT THE PAGE: the ballots in
-      // hand are counted either way.
-      al.warn(`the ballots could not be stored (${exchangeFailureLogText({ error, },)}); they are counted all the same`,);
-    }
-  }
   return {
     ...record,
-    resumed: false,
+    resumed,
   };
 }
 

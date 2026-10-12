@@ -1,7 +1,9 @@
 import { countConsistency, } from '../consistency-count.ts';
 import type { ConsistencyCount, } from '../consistency-count-types.ts';
 import { ConsistencyInvariantError, } from '../consistency-invariant-error.ts';
+import { usableVoicesOf, } from '../consistency-majority.ts';
 import { consistencyLabel, } from '../consistency-wire.ts';
+import { wordForCount, } from '../count-word.ts';
 import type {
   ArtifactConsistencyBallot,
   ArtifactConsistencyCarry,
@@ -21,18 +23,18 @@ import type {
   CarryReceiver,
   DecidedGroup,
   PendingEdit,
-  PlaceCarried,
   SettledGroup,
+  UnitCarried,
 } from './pass-consistency-types.ts';
 
 //region Pass consistency settle
 // WHAT A GROUP COMES TO once its ballots are counted and a tie for first is run
 // off: a verdict, a rendering and a provisional outcome for each place, and the
 // places the chosen rendering is still to be carried to (`receivers`). The carry
-// (`pass-consistency-carry.ts`) turns each receiver into a record and, when the
-// bench chooses a text other than the place's own, a replacement. The outcomes
-// become final in `pass-consistency-apply.ts`, where replacements meet each other
-// and the floors.
+// (`pass-consistency-carry.ts`) turns the receivers of each block into a record
+// for every one of them and, when the bench chooses a text other than the block's
+// own, a replacement. The outcomes become final in `pass-consistency-apply.ts`,
+// where replacements meet each other and the floors.
 
 /**
  A ballot as the artifact records it.
@@ -63,6 +65,68 @@ function recordedBallot(
     choice: voice.choice,
     keep: voice.keep,
   };
+}
+
+/**
+ Why the bench was asked once more: the places that tied for first and how many
+ of the usable ballots named each.
+
+ @param count - what the first round's ballots came to, with finalists
+
+ @param asked - the ballots heard
+
+ @returns One sentence naming the tied places and their ballots, empty when the choices did not tie
+
+ @example
+ ```ts
+ const reason = runOffReasonOf({ count, asked, },); // 'the choices tied for first between OCCURRENCE 3 (2 ballots) and OCCURRENCE 4 (2 ballots), of 4 usable in all'
+ ```
+ */
+export function runOffReasonOf(
+  {
+    count,
+    asked,
+  }: {
+    readonly count: ConsistencyCount;
+    readonly asked: ConsistencyAsked;
+  },
+): string {
+  if (count.finalists
+    .length
+    === 0)
+    return '';
+  /**
+   The usable ballots, which the counts are over.
+   */
+  const usable = usableVoicesOf({
+    voices: asked.voices,
+    labels: count.renderings
+      .map(function labelOf(
+        _rendering,
+        position,
+      ): string {
+        return consistencyLabel({ position, },);
+      },),
+  },);
+  /**
+   Each tied place with the ballots that named it.
+   */
+  const named = count.finalists
+    .map(function namedOf(label,): string {
+      /**
+       Ballots that chose this place.
+       */
+      const ballots = usable.filter(function choosesIt(voice,): boolean {
+        return voice.choice === label;
+      },)
+        .length;
+      return `${label} (${String(ballots,)} ${wordForCount({
+        count: ballots,
+        one: 'ballot',
+        many: 'ballots',
+      },)})`;
+    },);
+  return `the choices tied for first between ${named.join(' and ',)}, of ${String(usable.length,)} usable in all`;
 }
 
 /**
@@ -226,6 +290,16 @@ export function settleAsked(
     carries: [],
     findings: [
       ...asked.findings,
+      ...((runOff === undefined)
+        ? []
+        : [
+          `run-off asked: ${
+            runOffReasonOf({
+              count,
+              asked,
+            },)
+          }`,
+        ]),
       ...(runOff?.findings ?? []),
     ],
     chosen,
@@ -240,11 +314,11 @@ export function settleAsked(
 
  @param decided - the group with its receivers
 
- @param carried - how each receiver's carry ended, in the order of the receivers
+ @param carried - how the carry to each block of receiving places ended, in any order
 
- @returns The group with the carries' records, the replacements the chosen candidates make, and each receiver's provisional outcome
+ @returns The group with the carries' records in the order of the receivers, the replacements the chosen candidates make, and each receiver's provisional outcome
 
- @throws {@link ConsistencyInvariantError} when the carries are not one per receiver
+ @throws {@link ConsistencyInvariantError} when the carries are not one record per receiver
 
  @example
  ```ts
@@ -257,24 +331,47 @@ export function settleCarried(
     carried,
   }: {
     readonly decided: DecidedGroup;
-    readonly carried: readonly PlaceCarried[];
+    readonly carried: readonly UnitCarried[];
   },
 ): SettledGroup {
-  if (carried.length
+  /**
+   Every receiving place's record of the carry, in the order the blocks were carried.
+   */
+  const records = carried.flatMap(function recordsOf(entry,): readonly ArtifactConsistencyCarry[] {
+    return entry.carries;
+  },);
+  if (records.length
     !== decided.receivers
     .length) {
     throw new ConsistencyInvariantError({ invariant:
-      `the pass carries to each receiving place once, and the number of carries differs from the number of receiving places (carried: ${String(carried.length,)}, receiving: ${String(decided.receivers
+      `the pass carries to each receiving place once, and the number of carries differs from the number of receiving places (carried: ${String(records.length,)}, receiving: ${String(decided.receivers
         .length,)})`, },);
   }
+  /**
+   The records in the order of the receivers, each place's own.
+   */
+  const ordered = decided.receivers
+    .map(function recordFor(receiver,): ArtifactConsistencyCarry {
+      /**
+       The records that name this receiver.
+       */
+      const [own, ...others] = records.filter(function namesIt({ label, },): boolean {
+        return label === receiver.label;
+      },);
+      if ((own === undefined) || (others.length > 0)) {
+        throw new ConsistencyInvariantError({ invariant:
+          `the pass carries to each receiving place once, and the records that name ${receiver.label} number ${String(others.length + ((own === undefined) ? 0 : 1),)}`, },);
+      }
+      return own;
+    },);
   /**
    The positions of the places whose carry makes a replacement.
    */
   const replacing = new Set(carried.flatMap(function positionsOf(entry,): readonly number[] {
     return entry.edits
-      .map(function positionOf(edit,): number {
-      return edit.placePosition;
-    },);
+      .flatMap(function positionOf(edit,): readonly number[] {
+        return edit.placePositions;
+      },);
   },),);
   return {
     repeat: decided.repeat,
@@ -292,9 +389,7 @@ export function settleCarried(
     edits: carried.flatMap(function editsOf(entry,): readonly PendingEdit[] {
       return entry.edits;
     },),
-    carries: carried.map(function carryOf(entry,): ArtifactConsistencyCarry {
-      return entry.carry;
-    },),
+    carries: ordered,
     findings: [
       ...decided.findings,
       ...carried.flatMap(function findingsOf(entry,): readonly string[] {

@@ -86,15 +86,21 @@ export type JudgeSeatPhase =
  insertion admission, which asks the roster whether the archive already
  covers each source-only passage, re-reads its seats under a hold as its own
  phase (ledger X12) and leans on the wide bench, as the preparation does. The
- page consistency pass, which asks the late bench which rendering of a repeated
- wording every place should follow, leans on the wide bench as the lane contest
- that asks the same bench does, and on the translators as well: it then asks the
- translate stage's writer bench (`seats.translators`) to carry the chosen
- rendering to each receiving place, so a phase that read only the wide bench
- would neither wait for the writers nor check them before the carry asks for
- them. A writer bench below its floor with no hold to wait out therefore makes
- the reading refuse (`run-seats-floor.ts`), which `runPassConsistency` contains:
- the page ships without the pass.
+ page consistency pass asks the late judge bench (`seats.lateJudges`) which
+ rendering of a repeated wording every place should follow. The table has no
+ name for the late bench and reads the wide bench in its place, as the lane
+ contest's row does; the late bench holds every seat of the wide bench and one
+ more (`RUN_LATE_JUDGES` against `RUN_WIDE_SEATS`), so the wide bench's
+ shortfall is the conservative reading of the late bench's. The pass leans on
+ the translators as well: it asks the translate stage's writer bench
+ (`seats.translators`) to carry the chosen rendering into each receiving block, so a
+ phase that read only the wide bench would neither wait for the writers nor
+ check them before the carry asks for them. A writer bench below its floor
+ with no hold to wait out does not stop this phase
+ (`PHASES_WITHOUT_WRITER_STOP` in `run-seats-floor.ts`): the reading says so
+ once and the pass goes on without writers, choosing between the English a
+ place has and the chosen words moved in by code, and records that the
+ writers were not asked.
  */
 const BENCHES_BY_PHASE: Readonly<Record<JudgeSeatPhase, readonly BenchName[]>> = {
   preparation: ['wide',],

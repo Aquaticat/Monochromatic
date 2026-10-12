@@ -3,6 +3,7 @@ import type { RosterModelId, } from '../roster-id.ts';
 import type { JudgeSeats, } from './run-seats.ts';
 import {
   type BenchName,
+  type JudgeSeatPhase,
   reachableSeats,
 } from './run-seats-wait.ts';
 
@@ -127,6 +128,80 @@ export function benchesOf(
 }
 
 /**
+ Phases that go on when a writing bench they lean on is below the floor and no
+ provider has named its return, rather than stopping the entry. The page
+ consistency pass is the one: its writers carry a chosen rendering into a place,
+ and without them the pass still chooses between the English a place has and the
+ chosen words moved in by code, and records that the writers were not asked.
+ */
+export const PHASES_WITHOUT_WRITER_STOP: ReadonlySet<JudgeSeatPhase> = new Set<JudgeSeatPhase>([
+  'page consistency',
+],);
+
+/**
+ Writing benches among the named ones that cannot reach the floor among the
+ seats a wet provider serves, with the counts the clause prints.
+
+ @param benches - each bench the phase leans on, keyed by name
+
+ @param names - benches the phase leans on, in the order the line prints them
+
+ @param dry - dryness per provider, holds folded in
+
+ @returns One entry per writing bench below the floor: its name and its clause
+
+ @example
+ ```ts
+ belowFloorWritingBenches({ benches, names: phaseBenches({ phase: 'lanes', },), dry, },);
+ // => [{ name: 'editors', clause: 'editors 0 of 3 reachable, floor 2', },]
+ ```
+ */
+export function belowFloorWritingBenches(
+  {
+    benches,
+    names,
+    dry,
+  }: {
+    readonly benches: Readonly<Record<BenchName, readonly RosterModelId[]>>;
+    readonly names: readonly BenchName[];
+    readonly dry: BudgetView;
+  },
+): readonly {
+  readonly name: BenchName;
+  readonly clause: string
+}[] {
+  return names
+    .filter(function writes(name,): boolean {
+      return WRITING_BENCHES.has(name,);
+    },)
+    .flatMap(function entryOf(name,): readonly {
+      readonly name: BenchName;
+      readonly clause: string
+    }[] {
+      /**
+       Seats this bench holds.
+       */
+      const seats = benches[name];
+      /**
+       Seats a wet provider would serve.
+       */
+      const reachable = reachableSeats({
+        seats,
+        dry,
+      },);
+      if (reachable.length >= WRITING_BENCH_FLOOR)
+        return [];
+      return [
+        {
+          name,
+          clause:
+            `${name} ${String(reachable.length,)} of ${String(seats.length,)} reachable, floor ${String(WRITING_BENCH_FLOOR,)}`,
+        },
+      ];
+    },);
+}
+
+/**
  Writing benches among the named ones that cannot reach the floor among the
  seats a wet provider serves.
 
@@ -156,27 +231,13 @@ export function unreachableWritingBenches(
     readonly dry: BudgetView;
   },
 ): readonly string[] {
-  return names
-    .filter(function writes(name,): boolean {
-      return WRITING_BENCHES.has(name,);
-    },)
-    .flatMap(function clauseOf(name,): readonly string[] {
-      /**
-       Seats this bench holds.
-       */
-      const seats = benches[name];
-      /**
-       Seats a wet provider would serve.
-       */
-      const reachable = reachableSeats({
-        seats,
-        dry,
-      },);
-      if (reachable.length >= WRITING_BENCH_FLOOR)
-        return [];
-      return [
-        `${name} ${String(reachable.length,)} of ${String(seats.length,)} reachable, floor ${String(WRITING_BENCH_FLOOR,)}`,
-      ];
+  return belowFloorWritingBenches({
+    benches,
+    names,
+    dry,
+  },)
+    .map(function clauseOf({ clause, },): string {
+      return clause;
     },);
 }
 

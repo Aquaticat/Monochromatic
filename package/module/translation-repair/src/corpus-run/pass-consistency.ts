@@ -49,8 +49,10 @@ import { ConsistencyInvariantError, } from '../consistency-invariant-error.ts';
 // slices settle, repeated source wording and refrains that the page renders
 // differently are put to the judge bench, one sheet per group; the bench picks
 // the rendering or the pattern every place should follow and names the places
-// whose context calls for their own; the chosen words are carried to the other
-// places by code, and every changed slice passes every floor.
+// whose context calls for their own; the chosen rendering is carried to the
+// other places by the writers and the bench's choice among the current English,
+// the chosen words moved in by code and each writer's block
+// (`pass-consistency-carry.ts`), and every changed slice passes every floor.
 //
 // A RUN ALWAYS SHIPS (the owner's rule). No trouble here stops an entry: a
 // group that cannot be handled keeps its places as they stand and says so in

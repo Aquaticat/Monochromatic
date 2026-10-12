@@ -8,10 +8,12 @@ export {
   slotInSpan,
   winnerOf,
 } from './consistency-count.ts';
+export { edgeFreeWordsOf, } from './consistency-edge-marks.ts';
 export {
   foldedWordsOf,
   locateWords,
   type SpanSearch,
+  standsOf,
 } from './consistency-fold.ts';
 export {
   quoteBounds,
@@ -72,6 +74,15 @@ export {
   buildCarryWriterMessages,
   type CarryWriterSubject,
 } from './consistency-carry-writer-sheet.ts';
+export {
+  aroundBlocksOf,
+  type CarryChosenPlace,
+  type CarryReceivingPlace,
+  chosenEnglishBlocksOf,
+  keepingBlockOf,
+  originalBlocksOf,
+  receivingLabel,
+} from './consistency-carry-sheet-parts.ts';
 export {
   buildCarryChoiceMessages,
   type CarryChoiceCandidate,
@@ -137,6 +148,9 @@ export {
   type ArtifactConsistencyVerdict,
   type ConsistencyCarryNoDecisionReason,
   type ConsistencyNotAskedReason,
+  CONSISTENCY_CANDIDATE_KINDS,
+  CONSISTENCY_CARRY_DECISION_KINDS,
+  CONSISTENCY_CARRY_NO_DECISION_REASONS,
   type ConsistencyOccurrenceOutcome,
   type ConsistencyOverride,
   consistencyOverrideAt,
@@ -174,29 +188,45 @@ export {
   floorRefusalOf,
   writtenParagraphsOf,
 } from './corpus-run/pass-consistency-carry-candidates.ts';
-export { carryToPlace, } from './corpus-run/pass-consistency-carry.ts';
+export {
+  carryAll,
+  carryToUnit,
+} from './corpus-run/pass-consistency-carry.ts';
 export {
   carryWithoutChoice,
   choose,
 } from './corpus-run/pass-consistency-carry-choose.ts';
+export {
+  englishOf,
+  englishOfUnit,
+  type HeldReceiver,
+  type KeptWords,
+  keptWordsOf,
+  sliceOfUnit,
+  unitLabelsOf,
+  unitsOf,
+} from './corpus-run/pass-consistency-carry-units.ts';
 export {
   afterRunOff,
   chosenPlaceOf,
   plannedPlace,
 } from './corpus-run/pass-consistency-decide.ts';
 export {
-  englishOf,
+  type CarryShown,
+  shownOf,
   splicedParagraphOf,
   writtenOffers,
 } from './corpus-run/pass-consistency-carry-offers.ts';
 export {
   type CarryContext,
   type CarryReceiver,
+  type CarryUnit,
+  type CarryWriters,
   type DecidedGroup,
   type LocatedPlace,
   type PendingEdit,
-  type PlaceCarried,
   type SettledGroup,
+  type UnitCarried,
 } from './corpus-run/pass-consistency-types.ts';
 export {
   type ConsistencyFloorVerdict,
@@ -219,6 +249,7 @@ export {
 export {
   askAll,
   type PreparedGroup,
+  writersOf,
 } from './corpus-run/pass-consistency-bench.ts';
 export {
   type ConsistencyPlace,
@@ -230,6 +261,7 @@ export {
 } from './corpus-run/pass-consistency-group.ts';
 export {
   countAsked,
+  runOffReasonOf,
   settleAsked,
   settleCarried,
 } from './corpus-run/pass-consistency-settle.ts';

@@ -4,6 +4,19 @@
  Generation of the page consistency pass's cached answers (the owner's ruling
  of 2026-10-11).
 
+ Version three: what the pass asks changed again, before any pass wrote version
+ two. A quote locates only at the boundaries of words, so a quote or a slot that
+ stood inside a longer word no longer locates and the spans carried change; a
+ quote's quotation marks and brackets that its words do not need are read as
+ edge punctuation, like a full stop; the writers are given the innermost block
+ that holds the words, and every receiving place of one block together, with the
+ words of the group's other places inside it to keep; the choice sheet shows the
+ judges what the writers were shown (the chosen place's ORIGINAL and English
+ paragraph, the receiving places' ORIGINAL with the blocks around it, and the
+ chosen place's English slot for a frame); and the reply shapes of the three
+ judges' sheets name no real label. Every sheet of the stage changed, so no
+ stored answer of version two is resumed.
+
  Version two: what the pass asks changed in three ways. The consistency sheet
  asks each judge to quote only the words that render the repeated source wording
  and to name, in the reason, a word of the chosen rendering that renders source
@@ -34,6 +47,6 @@
  const material = JSON.stringify({ version: CONSISTENCY_CACHE_VERSION, sheet, roster, },);
  ```
  */
-export const CONSISTENCY_CACHE_VERSION = 2;
+export const CONSISTENCY_CACHE_VERSION = 3;
 
 //endregion Consistency cache version

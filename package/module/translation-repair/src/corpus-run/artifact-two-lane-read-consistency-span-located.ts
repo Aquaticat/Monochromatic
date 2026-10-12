@@ -5,6 +5,7 @@ import type {
   ConsistencyRendering,
   UnlocatedReason,
 } from '../consistency-count-types.ts';
+import { ConsistencyInvariantError, } from '../consistency-invariant-error.ts';
 import { rendersAsNothing, } from '../renders-as-nothing.ts';
 import type { ArtifactConsistencyRendering, } from './artifact-two-lane-consistency.ts';
 
@@ -30,6 +31,9 @@ import type { ArtifactConsistencyRendering, } from './artifact-two-lane-consiste
  @throws {@link ArtifactParseError} when a recorded slot does not stand exactly
  once in the words of its quote
 
+ @throws {@link ConsistencyInvariantError} when the rendering records no offset,
+ which every rendering of the sixteenth shape does
+
  @example
  ```ts
  const located = asLocatedBySpan({ rendering, path, },);
@@ -44,6 +48,10 @@ export function asLocatedBySpan(
     readonly path: string;
   },
 ): Extract<ConsistencyRendering, { readonly kind: 'located'; }> {
+  if (rendering.start === undefined) {
+    throw new ConsistencyInvariantError({ invariant:
+      `the located rendering at ${path} records no offset, and the reader of the sixteenth shape requires one`, },);
+  }
   /**
    The counter's form of a rendering without a slot.
    */
@@ -51,7 +59,7 @@ export function asLocatedBySpan(
     kind: 'located',
     quote: rendering.quote,
     core: rendering.quote,
-    start: rendering.start ?? 0,
+    start: rendering.start,
   };
   if (rendering.slot === undefined)
     return bare;

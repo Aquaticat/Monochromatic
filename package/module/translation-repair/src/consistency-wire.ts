@@ -13,9 +13,14 @@ import { rendersAsNothing, } from './renders-as-nothing.ts';
 //
 // THE JUDGE NAMES WORDS, NEVER WRITES THEM. The ballot quotes the exact words
 // of each place's English that render the repeated wording, and the pass
-// splices the chosen place's quote over the others by code (the owner's
-// ruling of 2026-10-11): a model asked to rewrite the pages would be asked to
-// write new English over settled slices, which this pass is not for.
+// locates them in the place's own English (`consistency-fold.ts`): a quote is
+// evidence of where it points, never text to splice (the owner's ruling of
+// 2026-10-11). What carries the chosen rendering to another place is chosen
+// among candidates by the bench and held to every floor
+// (`corpus-run/pass-consistency-carry.ts`): the chosen words moved in by code,
+// where the place's words can be moved whole, and the blocks the translate
+// stage's writers write; no judge's quote and no model's text reaches the page
+// without that choice and those floors.
 //
 // REASON BEFORE CHOICE (the owner's ruling of 2026-10-11): the reply schema
 // declares `reason` first, the sheet's reply shape shows it first, and the

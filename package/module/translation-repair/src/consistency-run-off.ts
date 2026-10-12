@@ -279,9 +279,7 @@ export function buildConsistencyRunOffMessages(
           repeat: subject.repeat,
           fence,
         },)
-      }${placeBlocks.join('',)}${tenseBlock}${fence} END ${fence}\nReply with JSON only: {"reason":"...","choice":"${
-        finalists[0] ?? ''
-      }"}`,
+      }${placeBlocks.join('',)}${tenseBlock}${fence} END ${fence}\nReply with JSON only: {"reason":"...","choice":"<the label of the place you choose>"}`,
     },
   ];
 }

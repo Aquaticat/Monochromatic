@@ -121,6 +121,7 @@ export {
 } from './corpus-run/run-seats.ts';
 export {
   readJudgeSeats,
+  readPhaseSeats,
   type SeatReadingClient,
 } from './corpus-run/run-seats-read.ts';
 export {
@@ -147,7 +148,9 @@ export {
   shortBenches,
 } from './corpus-run/run-seats-wait.ts';
 export {
+  belowFloorWritingBenches,
   benchesOf,
+  PHASES_WITHOUT_WRITER_STOP,
   unreachableWritingBenches,
   WRITING_BENCH_FLOOR,
   WRITING_BENCHES,

@@ -1,6 +1,6 @@
 import {
   requireExactKeys,
-  requireOneOf,
+  requireKeyOf,
 } from '../artifact-exact-guard.ts';
 import {
   requireArray,
@@ -9,16 +9,27 @@ import {
   requireString,
   requireStringList,
 } from '../artifact-guard.ts';
-import type {
-  ArtifactConsistencyCandidate,
-  ArtifactConsistencyCarry,
-  ArtifactConsistencyCarryDecision,
-  ArtifactConsistencyChoiceBallot,
-  ArtifactConsistencyRunOff,
+import {
+  type ArtifactConsistencyCandidate,
+  type ArtifactConsistencyCarry,
+  type ArtifactConsistencyCarryDecision,
+  type ArtifactConsistencyChoiceBallot,
+  type ArtifactConsistencyRunOff,
+  CONSISTENCY_CANDIDATE_KINDS,
+  CONSISTENCY_CARRY_DECISION_KINDS,
+  CONSISTENCY_CARRY_NO_DECISION_REASONS,
 } from './artifact-two-lane-consistency.ts';
 import { parseConsistencyChoiceBallot, } from './artifact-two-lane-read-consistency-parts.ts';
 
 //region Artifact consistency carry reading
+// Reading the records of the sixteenth shape that the first round does not
+// hold: the run-off among the places that tied for first, and the carry of the
+// chosen rendering to a receiving place (the candidates, the ballots that chose
+// among them and what they decided), every key checked. What a carry says
+// about its own ballots is recounted in
+// `artifact-two-lane-read-consistency-carry-recount.ts`, and what it says about
+// the group's ballots, renderings and outcomes is the coherence check's question
+// (`artifact-two-lane-read-consistency-span.ts`).
 
 /**
  Reads the ballots of a run-off or of a carry, each a seat's reason and choice.
@@ -59,14 +70,6 @@ function parseChoiceBallots(
       },);
     },);
 }
-// Reading the records of the sixteenth shape that the first round does not
-// hold: the run-off among the places that tied for first, and the carry of the
-// chosen rendering to a receiving place (the candidates, the ballots that chose
-// among them and what they decided), every key checked. What a carry says
-// about its own ballots is recounted in
-// `artifact-two-lane-read-consistency-carry-recount.ts`, and what it says about
-// the group's ballots, renderings and outcomes is the coherence check's question
-// (`artifact-two-lane-read-consistency-span.ts`).
 
 /**
  Reads the run-off of a group.
@@ -177,13 +180,9 @@ function parseCandidate(
       value: record.label,
       path: `${path}.label`,
     },),
-    kind: requireOneOf({
+    kind: requireKeyOf({
       value: record.kind,
-      allowed: [
-        'current',
-        'splice',
-        'writer',
-      ],
+      record: CONSISTENCY_CANDIDATE_KINDS,
       path: `${path}.kind`,
     },),
     writers: requireStringList({
@@ -232,13 +231,9 @@ function parseDecision(
   /**
    How the carry ended.
    */
-  const kind = requireOneOf({
+  const kind = requireKeyOf({
     value: record.kind,
-    allowed: [
-      'chosen',
-      'none',
-      'failed',
-    ],
+    record: CONSISTENCY_CARRY_DECISION_KINDS,
     path: `${path}.kind`,
   },);
   if (kind === 'chosen') {
@@ -285,13 +280,9 @@ function parseDecision(
   },);
   return {
     kind,
-    reason: requireOneOf({
+    reason: requireKeyOf({
       value: record.reason,
-      allowed: [
-        'no-alternative',
-        'no-quorum',
-        'no-majority',
-      ],
+      record: CONSISTENCY_CARRY_NO_DECISION_REASONS,
       path: `${path}.reason`,
     },),
   };

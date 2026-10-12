@@ -38,12 +38,14 @@ import type { UnplacedReason, } from '../repeat-groups-types.ts';
  slice now carries the chosen rendering. `consistent` is a place that already
  carried it. `kept-context` is a place a strict majority kept for its
  surroundings. `kept-floor` is a place whose replacement a floor refused.
- `overlapped` is a place whose words overlap those of an earlier group's
- replacement in the same slice. `unlocated` is a place whose rendering the
- ballots did not pin down. `untouched` is a place of a group that decided
- nothing. `kept-current` (generation sixteen) is a place whose carry ended with
- its own English standing: the choice among the candidates kept it, reached no
- decision, had no candidate to choose or failed.
+ `overlapped` is a place whose replacement overlaps one of an earlier group in
+ the same slice and was left out for it; it never names an overlap with a
+ place of its own group, whose places in one block are carried by one
+ replacement. `unlocated` is a place whose rendering the ballots did not pin
+ down. `untouched` is a place of a group that decided nothing. `kept-current`
+ (generation sixteen) is a place whose carry ended with its own English
+ standing: the choice among the candidates kept it, reached no decision, had no
+ candidate to choose or failed.
  */
 export type ConsistencyOccurrenceOutcome =
   | 'chosen'
@@ -325,7 +327,24 @@ export type ArtifactConsistencyRunOff = {
 };
 
 /**
- One text a receiving place's carry chose among.
+ What a candidate text of a carry is: the English the block has now, the chosen
+ place's words moved into every receiving place of the block by code, or a text
+ a writer wrote.
+ */
+export type ConsistencyCandidateKind = 'current' | 'splice' | 'writer';
+
+/**
+ Every kind a candidate can be, keyed by the union so the compiler refuses a
+ member the record lacks, for a reader checking a recorded one.
+ */
+export const CONSISTENCY_CANDIDATE_KINDS: Readonly<Record<ConsistencyCandidateKind, true>> = {
+  current: true,
+  splice: true,
+  writer: true,
+};
+
+/**
+ One text the carry to the receiving places of a block chose among.
 
  @example
  ```ts
@@ -339,10 +358,11 @@ export type ArtifactConsistencyCandidate = {
   readonly label: string;
 
   /**
-   `current` is the English the receiving place has now; `splice` is the chosen
-   place's words moved into it by code; `writer` is a text a writer wrote.
+   `current` is the English the block has now; `splice` is the chosen place's
+   words moved into every receiving place of the block by code; `writer` is a
+   text a writer wrote.
    */
-  readonly kind: 'current' | 'splice' | 'writer';
+  readonly kind: ConsistencyCandidateKind;
 
   /**
    Seats whose reply was exactly this text, which is none for a splice no
@@ -351,7 +371,9 @@ export type ArtifactConsistencyCandidate = {
   readonly writers: readonly string[];
 
   /**
-   The receiving paragraph's English as this candidate has it.
+   The block's English as this candidate has it: the paragraph or heading that
+   holds the receiving places' words, or the whole English of the slice for
+   words that lie in no single block.
    */
   readonly text: string;
 };
@@ -360,6 +382,15 @@ export type ArtifactConsistencyCandidate = {
  Why a carry reached no decision among its candidates.
  */
 export type ConsistencyCarryNoDecisionReason = 'no-alternative' | 'no-quorum' | 'no-majority';
+
+/**
+ Every reason a carry can reach no decision, keyed by the union, for a reader.
+ */
+export const CONSISTENCY_CARRY_NO_DECISION_REASONS: Readonly<Record<ConsistencyCarryNoDecisionReason, true>> = {
+  'no-alternative': true,
+  'no-quorum': true,
+  'no-majority': true,
+};
 
 /**
  What a receiving place's carry decided.
@@ -405,8 +436,19 @@ export type ArtifactConsistencyCarryDecision =
   };
 
 /**
+ Every kind of decision a carry can record, keyed by the union, for a reader.
+ */
+export const CONSISTENCY_CARRY_DECISION_KINDS: Readonly<Record<ArtifactConsistencyCarryDecision['kind'], true>> = {
+  chosen: true,
+  none: true,
+  failed: true,
+};
+
+/**
  How the chosen rendering was carried to one receiving place: the texts
- offered, the ballots that chose among them and what they decided.
+ offered, the ballots that chose among them and what they decided. The
+ receiving places of one block are carried to together and share one choice, so
+ each of them carries the same texts, ballots and decision under its own label.
 
  @example
  ```ts
@@ -581,7 +623,8 @@ export type ArtifactConsistencyGroup = {
 
   /**
    Generation sixteen: how the chosen rendering was carried to each receiving
-   place, in the order of the places; empty where no place received one.
+   place, in the order of the places, the places of one block sharing one
+   record; empty where no place received one.
    */
   readonly carries?: readonly ArtifactConsistencyCarry[];
 };
@@ -626,8 +669,11 @@ export type ArtifactConsistency = {
   readonly slices: readonly ArtifactConsistencySlice[];
 
   /**
-   What the pass reports beside its groups: a replacement a floor refused,
-   and trouble that stopped the pass.
+   What the pass reports beside its groups: what the gathers reported, why a
+   run-off was asked, what the carries reported (a writer's text a floor
+   refused or that could not be read, writers that were not asked and why, a
+   carry that failed), a replacement a floor refused, and trouble that stopped
+   the pass.
    */
   readonly findings: readonly string[];
 };

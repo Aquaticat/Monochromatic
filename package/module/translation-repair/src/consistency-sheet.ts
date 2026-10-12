@@ -491,11 +491,11 @@ export function buildConsistencyMessages(
     },
     {
       role: 'user',
-      content: `${identityBlock}${referenceBlock}${repeatBlock}${placeBlocks.join('',)}${tenseBlock}${fence} END ${fence}\nReply with JSON only: {"reason":"...","quotes":[{"label":"${
-        consistencyLabel({ position: 0, },)
-      }","quote":"..."${(subject.repeat
+      // THE REPLY SHAPE NAMES NO REAL LABEL, since the rules forbid choosing by
+      // position and a label in the example would be a first place offered.
+      content: `${identityBlock}${referenceBlock}${repeatBlock}${placeBlocks.join('',)}${tenseBlock}${fence} END ${fence}\nReply with JSON only: {"reason":"...","quotes":[{"label":"<the label of the OCCURRENCE>","quote":"..."${(subject.repeat
         .kind
-        === 'refrain') ? ',"slot":"..."' : ''}}],"choice":"${consistencyLabel({ position: 0, },)}","keep":[]}`,
+        === 'refrain') ? ',"slot":"..."' : ''}}],"choice":"<the label of the OCCURRENCE you choose>","keep":[]}`,
     },
   ];
 }

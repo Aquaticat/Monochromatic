@@ -1,7 +1,12 @@
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
-import type { CarryBlock, } from '../consistency-carry.ts';
+import { blockHolding, } from '../consistency-carry.ts';
+import type {
+  CarryChosenPlace,
+  CarryReceivingPlace,
+} from '../consistency-carry-sheet-parts.ts';
 import { ConsistencyInvariantError, } from '../consistency-invariant-error.ts';
+import { applyConsistencyEdits, } from '../consistency-splice.ts';
 import type { ArtifactConsistencyRepeat, } from './artifact-two-lane-consistency.ts';
 import { askCarryWriters, } from './pass-consistency-carry-ask.ts';
 import {
@@ -10,89 +15,116 @@ import {
   writtenParagraphsOf,
 } from './pass-consistency-carry-candidates.ts';
 import {
+  englishOf,
+  sliceOfUnit,
+  unitLabelsOf,
+} from './pass-consistency-carry-units.ts';
+import {
   type ConsistencyPlace,
   occurrenceViewOf,
 } from './pass-consistency-group.ts';
 import type {
   CarryContext,
-  CarryReceiver,
+  CarryUnit,
   LocatedPlace,
 } from './pass-consistency-types.ts';
 import { RUN_PER_CALL_TIMEOUT_MS, } from './run-config.ts';
 
 //region Pass consistency carry offers
-// THE TEXTS OFFERED FOR A RECEIVING PLACE'S PARAGRAPH, apart from the current
-// one: the chosen words moved in by code, where that is possible and the floors
-// pass it, and the paragraphs the translate stage's writer bench writes for it.
+// THE TEXTS OFFERED FOR A BLOCK, apart from the current one: the chosen words
+// moved into every receiving place of the block by code, where that is possible
+// and the floors pass it, and the blocks the translate stage's writer bench
+// writes for it. And what the sheets of both questions show of the places.
 
 /**
- The English of a place's slice, which a located place has.
-
- @param place - the place
-
- @returns The slice's English
-
- @throws {@link ConsistencyInvariantError} when the slice carries none, since a rendering is located only in English
+ What both sheets of a block's carry show of its places.
 
  @example
  ```ts
- const english = englishOf({ place, },);
+ const shown: CarryShown = { chosen, receiving: [], keeping: [], };
  ```
  */
-export function englishOf({ place, }: { readonly place: ConsistencyPlace; },): string {
-  if (place.slice
-    .current
-    .kind
-    === 'absent') {
-    throw new ConsistencyInvariantError({ invariant:
-      `slice ${String(place.slice
-        .sliceIndex,)} carries no English, and a rendering is located only in English`, },);
-  }
-  return place.slice
-    .current
-    .text;
-}
+export type CarryShown = {
+  /**
+   The chosen place with its English paragraph and, for a frame, its English slot.
+   */
+  readonly chosen: CarryChosenPlace;
+
+  /**
+   The receiving places of the block, in page order.
+   */
+  readonly receiving: readonly CarryReceivingPlace[];
+
+  /**
+   English words of the group's other places inside the block that must stay.
+   */
+  readonly keeping: readonly string[];
+
+  /**
+   The original block before the receiving places' block, where the slice has one.
+   */
+  readonly before?: string;
+
+  /**
+   The original block after the receiving places' block, where the slice has one.
+   */
+  readonly after?: string;
+};
 
 /**
- The original blocks before and after the one that holds a place, in its slice.
+ The original blocks before and after the ones that hold the receiving places
+ of a unit, in their slice.
 
- @param place - the place
+ THE PLACES LIE IN NO BODY BLOCK when the original shows the whole slice in
+ place of a paragraph (`occurrenceViewOf`), and then there is nothing around it
+ to show: each block is absent.
+
+ @param places - the receiving places, all of one slice
 
  @returns The blocks' texts, each absent where the slice has no such block
 
  @example
  ```ts
- const { before, after, } = neighboursOf({ place, },);
+ const { before, after, } = neighboursOf({ places, },);
  ```
  */
 function neighboursOf(
-  { place, }: { readonly place: ConsistencyPlace; },
+  { places, }: { readonly places: readonly ConsistencyPlace[]; },
 ): {
   readonly before?: string;
   readonly after?: string;
 } {
   /**
-   The slice's body blocks in order.
+   The slice's body blocks in order, of the first place's slice.
    */
-  const blocks = place.slice
+  const blocks = (places[0]
+    ?.slice
     .nodes
+    ?? [])
     .filter(function isBody(node,): boolean {
       return node.zone === 'body';
     },);
   /**
-   Position of the block that holds the place.
+   Positions of the blocks that hold a place, in order.
    */
-  const at = blocks.findIndex(function holdsIt(node,): boolean {
-    return (node.startOffset <= place.startOffset) && (place.endOffset <= node.endOffset);
+  const holding = places.flatMap(function positionOf(place,): readonly number[] {
+    return blocks.flatMap(function holdsIt(
+      node,
+      at,
+    ): readonly number[] {
+      return ((node.startOffset <= place.startOffset) && (place.endOffset <= node.endOffset)) ? [at,] : [];
+    },);
   },);
+  if (holding.length === 0)
+    return {};
   /**
-   The block before it.
+   The block before the first block that holds a place.
    */
-  const before = (at > 0) ? blocks[at - 1] : undefined;
+  const before = blocks[Math.min(...holding,) - 1];
   /**
-   The block after it.
+   The block after the last block that holds a place.
    */
-  const after = (at === (-1)) ? undefined : blocks[at + 1];
+  const after = blocks[Math.max(...holding,) + 1];
   return {
     ...((before === undefined) ? {} : { before: before.text, }),
     ...((after === undefined) ? {} : { after: after.text, }),
@@ -100,97 +132,11 @@ function neighboursOf(
 }
 
 /**
- The paragraph with the chosen words moved in by code, when that is possible
- and every floor passes it.
+ What both sheets of a unit's carry show of its places.
 
- @param receiver - the receiving place
-
- @param english - its slice's English
-
- @param block - the block that holds it
-
- @param context - what the carry reads
-
- @returns The paragraph as a list of zero or one, and a finding where a floor refused it
-
- @example
- ```ts
- const { spliced, findings, } = splicedParagraphOf({ receiver, english, block, context, },);
- ```
- */
-export function splicedParagraphOf(
-  {
-    receiver,
-    english,
-    block,
-    context,
-  }: {
-    readonly receiver: CarryReceiver;
-    readonly english: string;
-    readonly block: CarryBlock;
-    readonly context: CarryContext;
-  },
-): {
-  readonly spliced: readonly string[];
-  readonly findings: readonly string[];
-} {
-  if (receiver.plan
-    .kind
-    !== 'replace') {
-    return {
-      spliced: [],
-      findings: [],
-    };
-  }
-  /**
-   The paragraph with the chosen words in place of the receiving place's.
-   */
-  const paragraph = `${block.text
-    .slice(
-    0,
-    receiver.plan
-      .start
-      - block.start,
-  )}${receiver.plan
-    .text}${block.text
-      .slice(receiver.plan
-        .end
-        - block.start,)}`;
-  /**
-   What the floors find against the slice carrying it, none when they pass it.
-   */
-  const [refusal,] = floorRefusalOf({
-    facts: receiver.place
-      .slice,
-    currentText: english,
-    candidateText: composeSlice({
-      english,
-      block,
-      paragraph,
-    },),
-    declared: context.declared,
-    declaredNames: context.declaredNames,
-  },);
-  if (refusal === undefined) {
-    return {
-      spliced: [paragraph,],
-      findings: [],
-    };
-  }
-  tagged({
-    tag: splicedParagraphOf.name,
-    l: context.l,
-  },)
-    .warn(`withheld the splice for ${receiver.label} from the bench: the floors refuse its paragraph: ${refusal}`,);
-  return {
-    spliced: [],
-    findings: [`consistency-candidate-refused (splice of ${receiver.label}): ${refusal}`,],
-  };
-}
-
-/**
- Asks the writer bench for the receiving place's paragraph and keeps the
- paragraphs the floors pass.
+ THE CHOSEN PLACE'S PARAGRAPH is the block that holds its words, or, where they
+ lie in no single block, the whole English of its slice, so the sheets never show
+ a bare span as a paragraph.
 
  @param context - what the carry reads
 
@@ -198,19 +144,217 @@ export function splicedParagraphOf(
 
  @param chosen - the chosen place and its located rendering
 
- @param receiver - the receiving place
+ @param unit - the unit
 
- @param english - the receiving place's slice English
-
- @param block - the block of it that holds the words
-
- @param chosenParagraph - the chosen place's English paragraph
-
- @returns The surviving paragraphs and what the asking and the floors reported
+ @returns What the sheets show
 
  @example
  ```ts
- const { written, findings, } = await writtenOffers({ context, repeat, chosen, receiver, english, block, chosenParagraph, },);
+ const shown = shownOf({ context, repeat, chosen, unit, },);
+ ```
+ */
+export function shownOf(
+  {
+    context,
+    repeat,
+    chosen,
+    unit,
+  }: {
+    readonly context: CarryContext;
+    readonly repeat: ArtifactConsistencyRepeat;
+    readonly chosen: LocatedPlace;
+    readonly unit: CarryUnit;
+  },
+): CarryShown {
+  /**
+   The chosen place's slice English.
+   */
+  const english = englishOf({ place: chosen.place, },);
+  /**
+   Where the chosen words stand in that English and what they are.
+   */
+  const { rendering, } = chosen;
+  /**
+   The chosen words.
+   */
+  const { core, } = rendering;
+  /**
+   The block of it that holds the chosen words, as a list of zero or one.
+   */
+  const [chosenBlock,] = blockHolding({
+    english,
+    start: rendering.start,
+    end: rendering.start + core.length,
+  },);
+  return {
+    chosen: {
+      view: occurrenceViewOf({
+        place: chosen.place,
+        text: context.text,
+      },),
+      span: core,
+      paragraph: chosenBlock?.text ?? english,
+      ...(((repeat.kind === 'refrain') && (rendering.slot !== undefined))
+        ? { slot: rendering.slot, }
+        : {}),
+    },
+    receiving: unit.receivers
+      .map(function receivingOf(receiver,): CarryReceivingPlace {
+        return {
+          view: occurrenceViewOf({
+            place: receiver.place,
+            text: context.text,
+          },),
+          span: receiver.rendering
+            .core,
+        };
+      },),
+    keeping: unit.keeping,
+    ...neighboursOf({
+      places: unit.receivers
+        .map(function placeOf({ place, },): ConsistencyPlace {
+          return place;
+        },),
+    },),
+  };
+}
+
+/**
+ The block with the chosen words moved into every receiving place by code, when
+ that is possible for all of them and every floor passes it.
+
+ @param unit - the unit
+
+ @param english - the slice's English
+
+ @param context - what the carry reads
+
+ @returns The block as a list of zero or one, and a finding where a floor refused it
+
+ @throws {@link ConsistencyInvariantError} when two receiving places of a unit have words that overlap, which the counting leaves unlocated
+
+ @example
+ ```ts
+ const { spliced, findings, } = splicedParagraphOf({ unit, english, context, },);
+ ```
+ */
+export function splicedParagraphOf(
+  {
+    unit,
+    english,
+    context,
+  }: {
+    readonly unit: CarryUnit;
+    readonly english: string;
+    readonly context: CarryContext;
+  },
+): {
+  readonly spliced: readonly string[];
+  readonly findings: readonly string[];
+} {
+  /**
+   The block the receiving places stand in.
+   */
+  const { block, } = unit;
+  /**
+   Offset in the English where the block starts, which the places' offsets are counted from.
+   */
+  const { start: blockStart, } = block;
+  /**
+   The replacement of each receiving place that has one, with offsets in the block.
+   */
+  const edits = unit.receivers
+    .flatMap(function editOf(receiver,) {
+      /**
+       How the chosen words are moved into this place.
+       */
+      const { plan, } = receiver;
+      return (plan.kind === 'replace')
+        ? [
+          {
+            id: receiver.label,
+            start: plan.start - blockStart,
+            end: plan.end - blockStart,
+            text: plan.text,
+          },
+        ]
+        : [];
+    },);
+  /**
+   The places the block's replacements are for.
+   */
+  const { receivers, } = unit;
+  if (edits.length < receivers.length) {
+    return {
+      spliced: [],
+      findings: [],
+    };
+  }
+  /**
+   The block with every replacement made.
+   */
+  const made = applyConsistencyEdits({
+    english: block.text,
+    edits,
+  },);
+  /**
+   The replacements left out for overlapping an earlier one.
+   */
+  const { overlapped, } = made;
+  if (overlapped.length > 0) {
+    throw new ConsistencyInvariantError({ invariant:
+      `the receiving places ${unitLabelsOf({ unit, },)} of one block have words that overlap, and places whose words overlap are left unlocated before a carry`, },);
+  }
+  /**
+   What the floors find against the slice carrying it, none when they pass it.
+   */
+  const [refusal,] = floorRefusalOf({
+    facts: sliceOfUnit({ unit, },),
+    currentText: english,
+    candidateText: composeSlice({
+      english,
+      block,
+      paragraph: made.text,
+    },),
+    declared: context.declared,
+    declaredNames: context.declaredNames,
+  },);
+  if (refusal === undefined) {
+    return {
+      spliced: [made.text,],
+      findings: [],
+    };
+  }
+  tagged({
+    tag: splicedParagraphOf.name,
+    l: context.l,
+  },)
+    .warn(`withheld the splice for ${unitLabelsOf({ unit, },)} from the bench: the floors refuse its paragraph: ${refusal}`,);
+  return {
+    spliced: [],
+    findings: [`consistency-candidate-refused (splice of ${unitLabelsOf({ unit, },)}): ${refusal}`,],
+  };
+}
+
+/**
+ Asks the writer bench for the unit's block and keeps the blocks the floors
+ pass.
+
+ @param context - what the carry reads
+
+ @param repeat - the repeated wording or frame
+
+ @param chosen - the chosen place and its located rendering
+
+ @param unit - the unit
+
+ @param english - the receiving places' slice English
+
+ @returns The surviving blocks and what the asking and the floors reported; none, with a finding saying why, where the writers are not asked
+
+ @example
+ ```ts
+ const { written, findings, } = await writtenOffers({ context, repeat, chosen, unit, english, },);
  ```
  */
 export async function writtenOffers(
@@ -218,18 +362,14 @@ export async function writtenOffers(
     context,
     repeat,
     chosen,
-    receiver,
+    unit,
     english,
-    block,
-    chosenParagraph,
   }: {
     readonly context: CarryContext;
     readonly repeat: ArtifactConsistencyRepeat;
     readonly chosen: LocatedPlace;
-    readonly receiver: CarryReceiver;
+    readonly unit: CarryUnit;
     readonly english: string;
-    readonly block: CarryBlock;
-    readonly chosenParagraph: string;
   },
 ): Promise<{
   readonly written: readonly {
@@ -238,43 +378,47 @@ export async function writtenOffers(
   }[];
   readonly findings: readonly string[];
 }> {
-  if (context.writerModelIds
-    .length
-    === 0) {
+  /**
+   Whether the writers are asked and which seats, or why they are not.
+   */
+  const { writers, } = context;
+  if (writers.kind === 'not-asked') {
     return {
       written: [],
-      findings: [`consistency-writers-unseated (${receiver.label})`,],
+      findings: [
+        `consistency-writers-not-asked (${unitLabelsOf({ unit, },)}): the translators bench was not asked: ${writers.why}`,
+      ],
     };
   }
+  if (!unit.writable) {
+    return {
+      written: [],
+      findings: [
+        `consistency-writers-not-asked (${unitLabelsOf({ unit, },)}): the words that render the repeated wording lie in no single block of the English, so no paragraph can be rewritten`,
+      ],
+    };
+  }
+  /**
+   What both sheets show of the places.
+   */
+  const shown = shownOf({
+    context,
+    repeat,
+    chosen,
+    unit,
+  },);
   /**
    The writers' replies.
    */
   const asked = await askCarryWriters({
     client: context.client,
-    modelIds: context.writerModelIds,
+    modelIds: writers.modelIds,
     subject: {
       repeat,
-      chosen: {
-        view: occurrenceViewOf({
-          place: chosen.place,
-          text: context.text,
-        },),
-        span: chosen.rendering
-          .core,
-        paragraph: chosenParagraph,
-      },
-      receiving: {
-        view: occurrenceViewOf({
-          place: receiver.place,
-          text: context.text,
-        },),
-        span: receiver.rendering
-          .core,
-        paragraph: block.text,
-      },
-      ...neighboursOf({ place: receiver.place, },),
-      lineStructured: receiver.place
-        .slice
+      ...shown,
+      paragraph: unit.block
+        .text,
+      lineStructured: sliceOfUnit({ unit, },)
         .lineStructured,
       ...((context.identityContext === undefined) ? {} : { identityContext: context.identityContext, }),
       ...((context.referenceContext === undefined) ? {} : { referenceContext: context.referenceContext, }),
@@ -288,14 +432,14 @@ export async function writtenOffers(
     stageSettings: context.stageSettings,
   },);
   /**
-   The paragraphs that pass the floors, and a finding per reply withheld.
+   The blocks that pass the floors, and a finding per reply withheld.
    */
   const kept = writtenParagraphsOf({
     voices: asked.voices,
     english,
-    block,
-    facts: receiver.place
-      .slice,
+    block: unit.block,
+    keeping: unit.keeping,
+    facts: sliceOfUnit({ unit, },),
     declared: context.declared,
     declaredNames: context.declaredNames,
     l: context.l,
