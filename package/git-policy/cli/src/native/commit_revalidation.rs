@@ -172,8 +172,12 @@ pub fn revalidate_replay<F: RepositoryFacts>(
     let root: &Path = context.capture.layout.repository_root.as_path();
     let index: PathBuf = replayed_index_path(workspace.landing.directory.as_path(), replay);
     let directory: PathBuf = workspace.landing.directory.join(format!("replay-{replay}"));
-    create_private_directory(directory.as_path())
-        .map_err(|error| { return failed(format!("creating {} failed: {error}", directory.display())); })?;
+    // Subsumption may have created the directory for its base index already.
+    if let Err(error) = create_private_directory(directory.as_path())
+        && error.kind() != std::io::ErrorKind::AlreadyExists
+    {
+        return Err(failed(format!("creating {} failed: {error}", directory.display())));
+    }
     read_replayed_index(git, cwd, workspace.object_directory.as_path(), index.as_path(), merged_tree)?;
     move_shadow_head(
         git,

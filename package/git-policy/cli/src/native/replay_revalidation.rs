@@ -50,9 +50,12 @@ pub fn read_replayed_index(
     merged_tree: &str,
 ) -> Result<(), GitFailure> {
     if let Some(parent) = index_path.parent() {
-        create_private_directory(parent).map_err(|error| {
-            return GitFailure(format!("creating {} failed: {error}", parent.display()));
-        })?;
+        // Subsumption creates the same directory for its base index first.
+        if let Err(error) = create_private_directory(parent)
+            && error.kind() != std::io::ErrorKind::AlreadyExists
+        {
+            return Err(GitFailure(format!("creating {} failed: {error}", parent.display())));
+        }
     }
     let mut request: GitRequest = GitRequest::new(cwd, &["read-tree", merged_tree]);
     request.index = Some(index_path.to_path_buf());

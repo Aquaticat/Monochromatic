@@ -29,16 +29,18 @@ fn an_option_value_is_never_read_as_an_option() {
 #[test]
 fn the_pathspec_separator_ends_the_options() {
     assert!(!replay_options(&args(&["-m", "x", "--", "--no-verify"])).no_verify);
-    assert_eq!(replay_options(&args(&["--", "-Skey"])).signing_key, None);
+    assert_eq!(replay_options(&args(&["--", "--gpg-sign=key"])).signing_key, None);
 }
 
-/// The signing key comes from `-S<key>`, `--gpg-sign=<key>`, and is absent for a bare `-S` or `--gpg-sign`.
+/// The signing key comes from `--gpg-sign=<key>` and is absent for a bare `-S` or `--gpg-sign`.
+///  The incumbent's argument normalization splits an attached `-S<key>` into `-S` and a separate token, so it
+///  reads no key from that spelling either; this control pins that shared behavior (checked against the incumbent).
 #[test]
-fn the_signing_key_is_read_from_every_spelling() {
-    assert_eq!(replay_options(&args(&["-Sabc", "-m", "x"])).signing_key, Some(String::from("abc")));
+fn the_signing_key_is_read_from_the_long_spelling_only() {
     assert_eq!(replay_options(&args(&["--gpg-sign=def"])).signing_key, Some(String::from("def")));
     assert_eq!(replay_options(&args(&["-S"])).signing_key, None);
     assert_eq!(replay_options(&args(&["--gpg-sign"])).signing_key, None);
-    assert_eq!(replay_options(&args(&["-nSabc"])).signing_key, Some(String::from("abc")));
+    assert_eq!(replay_options(&args(&["-Sabc", "-m", "x"])).signing_key, None);
+    assert_eq!(replay_options(&args(&["-nSabc"])).signing_key, None);
     assert!(replay_options(&args(&["-nSabc"])).no_verify);
 }
