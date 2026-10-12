@@ -12,7 +12,10 @@ Updated 2026-10-12.
 The user explicitly resumed implementation on 2026-10-12.
 The requested break was completed;
 its stop instruction is now historical.
-The resource limits and no-subagent restriction remain unchanged.
+The no-subagent restriction remains unchanged.
+The initial resumption kept the resource limits;
+the later user authorization raised only the worker memory budget as recorded in
+"Resource-budget correction".
 The resumption probe found the expected slice limits,
 no active managed jobs,
 and no additional OOM kills beyond the recorded count of one.
@@ -126,7 +129,8 @@ and outcome calculation now live in `package/pi-plugin/auto-mode/src/`:
   and separates the identity-byte limit from the fact-count limit.
 - `dd9cd4570f` adds explicit path argument decoding to the package's existing Oxlint tasks,
   using the existing mise helpers and unchanged lint rules.
-  That new argument route has not yet been exercised successfully.
+  `proc_e2d8` exercised that route on the exact 11 selected files and reported real lint findings.
+  Those findings were addressed without suppressions in the subsequent kernel commits.
 
 The rebuilt artifact and package type check passed `proc_4615` with exit zero.
 Despite that process's name,
@@ -135,8 +139,16 @@ it did not run unit tests.
 After resumption,
 `proc_a39e` rebuilt the artifact and passed all three new kernel test files,
 including the retained 14,400-program and 112,896-completion oracle.
-Formatter completion and lint remain unverified;
-the selected-file task is running under the unchanged cgroup limits.
+`proc_41fe` rebuilt the final kernel and passed package type checking.
+The full unit task passed in `proc_f4ce`,
+including the conformance loop with the bundled logger flushed before and after it.
+Its previous startup-drop diagnostic was absent;
+intentional negative-fixture warnings and errors remained.
+The following full-package lint was killed by the old memory limit.
+After the memory-budget correction,
+`proc_0f9a` passed all 77 linted files with 486 rules,
+zero warnings,
+and zero errors.
 The pure resolver does not establish source authority,
 coverage,
 human approval,
@@ -157,14 +169,39 @@ and the later build/type run passed.
 The no-argument package formatter `proc_0d52` reached the configuration build,
 then terminated with `SIGTERM` without an Oxlint report or source changes.
 The shared restricted slice recorded `oom 1` and `oom_kill 1`.
-A kernel-journal query returned no matching entries;
-the killed process and exact causal chain have not been established.
-Do not call that run a lint pass,
-or attribute it to the earlier systemd transport failures.
-No successful resource-tuning workaround has been verified.
+The initial calendar-window query excluded the event in the host's local time zone.
+The later relative-window query identified `tsc` PID 4039089 in that exact scope,
+with `constraint=CONSTRAINT_MEMCG` and this session's slice named as `oom_memcg`.
+The same query identified the later `proc_f4ce` and `proc_f064` failures as cgroup OOM kills of `tsc`.
+These are not the earlier systemd transport failures,
+which happened before workloads started.
 
-All shell commands and process startups remain subject to the requested aggregate limits:
-2 GiB memory,
+### Resource-budget correction
+
+After seeing memory-shortage notifications,
+the user explicitly authorized system or configuration changes to prevent interference.
+The host probe reported 40,066,496 KiB available memory,
+while the worker slice was capped at 2 GiB.
+The cap was therefore raised to 4 GiB for this session,
+using `systemctl --user --runtime set-property piwork3285273.slice MemoryMax=4G`.
+Every subsequent command wrapper also uses `MemoryMax=4G`.
+This changes the worker budget,
+not any policy-judgment deadline or source bound.
+
+`proc_0f9a` verified the real command and its child in the same 4-GiB scope,
+then completed the previously failing full-package lint.
+The slice's measured peak was 3,622,907,904 bytes,
+which exceeds the old cap and fits the new one.
+System-wide OOM protection remains enabled;
+notifications were not muted.
+Run memory-heavy checks serially within the shared budget.
+The package Oxlint tasks now retain the tested single-thread,
+512-MiB Node old-space,
+and 768-MiB Go soft-limit settings;
+verification of that persisted task route is the remaining resource check.
+
+All shell commands and process startups now use these aggregate limits:
+4 GiB memory,
 CPU quota 200%,
 256 tasks,
 and no swap.
@@ -181,8 +218,10 @@ The maintained repository is `${HOME}/Monochromatic`.
 The private implementation and progress record are under
 `${HOME}/temp/agent/auto-mode-consumer-contract.mDLkyNoP`.
 Its canonical progress file is `contract/lifecycle/runtime-continuation/current-progress.json`.
-Recent process logs are in `/tmp/pi-processes-rZNk8G/`;
-those logs are temporary,
+Earlier process logs are in `/tmp/pi-processes-rZNk8G/`.
+Resumed process logs are in `/tmp/pi-processes-bBy8W5/`
+(the current log directory since resumption on 2026-10-12).
+These logs are temporary,
 so the results and limitations in this handover are the durable summary.
 
 Every shell command and process startup in this session uses this launcher,
@@ -193,7 +232,7 @@ including Git and diagnostic commands:
 exec /usr/bin/systemd-run \
   --user --scope --quiet --collect --expand-environment=no \
   --slice=piwork3285273.slice \
-  --property=MemoryMax=2G --property=MemorySwapMax=0 \
+  --property=MemoryMax=4G --property=MemorySwapMax=0 \
   --property=CPUQuota=200% --property=TasksMax=256 \
   /usr/bin/bash --noprofile --norc -c \
   'cd -- "$HOME/Monochromatic" && git status --short'
@@ -206,9 +245,11 @@ The empty `direct` child cgroup was never used as an alternate launcher.
 
 ### Resume from these concrete gaps
 
-First finish the maintained kernel's built-artifact tests and lint under those limits.
-The changed Oxlint task's explicit file selection needs an actual invocation;
-selected-file success would not prove package-wide lint coverage.
+The maintained kernel build,
+type check,
+full units,
+and full-package lint have passed.
+Finish only the persisted resource-task check and document closeout for that work.
 Do not rerun the full private native parent merely because a new session starts.
 
 Then complete the existing native decision consumer,
@@ -218,12 +259,18 @@ rather than creating another standalone inventory:
   `inspectPolicyPremises` still unconditionally adds `request-source-domain`.
   `compiler.mjs` therefore keeps the native program incomplete.
   Replace the placeholder only with decision-specific evidence from existing owners.
-- In private `contract/integration/action-policy/evaluate.mjs`,
-  `evaluateOriginalPolicy` does not supply `approvalContext` to `evaluatePolicy`.
-  The runtime,
+- Private commit `436d83c2` now carries bootstrap `approvalHost` through the runtime,
   handler,
-  and reviewer do not carry that context either.
-  The existing `finishWithApproval` and incumbent original-group binder are not connected to the canonical path.
+  reviewer,
+  and evaluator into `approvalContext`.
+  The incumbent binder uses the existing `judgment.sourceSnapshot`,
+  not a new observer API or a post-closure recapture.
+  Approval failures latch;
+  restoring source or UI values cannot revive eligibility.
+  The action-policy parent passed `proc_7367`,
+  and the actual owned-session bootstrap/rollback regression passed `proc_df80`.
+  Those checks establish routing and lifecycle mechanisms,
+  not a canonical semantic-policy approval branch or genuine human approval.
 - Production runtime and host integration still depend on the private generated graph.
   The prior static scan reached 115 modules,
   but was not a complete packaging inventory.

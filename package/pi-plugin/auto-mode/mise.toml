@@ -1,3 +1,12 @@
+[vars]
+# The full semantic lint uses both Node and Go workers. These are the worker
+# settings verified under the session's 4-GiB aggregate cgroup limit; no rules are disabled.
+auto_mode_lint_resources = """
+process.env.OXLINT_THREADS = '1'
+process.env.GOMEMLIMIT = '768MiB'
+process.env.NODE_OPTIONS = `${process.env.NODE_OPTIONS ?? ''} --max-old-space-size=512`.trim()
+"""
+
 [tasks.build]
 extends = "build"
 
@@ -30,6 +39,7 @@ usage = 'arg "[args]" var=#true help="Package-relative source paths; omitted mea
 run = """
 {{vars.dispatch_workspace_node}}
 {{vars.parse_usage_args}}
+{{vars.auto_mode_lint_resources}}
 ensureOxlintConfig()
 runWorkspaceNode('package/dev-script/task-util', 'oxlint-wrapper', parseUsageArgs(process.env.usage_args ?? ''))
 """
@@ -40,6 +50,7 @@ usage = 'arg "[args]" var=#true help="Package-relative source paths; omitted mea
 run = """
 {{vars.dispatch_workspace_node}}
 {{vars.parse_usage_args}}
+{{vars.auto_mode_lint_resources}}
 ensureOxlintConfig()
 runWorkspaceNode('package/dev-script/task-util', 'oxlint-wrapper', ['--fix', ...parseUsageArgs(process.env.usage_args ?? '')])
 """
