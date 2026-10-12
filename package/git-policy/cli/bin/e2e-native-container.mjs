@@ -172,7 +172,7 @@ async function buildImage() {
       '--network=none',
       '--http-proxy=false',
       '--pull=never',
-      '--memory=4g',
+      '--memory=2g',
       '--cpu-period=100000',
       '--cpu-quota=200000',
       '--tag',
