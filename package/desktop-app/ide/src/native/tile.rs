@@ -240,17 +240,13 @@ pub(super) fn poll(window: &AppWindow, state: &Rc<RefCell<State>>) {
         (polled, pass)
     };
     // The tile comes first: it may change which lines the displayed tile holds, and so which lines the output may set.
-    let reply = match polled {
-        Ok(Some(reply)) => Some(reply),
-        Ok(None) => None,
+    match polled {
+        Ok(Some(reply)) => apply(window, state, reply),
+        Ok(None) => {}
         Err(error) => {
             tracing::error!(%error, "source tile worker stopped");
             window.set_error_message(SharedString::from(format!("{error:#}")));
-            None
         }
-    };
-    if let Some(reply) = reply {
-        apply(window, state, reply);
     }
     if let Some(output) = pass {
         apply_pass(window, state, output);
