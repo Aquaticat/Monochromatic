@@ -1511,14 +1511,10 @@ const CARGO_SHARED_DEPENDENCIES: readonly CargoSharedDependency[] = [
   { table: 'dependencies', name: 'ignore', value: '0.4', },
   { table: 'dependencies', name: 'libfuzzer-sys', value: { version: '0.4', features: ['arbitrary-derive',], }, },
   { table: 'dependencies', name: 'memchr', value: '2', },
-  {
-    table: 'dependencies',
-    name: 'opus',
-    value: { git: 'https://github.com/SpaceManiac/opus-rs', rev: '559876660603dc8079a053e03e6438766f669e69', },
-  },
+  { table: 'dependencies', name: 'opus', value: '0.4', },
   { table: 'dependencies', name: 'rayon', value: '1', },
   { table: 'dependencies', name: 'regex', value: '1', },
-  { table: 'dependencies', name: 'ringbuf', value: '0.4', },
+  { table: 'dependencies', name: 'ringbuf', value: '0.5', },
   { table: 'dependencies', name: 'serde', value: { version: '1', features: ['derive',], }, },
   { table: 'dependencies', name: 'serde_json', value: '1', },
   {

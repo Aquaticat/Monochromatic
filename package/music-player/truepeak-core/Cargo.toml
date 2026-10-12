@@ -61,9 +61,10 @@ tracing = "0.1"
 tokio = { version = "1", features = ["rt", "sync", "macros"], optional = true }
 
 # The pure-Rust SQLite rewrite that stores decision rows (behind the `service` feature).
-# Pinned to the same major 0.6 the desktop cache uses, `default-features = false` to drop
-# the full-text and mimalloc defaults. Optional so it is absent from the meter-only build.
-turso = { version = "0.6", default-features = false, optional = true }
+# Pinned to the 0.8 line (0.8.2 at the last bump; the desktop cache reaches it through this
+# crate), `default-features = false` to drop the full-text and mimalloc defaults (turso 0.8.2
+# still defaults to `mimalloc` and `fts`). Optional so it is absent from the meter-only build.
+turso = { version = "0.8", default-features = false, optional = true }
 
 # `turso_core` depends on `branches` without its `std` feature. Without `std`, `branches::abort` calls
 # `core::intrinsics::abort` on nightly, which the newest nightly removed (E0425 and E0308 in branches 0.4.4 and

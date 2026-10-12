@@ -4,11 +4,12 @@
 //!  `nativeWarmTrack` use, so they read and clear the same cache the sweep writes.
 //!  Neither starts a measurement: the peek only reads, and the invalidate only removes.
 
-use jni::JNIEnv;
 use jni::objects::{JClass, JFloatArray};
-use jni::sys::{JNI_FALSE, JNI_TRUE, jboolean, jfloatArray, jlong};
+use jni::sys::{jboolean, jfloatArray, jlong};
+use jni::{Env, EnvUnowned};
 use truepeak_core::{PeakKind, peak_dbtp};
 
+use crate::jni_call::run_with_env;
 use crate::service::service_ref;
 
 /// What:
@@ -75,15 +76,15 @@ fn kind_code(kind: PeakKind) -> f32 {
 /// ```ts
 /// function peakArray(slots: number[]): Float32Array | null { ... }
 /// ```
-fn peak_array<'local>(env: &mut JNIEnv<'local>, slots: &[f32; PEAK_READING_LEN]) -> JFloatArray<'local> {
-    let array = match env.new_float_array(PEAK_READING_LEN as i32) {
+fn peak_array<'local>(env: &mut Env<'local>, slots: &[f32; PEAK_READING_LEN]) -> JFloatArray<'local> {
+    let array = match JFloatArray::new(env, PEAK_READING_LEN) {
         Ok(array) => array,
         Err(error) => {
             tracing::warn!(cause = %error, "peek peak: could not allocate the reply array");
             return JFloatArray::default()
         }
     };
-    if let Err(error) = env.set_float_array_region(&array, 0, slots) {
+    if let Err(error) = array.set_region(env, 0, slots) {
         tracing::warn!(cause = %error, "peek peak: could not fill the reply array");
         return JFloatArray::default();
     }
@@ -104,7 +105,7 @@ fn peak_array<'local>(env: &mut JNIEnv<'local>, slots: &[f32; PEAK_READING_LEN])
 /// ```
 #[unsafe(no_mangle)]
 pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativePeekPeak<'local>(
-    mut env: JNIEnv<'local>,
+    mut env: EnvUnowned<'local>,
     _class: JClass<'local>,
     handle: jlong,
     fingerprint: jlong,
@@ -122,7 +123,12 @@ pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativePee
         peak_dbtp(f64::from(decision.measured_peak)) as f32,
         kind_code(decision.peak_kind()),
     ];
-    return peak_array(&mut env, &slots).into_raw()
+    // `peak_array` handles its own JNI failures (null array); `run_with_env` only adds the lent `Env`.
+    let reply = run_with_env(&mut env, "nativePeekPeak reply", |jni_env| {
+        return Ok(peak_array(jni_env, &slots));
+    })
+    .unwrap_or_default();
+    return reply.into_raw()
 }
 
 /// What:
@@ -139,7 +145,7 @@ pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativePee
 /// ```
 #[unsafe(no_mangle)]
 pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeInvalidateTrack<'local>(
-    _env: JNIEnv<'local>,
+    _env: EnvUnowned<'local>,
     _class: JClass<'local>,
     handle: jlong,
     fingerprint: jlong,
@@ -147,10 +153,10 @@ pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeInv
     tracing::info!(fingerprint, "invalidate track");
     let Some(service) = service_ref(handle) else {
         tracing::warn!("invalidate track: null service handle; nothing removed");
-        return JNI_FALSE;
+        return false;
     };
     if service.forget(fingerprint as u64) {
-        return JNI_TRUE;
+        return true;
     }
-    return JNI_FALSE
+    return false
 }

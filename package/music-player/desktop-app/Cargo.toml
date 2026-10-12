@@ -36,7 +36,7 @@ anyhow = "1"
 # `#[derive(Parser)]`, replacing hand-rolled argv scanning and generating
 # `--help` / `--version` for free. 4.x is the current major line.
 clap = { version = "4", features = ["derive"] }
-directories = "5"
+directories = "6"
 # True-peak cache fingerprint hashing (src/peakcache.rs). We call the one-shot
 # `gxhash64(bytes, seed)` to derive the opaque cache key from (path, size, mtime),
 # replacing the hand-rolled FNV-1a. Pinned to major 3: gxhash guarantees its output
@@ -64,9 +64,11 @@ i-slint-backend-winit = "1.18.1"
 # Not called from our code: a feature-unification shim. icu_provider reaches the
 # tree transitively (slint -> parley -> icu_segmenter -> icu_provider). With its
 # `logging` feature OFF, a DEBUG build routes ICU's internal `warn!` to a raw
-# `std::eprintln!` (icu_provider 2.2 src/lib.rs:194), so opening a folder with
+# `std::eprintln!` (icu_provider 2.3.1 src/lib.rs:188-202; re-checked at that release, the
+# mechanism is unchanged from 2.2), so opening a folder with
 # Japanese (or Thai/Khmer/etc.) filenames floods stderr with
-# "ICU4X data error: No segmentation model for language: ja" once per layout pass:
+# "ICU4X data error: No segmentation model for complex script: Chinese/Japanese" (icu_segmenter 2.3;
+# 2.2 printed "No segmentation model for language: ja") once per layout pass:
 # parley builds LineSegmenter::new_for_non_complex_scripts, which bundles no CJK
 # dictionary, so icu_segmenter warns it cannot dictionary-segment the run (text
 # still renders, breaking between graphemes). Release builds already no-op those
@@ -83,24 +85,24 @@ icu_provider = { version = "2", features = ["logging"] }
 # inotify on Linux, FSEvents on macOS, ReadDirectoryChangesW on Windows. Pulls
 # notify as a transitive dep.
 notify-debouncer-mini = "0.7"
-# Pinned to opus-rs git HEAD (post-0.3.1) instead of the crates.io 0.3.1 release.
-# 0.3.1 depends on audiopus_sys 0.2.2, whose BUNDLED libopus (commit 7b05f44)
-# declares cmake_minimum_required(VERSION 3.1); CMake 4.x removed compatibility
-# with < 3.5 and aborts configuring it (seen on Windows with CMake 4.3.3). opus-rs
-# HEAD replaced audiopus_sys with opusic-sys 0.7.3, which bundles libopus 1.6.1
+# The crates.io 0.4.0 release (2026-08-23) is the opus-rs backend that replaced
+# audiopus_sys. The former 0.3.1 release depended on audiopus_sys 0.2.2, whose BUNDLED
+# libopus (commit 7b05f44) declares cmake_minimum_required(VERSION 3.1); CMake 4.x removed
+# compatibility with < 3.5 and aborts configuring it (seen on Windows with CMake 4.3.3).
+# 0.4.0 depends on opusic-sys ^0.7.3, which bundles libopus 1.6.1
 # (cmake_minimum_required(VERSION 3.16)), so it configures cleanly under CMake 4
 # with no CMAKE_POLICY_VERSION_MINIMUM override. opusic-sys's `bundled` feature is
 # ON by default and the `opus` crate pulls it with default features, so libopus is
 # compiled from source via cmake on EVERY platform (this is why the Containerfile
 # now installs cmake; macOS and Windows already have it). The public `opus` API
-# (Decoder/Channels/decode_float/reset_state/Error) is unchanged at this rev, so
-# src/opus.rs and error.rs need no edits. The rev is pinned (not branch=master) so
-# `cargo update` cannot move it, and the committed Cargo.lock records the resolved
-# git source. Revert to a crates.io `version` once a release with the opusic-sys backend ships.
+# (Decoder/Channels/decode_float/reset_state/Error) is unchanged from the former git
+# revision (opus-rs master at that revision plus the readme, `cargo update` and version
+# bump commits became v0.4.0), so src/opus.rs and error.rs need no edits. This replaces
+# the former git revision pin; the committed Cargo.lock records the resolved registry source.
 # See ../../../doc/troubleshooting/audiopus-cmake4-libopus-min-version.md.
-opus = { git = "https://github.com/SpaceManiac/opus-rs", rev = "559876660603dc8079a053e03e6438766f669e69" }
-rfd = "0.15"
-ringbuf = "0.4"
+opus = "0.4"
+rfd = "0.17"
+ringbuf = "0.5"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 # "1.18.1" here is Cargo's default caret requirement (">=1.18.1, <2.0.0"), not an
@@ -158,8 +160,8 @@ arboard = "3"
 # `spa_pod_builder` against PipeWire 1.6.x, breaking the `libspa` wrapper's
 # `.data`/`.size` access.
 pipewire = "0.10"
-# Already in the tree transitively (Slint's color-scheme watcher, rfd's portal
-# picker). Used directly to emit the com.canonical.Unity.LauncherEntry `Update`
+# Already in the tree transitively (Slint's color-scheme watcher; rfd 0.17 no longer
+# uses it for its portal picker). Used directly to emit the com.canonical.Unity.LauncherEntry `Update`
 # signal that drives the KDE taskbar progress. Default features include the
 # blocking API and async-io backend. macOS has no D-Bus session bus, so it is
 # gated to Linux alongside the launcher integration it powers.

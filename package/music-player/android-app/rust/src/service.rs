@@ -77,16 +77,18 @@ use jni::objects::{JClass, JString};
 use jni::sys::{jfloat, jint, jlong};
 
 /// What:
-///      `use jni::JNIEnv;`.
-///  The per-call JVM gateway.
+///      `use jni::EnvUnowned;`.
+///  The per-call JVM argument (the former `EnvUnowned`, renamed in jni 0.22).
 /// Why:
-///       The create entry reads its `JString` through it.
+///       The create entry reads its `JString` through `run_with_env`.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// type JNIEnv = RuntimeContext;
+/// type EnvUnowned = RuntimeContext;
 /// ```
-use jni::JNIEnv;
+use jni::EnvUnowned;
+
+use crate::jni_call::run_with_env;
 
 /// What:
 ///      `use tokio::sync::mpsc::{self, UnboundedReceiver, UnboundedSender};`.
@@ -894,26 +896,27 @@ fn resolve_and_cache(service: &TruePeakService, fd: jint, fingerprint: u64, full
 /// ```
 #[unsafe(no_mangle)]
 pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeTruePeakServiceCreate<'local>(
-    mut env: JNIEnv<'local>,
+    mut env: EnvUnowned<'local>,
     _class: JClass<'local>,
     db_path: JString<'local>,
 ) -> jlong {
     // Install the logcat subscriber once (idempotent) before any native work logs.
     crate::logging::init();
-    // What:     `let path: String = match env.get_string(&db_path) { ... };`. Read the Java
-    //           string; log and return `0` on the (unreachable) read failure.
+    // What:     `let Some(path) = run_with_env(&mut env, ..., |jni_env| ...) else { ... };` with the closure
+    //           body `return db_path.try_to_string(jni_env)`.
+    //           Read the Java string; `run_with_env` logs and the `else` arm returns `0` on the
+    //           (unreachable) read failure.
     // Why:      The actor needs an owned path string.
     //
     // In TS you'd write (pseudocode):
     // ```ts
     // let path; try { path = env.getString(dbPath); } catch { return 0; }
     // ```
-    let path: String = match env.get_string(&db_path) {
-        Ok(value) => value.into(),
-        Err(error) => {
-            tracing::warn!(cause = %error, "could not read db path string; no service created");
-            return 0;
-        }
+    let Some(path) = run_with_env(&mut env, "nativeTruePeakServiceCreate db path", |jni_env| {
+        return db_path.try_to_string(jni_env);
+    }) else {
+        tracing::warn!("could not read db path string; no service created");
+        return 0;
     };
     // What:     `Box::into_raw(Box::new(TruePeakService::open(path))) as jlong`. Open the
     //           service, box it onto the heap, and leak the pointer as the handle. Tail ->
@@ -946,7 +949,7 @@ pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeTru
 /// ```
 #[unsafe(no_mangle)]
 pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeTruePeakServiceRelease<'local>(
-    _env: JNIEnv<'local>,
+    _env: EnvUnowned<'local>,
     _class: JClass<'local>,
     handle: jlong,
 ) {
@@ -991,7 +994,7 @@ pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeTru
 /// ```
 #[unsafe(no_mangle)]
 pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeResolveGain<'local>(
-    _env: JNIEnv<'local>,
+    _env: EnvUnowned<'local>,
     _class: JClass<'local>,
     handle: jlong,
     fd: jint,
@@ -1035,7 +1038,7 @@ pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeRes
 /// ```
 #[unsafe(no_mangle)]
 pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeWarmTrack<'local>(
-    _env: JNIEnv<'local>,
+    _env: EnvUnowned<'local>,
     _class: JClass<'local>,
     handle: jlong,
     fd: jint,
