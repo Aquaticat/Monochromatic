@@ -52,7 +52,7 @@ pub struct ScrollInput<'a> {
 
 /// What: `row_height_px` gives the height of one list row, from the same rules as the track list in `ui/tracks.slint`.
 /// Why: the scroll offset of a row is the sum of the heights above it, and the list does not report its layout back.
-fn row_height_px(row: &ListRow) -> f32 {
+pub fn row_height_px(row: &ListRow) -> f32 {
     if row.kind == 1 {
         return HEADER_HEIGHT_PX;
     }

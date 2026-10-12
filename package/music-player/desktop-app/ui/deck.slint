@@ -4,6 +4,7 @@
 import { Theme } from "theme.slint";
 import { DeckLabels } from "deck_labels.slint";
 import { StateLayer } from "state_layer.slint";
+import { Focus, PlayerStop, FocusRing, KeyBadge, Keys } from "focus.slint";
 
 // One connected segment of the mode control. The outline has square inner corners and rounds only
 // the corners the group exposes, so adjacent segments share one hairline.
@@ -26,6 +27,12 @@ component ModeSegment inherits Rectangle {
     in property <length> radius-br: 0px;
     // Bottom-left outside corner radius.
     in property <length> radius-bl: 0px;
+    // True while the keyboard ring is on this segment: the mode group holds focus and this is the selected mode.
+    in property <bool> ring: false;
+    // Key hint badge text of this segment; empty draws none.
+    in property <string> badge: "";
+    // Tooltip text of this segment, with its shortcut.
+    in property <string> tip: "";
     // Fired when the user presses the segment.
     callback activated();
 
@@ -163,6 +170,28 @@ component ModeSegment inherits Rectangle {
         accessible-role: none;
     }
 
+    // Keyboard focus: a 12 percent layer and the 2 px ring in the primary role, both with this segment's corner radii, so
+    // the focus shows in two channels. The ring sits inside the 1 px outline.
+    Rectangle {
+        visible: root.ring;
+        background: (root.selected ? Theme.on-secondary-container : Theme.on-surface).with-alpha(0.12);
+        border-top-left-radius: root.r-tl * 1px;
+        border-top-right-radius: root.r-tr * 1px;
+        border-bottom-right-radius: root.r-br * 1px;
+        border-bottom-left-radius: root.r-bl * 1px;
+    }
+    FocusRing {
+        active: root.ring;
+        x: 1px;
+        y: 1px;
+        width: root.width - 2px;
+        height: root.height - 2px;
+        radius-tl: root.r-tl * 1px;
+        radius-tr: root.r-tr * 1px;
+        radius-br: root.r-br * 1px;
+        radius-bl: root.r-bl * 1px;
+    }
+
     // Whole segment is the touch target, never smaller than 48px tall because the parent sets the height.
     segment-touch := TouchArea {
         mouse-cursor: pointer;
@@ -171,8 +200,17 @@ component ModeSegment inherits Rectangle {
         accessible-checkable: true;
         accessible-checked: root.selected;
         clicked => {
+            Focus.ring-visible = false;
             root.activated();
         }
+        Tooltip {
+            text: @markdown("\{root.tip}");
+        }
+    }
+    KeyBadge {
+        x: root.width - self.width;
+        y: 0px;
+        text: root.badge;
     }
 }
 
@@ -417,8 +455,17 @@ export component TransportDeck inherits Rectangle {
         accessible-role: button;
         accessible-label: "Show folder of playing track";
         clicked => {
+            Focus.ring-visible = false;
             root.reveal-folder();
         }
+        Tooltip {
+            text: @markdown("Show the folder of the playing track (\{Keys.texts.deck-folder})");
+        }
+    }
+    KeyBadge {
+        x: root.title-line-x + root.folder-w - self.width;
+        y: 0px;
+        text: root.folder == "" ? "" : Keys.badges.deck-folder;
     }
     // Click target over the title part of the title line, the same height as the folder target: jumps to the playing track.
     title-touch := TouchArea {
@@ -432,8 +479,17 @@ export component TransportDeck inherits Rectangle {
         accessible-role: button;
         accessible-label: "Show playing track";
         clicked => {
+            Focus.ring-visible = false;
             root.reveal-playing();
         }
+        Tooltip {
+            text: @markdown("Show the playing track (\{Keys.texts.deck-title})");
+        }
+    }
+    KeyBadge {
+        x: root.title-line-x + root.folder-w + root.sep-w + root.title-w - self.width;
+        y: 0px;
+        text: root.title == "" ? "" : Keys.badges.deck-title;
     }
 
     // ---- Vertical rhythm, derived from the heading and the mode control heights. ----
@@ -581,6 +637,66 @@ export component TransportDeck inherits Rectangle {
                 root.seek(root.fraction-at(self.mouse-x) * root.duration-seconds);
             }
         }
+        Tooltip {
+            text: @markdown("Track position (\{Keys.texts.seek-back} back, \{Keys.texts.seek-forward} forward)");
+        }
+    }
+    // Keyboard seek bar: a focus stop over the track. Left and Right move 5 seconds, Home and End jump to the ends. The
+    // 12 percent layer and the 2 px ring show the focus in two channels.
+    seek-stop := PlayerStop {
+        label: "seek";
+        zone: 3;
+        activates: false;
+        x: root.slider-x;
+        y: root.seek-y;
+        width: root.slider-w;
+        height: root.target;
+        extra-key(event) => {
+            if (event.text == Key.LeftArrow) {
+                root.seek(max(0, root.position-seconds - 5));
+                return true;
+            }
+            if (event.text == Key.RightArrow) {
+                root.seek(min(root.duration-seconds, root.position-seconds + 5));
+                return true;
+            }
+            if (event.text == Key.Home) {
+                root.seek(0);
+                return true;
+            }
+            if (event.text == Key.End) {
+                root.seek(root.duration-seconds);
+                return true;
+            }
+            return false;
+        }
+    }
+    Rectangle {
+        visible: seek-stop.ring;
+        x: root.slider-x;
+        y: root.seek-y;
+        width: root.slider-w;
+        height: root.target;
+        background: Theme.on-surface.with-alpha(0.12);
+        border-radius: root.target / 2;
+    }
+    FocusRing {
+        x: root.slider-x;
+        y: root.seek-y;
+        width: root.slider-w;
+        height: root.target;
+        radius: root.target / 2;
+        active: seek-stop.ring;
+    }
+    KeyBadge {
+        x: root.slider-x;
+        y: root.seek-y;
+        text: Keys.badges.seek-back;
+    }
+    KeyBadge {
+        x: root.slider-x + root.slider-w - self.width;
+        y: root.seek-y;
+        text: Keys.badges.seek-forward;
     }
 
     // ---- Transport row: previous, play or pause, next, centered, or left of the mode control on the shared line. ----
@@ -597,7 +713,11 @@ export component TransportDeck inherits Rectangle {
         accessible-role: button;
         accessible-label: "Previous track";
         clicked => {
+            Focus.ring-visible = false;
             root.previous();
+        }
+        Tooltip {
+            text: @markdown("Previous track (\{Keys.texts.previous})");
         }
     }
     Rectangle {
@@ -618,6 +738,7 @@ export component TransportDeck inherits Rectangle {
         radius: root.circle / 2;
         hovered: prev-touch.has-hover;
         pressed: prev-touch.pressed;
+        focused: prev-stop.ring;
         tint: Theme.on-surface;
     }
     Path {
@@ -631,6 +752,31 @@ export component TransportDeck inherits Rectangle {
         fill: Theme.on-surface;
     }
 
+    prev-stop := PlayerStop {
+        label: "previous";
+        zone: 5;
+        x: root.transport-x;
+        y: root.transport-y;
+        width: root.target;
+        height: root.target;
+        activated => {
+            root.previous();
+        }
+    }
+    FocusRing {
+        x: root.transport-x + (root.target - root.circle) / 2;
+        y: root.transport-y + (root.target - root.circle) / 2;
+        width: root.circle;
+        height: root.circle;
+        radius: root.circle / 2;
+        active: prev-stop.ring;
+    }
+    KeyBadge {
+        x: root.transport-x + root.target - self.width;
+        y: root.transport-y;
+        text: Keys.badges.previous;
+    }
+
     // Play or pause button: filled primary circle in a 48px target.
     play-touch := TouchArea {
         x: root.transport-x + root.target + root.control-gap;
@@ -641,7 +787,11 @@ export component TransportDeck inherits Rectangle {
         accessible-role: button;
         accessible-label: root.playing ? "Pause" : "Play";
         clicked => {
+            Focus.ring-visible = false;
             root.toggle-play();
+        }
+        Tooltip {
+            text: @markdown("\{root.playing ? "Pause" : "Play"} (\{Keys.texts.play})");
         }
     }
     Rectangle {
@@ -661,6 +811,7 @@ export component TransportDeck inherits Rectangle {
         radius: root.circle / 2;
         hovered: play-touch.has-hover;
         pressed: play-touch.pressed;
+        focused: play-stop.ring;
         tint: Theme.on-primary;
     }
     Path {
@@ -686,6 +837,26 @@ export component TransportDeck inherits Rectangle {
         fill: Theme.on-primary;
     }
 
+    play-stop := PlayerStop {
+        label: "play";
+        zone: 5;
+        x: root.transport-x + root.target + root.control-gap;
+        y: root.transport-y;
+        width: root.target;
+        height: root.target;
+        activated => {
+            root.toggle-play();
+        }
+    }
+    FocusRing {
+        x: root.transport-x + root.target + root.control-gap + (root.target - root.circle) / 2;
+        y: root.transport-y + (root.target - root.circle) / 2;
+        width: root.circle;
+        height: root.circle;
+        radius: root.circle / 2;
+        active: play-stop.ring;
+    }
+
     // Next button: outlined circle in a 48px target.
     next-touch := TouchArea {
         x: root.transport-x + 2 * (root.target + root.control-gap);
@@ -696,7 +867,11 @@ export component TransportDeck inherits Rectangle {
         accessible-role: button;
         accessible-label: "Next track";
         clicked => {
+            Focus.ring-visible = false;
             root.next();
+        }
+        Tooltip {
+            text: @markdown("Next track (\{Keys.texts.next})");
         }
     }
     Rectangle {
@@ -717,6 +892,7 @@ export component TransportDeck inherits Rectangle {
         radius: root.circle / 2;
         hovered: next-touch.has-hover;
         pressed: next-touch.pressed;
+        focused: next-stop.ring;
         tint: Theme.on-surface;
     }
     Path {
@@ -728,6 +904,31 @@ export component TransportDeck inherits Rectangle {
         viewbox-height: 24;
         commands: "M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z";
         fill: Theme.on-surface;
+    }
+
+    next-stop := PlayerStop {
+        label: "next";
+        zone: 5;
+        x: root.transport-x + 2 * (root.target + root.control-gap);
+        y: root.transport-y;
+        width: root.target;
+        height: root.target;
+        activated => {
+            root.next();
+        }
+    }
+    FocusRing {
+        x: root.transport-x + 2 * (root.target + root.control-gap) + (root.target - root.circle) / 2;
+        y: root.transport-y + (root.target - root.circle) / 2;
+        width: root.circle;
+        height: root.circle;
+        radius: root.circle / 2;
+        active: next-stop.ring;
+    }
+    KeyBadge {
+        x: root.transport-x + 2 * (root.target + root.control-gap) + root.target - self.width;
+        y: root.transport-y;
+        text: Keys.badges.next;
     }
 
     // ---- Mode control measuring. Hidden texts report the widths the labels need. ----
@@ -855,6 +1056,24 @@ export component TransportDeck inherits Rectangle {
 
         // Left edge of the first one-row segment on a whole pixel, centering the connected group.
         property <length> one-x0: root.round-px((self.width - root.one-sum) / 2);
+        // Keyboard stop of the whole group: one Tab stop. The arrows move the selection, and the ring is drawn on the
+        // selected segment.
+        mode-stop := PlayerStop {
+            label: "mode-group";
+            zone: 4;
+            activates: false;
+            extra-key(event) => {
+                if (event.text == Key.LeftArrow || event.text == Key.UpArrow) {
+                    root.select-mode(max(0, root.mode - 1));
+                    return true;
+                }
+                if (event.text == Key.RightArrow || event.text == Key.DownArrow) {
+                    root.select-mode(min(3, root.mode + 1));
+                    return true;
+                }
+                return false;
+            }
+        }
         // Top segment and left column positions per mode, with the shared hairlines removed.
         seg-0 := ModeSegment {
             x: root.rows == 1 ? parent.one-x0 : 0px;
@@ -862,6 +1081,9 @@ export component TransportDeck inherits Rectangle {
             width: root.rows == 1 ? root.seg-w-0 : (root.rows == 2 ? root.two-cell : parent.width);
             height: root.seg-h;
             selected: root.mode == 0;
+            ring: mode-stop.ring && root.mode == 0;
+            badge: Keys.badges.mode-repeat;
+            tip: "Repeat track (" + Keys.texts.mode-repeat + ")";
             label: "Repeat";
             label-width: root.text-w-0;
             label-size: root.font-label;
@@ -882,6 +1104,9 @@ export component TransportDeck inherits Rectangle {
             width: root.rows == 1 ? root.seg-w-1 : (root.rows == 2 ? root.two-cell : parent.width);
             height: root.seg-h;
             selected: root.mode == 1;
+            ring: mode-stop.ring && root.mode == 1;
+            badge: Keys.badges.mode-in-order;
+            tip: "Play in order (" + Keys.texts.mode-in-order + ")";
             label: "In order";
             label-width: root.text-w-1;
             label-size: root.font-label;
@@ -900,6 +1125,9 @@ export component TransportDeck inherits Rectangle {
             width: root.rows == 1 ? root.seg-w-2 : (root.rows == 2 ? root.two-cell : parent.width);
             height: root.seg-h;
             selected: root.mode == 2;
+            ring: mode-stop.ring && root.mode == 2;
+            badge: Keys.badges.mode-shuffle-folder;
+            tip: "Shuffle the folder (" + Keys.texts.mode-shuffle-folder + ")";
             label: "Shuffle " + root.shuffle-folder-label;
             label-width: root.text-w-2;
             label-size: root.font-label;
@@ -918,6 +1146,9 @@ export component TransportDeck inherits Rectangle {
             width: root.rows == 1 ? root.seg-w-3 : (root.rows == 2 ? root.two-cell : parent.width);
             height: root.seg-h;
             selected: root.mode == 3;
+            ring: mode-stop.ring && root.mode == 3;
+            badge: Keys.badges.mode-shuffle-all;
+            tip: "Shuffle all folders (" + Keys.texts.mode-shuffle-all + ")";
             label: "Shuffle all";
             label-width: root.text-w-3;
             label-size: root.font-label;
@@ -931,6 +1162,11 @@ export component TransportDeck inherits Rectangle {
             activated => {
                 root.select-mode(3);
             }
+        }
+        KeyBadge {
+            x: parent.width - self.width;
+            y: 0px;
+            text: Keys.badges.mode-cycle;
         }
     }
 

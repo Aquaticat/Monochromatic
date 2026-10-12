@@ -126,6 +126,10 @@ export global Theme {
     // Accent roles.
     out property <color> primary: root.roles.primary;
     out property <color> on-primary: root.roles.on-primary;
+    // Secondary and on-secondary follow the primary pair, as the Android theme maps them (PlayerTheme.kt: secondary =
+    // primary, onSecondary = onPrimary), so no new derived role is needed.
+    out property <color> secondary: root.roles.primary;
+    out property <color> on-secondary: root.roles.on-primary;
     out property <color> secondary-container: root.roles.secondary-container;
     out property <color> secondary-container-hovered: root.roles.secondary-container-hovered;
     out property <color> secondary-container-pressed: root.roles.secondary-container-pressed;

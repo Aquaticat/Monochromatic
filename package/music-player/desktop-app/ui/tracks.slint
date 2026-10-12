@@ -2,6 +2,7 @@
 // scrolling list, and the playing row can be scrolled into view as playback moves.
 import { Theme } from "theme.slint";
 import { StateLayer } from "state_layer.slint";
+import { Focus, PlayerStop, FocusRing, KeyBadge, Keys } from "focus.slint";
 
 // One entry of the flat list. A track row (kind 0) plays on tap; a subfolder header (kind 1) only labels the
 // tracks below it, with its name in `title` and its count text in `supporting`.
@@ -36,6 +37,32 @@ export component TrackListPane inherits Rectangle {
     // Fires with the library index of a track row and the pointer position relative to this pane, on a right
     // click or a 500 ms long press. The position is what the caller uses to place the menu.
     callback open-menu(int, length, length);
+    // Library index of the track row the keyboard ring is on; -1 for none. The Rust side moves it with the list keys.
+    in property <int> ring-index: -1;
+    // Changes each time the ring moves; the list then scrolls the row at `ring-offset` into view.
+    in property <int> ring-tick: 0;
+    // Distance from the top of the list to the top of the ringed row.
+    in property <length> ring-offset: 0px;
+    // Height of the ringed row.
+    in property <length> ring-height: 48px;
+    // Changes when the Menu key or Shift+F10 asks for the ringed row's menu; the list then reports `open-menu` for
+    // the row `menu-index` at `menu-offset`, as a right click does.
+    in property <int> menu-tick: 0;
+    // Library index of the row whose menu the keyboard asked for.
+    in property <int> menu-index: -1;
+    // Distance from the top of the list to the top of that row.
+    in property <length> menu-offset: 0px;
+    // False for the copy of the list that sits in the layout the window is not showing. The window builds both layouts, and
+    // a request for focus, for a menu or for the page size is meant for the layout that is on screen.
+    in property <bool> active: true;
+    // True when the list should take keyboard focus: when it is created and each time `focus-tick` changes.
+    in property <bool> wants-focus: false;
+    // Changes when the Rust side asks for focus (Alt+2).
+    in property <int> focus-tick: 0;
+    // Number of 48 px rows that fit the pane, for the page keys.
+    callback page-rows(int);
+    // Fired when the list gains keyboard focus, so the ring can start on a row.
+    callback focused();
 
     // Height of a track row without a second line, which is the 48 px touch target.
     property <length> row-min-height: 48px;
@@ -58,6 +85,35 @@ export component TrackListPane inherits Rectangle {
         flick.content-y = max(min(0px, flick.height - flick.content-height), min(0px, -top));
     }
 
+    // Scrolls just enough to bring a row inside the viewport; the list keys use it so the ringed row stays visible.
+    function ensure-visible(top: length, height: length) {
+        if (top < -flick.content-y) {
+            flick.content-y = min(0px, -top);
+        } else if (top + height > -flick.content-y + flick.height) {
+            flick.content-y = max(flick.height - flick.content-height, flick.height - (top + height));
+        }
+    }
+
+    changed ring-tick => {
+        root.ensure-visible(root.ring-offset, root.ring-height);
+    }
+    changed menu-tick => {
+        // The menu opens under the row's top, 32 px in from the left, kept inside the pane.
+        if (root.active) {
+            root.open-menu(root.menu-index, 32px, max(8px, min(root.height - 8px, root.menu-offset + flick.content-y + 40px)));
+        }
+    }
+    changed focus-tick => {
+        if (root.wants-focus && root.active) {
+            list-stop.focus();
+        }
+    }
+    changed height => {
+        if (root.active) {
+            root.page-rows(max(1, Math.floor(root.height / 48px)));
+        }
+    }
+
     // Scrolls to the requested offset each time the Rust side bumps scroll-tick, and is the only place the list scrolls.
     changed scroll-tick => {
         root.reveal(root.scroll-offset);
@@ -66,6 +122,28 @@ export component TrackListPane inherits Rectangle {
     // is drawn again, so the list shows the same position as before the pane went away.
     init => {
         root.reveal(root.scroll-offset);
+    }
+    // Takes keyboard focus when the list is created for a request (the folded layout creates it when the picker closes).
+    // A pane that has just been created is not laid out yet, and focusing it then loses the keyboard focus altogether, so
+    // the timer waits one frame.
+    focus-timer := Timer {
+        interval: 16ms;
+        running: root.wants-focus && root.active;
+        triggered => {
+            self.running = false;
+            list-stop.focus();
+        }
+    }
+
+    // The list's keyboard stop. Up, Down, the page keys, Home, End, Enter and the row chords reach the Rust side through
+    // the window's key scope; this element only holds focus and reports the zone.
+    list-stop := PlayerStop {
+        label: "track-list";
+        zone: 2;
+        activates: false;
+        gained => {
+            root.focused();
+        }
     }
 
     flick := Flickable {
@@ -92,6 +170,7 @@ export component TrackListPane inherits Rectangle {
                         height: parent.height;
                         hovered: row-touch.has-hover;
                         pressed: row-touch.pressed;
+                        focused: row.index == root.ring-index && list-stop.ring;
                         tint: Theme.on-surface;
                     }
 
@@ -139,11 +218,18 @@ export component TrackListPane inherits Rectangle {
                         }
 
                         clicked => {
+                            Focus.ring-visible = false;
+                            list-stop.focus();
                             if (!self.suppress) {
                                 root.play(row.index);
                             }
                         }
                     }
+                }
+
+                // Keyboard ring around the row under the ring, inside the row so the pane's clip never cuts it.
+                FocusRing {
+                    active: row.kind == 0 && row.index == root.ring-index && list-stop.ring;
                 }
 
                 // Track rows: title and optional second line, both inset by the row padding.
@@ -195,5 +281,12 @@ export component TrackListPane inherits Rectangle {
                 }
             }
         }
+    }
+
+    // Key hint badge of the Alt+2 shortcut that focuses this list, over the top right corner. It takes no pointer input.
+    KeyBadge {
+        x: root.width - self.width - 4px;
+        y: 4px;
+        text: Keys.badges.track-list;
     }
 }

@@ -635,6 +635,84 @@ The scale tests run in the normal `mise run //package/music-player/desktop-app:t
 and 1,000,000 tracks, and both print the median with the minimum and maximum of five runs in release builds.
 Run them with `--release` and `--no-capture` to read the numbers.
 
+## Keyboard
+
+The keyboard map and the focus model are decision D106 (extending D102) in `package/music-player/design/decisions.md`.
+`src/keymap_bindings.rs` holds the whole table (`BINDINGS`) and the pure classifier in `src/keymap.rs` reads it, so the
+key hint badges, the tooltips and the menu rows draw their texts from the same rows.
+Control is Ctrl on Windows and Linux; on macOS the primary modifier is Command (`held_modifiers` in `src/ui_keys.rs`
+swaps the two because Slint reports them swapped there).
+
+### Bindings
+
+Playback, anywhere on the player page (Space also works with the track list, the folder list or a button focused;
+on a focused button Space and Enter press that button instead):
+
+- Space toggles play and pause.
+- Ctrl+Left and Ctrl+Right go to the previous and the next track (macOS: Command+Shift+[ and Command+Shift+]).
+- Alt+Left and Alt+Right seek 10 s back and forward; with Shift, 60 s. A held key repeats.
+- Ctrl+M cycles the playback mode; Ctrl+Shift+1 to 4 pick Repeat, In order, Shuffle folder and Shuffle all.
+- Ctrl+Home restarts the track.
+
+Browsing:
+
+- Ctrl+F opens Search; double Shift opens it too (two Shift taps, the second released within 400 ms of the first
+  press, on the player page only).
+- Ctrl+Alt+S opens Settings (macOS: Command+,).
+- Ctrl+O opens the folder picker (on the folded layout the picker overlay; on the two-pane layout it focuses the
+  folder list); Ctrl+Shift+O asks for the system folder dialog.
+- Alt+1 and Alt+2 focus the folder list and the track list.
+- Alt+Up and Alt+Down show the previous and the next folder; Ctrl+G reveals the playing track (macOS: Command+L) and
+  Ctrl+Shift+G shows the playing track's folder.
+- F5 rescans the library; Ctrl+Q quits.
+
+In a focused list:
+
+- Up, Down, Home, End, PageUp and PageDown move the ring; Enter plays the row (on the playing row it pauses) or shows
+  the folder.
+- In the folder list a letter jumps to the first folder starting with it, and Left and Right move like Up and Down.
+- On a track row: Menu or Shift+F10 opens the row menu, Delete moves the file to the trash, Ctrl+Shift+C copies the
+  file name, Ctrl+Shift+E shows the file in the file manager, Alt+Enter shows details, Ctrl+Shift+F5 re-analyses it.
+  While the menu is open Up, Down and Enter choose a row, and Escape closes it.
+
+Pages:
+
+- Escape closes the innermost thing: the track menu, the folder picker overlay, then the page (Search, Settings).
+- In Settings the template line's first Escape returns to its list row and the second leaves Settings; on the
+  single-form editor page Escape returns to the Settings list. Ctrl+Enter applies the template and Ctrl+Shift+Backspace
+  resets it. Ctrl+F and double Shift do nothing in Settings.
+- In the Search field bare keys are text; Up and Down still move through the results and Enter opens one.
+
+### Focus model
+
+Tab and Shift+Tab walk the folder picker (the Open pill; on the folded layout the folder trigger first), the folder and
+track lists, the deck controls (seek bar, Previous, Play, Next, mode group), then Search and Settings, and wrap; no
+element traps the keyboard. Every focusable element draws a 2 px `primary` ring plus its state layer, only while the
+keyboard is in use: a key press turns the ring on and a pointer press turns it off.
+
+### Key hint badges
+
+Holding modifiers for 300 ms shows a small badge (the key letter) on each control that the held set triggers;
+holding more modifiers narrows the badges to the chords of exactly that set; releasing hides them. The badges take no
+pointer input and move no content; they are drawn from `Theme` roles.
+
+### Known limits
+
+- F5, F10 and Menu cannot be pressed through the nested compositor 0.3.0 (`err unknown key`); the window tests press
+  them, and the end-to-end run marks them as not injectable.
+- Ctrl+Shift+3 and 4 may be taken by the screenshot shortcuts of macOS, and the digit chords assume a layout where
+  Shift+digit gives the usual symbol; neither is verified here, and the macOS and Windows key mapping is untested.
+
+### End-to-end run
+
+`mise run //package/music-player/desktop-app:test:e2e` builds the release binary, then hosts it in the nested
+compositor 0.3.0 with scratch XDG directories and a generated library (the 1k scale library plus tone tracks), and
+presses every shortcut as a real key event. It plays into its own PipeWire null sink (checked by node id against
+every output stream of the app, and stops at once if one links elsewhere), never touches another player process, and
+prints one pass, fail or not-injectable line per shortcut. State is read from the app's `ui_state` log lines, from
+screenshots and from files; `E2E_ONLY` (a check id or group prefix), `E2E_OUT` (default `target/e2e`, with
+screenshots and `e2e-summary.json`), `E2E_TMP` and `E2E_LIBRARY_GENERATOR` tune it. Run it alone.
+
 ## Environment overrides
 
 `MUSIC_PLAYER_COLOR_SCHEME` forces the window's color scheme.
@@ -975,6 +1053,9 @@ mise run //package/music-player/desktop-app:test
 
 # release build
 mise run //package/music-player/desktop-app:build
+
+# keyboard end-to-end run in the nested compositor (builds first)
+mise run //package/music-player/desktop-app:test:e2e
 
 # build, install to ~/.local/bin + ~/.local/share/applications,
 # then run the GUI on the host (optional single folder or file arg)

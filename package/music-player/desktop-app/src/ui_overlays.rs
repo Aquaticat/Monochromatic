@@ -95,6 +95,14 @@ pub(crate) fn show_trash_notice(window: &AppWindow, text: &str) {
     project(window);
 }
 
+/// What: `show_notice` shows a plain message with no action.
+/// Why: a keyboard action such as File details reports its result as a message; this is the same message kind as the
+/// trash notice, named for what it is used for.
+pub(crate) fn show_notice(window: &AppWindow, text: &str) {
+    add_message(FeedbackKind::Undo, text, None, None);
+    project(window);
+}
+
 /// What: `dismiss` removes the message with `id` and its Undo target.
 /// Why: a dismissed or acted-on message must not stay visible or restorable.
 fn dismiss(id: &str) {

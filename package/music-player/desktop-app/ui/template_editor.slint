@@ -6,6 +6,7 @@
 // each time the selected template changes.
 import { Theme } from "theme.slint";
 import { StateLayer } from "state_layer.slint";
+import { Focus, FocusStop, FocusRing, KeyBadge, Keys } from "focus.slint";
 
 // One insertable field row: its name, the call a tap inserts, and its value for the first preview track.
 export struct EditorFieldRow {
@@ -121,9 +122,10 @@ export component TemplateEditor inherits Rectangle {
         y: 0px;
         width: root.width;
         height: 72px;
-        background: Theme.surface-high;
+        // The one canvas color of the page (D109): the header is separated from the body by its divider only.
+        background: Theme.canvas;
 
-        // Circular hover and pressed layer, 40 px centered in the 48 px Back target.
+        // Circular hover, pressed and focus layer, 40 px centered in the 48 px Back target.
         StateLayer {
             x: 20px;
             y: 16px;
@@ -133,6 +135,7 @@ export component TemplateEditor inherits Rectangle {
             tint: Theme.on-surface;
             hovered: back-touch.has-hover;
             pressed: back-touch.pressed;
+            focused: back-stop.ring;
         }
         Path {
             x: 28px;
@@ -150,7 +153,31 @@ export component TemplateEditor inherits Rectangle {
             width: 48px;
             height: 48px;
             mouse-cursor: pointer;
-            clicked => { root.back(); }
+            accessible-role: button;
+            accessible-label: "Back";
+            clicked => {
+                Focus.ring-visible = false;
+                root.back();
+            }
+            Tooltip {
+                text: @markdown("Back (\{Keys.texts.back})");
+            }
+        }
+        back-stop := FocusStop {
+            label: "editor-back";
+            x: 16px;
+            y: 12px;
+            width: 48px;
+            height: 48px;
+            activated => { root.back(); }
+        }
+        FocusRing {
+            x: 20px;
+            y: 16px;
+            width: 40px;
+            height: 40px;
+            radius: 20px;
+            active: back-stop.ring;
         }
         Text {
             x: 72px;
@@ -315,6 +342,14 @@ export component TemplateEditor inherits Rectangle {
                     }
                     changed has-focus => {
                         root.focus-changed(self.has-focus);
+                        // The template line is a text field (zone 7): it keeps every bare key.
+                        if (self.has-focus) {
+                            Focus.zone = 7;
+                            Focus.label = "template-field";
+                        } else if (Focus.zone == 7) {
+                            Focus.zone = 0;
+                            Focus.label = "";
+                        }
                     }
                 }
 
@@ -404,13 +439,14 @@ export component TemplateEditor inherits Rectangle {
             // One field row: name and value on the left, the call to insert on the right. A tap inserts the call.
             for field[index] in root.fields : Rectangle {
                 height: 65px;
-                // Rectangular hover and pressed layer over the 64 px insert target, above the divider.
+                // Rectangular hover, pressed and focus layer over the 64 px insert target, above the divider.
                 StateLayer {
                     width: parent.width;
                     height: 64px;
                     tint: Theme.on-surface;
                     hovered: field-touch.has-hover;
                     pressed: field-touch.pressed;
+                    focused: field-stop.ring;
                 }
                 headline := Text {
                     x: 16px;
@@ -455,14 +491,34 @@ export component TemplateEditor inherits Rectangle {
                     width: parent.width;
                     height: 64px;
                     mouse-cursor: pointer;
-                    clicked => { root.insert-field(index); }
+                    accessible-role: button;
+                    accessible-label: "Insert " + field.insert;
+                    clicked => {
+                        Focus.ring-visible = false;
+                        root.insert-field(index);
+                    }
+                }
+                field-stop := FocusStop {
+                    label: "insert-field-" + index;
+                    x: 0px;
+                    y: 0px;
+                    width: parent.width;
+                    height: 64px;
+                    activated => { root.insert-field(index); }
+                }
+                FocusRing {
+                    x: 0px;
+                    y: 0px;
+                    width: parent.width;
+                    height: 64px;
+                    active: field-stop.ring;
                 }
             }
 
             // Reset to default, offered only when the open template differs from its default.
             if root.can-reset : Rectangle {
                 height: 72px;
-                // Pill-shaped hover and pressed layer over the text button, matching its 48 px target.
+                // Pill-shaped hover, pressed and focus layer over the text button, matching its 48 px target.
                 StateLayer {
                     x: 4px;
                     y: 8px;
@@ -472,6 +528,7 @@ export component TemplateEditor inherits Rectangle {
                     tint: Theme.on-surface;
                     hovered: reset-touch.has-hover;
                     pressed: reset-touch.pressed;
+                    focused: reset-stop.ring;
                 }
                 reset-text := Text {
                     x: 16px;
@@ -489,7 +546,36 @@ export component TemplateEditor inherits Rectangle {
                     width: reset-text.preferred-width + 24px;
                     height: 48px;
                     mouse-cursor: pointer;
-                    clicked => { root.reset(); }
+                    accessible-role: button;
+                    accessible-label: "Reset to default";
+                    clicked => {
+                        Focus.ring-visible = false;
+                        root.reset();
+                    }
+                    Tooltip {
+                        text: @markdown("Reset to default (\{Keys.texts.editor-reset})");
+                    }
+                }
+                reset-stop := FocusStop {
+                    label: "reset";
+                    x: 4px;
+                    y: 8px;
+                    width: reset-text.preferred-width + 24px;
+                    height: 48px;
+                    activated => { root.reset(); }
+                }
+                FocusRing {
+                    x: 4px;
+                    y: 8px;
+                    width: reset-text.preferred-width + 24px;
+                    height: 48px;
+                    radius: 24px;
+                    active: reset-stop.ring;
+                }
+                KeyBadge {
+                    x: 4px + reset-text.preferred-width + 24px - self.width;
+                    y: 8px;
+                    text: Keys.badges.editor-reset;
                 }
             }
 

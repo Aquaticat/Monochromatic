@@ -4,6 +4,8 @@
 //! Why: the action order, the grouping and the destructive row come from the Rust model; the window
 //! only draws them.
 
+use music_player::keymap::{KeyboardPlatform, ShortcutAction};
+use music_player::keymap_bindings::shortcut_text;
 use music_player::track_menu::{TrackMenuAction, label, track_menu_actions_for, track_menu_divider_flags};
 
 /// What: `MenuItemView` is one menu row as plain values.
@@ -25,6 +27,8 @@ pub struct MenuItemView {
     pub divider_before: bool,
     /// Inline value after the label; only the details row carries one.
     pub value: String,
+    /// Shortcut of the action on the running platform, drawn right-aligned; empty for an action with none.
+    pub shortcut: String,
 }
 
 /// What: `icon_index` gives the glyph index the menu component draws for an action.
@@ -46,14 +50,35 @@ pub fn icon_index(action: TrackMenuAction) -> i32 {
     };
 }
 
-/// What: `menu_items` builds every menu row, with the file size as the details value.
-/// Why: the details row shows its value inline (D7), and the value is read when the menu opens.
+/// What: `shortcut_action_of` gives the shortcut action whose chord a menu row shows.
+/// Why: D106 shows each action's shortcut in its menu row; Play is Enter on the focused row, and Start shuffle from here has
+/// no shortcut.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// const menuItems = (size: string | null): MenuItemView[] => { ... };
+/// const shortcutActionOf = (action: TrackMenuAction): ShortcutAction | null => ...;
 /// ```
-pub fn menu_items(size_text: Option<&str>) -> Vec<MenuItemView> {
+pub fn shortcut_action_of(action: TrackMenuAction) -> Option<ShortcutAction> {
+    return match action {
+        TrackMenuAction::Play => Some(ShortcutAction::ListActivate),
+        TrackMenuAction::ShuffleFromHere => None,
+        TrackMenuAction::Details => Some(ShortcutAction::RowDetails),
+        TrackMenuAction::ReanalyseTruePeak => Some(ShortcutAction::RowReanalyse),
+        TrackMenuAction::ShowInFileManager => Some(ShortcutAction::RowShow),
+        TrackMenuAction::CopyFilename => Some(ShortcutAction::RowCopy),
+        TrackMenuAction::MoveToTrash => Some(ShortcutAction::RowTrash),
+    };
+}
+
+/// What: `menu_items` builds every menu row, with the file size as the details value and each action's shortcut.
+/// Why: the details row shows its value inline (D7), the value is read when the menu opens, and every row shows its
+/// shortcut (D106).
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// const menuItems = (size: string | null, platform: KeyboardPlatform): MenuItemView[] => { ... };
+/// ```
+pub fn menu_items(size_text: Option<&str>, platform: KeyboardPlatform) -> Vec<MenuItemView> {
     let actions = track_menu_actions_for();
     let dividers = track_menu_divider_flags(actions);
     return actions
@@ -68,6 +93,7 @@ pub fn menu_items(size_text: Option<&str>) -> Vec<MenuItemView> {
                 TrackMenuAction::Details => size_text.unwrap_or("").to_string(),
                 _ => String::new(),
             },
+            shortcut: shortcut_action_of(*action).map_or_else(String::new, |chord| return shortcut_text(chord, platform)),
         })
         .collect();
 }

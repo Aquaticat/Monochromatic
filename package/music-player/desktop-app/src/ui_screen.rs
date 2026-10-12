@@ -58,6 +58,7 @@ pub(crate) fn apply_update(app: &AppWindow, update: &Update) {
             set_now_playing(app, *index, name, *duration);
             follow_playing(*index);
             project(app);
+            crate::ui_state_log::emit(app, "now-playing");
         }
         Update::Reconciled { names, index, name, duration } => {
             let mut shared = None;
@@ -77,12 +78,14 @@ pub(crate) fn apply_update(app: &AppWindow, update: &Update) {
             });
             app.set_position(*secs as f32);
             app.set_position_text(format_time(*secs).into());
+            crate::ui_state_log::emit(app, "position");
         }
         Update::Playing(on) => {
             update_state(|state| {
                 state.playing = *on;
             });
             app.set_playing(*on);
+            crate::ui_state_log::emit(app, "playing");
         }
         Update::Volume(volume) => app.set_volume(*volume),
         Update::Measures(measures) => {
@@ -111,6 +114,7 @@ pub(crate) fn apply_update(app: &AppWindow, update: &Update) {
                 state.mode = *mode;
             });
             app.set_playback_mode(playback_mode_to_int(*mode));
+            crate::ui_state_log::emit(app, "playback-mode");
         }
     }
 }
@@ -197,6 +201,12 @@ pub(crate) fn project(app: &AppWindow) {
     ));
     app.set_current_folder(screen.folder_title.as_str().into());
     app.set_current_cell(screen.picker.current_cell.as_str().into());
+    update_state(|state| {
+        state.shown_rows = screen.rows.clone();
+        state.shown_names = screen.picker.names.clone();
+        state.shown_folder = screen.folder_title.clone();
+    });
+    crate::ui_lists::sync_rings(app);
     app.set_library_name(read_state(|state| return state.library_heading()).into());
     app.set_deck_title(screen.deck_title.as_str().into());
     app.set_deck_folder(screen.deck_folder.as_str().into());

@@ -93,6 +93,30 @@ mod ui_files;
 
 mod ui_keys;
 
+mod ui_keys_actions;
+
+mod ui_keys_focus;
+
+mod ui_host;
+
+mod ui_lists;
+
+mod ui_hints;
+
+mod ui_state_log;
+
+/// Shared helpers of the window tests that press real key events.
+#[cfg(test)]
+mod ui_test_support;
+
+/// Window tests of the focus model: Tab order, rings and the lists' focus keys.
+#[cfg(test)]
+mod ui_keys_focus_tests;
+
+/// Window tests of every D106 shortcut, pressed as real key events on the testing backend.
+#[cfg(test)]
+mod ui_keys_window_tests;
+
 mod ui_menu;
 
 mod ui_menu_model;

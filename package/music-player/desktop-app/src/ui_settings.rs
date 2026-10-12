@@ -107,8 +107,7 @@ fn wire_editor(app: &AppWindow) {
     let reset_weak = app.as_weak();
     app.on_editor_reset(move || {
         if let Some(window) = reset_weak.upgrade() {
-            update_editor(|editor| return editor.reset_to_default());
-            project(&window);
+            reset_open_template(&window);
         }
     });
     let back_weak = app.as_weak();
@@ -211,7 +210,15 @@ fn layout_changed(window: &AppWindow, wide: bool) {
         // Narrowing destroys the right pane's text field, which may never report that it lost focus, and a focus left
         // set would make Escape on the list page look like typing in a template line.
         update_editor(|editor| return editor.with_focus(false));
+        // The template line's focus zone went with it.
+        let focus = window.global::<crate::Focus>();
+        if focus.get_zone() == 7 {
+            focus.set_zone(0);
+            focus.set_label("".into());
+        }
     }
+    // The end-to-end run waits for the layout it asked for before it presses keys.
+    crate::ui_state_log::emit(window, "layout");
 }
 
 /// What: `edit_text` applies one text edit with byte offsets from the editor.
@@ -240,9 +247,23 @@ fn insert_field(window: &AppWindow, index: i32) {
     }
 }
 
+/// What: `reset_open_template` resets the open template to its default and shows it.
+/// Why: the Reset control and Ctrl+Shift+Backspace (D106) do the same thing.
+pub(crate) fn reset_open_template(window: &AppWindow) {
+    update_editor(|editor| return editor.reset_to_default());
+    project(window);
+}
+
+/// What: `apply_templates` applies and saves the drafts without leaving Settings.
+/// Why: Ctrl+Enter in the two-pane Settings page applies the open template and returns to the list (D106).
+pub(crate) fn apply_templates(window: &AppWindow) {
+    commit_templates();
+    project(window);
+}
+
 /// What: `editor_back` saves the valid templates to the session file and returns to Settings.
 /// Why: a template that does not apply keeps its previously applied text, so the rows never show a broken template.
-fn editor_back(window: &AppWindow) {
+pub(crate) fn editor_back(window: &AppWindow) {
     commit_templates();
     update_state(|state| {
         state.route = Route::Settings;

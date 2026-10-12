@@ -4,6 +4,7 @@
 import { Theme } from "theme.slint";
 import { StateLayer } from "state_layer.slint";
 import { ListView } from "std-widgets.slint";
+import { Focus, FocusStop, FocusRing, Keys } from "focus.slint";
 
 // One piece of a result line. The Rust side splits every line at each visible query match, so a line is a
 // sequence of plain and emphasized pieces that together read as the full text.
@@ -53,6 +54,9 @@ export component SearchPage inherits Rectangle {
     in property <length> anchor-offset: 0px;
     // Changes after a refresh re-ranks the results, so the first visible row keeps its place on screen (D111).
     in property <int> anchor-tick: 0;
+    // Result the keyboard highlights (Up and Down move it, Enter opens it), by the `index` of its row; -1 for none. The
+    // query field keeps the typing focus, so this is an active-descendant highlight: a 12 percent layer and a 2 px ring.
+    in property <int> ring: -1;
     // Left inset of the header, the Back target and the result rows, measured from this page's left edge. The
     // inner caller sets it to half the crease plus the standard 16 px inset, and the cover leaves it at 16 px.
     in property <length> content-start-x: 16px;
@@ -95,7 +99,7 @@ export component SearchPage inherits Rectangle {
         height: root.header-height;
         background: Theme.surface-high;
 
-        // Circular hover and pressed layer, 40 px centered in the 48 px Back target.
+        // Circular hover, pressed and focus layer, 40 px centered in the 48 px Back target.
         StateLayer {
             x: root.content-start-x + 4px;
             y: (parent.height - Theme.touch-target) / 2 + 4px;
@@ -105,6 +109,7 @@ export component SearchPage inherits Rectangle {
             tint: Theme.on-surface;
             hovered: back-touch.has-hover;
             pressed: back-touch.pressed;
+            focused: back-stop.ring;
         }
         Path {
             x: root.content-start-x + (Theme.touch-target - root.icon-size) / 2;
@@ -122,7 +127,31 @@ export component SearchPage inherits Rectangle {
             width: Theme.touch-target;
             height: Theme.touch-target;
             mouse-cursor: pointer;
-            clicked => { root.back(); }
+            accessible-role: button;
+            accessible-label: "Back";
+            clicked => {
+                Focus.ring-visible = false;
+                root.back();
+            }
+            Tooltip {
+                text: @markdown("Back (\{Keys.texts.back})");
+            }
+        }
+        back-stop := FocusStop {
+            label: "search-back";
+            x: root.content-start-x;
+            y: (parent.height - Theme.touch-target) / 2;
+            width: Theme.touch-target;
+            height: Theme.touch-target;
+            activated => { root.back(); }
+        }
+        FocusRing {
+            x: root.content-start-x + 4px;
+            y: (parent.height - Theme.touch-target) / 2 + 4px;
+            width: 40px;
+            height: 40px;
+            radius: 20px;
+            active: back-stop.ring;
         }
 
         field := TextInput {
@@ -137,6 +166,16 @@ export component SearchPage inherits Rectangle {
             // Reports each user edit to the caller.
             edited => {
                 root.query-edited(self.text);
+            }
+            // The query field is a text field: it keeps every bare key (zone 7) except the few the Search page takes.
+            changed has-focus => {
+                if (self.has-focus) {
+                    Focus.zone = 7;
+                    Focus.label = "search-field";
+                } else if (Focus.zone == 7) {
+                    Focus.zone = 0;
+                    Focus.label = "";
+                }
             }
         }
         // Placeholder shown only while the field is empty.
@@ -153,7 +192,7 @@ export component SearchPage inherits Rectangle {
         }
 
         // Clear appears only while the field has text (D65 keeps focus where it is).
-        // Circular hover and pressed layer, 40 px centered in the 48 px Clear target.
+        // Circular hover, pressed and focus layer, 40 px centered in the 48 px Clear target.
         StateLayer {
             x: root.width - root.end-inset - Theme.touch-target + 4px;
             y: (parent.height - Theme.touch-target) / 2 + 4px;
@@ -164,6 +203,7 @@ export component SearchPage inherits Rectangle {
             disabled: field.text == "";
             hovered: clear-touch.has-hover;
             pressed: clear-touch.pressed;
+            focused: clear-stop.ring;
         }
         Path {
             x: root.width - root.end-inset - Theme.touch-target + (Theme.touch-target - root.icon-size) / 2;
@@ -183,10 +223,34 @@ export component SearchPage inherits Rectangle {
             height: Theme.touch-target;
             visible: field.text != "";
             mouse-cursor: pointer;
+            accessible-role: button;
+            accessible-label: "Clear";
             clicked => {
+                Focus.ring-visible = false;
                 field.text = "";
                 root.clear();
             }
+        }
+        clear-stop := FocusStop {
+            label: "search-clear";
+            x: root.width - root.end-inset - Theme.touch-target;
+            y: (parent.height - Theme.touch-target) / 2;
+            width: Theme.touch-target;
+            height: Theme.touch-target;
+            enabled: field.text != "";
+            activated => {
+                field.text = "";
+                root.clear();
+                field.focus();
+            }
+        }
+        FocusRing {
+            x: root.width - root.end-inset - Theme.touch-target + 4px;
+            y: (parent.height - Theme.touch-target) / 2 + 4px;
+            width: 40px;
+            height: 40px;
+            radius: 20px;
+            active: clear-stop.ring;
         }
     }
 
@@ -203,6 +267,9 @@ export component SearchPage inherits Rectangle {
     init => {
         field.text = root.query;
         field.focus();
+        // The field's focus change is not reported for the focus it takes here, so the zone is set by hand.
+        Focus.zone = 7;
+        Focus.label = "search-field";
     }
 
     // Keeps the field in step with a query the caller sets, such as a cleared query, and returns the list to its
@@ -212,6 +279,17 @@ export component SearchPage inherits Rectangle {
             field.text = root.query;
         }
         results.content-y = 0px;
+    }
+
+    // Scrolls just enough to keep the highlighted result inside the list when the keyboard moves it.
+    changed ring => {
+        if (root.ring >= 0) {
+            if (root.ring * root.row-height < -results.content-y) {
+                results.content-y = -(root.ring * root.row-height);
+            } else if ((root.ring + 1) * root.row-height > -results.content-y + results.visible-height) {
+                results.content-y = results.visible-height - (root.ring + 1) * root.row-height;
+            }
+        }
     }
 
     // Moves the list to the offset Rust computed so a re-ranked list leaves the first visible row where it was.
@@ -310,13 +388,17 @@ export component SearchPage inherits Rectangle {
             width: results.width;
             height: root.row-height;
 
-            // Hover and pressed layer over the whole row, below the glyph and the text.
+            // Hover, pressed and keyboard layer over the whole row, below the glyph and the text.
             StateLayer {
                 width: parent.width;
                 height: parent.height;
                 tint: Theme.on-surface;
                 hovered: row-touch.has-hover;
                 pressed: row-touch.pressed;
+                focused: row.index == root.ring && Focus.ring-visible;
+            }
+            FocusRing {
+                active: row.index == root.ring && Focus.ring-visible;
             }
 
             // Glyph in the 48 px slot, centered on the same axis as the Back arrow.

@@ -9,6 +9,8 @@ use music_player::command::Command;
 use music_player::engine::Engine;
 use slint::ComponentHandle;
 
+use crate::ui_host::Host;
+
 use crate::AppWindow;
 use crate::ui_playback::int_to_playback_mode;
 use crate::ui_screen::{project, read_state, update_state};
@@ -22,72 +24,89 @@ use crate::ui_screen_view::{select_folder_label, selected_page_scope};
 /// function wire(app: AppWindow, engine: Engine): void { ... }
 /// ```
 pub(crate) fn wire(app: &AppWindow, engine: &Rc<Engine>) {
-    wire_transport(app, engine);
-    wire_library(app, engine);
+    let host: Rc<dyn Host> = Rc::clone(engine) as Rc<dyn Host>;
+    wire_host_callbacks(app, &host);
+    let open_sender = engine.sender();
+    app.on_open_files(move || {
+        open_folder_dialog(open_sender.clone());
+    });
+    crate::ui_overlays::wire(app, engine);
+    crate::ui_menu::wire(app, engine);
+    crate::ui_settings::wire(app);
     crate::ui_search::wire(app, engine);
 }
 
 /// What: `mark_user_acted` records that the user has started to drive the player.
 /// Why: the one-time reveal of the restored playing track must not fire for a track the user starts themselves, which
 /// would scroll the list under them.
-fn mark_user_acted() {
+pub(crate) fn mark_user_acted() {
     update_state(|state| {
         state.startup_reveal_done = true;
     });
 }
 
+/// What: `wire_host_callbacks` registers the callbacks that only send commands to a host: the transport deck, row play,
+/// folder pick, the picker toggle and the keyboard.
+/// Why: the window tests register the same callbacks with a recording host, so a click or a key reaches the same code as
+/// in the application.
+pub(crate) fn wire_host_callbacks(app: &AppWindow, host: &Rc<dyn Host>) {
+    wire_transport(app, host);
+    wire_library(app, host);
+    wire_keys(app, host);
+}
+
 /// What: `wire_transport` registers play, previous, next, seek and mode callbacks.
 /// Why: the transport deck and the mode group send these without knowing the engine.
-fn wire_transport(app: &AppWindow, engine: &Rc<Engine>) {
-    let toggle_engine = engine.clone();
+fn wire_transport(app: &AppWindow, host: &Rc<dyn Host>) {
+    let toggle_host = Rc::clone(host);
     app.on_toggle_play(move || {
         mark_user_acted();
-        toggle_engine.send(Command::TogglePlay);
+        toggle_host.send(Command::TogglePlay);
     });
-    let prev_engine = engine.clone();
+    let prev_host = Rc::clone(host);
     app.on_prev(move || {
         mark_user_acted();
-        prev_engine.send(Command::Prev);
+        prev_host.send(Command::Prev);
     });
-    let next_engine = engine.clone();
+    let next_host = Rc::clone(host);
     app.on_next(move || {
         mark_user_acted();
-        next_engine.send(Command::Next);
+        next_host.send(Command::Next);
     });
-    let seek_engine = engine.clone();
-    app.on_seek(move |secs| seek_engine.send(Command::Seek(f64::from(secs))));
+    let seek_host = Rc::clone(host);
+    app.on_seek(move |secs| seek_host.send(Command::Seek(f64::from(secs))));
     let reveal_weak = app.as_weak();
     app.on_reveal_playing(move || {
         if let Some(window) = reveal_weak.upgrade() {
-            crate::ui_keys::reveal_playing(&window);
+            crate::ui_keys_actions::reveal_playing(&window);
         }
     });
     let folder_reveal_weak = app.as_weak();
     app.on_reveal_folder(move || {
         if let Some(window) = folder_reveal_weak.upgrade() {
-            crate::ui_keys::reveal_playing_folder(&window);
+            crate::ui_keys_actions::reveal_playing_folder(&window);
         }
     });
-    let mode_engine = engine.clone();
+    let mode_host = Rc::clone(host);
     let mode_weak = app.as_weak();
     app.on_select_mode(move |mode| {
         if mode_weak.upgrade().is_some() {
             let scope = read_state(selected_page_scope);
-            mode_engine.send(Command::SetPageScope(scope));
-            mode_engine.send(Command::SetPlaybackMode(int_to_playback_mode(mode)));
+            mode_host.send(Command::SetPageScope(scope));
+            mode_host.send(Command::SetPlaybackMode(int_to_playback_mode(mode)));
         }
     });
 }
 
-/// What: `wire_library` registers row play, folder picker and open-folder callbacks.
+/// What: `wire_library` registers row play and the folder picker callbacks.
 /// Why: these change the selected folder or start a track, and each one ends with a window projection.
-fn wire_library(app: &AppWindow, engine: &Rc<Engine>) {
-    let row_engine = engine.clone();
+fn wire_library(app: &AppWindow, host: &Rc<dyn Host>) {
+    let row_host = Rc::clone(host);
     let row_weak = app.as_weak();
     app.on_select_index(move |index| {
         if let Some(window) = row_weak.upgrade() {
             mark_user_acted();
-            play_row(&row_engine, usize::try_from(index).unwrap_or(usize::MAX));
+            play_row(row_host.as_ref(), usize::try_from(index).unwrap_or(usize::MAX));
             project(&window);
         }
     });
@@ -100,36 +119,30 @@ fn wire_library(app: &AppWindow, engine: &Rc<Engine>) {
             project(&window);
         }
     });
-    let folder_engine = engine.clone();
+    let folder_host = Rc::clone(host);
     let folder_weak = app.as_weak();
     app.on_select_folder(move |label| {
         if let Some(window) = folder_weak.upgrade() {
             mark_user_acted();
-            select_folder(&folder_engine, label.as_str());
+            select_folder(folder_host.as_ref(), label.as_str());
             project(&window);
         }
     });
-    let open_sender = engine.sender();
-    app.on_open_files(move || {
-        open_folder_dialog(open_sender.clone());
-    });
-    crate::ui_overlays::wire(app, engine);
-    crate::ui_menu::wire(app, engine);
-    crate::ui_settings::wire(app);
-    wire_keys(app, engine);
 }
 
-/// What: `wire_keys` routes each key press from the window's key scope to the shortcut dispatcher.
+/// What: `wire_keys` routes each key press and release from the window's key scope to the shortcut handler, and the focus
+/// zone and list focus reports to the list rings.
 /// Why: the window answers true when a shortcut used the key, so the focused field keeps every other key.
-fn wire_keys(app: &AppWindow, engine: &Rc<Engine>) {
+fn wire_keys(app: &AppWindow, host: &Rc<dyn Host>) {
+    crate::ui_hints::install_texts(app);
     let key_weak = app.as_weak();
-    let key_engine = engine.clone();
-    app.on_key_pressed(move |key, ctrl, meta, alt, shift, repeat, in_popup| {
+    let press_host = Rc::clone(host);
+    app.on_key_pressed(move |text, ctrl, meta, alt, shift, repeat, in_popup| {
         let Some(window) = key_weak.upgrade() else {
             return false;
         };
-        let input = crate::ui_keys::KeyInput {
-            key: key.to_string(),
+        let key = crate::ui_keys::RawKey {
+            text: text.to_string(),
             ctrl,
             meta,
             alt,
@@ -137,7 +150,35 @@ fn wire_keys(app: &AppWindow, engine: &Rc<Engine>) {
             repeat,
             in_popup,
         };
-        return crate::ui_keys::dispatch(&window, &key_engine, &input);
+        return crate::ui_keys::on_key_pressed(&window, press_host.as_ref(), &key);
+    });
+    let release_weak = app.as_weak();
+    app.on_key_released(move |text, ctrl, meta, alt, shift| {
+        if let Some(window) = release_weak.upgrade() {
+            let key = crate::ui_keys::RawKey {
+                text: text.to_string(),
+                ctrl,
+                meta,
+                alt,
+                shift,
+                repeat: false,
+                in_popup: false,
+            };
+            crate::ui_keys::on_key_released(&window, &key);
+        }
+    });
+    let list_weak = app.as_weak();
+    app.on_list_focused(move |zone| {
+        if let Some(window) = list_weak.upgrade() {
+            crate::ui_lists::list_focused(&window, zone);
+        }
+    });
+    let zone_weak = app.as_weak();
+    app.global::<crate::Focus>().on_zone_changed(move |zone| {
+        tracing::debug!(zone, "the focus zone changed");
+        if let Some(window) = zone_weak.upgrade() {
+            crate::ui_state_log::emit(&window, "focus");
+        }
     });
 }
 
@@ -164,7 +205,7 @@ pub(crate) fn open_folder_dialog(sender: music_player::engine::CommandSender) {
 /// ```ts
 /// const playRow = (index: number) => current === index ? toggle() : (select(index), play());
 /// ```
-pub(crate) fn play_row(engine: &Engine, index: usize) {
+pub(crate) fn play_row(engine: &dyn Host, index: usize) {
     let current = read_state(|state| return state.current_index);
     if current == Some(index) {
         engine.send(Command::TogglePlay);
@@ -176,7 +217,7 @@ pub(crate) fn play_row(engine: &Engine, index: usize) {
 
 /// What: `select_folder` selects the folder named `label`, closes the picker, and scopes the engine to it.
 /// Why: the selection and the engine scope come from the same state write.
-fn select_folder(engine: &Engine, label: &str) {
+pub(crate) fn select_folder(engine: &dyn Host, label: &str) {
     let mut chosen_scope: Option<Vec<usize>> = None;
     update_state(|state| {
         chosen_scope = select_folder_label(state, label);

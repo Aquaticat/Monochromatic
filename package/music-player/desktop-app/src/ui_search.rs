@@ -21,6 +21,7 @@ use music_player::search_service::{SearchAnswer, SearchService};
 use slint::ComponentHandle;
 
 use crate::AppWindow;
+use crate::ui_host::Host;
 use crate::ui_screen::{project, read_state, update_state};
 use crate::ui_screen_view::{Route, ScreenState, select_folder_label};
 use crate::ui_search_apply::{apply_answer, install_rows_model, show_view};
@@ -83,11 +84,16 @@ pub(crate) fn feed_library_names(names: Arc<Vec<String>>) {
 /// ```
 pub(crate) fn wire(app: &AppWindow, engine: &Rc<Engine>) {
     wire_route(app);
-    let result_engine = engine.clone();
+    wire_open(app, Rc::clone(engine) as Rc<dyn Host>);
+}
+
+/// What: `wire_open` registers the callback that opens a result with a host.
+/// Why: the window tests open a result with a recording host.
+pub(crate) fn wire_open(app: &AppWindow, host: Rc<dyn Host>) {
     let result_weak = app.as_weak();
     app.on_search_open(move |position| {
         if let Some(window) = result_weak.upgrade() {
-            activate_result(&window, &result_engine, usize::try_from(position).unwrap_or(usize::MAX));
+            activate_result(&window, host.as_ref(), usize::try_from(position).unwrap_or(usize::MAX));
         }
     });
 }
@@ -181,7 +187,7 @@ pub(crate) fn project_search(window: &AppWindow) {
 /// What: `activate_result` opens the result at `position` of the list the user is looking at.
 /// Why: the position refers to the shown list, which was kept from the last answer; searching again could return a
 /// different row for the same position while the library is still growing.
-fn activate_result(window: &AppWindow, engine: &Engine, position: usize) {
+pub(crate) fn activate_result(window: &AppWindow, engine: &dyn Host, position: usize) {
     let result = read_state(|state| return state.search_ui.results.get(position).cloned());
     let Some(found) = result else {
         return;
@@ -206,6 +212,29 @@ fn activate_result(window: &AppWindow, engine: &Engine, position: usize) {
         }
     }
     show_route(window);
+}
+
+/// What: `move_ring` moves the highlighted result of the Search page by `delta`, staying inside the list.
+/// Why: Up and Down move through the results while the query field keeps the typing focus (D106).
+pub(crate) fn move_ring(window: &AppWindow, delta: isize) {
+    let count = read_state(|state| return state.search_ui.results.len());
+    if count == 0 {
+        return;
+    }
+    update_state(|state| {
+        let here = state.search_ring.unwrap_or(0);
+        state.search_ring = Some(here.saturating_add_signed(delta).min(count - 1));
+    });
+    let ring = read_state(|state| return state.search_ring);
+    window.set_search_ring(ring.and_then(|row| return i32::try_from(row).ok()).unwrap_or(-1));
+    tracing::debug!(?ring, "the Search highlight moved");
+}
+
+/// What: `open_ringed_result` opens the highlighted result, or the first one when none is highlighted.
+/// Why: Enter in the Search page opens the focused result (D106).
+pub(crate) fn open_ringed_result(window: &AppWindow, host: &dyn Host) {
+    let position = read_state(|state| return state.search_ring).unwrap_or(0);
+    activate_result(window, host, position);
 }
 
 /// What: `open_folder_result` selects the folder page named by a result and returns to the player, or does nothing.

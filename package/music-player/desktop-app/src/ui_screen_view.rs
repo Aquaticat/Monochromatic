@@ -15,7 +15,7 @@ use music_player::track_entries::{deck_folder_label, track_title_for};
 use music_player::track_measure::{TrackMeasure, lookup_for_positions};
 use std::collections::HashMap;
 
-use crate::ui_screen_rows::{ListRow, Picker, list_rows, picker};
+use crate::ui_screen_rows::{ListRow, Picker, PickerName, list_rows, picker};
 use crate::ui_screen_scroll::ScrollRequest;
 use crate::ui_templates::{playing_subtitle, playing_track};
 use music_player::template_editor_state::TemplateEditorState;
@@ -123,6 +123,22 @@ pub struct ScreenState {
     /// Whether the one-time reveal of the restored playing track has happened or the user has already acted, so a
     /// later change of the playing track never scrolls the list.
     pub startup_reveal_done: bool,
+    /// Rows of the track list as the last projection showed them, for the list keys.
+    pub shown_rows: Vec<ListRow>,
+    /// Name rows of the folder picker as the last projection showed them, for the list keys.
+    pub shown_names: Vec<PickerName>,
+    /// Title of the folder the last projection showed, which the folder ring starts on.
+    pub shown_folder: String,
+    /// Library index of the track row with the keyboard ring.
+    pub ring_track: Option<i32>,
+    /// Name of the folder with the keyboard ring.
+    pub ring_folder: Option<String>,
+    /// Highlighted row of the open track menu, which the keyboard moves.
+    pub menu_ring: Option<usize>,
+    /// True when the next track menu was asked for from the keyboard, so it opens with its first row highlighted.
+    pub menu_by_key: bool,
+    /// Highlighted result of the Search page, which the keyboard moves.
+    pub search_ring: Option<usize>,
 }
 
 /// Methods of `ScreenState`.

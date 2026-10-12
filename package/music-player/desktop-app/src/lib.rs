@@ -746,6 +746,58 @@ pub mod search_page_model;
 pub mod keymap;
 
 /// What:
+///      `pub mod keymap_bindings;` the D106 binding table (`src/keymap_bindings.rs`).
+/// Why:
+///       One table of chords feeds the classifier,
+///  the key hint badges,
+///  the tooltips and the menu rows,
+///  so they cannot disagree.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// export * as keymapBindings from "./keymap_bindings";
+/// ```
+pub mod keymap_bindings;
+
+/// What:
+///      `pub mod double_shift;` the double tap of Shift detector (`src/double_shift.rs`).
+/// Why:
+///       Search opens on two quick taps of Shift (D106),
+///  and the timing rule is pure logic with injected time.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// export * as doubleShift from "./double_shift";
+/// ```
+pub mod double_shift;
+
+/// What:
+///      `pub mod key_hints;` the key hint badge state and texts (`src/key_hints.rs`).
+/// Why:
+///       Badges appear after the modifiers of a shortcut have been held for 300 ms (D106),
+///  and the timing and narrowing rules are pure logic with injected time.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// export * as keyHints from "./key_hints";
+/// ```
+pub mod key_hints;
+
+/// What:
+///      `pub mod list_focus;` the focus ring position inside the folder and track lists (`src/list_focus.rs`).
+/// Why:
+///       Arrow keys,
+///  Home,
+///  End,
+///  the page keys and letters move the ring by pure rules that are unit-tested.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// export * as listFocus from "./list_focus";
+/// ```
+pub mod list_focus;
+
+/// What:
 ///      `pub mod first_run;` the first-run walkthrough state (`src/first_run.rs`).
 /// Why:
 ///       The walkthrough's steps and their persistence are pure logic,

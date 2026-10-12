@@ -36,8 +36,8 @@ pub const TITLE_X_FROM_EDGE: f32 = 84.0;
 /// Height of the header that holds Back and the page title (D109).
 pub const HEADER_HEIGHT: f32 = 64.0;
 
-/// Corner radius of the selected row's pill in whole pixels; the stock selection measures about 27.5 (D110).
-pub const PILL_RADIUS: f32 = 28.0;
+/// Corner radius of the selected row's pill in whole pixels: 21, inside the stock 21 to 22 dp (D110).
+pub const PILL_RADIUS: f32 = 21.0;
 
 /// What: `is_wide` tells whether a window of `width` logical pixels shows the two-pane Settings.
 /// Why: Settings switches form at the same width as the player's own two-pane layout (D110).

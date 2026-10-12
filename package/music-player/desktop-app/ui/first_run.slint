@@ -2,6 +2,7 @@
 // prepared by the Rust module `first_run`, so this component only lays out text and buttons.
 import { Theme } from "theme.slint";
 import { StateLayer } from "state_layer.slint";
+import { Focus, PlayerStop, FocusRing } from "focus.slint";
 
 // Pane that shows one first-run state as a scrollable column of copy and actions.
 export component FirstRunPane inherits Rectangle {
@@ -67,12 +68,13 @@ export component FirstRunPane inherits Rectangle {
                 background: Theme.primary;
                 border-radius: 24px;
 
-                // Hover and pressed layer over the filled pill, in the content color of the primary fill.
+                // Hover, pressed and focus layer over the filled pill, in the content color of the primary fill.
                 StateLayer {
                     radius: 24px;
                     tint: Theme.on-primary;
                     hovered: primary-touch.has-hover;
                     pressed: primary-touch.pressed;
+                    focused: primary-stop.ring;
                 }
                 primary-row := HorizontalLayout {
                     padding-left: 24px;
@@ -88,7 +90,24 @@ export component FirstRunPane inherits Rectangle {
                 }
                 primary-touch := TouchArea {
                     mouse-cursor: pointer;
-                    clicked => { root.primary(); }
+                    accessible-role: button;
+                    accessible-label: root.primary-label;
+                    clicked => {
+                        Focus.ring-visible = false;
+                        root.primary();
+                    }
+                }
+                primary-stop := PlayerStop {
+                    label: "first-run-primary";
+                    activated => { root.primary(); }
+                }
+                // The ring sits inside the pill in the on-primary role: the primary role would vanish against the fill.
+                Rectangle {
+                    visible: primary-stop.ring;
+                    background: transparent;
+                    border-width: 2px;
+                    border-color: Theme.on-primary;
+                    border-radius: 24px;
                 }
             }
 
@@ -102,12 +121,13 @@ export component FirstRunPane inherits Rectangle {
                 border-width: 1px;
                 border-color: Theme.outline;
 
-                // Hover and pressed layer over the outlined pill, in the content color of the canvas beneath it.
+                // Hover, pressed and focus layer over the outlined pill, in the content color of the canvas beneath it.
                 StateLayer {
                     radius: 24px;
                     tint: Theme.on-surface;
                     hovered: secondary-touch.has-hover;
                     pressed: secondary-touch.pressed;
+                    focused: secondary-stop.ring;
                 }
                 secondary-row := HorizontalLayout {
                     padding-left: 24px;
@@ -123,7 +143,20 @@ export component FirstRunPane inherits Rectangle {
                 }
                 secondary-touch := TouchArea {
                     mouse-cursor: pointer;
-                    clicked => { root.secondary(index); }
+                    accessible-role: button;
+                    accessible-label: label;
+                    clicked => {
+                        Focus.ring-visible = false;
+                        root.secondary(index);
+                    }
+                }
+                secondary-stop := PlayerStop {
+                    label: "first-run-secondary-" + index;
+                    activated => { root.secondary(index); }
+                }
+                FocusRing {
+                    radius: 24px;
+                    active: secondary-stop.ring;
                 }
             }
 

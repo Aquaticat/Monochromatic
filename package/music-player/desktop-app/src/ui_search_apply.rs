@@ -122,7 +122,16 @@ pub(crate) fn show_view(window: &AppWindow, view: SearchView, query: &str, ancho
         state.search_ui.results = view.results;
         state.search_ui.rows = view.rows;
         state.search_ui.shown_query = Some(query.to_string());
+        // The highlighted result is the first one for a new query, stays where it is when the list is refreshed in place
+        // (clamped to the list), and is none when there is no result.
+        let count = state.search_ui.results.len();
+        state.search_ring = match (count, state.search_ring) {
+            (0, _) => None,
+            (_, Some(ring)) if anchor => Some(ring.min(count - 1)),
+            _ => Some(0),
+        };
     });
+    window.set_search_ring(read_state(|state| return state.search_ring).and_then(|row| return i32::try_from(row).ok()).unwrap_or(-1));
 }
 
 /// What: `apply_answer` applies one service answer on the window thread.
