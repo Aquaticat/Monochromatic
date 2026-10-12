@@ -16,7 +16,7 @@
 
 /// The world the child lands in, and the shared fixtures.
 use super::landing_support::{Opened, WORLD_VARIABLE, World, git_text, land};
-use super::support::{Fixture, TRANSACTION_ID, fixture, git, remove, run_wrapped};
+use super::support::{Fixture, TRANSACTION_ID, bounded_for, fixture, git, observe, remove, wrapper_first_path};
 use git_policy_cli::transaction_journal::Conclusion;
 use git_policy_cli::transaction_phase::PHASE_SIGNAL_VARIABLE;
 use std::os::unix::process::ExitStatusExt;
@@ -119,7 +119,16 @@ fn crash_at(phase: &str, landed: bool) {
     assert_eq!(status.signal(), Some(9), "the child died of the kill marker, not of a failure; see child.log");
     assert!(marker_directory.join(format!("{phase}.reached")).exists());
     assert!(world.directory.exists(), "the dead landing left its transaction directory");
-    let observed = run_wrapped(&fixture, world.repo.as_path(), &["status", "--porcelain=v1"]);
+    // Recovery runs real Git several times before the status, so the bound is wider than the 5 seconds
+    // that bound a single forwarded command; a heavily loaded host otherwise ends the wrapper mid-recovery.
+    let mut status_command: Command = bounded_for(
+        &fixture,
+        fixture.root.join("bin/git").as_path(),
+        wrapper_first_path(&fixture).as_os_str(),
+        "120",
+    );
+    status_command.current_dir(world.repo.as_path()).args(["status", "--porcelain=v1"]);
+    let observed = observe(&mut status_command, b"");
     assert_eq!(observed.code, Some(0), "{}", String::from_utf8_lossy(&observed.stderr));
     let expected_branch: &str = if landed { world.prepared.as_str() } else { world.base.as_str() };
     assert_eq!(git_text(&fixture, world.repo.as_path(), &["rev-parse", "refs/heads/main"]), expected_branch);
