@@ -21,6 +21,12 @@ use super::landing_findings::{LANDING_FINDING_EXIT_CODE, landing_finding};
 use super::owner_lock::OwnerLock;
 use super::policy_events::PolicyEvent;
 use super::transaction_git::{GitFailure, GitRequest, run_git_checked};
+
+/// The core of the no-change finding.
+pub const NO_CHANGE_CORE_ID: &str = "commit-normalization";
+
+/// The code of the no-change finding.
+pub const NO_CHANGE_CODE: &str = "no-change";
 use super::transaction_journal::{AddedPath, Base, TransactionMode};
 use super::worktree_completion::{InstallResult, install_added_worktree_files};
 
@@ -168,8 +174,8 @@ pub fn complete_no_change_transaction(input: NoChangeInput<'_>) -> Result<Option
     input.workspace.finish_transaction();
     let mut events: Vec<PolicyEvent> = summary;
     events.push(PolicyEvent::CoreFinding {
-        core_id: super::commit_policy_preparation::NO_CHANGE_CORE_ID,
-        code: super::commit_policy_preparation::NO_CHANGE_CODE,
+        core_id: NO_CHANGE_CORE_ID,
+        code: NO_CHANGE_CODE,
         message: no_change_message(completion.conflicted.as_slice()),
     });
     return Ok(Some(TransactionResult {

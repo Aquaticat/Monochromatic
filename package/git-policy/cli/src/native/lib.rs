@@ -240,9 +240,6 @@ pub mod private_index_stage;
 /// Slice 6: the commit path's bounded policy convergence over the private index.
 pub mod commit_convergence;
 
-/// Slice 6: the commit path's preparation: converge, then prepare the commit or report a no-change normalization.
-pub mod commit_policy_preparation;
-
 /// The commit transaction in the incumbent's order, up to the settled policies.
 pub mod commit_transaction;
 
