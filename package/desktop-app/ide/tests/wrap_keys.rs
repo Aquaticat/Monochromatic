@@ -307,7 +307,11 @@ fn end_goes_to_the_row_end_then_the_line_end() {
     let gap = Document::new("aaaa    bb");
     let gap_rows = vec![0..4, 4..8, 8..10];
     let gap_text = gap.text().slice(..);
-    assert_eq!(end(gap_text, &gap_rows, 5, Downstream), place(8, Upstream));
+    assert_eq!(
+        end(gap_text, &gap_rows, 5, Downstream),
+        place(8, Upstream),
+        "a row of blanks only keeps its whole end"
+    );
     // Trailing blanks on the last row: End goes before them, then back after them.
     let trailing = Document::new("ab   ");
     let trailing_rows = one_row(5);
@@ -823,4 +827,41 @@ fn a_hanging_blank_at_the_end_of_the_text_leaves_no_empty_row() {
         tails > 0,
         "no fixture produced an empty tail, so the test proves nothing about it"
     );
+}
+
+/// A remembered column belongs to one side of a wrap offset:
+///  the end of an upper row and the start of the next row are the same position, but not the same place.
+#[test]
+fn a_remembered_column_belongs_to_one_side_of_a_wrap_offset() {
+    for width in WIDTHS {
+        for scale in SCALES {
+            let label = format!("width {width} scale {scale}");
+            let text = exact_fit(width, scale);
+            let rows = rows_of(&text, 0, width, scale);
+            let wrap = rows[0].end;
+            let mut shaper = TextShaper::new();
+            let at_row_end = at(&text, wrap, ReadingAffinity::Upstream);
+            let other_side = PreferredColumn {
+                head: wrap,
+                affinity: ReadingAffinity::Downstream,
+                x: 0.0,
+            };
+            let ignored = vertical(&mut shaper, &at_row_end, scale, width, 1, Some(other_side));
+            assert!(
+                ignored.head > rows[1].start + 3,
+                "{label}: a column remembered for the start of the lower row moved a caret at the end of the upper row"
+            );
+            let same_side = PreferredColumn {
+                head: wrap,
+                affinity: ReadingAffinity::Upstream,
+                x: 0.0,
+            };
+            let used = vertical(&mut shaper, &at_row_end, scale, width, 1, Some(same_side));
+            assert!(
+                used.head <= rows[1].start + 1,
+                "{label}: a column remembered for this side must be used, landed at {}",
+                used.head
+            );
+        }
+    }
 }

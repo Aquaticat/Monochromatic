@@ -279,6 +279,32 @@ fn a_new_width_breaks_kept_rows_again_without_shaping() {
     assert!(kept.rebroken_rows() >= 4 * count as u64);
 }
 
+/// Rows broken again at a new width at scale 2 count as many rows as a fresh shaping gives:
+///  the continuation indent is the same on both paths.
+#[test]
+fn a_new_width_breaks_kept_rows_like_a_fresh_shaping_at_scale_two() {
+    let mut lines = Vec::new();
+    for index in 0..30 {
+        lines.push(format!("{}{}", " ".repeat(2 + index % 9), CODE));
+    }
+    let text = lines.join("\n");
+    let document = Document::new(&text);
+    let count = document.text().len_lines();
+    let mut kept = TextShaper::new();
+    let mut fresh = TextShaper::new();
+    kept.measure_lines(&document, 0..count, 2.0, Some(420.0), &[]);
+    for width in [300.0, 180.0, 640.0] {
+        let moved = kept.measure_lines(&document, 0..count, 2.0, Some(width), &[]);
+        assert_eq!(moved.shaped, 0, "width {width}: no line is shaped again");
+        fresh.forget_rows();
+        let wanted = fresh.measure_lines(&document, 0..count, 2.0, Some(width), &[]);
+        assert_eq!(
+            moved.lines, wanted.lines,
+            "scale 2 width {width}: broken again like a fresh shaping"
+        );
+    }
+}
+
 /// A click inside a continuation row resolves in that row, and the caret there is drawn on that row.
 #[test]
 fn hits_and_carets_on_continuation_rows_resolve_in_their_row() {
