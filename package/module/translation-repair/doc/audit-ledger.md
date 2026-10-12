@@ -35191,6 +35191,195 @@ Recurrence:
 `mistake-prevention.md`,
 "Tests on the real clock".
 
+### B417: a contest most of whose ballots called the archive flawed ran no run-off
+
+Red `52a38dc6cf`,
+fixed in `c66cb5e474`.
+
+Found on 2026-10-11 (UTC) in the read of TianqiChen66622.
+Slice 4 settled neither,
+with four of its five usable contest ballots calling the archive flawed,
+yet the run-off over a tied slate with an eligible standing read every usable ballot,
+so it ran a single round;
+three proposals tied at weight one,
+the standing drew none,
+and the tie kept the archive's present-tense sentence.
+The owner answered the same day,
+"Majority flawed yes".
+
+The fix:
+`archiveFlawedByMajority` (`consolidate-archive-flawed.ts`) triggers the run-off on a strict majority of the usable ballots,
+and the driver sets `runoffOverStanding` from it.
+`CONSOLIDATE_CACHE_VERSION` moved from 20 to 21,
+since stored settlements change meaning.
+The archive predicate cases read three of five flawed as a run-off and two of four as none.
+
+Open to the owner's veto:
+a ballot silent about the archive counts in the denominator,
+where the alternative counts only ballots that judged the archive.
+
+### B418: a single-round tie the standing drew no ballot in kept the standing
+
+Red `52a38dc6cf`,
+fixed in `c66cb5e474`.
+
+Found with B417.
+A single round that declined on a tie between proposals kept the standing,
+even when the standing itself drew no ballot.
+The owner answered on 2026-10-11 (UTC),
+"Run off the tied finalists".
+
+The fix:
+`judgeSingleRoundOverStanding` runs off the tied finalists once through `runoffTiedFinalists` (`translate-retry.ts`)
+when the single round declines and the standing drew no ballot;
+a run-off that ties again keeps the standing,
+and a standing that drew a ballot keeps the single round.
+The settle cases run off a three-way tie the standing drew no ballot in,
+keep a tie the standing took part in,
+and keep the standing when the run-off ties again after one ask.
+
+Left open for the next round:
+`archive-block-review-stage.ts` keeps a ballot-drawing fallback on a tie,
+where the same run-off would apply.
+
+### B420: a seat that threw on every call kept its place on every bench for the whole run
+
+Red `2a049370cd`,
+fixed in `06442b4689`.
+
+Found on 2026-10-11 (UTC) in the read of TianqiChen66622,
+where seats that threw on every call they were given were still asked by every later gather
+and still counted in every quorum denominator,
+so each gather waited on them and sized its quorum on a bench they could not fill.
+
+The fix:
+`seatTallyClient` (`seat-tally.ts`) takes a `minAsks` threshold
+and refuses a seat the tally has withheld with `NoProviderForModelError` before the inner client is asked,
+which every stage already reads as an unreachable seat;
+a refusal is not an ask,
+so it leaves the counts as they were.
+The threshold is `SEAT_WITHHOLD_ASKS` in `stage-quorum.ts`,
+`STAGE_RETRY_ROUNDS` plus one:
+the most asks one gather gives a lost seat,
+so a withheld seat has failed a whole gather's worth of asks rather than one round.
+The quorum gather leaves withheld seats out of its bench and its denominator,
+and each gather whose stage named a withheld seat warns which seats it did not ask and why.
+The run's seat line names each withheld seat with how many of its asks threw.
+
+Open to the owner's veto:
+the threshold of four asks;
+`runWindowedRounds`,
+the judge benches and the floor checks do not filter withheld seats themselves,
+and reach them only through the refusal.
+
+### B421: a call the caller abandoned would have counted as the seat's failure
+
+Red `2a049370cd`,
+fixed in `06442b4689`.
+
+Found on 2026-10-11 (UTC) in the lead's review of the B420 patch,
+before it merged.
+Every catch in `seatTallyClient` recorded `threw`,
+so a call the caller aborted
+(a straggler cut off after quorum,
+a stage deadline,
+an entry stop)
+counted as the seat's own failure.
+A slow but healthy seat cut off four times would then have been withheld for the whole run;
+Kimi-K3 took 44 to 74 seconds to its first byte in TianqiChen66622,
+which is that shape.
+
+The fix:
+a throw after the request's signal has aborted records nothing,
+the treatment the tally already gave a call cut off when the process ends.
+One case records nothing for four calls a caller aborted and that then threw,
+and another withholds a seat whose four calls threw with the caller still waiting on each.
+
+### B422: the census of thrown text found every failed call already written
+
+No code change.
+
+The dark-seat work counted every path where a stage call can throw,
+to find any whose error text reached no line,
+since TianqiChen66622's log had none for the seats that threw.
+Every caller already writes the thrown text on a warn line;
+that log lost them to the launch's stream wiring
+(M147).
+The run's "seats dark" line now says where those lines are:
+"<stage> <model>: <error>,
+voice lost",
+or "seat unreachable".
+
+### B424: the forfeit of an eligible standing read every ballot where the run-off read a majority
+
+Red `46fe30664f`,
+fixed in `b640f2392e`.
+
+After B417,
+the forfeit of an eligible standing past an undecided gate still needed every contest ballot to call the archive flawed,
+the rule since 2026-09-27 ("Slate's choice"),
+while the run-off read a strict majority,
+so the same contest could run off and still keep the standing.
+The owner answered on 2026-10-11 (UTC),
+"Majority,
+like the run-off".
+
+The fix:
+both rules read `archiveFlawedByMajority`;
+the consolidation carries one flag,
+`runoffOverStanding`,
+which `settleConsolidation` hands to the gate as `standingFlawedByMajority`;
+`archiveFlawedByEveryBallot` and `archiveFlagsOf` are removed,
+and the finding and the warn line say "a majority of contest ballots".
+`CONSOLIDATE_CACHE_VERSION` stays 21:
+its account names this change,
+and no pass had run since 21 was set.
+Red at the base:
+"expected 'gate-kept-standing' to equal 'consolidated'".
+
+### B425: archive-absent insertions went to the roster, and those that missed quorum shipped nothing
+
+Red `4f0ab3522d`,
+fixed in `5059b141cc`.
+
+Ledger item L6,
+measured before the fix over 952 contests in 240 artifacts:
+931 shipped the translate lane,
+5 consolidated,
+and 16 missed quorum and shipped nothing.
+At an archive-absent insertion the repair lane records `not-applicable`,
+so the question had one applicable lane,
+yet the contest asked the roster.
+
+The fix:
+`contestDocumentLanes` gives such a slice a `sole-lane` verdict before any cache or roster read,
+with no ballots and no usable voices,
+unless the slice is front matter,
+whose candidates the syntax admission rule judges and records one by one.
+The consolidation and the final selection read `sole-lane` as a win for that lane,
+and the would-ship reader ships its wording.
+The artifact writer moves to generation 15,
+which records `sole-lane`;
+the reader accepts it only there,
+only on a slice with one applicable lane and no ballots,
+and reads generation 14 contests unchanged.
+The persistence helpers moved unchanged to `lane-contest-persist.ts`.
+No cache version moved:
+`sole-lane` rows never reach the lane-contest cache,
+and every namespace is keyed by the pipeline digest.
+The 16 lost passages were not measured again;
+that waits for a pass.
+
+Open to the owner's veto:
+a `sole-lane` record keeps `ballots: []` and `usable: 0`,
+where the alternative omits the keys and needs a second record shape;
+the would-ship reader reuses `decidedBy: 'contest'`,
+where the alternative is a new decider value;
+front-matter insertions stay on the roster;
+`soleLaneOf` answers both lanes rather than throwing on a row where neither or both lanes are not applicable,
+so a reader refuses it as a parse error;
+a runs directory holding generation 14 artifacts is refused on resume.
+
 ## Process mistakes in this audit
 
 These are the agent's own mistakes while fixing,
@@ -38099,6 +38288,66 @@ every occurrence read,
 before the question is asked.
 `mistake-prevention.md`,
 "Questions to the owner".
+
+### M149: an agent read the session's task output files while it waited
+
+Status:
+happened on 2026-10-11 (UTC),
+in the agent that built B425;
+disclosed in its own report.
+While its suite ran,
+it read one background task's output file under the harness's task folder,
+then stopped and read its own scratch logs instead.
+Its brief forbids reading those files,
+since they hold whole transcripts and other tasks' output.
+No key or environment was read or printed.
+
+Prevention:
+the rule stays in every brief and is restated in every continuation brief;
+an agent waits on its own scratch logs.
+`mistake-prevention.md`,
+"Tasks,
+builds and bulk output".
+
+### M150: the lead's own slips in merging B420, B421 and B425
+
+Status:
+happened on 2026-10-11 (UTC);
+each caught before it reached a commit or a conclusion.
+
+- A package task started from the repository root,
+  where it is not found,
+  the M134 family again;
+  rerun from the worktree root.
+- A type check run while the named-test runner was rebuilding `dist`,
+  so it read the old build and reported exports the new build has;
+  rerun after the build,
+  clean.
+- `git apply --check` piped into a filter,
+  so the shell reported the filter's exit
+  and a patch that applied read as one that did not;
+  rerun alone.
+- A commit message drafted with call counts the lead could not trace to a source in front of it,
+  and naming the wrong file for the withholding threshold;
+  both rewritten from the diff before the commit.
+- The Markdown lint for this entry was started with a `;` chain,
+  which the shell rules forbid (M1);
+  its result was read from its log as usual.
+- An agent's hand-back report never reached the lead,
+  so the merge read its results from its scratch logs:
+  lint,
+  scans and the suite log,
+  whose one failing file came from the agent's worktree lacking the `git` policy wrapper's build,
+  and passed on the branch.
+
+Prevention:
+`mistake-prevention.md`,
+"Tasks,
+builds and bulk output",
+where the wrong root (M134) and the type check beside a rebuild (M132) are recurrences of recorded rules
+and the piped exit is new;
+and "Commit messages",
+whose rule that a constant or count a message names is read from its source first (M84) this repeats.
 
 ### M79: a coverage census measuring compressed code
 

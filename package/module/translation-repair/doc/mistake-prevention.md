@@ -737,6 +737,9 @@ A constant a message or a comment names is read from its declaration first,
 and a correction is held to the same rule:
 one message quoted a quorum of 3 where both quorums were 2,
 and its correction's first wording repeated the slip (M84).
+On 2026-10-11 (UTC) a merge message was drafted with call counts no source in front of the lead held,
+and named the wrong file for the threshold it described;
+both were rewritten from the diff before the commit ran (M150).
 A message file takes a name no earlier message used,
 checked with `ls` before any tool writes it (M72).
 Before the commit runs,
@@ -2226,6 +2229,16 @@ A brief names the source of each observation it hands on
 a ledger code or a report),
 or says it holds none,
 so the agent knows whether it is checking a claim or searching for one.
+On 2026-10-11 (UTC) the lead again started a package task from the main repository's root,
+ran the type check while the named-test runner was rebuilding `dist`,
+and piped `git apply --check` into a filter,
+so the shell reported the filter's exit and a patch that applied read as refused (ledger M150);
+a command whose exit decides the next step runs unpiped.
+An agent waiting on its suite read a background task's output file in the harness's task folder,
+which its brief forbids,
+then stopped and read its own scratch logs instead (ledger M149);
+a continuation brief restates every binding rule of the brief it continues,
+since a fresh agent has not read the old one's corrections.
 
 The rule:
 a task that must not run with a fan-out parent is named outside the parent's prefix,
