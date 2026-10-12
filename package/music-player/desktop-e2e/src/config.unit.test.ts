@@ -12,7 +12,6 @@ import {
 import {
   loadRunConfig,
   overridesFromEnvironment,
-  PINNED_COMPOSITOR_VERSION,
 } from './config.ts';
 
 await describe({
@@ -21,11 +20,15 @@ await describe({
     it({
       name: 'derives every default from the app directory and the home directory',
       fn: async ({ expect, }) => {
-        const config = loadRunConfig({ appDir: '/work/app', home: '/home/tester', overrides: {}, },);
+        const config = loadRunConfig({
+          appDir: '/work/app',
+          home: '/home/tester',
+          overrides: {},
+          defaultCompositorPath: '/mise/installs/nested/bin/nested',
+        },);
         expect(config,).toEqual({
           appDir: '/work/app',
-          compositorPath:
-            `/home/tester/.local/share/mise/installs/cargo-monochromatic-nested-wayland-session/${PINNED_COMPOSITOR_VERSION}/bin/monochromatic-nested-wayland-session`,
+          compositorPath: '/mise/installs/nested/bin/nested',
           generatorPath: '/home/tester/temp/agent/agent-scale/make-scale-library.ts',
           only: '',
           outputRoot: '/work/app/target/e2e',
@@ -41,6 +44,7 @@ await describe({
           appDir: '/work/app',
           home: '/home/tester',
           overrides: { generatorPath: '/g.ts', only: 'seek', outputRoot: '/out', scratchRoot: '/tmp-x', },
+          defaultCompositorPath: '/mise/installs/nested/bin/nested',
         },);
         expect(config.generatorPath,).toBe('/g.ts',);
         expect(config.only,).toBe('seek',);
@@ -50,20 +54,15 @@ await describe({
       },
     },),
     it({
-      name: 'lets the compositor path be replaced, for a build that is not installed yet',
+      name: 'lets the compositor path be replaced over the installed one, for a build that is not installed yet',
       fn: async ({ expect, }) => {
         const config = loadRunConfig({
           appDir: '/work/app',
           home: '/home/tester',
           overrides: { compositorPath: '/work/nws/target/release/monochromatic-nested-wayland-session', },
+          defaultCompositorPath: '/mise/installs/nested/bin/nested',
         },);
         expect(config.compositorPath,).toBe('/work/nws/target/release/monochromatic-nested-wayland-session',);
-      },
-    },),
-    it({
-      name: 'pins the compositor version the checks were probed on',
-      fn: async ({ expect, }) => {
-        expect(PINNED_COMPOSITOR_VERSION,).toBe('0.4.0',);
       },
     },),
   ],

@@ -41,11 +41,18 @@ Run it alone:
    `pgrep`,
    ImageMagick (`magick`),
    and `wl-paste`.
-- The nested compositor `monochromatic-nested-wayland-session` at version 0.4.0 or newer,
-   installed through mise (the run starts the install named by `PINNED_COMPOSITOR_VERSION` in `src/config.ts`),
+- The nested compositor `monochromatic-nested-wayland-session`, installed through mise
+   (`"cargo:monochromatic-nested-wayland-session" = "latest"` in the root `mise.toml`),
    or any executable named by `E2E_COMPOSITOR`.
-  The run asks the compositor for `--version` before it starts and refuses an older one with the way out.
-  Version 0.4.0 adds the key names the checks press (Menu, F10 and the other F keys,
+  The run starts the install that mise reports for `mise where cargo:monochromatic-nested-wayland-session`,
+   whatever its version: the runner pins no version, and the path it uses is absolute,
+   because the mise shim needs a trusted config that the compositor's systemd unit does not have.
+  Before it starts, the run asks the compositor for `--version` and requires 0.4.0 or newer
+   (`FIRST_VERSION_WITH_RUNNER_CONTROLS` in `src/compositor-version.ts`, the first version with the controls below);
+   a newer version, including a pre-release build, is always accepted.
+  An older version, or output with no version, is refused with a plain message that names
+   `mise upgrade cargo:monochromatic-nested-wayland-session` and `E2E_COMPOSITOR` as the ways out.
+  Version 0.4.0 added the key names the checks press (Menu, F10 and the other F keys,
    chords, `hold` with the client's key repeat), Unicode typing, exact odd sizes,
    focus return after a dialog, and the `windows` and `repeat-info` commands.
   One check stays recorded as not injectable:
@@ -84,7 +91,7 @@ Run it alone:
    created with mode 0700.
 - `E2E_COMPOSITOR`:
    path of the compositor executable;
-   default the mise install of `PINNED_COMPOSITOR_VERSION`.
+   default the active mise install, found with `mise where` from the app directory.
    Use it to run against a build that is not installed yet,
    such as `package/cli/nested-wayland-session/target/release/monochromatic-nested-wayland-session`.
 - `E2E_LIBRARY_GENERATOR`:
@@ -107,6 +114,8 @@ Run it alone:
    it reads `--app-dir` and the environment,
    runs the suite,
    and fails the command when checks fail.
+- `src/compositor-path.ts` finds the installed compositor with `mise where`,
+   and `src/compositor-version.ts` refuses one without the controls the checks use.
 - `src/run.ts` checks the preconditions,
    builds the scratch library,
    creates the sink,

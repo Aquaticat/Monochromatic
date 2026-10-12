@@ -24,6 +24,7 @@ import {
   tagged,
 } from '@monochromatic-dev/module-logger/ts';
 
+import { installedCompositorPath, } from './compositor-path.ts';
 import {
   loadRunConfig,
   overridesFromEnvironment,
@@ -105,6 +106,17 @@ export async function main(args: readonly string[],): Promise<void> {
   rl.info(`running against ${appDir}`,);
 
   /**
+   Values the user set in the environment.
+   */
+  const overrides = overridesFromEnvironment();
+
+  /**
+   The compositor to start: `E2E_COMPOSITOR`, else the one mise has installed.
+   */
+  const compositorPath = overrides.compositorPath ?? await installedCompositorPath({ cwd: appDir, },);
+  rl.info(`compositor ${compositorPath}`,);
+
+  /**
    The outcomes and the counts.
    */
   const {
@@ -114,7 +126,8 @@ export async function main(args: readonly string[],): Promise<void> {
     config: loadRunConfig({
       appDir,
       home: homedir(),
-      overrides: overridesFromEnvironment(),
+      overrides,
+      defaultCompositorPath: compositorPath,
     },),
   },);
   if (totals.failed === 0)

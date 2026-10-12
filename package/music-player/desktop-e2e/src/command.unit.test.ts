@@ -51,6 +51,13 @@ await describe({
       },
     },),
     it({
+      name: 'runs the program in the directory it is given',
+      fn: async ({ expect, }) => {
+        const result = await runCommand({ command: 'node', args: ['-e', 'console.log(process.cwd())',], cwd: '/', },);
+        expect(result.stdout,).toBe('/',);
+      },
+    },),
+    it({
       name: 'kills a program that runs past the timeout and reports no exit status',
       fn: async ({ expect, }) => {
         const result = await runCommand({ command: 'node', args: ['-e', 'setTimeout(() => {}, 30000)',], timeoutMs: 100, },);

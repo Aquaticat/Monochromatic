@@ -1,9 +1,9 @@
 /**
  Checks of the wide session about the 600 px layout breakpoint, hit at exactly 599 and 600 logical pixels.
  
- Compositor 0.3.0 rounded a requested size to the parent window's pixel grid in its captures (599 became 600), so the
- breakpoint could not be tested at its edge. Compositor 0.4.0 makes both the size the app sees and the screenshot
- exactly what was asked for.
+ Compositor 0.3.0 and older rounded a requested size to the parent window's pixel grid in its captures (599 became
+ 600), so the breakpoint could not be tested at its edge. From compositor 0.4.0 on, both the size the app sees and the
+ screenshot are exactly what was asked for, which the runner's start-up check requires.
  
  @example
  ```ts

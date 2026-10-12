@@ -1,9 +1,10 @@
 /**
- The compositor version the checks need, and how to read a version from the compositor's `--version` line.
+ What the checks need from the nested compositor, and how to tell from its `--version` line whether it has that.
  
  The key names F1 to F24 and Menu, the chords, the timed hold with the client's key repeat, Unicode typing, exact sizes
- and focus return after a dialog belong to compositor 0.4.0. An older compositor answers `unknown key` for them, so the
- run refuses to start with a message that names the fix instead of failing a dozen checks one by one.
+ and focus return after a dialog first appeared in compositor 0.4.0. An older compositor answers `unknown key` for them,
+ so the run refuses to start with a message that names the fix instead of failing a dozen checks one by one. Any newer
+ version is accepted: nothing here compares a version for equality.
  
  @example
  ```ts
@@ -16,9 +17,10 @@
  */
 
 /**
- The oldest compositor the checks run against.
+ The first compositor version that has every control the runner uses: `key` with F-keys and Menu, `type` of Unicode,
+ exact `resize`, `windows` and `focus`. A compositor of this version or newer is accepted.
  */
-export const MINIMUM_COMPOSITOR_VERSION = '0.4.0';
+export const FIRST_VERSION_WITH_RUNNER_CONTROLS = '0.4.0';
 
 /**
  How many numbers a version has: major, minor and patch.
@@ -26,7 +28,29 @@ export const MINIMUM_COMPOSITOR_VERSION = '0.4.0';
 const VERSION_PARTS = 3;
 
 /**
- Reads the version number from the text `--version` prints, which ends with the number.
+ Tells whether a text is one or more decimal digits and nothing else.
+ 
+ @param text - one dot-separated part of a version
+ 
+ @returns whether every character of `text` is a digit and `text` is not empty
+ 
+ @example
+ ```ts
+ isDigits('12',); // true
+ ```
+ */
+function isDigits(text: string,): boolean {
+  if (text === '')
+    return false;
+  for (const character of text.split('',))
+    if ((character < '0') || (character > '9'))
+      return false;
+  return true;
+}
+
+/**
+ Reads the version number from the text `--version` prints, which ends with the number. A pre-release or build suffix
+ (`0.5.0-dev`, `0.5.0+local`) is ignored, so a local build of a newer compositor is not refused for its suffix.
  
  @param output - the compositor's `--version` output, such as `monochromatic-nested-wayland-session 0.4.0`
  
@@ -50,15 +74,21 @@ export function parseCompositorVersion(output: string,): readonly number[] {
   const word = words.at(-1,) ?? '';
 
   /**
-   The dot-separated parts of that word as numbers.
+   The word without a pre-release or build suffix.
    */
-  const parts = word.split('.',)
-    .map(Number,);
-  if ((parts.length !== VERSION_PARTS) || parts.some(function isNotNumber(part,): boolean {
-    return Number.isNaN(part,);
-  },))
+  const core = word.split('-',)[0]
+    ?.split('+',)[0]
+    ?? '';
+
+  /**
+   The dot-separated parts of that word.
+   */
+  const parts = core.split('.',);
+  if (parts.length !== VERSION_PARTS)
     return [];
-  return parts;
+  if (!parts.every(isDigits,))
+    return [];
+  return parts.map(Number,);
 }
 
 /**
@@ -102,7 +132,7 @@ export function isAtLeast(
  
  @param path - the executable that was asked
  
- @returns a message that names the problem and the fix, or an empty string when the version is fine
+ @returns a message that names the problem and the ways out, or an empty string when the compositor has the controls
  
  @example
  ```ts
@@ -122,14 +152,20 @@ export function compositorVersionProblem(
    The version the compositor reported.
    */
   const version = parseCompositorVersion(output,);
+
+  /**
+   What the checks need, in words, and the ways to get it.
+   */
+  const need = `the checks need compositor ${FIRST_VERSION_WITH_RUNNER_CONTROLS} or newer (key names F1 to F24 and `
+    + 'Menu, Unicode typing, exact sizes, windows and focus). Install the current one with '
+    + '"mise upgrade cargo:monochromatic-nested-wayland-session", or set E2E_COMPOSITOR to a build of '
+    + 'package/cli/nested-wayland-session';
   if (version.length === 0)
-    return `the compositor ${path} printed no version ("${output.trim()}"); the checks need ${MINIMUM_COMPOSITOR_VERSION} or newer`;
+    return `the compositor ${path} printed no version ("${output.trim()}"); ${need}`;
   if (isAtLeast({
     version,
-    minimum: parseCompositorVersion(MINIMUM_COMPOSITOR_VERSION,),
+    minimum: parseCompositorVersion(FIRST_VERSION_WITH_RUNNER_CONTROLS,),
   },))
     return '';
-  return `the compositor ${path} is ${version.join('.',)}; the checks need ${MINIMUM_COMPOSITOR_VERSION} or newer. `
-    + 'Install it (mise upgrade cargo:monochromatic-nested-wayland-session) and raise PINNED_COMPOSITOR_VERSION, '
-    + 'or set E2E_COMPOSITOR to a build of package/cli/nested-wayland-session.';
+  return `the compositor ${path} is ${version.join('.',)}; ${need}`;
 }

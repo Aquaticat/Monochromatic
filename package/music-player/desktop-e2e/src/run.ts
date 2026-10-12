@@ -85,12 +85,12 @@ const SESSION_RUNNERS: Readonly<Record<SessionName, (context: RunContext,) => Pr
 };
 
 /**
- Checks what the run needs before it touches anything: the release binary, a compositor of the needed version, a
- reachable PipeWire, and no other run.
+ Checks what the run needs before it touches anything: the release binary, a compositor that has the controls the
+ checks use, a reachable PipeWire, and no other run.
  
  @param config - paths of the run
  
- @throws CheckFailureError when the binary is missing, the compositor is missing or too old, PipeWire is unreachable, or
+ @throws CheckFailureError when the binary is missing, the compositor is missing or lacks the controls, PipeWire is unreachable, or
  another run is active
  
  @example
@@ -110,7 +110,7 @@ export async function checkPreconditions(config: RunConfig,): Promise<void> {
   },);
 
   /**
-   What the compositor prints for `--version`.
+   What the compositor prints for `--version`, from which its controls are judged.
    */
   const version = await runCommand({
     command: config.compositorPath,

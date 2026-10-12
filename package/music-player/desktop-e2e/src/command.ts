@@ -41,6 +41,8 @@ export type CommandResult = {
  
  @param args - argument vector
  
+ @param cwd - directory the program runs in; the current directory when absent
+ 
  @param env - variables set on top of the current environment
  
  @param timeoutMs - milliseconds after which the program is killed; no limit when absent
@@ -56,11 +58,13 @@ export async function runCommand(
   {
     command,
     args,
+    cwd,
     env,
     timeoutMs,
   }: {
     readonly args: readonly string[];
     readonly command: string;
+    readonly cwd?: string;
     readonly env?: Readonly<Record<string, string>>;
     readonly timeoutMs?: number;
   },
@@ -84,6 +88,7 @@ export async function runCommand(
       command,
       [...args,],
       {
+      ...cwd === undefined ? {} : { cwd, },
       ...env === undefined ? {} : { env, },
       ...timeoutMs === undefined ? {} : { timeout: timeoutMs, },
     },

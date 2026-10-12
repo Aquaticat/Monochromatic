@@ -206,12 +206,13 @@ run = "slint-viewer --check ui/app.slint"
 [tasks."test:e2e"]
 description = "Release build, then press every D106 shortcut as a real key event in the nested compositor (own PipeWire null sink, scratch XDG dirs)"
 # One task builds, then runs the end-to-end suite, in this order, so a stale binary is never exercised. The suite is the
-# package/music-player/desktop-e2e package: it hosts the release binary in monochromatic-nested-wayland-session 0.4.0,
-# presses keys through the compositor's control socket, and reads state from the app's `ui_state` log lines (the release
+# package/music-player/desktop-e2e package: it hosts the release binary in the monochromatic-nested-wayland-session that
+# mise has installed (found with `mise where`, any version from 0.4.0 on), presses keys through the compositor's control socket, and reads state from the app's `ui_state` log lines (the release
 # build has no MCP server), from screenshots, files and the nested clipboard. The command runs in this directory, where
 # it finds target/release/music-player and writes screenshots and e2e-summary.json to target/e2e.
 # Environment: E2E_ONLY (a check id or group prefix to run alone), E2E_OUT (screenshots and summary, default
-# target/e2e), E2E_TMP (scratch root), E2E_LIBRARY_GENERATOR (the library generator script).
+# target/e2e), E2E_TMP (scratch root), E2E_LIBRARY_GENERATOR (the library generator script), E2E_COMPOSITOR (a
+# compositor executable to use instead of the mise install).
 run = [
   { tasks = ["build"] },
   "node ../desktop-e2e/src/cli.ts",

@@ -1,10 +1,10 @@
 /**
  The dialog session: Ctrl+Shift+O in a session of its own.
  
- The system folder dialog is a window of its own. Compositor 0.3.0 did not hand keyboard focus back to the player
- window after that dialog closed (probed: after Escape closed it and after a click on the player, no key reached the
- app), which is why this session is separate from the wide one. Compositor 0.4.0 returns focus to the window that had
- it, and the second check proves that a key reaches the player afterwards.
+ The system folder dialog is a window of its own. Compositor 0.3.0 and older did not hand keyboard focus back to the
+ player window after that dialog closed (probed on 0.3.0: after Escape closed it and after a click on the player, no
+ key reached the app), which is why this session is separate from the wide one. From compositor 0.4.0 on, focus returns
+ to the window that had it, and the second check proves that a key reaches the player afterwards.
  
  @example
  ```ts

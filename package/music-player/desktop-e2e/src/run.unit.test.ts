@@ -15,6 +15,7 @@ import {
 import { join, } from 'node:path';
 import { tmpdir, } from 'node:os';
 
+import { caughtValueText, } from '@monochromatic-dev/module-caught-value/ts';
 import {
   describe,
   it,
@@ -22,6 +23,41 @@ import {
 
 import { loadRunConfig, } from './config.ts';
 import { checkPreconditions, } from './run.ts';
+
+/**
+ Runs the preconditions against a fake compositor that prints the given text for `--version`.
+ 
+ @param versionOutput - what the fake compositor prints
+ 
+ @returns the fake compositor's path and the message of the precondition failure, empty when all preconditions held
+ */
+async function preconditionMessage(
+  { versionOutput, }: { readonly versionOutput: string; },
+): Promise<{ readonly compositor: string; readonly message: string; }> {
+  const appDir = await mkdtemp(join(tmpdir(), 'e2e-pre-',),);
+  await using _scratch = {
+    async [Symbol.asyncDispose](): Promise<void> {
+      await rm(appDir, { recursive: true, force: true, },);
+    },
+  };
+  await mkdir(join(appDir, 'target', 'release',), { recursive: true, },);
+  await writeFile(join(appDir, 'target', 'release', 'music-player',), '',);
+  const compositor = join(appDir, 'fake-compositor',);
+  await writeFile(compositor, `#!/usr/bin/env node\nconsole.log(${JSON.stringify(versionOutput,)});\n`,);
+  await chmod(compositor, 0o700,);
+  try {
+    await checkPreconditions(loadRunConfig({
+      appDir,
+      home: tmpdir(),
+      overrides: { compositorPath: compositor, },
+      defaultCompositorPath: '/no/such/compositor',
+    },),);
+  }
+  catch (error: unknown) {
+    return { compositor, message: caughtValueText(error,), };
+  }
+  return { compositor, message: '', };
+}
 
 await describe({
   name: checkPreconditions.name,
@@ -32,7 +68,12 @@ await describe({
         const appDir = join(tmpdir(), 'e2e-no-such-app',);
         let caught: unknown;
         try {
-          await checkPreconditions(loadRunConfig({ appDir, home: tmpdir(), overrides: {}, },),);
+          await checkPreconditions(loadRunConfig({
+            appDir,
+            home: tmpdir(),
+            overrides: {},
+            defaultCompositorPath: '/no/such/compositor',
+          },),);
         }
         catch (error: unknown) {
           caught = error;
@@ -55,6 +96,7 @@ await describe({
             appDir,
             home: tmpdir(),
             overrides: { compositorPath: compositor, },
+            defaultCompositorPath: '/no/such/compositor',
           },),);
         }
         catch (error: unknown) {
@@ -67,28 +109,29 @@ await describe({
       },
     },),
     it({
-      name: 'refuses a compositor older than the checks need, naming both ways out',
+      name: 'refuses a compositor older than the checks need, naming the upgrade and the override',
       fn: async ({ expect, }) => {
-        const appDir = await mkdtemp(join(tmpdir(), 'e2e-pre-',),);
-        await mkdir(join(appDir, 'target', 'release',), { recursive: true, },);
-        await writeFile(join(appDir, 'target', 'release', 'music-player',), '',);
-        const compositor = join(appDir, 'old-compositor',);
-        await writeFile(compositor, '#!/usr/bin/env node\nconsole.log("monochromatic-nested-wayland-session 0.3.0");\n',);
-        await chmod(compositor, 0o700,);
-        let caught: unknown;
-        try {
-          await checkPreconditions(loadRunConfig({
-            appDir,
-            home: tmpdir(),
-            overrides: { compositorPath: compositor, },
-          },),);
-        }
-        catch (error: unknown) {
-          caught = error;
-        }
-        await rm(appDir, { recursive: true, force: true, },);
-        expect((caught as Error).message,).toContain(`the compositor ${compositor} is 0.3.0`,);
-        expect((caught as Error).message,).toContain('E2E_COMPOSITOR',);
+        const { compositor, message, } = await preconditionMessage({ versionOutput: 'monochromatic-nested-wayland-session 0.3.0', },);
+        expect(message,).toContain(`the compositor ${compositor} is 0.3.0`,);
+        expect(message,).toContain('mise upgrade cargo:monochromatic-nested-wayland-session',);
+        expect(message,).toContain('E2E_COMPOSITOR',);
+      },
+    },),
+    it({
+      name: 'refuses a compositor whose version output cannot be read',
+      fn: async ({ expect, }) => {
+        const { compositor, message, } = await preconditionMessage({ versionOutput: 'no version here', },);
+        expect(message,).toContain(`the compositor ${compositor} printed no version ("no version here")`,);
+        expect(message,).toContain('E2E_COMPOSITOR',);
+      },
+    },),
+    it({
+      name: 'does not refuse a newer compositor for its version; the later checks may still stop the run',
+      fn: async ({ expect, }) => {
+        const newer = await preconditionMessage({ versionOutput: 'monochromatic-nested-wayland-session 9.9.9', },);
+        expect(newer.message,).not.toContain('the compositor',);
+        const prerelease = await preconditionMessage({ versionOutput: 'monochromatic-nested-wayland-session 0.5.0-dev', },);
+        expect(prerelease.message,).not.toContain('the compositor',);
       },
     },),
   ],

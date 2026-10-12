@@ -183,7 +183,7 @@ export function sessionEnvironment(
  
  @param environment - variables set on the unit
  
- @param compositorPath - pinned compositor executable
+ @param compositorPath - compositor executable
  
  @param socket - path of the compositor's control socket
  

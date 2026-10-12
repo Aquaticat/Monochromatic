@@ -4,25 +4,24 @@
  Environment variables: `E2E_ONLY` (a check id or group prefix to run alone), `E2E_OUT` (screenshots and summary,
  default `target/e2e` under the app directory), `E2E_TMP` (scratch root, default `temp/agent/music-player-e2e` under the
  home directory), `E2E_LIBRARY_GENERATOR` (the library generator script), `E2E_COMPOSITOR` (the compositor executable,
- default the pinned mise install).
+ default the one mise has installed, found by `compositor-path.ts`).
  
  @example
  ```ts
  import { loadRunConfig, overridesFromEnvironment, } from './config.ts';
  
- const config = loadRunConfig({ appDir: process.cwd(), home: homedir(), overrides: overridesFromEnvironment(), },);
+ const config = loadRunConfig({
+   appDir: process.cwd(),
+   home: homedir(),
+   overrides: overridesFromEnvironment(),
+   defaultCompositorPath: '/opt/nested/bin/nested',
+ },);
  ```
  
  @packageDocumentation
  */
 
 import { join, } from 'node:path';
-
-/**
- The compositor version the checks were probed on. The control API and the key names the checks use belong to this
- version; it answers "unknown key" for Menu, and another version could change that.
- */
-export const PINNED_COMPOSITOR_VERSION = '0.4.0';
 
 /**
  Everything the run needs to know about its surroundings.
@@ -88,6 +87,9 @@ export function overridesFromEnvironment(): RunOverrides {
  
  @param overrides - values that replace the defaults
  
+ @param defaultCompositorPath - compositor executable used when the overrides name none; the caller finds the one mise
+ has installed (see `compositor-path.ts`), because that needs a command and this function stays free of side effects
+ 
  @returns the paths and the check filter
  
  @example
@@ -100,28 +102,17 @@ export function loadRunConfig(
     appDir,
     home,
     overrides,
+    defaultCompositorPath,
   }: {
     readonly appDir: string;
+    readonly defaultCompositorPath: string;
     readonly home: string;
     readonly overrides: RunOverrides;
   },
 ): RunConfig {
   return {
     appDir,
-    // The pinned install is used directly: the mise shim on PATH needs the user's trusted config, which the systemd unit
-    // that hosts the compositor does not have. E2E_COMPOSITOR names another executable, such as a build that is not
-    // installed yet.
-    compositorPath: overrides.compositorPath ?? join(
-      home,
-      '.local',
-      'share',
-      'mise',
-      'installs',
-      'cargo-monochromatic-nested-wayland-session',
-      PINNED_COMPOSITOR_VERSION,
-      'bin',
-      'monochromatic-nested-wayland-session',
-    ),
+    compositorPath: overrides.compositorPath ?? defaultCompositorPath,
     generatorPath: overrides.generatorPath ?? join(
       home,
       'temp',
