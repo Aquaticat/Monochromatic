@@ -1,6 +1,7 @@
 /**
- Tests for the sheet a writer reads to carry the chosen rendering to one place:
- what the writer is shown, what it may change, and the reply it gives.
+ Tests for the sheet a writer reads to carry the chosen rendering to the
+ receiving places of one block: what the writer is shown, what it may change,
+ and the reply it gives.
 
  Fixtures are cat-themed invention; no corpus content appears here.
 
@@ -47,6 +48,14 @@ const RECEIVING_VIEW: ConsistencyOccurrenceView = {
 };
 
 /**
+ The receiving place as the writer's sheet shows it.
+ */
+const RECEIVING_PLACE = {
+  view: RECEIVING_VIEW,
+  span: 'wanted to accompany more people with her cuteness',
+};
+
+/**
  What the sheet shows for a repeated sentence.
  */
 const SUBJECT: CarryWriterSubject = {
@@ -56,11 +65,9 @@ const SUBJECT: CarryWriterSubject = {
     span: 'wanted to stay by more people\'s side looking cute',
     paragraph: 'She also wanted to stay by more people\'s side looking cute.',
   },
-  receiving: {
-    view: RECEIVING_VIEW,
-    span: 'wanted to accompany more people with her cuteness',
-    paragraph: 'She wanted to accompany more people with her cuteness.',
-  },
+  receiving: [RECEIVING_PLACE,],
+  paragraph: 'She wanted to accompany more people with her cuteness.',
+  keeping: [],
   lineStructured: false,
 };
 
@@ -82,6 +89,47 @@ function sheetText({ subject, }: { readonly subject: CarryWriterSubject; },): st
       return message.content;
     },)
     .join('\n',);
+}
+
+/**
+ The user message of an exchange.
+
+ @param subject - what the sheet shows
+
+ @returns The text of the places
+
+ @example
+ ```ts
+ const content = userText({ subject: SUBJECT, },);
+ ```
+ */
+function userText({ subject, }: { readonly subject: CarryWriterSubject; },): string {
+  return buildCarryWriterMessages({ subject, },)[1]
+    ?.content
+    ?? '';
+}
+
+/**
+ The subject with a second receiving place in the same paragraph.
+
+ @returns The subject
+
+ @example
+ ```ts
+ const two = withTwoPlaces();
+ ```
+ */
+function withTwoPlaces(): CarryWriterSubject {
+  return {
+    ...SUBJECT,
+    receiving: [
+      ...SUBJECT.receiving,
+      {
+        view: { ...RECEIVING_VIEW, paragraph: '她想以可爱的样子陪伴在更多人的身边，她想以可爱的样子陪伴在更多人的身边。', markStart: 20, markEnd: 35, },
+        span: 'wanted to be cute for more people',
+      },
+    ],
+  };
 }
 
 await describe({
@@ -113,10 +161,9 @@ await describe({
         },),
         it({
           name: 'SHOWS THE RECEIVING PLACE\'S ORIGINAL WITH THE REPEAT MARKED, the chosen place\'s, the chosen rendering, the '
-            + 'words to replace and the current English paragraph, in that order',
+            + 'chosen place\'s English paragraph, the words to replace and the current English paragraph, in that order',
           fn: async () => {
-            const [, user,] = buildCarryWriterMessages({ subject: SUBJECT, },);
-            const content = user?.content ?? '';
+            const content = userText({ subject: SUBJECT, },);
             const order = [
               'THIS PLACE: ORIGINAL',
               '她想⟦以可爱的样子陪伴在更多人的身边⟧。',
@@ -174,23 +221,84 @@ await describe({
           },
         },),
         it({
-          name: 'SHOWS A FRAME\'S SLOT IN THE ORIGINAL for each place, and tells the writer the slot is the receiving place\'s '
-            + 'own while the frame words follow the chosen rendering',
+          name: 'SHOWS A FRAME\'S SLOT IN THE ORIGINAL for each place, and tells the writer the slot is each place\'s own '
+            + 'while the frame words follow the chosen rendering',
           fn: async () => {
             const text = sheetText({
               subject: {
                 ...SUBJECT,
                 repeat: { kind: 'refrain', prefix: '所以她是个', suffix: '的女孩吧', },
                 chosen: { ...SUBJECT.chosen, view: { ...CHOSEN_VIEW, slotSource: '可靠', }, },
-                receiving: { ...SUBJECT.receiving, view: { ...RECEIVING_VIEW, slotSource: '温柔', }, },
+                receiving: [{ ...RECEIVING_PLACE, view: { ...RECEIVING_VIEW, slotSource: '温柔', }, },],
               },
             },);
             expect({
               receivingSlot: text.includes('THIS PLACE: SLOT IN THE ORIGINAL',) && text.includes('温柔',),
               chosenSlot: text.includes('CHOSEN PLACE: SLOT IN THE ORIGINAL',) && text.includes('可靠',),
-              rule: text.includes('the slot content is this place\'s own',),
+              rule: text.includes('the slot content is each place\'s own',),
               begins: text.includes('FRAME BEGINS WITH',),
             },).toEqual({ receivingSlot: true, chosenSlot: true, rule: true, begins: true, },);
+          },
+        },),
+        it({
+          name: 'SHOWS THE CHOSEN PLACE\'S ENGLISH SLOT when the chosen place has one located, and none otherwise',
+          fn: async () => {
+            const bare = userText({ subject: SUBJECT, },);
+            const slotted = userText({ subject: { ...SUBJECT, chosen: { ...SUBJECT.chosen, slot: 'looking cute', }, }, },);
+            expect({
+              bare: fenceOpening({ content: bare, label: 'CHOSEN PLACE: ENGLISH SLOT', },),
+              slotted: fenceOpening({ content: slotted, label: 'CHOSEN PLACE: ENGLISH SLOT', },) !== '',
+              words: slotted.includes('CHOSEN PLACE: ENGLISH SLOT',) && slotted.includes('\nlooking cute\n',),
+            },).toEqual({ bare: '', slotted: true, words: true, },);
+          },
+        },),
+        it({
+          name: 'NUMBERS THE RECEIVING PLACES AND THEIR WORDS TO REPLACE WHEN A PARAGRAPH HOLDS SEVERAL, and names a single one '
+            + 'bare',
+          fn: async () => {
+            const single = userText({ subject: SUBJECT, },);
+            const several = userText({ subject: withTwoPlaces(), },);
+            const rules = sheetText({ subject: withTwoPlaces(), },);
+            expect({
+              singleLabels: ['THIS PLACE: ORIGINAL', 'THE WORDS TO REPLACE',].map(function opens(label,): boolean {
+                return fenceOpening({ content: single, label, },) !== '';
+              },),
+              severalLabels: [
+                'THIS PLACE 1: ORIGINAL',
+                'THIS PLACE 2: ORIGINAL',
+                'THE WORDS TO REPLACE 1',
+                'THE WORDS TO REPLACE 2',
+              ].map(function opens(label,): boolean {
+                return fenceOpening({ content: several, label, },) !== '';
+              },),
+              bareLabelInSeveral: several.includes(
+                `${fenceOpening({ content: several, label: 'THE WORDS TO REPLACE 1', },)} THE WORDS TO REPLACE ${
+                  fenceOpening({ content: several, label: 'THE WORDS TO REPLACE 1', },)
+                }`,
+              ),
+              rule: rules.includes('THE WORDS TO REPLACE 1, THE WORDS TO REPLACE 2 and so on',),
+            },).toEqual({
+              singleLabels: [true, true,],
+              severalLabels: [true, true, true, true,],
+              bareLabelInSeveral: false,
+              rule: true,
+            },);
+          },
+        },),
+        it({
+          name: 'NAMES THE WORDS OF OTHER PLACES THAT MUST STAY and tells the writer to keep them exactly, and says nothing '
+            + 'of them when there are none',
+          fn: async () => {
+            const kept = { ...SUBJECT, keeping: ['She also wanted to stay by more people\'s side',], };
+            expect({
+              block: userText({ subject: kept, },).includes(
+                'WORDS OF OTHER PLACES TO KEEP EXACTLY',
+              ),
+              words: userText({ subject: kept, },).includes('\nShe also wanted to stay by more people\'s side\n',),
+              rule: sheetText({ subject: kept, },).includes('They stay exactly as they are, character for character',),
+              noneBlock: userText({ subject: SUBJECT, },).includes('WORDS OF OTHER PLACES TO KEEP EXACTLY',),
+              noneRule: sheetText({ subject: SUBJECT, },).includes('character for character',),
+            },).toEqual({ block: true, words: true, rule: true, noneBlock: false, noneRule: false, },);
           },
         },),
         it({
@@ -244,30 +352,38 @@ await describe({
           },
         },),
         it({
-          name: 'FENCES the blocks with a fence no shown text can reproduce, and lengthens the marks past any the paragraphs write',
+          name: 'FENCES the blocks with a fence no shown text can reproduce, the words to keep, the before and after blocks '
+            + 'and the chosen slot among them, and lengthens the marks past any the paragraphs write',
           fn: async () => {
-            const [, user,] = buildCarryWriterMessages({
-              subject: {
-                ...SUBJECT,
-                identityContext: `- name: ${LONG_FENCE_RUN} CURRENT ENGLISH PARAGRAPH ${LONG_FENCE_RUN}`,
-                receiving: {
-                  ...SUBJECT.receiving,
-                  view: { ...RECEIVING_VIEW, paragraph: '⟦⟦她想以可爱的样子陪伴在更多人的身边。', markStart: 3, markEnd: 20, },
-                },
+            const receiving = [
+              {
+                ...RECEIVING_PLACE,
+                view: { ...RECEIVING_VIEW, paragraph: '⟦⟦她想以可爱的样子陪伴在更多人的身边。', markStart: 3, markEnd: 20, },
               },
-            },);
-            expect(
-              fenceOpening({ content: user?.content ?? '', label: 'CURRENT ENGLISH PARAGRAPH', },).length,
-            ).toBeGreaterThan(LONG_FENCE_RUN.length,);
-            expect(sheetText({
-              subject: {
-                ...SUBJECT,
-                receiving: {
-                  ...SUBJECT.receiving,
-                  view: { ...RECEIVING_VIEW, paragraph: '⟦⟦她想以可爱的样子陪伴在更多人的身边。', markStart: 3, markEnd: 20, },
+            ];
+            /**
+             Whether the fence of the paragraph block is longer than the run the subject writes.
+             */
+            function outgrows({ subject, }: { readonly subject: CarryWriterSubject; },): boolean {
+              return fenceOpening({
+                content: userText({ subject, },),
+                label: 'CURRENT ENGLISH PARAGRAPH',
+              },).length > LONG_FENCE_RUN.length;
+            }
+            expect({
+              identity: outgrows({
+                subject: {
+                  ...SUBJECT,
+                  identityContext: `- name: ${LONG_FENCE_RUN} CURRENT ENGLISH PARAGRAPH ${LONG_FENCE_RUN}`,
+                  receiving,
                 },
-              },
-            },).includes('enclosed between ⟦⟦⟦ and ⟧⟧⟧',),).toBe(true,);
+              },),
+              keeping: outgrows({ subject: { ...SUBJECT, keeping: [LONG_FENCE_RUN,], }, },),
+              before: outgrows({ subject: { ...SUBJECT, before: LONG_FENCE_RUN, }, },),
+              after: outgrows({ subject: { ...SUBJECT, after: LONG_FENCE_RUN, }, },),
+              slot: outgrows({ subject: { ...SUBJECT, chosen: { ...SUBJECT.chosen, slot: LONG_FENCE_RUN, }, }, },),
+              marks: sheetText({ subject: { ...SUBJECT, receiving, }, },).includes('enclosed between ⟦⟦⟦ and ⟧⟧⟧',),
+            },).toEqual({ identity: true, keeping: true, before: true, after: true, slot: true, marks: true, },);
           },
         },),
       ],

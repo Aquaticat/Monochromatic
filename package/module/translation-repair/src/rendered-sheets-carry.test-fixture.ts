@@ -16,6 +16,7 @@ import {
   type ConsistencyOccurrenceView,
 } from '../dist/final/node/index.mjs';
 
+import { refrainCarrySheets, } from './rendered-sheets-carry-refrain.test-fixture.ts';
 import {
   IDENTITY,
   joined,
@@ -62,8 +63,18 @@ const SENTENCE = {
 } as const;
 
 /**
+ The chosen place of the repeated sentence as the carry sheets show it: its words and the paragraph that holds them.
+ */
+const CHOSEN_PLACE = {
+  view: FIRST_VIEW,
+  span: 'The sunny window put the kitten to sleep',
+  paragraph: 'The sunny window put the kitten to sleep.',
+} as const;
+
+/**
  The sheets of the run-off, the writer and the choice among candidates, each
- also with a death recorded so the tense block is rendered once more.
+ also with a death recorded so the tense block is rendered once more, and the
+ sheets of a refrain whose two places share one paragraph.
 
  @returns One entry per sheet
 
@@ -155,11 +166,14 @@ export function carrySheets(): readonly RenderedSheet[] {
               span: 'The sunny window put the kitten to sleep',
               paragraph: 'The sunny window put the kitten to sleep.',
             },
-            receiving: {
-              view: SECOND_VIEW,
-              span: 'the sunlight on the sill lulled the kitten to sleep',
-              paragraph: 'In the evening, the sunlight on the sill lulled the kitten to sleep, and the fish snacks smiled too.',
-            },
+            receiving: [
+              {
+                view: SECOND_VIEW,
+                span: 'the sunlight on the sill lulled the kitten to sleep',
+              },
+            ],
+            paragraph: 'In the evening, the sunlight on the sill lulled the kitten to sleep, and the fish snacks smiled too.',
+            keeping: [],
             before: '傍晚的阳光很暖。',
             after: '小鱼干也笑了。',
             lineStructured: false,
@@ -180,11 +194,14 @@ export function carrySheets(): readonly RenderedSheet[] {
               span: 'The sunny window put the kitten to sleep',
               paragraph: 'The sunny window put the kitten to sleep.',
             },
-            receiving: {
-              view: SECOND_VIEW,
-              span: 'the sunlight on the sill lulled the kitten to sleep',
-              paragraph: 'In the evening, the sunlight on the sill lulled the kitten to sleep, and the fish snacks smiled too.',
-            },
+            receiving: [
+              {
+                view: SECOND_VIEW,
+                span: 'the sunlight on the sill lulled the kitten to sleep',
+              },
+            ],
+            paragraph: 'In the evening, the sunlight on the sill lulled the kitten to sleep, and the fish snacks smiled too.',
+            keeping: [],
             lineStructured: true,
             identityContext: IDENTITY,
             referenceContext: REFERENCES,
@@ -200,8 +217,9 @@ export function carrySheets(): readonly RenderedSheet[] {
         messages: buildCarryChoiceMessages({
           subject: {
             repeat: SENTENCE,
-            receiving: SECOND_VIEW,
-            chosenWords: 'The sunny window put the kitten to sleep',
+            receiving: [SECOND_VIEW,],
+            chosen: CHOSEN_PLACE,
+            keeping: [],
             candidates: [
               {
                 label: 'CANDIDATE 1',
@@ -226,8 +244,9 @@ export function carrySheets(): readonly RenderedSheet[] {
         messages: buildCarryChoiceMessages({
           subject: {
             repeat: SENTENCE,
-            receiving: SECOND_VIEW,
-            chosenWords: 'The sunny window put the kitten to sleep',
+            receiving: [SECOND_VIEW,],
+            chosen: CHOSEN_PLACE,
+            keeping: [],
             candidates: [
               {
                 label: 'CANDIDATE 1',
@@ -248,6 +267,7 @@ export function carrySheets(): readonly RenderedSheet[] {
         },),
       },),
     },
+    ...refrainCarrySheets(),
   ];
 }
 

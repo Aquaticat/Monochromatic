@@ -276,9 +276,9 @@ await describe({
               ],
             },);
             const overlapping = countOver({
-              voices: threeAlike({ over: { quotes: [{ label: 'OCCURRENCE 1', quote: 'aa', },], }, },),
+              voices: threeAlike({ over: { quotes: [{ label: 'OCCURRENCE 1', quote: '猫猫', },], }, },),
               places: [
-                { label: 'OCCURRENCE 1', english: { kind: 'present', text: 'aaa', }, },
+                { label: 'OCCURRENCE 1', english: { kind: 'present', text: '猫猫猫', }, },
                 PLACES[1] as { readonly label: string; readonly english: ConsistencyEnglish; },
               ],
             },);
@@ -527,6 +527,138 @@ await describe({
               core: 'So this cat is a **chubby** little treasure',
               start: 0,
             },);
+          },
+        },),
+        it({
+          name: 'LOCATES A FRAME\'S PLACE WITHOUT A SLOT WHEN THE SLOT IS ONLY A PIECE OF A WORD of its span, a slot being '
+            + 'located at word boundaries like a span',
+          fn: async () => {
+            const count = countConsistency({
+              voices: threeAlike({
+                over: {
+                  quotes: [{
+                    label: 'OCCURRENCE 1',
+                    quote: 'So the kitten is a smart girl',
+                    slot: 'art',
+                  },],
+                },
+              },),
+              places: [
+                {
+                  label: 'OCCURRENCE 1',
+                  english: { kind: 'present', text: 'So the kitten is a smart girl.', },
+                },
+                PLACES[1] as (typeof PLACES)[number],
+              ],
+              framed: true,
+              quorum: 2,
+            },);
+            expect(count.renderings[0],).toEqual({
+              kind: 'located',
+              quote: 'So the kitten is a smart girl',
+              core: 'So the kitten is a smart girl',
+              start: 0,
+            },);
+          },
+        },),
+        it({
+          name: 'LEAVES A QUOTE UNLOCATED WHEN IT IS ONLY A PIECE OF A WORD, so a judge who quoted `so` does not point at the '
+            + 'middle of `also`',
+          fn: async () => {
+            const count = countOver({
+              voices: threeAlike({ over: { quotes: [{ label: 'OCCURRENCE 1', quote: 'so', },], }, },),
+              places: [
+                { label: 'OCCURRENCE 1', english: { kind: 'present', text: 'The kitten also napped.', }, },
+                PLACES[1] as (typeof PLACES)[number],
+              ],
+            },);
+            expect(count.renderings[0],).toEqual({ kind: 'unlocated', reason: 'not-found', },);
+          },
+        },),
+        it({
+          name: 'LOCATES TWO PLACES OF ONE SLICE WHOSE WORDS TOUCH, since words that share no character overlap nothing',
+          fn: async () => {
+            const sleepy = '小猫睡觉';
+            const count = countConsistency({
+              voices: threeAlike({
+                over: {
+                  quotes: [
+                    { label: 'OCCURRENCE 1', quote: '小猫', },
+                    { label: 'OCCURRENCE 2', quote: '睡觉', },
+                  ],
+                },
+              },),
+              places: [
+                { label: 'OCCURRENCE 1', english: { kind: 'present', text: sleepy, }, sliceIndex: 0, },
+                { label: 'OCCURRENCE 2', english: { kind: 'present', text: sleepy, }, sliceIndex: 0, },
+              ],
+              framed: false,
+              quorum: 2,
+            },);
+            expect(count.renderings,).toEqual([
+              { kind: 'located', quote: '小猫', core: '小猫', start: 0, },
+              { kind: 'located', quote: '睡觉', core: '睡觉', start: 2, },
+            ],);
+          },
+        },),
+        it({
+          name: 'LEAVES TWO PLACES OF ONE SLICE UNLOCATED WHEN THEIR WORDS OVERLAP, one run of English being no two renderings',
+          fn: async () => {
+            const english: ConsistencyEnglish = { kind: 'present', text: 'The cat naps loudly today.', };
+            const count = countConsistency({
+              voices: threeAlike({
+                over: {
+                  quotes: [
+                    { label: 'OCCURRENCE 1', quote: 'cat naps loudly', },
+                    { label: 'OCCURRENCE 2', quote: 'naps loudly today', },
+                  ],
+                },
+              },),
+              places: [
+                { label: 'OCCURRENCE 1', english, sliceIndex: 0, },
+                { label: 'OCCURRENCE 2', english, sliceIndex: 0, },
+              ],
+              framed: false,
+              quorum: 2,
+            },);
+            expect(count.renderings,).toEqual([
+              { kind: 'unlocated', reason: 'overlaps-another', },
+              { kind: 'unlocated', reason: 'overlaps-another', },
+            ],);
+          },
+        },),
+        it({
+          name: 'LOCATES TWO PLACES WHOSE WORDS OVERLAP WHEN THEY STAND IN DIFFERENT SLICES or in no slice the caller names, '
+            + 'since each is cut from an English of its own',
+          fn: async () => {
+            const english: ConsistencyEnglish = { kind: 'present', text: 'The cat naps loudly today.', };
+            const quotes = [
+              { label: 'OCCURRENCE 1', quote: 'cat naps loudly', },
+              { label: 'OCCURRENCE 2', quote: 'naps loudly today', },
+            ];
+            const apart = countConsistency({
+              voices: threeAlike({ over: { quotes, }, },),
+              places: [
+                { label: 'OCCURRENCE 1', english, sliceIndex: 0, },
+                { label: 'OCCURRENCE 2', english, sliceIndex: 1, },
+              ],
+              framed: false,
+              quorum: 2,
+            },);
+            const unnamed = countConsistency({
+              voices: threeAlike({ over: { quotes, }, },),
+              places: [
+                { label: 'OCCURRENCE 1', english, },
+                { label: 'OCCURRENCE 2', english, },
+              ],
+              framed: false,
+              quorum: 2,
+            },);
+            const located = [
+              { kind: 'located', quote: 'cat naps loudly', core: 'cat naps loudly', start: 4, },
+              { kind: 'located', quote: 'naps loudly today', core: 'naps loudly today', start: 8, },
+            ];
+            expect([apart.renderings, unnamed.renderings,],).toEqual([located, located,],);
           },
         },),
         it({

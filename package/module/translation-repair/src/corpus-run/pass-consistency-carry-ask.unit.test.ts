@@ -24,9 +24,11 @@ import {
   buildCarryWriterMessages,
   type CarryChoiceSubject,
   type CarryWriterSubject,
+  type ChatJsonRequest,
   type ConsistencyCacheValue,
   type ConsistencyOccurrenceView,
   consistencyKey,
+  producedVolumeBound,
   type RosterModelId,
   type SliceCache,
 } from '../../dist/final/node/index.mjs';
@@ -78,7 +80,9 @@ const RECEIVING_VIEW: ConsistencyOccurrenceView = {
 const WRITER_SUBJECT: CarryWriterSubject = {
   repeat: { kind: 'maximal', wording: '小猫打盹', },
   chosen: { view: CHOSEN_VIEW, span: 'The cat naps', paragraph: 'The cat naps.', },
-  receiving: { view: RECEIVING_VIEW, span: 'The kitten naps', paragraph: 'The kitten naps.', },
+  receiving: [{ view: RECEIVING_VIEW, span: 'The kitten naps', },],
+  paragraph: 'The kitten naps.',
+  keeping: [],
   lineStructured: false,
 };
 
@@ -87,8 +91,9 @@ const WRITER_SUBJECT: CarryWriterSubject = {
  */
 const CHOICE_SUBJECT: CarryChoiceSubject = {
   repeat: { kind: 'maximal', wording: '小猫打盹', },
-  receiving: RECEIVING_VIEW,
-  chosenWords: 'The cat naps',
+  receiving: [RECEIVING_VIEW,],
+  chosen: { view: CHOSEN_VIEW, span: 'The cat naps', paragraph: 'The cat naps.', },
+  keeping: [],
   candidates: [
     { label: 'CANDIDATE 1', current: true, text: 'The kitten naps.', },
     { label: 'CANDIDATE 2', current: false, text: 'The cat naps.', },
@@ -359,6 +364,40 @@ await describe({
               asked: BENCH.length,
               warned: 1,
             },);
+          },
+        },),
+        it({
+          name: 'BOUNDS EACH ANSWER BY THE ORIGINAL IN CODE POINTS, an original shared by two receiving places counted once',
+          fn: async () => {
+            const original = String.fromCodePoint(0x2_00_00,)
+              .repeat(2_000,);
+            const view: ConsistencyOccurrenceView = { ...RECEIVING_VIEW, paragraph: original, markEnd: 2, };
+            /**
+             The bound on the answer of each call, none recorded for a call that set none.
+             */
+            const bounds: number[] = [];
+            const client = scriptedJudgeClient({ behave: everyWriterAnswers, asked: [], sheets: [], },);
+            await askCarryWriters({
+              client: {
+                ...client,
+                chatJson: function recording<ValueT,>(request: ChatJsonRequest<ValueT>,) {
+                  if (request.maxAnswerChars !== undefined)
+                    bounds.push(request.maxAnswerChars,);
+                  return client.chatJson(request,);
+                },
+              },
+              modelIds: BENCH,
+              subject: {
+                ...WRITER_SUBJECT,
+                receiving: [{ view, span: 'The kitten naps', }, { view, span: 'the sun', },],
+              },
+              cache: recordingCache({ resumed: new Map(), persisted: [], },),
+              signal: AbortSignal.timeout(HANG_STOP_MS,),
+              exchangeTimeoutMs: HANG_STOP_MS,
+              l: levelCapturingLogger({ lines: [], },),
+              stageSettings: SCRIPTED_STAGE_SETTINGS,
+            },);
+            expect([...new Set(bounds,),],).toEqual([producedVolumeBound({ materialChars: 2_000, },),],);
           },
         },),
         it({

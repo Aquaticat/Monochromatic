@@ -29,13 +29,14 @@ import {
   type ConsistencySliceFacts,
   consistencySlicesOf,
   type DecidedGroup,
-  type PlaceCarried,
   placesOf,
+  prepareDocumentPair,
   repeatGroupsOf,
   repeatOf,
   type SettledGroup,
   settleAsked,
   settleCarried,
+  type UnitCarried,
   unplacedOf,
 } from '../../dist/final/node/index.mjs';
 import { levelCapturingLogger, } from '../capturing-logger.test-fixture.ts';
@@ -55,18 +56,28 @@ import {
 const ENGLISH = archiveEnglishOf({ prepared: preparedCatPage(), },);
 
 /**
- The ballots of three judges who all choose the first place and keep none.
+ The ballots of three judges who all choose one place and keep none.
 
  @param quotes - the quotes every judge gives
+
+ @param choice - the label every judge chooses
 
  @returns The voices, in seat order
 
  @example
  ```ts
- const voices = alikeVoices({ quotes: SENTENCE_QUOTES, },);
+ const voices = alikeVoices({ quotes: SENTENCE_QUOTES, choice: 'OCCURRENCE 1', },);
  ```
  */
-function alikeVoices({ quotes, }: { readonly quotes: readonly Record<string, string>[]; },) {
+function alikeVoices(
+  {
+    quotes,
+    choice,
+  }: {
+    readonly quotes: readonly Record<string, string>[];
+    readonly choice: string;
+  },
+) {
   return ['hyper-cat', 'bedrock-cat', 'synthetic-cat',].map(function voiceFor(seat,) {
     return {
       seat,
@@ -78,7 +89,7 @@ function alikeVoices({ quotes, }: { readonly quotes: readonly Record<string, str
           ...((quote.slot === undefined) ? {} : { slot: quote.slot, }),
         };
       },),
-      choice: 'OCCURRENCE 1',
+      choice,
       keep: [] as string[],
     };
   },);
@@ -97,44 +108,48 @@ function alikeVoices({ quotes, }: { readonly quotes: readonly Record<string, str
  const carried = carriedBySplice({ decided, },);
  ```
  */
-function carriedBySplice({ decided, }: { readonly decided: DecidedGroup; },): readonly PlaceCarried[] {
+function carriedBySplice({ decided, }: { readonly decided: DecidedGroup; },): readonly UnitCarried[] {
   return decided.receivers
-    .map(function carryOf(receiver,): PlaceCarried {
+    .map(function carryOf(receiver,): UnitCarried {
       /**
        The paragraph the receiving place has now.
        */
       const current = receiver.place.slice.current.kind === 'present' ? receiver.place.slice.current.text : '';
       if (receiver.plan.kind !== 'replace') {
         return {
-          carry: {
-            label: receiver.label,
-            candidates: [{ label: 'CANDIDATE 1', kind: 'current', writers: [], text: current, },],
-            ballots: [],
-            usable: 0,
-            quorum: 0,
-            decision: { kind: 'none', reason: 'no-alternative', },
-          },
+          carries: [
+            {
+              label: receiver.label,
+              candidates: [{ label: 'CANDIDATE 1', kind: 'current', writers: [], text: current, },],
+              ballots: [],
+              usable: 0,
+              quorum: 0,
+              decision: { kind: 'none', reason: 'no-alternative', },
+            },
+          ],
           edits: [],
           findings: [],
         };
       }
       return {
-        carry: {
-          label: receiver.label,
-          candidates: [
-            { label: 'CANDIDATE 1', kind: 'current', writers: [], text: current, },
-            { label: 'CANDIDATE 2', kind: 'splice', writers: [], text: receiver.plan.text, },
-          ],
-          ballots: ['hyper-cat', 'bedrock-cat', 'synthetic-cat',].map(function ballotOf(seat,) {
-            return { seat, reason: 'The chosen words belong here.', choice: 'CANDIDATE 2', };
-          },),
-          usable: 3,
-          quorum: 2,
-          decision: { kind: 'chosen', label: 'CANDIDATE 2', },
-        },
+        carries: [
+          {
+            label: receiver.label,
+            candidates: [
+              { label: 'CANDIDATE 1', kind: 'current', writers: [], text: current, },
+              { label: 'CANDIDATE 2', kind: 'splice', writers: [], text: receiver.plan.text, },
+            ],
+            ballots: ['hyper-cat', 'bedrock-cat', 'synthetic-cat',].map(function ballotOf(seat,) {
+              return { seat, reason: 'The chosen words belong here.', choice: 'CANDIDATE 2', };
+            },),
+            usable: 3,
+            quorum: 2,
+            decision: { kind: 'chosen', label: 'CANDIDATE 2', },
+          },
+        ],
         edits: [
           {
-            placePosition: receiver.position,
+            placePositions: [receiver.position,],
             sliceIndex: receiver.place.slice.sliceIndex,
             start: receiver.plan.start,
             end: receiver.plan.end,
@@ -149,11 +164,15 @@ function carriedBySplice({ decided, }: { readonly decided: DecidedGroup; },): re
 /**
  The cat page's two groups settled from scripted ballots, beside the facts of its slices.
 
+ @param prepared - preparation of the page, the cat page by default
+
  @param english - what each slice would ship, the archive by default
 
  @param sentenceQuotes - the quotes the judges give for the repeated sentence
 
  @param frameQuotes - the quotes the judges give for the refrain
+
+ @param choice - the label the judges choose, the first place by default
 
  @returns The settled groups in page order and the facts of every slice
 
@@ -164,19 +183,22 @@ function carriedBySplice({ decided, }: { readonly decided: DecidedGroup; },): re
  */
 function settledCatPage(
   {
-    english = ENGLISH,
+    prepared = preparedCatPage(),
+    english = archiveEnglishOf({ prepared, },),
     sentenceQuotes = SENTENCE_QUOTES,
     frameQuotes = REFRAIN_QUOTES,
+    choice = 'OCCURRENCE 1',
   }: {
+    readonly prepared?: ReturnType<typeof preparedCatPage>;
     readonly english?: readonly string[];
     readonly sentenceQuotes?: readonly Record<string, string>[];
     readonly frameQuotes?: readonly Record<string, string>[];
+    readonly choice?: string;
   },
 ): {
   readonly settled: readonly SettledGroup[];
   readonly slices: readonly ConsistencySliceFacts[];
 } {
-  const prepared = preparedCatPage();
   const slices = consistencySlicesOf({
     prepared,
     projected: projectedCatPage({ prepared, english, },),
@@ -202,7 +224,7 @@ function settledCatPage(
           unplaced: unplacedOf({ group, },),
           asked: {
             quorum: 2,
-            voices: alikeVoices({ quotes: (group.kind === 'refrain') ? frameQuotes : sentenceQuotes, },),
+            voices: alikeVoices({ quotes: (group.kind === 'refrain') ? frameQuotes : sentenceQuotes, choice, },),
             findings: [],
             resumed: false,
           },
@@ -296,6 +318,90 @@ await describe({
               ['chosen', 'replaced', 'replaced', 'replaced',],
             ],);
             expect([applied.findings, lines,],).toEqual([[], [],],);
+          },
+        },),
+        it({
+          name: 'MAKES THE REPLACEMENTS OF TWO PLACES OF ONE GROUP IN ONE SLICE TOGETHER, neither being left out as '
+            + 'overlapping its own group, whether the carries are one for each place or one for the block',
+          fn: async () => {
+            const prepared = prepareDocumentPair({
+              sourceText: '## 一\n\n窗台上的阳光让小猫睡着了。厨房里很暖和。窗台上的阳光让小猫睡着了。\n\n## 二\n\n窗台上的阳光让小猫睡着了。\n',
+              targetText: '## One\n\nThe sunny window put the kitten to sleep. The kitchen was warm. The sun on the sill sent the '
+                + 'kitten off to sleep.\n\n## Two\n\nThe window sun made the kitten fall asleep.\n',
+            },);
+            const page = settledCatPage({
+              prepared,
+              sentenceQuotes: [
+                { label: 'OCCURRENCE 1', quote: 'The sunny window put the kitten to sleep', },
+                { label: 'OCCURRENCE 2', quote: 'The sun on the sill sent the kitten off to sleep', },
+                { label: 'OCCURRENCE 3', quote: 'The window sun made the kitten fall asleep', },
+              ],
+              choice: 'OCCURRENCE 3',
+            },);
+            const lines: string[] = [];
+            const applied = applyCat({ page, lines, },);
+            /**
+             The same edits as one edit naming both places, as a writer's block would make.
+             */
+            const [group,] = page.settled;
+            const [first, second,] = group?.edits ?? [];
+            const together = applyCat({
+              page: {
+                ...page,
+                settled: page.settled.map(function asOneBlock(settled,): SettledGroup {
+                  return {
+                    ...settled,
+                    edits: ((first === undefined) || (second === undefined))
+                      ? settled.edits
+                      : [
+                        {
+                          placePositions: [...first.placePositions, ...second.placePositions,],
+                          sliceIndex: first.sliceIndex,
+                          start: first.start,
+                          end: second.end,
+                          text: 'The window sun made the kitten fall asleep. The kitchen was warm. The window sun made the kitten fall asleep',
+                        },
+                      ],
+                  };
+                },),
+              },
+              lines,
+            },);
+            expect({
+              outcomes: outcomesOf({ groups: applied.groups, },),
+              changed: applied.slices.map(function textOf(slice,): readonly [number, string] {
+                return [slice.sliceIndex, slice.text,];
+              },),
+              editsPlanned: group?.edits.map(function positionsOf({ placePositions, },): readonly number[] {
+                return placePositions;
+              },),
+              findings: applied.findings,
+              lines,
+              togetherOutcomes: outcomesOf({ groups: together.groups, },),
+              togetherChanged: together.slices.map(function textOf(slice,): readonly [number, string] {
+                return [slice.sliceIndex, slice.text,];
+              },),
+            },).toEqual({
+              outcomes: [['replaced', 'replaced', 'chosen',],],
+              changed: [
+                [
+                  0,
+                  '## One\n\nThe window sun made the kitten fall asleep. The kitchen was warm. '
+                  + 'The window sun made the kitten fall asleep.',
+                ],
+              ],
+              editsPlanned: [[0,], [1,],],
+              findings: [],
+              lines: [],
+              togetherOutcomes: [['replaced', 'replaced', 'chosen',],],
+              togetherChanged: [
+                [
+                  0,
+                  '## One\n\nThe window sun made the kitten fall asleep. The kitchen was warm. '
+                  + 'The window sun made the kitten fall asleep.',
+                ],
+              ],
+            },);
           },
         },),
         it({

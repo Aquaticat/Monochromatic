@@ -12,11 +12,13 @@ import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import {
   type ArtifactConsistency,
   assertPipelineDigest,
+  type BudgetView,
   type PipelineDigest,
   type PreparedDocumentPair,
   type RosterModelId,
   runPassConsistency,
 } from '../../dist/final/node/index.mjs';
+import { levelCapturingLogger, } from '../capturing-logger.test-fixture.ts';
 import { HANG_STOP_MS, } from '../hang-stop.test-fixture.ts';
 import { SCRIPTED_STAGE_SETTINGS, } from '../stage-settings.test-fixture.ts';
 import {
@@ -106,6 +108,10 @@ export type CatRun = {
 
  @param dark - seats no provider serves, none by default
 
+ @param dryness - which providers read dry to the seat reading, every provider wet by default
+
+ @param lines - sink for the level and text of every line the pass logs, which makes the pass log there instead of to the console
+
  @returns The section, the seats asked and the sheets shown
 
  @example
@@ -122,7 +128,10 @@ export async function runCatPass(
     english = archiveEnglishOf({ prepared, },),
     signal = AbortSignal.timeout(HANG_STOP_MS,),
     dark = new Set<RosterModelId>(),
+    dryness,
+    lines,
   }: {
+    readonly lines?: string[];
     readonly behave: SeatScript;
     readonly others?: SeatScript;
     readonly entryCacheDir: string;
@@ -130,6 +139,7 @@ export async function runCatPass(
     readonly english?: readonly string[];
     readonly signal?: AbortSignal;
     readonly dark?: ReadonlySet<RosterModelId>;
+    readonly dryness?: BudgetView;
   },
 ): Promise<CatRun> {
   /**
@@ -149,6 +159,7 @@ export async function runCatPass(
         asked,
         sheets,
         dark,
+        ...((dryness === undefined) ? {} : { dryness, }),
       },),
       prepared,
       projected: projectedCatPage({
@@ -162,7 +173,7 @@ export async function runCatPass(
       pipelineDigest: DIGEST,
       signal,
       overlap: 2,
-      l,
+      l: (lines === undefined) ? l : levelCapturingLogger({ lines, },),
       stageSettings: SCRIPTED_STAGE_SETTINGS,
     },),
     asked,

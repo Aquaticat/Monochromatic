@@ -103,6 +103,13 @@ function sheetText({ subject, }: { readonly subject: ConsistencySubject; },): st
     .join('\n',);
 }
 
+/**
+ The reply example the sheet ends on: it names a placeholder for each label and no real label, since the rules forbid
+ choosing by position and a real label in the example would be one to copy.
+ */
+const REPLY_SHAPE = 'Reply with JSON only: {"reason":"...","quotes":[{"label":"<the label of the OCCURRENCE>","quote":"..."}],'
+  + '"choice":"<the label of the OCCURRENCE you choose>","keep":[]}';
+
 await describe({
   name: '',
   concurrency: 1,
@@ -140,7 +147,7 @@ await describe({
               rule: text.includes('Write the reason first and choose after it',),
               keysInRules: text.includes('keys come in this order: reason, quotes, choice, keep',),
               shape: userText.indexOf('{"reason"',) < userText.indexOf('"choice"',),
-              shapeShown: user?.content.includes('{"reason":"...","quotes":[{"label":"OCCURRENCE 1","quote":"..."}],"choice":"OCCURRENCE 1","keep":[]}',),
+              shapeShown: user?.content.endsWith(REPLY_SHAPE,),
               systemFirst: system?.role,
               schema: Object.keys(CONSISTENCY_RESPONSE_FORMAT.json_schema.schema.properties as Record<string, unknown>,),
               required: CONSISTENCY_RESPONSE_FORMAT.json_schema.schema.required,
@@ -359,7 +366,7 @@ await describe({
                 '- "Mittens is asleep in the sunny window." (matched "Mittens is", rule copula-or-auxiliary)',
                 fence,
                 `${fence} END ${fence}`,
-                'Reply with JSON only: {"reason":"...","quotes":[{"label":"OCCURRENCE 1","quote":"..."}],"choice":"OCCURRENCE 1","keep":[]}',
+                REPLY_SHAPE,
               ],
             },);
           },
@@ -405,7 +412,7 @@ await describe({
             },);
             const [, run,] = buildConsistencyMessages({ subject: SENTENCE, },);
             expect([
-              frame?.content.includes('"quotes":[{"label":"OCCURRENCE 1","quote":"...","slot":"..."}]',),
+              frame?.content.includes('"quotes":[{"label":"<the label of the OCCURRENCE>","quote":"...","slot":"..."}]',),
               run?.content.includes('"slot"',),
             ],).toEqual([true, false,],);
           },

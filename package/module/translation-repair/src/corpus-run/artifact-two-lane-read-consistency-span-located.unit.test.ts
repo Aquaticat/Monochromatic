@@ -20,6 +20,7 @@ import {
 import {
   ArtifactParseError,
   asLocatedBySpan,
+  ConsistencyInvariantError,
   locatedContradictedBySpan,
   reasonContradictedBySpan,
   type UnlocatedReason,
@@ -63,6 +64,23 @@ await describe({
               slot: 'gentle, tender-hearted',
               slotStart: 13,
             },);
+          },
+        },),
+        it({
+          name: 'REFUSES A LOCATED RENDERING THAT RECORDS NO OFFSET as a broken invariant, not as an offset of zero, since the '
+            + 'sixteenth shape records one for every located rendering',
+          fn: async () => {
+            const refusal = caught(function readsWithoutOffset(): unknown {
+              return asLocatedBySpan({
+                rendering: { kind: 'located', quote: 'The cat naps', },
+                path: 'cat.rendering',
+              },);
+            },);
+            expect(refusal,).toBeInstanceOf(ConsistencyInvariantError,);
+            expect(String(refusal,),).toBe(
+              'ConsistencyInvariantError: unreachable: the located rendering at cat.rendering records no offset, and the '
+              + 'reader of the sixteenth shape requires one',
+            );
           },
         },),
         it({

@@ -87,6 +87,101 @@ await describe({
           },
         },),
         it({
+          name: 'NAMES THE INNERMOST PARAGRAPH, not the container, for a span inside a list item, a block quote or a nested '
+            + 'quote and list, with offsets in the English whole',
+          fn: async () => {
+            const list = '- The cat naps in the sun.\n- The fish swims.\n';
+            const afterIntro = 'Intro here.\n\n- The cat naps in the sun.\n- The fish swims.\n';
+            const nested = '> - The cat naps in the sun.\n';
+            const quote = '> The cat naps in the sun.\n> It is warm.\n';
+            const secondInItem = '- The cat naps.\n\n  The fish swims in the bowl.\n';
+            expect([
+              blockHolding({ english: list, start: list.indexOf('cat naps',), end: list.indexOf('cat naps',) + 8, },),
+              blockHolding({
+                english: afterIntro,
+                start: afterIntro.indexOf('cat naps',),
+                end: afterIntro.indexOf('cat naps',) + 8,
+              },),
+              blockHolding({ english: nested, start: nested.indexOf('cat naps',), end: nested.indexOf('cat naps',) + 8, },),
+              blockHolding({ english: quote, start: quote.indexOf('cat naps',), end: quote.indexOf('cat naps',) + 8, },),
+              blockHolding({
+                english: secondInItem,
+                start: secondInItem.indexOf('fish swims',),
+                end: secondInItem.indexOf('fish swims',) + 10,
+              },),
+            ],).toEqual([
+              [{ start: 2, end: 26, text: 'The cat naps in the sun.', },],
+              [{ start: 15, end: 39, text: 'The cat naps in the sun.', },],
+              [{ start: 4, end: 28, text: 'The cat naps in the sun.', },],
+              [{ start: 2, end: 40, text: 'The cat naps in the sun.\n> It is warm.', },],
+              [{ start: 19, end: 46, text: 'The fish swims in the bowl.', },],
+            ],);
+          },
+        },),
+        it({
+          name: 'NAMES THE PARAGRAPH ALONE, WITHOUT THE CLOSING TAG, for a span in the content of a details container, whatever '
+            + 'stands before it',
+          fn: async () => {
+            const details = '<details>\n<summary>Cats</summary>\n\nThe cat naps in the sun.\n\n</details>\n';
+            const afterIntro = `Intro here.\n\n${details}`;
+            expect([
+              blockHolding({ english: details, start: 40, end: 48, },),
+              blockHolding({ english: afterIntro, start: 53, end: 61, },),
+            ],).toEqual([
+              [{ start: 35, end: 59, text: 'The cat naps in the sun.', },],
+              [{ start: 48, end: 72, text: 'The cat naps in the sun.', },],
+            ],);
+          },
+        },),
+        it({
+          name: 'KEEPS THE OFFSETS OF AN ENGLISH THAT STARTS WITH A BYTE ORDER MARK, A FRONT MATTER OR WINDOWS LINE ENDS, naming '
+            + 'the same innermost paragraph',
+          fn: async () => {
+            const bom = `${String.fromCodePoint(0xFE_FF,)}- The cat naps in the sun.\n`;
+            const front = '---\ntitle: Mittens\n---\n\n- The cat naps in the sun.\n';
+            const windows = '- The cat naps in the sun.\r\n- The fish swims.\r\n';
+            expect([
+              blockHolding({ english: bom, start: 8, end: 16, },),
+              blockHolding({ english: front, start: 29, end: 37, },),
+              blockHolding({ english: windows, start: 6, end: 14, },),
+            ],).toEqual([
+              [{ start: 3, end: 27, text: 'The cat naps in the sun.', },],
+              [{ start: 26, end: 50, text: 'The cat naps in the sun.', },],
+              [{ start: 2, end: 26, text: 'The cat naps in the sun.', },],
+            ],);
+          },
+        },),
+        it({
+          name: 'NAMES THE WHOLE TABLE FOR A SPAN IN A CELL, and the heading line for a span in a heading, since neither holds '
+            + 'a paragraph',
+          fn: async () => {
+            const table = '| a | b |\n| - | - |\n| cat naps | x |\n';
+            const heading = '## The cat naps\n\nThe fish swims.\n';
+            expect([
+              blockHolding({ english: table, start: 24, end: 32, },),
+              blockHolding({ english: heading, start: 7, end: 15, },),
+            ],).toEqual([
+              [{ start: 0, end: 36, text: '| a | b |\n| - | - |\n| cat naps | x |', },],
+              [{ start: 0, end: 15, text: '## The cat naps', },],
+            ],);
+          },
+        },),
+        it({
+          name: 'NAMES NO BLOCK FOR A SPAN IN A FOOTNOTE DEFINITION, and the whole list for a span across two list items, '
+            + 'since no paragraph holds it',
+          fn: async () => {
+            const footnote = 'The cat naps.[^1]\n\n[^1]: The note says the cat naps.\n';
+            const items = '- The cat naps\n- in the sun.\n';
+            expect([
+              blockHolding({ english: footnote, start: 25, end: 35, },),
+              blockHolding({ english: items, start: 11, end: 20, },),
+            ],).toEqual([
+              [],
+              [{ start: 0, end: 28, text: '- The cat naps\n- in the sun.', },],
+            ],);
+          },
+        },),
+        it({
           name: 'NAMES NO BLOCK for a span that crosses two blocks, lies past the English, or lies in the front matter',
           fn: async () => {
             const english = 'The cat naps.\n\nThe fish swims.';

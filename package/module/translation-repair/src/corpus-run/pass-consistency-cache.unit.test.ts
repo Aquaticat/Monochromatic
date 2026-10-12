@@ -46,6 +46,11 @@ const GENERATION = 'sha256-tree-v1:cat';
 const KEY = 'purr';
 
 /**
+ The key a one-message question to one seat gets at version three, which moves when the version or the digest does.
+ */
+const KEY_AT_VERSION_THREE = '2e2d605a878b0a81410524c651a664603a73e399c1b3fbed3b64ce31b7b6d1e7';
+
+/**
  A sheet of one message.
  */
 const SHEET: readonly ChatMessage[] = [{ role: 'user', content: 'Which rendering of the cat naps best?', },];
@@ -218,10 +223,20 @@ await describe({
           },
         },),
         it({
-          name: 'MOVES THE KEY WITH THE CACHE VERSION: the version is part of what the key digests, and version two names a '
-            + 'run that stores run-off, writer and choice records beside the ballots',
+          name: 'MOVES THE KEY WITH THE CACHE VERSION: the version is part of what the key digests, and version three names '
+            + 'a run whose writers were asked for a whole block and whose first round and gather share one protocol',
           fn: async () => {
-            expect(CONSISTENCY_CACHE_VERSION,).toBe(2,);
+            expect({
+              version: CONSISTENCY_CACHE_VERSION,
+              key: consistencyKey({
+                stage: 'ballots',
+                messages: [{ role: 'user', content: 'cat', },],
+                modelIds: ['glm-5.3',],
+              },),
+            },).toEqual({
+              version: 3,
+              key: KEY_AT_VERSION_THREE,
+            },);
           },
         },),
       ],

@@ -274,20 +274,6 @@ export type SeatScript = (
 ) => SeatBehaviour;
 
 /**
- The dryness view of a client whose every provider is wet.
-
- @returns Every provider wet
-
- @example
- ```ts
- const dry = await wetView();
- ```
- */
-function wetView(): Promise<BudgetView> {
-  return Promise.resolve(ALL_WET,);
-}
-
-/**
  Holds of a client none of whose providers is held.
 
  @returns Zero hold for every provider
@@ -350,6 +336,8 @@ function sheetOf<ValueT,>({ request, }: { readonly request: ChatJsonRequest<Valu
 
  @param dark - seats no provider serves, which the router refuses before any reply
 
+ @param dryness - which providers read dry to the seat reading, every provider wet by default
+
  @returns Client to drive the consistency pass with
 
  @example
@@ -363,15 +351,19 @@ export function scriptedJudgeClient(
     asked,
     sheets,
     dark = new Set<RosterModelId>(),
+    dryness = ALL_WET,
   }: {
     readonly behave: SeatScript;
     readonly asked: RosterModelId[];
     readonly sheets: string[];
     readonly dark?: ReadonlySet<RosterModelId>;
+    readonly dryness?: BudgetView;
   },
 ): RunClient {
   return {
-    providerDryness: wetView,
+    providerDryness: function viewOfDryness(): Promise<BudgetView> {
+      return Promise.resolve(dryness,);
+    },
     providerHolds: noHolds,
     chatText: unservedCall,
     quotas: unservedCall,

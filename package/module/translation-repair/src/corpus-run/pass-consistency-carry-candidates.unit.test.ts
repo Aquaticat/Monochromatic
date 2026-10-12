@@ -10,6 +10,7 @@
  */
 
 import {
+  caught,
   DEFAULT_CONCURRENCY,
   describe,
   expect,
@@ -90,17 +91,22 @@ function writtenBy(
     voices,
     lineStructured,
     lines,
+    keeping = [],
+    facts = factsOf({ lineStructured, },),
   }: {
     readonly voices: readonly { readonly seat: string; readonly translation: string; }[];
     readonly lineStructured: boolean;
     readonly lines: string[];
+    readonly keeping?: readonly string[];
+    readonly facts?: ConsistencySliceFacts;
   },
 ): ReturnType<typeof writtenParagraphsOf> {
   return writtenParagraphsOf({
     voices,
     english: ENGLISH,
     block: BLOCK,
-    facts: factsOf({ lineStructured, },),
+    keeping,
+    facts,
     declared: [],
     declaredNames: [],
     l: levelCapturingLogger({ lines, },),
@@ -243,6 +249,60 @@ await describe({
               written: [{ seat: 'bedrock-cat', text: 'The warm window sent the kitten to sleep.', },],
               findings: ['consistency-candidate-refused (hyper-cat): ',],
               warned: ['warn [writtenParagraphsOf] withheld hyper-cat from the bench: ',],
+            },);
+          },
+        },),
+        it({
+          name: 'RAISES WHAT THE FLOORS THROW ON THE SLICE\'S OWN SIDE ONCE FOR THE BLOCK, and charges it to no writer',
+          fn: async () => {
+            const lines: string[] = [];
+            const faulty: ConsistencySliceFacts = {
+              ...factsOf({ lineStructured: false, },),
+              get sourceText(): string {
+                throw new Error('the cat knocked the original off the shelf',);
+              },
+            };
+            const refusal = caught(function writesOverAFaultySlice(): unknown {
+              return writtenBy({
+                voices: [
+                  { seat: 'hyper-cat', translation: 'The sunlit window put the kitten to sleep.', },
+                  { seat: 'bedrock-cat', translation: 'The warm window sent the kitten to sleep.', },
+                ],
+                lineStructured: false,
+                lines,
+                facts: faulty,
+              },);
+            },);
+            expect({ refusal: String(refusal,), warned: lines, },).toEqual({
+              refusal: 'Error: the cat knocked the original off the shelf',
+              warned: [],
+            },);
+          },
+        },),
+        it({
+          name: 'WITHHOLDS A PARAGRAPH THAT HOLDS THE WORDS OF ANOTHER PLACE FEWER TIMES THAN THE BLOCK DID, and keeps one '
+            + 'that holds them again beside the words it rewrote',
+          fn: async () => {
+            const lines: string[] = [];
+            const { written, findings, } = writtenBy({
+              voices: [
+                { seat: 'hyper-cat', translation: 'The sunny window put the cat to sleep.', },
+                { seat: 'bedrock-cat', translation: 'The kitten put the kitten to sleep.', },
+                { seat: 'vision-cat', translation: 'The sunny window put the kitten to sleep.', },
+              ],
+              lineStructured: false,
+              lines,
+              keeping: ['kitten',],
+            },);
+            expect({ written, findings, },).toEqual({
+              written: [
+                { seat: 'bedrock-cat', text: 'The kitten put the kitten to sleep.', },
+                { seat: 'vision-cat', text: 'The sunny window put the kitten to sleep.', },
+              ],
+              findings: [
+                'consistency-candidate-refused (hyper-cat): the paragraph no longer holds the words of another place that '
+                + 'must stay as they are',
+              ],
             },);
           },
         },),

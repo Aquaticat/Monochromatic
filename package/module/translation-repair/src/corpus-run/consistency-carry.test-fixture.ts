@@ -11,6 +11,8 @@
 import type {
   CarryContext,
   CarryReceiver,
+  CarryUnit,
+  CarryWriters,
   ConsistencyCacheValue,
   LocatedPlace,
   RosterModelId,
@@ -112,6 +114,12 @@ export type CarryScene = {
   readonly receiver: CarryReceiver;
 
   /**
+   The receiving place's block as a unit of its own: its one paragraph, which is
+   its slice's whole English, holding nothing to keep.
+   */
+  readonly unit: CarryUnit;
+
+  /**
    Seat of every structured call, in order.
    */
   readonly asked: RosterModelId[];
@@ -142,7 +150,7 @@ export type CarryScene = {
 
  @param resumed - what an earlier run settled
 
- @param writerModelIds - the writer bench, the whole bench by default
+ @param writers - whether the writers are asked, the whole bench by default
 
  @returns The scene
 
@@ -155,11 +163,14 @@ export function carryScene(
   {
     behave,
     resumed = new Map<string, ConsistencyCacheValue>(),
-    writerModelIds = CARRY_BENCH,
+    writers = {
+      kind: 'asked',
+      modelIds: CARRY_BENCH,
+    },
   }: {
     readonly behave: SeatScript;
     readonly resumed?: ReadonlyMap<string, ConsistencyCacheValue>;
-    readonly writerModelIds?: readonly RosterModelId[];
+    readonly writers?: CarryWriters;
   },
 ): CarryScene {
   /**
@@ -239,6 +250,20 @@ export function carryScene(
       start: 6,
     },
   };
+  /**
+   The receiving place with the plan to move the chosen words in.
+   */
+  const receiver: CarryReceiver = {
+    ...located,
+    position: 1,
+    label: 'OCCURRENCE 2',
+    plan: {
+      kind: 'replace',
+      start: 6,
+      end: 21,
+      text: 'the cat naps',
+    },
+  };
   return {
     context: {
       client: scriptedJudgeClient({
@@ -246,7 +271,7 @@ export function carryScene(
         asked,
         sheets,
       },),
-      writerModelIds,
+      writers,
       judgeModelIds: CARRY_BENCH,
       cache: {
         resumed,
@@ -263,21 +288,53 @@ export function carryScene(
       stageSettings: SCRIPTED_STAGE_SETTINGS,
     },
     chosen,
-    receiver: {
-      ...located,
-      position: 1,
-      label: 'OCCURRENCE 2',
-      plan: {
-        kind: 'replace',
-        start: 6,
-        end: 21,
-        text: 'the cat naps',
+    receiver,
+    unit: {
+      block: {
+        start: 0,
+        end: RECEIVING_ENGLISH.length,
+        text: RECEIVING_ENGLISH,
       },
+      writable: true,
+      receivers: [receiver,],
+      keeping: [],
     },
     asked,
     sheets,
     lines,
     persisted,
+  };
+}
+
+/**
+ A second receiving place of the scene's block, worded differently, whose words stand after the first's.
+
+ @param receiver - the scene's receiving place
+
+ @returns Another place of the same slice, at position 2, whose plan moves in the warm sun
+
+ @example
+ ```ts
+ const second = secondReceiverOf({ receiver: scene.receiver, },);
+ ```
+ */
+export function secondReceiverOf({ receiver, }: { readonly receiver: CarryReceiver; },): CarryReceiver {
+  return {
+    ...receiver,
+    position: 2,
+    label: 'OCCURRENCE 3',
+    rendering: {
+      kind: 'located',
+      quote: 'the sun',
+      core: 'the sun',
+      start: 25,
+    },
+    plan: {
+      kind: 'replace',
+      start: 25,
+      end: 32,
+      text: 'the warm sun',
+    },
   };
 }
 

@@ -18,9 +18,11 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
+  belowFloorWritingBenches,
   benchesOf,
   judgeSeatsFor,
   phaseBenches,
+  PHASES_WITHOUT_WRITER_STOP,
   reachableSeats,
   RUN_MODELS,
   RUN_TRANSLATORS,
@@ -173,6 +175,55 @@ await describe({
       ],
     },),
 
+    describe({
+      name: belowFloorWritingBenches.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'NAMES EACH WRITING BENCH BELOW THE FLOOR WITH ITS CLAUSE, the name beside the clause the phase prints, and '
+            + 'names no judge bench however short, the same benches unreachableWritingBenches words',
+          fn: async () => {
+            const dry: BudgetView = { synthetic: true, bedrock: true, hyper: true, openrouter: true, };
+            const benches = benchesOf({ seats: judgeSeatsFor({ dry, },), },);
+            const shortOfFloor = belowFloorWritingBenches({
+              benches,
+              names: phaseBenches({ phase: 'page consistency', },),
+              dry,
+            },);
+            expect({
+              below: shortOfFloor,
+              sameClauses: shortOfFloor.map(function clauseOf({ clause, },): string {
+                return clause;
+              },),
+              words: unreachableWritingBenches({ benches, names: phaseBenches({ phase: 'page consistency', },), dry, },),
+              none: belowFloorWritingBenches({
+                benches: benchesOf({ seats: judgeSeatsFor({ dry: ALL_WET, },), },),
+                names: phaseBenches({ phase: 'page consistency', },),
+                dry: ALL_WET,
+              },),
+            },).toEqual({
+              below: [{ name: 'translators', clause: 'translators 0 of 8 reachable, floor 2', },],
+              sameClauses: ['translators 0 of 8 reachable, floor 2',],
+              words: ['translators 0 of 8 reachable, floor 2',],
+              none: [],
+            },);
+          },
+        },),
+      ],
+    },),
+    describe({
+      name: 'PHASES_WITHOUT_WRITER_STOP',
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'NAMES ONLY THE PAGE CONSISTENCY PHASE, so every other phase that leans on a writing bench still stops the '
+            + 'entry when the bench is below its floor',
+          fn: async () => {
+            expect([...PHASES_WITHOUT_WRITER_STOP,],).toEqual(['page consistency',],);
+          },
+        },),
+      ],
+    },),
     describe({
       name: WritingBenchUnreachableError.name,
       concurrency: DEFAULT_CONCURRENCY,

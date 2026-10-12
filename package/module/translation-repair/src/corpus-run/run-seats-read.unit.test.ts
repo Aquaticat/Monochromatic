@@ -23,6 +23,7 @@ import {
   mapOverlapped,
   reachableSeats,
   readJudgeSeats,
+  readPhaseSeats,
   rosterQuorumSize,
   RUN_SEATS,
   RUN_TRANSLATORS,
@@ -55,6 +56,16 @@ const ALL_WET: BudgetView = {
   bedrock: false,
   hyper: false,
   openrouter: false,
+};
+
+/**
+ Every provider dry.
+ */
+const ALL_DRY: BudgetView = {
+  synthetic: true,
+  bedrock: true,
+  hyper: true,
+  openrouter: true,
 };
 
 /**
@@ -536,6 +547,156 @@ await describe({
                 stopLine,
               ],);
             }
+          },
+        },),
+      ],
+    },),
+    describe({
+      name: `${readPhaseSeats.name} for a phase that goes on without its writers`,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'GOES ON WHEN THE WRITING BENCH IS BELOW ITS FLOOR AND NO PROVIDER HAS NAMED ITS RETURN: one error line '
+            + 'names the bench and says the phase goes on, none says the entry stops, and the benches below the floor are '
+            + 'handed back',
+          fn: async () => {
+            const script = scriptedViews({ views: [ALL_DRY,], },);
+            const lines: string[] = [];
+            const { seats, unreachableWriters, } = await readPhaseSeats({
+              client: viewClient({ providerDryness: script.read, },),
+              phase: 'page consistency',
+              signal: new AbortController().signal,
+              l: levelCapturingLogger({ lines, },),
+              pollMs: 5,
+            },);
+            expect({
+              reads: script.counter.reads,
+              unreachableWriters,
+              translators: seats.translators,
+              errors: lines.filter(function isError(line,): boolean {
+                return line.startsWith('error ',);
+              },),
+              stops: lines.filter(function saysStop(line,): boolean {
+                return line.includes('stopping the entry',);
+              },),
+              warned: lines.filter(function isWarning(line,): boolean {
+                return line.startsWith('warn ',);
+              },),
+            },).toEqual({
+              reads: 1,
+              unreachableWriters: ['translators 0 of 8 reachable, floor 2',],
+              translators: RUN_TRANSLATORS,
+              errors: [
+                'error JUDGE SEATS phase=page consistency writing bench unreachable: translators 0 of 8 reachable, floor 2; '
+                + 'no provider has named its return, so the phase goes on without its writers',
+              ],
+              stops: [],
+              warned: [
+                'warn JUDGE SEATS phase=page consistency short of quorum: wide 0 of 7 reachable, quorum 4; '
+                + 'no provider has named its return, so the phase runs on what is reachable',
+              ],
+            },);
+          },
+        },),
+        it({
+          name: 'SEATS THE WRITERS AND SAYS NOTHING OF THEM WHEN THE BENCH IS AT ITS FLOOR OR ABOVE, handing back no bench',
+          fn: async () => {
+            const lines: string[] = [];
+            const { unreachableWriters, seats, } = await readPhaseSeats({
+              client: viewClient({ providerDryness: scriptedViews({ views: [ALL_WET,], },).read, },),
+              phase: 'page consistency',
+              signal: new AbortController().signal,
+              l: levelCapturingLogger({ lines, },),
+              pollMs: 5,
+            },);
+            expect({
+              unreachableWriters,
+              translators: seats.translators,
+              unwanted: lines.filter(function isNotTheSeatsLine(line,): boolean {
+                return !line.startsWith('info JUDGE SEATS phase=page consistency ',);
+              },),
+            },).toEqual({ unreachableWriters: [], translators: RUN_TRANSLATORS, unwanted: [], },);
+          },
+        },),
+        it({
+          name: 'STILL WAITS OUT A NAMED HOLD ONCE, then goes on without the writers when the bench is still below its floor, '
+            + 'saying so after the wait in one error line that does not say the entry stops',
+          fn: async () => {
+            const stays = scriptedViews({ views: [ALL_DRY, ALL_DRY,], },);
+            const lines: string[] = [];
+            const { unreachableWriters, } = await readPhaseSeats({
+              client: viewClient({
+                providerDryness: stays.read,
+                providerHolds: () => ({ ...NO_HOLDS, hyper: 40, }),
+              },),
+              phase: 'page consistency',
+              signal: new AbortController().signal,
+              l: levelCapturingLogger({ lines, },),
+              pollMs: 5,
+            },);
+            expect({
+              reads: stays.counter.reads,
+              unreachableWriters,
+              errors: lines.filter(function isError(line,): boolean {
+                return line.startsWith('error ',);
+              },),
+              waits: lines.filter(function isWait(line,): boolean {
+                return line.startsWith('warn ',) && line.includes('waiting 40ms for the shortest hold to end',);
+              },).length,
+            },).toEqual({
+              reads: 2,
+              unreachableWriters: ['translators 0 of 8 reachable, floor 2',],
+              errors: [
+                'error JUDGE SEATS phase=page consistency writing bench unreachable after waiting 40ms: '
+                + 'translators 0 of 8 reachable, floor 2; the phase goes on without its writers',
+              ],
+              waits: 1,
+            },);
+          },
+        },),
+        it({
+          name: 'SEATS THE WRITERS WHEN THE WAIT BROUGHT THE BENCH BACK, handing back no bench and writing no error line',
+          fn: async () => {
+            const returns = scriptedViews({ views: [ALL_DRY, ALL_WET,], },);
+            const lines: string[] = [];
+            const { unreachableWriters, seats, } = await readPhaseSeats({
+              client: viewClient({
+                providerDryness: returns.read,
+                providerHolds: () => ({ ...NO_HOLDS, hyper: 40, }),
+              },),
+              phase: 'page consistency',
+              signal: new AbortController().signal,
+              l: levelCapturingLogger({ lines, },),
+              pollMs: 5,
+            },);
+            expect({
+              reads: returns.counter.reads,
+              unreachableWriters,
+              translators: seats.translators,
+              errors: lines.filter(function isError(line,): boolean {
+                return line.startsWith('error ',);
+              },),
+            },).toEqual({ reads: 2, unreachableWriters: [], translators: RUN_TRANSLATORS, errors: [], },);
+          },
+        },),
+        it({
+          name: 'STOPS A PHASE THAT DOES NOT GO ON WITHOUT ITS WRITERS exactly as before, so the lanes on the same view '
+            + 'still refuse and still say the entry stops',
+          fn: async () => {
+            const lines: string[] = [];
+            await expect(readPhaseSeats({
+              client: viewClient({ providerDryness: scriptedViews({ views: [ALL_DRY,], },).read, },),
+              phase: 'lanes',
+              signal: new AbortController().signal,
+              l: levelCapturingLogger({ lines, },),
+              pollMs: 5,
+            },),).rejects.toThrow(WritingBenchUnreachableError,);
+            expect(lines.filter(function isError(line,): boolean {
+              return line.startsWith('error ',);
+            },),).toEqual([
+              'error JUDGE SEATS phase=lanes writing bench unreachable: editors 0 of 3 reachable, floor 2; '
+              + 'refiners 0 of 3 reachable, floor 2; translators 0 of 8 reachable, floor 2; stopping the entry',
+            ],);
           },
         },),
       ],

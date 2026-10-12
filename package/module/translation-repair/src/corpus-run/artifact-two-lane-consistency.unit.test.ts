@@ -16,6 +16,9 @@ import {
 
 import {
   type ArtifactConsistency,
+  CONSISTENCY_CANDIDATE_KINDS,
+  CONSISTENCY_CARRY_DECISION_KINDS,
+  CONSISTENCY_CARRY_NO_DECISION_REASONS,
   consistencyOverrideAt,
   NO_CONSISTENCY,
 } from '../../dist/final/node/index.mjs';
@@ -49,6 +52,27 @@ await describe({
               { kind: 'untouched', },
               { kind: 'untouched', },
             ],);
+          },
+        },),
+      ],
+    },),
+    describe({
+      name: 'the carry vocabularies the reader checks a record against',
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'NAME EVERY KIND OF CANDIDATE, EVERY KIND OF DECISION AND EVERY REASON A CARRY CAN HAVE NO CHOICE, as records '
+            + 'keyed by the types so that a member added to a type fails to compile until the record names it',
+          fn: async () => {
+            expect({
+              candidates: Object.keys(CONSISTENCY_CANDIDATE_KINDS,),
+              decisions: Object.keys(CONSISTENCY_CARRY_DECISION_KINDS,),
+              reasons: Object.keys(CONSISTENCY_CARRY_NO_DECISION_REASONS,),
+            },).toEqual({
+              candidates: ['current', 'splice', 'writer',],
+              decisions: ['chosen', 'none', 'failed',],
+              reasons: ['no-alternative', 'no-quorum', 'no-majority',],
+            },);
           },
         },),
       ],

@@ -91,8 +91,9 @@ await describe({
               },
             },);
             // The order the keys are written in is the order the reply is asked in.
-            expect(JSON.stringify(CONSISTENCY_CHOICE_RESPONSE_FORMAT.json_schema.schema,),).toContain(
-              '"properties":{"reason":{"type":"string"},"choice":{"type":"string"}}',
+            expect(JSON.stringify(CONSISTENCY_CHOICE_RESPONSE_FORMAT.json_schema.schema,),).toBe(
+              '{"type":"object","required":["reason","choice"],"additionalProperties":false,'
+              + '"properties":{"reason":{"type":"string"},"choice":{"type":"string"}}}',
             );
           },
         },),

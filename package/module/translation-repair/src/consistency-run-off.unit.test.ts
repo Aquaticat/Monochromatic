@@ -192,7 +192,9 @@ await describe({
               reasonFirst: system?.content.includes('keys come in this order: reason, choice',),
               outside: system?.content.includes('name any word of the rendering you choose that renders ORIGINAL outside the marked wording',),
               houseRules: system?.content.includes('House rules this corpus is written under',),
-              shape: user?.content.includes('Reply with JSON only: {"reason":"...","choice":"OCCURRENCE 3"}',),
+              shape: user?.content.endsWith(
+                'Reply with JSON only: {"reason":"...","choice":"<the label of the place you choose>"}',
+              ),
               quotesAsked: (system?.content ?? '').includes('"quotes"',),
             },).toEqual({
               roles: ['system', 'user',],

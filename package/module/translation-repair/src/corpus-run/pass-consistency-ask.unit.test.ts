@@ -329,7 +329,8 @@ await describe({
           },
         },),
         it({
-          name: 'READS BACK A STORED ANSWER INSTEAD OF ASKING, marking it resumed and saying how many ballots it read',
+          name: 'READS BACK A STORED ANSWER INSTEAD OF ASKING, marking it resumed and saying how many voices it read, as the '
+            + 'writers\' and the choosing judges\' asking does, since all three share one cache protocol',
           fn: async () => {
             const stored: ConsistencyRecord = {
               quorum: 2,
@@ -346,11 +347,11 @@ await describe({
             },);
             expect(result,).toEqual({ ...stored, resumed: true, },);
             expect(asked,).toEqual([],);
-            expect(lines,).toEqual(['info [askConsistencyBench] resumed 2 ballots',],);
+            expect(lines,).toEqual(['info [askConsistencyBench] [gatherThroughCache] page-consistency: resumed 2 voices',],);
           },
         },),
         it({
-          name: 'SAYS ONE BALLOT, NOT ONE BALLOTS, WHEN IT READS BACK A GATHER OF ONE VOICE',
+          name: 'SAYS ONE VOICE, NOT ONE VOICES, WHEN IT READS BACK A GATHER OF ONE VOICE',
           fn: async () => {
             const stored: ConsistencyRecord = {
               quorum: 1,
@@ -364,7 +365,7 @@ await describe({
               lines,
               asked: [],
             },);
-            expect(lines,).toEqual(['info [askConsistencyBench] resumed 1 ballot',],);
+            expect(lines,).toEqual(['info [askConsistencyBench] [gatherThroughCache] page-consistency: resumed 1 voice',],);
           },
         },),
         it({
@@ -464,8 +465,9 @@ await describe({
                 findings: [],
               },
             ];
-            const warning = 'warn [askConsistencyBench] the stored ballots cannot be an answer of this bench (a seat heard twice, '
-              + 'or a seat the bench does not have), so the question is asked again';
+            const warning = 'warn [askConsistencyBench] [gatherThroughCache] page-consistency: the stored answer cannot be an '
+              + 'answer of this bench (another kind, a seat heard twice, or a seat the bench does not have), so the question '
+              + 'is asked again';
             const results = await Promise.all(unfit.map(async function askedWith(stored,): Promise<unknown> {
               const lines: string[] = [];
               const asked: RosterModelId[] = [];
@@ -479,7 +481,7 @@ await describe({
                 resumed: result.resumed,
                 asked: asked.toSorted(),
                 warnings: lines.filter(function namesTheStoredBallots(line,): boolean {
-                  return line.includes('the stored ballots',);
+                  return line.includes('the stored answer',);
                 },),
               };
             },),);
@@ -586,7 +588,8 @@ await describe({
             expect(lines.filter(function namesTheStore(line,): boolean {
               return line.includes('could not be stored',);
             },),).toEqual([
-              'warn [askConsistencyBench] the ballots could not be stored (refused by Error); they are counted all the same',
+              'warn [askConsistencyBench] [gatherThroughCache] page-consistency: the answer could not be stored (refused by Error); '
+              + 'it is counted all the same',
             ],);
           },
         },),

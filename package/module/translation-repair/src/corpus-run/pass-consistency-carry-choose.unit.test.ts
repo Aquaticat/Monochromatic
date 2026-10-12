@@ -1,9 +1,11 @@
 /**
- Tests for the bench's choice among a receiving place's candidates and what it
- comes to: the record of a carry that ended without a choice, and, for a choice,
- the carry's record and the replacement the winner makes (the words for the
- splice, the block for a writer's paragraph, nothing for the current paragraph).
- A place with no alternative to its own English is not put to the bench.
+ Tests for the bench's choice among a block's candidates and what it comes to:
+ the record of a carry that ended without a choice, once for each receiving
+ place of the block, and, for a choice, the carry's records and the replacements
+ the winner makes (the words of each receiving place for the splice, the block
+ once for every receiving place for a writer's paragraph, nothing for the
+ current paragraph). A block with no alternative to its own English is not put
+ to the bench.
 
  Fixtures are cat-themed invention; no corpus content appears here.
 
@@ -18,11 +20,13 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
-  type CarryBlock,
   carryOffersOf,
+  type CarryUnit,
   carryWithoutChoice,
   choose,
+  ConsistencyInvariantError,
 } from '../../dist/final/node/index.mjs';
+import { rejectionOf, } from '../rejecting-call.test-fixture.ts';
 import {
   choosing,
   type SeatBehaviour,
@@ -33,13 +37,9 @@ import {
   CARRY_REPEAT,
   carryScene,
   RECEIVING_ENGLISH,
+  secondReceiverOf,
   SPLICED_PARAGRAPH,
 } from './consistency-carry.test-fixture.ts';
-
-/**
- The one body block of the receiving English.
- */
-const BLOCK: CarryBlock = { start: 0, end: RECEIVING_ENGLISH.length, text: RECEIVING_ENGLISH, };
 
 /**
  What a writer wrote.
@@ -55,6 +55,14 @@ const OFFERS = carryOffersOf({
   written: [{ seat: 'hyper-cat', text: WRITTEN, },],
   lineStructured: false,
 },);
+
+/**
+ Label of the writer's paragraph among the three candidates.
+ */
+const WRITER_LABEL = OFFERS.find(function isWriter({ kind, },): boolean {
+  return kind === 'writer';
+},)
+  ?.label;
 
 /**
  Judges that all choose the candidate holding a text.
@@ -89,20 +97,31 @@ await describe({
       concurrency: DEFAULT_CONCURRENCY,
       children: [
         it({
-          name: 'RECORDS A CARRY WITH NO BALLOTS, NO USABLE COUNT AND NO QUORUM, the decision and the candidates as given',
+          name: 'RECORDS A CARRY WITH NO BALLOTS, NO USABLE COUNT AND NO QUORUM under each label, the decision and the '
+            + 'candidates as given',
           fn: async () => {
             expect(carryWithoutChoice({
-              label: 'OCCURRENCE 2',
+              labels: ['OCCURRENCE 2', 'OCCURRENCE 3',],
               decision: { kind: 'failed', detail: 'Error', },
               candidates: [{ label: 'CANDIDATE 1', kind: 'current', writers: [], text: RECEIVING_ENGLISH, },],
-            },),).toEqual({
-              label: 'OCCURRENCE 2',
-              candidates: [{ label: 'CANDIDATE 1', kind: 'current', writers: [], text: RECEIVING_ENGLISH, },],
-              ballots: [],
-              usable: 0,
-              quorum: 0,
-              decision: { kind: 'failed', detail: 'Error', },
-            },);
+            },),).toEqual([
+              {
+                label: 'OCCURRENCE 2',
+                candidates: [{ label: 'CANDIDATE 1', kind: 'current', writers: [], text: RECEIVING_ENGLISH, },],
+                ballots: [],
+                usable: 0,
+                quorum: 0,
+                decision: { kind: 'failed', detail: 'Error', },
+              },
+              {
+                label: 'OCCURRENCE 3',
+                candidates: [{ label: 'CANDIDATE 1', kind: 'current', writers: [], text: RECEIVING_ENGLISH, },],
+                ballots: [],
+                usable: 0,
+                quorum: 0,
+                decision: { kind: 'failed', detail: 'Error', },
+              },
+            ],);
           },
         },),
       ],
@@ -120,23 +139,24 @@ await describe({
               context: scene.context,
               repeat: CARRY_REPEAT,
               chosen: scene.chosen,
-              receiver: scene.receiver,
-              block: BLOCK,
+              unit: scene.unit,
               offers: carryOffersOf({ current: RECEIVING_ENGLISH, splice: [], written: [], lineStructured: false, },),
-              findings: ['consistency-writers-unseated (OCCURRENCE 2)',],
+              findings: ['consistency-writers-not-asked (OCCURRENCE 2): none',],
             },);
             expect({ carried, asked: scene.asked, },).toEqual({
               carried: {
-                carry: {
-                  label: 'OCCURRENCE 2',
-                  candidates: [{ label: 'CANDIDATE 1', kind: 'current', writers: [], text: RECEIVING_ENGLISH, },],
-                  ballots: [],
-                  usable: 0,
-                  quorum: 0,
-                  decision: { kind: 'none', reason: 'no-alternative', },
-                },
+                carries: [
+                  {
+                    label: 'OCCURRENCE 2',
+                    candidates: [{ label: 'CANDIDATE 1', kind: 'current', writers: [], text: RECEIVING_ENGLISH, },],
+                    ballots: [],
+                    usable: 0,
+                    quorum: 0,
+                    decision: { kind: 'none', reason: 'no-alternative', },
+                  },
+                ],
                 edits: [],
-                findings: ['consistency-writers-unseated (OCCURRENCE 2)',],
+                findings: ['consistency-writers-not-asked (OCCURRENCE 2): none',],
               },
               asked: [],
             },);
@@ -149,18 +169,17 @@ await describe({
             const results = await Promise.all([RECEIVING_ENGLISH, SPLICED_PARAGRAPH, WRITTEN,].map(
               async function chooses(text,) {
                 const scene = carryScene({ behave: allChoose({ text, }), },);
-                const { carry, edits, } = await choose({
+                const { carries, edits, } = await choose({
                   context: scene.context,
                   repeat: CARRY_REPEAT,
                   chosen: scene.chosen,
-                  receiver: scene.receiver,
-                  block: BLOCK,
+                  unit: scene.unit,
                   offers: OFFERS,
                   findings: [],
                 },);
                 return {
                   decided: OFFERS.find(function isNamed({ label, },): boolean {
-                    return (carry.decision.kind === 'chosen') && (carry.decision.label === label);
+                    return (carries[0]?.decision.kind === 'chosen') && (carries[0].decision.label === label);
                   },)?.kind,
                   edits,
                 };
@@ -170,13 +189,99 @@ await describe({
               { decided: 'current', edits: [], },
               {
                 decided: 'splice',
-                edits: [{ placePosition: 1, sliceIndex: 1, start: 6, end: 21, text: 'the cat naps', },],
+                edits: [{ placePositions: [1,], sliceIndex: 1, start: 6, end: 21, text: 'the cat naps', },],
               },
               {
                 decided: 'writer',
-                edits: [{ placePosition: 1, sliceIndex: 1, start: 0, end: RECEIVING_ENGLISH.length, text: WRITTEN, },],
+                edits: [
+                  { placePositions: [1,], sliceIndex: 1, start: 0, end: RECEIVING_ENGLISH.length, text: WRITTEN, },
+                ],
               },
             ],);
+          },
+        },),
+        it({
+          name: 'CARRIES EVERY RECEIVING PLACE OF A BLOCK IN ONE REPLACEMENT WHEN THE BENCH CHOOSES A WRITER\'S PARAGRAPH, and '
+            + 'each place\'s own words when it chooses the splice, the record being one choice repeated under each label',
+          fn: async () => {
+            const scene = carryScene({ behave: allChoose({ text: WRITTEN, }), },);
+            const unit: CarryUnit = {
+              ...scene.unit,
+              receivers: [scene.receiver, secondReceiverOf({ receiver: scene.receiver, },),],
+            };
+            const written = await choose({
+              context: scene.context,
+              repeat: CARRY_REPEAT,
+              chosen: scene.chosen,
+              unit,
+              offers: OFFERS,
+              findings: [],
+            },);
+            const spliceScene = carryScene({ behave: allChoose({ text: 'Later the cat naps in the warm sun.', }), },);
+            const spliceOffers = carryOffersOf({
+              current: RECEIVING_ENGLISH,
+              splice: ['Later the cat naps in the warm sun.',],
+              written: [],
+              lineStructured: false,
+            },);
+            const spliced = await choose({
+              context: spliceScene.context,
+              repeat: CARRY_REPEAT,
+              chosen: spliceScene.chosen,
+              unit,
+              offers: spliceOffers,
+              findings: [],
+            },);
+            expect({
+              writtenEdits: written.edits,
+              writtenLabels: written.carries.map(function labelOf({ label, },): string {
+                return label;
+              },),
+              writtenDecisions: written.carries.map(function decisionOf({ decision, },) {
+                return decision;
+              },),
+              splicedEdits: spliced.edits,
+              asked: scene.asked.length,
+            },).toEqual({
+              writtenEdits: [
+                { placePositions: [1, 2,], sliceIndex: 1, start: 0, end: RECEIVING_ENGLISH.length, text: WRITTEN, },
+              ],
+              writtenLabels: ['OCCURRENCE 2', 'OCCURRENCE 3',],
+              writtenDecisions: [
+                { kind: 'chosen', label: WRITER_LABEL, },
+                { kind: 'chosen', label: WRITER_LABEL, },
+              ],
+              splicedEdits: [
+                { placePositions: [1,], sliceIndex: 1, start: 6, end: 21, text: 'the cat naps', },
+                { placePositions: [2,], sliceIndex: 1, start: 25, end: 32, text: 'the warm sun', },
+              ],
+              asked: 3,
+            },);
+          },
+        },),
+        it({
+          name: 'REFUSES A SPLICE THAT WON FOR A BLOCK WITH A PLACE WHOSE WORDS CANNOT BE MOVED BY CODE, since no splice is '
+            + 'offered then',
+          fn: async () => {
+            const scene = carryScene({ behave: allChoose({ text: SPLICED_PARAGRAPH, }), },);
+            const refusal = await rejectionOf(async function chooseUnspliceable(): Promise<unknown> {
+              return await choose({
+                context: scene.context,
+                repeat: CARRY_REPEAT,
+                chosen: scene.chosen,
+                unit: {
+                  ...scene.unit,
+                  receivers: [{ ...scene.receiver, plan: { kind: 'unavailable', }, },],
+                },
+                offers: OFFERS,
+                findings: [],
+              },);
+            },);
+            expect(refusal,).toBeInstanceOf(ConsistencyInvariantError,);
+            expect(String(refusal,),).toBe(
+              'ConsistencyInvariantError: unreachable: the splice won for OCCURRENCE 2, whose words cannot be moved by code, '
+              + 'and a splice is offered only when every receiving place of the block can be spliced',
+            );
           },
         },),
         it({
@@ -184,25 +289,25 @@ await describe({
             + 'the candidates\' making and the asking reported',
           fn: async () => {
             const scene = carryScene({ behave: allChoose({ text: WRITTEN, }), },);
-            const { carry, findings, } = await choose({
+            const { carries, findings, } = await choose({
               context: scene.context,
               repeat: CARRY_REPEAT,
               chosen: scene.chosen,
-              receiver: scene.receiver,
-              block: BLOCK,
+              unit: scene.unit,
               offers: OFFERS,
               findings: ['consistency-candidate-refused (hyper-cat): none',],
             },);
+            const [carry,] = carries;
             expect({
-              labels: carry.candidates.map(function labelOf({ label, },): string {
+              labels: carry?.candidates.map(function labelOf({ label, },): string {
                 return label;
               },),
-              kinds: carry.candidates.map(function kindOf({ kind, },): string {
+              kinds: carry?.candidates.map(function kindOf({ kind, },): string {
                 return kind;
               },).toSorted(),
-              ballots: carry.ballots.length,
-              usable: carry.usable,
-              quorum: carry.quorum,
+              ballots: carry?.ballots.length,
+              usable: carry?.usable,
+              quorum: carry?.quorum,
               findings,
             },).toEqual({
               labels: ['CANDIDATE 1', 'CANDIDATE 2', 'CANDIDATE 3',],
@@ -224,16 +329,15 @@ await describe({
                 return choosing({ choice: candidates[at % candidates.length]?.label ?? '', },);
               },
             },);
-            const { carry, edits, } = await choose({
+            const { carries, edits, } = await choose({
               context: scene.context,
               repeat: CARRY_REPEAT,
               chosen: scene.chosen,
-              receiver: scene.receiver,
-              block: BLOCK,
+              unit: scene.unit,
               offers: OFFERS,
               findings: [],
             },);
-            expect({ decision: carry.decision, edits, },).toEqual({
+            expect({ decision: carries[0]?.decision, edits, },).toEqual({
               decision: { kind: 'none', reason: 'no-majority', },
               edits: [],
             },);

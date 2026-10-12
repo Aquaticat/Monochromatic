@@ -1,8 +1,10 @@
 /**
  Tests for asking the judge bench about every group that needs it: nobody to
  ask reads no seats, a group whose handling breaks outside the bench's own
- containment stops the pass with the failure of the first, and the failure of
- each other group is written under the name of the group asked.
+ containment stops the pass with the failure of the first, the failure of each
+ other group is written under the name of the group asked, a failure inside the
+ bench is contained unless the caller has stopped the work, and the writers are
+ asked only when the seat reading left a writer bench to ask.
 
  Fixtures are cat-themed invention; no corpus content appears here.
 
@@ -10,7 +12,9 @@
  */
 
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
+import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 import {
+  DEFAULT_CONCURRENCY,
   describe,
   expect,
   it,
@@ -18,16 +22,24 @@ import {
 
 import {
   askAll,
+  consistencySlicesOf,
+  placesOf,
   type PreparedGroup,
+  repeatGroupsOf,
   type RosterModelId,
+  writersOf,
 } from '../../dist/final/node/index.mjs';
 import { warnLinesDuring, } from '../console-warn-lines.test-fixture.ts';
 import { HANG_STOP_MS, } from '../hang-stop.test-fixture.ts';
+import { rejectionOf, } from '../rejecting-call.test-fixture.ts';
 import { scratchDir, } from '../scratch-dir.test-fixture.ts';
 import { SCRIPTED_STAGE_SETTINGS, } from '../stage-settings.test-fixture.ts';
 import {
+  archiveEnglishOf,
   firstPlaceWins,
   PAGE_SOURCE,
+  preparedCatPage,
+  projectedCatPage,
   scriptedJudgeClient,
 } from './consistency-page.test-fixture.ts';
 import { DIGEST, } from './consistency-run.test-fixture.ts';
@@ -55,73 +67,230 @@ function placelessGroup(): PreparedGroup {
   };
 }
 
+/**
+ The cat page's groups as the pass hands them to the bench, in page order.
+
+ @returns One prepared group for each repeat group of the page
+
+ @example
+ ```ts
+ const [first,] = catGroups();
+ ```
+ */
+function catGroups(): readonly PreparedGroup[] {
+  const prepared = preparedCatPage();
+  const slices = consistencySlicesOf({
+    prepared,
+    projected: projectedCatPage({ prepared, english: archiveEnglishOf({ prepared, },), },),
+    contestSlices: [],
+    consolidateSlices: [],
+    archiveDisputes: new Map(),
+  },);
+  return repeatGroupsOf({
+    text: prepared.sourceText,
+    slices: prepared.slices
+      .map(function sourceOf(slice,) {
+        return slice.source;
+      },),
+  },)
+    .map(function preparedOf(group,): PreparedGroup {
+      return { group, places: placesOf({ group, slices, },), };
+    },);
+}
+
 await describe({
-  name: askAll.name,
+  name: '',
   concurrency: 1,
   children: [
-    it({
-      name: 'ASKS NOBODY AND READS NO SEATS FOR NO GROUP TO ASK, since a page that needs no judge waits out no hold',
-      fn: async () => {
-        await using dir = await scratchDir({ prefix: 'pass-consistency-bench-', },);
-        /**
-         Seats the client was asked.
-         */
-        const asked: RosterModelId[] = [];
-        expect(await askAll({
-          client: scriptedJudgeClient({ behave: firstPlaceWins, asked, sheets: [], },),
-          text: PAGE_SOURCE,
-          toAsk: [],
-          declared: [],
-          declaredNames: [],
-          entryCacheDir: dir.path,
-          pipelineDigest: DIGEST,
-          signal: AbortSignal.timeout(HANG_STOP_MS,),
-          overlap: 2,
-          l,
-          stageSettings: SCRIPTED_STAGE_SETTINGS,
-        },),).toEqual([],);
-        expect(asked,).toEqual([],);
-      },
+    describe({
+      name: writersOf.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'ASKS THE WRITER BENCH AS THE SEAT READING LEFT IT when no writing bench is below its floor',
+          fn: async () => {
+            expect(writersOf({ translators: ['glm-5.3', 'minimax-m3',], unreachableWriters: [], },),).toEqual({
+              kind: 'asked',
+              modelIds: ['glm-5.3', 'minimax-m3',],
+            },);
+          },
+        },),
+        it({
+          name: 'DOES NOT ASK THE WRITERS WHEN A WRITING BENCH IS BELOW ITS FLOOR, naming each such bench and saying no '
+            + 'provider named its return, even when the reading still lists translators',
+          fn: async () => {
+            expect([
+              writersOf({
+                translators: ['glm-5.3', 'minimax-m3',],
+                unreachableWriters: ['translators 0 of 8 reachable, floor 2',],
+              },),
+              writersOf({
+                translators: [],
+                unreachableWriters: ['translators 1 of 8 reachable, floor 2', 'editors 0 of 3 reachable, floor 2',],
+              },),
+            ],).toEqual([
+              { kind: 'not-asked', why: 'translators 0 of 8 reachable, floor 2; no provider has named its return', },
+              {
+                kind: 'not-asked',
+                why: 'translators 1 of 8 reachable, floor 2; editors 0 of 3 reachable, floor 2; '
+                  + 'no provider has named its return',
+              },
+            ],);
+          },
+        },),
+        it({
+          name: 'DOES NOT ASK THE WRITERS WHEN THE BENCH SEATS NO MODEL, whatever the reading said of the floor',
+          fn: async () => {
+            expect(writersOf({ translators: [], unreachableWriters: [], },),).toEqual({
+              kind: 'not-asked',
+              why: 'the translators bench seats no model',
+            },);
+          },
+        },),
+      ],
     },),
-    it({
-      name: 'THROWS THE FIRST GROUP\'S FAILURE AND WRITES THE SECOND\'S UNDER ITS NAME when two groups break outside '
-        + 'the bench\'s containment',
-      fn: async () => {
-        await using dir = await scratchDir({ prefix: 'pass-consistency-bench-', },);
-        const { result: refusal, warned, } = await warnLinesDuring({
-          run: async function askBoth(): Promise<string> {
-            try {
-              await askAll({
+    describe({
+      name: askAll.name,
+      concurrency: 1,
+      children: [
+        it({
+          name: 'ASKS NOBODY AND READS NO SEATS FOR NO GROUP TO ASK, since a page that needs no judge waits out no hold',
+          fn: async () => {
+            await using dir = await scratchDir({ prefix: 'pass-consistency-bench-', },);
+            /**
+             Seats the client was asked.
+             */
+            const asked: RosterModelId[] = [];
+            expect(await askAll({
+              client: scriptedJudgeClient({ behave: firstPlaceWins, asked, sheets: [], },),
+              text: PAGE_SOURCE,
+              toAsk: [],
+              declared: [],
+              declaredNames: [],
+              entryCacheDir: dir.path,
+              pipelineDigest: DIGEST,
+              signal: AbortSignal.timeout(HANG_STOP_MS,),
+              overlap: 2,
+              l,
+              stageSettings: SCRIPTED_STAGE_SETTINGS,
+            },),).toEqual([],);
+            expect(asked,).toEqual([],);
+          },
+        },),
+        it({
+          name: 'THROWS THE FIRST GROUP\'S FAILURE AND WRITES THE SECOND\'S UNDER ITS NAME when two groups break outside '
+            + 'the bench\'s containment',
+          fn: async () => {
+            await using dir = await scratchDir({ prefix: 'pass-consistency-bench-', },);
+            const { result: refusal, warned, } = await warnLinesDuring({
+              run: async function askBoth(): Promise<string> {
+                try {
+                  await askAll({
+                    client: scriptedJudgeClient({ behave: firstPlaceWins, asked: [], sheets: [], },),
+                    text: PAGE_SOURCE,
+                    toAsk: [placelessGroup(), placelessGroup(),],
+                    declared: [],
+                    declaredNames: [],
+                    entryCacheDir: dir.path,
+                    pipelineDigest: DIGEST,
+                    signal: AbortSignal.timeout(HANG_STOP_MS,),
+                    overlap: 2,
+                    l,
+                    stageSettings: SCRIPTED_STAGE_SETTINGS,
+                  },);
+                }
+                catch (error) {
+                  return String(error,);
+                }
+                return 'settled';
+              },
+            },);
+            expect(refusal,).toBe(
+              'ConsistencyInvariantError: unreachable: a repeat group lists no place, and the detector reports a repeat only '
+                + 'where it stands in two',
+            );
+            expect(warned.some(function namesTheSecond(line,): boolean {
+              return line.includes(
+                'group 2 asked failed (unreachable: a repeat group lists no place, and the detector reports a repeat only where '
+                  + "it stands in two), and the failure thrown is group 1 asked's",
+              );
+            },),).toBe(true,);
+          },
+        },),
+        it({
+          name: 'CONTAINS A FAILURE INSIDE THE BENCH WHEN THE CALLER HAS NOT STOPPED THE WORK: a text that is not the page\'s '
+            + 'settles the group as failed with its places left as they stand, and asks nobody',
+          fn: async () => {
+            await using dir = await scratchDir({ prefix: 'pass-consistency-bench-', },);
+            /**
+             Seats the client was asked.
+             */
+            const asked: RosterModelId[] = [];
+            const settled = await askAll({
+              client: scriptedJudgeClient({ behave: firstPlaceWins, asked, sheets: [], },),
+              text: '',
+              toAsk: [nonNullishOrThrow(catGroups()[0],),],
+              declared: [],
+              declaredNames: [],
+              entryCacheDir: dir.path,
+              pipelineDigest: DIGEST,
+              signal: AbortSignal.timeout(HANG_STOP_MS,),
+              overlap: 2,
+              l,
+              stageSettings: SCRIPTED_STAGE_SETTINGS,
+            },);
+            expect({
+              verdicts: settled.map(function verdictOf({ verdict, },): unknown {
+                return verdict.kind === 'failed' ? [verdict.kind, verdict.detail,] : verdict.kind;
+              },),
+              outcomes: settled.map(function outcomesOf({ outcomes, },): readonly string[] {
+                return outcomes;
+              },),
+              edits: settled.map(function editsOf({ edits, },): number {
+                return edits.length;
+              },),
+              asked,
+            },).toEqual({
+              verdicts: [
+                [
+                  'failed',
+                  'unreachable: the offsets of a place point at other words in the text shown than in the whole original '
+                  + '(slice 0), and both are cut from the same offsets',
+                ],
+              ],
+              outcomes: [['untouched', 'untouched',],],
+              edits: [0,],
+              asked: [],
+            },);
+          },
+        },),
+        it({
+          name: 'THROWS THE FAILURE ITSELF INSTEAD OF CONTAINING IT WHEN THE CALLER HAS STOPPED THE WORK: the same text that '
+            + 'settles a group as failed while the run goes on stops the pass once the signal has fired',
+          fn: async () => {
+            await using dir = await scratchDir({ prefix: 'pass-consistency-bench-', },);
+            const refusal = await rejectionOf(async function askAfterStop(): Promise<unknown> {
+              return await askAll({
                 client: scriptedJudgeClient({ behave: firstPlaceWins, asked: [], sheets: [], },),
-                text: PAGE_SOURCE,
-                toAsk: [placelessGroup(), placelessGroup(),],
+                text: '',
+                toAsk: [nonNullishOrThrow(catGroups()[0],),],
                 declared: [],
                 declaredNames: [],
                 entryCacheDir: dir.path,
                 pipelineDigest: DIGEST,
-                signal: AbortSignal.timeout(HANG_STOP_MS,),
+                signal: AbortSignal.abort(new Error('the cat woke the run',),),
                 overlap: 2,
                 l,
                 stageSettings: SCRIPTED_STAGE_SETTINGS,
               },);
-            }
-            catch (error) {
-              return String(error,);
-            }
-            return 'settled';
+            },);
+            expect(String(refusal,),).toBe(
+              'ConsistencyInvariantError: unreachable: the offsets of a place point at other words in the text shown than in '
+              + 'the whole original (slice 0), and both are cut from the same offsets',
+            );
           },
-        },);
-        expect(refusal,).toBe(
-          'ConsistencyInvariantError: unreachable: a repeat group lists no place, and the detector reports a repeat only '
-            + 'where it stands in two',
-        );
-        expect(warned.some(function namesTheSecond(line,): boolean {
-          return line.includes(
-            'group 2 asked failed (unreachable: a repeat group lists no place, and the detector reports a repeat only where '
-              + "it stands in two), and the failure thrown is group 1 asked's",
-          );
-        },),).toBe(true,);
-      },
+        },),
+      ],
     },),
   ],
 },);

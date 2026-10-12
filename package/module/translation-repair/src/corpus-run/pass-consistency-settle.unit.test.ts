@@ -18,6 +18,7 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
+  type ArtifactConsistencyCarry,
   type ArtifactConsistencyRepeat,
   ConsistencyInvariantError,
   type ConsistencyAsked,
@@ -25,9 +26,10 @@ import {
   type ConsistencyRunOffAsked,
   type ConsistencyVoice,
   countAsked,
-  type PlaceCarried,
+  runOffReasonOf,
   settleAsked,
   settleCarried,
+  type UnitCarried,
 } from '../../dist/final/node/index.mjs';
 import {
   placeIn,
@@ -223,6 +225,21 @@ function decideSentence(
 }
 
 /**
+ The record of a carry to the second place that ended without a choice.
+ */
+const CARRY: ArtifactConsistencyCarry = {
+  label: 'OCCURRENCE 2',
+  candidates: [
+    { label: 'CANDIDATE 1', kind: 'current', writers: [], text: 'Later the kitten naps in the sun.', },
+    { label: 'CANDIDATE 2', kind: 'splice', writers: [], text: 'Later the cat naps in the sun.', },
+  ],
+  ballots: [],
+  usable: 0,
+  quorum: 2,
+  decision: { kind: 'none', reason: 'no-quorum', },
+};
+
+/**
  A carry of the second place that makes the edit it is given.
 
  @param edits - replacements the carry makes
@@ -241,22 +258,12 @@ function carriedOf(
     edits,
     findings,
   }: {
-    readonly edits: PlaceCarried['edits'];
-    readonly findings: PlaceCarried['findings'];
+    readonly edits: UnitCarried['edits'];
+    readonly findings: UnitCarried['findings'];
   },
-): PlaceCarried {
+): UnitCarried {
   return {
-    carry: {
-      label: 'OCCURRENCE 2',
-      candidates: [
-        { label: 'CANDIDATE 1', kind: 'current', writers: [], text: 'Later the kitten naps in the sun.', },
-        { label: 'CANDIDATE 2', kind: 'splice', writers: [], text: 'Later the cat naps in the sun.', },
-      ],
-      ballots: [],
-      usable: 0,
-      quorum: 2,
-      decision: { kind: 'none', reason: 'no-quorum', },
-    },
+    carries: [CARRY,],
     edits,
     findings,
   };
@@ -545,7 +552,11 @@ await describe({
                 },
               },
               outcomes: ['kept-current', 'chosen', 'kept-current',],
-              findings: ['page-consistency-run-off 3/3',],
+              findings: [
+                'run-off asked: the choices tied for first between OCCURRENCE 1 (2 ballots) and OCCURRENCE 2 (2 ballots), '
+                + 'of 4 usable in all',
+                'page-consistency-run-off 3/3',
+              ],
               receivers: ['OCCURRENCE 1', 'OCCURRENCE 3',],
             },);
           },
@@ -595,6 +606,48 @@ await describe({
       ],
     },),
     describe({
+      name: runOffReasonOf.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'NAMES THE PLACES THAT TIED FOR FIRST WITH THE BALLOTS EACH GOT and the usable ballots in all, and gives '
+            + 'nothing when the choices did not tie',
+          fn: async () => {
+            const tiedAsked = askedOf({ voices: fourSplit(), quorum: 3, });
+            const decidedAsked = askedOf({ voices: threeAlike({ quotes: SENTENCE_QUOTES, },), });
+            expect([
+              runOffReasonOf({
+                count: countAsked({ repeat: SENTENCE, places: SENTENCE_PLACES, asked: tiedAsked, },),
+                asked: tiedAsked,
+              },),
+              runOffReasonOf({
+                count: countAsked({ repeat: SENTENCE, places: SENTENCE_PLACES, asked: decidedAsked, },),
+                asked: decidedAsked,
+              },),
+            ],).toEqual([
+              'the choices tied for first between OCCURRENCE 1 (2 ballots) and OCCURRENCE 2 (2 ballots), of 4 usable in all',
+              '',
+            ],);
+          },
+        },),
+        it({
+          name: 'SAYS BALLOT IN THE SINGULAR FOR A PLACE THAT GOT ONE',
+          fn: async () => {
+            const voices = ['OCCURRENCE 1', 'OCCURRENCE 2',].map(function voiceFor(choice, at,): ConsistencyVoice {
+              return voiceOf({ seat: `seat-${String(at,)}`, quotes: SENTENCE_QUOTES, choice, },);
+            },);
+            const asked = askedOf({ voices, quorum: 2, });
+            expect(runOffReasonOf({
+              count: countAsked({ repeat: SENTENCE, places: SENTENCE_PLACES, asked, },),
+              asked,
+            },),).toBe(
+              'the choices tied for first between OCCURRENCE 1 (1 ballot) and OCCURRENCE 2 (1 ballot), of 2 usable in all',
+            );
+          },
+        },),
+      ],
+    },),
+    describe({
       name: countAsked.name,
       concurrency: DEFAULT_CONCURRENCY,
       children: [
@@ -632,7 +685,7 @@ await describe({
             const decided = decideSentence({
               asked: askedOf({ voices: threeAlike({ quotes: SENTENCE_QUOTES, },), findings: ['page-consistency 3/3',], }),
             },);
-            const edit = { placePosition: 1, sliceIndex: 1, start: 6, end: 21, text: 'the cat naps', };
+            const edit = { placePositions: [1,], sliceIndex: 1, start: 6, end: 21, text: 'the cat naps', };
             const carried = carriedOf({ edits: [edit,], findings: ['consistency-candidate-refused (qwen)',], });
             const settled = settleCarried({ decided, carried: [carried,], },);
             expect({
@@ -644,10 +697,61 @@ await describe({
             },).toEqual({
               outcomes: ['chosen', 'replaced', 'consistent',],
               edits: [edit,],
-              carries: [carried.carry,],
+              carries: [CARRY,],
               findings: ['page-consistency 3/3', 'consistency-candidate-refused (qwen)',],
               verdict: decided.verdict,
             },);
+          },
+        },),
+        it({
+          name: 'MAKES EVERY RECEIVER OF ONE EDIT REPLACED AND ORDERS THE RECORDS BY RECEIVER: one unit carried to two places '
+            + 'holds a record under each label and a single edit naming both positions',
+          fn: async () => {
+            const places = [...SENTENCE_PLACES, placeIn({ position: 3, english: 'Then the kitty naps by the fire.', },),];
+            const decided = settleAsked({
+              repeat: SENTENCE,
+              places,
+              unplaced: [],
+              asked: askedOf({
+                voices: threeAlike({ quotes: [...SENTENCE_QUOTES, { label: 'OCCURRENCE 4', quote: 'the kitty naps', },], },),
+              }),
+            },);
+            const second: ArtifactConsistencyCarry = { ...CARRY, label: 'OCCURRENCE 4', };
+            const edit = { placePositions: [1, 3,], sliceIndex: 1, start: 0, end: 10, text: 'one paragraph', };
+            const settled = settleCarried({
+              decided,
+              carried: [{ carries: [second, CARRY,], edits: [edit,], findings: [], },],
+            },);
+            expect({
+              receivers: decided.receivers.map(function labelOf({ label, },): string {
+                return label;
+              },),
+              outcomes: settled.outcomes,
+              edits: settled.edits,
+              carries: settled.carries,
+            },).toEqual({
+              receivers: ['OCCURRENCE 2', 'OCCURRENCE 4',],
+              outcomes: ['chosen', 'replaced', 'consistent', 'replaced',],
+              edits: [edit,],
+              carries: [CARRY, second,],
+            },);
+          },
+        },),
+        it({
+          name: 'REFUSES CARRIES THAT NAME A RECEIVER TWICE OR NOT AT ALL, since each receiving place is carried to once',
+          fn: async () => {
+            const decided = decideSentence({
+              asked: askedOf({ voices: threeAlike({ quotes: SENTENCE_QUOTES, },), }),
+            },);
+            const other: UnitCarried = { carries: [{ ...CARRY, label: 'OCCURRENCE 3', },], edits: [], findings: [], };
+            const refusal = caught(function settleOtherLabel(): unknown {
+              return settleCarried({ decided, carried: [other,], },);
+            },);
+            expect(refusal,).toBeInstanceOf(ConsistencyInvariantError,);
+            expect(String(refusal,),).toBe(
+              'ConsistencyInvariantError: unreachable: the pass carries to each receiving place once, and the records that '
+              + 'name OCCURRENCE 2 number 0',
+            );
           },
         },),
         it({
