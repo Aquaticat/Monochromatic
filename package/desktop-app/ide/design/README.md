@@ -1373,3 +1373,56 @@ The headless native test `a_drag_selects_across_visual_rows` drags across wrappe
 - There is no horizontal scrollbar and no horizontal scroll range.
 - The selection in the `-selection` frames covers each visual row from its first selected glyph to its end,
   and the caret of the click stands on the second visual row of the first line, not at the end of the first.
+
+## Applied frames of the 2026-10-12 hints and messages on wrapped lines
+
+`screenshots/2026-10-12-wrap-annotations-applied/` holds frames of the application built from the branch
+`feat/ide-soft-wrap`,
+in the light and the dark scheme,
+for the hint and message rows of a wrapped line.
+The user decided on 2026-10-05 that hints and messages stand on rows over the code line
+(see the 2026-10-05 UI batch 3 above);
+the frames show that decision on lines that wrap,
+and the one place where the built behavior differs from IntelliJ's:
+a block stands over the first visual row of its line, and IntelliJ's block inlay over the visual row that holds its
+offset.
+
+### File names of the hints and messages frames
+
+- `wrap-annotations-<scheme>-<size>.png`:
+  the sample file just after it opens, with its hints and diagnostics injected.
+  `<scheme>` is `light` or `dark`,
+  and `<size>` is `wide` (1100 by 660 pixels) or `narrow` (760 by 660 pixels).
+  Every frame is at scale 1.
+
+### How the hints and messages frames were produced
+
+`wrap-annotation-shots.mjs` in this directory writes a sample Rust file into a disposable project,
+writes the hints and diagnostics of the scene as the inspection file,
+and hosts a debug build of `monochromatic-ide` in the nested compositor
+(`package/cli/nested-wayland-session`, `--color-scheme light` and `dark`, both sizes).
+It takes each screenshot once two captures in a row are identical and the window is drawn.
+The hints and diagnostics come from the debug-only inspection path (`IDE_INSPECT_ANNOTATIONS`,
+`src/native/inspect.rs`), which release builds do not contain,
+so the application must be a debug build (`mise run //package/desktop-app/ide:build:debug`).
+The script needs `WAYLAND_DISPLAY` and `XDG_RUNTIME_DIR` of a running Wayland session:
+
+```sh
+# design/wrap-annotation-shots.mjs usage
+node design/wrap-annotation-shots.mjs target/debug/monochromatic-ide "${HOME}/temp/agent/wrap-annotation-frames" target/debug/runtime
+```
+
+### What the hints and messages frames show
+
+- A hint stands over the first visual row of its line at the x of its character on the visual row that character is on:
+  in `wide`, the hint `second:` over line 3 stands at the x of `second_value`, which is on the second visual row.
+  The blocks of lines 3 and 5 stand over their first rows, and the line after a wrapped line starts under its last
+  visual row.
+- A message whose widest row would pass the text area from the x of its diagnostic moves left, as a whole:
+  in `wide`, the error message of line 3 starts left of `second_value`, so that its widest row ends inside the pane.
+- A message row wider than the text area is broken again at the width of the text area,
+  the first row of a message using all of it and the rows after it standing 16 px in:
+  the same messages take one more row or two in `narrow`, and the rows are filled, not cut at the pane edge.
+- The underlines stand under the characters they mark on their own visual rows,
+  and the severity letters stand beside the first visual row of each line.
+- The wrap indicator stands in the gutter on every continuation row, as in the 2026-10-12 soft wrap frames.
