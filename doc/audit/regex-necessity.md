@@ -370,6 +370,54 @@ Resolving it needs the crate's exact folding semantics,
  and a real literal-search algorithm rather than a naive comparison at every position.
 No issue is filed for it until that work is done.
 
+## Surfaces checked and found empty or out of scope
+
+Completeness needs the negative results too,
+ each with the search that produced it.
+
+- **Dot-directories the mirror skipped**:
+  `.agents`,
+  `.cargo`,
+  `.changeset`,
+  `.claude-plugin`,
+  `.github`,
+  `.idea`,
+  `.opencodereview`,
+  `.out-of-scope`,
+  `.pi`,
+  and `.serena` hold exactly one tracked JS or TS file between them,
+  `.changeset/changelog.ts`,
+  which contains no regex.
+- **Shell-tool regex**:
+  every tracked hit for `grep -E`,
+  `sed -E`,
+  `sed -r`,
+  `path_regexp`,
+  or `header_regexp` is inside a `doc/runbook/`,
+  `doc/troubleshooting/`,
+  `doc/handover/`,
+  or `doc/decision/` file,
+  as a command a human runs.
+  Those are an external tool's own interface in a documented manual step,
+  not repo code,
+  and replacing them would mean telling the reader to write a program instead of a
+  command.
+  Out of scope by decision.
+- **`mise.toml` task bodies and `Caddyfile`**:
+  no `grep -E`,
+  `sed -E`,
+  `=~`,
+  or Caddy regexp matcher.
+- **Other declarative surfaces**:
+  Slint,
+  CSS,
+  and Dockerfile files carry no regex constructs.
+- **`.pnpmfile.mjs` and the root `playwright.*.config.ts`,
+  `file-enforcer.config.ts`,
+  `oxlint.config.ts`**:
+  inside the mirrored tree,
+  so they were scanned with everything else.
+
 ## Relationship to the earlier sweep
 
 `doc/handover/no-regex.md` records the sweep that cleared the gate's findings and paused
