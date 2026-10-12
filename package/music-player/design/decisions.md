@@ -3268,6 +3268,13 @@ This narrows D108's near-gray rule and D41's stable neutrals.
   outlines, the surfaces and the text variants are grays and take the tint, in both schemes and on both platforms, from
   the same derivation and the shared fixture.
 
+### D119. Context menus sit on the pure canvas color (2026-10-12)
+
+The human decided that the background of a context menu is pure white in the light scheme and pure black in the dark
+scheme, the same canvas color as D109, with no tint. The menu stays distinguishable from the content under it by its
+existing boundary (outline or shadow), not by a fill; if it has none, it gets a 1 px outline in the `outline-variant`
+role, because a pure black menu over a pure black page would otherwise have no edge.
+
 ## Pending after the theme picks (2026-09-04)
 
 - **Order of remaining work** — my recommendation:
