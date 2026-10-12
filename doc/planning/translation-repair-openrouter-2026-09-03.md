@@ -8084,6 +8084,102 @@ then whether the repair lane keeps the clause and what the contest and consolida
 then the first chat block's quote style,
 then the seven steps and the three checks.
 
+## TianqiChen66623 read, 2026-10-12: SETTLED, the tense holds and the consistency pass changes nothing
+
+TianqiChen66623 launched on 2026-10-12 at 08:58 UTC at `9c0406f113`
+through the runbook's unit form
+(`mise run //package/module/translation-repair:corpus-pass -- --only TianqiChen666`,
+`StandardError=inherit` read back from systemd right after the launch)
+into a throwaway runs directory,
+and settled in 7,339,457 ms
+(`TALLY TianqiChen666 status=SETTLED slices=24`):
+144 repair issues,
+101 accepted,
+100 resolved,
+every slice changed.
+`verify-published` read the page back:
+1 of 1 page carries every wording its artifact promised,
+at the length it implies.
+`DESTINATIONS` dropped none,
+no `DEFECTS` line printed,
+the log holds no `[error]` line,
+and it holds 529 `warn` lines,
+where TianqiChen66622 kept 2.
+
+### The two Gemma seats: an expired credential
+
+With stderr kept,
+the cause the last read could not name is in the log:
+every call to `google.gemma-4-e2b` and `gemma-4-26b-a4b-it` was refused with HTTP 401,
+the provider saying "The security token included in the request has expired."
+The run withheld each seat after it threw on every ask
+(`SEAT google.gemma-4-e2b asked=6 ... threw=6`,
+`SEAT gemma-4-26b-a4b-it asked=5 ... threw=5`),
+where TianqiChen66622 asked them 270 and 266 times;
+rounds without quorum fell to 4 of 503 from 212 of 696,
+and voices never heard to 146 from 753 (`run-timing-report`).
+That TianqiChen66622's Gemma failures had the same cause is likely,
+not shown:
+its stderr is lost.
+Renewing the credential is the owner's.
+
+### Time and spend
+
+7,339,457 ms against TianqiChen66622's 7,377,286 ms,
+with 13.72 h of calls against 11.07 h:
+the run asked more,
+not waited more,
+and the share of each new stage in it is not measured.
+Calls in flight averaged 6.73;
+rounds spent 47.7% of their time waiting after quorum.
+`spend-report` priced 135.66 credits at the rates read on 2026-10-11;
+the providers' own balances were not read for this section.
+
+### Tense
+
+The passage TianqiChen66622 shipped in the archive's present tense now reads in the past
+(page lines 49 to 56,
+"That glow was like thin mist ... Then it left her ashes behind");
+three repair judges flagged the archive's present tense against the house rule for a life that has ended.
+
+### The consistency pass changed nothing
+
+The pass found both groups the last read named and asked the bench about each
+(`settled groups=2 changed slices=0`):
+
+- The refrain 所以她是个……女孩吧 (source lines 17,
+  25,
+  33 and 37):
+  two ballots chose the third place ("So she was a girl who could be trusted,
+  wasn't she?"),
+  two the fourth ("So she was a gentle,
+  tender-hearted girl,
+  wasn't she?"),
+  so no strict majority.
+  The two frames put the slot on either side of "girl",
+  so a splice of either by code could not carry every place's own slot as English.
+  The page still reads the refrain three ways.
+- The repeated sentence 她想以可爱的样子陪伴在更多人的身边 (source lines 35 and 55):
+  three of four ballots chose the first place,
+  yet the pass found no agreed quote,
+  since it compared quotes as exact strings and two judges quoted the place without its final period,
+  two with it.
+  Had it located,
+  the first place's "She also wanted" renders the `也` that stands before the repeat on source line 35 and not on
+  line 55,
+  so a splice would have put a word the source lacks into page line 178.
+
+The lead's decision on these,
+under the owner's instruction of 2026-10-11 to decide without asking,
+is in the package's audit ledger with the work that carries it.
+
+### Em-dashes
+
+The page carries five.
+The source carries none,
+and the human archive carries them on five lines;
+the owner's ruling of 2026-09-21 leaves em-dashes as they are.
+
 ## TianqiChen66622 read, 2026-10-11: SETTLED, two Bedrock seats dark all run
 
 TianqiChen66622 launched on 2026-10-11 at 18:31 UTC at `f58e30822`

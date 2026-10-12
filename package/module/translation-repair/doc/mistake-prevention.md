@@ -4935,6 +4935,34 @@ its header names what it cannot reach (ledger B339).
 Issue 610 holds the cause in the test package,
 so a comparison outside a scan can still print a count where what differs runs past 40 characters.
 
+## Quotes a judge gives back
+
+What happened:
+the consistency pass counted the judges' quotes of a place as agreed only when they were the same string,
+and the first live run split them on a final period,
+a line break against a space and a straight against a curly apostrophe,
+so a 3 to 1 choice located nothing (ledger B449);
+and a quote that did locate would have carried a word that renders source outside the repeat (ledger B450).
+Both families were recorded before the module was written.
+
+The rule:
+a quote a model gives back is evidence of where it points,
+not text to compare or splice:
+it is located in the text it quotes,
+with whitespace runs,
+quotation-mark style and edge punctuation read as equal,
+and ballots agree when they locate the same span;
+what a later step writes comes from the text itself,
+and a change a span cannot express goes through writers,
+the bench and the floors,
+never through a splice.
+
+What enforces it:
+the consistency pass's own tests,
+built from the live run's texts;
+no scan finds a quote compared as a string elsewhere,
+so a new reader of judges' quotes is reviewed against this rule.
+
 ## Work merged from parallel briefs
 
 What happened:

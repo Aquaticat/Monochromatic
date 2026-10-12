@@ -11,15 +11,18 @@ the findings,
 their fixes and the process mistakes (M entries) are in
 [the audit ledger](audit-ledger.md),
 and the owner's rulings in [the design commitments](design-commitments.md).
-Two passes have run since the audit began,
-both of TianqiChen666:
-TianqiChen66621 on 2026-09-28 and TianqiChen66622 on 2026-10-11
+Three passes have run since the audit began,
+all of TianqiChen666:
+TianqiChen66621 on 2026-09-28,
+TianqiChen66622 on 2026-10-11 and TianqiChen66623 on 2026-10-12
 (the repository's pass log,
 `doc/planning/translation-repair-openrouter-2026-09-03.md`,
 reads each).
-The next waits for the fixes the owner's answers of 2026-10-11 call for
-([the design commitments](design-commitments.md)),
-and its launch writes stdout and stderr through one descriptor (ledger M147).
+The next waits for the rebuild of how the page-level consistency pass reads agreement and carries the bench's
+choice (ledger B449,
+B450),
+and for the Gemma seats' credential,
+which had expired.
 
 Landed late on 2026-09-27,
 each with a guard shown red first and the full suite green after:

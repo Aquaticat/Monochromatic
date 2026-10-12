@@ -36089,6 +36089,61 @@ they now say the floor is a short bench's,
 and that a bench of one or two seats closes on one voice,
 which the code has always done.
 
+### B449: the consistency pass compared the judges' quotes as exact strings
+
+Found on 2026-10-12 (UTC) in the read of TianqiChen66623,
+the first pass to run the consistency pass,
+which changed nothing on the page.
+`agreedQuoteOf` and `agreedSlotOf` (`consistency-count.ts`) counted a quote as agreed only when a strict majority
+of usable ballots gave the same string.
+Three of four judges chose the first place of the repeated sentence,
+yet two quoted it without its final period and two with it,
+so the place read `no-agreement` and the winner `chosen-unlocated`;
+the refrain's quotes split the same way on a line break against a space and a straight against a curly apostrophe.
+This is the straight-against-curly and trimmed-text family again,
+in a module written after both were recorded.
+Changed by the lead's decision,
+in work still open when this entry was written:
+ballots agree on a place when their quotes locate the same span of its English,
+whitespace runs,
+quotation-mark style and the punctuation at a quote's edges read as equal,
+and later steps use the place's own span,
+never a judge's string.
+
+### B450: a code splice could not carry the bench's choice
+
+Found in the same read.
+Even located,
+the repeated sentence's first place reads "She also wanted",
+and its "also" renders the `也` that stands before the repeat on source line 35 and not on line 55,
+so splicing it into the second place would have added a word the source lacks there;
+the word sits inside the sentence,
+so no contiguous quote leaves it out.
+The refrain's vote split 2 to 2 between two frames that put the slot on either side of "girl",
+so no splice of one frame carries every place's own slot as English.
+No floor catches an added word or a misplaced modifier.
+
+Changed by the lead's decision under the owner's instruction of 2026-10-11 to decide without asking,
+in work still open when this entry was written:
+writers render each receiving place following the chosen rendering,
+changing only what the place's own source requires,
+and the bench chooses among the current English,
+the code splice where it locates,
+and the writers' candidates,
+reason before choice,
+with every floor on the winner;
+a tie for first is run off among the tied finalists,
+as the owner's rule of 2026-10-11 does for contests,
+and a second tie leaves the page as it stands.
+Rejected:
+loosening the matcher alone,
+which would have shipped the "also";
+and a splice of the refrain's winning frame,
+which would have shipped a misplaced slot.
+Open to the owner's veto:
+the run-off,
+whose alternative is that a tie leaves the page.
+
 ## Process mistakes in this audit
 
 These are the agent's own mistakes while fixing,

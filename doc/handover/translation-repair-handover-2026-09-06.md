@@ -53,11 +53,32 @@ each choice an agent left open is recorded beside its ledger entry.
   (ledger M153 and M156);
   the rule is now in `mistake-prevention.md`,
   "Work merged from parallel briefs".
+- THE LAST PASS.
+  `TianqiChen66623` at `9c0406f113`,
+  launched through the runbook's unit form with stderr kept,
+  settled in 7,339,457 ms and was read the same day
+  (the pass log's "TianqiChen66623 read,
+  2026-10-12"):
+  the passage TianqiChen66622 shipped in the present tense now reads in the past;
+  the two Gemma seats were refused with an expired credential (HTTP 401) and withheld after their first asks,
+  so rounds without quorum fell to 4 of 503;
+  and the consistency pass asked the bench about both repeat groups and changed nothing
+  (ledger B449,
+  B450).
+- IN FLIGHT.
+  An agent rebuilds how the consistency pass reads agreement and carries the bench's choice
+  (by located span,
+  through writers and the bench,
+  with a run-off on a tie),
+  owning every consistency file.
+- FOR THE OWNER.
+  The Gemma seats' credential has expired and needs renewing before the next launch.
 - NEXT.
-  Walk "Before a run launches" and relaunch `TianqiChen666` as `TianqiChen66623`
-  into a fresh runs directory through the runbook's unit form,
-  then read its page against the source,
-  with the refrain lines and the repeated sentence of TianqiChen66622 read for one rendering each.
+  Merge that work,
+  gate the merged head,
+  replay the TianqiChen66623 artifact's ballots through it,
+  then walk "Before a run launches" and relaunch `TianqiChen666` as `TianqiChen66624`,
+  reading the refrain and the repeated sentence for one rendering each.
 
 ### 2026-10-11: TianqiChen66622 read, the owner's answers, and the fixes before the next launch
 
@@ -5460,8 +5481,9 @@ each read off the pass log and the shipped page:
 
 As of 2026-10-12 (UTC),
 the next action is the newest checkpoint's "NEXT":
-walk "Before a run launches" and relaunch `TianqiChen666` as `TianqiChen66623` through the runbook's unit form,
-then read the page against the source.
+merge the consistency pass's rebuild,
+gate it,
+and relaunch `TianqiChen666` as `TianqiChen66624` through the runbook's unit form.
 The numbered items keep the queue as the sessions of 2026-09-08 to 2026-09-26 left it;
 read each against its date.
 

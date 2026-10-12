@@ -34,17 +34,18 @@ and every mistake made while fixing;
 holds the rule that prevents each family of mistakes.
 Open work is every ledger entry whose status reads open or recurring.
 The last pass,
-`TianqiChen66622` at `f58e30822`,
-settled on 2026-10-11 and was read the same day
-(the pass log's "TianqiChen66622 read,
-2026-10-11"):
-two Bedrock seats answered none of their calls,
-slice 4 shipped the archive's present-tense sentence,
-and the launch lost every stderr line (ledger M147).
-The owner's answers that followed are in the package's
+`TianqiChen66623` at `9c0406f113`,
+settled on 2026-10-12 and was read the same day
+(the pass log's "TianqiChen66623 read,
+2026-10-12"):
+the tense the owner's rule asks held where TianqiChen66622 lost it,
+the two Gemma seats were refused with an expired credential and withheld,
+and the page-level consistency pass changed nothing (ledger B449,
+B450),
+whose rebuild lands before the next launch.
+The owner's answers it serves are in the package's
 [design commitments](../../package/module/translation-repair/doc/design-commitments.md)
-under 2026-10-11,
-and the fixes they call for land before the next launch.
+under 2026-10-11.
 
 The finite redesign stopped after Candidate M failed on 2026-09-01.
 No Candidate A through M is production-eligible,
@@ -71,7 +72,7 @@ Start with:
     for every OpenRouter run and its reading,
     one section per run or read,
     each heading dated;
-    when this map was written the newest was TianqiChen66622's read of 2026-10-11;
+    when this map was written the newest was TianqiChen66623's read of 2026-10-12;
 5.  [`translation-repair-redesign-failure-2026-09-01.md`](../audit/translation-repair-redesign-failure-2026-09-01.md)
     for the redesign's terminal disposition and A through M reconstruction;
 6.  [`translation-repair.md`](translation-repair.md)
