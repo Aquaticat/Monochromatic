@@ -395,6 +395,7 @@ fn selected_underlines_take_the_selected_ink() {
         anchor: 0,
         head: 9,
         viewport: 0,
+        affinity: ide_app::document::ReadingAffinity::Downstream,
     });
     let mut shaper = TextShaper::new();
     let viewport = Viewport {

@@ -337,6 +337,7 @@ pub(super) fn caret(reader: &LanguageReader, position: usize) {
     let mut reading = current.document.position();
     reading.anchor = position;
     reading.head = position;
+    reading.affinity = ide_app::document::ReadingAffinity::Downstream;
     current.document.select(reading);
     drop(current);
     render(&reader.window, &reader.source);

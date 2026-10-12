@@ -81,6 +81,7 @@ fn ligature_interior_caret_hit_and_copy_remain_source_based() {
                 anchor: position,
                 head: position,
                 viewport: 0,
+                affinity: ide_app::document::ReadingAffinity::Downstream,
             });
             let view = shaper.prepare(&document, viewport(), &[]);
             let caret = view.caret(&document);
@@ -94,6 +95,7 @@ fn ligature_interior_caret_hit_and_copy_remain_source_based() {
             anchor: 1,
             head: 2,
             viewport: 0,
+            affinity: ide_app::document::ReadingAffinity::Downstream,
         });
         assert_eq!(document.selected_text(), &source[1..2]);
     }
@@ -109,6 +111,7 @@ fn partial_ligature_selection_preserves_geometry_and_clips_ink() {
         anchor: 1,
         head: 2,
         viewport: 0,
+        affinity: ide_app::document::ReadingAffinity::Downstream,
     });
     let selected = shaper.prepare(&document, viewport(), &[]);
     assert_eq!(
@@ -179,6 +182,7 @@ fn fractional_ligature_selection_keeps_glyph_alpha_and_clip_edges() {
                 anchor: 1,
                 head: 2,
                 viewport: 0,
+                affinity: ide_app::document::ReadingAffinity::Downstream,
             });
             let selected = shaper.prepare(&document, area, &[]);
             assert_eq!(glyphs(&ordinary), glyphs(&selected));

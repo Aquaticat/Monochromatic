@@ -24,6 +24,7 @@ pub(super) fn reveal(window: &AppWindow, source: &Rc<RefCell<State>>, requested:
         anchor: position,
         head: position,
         viewport: position,
+        affinity: ide_app::document::ReadingAffinity::Downstream,
     });
     // The file may have been installed just now; the map must describe it before a line is placed by it.
     rows::refresh(&mut current, window.window().scale_factor());

@@ -6,6 +6,8 @@ use super::{
     AppWindow, State, render, rows,
     tile::{self, TileBounds},
 };
+/// The side of a soft-wrap offset a position is read on.
+use ide_app::document::ReadingAffinity;
 /// Height of one code row:
 ///  the least a line can take,
 ///  which bounds how many lines a view can show.
@@ -265,21 +267,20 @@ pub(super) fn bind_viewport(owner: &AppWindow, shared: &Rc<RefCell<State>>) {
 
 /// What:
 ///  How many visual rows below the first row of its line the character `position` is drawn,
-///  on the side of a soft wrap the caret's affinity names.
+///  on the side of a soft wrap `affinity` names.
 ///  A line outside the materialized rows is shaped on the spot.
 /// Why:
 ///  Keeping the caret in view means keeping its visual row in view, not only its line.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function rowsDown(current: State, position: number, scale: number): number;
+/// function rowsDown(current: State, position: number, affinity: ReadingAffinity, scale: number): number;
 /// ```
-fn rows_down(current: &mut State, position: usize, scale: f32) -> usize {
+fn rows_down(current: &mut State, position: usize, affinity: ReadingAffinity, scale: f32) -> usize {
     let line = current
         .document
         .text()
         .char_to_line(position.min(current.document.text().len_chars()));
-    let affinity = current.affinity_at(position);
     if let Some(view) = &current.shaped {
         for row in &view.rows {
             if row.row == line {
@@ -323,9 +324,10 @@ pub(super) fn follow(window: &AppWindow, state: &Rc<RefCell<State>>, paged: f32)
     let before = -window.get_scroll_y();
     let scale = window.window().scale_factor();
     let mut current = state.borrow_mut();
-    let head = current.document.position().head;
+    let caret = current.document.position();
+    let head = caret.head;
     let row = current.document.text().char_to_line(head);
-    let down = rows_down(&mut current, head, scale);
+    let down = rows_down(&mut current, head, caret.affinity, scale);
     let limit = rows::limit(&current.row_map, height);
     let paged_offset = (before + paged).clamp(0.0, limit);
     let mut offset =
@@ -359,7 +361,8 @@ pub(super) fn reveal(window: &AppWindow, state: &Rc<RefCell<State>>, start: usiz
     let text = current.document.text();
     let bounded = start.min(text.len_chars());
     let row = text.char_to_line(bounded);
-    let down = rows_down(&mut current, bounded, scale);
+    // A range to reveal is not the caret, so its start stands on the default side of a wrap offset.
+    let down = rows_down(&mut current, bounded, ReadingAffinity::Downstream, scale);
     let top = current.row_map.code_top(row) + down as f32 * CODE_ROW;
     if top < offset || top + CODE_ROW > offset + height {
         let limit = rows::limit(&current.row_map, height);

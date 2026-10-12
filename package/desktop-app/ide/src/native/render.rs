@@ -484,7 +484,7 @@ pub(super) fn show(window: &AppWindow, state: &Rc<RefCell<State>>, frame: Frame)
     let view = current.shaped.as_ref().expect("painted source view");
     let matches = matches_changed.then(|| return model_rows(&view.matches));
     let document = &current.document;
-    let caret = view.caret_with(document, current.affinity_at(document.position().head));
+    let caret = view.caret(document);
     let selections = model_rows(&view.selections);
     let position = document.position();
     let revision = document.revision();

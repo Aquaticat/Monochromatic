@@ -21,8 +21,6 @@ mod ui {
 use anyhow::{Context, bail};
 /// Hint and diagnostic snapshots with their position index.
 use ide_app::annotation::Annotations;
-/// The side of a soft-wrap offset a position is read on.
-use ide_app::document::ReadingAffinity;
 /// Accepted in-file matches carry the file generation and revision they describe.
 use ide_app::find_navigation::FindResults;
 /// The stamp naming a displayed text.
@@ -343,8 +341,6 @@ struct State {
     wrap_version: u64,
     /// What the pass last posted to the worker was for, and the syntax snapshot it used.
     pass_posted: Option<(PassKey, usize)>,
-    /// The caret's affinity at the caret position it belongs to, set by a pointer press at a soft-wrap offset.
-    caret_affinity: Option<(usize, ReadingAffinity)>,
     /// The symbol the gutter shows on a continuation row, chosen once from the fonts.
     sign: Option<Sign>,
     /// The display scale the gutter's sign image was painted for.
@@ -528,15 +524,6 @@ struct State {
 
 /// Construct the same reading state for the application and headless native event tests.
 impl State {
-    /// The side of a soft-wrap offset the caret at `position` is drawn on:
-    ///  the one a pointer press chose for that very position, otherwise downstream.
-    fn affinity_at(&self, position: usize) -> ReadingAffinity {
-        return match self.caret_affinity {
-            Some((head, affinity)) if head == position => affinity,
-            _ => ReadingAffinity::Downstream,
-        };
-    }
-
     /// Retain source ownership and initialize viewport resources without changing the filesystem.
     fn new(source: &str, file_path: Option<PathBuf>) -> Self {
         let document = Document::new(source);
@@ -559,7 +546,6 @@ impl State {
             wrap_text: None,
             wrap_version: 0,
             pass_posted: None,
-            caret_affinity: None,
             sign: None,
             sign_scale: None,
             shaper: TextShaper::new(),

@@ -77,6 +77,7 @@ fn disk_replacement_preserves_corresponding_selection() {
         anchor: 2,
         head: 6,
         viewport: 0,
+        affinity: ide_app::document::ReadingAffinity::Downstream,
     });
     let reload = read_reload(&document, &path)
         .expect("read updated source")
@@ -134,6 +135,7 @@ fn worker_bounds_requests_and_maps_the_latest_caret() {
         anchor: 9,
         head: 9,
         viewport: 0,
+        affinity: ide_app::document::ReadingAffinity::Downstream,
     });
     let response = reply(&mut worker);
     assert_eq!(response.generation, 41);

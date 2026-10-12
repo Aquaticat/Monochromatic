@@ -190,9 +190,13 @@ pub(super) fn bind_pointer(owner: &AppWindow, shared: &Rc<RefCell<State>>) {
             "source pointer press"
         );
         drop(pressed);
-        current.document.select(position);
         // A caret at a soft-wrap offset stays on the side that was clicked.
-        current.caret_affinity = (position.head == hit).then_some((hit, side));
+        position.affinity = if position.head == hit {
+            side
+        } else {
+            ReadingAffinity::Downstream
+        };
+        current.document.select(position);
         drop(current);
         render(&window, &press_state);
     });
@@ -208,18 +212,40 @@ pub(super) fn bind_pointer(owner: &AppWindow, shared: &Rc<RefCell<State>>) {
         let (hit, side) =
             pointer_position(&mut current, line, (x, y), window.window().scale_factor());
         let pressed = drag.borrow();
+        let granularity = pressed.granularity;
         let (anchor, head) = extended(
             current.document.text().slice(..),
             pressed.origin,
-            pressed.granularity,
+            granularity,
             hit,
         );
         drop(pressed);
         let mut position = current.document.position();
         position.anchor = anchor;
         position.head = head;
+        position.affinity = if head == hit {
+            side
+        } else {
+            ReadingAffinity::Downstream
+        };
+        // What: `?granularity` logs the value in its debug form, as a named field.
+        // Why: A drag that never reaches this callback and one that reaches it with the wrong unit look alike
+        // on screen; the log tells them apart.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // logger.debug('source pointer drag', { line, granularity, anchor, head });
+        // ```
+        tracing::debug!(
+            line,
+            y,
+            x,
+            ?granularity,
+            anchor,
+            head,
+            "source pointer drag"
+        );
         current.document.select(position);
-        current.caret_affinity = (head == hit).then_some((hit, side));
         drop(current);
         // A drag past an edge of the view scrolls just far enough to show where the selection now ends.
         follow(&window, &state, 0.0);
@@ -299,6 +325,7 @@ pub(super) fn bind_keys(owner: &AppWindow, shared: &Rc<RefCell<State>>) {
             anchor: 0,
             head: end,
             viewport: 0,
+            affinity: ide_app::document::ReadingAffinity::Downstream,
         });
         drop(current);
         if let Some(window) = select_window.upgrade() {
@@ -358,6 +385,8 @@ pub(super) fn bind_keys(owner: &AppWindow, shared: &Rc<RefCell<State>>) {
         } else {
             return;
         }
+        // A key move names no wrap side; the moves that do will set one before this point.
+        position.affinity = ReadingAffinity::Downstream;
         if !shift {
             position.anchor = position.head;
         }

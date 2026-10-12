@@ -57,6 +57,7 @@ fn caret_and_hit_test_share_mixed_script_advances() {
         anchor: 4,
         head: 4,
         viewport: 0,
+        affinity: ide_app::document::ReadingAffinity::Downstream,
     });
     let mut shaper = TextShaper::new();
     let view = shaper.prepare(&document, viewport(), &[]);
@@ -73,6 +74,7 @@ fn selection_copies_source_not_projection() {
         anchor: 1,
         head: 5,
         viewport: 0,
+        affinity: ide_app::document::ReadingAffinity::Downstream,
     });
     let mut shaper = TextShaper::new();
     let view = shaper.prepare(&document, viewport(), &[]);

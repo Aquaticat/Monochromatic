@@ -81,6 +81,7 @@ fn source_typography_repaints_without_changing_selection() {
         anchor: 1,
         head: 2,
         viewport: 0,
+        affinity: ide_app::document::ReadingAffinity::Downstream,
     });
     window.show().expect("show source typography fixture");
     // Lend the window/state while each independent pixel buffer remains owned by the test.

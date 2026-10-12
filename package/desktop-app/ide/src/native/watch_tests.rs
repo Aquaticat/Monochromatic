@@ -167,6 +167,7 @@ fn native_source_follows_atomic_replace_and_delete_then_recreate() {
         anchor: 9,
         head: 9,
         viewport: 0,
+        affinity: ide_app::document::ReadingAffinity::Downstream,
     });
     replace("I was a big cat.\n");
     promptly("the caret replacement", || {
@@ -186,6 +187,7 @@ fn native_source_follows_atomic_replace_and_delete_then_recreate() {
         anchor: 2,
         head: 6,
         viewport: 0,
+        affinity: ide_app::document::ReadingAffinity::Downstream,
     });
     render(&window, &state);
     replace("I was a big cat, but now I am a human!\n");

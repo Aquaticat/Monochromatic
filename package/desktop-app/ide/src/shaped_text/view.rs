@@ -95,25 +95,21 @@ impl ShapedView {
         return document.text().line_to_char(bounded_row);
     }
 
-    /// Return the caret bar on the downstream side of a soft-wrap offset,
-    ///  using exactly the same glyph advances as drawing.
-    pub fn caret(&self, document: &Document) -> ReadingRect {
-        return self.caret_with(document, ReadingAffinity::Downstream);
-    }
-
     /// What:
-    ///  Return the caret bar on the side of a soft-wrap offset that `affinity` names:
+    ///  Return the caret bar on the side of a soft-wrap offset that the document's reading position names:
     ///  its x from the glyph advances of the visual row it is drawn on,
     ///  and its y from that row.
     /// Why:
-    ///  A caret at a wrap offset is both the end of the upper row and the start of the lower one.
+    ///  A caret at a wrap offset is both the end of the upper row and the start of the lower one,
+    ///  and the reading position carries which of the two the reader is on.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
-    /// caretWith(document: Document, affinity: 'upstream' | 'downstream'): ReadingRect;
+    /// caret(document: Document): ReadingRect;
     /// ```
-    pub fn caret_with(&self, document: &Document, affinity: ReadingAffinity) -> ReadingRect {
+    pub fn caret(&self, document: &Document) -> ReadingRect {
         let head = document.position().head;
+        let affinity = document.position().affinity;
         let row = document.text().char_to_line(head);
         let mut x = 0.0;
         let mut offset = 0.0;

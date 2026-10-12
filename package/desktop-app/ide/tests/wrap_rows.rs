@@ -299,9 +299,16 @@ fn hits_and_carets_on_continuation_rows_resolve_in_their_row() {
         anchor: second,
         head: second,
         viewport: 0,
+        affinity: ReadingAffinity::Downstream,
     });
-    let lower = view.caret_with(&moved, ReadingAffinity::Downstream);
-    let upper = view.caret_with(&moved, ReadingAffinity::Upstream);
+    let lower = view.caret(&moved);
+    moved.select(ReadingPosition {
+        anchor: second,
+        head: second,
+        viewport: 0,
+        affinity: ReadingAffinity::Upstream,
+    });
+    let upper = view.caret(&moved);
     assert_eq!(lower.y, CODE_ROW + 2.0, "downstream draws on the lower row");
     assert_eq!(upper.y, 2.0, "upstream draws on the upper row");
     assert!(upper.x > lower.x);
@@ -316,6 +323,7 @@ fn selected_ink_reaches_continuation_rows() {
         anchor: 0,
         head: end,
         viewport: 0,
+        affinity: ide_app::document::ReadingAffinity::Downstream,
     });
     let mut shaper = TextShaper::new();
     let plain = RowMap::plain(1);

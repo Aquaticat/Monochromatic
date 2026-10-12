@@ -30,6 +30,7 @@ fn at(source: &str, head: usize) -> Document {
         anchor: head,
         head,
         viewport: 0,
+        affinity: ide_app::document::ReadingAffinity::Downstream,
     });
     return document;
 }
@@ -65,6 +66,7 @@ fn travel(source: &str, head: usize, steps: &[isize]) -> Vec<usize> {
             anchor: landed.head,
             head: landed.head,
             viewport: 0,
+            affinity: ide_app::document::ReadingAffinity::Downstream,
         });
         visited.push(landed.head);
     }

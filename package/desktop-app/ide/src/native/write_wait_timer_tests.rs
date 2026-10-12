@@ -101,6 +101,7 @@ fn write_wait_timer_coincidence() {
             anchor: 2,
             head: 6,
             viewport: 0,
+            affinity: ide_app::document::ReadingAffinity::Downstream,
         });
         render(&window, &state);
         let mut seen = Vec::new();

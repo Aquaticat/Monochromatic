@@ -289,6 +289,7 @@ fn inline_hint_changes_where_down_lands() {
             anchor: position,
             head: position,
             viewport: 0,
+            affinity: ide_app::document::ReadingAffinity::Downstream,
         });
         // `None` means no remembered column: the aim is the caret's own x on hint-free geometry.
         let plain = vertical(&mut shaper, &moving, 1.0, 1, None).head;

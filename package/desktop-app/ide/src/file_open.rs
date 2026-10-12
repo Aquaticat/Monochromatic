@@ -79,6 +79,7 @@ fn opened(reply: ReloadReply, outside_project: bool) -> Result<OpenedFile> {
         anchor: 0,
         head: 0,
         viewport: 0,
+        affinity: crate::document::ReadingAffinity::Downstream,
     });
     if let Some(syntax) = &reply.syntax
         && syntax.revision != document.revision()

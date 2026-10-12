@@ -43,6 +43,7 @@ fn cached_pixels_match_fresh_pixels_after_input_changes() {
             anchor: 0,
             head: case % 6,
             viewport: 0,
+            affinity: ide_app::document::ReadingAffinity::Downstream,
         });
         let viewport = Viewport {
             first: 0,

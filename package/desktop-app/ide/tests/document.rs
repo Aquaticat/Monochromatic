@@ -27,6 +27,7 @@ fn caret_follows_surviving_word() {
         anchor: 9,
         head: 9,
         viewport: 7,
+        affinity: ide_app::document::ReadingAffinity::Downstream,
     });
     let reload = doc.prepare_reload("I was a big cat.");
     // What: assert macros terminate a test when its condition fails.
@@ -43,7 +44,8 @@ fn caret_follows_surviving_word() {
         ReadingPosition {
             anchor: 10,
             head: 10,
-            viewport: 8
+            viewport: 8,
+            affinity: ide_app::document::ReadingAffinity::Downstream,
         }
     );
 }
@@ -57,6 +59,7 @@ fn selected_region_follows_replacement_not_literal_match() {
         anchor: 2,
         head: 6,
         viewport: 0,
+        affinity: ide_app::document::ReadingAffinity::Downstream,
     });
     let reload = doc.prepare_reload("I was a big cat, but now I am a human!");
     assert!(doc.apply_reload(reload));
@@ -73,6 +76,7 @@ fn backwards_selection_preserves_direction() {
         anchor: 6,
         head: 2,
         viewport: 0,
+        affinity: ide_app::document::ReadingAffinity::Downstream,
     });
     let reload = doc.prepare_reload("I was a big cat, but now I am a human!");
     assert!(doc.apply_reload(reload));
@@ -108,6 +112,7 @@ fn reload_maps_latest_reading_position() {
         anchor: 11,
         head: 14,
         viewport: 7,
+        affinity: ide_app::document::ReadingAffinity::Downstream,
     });
     assert!(doc.apply_reload(reload));
     assert_eq!(doc.selected_text(), "cat");
@@ -121,6 +126,7 @@ fn unicode_prefix_preserves_selection() {
         anchor: 2,
         head: 6,
         viewport: 0,
+        affinity: ide_app::document::ReadingAffinity::Downstream,
     });
     let reload = doc.prepare_reload("猫 was a big cat, am a");
     assert!(doc.apply_reload(reload));
@@ -135,6 +141,7 @@ fn deletion_clamps_positions() {
         anchor: 0,
         head: 3,
         viewport: 2,
+        affinity: ide_app::document::ReadingAffinity::Downstream,
     });
     let reload = doc.prepare_reload("");
     assert!(doc.apply_reload(reload));

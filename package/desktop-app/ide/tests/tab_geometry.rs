@@ -196,6 +196,7 @@ fn hit_selection_and_copy_treat_a_tab_as_one_source_character() {
         anchor: 2,
         head: 3,
         viewport: 0,
+        affinity: ide_app::document::ReadingAffinity::Downstream,
     });
     assert_eq!(
         document.selected_text(),
@@ -206,6 +207,7 @@ fn hit_selection_and_copy_treat_a_tab_as_one_source_character() {
         anchor: 0,
         head: 4,
         viewport: 0,
+        affinity: ide_app::document::ReadingAffinity::Downstream,
     });
     assert_eq!(document.selected_text(), "ab\tc");
 }

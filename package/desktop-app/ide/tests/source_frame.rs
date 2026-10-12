@@ -55,6 +55,7 @@ fn caret_only_movement_reuses_image() {
         anchor: 5,
         head: 5,
         viewport: 0,
+        affinity: ide_app::document::ReadingAffinity::Downstream,
     });
     // Assert the exact rendering gate remains closed for caret-only movement.
     assert!(before == stamp(&document));
@@ -69,6 +70,7 @@ fn selection_invalidates_but_direction_does_not() {
         anchor: 1,
         head: 5,
         viewport: 0,
+        affinity: ide_app::document::ReadingAffinity::Downstream,
     });
     let selected = stamp(&document);
     assert!(empty != selected);
@@ -76,12 +78,14 @@ fn selection_invalidates_but_direction_does_not() {
         anchor: 5,
         head: 1,
         viewport: 0,
+        affinity: ide_app::document::ReadingAffinity::Downstream,
     });
     assert!(selected == stamp(&document));
     document.select(ReadingPosition {
         anchor: 5,
         head: 5,
         viewport: 0,
+        affinity: ide_app::document::ReadingAffinity::Downstream,
     });
     assert!(selected != stamp(&document));
 }

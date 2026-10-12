@@ -86,6 +86,7 @@ fn matches_inside_a_ligature_use_selection_geometry_without_reshaping() {
             anchor: found[index].start,
             head: found[index].end,
             viewport: 0,
+            affinity: ide_app::document::ReadingAffinity::Downstream,
         });
         let selected = shaper.prepare(&document, viewport(0, 1), &[]);
         let selection = selected.selections[0];
