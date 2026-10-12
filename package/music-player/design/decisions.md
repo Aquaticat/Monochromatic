@@ -3259,6 +3259,9 @@ default outlines are broken lines, that the app follow whatever the latest Firef
 - The ring is drawn outside the element, is never clipped by a parent and never moves content.
 - It appears for keyboard focus only (CSS `:focus-visible`).
 - Focus adds no fill, tint, state layer, bold or size change. Hover and pressed keep their own state layers.
+- The human chose Firefox over Chromium on 2026-10-12. Chromium draws the same two solid rings (2 px next to the element,
+  1 px outside, flush) in a neutral focus color with a white or #101010 outer ring; it was rejected because it carries no
+  accent and its neutral pair conflicts with D118.
 
 ### D118. Grays are always accented unless the root color is completely neutral (2026-10-12)
 
