@@ -3130,8 +3130,8 @@ the list.
   crease does not need that: whether the device has a crease is detected through the platform API (on Android the
   Jetpack WindowManager `FoldingFeature` of a vertical fold or hinge, from `WindowInfoTracker`; the desktop has none), and
   without one the split follows the platform default ratio, which the orchestrator reads as the stock Settings value
-  `config_activity_embed_split_ratio` = 0.3636 for the list pane that the stock Settings APK ships (the human's wording
-  was "the default ratio"; this reading is a one-constant change).
+  `config_activity_embed_split_ratio` = 0.3636 for the list pane that the stock Settings APK ships. The human
+  confirmed on 2026-10-12 that 0.3636 is the ratio on a device without a crease; the setting is closed.
   No row or editor moves when the selection changes (the same stability as the Folders panel).
   The selected row is shown with a filled selection shape in the secondary container role plus a bold title (two
   channels, not color alone), and the first row, Track rows, is selected when Settings opens so the right pane is never

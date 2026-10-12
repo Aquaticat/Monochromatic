@@ -221,8 +221,7 @@ uncommitted in the worktree `~/temp/agent/music-player-production`; the orchestr
 
 - Waiting on the human: the D108 retune (primary moved 3.46 delta-E, accepted by the orchestrator), the D112 veto, filing
   the two Turso bugs from issue 678, the `[profile.dev]` and `[profile.test]` `opt-level = 1` proposal (the desktop test
-  suite ran 3.99 s instead of 8.9 s in a sandbox, at the cost of a 12.5 minute cold dependency build), the Settings
-  default ratio 0.3636, and `targetSdk` staying on 36 until a device test.
+  suite ran 3.99 s instead of 8.9 s in a sandbox, at the cost of a 12.5 minute cold dependency build), and `targetSdk` staying on 36 until a device test.
 - The Rust drift test reads the Android fixture and fails under the `containerCargo` fallback, which mounts only the
   desktop package (task 66).
 - Review findings the fix agents may leave open: look-alike Latin, Cyrillic and Greek letters in the rail, red accent
