@@ -31,6 +31,8 @@ pub mod wrap;
 /// Two-pass shaping that widens each tab's stand-in space to its stop.
 mod tab_layout;
 
+/// How many visual rows each source line takes, in chunks that copies share.
+pub mod line_rows;
 /// The one mapping between vertical pixels and source lines,
 ///  with blocks of virtual rows above annotated lines.
 pub mod row_map;

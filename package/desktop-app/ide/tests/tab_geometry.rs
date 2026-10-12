@@ -31,6 +31,7 @@ fn shaped(source: &str, scale: f32) -> (Document, ShapedView) {
         count: 4,
         width: 600.0,
         scale,
+        wrap: None,
     };
     // What: `&document` lends the source to the shaper; the tuple hands both values to the caller.
     // Why: The view borrows nothing from the document after shaping, so both can be returned together.

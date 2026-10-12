@@ -19,7 +19,9 @@ use crate::tab_stop::tab_advance;
 /// ```ts
 /// import { LineBreakContext, LineBreakOverrideFn } from 'parley';
 /// ```
-use parley::{LineBreakContext, LineBreakOverrideFn};
+use parley::{
+    Alignment, AlignmentOptions, IndentOptions, Layout, LineBreakContext, LineBreakOverrideFn,
+};
 
 /// First code point that IntelliJ's `canWrapLineAtOffset` treats as Eastern text.
 const EASTERN_FIRST: u32 = 0x2F00;
@@ -183,6 +185,63 @@ pub fn continuation_indent(text: &str, space: f32) -> f32 {
         }
     }
     return space;
+}
+
+/// What:
+///  Whether the first visual row of `layout` ends inside the leading blanks of `text`.
+/// Why:
+///  IntelliJ indents continuation rows by the first non-blank character only when the first break comes after it
+///  (`SoftWrapEngine`);
+///  a break inside the leading blanks gets only the mark.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function firstRowInBlanks(layout: Layout, text: string): boolean;
+/// ```
+pub fn first_row_in_blanks(layout: &Layout<u32>, text: &str) -> bool {
+    let first_text = text
+        .find(|character| {
+            return !is_blank(character);
+        })
+        .unwrap_or(text.len());
+    return layout.lines().next().is_some_and(|line| {
+        return line.text_range().end <= first_text;
+    });
+}
+
+/// What:
+///  Break `layout` at `width` logical pixels with the continuation indent of `text`,
+///  breaking it again with only the mark's width as the indent when the first break falls inside the leading blanks.
+///  The layout may already be broken, at the same or another width.
+/// Why:
+///  A fresh layout and a layout kept from an earlier width must end up exactly alike,
+///  so both go through this one function.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function breakWrapped(layout: Layout, text: string, scale: number, width: number, space: number): void;
+/// ```
+pub fn break_wrapped(layout: &mut Layout<u32>, text: &str, scale: f32, width: f32, space: f32) {
+    let indent = continuation_indent(text, space);
+    break_with_indent(layout, indent, scale, width);
+    if indent > space && layout.len() > 1 && first_row_in_blanks(layout, text) {
+        break_with_indent(layout, space, scale, width);
+    }
+}
+
+/// Break `layout` at `width` with every row but the first indented by `indent`,
+///  both in logical pixels at `scale`.
+fn break_with_indent(layout: &mut Layout<u32>, indent: f32, scale: f32, width: f32) {
+    // The indent applies to every row but the first, and `align` then places each row at its offset.
+    layout.set_text_indent(
+        indent * scale,
+        IndentOptions {
+            each_line: false,
+            hanging: true,
+        },
+    );
+    layout.break_all_lines(Some(width * scale));
+    layout.align(Alignment::Start, AlignmentOptions::default());
 }
 
 #[cfg(test)]

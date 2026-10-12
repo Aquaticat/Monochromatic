@@ -114,6 +114,25 @@ const TAB_PASSES: usize = 4;
 /// Two corrections closer than this in logical pixels are the same correction.
 const SPACING_TOLERANCE: f32 = 0.001;
 
+/// What:
+///  Whether every tab (display bytes in `tabs`) lies on the first visual row of `layout`.
+/// Why:
+///  A tab on the first row starts at a place that does not depend on where the line breaks,
+///  so its widening survives a new break;
+///  a tab on a continuation row does not.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function tabsOnFirstRow(layout: Layout, tabs: number[]): boolean;
+/// ```
+pub(crate) fn tabs_on_first_row(layout: &Layout<u32>, tabs: &[usize]) -> bool {
+    let Some(first) = layout.lines().next() else {
+        return true;
+    };
+    let end = first.text_range().end;
+    return tabs.iter().all(|byte| return *byte < end);
+}
+
 /// Index of the visual row that holds display byte `byte`, a byte on a row boundary being on the lower row.
 ///
 /// In TS you'd write (pseudocode):

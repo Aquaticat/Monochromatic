@@ -61,6 +61,7 @@ fn shaped(source: &str) -> (Document, ShapedView) {
         count: 16,
         width: 800.0,
         scale: 1.0,
+        wrap: None,
     };
     // What: `&document` lends the source to the shaper; the tuple hands both values to the caller.
     // Why: Assertions need the document for copying and the view for geometry.
@@ -256,6 +257,7 @@ fn selected_terminators_are_copied_and_marked() {
                 count: 16,
                 width: 800.0,
                 scale: 1.0,
+                wrap: None,
             };
             let view = shaper.prepare(&document, viewport, &[]);
             let mut marks = 0;

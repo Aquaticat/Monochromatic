@@ -49,6 +49,7 @@ fn cached_pixels_match_fresh_pixels_after_input_changes() {
             count: 3,
             width: 300.0,
             scale: [1.0, 1.25, 2.0][case % 3],
+            wrap: None,
         };
         let horizontal = [0.0, 0.25, 5.75, 0.0][case % 4];
         let colors = CodeColors {
@@ -98,6 +99,7 @@ fn comparison_detects_changed_ink_and_fractional_origin() {
         count: 1,
         width: 200.0,
         scale: 1.0,
+        wrap: None,
     };
     let view = shaper.prepare(&document, viewport, &[]);
     let mut raster = TextRaster::new();

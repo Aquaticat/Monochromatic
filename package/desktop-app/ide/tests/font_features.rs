@@ -16,6 +16,7 @@ fn viewport() -> Viewport {
         count: 1,
         width: 500.0,
         scale: 1.0,
+        wrap: None,
     };
 }
 

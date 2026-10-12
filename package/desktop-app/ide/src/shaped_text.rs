@@ -34,14 +34,13 @@ use crate::text_projection::project_line;
 /// Height and text size of the virtual rows above annotated lines.
 use crate::virtual_row::{ROW_HEIGHT, ROW_TEXT};
 /// IntelliJ's break rules as a Parley override, and the continuation indent of a wrapped line.
-use crate::wrap::{INTELLIJ_LINE_BREAK, continuation_indent, has_wrap_width, is_blank};
+use crate::wrap::{INTELLIJ_LINE_BREAK, break_wrapped, has_wrap_width};
 /// Construction failures identify unsupported source typography.
 use anyhow::Result;
 /// Font and paragraph layout are supplied by the same Parley stack Slint uses.
 use parley::{
-    Affinity, Alignment, AlignmentOptions, Cursor, FontContext, FontFamily, FontFeature,
-    FontFeatures, FontStyle, FontWeight, IndentOptions, Layout, LayoutContext, LineHeight,
-    OverflowWrap, StyleProperty,
+    Affinity, Cursor, FontContext, FontFamily, FontFeature, FontFeatures, FontStyle, FontWeight,
+    Layout, LayoutContext, LineHeight, OverflowWrap, StyleProperty,
 };
 /// Font bytes are shared immutably across the font database.
 use std::borrow::Cow;
@@ -52,6 +51,11 @@ use std::borrow::Cow;
 ///  selection and range rectangles,
 ///  and rebasing.
 mod view;
+
+/// Whole-file passes: bringing rows into the cache for a wrap width,
+///  and breaking kept rows again at a new width.
+mod pass;
+pub use pass::{Ensured, Measured};
 
 /// What:
 ///  `pub const` exports a compile-time value;
@@ -121,6 +125,9 @@ pub struct Viewport {
     pub width: f32,
     /// Physical pixels per logical pixel.
     pub scale: f32,
+    /// Wrap width in logical pixels that every line is broken at,
+    ///  or nothing to leave lines unbroken.
+    pub wrap: Option<f32>,
 }
 
 /// Viewport text and selection geometry share these exact shaped rows.
@@ -181,6 +188,8 @@ pub struct TextShaper {
     rows: RowCache,
     /// Source rows shaped by this shaper, never reset.
     shaped_rows: u64,
+    /// Kept rows broken again at a new wrap width instead of being shaped again, never reset.
+    rebroken_rows: u64,
 }
 
 /// Constructing a default shaper registers the bundled source font.
@@ -229,6 +238,7 @@ impl TextShaper {
             space: None,
             rows: RowCache::default(),
             shaped_rows: 0,
+            rebroken_rows: 0,
         });
     }
 
@@ -249,7 +259,7 @@ impl TextShaper {
             spacings,
             wrap: None,
         };
-        return self.build_line(request, 0.0);
+        return self.build_line(request);
     }
 
     /// What:
@@ -273,36 +283,17 @@ impl TextShaper {
                 wrap: None,
                 ..request
             };
-            return self.build_line(unwrapped, 0.0);
+            return self.build_line(unwrapped);
         }
         let space = self.space_advance(request.scale);
-        let indent = continuation_indent(request.text, space);
-        let layout = self.build_line(request, indent);
-        // What: The first non-blank byte, or the text length when the line is all blanks.
-        // Why: IntelliJ indents continuation rows by the first non-blank character only when the first break comes after it.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // const firstText = text.search(/[^ \t]/); const firstBreakInBlanks = ...;
-        // ```
-        let first_text = request
-            .text
-            .find(|character| {
-                return !is_blank(character);
-            })
-            .unwrap_or(request.text.len());
-        let first_row_in_blanks = layout.lines().next().is_some_and(|line| {
-            return line.text_range().end <= first_text;
-        });
-        if indent > space && layout.len() > 1 && first_row_in_blanks {
-            return self.build_line(request, space);
-        }
+        let mut layout = self.build_line(request);
+        break_wrapped(&mut layout, request.text, request.scale, width, space);
         return layout;
     }
 
-    /// Build and break one line with the shared font setup.
-    /// `indent` is the continuation indent in logical pixels and is used only when the request wraps.
-    fn build_line(&mut self, request: LineRequest<'_>, indent: f32) -> Layout<u32> {
+    /// Build and break one line with the shared font setup;
+    ///  a request that wraps is left unbroken for `break_wrapped`.
+    fn build_line(&mut self, request: LineRequest<'_>) -> Layout<u32> {
         let mut builder =
             self.layouts
                 .ranged_builder(&mut self.fonts, request.text, request.scale, true);
@@ -344,20 +335,8 @@ impl TextShaper {
             builder.push(StyleProperty::LetterSpacing(*extra), *byte..*byte + 1);
         }
         let mut layout = builder.build(request.text);
-        match request.wrap {
-            Some(width) => {
-                // The indent applies to every row but the first, and `align` then places each row at its offset.
-                layout.set_text_indent(
-                    indent * request.scale,
-                    IndentOptions {
-                        each_line: false,
-                        hanging: true,
-                    },
-                );
-                layout.break_all_lines(Some(width * request.scale));
-                layout.align(Alignment::Start, AlignmentOptions::default());
-            }
-            None => layout.break_all_lines(None),
+        if request.wrap.is_none() {
+            layout.break_all_lines(None);
         }
         return layout;
     }
@@ -456,7 +435,19 @@ impl TextShaper {
         let projection = project_line(&source);
         let source_len = projection.source_to_byte.len().saturating_sub(1);
         let mut roles = Vec::new();
-        for span in styles {
+        // What: Spans ascend and do not overlap, so a binary search finds the first one that reaches this line.
+        // Why: A pass over a whole file shapes every line; scanning every span for each would be quadratic.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // const relevant = styles.slice(lowerBound(styles, (span) => span.end > sourceStart));
+        // ```
+        let source_end = source_start + text.line(row).len_chars();
+        let reaching = styles.partition_point(|span| return span.end <= source_start);
+        for span in styles[reaching..]
+            .iter()
+            .take_while(|span| return span.start < source_end)
+        {
             let start = span.start.saturating_sub(source_start).min(source_len);
             let end = span.end.saturating_sub(source_start).min(source_len);
             if start < end {
@@ -485,6 +476,7 @@ impl TextShaper {
             layout,
             baseline,
             baseline_shift: baseline - natural,
+            wrap,
         };
     }
 
@@ -592,6 +584,7 @@ impl TextShaper {
             space: None,
             rows: RowCache::default(),
             shaped_rows: 0,
+            rebroken_rows: 0,
         };
     }
 
@@ -628,48 +621,73 @@ impl TextShaper {
         if cached {
             self.rows.sync(document.revision(), viewport.scale);
         }
-        let mut rows = Vec::new();
+        let mut shaped_rows = Vec::new();
         for row in viewport.first..last {
-            let top = map.code_top(row);
-            // What: A cached row is copied and placed at this map's top; a miss is shaped once and kept.
+            // What: A cached row is copied; a miss is shaped, or a kept row of another wrap width broken again, and kept.
             // Why: Shaping ignores the vertical position, so the same row serves every map.
             //
             // In TS you'd write (pseudocode):
             // ```ts
             // const shaped = cache.get(row) ?? shapeAndKeep(row);
             // ```
+            let request = RowRequest {
+                row,
+                scale: viewport.scale,
+                wrap: viewport.wrap,
+                baseline,
+            };
+            if cached {
+                self.ensure_row(document, styles, request);
+            }
             let hit = if cached {
-                self.rows.get(row).cloned()
+                self.rows.get(row, viewport.wrap).cloned()
             } else {
                 None
             };
             let shaped = match hit {
                 Some(shaped) => shaped,
                 None => {
-                    let fresh = self.shape_row(
+                    self.shaped_rows += 1;
+                    self.shape_row(
                         document,
                         (row, 0.0),
                         viewport.scale,
                         styles,
                         baseline,
-                        None,
-                    );
-                    self.shaped_rows += 1;
-                    if cached {
-                        self.rows.insert(fresh.clone());
-                    }
-                    fresh
+                        viewport.wrap,
+                    )
                 }
             };
-            rows.push(ShapedRow { top, ..shaped });
+            shaped_rows.push(shaped);
         }
         if cached {
             self.rows.trim(viewport.first + viewport.count / 2);
         }
+        // What: When lines wrap, the rows these lines really have replace the map's counts for them.
+        // Why: The map may still count an unmeasured line as one row; the frame must place its rows by what it shaped.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // const placed = wrap ? map.withMeasured(rows.map((r) => [r.row, r.visualRows])) : map;
+        // ```
+        let placed = if viewport.wrap.is_some() {
+            let measured: Vec<(usize, usize)> = shaped_rows
+                .iter()
+                .map(|shaped| return (shaped.row, shaped.visual_rows()))
+                .collect();
+            map.with_measured(&measured)
+        } else {
+            map.clone()
+        };
+        let mut rows = Vec::new();
+        for shaped in shaped_rows {
+            let top = placed.code_top(shaped.row);
+            rows.push(ShapedRow { top, ..shaped });
+        }
         let width = (viewport.width.max(1.0) * viewport.scale).ceil() as u32;
         // The raster spans every materialized line with its block; an empty frame is still one row tall.
-        let origin = map.block_top(viewport.first);
-        let extent = (map.block_top(last) - origin).max(CODE_ROW);
+        let origin = placed.block_top(viewport.first);
+        let extent = (placed.block_top(last) - origin).max(CODE_ROW);
         let height = (extent * viewport.scale).ceil() as u32;
         let mut view = ShapedView {
             rows,
@@ -677,8 +695,8 @@ impl TextShaper {
             width,
             height,
             origin,
-            // `clone` copies the mapping so the frame stays consistent while the window's own map moves on.
-            map: map.clone(),
+            // The frame keeps the mapping it placed its rows by, so it stays consistent while the window's own moves on.
+            map: placed,
             selections: Vec::new(),
             matches: Vec::new(),
             annotations: None,
@@ -686,4 +704,27 @@ impl TextShaper {
         view.selections = view.selection(document);
         return view;
     }
+}
+
+/// What:
+///  Which line to bring into the row cache,
+///  at what scale and wrap width,
+///  against which common baseline.
+/// Why:
+///  Ensuring a row and shaping one take the same four inputs.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// type RowRequest = { row: number; scale: number; wrap?: number; baseline: number };
+/// ```
+#[derive(Clone, Copy)]
+struct RowRequest {
+    /// Line to bring in.
+    row: usize,
+    /// Physical pixels per logical pixel.
+    scale: f32,
+    /// Wrap width in logical pixels.
+    wrap: Option<f32>,
+    /// Common baseline of every row in physical pixels.
+    baseline: f32,
 }

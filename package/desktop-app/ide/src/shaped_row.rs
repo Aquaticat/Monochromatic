@@ -86,6 +86,9 @@ pub struct ShapedRow {
     pub baseline: f32,
     /// Translation from Parley's natural baseline to the common source baseline.
     pub baseline_shift: f32,
+    /// The wrap width in logical pixels this layout is broken at,
+    ///  or nothing for an unbroken line.
+    pub wrap: Option<f32>,
 }
 
 /// Reading geometry of one row,
@@ -127,6 +130,31 @@ impl ShapedRow {
             return line.metrics().line_height;
         });
         return index as f32 * height / scale;
+    }
+
+    /// What:
+    ///  The visual row of this line whose extent holds the logical `top` of a rectangle,
+    ///  or nothing when the rectangle is not on this line.
+    ///  A rectangle on a row starts at that row's top, so a small tolerance covers rounding after a rebase.
+    /// Why:
+    ///  Selected ink and underlines are matched to the visual row they lie on,
+    ///  never by comparing two floats for equality.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// visualRowHolding(top: number, scale: number): number | undefined;
+    /// ```
+    pub fn visual_row_holding(&self, top: f32, scale: f32) -> Option<usize> {
+        let step = self.visual_row_offset(1, scale);
+        if step <= 0.0 {
+            return None;
+        }
+        let from = top - self.top;
+        let index = ((from + step * 0.5) / step).floor();
+        if index < 0.0 || index >= self.visual_rows() as f32 {
+            return None;
+        }
+        return Some(index as usize);
     }
 
     /// Display bytes of visual row `index`, or nothing when the row does not exist.

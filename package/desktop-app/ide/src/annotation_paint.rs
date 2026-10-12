@@ -15,7 +15,7 @@ use crate::annotation_layout::AnnotationFrame;
 /// Severities as the Language module names them.
 use crate::language::diagnostics::Severity;
 /// The frame's vertical mapping says where each underlined code row starts.
-use crate::row_map::RowMap;
+use crate::row_map::{CODE_ROW, RowMap};
 /// Selection coverage and ink blending,
 ///  shared with selected glyphs.
 use crate::selection_paint;
@@ -278,14 +278,15 @@ pub fn paint_underlines(
     } = place;
     for run in &frame.underlines {
         // The run lies on a materialized code row; the same mapping placed that row's selection rectangles.
-        let code_top = map.code_top(run.row);
+        let code_top = map.code_top(run.row) + run.offset;
         let row_y = (code_top - top) * scale;
         let line = row_y + baseline + DROP * scale;
         let left = (run.x - horizontal) * scale;
         let right = (run.x + run.width - horizontal) * scale;
         let mut intervals = Vec::new();
         for rectangle in selections {
-            if rectangle.y == code_top {
+            // A rectangle lies on the run's visual row when its top is that row's top, within rounding.
+            if (rectangle.y - code_top).abs() < CODE_ROW * 0.5 {
                 intervals.push((
                     (rectangle.x - horizontal) * scale,
                     (rectangle.x + rectangle.width - horizontal) * scale,
