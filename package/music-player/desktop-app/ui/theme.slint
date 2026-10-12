@@ -1,43 +1,142 @@
-// Shared design tokens for the accepted player design. The desktop has no wallpaper-derived dynamic color, so the
-// accent is the fixed blue-lavender family the Fold captures were taken with (sampled from those captures:
-// dark primary #BAC5EE, secondary container #353B4D; light primary #4E5E8B, secondary container #DDE2F9).
+// Shared design tokens for the accepted player design. The root color is the only thing taken from the platform: the
+// system accent that Slint reports (XDG portal `accent-color` on Linux, DWM colorization on Windows, `NSColor` accent on
+// macOS), or the Fold capture baseline (#4E5E8B) when no accent exists (A3, D108). Every role below is derived from
+// that root by moving lightness, chroma and hue in OKLCH with gamut mapping and a WCAG contrast fit, in
+// `src/theme_roles.rs`; the Rust side writes the result into `dark-roles` and `light-roles` at startup and whenever the
+// accent changes (`src/ui_theme.rs`).
+// The literals below are the roles for the baseline root, so a viewer or preview that runs no Rust still renders the
+// accepted look; a test keeps them equal to what Rust derives. Do not edit them by hand: change `theme_roles.rs`, and
+// the failing test prints the new literals.
 // Dark mode uses a true black canvas (D41) and a fixed #0A0A0D deck; light is flat with hairline seams (D34, D45).
 import { Palette } from "std-widgets.slint";
+
+// One scheme's color roles, written as a whole by the Rust side.
+export struct RoleSet {
+    // Page background.
+    canvas: color,
+    // Playback deck background.
+    deck: color,
+    // Background of the playing row.
+    current-row: color,
+    // Hairline between structural surfaces.
+    seam: color,
+    // Menus, search header and snackbar surface.
+    surface-high: color,
+    // Primary text and icons.
+    on-surface: color,
+    // Secondary text and icons.
+    on-surface-variant: color,
+    // Borders and strong dividers.
+    outline: color,
+    // Hairline dividers.
+    outline-variant: color,
+    // Accent fill and accent text.
+    primary: color,
+    // Content on the accent fill.
+    on-primary: color,
+    // Selected segment and rail cell fill.
+    secondary-container: color,
+    // Selected fill under the hover layer.
+    secondary-container-hovered: color,
+    // Selected fill under the pressed layer.
+    secondary-container-pressed: color,
+    // Content on the selected fill.
+    on-secondary-container: color,
+    // Search match highlight (D59), opaque.
+    match-fill: color,
+    // Error text and icons.
+    error: color,
+    // Error card fill.
+    error-container: color,
+    // Content on the error card.
+    on-error-container: color,
+}
 
 export global Theme {
     // 0 follows the system, 1 forces light, 2 forces dark. Previews, screenshots and tests set it.
     in property <int> scheme-override: 0;
     out property <bool> dark: root.scheme-override == 2 || (root.scheme-override == 0 && Palette.color-scheme == ColorScheme.dark);
 
+    // Replaces the system accent as the theme root when its alpha is above 0; transparent follows the system.
+    // Previews, screenshots and tests set it (the Rust side derives the roles from it).
+    in property <color> accent-override: transparent;
+    // The theme root: the override when set, else the system accent that Slint reports (SlintInternal needs the
+    // experimental-features switch the package already sets in `mise.toml`). Alpha 0 means no accent is available and
+    // the Rust side then uses the baseline root.
+    out property <color> accent-source: root.accent-override.alpha > 0 ? root.accent-override : SlintInternal.accent-color;
+
+    // Roles of each scheme, derived by `src/theme_roles.rs`. The defaults are the baseline roles.
+    in property <RoleSet> dark-roles: {
+        canvas: #000000,
+        deck: #0A0A0D,
+        current-row: #121318,
+        seam: #000000,
+        surface-high: #1E1F25,
+        on-surface: #E4E5F0,
+        on-surface-variant: #C5C6D0,
+        outline: #8E9099,
+        outline-variant: #44464F,
+        primary: #BAC5EE,
+        on-primary: #1F2D52,
+        secondary-container: #353B4D,
+        secondary-container-hovered: #414759,
+        secondary-container-pressed: #474D60,
+        on-secondary-container: #DDE2F9,
+        match-fill: #2B3045,
+        error: #FFB4AB,
+        error-container: #8C1D18,
+        on-error-container: #F9DEDC,
+    };
+    in property <RoleSet> light-roles: {
+        canvas: #FFFFFF,
+        deck: #F4F3FA,
+        current-row: #F4F3FA,
+        seam: #B0B1BC,
+        surface-high: #E8E7EE,
+        on-surface: #30323B,
+        on-surface-variant: #5C5E6A,
+        outline: #757780,
+        outline-variant: #C5C6D0,
+        primary: #4E5E8B,
+        on-primary: #FFFFFF,
+        secondary-container: #DDE2F9,
+        secondary-container-hovered: #CBD0E7,
+        secondary-container-pressed: #C2C7DE,
+        on-secondary-container: #161B2C,
+        match-fill: #CFD9F0,
+        error: #BA1A1A,
+        error-container: #F9DEDC,
+        on-error-container: #410E0B,
+    };
+    out property <RoleSet> roles: root.dark ? root.dark-roles : root.light-roles;
+
     // Surfaces.
-    out property <color> canvas: root.dark ? #000000 : #FFFFFF;
-    out property <color> deck: root.dark ? #0A0A0D : #F4F3FA;
-    out property <color> current-row: root.dark ? #121318 : #F4F3FA;
-    out property <color> seam: root.dark ? #000000 : #B0B1BC;
+    out property <color> canvas: root.roles.canvas;
+    out property <color> deck: root.roles.deck;
+    out property <color> current-row: root.roles.current-row;
+    out property <color> seam: root.roles.seam;
+    out property <color> surface-high: root.roles.surface-high;
 
     // Content.
-    out property <color> on-surface: root.dark ? #E4E5F0 : #30323B;
-    out property <color> on-surface-variant: root.dark ? #C5C6D0 : #5C5E6A;
-    out property <color> outline: root.dark ? #8E9099 : #757780;
-    out property <color> outline-variant: root.dark ? #44464F : #C5C6D0;
+    out property <color> on-surface: root.roles.on-surface;
+    out property <color> on-surface-variant: root.roles.on-surface-variant;
+    out property <color> outline: root.roles.outline;
+    out property <color> outline-variant: root.roles.outline-variant;
 
     // Accent roles.
-    out property <color> primary: root.dark ? #BAC5EE : #4E5E8B;
-    out property <color> on-primary: root.dark ? #1F2D52 : #FFFFFF;
-    out property <color> secondary-container: root.dark ? #353B4D : #DDE2F9;
-    out property <color> on-secondary-container: root.dark ? #DDE2F9 : #161B2C;
-    out property <color> error: root.dark ? #FFB4AB : #BA1A1A;
-    // Material 3 error container pair, matching the captured feedback error colors (#8C1D18 dark, #F9DEDC light).
-    out property <color> error-container: root.dark ? #8C1D18 : #F9DEDC;
-    out property <color> on-error-container: root.dark ? #F9DEDC : #410E0B;
-    out property <color> surface-high: root.dark ? #1E1F25 : #E8E7EE;
+    out property <color> primary: root.roles.primary;
+    out property <color> on-primary: root.roles.on-primary;
+    out property <color> secondary-container: root.roles.secondary-container;
+    out property <color> secondary-container-hovered: root.roles.secondary-container-hovered;
+    out property <color> secondary-container-pressed: root.roles.secondary-container-pressed;
+    out property <color> on-secondary-container: root.roles.on-secondary-container;
+    out property <color> match-fill: root.roles.match-fill;
 
-    // Android Settings surfaces, sampled from the Pixel 9 Pro Fold captures: the tinted page, the grouped row cards,
-    // and the tonal fill of the round Back button. The Back fill steps against the page in each scheme (light
-    // #E1E2ED is darker than the page, dark #23252E is lighter than it), so it is a measured value, not a tint rule.
-    out property <color> settings-page: root.dark ? #181920 : #EEEDF6;
-    out property <color> settings-card: root.dark ? #2A2C34 : #FAF8FE;
-    out property <color> back-tonal: root.dark ? #23252E : #E1E2ED;
+    // Error roles: semantic constants that follow no accent.
+    out property <color> error: root.roles.error;
+    out property <color> error-container: root.roles.error-container;
+    out property <color> on-error-container: root.roles.on-error-container;
+
 
     // Type scale in logical pixels (Material 3 roles used by the design).
     out property <length> body-large: 16px;

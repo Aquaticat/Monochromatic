@@ -104,3 +104,48 @@ fn duplicate_paths_keep_filename() {
     // Why:      Filename survives even for duplicates.
     assert_eq!(got, vec!["x.flac", "x.flac"]);
 }
+
+// What:     `assert_scope_matches_pagination`, compares `page_scope_for_anchor` with the page that `paginate` gives each anchor.
+// Why:      Playback scope and the visible page must agree for every track, whatever the folder shape.
+fn assert_scope_matches_pagination(tracks: &[PathBuf]) {
+    let names = relative_display_paths(tracks);
+    let pages = crate::pagination::paginate(&names);
+    for anchor in 0..tracks.len() {
+        let expected: Vec<usize> = crate::pagination::page_of_index(&pages, anchor)
+            .map(|page| return pages[page].entries.iter().map(|entry| return entry.index).collect())
+            .expect("every track is on a page");
+        assert_eq!(page_scope_for_anchor(tracks, anchor), Some(expected), "anchor {anchor} of {names:?}");
+    }
+    assert_eq!(page_scope_for_anchor(tracks, tracks.len()), None);
+}
+
+// What:     A queue with folders, subfolders, letter files, digit files, symbol files and case-different folders.
+// Why:      Each shape decides a page rule: folder page, letter page, catch-all page.
+#[test]
+fn page_scope_for_anchor_matches_paginate_on_a_mixed_queue() {
+    assert_scope_matches_pagination(&paths(&[
+        "/lib/Abba/one.mp3",
+        "/lib/Abba/Sub/two.mp3",
+        "/lib/b.mp3",
+        "/lib/B2.mp3",
+        "/lib/1.mp3",
+        "/lib/#x.mp3",
+        "/lib/Zed/z.mp3",
+        "/lib/abba/lower.mp3",
+        "/lib/\u{00E9}clair.mp3",
+    ]));
+}
+
+// What:     A queue that lives in one folder, so the folder itself is part of the shared prefix.
+// Why:      The display names then have no folder part, and every track is a root-level name.
+#[test]
+fn page_scope_for_anchor_matches_paginate_in_a_single_folder() {
+    assert_scope_matches_pagination(&paths(&["/lib/Only/a.mp3", "/lib/Only/b.mp3", "/lib/Only/1.mp3", "/lib/Only/A2.mp3"]));
+}
+
+// What:     A single track.
+// Why:      The shared prefix never swallows the last component, so one track still has a name and a page.
+#[test]
+fn page_scope_for_anchor_handles_a_single_track() {
+    assert_scope_matches_pagination(&paths(&["/lib/Only/a.mp3"]));
+}

@@ -469,6 +469,15 @@ pub fn execute(state: &mut Compositor, command: Command) -> Response {
             // ```
             return crate::control_color_scheme::switch(state.appearance_portal.as_ref(), preference);
         }
+        Command::AccentColor(color) => {
+            return crate::control_accent::switch(state.appearance_portal.as_ref(), color);
+        }
+        Command::Notification(verb) => {
+            return crate::control_notification::run(state.notifications.as_ref(), &verb);
+        }
+        Command::Job(verb) => {
+            return crate::control_job::run(state.notifications.as_ref(), &verb);
+        }
         Command::Move { x, y } => {
             // What:     `input_pointer::move_pointer(state, x, y)`. Moves the pointer with no
             //           button, mapping a failure to an `err` line.

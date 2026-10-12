@@ -56,19 +56,22 @@ use anyhow::{Context, Result};
 /// import { initBackend } from "./backend"; import { spawnChild, ... } from "./child"; ...
 /// ```
 use crate::{
-    appearance_portal::AppearancePortal,
+    appearance_portal::{AppearancePortal, PortalStart},
     backend::init_backend,
     child::{register_exit_poll, spawn_child},
     cli::Config,
     control,
     launcher_listen::LauncherLog,
+    plasma_services::PlasmaServices,
     private_bus::PrivateBus,
     render::redraw,
     state::Compositor,
     systemd::Isolation,
 };
 
-/// Shares the one private bus between the portal, the listener, and the compositor state.
+/// Shares the one private bus between the portal,
+///  the listener,
+///  and the compositor state.
 use std::sync::Arc;
 
 /// Build everything,
@@ -168,7 +171,11 @@ pub fn run(config: Config) -> Result<i32> {
     //           Starts one private session bus when either option needs one.
     // Why:      The appearance portal and the taskbar listener share this bus,
     //           so the compositor starts only one `dbus-daemon`.
-    let private_bus = if config.color_scheme.is_some() || config.launcher_log {
+    let private_bus = if config.color_scheme.is_some()
+        || config.accent_color.is_some()
+        || config.launcher_log
+        || config.notifications.serves_notifications()
+    {
         Some(Arc::new(
             PrivateBus::start().context("starting the private session bus")?,
         ))
@@ -176,15 +183,28 @@ pub fn run(config: Config) -> Result<i32> {
         None
     };
 
-    // Serve deterministic appearance on that bus only when `--color-scheme` was requested.
-    let appearance_portal = match config.color_scheme {
-        Some(preference) => {
-            let bus = private_bus
-                .as_ref()
-                .map(Arc::clone)
-                .context("the private session bus is missing for --color-scheme")?;
-            Some(AppearancePortal::start(preference, bus).context("starting isolated nested appearance")?)
-        }
+    // Serve deterministic appearance on that bus only when `--color-scheme` or `--accent-color` was requested.
+    let appearance_portal = if config.color_scheme.is_some() || config.accent_color.is_some() {
+        let bus = private_bus
+            .as_ref()
+            .map(Arc::clone)
+            .context("the private session bus is missing for the appearance portal")?;
+        Some(
+            AppearancePortal::serve(PortalStart {
+                color_scheme: config.color_scheme,
+                accent_color: config.accent_color,
+                bus,
+            })
+            .context("starting isolated nested appearance")?,
+        )
+    } else {
+        None
+    };
+
+    // Serve the fake notification and job services only when `--notifications` asked for them.
+    let notifications = match private_bus.as_ref() {
+        Some(bus) => PlasmaServices::start(config.notifications, Arc::clone(bus), state.start_time)
+            .context("starting the private notification services")?,
         None => None,
     };
 
@@ -212,6 +232,7 @@ pub fn run(config: Config) -> Result<i32> {
 
     // Keep the portal, bus, and listener reachable from control commands for the whole session.
     state.appearance_portal = appearance_portal;
+    state.notifications = notifications;
     state.private_bus = private_bus;
     state.launcher = launcher;
 

@@ -1,7 +1,8 @@
 //! The private session bus shared by every feature that must stay off the host desktop.
 //!
-//! One `dbus-daemon` serves the appearance portal (`--color-scheme`) and the taskbar
-//!  progress log (`--launcher-log`).
+//! One `dbus-daemon` serves the appearance portal (`--color-scheme`, `--accent-color`),
+//!  the taskbar progress log (`--launcher-log`),
+//!  and the recording notification and Plasma job services (`--notifications`).
 //! The daemon reads a configuration with no service directories,
 //!  so no host service can be started through it.
 //! The hosted client receives its address as `DBUS_SESSION_BUS_ADDRESS`;
@@ -127,7 +128,7 @@ impl PrivateBus {
     ///      `pub fn start() -> Result<Self>`.
     ///  Spawns the daemon and waits up to two seconds for its address line.
     /// Why:
-    ///       The appearance portal and the launcher listener share this one bus,
+    ///       The appearance portal, the launcher listener, and the notification services share this one bus,
     ///  so the compositor starts the daemon once.
     pub fn start() -> Result<Self> {
         let sequence = PRIVATE_BUS_SEQUENCE.fetch_add(1, Ordering::Relaxed);

@@ -111,15 +111,6 @@ import android.net.Uri
 // ```
 import android.os.Bundle
 
-// What:     `import android.os.Build` exposes current Android API level and named release floors.
-// Why:      Dynamic system accent is available only from Android 12 onward.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// import { Build } from "android/os";
-// ```
-import android.os.Build
-
 // What:     `import android.os.IBinder` pulls in `IBinder`, the interface a bound
 //           service hands back; `onServiceConnected` receives one to cast.
 // Why:      `onServiceConnected(..., service: IBinder?)` takes an `IBinder?`.
@@ -559,15 +550,6 @@ import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 // ```
 import androidx.compose.material3.CircularProgressIndicator
 
-// What:     `import androidx.compose.material3.ColorScheme` names complete Material color roles.
-// Why:      Theme helper returns dynamic accent roles with a true-black dark ground.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// import type { ColorScheme } from "androidx/compose/material3";
-// ```
-import androidx.compose.material3.ColorScheme
-
 // What:     `import androidx.compose.material3.MaterialTheme` pulls in `MaterialTheme`,
 //           the theme provider/accessor (its `.colorScheme` gives themed colors).
 // Why:      `onCreate` wraps the UI in `MaterialTheme`; rows read its colors.
@@ -637,44 +619,6 @@ import androidx.compose.material3.Surface
 // import { Text } from "androidx/compose/material3";
 // ```
 import androidx.compose.material3.Text
-
-// What:     `import androidx.compose.material3.darkColorScheme` pulls in
-//           `darkColorScheme()`, the factory for the dark Material color set.
-// Why:      `onCreate` uses it when the device is in dark mode.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// import { darkColorScheme } from "androidx/compose/material3";
-// ```
-import androidx.compose.material3.darkColorScheme
-
-// What:     `dynamicDarkColorScheme` derives dark Material roles from runtime system accent.
-// Why:      Selected LED light follows user accent rather than a hardcoded reference purple.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// import { dynamicDarkColorScheme } from "androidx/compose/material3";
-// ```
-import androidx.compose.material3.dynamicDarkColorScheme
-
-// What:     `dynamicLightColorScheme` derives light Material roles from runtime system accent.
-// Why:      Bright-scene LED light uses the same user-selected accent source.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// import { dynamicLightColorScheme } from "androidx/compose/material3";
-// ```
-import androidx.compose.material3.dynamicLightColorScheme
-
-// What:     `import androidx.compose.material3.lightColorScheme` pulls in
-//           `lightColorScheme()`, the factory for the light Material color set.
-// Why:      `onCreate` uses it when the device is in light mode.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// import { lightColorScheme } from "androidx/compose/material3";
-// ```
-import androidx.compose.material3.lightColorScheme
 
 // What:     `import androidx.compose.runtime.Composable` pulls in the `@Composable`
 //           ANNOTATION that marks a function as a Compose UI component.
@@ -1159,6 +1103,17 @@ class MainActivity : ComponentActivity() {
     /** Holder that starts media trash and restore requests through the launcher and delivers each result. */
     private val trashRequest: TrashMediaStoreRequest = TrashMediaStoreRequest(trashResultLauncher)
 
+    // What:     `private val analysisNotificationPermission` asks for the notification permission once.
+    // Why:      D107 puts the true-peak analysis progress in a system notification, which Android 13 and later gate
+    //           behind a permission; the asker registers its launcher here because that must happen before start.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // private readonly analysisNotificationPermission = new AnalysisNotificationPermission(this);
+    // ```
+    /** Asks for the notification permission once, when the first true-peak analysis starts. */
+    private val analysisNotificationPermission: AnalysisNotificationPermission = AnalysisNotificationPermission(this)
+
     // What:     `private var heldFolderName: String? by mutableStateOf(null)` is the held folder's display name.
     // Why:      The first-run copy names the folder, and composition must redraw when the held folder changes.
     //
@@ -1432,9 +1387,13 @@ class MainActivity : ComponentActivity() {
         // console.info(`[${LOG_TAG}] MainActivity.onCreate`);
         // ```
         Log.i(LOG_TAG, "MainActivity.onCreate")
-        // Auto-start the one-time parallel true-peak index (no user action). Legal here because the
-        // activity is foregrounded; PeakSweepService self-stops fast if the initial index is done.
-        PeakSweepService.startIfNeeded(this)
+        // Drop the notification channel of builds before D107 on every launch, because an upgrade after the first
+        // analysis finished never starts the sweep service that would otherwise do it.
+        deleteLegacyAnalysisChannel(this)
+        // The one-time parallel true-peak index starts from the `onAudioGranted` callback that `appRoot` receives,
+        // once a music source is readable, because a start here on a first launch finds no library before access.
+        // Ask for the notification permission once, when the analysis that just started reports its first total.
+        analysisNotificationPermission.start()
         // What:     `enableEdgeToEdge()` draws the app behind the system bars. (Folds in the
         //           old inline note: draw edge to edge, the platform default on targetSdk
         //           35+, and let the `Scaffold` apply the system-bar insets.)
@@ -1482,39 +1441,20 @@ class MainActivity : ComponentActivity() {
         // In TS you'd write (pseudocode):
         // ```ts
         // setContent(() => {
-        //   const colorScheme = isSystemInDarkTheme() ? darkColorScheme() : lightColorScheme();
-        //   return <MaterialTheme colorScheme={colorScheme}> ... </MaterialTheme>;
+        //   return <PlayerTheme> ... </PlayerTheme>;
         // });
         // ```
         setContent {
-            // What:     `val colorScheme = if (isSystemInDarkTheme()) darkColorScheme() else lightColorScheme()`
-            //           declares `colorScheme` from an `if/else` EXPRESSION: dark or light
-            //           Material colors based on the device theme (`isSystemInDarkTheme()` is
-            //           a composable returning a `Boolean`).
-            // Why:      Theme the UI to the system setting.
+            // What:     `playerTheme { ... }` themes its trailing-lambda child UI with the palette derived from the
+            //           system accent (A3, D108) and provides the derived roles that Material has no slot for.
+            // Why:      Every color of the player is derived from one root in OKLCH, so the platform's own dynamic
+            //           color roles are not used.
             //
             // In TS you'd write (pseudocode):
             // ```ts
-            // const colorScheme = isSystemInDarkTheme() ? darkColorScheme() : lightColorScheme();
+            // <PlayerTheme> <Surface modifier={Modifier.fillMaxSize()}> ... </Surface> </PlayerTheme>
             // ```
-            /**
-             * Defines color scheme value for this music-player component; the TypeScript-oriented notes above
-             * explain its source and use.
-             */
-            val colorScheme: ColorScheme = musicPlayerColorScheme()
-            // What:     `MaterialTheme(colorScheme = colorScheme) { ... }` calls the
-            //           `MaterialTheme` composable with the `colorScheme` named argument and a
-            //           TRAILING LAMBDA holding its child UI. Trailing-lambda children are how
-            //           Compose nests UI (like JSX children).
-            // Why:      Provide the theme to all descendants.
-            //
-            // In TS you'd write (pseudocode):
-            // ```ts
-            // <MaterialTheme colorScheme={colorScheme}>
-            //   <Surface modifier={Modifier.fillMaxSize()}> ... </Surface>
-            // </MaterialTheme>
-            // ```
-            MaterialTheme(colorScheme = colorScheme) {
+            playerTheme {
                 // What:     `Surface(modifier = Modifier.fillMaxSize()) { ... }` calls the
                 //           `Surface` composable with a `Modifier.fillMaxSize()` chain (occupy
                 //           the whole screen) and a trailing-lambda child.
@@ -1587,7 +1527,12 @@ class MainActivity : ComponentActivity() {
                         CompositionLocalProvider(LocalTrashMediaStoreRequest provides trashRequest) {
                             appRoot(
                                 controller = controller,
-                                onAudioGranted = { binder?.ensureLibraryLoaded() },
+                                onAudioGranted = {
+                                    binder?.ensureLibraryLoaded()
+                                    // Auto-start the one-time true-peak index (no user action) as soon as the library
+                                    // is readable: at launch with access held, or right after the access prompt.
+                                    PeakSweepService.startIfNeeded(this@MainActivity)
+                                },
                                 onChooseFolder = { folderPicker.launch(null) },
                                 feedback = feedback,
                                 folderName = heldFolderName,
@@ -1905,7 +1850,7 @@ class MainActivity : ComponentActivity() {
  * load once a source can be read, and draws the first-run pane when the open source needs it.
  *
  * @param controller bound controller that owns the library and playback
- * @param onAudioGranted starts the library load once a source can be read
+ * @param onAudioGranted starts the library load and the initial true-peak analysis once a source can be read
  * @param onChooseFolder opens the folder picker
  * @param feedback feedback queue that the player host draws
  * @param folderName display name of the held folder, or null when no folder grant is held
@@ -2164,32 +2109,6 @@ private fun startingGate() {
         // ```
         Text("Starting Music Player...")
     }
-}
-
-// What:     `musicPlayerColorScheme` resolves runtime accent and page-level dark ground.
-// Why:      Hardware light follows system accent while every dark page starts from true black.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// function musicPlayerColorScheme(): ColorScheme { ... }
-// ```
-/** Returns dynamic Material roles with true-black dark background and surface. */
-@Composable
-private fun musicPlayerColorScheme(): ColorScheme {
-    /** Records system appearance for scene and ground selection. */
-    val dark: Boolean = isSystemInDarkTheme()
-    /** Supplies Android context required by dynamic-color APIs. */
-    val context: Context = LocalContext.current
-    /** Uses runtime system accent where platform supports dynamic color. */
-    val scheme: ColorScheme = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-        if (dark) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
-    } else {
-        if (dark) darkColorScheme() else lightColorScheme()
-    }
-    if (!dark) {
-        return scheme
-    }
-    return scheme.copy(background = Color.Black, surface = Color.Black)
 }
 
 /** Holds live seek position and duration sampled from current controller. */

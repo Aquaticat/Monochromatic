@@ -14,9 +14,26 @@ use slint::ComponentHandle;
 
 use crate::ui_screen::{model_of, project, read_state, update_state};
 use crate::ui_screen_view::{Route, ScreenState};
-use crate::ui_settings_model::{editor_view, kind_of_index, settings_rows, EditorView, SettingsRow};
+use crate::ui_settings_model::{editor_view, index_of_kind, kind_of_index, settings_rows, EditorView, SettingsRow};
 use crate::ui_templates::{editor_library, utf16_offset};
 use crate::{AppWindow, EditorFieldRow, EditorPreviewRow, SettingsTemplateRow};
+
+/// What: `SaveTemplates` is the function that persists both template texts.
+/// Why: the production function writes the user's session file, so the window tests swap in one that records the texts.
+type SaveTemplates = fn(Option<&str>, Option<&str>) -> std::io::Result<()>;
+
+thread_local! {
+    /// What: the persistence function of this UI thread.
+    /// Why: only the event-loop thread saves templates, and tests replace it per test thread.
+    static SAVER: std::cell::Cell<SaveTemplates> = const { std::cell::Cell::new(Session::save_templates) };
+}
+
+/// What: `replace_saver` makes this thread persist templates through `saver`.
+/// Why: a test that edits a template must never write the user's session file.
+#[cfg(test)]
+pub(crate) fn replace_saver(saver: SaveTemplates) {
+    SAVER.set(saver);
+}
 
 /// What: `wire` registers the Settings and editor callbacks and loads the saved templates into the state.
 /// Why: the saved templates must be in the state before the first projection, so the rows show them.
@@ -26,6 +43,12 @@ pub(crate) fn wire(app: &AppWindow) {
         state.track_rows_template = track_rows;
         state.playing_template = playing;
     });
+    wire_callbacks(app);
+}
+
+/// What: `wire_callbacks` registers the Settings page's callbacks and the editor's.
+/// Why: split from `wire` so the window tests register the same callbacks without reading the user's session file.
+pub(crate) fn wire_callbacks(app: &AppWindow) {
     let open_weak = app.as_weak();
     app.on_open_settings(move || {
         if let Some(window) = open_weak.upgrade() {
@@ -38,10 +61,22 @@ pub(crate) fn wire(app: &AppWindow) {
             open_template(&window, index);
         }
     });
+    let select_weak = app.as_weak();
+    app.on_settings_select_template(move |index| {
+        if let Some(window) = select_weak.upgrade() {
+            select_template(&window, index);
+        }
+    });
     let back_weak = app.as_weak();
     app.on_settings_back(move || {
         if let Some(window) = back_weak.upgrade() {
-            settings_back(&window);
+            close_settings(&window);
+        }
+    });
+    let layout_weak = app.as_weak();
+    app.on_layout_changed(move |wide| {
+        if let Some(window) = layout_weak.upgrade() {
+            layout_changed(&window, wide);
         }
     });
     wire_editor(app);
@@ -128,14 +163,55 @@ fn open_template(window: &AppWindow, index: i32) {
     project(window);
 }
 
-/// What: `settings_back` returns from Settings to the player and drops the editor value.
-/// Why: Settings holds no state of its own; the saved templates already live in the screen state.
-fn settings_back(window: &AppWindow) {
+/// What: `select_template` shows the editor of Settings row `index` in the right pane without leaving Settings.
+/// Why: on a wide window a row selects instead of navigating (D110); the template being left is applied and saved
+/// first, exactly as leaving its editor page does, so no draft is lost by choosing the other row.
+fn select_template(window: &AppWindow, index: i32) {
+    let Some(kind) = usize::try_from(index).ok().and_then(kind_of_index) else {
+        tracing::warn!(index, "ignored a selection of a Settings row that does not exist");
+        return;
+    };
+    let already_selected = read_state(|state| return state.editor.as_ref().is_some_and(|editor| return editor.kind() == kind));
+    if already_selected {
+        tracing::debug!(?kind, "the selected Settings row was chosen again; nothing changes");
+        return;
+    }
+    tracing::info!(?kind, "selected a Settings row");
+    commit_templates();
+    update_editor(|editor| return editor.open(kind));
+    project(window);
+}
+
+/// What: `close_settings` applies and saves the templates, then returns from Settings to the player.
+/// Why: Back and Escape close Settings in both forms (D110); on a wide window the drafts were never left through an
+/// editor page, so closing is where they are saved. The editor value is dropped afterwards.
+pub(crate) fn close_settings(window: &AppWindow) {
+    tracing::info!("closing Settings");
+    commit_templates();
     update_state(|state| {
         state.editor = None;
         state.route = Route::Player;
     });
     project(window);
+}
+
+/// What: `layout_changed` reacts to the window crossing the two-pane width.
+/// Why: a template editor page only exists in the single form; when the window widens while it is open, the same editor
+/// continues in the right pane of the two-pane Settings, so the route becomes Settings and the template stays selected.
+fn layout_changed(window: &AppWindow, wide: bool) {
+    let on_editor_page = read_state(|state| return state.route == Route::TemplateEditor);
+    tracing::debug!(wide, on_editor_page, "window crossed the Settings width switch");
+    if wide && on_editor_page {
+        update_state(|state| {
+            state.route = Route::Settings;
+        });
+        project(window);
+    }
+    if !wide {
+        // Narrowing destroys the right pane's text field, which may never report that it lost focus, and a focus left
+        // set would make Escape on the list page look like typing in a template line.
+        update_editor(|editor| return editor.with_focus(false));
+    }
 }
 
 /// What: `edit_text` applies one text edit with byte offsets from the editor.
@@ -167,34 +243,67 @@ fn insert_field(window: &AppWindow, index: i32) {
 /// What: `editor_back` saves the valid templates to the session file and returns to Settings.
 /// Why: a template that does not apply keeps its previously applied text, so the rows never show a broken template.
 fn editor_back(window: &AppWindow) {
-    let saved = read_state(|state| {
-        let editor = state.editor.as_ref()?;
-        return Some((
-            applied_text(editor, TemplateKind::TrackRows, state.track_rows_template.as_deref()),
-            applied_text(editor, TemplateKind::PlayingTrack, state.playing_template.as_deref()),
-        ));
-    });
-    let Some((track_rows, playing)) = saved else {
-        return;
-    };
-    if let Err(error) = Session::save_templates(track_rows.as_deref(), playing.as_deref()) {
-        tracing::warn!(?error, "failed to save the template texts");
-    }
+    commit_templates();
     update_state(|state| {
-        state.track_rows_template = track_rows;
-        state.playing_template = playing;
-        state.editor = Some(build_editor(state));
         state.route = Route::Settings;
     });
     project(window);
 }
 
-/// What: `applied_text` gives the draft of `kind` when it applies, or the previously applied text otherwise.
-/// Why: only texts that apply reach the track rows and the saved session.
+/// What: `commit_templates` applies the editor's valid drafts to the track rows and the deck, saves them when they
+/// changed, and rebuilds the editor on the applied texts.
+/// Why: both forms leave a template the same way: the editor page's Back, a new selection in the right pane, and closing
+/// Settings. Rebuilding keeps the open template unchanged except that its draft equals what is applied.
+fn commit_templates() {
+    let saved = read_state(|state| {
+        let editor = state.editor.as_ref()?;
+        return Some((
+            applied_text(editor, TemplateKind::TrackRows, state.track_rows_template.as_deref()),
+            applied_text(editor, TemplateKind::PlayingTrack, state.playing_template.as_deref()),
+            editor.kind(),
+        ));
+    });
+    let Some((track_rows, playing, open_kind)) = saved else {
+        tracing::debug!("no editor value to commit");
+        return;
+    };
+    // A template the user never changed is stored as None and applied as its default text, which is the same template.
+    let changed = read_state(|state| {
+        return effective_text(TemplateKind::TrackRows, state.track_rows_template.as_deref())
+            != effective_text(TemplateKind::TrackRows, track_rows.as_deref())
+            || effective_text(TemplateKind::PlayingTrack, state.playing_template.as_deref())
+                != effective_text(TemplateKind::PlayingTrack, playing.as_deref());
+    });
+    if changed {
+        tracing::info!("saving the applied template texts");
+        if let Err(error) = SAVER.get()(track_rows.as_deref(), playing.as_deref()) {
+            tracing::warn!(?error, "failed to save the template texts");
+        }
+    } else {
+        tracing::debug!("the template texts are unchanged; nothing to save");
+    }
+    update_state(|state| {
+        state.track_rows_template = track_rows;
+        state.playing_template = playing;
+        state.editor = Some(build_editor(state).open(open_kind));
+    });
+}
+
+/// What: `effective_text` gives the text a template actually uses: the saved one, or the default when none is saved.
+/// Why: saved None and saved default text are the same template, so comparing them must not report a change.
+fn effective_text(kind: TemplateKind, saved: Option<&str>) -> String {
+    return saved.map_or_else(|| return kind.default_template().to_string(), str::to_string);
+}
+
+/// What: `applied_text` gives the draft of `kind` when it applies, or the previously applied text otherwise; a text equal
+/// to the template's default is given as None.
+/// Why: only texts that apply reach the track rows and the saved session, and a template that reads as its default is
+/// stored as no text, so it keeps following the default.
 fn applied_text(editor: &TemplateEditorState, kind: TemplateKind, previous: Option<&str>) -> Option<String> {
     let opened = editor.open(kind);
     if opened.is_valid() {
-        return Some(opened.text().to_string());
+        let text = opened.text();
+        return if text == kind.default_template() { None } else { Some(text.to_string()) };
     }
     return previous.map(str::to_string);
 }
@@ -222,9 +331,12 @@ pub(crate) fn project_pages(window: &AppWindow) {
             .map(|row| return SettingsTemplateRow {
                 label: row.label.as_str().into(),
                 line: row.line.as_str().into(),
+                icon: row.icon.into(),
             })
             .collect(),
     ));
+    let selected = read_state(|state| return state.editor.as_ref().map_or(0, |editor| return index_of_kind(editor.kind())));
+    window.set_settings_selected(i32::try_from(selected).unwrap_or(0));
     let Some(page) = view else {
         return;
     };
@@ -256,3 +368,7 @@ pub(crate) fn project_pages(window: &AppWindow) {
     window.set_editor_notes(model_of(page.notes.iter().map(|note| return note.as_str().into()).collect()));
     window.set_editor_can_reset(page.can_reset);
 }
+
+#[cfg(test)]
+#[path = "ui_settings_tests.rs"]
+mod tests;

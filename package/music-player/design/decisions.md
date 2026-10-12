@@ -3063,23 +3063,41 @@ Slint, or `lerp` and `copy(alpha)` on sRGB values in Compose.
 When no accent is available the fixed baseline from the Fold captures is the root and the same derivation applies.
 Alpha-only layering (state layers over a surface) is allowed because it does not change a color's lightness, chroma or hue.
 
-### D109. Settings is one full-width column with 16dp margins; stock Settings has no two-pane form here (2026-10-12)
+### D109. The single-pane Settings is one full-width column with 16dp margins (2026-10-12)
 
 The human asked for the stock Android Settings layout to be measured on the owned Pixel 9 Pro Fold with its display size
 changed only through Settings (and Developer options' Smallest width as the fallback), then on a Pixel Tablet, and said
 that if neither shows two panes the conclusion is that two-pane Settings does not exist.
 It was measured with a headful emulator (record in `/home/user/temp/agent/agent-settings-ref3/notes.txt`):
-stock Settings of this Android 17 image logs `isSettingsSplitSupported = false` and shows one full-width column at every
-size tried, from 320 dp to 1200 dp on the Fold's inner display (default 851 dp), at all five Display size steps, on the
-folded cover (443 dp), and at 1101, 1280 and 1506 dp on a Pixel Tablet.
-The split is gated by the `settings_ui/settings_support_large_screen` flag, which this build leaves unset and refuses
-to let a shell set, so the conclusion rests on this build; no two-pane measurements exist and none are invented.
+stock Settings of the Play-store Android 17 image shows one full-width column at every size tried, from 320 dp to
+1200 dp on the Fold's inner display (default 851 dp), at all five Display size steps, on the folded cover (443 dp),
+and at 1101, 1280 and 1506 dp on a Pixel Tablet.
+The first conclusion drawn from that, that two-pane stock Settings does not exist, was wrong and is withdrawn:
+a later round with the human's instruction to set the large-screen option found that the split is gated by the system
+properties `persist.settings.large_screen_opt.enabled` and `persist.settings.large_screen_opt_for_dp.enabled` (either
+one; read once per Settings process in `ActivityEmbeddingUtils`), which a production build such as the Play-store image does not let
+a shell set; on a rootable image (`google_apis_ps16k`, API 37.1, `userdebug`) setting one gives two panes at 720 dp
+current width and above.
+Measurements of that stock two-pane form are in `/home/user/temp/agent/agent-settings-ref3/round4/` (list pane 0.3632 of
+the window, rows 72.6 dp, selected row filled in the detail pane's color as a pill of about 27.5 dp corners, no divider,
+cross-fade when the selection changes, the detail pane starting on the first destination, a sub-page in the detail pane
+gets a Navigate up button) and are the reference for D110, not the target: D110 overrides the ratio on a crease and the
+tinted backgrounds.
 
 The music player's Settings page therefore has one form on every window width, following the measured stock layout:
 the list is full width with no maximum column width and no centering (this replaces the 640 dp centered column of the
 earlier redesign), 16 dp side margin so a card is the page width minus 32 dp, rows 72 dp tall with a 40 dp circular icon
 at x = 32 dp and the title at x = 84 dp, 2 dp between rows of one group and 16 dp between groups, with the group corner
 rounding already built.
+The human then rejected Google's tinted backgrounds ("the non-transparent gray-ish bg is uncalled for; everything should
+be in one color, white or black"): the page, the header, the cards and the rows all use the one canvas color of the
+player, pure white in light (D34) and pure black in dark (D41), with no separate page tint, card fill or header band
+(this removes the `settings-page`, `settings-card` and header-band tokens of the earlier redesign).
+Groups and rows are therefore separated by the spacing above and by their text and icons alone, with no fill, border or
+divider line (the divider lines were already removed on 2026-10-11), and the group corner rounding survives only as the
+shape of the pressed, hovered and selected states.
+Fills that carry state or an icon are not backgrounds in this sense and stay: the 40 dp icon circle and the selection fill
+of D110, each a role derived from the accent under D108.
 The music player's template rows (D87 and D99) had no icon; the human asked that an icon be picked for each from
 Material Symbols and embedded, so every row has the stock leading icon and keeps the 72 dp two-line height.
 The orchestrator picked `queue_music` for the Track rows template and `play_circle` for the Playing track template, in
@@ -3088,6 +3106,75 @@ the Outlined style at weight 400 on the 24 px grid, drawn in a 40 dp circle fill
 They are embedded as vector path data in each app, with no icon font, no download and no network access at run time,
 the way the app already embeds its other icons; the Material Symbols license (Apache 2.0) text goes under `LICENSES/`
 and the README names the source.
+
+### D110. Settings is two panes of half the screen each when unfolded, and its text dodges the crease (2026-10-12)
+
+The human has seen Google's two-pane Settings and does not fully agree with it, and decided that this player's Settings
+still takes two panes on the unfolded screen, each exactly half of the screen, with text kept out of the crease.
+This replaces D109's "one form on every width" for the wide case; D109's measurements, row geometry and icons stand for
+the list.
+
+- Wide means the same condition under which the player shows two panes (the unfolded Fold inner display on Android, a
+  window of 600 px or more on desktop). Below that, Settings stays the single full-width page of D109, where a tap on a row
+  opens that template's editor page and Back returns.
+- Wide: the left pane is the Settings list of D109 (heading, rows with icons, 72 dp rows, group rounding) and the right
+  pane is the editor of the selected row (D89 to D99), shown in place so selecting a row never navigates.
+  On a device with a crease the panes are exactly half of the window each. The human then added that a device without a
+  crease does not need that: whether the device has a crease is detected through the platform API (on Android the
+  Jetpack WindowManager `FoldingFeature` of a vertical fold or hinge, from `WindowInfoTracker`; the desktop has none), and
+  without one the split follows the platform default ratio, which the orchestrator reads as the stock Settings value
+  `config_activity_embed_split_ratio` = 0.3636 for the list pane that the stock Settings APK ships (the human's wording
+  was "the default ratio"; this reading is a one-constant change).
+  No row or editor moves when the selection changes (the same stability as the Folders panel).
+  The selected row is shown with a filled selection shape in the secondary container role plus a bold title (two
+  channels, not color alone), and the first row, Track rows, is selected when Settings opens so the right pane is never
+  empty.
+- Crease: only on a device where the API reports a crease. E2 governs there. Text, labels and other informative marks in either pane keep a
+  clearance of `max(7.5 mm, crease width)` in total across the center, shared half to each pane, measured in physical
+  units and never stored as a fixed dp value; backgrounds, row and card containers, hit regions and the selection fill may
+  span the center. Where a row's title would reach the band, it ends before the band (ellipsis) and the right pane's
+  content starts after it.
+  Desktop windows have no crease, so there the split follows the default ratio and the clearance is the pane's ordinary
+  16 dp inset. The same holds for a tablet or any other large screen whose API reports no crease.
+- Back closes Settings in the wide form and in the single form alike, and in the wide form Escape closes it too.
+
+### D111. Search works while scanning is still running (hard requirement, 2026-10-12)
+
+The human stated it as a hard requirement on Search: it must still be functional while the library is still being scanned.
+It binds both platforms and whatever engine D47 to D74 end up on:
+
+- Search is available from the moment any track is known. It is never disabled, hidden or replaced by a scanning state,
+  and the analysis sweep (D84) never gates it either.
+- Each keystroke searches every track known at that moment. While the scan keeps adding tracks, the open Search page
+  refreshes its results in place, keeping the query, the caret and the scroll position, and without moving a row the user
+  is about to tap.
+- Neither the scan nor the sweep blocks a keystroke: the index takes track additions incrementally in small batches, no lock
+  or transaction is held across a scan batch, and the per-keystroke latency target holds while scanning, as it does at rest.
+- The requirement is tested with a scan that is deliberately slow, on both platforms, by typing while tracks arrive and
+  checking that results appear for the tracks already known and later for the new ones.
+
+### D112. Search runs on an in-memory index, not on Turso search (2026-10-12)
+
+The human suggested replacing the app's own search algorithm with Turso's built-in search. Both Turso mechanisms were
+measured against D47 to D74, D111 and the 1,000,000-track bar (scratch record in `/home/user/temp/agent/agent-tursofts/`):
+
+- Turso's two ways to search are full-text search (Tantivy, `USING fts`) and vector search. Neither is exact for the rules
+  without Rust re-applying them: FTS has no custom ranking or rerank hook (only `fts_score` ordering is pushed into the
+  index; any other `ORDER BY` makes SQLite sort every candidate, which measured seven to ten times slower than Rust at
+  1,000,000), and `fts_highlight` highlights whole tokens only and returns tagged text, not ranges.
+  Vector search is similarity, not containment: no query had an exact result at the 500 cap, and exact results needed k
+  at or above the match count at 250 to 390 ms per query; the only vector index (`toy_vector_sparse_ivf`) built 200,000
+  rows in 209 s.
+- Turso FTS with word-start grams does satisfy the rules (parity 44 of 44) and stays usable while a scan adds tracks, but
+  it still needs the same in-memory table of normalized names, adds a 186 MiB index file, a 26 to 33 s rebuild and
+  multi-second write transactions at 10,000-row batches, needs the `turso_core` source patched to compile on the newest
+  nightly, makes the Android library 26 percent larger, and is experimental. In 0.8.2 a plain `ORDER BY ... LIMIT n` over
+  an FTS-matched table returns wrong rows unless written `LIMIT n OFFSET 0`.
+
+Decision (the orchestrator's, on the human's standing instruction to decide, open to the human's veto): Search uses an
+in-memory index of normalized names in each app, with first and second character buckets, a best-500 list per first
+character, off-thread batch normalization with an append-only write lock, search on a worker thread, and a refresh signal
+after every batch so open results update in place (D111). Turso stays the store of the peak cache only.
 
 ## Pending after the theme picks (2026-09-04)
 

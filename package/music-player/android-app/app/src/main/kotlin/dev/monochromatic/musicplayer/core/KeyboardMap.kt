@@ -426,6 +426,16 @@ data class ShortcutRequest(
     /** True while Search is open. */
     val inSearch: Boolean,
 
+    // What:     `val inWideSettings: Boolean` is true while the two-pane Settings page is open.
+    // Why:      D110 closes the wide Settings page on Escape, even from the editor pane's text field.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // inWideSettings: boolean;
+    // ```
+    /** True while the two-pane Settings page, or its editor, is open on a wide window. */
+    val inWideSettings: Boolean = false,
+
     // What:     `val composing: Boolean` is true while an input method is still composing text.
     // Why:      Composition keys belong to the input method, so the classifier leaves them alone.
     //
@@ -657,14 +667,15 @@ private fun revealAction(request: ShortcutRequest): ShortcutAction? {
 // ```
 /** Returns the owner-based action, or null when the player owns the key. */
 private fun ownerAction(request: ShortcutRequest): ShortcutAction? {
-    // What:     `if (request.key == "Escape" && request.inSearch) { ... }` returns from Search on Escape.
-    // Why:      Escape leaves Search even though a text field owns the key otherwise.
+    // What:     `if (request.key == "Escape" && (request.inSearch || request.inWideSettings)) { ... }` goes back.
+    // Why:      Escape leaves Search, and closes the wide Settings page, even though a text field owns the key
+    //           otherwise.
     //
     // In TS you'd write (pseudocode):
     // ```ts
     // if (request.key === "Escape" && request.inSearch) return "back";
     // ```
-    if (request.key == "Escape" && request.inSearch) {
+    if (request.key == "Escape" && (request.inSearch || request.inWideSettings)) {
         return ShortcutAction.BACK
     }
 

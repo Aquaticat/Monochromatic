@@ -47,6 +47,12 @@ export component SearchPage inherits Rectangle {
     in property <string> status-detail: "";
     // Cover arrangement: centers the status block with a magnifier glyph. False aligns it to `content-start-x`.
     in property <bool> compact: false;
+    // Scroll position of the result list; 0 at the top and negative when scrolled down.
+    in-out property <length> scroll-y <=> results.content-y;
+    // Distance from the top to scroll to when `anchor-tick` changes, limited to the end of the list.
+    in property <length> anchor-offset: 0px;
+    // Changes after a refresh re-ranks the results, so the first visible row keeps its place on screen (D111).
+    in property <int> anchor-tick: 0;
     // Left inset of the header, the Back target and the result rows, measured from this page's left edge. The
     // inner caller sets it to half the crease plus the standard 16 px inset, and the cover leaves it at 16 px.
     in property <length> content-start-x: 16px;
@@ -67,8 +73,9 @@ export component SearchPage inherits Rectangle {
     property <length> end-inset: 16px;
     // Nominal glyph size, drawn inside its 48 px target.
     property <length> icon-size: 24px;
-    // Fill behind an emphasized match (D59), the primary role at 30 percent alpha.
-    property <color> match-fill: Theme.primary.with-alpha(0.3);
+    // Fill behind an emphasized match (D59), the theme's OKLCH-derived match role (the primary moved toward the neutral
+    // end, kept legible under both text roles).
+    property <color> match-fill: Theme.match-fill;
 
     // Top of the region below the header and divider.
     property <length> body-top: header-height + 1px;
@@ -205,6 +212,11 @@ export component SearchPage inherits Rectangle {
             field.text = root.query;
         }
         results.content-y = 0px;
+    }
+
+    // Moves the list to the offset Rust computed so a re-ranked list leaves the first visible row where it was.
+    changed anchor-tick => {
+        results.content-y = -min(root.anchor-offset, max(0px, results.content-height - results.visible-height));
     }
 
     // Status block for an empty result set. The cover centers it with a glyph; the inner panel aligns it left

@@ -19,15 +19,6 @@ package dev.monochromatic.musicplayer
 // ```
 import android.os.Bundle
 
-// What:     `import android.os.Build` reads the API level before using dynamic color.
-// Why:      Dynamic color exists from Android 12, so older devices use the static scheme.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// import { Build } from "android/os";
-// ```
-import android.os.Build
-
 // What:     `import android.util.Log` writes the composition line the debug run is checked against.
 // Why:      The screenshot run confirms which layout and picker state the host composed.
 //
@@ -36,15 +27,6 @@ import android.os.Build
 // import { Log } from "android/util";
 // ```
 import android.util.Log
-
-// What:     `import android.content.Context` types the context that dynamic color needs.
-// Why:      The dynamic color APIs take a Context, which the composition supplies.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// import type { Context } from "android/content";
-// ```
-import android.content.Context
 
 // What:     `import androidx.activity.ComponentActivity` is the base class of the host activity.
 // Why:      The host uses Compose through the same base class as the production activity.
@@ -95,48 +77,9 @@ import androidx.compose.foundation.layout.padding
 // ```
 import androidx.compose.foundation.layout.fillMaxSize
 
-// What:     `import androidx.compose.material3.ColorScheme` names the color scheme type.
-// Why:      The host builds the same scheme as the production activity and passes it to the theme.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// import type { ColorScheme } from "material3";
-// ```
-import androidx.compose.material3.ColorScheme
-
-// What:     `import androidx.compose.material3.MaterialTheme` applies the color scheme to the host content.
-// Why:      The production screen reads its colors from the theme.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// import { MaterialTheme } from "material3";
-// ```
-import androidx.compose.material3.MaterialTheme
-
 // What:     `import androidx.compose.material3.Surface` is the themed background container.
 // Why:      The host wraps its scenes in one, as the production activity does, so text inherits the right color.
 import androidx.compose.material3.Surface
-
-// What:     `import androidx.compose.material3.darkColorScheme` and `lightColorScheme` are the pre-Android-12 schemes.
-// Why:      The production activity falls back to these schemes on older devices, and the host must match it.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// import { darkColorScheme, lightColorScheme } from "material3";
-// ```
-import androidx.compose.material3.darkColorScheme
-import androidx.compose.material3.lightColorScheme
-
-// What:     `import androidx.compose.material3.dynamicDarkColorScheme` and `dynamicLightColorScheme` are the
-//           wallpaper schemes.
-// Why:      The production activity uses these schemes on Android 12 and later, and the host must match it.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// import { dynamicDarkColorScheme, dynamicLightColorScheme } from "material3";
-// ```
-import androidx.compose.material3.dynamicDarkColorScheme
-import androidx.compose.material3.dynamicLightColorScheme
 
 // What:     `import androidx.compose.runtime.Composable` marks the functions that emit UI.
 // Why:      The host's screen function emits UI.
@@ -160,24 +103,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 
-// What:     `import androidx.compose.foundation.isSystemInDarkTheme` reads the system appearance.
-// Why:      The host picks the dark or light scheme from the same appearance as the production activity.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// import { isSystemInDarkTheme } from "compose/foundation";
-// ```
-import androidx.compose.foundation.isSystemInDarkTheme
-
-// What:     `import androidx.compose.ui.graphics.Color` names the true-black scheme color.
-// Why:      The dark scheme uses true black for its background and surface, as the production activity does.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// import type { Color } from "compose/ui/graphics";
-// ```
-import androidx.compose.ui.graphics.Color
-
 // What:     `import androidx.compose.ui.Modifier` sizes the host's outer box.
 // Why:      The outer box fills the window so the width measurement matches the production screen.
 //
@@ -189,15 +114,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-
-// What:     `import androidx.compose.ui.platform.LocalContext` supplies the Android context to the scheme helper.
-// Why:      The dynamic color APIs need a Context, and the composition provides one.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// import { LocalContext } from "compose/ui/platform";
-// ```
-import androidx.compose.ui.platform.LocalContext
 
 // What:     `import dev.monochromatic.musicplayer.core.Page` and `paginate` build the authored pages.
 // Why:      The sample library goes through the same pagination the production controller uses.
@@ -226,9 +142,7 @@ import dev.monochromatic.musicplayer.core.FeedbackKind
 import dev.monochromatic.musicplayer.core.FeedbackMessage
 import dev.monochromatic.musicplayer.core.FeedbackQueue
 import dev.monochromatic.musicplayer.core.FirstRunState
-import dev.monochromatic.musicplayer.core.ScanIndicatorModel
 import dev.monochromatic.musicplayer.core.TemplateKind
-import dev.monochromatic.musicplayer.core.scanIndicatorFor
 import dev.monochromatic.musicplayer.core.searchLibrary
 import dev.monochromatic.musicplayer.core.TrashRecord
 import dev.monochromatic.musicplayer.core.TrashRoute
@@ -347,16 +261,6 @@ private const val SCENE_FIRST_RUN_SYSTEM_EMPTY: String = "first-run-system-empty
 /** Scene name of the first-run pane for a chosen folder with no audio. */
 private const val SCENE_FIRST_RUN_FOLDER_EMPTY: String = "first-run-folder-empty"
 
-// What:     `private const val SCENE_SCAN_MEASURING: String = "scan-measuring"` draws the scan bar mid-sweep.
-// Why:      The captures need the bar at a fixed count to check its layout.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// const SCENE_SCAN_MEASURING = "scan-measuring";
-// ```
-/** Scene name of the player with the scan bar at a fixed count. */
-private const val SCENE_SCAN_MEASURING: String = "scan-measuring"
-
 // What:     `private const val SCENE_FEEDBACK_BOTH: String = "feedback-both"` draws Undo and Error together.
 // Why:      The captures need both overlay messages visible to check their order and stacking.
 //
@@ -396,26 +300,6 @@ private const val SCENE_TRASH_UNDO: String = "trash-undo"
 // ```
 /** Folder name that the folder no-audio scene shows in its headline. */
 private const val SAMPLE_FOLDER_NAME: String = "Camellia"
-
-// What:     `private const val SAMPLE_SCAN_DONE: Int = 412` is the visited count of the scan scene.
-// Why:      The design record fixes the bar at 412 of 1,218, so the capture matches the record.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// const SAMPLE_SCAN_DONE = 412;
-// ```
-/** Tracks visited in the scan scene, matching the count in the design record. */
-private const val SAMPLE_SCAN_DONE: Int = 412
-
-// What:     `private const val SAMPLE_SCAN_TOTAL: Int = 1218` is the total of the scan scene.
-// Why:      The design record fixes the bar at 412 of 1,218, so the capture matches the record.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// const SAMPLE_SCAN_TOTAL = 1218;
-// ```
-/** Tracks in the scan scene, matching the total in the design record. */
-private const val SAMPLE_SCAN_TOTAL: Int = 1218
 
 // What:     `private val SAMPLE_OVERLAY_INSET: Dp = 16.dp` is the overlay inset the player host uses.
 // Why:      The debug overlay scenes place messages at the same inset as the production host.
@@ -658,9 +542,8 @@ class ProductionScreenActivity : ComponentActivity() {
         /** Scene to draw, from the `scene` intent extra, or the player when the extra is absent. */
         val scene: String = intent.getStringExtra(EXTRA_SCENE) ?: SCENE_PLAYER
         setContent {
-            /** Color scheme matching the production activity for the current appearance. */
-            val colorScheme: ColorScheme = sampleColorScheme()
-            MaterialTheme(colorScheme = colorScheme) {
+            // The production activity's theme: the palette derived from the system accent (A3, D108).
+            playerTheme {
                 // A Surface supplies the content color and canvas, as the production activity's root does.
                 Surface(modifier = Modifier.fillMaxSize()) {
                     ProductionScreenHost(startWithPicker = startWithPicker, scene = scene)
@@ -781,20 +664,6 @@ private fun ProductionScreenHost(startWithPicker: Boolean, scene: String) {
                 folderName = SAMPLE_FOLDER_NAME,
                 actions = sampleFirstRunActions(),
             )
-            // What:     `SCENE_SCAN_MEASURING` draws the scan bar over the player at 412 of 1218 tracks.
-            // Why:      The capture shows the bar's fixed layout at the count named in the decision record.
-            //
-            // In TS you'd write (pseudocode):
-            // ```ts
-            // case "scan-measuring": return <Player overlay={<ScanIndicator done={412} total={1218} />} />;
-            // ```
-            SCENE_SCAN_MEASURING -> sampleOverlayScene(
-                model = model,
-                actions = actions,
-                pickerOpen = pickerOpen,
-                messages = emptyList(),
-                scanModel = scanIndicatorFor(loading = false, measured = SAMPLE_SCAN_DONE, total = SAMPLE_SCAN_TOTAL),
-            )
             // What:     `SCENE_FEEDBACK_BOTH` draws the Undo message above the Error message over the player.
             // Why:      The capture shows both overlay messages at once, Undo above Error, at their content width.
             //
@@ -807,14 +676,12 @@ private fun ProductionScreenHost(startWithPicker: Boolean, scene: String) {
                 actions = actions,
                 pickerOpen = pickerOpen,
                 messages = sampleFeedbackMessages(),
-                scanModel = scanIndicatorFor(loading = false, measured = 0, total = 0),
             )
             SCENE_TRASH_UNDO -> sampleOverlayScene(
                 model = model,
                 actions = actions,
                 pickerOpen = pickerOpen,
                 messages = listOf(trashUndoMessage(sampleTrashRecord())),
-                scanModel = scanIndicatorFor(loading = false, measured = 0, total = 0),
             )
             SCENE_TRACK_MENU -> sampleTrackMenuScene(model = model, actions = actions, pickerOpen = pickerOpen)
             else -> throw IllegalArgumentException("Unknown ProductionScreenActivity scene: $scene")
@@ -871,15 +738,13 @@ private fun sampleFeedbackMessages(): List<FeedbackMessage> {
     return FeedbackQueue.EMPTY.show(message = error, nowMs = 0L).show(message = undo, nowMs = 0L).visible()
 }
 
-// What:     `private fun sampleOverlayScene(...)` draws the player with the feedback overlay and the scan bar at the
-//           bottom.
-// Why:      The overlay and the bar share one bottom column, so the capture shows the same stacking as the production
-//           host.
+// What:     `private fun sampleOverlayScene(...)` draws the player with the feedback overlay at the bottom.
+// Why:      The overlay floats over the player, so the capture shows the same placement as the production host.
 //
 // In TS you'd write (pseudocode):
 // ```ts
 // function SampleOverlayScene(props): UIElement { return
-//           <Player><BottomColumn>{feedback}{scan}</BottomColumn></Player>; }
+//           <Player><BottomColumn>{feedback}</BottomColumn></Player>; }
 // ```
 // What:     `private fun sampleTrashRecord(): TrashRecord` builds one Undo record over the second Camellia track.
 // Why:      The trash-undo scene shows the production message text for a real sample name, without touching any file.
@@ -938,14 +803,13 @@ private fun sampleTrackMenuScene(
     }
 }
 
-/** Draws the player over the sample library with the feedback overlay and the scan bar stacked at the bottom. */
+/** Draws the player over the sample library with the feedback overlay at the bottom. */
 @Composable
 private fun sampleOverlayScene(
     model: PlayerContentModel,
     actions: PlayerContentActions,
     pickerOpen: Boolean,
     messages: List<FeedbackMessage>,
-    scanModel: ScanIndicatorModel,
 ) {
     Box(modifier = Modifier.fillMaxSize()) {
         playerContent(model = model, pickerOpen = pickerOpen, actions = actions)
@@ -958,7 +822,6 @@ private fun sampleOverlayScene(
                     modifier = Modifier.padding(SAMPLE_OVERLAY_INSET),
                 )
             }
-            scanIndicator(model = scanModel, modifier = Modifier.fillMaxWidth())
         }
     }
 }
@@ -969,6 +832,7 @@ private fun sampleSearchPage(query: String, model: PlayerContentModel, actions: 
     /** Search state the page draws for the query over the sample library. */
     val results: SearchState = searchLibrary(query = query, tracks = SAMPLE_TRACKS, available = true)
     searchPage(
+        creaseWidthPx = rememberCrease().widthPxOrNull,
         state = results,
         query = query,
         onQueryChange = {},
@@ -987,31 +851,4 @@ private fun sampleSearchPage(query: String, model: PlayerContentModel, actions: 
             )
         },
     )
-}
-
-// What:     `@Composable private fun sampleColorScheme(): ColorScheme` picks the scheme the production activity uses.
-// Why:      The host copies the production scheme so the screenshots show the same colors, including
-//           true black in dark mode.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// function sampleColorScheme(): ColorScheme { /* dynamic on Android 12+, true black in dark mode */ }
-// ```
-/** Returns dynamic Material roles with a true-black background and surface in dark mode. */
-@Composable
-private fun sampleColorScheme(): ColorScheme {
-    /** Whether the system is in dark mode. */
-    val dark: Boolean = isSystemInDarkTheme()
-    /** Android context that the dynamic color APIs need. */
-    val context: Context = LocalContext.current
-    /** Scheme from the wallpaper on Android 12 and later, or the static scheme on older devices. */
-    val scheme: ColorScheme = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-        if (dark) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
-    } else {
-        if (dark) darkColorScheme() else lightColorScheme()
-    }
-    if (!dark) {
-        return scheme
-    }
-    return scheme.copy(background = Color.Black, surface = Color.Black)
 }

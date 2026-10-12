@@ -111,6 +111,7 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.onFocusChanged
+import dev.monochromatic.musicplayer.core.CreaseState
 import dev.monochromatic.musicplayer.core.TrackActionFailure
 import dev.monochromatic.musicplayer.core.libraryDisplayName
 import dev.monochromatic.musicplayer.core.TrackMenuAction
@@ -133,8 +134,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-// What:     `import androidx.compose.ui.Alignment` aligns the feedback overlay and scan bar to the bottom start edge.
-// Why:      The overlay stacks above the scan bar at the bottom of the player, and it never reflows the content.
+// What:     `import androidx.compose.ui.Alignment` aligns the feedback overlay to the bottom start edge.
+// Why:      The overlay floats at the bottom of the player, and it never reflows the content.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -143,7 +144,7 @@ import kotlinx.coroutines.withContext
 import androidx.compose.ui.Alignment
 
 // What:     `import androidx.compose.ui.unit.Dp` and `dp` size the feedback overlay inset.
-// Why:      The overlay sits 16dp from the edges and from the scan bar, and the inset is a named constant.
+// Why:      The overlay sits 16dp from the edges, and the inset is a named constant.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -195,9 +196,7 @@ import dev.monochromatic.musicplayer.core.SearchState
 import dev.monochromatic.musicplayer.core.TemplateEditorState
 import dev.monochromatic.musicplayer.core.TemplateKind
 import dev.monochromatic.musicplayer.core.FeedbackMessage
-import dev.monochromatic.musicplayer.core.ScanIndicatorModel
 import dev.monochromatic.musicplayer.core.buildPlayerContent
-import dev.monochromatic.musicplayer.core.scanIndicatorFor
 import dev.monochromatic.musicplayer.core.searchLibrary
 
 // What:     `sealed interface PlayerRoute` names the four destinations the host can show.
@@ -382,13 +381,13 @@ private fun loadStoredTemplates(context: Context): Map<TemplateKind, String> =
     TemplateKind.entries.associateWith { kind -> SessionStore.loadTemplate(context, kind) }
 
 // What:     `private val PLAYER_HOST_FEEDBACK_INSET: Dp = 16.dp` is the gap between the overlay and the screen edges.
-// Why:      The feedback overlay keeps this inset from the start, end, and bottom edges, and from the scan bar.
+// Why:      The feedback overlay keeps this inset from the start, end, and bottom edges.
 //
 // In TS you'd write (pseudocode):
 // ```ts
 // const PLAYER_HOST_FEEDBACK_INSET = 16; // dp
 // ```
-/** Inset between the feedback overlay and the start, end, and bottom edges of the player, and above the scan bar. */
+/** Inset between the feedback overlay and the start, end, and bottom edges of the player. */
 private val PLAYER_HOST_FEEDBACK_INSET: Dp = 16.dp
 
 // What:     `private val TRACK_MENU_INNER_INSET: Dp = 12.dp` is the track menu's start inset on the inner panes.
@@ -473,6 +472,8 @@ fun playerHost(
     var templates: TemplateEditorState by remember {
         mutableStateOf(PlayerHostModel.restoredEditor(stored = loadStoredTemplates(context)))
     }
+    /** Template whose editor the wide Settings page shows; Track rows each time Settings opens (D110). */
+    var settingsSelection: TemplateKind by rememberSaveable { mutableStateOf(TemplateKind.entries.first()) }
     /** Controller snapshot the host draws this frame. */
     val state: PlayerUiState = controller.uiState
     /** Playback position and duration sampled for this frame. */
@@ -556,6 +557,9 @@ fun playerHost(
     /** Moves the host to one destination and saves the destination in the instance state. */
     fun go(next: PlayerRoute) {
         Log.i(LOG_TAG, "player host route=${PlayerRouteRules.encode(next)}")
+        if (next == PlayerRoute.Settings && route != PlayerRoute.Settings) {
+            settingsSelection = TemplateKind.entries.first()
+        }
         routeToken = PlayerRouteRules.encode(next)
     }
 
@@ -1232,6 +1236,20 @@ fun playerHost(
     } else {
         HostKeyLayout.UNFOLDED
     }
+    // What:     `val settingsIsWide: Boolean` says whether Settings draws its two panes.
+    // Why:      D110 gives Settings two panes under the same condition as the player's two panes, and the editor then
+    //           sits inside the Settings page, so a focused editor field is a text field on that page.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const settingsIsWide = !isCoverLayout(window.innerWidth);
+    // ```
+    /** Whether the window is wide enough for the two-pane Settings page. */
+    val settingsIsWide: Boolean = keyLayout == HostKeyLayout.UNFOLDED
+    /** Crease of this window from the Jetpack WindowManager layout, shared by Settings and Search (D110, E2). */
+    val crease: CreaseState = rememberCrease()
+    /** Crease width in physical pixels when the window has a crease, else null. */
+    val creaseWidthPx: Float? = crease.widthPxOrNull
     // What:     `val keyContext: HostKeyContext` is the host state that the keyboard rules read for this frame.
     // Why:      The owner, the route rules, the layout, and the mode cycle each need the route, popup, focus, and mode.
     //
@@ -1244,7 +1262,8 @@ fun playerHost(
         route = hostKeyRouteOf(route),
         menuOpen = menuTarget != null,
         textFieldFocused = (route == PlayerRoute.Search && searchFieldFocused) ||
-            (route is PlayerRoute.TemplateEditor && templates.fieldFocused),
+            ((route is PlayerRoute.TemplateEditor || (route == PlayerRoute.Settings && settingsIsWide)) &&
+                templates.fieldFocused),
         rootFocused = rootFocused,
         playbackMode = state.playbackMode,
         layout = keyLayout,
@@ -1378,7 +1397,11 @@ fun playerHost(
         // ```
         /** Leaves Search by the route rule that the system Back handler uses. */
         override fun backFromSearch() {
-            go(PlayerRouteRules.backFrom(route))
+            if (settingsIsWide && route != PlayerRoute.Search) {
+                go(PlayerRoute.Player)
+            } else {
+                go(PlayerRouteRules.backFrom(route))
+            }
         }
 
         // What:     `override fun closePopup()` clears the bound track so the menu closes.
@@ -1435,7 +1458,12 @@ fun playerHost(
     }
 
     BackHandler(enabled = route != PlayerRoute.Player) {
-        go(PlayerRouteRules.backFrom(route))
+        // The wide Settings page shows the editor in place, so Back closes Settings from either route.
+        if (settingsIsWide && route != PlayerRoute.Search) {
+            go(PlayerRoute.Player)
+        } else {
+            go(PlayerRouteRules.backFrom(route))
+        }
     }
 
     // What:     `LaunchedEffect(nextExpiry)` waits until the earliest visible message is due and then expires it.
@@ -1473,15 +1501,6 @@ fun playerHost(
         ) {
             when (route) {
                 PlayerRoute.Player -> {
-                    /**
-                     * Scan indicator for this frame, idle while the first-run pane holds the screen
-                     *     because no sweep runs then.
-                     */
-                    val scanModel: ScanIndicatorModel = scanIndicatorFor(
-                        loading = state.loading && firstRunContent == null,
-                        measured = SweepProgress.snapshot.done,
-                        total = SweepProgress.snapshot.total,
-                    )
                     Box(modifier = Modifier.fillMaxSize()) {
                         if (firstRunContent != null) {
                             firstRunContent { go(PlayerRoute.Settings) }
@@ -1517,8 +1536,9 @@ fun playerHost(
                                 onDismiss = { menuTarget = null },
                             )
                         }
-                        // The overlay and the scan bar share one bottom column, so the overlay sits above the bar and
-                        // neither one changes the layout of the player beneath.
+                        // The feedback overlay floats at the bottom edge and never changes the layout beneath it.
+                        // True-peak analysis shows no in-app indicator (D107): its progress is a system notification,
+                        // so nothing here reserves space for it.
                         Column(modifier = Modifier.align(Alignment.BottomStart).fillMaxWidth()) {
                             /**
                              * Messages in display order, Undo above Error, drawn only while at least one is visible.
@@ -1539,7 +1559,6 @@ fun playerHost(
                                     ),
                                 )
                             }
-                            scanIndicator(model = scanModel, modifier = Modifier.fillMaxWidth())
                         }
                     }
                 }
@@ -1553,6 +1572,7 @@ fun playerHost(
                         searchLibrary(query = query, tracks = tracks, available = true)
                     }
                     searchPage(
+                        creaseWidthPx = creaseWidthPx,
                         state = results,
                         query = query,
                         onQueryChange = { text -> query = text },
@@ -1577,26 +1597,69 @@ fun playerHost(
                         },
                     )
                 }
-                PlayerRoute.Settings -> settingsPageContent(
-                    templateLines = editor.settingsLines,
-                    onBack = { go(PlayerRoute.Player) },
-                    onOpenTemplate = { kind -> openTemplate(kind) },
-                )
-                is PlayerRoute.TemplateEditor -> {
-                    /**
-                     * Editor view opened on the route's template, which differs from the stored editor after a restore.
-                     */
-                    val opened: TemplateEditorState = if (editor.kind == route.kind) editor else editor.open(route.kind)
-                    templateEditor(
-                        state = opened,
-                        actions = TemplateEditorActions(
-                            onEdit = { edit -> applyTemplateChange(opened.withEdit(edit)) },
-                            onFocusChanged = { focused -> templates = opened.withFocus(focused) },
-                            onInsertField = { mode -> applyTemplateChange(opened.insertField(mode)) },
-                            onReset = { applyTemplateChange(opened.resetToDefault()) },
-                            onBack = { go(PlayerRoute.Settings) },
-                        ),
+                PlayerRoute.Settings, is PlayerRoute.TemplateEditor -> {
+                    /** Template kind a restored editor route names, or null when the route is Settings itself. */
+                    val routeKind: TemplateKind? = (route as? PlayerRoute.TemplateEditor)?.kind
+                    /** Template whose editor is shown: the route's own, else the wide page's selection. */
+                    val shownKind: TemplateKind = routeKind ?: settingsSelection
+                    // What:     `fun actionsFor(opened)` builds the editor callbacks that act on one opened template.
+                    // Why:      The wide page keeps two editors alive while it cross-fades, and each one must edit its
+                    //           own template.
+                    //
+                    // In TS you'd write (pseudocode):
+                    // ```ts
+                    // const actionsFor = (opened) => ({ onEdit: (e) => apply(opened.withEdit(e)), ... });
+                    // ```
+                    /** Callbacks the editor reports to the host for the template that [opened] is open on. */
+                    fun actionsFor(opened: TemplateEditorState) = TemplateEditorActions(
+                        onEdit = { edit -> applyTemplateChange(opened.withEdit(edit)) },
+                        onFocusChanged = { focused -> templates = opened.withFocus(focused) },
+                        onInsertField = { mode -> applyTemplateChange(opened.insertField(mode)) },
+                        onReset = { applyTemplateChange(opened.resetToDefault()) },
+                        onBack = { go(PlayerRoute.Settings) },
                     )
+
+                    /**
+                     * Editor view opened on one template, which differs from the stored editor after a restore.
+                     */
+                    fun openedOn(kind: TemplateKind): TemplateEditorState =
+                        if (editor.kind == kind) editor else editor.open(kind)
+
+                    if (settingsIsWide) {
+                        settingsWidePage(
+                            templateLines = editor.settingsLines,
+                            selected = shownKind,
+                            onSelect = { kind ->
+                                if (routeKind != null) {
+                                    go(PlayerRoute.Settings)
+                                }
+                                settingsSelection = kind
+                                templates = editor.open(kind)
+                            },
+                            onBack = { go(PlayerRoute.Player) },
+                            creaseWidthPx = creaseWidthPx,
+                            editor = { kind, startInset ->
+                                /** Editor view of the template this pane child shows. */
+                                val paneState: TemplateEditorState = openedOn(kind)
+                                templateEditor(
+                                    state = paneState,
+                                    actions = actionsFor(paneState),
+                                    embedded = true,
+                                    startInset = startInset,
+                                )
+                            },
+                        )
+                    } else if (routeKind != null) {
+                        /** Editor view of the route's template. */
+                        val pageState: TemplateEditorState = openedOn(shownKind)
+                        templateEditor(state = pageState, actions = actionsFor(pageState))
+                    } else {
+                        settingsPageContent(
+                            templateLines = editor.settingsLines,
+                            onBack = { go(PlayerRoute.Player) },
+                            onOpenTemplate = { kind -> openTemplate(kind) },
+                        )
+                    }
                 }
             }
         }

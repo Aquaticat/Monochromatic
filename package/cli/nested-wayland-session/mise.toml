@@ -121,6 +121,122 @@ slint_scheme_probe = '''
   }
 '''
 
+# Shared body for hosted inspection clients that talk to the private bus without a window
+# (interpolated inside an async function whose source is passed to a nested `node -e`). It provides:
+# - until(label, probe): poll until probe() is truthy, failing after ten seconds.
+# - control(socketPath, line): send one control command, resolve with its response line.
+# - address: the private bus address the hosted client inherited.
+# - busctl(...args): one busctl command against that address, returning trimmed standard output.
+# - monitor(destination): a gdbus subscription to every signal the named service emits;
+#   text() is everything printed, signals(member) the lines naming that signal.
+# Literal ''' strings keep JavaScript escapes such as '\n' out of TOML's own escaping.
+bus_probe = '''
+  const { spawn, spawnSync } = await import('node:child_process')
+  const { createConnection } = await import('node:net')
+  const { setTimeout: wait } = await import('node:timers/promises')
+  const { default: assert } = await import('node:assert/strict')
+  const until = async (label, probe, limit = 10000) => {
+    const started = performance.now()
+    while (performance.now() - started < limit) {
+      const value = await probe()
+      if (value) return value
+      await wait(25)
+    }
+    assert.fail('timed out waiting for ' + label)
+  }
+  const control = (socketPath, line) => new Promise((resolve, reject) => {
+    const socket = createConnection(socketPath)
+    let reply = ''
+    socket.on('error', reject)
+    socket.on('data', chunk => {
+      reply += chunk
+      if (reply.includes('\n')) { socket.end(); resolve(reply.trim()) }
+    })
+    socket.write(line + '\n')
+  })
+  const address = process.env.DBUS_SESSION_BUS_ADDRESS ?? String()
+  assert.match(address, /monochromatic-nested-wayland-session-/)
+  const busctl = (...args) => {
+    const result = spawnSync('busctl', ['--address=' + address, ...args], { timeout: 5000 })
+    assert.equal(result.status, 0, 'busctl ' + args.join(' ') + ': ' + result.stderr.toString())
+    return result.stdout.toString().trim()
+  }
+  const monitor = destination => {
+    const child = spawn('gdbus', ['monitor', '--address', address, '--dest', destination], { stdio: ['ignore', 'pipe', 'inherit'] })
+    const chunks = []
+    child.stdout.on('data', chunk => chunks.push(chunk))
+    const text = () => Buffer.concat(chunks).toString()
+    const signals = member => text().split('\n').filter(line => line.includes('.' + member + ' '))
+    return { text, signals, stop: () => child.kill() }
+  }
+'''
+
+# Shared runner for the service inspections: a disposable decoy bus stands in for the host session bus
+# in the compositor's own environment, and must see no traffic but a deliberate sentinel.
+# runInDecoy({ prefix, sessionOptions, client, clientArguments }) hosts `client` (its source text runs
+# under `node -e` inside the nested session, receiving the control socket path, the evidence directory,
+# and clientArguments) and fails unless the client exits 0 and the decoy saw only the sentinel connection.
+decoy_runner = '''
+const { spawn, spawnSync } = await import('node:child_process')
+const { once } = await import('node:events')
+const { mkdtempSync, writeFileSync } = await import('node:fs')
+const { tmpdir } = await import('node:os')
+const { join } = await import('node:path')
+const { setTimeout: wait } = await import('node:timers/promises')
+const { default: assert } = await import('node:assert/strict')
+const runInDecoy = async ({ prefix, sessionOptions, client, clientArguments = [] }) => {
+  const evidence = mkdtempSync(join(tmpdir(), prefix))
+  const socketPath = join(evidence, 'control.sock')
+  const decoyAddress = 'unix:path=' + join(evidence, 'decoy-bus')
+  const decoy = spawn('dbus-daemon', ['--session', '--nofork', '--nopidfile', '--nosyslog', '--print-address=1', '--address=' + decoyAddress], { stdio: ['ignore', 'pipe', 'inherit'] })
+  let failure
+  try {
+    await once(decoy.stdout, 'data')
+    const watcher = spawn('dbus-monitor', ['--address', decoyAddress], { stdio: ['ignore', 'pipe', 'inherit'] })
+    const watcherOutput = []
+    watcher.stdout.on('data', chunk => watcherOutput.push(chunk))
+    const watched = () => Buffer.concat(watcherOutput).toString()
+    const untilWatched = async text => {
+      const started = performance.now()
+      while (!watched().includes(text) && performance.now() - started < 3000) await wait(25)
+      assert(watched().includes(text), 'decoy session bus watcher did not report ' + text)
+    }
+    try {
+      await untilWatched('NameAcquired')
+      const session = spawn('./target/release/monochromatic-nested-wayland-session', [
+        '--size', '640x240', '--socket', socketPath, ...sessionOptions, '--',
+        'node', '--input-type=module', '-e', 'await (' + client.toString() + ')()', '--',
+        socketPath, evidence, decoyAddress, ...clientArguments,
+      ], { stdio: 'inherit', env: { ...process.env, DBUS_SESSION_BUS_ADDRESS: decoyAddress } })
+      const [code] = await once(session, 'exit')
+      assert.equal(code, 0, 'nested client failed')
+      // Positive control: the watcher must see a deliberate environment-addressed connection.
+      const sentinel = spawnSync('dbus-send', ['--session', '--type=signal', '/sentinel', 'org.example.Sentinel.Ping'], {
+        timeout: 3000, env: { ...process.env, DBUS_SESSION_BUS_ADDRESS: decoyAddress },
+      })
+      assert.equal(sentinel.status, 0, sentinel.stderr.toString())
+      await untilWatched('member=Ping')
+      writeFileSync(join(evidence, 'decoy-session-bus.log'), watched())
+      // Every connection must call Hello first, so one Hello before the sentinel signal is the sentinel itself.
+      const beforeSentinel = watched().slice(0, watched().indexOf('member=Ping'))
+      assert.equal(beforeSentinel.split('member=Hello').length - 1, 1,
+        'something other than the sentinel connected to the decoy session bus')
+      assert(!/Notif|JobView|kuiserver|SettingChanged/.test(beforeSentinel), 'service traffic reached the decoy session bus')
+      console.log('Decoy session bus saw only the sentinel connection; no service traffic left the private bus')
+    } finally {
+      watcher.kill()
+    }
+  } catch (error) {
+    failure = error
+  } finally {
+    decoy.kill()
+  }
+  console.log('Evidence: ' + evidence)
+  if (failure) throw failure
+  return evidence
+}
+'''
+
 [tasks.image]
 description = "Build the Fedora build container image"
 run = "podman build -t localhost/monochromatic/nested-wayland-session -f Containerfile ."
@@ -987,4 +1103,261 @@ const session = spawn(binary, ['--size', '320x200', '--socket', socketPath, '--l
 const [code] = await once(session, 'exit')
 assert.equal(code, 0, 'launcher client failed')
 console.log('Taskbar progress observation verified')
+'''
+
+[tasks."inspect:notifications"]
+description = "Verify the recording org.freedesktop.Notifications service: Notify, replacement, close reasons, actions, notification-log, and clear, with a bus client, a signal monitor, and a decoy session bus"
+shell = "node --input-type=module-typescript -e"
+run = '''
+{{vars.decoy_runner}}
+// Runs inside the nested session as the hosted command; its environment holds the private bus address.
+const client = async () => {
+{{vars.bus_probe}}
+  const [socketPath] = process.argv.slice(1)
+  const service = ['org.freedesktop.Notifications', '/org/freedesktop/Notifications', 'org.freedesktop.Notifications']
+  const watch = monitor('org.freedesktop.Notifications')
+  // The count and records of a list answer, split on the documented "; " separator.
+  const records = answer => answer.replace(/^ok \d+ ?/, String()).split('; ').filter(Boolean)
+  const notify = (replaces, summary, actions = ['2', 'default', 'Open', '2', 'urgency', 'y', '2', 'value', 'i', '50']) =>
+    busctl('call', ...service, 'Notify', 'susssasa{sv}i', 'Example App', String(replaces), 'dialog-information', summary, 'Body; text',
+      ...actions, '5000')
+  try {
+    await until('the signal monitor', () => watch.text().includes('Monitoring'))
+    assert.equal(await control(socketPath, 'notifications'), 'ok 0')
+    assert.equal(await control(socketPath, 'notification-log'), 'ok 0')
+    assert.match(await control(socketPath, 'notification-close 1'), /^err no visible notification with id 1$/)
+
+    // The capabilities Plasma reports, minus the three the recorder cannot honor.
+    assert.equal(busctl('call', ...service, 'GetCapabilities'),
+      'as 10 "body" "body-hyperlinks" "body-markup" "body-images" "icon-static" "actions" "persistence" "x-kde-urls" "x-kde-origin-name" "x-kde-display-appname"')
+    assert.match(busctl('call', ...service, 'GetServerInformation'), /^ssss "monochromatic-nested-wayland-session" "Monochromatic" "\d+\.\d+\.\d+" "1\.2"$/)
+
+    assert.equal(notify(0, 'Analysis started'), 'u 1')
+    assert.equal(notify(1, 'Analysis 40 percent', ['0', '1', 'urgency', 'y', '0']), 'u 1')
+    assert.equal(notify(0, 'Second'), 'u 2')
+    const shown = records(await control(socketPath, 'notifications'))
+    assert.equal(shown.length, 2)
+    assert.match(shown[0], /^id=1 app=Example%20App icon=dialog-information summary=Analysis%2040%20percent body=Body%3B%20text actions= hints=urgency:y:0 expire=5000 replaced=1 age-ms=\d+$/)
+    assert.match(shown[1], /^id=2 app=Example%20App icon=dialog-information summary=Second body=Body%3B%20text actions=default=Open hints=urgency:y:2,value:i:50 expire=5000 replaced=0 age-ms=\d+$/)
+
+    // Close reasons: a control close uses the reason asked for, the client's own close uses 3.
+    assert.equal(await control(socketPath, 'notification-close 1 expired'), 'ok')
+    await until('NotificationClosed 1 expired', () => watch.signals('NotificationClosed').some(line => line.includes('(uint32 1, uint32 1)')))
+    busctl('call', ...service, 'CloseNotification', 'u', '2')
+    await until('NotificationClosed 2 by call', () => watch.signals('NotificationClosed').some(line => line.includes('(uint32 2, uint32 3)')))
+    assert.equal(await control(socketPath, 'notifications'), 'ok 0')
+    assert.equal(notify(0, 'Third'), 'u 3')
+    assert.equal(await control(socketPath, 'notification-close 3'), 'ok')
+    await until('NotificationClosed 3 dismissed', () => watch.signals('NotificationClosed').some(line => line.includes('(uint32 3, uint32 2)')))
+
+    // Action invocation reaches the client; a key the notification did not offer is refused.
+    assert.equal(notify(0, 'Pick'), 'u 4')
+    assert.equal(await control(socketPath, 'notification-action 4 default'), 'ok')
+    await until('ActionInvoked', () => watch.signals('ActionInvoked').some(line => line.includes("(uint32 4, 'default')")))
+    assert.equal(await control(socketPath, 'notification-action 4 snooze'), 'err notification 4 offers no action snooze (offered: default)')
+
+    // The log lists every call and signal in order.
+    const kinds = records(await control(socketPath, 'notification-log')).map(record => record.split(' ')[1])
+    assert.deepEqual(kinds, ['notify', 'notify', 'notify', 'closed', 'close-call', 'closed', 'notify', 'closed', 'notify', 'action-invoked'])
+    assert.match(await control(socketPath, 'notification-log 0'), /^err notification-log count must be at least 1$/)
+    assert.equal(await control(socketPath, 'notification-clear'), 'ok')
+    assert.equal(await control(socketPath, 'notifications'), 'ok 0')
+    assert.equal(await control(socketPath, 'notification-log'), 'ok 0')
+    assert.match(await control(socketPath, 'job-log'), /^err no Plasma job service \(start with --notifications kde\)$/)
+    console.log('notifications: Notify, replacement, three close reasons, an action, the ordered log, and clear all behaved')
+  } finally {
+    watch.stop()
+  }
+}
+await runInDecoy({ prefix: 'nested-notifications-', sessionOptions: ['--notifications', 'freedesktop'], client })
+console.log('Nested notification recording verified')
+'''
+
+[tasks."inspect:plasma-jobs"]
+description = "Verify the recording Plasma job view server like a KJob client: requestView, no-reply updates, suspended flag, terminate, and the V3 signals, with a decoy session bus"
+shell = "node --input-type=module-typescript -e"
+run = '''
+{{vars.decoy_runner}}
+// Runs inside the nested session as the hosted command; its environment holds the private bus address.
+const client = async () => {
+{{vars.bus_probe}}
+  const [socketPath] = process.argv.slice(1)
+  const server = ['org.kde.kuiserver', '/JobViewServer', 'org.kde.JobViewServerV2']
+  const records = answer => answer.replace(/^ok \d+ ?/, String()).split('; ').filter(Boolean)
+  const watch = monitor('org.kde.kuiserver')
+  try {
+    await until('the signal monitor', () => watch.text().includes('Monitoring'))
+    assert.equal(await control(socketPath, 'jobs'), 'ok 0')
+    const granted = busctl('call', ...server, 'requestView', 'sia{sv}', 'org.example.inspect', '3', '2',
+      'application-display-name', 's', 'Inspect', 'transient', 'b', 'true')
+    assert.equal(granted, 'o "/org/kde/notificationmanager/jobs/JobView_1"')
+    const job = ['org.kde.kuiserver', '/org/kde/notificationmanager/jobs/JobView_1', 'org.kde.JobViewV3']
+    // Qt sends update and terminate without waiting for a reply; busctl does the same with --expect-reply=no.
+    const noReply = (member, signature, ...args) => busctl('--expect-reply=no', 'call', ...job, member, signature, ...args)
+    noReply('update', 'a{sv}', '5', 'title', 's', 'Analysing 3 tracks', 'infoMessage', 's', 'track 1 of 3',
+      'percent', 'u', '10', 'suspended', 'b', 'false', 'descriptionField', 's', 'ignored')
+    await until('the first update', async () => (await control(socketPath, 'jobs')).includes('percent=10'))
+    assert.match((await control(socketPath, 'jobs')), /^ok 1 id=1 path=\/org\/kde\/notificationmanager\/jobs\/JobView_1 entry=org.example.inspect title=Analysing%203%20tracks info=track%201%20of%203 percent=10 suspended=false capabilities=3 terminated=false$/)
+
+    // The Pause button changes only after the app reports suspended.
+    assert.equal(await control(socketPath, 'job-suspend 1'), 'ok')
+    await until('suspendRequested', () => watch.signals('suspendRequested').length === 1)
+    assert((await control(socketPath, 'jobs')).includes('suspended=false'), 'the job changed state before the app reported it')
+    noReply('update', 'a{sv}', '2', 'percent', 'u', '55', 'suspended', 'b', 'true')
+    await until('the suspended flag', async () => (await control(socketPath, 'jobs')).includes('percent=55 suspended=true'))
+    assert.equal(await control(socketPath, 'job-resume 1'), 'ok')
+    assert.equal(await control(socketPath, 'job-refresh 1'), 'ok')
+    assert.equal(await control(socketPath, 'job-cancel 1'), 'ok')
+    await until('the other signals', () => watch.signals('resumeRequested').length === 1 && watch.signals('updateRequested').length === 1 && watch.signals('cancelRequested').length === 1)
+
+    // A call that waits for a reply is logged with no-reply=false, so the flag is observable (positive control).
+    busctl('call', ...job, 'update', 'a{sv}', '1', 'percent', 'u', '60')
+    noReply('terminate', 'usa{sv}', '1', 'canceled by user', '0')
+    await until('the job to end', async () => (await control(socketPath, 'jobs')).includes('terminated=true'))
+    assert.match(await control(socketPath, 'jobs'), / terminated=true code=1 message=canceled%20by%20user$/)
+    assert.match(await control(socketPath, 'job-suspend 1'), /^err job 1 has ended; its object is gone from the bus$/)
+    const log = records(await control(socketPath, 'job-log')).map(record => record.replace(/^t=\d+ /, String()))
+    assert(log.some(line => /^update id=1 no-reply=true properties=descriptionField:s:ignored,/.test(line)), log.join('\n'))
+    assert(log.some(line => /^update id=1 no-reply=false properties=percent:u:60$/.test(line)), log.join('\n'))
+    assert(log.some(line => /^terminate id=1 no-reply=true code=1 message=canceled%20by%20user hints=$/.test(line)), log.join('\n'))
+    assert.deepEqual(log.filter(line => line.startsWith('signal ')).map(line => line.split(' ')[2]),
+      ['name=suspendRequested', 'name=resumeRequested', 'name=updateRequested', 'name=cancelRequested'])
+    assert.equal(await control(socketPath, 'job-clear'), 'ok')
+    assert.equal(await control(socketPath, 'jobs'), 'ok 0')
+    console.log('plasma jobs: requestView, no-reply updates, suspended flag, four signals, and terminate behaved')
+  } finally {
+    watch.stop()
+  }
+}
+await runInDecoy({ prefix: 'nested-plasma-jobs-', sessionOptions: ['--notifications', 'kde'], client })
+console.log('Nested Plasma job view recording verified')
+'''
+
+[tasks."inspect:accent-color"]
+description = "Verify the private accent-color setting with a bus monitor, a Slint client that reports its accent hue, and a decoy session bus"
+shell = "node --input-type=module-typescript -e"
+run = '''
+{{vars.decoy_runner}}
+// Runs inside the nested session as the hosted command; its environment holds the private bus address.
+const client = async () => {
+{{vars.slint_scheme_probe}}
+  const [socketPath, evidence] = process.argv.slice(1)
+  const portal = ['--session', '--dest', 'org.freedesktop.portal.Desktop', '--object-path', '/org/freedesktop/portal/desktop']
+  const served = () => {
+    const result = spawnSync('gdbus', ['call', ...portal, '--method', 'org.freedesktop.portal.Settings.ReadOne', 'org.freedesktop.appearance', 'accent-color'], { timeout: 3000 })
+    assert.equal(result.status, 0, result.stderr.toString())
+    return result.stdout.toString().trim()
+  }
+  // The three doubles of the (ddd) setting, read back from gdbus's text form.
+  const servedColor = () => served().match(/[0-9.]+/g).map(Number)
+  const monitor = spawn('gdbus', ['monitor', ...portal], { stdio: ['ignore', 'pipe', 'inherit'] })
+  const monitorOutput = []
+  monitor.stdout.on('data', chunk => monitorOutput.push(chunk))
+  const monitored = () => Buffer.concat(monitorOutput).toString()
+  const signals = () => monitored().split('\n').filter(line => line.includes('SettingChanged') && line.includes('accent-color'))
+  const scene = join(evidence, 'accent.slint')
+  writeFileSync(scene, [
+    'import { Palette } from "std-widgets.slint";',
+    'export component Scene inherits Window {',
+    '    callback accent-seen(string);',
+    '    property <string> accent: "hue \\{Math.round(Palette.accent-background.to-oklch().hue)}";',
+    '    background: Palette.background;',
+    '    // slint-viewer attaches its handler after the component is created, so a value applied before',
+    '    // then would never be reported by init; a timer reports the current value until the task ends.',
+    '    Timer { interval: 200ms; running: true; triggered => { root.accent-seen(root.accent); } }',
+    '    Rectangle { background: Palette.accent-background; }',
+    '}',
+    '',
+  ].join('\n'))
+  const viewer = spawn('slint-viewer', ['--on', 'accent-seen', 'echo accent-seen $1', scene], { stdio: ['ignore', 'pipe', 'inherit'] })
+  const output = []
+  viewer.stdout.on('data', chunk => output.push(chunk))
+  const seen = () => Buffer.concat(output).toString().split('\n').filter(line => line.startsWith('accent-seen ')).map(line => line.slice(12))
+  const hue = text => Number(text.replace(/\D/g, String()))
+  try {
+    await until('the bus monitor to attach', () => monitor.exitCode === null && monitored().includes('Monitoring signals'))
+    assert.deepEqual(servedColor(), [0x35 / 255, 0x84 / 255, 0xE4 / 255])
+    await until('Slint to report a hue', () => seen().length > 0)
+    const blue = hue(seen().at(-1))
+    // Negative control: the color already served changes nothing and emits nothing.
+    assert.equal(await control(socketPath, 'accent-color 3584E4'), 'ok unchanged')
+    // Positive control: a real change reaches the bus monitor, the setting, and the toolkit.
+    assert.equal(await control(socketPath, 'accent-color FF7800'), 'ok changed')
+    await until('the accent signal', () => signals().length === 1)
+    assert.deepEqual(servedColor(), [1, 0x78 / 255, 0])
+    await until('Slint to report another hue', () => hue(seen().at(-1)) !== blue)
+    const orange = hue(seen().at(-1))
+    assert(Math.abs(orange - blue) > 90, 'the reported hue barely moved: ' + blue + ' -> ' + orange)
+    assert.equal(await control(socketPath, 'accent-color FF7800'), 'ok unchanged')
+    assert.match(await control(socketPath, 'accent-color orange'), /^err accent-color must be six hexadecimal digits \(RRGGBB\), got: orange$/)
+    assert.equal(signals().length, 1)
+    // The color scheme was not requested, so it stays unserved and its verb says why.
+    assert.match(await control(socketPath, 'color-scheme dark'), /^err color-scheme needs the private appearance portal/)
+    writeFileSync(join(evidence, 'accent-seen.log'), seen().join('\n'))
+    console.log('Slint accent hue: ' + seen().join(' -> ') + ' (blue ' + blue + ', orange ' + orange + ')')
+  } finally {
+    monitor.kill()
+    viewer.kill()
+    if (viewer.exitCode === null && viewer.signalCode === null) await once(viewer, 'exit')
+  }
+}
+await runInDecoy({ prefix: 'nested-accent-color-', sessionOptions: ['--accent-color', '3584E4'], client })
+console.log('Nested accent color verified')
+'''
+
+[tasks."inspect:plasma-host-contract"]
+description = "Compare the fake services' introspected members with the live host's Plasma services, read-only: introspection only, no job or notification is created on the host"
+shell = "node --input-type=module-typescript -e"
+run = '''
+{{vars.decoy_runner}}
+// Members of the named interfaces from `busctl introspect` output, as "kind name signature result" lines.
+const members = (text, interfaces) => {
+  const found = new Map()
+  let current
+  for (const line of text.split('\n')) {
+    const columns = line.trim().split(/\s+/)
+    if (columns[1] === 'interface') { current = columns[0]; if (interfaces.includes(current)) found.set(current, []); continue }
+    if (current && found.has(current) && columns[0].startsWith('.')) found.get(current).push(columns.slice(0, 4).join(' '))
+  }
+  return found
+}
+const hostCheck = spawnSync('busctl', ['--user', 'call', 'org.freedesktop.DBus', '/org/freedesktop/DBus', 'org.freedesktop.DBus', 'NameHasOwner', 's', 'org.kde.kuiserver'], { timeout: 5000 })
+if (hostCheck.status !== 0 || hostCheck.stdout.toString().trim() !== 'b true') {
+  console.log('skipped: the host session bus has no org.kde.kuiserver owner, so there is nothing to compare with')
+} else {
+  // Read-only: introspection of the live server objects. requestView is never called on the host.
+  const host = {
+    server: members(spawnSync('busctl', ['--user', 'introspect', 'org.kde.kuiserver', '/JobViewServer'], { timeout: 5000 }).stdout.toString(),
+      ['org.kde.JobViewServer', 'org.kde.JobViewServerV2', 'org.kde.kuiserver']),
+    notifications: members(spawnSync('busctl', ['--user', 'introspect', 'org.freedesktop.Notifications', '/org/freedesktop/Notifications'], { timeout: 5000 }).stdout.toString(),
+      ['org.freedesktop.Notifications']),
+  }
+  const client = async () => {
+{{vars.bus_probe}}
+    const [socketPath, evidence] = process.argv.slice(1)
+    const { writeFileSync } = await import('node:fs')
+    const { join } = await import('node:path')
+    const stdout = busctl('introspect', 'org.kde.kuiserver', '/JobViewServer')
+    const notifications = busctl('introspect', 'org.freedesktop.Notifications', '/org/freedesktop/Notifications')
+    writeFileSync(join(evidence, 'fake-server.txt'), stdout)
+    writeFileSync(join(evidence, 'fake-notifications.txt'), notifications)
+  }
+  // The fake's output is written by the hosted client; read it back after the session ends.
+  const evidenceDirectory = await runInDecoy({ prefix: 'nested-host-contract-', sessionOptions: ['--notifications', 'kde'], client })
+  const { readFileSync } = await import('node:fs')
+  const fake = {
+    server: members(readFileSync(join(evidenceDirectory, 'fake-server.txt'), 'utf8'), ['org.kde.JobViewServer', 'org.kde.JobViewServerV2', 'org.kde.kuiserver']),
+    notifications: members(readFileSync(join(evidenceDirectory, 'fake-notifications.txt'), 'utf8'), ['org.freedesktop.Notifications']),
+  }
+  for (const group of ['server', 'notifications']) {
+    for (const [name, lines] of fake[group]) {
+      const hostLines = host[group].get(name) ?? []
+      const missing = lines.filter(line => !hostLines.includes(line))
+      assert.deepEqual(missing, [], name + ' has members the live host does not have')
+      const hostOnly = hostLines.filter(line => !lines.includes(line))
+      console.log(name + ': ' + lines.length + ' fake members all present on the host' + (hostOnly.length ? '; host only: ' + hostOnly.join(', ') : '; no host-only members'))
+    }
+  }
+}
+console.log('Host contract comparison done')
 '''

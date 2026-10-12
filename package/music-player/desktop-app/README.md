@@ -461,16 +461,10 @@ The crate is a library plus a thin binary so the pure logic is unit-testable wit
    The window title shows the playing track's list path (the same
   `folder/.../file` string the queue row shows) while audio plays,
    and reverts to "Music Player" when paused.
-  The custom controls (radio group,
-   checkbox,
-   scrollbar,
-   row highlight) take their colours from the Slint system
-  palette rather than hardcoded values,
+  The custom controls take their colours from the `Theme` roles in `ui/theme.slint`
+   rather than hardcoded values,
    so they follow the OS accent colour
-  and the light/dark theme:
-   the highlighted row and the checked checkbox use the accent,
-   the same as the active
-  page tab's primary button.
+  and the light/dark theme (see "Theme colours").
   Seek-bar movement and platform taskbar progress updates (KDE LauncherEntry on Linux,
    ITaskbarList3 on Windows)
   are debounced through the same Rust helper,
@@ -488,6 +482,159 @@ If that compositor cannot provide a required test feature,
 add the feature to `nested-wayland-session` rather than mutating host-wide desktop settings.
 Restore any app-local fixture state after capture.
 
+## Theme colours
+
+The operating system's accent colour is the theme root (A3, D108), and it is the only thing taken from the platform.
+Slint reports it through `SlintInternal.accent-color`: the XDG portal `org.freedesktop.appearance` `accent-color` on
+Linux (live, through the portal's `SettingChanged` signal), DWM colorization on Windows and `NSColor` accent on macOS.
+A transparent accent (alpha 0) means none is available, and the root is then the Fold capture baseline `#4E5E8B`.
+`SlintInternal` needs Slint's experimental-features switch (`SLINT_ENABLE_EXPERIMENTAL_FEATURES`), which the package
+`mise.toml` and the repo `.cargo/config.toml` already set.
+
+Every other colour is derived from the root in OKLCH by `src/theme_roles.rs` (math in `src/oklch.rs`):
+each role has a lightness target, a chroma share and a hue offset, converted to sRGB with chroma reduction at constant
+lightness and hue (a binary search, never per-channel clipping, which would shift the hue).
+Text roles are then moved in lightness until WCAG AA holds on every surface they are drawn on and under the hover layer,
+so contrast holds for any accent.
+The dark canvas, the rail seam and the deck stay the fixed neutrals of D41, the light canvas stays white,
+and the error roles are constants that follow no accent.
+Hover and pressed fills of the selected segment and the search match fill (D59) are OKLCH roles too;
+state layers over a surface stay alpha-only.
+The Rust side (`src/ui_theme.rs`) writes both schemes into `Theme.dark-roles` and `Theme.light-roles` at startup and
+again whenever the accent changes; the light or dark choice stays inside Slint.
+The literals in `ui/theme.slint` are the baseline roles, so a Slint viewer without Rust still renders the baseline;
+a test fails when they differ from the derivation and says what to paste.
+No `.slint` file may call `mix`, `brighter`, `darker` or `transparentize` (a test scans for them).
+
+## Settings page
+
+Settings (`ui/settings.slint`, D87, D99, D109, D110) lists the two templates, Track rows and Playing track, under a
+Templates heading.
+The whole page is drawn on the one canvas colour (pure white in light, pure black in dark): no page tint, card fill,
+header band, border or divider line, so the header, the heading and the rows are separated by spacing alone.
+Only state carries a fill: the hover and pressed layers, the 40 px icon circle (the secondary container role) and the
+selected row's pill.
+`src/settings_layout.rs` holds the layout numbers as pure functions,
+and the window tests compare the real layout with them.
+
+The window decides the form with the same 600 px switch as the player.
+Below 600 px Settings is one full-width page with no maximum column width and no centering:
+a 16 px side margin, rows 72 px tall with a 40 px circular icon at x = 32 px from the window edge and the title at
+x = 84 px, 2 px between rows and 16 px above the group heading, and the header with Back.
+A tap on a row opens that template's editor page, and Back on the editor page returns to the list.
+From 600 px Settings is two panes.
+The list pane takes the default split ratio 0.3636 of the window width, rounded to a pixel, and the editor pane takes
+the rest, with only the ordinary 16 px insets (a desktop has no crease).
+The left pane is the list above, and the right pane shows the selected row's editor in place, so selecting never
+navigates and nothing moves: the selected row is a filled pill in the secondary container role with a bold title (two
+channels), the title's box is sized by a hidden bold copy, and the new content fades in over 150 ms.
+Slint 1.18 exposes no reduced-motion setting (searched in its 1.18.1 crates), so the fade is always that short.
+While Settings is open the player layouts are hidden, so nothing of the player shows through the fade.
+The first row is selected when Settings opens.
+Up, Down, Home and End move through the rows (selection follows in the wide form, and the single form shows the focused
+row with the hover layer), and Enter or Space activates the focused row.
+Back (the header arrow) and Escape close Settings in both forms.
+Escape closes Settings only while Settings is the visible page and no template line is being edited.
+Closing Settings, or selecting the other row, applies and saves the valid drafts.
+Widening the window on an editor page continues that editor in the right pane.
+
+The row icons are Material Symbols Outlined (weight 400, grade 0, 24 px, unfilled) `queue_music` and `play_circle`
+from [google/material-design-icons][material-icons], commit `49d4db35df873165d6bd6ba09b063c7dafbac2f4`
+(`symbols/web/queue_music/materialsymbolsoutlined/queue_music_24px.svg` and
+`symbols/web/play_circle/materialsymbolsoutlined/play_circle_24px.svg`).
+They are embedded as Slint `Path` commands in `ui/settings.slint`, with no icon font and no network access at run time.
+The SVG files use a `viewBox` of `0 -960 960 960`; the embedded data is the same outline moved onto a 24 by 24 grid
+(x / 40 and (y + 960) / 40) in explicit absolute `M`, `L`, `Q` and `Z` commands, with a matching `viewbox` of 24.
+The files close each contour with a line back to its start before `Z`, which Slint's femtovg renderer draws as a wrong
+shape (the three bars of `queue_music` became one blob), so that redundant line is dropped; a test pins the form of the
+data.
+The icons are licensed under the Apache License 2.0.
+The text is `LICENSES/Apache-2.0.txt` in this package, next to the font license, and the same file sits at the
+repository root.
+
+[material-icons]: https://github.com/google/material-design-icons
+
+## Search and scale
+
+A library of 1,000 artists and 1,000,000 tracks is normal operation, so Search, the scan and the window projection are
+built to cost the size of what is shown or typed, not the size of the library.
+This section describes the pieces; the decisions behind them are D47 to D74 (Search behavior), D103, D111 (Search while
+the scan runs) and D112 (the in-memory index).
+
+### The Search index
+
+`search_index.rs` holds one entry per track: the display path and the normalized title, each in one shared text buffer
+with end offsets (`search_index_text.rs`), and the title's length in UTF-16 units.
+Two buckets, by first character and by first two characters of every word, list the tracks a term can match.
+A query takes the smallest bucket among its terms, tiers each member with an allocation-free byte search at word
+starts, keeps the best five hundred in the order the replaced matcher used (tier, length, collation key, path, folder
+before track, position), and only then builds rows with highlights and parent context.
+`search_index_rank.rs` computes collation keys lazily, only for the entries tied at the cut.
+A bucket of 32,768 members or more is tiered by four threads and joined in order, which returns the same list.
+The top five hundred of every first character is cached per character, and the cache is merged with the tracks
+appended since, so it is exact at every moment (`search_index_top.rs`); an answer is never stale.
+Normalization is unchanged: NFKD, combining marks removed, lowercase, trimmed by the Kotlin whitespace rule.
+
+`search_service.rs` owns the index behind a read-write lock and three threads.
+The query thread answers the newest query and drops the ones typed over, and never runs on the window thread.
+The stream thread appends scan batches, and the warmer thread refreshes the one-character caches after a quiet moment.
+Batches are normalized and bucketed outside the lock, and only the push runs under the write lock, which waits for
+readers in short polls instead of blocking a keystroke.
+Every batch signals a refresh, throttled to one answer every 120 ms, so an open Search page updates in place.
+
+The old matcher is kept as `search_results_oracle.rs` (test builds only) and is the oracle for the index.
+Tests compare tier, kind, name, library index, count, truncated flag and highlight ranges on hostile queries, on
+seeded random libraries, on libraries that grow between batches, and on generated libraries.
+
+### Searching while the scan runs
+
+`scan_stream.rs` walks the root like `expand_paths` and reports every 5,000 tracks (the first after 150 ms) as
+`Update::ScanBatch`, which `main.rs` hands to the stream thread.
+Search therefore answers from the first batch, and results arrive in place while the scan continues.
+`apply_answer` in `ui_search_apply.rs` keeps the query, the caret and the scroll position, edits one rows model in
+place, and anchors the list (`ui_search_anchor.rs`) so the first visible row keeps its place when a better match is
+inserted above it.
+A tap resolves its row in the list last shown, not in a new search.
+A query that matches nothing says the library is still being scanned until the scan completes (D69).
+Browse rows still wait for the whole walk, because pages need every name.
+
+The walk uses the file type of each directory entry and calls `is_file` only for symlinks.
+A `stat` per file made the walk of 1,000,000 files take 10.6 seconds instead of 1.4 on a warm cache, and 55 seconds on
+the one cold run measured.
+The file watcher registers its recursive watch on its own thread (28 to 45 seconds at 1,000,000 files, where it used to
+run before the walk on the engine thread) and ignores open and close events, which the walk itself raises.
+When a registration ends it asks for one rescan, which catches a change made while it ran.
+The queue itself takes its names and page index from one pass each: `Queue::set_tracks` went from 2.2 seconds to 0.5
+at 1,000,000 tracks.
+
+### The window projection
+
+`ScreenState` keeps the names as one shared list and a page index (`page_index.rs`) built once per queue generation.
+A projection reads only the selected page, looks up measures only for that page, and shares names instead of cloning
+them.
+The sweep reports measures in chunks that are written in place; a projection is requested only when a chunk touches the
+selected page, and at most four times a second.
+
+### Numbers
+
+All numbers are release builds on a shared 16-core host whose load average stayed near 40, so they are upper bounds.
+At 1,000,000 tracks the index builds in about 0.2 seconds from the names and holds 136 MiB, the slowest push under the
+write lock is about 4 ms, and a query of one letter takes about 2 ms.
+Queries of two to eight characters take 5 to 8 ms on the generated library, and 4 to 8 ms on 1,000,000 realistic names.
+Typed into the running app at 1,000,000 tracks while the scan was still running, a keystroke took 4 to 9 ms from the
+key to the applied rows (compute 4 to 7 ms, apply under 1 ms).
+The window projection of a page of 970 tracks takes about 3 ms.
+A page of 30,000 loose tracks takes about 80 ms, because a projection is linear in the selected page, at about 2.8
+microseconds per row; the row template is parsed once per template and not once per row.
+
+### Tests at scale
+
+The scale tests run in the normal `mise run //package/music-player/desktop-app:test` suite, including 1,000,000 tracks.
+`scale_library_tests.rs` generates the library; debug builds repeat a 100,000-track base so the suite stays short.
+`search_scale_tests.rs` times the index and `scale_tests.rs` times the window stages, each at 1,000, 10,000, 100,000
+and 1,000,000 tracks, and both print the median with the minimum and maximum of five runs in release builds.
+Run them with `--release` and `--no-capture` to read the numbers.
+
 ## Environment overrides
 
 `MUSIC_PLAYER_COLOR_SCHEME` forces the window's color scheme.
@@ -495,6 +642,17 @@ Set it to `light` or `dark`.
 Leave it unset to follow the operating system's scheme.
 Any other value is logged and ignored, so the window follows the system.
 Verification runs use it to capture both schemes without changing the host's theme.
+
+`MUSIC_PLAYER_ACCENT` replaces the system accent as the theme root.
+Set it to six hex digits such as `6060C0` or `#6060C0`.
+Leave it unset to follow the system accent.
+Any other value is logged and ignored.
+It sets `Theme.accent-override`, which previews and tests can also set (transparent follows the system).
+Verification runs use it to capture several accents without changing the host's theme.
+
+`MUSIC_PLAYER_SCAN_PAUSE_MS` makes the folder scan pause that many milliseconds after each reported batch.
+Leave it unset for normal speed; any value that is not a whole number is ignored.
+Verification runs use it to type into Search while the scan is still running.
 
 ## Typeface
 
@@ -641,12 +799,11 @@ ignore it.
  A freshly installed `.desktop` file may need one login cycle before the shell associates it.
 
 The same Slint XDG-portal watcher that supplies the dark/light colour scheme also reads
-`org.freedesktop.appearance accent-color` and live-updates on change,
- so the UI follows the system accent colour
-through the Slint palette with no extra wiring.
- When the desktop environment or portal exposes no accent-color
-setting,
- Slint falls back to its default accent,
+`org.freedesktop.appearance accent-color` and live-updates on change.
+ The app reads that accent through `SlintInternal.accent-color` (not through the Slint palette,
+ which keeps only its own lightness) and derives every theme colour from it in OKLCH, see "Theme colours" above.
+ When the desktop environment or portal exposes no accent-color setting,
+ Slint reports a transparent accent and the app uses its Fold baseline root instead,
  so the feature degrades gracefully rather than failing.
 
 The image installs `google-noto-sans-cjk-fonts`.

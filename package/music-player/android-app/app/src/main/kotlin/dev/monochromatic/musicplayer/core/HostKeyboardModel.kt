@@ -601,6 +601,8 @@ fun hostKeyRequestOf(press: HostKeyPress): ShortcutRequest = ShortcutRequest(
     owner = hostKeyOwnerOf(press.context),
     inPopup = press.context.menuOpen,
     inSearch = press.context.route == HostKeyRoute.SEARCH,
+    inWideSettings = (press.context.route == HostKeyRoute.SETTINGS || press.context.route == HostKeyRoute.EDITOR) &&
+        press.context.layout == HostKeyLayout.UNFOLDED,
     composing = false,
 )
 

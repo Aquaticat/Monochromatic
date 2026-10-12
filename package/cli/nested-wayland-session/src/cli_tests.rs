@@ -4,6 +4,8 @@
 use super::*;
 /// The startup scale shares its value type with the runtime `scale` verb.
 use crate::screen_geometry::OutputScale;
+/// The notification mode the new option selects.
+use crate::notification_mode::NotificationMode;
 
 /// Build owned parser arguments from borrowed test literals.
 fn args(values: &[&str]) -> Vec<String> {
@@ -186,4 +188,46 @@ fn launcher_log_flag_is_off_by_default_and_parses_alone() {
     assert!(config.launcher_log);
     assert_eq!(config.color_scheme, None);
     assert_eq!(config.child_command, ["app"]);
+}
+
+/// The notification mode is `none` by default and takes exactly the three documented values.
+#[test]
+fn notifications_option_defaults_to_none_and_takes_three_values() {
+    assert_eq!(parse_args(&args(&["app"])).unwrap().notifications, NotificationMode::None);
+    for (value, mode) in [
+        ("none", NotificationMode::None),
+        ("freedesktop", NotificationMode::Freedesktop),
+        ("kde", NotificationMode::Kde),
+    ] {
+        let config = parse_args(&args(&["--notifications", value, "--", "app"])).unwrap();
+        assert_eq!(config.notifications, mode, "{value}");
+        let joined = format!("--notifications={value}");
+        assert_eq!(parse_args(&args(&[&joined, "app"])).unwrap().notifications, mode, "{joined}");
+    }
+    for bad in ["", "plasma", "KDE", "freedesktop,kde"] {
+        let error = parse_args(&args(&["--notifications", bad, "app"])).err().expect("expected validation error");
+        assert!(error.to_string().contains("--notifications"), "{bad:?}: {error}");
+    }
+}
+
+/// The accent color is absent by default and takes six hexadecimal digits only.
+#[test]
+fn accent_color_option_takes_six_hex_digits() {
+    assert_eq!(parse_args(&args(&["app"])).unwrap().accent_color, None);
+    let config = parse_args(&args(&["--accent-color", "3584e4", "--", "app"])).unwrap();
+    assert_eq!(config.accent_color.map(|color| return color.to_string()), Some("3584E4".to_string()));
+    assert_eq!(config.color_scheme, None);
+    for bad in ["", "#3584E4", "3584E", "3584E4FF", "blue"] {
+        let error = parse_args(&args(&["--accent-color", bad, "app"])).err().expect("expected validation error");
+        let text = error.to_string();
+        assert!(text.contains("--accent-color") && text.contains("RRGGBB"), "{bad:?}: {text}");
+    }
+}
+
+/// The new options leave the child command alone, like every other parent option.
+#[test]
+fn new_options_stop_at_the_child_command() {
+    let config = parse_args(&args(&["--notifications", "kde", "app", "--notifications", "none"])).unwrap();
+    assert_eq!(config.notifications, NotificationMode::Kde);
+    assert_eq!(config.child_command, ["app", "--notifications", "none"]);
 }

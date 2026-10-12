@@ -133,82 +133,85 @@ Packages 1 and 2 are pure logic with an existing reference; the rest need the sc
   finished. A change is now done only after it has been driven in the running window (hover, press, keyboard, both color
   schemes, every screen), not when tests pass.
 
-## Handover: open work queue (2026-10-11 night)
+## Handover: open work queue (2026-10-12)
 
-This section is the canonical state for the next session. Read it, then `git log` on `feat/music-player-production`.
+This section is the canonical state for the next session. Read it, then `git log` on `feat/music-player-production`
+and the decisions D106 to D112 at the end of `package/music-player/design/decisions.md`.
 
 ### Working agreements set by the human
 
 - The human checks only `main`, and `main` is not sacred: merge as soon as tests, lints and clippy pass, and say plainly
-  what has not been driven in a window.
-- Use subagents for parallel work (Haiku by default; a Sonnet agent where the human asked for one). Do not start more than
-  can be verified; take items one at a time and keep this list current.
-- Polish standard: every clickable element has hover, pressed and pointer-cursor feedback; no copy or layout that a user would
-  call unfinished; verify by driving the real window (nested compositor: `package/cli/nested-wayland-session`, which may be
-  improved: bump its version and it auto-releases, then run `mise upgrade`).
+  what has not been driven in a window or on a device.
+- Subagents work in parallel, at most five at a time. Routing authority (2026-10-11): the orchestrator decides what goes
+  to Sonnet without proof; diagnosis, performance, integration and judgment work goes to Sonnet, mechanical work stays on
+  Haiku (`doc/limitation/haiku.md` records why). Every brief names `doc/troubleshooting/` as the first search and requires
+  real runs, not a linter, as the verdict. Early circuit breaker: when a strategy cannot fit a hard requirement, record
+  why and stop work on it.
+- Polish standard: every clickable element has hover, pressed and pointer-cursor feedback; no copy or layout that a user
+  would call unfinished; verify by driving the real window in the nested compositor
+  (`package/cli/nested-wayland-session`, 0.3.0 installed: notifications and Plasma job fakes, `--accent-color`,
+  `--launcher-log`, `--color-scheme`). A change is done only after it was driven the way a person uses it.
+- Emulator: launch it headfully, as its own systemd user unit, on the host GPU, no container, no `xvfb-run`, no
+  `-feature -Vulkan` (`doc/troubleshooting/android-emulator-37-software-renderer-sigsegv.md`, section "Working agent
+  launch"). The headless container launch failed for 2.8 hours. Never use `wm density`; change display size through
+  Settings (Display size or Developer options "Smallest width") and restore it. Always use a private copy of the owned AVD.
 - Scale: 1 000 artists and 1 000 000 tracks is normal operation (tests at 1M belong in the normal suite); above that is
-  unsupported. The real library to seed names from is `/home/user/Seafile/Plain/Music` (read only; 206 folders, 4262 files).
-- Never set the emulator display density with `wm density`; use the Settings app's Display size slider, or Developer options
-  "Smallest width", through the UI, and restore it.
-- Shortcuts: D106 in `package/music-player/design/decisions.md` (JetBrains style, key hints when modifiers are held,
-  double Shift opens Search on the player page only). Every shortcut needs an end-to-end test.
-- Never use the word "finished" for a UI until the user-eyes pass is clean; a Sonnet review found the first "final state"
-  was not.
+  unsupported. The real library to seed names from is `/home/user/Seafile/Plain/Music` (read only).
+- Colors: D108. The OS accent is the only platform color on both apps, every derived color is OKLCH.
+- Search: D111 (functional while scanning, hard requirement) and D112 (in-memory index, Turso search rejected after
+  measuring both of its mechanisms; open to the human's veto).
+- Settings: D109 (single full-width column on one canvas color, stock numbers, Material Symbols icons) and D110 (two
+  panes when wide: half each with the text out of the crease band on a device with a crease, the 0.3636 default ratio
+  without one; Back and Escape close).
+- Analysis progress: D107 (a system notification, never an in-app banner; a Plasma job on KDE).
+- `mise upgrade`: scope it to the tool (`mise upgrade <tool>`), and use `--before 0s` only for our own just-released crate.
+  A bare upgrade installs unrelated toolchains and rewrites `mise.lock` (it broke the builds once).
 
 ### Landed on `main`
 
-- Inter Variable font, thin LTO, `run-quick` task, Settings dividers removed, Folders panel no longer re-wraps,
-  tapped rail letter circled, deck title click, Search covers only the right pane when unfolded, "Open dir",
-  the unfolded folder pane heading shows the opened folder (Android: "MediaStore" for the system library).
+- Earlier: Inter font, thin LTO, `run-quick`, Settings dividers removed, stable Folders panel, rail tap circle, deck title
+  click, Search on the right pane only, "Open dir", library name heading.
+- This session: hover and pressed everywhere (desktop), deck heading and one-line controls, steady seek bar, list scrolls
+  only when asked; Slint 1.18.1 in three packages; every Rust crate and Android build dependency at the latest release
+  (Turso 0.8.2, jni 0.22, ringbuf 0.5, Gradle 9.8.1, AGP 9.4.1, Kotlin 2.4.21); the `branches` crate fix for the newest
+  nightly (`std` feature enabled in `truepeak-core`, see `doc/troubleshooting/floating-nightly-branches-crate-abort.md`);
+  the audio underrun meter, rtkit priority and no-wait track change; D107 on both platforms (the sweep has a pause gate,
+  the banner is gone); the desktop theme following the OS accent in OKLCH (`src/oklch.rs`, `src/theme_roles.rs`);
+  Android Settings per D109 and D110; the taskbar progress state machine (`launcher/taskbar_state.rs`);
+  nested compositor 0.3.0.
 
-### Committed on the branch, to merge to `main`
+### In flight when this was written
 
-- Desktop: StateLayer and hover, pressed and pointer feedback on every TouchArea; deck heading `folder / title` with two
-  click targets; one-line transport and mode control; steady seek bar (fixed-width time labels); mode control that slides
-  and fits one row at 443 px (segment padding 10); whole-pixel geometry; list scrolls only when asked (single scroll
-  offset and tick, startup reveal waits for the restored track, cancelled by any user action); Settings page in the stock
-  Android Settings look. 616 tests, clippy and slint lint pass.
-- Android: deck heading `folder / title`, one-line deck controls, list scrolls only when asked, Settings page in the stock
-  look. Detekt and unit tests pass. None of the Android work has been seen on a device since the Settings redesign.
+- Desktop Settings per D109 and D110 (also removes the Settings tint tokens from the theme).
+- Desktop Search on the in-memory index plus the 1M scale fixes (page and name caches, coalesced projections, 1M tests in
+  the normal suite, the D111 slow-scan test).
+- Android: theme from the system accent in OKLCH with a shared test vector against the Rust roles, and crease detection
+  through `androidx.window` `FoldingFeature` (the Settings work used the hinge sensor feature).
+- Engine position ahead of the audio by about 1.3 s (the ring buffer is counted as played); fix and tail integrity.
+- Check `git status` in the worktree `~/temp/agent/music-player-production` before assuming anything is committed: agents
+  leave uncommitted work and the orchestrator commits with explicit pathspecs.
 
-### In flight (agents; read their reports when they arrive)
+### Open, not started
 
-- Audio stutter under load: own worktree `~/temp/agent/audio-work`; maps the pipeline, adds an underrun counter, measures
-  on a silent null sink with CPU load in a capped unit, then fixes (analysis worker priority and count, ring depth,
-  output buffer size, real-time work in the callback).
-- Nested compositor 0.2.0: worktree `~/temp/agent/nws-work`; adds `move`, `button down|up`, `title`, `app-id`,
-  `launcher`, `launcher-log`, `launcher-clear`, `--launcher-log`. After review: merge to `main`, wait for the release,
-  `mise upgrade`.
-- Scale testing: worktree `~/temp/agent/scale-work`; generator `~/temp/agent/agent-scale/make-scale-library.ts`, pure-logic
-  scale tests desktop and Android, real-app measurements at 1M, bottleneck list (suspect: per-update O(N) work in
-  `view`/`pages`).
-- Stock Settings two-pane capture on the unfolded screen (first run saw one column only; second agent retries and may use
-  Developer options "Smallest width"). Output under `~/temp/agent/agent-settings-ref2/`.
-
-### Not started
-
-- Slint bump to 1.18.1 (latest on crates.io, 2026-09-21) in `file-enforcer.config.ts` (shared dependencies), the
-  per-crate `i-slint-backend-testing` pin, three lock files (music-player, desktop-app ide, desktop-app terminal), rename
-  `viewport-*` to `content-*`, check the ICU duplicate pins in `doc/troubleshooting/slint-parley-icu-cjk-segmentation.md`.
-  The `lint:slint` task uses `slint-viewer` 1.18.1 while the app compiles against 1.17, so it passed code that did not
-  build; make lint compile with the app's version.
-- Taskbar progress jumps (KDE LauncherEntry). Harness `~/temp/agent/taskbar-check/record.ts` records signals on a private
-  D-Bus session. The first run showed no `visible=true` signals; another agent had killed the instance and playback state
-  was unclear. Suspects: old position over the new duration at a track change, debounce dropping the visible signal.
-  Use the compositor `launcher-log` once released.
-- Turso full-text search instead of our matcher: Turso 0.8.2 is current (we pin 0.6); its repository has an FTS index
-  (`CREATE INDEX ... USING fts`, Tantivy based, `ngram` tokenizer). Check release status, CJK and one-character queries,
-  1M-row build and update cost, Android, and the peak cache file migration. Keep the highlighter and D58 to D74 on results.
-- Keyboard map and focus model (D106), key hint badges, double Shift, end-to-end runner as a package mise task.
-- Polish review packages (report in `~/temp/agent/agent-polish/`): clicks fall through Search, Settings and the editor to the
-  hidden player (severe); Escape does not leave Settings or the editor; scan bar and toasts cover controls and the scan
-  bar never animates; long names have no ellipsis; loose root tracks are bucketed under a letter and the deck labels
-  follow the browsed folder; first-run shows a dead deck; header heights and button styles are inconsistent; "time dBTP"
-  has no separator; developer wording in template errors; nothing reachable by Tab and no focus ring; many controls lack
-  accessible labels; no motion; contrast is low in places (a design question, D41).
-- Android clickable audit leftovers (`MainActivity.kt` legacy page tabs), the unexplained intermittent first-click miss on a
-  rail cell, an Android user-eyes pass, and the `AGENTS.md` proposal to tighten `VUB` (a UI is done only after it has been
-  driven the way a person uses it).
+- Android search on the same index (a Kotlin port or the shared Rust core behind JNI; Android runs the matcher inside
+  composition today, so it also has to move to a coroutine) and the D111 test on Android.
+- Keyboard map and focus model (D106), key hint badges, double Shift, an end-to-end runner as a package mise task.
+- Desktop hover and pressed states below AA in the old design (four, `#62`): darken the baseline primary by about 2 to 3
+  delta-E (orchestrator decision, open to veto).
+- Polish review packages (`~/temp/agent/agent-polish/`): clicks fall through Search, Settings and the editor to the hidden
+  player (severe); long names have no ellipsis; loose root tracks are bucketed under a letter and the deck labels follow
+  the browsed folder; first-run shows a dead deck; header heights and button styles are inconsistent; "time dBTP" has no
+  separator; developer wording in template errors; nothing reachable by Tab and no focus ring; many controls lack
+  accessible labels; no motion. Also an empty Folders pane seen once at 443 px with a persisted old session, stale
+  scan-indicator mentions in docs, `src/scan_indicator.rs` to delete after moving its count helper, stale 1.17 comments,
+  the README text about the old taskbar debounce, and the Rust comment blocks the repo's skill asks for.
+- Android native library: the newest nightly has no Android targets, so `mise` tasks that build it fail; the last build
+  used `RUSTUP_TOOLCHAIN=nightly-2026-09-22 cargo ndk`. It also grew about 24 percent through Turso's ICU dependency. The
+  human decides the toolchain target change.
+- An Android device pass of D107 (permission flow on API 33 and later, pause from the shade, removal), the unexplained
+  intermittent first-click miss on a rail cell, the `startIfNeeded` first-launch gap, and the `AGENTS.md` proposal to
+  tighten `VUB` (a UI is done only after it is driven) and to require the compositor for GUI verification runs.
+- Never verified: a real Plasma session, macOS, Windows.
 
 ## Queue
 

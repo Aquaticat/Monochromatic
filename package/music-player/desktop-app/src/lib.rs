@@ -201,6 +201,19 @@ pub mod thread_priority;
 pub mod playback;
 
 /// What:
+///      `pub mod playback_clock;` the audible playback clock (`src/playback_clock.rs`):
+///           position from the frames the output consumed,
+///  and the end-of-track drain decision.
+/// Why:
+///       Pure arithmetic kept apart so it is unit-tested without an audio device.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// export * as playbackClock from "./playbackClock";
+/// ```
+pub mod playback_clock;
+
+/// What:
 ///      `pub mod progress;` the progress-surface debounce helper module.
 /// Why:
 ///       The binary uses this pure,
@@ -323,6 +336,17 @@ pub mod watch;
 /// export * as pagination from "./pagination";
 /// ```
 pub mod pagination;
+
+/// What:
+///      `pub mod page_index;` the page index built once per library (`src/page_index.rs`).
+/// Why:
+///       The window reads the selected page from this index instead of regrouping every name on each projection.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// export * as pageIndex from "./page_index";
+/// ```
+pub mod page_index;
 
 /// What:
 ///      `pub mod relpath;` the relative-path display module (`src/relpath.rs`).
@@ -611,6 +635,94 @@ pub mod search_matcher;
 pub mod search_results;
 
 /// What:
+///      `pub mod search_index;` the in-memory Search index (`src/search_index.rs`).
+/// Why:
+///       D112 moves Search onto normalized names in memory with first-character buckets,
+///  so a keystroke tests a bucket instead of the whole library.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// export * as searchIndex from "./search_index";
+/// ```
+pub mod search_index;
+
+/// What:
+///      `mod search_index_text;` the text arena and title normalizer of the index (`src/search_index_text.rs`).
+/// Why:
+///       One buffer per list of names keeps a million names to a few allocations.
+mod search_index_text;
+
+/// What:
+///      `mod search_index_batch;` batch preparation for the index (`src/search_index_batch.rs`).
+/// Why:
+///       Normalization and key extraction run before the write lock is taken.
+mod search_index_batch;
+
+/// What:
+///      `mod search_index_rank;` the tier test and best-five-hundred selection (`src/search_index_rank.rs`).
+/// Why:
+///       Ranking needs integer keys first and string keys only for ties.
+mod search_index_rank;
+
+/// What:
+///      `mod search_index_top;` the single-character answer cache (`src/search_index_top.rs`).
+/// Why:
+///       A one-character query matches a large share of the library,
+///  so its answer is kept and merged with later tracks.
+mod search_index_top;
+
+/// What:
+///      `mod search_index_query;` query answering for the index (`src/search_index_query.rs`).
+/// Why:
+///       Keeps `SearchIndex::search` and row building apart from the index storage.
+mod search_index_query;
+
+/// What:
+///      `pub mod search_service;` the Search worker thread, append path and refresh signal (`src/search_service.rs`).
+/// Why:
+///       D111 and D112 need queries answered off the window thread while a scan appends tracks under a short lock.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// export * as searchService from "./search_service";
+/// ```
+pub mod search_service;
+
+/// What:
+///      `mod search_worker;` the threads behind the Search service (`src/search_worker.rs`).
+/// Why:
+///       Keeps the query worker and the warm-up thread apart from the public handle.
+mod search_worker;
+
+/// What:
+///      `mod search_stream;` the thread that appends streamed scan batches (`src/search_stream.rs`).
+/// Why:
+///       The engine thread only hands names over; preparing and pushing them happen here.
+mod search_stream;
+
+/// What:
+///      `pub mod search_feed;` feeding a whole library into the Search service (`src/search_feed.rs`).
+/// Why:
+///       A library that arrives as one list must reach the index in batches, off the window thread.
+pub mod search_feed;
+
+/// What:
+///      `pub(crate) mod scan_stream;` the folder walk that reports tracks while it walks (`src/scan_stream.rs`).
+/// Why:
+///       D111: Search must work while the library is still being scanned, so the walk hands out batches as it goes.
+pub(crate) mod scan_stream;
+
+/// Synthetic libraries for the scale tests (`src/scale_library_tests.rs`), compiled for tests only.
+#[cfg(test)]
+#[path = "scale_library_tests.rs"]
+mod scale_library_tests;
+
+/// Search index scale tests (`src/search_scale_tests.rs`): 1,000 to 1,000,000 tracks.
+#[cfg(test)]
+#[path = "search_scale_tests.rs"]
+mod search_scale_tests;
+
+/// What:
 ///      `pub mod search_page_model;` the search page's view model (`src/search_page_model.rs`).
 /// Why:
 ///       One pure builder turns the query and results into the rows and states the page draws.
@@ -673,6 +785,10 @@ pub mod feedback;
 /// Why: the rows and the deck read these values through the template fields.
 pub mod track_measure;
 
+/// What: `pub(crate) mod track_measure_page;` the in-place measure writer and the page lookup.
+/// Why: they live beside `track_measure`, which re-exports them, to keep that file short.
+pub(crate) mod track_measure_page;
+
 /// What: `pub mod duration_probe;` reads a file length from its container header.
 /// Why: rows show lengths before the slow true-peak measurement finishes.
 pub mod duration_probe;
@@ -688,6 +804,18 @@ pub mod sweep_report;
 /// What: `pub mod color_scheme;` the environment override of the window color scheme.
 /// Why: verification runs need a fixed light or dark window.
 pub mod color_scheme;
+
+/// What: `pub mod oklch;` OKLCH color math, gamut mapping and WCAG contrast (D108).
+/// Why: every derived theme color is computed there, in one pure place.
+pub mod oklch;
+
+/// What: `pub mod accent_override;` the environment override of the theme root color.
+/// Why: renders and verification runs need a deterministic accent.
+pub mod accent_override;
+
+/// What: `pub mod theme_roles;` the theme roles derived from one root color (A3, D108).
+/// Why: the accent-following palette and its contrast guarantee are pure logic that is unit-tested.
+pub mod theme_roles;
 
 /// What: `pub mod controller_measures;` the controller side of the per-track measures.
 /// Why: sweep reports are filtered by queue generation there, before they reach the window.
@@ -722,3 +850,15 @@ pub mod analysis_notification_wire;
 /// What: `pub mod analysis_notification;` the analysis indicator's handle and its D-Bus thread (D107).
 /// Why: the system notification replaces the in-app banner; off Linux the handle does nothing.
 pub mod analysis_notification;
+
+/// What:
+///      `pub mod settings_layout;` the Settings page's layout numbers (`src/settings_layout.rs`).
+/// Why:
+///       The pane widths and row geometry of D109 and D110 live once as pure functions,
+///  and the window tests compare the real layout with them.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// export * as settingsLayout from "./settings_layout";
+/// ```
+pub mod settings_layout;

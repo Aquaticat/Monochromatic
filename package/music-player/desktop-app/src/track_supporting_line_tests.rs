@@ -94,3 +94,21 @@ fn one_function_reads_each_track_it_is_given() {
     assert_eq!(line(&analysed()), Some("Another Xronixle".to_string()));
     assert_eq!(line(&waiting()), Some("Exit This Earth's Atomosphere".to_string()));
 }
+
+// What:     Parsing the template once gives the lines that parsing it for every track gave.
+// Why:      The function parses when it is built so a page of thirty thousand rows does not parse thirty thousand times;
+//           the result for each template and track, including refused and blank ones, must be the one `evaluate_template` gives.
+#[test]
+fn parsing_once_gives_what_parsing_per_track_gave() {
+    let fields = track_template_fields();
+    for template in [DEFAULT_TRACK_TEMPLATE, "$mi(title)$ / $mi(folder)$", "$nosuch(mi(title))$", "", "plain text", "$tf(mi(len), m:ss)$"] {
+        let line = supporting_line_from_template(template);
+        for track in [analysed(), waiting(), bare()] {
+            let expected: Option<String> = match crate::template_eval::evaluate_template(template, &track, &fields) {
+                TemplateResult::Shown(text) => Some(text.trim().to_string()).filter(|trimmed| return !trimmed.is_empty()),
+                TemplateResult::Refused(_) => None,
+            };
+            assert_eq!(line(&track), expected, "template {template:?}");
+        }
+    }
+}

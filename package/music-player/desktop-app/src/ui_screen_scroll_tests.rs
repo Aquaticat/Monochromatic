@@ -1,8 +1,7 @@
 //! Tests for the scroll request rules in `ui_screen_scroll`.
 
 use super::*;
-use crate::ui_screen_view::{pages, view};
-use music_player::pagination::page_identity;
+use crate::ui_screen_view::view;
 use music_player::template_model::TrackFields;
 
 /// What: `no_supporting_line` is the supporting-line function that never shows text.
@@ -26,7 +25,7 @@ fn list_row(kind: i32, supporting: &str, current: bool) -> ListRow {
 /// Why: the scroll cases need only the queue, the playing index and the request fields.
 fn state_with_queue(names: &[&str], current: Option<usize>) -> ScreenState {
     return ScreenState {
-        names: names.iter().map(|name| return name.to_string()).collect(),
+        names: std::sync::Arc::new(names.iter().map(|name| return name.to_string()).collect()),
         current_index: current,
         ..ScreenState::default()
     };
@@ -264,7 +263,7 @@ fn changing_the_playing_track_alone_requests_nothing() {
 fn changing_the_selected_page_scrolls_to_the_top() {
     let mut state = state_with_queue(&["Abba/one.mp3", "Beta/two.mp3"], None);
     assert_eq!(project_once(&mut state), Some(ScrollRequest::PlayingRow));
-    let beta_key = page_identity(&pages(&state)[1]);
+    let beta_key = state.current_pages().page(1).map(|page| return page.identity.clone()).unwrap_or_default();
     state.selected_key = beta_key;
     assert_eq!(project_once(&mut state), Some(ScrollRequest::Top));
     assert_eq!(project_once(&mut state), None);
@@ -274,7 +273,7 @@ fn changing_the_selected_page_scrolls_to_the_top() {
 fn empty_projections_leave_the_first_reveal_for_the_first_rows() {
     let mut state = state_with_queue(&[], None);
     assert_eq!(project_once(&mut state), None);
-    state.names = vec!["Abba/one.mp3".to_string(), "Abba/two.mp3".to_string()];
+    state.names = std::sync::Arc::new(vec!["Abba/one.mp3".to_string(), "Abba/two.mp3".to_string()]);
     state.current_index = Some(1);
     assert_eq!(project_once(&mut state), Some(ScrollRequest::PlayingRow));
 }
@@ -283,7 +282,7 @@ fn empty_projections_leave_the_first_reveal_for_the_first_rows() {
 fn explicit_request_wins_over_a_page_change_and_is_cleared() {
     let mut state = state_with_queue(&["Abba/one.mp3", "Beta/two.mp3"], None);
     assert_eq!(project_once(&mut state), Some(ScrollRequest::PlayingRow));
-    let beta_key = page_identity(&pages(&state)[1]);
+    let beta_key = state.current_pages().page(1).map(|page| return page.identity.clone()).unwrap_or_default();
     state.selected_key = beta_key;
     state.scroll_request = Some(ScrollRequest::PlayingFolder);
     assert_eq!(project_once(&mut state), Some(ScrollRequest::PlayingFolder));

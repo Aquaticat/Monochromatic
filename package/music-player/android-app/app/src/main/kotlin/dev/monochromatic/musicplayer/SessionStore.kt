@@ -126,6 +126,17 @@ object SessionStore {
     /** Persisted flag that this app has already asked Android for music access. */
     private const val KEY_AUDIO_ACCESS_REQUESTED: String = "audio_access_requested"
 
+    // What:     `private const val KEY_NOTIFICATION_ACCESS_REQUESTED: String = "notification_access_requested"` names
+    //           the flag that records the one notification permission ask.
+    // Why:      D107 asks for the notification permission once, so a denial must still be remembered.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const KEY_NOTIFICATION_ACCESS_REQUESTED = "notification_access_requested";
+    // ```
+    /** Preference key of the flag that records that the app asked for the notification permission. */
+    private const val KEY_NOTIFICATION_ACCESS_REQUESTED: String = "notification_access_requested"
+
     // What:     `private const val KEY_TEMPLATE_PREFIX: String = "template_"` starts each template's preference key.
     // Why:      Each template kind keeps its own text, so its key is this prefix followed by the kind's name.
     //
@@ -264,6 +275,33 @@ object SessionStore {
     fun saveAudioAccessRequested(context: Context, requested: Boolean) {
         prefs(context).edit {
             putBoolean(KEY_AUDIO_ACCESS_REQUESTED, requested)
+        }
+    }
+
+    // What:     `fun loadNotificationAccessRequested(context: Context): Boolean` reads the notification ask flag.
+    // Why:      The analysis asks for the notification permission once, so a missing flag means not asked yet.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // function loadNotificationAccessRequested(context: Context): boolean { return storage.getBoolean(KEY, false); }
+    // ```
+    /** Returns whether this app has already shown the notification permission prompt, or false when unsaved. */
+    fun loadNotificationAccessRequested(context: Context): Boolean =
+        prefs(context).getBoolean(KEY_NOTIFICATION_ACCESS_REQUESTED, false)
+
+    // What:     `fun saveNotificationAccessRequested(context: Context, requested: Boolean)` writes the ask flag.
+    // Why:      The flag is written before the prompt opens, so a denial or a process death never asks again.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // function saveNotificationAccessRequested(context: Context, requested: boolean): void {
+    //   storage.setBoolean(KEY, requested);
+    // }
+    // ```
+    /** Records whether this app has shown the notification permission prompt. */
+    fun saveNotificationAccessRequested(context: Context, requested: Boolean) {
+        prefs(context).edit {
+            putBoolean(KEY_NOTIFICATION_ACCESS_REQUESTED, requested)
         }
     }
 

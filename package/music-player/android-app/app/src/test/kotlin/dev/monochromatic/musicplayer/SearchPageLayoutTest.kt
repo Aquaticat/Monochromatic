@@ -18,15 +18,6 @@ package dev.monochromatic.musicplayer
 // ```
 import androidx.compose.ui.graphics.Color
 
-// What:     `import androidx.compose.ui.graphics.luminance` reads the relative brightness of a color.
-// Why:      The dark fill must be darker than its accent and the light fill lighter, which luminance compares.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// const luminance = (c: Color) => c.luminance();
-// ```
-import androidx.compose.ui.graphics.luminance
-
 // What:     `import androidx.compose.ui.text.buildAnnotatedString` builds the highlighted text under test.
 // Why:      The span count and text are read from the same annotated string the page draws.
 //
@@ -120,7 +111,7 @@ private fun searchTrackFixture(name: String, index: Int): SearchResult = SearchR
 // ```ts
 // describe("SearchPage layout", () => { /* cases */ });
 // ```
-/** Verifies the crease conversion, the OKLCH match fill, the row keys, and the highlight spans of the Search page. */
+/** Verifies the crease conversion, the row keys, and the highlight spans of the Search page. */
 class SearchPageLayoutTest {
     // What:     `@Test fun creaseHalfMatchesPhysicalPixelsAtUnitDensity()` checks the crease at density one.
     // Why:      At one pixel per dp the half crease equals its physical pixel count, which fixes the conversion.
@@ -134,7 +125,7 @@ class SearchPageLayoutTest {
     fun creaseHalfMatchesPhysicalPixelsAtUnitDensity() {
         /** Expected half crease in physical pixels from the published panel width. */
         val expected: Float = 7.5f / 141.08f * 2076f / 2f
-        assertEquals(expected, searchCreaseHalfDp(1f), 0.001f)
+        assertEquals(expected, searchCreaseHalfDp(1f, creaseWidthPx = 0f), 0.001f)
     }
 
     // What:     `@Test fun creaseHalfShrinksInDpAsDensityGrows()` checks the density scaling.
@@ -147,7 +138,19 @@ class SearchPageLayoutTest {
     /** Doubling the density halves the crease in dp, so the clear zone is physical, not fixed in dp (E2). */
     @Test
     fun creaseHalfShrinksInDpAsDensityGrows() {
-        assertEquals(searchCreaseHalfDp(1f) / 2f, searchCreaseHalfDp(2f), 0.001f)
+        assertEquals(
+            searchCreaseHalfDp(1f, creaseWidthPx = 0f) / 2f,
+            searchCreaseHalfDp(2f, creaseWidthPx = 0f),
+            0.001f,
+        )
+    }
+
+    /** A window without a crease keeps no clearance, and a wider reported crease governs over the 7.5 mm floor. */
+    @Test
+    fun creaseHalfIsZeroWithoutACreaseAndFollowsAWiderReportedOne() {
+        assertEquals(0f, searchCreaseHalfDp(1f, creaseWidthPx = null), 0f)
+        assertEquals(150f, searchCreaseHalfDp(1f, creaseWidthPx = 300f), 0.001f)
+        assertEquals(75f, searchCreaseHalfDp(2f, creaseWidthPx = 300f), 0.001f)
     }
 
     // What:     `@Test fun creaseHalfRejectsNonPositiveDensity()` checks the failure path.
@@ -161,54 +164,8 @@ class SearchPageLayoutTest {
     @Test
     fun creaseHalfRejectsNonPositiveDensity() {
         assertThrows(SearchLayoutException::class.java) {
-            searchCreaseHalfDp(0f)
+            searchCreaseHalfDp(0f, creaseWidthPx = 0f)
         }
-    }
-
-    // What:     `@Test fun darkMatchFillIsDarkerThanAccent()` checks the dark-scene fill.
-    // Why:      D59 darkens the accent in dark mode, so the fill must be darker than the accent.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // test("dark fill darker", () => { /* ... */ });
-    // ```
-    /** The dark-scene fill has less luminance than the accent it is derived from. */
-    @Test
-    fun darkMatchFillIsDarkerThanAccent() {
-        /** Mid-brightness blue accent used as the theme primary in the check. */
-        val accent: Color = Color(0xFF3366CC)
-        assertTrue(searchMatchFill(accent, darkScene = true).luminance() < accent.luminance())
-    }
-
-    // What:     `@Test fun lightMatchFillIsLighterThanAccent()` checks the light-scene fill.
-    // Why:      D59 lightens the accent in light mode, so the fill must be lighter than the accent.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // test("light fill lighter", () => { /* ... */ });
-    // ```
-    /** The light-scene fill has more luminance than the accent it is derived from. */
-    @Test
-    fun lightMatchFillIsLighterThanAccent() {
-        /** Mid-brightness blue accent used as the theme primary in the check. */
-        val accent: Color = Color(0xFF3366CC)
-        assertTrue(searchMatchFill(accent, darkScene = false).luminance() > accent.luminance())
-    }
-
-    // What:     `@Test fun matchFillIsOpaque()` checks the fill's alpha.
-    // Why:      The highlight must paint solid behind the text, not let the row show through.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // test("fill opaque", () => { /* ... */ });
-    // ```
-    /** The emphasis fill is fully opaque in both scenes. */
-    @Test
-    fun matchFillIsOpaque() {
-        /** Blue accent whose alpha is one before the fill is derived. */
-        val accent: Color = Color(0xFF3366CC)
-        assertEquals(1f, searchMatchFill(accent, darkScene = true).alpha, 0.001f)
-        assertEquals(1f, searchMatchFill(accent, darkScene = false).alpha, 0.001f)
     }
 
     // What:     `@Test fun folderAndTrackWithSameNameHaveDistinctKeys()` checks key separation by kind.

@@ -8,129 +8,79 @@
 //!  the queue is the scan of the root,
 //!  so any change just means "rescan".
 //! See `doc/decision/music-player-live-update-rescan.md`.
+//!
+//! Registering the watch walks every directory of the root, which took 28 to 45 seconds at one million tracks, so it
+//! runs on its own thread and `watch` only sends a request. Events are debounced here, not by a library, because the
+//! library cannot tell a read of a directory from a change to it, and the rescan's own walk reads every directory.
 
-/// What:
-///      `use std::path::{Path, PathBuf};`.
-///  Borrowed path view and owned path buffer.
-/// Why:
-///       `watch` takes a borrowed `&Path`;
-///  the currently-watched root is stored owned.
-///
-/// In TS you'd write (pseudocode):
-/// ```ts
-/// type Path = string;
-/// ```
+/// Path types for the watched root.
 use std::path::{Path, PathBuf};
 
-/// What:
-///      `use std::time::Duration;`.
-///  A span of time.
-/// Why:
-///       The debounce window is a `Duration`.
-///
-/// In TS you'd write (pseudocode):
-/// ```ts
-/// // a number of milliseconds
-/// ```
-use std::time::Duration;
+/// Time spans and clocks for the debounce window.
+use std::time::{Duration, Instant};
+
+/// Channels, a shared counter with its wake-up, and the two threads.
+use std::sync::{Arc, Condvar, Mutex, mpsc};
+use std::thread;
 
 /// What:
-///      `use notify_debouncer_mini::{new_debouncer, DebounceEventResult, Debouncer};`.
-///           The constructor,
-///  the handler's argument type,
-///  and the guard type.
+///      `use notify_debouncer_mini::notify::{...};`.
+///  The raw watcher, its event type and the recursive mode, from the `notify` crate the debouncer re-exports.
 /// Why:
-///       Build a debounced recursive watcher whose handler we drive.
-///
-/// In TS you'd write (pseudocode):
-/// ```ts
-/// import { newDebouncer, type DebounceEventResult, type Debouncer } from "notify-debouncer-mini";
-/// ```
-use notify_debouncer_mini::{new_debouncer, DebounceEventResult, Debouncer};
-
-/// What:
-///      `use notify_debouncer_mini::notify::{RecommendedWatcher, RecursiveMode};`.
-///           The platform-default watcher type and the recursive-mode enum.
-///  The
-///           `watch`/`unwatch` methods reached via `Debouncer::watcher()` resolve without
-///           importing the `Watcher` trait here.
-/// Why:
-///       `RecommendedWatcher` is the `Debouncer`'s type parameter;
-///  `RecursiveMode`
-///           selects a deep watch.
-///
-/// In TS you'd write (pseudocode):
-/// ```ts
-/// import { RecommendedWatcher, RecursiveMode } from "notify";
-/// ```
-use notify_debouncer_mini::notify::{RecommendedWatcher, RecursiveMode};
+///       Events are filtered by kind before they count as a change, which the debouncer's own events do not allow.
+use notify_debouncer_mini::notify::{Event, RecommendedWatcher, RecursiveMode, Watcher, recommended_watcher};
 
 /// What:
 ///      `const DEBOUNCE_MS: u64 = 500;`.
-///  The debounce window in milliseconds.
+///  The quiet time after the last change before a rescan is requested.
 /// Why:
-///       Coalesce bursts (copying an album,
-///  an editor's atomic-rename temp files) into
-///           one rescan instead of one per raw event.
-///  Named (not an inline literal) per the
-///           magic-number rule.
-///
-/// In TS you'd write (pseudocode):
-/// ```ts
-/// const DEBOUNCE_MS = 500;
-/// ```
+///       Coalesce bursts (copying an album, an editor's atomic-rename temp files) into one rescan.
 const DEBOUNCE_MS: u64 = 500;
 
 /// What:
-///      `pub(crate) struct SourceWatcher { ... }`.
-///  Owns the debouncer (a guard that
-///           stops its background thread on drop) and remembers which root is watched.
+///      `const MAX_DEBOUNCE_MS: u64 = 5_000;`.
+///  The longest a rescan is put off while changes keep arriving.
 /// Why:
-///       The controller holds one of these and re-points it whenever the Source Root
-///           changes;
-///  dropping it (on quit) tears the watcher down.
+///       A long copy must still refresh the library now and then, instead of only once it ends.
+const MAX_DEBOUNCE_MS: u64 = 5_000;
+
+/// What:
+///      `enum WatchRequest { Watch(PathBuf), Stop }`.
+///  The two things the registration thread is asked to do.
+/// Why:
+///       The caller only sends a request, so it never waits for a registration.
+enum WatchRequest {
+    /// Watch this root recursively, after unwatching the previous one.
+    Watch(PathBuf),
+    /// Stop the thread.
+    Stop,
+}
+
+/// What:
+///      `pub(crate) struct SourceWatcher { requests, registered }`.
+///  A handle to the registration thread, which owns the raw watcher.
+/// Why:
+///       The controller holds one of these and re-points it whenever the Source Root changes. The engine thread must
+///  not wait for the OS watch to be registered: at one million tracks that wait came before the first folder was scanned.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// class SourceWatcher { debouncer: Debouncer; watched: string | null; }
+/// class SourceWatcher { requests: Channel<WatchRequest>; registered: Counter; }
 /// ```
 pub(crate) struct SourceWatcher {
-    /// What:
-    ///      `debouncer: Debouncer<RecommendedWatcher>`.
-    ///  The debounced watcher guard.
-    /// Why:
-    ///       Kept alive so its background thread keeps delivering events;
-    ///  dropping it
-    ///           stops the watch.
-    ///
-    /// In TS you'd write (pseudocode):
-    /// ```ts
-    /// debouncer: Debouncer;
-    /// ```
-    debouncer: Debouncer<RecommendedWatcher>,
-    /// What:
-    ///      `watched: Option<PathBuf>`.
-    ///  The currently-watched root (`Some`),
-    ///  or `None`.
-    /// Why:
-    ///       `watch` unwatches this before watching a new root,
-    ///  so only one root is ever
-    ///           watched at a time.
-    ///
-    /// In TS you'd write (pseudocode):
-    /// ```ts
-    /// watched: string | null;
-    /// ```
-    watched: Option<PathBuf>,
+    /// Requests to the registration thread.
+    requests: mpsc::Sender<WatchRequest>,
+    /// How many watches the thread has finished registering, with the condition variable that announces each one.
+    /// Only tests wait for it.
+    #[cfg(test)]
+    registered: Arc<(Mutex<u64>, Condvar)>,
 }
 
 /// What:
 ///      `impl SourceWatcher { ... }`.
 ///  The constructor and the re-point method.
 /// Why:
-///       Two operations:
-///  create the debouncer,
-///  and watch a given root.
+///       Create the watcher and its two threads, and watch a given root.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -138,18 +88,11 @@ pub(crate) struct SourceWatcher {
 /// ```
 impl SourceWatcher {
     /// What:
-    ///      `pub(crate) fn new<F>(on_change: F) -> Option<SourceWatcher> where F: Fn() + Send + 'static`.
-    ///           Build the debouncer whose handler calls `on_change` on any change;
-    ///  `None` if
-    ///           the OS watcher cannot be created.
+    ///      `pub(crate) fn new<F>(on_change: F) -> Option<SourceWatcher>`.
+    ///  Create the watcher, the debounce thread that calls `on_change`, and the registration thread, or `None`
+    ///  when the OS watcher cannot start.
     /// Why:
-    ///       The watcher stays ignorant of the engine:
-    ///  the caller passes a closure (which
-    ///           in the app enqueues `Command::Rescan` and wakes the worker),
-    ///  keeping this
-    ///           module dependency-free and unit-testable.
-    ///  The app must still run (without live
-    ///           updates) if the watcher fails to start.
+    ///       The watcher is created here so a failure is reported to the caller, then moved to its thread.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -159,103 +102,144 @@ impl SourceWatcher {
     where
         F: Fn() + Send + 'static,
     {
-        // What:     `let debouncer = new_debouncer(Duration::from_millis(DEBOUNCE_MS), move |result| { ... }).ok()?;`.
-        //           Create the debouncer with our window and a `move` handler that owns
-        //           `on_change`. `.ok()?` turns a creation error into `None` (early return).
-        // Why:      The handler runs on the watcher's own thread, so the captured closure must
-        //           be `Send + 'static`; any event batch triggers `on_change`.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // const debouncer = newDebouncer(DEBOUNCE_MS, (result) => { ... });
-        // ```
-        let debouncer = new_debouncer(
-            Duration::from_millis(DEBOUNCE_MS),
-            move |result: DebounceEventResult| {
-                // What:     `match result { Ok(events) if events.is_empty() => {}, _ => on_change() }`.
-                //           An empty `Ok` batch is ignored; any non-empty batch OR an error
-                //           (which may mean events were dropped) calls `on_change`.
-                // Why:      We do not interpret the events; the callback reconciles the queue
-                //           with whatever is on disk now.
-                //
-                // In TS you'd write (pseudocode):
-                // ```ts
-                // if (!result.ok || result.events.length) onChange();
-                // ```
-                match result {
-                    Ok(events) if events.is_empty() => {}
-                    _ => on_change(),
-                }
-            },
-        )
-        .ok()?;
-        // What:     `Some(SourceWatcher { debouncer, watched: None })`. Wrap the new watcher;
-        //           nothing is watched yet.
-        // Why:      The controller calls `watch` once a Source Root is known.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // return { debouncer, watched: null };
-        // ```
-        return Some(SourceWatcher {
-            debouncer,
-            watched: None,
+        let (changes, quiet_for) = mpsc::channel::<()>();
+        let catch_up: mpsc::Sender<()> = changes.clone();
+        let watcher: RecommendedWatcher = recommended_watcher(move |result: notify_debouncer_mini::notify::Result<Event>| {
+            if counts_as_change(&result) {
+                let _sent = changes.send(());
+            }
         })
+        .ok()?;
+        let (requests, inbox) = mpsc::channel::<WatchRequest>();
+        let registered: Arc<(Mutex<u64>, Condvar)> = Arc::new((Mutex::new(0), Condvar::new()));
+        let thread_registered: Arc<(Mutex<u64>, Condvar)> = Arc::clone(&registered);
+        let _debounce = thread::spawn(move || debounce_loop(quiet_for, on_change));
+        let _registration = thread::spawn(move || watch_loop(watcher, inbox, thread_registered, catch_up));
+        return Some(SourceWatcher {
+            requests,
+            #[cfg(test)]
+            registered,
+        });
     }
 
     /// What:
     ///      `pub(crate) fn watch(&mut self, root: &Path)`.
-    ///  Watch `root` recursively,
-    ///           after unwatching any previously-watched root.
+    ///  Ask the registration thread to watch `root` recursively, after unwatching any previously-watched root,
+    ///  and return at once.
     /// Why:
-    ///       Re-point the single watch when the Source Root changes (open,
-    ///  restore).
+    ///       Re-point the single watch when the Source Root changes (open, restore).
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
-    /// watch(root: string): void { ... }
+    /// watch(root: string): void { this.requests.send({ kind: "watch", root }); }
     /// ```
     pub(crate) fn watch(&mut self, root: &Path) {
-        // What:     `if let Some(prev) = self.watched.take() { let _ = self.debouncer.watcher().unwatch(&prev); }`.
-        //           `take()` removes and yields the previous root; `unwatch` stops watching
-        //           it (errors are ignored: the path may already be gone).
-        // Why:      Only the current root should be watched.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // if (this.watched) { try { this.debouncer.watcher().unwatch(this.watched); } catch {} }
-        // ```
-        if let Some(prev) = self.watched.take() {
-            let _ = self.debouncer.watcher().unwatch(&prev);
+        tracing::info!(root = %root.display(), "watch requested; the registration thread registers it");
+        let _sent = self.requests.send(WatchRequest::Watch(root.to_path_buf()));
+    }
+
+    /// What:
+    ///      `pub(crate) fn wait_until_registered(&self, count: u64, patience: Duration) -> bool`.
+    ///  Wait until the thread has finished registering `count` watches.
+    /// Why:
+    ///       A change made before the registration finishes is not seen, so tests that change files wait for it first.
+    #[cfg(test)]
+    pub(crate) fn wait_until_registered(&self, count: u64, patience: Duration) -> bool {
+        let (finished, wake) = &*self.registered;
+        let before = finished.lock().unwrap_or_else(std::sync::PoisonError::into_inner);
+        let (after, _timeout) = wake
+            .wait_timeout_while(before, patience, |done| return *done < count)
+            .unwrap_or_else(std::sync::PoisonError::into_inner);
+        return *after >= count;
+    }
+}
+
+/// Teardown of `SourceWatcher`.
+impl Drop for SourceWatcher {
+    /// What:
+    ///      `fn drop(&mut self)`.
+    ///  Ask the registration thread to stop, without waiting for it.
+    /// Why:
+    ///       A registration still running would hold shutdown for as long as it takes; the thread ends when it is done,
+    ///  and its watcher closing ends the debounce thread.
+    fn drop(&mut self) {
+        let _sent = self.requests.send(WatchRequest::Stop);
+    }
+}
+
+/// What:
+///      `fn counts_as_change(result: &notify::Result<Event>) -> bool`.
+///  Whether a raw event means the library may have changed: any error, and any event that is not an access.
+/// Why:
+///       Reading a directory (the rescan's own walk does it) raises open and close events. Counting them made every
+///  rescan request another one, a loop that kept a core busy at one million tracks.
+fn counts_as_change(result: &notify_debouncer_mini::notify::Result<Event>) -> bool {
+    return match result {
+        Ok(event) => !event.kind.is_access(),
+        Err(_) => true,
+    };
+}
+
+/// What:
+///      `fn debounce_loop(quiet_for, on_change)`.
+///  The debounce thread: after a change it waits for `DEBOUNCE_MS` without another (at most `MAX_DEBOUNCE_MS`),
+///  then calls `on_change` once.
+/// Why:
+///       A burst of events becomes one rescan, and a continuous one still produces a rescan every few seconds.
+fn debounce_loop<F: Fn()>(quiet_for: mpsc::Receiver<()>, on_change: F) {
+    while quiet_for.recv().is_ok() {
+        let first: Instant = Instant::now();
+        loop {
+            let waited: Duration = first.elapsed();
+            let patience: Duration = Duration::from_millis(DEBOUNCE_MS).min(Duration::from_millis(MAX_DEBOUNCE_MS).saturating_sub(waited));
+            if patience.is_zero() {
+                break;
+            }
+            match quiet_for.recv_timeout(patience) {
+                Ok(()) => {}
+                Err(mpsc::RecvTimeoutError::Timeout) => break,
+                Err(mpsc::RecvTimeoutError::Disconnected) => return,
+            }
         }
-        // What:     `match self.debouncer.watcher().watch(root, RecursiveMode::Recursive) { ... }`.
-        //           Start a deep watch; on success remember the root, on failure log it.
-        // Why:      Record the watched root so the next `watch` can unwatch it; a failed
-        //           watch must not pretend it succeeded.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // try { this.debouncer.watcher().watch(root, "recursive"); this.watched = root; }
-        // catch (e) { console.error(e); }
-        // ```
-        match self.debouncer.watcher().watch(root, RecursiveMode::Recursive) {
-            // What:     `Ok(()) => self.watched = Some(root.to_path_buf())`. Remember it.
-            // Why:      So a later re-point unwatches this exact root.
-            //
-            // In TS you'd write (pseudocode):
-            // ```ts
-            // this.watched = root;
-            // ```
-            Ok(()) => self.watched = Some(root.to_path_buf()),
-            // What:     `Err(e) => tracing::warn!(...)`. Log and leave `watched` as `None`.
-            // Why:      Live updates silently degrade if the OS watch cannot start.
-            //
-            // In TS you'd write (pseudocode):
-            // ```ts
-            // logger.warn("watch failed for", root, e);
-            // ```
-            Err(e) => tracing::warn!(root = %root.display(), error = %e, "watch failed"),
+        tracing::debug!(waited_ms = first.elapsed().as_millis(), "source change settled; a rescan is requested");
+        on_change();
+    }
+}
+
+/// What:
+///      `fn watch_loop(watcher, inbox, registered, catch_up)`.
+///  The registration thread: registers each requested root, counts it, and asks for one rescan once it is registered.
+/// Why:
+///       Keeps the slow recursive registration off the engine thread. A change made while the registration was still
+///  running (28 seconds at one million tracks, after the scan had finished) was not seen by the watch, so one rescan
+///  after the registration catches it up. It cannot start a loop, because the rescan's own reads are not changes.
+fn watch_loop(
+    mut watcher: RecommendedWatcher,
+    inbox: mpsc::Receiver<WatchRequest>,
+    registered: Arc<(Mutex<u64>, Condvar)>,
+    catch_up: mpsc::Sender<()>,
+) {
+    let mut watched: Option<PathBuf> = None;
+    for request in inbox {
+        let root: PathBuf = match request {
+            WatchRequest::Watch(root) => root,
+            WatchRequest::Stop => return,
+        };
+        if let Some(previous) = watched.take() {
+            let _unwatched = watcher.unwatch(&previous);
         }
+        let started: Instant = Instant::now();
+        match watcher.watch(&root, RecursiveMode::Recursive) {
+            Ok(()) => {
+                tracing::info!(root = %root.display(), elapsed_ms = started.elapsed().as_millis(), "watch registered; one rescan catches up");
+                watched = Some(root);
+                let _sent = catch_up.send(());
+            }
+            Err(error) => tracing::warn!(root = %root.display(), error = %error, "watch failed"),
+        }
+        let (finished, wake) = &*registered;
+        *finished.lock().unwrap_or_else(std::sync::PoisonError::into_inner) += 1;
+        wake.notify_all();
     }
 }
 

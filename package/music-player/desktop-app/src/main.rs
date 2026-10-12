@@ -65,7 +65,11 @@ mod ui_screen;
 
 mod ui_screen_rows;
 
+mod ui_screen_pages;
+
 mod ui_screen_scroll;
+
+mod ui_screen_throttle;
 
 mod ui_screen_view;
 
@@ -78,6 +82,10 @@ mod ui_settings_model;
 mod ui_templates;
 
 mod ui_search_model;
+
+mod ui_search_anchor;
+
+mod ui_search_apply;
 
 mod ui_wire;
 
@@ -97,6 +105,32 @@ mod ui_overlays_model;
 #[cfg(test)]
 #[path = "ui_layout_tests.rs"]
 mod ui_layout_tests;
+
+/// Synthetic libraries for the scale tests; the library crate compiles the same file.
+#[cfg(test)]
+#[path = "scale_library_tests.rs"]
+mod scale_library_tests;
+
+/// Scale tests of the window projection and the Search service at 1k to 1M tracks (`src/scale_tests.rs`).
+#[cfg(test)]
+mod scale_tests;
+
+/// Search page tests with the testing backend: refresh in place while a slow scan adds tracks (D111).
+#[cfg(test)]
+#[path = "ui_search_ingest_tests.rs"]
+mod ui_search_ingest_tests;
+
+/// What:
+///      `mod ui_theme;` loads the sibling `ui_theme.rs` module.
+/// Why:
+///       It writes the OKLCH-derived theme roles into the generated `Theme` global and follows accent changes,
+///           so it needs the generated window type and stays out of `main.rs`.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import * as uiTheme from "./ui_theme";
+/// ```
+mod ui_theme;
 
 /// What:
 ///      `mod ui_font_scale;` loads the sibling `ui_font_scale.rs` module.
@@ -985,6 +1019,19 @@ fn main() -> Result<()> {
     // app.theme.schemeOverride = colorSchemeFromEnv();
     // ```
     app.global::<Theme>().set_scheme_override(color_scheme_from_env());
+    // What:     `ui_theme::apply_accent_override_from_env(&app);` then `ui_theme::install_accent_tracking(&app);`.
+    //           Apply the optional accent override, derive the theme roles for the current root (the system accent,
+    //           or the baseline when none exists), and register the callback that re-derives them on an accent change.
+    // Why:      A3 and D108: the OS accent is the theme root and every other color is derived from it in OKLCH.
+    //           The override comes first so the first derivation already uses it.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // applyAccentOverrideFromEnv(app);
+    // installAccentTracking(app);
+    // ```
+    ui_theme::apply_accent_override_from_env(&app);
+    ui_theme::install_accent_tracking(&app);
 
     // What:     `let weak = app.as_weak();`. `.as_weak()` makes a WEAK handle to the
     //           window: it does not keep the window alive, and can be sent to other
@@ -1076,12 +1123,23 @@ fn main() -> Result<()> {
     // ```
     let analysis_notifier = start_analysis_notifier();
     let update_notifier = analysis_notifier.clone();
+    // The Search service answers on its own thread and takes scan batches from the engine thread (D111, D112).
+    let search_service = ui_search::start_service(&app);
+    let scan_service = search_service.clone();
     let engine = Rc::new(Engine::spawn(move |update| {
         // What:     post the sweep's progress to the system indicator before the window sees the update.
         // Why:      D107: the indicator runs on its own thread, so this only queues a message; the window draws no
         //           analysis indicator at all.
         if let Update::Analysis { done, total } = &update {
             update_notifier.report(*done, *total);
+        }
+        // What:     hand tracks the folder walk has found to the Search index, on the engine thread.
+        // Why:      D111: Search works while the library is still being scanned; the window needs no part in it.
+        if matches!(update, Update::ScanBatch { .. }) {
+            if let Update::ScanBatch { first_index, names } = update {
+                scan_service.stream_batch(first_index, names);
+            }
+            return;
         }
         // What:     `let update_weak = weak.clone();`. `.clone()` of a weak handle is
         //           cheap (bumps a refcount); the outer closure is called repeatedly so

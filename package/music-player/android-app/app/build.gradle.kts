@@ -76,6 +76,11 @@ dependencies {
     implementation("androidx.compose.material3:material3:1.5.0-beta01")
     implementation("androidx.activity:activity-compose:1.13.0")
     implementation("androidx.core:core-ktx:1.19.1")
+    // Jetpack WindowManager reports the window's FoldingFeature (a vertical fold or hinge, its bounds and occlusion),
+    // which D110 names as the crease source. The Compose BOM does not manage it. 1.5.0 is the version Compose UI
+    // already resolves transitively (see `:app:dependencies --configuration debugRuntimeClasspath`), so this
+    // declaration adds no new artifact, and it lets the app call the API without relying on the transitive edge.
+    implementation("androidx.window:window:1.5.0")
     debugImplementation("androidx.compose.ui:ui-tooling")
 
     // Host JVM unit tests for the pure-logic `core` package (ported from the

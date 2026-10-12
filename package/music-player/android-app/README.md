@@ -130,6 +130,14 @@ Use durable decisions and runbooks for architecture and maintenance context:
 - [Peak-sweep parallelism decision](DECISION.peak-sweep-parallelism.md)
 - [Page-control style runbook](../../../doc/runbook/music-player-page-control-styles.md)
 
+## Settings icons
+
+The Settings rows carry the Material Symbols `queue_music` and `play_circle` icons,
+embedded as vector path data in [`SettingsIcons.kt`](app/src/main/kotlin/dev/monochromatic/musicplayer/SettingsIcons.kt).
+The icons are Apache License 2.0 material from `google/material-design-icons`,
+and the license text is `LICENSES/Apache-2.0.txt` at the repository root.
+The source files, commit and style are named in the [package README](../README.md#third-party-icons).
+
 ## Page-control default
 
 Chromium-like tabs are the first-install page-control style.
@@ -172,3 +180,35 @@ The selected fill remains dark enough to contrast clearly with its white legend,
 even when the runtime Material accent is very light.
 Independent OKLCH lightness and chroma mixing retains most available accent chroma,
 keeping the selected background vibrant instead of muddy.
+
+## Theme and crease
+
+The theme follows the system accent as its only platform color (A3, D108).
+On API 31 and later the root is the middle tone of the system accent palette, `android.R.color.system_accent1_500`,
+and below that it is the Fold baseline `#4E5E8B`.
+Every role is then derived from the root in OKLCH by
+[`core/ThemeRoles.kt`](app/src/main/kotlin/dev/monochromatic/musicplayer/core/ThemeRoles.kt),
+using the one OKLCH implementation in
+[`core/OklchColor.kt`](app/src/main/kotlin/dev/monochromatic/musicplayer/core/OklchColor.kt).
+Both are ports of the desktop's `oklch.rs` and `theme_roles.rs`,
+and `app/src/test/resources/theme-roles-vector.txt` (written by the Rust code, with its source hashes in the header)
+proves that the same root gives the same sRGB roles in Kotlin and Rust.
+[`PlayerTheme.kt`](app/src/main/kotlin/dev/monochromatic/musicplayer/PlayerTheme.kt) maps the roles onto every
+Material 3 slot,
+so the platform's `dynamicLightColorScheme` and `dynamicDarkColorScheme` are not used,
+and carries the roles Material has no slot for (the Search match fill) in `LocalThemeRoles`.
+Dark keeps a pure-black canvas and the `#0A0A0D` deck (D41),
+light keeps a white canvas (D34),
+and every text role is fitted to WCAG AA on the surfaces it is drawn on, for any root.
+Gradients are interpolated in OKLCH through `oklchGradientStops`,
+because Android blends gradient stops in sRGB.
+
+The crease comes from Jetpack WindowManager (D110, E2):
+[`CreaseDetection.kt`](app/src/main/kotlin/dev/monochromatic/musicplayer/CreaseDetection.kt) reads the window's
+`FoldingFeature` list through `WindowInfoTracker`,
+and [`core/CreaseReading.kt`](app/src/main/kotlin/dev/monochromatic/musicplayer/core/CreaseReading.kt) decides:
+a vertical fold is a crease,
+its reported width is the width of its bounds,
+and the clearance is `max(7.5 mm, reported width)`.
+Until the first layout report the `android.hardware.sensor.hinge_angle` system feature stands in.
+Settings and Search read the same answer.

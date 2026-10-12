@@ -57,6 +57,36 @@ mod pointer;
 #[path = "protocol_launcher.rs"]
 mod launcher;
 
+/// The `record` verb has the longest argument list and is parsed beside the others,
+///  not among them.
+#[path = "protocol_record.rs"]
+mod record;
+
+/// Notification verbs parse their ids,
+///  reasons,
+///  and action keys here.
+#[path = "protocol_notification.rs"]
+mod notification;
+
+/// Plasma job verbs parse their job ids here.
+#[path = "protocol_job.rs"]
+mod job;
+
+/// The runtime accent color verb shares the startup option's grammar.
+#[path = "protocol_accent.rs"]
+mod accent;
+
+/// Job verbs are matched by the executor,
+///  so their type is part of the protocol's interface.
+pub use job::JobCommand;
+
+/// Notification verbs are matched by the executor,
+///  so their type is part of the protocol's interface.
+pub use notification::NotificationCommand;
+
+/// The accent color a runtime `accent-color` request carries.
+use crate::accent_color::AccentColor;
+
 /// What:
 ///      Import the output-scale value a `scale` request carries.
 /// Why:
@@ -226,6 +256,8 @@ pub enum ButtonAction {
 ///   | { kind: "button"; action: "down" | "up"; button: PointerButton }
 ///   | { kind: "title" } | { kind: "appId" }
 ///   | { kind: "launcher" } | { kind: "launcherLog"; count: number } | { kind: "launcherClear" }
+///   | { kind: "accentColor"; color: AccentColor }
+///   | { kind: "notification"; command: NotificationCommand } | { kind: "job"; command: JobCommand }
 ///   | { kind: "quit" };
 /// ```
 #[derive(Debug, Clone, PartialEq)]
@@ -321,7 +353,8 @@ pub enum Command {
     AppId,
     /// Report the newest taskbar progress update.
     Launcher,
-    /// Report the newest taskbar progress updates, oldest first.
+    /// Report the newest taskbar progress updates,
+    ///  oldest first.
     LauncherLog {
         /// How many of the newest updates to list.
         count: usize,
@@ -337,6 +370,21 @@ pub enum Command {
     Scale(
         /// Scale every hosted surface is told to render at from now on.
         OutputScale,
+    ),
+    /// Change the private appearance portal's accent color while the client runs.
+    AccentColor(
+        /// Accent color the private portal serves from now on.
+        AccentColor,
+    ),
+    /// Read or drive the fake notification service.
+    Notification(
+        /// The notification verb and its arguments.
+        NotificationCommand,
+    ),
+    /// Read or drive the fake Plasma job view server.
+    Job(
+        /// The job verb and its arguments.
+        JobCommand,
     ),
     /// Stop the compositor.
     Quit,
@@ -467,6 +515,16 @@ pub fn parse_command(raw: &str) -> Result<Command, String> {
         return Ok(Command::Screenshot(PathBuf::from(path)));
     }
 
+    // What:     `notification-action` takes the rest of the line as the action key, so it is
+    //           handled before tokenising, like `type`.
+    // Why:      Action keys are chosen by the app and may contain spaces.
+    if let Some(rest) = line.strip_prefix("notification-action ") {
+        return notification::parse_action(rest);
+    }
+    if line == "notification-action" {
+        return Err("notification-action requires an id and an action key".to_string());
+    }
+
     // What:     `let mut tokens = line.split_whitespace();`. Lazy iterator over
     //           whitespace-separated tokens (collapses runs of spaces). `mut` because we
     //           consume it with `.next()`.
@@ -491,7 +549,7 @@ pub fn parse_command(raw: &str) -> Result<Command, String> {
         "key" => return parse_key(&mut tokens),
         "resize" => return parse_resize(&mut tokens),
         "drop-file" => return parse_drop_file(&mut tokens),
-        "record" => return parse_record(&mut tokens),
+        "record" => return record::parse(&mut tokens),
         "color-scheme" => return color_scheme::parse(&mut tokens),
         "scale" => return scale::parse(&mut tokens),
         "move" => return pointer::parse_move(&mut tokens),
@@ -501,6 +559,13 @@ pub fn parse_command(raw: &str) -> Result<Command, String> {
         "launcher" => return no_arguments(&mut tokens, "launcher", Command::Launcher),
         "launcher-clear" => return no_arguments(&mut tokens, "launcher-clear", Command::LauncherClear),
         "launcher-log" => return launcher::parse_log(&mut tokens),
+        "accent-color" => return accent::parse(&mut tokens),
+        "notifications" | "notification-log" | "notification-clear" | "notification-close" => {
+            return notification::parse(verb, &mut tokens);
+        }
+        "jobs" | "job-log" | "job-clear" | "job-suspend" | "job-resume" | "job-cancel" | "job-refresh" => {
+            return job::parse(verb, &mut tokens);
+        }
         other => return Err(format!("unknown command: {other}")),
     }
 }
@@ -524,66 +589,6 @@ fn no_arguments(
         return Err(format!("{verb} takes no arguments"));
     }
     return Ok(command)
-}
-
-/// Parse the arguments of a `record` command (`<dir> [fps] [format]` or `stop`).
-///
-/// What:
-///      `fn parse_record(tokens: &mut std::str::SplitWhitespace) -> Result<Command,
-///           String>`.
-///  The first token is either `stop` (stop recording) or the output
-///           directory,
-///  optionally followed by an fps and a format name.
-/// Why:
-///       Isolate the recorder command grammar.
-fn parse_record(tokens: &mut std::str::SplitWhitespace) -> Result<Command, String> {
-    // What:     `let first = tokens.next().ok_or_else(|| "record requires a directory or
-    //           'stop'".to_string())?;`. Require the first token.
-    // Why:      A bare `record` is ambiguous.
-    let first = tokens
-        .next()
-        .ok_or_else(|| return "record requires a directory or 'stop'".to_string())?;
-
-    // What:     `if first == "stop" { if tokens.next().is_some() { return Err(...); } return
-    //           Ok(Command::RecordStop); }`. Handle the stop form (which takes no more args).
-    // Why:      `record stop` ends the recording.
-    if first == "stop" {
-        if tokens.next().is_some() {
-            return Err("record stop takes no arguments".to_string());
-        }
-        return Ok(Command::RecordStop);
-    }
-
-    // What:     `let dir = PathBuf::from(first);`. The output directory (no spaces).
-    // Why:      Where the frame sequence is written.
-    let dir = PathBuf::from(first);
-
-    // What:     `let fps = match tokens.next() { Some(text) => text.parse::<f64>()
-    //           .map_err(|_| "record fps is not a number".to_string())?, None => 60.0 };`.
-    //           Optional fps, defaulting to 60.
-    // Why:      The requested capture rate.
-    let fps = match tokens.next() {
-        Some(text) => text
-            .parse::<f64>()
-            .map_err(|_| return "record fps is not a number".to_string())?,
-        None => 60.0,
-    };
-
-    // What:     `let format = tokens.next().unwrap_or("png").to_string();`. Optional format
-    //           name, defaulting to `png`; validated later by the encoder.
-    // Why:      Choose the output codec.
-    let format = tokens.next().unwrap_or("png").to_string();
-
-    // What:     `if tokens.next().is_some() { return Err(...); }`. Reject extra tokens.
-    // Why:      `record` takes at most dir, fps, format.
-    if tokens.next().is_some() {
-        return Err("record takes at most a directory, fps, and format".to_string());
-    }
-
-    // What:     `Ok(Command::Record { dir, fps, format })`. Build the command (tail
-    //           expression).
-    // Why:      Return the parsed record request.
-    return Ok(Command::Record { dir, fps, format })
 }
 
 /// Parse the arguments of a `click` command.

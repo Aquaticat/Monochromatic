@@ -864,7 +864,20 @@ fn run(
         // ```ts
         // const didWork = controller.pumpAudio();
         // ```
-        let did_work = controller.pump_audio();
+        let pumped = controller.pump_audio();
+
+        // What:     `let handed_off = controller.tick_playback();`. Emit the audible position when due and
+        //           start the next track once the output consumed the last frame of the old one.
+        // Why:      Position follows the speakers (frames taken from the ring), not the decoder, and the
+        //           track-end handoff waits for the ring to play out instead of discarding its tail.
+        //           A handoff counts as work so the new track is pumped at once.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // const handedOff = controller.tickPlayback();
+        // ```
+        let handed_off = controller.tick_playback();
+        let did_work = pumped || handed_off;
 
         // What:     `controller.report_audio_meters(&mut meter_reporter);`. Log the output's
         //           underrun counters if a second has passed and they moved.
@@ -893,7 +906,7 @@ fn run(
         // if (!appliedPeak && !didWork) await Promise.race([wokenSignal, sleep(IDLE_PARK_FALLBACK_MS)]);
         // ```
         if !applied_peak && !did_work {
-            thread::park_timeout(Duration::from_millis(IDLE_PARK_FALLBACK_MS));
+            thread::park_timeout(controller.idle_park_timeout(Duration::from_millis(IDLE_PARK_FALLBACK_MS)));
         }
     }
 }
