@@ -601,6 +601,48 @@ Eleven-document rendering passed `proc_c7e4` before this final evidence update.
 
 The unassociated ordinary request domain and other unconsumed producer relationships remain explicit.
 
+## Original Agent tool-setter receipts
+
+The native `Agent.state.tools` setter receives declaration data even when the caller later clears or restores it.
+`c1ff7330` / `proc_f8a4` reproduced the missing receipt after a positive native-state read.
+`8bedf07a` observes the actual setter argument frame through the existing Agent observer and manager input pool.
+It reuses the metadata copier and publishes no role,
+authority,
+registration,
+or payload capability.
+The source keeps kind `native-tool-description-input`,
+origin `native-agent-input`,
+location `agentInput`,
+and method `state.tools`.
+
+`proc_9458` passed native array-copy parity,
+borrowed-setter routing,
+shared input-count enforcement,
+exact falsy observer failure retirement,
+and canonical retention after tool-set restoration.
+The hidden received text reached original source views and indexed questions without entering the model request.
+The lifecycle portion of `proc_1009` passed before-request,
+post-emission,
+post-binding,
+oversize,
+reset,
+and disposal controls.
+Tool receipts do not acquire the manager-only post-emission handoff.
+
+The source-order diagnostic `proc_b4a8` showed distinct constructor-time and prompt-time tool-setter receipts.
+Both are retained,
+not deduplicated because their data can match.
+Updated original-source variants passed `proc_b187`;
+message-setter and constructor parity passed `proc_bf23`.
+The shared input parent then hit its actual 64-occurrence limit in an accumulated enqueue-failure fixture
+(`proc_cc4b`).
+Independent failure cases now use fresh fixture roots;
+no source limit or native behavior is loosened.
+Queue and prompt-owner verification is pending.
+
+These receipts close a named input loss,
+not complete governing-domain coverage or maintained host installation.
+
 ## Constructor declaration metadata
 
 The decision consumer cannot account for an original hidden schema instruction
