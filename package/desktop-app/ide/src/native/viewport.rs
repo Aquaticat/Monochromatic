@@ -232,6 +232,33 @@ fn clip_for(current: &State, band: (f32, f32)) -> Option<Clip> {
     let first_top = current.row_map.block_top(current.first);
     let bottom = current.row_map.block_top(end);
     let cap = render::tile_cap(current.width, current.scale);
+    let clip = band_clip(first_top, bottom, band, cap);
+    if let Some(chosen) = clip {
+        tracing::debug!(
+            first = current.first,
+            top = chosen.top,
+            bottom = chosen.bottom,
+            cap,
+            "clipped a tile of lines taller than one raster"
+        );
+    }
+    return clip;
+}
+
+/// What:
+///  The clip of lines that span `first_top` to `bottom` (logical pixels from the top of the text) for a view whose
+///  three-height `band` is given, when a raster may be `cap` pixels tall at most; nothing while the lines fit.
+///  The edges are whole code rows below `first_top`, and the clip is never taller than `cap`.
+/// Why:
+///  The rounding to whole code rows adds up to two rows, and the cap leaves only one, so the height is cut back to the
+///  rows the cap allows; a view taller than the cap can never be held by such a tile, so it is placed again at every
+///  scroll step, as a window that tall has no better answer.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function bandClip(firstTop: number, bottom: number, band: [number, number], cap: number): Clip | undefined;
+/// ```
+pub(super) fn band_clip(first_top: f32, bottom: f32, band: (f32, f32), cap: f32) -> Option<Clip> {
     if bottom - first_top <= cap {
         return None;
     }
@@ -247,13 +274,9 @@ fn clip_for(current: &State, band: (f32, f32)) -> Option<Clip> {
     let top = ((from - first_top) / CODE_ROW).floor().max(0.0) * CODE_ROW;
     let mut cut = ((to - first_top) / CODE_ROW).ceil() * CODE_ROW;
     cut = cut.min(bottom - first_top).max(top + CODE_ROW);
-    tracing::debug!(
-        first = current.first,
-        top,
-        bottom = cut,
-        cap,
-        "clipped a tile of lines taller than one raster"
-    );
+    // The rounding must not take the raster past what the cap allows.
+    let allowed = (cap / CODE_ROW).floor().max(1.0) * CODE_ROW;
+    cut = cut.min(top + allowed);
     return Some(Clip { top, bottom: cut });
 }
 
@@ -309,13 +332,13 @@ pub(super) fn bind_viewport(owner: &AppWindow, shared: &Rc<RefCell<State>>) {
         // ```ts
         // const changed = place(state.current, offset, width, height);
         // ```
-        let scale = weak
+        let reported = weak
             .upgrade()
             .map(|window| return window.window().scale_factor());
         let mut current = state.borrow_mut();
-        if let Some(scale) = scale {
+        if let Some(factor) = reported {
             // The size limit of the tile depends on the display scale.
-            current.scale = scale;
+            current.scale = factor;
         }
         // An offset nobody announced is the reader scrolling: by wheel, by touch, or by a drag past an edge.
         if offset != current.offset {

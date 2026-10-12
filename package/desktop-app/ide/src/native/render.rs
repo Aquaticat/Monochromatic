@@ -408,7 +408,19 @@ pub(super) fn render(window: &AppWindow, state: &Rc<RefCell<State>>) {
     let requested = tile::requested(&current);
     let shown = current.shown;
     // The displayed tile's own inputs decide whether the frame changed; the requested window is judged separately.
-    let same_inputs = current.frame_stamp.as_ref() == Some(&stamp_for(&current, shown, &paint));
+    let shown_stamp = stamp_for(&current, shown, &paint);
+    let mut same_inputs = current.frame_stamp.as_ref() == Some(&shown_stamp);
+    // A new wrap width moves the blocks at once, while the displayed tile keeps the ones it was painted with until the
+    // worker's tile for the new width arrives; that difference alone does not make the displayed tile stale.
+    if !same_inputs
+        && shown.width != requested.width
+        && current
+            .frame_stamp
+            .as_ref()
+            .is_some_and(|held| return held.same_except_annotations(&shown_stamp))
+    {
+        same_inputs = true;
+    }
     let mut pixels = None;
     let mut matches_changed = false;
     let mut notice = None;

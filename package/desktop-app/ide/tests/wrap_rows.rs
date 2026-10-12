@@ -598,7 +598,8 @@ fn underlines_across_a_wrap_break_stand_on_their_own_rows() {
     );
 }
 
-/// A wrapped line so tall that its tile would pass the raster limit is refused with a diagnostic, never a panic.
+/// The raster itself refuses a tile past its limit with a diagnostic, never a panic;
+///  the window never asks for one, because it clips a tile of a very tall line (`Viewport::clip`).
 ///  The limit is 64 MiB of pixels: at a text width of 782 px that is about 894 rows at scale 1 (about 75,000
 ///  characters in one line) and about 223 rows at scale 2 (about 18,700).
 #[test]

@@ -140,7 +140,7 @@ fn ranged(
 fn blocks(store: &mut Annotations, stamp: DocumentStamp) -> Vec<Arc<Block>> {
     let document = Document::new(TEXT);
     let mut shaper = TextShaper::new();
-    return store.assemble(stamp, &document, &mut shaper, 1.0, None);
+    return store.assemble(stamp, &document, &mut shaper, 1.0, None, &(0..usize::MAX));
 }
 
 /// The hint texts of the block above `line`,

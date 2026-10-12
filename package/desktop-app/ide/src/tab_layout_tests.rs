@@ -65,10 +65,10 @@ fn a_long_tabbed_line_shapes_no_more_passes_than_its_length_allows() {
     );
     // A short line of the same pattern is held to the full count, and not below what it needs.
     let short = tabbed(2_000);
-    let before = shaper.tab_passes();
-    let document = Document::new(&short);
-    shaper.wrapped_row(&document, 0, 1.0, 782.0);
-    let used = shaper.tab_passes() - before;
+    let earlier = shaper.tab_passes();
+    let short_document = Document::new(&short);
+    shaper.wrapped_row(&short_document, 0, 1.0, 782.0);
+    let used = shaper.tab_passes() - earlier;
     assert!(
         used > 4 && used as usize <= TAB_PASSES,
         "a short line shaped {used} corrective passes"

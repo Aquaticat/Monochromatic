@@ -13,7 +13,7 @@
 /// The store these methods extend,
 ///  its records,
 ///  and the hint label type.
-use super::{Annotations, Held, Label};
+use super::{Annotations, Fitted, Held, Label, Placed};
 /// Hint rows are packed against the shaped code line.
 use crate::annotation_layout::pack;
 /// The displayed text and its line starts.
@@ -47,7 +47,7 @@ use helix_core::Rope;
 /// ```ts
 /// type Shared<T> = Readonly<T>;
 /// ```
-use std::{collections::BTreeMap, sync::Arc, time::Instant};
+use std::{collections::BTreeMap, ops::Range, sync::Arc, time::Instant};
 
 /// What:
 ///  The rows of one line's messages broken so that each fits `limit` logical pixels,
@@ -256,6 +256,7 @@ impl Annotations {
     ///  `&mut TextShaper` is
     ///       lent to pack hint rows of lines not packed yet at `scale` and `wrap`,
     ///  the width of the text area in logical pixels, or nothing while the source view has none;
+    ///  `focus` is the range of lines near the view, the only ones that are packed again for a new width;
     ///  `&Document` lends the displayed text.
     /// Why:
     ///  This is the single source of block heights for the vertical mapping and of the rows a frame
@@ -268,7 +269,7 @@ impl Annotations {
     /// In TS you'd write (pseudocode):
     /// ```ts
     /// assemble(displayed: DocumentStamp, document: Document, shaper: TextShaper, scale: number,
-    ///   wrap?: number): Block[];
+    ///   wrap: number | undefined, focus: Range): Block[];
     /// ```
     pub fn assemble(
         &mut self,
@@ -277,6 +278,7 @@ impl Annotations {
         shaper: &mut TextShaper,
         scale: f32,
         wrap: Option<f32>,
+        focus: &Range<usize>,
     ) -> Vec<Arc<Block>> {
         if self.placed_scale != scale {
             // Label widths and caret positions are measured in pixels of one scale.
@@ -285,14 +287,15 @@ impl Annotations {
             self.wrapped.clear();
             self.placed_scale = scale;
         }
-        if self.placed_wrap != wrap {
-            // Where a hint stands and where a message breaks depend on the width of the text area.
-            self.placed.clear();
-            self.wrapped.clear();
-            self.placed_wrap = wrap;
-        }
         let labelled = self.labelled == Some(displayed);
         let diagnosed = self.diagnostics_current(displayed);
+        // Packings and breaks of snapshots that no longer describe the displayed text are never used again.
+        if !labelled {
+            self.placed.clear();
+        }
+        if !diagnosed {
+            self.wrapped.clear();
+        }
         // Every line that owns something, with the space held for it.
         let mut lines: BTreeMap<usize, (f32, f32)> = BTreeMap::new();
         if labelled {
@@ -320,33 +323,50 @@ impl Annotations {
             let mut hints = Vec::new();
             // `get` lends the line's labels when the line has any.
             if labelled && let Some(labels) = self.labels.get(&line) {
-                // What: `entry(...).or_insert_with(...)` lends the line's cached packing, running the closure
-                //       to pack the line first when the cache has none; `|| { ... }` is that closure.
-                // Why: A line is shaped and packed once per snapshot and scale, not on every assembly.
+                // What: A line is packed when it was never packed, or when it was packed for another width and is in the
+                //       focus; a line outside the focus keeps its stale packing until the view comes near.
+                // Why: A line is shaped and packed once per snapshot, scale, and width, and a new width must not cost
+                //      the window thread one packing for every line the view ever passed.
                 //
                 // In TS you'd write (pseudocode):
                 // ```ts
-                // if (!placed.has(line)) placed.set(line, pack(shaper.row(document, line, scale), labels, shaper, scale));
+                // if (!placed.has(line) || (placed.get(line).wrap !== wrap && focus.has(line))) placed.set(line, pack(...));
                 // ```
-                let packed = self.placed.entry(line).or_insert_with(|| {
+                let repack = match self.placed.get(&line) {
+                    None => true,
+                    Some(known) => known.wrap != wrap && focus.contains(&line),
+                };
+                if repack {
                     // A hint stands where its character is drawn, so the line is broken as the source view breaks it.
                     let row = match wrap {
                         Some(width) => shaper.wrapped_row(document, line, scale, width),
                         None => shaper.row(document, line, scale),
                     };
                     self.work.packed += 1;
-                    return pack(&row, labels, shaper, scale, wrap);
-                });
-                // `clone` copies the packed rows so the block owns them independently of the cache.
-                (hint_rows, hints) = packed.clone();
+                    let (rows, packed) = pack(&row, labels, shaper, scale, wrap);
+                    self.placed.insert(
+                        line,
+                        Placed {
+                            wrap,
+                            rows,
+                            hints: packed,
+                        },
+                    );
+                }
+                if let Some(known) = self.placed.get(&line) {
+                    // `clone` copies the packed rows so the block owns them independently of the cache.
+                    (hint_rows, hints) = (known.rows, known.hints.clone());
+                }
             }
             let mut messages = Vec::new();
             if diagnosed && let Some(rows) = self.messages.get(&line) {
                 messages = match wrap {
-                    Some(limit) => self
-                        .wrapped
-                        .entry(line)
-                        .or_insert_with(|| {
+                    Some(limit) => {
+                        let refit = match self.wrapped.get(&line) {
+                            None => true,
+                            Some(known) => known.wrap != wrap && focus.contains(&line),
+                        };
+                        if refit {
                             let widths = self.natural.entry(line).or_insert_with(|| {
                                 self.work.measured += rows.len() as u64;
                                 return rows
@@ -359,9 +379,12 @@ impl Annotations {
                             });
                             let (fitted, broken) = fit_messages(rows, widths, shaper, scale, limit);
                             self.work.broken += broken;
-                            return fitted;
-                        })
-                        .clone(),
+                            self.wrapped.insert(line, Fitted { wrap, rows: fitted });
+                        }
+                        self.wrapped
+                            .get(&line)
+                            .map_or_else(|| return rows.clone(), |known| return known.rows.clone())
+                    }
                     None => rows.clone(),
                 };
             }

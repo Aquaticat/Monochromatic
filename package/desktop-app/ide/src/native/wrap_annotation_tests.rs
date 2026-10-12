@@ -13,6 +13,8 @@ use super::annotation_tests::{TEXT_TOP, above, block, click, hint, painted, prob
 use super::caret_tests::position;
 /// The reader fixture.
 use super::find_tests::Reader;
+/// The counters of the window thread's work.
+use super::overscan_tile_tests::{counts, reset};
 /// Window sizing for exact text widths.
 use super::sidebar_tests::{TEXT_LEFT, resize};
 /// Wrapped fixtures, the open reader, and bounded waits.
@@ -28,7 +30,7 @@ use ide_app::{
     virtual_row::{BLOCK_GAP, CONTINUATION_INDENT, ROW_HEIGHT},
 };
 /// Toolkit access.
-use slint::{ComponentHandle, LogicalPosition};
+use slint::{ComponentHandle, LogicalPosition, platform::update_timers_and_animations};
 /// Snapshots are shared values.
 use std::sync::Arc;
 
@@ -159,15 +161,15 @@ fn presses_on_a_wrapped_block_and_its_rows_resolve_the_right_line_and_row() {
     let (first_row, third_row, below_second) = {
         let current = opened.source.borrow();
         let view = current.shaped.as_ref().expect("shaped view");
-        let row = view
+        let shaped = view
             .rows
             .iter()
-            .find(|row| return row.row == LINE)
+            .find(|candidate| return candidate.row == LINE)
             .expect("line");
         let below = view
             .rows
             .iter()
-            .find(|row| return row.row == LINE + 1)
+            .find(|candidate| return candidate.row == LINE + 1)
             .expect("next");
         let map = &current.row_map;
         let y = map.code_top(LINE) - ROW_HEIGHT;
@@ -188,31 +190,31 @@ fn presses_on_a_wrapped_block_and_its_rows_resolve_the_right_line_and_row() {
             "a point on a continuation row is not in the block"
         );
         (
-            row.source_rows()[0].clone(),
-            row.source_rows()[2].clone(),
+            shaped.source_rows()[0].clone(),
+            shaped.source_rows()[2].clone(),
             below.source_rows()[1].clone(),
         )
     };
     // A press on the block places the caret on the line's first visual row.
     click(window, above(&opened, LINE, 60.0, ROW_HEIGHT));
-    let head = position(&opened).1;
+    let on_block = position(&opened).1;
     assert!(
-        first_row.contains(&head) || head == first_row.end,
-        "a press on the block put the caret at {head}, outside the first row {first_row:?}"
+        first_row.contains(&on_block) || on_block == first_row.end,
+        "a press on the block put the caret at {on_block}, outside the first row {first_row:?}"
     );
     // A press on the third visual row of the same line lands in that row.
     click(window, on_row(&opened, LINE, 2, 60.0));
-    let head = position(&opened).1;
+    let on_third = position(&opened).1;
     assert!(
-        third_row.contains(&head),
-        "a press on the third row put the caret at {head}, outside {third_row:?}"
+        third_row.contains(&on_third),
+        "a press on the third row put the caret at {on_third}, outside {third_row:?}"
     );
     // A press on the second visual row of the next line, whose rows moved down by the block above this line.
     click(window, on_row(&opened, LINE + 1, 1, 60.0));
-    let head = position(&opened).1;
+    let on_below = position(&opened).1;
     assert!(
-        below_second.contains(&head),
-        "a press on the next line's second row put the caret at {head}, outside {below_second:?}"
+        below_second.contains(&on_below),
+        "a press on the next line's second row put the caret at {on_below}, outside {below_second:?}"
     );
     opened.window.hide().expect("close wrap window");
 }
@@ -226,16 +228,31 @@ fn a_new_window_width_breaks_the_block_again() {
     settled(&opened);
     let window = &opened.window;
     let wide = opened.source.borrow().width;
-    let rows_at = |opened: &Reader| {
-        let found = block(opened, LINE).expect("block");
+    let rows_at = |reader: &Reader| {
+        let found = block(reader, LINE).expect("block");
         return (found.messages.len(), found.hint_rows, found.height());
     };
     let before = rows_at(&opened);
+    reset(&opened.source);
+    let packed = opened.source.borrow().annotations.work().packed;
     resize(window, TEXT_LEFT + 300.0, 660.0);
     until("the narrow width did not reach the state", || {
         return opened.source.borrow().width < wide;
     });
     settled(&opened);
+    // The blocks follow the width at once, but the window thread builds no tile for it: the worker's tile is swapped in.
+    let [_, tiles, rows, images] = counts(&opened.source);
+    assert_eq!(tiles, 0, "the window thread painted a tile for the resize");
+    assert_eq!(rows, 0, "the window thread shaped lines for the resize");
+    assert_eq!(
+        images, 1,
+        "the worker's tile for the new width is swapped in once"
+    );
+    let repacked = opened.source.borrow().annotations.work().packed - packed;
+    assert!(
+        (1..=3).contains(&repacked),
+        "the resize packed {repacked} lines: the one line with hints, once for each width it passed"
+    );
     let narrow_width = opened.source.borrow().width;
     let narrow = rows_at(&opened);
     assert!(
@@ -272,4 +289,85 @@ fn a_new_window_width_breaks_the_block_again() {
         "a wide area restores the rows"
     );
     window.hide().expect("close wrap window");
+}
+
+/// Hints far from the view keep the packing of the width they were made for after a resize, so the window thread packs
+///  only the lines near the view, and they are packed again for the new width once the view comes near them.
+#[test]
+fn hints_far_from_the_view_are_packed_again_when_the_view_comes_near() {
+    const FAR: usize = 250;
+    let (_project, opened) = open(&long_text(300));
+    settled(&opened);
+    // A hint near the end of its line stands on the last visual row, whose start moves with the width.
+    let (stamp, near, far) = {
+        let current = opened.source.borrow();
+        let text = current.document.text();
+        let end = text.line(LINE).len_chars() - 4;
+        (
+            displayed(&current),
+            text.line_to_char(LINE) + end,
+            text.line_to_char(FAR) + end,
+        )
+    };
+    let snapshot = HintsSnapshot {
+        stamp,
+        first_line: 0,
+        last_line: 300,
+        hints: vec![hint(near, ": u32"), hint(far, ": u32")],
+    };
+    set_annotations(
+        &opened.window,
+        &opened.source,
+        Some(Arc::new(snapshot)),
+        None,
+    );
+    settled(&opened);
+    let wide_far = block(&opened, FAR).expect("far block").hints[0].x;
+    let wide_near = block(&opened, LINE).expect("near block").hints[0].x;
+    let wide = opened.source.borrow().width;
+    let packed = opened.source.borrow().annotations.work().packed;
+    resize(&opened.window, TEXT_LEFT + 300.0, 660.0);
+    until("the narrow width did not reach the state", || {
+        return opened.source.borrow().width < wide;
+    });
+    settled(&opened);
+    let narrow = opened.source.borrow().width;
+    let repacked = opened.source.borrow().annotations.work().packed - packed;
+    assert!(
+        (1..=3).contains(&repacked),
+        "the resize packed {repacked} lines; only the line near the view may be packed"
+    );
+    assert_ne!(
+        block(&opened, LINE).expect("near block").hints[0].x,
+        wide_near,
+        "the line near the view was not packed for the new width"
+    );
+    assert_eq!(
+        block(&opened, FAR).expect("far block").hints[0].x,
+        wide_far,
+        "a line far from the view was packed for the new width"
+    );
+    // The view comes near the far line: its hints are packed for the width it has now.
+    let top = opened.source.borrow().row_map.code_top(FAR);
+    opened.window.set_scroll_y(-top);
+    until("the tile for the far line did not arrive", || {
+        update_timers_and_animations();
+        let current = opened.source.borrow();
+        return current.tile_job.is_none()
+            && current.scroll_wanted.is_none()
+            && current.shown.first <= FAR
+            && FAR < current.shown.first + current.shown.count;
+    });
+    let mut shaper = TextShaper::new();
+    let expected = {
+        let current = opened.source.borrow();
+        shaper
+            .wrapped_row(&current.document, FAR, 1.0, narrow)
+            .caret_x(far, 1.0)
+    };
+    until("the far line was not packed for the new width", || {
+        update_timers_and_animations();
+        return block(&opened, FAR).is_some_and(|found| return found.hints[0].x == expected);
+    });
+    opened.window.hide().expect("close wrap window");
 }

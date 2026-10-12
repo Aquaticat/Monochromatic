@@ -8,6 +8,8 @@
 use super::overscan_tile_tests::{counts, reset, scroll_to, worker_counts};
 /// The raster limit and the size rule of a tile that is derived from it.
 use super::render::tile_cap;
+/// The clip rule, which does not depend on a window.
+use super::viewport::band_clip;
 /// The reader fixture, bounded waits, and the pixels of the shown image.
 use super::wrap_tests::{long_text, open, settled, shown, until};
 /// Library types that give the expected values.
@@ -136,6 +138,39 @@ fn a_line_past_the_raster_limit_is_painted_in_a_clip_that_follows_the_view() {
         "the tall line's first row carries its number"
     );
     window.hide().expect("close wrap window");
+}
+
+/// The clip never passes the raster limit, for the sizes that matter: ordinary windows at both scales, a window so tall
+///  that three views pass the limit, and a very wide one; its edges are whole code rows inside the lines.
+#[test]
+fn a_clip_stays_within_the_raster_limit_for_every_window_size() {
+    for (width, scale, height) in [
+        (782.0_f32, 1.0_f32, 660.0_f32),
+        (782.0, 2.0, 660.0),
+        (1918.0, 2.0, 1080.0),
+        (3800.0, 1.0, 2000.0),
+        (782.0, 3.0, 1000.0),
+        (1300.0, 1.5, 4000.0),
+    ] {
+        let cap = tile_cap(width, scale);
+        for view in [0.0_f32, 12_345.0, 400_000.0] {
+            let band = ((view - height).max(0.0), view + 2.0 * height);
+            let clip = band_clip(0.0, 1_000_000.0, band, cap).unwrap_or_else(|| {
+                panic!("a million pixels of lines fit one raster at {width}x{height}")
+            });
+            let columns = ((width + 24.0).ceil() * scale).ceil() as u64;
+            let rows = ((clip.bottom - clip.top) * scale).ceil() as u64;
+            assert!(
+                columns * rows * 4 <= MAX_RASTER_BYTES,
+                "width {width} scale {scale} height {height}: a raster of {columns}x{rows} passes the limit"
+            );
+            assert_eq!(clip.top % CODE_ROW, 0.0);
+            assert_eq!(clip.bottom % CODE_ROW, 0.0);
+            assert!(clip.top >= 0.0 && clip.bottom <= 1_000_000.0 && clip.top < clip.bottom);
+        }
+    }
+    // Lines that fit are not clipped.
+    assert!(band_clip(0.0, 1000.0, (0.0, 3000.0), tile_cap(782.0, 1.0)).is_none());
 }
 
 /// Opening the file shapes each of its lines once on the window thread, and the clip, not the whole line,

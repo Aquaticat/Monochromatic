@@ -20,8 +20,8 @@ use ide_app::{
     text_raster::{CodeColors, TextRaster},
     virtual_row::{BLOCK_GAP, Block, CONTINUATION_INDENT, MESSAGE_ROWS, ROW_HEIGHT},
 };
-/// Helix's rope and the shared-ownership pointer snapshots travel in.
-use std::sync::Arc;
+/// The pointer snapshots travel in, and the range of lines near the view.
+use std::{ops::Range, sync::Arc};
 
 /// A line that wraps to several rows at the widths used here, with a clear place for hints on its later rows.
 const CODE: &str = "let value = compute_total(first_item, second_item); // a long comment that keeps going and going";
@@ -105,6 +105,11 @@ fn store(
     return (annotations, document);
 }
 
+/// Every line is near the view.
+fn everywhere() -> Range<usize> {
+    return 0..usize::MAX;
+}
+
 /// A viewport of `count` lines wrapped at `wrap`.
 fn viewport(count: usize, wrap: f32) -> Viewport {
     return Viewport {
@@ -130,7 +135,13 @@ fn hints_are_packed_against_the_line_as_it_is_broken() {
         position,
         text: ": u32".to_string(),
     };
-    let (rows, places) = pack(&wrapped, &[label.clone()], &mut shaper, 1.0, Some(300.0));
+    let (rows, places) = pack(
+        &wrapped,
+        std::slice::from_ref(&label),
+        &mut shaper,
+        1.0,
+        Some(300.0),
+    );
     let unbroken = shaper.row(&document, 0, 1.0).caret_x(position, 1.0);
     assert_eq!(rows, 1);
     assert_eq!(places[0].x, wrapped.caret_x(position, 1.0));
@@ -219,7 +230,10 @@ fn a_label_wider_than_the_text_area_breaks_into_rows() {
             assert_eq!(place.x, 0.0, "later pieces start at the left edge");
         }
     }
-    let joined: Vec<&str> = places.iter().map(|place| place.text.as_str()).collect();
+    let joined: Vec<&str> = places
+        .iter()
+        .map(|place| return place.text.as_str())
+        .collect();
     assert_eq!(
         joined
             .join(" ")
@@ -242,9 +256,23 @@ fn message_rows_break_to_the_text_area() {
         "expected `u32`, found `&str` because the argument named first_item is a string slice here";
     let (mut annotations, document) = store(CODE, Vec::new(), vec![error(4, 9, message)]);
     let mut shaper = TextShaper::new();
-    let plain = annotations.assemble(SHOWN, &document, &mut shaper, 1.0, None);
-    let wide = annotations.assemble(SHOWN, &document, &mut shaper, 1.0, Some(1400.0));
-    let narrow = annotations.assemble(SHOWN, &document, &mut shaper, 1.0, Some(240.0));
+    let plain = annotations.assemble(SHOWN, &document, &mut shaper, 1.0, None, &everywhere());
+    let wide = annotations.assemble(
+        SHOWN,
+        &document,
+        &mut shaper,
+        1.0,
+        Some(1400.0),
+        &everywhere(),
+    );
+    let narrow = annotations.assemble(
+        SHOWN,
+        &document,
+        &mut shaper,
+        1.0,
+        Some(240.0),
+        &everywhere(),
+    );
     assert_eq!(plain.len(), 1);
     assert_eq!(
         wide[0].messages, plain[0].messages,
@@ -303,7 +331,14 @@ fn a_message_keeps_its_row_cap_at_a_narrow_width() {
     let message = "word ".repeat(120);
     let (mut annotations, document) = store(CODE, Vec::new(), vec![error(4, 9, &message)]);
     let mut shaper = TextShaper::new();
-    let narrow = annotations.assemble(SHOWN, &document, &mut shaper, 1.0, Some(90.0));
+    let narrow = annotations.assemble(
+        SHOWN,
+        &document,
+        &mut shaper,
+        1.0,
+        Some(90.0),
+        &everywhere(),
+    );
     let rows = &narrow[0].messages;
     assert_eq!(
         rows.len(),
@@ -324,7 +359,14 @@ fn a_message_far_to_the_right_moves_left_to_stay_inside_the_text_area() {
     let message = "expected something quite different here";
     let (mut annotations, document) = store(&text, Vec::new(), vec![error(50, 54, message)]);
     let mut shaper = TextShaper::new();
-    let blocks = annotations.assemble(SHOWN, &document, &mut shaper, 1.0, Some(560.0));
+    let blocks = annotations.assemble(
+        SHOWN,
+        &document,
+        &mut shaper,
+        1.0,
+        Some(560.0),
+        &everywhere(),
+    );
     let map = RowMap::new(1, &[(0, blocks[0].height())]);
     let view = shaper.prepare_rows(&document, viewport(1, 560.0), &[], &map);
     let visible = Visible {
@@ -334,12 +376,12 @@ fn a_message_far_to_the_right_moves_left_to_stay_inside_the_text_area() {
     let frame = lay_out(&view, &visible, &mut shaper, COLORS);
     assert!(!frame.texts.is_empty());
     let own_x = view.rows[0].caret_x(50, 1.0);
-    for text in &frame.texts {
+    for shown in &frame.texts {
         assert!(
-            text.x + text.width <= 560.01,
+            shown.x + shown.width <= 560.01,
             "a message row passes the text area: x {} width {}",
-            text.x,
-            text.width
+            shown.x,
+            shown.width
         );
     }
     assert!(
@@ -357,8 +399,8 @@ fn a_message_far_to_the_right_moves_left_to_stay_inside_the_text_area() {
         &[],
         &map,
     );
-    let frame = lay_out(&unwrapped_view, &visible, &mut shaper, COLORS);
-    assert_eq!(frame.texts[0].x, own_x);
+    let unwrapped = lay_out(&unwrapped_view, &visible, &mut shaper, COLORS);
+    assert_eq!(unwrapped.texts[0].x, own_x);
 }
 
 /// With a block above a wrapped line, the block ends where the line's first row begins, the line's rows follow it
@@ -369,7 +411,14 @@ fn a_block_sits_above_the_first_row_and_underlines_stay_on_their_rows() {
     let text = format!("{CODE}\nnext line\n");
     let (mut annotations, document) = store(&text, vec![hint(4, ": u32")], Vec::new());
     let mut shaper = TextShaper::new();
-    let blocks = annotations.assemble(SHOWN, &document, &mut shaper, 1.0, Some(200.0));
+    let blocks = annotations.assemble(
+        SHOWN,
+        &document,
+        &mut shaper,
+        1.0,
+        Some(200.0),
+        &everywhere(),
+    );
     assert_eq!(blocks.len(), 1);
     let block_height = blocks[0].height();
     let plain = RowMap::new(3, &[(0, block_height)]);
@@ -458,7 +507,7 @@ fn a_new_width_does_only_the_work_it_needs() {
     for number in 0..40 {
         text.push_str(&format!("{CODE} {number}\n"));
     }
-    let start_of = |line: usize| Document::new(&text).text().line_to_char(line);
+    let start_of = |line: usize| return Document::new(&text).text().line_to_char(line);
     let hints = vec![hint(start_of(3) + 10, ": a"), hint(start_of(9) + 10, ": b")];
     let diagnostics = vec![
         error(start_of(5) + 4, start_of(5) + 9, "short message"),
@@ -471,17 +520,38 @@ fn a_new_width_does_only_the_work_it_needs() {
     let (mut annotations, document) = store(&text, hints, diagnostics);
     let mut shaper = TextShaper::new();
     assert_eq!(annotations.work().packed, 0);
-    annotations.assemble(SHOWN, &document, &mut shaper, 1.0, Some(900.0));
+    annotations.assemble(
+        SHOWN,
+        &document,
+        &mut shaper,
+        1.0,
+        Some(900.0),
+        &everywhere(),
+    );
     let first = annotations.work();
     assert_eq!(first.packed, 2, "one packing for each line that has hints");
     assert!(first.measured >= 2, "every message row was measured once");
-    annotations.assemble(SHOWN, &document, &mut shaper, 1.0, Some(900.0));
+    annotations.assemble(
+        SHOWN,
+        &document,
+        &mut shaper,
+        1.0,
+        Some(900.0),
+        &everywhere(),
+    );
     assert_eq!(
         annotations.work(),
         first,
         "the same width again does no shaping"
     );
-    annotations.assemble(SHOWN, &document, &mut shaper, 1.0, Some(260.0));
+    annotations.assemble(
+        SHOWN,
+        &document,
+        &mut shaper,
+        1.0,
+        Some(260.0),
+        &everywhere(),
+    );
     let narrow = annotations.work();
     assert_eq!(
         narrow.packed,
@@ -499,7 +569,14 @@ fn a_new_width_does_only_the_work_it_needs() {
     );
     // A width nothing is wider than breaks nothing at all.
     let before = annotations.work();
-    annotations.assemble(SHOWN, &document, &mut shaper, 1.0, Some(5000.0));
+    annotations.assemble(
+        SHOWN,
+        &document,
+        &mut shaper,
+        1.0,
+        Some(5000.0),
+        &everywhere(),
+    );
     assert_eq!(annotations.work().broken, before.broken);
     assert_eq!(annotations.work().measured, before.measured);
 }
@@ -511,15 +588,123 @@ fn assembled_hints_stand_where_the_broken_line_draws_them() {
     let mut shaper = TextShaper::new();
     let wrapped = shaper.wrapped_row(&document, 0, 1.0, 300.0);
     let position = wrapped.visual_row_sources(1).expect("second row").start + 4;
-    let (mut annotations, document) = store(CODE, vec![hint(position, ": u32")], Vec::new());
-    let narrow = annotations.assemble(SHOWN, &document, &mut shaper, 1.0, Some(300.0));
+    let (mut annotations, _) = store(CODE, vec![hint(position, ": u32")], Vec::new());
+    let narrow = annotations.assemble(
+        SHOWN,
+        &document,
+        &mut shaper,
+        1.0,
+        Some(300.0),
+        &everywhere(),
+    );
     assert_eq!(narrow[0].hints[0].x, wrapped.caret_x(position, 1.0));
     let wide = shaper.wrapped_row(&document, 0, 1.0, 700.0);
-    let assembled = annotations.assemble(SHOWN, &document, &mut shaper, 1.0, Some(700.0));
+    let assembled = annotations.assemble(
+        SHOWN,
+        &document,
+        &mut shaper,
+        1.0,
+        Some(700.0),
+        &everywhere(),
+    );
     assert_eq!(
         assembled[0].hints[0].x,
         wide.caret_x(position, 1.0),
         "another width packs the hint again"
     );
     assert_ne!(narrow[0].hints[0].x, assembled[0].hints[0].x);
+}
+
+/// A new width packs and breaks only the lines near the view; the others keep what they had until the view comes
+///  near, and `stale_in` tells the window when that is.
+#[test]
+fn a_new_width_applies_to_the_lines_near_the_view_first() {
+    let mut text = String::new();
+    for number in 0..40 {
+        text.push_str(&format!("{CODE} {number}\n"));
+    }
+    let start_of = |line: usize| return Document::new(&text).text().line_to_char(line);
+    let hints = vec![
+        hint(start_of(3) + 90, ": a"),
+        hint(start_of(30) + 90, ": b"),
+    ];
+    let long =
+        "expected `u32`, found `&str` because the argument named first_item is a string slice here";
+    let diagnostics = vec![
+        error(start_of(5) + 4, start_of(5) + 9, long),
+        error(start_of(33) + 4, start_of(33) + 9, long),
+    ];
+    let (mut annotations, document) = store(&text, hints, diagnostics);
+    let mut shaper = TextShaper::new();
+    let block_at = |blocks: &[Arc<Block>], line: usize| {
+        return blocks
+            .iter()
+            .find(|block| return block.line == line)
+            .map(Arc::clone)
+            .expect("block");
+    };
+    let wide = annotations.assemble(
+        SHOWN,
+        &document,
+        &mut shaper,
+        1.0,
+        Some(900.0),
+        &everywhere(),
+    );
+    assert_eq!(annotations.work().packed, 2);
+    assert!(!annotations.stale_in(Some(900.0), &everywhere()));
+    let (near, far) = (0..10, 20..40);
+    let narrow = annotations.assemble(SHOWN, &document, &mut shaper, 1.0, Some(260.0), &near);
+    assert_eq!(
+        annotations.work().packed,
+        3,
+        "only the hinted line near the view is packed again"
+    );
+    assert!(
+        !annotations.stale_in(Some(260.0), &near),
+        "the lines near the view are exact"
+    );
+    assert!(
+        annotations.stale_in(Some(260.0), &far),
+        "the lines far from it are stale"
+    );
+    assert_ne!(
+        block_at(&narrow, 3).hints[0].x,
+        block_at(&wide, 3).hints[0].x
+    );
+    assert_ne!(block_at(&narrow, 5).messages, block_at(&wide, 5).messages);
+    assert_eq!(
+        block_at(&narrow, 30).hints,
+        block_at(&wide, 30).hints,
+        "a far line keeps its packing"
+    );
+    assert_eq!(
+        block_at(&narrow, 33).messages,
+        block_at(&wide, 33).messages,
+        "a far line keeps its rows"
+    );
+    // The view comes near the other lines.
+    let after = annotations.assemble(SHOWN, &document, &mut shaper, 1.0, Some(260.0), &far);
+    assert_eq!(
+        annotations.work().packed,
+        4,
+        "the far hinted line is packed when the view comes near"
+    );
+    assert!(!annotations.stale_in(Some(260.0), &everywhere()));
+    assert_ne!(block_at(&after, 30).hints, block_at(&wide, 30).hints);
+    assert_ne!(block_at(&after, 33).messages, block_at(&wide, 33).messages);
+    // Hints of a snapshot that no longer describes the text leave no stale packing behind.
+    let other = DocumentStamp {
+        file: 9,
+        revision: 9,
+    };
+    annotations.assemble(
+        other,
+        &document,
+        &mut shaper,
+        1.0,
+        Some(500.0),
+        &everywhere(),
+    );
+    assert!(!annotations.stale_in(Some(500.0), &everywhere()));
 }

@@ -52,10 +52,12 @@ pub const CONTINUATION_INDENT: f32 = 16.0;
 ///  `usize` is the count type (siblings `u32`,
 ///  `u64`).
 /// Why:
-///  Long messages wrap instead of widening the scroll range without bound.
+///  Long messages wrap instead of running on without bound.
 ///  The limit is counted in
 ///      characters,
-///  so the number of rows never depends on the window or on shaping.
+///  so this first break never depends on the window or on shaping;
+///  a row wider than the text area is then broken again to fit it
+///  (`Annotations::assemble`).
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -106,7 +108,8 @@ pub struct HintPlace {
 ///  One row of a diagnostic message.
 /// Why:
 ///  Rows are derived from the message text alone,
-///  so a line's row count is known without shaping.
+///  so a line's row count at the first break is known without shaping;
+///  a row wider than the text area is broken again by shaping when the blocks are assembled.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

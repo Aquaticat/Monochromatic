@@ -55,6 +55,7 @@ use std::cell::Cell;
 /// `Rc` shares the persistent model between the state and the window;
 ///  `Duration` and `Instant` time held space.
 use std::{
+    ops::Range,
     rc::Rc,
     sync::Arc,
     time::{Duration, Instant},
@@ -82,18 +83,19 @@ const SCROLL_QUIET: Duration = Duration::from_millis(200);
 ///  the annotation store's change counter,
 ///  the display scale as exact bits,
 ///  the counter of changes to the measured visual rows,
-///  and the wrap width as exact bits (zero while the view has none);
+///  the wrap width as exact bits (zero while the view has none),
+///  and whether a line near the view still holds blocks made for another width;
 ///  `type` names the tuple once.
 /// Why:
-///  Blocks are assembled again only when the stamp, the version, the scale, or the width changed,
+///  Blocks are assembled again only when the stamp, the version, the scale, the width, or the staleness changed,
 ///  because a hint stands where its character is drawn and a message breaks to the text area;
-///  the map is rebuilt when any of the five did.
+///  the map is rebuilt when any of the six did.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// type RowKey = [stamp: DocumentStamp, version: number, scale: number, measured: number, width: number];
+/// type RowKey = [stamp: DocumentStamp, version: number, scale: number, measured: number, width: number, stale: boolean];
 /// ```
-pub(super) type RowKey = (DocumentStamp, u64, u32, u64, u32);
+pub(super) type RowKey = (DocumentStamp, u64, u32, u64, u32, bool);
 
 /// What:
 ///  A freshly assembled vertical layout that is not installed yet:
@@ -162,6 +164,22 @@ fn wrap_of(current: &State) -> Option<f32> {
     return has_wrap_width(current.width).then_some(current.width);
 }
 
+/// What:
+///  The lines whose blocks are made exact for the wrap width: the requested tile and one tile's worth of lines
+///  on each side.
+/// Why:
+///  A new width packs the lines that have hints again, which shapes them on the window thread;
+///  only the lines near the view need it at once, and the rest wait until the view comes near.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function focusOf(current: State): Range;
+/// ```
+fn focus_of(current: &State) -> Range<usize> {
+    let span = current.count.max(1);
+    return current.first.saturating_sub(span)..current.first.saturating_add(2 * span);
+}
+
 /// The key the displayed text,
 ///  its annotations,
 ///  the display `scale`,
@@ -174,6 +192,9 @@ fn wanted_key(current: &State, scale: f32) -> RowKey {
         scale.to_bits(),
         current.wrap_version,
         wrap_of(current).map_or(0, f32::to_bits),
+        current
+            .annotations
+            .stale_in(wrap_of(current), &focus_of(current)),
     );
 }
 
@@ -187,9 +208,11 @@ fn wanted_key(current: &State, scale: f32) -> RowKey {
 /// Why:
 ///  Blocks are assembled only when the text,
 ///  the annotation store,
-///  or the scale changed;
+///  the scale,
+///  or the wrap width changed;
 ///  a change of the measured rows keeps the blocks and only rebuilds the map,
-///  so a window resize does not pack hints again.
+///  so the pass over the whole text does not pack hints again.
+///  A new wrap width packs the lines that have hints again and breaks only the message rows wider than it.
 ///  Nothing in the state changes here except the store's packing cache.
 ///
 /// In TS you'd write (pseudocode):
@@ -204,7 +227,8 @@ fn rebuilt(current: &mut State, scale: f32) -> Option<Rebuilt> {
         return None;
     }
     let blocks_current = current.row_key.is_some_and(|known| {
-        return (known.0, known.1, known.2, known.4) == (key.0, key.1, key.2, key.4);
+        return (known.0, known.1, known.2, known.4, known.5)
+            == (key.0, key.1, key.2, key.4, key.5);
     });
     // What: Destructuring `&mut State` lends fields separately.
     // Why: Assembly changes the store's packing cache and uses the shaper while the document is only read.
@@ -214,6 +238,7 @@ fn rebuilt(current: &mut State, scale: f32) -> Option<Rebuilt> {
     // const { document, shaper, annotations } = current;
     // ```
     let wrap = wrap_of(current);
+    let focus = focus_of(current);
     let State {
         document,
         shaper,
@@ -226,7 +251,7 @@ fn rebuilt(current: &mut State, scale: f32) -> Option<Rebuilt> {
         // `clone` copies the list of shared block pointers, not the blocks.
         kept.clone()
     } else {
-        annotations.assemble(key.0, document, shaper, scale, wrap)
+        annotations.assemble(key.0, document, shaper, scale, wrap, &focus)
     };
     let mut raised = Vec::new();
     for block in &blocks {
@@ -234,7 +259,20 @@ fn rebuilt(current: &mut State, scale: f32) -> Option<Rebuilt> {
     }
     let map = RowMap::new(document.text().len_lines(), &raised).with_rows(wrap_rows);
     // `Some(...)` hands the assembled layout to the caller, which decides when to install it.
-    return Some(Rebuilt { key, blocks, map });
+    // The lines near the view are exact now, so the key records the state after the assembly.
+    let assembled = (
+        key.0,
+        key.1,
+        key.2,
+        key.3,
+        key.4,
+        annotations.stale_in(wrap, &focus),
+    );
+    return Some(Rebuilt {
+        key: assembled,
+        blocks,
+        map,
+    });
 }
 
 /// What:

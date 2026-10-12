@@ -761,11 +761,11 @@ impl TextShaper {
         // The raster spans every materialized line with its block, or the clip of them; an empty frame is still one
         // row tall.
         let first_top = placed.block_top(viewport.first);
-        let (origin, extent) = match viewport.clip {
+        let (origin, tall) = match viewport.clip {
             Some(clip) => (first_top + clip.top, clip.bottom - clip.top),
             None => (first_top, placed.block_top(last) - first_top),
         };
-        let extent = extent.max(CODE_ROW);
+        let extent = tall.max(CODE_ROW);
         let height = (extent * viewport.scale).ceil() as u32;
         let mut view = ShapedView {
             rows,
