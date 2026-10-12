@@ -86,7 +86,7 @@ const UNLOCATED_REASONS = [
 ];
 
 /**
- Every outcome a place can have.
+ Every outcome the vocabulary names, in the order the refusal lists them.
  */
 const OUTCOMES = [
   'chosen',
@@ -94,38 +94,41 @@ const OUTCOMES = [
   'consistent',
   'kept-context',
   'kept-floor',
+  'kept-current',
   'overlapped',
   'unlocated',
   'untouched',
 ];
 
 /**
- The text of the refusal a place raises.
-
- @param value - recorded place
-
- @returns The refusal as text
-
- @example
- ```ts
- const text = placeRefusal({ value: 'naps', },);
- ```
+ Every outcome a place of generation fifteen can have, which has no carry to end in `kept-current`.
  */
-function placeRefusal({ value, }: { readonly value: unknown; },): string {
-  return refusalTextOf({
-    read: function readsPlace(): unknown {
-      return parseConsistencyOccurrence({
-        value,
-        path: 'cat.occurrences[0]',
-      },);
-    },
-  },);
-}
+const OUTCOMES_OF_FIFTEEN = OUTCOMES.filter(function notKeptCurrent(outcome,): boolean {
+  return outcome !== 'kept-current';
+});
+
+/**
+ A place of generation sixteen whose rendering was located, which records the offset of its words.
+ */
+const LOCATED_BY_SPAN = {
+  ...LOCATED,
+  rendering: { kind: 'located', quote: 'The cat naps', start: 4, },
+};
+
+/**
+ A place of a frame of generation sixteen, located with its slot.
+ */
+const FRAMED_BY_SPAN = {
+  ...FRAMED,
+  rendering: { kind: 'located', quote: 'So this cat is a lazy little treasure', start: 4, slot: 'lazy', },
+};
 
 /**
  A place read as written.
 
  @param value - recorded place
+
+ @param generation - generation the section was written under
 
  @returns What the reader makes of it
 
@@ -134,10 +137,52 @@ function placeRefusal({ value, }: { readonly value: unknown; },): string {
  const place = placeRead({ value: LOCATED, },);
  ```
  */
-function placeRead({ value, }: { readonly value: unknown; },): unknown {
+function placeRead(
+  {
+    value,
+    generation = 15,
+  }: {
+    readonly value: unknown;
+    readonly generation?: 15 | 16;
+  },
+): unknown {
   return parseConsistencyOccurrence({
     value,
     path: 'cat.occurrences[0]',
+    generation,
+  },);
+}
+
+/**
+ The text of the refusal a place raises.
+
+ @param value - recorded place
+
+ @param generation - generation the section was written under
+
+ @returns The refusal as text
+
+ @example
+ ```ts
+ const text = placeRefusal({ value: 'naps', },);
+ ```
+ */
+function placeRefusal(
+  {
+    value,
+    generation = 15,
+  }: {
+    readonly value: unknown;
+    readonly generation?: 15 | 16;
+  },
+): string {
+  return refusalTextOf({
+    read: function readsPlace(): unknown {
+      return placeRead({
+        value,
+        generation,
+      },);
+    },
   },);
 }
 
@@ -168,12 +213,66 @@ await describe({
           },
         },),
         it({
-          name: 'READS A PLACE FOR EACH OUTCOME A PLACE CAN HAVE',
+          name: 'READS A PLACE FOR EACH OUTCOME A PLACE OF GENERATION FIFTEEN CAN HAVE',
+          fn: async () => {
+            expect(OUTCOMES_OF_FIFTEEN.map(function read(outcome,): unknown {
+              return placeRead({ value: { ...LOCATED, outcome, }, },);
+            },),).toEqual(OUTCOMES_OF_FIFTEEN.map(function written(outcome,): unknown {
+              return { ...LOCATED, outcome, };
+            },),);
+          },
+        },),
+        it({
+          name: 'READS A PLACE FOR EACH OUTCOME A PLACE OF GENERATION SIXTEEN CAN HAVE, kept-current among them, and refuses '
+            + 'kept-current in generation fifteen, which has no carry for a place to keep its English in',
           fn: async () => {
             expect(OUTCOMES.map(function read(outcome,): unknown {
-              return placeRead({ value: { ...LOCATED, outcome, }, },);
+              return placeRead({ value: { ...LOCATED_BY_SPAN, outcome, }, generation: 16, },);
             },),).toEqual(OUTCOMES.map(function written(outcome,): unknown {
-              return { ...LOCATED, outcome, };
+              return { ...LOCATED_BY_SPAN, outcome, };
+            },),);
+            expect(placeRefusal({ value: { ...LOCATED, outcome: 'kept-current', }, },),).toBe(
+              'ArtifactParseError: artifact parse failed at cat.occurrences[0].outcome: expected an outcome generation fifteen '
+              + 'gives, which has no carry to end in kept-current.',
+            );
+          },
+        },),
+        it({
+          name: 'READS A LOCATED PLACE OF GENERATION SIXTEEN WITH THE OFFSET OF ITS WORDS, with and without a slot, and refuses '
+            + 'one without the offset and an offset in generation fifteen',
+          fn: async () => {
+            expect([LOCATED_BY_SPAN, FRAMED_BY_SPAN,].map(function read(value,): unknown {
+              return placeRead({ value, generation: 16, },);
+            },),).toEqual([LOCATED_BY_SPAN, FRAMED_BY_SPAN,],);
+            expect([
+              placeRefusal({ value: LOCATED, generation: 16, },),
+              placeRefusal({ value: { ...LOCATED_BY_SPAN, rendering: { kind: 'located', quote: 'x', start: -1, }, }, generation: 16, },),
+              placeRefusal({ value: LOCATED_BY_SPAN, generation: 15, },),
+            ],).toEqual([
+              'ArtifactParseError: artifact parse failed at cat.occurrences[0].rendering.start: expected a number.',
+              `ArtifactParseError: artifact parse failed at cat.occurrences[0].rendering.start: expected ${NOT_A_COUNT}.`,
+              'ArtifactParseError: artifact parse failed at cat.occurrences[0].rendering.start: '
+              + 'expected no key here beyond kind, quote, slot.',
+            ],);
+          },
+        },),
+        it({
+          name: 'READS THE SLOT REASONS OF GENERATION FIFTEEN AS WRITTEN THERE, and refuses each in generation sixteen, which '
+            + 'locates a place on its quote and not its slot',
+          fn: async () => {
+            const slotReasons = UNLOCATED_REASONS.filter(function isSlotReason(reason,): boolean {
+              return reason.startsWith('slot-',);
+            },);
+            expect(slotReasons.map(function readFifteen(reason,): unknown {
+              return placeRead({ value: { ...UNLOCATED, rendering: { kind: 'unlocated', reason, }, }, generation: 15, },);
+            },),).toEqual(slotReasons.map(function written(reason,): unknown {
+              return { ...UNLOCATED, rendering: { kind: 'unlocated', reason, }, };
+            },),);
+            expect(slotReasons.map(function refuseSixteen(reason,): string {
+              return placeRefusal({ value: { ...UNLOCATED, rendering: { kind: 'unlocated', reason, }, }, generation: 16, },);
+            },),).toEqual(slotReasons.map(function refused(): string {
+              return 'ArtifactParseError: artifact parse failed at cat.occurrences[0].rendering.reason: expected a reason '
+                + 'generation sixteen gives, which locates a place on its quote and not its slot.';
             },),);
           },
         },),

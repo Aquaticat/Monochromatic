@@ -34,15 +34,18 @@ import {
   archiveEnglishOf,
   ballotText,
   firstPlaceWins,
-  isRefrainSheet,
+  otherSheetsSplittingRunOff,
   preparedCatPage,
-  REFRAIN_QUOTES,
   refrainAnsweredInOrder,
   refrainChoosing,
   type SeatBehaviour,
   type SeatScript,
-  SENTENCE_QUOTES,
 } from './consistency-page.test-fixture.ts';
+import {
+  REFRAIN_QUOTES,
+  SENTENCE_QUOTES,
+} from './consistency-quotes.test-fixture.ts';
+import { isRefrainSheet, } from './consistency-sheet-reading.test-fixture.ts';
 import {
   fourthAlreadyFollows,
   outcomesByGroup,
@@ -50,6 +53,7 @@ import {
   slotWithTheName,
   withBlankedBlocks,
 } from './consistency-edge.test-fixture.ts';
+import { LIVE_CONSISTENCY_FIFTEEN, } from './consistency-live-fifteen.test-fixture.ts';
 import { runCatPass, } from './consistency-run.test-fixture.ts';
 import {
   appendAt,
@@ -80,11 +84,18 @@ const SLICES = new Set([0, 1, 2, 3,],);
  ```
  */
 async function sectionOf(
-  { behave = firstPlaceWins, }: { readonly behave?: SeatScript; },
+  {
+    behave = firstPlaceWins,
+    others,
+  }: {
+    readonly behave?: SeatScript;
+    readonly others?: SeatScript;
+  },
 ): Promise<unknown> {
   await using dir = await scratchDir({ prefix: 'consistency-read-', },);
   const run = await runCatPass({
     behave,
+    ...((others === undefined) ? {} : { others, }),
     entryCacheDir: dir.path,
   },);
   return structuredClone(run.consistency,);
@@ -143,7 +154,7 @@ function readWritten({ value, }: { readonly value: unknown; },): ReturnType<type
   return parseConsistency({
     value,
     path: 'cat.consistency',
-    writesSection: true,
+    generation: 16,
     sliceIndexes: SLICES,
   },);
 }
@@ -320,9 +331,37 @@ await describe({
             expect(parseConsistency({
               value: undefined,
               path: 'cat.consistency',
-              writesSection: false,
+              generation: 14,
               sliceIndexes: SLICES,
             },),).toEqual(NO_CONSISTENCY,);
+          },
+        },),
+        it({
+          name: 'READS THE LIVE SECTION OF GENERATION FIFTEEN AS WRITTEN, the straight-against-curly quotes counted as the '
+            + 'strings they were, and refuses it as generation sixteen, which gives no slot reason',
+          fn: async () => {
+            const slices = new Set(Array.from({ length: 16, }, function indexOf(_unused, at,): number {
+              return at;
+            },),);
+            expect(parseConsistency({
+              value: structuredClone(LIVE_CONSISTENCY_FIFTEEN,),
+              path: 'live.consistency',
+              generation: 15,
+              sliceIndexes: slices,
+            },),).toEqual(LIVE_CONSISTENCY_FIFTEEN,);
+            expect(
+              String(caught(function readAsSixteen(): unknown {
+              return parseConsistency({
+                value: structuredClone(LIVE_CONSISTENCY_FIFTEEN,),
+                path: 'live.consistency',
+                generation: 16,
+                sliceIndexes: slices,
+              },);
+            },),),
+            ).toBe(
+              'ArtifactParseError: artifact parse failed at live.consistency.groups[0].occurrences[0].rendering.reason: '
+              + 'expected a reason generation sixteen gives, which locates a place on its quote and not its slot.',
+            );
           },
         },),
         it({
@@ -333,7 +372,7 @@ await describe({
               return parseConsistency({
                 value: NO_CONSISTENCY,
                 path: 'cat.consistency',
-                writesSection: false,
+                generation: 14,
                 sliceIndexes: SLICES,
               },);
             },) instanceof ArtifactParseError,).toBe(true,);
@@ -536,6 +575,7 @@ await describe({
                 { ...place, label: 'OCCURRENCE 2', sliceIndex: 2, startOffset: 85, endOffset: 97, line: 11, },
               ],
               unplaced: [],
+              carries: [],
               verdict: { kind: 'not-asked', reason: 'no-english', },
             };
             /**
@@ -580,6 +620,7 @@ await describe({
                 { ...place, label: 'OCCURRENCE 2', sliceIndex: 2, startOffset: 85, endOffset: 97, line: 11, },
               ],
               unplaced: [{ startOffset: 120, endOffset: 132, line: 14, reason: 'crosses-slice-end', },],
+              carries: [],
               verdict: {
                 kind: 'failed',
                 detail: 'unreachable: slice 2 of the preparation has no comparison row, and the comparison is derived '
@@ -630,6 +671,7 @@ await describe({
                     return refrainChoosing({ choice, },);
                   },),
               },),
+              others: otherSheetsSplittingRunOff,
             },);
             expect(readWritten({ value: tie, },),).toEqual(tie,);
             expect(refusalAfter({
@@ -673,67 +715,81 @@ await describe({
           },
         },),
         it({
-          name: 'READS EACH REASON A QUOTE OR A SLOT WAS NOT LOCATED FOR AS WRITTEN, and refuses it where the ballots '
-            + 'agree on what the reason denies',
+          name: 'READS THE REASON A QUOTE WAS NOT LOCATED FOR AS WRITTEN, and refuses it where the ballots agree on what the '
+            + 'reason denies',
           fn: async () => {
             const reasonPath = placePath({ group: 1, place: 1, field: ['rendering', 'reason',], },);
-            const cases = [
-              {
-                reason: 'empty',
-                tampered: 'no-agreement',
-                section: await sectionOf({
-                  behave: fiveAlike({
-                    quotes: refrainQuotesWithSecond({ over: { quote: '...', }, },),
-                    choice: 'OCCURRENCE 1',
-                    keep: [],
-                  },),
-                },),
-              },
-              {
-                reason: 'slot-empty',
-                tampered: 'slot-no-agreement',
-                section: await sectionOf({
-                  behave: fiveAlike({
-                    quotes: refrainQuotesWithSecond({ over: { slot: '', }, },),
-                    choice: 'OCCURRENCE 1',
-                    keep: [],
-                  },),
-                },),
-              },
-              {
-                reason: 'slot-no-agreement',
-                tampered: 'slot-empty',
-                section: await sectionOf({
-                  behave: refrainAnsweredInOrder({
-                    answers: ['lazy', 'lazy', 'idle', 'idle', 'cosy',]
-                      .map(function answerWith(slot,): { readonly kind: 'answers'; readonly text: string; } {
-                        return {
-                          kind: 'answers',
-                          text: ballotText({
-                            quotes: refrainQuotesWithSecond({ over: { slot, }, },),
-                            choice: 'OCCURRENCE 1',
-                            keep: [],
-                          },),
-                        };
-                      },),
-                  },),
-                },),
-              },
-            ];
-            expect(cases.map(function recorded({ section, },): unknown {
-              return valueAt({ root: section, path: reasonPath, },);
-            },),).toEqual(['empty', 'slot-empty', 'slot-no-agreement',],);
-            expect(cases.map(function accepted({ section, },): string {
-              return refusalOf({ value: section, },);
-            },),).toEqual(['not refused', 'not refused', 'not refused',],);
-            expect(cases.map(function refusedAt({ section, tampered, },): boolean {
-              return refusalAfter({ section, edits: [setAt({ path: reasonPath, value: tampered, },),], },)
-                .includes('cat.consistency.groups[1].occurrences[1].rendering.reason',);
-            },),).toEqual([true, true, true,],);
+            const section = await sectionOf({
+              behave: fiveAlike({
+                quotes: refrainQuotesWithSecond({ over: { quote: '...', }, },),
+                choice: 'OCCURRENCE 1',
+                keep: [],
+              },),
+            },);
+            expect(valueAt({ root: section, path: reasonPath, },),).toBe('empty',);
+            expect(refusalOf({ value: section, },),).toBe('not refused',);
+            expect(refusalAfter({ section, edits: [setAt({ path: reasonPath, value: 'no-agreement', },),], },),)
+              .toContain('cat.consistency.groups[1].occurrences[1].rendering.reason',);
           },
         },),
         it({
-          name: 'REFUSES A LOCATED SLOT THAT DOES NOT STAND EXACTLY ONCE IN THE WORDS OF ITS QUOTE, though the ballots agree on it',
+          name: 'LOCATES A PLACE WITHOUT A SLOT WHERE THE BALLOTS GAVE AN EMPTY SLOT OR NO SLOT A MAJORITY AGREED, reads that '
+            + 'as written, and refuses a slot reason of generation fifteen, which generation sixteen never writes',
+          fn: async () => {
+            const reasonPath = placePath({ group: 1, place: 1, field: ['rendering', 'reason',], },);
+            const emptySlot = await sectionOf({
+              behave: fiveAlike({
+                quotes: refrainQuotesWithSecond({ over: { slot: '', }, },),
+                choice: 'OCCURRENCE 1',
+                keep: [],
+              },),
+            },);
+            const disagreeing = await sectionOf({
+              behave: refrainAnsweredInOrder({
+                answers: ['lazy', 'lazy', 'idle', 'idle', 'cosy',]
+                  .map(function answerWith(slot,): { readonly kind: 'answers'; readonly text: string; } {
+                    return {
+                      kind: 'answers',
+                      text: ballotText({
+                        quotes: refrainQuotesWithSecond({ over: { slot, }, },),
+                        choice: 'OCCURRENCE 1',
+                        keep: [],
+                      },),
+                    };
+                  },),
+              },),
+            },);
+            expect([emptySlot, disagreeing,].map(function recorded(section,): unknown {
+              return valueAt({ root: section, path: placePath({ group: 1, place: 1, field: ['rendering',], },), },);
+            },),).toEqual([
+              { kind: 'located', quote: 'So this cat is surely a lazy little treasure', start: 58, },
+              { kind: 'located', quote: 'So this cat is surely a lazy little treasure', start: 58, },
+            ],);
+            expect([emptySlot, disagreeing,].map(function accepted(section,): string {
+              return refusalOf({ value: section, },);
+            },),).toEqual(['not refused', 'not refused',],);
+            expect(['slot-empty', 'slot-no-agreement', 'slot-not-found', 'slot-ambiguous', 'slot-whole',]
+              .map(function tamperedWith(reason,): string {
+                return refusalAfter({
+                  section: emptySlot,
+                  edits: [
+                    setAt({
+                      path: placePath({ group: 1, place: 1, field: ['rendering',], },),
+                      value: { kind: 'unlocated', reason, },
+                    },),
+                    setAt({ path: placePath({ group: 1, place: 1, field: ['outcome',], },), value: 'unlocated', },),
+                  ],
+                },);
+              },)
+              .every(function namesTheReason(message,): boolean {
+                return message.includes('cat.consistency.groups[1].occurrences[1].rendering.reason',)
+                  && message.includes('a reason generation sixteen gives, which locates a place on its quote and not its slot',);
+              },),).toBe(true,);
+            expect(reasonPath.length,).toBeGreaterThan(0,);
+          },
+        },),
+        it({
+          name: 'REFUSES A LOCATED SLOT THAT DOES NOT STAND EXACTLY ONCE IN THE WORDS OF ITS PLACE, though the ballots agree on it',
           fn: async () => {
             const section = await sectionOf({
               behave: fiveAlike({ quotes: REFRAIN_QUOTES, choice: 'OCCURRENCE 1', keep: [], },),
@@ -754,7 +810,7 @@ await describe({
             }
             expect(['bored', 'e',].map(function refusedFor(slot,): boolean {
               return refusalAfter({ section, edits: slotEdits({ slot, },), },)
-                .includes('a slot that stands exactly once in the words of its quote',);
+                .includes('the slot a strict majority of the usable ballots gave inside those words, and none where they gave none',);
             },),).toEqual([true, true,],);
           },
         },),
@@ -775,13 +831,13 @@ await describe({
           },
         },),
         it({
-          name: 'READS BACK EACH OUTCOME AND EACH REASON THE PASS WRITES, a floor refusal, an overlap, a place that already '
-            + 'follows, a place with no English, a quote standing twice, a group whose handling failed',
+          name: 'READS BACK EACH OUTCOME AND EACH REASON THE PASS WRITES, a splice a floor withheld, an overlap, a place that '
+            + 'already follows, a place with no English, a quote standing twice, a group whose handling failed',
           fn: async () => {
             const prepared = preparedCatPage();
             const archive = archiveEnglishOf({ prepared, },);
             const sections: Record<string, ArtifactConsistency> = {
-              keptFloor: await sectionOfRun({
+              withheldSplice: await sectionOfRun({
                 behave: slotWithTheName,
                 prepared: { ...prepared, declaredNames: ['Mittens',], },
                 english: [
@@ -846,7 +902,7 @@ await describe({
               return [name, refusalOf({ value: section, },),];
             },),);
             expect(outcome,).toEqual({
-              keptFloor: 'not refused',
+              withheldSplice: 'not refused',
               overlapped: 'not refused',
               following: 'not refused',
               alike: 'not refused',
@@ -857,7 +913,7 @@ await describe({
             expect(Object.entries(sections,).map(function outcomesIn([name, section,],): readonly [string, readonly string[]] {
               return [name, outcomesByGroup({ consistency: section, },).flat(),];
             },),).toEqual([
-              ['keptFloor', ['chosen', 'replaced', 'chosen', 'kept-floor', 'replaced', 'replaced',],],
+              ['withheldSplice', ['chosen', 'replaced', 'chosen', 'kept-current', 'replaced', 'replaced',],],
               ['overlapped', ['chosen', 'replaced', 'chosen', 'replaced', 'overlapped', 'replaced',],],
               ['following', ['chosen', 'replaced', 'chosen', 'replaced', 'replaced', 'consistent',],],
               ['alike', ['consistent', 'consistent', 'chosen', 'replaced', 'unlocated', 'replaced',],],
@@ -908,6 +964,7 @@ await describe({
               repeat: { kind: 'maximal', wording: '窗台上的阳光让小猫睡着了', },
               occurrences: [place,],
               unplaced: [],
+              carries: [],
             };
             expect([
               { ...base, verdict: { kind: 'not-asked', reason: 'no-english', }, },
@@ -941,6 +998,7 @@ await describe({
                   repeat: { kind: 'maximal', wording: '窗台上的阳光让小猫睡着了', },
                   occurrences: [place, { ...place, label: 'OCCURRENCE 2', startOffset: 30, endOffset: 42, line: 5, },],
                   unplaced: [],
+                  carries: [],
                   verdict: { kind: 'not-asked', reason: 'consistent', },
                 },],
                 slices: [],

@@ -23,6 +23,7 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
+  type ArtifactConsistencyCarry,
   type ArtifactConsistencyGroup,
   type ArtifactConsistencyOccurrence,
   assertGroupFits,
@@ -75,9 +76,11 @@ function fitRefusal(
   {
     group,
     sliceIndexes = SLICES,
+    generation = 15,
   }: {
     readonly group: ArtifactConsistencyGroup;
     readonly sliceIndexes?: ReadonlySet<number>;
+    readonly generation?: 15 | 16;
   },
 ): string {
   return refusalTextOf({
@@ -86,6 +89,7 @@ function fitRefusal(
         group,
         path: 'cat.groups[0]',
         sliceIndexes,
+        generation,
       },);
     },
   },);
@@ -103,11 +107,20 @@ function fitRefusal(
  const nothing = fitRead({ group: napsGroup(), },);
  ```
  */
-function fitRead({ group, }: { readonly group: ArtifactConsistencyGroup; },): unknown {
+function fitRead(
+  {
+    group,
+    generation = 15,
+  }: {
+    readonly group: ArtifactConsistencyGroup;
+    readonly generation?: 15 | 16;
+  },
+): unknown {
   return assertGroupFits({
     group,
     path: 'cat.groups[0]',
     sliceIndexes: SLICES,
+    generation,
   },);
 }
 
@@ -327,6 +340,62 @@ await describe({
               + 'expected a slot in the rendering of a place of a frame, and in no other.',
               'ArtifactParseError: artifact parse failed at cat.groups[0].occurrences[1].rendering: '
               + 'expected a slot in the rendering of a place of a frame, and in no other.',
+            ],);
+          },
+        },),
+        it({
+          name: 'ACCEPTS, FROM GENERATION SIXTEEN, A LOCATED RENDERING OF A FRAME WITH NO SLOT, since a slot is no condition '
+            + 'of a place being located, and still refuses a slot in the rendering of a repeated run',
+          fn: async () => {
+            const withoutSlot = withPlace({
+              group: frameGroup(),
+              position: 1,
+              over: { rendering: { kind: 'located', quote: 'So this cat must be a chubby little treasure', start: 4, }, },
+            });
+            expect([
+              fitRead({ group: withoutSlot, generation: 16, },),
+              fitRefusal({ group: withoutSlot, generation: 15, },),
+              fitRefusal({
+                group: withPlace({
+                  group: napsGroup(),
+                  position: 1,
+                  over: { rendering: { kind: 'located', quote: 'The kitten naps', start: 4, slot: 'kitten', }, },
+                }),
+                generation: 16,
+              },),
+            ],).toEqual([
+              undefined,
+              'ArtifactParseError: artifact parse failed at cat.groups[0].occurrences[1].rendering: '
+              + 'expected a slot in the rendering of a place of a frame, and in no other.',
+              'ArtifactParseError: artifact parse failed at cat.groups[0].occurrences[1].rendering: '
+              + 'expected a slot in the rendering of a place of a frame only.',
+            ],);
+          },
+        },),
+        it({
+          name: 'REFUSES CARRIES BESIDE A BENCH THAT WAS NOT ASKED OR WHOSE HANDLING FAILED, since there is nothing to carry',
+          fn: async () => {
+            const carry: ArtifactConsistencyCarry = {
+              label: 'OCCURRENCE 2',
+              candidates: [],
+              ballots: [],
+              usable: 0,
+              quorum: 0,
+              decision: { kind: 'failed', detail: 'refused by ConsistencyInvariantError', },
+            };
+            const groups: readonly ArtifactConsistencyGroup[] = [
+              { ...unaskedGroup({ reason: 'consistent', outcome: 'consistent', places: 3, }), carries: [carry,], },
+              {
+                ...unaskedGroup({ reason: 'no-english', outcome: 'untouched', places: 3, }),
+                verdict: { kind: 'failed', detail: 'refused by ConsistencyInvariantError', },
+                carries: [carry,],
+              },
+            ];
+            expect(groups.map(function refusedFor(group,): string {
+              return fitRefusal({ group, generation: 16, },);
+            },),).toEqual([
+              'ArtifactParseError: artifact parse failed at cat.groups[0].carries: expected no carries, since the bench was not asked.',
+              'ArtifactParseError: artifact parse failed at cat.groups[0].carries: expected no carries, since the bench was not asked.',
             ],);
           },
         },),

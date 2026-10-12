@@ -1,8 +1,8 @@
 /**
- Tests for settling a repeat group once the bench has spoken, or was not
- asked, or failed: the verdict a group records, the rendering and provisional
- outcome of each place, and the replacements the winner would make before the
- floors have spoken.
+ Tests for deciding a repeat group once the bench has spoken, and settling it
+ once its receiving places are carried to: the verdict a group records, the
+ rendering and provisional outcome of each place, the run-off of a tie for
+ first, and the replacements the carries make before the floors have spoken.
 
  Fixtures are cat-themed invention; no corpus content appears here.
 
@@ -10,6 +10,7 @@
  */
 
 import {
+  caught,
   DEFAULT_CONCURRENCY,
   describe,
   expect,
@@ -18,15 +19,20 @@ import {
 
 import {
   type ArtifactConsistencyRepeat,
+  ConsistencyInvariantError,
   type ConsistencyAsked,
   type ConsistencyPlace,
+  type ConsistencyRunOffAsked,
   type ConsistencyVoice,
-  type RepeatGroup,
+  countAsked,
+  type PlaceCarried,
   settleAsked,
-  settleFailed,
-  settleUnasked,
-  unplacedOf,
+  settleCarried,
 } from '../../dist/final/node/index.mjs';
+import {
+  placeIn,
+  runOffOf,
+} from './consistency-settle.test-fixture.ts';
 
 /**
  The repeated sentence, as the artifact records it.
@@ -44,46 +50,6 @@ const FRAME: ArtifactConsistencyRepeat = {
   prefix: '所以这只猫',
   suffix: '的小宝贝',
 };
-
-/**
- A place a slice holds whole, the slice carrying the English it is given.
-
- @param position - position of the place in its group, which is also its slice
-
- @param english - the English the place's slice carries
-
- @returns The place with the facts of its slice
-
- @example
- ```ts
- const place = placeIn({ position: 0, english: 'The cat naps.', },);
- ```
- */
-function placeIn(
-  {
-    position,
-    english,
-  }: {
-    readonly position: number;
-    readonly english: string;
-  },
-): ConsistencyPlace {
-  return {
-    startOffset: position * 10,
-    endOffset: (position * 10) + 4,
-    line: position + 1,
-    slice: {
-      sliceIndex: position,
-      sourceIndex: position,
-      sourceText: '小猫打盹',
-      sourceStart: position * 10,
-      nodes: [],
-      current: { kind: 'present', text: english, },
-      lineStructured: false,
-      disputedWordings: [],
-    },
-  };
-}
 
 /**
  The three places of the repeated sentence: the English of the second says it
@@ -202,40 +168,98 @@ function threeAlike({ quotes, }: { readonly quotes: ConsistencyVoice['quotes']; 
 }
 
 /**
+ Four voices that give the same quotes and choose the first place twice and the second twice, a tie for first.
+
+ @returns The voices, in seat order
+
+ @example
+ ```ts
+ const voices = fourSplit();
+ ```
+ */
+function fourSplit(): readonly ConsistencyVoice[] {
+  return ['hyper-cat', 'bedrock-cat', 'synthetic-cat', 'openrouter-cat',].map(function voiceFor(
+    seat,
+    at,
+  ): ConsistencyVoice {
+    return voiceOf({
+      seat,
+      quotes: SENTENCE_QUOTES,
+      choice: (at < 2) ? 'OCCURRENCE 1' : 'OCCURRENCE 2',
+    },);
+  },);
+}
+
+/**
  Settles the repeated sentence in its three places from what the bench came to.
 
  @param asked - the ballots heard, the quorum and the gather's findings
 
- @returns The settled group
+ @param runOff - what the run-off heard, none when the choices did not tie
+
+ @returns The decided group
 
  @example
  ```ts
- const settled = settleSentence({ asked: askedOf({ voices, }), },);
+ const decided = decideSentence({ asked: askedOf({ voices, }), },);
  ```
  */
-function settleSentence({ asked, }: { readonly asked: ConsistencyAsked; },): ReturnType<typeof settleAsked> {
+function decideSentence(
+  {
+    asked,
+    runOff,
+  }: {
+    readonly asked: ConsistencyAsked;
+    readonly runOff?: ConsistencyRunOffAsked;
+  },
+): ReturnType<typeof settleAsked> {
   return settleAsked({
     repeat: SENTENCE,
     places: SENTENCE_PLACES,
     unplaced: [],
     asked,
+    ...((runOff === undefined) ? {} : { runOff, }),
   },);
 }
 
 /**
- The outcomes of a settled group's places.
+ A carry of the second place that makes the edit it is given.
 
- @param settled - the settled group
+ @param edits - replacements the carry makes
 
- @returns One outcome per place
+ @param findings - what the carry reported
+
+ @returns The carried place
 
  @example
  ```ts
- const outcomes = outcomesOf({ settled, },);
+ const carried = carriedOf({ edits: [], findings: [], },);
  ```
  */
-function outcomesOf({ settled, }: { readonly settled: ReturnType<typeof settleAsked>; },): readonly string[] {
-  return settled.outcomes;
+function carriedOf(
+  {
+    edits,
+    findings,
+  }: {
+    readonly edits: PlaceCarried['edits'];
+    readonly findings: PlaceCarried['findings'];
+  },
+): PlaceCarried {
+  return {
+    carry: {
+      label: 'OCCURRENCE 2',
+      candidates: [
+        { label: 'CANDIDATE 1', kind: 'current', writers: [], text: 'Later the kitten naps in the sun.', },
+        { label: 'CANDIDATE 2', kind: 'splice', writers: [], text: 'Later the cat naps in the sun.', },
+      ],
+      ballots: [],
+      usable: 0,
+      quorum: 2,
+      decision: { kind: 'none', reason: 'no-quorum', },
+    },
+    edits,
+    findings,
+  };
 }
 
 await describe({
@@ -247,16 +271,22 @@ await describe({
       concurrency: DEFAULT_CONCURRENCY,
       children: [
         it({
-          name: 'SETTLES A GROUP THE BENCH DECIDED: the first place chosen, the second replaced by its words, the third '
-            + 'already carrying them, with the verdict, renderings and replacement recorded whole',
+          name: 'DECIDES A GROUP THE BENCH DECIDED: the first place chosen, the second a receiver of the chosen words, the third '
+            + 'already carrying them, with the verdict, renderings and receivers recorded whole and nothing replaced yet',
           fn: async () => {
             const voices = threeAlike({ quotes: SENTENCE_QUOTES, },);
-            expect(settleAsked({
+            const decided = settleAsked({
               repeat: SENTENCE,
               places: SENTENCE_PLACES,
               unplaced: [],
               asked: askedOf({ voices, findings: ['page-consistency 3/3',], }),
-            },),).toEqual({
+            },);
+            const renderings = [
+              { kind: 'located', quote: 'The cat naps', core: 'The cat naps', start: 0, },
+              { kind: 'located', quote: 'the kitten naps', core: 'the kitten naps', start: 6, },
+              { kind: 'located', quote: 'The cat naps', core: 'The cat naps', start: 9, },
+            ] as const;
+            expect(decided,).toEqual({
               repeat: SENTENCE,
               places: SENTENCE_PLACES,
               unplaced: [],
@@ -267,33 +297,33 @@ await describe({
                 quorum: 2,
                 winner: { kind: 'chosen', label: 'OCCURRENCE 1', },
               },
-              renderings: [
-                { kind: 'located', quote: 'The cat naps.', core: 'The cat naps', start: 0, },
-                { kind: 'located', quote: 'the kitten naps', core: 'the kitten naps', start: 6, },
-                { kind: 'located', quote: 'The cat naps', core: 'The cat naps', start: 9, },
-              ],
-              outcomes: ['chosen', 'replaced', 'consistent',],
-              edits: [
+              renderings,
+              outcomes: ['chosen', 'kept-current', 'consistent',],
+              edits: [],
+              carries: [],
+              findings: ['page-consistency 3/3',],
+              chosen: [{ place: SENTENCE_PLACES[0], rendering: renderings[0], },],
+              receivers: [
                 {
-                  placePosition: 1,
-                  sliceIndex: 1,
-                  start: 6,
-                  end: 21,
-                  text: 'the cat naps',
+                  place: SENTENCE_PLACES[1],
+                  rendering: renderings[1],
+                  position: 1,
+                  label: 'OCCURRENCE 2',
+                  plan: { kind: 'replace', start: 6, end: 21, text: 'the cat naps', },
                 },
               ],
-              findings: ['page-consistency 3/3',],
             },);
           },
         },),
         it({
-          name: 'SETTLES A FRAME BY CARRYING THE CHOSEN PATTERN OVER THE RECEIVING PLACE\'S OWN SLOT',
+          name: 'DECIDES A FRAME BY MAKING THE RECEIVING PLACE A RECEIVER OF THE CHOSEN PATTERN, its plan carrying its own slot '
+            + 'inside the chosen frame',
           fn: async () => {
             const quotes = [
               { label: 'OCCURRENCE 1', quote: 'So this cat is a lazy little treasure.', slot: 'lazy', },
               { label: 'OCCURRENCE 2', quote: 'So this cat must be a chubby little treasure.', slot: 'chubby', },
             ];
-            const settled = settleAsked({
+            const decided = settleAsked({
               repeat: FRAME,
               places: [
                 placeIn({ position: 0, english: 'So this cat is a lazy little treasure. Sleep.', },),
@@ -302,10 +332,10 @@ await describe({
               unplaced: [],
               asked: askedOf({ voices: threeAlike({ quotes, },), }),
             },);
-            expect(settled.renderings,).toEqual([
+            expect(decided.renderings,).toEqual([
               {
                 kind: 'located',
-                quote: 'So this cat is a lazy little treasure.',
+                quote: 'So this cat is a lazy little treasure',
                 core: 'So this cat is a lazy little treasure',
                 start: 0,
                 slot: 'lazy',
@@ -313,23 +343,42 @@ await describe({
               },
               {
                 kind: 'located',
-                quote: 'So this cat must be a chubby little treasure.',
+                quote: 'So this cat must be a chubby little treasure',
                 core: 'So this cat must be a chubby little treasure',
                 start: 5,
                 slot: 'chubby',
                 slotStart: 22,
               },
             ],);
-            expect(settled.edits,).toEqual([
-              {
-                placePosition: 1,
-                sliceIndex: 1,
-                start: 5,
-                end: 49,
-                text: 'So this cat is a chubby little treasure',
-              },
+            expect(decided.receivers.map(function planOf({ plan, label, },): unknown {
+              return [label, plan,];
+            },),).toEqual([
+              ['OCCURRENCE 2', { kind: 'replace', start: 5, end: 49, text: 'So this cat is a chubby little treasure', },],
             ],);
-            expect(outcomesOf({ settled, },),).toEqual(['chosen', 'replaced',],);
+            expect([decided.outcomes, decided.edits,],).toEqual([['chosen', 'kept-current',], [],],);
+          },
+        },),
+        it({
+          name: 'MAKES A FRAME\'S PLACE A RECEIVER WITH NO SPLICE WHEN THE BALLOTS DID NOT AGREE ITS SLOT, the plan unavailable '
+            + 'to code so only a writer can carry the pattern',
+          fn: async () => {
+            const quotes = [
+              { label: 'OCCURRENCE 1', quote: 'So this cat is a lazy little treasure.', slot: 'lazy', },
+              { label: 'OCCURRENCE 2', quote: 'So this cat must be a chubby little treasure.', },
+            ];
+            const decided = settleAsked({
+              repeat: FRAME,
+              places: [
+                placeIn({ position: 0, english: 'So this cat is a lazy little treasure. Sleep.', },),
+                placeIn({ position: 1, english: 'Now: So this cat must be a chubby little treasure.', },),
+              ],
+              unplaced: [],
+              asked: askedOf({ voices: threeAlike({ quotes, },), }),
+            },);
+            expect(decided.receivers.map(function planOf({ plan, },): unknown {
+              return plan;
+            },),).toEqual([{ kind: 'unavailable', },],);
+            expect(decided.outcomes,).toEqual(['chosen', 'kept-current',],);
           },
         },),
         it({
@@ -339,7 +388,7 @@ await describe({
               { label: 'OCCURRENCE 1', quote: 'So this cat is a lazy little treasure.', slot: 'lazy', },
               { label: 'OCCURRENCE 2', quote: 'So this cat is a chubby little treasure.', },
             ];
-            const settled = settleAsked({
+            const decided = settleAsked({
               repeat: FRAME,
               places: [
                 placeIn({ position: 0, english: 'So this cat is a lazy little treasure.', },),
@@ -348,16 +397,13 @@ await describe({
               unplaced: [],
               asked: askedOf({ voices: threeAlike({ quotes, },), }),
             },);
-            expect(settled.verdict.kind === 'asked' ? settled.verdict.ballots[0]?.quotes : null,).toEqual(quotes,);
+            expect(decided.verdict.kind === 'asked' ? decided.verdict.ballots[0]?.quotes : null,).toEqual(quotes,);
           },
         },),
         it({
-          name: 'KEEPS A PLACE A STRICT MAJORITY LISTS, recording kept-context and making no replacement for it',
+          name: 'KEEPS A PLACE A STRICT MAJORITY LISTS, recording kept-context and making it no receiver',
           fn: async () => {
-            const settled = settleAsked({
-              repeat: SENTENCE,
-              places: SENTENCE_PLACES,
-              unplaced: [],
+            const decided = decideSentence({
               asked: askedOf({
                 voices: ['hyper-cat', 'bedrock-cat', 'synthetic-cat',].map(function voiceFor(seat,): ConsistencyVoice {
                   return voiceOf({
@@ -368,17 +414,13 @@ await describe({
                 },),
               }),
             },);
-            expect(outcomesOf({ settled, },),).toEqual(['chosen', 'kept-context', 'consistent',],);
-            expect(settled.edits,).toEqual([],);
+            expect([decided.outcomes, decided.receivers,],).toEqual([['chosen', 'kept-context', 'consistent',], [],],);
           },
         },),
         it({
-          name: 'LEAVES A PLACE UNLOCATED WHEN ITS QUOTE IS NOT IN ITS ENGLISH, recording unlocated and making no replacement',
+          name: 'LEAVES A PLACE UNLOCATED WHEN ITS QUOTE IS NOT IN ITS ENGLISH, recording unlocated and making it no receiver',
           fn: async () => {
-            const settled = settleAsked({
-              repeat: SENTENCE,
-              places: SENTENCE_PLACES,
-              unplaced: [],
+            const decided = decideSentence({
               asked: askedOf({
                 voices: threeAlike({
                   quotes: [
@@ -389,9 +431,8 @@ await describe({
                 },),
               }),
             },);
-            expect(outcomesOf({ settled, },),).toEqual(['chosen', 'unlocated', 'consistent',],);
-            expect(settled.renderings[1],).toEqual({ kind: 'unlocated', reason: 'not-found', },);
-            expect(settled.edits,).toEqual([],);
+            expect([decided.outcomes, decided.receivers,],).toEqual([['chosen', 'unlocated', 'consistent',], [],],);
+            expect(decided.renderings[1],).toEqual({ kind: 'unlocated', reason: 'not-found', },);
           },
         },),
         it({
@@ -399,8 +440,8 @@ await describe({
             + 'whose quote is not located',
           fn: async () => {
             const alike = threeAlike({ quotes: SENTENCE_QUOTES, },);
-            const noQuorum = settleSentence({ asked: askedOf({ voices: alike, quorum: 4, }), },);
-            const noMajority = settleSentence({
+            const noQuorum = decideSentence({ asked: askedOf({ voices: alike, quorum: 4, }), },);
+            const noMajority = decideSentence({
               asked: askedOf({
                 voices: ['OCCURRENCE 1', 'OCCURRENCE 2', 'OCCURRENCE 3',].map(function splitChoice(choice,): ConsistencyVoice {
                   return voiceOf({
@@ -410,8 +451,9 @@ await describe({
                   },);
                 },),
               }),
+              runOff: runOffOf({ choices: ['OCCURRENCE 1', 'OCCURRENCE 2', 'OCCURRENCE 3',], },),
             },);
-            const chosenUnlocated = settleSentence({
+            const chosenUnlocated = decideSentence({
               asked: askedOf({
                 voices: threeAlike({
                   quotes: [
@@ -422,19 +464,19 @@ await describe({
                 },),
               }),
             },);
-            expect([noQuorum, noMajority, chosenUnlocated,].map(function winnerOfEach(settled,): unknown {
-              return settled.verdict.kind === 'asked' ? settled.verdict.winner : null;
+            expect([noQuorum, noMajority, chosenUnlocated,].map(function winnerOfEach(decided,): unknown {
+              return decided.verdict.kind === 'asked' ? decided.verdict.winner : null;
             },),).toEqual([
               { kind: 'none', reason: 'no-quorum', },
-              { kind: 'none', reason: 'no-majority', },
+              { kind: 'none', reason: 'run-off-tied', },
               { kind: 'none', reason: 'chosen-unlocated', },
             ],);
-            expect([noQuorum, noMajority, chosenUnlocated,].map(function outcomesOfEach(settled,): unknown {
-              return [outcomesOf({ settled, },), settled.edits,];
+            expect([noQuorum, noMajority, chosenUnlocated,].map(function outcomesOfEach(decided,): unknown {
+              return [decided.outcomes, decided.receivers, decided.chosen,];
             },),).toEqual([
-              [['untouched', 'untouched', 'untouched',], [],],
-              [['untouched', 'untouched', 'untouched',], [],],
-              [['untouched', 'untouched', 'untouched',], [],],
+              [['untouched', 'untouched', 'untouched',], [], [],],
+              [['untouched', 'untouched', 'untouched',], [], [],],
+              [['untouched', 'untouched', 'untouched',], [], [],],
             ],);
           },
         },),
@@ -445,13 +487,8 @@ await describe({
               ...threeAlike({ quotes: SENTENCE_QUOTES, },).slice(0, 2,),
               voiceOf({ seat: 'stray-cat', quotes: SENTENCE_QUOTES, choice: 'OCCURRENCE 9', },),
             ];
-            const settled = settleAsked({
-              repeat: SENTENCE,
-              places: SENTENCE_PLACES,
-              unplaced: [],
-              asked: askedOf({ voices, }),
-            },);
-            expect(settled.verdict.kind === 'asked' ? [settled.verdict.usable, settled.verdict.ballots,] : null,).toEqual([
+            const decided = decideSentence({ asked: askedOf({ voices, }), },);
+            expect(decided.verdict.kind === 'asked' ? [decided.verdict.usable, decided.verdict.ballots,] : null,).toEqual([
               2,
               voices,
             ],);
@@ -469,107 +506,181 @@ await describe({
             },).unplaced,).toEqual(unplaced,);
           },
         },),
-      ],
-    },),
-    describe({
-      name: settleUnasked.name,
-      concurrency: DEFAULT_CONCURRENCY,
-      children: [
         it({
-          name: 'LEAVES EVERY PLACE OF A GROUP THAT READ ALIKE CONSISTENT, the bench not asked and no replacement made',
+          name: 'RUNS OFF A TIE FOR FIRST: the finalist the run-off\'s strict majority names is chosen, and the run-off is '
+            + 'recorded whole beside the first round with its findings',
           fn: async () => {
-            expect(settleUnasked({
-              repeat: SENTENCE,
-              places: SENTENCE_PLACES,
-              unplaced: [],
-              reason: 'consistent',
-            },),).toEqual({
-              repeat: SENTENCE,
-              places: SENTENCE_PLACES,
-              unplaced: [],
-              verdict: { kind: 'not-asked', reason: 'consistent', },
-              renderings: [
-                { kind: 'unlocated', reason: 'not-asked', },
-                { kind: 'unlocated', reason: 'not-asked', },
-                { kind: 'unlocated', reason: 'not-asked', },
-              ],
-              outcomes: ['consistent', 'consistent', 'consistent',],
-              edits: [],
-              findings: [],
+            const voices = fourSplit();
+            const decided = decideSentence({
+              asked: askedOf({ voices, quorum: 3, }),
+              runOff: runOffOf({
+                choices: ['OCCURRENCE 2', 'OCCURRENCE 2', 'OCCURRENCE 1',],
+                quorum: 2,
+                findings: ['page-consistency-run-off 3/3',],
+              },),
+            },);
+            expect({
+              verdict: decided.verdict,
+              outcomes: decided.outcomes,
+              findings: decided.findings,
+              receivers: decided.receivers.map(function labelOf({ label, },): string {
+                return label;
+              },),
+            },).toEqual({
+              verdict: {
+                kind: 'asked',
+                ballots: voices,
+                usable: 4,
+                quorum: 3,
+                winner: { kind: 'chosen', label: 'OCCURRENCE 2', },
+                runOff: {
+                  finalists: ['OCCURRENCE 1', 'OCCURRENCE 2',],
+                  ballots: [
+                    { seat: 'seat-0', reason: 'It renders the original best.', choice: 'OCCURRENCE 2', },
+                    { seat: 'seat-1', reason: 'It renders the original best.', choice: 'OCCURRENCE 2', },
+                    { seat: 'seat-2', reason: 'It renders the original best.', choice: 'OCCURRENCE 1', },
+                  ],
+                  usable: 3,
+                  quorum: 2,
+                },
+              },
+              outcomes: ['kept-current', 'chosen', 'kept-current',],
+              findings: ['page-consistency-run-off 3/3',],
+              receivers: ['OCCURRENCE 1', 'OCCURRENCE 3',],
             },);
           },
         },),
         it({
-          name: 'LEAVES EVERY PLACE OF A GROUP WITH TOO FEW PLACES OR NO ENGLISH UNTOUCHED, naming the reason',
+          name: 'LEAVES THE PAGE AS IT STANDS ON A SECOND TIE OR A RUN-OFF BELOW ITS QUORUM, recorded with the run-off whole',
           fn: async () => {
-            expect((['too-few-placed', 'no-english',] as const).map(function settle(reason,): unknown {
-              const settled = settleUnasked({
-                repeat: SENTENCE,
-                places: SENTENCE_PLACES.slice(0, 2,),
-                unplaced: [],
-                reason,
-              },);
-              return [settled.verdict, settled.outcomes,];
+            const tied = decideSentence({
+              asked: askedOf({ voices: fourSplit(), quorum: 3, }),
+              runOff: runOffOf({ choices: ['OCCURRENCE 1', 'OCCURRENCE 2',], },),
+            },);
+            const short = decideSentence({
+              asked: askedOf({ voices: fourSplit(), quorum: 3, }),
+              runOff: runOffOf({ choices: ['OCCURRENCE 1',], quorum: 2, },),
+            },);
+            expect([tied, short,].map(function summary(decided,): unknown {
+              return decided.verdict.kind === 'asked'
+                ? [decided.verdict.winner, decided.verdict.runOff?.usable, decided.outcomes, decided.receivers.length,]
+                : null;
             },),).toEqual([
-              [{ kind: 'not-asked', reason: 'too-few-placed', }, ['untouched', 'untouched',],],
-              [{ kind: 'not-asked', reason: 'no-english', }, ['untouched', 'untouched',],],
+              [{ kind: 'none', reason: 'run-off-tied', }, 2, ['untouched', 'untouched', 'untouched',], 0,],
+              [{ kind: 'none', reason: 'run-off-no-quorum', }, 1, ['untouched', 'untouched', 'untouched',], 0,],
+            ],);
+          },
+        },),
+        it({
+          name: 'REFUSES A GROUP WHOSE TIE WAS NOT RUN OFF, and a run-off heard for choices that did not tie',
+          fn: async () => {
+            const tieWithoutRunOff = caught(function settleTie(): unknown {
+              return decideSentence({ asked: askedOf({ voices: fourSplit(), quorum: 3, }), },);
+            },);
+            const runOffWithoutTie = caught(function settleMajority(): unknown {
+              return decideSentence({
+                asked: askedOf({ voices: threeAlike({ quotes: SENTENCE_QUOTES, },), }),
+                runOff: runOffOf({ choices: ['OCCURRENCE 2', 'OCCURRENCE 2',], },),
+              },);
+            },);
+            expect(tieWithoutRunOff,).toBeInstanceOf(ConsistencyInvariantError,);
+            expect([String(tieWithoutRunOff,), String(runOffWithoutTie,),],).toEqual([
+              'ConsistencyInvariantError: unreachable: the choices tied for first and the bench was not asked again, and a tie is '
+              + 'run off before the group is settled',
+              'ConsistencyInvariantError: unreachable: a run-off was heard for choices that did not tie for first, and the bench '
+              + 'is asked again only on a tie',
             ],);
           },
         },),
       ],
     },),
     describe({
-      name: settleFailed.name,
+      name: countAsked.name,
       concurrency: DEFAULT_CONCURRENCY,
       children: [
         it({
-          name: 'LEAVES EVERY PLACE OF A GROUP WHOSE HANDLING FAILED UNTOUCHED, recording the detail and no replacement',
+          name: 'COUNTS THE FIRST ROUND\'S BALLOTS OVER THE PLACES and names the finalists of a tie for first',
           fn: async () => {
-            const unplaced = [{ startOffset: 40, endOffset: 44, line: 5, reason: 'in-no-slice', },] as const;
-            expect(settleFailed({
-              repeat: FRAME,
+            const tied = countAsked({
+              repeat: SENTENCE,
               places: SENTENCE_PLACES,
-              unplaced,
-              detail: 'refused by ConsistencyInvariantError',
-            },),).toEqual({
-              repeat: FRAME,
+              asked: askedOf({ voices: fourSplit(), quorum: 3, }),
+            },);
+            const decided = countAsked({
+              repeat: SENTENCE,
               places: SENTENCE_PLACES,
-              unplaced,
-              verdict: { kind: 'failed', detail: 'refused by ConsistencyInvariantError', },
-              renderings: [
-                { kind: 'unlocated', reason: 'not-asked', },
-                { kind: 'unlocated', reason: 'not-asked', },
-                { kind: 'unlocated', reason: 'not-asked', },
-              ],
-              outcomes: ['untouched', 'untouched', 'untouched',],
-              edits: [],
-              findings: [],
+              asked: askedOf({ voices: threeAlike({ quotes: SENTENCE_QUOTES, },), }),
+            },);
+            expect([tied.finalists, tied.winner, decided.finalists, decided.winner,],).toEqual([
+              ['OCCURRENCE 1', 'OCCURRENCE 2',],
+              { kind: 'none', reason: 'no-majority', },
+              [],
+              { kind: 'chosen', label: 'OCCURRENCE 1', },
+            ],);
+          },
+        },),
+      ],
+    },),
+    describe({
+      name: settleCarried.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'MAKES A RECEIVER REPLACED WHEN ITS CARRY MAKES AN EDIT, and records the carries, the edits and the findings '
+            + 'of the decision and of the carries',
+          fn: async () => {
+            const decided = decideSentence({
+              asked: askedOf({ voices: threeAlike({ quotes: SENTENCE_QUOTES, },), findings: ['page-consistency 3/3',], }),
+            },);
+            const edit = { placePosition: 1, sliceIndex: 1, start: 6, end: 21, text: 'the cat naps', };
+            const carried = carriedOf({ edits: [edit,], findings: ['consistency-candidate-refused (qwen)',], });
+            const settled = settleCarried({ decided, carried: [carried,], },);
+            expect({
+              outcomes: settled.outcomes,
+              edits: settled.edits,
+              carries: settled.carries,
+              findings: settled.findings,
+              verdict: settled.verdict,
+            },).toEqual({
+              outcomes: ['chosen', 'replaced', 'consistent',],
+              edits: [edit,],
+              carries: [carried.carry,],
+              findings: ['page-consistency 3/3', 'consistency-candidate-refused (qwen)',],
+              verdict: decided.verdict,
             },);
           },
         },),
-      ],
-    },),
-    describe({
-      name: unplacedOf.name,
-      concurrency: DEFAULT_CONCURRENCY,
-      children: [
         it({
-          name: 'LISTS EACH PLACE NO SLICE HOLDS WHOLE WITH ITS OFFSETS, LINE AND REASON, in the detector\'s order',
+          name: 'KEEPS A RECEIVER\'S PROVISIONAL OUTCOME WHEN ITS CARRY MAKES NO EDIT: the page keeps its English',
           fn: async () => {
-            const group: RepeatGroup = {
-              kind: 'maximal',
-              length: 4,
-              occurrences: [],
-              unplaced: [
-                { startOffset: 40, endOffset: 44, line: 5, reason: 'crosses-slice-end', },
-                { startOffset: 60, endOffset: 64, line: 7, reason: 'in-no-slice', },
-              ],
-            };
-            expect(unplacedOf({ group, },),).toEqual([
-              { startOffset: 40, endOffset: 44, line: 5, reason: 'crosses-slice-end', },
-              { startOffset: 60, endOffset: 64, line: 7, reason: 'in-no-slice', },
-            ],);
-            expect(unplacedOf({ group: { ...group, unplaced: [], }, },),).toEqual([],);
+            const decided = decideSentence({
+              asked: askedOf({ voices: threeAlike({ quotes: SENTENCE_QUOTES, },), }),
+            },);
+            const settled = settleCarried({ decided, carried: [carriedOf({ edits: [], findings: [], }),], },);
+            expect([settled.outcomes, settled.edits,],).toEqual([['chosen', 'kept-current', 'consistent',], [],],);
+          },
+        },),
+        it({
+          name: 'SETTLES A GROUP WITH NO RECEIVER FROM NO CARRY, and refuses a count of carries that is not one per receiver',
+          fn: async () => {
+            const nobody = decideSentence({
+              asked: askedOf({ voices: threeAlike({ quotes: SENTENCE_QUOTES, },), quorum: 4, }),
+            },);
+            const receiving = decideSentence({
+              asked: askedOf({ voices: threeAlike({ quotes: SENTENCE_QUOTES, },), }),
+            },);
+            expect(settleCarried({ decided: nobody, carried: [], },).carries,).toEqual([],);
+            const refusal = caught(function settleTwo(): unknown {
+              return settleCarried({
+                decided: receiving,
+                carried: [carriedOf({ edits: [], findings: [], },), carriedOf({ edits: [], findings: [], },),],
+              },);
+            },);
+            expect(refusal,).toBeInstanceOf(ConsistencyInvariantError,);
+            expect(String(refusal,),).toBe(
+              'ConsistencyInvariantError: unreachable: the pass carries to each receiving place once, and the number of '
+              + 'carries differs from the number of receiving places (carried: 2, receiving: 1)',
+            );
           },
         },),
       ],

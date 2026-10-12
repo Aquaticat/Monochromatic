@@ -1385,6 +1385,26 @@ const HELD_TESTS: Readonly<Record<string, {
     tests: 1,
     why: ASSEMBLED,
   },
+  'consistency-run-off.ts#buildConsistencyRunOffMessages': {
+    tests: 1,
+    why: ASSEMBLED,
+  },
+  'consistency-carry-writer-sheet.ts#buildCarryWriterMessages': {
+    tests: 1,
+    why: ASSEMBLED,
+  },
+  'consistency-carry-writer-sheet.ts#isPresent': {
+    tests: 1,
+    why: ASSEMBLED,
+  },
+  'consistency-carry-choice-sheet.ts#buildCarryChoiceMessages': {
+    tests: 1,
+    why: ASSEMBLED,
+  },
+  'consistency-fold.ts#locateWords': {
+    tests: 1,
+    why: EMPTY_NEEDLE,
+  },
   'corpus-run/ordinal-style.ts#renderOrdinal': {
     tests: 1,
     why: SENTINEL,

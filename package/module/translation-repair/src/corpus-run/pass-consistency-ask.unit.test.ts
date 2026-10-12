@@ -22,6 +22,7 @@ import {
   askConsistencyBench,
   buildConsistencyMessages,
   CONSISTENCY_RESPONSE_FORMAT,
+  type ConsistencyCacheValue,
   type ConsistencyRecord,
   consistencyKey,
   consistencyLabels,
@@ -42,6 +43,7 @@ import {
   SEAT_HYPER_VISION,
 } from '../roster-seats.test-fixture.ts';
 import { SCRIPTED_STAGE_SETTINGS, } from '../stage-settings.test-fixture.ts';
+import { recordingCache, } from './consistency-cache.test-fixture.ts';
 import {
   scriptedJudgeClient,
   type SeatBehaviour,
@@ -80,6 +82,7 @@ const SUBJECT: ConsistencySubject = {
  The question the bench is put, as the cache names it.
  */
 const KEY = consistencyKey({
+  stage: 'ballots',
   messages: buildConsistencyMessages({ subject: SUBJECT, },),
   modelIds: BENCH,
 },);
@@ -150,43 +153,6 @@ function everySeatAnswers({ seat, }: { readonly seat: RosterModelId; },): SeatBe
 }
 
 /**
- A cache that keeps what it is handed, and refuses to store when told.
-
- @param resumed - what an earlier run settled
-
- @param persisted - sink for every question and answer handed to the store
-
- @param refusal - what storing fails with, absent when it works
-
- @returns The cache
-
- @example
- ```ts
- const cache = recordingCache({ resumed: new Map(), persisted: [], },);
- ```
- */
-function recordingCache(
-  {
-    resumed,
-    persisted,
-    refusal,
-  }: {
-    readonly resumed: ReadonlyMap<string, ConsistencyRecord>;
-    readonly persisted: { readonly key: string; readonly serialized: string; }[];
-    readonly refusal?: Error;
-  },
-): SliceCache<ConsistencyRecord> {
-  return {
-    resumed,
-    persist: async function persist(entry,): Promise<void> {
-      if (refusal !== undefined)
-        throw refusal;
-      persisted.push(entry,);
-    },
-  };
-}
-
-/**
  Asks the bench about the repeated sentence.
 
  @param behave - what each seat does
@@ -218,7 +184,7 @@ async function askBench(
     asked,
   }: {
     readonly behave: SeatScript;
-    readonly cache: SliceCache<ConsistencyRecord>;
+    readonly cache: SliceCache<ConsistencyCacheValue>;
     readonly modelIds?: readonly RosterModelId[];
     readonly subject?: ConsistencySubject;
     readonly lines: string[];
@@ -406,6 +372,7 @@ await describe({
           fn: async () => {
             const twoSeats = BENCH.slice(0, 2,);
             const twoSeatsKey = consistencyKey({
+              stage: 'ballots',
               messages: buildConsistencyMessages({ subject: SUBJECT, },),
               modelIds: twoSeats,
             },);
@@ -564,6 +531,7 @@ await describe({
               return entry.key;
             },),).toEqual([
               consistencyKey({
+                stage: 'ballots',
                 messages: buildConsistencyMessages({ subject: framed, },),
                 modelIds: BENCH,
                 lifeEnded: true,
@@ -571,6 +539,7 @@ await describe({
               },),
             ],);
             expect(persisted[0]?.key,).not.toBe(consistencyKey({
+              stage: 'ballots',
               messages: buildConsistencyMessages({ subject: framed, },),
               modelIds: BENCH,
             },),);
@@ -580,6 +549,7 @@ await describe({
           name: 'ASKS AGAIN WHEN THE STORED ANSWER IS FOR ANOTHER BENCH, since the key names the bench as well as the sheet',
           fn: async () => {
             const otherKey = consistencyKey({
+              stage: 'ballots',
               messages: buildConsistencyMessages({ subject: SUBJECT, },),
               modelIds: BENCH.slice(0, 2,),
             },);

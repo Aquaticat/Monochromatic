@@ -29,6 +29,7 @@ import {
   joined,
 } from './rendered-sheets-texts.test-fixture.ts';
 import { evidenceSheets, } from './rendered-sheets-preparation.test-fixture.ts';
+import { carrySheets, } from './rendered-sheets-carry.test-fixture.ts';
 import { judgeSheets, } from './rendered-sheets-judges.test-fixture.ts';
 import { slateSheets, } from './rendered-sheets-slates.test-fixture.ts';
 
@@ -345,6 +346,7 @@ export function renderedSheets(): readonly RenderedSheet[] {
     },
     ...evidenceSheets(),
     ...judgeSheets(),
+    ...carrySheets(),
     ...slateSheets(),
   ];
 }

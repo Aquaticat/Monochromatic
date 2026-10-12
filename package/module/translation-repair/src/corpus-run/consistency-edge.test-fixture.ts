@@ -24,12 +24,18 @@ import {
 import {
   ballotText,
   firstPlaceWins,
-  isRefrainSheet,
-  REFRAIN_QUOTES,
+  otherSheetBehaviour,
   type SeatBehaviour,
   type SeatScript,
-  SENTENCE_QUOTES,
 } from './consistency-page.test-fixture.ts';
+import {
+  REFRAIN_QUOTES,
+  SENTENCE_QUOTES,
+} from './consistency-quotes.test-fixture.ts';
+import {
+  isRefrainSheet,
+  sheetKindOf,
+} from './consistency-sheet-reading.test-fixture.ts';
 
 //region Consistency edge fixture
 
@@ -101,7 +107,9 @@ export function everySeatQuotes(
     readonly keep: readonly string[];
   },
 ): SeatScript {
-  return function answers(): SeatBehaviour {
+  return function answers({ sheet, }: { readonly sheet: string; },): SeatBehaviour {
+    if (sheetKindOf({ sheet, },) !== 'ballot')
+      return otherSheetBehaviour({ sheet, },);
     return {
       kind: 'answers',
       text: ballotText({
@@ -164,7 +172,7 @@ export function fourthAlreadyFollows({ sheet, }: { readonly sheet: string; },): 
  ```
  */
 export function sentenceQuoteSpansTheRefrain({ sheet, }: { readonly sheet: string; },): SeatBehaviour {
-  return isRefrainSheet({ sheet, },)
+  return (isRefrainSheet({ sheet, },) || (sheetKindOf({ sheet, },) !== 'ballot'))
     ? firstPlaceWins({ sheet, },)
     : {
       kind: 'answers',
@@ -342,7 +350,8 @@ export async function storedGathers(
 }
 
 /**
- Rewrites every stored gather's record with a change a case names.
+ Rewrites every stored first-round gather's record with a change a case names.
+ The run-off, writer and choice records, which carry a `kind`, are left as stored.
 
  @param dir - entry cache directory
 
@@ -369,6 +378,8 @@ export async function alterStored(
     const { record, } = stored.parsed;
     if (!isJsonRecord(record,))
       throw new Error(`the stored gather ${stored.path} holds no record`,);
+    if (record.kind !== undefined)
+      continue;
     /* oxlint-disable no-await-in-loop -- a handful of files rewritten one after another */
     await writeFile(
       stored.path,

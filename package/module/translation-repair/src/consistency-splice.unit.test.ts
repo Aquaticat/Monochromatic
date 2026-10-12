@@ -72,6 +72,7 @@ await describe({
             expect(planConsistencyEdit({
               chosen: locatedAt({ core: 'the kitten dozes', start: 40, },),
               target: locatedAt({ core: 'the kitten naps', start: 7, },),
+              framed: false,
             },),).toEqual({
               kind: 'replace',
               start: 7,
@@ -86,6 +87,7 @@ await describe({
             expect(planConsistencyEdit({
               chosen: locatedAt({ core: 'the kitten dozes', start: 40, },),
               target: locatedAt({ core: 'the kitten dozes', start: 7, },),
+              framed: false,
             },),).toEqual({ kind: 'same', },);
           },
         },),
@@ -95,6 +97,7 @@ await describe({
             expect(planConsistencyEdit({
               chosen: locatedAt({ core: 'the kitten dozes', start: 40, over: { quote: 'the kitten dozes.', }, },),
               target: locatedAt({ core: 'the kitten naps', start: 7, over: { quote: 'the kitten naps!', }, },),
+              framed: false,
             },),).toEqual({
               kind: 'replace',
               start: 7,
@@ -111,10 +114,12 @@ await describe({
               planConsistencyEdit({
                 chosen: locatedAt({ core: 'The kitten dozes', start: 0, },),
                 target: locatedAt({ core: 'the kitten naps', start: 9, },),
+                framed: false,
               },),
               planConsistencyEdit({
                 chosen: locatedAt({ core: 'the kitten dozes', start: 9, },),
                 target: locatedAt({ core: 'The kitten naps', start: 0, },),
+                framed: false,
               },),
             ],).toEqual([
               { kind: 'replace', start: 9, end: 24, text: 'the kitten dozes', },
@@ -128,6 +133,7 @@ await describe({
             expect(planConsistencyEdit({
               chosen: locatedAt({ core: 'Sunny windows nap', start: 0, },),
               target: locatedAt({ core: 'the kitten naps', start: 9, },),
+              framed: false,
             },),).toEqual({ kind: 'replace', start: 9, end: 24, text: 'Sunny windows nap', },);
           },
         },),
@@ -145,6 +151,7 @@ await describe({
                 start: 50,
                 over: { slot: 'lazy', slotStart: 24, },
               },),
+              framed: true,
             },),).toEqual({
               kind: 'replace',
               start: 50,
@@ -162,6 +169,7 @@ await describe({
             expect(planConsistencyEdit({
               chosen: locatedAt({ core: `${small} cat naps`, start: 0, },),
               target: locatedAt({ core: `${capital} cat sleeps`, start: 9, },),
+              framed: false,
             },),).toEqual({
               kind: 'replace',
               start: 9,
@@ -176,6 +184,7 @@ await describe({
             expect(planConsistencyEdit({
               chosen: locatedAt({ core: '3 cats nap', start: 0, },),
               target: locatedAt({ core: '4 cats sleep', start: 9, },),
+              framed: false,
             },),).toEqual({ kind: 'replace', start: 9, end: 21, text: '3 cats nap', },);
           },
         },),
@@ -187,10 +196,12 @@ await describe({
               planConsistencyEdit({
                 chosen: locatedAt({ core: '“The cat naps”', start: 0, },),
                 target: locatedAt({ core: '“the cat naps”', start: 9, },),
+                framed: false,
               },),
               planConsistencyEdit({
                 chosen: locatedAt({ core: '*The cat* naps', start: 0, },),
                 target: locatedAt({ core: '*the cat* dozes', start: 9, },),
+                framed: false,
               },),
             ],).toEqual([
               { kind: 'same', },
@@ -205,10 +216,12 @@ await describe({
               planConsistencyEdit({
                 chosen: locatedAt({ core: '((', start: 0, },),
                 target: locatedAt({ core: 'the cat', start: 9, },),
+                framed: false,
               },),
               planConsistencyEdit({
                 chosen: locatedAt({ core: 'The cat', start: 0, },),
                 target: locatedAt({ core: '**', start: 9, },),
+                framed: false,
               },),
             ],).toEqual([
               { kind: 'replace', start: 9, end: 16, text: '((', },
@@ -223,10 +236,12 @@ await describe({
               planConsistencyEdit({
                 chosen: locatedAt({ core: 'the kitten', start: 30, },),
                 target: locatedAt({ core: 'the kitten naps on the mat', start: 0, },),
+                framed: false,
               },),
               planConsistencyEdit({
                 chosen: locatedAt({ core: 'the kitten', start: 0, },),
                 target: locatedAt({ core: 'the kitten naps', start: 17, },),
+                framed: false,
               },),
             ],).toEqual([
               { kind: 'replace', start: 0, end: 26, text: 'the kitten', },
@@ -248,7 +263,43 @@ await describe({
                 start: 50,
                 over: { slot: 'lazy', slotStart: 22, },
               },),
+              framed: true,
             },),).toEqual({ kind: 'same', },);
+          },
+        },),
+        it({
+          name: 'FINDS A FRAME\'S PLACE UNAVAILABLE TO CODE when either place has no agreed slot, and the same when the words '
+            + 'are already the same',
+          fn: async () => {
+            expect([
+              planConsistencyEdit({
+                chosen: locatedAt({ core: 'So this cat must be a chubby little treasure', start: 42, },),
+                target: locatedAt({
+                  core: 'So this cat is surely a lazy little treasure',
+                  start: 50,
+                  over: { slot: 'lazy', slotStart: 24, },
+                },),
+                framed: true,
+              },),
+              planConsistencyEdit({
+                chosen: locatedAt({
+                  core: 'So this cat must be a chubby little treasure',
+                  start: 42,
+                  over: { slot: 'chubby', slotStart: 22, },
+                },),
+                target: locatedAt({ core: 'So this cat is surely a lazy little treasure', start: 50, },),
+                framed: true,
+              },),
+              planConsistencyEdit({
+                chosen: locatedAt({ core: 'So this cat must be a treasure', start: 42, },),
+                target: locatedAt({ core: 'So this cat must be a treasure', start: 50, },),
+                framed: true,
+              },),
+            ],).toEqual([
+              { kind: 'unavailable', },
+              { kind: 'unavailable', },
+              { kind: 'same', },
+            ],);
           },
         },),
       ],

@@ -21,11 +21,14 @@ import { HANG_STOP_MS, } from '../hang-stop.test-fixture.ts';
 import { SCRIPTED_STAGE_SETTINGS, } from '../stage-settings.test-fixture.ts';
 import {
   archiveEnglishOf,
+  otherSheetBehaviour,
   preparedCatPage,
   projectedCatPage,
   scriptedJudgeClient,
+  type SeatBehaviour,
   type SeatScript,
 } from './consistency-page.test-fixture.ts';
+import { sheetKindOf, } from './consistency-sheet-reading.test-fixture.ts';
 
 //region Consistency run fixture
 
@@ -49,6 +52,24 @@ assertPipelineDigest(DIGEST_TEXT,);
  Generation stamp the cache is opened under.
  */
 export const DIGEST: PipelineDigest = DIGEST_TEXT;
+
+/**
+ What every seat does with a sheet that is not a first-round ballot unless a case says otherwise: the writers
+ write nothing, a choice among candidates takes the first candidate that is not the paragraph as the page has it
+ now (the chosen words moved in by code), and a run-off takes the first tied place.
+
+ @param call - the call the seat was handed, of which only the sheet is read
+
+ @returns Behaviour of the seat
+
+ @example
+ ```ts
+ const behaviour = otherSheets({ seat, before: 0, sheet, },);
+ ```
+ */
+function otherSheets(call: Parameters<SeatScript>[0],): SeatBehaviour {
+  return otherSheetBehaviour({ sheet: call.sheet, },);
+}
 
 /**
  What a run of the pass came to.
@@ -95,6 +116,7 @@ export type CatRun = {
 export async function runCatPass(
   {
     behave,
+    others = otherSheets,
     entryCacheDir,
     prepared = preparedCatPage(),
     english = archiveEnglishOf({ prepared, },),
@@ -102,6 +124,7 @@ export async function runCatPass(
     dark = new Set<RosterModelId>(),
   }: {
     readonly behave: SeatScript;
+    readonly others?: SeatScript;
     readonly entryCacheDir: string;
     readonly prepared?: PreparedDocumentPair;
     readonly english?: readonly string[];
@@ -120,7 +143,9 @@ export async function runCatPass(
   return {
     consistency: await runPassConsistency({
       client: scriptedJudgeClient({
-        behave,
+        behave: function byQuestion(call,): SeatBehaviour {
+          return (sheetKindOf({ sheet: call.sheet, },) === 'ballot') ? behave(call,) : others(call,);
+        },
         asked,
         sheets,
         dark,

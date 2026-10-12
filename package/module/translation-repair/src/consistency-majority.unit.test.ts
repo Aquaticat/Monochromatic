@@ -19,10 +19,13 @@ import {
 import {
   agreedQuoteOf,
   agreedSlotOf,
+  agreedSlotWordsOf,
+  agreedWordsOf,
   type ConsistencyVoice,
   consistencyLabels,
   isKeptByMajority,
   majorityChoiceOf,
+  tiedForFirstOf,
   usableVoicesOf,
 } from '../dist/final/node/index.mjs';
 
@@ -112,6 +115,94 @@ await describe({
               agreedSlotOf({ voices: slotted, label: 'OCCURRENCE 1', },),
               agreedSlotOf({ voices: mostlyBare, label: 'OCCURRENCE 1', },),
             ],).toEqual([['naps',], [],],);
+          },
+        },),
+      ],
+    },),
+    describe({
+      name: agreedWordsOf.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'NAMES THE FOLDED WORDS MORE THAN HALF OF THE USABLE BALLOTS QUOTED, whatever their spacing, apostrophes and '
+            + 'closing marks, and none when the words split',
+          fn: async () => {
+            const alike = [
+              voiceOf({ seat: 'a', over: { quotes: [{ label: 'OCCURRENCE 1', quote: 'The cat wasn’t   asleep.', },], }, },),
+              voiceOf({ seat: 'b', over: { quotes: [{ label: 'OCCURRENCE 1', quote: 'The cat wasn\'t\nasleep', },], }, },),
+              voiceOf({ seat: 'c', over: { quotes: [{ label: 'OCCURRENCE 1', quote: 'The cat dozes', },], }, },),
+            ];
+            const split = [
+              voiceOf({ seat: 'a', over: { quotes: [{ label: 'OCCURRENCE 1', quote: 'The cat naps', },], }, },),
+              voiceOf({ seat: 'b', over: { quotes: [{ label: 'OCCURRENCE 1', quote: 'The cat dozes', },], }, },),
+            ];
+            expect([
+              agreedWordsOf({ voices: alike, label: 'OCCURRENCE 1', },),
+              agreedWordsOf({ voices: split, label: 'OCCURRENCE 1', },),
+              agreedWordsOf({ voices: alike, label: 'OCCURRENCE 2', },),
+              agreedWordsOf({ voices: [], label: 'OCCURRENCE 1', },),
+            ],).toEqual([['The cat wasn\'t asleep',], [], [], [],],);
+          },
+        },),
+      ],
+    },),
+    describe({
+      name: agreedSlotWordsOf.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'NAMES THE FOLDED SLOT WORDS MORE THAN HALF OF THE USABLE BALLOTS GAVE beside the agreed words, a slot given '
+            + 'beside other words or not given counting against it',
+          fn: async () => {
+            const voices = [
+              voiceOf({ seat: 'a', over: { quotes: [{ label: 'OCCURRENCE 1', quote: 'The cat naps', slot: 'cat', },], }, },),
+              voiceOf({ seat: 'b', over: { quotes: [{ label: 'OCCURRENCE 1', quote: 'The cat naps.', slot: 'cat', },], }, },),
+              voiceOf({ seat: 'c', over: { quotes: [{ label: 'OCCURRENCE 1', quote: 'The cat', slot: 'cat', },], }, },),
+            ];
+            expect([
+              agreedSlotWordsOf({ voices, label: 'OCCURRENCE 1', words: 'The cat naps', },),
+              agreedSlotWordsOf({ voices, label: 'OCCURRENCE 1', words: 'The cat', },),
+              agreedSlotWordsOf({ voices, label: 'OCCURRENCE 1', words: 'The kitten', },),
+            ],).toEqual([['cat',], [], [],],);
+          },
+        },),
+      ],
+    },),
+    describe({
+      name: tiedForFirstOf.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'NAMES THE LABELS SHARING THE HIGHEST CHOICE COUNT when two or more share it and none has more than half, in '
+            + 'the order of the sheet',
+          fn: async () => {
+            const labels = consistencyLabels({ count: 3, },);
+            /**
+             Ballots that choose the labels given, one each.
+             */
+            function choosing({ choices, }: { readonly choices: readonly string[]; },): readonly ConsistencyVoice[] {
+              return choices.map(function oneSeat(
+                choice,
+                at,
+              ): ConsistencyVoice {
+                return voiceOf({ seat: `seat-${String(at,)}`, over: { choice, }, },);
+              },);
+            }
+            expect([
+              tiedForFirstOf({ voices: choosing({ choices: ['OCCURRENCE 1', 'OCCURRENCE 2',], },), labels, },),
+              tiedForFirstOf({ voices: choosing({ choices: ['OCCURRENCE 3', 'OCCURRENCE 1', 'OCCURRENCE 3', 'OCCURRENCE 1', 'OCCURRENCE 2',], },), labels, },),
+              tiedForFirstOf({ voices: choosing({ choices: ['OCCURRENCE 1', 'OCCURRENCE 1', 'OCCURRENCE 2',], },), labels, },),
+              tiedForFirstOf({ voices: choosing({ choices: ['OCCURRENCE 1', 'OCCURRENCE 1', 'OCCURRENCE 2', 'OCCURRENCE 3',], },), labels, },),
+              tiedForFirstOf({ voices: choosing({ choices: ['OCCURRENCE 2',], },), labels, },),
+              tiedForFirstOf({ voices: [], labels, },),
+            ],).toEqual([
+              ['OCCURRENCE 1', 'OCCURRENCE 2',],
+              ['OCCURRENCE 1', 'OCCURRENCE 3',],
+              [],
+              [],
+              [],
+              [],
+            ],);
           },
         },),
       ],

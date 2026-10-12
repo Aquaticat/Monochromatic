@@ -87,6 +87,7 @@ function coherent({ group, }: { readonly group: ArtifactConsistencyGroup; },): u
   return assertAskedGroupCoherent({
     group: askedOf({ group, },),
     path: GROUP,
+    generation: 15,
   },);
 }
 

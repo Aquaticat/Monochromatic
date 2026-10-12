@@ -22,6 +22,7 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
+  CONSISTENCY_CACHE_VERSION,
   consistencyKey,
   openConsistencyCache,
   type RosterModelId,
@@ -166,8 +167,8 @@ await describe({
         it({
           name: 'NAMES THE SAME QUESTION BY THE SAME KEY EVERY TIME',
           fn: async () => {
-            expect(consistencyKey({ messages: SHEET, modelIds: BENCH, },),).toBe(
-              consistencyKey({ messages: [...SHEET,], modelIds: [...BENCH,], },),
+            expect(consistencyKey({ stage: 'ballots', messages: SHEET, modelIds: BENCH, },),).toBe(
+              consistencyKey({ stage: 'ballots', messages: [...SHEET,], modelIds: [...BENCH,], },),
             );
           },
         },),
@@ -175,13 +176,52 @@ await describe({
           name: 'NAMES ANOTHER QUESTION BY ANOTHER KEY WHEN THE SHEET, THE BENCH OR THE ORDER OF THE BENCH CHANGES',
           fn: async () => {
             const keys = [
-              consistencyKey({ messages: SHEET, modelIds: BENCH, },),
-              consistencyKey({ messages: [{ role: 'user', content: 'Which rendering of the kitten naps best?', },], modelIds: BENCH, },),
-              consistencyKey({ messages: [...SHEET, { role: 'user', content: 'Mittens is the cat.', },], modelIds: BENCH, },),
-              consistencyKey({ messages: SHEET, modelIds: BENCH.slice(0, 2,), },),
-              consistencyKey({ messages: SHEET, modelIds: BENCH.toReversed(), },),
+              consistencyKey({ stage: 'ballots', messages: SHEET, modelIds: BENCH, },),
+              consistencyKey({
+                stage: 'ballots',
+                messages: [{ role: 'user', content: 'Which rendering of the kitten naps best?', },],
+                modelIds: BENCH,
+              },),
+              consistencyKey({
+                stage: 'ballots',
+                messages: [...SHEET, { role: 'user', content: 'Mittens is the cat.', },],
+                modelIds: BENCH,
+              },),
+              consistencyKey({ stage: 'ballots', messages: SHEET, modelIds: BENCH.slice(0, 2,), },),
+              consistencyKey({ stage: 'ballots', messages: SHEET, modelIds: BENCH.toReversed(), },),
             ];
             expect(new Set(keys,).size,).toBe(keys.length,);
+          },
+        },),
+        it({
+          name: 'NAMES ANOTHER QUESTION BY ANOTHER KEY FOR EACH STAGE, so a run-off, the writers and a choice among candidates '
+            + 'never read the first round\'s answer for the same sheet',
+          fn: async () => {
+            const keys = (['ballots', 'run-off', 'writers', 'choice',] as const).map(function keyOf(stage,): string {
+              return consistencyKey({ stage, messages: SHEET, modelIds: BENCH, },);
+            },);
+            expect(new Set(keys,).size,).toBe(4,);
+          },
+        },),
+        it({
+          name: 'FOLDS A RECORDED DEATH AND THE NAMES ITS TENSE CANDIDATES READ into the key, and a living entry keys as '
+            + 'without them',
+          fn: async () => {
+            const keys = [
+              consistencyKey({ stage: 'ballots', messages: SHEET, modelIds: BENCH, },),
+              consistencyKey({ stage: 'ballots', messages: SHEET, modelIds: BENCH, lifeEnded: false, subjectNames: ['Mittens',], },),
+              consistencyKey({ stage: 'ballots', messages: SHEET, modelIds: BENCH, lifeEnded: true, subjectNames: ['Mittens',], },),
+              consistencyKey({ stage: 'ballots', messages: SHEET, modelIds: BENCH, lifeEnded: true, subjectNames: ['Tom',], },),
+              consistencyKey({ stage: 'ballots', messages: SHEET, modelIds: BENCH, lifeEnded: true, },),
+            ];
+            expect([keys[0] === keys[1], new Set(keys.slice(2,),).size,],).toEqual([true, 3,],);
+          },
+        },),
+        it({
+          name: 'MOVES THE KEY WITH THE CACHE VERSION: the version is part of what the key digests, and version two names a '
+            + 'run that stores run-off, writer and choice records beside the ballots',
+          fn: async () => {
+            expect(CONSISTENCY_CACHE_VERSION,).toBe(2,);
           },
         },),
       ],
@@ -287,6 +327,60 @@ await describe({
             },),).toEqual({
               resumed: [false, false, false, false, false, false, false, false, false,],
               warned: Array.from({ length: 9, }, function refused(): string {
+                return REFUSED_LINE;
+              },),
+            },);
+          },
+        },),
+        it({
+          name: 'RESUMES A STORED RUN-OFF OR CHOICE RECORD AND A STORED WRITERS RECORD WHOLE, each as its kind',
+          fn: async () => {
+            const choice = {
+              kind: 'choice',
+              quorum: 2,
+              voices: [
+                { seat: 'hyper-cat', reason: 'It reads best.', choice: 'CANDIDATE 2', },
+                { seat: 'bedrock-cat', reason: 'It reads best.', choice: 'CANDIDATE 2', },
+              ],
+              findings: [],
+            };
+            const writers = {
+              kind: 'writers',
+              quorum: 1,
+              voices: [{ seat: 'hyper-cat', translation: 'The kitten naps in the sun.', },],
+              findings: ['page-consistency-writers 1/1',],
+            };
+            expect(await reopenedAll({ stored: [choice, writers,], },),).toEqual({ resumed: [true, true,], warned: [], },);
+          },
+        },),
+        it({
+          name: 'DOES NOT RESUME A CHOICE OR WRITERS RECORD WITH A DEFECT: an unknown kind, a choice without its seat or '
+            + 'with a number for its label, a paragraph that is not text, a ballot in place of a paragraph',
+          fn: async () => {
+            const choice = {
+              kind: 'choice',
+              quorum: 1,
+              voices: [{ seat: 'hyper-cat', reason: 'It reads best.', choice: 'CANDIDATE 2', },],
+              findings: [],
+            };
+            const writers = {
+              kind: 'writers',
+              quorum: 1,
+              voices: [{ seat: 'hyper-cat', translation: 'The kitten naps in the sun.', },],
+              findings: [],
+            };
+            expect(await reopenedAll({
+              stored: [
+                { ...choice, kind: 'ballots', },
+                { ...choice, voices: [{ reason: 'It reads best.', choice: 'CANDIDATE 2', },], },
+                { ...choice, voices: [{ seat: 'hyper-cat', reason: 'It reads best.', choice: 2, },], },
+                { ...writers, voices: [{ seat: 'hyper-cat', translation: 4, },], },
+                { ...writers, voices: [{ translation: 'The kitten naps in the sun.', },], },
+                { ...writers, voices: [VOICE,], },
+              ],
+            },),).toEqual({
+              resumed: [false, false, false, false, false, false,],
+              warned: Array.from({ length: 6, }, function refused(): string {
                 return REFUSED_LINE;
               },),
             },);

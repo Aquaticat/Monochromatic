@@ -33,6 +33,7 @@ import {
   prepareDocumentPair,
   type RosterModelId,
   RUN_LATE_JUDGES,
+  RUN_TRANSLATORS,
   runPassConsistency,
 } from '../../dist/final/node/index.mjs';
 import { HANG_STOP_MS, } from '../hang-stop.test-fixture.ts';
@@ -54,17 +55,28 @@ import { SCRIPTED_STAGE_SETTINGS, } from '../stage-settings.test-fixture.ts';
 import {
   archiveEnglishOf,
   ballotText,
+  choosing,
   firstPlaceWins,
-  isRefrainSheet,
+  otherSheetBehaviour,
   preparedCatPage,
   projectedCatPage,
-  REFRAIN_QUOTES,
   refrainAnsweredInOrder,
+  otherSheetsSplittingRunOff,
   refrainChoosing,
   scriptedJudgeClient,
   type SeatBehaviour,
-  SENTENCE_QUOTES,
 } from './consistency-page.test-fixture.ts';
+import {
+  REFRAIN_QUOTES,
+  SENTENCE_QUOTES,
+} from './consistency-quotes.test-fixture.ts';
+import {
+  candidateTextsOf,
+  currentParagraphOf,
+  isRefrainSheet,
+  sheetBlockOf,
+  sheetKindOf,
+} from './consistency-sheet-reading.test-fixture.ts';
 import {
   type CatRun,
   DIGEST,
@@ -173,6 +185,340 @@ function outcomesOf(
     },);
 }
 
+//region Live group two
+// The live case where a repeated sentence's first place carries an "also" that renders a word standing before the
+// repeat: the source in this region is the live Chinese, the English the live English trimmed to the paragraph around it.
+
+/**
+ The words of the first place's English that render the repeated sentence, with the "also" the live ballots quoted.
+ */
+const GROUP_TWO_WANTED = 'She also wanted to stay by more people\'s side looking cute and bring sunshine to more people';
+
+/**
+ The words of the second place's English that render the repeated sentence.
+ */
+const GROUP_TWO_ACCOMPANY = 'She wanted to accompany more people with her cuteness and bring sunshine to their lives';
+
+/**
+ The live page of group two: the sentence ends the first section after "也是" and stands alone in the second.
+
+ @returns Preparation of the page
+
+ @example
+ ```ts
+ const prepared = groupTwoPage();
+ ```
+ */
+function groupTwoPage(): ReturnType<typeof prepareDocumentPair> {
+  return prepareDocumentPair({
+    sourceText: '## 一\n\n她不是刻板印象当中懦弱的小孩，而是实实在在可以让大家依靠的「前辈」，更是值得信赖的「老师」，'
+      + '也是她想以可爱的样子陪伴在更多人的身边，为更多人带来阳光。\n\n## 二\n\n她想以可爱的样子陪伴在更多人的身边，为更多人带来阳光。\n',
+    targetText: '## One\n\nShe was not the stereotypical timid child;\nshe was a “senior” everyone could truly rely on,\nand,\n'
+      + `even more,\na “teacher” worthy of trust.\n${GROUP_TWO_WANTED}.\n\n## Two\n\n${GROUP_TWO_ACCOMPANY}.\n`,
+  },);
+}
+
+/**
+ The live ballots of group two: four judges answer, two quoting with the closing full stop and two without, three
+ choosing the first place and one the second; the other seats throw.
+
+ @param seat - the seat asked
+
+ @returns Behaviour of the seat
+
+ @example
+ ```ts
+ const behave: SeatScript = groupTwoBallots;
+ ```
+ */
+function groupTwoBallots({ seat, }: { readonly seat: RosterModelId; },): SeatBehaviour {
+  /**
+   Position of the seat among the late judges.
+   */
+  const position = RUN_LATE_JUDGES.indexOf(seat,);
+  if (position > 3)
+    return { kind: 'throws', };
+  /**
+   The closing mark two of the four live judges kept.
+   */
+  const stop = (position >= 2) ? '.' : '';
+  return {
+    kind: 'answers',
+    text: ballotText({
+      quotes: [
+        { label: 'OCCURRENCE 1', quote: `${GROUP_TWO_WANTED}${stop}`, },
+        { label: 'OCCURRENCE 2', quote: `${GROUP_TWO_ACCOMPANY}${stop}`, },
+      ],
+      choice: (position === 3) ? 'OCCURRENCE 2' : 'OCCURRENCE 1',
+      keep: [],
+    },),
+  };
+}
+
+/**
+ The writers and the bench of group two as scripted: the first two writers carry the chosen words without the "also",
+ the third carries them as they stand, the rest return the paragraph unchanged; the judges choose the candidate that
+ carries the chosen words without the "also".
+
+ @param seat - the seat asked
+
+ @param sheet - the sheet it was shown
+
+ @returns Behaviour of the seat
+
+ @example
+ ```ts
+ const behave: SeatScript = groupTwoWritersAndBench;
+ ```
+ */
+function groupTwoWritersAndBench(
+  {
+    seat,
+    sheet,
+  }: {
+    readonly seat: RosterModelId;
+    readonly before: number;
+    readonly sheet: string;
+  },
+): SeatBehaviour {
+  /**
+   The question the sheet asks.
+   */
+  const kind = sheetKindOf({ sheet, },);
+  if (kind === 'writer') {
+    /**
+     Position of the seat among the translate stage's writers.
+     */
+    const position = RUN_TRANSLATORS.indexOf(seat,);
+    // Only the first four writers answer, so the gather hears exactly them whatever the order the replies arrive in.
+    if (position > 3)
+      return { kind: 'throws', };
+    /**
+     The paragraph as it stands.
+     */
+    const current = currentParagraphOf({ sheet, },);
+    /**
+     The words the chosen rendering replaces here.
+     */
+    const words = sheetBlockOf({ sheet, label: 'THE WORDS TO REPLACE', },);
+    /**
+     The words the chosen place's English holds.
+     */
+    const chosen = sheetBlockOf({ sheet, label: 'CHOSEN RENDERING', },);
+    return {
+      kind: 'answers',
+      text: JSON.stringify({
+        translation: (position < 2)
+          ? current.replace(words, chosen.replace(' also', '',),)
+          : (position === 2)
+          ? current.replace(words, chosen,)
+          : current,
+      },),
+    };
+  }
+  if (kind === 'choice') {
+    // Only the first four judges answer, so the gather hears exactly them.
+    if (RUN_LATE_JUDGES.indexOf(seat,) > 3)
+      return { kind: 'throws', };
+    return choosing({
+      choice: candidateTextsOf({ sheet, },)
+        .find(function carriesTheWordsWithoutAlso({ current, text, },): boolean {
+          return (!current) && text.includes('stay by',) && (!text.includes('also',));
+        },)
+        ?.label
+        ?? '',
+    },);
+  }
+  return otherSheetBehaviour({ sheet, },);
+}
+
+//endregion Live group two
+
+//region Live group one
+// The live refrain whose four places tied two and two: the source in this region is the live Chinese, the English the live
+// English trimmed to the paragraph that holds the refrain.
+
+/**
+ The live page of group one: four sections, each opening on the refrain.
+
+ @returns Preparation of the page
+
+ @example
+ ```ts
+ const prepared = groupOnePage();
+ ```
+ */
+function groupOnePage(): ReturnType<typeof prepareDocumentPair> {
+  return prepareDocumentPair({
+    sourceText: [
+      '## 一\n\n所以她是个热爱生活的女孩吧，灯火下，她在最朴素的生活里怀揣着最遥远的梦想。\n',
+      '## 二\n\n所以她是个毅力超群的女孩吧。你看星夜中，她在最虚弱的身体上承担着最坚实的压力。\n',
+      '## 三\n\n所以她是个值得信赖的女孩吧。你看山海外，她在最复杂的情况里给出了最明确的方向。\n',
+      '## 四\n\n所以她是个温柔细腻的女孩吧。你看头壳里，她在最狭小的空间中撑起了最完美的世界。\n',
+    ].join('\n',),
+    targetText: [
+      '## One\n\nSo she must have been a girl who loved life.\nUnder the lights,\nin the plainest of lives,\n'
+      + 'she held the most distant of dreams close to her heart.\n',
+      '## Two\n\nSo she was a girl of extraordinary perseverance,\nI suppose.\nYou see,\namid the starry night,\n'
+      + 'in the frailest of bodies,\nshe bore the most unyielding pressure.\n',
+      '## Three\n\nSo she was a girl who could be trusted,\nwasn\'t she?\nYou see,\nfar across the mountains and seas,\n'
+      + 'she gave the clearest directions in the most complicated of situations.\n',
+      '## Four\n\nSo she was a gentle,\ntender-hearted girl,\nwasn\'t she?\nJust look:\ninside the headpiece,\n'
+      + 'in the narrowest of spaces,\nshe held up the most perfect world.\n',
+    ].join('\n',),
+  },);
+}
+
+/**
+ The quotes and slots of the four live judges of group one, written as they wrote them: a line break or a space, a
+ straight or a curly apostrophe, a closing mark or none, and a slot with or without its "who" or "of".
+
+ @type {readonly (readonly (readonly [string, string])[])[]}
+ */
+const GROUP_ONE_QUOTES: readonly (readonly (readonly [string, string,])[])[] = [
+  [
+    ['So she must have been a girl who loved life', 'loved life',],
+    ['So she was a girl of extraordinary perseverance,\nI suppose', 'extraordinary perseverance',],
+    ['So she was a girl who could be trusted,\nwasn\'t she', 'could be trusted',],
+    ['So she was a gentle,\ntender-hearted girl,\nwasn\'t she', 'gentle,\ntender-hearted',],
+  ],
+  [
+    ['So she must have been a girl who loved life', 'who loved life',],
+    ['So she was a girl of extraordinary perseverance,\nI suppose', 'of extraordinary perseverance',],
+    ['So she was a girl who could be trusted,\nwasn\'t she', 'who could be trusted',],
+    ['So she was a gentle,\ntender-hearted girl,\nwasn\'t she', 'gentle,\ntender-hearted',],
+  ],
+  [
+    ['So she must have been a girl who loved life.', 'loved life',],
+    ['So she was a girl of extraordinary perseverance, I suppose.', 'of extraordinary perseverance',],
+    ['So she was a girl who could be trusted, wasn\'t she?', 'who could be trusted',],
+    ['So she was a gentle, tender-hearted girl, wasn\'t she?', 'gentle, tender-hearted',],
+  ],
+  [
+    ['So she must have been a girl who loved life', 'loved life',],
+    ['So she was a girl of extraordinary perseverance,\nI suppose', 'extraordinary perseverance',],
+    ['So she was a girl who could be trusted,\nwasn’t she', 'could be trusted',],
+    ['So she was a gentle,\ntender-hearted girl,\nwasn’t she', 'gentle, tender-hearted',],
+  ],
+];
+
+/**
+ The live ballots of group one: four judges answer, two choosing the third place and two the fourth, so the choices
+ tie for first; the other seats throw.
+
+ @param seat - the seat asked
+
+ @returns Behaviour of the seat
+
+ @example
+ ```ts
+ const behave: SeatScript = groupOneBallots;
+ ```
+ */
+function groupOneBallots({ seat, }: { readonly seat: RosterModelId; },): SeatBehaviour {
+  /**
+   Position of the seat among the late judges.
+   */
+  const position = RUN_LATE_JUDGES.indexOf(seat,);
+  if (position > 3)
+    return { kind: 'throws', };
+  return {
+    kind: 'answers',
+    text: JSON.stringify({
+      reason: 'The renderings differ in wording and force, not core meaning.',
+      quotes: (GROUP_ONE_QUOTES[position] ?? []).map(function quoteOf([quote, slot,], at,) {
+        return { label: `OCCURRENCE ${String(at + 1,)}`, quote, slot, };
+      },),
+      choice: (position < 2) ? 'OCCURRENCE 3' : 'OCCURRENCE 4',
+      keep: [],
+    },),
+  };
+}
+
+/**
+ The rewrites the writers of group one make: each receiving place's paragraph with its refrain put in the chosen
+ frame ("So she was a girl who ..., wasn't she?"), the place's own slot kept.
+ */
+const GROUP_ONE_REWRITES: readonly (readonly [string, string, string])[] = [
+  [
+    'So she must have been a girl who loved life',
+    'So she must have been a girl who loved life.',
+    'So she was a girl who loved life, wasn\'t she?',
+  ],
+  [
+    'So she was a girl of extraordinary perseverance,\nI suppose',
+    'So she was a girl of extraordinary perseverance,\nI suppose.',
+    'So she was a girl of extraordinary perseverance,\nwasn\'t she?',
+  ],
+  [
+    'So she was a gentle,\ntender-hearted girl,\nwasn\'t she',
+    'So she was a gentle,\ntender-hearted girl,\nwasn\'t she?',
+    'So she was a girl who was gentle and tender-hearted, wasn\'t she?',
+  ],
+];
+
+/**
+ The run-off, the writers and the bench of group one as scripted: three of the first four late judges choose the third
+ place in the run-off and one the fourth, every writer puts the receiving place's own slot in the chosen frame, and the
+ judges choose the candidate that is not the paragraph as it stands.
+
+ @param seat - the seat asked
+
+ @param sheet - the sheet it was shown
+
+ @returns Behaviour of the seat
+
+ @example
+ ```ts
+ const behave: SeatScript = groupOneRunOffAndWriters;
+ ```
+ */
+function groupOneRunOffAndWriters(
+  {
+    seat,
+    sheet,
+  }: {
+    readonly seat: RosterModelId;
+    readonly before: number;
+    readonly sheet: string;
+  },
+): SeatBehaviour {
+  /**
+   The question the sheet asks.
+   */
+  const kind = sheetKindOf({ sheet, },);
+  if (kind === 'run-off') {
+    /**
+     Position of the seat among the late judges.
+     */
+    const position = RUN_LATE_JUDGES.indexOf(seat,);
+    return (position > 3) ? { kind: 'throws', } : choosing({ choice: (position < 3) ? 'OCCURRENCE 3' : 'OCCURRENCE 4', },);
+  }
+  if (kind === 'writer') {
+    /**
+     The words the chosen rendering replaces here.
+     */
+    const words = sheetBlockOf({ sheet, label: 'THE WORDS TO REPLACE', },);
+    /**
+     The rewrite for the place whose words these are.
+     */
+    const rewrite = GROUP_ONE_REWRITES.find(function isThePlace([from,],): boolean {
+      return from === words;
+    },);
+    return {
+      kind: 'answers',
+      text: JSON.stringify({
+        translation: (rewrite === undefined)
+          ? currentParagraphOf({ sheet, },)
+          : currentParagraphOf({ sheet, },).replace(rewrite[1], rewrite[2],),
+      },),
+    };
+  }
+  return otherSheetBehaviour({ sheet, },);
+}
+
+//endregion Live group one
+
 await describe({
   name: '',
   concurrency: 1,
@@ -244,7 +590,7 @@ await describe({
                 startOffset: 6,
                 endOffset: 18,
                 line: 3,
-                rendering: { kind: 'located', quote: 'The sunny window put the kitten to sleep.', },
+                rendering: { kind: 'located', quote: 'The sunny window put the kitten to sleep', start: 8, },
                 outcome: 'chosen',
               },
               {
@@ -253,7 +599,7 @@ await describe({
                 startOffset: 85,
                 endOffset: 97,
                 line: 11,
-                rendering: { kind: 'located', quote: 'the sunlight on the sill lulled the kitten to sleep', },
+                rendering: { kind: 'located', quote: 'the sunlight on the sill lulled the kitten to sleep', start: 26, },
                 outcome: 'replaced',
               },
             ],);
@@ -273,7 +619,7 @@ await describe({
             expect(parseConsistency({
               value: structuredClone(run.consistency,),
               path: 'cat.consistency',
-              writesSection: true,
+              generation: 16,
               sliceIndexes: new Set([0, 1, 2, 3,],),
             },),).toEqual(run.consistency,);
           },
@@ -293,7 +639,7 @@ await describe({
               line: 7,
               slotStartOffset: 64,
               slotEndOffset: 66,
-              rendering: { kind: 'located', quote: 'So this cat is surely a lazy little treasure.', slot: 'lazy', },
+              rendering: { kind: 'located', quote: 'So this cat is surely a lazy little treasure', start: 58, slot: 'lazy', },
               outcome: 'replaced',
             },);
           },
@@ -341,7 +687,7 @@ await describe({
             expect(group.verdict,).toEqual({ kind: 'not-asked', reason: 'consistent', },);
             expect(outcomesOf({ consistency: run.consistency, group: 0, },),).toEqual(['consistent', 'consistent',],);
             expect(run.sheets.every(function asksAboutFrame(sheet,): boolean {
-              return isRefrainSheet({ sheet, },);
+              return sheet.includes('FRAME BEGINS WITH',);
             },),).toBe(true,);
           },
         },),
@@ -501,7 +847,8 @@ await describe({
           },
         },),
         it({
-          name: 'LEAVES A GROUP AS IT STANDS ON A TIE between two places, four usable ballots splitting two and two',
+          name: 'RUNS OFF A TIE FOR FIRST between two places, four usable ballots splitting two and two: the bench is asked '
+            + 'once more with a sheet showing only the tied places, and the place it names is carried to the others',
           fn: async () => {
             await using dir = await scratchDir({ prefix: 'pass-consistency-', },);
             const run = await runCatPass({
@@ -516,10 +863,60 @@ await describe({
               entryCacheDir: dir.path,
             },);
             const refrain = nonNullishOrThrow(run.consistency.groups[1],);
-            expect(refrain.verdict.kind === 'asked' ? [refrain.verdict.usable, refrain.verdict.winner,] : [],).toEqual([
-              4,
-              { kind: 'none', reason: 'no-majority', },
+            expect(refrain.verdict.kind === 'asked'
+              ? [
+                refrain.verdict.usable,
+                refrain.verdict.winner,
+                refrain.verdict.runOff?.finalists,
+                (refrain.verdict.runOff?.usable ?? 0) >= (refrain.verdict.runOff?.quorum ?? 1),
+              ]
+              : [],).toEqual([
+                4,
+                { kind: 'chosen', label: 'OCCURRENCE 1', },
+                ['OCCURRENCE 1', 'OCCURRENCE 2',],
+                true,
+              ],);
+            const runOffSheets = run.sheets.filter(function isRunOff(sheet,): boolean {
+              return sheetKindOf({ sheet, },) === 'run-off';
+            },);
+            expect(runOffSheets.length,).toBeGreaterThan(0,);
+            expect(runOffSheets.every(function showsOnlyTheTied(sheet,): boolean {
+              return sheet.includes('OCCURRENCE 1 ORIGINAL',) && sheet.includes('OCCURRENCE 2 ORIGINAL',)
+                && (!sheet.includes('OCCURRENCE 3 ORIGINAL',)) && (!sheet.includes('OCCURRENCE 4 ORIGINAL',));
+            },),).toBe(true,);
+            expect(outcomesOf({ consistency: run.consistency, group: 1, },),).toEqual([
+              'chosen',
+              'replaced',
+              'replaced',
+              'replaced',
             ],);
+          },
+        },),
+        it({
+          name: 'LEAVES A GROUP AS IT STANDS ON A SECOND TIE, the run-off splitting four and four, recording the run-off, and '
+            + 'a resume asks nobody and lands on the same page',
+          fn: async () => {
+            await using dir = await scratchDir({ prefix: 'pass-consistency-', },);
+            const run = await runCatPass({
+              behave: refrainAnsweredInOrder({
+                answers: [
+                  refrainChoosing({ choice: 'OCCURRENCE 1', },),
+                  refrainChoosing({ choice: 'OCCURRENCE 1', },),
+                  refrainChoosing({ choice: 'OCCURRENCE 2', },),
+                  refrainChoosing({ choice: 'OCCURRENCE 2', },),
+                ],
+              },),
+              others: otherSheetsSplittingRunOff,
+              entryCacheDir: dir.path,
+            },);
+            const refrain = nonNullishOrThrow(run.consistency.groups[1],);
+            expect(refrain.verdict.kind === 'asked'
+              ? [refrain.verdict.usable, refrain.verdict.winner, refrain.verdict.runOff?.usable,]
+              : [],).toEqual([
+                4,
+                { kind: 'none', reason: 'run-off-tied', },
+                4,
+              ],);
             expect(outcomesOf({ consistency: run.consistency, group: 1, },),).toEqual([
               'untouched',
               'untouched',
@@ -529,9 +926,12 @@ await describe({
             expect(changedTexts({ consistency: run.consistency, },).map(function indexOf([index,],): number {
               return index;
             },),).toEqual([2,],);
-            // The gather reached its quorum with one seat short, so it was stored with its findings and a resume reads them back.
+            // The gathers reached their quorum with one seat short, so they were stored with their findings and a resume reads them back.
             const again = await runCatPass({
               behave: function throwsAlways(): SeatBehaviour {
+                return { kind: 'throws', };
+              },
+              others: function throwsAlways(): SeatBehaviour {
                 return { kind: 'throws', };
               },
               entryCacheDir: dir.path,
@@ -541,7 +941,8 @@ await describe({
           },
         },),
         it({
-          name: 'LEAVES A GROUP AS IT STANDS WHEN NO PLACE HAS A MAJORITY, five usable ballots splitting two, two and one',
+          name: 'RUNS OFF THE TWO PLACES THAT TIED FOR FIRST WHEN NO PLACE HAS A MAJORITY, five usable ballots splitting two, '
+            + 'two and one, and leaves the group as it stands when the run-off ties again',
           fn: async () => {
             await using dir = await scratchDir({ prefix: 'pass-consistency-', },);
             const run = await runCatPass({
@@ -554,13 +955,47 @@ await describe({
                   refrainChoosing({ choice: 'OCCURRENCE 3', },),
                 ],
               },),
+              others: otherSheetsSplittingRunOff,
               entryCacheDir: dir.path,
             },);
             const refrain = nonNullishOrThrow(run.consistency.groups[1],);
-            expect(refrain.verdict.kind === 'asked' ? [refrain.verdict.usable, refrain.verdict.winner,] : [],).toEqual([
-              5,
-              { kind: 'none', reason: 'no-majority', },
-            ],);
+            expect(refrain.verdict.kind === 'asked'
+              ? [refrain.verdict.usable, refrain.verdict.winner, refrain.verdict.runOff?.finalists,]
+              : [],).toEqual([
+                5,
+                { kind: 'none', reason: 'run-off-tied', },
+                ['OCCURRENCE 1', 'OCCURRENCE 2',],
+              ],);
+          },
+        },),
+        it({
+          name: 'ASKS NO RUN-OFF WHEN A PLURALITY IS NOT A TIE: five usable ballots splitting two, one, one and one leave '
+            + 'the group as it stands on no majority, as the first round had it',
+          fn: async () => {
+            await using dir = await scratchDir({ prefix: 'pass-consistency-', },);
+            const run = await runCatPass({
+              behave: refrainAnsweredInOrder({
+                answers: [
+                  refrainChoosing({ choice: 'OCCURRENCE 1', },),
+                  refrainChoosing({ choice: 'OCCURRENCE 1', },),
+                  refrainChoosing({ choice: 'OCCURRENCE 2', },),
+                  refrainChoosing({ choice: 'OCCURRENCE 3', },),
+                  refrainChoosing({ choice: 'OCCURRENCE 4', },),
+                ],
+              },),
+              entryCacheDir: dir.path,
+            },);
+            const refrain = nonNullishOrThrow(run.consistency.groups[1],);
+            expect(refrain.verdict.kind === 'asked'
+              ? [refrain.verdict.usable, refrain.verdict.winner, refrain.verdict.runOff,]
+              : [],).toEqual([
+                5,
+                { kind: 'none', reason: 'no-majority', },
+                undefined,
+              ],);
+            expect(run.sheets.some(function isRunOff(sheet,): boolean {
+              return sheetKindOf({ sheet, },) === 'run-off';
+            },),).toBe(false,);
           },
         },),
         it({
@@ -590,7 +1025,7 @@ await describe({
             // The repeated sentence's gather reached its quorum and was stored; the refrain's did not, so it is asked again.
             expect(again.asked.length,).toBeGreaterThan(0,);
             expect(again.sheets.every(function asksFrame(sheet,): boolean {
-              return isRefrainSheet({ sheet, },);
+              return sheet.includes('FRAME BEGINS WITH',);
             },),).toBe(true,);
           },
         },),
@@ -703,7 +1138,8 @@ await describe({
           },
         },),
         it({
-          name: 'LEAVES A FRAME\'S PLACE UNLOCATED WHEN ITS SLOT IS NOT IN ITS QUOTE, and carries the frame to the others',
+          name: 'LOCATES A FRAME\'S PLACE WITHOUT A SLOT WHEN ITS SLOT IS NOT IN ITS SPAN, leaves it to the writers since '
+            + 'code cannot carry the pattern, and carries the frame to the others',
           fn: async () => {
             await using dir = await scratchDir({ prefix: 'pass-consistency-', },);
             const run = await runCatPass({
@@ -728,13 +1164,18 @@ await describe({
             },);
             expect(outcomesOf({ consistency: run.consistency, group: 1, },),).toEqual([
               'chosen',
-              'unlocated',
+              'kept-current',
               'replaced',
               'replaced',
             ],);
             expect(nonNullishOrThrow(run.consistency.groups[1],).occurrences[1]?.rendering,).toEqual({
-              kind: 'unlocated',
-              reason: 'slot-not-found',
+              kind: 'located',
+              quote: 'So this cat is surely a lazy little treasure',
+              start: 58,
+            },);
+            expect(nonNullishOrThrow(run.consistency.groups[1],).carries?.[0]?.decision,).toEqual({
+              kind: 'none',
+              reason: 'no-alternative',
             },);
           },
         },),
@@ -906,7 +1347,10 @@ await describe({
               },);
             },),).toBe(true,);
             expect(seats.length > 0,).toBe(true,);
-            const stored = await storedGathers({ dir: dir.path, },);
+            const stored = (await storedGathers({ dir: dir.path, },)).filter(function isFirstRound({ parsed, },): boolean {
+              return (parsed.record as { readonly kind?: string; }).kind === undefined;
+            },);
+            expect(stored.length,).toBeGreaterThan(0,);
             expect(stored.flatMap(function keysOf({ parsed, },): readonly string[] {
               const record = parsed.record as { readonly voices: readonly Record<string, unknown>[]; };
               return record.voices.map(function keys(voice,): string {
@@ -954,7 +1398,9 @@ await describe({
           fn: async () => {
             await using dir = await scratchDir({ prefix: 'pass-consistency-', },);
             const first = await runCatPass({ behave: firstPlaceWins, entryCacheDir: dir.path, },);
-            const [torn, foreign,] = await storedGathers({ dir: dir.path, },);
+            const [torn, foreign,] = (await storedGathers({ dir: dir.path, },)).filter(function isFirstRound({ parsed, },): boolean {
+              return (parsed.record as { readonly kind?: string; }).kind === undefined;
+            },);
             await writeFile(
               nonNullishOrThrow(torn,).path,
               JSON.stringify(torn?.parsed,).slice(0, 40,),
@@ -966,7 +1412,10 @@ await describe({
               'utf8',
             );
             const again = await runCatPass({ behave: firstPlaceWins, entryCacheDir: dir.path, },);
-            expect(again.sheets.length,).toBe(first.sheets.length,);
+            // Only the two first-round gathers were damaged; the writers' and the choices' records resume.
+            expect(again.sheets.length,).toBe(first.sheets.filter(function isBallotSheet(sheet,): boolean {
+              return sheetKindOf({ sheet, },) === 'ballot';
+            },).length,);
             expect(outcomesByGroup({ consistency: again.consistency, },),)
               .toEqual(outcomesByGroup({ consistency: first.consistency, },),);
           },
@@ -1183,7 +1632,7 @@ await describe({
             expect(parseConsistency({
               value: structuredClone(run.consistency,),
               path: 'cat.consistency',
-              writesSection: true,
+              generation: 16,
               sliceIndexes: new Set([0, 1, 2, 3,],),
             },),).toEqual(run.consistency,);
           },
@@ -1221,11 +1670,15 @@ await describe({
             const living = await runCatPass({ behave: firstPlaceWins, entryCacheDir: other.path, prepared: whole, english, },);
             expect([
               died.sheets.length > 0,
-              died.sheets.every(function showsBlock(sheet,): boolean {
+              died.sheets.filter(function isBallotSheet(sheet,): boolean {
+                return sheetKindOf({ sheet, },) === 'ballot';
+              },).every(function showsBlock(sheet,): boolean {
                 return sheet.includes('OCCURRENCE 1 TRANSLATION:\n- "Mittens is asleep in the sunny window." '
                   + '(matched "Mittens is", rule copula-or-auxiliary)',);
               },),
-              living.sheets.some(function showsBlock(sheet,): boolean {
+              living.sheets.filter(function isBallotSheet(sheet,): boolean {
+                return sheetKindOf({ sheet, },) === 'ballot';
+              },).some(function showsBlock(sheet,): boolean {
                 return sheet.includes('TENSE CANDIDATES',);
               },),
             ],).toEqual([true, true, false,],);
@@ -1307,6 +1760,7 @@ await describe({
               .update(
                 JSON.stringify({
                   version: CONSISTENCY_CACHE_VERSION,
+                  stage: 'ballots',
                   sheet: hashContent({ content: JSON.stringify(messages,), },),
                   roster: modelIds,
                 },),
@@ -1314,11 +1768,17 @@ await describe({
               )
               .digest('hex',);
             const keys = {
-              plain: consistencyKey({ messages, modelIds, },),
-              living: consistencyKey({ messages, modelIds, lifeEnded: false, subjectNames: ['Mittens',], },),
-              died: consistencyKey({ messages, modelIds, lifeEnded: true, subjectNames: ['Mittens',], },),
-              diedNamed: consistencyKey({ messages, modelIds, lifeEnded: true, subjectNames: ['Mittens', 'Tabby',], },),
-              diedUnnamed: consistencyKey({ messages, modelIds, lifeEnded: true, },),
+              plain: consistencyKey({ stage: 'ballots', messages, modelIds, },),
+              living: consistencyKey({ stage: 'ballots', messages, modelIds, lifeEnded: false, subjectNames: ['Mittens',], },),
+              died: consistencyKey({ stage: 'ballots', messages, modelIds, lifeEnded: true, subjectNames: ['Mittens',], },),
+              diedNamed: consistencyKey({
+                stage: 'ballots',
+                messages,
+                modelIds,
+                lifeEnded: true,
+                subjectNames: ['Mittens', 'Tabby',],
+              },),
+              diedUnnamed: consistencyKey({ stage: 'ballots', messages, modelIds, lifeEnded: true, },),
             };
             expect([
               keys.plain === bare,
@@ -1350,8 +1810,8 @@ await describe({
       concurrency: 1,
       children: [
         it({
-          name: 'REFUSES A REPLACEMENT A FLOOR REFUSES, keeping the slice\'s wording, recording kept-floor and the '
-            + 'floor\'s finding, and warning',
+          name: 'WITHHOLDS A SPLICE A FLOOR REFUSES FROM THE BENCH, keeping the slice\'s wording, recording kept-current '
+            + 'with the floor\'s finding, and warning',
           fn: async () => {
             await using dir = await scratchDir({ prefix: 'pass-consistency-', },);
             const whole = preparedCatPage();
@@ -1371,7 +1831,7 @@ await describe({
             },);
             expect(outcomesOf({ consistency: run.consistency, group: 1, },),).toEqual([
               'chosen',
-              'kept-floor',
+              'kept-current',
               'replaced',
               'replaced',
             ],);
@@ -1379,11 +1839,18 @@ await describe({
               return index;
             },),).toEqual([2, 3,],);
             expect(run.consistency.findings.length,).toBe(1,);
-            expect(run.consistency.findings[0]?.startsWith('slice 1: the floors refused the consistency replacement: ',),)
-              .toBe(true,);
-            expect(warnings.some(function namesTheSlice(line,): boolean {
-              return line.includes('slice 1: the floors refused the consistency replacement, so the slice keeps its wording',);
+            expect(run.consistency.findings[0]?.startsWith(
+              'group 2: consistency-candidate-refused (splice of OCCURRENCE 2): ',
+            ),).toBe(true,);
+            expect(warnings.some(function namesThePlace(line,): boolean {
+              return line.includes(
+                'withheld the splice for OCCURRENCE 2 from the bench: the floors refuse its paragraph: ',
+              );
             },),).toBe(true,);
+            const carry = nonNullishOrThrow(run.consistency.groups[1],).carries?.[0];
+            expect([carry?.label, carry?.decision, carry?.candidates.map(function kindOf({ kind, },): string {
+              return kind;
+            },),],).toEqual(['OCCURRENCE 2', { kind: 'none', reason: 'no-alternative', }, ['current',],],);
           },
         },),
         it({
@@ -1422,6 +1889,259 @@ await describe({
               return line.includes('the ballots could not be stored (',)
                 && line.includes('); they are counted all the same',);
             },),).toBe(true,);
+          },
+        },),
+      ],
+    },),
+    describe({
+      name: `${runPassConsistency.name} carrying the chosen rendering by writing`,
+      concurrency: 1,
+      children: [
+        it({
+          name: 'CARRIES THE LIVE GROUP TWO BY WRITING: the writers drop the "also" that renders a word standing before the '
+            + 'repeat, the splice carries it, and the bench chooses the paragraph without it',
+          fn: async () => {
+            await using dir = await scratchDir({ prefix: 'pass-consistency-', },);
+            const run = await runCatPass({
+              behave: groupTwoBallots,
+              others: groupTwoWritersAndBench,
+              entryCacheDir: dir.path,
+              prepared: groupTwoPage(),
+            },);
+            const group = nonNullishOrThrow(run.consistency.groups[0],);
+            const carry = nonNullishOrThrow(group.carries?.[0],);
+            const byKind = Object.fromEntries(carry.candidates.map(function entryOf({ kind, label, writers, text, },) {
+              return [kind, { label, writers, text, }];
+            },),);
+            expect({
+              winner: group.verdict.kind === 'asked' ? [group.verdict.usable, group.verdict.winner,] : null,
+              outcomes: outcomesOf({ consistency: run.consistency, group: 0, },),
+              changed: changedTexts({ consistency: run.consistency, },),
+              candidateKinds: carry.candidates.map(function kindOf({ kind, },): string {
+                return kind;
+              },).toSorted(),
+              current: byKind.current?.writers,
+              splice: [byKind.splice?.writers, byKind.splice?.text,],
+              written: [byKind.writer?.writers, byKind.writer?.text,],
+              decision: carry.decision,
+              chosenIsTheWriters: (carry.decision.kind === 'chosen') && (carry.decision.label === byKind.writer?.label),
+              writerSheetsAsked: run.sheets.some(function isWriter(sheet,): boolean {
+                return sheetKindOf({ sheet, },) === 'writer';
+              },),
+            },).toEqual({
+              winner: [4, { kind: 'chosen', label: 'OCCURRENCE 1', },],
+              outcomes: ['chosen', 'replaced',],
+              changed: [[1, '## Two\n\nShe wanted to stay by more people\'s side looking cute and bring sunshine to more people.',],],
+              candidateKinds: ['current', 'splice', 'writer',],
+              current: [RUN_TRANSLATORS[3],],
+              splice: [
+                [RUN_TRANSLATORS[2],],
+                'She also wanted to stay by more people\'s side looking cute and bring sunshine to more people.',
+              ],
+              written: [
+                RUN_TRANSLATORS.slice(0, 2,),
+                'She wanted to stay by more people\'s side looking cute and bring sunshine to more people.',
+              ],
+              decision: carry.decision,
+              chosenIsTheWriters: true,
+              writerSheetsAsked: true,
+            },);
+            expect(parseConsistency({
+              value: structuredClone(run.consistency,),
+              path: 'cat.consistency',
+              generation: 16,
+              sliceIndexes: new Set([0, 1,],),
+            },),).toEqual(run.consistency,);
+          },
+        },),
+        it({
+          name: 'KEEPS THE PAGE\'S ENGLISH WHEN THE BENCH CHOOSES THE PARAGRAPH AS IT STANDS, though a writer and the code '
+            + 'offered others, recording the choice and no replacement',
+          fn: async () => {
+            await using dir = await scratchDir({ prefix: 'pass-consistency-', },);
+            const run = await runCatPass({
+              behave: groupTwoBallots,
+              others: function benchKeepsCurrent(call,): SeatBehaviour {
+                return (sheetKindOf({ sheet: call.sheet, },) === 'choice')
+                  ? choosing({
+                    choice: candidateTextsOf({ sheet: call.sheet, },)
+                      .find(function isCurrent({ current, },): boolean {
+                        return current;
+                      },)
+                      ?.label
+                      ?? '',
+                  },)
+                  : groupTwoWritersAndBench(call,);
+              },
+              entryCacheDir: dir.path,
+              prepared: groupTwoPage(),
+            },);
+            const carry = nonNullishOrThrow(run.consistency.groups[0]?.carries?.[0],);
+            const current = carry.candidates.find(function isCurrent({ kind, },): boolean {
+              return kind === 'current';
+            },);
+            expect({
+              outcomes: outcomesOf({ consistency: run.consistency, group: 0, },),
+              slices: run.consistency.slices,
+              decision: carry.decision,
+              currentLabel: current?.label,
+            },).toEqual({
+              outcomes: ['chosen', 'kept-current',],
+              slices: [],
+              decision: { kind: 'chosen', label: current?.label, },
+              currentLabel: current?.label,
+            },);
+          },
+        },),
+        it({
+          name: 'KEEPS THE PAGE\'S ENGLISH WHEN THE BENCH HAS NO MAJORITY AMONG THE CANDIDATES, recording why',
+          fn: async () => {
+            await using dir = await scratchDir({ prefix: 'pass-consistency-', },);
+            const run = await runCatPass({
+              behave: groupTwoBallots,
+              others: function benchSplits(call,): SeatBehaviour {
+                if (sheetKindOf({ sheet: call.sheet, },) !== 'choice')
+                  return groupTwoWritersAndBench(call,);
+                /**
+                 The candidates the sheet shows.
+                 */
+                const candidates = candidateTextsOf({ sheet: call.sheet, },);
+                /**
+                 Position of the seat among the late judges: the first two choose the first candidate and the next two the second.
+                 */
+                const position = RUN_LATE_JUDGES.indexOf(call.seat,);
+                return (position >= 4) ? { kind: 'throws', } : choosing({ choice: candidates[position % 2]?.label ?? '', },);
+              },
+              entryCacheDir: dir.path,
+              prepared: groupTwoPage(),
+            },);
+            const carry = nonNullishOrThrow(run.consistency.groups[0]?.carries?.[0],);
+            expect({
+              outcomes: outcomesOf({ consistency: run.consistency, group: 0, },),
+              slices: run.consistency.slices,
+              decision: carry.decision,
+              usable: carry.usable,
+            },).toEqual({
+              outcomes: ['chosen', 'kept-current',],
+              slices: [],
+              decision: { kind: 'none', reason: 'no-majority', },
+              usable: 4,
+            },);
+          },
+        },),
+        it({
+          name: 'CONTAINS A CARRY THAT FAILS: a writer that cannot be read is withheld with a finding, and the place keeps its '
+            + 'English when no candidate but the paragraph as it stands remains',
+          fn: async () => {
+            await using dir = await scratchDir({ prefix: 'pass-consistency-', },);
+            const { result: run, warned: warnings, } = await warnLinesDuring({
+              run: async function passWithBrokenWriters(): Promise<CatRun> {
+                return await runCatPass({
+                  behave: groupTwoBallots,
+                  others: function writersReturnTheWrongThing(call,): SeatBehaviour {
+                    if (sheetKindOf({ sheet: call.sheet, },) === 'writer')
+                      return { kind: 'answers', text: JSON.stringify({ translation: '## A heading nobody asked for', },), };
+                    return groupTwoWritersAndBench(call,);
+                  },
+                  entryCacheDir: dir.path,
+                  prepared: groupTwoPage(),
+                },);
+              },
+            },);
+            const group = nonNullishOrThrow(run.consistency.groups[0],);
+            const carry = nonNullishOrThrow(group.carries?.[0],);
+            expect({
+              outcomes: outcomesOf({ consistency: run.consistency, group: 0, },),
+              slices: run.consistency.slices,
+              kinds: carry.candidates.map(function kindOf({ kind, },): string {
+                return kind;
+              },).toSorted(),
+              unreadable: run.consistency.findings.some(function isFinding(finding,): boolean {
+                return finding.startsWith('group 1: consistency-candidate-',);
+              },),
+              warned: warnings.some(function namesTheSeat(line,): boolean {
+                return line.includes('withheld',) && line.includes('from the bench',);
+              },),
+            },).toEqual({
+              outcomes: ['chosen', 'kept-current',],
+              slices: [],
+              kinds: ['current', 'splice',],
+              unreadable: true,
+              warned: true,
+            },);
+          },
+        },),
+        it({
+          name: 'CARRIES THE LIVE GROUP ONE BY RUNNING OFF THE TIE AND WRITING: the two places that tied for first are put to '
+            + 'the bench once more on a sheet showing only them, and each receiving refrain keeps its own slot in the chosen '
+            + 'frame',
+          fn: async () => {
+            await using dir = await scratchDir({ prefix: 'pass-consistency-', },);
+            const run = await runCatPass({
+              behave: groupOneBallots,
+              others: groupOneRunOffAndWriters,
+              entryCacheDir: dir.path,
+              prepared: groupOnePage(),
+            },);
+            const group = nonNullishOrThrow(run.consistency.groups[0],);
+            const runOffSheets = run.sheets.filter(function isRunOff(sheet,): boolean {
+              return sheetKindOf({ sheet, },) === 'run-off';
+            },);
+            const writerSheets = run.sheets.filter(function isWriter(sheet,): boolean {
+              return sheetKindOf({ sheet, },) === 'writer';
+            },);
+            expect({
+              first: group.verdict.kind === 'asked' ? [group.verdict.usable, group.verdict.winner,] : null,
+              runOff: group.verdict.kind === 'asked'
+                ? [group.verdict.runOff?.finalists, group.verdict.runOff?.usable, group.verdict.runOff?.quorum,]
+                : null,
+              finalistsShownOnly: runOffSheets.every(function showsOnlyTheTied(sheet,): boolean {
+                return sheet.includes('OCCURRENCE 3 ORIGINAL',) && sheet.includes('OCCURRENCE 4 ORIGINAL',)
+                  && (!sheet.includes('OCCURRENCE 1 ORIGINAL',)) && (!sheet.includes('OCCURRENCE 2 ORIGINAL',));
+              },),
+              outcomes: outcomesOf({ consistency: run.consistency, group: 0, },),
+              changed: changedTexts({ consistency: run.consistency, },),
+              carries: group.carries?.map(function carryOf({ label, candidates, decision, },): unknown {
+                return [
+                  label,
+                  candidates.map(function kindOf({ kind, },): string {
+                    return kind;
+                  },).toSorted(),
+                  decision.kind,
+                ];
+              },),
+              slotsShown: writerSheets.map(function slotOf(sheet,): string {
+                return sheetBlockOf({ sheet, label: 'THIS PLACE: SLOT IN THE ORIGINAL', },);
+              },).filter(function distinct(slot, at, all,): boolean {
+                return all.indexOf(slot,) === at;
+              },).toSorted(),
+            },).toEqual({
+              first: [4, { kind: 'chosen', label: 'OCCURRENCE 3', },],
+              runOff: [['OCCURRENCE 3', 'OCCURRENCE 4',], 4, 4,],
+              finalistsShownOnly: true,
+              outcomes: ['replaced', 'replaced', 'chosen', 'replaced',],
+              changed: [
+                // The writers' paragraphs are laid out as the page lays out a clause, one clause to a line.
+                [0, '## One\n\nSo she was a girl who loved life,\nwasn\'t she?\nUnder the lights,\nin the plainest of lives,\n'
+                  + 'she held the most distant of dreams close to her heart.',],
+                [1, '## Two\n\nSo she was a girl of extraordinary perseverance,\nwasn\'t she?\nYou see,\namid the starry night,\n'
+                  + 'in the frailest of bodies,\nshe bore the most unyielding pressure.',],
+                [3, '## Four\n\nSo she was a girl who was gentle and tender-hearted,\nwasn\'t she?\nJust look:\n'
+                  + 'inside the headpiece,\nin the narrowest of spaces,\nshe held up the most perfect world.',],
+              ],
+              carries: [
+                ['OCCURRENCE 1', ['current', 'writer',], 'chosen',],
+                ['OCCURRENCE 2', ['current', 'writer',], 'chosen',],
+                ['OCCURRENCE 4', ['current', 'writer',], 'chosen',],
+              ],
+              slotsShown: ['热爱生活', '毅力超群', '温柔细腻',].toSorted(),
+            },);
+            expect(parseConsistency({
+              value: structuredClone(run.consistency,),
+              path: 'cat.consistency',
+              generation: 16,
+              sliceIndexes: new Set([0, 1, 2, 3,],),
+            },),).toEqual(run.consistency,);
           },
         },),
       ],

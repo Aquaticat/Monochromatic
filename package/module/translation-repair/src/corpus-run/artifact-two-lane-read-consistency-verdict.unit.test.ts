@@ -61,16 +61,38 @@ const ASKED = {
  const text = verdictRefusal({ value: 'naps', },);
  ```
  */
-function verdictRefusal({ value, }: { readonly value: unknown; },): string {
+function verdictRefusal(
+  {
+    value,
+    generation = 15,
+  }: {
+    readonly value: unknown;
+    readonly generation?: 15 | 16;
+  },
+): string {
   return refusalTextOf({
     read: function readsVerdict(): unknown {
       return parseConsistencyVerdict({
         value,
         path: 'cat.verdict',
+        generation,
       },);
     },
   },);
 }
+
+/**
+ A run-off as the artifact records it: two places tied for first and two judges chose between them.
+ */
+const RUN_OFF = {
+  finalists: ['OCCURRENCE 1', 'OCCURRENCE 2',],
+  ballots: [
+    { seat: 'hyper-cat', reason: 'The first place words it best.', choice: 'OCCURRENCE 1', },
+    { seat: 'bedrock-cat', reason: 'The first place words it best.', choice: 'OCCURRENCE 1', },
+  ],
+  usable: 2,
+  quorum: 2,
+};
 
 await describe({
   name: '',
@@ -96,6 +118,7 @@ await describe({
               return parseConsistencyVerdict({
                 value,
                 path: 'cat.verdict',
+                generation: 15,
               },);
             },),).toEqual(quiet,);
           },
@@ -130,8 +153,47 @@ await describe({
               return parseConsistencyVerdict({
                 value,
                 path: 'cat.verdict',
+                generation: 15,
               },);
             },),).toEqual(verdicts,);
+          },
+        },),
+        it({
+          name: 'READS A BENCH ASKED OF GENERATION SIXTEEN WITH ITS RUN-OFF, and the reasons only a run-off gives, as written',
+          fn: async () => {
+            const verdicts = [
+              { ...ASKED, runOff: RUN_OFF, },
+              { ...ASKED, winner: { kind: 'none', reason: 'run-off-tied', }, runOff: RUN_OFF, },
+              { ...ASKED, winner: { kind: 'none', reason: 'run-off-no-quorum', }, runOff: { ...RUN_OFF, quorum: 3, }, },
+              ASKED,
+            ];
+            expect(verdicts.map(function read(value,): unknown {
+              return parseConsistencyVerdict({
+                value,
+                path: 'cat.verdict',
+                generation: 16,
+              },);
+            },),).toEqual(verdicts,);
+          },
+        },),
+        it({
+          name: 'REFUSES A RUN-OFF AND THE REASONS ONLY A RUN-OFF GIVES IN GENERATION FIFTEEN, which runs off no tie, and a '
+            + 'run-off whose shape is wrong in generation sixteen',
+          fn: async () => {
+            expect([
+              verdictRefusal({ value: { ...ASKED, runOff: RUN_OFF, }, generation: 15, },),
+              verdictRefusal({ value: { ...ASKED, winner: { kind: 'none', reason: 'run-off-tied', }, }, generation: 15, },),
+              verdictRefusal({ value: { ...ASKED, runOff: { ...RUN_OFF, finalists: 'OCCURRENCE 1', }, }, generation: 16, },),
+              verdictRefusal({ value: { ...ASKED, runOff: { ...RUN_OFF, extra: 1, }, }, generation: 16, },),
+            ],).toEqual([
+              'ArtifactParseError: artifact parse failed at cat.verdict.runOff: '
+              + 'expected no key here beyond kind, ballots, usable, quorum, winner.',
+              'ArtifactParseError: artifact parse failed at cat.verdict.winner.reason: '
+              + 'expected a reason generation fifteen gives, which runs off no tie.',
+              'ArtifactParseError: artifact parse failed at cat.verdict.runOff.finalists: expected an array.',
+              'ArtifactParseError: artifact parse failed at cat.verdict.runOff.extra: '
+              + 'expected no key here beyond finalists, ballots, usable, quorum.',
+            ],);
           },
         },),
         it({
@@ -250,7 +312,7 @@ await describe({
               'ArtifactParseError: artifact parse failed at cat.verdict.winner.label: '
               + 'expected no key here beyond kind, reason.',
               'ArtifactParseError: artifact parse failed at cat.verdict.winner.reason: '
-              + 'expected one of no-quorum, no-majority, chosen-unlocated.',
+              + 'expected one of no-quorum, no-majority, chosen-unlocated, run-off-no-quorum, run-off-tied.',
             ],);
           },
         },),

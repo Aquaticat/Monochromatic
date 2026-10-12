@@ -91,7 +91,7 @@ const GENERATION_NINE = 9;
 /**
  Generation no table covers, one past newest.
  */
-const GENERATION_UNKNOWN = 16;
+const GENERATION_UNKNOWN = 17;
 
 await describe({
   name: keyVocabularyOf.name,

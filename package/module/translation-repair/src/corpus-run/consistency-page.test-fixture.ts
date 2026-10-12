@@ -19,8 +19,26 @@ import {
   type ProjectedLanes,
   type ProviderRecord,
   type RosterModelId,
+  RUN_LATE_JUDGES,
   type RunClient,
 } from '../../dist/final/node/index.mjs';
+import {
+  REFRAIN_QUOTES,
+  SENTENCE_QUOTES,
+} from './consistency-quotes.test-fixture.ts';
+import {
+  candidateTextsOf,
+  currentParagraphOf,
+  finalistsOf,
+  firstFinalistOf,
+  isRefrainSheet,
+  sheetKindOf,
+} from './consistency-sheet-reading.test-fixture.ts';
+
+/**
+ How many of the late judges answer when the bench splits a run-off in half; the rest throw.
+ */
+const HEARD_LATE_JUDGES = 4;
 
 //region Consistency page fixture
 
@@ -404,48 +422,6 @@ export function scriptedJudgeClient(
 }
 
 /**
- Quotes of the repeated sentence's two places that stand once in the archive's
- English: the first with its closing full stop, the second without one.
- */
-export const SENTENCE_QUOTES: readonly Record<string, string>[] = [
-  {
-    label: 'OCCURRENCE 1',
-    quote: 'The sunny window put the kitten to sleep.',
-  },
-  {
-    label: 'OCCURRENCE 2',
-    quote: 'the sunlight on the sill lulled the kitten to sleep',
-  },
-];
-
-/**
- Quotes of the refrain's four places that stand once in the archive's English,
- each with its slot.
- */
-export const REFRAIN_QUOTES: readonly Record<string, string>[] = [
-  {
-    label: 'OCCURRENCE 1',
-    quote: 'So this cat must be a chubby little treasure.',
-    slot: 'chubby',
-  },
-  {
-    label: 'OCCURRENCE 2',
-    quote: 'So this cat is surely a lazy little treasure.',
-    slot: 'lazy',
-  },
-  {
-    label: 'OCCURRENCE 3',
-    quote: 'So this cat has to be a sweet little darling.',
-    slot: 'sweet',
-  },
-  {
-    label: 'OCCURRENCE 4',
-    quote: 'So this cat is certainly a warm little dumpling.',
-    slot: 'warm',
-  },
-];
-
-/**
  One ballot as a judge sends it, reason first.
 
  @param quotes - the quotes the judge gives
@@ -481,19 +457,107 @@ export function ballotText(
 }
 
 /**
- Whether a sheet asks about the refrain rather than the repeated sentence.
+ A reply that only chooses, with a reason.
 
- @param sheet - the sheet a judge was shown
+ @param choice - label chosen
 
- @returns Whether it shows a frame
+ @returns Behaviour of a seat that answers with that choice
 
  @example
  ```ts
- const framed = isRefrainSheet({ sheet, },);
+ const behaviour = choosing({ choice: 'CANDIDATE 2', },);
  ```
  */
-export function isRefrainSheet({ sheet, }: { readonly sheet: string; },): boolean {
-  return sheet.includes('FRAME BEGINS WITH',);
+export function choosing({ choice, }: { readonly choice: string; },): SeatBehaviour {
+  return {
+    kind: 'answers',
+    text: JSON.stringify({
+      reason: 'It renders the original best under the house rules.',
+      choice,
+    },),
+  };
+}
+
+/**
+ What a seat does with a sheet that is not a first-round ballot: a writer
+ returns the paragraph as it stands (so it joins the current candidate and
+ adds none), a choice among candidates takes the first candidate that is not
+ the paragraph as the page has it now (the chosen words moved in by code), and a
+ run-off takes the first tied place.
+
+ @param sheet - the sheet the seat was shown
+
+ @returns Behaviour of the seat
+
+ @example
+ ```ts
+ const behaviour = otherSheetBehaviour({ sheet, },);
+ ```
+ */
+export function otherSheetBehaviour({ sheet, }: { readonly sheet: string; },): SeatBehaviour {
+  /**
+   The question the sheet asks.
+   */
+  const kind = sheetKindOf({ sheet, },);
+  if (kind === 'writer') {
+    return {
+      kind: 'answers',
+      text: JSON.stringify({ translation: currentParagraphOf({ sheet, },), },),
+    };
+  }
+  if (kind === 'choice') {
+    return choosing({ choice: candidateTextsOf({ sheet, },)
+      .find(function isAlternative(candidate,): boolean {
+        return !candidate.current;
+      },)
+      ?.label
+      ?? 'CANDIDATE 1', },);
+  }
+  if (kind === 'run-off')
+    return choosing({ choice: firstFinalistOf({ sheet, },), },);
+  return { kind: 'throws', };
+}
+
+/**
+ What every seat does with a sheet that is not a first-round ballot when the bench splits a run-off in half: the
+ first two late judges choose the first place the run-off shows, the next two the second, and the rest throw, so
+ four usable choices tie two and two and the two places that tied for first tie again; the writers write nothing
+ and a choice among candidates takes the candidate that is not the paragraph as the page has it now.
+
+ @param seat - the seat asked
+
+ @param sheet - the sheet the seat was shown
+
+ @returns Behaviour of the seat
+
+ @example
+ ```ts
+ const behaviour = otherSheetsSplittingRunOff({ seat, before: 0, sheet, },);
+ ```
+ */
+export function otherSheetsSplittingRunOff(
+  {
+    seat,
+    sheet,
+  }: {
+    readonly seat: RosterModelId;
+    readonly before: number;
+    readonly sheet: string;
+  },
+): SeatBehaviour {
+  if (sheetKindOf({ sheet, },) !== 'run-off')
+    return otherSheetBehaviour({ sheet, },);
+  /**
+   The places the run-off shows.
+   */
+  const finalists = finalistsOf({ sheet, },);
+  /**
+   Position of the seat among the late judges.
+   */
+  const position = RUN_LATE_JUDGES.indexOf(seat,);
+  if (position >= HEARD_LATE_JUDGES)
+    return { kind: 'throws', };
+  return choosing({ choice: (position < 2) ? (finalists[0] ?? '') : (finalists[1] ?? ''), },);
 }
 
 /**
@@ -509,6 +573,8 @@ export function isRefrainSheet({ sheet, }: { readonly sheet: string; },): boolea
  ```
  */
 export function firstPlaceWins({ sheet, }: { readonly sheet: string; },): SeatBehaviour {
+  if (sheetKindOf({ sheet, },) !== 'ballot')
+    return otherSheetBehaviour({ sheet, },);
   return {
     kind: 'answers',
     text: ballotText({

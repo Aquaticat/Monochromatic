@@ -28,11 +28,14 @@ import {
   consistencyFloorVerdict,
   type ConsistencySliceFacts,
   consistencySlicesOf,
+  type DecidedGroup,
+  type PlaceCarried,
   placesOf,
   repeatGroupsOf,
   repeatOf,
   type SettledGroup,
   settleAsked,
+  settleCarried,
   unplacedOf,
 } from '../../dist/final/node/index.mjs';
 import { levelCapturingLogger, } from '../capturing-logger.test-fixture.ts';
@@ -40,9 +43,11 @@ import {
   archiveEnglishOf,
   preparedCatPage,
   projectedCatPage,
+} from './consistency-page.test-fixture.ts';
+import {
   REFRAIN_QUOTES,
   SENTENCE_QUOTES,
-} from './consistency-page.test-fixture.ts';
+} from './consistency-quotes.test-fixture.ts';
 
 /**
  What the pass made of each slice of the cat page when the archive stands everywhere.
@@ -77,6 +82,68 @@ function alikeVoices({ quotes, }: { readonly quotes: readonly Record<string, str
       keep: [] as string[],
     };
   },);
+}
+
+/**
+ The carry of every receiving place when the bench chooses the chosen words moved in by code, as the
+ pass would record it where the writers wrote nothing; a place the code cannot reach keeps its English.
+
+ @param decided - the group with its receivers
+
+ @returns One carried place per receiver, in the order of the receivers
+
+ @example
+ ```ts
+ const carried = carriedBySplice({ decided, },);
+ ```
+ */
+function carriedBySplice({ decided, }: { readonly decided: DecidedGroup; },): readonly PlaceCarried[] {
+  return decided.receivers
+    .map(function carryOf(receiver,): PlaceCarried {
+      /**
+       The paragraph the receiving place has now.
+       */
+      const current = receiver.place.slice.current.kind === 'present' ? receiver.place.slice.current.text : '';
+      if (receiver.plan.kind !== 'replace') {
+        return {
+          carry: {
+            label: receiver.label,
+            candidates: [{ label: 'CANDIDATE 1', kind: 'current', writers: [], text: current, },],
+            ballots: [],
+            usable: 0,
+            quorum: 0,
+            decision: { kind: 'none', reason: 'no-alternative', },
+          },
+          edits: [],
+          findings: [],
+        };
+      }
+      return {
+        carry: {
+          label: receiver.label,
+          candidates: [
+            { label: 'CANDIDATE 1', kind: 'current', writers: [], text: current, },
+            { label: 'CANDIDATE 2', kind: 'splice', writers: [], text: receiver.plan.text, },
+          ],
+          ballots: ['hyper-cat', 'bedrock-cat', 'synthetic-cat',].map(function ballotOf(seat,) {
+            return { seat, reason: 'The chosen words belong here.', choice: 'CANDIDATE 2', };
+          },),
+          usable: 3,
+          quorum: 2,
+          decision: { kind: 'chosen', label: 'CANDIDATE 2', },
+        },
+        edits: [
+          {
+            placePosition: receiver.position,
+            sliceIndex: receiver.place.slice.sliceIndex,
+            start: receiver.plan.start,
+            end: receiver.plan.end,
+            text: receiver.plan.text,
+          },
+        ],
+        findings: [],
+      };
+    },);
 }
 
 /**
@@ -129,7 +196,7 @@ function settledCatPage(
     },)
       .map(function settle(group,): SettledGroup {
         const places = placesOf({ group, slices, },);
-        return settleAsked({
+        const decided = settleAsked({
           repeat: repeatOf({ group, text, },),
           places,
           unplaced: unplacedOf({ group, },),
@@ -140,6 +207,7 @@ function settledCatPage(
             resumed: false,
           },
         },);
+        return settleCarried({ decided, carried: carriedBySplice({ decided, },), },);
       },),
   };
 }
@@ -246,7 +314,7 @@ await describe({
               line: 7,
               slotStartOffset: 64,
               slotEndOffset: 66,
-              rendering: { kind: 'located', quote: 'So this cat is surely a lazy little treasure.', slot: 'lazy', },
+              rendering: { kind: 'located', quote: 'So this cat is surely a lazy little treasure', start: 58, slot: 'lazy', },
               outcome: 'replaced',
             },);
             expect(nonNullishOrThrow(sentence,).occurrences[1],).toEqual({
@@ -255,13 +323,37 @@ await describe({
               startOffset: 85,
               endOffset: 97,
               line: 11,
-              rendering: { kind: 'located', quote: 'the sunlight on the sill lulled the kitten to sleep', },
+              rendering: { kind: 'located', quote: 'the sunlight on the sill lulled the kitten to sleep', start: 26, },
               outcome: 'replaced',
             },);
             expect([sentence, frame,].map(function carried(group,): unknown {
               return [group?.repeat, group?.unplaced, group?.verdict,];
             },),).toEqual([sentenceSettled, frameSettled,].map(function settledOf(group,): unknown {
               return [group?.repeat, group?.unplaced, group?.verdict,];
+            },),);
+          },
+        },),
+        it({
+          name: 'RECORDS EACH GROUP\'S CARRIES AS THEY WERE SETTLED, one for each receiving place, beside its places',
+          fn: async () => {
+            const page = settledCatPage({},);
+            const applied = applyCat({ page, lines: [], },);
+            expect(applied.groups.map(function carriesOf(group,): unknown {
+              return group.carries?.map(function labelOf({ label, decision, },): unknown {
+                return [label, decision,];
+              },);
+            },),).toEqual([
+              [['OCCURRENCE 2', { kind: 'chosen', label: 'CANDIDATE 2', },],],
+              [
+                ['OCCURRENCE 2', { kind: 'chosen', label: 'CANDIDATE 2', },],
+                ['OCCURRENCE 3', { kind: 'chosen', label: 'CANDIDATE 2', },],
+                ['OCCURRENCE 4', { kind: 'chosen', label: 'CANDIDATE 2', },],
+              ],
+            ],);
+            expect(applied.groups.map(function carriesOf(group,): unknown {
+              return group.carries;
+            },),).toEqual(page.settled.map(function carriesOf(group,): unknown {
+              return group.carries;
             },),);
           },
         },),

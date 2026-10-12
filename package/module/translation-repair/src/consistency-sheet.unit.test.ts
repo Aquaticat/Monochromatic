@@ -156,6 +156,26 @@ await describe({
           },
         },),
         it({
+          name: 'ASKS THE JUDGES TO QUOTE ONLY THE WORDS THAT RENDER THE REPEATED WORDING, and to name in the reason any word '
+            + 'of the chosen rendering that renders source outside the repeat',
+          fn: async () => {
+            const text = sheetText({ subject: SENTENCE, },);
+            expect({
+              reason: text.includes(
+                'name any word of the rendering you choose that renders ORIGINAL outside the marked wording (the other places must not be given such a word)',
+              ),
+              quote: text.includes('that render the marked wording and no other words',),
+              leaveOut: text.includes(
+                'Leave out a word before or after them that renders ORIGINAL outside the marked wording, such as an "also" that renders a word standing before the marked wording.',
+              ),
+            },).toEqual({
+              reason: true,
+              quote: true,
+              leaveOut: true,
+            },);
+          },
+        },),
+        it({
           name: 'MARKS THE REPEATED WORDING in each paragraph and shows the whole English of each slice',
           fn: async () => {
             const text = sheetText({ subject: SENTENCE, },);
