@@ -115,10 +115,10 @@ fn transaction_in(root: &Path) -> PathBuf {
 ///  so a defect that makes it wait for ever is a failure and not a timeout.
 fn acquire_bounded(index: &Path, directory: &Path) -> Result<RealIndexLock, CoordinationFailure> {
     let (sender, receiver) = std::sync::mpsc::channel();
-    let index: PathBuf = index.to_path_buf();
-    let directory: PathBuf = directory.to_path_buf();
+    let owned_index: PathBuf = index.to_path_buf();
+    let owned_directory: PathBuf = directory.to_path_buf();
     std::thread::spawn(move || {
-        let _ = sender.send(acquire_landing_index_lock(index.as_path(), directory.as_path(), 1, 100, "landed nothing"));
+        let _ = sender.send(acquire_landing_index_lock(owned_index.as_path(), owned_directory.as_path(), 1, 100, "landed nothing"));
     });
     return receiver
         .recv_timeout(std::time::Duration::from_secs(30))
