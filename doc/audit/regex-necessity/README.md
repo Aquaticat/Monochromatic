@@ -50,6 +50,11 @@ It is excluded from the audit population:
   which is the safe way to land a correction round:
   it adds labels without removing,
   and it is resume-safe through its own ledger.
+- `spotcheck.mjs` reads filed issues back from the tracker and confirms each body
+  names its site,
+  quotes the extracted pattern,
+  agrees with the repository source at that line,
+  and carries the expected title and labels.
 - `verify.mjs` reconciles the ledger against the tracker:
   duplicates,
   missing sites,
