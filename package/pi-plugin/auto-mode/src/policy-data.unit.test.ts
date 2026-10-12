@@ -123,11 +123,13 @@ await describe({
         let reads = 0;
         const rule = Object.defineProperty(policyRule(), 'effect', {
           enumerable: true,
-          get() { reads++; return 'permit'; },
+          get() { reads++;
+          return 'permit'; },
         },);
         const array = Object.defineProperty([policyRule(),], '0', {
           enumerable: true,
-          get() { reads++; return policyRule(); },
+          get() { reads++;
+          return policyRule(); },
         },);
         const hidden = Object.defineProperty(policyRule(), 'id', { enumerable: false, },);
         expect(function getterRule() { resolveInstructionEffects([rule,],); },).toThrow(InstructionResolutionInputError,);

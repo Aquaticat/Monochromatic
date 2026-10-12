@@ -73,9 +73,19 @@ export {
 
 export { type AuthorizationRequirement, } from './authorization-requirement.ts';
 export { inspectAuthorizationRequirements, } from './authorization-requirements.ts';
-export { type GuardOutcome, resolveGuardOutcome, } from './guard-outcome.ts';
-export { type InstructionResolution, resolveInstructionEffects, } from './instruction-resolution.ts';
-export { type InstructionApplicability, type InstructionEffect, type InstructionRule, } from './instruction-rule.ts';
+export {
+  type GuardOutcome,
+  resolveGuardOutcome,
+} from './guard-outcome.ts';
+export {
+  type InstructionResolution,
+  resolveInstructionEffects,
+} from './instruction-resolution.ts';
+export {
+  type InstructionApplicability,
+  type InstructionEffect,
+  type InstructionRule,
+} from './instruction-rule.ts';
 export { InstructionResolutionInputError, } from './policy-data.ts';
 
 //endregion Deterministic migration kernel
