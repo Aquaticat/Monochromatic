@@ -1387,9 +1387,11 @@ class MainActivity : ComponentActivity() {
         // console.info(`[${LOG_TAG}] MainActivity.onCreate`);
         // ```
         Log.i(LOG_TAG, "MainActivity.onCreate")
-        // Auto-start the one-time parallel true-peak index (no user action). Legal here because the
-        // activity is foregrounded; PeakSweepService self-stops fast if the initial index is done.
-        PeakSweepService.startIfNeeded(this)
+        // Drop the notification channel of builds before D107 on every launch, because an upgrade after the first
+        // analysis finished never starts the sweep service that would otherwise do it.
+        deleteLegacyAnalysisChannel(this)
+        // The one-time parallel true-peak index starts from the `onAudioGranted` callback that `appRoot` receives,
+        // once a music source is readable, because a start here on a first launch finds no library before access.
         // Ask for the notification permission once, when the analysis that just started reports its first total.
         analysisNotificationPermission.start()
         // What:     `enableEdgeToEdge()` draws the app behind the system bars. (Folds in the
@@ -1525,7 +1527,12 @@ class MainActivity : ComponentActivity() {
                         CompositionLocalProvider(LocalTrashMediaStoreRequest provides trashRequest) {
                             appRoot(
                                 controller = controller,
-                                onAudioGranted = { binder?.ensureLibraryLoaded() },
+                                onAudioGranted = {
+                                    binder?.ensureLibraryLoaded()
+                                    // Auto-start the one-time true-peak index (no user action) as soon as the library
+                                    // is readable: at launch with access held, or right after the access prompt.
+                                    PeakSweepService.startIfNeeded(this@MainActivity)
+                                },
                                 onChooseFolder = { folderPicker.launch(null) },
                                 feedback = feedback,
                                 folderName = heldFolderName,
@@ -1843,7 +1850,7 @@ class MainActivity : ComponentActivity() {
  * load once a source can be read, and draws the first-run pane when the open source needs it.
  *
  * @param controller bound controller that owns the library and playback
- * @param onAudioGranted starts the library load once a source can be read
+ * @param onAudioGranted starts the library load and the initial true-peak analysis once a source can be read
  * @param onChooseFolder opens the folder picker
  * @param feedback feedback queue that the player host draws
  * @param folderName display name of the held folder, or null when no folder grant is held

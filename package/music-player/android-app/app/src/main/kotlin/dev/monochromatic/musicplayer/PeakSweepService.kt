@@ -32,6 +32,7 @@ import dev.monochromatic.musicplayer.core.AnalysisNotificationContent
 import dev.monochromatic.musicplayer.core.AnalysisNotificationPublisher
 import dev.monochromatic.musicplayer.core.AnalysisUpdatePacer
 import dev.monochromatic.musicplayer.core.analysisNotificationContent
+import dev.monochromatic.musicplayer.core.shouldStartInitialAnalysis
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -42,8 +43,9 @@ import kotlinx.coroutines.launch
 
 /**
  * Foreground service that performs the one-time parallel true-peak index of the whole library.
- * Auto-started from [MainActivity] when the app is opened and the initial sweep has not yet
- * completed; self-terminates as soon as the library is fully measured. Its foreground notification
+ * Auto-started from [MainActivity] as soon as a music source is readable (at launch with access held, or right
+ * after the access prompt is answered) while the initial sweep has not yet completed; self-terminates as soon as
+ * the library is fully measured. Its foreground notification
  * is the analysis progress notification of decision D107.
  */
 class PeakSweepService : Service() {
@@ -198,12 +200,24 @@ class PeakSweepService : Service() {
     }
 
     /**
-     * API 34+ time-limit signal for a dataSync foreground service: stop promptly so the system does
-     * not force-kill the app for ignoring it. Measurements persist in batches, so a stop here loses
-     * at most one unflushed batch, which the next run re-measures from the cache cursor.
+     * API 34 time-limit signal, which the system sends only to a short foreground service. The sweep is a dataSync
+     * service, whose limit arrives through the two-argument overload, so on the platforms measured this one is
+     * never called for it and only stays as a safe stop should the service type ever change.
      */
     override fun onTimeout(startId: Int) {
         Log.w(TAG, "PeakSweepService hit the foreground-service time limit; stopping")
+        stopSelf()
+    }
+
+    /**
+     * API 35+ time-limit signal for a dataSync foreground service: stop promptly, because the system raises
+     * `ForegroundServiceDidNotStopInTimeException` and ends the app a few seconds after this callback if the
+     * service keeps running (measured on an API 37 emulator with the limit shortened to one minute). Measurements
+     * persist in batches, so a stop here loses at most one unflushed batch, and the next launch continues from the
+     * cache because the initial-sweep flag is only set by a completed run.
+     */
+    override fun onTimeout(startId: Int, fgsType: Int) {
+        Log.w(TAG, "PeakSweepService hit the foreground-service time limit fgsType=$fgsType; stopping")
         stopSelf()
     }
 
@@ -225,9 +239,19 @@ class PeakSweepService : Service() {
         /** Preference key set once the initial full index has completed. */
         private const val KEY_INITIAL_DONE = "initial-sweep-done"
 
-        /** Starts the foreground sweep unless the initial full index has already completed. */
+        /**
+         * Starts the foreground sweep when a music source can be read and the initial full index has not completed.
+         * Call it whenever the source may have become readable (at launch and after the access prompt is answered),
+         * because a start before access finds no library and ends at once.
+         */
         fun startIfNeeded(context: Context) {
-            if (context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).getBoolean(KEY_INITIAL_DONE, false)) {
+            /** Whether the library can be listed: music access or a held folder grant. */
+            val sourceReadable: Boolean = hasAudioPermission(context) || LibraryRoot.heldRoot(context) != null
+            /** Whether an earlier run already analysed the whole library. */
+            val initialDone: Boolean =
+                context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).getBoolean(KEY_INITIAL_DONE, false)
+            if (!shouldStartInitialAnalysis(sourceReadable = sourceReadable, initialSweepDone = initialDone)) {
+                Log.i(TAG, "PeakSweepService not started readable=$sourceReadable initialDone=$initialDone")
                 return
             }
             ContextCompat.startForegroundService(context, Intent(context, PeakSweepService::class.java))
