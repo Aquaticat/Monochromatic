@@ -3,6 +3,8 @@ package dev.monochromatic.musicplayer
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.graphics.colorspace.ColorSpaces
+import dev.monochromatic.musicplayer.core.SrgbUnit
+import dev.monochromatic.musicplayer.core.srgbUnitToOklch
 import kotlin.math.sqrt
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -88,6 +90,44 @@ class OklchColorTest {
         assertEquals(Color.White.red, white.red, CHANNEL_TOLERANCE)
         assertEquals(Color.White.green, white.green, CHANNEL_TOLERANCE)
         assertEquals(Color.White.blue, white.blue, CHANNEL_TOLERANCE)
+    }
+
+    /** Confirms the stops keep their order and positions and add interpolated stops inside every segment. */
+    @Test
+    fun gradientStopsKeepTheEndsAndFillTheSegments() {
+        val stops: Array<Pair<Float, Color>> = oklchGradientStops(
+            arrayOf(0f to Color.White, 1f to Color.Black),
+        )
+        assertEquals(0f, stops.first().first, 0f)
+        assertEquals(1f, stops.last().first, 0f)
+        assertTrue(stops.size > 2)
+        assertTrue(stops.map { stop -> stop.first }.zipWithNext().all { pair -> pair.first <= pair.second })
+    }
+
+    /** Confirms a white to black ramp is mixed in OKLCH lightness, not by averaging sRGB channels. */
+    @Test
+    fun whiteToBlackMidpointIsOklchMiddleGrayNotSrgbMiddleGray() {
+        val stops: Array<Pair<Float, Color>> = oklchGradientStops(arrayOf(0f to Color.White, 1f to Color.Black))
+        val middle: Color = stops.minByOrNull { stop -> kotlin.math.abs(stop.first - 0.5f) }!!.second
+        val lightness: Double = srgbUnitToOklch(
+            SrgbUnit(middle.red.toDouble(), middle.green.toDouble(), middle.blue.toDouble()),
+        ).lightness
+        assertEquals(0.5, lightness, 0.01)
+        assertTrue("sRGB averaging would give 0.5 per channel, got ${middle.red}", middle.red < 0.45f)
+    }
+
+    /** Confirms a fade to Color.Transparent keeps the pigment of the visible end, so only alpha changes. */
+    @Test
+    fun fadeToTransparentBlackKeepsThePigmentAndOnlyChangesAlpha() {
+        val pigment: Color = Color.White.withOklchAlpha(0.5f)
+        val stops: Array<Pair<Float, Color>> = oklchGradientStops(arrayOf(0f to pigment, 1f to Color.Transparent))
+        // The last stop is the caller's own Transparent (black, alpha 0); every stop the helper adds is white.
+        for (stop in stops.copyOfRange(0, stops.size - 1)) {
+            assertEquals(1f, stop.second.red, CHANNEL_TOLERANCE)
+            assertEquals(1f, stop.second.green, CHANNEL_TOLERANCE)
+            assertEquals(1f, stop.second.blue, CHANNEL_TOLERANCE)
+        }
+        assertEquals(0.25f, stops.minByOrNull { stop -> kotlin.math.abs(stop.first - 0.5f) }!!.second.alpha, 0.05f)
     }
 
     private companion object {

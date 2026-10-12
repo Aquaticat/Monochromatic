@@ -111,15 +111,6 @@ import android.net.Uri
 // ```
 import android.os.Bundle
 
-// What:     `import android.os.Build` exposes current Android API level and named release floors.
-// Why:      Dynamic system accent is available only from Android 12 onward.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// import { Build } from "android/os";
-// ```
-import android.os.Build
-
 // What:     `import android.os.IBinder` pulls in `IBinder`, the interface a bound
 //           service hands back; `onServiceConnected` receives one to cast.
 // Why:      `onServiceConnected(..., service: IBinder?)` takes an `IBinder?`.
@@ -559,15 +550,6 @@ import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 // ```
 import androidx.compose.material3.CircularProgressIndicator
 
-// What:     `import androidx.compose.material3.ColorScheme` names complete Material color roles.
-// Why:      Theme helper returns dynamic accent roles with a true-black dark ground.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// import type { ColorScheme } from "androidx/compose/material3";
-// ```
-import androidx.compose.material3.ColorScheme
-
 // What:     `import androidx.compose.material3.MaterialTheme` pulls in `MaterialTheme`,
 //           the theme provider/accessor (its `.colorScheme` gives themed colors).
 // Why:      `onCreate` wraps the UI in `MaterialTheme`; rows read its colors.
@@ -637,44 +619,6 @@ import androidx.compose.material3.Surface
 // import { Text } from "androidx/compose/material3";
 // ```
 import androidx.compose.material3.Text
-
-// What:     `import androidx.compose.material3.darkColorScheme` pulls in
-//           `darkColorScheme()`, the factory for the dark Material color set.
-// Why:      `onCreate` uses it when the device is in dark mode.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// import { darkColorScheme } from "androidx/compose/material3";
-// ```
-import androidx.compose.material3.darkColorScheme
-
-// What:     `dynamicDarkColorScheme` derives dark Material roles from runtime system accent.
-// Why:      Selected LED light follows user accent rather than a hardcoded reference purple.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// import { dynamicDarkColorScheme } from "androidx/compose/material3";
-// ```
-import androidx.compose.material3.dynamicDarkColorScheme
-
-// What:     `dynamicLightColorScheme` derives light Material roles from runtime system accent.
-// Why:      Bright-scene LED light uses the same user-selected accent source.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// import { dynamicLightColorScheme } from "androidx/compose/material3";
-// ```
-import androidx.compose.material3.dynamicLightColorScheme
-
-// What:     `import androidx.compose.material3.lightColorScheme` pulls in
-//           `lightColorScheme()`, the factory for the light Material color set.
-// Why:      `onCreate` uses it when the device is in light mode.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// import { lightColorScheme } from "androidx/compose/material3";
-// ```
-import androidx.compose.material3.lightColorScheme
 
 // What:     `import androidx.compose.runtime.Composable` pulls in the `@Composable`
 //           ANNOTATION that marks a function as a Compose UI component.
@@ -1495,39 +1439,20 @@ class MainActivity : ComponentActivity() {
         // In TS you'd write (pseudocode):
         // ```ts
         // setContent(() => {
-        //   const colorScheme = isSystemInDarkTheme() ? darkColorScheme() : lightColorScheme();
-        //   return <MaterialTheme colorScheme={colorScheme}> ... </MaterialTheme>;
+        //   return <PlayerTheme> ... </PlayerTheme>;
         // });
         // ```
         setContent {
-            // What:     `val colorScheme = if (isSystemInDarkTheme()) darkColorScheme() else lightColorScheme()`
-            //           declares `colorScheme` from an `if/else` EXPRESSION: dark or light
-            //           Material colors based on the device theme (`isSystemInDarkTheme()` is
-            //           a composable returning a `Boolean`).
-            // Why:      Theme the UI to the system setting.
+            // What:     `playerTheme { ... }` themes its trailing-lambda child UI with the palette derived from the
+            //           system accent (A3, D108) and provides the derived roles that Material has no slot for.
+            // Why:      Every color of the player is derived from one root in OKLCH, so the platform's own dynamic
+            //           color roles are not used.
             //
             // In TS you'd write (pseudocode):
             // ```ts
-            // const colorScheme = isSystemInDarkTheme() ? darkColorScheme() : lightColorScheme();
+            // <PlayerTheme> <Surface modifier={Modifier.fillMaxSize()}> ... </Surface> </PlayerTheme>
             // ```
-            /**
-             * Defines color scheme value for this music-player component; the TypeScript-oriented notes above
-             * explain its source and use.
-             */
-            val colorScheme: ColorScheme = musicPlayerColorScheme()
-            // What:     `MaterialTheme(colorScheme = colorScheme) { ... }` calls the
-            //           `MaterialTheme` composable with the `colorScheme` named argument and a
-            //           TRAILING LAMBDA holding its child UI. Trailing-lambda children are how
-            //           Compose nests UI (like JSX children).
-            // Why:      Provide the theme to all descendants.
-            //
-            // In TS you'd write (pseudocode):
-            // ```ts
-            // <MaterialTheme colorScheme={colorScheme}>
-            //   <Surface modifier={Modifier.fillMaxSize()}> ... </Surface>
-            // </MaterialTheme>
-            // ```
-            MaterialTheme(colorScheme = colorScheme) {
+            playerTheme {
                 // What:     `Surface(modifier = Modifier.fillMaxSize()) { ... }` calls the
                 //           `Surface` composable with a `Modifier.fillMaxSize()` chain (occupy
                 //           the whole screen) and a trailing-lambda child.
@@ -2177,32 +2102,6 @@ private fun startingGate() {
         // ```
         Text("Starting Music Player...")
     }
-}
-
-// What:     `musicPlayerColorScheme` resolves runtime accent and page-level dark ground.
-// Why:      Hardware light follows system accent while every dark page starts from true black.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// function musicPlayerColorScheme(): ColorScheme { ... }
-// ```
-/** Returns dynamic Material roles with true-black dark background and surface. */
-@Composable
-private fun musicPlayerColorScheme(): ColorScheme {
-    /** Records system appearance for scene and ground selection. */
-    val dark: Boolean = isSystemInDarkTheme()
-    /** Supplies Android context required by dynamic-color APIs. */
-    val context: Context = LocalContext.current
-    /** Uses runtime system accent where platform supports dynamic color. */
-    val scheme: ColorScheme = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-        if (dark) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
-    } else {
-        if (dark) darkColorScheme() else lightColorScheme()
-    }
-    if (!dark) {
-        return scheme
-    }
-    return scheme.copy(background = Color.Black, surface = Color.Black)
 }
 
 /** Holds live seek position and duration sampled from current controller. */

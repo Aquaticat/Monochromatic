@@ -813,11 +813,13 @@ private fun ledPlateModifier(options: LedPlateOptions): Modifier {
     val plateColor: Color = if (options.lightScene) Color(0xFFF7F8FA) else Color(0xFF111111)
     /** Selects subtle key-light-to-away-side metal sheen. */
     val sheen: Brush = Brush.linearGradient(
-        colorStops = arrayOf(
-            0f to Color.White.withOklchAlpha(if (options.lightScene) 0.16f else 0.06f),
-            0.30f to Color.White.withOklchAlpha(if (options.lightScene) 0.06f else 0.02f),
-            0.55f to Color.Transparent,
-            1f to Color.Black.withOklchAlpha(if (options.lightScene) 0.12f else 0.14f),
+        colorStops = oklchGradientStops(
+            arrayOf(
+                0f to Color.White.withOklchAlpha(if (options.lightScene) 0.16f else 0.06f),
+                0.30f to Color.White.withOklchAlpha(if (options.lightScene) 0.06f else 0.02f),
+                0.55f to Color.Transparent,
+                1f to Color.Black.withOklchAlpha(if (options.lightScene) 0.12f else 0.14f),
+            ),
         ),
     )
     /** Selects broad bottom-right plate shoulder darkness. */
@@ -853,13 +855,15 @@ private fun ledPlateModifier(options: LedPlateOptions): Modifier {
 
 /** Returns near-flat offset dome with falloff concentrated near cap edge. */
 private fun ledDomeBrush(size: Size): Brush = Brush.radialGradient(
-    colorStops = arrayOf(
-        0f to Color.White.withOklchAlpha(LED_DOME_CENTER_ALPHA),
-        LED_GRADIENT_MIDDLE to Color.White.withOklchAlpha(LED_DOME_MIDDLE_ALPHA),
-        LED_GRADIENT_THREE_QUARTERS to Color.Transparent,
-        LED_DOME_EDGE_START to Color.Black.withOklchAlpha(LED_DOME_NEAR_EDGE_ALPHA),
-        LED_DOME_EDGE_END to Color.Black.withOklchAlpha(LED_DOME_EDGE_ALPHA),
-        1f to Color.Black.withOklchAlpha(LED_DOME_OUTER_ALPHA),
+    colorStops = oklchGradientStops(
+        arrayOf(
+            0f to Color.White.withOklchAlpha(LED_DOME_CENTER_ALPHA),
+            LED_GRADIENT_MIDDLE to Color.White.withOklchAlpha(LED_DOME_MIDDLE_ALPHA),
+            LED_GRADIENT_THREE_QUARTERS to Color.Transparent,
+            LED_DOME_EDGE_START to Color.Black.withOklchAlpha(LED_DOME_NEAR_EDGE_ALPHA),
+            LED_DOME_EDGE_END to Color.Black.withOklchAlpha(LED_DOME_EDGE_ALPHA),
+            1f to Color.Black.withOklchAlpha(LED_DOME_OUTER_ALPHA),
+        ),
     ),
     center = Offset(x = size.width * 0.38f, y = size.height * 0.30f),
     radius = size.maxDimension * 0.95f,
@@ -867,28 +871,35 @@ private fun ledDomeBrush(size: Size): Brush = Brush.radialGradient(
 
 /** Returns selected cap's gentle accent-derived top-left hot layer. */
 private fun ledHotBrush(options: LedBrushOptions): Brush = Brush.radialGradient(
-    colors = listOf(options.palette.selectedHot.withOklchAlpha(LED_HOT_LAYER_ALPHA), Color.Transparent),
+    colorStops = oklchGradientStops(
+        arrayOf(
+            0f to options.palette.selectedHot.withOklchAlpha(LED_HOT_LAYER_ALPHA),
+            1f to Color.Transparent,
+        ),
+    ),
     center = Offset(x = options.size.width * 0.40f, y = options.size.height * 0.34f),
     radius = options.size.maxDimension * 0.60f,
 )
 
 /** Returns directional plastic shoulder from reference's 315-degree key light. */
 private fun ledShoulderBrush(options: LedBrushOptions): Brush = Brush.linearGradient(
-    colorStops = arrayOf(
-        0f to Color.White.withOklchAlpha(LED_SHOULDER_HIGHLIGHT_ALPHA),
-        LED_GRADIENT_QUARTER to Color.White.withOklchAlpha(LED_SHOULDER_QUARTER_ALPHA),
-        LED_GRADIENT_NEAR_MIDDLE to Color.White.withOklchAlpha(LED_SHOULDER_MIDDLE_ALPHA),
-        LED_GRADIENT_MIDDLE to Color.Black.withOklchAlpha(LED_SHOULDER_SHADOW_ALPHA),
-        LED_GRADIENT_THREE_QUARTERS to if (options.selected) {
-            options.palette.selectedEdge.withOklchAlpha(LED_SHOULDER_NEAR_EDGE_ALPHA)
-        } else {
-            Color.Black.withOklchAlpha(LED_SHOULDER_NEAR_EDGE_ALPHA)
-        },
-        1f to if (options.selected) {
-            options.palette.selectedEdge.withOklchAlpha(LED_SHOULDER_OUTER_EDGE_ALPHA)
-        } else {
-            Color.Black.withOklchAlpha(LED_SHOULDER_OUTER_EDGE_ALPHA)
-        },
+    colorStops = oklchGradientStops(
+        arrayOf(
+            0f to Color.White.withOklchAlpha(LED_SHOULDER_HIGHLIGHT_ALPHA),
+            LED_GRADIENT_QUARTER to Color.White.withOklchAlpha(LED_SHOULDER_QUARTER_ALPHA),
+            LED_GRADIENT_NEAR_MIDDLE to Color.White.withOklchAlpha(LED_SHOULDER_MIDDLE_ALPHA),
+            LED_GRADIENT_MIDDLE to Color.Black.withOklchAlpha(LED_SHOULDER_SHADOW_ALPHA),
+            LED_GRADIENT_THREE_QUARTERS to if (options.selected) {
+                options.palette.selectedEdge.withOklchAlpha(LED_SHOULDER_NEAR_EDGE_ALPHA)
+            } else {
+                Color.Black.withOklchAlpha(LED_SHOULDER_NEAR_EDGE_ALPHA)
+            },
+            1f to if (options.selected) {
+                options.palette.selectedEdge.withOklchAlpha(LED_SHOULDER_OUTER_EDGE_ALPHA)
+            } else {
+                Color.Black.withOklchAlpha(LED_SHOULDER_OUTER_EDGE_ALPHA)
+            },
+        ),
     ),
 )
 

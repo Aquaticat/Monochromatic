@@ -111,6 +111,7 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.onFocusChanged
+import dev.monochromatic.musicplayer.core.CreaseState
 import dev.monochromatic.musicplayer.core.TrackActionFailure
 import dev.monochromatic.musicplayer.core.libraryDisplayName
 import dev.monochromatic.musicplayer.core.TrackMenuAction
@@ -1245,8 +1246,10 @@ fun playerHost(
     // ```
     /** Whether the window is wide enough for the two-pane Settings page. */
     val settingsIsWide: Boolean = keyLayout == HostKeyLayout.UNFOLDED
-    /** Crease width in physical pixels when the device has a crease, else null. */
-    val creaseWidthPx: Float? = rememberCreaseWidthPx()
+    /** Crease of this window from the Jetpack WindowManager layout, shared by Settings and Search (D110, E2). */
+    val crease: CreaseState = rememberCrease()
+    /** Crease width in physical pixels when the window has a crease, else null. */
+    val creaseWidthPx: Float? = crease.widthPxOrNull
     // What:     `val keyContext: HostKeyContext` is the host state that the keyboard rules read for this frame.
     // Why:      The owner, the route rules, the layout, and the mode cycle each need the route, popup, focus, and mode.
     //
@@ -1569,6 +1572,7 @@ fun playerHost(
                         searchLibrary(query = query, tracks = tracks, available = true)
                     }
                     searchPage(
+                        creaseWidthPx = creaseWidthPx,
                         state = results,
                         query = query,
                         onQueryChange = { text -> query = text },
