@@ -577,6 +577,24 @@ pub mod recovery_completion;
 /// The `.keep` files protecting a landing's migrated pack.
 pub mod pack_keep;
 
+/// Test-only transaction phase markers, compiled into the release executable and armed only by an environment variable.
+pub mod transaction_phase;
+
+/// Landing target comparison, nonce reflog message and compare-and-swap.
+pub mod landing_support;
+
+/// Migration of a prepared commit's shadow objects into a kept pack of the real store.
+pub mod landing_objects;
+
+/// Post-index a landing installs, computed against the real index at landing.
+pub mod landing_index;
+
+/// One landing attempt inside the landing critical section, and its outcome.
+pub mod landing_attempt;
+
+/// The `concurrent-commit` finding for a landing that landed nothing.
+pub mod landing_findings;
+
 /// Git commands run against a transaction's shadow repository.
 pub mod shadow_git;
 

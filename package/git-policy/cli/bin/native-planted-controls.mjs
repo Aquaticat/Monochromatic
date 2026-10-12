@@ -451,6 +451,41 @@ const plantedControls = [
     to: 'entries.chunks(entries.len().max(1))',
     failing: 'worktree_copy_install::tests::records_grow_by_batch_not_by_entry',
   },
+  {
+    name: 'landing branch-switch check',
+    file: 'src/native/landing_attempt.rs',
+    from: 'if symbolic_head != capture.layout.symbolic_head {',
+    to: 'if false {',
+    failing: 'landing::a_branch_switch_lands_nothing_and_renders_the_finding',
+  },
+  {
+    name: 'landing head-moved check',
+    file: 'src/native/landing_attempt.rs',
+    from: 'if !same_target(&current, &expected_old) {',
+    to: 'if false {',
+    failing: 'landing::a_moved_target_reports_the_winner_and_is_replayable',
+  },
+  {
+    name: 'landing releases the index lock when it lands nothing',
+    file: 'src/native/landing_attempt.rs',
+    from: 'if held.for_recovery {',
+    to: 'if true {',
+    failing: 'landing::a_failed_migration_releases_the_lock',
+  },
+  {
+    name: 'landing hands the directory back after a lost compare-and-swap',
+    file: 'src/native/landing_attempt.rs',
+    from: 'workspace.preserved = false;',
+    to: 'workspace.preserved = true;',
+    failing: 'landing_crash::a_target_moved_during_the_landing_loses_the_compare_and_swap',
+  },
+  {
+    name: 'landing journals the index lock before announcing it',
+    file: 'src/native/real_index_lock.rs',
+    from: 'write_lock_record(transaction_directory, attempt, identity)?;',
+    to: 'let _ = write_lock_record;',
+    failing: 'real_index_lock::tests::a_landing_lock_journals_its_identity_and_announces_the_process',
+  },
 ];
 
 /**

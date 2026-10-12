@@ -68,3 +68,9 @@ mod hook;
 /// The dependent-version policy on direct check and fix.
 #[path = "binary_dependent_version_tests.rs"]
 mod dependent_version;
+#[path = "binary_landing_support.rs"]
+mod landing_support;
+#[path = "binary_landing_tests.rs"]
+mod landing;
+#[path = "binary_landing_crash_tests.rs"]
+mod landing_crash;
