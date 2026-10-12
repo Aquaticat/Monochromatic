@@ -41,7 +41,8 @@ It also wrapped the headless emulator in `xvfb-run` and capped the container at 
 while giving the guest 2 cores and 4 GiB,
 and it used `-no-snapshot`, which forces a cold boot every run.
 The orchestrator asked for a comparison run with corrected flags,
-and the agent still had not completed the task when it was stopped on 2026-10-11 after hours of wall time,
+and the agent still had not completed the task when it was stopped on 2026-10-12,
+2.8 hours after its first transcript record (measured from the transcript timestamps, 21:51 to 00:39 UTC),
 while it was still trying to make the Developer options navigation script wait long enough.
 The user's observation: GPT models never had a problem using the emulator,
 and the difference is that they always launched it headfully (with its window),
