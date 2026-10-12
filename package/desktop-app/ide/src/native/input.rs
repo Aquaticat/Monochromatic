@@ -352,7 +352,7 @@ pub(super) fn bind_keys(owner: &AppWindow, shared: &Rc<RefCell<State>>) {
             anchor: 0,
             head: end,
             viewport: 0,
-            affinity: ide_app::document::ReadingAffinity::Downstream,
+            affinity: ReadingAffinity::Downstream,
         });
         drop(current);
         if let Some(window) = select_window.upgrade() {
@@ -442,6 +442,7 @@ pub(super) fn bind_keys(owner: &AppWindow, shared: &Rc<RefCell<State>>) {
             shift,
             anchor = position.anchor,
             head = position.head,
+            affinity = ?position.affinity,
             paged = scrolled,
             "source caret key"
         );

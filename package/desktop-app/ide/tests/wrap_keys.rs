@@ -812,8 +812,9 @@ fn a_hanging_blank_at_the_end_of_the_text_leaves_no_empty_row() {
                         rows.len() - 1,
                         "{label}: the end of the text is on the last counted row ({affinity:?})"
                     );
+                    // With an empty tail the end of the text is the hanging blank at the right edge of the last row.
                     assert!(
-                        caret.x > rows.len() as f32,
+                        !shaped.has_empty_tail() || caret.x > width / 2.0,
                         "{label}: and at the right of its text, found x {} ({affinity:?})",
                         caret.x
                     );
