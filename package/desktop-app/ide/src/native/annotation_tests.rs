@@ -561,6 +561,9 @@ fn caret_problems_follow_the_caret_and_are_spelled_out_in_full() {
         "the problems stayed after leaving the range"
     );
     key(window, Key::DownArrow);
+    // Home goes to the first non-blank character of the line (past its tab) and a second Home to the line start.
+    key(window, Key::Home);
+    assert_eq!(position(&reader), (25, 25));
     key(window, Key::Home);
     for _ in 0..5 {
         key(window, Key::RightArrow);
