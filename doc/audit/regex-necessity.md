@@ -138,14 +138,18 @@ Enumeration had to see justified sites too,
 - **1 site in `package/module/conf-fork.fuzz/upstream-conf/index.ts`**:
   a vendored upstream snapshot under `@ts-nocheck`,
   whose value is that it matches upstream.
-- **20 tracked files in directories the mirror skipped** (`bundle`,
+- **The directories the mirror skipped** (`bundle`,
   `dist`,
-  `.pi`):
-  committed build output of first-party source that was itself scanned,
-  plus `.pi/settings.json`.
-  Recorded as a decision,
-  not an oversight:
-  fixing generated bundles is fixing the generator.
+  `.pi`,
+  plus tool caches) hold 9 tracked JS and TS files,
+  all committed build output under `package/claude-code-plugin/*/bundle/node/`,
+  and 2 tracked files under `.pi/` that are neither JS nor TS.
+  Each of the 9 was checked directly for `RegExp(` and `new RegExp(` and contains
+  neither,
+  which is consistent with their sources:
+  the audit found zero regex sites anywhere in `package/claude-code-plugin`,
+  because the earlier sweep replaced them with text-scan helpers.
+  Recorded as a verified decision rather than an oversight.
 
 Replacement shapes across the 308,
  derived from the pattern tokenizer:
