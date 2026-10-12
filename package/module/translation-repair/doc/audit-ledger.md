@@ -35523,6 +35523,107 @@ the census modules sit on the own-test allowlist;
 same-line repeats stay out of the groups,
 as the design recommended.
 
+### B426: the repeat reader tested raw regions the parse had already hidden
+
+Red `cda53b4338`,
+fixed in `566de2e511`.
+
+Found on 2026-10-12 (UTC) by an independent review of B423.
+The wording reader ran its markup test and its inline cuts on the raw paragraph,
+so a brace or tag inside an HTML comment,
+inline code or a bare URL dropped the whole paragraph,
+though the parse reads none of them as an expression or tag;
+a URL or backtick inside a comment opened a cut that ran past `-->` and ate the wording after it;
+a comment inside a repeat ended the run;
+and an edge paragraph of a container carried the container's tags into the markup test,
+which 37 paragraph ranges of the pinned corpus hold.
+
+The fix:
+the reader blanks comments and container tags,
+reads them as whitespace,
+and runs the markup test with hidden ranges and inline cuts blanked.
+The groups over the 92 pinned pages did not change.
+
+### B427: straight double quotation marks were not read as quotation
+
+Red `cda53b4338`,
+fixed in `566de2e511`.
+
+The reader treated only corner brackets and curly marks as quotation,
+so a repeat inside straight double marks was reported.
+The pinned corpus writes ASCII `"` in 98 body paragraphs;
+two of its characters,
+in one paragraph,
+reach the wording.
+
+The fix:
+a straight mark opens a quotation when none is open in its paragraph,
+and closes the open one otherwise.
+
+### B428: a repeat's slice depended on the order of the slice list
+
+Red `cda53b4338`,
+fixed in `566de2e511`.
+
+`placementOf` took the first slice in list order that held an occurrence's start,
+so with overlapping slices it reported `crosses-slice-end` for an occurrence another slice held whole.
+The order of groups that start at the same offset was fixed by construction but stated nowhere.
+
+The fix:
+an occurrence goes to the slice with the lowest `sliceIndex` among those holding it whole;
+`compareFoundRepeats` (`repeat-groups-order.ts`) states the group order.
+
+### B429: the repeat finders grew with the square of their input
+
+Red `cda53b4338`,
+fixed in `566de2e511`.
+
+`maximalRunsOf` extended every window group,
+so a paragraph copied whole cost the square of its length
+(8000 elements per copy took 2329 ms);
+the refrain finder compared every pair of clauses sharing four leading elements;
+and the line lookup sliced the page once per occurrence.
+
+The fix:
+a window group that is the previous one moved by one element is skipped
+(the same copy takes 26 ms),
+clauses are bucketed by both ends,
+and line numbers come from one table of line starts.
+The maximal runs of 20000 random streams and the groups of the 92 pinned pages are unchanged.
+A page of clauses that nearly all share both ends is still quadratic,
+as the TSDoc of `refrainFramesOf` says.
+The largest pinned page takes tens of milliseconds.
+
+### B430: three repeat modules were tested only through their caller
+
+Red `cda53b4338`,
+fixed in `566de2e511`.
+
+`repeat-groups-bounds.ts`,
+`repeat-groups-runs.ts` and `repeat-groups-wording.ts` sat on the own-test allowlist,
+reached only through `repeatGroupsOf`,
+the shape that hid the defects of B103.
+They,
+with `repeat-groups-refrain.ts` and `repeat-groups-order.ts` split off to meet the line limit,
+now have unit tests of their own,
+and the allowlist lines are gone.
+
+Kept by the lead under the owner's instruction of 2026-10-11 to decide without asking:
+an HTML comment is whitespace;
+an opening mark that never closes quotes to the end of its paragraph;
+invisible characters stay as wording;
+overlapping slices place an occurrence in the lowest `sliceIndex`;
+inline code is read on one line;
+a lone carriage return is no line end;
+emphasis marks stay as wording;
+quotation marks no body paragraph of the corpus uses are not read;
+the helpers are exported through `repeat-groups-barrel.ts`.
+Changed by the lead's decision in a later commit:
+a repeat that touches quoted speech anywhere stays out,
+as the owner's answer of 2026-10-11 reads;
+no two groups claim overlapping text;
+the census fails when a positive control fails.
+
 ## Process mistakes in this audit
 
 These are the agent's own mistakes while fixing,

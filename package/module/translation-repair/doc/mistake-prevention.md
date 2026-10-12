@@ -2797,6 +2797,11 @@ What happened:
 five readers of paired marks each paired an opening mark with the next closing mark,
 so an opening mark that never closed took the next title into its span,
 and three of them grew with the square of the unclosed marks (ledger B38).
+The repeat reader read corner brackets and curly marks as quotation but not ASCII `"`,
+which the pinned corpus writes in 98 body paragraphs (ledger B427).
+It keeps its own depth rule,
+since a quotation in Chinese prose reopens its mark at each paragraph,
+and the marks it lists were then counted against the corpus.
 
 The rule:
 a reader of paired marks (title marks,
@@ -2804,6 +2809,8 @@ quotation marks,
 brackets) reads spans through `closedMarkSpans` (`closed-mark-spans.ts`),
 never through an `indexOf` loop of its own,
 and its tests carry an opening mark that never closed.
+The marks a quotation reader lists are counted against the pinned corpus,
+and a mark the corpus writes that the reader does not list is a defect or a stated choice.
 
 What enforces it:
 habit and review;
@@ -3238,6 +3245,11 @@ so putting it back rebuilds the text byte for byte.
 A guard's tests carry a case where the split and the parse disagree:
 a block opening on the line after a paragraph's,
 and one inside a container tag.
+A reader that scans a paragraph's raw text first blanks what the parse hides there,
+comments and the tags of a container the parse widened the paragraph over,
+and the text inside inline code and bare URLs,
+before it tests the paragraph for markup;
+the repeat reader dropped whole paragraphs for a brace inside a comment (ledger B426).
 Before calling a guard behind the floor unreachable,
 check that both read the structure one way.
 A floor comparing top-level blocks answers nothing about what they contain,
