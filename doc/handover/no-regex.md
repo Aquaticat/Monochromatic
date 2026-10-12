@@ -358,6 +358,43 @@ unless the user asks otherwise.
   `module/es/.../regexp/t global/.unit.test.ts`,
   `module/or-throw/regexp-or-throw.unit.test.ts`).
 
+### Patterns added since the sweep
+
+`claude-code-plugin/statusline` carried two justified disables that the sweep left standing.
+ They were replaced on 2026-10-12 in commit
+`c436b4c48e`,
+ and both shapes recur in the paused packages:
+
+- Word-boundary scanner for
+  `\b[a-z]+-?[a-z]*ing\b`:
+  attempt a match only where a word starts with a member of the pattern's first character class,
+  advance one character everywhere else,
+  and at a start take the longest match the greedy optional pieces allow.
+  A leading `\b` in front of a character class means exactly that the previous character is not a
+  word character or the index is zero,
+  and `charAt` returns `''` out of bounds,
+  so both text edges need no bounds check.
+  See
+  `package/claude-code-plugin/statusline/src/gerund.ts`.
+- Anchored grammar with optional groups such as
+  `^(?<family>[A-Za-z]+)(?: (?<version>\d+\.\d+))?(?: \((?<context>\S+) context\))?$`:
+  when every separator is a literal that no piece can contain,
+  at most one optional group can follow any given position,
+  so a single left-to-right pass over character runs replaces the backtracking engine.
+  `\S+` becomes a run up to the first whitespace character,
+  which needs the whole `\s` set written out as a character-list constant to stay exact.
+  See
+  `package/claude-code-plugin/statusline/src/model.ts`.
+- Equivalence evidence for any such replacement:
+  record golden outputs from the regex implementation over a generated adversarial corpus,
+  replay the same corpus against the replacement,
+  and prove the comparison can fail by mutating the replacement.
+  Read the pattern literal out of the source file rather than retyping it.
+  Here 520,985 display names and 140,090 gerund texts replayed identically,
+  while a one-character change to a length threshold diverged on 5,159 of them and the filtered
+  public API hid every one of those divergences,
+  so the raw match list has to be compared as well.
+
 ### Files where source-of-truth IS regex (kept with disables)
 
 - `package/dev-script/deps-cube/src/scripts/filter.ts` (user-typed
