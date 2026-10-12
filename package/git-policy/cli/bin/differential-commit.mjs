@@ -141,6 +141,67 @@ const cases = /** @type {readonly Case[]} */ ([
     ],
   },
   {
+    name: 'include-flag',
+    baseline: {
+      'a.txt': 'one\n',
+      'b.txt': 'b\n',
+    },
+    changes: {
+      'a.txt': 'one\ntwo',
+      'b.txt': 'b\nmore\n',
+    },
+    stage: ['b.txt'],
+    commands: [
+      [
+        'commit',
+        '--include',
+        '--message=include',
+        'a.txt',
+      ],
+    ],
+    paths: [
+      'a.txt',
+      'b.txt',
+    ],
+  },
+  {
+    name: 'pathspec-from-file',
+    baseline: {
+      'a.txt': 'one\n',
+      'b.txt': 'b\n',
+      'list.txt': 'a.txt\n',
+    },
+    changes: {
+      'a.txt': 'one\ntwo\n',
+      'b.txt': 'b\nmore\n',
+    },
+    commands: [
+      [
+        'commit',
+        '--message=listed',
+        '--pathspec-from-file=list.txt',
+      ],
+    ],
+    paths: [
+      'a.txt',
+      'b.txt',
+    ],
+  },
+  {
+    name: 'allow-empty',
+    baseline: { 'a.txt': 'one\n' },
+    changes: {},
+    commands: [
+      [
+        'commit',
+        '--allow-empty',
+        '--no-only',
+        '--message=empty',
+      ],
+    ],
+    paths: ['a.txt'],
+  },
+  {
     name: 'concurrent-commit-replay',
     baseline: {
       'a.txt': 'one\n',
