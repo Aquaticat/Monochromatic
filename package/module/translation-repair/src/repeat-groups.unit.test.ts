@@ -15,7 +15,6 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 import {
   chunkByHeadings,
-  maximalRunsOf,
   parseDocument,
   repeatGroupsOf,
 } from '../dist/final/node/index.mjs';
@@ -100,6 +99,42 @@ function sliceAt(
     startOffset,
     endOffset,
     text: text.slice(startOffset, endOffset,),
+  };
+}
+
+/**
+ Builds the occurrence a maximal repeat reports for a span of the page.
+
+ @param startOffset - first offset of the occurrence
+ @param width - UTF-16 units the occurrence spans
+ @param line - one-based line the occurrence starts on
+ @param sliceIndex - index of the slice holding the occurrence
+
+ @returns Occurrence as `repeatGroupsOf` reports it
+
+ @example
+ ```ts
+ const occurrence = occurrenceAt({ startOffset: 0, width: 12, line: 1, sliceIndex: 0, },);
+ ```
+ */
+function occurrenceAt(
+  {
+    startOffset,
+    width,
+    line,
+    sliceIndex,
+  }: {
+    readonly startOffset: number;
+    readonly width: number;
+    readonly line: number;
+    readonly sliceIndex: number;
+  },
+) {
+  return {
+    sliceIndex,
+    startOffset,
+    endOffset: startOffset + width,
+    line,
   };
 }
 
@@ -1136,20 +1171,1083 @@ await describe({
             ],);
           },
         },),
-      ],
-    },),
 
-    describe({
-      name: maximalRunsOf.name,
-      concurrency: DEFAULT_CONCURRENCY,
-      children: [
         it({
-          name: 'Returns no run whose occurrences overlap into fewer than two places',
+          name: 'Reads a paragraph whose HTML comment holds an expression brace as wording around the comment',
           fn: async () => {
-            /** Thirteen of one character: two starts one apart overlap, so one place is left once the overlap is dropped. */
-            const stream = Array.from('猫'.repeat(13,),);
+            /** Page whose first paragraph ends in a comment holding a brace, which is no expression of the paragraph. */
+            const text = `${RUN_TWELVE}。<!-- {窗台} -->\n\n午后，${RUN_TWELVE}，尾巴一卷一卷。\n`;
+            /** Offset of the second occurrence. */
+            const second = text.indexOf(RUN_TWELVE, 1,);
 
-            expect(maximalRunsOf({ stream, },),).toEqual([],);
+            expect(repeatGroupsOf({ text, slices: chunksOf({ text, },), },),).toEqual([
+              {
+                kind: 'maximal',
+                length: 12,
+                occurrences: [
+                  occurrenceAt({
+                    startOffset: 0,
+                    width: 12,
+                    line: 1,
+                    sliceIndex: 0,
+                  },),
+                  occurrenceAt({
+                    startOffset: second,
+                    width: 12,
+                    line: 3,
+                    sliceIndex: 0,
+                  },),
+                ],
+                unplaced: [],
+              },
+            ],);
+          },
+        },),
+
+        it({
+          name: 'Reads a paragraph whose HTML comment holds a tag as wording around the comment',
+          fn: async () => {
+            /** Page whose first paragraph ends in a comment holding a tag, which is no tag of the paragraph. */
+            const text = `${RUN_TWELVE}。<!-- <b>窗台</b> -->\n\n午后，${RUN_TWELVE}，尾巴一卷一卷。\n`;
+            /** Offset of the second occurrence. */
+            const second = text.indexOf(RUN_TWELVE, 1,);
+
+            expect(repeatGroupsOf({ text, slices: chunksOf({ text, },), },),).toEqual([
+              {
+                kind: 'maximal',
+                length: 12,
+                occurrences: [
+                  occurrenceAt({
+                    startOffset: 0,
+                    width: 12,
+                    line: 1,
+                    sliceIndex: 0,
+                  },),
+                  occurrenceAt({
+                    startOffset: second,
+                    width: 12,
+                    line: 3,
+                    sliceIndex: 0,
+                  },),
+                ],
+                unplaced: [],
+              },
+            ],);
+          },
+        },),
+
+        it({
+          name: 'Reads a paragraph whose inline code holds an expression brace as wording around the code',
+          fn: async () => {
+            /** Page whose first paragraph holds inline code with a brace, which is no expression of the paragraph. */
+            const text = `午后，\`{窗台}\`${RUN_TWELVE}。\n\n${RUN_TWELVE}，尾巴一卷一卷。\n`;
+            /** Offset of the first occurrence. */
+            const first = text.indexOf(RUN_TWELVE,);
+            /** Offset of the second occurrence. */
+            const second = text.indexOf(RUN_TWELVE, first + 1,);
+
+            expect(repeatGroupsOf({ text, slices: chunksOf({ text, },), },),).toEqual([
+              {
+                kind: 'maximal',
+                length: 12,
+                occurrences: [
+                  occurrenceAt({
+                    startOffset: first,
+                    width: 12,
+                    line: 1,
+                    sliceIndex: 0,
+                  },),
+                  occurrenceAt({
+                    startOffset: second,
+                    width: 12,
+                    line: 3,
+                    sliceIndex: 0,
+                  },),
+                ],
+                unplaced: [],
+              },
+            ],);
+          },
+        },),
+
+        it({
+          name: 'Reads a paragraph whose inline code holds a tag as wording around the code',
+          fn: async () => {
+            /** Page whose first paragraph holds inline code with a tag, which is no tag of the paragraph. */
+            const text = `午后，\`<b>窗台</b>\`${RUN_TWELVE}。\n\n${RUN_TWELVE}，尾巴一卷一卷。\n`;
+            /** Offset of the first occurrence. */
+            const first = text.indexOf(RUN_TWELVE,);
+            /** Offset of the second occurrence. */
+            const second = text.indexOf(RUN_TWELVE, first + 1,);
+
+            expect(repeatGroupsOf({ text, slices: chunksOf({ text, },), },),).toEqual([
+              {
+                kind: 'maximal',
+                length: 12,
+                occurrences: [
+                  occurrenceAt({
+                    startOffset: first,
+                    width: 12,
+                    line: 1,
+                    sliceIndex: 0,
+                  },),
+                  occurrenceAt({
+                    startOffset: second,
+                    width: 12,
+                    line: 3,
+                    sliceIndex: 0,
+                  },),
+                ],
+                unplaced: [],
+              },
+            ],);
+          },
+        },),
+
+        it({
+          name: 'Reads a paragraph whose bare URL holds an expression brace as wording around the URL',
+          fn: async () => {
+            /** Page whose first paragraph holds a bare URL with a brace, which is no expression of the paragraph. */
+            const text = `午后，https://cat.example.invalid/{whiskers} ${RUN_TWELVE}。\n\n${RUN_TWELVE}，尾巴一卷一卷。\n`;
+            /** Offset of the first occurrence. */
+            const first = text.indexOf(RUN_TWELVE,);
+            /** Offset of the second occurrence. */
+            const second = text.indexOf(RUN_TWELVE, first + 1,);
+
+            expect(repeatGroupsOf({ text, slices: chunksOf({ text, },), },),).toEqual([
+              {
+                kind: 'maximal',
+                length: 12,
+                occurrences: [
+                  occurrenceAt({
+                    startOffset: first,
+                    width: 12,
+                    line: 1,
+                    sliceIndex: 0,
+                  },),
+                  occurrenceAt({
+                    startOffset: second,
+                    width: 12,
+                    line: 3,
+                    sliceIndex: 0,
+                  },),
+                ],
+                unplaced: [],
+              },
+            ],);
+          },
+        },),
+
+        it({
+          name: 'Keeps the wording after an HTML comment that holds a URL with no space before its closing marker',
+          fn: async () => {
+            /** Page whose first paragraph puts the repeat right after a comment ending in a URL. */
+            const text = `午后，<!--https://cat.example.invalid/whiskers-->${RUN_TWELVE}。\n\n${RUN_TWELVE}，尾巴一卷一卷。\n`;
+            /** Offset of the first occurrence. */
+            const first = text.indexOf(RUN_TWELVE,);
+            /** Offset of the second occurrence. */
+            const second = text.indexOf(RUN_TWELVE, first + 1,);
+
+            expect(repeatGroupsOf({ text, slices: chunksOf({ text, },), },),).toEqual([
+              {
+                kind: 'maximal',
+                length: 12,
+                occurrences: [
+                  occurrenceAt({
+                    startOffset: first,
+                    width: 12,
+                    line: 1,
+                    sliceIndex: 0,
+                  },),
+                  occurrenceAt({
+                    startOffset: second,
+                    width: 12,
+                    line: 3,
+                    sliceIndex: 0,
+                  },),
+                ],
+                unplaced: [],
+              },
+            ],);
+          },
+        },),
+
+        it({
+          name: 'Keeps the wording after an HTML comment that holds a backtick when another backtick follows',
+          fn: async () => {
+            /** Page whose first paragraph puts the repeat between a backtick inside a comment and a backtick outside it. */
+            const text = `午后，<!--\`-->${RUN_TWELVE}\`，尾巴一卷一卷。\n\n${RUN_TWELVE}，尾巴一卷一卷。\n`;
+            /** Offset of the first occurrence. */
+            const first = text.indexOf(RUN_TWELVE,);
+            /** Offset of the second occurrence. */
+            const second = text.indexOf(RUN_TWELVE, first + 1,);
+
+            expect(repeatGroupsOf({ text, slices: chunksOf({ text, },), },),).toEqual([
+              {
+                kind: 'maximal',
+                length: 12,
+                occurrences: [
+                  occurrenceAt({
+                    startOffset: first,
+                    width: 12,
+                    line: 1,
+                    sliceIndex: 0,
+                  },),
+                  occurrenceAt({
+                    startOffset: second,
+                    width: 12,
+                    line: 3,
+                    sliceIndex: 0,
+                  },),
+                ],
+                unplaced: [],
+              },
+            ],);
+          },
+        },),
+
+        it({
+          name: 'Reads a repeat across an HTML comment that stands inside it, the comment lying within its span',
+          fn: async () => {
+            /** Page whose first paragraph carries a comment in the middle of the repeat. */
+            const text = `猫咪在窗台<!-- 注 -->上晒太阳打盹儿。\n\n午后，${RUN_TWELVE}，尾巴一卷一卷。\n`;
+            /** Offset of the second occurrence, the only whole copy in the raw text. */
+            const second = text.indexOf(RUN_TWELVE,);
+
+            expect(repeatGroupsOf({ text, slices: chunksOf({ text, },), },),).toEqual([
+              {
+                kind: 'maximal',
+                length: 12,
+                occurrences: [
+                  occurrenceAt({
+                    startOffset: 0,
+                    width: text.indexOf('。',),
+                    line: 1,
+                    sliceIndex: 0,
+                  },),
+                  occurrenceAt({
+                    startOffset: second,
+                    width: 12,
+                    line: 3,
+                    sliceIndex: 0,
+                  },),
+                ],
+                unplaced: [],
+              },
+            ],);
+          },
+        },),
+
+        it({
+          name: 'Reads a repeat in a paragraph that carries the tags of the container around it',
+          fn: async () => {
+            /** Page whose only paragraph of a disclosure container is widened over the container's two tags. */
+            const text = `<details>\n\n${RUN_TWELVE}。\n\n</details>\n\n午后，${RUN_TWELVE}，尾巴一卷一卷。\n`;
+            /** Offset of the first occurrence. */
+            const first = text.indexOf(RUN_TWELVE,);
+            /** Offset of the second occurrence. */
+            const second = text.indexOf(RUN_TWELVE, first + 1,);
+
+            expect(repeatGroupsOf({ text, slices: chunksOf({ text, },), },),).toEqual([
+              {
+                kind: 'maximal',
+                length: 12,
+                occurrences: [
+                  occurrenceAt({
+                    startOffset: first,
+                    width: 12,
+                    line: 3,
+                    sliceIndex: 0,
+                  },),
+                  occurrenceAt({
+                    startOffset: second,
+                    width: 12,
+                    line: 7,
+                    sliceIndex: 0,
+                  },),
+                ],
+                unplaced: [],
+              },
+            ],);
+          },
+        },),
+
+        it({
+          name: 'Leaves a repeat out of the groups when an occurrence sits inside straight double quotation marks',
+          fn: async () => {
+            /** Page whose first occurrence stands between straight double quotation marks. */
+            const text = `"${RUN_TWELVE}。"\n\n午后，${RUN_TWELVE}，尾巴一卷一卷。\n`;
+
+            expect(repeatGroupsOf({ text, slices: chunksOf({ text, },), },),).toEqual([],);
+          },
+        },),
+
+        it({
+          name: 'Reads wording after a pair of straight double quotation marks as unquoted',
+          fn: async () => {
+            /** Page whose first paragraph quotes one word with straight marks, then states the repeat. */
+            const text = `她说"好"。${RUN_TWELVE}。\n\n午后，${RUN_TWELVE}，尾巴一卷一卷。\n`;
+            /** Offset of the first occurrence. */
+            const first = text.indexOf(RUN_TWELVE,);
+            /** Offset of the second occurrence. */
+            const second = text.indexOf(RUN_TWELVE, first + 1,);
+
+            expect(repeatGroupsOf({ text, slices: chunksOf({ text, },), },),).toEqual([
+              {
+                kind: 'maximal',
+                length: 12,
+                occurrences: [
+                  occurrenceAt({
+                    startOffset: first,
+                    width: 12,
+                    line: 1,
+                    sliceIndex: 0,
+                  },),
+                  occurrenceAt({
+                    startOffset: second,
+                    width: 12,
+                    line: 3,
+                    sliceIndex: 0,
+                  },),
+                ],
+                unplaced: [],
+              },
+            ],);
+          },
+        },),
+
+        it({
+          name: 'Leaves a repeat out of the groups when it stands inside a quotation after an inner quotation closed',
+          fn: async () => {
+            /** Page whose first paragraph closes an inner quotation and states the repeat inside the outer one. */
+            const text = `「外面『内』${RUN_TWELVE}。」\n\n午后，${RUN_TWELVE}，尾巴一卷一卷。\n`;
+
+            expect(repeatGroupsOf({ text, slices: chunksOf({ text, },), },),).toEqual([],);
+          },
+        },),
+
+        it({
+          name: 'Leaves a repeat out of the groups when it stands inside the inner of two nested quotations',
+          fn: async () => {
+            /** Page whose first paragraph states the repeat inside an inner quotation of an outer one. */
+            const text = `「外面『${RUN_TWELVE}』。」\n\n午后，${RUN_TWELVE}，尾巴一卷一卷。\n`;
+
+            expect(repeatGroupsOf({ text, slices: chunksOf({ text, },), },),).toEqual([],);
+          },
+        },),
+
+        it({
+          name: 'Reads wording after a closing mark that opens its paragraph as unquoted',
+          fn: async () => {
+            /** Page whose first paragraph opens with a closing mark whose quotation began in the paragraph before. */
+            const text = `」${RUN_TWELVE}。\n\n午后，${RUN_TWELVE}，尾巴一卷一卷。\n`;
+            /** Offset of the first occurrence. */
+            const first = text.indexOf(RUN_TWELVE,);
+            /** Offset of the second occurrence. */
+            const second = text.indexOf(RUN_TWELVE, first + 1,);
+
+            expect(repeatGroupsOf({ text, slices: chunksOf({ text, },), },),).toEqual([
+              {
+                kind: 'maximal',
+                length: 12,
+                occurrences: [
+                  occurrenceAt({
+                    startOffset: first,
+                    width: 12,
+                    line: 1,
+                    sliceIndex: 0,
+                  },),
+                  occurrenceAt({
+                    startOffset: second,
+                    width: 12,
+                    line: 3,
+                    sliceIndex: 0,
+                  },),
+                ],
+                unplaced: [],
+              },
+            ],);
+          },
+        },),
+
+        it({
+          name: 'Ends an opening mark that never closes with its paragraph, so later paragraphs read as unquoted',
+          fn: async () => {
+            /** Page whose first paragraph opens a quotation it never closes, before two plain paragraphs holding the repeat. */
+            const text = `「他说得很轻。\n\n${RUN_TWELVE}。\n\n午后，${RUN_TWELVE}，尾巴一卷一卷。\n`;
+            /** Offset of the first occurrence. */
+            const first = text.indexOf(RUN_TWELVE,);
+            /** Offset of the second occurrence. */
+            const second = text.indexOf(RUN_TWELVE, first + 1,);
+
+            expect(repeatGroupsOf({ text, slices: chunksOf({ text, },), },),).toEqual([
+              {
+                kind: 'maximal',
+                length: 12,
+                occurrences: [
+                  occurrenceAt({
+                    startOffset: first,
+                    width: 12,
+                    line: 3,
+                    sliceIndex: 0,
+                  },),
+                  occurrenceAt({
+                    startOffset: second,
+                    width: 12,
+                    line: 5,
+                    sliceIndex: 0,
+                  },),
+                ],
+                unplaced: [],
+              },
+            ],);
+          },
+        },),
+
+        it({
+          name: 'Leaves a repeat out of the groups when its paragraph reopens a quotation the paragraph before left open',
+          fn: async () => {
+            /** Page whose second paragraph opens again the quotation its predecessor never closed. */
+            const text = `「他说得很轻。\n\n「${RUN_TWELVE}。」\n\n午后，${RUN_TWELVE}，尾巴一卷一卷。\n`;
+
+            expect(repeatGroupsOf({ text, slices: chunksOf({ text, },), },),).toEqual([],);
+          },
+        },),
+
+        it({
+          name: 'Reads a repeat on a page whose lines end in a carriage return and a line feed',
+          fn: async () => {
+            /** Page with Windows line endings, whose repeat stands on its first and third lines. */
+            const text = `${RUN_TWELVE}。\r\n\r\n午后，${RUN_TWELVE}，尾巴一卷一卷。\r\n`;
+            /** Offset of the second occurrence. */
+            const second = text.indexOf(RUN_TWELVE, 1,);
+
+            expect(repeatGroupsOf({ text, slices: chunksOf({ text, },), },),).toEqual([
+              {
+                kind: 'maximal',
+                length: 12,
+                occurrences: [
+                  occurrenceAt({
+                    startOffset: 0,
+                    width: 12,
+                    line: 1,
+                    sliceIndex: 0,
+                  },),
+                  occurrenceAt({
+                    startOffset: second,
+                    width: 12,
+                    line: 3,
+                    sliceIndex: 0,
+                  },),
+                ],
+                unplaced: [],
+              },
+            ],);
+          },
+        },),
+
+        it({
+          name: 'Returns no group for a page that holds front matter alone',
+          fn: async () => {
+            /** Page of a front matter block and nothing after it. */
+            const text = `---\ntitle: ${RUN_TWELVE}\ndescription: ${RUN_TWELVE}\n---\n`;
+
+            expect(repeatGroupsOf({ text, slices: chunksOf({ text, },), },),).toEqual([],);
+          },
+        },),
+
+        it({
+          name: 'Returns no group for an empty page',
+          fn: async () => {
+            expect(repeatGroupsOf({ text: '', slices: chunksOf({ text: '', },), },),).toEqual([],);
+          },
+        },),
+
+        it({
+          name: 'Returns no group for a page whose body holds no paragraph',
+          fn: async () => {
+            /** Page of a heading, a blockquote and a list, each repeating the same wording. */
+            const text = `## ${RUN_TWELVE}\n\n> ${RUN_TWELVE}\n\n- ${RUN_TWELVE}\n`;
+
+            expect(repeatGroupsOf({ text, slices: chunksOf({ text, },), },),).toEqual([],);
+          },
+        },),
+
+        it({
+          name: 'Reads a repeat in a paragraph that opens with an HTML comment',
+          fn: async () => {
+            /** Page whose first paragraph begins with a comment. */
+            const text = `<!-- 注 -->${RUN_TWELVE}。\n\n午后，${RUN_TWELVE}，尾巴一卷一卷。\n`;
+            /** Offset of the first occurrence. */
+            const first = text.indexOf(RUN_TWELVE,);
+            /** Offset of the second occurrence. */
+            const second = text.indexOf(RUN_TWELVE, first + 1,);
+
+            expect(repeatGroupsOf({ text, slices: chunksOf({ text, },), },),).toEqual([
+              {
+                kind: 'maximal',
+                length: 12,
+                occurrences: [
+                  occurrenceAt({
+                    startOffset: first,
+                    width: 12,
+                    line: 1,
+                    sliceIndex: 0,
+                  },),
+                  occurrenceAt({
+                    startOffset: second,
+                    width: 12,
+                    line: 3,
+                    sliceIndex: 0,
+                  },),
+                ],
+                unplaced: [],
+              },
+            ],);
+          },
+        },),
+
+        it({
+          name: 'Reads a repeat in a paragraph that ends with an HTML comment',
+          fn: async () => {
+            /** Page whose first paragraph ends with a comment. */
+            const text = `${RUN_TWELVE}。<!-- 注 -->\n\n午后，${RUN_TWELVE}，尾巴一卷一卷。\n`;
+            /** Offset of the second occurrence. */
+            const second = text.indexOf(RUN_TWELVE, 1,);
+
+            expect(repeatGroupsOf({ text, slices: chunksOf({ text, },), },),).toEqual([
+              {
+                kind: 'maximal',
+                length: 12,
+                occurrences: [
+                  occurrenceAt({
+                    startOffset: 0,
+                    width: 12,
+                    line: 1,
+                    sliceIndex: 0,
+                  },),
+                  occurrenceAt({
+                    startOffset: second,
+                    width: 12,
+                    line: 3,
+                    sliceIndex: 0,
+                  },),
+                ],
+                unplaced: [],
+              },
+            ],);
+          },
+        },),
+
+        it({
+          name: 'Reads the paragraphs either side of an HTML comment that spans a blank line as two paragraphs',
+          fn: async () => {
+            /** Page whose comment holds a blank line, with the repeat before it and wording after it. */
+            const text = `${RUN_TWELVE}<!-- 注\n\n注 -->猫狗乙\n\n${RUN_TWELVE}，尾巴一卷一卷。\n`;
+            /** Offset of the second occurrence. */
+            const second = text.indexOf(RUN_TWELVE, 1,);
+
+            expect(repeatGroupsOf({ text, slices: chunksOf({ text, },), },),).toEqual([
+              {
+                kind: 'maximal',
+                length: 12,
+                occurrences: [
+                  occurrenceAt({
+                    startOffset: 0,
+                    width: 12,
+                    line: 1,
+                    sliceIndex: 0,
+                  },),
+                  occurrenceAt({
+                    startOffset: second,
+                    width: 12,
+                    line: 5,
+                    sliceIndex: 0,
+                  },),
+                ],
+                unplaced: [],
+              },
+            ],);
+          },
+        },),
+
+        it({
+          name: 'Spans a character beyond the first plane at the start and the end of a repeat',
+          fn: async () => {
+            /** Ten plain characters between two ideographs from the second plane, twelve characters in all. */
+            const run = '𠀀猫咪在窗台上晒太阳打𠀁';
+            /** Page repeating that run in two paragraphs. */
+            const text = `${run}。\n\n午后，${run}，尾巴一卷一卷。\n`;
+            /** Offset of the second occurrence. */
+            const second = text.indexOf(run, 1,);
+
+            expect(repeatGroupsOf({ text, slices: chunksOf({ text, },), },),).toEqual([
+              {
+                kind: 'maximal',
+                length: 12,
+                occurrences: [
+                  occurrenceAt({
+                    startOffset: 0,
+                    width: 14,
+                    line: 1,
+                    sliceIndex: 0,
+                  },),
+                  occurrenceAt({
+                    startOffset: second,
+                    width: 14,
+                    line: 3,
+                    sliceIndex: 0,
+                  },),
+                ],
+                unplaced: [],
+              },
+            ],);
+          },
+        },),
+
+        it({
+          name: 'Spans a character beyond the first plane that ends the shared prefix of a refrain',
+          fn: async () => {
+            /** Clauses whose shared prefix ends in an ideograph from the second plane, ahead of the slot. */
+            const text = '所以这只猫是个𠀀胖猫咪吧。\n\n所以这只猫是个𠀀瘦猫咪吧。\n';
+            /** Offset of the second clause. */
+            const second = text.indexOf('所以这只猫是个𠀀瘦',);
+
+            expect(repeatGroupsOf({ text, slices: chunksOf({ text, },), },),).toEqual([
+              {
+                kind: 'refrain',
+                prefix: '所以这只猫是个𠀀',
+                suffix: '猫咪吧',
+                slotBounds: {
+                  minimum: 1,
+                  maximum: 8,
+                },
+                occurrences: [
+                  {
+                    sliceIndex: 0,
+                    startOffset: 0,
+                    endOffset: 13,
+                    line: 1,
+                    slotStartOffset: 9,
+                    slotEndOffset: 10,
+                  },
+                  {
+                    sliceIndex: 0,
+                    startOffset: second,
+                    endOffset: second + 13,
+                    line: 3,
+                    slotStartOffset: second + 9,
+                    slotEndOffset: second + 10,
+                  },
+                ],
+                unplaced: [],
+              },
+            ],);
+          },
+        },),
+
+        it({
+          name: 'Spans a character beyond the first plane that ends the slot of a refrain',
+          fn: async () => {
+            /** Clauses whose slots end in different ideographs from the second plane, ahead of the shared suffix. */
+            const text = '所以这只猫是个胖𠀀猫咪吧。\n\n所以这只猫是个瘦𠀁猫咪吧。\n';
+            /** Offset of the second clause. */
+            const second = text.indexOf('所以这只猫是个瘦',);
+
+            expect(repeatGroupsOf({ text, slices: chunksOf({ text, },), },),).toEqual([
+              {
+                kind: 'refrain',
+                prefix: '所以这只猫是个',
+                suffix: '猫咪吧',
+                slotBounds: {
+                  minimum: 1,
+                  maximum: 8,
+                },
+                occurrences: [
+                  {
+                    sliceIndex: 0,
+                    startOffset: 0,
+                    endOffset: 13,
+                    line: 1,
+                    slotStartOffset: 7,
+                    slotEndOffset: 10,
+                  },
+                  {
+                    sliceIndex: 0,
+                    startOffset: second,
+                    endOffset: second + 13,
+                    line: 3,
+                    slotStartOffset: second + 7,
+                    slotEndOffset: second + 10,
+                  },
+                ],
+                unplaced: [],
+              },
+            ],);
+          },
+        },),
+
+        it({
+          name: 'Reports a paragraph copied whole as one repeat of its whole length',
+          fn: async () => {
+            /** Sixty distinct ideographs, which no shorter repeat divides. */
+            const paragraph = Array.from({ length: 60, }, (_, index,) => String.fromCodePoint(0x4E_00 + (index * 37),),)
+              .join('',);
+            /** Page holding that paragraph twice. */
+            const text = `${paragraph}\n\n${paragraph}\n`;
+
+            expect(repeatGroupsOf({ text, slices: chunksOf({ text, },), },),).toEqual([
+              {
+                kind: 'maximal',
+                length: 60,
+                occurrences: [
+                  occurrenceAt({
+                    startOffset: 0,
+                    width: 60,
+                    line: 1,
+                    sliceIndex: 0,
+                  },),
+                  occurrenceAt({
+                    startOffset: 62,
+                    width: 60,
+                    line: 3,
+                    sliceIndex: 0,
+                  },),
+                ],
+                unplaced: [],
+              },
+            ],);
+          },
+        },),
+
+        it({
+          name: 'Lists the shorter of two repeats that start at the same offset first',
+          fn: async () => {
+            /** Three paragraphs: the first two share fifteen characters, all three share their first twelve. */
+            const text = `${RUN_FIFTEEN}。\n\n${RUN_FIFTEEN}，尾巴一卷一卷。\n\n${RUN_TWELVE}，又伸了个懒腰。\n`;
+            /** Offsets of the three paragraphs' repeats. */
+            const starts = [
+              0,
+              text.indexOf(RUN_FIFTEEN, 1,),
+              text.indexOf(RUN_TWELVE, text.indexOf(RUN_FIFTEEN, 1,) + 1,),
+            ] as const;
+
+            expect(repeatGroupsOf({ text, slices: chunksOf({ text, },), },),).toEqual([
+              {
+                kind: 'maximal',
+                length: 12,
+                occurrences: [
+                  occurrenceAt({
+                    startOffset: starts[0],
+                    width: 12,
+                    line: 1,
+                    sliceIndex: 0,
+                  },),
+                  occurrenceAt({
+                    startOffset: starts[1],
+                    width: 12,
+                    line: 3,
+                    sliceIndex: 0,
+                  },),
+                  occurrenceAt({
+                    startOffset: starts[2],
+                    width: 12,
+                    line: 5,
+                    sliceIndex: 0,
+                  },),
+                ],
+                unplaced: [],
+              },
+              {
+                kind: 'maximal',
+                length: 15,
+                occurrences: [
+                  occurrenceAt({
+                    startOffset: starts[0],
+                    width: 15,
+                    line: 1,
+                    sliceIndex: 0,
+                  },),
+                  occurrenceAt({
+                    startOffset: starts[1],
+                    width: 15,
+                    line: 3,
+                    sliceIndex: 0,
+                  },),
+                ],
+                unplaced: [],
+              },
+            ],);
+          },
+        },),
+
+        it({
+          name: 'Lists a maximal repeat before a refrain that starts at the same offset',
+          fn: async () => {
+            /** Two lines, each holding both clauses of one frame, so the whole line repeats and its clauses form a refrain. */
+            const line = `${REFRAIN_FIRST}，${REFRAIN_SECOND}`;
+            /** Page repeating that line in two paragraphs. */
+            const text = `${line}\n\n${line}\n`;
+            /** Offset of the second line. */
+            const second = text.indexOf(line, 1,);
+            /** Width of one line in UTF-16 units. */
+            const width = line.length;
+
+            expect(repeatGroupsOf({ text, slices: chunksOf({ text, },), },),).toEqual([
+              {
+                kind: 'maximal',
+                length: 23,
+                occurrences: [
+                  occurrenceAt({
+                    startOffset: 0,
+                    width,
+                    line: 1,
+                    sliceIndex: 0,
+                  },),
+                  occurrenceAt({
+                    startOffset: second,
+                    width,
+                    line: 3,
+                    sliceIndex: 0,
+                  },),
+                ],
+                unplaced: [],
+              },
+              {
+                kind: 'refrain',
+                prefix: '所以这只猫是个',
+                suffix: '猫咪吧',
+                slotBounds: {
+                  minimum: 1,
+                  maximum: 8,
+                },
+                occurrences: [
+                  {
+                    sliceIndex: 0,
+                    startOffset: 0,
+                    endOffset: 11,
+                    line: 1,
+                    slotStartOffset: 7,
+                    slotEndOffset: 8,
+                  },
+                  {
+                    sliceIndex: 0,
+                    startOffset: 12,
+                    endOffset: 23,
+                    line: 1,
+                    slotStartOffset: 19,
+                    slotEndOffset: 20,
+                  },
+                  {
+                    sliceIndex: 0,
+                    startOffset: second,
+                    endOffset: second + 11,
+                    line: 3,
+                    slotStartOffset: second + 7,
+                    slotEndOffset: second + 8,
+                  },
+                  {
+                    sliceIndex: 0,
+                    startOffset: second + 12,
+                    endOffset: second + 23,
+                    line: 3,
+                    slotStartOffset: second + 19,
+                    slotEndOffset: second + 20,
+                  },
+                ],
+                unplaced: [],
+              },
+            ],);
+          },
+        },),
+
+        it({
+          name: 'Places an occurrence in the slice it is given by, whatever order the slices come in',
+          fn: async () => {
+            /** Page with the repeat in two paragraphs, cut between them. */
+            const text = `${RUN_TWELVE}，\n\n${RUN_TWELVE}。\n`;
+            /** Offset of the second occurrence. */
+            const second = text.indexOf(RUN_TWELVE, 1,);
+            /** Cut placed at the start of the second paragraph. */
+            const cut = second;
+            /** Slices handed over last first. */
+            const slices = [
+              sliceAt({
+                sliceIndex: 1,
+                text,
+                startOffset: cut,
+                endOffset: text.length,
+              },),
+              sliceAt({
+                sliceIndex: 0,
+                text,
+                startOffset: 0,
+                endOffset: cut,
+              },),
+            ];
+
+            expect(repeatGroupsOf({ text, slices, },),).toEqual([
+              {
+                kind: 'maximal',
+                length: 12,
+                occurrences: [
+                  occurrenceAt({
+                    startOffset: 0,
+                    width: 12,
+                    line: 1,
+                    sliceIndex: 0,
+                  },),
+                  occurrenceAt({
+                    startOffset: second,
+                    width: 12,
+                    line: 3,
+                    sliceIndex: 1,
+                  },),
+                ],
+                unplaced: [],
+              },
+            ],);
+          },
+        },),
+
+        it({
+          name: 'Names a slice by its sliceIndex field and not by its position in the given list',
+          fn: async () => {
+            /** Page with the repeat in two paragraphs, cut between them. */
+            const text = `${RUN_TWELVE}，\n\n${RUN_TWELVE}。\n`;
+            /** Offset of the second occurrence. */
+            const second = text.indexOf(RUN_TWELVE, 1,);
+            /** Slices whose indexes are not their positions. */
+            const slices = [
+              sliceAt({
+                sliceIndex: 5,
+                text,
+                startOffset: 0,
+                endOffset: second,
+              },),
+              sliceAt({
+                sliceIndex: 2,
+                text,
+                startOffset: second,
+                endOffset: text.length,
+              },),
+            ];
+
+            expect(repeatGroupsOf({ text, slices, },),).toEqual([
+              {
+                kind: 'maximal',
+                length: 12,
+                occurrences: [
+                  occurrenceAt({
+                    startOffset: 0,
+                    width: 12,
+                    line: 1,
+                    sliceIndex: 5,
+                  },),
+                  occurrenceAt({
+                    startOffset: second,
+                    width: 12,
+                    line: 3,
+                    sliceIndex: 2,
+                  },),
+                ],
+                unplaced: [],
+              },
+            ],);
+          },
+        },),
+
+        it({
+          name: 'Places an occurrence that a later overlapping slice holds whole, though an earlier one ends inside it',
+          fn: async () => {
+            /** Page with the repeat on its first and third lines. */
+            const text = `${RUN_TWELVE}，\n尾巴一卷一卷。\n${RUN_TWELVE}。\n`;
+            /** Offset of the second occurrence. */
+            const second = text.indexOf(RUN_TWELVE, 1,);
+            /** Slices that overlap: the first ends five characters into the second occurrence, the second starts before it. */
+            const slices = [
+              sliceAt({
+                sliceIndex: 0,
+                text,
+                startOffset: 0,
+                endOffset: second + 5,
+              },),
+              sliceAt({
+                sliceIndex: 1,
+                text,
+                startOffset: second - 3,
+                endOffset: text.length,
+              },),
+            ];
+
+            expect(repeatGroupsOf({ text, slices, },),).toEqual([
+              {
+                kind: 'maximal',
+                length: 12,
+                occurrences: [
+                  occurrenceAt({
+                    startOffset: 0,
+                    width: 12,
+                    line: 1,
+                    sliceIndex: 0,
+                  },),
+                  occurrenceAt({
+                    startOffset: second,
+                    width: 12,
+                    line: 3,
+                    sliceIndex: 1,
+                  },),
+                ],
+                unplaced: [],
+              },
+            ],);
+          },
+        },),
+
+        it({
+          name: 'Places an occurrence that two overlapping slices hold whole in the one with the lower sliceIndex',
+          fn: async () => {
+            /** Page with the repeat in two paragraphs. */
+            const text = `${RUN_TWELVE}，\n\n${RUN_TWELVE}。\n`;
+            /** Offset of the second occurrence. */
+            const second = text.indexOf(RUN_TWELVE, 1,);
+            /** Two slices that each hold the whole page, the higher index first. */
+            const slices = [
+              sliceAt({
+                sliceIndex: 4,
+                text,
+                startOffset: 0,
+                endOffset: text.length,
+              },),
+              sliceAt({
+                sliceIndex: 1,
+                text,
+                startOffset: 0,
+                endOffset: text.length,
+              },),
+            ];
+
+            expect(repeatGroupsOf({ text, slices, },),).toEqual([
+              {
+                kind: 'maximal',
+                length: 12,
+                occurrences: [
+                  occurrenceAt({
+                    startOffset: 0,
+                    width: 12,
+                    line: 1,
+                    sliceIndex: 1,
+                  },),
+                  occurrenceAt({
+                    startOffset: second,
+                    width: 12,
+                    line: 3,
+                    sliceIndex: 1,
+                  },),
+                ],
+                unplaced: [],
+              },
+            ],);
           },
         },),
       ],

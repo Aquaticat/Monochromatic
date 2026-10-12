@@ -781,12 +781,6 @@ const ALLOWLIST: readonly string[] = [
   'src/repair-scorecard.ts',
   'src/repair-slice-settle.ts',
   'src/repair-stage-findings.ts',
-  // The splits of `repeat-groups.ts` (its constants, its finders and its wording reader):
-  // every case of `repeat-groups.unit.test.ts` reaches them through `repeatGroupsOf`, the
-  // one export. Each line goes when its module gains an own test.
-  'src/repeat-groups-bounds.ts',
-  'src/repeat-groups-runs.ts',
-  'src/repeat-groups-wording.ts',
   'src/resolution-authorship.ts',
   'src/restore-ellipsis.ts',
   'src/retry-stated-wait.ts',
