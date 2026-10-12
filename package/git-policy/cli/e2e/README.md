@@ -36,6 +36,7 @@ The same scenarios run against the native executable (`src/native/`) with the na
 # package/git-policy/cli: run from the repository root
 mise run //package/git-policy/cli:test:e2e:concurrent:native
 mise run //package/git-policy/cli:test:e2e:concurrent:native --seed 1 --scenario baseline-explicit-commit --git 2.55.0
+mise run //package/git-policy/cli:test:e2e:concurrent:native:surface
 ```
 
 - `E2E_WRAPPER` (`incumbent` by default, or `native`) selects the directory whose `git` shadows the real Git
@@ -43,6 +44,8 @@ mise run //package/git-policy/cli:test:e2e:concurrent:native --seed 1 --scenario
   the consumer checks that this `git` is a script for the incumbent and an ELF executable for the native one,
   and prints the result first.
   Scenarios, invariants and the report do not change with the selection.
+- `test:e2e:concurrent:native:surface` sends the non-commit commands the scenarios use through both wrappers
+  (`wrapper-surface-probe.ts`) and compares exit codes and output; it needs no commit path.
 - `test:e2e:concurrent:native:image` compiles the release `cli-git-native` in `rust:1.97-bookworm`
   and links it as `/opt/native/bin/git` in a copy of the `cli-git-concurrent-e2e` image;
   build that image first with `test:e2e:concurrent:image`.

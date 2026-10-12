@@ -1,6 +1,6 @@
 /**
  The non-commit Git commands that the end-to-end scenarios send through the wrapper,
- plus a few the wrapper refuses,
+ plus a few that the wrapper's policies may refuse,
  in the order the wrapper surface probe runs them.
 
  @module
@@ -253,21 +253,21 @@ export async function runSurfaceSteps({
     ],
   },);
   await wrapped({
-    label: 'refused add all',
+    label: 'add all',
     args: [
       'add',
       '--all',
     ],
   },);
   await wrapped({
-    label: 'refused reset hard',
+    label: 'reset hard',
     args: [
       'reset',
       '--hard',
     ],
   },);
   await wrapped({
-    label: 'refused clean',
+    label: 'clean',
     args: [
       'clean',
       '--force',
