@@ -3211,6 +3211,23 @@ The human noticed that `Shift+F10` is Run in JetBrains' keymap, which D106 uses 
   Shuffle from here, Details, Copy filename, Show in file manager, Move to trash), and the rows' `Up`, `Down`, `Enter`,
   `Escape` keys stay. On Android the access keys work with an attached keyboard.
 
+### D115. Readings made while fixing the list defects (2026-10-12)
+
+The orchestrator's readings of earlier decisions, adopted from the desktop lists work and open to the human's veto:
+
+- D22 and C1: the scrollbar's grab zone is 12 px across the scroll axis (D22), and the thumb is never shorter than 48 px
+  along it (C1). The thumb widens from 4 to 8 px on hover or drag, so state is shown by color and width.
+- D31: names take the width they need, up to the pane. A longer name ends in an ellipsis, with the full name as a tooltip
+  (only while it is cut) and as the accessible label. A highlighted Search match is never the part that is cut.
+- D1 and D18: the Shuffle segment keeps the width of "Shuffle Camellia" for every folder name, so the deck never
+  re-lays itself out while the user browses; a longer name gets the middle ellipsis on the name only.
+- D28: each writing system after the first starts with a 1 px hairline in the rail, which also separates look-alike Latin,
+  Cyrillic and Greek letters.
+- D36: the playing row carries a 4 px bar in the primary role on its left edge besides bold and the soft fill, so the
+  emphasis does not depend on the script of the title.
+- The Hangul syllable that renders as two jamo in some sessions is a font fallback gap, not an app or renderer defect:
+  `doc/troubleshooting/slint-hangul-split-jamo-droid-sans-fallback.md`. Open question: bundle a Hangul-capable font.
+
 ## Pending after the theme picks (2026-09-04)
 
 - **Order of remaining work** — my recommendation:
