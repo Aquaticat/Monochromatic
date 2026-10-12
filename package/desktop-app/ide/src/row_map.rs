@@ -358,54 +358,74 @@ impl RowMap {
     }
 
     /// What:
-    ///  Height of everything `line` owns:
-    ///  its block and its code row.
-    ///  A line the text does not have
-    ///       counts as one plain row.
+    ///  Height of the visual row `row` of `line` with what stands above it:
+    ///  one code row, and the line's block when the row is its first.
+    ///  A line the text does not have counts as one plain row.
     /// Why:
-    ///  A page step is measured in whole lines,
+    ///  A page step is measured in whole visual rows,
     ///  also where a page reaches past either end of the text.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
-    /// extent(line: number): number;
+    /// extent(line: number, row: number): number;
     /// ```
-    fn extent(&self, line: usize) -> f32 {
+    fn extent(&self, line: usize, row: usize) -> f32 {
         if line >= self.lines {
             return CODE_ROW;
         }
-        return self.block_height(line) + self.code_height(line);
+        if row == 0 {
+            return self.block_height(line) + CODE_ROW;
+        }
+        return CODE_ROW;
     }
 
     /// What:
     ///  One page step from a view whose top edge is at `offset` and which is `height` tall:
     ///  the number of
-    ///       lines that fit,
+    ///       visual rows that fit,
     ///  at least one,
     ///  and their summed height.
-    ///  `forward` counts from the top line down,
-    ///       otherwise the lines above it.
+    ///  `forward` counts from the row at the top edge down,
+    ///       otherwise the rows above it.
     ///  The answer is a pair (tuple).
     /// Why:
-    ///  PageUp and PageDown move the caret by whole lines and the view by exactly the pixels those lines
+    ///  PageUp and PageDown move the caret by whole visual rows and the view by exactly the pixels those rows
     ///      take,
     ///  which is no longer a multiple of one row height once blocks take space.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
-    /// page(offset: number, height: number, forward: boolean): [lines: number, pixels: number];
+    /// page(offset: number, height: number, forward: boolean): [rows: number, pixels: number];
     /// ```
     pub fn page(&self, offset: f32, height: f32, forward: bool) -> (usize, f32) {
-        let start = self.line_at(offset);
+        let mut line = self.line_at(offset);
+        let mut row = self.visual_row_at(line, offset);
         let mut count: usize = 0;
         let mut pixels: f32 = 0.0;
+        // Above the first row there is nothing to measure; such steps count as plain rows.
+        let mut above = true;
         loop {
-            // Above the first line there is nothing to measure; such steps count as plain rows.
             let mut step = CODE_ROW;
             if forward {
-                step = self.extent(start + count);
-            } else if count < start {
-                step = self.extent(start - count - 1);
+                step = self.extent(line, row);
+                row += 1;
+                if row >= self.rows_of(line) {
+                    line += 1;
+                    row = 0;
+                }
+            } else if above {
+                // The previous row of the text is the one before the first row counted, or the last of the line above.
+                if row > 0 {
+                    row -= 1;
+                } else if line > 0 {
+                    line -= 1;
+                    row = self.rows_of(line) - 1;
+                } else {
+                    above = false;
+                }
+                if above {
+                    step = self.extent(line, row);
+                }
             }
             if count > 0 && pixels + step > height {
                 break;

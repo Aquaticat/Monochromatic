@@ -126,15 +126,22 @@ fn every_pixel_belongs_to_one_line_with_wrapped_lines() {
     assert_eq!(map.visual_row_at(2, -5.0), 0);
 }
 
-/// A page step counts the whole height of each wrapped line.
+/// A page step counts visual rows, and a block counts with the first row of its line.
 #[test]
-fn a_page_step_counts_wrapped_lines_by_their_height() {
+fn a_page_step_counts_visual_rows_with_the_blocks_above_their_first_rows() {
     let map = wrapped_map();
-    let (lines, pixels) = map.page(map.code_top(2), 150.0, true);
-    assert_eq!(lines, 2, "line 2 takes 72 px and line 3 takes 26 + 48");
-    assert_eq!(pixels, 72.0 + 74.0);
-    let (one, taken) = map.page(map.code_top(2), 100.0, true);
-    assert_eq!((one, taken), (1, 72.0), "the next line does not fit");
+    let (rows, pixels) = map.page(map.code_top(2), 150.0, true);
+    assert_eq!(
+        rows, 5,
+        "line 2 takes three rows (72 px), line 3 takes 26 + 24 for its first row and 24 for its second"
+    );
+    assert_eq!(pixels, 72.0 + 50.0 + 24.0);
+    let (three, taken) = map.page(map.code_top(2), 100.0, true);
+    assert_eq!(
+        (three, taken),
+        (3, 72.0),
+        "the first row of line 3 carries its 26 px block, so it would end at 122 px and does not fit"
+    );
 }
 
 /// A table for a million lines answers a position in a handful of lookups and copies in microseconds.

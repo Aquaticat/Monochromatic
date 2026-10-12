@@ -107,13 +107,35 @@ impl ShapedRow {
 
     /// Number of visual rows this source line occupies:
     ///  one for an unwrapped line, more when the line was broken at a wrap width.
+    /// An empty line the engine leaves after the last row does not count (see [`Self::has_empty_tail`]).
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
-    /// get visualRows(): number { return this.layout.lines().length; }
+    /// get visualRows(): number { return this.layout.lines().length - (this.hasEmptyTail() ? 1 : 0); }
     /// ```
     pub fn visual_rows(&self) -> usize {
-        return self.layout.len();
+        return self.layout.len() - usize::from(self.has_empty_tail());
+    }
+
+    /// What:
+    ///  Whether the engine left an empty line after the last row of the text.
+    /// Why:
+    ///  When blanks end the text and the last of them overflows the width, the engine hangs the blanks on the last row
+    ///  and still emits one more line, with no characters.
+    ///  That line is no row of text: the caret at the end of the text stands at the end of the row before it,
+    ///  and the gutter, the vertical map, and the keys must not count it.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// hasEmptyTail(): boolean { return lines.length > 1 && lines.at(-1).textRange.isEmpty; }
+    /// ```
+    pub fn has_empty_tail(&self) -> bool {
+        let count = self.layout.len();
+        return count > 1
+            && self
+                .layout
+                .get(count - 1)
+                .is_some_and(|line| return line.text_range().is_empty());
     }
 
     /// Logical y of visual row `index` from the top of the line's first row, at `scale`.
@@ -195,9 +217,36 @@ impl ShapedRow {
         );
     }
 
+    /// The source characters of every visual row, as global character ranges that tile the line's visible text.
+    /// A line without text has one empty range at its start.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// sourceRows(): [number, number][];
+    /// ```
+    pub fn source_rows(&self) -> Vec<Range<usize>> {
+        let mut rows: Vec<Range<usize>> = (0..self.visual_rows())
+            .filter_map(|index| return self.visual_row_sources(index))
+            .map(|local| return self.source_start + local.start..self.source_start + local.end)
+            .collect();
+        if rows.is_empty() {
+            rows.push(self.source_start..self.source_start);
+        }
+        return rows;
+    }
+
+    /// The side the engine draws a caret at display byte `byte` on:
+    ///  at the end of a text that has an empty tail, the end of the last row, whatever side was asked for.
+    fn at_text_end(&self, byte: usize, affinity: Affinity) -> Affinity {
+        if self.has_empty_tail() && byte >= self.projection.text.len() {
+            return Affinity::Upstream;
+        }
+        return affinity;
+    }
+
     /// Physical x of the caret at display byte `byte` on the side `affinity` names.
     fn cursor_x(&self, byte: usize, affinity: Affinity) -> f32 {
-        let cursor = Cursor::from_byte_index(&self.layout, byte, affinity);
+        let cursor = Cursor::from_byte_index(&self.layout, byte, self.at_text_end(byte, affinity));
         // What: `as f32` narrows the engine's 64-bit coordinate to the 32-bit float advances use.
         // Why: Parley's geometry uses `f64`; glyph advances and Slint coordinates use `f32`.
         //
@@ -230,7 +279,8 @@ impl ShapedRow {
         if matches!(affinity, Affinity::Upstream) && row > 0 && starts_row {
             row -= 1;
         }
-        return row;
+        // The empty tail is no row: the end of the text is on the row before it.
+        return row.min(self.visual_rows() - 1);
     }
 
     /// Physical x of the caret before the row-local source character `local`, with the affinity of a plain row.
@@ -248,7 +298,7 @@ impl ShapedRow {
     /// Visual row whose vertical extent contains physical `y`, or the last row when `y` is below all of them.
     fn row_at_physical(&self, y: f32) -> usize {
         let mut row = 0;
-        for (index, line) in self.layout.lines().enumerate() {
+        for (index, line) in self.layout.lines().enumerate().take(self.visual_rows()) {
             row = index;
             if y < line.metrics().block_max_coord {
                 return index;
@@ -359,11 +409,12 @@ impl ShapedRow {
             .saturating_sub(self.source_start)
             .min(self.source_len());
         let byte = self.projection.source_to_byte[local];
-        let starts_next = self
-            .layout
-            .lines()
-            .nth(row + 1)
-            .is_some_and(|next| return next.text_range().start == byte);
+        let starts_next = row + 1 < self.visual_rows()
+            && self
+                .layout
+                .lines()
+                .nth(row + 1)
+                .is_some_and(|next| return next.text_range().start == byte);
         if starts_next {
             return ReadingAffinity::Upstream;
         }

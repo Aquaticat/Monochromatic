@@ -36,7 +36,7 @@ use std::{
 const PATIENCE: Duration = Duration::from_secs(90);
 
 /// A line that wraps to several rows at the width of the test window (about 700 px of text).
-fn long_line(number: usize) -> String {
+pub(super) fn long_line(number: usize) -> String {
     return format!(
         "let line_{number} = compute_total(first_item, second_item, third_item); // {}",
         "word ".repeat(40)
@@ -44,7 +44,7 @@ fn long_line(number: usize) -> String {
 }
 
 /// `count` long lines.
-fn long_text(count: usize) -> String {
+pub(super) fn long_text(count: usize) -> String {
     let mut text = String::new();
     for number in 0..count {
         text.push_str(&long_line(number));
@@ -54,7 +54,7 @@ fn long_text(count: usize) -> String {
 }
 
 /// Advance timers until `ready` holds, failing with `message` after `PATIENCE`.
-fn until(message: &str, mut ready: impl FnMut() -> bool) {
+pub(super) fn until(message: &str, mut ready: impl FnMut() -> bool) {
     let start = Instant::now();
     loop {
         update_timers_and_animations();
@@ -80,7 +80,7 @@ fn measured(state: &Rc<RefCell<State>>, scale: f32) -> bool {
 }
 
 /// Wait until the pass has finished and the last output is applied.
-fn settled(reader: &Reader) {
+pub(super) fn settled(reader: &Reader) {
     let scale = reader.window.window().scale_factor();
     until("the measurement pass did not finish", || {
         return measured(&reader.source, scale);
@@ -90,7 +90,7 @@ fn settled(reader: &Reader) {
 }
 
 /// Open a reader on `text` and wait for the first layout to give the view its width.
-fn open(text: &str) -> (tempfile::TempDir, Reader) {
+pub(super) fn open(text: &str) -> (tempfile::TempDir, Reader) {
     let project = memory_project("wrap-view-");
     fs::write(project.path().join("a.txt"), text).expect("fixture file");
     let opened = reader(project.path(), "a.txt");

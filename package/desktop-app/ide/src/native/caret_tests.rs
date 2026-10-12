@@ -329,7 +329,7 @@ fn page_keys_move_by_the_visible_height_and_keep_the_caret_in_view() {
 }
 
 /// Whether the caret's line lies completely inside the vertical viewport.
-fn caret_in_view(reader: &Reader) -> bool {
+pub(super) fn caret_in_view(reader: &Reader) -> bool {
     let window = &reader.window;
     let reading = reader.source.borrow();
     let head = reading.document.position().head;
@@ -413,6 +413,13 @@ fn view_follows_the_caret_across_the_visual_rows_of_a_wrapped_line() {
         3.0 * 24.0 + 2.0,
         "the caret is on the wide line's first row"
     );
+    // The first End stops at the end of the first visual row; the second goes to the end of the line.
+    key(window, Key::End);
+    assert_eq!(
+        window.get_caret_y(),
+        3.0 * 24.0 + 2.0,
+        "End stops at the end of the visual row it is on"
+    );
     key(window, Key::End);
     let caret = window.get_caret_y() - 2.0;
     assert!(
@@ -430,12 +437,25 @@ fn view_follows_the_caret_across_the_visual_rows_of_a_wrapped_line() {
         (caret + 24.0 - height).round(),
         "the view moves only by what is missing"
     );
+    // Home goes to the start of the last row first, which is already in view.
+    key(window, Key::Home);
+    assert_eq!(
+        window.get_caret_y() - 2.0,
+        caret,
+        "Home stays on the visual row it is on"
+    );
+    assert_eq!(-window.get_scroll_y(), offset, "the view stays");
     key(window, Key::Home);
     let home_offset = -window.get_scroll_y();
     let home_caret = window.get_caret_y() - 2.0;
     assert!(
         home_caret >= home_offset && home_caret + 24.0 <= home_offset + height,
         "Home brings the first row back"
+    );
+    assert_eq!(
+        home_caret,
+        3.0 * 24.0,
+        "and puts the caret on the first row"
     );
     window.hide().expect("close caret window");
 }

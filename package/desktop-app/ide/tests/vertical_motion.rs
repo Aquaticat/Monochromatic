@@ -7,7 +7,7 @@
 ///  the production shaper,
 ///  and the vertical movement under test.
 use ide_app::{
-    document::{Document, ReadingPosition},
+    document::{Document, ReadingAffinity, ReadingPosition},
     shaped_text::TextShaper,
     vertical_motion::{PreferredColumn, vertical},
 };
@@ -30,7 +30,7 @@ fn at(source: &str, head: usize) -> Document {
         anchor: head,
         head,
         viewport: 0,
-        affinity: ide_app::document::ReadingAffinity::Downstream,
+        affinity: ReadingAffinity::Downstream,
     });
     return document;
 }
@@ -60,13 +60,13 @@ fn travel(source: &str, head: usize, steps: &[isize]) -> Vec<usize> {
     let mut column: Option<PreferredColumn> = None;
     let mut visited = Vec::new();
     for step in steps {
-        let landed = vertical(&mut shaper, &document, 1.0, *step, column);
+        let landed = vertical(&mut shaper, &document, 1.0, 0.0, *step, column);
         column = Some(landed);
         document.select(ReadingPosition {
             anchor: landed.head,
             head: landed.head,
             viewport: 0,
-            affinity: ide_app::document::ReadingAffinity::Downstream,
+            affinity: landed.affinity,
         });
         visited.push(landed.head);
     }
@@ -133,18 +133,20 @@ fn stale_preferred_column_is_ignored() {
     let mut shaper = TextShaper::new();
     let stale = PreferredColumn {
         head: 7,
+        affinity: ReadingAffinity::Downstream,
         x: 10_000.0,
     };
-    let landed = vertical(&mut shaper, &document, 1.0, 1, Some(stale));
+    let landed = vertical(&mut shaper, &document, 1.0, 0.0, 1, Some(stale));
     assert_eq!(
         landed.head, 11,
         "a column remembered for another caret position moved the caret"
     );
     let current = PreferredColumn {
         head: 2,
+        affinity: ReadingAffinity::Downstream,
         x: 10_000.0,
     };
-    let kept = vertical(&mut shaper, &document, 1.0, 1, Some(current));
+    let kept = vertical(&mut shaper, &document, 1.0, 0.0, 1, Some(current));
     assert_eq!(
         kept.head, 17,
         "a column remembered for this caret position must be used"
@@ -170,7 +172,7 @@ fn target_position_follows_pixels_across_cjk_and_tabs() {
     let mut shaper = TextShaper::new();
     let document = at(source, 6);
     let aim = shaper.row(&document, 0, 1.0).caret_x(6, 1.0);
-    let cjk = vertical(&mut shaper, &document, 1.0, 1, None);
+    let cjk = vertical(&mut shaper, &document, 1.0, 0.0, 1, None);
     assert_eq!(
         cjk.head,
         shaper.row(&document, 1, 1.0).hit(aim, 1.0),

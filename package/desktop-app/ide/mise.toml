@@ -236,7 +236,7 @@ shell = "node --input-type=module-typescript -e"
 run = """
 {{vars.cargo}}
 runCargo(['test', '--no-default-features', '--lib', 'wrap::'])
-runCargo(['test', '--no-default-features', '--test', 'wrap', '--test', 'wrap_rows', '--test', 'row_map'])
+runCargo(['test', '--no-default-features', '--test', 'wrap', '--test', 'wrap_rows', '--test', 'row_map', '--test', 'wrap_keys', '--test', 'vertical_motion'])
 """
 
 [tasks."test:native"]

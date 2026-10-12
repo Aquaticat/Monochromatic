@@ -265,6 +265,9 @@ mod watch_scope_tests;
 ///  faster than polling could.
 #[cfg(test)]
 mod watch_tests;
+/// Home, End, Up, Down, paging, word motion, drags, and multi-clicks on wrapped lines.
+#[cfg(test)]
+mod wrap_keys_tests;
 /// Always-on soft wrap in the window:
 ///  the wrap width,
 ///  the gutter's indicator,

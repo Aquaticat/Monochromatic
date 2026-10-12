@@ -58,6 +58,9 @@ pub mod shaped_text;
 ///  and document caret movement over source characters.
 pub mod caret_motion;
 
+/// Home and End on the visual rows of a soft-wrapped line.
+pub mod line_boundary;
+
 /// Up,
 ///  Down,
 ///  and page movement by shaped pixel position with a remembered column.
