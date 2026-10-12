@@ -3228,6 +3228,18 @@ The orchestrator's readings of earlier decisions, adopted from the desktop lists
 - The Hangul syllable that renders as two jamo in some sessions is a font fallback gap, not an app or renderer defect:
   `doc/troubleshooting/slint-hangul-split-jamo-droid-sans-fallback.md`. Open question: bundle a Hangul-capable font.
 
+### D116. No bundled Hangul font, and no optimized test profile (2026-10-12)
+
+Two questions left open by earlier work, decided by the orchestrator on the human's standing instruction to decide, open to the human's veto:
+
+- No Hangul font is bundled. The app already depends on system fonts for every CJK script (Inter has none), so bundling
+  one script would be inconsistent and a full CJK bundle costs tens of megabytes. A session whose fontconfig picks a
+  fallback without that syllable shows it as two jamo; the cause and the Slint constraint are in
+  `doc/troubleshooting/slint-hangul-split-jamo-droid-sans-fallback.md`.
+- `[profile.dev]` and `[profile.test]` keep their defaults. An `opt-level = 1` test profile ran a 771-test suite in
+  3.99 s instead of 8.9 s in one sandbox, but made a cold dependency build 12.5 minutes instead of about 4, and that
+  cold build hits every fresh worktree and CI run. Revisit if the suite grows.
+
 ## Pending after the theme picks (2026-09-04)
 
 - **Order of remaining work** — my recommendation:
