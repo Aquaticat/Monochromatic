@@ -300,3 +300,8 @@ pub fn selected_worktree_records(
 fn path_from_bytes(bytes: &[u8]) -> std::path::PathBuf {
     return std::path::PathBuf::from(os_from_bytes(bytes.to_vec()));
 }
+
+/// Controls for this module stay out of the release executable.
+#[cfg(test)]
+#[path = "commit_worktree_records_tests.rs"]
+mod tests;

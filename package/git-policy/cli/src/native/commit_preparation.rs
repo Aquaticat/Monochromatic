@@ -170,6 +170,30 @@ fn native_commit_arguments(request: &PreparationRequest) -> Vec<String> {
 }
 
 /// What:
+///  Install the signal guard, waiting while another thread of this process holds it.
+/// Why:
+///   One wrapper process runs one Git child at a time, so the wait never happens there; library tests run several
+///  preparations in threads of one process, and the guard is process-wide.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// const guard = installSignalGuard();
+/// ```
+pub fn install_guard_when_free() -> std::io::Result<SignalGuard> {
+    let mut attempts: u32 = 0;
+    loop {
+        match SignalGuard::install() {
+            Ok(guard) => return Ok(guard),
+            Err(error) if error.to_string().contains("already active") && attempts < 1_200 => {
+                attempts += 1;
+                std::thread::sleep(std::time::Duration::from_millis(50));
+            }
+            Err(error) => return Err(error),
+        }
+    }
+}
+
+/// What:
 ///  Runs native `git commit` in the shadow with the terminal attached and returns its exit code.
 /// Why:
 ///   The editor and hook output reach the user unchanged,
@@ -193,7 +217,7 @@ pub fn run_native_commit(
         command.env_remove(name);
     }
     // A signal sent to the wrapper while Git runs reaches Git when a process sent it; Git's ending decides the status.
-    let guard: SignalGuard = SignalGuard::install().map_err(|error| {
+    let guard: SignalGuard = install_guard_when_free().map_err(|error| {
         return PreparationError::Git(GitFailure(format!("installing the signal guard failed: {error}")));
     })?;
     let outcome = guard.run_child(&mut command).map_err(|error| {

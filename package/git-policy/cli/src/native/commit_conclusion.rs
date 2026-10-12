@@ -335,3 +335,8 @@ pub fn conclude_commit_transaction<F: RepositoryFacts>(
         landed_oid: Some(oid),
     });
 }
+
+/// Controls for this module stay out of the release executable.
+#[cfg(test)]
+#[path = "commit_conclusion_tests.rs"]
+mod tests;

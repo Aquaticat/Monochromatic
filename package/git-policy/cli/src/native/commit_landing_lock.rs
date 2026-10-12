@@ -114,3 +114,8 @@ pub fn acquire_reserved_lock(
         return acquire_landing_lock(context, cwd, layout, environment).map_err(ReservationError::Registry);
     });
 }
+
+/// Controls for this module stay out of the release executable.
+#[cfg(test)]
+#[path = "commit_landing_lock_tests.rs"]
+mod tests;

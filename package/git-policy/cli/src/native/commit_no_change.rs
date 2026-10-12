@@ -178,3 +178,8 @@ pub fn complete_no_change_transaction(input: NoChangeInput<'_>) -> Result<Option
         landed_oid: None,
     }));
 }
+
+/// Controls for this module stay out of the release executable.
+#[cfg(test)]
+#[path = "commit_no_change_tests.rs"]
+mod tests;

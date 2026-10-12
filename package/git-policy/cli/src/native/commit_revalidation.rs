@@ -12,13 +12,12 @@
 //! ```
 
 use super::candidate_object::{ObjectId, parse_object_id};
-use super::candidate_prediction::CandidateRequest;
 use super::capture_invocation::InvocationCapture;
 use super::commit_convergence::{CommitConvergence, CommitConvergenceInput, converge_commit_policies};
 use super::commit_facts::PrivateIndexFacts;
 use super::commit_index::{list_changed_index_paths, write_private_tree};
-use super::commit_preparation::NATIVE_UNSET_VARIABLES;
-use super::commit_transaction::{CommitInvocation, TransactionStop, failed};
+use super::commit_preparation::{NATIVE_UNSET_VARIABLES, install_guard_when_free};
+use super::commit_transaction::{CommitInvocation, TransactionStop, failed, staged_at_base};
 use super::commit_workspace::CommitWorkspace;
 use super::commit_worktree_records::{HookChanges, describe_hook_changes};
 use super::diagnostic_log::debug;
@@ -138,7 +137,7 @@ fn rerun_pre_commit(
     for name in NATIVE_UNSET_VARIABLES {
         command.env_remove(name);
     }
-    let guard: SignalGuard = SignalGuard::install()
+    let guard: SignalGuard = install_guard_when_free()
         .map_err(|error| { return failed(format!("installing the signal guard failed: {error}")); })?;
     let outcome = guard
         .run_child(&mut command)
@@ -195,7 +194,7 @@ pub fn revalidate_replay<F: RepositoryFacts>(
     let base: Option<ObjectId> = parse_object_id(onto.as_bytes());
     checks.facts.use_index(index.as_path(), workspace.object_directory.as_path());
     checks.content = ContentState::new();
-    checks.candidates = LifecycleContent::Requested(CandidateRequest::StagedAtBase(base));
+    checks.candidates = LifecycleContent::Requested(staged_at_base(base, candidate_paths.as_slice()));
     let (pass, changed_passes, changed_paths): (PassResult, u64, Vec<String>) = if context.read_only_selection {
         checks.can_apply_patches = false;
         (run_policy_pass(request, checks), 0, Vec::new())

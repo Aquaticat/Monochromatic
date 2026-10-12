@@ -223,3 +223,8 @@ impl Drop for CommitWorkspace {
         }
     }
 }
+
+/// Controls for this module stay out of the release executable.
+#[cfg(test)]
+#[path = "commit_workspace_tests.rs"]
+mod tests;

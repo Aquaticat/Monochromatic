@@ -745,8 +745,9 @@ Running the suite against the native executable (design, not yet built):
 - The incumbent suite installs the packed npm wrapper into `concurrent-commits.Containerfile` and selects Git by `PATH`
   order (Git 2.39.5, 2.40.0 and 2.55.0 under `/opt/git/<version>`). The native executable goes in the same place, as the
   `git` on `PATH` ahead of the real Git, so each scenario's Git choice is unchanged.
-- The native executable must degrade on Git 2.39.5 the way the incumbent does: a commit that loses a landing race fails
-  fast with `concurrent-commit/head-moved`.
+- The native executable refuses Git below 2.55.0 (the settled floor), so it does not degrade on Git 2.39.5 the way the
+  incumbent does; the native run uses `--git 2.55.0` only, and the two `replay-unavailable-*` scenarios, which prove
+  that degradation, never run natively.
 - Every scenario runs in the container with the same seeds as the incumbent, and the invariant checker judges the native run.
   A differential compares the JSONL events of each scenario against the incumbent's on the same seed.
 

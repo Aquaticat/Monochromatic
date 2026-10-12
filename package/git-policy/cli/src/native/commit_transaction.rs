@@ -347,7 +347,7 @@ pub fn private_checks<'a, F: RepositoryFacts>(
     checks: &'a mut ShippedChecks<F>,
     index: &Path,
     object_directory: &Path,
-    base: Option<ObjectId>,
+    candidates: CandidateRequest,
 ) -> ShippedChecks<PrivateIndexFacts<&'a mut F>> {
     // The scanner settings and the Markdown linter move to the rebuilt checks; the originals are placeholders that
     // nothing reads again, because the rebuilt checks run every policy of this transaction.
@@ -358,12 +358,29 @@ pub fn private_checks<'a, F: RepositoryFacts>(
     let mut rebuilt: ShippedChecks<PrivateIndexFacts<&'a mut F>> = shipped_checks(
         PrivateIndexFacts::new(&mut checks.facts, index, object_directory),
         arguments,
-        LifecycleContent::Requested(CandidateRequest::StagedAtBase(base)),
+        LifecycleContent::Requested(candidates),
         allowed_worktree_dirs,
     );
     rebuilt.scanner_settings = scanner_settings;
     rebuilt.markdown = markdown;
     return rebuilt;
+}
+
+/// What:
+///  The candidate request for the paths a private index changes against the recorded base.
+/// Why:
+///   The policies check exactly the paths the commit changes; each path is literal and rooted at the top level, so a
+///   name with glob characters or a directory below the current one still names one file.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// createPrivateIndexFacts({ paths: candidatePaths, baseRevision })
+/// ```
+pub fn staged_at_base(base: Option<ObjectId>, paths: &[String]) -> CandidateRequest {
+    return CandidateRequest::StagedAtBase {
+        base,
+        pathspecs: paths.iter().map(|path| { return OsString::from(format!(":(top,literal){path}")); }).collect(),
+    };
 }
 
 /// What:
@@ -572,7 +589,7 @@ pub fn run_commit_transaction<F: RepositoryFacts>(
         checks,
         workspace.landing.commit_index.as_path(),
         workspace.object_directory.as_path(),
-        base_object(&capture)?,
+        staged_at_base(base_object(&capture)?, candidate_paths.as_slice()),
     );
     let converged: Converged = converge(request, &mut checks, context, cwd, &workspace, selection.read_only);
     let code: i32 = pass_exit_code(converged.pass.events.as_slice(), converged.pass.end);
