@@ -547,7 +547,7 @@ The user chose this explicitly:
 Consequence:
  the "10,412 of 10,412 analysed" row from settings-b is gone,
  and
-**Re-analyse on the track context menu is the only remaining entry point**.
+**Re-analyse on the track context menu is the only remaining entry point** (removed by D113, 2026-10-12).
 
 ### D13. The scan indicator is not permanent
 It appears while analysing and leaves afterwards.
@@ -2988,13 +2988,13 @@ Browsing:
 - Inside a focused list: `Up`, `Down`, `Home`, `End`, `PageUp`, `PageDown` move the focus ring, `Enter` plays the row,
   `Space` on a list keeps play and pause, a letter key moves to the first folder starting with it.
 - Open a folder with the system dialog: `Ctrl+Shift+O`.
-- Rescan the library: `F5`.
+- Rescan the library: no binding (D113 removed `F5`; the library refreshes by itself).
 - Quit (desktop): `Ctrl+Q`.
 
 On the focused track row, or the row the menu is open on:
-- Open its menu: `Menu` key or `Shift+F10`.
+- Open its menu: `Menu` key or `Alt+Enter` (D114 replaced `Shift+F10`, which is Run in JetBrains).
 - Move to trash: `Delete`. Copy path: `Ctrl+Shift+C` (JetBrains copies the path with this).
-- Show in file manager: `Ctrl+Shift+E`. File details: `Alt+Enter`. Re-analyse: `Ctrl+Shift+F5`.
+- Show in file manager: `Ctrl+Shift+E`. File details has no dedicated key (D114: reach it through the menu).
 - With the menu open, `Up`, `Down` and `Enter` choose a row and `Escape` closes it.
 
 Pages:
@@ -3182,6 +3182,51 @@ Decision (the orchestrator's, on the human's standing instruction to decide, ope
 in-memory index of normalized names in each app, with first and second character buckets, a best-500 list per first
 character, off-thread batch normalization with an append-only write lock, search on a worker thread, and a refresh signal
 after every batch so open results update in place (D111). Turso stays the store of the peak cache only.
+
+### D113. Refresh and re-analysis are automatic and never exposed to the user (2026-10-12)
+
+The human said that refreshing the library and re-analyzing true peaks must always be handled perfectly by the app and
+not be exposed as user actions. This supersedes D12's menu entry "Re-analyse true peak" (the last manual entry point) and
+the D106 rows `F5` (rescan) and `Ctrl+Shift+F5` (re-analyse).
+
+- No rescan or re-analyze command exists anywhere in the user interface, keyboard map, menus, tooltips or settings, on
+  both platforms. Trash and Undo keep reloading the library internally.
+- The library follows the disk by itself: changes are detected and applied without a user action (desktop: the live
+  watcher with its catch-up rescan; Android: observers of the source plus a reload when the app returns to the front).
+- Analysis follows the files by itself: a new, replaced or edited file (its fingerprint changed) is measured again, a file
+  that failed to decode is retried when the library next changes or the app next starts, and a failure is reported once
+  per file in plain words (D83) instead of offering a retry button.
+- The D107 notification stays the only analysis surface.
+
+### D114. The track menu opens with Menu or Alt+Enter, and every menu row has an access key (2026-10-12)
+
+The human noticed that `Shift+F10` is Run in JetBrains' keymap, which D106 uses as its tie-breaker. Decided by the human:
+
+- The track row's menu opens with the `Menu` key or `Alt+Enter` (JetBrains' key for the actions on the item under the
+  cursor). `Shift+F10` is not bound.
+- File details has no dedicated key; the menu reaches it.
+- Every menu row has an access key, as JetBrains and desktop menus do: one letter per row, drawn underlined in the row
+  label (a second channel besides the letter itself is the underline), and pressing the letter while the menu is open runs
+  that row and closes the menu. Letters are unique within the menu, chosen from the row's own words (for example Play,
+  Shuffle from here, Details, Copy filename, Show in file manager, Move to trash), and the rows' `Up`, `Down`, `Enter`,
+  `Escape` keys stay. On Android the access keys work with an attached keyboard.
+
+### D115. Readings made while fixing the list defects (2026-10-12)
+
+The orchestrator's readings of earlier decisions, adopted from the desktop lists work and open to the human's veto:
+
+- D22 and C1: the scrollbar's grab zone is 12 px across the scroll axis (D22), and the thumb is never shorter than 48 px
+  along it (C1). The thumb widens from 4 to 8 px on hover or drag, so state is shown by color and width.
+- D31: names take the width they need, up to the pane. A longer name ends in an ellipsis, with the full name as a tooltip
+  (only while it is cut) and as the accessible label. A highlighted Search match is never the part that is cut.
+- D1 and D18: the Shuffle segment keeps the width of "Shuffle Camellia" for every folder name, so the deck never
+  re-lays itself out while the user browses; a longer name gets the middle ellipsis on the name only.
+- D28: each writing system after the first starts with a 1 px hairline in the rail, which also separates look-alike Latin,
+  Cyrillic and Greek letters.
+- D36: the playing row carries a 4 px bar in the primary role on its left edge besides bold and the soft fill, so the
+  emphasis does not depend on the script of the title.
+- The Hangul syllable that renders as two jamo in some sessions is a font fallback gap, not an app or renderer defect:
+  `doc/troubleshooting/slint-hangul-split-jamo-droid-sans-fallback.md`. Open question: bundle a Hangul-capable font.
 
 ## Pending after the theme picks (2026-09-04)
 
