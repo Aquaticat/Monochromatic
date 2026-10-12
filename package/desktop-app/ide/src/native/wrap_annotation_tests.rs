@@ -378,29 +378,35 @@ fn hints_far_from_the_view_are_packed_again_when_the_view_comes_near() {
 fn a_hint_arriving_while_a_resized_tile_is_built_does_not_strand_the_window() {
     let (_project, opened) = open(&long_text(8));
     settled(&opened);
-    let wide = opened.source.borrow().width;
-    resize(&opened.window, TEXT_LEFT + 300.0, 660.0);
-    // The worker's tile for the narrow width is in flight, or finished and not yet taken in: no poll has run.
-    {
+    let tile_settled = || {
         let current = opened.source.borrow();
-        assert!(
-            current.width < wide,
-            "the narrow width did not reach the state"
+        return current.shown.width == current.width
+            && current.scroll_wanted.is_none()
+            && current.tile_job.is_none();
+    };
+    // Whether the worker's tile is still in flight when the resize returns depends on how fast the host runs the
+    // worker and the poll, so each attempt takes another width, and the first one that catches it gets the hint.
+    let mut caught = false;
+    for attempt in 0..24 {
+        resize(
+            &opened.window,
+            TEXT_LEFT + 300.0 + 12.0 * attempt as f32,
+            660.0,
         );
-        assert!(
-            current.tile_job.is_some(),
-            "the resize asked the worker for a tile"
+        if opened.source.borrow().tile_job.is_some() {
+            annotate_line(&opened);
+            caught = true;
+            break;
+        }
+        until(
+            "the window did not settle on a tile of the new width",
+            tile_settled,
         );
     }
-    annotate_line(&opened);
+    assert!(caught, "no resize caught the worker's tile in flight");
     until(
         "the window did not settle on a tile of the new width",
-        || {
-            let current = opened.source.borrow();
-            return current.shown.width == current.width
-                && current.scroll_wanted.is_none()
-                && current.tile_job.is_none();
-        },
+        tile_settled,
     );
     settled(&opened);
     assert!(
