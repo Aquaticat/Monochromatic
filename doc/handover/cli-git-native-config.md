@@ -29,7 +29,7 @@ Commits on this branch after `13f60ef1b1`:
 - `108a326616` adds the differential check and its mise task.
 - `31bad9874a` adds the configuration control and the gate snapshot entry for the shipped file.
 
-The container gate image and the Clippy result are in `Gate results`.
+The container gate and Clippy results are in `Gate results`.
 
 ## The native format and how the incumbent maps onto it
 
@@ -217,7 +217,27 @@ or the ignored-state copy must bring `.cache`; whether the copy does so was not 
 
 ## Gate results
 
-Pending until the container gate and Clippy runs below finish; replaced by the result when they do.
+Container gate at `31bad9874a` (image `6a81db2ba3034977061a1ab45ebc1b9300a085ce8fffee2a988b4def6deb0022`,
+Git 2.56.0 base `6ec87f6d290a2f59bda5b3ffd4197058fe0749d02b4978c877e8edf6dc38802a`):
+
+- The four tests of `src/native/config_repository_tests.rs` pass in the image,
+  so the snapshot entry and the `COPY` line deliver the shipped file.
+- The library target ran 1337 passed, 1 failed, 4 ignored.
+  The one failure, `commit_transaction::tests::a_selected_change_prepares_a_commit_outside_head`,
+  is not part of this branch:
+  the image has no Git identity and the test's `git` child stops with
+  "fatal: unable to auto-detect email address (got 'user@91eb299ae250.(none)')" (exit 128).
+  The same test passes on the host through the `native:test:host` task with the test name as its filter,
+  where Git has an identity.
+  It comes from the slice 9 skeleton commit `2ce0f83d0b`;
+  its owner must give the test an identity in the child environment.
+- Because `cargo test` stops after the first failing target, the remaining targets were run in the same image with
+  `--no-fail-fast`: the binary target passed 50 tests and the consumer target 1.
+- `mise run //package/git-policy/cli:native:clippy` fails on the base before this branch's files are linted:
+  an unused import `git_text` in `src/native/commit_convergence_tests.rs:14`,
+  a collapsible `if` in `src/native/commit_transaction.rs:148`,
+  and two missing `return` statements in `src/native/commit_transaction_tests.rs:64` and `:139`.
+  None of the four diagnostics is in a file this branch changed.
 
 ## Trailing gates
 
