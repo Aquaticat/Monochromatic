@@ -261,8 +261,30 @@ the items after it are the record of 2026-10-05 and older.
     and the source, find, annotation, sidebar, theme, search, and watch guards.
     The `rebase-frame` guard now matches the shared failure prefix, because the first assertion of its test no longer
     sees the removed rebase while the second still does.
-  - Next: stage 2 (a worker thread builds tiles, so no scroll step waits on shaping or rasterizing),
-    then always-on soft wrap with a gutter wrap indicator (`doc/planning/slint-ide-soft-wrap.md`).
+  - Stage 2 is landed on `main` as merge `2c62b1feb6` (IDE tree `55ad110cd030e8f4c7b6b7a1c241edd73a05850d`):
+    a scroll that nears the tile edge re-centers it on a worker thread (`src/native/tile.rs`, `tile_build.rs`),
+    the worker shapes with a shaper forked from the window's fonts, a failed worker is replaced on the next re-center,
+    and closing the window does not wait for a build in flight.
+    Gate on that tree, at host load 47 to 85: lint:clippy, lint:rustfmt, lint:slint, lint:release, test, test:cli,
+    test:native 131 of 131, bundle, inspect:bundle 10 of 10, inspect:bundle-guards, and the source (33 of 33), find,
+    annotation, sidebar, theme, search, and watch guards, all passing.
+    The landing message lists them as still running because they were; they finished green afterwards.
+    A release profile tile build was never timed (the test builds are debug and take about 600 ms each).
+  - The user wants the real feel checked by hand: scrolling under load with the installed build.
+    The installed single file at `~/.local/bin/monochromatic-ide` predates stages 1 and 2.
+  - Soft wrap is in progress on the branch `feat/ide-soft-wrap` (worktree `.claude/worktrees/ide-wrap`), not landed:
+    slice 1 (IntelliJ break rules, wrapped shaping, multi-row geometry; library only) is committed and gated;
+    slice 2 (wrap width, row heights, worker shaping in chunks, painting, no horizontal scrolling, gutter with the
+    indicator) is with a Sonnet subagent; slice 3 is keys, pointer, and the affinity bit in `ReadingPosition`
+    (a field added with a mechanical edit of the existing struct literals); slice 4 is annotations, find, and
+    selection per visual fragment, plus the remaining tests and guards.
+    The plan `doc/planning/slint-ide-soft-wrap.md` holds the decisions: the layout (option A on the worker), the
+    indicator (IntelliJ's glyph chain and color, in the gutter), and the Parley findings.
+  - The nested compositor now launches minimized (`package/cli/nested-wayland-session`, the user confirmed it works),
+    version 0.1.2 is published on crates.io with a GitHub release of Linux archives, and the repository's mise tool
+    list installs it through cargo-binstall as `cargo:monochromatic-nested-wayland-session` (source:
+    `mise.no-env.toml`; `mise.toml` is generated from it by file-enforcer).
+  - Haiku subagent failures of this work are recorded in `doc/limitation/haiku.md`.
 - Still open:
   - Lazy server lookup was measured and not built:
     locating servers is 12 ms of a 210 ms registry build.
