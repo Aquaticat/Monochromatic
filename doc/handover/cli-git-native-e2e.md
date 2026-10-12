@@ -124,7 +124,7 @@ No failure is a native bug outside the commit path and none is a harness gap.
 
 - `replay-unavailable-fails-fast` and `replay-unavailable-disjoint-burst`: by design they run only on Git 2.39.5
   (`replayPlumbing: 'absent'`); on 2.55.0 the harness skips them.
-  See "Git floor" for why they cannot be satisfied by the native executable today.
+  See "Git floor" for why the native executable never runs them.
 
 ### Fail, needs the commit path (first failing assertion)
 
@@ -171,7 +171,12 @@ Phase kill fixture: `sigkill-phase-preparation-done`, `sigkill-phase-landing-loc
 
 ## Non-commit surface: no native bug found
 
-`test:e2e:concurrent:native:surface`: 25 of 25 commands agree between the incumbent and the native executable on
+The incumbent in this comparison and in the control run is the build baked into
+`localhost/cli-git-concurrent-e2e:latest` (image id `1d29d429cddf`, created 2026-09-26), whose
+`dist/final/node/index.mjs` has sha256 `8103d0848e168b52654e32a80a940de21535972033499f2e124eb451b09a944a`;
+it is not rebuilt from `13f60ef1b1`, so a difference introduced into the incumbent after that date is not covered.
+
+`test:e2e:concurrent:native:surface`: 25 of 25 commands agree between that incumbent and the native executable on
 exit code, arguments and output (Git 2.55.0, linked worktree).
 The commands: `status --short` (clean, modified, after checkout, after apply), `add -- <path>`,
 `diff --staged --name-only -z --diff-filter=ACMR`, `diff --binary --unified=0 ... --staged`, `stash create`,
@@ -179,8 +184,9 @@ The commands: `status --short` (clean, modified, after checkout, after apply), `
 `apply -v --whitespace=nowarn --recount --unidiff-zero`, `switch side`, `switch <branch>`, `gc --quiet --prune=now`,
 `push`, `rev-parse --abbrev-ref HEAD`, `log --oneline --max-count=1`, `branch --list`, `config --get`,
 `commit --dry-run --short`, and `add --all` (exit 1 in both: the bulk-add policy), `reset --hard`, `clean --force`.
-Two earlier probe runs showed three differences (`stash store`, `log`, `reset --hard`); all were object IDs in the
-output that differ between two containers, not wrapper behavior, and the probe now masks them.
+The comparator can detect a difference: with object IDs unmasked it reported `stash store`, `log` and `reset --hard`
+as different (the output carries IDs that differ between two containers), so the probe masks seven and forty digit
+hexadecimal tokens that hold a decimal digit.
 Unexercised: hook-nested wrapper calls (they need a commit), Git older than 2.55.0, Windows.
 
 ## Incumbent control
@@ -194,18 +200,23 @@ under test is the mounted working copy.
 
 ## Facts for the integrator
 
-### Git floor: Git 2.39.5 and 2.40.0 cannot run today
+### Git floor: the native suite runs on Git 2.55.0 only
 
-The native executable refuses Git older than 2.55.0 (`MINIMUM_GIT_VERSION` in `src/native/git_version.rs`; the message
-is `unsupported_message` there).
-On 2.39.5 and 2.40.0 the harness's own first wrapper command, `git add added.txt`, exits 2, so
-`baseline-explicit-commit` and `baseline-index-commit` fail in setup there (observed, seed 1).
-This contradicts the slice 9 design in the transactions document ("the native executable must degrade on Git 2.39.5
-the way the incumbent does: a commit that loses a landing race fails fast with `concurrent-commit/head-moved`"), and
-it makes the two `replay-unavailable-*` scenarios unsatisfiable.
-Either the floor is relaxed for the paths that need no replay plumbing, or the suite for the native executable runs
-on 2.55.0 only.
-That is a decision for the lane that owns Git version handling; this lane changed nothing under `src/native/`.
+The native minimum is Git 2.55.0 (user decision of 2026-10-10 in `~/temp/agent/lane-brief.md`;
+`MINIMUM_GIT_VERSION` in `src/native/git_version.rs`).
+The executable therefore refuses Git 2.39.5 and 2.40.0, observed on a real invocation in the native image
+(`git add -- added.txt` in a repository made by `/opt/git/2.39.5/bin/git`): exit 2 with the engine failure
+`cli-git: real Git at /opt/git/2.39.5/bin/git reports version 2.39.5; commits, hooks and the locks that coordinate
+with them need Git 2.55.0 or newer. Nothing was run. Upgrade Git, then run the command again.`
+So on those two versions the harness's own first wrapper command fails and the scenarios fail in setup
+(`baseline-explicit-commit` and `baseline-index-commit` observed, seed 1).
+Consequences: runs on 2.39.5 and 2.40.0 and both `replay-unavailable-*` scenarios (they prove degradation on 2.39.5)
+are out of scope for the native executable.
+The sentence in `doc/handover/cli-git-native-transactions.md` ("the native executable must degrade on Git 2.39.5 the
+way the incumbent does") conflicts with the settled floor and should be corrected there; this lane does not edit that
+file.
+`doc/handover/cli-git-rust-implementation.md` has no decision about Git older than 2.55.0 (searched for `2.39`,
+`2.40` and `degrad`).
 
 ### Phase markers are not implemented
 
@@ -252,7 +263,7 @@ non-skipped ones on 2.55.0; none can pass without it except the vacuous one):
   `sigkill-phase-objects-migrated`, `sigkill-phase-ref-updated`, `sigkill-phase-index-installed`
   (also need the phase markers).
 - `scenario-replay-degradation-fixture.ts`: `replay-unavailable-fails-fast`, `replay-unavailable-disjoint-burst`
-  (Git 2.39.5 only; see "Git floor").
+  (Git 2.39.5 only; out of scope for the native executable, see "Git floor").
 
 The command that runs all of them once the refusal is removed and the image is rebuilt from the merged sources
 (a full run takes far longer than today's 65 s, so start it as its own unit with a memory cap and wait for its log):
@@ -276,7 +287,7 @@ GIT_POLICY_NATIVE_IMAGE_TAG=e2e node "${HOME}/temp/agent/gate-slot.ts" \
   --scenario sigkill-phase-preparation-done,sigkill-phase-landing-locked,sigkill-phase-objects-migrated,sigkill-phase-ref-updated,sigkill-phase-index-installed
 ```
 
-Drop `--git 2.55.0` to add 2.39.5 and 2.40.0 (see "Git floor").
+Git 2.39.5 and 2.40.0 stay out of the native runs (see "Git floor").
 The task exits non-zero when any scenario fails or errors; every run prints its seed first, so a failure replays with
 the same `--seed`.
 
@@ -297,4 +308,7 @@ the same `--seed`.
 ## Trailing gates
 
 No gate was skipped by this lane.
-Mutation testing does not apply: the lane adds test harness code and no `src/native` code.
+`native:test:container` and `native:clippy` were not run because nothing under `src/native/` changed; this lane's
+container evidence is the native end-to-end image `1d843b0f655c` (base `1d29d429cddf`).
+Mutation testing, planted controls and fuzz targets do not apply: the lane adds test harness code and no
+`src/native` code.
