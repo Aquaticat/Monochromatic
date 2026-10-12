@@ -4,7 +4,8 @@
  One linear pass replaces a global `\b[a-z]+-?[a-z]*ing\b` regex.
  A match can only start where a word starts with an ASCII lowercase letter,
  and at such a start the greedy optional hyphen picks a single longest match,
- so visiting word starts reports every match the pattern reported,
+ so attempting a match only at word starts and advancing one character everywhere else reports every
+ match the pattern reported,
  in the same order,
  in O(n) time and O(1) stack.
  
@@ -111,38 +112,11 @@ function lowerLetterRunEnd({
   text: string;
   start: number;
 }>,): number {
+  /**
+   Index the scan has reached.
+   */
   let cursor = start;
   while (isLowerAsciiLetter(text.charAt(cursor,),))
-    cursor += 1;
-  return cursor;
-}
-
-/**
- Finds where the word starting at one index ends.
- 
- Every index inside a word is preceded by a word character, so none of them can start a gerund;
- skipping a whole word after a failed start costs one pass instead of one attempt per character.
- 
- @param text - lowercased text to scan
- 
- @param start - index of a word character
- 
- @returns index one past the last word character, which is at least `start` plus one
- 
- @example
- ```ts
- wordRunEnd({ text: 'testing the parser', start: 0 }); // 7
- ```
- */
-function wordRunEnd({
-  text,
-  start,
-}: Readonly<{
-  text: string;
-  start: number;
-}>,): number {
-  let cursor = start;
-  while (isWordCharacter(text.charAt(cursor,),))
     cursor += 1;
   return cursor;
 }
@@ -294,13 +268,16 @@ function scanGerundMatches(text: string,): readonly string[] {
    Gerunds found so far, in order of appearance.
    */
   const matches: string[] = [];
+  /**
+   Index the scan has reached.
+   */
   let cursor = 0;
   while (cursor < text.length) {
     /**
      Whether a gerund may start here: a word start holding a lowercase letter.
      */
     const isCandidateStart = isLowerAsciiLetter(text.charAt(cursor,),)
-      && !isWordCharacter(text.charAt(cursor - 1,),);
+      && (!isWordCharacter(text.charAt(cursor - 1,),));
     if (!isCandidateStart) {
       cursor += 1;
       continue;
@@ -321,10 +298,9 @@ function scanGerundMatches(text: string,): readonly string[] {
       cursor += length;
       continue;
     }
-    cursor = wordRunEnd({
-      text,
-      start: cursor,
-    },);
+    // Nothing inside a word can start a gerund either, since every index there is preceded by a word
+    // character, so the next attempt worth making is the next word start.
+    cursor += 1;
   }
   return matches;
 }
