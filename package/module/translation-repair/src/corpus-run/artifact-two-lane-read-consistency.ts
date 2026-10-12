@@ -14,10 +14,8 @@ import {
   NO_CONSISTENCY,
 } from './artifact-two-lane-consistency.ts';
 import { assertGroupFits, } from './artifact-two-lane-read-consistency-fit.ts';
-import {
-  assertAskedGroupCoherent,
-  assertSlicesCoherent,
-} from './artifact-two-lane-read-consistency-coherence.ts';
+import { assertAskedGroupCoherent, } from './artifact-two-lane-read-consistency-coherence.ts';
+import { assertSlicesCoherent, } from './artifact-two-lane-read-consistency-slices.ts';
 import { parseConsistencyOccurrence, } from './artifact-two-lane-read-consistency-occurrence.ts';
 import {
   parseConsistencyRepeat,

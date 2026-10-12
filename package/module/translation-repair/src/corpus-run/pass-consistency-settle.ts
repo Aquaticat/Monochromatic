@@ -304,6 +304,8 @@ export function settleAsked(
         label: consistencyLabel({ position, },),
         english: place.slice
           .current,
+        sliceIndex: place.slice
+          .sliceIndex,
       };
     },),
     framed: repeat.kind === 'refrain',

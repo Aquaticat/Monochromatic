@@ -17,10 +17,10 @@ import { consistencyLabels, } from '../consistency-wire.ts';
 import type {
   ArtifactConsistencyGroup,
   ArtifactConsistencyOccurrence,
-  ArtifactConsistencySlice,
 } from './artifact-two-lane-consistency.ts';
 import {
   asLocated,
+  locatedContradicted,
   reasonContradicted,
 } from './artifact-two-lane-read-consistency-located.ts';
 
@@ -79,16 +79,17 @@ function assertRenderingAgrees(
     label: occurrence.label,
   },);
   /**
-   The slot a strict majority gave this place.
+   The quote a strict majority gave, if one did.
+   */
+  const [quote,] = quotes;
+  /**
+   The slot a strict majority gave beside that quote.
    */
   const slots = agreedSlotOf({
     voices,
     label: occurrence.label,
+    ...((quote === undefined) ? {} : { quote, }),
   },);
-  /**
-   The quote a strict majority gave, if one did.
-   */
-  const [quote,] = quotes;
   /**
    The slot a strict majority gave, if one did.
    */
@@ -109,12 +110,26 @@ function assertRenderingAgrees(
         path: `${path}.rendering`,
         reason: 'the quote and slot a strict majority of the usable ballots gave',
       },);
+    if (locatedContradicted({
+      rendering,
+      framed: group.repeat
+        .kind
+        === 'refrain',
+    },)) {
+      throw new ArtifactParseError({
+        path: `${path}.rendering`,
+        reason: 'words that show a reader something, hold their markup in pairs and, in a frame, leave frame words beside the slot',
+      },);
+    }
     return;
   }
   if (reasonContradicted({
     reason: rendering.reason,
     quotes,
     slots,
+    framed: group.repeat
+      .kind
+      === 'refrain',
   },)) {
     throw new ArtifactParseError({
       path: `${path}.rendering.reason`,
@@ -320,6 +335,24 @@ export function assertAskedGroupCoherent(
       .ballots,
     labels,
   },);
+  group.verdict
+    .ballots
+    .forEach(function heardOnce(
+    ballot,
+    at,
+  ): void {
+    if (group.verdict
+      .ballots
+      .findIndex(function sameSeat(other,): boolean {
+        return other.seat === ballot.seat;
+      },)
+      !== at) {
+      throw new ArtifactParseError({
+        path: `${path}.verdict.ballots[${String(at,)}].seat`,
+        reason: 'a seat heard once, since a gather hears each seat once',
+      },);
+    }
+  },);
   if (voices.length
     !== group.verdict
     .usable) {
@@ -377,75 +410,6 @@ export function assertAskedGroupCoherent(
     group,
     path,
   },);
-}
-
-/**
- Checks the changed slices against the places that were replaced.
-
- @param groups - every recorded group
-
- @param slices - the recorded changed slices
-
- @param path - where the slices sit, for the parse error
-
- @throws {@link ArtifactParseError} when a slice is listed twice, a slice has no
- replaced place, or a replaced place has no slice
-
- @example
- ```ts
- assertSlicesCoherent({ groups, slices, path, },);
- ```
- */
-export function assertSlicesCoherent(
-  {
-    groups,
-    slices,
-    path,
-  }: {
-    readonly groups: readonly ArtifactConsistencyGroup[];
-    readonly slices: readonly ArtifactConsistencySlice[];
-    readonly path: string;
-  },
-): void {
-  /**
-   Slices a replaced place sits in.
-   */
-  const replaced = new Set(groups.flatMap(function replacedIn(group,): readonly number[] {
-    return group.occurrences
-      .filter(function wasReplaced(occurrence,): boolean {
-        return occurrence.outcome === 'replaced';
-      },)
-      .map(function sliceOf(occurrence,): number {
-        return occurrence.sliceIndex;
-      },);
-  },),);
-  /**
-   Slices already named.
-   */
-  const named = new Set<number>();
-  for (const row of slices) {
-    if (named.has(row.sliceIndex,)) {
-      throw new ArtifactParseError({
-        path,
-        reason: `one row per slice; slice ${String(row.sliceIndex,)} appears more than once`,
-      },);
-    }
-    named.add(row.sliceIndex,);
-    if (!replaced.has(row.sliceIndex,)) {
-      throw new ArtifactParseError({
-        path,
-        reason: `a replaced place in slice ${String(row.sliceIndex,)}, which a changed slice needs`,
-      },);
-    }
-  }
-  for (const sliceIndex of replaced) {
-    if (!named.has(sliceIndex,)) {
-      throw new ArtifactParseError({
-        path,
-        reason: `a changed slice row for slice ${String(sliceIndex,)}, which holds a replaced place`,
-      },);
-    }
-  }
 }
 
 //endregion Artifact consistency coherence

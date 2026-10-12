@@ -29,10 +29,13 @@ export type UnlocatedReason =
   | 'empty'
   | 'not-found'
   | 'ambiguous'
+  | 'markup'
+  | 'overlaps-another'
   | 'slot-no-agreement'
   | 'slot-empty'
   | 'slot-not-found'
-  | 'slot-ambiguous';
+  | 'slot-ambiguous'
+  | 'slot-whole';
 
 /**
  Where a place's rendering stands in its English, or why it cannot be found.

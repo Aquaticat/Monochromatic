@@ -7,11 +7,13 @@ import type { SyntheticClient, } from '../chat-contract.ts';
 import { wordForCount, } from '../count-word.ts';
 import { exchangeFailureLogText, } from '../exchange-failure-text.ts';
 import type { ConsistencyVoice, } from '../consistency-count-types.ts';
+import { MIN_STAGE_VOICES, } from '../stage-reachable-quorum.ts';
 import {
   buildConsistencyMessages,
   type ConsistencySubject,
 } from '../consistency-sheet.ts';
 import {
+  type ConsistencyBallotWire,
   CONSISTENCY_RESPONSE_FORMAT,
   consistencyLabels,
   usableConsistencyBallotFor,
@@ -46,6 +48,98 @@ export type ConsistencyAsked = ConsistencyRecord & {
    */
   readonly resumed: boolean;
 };
+
+/**
+ One heard ballot as the pass keeps it: the seat the roster asked and the ballot's
+ own fields, nothing else a reply carried.
+
+ @param seat - roster seat that answered, which no reply field can replace
+
+ @param ballot - the reply, of the right shape
+
+ @returns The ballot with its seat
+
+ @example
+ ```ts
+ const voice = voiceOf({ seat: 'glm-5.3', ballot, },);
+ ```
+ */
+function voiceOf(
+  {
+    seat,
+    ballot,
+  }: {
+    readonly seat: string;
+    readonly ballot: ConsistencyBallotWire;
+  },
+): ConsistencyVoice {
+  return {
+    seat,
+    reason: ballot.reason,
+    quotes: ballot.quotes
+      .map(function quoteOf(entry,): ConsistencyBallotWire['quotes'][number] {
+        return {
+          label: entry.label,
+          quote: entry.quote,
+          ...((entry.slot === undefined) ? {} : { slot: entry.slot, }),
+        };
+      },),
+    choice: ballot.choice,
+    keep: [...ballot.keep,],
+  };
+}
+
+/**
+ Whether a stored gather is one a fresh gather over this bench could have
+ made: a quorum within the bench and no smaller than a stage closes on, and
+ that many ballots at least, no more than the bench has, each from a seat of
+ the bench and each seat once.
+
+ @param record - the stored gather
+
+ @param modelIds - bench asked
+
+ @returns Whether it can be counted again as the answer to this question
+
+ @example
+ ```ts
+ const fits = recordFits({ record, modelIds, },);
+ ```
+ */
+function recordFits(
+  {
+    record,
+    modelIds,
+  }: {
+    readonly record: ConsistencyRecord;
+    readonly modelIds: readonly RosterModelId[];
+  },
+): boolean {
+  /**
+   Seats heard.
+   */
+  const seats = record.voices
+    .map(function seatOf(voice,): string {
+    return voice.seat;
+  },);
+  return (record.quorum >= Math.min(
+    MIN_STAGE_VOICES,
+    modelIds.length,
+  ))
+    && (record.quorum <= modelIds.length)
+    && (record.voices
+      .length
+      >= record.quorum)
+    && (record.voices
+      .length
+      <= modelIds.length)
+    && (new Set(seats,).size === seats.length)
+    && seats.every(function isSeated(seat,): boolean {
+      return modelIds.some(function isSeat(modelId,): boolean {
+        return modelId === seat;
+      },);
+    },);
+}
 
 /**
  Asks the bench about one repeated wording, or reads its earlier answer.
@@ -113,12 +207,26 @@ export async function askConsistencyBench(
   const key = consistencyKey({
     messages,
     modelIds,
+    ...((subject.lifeEnded === undefined) ? {} : { lifeEnded: subject.lifeEnded, }),
+    ...((subject.subjectNames === undefined) ? {} : { subjectNames: subject.subjectNames, }),
   },);
   /**
-   The answer an earlier run settled for this question.
+   The answer an earlier run stored under this question's key.
    */
-  const cached = cache.resumed
+  const stored = cache.resumed
     .get(key,);
+  /**
+   The stored answer, when it is one this bench could have given.
+   */
+  const cached = ((stored !== undefined) && recordFits({
+    record: stored,
+    modelIds,
+  },)) ? stored : undefined;
+  if ((stored !== undefined) && (cached === undefined)) {
+    al.warn(
+      'the stored ballots cannot be an answer of this bench (a quorum or a seat a gather could not have closed on), so the question is asked again',
+    );
+  }
   if (cached !== undefined) {
     al.info(
       `resumed ${String(cached.voices
@@ -166,10 +274,10 @@ export async function askConsistencyBench(
       return modelIds.indexOf(left.modelId,) - modelIds.indexOf(right.modelId,);
     },)
     .map(function toVoice(voice,): ConsistencyVoice {
-      return {
+      return voiceOf({
         seat: voice.modelId,
-        ...voice.value,
-      };
+        ballot: voice.value,
+      },);
     },);
   /**
    What this gather comes to, stored whole.

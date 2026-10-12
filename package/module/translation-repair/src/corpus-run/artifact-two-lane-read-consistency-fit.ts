@@ -47,11 +47,22 @@ function assertNotAskedFits(
       === 'consistent'))
     ? 'consistent'
     : 'untouched';
+  /**
+   Slices the places stand in so far.
+   */
+  const slicesSeen = new Set<number>();
   group.occurrences
     .forEach(function fits(
     occurrence,
     at,
   ): void {
+    if ((outcome === 'consistent') && slicesSeen.has(occurrence.sliceIndex,)) {
+      throw new ArtifactParseError({
+        path: `${path}.occurrences[${String(at,)}].sliceIndex`,
+        reason: 'a slice of its own, since the pass asks the bench when two places stand in one slice',
+      },);
+    }
+    slicesSeen.add(occurrence.sliceIndex,);
     if ((occurrence.outcome !== outcome)
       || (occurrence.rendering
         .kind
@@ -146,7 +157,17 @@ export function assertGroupFits(
       || (framed !== (occurrence.slotEndOffset !== undefined))) {
       throw new ArtifactParseError({
         path: here,
-        reason: 'slot offsets on a place of a frame, and on no other',
+        reason: 'both slot offsets on a place of a frame, and neither on any other',
+      },);
+    }
+    if (framed && (occurrence.slotStartOffset !== undefined)
+      && (occurrence.slotEndOffset !== undefined)
+      && ((occurrence.slotStartOffset >= occurrence.slotEndOffset)
+        || (occurrence.slotStartOffset < occurrence.startOffset)
+        || (occurrence.slotEndOffset > occurrence.endOffset))) {
+      throw new ArtifactParseError({
+        path: here,
+        reason: 'a slot that starts before it ends and lies inside its place',
       },);
     }
     if ((occurrence.rendering
@@ -160,30 +181,22 @@ export function assertGroupFits(
       },);
     }
   },);
-  assertNotAskedFits({
-    group,
-    path,
-  },);
-  // A GROUP OF FEWER THAN TWO PLACES IS SKIPPED FOR TOO FEW, whatever else the
-  // bench would say: the pass asks a group, or finds its places already alike
-  // or without English, only with two places or more. A group whose handling
-  // failed is the one verdict a reader has always read with any number.
   if ((group.occurrences
     .length
-    < 2)
-    && (group.verdict
-      .kind
-      !== 'failed')
-    && (!((group.verdict
+    < 2) && (!((group.verdict
       .kind
       === 'not-asked') && (group.verdict
         .reason
         === 'too-few-placed')))) {
     throw new ArtifactParseError({
       path: `${path}.occurrences`,
-      reason: 'at least two places, since a group with fewer is skipped for too few',
+      reason: 'two places at least, since only a skip for too few places has fewer',
     },);
   }
+  assertNotAskedFits({
+    group,
+    path,
+  },);
 }
 
 //endregion Artifact consistency fit

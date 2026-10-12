@@ -1,6 +1,7 @@
 import type { ChatMessage, } from '@monochromatic-dev/module-llm-type/ts';
 
 import { longestRunOf, } from './character-run.ts';
+import { consistencyTenseLines, } from './consistency-tense.ts';
 import { citedReferenceBlockText, } from './cited-reference-rule.ts';
 import {
   DECLARED_IDENTITY_RULES,
@@ -133,6 +134,18 @@ export type ConsistencySubject = {
    Lines of the pages the original cites, when it cites any.
    */
   readonly referenceContext?: string;
+
+  /**
+   Whether the original's entry records a death, which adds the tense-candidate
+   block of the English each slice shows.
+   */
+  readonly lifeEnded?: boolean;
+
+  /**
+   Names the translation declares for its subject, read as named subjects by the
+   tense candidates; present only with a recorded death.
+   */
+  readonly subjectNames?: readonly string[];
 };
 
 /**
@@ -303,10 +316,20 @@ export function buildConsistencyMessages(
       .prefix}${subject.repeat
         .suffix}`;
   /**
+   The tense candidates of each slice's English, shown only where the entry
+   records a death, in the lines every judging sheet prints them in.
+   */
+  const tenseLines = consistencyTenseLines({
+    lifeEnded: subject.lifeEnded === true,
+    ...((subject.subjectNames === undefined) ? {} : { subjectNames: subject.subjectNames, }),
+    places: subject.occurrences,
+  },);
+  /**
    Every text the sheet shows.
    */
   const shown = [
     repeatedText,
+    ...tenseLines,
     subject.identityContext ?? '',
     subject.referenceContext ?? '',
     ...subject.occurrences
@@ -358,6 +381,12 @@ export function buildConsistencyMessages(
     : `${fence} FRAME BEGINS WITH ${fence}\n${subject.repeat
       .prefix}\n${fence} FRAME ENDS WITH ${fence}\n${subject.repeat
         .suffix}\n`;
+  /**
+   The tense block, fenced like the other blocks, or nothing when no English has a candidate.
+   */
+  const tenseBlock = (tenseLines.length === 0)
+    ? ''
+    : `${fence} TENSE CANDIDATES ${fence}\n${tenseLines.join('\n',)}\n${fence}\n`;
   /**
    Labels of the first place of each slice, whose block carries the slice's English.
    */
@@ -415,13 +444,13 @@ export function buildConsistencyMessages(
     },
     {
       role: 'user',
-      content: `${identityBlock}${referenceBlock}${repeatBlock}${placeBlocks.join('',)}${fence} END ${fence}\nReply with JSON only: {"reason":"...","quotes":[{"label":"${
+      content: `${identityBlock}${referenceBlock}${repeatBlock}${placeBlocks.join('',)}${tenseBlock}${fence} END ${fence}\nReply with JSON only: {"reason":"...","quotes":[{"label":"${
         consistencyLabel({ position: 0, },)
-      }","quote":"..."}],"choice":"${consistencyLabel({ position: 0, },)}","keep":[]}`,
+      }","quote":"..."${(subject.repeat
+        .kind
+        === 'refrain') ? ',"slot":"..."' : ''}}],"choice":"${consistencyLabel({ position: 0, },)}","keep":[]}`,
     },
   ];
 }
-
-//endregion Consistency wire
 
 //endregion Consistency sheet

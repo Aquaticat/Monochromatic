@@ -161,6 +161,10 @@ function groupLine({ group, }: { readonly group: ArtifactConsistencyGroup; },): 
 
  @param referenceContext - lines of the pages the original cites, which each sheet shows
 
+ @param lifeEnded - whether the entry records a death, which adds the tense block to each sheet
+
+ @param subjectNames - names the translation declares for its subject
+
  @param entryCacheDir - per-entry cache root
 
  @param pipelineDigest - generation stamp for the cache
@@ -190,6 +194,8 @@ async function settleAll(
     classified,
     identityContext,
     referenceContext,
+    lifeEnded,
+    subjectNames,
     entryCacheDir,
     pipelineDigest,
     signal,
@@ -202,6 +208,8 @@ async function settleAll(
     readonly classified: readonly ClassifiedGroup[];
     readonly identityContext?: string;
     readonly referenceContext?: string;
+    readonly lifeEnded?: boolean;
+    readonly subjectNames?: readonly string[];
     readonly entryCacheDir: string;
     readonly pipelineDigest: PipelineDigest;
     readonly signal: AbortSignal;
@@ -227,6 +235,8 @@ async function settleAll(
     toAsk,
     ...((identityContext === undefined) ? {} : { identityContext, }),
     ...((referenceContext === undefined) ? {} : { referenceContext, }),
+    ...((lifeEnded === undefined) ? {} : { lifeEnded, }),
+    ...((subjectNames === undefined) ? {} : { subjectNames, }),
     entryCacheDir,
     pipelineDigest,
     signal,
@@ -387,6 +397,8 @@ export async function runPassConsistency(
       },),
       ...((prepared.identityContext === undefined) ? {} : { identityContext: prepared.identityContext, }),
       ...((prepared.referenceContext === undefined) ? {} : { referenceContext: prepared.referenceContext, }),
+      ...((prepared.lifeEnded === true) ? { lifeEnded: true, } : {}),
+      ...((prepared.subjectNames === undefined) ? {} : { subjectNames: prepared.subjectNames, }),
       entryCacheDir,
       pipelineDigest,
       signal,

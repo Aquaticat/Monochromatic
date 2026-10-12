@@ -121,26 +121,32 @@ export function agreedQuoteOf(
 
 /**
  The slot a strict majority of the usable ballots gave for a place, as a list
- of zero or one.
+ of zero or one. A slot belongs to the quote it was given beside, so when the
+ quote a majority agreed on is named, only the ballots that gave that quote
+ count, against all the usable ballots.
 
  @param voices - usable ballots
 
  @param label - the place's label
 
+ @param quote - the quote a majority agreed on, when the slot is asked beside it
+
  @returns The agreed slot, or none
 
  @example
  ```ts
- const [slot,] = agreedSlotOf({ voices, label: 'OCCURRENCE 1', },);
+ const [slot,] = agreedSlotOf({ voices, label: 'OCCURRENCE 1', quote: 'the cat naps', },);
  ```
  */
 export function agreedSlotOf(
   {
     voices,
     label,
+    quote,
   }: {
     readonly voices: readonly ConsistencyVoice[];
     readonly label: string;
+    readonly quote?: string;
   },
 ): readonly string[] {
   return majorityText({
@@ -148,6 +154,9 @@ export function agreedSlotOf(
       voices,
       label,
     },)
+      .filter(function besideTheQuote(entry,): boolean {
+        return (quote === undefined) || (entry.quote === quote);
+      },)
       .flatMap(function slotOf(entry,): readonly string[] {
         return (entry.slot === undefined) ? [] : [entry.slot,];
       },),

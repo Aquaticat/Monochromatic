@@ -123,11 +123,19 @@ export async function openConsistencyCache(
  Names one question: the version, the whole sheet the bench is shown (which
  holds the wording, every place's paragraph and English, the declared identity
  and the cited pages) and the bench that answers, as one JSON value so no two
- questions share a key.
+ questions share a key. An entry that records a death adds the death and the
+ names its tense candidates read, since the sheet then shows a block built from
+ them (the lead's decision of 2026-10-12); an entry that records none keys as
+ before.
 
  @param messages - the sheet
 
  @param modelIds - bench asked
+
+ @param lifeEnded - whether the entry records a death, folded in only when it does
+
+ @param subjectNames - names the translation declares for its subject, folded in
+ with a recorded death, since the tense candidates read each as a subject
 
  @returns Cache key
 
@@ -140,9 +148,13 @@ export function consistencyKey(
   {
     messages,
     modelIds,
+    lifeEnded,
+    subjectNames,
   }: {
     readonly messages: readonly ChatMessage[];
     readonly modelIds: readonly RosterModelId[];
+    readonly lifeEnded?: boolean;
+    readonly subjectNames?: readonly string[];
   },
 ): string {
   return createHash('sha256',)
@@ -151,6 +163,14 @@ export function consistencyKey(
         version: CONSISTENCY_CACHE_VERSION,
         sheet: hashContent({ content: JSON.stringify(messages,), },),
         roster: modelIds,
+        ...((lifeEnded === true)
+          ? {
+            tense: [
+              'life-ended',
+              subjectNames ?? [],
+            ],
+          }
+          : {}),
       },),
       'utf8',
     )

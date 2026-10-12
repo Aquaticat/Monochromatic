@@ -30,10 +30,13 @@ const UNLOCATED_REASONS: Readonly<Record<UnlocatedReason, true>> = {
   empty: true,
   'not-found': true,
   ambiguous: true,
+  markup: true,
+  'overlaps-another': true,
   'slot-no-agreement': true,
   'slot-empty': true,
   'slot-not-found': true,
   'slot-ambiguous': true,
+  'slot-whole': true,
 };
 
 /**

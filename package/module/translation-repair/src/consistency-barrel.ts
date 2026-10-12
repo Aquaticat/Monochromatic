@@ -5,13 +5,19 @@ export {
   countConsistency,
   occurrencesOf,
   type QuoteOccurrences,
-  quoteCore,
   winnerOf,
 } from './consistency-count.ts';
 export {
+  quoteBounds,
+  quoteCore,
+} from './consistency-quote-bounds.ts';
+export {
   asLocated,
+  locatedContradicted,
   reasonContradicted,
 } from './corpus-run/artifact-two-lane-read-consistency-located.ts';
+export { carriesOrCutsMarkup, } from './consistency-markup.ts';
+export { consistencyTenseLines, } from './consistency-tense.ts';
 export type {
   ConsistencyCount,
   ConsistencyRendering,
@@ -116,10 +122,8 @@ export {
   runPassSettlement,
 } from './corpus-run/pass-settlement.ts';
 export { assertGroupFits, } from './corpus-run/artifact-two-lane-read-consistency-fit.ts';
-export {
-  assertAskedGroupCoherent,
-  assertSlicesCoherent,
-} from './corpus-run/artifact-two-lane-read-consistency-coherence.ts';
+export { assertAskedGroupCoherent, } from './corpus-run/artifact-two-lane-read-consistency-coherence.ts';
+export { assertSlicesCoherent, } from './corpus-run/artifact-two-lane-read-consistency-slices.ts';
 export { parseConsistencyOccurrence, } from './corpus-run/artifact-two-lane-read-consistency-occurrence.ts';
 export {
   parseConsistencyBallot,

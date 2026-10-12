@@ -1,3 +1,4 @@
+import { isCasedLetter, } from './cased-letters.ts';
 import type { ConsistencyRendering, } from './consistency-count-types.ts';
 import { ConsistencyInvariantError, } from './consistency-invariant-error.ts';
 
@@ -9,8 +10,8 @@ import { ConsistencyInvariantError, } from './consistency-invariant-error.ts';
 // Two edges of the quotes are the only things this code adjusts, and each is
 // a rule about the place the words go to rather than a rewrite: the closing
 // punctuation of a quote stays where the receiving place has it, and a first
-// letter takes the receiving place's capital or small form when the two
-// quotes begin with the same letter.
+// letter (the first past any opening mark) takes the receiving place's capital
+// or small form when the two quotes begin with the same letter.
 
 /**
  One replacement of words in a place's English.
@@ -80,15 +81,59 @@ export type ConsistencyPlan =
   };
 
 /**
+ Marks that may open a quote before its first letter: quotation marks,
+ brackets and the characters that open emphasis, code or strikethrough.
+ */
+const OPENING_MARKS = '"\'“‘„«‹([{*_~`¿¡「『（《〈';
+
+/**
+ Where a text's first letter stands: past any opening marks, as the character
+ there and its offset.
+
+ @param text - words whose first letter is wanted
+
+ @returns The first character after the opening marks and its offset in UTF-16
+ units, as a list of one; empty for a text made of opening marks alone
+
+ @example
+ ```ts
+ const [first,] = firstLetterOf({ text: '“The cat', },); // { character: 'T', at: 1 }
+ ```
+ */
+function firstLetterOf(
+  { text, }: { readonly text: string; },
+): readonly {
+  readonly character: string;
+  readonly at: number;
+}[] {
+  /**
+   Offset reached so far, in UTF-16 units.
+   */
+  const reached = { at: 0, };
+  for (const character of text) {
+    if (!OPENING_MARKS.includes(character,)) {
+      return [
+        {
+          character,
+          at: reached.at,
+        },
+      ];
+    }
+    reached.at += character.length;
+  }
+  return [];
+}
+
+/**
  A letter in the case of another, when the two are one letter.
 
- @param text - words whose first character may change case
+ @param text - words whose first letter may change case
 
- @param like - words whose first character sets the case
+ @param like - words whose first letter sets the case
 
- @returns The text with its first character in the case of the first of
- `like`, or the text itself when the two first characters are not one letter
- in two cases
+ @returns The text with its first letter, whole and past any opening mark, in
+ the case it has in `like`, or the text itself when the two first letters are
+ not one letter in two cases
 
  @example
  ```ts
@@ -105,16 +150,29 @@ function firstLetterLike(
   },
 ): string {
   /**
-   First character of each.
+   First letter of each.
    */
-  const first = text.charAt(0,);
+  const [first,] = firstLetterOf({ text, },);
   /**
-   First character of the text whose case is followed.
+   First letter of the text whose case is followed.
    */
-  const model = like.charAt(0,);
-  if ((first === model) || (first.toLowerCase() !== model.toLowerCase()))
+  const [model,] = firstLetterOf({ text: like, },);
+  if ((first === undefined) || (model === undefined)
+    || (first.character === model.character))
     return text;
-  return `${model}${text.slice(1,)}`;
+  if ((!isCasedLetter({ character: first.character, },)) || (!isCasedLetter({ character: model.character, },)))
+    return text;
+  if (first.character
+    .toLowerCase()
+    !== model.character
+    .toLowerCase())
+    return text;
+  return `${text.slice(
+    0,
+    first.at,
+  )}${model.character}${text.slice(first.at
+    + first.character
+    .length,)}`;
 }
 
 /**

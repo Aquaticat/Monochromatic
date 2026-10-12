@@ -61,7 +61,8 @@ export type AppliedConsistency = {
 };
 
 /**
- The name a replacement is reported under.
+ The name a replacement is reported under, in the words an operator reads the
+ pass's log in: the group counted from one and the receiving place's label.
 
  @param group - position of the group on the page, from zero
 
@@ -71,7 +72,7 @@ export type AppliedConsistency = {
 
  @example
  ```ts
- const id = editId({ group: 0, place: 1, },); // '0:1'
+ const id = editId({ group: 0, place: 1, },); // 'group 1 OCCURRENCE 2'
  ```
  */
 function editId(
@@ -83,7 +84,7 @@ function editId(
     readonly place: number;
   },
 ): string {
-  return `${String(group,)}:${String(place,)}`;
+  return `group ${String(group + 1,)} ${consistencyLabel({ position: place, },)}`;
 }
 
 /**
@@ -323,7 +324,7 @@ export function applyConsistency(
             const provisional = group.outcomes[position];
             if ((rendering === undefined) || (provisional === undefined)) {
               throw new ConsistencyInvariantError({ invariant:
-                `place ${String(position,)} of group ${String(groupPosition,)} has no rendering `
+                `${consistencyLabel({ position, },)} of group ${String(groupPosition + 1,)} has no rendering `
                   + 'or outcome, and both are made for every place', },);
             }
             /**
@@ -335,7 +336,7 @@ export function applyConsistency(
             },),);
             if ((provisional === 'replaced') && (decided === undefined)) {
               throw new ConsistencyInvariantError({ invariant:
-                `place ${String(position,)} of group ${String(groupPosition,)} was to be replaced `
+                `${consistencyLabel({ position, },)} of group ${String(groupPosition + 1,)} was to be replaced `
                   + 'and no replacement was applied, left out or refused, and every pending replacement is one of the three', },);
             }
             return {

@@ -1,8 +1,7 @@
 import { ArtifactParseError, } from '../artifact-guard.ts';
-import {
-  occurrencesOf,
-  quoteCore,
-} from '../consistency-count.ts';
+import { carriesOrCutsMarkup, } from '../consistency-markup.ts';
+import { occurrencesOf, } from '../consistency-count.ts';
+import { quoteCore, } from '../consistency-quote-bounds.ts';
 import type {
   ConsistencyRendering,
   UnlocatedReason,
@@ -80,19 +79,23 @@ export function asLocated(
 
 /**
  Whether the usable ballots contradict a reason given for a place that was not
- located.
+ located. A reason is contradicted when the ballots say what it denies, and
+ also when it could not have been reached: a quote reason beside no agreed
+ quote, a slot reason in a repeated run or beside no agreed slot.
 
  @param reason - the recorded reason
 
  @param quotes - the quote a strict majority gave, none when no text had a majority
 
- @param slots - the slot a strict majority gave, none when no text had a majority
+ @param slots - the slot a strict majority gave beside that quote, none when no text had a majority
 
- @returns Whether the ballots say what the reason denies
+ @param framed - whether the group is a frame with a slot
+
+ @returns Whether the ballots say what the reason denies, or the reason names a step the pass never reached
 
  @example
  ```ts
- const wrong = reasonContradicted({ reason: 'no-agreement', quotes: ['the cat naps',], slots: [], },);
+ const wrong = reasonContradicted({ reason: 'no-agreement', quotes: ['the cat naps',], slots: [], framed: false, },);
  ```
  */
 export function reasonContradicted(
@@ -100,27 +103,106 @@ export function reasonContradicted(
     reason,
     quotes,
     slots,
+    framed,
   }: {
     readonly reason: UnlocatedReason;
     readonly quotes: readonly string[];
     readonly slots: readonly string[];
+    readonly framed: boolean;
   },
 ): boolean {
+  if (reason === 'not-asked')
+    return true;
+  if (reason === 'no-english')
+    return false;
+  /**
+   The quote a strict majority gave, absent when no text had one.
+   */
+  const [quote,] = quotes;
+  /**
+   The slot a strict majority gave beside it.
+   */
+  const [slot,] = slots;
   if (reason === 'no-agreement')
-    return quotes.length > 0;
-  if (reason === 'empty') {
-    return (quotes.length === 0) || quotes.some(function showsSomething(quote,): boolean {
-      return !rendersAsNothing({ text: quoteCore({ quote, },), },);
-    },);
+    return quote !== undefined;
+  if (quote === undefined)
+    return true;
+  /**
+   The words the quote keeps.
+   */
+  const core = quoteCore({ quote, },);
+  if (reason === 'empty')
+    return !rendersAsNothing({ text: core, },);
+  if (rendersAsNothing({ text: core, },))
+    return true;
+  if ((reason === 'not-found') || (reason === 'ambiguous')
+    || (reason === 'overlaps-another'))
+    return false;
+  if (reason === 'markup') {
+    return !(carriesOrCutsMarkup({ text: quote, },)
+      || (framed && (slot !== undefined)
+        && carriesOrCutsMarkup({ text: slot, },)));
   }
+  // A SLOT REASON comes after a quote that stood once and held its markup in pairs.
+  if ((!framed) || carriesOrCutsMarkup({ text: quote, },))
+    return true;
   if (reason === 'slot-no-agreement')
-    return (quotes.length === 0) || (slots.length > 0);
-  if (reason === 'slot-empty') {
-    return (slots.length === 0) || slots.some(function showsSomething(slot,): boolean {
-      return !rendersAsNothing({ text: slot, },);
-    },);
-  }
-  return reason === 'not-asked';
+    return slot !== undefined;
+  if (slot === undefined)
+    return true;
+  if (reason === 'slot-empty')
+    return !rendersAsNothing({ text: slot, },);
+  if (rendersAsNothing({ text: slot, },))
+    return true;
+  /**
+   Where the slot stands in the quote's words.
+   */
+  const inCore = occurrencesOf({
+    haystack: core,
+    needle: slot,
+  },);
+  if (reason === 'slot-not-found')
+    return inCore.kind !== 'none';
+  if (reason === 'slot-ambiguous')
+    return inCore.kind !== 'many';
+  return slot !== core;
+}
+
+/**
+ Whether the words of a located rendering are ones the pass would have located:
+ they show a reader something, hold their markup in pairs, and in a frame leave
+ words of the frame beside the slot.
+
+ @param rendering - recorded rendering, located
+
+ @param framed - whether the group is a frame with a slot
+
+ @returns Whether the pass would have left the place unlocated instead
+
+ @example
+ ```ts
+ const wrong = locatedContradicted({ rendering, framed: false, },);
+ ```
+ */
+export function locatedContradicted(
+  {
+    rendering,
+    framed,
+  }: {
+    readonly rendering: Extract<ArtifactConsistencyRendering, { readonly kind: 'located'; }>;
+    readonly framed: boolean;
+  },
+): boolean {
+  /**
+   The words the quote keeps.
+   */
+  const core = quoteCore({ quote: rendering.quote, },);
+  if (rendersAsNothing({ text: core, },) || carriesOrCutsMarkup({ text: rendering.quote, },))
+    return true;
+  if ((!framed) || (rendering.slot === undefined))
+    return false;
+  return rendersAsNothing({ text: rendering.slot, },) || (rendering.slot === core)
+    || carriesOrCutsMarkup({ text: rendering.slot, },);
 }
 
 //endregion Artifact consistency located

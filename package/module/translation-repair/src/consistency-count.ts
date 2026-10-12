@@ -1,3 +1,5 @@
+import { carriesOrCutsMarkup, } from './consistency-markup.ts';
+import { quoteBounds, } from './consistency-quote-bounds.ts';
 import {
   agreedQuoteOf,
   agreedSlotOf,
@@ -5,6 +7,7 @@ import {
   majorityChoiceOf,
   usableVoicesOf,
 } from './consistency-majority.ts';
+import { ConsistencyInvariantError, } from './consistency-invariant-error.ts';
 import type {
   ConsistencyCount,
   ConsistencyRendering,
@@ -27,43 +30,13 @@ import { rendersAsNothing, } from './renders-as-nothing.ts';
 // located; otherwise the group stays as it stands, as the consolidation gate
 // keeps the standing on a tie. A PLACE IS KEPT when a strict majority list it.
 //
+// A QUOTE THAT CANNOT BE MOVED WHOLE STAYS WHERE IT IS: one that cuts markup or
+// carries a footnote mark (`consistency-markup.ts`), a slot that is all of its
+// quote, and two places of one slice whose words overlap are left unlocated.
+//
 // NOTHING HERE WRITES TEXT. The words a replacement carries are words a
 // judge quoted from the page, and the splice (`consistency-splice.ts`) only
 // moves them.
-
-/**
- Characters that close a sentence or a clause, taken off the end of a quote
- before it is compared or replaced, so a quote that carries the punctuation
- beside one that does not still agree.
- */
-const CLOSING_PUNCTUATION = '.,;:!?…。！？，；：、';
-
-/**
- A quote without the punctuation that closes it.
-
- @param quote - words as a judge quoted them
-
- @returns The quote up to its last character that is not closing punctuation
- or space
-
- @example
- ```ts
- const core = quoteCore({ quote: 'the cat naps.', },); // 'the cat naps'
- ```
- */
-export function quoteCore({ quote, }: { readonly quote: string; },): string {
-  /**
-   Index one past the last character the core keeps.
-   */
-  const bounds = { end: quote.length, };
-  while ((bounds.end > 0) && (CLOSING_PUNCTUATION.includes(quote.charAt(bounds.end - 1,),)
-    || rendersAsNothing({ text: quote.charAt(bounds.end - 1,), },)))
-    bounds.end -= 1;
-  return quote.slice(
-    0,
-    bounds.end,
-  );
-}
 
 /**
  Where a text stands inside another.
@@ -191,9 +164,16 @@ function locatedRendering(
     };
   }
   /**
+   Where the quote's words begin and end.
+   */
+  const bounds = quoteBounds({ quote, },);
+  /**
    The words the quote keeps.
    */
-  const core = quoteCore({ quote, },);
+  const core = quote.slice(
+    bounds.start,
+    bounds.end,
+  );
   if (rendersAsNothing({ text: core, },)) {
     return {
       kind: 'unlocated',
@@ -219,12 +199,22 @@ function locatedRendering(
       reason: 'ambiguous',
     };
   }
+  if (carriesOrCutsMarkup({ text: quote, },)) {
+    return {
+      kind: 'unlocated',
+      reason: 'markup',
+    };
+  }
+  /**
+   Offset in the English where the words begin, after any space the quote opens with.
+   */
+  const start = found.at + bounds.start;
   if (!framed) {
     return {
       kind: 'located',
       quote,
       core,
-      start: found.at,
+      start,
     };
   }
   /**
@@ -233,6 +223,7 @@ function locatedRendering(
   const [slot,] = agreedSlotOf({
     voices,
     label,
+    quote,
   },);
   if (slot === undefined) {
     return {
@@ -265,14 +256,91 @@ function locatedRendering(
       reason: 'slot-ambiguous',
     };
   }
+  if (slot === core) {
+    return {
+      kind: 'unlocated',
+      reason: 'slot-whole',
+    };
+  }
+  if (carriesOrCutsMarkup({ text: slot, },)) {
+    return {
+      kind: 'unlocated',
+      reason: 'markup',
+    };
+  }
   return {
     kind: 'located',
     quote,
     core,
-    start: found.at,
+    start,
     slot,
     slotStart: inCore.at,
   };
+}
+
+/**
+ Takes the rendering of every place whose located words overlap another place
+ of the same slice, since one run of English cannot be two renderings and
+ replacing the one would damage the other.
+
+ @param places - slice of each place, in page order, where it is known
+
+ @param renderings - each place's rendering as located, in the same order
+
+ @returns The renderings, a place that overlaps another unlocated
+
+ @example
+ ```ts
+ const separated = unlessOverlapping({ places, renderings, },);
+ ```
+ */
+function unlessOverlapping(
+  {
+    places,
+    renderings,
+  }: {
+    readonly places: readonly { readonly sliceIndex?: number; }[];
+    readonly renderings: readonly ConsistencyRendering[];
+  },
+): readonly ConsistencyRendering[] {
+  return renderings.map(function separated(
+    rendering,
+    position,
+  ): ConsistencyRendering {
+    if (rendering.kind !== 'located')
+      return rendering;
+    /**
+     Slice this place stands in, where the caller knows it.
+     */
+    const sliceIndex = places[position]
+      ?.sliceIndex;
+    if (sliceIndex === undefined)
+      return rendering;
+    /**
+     Whether another place of the slice has words over these.
+     */
+    const overlaps = renderings.some(function sharesWords(
+      other,
+      otherPosition,
+    ): boolean {
+      return (otherPosition !== position) && (other.kind === 'located')
+        && (places[otherPosition]
+          ?.sliceIndex
+          === sliceIndex)
+        && (rendering.start < (other.start
+          + other.core
+          .length))
+        && (other.start < (rendering.start
+          + rendering.core
+          .length));
+    },);
+    return overlaps
+      ? {
+        kind: 'unlocated',
+        reason: 'overlaps-another',
+      }
+      : rendering;
+  },);
 }
 
 /**
@@ -280,7 +348,8 @@ function locatedRendering(
 
  @param voices - every heard ballot with its seat
 
- @param places - label and English of each place, in page order
+ @param places - label and English of each place, in page order, with the slice
+ it stands in where the caller knows it
 
  @param framed - whether the group is a frame with a slot
 
@@ -304,6 +373,7 @@ export function countConsistency(
     readonly places: readonly {
       readonly label: string;
       readonly english: ConsistencyEnglish;
+      readonly sliceIndex?: number;
     }[];
     readonly framed: boolean;
     readonly quorum: number;
@@ -325,13 +395,16 @@ export function countConsistency(
   /**
    Each place's rendering.
    */
-  const renderings = places.map(function renderingOf(place,): ConsistencyRendering {
-    return locatedRendering({
-      voices: usableVoices,
-      label: place.label,
-      english: place.english,
-      framed,
-    },);
+  const renderings = unlessOverlapping({
+    places,
+    renderings: places.map(function renderingOf(place,): ConsistencyRendering {
+      return locatedRendering({
+        voices: usableVoices,
+        label: place.label,
+        english: place.english,
+        framed,
+      },);
+    },),
   },);
   /**
    Whether a strict majority keeps each place.
@@ -375,6 +448,9 @@ export function countConsistency(
 
  @returns The winner, or why there is none
 
+ @throws {@link ConsistencyInvariantError} when the chosen label is none of the
+ sheet's labels, which a usable ballot cannot choose
+
  @example
  ```ts
  const winner = winnerOf({ usable: 3, quorum: 2, chosen: ['OCCURRENCE 1',], labels, renderings, },);
@@ -411,7 +487,15 @@ export function winnerOf(
       reason: 'no-majority',
     };
   }
-  if (renderings[labels.indexOf(label,)]
+  /**
+   Position of the chosen label among the places.
+   */
+  const position = labels.indexOf(label,);
+  if (position === (-1)) {
+    throw new ConsistencyInvariantError({ invariant:
+      `the label ${label} a majority chose is no label of the sheet, and a usable ballot chooses a label the sheet showed`, },);
+  }
+  if (renderings[position]
     ?.kind
     !== 'located') {
     return {

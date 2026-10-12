@@ -2,13 +2,13 @@
 // A state the page-level consistency pass's own construction rules out, met
 // anyway.
 //
-// UNMARKED ON PURPOSE, as `RenderingAuditInvariantError` is: each site writes
-// its sentence from indexes, counts and vocabulary words and never from page
-// text, but the inventory in `message-names-only.unit.test.ts` reserves the
-// marker for classes whose sentence a boundary has to print. The pass contains
-// this error (a run always ships) and records `refused by
-// ConsistencyInvariantError`; the sentence itself reaches the run's log through
-// the caught value and the stack.
+// MARKED, SO A CONTAINED FAILURE RECORDS ITS SENTENCE. The pass contains this
+// error (a run always ships) and writes what it caught into a group's verdict
+// and into the section's findings through `exchangeFailureText`, which repeats
+// the message of a marked class and only the class name of any other. Every
+// throw site writes its sentence from positions, counts and vocabulary words
+// (a slice index, `OCCURRENCE 2`, `group 1`) and never from page text, which is
+// the claim the marker makes and `message-names-only.unit.test.ts` reads.
 
 /**
  An invariant of the consistency pass that did not hold.
@@ -25,8 +25,13 @@
  */
 export class ConsistencyInvariantError extends Error {
   /**
+   Message names positions, counts and vocabulary words only.
+   */
+  readonly messageNamesOnly: true = true;
+
+  /**
    @param invariant - what was supposed to hold, in the site's own words,
-   naming indexes and vocabulary words and never text
+   naming positions, counts and vocabulary words and never page text
    */
   constructor(
     { invariant, }: { readonly invariant: string; },

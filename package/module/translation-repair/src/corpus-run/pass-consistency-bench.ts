@@ -76,6 +76,10 @@ export type PreparedGroup = {
 
  @param referenceContext - lines of the pages the original cites, which the sheet shows
 
+ @param lifeEnded - whether the entry records a death, which adds the tense block to the sheet
+
+ @param subjectNames - names the translation declares for its subject
+
  @param signal - entry deadline and caller abort
 
  @param l - logger the pass writes to
@@ -100,6 +104,8 @@ async function settleAskedGroup(
     cache,
     identityContext,
     referenceContext,
+    lifeEnded,
+    subjectNames,
     signal,
     l,
     stageSettings,
@@ -111,6 +117,8 @@ async function settleAskedGroup(
     readonly cache: SliceCache<ConsistencyRecord>;
     readonly identityContext?: string;
     readonly referenceContext?: string;
+    readonly lifeEnded?: boolean;
+    readonly subjectNames?: readonly string[];
     readonly signal: AbortSignal;
     readonly l: Logger;
     readonly stageSettings: StageSettings;
@@ -153,6 +161,8 @@ async function settleAskedGroup(
             },),
           ...((identityContext === undefined) ? {} : { identityContext, }),
           ...((referenceContext === undefined) ? {} : { referenceContext, }),
+          ...((lifeEnded === undefined) ? {} : { lifeEnded, }),
+          ...((subjectNames === undefined) ? {} : { subjectNames, }),
         },
         cache,
         signal,
@@ -211,6 +221,10 @@ function groupAskedName(
 
  @param referenceContext - lines of the pages the original cites, which each sheet shows
 
+ @param lifeEnded - whether the entry records a death, which adds the tense block to each sheet
+
+ @param subjectNames - names the translation declares for its subject
+
  @param entryCacheDir - per-entry cache root
 
  @param pipelineDigest - generation stamp for the cache
@@ -240,6 +254,8 @@ export async function askAll(
     toAsk,
     identityContext,
     referenceContext,
+    lifeEnded,
+    subjectNames,
     entryCacheDir,
     pipelineDigest,
     signal,
@@ -252,6 +268,8 @@ export async function askAll(
     readonly toAsk: readonly PreparedGroup[];
     readonly identityContext?: string;
     readonly referenceContext?: string;
+    readonly lifeEnded?: boolean;
+    readonly subjectNames?: readonly string[];
     readonly entryCacheDir: string;
     readonly pipelineDigest: PipelineDigest;
     readonly signal: AbortSignal;
@@ -290,6 +308,8 @@ export async function askAll(
         cache,
         ...((identityContext === undefined) ? {} : { identityContext, }),
         ...((referenceContext === undefined) ? {} : { referenceContext, }),
+        ...((lifeEnded === undefined) ? {} : { lifeEnded, }),
+        ...((subjectNames === undefined) ? {} : { subjectNames, }),
         signal,
         l,
         stageSettings,

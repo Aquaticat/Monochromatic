@@ -15,6 +15,12 @@
  number, since each changes what a stored ballot answers or whether it counts.
  No pass has run with this value set, so no answer is cached under it.
 
+ The tense-candidate block (the lead's decision of 2026-10-12) moved no number:
+ the key adds the recorded death and the subject names for an entry that records
+ a death, so such an entry asks a new question under a new key, and an entry
+ that records none keeps its key byte for byte, as the key of every other judged
+ stage does (ledger B419).
+
  @example
  ```ts
  const material = JSON.stringify({ version: CONSISTENCY_CACHE_VERSION, sheet, roster, },);
