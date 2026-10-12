@@ -62,8 +62,8 @@ const VERSION_SEPARATOR = '.';
  */
 const WHITESPACE_CHARACTERS = [
   '\t\n\v\f\r ',
-  '\u00a0\u1680\u2000\u2001\u2002\u2003\u2004\u2005\u2006\u2007\u2008\u2009\u200a',
-  '\u2028\u2029\u202f\u205f\u3000\ufeff',
+  '\u00A0\u1680\u2000\u2001\u2002\u2003\u2004\u2005\u2006\u2007\u2008\u2009\u200A',
+  '\u2028\u2029\u202F\u205F\u3000\uFEFF',
 ].join('',);
 
 /**
@@ -168,6 +168,9 @@ function asciiLetterRunEnd({
   text: string;
   start: number;
 }>,): number {
+  /**
+   Index the scan has reached.
+   */
   let cursor = start;
   while (isAsciiLetter(text.charAt(cursor,),))
     cursor += 1;
@@ -195,6 +198,9 @@ function digitRunEnd({
   text: string;
   start: number;
 }>,): number {
+  /**
+   Index the scan has reached.
+   */
   let cursor = start;
   while (isAsciiDigit(text.charAt(cursor,),))
     cursor += 1;
@@ -222,8 +228,11 @@ function nonWhitespaceRunEnd({
   text: string;
   start: number;
 }>,): number {
+  /**
+   Index the scan has reached.
+   */
   let cursor = start;
-  while ((cursor < text.length) && !isWhitespaceCharacter(text.charAt(cursor,),))
+  while ((cursor < text.length) && (!isWhitespaceCharacter(text.charAt(cursor,),)))
     cursor += 1;
   return cursor;
 }
