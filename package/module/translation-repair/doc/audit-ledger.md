@@ -35924,6 +35924,113 @@ as the pass gives them.
 so a ledger bought on the older sheets is not resumed;
 the trial reads no slice cache.
 
+### B443: the consistency pass's ballots, stored gathers and quotes took what no gather or slice holds
+
+Red `54d53e8b46`,
+fixed in `d4736ccb6c`.
+
+Found on 2026-10-12 (UTC) by an adversarial review of B431,
+each red at the pass's own commit.
+
+- A reply key `seat` overwrote the roster seat in a stored ballot,
+  and any extra key was stored;
+  `voiceOf` now copies the ballot's own fields after the roster seat.
+- A stored gather resumed with a quorum,
+  a ballot count or a seat set no fresh gather makes;
+  `recordFits` now checks it against the bench after the cache answers,
+  and warns and asks again otherwise (B439 states the same family in the cache reader).
+- A quote that began inside emphasis,
+  or carried a footnote mark,
+  reached a slice,
+  since the floors read neither;
+  `carriesOrCutsMarkup` (`consistency-markup.ts`) leaves a quote or slot with an unpaired emphasis,
+  code,
+  bracket or parenthesis run,
+  or any footnote mark,
+  unlocated with the reason `markup`.
+- Two places of one slice whose quotes overlap were spliced against each other;
+  both are now unlocated with the reason `overlaps-another`.
+- A frame's slot that was its whole quote would have replaced the receiver's frame words with the slot alone;
+  such a place is unlocated with the reason `slot-whole`.
+- The slot majority was counted among every ballot,
+  not among those that gave the agreed quote;
+  `agreedSlotOf` now takes the quote,
+  and the reader's recount passes it.
+- `quoteCore` kept a leading space in the words and cut a variation selector off the character before it;
+  `consistency-quote-bounds.ts` reads whole characters.
+- The first-letter adaptation read `charAt(0)`,
+  so a capital beyond the first plane was not adapted,
+  and stopped at an opening mark;
+  it now reads whole characters by general category past the opening marks.
+- A chosen label the sheet never showed read as unlocated;
+  it now throws `ConsistencyInvariantError`.
+
+### B444: the consistency reader accepted relations no writer gives
+
+Red `54d53e8b46`,
+fixed in `d4736ccb6c`.
+
+The same review found the reader took slot offsets outside their place or ending before they start,
+a group of one place the bench considered,
+`failed` included,
+a seat heard twice,
+places of one slice said to read alike,
+a slice holding both a replaced place and one the floors refused,
+and a reason for an unlocated place that no ballot or group could have given;
+`reasonContradicted` now reads whether the group is a frame,
+which settles the gap B440 left open.
+The slice checks moved to `artifact-two-lane-read-consistency-slices.ts`,
+with a test of its own.
+A round trip from the real writer through the reader for every outcome and reason passed before and after.
+
+### B445: the consistency judges were not shown the tense candidates of a life that has ended
+
+Red `54d53e8b46`,
+fixed in `d4736ccb6c`.
+
+The consistency judges choose one rendering and carry it to every place,
+yet their sheet showed no tense candidate when the entry records a death.
+The sheet now prints the labelled tense block of the English of each slice it shows,
+once per slice under the first place's label,
+built by the same `tenseCandidateGroups` and `tenseCandidateLines` the other sheets use
+(`consistency-tense.ts`),
+inside the fence the sheet chooses against all its texts.
+`consistencyKey` adds the death flag and the subject names only when the entry records a death,
+so every other key keeps its bytes,
+and `CONSISTENCY_CACHE_VERSION` stays 1,
+since no pass has run at it.
+
+### B446: ConsistencyInvariantError recorded only its class name
+
+Red `54d53e8b46`,
+fixed in `d4736ccb6c`.
+
+A contained failure wrote `refused by ConsistencyInvariantError` into a group's verdict and the section's findings,
+since the class was not marked as carrying only names.
+It is now marked,
+every throw site interpolates positions,
+labels and vocabulary only,
+its sentences count places from one,
+and the message inventory names the part `invariant`.
+
+### B447: a died of an unreadable kind left no finding on the artifact
+
+Red `94371feed6`,
+fixed in `f42d69c2fe`.
+
+Found on 2026-10-12 (UTC) by the lead's decision on B441.
+A `died` that is a truth value,
+a list,
+a record or a number that is not finite was logged (B433) and left no finding,
+so the artifact could not tell such an entry from one that records no death.
+`entryInfoFindingsOf` now answers one finding for it,
+naming the key and the kind and quoting no value,
+built from the same clause as the warning so the two cannot drift;
+every way out of `preparePassEntry` carries it,
+and a case pins each.
+Findings reach no key and no sheet,
+so no cache key or schema version moved.
+
 ## Process mistakes in this audit
 
 These are the agent's own mistakes while fixing,
@@ -39001,6 +39108,30 @@ the lead reruns every count an agent hands back on the merged head before relyin
 as here.
 `mistake-prevention.md`,
 "Shell commands".
+
+### M156: two agents were briefed onto the same production modules at once
+
+Status:
+happened on 2026-10-12 (UTC);
+caught by the lead's named run after both merged,
+before any pass.
+The lead launched the consistency review (B443 to B446) and the consistency own tests (B437 to B440) together
+from one base,
+keeping them apart by test file only,
+while both briefs let each change the production modules under test.
+Both fixed the reader's slot-offset and place-count rules,
+each its own way,
+the merge held the place-count rule twice,
+and four of the own-test files pinned rules or messages the review had changed.
+The lead kept one statement of each rule on merge
+and gave the reconciling of the cases to a follow-up.
+
+Prevention:
+work that may change the same production files runs one after the other,
+or one brief owns those files and the other only reads them;
+separating test files is not separating the work.
+`mistake-prevention.md`,
+"Work merged from parallel briefs".
 
 ### M79: a coverage census measuring compressed code
 

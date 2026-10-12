@@ -4934,3 +4934,29 @@ its header names what it cannot reach (ledger B339).
 `scan-findings.unit.test.ts` holds each helper's whole failure text.
 Issue 610 holds the cause in the test package,
 so a comparison outside a scan can still print a count where what differs runs past 40 characters.
+
+## Work merged from parallel briefs
+
+What happened:
+the tense work and the consistency pass were built apart and both changed what artifact generation 15 holds,
+so five replay fixtures of one broke on the other's section when merged (ledger M153).
+Then the consistency review and the consistency modules' own tests were briefed together from one base,
+kept apart by test file only,
+and both changed the same production modules:
+each fixed the reader's slot-offset and place-count rules its own way,
+the merge held one rule twice,
+and four test files pinned rules or messages the other had changed (ledger M156).
+A three-way merge with no textual conflict said nothing about either.
+
+The rule:
+work that may change the same production files runs one after the other,
+or one brief owns those files and the others only read them;
+separating test files is not separating the work.
+When two pieces of work did run apart,
+the second merge runs every test file of both on the merged head before its commit is relied on,
+and a rule both stated is kept once.
+
+What enforces it:
+nothing in the package;
+the lead's briefs name the files each may change,
+and the lead's named run after each merge covers both pieces of work.
