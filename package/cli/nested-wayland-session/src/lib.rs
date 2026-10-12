@@ -81,7 +81,8 @@ pub mod control_window;
 /// Pointer hover and held-button injection through the nested seat.
 pub mod input_pointer;
 
-/// Taskbar progress answer text, including the one-line URI escaping.
+/// Taskbar progress answer text,
+///  including the one-line URI escaping.
 pub mod launcher_format;
 
 /// Bounded history of taskbar progress updates.
@@ -90,7 +91,63 @@ pub mod launcher_history;
 /// Listens for taskbar progress signals on the private bus.
 pub mod launcher_listen;
 
-/// The private session bus shared by the appearance portal and the launcher listener.
+/// The accent color the private appearance portal serves.
+pub mod accent_color;
+
+/// Runtime accent color switching reaches only the private Settings portal.
+pub mod control_accent;
+
+/// Plasma job verbs answer from the fake job view server's records.
+pub mod control_job;
+
+/// Notification verbs answer from the fake notification service's records.
+pub mod control_notification;
+
+/// A bounded,
+///  oldest-first record of observed events.
+pub mod event_ring;
+
+/// Plasma job answer text,
+///  with one-line escaping of app-chosen text.
+pub mod job_format;
+
+/// The fake Plasma job view server and its kuiserver interface.
+pub mod job_server;
+
+/// State of the fake Plasma job view server.
+pub mod job_store;
+
+/// One granted Plasma job view object.
+pub mod job_view;
+
+/// Notification answer text,
+///  with one-line escaping of app-chosen text.
+pub mod notification_format;
+
+/// Which fake notification services a session serves.
+pub mod notification_mode;
+
+/// The fake freedesktop notification server.
+pub mod notification_service;
+
+/// State of the fake freedesktop notification server.
+pub mod notification_store;
+
+/// The fake notification and Plasma job services on the private bus.
+pub mod plasma_services;
+
+/// A store shared between the bus service thread and the control thread.
+pub mod service_state;
+
+/// Plain-text summaries of D-Bus variant maps.
+pub mod value_summary;
+
+/// One-line encoding of client-chosen text in control answers.
+pub mod wire_text;
+
+/// The private session bus shared by the appearance portal,
+///  the launcher listener,
+///  and the fake services.
 pub mod private_bus;
 
 /// What:

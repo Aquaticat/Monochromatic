@@ -56,7 +56,10 @@ use crate::handler::clipboard::ClipboardProtocols;
 use crate::appearance_portal::AppearancePortal;
 
 /// The private session bus and the taskbar progress listener that reads it.
-use crate::{input_pointer::HeldButtons, launcher_listen::LauncherLog, private_bus::PrivateBus};
+use crate::{
+    input_pointer::HeldButtons, launcher_listen::LauncherLog, plasma_services::PlasmaServices,
+    private_bus::PrivateBus,
+};
 
 /// Stall bookkeeping that keeps the hosted client drawing while the parent is silent.
 use crate::frame_pacing::FramePacing;
@@ -376,7 +379,18 @@ pub struct Compositor {
     ///           the private bus and removes its socket directory.
     pub appearance_portal: Option<AppearancePortal>,
 
-    /// The private session bus, when `--color-scheme` or `--launcher-log` started one.
+    /// The fake notification and Plasma job services,
+    ///  when `--notifications` asked for them.
+    ///
+    /// What:
+    ///      `pub notifications: Option<PlasmaServices>`.
+    /// Why:
+    ///       The notification and job verbs read and drive these records.
+    ///  Declared before the private bus so the services' connection closes first.
+    pub notifications: Option<PlasmaServices>,
+
+    /// The private session bus,
+    ///  when an option that needs one started it.
     ///
     /// What:
     ///      `pub private_bus: Option<Arc<PrivateBus>>`.
@@ -387,13 +401,15 @@ pub struct Compositor {
     ///  Declared after the portal so the portal's connection closes first.
     pub private_bus: Option<Arc<PrivateBus>>,
 
-    /// The taskbar progress listener on the private bus, when a bus exists.
+    /// The taskbar progress listener on the private bus,
+    ///  when a bus exists.
     ///
     /// What:
     ///      `pub launcher: Option<LauncherLog>`.
     /// Why:
     ///       The `launcher` verbs read its history;
-    ///  `None` means no private bus, so those verbs refuse with the reason.
+    ///  `None` means no private bus,
+    ///  so those verbs refuse with the reason.
     pub launcher: Option<LauncherLog>,
 
     /// Pointer buttons that `button down` is holding.
@@ -699,6 +715,7 @@ impl Compositor {
             child: None,
             shutdown_deadline: None,
             appearance_portal: None,
+            notifications: None,
             private_bus: None,
             launcher: None,
             held_pointer_buttons: HeldButtons::default(),

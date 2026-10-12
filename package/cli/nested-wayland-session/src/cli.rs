@@ -17,7 +17,9 @@ use std::path::PathBuf;
 /// Preserve the public anyhow error interface while retaining clap's error type.
 use anyhow::{Context, Result};
 /// Existing private-portal values are unchanged.
-use crate::appearance_portal::ColorSchemePreference;
+use crate::{
+    accent_color::AccentColor, appearance_portal::ColorSchemePreference, notification_mode::NotificationMode,
+};
 /// Validated output scale produced by the `--scale` value parser.
 use crate::screen_geometry::OutputScale;
 
@@ -83,6 +85,18 @@ pub fn parse_args(args: &[String]) -> Result<Config> {
         color_scheme = Some(ColorSchemePreference::parse(value)?);
     }
 
+    let mut accent_color = None;
+    if let Some(value) = matches.get_one::<String>("accent-color") {
+        match AccentColor::parse(value) {
+            Ok(color) => accent_color = Some(color),
+            Err(message) => anyhow::bail!("--accent-color {message}"),
+        }
+    }
+    let notifications = match matches.get_one::<String>("notifications") {
+        Some(value) => NotificationMode::parse(value)?,
+        None => NotificationMode::None,
+    };
+
     // copied extracts owned integer options rather than references into matches.
     let app_cpu_quota = matches.get_one::<u32>("app-cpu-quota").copied();
     let app_cpu_weight = matches.get_one::<u32>("app-cpu-weight").copied();
@@ -100,6 +114,8 @@ pub fn parse_args(args: &[String]) -> Result<Config> {
         height: dimensions.1,
         scale,
         color_scheme,
+        accent_color,
+        notifications,
         isolate: matches.get_flag("isolate"),
         launcher_log: matches.get_flag("launcher-log"),
         app_cpu_quota,

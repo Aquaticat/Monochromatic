@@ -11,7 +11,8 @@ use std::collections::HashMap;
 ///  single-owner `Box<T>`,
 ///           single-thread `Rc<T>`).
 ///  `AtomicU32` is an integer cell several threads may read and write without a lock
-///           (sibling: `Mutex<u32>`,
+///           (sibling:
+///  `Mutex<u32>`,
 ///  which locks).
 ///           `Ordering` selects how strictly those accesses are sequenced.
 /// Why:
@@ -30,8 +31,10 @@ use std::sync::{
     Arc,
 };
 
-/// The private bus this portal is served on, shared with the compositor.
-use crate::private_bus::PrivateBus;
+/// The private bus this portal is served on,
+///  shared with the compositor,
+///  and the accent color the portal can serve beside the color scheme.
+use crate::{accent_color::AccentColor, private_bus::PrivateBus};
 
 /// Imports shared error context and result channel.
 use anyhow::{Context, Result};
@@ -53,7 +56,7 @@ use anyhow::{Context, Result};
 /// ```
 use zbus::{
     blocking::Connection,
-    zvariant::{OwnedValue, Value},
+    zvariant::{OwnedValue, Structure, Value},
 };
 
 /// Stores portal well-known bus name.
@@ -73,6 +76,21 @@ const APPEARANCE_NAMESPACE: &str = "org.freedesktop.appearance";
 
 /// Stores color-scheme setting key.
 const COLOR_SCHEME_KEY: &str = "color-scheme";
+
+/// Stores accent-color setting key.
+const ACCENT_COLOR_KEY: &str = "accent-color";
+
+/// Marks a setting this portal was not asked to serve.
+///
+/// What:
+///      `u32::MAX`,
+///  stored in the atomic cell of a setting.
+/// Why:
+///       Portal color-scheme values are 0 to 2 and a packed color is at most `0x00FFFFFF`,
+///  so neither can collide with it.
+///  A setting that is not served answers `NotSupported`,
+///  as before accent colors existed.
+const NOT_SERVED: u32 = u32::MAX;
 
 /// Requested isolated color scheme.
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
@@ -138,7 +156,11 @@ pub enum SwitchOutcome {
 struct PortalSettings {
     /// Portal value returned for appearance color-scheme reads;
     ///  runtime switches replace it.
+    ///  `NOT_SERVED` when only `--accent-color` started the portal.
     served_value: Arc<AtomicU32>,
+    /// Packed accent color returned for appearance accent-color reads;
+    ///  `NOT_SERVED` when only `--color-scheme` started the portal.
+    served_accent: Arc<AtomicU32>,
 }
 
 /// Implements XDG Settings methods consumed by Slint and other toolkits.
@@ -162,27 +184,50 @@ impl PortalSettings {
         if !namespaces_match_appearance(&namespaces) {
             return HashMap::new();
         }
-        return HashMap::from([(
-            APPEARANCE_NAMESPACE.to_owned(),
-            HashMap::from([(
-                COLOR_SCHEME_KEY.to_owned(),
-                OwnedValue::from(self.served_value.load(Ordering::SeqCst)),
-            )]),
-        )]);
+        let mut appearance = HashMap::new();
+        for key in [COLOR_SCHEME_KEY, ACCENT_COLOR_KEY] {
+            if let Ok(value) = self.read_setting(APPEARANCE_NAMESPACE, key) {
+                appearance.insert(key.to_owned(), value);
+            }
+        }
+        if appearance.is_empty() {
+            return HashMap::new();
+        }
+        return HashMap::from([(APPEARANCE_NAMESPACE.to_owned(), appearance)]);
     }
 }
 
 /// Shares setting lookup between standard and compatibility methods.
 impl PortalSettings {
-    /// Returns configured scheme or rejects unsupported setting reads.
+    /// Returns configured setting or rejects unsupported setting reads.
+    ///
+    /// The accent color leaves as the `(ddd)` structure of doubles in `[0, 1]` the portal defines,
+    ///  which Slint reads with `downcast_ref::<(f64, f64, f64)>()`.
     fn read_setting(&self, namespace: &str, key: &str) -> zbus::fdo::Result<OwnedValue> {
         if namespace == APPEARANCE_NAMESPACE && key == COLOR_SCHEME_KEY {
-            return Ok(OwnedValue::from(self.served_value.load(Ordering::SeqCst)));
+            let served = self.served_value.load(Ordering::SeqCst);
+            if served != NOT_SERVED {
+                return Ok(OwnedValue::from(served));
+            }
+        }
+        if namespace == APPEARANCE_NAMESPACE && key == ACCENT_COLOR_KEY {
+            let packed = self.served_accent.load(Ordering::SeqCst);
+            if packed != NOT_SERVED {
+                return match OwnedValue::try_from(accent_variant(AccentColor::unpack(packed))) {
+                    Ok(value) => Ok(value),
+                    Err(error) => Err(zbus::fdo::Error::Failed(error.to_string())),
+                };
+            }
         }
         return Err(zbus::fdo::Error::NotSupported(format!(
             "nested appearance portal does not provide {namespace}/{key}",
         )));
     }
+}
+
+/// Builds the `(ddd)` value the portal serves and announces for an accent color.
+fn accent_variant(color: AccentColor) -> Value<'static> {
+    return Value::Structure(Structure::from(color.portal_value()));
 }
 
 /// Returns whether portal namespace filters request appearance values.
@@ -201,6 +246,22 @@ fn namespaces_match_appearance(namespaces: &[String]) -> bool {
     });
 }
 
+/// What the private portal is asked to serve.
+pub struct PortalStart {
+    /// The color scheme from `--color-scheme`,
+    ///  when given.
+    pub color_scheme: Option<ColorSchemePreference>,
+    /// The accent color from `--accent-color`,
+    ///  when given.
+    pub accent_color: Option<AccentColor>,
+    /// The private bus to serve on.
+    pub bus: Arc<PrivateBus>,
+}
+
+/// Accent color serving and switching sit beside the color scheme without crowding this file.
+#[path = "appearance_accent.rs"]
+mod accent;
+
 /// Holds the Settings service on the private bus for the session lifetime.
 pub struct AppearancePortal {
     /// Live zbus service connection owning the portal name,
@@ -208,7 +269,11 @@ pub struct AppearancePortal {
     connection: Connection,
     /// Portal value shared with the Settings interface served on `connection`.
     served_value: Arc<AtomicU32>,
-    /// Private bus shared with the launcher listener; kept alive while the portal is served.
+    /// Packed accent color shared with the Settings interface;
+    ///  `NOT_SERVED` when `--accent-color` was not given.
+    served_accent: Arc<AtomicU32>,
+    /// Private bus shared with the launcher listener;
+    ///  kept alive while the portal is served.
     bus: Arc<PrivateBus>,
 }
 
@@ -223,6 +288,19 @@ impl AppearancePortal {
     /// Why:
     ///       `--color-scheme` and `--launcher-log` share one private bus.
     pub fn start(preference: ColorSchemePreference, bus: Arc<PrivateBus>) -> Result<Self> {
+        return Self::serve(PortalStart { color_scheme: Some(preference), accent_color: None, bus });
+    }
+
+    /// Serves the settings `start` names on an already started private bus.
+    ///
+    /// What:
+    ///      `pub fn serve(start: PortalStart) -> Result<Self>`.
+    ///  A setting given as `None` answers `NotSupported` and refuses runtime changes,
+    ///  exactly as a session without that startup option always did.
+    /// Why:
+    ///       `--color-scheme` and `--accent-color` each start the portal,
+    ///  and neither may make the other's setting appear.
+    pub fn serve(start: PortalStart) -> Result<Self> {
         // What:     `Arc::new(AtomicU32::new(...))` allocates one shared integer cell holding the
         //           initial portal value. `Arc::clone(&served_value)` creates a second owner of
         //           that same cell, not a copy of the number; `&` lends the first owner.
@@ -233,15 +311,32 @@ impl AppearancePortal {
         // const servedValue = new Uint32Array(new SharedArrayBuffer(4));
         // const settings = { servedValue }; // same buffer, second reference
         // ```
-        let served_value = Arc::new(AtomicU32::new(preference.portal_value()));
-        let settings = PortalSettings { served_value: Arc::clone(&served_value) };
-        let connection = zbus::blocking::connection::Builder::address(bus.address())?
+        let served_value = Arc::new(AtomicU32::new(
+            start.color_scheme.map_or(NOT_SERVED, ColorSchemePreference::portal_value),
+        ));
+        let served_accent = Arc::new(AtomicU32::new(start.accent_color.map_or(NOT_SERVED, AccentColor::pack)));
+        let settings = PortalSettings {
+            served_value: Arc::clone(&served_value),
+            served_accent: Arc::clone(&served_accent),
+        };
+        let connection = zbus::blocking::connection::Builder::address(start.bus.address())?
             .name(PORTAL_BUS_NAME)?
             .serve_at(PORTAL_OBJECT_PATH, settings)?
             .build()
             .context("starting private XDG Settings portal")?;
-        tracing::info!(?preference, "started isolated XDG appearance portal");
-        return Ok(Self { connection, served_value, bus });
+        tracing::info!(
+            color_scheme = ?start.color_scheme,
+            accent_color = ?start.accent_color,
+            "started isolated XDG appearance portal",
+        );
+        return Ok(Self { connection, served_value, served_accent, bus: start.bus });
+    }
+
+    /// Tells whether `--color-scheme` was given,
+    ///  so the `color-scheme` verb has a value to switch.
+    #[must_use]
+    pub fn serves_color_scheme(&self) -> bool {
+        return self.served_value.load(Ordering::SeqCst) != NOT_SERVED;
     }
 
     /// Serves `preference` from now on and notifies subscribed clients on the private bus.
@@ -271,6 +366,9 @@ impl AppearancePortal {
     /// }
     /// ```
     pub fn set_color_scheme(&self, preference: ColorSchemePreference) -> Result<SwitchOutcome> {
+        if !self.serves_color_scheme() {
+            anyhow::bail!("the private appearance portal was started without --color-scheme");
+        }
         let value = preference.portal_value();
         // What:     `swap` stores the new value and returns the one it replaced, as one step.
         //           `Ordering::SeqCst` is the strictest sequencing: every thread sees one order.
@@ -327,3 +425,8 @@ impl AppearancePortal {
 #[cfg(test)]
 #[path = "appearance_portal_tests.rs"]
 mod tests;
+
+/// Verifies the accent color against a real client on the private bus.
+#[cfg(test)]
+#[path = "appearance_accent_tests.rs"]
+mod accent_tests;
