@@ -3240,19 +3240,25 @@ Two questions left open by earlier work, decided by the orchestrator on the huma
   3.99 s instead of 8.9 s in one sandbox, but made a cold dependency build 12.5 minutes instead of about 4, and that
   cold build hits every fresh worktree and CI run. Revisit if the suite grows.
 
-### D117. A focus ring is only a ring, drawn like a CSS outline but hugging the element (2026-10-12)
+### D117. A focus ring is only a ring, drawn the way Firefox draws it but hugging the element (2026-10-12)
 
-The human asked that focus rings look like what HTML and CSS draw, except that CSS rings are always rectangles and ours
-hug the element, and that a focus ring be merely a ring with no other change such as a background color. This replaces
-the "2 px ring plus the state layer" wording of D106 and the focus fill of the earlier focus work.
+The human asked that focus rings look like what HTML and CSS draw, except that CSS rings are rectangles and ours hug the
+element, that a focus ring be merely a ring with no other change such as a background color, and, when told that browser
+default outlines are broken lines, that the app follow whatever the latest Firefox desktop source does. The source
+(mozilla-firefox/firefox, `layout/style/res/ua.css` rule `:focus-visible { outline: 1px auto; }`, painted by
+`Theme::PaintAutoStyleOutline` in `widget/Theme.cpp`) draws two solid rings, not a broken line. This replaces the
+"2 px ring plus the state layer" wording of D106 and the focus fill of the earlier focus work.
 
-- The ring is an outline: 2 px (dp on Android) wide, drawn outside the element with a 2 px gap (CSS `outline: 2px solid;
-  outline-offset: 2px`), and it is the element's own shape grown by the gap: a pill stays a pill, a circle a circle, a
-  rounded rectangle keeps its radius plus the gap. It is never clipped by a parent and never moves content.
-- It appears for keyboard focus only (CSS `:focus-visible`), in the `primary` role, at 3:1 or better against the
-  surface it sits on (WCAG 2.2 focus appearance).
+- The ring is the pair Firefox paints: an inner ring 2 px (dp on Android) wide in the `primary` role, flush against the
+  element's edge (Firefox's default `outline-offset` is 0, so there is no gap), and an outer ring 1 px wide in the
+  `on-primary` role around it, which keeps the ring readable on any surface because `on-primary` contrasts with
+  `primary`.
+- Both rings are solid and follow the element's own shape: the inner ring's inner radius is the element's corner radius
+  and each ring's outer radius is the radius plus the widths inside it, so a pill stays a pill, a circle a circle and a
+  rounded rectangle keeps its curve; an element with square corners gets a 2 px outer radius, as in Firefox.
+- The ring is drawn outside the element, is never clipped by a parent and never moves content.
+- It appears for keyboard focus only (CSS `:focus-visible`).
 - Focus adds no fill, tint, state layer, bold or size change. Hover and pressed keep their own state layers.
-- The ring and the element boundary are the two visible channels (position and shape, plus color), not a fill.
 
 ### D118. Grays are always accented unless the root color is completely neutral (2026-10-12)
 
