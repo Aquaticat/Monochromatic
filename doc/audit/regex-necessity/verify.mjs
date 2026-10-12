@@ -13,6 +13,7 @@ const ledger = readFileSync(join(AUDIT, 'filed2.jsonl'), 'utf8').split('\n')
   .filter((line) => line.trim() !== '')
   .map((line) => JSON.parse(line));
 
+const payloadBySiteId = new Map(payloads.map((payload) => [payload.siteId, payload, ]));
 const bySiteId = new Map();
 for (const entry of ledger) {
   const list = bySiteId.get(entry.siteId) ?? [];

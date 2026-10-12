@@ -243,37 +243,77 @@ function sequenceSketch(middle) {
   return steps.join('; then ');
 }
 
+const CANDIDATE_CAP = 64;
+
 /**
- When every top-level alternative in the atom list is a plain literal, return the
- candidate strings; otherwise null.
+ Candidate strings a sequence of atoms can match, or null when the sequence is not
+ built only from plain literals and groups whose bodies expand the same way.
+ Nested groups expand by cartesian product, capped so a pathological pattern cannot
+ blow up here.
  */
-function literalAlternation(atoms) {
-  if (atoms.some((atom) => atom.type === 'alternation') === false) {
-    // A single group holding the alternation, optionally wrapped in literals:
-    // `1 (?:test|passed)` becomes the candidates `1 test` and `1 passed`.
-    const groupIndex = atoms.findIndex((atom) => atom.type === 'group');
-    if (groupIndex === -1) return null;
-    const inner = literalAlternation(atoms[groupIndex].innerAtoms ?? []);
-    if (inner === null) return null;
-    const before = literalText(atoms.slice(0, groupIndex));
-    const after = literalText(atoms.slice(groupIndex + 1));
-    if (before === null || after === null) return null;
-    return inner.map((candidate) => `${before}${candidate}${after}`);
+function sequenceTexts(atoms) {
+  let combinations = [''];
+  for (const atom of atoms) {
+    let options = null;
+    if (atom.type === 'literal' && (atom.quantifier ?? '') === '') {
+      options = [atom.text, ];
+    } else if (atom.type === 'group') {
+      options = alternativeTexts(atom.innerAtoms ?? []);
+    }
+    if (options === null) return null;
+    const next = [];
+    for (const prefix of combinations) {
+      for (const option of options) next.push(prefix + option);
+    }
+    combinations = next;
+    if (combinations.length > CANDIDATE_CAP) return null;
   }
-  const parts = [];
+  return combinations;
+}
+
+/**
+ Candidate strings an atom list matches, splitting on top-level alternation and
+ expanding each branch as a sequence. Null when any branch is not literal-shaped.
+ */
+function alternativeTexts(atoms) {
+  const branches = [];
   let current = [];
   for (const atom of atoms) {
     if (atom.type === 'alternation') {
-      parts.push(current);
+      branches.push(current);
       current = [];
       continue;
     }
     current.push(atom);
   }
-  parts.push(current);
-  const texts = parts.map((part) => literalText(part));
-  if (texts.some((text) => text === null || text === '')) return null;
-  return texts;
+  branches.push(current);
+  const expanded = [];
+  for (const branch of branches) {
+    const texts = sequenceTexts(branch);
+    if (texts === null) return null;
+    expanded.push(...texts);
+    if (expanded.length > CANDIDATE_CAP) return null;
+  }
+  if (expanded.length === 1) return null;
+  if (expanded.some((text) => text === '')) return null;
+  return expanded;
+}
+
+/**
+ Candidate list for an atom list that is either a top-level alternation or a single
+ group holding one, optionally wrapped in literals: `1 (?:test|passed)` becomes the
+ candidates `1 test` and `1 passed`.
+ */
+function literalAlternation(atoms) {
+  if (atoms.some((atom) => atom.type === 'alternation')) return alternativeTexts(atoms);
+  const groupIndex = atoms.findIndex((atom) => atom.type === 'group');
+  if (groupIndex === -1) return null;
+  const inner = alternativeTexts(atoms[groupIndex].innerAtoms ?? []);
+  if (inner === null) return null;
+  const before = literalText(atoms.slice(0, groupIndex));
+  const after = literalText(atoms.slice(groupIndex + 1));
+  if (before === null || after === null) return null;
+  return inner.map((candidate) => `${before}${candidate}${after}`);
 }
 
 /**

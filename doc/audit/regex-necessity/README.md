@@ -46,6 +46,10 @@ It is excluded from the audit population:
 - `close-excluded.mjs` closes the issues filed for sites later excluded on
   provenance,
   with the evidence in the closing comment.
+- `reapply-all.mjs` deterministically re-applies every current payload to its issue,
+  which is the safe way to land a correction round:
+  it adds labels without removing,
+  and it is resume-safe through its own ledger.
 - `verify.mjs` reconciles the ledger against the tracker:
   duplicates,
   missing sites,

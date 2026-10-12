@@ -15,6 +15,7 @@ const ledger = existsSync(join(AUDIT, 'filed2.jsonl'))
   : [];
 
 const numberBySiteId = new Map(ledger.map((entry) => [entry.siteId, Number(entry.number), ]));
+const payloadBySiteId = new Map(payloads.map((payload) => [payload.siteId, payload, ]));
 /**
  Scope from a generated title. The scope itself can contain parentheses
  (`docs(handover)`), so the cut runs to the last `)` before the subject.
@@ -53,15 +54,22 @@ const stats = {
 };
 
 // Issue list comment, grouped by scope, each line linking the issue to its site.
-const listLines = ['# Filed site issues', '', `One issue per unnecessary regex site, grouped by package scope. ${ledger.length} filed of ${payloads.length} expected.`, ''];
+const closed = ledger.filter((entry) => payloadBySiteId.has(entry.siteId) === false);
+const listLines = [
+  '# Filed site issues',
+  '',
+  `One issue per unnecessary regex site, grouped by package scope: ${payloads.length} live issues.`,
+  '',
+  `A further ${closed.length} issues were filed in the first round and then closed on provenance (${closed.map((entry) => `#${entry.number} \`${entry.repoPath}:${entry.line}\``).join(', ')}): generated output whose template is filed separately, and user-provided reference material. The evidence is in each closing comment and in \`doc/audit/regex-necessity.md\`.`,
+  '',
+];
 for (const [scope, list] of [...groups.entries()].sort((left, right) => right.length - left.length)) {
   listLines.push(`## ${scope} (${list.length})`);
   listLines.push('');
   for (const payload of list.sort((left, right) => left.repoPath.localeCompare(right.repoPath) || left.line - right.line)) {
     const number = numberBySiteId.get(payload.siteId);
-    const suffix = payload.repoPath.slice(payload.repoPath.lastIndexOf('/') + 1);
     const marker = number === undefined ? '(not filed)' : `#${number}`;
-    listLines.push(`- ${marker} \`${payload.repoPath}:${payload.line}\` (${payload.shape}) ${suffix}`);
+    listLines.push(`- ${marker} \`${payload.repoPath}:${payload.line}\` (${payload.shape})`);
   }
   listLines.push('');
 }

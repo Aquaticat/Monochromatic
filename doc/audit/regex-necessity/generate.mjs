@@ -354,7 +354,10 @@ for (const finding of findings) {
     column: finding.column,
     offset: finding.offset,
     length: finding.length,
-    siteId: `${finding.repoPath}:${finding.offset}:${finding.length}`,
+    // Surfaces enumerated without a span (Kotlin, inline YAML) carry their own
+    // identity from supplement.mjs; offset and length are zero there, so the
+    // computed form would collide across every site in one file.
+    siteId: finding.siteId ?? `${finding.repoPath}:${finding.offset}:${finding.length}`,
     shape: finding.shape,
     exclusion: finding.exclusion,
     covered: finding.covered,
