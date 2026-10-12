@@ -274,10 +274,16 @@ the items after it are the record of 2026-10-05 and older.
     separate action in the user's real home.
   - Soft wrap is in progress on the branch `feat/ide-soft-wrap` (worktree `.claude/worktrees/ide-wrap`), not landed:
     slice 1 (IntelliJ break rules, wrapped shaping, multi-row geometry; library only) is committed and gated;
-    slice 2 (wrap width, row heights, worker shaping in chunks, painting, no horizontal scrolling, gutter with the
-    indicator) is with a Sonnet subagent; slice 3 is keys, pointer, and the affinity bit in `ReadingPosition`
-    (a field added with a mechanical edit of the existing struct literals); slice 4 is annotations, find, and
-    selection per visual fragment, plus the remaining tests and guards.
+    slice 2 (wrap width, per-line visual rows in `RowMap`, whole-file measurement on the tile worker, wrapped painting,
+    no horizontal scrolling, gutter numbers on first rows and the indicator on continuation rows) is committed at
+    `7bc40b8505`, tested at `21ac0ae8b2` (clippy, rustfmt, slint, release lint, 116 test result lines, test:cli,
+    144 of 144 native tests, bundle and bundle guards, and the sidebar, theme, find, annotation, and source guards,
+    all status 0; the new guards were seen failing).
+    Known gaps of slice 2: click affinity lives in `State.caret_affinity`, a tile holds every row of its lines so a
+    single line past the 64 MiB raster limit (about 75000 characters at scale 1) is refused, tab correction stops at
+    40 passes, and hint and message rows are not wrapped.
+    Slice 3 (keys, pointer, and the affinity bit in `ReadingPosition`) is with a Sonnet subagent;
+    slice 4 is annotations, find, and selection per visual fragment, plus the remaining tests and guards.
     The plan `doc/planning/slint-ide-soft-wrap.md` holds the decisions: the layout (option A on the worker), the
     indicator (IntelliJ's glyph chain and color, in the gutter), and the Parley findings.
   - The nested compositor now launches minimized (`package/cli/nested-wayland-session`, the user confirmed it works),
