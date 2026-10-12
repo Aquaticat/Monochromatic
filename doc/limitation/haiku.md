@@ -40,9 +40,15 @@ The documented working launch has no such flag.
 It also wrapped the headless emulator in `xvfb-run` and capped the container at 2 CPUs and 6 GiB
 while giving the guest 2 cores and 4 GiB,
 and it used `-no-snapshot`, which forces a cold boot every run.
-Whether these flags caused the ANRs is not yet established: a comparison run with the corrected flags was requested.
+The orchestrator asked for a comparison run with corrected flags,
+and the agent still had not completed the task when it was stopped on 2026-10-11 after hours of wall time,
+while it was still trying to make the Developer options navigation script wait long enough.
+The user's observation: GPT models never had a problem using the emulator,
+and the difference is that they always launched it headfully (with its window),
+whereas every launch in this task was headless.
 The failure recorded here is that the agent never compared its launch against `doc/troubleshooting/`
-before attributing three separate failures to one external cause.
+before attributing three separate failures to one external cause,
+and kept refining scripts around a headless setup that other sessions had avoided.
 
 #### Left the unexplained Build number taps unexplained
 
