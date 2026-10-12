@@ -73,6 +73,7 @@ import androidx.compose.material3.OutlinedIconButton
 import androidx.compose.material3.SegmentedButtonDefaults
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberSliderState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.mutableStateOf
@@ -895,8 +896,11 @@ private fun seekRow(positionSec: Double, durationSec: Double, onSeek: (Double) -
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             style = timeStyle,
         )
+        /** Slider state whose thumb is re-pinned to the playback fraction on every recomposition. */
+        val sliderState = rememberSliderState()
+        sliderState.value = progressFractionFor(positionSec, durationSec)
         Slider(
-            value = progressFractionFor(positionSec, durationSec),
+            state = sliderState,
             onValueChange = { fraction -> onSeek(fraction.toDouble() * durationSec) },
             modifier = Modifier
                 .weight(1f)

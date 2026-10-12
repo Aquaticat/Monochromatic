@@ -2,14 +2,16 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
     id("com.android.application")
-    id("org.jetbrains.kotlin.plugin.compose") version "2.2.10"
+    id("org.jetbrains.kotlin.plugin.compose")
 }
 
 android {
     namespace = "dev.monochromatic.musicplayer"
-    // compileSdk 37: the current androidx (core-ktx 1.19.0, the Compose BOM) is
-    // compiled against API 37 and AGP 9 rejects compiling against anything lower.
-    // targetSdk stays 36 (the device's API level, the behavior the app opts into).
+    // compileSdk 37: the current androidx (core-ktx 1.19.1, Compose 1.12.1 from the BOM, Material3 1.5.0-beta01)
+    // is compiled against API 37 and AGP rejects compiling against anything lower (checkDebugAarMetadata
+    // reports 15 dependencies needing 37 when this is 36). 37.0 is the newest stable platform installed.
+    // targetSdk stays 36 (the owner's Pixel 6 API level, the behavior the app opts into): API 37 adds
+    // background audio hardening that a music player must be checked against on a device first.
     compileSdk = 37
 
     defaultConfig {
@@ -63,16 +65,17 @@ android {
 
 dependencies {
 
-    val composeBom = platform("androidx.compose:compose-bom:2026.05.01")
+    val composeBom = platform("androidx.compose:compose-bom:2026.09.00")
     implementation(composeBom)
     implementation("androidx.compose.ui:ui")
     implementation("androidx.compose.ui:ui-tooling-preview")
-    // Explicit alpha is required because the Material standard ButtonGroup API first
-    // appears in 1.5.0-alpha27; the 2026.08 stable BOM still resolves Material3 1.4.0.
-    // Keep the rest of Compose on the BOM while this one component has no stable release.
-    implementation("androidx.compose.material3:material3:1.5.0-alpha27")
+    // Explicit pre-release is required because the Material standard ButtonGroup API first
+    // appears in the 1.5.0 line (absent from 1.4.0); the 2026.09.00 stable BOM still resolves
+    // Material3 1.4.0. Keep the rest of Compose on the BOM while this one component has no
+    // stable release.
+    implementation("androidx.compose.material3:material3:1.5.0-beta01")
     implementation("androidx.activity:activity-compose:1.13.0")
-    implementation("androidx.core:core-ktx:1.19.0")
+    implementation("androidx.core:core-ktx:1.19.1")
     debugImplementation("androidx.compose.ui:ui-tooling")
 
     // Host JVM unit tests for the pure-logic `core` package (ported from the
@@ -85,7 +88,7 @@ dependencies {
     // pinned >= 1.7.0 because the older runner crashes on Android 15/16
     // (InputManager.getInstance removed); Espresso is deliberately NOT pulled in, so
     // the Compose BOM's transitive Espresso 3.5.0 cannot crash here.
-    androidTestImplementation("androidx.test.ext:junit:1.2.1")
+    androidTestImplementation("androidx.test.ext:junit:1.3.0")
     androidTestImplementation("androidx.test:runner:1.7.0")
 
     // The session layer (MediaSessionService, MediaSession, MediaController) plus
@@ -93,15 +96,15 @@ dependencies {
     // notification/lockscreen. media3-session api-depends on media3-common, so
     // SimpleBasePlayer comes along transitively. This is the only media3 artifact the
     // app uses; the full-Rust engine never touches ExoPlayer.
-    implementation("androidx.media3:media3-session:1.10.1")
+    implementation("androidx.media3:media3-session:1.11.1")
 
     // WorkManager backs the charging+idle background peak sweep (PeakSweepWorker): it
     // pre-measures the library's true peaks so playback rarely hits an uncached track.
     // CoroutineWorker lives in work-runtime; the -ktx artifact has been empty since 2.7.
-    implementation("androidx.work:work-runtime:2.11.2")
+    implementation("androidx.work:work-runtime:2.12.0")
 
     // On-device WorkManager test harness: TestListenableWorkerBuilder runs the sweep
     // worker's real doWork against the installed library and cache file (see
     // PeakSweepWorkerTest), the same way the engine is verified on a device.
-    androidTestImplementation("androidx.work:work-testing:2.11.2")
+    androidTestImplementation("androidx.work:work-testing:2.12.0")
 }

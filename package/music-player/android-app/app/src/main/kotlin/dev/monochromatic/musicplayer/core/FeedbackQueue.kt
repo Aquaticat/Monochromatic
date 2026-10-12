@@ -9,8 +9,8 @@
 package dev.monochromatic.musicplayer.core
 
 // What:     `internal const val FEEDBACK_ERROR_DURATION_MS: Long = 4_000L` is the default visible time of an error.
-// Why:      The study used Compose's Short snackbar duration, which material3 1.5.0-alpha27 maps to 4000 ms
-//           before the platform accessibility adjustment.
+// Why:      The study used Compose's Short snackbar duration, which material3 1.5.0-beta01 maps to 4000 ms
+//           (unchanged since 1.5.0-alpha27) before the platform accessibility adjustment.
 //
 // In TS you'd write (pseudocode):
 // ```ts
