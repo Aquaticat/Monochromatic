@@ -367,6 +367,20 @@ pub fn private_checks<'a, F: RepositoryFacts>(
 }
 
 /// What:
+///  Whether the capture lists worktree changes that the commit stages: `-a` stages every tracked change and
+///  `--include` stages the named paths.
+/// Why:
+///   The capture record names those paths, so recovery copies exactly the worktree files the commit staged.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// stagedAll || include
+/// ```
+pub fn stages_worktree(staged_all: bool, include: bool) -> bool {
+    return staged_all || include;
+}
+
+/// What:
 ///  How many passes changed the state when the convergence settled; any other ending counts none.
 /// Why:
 ///   The fix summary names the passes of a settled convergence only.
@@ -549,7 +563,7 @@ pub fn run_commit_transaction<F: RepositoryFacts>(
         workspace.landing.directory.as_path(),
         &indexes,
         selection.mode,
-        selection.staged_all || invocation.region.include,
+        stages_worktree(selection.staged_all, invocation.region.include),
         base.as_str(),
         next_sequence_before_base,
         || {

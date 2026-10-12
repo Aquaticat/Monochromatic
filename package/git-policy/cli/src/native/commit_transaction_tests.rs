@@ -173,3 +173,12 @@ fn only_a_settled_convergence_counts_passes() {
     assert_eq!(settled_passes(&Convergence::FixCycle), 0);
     assert_eq!(settled_passes(&Convergence::FixPassLimit), 0);
 }
+
+/// Either `-a` or `--include` makes the capture list the staged worktree changes.
+#[test]
+fn a_capture_lists_worktree_changes_for_all_or_include() {
+    assert!(stages_worktree(true, false));
+    assert!(stages_worktree(false, true));
+    assert!(stages_worktree(true, true));
+    assert!(!stages_worktree(false, false));
+}
