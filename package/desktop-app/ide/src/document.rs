@@ -39,6 +39,28 @@ pub struct ReadingPosition {
 }
 
 /// What:
+///  The side of a soft-wrap offset that a reading position stands on:
+///  `Upstream` is the end of the upper visual row,
+///  `Downstream` the start of the lower one.
+/// Why:
+///  One offset is both the end of a row and the start of the next row,
+///  so a caret there needs a side to be drawn on.
+///  `Downstream` is the default because it matches a position with no wrap.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// type ReadingAffinity = 'upstream' | 'downstream';
+/// ```
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+pub enum ReadingAffinity {
+    /// The end of the upper visual row.
+    Upstream,
+    /// The start of the lower visual row.
+    #[default]
+    Downstream,
+}
+
+/// What:
 ///  A prepared replacement retains its base version and new owned text.
 /// Why:
 ///  A worker can compute this without borrowing mutable UI state.

@@ -19,7 +19,7 @@ use crate::row_map::{CODE_ROW, RowMap};
 /// ```ts
 /// export { ReadingRect, ShapedRow } from './shaped-row';
 /// ```
-pub use crate::shaped_row::{ReadingRect, ShapedRow};
+pub use crate::shaped_row::{ReadingRect, ShapedRow, VisualCaret};
 /// Shaped rows kept by line for one text revision and scale.
 use crate::shaped_row_cache::RowCache;
 /// Syntax classifications stay independent of pixels.
@@ -28,7 +28,7 @@ use crate::source_style::StyleSpan;
 use crate::source_typography::SourceTypography;
 /// Tabs end on pixel tab stops,
 ///  whatever script precedes them.
-use crate::tab_layout::layout_with_tabs;
+use crate::tab_layout::{layout_wrapped_with_tabs, layout_with_tabs};
 /// Source/display byte maps keep tabs and Unicode out of hit-test heuristics.
 use crate::text_projection::project_line;
 /// Height and text size of the virtual rows above annotated lines.
@@ -37,11 +37,14 @@ use crate::virtual_row::{ROW_HEIGHT, ROW_TEXT};
 use anyhow::Result;
 /// Font and paragraph layout are supplied by the same Parley stack Slint uses.
 use parley::{
-    Affinity, Cursor, FontContext, FontFamily, FontFeature, FontFeatures, FontStyle, FontWeight,
-    Layout, LayoutContext, LineHeight, StyleProperty,
+    Affinity, Alignment, AlignmentOptions, Cursor, FontContext, FontFamily, FontFeature,
+    FontFeatures, FontStyle, FontWeight, IndentOptions, Layout, LayoutContext, LineHeight,
+    OverflowWrap, StyleProperty,
 };
 /// Font bytes are shared immutably across the font database.
 use std::borrow::Cow;
+/// IntelliJ's break rules as a Parley override, and the continuation indent of a wrapped line.
+use crate::wrap::{INTELLIJ_LINE_BREAK, continuation_indent, has_wrap_width, is_blank};
 
 /// Reading geometry of a prepared frame:
 ///  hits,
@@ -80,6 +83,31 @@ pub const ROW_ROLE: u32 = 65;
 /// Family name of the bundled interface face,
 ///  as its name table spells it.
 const ROW_FAMILY: &str = "Inter Variable";
+
+/// What:
+///  The inputs that shape one source line:
+///  display text, scale, syntax roles, tab spacings, and an optional wrap width.
+/// Why:
+///  Plain and wrapped layouts share one builder,
+///  and the wrap width is the only difference between them.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// type LineRequest = { text: string; scale: number; roles: Role[]; spacings: Spacing[]; wrap?: number };
+/// ```
+#[derive(Clone, Copy)]
+pub(crate) struct LineRequest<'a> {
+    /// Display text, with each tab stood in by one space.
+    pub(crate) text: &'a str,
+    /// Physical pixels per logical pixel.
+    pub(crate) scale: f32,
+    /// Syntax role runs as display byte start, end, and brush.
+    pub(crate) roles: &'a [(usize, usize, u32)],
+    /// Extra advance per display byte in logical pixels.
+    pub(crate) spacings: &'a [(usize, f32)],
+    /// Wrap width in logical pixels, or nothing for an unbroken line.
+    pub(crate) wrap: Option<f32>,
+}
 
 /// Logical dimensions and scale of the source viewport.
 #[derive(Clone, Copy, PartialEq)]
@@ -214,10 +242,69 @@ impl TextShaper {
         roles: &[(usize, usize, u32)],
         spacings: &[(usize, f32)],
     ) -> Layout<u32> {
-        // Borrow the contexts only while constructing this owned layout.
+        let request = LineRequest {
+            text,
+            scale,
+            roles,
+            spacings,
+            wrap: None,
+        };
+        return self.build_line(request, 0.0);
+    }
+
+    /// What:
+    ///  Shape text broken at a logical wrap width with IntelliJ's break rules,
+    ///  and a hanging continuation indent.
+    /// Why:
+    ///  Parley breaks by its own rules unless the override says otherwise,
+    ///  and a continuation row starts after the indent,
+    ///  so the indent is set on the layout before it is broken.
+    ///  A width that is not positive gives the unbroken layout,
+    ///  because the caller keeps its last positive width instead (`wrap::has_wrap_width`).
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// wrappedLayout(text: string, scale: number, width: number): Layout;
+    /// ```
+    pub(crate) fn wrapped_line_layout(&mut self, request: LineRequest<'_>) -> Layout<u32> {
+        let width = request.wrap.unwrap_or(0.0);
+        if !has_wrap_width(width) {
+            let unwrapped = LineRequest {
+                wrap: None,
+                ..request
+            };
+            return self.build_line(unwrapped, 0.0);
+        }
+        let space = self.space_advance(request.scale);
+        let indent = continuation_indent(request.text, space);
+        let layout = self.build_line(request, indent);
+        // What: The first non-blank byte, or the text length when the line is all blanks.
+        // Why: IntelliJ indents continuation rows by the first non-blank character only when the first break comes after it.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // const firstText = text.search(/[^ \t]/); const firstBreakInBlanks = ...;
+        // ```
+        let first_text = request
+            .text
+            .find(|character| !is_blank(character))
+            .unwrap_or(request.text.len());
+        let first_row_in_blanks = layout
+            .lines()
+            .next()
+            .is_some_and(|line| line.text_range().end <= first_text);
+        if indent > space && layout.len() > 1 && first_row_in_blanks {
+            return self.build_line(request, space);
+        }
+        return layout;
+    }
+
+    /// Build and break one line with the shared font setup.
+    /// `indent` is the continuation indent in logical pixels and is used only when the request wraps.
+    fn build_line(&mut self, request: LineRequest<'_>, indent: f32) -> Layout<u32> {
         let mut builder = self
             .layouts
-            .ranged_builder(&mut self.fonts, text, scale, true);
+            .ranged_builder(&mut self.fonts, request.text, request.scale, true);
         builder.push_default(StyleProperty::FontFamily(FontFamily::Source(
             Cow::Borrowed("JetBrains Mono"),
         )));
@@ -237,15 +324,40 @@ impl TextShaper {
         builder.push_default(StyleProperty::FontFeatures(FontFeatures::List(
             Cow::Borrowed(&self.typography.features),
         )));
-        for (start, end, role) in roles {
+        if request.wrap.is_some() {
+            // What: `OverflowWrap::Anywhere` lets a token wider than the width break inside it.
+            // Why: IntelliJ breaks a token without an opportunity at the code point where the width is exceeded.
+            //
+            // In TS you'd write (pseudocode):
+            // ```ts
+            // style.overflowWrap = 'anywhere';
+            // ```
+            builder.push_default(StyleProperty::OverflowWrap(OverflowWrap::Anywhere));
+            builder.set_line_break_override(Some(INTELLIJ_LINE_BREAK));
+        }
+        for (start, end, role) in request.roles {
             builder.push(StyleProperty::Brush(*role), *start..*end);
         }
         // The stand-in space of a tab is one byte; spacing on it changes that one advance only.
-        for (byte, extra) in spacings {
+        for (byte, extra) in request.spacings {
             builder.push(StyleProperty::LetterSpacing(*extra), *byte..*byte + 1);
         }
-        let mut layout = builder.build(text);
-        layout.break_all_lines(None);
+        let mut layout = builder.build(request.text);
+        match request.wrap {
+            Some(width) => {
+                // The indent applies to every row but the first, and `align` then places each row at its offset.
+                layout.set_text_indent(
+                    indent * request.scale,
+                    IndentOptions {
+                        each_line: false,
+                        hanging: true,
+                    },
+                );
+                layout.break_all_lines(Some(width * request.scale));
+                layout.align(Alignment::Start, AlignmentOptions::default());
+            }
+            None => layout.break_all_lines(None),
+        }
         return layout;
     }
 
@@ -325,7 +437,8 @@ impl TextShaper {
     }
 
     /// Shape one source line with syntax roles on a given common baseline.
-    /// `place` pairs the line with the top of its code row in logical pixels.
+    /// `place` pairs the line with the top of its code row in logical pixels;
+    ///  `wrap` is the wrap width in logical pixels, or nothing for an unbroken line.
     fn shape_row(
         &mut self,
         document: &Document,
@@ -333,6 +446,7 @@ impl TextShaper {
         scale: f32,
         styles: &[StyleSpan],
         baseline: f32,
+        wrap: Option<f32>,
     ) -> ShapedRow {
         let (row, top) = place;
         let text = document.text();
@@ -352,7 +466,10 @@ impl TextShaper {
                 ));
             }
         }
-        let layout = layout_with_tabs(self, &projection, scale, &roles);
+        let layout = match wrap {
+            Some(width) => layout_wrapped_with_tabs(self, &projection, scale, width, &roles),
+            None => layout_with_tabs(self, &projection, scale, &roles),
+        };
         let natural = layout
             .lines()
             .next()
@@ -380,7 +497,30 @@ impl TextShaper {
     pub fn row(&mut self, document: &Document, row: usize, scale: f32) -> ShapedRow {
         let last = document.text().len_lines().saturating_sub(1);
         let baseline = self.baseline(scale);
-        return self.shape_row(document, (row.min(last), 0.0), scale, &[], baseline);
+        return self.shape_row(document, (row.min(last), 0.0), scale, &[], baseline, None);
+    }
+
+    /// What:
+    ///  Shape one arbitrary source line broken at a wrap width,
+    ///  as the source view would show it when wrapping is on.
+    /// Why:
+    ///  A line with several visual rows needs its row geometry, and this is the only path that makes one.
+    ///  A width that is not positive shapes the unbroken line.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// wrappedRow(document: Document, row: number, scale: number, width: number): ShapedRow;
+    /// ```
+    pub fn wrapped_row(
+        &mut self,
+        document: &Document,
+        row: usize,
+        scale: f32,
+        width: f32,
+    ) -> ShapedRow {
+        let last = document.text().len_lines().saturating_sub(1);
+        let baseline = self.baseline(scale);
+        return self.shape_row(document, (row.min(last), 0.0), scale, &[], baseline, Some(width));
     }
 
     /// Prepare a visible viewport of a text without virtual rows:
@@ -499,7 +639,7 @@ impl TextShaper {
                 Some(shaped) => shaped,
                 None => {
                     let fresh =
-                        self.shape_row(document, (row, 0.0), viewport.scale, styles, baseline);
+                        self.shape_row(document, (row, 0.0), viewport.scale, styles, baseline, None);
                     self.shaped_rows += 1;
                     if cached {
                         self.rows.insert(fresh.clone());

@@ -24,6 +24,9 @@ pub mod text_projection;
 /// Pixel tab stops at multiples of two space advances,
 ///  independent of the preceding script.
 pub mod tab_stop;
+/// Soft-wrap break rules from IntelliJ, as Parley line-break overrides,
+///  and the continuation indent of a wrapped line.
+pub mod wrap;
 
 /// Two-pass shaping that widens each tab's stand-in space to its stop.
 mod tab_layout;

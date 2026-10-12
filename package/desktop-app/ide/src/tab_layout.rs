@@ -10,7 +10,7 @@
 
 /// The shaper owns fonts and scratch space;
 ///  this module only decides tab corrections.
-use crate::shaped_text::TextShaper;
+use crate::shaped_text::{LineRequest, TextShaper};
 /// Pixel tab-stop arithmetic,
 ///  independent of fonts.
 use crate::tab_stop::tab_spacings;
@@ -106,4 +106,130 @@ pub(crate) fn layout_with_tabs(
         spacings.push((*byte, extra / scale));
     }
     return shaper.line_layout(&projection.text, scale, roles, &spacings);
+}
+
+/// Passes of the wrapped tab correction; each pass re-measures the layout the previous pass produced.
+const TAB_PASSES: usize = 4;
+
+/// Two corrections closer than this in logical pixels are the same correction.
+const SPACING_TOLERANCE: f32 = 0.001;
+
+/// Index of the visual row that holds display byte `byte`, a byte on a row boundary being on the lower row.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function rowOf(layout: Layout, byte: number): number;
+/// ```
+fn row_of(layout: &Layout<u32>, byte: usize) -> usize {
+    let mut row = 0;
+    for (index, line) in layout.lines().enumerate() {
+        if line.text_range().start <= byte {
+            row = index;
+        }
+    }
+    return row;
+}
+
+/// Extra advance for each tab of a wrapped layout, in logical pixels, so every tab ends on a stop.
+///
+/// Each tab's position is taken from `layout` with the corrections in `applied` removed from its row,
+///  so the answer does not depend on which corrections were applied.
+/// Tab stops restart on every visual row, because a row starts at its own offset (the continuation indent).
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function wrappedSpacings(layout: Layout, tabs: number[], applied: Spacing[], space: number): Spacing[];
+/// ```
+fn wrapped_spacings(
+    layout: &Layout<u32>,
+    projection: &Projection,
+    applied: &[(usize, f32)],
+    scale: f32,
+    space: f32,
+) -> Vec<(usize, f32)> {
+    let mut naturals = Vec::new();
+    let mut rows = Vec::new();
+    // Physical correction already applied to the tabs of the current row before this one.
+    let mut applied_on_row = 0.0;
+    for (index, byte) in projection.tabs.iter().enumerate() {
+        let row = row_of(layout, *byte);
+        if rows.last() != Some(&row) {
+            applied_on_row = 0.0;
+        }
+        naturals.push(x_before(layout, *byte) - applied_on_row);
+        rows.push(row);
+        let extra = applied.get(index).map_or(0.0, |(_, extra)| *extra);
+        applied_on_row += extra * scale;
+    }
+    let mut spacings = Vec::new();
+    let mut start = 0;
+    while start < naturals.len() {
+        let mut end = start + 1;
+        while end < naturals.len() && rows[end] == rows[start] {
+            end += 1;
+        }
+        let extras = tab_spacings(&naturals[start..end], space);
+        for (offset, extra) in extras.iter().enumerate() {
+            spacings.push((projection.tabs[start + offset], *extra / scale));
+        }
+        start = end;
+    }
+    return spacings;
+}
+
+/// Whether two correction lists name the same tabs with the same extra advance, within `SPACING_TOLERANCE`.
+fn same_spacings(left: &[(usize, f32)], right: &[(usize, f32)]) -> bool {
+    return left.len() == right.len()
+        && left
+            .iter()
+            .zip(right)
+            .all(|(first, second)| first.0 == second.0 && (first.1 - second.1).abs() <= SPACING_TOLERANCE);
+}
+
+/// Shape `projection` broken at `width` with each tab widened to its stop on its own visual row.
+///
+/// The first layout has no corrections; each later pass removes the corrections of the previous pass from every row,
+///  recomputes the stops, and stops when the corrections no longer change or after `TAB_PASSES` passes.
+///  A correction can move a break, so the passes repeat until the rows agree.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function wrappedLayoutWithTabs(shaper: TextShaper, projection: Projection, scale: number, width: number): Layout;
+/// ```
+pub(crate) fn layout_wrapped_with_tabs(
+    shaper: &mut TextShaper,
+    projection: &Projection,
+    scale: f32,
+    width: f32,
+    roles: &[(usize, usize, u32)],
+) -> Layout<u32> {
+    let mut spacings: Vec<(usize, f32)> = Vec::new();
+    let request = LineRequest {
+        text: &projection.text,
+        scale,
+        roles,
+        spacings: &spacings,
+        wrap: Some(width),
+    };
+    let mut layout = shaper.wrapped_line_layout(request);
+    if projection.tabs.is_empty() {
+        return layout;
+    }
+    let space = shaper.space_advance(scale);
+    for _ in 0..TAB_PASSES {
+        let next = wrapped_spacings(&layout, projection, &spacings, scale, space);
+        if same_spacings(&next, &spacings) {
+            break;
+        }
+        spacings = next;
+        let request = LineRequest {
+            text: &projection.text,
+            scale,
+            roles,
+            spacings: &spacings,
+            wrap: Some(width),
+        };
+        layout = shaper.wrapped_line_layout(request);
+    }
+    return layout;
 }
