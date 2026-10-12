@@ -32,6 +32,7 @@ import {
   type ChatJsonOutcome,
   type ChatJsonRequest,
   type LaneContestOutcome,
+  messageText,
   type BenchSeating,
   type ProjectedLanes,
   type RosterModelId,
@@ -51,6 +52,10 @@ import { ARCHIVE_NAP, catRow, } from './two-lane-comparison-row.test-fixture.ts'
 import { HANG_STOP_MS, } from './hang-stop.test-fixture.ts';
 import { rejectionOf, } from './rejecting-call.test-fixture.ts';
 import { SCRIPTED_STAGE_SETTINGS, } from './stage-settings.test-fixture.ts';
+import {
+  TENSE_EXPLANATION,
+  tenseBlocksOf,
+} from './tense-sheet.test-fixture.ts';
 import {
   BENCH_UNREACHABLE,
   stopLandingHook,
@@ -450,6 +455,11 @@ type CatRig = {
   readonly persisted: readonly string[];
 
   /**
+   What every judge was sent, messages joined as the judge reads them.
+   */
+  readonly sheets: readonly string[];
+
+  /**
    Records the driver produced.
    */
   readonly slices: readonly ArtifactContestSlice[];
@@ -478,6 +488,11 @@ type CatRig = {
 
  @param abortOnCall - one-based admitted call that aborts caller signal
 
+ @param lifeEnded - whether the entry records a death, which shows the judges
+ the tense candidates of each text on offer
+
+ @param subjectNames - names the translation declares for its subject
+
  @returns What the driver called, persisted and recorded
 
  @example
@@ -497,6 +512,8 @@ async function drive(
     overlap = 1,
     activity,
     abortOnCall,
+    lifeEnded,
+    subjectNames,
   }: {
     readonly pairs: readonly (readonly [
       string,
@@ -511,6 +528,8 @@ async function drive(
     readonly overlap?: number;
     readonly activity?: ContestConcurrency;
     readonly abortOnCall?: number;
+    readonly lifeEnded?: boolean;
+    readonly subjectNames?: readonly string[];
   },
 ): Promise<CatRig> {
   /**
@@ -522,6 +541,11 @@ async function drive(
    Keys the driver asked to persist.
    */
   const persisted: string[] = [];
+
+  /**
+   What every judge was sent.
+   */
+  const sheets: string[] = [];
 
   /**
    Cache recording what it was asked to keep.
@@ -593,6 +617,11 @@ async function drive(
     chatText: inner.chatText,
     chatJson: async (request) => {
       admitted.count += 1;
+      sheets.push(request.messages
+        .map(function contentOf(message,): string {
+          return messageText({ message, },);
+        },)
+        .join('\n',),);
       if (admitted.count === abortOnCall)
         controller.abort(CONTEST_ABORT,);
       if (activity !== undefined) {
@@ -642,6 +671,10 @@ async function drive(
     modelIds: ROSTER,
     frontMatterSlices,
     lineStructuredSlices,
+    sheetFacts: {
+      ...((lifeEnded === undefined) ? {} : { lifeEnded, }),
+      ...((subjectNames === undefined) ? {} : { subjectNames, }),
+    },
     cache,
     signal: (abortOnCall === undefined)
       ? AbortSignal.timeout(HANG_STOP_MS,)
@@ -658,6 +691,7 @@ async function drive(
     calls,
     admitted: admitted.count,
     persisted,
+    sheets,
     slices,
   };
 }
@@ -818,6 +852,55 @@ await describe({
           },
         },),
         it({
+          name: 'SHOWS EVERY JUDGE the tense candidates of the texts on offer where the entry records a death and names its subject, and none where it records none',
+          fn: async () => {
+            /**
+             One contested slice whose repair wording follows the declared name in the present.
+             */
+            const pairs = [
+              [
+                'Mittens naps in the bookshop attic.',
+                TRANSLATE_NAP,
+              ],
+            ] as const;
+            /**
+             Blocks each judge of an entry that records a death was sent.
+             */
+            const recorded = await drive({
+              pairs,
+              answering: true,
+              lifeEnded: true,
+              subjectNames: ['Mittens',],
+            },);
+            expect(recorded.sheets.map(function blocksOfSheet(sheet,): readonly string[] {
+              return tenseBlocksOf({ content: sheet, },);
+            },),).toEqual(ROSTER.map(function sameBlockFor(): readonly string[] {
+              return [
+                [
+                  '===== TENSE CANDIDATES =====',
+                  TENSE_EXPLANATION,
+                  'CANDIDATE "repair":',
+                  '- "Mittens naps in the bookshop attic." (matched "Mittens naps", rule s-ending-verb)',
+                  '=====',
+                ].join('\n',),
+              ];
+            },),);
+            /**
+             Blocks each judge of an entry that records none was sent.
+             */
+            const unrecorded = await drive({
+              pairs,
+              answering: true,
+              subjectNames: ['Mittens',],
+            },);
+            expect(unrecorded.sheets.map(function blocksOfSheet(sheet,): readonly string[] {
+              return tenseBlocksOf({ content: sheet, },);
+            },),).toEqual(ROSTER.map(function noBlockFor(): readonly string[] {
+              return [];
+            },),);
+          },
+        },),
+        it({
           name: 'ASKS ONLY the slices that differ, leaving the agreed ones out of the record entirely',
           fn: async () => {
             /**
@@ -884,6 +967,32 @@ await describe({
                 usable: 0,
               },
             ],);
+          },
+        },),
+        it({
+          name: 'SHOWS NO TENSE BLOCK AND RECORDS NO CANDIDATES AT AN ARCHIVE-ABSENT INSERTION of an entry that records a death, '
+            + 'since a sole-lane slice sends no sheet to any judge',
+          fn: async () => {
+            /**
+             One insertion worded in the present after a pronoun, which a sheet would list as a candidate.
+             */
+            const rig = await drive({
+              pairs: [
+                [
+                  '',
+                  'She naps in the attic of the bookshop.',
+                ],
+              ],
+              answering: true,
+              projected: insertionProjection({ translateText: 'She naps in the attic of the bookshop.', },),
+              lifeEnded: true,
+            },);
+            expect(rig.calls,).toEqual([],);
+            expect(rig.sheets,).toEqual([],);
+            expect(rig.persisted,).toEqual([],);
+            expect(rig.slices.map(function hasField(slice,): boolean {
+              return 'tenseCandidates' in slice;
+            },),).toEqual([false,],);
           },
         },),
         it({

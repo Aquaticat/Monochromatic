@@ -82,7 +82,7 @@ const FRESH_LINE = 'The cat has been given a line.';
  Makes a throwaway corpus clone carrying the fixture entry at one commit.
 
  @param pages - original and archive English the entry carries, the fixture
- pages unless a case needs others
+ pages unless a case needs others, and the entry's `info.yml` where it has one
 
  @returns Clone directory and commit, removed on dispose
 
@@ -95,9 +95,11 @@ async function throwawayCorpus(
   {
     sourcePage = SOURCE_PAGE,
     targetPage = TARGET_PAGE,
+    infoYml,
   }: {
     readonly sourcePage?: string;
     readonly targetPage?: string;
+    readonly infoYml?: string;
   } = {},
 ): Promise<
   AsyncDisposable & {
@@ -152,12 +154,29 @@ async function throwawayCorpus(
         targetPage,
         'utf8',
       );
+      if (infoYml !== undefined) {
+        await writeFile(
+          join(
+            dir,
+            'info.yml',
+          ),
+          infoYml,
+          'utf8',
+        );
+      }
+      /**
+       Paths the commit adds, the entry's pages and its info.yml where a case gives one.
+       */
+      const paths = [
+        `people/${ENTRY_ID}/page.md`,
+        `people/${ENTRY_ID}/page.en.md`,
+        ...((infoYml === undefined) ? [] : [`people/${ENTRY_ID}/info.yml`,]),
+      ];
       await fixtureGit({
         cloneDir,
         args: [
           'add',
-          `people/${ENTRY_ID}/page.md`,
-          `people/${ENTRY_ID}/page.en.md`,
+          ...paths,
         ],
       },);
       await fixtureGit({
@@ -172,8 +191,7 @@ async function throwawayCorpus(
           'add whiskers',
           '--no-gpg-sign',
           '--',
-          `people/${ENTRY_ID}/page.md`,
-          `people/${ENTRY_ID}/page.en.md`,
+          ...paths,
         ],
       },);
 
@@ -684,6 +702,42 @@ await describe({
               preparationIdentity({ prepared: paired, },),
             );
             expect(recipeLabel({ recipe: carve.recipe, },),).toBe('complete recipe',);
+          },
+        },),
+        it({
+          name: 'CARVES WITH THE DEATH THE ENTRY RECORDS at the artifact\'s own commit, so the identity block and lifeEnded '
+            + 'are the run\'s',
+          fn: async () => {
+            await using withInfo = await throwawayCorpus({ infoYml: 'info:\n  died: 2025-02-26\n', },);
+            await using runs = await scratchDir({ prefix: 'whiskers-settled-runs-', },);
+            /**
+             How the run carved the pair, knowing the death.
+             */
+            const carved = prepareDocumentPair({
+              sourceText: SOURCE_PAGE,
+              targetText: TARGET_PAGE,
+              sourceEntryInfo: { info: { died: '2025-02-26', }, },
+            },);
+            await writeArtifact({
+              runsDir: runs.path,
+              prepared: carved,
+              corpusSha: withInfo.commitSha,
+              strip: [],
+            },);
+            /**
+             Carve of the entry that records a death.
+             */
+            const recorded = await carveSettled({
+              entryId: ENTRY_ID,
+              runsDir: runs.path,
+              cloneDir: withInfo.cloneDir,
+              readFile: readCorpusFile,
+            },);
+            if (recorded.kind !== 'settled')
+              throw new Error(`expected a settled carve, got ${recorded.kind}`,);
+            expect(recorded.prepared.lifeEnded,).toBe(true,);
+            expect(recorded.prepared.identityContext,).toBe(carved.identityContext,);
+            expect(carved.identityContext?.includes('"2025-02-26"',),).toBe(true,);
           },
         },),
         it({

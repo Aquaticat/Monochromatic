@@ -117,6 +117,22 @@ const FLOORED_SLICE = {
 };
 
 /**
+ Tense candidates a consolidation slice records for the wording it ships.
+ */
+const TENSE_CANDIDATES = [
+  {
+    label: 'CANDIDATE "consolidated"',
+    found: [
+      {
+        sentence: 'She naps in the window.',
+        matched: 'She naps',
+        rule: 's-ending-verb',
+      },
+    ],
+  },
+];
+
+/**
  Contest that settled exactly these slices, in this order, each on the
  verdict that ships nothing so the fixture carries no lane text.
 
@@ -163,6 +179,8 @@ const CONTEST_OF_TWO = contestOf({
  @param laneSelection - contest recorded beside it, the two-slice one unless
  a case says otherwise
 
+ @param tenseRecorded - whether the generation under test records tense candidates
+
  @returns What was parsed, or the refusal text
 
  @example
@@ -174,9 +192,11 @@ function readingOf(
   {
     value,
     laneSelection = CONTEST_OF_TWO,
+    tenseRecorded = false,
   }: {
     readonly value: unknown;
     readonly laneSelection?: ArtifactLaneSelection;
+    readonly tenseRecorded?: boolean;
   },
 ): {
   readonly kind: string;
@@ -189,6 +209,7 @@ function readingOf(
         laneSelection,
         path: AT,
         keys: SLICE_SPELLED_KEYS,
+        ...(tenseRecorded ? { tenseRecorded, } : {}),
       },).kind,
       reason: '',
     };
@@ -504,6 +525,105 @@ await describe({
         expect(read.reason,).toBe(
           `${REFUSED_AT}.slices[0].gate.ballots[0].dropped[0]: expected one of consolidated, standing, neither.`,
         );
+      },
+    },),
+
+    it({
+      name: 'READS THE TENSE CANDIDATES A SLICE RECORDS for the wording it ships, in a generation that records them, '
+        + 'a consolidation and an incumbent that stood in alike',
+      fn: async () => {
+        /**
+         The settled stage as parsed, with the finding on both slices that ship wording.
+         */
+        const parsed = parseConsolidation({
+          value: {
+            kind: 'settled',
+            slices: [
+              {
+                ...SHIPPED_SLICE,
+                tenseCandidates: TENSE_CANDIDATES,
+              },
+              {
+                ...INCUMBENT_SLICE,
+                sliceIndex: 1,
+                tenseCandidates: TENSE_CANDIDATES,
+              },
+            ],
+          },
+          laneSelection: CONTEST_OF_TWO,
+          path: AT,
+          keys: SLICE_SPELLED_KEYS,
+          tenseRecorded: true,
+        },);
+        if (parsed.kind !== 'settled')
+          throw new Error('the settled stage was read as another kind',);
+        expect(parsed.slices.map(function findingOf(slice,) {
+          return slice.tenseCandidates;
+        },),).toEqual([
+          TENSE_CANDIDATES,
+          TENSE_CANDIDATES,
+        ],);
+      },
+    },),
+
+    it({
+      name: 'REFUSES THE TENSE CANDIDATES in a generation that does not record them, naming the keys that generation allows',
+      fn: async () => {
+        const read = readingOf({
+          value: {
+            kind: 'settled',
+            slices: [
+              {
+                ...SHIPPED_SLICE,
+                tenseCandidates: TENSE_CANDIDATES,
+              },
+            ],
+          },
+          laneSelection: contestOf({ sliceIndexes: [0,], },),
+        },);
+
+        expect(read.reason,).toBe(
+          `${REFUSED_AT}.slices[0].tenseCandidates: expected no key here beyond sliceIndex, terminal, shipped, `
+            + 'rewrapped, demoted, verdicts, gate.',
+        );
+      },
+    },),
+
+    it({
+      name: 'REFUSES THE TENSE CANDIDATES OF A SLICE THAT SHIPS NO WORDING OF ITS OWN, the archive kept or nothing changed, '
+        + 'since the contest record holds the candidates of the lanes and the archive',
+      fn: async () => {
+        const unchanged = readingOf({
+          value: {
+            kind: 'settled',
+            slices: [
+              {
+                ...FLOORED_SLICE,
+                tenseCandidates: TENSE_CANDIDATES,
+              },
+            ],
+          },
+          laneSelection: contestOf({ sliceIndexes: [1,], },),
+          tenseRecorded: true,
+        },);
+        expect(unchanged.reason,).toBe(
+          `${REFUSED_AT}.slices[0].tenseCandidates: expected no tense candidates, since a slice that ships no wording of its own has no shipped text to read them from.`,
+        );
+        const archive = readingOf({
+          value: {
+            kind: 'settled',
+            slices: [
+              {
+                ...FLOORED_SLICE,
+                shipped: { kind: 'archive', },
+                tenseCandidates: TENSE_CANDIDATES,
+              },
+            ],
+          },
+          laneSelection: contestOf({ sliceIndexes: [1,], },),
+          tenseRecorded: true,
+        },);
+        expect(archive.reason,).toBe(unchanged.reason,);
       },
     },),
 

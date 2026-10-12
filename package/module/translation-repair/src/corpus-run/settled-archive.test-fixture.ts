@@ -155,6 +155,8 @@ async function fixtureGit(
 
  @param targetPage - archive translation content
 
+ @param infoYml - content of the entry's `info.yml`, none written when absent
+
  @returns Commit the write landed in
 
  @example
@@ -168,13 +170,23 @@ export async function commitEntry(
     entryId,
     sourcePage,
     targetPage,
+    infoYml,
   }: {
     readonly cloneDir: string;
     readonly entryId: string;
     readonly sourcePage: string;
     readonly targetPage: string;
+    readonly infoYml?: string;
   },
 ): Promise<string> {
+  /**
+   Paths this commit adds, the entry's pages and its `info.yml` where one is given.
+   */
+  const paths = [
+    `people/${entryId}/page.md`,
+    `people/${entryId}/page.en.md`,
+    ...((infoYml === undefined) ? [] : [`people/${entryId}/info.yml`,]),
+  ];
   /**
    Entry directory inside the fixture repository.
    */
@@ -203,6 +215,16 @@ export async function commitEntry(
     targetPage,
     'utf8',
   );
+  if (infoYml !== undefined) {
+    await writeFile(
+      join(
+        dir,
+        'info.yml',
+      ),
+      infoYml,
+      'utf8',
+    );
+  }
   // EXPLICIT PATHSPECS rather than `--all`: the repository's own git policy
   // rejects bulk staging, and a fixture that bypassed it would be teaching the
   // habit the guard exists to stop.
@@ -210,8 +232,7 @@ export async function commitEntry(
     cloneDir,
     args: [
       'add',
-      `people/${entryId}/page.md`,
-      `people/${entryId}/page.en.md`,
+      ...paths,
     ],
   },);
   await fixtureGit({
@@ -226,8 +247,7 @@ export async function commitEntry(
       `add ${entryId}`,
       '--no-gpg-sign',
       '--',
-      `people/${entryId}/page.md`,
-      `people/${entryId}/page.en.md`,
+      ...paths,
     ],
   },);
   return (await fixtureGit({
@@ -245,6 +265,8 @@ export async function commitEntry(
 
  @param path - directory made for the repository
 
+ @param infoYml - content of the entry's `info.yml`, none written when absent
+
  @returns The clone directory and the commit the pair landed in
 
  @example
@@ -253,7 +275,13 @@ export async function commitEntry(
  ```
  */
 async function seededCorpus(
-  { path: cloneDir, }: { readonly path: string; },
+  {
+    path: cloneDir,
+    infoYml,
+  }: {
+    readonly path: string;
+    readonly infoYml?: string;
+  },
 ): Promise<{
   readonly cloneDir: string;
   readonly commitSha: string;
@@ -278,6 +306,7 @@ async function seededCorpus(
     entryId: ENTRY_ID,
     sourcePage: SOURCE_PAGE,
     targetPage: TARGET_PAGE,
+    ...((infoYml === undefined) ? {} : { infoYml, }),
   },);
 
   return {
@@ -289,6 +318,8 @@ async function seededCorpus(
 /**
  Throwaway corpus holding the cat pair, removed on dispose.
 
+ @param infoYml - content of the entry's `info.yml`, none written when absent
+
  @returns Clone directory, the commit holding the pair, and a disposer
 
  @example
@@ -296,7 +327,9 @@ async function seededCorpus(
  await using corpus = await makeCorpus();
  ```
  */
-export async function makeCorpus(): Promise<
+export async function makeCorpus(
+  { infoYml, }: { readonly infoYml?: string; } = {},
+): Promise<
   AsyncDisposable & {
     readonly cloneDir: string;
     readonly commitSha: string;
@@ -305,7 +338,12 @@ export async function makeCorpus(): Promise<
   // Fresh temp directory holding the throwaway repository.
   return await scratchDirWith({
     prefix: 'settled-audit-corpus-',
-    setup: seededCorpus,
+    setup: async function seeded({ path, },) {
+      return await seededCorpus({
+        path,
+        ...((infoYml === undefined) ? {} : { infoYml, }),
+      },);
+    },
   },);
 }
 

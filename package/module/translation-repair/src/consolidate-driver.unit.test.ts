@@ -53,6 +53,7 @@ import {
   type ConsolidationPolishConfig,
   type ConsolidationSettlement,
   type ConsolidationTerminal,
+  type PreparedSheetFacts,
   type ProjectedLanes,
   type RosterModelId,
   type SliceCache,
@@ -723,6 +724,7 @@ async function driveWith(
     signal = AbortSignal.timeout(HANG_STOP_MS,),
     archiveDisputes,
     referenceContext,
+    sheetFacts,
   }: {
     readonly contests: readonly ArtifactContestSlice[];
     readonly archiveDisputes?: ReadonlyMap<number, ArchiveDispute>;
@@ -731,6 +733,11 @@ async function driveWith(
      each round was shown it.
      */
     readonly referenceContext?: string;
+    /**
+     The page-level facts the document carries, for the cases reading what each
+     record keeps of them; wins over `referenceContext` when both are given.
+     */
+    readonly sheetFacts?: PreparedSheetFacts;
     readonly resumed?: ReadonlyMap<string, ConsolidationSettlement>;
     readonly projected?: ProjectedLanes;
     readonly client?: SyntheticClient;
@@ -817,7 +824,16 @@ async function driveWith(
     pictureContextBySlice,
     neighbourContextBySlice,
     ...((archiveDisputes === undefined) ? {} : { archiveDisputes, }),
-    ...((referenceContext === undefined) ? {} : { referenceContext, }),
+    ...((sheetFacts !== undefined)
+      ? { sheetFacts, }
+      : ((referenceContext === undefined)
+        ? {}
+        : {
+          sheetFacts: {
+            lifeEnded: false,
+            referenceContext,
+          },
+        })),
     l: (messages === undefined) ? l : capturingLogger({ messages, },),
     stageSettings: SCRIPTED_STAGE_SETTINGS,
   },);
@@ -1694,6 +1710,77 @@ await describe({
             expect(slices[0]?.terminal,).toBe('incumbent-only',);
             expect(slices[0]?.gate.kind,).toBe('not-asked',);
             expect(written.length,).toBe(0,);
+          },
+        },),
+
+        it({
+          name: 'RECORDS THE TENSE CANDIDATES OF THE WORDING A SLICE SHIPPED when the entry records a death, '
+            + 'and records none where it records none or where the slice ships no wording of its own',
+          fn: async () => {
+            /**
+             Both slices resumed as shipping the present-tense consolidation.
+             */
+            const shipping = {
+              get: function answerAnyKey() {
+                return {
+                  ...settlementReaching({ terminal: 'consolidated', },),
+                  text: 'She naps in the window.',
+                };
+              },
+            };
+            /**
+             What the driver recorded for an entry that records a death.
+             */
+            const recorded = await driveWith({
+              contests: [
+                contestSettling({ sliceIndex: 0, lane: 'repair', },),
+                contestSettling({ sliceIndex: 1, lane: 'translate', },),
+              ],
+              resumed: shipping as unknown as ReadonlyMap<string, ConsolidationSettlement>,
+              sheetFacts: {
+                lifeEnded: true,
+                subjectNames: ['The cat',],
+              },
+            },);
+            expect(recorded.slices.map(function findingOf(slice,) {
+              return slice.tenseCandidates;
+            },),).toEqual([
+              [
+                {
+                  label: 'CANDIDATE "consolidated"',
+                  found: [
+                    {
+                      sentence: 'She naps in the window.',
+                      matched: 'She naps',
+                      rule: 's-ending-verb',
+                    },
+                  ],
+                },
+              ],
+              [
+                {
+                  label: 'CANDIDATE "consolidated"',
+                  found: [
+                    {
+                      sentence: 'She naps in the window.',
+                      matched: 'She naps',
+                      rule: 's-ending-verb',
+                    },
+                  ],
+                },
+              ],
+            ],);
+            /**
+             What the driver recorded for an entry that records none.
+             */
+            const unrecorded = await driveWith({
+              contests: [contestSettling({ sliceIndex: 0, lane: 'repair', },),],
+              resumed: shipping as unknown as ReadonlyMap<string, ConsolidationSettlement>,
+              sheetFacts: { lifeEnded: false, },
+            },);
+            expect(unrecorded.slices.map(function hasField(slice,): boolean {
+              return 'tenseCandidates' in slice;
+            },),).toEqual([false,],);
           },
         },),
 

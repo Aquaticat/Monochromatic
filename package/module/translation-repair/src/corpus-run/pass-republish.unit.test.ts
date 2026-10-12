@@ -187,6 +187,59 @@ await describe({
           'utf8',
         ),).toBe(TARGET_DOC,);
         expect(messages,).toEqual([
+          // THE ENTRY'S info.yml IS READ WITH THE PAIR, and this clone's entry has none.
+          `ENTRY INFO entry=CatEntry1: no info.yml at the pin (corpus read failed for ${clone.commitSha}:people/CatEntry1/info.yml `
+          + '(missing-object); the commit has no such path: check the path, or pin a commit that has it.), '
+          + 'so no death is recorded for it',
+          'publish: wrote 2 slices into a page of 81 characters',
+          'REPUBLISHED entry=CatEntry1 why=missing: page rewritten from its artifact',
+          'republish: 1 settled page judged, 1 rewritten, 0 left',
+        ],);
+      },
+    },),
+    it({
+      name: 'READS THE ENTRY\'S info.yml WITH THE PAIR and says nothing of it when the clone holds one, '
+        + 'and writes the same page',
+      fn: async () => {
+        await using clone = await makeCorpusPassClone({ entries: [{
+          id: ENTRY,
+          sourceText: SOURCE_DOC,
+          targetText: TARGET_DOC,
+          infoYml: 'info:\n  died: 2025-02-26\n',
+        },], },);
+        await using scratch = await scratchDir({ prefix: 'pass-republish-', },);
+        const layout = await prepareRunsLayout({ runsDir: scratch.path, },);
+        await writeFile(
+          join(
+            layout.artifactsDir,
+            `${ENTRY}.json`,
+          ),
+          artifactAt({ corpusSha: clone.commitSha, },),
+        );
+        /**
+         Lines the step logged.
+         */
+        const messages: string[] = [];
+
+        await republishRunPages({
+          runsDir: scratch.path,
+          artifactsDir: layout.artifactsDir,
+          declinedDir: layout.declinedDir,
+          publishDir: layout.publishDir,
+          cloneDir: clone.cloneDir,
+          l: capturingLogger({ messages, },),
+        },);
+
+        expect(await readFile(
+          join(
+            layout.publishDir,
+            'people',
+            ENTRY,
+            'page.en.md',
+          ),
+          'utf8',
+        ),).toBe(TARGET_DOC,);
+        expect(messages,).toEqual([
           'publish: wrote 2 slices into a page of 81 characters',
           'REPUBLISHED entry=CatEntry1 why=missing: page rewritten from its artifact',
           'republish: 1 settled page judged, 1 rewritten, 0 left',

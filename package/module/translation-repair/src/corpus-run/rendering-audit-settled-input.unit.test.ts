@@ -273,6 +273,114 @@ await describe({
         },),
 
         it({
+          name: 'SHOWS THE AUDITORS THE DATE OF DEATH the run\'s models saw, read from the entry\'s info.yml at the '
+            + 'ARTIFACT\'S OWN COMMIT rather than at whatever the clone now holds',
+          fn: async () => {
+            await using corpus = await makeCorpus({ infoYml: 'info:\n  died: 2025-02-26\n', },);
+            await using archive = await scratchDir({ prefix: 'settled-audit-archive-', },);
+
+            /**
+             Preparation the run made, whose identity block carries the recorded death.
+             */
+            const prepared = prepareDocumentPair({
+              sourceText: SOURCE_PAGE,
+              targetText: TARGET_PAGE,
+              sourceEntryInfo: { info: { died: '2025-02-26', }, },
+            },);
+            await writeArtifact({
+              archiveDir: archive.path,
+              runSet: 'first',
+              prepared,
+              corpusSha: corpus.commitSha,
+              entryId: ENTRY_ID,
+            },);
+            // The record is edited AFTER the artifact settled, so a reader that followed the clone would show another date.
+            await commitEntry({
+              cloneDir: corpus.cloneDir,
+              entryId: ENTRY_ID,
+              sourcePage: SOURCE_PAGE,
+              targetPage: TARGET_PAGE,
+              infoYml: 'info:\n  died: 2031-01-01\n',
+            },);
+
+            /**
+             Subjects the artifact offers.
+             */
+            const { subjects, } = await readArtifactSubjects({
+              archiveDir: archive.path,
+              runSetDir: 'first',
+              runSet: 'first',
+              artifactFile: `${ENTRY_ID}.json`,
+              cloneDir: corpus.cloneDir,
+              readFile: readCorpusFile,
+            },);
+            expect(subjects[0]?.identity,).toEqual({
+              kind: 'declared',
+              context: prepared.identityContext,
+            },);
+            expect(prepared.identityContext?.includes('"2025-02-26"',),).toBe(true,);
+          },
+        },),
+
+        it({
+          name: 'LEAVES THE DATE OF DEATH OUT of the replay of an artifact of generation fourteen, whose run never read '
+            + 'an info.yml and told its models no date, and reads no info.yml for it, though the entry now records one',
+          fn: async () => {
+            // A DAMAGED info.yml: a replay that read it for this artifact would be refused.
+            await using corpus = await makeCorpus({ infoYml: 'info: [\n', },);
+            await using archive = await scratchDir({ prefix: 'settled-audit-archive-', },);
+
+            /**
+             Preparation the run made, which was told no death.
+             */
+            const prepared = prepareDocumentPair({
+              sourceText: SOURCE_PAGE,
+              targetText: TARGET_PAGE,
+            },);
+            await writeArtifact({
+              archiveDir: archive.path,
+              runSet: 'first',
+              prepared,
+              corpusSha: corpus.commitSha,
+              entryId: ENTRY_ID,
+            },);
+            /**
+             Where the artifact sits in the archive.
+             */
+            const artifactPath = join(
+              archive.path,
+              'first',
+              `${ENTRY_ID}.json`,
+            );
+            /**
+             Artifact as parsed, restamped as the generation before the one that tells the death.
+             */
+            const restamped = JSON.parse(await readFile(artifactPath, 'utf8',),) as {
+              artifactSchemaVersion: number;
+            };
+            restamped.artifactSchemaVersion = 14;
+            await writeFile(artifactPath, JSON.stringify(restamped,),);
+
+            /**
+             Subjects the artifact offers.
+             */
+            const { subjects, } = await readArtifactSubjects({
+              archiveDir: archive.path,
+              runSetDir: 'first',
+              runSet: 'first',
+              artifactFile: `${ENTRY_ID}.json`,
+              cloneDir: corpus.cloneDir,
+              readFile: readCorpusFile,
+            },);
+            expect(subjects[0]?.identity,).toEqual({
+              kind: 'declared',
+              context: prepared.identityContext,
+            },);
+            expect(prepared.identityContext?.includes('died',),).toBe(false,);
+          },
+        },),
+
+        it({
           name: 'reports NO DECLARED NAMES as a positive answer when the pair declares none, rather '
             + 'than as a missing field, so a later reader can tell "this pair declared nothing" from '
             + '"nobody recorded whether it did"',

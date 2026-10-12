@@ -15,6 +15,7 @@ import {
   applyLaneContestEligibility,
   describeInadmissibleLanes,
   frontMatterContestEligibility,
+  ineligibleCandidatesOf,
   LANE_CONTEST_ELIGIBILITY_FLOOR_FINDING,
   laneContestChoiceVerdict,
   type LaneContestBallot,
@@ -96,6 +97,34 @@ await describe({
   name: '',
   concurrency: 1,
   children: [
+    describe({
+      name: ineligibleCandidatesOf.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'NAMES the candidates the syntax policy marks ineligible in contest order, and none where every candidate is admissible',
+          fn: async () => {
+            expect(ineligibleCandidatesOf({
+              eligibility: frontMatterContestEligibility({
+                sourceText: SOURCE,
+                incumbentText: ARCHIVE,
+                repairText: ARCHIVE,
+                translateText: TRANSLATED,
+              },),
+            },),).toEqual(['archive', 'repair',],);
+            expect(ineligibleCandidatesOf({
+              eligibility: frontMatterContestEligibility({
+                sourceText: SOURCE,
+                incumbentText: TRANSLATED,
+                repairText: TRANSLATED,
+                translateText: TRANSLATED,
+              },),
+            },),).toEqual([],);
+          },
+        },),
+      ],
+    },),
+
     describe({
       name: settleEligibleLaneContestBallots.name,
       concurrency: DEFAULT_CONCURRENCY,

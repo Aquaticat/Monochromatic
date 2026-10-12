@@ -338,6 +338,38 @@ await describe({
       },
     },),
     it({
+      name: 'WRITES THE SAME PAGE when the pair reader also hands the entry\'s info.yml record, which adds a date to '
+        + 'the identity block of the rebuilt preparation and no wording to the page',
+      fn: async () => {
+        await using bare = await settledRun({ strip: [], },);
+        await using informed = await settledRun({ strip: [], },);
+        await republishIn({
+          run: bare,
+          readPair: SAME_PAIR,
+        },);
+        expect(await republishIn({
+          run: informed,
+          readPair: async function readPairWithEntryInfo() {
+            return {
+              sourceText: SOURCE_DOC,
+              targetText: TARGET_DOC,
+              sourceEntryInfo: { info: { died: '2025-02-26', }, },
+            };
+          },
+        },),).toStrictEqual({
+          kind: 'republished',
+          why: 'missing',
+        },);
+        expect(await readFile(
+          informed.pagePath,
+          'utf8',
+        ),).toBe(await readFile(
+          bare.pagePath,
+          'utf8',
+        ),);
+      },
+    },),
+    it({
       name: 'LEAVES an agreeing page as it is, the control that a rewrite is not every page\'s fate',
       fn: async () => {
         await using run = await settledRun({ strip: [], },);

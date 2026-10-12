@@ -17,6 +17,7 @@ import {
   buildCriticMessages,
   collectIdentityLines,
   extractDeclaredIdentity,
+  prepareDocumentPair,
   sourcePronounLines,
 } from '../dist/final/node/index.mjs';
 
@@ -366,6 +367,125 @@ await describe({
           fn: async () => {
             expect(sourcePronounLines({ text: '毛毛很可爱。猫咪在书店。', },),).toEqual([],);
             expect(sourcePronounLines({ text: '', },),).toEqual([],);
+          },
+        },),
+      ],
+    },),
+
+    describe({
+      name: 'collectIdentityLines recorded death',
+      children: [
+        it({
+          name: 'ADDS a line for the date of death the original\'s entry records, worded for the model',
+          fn: async () => {
+            expect(collectIdentityLines({
+              sourceData: { name: 'Mittens', },
+              targetData: { name: 'Mittens', },
+              sourceEntryInfo: { info: { died: '2025-02-26', }, },
+            },),).toEqual([
+              '- name: ORIGINAL declares "Mittens", TRANSLATION declares "Mittens"',
+              '- died: the date this person died, as the corpus records it: "2025-02-26".',
+            ],);
+          },
+        },),
+
+        it({
+          name: 'EMITS no death line when the entry has no info.yml, and none for a blank death date',
+          fn: async () => {
+            expect(collectIdentityLines({
+              sourceData: {},
+              targetData: {},
+            },),).toEqual([],);
+            expect(collectIdentityLines({
+              sourceData: {},
+              targetData: {},
+              sourceEntryInfo: { info: { died: '   ', }, },
+            },),).toEqual([],);
+          },
+        },),
+
+        it({
+          name: 'COUNTS a death year that YAML reads as a number, written as the text of that number',
+          fn: async () => {
+            expect(collectIdentityLines({
+              sourceData: {},
+              targetData: {},
+              sourceEntryInfo: { info: { died: 2_025, }, },
+            },),).toEqual(['- died: the date this person died, as the corpus records it: "2025".',],);
+          },
+        },),
+
+        it({
+          name: 'LEAVES OUT a death that YAML reads as a number with no text of its own, or as a truth value',
+          fn: async () => {
+            expect(collectIdentityLines({
+              sourceData: {},
+              targetData: {},
+              sourceEntryInfo: { info: { died: Number.NaN, }, },
+            },),).toEqual([],);
+            expect(collectIdentityLines({
+              sourceData: {},
+              targetData: {},
+              sourceEntryInfo: { info: { died: Number.POSITIVE_INFINITY, }, },
+            },),).toEqual([],);
+            expect(collectIdentityLines({
+              sourceData: {},
+              targetData: {},
+              sourceEntryInfo: { info: { died: true, }, },
+            },),).toEqual([],);
+          },
+        },),
+
+        it({
+          name: 'READS the death date only from the nested info record, never from a top-level field',
+          fn: async () => {
+            expect(collectIdentityLines({
+              sourceData: {},
+              targetData: {},
+              sourceEntryInfo: { died: '2025-02-26', },
+            },),).toEqual([],);
+          },
+        },),
+      ],
+    },),
+
+    describe({
+      name: 'prepareDocumentPair recorded death',
+      children: [
+        it({
+          name: 'SETS lifeEnded on the prepared pair exactly when the source entry records a death, and puts the date in the identity block',
+          fn: async () => {
+            /**
+             Original of one cat sentence, with no pronoun and no declaration.
+             */
+            const sourceText = '猫睡觉。\n';
+
+            /**
+             Archive English of the same sentence.
+             */
+            const targetText = 'The cat naps.\n';
+            expect(prepareDocumentPair({
+              sourceText,
+              targetText,
+              sourceEntryInfo: { info: { died: '2025-02-26', }, },
+            },).lifeEnded,).toBe(true,);
+            expect(prepareDocumentPair({ sourceText, targetText, },).lifeEnded,).toBe(false,);
+            expect(prepareDocumentPair({
+              sourceText,
+              targetText,
+              sourceEntryInfo: { info: { died: '2025-02-26', }, },
+            },).identityContext,).toBe('- died: the date this person died, as the corpus records it: "2025-02-26".',);
+          },
+        },),
+
+        it({
+          name: 'SETS lifeEnded for a death year YAML reads as a number, so a bare year leaves the feature on',
+          fn: async () => {
+            expect(prepareDocumentPair({
+              sourceText: '猫睡觉。\n',
+              targetText: 'The cat naps.\n',
+              sourceEntryInfo: { info: { died: 2_025, }, },
+            },).lifeEnded,).toBe(true,);
           },
         },),
       ],

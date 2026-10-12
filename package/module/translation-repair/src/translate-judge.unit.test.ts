@@ -39,6 +39,10 @@ import {
 } from '../dist/final/node/index.mjs';
 import { HANG_STOP_MS, } from './hang-stop.test-fixture.ts';
 import { SCRIPTED_STAGE_SETTINGS, } from './stage-settings.test-fixture.ts';
+import {
+  TENSE_EXPLANATION,
+  tenseBlocksOf,
+} from './tense-sheet.test-fixture.ts';
 
 /**
  Logger the halves write their progress to.
@@ -219,9 +223,13 @@ async function judgeSheetFor(
   {
     lineStructured,
     archiveDisputeNote,
+    lifeEnded,
+    subjectNames,
   }: {
     readonly lineStructured: boolean;
     readonly archiveDisputeNote?: string;
+    readonly lifeEnded?: boolean;
+    readonly subjectNames?: readonly string[];
   },
 ): Promise<string> {
   const rig = driftingClient();
@@ -256,6 +264,8 @@ async function judgeSheetFor(
     incumbentText: INCUMBENT_TEXT,
     incumbentKind: 'present',
     ...((archiveDisputeNote === undefined) ? {} : { archiveDisputeNote, }),
+    ...((lifeEnded === undefined) ? {} : { lifeEnded, }),
+    ...((subjectNames === undefined) ? {} : { subjectNames, }),
     lineStructured,
     signal: AbortSignal.timeout(HANG_STOP_MS,),
     perCallTimeoutMs: HANG_STOP_MS,
@@ -268,6 +278,50 @@ async function judgeSheetFor(
     .join('\n',);
 }
 
+
+/**
+ Number a sheet gives the candidate holding a text, read off the sheet itself.
+
+ @param sheet - what the judges were sent, joined as they read it
+
+ @param candidateText - text one candidate holds, written on its own line
+
+ @returns The number printed on the line that opens that candidate's block
+
+ @throws {@link Error} when no candidate block holds that text
+
+ @example
+ ```ts
+ const number = candidateNumberOf({ sheet, candidateText: INCUMBENT_TEXT, },);
+ ```
+ */
+function candidateNumberOf(
+  {
+    sheet,
+    candidateText,
+  }: {
+    readonly sheet: string;
+    readonly candidateText: string;
+  },
+): number {
+  /**
+   Lines of the sheet.
+   */
+  const lines = sheet.split('\n',);
+
+  /**
+   Index of the line opening the block that holds the text two lines later.
+   */
+  const opening = lines.findIndex(function opensBlockOf(
+    line,
+    index,
+  ): boolean {
+    return (line.startsWith('CANDIDATE ',)) && (lines[index + 2] === candidateText);
+  },);
+  if (opening === (-1))
+    throw new Error(`no candidate block holds the text ${candidateText}`,);
+  return Number((lines[opening] ?? '').slice('CANDIDATE '.length,),);
+}
 
 /**
  Client that fails if anything asks it a question.
@@ -939,6 +993,88 @@ await describe({
             // list, so a caller reading the failure sees the evidence gathered
             // before the winner came back blank.
             expect((caught as BlankSelectionError).findings,).toContain('translate-blank-fixture-marker',);
+          },
+        },),
+      ],
+    },),
+
+    describe({
+      name: 'translate judge tense candidates',
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'SHOWS the tense candidates of the texts on the ballot under the numbers the sheet gives those candidates, where the entry records a death and names its subject',
+          fn: async () => {
+            /**
+             What the judges were sent for an entry that records a death.
+             */
+            const sheet = await judgeSheetFor({
+              lineStructured: false,
+              lifeEnded: true,
+              subjectNames: ['The cat',],
+            },);
+            /**
+             Number the sheet gives the archive's wording.
+             */
+            const archiveNumber = candidateNumberOf({
+              sheet,
+              candidateText: INCUMBENT_TEXT,
+            },);
+            /**
+             Number the sheet gives the rendering whose verb follows the name.
+             */
+            const dozesNumber = candidateNumberOf({
+              sheet,
+              candidateText: RENDERINGS[0] ?? '',
+            },);
+            /**
+             Lines of the two groups, in the order of the numbers.
+             */
+            const groups = [
+              {
+                number: archiveNumber,
+                lines: [
+                  `CANDIDATE ${String(archiveNumber,)}:`,
+                  `- "${INCUMBENT_TEXT}" (matched "The cat is", rule copula-or-auxiliary)`,
+                ],
+              },
+              {
+                number: dozesNumber,
+                lines: [
+                  `CANDIDATE ${String(dozesNumber,)}:`,
+                  `- "${RENDERINGS[0] ?? ''}" (matched "The cat dozes", rule s-ending-verb)`,
+                ],
+              },
+            ]
+              .toSorted(function byNumber(
+                left,
+                right,
+              ): number {
+                return left.number - right.number;
+              },)
+              .flatMap(function linesOf(group,): readonly string[] {
+                return group.lines;
+              },);
+            /**
+             Distinct blocks the judges were sent, one per kind of sheet.
+             */
+            const distinct = [...new Set(tenseBlocksOf({ content: sheet, },),),];
+            expect(distinct,).toEqual([
+              `TENSE CANDIDATES, to check against the house tense rule\n`
+              + `=====\n${[TENSE_EXPLANATION, ...groups,].join('\n',)}\n=====`,
+            ],);
+          },
+        },),
+
+        it({
+          name: 'SHOWS NO TENSE BLOCK to the slate judges when the entry records no death',
+          fn: async () => {
+            expect(tenseBlocksOf({
+              content: await judgeSheetFor({
+                lineStructured: false,
+                subjectNames: ['The cat',],
+              },),
+            },),).toEqual([],);
           },
         },),
       ],

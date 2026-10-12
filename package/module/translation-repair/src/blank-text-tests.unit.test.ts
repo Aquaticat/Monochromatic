@@ -1863,6 +1863,18 @@ const HELD_TESTS: Readonly<Record<string, {
     tests: 1,
     why: ASSEMBLED,
   },
+  'present-tense-words.ts#isWhitespace': {
+    tests: 2,
+    why: SCANNER,
+  },
+  'present-tense-words.ts#isWordCharacter': {
+    tests: 1,
+    why: SCANNER,
+  },
+  'present-tense-words.ts#namesAt': {
+    tests: 1,
+    why: EMPTY_NEEDLE,
+  },
   'preservation-check.ts#blank': {
     tests: 1,
     why: EMPTY_NEEDLE,

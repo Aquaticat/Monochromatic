@@ -27,4 +27,7 @@ export const NO_OUTSIDE_READS: PassOutsideReads = {
   corpusNames: function noCorpusNames() {
     return Promise.resolve([],);
   },
+  entryInfo: function noEntryInfo() {
+    return Promise.resolve({ kind: 'absent', } as const,);
+  },
 };

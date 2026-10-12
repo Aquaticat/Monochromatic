@@ -234,6 +234,67 @@ await describe({
     },),
 
     it({
+      name: 'SEPARATES AN ENTRY THAT RECORDS A DEATH, and the subject it names, from one that records none, '
+        + 'and keys an entry that records none exactly as before',
+      fn: async () => {
+        /**
+         The same roster over an entry that records a death and names its subject.
+         */
+        const named = consolidateRunShape({
+          declaredNamePairs: [],
+          modelIds: ROSTER,
+          lifeEnded: true,
+          subjectNames: ['Mittens',],
+        },);
+
+        expect(consolidateSliceKey(SLICE,),).not.toBe(
+          consolidateSliceKey({ ...SLICE, runShape: named, },),
+        );
+        expect(consolidateSliceKey({ ...SLICE, runShape: named, },),).not.toBe(
+          consolidateSliceKey({
+            ...SLICE,
+            runShape: consolidateRunShape({
+              declaredNamePairs: [],
+              modelIds: ROSTER,
+              lifeEnded: true,
+              subjectNames: ['Whiskers',],
+            },),
+          },),
+        );
+        expect(consolidateSliceKey(SLICE,),).toBe(
+          consolidateSliceKey({
+            ...SLICE,
+            runShape: consolidateRunShape({
+              declaredNamePairs: [],
+              modelIds: ROSTER,
+              lifeEnded: false,
+            },),
+          },),
+        );
+      },
+    },),
+
+    it({
+      name: 'SEPARATES AN ENTRY WHOSE SUBJECT CARRIES A DECLARED ALIAS from one that names the subject alone, since the tense candidates read every name',
+      fn: async () => {
+        expect(consolidateRunShape({
+          declaredNamePairs: [],
+          modelIds: ROSTER,
+          lifeEnded: true,
+          subjectNames: [
+            'Mittens',
+            'Whiskers',
+          ],
+        },),).not.toBe(consolidateRunShape({
+          declaredNamePairs: [],
+          modelIds: ROSTER,
+          lifeEnded: true,
+          subjectNames: ['Mittens',],
+        },),);
+      },
+    },),
+
+    it({
       name: 'SEPARATES TWO PAIRS THAT DECLARE DIFFERENT NAME PAIRS, which the standing and slate floors '
         + 'read, rather than trusting the identity context to carry them (ledger A13)',
       fn: async () => {

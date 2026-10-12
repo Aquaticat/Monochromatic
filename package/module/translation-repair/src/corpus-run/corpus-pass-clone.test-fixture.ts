@@ -38,6 +38,11 @@ export type CorpusCloneEntry = {
    Text of the archive's English page, absent to leave the pair incomplete.
    */
   readonly targetText?: string;
+
+  /**
+   Text of the entry's `info.yml`, absent to leave the entry without one.
+   */
+  readonly infoYml?: string;
 };
 
 /**
@@ -129,6 +134,13 @@ export async function makeCorpusPassClone(
             cloneDir,
             relPath: `people/${entry.id}/page.en.md`,
             text: entry.targetText,
+          },);
+        }
+        if (entry.infoYml !== undefined) {
+          await writeCloneFile({
+            cloneDir,
+            relPath: `people/${entry.id}/info.yml`,
+            text: entry.infoYml,
           },);
         }
       }

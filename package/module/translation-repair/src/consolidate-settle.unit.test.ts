@@ -52,6 +52,7 @@ import {
 import { ballot, } from './structural-ballot.test-fixture.ts';
 import { HANG_STOP_MS, } from './hang-stop.test-fixture.ts';
 import { SCRIPTED_STAGE_SETTINGS, } from './stage-settings.test-fixture.ts';
+import { tenseBlocksOf, } from './tense-sheet.test-fixture.ts';
 
 /**
  Logger the stage writes through, whose output is not under test.
@@ -1005,6 +1006,56 @@ await describe({
     },),
 
     it({
+      name: 'SHOWS THE SLATE JUDGES AND THE GATE the tense candidates of the texts they weigh, when the slice\'s entry '
+        + 'records a death and names its subject; the same settlement for an entry recording none is the control',
+      fn: async () => {
+        /** Standing text told in the present, which both rounds weigh. */
+        const presentStanding = 'The cat is asleep by the window.\nShe wakes at four.';
+        /**
+         Whether every judge sheet and every gate sheet of one settlement
+         carries exactly one tense block.
+
+         @param recorded - the slice's death record, none left out
+
+         @returns Judge and gate answers, false for a round never asked
+         */
+        async function carriedBy(
+          { recorded, }: { readonly recorded?: { readonly lifeEnded: boolean; readonly subjectNames: readonly string[]; }; },
+        ): Promise<readonly boolean[]> {
+          /** Sheets the settlement sent. */
+          const { judgeSheets, gateSheets, } = await settleWith({
+            subject: {
+              ...SUBJECT,
+              ...recorded,
+            },
+            standingText: presentStanding,
+            voices: [voiceOf({ modelId: ROSTER[0], translation: FRESH, },),],
+            validity: [validityOf({ modelId: ROSTER[0], valid: true, },),],
+            judgeReply: judgeBallot({ best: positionOfText({ texts: [FRESH,], wanted: FRESH, },), },),
+            gateReply: ballot({ choice: 'consolidated', },),
+          },);
+          return [judgeSheets, gateSheets,].map(function carried(sheets,): boolean {
+            return (sheets.length > 0) && sheets.every(function carries(sheet,): boolean {
+              return tenseBlocksOf({ content: sheet, },).length === 1;
+            },);
+          },);
+        }
+        expect([
+          await carriedBy({},),
+          await carriedBy({
+            recorded: {
+              lifeEnded: true,
+              subjectNames: ['The cat',],
+            },
+          },),
+        ],).toEqual([
+          [false, false,],
+          [true, true,],
+        ],);
+      },
+    },),
+
+    it({
       name: 'SHOWS THE GATE THE FRONT-MATTER RULE on a front-matter slice, which the gate sheet carries only when '
         + 'the slice\'s syntax role reaches it; the prose slice every other case decides is the control',
       fn: async () => {
@@ -1500,6 +1551,73 @@ await describe({
         expect(decided.settled.findings.includes('translate-declined-retried',),).toBe(true,);
         expect(decided.judgeSheets.some(function challenged(sheet,): boolean {
           return sheet.includes(CHALLENGE_MARKER,);
+        },),).toBe(true,);
+      },
+    },),
+    it({
+      name: 'SHOWS THE RUN-OFF OVER THE TIED FINALISTS THE TENSE CANDIDATES of its texts as the first round shows them, '
+        + 'since every ask of a slate carries the same blocks, when the entry records a death',
+      fn: async () => {
+        /**
+         Standing told in the present, which the round and the run-off both weigh.
+         */
+        const presentStanding = 'The cat is asleep by the window.\nShe wakes at four.';
+        /**
+         Other proposal, worded in the present too.
+         */
+        const OTHER = 'The cat naps on the sill each afternoon.';
+        /**
+         Third proposal, the one the run-off backs.
+         */
+        const THIRD = 'The cat dozes in a patch of sun, then wakes at four.';
+        /**
+         Wording the challenge round's task carries and the first round's does not.
+         */
+        const CHALLENGE_MARKER = 'A prior panel declined this exact slate';
+        /**
+         Ballots: the first round gives each proposal one voice, so no candidate
+         leads; the run-off round votes for the third proposal.
+         */
+        function splitThenThird(sent: string, call: number,): string {
+          if (sent.includes(CHALLENGE_MARKER,))
+            return judgeBallot({ best: numberedOn({ sent, wanted: 'patch of sun', },), },);
+          return judgeBallot({
+            best: [
+              numberedOn({ sent, wanted: 'beside the window', },),
+              numberedOn({ sent, wanted: 'naps on the sill', },),
+              numberedOn({ sent, wanted: 'patch of sun', },),
+            ][call % 3] ?? 0,
+          },);
+        }
+        const decided = await settleWith({
+          subject: {
+            ...SUBJECT,
+            lifeEnded: true,
+            subjectNames: ['The cat',],
+          },
+          standingText: presentStanding,
+          voices: [
+            voiceOf({ modelId: ROSTER[0], translation: FRESH, },),
+            voiceOf({ modelId: ROSTER[1], translation: OTHER, },),
+            voiceOf({ modelId: ROSTER[2], translation: THIRD, },),
+          ],
+          validity: [
+            validityOf({ modelId: ROSTER[0], valid: true, },),
+            validityOf({ modelId: ROSTER[1], valid: true, },),
+            validityOf({ modelId: ROSTER[2], valid: true, },),
+          ],
+          judgeReply: splitThenThird,
+          gateReply: ballot({ choice: 'consolidated', },),
+        },);
+        /**
+         Judge sheets of the run-off round alone.
+         */
+        const challenged = decided.judgeSheets.filter(function inRunOff(sheet,): boolean {
+          return sheet.includes(CHALLENGE_MARKER,);
+        },);
+        expect(challenged.length > 0,).toBe(true,);
+        expect(decided.judgeSheets.every(function carriesOneBlock(sheet,): boolean {
+          return tenseBlocksOf({ content: sheet, },).length === 1;
         },),).toBe(true,);
       },
     },),

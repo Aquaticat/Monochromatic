@@ -46,6 +46,7 @@ import {
   runPassPreparation,
 } from '../../dist/final/node/index.mjs';
 import { scratchDir, } from '../scratch-dir.test-fixture.ts';
+import { insertionRow, } from '../sole-lane-comparison-row.test-fixture.ts';
 
 import { NO_OUTSIDE_READS, } from './pass-outside-reads.test-fixture.ts';
 import { HANG_STOP_MS, } from '../hang-stop.test-fixture.ts';
@@ -271,25 +272,45 @@ const PROJECTED: ProjectedLanes = (function projected(): ProjectedLanes {
 const DIGEST = 'pass-seams-reseat-test' as PipelineDigest;
 
 /**
- Runs the contest seam over the one slice, every judge voting for the repair
- lane.
+ Runs the contest seam over a slice, every judge voting for the repair lane.
 
  @param later - view every reading after the phase's own answers
 
- @returns Seats the judges' calls asked
+ @param projected - both lanes over the slices the contest answers
+
+ @param lifeEnded - whether the entry records a death
+
+ @param subjectNames - names the translation declares for its subject
+
+ @returns Seats the judges' calls asked, and the records the seam returned
 
  @example
  ```ts
- const asked = await contestAsked({ later: SYNTHETIC_DRY, },);
+ const { asked, slices, } = await contestRun({ later: SYNTHETIC_DRY, projected: PROJECTED, },);
  ```
  */
-async function contestAsked({ later, }: { readonly later: BudgetView; },): Promise<readonly RosterModelId[]> {
+async function contestRun(
+  {
+    later,
+    projected,
+    lifeEnded,
+    subjectNames,
+  }: {
+    readonly later: BudgetView;
+    readonly projected: ProjectedLanes;
+    readonly lifeEnded?: boolean;
+    readonly subjectNames?: readonly string[];
+  },
+): Promise<{
+  readonly asked: readonly RosterModelId[];
+  readonly slices: readonly ArtifactContestSlice[];
+}> {
   /**
    Seat of every call.
    */
   const asked: RosterModelId[] = [];
   await using cacheDir = await scratchDir({ prefix: 'pass-seams-reseat-', },);
-  await runPassContest({
+  const slices = await runPassContest({
     client: viewChangingClient({
       later,
       asked,
@@ -303,9 +324,13 @@ async function contestAsked({ later, }: { readonly later: BudgetView; },): Promi
     // Only the repair lane's chunks are read, for damage claims and dispute
     // notes, and a lane with none carries neither.
     lanes: { repair: { chunks: [], }, } as unknown as DocumentLanesResult,
-    projected: PROJECTED,
+    projected,
     frontMatterSlices: new Set(),
     lineStructuredSlices: new Set(),
+    sheetFacts: {
+      ...((lifeEnded === undefined) ? {} : { lifeEnded, }),
+      ...((subjectNames === undefined) ? {} : { subjectNames, }),
+    },
     entryCacheDir: cacheDir.path,
     pipelineDigest: DIGEST,
     signal: AbortSignal.timeout(HANG_STOP_MS,),
@@ -313,7 +338,30 @@ async function contestAsked({ later, }: { readonly later: BudgetView; },): Promi
     l,
     stageSettings: SCRIPTED_STAGE_SETTINGS,
   },);
-  return asked;
+  return {
+    asked,
+    slices,
+  };
+}
+
+/**
+ Runs the contest seam over the one slice, every judge voting for the repair
+ lane.
+
+ @param later - view every reading after the phase's own answers
+
+ @returns Seats the judges' calls asked
+
+ @example
+ ```ts
+ const asked = await contestAsked({ later: SYNTHETIC_DRY, },);
+ ```
+ */
+async function contestAsked({ later, }: { readonly later: BudgetView; },): Promise<readonly RosterModelId[]> {
+  return (await contestRun({
+    later,
+    projected: PROJECTED,
+  },)).asked;
 }
 
 /**
@@ -804,6 +852,175 @@ await describe({
               movedAskedAny: true,
               movedAskedLost: false,
             },);
+          },
+        },),
+        it({
+          name: 'THE CONTEST SEAM RECORDS THE TENSE CANDIDATES the judges were shown, beside the verdict, where the entry '
+            + 'records a death and names its subject, and records none where it records none',
+          fn: async () => {
+            /**
+             Both lanes over a slice whose repair wording follows the declared name in the present.
+             */
+            const projected: ProjectedLanes = {
+              delivery: {
+                repair: PROJECTED.delivery
+                  .repair
+                  .map(function present(row,): ArtifactDeliveryRow {
+                    return {
+                      ...row,
+                      shippedText: 'Mittens naps by the window.',
+                    };
+                  },),
+                translate: PROJECTED.delivery.translate,
+              },
+              comparison: PROJECTED.comparison
+                .map(function present(row,): ArtifactComparisonRow {
+                  return {
+                    ...row,
+                    repairText: 'Mittens naps by the window.',
+                  };
+                },),
+            };
+            /**
+             What the seam recorded for an entry that records a death.
+             */
+            const recorded = await contestRun({
+              later: ALL_WET,
+              projected,
+              lifeEnded: true,
+              subjectNames: ['Mittens',],
+            },);
+            /**
+             What the seam recorded for an entry that records none.
+             */
+            const unrecorded = await contestRun({
+              later: ALL_WET,
+              projected,
+              subjectNames: ['Mittens',],
+            },);
+            expect({
+              recorded: recorded.slices.map(function findingOf(slice,) {
+                return slice.tenseCandidates;
+              },),
+              unrecorded: unrecorded.slices.map(function hasField(slice,): boolean {
+                return 'tenseCandidates' in slice;
+              },),
+            },).toEqual({
+              recorded: [
+                [
+                  {
+                    label: 'CANDIDATE "repair"',
+                    found: [
+                      {
+                        sentence: 'Mittens naps by the window.',
+                        matched: 'Mittens naps',
+                        rule: 's-ending-verb',
+                      },
+                    ],
+                  },
+                ],
+              ],
+              unrecorded: [false,],
+            },);
+          },
+        },),
+        it({
+          name: 'THE CONTEST SEAM RECORDS NO TENSE CANDIDATES FOR A SOLE-LANE SLICE, which asked no judge and showed no sheet, '
+            + 'and records them for the contested slice beside it',
+          fn: async () => {
+            /**
+             Wording that follows a pronoun in the present.
+             */
+            const presentWording = 'She naps by the window.';
+            /**
+             Slice 0 an archive-absent insertion only the translate lane filled, and slice 1 contested, both worded in the present.
+             */
+            const projected: ProjectedLanes = {
+              delivery: {
+                repair: [
+                  {
+                    sliceIndex: 0,
+                    sourceText: SOURCE,
+                    incumbentKind: 'absent',
+                    incumbentText: '',
+                    outcome: { kind: 'not-applicable', },
+                    shippedText: '',
+                    delivery: { kind: 'gap-remains', },
+                  },
+                  ...PROJECTED.delivery
+                    .repair
+                    .map(function contested(row,): ArtifactDeliveryRow {
+                      return {
+                        ...row,
+                        sliceIndex: 1,
+                        shippedText: presentWording,
+                      };
+                    },),
+                ],
+                translate: [
+                  {
+                    sliceIndex: 0,
+                    sourceText: SOURCE,
+                    incumbentKind: 'absent',
+                    incumbentText: '',
+                    outcome: {
+                      kind: 'decided',
+                      acceptedText: presentWording,
+                    },
+                    shippedText: presentWording,
+                    delivery: { kind: 'replacement-shipped', },
+                  },
+                  ...PROJECTED.delivery
+                    .translate
+                    .map(function contested(row,): ArtifactDeliveryRow {
+                      return {
+                        ...row,
+                        sliceIndex: 1,
+                      };
+                    },),
+                ],
+              },
+              comparison: [
+                insertionRow({
+                  sliceIndex: 0,
+                  translateText: presentWording,
+                },),
+                ...PROJECTED.comparison
+                  .map(function contested(row,): ArtifactComparisonRow {
+                    return {
+                      ...row,
+                      sliceIndex: 1,
+                      repairText: presentWording,
+                    };
+                  },),
+              ],
+            };
+            /**
+             What the seam recorded for an entry that records a death.
+             */
+            const recorded = await contestRun({
+              later: ALL_WET,
+              projected,
+              lifeEnded: true,
+            },);
+            expect(recorded.slices.map(function readOne(slice,) {
+              return {
+                sliceIndex: slice.sliceIndex,
+                verdict: slice.verdict.kind,
+                recordsTense: 'tenseCandidates' in slice,
+              };
+            },),).toEqual([
+              {
+                sliceIndex: 0,
+                verdict: 'sole-lane',
+                recordsTense: false,
+              },
+              {
+                sliceIndex: 1,
+                verdict: 'lane-won',
+                recordsTense: true,
+              },
+            ],);
           },
         },),
         it({

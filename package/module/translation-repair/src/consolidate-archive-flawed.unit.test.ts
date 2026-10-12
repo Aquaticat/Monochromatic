@@ -19,8 +19,11 @@ import {
 
 import {
   archiveFlawedByMajority,
+  describeContestSlice,
   type LaneContestBallot,
+  withTenseCandidates,
 } from '../dist/final/node/index.mjs';
+import { catRow, } from './two-lane-comparison-row.test-fixture.ts';
 
 /**
  One usable ballot with the archive verdict a case needs.
@@ -91,6 +94,50 @@ await describe({
             ballotOf({ archive: 'publishable', },),
           ],
         },),).toBe(false,);
+      },
+    },),
+    it({
+      name: 'COUNTS THE SAME for a contest slice that records tense candidates, since the finding is no ballot and no verdict: the run-off follows the ballots alone',
+      fn: async () => {
+        /**
+         Ballots every judge cast calling the archive flawed.
+         */
+        const ballots = [
+          ballotOf({ archive: 'flawed', },),
+          ballotOf({ archive: 'flawed', },),
+        ];
+        /**
+         The slice as the contest records it, before any finding.
+         */
+        const settled = describeContestSlice({
+          sliceIndex: 0,
+          outcome: {
+            choice: 'neither',
+            ballots,
+            usable: 2,
+            findings: [],
+          },
+        },);
+        /**
+         The same slice with a tense candidate in the archive wording.
+         */
+        const [recorded,] = withTenseCandidates({
+          slices: [settled,],
+          comparison: [
+            catRow({
+              sliceIndex: 0,
+              repairText: 'The cat napped by the window.',
+              translateText: 'The cat slept by the window.',
+            },),
+          ],
+          lifeEnded: true,
+          subjectNames: ['The cat',],
+        },);
+        expect(recorded?.tenseCandidates?.length,).toBe(1,);
+        expect(archiveFlawedByMajority({
+          verdict: recorded?.verdict ?? settled.verdict,
+          ballots: recorded?.ballots ?? [],
+        },),).toBe(true,);
       },
     },),
     it({

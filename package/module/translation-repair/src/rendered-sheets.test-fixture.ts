@@ -229,6 +229,70 @@ export function renderedSheets(): readonly RenderedSheet[] {
       },),
     },
     {
+      // THE THREE SHEETS A RECORDED DEATH ADDS A BLOCK TO (the owner's tense
+      // decision of 2026-10-11), rendered once more with the death recorded
+      // so the guards over every sheet read the block's wording too.
+      name: 'lane contest, death recorded',
+      text: joined({
+        messages: buildLaneContestMessages({
+          subject: {
+            lineStructured: false,
+            sourceText: SOURCE,
+            incumbentText: ARCHIVE,
+            repairText: REPAIR,
+            translateText: REPAIR,
+            identityContext: IDENTITY,
+            referenceContext: REFERENCES,
+            lifeEnded: true,
+            subjectNames: ['Mittens',],
+          },
+        },),
+      },),
+    },
+    {
+      name: 'consolidate gate, death recorded',
+      text: joined({
+        messages: buildConsolidateGateMessages({
+          subject: {
+            lineStructured: false,
+            sourceText: SOURCE,
+            incumbentText: ARCHIVE,
+            consolidatedText: REPAIR,
+            standingText: ARCHIVE,
+            identityContext: IDENTITY,
+            referenceContext: REFERENCES,
+            lifeEnded: true,
+            subjectNames: ['Mittens',],
+          },
+        },),
+      },),
+    },
+    {
+      name: 'translate slate, death recorded',
+      text: joined({
+        messages: buildCandidateSelectMessages({
+          task: TRANSLATE_SELECTION_TASK,
+          criteria: translateSelectionCriteria({ lineStructured: false, },),
+          evidence: translateSlateEvidence({
+            sourceText: SOURCE,
+            identityContext: IDENTITY,
+            referenceContext: REFERENCES,
+            lifeEnded: true,
+            subjectNames: ['Mittens',],
+            ballotTexts: [
+              ARCHIVE,
+              REPAIR,
+            ],
+          },),
+          rendered: [
+            ARCHIVE,
+            REPAIR,
+          ],
+          sourceText: SOURCE,
+        },),
+      },),
+    },
+    {
       name: 'coverage',
       text: joined({
         messages: coveragePlan.messages,

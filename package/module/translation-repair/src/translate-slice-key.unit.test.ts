@@ -121,6 +121,46 @@ await describe({
       },
     },),
     it({
+      name: 'SEPARATES a run whose entry records a death, and the subject it names, from one that records none, and keeps the run shape of an entry that records none',
+      fn: async () => {
+        /**
+         The shape of an entry that records a death and names its subject.
+         */
+        const named = translateRunShape({
+          models: MODELS,
+          lifeEnded: true,
+          subjectNames: ['Mittens',],
+        },);
+        expect(named,).not.toBe(RUN_SHAPE,);
+        expect(translateRunShape({
+          models: MODELS,
+          lifeEnded: true,
+          subjectNames: ['Whiskers',],
+        },),).not.toBe(named,);
+        expect(translateRunShape({
+          models: MODELS,
+          lifeEnded: false,
+        },),).toBe(RUN_SHAPE,);
+      },
+    },),
+    it({
+      name: 'SEPARATES a run whose subject carries a declared alias from one that names the subject alone, since the tense candidates read every name',
+      fn: async () => {
+        expect(translateRunShape({
+          models: MODELS,
+          lifeEnded: true,
+          subjectNames: [
+            'Mittens',
+            'Whiskers',
+          ],
+        },),).not.toBe(translateRunShape({
+          models: MODELS,
+          lifeEnded: true,
+          subjectNames: ['Mittens',],
+        },),);
+      },
+    },),
+    it({
       name: 'SEPARATES a slice whose translators were shown an attested detail from the same slice '
         + 'without one, so the lane written before the writer sheet carried them is not served back '
         + '(class thirty-nine, 2026-09-16)',

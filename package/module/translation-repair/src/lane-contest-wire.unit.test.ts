@@ -25,6 +25,22 @@ import {
   isLaneContestWire,
   readLaneContestBallot,
 } from '../dist/final/node/index.mjs';
+import {
+  TENSE_EXPLANATION,
+  tenseBlocksOf,
+} from './tense-sheet.test-fixture.ts';
+
+/**
+ One contested slice whose texts hold present-tense candidates, with no death
+ recorded until a case says so.
+ */
+const TENSE_SUBJECT = {
+  lineStructured: false,
+  sourceText: '猫睡了。',
+  incumbentText: 'Mittens is loud.',
+  repairText: 'The cat sleeps.',
+  translateText: 'She naps by the window.',
+};
 
 /**
  Original long enough for the size floor to pass, so a ratio is measured
@@ -243,6 +259,79 @@ await describe({
       name: buildLaneContestMessages.name,
       concurrency: DEFAULT_CONCURRENCY,
       children: [
+        it({
+          name: 'SHOWS NO TENSE BLOCK when the entry records no death, whatever the texts say',
+          fn: async () => {
+            expect(tenseBlocksOf({
+              content: buildLaneContestMessages({ subject: TENSE_SUBJECT, },)
+                .at(1,)
+                ?.content ?? '',
+            },),).toEqual([],);
+            expect(tenseBlocksOf({
+              content: buildLaneContestMessages({
+                subject: {
+                  ...TENSE_SUBJECT,
+                  lifeEnded: false,
+                  subjectNames: ['Mittens',],
+                },
+              },)
+                .at(1,)
+                ?.content ?? '',
+            },),).toEqual([],);
+          },
+        },),
+
+        it({
+          name: 'SHOWS THE TENSE CANDIDATES of each text that has one under its sheet label, and none for a text without, where the entry records a death and names its subject',
+          fn: async () => {
+            expect(tenseBlocksOf({
+              content: buildLaneContestMessages({
+                subject: {
+                  ...TENSE_SUBJECT,
+                  lifeEnded: true,
+                  subjectNames: ['Mittens',],
+                },
+              },)
+                .at(1,)
+                ?.content ?? '',
+            },),).toEqual([
+              [
+                '===== TENSE CANDIDATES =====',
+                TENSE_EXPLANATION,
+                'ARCHIVE RENDERING:',
+                '- "Mittens is loud." (matched "Mittens is", rule copula-or-auxiliary)',
+                'CANDIDATE "translate":',
+                '- "She naps by the window." (matched "She naps", rule s-ending-verb)',
+                '=====',
+              ].join('\n',),
+            ],);
+          },
+        },),
+
+        it({
+          name: 'LEAVES A SENTENCE UNFLAGGED that opens with the subject name when the sheet is given no name, which is the weaker detector the name closes',
+          fn: async () => {
+            expect(tenseBlocksOf({
+              content: buildLaneContestMessages({
+                subject: {
+                  ...TENSE_SUBJECT,
+                  lifeEnded: true,
+                },
+              },)
+                .at(1,)
+                ?.content ?? '',
+            },),).toEqual([
+              [
+                '===== TENSE CANDIDATES =====',
+                TENSE_EXPLANATION,
+                'CANDIDATE "translate":',
+                '- "She naps by the window." (matched "She naps", rule s-ending-verb)',
+                '=====',
+              ].join('\n',),
+            ],);
+          },
+        },),
+
         it({
           name: 'SHOWS THE DISPUTE NOTE after both candidates on a disputed slice, and no such heading elsewhere (class one hundred eight, one entry\'s slice 3, 2026-09-24)',
           fn: async () => {

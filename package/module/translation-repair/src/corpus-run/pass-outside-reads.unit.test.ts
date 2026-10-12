@@ -324,6 +324,7 @@ await describe({
                 corpusReads.count += 1;
                 return [{ source: '猫糖', renderings: ['Cat Candy',], entryId: 'gum', },];
               },
+              entryInfo: async () => ({ kind: 'absent', } as const),
             };
             /**
              Directory this case owns for its entry caches.
@@ -364,6 +365,62 @@ await describe({
               corpusReads: 1,
               workTitle: true,
               corpusName: true,
+            },);
+          },
+        },),
+        it({
+          name: 'CARRIES THE RECORDED DEATH of the entry\'s info.yml onto the prepared pair, asking the info reader once about the entry, '
+            + 'and names the date and the subject on the pair',
+          fn: async () => {
+            /**
+             Entries the info reader was asked about.
+             */
+            const askedAbout: string[] = [];
+            /**
+             Readers whose info reader answers with a recorded death.
+             */
+            const outsideReads: PassOutsideReads = {
+              workTitles: async () => [],
+              references: async () => '',
+              corpusNames: async () => [],
+              entryInfo: async ({ entryId, },) => {
+                askedAbout.push(entryId,);
+                return {
+                  kind: 'read',
+                  info: { info: { died: '2025-02-26', }, },
+                } as const;
+              },
+            };
+            await using scratch = await scratchDir({ prefix: 'pass-entry-info-', },);
+            /**
+             The preparation of a page whose English front matter names the cat.
+             */
+            const paired = await preparePassEntry({
+              client: pairingClient(),
+              entryId: 'CatEntry',
+              entryCacheDir: scratch.path,
+              pipelineDigest: DIGEST,
+              modelIds: ROSTER,
+              sourceText: SOURCE,
+              targetText: '---\nname: Mittens\n---\n\nMittens falls asleep on the windowsill.\n',
+              signal: new AbortController().signal,
+              exchangeTimeoutMs: HANG_STOP_MS,
+              l,
+              outsideReads,
+              stageSettings: SCRIPTED_STAGE_SETTINGS,
+            },);
+            expect({
+              askedAbout,
+              lifeEnded: paired.prepared.lifeEnded,
+              subjectNames: paired.prepared.subjectNames,
+              dateLine: (paired.prepared.identityContext ?? '').split('\n',).filter(function namesDeath(line,): boolean {
+                return line.startsWith('- died:',);
+              },),
+            },).toEqual({
+              askedAbout: ['CatEntry',],
+              lifeEnded: true,
+              subjectNames: ['Mittens',],
+              dateLine: ['- died: the date this person died, as the corpus records it: "2025-02-26".',],
             },);
           },
         },),
@@ -509,6 +566,36 @@ await describe({
             expect(await reads.workTitles(asked,),).toEqual([],);
             expect(await reads.references(asked,),).toBe('',);
             expect(seen,).toEqual([],);
+          },
+        },),
+        it({
+          name: 'READS THE ENTRY\'S info.yml at the pin it is handed, through the reader it is handed, and records the parsed death',
+          fn: async () => {
+            /**
+             Pin and path each corpus read was asked at.
+             */
+            const asked: unknown[] = [];
+            /**
+             Readers over an invented corpus whose one entry records a death.
+             */
+            const reads = outsideReadsFrom({
+              env: {},
+              fetchFn: exaStub().fetchFn,
+              pin: PIN,
+              listPeople: listNoPeople,
+              readFile: async function readInfo({
+                pin,
+                relPath,
+              },) {
+                asked.push({ pin, relPath, },);
+                return 'info:\n  born: 2019-05-02\n  died: 2025-02-26\n';
+              },
+            },);
+            expect(await reads.entryInfo({ entryId: 'gum', l, },),).toEqual({
+              kind: 'read',
+              info: { info: { born: '2019-05-02', died: '2025-02-26', }, },
+            },);
+            expect(asked,).toEqual([{ pin: PIN, relPath: 'people/gum/info.yml', },],);
           },
         },),
         it({

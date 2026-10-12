@@ -177,6 +177,64 @@ await describe({
       },
     },),
     it({
+      name: 'SEPARATES a run whose entry records a death, and the subject it names, from one that records none, and keys an entry that records none exactly as before',
+      fn: async () => {
+        /**
+         The shape of an entry that records a death and names its subject.
+         */
+        const named = laneContestRunShape({
+          modelIds: ROSTER,
+          lifeEnded: true,
+          subjectNames: ['Mittens',],
+        },);
+        expect(laneContestSliceKey({
+          ...catInputs(),
+          runShape: named,
+        },),).not.toBe(laneContestSliceKey(catInputs(),),);
+        expect(laneContestSliceKey({
+          ...catInputs(),
+          runShape: laneContestRunShape({
+            modelIds: ROSTER,
+            lifeEnded: true,
+            subjectNames: ['Whiskers',],
+          },),
+        },),).not.toBe(laneContestSliceKey({
+          ...catInputs(),
+          runShape: named,
+        },),);
+        expect(laneContestSliceKey({
+          ...catInputs(),
+          runShape: laneContestRunShape({
+            modelIds: ROSTER,
+            lifeEnded: false,
+          },),
+        },),).toBe(laneContestSliceKey(catInputs(),),);
+      },
+    },),
+    it({
+      name: 'SEPARATES a run whose subject carries a declared alias from one that names the subject alone, since the tense candidates read every name',
+      fn: async () => {
+        expect(laneContestSliceKey({
+          ...catInputs(),
+          runShape: laneContestRunShape({
+            modelIds: ROSTER,
+            lifeEnded: true,
+            subjectNames: [
+              'Mittens',
+              'Whiskers',
+            ],
+          },),
+        },),).not.toBe(laneContestSliceKey({
+          ...catInputs(),
+          runShape: laneContestRunShape({
+            modelIds: ROSTER,
+            lifeEnded: true,
+            subjectNames: ['Mittens',],
+          },),
+        },),);
+      },
+    },),
+    it({
       name: 'SEPARATES the two candidates by SIDE, so swapping which lane produced which is a different question',
       fn: async () => {
         expect(laneContestSliceKey({

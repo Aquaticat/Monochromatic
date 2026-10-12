@@ -75,7 +75,7 @@ function writeAndRead(
   }: {
     readonly prepared: PreparedDocumentPair;
     readonly strip: readonly string[];
-    readonly generation?: 4 | 5 | 11;
+    readonly generation?: 4 | 5 | 11 | 14 | 15;
   },
 ): ReturnType<typeof parseSettledTwoLaneArtifact> {
   /**
@@ -454,6 +454,59 @@ await describe({
     },),
     it({
       name:
+        'KEEPS THE DEATH THE ENTRY RECORDS in the carve it makes again after setting a recorded block pairing '
+        + 'aside, for an artifact of generation fifteen',
+      fn: async () => {
+        /**
+         How the run carved it, the last pair naming translation block 3.
+         */
+        const carved = prepareDocumentPair({
+          sourceText: BLOCKY_SOURCE,
+          targetText: BLOCKY_TARGET,
+          blockPairings: new Map([[
+            0,
+            [
+              0,
+              1,
+              2,
+              3,
+            ].map(function samePlace(at,): {
+              readonly source: number;
+              readonly target: number;
+            } {
+              return {
+                source: at,
+                target: at,
+              };
+            },),
+          ],],),
+        },);
+        /**
+         Corpus copy with two paragraphs joined, so the recorded pairing no longer fits.
+         */
+        const shorterTarget = BLOCKY_TARGET.replace(
+          'sill.\n\nThe cat likes',
+          'sill and likes',
+        );
+        /**
+         The carve made again, told the entry's death.
+         */
+        const rebuilt = rebuildPreparation({
+          artifact: writeAndRead({
+            prepared: carved,
+            strip: ['archiveText',],
+            generation: 15,
+          },),
+          sourceText: BLOCKY_SOURCE,
+          targetText: shorterTarget,
+          sourceEntryInfo: { info: { died: '2025-02-26', }, },
+        },);
+        expect(rebuilt.reproduction.kind,).toBe('moved',);
+        expect(rebuilt.prepared.lifeEnded,).toBe(true,);
+      },
+    },),
+    it({
+      name:
         'NAMES every recipe half a file does not record and rebuilds with the deterministic default, '
         + 'which is what every artifact settled before the fields existed looks like',
       fn: async () => {
@@ -537,6 +590,80 @@ await describe({
         },);
         expect(rebuilt.prepared.targetText,).toBe(TARGET_DOC,);
         expect(rebuilt.reproduction,).toStrictEqual({ kind: 'reproduced', },);
+      },
+    },),
+    it({
+      name: 'TELLS THE DEATH THE ENTRY RECORDS only in the identity block of an artifact of generation fifteen, '
+        + 'whose run told its models the date, and leaves it out for generation fourteen, whose run told them none',
+      fn: async () => {
+        /**
+         Entry info the corpus holds for the entry, which records a death.
+         */
+        const sourceEntryInfo = { info: { died: '2025-02-26', }, };
+        /**
+         Preparation the run of generation fifteen made, knowing the death.
+         */
+        const told = prepareDocumentPair({
+          sourceText: SOURCE_DOC,
+          targetText: TARGET_DOC,
+          sourceEntryInfo,
+        },);
+        /**
+         Preparation a run of generation fourteen made, which read no info.yml.
+         */
+        const untold = prepareDocumentPair({
+          sourceText: SOURCE_DOC,
+          targetText: TARGET_DOC,
+        },);
+        /**
+         Rebuild of the generation fifteen artifact.
+         */
+        const current = rebuildPreparation({
+          artifact: writeAndRead({
+            prepared: told,
+            strip: [],
+            generation: 15,
+          },),
+          sourceText: SOURCE_DOC,
+          targetText: TARGET_DOC,
+          sourceEntryInfo,
+        },).prepared;
+        /**
+         Rebuild of the generation fourteen artifact over the same entry info.
+         */
+        const legacy = rebuildPreparation({
+          artifact: writeAndRead({
+            prepared: untold,
+            strip: [],
+            generation: 14,
+          },),
+          sourceText: SOURCE_DOC,
+          targetText: TARGET_DOC,
+          sourceEntryInfo,
+        },).prepared;
+        expect({
+          current: [
+            current.lifeEnded,
+            current.identityContext === told.identityContext,
+            current.identityContext?.includes('"2025-02-26"',),
+          ],
+          legacy: [
+            legacy.lifeEnded,
+            legacy.identityContext === untold.identityContext,
+            legacy.identityContext?.includes('died',),
+          ],
+        },).toEqual({
+          current: [
+            true,
+            true,
+            true,
+          ],
+          legacy: [
+            false,
+            true,
+            false,
+          ],
+        },);
       },
     },),
     it({

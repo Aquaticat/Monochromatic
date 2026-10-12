@@ -1582,6 +1582,9 @@ await describe({
               asked.corpusNames += 1;
               return [];
             },
+            entryInfo: async function noEntryInfo() {
+              return { kind: 'absent', } as const;
+            },
           },
           pictureSources: NO_PICTURE_SOURCES,
           hardCapMs: HANG_STOP_MS,

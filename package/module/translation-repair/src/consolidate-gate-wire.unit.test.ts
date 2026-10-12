@@ -24,6 +24,10 @@ import {
   isConsolidateGateWire,
   readConsolidateGateBallot,
 } from '../dist/final/node/index.mjs';
+import {
+  TENSE_EXPLANATION,
+  tenseBlocksOf,
+} from './tense-sheet.test-fixture.ts';
 
 /**
  What the sheet builder takes, so a case may add the optional evidence.
@@ -45,6 +49,18 @@ const SUBJECT: GateSubject = {
   incumbentText: 'The cat sleeps on the sill, purring.',
   consolidatedText: 'The cat sleeps on the window sill.',
   standingText: 'The cat is napping on the ledge.',
+};
+
+/**
+ One gated slice whose texts hold present-tense candidates, with no death
+ recorded until a case says so.
+ */
+const TENSE_SUBJECT: GateSubject = {
+  lineStructured: false,
+  sourceText: '猫在窗台上睡觉。',
+  incumbentText: 'Mittens is loud.',
+  consolidatedText: 'The cat sleeps on the window sill.',
+  standingText: 'She naps by the window.',
 };
 
 /**
@@ -342,6 +358,55 @@ await describe({
             const shown = shownFor({ subject: SUBJECT, },);
             expect(shown.includes('DECLARED NAMES',),).toBe(false,);
             expect(shown.includes('CITED REFERENCES',),).toBe(false,);
+          },
+        },),
+      ],
+    },),
+
+    describe({
+      name: 'buildConsolidateGateMessages tense candidates',
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'SHOWS NO TENSE BLOCK when the entry records no death, whatever the texts say',
+          fn: async () => {
+            expect(tenseBlocksOf({
+              content: exchangeFor({ subject: TENSE_SUBJECT, },),
+            },),).toEqual([],);
+            expect(tenseBlocksOf({
+              content: exchangeFor({
+                subject: {
+                  ...TENSE_SUBJECT,
+                  lifeEnded: false,
+                  subjectNames: ['Mittens',],
+                },
+              },),
+            },),).toEqual([],);
+          },
+        },),
+
+        it({
+          name: 'SHOWS THE TENSE CANDIDATES of each text that has one under its sheet label, and none for a text without, where the entry records a death and names its subject',
+          fn: async () => {
+            expect(tenseBlocksOf({
+              content: exchangeFor({
+                subject: {
+                  ...TENSE_SUBJECT,
+                  lifeEnded: true,
+                  subjectNames: ['Mittens',],
+                },
+              },),
+            },),).toEqual([
+              [
+                '===== TENSE CANDIDATES =====',
+                TENSE_EXPLANATION,
+                'ARCHIVE RENDERING:',
+                '- "Mittens is loud." (matched "Mittens is", rule copula-or-auxiliary)',
+                'CANDIDATE "standing":',
+                '- "She naps by the window." (matched "She naps", rule s-ending-verb)',
+                '=====',
+              ].join('\n',),
+            ],);
           },
         },),
       ],

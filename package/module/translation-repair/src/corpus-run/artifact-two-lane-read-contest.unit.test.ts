@@ -21,8 +21,11 @@ import {
 import {
   type ArtifactComparisonRow,
   ArtifactParseError,
+  describeContestSlice,
+  type LaneContestBallot,
   SLICE_SPELLED_KEYS,
   parseLaneSelection,
+  withTenseCandidates,
 } from '../../dist/final/node/index.mjs';
 import { ARCHIVE_NAP, catRow, } from '../two-lane-comparison-row.test-fixture.ts';
 import { insertionRow, } from '../sole-lane-comparison-row.test-fixture.ts';
@@ -392,6 +395,175 @@ await describe({
           lane: 'translate',
         },);
         expect(selection.slices[0]?.ballots,).toHaveLength(4,);
+      },
+    },),
+
+    it({
+      name: 'KEEPS the tense candidates a contested slice records at generation fifteen, beside a verdict they do not touch',
+      fn: async () => {
+        /**
+         Ballot backing the repair lane, typed as the stage returns it.
+         */
+        const forRepair: LaneContestBallot = {
+          choice: 'repair',
+          unsupported: [],
+          unsupportedRaw: [],
+          dropped: [],
+          droppedRaw: [],
+          reason: 'keeps the bookshop, which the original names',
+        };
+        /**
+         The slice as the writer records it, with the tense candidates of its texts.
+         */
+        const recorded = withTenseCandidates({
+          slices: [
+            describeContestSlice({
+              sliceIndex: 0,
+              outcome: {
+                choice: 'repair',
+                ballots: [
+                  forRepair,
+                  forRepair,
+                  forRepair,
+                ],
+                usable: 3,
+                findings: [],
+              },
+            },),
+          ],
+          comparison: ONE_CONTESTED,
+          lifeEnded: true,
+          subjectNames: ['The cat',],
+        },);
+        expect(recorded[0]?.tenseCandidates?.length,).toBe(3,);
+        expect(parseLaneSelection({
+          value: {
+            kind: 'contested',
+            slices: recorded,
+          },
+          comparison: ONE_CONTESTED,
+          path: SELECTION_PATH,
+          keys: SLICE_SPELLED_KEYS,
+          generation: 15,
+        },),).toEqual({
+          kind: 'contested',
+          slices: recorded,
+        },);
+      },
+    },),
+
+    it({
+      name: 'REFUSES a tense candidate record in generation fourteen, the last generation before the field',
+      fn: async () => {
+        const refusal = caught(function tenseBeforeFifteen() {
+          return parseLaneSelection({
+            value: {
+              kind: 'contested',
+              slices: [{
+                sliceIndex: 0,
+                verdict: {
+                  kind: 'lane-won',
+                  lane: 'repair',
+                },
+                ballots: [FOR_REPAIR, FOR_REPAIR, FOR_TRANSLATE,],
+                usable: 3,
+                tenseCandidates: [],
+              },],
+            },
+            comparison: ONE_CONTESTED,
+            path: SELECTION_PATH,
+            keys: SLICE_SPELLED_KEYS,
+            generation: 14,
+          },);
+        },);
+        expect(refusal,).toBeInstanceOf(ArtifactParseError,);
+        expect(String(refusal,),).toBe(
+          'ArtifactParseError: artifact parse failed at CatEntry1.laneSelection.slices[0].tenseCandidates: '
+            + 'expected no key here beyond sliceIndex, verdict, ballots, usable, eligibility.',
+        );
+      },
+    },),
+
+    it({
+      name: 'REFUSES a tense candidate record on a sole-lane slice, which asked no judge and showed no sheet, rather than dropping it unread',
+      fn: async () => {
+        const refusal = caught(function tenseOnSoleLane() {
+          return parseLaneSelection({
+            value: {
+              kind: 'contested',
+              slices: [
+                {
+                  sliceIndex: 0,
+                  verdict: {
+                    kind: 'sole-lane',
+                    lane: 'translate',
+                  },
+                  ballots: [],
+                  usable: 0,
+                  tenseCandidates: [{
+                    label: 'CANDIDATE "translate"',
+                    found: [{
+                      sentence: 'She naps in the attic of the bookshop.',
+                      matched: 'She naps',
+                      rule: 's-ending-verb',
+                    },],
+                  },],
+                },
+              ],
+            },
+            comparison: [insertionRow({
+              sliceIndex: 0,
+              translateText: TRANSLATE_NAP,
+            },),],
+            path: SELECTION_PATH,
+            keys: SLICE_SPELLED_KEYS,
+            generation: SOLE_LANE_GENERATION,
+          },);
+        },);
+        expect(refusal,).toBeInstanceOf(ArtifactParseError,);
+        expect(String(refusal,),).toBe(
+          'ArtifactParseError: artifact parse failed at CatEntry1.laneSelection.slices[0].tenseCandidates: '
+            + 'expected no tense candidates, since no roster was asked about a slice one lane applies to.',
+        );
+      },
+    },),
+
+    it({
+      name: 'REFUSES a tense candidate naming a rule the detector never writes',
+      fn: async () => {
+        const refusal = caught(function tenseRuleUnknown() {
+          return parseLaneSelection({
+            value: {
+              kind: 'contested',
+              slices: [{
+                sliceIndex: 0,
+                verdict: {
+                  kind: 'lane-won',
+                  lane: 'repair',
+                },
+                ballots: [FOR_REPAIR, FOR_REPAIR, FOR_TRANSLATE,],
+                usable: 3,
+                tenseCandidates: [{
+                  label: 'CANDIDATE "repair"',
+                  found: [{
+                    sentence: 'The cat naps.',
+                    matched: 'cat naps',
+                    rule: 'guess',
+                  },],
+                },],
+              },],
+            },
+            comparison: ONE_CONTESTED,
+            path: SELECTION_PATH,
+            keys: SLICE_SPELLED_KEYS,
+            generation: 15,
+          },);
+        },);
+        expect(refusal,).toBeInstanceOf(ArtifactParseError,);
+        expect(String(refusal,),).toBe(
+          'ArtifactParseError: artifact parse failed at CatEntry1.laneSelection.slices[0].tenseCandidates[0].found[0].rule: '
+            + 'expected a present-tense rule the detector writes.',
+        );
       },
     },),
 
