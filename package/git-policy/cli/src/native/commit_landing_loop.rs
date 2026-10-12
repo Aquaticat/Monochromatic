@@ -384,9 +384,35 @@ fn replay_candidate<F: RepositoryFacts>(
         worktree_records,
         hook_changes: HookChanges::combine(&input.hook_changes, &revalidated_hooks),
         events,
-        attempt: candidate.attempt + 1,
-        lost_races: candidate.lost_races + 1,
+        attempt: next_attempt_number(candidate.attempt),
+        lost_races: lost_races_after(candidate.lost_races),
     }));
+}
+
+/// What:
+///  The landing attempt number that follows a lost race.
+/// Why:
+///   The attempt number names the attempt's landing files, so two attempts of one commit never share a name.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// attempt + 1
+/// ```
+pub fn next_attempt_number(attempt: i64) -> i64 {
+    return attempt + 1;
+}
+
+/// What:
+///  The count of lost races once one more race is lost.
+/// Why:
+///   The reservation threshold and the `race-lost` marker occurrence both read this count.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// lostRaces + 1
+/// ```
+pub fn lost_races_after(lost_races: u64) -> u64 {
+    return lost_races + 1;
 }
 
 /// What:
@@ -538,7 +564,7 @@ fn run_loop<F: RepositoryFacts>(
                 });
             }
         };
-        let lost_races: u64 = candidate.lost_races + 1;
+        let lost_races: u64 = lost_races_after(candidate.lost_races);
         debug(TAG, format!("lost landing race {lost_races} to {onto}").as_str());
         let reserved: bool = lost_races >= input.reserve_after_lost_races
             && reservation.reserve(lost_races).map_err(reservation_stop)?;

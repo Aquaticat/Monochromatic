@@ -136,3 +136,12 @@ fn completions_are_retargeted_to_the_replayed_blobs() {
     assert_eq!(retargeted[0].original_oid, "o");
     remove(root.as_path());
 }
+
+/// Each lost race moves the attempt number and the lost-race count up by one.
+#[test]
+fn a_lost_race_moves_the_counters_up_by_one() {
+    assert_eq!(next_attempt_number(1), 2);
+    assert_eq!(next_attempt_number(5), 6);
+    assert_eq!(lost_races_after(0), 1);
+    assert_eq!(lost_races_after(4), 5);
+}
