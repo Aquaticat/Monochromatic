@@ -4988,3 +4988,28 @@ What enforces it:
 nothing in the package;
 the lead's briefs name the files each may change,
 and the lead's named run after each merge covers both pieces of work.
+
+## How an agent waits
+
+What happened:
+the brief for the consistency review's fixes forbade `sleep` and shell loops
+but gave no way to wait for the whole unit suite.
+The agent started the suite with the Bash tool's background mode,
+armed a Monitor whose `ps` filter matched its own command line,
+armed two more,
+then counted the log's lines in about twenty separate calls while the suite ran;
+one call also ended in `; echo done` (ledger M162).
+Each count cost a turn and decided nothing.
+
+The rule:
+a brief that forbids a way of waiting names the way to wait.
+A command that ends inside ten minutes runs in the foreground with the Bash timeout at 600000.
+A longer one runs as its own `systemd-run --user` unit with its output in a scratch log,
+followed by one foreground call to `wait-unit.ts <unit>.service` in the lead's scratch folder,
+which returns only when the unit ends and prints its result;
+a timed-out wait is repeated once, not replaced by polling.
+No Monitor, `pgrep` or `ps` loop, or line count of a growing log stands in for it.
+
+What enforces it:
+the shared facts every brief points to carry the waiting rule and the exact unit form;
+the lead checks a new brief for a forbidden form of waiting with no named replacement.

@@ -39412,6 +39412,27 @@ Prevention:
 before naming an owner action,
 the lead checks the owner's rulings on that provider and whether any launch waits on it.
 
+### M162: a brief forbade the ways of waiting and named none, so its agent polled
+
+Status:
+happened on 2026-10-12 (UTC) in the consistency review's fixes.
+The brief and the shared facts it cites forbade `sleep` and shell loops
+and said to run the whole unit suite once,
+but named no way to wait for a command longer than the Bash timeout.
+The agent started the suite with the Bash tool's background mode,
+armed three Monitors (the first matched its own `ps` filter and was stopped),
+and counted the suite log's lines in about twenty calls;
+one earlier call ended in `; echo done`.
+The owner saw it and asked for better briefs.
+The lead sent the agent the unit form and a blocking wait the same day.
+
+Prevention:
+the shared facts now give the waiting rule:
+foreground with the Bash timeout at 600000 for a command inside ten minutes,
+otherwise a `systemd-run --user` unit and one blocking call to `wait-unit.ts`,
+and no Monitor, process loop or line count.
+`doc/mistake-prevention.md` holds it under "How an agent waits".
+
 ### M79: a coverage census measuring compressed code
 
 Status:
