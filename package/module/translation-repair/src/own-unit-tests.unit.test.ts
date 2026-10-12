@@ -682,11 +682,12 @@ const ALLOWLIST: readonly string[] = [
   'src/corpus-run/rendering-audit-settled-runs.ts',
   // The repeat census splits (the command `repeat-census.ts` is a runner entry and exempt):
   // a read-only measurement of the pinned corpus. Their logic runs in the command's own
-  // pass, whose printed summary carries a positive control (the live case's refrain and
-  // sentence lines must be found by the line reading and by the package's detection), and
-  // the detection it runs has its own cases in `repeat-groups.unit.test.ts`. Each line goes
-  // when its module gains an own test.
-  'src/corpus-run/repeat-census-control.ts',
+  // pass, whose positive control (the live case's refrain and sentence lines must be found
+  // by the line reading and by the package's detection) ends the command at the stated
+  // refusal code when it reads false (`repeat-census-control.unit.test.ts` and
+  // `repeat-census-report.unit.test.ts` hold that decision), and the detection it runs has
+  // its own cases in `repeat-groups.unit.test.ts`. Each line goes when its module gains an
+  // own test.
   'src/corpus-run/repeat-census-lines.ts',
   'src/corpus-run/repeat-census-maximal.ts',
   'src/corpus-run/repeat-census-package.ts',

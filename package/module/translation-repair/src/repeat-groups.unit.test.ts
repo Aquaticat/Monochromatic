@@ -45,6 +45,16 @@ const REFRAIN_FIRST = '所以这只猫是个胖猫咪吧';
 const REFRAIN_SECOND = '所以这只猫是个瘦猫咪吧';
 
 /**
+ Seven narration characters that lead into speech, so a run holding them and the speech starts in narration.
+ */
+const SAID = '窗台上的小猫说';
+
+/**
+ Six characters a cat speaks, which together with {@link SAID} and two marks make a run of fifteen.
+ */
+const SPEECH = '好暖和的太阳';
+
+/**
  Cuts a page into the slices the pass reads, by its headings.
 
  @param text - page text
@@ -225,63 +235,44 @@ await describe({
         },),
 
         it({
-          name: 'Reports a twelve-character repeat of three occurrences, and the longer repeat its last two share',
+          name: 'Keeps the repeat of three occurrences and drops the longer repeat its last two share, which overlaps it',
           fn: async () => {
             /**
              Page with the same twelve characters in three paragraphs. The last two stand between the same commas,
-             so the sub-run from the comma before them to the comma after them is a second maximal repeat.
+             so the sub-run from the comma before them to the comma after them is a second maximal repeat that
+             overlaps the first repeat's last two occurrences. The first covers 36 characters and the second 28.
              */
             const text = `${RUN_TWELVE}。\n\n午后，${RUN_TWELVE}，尾巴一卷一卷。\n\n傍晚，${RUN_TWELVE}，又伸了个懒腰。\n`;
-            /** Offsets of the three occurrences, in page order. */
-            const starts = [
-              text.indexOf(RUN_TWELVE,),
-              text.indexOf(RUN_TWELVE, text.indexOf(RUN_TWELVE,) + 1,),
-            ] as const;
+            /** Offset of the first occurrence. */
+            const first = text.indexOf(RUN_TWELVE,);
+            /** Offset of the second occurrence. */
+            const second = text.indexOf(RUN_TWELVE, first + 1,);
             /** Offset of the third occurrence. */
-            const third = text.indexOf(RUN_TWELVE, starts[1] + 1,);
+            const third = text.indexOf(RUN_TWELVE, second + 1,);
 
             expect(repeatGroupsOf({ text, slices: chunksOf({ text, },), },),).toEqual([
               {
                 kind: 'maximal',
                 length: 12,
                 occurrences: [
-                  {
-                    sliceIndex: 0,
-                    startOffset: starts[0],
-                    endOffset: starts[0] + 12,
+                  occurrenceAt({
+                    startOffset: first,
+                    width: 12,
                     line: 1,
-                  },
-                  {
                     sliceIndex: 0,
-                    startOffset: starts[1],
-                    endOffset: starts[1] + 12,
+                  },),
+                  occurrenceAt({
+                    startOffset: second,
+                    width: 12,
                     line: 3,
-                  },
-                  {
                     sliceIndex: 0,
+                  },),
+                  occurrenceAt({
                     startOffset: third,
-                    endOffset: third + 12,
+                    width: 12,
                     line: 5,
-                  },
-                ],
-                unplaced: [],
-              },
-              {
-                kind: 'maximal',
-                length: 14,
-                occurrences: [
-                  {
                     sliceIndex: 0,
-                    startOffset: starts[1] - 1,
-                    endOffset: starts[1] + 13,
-                    line: 3,
-                  },
-                  {
-                    sliceIndex: 0,
-                    startOffset: third - 1,
-                    endOffset: third + 13,
-                    line: 5,
-                  },
+                  },),
                 ],
                 unplaced: [],
               },
@@ -1615,6 +1606,133 @@ await describe({
         },),
 
         it({
+          name: 'Leaves a repeat out of the groups when it starts in narration and ends inside a 「…」 quotation',
+          fn: async () => {
+            /** Page repeating a narrated lead-in and the speech it quotes, so the run starts before the opening mark. */
+            const text = `${SAID}「${SPEECH}」。\n\n午后，${SAID}「${SPEECH}」，尾巴一卷一卷。\n`;
+
+            expect(repeatGroupsOf({ text, slices: chunksOf({ text, },), },),).toEqual([],);
+          },
+        },),
+
+        it({
+          name: 'Leaves a repeat out of the groups when it starts in narration and ends inside straight double quotation marks',
+          fn: async () => {
+            /** Page repeating a narrated lead-in and the speech it quotes between straight marks. */
+            const text = `${SAID}"${SPEECH}"。\n\n午后，${SAID}"${SPEECH}"，尾巴一卷一卷。\n`;
+
+            expect(repeatGroupsOf({ text, slices: chunksOf({ text, },), },),).toEqual([],);
+          },
+        },),
+
+        it({
+          name: 'Leaves a repeat out of the groups when it runs into an opening mark that never closes',
+          fn: async () => {
+            /** Page whose repeat starts in narration and reaches an opening mark with no closing mark in its paragraph. */
+            const text = `${SAID}「${SPEECH}。\n\n午后，${SAID}「${SPEECH}，尾巴一卷一卷。\n`;
+
+            expect(repeatGroupsOf({ text, slices: chunksOf({ text, },), },),).toEqual([],);
+          },
+        },),
+
+        it({
+          name: 'Leaves a repeat out of the groups when it begins at the closing mark of a quotation',
+          fn: async () => {
+            /** Page whose two paragraphs close different quotations, then repeat the narration after the closing mark. */
+            const text = `「好」窗台上的小猫在晒暖洋洋的太阳。\n\n午后，「坏」窗台上的小猫在晒暖洋洋的太阳，尾巴一卷一卷。\n`;
+
+            expect(repeatGroupsOf({ text, slices: chunksOf({ text, },), },),).toEqual([],);
+          },
+        },),
+
+        it({
+          name: 'Leaves a repeat out of the groups when it holds a closing mark that no opening mark matches',
+          fn: async () => {
+            /** Page whose repeat holds a closing mark of a quotation opened in no paragraph, so no depth ever rises. */
+            const text = `${SAID}」${SPEECH}。\n\n午后，${SAID}」${SPEECH}，尾巴一卷一卷。\n`;
+
+            expect(repeatGroupsOf({ text, slices: chunksOf({ text, },), },),).toEqual([],);
+          },
+        },),
+
+        it({
+          name: 'Keeps a repeat in narration that stops where a quotation opens',
+          fn: async () => {
+            /** Fourteen narration characters that both paragraphs state. */
+            const narration = '窗台上的小猫在晒暖洋洋的太阳';
+            /** Page whose paragraphs differ right after the narration, each then opening its own speech. */
+            const text = `${narration}，「好暖和」\n\n午后，${narration}。「真舒服」\n`;
+            /** Offset of the second occurrence. */
+            const second = text.indexOf(narration, 1,);
+
+            expect(repeatGroupsOf({ text, slices: chunksOf({ text, },), },),).toEqual([
+              {
+                kind: 'maximal',
+                length: 14,
+                occurrences: [
+                  occurrenceAt({
+                    startOffset: 0,
+                    width: 14,
+                    line: 1,
+                    sliceIndex: 0,
+                  },),
+                  occurrenceAt({
+                    startOffset: second,
+                    width: 14,
+                    line: 3,
+                    sliceIndex: 0,
+                  },),
+                ],
+                unplaced: [],
+              },
+            ],);
+          },
+        },),
+
+        it({
+          name: 'Keeps a refrain whose clauses stand in narration right after a closing mark',
+          fn: async () => {
+            /** Page whose clauses each follow a short quotation, with a different quotation before each. */
+            const text = `「好」${REFRAIN_FIRST}。\n\n「坏」${REFRAIN_SECOND}。\n`;
+            /** Offset of the first clause. */
+            const first = text.indexOf(REFRAIN_FIRST,);
+            /** Offset of the second clause. */
+            const second = text.indexOf(REFRAIN_SECOND,);
+
+            expect(repeatGroupsOf({ text, slices: chunksOf({ text, },), },),).toEqual([
+              {
+                kind: 'refrain',
+                prefix: '所以这只猫是个',
+                suffix: '猫咪吧',
+                slotBounds: {
+                  minimum: 1,
+                  maximum: 8,
+                },
+                occurrences: [
+                  {
+                    sliceIndex: 0,
+                    startOffset: first,
+                    endOffset: first + 11,
+                    line: 1,
+                    slotStartOffset: first + 7,
+                    slotEndOffset: first + 8,
+                  },
+                  {
+                    sliceIndex: 0,
+                    startOffset: second,
+                    endOffset: second + 11,
+                    line: 3,
+                    slotStartOffset: second + 7,
+                    slotEndOffset: second + 8,
+                  },
+                ],
+                unplaced: [],
+              },
+            ],);
+          },
+        },),
+
+        it({
           name: 'Reads a repeat on a page whose lines end in a carriage return and a line feed',
           fn: async () => {
             /** Page with Windows line endings, whose repeat stands on its first and third lines. */
@@ -1921,9 +2039,12 @@ await describe({
         },),
 
         it({
-          name: 'Lists the shorter of two repeats that start at the same offset first',
+          name: 'Keeps the repeat of three occurrences and drops the longer repeat of two that starts at the same offset',
           fn: async () => {
-            /** Three paragraphs: the first two share fifteen characters, all three share their first twelve. */
+            /**
+             Three paragraphs: the first two share fifteen characters, all three share their first twelve.
+             The twelve cover 36 characters and the fifteen 30, and the two repeats overlap at both places of the fifteen.
+             */
             const text = `${RUN_FIFTEEN}。\n\n${RUN_FIFTEEN}，尾巴一卷一卷。\n\n${RUN_TWELVE}，又伸了个懒腰。\n`;
             /** Offsets of the three paragraphs' repeats. */
             const starts = [
@@ -1958,35 +2079,16 @@ await describe({
                 ],
                 unplaced: [],
               },
-              {
-                kind: 'maximal',
-                length: 15,
-                occurrences: [
-                  occurrenceAt({
-                    startOffset: starts[0],
-                    width: 15,
-                    line: 1,
-                    sliceIndex: 0,
-                  },),
-                  occurrenceAt({
-                    startOffset: starts[1],
-                    width: 15,
-                    line: 3,
-                    sliceIndex: 0,
-                  },),
-                ],
-                unplaced: [],
-              },
             ],);
           },
         },),
 
         it({
-          name: 'Lists a maximal repeat before a refrain that starts at the same offset',
+          name: 'Keeps the maximal repeat and drops the refrain frame that overlaps it, when the repeat covers more text',
           fn: async () => {
             /** Two lines, each holding both clauses of one frame, so the whole line repeats and its clauses form a refrain. */
             const line = `${REFRAIN_FIRST}，${REFRAIN_SECOND}`;
-            /** Page repeating that line in two paragraphs. */
+            /** Page repeating that line in two paragraphs. The line covers 46 units twice, the four clauses 44. */
             const text = `${line}\n\n${line}\n`;
             /** Offset of the second line. */
             const second = text.indexOf(line, 1,);
@@ -2013,6 +2115,23 @@ await describe({
                 ],
                 unplaced: [],
               },
+            ],);
+          },
+        },),
+
+        it({
+          name: 'Keeps the refrain frame and drops the maximal repeat that overlaps it, when the clauses cover more text',
+          fn: async () => {
+            /** Two lines holding both clauses of one frame, and a third paragraph with one more clause of it. */
+            const line = `${REFRAIN_FIRST}，${REFRAIN_SECOND}`;
+            /** Page repeating the line twice, then the first clause once more. The line covers 46 units, the five clauses 55. */
+            const text = `${line}\n\n${line}\n\n${REFRAIN_FIRST}。\n`;
+            /** Offset of the second line. */
+            const second = text.indexOf(line, 1,);
+            /** Offset of the third paragraph's clause. */
+            const third = text.lastIndexOf(REFRAIN_FIRST,);
+
+            expect(repeatGroupsOf({ text, slices: chunksOf({ text, },), },),).toEqual([
               {
                 kind: 'refrain',
                 prefix: '所以这只猫是个',
@@ -2054,8 +2173,348 @@ await describe({
                     slotStartOffset: second + 19,
                     slotEndOffset: second + 20,
                   },
+                  {
+                    sliceIndex: 0,
+                    startOffset: third,
+                    endOffset: third + 11,
+                    line: 5,
+                    slotStartOffset: third + 7,
+                    slotEndOffset: third + 8,
+                  },
                 ],
                 unplaced: [],
+              },
+            ],);
+          },
+        },),
+
+        it({
+          name: 'Keeps the whole-paragraph repeat of periodic text and drops the shorter repeat that shares its start',
+          fn: async () => {
+            /** Nine characters that a paragraph states three times over. */
+            const unit = '猫咪在窗台上晒太阳';
+            /** Page stating the periodic paragraph twice. The paragraph covers 54 characters, the shorter repeat 36. */
+            const text = `${unit.repeat(3,)}\n\n${unit.repeat(3,)}\n`;
+
+            expect(repeatGroupsOf({ text, slices: chunksOf({ text, },), },),).toEqual([
+              {
+                kind: 'maximal',
+                length: 27,
+                occurrences: [
+                  occurrenceAt({
+                    startOffset: 0,
+                    width: 27,
+                    line: 1,
+                    sliceIndex: 0,
+                  },),
+                  occurrenceAt({
+                    startOffset: 29,
+                    width: 27,
+                    line: 3,
+                    sliceIndex: 0,
+                  },),
+                ],
+                unplaced: [],
+              },
+            ],);
+          },
+        },),
+
+        it({
+          name: 'Keeps the repeat that tiles a periodic paragraph four times when it covers more text than the paragraph repeat',
+          fn: async () => {
+            /** Nine characters that a paragraph states four times over. */
+            const unit = '猫咪在窗台上晒太阳';
+            /** Page stating the periodic paragraph twice. The two-unit repeat covers 72 characters, the three-unit one 54. */
+            const text = `${unit.repeat(4,)}\n\n${unit.repeat(4,)}\n`;
+
+            expect(repeatGroupsOf({ text, slices: chunksOf({ text, },), },),).toEqual([
+              {
+                kind: 'maximal',
+                length: 18,
+                occurrences: [
+                  occurrenceAt({
+                    startOffset: 0,
+                    width: 18,
+                    line: 1,
+                    sliceIndex: 0,
+                  },),
+                  occurrenceAt({
+                    startOffset: 18,
+                    width: 18,
+                    line: 1,
+                    sliceIndex: 0,
+                  },),
+                  occurrenceAt({
+                    startOffset: 38,
+                    width: 18,
+                    line: 3,
+                    sliceIndex: 0,
+                  },),
+                  occurrenceAt({
+                    startOffset: 56,
+                    width: 18,
+                    line: 3,
+                    sliceIndex: 0,
+                  },),
+                ],
+                unplaced: [],
+              },
+            ],);
+          },
+        },),
+
+        it({
+          name: 'Lists the repeat that comes first on the page when two overlapping repeats cover the same amount of text',
+          fn: async () => {
+            /** Nine characters that the paragraphs state five times and three times. */
+            const unit = '猫咪在窗台上晒太阳';
+            /** Page whose two-unit repeat covers 54 characters over three places and its three-unit repeat 54 over two. */
+            const text = `${unit.repeat(5,)}\n\n${unit.repeat(3,)}\n`;
+
+            expect(repeatGroupsOf({ text, slices: chunksOf({ text, },), },),).toEqual([
+              {
+                kind: 'maximal',
+                length: 18,
+                occurrences: [
+                  occurrenceAt({
+                    startOffset: 0,
+                    width: 18,
+                    line: 1,
+                    sliceIndex: 0,
+                  },),
+                  occurrenceAt({
+                    startOffset: 18,
+                    width: 18,
+                    line: 1,
+                    sliceIndex: 0,
+                  },),
+                  occurrenceAt({
+                    startOffset: 47,
+                    width: 18,
+                    line: 3,
+                    sliceIndex: 0,
+                  },),
+                ],
+                unplaced: [],
+              },
+            ],);
+          },
+        },),
+
+        it({
+          name: 'Keeps one of three refrain frames that share clauses, the one covering the most text, the earlier on a tie',
+          fn: async () => {
+            /** Clause that shares four leading characters with the first two but changes its slot to two characters. */
+            const third = '所以这只狗儿是个胖猫咪吧';
+            /** Page whose three clauses pair up into three frames: the first two, the first and third, the second and third. */
+            const text = `${REFRAIN_FIRST}。\n\n${REFRAIN_SECOND}。\n\n${third}。\n`;
+            /** Offset of the third clause. */
+            const thirdAt = text.indexOf(third,);
+
+            expect(repeatGroupsOf({ text, slices: chunksOf({ text, },), },),).toEqual([
+              {
+                kind: 'refrain',
+                prefix: '所以这只',
+                suffix: '是个胖猫咪吧',
+                slotBounds: {
+                  minimum: 1,
+                  maximum: 8,
+                },
+                occurrences: [
+                  {
+                    sliceIndex: 0,
+                    startOffset: 0,
+                    endOffset: 11,
+                    line: 1,
+                    slotStartOffset: 4,
+                    slotEndOffset: 5,
+                  },
+                  {
+                    sliceIndex: 0,
+                    startOffset: thirdAt,
+                    endOffset: thirdAt + 12,
+                    line: 5,
+                    slotStartOffset: thirdAt + 4,
+                    slotEndOffset: thirdAt + 6,
+                  },
+                ],
+                unplaced: [],
+              },
+            ],);
+          },
+        },),
+
+        it({
+          name: 'Keeps two groups whose occurrences touch without sharing a character',
+          fn: async () => {
+            /** Twelve characters that end one group's occurrence where the other group's begins. */
+            const other = '尾巴一卷一卷地扫来扫去啊';
+            /** Page whose first paragraph holds both runs back to back, the second and third one run each beside other words. */
+            const text = `${RUN_TWELVE}${other}。\n\n${RUN_TWELVE}，又伸了个懒腰。\n\n傍晚，${other}，尾巴一卷一卷。\n`;
+            /** Offset of the first run's second place. */
+            const secondRun = text.indexOf(RUN_TWELVE, 1,);
+            /** Offset of the other run's second place. */
+            const secondOther = text.indexOf(other, 13,);
+
+            expect(repeatGroupsOf({ text, slices: chunksOf({ text, },), },),).toEqual([
+              {
+                kind: 'maximal',
+                length: 12,
+                occurrences: [
+                  occurrenceAt({
+                    startOffset: 0,
+                    width: 12,
+                    line: 1,
+                    sliceIndex: 0,
+                  },),
+                  occurrenceAt({
+                    startOffset: secondRun,
+                    width: 12,
+                    line: 3,
+                    sliceIndex: 0,
+                  },),
+                ],
+                unplaced: [],
+              },
+              {
+                kind: 'maximal',
+                length: 12,
+                occurrences: [
+                  occurrenceAt({
+                    startOffset: 12,
+                    width: 12,
+                    line: 1,
+                    sliceIndex: 0,
+                  },),
+                  occurrenceAt({
+                    startOffset: secondOther,
+                    width: 12,
+                    line: 5,
+                    sliceIndex: 0,
+                  },),
+                ],
+                unplaced: [],
+              },
+            ],);
+          },
+        },),
+
+        it({
+          name: 'Keeps a repeat that a longer repeat touching quoted speech overlaps, since that one is left out first',
+          fn: async () => {
+            /**
+             Three paragraphs: the first two repeat the twelve characters and the speech that follows them, the third
+             states the twelve alone. The twelve cover 36 characters over three places; the longer repeat runs on into
+             the quotation, covers 40 over two places and overlaps the first two of the twelve.
+             */
+            const text = `${RUN_TWELVE}「${SPEECH}」。\n\n午后，${RUN_TWELVE}「${SPEECH}」，尾巴一卷一卷。\n\n傍晚，${RUN_TWELVE}，又伸了个懒腰。\n`;
+            /** Offset of the second occurrence. */
+            const second = text.indexOf(RUN_TWELVE, 1,);
+            /** Offset of the third occurrence. */
+            const third = text.indexOf(RUN_TWELVE, second + 1,);
+
+            expect(repeatGroupsOf({ text, slices: chunksOf({ text, },), },),).toEqual([
+              {
+                kind: 'maximal',
+                length: 12,
+                occurrences: [
+                  occurrenceAt({
+                    startOffset: 0,
+                    width: 12,
+                    line: 1,
+                    sliceIndex: 0,
+                  },),
+                  occurrenceAt({
+                    startOffset: second,
+                    width: 12,
+                    line: 3,
+                    sliceIndex: 0,
+                  },),
+                  occurrenceAt({
+                    startOffset: third,
+                    width: 12,
+                    line: 5,
+                    sliceIndex: 0,
+                  },),
+                ],
+                unplaced: [],
+              },
+            ],);
+          },
+        },),
+
+        it({
+          name: 'Counts the text a group covers in characters, so a repeat of characters beyond the first plane does not outweigh a longer one',
+          fn: async () => {
+            /** Fourteen basic-plane characters that end the longer repeat's occurrences but one. */
+            const lead = `${RUN_TWELVE}呀真`;
+            /** Basic-plane character that both repeats share at their first place. */
+            const shared = '好';
+            /** Eleven characters beyond the first plane, which each take two UTF-16 units. */
+            const astral = Array.from({ length: 11, }, (_, index,) => String.fromCodePoint(0x2_00_00 + index,),)
+              .join('',);
+            /**
+             Three paragraphs. The first holds both repeats, the lead and the shared character (fifteen characters, stated
+             again in the second paragraph) and the shared character and the astral run (twelve characters, stated again in
+             the third), overlapping at the shared character. In characters the fifteen cover 30 and the twelve 24; in UTF-16
+             units the fifteen cover 30 and the twelve 46.
+             */
+            const text = `${lead}${shared}${astral}，\n\n${lead}${shared}，尾巴一卷一卷。\n\n傍晚，${shared}${astral}。\n`;
+            /** Offset of the lead's second place. */
+            const second = text.indexOf(lead, 1,);
+
+            expect(repeatGroupsOf({ text, slices: chunksOf({ text, },), },),).toEqual([
+              {
+                kind: 'maximal',
+                length: 15,
+                occurrences: [
+                  occurrenceAt({
+                    startOffset: 0,
+                    width: 15,
+                    line: 1,
+                    sliceIndex: 0,
+                  },),
+                  occurrenceAt({
+                    startOffset: second,
+                    width: 15,
+                    line: 3,
+                    sliceIndex: 0,
+                  },),
+                ],
+                unplaced: [],
+              },
+            ],);
+          },
+        },),
+
+        it({
+          name: 'Decides which of two overlapping groups stays before it places them, so slices that hold none of the page change nothing',
+          fn: async () => {
+            /** Nine characters that a paragraph states three times over. */
+            const unit = '猫咪在窗台上晒太阳';
+            /** Page stating the periodic paragraph twice. */
+            const text = `${unit.repeat(3,)}\n\n${unit.repeat(3,)}\n`;
+
+            expect(repeatGroupsOf({ text, slices: [], },),).toEqual([
+              {
+                kind: 'maximal',
+                length: 27,
+                occurrences: [],
+                unplaced: [
+                  {
+                    startOffset: 0,
+                    endOffset: 27,
+                    line: 1,
+                    reason: 'in-no-slice',
+                  },
+                  {
+                    startOffset: 29,
+                    endOffset: 56,
+                    line: 3,
+                    reason: 'in-no-slice',
+                  },
+                ],
               },
             ],);
           },

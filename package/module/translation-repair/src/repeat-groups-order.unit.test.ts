@@ -54,6 +54,7 @@ function foundRepeat(
       startOffset,
       endOffset,
       quoted: false,
+      width: endOffset - startOffset,
       slotStartOffset: startOffset,
       slotEndOffset: endOffset,
     }),),
