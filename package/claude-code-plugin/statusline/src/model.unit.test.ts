@@ -6,6 +6,8 @@ import {
 
 import { formatModelDisplay, } from '../dist/final/node/statusline.mjs';
 
+//region Case tables
+
 /**
  One formatter case: display name in, concise display name out.
  */
@@ -93,6 +95,31 @@ const STRIPPED_CASES: readonly DisplayCase[] = [
     raw: 'constructor 1.0',
     expected: 'constructor 1.0',
   },
+  {
+    name: 'keeps a zero-width space inside a context piece, since it is not whitespace',
+    raw: 'Sonnet 4.6 (1M\u200BX context)',
+    expected: 'Sonnet (1M\u200BX)',
+  },
+  {
+    name: 'keeps a next-line character inside a context piece, since a regex does not treat it as whitespace',
+    raw: 'Sonnet 4.6 (1M\u0085X context)',
+    expected: 'Sonnet (1M\u0085X)',
+  },
+  {
+    name: 'keeps an astral character as a whole context piece',
+    raw: 'Sonnet 4.6 (\u{1F600} context)',
+    expected: 'Sonnet (\u{1F600})',
+  },
+  {
+    name: 'keeps an unpaired surrogate as a whole context piece',
+    raw: 'Sonnet 4.6 (\uD800 context)',
+    expected: 'Sonnet (\uD800)',
+  },
+  {
+    name: 'keeps punctuation inside a context piece',
+    raw: 'Sonnet 4.6 (1M/2 context)',
+    expected: 'Sonnet (1M/2)',
+  },
 ] as const;
 
 /**
@@ -135,9 +162,39 @@ const UNPARSED_CASES: readonly DisplayCase[] = [
     expected: 'Opus 4.8.9',
   },
   {
-    name: 'returns a context piece with no opening paren position untouched',
+    name: 'returns a name with text after the closed context piece untouched',
     raw: 'Opus 4.8 (1M context)x',
     expected: 'Opus 4.8 (1M context)x',
+  },
+  {
+    name: 'returns a context piece holding an en quad space untouched',
+    raw: 'Sonnet 4.6 (1M\u2001X context)',
+    expected: 'Sonnet 4.6 (1M\u2001X context)',
+  },
+  {
+    name: 'returns a name whose context piece follows a no-break space untouched',
+    raw: 'Sonnet 4.6\u00A0(200K context)',
+    expected: 'Sonnet 4.6\u00A0(200K context)',
+  },
+  {
+    name: 'returns a name whose version follows a no-break space untouched',
+    raw: 'Sonnet\u00A04.6',
+    expected: 'Sonnet\u00A04.6',
+  },
+  {
+    name: 'returns a name whose context piece follows a line separator untouched',
+    raw: 'Sonnet 4.6\u2028(200K context)',
+    expected: 'Sonnet 4.6\u2028(200K context)',
+  },
+  {
+    name: 'returns a name with a trailing carriage return and newline untouched',
+    raw: 'Opus 4.8 (1M context)\r\n',
+    expected: 'Opus 4.8 (1M context)\r\n',
+  },
+  {
+    name: 'returns a name with a trailing carriage return untouched',
+    raw: 'Sonnet\r',
+    expected: 'Sonnet\r',
   },
   {
     name: 'returns an unclosed context piece untouched',
@@ -176,8 +233,12 @@ const UNPARSED_CASES: readonly DisplayCase[] = [
   },
 ] as const;
 
+//endregion Case tables
+
+//region Suites
+
 await describe({
-  name: 'model',
+  name: '',
   children: [
     describe({
       name: formatModelDisplay.name,
@@ -210,3 +271,5 @@ await describe({
     },),
   ],
 },);
+
+//endregion Suites
