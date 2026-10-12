@@ -23,7 +23,7 @@ import type {
 } from './pass-entry-contract.ts';
 import { foldPassCarried, } from './pass-carried-fold.ts';
 import { admitPassInsertions, } from './pass-insertion-reseat.ts';
-import { runPassConsolidation, } from './pass-consolidate.ts';
+import { runPassSettlement, } from './pass-settlement.ts';
 import type { PipelineDigest, } from './pipeline-digest.ts';
 import { tallyCaughtEntry, } from './entry-error-outcome.ts';
 import {
@@ -414,9 +414,15 @@ async function runEntryPipeline(
     },);
 
     /**
-     Third rendering and final naturalness decisions for contested slices.
+     Third rendering and final naturalness decisions for contested slices, then
+     the page-level consistency of the settled slices (`pass-settlement.ts`):
+     repeated source wording and refrains the slices render differently, put to
+     the judge bench and carried to one rendering (the owner's ruling of
+     2026-10-11). BEFORE THE PAGE IS COMPOSED, so the page passes and the page
+     guards run over its result. A run always ships: trouble in the consistency
+     pass leaves the page as it stood and says so in the artifact.
      */
-    const consolidateSlices = await runPassConsolidation({
+    const settlement = await runPassSettlement({
       client,
       prepared,
       projected,
@@ -435,7 +441,7 @@ async function runEntryPipeline(
     },);
 
     /**
-     Time this entry took, both lanes and the contest included, on `monotonicMs` (ledger B78).
+     Time this entry took, both lanes, the contest, the consolidation and the consistency pass included, on `monotonicMs` (ledger B78).
      */
     const durationMs = monotonicMs() - t0;
 
@@ -451,7 +457,7 @@ async function runEntryPipeline(
       prepared,
       lanes,
       contestSlices,
-      consolidateSlices,
+      ...settlement,
       targetText: settledArchiveText,
       l: tagged({ tag: entry.id, },),
     },);

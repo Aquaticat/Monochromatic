@@ -3,6 +3,7 @@ import type { PreparedDocumentPair, } from '../document-preparation.ts';
 import { buildSettledTwoLaneArtifact, } from './artifact-two-lane-build.ts';
 import type { ArtifactConsolidation, } from './artifact-two-lane-consolidate.ts';
 import type { ArtifactLaneSelection, } from './artifact-two-lane-contest.ts';
+import type { ArtifactConsistency, } from './artifact-two-lane-consistency.ts';
 import type { ArtifactPageAssembly, } from './artifact-two-lane-page-assembly.ts';
 import type { SettledArtifact, } from './artifact-two-lane-contract.ts';
 import type { PipelineDigest, } from './pipeline-digest.ts';
@@ -46,11 +47,17 @@ import { RUN_CALL_CONFIG, } from './run-config.ts';
 
  @param consolidateSlices - what the consolidation settled
 
+ @param pageAssembly - what the page-level assembly guard did to the composed
+ page
+
+ @param consistency - what the page-level consistency pass did to the settled
+ page
+
  @returns Artifact ready to serialize
 
  @example
  ```ts
- const artifact = settledEntryArtifact({ entryId, tip, pipelineDigest, corpusSha, durationMs, prepared, lanes, contestSlices, consolidateSlices, pageAssembly, },);
+ const artifact = settledEntryArtifact({ entryId, tip, pipelineDigest, corpusSha, durationMs, prepared, lanes, contestSlices, consolidateSlices, pageAssembly, consistency, },);
  ```
  */
 export function settledEntryArtifact(
@@ -65,6 +72,7 @@ export function settledEntryArtifact(
     contestSlices,
     consolidateSlices,
     pageAssembly,
+    consistency,
   }: {
     readonly entryId: string;
     readonly tip: string;
@@ -76,6 +84,7 @@ export function settledEntryArtifact(
     readonly contestSlices: Extract<ArtifactLaneSelection, { readonly kind: 'contested'; }>['slices'];
     readonly consolidateSlices: Extract<ArtifactConsolidation, { readonly kind: 'settled'; }>['slices'];
     readonly pageAssembly: ArtifactPageAssembly;
+    readonly consistency: ArtifactConsistency;
   },
 ): SettledArtifact {
   return buildSettledTwoLaneArtifact({
@@ -96,6 +105,7 @@ export function settledEntryArtifact(
       slices: consolidateSlices,
     },
     pageAssembly,
+    consistency,
   },);
 }
 

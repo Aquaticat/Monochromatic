@@ -70,7 +70,8 @@ export type JudgeSeatPhase =
   | 'lanes'
   | 'translate lane'
   | 'lane contest'
-  | 'consolidation';
+  | 'consolidation'
+  | 'page consistency';
 
 /**
  Which benches each phase cannot run without.
@@ -84,7 +85,10 @@ export type JudgeSeatPhase =
  gates with the late bench, of which the slate is the narrower. The
  insertion admission, which asks the roster whether the archive already
  covers each source-only passage, re-reads its seats under a hold as its own
- phase (ledger X12) and leans on the wide bench, as the preparation does.
+ phase (ledger X12) and leans on the wide bench, as the preparation does. The
+ page consistency pass, which asks the late bench which rendering of a repeated
+ wording every place should follow, leans on the wide bench as the lane contest
+ that asks the same bench does.
  */
 const BENCHES_BY_PHASE: Readonly<Record<JudgeSeatPhase, readonly BenchName[]>> = {
   preparation: ['wide',],
@@ -105,6 +109,7 @@ const BENCHES_BY_PHASE: Readonly<Record<JudgeSeatPhase, readonly BenchName[]>> =
     'slate',
     'wide',
   ],
+  'page consistency': ['wide',],
 };
 
 /**

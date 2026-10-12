@@ -17,6 +17,7 @@ import {
 } from '../preparation-identity.ts';
 import {
   ARTIFACT_SCHEMA_VERSION_V13,
+  ARTIFACT_SCHEMA_VERSION_V15,
   artifactGenerationReadingRequirements,
   isTwoLaneArtifactGeneration,
   TWO_LANE_GENERATIONS,
@@ -39,6 +40,7 @@ import type {
 import { parseLanes, } from './artifact-two-lane-read-lanes.ts';
 import { parseConsolidation, } from './artifact-two-lane-read-consolidate.ts';
 import { parsePageAssembly, } from './artifact-two-lane-page-assembly.ts';
+import { parseConsistency, } from './artifact-two-lane-read-consistency.ts';
 import { SETTLED_ARTIFACT_KEYS, } from './artifact-two-lane-read-keys.ts';
 import { parseBlockPairing, } from './artifact-two-lane-read-pairing.ts';
 import { parseSectionPairing, } from './artifact-two-lane-read-section-pairing.ts';
@@ -453,6 +455,18 @@ export function parseSettledTwoLaneArtifact(
       path: `${id}.pageAssembly`,
       required: generation
         >= ARTIFACT_SCHEMA_VERSION_V13,
+    },),
+
+    // WHAT THE PAGE-LEVEL CONSISTENCY PASS DID, written from generation fifteen
+    // on and refused in an older file, which no such pass ever ran over.
+    consistency: parseConsistency({
+      value: artifact.consistency,
+      path: `${id}.consistency`,
+      writesSection: generation
+        >= ARTIFACT_SCHEMA_VERSION_V15,
+      sliceIndexes: new Set(comparison.map(function indexOf(row,): number {
+        return row.sliceIndex;
+      },),),
     },),
   };
 }

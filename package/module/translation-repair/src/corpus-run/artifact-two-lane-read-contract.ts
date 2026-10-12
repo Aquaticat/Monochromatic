@@ -1,3 +1,4 @@
+import type { ArtifactConsistency, } from './artifact-two-lane-consistency.ts';
 import type { ArtifactPageAssembly, } from './artifact-two-lane-page-assembly.ts';
 import type { ArchiveOriginalSpan, } from '../archive-original-note.ts';
 import type { PreparationIdentity, } from '../preparation-identity.ts';
@@ -416,6 +417,13 @@ export type ParsedTwoLaneArtifact = {
    every artifact written before the guard existed.
    */
   readonly pageAssembly: ArtifactPageAssembly;
+
+  /**
+   What the page-level consistency pass did to the settled page, recounted
+   from its own ballots, and empty on every artifact written before
+   generation fifteen.
+   */
+  readonly consistency: ArtifactConsistency;
 };
 
 //endregion Artifact version 2 read contract

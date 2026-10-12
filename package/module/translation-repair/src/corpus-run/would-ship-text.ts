@@ -5,6 +5,11 @@ import type {
   ParsedTwoLaneArtifact,
 } from './artifact-two-lane-read-contract.ts';
 import {
+  type ArtifactConsistency,
+  consistencyOverrideAt,
+  NO_CONSISTENCY,
+} from './artifact-two-lane-consistency.ts';
+import {
   type ArtifactPageAssembly,
   NO_PAGE_ASSEMBLY,
   pageAssemblyOverrideAt,
@@ -42,6 +47,7 @@ import { restoreTypography, } from '../restore-typography.ts';
  */
 export type WouldShipDecider =
   | 'page-assembly'
+  | 'consistency'
   | 'polish'
   | 'consolidation'
   | 'contest'
@@ -144,7 +150,7 @@ export type WouldShipReading =
 export type WouldShipSource = Pick<
   ParsedTwoLaneArtifact,
   'comparison' | 'consolidation' | 'laneSelection'
-> & ArchiveTextCarrier & PageAssemblyCarrier;
+> & ArchiveTextCarrier & PageAssemblyCarrier & ConsistencyCarrier;
 
 /**
  What the page-level guard did, as either artifact shape carries it: the
@@ -162,6 +168,23 @@ type PageAssemblyCarrier = {
    What the page-level guard trimmed, withdrew and found.
    */
   readonly pageAssembly?: ArtifactPageAssembly;
+};
+
+/**
+ What the page-level consistency pass did, as either artifact shape carries
+ it: a source built from the three reading fields alone carries none, which
+ reads as a pass that changed nothing.
+
+ @example
+ ```ts
+ const carrier: ConsistencyCarrier = { consistency: NO_CONSISTENCY, };
+ ```
+ */
+type ConsistencyCarrier = {
+  /**
+   What the page-level consistency pass changed.
+   */
+  readonly consistency?: ArtifactConsistency;
 };
 
 /**
@@ -592,6 +615,22 @@ export function wouldShipTextFor(
       row,
       silence: 'page-assembly-withdrew-and-archive-silent',
     },);
+
+  /**
+   What the consistency pass wrote here, read BELOW the page assembly, which
+   describes the page this text is composed into, and ABOVE the polish, the
+   consolidation and the contest, which settled the text the pass changed.
+   */
+  const consistent = consistencyOverrideAt({
+    consistency: artifact.consistency ?? NO_CONSISTENCY,
+    sliceIndex: row.sliceIndex,
+  },);
+  if (consistent.kind === 'replaced')
+    return {
+      kind: 'wording',
+      text: consistent.text,
+      decidedBy: 'consistency',
+    };
 
   /**
    Final naturalness polish, absent before generation six or when base stood.

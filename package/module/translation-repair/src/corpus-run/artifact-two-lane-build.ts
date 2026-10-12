@@ -4,6 +4,7 @@ import { compareDocumentLanes, } from '../lane-comparison.ts';
 import { preparationIdentity, } from '../preparation-identity.ts';
 import { sourceBytesOf, } from '../sample-grading.ts';
 import type { ArtifactConsolidation, } from './artifact-two-lane-consolidate.ts';
+import type { ArtifactConsistency, } from './artifact-two-lane-consistency.ts';
 import type { ArtifactPageAssembly, } from './artifact-two-lane-page-assembly.ts';
 import type { ArtifactLaneSelection, } from './artifact-two-lane-contest.ts';
 import { projectLanes, } from './artifact-two-lane-derive.ts';
@@ -104,6 +105,9 @@ function sectionAlignmentOf(
  @param pageAssembly - what the page-level assembly guard did to the composed
  page
 
+ @param consistency - what the page-level consistency pass did to the settled
+ page
+
  @returns Artifact ready to serialize
 
  @throws {@link LaneComparisonError} when the two ledgers cannot be compared,
@@ -131,6 +135,7 @@ export function buildSettledTwoLaneArtifact(
     laneSelection,
     consolidation,
     pageAssembly,
+    consistency,
   }: {
     readonly entryId: string;
     readonly tip: string;
@@ -160,6 +165,11 @@ export function buildSettledTwoLaneArtifact(
      What the page-level guard did to the page these sections compose.
      */
     readonly pageAssembly: ArtifactPageAssembly;
+
+    /**
+     What the page-level consistency pass did to the page these sections compose.
+     */
+    readonly consistency: ArtifactConsistency;
   },
 ): SettledArtifact {
   /**
@@ -342,6 +352,10 @@ export function buildSettledTwoLaneArtifact(
     // WHAT THE PAGE-LEVEL GUARD DID to the page `lanes`, `laneSelection` and
     // `consolidation` compose, applied first by every reader composing that page.
     pageAssembly,
+
+    // WHAT THE PAGE-LEVEL CONSISTENCY PASS DID to the settled page, applied
+    // below the page assembly and above the polish when a slice's text is read.
+    consistency,
   };
 }
 

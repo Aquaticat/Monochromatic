@@ -23,6 +23,7 @@ export const SETTLED_ARTIFACT_KEYS: readonly string[] = [
   'laneSelection',
   'consolidation',
   'pageAssembly',
+  'consistency',
 ];
 
 //endregion Settled artifact keys

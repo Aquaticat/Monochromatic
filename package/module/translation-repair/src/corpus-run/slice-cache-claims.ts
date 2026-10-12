@@ -149,6 +149,17 @@ const CLAIM_BY_ROLE = {
     prefix: 'page-titles.',
     marker: 'page-titles-generation.txt',
   },
+
+  /**
+   Page consistency (the owner's ruling of 2026-10-11). NOT A LANE: the judge
+   bench's ballots about one repeated wording, bought once the slices have
+   settled and keyed by the sheet they answered, so a resumed page counts the
+   same ballots and lands on the same page.
+   */
+  pageConsistency: {
+    prefix: 'consistency.',
+    marker: 'consistency-generation.txt',
+  },
 } as const satisfies Record<string, SliceNamespace>;
 
 /**
@@ -205,5 +216,10 @@ export const REFINE_NAMESPACE: SliceNamespace = CLAIM_BY_ROLE.refinement;
  Page title lexicon's claim.
  */
 export const PAGE_TITLES_NAMESPACE: SliceNamespace = CLAIM_BY_ROLE.pageTitles;
+
+/**
+ Page consistency's claim.
+ */
+export const PAGE_CONSISTENCY_NAMESPACE: SliceNamespace = CLAIM_BY_ROLE.pageConsistency;
 
 //endregion Slice cache claims

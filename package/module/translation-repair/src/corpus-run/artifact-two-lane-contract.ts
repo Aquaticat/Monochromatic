@@ -3,6 +3,7 @@ import type { PreparationIdentity, } from '../preparation-identity.ts';
 import type { RepairTranslationResult, } from '../repair-result.ts';
 import type { TranslateDocumentResult, } from '../translate-document-contract.ts';
 import type { ArtifactConsolidation, } from './artifact-two-lane-consolidate.ts';
+import type { ArtifactConsistency, } from './artifact-two-lane-consistency.ts';
 import type { ArtifactPageAssembly, } from './artifact-two-lane-page-assembly.ts';
 import type { ArtifactLaneSelection, } from './artifact-two-lane-contest.ts';
 import type {
@@ -91,6 +92,12 @@ export const ARTIFACT_SCHEMA_VERSION_V14 = 14;
  refuses the key; a reader of this generation refuses it on a `sole-lane`
  slice, which asked no judge, and on a consolidation slice that ships no
  wording of its own.
+
+ THE CONSISTENCY SECTION JOINED THIS GENERATION before any pass ran at it, so
+ it moved no number: a reader of fifteen requires the `consistency` section
+ (the page-level pass's groups, ballots and changed slices) and refuses it in
+ an older file. No pass had written a generation fifteen artifact, so none
+ exists without it.
  */
 export const ARTIFACT_SCHEMA_VERSION_V15 = 15;
 
@@ -764,6 +771,13 @@ export type SettledArtifact = {
    What the page-level assembly guard did to the composed page.
    */
   readonly pageAssembly: ArtifactPageAssembly;
+
+  /**
+   What the page-level consistency pass did to the settled page: the
+   repeated wording it found, the ballots it counted, and the slices it changed.
+   Written from generation fifteen on.
+   */
+  readonly consistency: ArtifactConsistency;
 };
 
 //endregion Artifact version 2 contract

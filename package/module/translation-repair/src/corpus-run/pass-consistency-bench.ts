@@ -1,0 +1,304 @@
+import {
+  type Logger,
+  tagged,
+} from '@monochromatic-dev/module-logger/ts';
+
+import {
+  exchangeFailureLogText,
+  exchangeFailureText,
+} from '../exchange-failure-text.ts';
+import { mapOverlapped, } from '../overlapped-map.ts';
+import type { SliceCache, } from '../slice-cache.ts';
+import type { StageSettings, } from '../stage-settings.ts';
+import type { RosterModelId, } from '../synthetic-catalog.ts';
+import { askConsistencyBench, } from './pass-consistency-ask.ts';
+import {
+  type ConsistencyRecord,
+  openConsistencyCache,
+} from './pass-consistency-cache.ts';
+import {
+  type ConsistencyPlace,
+  occurrenceViewOf,
+  repeatOf,
+} from './pass-consistency-group.ts';
+import {
+  type SettledGroup,
+  settleAsked,
+  settleFailed,
+  unplacedOf,
+} from './pass-consistency-settle.ts';
+import type { PipelineDigest, } from './pipeline-digest.ts';
+import type { RunClient, } from './run-client-contract.ts';
+import { RUN_PER_CALL_TIMEOUT_MS, } from './run-config.ts';
+import { readJudgeSeats, } from './run-seats-read.ts';
+import type { RepeatGroup, } from '../repeat-groups-types.ts';
+
+//region Pass consistency bench
+// ASKING THE JUDGE BENCH ABOUT EVERY GROUP THAT NEEDS IT, side by side, and
+// settling what it says. The seats are read when the first group needs them and
+// not before, so a page that repeats nothing the bench must judge reads no
+// meter and waits out no hold.
+
+/**
+ A group with the places a slice holds whole.
+
+ @example
+ ```ts
+ const prepared: PreparedGroup = { group, places, };
+ ```
+ */
+export type PreparedGroup = {
+  /**
+   The group the detector found.
+   */
+  readonly group: RepeatGroup;
+
+  /**
+   The places a slice holds whole.
+   */
+  readonly places: readonly ConsistencyPlace[];
+};
+
+/**
+ Asks the bench about one group and settles it, containing whatever goes wrong.
+
+ @param client - provider client
+
+ @param modelIds - bench asked
+
+ @param text - whole original
+
+ @param prepared - the group and its places
+
+ @param cache - store an earlier answer is read from
+
+ @param identityContext - declared identity lines of the page, which the sheet shows
+
+ @param referenceContext - lines of the pages the original cites, which the sheet shows
+
+ @param signal - entry deadline and caller abort
+
+ @param l - logger the pass writes to
+
+ @param stageSettings - straggler windows the entry file read for this launch
+
+ @returns The group settled, or left as it stands with its failure said
+
+ @throws The abort reason when the caller stopped the work
+
+ @example
+ ```ts
+ const settled = await settleAskedGroup({ client, modelIds, text, prepared, cache, signal, l, stageSettings, },);
+ ```
+ */
+async function settleAskedGroup(
+  {
+    client,
+    modelIds,
+    text,
+    prepared,
+    cache,
+    identityContext,
+    referenceContext,
+    signal,
+    l,
+    stageSettings,
+  }: {
+    readonly client: RunClient;
+    readonly modelIds: readonly RosterModelId[];
+    readonly text: string;
+    readonly prepared: PreparedGroup;
+    readonly cache: SliceCache<ConsistencyRecord>;
+    readonly identityContext?: string;
+    readonly referenceContext?: string;
+    readonly signal: AbortSignal;
+    readonly l: Logger;
+    readonly stageSettings: StageSettings;
+  },
+): Promise<SettledGroup> {
+  /**
+   Logger pre-tagged with this function's name.
+   */
+  const gl = tagged({
+    tag: settleAskedGroup.name,
+    l,
+  },);
+  /**
+   The repeated wording or frame.
+   */
+  const repeat = repeatOf({
+    group: prepared.group,
+    text,
+  },);
+  /**
+   The places no slice holds whole.
+   */
+  const unplaced = unplacedOf({ group: prepared.group, },);
+  try {
+    return settleAsked({
+      repeat,
+      places: prepared.places,
+      unplaced,
+      asked: await askConsistencyBench({
+        client,
+        modelIds,
+        subject: {
+          repeat,
+          occurrences: prepared.places
+            .map(function viewOf(place,) {
+              return occurrenceViewOf({
+                place,
+                text,
+              },);
+            },),
+          ...((identityContext === undefined) ? {} : { identityContext, }),
+          ...((referenceContext === undefined) ? {} : { referenceContext, }),
+        },
+        cache,
+        signal,
+        exchangeTimeoutMs: RUN_PER_CALL_TIMEOUT_MS,
+        l: gl,
+        stageSettings,
+      },),
+    },);
+  }
+  catch (error) {
+    if (signal.aborted)
+      throw error;
+    gl.error(`the bench could not be asked or counted (${exchangeFailureLogText({ error, },)}); the places stay as they stand`,);
+    return settleFailed({
+      repeat,
+      places: prepared.places,
+      unplaced,
+      detail: exchangeFailureText({ error, },),
+    },);
+  }
+}
+
+/**
+ Names a group asked, for the line that reports a failure left unthrown.
+
+ @param position - position of the group among those asked
+
+ @returns Name of the group
+
+ @example
+ ```ts
+ const name = groupAskedName({ item, position: 0, },); // 'group 1 asked'
+ ```
+ */
+function groupAskedName(
+  {
+    position,
+  }: {
+    readonly item: PreparedGroup;
+    readonly position: number;
+  },
+): string {
+  return `group ${String(position + 1,)} asked`;
+}
+
+/**
+ Puts every group the bench is asked about to the bench, side by side.
+
+ @param client - provider client
+
+ @param text - whole original
+
+ @param toAsk - groups to put to the bench, in page order
+
+ @param identityContext - declared identity lines of the page, which each sheet shows
+
+ @param referenceContext - lines of the pages the original cites, which each sheet shows
+
+ @param entryCacheDir - per-entry cache root
+
+ @param pipelineDigest - generation stamp for the cache
+
+ @param signal - entry cancellation
+
+ @param overlap - most groups in flight
+
+ @param l - logger the pass writes to
+
+ @param stageSettings - straggler windows the entry file read for this launch
+
+ @returns One settled group per group asked, in page order
+
+ @throws The abort reason when the caller stopped the work, and whatever the
+ seat reading and the cache opening throw, which the pass contains
+
+ @example
+ ```ts
+ const settled = await askAll({ client, text, toAsk, entryCacheDir, pipelineDigest, signal, overlap, l, stageSettings, },);
+ ```
+ */
+export async function askAll(
+  {
+    client,
+    text,
+    toAsk,
+    identityContext,
+    referenceContext,
+    entryCacheDir,
+    pipelineDigest,
+    signal,
+    overlap,
+    l,
+    stageSettings,
+  }: {
+    readonly client: RunClient;
+    readonly text: string;
+    readonly toAsk: readonly PreparedGroup[];
+    readonly identityContext?: string;
+    readonly referenceContext?: string;
+    readonly entryCacheDir: string;
+    readonly pipelineDigest: PipelineDigest;
+    readonly signal: AbortSignal;
+    readonly overlap: number;
+    readonly l: Logger;
+    readonly stageSettings: StageSettings;
+  },
+): Promise<readonly SettledGroup[]> {
+  if (toAsk.length === 0)
+    return [];
+  /**
+   This phase's judge benches, read now and only when someone is to be asked.
+   */
+  const seats = await readJudgeSeats({
+    client,
+    phase: 'page consistency',
+    signal,
+    l,
+  },);
+  /**
+   Store earlier answers are read from.
+   */
+  const cache = await openConsistencyCache({
+    dir: entryCacheDir,
+    generation: pipelineDigest,
+  },);
+  return await mapOverlapped({
+    items: toAsk,
+    overlap,
+    oneItem: async function askOne({ item, },): Promise<SettledGroup> {
+      return await settleAskedGroup({
+        client,
+        modelIds: seats.lateJudges,
+        text,
+        prepared: item,
+        cache,
+        ...((identityContext === undefined) ? {} : { identityContext, }),
+        ...((referenceContext === undefined) ? {} : { referenceContext, }),
+        signal,
+        l,
+        stageSettings,
+      },);
+    },
+    signal,
+    l,
+    nameOf: groupAskedName,
+  },);
+}
+
+//endregion Pass consistency bench

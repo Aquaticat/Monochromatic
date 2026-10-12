@@ -4,6 +4,7 @@ import { wordForCount, } from '../count-word.ts';
 import type { DocumentLanesResult, } from '../document-lanes.ts';
 import type { PreparedDocumentPair, } from '../document-preparation.ts';
 import type { ArtifactConsolidation, } from './artifact-two-lane-consolidate.ts';
+import type { ArtifactConsistency, } from './artifact-two-lane-consistency.ts';
 import type { ArtifactLaneSelection, } from './artifact-two-lane-contest.ts';
 import type { SettledArtifact, } from './artifact-two-lane-contract.ts';
 import { NO_PAGE_ASSEMBLY, } from './artifact-two-lane-page-assembly.ts';
@@ -38,6 +39,9 @@ import type { PipelineDigest, } from './pipeline-digest.ts';
 
  @param consolidateSlices - what the third rendering settled per slice
 
+ @param consistency - what the page-level consistency pass did to the settled
+ page, which the guard reads the page through
+
  @param targetText - archive text the page's replacements address
 
  @param l - logger the guard's findings reach
@@ -46,7 +50,7 @@ import type { PipelineDigest, } from './pipeline-digest.ts';
 
  @example
  ```ts
- const artifact = settledPageArtifact({ entryId, tip, pipelineDigest, corpusSha, durationMs, prepared, lanes, contestSlices, consolidateSlices, targetText, l, },);
+ const artifact = settledPageArtifact({ entryId, tip, pipelineDigest, corpusSha, durationMs, prepared, lanes, contestSlices, consolidateSlices, consistency, targetText, l, },);
  ```
  */
 export function settledPageArtifact(
@@ -60,6 +64,7 @@ export function settledPageArtifact(
     lanes,
     contestSlices,
     consolidateSlices,
+    consistency,
     targetText,
     l,
   }: {
@@ -72,6 +77,7 @@ export function settledPageArtifact(
     readonly lanes: DocumentLanesResult;
     readonly contestSlices: Extract<ArtifactLaneSelection, { readonly kind: 'contested'; }>['slices'];
     readonly consolidateSlices: Extract<ArtifactConsolidation, { readonly kind: 'settled'; }>['slices'];
+    readonly consistency: ArtifactConsistency;
     readonly targetText: string;
     readonly l: Logger;
   },
@@ -90,6 +96,7 @@ export function settledPageArtifact(
     contestSlices,
     consolidateSlices,
     pageAssembly: NO_PAGE_ASSEMBLY,
+    consistency,
   },);
   /**
    What the guard made of the page that artifact would ship.
@@ -137,6 +144,7 @@ export function settledPageArtifact(
     contestSlices,
     consolidateSlices,
     pageAssembly,
+    consistency,
   },);
 }
 
