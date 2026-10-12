@@ -641,7 +641,17 @@ and native getter parity passed `proc_7057`.
 The integrated input parent then reached an obsolete description-only assertion in
 `agent-state-native.test.mjs` (`proc_6961`).
 That assertion now checks the retained description and added metadata without dropping callback-order checks.
-The corrected input parent and original-judgment variants are running.
+The corrected input parent passed all 160 integrated cases in `proc_fc94`,
+with empty child stderr and zero provider requests.
+Its subsequent original-judgment task failed in the test's new metadata assertion:
+the fixture uses a read definition with `parameters.properties.path`,
+not a codemode definition with `parameters.properties.code`.
+That authored assertion is corrected;
+`proc_ec25` passed the original-judgment variants,
+including discovered,
+empty,
+and replaced prompt inputs,
+with original ownership and bootstrap cleanup controls retained.
 
 The remaining delivery target is decision-specific domain closure and maintained host/runtime integration.
 Constructor metadata alone does not account for earlier configuration processing,
