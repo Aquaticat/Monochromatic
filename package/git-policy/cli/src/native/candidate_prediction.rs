@@ -117,6 +117,13 @@ pub enum CandidateRequest {
         /// The pathspecs of the scope.
         Vec<OsString>,
     ),
+    /// Every entry of the private index that differs from a recorded base commit (the empty tree when the branch was
+    ///  unborn), read without staging the worktree. The commit transaction uses it: its baseline is the base it
+    ///  recorded at invocation, never the `HEAD` another landing may have moved since.
+    StagedAtBase(
+        /// The recorded base commit, or nothing for an unborn branch.
+        Option<ObjectId>,
+    ),
     /// The changes a manual push publishes: each newly published commit's own delta and the whole tree
     ///  of each tip with no known published base.
     Pushed(
@@ -502,7 +509,7 @@ pub fn prepare_candidates(
     let purpose: &str = match request {
         CandidateRequest::Add(_) => "predict what git add stages",
         CandidateRequest::Direct(_) => "read the selected worktree files",
-        CandidateRequest::Staged(_) => "read the staged index entries",
+        CandidateRequest::Staged(_) | CandidateRequest::StagedAtBase(_) => "read the staged index entries",
         CandidateRequest::Landed(_) => "read the landed commit changes",
         CandidateRequest::Pushed(_) => "read the pushed commit changes",
     };
@@ -589,6 +596,12 @@ pub fn prepare_candidates(
             let mut scope_store: CandidateStore =
                 CandidateStore::new(real_git, global_prefix, private_overlay.as_slice());
             let selected: Vec<CandidateRecord> = staged_scope(&mut scope_store, pathspecs.as_slice())?;
+            (scope_store, selected)
+        }
+        CandidateRequest::StagedAtBase(base) => {
+            let mut scope_store: CandidateStore =
+                CandidateStore::new(real_git, global_prefix, private_overlay.as_slice()).with_baseline(base.clone());
+            let selected: Vec<CandidateRecord> = staged_scope(&mut scope_store, &[])?;
             (scope_store, selected)
         }
     };

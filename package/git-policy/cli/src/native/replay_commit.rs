@@ -181,18 +181,41 @@ fn prepared_commit(request: &ReplayRequest<'_>) -> Result<RawCommit, ReplayError
 }
 
 /// What:
-///  Replays the prepared commit onto `current`:
-///       lists the shared paths, decides capture order, settles subsumed paths, merges, and rebuilds on a clean merge;
-///       on a conflict, names the first landed commit that touched a conflicting path.
+///  The result of the merge half of a replay: the merged tree and what subsumption decided, or the conflict.
 /// Why:
-///   Every step runs outside both landing locks in the shadow store, so the landing loop can take the locks only for the
-///       revalidated commit it then lands.
+///   The incumbent revalidates the merged tree before it rebuilds the commit, so the two halves are separate steps.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// // replay in commit-replay.ts; order decisions and subsumption composed as the landing step does
+/// type MergeStep = { kind: 'merged'; treeOid; subsumedPaths; keptLandedPaths } | { kind: 'conflict'; ... };
 /// ```
-pub fn replay_commit(request: &ReplayRequest<'_>) -> Result<ReplayOutcome, ReplayError> {
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub enum MergeStep {
+    /// The change applies cleanly.
+    Merged {
+        /// The merged tree.
+        tree: String,
+        /// Paths whose prepared entries replay as they are.
+        subsumed_paths: Vec<String>,
+        /// Paths whose landed entries stay.
+        kept_landed_paths: Vec<String>,
+    },
+    /// The change conflicts with the target.
+    Conflict(ReplayConflict),
+}
+
+/// What:
+///  Lists the shared paths, decides capture order, settles subsumed paths and merges, naming the first landed commit
+///  that touched a conflicting path when the merge conflicts.
+/// Why:
+///   Every step runs outside both landing locks in the shadow store; the merged tree is revalidated before the
+///  commit is rebuilt on it.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// const subsumption = await subsumeLandedChanges(...); const merge = await mergeReplayTree(...);
+/// ```
+pub fn merge_replay(request: &ReplayRequest<'_>) -> Result<MergeStep, ReplayError> {
     let merge_base: String = replay_merge_base(request.context, request.shadow, request.worktree_root, request.base, request.empty_tree)
         .map_err(ReplayError::Merge)?;
     let shared = list_shared_paths(request.context, request.shadow, request.worktree_root, &merge_base, request.current, request.prepared)
@@ -230,32 +253,74 @@ pub fn replay_commit(request: &ReplayRequest<'_>) -> Result<ReplayOutcome, Repla
         request.prepared,
     )
     .map_err(ReplayError::Merge)?;
-    let tree: String = match merged {
+    match merged {
         ReplayMerge::Conflict { paths } => {
             let winning_oid: String = first_commit_touching(request.context, request.worktree_root, request.base, request.current, &paths)
                 .map_err(ReplayError::Merge)?;
-            return Ok(ReplayOutcome::Conflict(ReplayConflict {
+            return Ok(MergeStep::Conflict(ReplayConflict {
                 winning_oid,
                 paths,
                 prepared_oid: String::from(request.prepared),
             }));
         }
-        ReplayMerge::Merged { tree_oid } => tree_oid,
-    };
+        ReplayMerge::Merged { tree_oid } => {
+            return Ok(MergeStep::Merged {
+                tree: tree_oid,
+                subsumed_paths: subsumption.subsumed_paths,
+                kept_landed_paths: subsumption.kept_landed_paths,
+            });
+        }
+    }
+}
+
+/// What:
+///  Rebuilds the prepared commit on a tree, with the target that won as its parent.
+/// Why:
+///   The tree is the merged tree, or the tree revalidation settled; a signed commit is re-signed.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// await writeReplayedCommit({ gitPath, shadowPath, directory, attempt, commit: prepared.raw, treeOid, parentOid: onto, globalArgs, signingKey });
+/// ```
+pub fn rebuild_replay(request: &ReplayRequest<'_>, tree: &str) -> Result<ReplayedCommit, ReplayError> {
     let commit: RawCommit = prepared_commit(request)?;
-    let replayed: ReplayedCommit = write_replayed_commit(
+    return write_replayed_commit(
         request.context,
         request.shadow,
         request.worktree_root,
         request.transaction_directory,
         request.replay,
         &commit,
-        &tree,
+        tree,
         request.current,
         request.signing_key,
         request.global_arguments,
     )
-    .map_err(ReplayError::Merge)?;
+    .map_err(ReplayError::Merge);
+}
+
+/// What:
+///  Replays the prepared commit onto `current`:
+///       lists the shared paths, decides capture order, settles subsumed paths, merges, and rebuilds on a clean merge;
+///       on a conflict, names the first landed commit that touched a conflicting path.
+/// Why:
+///   Every step runs outside both landing locks in the shadow store, so the landing loop can take the locks only for the
+///       revalidated commit it then lands.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// // replay in commit-replay.ts; order decisions and subsumption composed as the landing step does
+/// ```
+pub fn replay_commit(request: &ReplayRequest<'_>) -> Result<ReplayOutcome, ReplayError> {
+    let (tree, subsumed_paths, kept_landed_paths): (String, Vec<String>, Vec<String>) = match merge_replay(request)? {
+        MergeStep::Conflict(conflict) => return Ok(ReplayOutcome::Conflict(conflict)),
+        MergeStep::Merged {
+            tree,
+            subsumed_paths,
+            kept_landed_paths,
+        } => (tree, subsumed_paths, kept_landed_paths),
+    };
+    let replayed: ReplayedCommit = rebuild_replay(request, tree.as_str())?;
     return Ok(ReplayOutcome::Replayed(Replayed {
         oid: replayed.oid,
         tree,
@@ -263,8 +328,8 @@ pub fn replay_commit(request: &ReplayRequest<'_>) -> Result<ReplayOutcome, Repla
         prepared_oid: String::from(request.prepared),
         from_base: request.base.map(String::from),
         dropped_headers: replayed.dropped_headers,
-        subsumed_paths: subsumption.subsumed_paths,
-        kept_landed_paths: subsumption.kept_landed_paths,
+        subsumed_paths,
+        kept_landed_paths,
     }));
 }
 

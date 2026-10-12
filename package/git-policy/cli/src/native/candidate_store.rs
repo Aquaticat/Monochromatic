@@ -95,6 +95,9 @@ pub struct CandidateStore {
     /// Versions already listed in this generation,
     ///  by source.
     versions: Vec<(CandidateSource, Rc<CandidateVersion>)>,
+    /// The commit every "against `HEAD`" listing compares with instead of the live `HEAD`:
+    ///  `Some(Some(commit))` for a recorded base, `Some(None)` for a recorded unborn branch, `None` for live `HEAD`.
+    baseline: Option<Option<ObjectId>>,
 }
 
 /// What:
@@ -155,7 +158,41 @@ impl CandidateStore {
             reader: None,
             generation: 0,
             versions: Vec::new(),
+            baseline: None,
         };
+    }
+
+    /// What:
+    ///  Compare every "against `HEAD`" listing with a recorded base instead of the live `HEAD`.
+    /// Why:
+    ///   A commit transaction reads its candidates against the base it recorded at invocation,
+    ///  because another landing may have moved `HEAD` since.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// listChangedIndexPaths({ baseRevision }) // never live HEAD
+    /// ```
+    #[must_use]
+    pub fn with_baseline(mut self, baseline: Option<ObjectId>) -> CandidateStore {
+        self.baseline = Some(baseline);
+        return self;
+    }
+
+    /// What:
+    ///  The commit the "against `HEAD`" listings compare with:
+    ///  the recorded baseline when one was set, otherwise the commit `HEAD` names now.
+    /// Why:
+    ///   One place decides the baseline, so the listings and the `HEAD` tree always agree.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// const baseline = recorded ?? await headCommit();
+    /// ```
+    fn baseline_commit(&mut self) -> Result<Option<ObjectId>, CandidateError> {
+        if let Some(recorded) = &self.baseline {
+            return Ok(recorded.clone());
+        }
+        return self.reader()?.head_commit();
     }
 
     /// What:
@@ -374,7 +411,7 @@ impl CandidateStore {
         }
         let output: Vec<u8> = match source {
             CandidateSource::StagedAgainstHead => {
-                let head: Option<ObjectId> = self.reader()?.head_commit()?;
+                let head: Option<ObjectId> = self.baseline_commit()?;
                 // `.as_ref()` turns `&Option<ObjectId>` into `Option<&ObjectId>`; `&[]` is no pathspec.
                 self.list_staged(head.as_ref(), &[])?
             }
@@ -439,7 +476,7 @@ impl CandidateStore {
         &mut self,
         pathspecs: &[OsString],
     ) -> Result<Vec<CandidateRecord>, CandidateError> {
-        let head: Option<ObjectId> = self.reader()?.head_commit()?;
+        let head: Option<ObjectId> = self.baseline_commit()?;
         let output: Vec<u8> = self.list_staged(head.as_ref(), pathspecs)?;
         return parse_raw_records(output.as_slice());
     }
@@ -455,7 +492,7 @@ impl CandidateStore {
     /// async headTreeRecords(): Promise<TreeRecord[]>
     /// ```
     pub fn head_tree_records(&mut self) -> Result<Vec<TreeRecord>, CandidateError> {
-        let Some(head) = self.reader()?.head_commit()? else {
+        let Some(head) = self.baseline_commit()? else {
             return Ok(Vec::new());
         };
         let output: Vec<u8> = self.run_listing(

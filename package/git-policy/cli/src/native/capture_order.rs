@@ -35,6 +35,7 @@ use super::owner_lock::{DEFAULT_POLL_DELAY, OwnerLockError, SilentWait, acquire_
 /// Random identity bytes formatted as a UUID.
 use super::random_id::random_uuid;
 /// One Git start and its failure text.
+use super::transaction_phase::{Phase, PhaseMarkerError, reach_transaction_phase};
 use super::transaction_git::{GitContext, GitFailure, GitOutput, GitRequest, run_git_checked};
 /// Journal enums: the commit selection mode and the schema constant.
 use super::transaction_journal::TransactionMode;
@@ -63,6 +64,8 @@ pub enum CaptureOrderError {
     Git(GitFailure),
     /// The transaction directory could not receive `captured.json`.
     Write(String),
+    /// The test-only phase marker variable is malformed or its marker could not be written.
+    Phase(PhaseMarkerError),
 }
 
 impl From<CaptureError> for CaptureOrderError {
@@ -87,6 +90,7 @@ impl std::fmt::Display for CaptureOrderError {
             Self::Lock(error) => write!(formatter, "{error}"),
             Self::Git(error) => write!(formatter, "{error}"),
             Self::Write(text) => formatter.write_str(text.as_str()),
+            Self::Phase(error) => write!(formatter, "{error}"),
         };
     }
 }
@@ -211,6 +215,8 @@ pub fn capture_in_order<Value, Failure: From<CaptureOrderError>>(
         &mut SilentWait,
     )
     .map_err(CaptureOrderError::Lock)?;
+    // The test-only marker of the incumbent's `captureInOrder`: reached once the capture lock is held.
+    reach_transaction_phase(Phase::CaptureLocked, None).map_err(CaptureOrderError::Phase)?;
     let worktree_id: String = ensure_worktree_id(store.as_path()).map_err(CaptureOrderError::from)?;
     let sequence: i64 = allocate_sequence(git_dir, store.as_path()).map_err(CaptureOrderError::from)?;
     let value: Value = capture()?;

@@ -39,8 +39,6 @@
 /// import { parseCommitRegion } from './command_commit.ts';
 /// ```
 use super::child_environment::environment_value;
-use super::command_commit::{CommitRegion, parse_commit_region};
-use super::command_options::OptionError;
 use super::command_worktree::changes_worktree_registrations;
 use super::git_builtins::is_git_builtin;
 use super::unported::Unported;
@@ -126,30 +124,6 @@ pub fn inherited_lease(environment: &[(OsString, OsString)]) -> Option<&'static 
 }
 
 /// What:
-///  Whether Git's own option table reads the tokens after `commit` as a dry run.
-///       `&[OsString]` borrows those tokens,
-///  already free of wrapper controls.
-/// Why:
-///   Only a dry run stays outside the commit transaction.
-///  A region the table refuses
-///       is not known to be a dry run,
-///  so it is treated as a real commit.
-///
-/// In TS you'd write (pseudocode):
-/// ```ts
-/// function commitIsDryRun(region: string[]): boolean { try { return parseCommitRegion(region).isDryRun; } catch { return false; } }
-/// ```
-fn commit_is_dry_run(region: &[OsString]) -> bool {
-    // `&[]` is an empty list of wrapper flags: they were removed before this point.
-    let parsed: Result<CommitRegion, OptionError> = parse_commit_region(region, &[]);
-    // `match` unpacks the `Result`: `Ok` carries the facts, `Err(_)` ignores the refusal.
-    match parsed {
-        Ok(found) => return found.dry_run,
-        Err(_) => return false,
-    }
-}
-
-/// What:
 ///  Whether the installed wrapper synchronizes ignored files for commands run at
 ///       this location.
 ///  `&WorktreeIdentity` borrows Git's answer about the location.
@@ -198,10 +172,8 @@ pub fn command_frontier(
     let word: &[u8] = command_word(stripped);
     let region: &[OsString] = command_region(stripped);
     if word == b"commit" {
-        if commit_is_dry_run(region) {
-            return None;
-        }
-        return Some(Unported::CommitTransaction);
+        // A real commit runs through the commit transaction; a dry run is forwarded.
+        return None;
     }
     if !synchronizes_worktree_copies(identity) || stripped.controls.skip_worktree_copy {
         return None;

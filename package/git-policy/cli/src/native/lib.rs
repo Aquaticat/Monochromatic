@@ -243,8 +243,38 @@ pub mod commit_convergence;
 /// Slice 6: the commit path's preparation: converge, then prepare the commit or report a no-change normalization.
 pub mod commit_policy_preparation;
 
-/// Slice 9 skeleton: the commit transaction in the incumbent's order (recovery, landing lock, shadow, preparation); not reachable until landing is merged.
+/// The commit transaction in the incumbent's order, up to the settled policies.
 pub mod commit_transaction;
+
+/// The conclusion of a settled commit transaction: preparation, landing and post-landing completion.
+pub mod commit_conclusion;
+
+/// The landing loop with replay, revalidation and the starvation reservation.
+pub mod commit_landing_loop;
+
+/// The landing lock a landing attempt takes, with the recovery every acquisition runs first.
+pub mod commit_landing_lock;
+
+/// Revalidation of a replayed tree outside both landing locks.
+pub mod commit_revalidation;
+
+/// The normalization-only transaction for a correction that removed every change.
+pub mod commit_no_change;
+
+/// The `git commit` command: the transaction, the settled events, the post-commit gate and the backup.
+pub mod commit_command;
+
+/// The disposable, recoverable workspace of one commit transaction.
+pub mod commit_workspace;
+
+/// Rule facts from the real repository with candidates read from the private index.
+pub mod commit_facts;
+
+/// The worktree completion records of selected corrections and of hook changes.
+pub mod commit_worktree_records;
+
+/// The replay-relevant commit options.
+pub mod commit_replay_options;
 
 /// Slice 9 skeleton: the order around a landed commit and a guarded Git child; not reachable until landing is merged.
 pub mod commit_lifecycle;

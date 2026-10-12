@@ -217,6 +217,24 @@ pub struct OwnerLock {
 /// Accessors and release of a held lock.
 impl OwnerLock {
     /// What:
+    ///  A view of a lock an ancestor process holds, which releases nothing.
+    /// Why:
+    ///   An invocation nested under a landing-lock holder proves it with an inherited lease and proceeds under the
+    ///  ancestor's lock instead of waiting for it (`inheritedLandingLock` in the incumbent).
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// { lockDirectory, token: process.env[LANDING_LEASE_ENV], [Symbol.asyncDispose]: async () => {} }
+    /// ```
+    pub fn inherited(directory: &Path, token: &str) -> OwnerLock {
+        return OwnerLock {
+            directory: directory.to_path_buf(),
+            token: String::from(token),
+            released: true,
+        };
+    }
+
+    /// What:
     ///  The published lock directory.
     /// Why:
     ///   Leases and diagnostics name the lock.
@@ -255,6 +273,10 @@ impl OwnerLock {
     /// await lock[Symbol.asyncDispose]();
     /// ```
     pub fn release(mut self) -> Result<(), OwnerLockError> {
+        // A view of an ancestor's lock was never taken by this holder, so it has nothing to release.
+        if self.released {
+            return Ok(());
+        }
         self.released = true;
         return release_held_lock(self.directory.as_path(), self.token.as_str());
     }

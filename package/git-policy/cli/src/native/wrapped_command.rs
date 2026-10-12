@@ -41,7 +41,9 @@ use super::candidate_prediction::CandidateRequest;
 use super::command_options::OptionError;
 use super::command_push::{PushRegion, parse_push_region};
 use super::config_loading::{ConfigLoading, classify_config_loading};
-use super::config_schema::PolicyConfig;
+use super::command_commit::{CommitRegion, parse_commit_region};
+use super::commit_command::{CommitCommand, run_commit_command};
+use super::config_schema::{CliGitConfig, PolicyConfig};
 use super::diagnostics::EngineFailureCode;
 use super::global_arguments::GlobalOutcome;
 use super::invocation_config::{config_invalid_event, load_identity_config};
@@ -260,7 +262,7 @@ fn prepare_guarded_command<F: RepositoryFacts>(
     environment: &[(OsString, OsString)],
     checks: &mut ShippedChecks<F>,
     command: &str,
-) -> Result<PolicyConfig, WrappedOutcome> {
+) -> Result<CliGitConfig, WrappedOutcome> {
     // `if let Some(variable) = ...` runs only when a lease variable is present.
     if let Some(variable) = inherited_lease(environment) {
         // `Err(x)` is the failure case of `Result`; `String::new()` is empty owned text.
@@ -296,8 +298,8 @@ fn prepare_guarded_command<F: RepositoryFacts>(
     if let Some(what) = pending_state(&location.identity, stripped.controls.skip_worktree_copy) {
         return Err(refused(String::new(), &what, command));
     }
-    let policies: PolicyConfig = match load_identity_config(&location.identity) {
-        Ok(loaded) => loaded.config.policies,
+    let config: CliGitConfig = match load_identity_config(&location.identity) {
+        Ok(loaded) => loaded.config,
         Err(error) => {
             return Err(WrappedOutcome::Exit {
                 code: ENGINE_FAILURE_EXIT_CODE,
@@ -309,8 +311,8 @@ fn prepare_guarded_command<F: RepositoryFacts>(
         return Err(refused(String::new(), &what, command));
     }
     // `.clone()` copies the scanner and Markdown options the configuration chose.
-    checks.scanner_settings.options = policies.forbidden_strings.clone();
-    checks.markdown.options = policies.markdown_autofix.clone();
+    checks.scanner_settings.options = config.policies.forbidden_strings.clone();
+    checks.markdown.options = config.policies.markdown_autofix.clone();
     // Only `git add` inside a worktree has content for a policy to read before Git runs:
     // what it would stage, predicted when a content policy first reads it.
     if command_word(stripped) == b"add" && worktree_root(&location.identity).is_some() {
@@ -320,7 +322,54 @@ fn prepare_guarded_command<F: RepositoryFacts>(
         ));
     }
     // `Ok(x)` is the success case.
-    return Ok(policies);
+    return Ok(config);
+}
+
+/// What:
+///  Run a real `git commit` through the commit transaction, or nothing when the command is anything else.
+///  `Option<WrappedOutcome>` is "the ending, or nothing to say".
+/// Why:
+///   Every non-dry-run commit goes through the transaction instead of being forwarded, because native `git commit`
+///   keeps `index.lock` on disk through hooks and the editor. A region Git's table refuses is not known to be a
+///   dry run, so it is treated as a real commit and Git itself rejects it.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// const transaction = willShortCircuit ? NOT_APPLICABLE : await runCommitTransactionBoundary({ args, gitPath, policyOptions, concurrency });
+/// ```
+fn run_commit_if_real<F: RepositoryFacts>(
+    stripped: &StrippedInvocation,
+    environment: &[(OsString, OsString)],
+    checks: &mut ShippedChecks<F>,
+    config: &CliGitConfig,
+) -> Option<WrappedOutcome> {
+    if command_word(stripped) != b"commit" {
+        return None;
+    }
+    let region: CommitRegion = match parse_commit_region(command_region(stripped), &[]) {
+        Ok(found) => found,
+        Err(_) => return None,
+    };
+    if region.dry_run {
+        return None;
+    }
+    let context = checks.facts.transaction_context();
+    let ending = run_commit_command(
+        &CommitCommand {
+            context: &context,
+            environment,
+            arguments: stripped.arguments.as_slice(),
+            subcommand_index: stripped.layout.prefix_len,
+            region: &region,
+            config,
+            controls: &stripped.controls,
+        },
+        checks,
+    );
+    return Some(WrappedOutcome::Exit {
+        code: ending.code,
+        stderr: String::new(),
+    });
 }
 
 /// What:
@@ -394,13 +443,22 @@ pub fn run_wrapped_command<F: RepositoryFacts>(
     // `.as_slice()` lends an owned list as a borrowed view.
     let skips_config: bool =
         classify_config_loading(stripped.arguments.as_slice()) == ConfigLoading::Skip;
-    let policies: PolicyConfig = if skips_config {
-        PolicyConfig::defaults()
+    let loaded: Option<CliGitConfig> = if skips_config {
+        None
     } else {
         match prepare_guarded_command(stripped, environment, checks, command.as_str()) {
-            Ok(loaded) => loaded,
+            Ok(found) => Some(found),
             Err(ending) => return ending,
         }
+    };
+    if let Some(config) = &loaded
+        && let Some(ending) = run_commit_if_real(stripped, environment, checks, config)
+    {
+        return ending;
+    }
+    let policies: PolicyConfig = match loaded {
+        Some(config) => config.policies,
+        None => PolicyConfig::defaults(),
     };
     let request: StageRequest = StageRequest {
         trigger: Trigger::PreForward,
