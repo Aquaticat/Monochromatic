@@ -49,6 +49,12 @@ Each item names the IntelliJ source it comes from
   Home goes to the start of the visual row, and from there to the first non-blank column of the logical line's first row;
   End goes to the end of the visual row (trailing blanks skipped), and from there to the logical line end.
   Shift variants extend the selection.
+  The built rules are IntelliJ's in full (`src/line_boundary.rs`):
+  on the first row Home alternates between the line start and the first non-blank character,
+  and End first goes before the trailing blanks, then to the end of the row, then to the end of the line,
+  and on the last row from the line end back before its trailing blanks.
+  Two steps are left out because the caret cannot stand in the indent of a continuation row or in virtual space:
+  the move into the indent, and the smart-indent column of a line of blanks only.
 - Up and Down keep a remembered pixel x across vertical moves and move by visual rows
   (`CaretImpl.myDesiredX`); horizontal moves clear it.
   PageUp and PageDown move by visual rows.
@@ -147,7 +153,12 @@ Read from the crate source that matches `Cargo.lock` (checksum verified), withou
   The breaker also exposes per row `set_line_x` and `set_line_max_advance`; its glyph shift is unverified.
   The plan's earlier note that a per row width is impossible was wrong (a narrower width is possible).
 - Trailing whitespace: an overflowing space hangs on the upper row and is part of its range and advance;
-  `Layout::width()` excludes it and `full_width()` includes it. A tab does not hang.
+  `Layout::width()` excludes it and `full_width()` includes it.
+  A tab hangs like a space: measured on 2026-10-12 at a width of 26 columns, a token of 26 glyphs followed by a tab
+  or by a space ends its row with that blank, and a second blank after it starts the next row
+  (so a continuation row can start with a tab).
+  When the last blank of a text overflows the width, the engine also adds one line with no characters after the last
+  row; the source view does not count that line (`ShapedRow::has_empty_tail`).
 - Tabs: Parley 0.11.1 has no tab stops; `src/tab_layout.rs` measures them on an unbroken layout and corrects with
   letter spacing, which must be redone per row (see `doc/troubleshooting/parley-tab-stops.md`).
 - Still unverified: runtime behavior of the indent and the breaker setters, the UAX 14 class of a tab, and whether
@@ -167,14 +178,19 @@ Status as of 2026-10-11 (the branch `feat/ide-soft-wrap`):
 2. Geometry readback: **built.**
    Caret, selection, find rectangles, underlines, and the terminator mark are placed on their visual row;
    hits resolve the visual row (`hit_at`); a click keeps the clicked side of a wrap offset in
-   `State::caret_affinity`, not yet in `ReadingPosition`.
+   `State::caret_affinity` until slice 3, which moved it into `ReadingPosition::affinity`.
 3. Gutter and scrolling: **built.**
    One gutter entry per visual row, the number on first rows only, the wrap indicator (IntelliJ's symbol chain checked
    against the fonts, `c0c0c0`, or a drawn arrow) on continuation rows;
    horizontal scrolling is gone.
-4. Keys and pointer: **partly built.**
+4. Keys and pointer: **built.**
    Click placement, hover, and Ctrl+click resolve the visual row; the caret scrolls its visual row into view.
-   Home, End, Up, Down, PageUp, PageDown, and drag semantics beyond placement are not built.
+   Home, End, Up, Down, PageUp, and PageDown move by visual rows with a remembered pixel x,
+   the side of a wrap offset is part of the reading position,
+   drags run across visual rows, a double click takes a word that spans rows, a triple click takes the whole line,
+   and two quick presses on different rows of one line are two single clicks.
+   Slice 3 also fixed two layout defects its tests found: the continuation indent was doubled at scale 2,
+   and a blank hanging on the last row left a counted row with no characters.
 5. Annotations, find, and selection on visual rows: **partly built.**
    Underlines, find rectangles, and selection ink are per visual row.
    Hints and message rows still stand above the first visual row of their line and are cut at the right edge of

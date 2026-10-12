@@ -1351,6 +1351,17 @@ node design/soft-wrap-shots.mjs target/release/monochromatic-ide "${HOME}/temp/a
 The compositor's `button down`, `move`, and `button up` sequence did not start a drag selection in this session,
 so the selection frames use the Shift+click path instead.
 
+A probe on 2026-10-12 found why a held-button drag can fail to start.
+`button down` presses where the compositor's pointer already is, and a pointer that was never moved has no surface
+under it.
+With `move 400 56`, then `button down`, then `move` to two points further down, the application logged the press
+and the screenshot with the button held showed a selection from the first wrapped row across the rows below it.
+With `button down` first and the same two `move` commands after it, the application logged no press and no selection
+appeared.
+So the application drags correctly and the driver needs a `move` to the starting point before `button down`.
+The sequence of the earlier session was not recorded, so whether it lacked that first `move` is not known.
+The headless native test `a_drag_selects_across_visual_rows` drags across wrapped rows through real window events.
+
 ### What the 2026-10-12 frames show
 
 - Wrapped lines carry their number on the first visual row only.

@@ -1246,7 +1246,8 @@ There is no pointer or keyboard way to read the rest on screen yet.
 - The caret never stands on a virtual row.
   Up,
   Down,
-  and the page keys move between code rows.
+  and the page keys move between code rows
+  (the visual rows of a wrapped line included).
 - Selection fills cover code rows only,
   and copying yields the source text alone.
 - Find matches source text only and paints its rectangles on code rows.
@@ -1390,9 +1391,13 @@ Every open detail follows IntelliJ IDEA Community
   and a click on the lower row's first character puts it at the start of the lower row (downstream).
   Hover and Ctrl+click resolve the visual row too.
   Selection, find matches, and underlines are painted per visual row.
-- Up, Down, Home, End, PageUp, and PageDown still move by logical lines;
-  moving them by visual rows is the next part of the wrap work.
-  Following the caret scrolls its visual row into view.
+- Home, End, Up, Down, PageUp, and PageDown move by visual rows
+  (see [Source view keys](#source-view-keys)),
+  and following the caret scrolls its visual row into view.
+- A blank that overflows the last row of a line hangs on that row, as IntelliJ keeps it.
+  Parley then adds one more line with no characters after it;
+  `ShapedRow::visual_rows` does not count that line, so the gutter, the vertical map, and the keys never see an empty
+  row, and a caret at the end of the text stands at the end of the last real row.
 
 #### Measuring every line without waiting
 
@@ -1824,15 +1829,34 @@ Every movement key also has a Shift form that extends the selection from its anc
   digits,
   and underscores;
   a run of punctuation is a stop of its own.
-- Home and End move to the start of the line and to its end before the terminator.
+- Home and End follow the visual rows of a wrapped line, as IntelliJ's smart Home and End do
+  (`EditorActionUtil.moveCaretToLineStart` and `moveCaretToLineEnd`; `src/line_boundary.rs`).
+  Home goes to the start of the visual row.
+  At the start of a continuation row it goes to the first non-blank character of the line's first row.
+  On the first row it alternates: from the line start to the first non-blank character,
+  from a place after that character to it,
+  and from it or from inside the indent to the line start.
+  End goes to the end of the visual row without its trailing blanks,
+  then to the end of the row,
+  and from the end of a row that is not the last to the end of the line before its terminator,
+  again without trailing blanks first.
+  On the last row, End at the end of the line goes back before its trailing blanks, as IntelliJ's does.
   Ctrl+Home and Ctrl+End move to the start and the end of the text.
-- Up and Down move by one line and aim for the horizontal pixel position
-  where the run of vertical movements started,
-  so a short or empty line does not pull the caret to the left for the lines after it.
+- Up and Down move by one visual row and aim for the horizontal pixel position
+  where the run of vertical movements started (IntelliJ's `CaretImpl.myDesiredX`),
+  so a short row or an empty line does not pull the caret to the left for the rows after it.
   A horizontal key or a click names a new position to aim for.
-  Up on the first line moves to the start of the text,
-  Down on the last line to its end.
-- PageUp and PageDown move the caret and the view by the whole lines in view.
+  Up on the first row moves to the start of the text,
+  Down on the last row to its end.
+  A caret that aims past the end of a shorter upper row stops at its end and stays drawn on that row.
+- PageUp and PageDown move the caret and the view by the whole visual rows in view.
+  A block of virtual rows counts with the first row of its line.
+- Ctrl+Left and Ctrl+Right move by document offset, so a wrap offset is no stop and no obstacle.
+- A caret at the offset where a visual row breaks stands on one of two sides:
+  at the end of the upper row or at the start of the lower row.
+  The side is part of the reading position (`ReadingPosition::affinity`).
+  A click keeps the clicked side, End on the upper row leaves the caret at its end,
+  and every other move puts it at the start of the lower row.
 - Ctrl+A selects everything,
   and Ctrl+C copies the selection as original source text.
 - Tab and Shift+Tab move keyboard focus between the tree,
@@ -1841,7 +1865,7 @@ Every movement key also has a Shift form that extends the selection from its anc
   and the find input while the find bar is open,
   in that order.
 
-Every caret key scrolls the view by the smallest amount that shows the caret.
+Every caret key scrolls the view by the smallest amount that shows the caret's visual row.
 The target of Up,
 Down,
 and the page keys is found by shaped pixel position,
@@ -1856,10 +1880,13 @@ and ligatures land where the eye expects.
 A click places the caret at the nearest grapheme boundary of the visual row under the pointer.
 A double click selects a word,
 a punctuation run,
-or a run of blanks;
-a triple click selects the line with its terminator.
+or a run of blanks,
+the whole of it when it spans several visual rows;
+a triple click selects the whole logical line with its terminator, all its visual rows.
+Two quick presses on different visual rows of one line are two single clicks, as the distance between them is a row.
 Shift+click extends from the anchor.
-A drag extends by the unit of its press and scrolls when it passes an edge of the view.
+A drag extends by the unit of its press, across visual rows and lines,
+and scrolls when it passes an edge of the view.
 A selected line terminator is shown as a mark after the line's text,
 so a selected empty line stays visible.
 Mouse drags never pan the view;
@@ -1917,12 +1944,14 @@ and was not compared key by key with that engine.
   Ctrl+PageUp,
   Ctrl+PageDown,
   and Alt combinations are unbound.
-- The page keys move by the whole lines in view without an overlapping line.
+- The page keys move by the whole visual rows in view without an overlapping row.
+- The caret cannot stand in the indent of a continuation row or in virtual space after the end of a line.
+  IntelliJ's Home therefore has one step fewer on a continuation row (the move into the indent),
+  and on a line of blanks only it stays where it is instead of going to the indent of the line above.
 - A drag past an edge of the view scrolls only while the pointer moves;
   no timer keeps scrolling under a resting pointer.
-- Long lines wrap like editord's,
-  but Up, Down, Home, End, and the page keys still move by source lines
-  (see [Soft wrap](#soft-wrap)).
+- Long lines wrap like editord's (see [Soft wrap](#soft-wrap)),
+  and the keys move by visual rows as IntelliJ's do.
 - Selected text is drawn in one ink instead of keeping its syntax colors.
 
 `test`,
