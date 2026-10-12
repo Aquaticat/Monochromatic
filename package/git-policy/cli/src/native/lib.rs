@@ -696,6 +696,15 @@ pub mod recovery_inspect;
 /// Recovery of one dead-owner transaction.
 pub mod recovery_landing;
 
+/// Disposal of a landed transaction: shadow removal, directory removal, then landed-capture pruning.
+pub mod landed_disposal;
+
+/// The post-commit run after a landing: author environment, hook lock, and the hook runner with inherited streams.
+pub mod post_commit_hook;
+
+/// Post-landing completion of one landed commit: worktree copies, disposal, maintenance, then `post-commit`.
+pub mod post_landing;
+
 /// Recovery across every transaction directory of one worktree.
 pub mod recovery_scan;
 
