@@ -153,6 +153,16 @@ import type { RosterModelId, } from './synthetic-catalog.ts';
  since, so no answer cached under an earlier question can be served under
  this number. Every source commit since then rides inside it, those the
  accounts in this TSDoc name and those they do not (`corpus-run/cache-account-audit.ts`, ledger M28).
+
+ Rides inside 6 too: the judges of an entry that records a death are shown the
+ tense candidates of each text on offer (`tense-candidate-block.ts`,
+ `lane-contest-wire.ts`), and the identity context carries the recorded date of
+ death (`identity-context.ts`). No answer cached under the earlier question can
+ be served under the new one: the run shape of such an entry names the recorded
+ death and the subject names, and its identity context differs, so its key
+ differs. An entry that records no death asks the question it asked before and
+ keeps its key, so the version stays where it is and the answers already bought
+ for those entries stay usable.
  */
 export const LANE_CONTEST_CACHE_VERSION = 6;
 
@@ -178,6 +188,12 @@ export const LANE_CONTEST_CACHE_VERSION = 6;
  only when the original cites any, so an entry that cites nothing keys as
  before
 
+ @param lifeEnded - whether the entry records a death, folded in only when it
+ does, so an entry that records none keys as before
+
+ @param subjectNames - names the translation declares for its subject, folded in
+ with a recorded death, since the tense candidates read each as a subject
+
  @returns Stable string for the key
 
  @example
@@ -190,16 +206,28 @@ export function laneContestRunShape(
     modelIds,
     identityContext,
     referenceContext,
+    lifeEnded,
+    subjectNames,
   }: {
     readonly modelIds: readonly RosterModelId[];
     readonly identityContext?: string;
     readonly referenceContext?: string;
+    readonly lifeEnded?: boolean;
+    readonly subjectNames?: readonly string[];
   },
 ): string {
   return JSON.stringify([
     modelIds,
     identityContext ?? '',
     ...(((referenceContext ?? '') === '') ? [] : [referenceContext,]),
+    ...((lifeEnded === true)
+      ? [
+        [
+          'life-ended',
+          subjectNames ?? [],
+        ],
+      ]
+      : []),
   ],);
 }
 

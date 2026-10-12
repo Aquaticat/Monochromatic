@@ -51,6 +51,8 @@ type TranslateRoundInput = ForeignBorrowed<{
   readonly incumbentEligible: boolean;
   readonly incumbentWithheld: boolean;
   readonly identityContext?: string;
+  readonly lifeEnded?: boolean;
+  readonly subjectNames?: readonly string[];
   readonly referenceContext?: string;
   readonly attestedLines?: readonly string[];
   readonly archiveDisputeNote?: string;
@@ -147,6 +149,8 @@ async function produceAndJudgeOnce(
           incumbentText: input.incumbentText,
           incumbentKind: input.incumbentKind,
           ...((input.identityContext === undefined) ? {} : { identityContext: input.identityContext, }),
+          ...((input.lifeEnded === undefined) ? {} : { lifeEnded: input.lifeEnded, }),
+          ...((input.subjectNames === undefined) ? {} : { subjectNames: input.subjectNames, }),
           ...((input.referenceContext === undefined) ? {} : { referenceContext: input.referenceContext, }),
           ...((input.archiveDisputeNote === undefined) ? {} : { archiveDisputeNote: input.archiveDisputeNote, }),
           ...((input.neighbouringSourceText === undefined)
@@ -255,6 +259,8 @@ export async function runTranslateRepairs(
     incumbentEligible,
     incumbentWithheld,
     identityContext,
+    lifeEnded,
+    subjectNames,
     referenceContext,
     attestedLines,
     archiveDisputeNote,
@@ -279,6 +285,8 @@ export async function runTranslateRepairs(
     readonly incumbentEligible: boolean;
     readonly incumbentWithheld: boolean;
     readonly identityContext?: string;
+    readonly lifeEnded?: boolean;
+    readonly subjectNames?: readonly string[];
     readonly referenceContext?: string;
     readonly attestedLines?: readonly string[];
     readonly archiveDisputeNote?: string;
@@ -308,6 +316,8 @@ export async function runTranslateRepairs(
     incumbentEligible,
     incumbentWithheld,
     ...((identityContext === undefined) ? {} : { identityContext, }),
+    ...((lifeEnded === undefined) ? {} : { lifeEnded, }),
+    ...((subjectNames === undefined) ? {} : { subjectNames, }),
     ...((referenceContext === undefined) ? {} : { referenceContext, }),
     ...((attestedLines === undefined) ? {} : { attestedLines, }),
     ...((archiveDisputeNote === undefined) ? {} : { archiveDisputeNote, }),

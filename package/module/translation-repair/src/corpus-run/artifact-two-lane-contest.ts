@@ -8,6 +8,7 @@ import {
   settleEligibleLaneContestBallots,
 } from '../lane-contest-eligibility.ts';
 import type { LaneContestBallot, } from '../lane-contest-wire.ts';
+import type { TenseCandidateGroup, } from '../tense-candidate-block.ts';
 import type { ArtifactComparisonRow, } from './artifact-two-lane-vocabulary.ts';
 
 //region Lane contest record
@@ -123,6 +124,15 @@ export type ArtifactContestSlice = {
    candidates that cannot cross publication boundary, then re-derives verdict.
    */
   readonly eligibility?: LaneContestEligibility;
+
+  /**
+   Tense candidates the judges were shown for this slice's texts, present only
+   where the entry records a death, the slice went to the roster and a text has
+   a candidate. A finding for the audit trail: it never counts toward a verdict,
+   a flawed archive or a run-off. Part of artifact generation fifteen alone, so
+   a reader of an older record refuses the key.
+   */
+  readonly tenseCandidates?: readonly TenseCandidateGroup[];
 };
 
 /**

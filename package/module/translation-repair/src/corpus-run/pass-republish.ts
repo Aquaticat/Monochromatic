@@ -6,6 +6,7 @@ import {
   type CorpusPairReader,
   republishSettledPages,
 } from './page-republish.ts';
+import { readEntryInfoRecord, } from './entry-info-record.ts';
 import { removeDeclinedPages, } from './pass-decline.ts';
 import { settledEntryIds, } from './published-tree-listing.ts';
 
@@ -25,11 +26,14 @@ import { settledEntryIds, } from './published-tree-listing.ts';
 
  @param corpusSha - commit its artifact was settled at
 
- @returns The original and the archive's English at that commit
+ @param l - logger the absence of an `info.yml` is named on
+
+ @returns The original and the archive's English at that commit, and the
+ entry's parsed `info.yml` where it has one
 
  @example
  ```ts
- const pair = await readPinnedPair({ cloneDir, entryId: 'tabby', corpusSha, },);
+ const pair = await readPinnedPair({ cloneDir, entryId: 'tabby', corpusSha, l, },);
  ```
  */
 async function readPinnedPair(
@@ -37,7 +41,11 @@ async function readPinnedPair(
     cloneDir,
     entryId,
     corpusSha,
-  }: Parameters<CorpusPairReader>[0] & { readonly cloneDir: string; },
+    l,
+  }: Parameters<CorpusPairReader>[0] & {
+    readonly cloneDir: string;
+    readonly l: Logger;
+  },
 ): ReturnType<CorpusPairReader> {
   /**
    The clone the run reads, at the artifact's own commit.
@@ -52,6 +60,7 @@ async function readPinnedPair(
   const [
     sourceText,
     targetText,
+    entryInfo,
   ] = await allInInputOrder({
     members: [
       readCorpusFile({
@@ -62,11 +71,18 @@ async function readPinnedPair(
         pin,
         relPath: `people/${entryId}/page.en.md`,
       },),
+      readEntryInfoRecord({
+        pin,
+        entryId,
+        readFile: readCorpusFile,
+        l,
+      },),
     ],
   },);
   return {
     sourceText,
     targetText,
+    ...((entryInfo.kind === 'read') ? { sourceEntryInfo: entryInfo.info, } : {}),
   };
 }
 
@@ -136,6 +152,7 @@ export async function republishRunPages(
         cloneDir,
         entryId,
         corpusSha,
+        l,
       },);
     },
     l,

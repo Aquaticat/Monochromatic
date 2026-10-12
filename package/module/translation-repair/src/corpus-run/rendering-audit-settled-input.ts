@@ -20,6 +20,7 @@ import type { ParsedTwoLaneArtifact, } from './artifact-two-lane-read-contract.t
 import {
   type RebuiltPreparation,
   rebuildPreparation,
+  readSettledEntryInfo,
   type RecipeHalf,
 } from './artifact-two-lane-rebuild.ts';
 import { namesOfKind, } from './directory-listing.ts';
@@ -342,7 +343,11 @@ export async function readArtifactSubjects(
   /**
    Pair as it stood at that commit.
    */
-  const [sourceText, targetText,] = await allInInputOrder({
+  const [
+    sourceText,
+    targetText,
+    entryInfo,
+  ] = await allInInputOrder({
     members: [
       readFile({
         pin,
@@ -351,6 +356,15 @@ export async function readArtifactSubjects(
       readFile({
         pin,
         relPath: `people/${artifact.id}/page.en.md`,
+      },),
+      // THE DEATH THE RUN'S MODELS WERE TOLD, read at the artifact's own commit
+      // like the pages, so the identity block the auditors are shown is the one
+      // the run's models saw; listed last so a refused page read is still the
+      // refusal an input reports.
+      readSettledEntryInfo({
+        artifact,
+        pin,
+        readFile,
       },),
     ],
   },);
@@ -364,6 +378,7 @@ export async function readArtifactSubjects(
     artifact,
     sourceText,
     targetText,
+    ...((entryInfo.kind === 'read') ? { sourceEntryInfo: entryInfo.info, } : {}),
   },);
 
   return {

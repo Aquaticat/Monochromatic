@@ -81,6 +81,16 @@ export const ARTIFACT_SCHEMA_VERSION_V14 = 14;
  the comparison row and refuses a roster verdict on it. A reader of fourteen
  or earlier takes the contest exactly as recorded, since those files asked
  the roster and the verdict is derived from its ballots.
+
+ THE TENSE FINDING IS THIS GENERATION'S ALONE. A contest slice that went to the
+ roster and a consolidation slice that ships wording may carry
+ `tenseCandidates`, the present-tense candidates the judges were shown for the
+ texts of that slice, only for an entry whose `info.yml` records a death and
+ only when a text has one. It is a finding for the audit trail, counted toward
+ no verdict, no flawed archive and no run-off. A reader of fourteen or earlier
+ refuses the key; a reader of this generation refuses it on a `sole-lane`
+ slice, which asked no judge, and on a consolidation slice that ships no
+ wording of its own.
  */
 export const ARTIFACT_SCHEMA_VERSION_V15 = 15;
 
@@ -330,6 +340,28 @@ export function artifactGenerationSettlesSoleLane(
 }
 
 /**
+ Reports whether the runs of a generation told their models the recorded date
+ of death and showed their judges the tense candidates, and so record those
+ candidates on a contest slice that went to the roster and on a consolidation
+ slice that ships wording. A run of an earlier generation read no `info.yml`,
+ so a replay of one must not add the date to the identity block its models saw.
+
+ @param generation - known two-lane artifact generation
+
+ @returns Whether the recorded death and the tense finding belong to the generation's runs
+
+ @example
+ ```ts
+ artifactGenerationRecordsTense({ generation: 15, });
+ ```
+ */
+export function artifactGenerationRecordsTense(
+  { generation, }: { readonly generation: TwoLaneArtifactGeneration; },
+): boolean {
+  return generation >= ARTIFACT_SCHEMA_VERSION_V15;
+}
+
+/**
  Generation-specific fields exact reader requires.
 
  @param generation - known two-lane artifact generation
@@ -349,6 +381,7 @@ export function artifactGenerationReadingRequirements(
   readonly correctionChainRequired: boolean;
   readonly everyBodyBlockReviewed: boolean;
   readonly quorumBasisRequired: boolean;
+  readonly tenseRecorded: boolean;
 } {
   return {
     polishRequired: artifactGenerationRequiresPolish({ generation, }),
@@ -356,6 +389,7 @@ export function artifactGenerationReadingRequirements(
     correctionChainRequired: artifactGenerationRequiresNaturalnessCorrectionChain({ generation, }),
     everyBodyBlockReviewed: artifactGenerationReviewsEveryBodyBlock({ generation, }),
     quorumBasisRequired: generation >= ARTIFACT_SCHEMA_VERSION_V14,
+    tenseRecorded: artifactGenerationRecordsTense({ generation, }),
   };
 }
 

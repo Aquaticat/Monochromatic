@@ -55,6 +55,13 @@ export type CorpusPairText = Readonly<{
    The archive's English page.
    */
   targetText: string;
+
+  /**
+   The original's entry `info.yml` as parsed at the same commit, absent where
+   the entry has none or the reader reads none; its recorded death joins the
+   identity block of the preparation the page is rebuilt from.
+   */
+  sourceEntryInfo?: unknown;
 }>;
 
 /**
@@ -248,6 +255,7 @@ async function rebuildPage(
     const {
       sourceText,
       targetText: corpusTarget,
+      sourceEntryInfo,
     } = await readPair({
       entryId: artifact.id,
       corpusSha: artifact.corpusSha,
@@ -265,6 +273,7 @@ async function rebuildPage(
       artifact,
       sourceText,
       targetText: corpusTarget,
+      ...((sourceEntryInfo === undefined) ? {} : { sourceEntryInfo, }),
     },);
     if (reproduction.kind === 'moved') {
       return {

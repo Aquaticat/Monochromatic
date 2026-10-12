@@ -5,6 +5,7 @@ import type {
   ProposalVerdict,
 } from '../consolidate-settle.ts';
 import type { GateBallot, } from '../consolidate-gate-wire.ts';
+import type { TenseCandidateGroup, } from '../tense-candidate-block.ts';
 
 //region Artifact version 2 consolidation
 // ONE CONSOLIDATED SLICE AS THE STAGE LEFT IT, written so a later reader can
@@ -445,6 +446,15 @@ export type ArtifactConsolidateSlice = {
    Final body naturalness decision. Absent only on artifacts before generation six.
    */
   readonly polish?: ArtifactConsolidationPolish;
+
+  /**
+   Tense candidates of the wording this slice ships, present only where the
+   entry records a death, the slice ships a consolidation or a stand-in
+   incumbent, and that wording has a candidate. A finding for the audit trail,
+   like the contest record's: it never counts toward a verdict, a flawed
+   archive or a run-off. Recorded from artifact generation fifteen.
+   */
+  readonly tenseCandidates?: readonly TenseCandidateGroup[];
 };
 
 /**

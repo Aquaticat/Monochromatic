@@ -12,6 +12,7 @@ import type { DeclaredNamePair, } from './linked-title-declared-name.ts';
 import { attestedDetailLines, } from './reference-attest-match.ts';
 import { splitTargetOnlyRun, } from './target-only-run.ts';
 import type { IncumbentKind, } from './translate-absence.ts';
+import { preparedSheetFactsOf, } from './prepared-sheet-facts.ts';
 
 //region Deterministic pre-stage surface
 // Production settlement and calibration share inputs without sharing publication-disposition guards.
@@ -42,6 +43,17 @@ export type TranslateSliceStageInput = {
    Existing document-level declarations and vocabulary context.
    */
   readonly identityContext?: string;
+  /**
+   Whether the original's entry records a death, carried from the preparation
+   so the judges see the tense candidates of the texts on offer.
+   */
+  readonly lifeEnded?: boolean;
+  /**
+   Names the translation declares for its subject, its display name and its
+   aliases, read by the tense candidates as named subjects; absent when the
+   translation declares none.
+   */
+  readonly subjectNames?: readonly string[];
   /**
    What the pages the original cites say, when it cites any.
    */
@@ -239,8 +251,7 @@ export function translateSliceInput(
       lineStructured: prepared.lineStructuredSliceIndices
         .has(slice.target
           .sliceIndex,),
-      ...((prepared.identityContext === undefined) ? {} : { identityContext: prepared.identityContext, }),
-      ...((prepared.referenceContext === undefined) ? {} : { referenceContext: prepared.referenceContext, }),
+      ...preparedSheetFactsOf({ prepared, },),
       ...((attestedLines.length === 0) ? {} : { attestedLines, }),
       ...((archiveDisputeNote === undefined) ? {} : { archiveDisputeNote, }),
       ...((refused.length === 0) ? {} : { disputedWordings: refused, }),

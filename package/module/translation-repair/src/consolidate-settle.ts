@@ -164,6 +164,19 @@ export type ConsolidationSubject = {
   readonly identityContext?: string;
 
   /**
+   Whether the original's entry records a death, absent when it records none;
+   the slate and the gate show the judges the tense candidates of their texts.
+   */
+  readonly lifeEnded?: boolean;
+
+  /**
+   Names the translation declares for its subject, its display name and its
+   aliases, which the tense candidates read as named subjects; absent when it
+   declares none.
+   */
+  readonly subjectNames?: readonly string[];
+
+  /**
    What the pages the original cites say, absent when it cites none.
    */
   readonly referenceContext?: string;

@@ -17,6 +17,7 @@ import {
   parseShipped,
   parseVerdict,
 } from './artifact-two-lane-read-consolidate-parts.ts';
+import { parseRecordedTenseCandidates, } from './artifact-two-lane-read-tense.ts';
 import { parseConsolidationPolish, } from './artifact-two-lane-read-polish.ts';
 
 //region Artifact consolidated slice read
@@ -179,6 +180,8 @@ function parseGate(
 
  @param quorumBasisRequired - whether review rounds retain their wider quorum
 
+ @param tenseRecorded - whether the generation records the tense candidates of the shipped wording
+
  @returns Parsed consolidation slice
 
  @example
@@ -196,6 +199,7 @@ export function parseConsolidateSlice(
     correctionChainRequired = false,
     everyBodyBlockReviewed = false,
     quorumBasisRequired = false,
+    tenseRecorded = false,
   }: {
     readonly value: unknown;
     readonly path: string;
@@ -205,6 +209,7 @@ export function parseConsolidateSlice(
     readonly correctionChainRequired?: boolean;
     readonly everyBodyBlockReviewed?: boolean;
     readonly quorumBasisRequired?: boolean;
+    readonly tenseRecorded?: boolean;
   },
 ): ArtifactConsolidateSlice {
   /**
@@ -225,6 +230,7 @@ export function parseConsolidateSlice(
       'verdicts',
       'gate',
       ...(polishRequired ? ['polish',] : []),
+      ...(tenseRecorded ? ['tenseCandidates',] : []),
     ],
     path,
   },);
@@ -261,17 +267,33 @@ export function parseConsolidateSlice(
       path: `${path}.verdicts[${String(at,)}]`,
     },);
   },);
-  return {
-    sliceIndex: requireCount({
-      value: record[keys.sliceIndex],
-      path: `${path}.${keys.sliceIndex}`,
-    },),
+  /**
+   Slice index this record answers.
+   */
+  const sliceIndex = requireCount({
+    value: record[keys.sliceIndex],
+    path: `${path}.${keys.sliceIndex}`,
+  },);
+  /**
+   Wording the slice ships, read before the tense finding that is about it.
+   */
+  const shipped = parseShipped({
+    value: record.shipped,
     terminal,
-    shipped: parseShipped({
-      value: record.shipped,
-      terminal,
-      path: `${path}.shipped`,
-    },),
+    path: `${path}.shipped`,
+  },);
+  // A SLICE THAT SHIPS NO WORDING OF ITS OWN has no shipped text to read a
+  // finding from; the contest record holds the candidates of what it leaves.
+  if ((record.tenseCandidates !== undefined) && ((shipped.kind === 'archive') || (shipped.kind === 'unchanged'))) {
+    throw new ArtifactParseError({
+      path: `${path}.tenseCandidates`,
+      reason: 'no tense candidates, since a slice that ships no wording of its own has no shipped text to read them from',
+    },);
+  }
+  return {
+    sliceIndex,
+    terminal,
+    shipped,
     rewrapped: requireBoolean({
       value: record.rewrapped,
       path: `${path}.rewrapped`,
@@ -297,6 +319,14 @@ export function parseConsolidateSlice(
         },),
       }
       : {}),
+    ...((record.tenseCandidates === undefined)
+      ? {}
+      : {
+        tenseCandidates: parseRecordedTenseCandidates({
+          value: record.tenseCandidates,
+          path: `${path}.tenseCandidates`,
+        },),
+      }),
   };
 }
 

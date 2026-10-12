@@ -19,6 +19,7 @@ import {
   soleLaneOf,
 } from './artifact-two-lane-contest.ts';
 import { parseContestBallot, } from './artifact-two-lane-read-contest-ballot.ts';
+import { parseRecordedTenseCandidates, } from './artifact-two-lane-read-tense.ts';
 import {
   contestEligibilityRequired,
   parseContestEligibility,
@@ -29,6 +30,7 @@ import type { ArtifactKeyVocabulary, } from '../artifact-key-vocabulary.ts';
 import {
   ARTIFACT_SCHEMA_VERSION_V6,
   ARTIFACT_SCHEMA_VERSION_V7,
+  artifactGenerationRecordsTense,
   artifactGenerationSettlesSoleLane,
   type TwoLaneArtifactGeneration,
 } from './artifact-two-lane-contract.ts';
@@ -93,6 +95,14 @@ function parseSoleLaneSlice(
     readonly path: string;
   },
 ): ArtifactContestSlice {
+  // A SLICE NO JUDGE WAS ASKED ABOUT shows no sheet, so it has no tense
+  // candidates to record; the key is refused rather than dropped unread.
+  if (slice.tenseCandidates !== undefined) {
+    throw new ArtifactParseError({
+      path: `${path}.tenseCandidates`,
+      reason: 'no tense candidates, since no roster was asked about a slice one lane applies to',
+    },);
+  }
   /**
    Ballots this slice carries, which must be none.
    */
@@ -187,6 +197,8 @@ function parseContestSlice(
       'ballots',
       'usable',
       ...((generation >= ARTIFACT_SCHEMA_VERSION_V7) ? ['eligibility',] : []),
+      // THE TENSE FINDING, optional from generation fifteen alone.
+      ...(artifactGenerationRecordsTense({ generation, }) ? ['tenseCandidates',] : []),
     ],
     path,
   },);
@@ -317,7 +329,22 @@ function parseContestSlice(
     derived: derived.verdict,
     path: `${path}.verdict`,
   },);
-  return derived;
+  /**
+   Tense candidates the slice records as its audit finding, absent on a slice
+   whose entry records no death or whose texts have no candidate.
+   */
+  const tenseCandidates = (slice.tenseCandidates === undefined)
+    ? {}
+    : {
+      tenseCandidates: parseRecordedTenseCandidates({
+        value: slice.tenseCandidates,
+        path: `${path}.tenseCandidates`,
+      },),
+    };
+  return {
+    ...derived,
+    ...tenseCandidates,
+  };
 }
 
 /**

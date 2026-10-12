@@ -5,8 +5,10 @@ import type { DocumentLanesResult, } from '../document-lanes.ts';
 import type { RunClient, } from './run-client-contract.ts';
 import { contestDocumentLanes, } from '../lane-contest-driver.ts';
 import { damageClaimLinesBySlice, } from '../repair-damage-evidence.ts';
+import { withTenseCandidates, } from '../lane-contest-tense.ts';
 import type { ArtifactContestSlice, } from './artifact-two-lane-contest.ts';
 import type { ProjectedLanes, } from './artifact-two-lane-derive.ts';
+import type { PreparedSheetFacts, } from '../prepared-sheet-facts.ts';
 import { openLaneContestCache, } from './lane-contest-cache-store.ts';
 import { archiveDisputeNotesOf, } from '../archive-dispute.ts';
 import type { PipelineDigest, } from './pipeline-digest.ts';
@@ -42,9 +44,10 @@ import type { StageSettings, } from '../stage-settings.ts';
  @param lineStructuredSlices - positions the line-structure rule governs, so
  the contest's publication verdict refuses a winner merging their lines
 
- @param identityContext - declared names both documents carry, when any
-
- @param referenceContext - what the pages the original cites say, when any
+ @param sheetFacts - what the page tells every sheet and key: the declared names,
+ whether the original's entry records a death, the name the translation
+ declares for its subject, and what the pages the original cites say; each
+ left out where the page lacks it
 
  @param entryCacheDir - per-entry cache root
 
@@ -73,8 +76,7 @@ export async function runPassContest(
     projected,
     frontMatterSlices,
     lineStructuredSlices,
-    identityContext,
-    referenceContext,
+    sheetFacts,
     declaredNamePairs,
     entryCacheDir,
     pipelineDigest,
@@ -88,8 +90,7 @@ export async function runPassContest(
     readonly projected: ProjectedLanes;
     readonly frontMatterSlices: ReadonlySet<number>;
     readonly lineStructuredSlices: ReadonlySet<number>;
-    readonly identityContext?: string;
-    readonly referenceContext?: string;
+    readonly sheetFacts?: PreparedSheetFacts;
     readonly declaredNamePairs?: readonly DeclaredNamePair[];
     readonly entryCacheDir: string;
     readonly pipelineDigest: PipelineDigest;
@@ -108,7 +109,10 @@ export async function runPassContest(
     signal,
     l,
   },);
-  return await contestDocumentLanes({
+  /**
+   Records the judges' ballots made, before the tense finding is added.
+   */
+  const contested = await contestDocumentLanes({
     client,
     projected,
     // JUDGES ONLY: the roster less GLM-5.3-Flash since 2026-09-02 (the reason
@@ -126,8 +130,7 @@ export async function runPassContest(
       chunks: lanes.repair
         .chunks,
     },),
-    ...((identityContext === undefined) ? {} : { identityContext, }),
-    ...((referenceContext === undefined) ? {} : { referenceContext, }),
+    ...((sheetFacts === undefined) ? {} : { sheetFacts, }),
     // A linked title naming a declared person takes the declared form on the
     // contest winner too (class one hundred fourteen).
     ...((declaredNamePairs === undefined) ? {} : { declaredNamePairs, }),
@@ -148,6 +151,15 @@ export async function runPassContest(
       .beforeSlice,
     l,
     stageSettings,
+  },);
+  // THE FINDING IS ADDED HERE, beside the wording each slice offered, so the
+  // artifact records the candidates under the labels the judges read them by
+  // (`lane-contest-tense.ts`) and no verdict reads them.
+  return withTenseCandidates({
+    slices: contested,
+    comparison: projected.comparison,
+    lifeEnded: sheetFacts?.lifeEnded === true,
+    ...((sheetFacts?.subjectNames === undefined) ? {} : { subjectNames: sheetFacts.subjectNames, }),
   },);
 }
 

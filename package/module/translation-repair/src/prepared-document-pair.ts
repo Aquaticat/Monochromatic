@@ -115,6 +115,23 @@ export type PreparedDocumentPair = {
   readonly sourceText: string;
 
   /**
+   Whether the original's corpus entry records a death (`info.died` in its
+   `info.yml`). True exactly when the source side declares one; false for a
+   preparation made without an entry's `info.yml`, which records no death.
+   `prepareDocumentPair` always states it. The sheets that judge tense read
+   this flag, never the identity block.
+   */
+  readonly lifeEnded?: boolean;
+
+  /**
+   Declared names of the page's subject on the translation side (`name` in its
+   front matter, then each alias in `info.alias`), which the tense candidates
+   read as subjects. Present only when {@link PreparedDocumentPair.lifeEnded}
+   is true and the translation declares a name.
+   */
+  readonly subjectNames?: readonly string[];
+
+  /**
    Translation the target spans and offsets index into.
 
    Carried so a lane assembles against the document it was prepared from. A

@@ -7,6 +7,7 @@ import {
 } from '@monochromatic-dev/module-logger/ts';
 import type { SyntheticClient, } from './chat-contract.ts';
 import type { ConsolidationPolishConfig, } from './consolidation-polish.ts';
+import type { PreparedSheetFacts, } from './prepared-sheet-facts.ts';
 import {
   consolidateRunShape,
   consolidateSliceKey,
@@ -24,10 +25,7 @@ import { readStandingVerdict, } from './consolidate-standing-verdict.ts';
 import {
   standingTextFor,
 } from './consolidate-standing.ts';
-import {
-  type ArtifactConsolidateSlice,
-  describeConsolidateSlice,
-} from './corpus-run/artifact-two-lane-consolidate.ts';
+import type { ArtifactConsolidateSlice, } from './corpus-run/artifact-two-lane-consolidate.ts';
 import type { ArtifactContestSlice, } from './corpus-run/artifact-two-lane-contest.ts';
 import type { ProjectedLanes, } from './corpus-run/artifact-two-lane-derive.ts';
 import {
@@ -37,6 +35,7 @@ import {
 import {
   type BoughtConsolidation,
   laneChoiceOf,
+  recordedConsolidateSlice,
 } from './consolidate-driver-records.ts';
 import { acquireConsolidation, } from './consolidate-driver-acquire.ts';
 import type { SliceNeighbourContext, } from './fidelity-window.ts';
@@ -107,9 +106,10 @@ function contestedSliceName(
  @param judgeModelIds - roster that judges each slate and gates its winner;
  `modelIds` when not given
 
- @param identityContext - names and handles both documents declare
-
- @param referenceContext - what the pages the original cites say, when any
+ @param sheetFacts - what the page tells every sheet and key: the declared names,
+ whether the original's entry records a death, the name the translation
+ declares for its subject, and what the pages the original cites say; each
+ left out where the page lacks it
 
  @param polishConfig - final body naturalness roles and document guard facts
 
@@ -156,8 +156,7 @@ export async function consolidateDocument(
     contests,
     modelIds,
     judgeModelIds = modelIds,
-    identityContext,
-    referenceContext,
+    sheetFacts,
     polishConfig,
     frontMatterSlices,
     lineStructuredSlices,
@@ -191,8 +190,7 @@ export async function consolidateDocument(
     readonly contests: readonly ArtifactContestSlice[];
     readonly modelIds: readonly RosterModelId[];
     readonly judgeModelIds?: readonly RosterModelId[];
-    readonly identityContext?: string;
-    readonly referenceContext?: string;
+    readonly sheetFacts?: PreparedSheetFacts;
     readonly polishConfig?: ConsolidationPolishConfig;
     readonly frontMatterSlices: ReadonlySet<number>;
     readonly lineStructuredSlices: ReadonlySet<number>;
@@ -244,8 +242,7 @@ export async function consolidateDocument(
     return consolidateRunShape({
       modelIds: roster.modelIds,
       judgeModelIds: roster.judgeModelIds,
-      ...((identityContext === undefined) ? {} : { identityContext, }),
-      ...((referenceContext === undefined) ? {} : { referenceContext, }),
+      ...sheetFacts,
       ...((roster.polishConfig === undefined) ? {} : { polishConfig: roster.polishConfig, }),
       declaredNamePairs,
     },);
@@ -465,8 +462,7 @@ export async function consolidateDocument(
             ...((syntax === undefined) ? {} : { syntax, }),
             lineStructured,
             declared: declaredNamePairs,
-            ...((identityContext === undefined) ? {} : { identityContext, }),
-            ...((referenceContext === undefined) ? {} : { referenceContext, }),
+            ...sheetFacts,
             ...((disputeNote === undefined) ? {} : { archiveDisputeNote: disputeNote, }),
             ...((disputedWordings.length === 0) ? {} : { disputedWordings, }),
             // Omitted rather than empty, matching the context above it, so a producer
@@ -571,10 +567,14 @@ export async function consolidateDocument(
            */
           const { settlement, } = acquired;
           cost.left({ exit: acquired.exit, },);
-          return describeConsolidateSlice({
+          // THE TENSE FINDING IS RECORDED HERE, from the wording the slice shipped,
+          // so a settlement resumed from the cache records the candidates of the
+          // text that shipped as a fresh one does, and no verdict reads them.
+          return recordedConsolidateSlice({
             sliceIndex: row.sliceIndex,
             settlement,
             incumbentStandsIn: incumbentStandsIn || standInShips,
+            ...((sheetFacts === undefined) ? {} : { sheetFacts, }),
           },);
         },
       },);

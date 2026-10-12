@@ -47,6 +47,7 @@ import {
 } from './pass-entry-caches.ts';
 import { readLanesSeats, } from './pass-reseat.ts';
 import { runPassLanes, } from './pass-lanes.ts';
+import { preparedSheetFactsOf, } from '../prepared-sheet-facts.ts';
 
 //region Pass entry
 
@@ -400,12 +401,7 @@ async function runEntryPipeline(
       projected,
       frontMatterSlices,
       lineStructuredSlices: prepared.lineStructuredSliceIndices,
-      ...((prepared.identityContext === undefined)
-        ? {}
-        : { identityContext: prepared.identityContext, }),
-      ...((prepared.referenceContext === undefined)
-        ? {}
-        : { referenceContext: prepared.referenceContext, }),
+      sheetFacts: preparedSheetFactsOf({ prepared, },),
       ...((prepared.declaredNamePairs === undefined)
         ? {}
         : { declaredNamePairs: prepared.declaredNamePairs, }),

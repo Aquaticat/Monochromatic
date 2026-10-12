@@ -14,6 +14,8 @@ import {
 import { contestSizeNote, } from './contest-size-note.ts';
 import { selectFence, } from './prompt-fence.ts';
 import { renderedBreakPrompt, } from './rendered-break-prompt.ts';
+import { laneContestTenseGroups, } from './lane-contest-tense.ts';
+import { tenseCandidateLines, } from './tense-candidate-block.ts';
 import { citedReferenceCandidateLines, } from './cited-reference-rule.ts';
 
 //region Lane contest wire
@@ -372,6 +374,20 @@ export type LaneContestSubject = {
   readonly identityContext?: string;
 
   /**
+   Whether the original's entry records a death, which shows the judges the
+   tense candidates of each text on offer (`tense-candidate-block.ts`).
+   Absent for an entry that records none.
+   */
+  readonly lifeEnded?: boolean;
+
+  /**
+   Names the translation declares for its subject, its display name and its
+   aliases, which the tense candidates read as named subjects. Absent when it
+   declares none.
+   */
+  readonly subjectNames?: readonly string[];
+
+  /**
    What the pages the original cites say, one line per page, when the
    original links anywhere (class thirty-six, 2026-09-16).
 
@@ -565,6 +581,29 @@ export function buildLaneContestMessages(
     ];
 
   /**
+   Tense candidates of each text on offer, shown only where the entry records
+   a death, after the passages with the other evidence about them.
+   */
+  const tenseGroups = laneContestTenseGroups({
+    lifeEnded: subject.lifeEnded === true,
+    ...((subject.subjectNames === undefined) ? {} : { subjectNames: subject.subjectNames, }),
+    incumbentText: subject.incumbentText,
+    repairText: subject.repairText,
+    translateText: subject.translateText,
+  },);
+  /**
+   The tense block, fenced like the other blocks, or nothing when no text has a candidate.
+   */
+  const tenseBlock = (tenseGroups.length === 0)
+    ? []
+    : [
+      `${fence} TENSE CANDIDATES ${fence}`,
+      ...tenseCandidateLines({ groups: tenseGroups, },),
+      fence,
+      '',
+    ];
+
+  /**
    Community renderings a candidate lacks where the original carries the
    term (owner, 2026-09-09), evidence to weigh after the passages.
    */
@@ -640,6 +679,7 @@ export function buildLaneContestMessages(
         ...disputeBlock,
         ...referenceBlock,
         ...damageBlock,
+        ...tenseBlock,
         ...communityBlock,
         ...sizeBlock,
         'SEPARATELY from that choice, judge the ARCHIVE RENDERING shown above.',

@@ -15,6 +15,11 @@ import { referenceCacheDir, } from '../reference-cache.ts';
 import { workTitleLookupLines, } from '../work-title-lookup.ts';
 import { EXA_API_KEY_VAR, } from '../work-title-search.ts';
 
+import {
+  type EntryInfoRecord,
+  readEntryInfoRecord,
+} from './entry-info-record.ts';
+
 //region Pass outside reads
 // WHAT A PREPARATION READS FROM OUTSIDE THE PIPELINE, named in one place and
 // required of every caller (ledger X19). The run's readers take their keys
@@ -79,6 +84,21 @@ export type PassWorkTitleReader = (
 export type PassCorpusNameReader = () => Promise<readonly CorpusName[]>;
 
 /**
+ Reads an entry's `info.yml` at the pin, which carries the date of death.
+
+ @example
+ ```ts
+ const entryInfo: PassEntryInfoReader = async () => ({ kind: 'absent', });
+ ```
+ */
+export type PassEntryInfoReader = (
+  input: {
+    readonly entryId: string;
+    readonly l: Logger;
+  },
+) => Promise<EntryInfoRecord>;
+
+/**
  Everything a preparation reads from outside the pipeline.
 
  @example
@@ -103,6 +123,12 @@ export type PassOutsideReads = {
    Names other entries declare (class seventy-eight).
    */
   readonly corpusNames: PassCorpusNameReader;
+
+  /**
+   The entry's `info.yml` at the pin, which records the date of death (the
+   house tense rule's "life that has ended").
+   */
+  readonly entryInfo: PassEntryInfoReader;
 };
 
 /**
@@ -206,6 +232,19 @@ export function outsideReadsFrom(
         pin,
         listPeople,
         readFile,
+      },);
+    },
+    entryInfo: function readEntryInfo(
+      {
+        entryId,
+        l,
+      },
+    ): Promise<EntryInfoRecord> {
+      return readEntryInfoRecord({
+        pin,
+        entryId,
+        readFile,
+        l,
       },);
     },
   };

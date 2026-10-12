@@ -17,6 +17,7 @@ import { RUN_PER_CALL_TIMEOUT_MS, } from './run-config.ts';
 import { consolidationHooksFor, } from './pass-consolidate-reseat.ts';
 import { readJudgeSeats, } from './run-seats-read.ts';
 import type { StageSettings, } from '../stage-settings.ts';
+import { preparedSheetFactsOf, } from '../prepared-sheet-facts.ts';
 
 //region Corpus pass consolidation
 
@@ -150,12 +151,7 @@ export async function runPassConsolidation(
     neighbourContextBySlice: sliceNeighbourContexts({
       slices: prepared.slices,
     },),
-    ...((prepared.identityContext === undefined)
-      ? {}
-      : { identityContext: prepared.identityContext, }),
-    ...((prepared.referenceContext === undefined)
-      ? {}
-      : { referenceContext: prepared.referenceContext, }),
+    sheetFacts: preparedSheetFactsOf({ prepared, },),
     cache: await openConsolidateCache({
       dir: entryCacheDir,
       generation: pipelineDigest,

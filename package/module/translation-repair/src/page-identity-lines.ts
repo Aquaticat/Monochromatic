@@ -33,6 +33,9 @@ import { glossaryTermLines, } from './rendering-glossary.ts';
  of the works the original names, other entries' names, settled titles),
  appended last
 
+ @param sourceEntryInfo - parsed `info.yml` of the original's corpus entry,
+ carrying the recorded death; absent when the caller has none
+
  @returns Identity lines, none when the page declares and carries nothing
 
  @example
@@ -47,12 +50,14 @@ export function pageIdentityLines(
     sourceText,
     targetText,
     contextLines,
+    sourceEntryInfo,
   }: {
     readonly sourceDocument: RepairDocument;
     readonly targetDocument: RepairDocument;
     readonly sourceText: string;
     readonly targetText: string;
     readonly contextLines: readonly string[];
+    readonly sourceEntryInfo?: unknown;
   },
 ): readonly string[] {
   /**
@@ -65,7 +70,10 @@ export function pageIdentityLines(
       ?.data,
   };
   return [
-    ...collectIdentityLines(frontMatterData,),
+    ...collectIdentityLines({
+      ...frontMatterData,
+      sourceEntryInfo,
+    },),
     // THE PRONOUN THE ORIGINAL USES FOR ITS SUBJECT, read off the whole
     // document, so a sheet judging one subjectless sentence knows who it is
     // about (the Toka_ls "they" of 2026-09-02).

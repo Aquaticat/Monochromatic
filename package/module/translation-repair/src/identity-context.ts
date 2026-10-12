@@ -54,6 +54,12 @@ export type DeclaredIdentity = {
    Place name as declared.
    */
   readonly location?: string;
+
+  /**
+   Date of death the corpus entry records (`info.died` in its `info.yml`), as
+   written there. Only the source side carries it.
+   */
+  readonly died?: string;
 };
 
 /**
@@ -71,7 +77,7 @@ export type DeclaredIdentity = {
  if (isDeclared('Mittens',)) { }
  ```
  */
-function isDeclared(value: unknown,): value is string {
+export function isDeclared(value: unknown,): value is string {
   return ((typeof value) === 'string')
     && (value.trim()
       .length
@@ -156,6 +162,94 @@ export function extractDeclaredIdentity(
       key: 'location',
     },),
   };
+}
+
+/**
+ Reads the date of death from one corpus entry's parsed `info.yml`, the
+ nested `info.died` field the pinned corpus records. Front matter never
+ declares it, so nothing here competes with a front matter declaration.
+
+ A BARE YEAR IS A DATE. YAML reads `died: 2025` as the number 2025, and a
+ date written in full (`2025-02-26`) as text, so the year alone would have
+ switched the feature off for its entry without a word. A finite number is
+ recorded as the text of that number; a number with no text of its own (not a
+ number, infinity) and any other non-text value stay undeclared, as they do
+ for every other identity field.
+
+ @param entryInfo - parsed `info.yml` of the entry, `unknown` because corpus metadata is hand-edited
+
+ @returns Declared identity carrying `died` when the entry records one, empty otherwise
+
+ @example
+ ```ts
+ const recorded = recordedDeathOf({ entryInfo: { info: { died: '2025-02-26', }, }, },);
+ ```
+ */
+export function recordedDeathOf(
+  { entryInfo, }: { readonly entryInfo: unknown; },
+): DeclaredIdentity {
+  if (!isJsonRecord(entryInfo,))
+    return {};
+
+  /**
+   Nested `info` record of the entry, empty when the entry has none.
+   */
+  const info = isJsonRecord(entryInfo.info,)
+    ? entryInfo.info
+    : {};
+  /**
+   Raw `died` value, still untyped.
+   */
+  const { died, } = info;
+  if (((typeof died) === 'number') && Number.isFinite(died,))
+    return { died: String(died,), };
+  return declaredFragment({
+    record: info,
+    key: 'died',
+  },);
+}
+
+/**
+ Whether an entry's parsed `info.yml` records a death, by the same declaration
+ rule every identity field follows.
+
+ @param entryInfo - parsed `info.yml` of the entry, `unknown` because corpus metadata is hand-edited
+
+ @returns True when `info.died` is a declared, non-blank string
+
+ @example
+ ```ts
+ const ended = lifeEndedOf({ entryInfo: { info: { died: '2025-02-26', }, }, },);
+ ```
+ */
+export function lifeEndedOf(
+  { entryInfo, }: { readonly entryInfo: unknown; },
+): boolean {
+  return isDeclared(recordedDeathOf({ entryInfo, },)
+    .died,);
+}
+
+/**
+ Renders the line that gives the recorded date of death, present only when the
+ original side's entry records one.
+
+ @param source - original side's declared identity
+
+ @returns One line naming the date, or nothing when no death is recorded
+
+ @example
+ ```ts
+ const lines = deathLines({ source: { died: '2025-02-26', }, },);
+ ```
+ */
+function deathLines(
+  { source, }: { readonly source: DeclaredIdentity; },
+): readonly string[] {
+  if (!isDeclared(source.died,))
+    return [];
+  return [
+    `- died: the date this person died, as the corpus records it: "${source.died}".`,
+  ];
 }
 
 /**
@@ -574,6 +668,8 @@ export function sourcePronounLines(
 
  @param targetData - translation document's parsed front matter value
 
+ @param sourceEntryInfo - parsed `info.yml` of the original's corpus entry, absent when the caller has none; its recorded death joins the original's declared identity, and front matter keeps precedence for any field it declares
+
  @returns Rendered lines, empty when no field is declared on either side
 
  @example
@@ -588,29 +684,37 @@ export function collectIdentityLines(
   {
     sourceData,
     targetData,
+    sourceEntryInfo,
   }: {
     readonly sourceData: unknown;
     readonly targetData: unknown;
+    readonly sourceEntryInfo?: unknown;
   },
 ): readonly string[] {
   /**
-   Original side's declared identity.
+   Original side's declared identity, its front matter and its recorded death.
    */
-  const source = extractDeclaredIdentity({ data: sourceData, },);
+  const source: DeclaredIdentity = {
+    ...recordedDeathOf({ entryInfo: sourceEntryInfo ?? {}, },),
+    ...extractDeclaredIdentity({ data: sourceData, },),
+  };
 
   /**
    Translation side's declared identity.
    */
   const target = extractDeclaredIdentity({ data: targetData, },);
 
-  return IDENTITY_FIELDS
-    .flatMap(function toLines(field,) {
-      return renderField({
-        field,
-        source,
-        target,
-      },);
-    },);
+  return [
+    ...IDENTITY_FIELDS
+      .flatMap(function toLines(field,) {
+        return renderField({
+          field,
+          source,
+          target,
+        },);
+      },),
+    ...deathLines({ source, },),
+  ];
 }
 
 //endregion Identity context

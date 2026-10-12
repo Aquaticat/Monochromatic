@@ -1,12 +1,19 @@
+import { withShippedTenseCandidates, } from './consolidate-shipped-tense.ts';
 import type { ConsolidationSettlement, } from './consolidate-settle.ts';
+import {
+  type ArtifactConsolidateSlice,
+  describeConsolidateSlice,
+} from './corpus-run/artifact-two-lane-consolidate.ts';
 import type { ArtifactContestVerdict, } from './corpus-run/artifact-two-lane-contest.ts';
 import type { LaneChoice, } from './lane-contest-wire.ts';
+import type { PreparedSheetFacts, } from './prepared-sheet-facts.ts';
 import type { TwinStored, } from './twin-memo.ts';
 
 //region Consolidate driver records
 // The consolidation driver's small readers, moved out of
 // `consolidate-driver.ts` at its line budget: what a fresh purchase leaves a
-// twin, and which lane a contest verdict backed.
+// twin, which lane a contest verdict backed, and the artifact record of one
+// settled slice.
 
 /**
  Fresh consolidation beside whether it became warm-run evidence.
@@ -71,6 +78,53 @@ export function laneChoiceOf(
   if ((verdict.kind === 'lane-won') || (verdict.kind === 'sole-lane'))
     return verdict.lane;
   return 'neither';
+}
+
+/**
+ Records one settled slice for the artifact: the settlement as the artifact
+ describes it, and the tense candidates of the wording it ships where the
+ entry records a death. A fresh settlement and one resumed from the cache are
+ recorded alike, because the finding is read off the settled wording and not
+ stored with it.
+
+ @param sliceIndex - slice this answers
+
+ @param settlement - what the stage settled
+
+ @param incumbentStandsIn - whether the standing the settlement ran against
+ was the incumbent standing in for an ineligible lane standing
+
+ @param sheetFacts - what the page tells every sheet: whether its entry records a death and the names the translation declares for its subject; absent when the document carries none
+
+ @returns Record for one consolidated slice
+
+ @example
+ ```ts
+ const slice = recordedConsolidateSlice({ sliceIndex: 0, settlement, incumbentStandsIn: false, },);
+ ```
+ */
+export function recordedConsolidateSlice(
+  {
+    sliceIndex,
+    settlement,
+    incumbentStandsIn,
+    sheetFacts,
+  }: {
+    readonly sliceIndex: number;
+    readonly settlement: ConsolidationSettlement;
+    readonly incumbentStandsIn: boolean;
+    readonly sheetFacts?: PreparedSheetFacts;
+  },
+): ArtifactConsolidateSlice {
+  return withShippedTenseCandidates({
+    slice: describeConsolidateSlice({
+      sliceIndex,
+      settlement,
+      incumbentStandsIn,
+    },),
+    lifeEnded: sheetFacts?.lifeEnded === true,
+    ...((sheetFacts?.subjectNames === undefined) ? {} : { subjectNames: sheetFacts.subjectNames, }),
+  },);
 }
 
 //endregion Consolidate driver records

@@ -150,6 +150,8 @@ export async function judgeTranslateSlate(
     incumbentText,
     incumbentKind,
     identityContext,
+    lifeEnded,
+    subjectNames,
     referenceContext,
     archiveDisputeNote,
     neighbouringIncumbentText,
@@ -173,6 +175,16 @@ export async function judgeTranslateSlate(
     readonly incumbentText: string;
     readonly incumbentKind: IncumbentKind;
     readonly identityContext?: string;
+    /**
+     Whether the original's entry records a death, which adds the tense
+     candidates of the ballot texts to the slate's evidence.
+     */
+    readonly lifeEnded?: boolean;
+    /**
+     Names the translation declares for its subject, read by the tense
+     candidates as named subjects.
+     */
+    readonly subjectNames?: readonly string[];
     readonly referenceContext?: string;
     readonly archiveDisputeNote?: string;
     readonly neighbouringIncumbentText?: string;
@@ -429,6 +441,11 @@ export async function judgeTranslateSlate(
       ...((identityContext === undefined) ? {} : { identityContext, }),
       ...((referenceContext === undefined) ? {} : { referenceContext, }),
       ...((archiveDisputeNote === undefined) ? {} : { archiveDisputeNote, }),
+      lifeEnded: lifeEnded === true,
+      ...((subjectNames === undefined) ? {} : { subjectNames, }),
+      ballotTexts: rotated.map(function ballotText(candidate,): string {
+        return candidate.rendered;
+      },),
     },),
     signal,
     perCallTimeoutMs,

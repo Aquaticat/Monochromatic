@@ -53,6 +53,8 @@ export type SettlementIdentity = {
   readonly identityContext?: string;
   readonly referenceContext?: string;
   readonly archiveDisputeNote?: string;
+  readonly lifeEnded?: boolean;
+  readonly subjectNames?: readonly string[];
 };
 
 /**
@@ -95,6 +97,8 @@ export function settlementContextOf(
     ...((subject.identityContext === undefined) ? {} : { identityContext: subject.identityContext, }),
     ...((subject.referenceContext === undefined) ? {} : { referenceContext: subject.referenceContext, }),
     ...((subject.archiveDisputeNote === undefined) ? {} : { archiveDisputeNote: subject.archiveDisputeNote, }),
+    ...((subject.lifeEnded === undefined) ? {} : { lifeEnded: subject.lifeEnded, }),
+    ...((subject.subjectNames === undefined) ? {} : { subjectNames: subject.subjectNames, }),
   };
 
   /**

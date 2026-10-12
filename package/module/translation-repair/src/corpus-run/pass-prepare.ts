@@ -230,6 +230,22 @@ export async function preparePassEntry(
     }`,
   );
   /**
+   The entry's `info.yml` at the pin, which records the date of death; absent
+   when the entry has none, which records no death.
+   */
+  const entryInfo = await outsideReads.entryInfo({
+    entryId,
+    l,
+  },);
+
+  /**
+   Parsed `info.yml` every preparation of this entry reads, absent when the
+   entry has no such file.
+   */
+  const sourceEntryInfo = (entryInfo.kind === 'read')
+    ? entryInfo.info
+    : undefined;
+  /**
    The page's declared identity without the lexicon's own lines, assembled
    as preparation assembles it (ledger B28): the lexicon asks for a work's
    official English title, which a web lookup or a note establishes.
@@ -243,6 +259,7 @@ export async function preparePassEntry(
       ...workTitleLines,
       ...corpusNameContext,
     ],
+    ...((sourceEntryInfo === undefined) ? {} : { sourceEntryInfo, }),
   },);
   l.debug(
     `${preparePassEntry.name}: the title lexicon reads ${String(lexiconIdentityLines.length,)} identity ${
@@ -369,6 +386,7 @@ export async function preparePassEntry(
         === 0) ? {} : { attestedDetails: attestation.details, }),
       frontMatterAuthority,
       sealArchiveOriginal: true,
+      ...((sourceEntryInfo === undefined) ? {} : { sourceEntryInfo, }),
       ...((pictureReadings === undefined) ? {} : { pictureReadings, }),
       ...((beforeItem === undefined) ? {} : { beforeSection: beforeItem, }),
       stageSettings,

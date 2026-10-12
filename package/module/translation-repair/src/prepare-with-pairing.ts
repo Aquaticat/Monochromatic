@@ -145,6 +145,7 @@ export async function prepareDocumentPairWithRoster(
     pictureReadings,
     beforeSection,
     stageSettings,
+    sourceEntryInfo,
   }: ForeignBorrowed<{
     readonly client: SyntheticClient;
     readonly modelIds: readonly RosterModelId[];
@@ -162,6 +163,7 @@ export async function prepareDocumentPairWithRoster(
     readonly frontMatterAuthority?: FrontMatterAuthority;
     readonly sealArchiveOriginal?: boolean;
     readonly pictureReadings?: ReadonlyMap<string, PairedReading>;
+    readonly sourceEntryInfo?: unknown;
     readonly beforeSection?: () => Promise<BenchSeating>;
     readonly stageSettings: StageSettings;
   }>,
@@ -280,6 +282,7 @@ export async function prepareDocumentPairWithRoster(
     ...((attestedDetails === undefined) ? {} : { attestedDetails, }),
     ...((frontMatterAuthority === undefined) ? {} : { frontMatterAuthority, }),
     ...((sealArchiveOriginal === undefined) ? {} : { sealArchiveOriginal, }),
+    ...((sourceEntryInfo === undefined) ? {} : { sourceEntryInfo, }),
     blockPairings,
   },);
   // Pairing findings remain on the artifact's existing alignment channel.

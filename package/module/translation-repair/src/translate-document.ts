@@ -215,6 +215,8 @@ export async function translateDocument(
       ...((prepared.identityContext === undefined)
         ? {}
         : { identityContext: prepared.identityContext, }),
+      lifeEnded: prepared.lifeEnded === true,
+      ...((prepared.subjectNames === undefined) ? {} : { subjectNames: prepared.subjectNames, }),
       ...((prepared.referenceContext === undefined)
         ? {}
         : { referenceContext: prepared.referenceContext, }),

@@ -253,6 +253,7 @@ export * from './text-fold-barrel.ts';
 export * from './footnote-barrel.ts';
 export * from './generation-barrel.ts';
 export * from './lane-barrel.ts';
+export * from './present-tense-barrel.ts';
 export * from './provider-barrel.ts';
 export * from './roster-barrel.ts';
 export * from './sampler-barrel.ts';

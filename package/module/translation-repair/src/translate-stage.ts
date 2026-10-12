@@ -143,6 +143,8 @@ export async function runTranslateStage(
     incumbentText,
     incumbentKind,
     identityContext,
+    lifeEnded,
+    subjectNames,
     referenceContext,
     attestedLines,
     archiveDisputeNote,
@@ -165,6 +167,8 @@ export async function runTranslateStage(
     readonly incumbentText: string;
     readonly incumbentKind: IncumbentKind;
     readonly identityContext?: string;
+    readonly lifeEnded?: boolean;
+    readonly subjectNames?: readonly string[];
     readonly referenceContext?: string;
     readonly attestedLines?: readonly string[];
     readonly archiveDisputeNote?: string;
@@ -263,6 +267,8 @@ export async function runTranslateStage(
     // 2026-09-27).
     incumbentWithheld: (incumbentKind === 'present') && (!incumbentEligible),
     ...((identityContext === undefined) ? {} : { identityContext, }),
+    ...((lifeEnded === undefined) ? {} : { lifeEnded, }),
+    ...((subjectNames === undefined) ? {} : { subjectNames, }),
     ...((referenceContext === undefined) ? {} : { referenceContext, }),
     ...((attestedLines === undefined) ? {} : { attestedLines, }),
     ...((archiveDisputeNote === undefined) ? {} : { archiveDisputeNote, }),

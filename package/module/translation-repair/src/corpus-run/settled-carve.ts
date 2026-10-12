@@ -23,6 +23,7 @@ import {
   type PairingRecipe,
   type RebuildReproduction,
   rebuildPreparation,
+  readSettledEntryInfo,
   recipeOf,
 } from './artifact-two-lane-rebuild.ts';
 
@@ -300,7 +301,11 @@ export async function carveSettled(
    Both sides at that commit. When both reads are refused the refusal is the
    original's, as the input lists it first, whichever read ends first.
    */
-  const [sourceText, targetText,] = await allInInputOrder({
+  const [
+    sourceText,
+    targetText,
+    entryInfo,
+  ] = await allInInputOrder({
     members: [
       readFile({
         pin,
@@ -309,6 +314,14 @@ export async function carveSettled(
       readFile({
         pin,
         relPath: `people/${entryId}/page.en.md`,
+      },),
+      // THE DEATH THE RUN'S MODELS WERE TOLD, read at the artifact's own commit
+      // like the pages, listed last so a refused page read is still the
+      // refusal an input reports.
+      readSettledEntryInfo({
+        artifact: settled.artifact,
+        pin,
+        readFile,
       },),
     ],
   },);
@@ -323,6 +336,7 @@ export async function carveSettled(
     artifact: settled.artifact,
     sourceText,
     targetText,
+    ...((entryInfo.kind === 'read') ? { sourceEntryInfo: entryInfo.info, } : {}),
   },);
   return {
     kind: 'settled',

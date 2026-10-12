@@ -48,8 +48,13 @@ const FULL_WIDTH_COMMA = '，';
  @param value - declared field, empty when the page declares none
 
  @returns Forms in declared order
+
+ @example
+ ```ts
+ const forms = formsOf({ value: 'Whiskers, Tom', },);
+ ```
  */
-function formsOf({ value, }: { readonly value: string; },): readonly string[] {
+export function formsOf({ value, }: { readonly value: string; },): readonly string[] {
   return value.replaceAll(
     FULL_WIDTH_COMMA,
     ',',

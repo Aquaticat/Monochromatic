@@ -22,6 +22,7 @@ export {
 } from './corpus-run/artifact-two-lane-read-consolidate-parts.ts';
 export { type ArtifactConsolidationTerminal, } from './corpus-run/artifact-two-lane-consolidate.ts';
 export { parseLaneSelection, } from './corpus-run/artifact-two-lane-read-contest.ts';
+export { parseRecordedTenseCandidates, } from './corpus-run/artifact-two-lane-read-tense.ts';
 export { parseSettledTwoLaneArtifact, } from './corpus-run/artifact-two-lane-read.ts';
 export { parseLanes, } from './corpus-run/artifact-two-lane-read-lanes.ts';
 export {

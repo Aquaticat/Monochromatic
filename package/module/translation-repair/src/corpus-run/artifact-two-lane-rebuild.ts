@@ -1,3 +1,7 @@
+import type {
+  CorpusPin,
+  readCorpusFile,
+} from '../corpus-source.ts';
 import {
   prepareDocumentPair,
   type PreparedDocumentPair,
@@ -10,9 +14,14 @@ import type { SectionPair, } from '../pair-sections-wire.ts';
 import {
   ARTIFACT_SCHEMA_VERSION_V12,
   ARTIFACT_SCHEMA_VERSION_V5,
+  artifactGenerationRecordsTense,
 } from './artifact-two-lane-contract.ts';
 import type { ParsedTwoLaneArtifact, } from './artifact-two-lane-read-contract.ts';
 import { carveDivergence, } from './artifact-two-lane-rebuild-rows.ts';
+import {
+  type EntryInfoRecord,
+  readEntryInfoRecord,
+} from './entry-info-record.ts';
 
 //region Preparation rebuilt from a settled artifact
 // Carving a document pair the way the run that settled it carved it.
@@ -318,6 +327,12 @@ export function pairingSetAsideSentence(
  @param targetText - archive English at the artifact's own commit, carved
  only where the artifact predates storing the text it carved
 
+ @param sourceEntryInfo - parsed `info.yml` of the original's entry as read at
+ the artifact's own commit, absent where the entry has none or the caller reads
+ none; its recorded death joins the identity block only for an artifact of a
+ generation whose runs told their models the death, since the models of an
+ earlier run were never shown it
+
  @returns Preparation and the recipe halves that had to be defaulted, and
  `moved` in the refusal's words where the recorded block pairing names a
  block the carved text lacks
@@ -336,10 +351,12 @@ export function rebuildPreparation(
     artifact,
     sourceText,
     targetText: corpusTarget,
+    sourceEntryInfo,
   }: {
     readonly artifact: ParsedTwoLaneArtifact;
     readonly sourceText: string;
     readonly targetText: string;
+    readonly sourceEntryInfo?: unknown;
   },
 ): RebuiltPreparation {
   /**
@@ -379,6 +396,13 @@ export function rebuildPreparation(
       sealArchiveOriginal: artifact.artifactSchemaVersion >= ARTIFACT_SCHEMA_VERSION_V12,
       ...((sectionPairing === undefined) ? {} : { sectionPairing, }),
       ...((blockPairings === undefined) ? {} : { blockPairings, }),
+      // THE DEATH IS TOLD ONLY WHERE THE RUN TOLD IT, read off the generation
+      // as the front matter and sealing flags of this call are: a run of an
+      // earlier generation read no `info.yml`, and its models saw no date.
+      ...(((sourceEntryInfo === undefined)
+        || (!artifactGenerationRecordsTense({ generation: artifact.artifactSchemaVersion, },)))
+        ? {}
+        : { sourceEntryInfo, }),
     },);
     /**
      First departure from the run's recorded carve, empty for none. The repair
@@ -429,6 +453,7 @@ export function rebuildPreparation(
       },
       sourceText,
       targetText: corpusTarget,
+      ...((sourceEntryInfo === undefined) ? {} : { sourceEntryInfo, }),
     },);
     return {
       prepared,
@@ -439,6 +464,47 @@ export function rebuildPreparation(
       },
     };
   }
+}
+
+/**
+ Reads the `info.yml` of an artifact's entry at the artifact's own commit, only
+ for a generation whose runs told their models the recorded death. An artifact
+ of an earlier generation reads nothing, so a damaged `info.yml` at an old
+ commit refuses no replay that never needed it.
+
+ @param artifact - parsed artifact whose entry is read
+
+ @param pin - corpus checkout and the artifact's own commit
+
+ @param readFile - document reader at the pin
+
+ @returns The parsed record, or the absence for an entry with no `info.yml` and for an earlier generation; the absence is recorded in silence, since the commands that replay an artifact pin their terminal output
+
+ @throws {@link Error} when the file exists but is not readable or not YAML, for a generation that reads it
+
+ @example
+ ```ts
+ const entryInfo = await readSettledEntryInfo({ artifact, pin, readFile: readCorpusFile, },);
+ ```
+ */
+export async function readSettledEntryInfo(
+  {
+    artifact,
+    pin,
+    readFile,
+  }: {
+    readonly artifact: ParsedTwoLaneArtifact;
+    readonly pin: CorpusPin;
+    readonly readFile: typeof readCorpusFile;
+  },
+): Promise<EntryInfoRecord> {
+  if (!artifactGenerationRecordsTense({ generation: artifact.artifactSchemaVersion, },))
+    return { kind: 'absent', };
+  return await readEntryInfoRecord({
+    pin,
+    entryId: artifact.id,
+    readFile,
+  },);
 }
 
 //endregion Preparation rebuilt from a settled artifact

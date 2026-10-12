@@ -37,6 +37,12 @@ import {
 
  @param identityContext - declared names travelling with every slice
 
+ @param lifeEnded - whether the entry records a death, folded in only when it
+ does, since the judges then see the tense candidates
+
+ @param subjectNames - names the translation declares for its subject, folded in
+ with a recorded death, since the tense candidates read each as a subject
+
  @param referenceContext - what the pages the original cites say, folded in
  only when the original cites any
 
@@ -55,11 +61,15 @@ export function translateRunShape(
   {
     models,
     identityContext,
+    lifeEnded,
+    subjectNames,
     referenceContext,
     attestedLines = [],
   }: {
     readonly models: TranslateModels;
     readonly identityContext?: string;
+    readonly lifeEnded?: boolean;
+    readonly subjectNames?: readonly string[];
     readonly referenceContext?: string;
     readonly attestedLines?: readonly string[];
   },
@@ -70,6 +80,14 @@ export function translateRunShape(
     identityContext ?? '',
     ...(((referenceContext ?? '') === '') ? [] : [referenceContext,]),
     ...((attestedLines.length === 0) ? [] : [attestedLines,]),
+    ...((lifeEnded === true)
+      ? [
+        [
+          'life-ended',
+          subjectNames ?? [],
+        ],
+      ]
+      : []),
     MIN_PROTECTED_INCUMBENT,
     MAX_INCUMBENT_TO_SOURCE_RATIO,
   ],);

@@ -115,6 +115,7 @@ export {
   applyLaneContestEligibility,
   describeInadmissibleLanes,
   frontMatterContestEligibility,
+  ineligibleCandidatesOf,
   type LaneContestEligibility,
   LANE_CONTEST_ELIGIBILITY_FLOOR_FINDING,
   laneContestChoiceVerdict,

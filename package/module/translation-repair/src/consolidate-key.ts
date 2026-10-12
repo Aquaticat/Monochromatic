@@ -288,6 +288,17 @@ import type { LaneText, } from './translate-candidates.ts';
  since, so no answer cached under an earlier question can be served under
  this number. Every source commit since then rides inside it, those the
  accounts in this TSDoc name and those they do not (`corpus-run/cache-account-audit.ts`, ledger M28).
+
+ Rides inside 21 too: the slate judges and the gate of an entry that records a
+ death are shown the tense candidates of each text on offer
+ (`tense-candidate-block.ts`, `consolidate-gate-wire.ts`,
+ `translate-slate-evidence.ts`), and the identity context carries the recorded
+ date of death (`identity-context.ts`). No answer cached under the earlier
+ question can be served under the new one: the run shape of such an entry names
+ the recorded death and the subject names, and its identity context differs, so
+ its key differs. An entry that records no death asks the question it asked
+ before and keeps its key, so the version stays where it is and the answers
+ already bought for those entries stay usable.
  */
 export const CONSOLIDATE_CACHE_VERSION = 21;
 
@@ -360,6 +371,12 @@ const LANE_TEXTS_KEY_LABEL = 'lane-texts';
 
  @param identityContext - names and handles both documents declare
 
+ @param lifeEnded - whether the entry records a death, folded in only when it
+ does, so an entry that records none keys as before
+
+ @param subjectNames - names the translation declares for its subject, folded in
+ with a recorded death, since the tense candidates read each as a subject
+
  @param referenceContext - what the pages the original cites say, folded in
  only when the original cites any
 
@@ -382,6 +399,8 @@ export function consolidateRunShape(
     modelIds,
     judgeModelIds = modelIds,
     identityContext,
+    lifeEnded,
+    subjectNames,
     referenceContext,
     polishConfig,
     declaredNamePairs,
@@ -389,6 +408,8 @@ export function consolidateRunShape(
     readonly modelIds: readonly RosterModelId[];
     readonly judgeModelIds?: readonly RosterModelId[];
     readonly identityContext?: string;
+    readonly lifeEnded?: boolean;
+    readonly subjectNames?: readonly string[];
     readonly referenceContext?: string;
     readonly polishConfig?: ConsolidationPolishConfig;
     readonly declaredNamePairs: readonly DeclaredNamePair[];
@@ -399,6 +420,14 @@ export function consolidateRunShape(
     judgeModelIds,
     identityContext ?? '',
     ...(((referenceContext ?? '') === '') ? [] : [referenceContext,]),
+    ...((lifeEnded === true)
+      ? [
+        [
+          'life-ended',
+          subjectNames ?? [],
+        ],
+      ]
+      : []),
     ...((polishConfig === undefined)
       ? []
       : [

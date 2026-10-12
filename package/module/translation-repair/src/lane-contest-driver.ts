@@ -11,6 +11,7 @@ import {
   applyLaneContestEligibility,
   describeInadmissibleLanes,
   frontMatterContestEligibility,
+  ineligibleCandidatesOf,
   laneContestChoiceVerdict,
 } from './lane-contest-eligibility.ts';
 import { inSliceLogContext, } from './log-context.ts';
@@ -38,6 +39,7 @@ import {
   laneContestSliceKey,
 } from './lane-contest-key.ts';
 import type { BenchSeating, } from './bench-seating.ts';
+import type { PreparedSheetFacts, } from './prepared-sheet-facts.ts';
 import type { SliceCache, } from './slice-cache.ts';
 import type { RosterModelId, } from './synthetic-catalog.ts';
 import {
@@ -65,15 +67,6 @@ import type { StageSettings, } from './stage-settings.ts';
 // overlapped twins from buying contradictory ballots or racing to overwrite one
 // cache file. An unheard outcome is neither persisted nor memoized, so its twin
 // asks again exactly as a warm run would.
-
-/**
- Candidate names deterministic syntax admission classifies.
- */
-const CONTEST_CANDIDATES = [
-  'archive',
-  'repair',
-  'translate',
-] as const;
 
 /**
  Names a compared slice on the lines the overlapped map writes about a failure
@@ -104,9 +97,10 @@ function comparedSliceName({ item, }: { readonly item: { readonly sliceIndex: nu
 
  @param modelIds - roster to ask
 
- @param identityContext - names and handles both documents declare
-
- @param referenceContext - what the pages the original cites say, when any
+ @param sheetFacts - what the page tells every sheet and key: the declared names,
+ whether the original's entry records a death, the name the translation
+ declares for its subject, and what the pages the original cites say; each
+ left out where the page lacks it
 
  @param frontMatterSlices - syntax-bearing metadata slice indexes
 
@@ -145,8 +139,7 @@ export async function contestDocumentLanes(
     client,
     projected,
     modelIds,
-    identityContext,
-    referenceContext,
+    sheetFacts,
     frontMatterSlices,
     lineStructuredSlices,
     cache,
@@ -164,8 +157,7 @@ export async function contestDocumentLanes(
     readonly client: SyntheticClient;
     readonly projected: ProjectedLanes;
     readonly modelIds: readonly RosterModelId[];
-    readonly identityContext?: string;
-    readonly referenceContext?: string;
+    readonly sheetFacts?: PreparedSheetFacts;
     readonly frontMatterSlices: ReadonlySet<number>;
     readonly lineStructuredSlices: ReadonlySet<number>;
     readonly cache: SliceCache<LaneContestOutcome>;
@@ -234,8 +226,7 @@ export async function contestDocumentLanes(
   function shapeFor({ judges, }: { readonly judges: readonly RosterModelId[]; },): string {
     return laneContestRunShape({
       modelIds: judges,
-      ...((identityContext === undefined) ? {} : { identityContext, }),
-      ...((referenceContext === undefined) ? {} : { referenceContext, }),
+      ...sheetFacts,
     },);
   }
 
@@ -340,10 +331,7 @@ export async function contestDocumentLanes(
            */
           const ineligibleCandidates = (eligibility === undefined)
             ? []
-            : CONTEST_CANDIDATES
-              .filter(function isIneligible(candidate,): boolean {
-                return eligibility[candidate] === 'ineligible';
-              },);
+            : ineligibleCandidatesOf({ eligibility, },);
           /**
            Probe claims against this slice's repair text, empty for most slices.
            */
@@ -433,8 +421,7 @@ export async function contestDocumentLanes(
                     translateText: row.translateText,
                     ...((syntax === undefined) ? {} : { syntax, }),
                     ...((ineligibleCandidates.length === 0) ? {} : { ineligibleCandidates, }),
-                    ...((identityContext === undefined) ? {} : { identityContext, }),
-                    ...((referenceContext === undefined) ? {} : { referenceContext, }),
+                    ...sheetFacts,
                     ...damageFragment,
                     ...disputeFragment,
                     lineStructured,

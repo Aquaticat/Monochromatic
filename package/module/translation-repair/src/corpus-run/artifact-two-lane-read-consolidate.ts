@@ -145,6 +145,8 @@ function assertConsolidationCoversContest(
 
  @param quorumBasisRequired - whether review rounds retain their wider quorum
 
+ @param tenseRecorded - whether the generation records the tense candidates of the shipped wording
+
  @returns What the stage settled, that it did not run, or that this artifact
  predates the field
 
@@ -168,6 +170,7 @@ export function parseConsolidation(
     correctionChainRequired = false,
     everyBodyBlockReviewed = false,
     quorumBasisRequired = false,
+    tenseRecorded = false,
   }: {
     readonly value: unknown;
     readonly laneSelection: ArtifactLaneSelection;
@@ -178,6 +181,7 @@ export function parseConsolidation(
     readonly correctionChainRequired?: boolean;
     readonly everyBodyBlockReviewed?: boolean;
     readonly quorumBasisRequired?: boolean;
+    readonly tenseRecorded?: boolean;
   },
 ): ParsedConsolidation {
   if (value === undefined) {
@@ -240,6 +244,7 @@ export function parseConsolidation(
         correctionChainRequired,
         everyBodyBlockReviewed,
         quorumBasisRequired,
+        tenseRecorded,
       },);
     },);
 

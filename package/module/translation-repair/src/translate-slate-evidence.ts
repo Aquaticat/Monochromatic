@@ -1,6 +1,10 @@
 import type { SelectEvidence, } from './candidate-select-wire.ts';
 import { citedReferenceEvidence, } from './cited-reference-rule.ts';
 import { JUDGE_PICTURE_SCOPE_RULE, } from './translate-wire.ts';
+import {
+  tenseCandidateGroups,
+  tenseCandidateLines,
+} from './tense-candidate-block.ts';
 
 //region Translate slate evidence
 // WHAT THE TRANSLATE SLATE SHOWS BESIDE ITS CANDIDATES, in one place so the
@@ -32,6 +36,16 @@ import { JUDGE_PICTURE_SCOPE_RULE, } from './translate-wire.ts';
  @param archiveDisputeNote - why the incumbent shown is the repair lane's
  stand-in, omitted on an undisputed slice
 
+ @param lifeEnded - whether the original's entry records a death, which adds
+ the tense candidates of the ballot texts; omitted when it records none
+
+ @param subjectNames - names the translation declares for its subject, its display
+ name and its aliases, read as named subjects by the tense candidates; omitted
+ when it declares none
+
+ @param ballotTexts - the texts on the ballot as the judges see them, one per
+ candidate in the order the sheet numbers them, read only for tense candidates
+
  @returns Labelled evidence entries, in the order the judges read them
 
  @example
@@ -48,6 +62,9 @@ export function translateSlateEvidence(
     identityContext,
     referenceContext,
     archiveDisputeNote,
+    lifeEnded = false,
+    subjectNames,
+    ballotTexts = [],
   }: {
     readonly sourceText: string;
     readonly pictureContext?: string;
@@ -56,8 +73,27 @@ export function translateSlateEvidence(
     readonly identityContext?: string;
     readonly referenceContext?: string;
     readonly archiveDisputeNote?: string;
+    readonly lifeEnded?: boolean;
+    readonly subjectNames?: readonly string[];
+    readonly ballotTexts?: readonly string[];
   },
 ): readonly SelectEvidence[] {
+  /**
+   Tense candidates of the ballot texts, one group per text that has any.
+   */
+  const tenseGroups = tenseCandidateGroups({
+    lifeEnded,
+    ...((subjectNames === undefined) ? {} : { subjectNames, }),
+    texts: ballotTexts.map(function ballotSource(
+      text,
+      index,
+    ) {
+      return {
+        label: `CANDIDATE ${String(index + 1,)}`,
+        text,
+      };
+    },),
+  },);
   return [
     {
       label: 'ORIGINAL (Chinese)',
@@ -135,6 +171,17 @@ export function translateSlateEvidence(
         {
           label: 'ARCHIVE RENDERING DISPUTED',
           text: archiveDisputeNote,
+        },
+      ]),
+    // Tense candidates of the ballot texts, last, so a judge reads the texts
+    // before a flag on them. Shown only where the entry records a death.
+    ...((tenseGroups.length === 0)
+      ? []
+      : [
+        {
+          label: 'TENSE CANDIDATES, to check against the house tense rule',
+          text: tenseCandidateLines({ groups: tenseGroups, },)
+            .join('\n',),
         },
       ]),
   ];

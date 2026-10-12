@@ -51,6 +51,37 @@ export type LaneContestEligibility = {
 };
 
 /**
+ Candidate names deterministic syntax admission classifies, in the order the
+ contest names them.
+ */
+const CONTEST_CANDIDATES = [
+  'archive',
+  'repair',
+  'translate',
+] as const;
+
+/**
+ Names the candidates the prompt marks unavailable before the panel votes.
+
+ @param eligibility - deterministic readings of the three candidates
+
+ @returns The ineligible candidates in contest order; empty when none is
+
+ @example
+ ```ts
+ const marked = ineligibleCandidatesOf({ eligibility, },);
+ ```
+ */
+export function ineligibleCandidatesOf(
+  { eligibility, }: { readonly eligibility: LaneContestEligibility; },
+): readonly (typeof CONTEST_CANDIDATES)[number][] {
+  return CONTEST_CANDIDATES
+    .filter(function isIneligible(candidate,): boolean {
+      return eligibility[candidate] === 'ineligible';
+    },);
+}
+
+/**
  Stable finding marking raw choices excluded by deterministic admission.
  */
 export const LANE_CONTEST_ELIGIBILITY_FLOOR_FINDING = 'lane-contest-eligibility-floor (inadmissible choices excluded)';

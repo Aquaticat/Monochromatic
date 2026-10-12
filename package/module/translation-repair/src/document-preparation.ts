@@ -6,8 +6,12 @@ import {
 import { archiveContributorNameForms, } from './contributor-name-authority.ts';
 import { declaredNameForms, } from './declared-name-survival.ts';
 import { declaredNamePairs, } from './linked-title-declared-name.ts';
-import { extractDeclaredIdentity, } from './identity-context.ts';
+import {
+  extractDeclaredIdentity,
+  lifeEndedOf,
+} from './identity-context.ts';
 import { pageIdentityLines, } from './page-identity-lines.ts';
+import { declaredSubjectNames, } from './subject-names.ts';
 import {
   type ChunkGovernance,
   type ChunkSlice,
@@ -112,6 +116,10 @@ import {
  when rebuilding an artifact written before generation twelve, whose slicing
  sealed nothing
 
+ @param sourceEntryInfo - parsed `info.yml` of the original's corpus entry,
+ whose recorded death joins the identity block and sets `lifeEnded`; absent
+ when the caller reads no entry, which records no death
+
  @returns Slices, governance, declared names and alignment findings
 
  @example
@@ -132,6 +140,7 @@ export function prepareDocumentPair(
     referenceContext = '',
     attestedDetails = [],
     sealArchiveOriginal = false,
+    sourceEntryInfo,
   }: {
     readonly sourceText: string;
     readonly targetText: string;
@@ -144,6 +153,7 @@ export function prepareDocumentPair(
     readonly referenceContext?: string;
     readonly attestedDetails?: readonly AttestedDetail[];
     readonly sealArchiveOriginal?: boolean;
+    readonly sourceEntryInfo?: unknown;
   },
 ): PreparedDocumentPair {
   /**
@@ -209,6 +219,23 @@ export function prepareDocumentPair(
     sourceText,
     targetText,
     contextLines,
+    sourceEntryInfo,
+  },);
+
+  /**
+   Whether the original's entry records a death, which the house tense rule
+   reads for the sheets that judge tense (`presentTenseCandidates`).
+   */
+  const lifeEnded = lifeEndedOf({ entryInfo: sourceEntryInfo, },);
+
+  /**
+   Names the translation declares for its subject, its display name and its
+   aliases, which the tense candidates read as named subjects beside the
+   pronouns. Empty when it declares none.
+   */
+  const subjectNames = declaredSubjectNames({
+    data: targetDocument.frontMatter
+      ?.data,
   },);
 
   /**
@@ -531,6 +558,10 @@ export function prepareDocumentPair(
     ...((archiveOriginalSpans.length === 0) ? {} : { archiveOriginalSpans, }),
     sourceText,
     targetText,
+    // TRUE EXACTLY WHEN THE ORIGINAL'S ENTRY RECORDS A DEATH, carried as a
+    // typed flag so no sheet has to read it back out of the identity block.
+    lifeEnded,
+    ...((lifeEnded && (subjectNames.length > 0)) ? { subjectNames, } : {}),
     slices,
     lineStructuredSliceIndices: governedSliceIndices({ chunks: governance, },),
     // Omitted rather than empty, so spreading this into a prompt cannot emit a
