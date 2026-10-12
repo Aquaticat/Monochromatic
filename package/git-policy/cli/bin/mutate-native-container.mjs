@@ -124,15 +124,24 @@ const maximumTimeoutSeconds = 3600;
  Split `--timeout <seconds>` from the repeated `--file` scopes; the timeout defaults to `defaultTimeoutSeconds`.
 
  @param {readonly string[]} options - command-line arguments after the script path
- @returns {{ timeoutSeconds: number, scopeOptions: string[] }} timeout and the arguments left for `parseScopes`
+ @returns {{ timeoutSeconds: number, examine: string[], scopeOptions: string[] }} timeout, the mutant-name patterns of
+   the repeated `--examine <regex>` options (only matching mutants are tried), and the arguments left for `parseScopes`
  */
 function parseTimeout(options) {
   let timeoutSeconds = defaultTimeoutSeconds;
   /** @type {string[]} */
   const scopeOptions = [];
+  /** @type {string[]} */
+  const examine = [];
   for (let index = 0; index < options.length; index += 2) {
     const flag = options[index];
     const value = options[index + 1];
+    if (flag === '--examine') {
+      if ((value === undefined) || !/^[A-Za-z0-9_|:.*?()\\ -]+$/u.test(value))
+        throw new NativeVerificationError(`--examine must be a regular expression of plain characters, got ${String(value)}.`);
+      examine.push(value);
+      continue;
+    }
     if (flag !== '--timeout') {
       scopeOptions.push(flag ?? '', value ?? '');
       continue;
@@ -141,7 +150,7 @@ function parseTimeout(options) {
       throw new NativeVerificationError(`--timeout must be a whole number of seconds from 1 to ${maximumTimeoutSeconds}, got ${value}.`);
     timeoutSeconds = Number(value);
   }
-  return { timeoutSeconds, scopeOptions };
+  return { timeoutSeconds, examine, scopeOptions };
 }
 
 /**
@@ -168,10 +177,11 @@ function parseScopes(options) {
 /**
  cargo-mutants command the campaign image runs.
 
- @param {{ scopes: readonly string[], timeoutSeconds: number }} request - `src/native` file globs and per-mutant test limit
+ @param {{ scopes: readonly string[], examine: readonly string[], timeoutSeconds: number }} request - `src/native` file
+   globs, mutant-name patterns to restrict to, and per-mutant test limit
  @returns {string[]} complete argument array, also recorded in the manifest
  */
-function mutationCommand({ scopes, timeoutSeconds }) {
+function mutationCommand({ scopes, examine, timeoutSeconds }) {
   return [
     'cargo',
     'mutants',
@@ -193,6 +203,12 @@ function mutationCommand({ scopes, timeoutSeconds }) {
       return [
         '--exclude-re',
         kind,
+      ];
+    }),
+    ...examine.flatMap(function examineArguments(pattern) {
+      return [
+        '--re',
+        pattern,
       ];
     }),
     // Scoped runs are evidence for the named files only. The unmutated baseline still runs over everything.
@@ -224,7 +240,7 @@ function baselineSkipArguments() {
 
 /** Build and run the tool over an immutable input image, then retain its complete report. */
 async function main() {
-  const { timeoutSeconds, scopeOptions } = parseTimeout(process.argv
+  const { timeoutSeconds, examine, scopeOptions } = parseTimeout(process.argv
     .slice(2));
   const scopes = parseScopes(scopeOptions);
   await using context = await mkdtempDisposable(join(
@@ -288,7 +304,7 @@ async function main() {
       'cargo-mutants',
     ),
   );
-  const command = mutationCommand({ scopes, timeoutSeconds });
+  const command = mutationCommand({ scopes, examine, timeoutSeconds });
   await writeFile(
     join(
       context.path,
