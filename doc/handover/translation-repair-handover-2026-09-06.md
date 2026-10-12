@@ -65,12 +65,25 @@ each choice an agent left open is recorded beside its ledger entry.
   and the consistency pass asked the bench about both repeat groups and changed nothing
   (ledger B449,
   B450).
+- LANDED.
+  The consistency pass's rebuild
+  (agreement by located span,
+  a run-off on a tie,
+  the choice carried through writers,
+  the bench and every floor;
+  generation 16)
+  in `6e5afaa41a` and `3085924af4`,
+  gate g80 green on the merged head
+  (2207 passing cases and the 8 environmental `bench-sample-draw` failures,
+  lint clean,
+  49 of 49 scans),
+  and the phase's wait on the writer bench in `4ec390fe87` and `f8d47c38aa`.
 - IN FLIGHT.
-  An agent rebuilds how the consistency pass reads agreement and carries the bench's choice
-  (by located span,
-  through writers and the bench,
-  with a run-off on a tie),
-  owning every consistency file.
+  An independent review of the rebuild found no path to the page around the bench and the floors,
+  and twelve defects (ledger B451 to B462);
+  one agent,
+  owning every consistency and seat-reading file,
+  fixes all of them.
 - THE GEMMA SEATS.
   Bedrock answers both with HTTP 401 for an expired token.
   The owner does not top up Bedrock (2026-09-07),
@@ -79,9 +92,9 @@ each choice an agent left open is recorded beside its ledger entry.
   A new key would bring them back,
   and is the owner's to issue or not.
 - NEXT.
-  Merge that work,
+  Merge those fixes,
   gate the merged head,
-  replay the TianqiChen66623 artifact's ballots through it,
+  read the replay of the TianqiChen66623 artifact's ballots through it,
   then walk "Before a run launches" and relaunch `TianqiChen666` as `TianqiChen66624`,
   reading the refrain and the repeated sentence for one rendering each.
 

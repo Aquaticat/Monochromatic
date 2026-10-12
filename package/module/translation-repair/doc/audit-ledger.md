@@ -36144,6 +36144,80 @@ Open to the owner's veto:
 the run-off,
 whose alternative is that a tie leaves the page.
 
+Built in `6e5afaa41a` (red) and `3085924af4`,
+with the page consistency phase leaning on the writer bench in `4ec390fe87` and `f8d47c38aa`;
+the artifact moved to generation 16 and `CONSISTENCY_CACHE_VERSION` to 2.
+A keyless replay over TianqiChen66623's stored ballots located every place:
+the refrain's 2 to 2 tie goes to a run-off between the third and fourth places,
+and the repeated sentence's first place wins 3 to 1.
+The lead also kept,
+open to veto:
+the generation 16 shape,
+which makes a pass refuse to resume into a directory of generation 15 artifacts
+(the alternative,
+an optional key in generation 15,
+weakens the exact-key readers);
+a separate outcome for the bench keeping the current English;
+and the first round's strict majority for the run-off.
+
+### B451 to B462: the independent review of the rebuild
+
+Found on 2026-10-12 (UTC) by a reviewer that read every changed file,
+ran twenty mutations and fuzzed six hundred benches;
+it found no path where model output reaches the page without the bench and every floor,
+and no failure that stops an entry.
+Being fixed in work open when this entry was written:
+
+- B451:
+  two receiving places in one paragraph:
+  a writer's rewrite of the paragraph replaced the first and dropped the second as `overlapped`,
+  so the page shipped still inconsistent with no finding,
+  and `overlapped` was defined as an earlier group's overlap.
+  The writers now rewrite each block once for every receiving place in it.
+- B452:
+  quotes and slots matched as substrings
+  ("so" inside "also"),
+  so a slot could be written into the middle of a word;
+  they now locate at word boundaries.
+  A recurrence of "Words inside words".
+- B453:
+  a writer bench below its floor skipped the whole pass,
+  under a line saying the entry stopped (M159);
+  the carry now goes ahead without writers and records why.
+- B454:
+  the judges choosing among the writers' paragraphs were shown less than the writers,
+  and neither was shown the chosen place's English slot words.
+  A recurrence of "What each sheet is shown".
+- B455:
+  the fold was not idempotent,
+  so a quote across a blank line located only when the caller had not folded it.
+- B456:
+  quotation marks and brackets at a quote's edges split the vote,
+  as sentence punctuation no longer did.
+- B457:
+  a writer was given the whole top-level list,
+  blockquote or `<details>` that held the span,
+  and a span in no single block was not tried as a splice.
+- B458:
+  one catch charged every throw to the writer,
+  including a floor's refusal of the source side.
+  A recurrence of "What a catch charges".
+- B459:
+  the first-round ask copied the gather's cache protocol.
+  A recurrence of "Copies of shared code".
+- B460:
+  sheets that forbid choosing by position named the first label in their reply example.
+- B461:
+  comments and TSDoc that still said the pass carries by code alone,
+  defaults no read can reach,
+  and no record of why a run-off was asked.
+- B462:
+  weak assertions in the new tests,
+  and three mutations no unit test caught:
+  touching spans unlocated,
+  an overlap check that ignores the slice,
+  and an abort swallowed in a group's settlement.
+
 ## Process mistakes in this audit
 
 These are the agent's own mistakes while fixing,
@@ -39264,6 +39338,79 @@ the lead reruns what an agent reports on the merged head before relying on it,
 as here.
 `mistake-prevention.md`,
 "Shell commands".
+
+### M158: two more agents broke their briefs' shell rules
+
+Status:
+happened on 2026-10-12 (UTC) in the work of B449 and B450 and in its review;
+disclosed by each agent in its hand-back.
+The agent that built the rebuild piped listings through `head`,
+`cut`,
+`sort`,
+`sed` and `tr`,
+chained calls with `;`,
+ran two `for` loops and put `sleep` in a watcher script.
+The reviewing agent used short `rg` flags,
+put four steps in two calls,
+and typed backslash-u escapes into a scratch script,
+which then held invisible characters
+(its edits to the package hold none,
+checked with a positive control).
+Gate g80 on the merged head confirmed the rebuild's reported results.
+
+Prevention:
+the briefs now name the display pipes they forbid one by one and give the long form of the flags agents reach for,
+since a rule naming `head` alone left `cut` and `sed` open;
+the lead reruns what an agent reports on the merged head before relying on it.
+
+### M159: the lead's own decision made a writer bench out of reach stop the consistency pass
+
+Status:
+found on 2026-10-12 (UTC) by the independent review of the rebuild,
+and changed in the work that fixes that review's findings.
+The lead decided that the page consistency phase should lean on the writer bench too,
+without reading what a bench below its floor does in that phase:
+the seat reading throws,
+the pass contains the throw,
+and the page ships with no first round and no code splice,
+under a log line saying the entry stops when it does not.
+The lead now decides that a writer bench out of reach leaves the carry without writers,
+and the judges' bench alone decides whether the pass runs.
+
+Prevention:
+a decision that changes which benches a phase leans on is traced through the seat reading's refusal and the
+caller's catch before it is briefed,
+with the log lines each path prints.
+
+### M160: the lead handed the owner a cleanup command whose list stopped short of the worktrees named
+
+Status:
+happened on 2026-10-12 (UTC).
+The lead asked the owner to run `remove-worktrees.ts force` for the worktrees `w109` to `w127`;
+the script's list ended at `w104`,
+so the owner's run removed 104 older worktrees and none of those named.
+The lead widened the list to `w127`,
+leaving out the worktree an agent still held,
+and removed the clean ones itself.
+
+Prevention:
+before handing the owner a command,
+the lead reads what it acts on and runs its dry mode.
+
+### M161: the lead asked the owner to renew a credential the owner had ruled out paying for
+
+Status:
+happened on 2026-10-12 (UTC) in the read of TianqiChen66623.
+The lead listed renewing the Bedrock Gemma seats' expired credential as the owner's action before the next launch,
+though the owner does not top up Bedrock (2026-09-07)
+and the run withholds both seats after their first failed calls,
+so nothing waited on them.
+The pass log,
+the handover and `status.md` were corrected the same day.
+
+Prevention:
+before naming an owner action,
+the lead checks the owner's rulings on that provider and whether any launch waits on it.
 
 ### M79: a coverage census measuring compressed code
 
