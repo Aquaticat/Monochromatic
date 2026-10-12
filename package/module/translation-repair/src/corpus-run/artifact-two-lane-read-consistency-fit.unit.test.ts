@@ -1,8 +1,10 @@
 /**
  Tests for checking the places of a recorded group beside the kind of repeat
  and the slices the comparison names: labels in order, slices that exist, slot
- offsets and a slot in the rendering on the places of a frame alone, and a
- bench that was not asked meaning every place says so.
+ offsets lying inside their place and a slot in the rendering on the places of
+ a frame alone, two places at least unless the group was skipped for too few,
+ and a bench that was not asked meaning every place says so, with a slice of
+ its own for each place of a group said to read alike.
 
  What the ballots say is the coherence check's question
  (`artifact-two-lane-read-consistency-coherence.unit.test.ts`).
@@ -37,6 +39,23 @@ import { refusalTextOf, } from './consistency-refusal.test-fixture.ts';
  Slices the cat page's comparison names.
  */
 const SLICES: ReadonlySet<number> = new Set([0, 1, 2,],);
+
+/**
+ The reason a place carrying a slot offset alone, or none on a frame, is refused
+ for, which every offset case shares.
+ */
+const SLOT_OFFSETS_REASON = 'expected both slot offsets on a place of a frame, and neither on any other.';
+
+/**
+ The reason a slot that does not lie inside its place is refused for.
+ */
+const SLOT_BOUNDS_REASON = 'expected a slot that starts before it ends and lies inside its place.';
+
+/**
+ The refusal of a group with fewer than two places that is not a skip for too few.
+ */
+const TWO_PLACES_REFUSAL = 'ArtifactParseError: artifact parse failed at cat.groups[0].occurrences: '
+  + 'expected two places at least, since only a skip for too few places has fewer.';
 
 /**
  The text of the refusal the fit check raises for a group.
@@ -232,12 +251,9 @@ await describe({
               fitRefusal({ group: withPlaceReplaced({ group: frameGroup(), position: 1, place: startOnly, },), },),
               fitRefusal({ group: withPlaceReplaced({ group: frameGroup(), position: 1, place: endOnly, },), },),
             ],).toEqual([
-              'ArtifactParseError: artifact parse failed at cat.groups[0].occurrences[0]: '
-              + 'expected slot offsets on a place of a frame, and on no other.',
-              'ArtifactParseError: artifact parse failed at cat.groups[0].occurrences[1]: '
-              + 'expected slot offsets on a place of a frame, and on no other.',
-              'ArtifactParseError: artifact parse failed at cat.groups[0].occurrences[1]: '
-              + 'expected slot offsets on a place of a frame, and on no other.',
+              `ArtifactParseError: artifact parse failed at cat.groups[0].occurrences[0]: ${SLOT_OFFSETS_REASON}`,
+              `ArtifactParseError: artifact parse failed at cat.groups[0].occurrences[1]: ${SLOT_OFFSETS_REASON}`,
+              `ArtifactParseError: artifact parse failed at cat.groups[0].occurrences[1]: ${SLOT_OFFSETS_REASON}`,
             ],);
           },
         },),
@@ -247,8 +263,7 @@ await describe({
             expect(fitRefusal({
               group: withPlace({ group: napsGroup(), position: 1, over: { slotStartOffset: 1, slotEndOffset: 2, }, },),
             },),).toBe(
-              'ArtifactParseError: artifact parse failed at cat.groups[0].occurrences[1]: '
-              + 'expected slot offsets on a place of a frame, and on no other.',
+              `ArtifactParseError: artifact parse failed at cat.groups[0].occurrences[1]: ${SLOT_OFFSETS_REASON}`,
             );
           },
         },),
@@ -261,11 +276,32 @@ await describe({
             ].map(function refusedFor(over,): string {
               return fitRefusal({ group: withPlace({ group: napsGroup(), position: 1, over, }), },);
             },),).toEqual([
-              'ArtifactParseError: artifact parse failed at cat.groups[0].occurrences[1]: '
-              + 'expected slot offsets on a place of a frame, and on no other.',
-              'ArtifactParseError: artifact parse failed at cat.groups[0].occurrences[1]: '
-              + 'expected slot offsets on a place of a frame, and on no other.',
+              `ArtifactParseError: artifact parse failed at cat.groups[0].occurrences[1]: ${SLOT_OFFSETS_REASON}`,
+              `ArtifactParseError: artifact parse failed at cat.groups[0].occurrences[1]: ${SLOT_OFFSETS_REASON}`,
             ],);
+          },
+        },),
+        it({
+          name: 'REFUSES A SLOT THAT ENDS WHERE IT STARTS OR BEFORE, STARTS BEFORE ITS PLACE OR ENDS AFTER IT, and accepts one '
+            + 'that fills its whole place',
+          fn: async () => {
+            /**
+             The frame's second place stands at 20 to 34, so these slots are empty, reversed, left of it and right of it.
+             */
+            const outside: readonly { readonly slotStartOffset: number; readonly slotEndOffset: number; }[] = [
+              { slotStartOffset: 25, slotEndOffset: 25, },
+              { slotStartOffset: 27, slotEndOffset: 25, },
+              { slotStartOffset: 19, slotEndOffset: 27, },
+              { slotStartOffset: 25, slotEndOffset: 35, },
+            ];
+            expect(outside.map(function refusedFor(over,): string {
+              return fitRefusal({ group: withPlace({ group: frameGroup(), position: 1, over, }), },);
+            },),).toEqual(outside.map(function refusal(): string {
+              return `ArtifactParseError: artifact parse failed at cat.groups[0].occurrences[1]: ${SLOT_BOUNDS_REASON}`;
+            },),);
+            expect(fitRead({
+              group: withPlace({ group: frameGroup(), position: 1, over: { slotStartOffset: 20, slotEndOffset: 34, }, },),
+            },),).toBeUndefined();
           },
         },),
         it({
@@ -324,8 +360,6 @@ await describe({
           name: 'REFUSES A GROUP WITH FEWER THAN TWO PLACES THAT THE BENCH WAS ASKED ABOUT OR SKIPPED FOR ANOTHER REASON THAN '
             + 'TOO FEW, since a group with fewer is skipped for too few',
           fn: async () => {
-            const refusal = 'ArtifactParseError: artifact parse failed at cat.groups[0].occurrences: '
-              + 'expected at least two places, since a group with fewer is skipped for too few.';
             expect([
               { ...napsGroup(), occurrences: napsGroup().occurrences.slice(0, 1,), },
               unaskedGroup({ reason: 'consistent', outcome: 'consistent', places: 1, }),
@@ -333,17 +367,43 @@ await describe({
               unaskedGroup({ reason: 'no-english', outcome: 'untouched', places: 0, }),
             ].map(function refusedFor(group,): string {
               return fitRefusal({ group, },);
-            },),).toEqual([refusal, refusal, refusal, refusal,],);
+            },),).toEqual([TWO_PLACES_REFUSAL, TWO_PLACES_REFUSAL, TWO_PLACES_REFUSAL, TWO_PLACES_REFUSAL,],);
           },
         },),
         it({
-          name: 'ACCEPTS A GROUP WHOSE HANDLING FAILED WITH NO PLACE AT ALL, as the reader has always read one',
+          name: 'REFUSES A GROUP WHOSE HANDLING FAILED WITH NO PLACE OR ONE, since a group is put to the bench only with two '
+            + 'places and only a group put to the bench can fail',
           fn: async () => {
+            expect([0, 1,].map(function refusedFor(places,): string {
+              return fitRefusal({
+                group: {
+                  ...unaskedGroup({ reason: 'too-few-placed', outcome: 'untouched', places, }),
+                  verdict: { kind: 'failed', detail: 'refused by ConsistencyInvariantError', },
+                },
+              },);
+            },),).toEqual([TWO_PLACES_REFUSAL, TWO_PLACES_REFUSAL,],);
+          },
+        },),
+        it({
+          name: 'REFUSES TWO PLACES OF ONE SLICE IN A GROUP SAID TO READ ALIKE, since the pass asks the bench when two places '
+            + 'stand in one slice, and accepts them in a group with no English',
+          fn: async () => {
+            expect(fitRefusal({
+              group: withPlace({
+                group: unaskedGroup({ reason: 'consistent', outcome: 'consistent', places: 3, }),
+                position: 1,
+                over: { sliceIndex: 0, },
+              }),
+            },),).toBe(
+              'ArtifactParseError: artifact parse failed at cat.groups[0].occurrences[1].sliceIndex: '
+              + 'expected a slice of its own, since the pass asks the bench when two places stand in one slice.',
+            );
             expect(fitRead({
-              group: {
-                ...unaskedGroup({ reason: 'too-few-placed', outcome: 'untouched', places: 0, }),
-                verdict: { kind: 'failed', detail: 'refused by ConsistencyInvariantError', },
-              },
+              group: withPlace({
+                group: unaskedGroup({ reason: 'no-english', outcome: 'untouched', places: 3, }),
+                position: 1,
+                over: { sliceIndex: 0, },
+              }),
             },),).toBeUndefined();
           },
         },),

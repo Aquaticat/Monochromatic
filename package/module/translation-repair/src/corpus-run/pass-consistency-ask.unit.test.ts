@@ -10,6 +10,7 @@
  @module
  */
 
+import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 import {
   DEFAULT_CONCURRENCY,
   describe,
@@ -25,6 +26,7 @@ import {
   consistencyKey,
   consistencyLabels,
   type ConsistencySubject,
+  createSeatTally,
   gatherStageVoices,
   type RosterModelId,
   type SliceCache,
@@ -193,6 +195,8 @@ function recordingCache(
 
  @param modelIds - the bench, the roster by default
 
+ @param subject - the question put, the repeated sentence by default
+
  @param lines - sink for the level and text of every line logged
 
  @param asked - sink for the seat of every call
@@ -209,12 +213,14 @@ async function askBench(
     behave,
     cache,
     modelIds = BENCH,
+    subject = SUBJECT,
     lines,
     asked,
   }: {
     readonly behave: SeatScript;
     readonly cache: SliceCache<ConsistencyRecord>;
     readonly modelIds?: readonly RosterModelId[];
+    readonly subject?: ConsistencySubject;
     readonly lines: string[];
     readonly asked: RosterModelId[];
   },
@@ -222,7 +228,7 @@ async function askBench(
   return await askConsistencyBench({
     client: scriptedJudgeClient({ behave, asked, sheets: [], },),
     modelIds,
-    subject: SUBJECT,
+    subject,
     cache,
     signal: AbortSignal.timeout(HANG_STOP_MS,),
     exchangeTimeoutMs: HANG_STOP_MS,
@@ -257,6 +263,8 @@ function oneSeatAnswers({ seat, }: { readonly seat: RosterModelId; },): SeatBeha
 
  @param behave - what each seat does
 
+ @param seatTally - the run's record of what each seat did, when a case needs seats it has withheld
+
  @returns The gather over the same sheet and bench
 
  @example
@@ -265,7 +273,13 @@ function oneSeatAnswers({ seat, }: { readonly seat: RosterModelId; },): SeatBeha
  ```
  */
 async function gatheredBy(
-  { behave, }: { readonly behave: SeatScript; },
+  {
+    behave,
+    seatTally,
+  }: {
+    readonly behave: SeatScript;
+    readonly seatTally?: ReturnType<typeof createSeatTally>;
+  },
 ): ReturnType<typeof gatherStageVoices<unknown>> {
   return await gatherStageVoices({
     client: scriptedJudgeClient({ behave, asked: [], sheets: [], },),
@@ -278,6 +292,7 @@ async function gatheredBy(
     stage: 'page-consistency',
     l: levelCapturingLogger({ lines: [], },),
     graceMs: HANG_STOP_MS,
+    ...((seatTally === undefined) ? {} : { seatTally, }),
   },);
 }
 
@@ -384,6 +399,181 @@ await describe({
               asked: [],
             },);
             expect(lines,).toEqual(['info [askConsistencyBench] resumed 1 ballot',],);
+          },
+        },),
+        it({
+          name: 'RESUMES THE GATHER IT STORED FOR A BENCH OF TWO, whose quorum is one, asking no seat again',
+          fn: async () => {
+            const twoSeats = BENCH.slice(0, 2,);
+            const twoSeatsKey = consistencyKey({
+              messages: buildConsistencyMessages({ subject: SUBJECT, },),
+              modelIds: twoSeats,
+            },);
+            const persisted: { key: string; serialized: string; }[] = [];
+            const fresh = await askBench({
+              behave: everySeatAnswers,
+              cache: recordingCache({ resumed: new Map(), persisted, },),
+              modelIds: twoSeats,
+              lines: [],
+              asked: [],
+            },);
+            const stored: ConsistencyRecord = {
+              quorum: fresh.quorum,
+              voices: fresh.voices,
+              findings: fresh.findings,
+            };
+            expect(persisted.map(function keyOf(entry,): string {
+              return entry.key;
+            },),).toEqual([twoSeatsKey,],);
+            expect(JSON.parse(nonNullishOrThrow(persisted[0],).serialized,),).toEqual(stored,);
+            const asked: RosterModelId[] = [];
+            const again = await askBench({
+              behave: everySeatAnswers,
+              cache: recordingCache({ resumed: new Map([[twoSeatsKey, stored,],],), persisted: [], },),
+              modelIds: twoSeats,
+              lines: [],
+              asked,
+            },);
+            expect({ quorum: fresh.quorum, asked, again, },).toEqual({
+              quorum: 1,
+              asked: [],
+              again: { ...stored, resumed: true, },
+            },);
+          },
+        },),
+        it({
+          name: 'RESUMES A GATHER THAT CLOSED ON A QUORUM OF ONE BECAUSE THE RUN HAD WITHHELD TWO SEATS OF A BENCH OF THREE, '
+            + 'asking no seat again',
+          fn: async () => {
+            /**
+             A tally holding the second and third seats withheld: each threw on all four asks it was given.
+             */
+            const seatTally = createSeatTally();
+            for (const seat of BENCH.slice(1,)) {
+              seatTally.record({ modelId: seat, outcome: 'threw', },);
+              seatTally.record({ modelId: seat, outcome: 'threw', },);
+              seatTally.record({ modelId: seat, outcome: 'threw', },);
+              seatTally.record({ modelId: seat, outcome: 'threw', },);
+            }
+            const gathered = await gatheredBy({ behave: everySeatAnswers, seatTally, },);
+            expect({
+              quorum: gathered.quorum,
+              quorumMet: gathered.quorumMet,
+              heard: gathered.voices.map(function seatOf(voice,): string {
+                return voice.modelId;
+              },),
+            },).toEqual({ quorum: 1, quorumMet: true, heard: [SEAT_HYPER_ONLY,], },);
+            const stored: ConsistencyRecord = {
+              quorum: gathered.quorum,
+              voices: [voiceOf({ seat: SEAT_HYPER_ONLY, },),],
+              findings: gathered.findings,
+            };
+            const asked: RosterModelId[] = [];
+            const again = await askBench({
+              behave: everySeatAnswers,
+              cache: recordingCache({ resumed: new Map([[KEY, stored,],],), persisted: [], },),
+              lines: [],
+              asked,
+            },);
+            expect({ asked, again, },).toEqual({ asked: [], again: { ...stored, resumed: true, }, },);
+          },
+        },),
+        it({
+          name: 'ASKS AGAIN WHEN THE STORED BALLOTS HOLD A SEAT TWICE OR A SEAT THE BENCH DOES NOT HAVE, warning that they cannot '
+            + 'be this bench\'s answer',
+          fn: async () => {
+            /**
+             The ballots a gather over this bench cannot have made: one seat heard twice, and a seat from outside the bench.
+             */
+            const unfit: readonly ConsistencyRecord[] = [
+              {
+                quorum: 2,
+                voices: [voiceOf({ seat: SEAT_HYPER_ONLY, },), voiceOf({ seat: SEAT_HYPER_ONLY, },),],
+                findings: [],
+              },
+              {
+                quorum: 2,
+                voices: [voiceOf({ seat: SEAT_HYPER_ONLY, },), { ...voiceOf({ seat: SEAT_BEDROCK_ONLY_TEXT, },), seat: 'unseated-cat', },],
+                findings: [],
+              },
+            ];
+            const warning = 'warn [askConsistencyBench] the stored ballots cannot be an answer of this bench (a seat heard twice, '
+              + 'or a seat the bench does not have), so the question is asked again';
+            const results = await Promise.all(unfit.map(async function askedWith(stored,): Promise<unknown> {
+              const lines: string[] = [];
+              const asked: RosterModelId[] = [];
+              const result = await askBench({
+                behave: everySeatAnswers,
+                cache: recordingCache({ resumed: new Map([[KEY, stored,],],), persisted: [], },),
+                lines,
+                asked,
+              },);
+              return {
+                resumed: result.resumed,
+                asked: asked.toSorted(),
+                warnings: lines.filter(function namesTheStoredBallots(line,): boolean {
+                  return line.includes('the stored ballots',);
+                },),
+              };
+            },),);
+            expect(results,).toEqual(unfit.map(function everySeatAskedAgain(): unknown {
+              return { resumed: false, asked: [...BENCH,].toSorted(), warnings: [warning,], };
+            },),);
+          },
+        },),
+        it({
+          name: 'KEEPS THE SLOT OF EACH QUOTE OF A REFRAIN AND KEYS THE QUESTION BY THE DEATH AND THE NAMES THE SHEET READS, so a '
+            + 'page that records a death never resumes the gather of one that records none',
+          fn: async () => {
+            const framed: ConsistencySubject = {
+              ...SUBJECT,
+              repeat: { kind: 'refrain', prefix: '小猫', suffix: '打盹', },
+              lifeEnded: true,
+              subjectNames: ['Mimi',],
+            };
+            const persisted: { key: string; serialized: string; }[] = [];
+            const result = await askBench({
+              behave: function framedSeatAnswers({ seat, },): SeatBehaviour {
+                return {
+                  kind: 'answers',
+                  text: JSON.stringify({
+                    reason: `${seat} words the first place best.`,
+                    quotes: [
+                      { label: 'OCCURRENCE 1', quote: 'The cat naps.', slot: 'cat', },
+                      { label: 'OCCURRENCE 2', quote: 'The kitten naps.', slot: 'kitten', },
+                    ],
+                    choice: 'OCCURRENCE 1',
+                    keep: [],
+                  },),
+                };
+              },
+              cache: recordingCache({ resumed: new Map(), persisted, },),
+              subject: framed,
+              lines: [],
+              asked: [],
+            },);
+            expect(result.voices.map(function quotesOf(voice,): unknown {
+              return voice.quotes;
+            },),).toEqual(BENCH.map(function quotesWithSlots(): unknown {
+              return [
+                { label: 'OCCURRENCE 1', quote: 'The cat naps.', slot: 'cat', },
+                { label: 'OCCURRENCE 2', quote: 'The kitten naps.', slot: 'kitten', },
+              ];
+            },),);
+            expect(persisted.map(function keyOf(entry,): string {
+              return entry.key;
+            },),).toEqual([
+              consistencyKey({
+                messages: buildConsistencyMessages({ subject: framed, },),
+                modelIds: BENCH,
+                lifeEnded: true,
+                subjectNames: ['Mimi',],
+              },),
+            ],);
+            expect(persisted[0]?.key,).not.toBe(consistencyKey({
+              messages: buildConsistencyMessages({ subject: framed, },),
+              modelIds: BENCH,
+            },),);
           },
         },),
         it({

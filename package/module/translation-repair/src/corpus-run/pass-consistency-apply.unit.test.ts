@@ -456,9 +456,9 @@ await describe({
               refusalOf({ changed: { ...group, renderings: group.renderings.slice(0, 1,), }, }),
               refusalOf({ changed: { ...group, outcomes: [], }, }),
             ],).toEqual([
-              'ConsistencyInvariantError: unreachable: place 1 of group 0 has no rendering or outcome, '
+              'ConsistencyInvariantError: unreachable: OCCURRENCE 2 of group 1 has no rendering or outcome, '
               + 'and both are made for every place',
-              'ConsistencyInvariantError: unreachable: place 0 of group 0 has no rendering or outcome, '
+              'ConsistencyInvariantError: unreachable: OCCURRENCE 1 of group 1 has no rendering or outcome, '
               + 'and both are made for every place',
             ],);
           },
@@ -482,7 +482,7 @@ await describe({
             },);
             expect(refusal,).toBeInstanceOf(ConsistencyInvariantError,);
             expect(String(refusal,),).toBe(
-              'ConsistencyInvariantError: unreachable: place 1 of group 0 was to be replaced and no replacement was applied, '
+              'ConsistencyInvariantError: unreachable: OCCURRENCE 2 of group 1 was to be replaced and no replacement was applied, '
               + 'left out or refused, and every pending replacement is one of the three',
             );
           },

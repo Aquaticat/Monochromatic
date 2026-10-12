@@ -76,10 +76,13 @@ const UNLOCATED_REASONS = [
   'empty',
   'not-found',
   'ambiguous',
+  'markup',
+  'overlaps-another',
   'slot-no-agreement',
   'slot-empty',
   'slot-not-found',
   'slot-ambiguous',
+  'slot-whole',
 ];
 
 /**
