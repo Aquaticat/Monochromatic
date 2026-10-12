@@ -393,3 +393,22 @@ fn an_interactive_selection_lands_the_chosen_file() {
     assert_nothing_left(&fixture, repo.as_path());
     remove(&fixture);
 }
+
+/// With `--allow-empty`, a correction that restores the base still creates the commit the user asked for.
+#[test]
+fn an_allowed_empty_commit_is_not_a_no_change_normalization() {
+    let fixture: Fixture = fixture("commit-allow-empty-normalized");
+    let repo: PathBuf = edited_repository(&fixture, "repo");
+    std::fs::write(repo.join("a.txt"), b"one").expect("remove the final newline");
+    let before: String = git_text(&fixture, repo.as_path(), &["rev-parse", "HEAD^{tree}"]);
+    let landed: Observed = run_commit(
+        &fixture,
+        repo.as_path(),
+        &["commit", "--allow-empty", "--message=empty on purpose", "a.txt"],
+    );
+    assert_eq!(landed.code, Some(0), "{}", stderr_of(&landed));
+    assert_eq!(git_text(&fixture, repo.as_path(), &["rev-list", "--count", "HEAD"]).trim(), "3");
+    assert_eq!(git_text(&fixture, repo.as_path(), &["rev-parse", "HEAD^{tree}"]), before);
+    assert_nothing_left(&fixture, repo.as_path());
+    remove(&fixture);
+}
