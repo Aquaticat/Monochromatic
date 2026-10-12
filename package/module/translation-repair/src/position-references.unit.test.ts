@@ -231,7 +231,7 @@ await describe({
          */
         const files = await readPackageTexts();
         expect(files.some(function isLedger({ path, },): boolean {
-          return path === 'doc/audit-ledger.md';
+          return path.startsWith('doc/audit-ledger-part-',);
         },),).toBe(true,);
         expectNoFindings({ findings: unexempted({ files, exemptions: PACKAGE_EXEMPTIONS, },), },);
         expectNoFindings({ findings: staleExemptions({ files, exemptions: PACKAGE_EXEMPTIONS, },), },);

@@ -2,7 +2,11 @@ import {
   readdir,
   readFile,
 } from 'node:fs/promises';
-import { join, } from 'node:path';
+import {
+  basename,
+  dirname,
+  join,
+} from 'node:path';
 
 //region Living repository-level docs
 // The repository-level translation-repair docs that state current fact and are
@@ -147,6 +151,51 @@ async function translationRepairDocs({ family, }: { readonly family: string; },)
 }
 
 /**
+ A doc and its parts: a doc past the line limit is kept as an index at its own
+ path and parts beside it named `<stem>-part-NN.md` (ledger M163), so a guard
+ reading the index alone would read none of its text.
+
+ @param path - doc's path from the repository root
+
+ @returns The doc, then its parts in order
+
+ @example
+ ```ts
+ const paths = await withParts({ path: 'doc/planning/naps.md', },); // ['doc/planning/naps.md', 'doc/planning/naps-part-01.md']
+ ```
+ */
+export async function withParts({ path, }: { readonly path: string; },): Promise<readonly string[]> {
+  /**
+   Folder holding the doc, from the repository root.
+   */
+  const folder = dirname(path,);
+  /**
+   What a part's name opens with.
+   */
+  const opening = `${basename(
+    path,
+    '.md',
+  )}-part-`;
+  return [
+    path,
+    ...(await readdir(join(
+      REPOSITORY_ROOT,
+      folder,
+    ),))
+      .filter(function isPart(name,): boolean {
+        return name.startsWith(opening,) && name.endsWith('.md',);
+      },)
+      .toSorted()
+      .map(function inFolder(name,): string {
+        return join(
+          folder,
+          name,
+        );
+      },),
+  ];
+}
+
+/**
  The living repository-level docs, located from the canonical handover.
 
  @returns Paths from the repository root, by kind
@@ -215,20 +264,20 @@ export async function readLivingRepositoryDocs(): Promise<LivingRepositoryDocs> 
   return {
     decisionRecords: await translationRepairDocs({ family: 'decision', },),
     handover: [
-      HANDOVER_INDEX,
-      snapshotPath,
+      ...await withParts({ path: HANDOVER_INDEX, },),
+      ...await withParts({ path: snapshotPath, },),
     ],
     operations: [
       ...await translationRepairDocs({ family: 'runbook', },),
       ...await translationRepairDocs({ family: 'troubleshooting', },),
     ],
-    currentPlanning: CURRENT_PLANNING.map(function underPlanning(name,): string {
-      return join(
+    currentPlanning: (await Promise.all(CURRENT_PLANNING.map(function underPlanning(name,): Promise<readonly string[]> {
+      return withParts({ path: join(
         'doc',
         'planning',
         name,
-      );
-    },),
+      ), },);
+    },),)).flat(),
   };
 }
 

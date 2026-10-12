@@ -160,14 +160,17 @@ type KeptRange = {
   readonly path: string;
 
   /**
-   Heading line that opens the stretch, exactly as written.
+   Heading line that opens the stretch, exactly as written; absent when the
+   stretch opens at the file's first line, as in a later part of a doc split
+   across parts (ledger M163).
    */
-  readonly from: string;
+  readonly from?: string;
 
   /**
-   Heading line that closes it, exactly as written.
+   Heading line that closes it, exactly as written; absent when the stretch
+   runs to the file's last line, as in a part that a later part continues.
    */
-  readonly to: string;
+  readonly to?: string;
 };
 
 /**
@@ -176,17 +179,23 @@ type KeptRange = {
  */
 const TAKEOVER_RANGES: readonly KeptRange[] = [
   {
-    path: join('doc', 'handover', 'translation-repair-handover-2026-09-06.md',),
+    path: join('doc', 'handover', 'translation-repair-handover-2026-09-06-part-03.md',),
     from: '### Latest checkpoint: V4.1 judge admission on 2026-09-11',
+  },
+  {
+    path: join('doc', 'handover', 'translation-repair-handover-2026-09-06-part-04.md',),
+  },
+  {
+    path: join('doc', 'handover', 'translation-repair-handover-2026-09-06-part-05.md',),
     to: '## Repository state',
   },
   {
-    path: join('doc', 'planning', 'translation-repair-readiness-signal.md',),
+    path: join('doc', 'planning', 'translation-repair-readiness-signal-part-03.md',),
     from: '## Archive correction has current-stage evidence; audit and temporal context remain (2026-09-10)',
     to: '## Naming has current-stage evidence; archive and context work remains (2026-09-10)',
   },
   {
-    path: join('doc', 'planning', 'translation-repair-openrouter-2026-09-03.md',),
+    path: join('doc', 'planning', 'translation-repair-openrouter-2026-09-03-part-33.md',),
     from: '## Clustered panels and complete repair evidence implemented, 2026-09-10',
     to: '## Naming scope reaches a bounded production stage, 2026-09-10',
   },
@@ -396,11 +405,11 @@ function keptLines(
       /**
        Line that opens the stretch.
        */
-      const start = lines.indexOf(from,);
+      const start = (from === undefined) ? 0 : lines.indexOf(from,);
       /**
        Line that closes it, after the opening one.
        */
-      const end = lines.indexOf(to, start + 1,);
+      const end = (to === undefined) ? lines.length : lines.indexOf(to, start + 1,);
       if ((start === (-1)) || (end === (-1)))
         return [];
       return Array.from(lines.slice(start, end,).keys(), function located(step,): number {
@@ -534,6 +543,35 @@ await describe({
       },
     },),
     it({
+      name: 'SKIPS a stretch that opens at a file\'s first line or runs to its last, as a split doc\'s parts carry one',
+      fn: async () => {
+        /**
+         Three parts of one doc, the kept stretch running from the first into the third.
+         */
+        const files = [
+          { path: 'doc/cat-part-01.md', text: [`${TASK_WORD} 1 naps`, '## Kept', `${TASK_WORD} 2 naps`,].join('\n',), },
+          { path: 'doc/cat-part-02.md', text: [`${TASK_WORD} 3 naps`, `${TASK_WORD} 4 naps`,].join('\n',), },
+          { path: 'doc/cat-part-03.md', text: [`${TASK_WORD} 5 naps`, '## After', `${TASK_WORD} 6 naps`,].join('\n',), },
+        ];
+        expect(wordCitations({
+          files,
+          ranges: [
+            { path: 'doc/cat-part-01.md', from: '## Kept', },
+            { path: 'doc/cat-part-02.md', },
+            { path: 'doc/cat-part-03.md', to: '## After', },
+          ],
+        },),).toEqual(['doc/cat-part-01.md:1 1', 'doc/cat-part-03.md:3 6',],);
+        expect(wordCitations({ files, ranges: [], },),).toEqual([
+          'doc/cat-part-01.md:1 1',
+          'doc/cat-part-01.md:3 2',
+          'doc/cat-part-02.md:1 3',
+          'doc/cat-part-02.md:2 4',
+          'doc/cat-part-03.md:1 5',
+          'doc/cat-part-03.md:3 6',
+        ],);
+      },
+    },),
+    it({
       name: 'LOCATES each citation by path and line, and allows only the listed GitHub issues',
       fn: async () => {
         /**
@@ -571,7 +609,7 @@ await describe({
          */
         const files = await readPackageTexts();
         expect(files.some(function isLedger({ path, },): boolean {
-          return path === join('doc', 'audit-ledger.md',);
+          return path.startsWith(join('doc', 'audit-ledger-part-',),);
         },),).toBe(true,);
         expect(files.some(function isSource({ path, },): boolean {
           return path.startsWith('src',) && path.endsWith('.ts',);

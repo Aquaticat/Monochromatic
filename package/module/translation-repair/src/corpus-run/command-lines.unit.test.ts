@@ -409,7 +409,10 @@ async function invokingDocs(): Promise<readonly string[]> {
       'doc',
     ),))
       .filter(function isLivingMarkdown(name,): boolean {
-        return name.endsWith('.md',) && (name !== 'audit-ledger.md');
+        // The ledger and its parts keep the command lines of their time as written.
+        if (name.startsWith('audit-ledger',))
+          return false;
+        return name.endsWith('.md',);
       },)
       .map(function underDoc(name,): string {
         return join(

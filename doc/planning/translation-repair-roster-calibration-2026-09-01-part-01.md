@@ -1,0 +1,688 @@
+# Roster calibration under the owner blocklist, 2026-09-01, part 01
+
+Part 01 of [Roster calibration under the owner blocklist, 2026-09-01](translation-repair-roster-calibration-2026-09-01.md),
+whose index lists every part in order.
+
+## Status
+
+-   `producer-calibrate` over 40 rounds:
+    complete,
+    standings recorded here.
+-   `editor-calibrate` at its 6-slice default:
+    complete,
+    recorded here as a same-day replicate,
+    not as seating evidence (the repo's own record calls a standing this small noise).
+-   `editor-calibrate` over 40 slices:
+    complete,
+    21:44Z to 01:02Z (11908 s),
+    four slices in flight,
+    300000 ms straggler window;
+    111 editor rounds from 30 slices,
+    25 refiner rounds from 25 slices.
+    Log at `~/temp/agent/editor-calibrate-40-20260901.log`.
+    Seated on it:
+    `doc/decision/translation-repair-roster-seating-2026-09-01.md`
+    (editors GLM-5.3-Flash,
+    glm-5.3,
+    deepseek-v4-pro-0813;
+    refiners GLM-5.3-Flash,
+    deepseek-v4-pro-0813,
+    minimax-m3;
+    checkers unchanged).
+    Its Synthetic weekly cost:
+    15.5 to 10.4 percent remaining;
+    Hyper 6967 to 6636 credits.
+-   Logs of the two finished runs:
+    `~/temp/agent/producer-calibrate-40-20260901.log`
+    and `~/temp/agent/editor-calibrate-6-20260901.log`.
+-   Landed at `03a58d2ca` on the owner's role-drop authorization:
+    `RUN_TRANSLATORS` (seven,
+    without
+    `gpt-oss-120b` and `deepseek-v4-flash-0731`) and `RUN_JUDGES` (eight,
+    without `glm-5.3`) in
+    `src/corpus-run/run-config.ts`;
+    read back from the built chunk `pass-entry` imports:
+    roster 9,
+    translators 7,
+    judges 8 in both lanes,
+    critics and panel 9.
+-   The standing report now ends with one counts line per slice (`sliceStandingLines`),
+    so the next calibration's log supports a bootstrap over slices without a log parser;
+    the 40-slice run in flight predates it and is read through the winner lines instead.
+
+## The roster measured
+
+Synthetic (subscription):
+`hf:Qwen/Qwen3.8-27B`,
+`hf:moonshotai/Kimi-K3`,
+`hf:openai/gpt-oss-120b`,
+`hf:zai-org/GLM-5.3-Flash`.
+Charm Hyper (metered credits):
+`glm-5.3`,
+`gemma-4-26b-a4b-it`,
+`minimax-m3`,
+`deepseek-v4-pro-0813`,
+`deepseek-v4-flash-0731`.
+`glm-5.3` and `GLM-5.3-Flash` are the two admissions of the post-blocklist catalog refresh;
+`qwen3.8-flash` and `qwen3.8-2.4t-a95b` were culled before either run on the forced-tool-choice probe.
+
+Seats in production at the time of measurement (`src/corpus-run/run-config.ts`):
+critics,
+panel,
+judges and translators are the whole roster;
+editors and refiners are Kimi-K3,
+Qwen3.8-27B and gemma-4-26b-a4b-it;
+checkers are Qwen3.8-27B,
+Kimi-K3 and gpt-oss-120b with self-certification permitted at half weight.
+
+Quorum arithmetic at nine:
+`gatherStageVoices` needs `ceil(9 / 2)`,
+which is 5 voices.
+`minBallotWeight` stays the absolute 3,
+so the share of the panel that must cast a non-abstain ballot is 3 of 9,
+33 percent,
+inside the range already lived at ten models (30 percent) and eight (37.5 percent).
+
+## How the numbers are read
+
+Every standing counts disinterested ballots only:
+a judge's ballot for its own candidate is excluded.
+The pooled null is every disinterested win over every disinterested ballot in that standing,
+and each model's z is its share against that null with the null's own standard error,
+which is the ballot-level statistic the 2026-08-24 seating used.
+The Bonferroni two-sided threshold for nine comparisons is z 2.77.
+The availability-adjusted share charges a model zero for every round it produced nothing in:
+raw share times candidates over rounds.
+Ballots within one round share a slate and are not independent,
+so the z is a ranking aid rather than a p-value.
+
+## Producer calibration, 40 rounds
+
+Every model wrote each slice from the source and every model judged.
+Ran 18:15:54Z to 20:57:58Z (9734 s),
+one slice at a time,
+under the 180000 ms production straggler window because `producer-calibrate` has no calibration dial yet
+(`doc/decision/translation-repair-calibration-overlap.md` lists that as follow-up work).
+
+Standing as printed,
+best first:
+
+-   `hf:Qwen/Qwen3.8-27B`:
+    35.5 percent (83 of 234 disinterested ballots,
+    over 40 candidates)
+-   `glm-5.3`:
+    17.2 percent (35 of 204,
+    over 36 candidates)
+-   `gemma-4-26b-a4b-it`:
+    16.4 percent (36 of 219,
+    over 40 candidates)
+-   `hf:zai-org/GLM-5.3-Flash`:
+    12.7 percent (27 of 213,
+    over 38 candidates)
+-   `minimax-m3`:
+    11.8 percent (25 of 211,
+    over 40 candidates)
+-   `hf:moonshotai/Kimi-K3`:
+    9.5 percent (21 of 221,
+    over 40 candidates)
+-   `deepseek-v4-pro-0813`:
+    6.9 percent (15 of 218,
+    over 40 candidates)
+-   `hf:openai/gpt-oss-120b`:
+    2.4 percent (5 of 207,
+    over 40 candidates)
+-   `deepseek-v4-flash-0731`:
+    2.4 percent (5 of 208,
+    over 40 candidates)
+
+Pooled null 13.02 percent (252 wins of 1935 ballots).
+Read against it:
+
+-   `Qwen3.8-27B` clears the null at z +10.20,
+    adjusted share 35.5 percent,
+    40 of 40 candidates.
+-   `gemma-4-26b-a4b-it` z +1.50 and `glm-5.3` z +1.75 (adjusted 15.4 percent,
+    36 of 40) are not separable from the null.
+-   `GLM-5.3-Flash` z -0.15 (adjusted 12.0 percent,
+    38 of 40),
+    `minimax-m3` z -0.51,
+    `Kimi-K3` z -1.56,
+    `deepseek-v4-pro-0813` z -2.69:
+    not separable.
+-   `gpt-oss-120b` z -4.53 and `deepseek-v4-flash-0731` z -4.55 sit under the null.
+
+Seat lines:
+every model answered every ask usably except `Kimi-K3` (78 of 79,
+one thrown),
+`GLM-5.3-Flash` (77 of 82,
+five thrown) and `glm-5.3` (63 of 78,
+fifteen thrown).
+
+## Editor calibration, 6-slice default
+
+Every model edited each slice through the whole repair lane and every model judged;
+the refiner standing comes off the same spend.
+Ran 20:59:21Z to 21:35:36Z (2185 s),
+four slices in flight,
+300000 ms window.
+Two of the six slices (GLaDOSister chunk 0,
+zheermao101 chunk 8) carried nothing eligible and bought no round;
+the other four (Everythings99 chunk 6,
+lxyddice chunk 2,
+shihai4h chunk 12,
+donotexist_A chunk 1)
+bought 14 editor rounds and 4 refiner rounds.
+
+EDITOR standing over 14 judged rounds,
+from 4 of 6 slices:
+
+-   `hf:zai-org/GLM-5.3-Flash`:
+    28.8 percent (30 of 104,
+    over 16 candidates)
+-   `glm-5.3`:
+    25.8 percent (24 of 93,
+    over 16 candidates)
+-   `hf:Qwen/Qwen3.8-27B`:
+    20.0 percent (20 of 100,
+    over 16 candidates)
+-   `hf:moonshotai/Kimi-K3`:
+    13.1 percent (13 of 99,
+    over 16 candidates)
+-   `deepseek-v4-pro-0813`:
+    7.1 percent (6 of 85,
+    over 14 candidates)
+-   `minimax-m3`:
+    6.8 percent (6 of 88,
+    over 15 candidates)
+-   `hf:openai/gpt-oss-120b`:
+    5.5 percent (5 of 91,
+    over 15 candidates)
+-   `gemma-4-26b-a4b-it`:
+    1.1 percent (1 of 90,
+    over 12 candidates)
+-   `deepseek-v4-flash-0731`:
+    0.0 percent (0 of 90,
+    over 14 candidates)
+
+Pooled null 12.50 percent (105 of 840).
+`GLM-5.3-Flash` z +5.04 and `glm-5.3` z +3.88 clear it;
+`Qwen3.8-27B` z +2.27 and `Kimi-K3` z +0.19 do not separate;
+`gemma-4-26b-a4b-it` z -3.27 and `deepseek-v4-flash-0731` z -3.59 sit under it.
+The gemma reading is the one that matters for the current seats:
+a model that writes from the source at the roster's second-best rate wrote the worst edits on this sample,
+which is the divergence the editor instrument exists to catch and the writer instrument cannot.
+
+REFINER standing over 4 judged rounds,
+from 4 of 6 slices:
+
+-   `hf:zai-org/GLM-5.3-Flash`:
+    34.4 percent (11 of 32,
+    over 4 candidates)
+-   `minimax-m3`:
+    31.3 percent (5 of 16,
+    over 2 candidates)
+-   `deepseek-v4-pro-0813`:
+    18.8 percent (6 of 32,
+    over 4 candidates)
+-   `hf:moonshotai/Kimi-K3`:
+    18.8 percent (3 of 16,
+    over 2 candidates)
+-   `gemma-4-26b-a4b-it`:
+    9.4 percent (3 of 32,
+    over 4 candidates)
+-   `hf:openai/gpt-oss-120b`:
+    4.2 percent (1 of 24,
+    over 3 candidates)
+-   `glm-5.3`:
+    4.2 percent (1 of 24,
+    over 3 candidates)
+-   `hf:Qwen/Qwen3.8-27B`:
+    0.0 percent (0 of 16,
+    over 2 candidates)
+-   `deepseek-v4-flash-0731`:
+    0.0 percent (0 of 8,
+    over 1 candidate)
+
+Pooled null 15.00 percent (30 of 200);
+only `GLM-5.3-Flash` clears it (z +3.07),
+and four rounds decide nothing.
+
+Editors shipped on 4 of 6 slices:
+`glm-5.3` wrote shipping text on two,
+`GLM-5.3-Flash` on one,
+`Qwen3.8-27B` on one.
+Shipping is not a preference:
+it includes text every editor proposed identically,
+which no judge was asked about.
+
+Seat lines:
+every model was asked 54 times;
+`Kimi-K3` and `glm-5.3` each lost one,
+the rest answered all.
+Other warnings:
+`deepseek-v4-flash-0731` failed the select schema guard twice (parsed JSON,
+wrong shape,
+recovery round failed the same way),
+`Qwen3.8-27B` returned one select answer with a bad control character,
+one HTTP 503 was retried.
+
+Why this run does not seat anyone:
+`doc/decision/translation-repair-calibration-overlap.md` records a four-slice
+EDITOR standing moving one model from 52.2 percent to 26.7 to 10.0 across identical runs,
+and names more slices as the remedy.
+`bench-sample.ts` draws a deterministic stride over slices ordered by source size,
+so the 40-slice draw is a different sample from the 6-slice draw and the two are not pooled.
+
+## Reliability of the two new admissions
+
+The two instruments ran under different straggler windows,
+and that is where the `glm-5.3` numbers come from:
+
+-   Under the 180000 ms production window (producer calibration) `glm-5.3` lost 14 streams to the window
+    after quorum (10 at select,
+    4 at translate) plus one select AbortError:
+    15 of 78 asks,
+    19 percent.
+    Read per role:
+    4 of 40 translate asks (10 percent) as a writer,
+    11 of 38 select asks (29 percent) as a judge
+    over a slate of up to ten candidates.
+    Each cut stream had delivered about 2 M raw SSE characters,
+    zero content characters and tens of thousands
+    of reasoning characters:
+    the model reasons past the window and never reaches its answer.
+-   Under the 300000 ms calibration window (editor calibration) it lost 1 of 54,
+    a panel stream cut after 3.45 M
+    raw characters.
+-   The corpus pass runs under the 180000 ms window (`corpus-pass.ts` resolves `STRAGGLER_GRACE_MS`),
+    so the 19 percent figure is the one that describes production.
+    A lost judge voice thins a nine-judge panel rather than biasing it,
+    and the stage had already reached quorum
+    every time;
+    the cost is metered output.
+-   `GLM-5.3-Flash` lost 6 streams the same way in the producer run (3 select,
+    2 translate,
+    one transport cut
+    retried) and none in the editor run.
+
+Cut streams emit no `SPEND` line:
+`reportSpend` in `hyper-client.ts` and `synthetic-client.ts` runs after
+`extractAnthropicCompletion` on a drained reply,
+and a stream abandoned at the window never reaches it.
+`spend-report` therefore understates `glm-5.3`.
+Summing the reasoning characters the cut streams delivered (954109 in the producer run,
+121962 in the editor run)
+at four characters per token gives about 238657 and 30491 output tokens,
+which at the 95.8144 credits per million output rate is about 22.9 and 2.9 credits unbilled in the logs.
+
+## Meters and spend
+
+Synthetic weekly allowance remaining:
+19.25 percent when the producer run started (18:15Z),
+19.16 at its last reading (20:53Z),
+19.07 when the editor run started (20:59Z),
+17.83 at its last reading (21:34Z).
+The five-hour meter never fell under 2737 of 2750.
+Both runs cost near 1.6 points of the weekly allowance gross once the allowance's continuous regeneration
+over each run's wall clock is added back.
+Charm Hyper balance:
+7272 to 7135 credits across the producer run,
+7134 to 7077 across the editor run
+(one credit is five cents).
+
+Every Synthetic seat has a Hyper route (`qwen3.8-27b`,
+`kimi-k3`,
+`gpt-oss-120b`,
+`glm-5.3-flash`),
+so a dry Synthetic allowance moves cost onto credits rather than emptying seats.
+
+Token totals from `SPEND` lines,
+prompt then completion:
+
+-   Producer run,
+    687 lines:
+    `deepseek-v4-flash-0731` 89966 / 16960 over 78 calls;
+    `deepseek-v4-pro-0813` 183768 / 16779 over 79;
+    `gemma-4-26b-a4b-it` 160555 / 10246 over 79;
+    `glm-5.3` 97159 / 434729 over 63;
+    `minimax-m3` 46382 / 280952 over 77;
+    `Qwen3.8-27B` 153309 / 498935 over 77;
+    `Kimi-K3` 162449 / 67601 over 78;
+    `gpt-oss-120b` 155093 / 93144 over 79;
+    `GLM-5.3-Flash` 146386 / 403609 over 77.
+-   Editor run,
+    484 lines:
+    `deepseek-v4-flash-0731` 133204 / 11596 over 54;
+    `deepseek-v4-pro-0813` 147386 / 8964 over 54;
+    `gemma-4-26b-a4b-it` 115793 / 6988 over 54;
+    `glm-5.3` 96001 / 334010 over 53;
+    `minimax-m3` 60414 / 150677 over 54;
+    `Qwen3.8-27B` 128109 / 270724 over 54;
+    `Kimi-K3` 130550 / 32810 over 53;
+    `gpt-oss-120b` 125548 / 53706 over 54;
+    `GLM-5.3-Flash` 121381 / 281479 over 54.
+
+Hyper rates in credits per million tokens as read 2026-09-01 (`src/corpus-run/hyper-price.ts`):
+`glm-5.3` 30.4864 in and 95.8144 out;
+`minimax-m3` 6.5328 and 26.1312;
+`deepseek-v4-pro-0813` 28.74432 and 86.23296;
+`deepseek-v4-flash-0731` 8.8 and 26.4;
+`gemma-4-26b-a4b-it` 2.4 and 8.4;
+`glm-5.3-flash` 3.2664 and 10.888;
+`kimi-k3` 65.328 and 326.64.
+
+## Slice-clustered reading of the 6-slice replicate
+
+A second reviewer (sol,
+reading the standings file) made two points the first rules had missed:
+the slice,
+not the ballot,
+is the independent unit (14 editor rounds came from 4 slices),
+and "the leader clears the null" says nothing about seats two and three or the boundary between three and four.
+The log does not carry the authorship of losing candidates,
+so per-slice ballot shares cannot be rebuilt from it;
+what it does carry is every round's winner
+(`[decideBestCandidate] candidate N from <author> won weight W across B ballots`,
+tagged by slice),
+which supports a round-win share per model and a bootstrap over whole slices.
+The reader is `~/temp/agent/round-wins-bootstrap-20260901.mjs`;
+a composite winner credits each author one share,
+as the standing does.
+Control on the 6-slice log:
+it found 12 winner-bearing editor rounds of the 14 judged
+(two rounds cast ballots and crowned nobody) and 4 of 4 refiner rounds.
+
+EDITOR round wins over 12 rounds from 4 slices,
+with top-three inclusion over 4000 slice resamples:
+`GLM-5.3-Flash` 5 wins (92.7 percent inclusion),
+`glm-5.3` 5 (82.9),
+`Qwen3.8-27B` 4 (72.8),
+`Kimi-K3` 3 (50.7),
+`gpt-oss-120b` 1 (0.0),
+`minimax-m3` 1 (0.0);
+the rest won nothing.
+Three of the twelve winners were composites credited to several authors.
+REFINER round wins over 4 rounds:
+`GLM-5.3-Flash` 2 (94.0 percent inclusion),
+`deepseek-v4-pro-0813` 1 (69.7),
+`minimax-m3` 1 (67.8).
+
+The replicate also shows the editor and refiner standings reversing for four models
+(`glm-5.3` and `Qwen3.8-27B` second and third as editors,
+near zero as refiners;
+`deepseek-v4-pro-0813` and `minimax-m3` the other way round),
+which four rounds cannot establish but which is enough to say "refiners are the editors" is a transfer assumption,
+not a measurement.
+
+## Seating rules, written before the 40-slice numbers arrive
+
+Revised at 22:10Z on the reviewer's points,
+while the 40-slice run stood at slice 6 of 40 with no refiner round
+printed yet,
+so still before any number they decide on existed.
+Revised again at 22:25Z (slice 12 of 40) to remove the numeric gates on the owner's note that testing against a
+magic number is discouraged:
+the rules now rank and report,
+and the numbers beside a rank are evidence a reader
+weighs,
+not thresholds a rule trips on.
+
+1.  Editors are seated from the 40-slice EDITOR standing alone.
+    The 6-slice run is a same-day replicate that shows the band;
+    its editor rounds are never pooled in.
+2.  Editors:
+    the top three by availability-adjusted share of disinterested ballots in the 40-slice EDITOR
+    standing (printed share times candidates over rounds;
+    every round seats the same judges,
+    so the product weights rounds about equally).
+    Two readings go beside the rank that the ballot-level z cannot give:
+    the slice-clustered round-win bootstrap
+    (round-win share and top-three inclusion probability),
+    and production-window reliability from the
+    180000 ms instrument (voices lost per ask in the producer calibration,
+    by role).
+    Where the third and fourth seats are not separated by the bootstrap,
+    the seat goes to the one that lost
+    fewer voices under the production window,
+    and the record says the seat was decided on reliability.
+3.  Refiners:
+    the REFINER rounds of the 6-slice and 40-slice runs are pooled as slice clusters
+    (same build,
+    same instrument,
+    same 300000 ms window;
+    slices from two strides are distinct clusters),
+    and the refiners are the top three by availability-adjusted share over the pooled rounds,
+    with the same two beside-readings and the same reliability tie-break.
+    The record states how many slices reached a rewriter;
+    if none did,
+    the refiners are the editors,
+    recorded as an unvalidated transfer assumption,
+    and a refiner-targeted calibration is filed as follow-up.
+4.  Checkers stay Qwen3.8-27B,
+    Kimi-K3 and gpt-oss-120b.
+    No instrument ranks checkers:
+    `checker-sensitivity` asks whether checkers can say no on fixtures,
+    and the `run-config.ts` note already says the writer and editor instruments are far from checking.
+    The gap is recorded as a gap.
+5.  Wide roles (critics,
+    panel,
+    judges,
+    translators) stay the whole roster.
+    Only the owner blocklist removes a model from the roster;
+    writers under the null still judge,
+    since neither instrument measures judge accuracy.
+    One question goes to the owner rather than being decided here:
+    the producer standing places
+    `gpt-oss-120b` and `deepseek-v4-flash-0731` under the null as writers with full availability
+    (40 of 40 candidates each),
+    which is a quality finding about the translator seat specifically.
+    `RUN_TRANSLATE_MODELS` was measured at full width,
+    so narrowing it is a design change,
+    not a seating.
+6.  `glm-5.3`'s reliability is read off the 180000 ms instrument,
+    because that is the corpus pass's window,
+    and by role:
+    10 percent of translate asks lost as a writer,
+    29 percent of select asks lost as a judge.
+
+## Owner authorization of 2026-09-01 and the drops made on it
+
+The owner wrote mid-run:
+"I authorize you to drop any model from any role,
+as long as you have evidence.
+These doesn't count as design decisions."
+That settles the question rule 5 had put to the owner and narrows the owner-blocklist-only clause to roster
+membership:
+a role drop on measured evidence is part of this seating.
+
+Latency of completed streams per model,
+from the two logs (`>180 s` counts completed streams that ran past the
+production window's length,
+an upper bound on further cuts under it,
+since the window starts at quorum):
+
+-   `glm-5.3`:
+    producer run p50 61 s,
+    p90 166 s,
+    max 221 s,
+    14 cut and 4 completed past 180 s of 77;
+    editor run p50 66 s,
+    p90 172 s,
+    max 278 s,
+    2 cut and 4 past 180 s of 55.
+-   `GLM-5.3-Flash`:
+    producer run p50 66 s,
+    p90 153 s,
+    6 cut and 4 past 180 s of 83;
+    editor run p50 52 s,
+    p90 199 s,
+    none cut and 6 past 180 s of 54.
+-   `Kimi-K3`:
+    producer p50 26 s,
+    p90 104 s,
+    1 cut and 1 past 180 s;
+    `Qwen3.8-27B`:
+    p50 33 s,
+    p90 77 s,
+    none.
+-   Every other model:
+    p90 under 50 s,
+    nothing past 120 s except two gemma streams in the editor run.
+
+Schema-mismatch lines by model and stage,
+recovery re-asks included:
+`deepseek-v4-flash-0731` at select 8 (producer) and 4 (editor),
+every one a numeric string where the guard wants
+a number (`"best": "8"`);
+`Qwen3.8-27B` at select 2 (editor run,
+one answer with a bad control character).
+
+Drops made before the 40-slice standing:
+
+-   Translator seat:
+    `hf:openai/gpt-oss-120b` and `deepseek-v4-flash-0731` leave
+    `RUN_TRANSLATE_MODELS.translatorModelIds`.
+    Evidence:
+    the 40-round producer standing,
+    5 of 207 and 5 of 208 disinterested ballots,
+    z -4.53 and -4.55
+    against the pooled null,
+    at 40 of 40 candidates each,
+    so the finding is about writing,
+    not availability.
+    Both keep every other seat.
+    With seven translators and eight judges every slate keeps at least two disinterested judges
+    (`assertJudgeableProducerRoster`'s floor) and the translator quorum is 4 of 7.
+-   Judge seat,
+    both lanes:
+    `glm-5.3` leaves `judgeModelIds`.
+    Evidence:
+    under the production window it lost 11 of 38 select asks (29 percent),
+    each loss holding the round
+    for the whole window after quorum and delivering about 2 M raw characters of reasoning that never reached an
+    answer,
+    at the roster's highest output rate;
+    its completed select streams are the roster's slowest.
+    It keeps the critic,
+    panel and translator seats,
+    where no production-window measurement exists
+    (the editor calibration ran at 300000 ms and lost 1 of 54 there);
+    the four-entry pass logs abandons by role
+    and supplies that evidence.
+-   Not dropped:
+    `deepseek-v4-flash-0731` as a judge loses about a tenth of its select ballots to the numeric
+    string shape,
+    a parser tolerance question filed as follow-up rather than evidence about its judgment;
+    `GLM-5.3-Flash` as a judge lost 6 of 83 asks (7 percent) under the production window and none under
+    300000 ms,
+    and stays.
+
+## Wall clock, and the owner's fast-iteration principle
+
+The owner,
+on seeing the pass's `hard=25200000ms` (the 420-minute per-entry cap raised on 2026-08-17 after
+entries were measured clearing at seven hours):
+"A 7h run is pretty unacceptable,
+since it goes against the
+principle of fast iteration at this early stage of the project."
+Recorded as the `FIT` rule in `AGENTS.md`.
+
+Where the time goes,
+measured on the two calibration logs and the first hours of the 40-slice run
+(`<stage> round: N/M heard, T total, Q to quorum, G in grace` lines):
+
+-   Producer calibration,
+    80 rounds:
+    83 percent of summed round time is waiting after quorum
+    (select rounds mean 138 s with 25 s to quorum;
+    translate rounds 98 s with 14 s to quorum).
+-   Editor calibration,
+    first 81 rounds of the 40-slice run:
+    75 percent
+    (panel 213 s with 59 s to quorum;
+    select 91 s with 17 s;
+    critic 68 s with 20 s;
+    editor 69 s with 19 s).
+-   In the rounds where everyone answered,
+    the last voice arrived a median 46 to 66 s after quorum,
+    p90 141 to 158 s.
+    A 60 s window keeps every voice in 43 to 62 percent of such rounds,
+    90 s in 62 to 72,
+    120 s in 74 to 82;
+    the voices a shorter window drops are the two GLM models,
+    whose completed streams run
+    p50 52 to 66 s and p90 153 to 199 s against p90s under 110 s for every other seat.
+
+Levers applied on that measurement,
+all within the role-drop authorization or the launch-time overrides the
+drivers already carry:
+
+-   `glm-5.3` leaves every nine-wide seat (critic,
+    panel,
+    judge),
+    landed at the commit that introduced
+    `RUN_WIDE_SEATS`;
+    the eight remaining reach quorum at 4.
+-   The four-entry pass launches with `TRANSLATION_REPAIR_STRAGGLER_GRACE_MS=60000` and
+    `TRANSLATION_REPAIR_SLICE_OVERLAP=4`,
+    the owner's original 60 s figure of 2026-08-14 now backed by the
+    last-voice distribution,
+    and the overlap the calibration arms measured at half the wall clock.
+    The built-in constants are untouched;
+    `doc/decision/translation-repair-straggler-grace.md` keeps the 180 s
+    built-in until a decision moves it,
+    and the pass prints both overrides at launch.
+-   The two launches run concurrently rather than one after the other.
+-   The 40-slice calibration in flight is left to finish (about two hours at its 300 s window);
+    its standing is computed in memory at the end,
+    so stopping it would keep only the winner lines.
+
+What a 60 s window costs is measured by the pass itself:
+it logs every abandon by model and stage,
+and the standing of the pass's own rounds says whether the dropped voices were the ones that mattered.
+
+## Stale text the seating edit fixes in `run-config.ts`
+
+-   `RUN_ROSTER` says "EIGHT MODELS NOW";
+    the roster is nine.
+-   `RUN_READER_MODELS` says "Four of the eight read images";
+    four of the nine do.
+-   The quorum paragraph stops at ten;
+    nine needs 5 voices and puts `minBallotWeight` at 3 of 9.
+-   If two GLM-family models take editor seats,
+    the provider-coverage paragraph must also name the family
+    correlation,
+    since it currently argues from providers alone.
+
+## Before the four-entry pass
+
+The pass keeps its own timing:
+one slice at a time and the built-in 180000 ms window
+(`corpus-pass.ts` resolves `STRAGGLER_GRACE_MS`;
+only `editor-calibrate` adopts the 300000 ms calibration window
+and the overlap of four).
+The overlap decision doc leaves moving the pass to `#261`'s measurement.
+So the pass launches at its defaults,
+not at "measured calibration values".
+
+Launch form verified on 2026-09-01 with the zero-quota `--plan` mode,
+both printing `PLAN ok` with
+`client=constructed` at tip `c4f707e3b`:
+
+-   `TRANSLATION_REPAIR_RUNS_DIR=<throwaway> mise run //package/module/translation-repair:corpus-pass -- --only keyword233,Toka_ls,XIEPT2`
+    against the clone at `~/one-among-us/data`,
+    verified at `a41fc607ea5a70d8a7625cc67d5ed8c444f53379`.
+-   The same with `TRANSLATION_REPAIR_CORPUS_CLONE_DIR` at the PR-386 fixture
+    (`~/temp/agent/pr386-mock-home-20260829/one-among-us/data`,
+    HEAD `d343df909b1673d68dd5cd805aeda1dfacd2d3c4`)
+    and `TRANSLATION_REPAIR_CORPUS_COMMIT` set to that sha,
+    `-- --only Carena0442`.
+-   Each hand-picked run goes into its own throwaway runs dir,
+    as the `ONLY` banner demands.
+    The plan had the two run one after the other so the per-model limiter stays one process wide;
+    the fast-iteration principle (the "Wall clock" section) launched them concurrently instead,
+    so each process holds its own limiter and a Synthetic model can see both at once.
+-   The pass reports `soft=259200000ms hard=25200000ms` budgets.
+-   The pass log's abandons by role are the production-window evidence the `glm-5.3` judge drop left open
+    for its critic,
+    panel and translator seats.

@@ -373,7 +373,7 @@ await describe({
          */
         const paths = await readLinkingDocs();
         expect(paths.some(function isPassLog(path,): boolean {
-          return path.endsWith('translation-repair-openrouter-2026-09-03.md',);
+          return path.includes('translation-repair-openrouter-2026-09-03-part-',);
         },),).toBe(true,);
         /**
          Reader over the working tree.
