@@ -11,8 +11,11 @@ import type { ArtifactConsistencyRendering, } from './artifact-two-lane-consiste
 
 //region Artifact consistency located
 // A RECORDED LOCATED RENDERING READ AS THE COUNTER'S, for the recount of what
-// moving words over it would do. The English the quote was located in is not in
-// the file, so its offset is left at zero and the recount compares words only.
+// moving words over it would do, as a generation fifteen section recorded it
+// (a judge's string; the sixteenth shape is read in
+// `artifact-two-lane-read-consistency-span.ts`). The English the quote was
+// located in is not in the file, so its offset is left at zero and the recount
+// compares words only.
 
 /**
  The recorded rendering of a place read as the counter's located rendering, for

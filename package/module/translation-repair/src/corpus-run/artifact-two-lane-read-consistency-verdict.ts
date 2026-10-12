@@ -4,6 +4,7 @@ import {
   requireOneOf,
 } from '../artifact-exact-guard.ts';
 import {
+  ArtifactParseError,
   requireArray,
   requireCount,
   requireRecord,
@@ -14,9 +15,14 @@ import type {
   NoWinnerReason,
 } from '../consistency-count-types.ts';
 import {
+  artifactGenerationCountsBySpan,
+  type TwoLaneArtifactGeneration,
+} from './artifact-two-lane-contract.ts';
+import {
   type ArtifactConsistencyVerdict,
   CONSISTENCY_NOT_ASKED_REASONS,
 } from './artifact-two-lane-consistency.ts';
+import { parseConsistencyRunOff, } from './artifact-two-lane-read-consistency-carry.ts';
 import { parseConsistencyBallot, } from './artifact-two-lane-read-consistency-parts.ts';
 
 //region Artifact consistency verdict reading
@@ -32,7 +38,18 @@ const NO_WINNER_REASONS: Readonly<Record<NoWinnerReason, true>> = {
   'no-quorum': true,
   'no-majority': true,
   'chosen-unlocated': true,
+  'run-off-no-quorum': true,
+  'run-off-tied': true,
 };
+
+/**
+ Reasons only generation sixteen gives, after the bench was asked again among
+ the places that tied for first.
+ */
+const RUN_OFF_REASONS: ReadonlySet<NoWinnerReason> = new Set<NoWinnerReason>([
+  'run-off-no-quorum',
+  'run-off-tied',
+],);
 
 /**
  Reads the winner of a group the bench was asked about.
@@ -41,22 +58,28 @@ const NO_WINNER_REASONS: Readonly<Record<NoWinnerReason, true>> = {
 
  @param path - where it sits, for the parse error
 
+ @param generation - generation the section was written under, which says
+ whether a run-off reason exists
+
  @returns The winner
 
- @throws {@link ArtifactParseError} when it is the wrong shape or kind
+ @throws {@link ArtifactParseError} when it is the wrong shape or kind, or gives
+ a run-off reason in a generation with no run-off
 
  @example
  ```ts
- const winner = parseConsistencyWinner({ value: record.winner, path: `${path}.winner`, },);
+ const winner = parseConsistencyWinner({ value: record.winner, path: `${path}.winner`, generation: 16, },);
  ```
  */
 function parseConsistencyWinner(
   {
     value,
     path,
+    generation,
   }: {
     readonly value: unknown;
     readonly path: string;
+    readonly generation: TwoLaneArtifactGeneration;
   },
 ): ConsistencyWinner {
   /**
@@ -102,13 +125,23 @@ function parseConsistencyWinner(
     ],
     path,
   },);
+  /**
+   Why no place won.
+   */
+  const reason = requireKeyOf({
+    value: record.reason,
+    record: NO_WINNER_REASONS,
+    path: `${path}.reason`,
+  },);
+  if (RUN_OFF_REASONS.has(reason,) && (!artifactGenerationCountsBySpan({ generation, },))) {
+    throw new ArtifactParseError({
+      path: `${path}.reason`,
+      reason: 'a reason generation fifteen gives, which runs off no tie',
+    },);
+  }
   return {
     kind,
-    reason: requireKeyOf({
-      value: record.reason,
-      record: NO_WINNER_REASONS,
-      path: `${path}.reason`,
-    },),
+    reason,
   };
 }
 
@@ -119,22 +152,28 @@ function parseConsistencyWinner(
 
  @param path - where it sits, for the parse error
 
+ @param generation - generation the section was written under, which says
+ whether a verdict may carry a run-off
+
  @returns The verdict
 
- @throws {@link ArtifactParseError} when it is the wrong shape or kind
+ @throws {@link ArtifactParseError} when it is the wrong shape or kind, or
+ carries a key or a reason of the other generation
 
  @example
  ```ts
- const verdict = parseConsistencyVerdict({ value: record.verdict, path: `${path}.verdict`, },);
+ const verdict = parseConsistencyVerdict({ value: record.verdict, path: `${path}.verdict`, generation: 16, },);
  ```
  */
 export function parseConsistencyVerdict(
   {
     value,
     path,
+    generation,
   }: {
     readonly value: unknown;
     readonly path: string;
+    readonly generation: TwoLaneArtifactGeneration;
   },
 ): ArtifactConsistencyVerdict {
   /**
@@ -191,15 +230,28 @@ export function parseConsistencyVerdict(
       },),
     };
   }
+  /**
+   Whether the section has the sixteenth shape, whose verdict may carry a run-off.
+   */
+  const spanned = artifactGenerationCountsBySpan({ generation, },);
   requireExactKeys({
     record,
-    allowed: [
-      'kind',
-      'ballots',
-      'usable',
-      'quorum',
-      'winner',
-    ],
+    allowed: spanned
+      ? [
+        'kind',
+        'ballots',
+        'usable',
+        'quorum',
+        'winner',
+        'runOff',
+      ]
+      : [
+        'kind',
+        'ballots',
+        'usable',
+        'quorum',
+        'winner',
+      ],
     path,
   },);
   return {
@@ -228,7 +280,16 @@ export function parseConsistencyVerdict(
     winner: parseConsistencyWinner({
       value: record.winner,
       path: `${path}.winner`,
+      generation,
     },),
+    ...((record.runOff === undefined)
+      ? {}
+      : {
+        runOff: parseConsistencyRunOff({
+          value: record.runOff,
+          path: `${path}.runOff`,
+        },),
+      }),
   };
 }
 

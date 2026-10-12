@@ -3,30 +3,38 @@ import {
   tagged,
 } from '@monochromatic-dev/module-logger/ts';
 
+import { allInInputOrder, } from '../all-in-input-order.ts';
 import {
   exchangeFailureLogText,
   exchangeFailureText,
 } from '../exchange-failure-text.ts';
+import type { DeclaredNamePair, } from '../linked-title-declared-name.ts';
 import { mapOverlapped, } from '../overlapped-map.ts';
 import type { SliceCache, } from '../slice-cache.ts';
 import type { StageSettings, } from '../stage-settings.ts';
 import type { RosterModelId, } from '../synthetic-catalog.ts';
 import { askConsistencyBench, } from './pass-consistency-ask.ts';
 import {
-  type ConsistencyRecord,
+  type ConsistencyCacheValue,
   openConsistencyCache,
 } from './pass-consistency-cache.ts';
+import { carryToPlace, } from './pass-consistency-carry.ts';
 import {
   type ConsistencyPlace,
   occurrenceViewOf,
   repeatOf,
 } from './pass-consistency-group.ts';
+import { askRunOff, } from './pass-consistency-run-off.ts';
 import {
-  type SettledGroup,
+  countAsked,
   settleAsked,
+  settleCarried,
+} from './pass-consistency-settle.ts';
+import type { SettledGroup, } from './pass-consistency-types.ts';
+import {
   settleFailed,
   unplacedOf,
-} from './pass-consistency-settle.ts';
+} from './pass-consistency-unasked.ts';
 import type { PipelineDigest, } from './pipeline-digest.ts';
 import type { RunClient, } from './run-client-contract.ts';
 import { RUN_PER_CALL_TIMEOUT_MS, } from './run-config.ts';
@@ -35,9 +43,11 @@ import type { RepeatGroup, } from '../repeat-groups-types.ts';
 
 //region Pass consistency bench
 // ASKING THE JUDGE BENCH ABOUT EVERY GROUP THAT NEEDS IT, side by side, and
-// settling what it says. The seats are read when the first group needs them and
-// not before, so a page that repeats nothing the bench must judge reads no
-// meter and waits out no hold.
+// settling what it says: the first round's ballots, a run-off among the places
+// that tied for first, and the carry of the chosen rendering to each receiving
+// place by the writer bench and a choice among candidates. The seats are read
+// when the first group needs them and not before, so a page that repeats nothing
+// the bench must judge reads no meter and waits out no hold.
 
 /**
  A group with the places a slice holds whole.
@@ -64,7 +74,9 @@ export type PreparedGroup = {
 
  @param client - provider client
 
- @param modelIds - bench asked
+ @param modelIds - judge bench asked
+
+ @param writerModelIds - the translate stage's writer bench, which carries the chosen rendering
 
  @param text - whole original
 
@@ -80,6 +92,10 @@ export type PreparedGroup = {
 
  @param subjectNames - names the translation declares for its subject
 
+ @param declared - name pairs the front matter declares, which the floors read
+
+ @param declaredNames - declared name forms, which the floors keep
+
  @param signal - entry deadline and caller abort
 
  @param l - logger the pass writes to
@@ -92,13 +108,14 @@ export type PreparedGroup = {
 
  @example
  ```ts
- const settled = await settleAskedGroup({ client, modelIds, text, prepared, cache, signal, l, stageSettings, },);
+ const settled = await settleAskedGroup({ client, modelIds, writerModelIds, text, prepared, cache, declared: [], declaredNames: [], signal, l, stageSettings, },);
  ```
  */
 async function settleAskedGroup(
   {
     client,
     modelIds,
+    writerModelIds,
     text,
     prepared,
     cache,
@@ -106,19 +123,24 @@ async function settleAskedGroup(
     referenceContext,
     lifeEnded,
     subjectNames,
+    declared,
+    declaredNames,
     signal,
     l,
     stageSettings,
   }: {
     readonly client: RunClient;
     readonly modelIds: readonly RosterModelId[];
+    readonly writerModelIds: readonly RosterModelId[];
     readonly text: string;
     readonly prepared: PreparedGroup;
-    readonly cache: SliceCache<ConsistencyRecord>;
+    readonly cache: SliceCache<ConsistencyCacheValue>;
     readonly identityContext?: string;
     readonly referenceContext?: string;
     readonly lifeEnded?: boolean;
     readonly subjectNames?: readonly string[];
+    readonly declared: readonly DeclaredNamePair[];
+    readonly declaredNames: readonly string[];
     readonly signal: AbortSignal;
     readonly l: Logger;
     readonly stageSettings: StageSettings;
@@ -143,33 +165,107 @@ async function settleAskedGroup(
    */
   const unplaced = unplacedOf({ group: prepared.group, },);
   try {
-    return settleAsked({
+    /**
+     The sheet the first round and the run-off show.
+     */
+    const subject = {
+      repeat,
+      occurrences: prepared.places
+        .map(function viewOf(place,) {
+          return occurrenceViewOf({
+            place,
+            text,
+          },);
+        },),
+      ...((identityContext === undefined) ? {} : { identityContext, }),
+      ...((referenceContext === undefined) ? {} : { referenceContext, }),
+      ...((lifeEnded === undefined) ? {} : { lifeEnded, }),
+      ...((subjectNames === undefined) ? {} : { subjectNames, }),
+    };
+    /**
+     The first round's ballots.
+     */
+    const asked = await askConsistencyBench({
+      client,
+      modelIds,
+      subject,
+      cache,
+      signal,
+      exchangeTimeoutMs: RUN_PER_CALL_TIMEOUT_MS,
+      l: gl,
+      stageSettings,
+    },);
+    /**
+     What they come to, and the places that tied for first when they tie.
+     */
+    const count = countAsked({
       repeat,
       places: prepared.places,
-      unplaced,
-      asked: await askConsistencyBench({
+      asked,
+    },);
+    /**
+     The bench asked once more among the places that tied for first, absent when none tied.
+     */
+    const runOff = (count.finalists
+      .length
+      === 0)
+      ? undefined
+      : await askRunOff({
         client,
         modelIds,
-        subject: {
-          repeat,
-          occurrences: prepared.places
-            .map(function viewOf(place,) {
-              return occurrenceViewOf({
-                place,
-                text,
-              },);
-            },),
-          ...((identityContext === undefined) ? {} : { identityContext, }),
-          ...((referenceContext === undefined) ? {} : { referenceContext, }),
-          ...((lifeEnded === undefined) ? {} : { lifeEnded, }),
-          ...((subjectNames === undefined) ? {} : { subjectNames, }),
-        },
+        subject,
+        finalists: count.finalists,
+        renderings: count.renderings,
         cache,
         signal,
         exchangeTimeoutMs: RUN_PER_CALL_TIMEOUT_MS,
         l: gl,
         stageSettings,
-      },),
+      },);
+    /**
+     The group decided, with the places the chosen rendering is still to reach.
+     */
+    const decided = settleAsked({
+      repeat,
+      places: prepared.places,
+      unplaced,
+      asked,
+      ...((runOff === undefined) ? {} : { runOff, }),
+    },);
+    /**
+     The chosen place, none when no place won.
+     */
+    const [chosen,] = decided.chosen;
+    return settleCarried({
+      decided,
+      carried: (chosen === undefined)
+        ? []
+        : await allInInputOrder({
+          members: decided.receivers
+            .map(async function carryOne(receiver,) {
+              return await carryToPlace({
+                context: {
+                  client,
+                  writerModelIds,
+                  judgeModelIds: modelIds,
+                  cache,
+                  text,
+                  ...((identityContext === undefined) ? {} : { identityContext, }),
+                  ...((referenceContext === undefined) ? {} : { referenceContext, }),
+                  ...((lifeEnded === undefined) ? {} : { lifeEnded, }),
+                  ...((subjectNames === undefined) ? {} : { subjectNames, }),
+                  declared,
+                  declaredNames,
+                  signal,
+                  l: gl,
+                  stageSettings,
+                },
+                repeat,
+                chosen,
+                receiver,
+              },);
+            },),
+        },),
     },);
   }
   catch (error) {
@@ -225,6 +321,10 @@ function groupAskedName(
 
  @param subjectNames - names the translation declares for its subject
 
+ @param declared - name pairs the front matter declares, which the floors read
+
+ @param declaredNames - declared name forms, which the floors keep
+
  @param entryCacheDir - per-entry cache root
 
  @param pipelineDigest - generation stamp for the cache
@@ -244,7 +344,7 @@ function groupAskedName(
 
  @example
  ```ts
- const settled = await askAll({ client, text, toAsk, entryCacheDir, pipelineDigest, signal, overlap, l, stageSettings, },);
+ const settled = await askAll({ client, text, toAsk, declared: [], declaredNames: [], entryCacheDir, pipelineDigest, signal, overlap, l, stageSettings, },);
  ```
  */
 export async function askAll(
@@ -256,6 +356,8 @@ export async function askAll(
     referenceContext,
     lifeEnded,
     subjectNames,
+    declared,
+    declaredNames,
     entryCacheDir,
     pipelineDigest,
     signal,
@@ -270,6 +372,8 @@ export async function askAll(
     readonly referenceContext?: string;
     readonly lifeEnded?: boolean;
     readonly subjectNames?: readonly string[];
+    readonly declared: readonly DeclaredNamePair[];
+    readonly declaredNames: readonly string[];
     readonly entryCacheDir: string;
     readonly pipelineDigest: PipelineDigest;
     readonly signal: AbortSignal;
@@ -303,6 +407,7 @@ export async function askAll(
       return await settleAskedGroup({
         client,
         modelIds: seats.lateJudges,
+        writerModelIds: seats.translators,
         text,
         prepared: item,
         cache,
@@ -310,6 +415,8 @@ export async function askAll(
         ...((referenceContext === undefined) ? {} : { referenceContext, }),
         ...((lifeEnded === undefined) ? {} : { lifeEnded, }),
         ...((subjectNames === undefined) ? {} : { subjectNames, }),
+        declared,
+        declaredNames,
         signal,
         l,
         stageSettings,

@@ -17,7 +17,6 @@ import {
 } from '../preparation-identity.ts';
 import {
   ARTIFACT_SCHEMA_VERSION_V13,
-  ARTIFACT_SCHEMA_VERSION_V15,
   artifactGenerationReadingRequirements,
   isTwoLaneArtifactGeneration,
   TWO_LANE_GENERATIONS,
@@ -458,12 +457,12 @@ export function parseSettledTwoLaneArtifact(
     },),
 
     // WHAT THE PAGE-LEVEL CONSISTENCY PASS DID, written from generation fifteen
-    // on and refused in an older file, which no such pass ever ran over.
+    // on and refused in an older file, which no such pass ever ran over; the
+    // generation also says which shape the section has (fifteen's or sixteen's).
     consistency: parseConsistency({
       value: artifact.consistency,
       path: `${id}.consistency`,
-      writesSection: generation
-        >= ARTIFACT_SCHEMA_VERSION_V15,
+      generation,
       sliceIndexes: new Set(comparison.map(function indexOf(row,): number {
         return row.sliceIndex;
       },),),

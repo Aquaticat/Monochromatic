@@ -22,9 +22,11 @@ import { gatherStageVoices, } from '../stage-quorum.ts';
 import type { StageSettings, } from '../stage-settings.ts';
 import type { RosterModelId, } from '../synthetic-catalog.ts';
 import {
+  type ConsistencyCacheValue,
   consistencyKey,
   type ConsistencyRecord,
 } from './pass-consistency-cache.ts';
+import { recordFits, } from './pass-consistency-gather.ts';
 
 //region Pass consistency ask
 // ASKING THE BENCH ONCE ABOUT ONE REPEATED WORDING, or resuming what it said.
@@ -89,54 +91,6 @@ function voiceOf(
 }
 
 /**
- Whether the ballots of a stored gather are ones a fresh gather over this
- bench could have heard: each from a seat of the bench and each seat once,
- which also bounds them by the bench's size.
-
- THE QUORUM IS NOT THIS CHECK'S QUESTION. A stored record has already passed
- the cache's own check (`isConsistencyRecord` in `pass-consistency-cache.ts`:
- a quorum of one at least, and no fewer ballots than it), and no bound on the
- quorum can be sharper than that: a gather closes on one voice when the bench
- seats one or two, or when the run withheld all but one or two of its seats
- (the key names the whole bench, not the seats left), so a floor of two would
- ask again a gather this pass made and spent paid calls on.
-
- @param record - the stored gather
-
- @param modelIds - bench asked
-
- @returns Whether it can be counted again as the answer to this question
-
- @example
- ```ts
- const fits = recordFits({ record, modelIds, },);
- ```
- */
-function recordFits(
-  {
-    record,
-    modelIds,
-  }: {
-    readonly record: ConsistencyRecord;
-    readonly modelIds: readonly RosterModelId[];
-  },
-): boolean {
-  /**
-   Seats heard.
-   */
-  const seats = record.voices
-    .map(function seatOf(voice,): string {
-    return voice.seat;
-  },);
-  return (new Set(seats,).size === seats.length)
-    && seats.every(function isSeated(seat,): boolean {
-      return modelIds.some(function isSeat(modelId,): boolean {
-        return modelId === seat;
-      },);
-    },);
-}
-
-/**
  Asks the bench about one repeated wording, or reads its earlier answer.
 
  @param client - provider client
@@ -178,7 +132,7 @@ export async function askConsistencyBench(
     readonly client: SyntheticClient;
     readonly modelIds: readonly RosterModelId[];
     readonly subject: ConsistencySubject;
-    readonly cache: SliceCache<ConsistencyRecord>;
+    readonly cache: SliceCache<ConsistencyCacheValue>;
     readonly signal: AbortSignal;
     readonly exchangeTimeoutMs: number;
     readonly l: Logger;
@@ -200,16 +154,21 @@ export async function askConsistencyBench(
    This question's identity.
    */
   const key = consistencyKey({
+    stage: 'ballots',
     messages,
     modelIds,
     ...((subject.lifeEnded === undefined) ? {} : { lifeEnded: subject.lifeEnded, }),
     ...((subject.subjectNames === undefined) ? {} : { subjectNames: subject.subjectNames, }),
   },);
   /**
-   The answer an earlier run stored under this question's key.
+   The value an earlier run stored under this question's key.
    */
-  const stored = cache.resumed
+  const value = cache.resumed
     .get(key,);
+  /**
+   The stored answer as a first-round record, none when the value is another kind.
+   */
+  const stored = ((value === undefined) || ('kind' in value)) ? undefined : value;
   /**
    The stored answer, when it is one this bench could have given.
    */
@@ -217,7 +176,7 @@ export async function askConsistencyBench(
     record: stored,
     modelIds,
   },)) ? stored : undefined;
-  if ((stored !== undefined) && (cached === undefined)) {
+  if ((value !== undefined) && (cached === undefined)) {
     al.warn(
       'the stored ballots cannot be an answer of this bench (a seat heard twice, or a seat the bench does not have), so the question is asked again',
     );

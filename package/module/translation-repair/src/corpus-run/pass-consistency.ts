@@ -5,6 +5,7 @@ import {
 
 import type { ArchiveDispute, } from '../archive-dispute.ts';
 import type { PreparedDocumentPair, } from '../document-preparation.ts';
+import type { DeclaredNamePair, } from '../linked-title-declared-name.ts';
 import {
   exchangeFailureLogText,
   exchangeFailureText,
@@ -31,14 +32,14 @@ import {
   repeatOf,
 } from './pass-consistency-group.ts';
 import {
-  type SettledGroup,
-  settleUnasked,
-  unplacedOf,
-} from './pass-consistency-settle.ts';
-import {
   type ConsistencySliceFacts,
   consistencySlicesOf,
 } from './pass-consistency-slices.ts';
+import type { SettledGroup, } from './pass-consistency-types.ts';
+import {
+  settleUnasked,
+  unplacedOf,
+} from './pass-consistency-unasked.ts';
 import type { PipelineDigest, } from './pipeline-digest.ts';
 import type { RunClient, } from './run-client-contract.ts';
 import { ConsistencyInvariantError, } from '../consistency-invariant-error.ts';
@@ -165,6 +166,10 @@ function groupLine({ group, }: { readonly group: ArtifactConsistencyGroup; },): 
 
  @param subjectNames - names the translation declares for its subject
 
+ @param declared - name pairs the front matter declares, which the floors read
+
+ @param declaredNames - declared name forms, which the floors keep
+
  @param entryCacheDir - per-entry cache root
 
  @param pipelineDigest - generation stamp for the cache
@@ -184,7 +189,7 @@ function groupLine({ group, }: { readonly group: ArtifactConsistencyGroup; },): 
 
  @example
  ```ts
- const settled = await settleAll({ client, text, classified, entryCacheDir, pipelineDigest, signal, overlap, l, stageSettings, },);
+ const settled = await settleAll({ client, text, classified, declared: [], declaredNames: [], entryCacheDir, pipelineDigest, signal, overlap, l, stageSettings, },);
  ```
  */
 async function settleAll(
@@ -196,6 +201,8 @@ async function settleAll(
     referenceContext,
     lifeEnded,
     subjectNames,
+    declared,
+    declaredNames,
     entryCacheDir,
     pipelineDigest,
     signal,
@@ -210,6 +217,8 @@ async function settleAll(
     readonly referenceContext?: string;
     readonly lifeEnded?: boolean;
     readonly subjectNames?: readonly string[];
+    readonly declared: readonly DeclaredNamePair[];
+    readonly declaredNames: readonly string[];
     readonly entryCacheDir: string;
     readonly pipelineDigest: PipelineDigest;
     readonly signal: AbortSignal;
@@ -237,6 +246,8 @@ async function settleAll(
     ...((referenceContext === undefined) ? {} : { referenceContext, }),
     ...((lifeEnded === undefined) ? {} : { lifeEnded, }),
     ...((subjectNames === undefined) ? {} : { subjectNames, }),
+    declared,
+    declaredNames,
     entryCacheDir,
     pipelineDigest,
     signal,
@@ -399,6 +410,8 @@ export async function runPassConsistency(
       ...((prepared.referenceContext === undefined) ? {} : { referenceContext: prepared.referenceContext, }),
       ...((prepared.lifeEnded === true) ? { lifeEnded: true, } : {}),
       ...((prepared.subjectNames === undefined) ? {} : { subjectNames: prepared.subjectNames, }),
+      declared: prepared.declaredNamePairs ?? [],
+      declaredNames: prepared.declaredNames,
       entryCacheDir,
       pipelineDigest,
       signal,

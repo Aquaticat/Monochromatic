@@ -14,6 +14,7 @@ import {
 import type { UnplacedReason, } from '../repeat-groups-types.ts';
 import type {
   ArtifactConsistencyBallot,
+  ArtifactConsistencyChoiceBallot,
   ArtifactConsistencyRepeat,
   ArtifactConsistencyUnplaced,
 } from './artifact-two-lane-consistency.ts';
@@ -345,6 +346,63 @@ export function parseConsistencyBallot(
     keep: requireStringList({
       value: record.keep,
       path: `${path}.keep`,
+    },),
+  };
+}
+
+/**
+ Reads one heard ballot that only chooses: the run-off's and a carry's.
+
+ @param value - recorded ballot
+
+ @param path - where it sits, for the parse error
+
+ @returns The ballot
+
+ @throws {@link ArtifactParseError} when it is the wrong shape
+
+ @example
+ ```ts
+ const ballot = parseConsistencyChoiceBallot({ value, path: `${path}.ballots[0]`, },);
+ ```
+ */
+export function parseConsistencyChoiceBallot(
+  {
+    value,
+    path,
+  }: {
+    readonly value: unknown;
+    readonly path: string;
+  },
+): ArtifactConsistencyChoiceBallot {
+  /**
+   The ballot as a record.
+   */
+  const record = requireRecord({
+    value,
+    path,
+  },);
+  requireExactKeys({
+    record,
+    allowed: [
+      'seat',
+      'reason',
+      'choice',
+    ],
+    path,
+  },);
+  return {
+    seat: requireString({
+      value: record.seat,
+      path: `${path}.seat`,
+    },),
+    reason: requireString({
+      value: record.reason,
+      path: `${path}.reason`,
+    },),
+    choice: requireString({
+      value: record.choice,
+      path: `${path}.choice`,
     },),
   };
 }

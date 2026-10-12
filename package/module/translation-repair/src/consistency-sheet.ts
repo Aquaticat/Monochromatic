@@ -149,6 +149,70 @@ export type ConsistencySubject = {
 };
 
 /**
+ The marks that enclose the repeated wording inside a shown paragraph.
+
+ @example
+ ```ts
+ const marks: ConsistencyMarks = { open: '⟦', close: '⟧', };
+ ```
+ */
+export type ConsistencyMarks = {
+  /**
+   Opening mark.
+   */
+  readonly open: string;
+
+  /**
+   Closing mark.
+   */
+  readonly close: string;
+};
+
+/**
+ The repeated wording as one text, for the fence and the marks.
+
+ @param repeat - the repeated wording or frame
+
+ @returns The wording, or a frame's prefix and suffix joined
+
+ @example
+ ```ts
+ const text = repeatedTextOf({ repeat: { kind: 'maximal', wording: '小猫', }, },); // '小猫'
+ ```
+ */
+export function repeatedTextOf({ repeat, }: { readonly repeat: ConsistencyRepeat; },): string {
+  return (repeat.kind === 'maximal') ? repeat.wording : `${repeat.prefix}${repeat.suffix}`;
+}
+
+/**
+ The fenced block that says what the repeated wording is.
+
+ @param repeat - the repeated wording or frame
+
+ @param fence - fence no shown text contains
+
+ @returns The block, ending in a line break
+
+ @example
+ ```ts
+ const block = repeatBlockOf({ repeat, fence, },);
+ ```
+ */
+export function repeatBlockOf(
+  {
+    repeat,
+    fence,
+  }: {
+    readonly repeat: ConsistencyRepeat;
+    readonly fence: string;
+  },
+): string {
+  return (repeat.kind === 'maximal')
+    ? `${fence} REPEATED ORIGINAL WORDING ${fence}\n${repeat.wording}\n`
+    : `${fence} FRAME BEGINS WITH ${fence}\n${repeat.prefix}\n${fence} FRAME ENDS WITH ${fence}\n${repeat.suffix}\n`;
+}
+
+/**
  Marks long enough that no shown text contains them.
 
  @param texts - every text the sheet shows
@@ -160,12 +224,9 @@ export type ConsistencySubject = {
  const { open, close, } = selectMarks({ texts: ['小猫',], },); // { open: '⟦', close: '⟧' }
  ```
  */
-function selectMarks(
+export function selectMarks(
   { texts, }: { readonly texts: readonly string[]; },
-): {
-  readonly open: string;
-  readonly close: string;
-} {
+): ConsistencyMarks {
   /**
    Longest run of either mark in any shown text.
    */
@@ -208,16 +269,13 @@ function selectMarks(
  const marked = markedParagraph({ view, marks: { open: '⟦', close: '⟧', }, },);
  ```
  */
-function markedParagraph(
+export function markedParagraph(
   {
     view,
     marks,
   }: {
     readonly view: ConsistencyOccurrenceView;
-    readonly marks: {
-      readonly open: string;
-      readonly close: string;
-    };
+    readonly marks: ConsistencyMarks;
   },
 ): string {
   return `${view.paragraph
@@ -281,8 +339,8 @@ Your task is to say whether the places render it alike, which rendering the whol
 In each paragraph the repeated wording is enclosed between ${marks.open} and ${marks.close}; the marks are not part of the text.
 
 Reply with one JSON object whose keys come in this order: reason, quotes, choice, keep. Write the reason first and choose after it:
-- "reason": one to three sentences. Say whether the renderings differ in meaning or only in wording, which rendering is the most faithful to the ORIGINAL under the house rules, and, for any OCCURRENCE you list in "keep", what in its surroundings calls for different wording.
-- "quotes": one entry per OCCURRENCE, in order, each {"label": the label, "quote": the quote}. The quote is the exact words of that OCCURRENCE's TRANSLATION that render the marked wording: copy them character for character, including capitals, spacing and line breaks, and take only the words that render the marked wording, from its first word to its last, without the punctuation that closes the sentence. The quote must appear exactly once in that TRANSLATION: when the same words appear more than once in it, or when the TRANSLATION does not render the marked wording at all, or carries no English, give an empty quote and that OCCURRENCE is left as it stands.${frameClauses}
+- "reason": one to three sentences. Say whether the renderings differ in meaning or only in wording, which rendering is the most faithful to the ORIGINAL under the house rules, name any word of the rendering you choose that renders ORIGINAL outside the marked wording (the other places must not be given such a word), and, for any OCCURRENCE you list in "keep", what in its surroundings calls for different wording.
+- "quotes": one entry per OCCURRENCE, in order, each {"label": the label, "quote": the quote}. The quote is the exact words of that OCCURRENCE's TRANSLATION that render the marked wording and no other words: copy them character for character, including capitals, spacing and line breaks, and take only the words that render the marked wording, from its first word to its last, without the punctuation that closes the sentence. Leave out a word before or after them that renders ORIGINAL outside the marked wording, such as an "also" that renders a word standing before the marked wording. The quote must appear exactly once in that TRANSLATION: when the same words appear more than once in it, or when the TRANSLATION does not render the marked wording at all, or carries no English, give an empty quote and that OCCURRENCE is left as it stands.${frameClauses}
 - "choice": the label of the OCCURRENCE whose rendering (for a frame, whose pattern) is the most faithful to the ORIGINAL under the house rules and so the one the others should follow. The ORIGINAL is the standard: never choose a rendering because it came first, came last, or is the commonest. When the renderings agree, name any one of them and keep none.
 - "keep": the labels of the OCCURRENCES whose surroundings call for different wording from the chosen one, such as a different speaker, a person or tense the sentence forces, quoted speech, or a play on the neighbouring words. A difference of taste is no reason to keep. Never list the chosen label.
 
@@ -307,14 +365,7 @@ export function buildConsistencyMessages(
   /**
    The repeated wording as one text, for the fence and the marks.
    */
-  const repeatedText = (subject.repeat
-    .kind
-    === 'maximal')
-    ? subject.repeat
-      .wording
-    : `${subject.repeat
-      .prefix}${subject.repeat
-        .suffix}`;
+  const repeatedText = repeatedTextOf({ repeat: subject.repeat, },);
   /**
    The tense candidates of each slice's English, shown only where the entry
    records a death, in the lines every judging sheet prints them in.
@@ -373,14 +424,10 @@ export function buildConsistencyMessages(
   /**
    What the repeated wording is, fenced.
    */
-  const repeatBlock = (subject.repeat
-    .kind
-    === 'maximal')
-    ? `${fence} REPEATED ORIGINAL WORDING ${fence}\n${subject.repeat
-      .wording}\n`
-    : `${fence} FRAME BEGINS WITH ${fence}\n${subject.repeat
-      .prefix}\n${fence} FRAME ENDS WITH ${fence}\n${subject.repeat
-        .suffix}\n`;
+  const repeatBlock = repeatBlockOf({
+    repeat: subject.repeat,
+    fence,
+  },);
   /**
    The tense block, fenced like the other blocks, or nothing when no English has a candidate.
    */

@@ -22,7 +22,7 @@ import {
   consistencyFloorVerdict,
 } from './pass-consistency-floors.ts';
 import type { ConsistencySliceFacts, } from './pass-consistency-slices.ts';
-import type { SettledGroup, } from './pass-consistency-settle.ts';
+import type { SettledGroup, } from './pass-consistency-types.ts';
 import { ConsistencyInvariantError, } from '../consistency-invariant-error.ts';
 
 //region Pass consistency apply
@@ -113,6 +113,7 @@ function recordedRendering(
   return {
     kind: 'located',
     quote: rendering.quote,
+    start: rendering.start,
     ...((rendering.slot === undefined) ? {} : { slot: rendering.slot, }),
   };
 }
@@ -356,6 +357,7 @@ export function applyConsistency(
           },),
         unplaced: group.unplaced,
         verdict: group.verdict,
+        carries: group.carries,
       };
     },),
     slices: changed,

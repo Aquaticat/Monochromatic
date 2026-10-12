@@ -1,10 +1,7 @@
 import { ArtifactParseError, } from '../artifact-guard.ts';
 import { ConsistencyInvariantError, } from '../consistency-invariant-error.ts';
 import { winnerOf, } from '../consistency-count.ts';
-import type {
-  ConsistencyRendering,
-  ConsistencyWinner,
-} from '../consistency-count-types.ts';
+import type { ConsistencyRendering, } from '../consistency-count-types.ts';
 import {
   agreedQuoteOf,
   agreedSlotOf,
@@ -14,6 +11,10 @@ import {
 } from '../consistency-majority.ts';
 import { planConsistencyEdit, } from '../consistency-splice.ts';
 import { consistencyLabels, } from '../consistency-wire.ts';
+import {
+  artifactGenerationCountsBySpan,
+  type TwoLaneArtifactGeneration,
+} from './artifact-two-lane-contract.ts';
 import type {
   ArtifactConsistencyGroup,
   ArtifactConsistencyOccurrence,
@@ -23,6 +24,12 @@ import {
   locatedContradicted,
   reasonContradicted,
 } from './artifact-two-lane-read-consistency-located.ts';
+import { assertSpanGroupCoherent, } from './artifact-two-lane-read-consistency-span.ts';
+import { sameWinner, } from './artifact-two-lane-read-consistency-span-winner.ts';
+import {
+  assertSeatsHeardOnce,
+  winningPositionOf,
+} from './artifact-two-lane-read-consistency-tally.ts';
 
 //region Artifact consistency coherence
 // WHAT A RECORDED GROUP SAYS ABOUT ITSELF, recounted. The ballots are in the
@@ -174,16 +181,7 @@ function assertOutcomesFollow(
   /**
    Rendering the chosen place carries, when there is a winner.
    */
-  const chosen = group.occurrences
-    .find(function isWinner(occurrence,): boolean {
-    return (group.verdict
-      .winner
-      .kind
-      === 'chosen') && (occurrence.label
-        === group.verdict
-        .winner
-        .label);
-  },);
+  const chosen = group.occurrences[winningPositionOf({ group, },)];
   group.occurrences
     .forEach(function checkOne(
     occurrence,
@@ -247,6 +245,9 @@ function assertOutcomesFollow(
         rendering: occurrence.rendering,
         path: `${here}.rendering`,
       },),
+      framed: group.repeat
+        .kind
+        === 'refrain',
     },);
     /**
      Whether the outcome is one a replacement can end in.
@@ -269,59 +270,42 @@ function assertOutcomesFollow(
 }
 
 /**
- Whether two winners name the same place or give the same reason for none.
-
- @param left - one winner
-
- @param right - the other winner
-
- @returns Whether they agree
-
- @example
- ```ts
- const agree = sameWinner({ left: expected, right: recorded, },);
- ```
- */
-function sameWinner(
-  {
-    left,
-    right,
-  }: {
-    readonly left: ConsistencyWinner;
-    readonly right: ConsistencyWinner;
-  },
-): boolean {
-  if ((left.kind === 'chosen') && (right.kind === 'chosen'))
-    return left.label === right.label;
-  if ((left.kind === 'none') && (right.kind === 'none'))
-    return left.reason === right.reason;
-  return false;
-}
-
-/**
  Checks a group asked of the bench against its own ballots.
 
  @param group - the group, asked of the bench
 
  @param path - where the group sits, for the parse error
 
+ @param generation - generation the section was written under: the first shape
+ is recounted by the exact text of the quotes as it was written, the sixteenth
+ by the span of the place's English they locate, with the run-off and the carries
+
  @throws {@link ArtifactParseError} when the usable count, the quorum test, the
  winner, a rendering or an outcome is not what the ballots give
 
  @example
  ```ts
- assertAskedGroupCoherent({ group, path, },);
+ assertAskedGroupCoherent({ group, path, generation: 15, },);
  ```
  */
 export function assertAskedGroupCoherent(
   {
     group,
     path,
+    generation,
   }: {
     readonly group: ArtifactConsistencyGroup & { readonly verdict: { readonly kind: 'asked'; }; };
     readonly path: string;
+    readonly generation: TwoLaneArtifactGeneration;
   },
 ): void {
+  if (artifactGenerationCountsBySpan({ generation, },)) {
+    assertSpanGroupCoherent({
+      group,
+      path,
+    },);
+    return;
+  }
   /**
    Labels the sheet showed.
    */
@@ -335,23 +319,13 @@ export function assertAskedGroupCoherent(
       .ballots,
     labels,
   },);
-  group.verdict
-    .ballots
-    .forEach(function heardOnce(
-    ballot,
-    at,
-  ): void {
-    if (group.verdict
+  assertSeatsHeardOnce({
+    seats: group.verdict
       .ballots
-      .findIndex(function sameSeat(other,): boolean {
-        return other.seat === ballot.seat;
-      },)
-      !== at) {
-      throw new ArtifactParseError({
-        path: `${path}.verdict.ballots[${String(at,)}].seat`,
-        reason: 'a seat heard once, since a gather hears each seat once',
-      },);
-    }
+      .map(function seatOf({ seat, },): string {
+        return seat;
+      },),
+    path: `${path}.verdict.ballots`,
   },);
   if (voices.length
     !== group.verdict

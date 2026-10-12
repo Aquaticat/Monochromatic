@@ -8,11 +8,17 @@ import {
   requireStringList,
 } from '../artifact-guard.ts';
 import {
+  artifactGenerationCountsBySpan,
+  artifactGenerationRecordsConsistency,
+  type TwoLaneArtifactGeneration,
+} from './artifact-two-lane-contract.ts';
+import {
   type ArtifactConsistency,
   type ArtifactConsistencyGroup,
   type ArtifactConsistencySlice,
   NO_CONSISTENCY,
 } from './artifact-two-lane-consistency.ts';
+import { parseConsistencyCarry, } from './artifact-two-lane-read-consistency-carry.ts';
 import { assertGroupFits, } from './artifact-two-lane-read-consistency-fit.ts';
 import { assertAskedGroupCoherent, } from './artifact-two-lane-read-consistency-coherence.ts';
 import { assertSlicesCoherent, } from './artifact-two-lane-read-consistency-slices.ts';
@@ -37,13 +43,15 @@ import { parseConsistencyVerdict, } from './artifact-two-lane-read-consistency-v
 
  @param sliceIndexes - slices the artifact's comparison names
 
+ @param generation - generation the section was written under
+
  @returns The group
 
  @throws {@link ArtifactParseError} when it is malformed or contradicts its own ballots
 
  @example
  ```ts
- const group = parseConsistencyGroup({ value, path: `${path}.groups[0]`, sliceIndexes, },);
+ const group = parseConsistencyGroup({ value, path: `${path}.groups[0]`, sliceIndexes, generation: 16, },);
  ```
  */
 function parseConsistencyGroup(
@@ -51,10 +59,12 @@ function parseConsistencyGroup(
     value,
     path,
     sliceIndexes,
+    generation,
   }: {
     readonly value: unknown;
     readonly path: string;
     readonly sliceIndexes: ReadonlySet<number>;
+    readonly generation: TwoLaneArtifactGeneration;
   },
 ): ArtifactConsistencyGroup {
   /**
@@ -64,14 +74,26 @@ function parseConsistencyGroup(
     value,
     path,
   },);
+  /**
+   Whether the section has the sixteenth shape, whose groups carry their carries.
+   */
+  const spanned = artifactGenerationCountsBySpan({ generation, },);
   requireExactKeys({
     record,
-    allowed: [
-      'repeat',
-      'occurrences',
-      'unplaced',
-      'verdict',
-    ],
+    allowed: spanned
+      ? [
+        'repeat',
+        'occurrences',
+        'unplaced',
+        'verdict',
+        'carries',
+      ]
+      : [
+        'repeat',
+        'occurrences',
+        'unplaced',
+        'verdict',
+      ],
     path,
   },);
   /**
@@ -93,6 +115,7 @@ function parseConsistencyGroup(
         return parseConsistencyOccurrence({
           value: entry,
           path: `${path}.occurrences[${String(at,)}]`,
+          generation,
         },);
       },),
     unplaced: requireArray({
@@ -111,12 +134,31 @@ function parseConsistencyGroup(
     verdict: parseConsistencyVerdict({
       value: record.verdict,
       path: `${path}.verdict`,
+      generation,
     },),
+    ...(spanned
+      ? {
+        carries: requireArray({
+          value: record.carries,
+          path: `${path}.carries`,
+        },)
+          .map(function toCarry(
+            entry,
+            at,
+          ) {
+            return parseConsistencyCarry({
+              value: entry,
+              path: `${path}.carries[${String(at,)}]`,
+            },);
+          },),
+      }
+      : {}),
   };
   assertGroupFits({
     group,
     path,
     sliceIndexes,
+    generation,
   },);
   if (group.verdict
     .kind
@@ -127,6 +169,7 @@ function parseConsistencyGroup(
         verdict: group.verdict,
       },
       path,
+      generation,
     },);
   return group;
 }
@@ -205,8 +248,11 @@ function parseConsistencySlice(
 
  @param path - where it sits, for the parse error
 
- @param writesSection - whether this generation writes the section, so its
- absence is a broken file and its presence in an older one is a broken file too
+ @param generation - generation the artifact records, which says whether it
+ writes the section (so its absence is a broken file and its presence in an
+ older one is a broken file too) and which shape the section has: the first
+ shape's ballots are counted by the exact text of the quotes as it was written,
+ the sixteenth's by the span of the place's English they locate
 
  @param sliceIndexes - slices the artifact's comparison names
 
@@ -218,22 +264,26 @@ function parseConsistencySlice(
 
  @example
  ```ts
- const consistency = parseConsistency({ value: artifact.consistency, path: `${id}.consistency`, writesSection, sliceIndexes, },);
+ const consistency = parseConsistency({ value: artifact.consistency, path: `${id}.consistency`, generation, sliceIndexes, },);
  ```
  */
 export function parseConsistency(
   {
     value,
     path,
-    writesSection,
+    generation,
     sliceIndexes,
   }: {
     readonly value: unknown;
     readonly path: string;
-    readonly writesSection: boolean;
+    readonly generation: TwoLaneArtifactGeneration;
     readonly sliceIndexes: ReadonlySet<number>;
   },
 ): ArtifactConsistency {
+  /**
+   Whether this generation writes the section.
+   */
+  const writesSection = artifactGenerationRecordsConsistency({ generation, },);
   if (value === undefined) {
     if (writesSection) {
       throw new ArtifactParseError({
@@ -280,6 +330,7 @@ export function parseConsistency(
         value: entry,
         path: `${path}.groups[${String(at,)}]`,
         sliceIndexes,
+        generation,
       },);
     },);
   /**

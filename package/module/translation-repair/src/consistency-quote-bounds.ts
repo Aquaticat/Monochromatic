@@ -66,7 +66,7 @@ function isVariationSelector({ point, }: { readonly point: string; },): boolean 
  const closes = isClosing({ point: '.', },); // true
  ```
  */
-function isClosing({ point, }: { readonly point: string; },): boolean {
+export function isClosing({ point, }: { readonly point: string; },): boolean {
   if (isVariationSelector({ point, },))
     return false;
   return CLOSING_PUNCTUATION.includes(point,) || rendersAsNothing({ text: point, },);

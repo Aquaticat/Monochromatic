@@ -48,18 +48,18 @@ export type UnlocatedReason =
 export type ConsistencyRendering =
   | {
     /**
-     A strict majority quoted words that occur once.
+     A strict majority quoted words that stand once in the place's English.
      */
     readonly kind: 'located';
 
     /**
-     The words the majority quoted, as they quoted them.
+     The words the place's English holds where the majority's quotes stand,
+     without the punctuation that closes them, never a judge's string.
      */
     readonly quote: string;
 
     /**
-     The quote without the punctuation that closes it: the words a
-     replacement takes or gives.
+     The words a replacement takes or gives: the span itself.
      */
     readonly core: string;
 
@@ -69,7 +69,8 @@ export type ConsistencyRendering =
     readonly start: number;
 
     /**
-     For a frame: the slot words the majority quoted.
+     For a frame: the slot words the English holds where the majority's slots
+     stand inside the span; absent when the ballots did not pin one down.
      */
     readonly slot?: string;
 
@@ -91,9 +92,16 @@ export type ConsistencyRendering =
   };
 
 /**
- Why the group has no winner.
+ Why the group has no winner. The two run-off reasons are given only after the
+ bench was asked again among the places that tied for first: the run-off's
+ gather missed its quorum, or the run-off tied or reached no majority too.
  */
-export type NoWinnerReason = 'no-quorum' | 'no-majority' | 'chosen-unlocated';
+export type NoWinnerReason =
+  | 'no-quorum'
+  | 'no-majority'
+  | 'chosen-unlocated'
+  | 'run-off-no-quorum'
+  | 'run-off-tied';
 
 /**
  Which place every place should follow, or why none.
@@ -155,6 +163,13 @@ export type ConsistencyCount = {
    The place every place should follow, if any.
    */
   readonly winner: ConsistencyWinner;
+
+  /**
+   Labels that tie for first among the choices when the ballots reach the
+   quorum and no label has a majority, in sheet order; the bench is asked once
+   more among them. None when the choices do not tie.
+   */
+  readonly finalists: readonly string[];
 };
 
 //endregion Consistency count types

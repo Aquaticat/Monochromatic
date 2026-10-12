@@ -70,8 +70,8 @@ export const ARTIFACT_SCHEMA_VERSION_V13 = 13;
 export const ARTIFACT_SCHEMA_VERSION_V14 = 14;
 
 /**
- Generation fifteen, the one the pass writes (`artifact-two-lane-build.ts`,
- `pass-schema-guard.ts`): a slice where the repair lane recorded
+ Generation fifteen, the one the first consistency pass wrote, still read and
+ no longer written (generation sixteen is): a slice where the repair lane recorded
  `not-applicable` (an archive-absent insertion) and the translate lane
  therefore alone had a passage to work on is recorded as a `sole-lane`
  contest verdict, with no ballots and no roster asked.
@@ -100,6 +100,33 @@ export const ARTIFACT_SCHEMA_VERSION_V14 = 14;
  exists without it.
  */
 export const ARTIFACT_SCHEMA_VERSION_V15 = 15;
+
+/**
+ Generation sixteen, the one the pass writes (`artifact-two-lane-build.ts`,
+ `pass-schema-guard.ts`): the consistency section records the page-level pass
+ as it counts ballots by the span of the place's own English they locate, runs
+ off a tie for first, and carries the chosen rendering by writers and a choice
+ among candidates.
+
+ WHAT MOVED FROM FIFTEEN, all inside the `consistency` section
+ (`corpus-run/artifact-two-lane-consistency.ts` states each): a located place
+ carries the words and the offset the English holds, not a judge's string; a
+ frame's slot is no condition of being located; a group the bench was asked
+ about may carry `verdict.runOff`, and every group carries `carries`, one record
+ per receiving place with its candidates and the ballots that chose among them;
+ and the outcome `kept-current` and the winner reasons `run-off-no-quorum` and
+ `run-off-tied` exist. A reader of this generation refuses the generation
+ fifteen spellings of the slot reasons (`slot-no-agreement`, `slot-empty`,
+ `slot-not-found`, `slot-ambiguous`, `slot-whole`), which no pass of this
+ generation gives. A reader of fifteen refuses `runOff`, `carries`, a located
+ place's `start`, the outcome `kept-current` and the two run-off reasons, and
+ recounts a section exactly as the first pass to write one counted it, so a
+ generation fifteen artifact reads as it was written.
+
+ Everything else the generation fifteen record holds (the sole-lane verdict, the
+ tense finding) is this generation's too.
+ */
+export const ARTIFACT_SCHEMA_VERSION_V16 = 16;
 
 /**
  Generation before archive-original spans were sealed; the archive's front
@@ -209,6 +236,7 @@ export const TWO_LANE_GENERATIONS: readonly number[] = [
   ARTIFACT_SCHEMA_VERSION_V13,
   ARTIFACT_SCHEMA_VERSION_V14,
   ARTIFACT_SCHEMA_VERSION_V15,
+  ARTIFACT_SCHEMA_VERSION_V16,
 ];
 
 /**
@@ -233,7 +261,8 @@ export type TwoLaneArtifactGeneration =
   | typeof ARTIFACT_SCHEMA_VERSION_V12
   | typeof ARTIFACT_SCHEMA_VERSION_V13
   | typeof ARTIFACT_SCHEMA_VERSION_V14
-  | typeof ARTIFACT_SCHEMA_VERSION_V15;
+  | typeof ARTIFACT_SCHEMA_VERSION_V15
+  | typeof ARTIFACT_SCHEMA_VERSION_V16;
 
 /**
  Narrows numeric artifact version to known two-lane generation.
@@ -366,6 +395,45 @@ export function artifactGenerationRecordsTense(
   { generation, }: { readonly generation: TwoLaneArtifactGeneration; },
 ): boolean {
   return generation >= ARTIFACT_SCHEMA_VERSION_V15;
+}
+
+/**
+ Reports whether generation records the page-level consistency section.
+
+ @param generation - known two-lane artifact generation
+
+ @returns Whether the section is required, and refused in an older file
+
+ @example
+ ```ts
+ artifactGenerationRecordsConsistency({ generation: 15, });
+ ```
+ */
+export function artifactGenerationRecordsConsistency(
+  { generation, }: { readonly generation: TwoLaneArtifactGeneration; },
+): boolean {
+  return generation >= ARTIFACT_SCHEMA_VERSION_V15;
+}
+
+/**
+ Reports whether generation counts the consistency ballots by the span of the
+ place's own English they locate, runs off a tie for first and carries the
+ chosen rendering by writers, so its section has the sixteenth shape. An older
+ section is recounted by the exact text of the quotes, as it was written.
+
+ @param generation - known two-lane artifact generation
+
+ @returns Whether the section is of the sixteenth shape
+
+ @example
+ ```ts
+ artifactGenerationCountsBySpan({ generation: 16, });
+ ```
+ */
+export function artifactGenerationCountsBySpan(
+  { generation, }: { readonly generation: TwoLaneArtifactGeneration; },
+): boolean {
+  return generation >= ARTIFACT_SCHEMA_VERSION_V16;
 }
 
 /**
@@ -679,7 +747,7 @@ export type SettledArtifact = {
    Which generation this is, stated rather than inferred from which fields
    happen to be present.
    */
-  readonly artifactSchemaVersion: typeof ARTIFACT_SCHEMA_VERSION_V15;
+  readonly artifactSchemaVersion: typeof ARTIFACT_SCHEMA_VERSION_V16;
 
   /**
    Corpus entry this covers.

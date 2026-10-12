@@ -60,6 +60,13 @@ export type ConsistencyPlan =
   }
   | {
     /**
+     A frame's chosen place or receiving place has no agreed slot, so the
+     words cannot be moved by code: only a writer can carry the pattern.
+     */
+    readonly kind: 'unavailable';
+  }
+  | {
+    /**
      The receiving place's words are replaced.
      */
     readonly kind: 'replace';
@@ -222,22 +229,33 @@ function patternFor(
 
  @param target - the receiving place's located rendering
 
- @returns That the receiving place already agrees, or the replacement
+ @param framed - whether the group is a frame, whose words move only with both
+ places' slots
+
+ @returns That the receiving place already agrees, that the words cannot be
+ moved by code, or the replacement
 
  @example
  ```ts
- const plan = planConsistencyEdit({ chosen, target, },);
+ const plan = planConsistencyEdit({ chosen, target, framed: false, },);
  ```
  */
 export function planConsistencyEdit(
   {
     chosen,
     target,
+    framed,
   }: {
     readonly chosen: Extract<ConsistencyRendering, { readonly kind: 'located'; }>;
     readonly target: Extract<ConsistencyRendering, { readonly kind: 'located'; }>;
+    readonly framed: boolean;
   },
 ): ConsistencyPlan {
+  if (framed && ((chosen.slot === undefined) || (target.slot === undefined))) {
+    return (chosen.core === target.core)
+      ? { kind: 'same', }
+      : { kind: 'unavailable', };
+  }
   /**
    The words the receiving place is given.
    */

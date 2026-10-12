@@ -1,5 +1,9 @@
 import { ArtifactParseError, } from '../artifact-guard.ts';
 import { consistencyLabel, } from '../consistency-wire.ts';
+import {
+  artifactGenerationCountsBySpan,
+  type TwoLaneArtifactGeneration,
+} from './artifact-two-lane-contract.ts';
 import type { ArtifactConsistencyGroup, } from './artifact-two-lane-consistency.ts';
 
 //region Artifact consistency fit
@@ -36,6 +40,12 @@ function assertNotAskedFits(
     .kind
     === 'asked')
     return;
+  if ((group.carries ?? []).length > 0) {
+    throw new ArtifactParseError({
+      path: `${path}.carries`,
+      reason: 'no carries, since the bench was not asked',
+    },);
+  }
   /**
    Outcome every place of such a group carries: all consistent when the page
    already read alike, untouched otherwise.
@@ -101,12 +111,15 @@ function assertNotAskedFits(
 
  @param sliceIndexes - slices the artifact's comparison names
 
+ @param generation - generation the section was written under, which says
+ whether a slot is a condition of a place being located
+
  @throws {@link ArtifactParseError} when a label, a slice, a slot, an outcome or
  the number of places does not fit
 
  @example
  ```ts
- assertGroupFits({ group, path, sliceIndexes, },);
+ assertGroupFits({ group, path, sliceIndexes, generation: 16, },);
  ```
  */
 export function assertGroupFits(
@@ -114,10 +127,12 @@ export function assertGroupFits(
     group,
     path,
     sliceIndexes,
+    generation,
   }: {
     readonly group: ArtifactConsistencyGroup;
     readonly path: string;
     readonly sliceIndexes: ReadonlySet<number>;
+    readonly generation: TwoLaneArtifactGeneration;
   },
 ): void {
   group.occurrences
@@ -170,14 +185,23 @@ export function assertGroupFits(
         reason: 'a slot that starts before it ends and lies inside its place',
       },);
     }
+    // A SLOT IS NO CONDITION OF A PLACE BEING LOCATED IN GENERATION SIXTEEN: a
+    // frame's place may be located with none, only a place of another kind
+    // cannot have one.
     if ((occurrence.rendering
       .kind
-      === 'located') && (framed !== (occurrence.rendering
-        .slot
-        !== undefined))) {
+      === 'located') && (artifactGenerationCountsBySpan({ generation, },)
+        ? ((!framed) && (occurrence.rendering
+          .slot
+          !== undefined))
+        : (framed !== (occurrence.rendering
+          .slot
+          !== undefined)))) {
       throw new ArtifactParseError({
         path: `${here}.rendering`,
-        reason: 'a slot in the rendering of a place of a frame, and in no other',
+        reason: artifactGenerationCountsBySpan({ generation, },)
+          ? 'a slot in the rendering of a place of a frame only'
+          : 'a slot in the rendering of a place of a frame, and in no other',
       },);
     }
   },);

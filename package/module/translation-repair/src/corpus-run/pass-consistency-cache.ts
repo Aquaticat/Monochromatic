@@ -4,6 +4,10 @@ import type { ChatMessage, } from '@monochromatic-dev/module-llm-type/ts';
 
 import type { ConsistencyVoice, } from '../consistency-count-types.ts';
 import { CONSISTENCY_CACHE_VERSION, } from '../consistency-cache-version.ts';
+import {
+  type ConsistencyChoiceVoice,
+  isConsistencyChoiceWire,
+} from '../consistency-choice.ts';
 import { isConsistencyBallotWire, } from '../consistency-wire.ts';
 import { hashContent, } from '../document-node.ts';
 import {
@@ -18,13 +22,17 @@ import {
 } from './slice-cache-namespace.ts';
 
 //region Pass consistency cache
-// THE BALLOTS OF ONE REPEATED WORDING, kept so a resumed page counts the same
-// ballots and lands on the same page. What is stored is what the bench said,
-// with the quorum the gather closed on; the counting against the English is
-// not stored, since it is deterministic and moves with the English it reads.
+// THE ANSWERS OF THE PAGE CONSISTENCY PASS, kept so a resumed page counts the
+// same answers and lands on the same page. Four kinds are stored in the one
+// cache, each under a key that names its kind: the ballots of the first round,
+// the choices of a run-off, the paragraphs the writers wrote and the choices
+// among a place's candidates. What is stored is what the bench or the writers
+// said, with the quorum the gather closed on; the counting against the English
+// is not stored, since it is deterministic and moves with the English it reads.
 
 /**
- What one settled gather stores.
+ What one settled first-round gather stores. It has no `kind`, which is what
+ tells it from the other three.
 
  @example
  ```ts
@@ -49,6 +57,120 @@ export type ConsistencyRecord = {
 };
 
 /**
+ What one settled gather of choices stores: a run-off's, or a place's choice
+ among its candidates.
+
+ @example
+ ```ts
+ const record: ConsistencyChoiceRecord = { kind: 'choice', quorum: 2, voices: [], findings: [], };
+ ```
+ */
+export type ConsistencyChoiceRecord = {
+  /**
+   Tells this record from the others.
+   */
+  readonly kind: 'choice';
+
+  /**
+   Voices the gather closed on.
+   */
+  readonly quorum: number;
+
+  /**
+   Every choice heard, with its seat.
+   */
+  readonly voices: readonly ConsistencyChoiceVoice[];
+
+  /**
+   What the gather reported.
+   */
+  readonly findings: readonly string[];
+};
+
+/**
+ One writer's paragraph as stored: the reply as the model wrote it.
+
+ @example
+ ```ts
+ const voice: ConsistencyWriterVoice = { seat: 'glm-5.3', translation: 'The cat naps.', };
+ ```
+ */
+export type ConsistencyWriterVoice = {
+  /**
+   Seat that answered.
+   */
+  readonly seat: string;
+
+  /**
+   The paragraph the seat wrote.
+   */
+  readonly translation: string;
+};
+
+/**
+ What one settled gather of writers stores.
+
+ @example
+ ```ts
+ const record: ConsistencyWritersRecord = { kind: 'writers', quorum: 2, voices: [], findings: [], };
+ ```
+ */
+export type ConsistencyWritersRecord = {
+  /**
+   Tells this record from the others.
+   */
+  readonly kind: 'writers';
+
+  /**
+   Voices the gather closed on.
+   */
+  readonly quorum: number;
+
+  /**
+   Every paragraph heard, with its seat.
+   */
+  readonly voices: readonly ConsistencyWriterVoice[];
+
+  /**
+   What the gather reported.
+   */
+  readonly findings: readonly string[];
+};
+
+/**
+ Anything the cache holds.
+ */
+export type ConsistencyCacheValue = ConsistencyRecord | ConsistencyChoiceRecord | ConsistencyWritersRecord;
+
+/**
+ Whether a stored value carries the gather's quorum and findings, with a
+ quorum that no gather closes below one and no fewer voices than it.
+
+ @param value - parsed stored record
+
+ @returns Whether the quorum, the voice list and the findings are the shapes a gather stores
+
+ @example
+ ```ts
+ carriesGather({ value: { quorum: 2, voices: [], findings: [], }, },);
+ ```
+ */
+function carriesGather({ value, }: { readonly value: Readonly<Record<string, unknown>>; },): boolean {
+  return ((typeof value.quorum) === 'number')
+    && Number.isInteger(value.quorum,)
+    && (value.quorum >= 1)
+    && isJsonArray(value.voices,)
+    && (value.voices
+      .length
+      >= value.quorum)
+    && isJsonArray(value.findings,)
+    && value.findings
+    .every(function isFinding(finding,): boolean {
+        return (typeof finding) === 'string';
+      },);
+}
+
+/**
  Whether a stored value is a gather's record.
 
  A STORED RECORD IS AN OUTSIDE READ, so it must be one the persistence rule
@@ -64,28 +186,34 @@ export type ConsistencyRecord = {
 
  @example
  ```ts
- isConsistencyRecord({ quorum: 2, voices: [], findings: [], },);
+ isConsistencyCacheValue({ quorum: 2, voices: [], findings: [], },);
  ```
  */
-function isConsistencyRecord(value: unknown,): value is ConsistencyRecord {
-  return isJsonRecord(value,)
-    && ((typeof value.quorum) === 'number')
-    && Number.isInteger(value.quorum,)
-    && (value.quorum >= 1)
-    && isJsonArray(value.voices,)
-    && (value.voices
-      .length
-      >= value.quorum)
-    && value.voices
-    .every(function isVoice(voice,): boolean {
-        return isJsonRecord(voice,) && ((typeof voice.seat) === 'string')
-          && isConsistencyBallotWire(voice,);
-      },)
-    && isJsonArray(value.findings,)
-    && value.findings
-    .every(function isFinding(finding,): boolean {
-        return (typeof finding) === 'string';
-      },);
+function isConsistencyCacheValue(value: unknown,): value is ConsistencyCacheValue {
+  if (!isJsonRecord(value,))
+    return false;
+  if (!carriesGather({ value, },))
+    return false;
+  /**
+   The voices as the JSON holds them.
+   */
+  const voices = isJsonArray(value.voices,) ? value.voices : [];
+  if (value.kind === undefined) {
+    return voices.every(function isVoice(voice,): boolean {
+      return isJsonRecord(voice,) && ((typeof voice.seat) === 'string')
+        && isConsistencyBallotWire(voice,);
+    },);
+  }
+  if (value.kind === 'choice') {
+    return voices.every(function isVoice(voice,): boolean {
+      return isJsonRecord(voice,) && ((typeof voice.seat) === 'string')
+        && isConsistencyChoiceWire(voice,);
+    },);
+  }
+  return (value.kind === 'writers') && voices.every(function isVoice(voice,): boolean {
+    return isJsonRecord(voice,) && ((typeof voice.seat) === 'string')
+      && ((typeof voice.translation) === 'string');
+  },);
 }
 
 /**
@@ -110,23 +238,30 @@ export async function openConsistencyCache(
     readonly dir: string;
     readonly generation: string;
   },
-): Promise<SliceCache<ConsistencyRecord>> {
+): Promise<SliceCache<ConsistencyCacheValue>> {
   return await openNamespacedCache({
     dir,
     generation,
     namespace: PAGE_CONSISTENCY_NAMESPACE,
-    isValue: isConsistencyRecord,
+    isValue: isConsistencyCacheValue,
   },);
 }
 
 /**
- Names one question: the version, the whole sheet the bench is shown (which
- holds the wording, every place's paragraph and English, the declared identity
- and the cited pages) and the bench that answers, as one JSON value so no two
- questions share a key. An entry that records a death adds the death and the
- names its tense candidates read, since the sheet then shows a block built from
- them (the lead's decision of 2026-10-12); an entry that records none keys as
- before.
+ Which of the pass's questions a key names.
+ */
+export type ConsistencyStage = 'ballots' | 'run-off' | 'writers' | 'choice';
+
+/**
+ Names one question: the version, the stage, the whole sheet the bench or the
+ writers are shown (which holds the wording, every place's paragraph and
+ English, the declared identity and the cited pages) and the bench that answers,
+ as one JSON value so no two questions share a key. An entry that records a
+ death adds the death and the names its tense candidates read, since the sheet
+ then shows a block built from them (the lead's decision of 2026-10-12); an
+ entry that records none keys as before.
+
+ @param stage - the question's kind
 
  @param messages - the sheet
 
@@ -141,16 +276,18 @@ export async function openConsistencyCache(
 
  @example
  ```ts
- const key = consistencyKey({ messages, modelIds, },);
+ const key = consistencyKey({ stage: 'ballots', messages, modelIds, },);
  ```
  */
 export function consistencyKey(
   {
+    stage,
     messages,
     modelIds,
     lifeEnded,
     subjectNames,
   }: {
+    readonly stage: ConsistencyStage;
     readonly messages: readonly ChatMessage[];
     readonly modelIds: readonly RosterModelId[];
     readonly lifeEnded?: boolean;
@@ -161,6 +298,7 @@ export function consistencyKey(
     .update(
       JSON.stringify({
         version: CONSISTENCY_CACHE_VERSION,
+        stage,
         sheet: hashContent({ content: JSON.stringify(messages,), },),
         roster: modelIds,
         ...((lifeEnded === true)

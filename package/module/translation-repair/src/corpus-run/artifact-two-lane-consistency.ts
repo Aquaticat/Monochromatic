@@ -18,9 +18,18 @@ import type { UnplacedReason, } from '../repeat-groups-types.ts';
 // consistency pass composed, and what the pass wrote stands over the polish,
 // the consolidation and the contest it settled after.
 //
-// WRITTEN FROM GENERATION FIFTEEN ON. Generation fifteen was introduced for
-// the sole-lane verdict and no pass had run at it when this section joined
-// it, so the section needs no generation of its own.
+// TWO SHAPES, TWO GENERATIONS. Generation fifteen carries the section as the
+// first pass to write it recorded it: ballots counted by the exact text of a
+// quote, a located place carrying the judge's string, a slot a condition of
+// being located, and the chosen words carried by code alone. It stays readable
+// as written. GENERATION SIXTEEN is the section the pass writes now: ballots
+// agree when their quotes locate one span of the place's own English, a located
+// place carries the words and the offset the English holds, a slot is no
+// condition of being located, a tie for first is run off among the finalists
+// (`verdict.runOff`), and the chosen rendering is carried by writers and a
+// choice among candidates (`group.carries`). The keys a generation does not
+// write are refused in it by the reader, and the outcome words and winner
+// reasons it does not give are refused too.
 
 /**
  What became of one place of a group.
@@ -32,7 +41,9 @@ import type { UnplacedReason, } from '../repeat-groups-types.ts';
  `overlapped` is a place whose words overlap those of an earlier group's
  replacement in the same slice. `unlocated` is a place whose rendering the
  ballots did not pin down. `untouched` is a place of a group that decided
- nothing.
+ nothing. `kept-current` (generation sixteen) is a place whose carry ended with
+ its own English standing: the choice among the candidates kept it, reached no
+ decision, had no candidate to choose or failed.
  */
 export type ConsistencyOccurrenceOutcome =
   | 'chosen'
@@ -40,6 +51,7 @@ export type ConsistencyOccurrenceOutcome =
   | 'consistent'
   | 'kept-context'
   | 'kept-floor'
+  | 'kept-current'
   | 'overlapped'
   | 'unlocated'
   | 'untouched';
@@ -54,6 +66,7 @@ export const CONSISTENCY_OCCURRENCE_OUTCOMES: Readonly<Record<ConsistencyOccurre
   consistent: true,
   'kept-context': true,
   'kept-floor': true,
+  'kept-current': true,
   overlapped: true,
   unlocated: true,
   untouched: true,
@@ -89,12 +102,21 @@ export type ArtifactConsistencyRendering =
     readonly kind: 'located';
 
     /**
-     The words the majority quoted.
+     Generation fifteen: the words the majority quoted, as they quoted them.
+     Generation sixteen: the words the place's English holds where their quotes
+     stand, without the punctuation that closes them.
      */
     readonly quote: string;
 
     /**
-     For a frame: the slot words the majority quoted.
+     Generation sixteen: offset in the place's English where the span starts.
+     */
+    readonly start?: number;
+
+    /**
+     For a frame: the slot words. Generation fifteen: as the majority quoted
+     them. Generation sixteen: as the English holds them inside the span, absent
+     where the ballots did not pin a slot down.
      */
     readonly slot?: string;
   }
@@ -246,6 +268,186 @@ export type ArtifactConsistencyBallot = {
 };
 
 /**
+ One heard ballot that only chooses: the run-off's and the choice among a
+ place's candidates.
+
+ @example
+ ```ts
+ const ballot: ArtifactConsistencyChoiceBallot = { seat: 'glm-5.3', reason: 'Reads best.', choice: 'OCCURRENCE 3', };
+ ```
+ */
+export type ArtifactConsistencyChoiceBallot = {
+  /**
+   Seat that answered.
+   */
+  readonly seat: string;
+
+  /**
+   Why the judge chose as it did, written before the choice.
+   */
+  readonly reason: string;
+
+  /**
+   Label of the place (a run-off) or of the candidate (a carry) chosen.
+   */
+  readonly choice: string;
+};
+
+/**
+ The bench asked once more among the places that tied for first.
+
+ @example
+ ```ts
+ const runOff: ArtifactConsistencyRunOff = { finalists: ['OCCURRENCE 3', 'OCCURRENCE 4',], ballots: [], usable: 0, quorum: 2, };
+ ```
+ */
+export type ArtifactConsistencyRunOff = {
+  /**
+   Labels of the places that tied, in sheet order, the only places the run-off's
+   sheet showed.
+   */
+  readonly finalists: readonly string[];
+
+  /**
+   Every ballot heard, whether or not it could be counted.
+   */
+  readonly ballots: readonly ArtifactConsistencyChoiceBallot[];
+
+  /**
+   Ballots that could be counted.
+   */
+  readonly usable: number;
+
+  /**
+   Voices the run-off's gather closed on.
+   */
+  readonly quorum: number;
+};
+
+/**
+ One text a receiving place's carry chose among.
+
+ @example
+ ```ts
+ const candidate: ArtifactConsistencyCandidate = { label: 'CANDIDATE 1', kind: 'current', writers: [], text: 'The cat naps.', };
+ ```
+ */
+export type ArtifactConsistencyCandidate = {
+  /**
+   Label the choice sheet gave the candidate, counted from one in sheet order.
+   */
+  readonly label: string;
+
+  /**
+   `current` is the English the receiving place has now; `splice` is the chosen
+   place's words moved into it by code; `writer` is a text a writer wrote.
+   */
+  readonly kind: 'current' | 'splice' | 'writer';
+
+  /**
+   Seats whose reply was exactly this text, which is none for a splice no
+   writer wrote and for a current text no writer returned.
+   */
+  readonly writers: readonly string[];
+
+  /**
+   The receiving paragraph's English as this candidate has it.
+   */
+  readonly text: string;
+};
+
+/**
+ Why a carry reached no decision among its candidates.
+ */
+export type ConsistencyCarryNoDecisionReason = 'no-alternative' | 'no-quorum' | 'no-majority';
+
+/**
+ What a receiving place's carry decided.
+
+ @example
+ ```ts
+ const decision: ArtifactConsistencyCarryDecision = { kind: 'none', reason: 'no-alternative', };
+ ```
+ */
+export type ArtifactConsistencyCarryDecision =
+  | {
+    /**
+     A strict majority of the usable ballots chose a candidate.
+     */
+    readonly kind: 'chosen';
+
+    /**
+     Label of the candidate.
+     */
+    readonly label: string;
+  }
+  | {
+    /**
+     No candidate was chosen, so the place's English stands.
+     */
+    readonly kind: 'none';
+
+    /**
+     Why.
+     */
+    readonly reason: ConsistencyCarryNoDecisionReason;
+  }
+  | {
+    /**
+     Trouble stopped the carry before a choice could be counted.
+     */
+    readonly kind: 'failed';
+
+    /**
+     What went wrong, in words naming no corpus text.
+     */
+    readonly detail: string;
+  };
+
+/**
+ How the chosen rendering was carried to one receiving place: the texts
+ offered, the ballots that chose among them and what they decided.
+
+ @example
+ ```ts
+ const carry: ArtifactConsistencyCarry = { label: 'OCCURRENCE 2', candidates: [], ballots: [], usable: 0, quorum: 2, decision: { kind: 'none', reason: 'no-alternative', }, };
+ ```
+ */
+export type ArtifactConsistencyCarry = {
+  /**
+   Label of the receiving place.
+   */
+  readonly label: string;
+
+  /**
+   The texts the choice was among, in sheet order; the current English first
+   when no alternative was offered.
+   */
+  readonly candidates: readonly ArtifactConsistencyCandidate[];
+
+  /**
+   Every ballot heard, whether or not it could be counted; none when the bench
+   was not asked.
+   */
+  readonly ballots: readonly ArtifactConsistencyChoiceBallot[];
+
+  /**
+   Ballots that could be counted.
+   */
+  readonly usable: number;
+
+  /**
+   Voices the choice's gather closed on; zero when the bench was not asked.
+   */
+  readonly quorum: number;
+
+  /**
+   What the ballots decided.
+   */
+  readonly decision: ArtifactConsistencyCarryDecision;
+};
+
+/**
  What was asked of the bench about a group and what it answered.
 
  @example
@@ -299,9 +501,16 @@ export type ArtifactConsistencyVerdict =
     readonly quorum: number;
 
     /**
-     The place every place followed, or why none.
+     The place every place followed, or why none. When the choices tied for
+     first, the place the run-off chose, or the run-off's reason for none.
      */
     readonly winner: ConsistencyWinner;
+
+    /**
+     Generation sixteen: the bench asked once more among the places that tied
+     for first; absent when the choices did not tie.
+     */
+    readonly runOff?: ArtifactConsistencyRunOff;
   };
 
 /**
@@ -369,6 +578,12 @@ export type ArtifactConsistencyGroup = {
    What was asked of the bench and what it answered.
    */
   readonly verdict: ArtifactConsistencyVerdict;
+
+  /**
+   Generation sixteen: how the chosen rendering was carried to each receiving
+   place, in the order of the places; empty where no place received one.
+   */
+  readonly carries?: readonly ArtifactConsistencyCarry[];
 };
 
 /**
