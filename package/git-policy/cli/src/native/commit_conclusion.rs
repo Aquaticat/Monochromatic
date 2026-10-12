@@ -249,8 +249,8 @@ pub fn conclude_commit_transaction<F: RepositoryFacts>(
         TAG,
         format!("prepared {}; hooks changed {} paths", prepared.oid, hook_changes.paths.len()).as_str(),
     );
-    let mut worktree_records: Vec<AddedPath> = selected.clone();
-    worktree_records.extend(hook_changes.worktree_records.iter().cloned());
+    let mut prepared_records: Vec<AddedPath> = selected.clone();
+    prepared_records.extend(hook_changes.worktree_records.iter().cloned());
     write_journal_record(
         workspace.landing.directory.as_path(),
         PREPARED_FILENAME,
@@ -261,7 +261,7 @@ pub fn conclude_commit_transaction<F: RepositoryFacts>(
             intended_tree_oid: intended_tree.clone(),
             committed_paths: committed_paths.clone(),
             added_paths: Vec::new(),
-            selected_worktree_paths: worktree_records.clone(),
+            selected_worktree_paths: prepared_records.clone(),
         })
         .as_str(),
     )?;
@@ -282,7 +282,7 @@ pub fn conclude_commit_transaction<F: RepositoryFacts>(
         read_only_selection: selection.read_only,
         committed_paths: committed_paths.clone(),
         added_paths: Vec::new(),
-        worktree_records: worktree_records.clone(),
+        worktree_records: prepared_records.clone(),
         hook_changes,
         index_lock_timeout_ms: timeout_ms,
         reserve_after_lost_races: invocation.config.concurrency.landing.reserve_after_lost_races,

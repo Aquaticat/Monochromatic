@@ -288,13 +288,12 @@ fn replay_candidate<F: RepositoryFacts>(
                 &input.capture.base,
                 None,
             )?;
-            let mut last: Vec<PolicyEvent> = Vec::new();
-            last.push(PolicyEvent::ReplayConflict {
+            let last: Vec<PolicyEvent> = vec![PolicyEvent::ReplayConflict {
                 target_ref: input.capture.layout.target_ref.clone(),
                 paths: conflict.paths,
                 winning_oid: conflict.winning_oid,
                 prepared_oid: conflict.prepared_oid,
-            });
+            }];
             return Ok(Err(LoopOutcome::Failed {
                 events: failed_events(input.settled_events.as_slice(), raced.as_slice(), last),
                 exit_code: 1,
@@ -554,7 +553,7 @@ fn run_loop<F: RepositoryFacts>(
         }
         match replay_candidate(input, &candidate, raced, onto.as_str())? {
             Ok(next) => candidate = next,
-            Err(outcome) => return Ok(outcome),
+            Err(ended) => return Ok(ended),
         }
     }
 }

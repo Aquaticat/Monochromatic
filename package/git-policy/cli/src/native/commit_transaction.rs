@@ -585,13 +585,13 @@ pub fn run_commit_transaction<F: RepositoryFacts>(
         base.as_str(),
         workspace.object_directory.as_path(),
     )?;
-    let mut checks: ShippedChecks<PrivateIndexFacts<&mut F>> = private_checks(
+    let mut private: ShippedChecks<PrivateIndexFacts<&mut F>> = private_checks(
         checks,
         workspace.landing.commit_index.as_path(),
         workspace.object_directory.as_path(),
         staged_at_base(base_object(&capture)?, candidate_paths.as_slice()),
     );
-    let converged: Converged = converge(request, &mut checks, context, cwd, &workspace, selection.read_only);
+    let converged: Converged = converge(request, &mut private, context, cwd, &workspace, selection.read_only);
     let code: i32 = pass_exit_code(converged.pass.events.as_slice(), converged.pass.end);
     if code != 0 {
         debug(TAG, "policies blocked the commit before preparation");
@@ -607,7 +607,7 @@ pub fn run_commit_transaction<F: RepositoryFacts>(
         capture: &capture,
         selection: &selection,
         request,
-        checks: &mut checks,
+        checks: &mut private,
         pass: converged.pass,
         changed_passes: converged.changed_passes,
         changed_paths: converged.changed_paths,
