@@ -15,6 +15,19 @@ use std::time::{Duration, Instant};
 /// The bound of one commit under host load, in seconds; the shared 5-second bound is for single Git commands.
 const COMMIT_BOUND_SECONDS: &str = "120";
 
+/// Remove the fixture once nothing writes into it any more.
+///  A landed commit may leave a maintenance child finishing for a moment under load, and removing a directory that
+///  still gains entries fails with "Directory not empty"; the removal is tried again for up to five seconds.
+fn remove_settled(fixture: &Fixture) {
+    for _ in 0..50 {
+        if std::fs::remove_dir_all(&fixture.root).is_ok() || !fixture.root.exists() {
+            return;
+        }
+        std::thread::sleep(Duration::from_millis(100));
+    }
+    remove(fixture);
+}
+
 /// A command for the fixture's `bin/git` with the wrapper first on PATH and the commit bound.
 fn wrapped_commit(fixture: &Fixture, directory: &Path, arguments: &[&str]) -> Command {
     let mut command: Command = bounded_for(
@@ -97,7 +110,7 @@ fn an_explicit_path_commit_lands_once_and_leaves_nothing() {
     assert_eq!(git_text(&fixture, repo.as_path(), &["log", "-1", "--format=%s"]).trim(), "second");
     assert_eq!(porcelain(&fixture, repo.as_path()), "");
     assert_nothing_left(&fixture, repo.as_path());
-    remove(&fixture);
+    remove_settled(&fixture);
 }
 
 /// A final-newline correction lands in the commit and in the worktree copy, and the summary names the path.
@@ -117,7 +130,7 @@ fn a_final_newline_correction_lands_in_the_commit_and_the_worktree() {
     );
     assert_eq!(porcelain(&fixture, repo.as_path()), "");
     assert_nothing_left(&fixture, repo.as_path());
-    remove(&fixture);
+    remove_settled(&fixture);
 }
 
 /// A dry run commits nothing and starts no transaction.
@@ -130,7 +143,7 @@ fn a_dry_run_commits_nothing() {
     assert_eq!(dry.code, Some(0), "{}", stderr_of(&dry));
     assert_eq!(git_text(&fixture, repo.as_path(), &["rev-parse", "HEAD"]), head);
     assert!(!repo.join(".git/cli-git").exists(), "a dry run creates no shadow area");
-    remove(&fixture);
+    remove_settled(&fixture);
 }
 
 /// `commit -a` commits every tracked change, including a deletion.
@@ -151,7 +164,7 @@ fn a_commit_of_all_tracked_changes_lands_them() {
     );
     assert_eq!(porcelain(&fixture, repo.as_path()), "");
     assert_nothing_left(&fixture, repo.as_path());
-    remove(&fixture);
+    remove_settled(&fixture);
 }
 
 /// A commit that names no path while commit-only enforcement is active is rejected with exit status 1.
@@ -166,7 +179,7 @@ fn a_blocking_finding_stops_the_commit_with_status_one() {
     assert!(stderr_of(&blocked).contains("commit-only/pathspec-required"), "{}", stderr_of(&blocked));
     assert_eq!(git_text(&fixture, repo.as_path(), &["rev-parse", "HEAD"]), head);
     assert_eq!(porcelain(&fixture, repo.as_path()), "M  a.txt\n");
-    remove(&fixture);
+    remove_settled(&fixture);
 }
 
 /// A correction that makes the commit identical to its base creates no commit and reconciles the copies.
@@ -187,7 +200,7 @@ fn a_correction_that_restores_the_base_is_a_no_change_normalization() {
     assert_eq!(std::fs::read(repo.join("a.txt")).expect("worktree copy"), b"one\n");
     assert_eq!(porcelain(&fixture, repo.as_path()), "");
     assert_nothing_left(&fixture, repo.as_path());
-    remove(&fixture);
+    remove_settled(&fixture);
 }
 
 /// An amend replaces the head commit, and an empty commit lands only with `--allow-empty`.
@@ -211,7 +224,7 @@ fn an_amend_replaces_the_head_and_an_empty_commit_needs_its_flag() {
     assert_eq!(empty.code, Some(0), "{}", stderr_of(&empty));
     assert_eq!(git_text(&fixture, repo.as_path(), &["rev-list", "--count", "HEAD"]).trim(), "3");
     assert_nothing_left(&fixture, repo.as_path());
-    remove(&fixture);
+    remove_settled(&fixture);
 }
 
 /// An unknown option reaches Git, which refuses it; nothing lands.
@@ -224,7 +237,7 @@ fn an_unknown_option_is_refused_by_git_and_nothing_lands() {
     let direct: Observed = run_direct(&fixture, repo.as_path(), &["commit", "--no-such-option", "a.txt"]);
     assert_eq!(refused.code, direct.code, "{}", stderr_of(&refused));
     assert_eq!(git_text(&fixture, repo.as_path(), &["rev-parse", "HEAD"]), head);
-    remove(&fixture);
+    remove_settled(&fixture);
 }
 
 /// A `pre-commit` hook that fails ends the commit with Git's status and leaves nothing behind.
@@ -242,7 +255,7 @@ fn a_failing_pre_commit_hook_stops_the_commit_with_its_status() {
     assert!(stderr_of(&rejected).contains("rejected by the hook"), "{}", stderr_of(&rejected));
     assert_eq!(git_text(&fixture, repo.as_path(), &["rev-parse", "HEAD"]), head);
     assert_nothing_left(&fixture, repo.as_path());
-    remove(&fixture);
+    remove_settled(&fixture);
 }
 
 /// A `pre-commit` hook that re-stages the file through the wrapper has its change kept in the commit.
@@ -261,7 +274,7 @@ fn a_pre_commit_hook_restaging_a_file_is_kept() {
         "one\ntwo\nhooked\n"
     );
     assert_nothing_left(&fixture, repo.as_path());
-    remove(&fixture);
+    remove_settled(&fixture);
 }
 
 /// Waits until a phase marker exists, or fails the control.
@@ -301,7 +314,7 @@ fn replayed_commit_stderr(name: &str, configuration: Option<&str>) -> String {
     assert_eq!(git_text(&fixture, repo.as_path(), &["rev-list", "--count", "HEAD"]).trim(), "4");
     assert_eq!(git_text(&fixture, repo.as_path(), &["show", "HEAD:a.txt"]), "one\ntwo\n");
     assert_eq!(git_text(&fixture, repo.as_path(), &["show", "HEAD:b.txt"]), "b\n");
-    remove(&fixture);
+    remove_settled(&fixture);
     return stderr;
 }
 
@@ -347,7 +360,7 @@ fn a_commit_that_overlaps_the_winner_ends_in_a_replay_conflict() {
     assert_eq!(finished.status.code(), Some(1), "{stderr}");
     assert!(stderr.contains("\"code\":\"concurrent-commit/replay-conflict\""), "{stderr}");
     assert_eq!(git_text(&fixture, repo.as_path(), &["rev-parse", "HEAD"]).trim(), winning.trim());
-    remove(&fixture);
+    remove_settled(&fixture);
 }
 
 /// A termination signal sent to the wrapper while a `pre-commit` hook runs ends the hook's Git, leaves no
@@ -378,7 +391,7 @@ fn a_termination_signal_during_a_hook_ends_the_commit_and_leaves_nothing() {
     assert_eq!(finished.status.code(), Some(143), "{}", String::from_utf8_lossy(finished.stderr.as_slice()));
     assert_eq!(git_text(&fixture, repo.as_path(), &["rev-parse", "HEAD"]), head);
     assert_nothing_left(&fixture, repo.as_path());
-    remove(&fixture);
+    remove_settled(&fixture);
 }
 
 /// `git commit --patch` stages the hunks chosen on standard input into the private index, and only those land.
@@ -394,7 +407,7 @@ fn a_patch_selection_lands_the_chosen_hunk() {
     assert_eq!(git_text(&fixture, repo.as_path(), &["show", "HEAD:a.txt"]), "one\ntwo\n");
     assert_eq!(git_text(&fixture, repo.as_path(), &["log", "-1", "--format=%s"]).trim(), "chosen");
     assert_nothing_left(&fixture, repo.as_path());
-    remove(&fixture);
+    remove_settled(&fixture);
 }
 
 /// `git commit --interactive` runs the file menu against the private index the same way.
@@ -409,7 +422,7 @@ fn an_interactive_selection_lands_the_chosen_file() {
     assert_eq!(landed.code, Some(0), "{}{}", stderr_of(&landed), String::from_utf8_lossy(landed.stdout.as_slice()));
     assert_eq!(git_text(&fixture, repo.as_path(), &["show", "HEAD:a.txt"]), "one\ntwo\n");
     assert_nothing_left(&fixture, repo.as_path());
-    remove(&fixture);
+    remove_settled(&fixture);
 }
 
 /// With `--allow-empty`, a correction that restores the base still creates the commit the user asked for.
@@ -428,5 +441,5 @@ fn an_allowed_empty_commit_is_not_a_no_change_normalization() {
     assert_eq!(git_text(&fixture, repo.as_path(), &["rev-list", "--count", "HEAD"]).trim(), "3");
     assert_eq!(git_text(&fixture, repo.as_path(), &["rev-parse", "HEAD^{tree}"]), before);
     assert_nothing_left(&fixture, repo.as_path());
-    remove(&fixture);
+    remove_settled(&fixture);
 }
