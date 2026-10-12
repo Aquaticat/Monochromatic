@@ -395,6 +395,21 @@ const [code] = await once(child, 'exit')
 if (code !== 0) throw new Error(`concurrent e2e container exited with ${String(code)}`)
 '''
 
+[tasks.'test:e2e:concurrent:native:image']
+description = "Build the native end-to-end image: the release native executable linked as /opt/native/bin/git into the concurrent-commit e2e image (build that first with test:e2e:concurrent:image)"
+# Mount-free build in rust:1.97-bookworm (the e2e image's Debian release); GIT_POLICY_NATIVE_IMAGE_TAG names the image tag.
+run = "node bin/e2e-native-container.mjs image"
+
+[tasks.'test:e2e:concurrent:native']
+description = "Replay concurrent-commit workloads through the native executable on Git 2.39.5, 2.40.0, and 2.55.0 in a bounded, network-isolated container; the scenarios and invariants are the incumbent suite's, unchanged"
+depends = ["test:e2e:concurrent:native:image"]
+usage = '''
+flag "--seed <seed>" help="Replay this decimal seed (printed by every run)"
+flag "--scenario <names>" help="Comma-separated scenario names to run"
+flag "--git <versions>" help="Comma-separated Git versions to run (2.39.5, 2.40.0, 2.55.0)"
+'''
+run = "node bin/e2e-native-container.mjs run"
+
 [tasks."native:lock:scanner"]
 description = "Seed the native wrapper lockfile from the linked scanner's lockfile, then let Cargo add only the wrapper's own packages, so both lock the same registry versions"
 run = ["cp ../../cli/forbidden-strings/Cargo.lock Cargo.lock", "cargo update --workspace --offline"]
