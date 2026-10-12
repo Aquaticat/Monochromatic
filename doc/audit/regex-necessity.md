@@ -247,6 +247,43 @@ The coverage gap is filed as its own issue,
 This audit covers exactly that excluded set plus every site the gate cannot see,
  so the two documents are complementary rather than overlapping.
 
+## Non-JS surfaces checked
+
+The detector is a JavaScript rule,
+ so the other languages and the config layer were checked separately.
+
+- **Rust**:
+  outside the two crates whose product is a regex engine
+  (`package/rust-module/forbidden-regex`,
+  `package/cli/forbidden-strings`),
+  the only tracked construction site is
+  `package/desktop-app/ide/src/find.rs:170`,
+  which escapes a user's find text and builds a case-insensitive Unicode matcher.
+  Classified necessary:
+  the feature is case-insensitive literal search with full Unicode case folding,
+  and the `regex` crate supplies both the folding and a literal-optimized matcher.
+  A hand-rolled scanner would need its own folding table and would compare at every
+  position instead of using the crate's literal search.
+  `doc/audit/resharp-fuzz-2026-06-19/tool/anchor_denot.rs` also imports the crate,
+  as a one-off tool whose subject is regex denotations.
+  No Rust lint rule polices regex use,
+  so this surface has no gate equivalent to `no-regex`.
+- **Kotlin**:
+  zero `Regex(` and zero `toRegex(` sites across 246 tracked `.kt` files.
+- **Config and data files**:
+  no regex-shaped strings in tracked JSON,
+  JSONC,
+  TOML,
+  or YAML config.
+  Stylelint is removed (`doc/decision/remove-stylelint.md`),
+  so the regex-shaped stylelint strings recorded in `doc/handover/no-regex.md` are gone.
+- **Regex as data**:
+  `package/cli/mutation-test/src/engine/enumerate.unit.test.ts` holds regex source text
+  as string fixtures for the quantifier mutators,
+  and `package/dev-script/deps-cube/src/script/filter.ts` holds user search strings.
+  Both are inputs to a feature whose subject is regex,
+  not regex use.
+
 ## Reproducing
 
 The scratch harness lives outside the repository,
