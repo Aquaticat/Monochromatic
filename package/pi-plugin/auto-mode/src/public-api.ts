@@ -86,7 +86,10 @@ export {
   type InstructionEffect,
   type InstructionRule,
 } from './instruction-rule.ts';
-export { flushPolicyDiagnostics, InstructionResolutionInputError, } from './policy-data.ts';
+export {
+  flushPolicyDiagnostics,
+  InstructionResolutionInputError,
+} from './policy-data.ts';
 
 //endregion Deterministic migration kernel
 

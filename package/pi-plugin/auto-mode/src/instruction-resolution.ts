@@ -99,9 +99,18 @@ export function resolveInstructionEffects(input: unknown,): InstructionResolutio
   /**
    Strongest known applicable tier; Infinity retains the no-applicable-rule case.
    */
-  const priority = rules.reduce(function strongestApplicable(current, rule,) {
-    return rule.applicability === 'applies' ? Math.min(current, rule.priority,) : current;
-  }, Number.POSITIVE_INFINITY,);
+  const priority = rules.reduce(
+    function strongestApplicable(
+      current,
+      rule,
+    ) {
+    return rule.applicability === 'applies' ? Math.min(
+      current,
+      rule.priority,
+    ) : current;
+  },
+    Number.POSITIVE_INFINITY,
+  );
   /**
    Known support at that tier is not a claim of a unique winning rule.
    */

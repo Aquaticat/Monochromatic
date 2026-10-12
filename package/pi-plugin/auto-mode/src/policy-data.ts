@@ -182,10 +182,9 @@ export function readPolicyIdentity(input: unknown,): string {
  Flush the package-owned logger instance used by the policy kernel.
  Synchronous conformance consumers can await sink verification before producing a burst,
  and drain the same instance before exiting.
+ Waits for bounded verification and queued diagnostic delivery to finish.
 
  @internal
-
- @returns after bounded verification and queued diagnostic delivery finish
 
  @example
  ```ts
@@ -196,7 +195,10 @@ export async function flushPolicyDiagnostics(): Promise<void> {
   /**
    Retain the function boundary on the final diagnostic before draining.
    */
-  const rl = tagged({ tag: flushPolicyDiagnostics.name, l, },);
+  const rl = tagged({
+    tag: flushPolicyDiagnostics.name,
+    l,
+  },);
   rl.debug('flushing policy diagnostics',);
   await rl.flush();
 }

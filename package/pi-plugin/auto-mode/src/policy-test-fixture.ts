@@ -12,13 +12,21 @@ import type {
  Each optional field is a genuine test-case override of the authored default.
  */
 type RuleFixtureOverrides = {
-  /** Identity override for cases with multiple rules. */
+  /**
+   Identity override for cases with multiple rules.
+   */
   readonly id?: string;
-  /** Priority override for precedence cases. */
+  /**
+   Priority override for precedence cases.
+   */
   readonly priority?: number;
-  /** Effect override for directive and uncertainty cases. */
+  /**
+   Effect override for directive and uncertainty cases.
+   */
   readonly effect?: InstructionRule['effect'];
-  /** Application override for scope and uncertainty cases. */
+  /**
+   Application override for scope and uncertainty cases.
+   */
   readonly applicability?: InstructionRule['applicability'];
 };
 
@@ -26,13 +34,21 @@ type RuleFixtureOverrides = {
  Each optional field independently varies one authorization proposition.
  */
 type RequirementFixtureOverrides = {
-  /** Identity override for cases with multiple constraints. */
+  /**
+   Identity override for cases with multiple constraints.
+   */
   readonly id?: string;
-  /** Application override for scope and uncertainty cases. */
+  /**
+   Application override for scope and uncertainty cases.
+   */
   readonly applicability?: AuthorizationRequirement['applicability'];
-  /** Fulfillment override independent of directive permission. */
+  /**
+   Fulfillment override independent of directive permission.
+   */
   readonly satisfaction?: AuthorizationRequirement['satisfaction'];
-  /** Channel-sufficiency override independent of UI availability. */
+  /**
+   Channel-sufficiency override independent of UI availability.
+   */
   readonly channel?: AuthorizationRequirement['channel'];
 };
 
