@@ -443,3 +443,18 @@ fn an_allowed_empty_commit_is_not_a_no_change_normalization() {
     assert_nothing_left(&fixture, repo.as_path());
     remove_settled(&fixture);
 }
+
+/// `--include` commits the named path's worktree content together with what is already staged.
+#[test]
+fn include_commits_the_named_path_together_with_the_staged_changes() {
+    let fixture: Fixture = fixture("commit-include");
+    let repo: PathBuf = edited_repository(&fixture, "repo");
+    std::fs::write(repo.join("b.txt"), b"b\n").expect("b");
+    git(&fixture, repo.as_path(), &["add", "--", "b.txt"]);
+    let landed: Observed = run_commit(&fixture, repo.as_path(), &["commit", "--include", "--message=both", "a.txt"]);
+    assert_eq!(landed.code, Some(0), "{}", stderr_of(&landed));
+    assert_eq!(git_text(&fixture, repo.as_path(), &["show", "HEAD:a.txt"]), "one\ntwo\n");
+    assert_eq!(git_text(&fixture, repo.as_path(), &["show", "HEAD:b.txt"]), "b\n");
+    assert_nothing_left(&fixture, repo.as_path());
+    remove_settled(&fixture);
+}

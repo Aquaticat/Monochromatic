@@ -145,3 +145,50 @@ fn a_lost_race_moves_the_counters_up_by_one() {
     assert_eq!(lost_races_after(0), 1);
     assert_eq!(lost_races_after(4), 5);
 }
+
+/// A path named by both lists is kept once, in first-seen order.
+#[test]
+fn replay_paths_are_the_union_without_repeats() {
+    let committed: Vec<String> = vec![String::from("a"), String::from("b")];
+    assert_eq!(
+        union_paths(committed.as_slice(), vec![String::from("b"), String::from("c"), String::from("c")]),
+        vec!["a", "b", "c"]
+    );
+    assert_eq!(union_paths(&[], Vec::new()), Vec::<String>::new());
+}
+
+/// The replay events keep the lost race first, name the base, and add the headers event only for dropped headers.
+#[test]
+fn replay_events_name_the_base_and_the_dropped_headers_only_when_there_are_some() {
+    let rebuilt = |headers: Vec<String>| {
+        return ReplayedCommit {
+            oid: String::from("new"),
+            dropped_headers: headers,
+        };
+    };
+    let raced: Vec<PolicyEvent> = vec![PolicyEvent::LandingReserved { lost_races: 1 }];
+    let plain: Vec<PolicyEvent> =
+        replayed_events(raced.clone(), "prep", &Base::Commit(String::from("old")), "onto", &rebuilt(Vec::new()));
+    assert_eq!(plain.len(), 2);
+    assert_eq!(plain[0], raced[0]);
+    assert_eq!(
+        plain[1],
+        PolicyEvent::CommitReplayed {
+            prepared_oid: String::from("prep"),
+            from_base: Some(String::from("old")),
+            onto: String::from("onto"),
+            oid: String::from("new"),
+        }
+    );
+    let unborn: Vec<PolicyEvent> = replayed_events(Vec::new(), "prep", &Base::Unborn, "onto", &rebuilt(vec![String::from("x-h")]));
+    assert_eq!(unborn.len(), 2);
+    assert!(matches!(&unborn[0], PolicyEvent::CommitReplayed { from_base: None, .. }));
+    assert_eq!(
+        unborn[1],
+        PolicyEvent::ReplayHeadersDropped {
+            prepared_oid: String::from("prep"),
+            oid: String::from("new"),
+            headers: vec![String::from("x-h")],
+        }
+    );
+}

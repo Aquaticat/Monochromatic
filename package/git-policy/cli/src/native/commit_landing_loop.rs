@@ -30,6 +30,7 @@ use super::policy_checks::ShippedChecks;
 use super::policy_engine::StageRequest;
 use super::policy_events::PolicyEvent;
 use super::replay_commit::{MergeStep, ReplayError, ReplayRequest, merge_replay, rebuild_replay};
+use super::replay_merge::ReplayedCommit;
 use super::replay_reservation::{LandingReservation, ReservationError};
 use super::repository_facts::RepositoryFacts;
 use super::transaction_journal::{AddedPath, Base, TransactionMode};
@@ -274,7 +275,7 @@ fn replay_candidate<F: RepositoryFacts>(
     raced: Vec<PolicyEvent>,
     onto: &str,
 ) -> Result<Result<Candidate, LoopOutcome>, TransactionStop> {
-    let replay: u64 = candidate.lost_races + 1;
+    let replay: u64 = lost_races_after(candidate.lost_races);
     let merge: Result<MergeStep, ReplayError> = merge_replay(&replay_request(input, replay, onto));
     let merged_tree: String = match merge {
         Err(error) => return Ok(Err(replay_failure(input.capture, onto, replay_error_text(&error)))),
@@ -346,31 +347,16 @@ fn replay_candidate<F: RepositoryFacts>(
         Ok(found) => found,
         Err(error) => return Ok(Err(replay_failure(input.capture, onto, replay_error_text(&error)))),
     };
-    let mut committed_paths: Vec<String> = input.committed_paths.clone();
-    for path in revalidated_paths {
-        if !committed_paths.contains(&path) {
-            committed_paths.push(path);
-        }
-    }
+    let committed_paths: Vec<String> = union_paths(input.committed_paths.as_slice(), revalidated_paths);
     let mut worktree_records: Vec<AddedPath> = retarget_records(input.invocation, index.as_path(), input.worktree_records.as_slice())?;
     worktree_records.extend(revalidated_hooks.worktree_records.iter().cloned());
-    let mut events: Vec<PolicyEvent> = raced;
-    events.push(PolicyEvent::CommitReplayed {
-        prepared_oid: input.prepared.oid.clone(),
-        from_base: match &input.capture.base {
-            Base::Commit(oid) => Some(oid.clone()),
-            Base::Unborn => None,
-        },
-        onto: String::from(onto),
-        oid: rebuilt.oid.clone(),
-    });
-    if !rebuilt.dropped_headers.is_empty() {
-        events.push(PolicyEvent::ReplayHeadersDropped {
-            prepared_oid: input.prepared.oid.clone(),
-            oid: rebuilt.oid.clone(),
-            headers: rebuilt.dropped_headers.clone(),
-        });
-    }
+    let mut events: Vec<PolicyEvent> = replayed_events(
+        raced,
+        input.prepared.oid.as_str(),
+        &input.capture.base,
+        onto,
+        &rebuilt,
+    );
     events.extend(revalidation_events);
     return Ok(Ok(Candidate {
         new_oid: rebuilt.oid,
@@ -387,6 +373,61 @@ fn replay_candidate<F: RepositoryFacts>(
         attempt: next_attempt_number(candidate.attempt),
         lost_races: lost_races_after(candidate.lost_races),
     }));
+}
+
+/// What:
+///  The paths of a replay: those already committed, then the ones revalidation added that are new.
+/// Why:
+///   A path both lists name is one path of the commit.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// [...new Set([...committedPaths, ...revalidatedPaths])]
+/// ```
+pub fn union_paths(committed: &[String], revalidated: Vec<String>) -> Vec<String> {
+    let mut paths: Vec<String> = committed.to_vec();
+    for path in revalidated {
+        if !paths.contains(&path) {
+            paths.push(path);
+        }
+    }
+    return paths;
+}
+
+/// What:
+///  The events of one replay: the lost race, the replayed commit, and the dropped signature headers when there are some.
+/// Why:
+///   The incumbent prints them in this order, and the headers event only when the rebuild dropped a header.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// [raceLost, commitReplayed, ...(dropped.length > 0 ? [replayHeadersDropped] : [])]
+/// ```
+pub fn replayed_events(
+    raced: Vec<PolicyEvent>,
+    prepared_oid: &str,
+    base: &Base,
+    onto: &str,
+    rebuilt: &ReplayedCommit,
+) -> Vec<PolicyEvent> {
+    let mut events: Vec<PolicyEvent> = raced;
+    events.push(PolicyEvent::CommitReplayed {
+        prepared_oid: String::from(prepared_oid),
+        from_base: match base {
+            Base::Commit(oid) => Some(oid.clone()),
+            Base::Unborn => None,
+        },
+        onto: String::from(onto),
+        oid: rebuilt.oid.clone(),
+    });
+    if !rebuilt.dropped_headers.is_empty() {
+        events.push(PolicyEvent::ReplayHeadersDropped {
+            prepared_oid: String::from(prepared_oid),
+            oid: rebuilt.oid.clone(),
+            headers: rebuilt.dropped_headers.clone(),
+        });
+    }
+    return events;
 }
 
 /// What:
