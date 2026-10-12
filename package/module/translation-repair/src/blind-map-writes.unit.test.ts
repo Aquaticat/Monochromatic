@@ -567,6 +567,11 @@ const ALLOWED_BLIND_SETS: ReadonlyMap<string, string> = new Map<string, string>(
     'one write per slice of a loop over the prepared slices, whose indexes `assertSliceIndexing` holds distinct',
   ],
   [
+    'corpus-run/pass-consistency-apply.ts#applyConsistency: outcomes.set(id,...)',
+    'the id names a group and a place, a replacement belongs to one slice, and the loop visits each slice once, so '
+    + 'each id is written once',
+  ],
+  [
     'corpus-run/pass-seated-pictures.ts#readPictures: priorReadings.set(name,...)',
     'a later reading of a picture supersedes the retained one on purpose, since it was read with the earlier as evidence',
   ],

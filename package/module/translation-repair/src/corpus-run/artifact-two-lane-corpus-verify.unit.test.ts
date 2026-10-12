@@ -29,6 +29,7 @@ import {
 import {
   ArtifactParseError,
   buildSettledTwoLaneArtifact,
+  NO_CONSISTENCY,
   NO_PAGE_ASSEMBLY,
   type DocumentLanesResult,
   parseSettledTwoLaneArtifact,
@@ -195,6 +196,7 @@ function writeAndRead(
    */
   const written = buildSettledTwoLaneArtifact({
     pageAssembly: NO_PAGE_ASSEMBLY,
+    consistency: NO_CONSISTENCY,
     entryId: 'CatEntry1',
     tip: 'a'.repeat(40,),
     pipelineDigest: DIGEST,

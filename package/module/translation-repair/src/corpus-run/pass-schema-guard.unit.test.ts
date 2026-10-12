@@ -155,6 +155,7 @@ function emptyVersionTwoArtifact(
     laneSelection: { kind: 'pending-human-decision', },
     consolidation: { kind: 'not-run', },
     pageAssembly: { trimmed: [], withdrawn: [], findings: [], },
+    consistency: { groups: [], slices: [], findings: [], },
   };
 }
 

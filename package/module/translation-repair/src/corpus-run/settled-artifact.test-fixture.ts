@@ -14,6 +14,7 @@ import {
   assertPipelineDigest,
   buildSettledTwoLaneArtifact,
   type DocumentLanesResult,
+  NO_CONSISTENCY,
   NO_PAGE_ASSEMBLY,
   type PipelineDigest,
   preparationIdentity,
@@ -241,6 +242,7 @@ export function settledArtifactOver(
 ): SettledArtifact {
   return buildSettledTwoLaneArtifact({
     pageAssembly: NO_PAGE_ASSEMBLY,
+    consistency: NO_CONSISTENCY,
     entryId,
     tip: 'a'.repeat(COMMIT_HEX_LENGTH,),
     pipelineDigest: FIXTURE_DIGEST,
@@ -327,6 +329,7 @@ export function settledArtifactOverRows(
 ): SettledArtifact {
   return buildSettledTwoLaneArtifact({
     pageAssembly: NO_PAGE_ASSEMBLY,
+    consistency: NO_CONSISTENCY,
     entryId,
     tip: 'a'.repeat(COMMIT_HEX_LENGTH,),
     pipelineDigest: FIXTURE_DIGEST,

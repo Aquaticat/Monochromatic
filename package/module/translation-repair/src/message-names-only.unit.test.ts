@@ -417,6 +417,9 @@ const NAMED_PARTS: Record<string, string> = {
  an oversight, and the next reader would have to re-derive each of these.
  */
 const WITHHELD: Record<string, string> = {
+  ConsistencyInvariantError: 'forwards each site\'s own sentence, which names indexes, counts and vocabulary '
+    + 'words and never text; unreachable by construction, and the consistency pass records only the class name '
+    + 'of a failure it contained',
   ArtifactProvenanceError: 'expected and observed carry whatever field disagreed, which may be text',
   PreparationIdentityError: 'quotes the string it refused, which a caller may have read from any file; the '
     + 'artifact reader refuses a stored identity by shape in its own words instead (ledger B34)',

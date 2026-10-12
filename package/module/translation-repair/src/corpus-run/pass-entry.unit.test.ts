@@ -431,6 +431,17 @@ const US_FORMS_ENTRY = {
 };
 
 /**
+ Entry whose two sections repeat one source sentence, worded differently by
+ the lanes, which the consistency pass puts to its judges.
+ */
+const REPEATED_SENTENCE_ENTRY = {
+  id: 'CatEntryRepeat',
+  sourceText: '## 第一节\n\n窗台上的阳光让小猫睡着了。\n\n## 第二节\n\n傍晚的时候，窗台上的阳光让小猫睡着了，小鱼干也笑了。\n',
+  targetText: '## Section one\n\nThe sunny window put the kitten to sleep.\n\n## Section two\n\n'
+    + 'In the evening, the sunlight on the sill lulled the kitten to sleep, and the fish snacks smiled too.\n',
+};
+
+/**
  Words only a consolidation producer's sheet carries, which tell it apart
  from a translator's under the one translation schema they share.
  */
@@ -1852,6 +1863,77 @@ await describe({
           findingRecorded: true,
           findingLogged: true,
           countLogged: true,
+        },);
+      },
+    },),
+    it({
+      name: 'SHIPS THE PAGE UNCHANGED WHEN EVERY CONSISTENCY JUDGE THROWS, recording the repeated sentence as asked '
+        + 'and unanswered: no winner, no changed slice, every place untouched',
+      fn: async () => {
+        await using dirs = await throwawayDirs();
+        /**
+         Schemas the entry's stages asked under.
+         */
+        const served: string[] = [];
+        await settleEntry({
+          client: entryClient({ served, failOnSchema: 'page_consistency', },),
+          entry: REPEATED_SENTENCE_ENTRY,
+          artifactsDir: dirs.artifactsDir,
+          publishDir: dirs.publishDir,
+          declinedDir: dirs.declinedDir,
+          sliceCacheDir: dirs.sliceCacheDir,
+          tip: 'a'.repeat(40,),
+          pipelineDigest: DIGEST,
+          pin: ENTRY_PIN,
+          outsideReads: NO_OUTSIDE_READS,
+          pictureSources: NO_PICTURE_SOURCES,
+          hardCapMs: HANG_STOP_MS,
+          baseSignal: new AbortController().signal,
+          overlap: PASS_FALLBACK_OVERLAP,
+          stageSettings: SCRIPTED_STAGE_SETTINGS,
+        },);
+        /**
+         Serialized artifact through production parser.
+         */
+        const artifact = parseSettledTwoLaneArtifact({
+          value: JSON.parse(await readFile(
+            join(
+              dirs.artifactsDir,
+              `${REPEATED_SENTENCE_ENTRY.id}.json`,
+            ),
+            'utf8',
+          ),),
+        },);
+        /**
+         Page the pass published.
+         */
+        const page = await readFile(
+          fixedPagePath({
+            publishDir: dirs.publishDir,
+            entryId: REPEATED_SENTENCE_ENTRY.id,
+          },),
+          'utf8',
+        );
+        /**
+         The one group the page repeats.
+         */
+        const group = nonNullishOrThrow(artifact.consistency.groups[0],);
+        expect({
+          asked: served.includes('page_consistency',),
+          groups: artifact.consistency.groups.length,
+          verdict: group.verdict.kind === 'asked' ? [group.verdict.usable, group.verdict.winner,] : group.verdict.kind,
+          outcomes: group.occurrences.map(function outcomeOf(occurrence,): string {
+            return occurrence.outcome;
+          },),
+          changed: artifact.consistency.slices.length,
+          shipped: page.length > 0,
+        },).toEqual({
+          asked: true,
+          groups: 1,
+          verdict: [0, { kind: 'none', reason: 'no-quorum', },],
+          outcomes: ['untouched', 'untouched',],
+          changed: 0,
+          shipped: true,
         },);
       },
     },),

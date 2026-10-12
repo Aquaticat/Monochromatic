@@ -87,6 +87,11 @@ function writeAndRead(
   },),) as Record<string, unknown>;
 
   /**
+   The artifact without the consistency section, which generations before
+   fifteen do not carry.
+   */
+  const { consistency: ignored, ...olderThanFifteen } = written;
+  /**
    Preparation record, with the named keys removed.
    */
   const preparation = Object.fromEntries(
@@ -97,7 +102,7 @@ function writeAndRead(
   );
   return parseSettledTwoLaneArtifact({
     value: {
-      ...written,
+      ...olderThanFifteen,
       artifactSchemaVersion: generation,
       preparation,
     },

@@ -239,6 +239,72 @@ function archiveKeptOver(
   },);
 }
 
+/**
+ The wording the consistency pass wrote at the slice every case reads.
+ */
+const CONSISTENT_NAP = 'The cat naps on the windowsill, as she always does.';
+
+/**
+ Final wording the polish approved at that slice, which the consistency pass stands over.
+ */
+const POLISHED_NAP = 'The cat dozes on the windowsill.';
+
+/**
+ What the consistency pass recorded: the one changed slice and nothing else.
+ */
+const CONSISTENCY_AT_ZERO = {
+  groups: [],
+  slices: [{ sliceIndex: 0, text: CONSISTENT_NAP, },],
+  findings: [],
+};
+
+/**
+ Builds a source whose contest chose the repair lane and whose consolidation
+ kept that choice and polished it, so the polish is the decider below any
+ consistency or page assembly record.
+
+ @returns Source the reader accepts
+
+ @example
+ ```ts
+ const source = polishedSource();
+ ```
+ */
+function polishedSource(): WouldShipSource {
+  return sourceWith({
+    consolidation: {
+      kind: 'settled',
+      slices: [
+        {
+          ...keptStanding({ terminal: 'gate-kept-standing', },),
+          polish: {
+            kind: 'settled',
+            baseText: REPAIR_NAP,
+            proposedText: POLISHED_NAP,
+            text: POLISHED_NAP,
+            changed: true,
+            refinersHeard: [SEAT_HYPER_OPENROUTER_VISION_EDITOR,],
+            contributors: [SEAT_HYPER_OPENROUTER_VISION_EDITOR,],
+            roundCount: 1,
+            findings: [],
+          },
+        },
+      ],
+    },
+    laneSelection: {
+      kind: 'contested',
+      slices: [
+        contestedWith({
+          verdict: {
+            kind: 'lane-won',
+            lane: 'repair',
+          },
+        },),
+      ],
+    },
+  },);
+}
+
 await describe({
   name: '',
   concurrency: 1,
@@ -327,6 +393,66 @@ await describe({
           expect(reading.kind,).toBe('wording',);
           expect(reading.kind === 'wording' ? reading.text : '',).toBe(polished,);
           expect(reading.kind === 'wording' ? reading.decidedBy : '',).toBe('polish',);
+        },
+      },),
+
+      it({
+        name: 'TAKES THE CONSISTENCY PASS\'S TEXT over the polish, the consolidation and the contest it was '
+          + 'settled after, and attributes it to the pass',
+        fn: async () => {
+          expect(firstReadingOf({
+            source: {
+              ...polishedSource(),
+              consistency: CONSISTENCY_AT_ZERO,
+            } as unknown as WouldShipSource,
+          },),).toEqual({
+            kind: 'wording',
+            text: CONSISTENT_NAP,
+            decidedBy: 'consistency',
+          },);
+        },
+      },),
+
+      it({
+        name: 'READS THE PAGE ASSEMBLY ABOVE THE CONSISTENCY PASS, since the assembly describes the page the '
+          + 'pass\'s text is composed into',
+        fn: async () => {
+          expect(firstReadingOf({
+            source: {
+              ...polishedSource(),
+              consistency: CONSISTENCY_AT_ZERO,
+              pageAssembly: {
+                trimmed: [{ sliceIndex: 0, replacementText: 'The cat naps[^1].', },],
+                withdrawn: [],
+                findings: [],
+              },
+            } as unknown as WouldShipSource,
+          },),).toEqual({
+            kind: 'wording',
+            text: 'The cat naps[^1].',
+            decidedBy: 'page-assembly',
+          },);
+        },
+      },),
+
+      it({
+        name: 'LEAVES THE POLISH IN FORCE at a slice the consistency pass did not change, however many other '
+          + 'slices it did',
+        fn: async () => {
+          expect(firstReadingOf({
+            source: {
+              ...polishedSource(),
+              consistency: {
+                groups: [],
+                slices: [{ sliceIndex: 7, text: CONSISTENT_NAP, },],
+                findings: [],
+              },
+            } as unknown as WouldShipSource,
+          },),).toEqual({
+            kind: 'wording',
+            text: POLISHED_NAP,
+            decidedBy: 'polish',
+          },);
         },
       },),
 
@@ -867,6 +993,42 @@ await describe({
             .toBe('The cat isn’t asleep on the sill.',);
           expect(agreedSlice.reading.kind === 'wording' ? agreedSlice.reading.text : '',)
             .toBe('The cat’s awake now.',);
+        },
+      },),
+
+      it({
+        name: 'RESTORES the archive\'s quote convention on the consistency pass\'s text as on any stage\'s, '
+          + 'so the page and the artifact agree on the apostrophe',
+        fn: async () => {
+          const source = {
+            comparison: [
+              rowWith({
+                sliceIndex: 0,
+                incumbentText: 'The cat’s asleep on the ledge.',
+              },),
+            ],
+            consolidation: { kind: 'not-run', },
+            laneSelection: { kind: 'pending-human-decision', },
+            consistency: {
+              groups: [],
+              slices: [{ sliceIndex: 0, text: 'The cat\'s asleep on the sill.', },],
+              findings: [],
+            },
+            preparation: {
+              archiveText: {
+                kind: 'stored',
+                text: 'The cat’s asleep on the ledge.\n',
+              },
+            },
+          } as unknown as WouldShipSource;
+
+          const slice = nonNullishOrThrow(wouldShipTextPerSlice({ artifact: source, },)[0],);
+
+          expect(slice.reading,).toEqual({
+            kind: 'wording',
+            text: 'The cat’s asleep on the sill.',
+            decidedBy: 'consistency',
+          },);
         },
       },),
 

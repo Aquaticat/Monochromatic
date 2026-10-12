@@ -30,6 +30,7 @@ import {
 import { spawnKeyless, } from '../child-environment.test-fixture.ts';
 import {
   buildSettledTwoLaneArtifact,
+  NO_CONSISTENCY,
   NO_PAGE_ASSEMBLY,
   carveSettled,
   CorpusReadError,
@@ -344,6 +345,7 @@ async function writeArtifact(
    */
   const serialized = JSON.stringify(buildSettledTwoLaneArtifact({
     pageAssembly: NO_PAGE_ASSEMBLY,
+    consistency: NO_CONSISTENCY,
     entryId: ENTRY_ID,
     tip: 'a'.repeat(40,),
     pipelineDigest: DIGEST,

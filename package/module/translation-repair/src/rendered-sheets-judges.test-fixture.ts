@@ -9,6 +9,7 @@
 
 import {
   buildAdjudicationMessages,
+  buildConsistencyMessages,
   buildDerivabilityMessages,
   buildIntroducedDefectMessages,
   buildRestorationJudgeMessages,
@@ -33,8 +34,9 @@ import {
 
 /**
  The repair lane's judges and the translate lane's retry: adjudication, the
- derivability and restoration probes, the introduced-defect check, and the
- translate writer asked again (ledger X17).
+ derivability and restoration probes, the introduced-defect check, the
+ translate writer asked again, and the page-level consistency judge asked about
+ a repeated sentence and about a refrain (ledger X17).
 
  @returns One entry per sheet
 
@@ -94,6 +96,83 @@ export function judgeSheets(): readonly RenderedSheet[] {
           identityContext: IDENTITY,
         },)
           .messages,
+      },),
+    },
+    {
+      name: 'page consistency, repeated sentence',
+      text: joined({
+        messages: buildConsistencyMessages({
+          subject: {
+            repeat: {
+              kind: 'maximal',
+              wording: '窗台上的阳光让小猫睡着了',
+            },
+            occurrences: [
+              {
+                sliceIndex: 0,
+                paragraph: '窗台上的阳光让小猫睡着了。',
+                markStart: 0,
+                markEnd: 12,
+                english: {
+                  kind: 'present',
+                  text: 'The sunny window put the kitten to sleep.',
+                },
+              },
+              {
+                sliceIndex: 2,
+                paragraph: '傍晚的时候，窗台上的阳光让小猫睡着了，小鱼干也笑了。',
+                markStart: 6,
+                markEnd: 18,
+                english: {
+                  kind: 'present',
+                  text: 'In the evening, the sunlight on the sill lulled the kitten to sleep, and the fish snacks smiled too.',
+                },
+              },
+            ],
+            identityContext: IDENTITY,
+            referenceContext: REFERENCES,
+          },
+        },),
+      },),
+    },
+    {
+      name: 'page consistency, refrain',
+      text: joined({
+        messages: buildConsistencyMessages({
+          subject: {
+            repeat: {
+              kind: 'refrain',
+              prefix: '所以这只猫一定是',
+              suffix: '的小宝贝',
+            },
+            occurrences: [
+              {
+                sliceIndex: 0,
+                paragraph: '所以这只猫一定是胖胖的小宝贝。',
+                markStart: 0,
+                markEnd: 14,
+                slotSource: '胖胖',
+                english: {
+                  kind: 'present',
+                  text: 'So this cat must be a chubby little treasure.',
+                },
+              },
+              {
+                sliceIndex: 1,
+                paragraph: '所以这只猫一定是懒懒的小宝贝。',
+                markStart: 0,
+                markEnd: 14,
+                slotSource: '懒懒',
+                english: {
+                  kind: 'present',
+                  text: 'So this cat is surely a lazy little treasure.',
+                },
+              },
+            ],
+            identityContext: IDENTITY,
+            referenceContext: REFERENCES,
+          },
+        },),
       },),
     },
     {

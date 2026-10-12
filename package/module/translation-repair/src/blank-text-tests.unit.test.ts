@@ -1381,6 +1381,10 @@ const HELD_TESTS: Readonly<Record<string, {
     tests: 1,
     why: SCANNER,
   },
+  'consistency-sheet.ts#buildConsistencyMessages': {
+    tests: 1,
+    why: ASSEMBLED,
+  },
   'corpus-run/ordinal-style.ts#renderOrdinal': {
     tests: 1,
     why: SENTINEL,

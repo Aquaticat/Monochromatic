@@ -33,6 +33,7 @@ import {
   buildSettledTwoLaneArtifact,
   collectTwoLaneShippedRegions,
   makeInsertionChunk,
+  NO_CONSISTENCY,
   NO_PAGE_ASSEMBLY,
   preparationIdentity,
   type ChunkPair,
@@ -354,6 +355,7 @@ async function censusOverOneEntry(): Promise<
     ),
     JSON.stringify(buildSettledTwoLaneArtifact({
       pageAssembly: NO_PAGE_ASSEMBLY,
+      consistency: NO_CONSISTENCY,
       entryId: ENTRY_ID,
       tip: 'a'.repeat(40,),
       pipelineDigest: DIGEST,
