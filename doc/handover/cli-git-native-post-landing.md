@@ -28,12 +28,28 @@ Incumbent sources:
 
 ## Status
 
-Evidence is recorded slice by slice below as each commit lands.
+In progress.
+The three modules and their tests are written; the host test run is waiting on the forbidden-strings build script (regex precompile) under host load.
+Nothing is committed beyond the skeleton yet.
 
 ## Progress
 
-Nothing committed yet.
+Modules written, not yet green:
+
+`landed_disposal` (shadow removal, directory removal, capture pruning, in that order).
+`post_commit_hook` (disabled check, author environment, hook lock, `hook run --ignore-missing post-commit` with inherited streams).
+`post_landing` (added-path copies, disposal, maintenance, post-commit, and the `PostLandingError` mapping).
+
+Each module is registered in `src/native/lib.rs` with its `*_tests.rs` file.
 
 ## Choices open to veto
 
-None recorded yet.
+The orchestration does not call `run_post_commit` (the post-commit policy gate and auto-push).
+That gate belongs to slice 9, needs the policy configuration the integrator holds, and exits 2 when blocked.
+The integrator runs it after `complete_landed_transaction` returns, which keeps the incumbent order.
+
+The post-commit child inherits stdio and is not wrapped in `SignalGuard::run_child`.
+The integrator wraps the whole command, as the signal relay contract describes.
+
+After a landing, a copy, disposal or hook failure exits 1 with its message, as the incumbent prints a thrown error.
+A maintenance failure is logged and never fails the commit.
