@@ -721,7 +721,7 @@ fn a_message_line_is_broken_again_as_a_whole() {
         vec![error(4, 9, long), error(10, 15, &word)],
     );
     let mut shaper = TextShaper::new();
-    let limit = 300.0;
+    let limit = 340.0;
     let blocks = annotations.assemble(
         SHOWN,
         &document,
@@ -754,13 +754,22 @@ fn a_message_line_is_broken_again_as_a_whole() {
             row.text
         );
     }
-    // The cut word stays whole: the pieces of the second message hold it without a blank inside.
-    let second: String = rows[first_end..]
-        .iter()
-        .map(|row| return row.text.as_str())
-        .collect();
-    assert!(
-        second.contains(&word),
-        "the cut word was split by a blank: {second}"
-    );
+    // The cut word stays whole: joined with a blank inside, the second message would break at that blank and leave a
+    // short row before its end, as the pieces of a word cut at 80 columns are one run of characters.
+    let second = &rows[first_end..];
+    // The first row stays the label before the word, which does not fit beside it; the rows after it hold the word.
+    assert!(second.len() >= 4, "the second message takes several rows");
+    for row in &second[1..second.len() - 1] {
+        let indent = if row.continued {
+            CONTINUATION_INDENT
+        } else {
+            0.0
+        };
+        let width = shaper.row_layout(&row.text, 1.0).full_width();
+        assert!(
+            indent + width >= limit * 0.9,
+            "`{}` is a short row of {width} px before the end of the cut word's message: the word was split by a blank",
+            row.text
+        );
+    }
 }
