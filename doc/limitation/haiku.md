@@ -350,3 +350,26 @@ Before trusting a Haiku measurement, read what the harness counts and ask for a 
 good number.
 Tell a Haiku agent to wait inside one blocking command and to run every task with its documented arguments,
 and read `git log`, the gate JSON and the unit state yourself before acting on its report.
+
+## Native commit-path post-landing lane (2026-10-11)
+
+### Goal
+
+Port the post-landing completion of the Rust Git policy wrapper (added-path copies, shadow and transaction removal,
+automatic maintenance, the `post-commit` hook under the hook lock, capture-record pruning).
+The lane's record is `doc/handover/cli-git-native-post-landing.md`.
+
+### Mistakes
+
+#### Went silent for almost an hour with a stale record
+
+After two commits (`136cf6d0fd`, `89d0fc7a0c`) the agent made no commit, no file change and no gate run for 57 minutes
+while the harness still listed it as running.
+Its evidence doc still said "Nothing is committed beyond the skeleton yet" and "Modules written, not yet green",
+so a reader of the doc alone would have believed the lane was a different, earlier state.
+The orchestrator stopped the agent and handed the lane to a Sonnet agent.
+
+### Lesson
+
+Check the dated state of the repository (`git log`, file modification times) against the evidence doc before trusting
+either; a Haiku agent's doc can lag its commits by hours.
