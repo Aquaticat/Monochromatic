@@ -685,6 +685,38 @@ class HostKeyboardModelTest {
         assertEquals(HostKeyCommand.BackFromSearch, hostKeyCommandFor(press))
     }
 
+    // What:     `fun escapeInWideSettingsGoesBack()` checks that Escape closes the two-pane Settings page.
+    // Why:      D110 closes the wide Settings page on Escape, even with the editor pane's text field focused.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // expect(commandFor("Escape", { route: "settings", layout: "unfolded", textFieldFocused: true })).toBe("back");
+    // ```
+    /** Escape on the unfolded Settings route goes back, and on the folded cover it does not. */
+    @Test
+    fun escapeInWideSettingsGoesBack() {
+        /** Unfolded Settings with the editor field focused. */
+        val wide: HostKeyContext = hostKeyPlayerContext().copy(
+            route = HostKeyRoute.SETTINGS,
+            layout = HostKeyLayout.UNFOLDED,
+            textFieldFocused = true,
+            rootFocused = false,
+        )
+        assertEquals(
+            HostKeyCommand.BackFromSearch,
+            hostKeyCommandFor(HostKeyPress(key = hostKeyPlainInput("Escape"), context = wide)),
+        )
+        assertEquals(
+            HostKeyCommand.Unhandled,
+            hostKeyCommandFor(
+                HostKeyPress(
+                    key = hostKeyPlainInput("Escape"),
+                    context = wide.copy(layout = HostKeyLayout.FOLDED_COVER),
+                ),
+            ),
+        )
+    }
+
     // What:     `fun escapeInSearchWithControlFocusGoesBack()` checks that Escape leaves Search from a result.
     // Why:      Escape leaves Search from any focus inside it, not only from the query field.
     //

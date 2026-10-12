@@ -305,6 +305,16 @@ class KeyboardMapTest {
             baseRequest().copy(key = "Escape", owner = ShortcutOwner.EDITOR, inSearch = true),
         )
         assertAction(
+            "Escape in the wide Settings page from an editor goes back",
+            ShortcutAction.BACK,
+            baseRequest().copy(key = "Escape", owner = ShortcutOwner.EDITOR, inWideSettings = true),
+        )
+        assertAction(
+            "Escape in the single-column Settings page from an editor stays with the editor",
+            ShortcutAction.OWNER,
+            baseRequest().copy(key = "Escape", owner = ShortcutOwner.EDITOR, inWideSettings = false),
+        )
+        assertAction(
             "row 25: Ctrl+Command+F is unbound",
             ShortcutAction.UNBOUND,
             baseRequest().copy(key = "f", ctrl = true, meta = true),

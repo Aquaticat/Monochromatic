@@ -121,4 +121,112 @@ class SettingsLayoutTest {
             settingsRowRadii(index = 2, count = 3),
         )
     }
+
+    // What:     `pageMarginsLeaveCardWidthOfPageMinusThirtyTwo` checks the card width on every measured stock page width.
+    // Why:      The stock captures measure a 16 dp margin on both sides, so a card is the page width minus 32 dp with no maximum.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // test("card is page minus 32", () => { ... });
+    // ```
+    /** Confirms the card width follows the page width with no maximum and never goes negative. */
+    @Test
+    fun pageMarginsLeaveCardWidthOfPageMinusThirtyTwo() {
+        assertEquals(288f, settingsCardWidthDp(pageWidthDp = 320f), 0f)
+        assertEquals(819.7f, settingsCardWidthDp(pageWidthDp = 851.7f), 0.001f)
+        assertEquals(1172f, settingsCardWidthDp(pageWidthDp = 1204f), 0f)
+        assertEquals(0f, settingsCardWidthDp(pageWidthDp = 20f), 0f)
+    }
+
+    // What:     `rowIsSeventyTwoDpWithTwoDpBetweenRowsAndSixteenBetweenGroups` checks the stock row height and spacing constants.
+    // Why:      The stock captures measure 72 dp rows, 2 dp between rows of a group and 16 dp between groups.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // test("stock row numbers", () => { ... });
+    // ```
+    /** Confirms the row height, the gap between rows and the gap between groups. */
+    @Test
+    fun rowIsSeventyTwoDpWithTwoDpBetweenRowsAndSixteenBetweenGroups() {
+        assertEquals(72f, SETTINGS_ROW_HEIGHT_DP, 0f)
+        assertEquals(2f, SETTINGS_ROW_GAP_DP, 0f)
+        assertEquals(16f, SETTINGS_GROUP_GAP_DP, 0f)
+        assertEquals(16f, SETTINGS_PAGE_MARGIN_DP, 0f)
+    }
+
+    // What:     `iconCircleIsFortyDpAtThirtyTwoAndTitleAtEightyFour` checks the icon circle size and the x positions of the circle and the title.
+    // Why:      The stock captures put a 40 dp circle at x = 32 dp and the title at x = 84 dp.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // test("icon at 32, title at 84", () => { ... });
+    // ```
+    /** Confirms the circle diameter, its left edge and the title's left edge from the page edge. */
+    @Test
+    fun iconCircleIsFortyDpAtThirtyTwoAndTitleAtEightyFour() {
+        assertEquals(40f, SETTINGS_ICON_CIRCLE_DP, 0f)
+        assertEquals(32f, settingsIconLeftDp(), 0f)
+        assertEquals(84f, settingsTitleLeftDp(), 0f)
+    }
+
+    // What:     `iconCircleIsCenteredInASeventyTwoDpRow` checks the circle's top inside a row and the glyph inside the circle.
+    // Why:      A centered circle sits 16 dp from the top and bottom of a 72 dp row, and the 24 dp glyph is centered in it.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // test("icon centered", () => { ... });
+    // ```
+    /** Confirms the circle's top offset in a row of the stock height and the glyph size inside it. */
+    @Test
+    fun iconCircleIsCenteredInASeventyTwoDpRow() {
+        assertEquals(16f, settingsIconTopDp(rowHeightDp = SETTINGS_ROW_HEIGHT_DP), 0f)
+        assertEquals(24f, SETTINGS_ICON_GLYPH_DP, 0f)
+        assertEquals(8f, (SETTINGS_ICON_CIRCLE_DP - SETTINGS_ICON_GLYPH_DP) / 2f, 0f)
+    }
+
+    // What:     `groupHeightIsRowsPlusGaps` checks the height of groups of zero, one and two rows.
+    // Why:      A group is its rows at 72 dp plus 2 dp between each pair, and an empty group has no height.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // test("group height", () => { ... });
+    // ```
+    /** Confirms the group height for zero, one and two rows. */
+    @Test
+    fun groupHeightIsRowsPlusGaps() {
+        assertEquals(0f, settingsGroupHeightDp(rowCount = 0), 0f)
+        assertEquals(72f, settingsGroupHeightDp(rowCount = 1), 0f)
+        assertEquals(146f, settingsGroupHeightDp(rowCount = 2), 0f)
+    }
+
+    // What:     `selectedRowIsAPillWhereverItSits` checks the radii of a chosen row at each position of a group.
+    // Why:      The stock two-pane Settings fills the chosen row as a pill of about 21.3 dp on all four corners.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // test("selected row: 21.3 on all corners", () => { ... });
+    // ```
+    /** Confirms the chosen row takes the selection radius on every corner, first, middle or last. */
+    @Test
+    fun selectedRowIsAPillWhereverItSits() {
+        /** Radii expected for any chosen row. */
+        val pill = SettingsRowRadii(topDp = SETTINGS_SELECTED_RADIUS_DP, bottomDp = SETTINGS_SELECTED_RADIUS_DP)
+        assertEquals(21.3f, SETTINGS_SELECTED_RADIUS_DP, 0f)
+        assertEquals(pill, settingsRowRadii(index = 0, count = 3, selected = true))
+        assertEquals(pill, settingsRowRadii(index = 1, count = 3, selected = true))
+        assertEquals(pill, settingsRowRadii(index = 2, count = 3, selected = true))
+    }
+
+    // What:     `paneFadeIsOneHundredFiftyMilliseconds` checks the cross-fade time.
+    // Why:      The editor pane fades for about 150 ms when a left row is chosen.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // test("fade is 150 ms", () => { ... });
+    // ```
+    /** Confirms the cross-fade time of the editor pane. */
+    @Test
+    fun paneFadeIsOneHundredFiftyMilliseconds() {
+        assertEquals(150, SETTINGS_PANE_FADE_MILLIS)
+    }
 }

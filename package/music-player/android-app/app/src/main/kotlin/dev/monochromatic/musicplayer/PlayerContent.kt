@@ -373,8 +373,9 @@ private fun seamLine(color: Color) {
     )
 }
 
-// What:     `@Composable private fun canvasColor(dark: Boolean): Color` picks the screen canvas for the theme.
-// Why:      Dark mode paints true black, and light mode paints the flat Material container role.
+// What:     `@Composable internal fun canvasColor(dark: Boolean): Color` picks the screen canvas for the theme.
+// Why:      Dark mode paints true black, and light mode paints the flat Material container role; Settings
+//           reads the same canvas so every page is one color.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -382,7 +383,7 @@ private fun seamLine(color: Color) {
 // ```
 /** Returns the true-black canvas in dark mode and the flat Material container in light mode. */
 @Composable
-private fun canvasColor(dark: Boolean): Color {
+internal fun canvasColor(dark: Boolean): Color {
     if (dark) {
         return TRUE_BLACK
     }

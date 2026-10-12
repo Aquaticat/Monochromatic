@@ -130,6 +130,14 @@ Use durable decisions and runbooks for architecture and maintenance context:
 - [Peak-sweep parallelism decision](DECISION.peak-sweep-parallelism.md)
 - [Page-control style runbook](../../../doc/runbook/music-player-page-control-styles.md)
 
+## Settings icons
+
+The Settings rows carry the Material Symbols `queue_music` and `play_circle` icons,
+embedded as vector path data in [`SettingsIcons.kt`](app/src/main/kotlin/dev/monochromatic/musicplayer/SettingsIcons.kt).
+The icons are Apache License 2.0 material from `google/material-design-icons`,
+and the license text is `LICENSES/Apache-2.0.txt` at the repository root.
+The source files, commit and style are named in the [package README](../README.md#third-party-icons).
+
 ## Page-control default
 
 Chromium-like tabs are the first-install page-control style.

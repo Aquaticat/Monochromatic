@@ -30,6 +30,7 @@ import dev.monochromatic.musicplayer.core.TemplatePreviewRow
 // ```
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -315,10 +316,22 @@ internal fun templateEditorParameterSpan(help: TemplateHelp): IntRange? {
 // ```ts
 // function TemplateEditor(props: { state: State; actions: Actions; modifier?: Modifier }): UIElement;
 // ```
-/** Draws the template editor for the open template: header, preview, template field, field list and reset. */
+/**
+ * Draws the template editor for the open template: header, preview, template field, field list and reset,
+ * on the player's canvas color.
+ * [embedded] draws it as the right pane of the wide Settings page: its header has no Back target (Back closes
+ * Settings) and matches the Settings header's height, and [startInset] moves every text start away from the
+ * pane's left edge so text keeps clear of the crease.
+ */
 @Composable
-fun templateEditor(state: TemplateEditorState, actions: TemplateEditorActions, modifier: Modifier = Modifier) {
-    Column(modifier = modifier.fillMaxSize().background(MaterialTheme.colorScheme.surface)) {
+fun templateEditor(
+    state: TemplateEditorState,
+    actions: TemplateEditorActions,
+    modifier: Modifier = Modifier,
+    embedded: Boolean = false,
+    startInset: Dp = 0.dp,
+) {
+    Column(modifier = modifier.fillMaxSize().background(canvasColor(dark = isSystemInDarkTheme()))) {
         // What:     `Box` with `windowInsetsTopHeight` is an empty block as tall as the status bar.
         // Why:      The page draws edge to edge, so its header starts below the clock and icons.
         //
@@ -327,8 +340,16 @@ fun templateEditor(state: TemplateEditorState, actions: TemplateEditorActions, m
         // <div style={{ height: 'env(safe-area-inset-top)' }}/>
         // ```
         Box(modifier = Modifier.fillMaxWidth().windowInsetsTopHeight(WindowInsets.statusBars))
-        destinationHeader(title = state.kind.label, backDescription = "Back to Settings", onBack = actions.onBack)
-        HorizontalDivider(thickness = DESTINATION_HAIRLINE, color = MaterialTheme.colorScheme.outline)
+        destinationHeader(
+            title = state.kind.label,
+            backDescription = "Back to Settings",
+            onBack = if (embedded) null else actions.onBack,
+            height = if (embedded) SETTINGS_HEADER_HEIGHT else HEADER_HEIGHT,
+            startInset = startInset,
+        )
+        if (!embedded) {
+            HorizontalDivider(thickness = DESTINATION_HAIRLINE, color = MaterialTheme.colorScheme.outline)
+        }
         // What:     `imePadding()` before `verticalScroll` shrinks the scrolling window while the keyboard is open.
         // Why:      The platform then scrolls a focused field back into view, so the lines under it stay reachable.
         //
@@ -338,7 +359,7 @@ fun templateEditor(state: TemplateEditorState, actions: TemplateEditorActions, m
         // ```
         Column(
             modifier = Modifier.weight(1f).fillMaxWidth().imePadding().verticalScroll(rememberScrollState())
-                .windowInsetsPadding(WindowInsets.navigationBars),
+                .windowInsetsPadding(WindowInsets.navigationBars).padding(start = startInset),
         ) {
             destinationSectionHeading(text = "Preview", bottom = DESTINATION_HEADING_GAP)
             /** The preview rows the state yields from the last template that applied. */
@@ -383,32 +404,44 @@ fun templateEditor(state: TemplateEditorState, actions: TemplateEditorActions, m
     }
 }
 
-// What:     `@Composable internal fun destinationHeader(...)` draws the header shared by Settings and the editor.
-// Why:      Both destinations read the same way and return the same way, so they share one header.
+// What:     `@Composable internal fun destinationHeader(...)` draws the editor's header row.
+// Why:      The editor page returns to Settings through its Back target, while the editor pane of the wide Settings
+//           page draws the same row without one.
 //
 // In TS you'd write (pseudocode):
 // ```ts
 // function DestinationHeader(props: { title: string; backDescription: string; onBack(): void }): UIElement;
 // ```
-/** Draws the header band with a Back target and the destination's title. */
+/**
+ * Draws the header row on the canvas, with no band fill: a Back target when [onBack] is not null, then the
+ * destination's title. [startInset] is the extra start inset that keeps the content clear of the crease.
+ */
 @Composable
-internal fun destinationHeader(title: String, backDescription: String, onBack: () -> Unit) {
+internal fun destinationHeader(
+    title: String,
+    backDescription: String,
+    onBack: (() -> Unit)?,
+    height: Dp,
+    startInset: Dp,
+) {
     Row(
-        modifier = Modifier.fillMaxWidth().height(HEADER_HEIGHT)
-            .background(MaterialTheme.colorScheme.surfaceContainerHigh)
-            .padding(start = DESTINATION_SIDE_INSET, end = DESTINATION_SIDE_INSET),
+        modifier = Modifier.fillMaxWidth().height(height)
+            .padding(start = DESTINATION_SIDE_INSET + startInset, end = DESTINATION_SIDE_INSET),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        IconButton(onClick = onBack, modifier = Modifier.size(DESTINATION_TOUCH_TARGET)) {
-            Icon(
-                imageVector = DESTINATION_BACK_ICON,
-                contentDescription = backDescription,
-                tint = MaterialTheme.colorScheme.onSurface,
-            )
+        if (onBack != null) {
+            IconButton(onClick = onBack, modifier = Modifier.size(DESTINATION_TOUCH_TARGET)) {
+                Icon(
+                    imageVector = DESTINATION_BACK_ICON,
+                    contentDescription = backDescription,
+                    tint = MaterialTheme.colorScheme.onSurface,
+                )
+            }
         }
         Text(
             text = title,
-            modifier = Modifier.weight(1f).padding(start = DESTINATION_SMALL_GAP).semantics { heading() },
+            modifier = Modifier.weight(1f).padding(start = if (onBack != null) DESTINATION_SMALL_GAP else 0.dp)
+                .semantics { heading() },
             color = MaterialTheme.colorScheme.onSurface,
             style = MaterialTheme.typography.titleLarge,
             maxLines = 1,

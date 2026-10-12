@@ -631,50 +631,20 @@ import dev.monochromatic.musicplayer.core.searchStatusLine
 // ```ts
 // import { SEARCH_FIELD_LABEL, SEARCH_BACK_LABEL } from "dev.monochromatic.musicplayer/core/SearchPageModel";
 // ```
+import dev.monochromatic.musicplayer.core.CREASE_FLOOR_WIDTH_PX
 import dev.monochromatic.musicplayer.core.SEARCH_BACK_LABEL
 import dev.monochromatic.musicplayer.core.SEARCH_CLEAR_LABEL
 import dev.monochromatic.musicplayer.core.SEARCH_FIELD_LABEL
 
-// What:     `private const val SEARCH_CREASE_WIDTH_MM: Float = 7.5f` is the visible crease width.
-// Why:      E2 measured this width as the crease the information must clear.
+// What:     `private const val SEARCH_CREASE_HALF_PX: Float` is half the crease in physical pixels.
+// Why:      The clear zone on each side of the fold is half the crease floor, which Settings shares through `core`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// const SEARCH_CREASE_WIDTH_MM = 7.5;
-// ```
-/** Visible crease width of the Fold inner panel in millimeters (E2). */
-private const val SEARCH_CREASE_WIDTH_MM: Float = 7.5f
-
-// What:     `private const val SEARCH_PANEL_WIDTH_MM: Float = 141.08f` is the active inner panel width.
-// Why:      The crease is converted from millimeters to pixels through the panel's measured width.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// const SEARCH_PANEL_WIDTH_MM = 141.08;
-// ```
-/** Active width of the Fold inner panel in millimeters, from the published diagonal (E2). */
-private const val SEARCH_PANEL_WIDTH_MM: Float = 141.08f
-
-// What:     `private const val SEARCH_PANEL_WIDTH_PX: Float = 2076f` is the inner panel width in pixels.
-// Why:      Pairs with `SEARCH_PANEL_WIDTH_MM` to turn the millimeter crease into physical pixels.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// const SEARCH_PANEL_WIDTH_PX = 2076;
-// ```
-/** Width of the Fold inner panel in physical pixels (E2). */
-private const val SEARCH_PANEL_WIDTH_PX: Float = 2076f
-
-// What:     `private val SEARCH_CREASE_HALF_PX: Float` is half the crease in physical pixels.
-// Why:      The clear zone on each side of the fold is half the crease, measured in physical pixels.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// const SEARCH_CREASE_HALF_PX = (7.5 / 141.08) * 2076 / 2;
+// const SEARCH_CREASE_HALF_PX = CREASE_FLOOR_WIDTH_PX / 2;
 // ```
 /** Half of the crease width in physical pixels, which is the clear zone on each side of the fold. */
-private const val SEARCH_CREASE_HALF_PX: Float =
-    SEARCH_CREASE_WIDTH_MM / SEARCH_PANEL_WIDTH_MM * SEARCH_PANEL_WIDTH_PX / 2f
+private const val SEARCH_CREASE_HALF_PX: Float = CREASE_FLOOR_WIDTH_PX / 2f
 
 // What:     `private val SEARCH_EDGE_INSET: Dp = 16.dp` is the page's standard edge inset.
 // Why:      Header and row content start at the same 16dp inset on the cover and beside the crease.
