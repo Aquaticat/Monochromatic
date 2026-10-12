@@ -43,7 +43,7 @@ path = "src/lib.rs"
 # each platform enables it when it adopts the shared cache (desktop already carries these
 # crates, and the Android cross-compile of `turso` was proven by the Stage-zero spike).
 [features]
-service = ["dep:turso", "dep:tokio"]
+service = ["dep:turso", "dep:tokio", "dep:branches"]
 
 [dependencies]
 # The logging facade. Non-optional (unlike the cache crates below) so the pure meter,
@@ -64,3 +64,9 @@ tokio = { version = "1", features = ["rt", "sync", "macros"], optional = true }
 # Pinned to the same major 0.6 the desktop cache uses, `default-features = false` to drop
 # the full-text and mimalloc defaults. Optional so it is absent from the meter-only build.
 turso = { version = "0.6", default-features = false, optional = true }
+
+# `turso_core` depends on `branches` without its `std` feature. Without `std`, `branches::abort` calls
+# `core::intrinsics::abort` on nightly, which the newest nightly removed (E0425 and E0308 in branches 0.4.4 and
+# 0.4.6). Enabling `std` here, through feature unification, makes it call `std::process::abort` on every channel.
+# Drop this line once turso_core builds on the newest nightly by itself.
+branches = { version = "0.4.6", default-features = false, features = ["std"], optional = true }

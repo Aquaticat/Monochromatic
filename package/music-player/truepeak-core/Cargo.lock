@@ -1617,6 +1617,7 @@ dependencies = [
 name = "truepeak-core"
 version = "0.1.0"
 dependencies = [
+ "branches",
  "tokio",
  "tracing",
  "turso",
