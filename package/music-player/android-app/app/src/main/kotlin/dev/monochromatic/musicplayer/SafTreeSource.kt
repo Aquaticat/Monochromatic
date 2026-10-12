@@ -108,6 +108,7 @@ import android.util.Log
 // import { BatchEmitGate } from "./core/BatchEmitGate";
 // ```
 import dev.monochromatic.musicplayer.core.LibraryDeltaGate
+import dev.monochromatic.musicplayer.core.TrackSignatures
 
 // What:     `import dev.monochromatic.musicplayer.core.LIBRARY_BATCH_SIZE` imports the
 //           app's own top-level `Int` constant (the shared streaming threshold, around
@@ -287,6 +288,8 @@ object SafTreeSource {
         // Document.COLUMN_MIME_TYPE,
         // ```
         Document.COLUMN_MIME_TYPE,
+        Document.COLUMN_SIZE,
+        Document.COLUMN_LAST_MODIFIED,
     )
 
     // What:     `private data class Frame(val documentId: String, val prefix: String)`
@@ -310,7 +313,7 @@ object SafTreeSource {
     // What:     `private data class ChildRow(...)` stores one non-null SAF row.
     // Why:      Null ids or names are unusable, so cursor decoding happens once before row handling.
     /** Non-null child document row read from a SAF cursor. */
-    private data class ChildRow(val id: String, val name: String, val mimeType: String?)
+    private data class ChildRow(val id: String, val name: String, val mimeType: String?, val signature: Long)
 
     // What:     `suspend fun query(resolver, treeUri, onBatch): List<Track> = withContext(Dispatchers.IO) { ... }`
     //           declares the one public entry point. `suspend` marks it a coroutine
@@ -605,6 +608,23 @@ object SafTreeSource {
         tracks.sortedWith { left, right -> compareByCodePoint(left.displayPath, right.displayPath) }
     }
 
+    // What:     `private fun signatureOfRow(cursor)` reads the size and modification time of the current row.
+    // Why:      The analysis compares them with its ledger to find a replaced or edited file; a provider that reports
+    //           neither gives zero, which leaves the file identified by its URI alone.
+    /** Signature of the current cursor row's file, or 0 when the provider reports neither size nor time. */
+    private fun signatureOfRow(cursor: android.database.Cursor): Long {
+        /** Column of the size, or -1 when the provider has none. */
+        val sizeColumn: Int = cursor.getColumnIndex(Document.COLUMN_SIZE)
+        /** Column of the modification time, or -1 when the provider has none. */
+        val modifiedColumn: Int = cursor.getColumnIndex(Document.COLUMN_LAST_MODIFIED)
+        /** File size in bytes, or 0 when unknown. */
+        val size: Long = if (sizeColumn >= 0 && !cursor.isNull(sizeColumn)) cursor.getLong(sizeColumn) else 0L
+        /** Modification time in milliseconds, or 0 when unknown. */
+        val modified: Long =
+            if (modifiedColumn >= 0 && !cursor.isNull(modifiedColumn)) cursor.getLong(modifiedColumn) else 0L
+        return TrackSignatures.signatureOf(sizeBytes = size, modifiedMs = modified)
+    }
+
     // What:     `private fun childRowOf(...)` converts the current cursor row to a child record.
     // Why:      The scan loop can use one `continue` for unusable rows instead of one per column.
     /** Current cursor row as a non-null child record, or null when id/name is missing. */
@@ -621,7 +641,12 @@ object SafTreeSource {
         return if (childId == null || name == null) {
             null
         } else {
-            ChildRow(id = childId, name = name, mimeType = cursor.getString(mimeColumn))
+            ChildRow(
+                id = childId,
+                name = name,
+                mimeType = cursor.getString(mimeColumn),
+                signature = signatureOfRow(cursor),
+            )
         }
     }
 
@@ -964,6 +989,7 @@ object SafTreeSource {
                         // tracks.push({ uri: documentUri.toString(), displayPath: childPath });
                         // ```
                         tracks.add(Track(uri = documentUri.toString(), displayPath = childPath))
+                        TrackSignatures.record(documentUri.toString(), child.signature)
                         // What:     `if (onBatch != null) { val batch = gate.nextBatch(tracks); if (batch != null) {
                         //           onBatch(batch) } }`
                         //           streams a batch when one is requested. `gate.nextBatch(tracks)`

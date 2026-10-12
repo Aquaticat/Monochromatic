@@ -180,9 +180,9 @@ private fun trackFieldsFor(displayPath: String, measure: TrackMeasure?): TrackFi
 // }
 // ```
 /** Trimmed template text for one track, or null when the template is refused or shows only blanks. */
-private fun supportingLineFor(template: String, fields: TrackFields): String? {
+private fun supportingLineFor(template: ParsedTemplate, fields: TrackFields): String? {
     /** Outcome of evaluating the template for this track. */
-    val result: TemplateResult = evaluateTemplate(template, fields)
+    val result: TemplateResult = evaluateParsedTemplate(template, fields)
     if (result !is TemplateResult.Shown) {
         return null
     }
@@ -207,7 +207,7 @@ private fun supportingLineFor(template: String, fields: TrackFields): String? {
 private fun rowFor(
     row: FolderTrackRow,
     currentIndexInLibrary: Int?,
-    template: String,
+    template: ParsedTemplate,
     measuresByIndex: Map<Int, TrackMeasure>,
 ): TrackRowModel {
     /** Display path of the track, which supplies the title and the template fields. */
@@ -235,7 +235,7 @@ private fun rowFor(
 private fun entryFor(
     item: FolderListItem,
     currentIndexInLibrary: Int?,
-    template: String,
+    template: ParsedTemplate,
     measuresByIndex: Map<Int, TrackMeasure>,
 ): TrackListEntry =
     when (item) {
@@ -260,4 +260,8 @@ fun trackListEntries(
     currentIndexInLibrary: Int?,
     template: String = DEFAULT_TRACK_TEMPLATE,
     measuresByIndex: Map<Int, TrackMeasure> = emptyMap(),
-): List<TrackListEntry> = folder.items.map { item -> entryFor(item, currentIndexInLibrary, template, measuresByIndex) }
+): List<TrackListEntry> {
+    /** The row template split once for every row of the folder. */
+    val parsed: ParsedTemplate = ParsedTemplateCache.parsedFor(template)
+    return folder.items.map { item -> entryFor(item, currentIndexInLibrary, parsed, measuresByIndex) }
+}

@@ -118,6 +118,7 @@ import dev.monochromatic.musicplayer.core.isAppleDoubleSidecar
 // import { BatchEmitGate } from "./core/BatchEmitGate";
 // ```
 import dev.monochromatic.musicplayer.core.LibraryDeltaGate
+import dev.monochromatic.musicplayer.core.TrackSignatures
 
 // What:     Imports the top-level `Int` constant `LIBRARY_BATCH_SIZE` (the shared streaming
 //           threshold, around 128) from `core`.
@@ -190,6 +191,9 @@ object MediaStoreSource {
      * source and use.
      */
     private const val SOURCE_TAG: String = "MediaStoreSource"
+
+    /** Milliseconds in one second, because MediaStore reports the modification time in seconds. */
+    private const val MILLIS_PER_SECOND: Long = 1000L
 
     // What:     `@Suppress("DEPRECATION")` is an annotation (metadata attached to the next
     //           declaration), not a comment. It tells the Kotlin compiler "do not warn me
@@ -433,6 +437,10 @@ object MediaStoreSource {
              * explain its source and use.
              */
             val idColumn: Int = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media._ID)
+            /** Column of the file size, which with the modification time tells an edited file from a measured one. */
+            val sizeColumn: Int = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.SIZE)
+            /** Column of the modification time in seconds. */
+            val modifiedColumn: Int = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DATE_MODIFIED)
             // What:     `val nameColumn: Int = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DISPLAY_NAME)`
             //           looks up the column index of the file-name column, throwing if absent.
             // Why:      We need the file-name column's position to read each row's name.
@@ -593,6 +601,13 @@ object MediaStoreSource {
                 // tracks.push(new Track(uri, displayPath)); // or { uri, displayPath }
                 // ```
                 tracks.add(Track(uri = uri, displayPath = displayPath))
+                TrackSignatures.record(
+                    uri,
+                    TrackSignatures.signatureOf(
+                        sizeBytes = cursor.getLong(sizeColumn),
+                        modifiedMs = cursor.getLong(modifiedColumn) * MILLIS_PER_SECOND,
+                    ),
+                )
                 // What:     `if (onBatch != null) { val batch = gate.nextBatch(tracks); if (batch != null) {
                 //           onBatch(batch) } }`
                 //           streams a batch when one is requested. `gate.nextBatch(tracks)` returns a
@@ -666,6 +681,8 @@ object MediaStoreSource {
     private fun mediaStoreProjection(hasRelativePath: Boolean): Array<String> = buildList {
         add(MediaStore.Audio.Media._ID)
         add(MediaStore.Audio.Media.DISPLAY_NAME)
+        add(MediaStore.Audio.Media.SIZE)
+        add(MediaStore.Audio.Media.DATE_MODIFIED)
         if (hasRelativePath) {
             add(MediaStore.Audio.Media.RELATIVE_PATH)
         } else {

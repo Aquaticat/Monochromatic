@@ -34,8 +34,8 @@ private object Coverage {
     /** Answers that contain a folder result. */
     var folders = 0
 
-    /** Answers that contain a folder result named Unfiled. */
-    var unfiledFolders = 0
+    /** Answers that contain a loose root-level track, whose folder is its virtual letter. */
+    var looseTracks = 0
 
     /** Answers to queries with more than one term. */
     var multiTerm = 0
@@ -56,7 +56,7 @@ private object Coverage {
     fun reset() {
         truncated = 0
         folders = 0
-        unfiledFolders = 0
+        looseTracks = 0
         multiTerm = 0
         separatorOnly = 0
         ties = 0
@@ -78,7 +78,7 @@ private fun assertSameAnswer(index: SearchIndex, tracks: List<Track>, query: Str
         if (expected.truncated) Coverage.truncated += 1
         val folders = expected.items.filter { it.kind == SearchResultKind.FOLDER }
         if (folders.isNotEmpty()) Coverage.folders += 1
-        if (folders.any { it.name == UNFILED_FOLDER_NAME }) Coverage.unfiledFolders += 1
+        if (expected.items.any { it.kind == SearchResultKind.TRACK && it.parentContext == null }) Coverage.looseTracks += 1
         if (expected.items.zipWithNext().any { (a, b) -> a.tier == b.tier && a.name.length == b.name.length }) Coverage.ties += 1
     }
 }
@@ -87,7 +87,7 @@ private fun assertSameAnswer(index: SearchIndex, tracks: List<Track>, query: Str
 class SearchIndexParityTest {
     /**
      * Compares random queries on libraries of several sizes built in a single batch, then checks that the queries
-     * reached truncation, ties, folders, a listed Unfiled folder, several terms and separator-only terms.
+     * reached truncation, ties, folders, loose tracks, several terms and separator-only terms.
      */
     @Test
     fun randomLibrariesMatchTheOracle() {
@@ -106,7 +106,7 @@ class SearchIndexParityTest {
         }
         assertTrue("truncated answers: ${Coverage.truncated}", Coverage.truncated > 0)
         assertTrue("answers with folders: ${Coverage.folders}", Coverage.folders > 0)
-        assertTrue("answers with an Unfiled folder: ${Coverage.unfiledFolders}", Coverage.unfiledFolders > 0)
+        assertTrue("answers with loose tracks: ${Coverage.looseTracks}", Coverage.looseTracks > 0)
         assertTrue("multi-term answers: ${Coverage.multiTerm}", Coverage.multiTerm > 0)
         assertTrue("separator-only answers: ${Coverage.separatorOnly}", Coverage.separatorOnly > 0)
         assertTrue("answers with ties: ${Coverage.ties}", Coverage.ties > 0)
@@ -164,9 +164,9 @@ class SearchIndexParityTest {
         }
     }
 
-    /** The rules that list a folder named like the root-level group match the old folder index, one library at a time. */
+    /** Loose tracks and folders named like a letter or like the old group match the old folder index, one at a time. */
     @Test
-    fun unfiledRulesMatchTheOracle() {
+    fun looseTrackLettersMatchTheOracle() {
         val libraries = listOf(
             listOf("./Unfiled/x.flac"),
             listOf("Unfiled/x.flac"),
@@ -179,12 +179,15 @@ class SearchIndexParityTest {
             listOf("Unfiled/.", "Other/x.flac"),
             listOf("Unfiled", "Unfiled/z.flac"),
             listOf("unfiled/x.flac"),
+            listOf("\u00c9milie.flac", "Eno.flac", "echo.flac", "E/x.flac"),
+            listOf("\u521d\u97f3.flac", "1 song.flac", "\u00d8.flac", "\u00df.flac"),
+            listOf("A/x.flac", "Abba.flac", "aaa.flac"),
         )
         for (paths in libraries) {
             val tracks = paths.mapIndexed { position, path -> Track("u$position", path) }
             val index = SearchIndex()
             index.appendPaths(paths, tracks.map { it.uri })
-            for (query in listOf("unf", "unfiled", "x", "u", "z", "other")) {
+            for (query in listOf("unf", "unfiled", "x", "u", "z", "other", "e", "emilie", "a", "e ")) {
                 assertSameAnswer(index, tracks, query, "library $paths")
             }
         }

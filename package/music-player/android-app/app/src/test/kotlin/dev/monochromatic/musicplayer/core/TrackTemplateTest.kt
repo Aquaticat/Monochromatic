@@ -206,10 +206,16 @@ class TrackTemplateTest {
         assertShows(text = "\$tf(4000, h:mm:ss)\$", track = analysed, expected = "1:06:40")
         assertShows(text = "\$tf(4000, hh:mm:ss)\$", track = analysed, expected = "01:06:40")
         assertShows(text = "\$tf(59.9, m:ss)\$", track = analysed, expected = "0:59")
-        assertShows(text = "\$tf(mi(len), \"m min\")\$", track = analysed, expected = "4 4in")
+        // TE5 (desktop parity): a letter outside apostrophes that is not h, m or s is a mistake, not text.
+        assertRefuses(text = "\$tf(mi(len), \"m min\")\$", lines = listOf("tf: unknown format letter i"))
+        assertRefuses(text = "\$tf(mi(len), \"MM:SS\")\$", lines = listOf("tf: unknown format letter M"))
+        assertRefuses(text = "\$tf(mi(len), q:q)\$", lines = listOf("tf: unknown format letter q"))
+        assertRefuses(text = "\$tf(mi(len), q:q)\$", lines = listOf("tf: unknown format letter q"), track = waiting)
+        assertShows(text = "\$tf(mi(len), \"m'.'ss\")\$", track = analysed, expected = "4.35")
+        assertShows(text = "\$tf(mi(len), \"m / ss\")\$", track = analysed, expected = "4 / 35")
         assertShows(text = "\$tf(mi(len), \"m' min'\")\$", track = analysed, expected = "4 min")
         assertShows(
-            text = "\$tf(4000, \"h' hours' and m' minutes'\")\$",
+            text = "\$tf(4000, \"h' hours and 'm' minutes'\")\$",
             track = analysed,
             expected = "1 hours and 6 minutes",
         )

@@ -245,6 +245,27 @@ data class HostKeyContext(
     // ```
     /** The layout the screen draws now, which decides whether the folder picker shortcut applies. */
     val layout: HostKeyLayout,
+
+    // What:     `val zone: HostKeyZone` names the list that holds keyboard focus, or none.
+    // Why:      The list keys and the playback chords of D106 apply by focus zone, and a focused list keeps the
+    //           playback keys that a focused button would keep for itself.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // zone: HostKeyZone;
+    // ```
+    /** The folder rail or the track list when one holds keyboard focus, else none. */
+    val zone: HostKeyZone = HostKeyZone.NONE,
+
+    // What:     `val pickerOpen: Boolean` is true while the folder picker covers the track list on the folded cover.
+    // Why:      Escape closes the picker first, as the Back button does.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // pickerOpen: boolean;
+    // ```
+    /** True while the folded cover shows the folder picker in place of the track list. */
+    val pickerOpen: Boolean = false,
 )
 
 // What:     `data class HostKeyPress(...)` joins one key-down with the host state that it arrived in.
@@ -549,6 +570,76 @@ interface HostKeyActions {
     // ```
     /** Closes the open track menu. */
     fun closePopup()
+
+    // What:     `fun seekBy(seconds: Int)` moves the playhead by a number of seconds.
+    // Why:      It is the one action behind Alt+Left and Alt+Right, with and without Shift.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // seekBy(seconds: number): void;
+    // ```
+    /** Moves the playhead by [seconds], clamped to the track. */
+    fun seekBy(seconds: Int)
+
+    // What:     `fun restartTrack()` returns the playhead to the start.
+    // Why:      It is the one action behind Ctrl+Home.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // restartTrack(): void;
+    // ```
+    /** Restarts the playing track from its beginning. */
+    fun restartTrack()
+
+    // What:     `fun stepFolder(step: Int)` selects the folder a number of places away.
+    // Why:      It is the one action behind Alt+Up (minus one) and Alt+Down (plus one).
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // stepFolder(step: number): void;
+    // ```
+    /** Selects the folder [step] places from the selected one, without starting a track. */
+    fun stepFolder(step: Int)
+
+    // What:     `fun revealPlayingTrackFolder()` shows the playing track's folder in the track list.
+    // Why:      It is the one action behind Ctrl+Shift+G.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // revealPlayingTrackFolder(): void;
+    // ```
+    /** Selects the playing track's folder and scrolls the track list to it. */
+    fun revealPlayingTrackFolder()
+
+    // What:     `fun focusZone(zone: HostKeyZone)` moves keyboard focus to the folder rail or the track list.
+    // Why:      It is the one action behind Alt+1 (folders) and Alt+2 (tracks).
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // focusZone(zone: HostKeyZone): void;
+    // ```
+    /** Moves keyboard focus into the list that [zone] names, opening the folder picker on the cover when needed. */
+    fun focusZone(zone: HostKeyZone)
+
+    // What:     `fun openFolderDialog()` opens the system folder chooser.
+    // Why:      It is the one action behind Ctrl+Shift+O, the same as the Open button.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // openFolderDialog(): void;
+    // ```
+    /** Opens the system folder chooser, as the Open button does. */
+    fun openFolderDialog()
+
+    // What:     `fun closePicker()` closes the folder picker on the folded cover.
+    // Why:      It is the one action behind Escape while the picker covers the list.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // closePicker(): void;
+    // ```
+    /** Closes the folder picker, as the Back button does. */
+    fun closePicker()
 }
 
 // What:     `fun hostKeyExecutes(command: HostKeyCommand): Boolean` is true when the command runs a host operation.
@@ -560,7 +651,7 @@ interface HostKeyActions {
 // ```
 /** Reports whether the command runs a host operation. */
 fun hostKeyExecutes(command: HostKeyCommand): Boolean =
-    command != HostKeyCommand.Unhandled && command != HostKeyCommand.SwallowRepeat
+    command != HostKeyCommand.Unhandled && command != HostKeyCommand.SwallowRepeat && command !is ListKeyCommand
 
 // What:     `fun hostKeyOwnerOf(context: HostKeyContext): ShortcutOwner` names the focus owner that receives the key.
 // Why:      A focused text field keeps its keys, the playback area owns transport keys only on the player route, and
@@ -577,7 +668,8 @@ fun hostKeyExecutes(command: HostKeyCommand): Boolean =
 /** Names the focus owner for one host state. */
 fun hostKeyOwnerOf(context: HostKeyContext): ShortcutOwner = when {
     context.textFieldFocused -> ShortcutOwner.EDITOR
-    context.route == HostKeyRoute.PLAYER && context.rootFocused -> ShortcutOwner.PLAYER
+    context.route == HostKeyRoute.PLAYER && (context.rootFocused || context.zone != HostKeyZone.NONE) ->
+        ShortcutOwner.PLAYER
     else -> ShortcutOwner.CONTROL
 }
 
@@ -725,12 +817,21 @@ private fun hostKeyRoutedOf(press: HostKeyPress): HostKeyCommand = when (shortcu
 // ```
 /** Resolves one key-down to the command the host runs, or to `Unhandled` when the key goes on to its owner. */
 fun hostKeyCommandFor(press: HostKeyPress): HostKeyCommand {
-    /** Command for the press before the repeat rule applies, or `Unhandled` for an unmapped key. */
-    val routed: HostKeyCommand = if (press.key.keyName.isEmpty()) {
-        HostKeyCommand.Unhandled
-    } else {
-        hostKeyRoutedOf(press)
+    if (press.key.keyName.isEmpty()) {
+        return HostKeyCommand.Unhandled
     }
+    /** Table row that the press hits, which decides before the classifier of the older rules. */
+    val binding: KeyBinding? = bindingMatching(press)
+    if (binding != null) {
+        return if (press.key.repeat && !binding.repeats) HostKeyCommand.SwallowRepeat else binding.command
+    }
+    /** Jump to a typed letter in the folder rail, which the table does not list one row at a time. */
+    val letterJump: KeyJumpToLetter? = letterJumpCommandFor(press)
+    if (letterJump != null) {
+        return if (press.key.repeat) HostKeyCommand.SwallowRepeat else letterJump
+    }
+    /** Command for the press before the repeat rule applies. */
+    val routed: HostKeyCommand = hostKeyRoutedOf(press)
     return if (press.key.repeat && hostKeyExecutes(routed)) HostKeyCommand.SwallowRepeat else routed
 }
 
@@ -779,6 +880,16 @@ class HostKeyDispatcher(
             HostKeyCommand.RevealCurrent -> actions.revealCurrent()
             HostKeyCommand.BackFromSearch -> actions.backFromSearch()
             HostKeyCommand.ClosePopup -> actions.closePopup()
+            is KeySeekBy -> actions.seekBy(command.seconds)
+            KeyRestartTrack -> actions.restartTrack()
+            KeyPreviousFolder -> actions.stepFolder(-1)
+            KeyNextFolder -> actions.stepFolder(1)
+            KeyRevealFolder -> actions.revealPlayingTrackFolder()
+            KeyFocusFolders -> actions.focusZone(HostKeyZone.NAMES)
+            KeyFocusTracks -> actions.focusZone(HostKeyZone.TRACKS)
+            KeyOpenFolderDialog -> actions.openFolderDialog()
+            KeyClosePicker -> actions.closePicker()
+            is ListKeyCommand -> Unit
         }
     }
 
@@ -794,6 +905,6 @@ class HostKeyDispatcher(
         if (hostKeyExecutes(command)) {
             runAction(command)
         }
-        return command != HostKeyCommand.Unhandled
+        return command != HostKeyCommand.Unhandled && command !is ListKeyCommand
     }
 }

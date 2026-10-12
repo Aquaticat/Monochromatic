@@ -26,7 +26,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 
 // What:     Imports from `androidx.compose.material3` and `runtime` bring in the theme roles, text, and effects.
@@ -63,14 +63,8 @@ import dev.monochromatic.musicplayer.core.MenuAnchorRect
 // import { Modifier, Color, FontWeight, Role, Dp } from "compose/ui";
 // ```
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.focus.FocusRequester
-import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.key.Key
-import androidx.compose.ui.input.key.KeyEventType
-import androidx.compose.ui.input.key.key
-import androidx.compose.ui.input.key.onKeyEvent
-import androidx.compose.ui.input.key.type
 import androidx.compose.ui.input.pointer.PointerEvent
 import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.isSecondaryPressed
@@ -91,7 +85,15 @@ import androidx.compose.ui.unit.dp
 // ```ts
 // import type { TrackListEntry, TrackRowModel } from "core/TrackListEntries";
 // ```
+import dev.monochromatic.musicplayer.core.HostKeyZone
+import dev.monochromatic.musicplayer.core.KeyActivateRow
+import dev.monochromatic.musicplayer.core.KeyOpenRowMenu
+import dev.monochromatic.musicplayer.core.KeyRowAction
+import dev.monochromatic.musicplayer.core.ListKeyCommand
 import dev.monochromatic.musicplayer.core.TrackListEntry
+import dev.monochromatic.musicplayer.core.TrackMenuAction
+import dev.monochromatic.musicplayer.core.ringAfter
+import dev.monochromatic.musicplayer.core.startFocus
 import dev.monochromatic.musicplayer.core.TrackRowModel
 import dev.monochromatic.musicplayer.core.currentPositionOf
 import dev.monochromatic.musicplayer.core.entryKeyOf
@@ -211,18 +213,39 @@ fun trackListPane(
             listState.scrollToItem(pageEntryScrollTarget(entries))
         }
     }
+    /** Focus state of the list as one keyboard stop, whose focus ring marks one row. */
+    val zone: ListZoneState = rememberListZone(HostKeyZone.TRACKS)
+    /** Position among the entries that the focus ring is on, or null when the ring has not started. */
+    var ringPosition: Int? by remember(pageIdentity) { mutableStateOf<Int?>(null) }
+    /** One flag per entry, true for the track rows, which are the entries that can hold the ring. */
+    val selectable: List<Boolean> = remember(entries) { entries.map { entry -> entry is TrackListEntry.RowEntry } }
+    /** Window-space bounds of the list, from which the menu anchor of the ringed row is computed. */
+    var listBounds: Rect? by remember { mutableStateOf<Rect?>(null) }
+    /** Runs a track menu action chosen by key for a library index, or null when no host provides one. */
+    val rowKeyActions: ((TrackMenuAction, Int) -> Unit)? = LocalTrackRowKeyActions.current
+    LaunchedEffect(zone.focused) {
+        if (zone.focused && ringPosition?.let { at -> selectable.getOrElse(at) { false } } != true) {
+            ringPosition = startFocus(selectable = selectable, preferred = currentPosition)
+        }
+    }
+    LaunchedEffect(ringPosition) {
+        /** Entry the ring is on now. */
+        val at: Int? = ringPosition
+        if (at != null && listState.layoutInfo.visibleItemsInfo.none { item -> item.index == at }) {
+            listState.scrollToItem(at)
+        }
+    }
     /** Count of reveal requests from the host, each of which scrolls to and focuses the playing row. */
     val revealToken: Int = HostKeyLocalReveal.current
     /** Reveal count when this list entered composition, so that entering the list never reveals by itself. */
     val revealAtEntry: Int = remember { revealToken }
-    /** Focus requester attached to the playing row, so a reveal can focus it once the row is composed. */
-    val currentRowFocus: FocusRequester = remember { FocusRequester() }
     LaunchedEffect(revealToken) {
         if (revealToken != revealAtEntry && currentPosition != null) {
             listState.scrollToItem(currentPosition)
             snapshotFlow { listState.layoutInfo.visibleItemsInfo.any { item -> item.index == currentPosition } }
                 .first { visible -> visible }
-            currentRowFocus.requestFocus()
+            ringPosition = currentPosition
+            zone.requester.requestFocus()
         }
     }
     /** Count of folder reveal requests from the host, each of which scrolls to the playing track's folder header. */
@@ -236,14 +259,52 @@ fun trackListPane(
             listState.scrollToItem(folderTargetIndex)
         }
     }
-    LazyColumn(state = listState, modifier = modifier) {
-        items(items = entries, key = { entry -> entryKeyOf(entry) }) { entry ->
+    LazyColumn(
+        state = listState,
+        modifier = modifier
+            .onGloballyPositioned { coordinates -> listBounds = coordinates.boundsInWindow() }
+            .listZone(zone = HostKeyZone.TRACKS, state = zone) { command ->
+                trackListCommand(
+                    command = command,
+                    entries = entries,
+                    selectable = selectable,
+                    ringPosition = ringPosition,
+                    page = listState.layoutInfo.visibleItemsInfo.size,
+                    onRing = { at -> ringPosition = at },
+                    onPlay = onPlay,
+                    refocus = { zone.requester.requestFocus() },
+                    openMenuAt = { at ->
+                        /** Layout of the ringed row, whose window bounds anchor the menu. */
+                        val item = listState.layoutInfo.visibleItemsInfo.firstOrNull { info -> info.index == at }
+                        /** Window-space bounds of the list, or null before its first layout. */
+                        val bounds: Rect? = listBounds
+                        /** The ringed entry when it is a track row, else null. */
+                        val row = entries[at] as? TrackListEntry.RowEntry
+                        if (item != null && bounds != null && row != null) {
+                            onOpenMenu?.invoke(
+                                row.row.indexInLibrary,
+                                menuAnchorOfRect(
+                                    Rect(
+                                        left = bounds.left,
+                                        top = bounds.top + item.offset,
+                                        right = bounds.right,
+                                        bottom = bounds.top + item.offset + item.size,
+                                    ),
+                                ),
+                            )
+                        }
+                    },
+                    runRowAction = rowKeyActions,
+                )
+            },
+    ) {
+        itemsIndexed(items = entries, key = { _, entry -> entryKeyOf(entry) }) { position, entry ->
             when (entry) {
                 is TrackListEntry.RowEntry -> trackRow(
                     row = entry.row,
                     onPlay = onPlay,
                     onOpenMenu = onOpenMenu,
-                    focus = if (entry.row.isCurrent) currentRowFocus else null,
+                    ringed = zone.focused && ringPosition == position,
                 )
                 is TrackListEntry.HeaderEntry -> subfolderHeader(name = entry.name, trackCount = entry.trackCount)
             }
@@ -266,6 +327,69 @@ fun trackListPane(
 //   return 0;
 // };
 // ```
+/**
+ * Runs one list command of the key table on the track list and reports whether it consumed the key.
+ *
+ * Movement keys put the focus ring on another row; Enter plays the ringed row, the menu keys open its menu, and a
+ * row chord runs its menu action, all on the row under the ring.
+ *
+ * @param command list command that the key resolved to.
+ * @param entries entries of the shown page, rows and subfolder headers.
+ * @param selectable one flag per entry, true for rows, which can hold the ring.
+ * @param ringPosition entry the ring is on now, or null.
+ * @param page rows that a page key moves by.
+ * @param onRing moves the ring to an entry.
+ * @param onPlay plays a track by library index.
+ * @param refocus gives keyboard focus back to the list, which the host's play path hands to the playback area.
+ * @param openMenuAt opens the context menu of the row at an entry position.
+ * @param runRowAction runs a menu action for a library index, or null when the host provides none.
+ */
+private fun trackListCommand(
+    command: ListKeyCommand,
+    entries: List<TrackListEntry>,
+    selectable: List<Boolean>,
+    ringPosition: Int?,
+    page: Int,
+    onRing: (Int) -> Unit,
+    onPlay: (Int) -> Unit,
+    refocus: () -> Unit,
+    openMenuAt: (Int) -> Unit,
+    runRowAction: ((TrackMenuAction, Int) -> Unit)?,
+): Boolean {
+    /** Entry the ring moves to when the command is a movement. */
+    val moved: Int? = ringAfter(
+        command = command,
+        selectable = selectable,
+        labels = emptyList(),
+        current = ringPosition,
+        page = page,
+    )
+    if (moved != null) {
+        onRing(moved)
+        return true
+    }
+    /** Ringed entry, which must be a row for the remaining commands. */
+    val at: Int = ringPosition ?: return false
+    /** The ringed row, or null when the ring is on no row. */
+    val row: TrackRowModel = (entries.getOrNull(at) as? TrackListEntry.RowEntry)?.row ?: return false
+    return when (command) {
+        KeyActivateRow -> {
+            onPlay(row.indexInLibrary)
+            refocus()
+            true
+        }
+        KeyOpenRowMenu -> {
+            openMenuAt(at)
+            true
+        }
+        is KeyRowAction -> {
+            runRowAction?.invoke(command.action, row.indexInLibrary)
+            runRowAction != null
+        }
+        else -> false
+    }
+}
+
 /** Index of the subfolder header that holds the playing row, or 0 when no header holds it or no row is playing. */
 internal fun folderScrollIndexFor(entries: List<TrackListEntry>): Int {
     /** Position of the playing row among the entries, or null when no row in this list is playing. */
@@ -311,7 +435,7 @@ private fun trackRow(
     row: TrackRowModel,
     onPlay: (Int) -> Unit,
     onOpenMenu: ((Int, MenuAnchorRect) -> Unit)?,
-    focus: FocusRequester?,
+    ringed: Boolean,
 ) {
     /** Surface role behind the current row (D42), and transparent behind every other row. */
     val rowBackground: Color = if (row.isCurrent) {
@@ -329,15 +453,14 @@ private fun trackRow(
             rowBounds?.let { bounds -> open(row.indexInLibrary, bounds) }
         }
     }
-    /** Focus modifier that lets a reveal focus this row, or an empty modifier when no reveal targets it. */
-    val focusModifier: Modifier = focus?.let { requester -> Modifier.focusRequester(requester) } ?: Modifier
     Column(
         modifier = Modifier
             .fillMaxWidth()
             .heightIn(min = ROW_MIN_HEIGHT)
             .onGloballyPositioned { coordinates -> rowBounds = menuAnchorOfRect(coordinates.boundsInWindow()) }
             .background(rowBackground)
-            .then(focusModifier)
+            .keyboardFocusRing(visible = ringed)
+            .focusProperties { canFocus = false }
             .combinedClickable(
                 role = Role.Button,
                 onClick = { onPlay(row.indexInLibrary) },
@@ -354,16 +477,13 @@ private fun trackRow(
                     }
                 }
             }
-            .onKeyEvent { event ->
-                if (event.key == Key.Menu && event.type == KeyEventType.KeyUp && openMenuForRow != null) {
-                    openMenuForRow.invoke()
-                    true
-                } else {
-                    false
-                }
-            }
             .semantics { selected = row.isCurrent }
-            .padding(horizontal = ROW_HORIZONTAL_PADDING, vertical = ROW_VERTICAL_PADDING),
+            .padding(
+                start = paneStartInset(ROW_HORIZONTAL_PADDING),
+                end = paneEndInset(ROW_HORIZONTAL_PADDING),
+                top = ROW_VERTICAL_PADDING,
+                bottom = ROW_VERTICAL_PADDING,
+            ),
         verticalArrangement = Arrangement.spacedBy(TEXT_SPACING),
     ) {
         Text(
@@ -398,7 +518,11 @@ private fun subfolderHeader(name: String, trackCount: Int) {
         modifier = Modifier
             .fillMaxWidth()
             .heightIn(min = ROW_MIN_HEIGHT)
-            .padding(start = ROW_HORIZONTAL_PADDING, end = ROW_HORIZONTAL_PADDING, top = HEADER_TOP_PADDING)
+            .padding(
+                start = paneStartInset(ROW_HORIZONTAL_PADDING),
+                end = paneEndInset(ROW_HORIZONTAL_PADDING),
+                top = HEADER_TOP_PADDING,
+            )
             .semantics { heading() },
         verticalArrangement = Arrangement.spacedBy(TEXT_SPACING),
     ) {

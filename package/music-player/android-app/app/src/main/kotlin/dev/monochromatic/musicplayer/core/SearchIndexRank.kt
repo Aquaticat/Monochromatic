@@ -211,9 +211,8 @@ private fun compareNames(collator: Collator, left: Keyed, right: Keyed): Int {
 private fun collationKeyOf(collator: Collator, candidate: Keyed): CollationKey =
     candidate.collationKey ?: collator.getCollationKey(candidate.name).also { key -> candidate.collationKey = key }
 
-/** Returns the displayed name of the folder in [slot], or the root-level group's name for its reserved slot. */
-internal fun folderNameOf(index: SearchIndex, slot: Int): String =
-    if (slot == ROOT_FOLDER_SLOT) UNFILED_NAME else index.folders[slot].name
+/** Returns the displayed name of the folder in [slot]. */
+internal fun folderNameOf(index: SearchIndex, slot: Int): String = index.folders[slot].name
 
 // What:     `private fun fullOrder(): Comparator<Keyed>` is the result order beyond tier and length.
 // Why:      It is the old order: tier, shorter names, collation order, display path by code point, folder before track,

@@ -1529,9 +1529,8 @@ class MainActivity : ComponentActivity() {
                                 controller = controller,
                                 onAudioGranted = {
                                     binder?.ensureLibraryLoaded()
-                                    // Auto-start the one-time true-peak index (no user action) as soon as the library
-                                    // is readable: at launch with access held, or right after the access prompt.
-                                    PeakSweepService.startIfNeeded(this@MainActivity)
+                                    // The true-peak analysis starts from the playback service after every completed
+                                    // library load or rescan, for the tracks it has not looked at yet (M9).
                                 },
                                 onChooseFolder = { folderPicker.launch(null) },
                                 feedback = feedback,
@@ -1909,6 +1908,11 @@ private fun appRoot(
     // ```ts
     // const permissionLauncher = useActivityResult(RequestPermission, (granted) => { ... });
     // ```
+    /**
+     * Whether the permission prompt is open and unanswered. It starts true when the launch will open the prompt, so
+     * no error shows for the frame before the prompt appears or while it is up.
+     */
+    var promptShowing by remember { mutableStateOf(!hasAudioAccess && folderName == null && canPrompt) }
     /** Launcher for the audio permission prompt, whose answer updates the grant and the prompt rule. */
     val permissionLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission(),
@@ -1916,6 +1920,7 @@ private fun appRoot(
         Log.i(LOG_TAG, "audio permission granted=$granted")
         hasAudioAccess = granted
         canPrompt = canPromptAudioAccess(activity)
+        promptShowing = false
     }
     // What:     `fun requestAudioAccess()` records the request and then opens the permission prompt.
     // Why:      The request flag is saved first, so the rule can tell a first refusal from a permanent one later.
@@ -1927,6 +1932,7 @@ private fun appRoot(
     /** Records that this app asked for music access, then opens Android's permission prompt. */
     fun requestAudioAccess() {
         SessionStore.saveAudioAccessRequested(context, requested = true)
+        promptShowing = true
         permissionLauncher.launch(audioPermission())
     }
     // What:     `fun runAllowAccess(action: AllowAccessAction)` performs the action that the decision chose.
@@ -2015,6 +2021,7 @@ private fun appRoot(
         loading = controller.uiState.loading,
         trackCount = controller.uiState.queueSize,
         canPromptForPermission = canPrompt,
+        promptShowing = promptShowing,
     )
     /** First-run screen to draw, or null when the player shows, with the Allow access action. */
     val decision: FirstRunDecision = firstRunDecisionFor(inputs)
@@ -2036,13 +2043,18 @@ private fun appRoot(
     // const firstRunContent = decision.state ? firstRunPaneContent(decision.state, ...) : null;
     // ```
     /** Pane content for the decided state, or null when the player shows. */
-    val firstRunContent: (@Composable (onSettings: () -> Unit) -> Unit)? = decision.state?.let { shown ->
-        firstRunPaneContent(
-            state = shown,
-            folderName = folderName,
-            onAllowAccess = { runAllowAccess(decision.allowAccess) },
-            onOpenFolder = onChooseFolder,
-        )
+    val firstRunContent: (@Composable (onSettings: () -> Unit) -> Unit)? = if (decision.awaitingAnswer) {
+        // Until the user answers the permission prompt nothing is known about the library, so the screen stays blank.
+        { _ -> Box(modifier = Modifier.fillMaxSize()) }
+    } else {
+        decision.state?.let { shown ->
+            firstRunPaneContent(
+                state = shown,
+                folderName = folderName,
+                onAllowAccess = { runAllowAccess(decision.allowAccess) },
+                onOpenFolder = onChooseFolder,
+            )
+        }
     }
     playerScreen(
         controller = controller,

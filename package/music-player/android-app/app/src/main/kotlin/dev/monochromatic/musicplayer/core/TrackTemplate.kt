@@ -56,11 +56,16 @@ val trackTemplateFields: List<TemplateField> = listOf(
     TemplateField(mode = "ext", label = "Extension", description = "The file extension."),
     TemplateField(mode = "folder", label = "Folder", description = "The folder that holds the file."),
     TemplateField(mode = "path", label = "Path", description = "The path from the library root."),
-    TemplateField(mode = "len", label = "Duration", description = "The duration in seconds; tf formats it."),
+    TemplateField(
+        mode = "len",
+        label = "Duration",
+        description = "The length of the track, shown here as minutes and seconds. In a template it is a number of " +
+            "seconds, and tf formats it, as in tf(mi(len)).",
+    ),
     TemplateField(
         mode = "peak",
         label = "True peak",
-        description = "The true peak with its unit, such as −1.2 dBTP, or nothing before the file is analysed.",
+        description = "The true peak with its unit, such as −1.2 dBTP, or nothing before the file is analyzed.",
     ),
 )
 
@@ -340,6 +345,82 @@ sealed interface TemplateResult {
 /** One line per mistake, naming the function first, in the order the mistakes sit in the template. */
 fun errorLines(errors: List<TemplateError>): List<String> =
     errors.sortedBy { error -> error.at }.map { error -> error.subject + ": " + error.message }
+
+// What:     `fun errorSentence(error: TemplateError): String` words one mistake as a plain sentence that says what to
+//           do.
+// Why:      The editor shows the mistakes to a person who does not know the evaluator's vocabulary, so each one names
+//           the
+//           call at fault and the remedy. The wording is the desktop's (`template_plain.rs`), so both editors read
+//           alike.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// const errorSentence = (e: TemplateError) => table[kindOf(e)](e);
+// ```
+/** Words one mistake as a sentence that names the call at fault and says what to change. */
+fun errorSentence(error: TemplateError): String {
+    /** The call or word at fault. */
+    val subject: String = error.subject
+    /** What is wrong, as the evaluator reports it. */
+    val message: String = error.message
+    return when {
+        message.startsWith("unknown field ") ->
+            subject + " has no field called " + message.removePrefix("unknown field ") +
+                ". Pick a name from the Fields list."
+        message.startsWith("unknown format letter ") ->
+            subject + " does not know the format letter " + message.removePrefix("unknown format letter ") +
+                ". Use h, m or s, and put any other words between apostrophes."
+        message.startsWith("unknown mode ") ->
+            subject + " has no mode called " + message.removePrefix("unknown mode ") + ". Use low, up, cap or cut."
+        message.startsWith("needs a number of seconds, not ") ->
+            subject + " needs a number of seconds, not " + message.removePrefix("needs a number of seconds, not ") +
+                ". Use mi(len) for the duration."
+        message.startsWith("takes ") -> subject + " " + message + "."
+        message.startsWith("unexpected ") ->
+            "Unexpected " + message.removePrefix("unexpected ") +
+                " in a formula. Join values with + or put each one in its own pair of $ signs."
+        message.startsWith("a value is missing before ") ->
+            "A value is missing before " + message.removePrefix("a value is missing before ") +
+                " in a formula. Put a field such as mi(title), or some text, there."
+        message.startsWith("the $ at character ") ->
+            "The $ at character " + message.removePrefix("the $ at character ").substringBefore(' ') +
+                " has no closing $. Add a $ where the formula ends."
+        message == "unknown function" -> subject + " is not a function. Use mi, tf or tc."
+        message == "a closing bracket is missing" ->
+            subject + " is missing its closing bracket. Add a ) after its last value."
+        message == "calls are nested too deeply" -> subject + " sits inside too many calls. Take some of the calls out."
+        message == "a value is missing" ->
+            "A formula is missing a value. Put a field such as mi(title), or some text, in it."
+        message == "a quotation mark is not closed" -> "A quotation mark is not closed. Add a closing quotation mark."
+        message.startsWith("cut needs a length") -> "tc needs a length to cut to, as in tc(cut, text, 10)."
+        else -> subject + ": " + message + "."
+    }
+}
+
+// What:     `fun errorSentences(errors: List<TemplateError>, parsed: ParsedTemplate): List<String>` words the mistakes
+//           of a
+//           template, one sentence per formula, in template order.
+// Why:      The editor lists every mistake at once instead of only the first. One formula with several slips gets one
+//           sentence for its first slip, so a single typo is not listed three times (the desktop does the same).
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// const errorSentences = (errors: TemplateError[], parsed: ParsedTemplate) =>
+// onePerFormula(errors.sort(byOffset)).map(errorSentence);
+// ```
+/** One plain sentence per formula that holds a mistake, plus one per mistake outside any formula, in template order. */
+fun errorSentences(errors: List<TemplateError>, parsed: ParsedTemplate): List<String> {
+    /** Formulas of the template, whose spans own the mistakes inside them. */
+    val formulas: List<FormulaPart> = parsed.parts.filterIsInstance<FormulaPart>()
+    /** Indices of the formulas that already have a sentence. */
+    val spoken = mutableSetOf<Int>()
+    return errors.sortedBy { error -> error.at }.mapNotNull { error ->
+        /** Index of the formula that holds the mistake, or -1 when none does. */
+        val owner: Int = formulas.indexOfFirst { formula -> error.at >= formula.start && error.at <= formula.end }
+        if (owner >= 0 && !spoken.add(owner)) null else errorSentence(error)
+    }
+}
+
 //endregion
 
 //region Tokens
@@ -1256,6 +1337,15 @@ private class TemplateEvaluation(
     // ```
     /** Formats seconds with the given format, or the default `m:ss`. */
     private fun evaluateTf(node: CallNode, values: List<String>): String {
+        /** The format text, or the default `m:ss` when the call gives none. */
+        val format = if (values.size == 2) values[1] else "m:ss"
+        // The format is checked even when the track has no duration, so a typo in it never hides behind an empty field.
+        /** The first letter outside apostrophes that is not h, m or s, or null when the format is sound. */
+        val unknown: Char? = unknownFormatLetter(format)
+        if (unknown != null) {
+            errors.add(TemplateError("tf", "unknown format letter " + unknown, node.start))
+            return ABSENT
+        }
         if (values[0] == ABSENT) {
             return ABSENT
         }
@@ -1265,8 +1355,6 @@ private class TemplateEvaluation(
             errors.add(TemplateError("tf", "needs a number of seconds, not " + values[0], node.start))
             return ABSENT
         }
-        /** The format text, or the default `m:ss` when the call gives none. */
-        val format = if (values.size == 2) values[1] else "m:ss"
         return formatSeconds(seconds, format)
     }
 
@@ -1313,14 +1401,103 @@ private class TemplateEvaluation(
 // ```ts
 // function evaluateTemplate(text: string, track: TemplateTrack, fields = trackFields): TemplateResult { ... }
 // ```
-/** What a template shows for one track, or the mistakes that refuse it; `fields` are those the template may use. */
+/**
+ * What a template shows for one track, or the mistakes that refuse it; `fields` are those the template may use.
+ * The text is parsed through [ParsedTemplateCache], so many tracks sharing one template parse it once.
+ */
 fun evaluateTemplate(
     text: String,
     track: TemplateTrack,
     fields: List<TemplateField> = trackTemplateFields,
-): TemplateResult {
+): TemplateResult = evaluateParsedTemplate(ParsedTemplateCache.parsedFor(text), track, fields)
+
+// What:     `fun evaluateParsedTemplate(...)` evaluates a template that is already split into pieces.
+// Why:      Rows share one template, so the caller parses it once and evaluates it per track, like the desktop's
+//           `evaluate_parsed_template`.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// function evaluateParsedTemplate(parsed: ParsedTemplate, track: TemplateTrack, fields = trackFields): TemplateResult
+// ```
+// What:     `fun templateMistakes(...)` lists every mistake of a template for one track: the parse mistakes and the
+//           evaluation mistakes of each formula that parsed.
+// Why:      Row evaluation stops at the first parse mistake so one slip does not multiply into follow-on errors, but
+//           the
+//           editor owes the user the whole list: an unknown field in one formula is reported even when another formula
+//           lacks a closing bracket. A formula that holds a parse mistake is not evaluated.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// function templateMistakes(text: string, track: TemplateTrack, fields = trackFields): TemplateError[] {
+//   const parsed = parseCached(text);
+//   const errors = [...parsed.errors];
+//   for (const part of parsed.parts) if (part.isFormula && !parsed.errors.some((e) => part.contains(e.at)))
+//   evaluate(part);
+//   return errors;
+// }
+// ```
+/** Every mistake the template has for [track]: parse mistakes plus the evaluation mistakes of the sound formulas. */
+fun templateMistakes(
+    text: String,
+    track: TemplateTrack,
+    fields: List<TemplateField> = trackTemplateFields,
+): List<TemplateError> {
     /** The template's pieces and the mistakes found while splitting it. */
-    val parsed = parseTemplate(text)
+    val parsed: ParsedTemplate = ParsedTemplateCache.parsedFor(text)
+    /** Mistakes found while evaluating the formulas that parsed cleanly. */
+    val evaluationErrors = mutableListOf<TemplateError>()
+    /** The evaluator for this track and its allowed fields. */
+    val evaluation = TemplateEvaluation(track, fields, evaluationErrors)
+    for (part in parsed.parts) {
+        if (part is FormulaPart && parsed.errors.none { error -> error.at >= part.start && error.at <= part.end }) {
+            evaluation.evaluate(part.tree)
+        }
+    }
+    return parsed.errors + evaluationErrors
+}
+
+// What:     `fun unknownFormatLetter(format: String): Char?` finds the first letter of a duration format that is no
+//           time
+//           letter.
+// Why:      Consistency with the desktop (TE5): only h, m and s are time letters, apostrophes keep any other
+//           words, and every other character is a separator. A letter such as the i in "m min" used to print as itself,
+//           so
+//           a typo went unnoticed.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// function unknownFormatLetter(format: string): string | null { /* scan outside apostrophes */ }
+// ```
+/** Returns the first letter outside apostrophes that is not h, m or s, or null when the format is sound. */
+fun unknownFormatLetter(format: String): Char? {
+    /** Whether the scan is inside apostrophes, where any text is kept. */
+    var kept = false
+    for (letter in format) {
+        if (letter == '\'') {
+            kept = !kept
+        } else if (!kept && letter.isLetter() && letter != 'h' && letter != 'm' && letter != 's') {
+            return letter
+        }
+    }
+    return null
+}
+
+// What:     `fun durationText(seconds: Double): String` writes a duration as `m:ss`.
+// Why:      The field list and the examples show a duration the way the rows do, not as a raw number of seconds.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// const durationText = (seconds: number) => formatSeconds(seconds, "m:ss");
+// ```
+/** Writes [seconds] as minutes and seconds, such as 3:20 for 200. */
+fun durationText(seconds: Double): String = formatSeconds(seconds, "m:ss")
+
+/** What an already parsed template shows for one track, or the mistakes that refuse it. */
+fun evaluateParsedTemplate(
+    parsed: ParsedTemplate,
+    track: TemplateTrack,
+    fields: List<TemplateField> = trackTemplateFields,
+): TemplateResult {
     if (parsed.errors.isNotEmpty()) {
         return TemplateResult.Refused(parsed.errors)
     }

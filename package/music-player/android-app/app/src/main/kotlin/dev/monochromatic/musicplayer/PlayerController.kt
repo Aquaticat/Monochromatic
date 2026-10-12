@@ -121,6 +121,8 @@ import dev.monochromatic.musicplayer.core.PlaybackMode
 import dev.monochromatic.musicplayer.core.buildLibrary
 /** Stable page identity distinguishes duplicate displayed labels. */
 import dev.monochromatic.musicplayer.core.pageIdentity
+import dev.monochromatic.musicplayer.core.playbackEntryIds
+import dev.monochromatic.musicplayer.core.trackTitleFor
 
 // What:     `import dev.monochromatic.musicplayer.core.TrackMeasure` imports the per-track duration and peak value.
 // Why:      The controller publishes the measures the library rows read.
@@ -340,6 +342,43 @@ class PlayerController(private val engine: AudioEngine) {
      */
     var onPersist: (() -> Unit)? = null
 
+    // What:     `var loadFailure: LoadFailureNotice? by mutableStateOf(null)` is observable state naming the last track
+    //           the engine could not open, with a serial so the same failure twice still changes the value.
+    // Why:      The file open happens after `load` returned, so the host learns of a failure from this state and shows
+    //           a
+    //           message (M6).
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // loadFailure: LoadFailureNotice | null = null; // observable
+    // ```
+    /** Last track the engine could not open, observed by the host to show a message; null before any failure. */
+    var loadFailure: LoadFailureNotice? by mutableStateOf(null)
+        private set
+
+    /** Artist tags read so far by track URI, kept for the few tracks that played, for the media notification. */
+    private val trackArtists: MutableMap<String, String> = LinkedHashMap()
+
+    /** Called with the URI of each track that is loaded, so the service can read its tags off the main thread. */
+    var onTrackLoaded: ((String) -> Unit)? = null
+
+    /**
+     * Records the artist tag of [uri] and republishes the media session so its notification shows the artist line.
+     *
+     * @param uri track whose tags were read
+     * @param artist artist tag, or null when the file has none
+     */
+    fun setTrackArtist(uri: String, artist: String?) {
+        if (artist == null) {
+            return
+        }
+        trackArtists[uri] = artist
+        while (trackArtists.size > MAX_TRACK_ARTISTS) {
+            trackArtists.remove(trackArtists.keys.first())
+        }
+        onStateChanged?.invoke()
+    }
+
     // What:     `init { ... }` is Kotlin's INITIALIZER BLOCK: code that runs once as part
     //           of constructing every instance, after the field initializers above. It has
     //           no method name.
@@ -405,25 +444,22 @@ class PlayerController(private val engine: AudioEngine) {
             // console.info(`[${LOG_TAG}] track ended; advancing`);
             // ```
             Log.i(LOG_TAG, "track ended; advancing")
-            // What:     `queue.advance(natural = true)` advances the queue, passing the
-            //           `natural` argument by NAME as `true` (a natural end honours
-            //           "repeat track").
-            // Why:      Move to the next track (or replay under repeat-track) on a natural
-            //           end.
+            // What:     `handleNaturalEnd()` moves on after the track ended by itself.
+            // Why:      Kept in a named method so unit tests can drive a natural end without
+            //           the Android logger.
             //
             // In TS you'd write (pseudocode):
             // ```ts
-            // this.queue.advance(true);
+            // this.handleNaturalEnd();
             // ```
-            queue.advance(natural = true)
-            // What:     `playCurrent()` loads and plays the queue's now-current track.
-            // Why:      Actually start whatever `advance` selected.
-            //
-            // In TS you'd write (pseudocode):
-            // ```ts
-            // this.playCurrent();
-            // ```
-            playCurrent()
+            handleNaturalEnd()
+        }
+        engine.setOnLoadFailed { uri, reason ->
+            Log.w(LOG_TAG, "track could not be opened reason=${reason.name}")
+            // Forget the failed track as loaded, so Play loads it again instead of resuming the previous track.
+            loadedUri = null
+            loadFailure = LoadFailureNotice(uri = uri, reason = reason, serial = (loadFailure?.serial ?: 0) + 1)
+            refresh()
         }
     }
 
@@ -658,6 +694,7 @@ class PlayerController(private val engine: AudioEngine) {
             queue.playIndex(savedIndex)
             loadedUri = uris[savedIndex]
             engine.load(uris[savedIndex], play = false)
+            onTrackLoaded?.invoke(uris[savedIndex])
             if (session.positionSecs > 0.0) {
                 engine.seekTo(session.positionSecs)
             }
@@ -835,7 +872,7 @@ class PlayerController(private val engine: AudioEngine) {
             queue.playIndex(newIndex)
         } else {
             if (playingUri != null) {
-                engine.pause()
+                engine.unload()
             }
             loadedUri = null
             queue.clearSelection()
@@ -1348,6 +1385,22 @@ class PlayerController(private val engine: AudioEngine) {
         return Track(uri = uri, displayPath = path)
     }
 
+    // What:     `fun dropMeasures(uris: Set<String>)` forgets the shown measures of some tracks.
+    // Why:      A replaced or edited file keeps its URI; dropping its old measure makes the page refresh read the new
+    //           one.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // dropMeasures(uris): void { this.uiState = { ...this.uiState, measures: omit(this.uiState.measures, uris) }; }
+    // ```
+    /** Removes the measures of [uris] so the next page refresh reads them again. */
+    fun dropMeasures(uris: Set<String>) {
+        if (uris.isEmpty()) {
+            return
+        }
+        uiState = uiState.copy(measures = uiState.measures - uris)
+    }
+
     // What:     `fun mergeMeasures(updates: Map<String, TrackMeasure>)` publishes newly read measures.
     // Why:      The refresh reads tracks in batches, and each batch replaces only its own keys.
     //
@@ -1408,7 +1461,16 @@ class PlayerController(private val engine: AudioEngine) {
          * source and use.
          */
         val display: List<String> = queue.displayPaths()
-        // What:     `val items: List<SnapshotItem> = order.map { loadIndex -> SnapshotItem(...) }`
+        // What:     `val entryIds: List<Long> = playbackEntryIds(order)` gives each history position its own id.
+        // Why:      A shuffle history repeats tracks, and the media timeline rejects two entries with one id.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // const entryIds: bigint[] = playbackEntryIds(order);
+        // ```
+        /** One timeline id per playback position; repeats of a track get distinct ids. */
+        val entryIds: List<Long> = playbackEntryIds(order)
+        // What:     `val items: List<SnapshotItem> = order.mapIndexed { position, loadIndex -> SnapshotItem(...) }`
         //           builds the timeline rows. `order.map { ... }` transforms each element;
         //           the trailing lambda names its parameter `loadIndex` (a load-order index)
         //           before `->`. `SnapshotItem(uri = ..., title = ..., loadIndex = ...)` is a
@@ -1428,8 +1490,8 @@ class PlayerController(private val engine: AudioEngine) {
          * Defines items value for this music-player component; the TypeScript-oriented notes above explain its
          * source and use.
          */
-        val items: List<SnapshotItem> = order.map { loadIndex ->
-            // What:     `SnapshotItem(uri = uris[loadIndex], title = display[loadIndex], loadIndex = loadIndex)`
+        val items: List<SnapshotItem> = order.mapIndexed { position, loadIndex ->
+            // What:     `SnapshotItem(uri = ..., title = ..., loadIndex = ..., entryId = entryIds[position])`
             //           constructs one timeline item (no `new`) with named args. It is the
             //           lambda's tail expression, so it is the value `map` collects.
             // Why:      One scope track described for the session.
@@ -1438,7 +1500,13 @@ class PlayerController(private val engine: AudioEngine) {
             // ```ts
             // ({ uri: this.uris[loadIndex], title: display[loadIndex], loadIndex })
             // ```
-            SnapshotItem(uri = uris[loadIndex], title = display[loadIndex], loadIndex = loadIndex)
+            SnapshotItem(
+                uri = uris[loadIndex],
+                title = trackTitleFor(display[loadIndex]),
+                loadIndex = loadIndex,
+                entryId = entryIds[position],
+                artist = trackArtists[uris[loadIndex]],
+            )
         }
         // What:     `return PlaybackSnapshot( ... )` constructs and returns the snapshot with
         //           NAMED arguments. Two of them convert seconds to milliseconds:
@@ -1558,6 +1626,77 @@ class PlayerController(private val engine: AudioEngine) {
         engine.release()
     }
 
+    // What:     `internal fun handleNaturalEnd()` asks the queue for the track after a natural end
+    //           (`advance(natural = true)`, which honours Repeat) and plays it. `advance` returns
+    //           `null` when nothing follows: In order has played the last track of its folder
+    //           (D2), or the queue is empty.
+    // Why:      Move to the next track (or replay under Repeat) on a natural end, and stop at
+    //           the end of the folder instead of wrapping.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // handleNaturalEnd(): void {
+    //   if (this.queue.advance(true) === null) this.stopAtScopeEnd();
+    //   else this.playCurrent();
+    // }
+    // ```
+    /** Reacts to a track that ended on its own: plays the next one, or stops at the end of an In order folder. */
+    internal fun handleNaturalEnd() {
+        if (queue.advance(natural = true) == null) {
+            stopAtScopeEnd()
+        } else {
+            playCurrent()
+        }
+    }
+
+    // What:     `private fun stopAtScopeEnd()` pauses, puts the queue cursor on the first track of
+    //           the scope and loads that track paused.
+    // Why:      D2: In order plays to the end of the folder and stops. Loading the first track
+    //           means the next Play starts the folder over, as a disc player does; an engine
+    //           left at the end of the last file would end again at once.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // private stopAtScopeEnd(): void {
+    //   this.engine.pause();
+    //   const first = this.queue.rewindScope();
+    //   if (first !== null) { this.loadedUri = this.uris[first]; this.engine.load(this.uris[first], false); }
+    //   this.refresh(true);
+    // }
+    // ```
+    /** Stops playback at the end of an In order folder and readies its first track. */
+    private fun stopAtScopeEnd() {
+        engine.pause()
+        /** Load-order index of the scope's first track, or null when nothing is queued. */
+        val first: Int? = queue.rewindScope()
+        if (first == null) {
+            refresh()
+            return
+        }
+        loadedUri = uris[first]
+        engine.load(uris[first], play = false)
+        refresh(followCurrent = true)
+    }
+
+    // What:     `private fun startOfScope(): Int?` selects the first track of the folder on screen in the queue
+    //           and returns it, or returns null for an empty library.
+    // Why:      Play with nothing selected (a fresh install, or after the playing track was trashed) used to do
+    //           nothing while the button flipped to Pause; it now starts the folder on screen, as the desktop does.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // private startOfScope(): number | null {
+    //   const first = this.pageIndices(this.uiState.selectedPage)[0] ?? 0;
+    //   return this.uris.length === 0 ? null : this.queue.playIndex(first);
+    // }
+    // ```
+    /** Selects the first track of the folder on screen, or of the library, and returns it; null when empty. */
+    private fun startOfScope(): Int? {
+        /** First track of the folder on screen, else of the whole library, else none. */
+        val first: Int = pageIndices(uiState.selectedPage).firstOrNull() ?: uris.indices.firstOrNull() ?: return null
+        return queue.playIndex(first)
+    }
+
     // What:     `private fun playCurrent() { ... }` declares a PRIVATE method (this-class
     //           only), block body, `Unit`.
     // Why:      Load the queue's current track and play it, or refresh idle state when the
@@ -1584,7 +1723,7 @@ class PlayerController(private val engine: AudioEngine) {
          * Defines index value for this music-player component; the TypeScript-oriented notes above explain its
          * source and use.
          */
-        val index = queue.currentIndex()
+        val index = queue.currentIndex() ?: startOfScope()
         // What:     `if (index == null) { refresh(); return }` handles the empty-queue case:
         //           when there is no current track, repaint idle state and bail.
         // Why:      Nothing to load when the queue is empty.
@@ -1633,6 +1772,7 @@ class PlayerController(private val engine: AudioEngine) {
         // this.engine.load(this.uris[index], true);
         // ```
         engine.load(uris[index], play = true)
+        onTrackLoaded?.invoke(uris[index])
         // What:     `refresh(followCurrent = true)` rebuilds the snapshot, switching to the
         //           current track's page (named arg `followCurrent = true`).
         // Why:      Keep the highlighted row on screen after loading a track.
@@ -1988,6 +2128,9 @@ class PlayerController(private val engine: AudioEngine) {
          * explain its source and use.
          */
         private const val MILLIS_PER_SEC: Double = 1000.0
+
+        /** How many artist tags the controller keeps; the notification only reads the playing track's. */
+        private const val MAX_TRACK_ARTISTS: Int = 32
     }
 }
 
@@ -2000,3 +2143,20 @@ private fun sameLibrary(tracks: List<Track>, uris: List<String>, rawPaths: List<
         tracks[index].uri == uris[index] && tracks[index].displayPath == rawPaths[index]
     }
 }
+
+// What:     `data class LoadFailureNotice(...)` names one track the engine could not open.
+// Why:      The host turns it into a message; the serial makes a repeat of the same failure a new value.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// type LoadFailureNotice = { uri: string; reason: LoadFailure; serial: number };
+// ```
+/** One failed attempt to open a track for playback. */
+data class LoadFailureNotice(
+    /** Location of the track that could not be opened. */
+    val uri: String,
+    /** Why it could not be opened. */
+    val reason: LoadFailure,
+    /** Count of failures so far, so two failures of one track differ. */
+    val serial: Int,
+)

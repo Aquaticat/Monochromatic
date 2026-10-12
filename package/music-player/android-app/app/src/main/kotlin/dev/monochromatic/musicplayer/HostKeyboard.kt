@@ -19,6 +19,7 @@ package dev.monochromatic.musicplayer
 // import { Log } from "android/util";
 // ```
 import android.util.Log
+import android.view.KeyEvent as AndroidKeyEvent
 import androidx.compose.foundation.focusable
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.ProvidableCompositionLocal
@@ -35,6 +36,7 @@ import androidx.compose.ui.input.key.isCtrlPressed
 import androidx.compose.ui.input.key.isMetaPressed
 import androidx.compose.ui.input.key.isShiftPressed
 import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.nativeKeyCode
 import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
 import dev.monochromatic.musicplayer.core.HostKeyCommand
@@ -62,18 +64,49 @@ private const val HOST_KEY_LOG_TAG: String = "HostKeyboard"
 // ```ts
 // const keyName = (key: string): string => ({ KeyF: "f", Space: " ", Escape: "Escape", ... })[key] ?? "";
 // ```
-/** Returns the classifier key text for a key that the map uses, or an empty text for any other key. */
+/**
+ * Returns the classifier key text for a key that the map uses, or an empty text for any other key.
+ *
+ * Letters and digits give one lowercase character whatever Shift does, named keys give their DOM-style name, and the
+ * keyboard's Home key is `MoveHome` (Compose `Key.Home` is the system Home button, which no shortcut uses).
+ */
 internal fun hostKeyNameOf(key: Key): String = when (key) {
-    Key.F -> "f"
-    Key.G -> "g"
-    Key.M -> "m"
-    Key.O -> "o"
-    Key.S -> "s"
     Key.Spacebar -> " "
     Key.Escape -> "Escape"
     Key.DirectionLeft -> "ArrowLeft"
     Key.DirectionRight -> "ArrowRight"
-    else -> ""
+    Key.DirectionUp -> "ArrowUp"
+    Key.DirectionDown -> "ArrowDown"
+    Key.MoveHome -> "Home"
+    Key.MoveEnd -> "End"
+    Key.PageUp -> "PageUp"
+    Key.PageDown -> "PageDown"
+    Key.Enter, Key.NumPadEnter -> "Enter"
+    Key.Delete -> "Delete"
+    Key.Menu -> "ContextMenu"
+    else -> letterOrDigitNameOf(key)
+}
+
+// What:     `private fun letterOrDigitNameOf(key: Key): String` names a letter or digit key by its character.
+// Why:      The table lists letters and digits by lowercase character, and Android gives each its own key code, so
+//           the code range maps to the character and Shift never changes the name.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// const letterOrDigitNameOf = (code: string) =>
+//   /^(Key[A-Z]|Digit[0-9])$/.test(code) ? code.slice(-1).toLowerCase() : "";
+// ```
+/** Returns the lowercase letter or digit that a key types, or an empty text when the key is neither. */
+private fun letterOrDigitNameOf(key: Key): String {
+    /** Android key code of the key. */
+    val code: Int = key.nativeKeyCode
+    return when (code) {
+        in AndroidKeyEvent.KEYCODE_A..AndroidKeyEvent.KEYCODE_Z ->
+            ('a' + (code - AndroidKeyEvent.KEYCODE_A)).toString()
+        in AndroidKeyEvent.KEYCODE_0..AndroidKeyEvent.KEYCODE_9 ->
+            ('0' + (code - AndroidKeyEvent.KEYCODE_0)).toString()
+        else -> ""
+    }
 }
 
 // What:     `internal fun hostKeyInputOf(event: KeyEvent): HostKeyInput` reads one key-down into the pure input.
@@ -165,9 +198,13 @@ internal fun Modifier.hostKeyboard(binding: HostKeyBinding): Modifier {
             if (command == HostKeyCommand.Unhandled) {
                 return@onPreviewKeyEvent false
             }
-            consumedKeyUps.add(event.key.keyCode)
             Log.i(HOST_KEY_LOG_TAG, "host key command=$command keyName=${input.keyName} repeat=${input.repeat}")
-            binding.dispatcher.dispatch(command)
+            /** Whether the host consumed the key; a list command stays with the focused list. */
+            val consumed: Boolean = binding.dispatcher.dispatch(command)
+            if (consumed) {
+                consumedKeyUps.add(event.key.keyCode)
+            }
+            consumed
         }
 }
 

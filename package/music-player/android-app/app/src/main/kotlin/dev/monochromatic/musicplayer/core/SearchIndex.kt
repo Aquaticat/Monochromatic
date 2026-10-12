@@ -14,30 +14,22 @@ package dev.monochromatic.musicplayer.core
 /** Number of distinct UTF-16 units, which is the size of the first-character bucket table. */
 private const val UNIT_COUNT: Int = 0x10000
 
-/** Name of the root-level group, and of any real folder called the same. */
-internal const val UNFILED_NAME: String = "Unfiled"
-
 /** Marks a ranked candidate as a folder: tracks use the low bits for their number and folders set this bit. */
 internal const val FOLDER_BIT: Int = 1 shl 31
-
-/** Folder number of the root-level group when it is listed as a folder; no table slot reaches it. */
-internal const val ROOT_FOLDER_SLOT: Int = FOLDER_BIT - 1
 
 // What:     `internal class FolderRecord(...)` is one top-level folder with its search form.
 // Why:      Folders are tested on every query, so their normalized names are kept ready.
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// type FolderRecord = { name: string; norm: Uint16Array; nestedOrPrefixed: boolean };
+// type FolderRecord = { name: string; norm: Uint16Array };
 // ```
-/** One top-level folder, its trimmed normalized name, and the flag that decides whether `Unfiled` is listed. */
+/** One top-level folder and its trimmed normalized name. */
 internal class FolderRecord(
     /** Folder name as displayed. */
     val name: String,
     /** Trimmed normalized name. */
     val norm: CharArray,
-    /** Whether a track of this folder has a subfolder or a display path that starts with `Unfiled/`. */
-    var nestedOrPrefixed: Boolean,
 )
 
 // What:     `internal class AppendRoom(...)` carries the enlarged storage that an append needs.
@@ -73,7 +65,7 @@ internal class AppendRoom(
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// type PathReplacement = { paths: string[]; folders: FolderRecord[]; hasRootTrack: boolean; rootPrefixed: boolean };
+// type PathReplacement = { paths: string[]; folders: FolderRecord[]; folderSlots: Map<string, number> };
 // ```
 /** Replacement display paths for all tracks, with the folder table they imply. */
 internal class PathReplacement(
@@ -83,10 +75,6 @@ internal class PathReplacement(
     val folders: ArrayList<FolderRecord>,
     /** Position of each folder name in [folders]. */
     val folderSlots: HashMap<String, Int>,
-    /** Whether some new path has fewer than two meaningful segments. */
-    val hasRootTrack: Boolean,
-    /** Whether a root-level new path starts with `Unfiled/`. */
-    val rootPrefixed: Boolean,
 )
 
 // What:     `class SearchIndex(val generation: Long)` is the searchable form of a library.
@@ -145,12 +133,6 @@ class SearchIndex(
     /** Position of each folder name in [folders]. */
     private var folderSlots: HashMap<String, Int> = HashMap()
 
-    /** Whether some track has fewer than two meaningful path segments. */
-    private var hasRootTrack: Boolean = false
-
-    /** Whether a root-level track has a display path that starts with `Unfiled/`. */
-    private var rootPrefixed: Boolean = false
-
     /** The best-five-hundred answer of each single-character query. */
     internal var top: TopCache = TopCache()
         private set
@@ -175,12 +157,8 @@ class SearchIndex(
     internal fun firstUnitSizes(): List<Pair<Char, Int>> =
         byFirst.withIndex().mapNotNull { (unit, list) -> list?.let { found -> unit.toChar() to found.size } }
 
-    /** Returns the table slots of the folders that Search offers as results. */
-    internal fun listedFolderSlots(): List<Int> =
-        folders.indices.filter { slot -> folders[slot].name != UNFILED_NAME || folders[slot].nestedOrPrefixed }
-
-    /** Reports whether the root-level group is offered as a folder result. */
-    internal fun rootGroupListed(): Boolean = hasRootTrack && rootPrefixed
+    /** Returns the table slots of the folders that Search offers as results: every real top-level folder. */
+    internal fun listedFolderSlots(): List<Int> = folders.indices.toList()
 
     // What:     `internal fun prepareRoom(batch: PreparedBatch): AppendRoom` enlarges the storage a batch needs.
     // Why:      See [AppendRoom]: the copies are made before the write lock is taken. Only the appender changes the
@@ -261,8 +239,6 @@ class SearchIndex(
             }
         }
         batch.folders.forEach { sighting -> noteFolder(sighting) }
-        hasRootTrack = hasRootTrack || batch.hasRootTrack
-        rootPrefixed = rootPrefixed || batch.rootPrefixed
     }
 
     /** Installs the storage of [room] and grows inline anything it did not cover. */
@@ -285,16 +261,13 @@ class SearchIndex(
         }
     }
 
-    /** Adds a folder to the table, or raises the flag of one that is already there. */
+    /** Adds a folder to the table unless it is already there. */
     private fun noteFolder(sighting: FolderSighting) {
-        /** Slot of the folder when it is known. */
-        val slot: Int? = folderSlots[sighting.name]
-        if (slot != null) {
-            folders[slot].nestedOrPrefixed = folders[slot].nestedOrPrefixed || sighting.nestedOrPrefixed
+        if (folderSlots.containsKey(sighting.name)) {
             return
         }
         folderSlots[sighting.name] = folders.size
-        folders.add(FolderRecord(sighting.name, normalizedName(sighting.name), sighting.nestedOrPrefixed))
+        folders.add(FolderRecord(sighting.name, normalizedName(sighting.name)))
     }
 
     // What:     `internal fun prepareReplacement(newPaths: List<String>): PathReplacement` builds the folder table of
@@ -323,16 +296,14 @@ class SearchIndex(
         val table = ArrayList<FolderRecord>()
         /** Position of each folder name in the table. */
         val slots = HashMap<String, Int>()
-        for ((name, flag) in scan.folders) {
+        for (name in scan.folders) {
             slots[name] = table.size
-            table.add(FolderRecord(name, normalizedName(name), flag))
+            table.add(FolderRecord(name, normalizedName(name)))
         }
         return PathReplacement(
             paths = newPaths.toTypedArray<String?>(),
             folders = table,
             folderSlots = slots,
-            hasRootTrack = scan.hasRootTrack,
-            rootPrefixed = scan.rootPrefixed,
         )
     }
 
@@ -350,8 +321,6 @@ class SearchIndex(
         paths = replacement.paths.copyOf(maxOf(paths.size, replacement.paths.size))
         folders = replacement.folders
         folderSlots = replacement.folderSlots
-        hasRootTrack = replacement.hasRootTrack
-        rootPrefixed = replacement.rootPrefixed
         top = TopCache()
     }
 

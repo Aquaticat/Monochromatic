@@ -317,11 +317,21 @@ class FolderRailTest {
     // ```
     /** Verifies an accented leading letter gets its own cell and ties keep first-seen order. */
     @Test
-    fun accentedLeadingLetterKeepsItsOwnCellAsTheJsModelDoes() {
+    fun accentedLeadingLetterSharesItsBaseLetterCell() {
         /** Latin section built from an accented leading name followed by a plain one. */
         val section = singleSection(listOf("Örjan", "Oscar"))
-        assertEquals(listOf("Ö", "O"), section.cells.map { cell -> cell.label })
-        assertEquals(listOf("Örjan"), section.cells[0].names)
+        assertEquals(listOf("O"), section.cells.map { cell -> cell.label })
+        assertEquals(listOf("Örjan", "Oscar"), section.cells[0].names)
+    }
+
+    /** Verifies É, Ó and Ü sit with E, O and U (D17, D28), and letters without a decomposition keep their own cell. */
+    @Test
+    fun accentedInitialsFoldIntoTheirBaseLetterCells() {
+        assertEquals("E", cellLabelOf("Émilie Simon"))
+        assertEquals("E", cellLabelOf("élan"))
+        assertEquals("U", cellLabelOf("Über"))
+        assertEquals("N", cellLabelOf("ñandú"))
+        assertEquals("Ø", cellLabelOf("Øystein"))
     }
 
     // What:     `@Test fun eszettUppercasesToSsLikeTheJsModel()` checks the German sharp s.

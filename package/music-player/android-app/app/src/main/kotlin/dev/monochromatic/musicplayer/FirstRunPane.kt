@@ -285,7 +285,12 @@ fun firstRunPane(
     val copy: FirstRunCopy = firstRunCopy(state = state, folderName = folderName)
     BoxWithConstraints(modifier = modifier.fillMaxSize().windowInsetsPadding(WindowInsets.systemBars)) {
         /** Start inset that keeps the text beside the blank left half on wide layouts. */
-        val start: Dp = firstRunStartPadding(maxWidth = maxWidth)
+        val start: Dp = if (maxWidth >= WIDE_LAYOUT_MIN_WIDTH) {
+            // On a creased screen the text also keeps the crease clearance of the right pane (E2, D110).
+            firstRunStartPadding(maxWidth = maxWidth) - EDGE_PADDING + paneStartInset(EDGE_PADDING)
+        } else {
+            firstRunStartPadding(maxWidth = maxWidth)
+        }
         Column(
             modifier = Modifier
                 .fillMaxSize()

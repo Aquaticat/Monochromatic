@@ -84,7 +84,11 @@ import android.os.IBinder
 // ```ts
 // import { Looper } from "android/os";
 // ```
+import android.database.ContentObserver
+import dev.monochromatic.musicplayer.core.RescanPlan
+import android.os.Handler
 import android.os.Looper
+import android.provider.MediaStore
 
 // What:     `import android.util.Log` pulls in `Log`, Android's logger
 //           (`Log.i(tag, msg)`).
@@ -334,6 +338,30 @@ class PlaybackService : MediaSessionService() {
      */
     private val scope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
 
+    /** Main-thread handler that debounces change signals into one rescan. */
+    private val handler: Handler = Handler(Looper.getMainLooper())
+
+    /** Remembers change signals that arrive while a library load runs, so no rescan is lost (D113). */
+    private val rescanPlan: RescanPlan = RescanPlan()
+
+    /** Runs the debounced rescan, or leaves it owed to the running load. */
+    private val rescanRunnable: Runnable = Runnable {
+        if (rescanPlan.signal()) {
+            rescanNow()
+        }
+    }
+
+    /** Follows the system audio index: any change to it asks for a rescan, so the library follows the disk. */
+    private val mediaObserver: ContentObserver = object : ContentObserver(handler) {
+        /** A row of the system audio index was added, changed or removed. */
+        override fun onChange(selfChange: Boolean) {
+            if (LibraryRoot.heldRoot(this@PlaybackService) == null) {
+                Log.i(LOG_TAG, "system audio index changed; a rescan follows")
+                rescan()
+            }
+        }
+    }
+
     /** The process's Search service and its answers, which every library change feeds. */
     private val searchHost: SearchHost = SearchHost()
 
@@ -550,6 +578,8 @@ class PlaybackService : MediaSessionService() {
         // ```ts
         // this.brainPlayer = new BrainPlayer(this.controller, Looper.getMainLooper());
         // ```
+        controller.onTrackLoaded = { uri -> readArtistTag(uri) }
+        contentResolver.registerContentObserver(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, true, mediaObserver)
         brainPlayer = BrainPlayer(controller, Looper.getMainLooper())
         // What:     `controller.onPersist = { saveSession() }` wires the controller's persist
         //           callback to this service's `saveSession`. The lambda is invoked at the end
@@ -796,7 +826,7 @@ class PlaybackService : MediaSessionService() {
         //   console.info(`[${LOG_TAG}] PlaybackService loaded ${tracks.length} tracks`);
         // });
         // ```
-        loadJob = scope.launch {
+        loadJob = launchLoad {
             // What:     `val outcome = scanner.scan(source = { onBatch -> LibrarySource.load(this, onBatch) },
             //           publish = { built -> controller.reconcileBuilt(built, feedSearch = false) })`
             //           declares a read-only local `outcome` (a `ScanOutcome`) from the `suspend` `scan`.
@@ -864,6 +894,7 @@ class PlaybackService : MediaSessionService() {
             // this.sessionRestored = true;
             // ```
             sessionRestored = true
+            analyzeNewTracks()
             // What:     `if (result == FinishLoadResult.KeptUserSelectionDuringLoad) { saveSession() }`
             //           saves immediately ONLY on the kept-tap path. `==` is value equality on the
             //           enum tag; `FinishLoadResult.KeptUserSelectionDuringLoad` reads the named
@@ -955,7 +986,7 @@ class PlaybackService : MediaSessionService() {
         //   console.info(`[${LOG_TAG}] PlaybackService loaded ${tracks.length} tracks from picked folder`);
         // });
         // ```
-        loadJob = scope.launch {
+        loadJob = launchLoad {
             // What:     `val tracks = LibrarySource.scanRoot(this@PlaybackService, treeUri)`
             //           declares `tracks` (inferred `List<Track>`) from the `suspend` call
             //           `scanRoot`, scanning the picked tree. `this@PlaybackService` is
@@ -1016,6 +1047,7 @@ class PlaybackService : MediaSessionService() {
             // console.info(`[${LOG_TAG}] PlaybackService loaded ${tracks.length} tracks from picked folder`);
             // ```
             Log.i(LOG_TAG, "PlaybackService loaded ${tracks.size} tracks from picked folder")
+            analyzeNewTracks()
         }
     }
 
@@ -1041,7 +1073,7 @@ class PlaybackService : MediaSessionService() {
      * Defines rescan behavior for this music-player component; the TypeScript-oriented notes above explain its
      * call shape and effects.
      */
-    fun rescan() {
+    private fun rescanNow() {
         // What:     `if (!libraryLoaded) return` bails before the first load.
         // Why:      Nothing to reconcile until a library has been loaded; the first load is
         //           `ensureLibraryLoaded`'s job, not a rescan's.
@@ -1073,7 +1105,7 @@ class PlaybackService : MediaSessionService() {
         // ```ts
         // this.loadJob = launch(this.scope, async () => { ... });
         // ```
-        loadJob = scope.launch {
+        loadJob = launchLoad {
             // What:     `val tracks = LibrarySource.load(this@PlaybackService)` re-resolves the
             //           CURRENT source (held SAF root, else MediaStore) and scans it.
             // Why:      The live state of the source on this foreground.
@@ -1105,6 +1137,86 @@ class PlaybackService : MediaSessionService() {
             // console.info(`[${LOG_TAG}] PlaybackService reconciled ${tracks.length} tracks (live update)`);
             // ```
             Log.i(LOG_TAG, "PlaybackService reconciled ${tracks.size} tracks (live update)")
+            analyzeNewTracks()
+        }
+    }
+
+    // What:     `fun rescan()` asks for a rescan of the current source, debounced.
+    // Why:      D113: the library follows the disk without a user action. The app returning to the front, a change of
+    //           the
+    //           system audio index and the service connecting all call this; a burst of signals becomes one rescan a
+    //           moment after the last one, and a signal during a load is remembered and answered when the load ends.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // rescan(): void { clearTimeout(this.timer); this.timer = setTimeout(() => { if (plan.signal()) this.rescanNow();
+    // }, 1500); }
+    // ```
+    /** Schedules one rescan after the signals of the last moment have settled. */
+    fun rescan() {
+        handler.removeCallbacks(rescanRunnable)
+        handler.postDelayed(rescanRunnable, RESCAN_DEBOUNCE_MS)
+    }
+
+    // What:     `private fun launchLoad(block)` starts a library load or rescan and tells the rescan plan when it ends.
+    // Why:      Every load goes through here, so a change signal that arrived during any of them is answered once the
+    //           load finishes.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // private launchLoad(block: () => Promise<void>): Job { plan.loadStarted(); const job = run(block);
+    // job.finally(...); return job; }
+    // ```
+    /** Launches [block] as the current load and, when it ends, rescans once more if a signal was owed. */
+    private fun launchLoad(block: suspend CoroutineScope.() -> Unit): Job {
+        rescanPlan.loadStarted()
+        /** The load or rescan that runs [block]. */
+        val job: Job = scope.launch(block = block)
+        job.invokeOnCompletion {
+            handler.post {
+                if (rescanPlan.loadFinished()) {
+                    Log.i(LOG_TAG, "a change arrived during the load; rescanning once more")
+                    rescan()
+                }
+            }
+        }
+        return job
+    }
+
+    // What:     `private fun readArtistTag(uri: String)` reads the artist tag of a loaded track off the main thread and
+    //           hands it to the controller, which republishes the media session.
+    // Why:      The media notification shows an artist line when tags exist; reading a tag opens the file, which must
+    //           not block the main thread.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // private async readArtistTag(uri: string) { controller.setTrackArtist(uri, await TrackTags.artistOf(this, uri)); }
+    // ```
+    /** Reads the artist tag of [uri] on the I/O dispatcher and gives it to the controller on the main thread. */
+    private fun readArtistTag(uri: String) {
+        scope.launch {
+            /** The artist tag, or null when the file has none. */
+            val artist: String? = withContext(Dispatchers.IO) { TrackTags.artistOf(this@PlaybackService, uri) }
+            controller.setTrackArtist(uri, artist)
+        }
+    }
+
+    // What:     `private fun analyzeNewTracks()` starts the true-peak analysis when the library holds tracks it has not
+    //           looked at.
+    // Why:      M9: the analysis used to start once, for the first full index; files added later never got a peak.
+    //           Every
+    //           completed load or rescan asks now, and the analysis service starts only for tracks it has not seen.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // private analyzeNewTracks(): void { void PeakSweepService.startIfNeeded(this, this.controller.urisSnapshot()); }
+    // ```
+    /** Asks the analysis service to run for the library's new tracks; the ledger check runs off the main thread. */
+    private fun analyzeNewTracks() {
+        /** URIs of the library as the controller holds it now. */
+        val uris: List<String> = controller.urisSnapshot()
+        scope.launch(Dispatchers.Default) {
+            PeakSweepService.startIfNeeded(this@PlaybackService, uris)
         }
     }
 
@@ -1167,6 +1279,8 @@ class PlaybackService : MediaSessionService() {
      * its call shape and effects.
      */
     override fun onDestroy() {
+        contentResolver.unregisterContentObserver(mediaObserver)
+        handler.removeCallbacks(rescanRunnable)
         // What:     `saveSession()` persists the final session BEFORE anything is released.
         // Why:      Capture the latest selection/settings/position while the controller and
         //           engine are still alive (`currentSession()` reads `engine.positionSec()`);
@@ -1274,6 +1388,9 @@ class PlaybackService : MediaSessionService() {
         // ```ts
         // static readonly ACTION_LOCAL_BIND = "dev.monochromatic.musicplayer.LOCAL_BIND";
         // ```
+        /** Quiet time after the last change signal before the library is rescanned. */
+        private const val RESCAN_DEBOUNCE_MS: Long = 1_500L
+
         /**
          * Defines action local bind value for this music-player component; the TypeScript-oriented notes above
          * explain its source and use.

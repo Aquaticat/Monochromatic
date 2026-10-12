@@ -17,6 +17,7 @@ package dev.monochromatic.musicplayer
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.defaultMinSize
@@ -57,9 +58,11 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import dev.monochromatic.musicplayer.core.headingLineBudget
 
 // What:     `private val TOP_BAR_MIN_HEIGHT: Dp = 56.dp` is the minimum height of each top bar row.
 // Why:      The Material app bar uses 56dp, so the bars match the standard height.
@@ -148,6 +151,7 @@ private fun folderTitleTrigger(
     pickerOpen: Boolean,
     onToggleFolderPicker: () -> Unit,
     modifier: Modifier,
+    maxLines: Int = 1,
 ) {
     Row(
         modifier = modifier
@@ -163,7 +167,8 @@ private fun folderTitleTrigger(
             text = folderTitle,
             modifier = Modifier.weight(1f, fill = false),
             style = MaterialTheme.typography.titleMedium,
-            maxLines = 1,
+            maxLines = maxLines,
+            minLines = maxLines,
             overflow = TextOverflow.Ellipsis,
         )
         Icon(
@@ -190,7 +195,7 @@ private fun openButton(onOpen: () -> Unit) {
             modifier = Modifier.size(ButtonDefaults.IconSize),
         )
         Box(modifier = Modifier.width(ButtonDefaults.IconSpacing))
-        Text(text = "Open dir")
+        Text(text = "Open")
     }
 }
 
@@ -256,6 +261,38 @@ fun coverTopRow(
     onSearch: (() -> Unit)?,
     modifier: Modifier = Modifier,
 ) {
+    /** Lines the folder title may use: two at large text sizes, where one line would cut the name to a stub. */
+    val titleLines: Int = headingLineBudget(LocalDensity.current.fontScale)
+    if (titleLines > 1) {
+        // At large text the three actions take most of the row, so the title gets its own full-width line and the
+        // actions sit on a second line at the end, instead of squeezing the title to a few letters.
+        Column(
+            modifier = modifier
+                .fillMaxWidth()
+                .windowInsetsPadding(WindowInsets.statusBars)
+                .padding(start = BAR_START_PADDING, end = BAR_END_PADDING),
+        ) {
+            folderTitleTrigger(
+                folderTitle = folderTitle,
+                pickerOpen = pickerOpen,
+                onToggleFolderPicker = onToggleFolderPicker,
+                modifier = Modifier.fillMaxWidth(),
+                maxLines = titleLines,
+            )
+            Row(
+                modifier = Modifier.fillMaxWidth().heightIn(min = TOP_BAR_MIN_HEIGHT),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(ACTION_SPACING, Alignment.End),
+            ) {
+                if (onSearch != null) {
+                    searchButton(onSearch = onSearch)
+                }
+                openButton(onOpen = onOpen)
+                settingsButton(onSettings = onSettings)
+            }
+        }
+        return
+    }
     Row(
         modifier = modifier
             .fillMaxWidth()
@@ -339,7 +376,7 @@ fun unfoldedTrackHeader(
             .fillMaxWidth()
             .heightIn(min = TOP_BAR_MIN_HEIGHT)
             .windowInsetsPadding(WindowInsets.statusBars)
-            .padding(start = BAR_START_PADDING, end = BAR_END_PADDING),
+            .padding(start = paneStartInset(BAR_START_PADDING), end = BAR_END_PADDING),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(ACTION_SPACING),
     ) {

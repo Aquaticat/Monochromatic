@@ -211,3 +211,37 @@ internal fun shuffleFromHere(controller: PlayerController, indexInLibrary: Int) 
     controller.setPlaybackMode(PlaybackMode.SHUFFLE_PAGE)
     controller.playIndex(indexInLibrary)
 }
+
+// What:     `internal fun trackFileSizeBytes(...)` reads the size of one track file from its provider.
+// Why:      M5: File details shows the size. A provider answers a size query with a database read, so the caller runs
+//           it
+//           off the main thread; the size is null when the provider does not report one.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// async function trackFileSizeBytes(track: Track): Promise<number | null> { /* query OpenableColumns.SIZE */ }
+// ```
+/** Returns the file size the provider reports for the track, or null when it reports none or the file is gone. */
+internal fun trackFileSizeBytes(context: Context, track: Track): Long? {
+    if (track.uri.startsWith("/")) {
+        /** The file at an absolute path, whose length is its size. */
+        val file = java.io.File(track.uri)
+        return if (file.isFile) file.length() else null
+    }
+    try {
+        context.contentResolver.query(
+            Uri.parse(track.uri),
+            arrayOf(android.provider.OpenableColumns.SIZE),
+            null,
+            null,
+            null,
+        )?.use { cursor ->
+            if (cursor.moveToFirst() && !cursor.isNull(0)) {
+                return cursor.getLong(0)
+            }
+        }
+    } catch (expectedFailure: Exception) {
+        Log.w(LOG_TAG, "$TRACK_ACTION_TAG size query failed", expectedFailure)
+    }
+    return null
+}

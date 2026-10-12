@@ -54,27 +54,6 @@ private fun parentContextFor(displayPath: String): String? {
     return parent
 }
 
-// What:     `private fun isUnfiledEntry(entry: FolderEntry): Boolean` tells the root-level Unfiled entry apart from a
-//           real top-level folder that happens to be named `Unfiled`.
-// Why:      A real folder must stay searchable by its name (D60), while the root-level group must not appear as a
-//           folder result. Real folder tracks always sit under `Unfiled/`, and root-level tracks never do.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// const isUnfiledEntry = (entry: FolderEntry) => entry.name === "Unfiled" && entry.items.every(isRootTrack);
-// ```
-/** Reports whether a folder entry is the root-level group rather than a real folder named `Unfiled`. */
-private fun isUnfiledEntry(entry: FolderEntry): Boolean {
-    if (entry.name != UNFILED_FOLDER_NAME) {
-        return false
-    }
-    /** Prefix that every track of a real folder named `Unfiled` carries in its display path. */
-    val folderPrefix: String = UNFILED_FOLDER_NAME + PATH_SEPARATOR
-    return entry.items.all { item ->
-        item is FolderListItem.TrackItem && !item.row.track.displayPath.startsWith(folderPrefix)
-    }
-}
-
 // What:     `private fun folderCandidate(entry: FolderEntry, query: String, terms: List<String>): SearchCandidate?`
 //           builds a folder result when the folder's own name matches.
 // Why:      Only the folder's name is matched (D60), so the folder's tracks never enter the list through it.
@@ -150,7 +129,7 @@ private fun trackCandidate(
 
 // What:     `private fun candidatesFor(query: String, terms: List<String>, tracks: List<Track>)` returns the
 //           `List<SearchCandidate>` of every folder and track that matches, before ordering and the limit.
-// Why:      Folders come from the folder index without its root-level group, and tracks come from every folder's
+// Why:      Folders come from the folder index without its virtual letter folders, and tracks come from every folder's
 //           track rows, so each track is searched exactly once.
 //
 // In TS you'd write (pseudocode):
@@ -159,11 +138,11 @@ private fun trackCandidate(
 // ```
 /** Gathers every matching folder result and track result for the library, unordered. */
 private fun candidatesFor(query: String, terms: List<String>, tracks: List<Track>): List<SearchCandidate> {
-    /** Folder entries of the library, one per top-level folder plus the root-level group when it has tracks. */
+    /** Folder entries of the library, one per top-level folder plus one virtual letter folder per initial of the loose tracks. */
     val entries: List<FolderEntry> = folderIndex(tracks)
-    /** Folder results for entries whose own name matches, with the root-level group excluded. */
+    /** Folder results for entries whose own name matches; the virtual letter folders of loose tracks are excluded. */
     val folderMatches: List<SearchCandidate> = entries
-        .filterNot { entry -> isUnfiledEntry(entry) }
+        .filterNot { entry -> entry.loose }
         .mapNotNull { entry -> folderCandidate(entry, query, terms) }
     /** Track results for every track row of every entry, each carrying its owning folder name. */
     val trackMatches: List<SearchCandidate> = entries.flatMap { entry ->

@@ -139,7 +139,10 @@ import androidx.compose.ui.unit.dp
 // ```ts
 // import type { PlayerContentModel } from "dev.monochromatic.musicplayer/core/PlayerContentModel";
 // ```
+import androidx.compose.ui.platform.LocalDensity
 import dev.monochromatic.musicplayer.core.PlayerContentModel
+import dev.monochromatic.musicplayer.core.leftPaneClearance
+import dev.monochromatic.musicplayer.core.rightPaneClearance
 
 // What:     `private const val COVER_LAYOUT_MAX_WIDTH_DP: Float = 600f` is the width below which the
 //           cover layout draws.
@@ -237,6 +240,7 @@ fun playerContent(
     pickerOpen: Boolean,
     actions: PlayerContentActions,
     modifier: Modifier = Modifier,
+    creaseWidthPx: Float? = null,
 ) {
     /** Whether the system is in dark mode, which selects the true-black canvas and the black seams. */
     val dark: Boolean = isSystemInDarkTheme()
@@ -249,7 +253,7 @@ fun playerContent(
             if (isCoverLayout(maxWidth.value)) {
                 coverLayout(model = model, pickerOpen = pickerOpen, actions = actions, dark = dark)
             } else {
-                unfoldedLayout(model = model, actions = actions, canvas = canvas)
+                unfoldedLayout(model = model, actions = actions, canvas = canvas, creaseWidthPx = creaseWidthPx)
             }
         }
     }
@@ -314,41 +318,53 @@ private fun coverLayout(
 //     <Column weight={1}>{trackHeader}{list}</Column></Row>;
 // }
 // ```
-/** Draws the unfolded layout: the folder rail with the deck on the left, and the track list on the right. */
+/**
+ * Draws the unfolded layout: the folder rail with the deck on the left, and the track list on the right.
+ *
+ * Each pane provides the crease clearance of its own edge (E2, D110), so the text of the left pane ends before the
+ * crease band and the text of the right pane starts after it, while backgrounds and containers span the band.
+ */
 @Composable
 private fun unfoldedLayout(
     model: PlayerContentModel,
     actions: PlayerContentActions,
     canvas: Color,
+    creaseWidthPx: Float?,
 ) {
+    /** Physical pixels per dp, which converts the physical crease clearance to dp. */
+    val density: Float = LocalDensity.current.density
     Row(modifier = Modifier.fillMaxSize()) {
-        Column(modifier = Modifier.weight(1f).fillMaxHeight()) {
-            unfoldedFoldersHeader(title = model.libraryName, onOpen = actions.onOpen)
-            folderPickerPane(
-                sections = model.sections,
-                currentFolder = model.currentFolder,
-                onSelectFolder = actions.onSelectFolder,
-                modifier = Modifier.weight(1f),
-            )
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(SECTION_GAP)
-                    .background(color = canvas),
-            )
-            transportDeck(model = model.deck, actions = actions.deck)
+        paneClearanceProvider(clearance = leftPaneClearance(creaseWidthPx = creaseWidthPx, density = density)) {
+            Column(modifier = Modifier.weight(1f).fillMaxHeight()) {
+                unfoldedFoldersHeader(title = model.libraryName, onOpen = actions.onOpen)
+                folderPickerPane(
+                    sections = model.sections,
+                    currentFolder = model.currentFolder,
+                    onSelectFolder = actions.onSelectFolder,
+                    modifier = Modifier.weight(1f),
+                )
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(SECTION_GAP)
+                        .background(color = canvas),
+                )
+                transportDeck(model = model.deck, actions = actions.deck)
+            }
         }
-        Column(modifier = Modifier.weight(1f).fillMaxHeight()) {
-            unfoldedTrackHeader(
-                folderTitle = model.folderTitle,
-                onSettings = actions.onSettings,
-                onSearch = actions.onSearch,
-            )
-            trackListPane(
-                entries = model.entries,
-                onPlay = actions.onPlay,
-                modifier = Modifier.weight(1f),
-            )
+        paneClearanceProvider(clearance = rightPaneClearance(creaseWidthPx = creaseWidthPx, density = density)) {
+            Column(modifier = Modifier.weight(1f).fillMaxHeight()) {
+                unfoldedTrackHeader(
+                    folderTitle = model.folderTitle,
+                    onSettings = actions.onSettings,
+                    onSearch = actions.onSearch,
+                )
+                trackListPane(
+                    entries = model.entries,
+                    onPlay = actions.onPlay,
+                    modifier = Modifier.weight(1f),
+                )
+            }
         }
     }
 }

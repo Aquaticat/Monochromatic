@@ -11,9 +11,6 @@
 // ```
 package dev.monochromatic.musicplayer.core
 
-/** Path prefix that marks a root-level track as filed under a folder named like the root-level group. */
-private const val UNFILED_PREFIX: String = "Unfiled/"
-
 /** Separator between the segments of a display path. */
 private const val SEGMENT_SEPARATOR: Char = '/'
 
@@ -36,19 +33,16 @@ private const val FOLDERED_SEGMENTS: Int = 2
 private const val UNIT_BITS: Int = 16
 
 // What:     `internal class FolderSighting(...)` is a top-level folder that a batch names.
-// Why:      The index lists each folder once; the flag decides, for a folder named `Unfiled`, whether it is a real
-//           folder or only the root-level group's namesake.
+// Why:      The index lists each folder once.
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// type FolderSighting = { name: string; nestedOrPrefixed: boolean };
+// type FolderSighting = { name: string };
 // ```
 /** A top-level folder named by at least one track of a batch. */
 internal class FolderSighting(
     /** First meaningful path segment of a track that has two or more segments. */
     val name: String,
-    /** Whether a track of this folder has a subfolder or a display path that starts with `Unfiled/`. */
-    val nestedOrPrefixed: Boolean,
 )
 
 // What:     `internal class PreparedBatch(...)` is a group of tracks ready to be appended with a copy.
@@ -77,10 +71,6 @@ internal class PreparedBatch(
     val triples: KeyedLists,
     /** Top-level folders named by tracks with two or more meaningful segments. */
     val folders: List<FolderSighting>,
-    /** Whether some track in the batch has fewer than two meaningful segments. */
-    val hasRootTrack: Boolean,
-    /** Whether a root-level track in the batch has a display path that starts with `Unfiled/`. */
-    val rootPrefixed: Boolean,
 )
 
 // What:     `internal fun pairKeyOf(first: Char, second: Char): Int` packs two UTF-16 units into one map key.
@@ -196,31 +186,18 @@ internal fun folderOf(path: String): FolderOfPath {
     return FolderOfPath(first, count)
 }
 
-/** Reports whether [path] names a folder level below its top-level folder, or starts with `Unfiled/`. */
-private fun isNestedOrPrefixed(path: String, segments: Int): Boolean =
-    segments >= SUBFOLDER_SEGMENTS || path.startsWith(UNFILED_PREFIX)
-
 // What:     `internal class FolderScan` collects the top-level folders of display paths.
-// Why:      A prepared batch and a path replacement both need the same notes: which folders exist, whether a folder
-//           has a subfolder or an `Unfiled/` path, and whether the root-level group exists and is offered.
+// Why:      A prepared batch and a path replacement both need the same note: which top-level folders exist. A
+//           loose root-level track is not a folder; its virtual letter folder is derived when a result is built.
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// class FolderScan { folders = new Map<string, boolean>(); hasRootTrack = false; rootPrefixed = false;
-//   note(path: string) {} }
+// class FolderScan { folders = new Set<string>(); note(path: string) {} }
 // ```
-/** Folders named by a run of display paths, with the flags that decide which of them Search offers. */
+/** Folders named by a run of display paths. */
 internal class FolderScan {
-    /** Folders in first-seen order, each with whether one of its tracks is nested or prefixed. */
-    val folders = LinkedHashMap<String, Boolean>()
-
-    /** Whether some path has fewer than two meaningful segments. */
-    var hasRootTrack: Boolean = false
-        private set
-
-    /** Whether a root-level path starts with `Unfiled/`. */
-    var rootPrefixed: Boolean = false
-        private set
+    /** Folder names in first-seen order. */
+    val folders = LinkedHashSet<String>()
 
     /** Notes the folder of one display path. */
     fun note(path: String) {
@@ -229,10 +206,7 @@ internal class FolderScan {
         /** Name of the top-level folder, or null. */
         val name: String? = folder.first
         if (name != null && folder.segments >= FOLDERED_SEGMENTS) {
-            folders[name] = (folders[name] ?: false) || isNestedOrPrefixed(path, folder.segments)
-        } else {
-            hasRootTrack = true
-            rootPrefixed = rootPrefixed || path.startsWith(UNFILED_PREFIX)
+            folders.add(name)
         }
     }
 }
@@ -281,8 +255,6 @@ internal fun prepareBatch(paths: List<String>, uris: List<String>? = null): Prep
         firsts = keys.firsts,
         pairs = keys.pairs,
         triples = keys.triples,
-        folders = folderScan.folders.map { (name, flag) -> FolderSighting(name, flag) },
-        hasRootTrack = folderScan.hasRootTrack,
-        rootPrefixed = folderScan.rootPrefixed,
+        folders = folderScan.folders.map { name -> FolderSighting(name) },
     )
 }

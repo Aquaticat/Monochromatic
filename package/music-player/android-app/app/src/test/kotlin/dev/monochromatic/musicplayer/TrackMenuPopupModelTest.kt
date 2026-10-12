@@ -47,7 +47,7 @@ class TrackMenuPopupModelTest {
     @Test
     fun dividersFollowD7Groups() {
         assertEquals(
-            listOf(false, false, true, false, true, false, false),
+            listOf(false, false, true, true, false, false),
             trackMenuDividerFlags(trackMenuActionsFor()),
         )
     }
@@ -119,7 +119,7 @@ class TrackMenuPopupModelTest {
     // ```ts
     // test("glyph per action", () => { ... });
     // ```
-    /** Confirms each of the seven actions maps to its named glyph. */
+    /** Confirms each of the six actions maps to its named glyph. */
     @Test
     fun trackMenuIconMapsEveryAction() {
         /** Each action paired with the glyph name it must produce. */
@@ -127,7 +127,6 @@ class TrackMenuPopupModelTest {
             Pair(TrackMenuAction.PLAY, "TrackMenu.Play"),
             Pair(TrackMenuAction.SHUFFLE_FROM_HERE, "TrackMenu.Shuffle"),
             Pair(TrackMenuAction.DETAILS, "TrackMenu.Info"),
-            Pair(TrackMenuAction.REANALYSE_TRUE_PEAK, "TrackMenu.Refresh"),
             Pair(TrackMenuAction.SHOW_IN_FILE_MANAGER, "TrackMenu.FolderOpen"),
             Pair(TrackMenuAction.COPY_FILENAME, "TrackMenu.ContentCopy"),
             Pair(TrackMenuAction.MOVE_TO_TRASH, "TrackMenu.Delete"),

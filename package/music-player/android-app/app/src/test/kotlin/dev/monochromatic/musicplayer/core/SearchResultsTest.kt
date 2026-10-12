@@ -248,14 +248,31 @@ class SearchResultsTest {
     // ```ts
     // test("unfiled", () => expect(searchLibrary("cam", [{ displayPath: "Cam.flac" }], true)).toHaveLength(1));
     // ```
-    /** Verifies a root-level track is found by its title, with no context line and the root-level group as owner. */
+    /** Verifies a root-level track is found by its title, with no context line and its letter folder as owner. */
     @Test
-    fun unfiledTracksAreSearchedByTitle() {
+    fun looseTracksAreSearchedByTitleAndShowTheirLetterFolder() {
         /** The single result for the root-level track. */
         val result: SearchResult = itemsOf(searchLibrary("cam", library("Cam.flac"), true)).single()
         assertEquals(SearchResultKind.TRACK, result.kind)
         assertNull(result.parentContext)
-        assertEquals(UNFILED_FOLDER_NAME, result.folderName)
+        assertEquals("C", result.folderName)
+    }
+
+    /** Verifies the virtual folder of a loose track is its upper-case initial, with accents folded, or # otherwise. */
+    @Test
+    fun looseTracksNameTheFolderThePlayerShows() {
+        assertEquals("A", itemsOf(searchLibrary("adele", library("Adele-Meow.mp3"), true)).single().folderName)
+        assertEquals("A", itemsOf(searchLibrary("aaa", library("aaa lowercase loose.mp3"), true)).single().folderName)
+        assertEquals("E", itemsOf(searchLibrary("emilie", library("Émilie.flac"), true)).single().folderName)
+        assertEquals("#", itemsOf(searchLibrary("song", library("1 song.flac"), true)).single().folderName)
+        assertEquals("#", itemsOf(searchLibrary("初音", library("初音.flac"), true)).single().folderName)
+    }
+
+    /** Verifies the word Unfiled is no longer the name of any group of loose tracks. */
+    @Test
+    fun noResultNamesAnUnfiledGroup() {
+        assertEquals(SearchState.NoMatch("unfiled"), searchLibrary("unfiled", library("Other.flac"), true))
+        assertEquals("O", itemsOf(searchLibrary("other", library("Other.flac"), true)).single().folderName)
     }
 
     // What:     `@Test fun rootTrackHasNoContextHighlight()` checks that a query cannot highlight a missing context.
@@ -283,10 +300,22 @@ class SearchResultsTest {
     // test("unfiled not folder", () =>
     //   expect(searchLibrary("unf", lib, true)).toEqual({ kind: "noMatch", query: "unf" }));
     // ```
-    /** Verifies the root-level group does not appear as a folder result even when its name matches. */
+    /** Verifies a virtual letter folder does not appear as a folder result even when its letter matches. */
     @Test
-    fun unfiledGroupIsNotAFolderResult() {
-        assertEquals(SearchState.NoMatch("unf"), searchLibrary("unf", library("Other.flac"), true))
+    fun letterFolderOfLooseTracksIsNotAFolderResult() {
+        assertEquals(
+            listOf(SearchResultKind.TRACK),
+            itemsOf(searchLibrary("a", library("Adele.flac"), true)).map { item -> item.kind },
+        )
+    }
+
+    /** Verifies a real folder named like a loose letter is one folder result, beside the loose track's own result. */
+    @Test
+    fun realFolderNamedLikeALetterIsTheOnlyFolderResult() {
+        /** Results for the query "a" over a real folder A and a loose track whose letter is A. */
+        val items = itemsOf(searchLibrary("a", library("A/Song.flac", "Adele.flac"), true))
+        assertEquals(1, items.count { item -> item.kind == SearchResultKind.FOLDER })
+        assertEquals("A", items.single { item -> item.kind == SearchResultKind.TRACK }.folderName)
     }
 
     // What:     `@Test fun realFolderNamedUnfiledIsAFolderResult()` checks a real folder that uses the reserved name.

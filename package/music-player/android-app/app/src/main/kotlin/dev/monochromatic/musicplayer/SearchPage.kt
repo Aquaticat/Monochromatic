@@ -632,6 +632,7 @@ import dev.monochromatic.musicplayer.core.searchStatusLine
 // import { SEARCH_FIELD_LABEL, SEARCH_BACK_LABEL } from "dev.monochromatic.musicplayer/core/SearchPageModel";
 // ```
 import dev.monochromatic.musicplayer.core.creaseHalfClearanceDp
+import dev.monochromatic.musicplayer.core.leftPaneClearance
 import dev.monochromatic.musicplayer.core.SEARCH_BACK_LABEL
 import dev.monochromatic.musicplayer.core.SEARCH_CLEAR_LABEL
 import dev.monochromatic.musicplayer.core.SEARCH_FIELD_LABEL
@@ -985,7 +986,12 @@ private fun searchInnerPage(
                 folderBrowser(Modifier.fillMaxSize().padding(end = halfCrease + SEARCH_BROWSER_GAP))
             }
             Box(modifier = Modifier.fillMaxWidth()) {
-                deck()
+                // The deck's text keeps the same crease clearance as the player's left pane (E2, D110).
+                paneClearanceProvider(
+                    clearance = leftPaneClearance(creaseWidthPx = creaseWidthPx, density = density.density),
+                ) {
+                    deck()
+                }
             }
         }
         Column(modifier = Modifier.weight(1f).fillMaxHeight()) {

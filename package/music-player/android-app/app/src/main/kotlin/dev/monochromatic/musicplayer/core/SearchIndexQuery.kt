@@ -169,7 +169,7 @@ private fun SearchIndex.trackMatches(
 /** Lists every track number, for a query whose terms all start with a separator. */
 private fun SearchIndex.everyTrack(): IntArray = IntArray(trackCount) { position -> position }
 
-/** Ranks the listed folders that match, including the root-level group when it is offered. */
+/** Ranks the listed folders that match. Loose root-level tracks have no folder result of their own (D28). */
 private fun SearchIndex.folderMatches(termChars: Array<CharArray>, joined: CharArray): LongArray {
     /** Packed matching folders. */
     val found = ArrayList<Long>()
@@ -180,15 +180,6 @@ private fun SearchIndex.folderMatches(termChars: Array<CharArray>, joined: CharA
         val tier: Int = fastTier(record.norm, 0, record.norm.size, termChars, joined)
         if (tier != NO_TIER) {
             found.add(packCandidate(tier, record.norm.size, FOLDER_BIT or slot))
-        }
-    }
-    if (rootGroupListed()) {
-        /** Normalized name of the root-level group. */
-        val root: CharArray = UNFILED_NAME.lowercase().toCharArray()
-        /** Tier of the group's name, or [NO_TIER]. */
-        val tier: Int = fastTier(root, 0, root.size, termChars, joined)
-        if (tier != NO_TIER) {
-            found.add(packCandidate(tier, root.size, FOLDER_BIT or ROOT_FOLDER_SLOT))
         }
     }
     return found.toLongArray()
@@ -227,7 +218,11 @@ private fun SearchIndex.trackResult(packed: Long, terms: List<String>): SearchRe
         name = title,
         parentContext = parentContext,
         indexInLibrary = position,
-        folderName = if (folder.first != null && folder.segments >= 2) folder.first else UNFILED_NAME,
+        folderName = if (folder.first != null && folder.segments >= 2) {
+            folder.first
+        } else {
+            looseFolderLabel(folder.first.orEmpty())
+        },
         tier = tierOfCandidate(packed),
         nameHighlights = highlightRangesForTerms(title, terms),
         parentHighlights = if (parentContext == null) emptyList() else highlightRangesForTerms(parentContext, terms),

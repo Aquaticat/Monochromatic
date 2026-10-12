@@ -211,7 +211,80 @@ a vertical fold is a crease,
 its reported width is the width of its bounds,
 and the clearance is `max(7.5 mm, reported width)`.
 Until the first layout report the `android.hardware.sensor.hinge_angle` system feature stands in.
-Settings and Search read the same answer.
+The player, Settings and Search read the same answer.
+
+On the unfolded player each pane provides its own clearance
+([`PaneClearanceLocals.kt`](app/src/main/kotlin/dev/monochromatic/musicplayer/PaneClearanceLocals.kt),
+rule in [`core/PaneClearance.kt`](app/src/main/kotlin/dev/monochromatic/musicplayer/core/PaneClearance.kt)):
+text in the left pane (folder names, the deck, the undo toast) ends half of `max(7.5 mm, crease width)` before the
+shared edge,
+text in the right pane (header, track rows, subfolder headers, the empty notice, the first-run text) starts that far
+after it,
+and backgrounds and containers still span the band.
+A window with no crease keeps the ordinary insets.
+
+## Keyboard and focus
+
+An attached keyboard gets the D106 map.
+[`core/KeyBindings.kt`](app/src/main/kotlin/dev/monochromatic/musicplayer/core/KeyBindings.kt) is the table, one row per
+chord with its scope, and `KeyBindingsTest` has one test per chord.
+The older D102 chords stay in `core/KeyboardMap.kt`; `core/HostKeyboardModel.kt` asks the table first, then the older
+classifier.
+Implemented: `Alt+Left` and `Alt+Right` seek 10 seconds (60 with `Shift`), `Ctrl+Home` restarts,
+`Ctrl+Shift+1` to `Ctrl+Shift+4` pick the mode, `Alt+Up` and `Alt+Down` pick the previous and next folder,
+`Ctrl+Shift+G` shows the playing track's folder, `Alt+1` and `Alt+2` focus the folder names and the track list,
+`Ctrl+Shift+O` opens the system folder chooser, `Escape` closes the cover's folder picker,
+inside a focused list the arrows, `Home`, `End`, `PageUp`, `PageDown` and `Enter`
+(a letter jumps in the rail and the names),
+and on a track row `Menu` or `Alt+Enter` open its menu (D114), and `Delete`, `Ctrl+Shift+C` and `Ctrl+Shift+E`
+trash it, copy its file name and show it in the file manager (also from the open menu).
+There is no rescan or re-analysis key (D113) and no `Shift+F10`.
+Left out on Android: the key hint badges, tooltips, `Ctrl+Q` and double `Shift`.
+
+The folder rail, the folder names and the track list are each one focus stop (`Tab` passes them in one step) with their
+own focus ring, moved by the arrow keys; their entries take no focus of their own,
+so TalkBack still reads every entry through its semantics.
+The focus indicator is a 2 dp ring in the primary role over a ten percent state layer
+([`FocusRing.kt`](app/src/main/kotlin/dev/monochromatic/musicplayer/FocusRing.kt));
+`FocusRingContrastTest` checks the ring at 3 to 1 or better on every surface in both appearances.
+
+## Playback modes and the track menu
+
+`In order` plays to the end of the folder on screen and then stops,
+with the first track of that folder loaded and paused (D2);
+`Next` still wraps around,
+and `Repeat` replays the one track.
+`core/Queue.kt` returns no next track for a natural end in `In order`,
+and `PlayerController.handleNaturalEnd` turns that into the stop.
+Every entry of the system playlist has its own id (`core/PlaybackEntryIds.kt`),
+so a short folder in a shuffle mode can queue the same file again without the duplicate-id crash of the first review.
+
+The track menu has six rows,
+and each has one access key taken from its own words
+(`core/TrackMenuAction.kt`, one table):
+`P` for Play, `S` for Start shuffle from here, `D` for File details, `F` for Show in file manager, `C` for Copy filename
+and `T` for Move to trash.
+The letter is underlined in the label,
+and pressing it with a hardware keyboard while the menu is open runs the row and closes the menu.
+File details has no key of its own outside the menu.
+
+## The library and the analysis follow the files
+
+There is no rescan or re-analysis action (D113).
+The system library follows a `ContentObserver` on the MediaStore audio collection,
+and a library from a folder grant is read again when the app returns to the front;
+both go through one debounced rescan in `PlaybackService`,
+and a change that arrives while a load runs is answered once the load ends (`core/RescanPlan.kt`).
+
+The analysis service decides what to measure from a ledger of the files it has swept
+(`core/SweepLedger.kt`, stored in `sweep-ledger.bin`).
+A file is new work when its address is unknown or when its size or modification time changed
+(`core/TrackSignatures.kt`, read with the rows of the scan),
+so a replaced or edited file is measured again.
+A file that could not be decoded is tried again at the next start and whenever the library gains new work,
+and it is reported once, in plain words, with no retry button
+(`AnalysisFailures.kt`, shown by `PlayerHost.kt`).
+The measures that the open page shows are read again when the analysis measured their tracks (`MeasureInvalidation`).
 
 ## Search and a library of a million tracks
 

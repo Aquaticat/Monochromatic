@@ -466,10 +466,10 @@ class BrainPlayer(
                 // ```
                 C.TIME_UNSET
             }
-            // What:     `MediaItemData.Builder(item.loadIndex) ... .build()` is a
-            //           BUILDER CHAIN: `MediaItemData.Builder(item.loadIndex)`
+            // What:     `MediaItemData.Builder(item.entryId) ... .build()` is a
+            //           BUILDER CHAIN: `MediaItemData.Builder(item.entryId)`
             //           constructs a fresh builder seeded with this row's UID
-            //           (`item.loadIndex`, the stable load-order index), then
+            //           (`item.entryId`, unique per history position), then
             //           each `.setX(...)` returns the same builder so calls
             //           chain, and `.build()` produces the immutable
             //           `MediaItemData`. This whole chain is the LAMBDA's last
@@ -481,13 +481,13 @@ class BrainPlayer(
             //
             // In TS you'd write (pseudocode):
             // ```ts
-            // return new MediaItemData.Builder(item.loadIndex)
+            // return new MediaItemData.Builder(item.entryId)
             //   .setMediaItem(/* ...inner builder... */)
             //   .setIsSeekable(true)
             //   .setDurationUs(durationUs)
             //   .build();
             // ```
-            MediaItemData.Builder(item.loadIndex)
+            MediaItemData.Builder(item.entryId)
                 // What:     `.setMediaItem( MediaItem.Builder()...build() )` sets
                 //           this row's media item to a freshly built `MediaItem`.
                 //           The argument is its own nested builder chain (see the
@@ -549,7 +549,7 @@ class BrainPlayer(
                         //   new MediaMetadata.Builder().setTitle(item.title).build(),
                         // )
                         // ```
-                        .setMediaMetadata(MediaMetadata.Builder().setTitle(item.title).build())
+                        .setMediaMetadata(MediaMetadata.Builder().setTitle(item.title).setArtist(item.artist).build())
                         // What:     `.build()` finalises the INNER `MediaItem`
                         //           builder into an immutable `MediaItem` value.
                         // Why:      We need the finished item to hand to

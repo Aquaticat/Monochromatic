@@ -43,10 +43,11 @@ private fun phrase(random: Random): String {
     return builder.toString()
 }
 
-/** Paths that decide whether the root-level group or a folder named like it is offered as a folder result. */
+/** Paths that decide which virtual letter folder a loose track sits in, and folders named like the old group. */
 private val UNFILED_PATHS: List<String> = listOf(
     "Unfiled/", "Unfiled/.", "Unfiled//", "./Unfiled/x.flac", "Unfiled/x.flac", "Unfiled/a/b.flac", "Unfiled/..",
-    "unfiled/x.flac", "x.flac", "Unfiled",
+    "unfiled/x.flac", "x.flac", "Unfiled", "\u00c9milie.flac", "\u00e9lan.flac", "\u00f1and\u00fa.flac",
+    "\u521d\u97f3.flac", "1 song.flac", "\u00d8.flac", "\u00df.flac", "E/x.flac", "Eno.flac",
 )
 
 /** Builds one random display path: zero to three folder segments, then a file name. */

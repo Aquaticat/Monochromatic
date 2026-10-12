@@ -180,6 +180,48 @@ private class HostKeyRecordingActions : HostKeyActions {
     override fun closePopup() {
         calls.add("close-popup")
     }
+
+    // What:     The overrides below record the D106 operations by name, with their argument where they take one.
+    // Why:      `KeyBindingsTest` and the dispatcher cases read the names back to prove which operation ran.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // seekBy(s: number): void { this.calls.push(`seek:${s}`); }
+    // ```
+    /** Records the seek operation with its step in seconds. */
+    override fun seekBy(seconds: Int) {
+        calls.add("seek:$seconds")
+    }
+
+    /** Records the restart operation. */
+    override fun restartTrack() {
+        calls.add("restart")
+    }
+
+    /** Records the folder step with its direction. */
+    override fun stepFolder(step: Int) {
+        calls.add("folder:$step")
+    }
+
+    /** Records the reveal of the playing track's folder. */
+    override fun revealPlayingTrackFolder() {
+        calls.add("reveal-folder")
+    }
+
+    /** Records the focus request with its zone. */
+    override fun focusZone(zone: HostKeyZone) {
+        calls.add("focus:${zone.name}")
+    }
+
+    /** Records the system folder chooser. */
+    override fun openFolderDialog() {
+        calls.add("folder-dialog")
+    }
+
+    /** Records the picker close. */
+    override fun closePicker() {
+        calls.add("close-picker")
+    }
 }
 
 // What:     `private fun hostKeyPlayerContext(): HostKeyContext` is the player with its root focused and a playing row
