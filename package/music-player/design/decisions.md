@@ -3046,6 +3046,23 @@ The orchestrator decided the details on the human's standing instruction to deci
   macOS and Windows get the same behavior through their own notification APIs in a later step.
 - The taskbar progress of the desktop app (the `LauncherEntry` hint) keeps its own meaning and is not changed here.
 
+### D108. The OS accent is the theme root and every derived color is computed in OKLCH (2026-10-11)
+
+The human confirmed that the desktop has to follow the OS accent as A3 says (it did not: `ui/theme.slint` used fixed
+primaries), and stated that every color manipulation after a root color is obtained must be done in OKLCH.
+Obtaining the root color is not a manipulation, and it is the only thing taken from the platform on either system:
+the desktop root is the portal, Windows or macOS accent that Slint 1.18 exposes, and the Android root is the system accent
+(on API 31 and later the middle tone of the system accent palette, `android.R.color.system_accent1_500`; the human
+corrected an earlier reading of this record that kept the platform's own `dynamicLightColorScheme` and
+`dynamicDarkColorScheme` roles, so Android's HCT-derived roles are not used).
+From the root, on both platforms, everything the app derives (tonal steps, container and on-container roles, hover and pressed layers,
+mixes with neutral, match highlights as in D59, gradients and any lightening or darkening) is computed by moving
+lightness, chroma and hue in OKLCH and converting back to sRGB with gamut handling.
+It is never computed by sRGB mixing or by HSV or HSL operations, such as `Color.brighter`, `Color.darker` or `Color.mix` in
+Slint, or `lerp` and `copy(alpha)` on sRGB values in Compose.
+When no accent is available the fixed baseline from the Fold captures is the root and the same derivation applies.
+Alpha-only layering (state layers over a surface) is allowed because it does not change a color's lightness, chroma or hue.
+
 ## Pending after the theme picks (2026-09-04)
 
 - **Order of remaining work** — my recommendation:
