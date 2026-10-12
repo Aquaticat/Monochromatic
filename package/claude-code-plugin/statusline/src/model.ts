@@ -240,8 +240,9 @@ function nonWhitespaceRunEnd({
 /**
  Finds where a major.minor version starting at one index ends.
  
- Both numbers need at least one digit and only one separator is allowed, so `4.` and `1.2.3` report
- no version rather than a partial one.
+ Both numbers need at least one digit, so `4.` reports no version. A third number is not this
+ function's concern: it reports the end of the `1.2` inside `1.2.3` and leaves the caller to reject
+ the leftover `.3` as text the grammar does not allow.
  
  @param text - display name to scan
  
@@ -408,7 +409,7 @@ function parseDisplayName(raw: string,): DisplayNamePieces {
  formatModelDisplay('Sonnet 4.6 (1M context)');
  ```
  */
-function formatModelDisplay(raw: string,): string {
+export function formatModelDisplay(raw: string,): string {
   /**
    Parsed display-name components.
    */
@@ -437,5 +438,3 @@ function formatModelDisplay(raw: string,): string {
 }
 
 //endregion Model display
-
-export { formatModelDisplay, };

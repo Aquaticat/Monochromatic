@@ -263,7 +263,7 @@ function gerundMatchLength({
  scanGerundMatches('compiling, then testing'); // ['compiling', 'testing']
  ```
  */
-function scanGerundMatches(text: string,): readonly string[] {
+export function scanGerundMatches(text: string,): readonly string[] {
   /**
    Gerunds found so far, in order of appearance.
    */
@@ -419,7 +419,7 @@ const MIN_GERUND_LENGTH = 5;
  findGerundInText('I am compiling and testing');
  ```
  */
-function findGerundInText(value: string,): string {
+export function findGerundInText(value: string,): string {
   /**
    Lowercased text for case-insensitive matching.
    */
@@ -452,8 +452,3 @@ function findGerundInText(value: string,): string {
 }
 
 //endregion Gerund filters
-
-export {
-  findGerundInText,
-  scanGerundMatches,
-};
