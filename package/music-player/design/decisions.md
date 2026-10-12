@@ -3153,6 +3153,29 @@ It binds both platforms and whatever engine D47 to D74 end up on:
 - The requirement is tested with a scan that is deliberately slow, on both platforms, by typing while tracks arrive and
   checking that results appear for the tracks already known and later for the new ones.
 
+### D112. Search runs on an in-memory index, not on Turso search (2026-10-12)
+
+The human suggested replacing the app's own search algorithm with Turso's built-in search. Both Turso mechanisms were
+measured against D47 to D74, D111 and the 1,000,000-track bar (scratch record in `/home/user/temp/agent/agent-tursofts/`):
+
+- Turso's two ways to search are full-text search (Tantivy, `USING fts`) and vector search. Neither is exact for the rules
+  without Rust re-applying them: FTS has no custom ranking or rerank hook (only `fts_score` ordering is pushed into the
+  index; any other `ORDER BY` makes SQLite sort every candidate, which measured seven to ten times slower than Rust at
+  1,000,000), and `fts_highlight` highlights whole tokens only and returns tagged text, not ranges.
+  Vector search is similarity, not containment: no query had an exact result at the 500 cap, and exact results needed k
+  at or above the match count at 250 to 390 ms per query; the only vector index (`toy_vector_sparse_ivf`) built 200,000
+  rows in 209 s.
+- Turso FTS with word-start grams does satisfy the rules (parity 44 of 44) and stays usable while a scan adds tracks, but
+  it still needs the same in-memory table of normalized names, adds a 186 MiB index file, a 26 to 33 s rebuild and
+  multi-second write transactions at 10,000-row batches, needs the `turso_core` source patched to compile on the newest
+  nightly, makes the Android library 26 percent larger, and is experimental. In 0.8.2 a plain `ORDER BY ... LIMIT n` over
+  an FTS-matched table returns wrong rows unless written `LIMIT n OFFSET 0`.
+
+Decision (the orchestrator's, on the human's standing instruction to decide, open to the human's veto): Search uses an
+in-memory index of normalized names in each app, with first and second character buckets, a best-500 list per first
+character, off-thread batch normalization with an append-only write lock, search on a worker thread, and a refresh signal
+after every batch so open results update in place (D111). Turso stays the store of the peak cache only.
+
 ## Pending after the theme picks (2026-09-04)
 
 - **Order of remaining work** — my recommendation:
