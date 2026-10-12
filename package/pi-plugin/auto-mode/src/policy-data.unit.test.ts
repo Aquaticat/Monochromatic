@@ -37,7 +37,7 @@ await describe({
       { ...policyRule(), effect: 'approve', },
       { ...policyRule(), applicability: 0.99, },
       { ...policyRule(), probability: 0.99, },
-      { ...policyRule(), [Symbol('unmodeled'),]: true, },
+      { ...policyRule(), [Symbol('unmodeled',)]: true, },
       { id: 'missing', effect: 'permit', applicability: 'applies', },
     ].map(function invalidRule(input, index,) {
       return it({

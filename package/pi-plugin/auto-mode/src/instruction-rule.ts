@@ -48,8 +48,6 @@ export function readInstructionRule(input: unknown,): InstructionRule {
     throw new InstructionResolutionInputError('Instruction effect requires an admitted fact or explicit unresolved supported effect',);
   if (applicability !== 'applies' && applicability !== 'does-not-apply' && applicability !== 'unresolved')
     throw new InstructionResolutionInputError('Instruction applicability requires admitted evidence or explicit uncertainty',);
-  if (Object.keys(values,).length !== 4)
-    throw new InstructionResolutionInputError('Instruction rule requires every supported field',);
   return Object.freeze({ id, priority, effect, applicability, },);
 }
 
