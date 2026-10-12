@@ -3021,6 +3021,28 @@ Bare keys never fire while a text field has focus, and the playback keys follow 
 Every shortcut is covered by an end-to-end test that presses the real keys through the nested compositor and reads the
 resulting state, which is the second reason for this decision.
 
+### D107. True-peak analysis progress is a system notification, never an in-app banner (2026-10-11)
+
+The human said the analysis banner should never block anything, changed their mind about the bar, and asked for a
+system notification with a progress bar, noting that both Android and KDE can show one.
+This supersedes D26's 56dp bottom bar and D13's appearance and disappearance of that bar on both platforms:
+the player screen draws no analysis indicator and reserves no space for one, so nothing it shows can cover or move content.
+
+The orchestrator decided the details on the human's standing instruction to decide remaining questions:
+
+- The notification is titled `Analyzing true peak`, its text is the count `412 of 1,218`, and it shows a determinate
+  progress bar.
+  It is silent, low priority and ongoing while analysis runs, and it is removed when analysis finishes.
+- D26's Pause and Resume control stays as the action button on the notification, with the same temporary-pause reading
+  that D84 records.
+- Android posts it on its own low-importance channel. Android 13 and later need the notification permission: the app asks
+  for it once, when the first analysis starts, and if it is declined the analysis runs without any indicator.
+- Linux desktop posts it through the freedesktop notification service with the progress hint that KDE draws as a bar,
+  replacing one notification in place rather than posting a new one per update, and updates it at a limited rate.
+  Where no notification service answers, analysis runs without an indicator.
+  macOS and Windows get the same behavior through their own notification APIs in a later step.
+- The taskbar progress of the desktop app (the `LauncherEntry` hint) keeps its own meaning and is not changed here.
+
 ## Pending after the theme picks (2026-09-04)
 
 - **Order of remaining work** — my recommendation:
