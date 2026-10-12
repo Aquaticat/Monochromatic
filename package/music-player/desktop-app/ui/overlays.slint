@@ -2,6 +2,7 @@
 // True-peak analysis progress has no component here: it is a system notification (D107).
 import { Theme } from "theme.slint";
 import { StateLayer } from "state_layer.slint";
+import { Focus, FocusStop, FocusRing } from "focus.slint";
 
 // One feedback message. `kind` is 0 for an error (warning glyph, error container) and 1 for an Undo message.
 // `action-label` is empty when the message offers no action button.
@@ -48,6 +49,23 @@ export component FeedbackOverlay inherits Rectangle {
             height: max(48px, row.preferred-height);
             background: card.container;
             border-radius: 24px;
+            // Fade in when the message appears, so it does not pop onto the deck (D83). It starts at 0 and `init` raises it
+            // to 1, which plays the animation; the host removes the message when its time runs out or it is dismissed.
+            property <float> enter: 0;
+            opacity: card.enter;
+            animate enter { duration: Theme.motion-enter; easing: ease-out; }
+            init => {
+                card.enter = 1;
+            }
+
+            // Pointer shield over the whole card, under the Undo and dismiss controls. A Rectangle passes clicks through,
+            // so a click on the message text used to press the Previous, Play or Next button that the card covers. It is
+            // not a control, so it has no hover layer and keeps the default cursor.
+            body-shield := TouchArea {
+                width: parent.width;
+                height: parent.height;
+                mouse-cursor: default;
+            }
 
             row := HorizontalLayout {
                 padding-left: 16px;
@@ -86,11 +104,12 @@ export component FeedbackOverlay inherits Rectangle {
                 if item.action-label != "" : Rectangle {
                     width: max(48px, action-text.preferred-width + 16px);
                     height: 48px;
-                    // Rectangular hover and pressed layer over the action target, in the card's content color.
+                    // Rectangular hover, pressed and focus layer over the action target, in the card's content color.
                     StateLayer {
                         tint: card.content;
                         hovered: action-touch.has-hover;
                         pressed: action-touch.pressed;
+                        focused: action-stop.ring;
                     }
                     action-text := Text {
                         text: item.action-label;
@@ -102,7 +121,19 @@ export component FeedbackOverlay inherits Rectangle {
                     }
                     action-touch := TouchArea {
                         mouse-cursor: pointer;
-                        clicked => { root.action(item.id); }
+                        accessible-role: button;
+                        accessible-label: item.action-label;
+                        clicked => {
+                            Focus.ring-visible = false;
+                            root.action(item.id);
+                        }
+                    }
+                    action-stop := FocusStop {
+                        label: "feedback-action";
+                        activated => { root.action(item.id); }
+                    }
+                    FocusRing {
+                        active: action-stop.ring;
                     }
                 }
 
@@ -110,7 +141,7 @@ export component FeedbackOverlay inherits Rectangle {
                 Rectangle {
                     width: 48px;
                     height: 48px;
-                    // Circular hover and pressed layer, 40 px centered in the 48 px dismiss target.
+                    // Circular hover, pressed and focus layer, 40 px centered in the 48 px dismiss target.
                     StateLayer {
                         x: 4px;
                         y: 4px;
@@ -120,6 +151,7 @@ export component FeedbackOverlay inherits Rectangle {
                         tint: card.content;
                         hovered: dismiss-touch.has-hover;
                         pressed: dismiss-touch.pressed;
+                        focused: dismiss-stop.ring;
                     }
                     Path {
                         width: 24px;
@@ -133,7 +165,24 @@ export component FeedbackOverlay inherits Rectangle {
                     }
                     dismiss-touch := TouchArea {
                         mouse-cursor: pointer;
-                        clicked => { root.dismiss(item.id); }
+                        accessible-role: button;
+                        accessible-label: "Dismiss";
+                        clicked => {
+                            Focus.ring-visible = false;
+                            root.dismiss(item.id);
+                        }
+                    }
+                    dismiss-stop := FocusStop {
+                        label: "feedback-dismiss";
+                        activated => { root.dismiss(item.id); }
+                    }
+                    FocusRing {
+                        x: 4px;
+                        y: 4px;
+                        width: 40px;
+                        height: 40px;
+                        radius: 20px;
+                        active: dismiss-stop.ring;
                     }
                 }
             }

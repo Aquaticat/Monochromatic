@@ -37,9 +37,22 @@ alternative considered are recorded in
 - Saves a screenshot of the current frame as a PNG when asked.
 - Records a frame sequence at a steady 60fps that holds even when the hosted app is laggy
   or resource-hungry (with optional systemd CPU isolation of the app).
-- Clicks at a point,
-   presses keys,
-   and types text into the app.
+- Clicks at a point (single,
+   double,
+   or with modifier keys held),
+   drags with intermediate motion,
+   scrolls with notches,
+   fractional notches,
+   or touchpad pixels,
+   presses any key a person can press (chords,
+   raw codes,
+   holds with the client's own key repeat),
+   and types any Unicode text into the app.
+- Hosts several windows,
+   returns keyboard focus to the window underneath when a dialog closes,
+   and can ask a window to close.
+- Reports the cursor shape the app shows,
+   and the accessibility tree it publishes.
 - Moves the pointer without pressing anything,
    so the app sees real hover (enter,
    motion,
@@ -128,7 +141,8 @@ Joined values such as `--size=800x600` are also accepted.
 ```txt
 monochromatic-nested-wayland-session [--socket PATH] [--size WIDTHxHEIGHT]
     [--scale SCALE] [--color-scheme dark|light] [--accent-color RRGGBB]
-    [--notifications none|freedesktop|kde] [--launcher-log] [--isolate]
+    [--notifications none|freedesktop|kde] [--launcher-log] [--accessibility]
+    [--repeat-rate PER_SECOND] [--repeat-delay MS] [--isolate]
     [--app-cpu-quota PCT] [--app-cpu-weight N] [--] COMMAND [ARG...]
 ```
 
@@ -173,6 +187,16 @@ monochromatic-nested-wayland-session [--socket PATH] [--size WIDTHxHEIGHT]
   see [Observe taskbar progress](#observe-taskbar-progress).
   The record is kept whenever the private bus runs,
    so `--color-scheme` alone also records it.
+- `--accessibility` serves a private AT-SPI accessibility bus on the private session bus.
+  The `a11y` control command then reads the tree the app publishes;
+  see [Read the accessibility tree](#read-the-accessibility-tree).
+- `--repeat-rate PER_SECOND` (default `25`) and `--repeat-delay MS` (default `200`) are the key repeat pair
+  announced to clients with `wl_keyboard.repeat_info`.
+  A rate of `0` tells clients not to repeat;
+  the protocol then leaves repeating to the compositor,
+  and this one sends no repeats.
+  The `repeat-info` control command changes the pair while the app runs;
+  see [Keyboard input](#keyboard-input).
 - `--isolate` launches the hosted app inside a resource-controlled systemd scope so a
   greedy app cannot starve the capture pipeline (see [60fps recording](#60fps-recording)).
   It degrades to a direct launch,
@@ -249,12 +273,14 @@ It also cannot start any:
 its configuration has no service directories and no includes,
 so a client's request to start a service fails at once with `org.freedesktop.DBus.Error.ServiceUnknown`,
 and no program named in a host `.service` file runs.
-Slint asks for the accessibility bus `org.a11y.Bus` this way and continues without it.
+Slint asks for the accessibility bus `org.a11y.Bus` this way and continues without it,
+unless `--accessibility` serves one.
 Use this option for deterministic appearance tests whose client does not need those services.
 Without `--color-scheme`,
  `--accent-color`,
  `--notifications`,
- or `--launcher-log`,
+ `--launcher-log`,
+ or `--accessibility`,
 the hosted client inherits its usual session bus.
 With `--launcher-log` alone the client gets the same private bus but no Settings portal,
 so a toolkit that asks for appearance receives `ServiceUnknown` there.
@@ -445,13 +471,18 @@ By that source it does not need the parent to send anything,
 which a locked host session does not;
 that case was not exercised,
 because the host was unlocked for every measurement.
-A parent at a scale above 1 can only make windows whose sides are multiples of its scale,
-so a capture can be wider or taller than the computed size
-by fewer pixels than the parent's scale rounded up;
-the extra strip shows the background color and no client content is cut off.
-When the parent keeps the window at a size of its own,
+A parent at a scale above 1 can only make windows whose sides are multiples of its scale.
+Captures do not depend on that:
+the output mode is the requested logical size times the scale,
+rounded as `wp_fractional_scale_v1` prescribes,
+whatever size the parent gave the window,
+and screenshots and recordings are rendered off screen at the mode size.
+`resize 599 400` therefore captures exactly 599x400 and tells the client 599x400,
+where earlier versions captured the parent's window size (600 wide on a parent at scale 2).
+Only the minimized window on the host shows a different size,
+and the parent keeping it at a size of its own,
 for example maximized or tiled there,
-`resize` and `scale` answer `err` with the size the window has.
+is logged as a warning and is no longer an error.
 The host output's own scale never becomes the nested scale,
 so captures do not depend on which host output shows the window.
 
@@ -953,6 +984,316 @@ on the host,
    and `NotificationClosed` for an expired notification is never sent
   unless `notification-close` asks for it.
 
+### Keyboard input
+
+`key SPEC [press|release|tap|hold MS]` presses what a person can press on a keyboard.
+`SPEC` is one of:
+
+- A key name.
+  Every Linux `KEY_*` name from `linux/input-event-codes.h` works,
+  lowercase and without the prefix (`f1` to `f24`,
+  `insert`,
+  `delete`,
+  `home`,
+  `end`,
+  `pageup`,
+  `pagedown`,
+  `sysrq`,
+  `pause`,
+  `scrolllock`,
+  `numlock`,
+  `capslock`,
+  `kp0` to `kp9`,
+  `kpenter`,
+  `kpplus`,
+  `volumeup`,
+  `playpause`,
+  and the rest of the 523 names).
+  Case,
+  `_`,
+  and `-` do not matter,
+  so `Page_Up`,
+  `PAGEUP`,
+  `page-up`,
+  and `KEY_PAGEUP` are one key.
+- A spoken alias:
+  `ctrl`,
+  `win`,
+  `menu`,
+  `altgr`,
+  `pgup`,
+  `pgdn`,
+  `print`,
+  `plus`,
+  `period`,
+  `bracketleft`,
+  `bracketright`,
+  `audioplay`,
+  `audionext`,
+  and X11 spellings such as `KP_Enter`,
+  `Scroll_Lock`,
+  `Page_Down`,
+  `Control_L`,
+  `Shift_R`,
+  `Super_R`.
+- Every modifier on both sides:
+  `ctrl`,
+  `shift`,
+  `alt`,
+  `meta` (also `super`,
+  `win`,
+  `logo`) press the left key,
+  and `rctrl`,
+  `rshift`,
+  `ralt` (also `altgr`),
+  `rmeta` press the right one.
+- A single character (`a`,
+  `1`,
+  `;`),
+  which presses the key that types it on the US layout without adding Shift.
+- A raw code `code:<n>`,
+  an evdev number from 1 to 767 in decimal or `0x` hexadecimal:
+  `code:68` is F10.
+  The number is the kernel's,
+  not the X11 keycode (which is 8 more).
+
+`menu` is the context-menu key a keyboard sends (`KEY_COMPOSE`,
+ evdev 127,
+ keysym `Menu`,
+ winit `ContextMenu`),
+and `menukb` is the kernel's `KEY_MENU` (keysym `XF86MenuKB`).
+`print` is `KEY_SYSRQ`,
+the key a keyboard sends for Print Screen.
+`plus` is the `=` key;
+hold shift yourself for a typed plus.
+
+What a key types depends on the keymap the client has,
+as with a real keyboard.
+
+A chord joins keys with `+`:
+`ctrl+shift+f10` presses Ctrl,
+Shift,
+and F10 in that order,
+and `tap` releases them in the reverse order.
+The plus key itself is written `++` (`ctrl++`) or `plus`.
+Every name is resolved before the first key is sent,
+so `ctrl+nokey+f10` answers `err unknown key: nokey` and presses nothing.
+With `press`,
+all keys go down and stay down;
+`release` lets them up in reverse.
+
+`hold MS` presses the chord,
+waits `MS` milliseconds (1 to 600000),
+and releases it,
+and answers `ok` after the release.
+The compositor keeps serving the client during the wait.
+
+By default key repeat is the client's work on Wayland,
+not the compositor's
+(the `wl_keyboard.key` documentation says a `repeat_info` rate of 0 is what hands repetition to the compositor).
+The compositor announces `wl_keyboard.repeat_info`
+(`--repeat-rate`,
+`--repeat-delay`,
+or the `repeat-info` command),
+and a client such as winit starts its own timer after the delay while a repeating key is down and
+reports each repeat as a key press with `repeat` set
+(Slint's `KeyEvent.repeat`).
+So `hold` is exactly a person holding the key,
+and a client that repeats gets the same events it gets from a desktop compositor.
+At 20 repeats per second and 100 ms delay,
+a 1000 ms hold of Right produced 18 repeats in each of three measured runs.
+`repeat-info` answers `ok rate=R delay=D` and
+`repeat-info RATE DELAY_MS` changes the pair (`ok changed` or `ok unchanged`).
+
+Modifier keys never repeat:
+the client's keymap marks them as non-repeating,
+and winit skips them (winit 0.30.13 `src/platform_impl/linux/wayland/seat/keyboard/mod.rs`,
+`key_repeats`).
+Holding Shift therefore gives one press and one release,
+also on a real desktop.
+A "double Shift with repeats" sequence cannot occur there,
+so it is not a gap of this tool,
+and an app's double-Shift detector is covered by a unit test of the detector.
+
+### Typing text
+
+`type TEXT` types the rest of the line.
+US-layout characters use their keys,
+with Shift where needed.
+Any other character (accents,
+CJK,
+Hangul,
+emoji) is typed on a spare key of a temporary keymap that carries its Unicode keysym,
+and the original keymap is sent back after the text.
+The client reads the key's text from the keymap,
+so winit reports `KeyEvent.text` as that character
+and Slint's `TextInput` receives it as typed text,
+exactly as it would from a keyboard layout that has the character.
+
+A text with more than 64 distinct off-layout characters is typed in chunks,
+one keymap per chunk.
+Tab and line feed are the Tab and Enter keys;
+any other control character fails the whole command before a key is sent:
+`err type cannot send the control character U+0001 at position 1`.
+
+This delivers key events with text.
+An input method that composes a candidate and commits it through `text-input-v3`
+reaches a toolkit as `Ime::Commit`,
+which Slint turns into the same text.
+That protocol is not emulated:
+the compositor would have to serve `zwp_text_input_v3` and play the input method itself,
+and the client receives the same string either way.
+
+### Pointer input
+
+- `click X Y [left|right|middle] [mods=CHORD] [count=N] [interval=MS]`:
+  `count=2` is a double click (presses `interval` ms apart,
+  default 80,
+  at one point),
+  `mods=ctrl+shift` holds those keys from before the first press until after the last release.
+- `drag X1 Y1 X2 Y2 [left|right|middle] [mods=CHORD] [steps=N] [step-ms=MS]`
+  presses at the first point,
+  moves in `N` equal steps (default 10) `MS` apart (default 16) ending exactly on the second point,
+  and releases there.
+  Sliders,
+  text selection,
+  and reordering see the motion in between.
+- `wheel X Y HORIZONTAL VERTICAL [mods=CHORD]` takes notches,
+  and fractions are allowed:
+  `0.25` is a quarter notch.
+  The amount is sent as Wayland `axis_value120` in 1/120 notches,
+  the way a high-resolution wheel does.
+  Amounts that round to nothing are refused.
+- `scroll X Y DX DY [mods=CHORD] [steps=N] [step-ms=MS]` is a touchpad two-finger scroll of `DX`,
+  `DY` logical pixels in total,
+  split into `N` events (default 1) and followed by the finger-lift stop.
+  Clients receive pixel deltas from a finger source,
+  not wheel notches.
+
+Modifier keys are real key events on the nested keyboard,
+so the client sees Ctrl or Shift down before the pointer event,
+which is where toolkits read them from.
+
+### Several windows and focus
+
+The hosted app may open further windows,
+such as the folder chooser of `zenity` or `kdialog`.
+Each is a toplevel of the same nested session,
+mapped fullscreen above the others.
+A new toplevel takes keyboard focus,
+the previously focused one loses its activated state,
+and when the focused toplevel is destroyed,
+or its client disconnects,
+keyboard focus returns to the most recently focused remaining toplevel,
+which becomes activated again.
+Killing the dialog's process with `SIGKILL` takes the same path.
+
+- `windows` answers the count and one record per toplevel,
+  first mapped first:
+  `index=N app-id=... title=... focused=true|false`,
+  text percent-encoded.
+  Index 0 is the window `title` and `app-id` describe.
+- `focus` answers the record of the toplevel that has keyboard focus,
+  or `none`.
+- `close [INDEX]` sends `xdg_toplevel.close` to that window or to the focused one,
+  as the close button does.
+  What the app does with it is the app's choice.
+- `display` answers the Wayland socket name (`wayland-N`).
+  A test starts a second client with `WAYLAND_DISPLAY` set to it.
+
+Native dialogs that go through a desktop portal need the host's portal service,
+which the private bus does not provide;
+a dialog tool that opens its own window needs none.
+
+### Dropping files
+
+`drop-file PATH... [at X Y]` drags the files from the compositor onto the window and drops them.
+A path with whitespace is written in double quotes,
+and `\"` and `\\` are escapes inside the quotes;
+an unquoted path is taken as it is.
+`drop-file "/music/My Album/a b.mp3" /music/c.mp3 at 300 200` drops two files at one point.
+The earlier `drop-file PATH X Y` form still works for one unquoted path followed by two numbers;
+a path that is a bare number,
+or the word `at`,
+must be quoted.
+
+The payload is a `text/uri-list` of RFC 8089 `file:` URIs,
+one per line ended by CRLF,
+with every byte outside ASCII letters,
+digits,
+`-`,
+`.`,
+`_`,
+`~`,
+and `/` percent-encoded,
+so spaces,
+`%`,
+`#`,
+`?`,
+quotes,
+and non-ASCII names survive a client that decodes the URI.
+Each path is resolved to an absolute path first,
+and one that does not exist fails the whole command.
+
+### Cursor shape
+
+`cursor` answers the cursor the app asked for under the pointer:
+a cursor-shape name such as `default`,
+`pointer`,
+or `text`,
+`hidden`,
+or `surface` for a bitmap the client drew itself.
+The compositor serves `wp_cursor_shape_manager_v1`,
+which winit uses to send the shape of a Slint `mouse-cursor`.
+Move onto the control first with `move`.
+
+### Read the accessibility tree
+
+`--accessibility` serves,
+ on the private session bus,
+ the three pieces of the AT-SPI accessibility bus that a toolkit needs:
+`org.a11y.Bus.GetAddress` (the private bus itself is the accessibility bus),
+`org.a11y.Status` (`IsEnabled` and `ScreenReaderEnabled` are true),
+and the registry's `org.a11y.atspi.Socket.Embed`.
+AccessKit,
+which Slint's winit backend uses,
+sees an enabled screen reader,
+connects,
+registers its application root,
+and serves its tree from its own bus name.
+The compositor implements no screen reader and routes no events.
+
+`a11y` walks that tree depth first and answers the count and one record per object:
+`depth=N role=... name=... states=a,b bounds=x,y,w,h`.
+Role names are the AT-SPI role names (`push button`,
+`check box`,
+`label`,
+`frame`),
+states are a named subset (`checked`,
+`enabled`,
+`focusable`,
+`focused`,
+`showing`,
+`visible`,
+...),
+and bounds are screen coordinates in the nested screen when the object has a component interface.
+Text is percent-encoded.
+The read has a five-second budget so a stalled app cannot freeze the compositor.
+Without `--accessibility` it answers `err no accessibility service (start with --accessibility)`.
+
+The tree is the toolkit's own,
+so the labels a screen reader would speak are what `a11y` shows.
+Against the desktop music player on its first page,
+`a11y` returned 65 objects:
+the window frame,
+labelled push buttons,
+radio buttons for the folder list,
+and a toggle button per track with its title and length.
+What is not covered:
+actions on objects (there is no command that invokes the default action),
+text-range and selection queries,
+and change events.
+
 ## Control protocol
 
 Requests are newline-delimited text,
@@ -967,9 +1308,17 @@ one response line:
 - `screenshot PATH` composites the hosted app's latest committed frame and writes it to `PATH` as a PNG.
   The app needs time to draw after input;
   see [Frame pacing](#frame-pacing) for what keeps that frame current.
-- `click X Y [left|right|middle]` moves the pointer to the logical point and clicks
+- `click X Y [left|right|middle] [mods=CHORD] [count=N] [interval=MS]` moves the pointer to the logical point and clicks
   (button defaults to `left`).
   It presses and releases at once and is unchanged by the `move` and `button` commands.
+  `count`,
+  `interval`,
+  and `mods` make a double click or a click with keys held;
+  see [Pointer input](#pointer-input).
+- `drag X1 Y1 X2 Y2 [left|right|middle] [mods=CHORD] [steps=N] [step-ms=MS]` presses,
+  moves in steps,
+  and releases.
+- `scroll X Y DX DY [mods=CHORD] [steps=N] [step-ms=MS]` is a touchpad pixel scroll.
 - `move X Y` moves the pointer to the logical point without pressing a button.
   The hosted client receives pointer enter,
    motion,
@@ -1037,41 +1386,29 @@ It also checks that `title` and `app-id` follow the client's own title change.
    and `job-refresh ID`
   read and drive the recording Plasma job view server started by `--notifications kde`.
   See [Observe notifications and Plasma jobs](#observe-notifications-and-plasma-jobs).
-- `wheel X Y HORIZONTAL VERTICAL` moves the pointer to the logical point
+- `wheel X Y HORIZONTAL VERTICAL [mods=CHORD]` moves the pointer to the logical point
   and delivers real wheel notches there.
-  Positive counts scroll right and down.
-- `key NAME [press|release|tap]` presses a named key (`enter`,
-   `escape`,
-   `tab`,
-   `space`,
-  `backspace`,
-   `up`,
-   `down`,
-   `left`,
-   `right`,
-   `home`,
-   `end`,
-   `pageup`,
-   `pagedown`,
-   `ctrl`,
-   `shift`,
-   `alt`,
-   `meta`,
-   and single characters).
-   Action defaults to
-  `tap`.
+  Positive counts scroll right and down,
+  and fractions are high-resolution steps of 1/120 notch.
+- `key SPEC [press|release|tap|hold MS]` presses a key,
+  a chord such as `ctrl+shift+f10`,
+  or a raw `code:<n>`;
+  see [Keyboard input](#keyboard-input).
+  Action defaults to `tap`.
   For a shortcut,
-  press its modifier,
+  use a chord,
+  or press its modifier,
   tap the target key,
   then release the modifier through this same isolated seat.
   Release held keys in the caller's cleanup path.
-- `type TEXT` types the rest of the line as individual key taps (US layout;
-   characters
-  off that layout are skipped).
+- `repeat-info [RATE DELAY_MS]` reads or changes the key repeat pair announced to clients.
+- `type TEXT` types the rest of the line as key taps,
+  using spare Unicode keys for characters the US layout lacks;
+  see [Typing text](#typing-text).
 - `resize WIDTH HEIGHT` sets the logical nested-screen size,
   keeping the output scale,
   and applies it before answering `ok`.
-  It answers `err` when the parent compositor keeps the nested window at a size of its own.
+  Odd and even sizes are exact in the client and in captures.
 - `scale SCALE` sets the output scale,
   keeping the logical size.
   It answers `ok changed` once the window and the output have the new scale
@@ -1080,21 +1417,18 @@ It also checks that `title` and `app-id` follow the client's own title change.
   It answers `ok unchanged` when that scale was already set,
   and `err <message>` for a value outside 0.5 to 3 or between steps of 1/120.
   See [Change the output scale](#change-the-output-scale).
-- `drop-file PATH [X Y]` originates a compositor-side drag carrying `PATH` as a
-  `text/uri-list` and drops it onto the hosted app (defaulting to the window centre),
-  exercising the app's own inbound file-drop path.
-   The compositor is the drag source,
-   so
-  no second app (file manager) is needed.
-   The drop completes asynchronously:
-   the command
-  returns `ok` once the drag is under way,
-   the button releases after a short dwell (so the
-  app can `accept` and choose an action,
-   the round-trips a real drag needs),
-   and the app
-  then reads the `file://PATH` payload.
-   Use a `screenshot` afterwards to observe the result.
+- `drop-file PATH... [at X Y]` originates a compositor-side drag carrying the files as a
+  `text/uri-list` and drops them onto the hosted app (defaulting to the window centre),
+  exercising the app's own inbound file-drop path;
+  see [Dropping files](#dropping-files).
+  The compositor is the drag source,
+  so no second app (file manager) is needed.
+  The drop completes asynchronously:
+  the command returns `ok` once the drag is under way,
+  the button releases after a short dwell (so the app can `accept` and choose an action,
+  the round-trips a real drag needs),
+  and the app then reads the payload.
+  Use a `screenshot` afterwards to observe the result.
 - `record DIR [FPS] [FORMAT]` starts recording a frame sequence into `DIR` at `FPS` frames
   per second (default `60`) in `FORMAT` (`png` default,
    or `bmp`).
@@ -1108,6 +1442,18 @@ It also checks that `title` and `app-id` follow the client's own title change.
   `ok unchanged` when that value was already served,
   and `err <message>` when the session has no private appearance portal.
   See [Switch appearance while the client runs](#switch-appearance-while-the-client-runs).
+- `windows`,
+  `focus`,
+  `close [INDEX]`,
+  and `display` list the toplevels,
+  name the focused one,
+  ask one to close,
+  and give the Wayland socket name;
+  see [Several windows and focus](#several-windows-and-focus).
+- `cursor` answers the cursor shape the app asked for;
+  see [Cursor shape](#cursor-shape).
+- `a11y` reads the accessibility tree started by `--accessibility`;
+  see [Read the accessibility tree](#read-the-accessibility-tree).
 - `quit` stops the compositor.
 
 Payloads are passed through verbatim:
@@ -1115,6 +1461,8 @@ Payloads are passed through verbatim:
 spaces and are never interpreted by a shell,
  so no quoting rules apply beyond the single
 newline that terminates each command.
+Only `drop-file` has a quoting rule,
+for paths with whitespace.
 
 ## How it works
 
@@ -1244,6 +1592,26 @@ Tasks fall back to the host automatically when the development libraries are pre
   denied.
 - `mise run lint:monochromatic-lint -- package/cli/nested-wayland-session` runs the repo's Rust linter
   (`rust/max-lines` plus `rust/require-rustdoc`) from the repository root.
+- `mise run //package/cli/nested-wayland-session:inspect:input` drives a real session through the control socket:
+  key names,
+  chords,
+  holds with the client's key repeat,
+  Unicode typing,
+  exact odd and even sizes,
+  double and modified clicks,
+  fractional wheel,
+  touchpad scroll,
+  drags,
+  cursor shape,
+  focus return with a second window,
+  quoted multi-file drops decoded by a GTK 4 client,
+  and the accessibility tree.
+  It runs every check,
+  reports each,
+  and exits 1 on any failure.
+  It needs `slint-viewer` and `python3` with GTK 4,
+  takes the binary from `NWS_BINARY` (default `./target/release/monochromatic-nested-wayland-session`),
+  and runs only the checks whose names match the regular expression in `NWS_CHECKS` when it is set.
 - `mise run //package/cli/nested-wayland-session:verify:container` is the reference build
   that builds,
    clippys,
@@ -1258,6 +1626,66 @@ session at run time.
  for a bare machine with no screen
 at all (such as a CI server),
  is the concentrated risk and is deferred to issue #273.
+
+## Not supported
+
+What a person can do that this tool cannot,
+and why.
+
+- An input method's `text-input-v3` commit:
+  typing arrives as key events with text,
+  which clients read the same way;
+   see [Typing text](#typing-text).
+- Keyboard layouts other than the compositor's default:
+  `type` places US-layout characters on US-layout keys,
+  so a different layout would type different characters for plain ASCII.
+- Touch screens,
+  pen tablets,
+  pointer gestures (pinch,
+  swipe),
+  pointer lock,
+  and more than one output:
+  the seat has a keyboard and a pointer only.
+- The host's desktop portals (the file chooser portal among them):
+  the private bus serves none by design,
+  so a client's portal call fails with `ServiceUnknown`.
+  A dialog tool that opens its own window,
+  such as `zenity` or `kdialog`,
+  works.
+- AT-SPI actions,
+  text ranges,
+  and change events:
+  `a11y` reads the tree only.
+
+## Changes in 0.4.0
+
+- `key` takes every Linux key name,
+  chords,
+  `code:<n>`,
+  and `hold MS`,
+  with `repeat-info`,
+  `--repeat-rate`,
+  and `--repeat-delay`.
+  Holding a key makes the client repeat it;
+  modifier keys do not repeat.
+- `type` takes any Unicode text.
+- `resize` is exact at odd sizes,
+  in captures as well as in the client.
+- `drop-file` quotes paths with spaces,
+  percent-encodes the URI,
+  and takes several files.
+- Keyboard focus returns to the most recently focused remaining toplevel when the focused one goes away.
+  New commands:
+  `windows`,
+  `focus`,
+  `close`,
+  `display`.
+- `click` takes `count`,
+  `interval`,
+  and `mods`;
+  new `drag` and `scroll`;
+  `wheel` takes fractional notches and `mods`.
+- New `cursor` and `a11y` commands with `--accessibility`.
 
 ## License
 

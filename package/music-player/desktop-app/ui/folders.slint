@@ -2,11 +2,16 @@
 // Ports FolderPickerPane.kt. Sizes are the Android logical-pixel values from the same file.
 import { Theme } from "theme.slint";
 import { StateLayer } from "state_layer.slint";
+import { Focus, PlayerStop, FocusRing, KeyBadge, Keys } from "focus.slint";
+import { Scrollbar, LastInput } from "scrollbar.slint";
+import { FullNameTip } from "name_tip.slint";
 
 // One rail cell. `key` identifies the cell in callbacks; `label` is the text drawn in the rail.
 export struct FolderRailCell {
     key: string,
     label: string,
+    // True for the first cell of a writing system other than the first, which draws a hairline above it (D28).
+    section-start: bool,
 }
 
 // One row of the rail-ordered name model. A heading row has `section-start: true`, an empty `name`,
@@ -15,6 +20,12 @@ export struct FolderName {
     name: string,
     section-start: bool,
     heading: string,
+}
+
+// Where the picker's names are scrolled to, for the logs and the tests. The picker on screen writes it.
+export global FolderLayout {
+    // Content offset of the names column of the picker that is on screen: 0 at the top and negative below.
+    in-out property <length> scroll-y: 0px;
 }
 
 // Folder picker: the rail on the left (48 px wide, scrolls on its own, no scrollbar) and the
@@ -33,6 +44,21 @@ export component FolderPickerPane inherits Rectangle {
     callback select-folder(string);
     // Invoked with the cell key when a rail cell is tapped, after the names scroll to that cell.
     callback select-cell(string);
+    // Name of the folder the keyboard ring is on; empty for none. The Rust side moves it with the list keys.
+    in property <string> ring-folder: "";
+    // Changes each time the ring moves, so the names scroll the ringed folder into view.
+    in property <int> ring-tick: 0;
+    // False for the copy of the picker that sits in the layout the window is not showing. The window builds both layouts,
+    // and a request for focus or for the page size is meant for the layout that is on screen.
+    in property <bool> active: true;
+    // True when the list should take keyboard focus: when it is created and each time `focus-tick` changes.
+    in property <bool> wants-focus: false;
+    // Changes when the Rust side asks for focus (Alt+1).
+    in property <int> focus-tick: 0;
+    // Number of name rows that fit the pane, for the page keys.
+    callback page-rows(int);
+    // Fired when the list gains keyboard focus, so the ring can start on a folder.
+    callback focused();
 
     // Cell key the names list scrolls to. Each heading row checks it when `scroll-tick` changes.
     property <string> scroll-key;
@@ -44,14 +70,41 @@ export component FolderPickerPane inherits Rectangle {
     // Cell the rail circles: a pending tap wins, otherwise the current folder's cell, so a tapped letter shows as
     // selected at once even though the current folder is still listed under another letter.
     property <string> shown-cell: root.tapped-cell != "" ? root.tapped-cell : root.current-cell;
+    // Counts the changes of the current folder, so every name re-checks whether it is the one to reveal (LS2).
+    property <int> reveal-tick: 0;
     changed current-folder => {
         root.tapped-cell = "";
+        root.reveal-tick += 1;
     }
+    // Width of the scrollbar's grab zone (D22). Names end 16 px from the right edge, so they never reach the bar.
+    property <length> bar-width: 12px;
 
     // Records the cell to scroll to and bumps the tick so every heading row re-checks it.
     function request-scroll(key: string) {
         root.scroll-key = key;
         root.scroll-tick += 1;
+    }
+
+    // Takes keyboard focus when asked, and when the pane is created for a request (the folded layout creates it when the
+    // picker opens). A pane that has just been created is not laid out yet, and focusing it then loses the keyboard focus
+    // altogether, so the timer waits one frame.
+    focus-timer := Timer {
+        interval: 16ms;
+        running: root.wants-focus && root.active;
+        triggered => {
+            self.running = false;
+            list-stop.focus();
+        }
+    }
+    changed focus-tick => {
+        if (root.wants-focus && root.active) {
+            list-stop.focus();
+        }
+    }
+    changed height => {
+        if (root.active) {
+            root.page-rows(max(1, Math.floor(root.height / 48px)));
+        }
     }
 
     // Opens the names at the current cell, as the Android list does with its initial index. Runs once after
@@ -75,6 +128,15 @@ export component FolderPickerPane inherits Rectangle {
         rail-column := VerticalLayout {
             for cell in root.cells: Rectangle {
                 height: 48px;
+                // D28: a hairline between writing systems, so a Latin M and a Cyrillic M never read as one cell. It spans the
+                // 32 px circle's width and sits on the cell's top edge, so cells keep their 48 px height.
+                if cell.section-start : Rectangle {
+                    x: 8px;
+                    y: 0px;
+                    width: 32px;
+                    height: 1px;
+                    background: Theme.outline;
+                }
                 // Circle sits centered inside the 48 px target: 8 px inset on each side.
                 Rectangle {
                     x: 8px;
@@ -120,13 +182,25 @@ export component FolderPickerPane inherits Rectangle {
         }
     }
 
+    // The list's keyboard stop. Up, Down, the page keys, Home, End, Enter and letters reach the Rust side through the
+    // window's key scope; this element only holds focus and reports the zone.
+    list-stop := PlayerStop {
+        label: "folder-list";
+        zone: 1;
+        activates: false;
+        gained => {
+            root.focused();
+        }
+    }
+
     // D34: in light mode a 1 px boundary line separates the rail from the names; dark mode relies on the black canvas.
     Rectangle {
         x: 48px;
         width: 1px;
         height: root.height;
         background: Theme.outline-variant;
-        visible: !Theme.dark;
+        // An empty rail (a library being read, or without audio) has nothing to separate, so no stray seam is drawn.
+        visible: !Theme.dark && root.cells.length > 0;
     }
 
     // Names column: the wrapped flow of name rows, offset past the rail by 48 px.
@@ -136,6 +210,12 @@ export component FolderPickerPane inherits Rectangle {
         height: root.height;
         content-width: self.width;
         content-height: names-column.preferred-height;
+        // The picker on screen publishes where its names are scrolled to.
+        changed content-y => {
+            if (root.active) {
+                FolderLayout.scroll-y = self.content-y;
+            }
+        }
         names-column := VerticalLayout {
             names-flow := FlexboxLayout {
                 // Left edge sits at the NAMES_START inset of 12 px; right inset is 16 px.
@@ -150,8 +230,42 @@ export component FolderPickerPane inherits Rectangle {
                     property <bool> selected: !row.section-start && row.name == root.current-folder;
                     // Mirrors the root scroll request so a changed tick re-runs the scroll check below.
                     property <int> tick: root.scroll-tick;
-                    width: row.section-start ? names-flow.width : max(48px, name-measure.preferred-width + 8px);
+                    // Mirrors the ring request so a moved ring scrolls its folder into view.
+                    property <int> ring-moved: root.ring-tick;
+                    // Mirrors the reveal request so a changed current folder runs the check below on the selected name.
+                    property <int> reveal: root.reveal-tick;
+                    // Distance from the top of the names column to the top of this name.
+                    property <length> top: names-flow.y + self.y;
+                    // True while the keyboard ring is on this name.
+                    property <bool> ringed: !row.section-start && row.name == root.ring-folder && list-stop.has-focus;
+                    // A name is as wide as its text needs, but never wider than the line, so a long name ends in an ellipsis on a line
+                    // of its own instead of running past the pane edge (OV1, which narrows D31's "nothing truncated" to names that fit).
+                    width: row.section-start ? names-flow.width : min(names-flow.width, max(48px, name-measure.preferred-width + 8px));
                     height: row.section-start ? self.section-gap + 38px : 48px;
+                    changed ring-moved => {
+                        if (self.ringed) {
+                            // Scroll just enough to bring the 48 px target, with an 8 px margin, inside the viewport.
+                            if (names-flow.y + self.y - 8px < -names-flick.content-y) {
+                                names-flick.content-y = min(0px, -(names-flow.y + self.y - 8px));
+                            } else if (names-flow.y + self.y + 56px > -names-flick.content-y + names-flick.height) {
+                                names-flick.content-y = max(
+                                    names-flick.height - names-column.preferred-height,
+                                    names-flick.height - (names-flow.y + self.y + 56px));
+                            }
+                        }
+                    }
+                    changed reveal => {
+                        // The selected name comes into view when the current folder changes through Search, a shuffle or a folder
+                        // key chord (D79). A name that is already fully in view stays put, so a click in the picker never moves
+                        // the list; one that is out of view is centered.
+                        if (self.selected) {
+                            if (self.top - 8px < -names-flick.content-y || self.top + 56px > -names-flick.content-y + names-flick.height) {
+                                names-flick.content-y = max(
+                                    names-flick.height - names-column.preferred-height,
+                                    min(0px, -(self.top - (names-flick.height - 48px) / 2)));
+                            }
+                        }
+                    }
                     changed tick => {
                         // Heading rows of the requested cell scroll the names so the heading sits at the top.
                         if (row.section-start && row.heading == root.scroll-key) {
@@ -166,6 +280,7 @@ export component FolderPickerPane inherits Rectangle {
                             tint: Theme.on-surface;
                             hovered: name-touch.has-hover;
                             pressed: name-touch.pressed;
+                            focused: name-row.ringed && Focus.ring-visible;
                         }
                         name-touch := TouchArea {
                             accessible-role: button;
@@ -173,8 +288,20 @@ export component FolderPickerPane inherits Rectangle {
                             accessible-checkable: true;
                             accessible-checked: name-row.selected;
                             mouse-cursor: pointer;
+                            // The scrollbars follow the kind of input the names saw last (D22).
+                            pointer-event(event) => {
+                                LastInput.touch = event.touch-finger-id != 0;
+                            }
                             clicked => {
+                                Focus.ring-visible = false;
+                                list-stop.focus();
                                 root.select-folder(row.name);
+                            }
+                            // The full name for a name that ended in an ellipsis; the accessible label is always the full name.
+                            if name-label.preferred-width > name-label.width : Tooltip {
+                                FullNameTip {
+                                    text: row.name;
+                                }
                             }
                         }
                     }
@@ -190,6 +317,7 @@ export component FolderPickerPane inherits Rectangle {
                     // so selecting a name (which draws it heavier) never changes its width and the flow never re-wraps.
                     name-measure := Text {
                         visible: false;
+                        wrap: no-wrap;
                         text: row.section-start ? "" : row.name;
                         font-size: Theme.body-large;
                         font-weight: 500;
@@ -198,12 +326,19 @@ export component FolderPickerPane inherits Rectangle {
                     name-label := Text {
                         x: 4px;
                         y: 0px;
+                        width: parent.width - 8px;
                         height: 48px;
+                        wrap: no-wrap;
+                        overflow: elide;
                         text: row.section-start ? "" : row.name;
                         font-size: Theme.body-large;
                         font-weight: parent.selected ? 500 : 400;
                         vertical-alignment: center;
                         color: parent.selected ? Theme.primary : Theme.on-surface;
+                    }
+                    // Keyboard ring around the 48 px target of the folder under the ring.
+                    FocusRing {
+                        active: name-row.ringed && Focus.ring-visible;
                     }
                     // Selection indicator: 2 px bar on the bottom edge of the whole target.
                     if selected: Rectangle {
@@ -220,5 +355,25 @@ export component FolderPickerPane inherits Rectangle {
                 height: 16px;
             }
         }
+    }
+
+    // Scrollbar of the names (D22): always visible and draggable for the pointer, a fading non-interactive bar for touch.
+    // The letter rail has none, because its cells are self-describing. It is above the names, so the wheel still reaches them.
+    Scrollbar {
+        x: root.width - self.width;
+        y: 0px;
+        height: root.height;
+        content-y: names-flick.content-y;
+        content-height: names-flick.content-height;
+        scroll-to(y) => {
+            names-flick.content-y = y;
+        }
+    }
+
+    // Key hint badge of the Alt+1 shortcut that focuses this list, over the top right corner. It takes no pointer input.
+    KeyBadge {
+        x: root.width - self.width - 4px;
+        y: 4px;
+        text: Keys.badges.folder-list;
     }
 }

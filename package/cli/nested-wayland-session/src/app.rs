@@ -174,6 +174,7 @@ pub fn run(config: Config) -> Result<i32> {
     let private_bus = if config.color_scheme.is_some()
         || config.accent_color.is_some()
         || config.launcher_log
+        || config.accessibility
         || config.notifications.serves_notifications()
     {
         Some(Arc::new(
@@ -231,6 +232,14 @@ pub fn run(config: Config) -> Result<i32> {
         .map(|bus| return bus.address().to_owned());
 
     // Keep the portal, bus, and listener reachable from control commands for the whole session.
+    state.a11y = match (config.accessibility, private_bus.as_ref()) {
+        (true, Some(bus)) => Some(
+            crate::a11y_service::A11yService::start(Arc::clone(bus))
+                .context("starting the private accessibility bus")?,
+        ),
+        _ => None,
+    };
+
     state.appearance_portal = appearance_portal;
     state.notifications = notifications;
     state.private_bus = private_bus;
@@ -240,6 +249,15 @@ pub fn run(config: Config) -> Result<i32> {
     //           config.app_cpu_quota, cpu_weight: config.app_cpu_weight };`. Assemble the
     //           CPU-isolation settings from the parsed config.
     // Why:      Passed to `spawn_child`, which isolates the app under systemd or degrades.
+    // What:     Announce the configured key repeat pair to every client that will connect.
+    // Why:      Wayland clients generate key repeat themselves from `wl_keyboard.repeat_info`.
+    if (config.repeat_rate, config.repeat_delay) != state.repeat_info {
+        if let Some(keyboard) = state.seat.get_keyboard() {
+            keyboard.change_repeat_info(config.repeat_rate, config.repeat_delay);
+        }
+        state.repeat_info = (config.repeat_rate, config.repeat_delay);
+    }
+
     let isolation = Isolation {
         enabled: config.isolate,
         cpu_quota_percent: config.app_cpu_quota,

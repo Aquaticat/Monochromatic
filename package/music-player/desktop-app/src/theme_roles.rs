@@ -43,8 +43,12 @@ pub const NON_TEXT_TARGET_RATIO: f64 = 3.02;
 /// Alpha of the hover layer (Material 3 state layer).
 pub const HOVER_ALPHA: f64 = 0.08;
 
-/// Alpha of the pressed layer (Material 3 state layer).
+/// Alpha of the pressed layer (Material 3 state layer). The focus layer uses the same strength and lasts as long as
+/// the keyboard focus does, so text must hold AA under it, not only while a button is held.
 pub const PRESSED_ALPHA: f64 = 0.12;
+
+/// Layer strengths text must survive: hover, then pressed (which is also the focus strength).
+pub const TEXT_LAYER_ALPHAS: [f64; 2] = [HOVER_ALPHA, PRESSED_ALPHA];
 
 /// Search match fill in the light scheme: lightness share moved toward white (mirrors Android `SEARCH_LIGHT_WHITE_MIX`).
 const MATCH_LIGHT_LIGHTNESS_SHARE: f64 = 0.72;
@@ -228,7 +232,11 @@ struct SchemeSpec {
 }
 
 // Targets fitted to the Fold captures (the baseline root reproduces them): `ui/theme.slint` before D108 held
-// dark primary #BAC5EE, light primary #4E5E8B, secondary container #353B4D and #DDE2F9, and so on.
+// dark primary #BAC5EE, light primary #4E5E8B, secondary container #353B4D and #DDE2F9, and so on. Two light roles
+// were then retuned darker in lightness only (B4): primary from 0.4883 to 0.4545 and on-surface-variant from 0.4844
+// to 0.4685, the smallest steps that put every drawn state at AA at the baseline (pressed layer on surface-high for
+// both, and the rail letter under the hover and pressed layers on the selected fill for primary). The baseline
+// therefore needs no contrast adjustment, as `the_baseline_needs_no_contrast_adjustment` checks.
 const DARK_SPEC: SchemeSpec = SchemeSpec {
     // D41: the canvas, the rail seam and the deck are stable neutrals under every accent.
     canvas: fixed(0x00, 0x00, 0x00),
@@ -258,10 +266,10 @@ const LIGHT_SPEC: SchemeSpec = SchemeSpec {
     current_row: neutral(0.9669, 0.0093, 24.2),
     surface_high: neutral(0.9308, 0.0094, 24.2),
     on_surface: neutral(0.3188, 0.0162, 7.0),
-    on_surface_variant: neutral(0.4844, 0.0193, 9.6),
+    on_surface_variant: neutral(0.4685, 0.0193, 9.6),
     outline: neutral(0.5706, 0.0140, 7.3),
     outline_variant: neutral(0.8288, 0.0139, 12.9),
-    primary: accent(0.4883, 0.0753, 0.0),
+    primary: accent(0.4545, 0.0753, 0.0),
     // Pure white, not tinted: its chroma is 0, so the accent leaves it white.
     on_primary: accent(1.0, 0.0, 0.0),
     secondary_container: accent(0.9159, 0.0317, 7.4),
@@ -397,24 +405,27 @@ fn fit_lightness(name: &str, start: Oklch, endpoint: f64, passes: &dyn Fn(Srgb8)
 }
 
 /// What:
-///      `fn legible_on(content, backgrounds, layer, layer_alpha, target) -> bool`: true when `content` reaches
-///  `target` against every background, and also against that background with `layer` at `layer_alpha` over it.
+///      `fn legible_on(content, backgrounds, layer, layer_alphas, target) -> bool`: true when `content` reaches
+///  `target` against every background, and also against that background with `layer` at each of `layer_alphas` over it.
 /// Why:
-///       Text is drawn on a surface and also under a hover or pressed layer (alpha-only, D108); the caller passes the
-///           layer strength the text must survive.
+///       Text is drawn on a surface and also under a hover, pressed or focus layer (alpha-only, D108); the caller
+///           passes every layer strength the text must survive.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// return backgrounds.every(b => ratio(content, b) >= target && ratio(content, compositeOver(layer, alpha, b)) >= target);
+/// return backgrounds.every(b => ratio(content, b) >= target
+///   && alphas.every(a => ratio(content, compositeOver(layer, a, b)) >= target));
 /// ```
-fn legible_on(content: Srgb8, backgrounds: &[Srgb8], layer: Srgb8, layer_alpha: f64, target: f64) -> bool {
+fn legible_on(content: Srgb8, backgrounds: &[Srgb8], layer: Srgb8, layer_alphas: &[f64], target: f64) -> bool {
     for background in backgrounds {
         if contrast_ratio(content, *background) < target {
             return false;
         }
-        let layered: Srgb8 = composite_over(layer, layer_alpha, *background);
-        if contrast_ratio(content, layered) < target {
-            return false;
+        for layer_alpha in layer_alphas {
+            let layered: Srgb8 = composite_over(layer, *layer_alpha, *background);
+            if contrast_ratio(content, layered) < target {
+                return false;
+            }
         }
     }
     return true;
@@ -481,9 +492,10 @@ pub fn derive_scheme(terms: RootTerms, scheme: Scheme) -> RoleSet {
     let (secondary_container_hovered, secondary_container_pressed) =
         container_layers(secondary_container, on_secondary_container);
 
-    // Neutral text on every surface, under the on-surface pressed layer. Secondary text below holds at rest and hovered.
+    // Neutral text on every surface, under the on-surface hover and pressed layers. Secondary text below holds under
+    // the same layers, tinted with on-surface.
     let on_surface_fit: Oklch = fit_lightness("on-surface", resolve_oklch(spec.on_surface, terms), toward_text, &|candidate| {
-        return legible_on(candidate, &surfaces, candidate, PRESSED_ALPHA, TEXT_TARGET_RATIO);
+        return legible_on(candidate, &surfaces, candidate, &TEXT_LAYER_ALPHAS, TEXT_TARGET_RATIO);
     });
     let on_surface: Srgb8 = oklch_to_srgb8(on_surface_fit);
     let variant_fit: Oklch = fit_lightness(
@@ -491,7 +503,7 @@ pub fn derive_scheme(terms: RootTerms, scheme: Scheme) -> RoleSet {
         resolve_oklch(spec.on_surface_variant, terms),
         toward_text,
         &|candidate| {
-            return legible_on(candidate, &surfaces, on_surface, HOVER_ALPHA, TEXT_TARGET_RATIO);
+            return legible_on(candidate, &surfaces, on_surface, &TEXT_LAYER_ALPHAS, TEXT_TARGET_RATIO);
         },
     );
     let on_surface_variant: Srgb8 = oklch_to_srgb8(variant_fit);
@@ -504,19 +516,24 @@ pub fn derive_scheme(terms: RootTerms, scheme: Scheme) -> RoleSet {
     let outline: Srgb8 = oklch_to_srgb8(outline_fit);
 
     // Primary is both a fill and text (rail letter, links, action labels), so it holds AA on every surface and under
-    // the hover layer, on the selected fill at rest, and against the light scheme's white on-primary. The pressed
-    // state lasts only while the button is held, and the selected fill's own tinted hover is not required.
+    // the hover and pressed (also focus) layers, on the selected fill at rest and under the layers the rail cell draws
+    // over it, and against the light scheme's white on-primary. The OKLCH hovered and pressed fills carry only
+    // on-secondary-container text (the deck segment), so primary is not fitted to them.
+    let selected_fill_states: [Srgb8; 3] = [
+        secondary_container,
+        composite_over(on_secondary_container, HOVER_ALPHA, secondary_container),
+        composite_over(on_secondary_container, PRESSED_ALPHA, secondary_container),
+    ];
     let primary_start: Oklch = resolve_oklch(spec.primary, terms);
     let light_on_primary: Option<Srgb8> = match scheme {
         Scheme::Dark => None,
         Scheme::Light => Some(resolve_srgb(spec.on_primary, terms)),
     };
     let primary_fit: Oklch = fit_lightness("primary", primary_start, toward_text, &|candidate| {
-        if !legible_on(candidate, &surfaces, on_surface, HOVER_ALPHA, TEXT_TARGET_RATIO) {
+        if !legible_on(candidate, &surfaces, on_surface, &TEXT_LAYER_ALPHAS, TEXT_TARGET_RATIO) {
             return false;
         }
-        let fills: [Srgb8; 1] = [secondary_container];
-        for fill in fills {
+        for fill in selected_fill_states {
             if contrast_ratio(candidate, fill) < TEXT_TARGET_RATIO {
                 return false;
             }
@@ -532,7 +549,7 @@ pub fn derive_scheme(terms: RootTerms, scheme: Scheme) -> RoleSet {
     let on_primary: Srgb8 = match light_on_primary {
         Some(content) => content,
         None => oklch_to_srgb8(fit_lightness("on-primary", resolve_oklch(spec.on_primary, terms), away_from_text, &|candidate| {
-            return legible_on(candidate, &[primary], candidate, PRESSED_ALPHA, TEXT_TARGET_RATIO);
+            return legible_on(candidate, &[primary], candidate, &TEXT_LAYER_ALPHAS, TEXT_TARGET_RATIO);
         })),
     };
 
@@ -599,3 +616,7 @@ pub fn derive_roles(root: Option<Srgb8>) -> ThemePalette {
 #[cfg(test)]
 #[path = "theme_roles_tests.rs"]
 mod tests;
+
+#[cfg(test)]
+#[path = "theme_roles_fixture_tests.rs"]
+mod fixture_tests;

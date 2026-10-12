@@ -20,8 +20,14 @@ import dev.monochromatic.musicplayer.core.MenuAnchorOffset
 import dev.monochromatic.musicplayer.core.MenuAnchorRect
 import dev.monochromatic.musicplayer.core.MenuAnchorRequest
 import dev.monochromatic.musicplayer.core.TrackMenuAction
+import dev.monochromatic.musicplayer.core.accessKey
 import dev.monochromatic.musicplayer.core.label
 import dev.monochromatic.musicplayer.core.menuAnchorOffset
+import dev.monochromatic.musicplayer.core.menuRowActionFor
+import dev.monochromatic.musicplayer.core.trackMenuActionForAccessKey
+import androidx.compose.ui.input.key.KeyEventType
+import androidx.compose.ui.input.key.onPreviewKeyEvent
+import androidx.compose.ui.input.key.type
 
 // What:     Imports from `androidx.compose.foundation` bring in layout size, shape, scrolling, and the layout column.
 // Why:      The popup caps its width, gives each row a 48dp target, scrolls long lists, and rounds the container.
@@ -70,7 +76,11 @@ import androidx.compose.material3.Text
 // ```ts
 // // Composable functions are plain functions in pseudocode.
 // ```
+import androidx.compose.foundation.focusable
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.runtime.remember
 
 // What:     Imports from `androidx.compose.ui` bring in the modifier, the density, and the geometry and unit types.
@@ -109,6 +119,7 @@ import androidx.compose.ui.window.PopupProperties
 // ```
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
 
@@ -330,13 +341,40 @@ fun trackMenuPopup(
     // ```
     /** Secondary text color used for the dB value on the File details row. */
     val secondary = MaterialTheme.colorScheme.onSurfaceVariant
+    /** Focus target of the popup, so the menu's own key handler receives the keys of a hardware keyboard. */
+    val menuFocus: FocusRequester = remember { FocusRequester() }
+    LaunchedEffect(Unit) {
+        menuFocus.requestFocus()
+    }
     Popup(
         popupPositionProvider = positionProvider,
         onDismissRequest = onDismiss,
         properties = PopupProperties(focusable = true, dismissOnBackPress = true, dismissOnClickOutside = true),
     ) {
         Surface(
-            modifier = modifier.widthIn(max = MENU_MAX_WIDTH),
+            modifier = modifier
+                .widthIn(max = MENU_MAX_WIDTH)
+                // The row chords of D106 (Delete, Alt+Enter and the Ctrl+Shift chords) act on the row the menu is
+                // open on, so the popup window, which receives its own keys, asks the key table about them.
+                .onPreviewKeyEvent { event ->
+                    /**
+                     * Menu action of the row chord or the access letter (D114) that this key-down presses, or null
+                     * when it presses neither.
+                     */
+                    val chord: TrackMenuAction? = if (event.type == KeyEventType.KeyDown) {
+                        hostKeyInputOf(event).let { input ->
+                            menuRowActionFor(input) ?: trackMenuActionForAccessKey(input)
+                        }
+                    } else {
+                        null
+                    }
+                    if (chord != null) {
+                        onSelect(chord)
+                    }
+                    chord != null
+                }
+                .focusRequester(menuFocus)
+                .focusable(),
             shape = RoundedCornerShape(MENU_CORNER_RADIUS),
             color = MaterialTheme.colorScheme.surfaceContainer,
             shadowElevation = MENU_ELEVATION,
@@ -393,9 +431,14 @@ fun trackMenuPopup(
                     // ```ts
                     // const rowText = [label(action), action === "details" ? span(secondary, suffix) : null];
                     // ```
-                    /** Visible text of this row, with the File details value in the secondary role. */
+                    /** Visible text of this row: access letter underlined, File details value in the secondary role. */
                     val rowText = buildAnnotatedString {
                         append(label(action))
+                        addStyle(
+                            SpanStyle(textDecoration = TextDecoration.Underline),
+                            accessKey(action).labelIndex,
+                            accessKey(action).labelIndex + 1,
+                        )
                         if (action == TrackMenuAction.DETAILS) {
                             withStyle(SpanStyle(color = secondary)) {
                                 append(trackMenuDetailsSuffix(detailsValue))

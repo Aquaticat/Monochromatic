@@ -118,7 +118,7 @@ fn empty_library_uses_sample_values() {
     assert_eq!(state.preview_notes(), vec![TEMPLATE_SAMPLE_NOTE]);
     assert_eq!(
         state.preview_rows(),
-        Ok(vec![row("Track title", "3:20 \u{2212}1.0 dBTP"), row("Track not analysed yet", "3:20 ")])
+        Ok(vec![row("Track title", "3:20 \u{2212}1.0 dBTP"), row("Track not analyzed yet", "3:20 ")])
     );
 }
 
@@ -242,7 +242,7 @@ fn unknown_field_is_refused_and_rows_keep_default() {
     let initial = TemplateEditorState::initial(&library());
     let state = typed(&initial, "$tf(mi(len), m:ss)$ $mi(peek)$");
     assert!(!state.is_valid());
-    assert_eq!(state.mistake_lines(), vec!["mi: unknown field peek"]);
+    assert_eq!(state.mistake_lines(), vec!["mi has no field called peek. Pick a name from the Fields list."]);
     assert_eq!(state.preview_rows(), initial.preview_rows());
     assert_eq!(state.preview_notes(), vec![TEMPLATE_LIBRARY_NOTE, TEMPLATE_KEPT_NOTE]);
 }

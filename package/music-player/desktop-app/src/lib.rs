@@ -301,6 +301,39 @@ pub mod controller;
 pub mod controller_audio;
 
 /// What:
+///      `pub mod controller_flow;` the third `impl Controller` block (`src/controller_flow.rs`).
+/// Why:
+///       Play with nothing selected, the stop at the end of a folder and the report of unplayable files.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// // more methods of the same `controller` class, in another file
+/// ```
+pub mod controller_flow;
+
+/// What:
+///      `pub mod default_library;` the choice of the folder to open when no session names one (`src/default_library.rs`).
+/// Why:
+///       D95: a library is always open, so the home `Music` folder is the last place to look.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// export * as defaultLibrary from "./default_library";
+/// ```
+pub mod default_library;
+
+/// What:
+///      `pub mod dialog_backend;` whether a folder chooser can open (`src/dialog_backend.rs`).
+/// Why:
+///       `Open folder` must say what to do when no chooser exists (the polish review finding PB5).
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// export * as dialogBackend from "./dialog_backend";
+/// ```
+pub mod dialog_backend;
+
+/// What:
 ///      `pub mod engine;` the worker-thread front door (`src/engine.rs`).
 /// Why:
 ///       Spawns the worker and drives a `Controller` from the command channel.
@@ -328,7 +361,7 @@ pub mod watch;
 ///      `pub mod pagination;` the queue-pagination module (`src/pagination.rs`).
 /// Why:
 ///       Pure grouping of display paths into folder pages (subfolder tracks) and
-///           A-Z + `#` letter pages (root-level tracks),
+///           A-Z + `#` letter pages (root-level tracks, virtual folders named by their letter),
 ///  unit-tested.
 ///
 /// In TS you'd write (pseudocode):
@@ -336,6 +369,28 @@ pub mod watch;
 /// export * as pagination from "./pagination";
 /// ```
 pub mod pagination;
+
+/// What:
+///      `pub mod natural_order;` the natural name order (`src/natural_order.rs`).
+/// Why:
+///       The folder walk sorts file and folder names so `Track 2` comes before `Track 10`.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// export * as naturalOrder from "./natural_order";
+/// ```
+pub mod natural_order;
+
+/// What:
+///      `pub mod title_prefix;` the shared filename prefix removal of D86 (`src/title_prefix.rs`).
+/// Why:
+///       Rows and the deck show titles without the text every file of the folder starts with.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// export * as titlePrefix from "./title_prefix";
+/// ```
+pub mod title_prefix;
 
 /// What:
 ///      `pub mod page_index;` the page index built once per library (`src/page_index.rs`).
@@ -444,6 +499,19 @@ pub mod template_tokens;
 /// export * as templateParse from "./template_parse";
 /// ```
 pub mod template_parse;
+
+/// What:
+///      `pub mod template_plain;` writes the editor's mistake lines as plain sentences
+///  (`src/template_plain.rs`).
+/// Why:
+///       The engine keeps its short notes,
+///  and the editor shows one plain sentence per problem.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// export * as templatePlain from "./template_plain";
+/// ```
+pub mod template_plain;
 
 /// What:
 ///      `pub mod template_eval;` shows a template's text for one track,
@@ -744,6 +812,58 @@ pub mod search_page_model;
 /// export * as keymap from "./keymap";
 /// ```
 pub mod keymap;
+
+/// What:
+///      `pub mod keymap_bindings;` the D106 binding table (`src/keymap_bindings.rs`).
+/// Why:
+///       One table of chords feeds the classifier,
+///  the key hint badges,
+///  the tooltips and the menu rows,
+///  so they cannot disagree.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// export * as keymapBindings from "./keymap_bindings";
+/// ```
+pub mod keymap_bindings;
+
+/// What:
+///      `pub mod double_shift;` the double tap of Shift detector (`src/double_shift.rs`).
+/// Why:
+///       Search opens on two quick taps of Shift (D106),
+///  and the timing rule is pure logic with injected time.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// export * as doubleShift from "./double_shift";
+/// ```
+pub mod double_shift;
+
+/// What:
+///      `pub mod key_hints;` the key hint badge state and texts (`src/key_hints.rs`).
+/// Why:
+///       Badges appear after the modifiers of a shortcut have been held for 300 ms (D106),
+///  and the timing and narrowing rules are pure logic with injected time.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// export * as keyHints from "./key_hints";
+/// ```
+pub mod key_hints;
+
+/// What:
+///      `pub mod list_focus;` the focus ring position inside the folder and track lists (`src/list_focus.rs`).
+/// Why:
+///       Arrow keys,
+///  Home,
+///  End,
+///  the page keys and letters move the ring by pure rules that are unit-tested.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// export * as listFocus from "./list_focus";
+/// ```
+pub mod list_focus;
 
 /// What:
 ///      `pub mod first_run;` the first-run walkthrough state (`src/first_run.rs`).

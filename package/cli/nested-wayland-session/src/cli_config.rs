@@ -165,4 +165,15 @@ pub struct Config {
     /// Why:
     ///       Override the default low weight that deprioritises the app under contention.
     pub app_cpu_weight: Option<u32>,
+
+    /// Whether to serve the private accessibility bus.
+    pub accessibility: bool,
+
+    /// Key repeat rate announced to the hosted client,
+    ///  in repeats per second.
+    pub repeat_rate: i32,
+
+    /// Wait before a held key starts repeating,
+    ///  in milliseconds.
+    pub repeat_delay: i32,
 }

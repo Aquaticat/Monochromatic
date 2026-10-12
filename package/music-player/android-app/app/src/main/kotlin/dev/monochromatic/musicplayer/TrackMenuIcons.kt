@@ -192,17 +192,6 @@ internal val TRACK_MENU_SHUFFLE_ICON: ImageVector =
 /** Information glyph for the file details action. */
 internal val TRACK_MENU_INFO_ICON: ImageVector = trackMenuGlyph(name = "TrackMenu.Info", pathData = INFO_PATH)
 
-// What:     `internal val TRACK_MENU_REFRESH_ICON: ImageVector` is the circular re-analysis glyph.
-// Why:      The re-analyse action shows this glyph beside its label.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// const TRACK_MENU_REFRESH_ICON = trackMenuGlyph("TrackMenu.Refresh", REFRESH_PATH);
-// ```
-/** Refresh glyph for the re-analyse action. */
-internal val TRACK_MENU_REFRESH_ICON: ImageVector =
-    trackMenuGlyph(name = "TrackMenu.Refresh", pathData = REFRESH_PATH)
-
 // What:     `internal val TRACK_MENU_FOLDER_OPEN_ICON: ImageVector` is the open folder glyph.
 // Why:      The show-in-file-manager action shows this glyph beside its label.
 //
@@ -247,7 +236,6 @@ internal fun trackMenuIcon(action: TrackMenuAction): ImageVector = when (action)
     TrackMenuAction.PLAY -> TRACK_MENU_PLAY_ICON
     TrackMenuAction.SHUFFLE_FROM_HERE -> TRACK_MENU_SHUFFLE_ICON
     TrackMenuAction.DETAILS -> TRACK_MENU_INFO_ICON
-    TrackMenuAction.REANALYSE_TRUE_PEAK -> TRACK_MENU_REFRESH_ICON
     TrackMenuAction.SHOW_IN_FILE_MANAGER -> TRACK_MENU_FOLDER_OPEN_ICON
     TrackMenuAction.COPY_FILENAME -> TRACK_MENU_CONTENT_COPY_ICON
     TrackMenuAction.MOVE_TO_TRASH -> TRACK_MENU_DELETE_ICON

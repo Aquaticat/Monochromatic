@@ -3895,6 +3895,37 @@ importers:
         specifier: 'catalog:'
         version: 7.0.2
 
+  package/music-player/desktop-e2e:
+    dependencies:
+      '@monochromatic-dev/module-async-time':
+        specifier: workspace:*
+        version: link:../../module/async-time
+      '@monochromatic-dev/module-caught-value':
+        specifier: workspace:*
+        version: link:../../module/caught-value
+      '@monochromatic-dev/module-logger':
+        specifier: workspace:*
+        version: link:../../module/logger
+      '@monochromatic-dev/module-or-throw':
+        specifier: workspace:*
+        version: link:../../module/or-throw
+      nano-spawn:
+        specifier: 'catalog:'
+        version: 2.1.0
+    devDependencies:
+      '@monochromatic-dev/config-typescript':
+        specifier: workspace:*
+        version: link:../../config/typescript
+      '@monochromatic-dev/module-test':
+        specifier: workspace:*
+        version: link:../../module/test
+      '@types/node':
+        specifier: 'catalog:'
+        version: 26.6.4
+      typescript:
+        specifier: 'catalog:'
+        version: 7.0.2
+
   package/ownership-marker/foreign-borrowed:
     devDependencies:
       '@monochromatic-dev/config-typescript':

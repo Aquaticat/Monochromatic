@@ -720,14 +720,14 @@ fn run(
     // ```
     let sweep_sender = self_sender.clone();
     controller.sweep_sink = Arc::new(move |report| return sweep_sender.send(Command::SweepReport(report)));
-    // What:     `controller.emit_source_root();`. Tell the window whether a folder is open before any command runs.
-    // Why:      With no saved folder and no music directory nothing else is sent, so the first-run copy needs this signal.
+    // What:     no `emit_source_root` here any more; `Command::NoLibrary` says "nothing to open" when that is true.
+    // Why:      The old start-up signal said "no folder is open" before the launch had decided whether a saved folder or the
+    //           music folder was about to open, so a library being read showed the "No folder is open" copy (EM1).
     //
     // In TS you'd write (pseudocode):
     // ```ts
-    // controller.emitSourceRoot();
+    // // nothing: the window learns about the folder from `reading` and `queue`
     // ```
-    controller.emit_source_root();
     // What:     `controller.watcher = crate::watch::SourceWatcher::new(move || self_sender.send(Command::Rescan));`.
     //           Create the file watcher (or `None` if the OS watcher fails) with a change
     //           callback that enqueues `Rescan` and wakes this worker. The closure owns

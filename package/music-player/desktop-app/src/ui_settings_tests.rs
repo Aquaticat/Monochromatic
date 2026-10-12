@@ -9,7 +9,7 @@
 
 use i_slint_backend_testing::ElementHandle;
 use music_player::settings_layout::{
-    HEADER_HEIGHT, ICON_DIAMETER, ROW_HEIGHT, SIDE_MARGIN, editor_pane_width, icon_x_in_row, icon_y_in_row, list_pane_width,
+    PILL_RADIUS, HEADER_HEIGHT, ICON_DIAMETER, ROW_HEIGHT, SIDE_MARGIN, editor_pane_width, icon_x_in_row, icon_y_in_row, list_pane_width,
     row_top, row_width, title_x_in_row,
 };
 use music_player::template_model::TemplateKind;
@@ -17,10 +17,11 @@ use slint::platform::{Key, PointerEventButton, WindowEvent};
 use slint::{ComponentHandle, LogicalPosition, SharedString};
 
 use crate::AppWindow;
-use crate::ui_keys::{KeyInput, classify, run_page_action};
+use crate::Focus;
 use crate::ui_screen::{project, read_state, update_state};
+use crate::ui_test_support::fresh_window_at;
 use crate::ui_screen_view::Route;
-use crate::ui_settings::{open_settings, wire_callbacks};
+use crate::ui_settings::open_settings;
 
 /// Height of the window in every test, tall enough for the whole Settings list.
 const WINDOW_HEIGHT: f32 = 900.0;
@@ -44,18 +45,6 @@ fn saved_texts() -> Vec<(Option<String>, Option<String>)> {
     return SAVED.with(|saved| return saved.borrow().clone());
 }
 
-/// What: `init_platform` installs the testing backend once per test thread.
-/// Why: `init_no_event_loop` installs a thread-local platform, and each test runs on its own thread.
-fn init_platform() {
-    thread_local! {
-        static INSTALLED: std::cell::Cell<bool> = const { std::cell::Cell::new(false) };
-    }
-    if !INSTALLED.get() {
-        i_slint_backend_testing::init_no_event_loop();
-        INSTALLED.set(true);
-    }
-}
-
 /// What: `settle` lets Slint run its pending `changed` handlers and timers, as the event loop does before a frame.
 fn settle() {
     slint::platform::update_timers_and_animations();
@@ -65,27 +54,8 @@ fn settle() {
 /// Why: the app registers the same callbacks in `ui_settings::wire` and `ui_wire::wire_keys`; the engine is left out
 /// because no Settings key needs it, and the session file is never read or written.
 fn window_at(width: f32) -> AppWindow {
-    init_platform();
-    update_state(|state| {
-        *state = crate::ui_screen_view::ScreenState::default();
-    });
+    let (app, _host) = fresh_window_at(width, WINDOW_HEIGHT);
     crate::ui_settings::replace_saver(record_save);
-    let app = AppWindow::new().expect("the window should build on the testing backend");
-    app.window().set_size(slint::LogicalSize::new(width, WINDOW_HEIGHT));
-    app.global::<crate::Theme>().set_scheme_override(1);
-    wire_callbacks(&app);
-    let key_weak = app.as_weak();
-    app.on_key_pressed(move |key, ctrl, meta, alt, shift, repeat, in_popup| {
-        let Some(window) = key_weak.upgrade() else {
-            return false;
-        };
-        let input = KeyInput { key: key.to_string(), ctrl, meta, alt, shift, repeat, in_popup };
-        let (action, context) = classify(&input);
-        return run_page_action(&window, action, &context);
-    });
-    app.show().expect("the window should show on the testing backend");
-    app.window().dispatch_event(WindowEvent::WindowActiveChanged(true));
-    project(&app);
     return app;
 }
 
@@ -340,7 +310,7 @@ fn enter_acts_on_the_focused_row_in_each_form() {
 
 /// What: `escape` classifies and runs an Escape key press the way the window's key scope does.
 fn escape(app: &AppWindow) -> bool {
-    let key_scope_used = app.invoke_key_pressed("Escape".into(), false, false, false, false, false, false);
+    let key_scope_used = app.invoke_key_pressed("\u{1b}".into(), false, false, false, false, false, false);
     settle();
     return key_scope_used;
 }
@@ -356,21 +326,24 @@ fn escape_closes_settings_in_both_forms() {
     }
 }
 
+/// What: `focus_template_field` clicks the template line of the right pane, so it holds keyboard focus like a person's click.
+fn focus_template_field(app: &AppWindow) {
+    let field = elements(app, "TemplateEditor::field-input").into_iter().next().expect("the template line exists");
+    click_center(app, &field);
+    settle();
+}
+
 #[test]
-fn escape_does_not_close_settings_while_a_template_line_is_being_edited() {
+fn escape_in_the_template_line_returns_to_the_list_and_a_second_escape_closes_settings() {
     let app = open_settings_at(850.0);
-    update_state(|state| {
-        state.editor = state.editor.as_ref().map(|editor| return editor.with_focus(true));
-    });
-    assert!(!escape(&app), "the field keeps Escape while it is edited");
-    assert_eq!(app.get_route(), Route::Settings.to_int());
+    focus_template_field(&app);
+    assert_eq!(app.global::<Focus>().get_zone(), 7, "the click put focus in the text field");
+    assert!(escape(&app), "the first Escape is used by the page");
+    assert_eq!(app.get_route(), Route::Settings.to_int(), "the first Escape does not close Settings");
     assert_eq!(open_kind(), Some(TemplateKind::TrackRows));
-    // Once the field loses focus the same key closes the page.
-    update_state(|state| {
-        state.editor = state.editor.as_ref().map(|editor| return editor.with_focus(false));
-    });
-    assert!(escape(&app));
-    assert_eq!(app.get_route(), Route::Player.to_int());
+    assert_eq!(app.global::<Focus>().get_zone(), 8, "focus returned to the Settings list row");
+    assert!(escape(&app), "the second Escape is used by the page");
+    assert_eq!(app.get_route(), Route::Player.to_int(), "the second Escape closed Settings");
 }
 
 #[test]
@@ -484,11 +457,11 @@ fn closing_settings_saves_an_edit_made_in_the_right_pane() {
 #[test]
 fn narrowing_the_window_clears_a_focus_left_in_the_destroyed_text_field() {
     let app = open_settings_at(850.0);
-    app.invoke_editor_focus_changed(true);
-    settle();
-    assert!(!escape(&app), "Escape while editing stays with the field");
+    focus_template_field(&app);
+    assert_eq!(app.global::<Focus>().get_zone(), 7);
     app.window().set_size(slint::LogicalSize::new(443.0, WINDOW_HEIGHT));
     settle();
+    assert_ne!(app.global::<Focus>().get_zone(), 7, "the destroyed field no longer holds the zone");
     assert!(escape(&app), "Escape on the list page closes Settings once the field is gone");
     assert_eq!(app.get_route(), Route::Player.to_int());
 }
@@ -522,5 +495,44 @@ fn the_icon_paths_are_explicit_absolute_commands_that_slint_draws_whole() {
                 _ => {}
             }
         }
+    }
+}
+
+#[test]
+fn the_selection_pill_radius_is_the_layout_rule() {
+    let source = include_str!("../ui/settings.slint");
+    let line = source.lines().find(|line| return line.contains("property <length> pill-radius:")).expect("the pill radius is declared");
+    let value: f32 = line.split(':').nth(1).and_then(|rest| return rest.trim().trim_end_matches(';').trim_end_matches("px").parse().ok()).expect("a pixel value");
+    assert_eq!(value, PILL_RADIUS, "settings.slint and settings_layout agree");
+    assert_eq!(PILL_RADIUS, 21.0, "21 px, inside the stock 21 to 22 dp");
+}
+
+#[test]
+fn the_icon_circle_uses_the_secondary_pair_and_the_editor_header_is_the_canvas_color() {
+    let settings = include_str!("../ui/settings.slint");
+    let from_circle = &settings[settings.find("row-icon := Rectangle").expect("the icon circle exists")..];
+    let circle = &from_circle[..from_circle.find("title-measure").expect("the title follows the circle")];
+    assert!(circle.contains("background: Theme.secondary;"), "the circle fill is the secondary role");
+    assert!(circle.contains("fill: Theme.on-secondary;"), "the glyph is the on-secondary role");
+    let editor = include_str!("../ui/template_editor.slint");
+    // D109: the page header has no band of its own, so the page's canvas color shows through, and no divider under it.
+    let from_band = &editor[editor.find("Page header with the Back target").expect("the page header exists")..];
+    let band = &from_band[..from_band.find("Reset to default, at the right end of the header").expect("the Reset button follows the header")];
+    assert!(!band.contains("background:"), "the header paints no band, so the canvas shows");
+    assert!(!band.contains("surface-high"), "no surface-high band");
+    assert!(editor.contains("background: Theme.canvas;"), "the page itself is the canvas color");
+    assert!(!editor.contains("Divider under the header"), "the editor page draws no divider under its header");
+    assert!(editor.contains("background: Theme.outline-variant;"), "the preview hairlines stay");
+    assert!(editor.contains("border-color: root.mistake-lines.length > 0"), "the field outline stays");
+}
+
+#[test]
+fn the_secondary_pair_follows_the_primary_pair_in_both_schemes() {
+    let app = window_at(443.0);
+    for scheme in [1, 2] {
+        app.global::<crate::Theme>().set_scheme_override(scheme);
+        let theme = app.global::<crate::Theme>();
+        assert_eq!(theme.get_secondary(), theme.get_primary(), "scheme {scheme}");
+        assert_eq!(theme.get_on_secondary(), theme.get_on_primary(), "scheme {scheme}");
     }
 }

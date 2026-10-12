@@ -29,15 +29,19 @@ import java.text.Normalizer
 // ```
 import java.util.Locale
 
-// What:     `private val WORD_SEPARATORS: Set<Char>` lists the characters after which a new word begins.
-// Why:      A term may start a name or start a word after one of these characters, but never inside a word.
+// What:     `internal fun isWordSeparator(character: Char): Boolean` tells whether a new word begins after a character.
+// Why:      A term may start a name or start a word after one of these characters, but never inside a word. The
+//           index tests it for every character of every name, so it is a `when` and not a boxed set lookup.
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// const WORD_SEPARATORS = new Set([" ", "-", "_", ".", "(", "[", "/"]);
+// const isWordSeparator = (c: string) => [" ", "-", "_", ".", "(", "[", "/"].includes(c);
 // ```
-/** Characters after which a new word begins inside a normalized name. */
-private val WORD_SEPARATORS: Set<Char> = setOf(' ', '-', '_', '.', '(', '[', '/')
+/** Reports whether a new word begins after [character] inside a normalized name. */
+internal fun isWordSeparator(character: Char): Boolean = when (character) {
+    ' ', '-', '_', '.', '(', '[', '/' -> true
+    else -> false
+}
 
 // What:     `private val WHITESPACE_RUN: Regex` matches one or more whitespace characters.
 // Why:      The query is split on runs of whitespace so that repeated spaces produce no empty term.
@@ -165,6 +169,17 @@ private fun normalizeCodePoint(codePoint: Int): String {
     return stripCombiningMarks(decomposed).lowercase(Locale.ROOT)
 }
 
+// What:     `internal fun normalizedPieceOf(codePoint: Int): String` exposes the one-code-point normalization.
+// Why:      The Search index normalizes a million names and caches this result per code point, and it must apply the
+//           same rule as the matcher or the two would disagree about a name.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// export const normalizedPieceOf = (c: string) => c.normalize("NFKD").replace(/\p{Mn}/gu, "").toLowerCase();
+// ```
+/** Returns the normalized form of one code point: empty for a lone combining mark, else its lowercase base letters. */
+internal fun normalizedPieceOf(codePoint: Int): String = normalizeCodePoint(codePoint)
+
 // What:     `private fun normalizeWithOrigins(original: String): NormalizedText` normalizes a text and records
 //           where every normalized character came from.
 // Why:      Matching runs on the normalized text, while highlights must land on the original text's offsets.
@@ -232,7 +247,7 @@ fun normalizeForSearch(text: String): String = normalizeWithOrigins(text).text
 // ```
 /** Reports whether an index in a normalized text begins a word. */
 private fun isWordStart(normalized: String, index: Int): Boolean =
-    index == 0 || normalized[index - 1] in WORD_SEPARATORS
+    index == 0 || isWordSeparator(normalized[index - 1])
 
 // What:     `private fun wordStartOccurrences(normalized: String, term: String): List<Int>` lists every index where
 //           the term begins a word.
@@ -311,9 +326,20 @@ fun searchTerms(query: String): List<String> =
  * diaeresis, queried with `co`, highlights all three code units. Overlapping or touching ranges are merged, and
  * the result is sorted by start.
  */
-fun highlightRanges(text: String, query: String): List<SearchHighlight> {
-    /** Normalized query terms; an empty list means nothing is highlighted. */
-    val terms: List<String> = searchTerms(query)
+fun highlightRanges(text: String, query: String): List<SearchHighlight> =
+    highlightRangesForTerms(text, searchTerms(query))
+
+// What:     `fun highlightRangesForTerms(text: String, terms: List<String>): List<SearchHighlight>` is
+//           `highlightRanges` for a query that was already split into normalized terms.
+// Why:      A result list highlights up to five hundred names for one query, and the terms must be normalized once,
+//           not once per name.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// function highlightRangesForTerms(text: string, terms: string[]): Range[] { /* same as highlightRanges */ }
+// ```
+/** Returns the highlight ranges of [text] for terms that `searchTerms` already produced. */
+fun highlightRangesForTerms(text: String, terms: List<String>): List<SearchHighlight> {
     if (terms.isEmpty()) {
         return emptyList()
     }

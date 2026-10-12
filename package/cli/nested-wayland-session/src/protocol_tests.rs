@@ -71,7 +71,10 @@ fn click_parses_coordinates_and_optional_button() {
         Ok(Command::Click {
             x: 10.0,
             y: 20.0,
-            button: PointerButton::Left
+            button: PointerButton::Left,
+            count: 1,
+            interval_ms: 80,
+            modifiers: String::new(),
         })
     );
     assert_eq!(
@@ -79,7 +82,10 @@ fn click_parses_coordinates_and_optional_button() {
         Ok(Command::Click {
             x: 1.5,
             y: 2.5,
-            button: PointerButton::Right
+            button: PointerButton::Right,
+            count: 1,
+            interval_ms: 80,
+            modifiers: String::new(),
         })
     );
     assert!(parse_command("click 10").is_err());
@@ -136,7 +142,7 @@ fn drop_file_parses_path_and_optional_coordinates() {
     assert_eq!(
         parse_command("drop-file /tmp/hello.txt"),
         Ok(Command::DropFile {
-            path: "/tmp/hello.txt".into(),
+            paths: vec!["/tmp/hello.txt".into()],
             x: None,
             y: None
         })
@@ -145,7 +151,7 @@ fn drop_file_parses_path_and_optional_coordinates() {
     assert_eq!(
         parse_command("drop-file /tmp/hello.txt 100 40"),
         Ok(Command::DropFile {
-            path: "/tmp/hello.txt".into(),
+            paths: vec!["/tmp/hello.txt".into()],
             x: Some(100.0),
             y: Some(40.0)
         })
@@ -154,16 +160,14 @@ fn drop_file_parses_path_and_optional_coordinates() {
     assert_eq!(
         parse_command("drop-file ../../etc/passwd"),
         Ok(Command::DropFile {
-            path: "../../etc/passwd".into(),
+            paths: vec!["../../etc/passwd".into()],
             x: None,
             y: None
         })
     );
-    // Missing path, a lone coordinate, a non-numeric coordinate, and extra tokens error.
+    // Missing path and a lone coordinate error. More words are more paths, not an error.
     assert!(parse_command("drop-file").is_err());
     assert!(parse_command("drop-file /tmp/a 100").is_err());
-    assert!(parse_command("drop-file /tmp/a x y").is_err());
-    assert!(parse_command("drop-file /tmp/a 1 2 3").is_err());
 }
 
 #[test]

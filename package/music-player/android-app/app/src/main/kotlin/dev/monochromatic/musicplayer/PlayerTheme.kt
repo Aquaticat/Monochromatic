@@ -209,6 +209,6 @@ internal fun playerTheme(content: @Composable () -> Unit) {
     /** Material slots of the appearance in use. */
     val scheme: ColorScheme = remember(palette, dark) { playerColorScheme(palette, dark) }
     CompositionLocalProvider(LocalThemeRoles provides if (dark) palette.dark else palette.light) {
-        MaterialTheme(colorScheme = scheme, content = content)
+        MaterialTheme(colorScheme = scheme) { focusRingTheme(content) }
     }
 }

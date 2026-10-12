@@ -7,6 +7,8 @@
 // editor of the selected row in the other pane, so selecting never navigates. Back is the header arrow in both forms.
 import { Theme } from "theme.slint";
 import { StateLayer } from "state_layer.slint";
+import { Focus, FocusStop, FocusRing, Keys } from "focus.slint";
+import { Scrollbar, LastInput } from "scrollbar.slint";
 
 // One row of the Templates section: the template's name, the line it currently yields and its leading icon.
 export struct SettingsTemplateRow {
@@ -30,6 +32,8 @@ component RowShape inherits Rectangle {
     in property <bool> hovered: false;
     // True while the pointer button is held on the row.
     in property <bool> pressed: false;
+    // True while the row holds keyboard focus.
+    in property <bool> focused: false;
     // Corner radii at the top and the bottom edge of the row.
     in property <length> radius-top: 0px;
     in property <length> radius-bottom: 0px;
@@ -40,9 +44,9 @@ component RowShape inherits Rectangle {
     border-bottom-left-radius: root.radius-bottom;
     border-bottom-right-radius: root.radius-bottom;
 
-    // The hover (8 percent) and pressed (12 percent) layer, alpha only so it keeps the surface's lightness and hue.
+    // The hover (8 percent) and pressed or focused (12 percent) layer, alpha only so it keeps the surface's lightness and hue.
     Rectangle {
-        background: root.pressed ? root.tint.with-alpha(0.12) : root.hovered ? root.tint.with-alpha(0.08) : transparent;
+        background: root.pressed || root.focused ? root.tint.with-alpha(0.12) : root.hovered ? root.tint.with-alpha(0.08) : transparent;
         border-top-left-radius: root.radius-top;
         border-top-right-radius: root.radius-top;
         border-bottom-left-radius: root.radius-bottom;
@@ -67,8 +71,19 @@ export component SettingsPage inherits Rectangle {
     callback open-template(int);
     // Fires with the index of a row when that row is chosen in the two-pane form, so the host shows its editor in place.
     callback select-template(int);
-    // Fires when the Back target in the header is tapped.
+    // Fires when the Back target in the header is tapped or pressed from the keyboard.
     callback back();
+    // True when the list should take keyboard focus: when the page opens and each time `focus-tick` changes (Escape out
+    // of the template field returns here).
+    in property <bool> wants-focus: false;
+    // Changes when the Rust side asks for focus.
+    in property <int> focus-tick: 0;
+    changed focus-tick => {
+        if (root.wants-focus) {
+            root.focus-index = root.wide ? root.selected-index : root.focus-index;
+            list-focus.focus();
+        }
+    }
 
     // Back arrow path on a 24 by 24 grid, copied from TemplateEditorIcons.kt.
     property <string> back-path: "M20 11 H7.83 l5.59 -5.59 L12 4 l-8 8 8 8 l1.41 -1.41 L7.83 13 H20 v-2 Z";
@@ -97,16 +112,14 @@ export component SettingsPage inherits Rectangle {
     // Corner radius at the outer ends of a group, and at the joints between its rows.
     property <length> group-radius: 14px;
     property <length> joint-radius: 2px;
-    // Corner radius of the selected row's pill (the stock selection measures about 27.5 px; whole pixels here).
-    property <length> pill-radius: 28px;
+    // Corner radius of the selected row's pill: 21 px, inside the stock 21 to 22 dp.
+    property <length> pill-radius: 21px;
     // Bold weight of a selected title. The title's box is sized by a hidden copy at this weight, so selecting never
     // changes the box (the same device as the Folders panel).
     property <int> bold-weight: 700;
 
     // Row that the keyboard acts on. In the two-pane form it follows the selection.
     property <int> focus-index: 0;
-    // True after a key moved the focus, so the focus layer shows for keyboard use and not after a pointer click.
-    property <bool> keyboard-focus: false;
     changed selected-index => {
         root.focus-index = root.selected-index;
     }
@@ -132,7 +145,7 @@ export component SettingsPage inherits Rectangle {
         width: root.width;
         height: root.header-height;
 
-        // Circular hover and pressed layer over the 56 px Back target, 16 px from the edge.
+        // Circular hover, pressed and focus layer over the 56 px Back target, 16 px from the edge.
         StateLayer {
             x: 16px;
             y: 4px;
@@ -142,6 +155,7 @@ export component SettingsPage inherits Rectangle {
             tint: Theme.on-surface;
             hovered: back-touch.has-hover;
             pressed: back-touch.pressed;
+            focused: back-stop.ring;
         }
         Path {
             x: 32px;
@@ -162,7 +176,29 @@ export component SettingsPage inherits Rectangle {
             accessible-role: button;
             accessible-label: "Back";
             accessible-action-default => { root.back(); }
-            clicked => { root.back(); }
+            clicked => {
+                Focus.ring-visible = false;
+                root.back();
+            }
+            Tooltip {
+                text: @markdown("Back (\{Keys.texts.back})");
+            }
+        }
+        back-stop := FocusStop {
+            label: "settings-back";
+            x: 16px;
+            y: 4px;
+            width: 56px;
+            height: 56px;
+            activated => { root.back(); }
+        }
+        FocusRing {
+            x: 16px;
+            y: 4px;
+            width: 56px;
+            height: 56px;
+            radius: 28px;
+            active: back-stop.ring;
         }
         Text {
             x: 98px;
@@ -178,7 +214,7 @@ export component SettingsPage inherits Rectangle {
     }
 
     // Body below the header. The rows scroll when the text grows past the window.
-    Flickable {
+    body-flick := Flickable {
         x: 0px;
         y: root.header-height;
         width: root.width;
@@ -186,22 +222,24 @@ export component SettingsPage inherits Rectangle {
         content-width: root.width;
         content-height: body.preferred-height;
 
-        // The list takes the keys: Up and Down move through the rows, Home and End jump, Enter and Space activate.
-        // Keys with Control, Alt or Meta held pass on, so the window's shortcuts keep working.
-        list-focus := FocusScope {
+        // The list takes the keys: Up and Down move through the rows, Home and End jump, Enter and Space activate. Keys
+        // with Control, Alt or Meta held pass on, so the window's shortcuts keep working. It is a focus stop of the
+        // Settings list zone (8), which the window's key scope leaves to the list.
+        list-focus := FocusStop {
+            label: "settings-list";
+            zone: 8;
+            activates: false;
             x: 0px;
             y: 0px;
             width: root.width;
             height: body.preferred-height;
-            focus-on-click: false;
-            key-pressed(event) => {
+            extra-key(event) => {
                 if (event.modifiers.control || event.modifiers.alt || event.modifiers.meta) {
-                    return reject;
+                    return false;
                 }
                 if (event.text == Key.DownArrow || event.text == Key.UpArrow || event.text == Key.Home || event.text == Key.End) {
-                    root.keyboard-focus = true;
                     if (root.rows.length == 0) {
-                        return accept;
+                        return true;
                     }
                     if (event.text == Key.Home) {
                         root.focus-index = 0;
@@ -215,16 +253,15 @@ export component SettingsPage inherits Rectangle {
                     if (root.wide) {
                         root.select-template(root.focus-index);
                     }
-                    return accept;
+                    return true;
                 }
                 if (event.text == Key.Return || event.text == " ") {
-                    root.keyboard-focus = true;
                     if (root.rows.length > 0) {
                         root.activate(root.focus-index);
                     }
-                    return accept;
+                    return true;
                 }
-                return reject;
+                return false;
             }
 
             body := VerticalLayout {
@@ -258,32 +295,39 @@ export component SettingsPage inherits Rectangle {
                     // One template row: icon circle, the template's name on top and the line it yields below.
                     for row[index] in root.rows : row-box := Rectangle {
                         property <bool> selected: root.wide && index == root.selected-index;
-                        property <bool> keyboard-focused: !root.wide && root.keyboard-focus && list-focus.has-focus && index == root.focus-index;
+                        property <bool> keyboard-focused: list-focus.ring && index == root.focus-index;
                         // Group rounding for the state layers, or the pill when the row is selected.
                         property <length> radius-top: self.selected ? root.pill-radius : (index == 0 ? root.group-radius : root.joint-radius);
                         property <length> radius-bottom: self.selected ? root.pill-radius : (index == root.rows.length - 1 ? root.group-radius : root.joint-radius);
                         height: root.row-height;
 
-                        // Selection pill and the hover and pressed layer over it, in the content color of what is beneath.
-                        // The keyboard focus shows as the same 8 percent layer a hover shows (no border or ring), on the
-                        // focused row of the single form; in the wide form focus and selection are the same row, and the
-                        // pill already marks it.
+                        // Selection pill and the hover, pressed and focus layer over it, in the content color of what is
+                        // beneath. The row under the keyboard focus also gets the 2 px ring below, so focus shows in
+                        // two channels; in the wide form focus and selection are the same row.
                         row-pill := RowShape {
                             fill: parent.selected ? Theme.secondary-container : transparent;
                             tint: parent.selected ? Theme.on-secondary-container : Theme.on-surface;
-                            hovered: row-touch.has-hover || parent.keyboard-focused;
+                            hovered: row-touch.has-hover;
                             pressed: row-touch.pressed;
+                            focused: parent.keyboard-focused;
                             radius-top: parent.radius-top;
                             radius-bottom: parent.radius-bottom;
                         }
-                        // Icon circle in the secondary container role with the glyph in its content role.
+                        FocusRing {
+                            active: parent.keyboard-focused;
+                            radius-tl: parent.radius-top;
+                            radius-tr: parent.radius-top;
+                            radius-bl: parent.radius-bottom;
+                            radius-br: parent.radius-bottom;
+                        }
+                        // Icon circle in the secondary role with the glyph in the on-secondary role (D109, D110).
                         row-icon := Rectangle {
                             x: root.icon-x;
                             y: (root.row-height - root.icon-circle) / 2;
                             width: root.icon-circle;
                             height: root.icon-circle;
                             border-radius: root.icon-circle / 2;
-                            background: Theme.secondary-container;
+                            background: Theme.secondary;
                             Path {
                                 x: (parent.width - 24px) / 2;
                                 y: (parent.height - 24px) / 2;
@@ -292,7 +336,7 @@ export component SettingsPage inherits Rectangle {
                                 viewbox-width: 24;
                                 viewbox-height: 24;
                                 commands: row.icon == "queue_music" ? root.queue-music-path : root.play-circle-path;
-                                fill: Theme.on-secondary-container;
+                                fill: Theme.on-secondary;
                             }
                         }
                         // Width probe: the name at the bold weight, never shown. The title's box takes this width (capped
@@ -336,7 +380,7 @@ export component SettingsPage inherits Rectangle {
                             accessible-checked: parent.selected;
                             accessible-action-default => { root.activate(index); }
                             clicked => {
-                                root.keyboard-focus = false;
+                                Focus.ring-visible = false;
                                 root.focus-index = index;
                                 // A click takes keyboard focus from the editor's text field, so Escape closes Settings.
                                 list-focus.focus();
@@ -346,6 +390,19 @@ export component SettingsPage inherits Rectangle {
                     }
                 }
             }
+        }
+    }
+
+    // Scrollbar (D22): always visible and draggable for the pointer, a fading non-interactive bar for touch. It is after the
+    // rows, so it is above them, and a touch area ignores the wheel, so the wheel still scrolls the list below it.
+    Scrollbar {
+        x: root.width - self.width;
+        y: body-flick.y;
+        height: body-flick.height;
+        content-y: body-flick.content-y;
+        content-height: body-flick.content-height;
+        scroll-to(y) => {
+            body-flick.content-y = y;
         }
     }
 }

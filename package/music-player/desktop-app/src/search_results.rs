@@ -21,9 +21,6 @@
 //! then the kind,
 //!  then the library position.
 
-/// Name of the root-level group, which the folder tests assert results against.
-#[cfg(test)]
-use crate::folder_index::UNFILED_FOLDER_NAME;
 /// The index that answers a query and the batch form it is built from.
 use crate::search_index::SearchIndex;
 use crate::search_index_batch::prepare_batch;

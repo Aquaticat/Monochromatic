@@ -2,12 +2,18 @@
 // anchored to the track row; this component draws the card, the heading, the rows and the dividers only.
 import { Theme } from "theme.slint";
 import { StateLayer } from "state_layer.slint";
+import { FocusRing } from "focus.slint";
 
-// One menu row. `icon` indexes the glyph: 0 play, 1 shuffle, 2 file details, 3 re-analyse, 4 show in file manager,
-// 5 copy filename, 6 move to trash.
+// One menu row. `icon` indexes the glyph: 0 play, 1 shuffle, 2 file details, 3 show in file manager,
+// 4 copy filename, 5 move to trash.
 export struct TrackMenuItem {
     // Visible label of the action, for example `Start shuffle from here`.
     label: string,
+    // The label split around its access letter (D114): the text before it, the letter, and the text after it. The letter
+    // is drawn underlined, so a row can be told from its neighbors by the letter that runs it, not by color alone.
+    label-before: string,
+    access: string,
+    label-after: string,
     // Glyph index from the list above.
     icon: int,
     // True for the destructive action; the row uses the error role for its glyph and label.
@@ -16,6 +22,8 @@ export struct TrackMenuItem {
     divider-before: bool,
     // Inline secondary value, drawn after the label as ` · value` (for File details); empty draws nothing.
     value: string,
+    // Shortcut of the action, drawn right-aligned in the row, such as `Alt+Enter`; empty draws nothing (D106).
+    shortcut: string,
 }
 
 // Track action menu with a one-line heading, grouped rows and a destructive row.
@@ -26,27 +34,52 @@ export component TrackMenu inherits Rectangle {
     in property <[TrackMenuItem]> items: [];
     // Extra start inset for the heading, rows and dividers; 12px on the inner panel, 0px on the cover.
     in property <length> start-inset: 0px;
+    // Row the keyboard highlights (Up and Down move it, Enter chooses it), or -1 for none. It is drawn with the 12 percent
+    // layer and the 2 px ring, so the highlight shows in two channels.
+    in property <int> ring: -1;
 
     // Fired with the row index when a row is pressed; the menu never closes itself on selection.
     callback select(int);
     // Fired when Escape is pressed while the menu has focus; the caller closes the popup.
     callback dismiss();
+    // A popup takes the keyboard focus while it is open, so the window's key scope never sees the keys; the menu hands
+    // each key press and release to the caller. The press returns true when the caller used the key.
+    callback key-down(string, bool, bool, bool, bool, bool) -> bool;
+    callback key-up(string, bool, bool, bool, bool);
 
-    // Card width is the content width, capped at 280px (the Android menu maximum).
-    width: min(280px, column.preferred-width);
+    // Card width the host gives the popup: the width the rows need, at least 280 px (the Android menu width) and at most
+    // 360 px. A fixed 280 px cut the longest shortcut hints (`Ctrl+Shift+E`) at the card edge. The heading does not count
+    // toward it, because an ellipsized track name must not widen the menu.
+    out property <length> card-width: min(360px, max(280px, column.preferred-width));
+    // Fade-in progress, 0 when the menu is created and 1 after `Theme.motion-enter`, so the menu does not pop in.
+    property <float> enter: 0;
+    width: root.card-width;
     height: column.preferred-height;
+    opacity: root.enter;
+    animate enter { duration: Theme.motion-enter; easing: ease-out; }
     background: Theme.surface-high;
     border-radius: 12px;
     clip: true;
     forward-focus: keys;
 
-    // Escape dismisses through the caller; other keys are left to the host.
+    // A popup does not give itself keyboard focus: the window's focus item is taken away when the popup opens, and nothing
+    // in the popup receives it unless asked, so the menu asks when it is created.
+    init => {
+        keys.focus();
+        root.enter = 1;
+    }
+
+    // Every key goes to the caller: Up, Down and Enter choose a row, Escape closes the menu, and the row chords act on its
+    // track (D106).
     keys := FocusScope {
         key-pressed(event) => {
-            if (event.text == Key.Escape) {
-                root.dismiss();
+            if (root.key-down(event.text, event.modifiers.control, event.modifiers.meta, event.modifiers.alt, event.modifiers.shift, event.repeat)) {
                 return accept;
             }
+            return reject;
+        }
+        key-released(event) => {
+            root.key-up(event.text, event.modifiers.control, event.modifiers.meta, event.modifiers.alt, event.modifiers.shift);
             return reject;
         }
     }
@@ -63,12 +96,9 @@ export component TrackMenu inherits Rectangle {
             return "M11 7 h2 v2 h-2 Z M11 11 h2 v6 h-2 Z M12 2 C6.48 2 2 6.48 2 12 s4.48 10 10 10 s10 -4.48 10 -10 S17.52 2 12 2 Z M12 20 c-4.41 0 -8 -3.59 -8 -8 s3.59 -8 8 -8 s8 3.59 8 8 s-3.59 8 -8 8 Z";
         }
         if (icon == 3) {
-            return "M17.65 6.35 C16.2 4.9 14.21 4 12 4 c-4.42 0 -7.99 3.58 -7.99 8 s3.57 8 7.99 8 c3.73 0 6.84 -2.55 7.73 -6 h-2.08 c-0.82 2.33 -3.04 4 -5.65 4 c-3.31 0 -6 -2.69 -6 -6 s2.69 -6 6 -6 c1.66 0 3.14 0.69 4.22 1.78 L13 11 h7 V4 l-2.35 2.35 Z";
-        }
-        if (icon == 4) {
             return "M20 6 h-8 l-2 -2 L4 4 c-1.1 0 -1.99 0.9 -1.99 2 L2 18 c0 1.1 0.9 2 2 2 h16 c1.1 0 2 -0.9 2 -2 L22 8 c0 -1.1 -0.9 -2 -2 -2 Z M20 18 L4 18 L4 8 h16 v10 Z";
         }
-        if (icon == 5) {
+        if (icon == 4) {
             return "M16 1 L4 1 c-1.1 0 -2 0.9 -2 2 v14 h2 L4 3 h12 L16 1 Z M19 5 L8 5 c-1.1 0 -2 0.9 -2 2 v14 c0 1.1 0.9 2 2 2 h11 c1.1 0 2 -0.9 2 -2 L21 7 c0 -1.1 -0.9 -2 -2 -2 Z M19 21 L8 21 L8 7 h11 v14 Z";
         }
         return "M16 9 v10 H8 V9 h8 m-1.5 -6 h-5 l-1 1 H5 v2 h14 V4 h-3.5 l-1 -1 Z M18 7 H6 v12 c0 1.1 0.9 2 2 2 h8 c1.1 0 2 -0.9 2 -2 V7 Z";
@@ -88,6 +118,10 @@ export component TrackMenu inherits Rectangle {
                 wrap: no-wrap;
                 overflow: elide;
                 vertical-alignment: center;
+                // The name never asks for width, so a long track name is ellipsized instead of widening the card.
+                preferred-width: 0px;
+                min-width: 0px;
+                accessible-role: text;
             }
         }
 
@@ -109,11 +143,15 @@ export component TrackMenu inherits Rectangle {
                 property <color> foreground: item.destructive ? Theme.error : Theme.on-surface;
 
                 height: max(48px, row.preferred-height);
-                // Rectangular hover and pressed layer over the whole action row, below its glyph and label.
+                // Rectangular hover, pressed and keyboard layer over the whole action row, below its glyph and label.
                 StateLayer {
                     tint: Theme.on-surface;
                     hovered: row-touch.has-hover;
                     pressed: row-touch.pressed;
+                    focused: index == root.ring;
+                }
+                FocusRing {
+                    active: index == root.ring;
                 }
                 row := HorizontalLayout {
                     padding-left: 16px + root.start-inset;
@@ -121,7 +159,7 @@ export component TrackMenu inherits Rectangle {
                     padding-top: 8px;
                     padding-bottom: 8px;
                     spacing: 12px;
-                    alignment: start;
+                    alignment: stretch;
 
                     // Glyph cell stretches to the row height so the 24px glyph centres on the label line.
                     Rectangle {
@@ -143,11 +181,12 @@ export component TrackMenu inherits Rectangle {
                         spacing: 0px;
                         alignment: start;
 
-                        Text {
+                        // The label with its access letter underlined (D114).
+                        StyledText {
                             horizontal-stretch: 0;
-                            text: item.label;
-                            color: row-card.foreground;
-                            font-size: Theme.label-large;
+                            text: @markdown("\{item.label-before}<u>\{item.access}</u>\{item.label-after}");
+                            default-color: row-card.foreground;
+                            default-font-size: Theme.label-large;
                             vertical-alignment: center;
                         }
 
@@ -160,9 +199,28 @@ export component TrackMenu inherits Rectangle {
                             vertical-alignment: center;
                         }
                     }
+
+                    // Shortcut of the action, right-aligned in the row after the room the label leaves.
+                    Rectangle {
+                        horizontal-stretch: 1;
+                        min-width: 12px;
+                    }
+                    Text {
+                        horizontal-stretch: 0;
+                        text: item.shortcut;
+                        color: Theme.on-surface-variant;
+                        font-size: Theme.body-small;
+                        vertical-alignment: center;
+                    }
                 }
                 row-touch := TouchArea {
                     mouse-cursor: pointer;
+                    // Each row is a button named by its label (with the inline value, such as the file size) and described
+                    // by its shortcut, so a screen reader announces the action and the key that runs it.
+                    accessible-role: button;
+                    accessible-label: item.value == "" ? item.label : item.label + ", " + item.value;
+                    accessible-description: item.shortcut;
+                    accessible-action-default => { root.select(index); }
                     clicked => { root.select(index); }
                 }
             }

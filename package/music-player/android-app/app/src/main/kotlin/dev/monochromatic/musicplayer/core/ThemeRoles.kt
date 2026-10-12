@@ -91,8 +91,19 @@ internal const val HOVER_ALPHA: Double = 0.08
 // ```ts
 // const PRESSED_ALPHA = 0.12;
 // ```
-/** Alpha of the pressed layer (Material 3 state layer). */
+/** Alpha of the pressed layer (Material 3 state layer). The focus layer has the same strength. */
 internal const val PRESSED_ALPHA: Double = 0.12
+
+// What:     `internal val TEXT_LAYER_ALPHAS: List<Double>` lists every layer strength text must survive.
+// Why:      A pressed or focused layer lasts as long as the press or the focus does, so text holds AA under both the
+//           hover and the pressed strength, not only while a button is held.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// const TEXT_LAYER_ALPHAS = [HOVER_ALPHA, PRESSED_ALPHA];
+// ```
+/** Layer strengths text must hold AA under: hover, then pressed (which is also the focus strength). */
+internal val TEXT_LAYER_ALPHAS: List<Double> = listOf(HOVER_ALPHA, PRESSED_ALPHA)
 
 // What:     The four `MATCH_*_SHARE` constants set how far the match fill moves from primary toward the neutral end.
 // Why:      D59 derives the fill from the accent in OKLCH; the values are the ones the Android app and the desktop
@@ -336,7 +347,9 @@ private data class SchemeSpec(
 )
 
 // Targets fitted to the Fold captures (the baseline root reproduces them): the player held dark primary #BAC5EE, light
-// primary #4E5E8B, secondary container #353B4D and #DDE2F9, and so on. The numbers are copied from the Rust tables.
+// primary #4E5E8B, secondary container #353B4D and #DDE2F9, and so on. Two light roles were then retuned darker in
+// lightness only (B4): primary from 0.4883 to 0.4545 and on-surface-variant from 0.4844 to 0.4685, the smallest steps
+// that put every drawn state at AA at the baseline. The numbers are copied from the Rust tables.
 /** Dark scheme table. D41: the canvas, the rail seam and the deck are stable neutrals under every accent. */
 private val DARK_SPEC: SchemeSpec = SchemeSpec(
     canvas = fixed(0x000000),
@@ -365,10 +378,10 @@ private val LIGHT_SPEC: SchemeSpec = SchemeSpec(
     currentRow = neutral(lightness = 0.9669, chroma = 0.0093, hueOffset = 24.2),
     surfaceHigh = neutral(lightness = 0.9308, chroma = 0.0094, hueOffset = 24.2),
     onSurface = neutral(lightness = 0.3188, chroma = 0.0162, hueOffset = 7.0),
-    onSurfaceVariant = neutral(lightness = 0.4844, chroma = 0.0193, hueOffset = 9.6),
+    onSurfaceVariant = neutral(lightness = 0.4685, chroma = 0.0193, hueOffset = 9.6),
     outline = neutral(lightness = 0.5706, chroma = 0.0140, hueOffset = 7.3),
     outlineVariant = neutral(lightness = 0.8288, chroma = 0.0139, hueOffset = 12.9),
-    primary = accent(lightness = 0.4883, chroma = 0.0753, hueOffset = 0.0),
+    primary = accent(lightness = 0.4545, chroma = 0.0753, hueOffset = 0.0),
     onPrimary = accent(lightness = 1.0, chroma = 0.0, hueOffset = 0.0),
     secondaryContainer = accent(lightness = 0.9159, chroma = 0.0317, hueOffset = 7.4),
     onSecondaryContainer = accent(lightness = 0.2260, chroma = 0.0341, hueOffset = 2.4),
@@ -493,21 +506,23 @@ internal fun fitLightness(start: Oklch, endpoint: Double, passes: (Srgb8) -> Boo
     return start.copy(lightness = passing)
 }
 
-// What:     `private fun legibleOn(content, backgrounds, layer, layerAlpha, target)` is true when `content` reaches
-//           `target` against every background, and also against that background with `layer` at `layerAlpha` over it.
-// Why:      Text is drawn on a surface and also under a hover or pressed layer (alpha-only, D108); the caller passes
-//           the layer strength the text must survive.
+// What:     `private fun legibleOn(content, backgrounds, layer, layerAlphas, target)` is true when `content` reaches
+//           `target` against every background, and also against that background with `layer` at each of `layerAlphas`.
+// Why:      Text is drawn on a surface and also under a hover, pressed or focus layer (alpha-only, D108); the caller
+//           passes every layer strength the text must survive.
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// return backgrounds.every(b =>
-//   ratio(content, b) >= target && ratio(content, compositeOver(layer, alpha, b)) >= target);
+// return backgrounds.every(b => ratio(content, b) >= target
+//   && alphas.every(a => ratio(content, compositeOver(layer, a, b)) >= target));
 // ```
-/** True when [content] holds [target] contrast on every background, at rest and under the layer. */
-private fun legibleOn(content: Srgb8, backgrounds: List<Srgb8>, layer: Srgb8, layerAlpha: Double): Boolean =
+/** True when [content] holds the text target on every background, at rest and under the layer at every strength. */
+private fun legibleOn(content: Srgb8, backgrounds: List<Srgb8>, layer: Srgb8, layerAlphas: List<Double>): Boolean =
     backgrounds.all { background ->
         contrastRatio(content, background) >= TEXT_TARGET_RATIO &&
-            contrastRatio(content, compositeOver(layer, layerAlpha, background)) >= TEXT_TARGET_RATIO
+            layerAlphas.all { layerAlpha ->
+                contrastRatio(content, compositeOver(layer, layerAlpha, background)) >= TEXT_TARGET_RATIO
+            }
     }
 
 // What:     `private fun containerLayers(container, content)` is the selected fill under the hover and under the
@@ -593,13 +608,13 @@ private fun fitText(spec: SchemeSpec, terms: RootTerms, surfaces: FixedSurfaces,
     /** Primary text color. */
     val onSurface: Srgb8 = oklchToSrgb8(
         fitLightness(resolveOklch(spec.onSurface, terms), towardText) { candidate ->
-            legibleOn(candidate, surfaces.textSurfaces, candidate, PRESSED_ALPHA)
+            legibleOn(candidate, surfaces.textSurfaces, candidate, TEXT_LAYER_ALPHAS)
         },
     )
     /** Secondary text after the contrast fit. */
     val onSurfaceVariant: Srgb8 = oklchToSrgb8(
         fitLightness(resolveOklch(spec.onSurfaceVariant, terms), towardText) { candidate ->
-            legibleOn(candidate, surfaces.textSurfaces, onSurface, HOVER_ALPHA)
+            legibleOn(candidate, surfaces.textSurfaces, onSurface, TEXT_LAYER_ALPHAS)
         },
     )
     /** Outline after the contrast fit. */
@@ -633,16 +648,25 @@ private data class FittedAccent(
 )
 
 // Primary is both a fill and text (rail letter, links, action labels), so it holds AA on every surface and under the
-// hover layer, on the selected fill at rest, and against the light scheme's white on-primary. The pressed state lasts
-// only while the button is held, and the selected fill's own tinted hover is not required.
+// hover and pressed (also focus) layers, on the selected fill at rest and under the layers the rail cell draws over it,
+// and against the light scheme's white on-primary. The OKLCH hovered and pressed fills carry only
+// on-secondary-container text, so primary is not fitted to them.
 /** Fits primary and on-primary against the surfaces and the already fitted neutral text. */
 private fun fitAccent(
     spec: SchemeSpec,
     terms: RootTerms,
     surfaces: FixedSurfaces,
-    onSurface: Srgb8,
+    text: FittedText,
     scheme: ThemeScheme,
 ): FittedAccent {
+    /** Fitted on-surface, the tint of the layers over the surfaces. */
+    val onSurface: Srgb8 = text.onSurface
+    /** The selected fill at rest and under the hover and pressed layers of on-secondary-container. */
+    val selectedFillStates: List<Srgb8> = listOf(
+        surfaces.secondaryContainer,
+        compositeOver(text.onSecondaryContainer, HOVER_ALPHA, surfaces.secondaryContainer),
+        compositeOver(text.onSecondaryContainer, PRESSED_ALPHA, surfaces.secondaryContainer),
+    )
     /** Lightness endpoint that text moves toward. */
     val towardText: Double = if (scheme == ThemeScheme.DARK) 1.0 else 0.0
     /** Fixed white on-primary of the light scheme, or null in dark. */
@@ -650,8 +674,8 @@ private fun fitAccent(
     /** Accent fill color. */
     val primary: Srgb8 = oklchToSrgb8(
         fitLightness(resolveOklch(spec.primary, terms), towardText) { candidate ->
-            legibleOn(candidate, surfaces.textSurfaces, onSurface, HOVER_ALPHA) &&
-                contrastRatio(candidate, surfaces.secondaryContainer) >= TEXT_TARGET_RATIO &&
+            legibleOn(candidate, surfaces.textSurfaces, onSurface, TEXT_LAYER_ALPHAS) &&
+                selectedFillStates.all { fill -> contrastRatio(candidate, fill) >= TEXT_TARGET_RATIO } &&
                 (lightOnPrimary == null || contrastRatio(candidate, lightOnPrimary) >= TEXT_TARGET_RATIO)
         },
     )
@@ -659,7 +683,7 @@ private fun fitAccent(
     /** Content color on the accent fill. */
     val onPrimary: Srgb8 = lightOnPrimary ?: oklchToSrgb8(
         fitLightness(resolveOklch(spec.onPrimary, terms), 1.0 - towardText) { candidate ->
-            legibleOn(candidate, listOf(primary), candidate, PRESSED_ALPHA)
+            legibleOn(candidate, listOf(primary), candidate, TEXT_LAYER_ALPHAS)
         },
     )
     return FittedAccent(primary = primary, onPrimary = onPrimary)
@@ -728,7 +752,7 @@ internal fun deriveScheme(terms: RootTerms, scheme: ThemeScheme): RoleSet {
     /** Fitted text roles. */
     val text: FittedText = fitText(spec, terms, surfaces, towardText)
     /** Fitted accent roles. */
-    val accentFit: FittedAccent = fitAccent(spec, terms, surfaces, text.onSurface, scheme)
+    val accentFit: FittedAccent = fitAccent(spec, terms, surfaces, text, scheme)
     val (hovered, pressed) = containerLayers(surfaces.secondaryContainer, text.onSecondaryContainer)
     return RoleSet(
         canvas = surfaces.canvas,

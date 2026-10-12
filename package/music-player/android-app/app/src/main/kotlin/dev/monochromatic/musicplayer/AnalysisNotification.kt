@@ -111,7 +111,7 @@ internal fun buildAnalysisNotification(context: Context, content: AnalysisNotifi
     /** Builder on the silent channel with the fixed parts of the notification. */
     val builder: NotificationCompat.Builder = NotificationCompat.Builder(context, ANALYSIS_CHANNEL_ID)
         .setContentTitle(ANALYSIS_NOTIFICATION_TITLE)
-        .setSmallIcon(android.R.drawable.stat_notify_sync)
+        .setSmallIcon(R.drawable.ic_stat_analysis)
         .setCategory(NotificationCompat.CATEGORY_PROGRESS)
         .setPriority(NotificationCompat.PRIORITY_LOW)
         .setSilent(true)

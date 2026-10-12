@@ -246,7 +246,8 @@ private fun kanaRowLabelFor(name: String): String? {
 // ```
 /** Chooses the rail cell label for one folder name inside its writing-system section. */
 private fun cellLabelFor(name: String, script: RailScript): String = when (script) {
-    RailScript.LATIN, RailScript.CYRILLIC, RailScript.GREEK, RailScript.HANGUL -> name[0].uppercase()
+    RailScript.LATIN -> (foldedLatinInitial(name[0]) ?: name[0]).uppercase()
+    RailScript.CYRILLIC, RailScript.GREEK, RailScript.HANGUL -> name[0].uppercase()
     RailScript.JAPANESE -> kanaRowLabelFor(name) ?: KANJI_LABEL
     RailScript.OTHER -> script.label
 }

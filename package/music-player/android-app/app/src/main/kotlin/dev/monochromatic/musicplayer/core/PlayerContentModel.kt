@@ -62,7 +62,11 @@ data class PlayerContentModel(
 // ```ts
 // function buildPlayerContent(input: PlayerInput): PlayerContentModel { /* rail, page entries, deck */ }
 // ```
-/** Builds the production player screen model from the page list, the selected page, and playback values. */
+/**
+ * Builds the production player screen model from the page list, the selected page, and playback values.
+ *
+ * @param entries rows the caller already built for the selected page (with its templates), so they are not built twice
+ */
 fun buildPlayerContent(
     pageLabels: List<String>,
     selectedPage: Int,
@@ -75,6 +79,7 @@ fun buildPlayerContent(
     positionSec: Double,
     durationSec: Double,
     libraryName: String = libraryDisplayName(null),
+    entries: List<TrackListEntry>? = null,
 ): PlayerContentModel {
     /** Rail sections built from every page name, so the picker can list each page. */
     val sections: List<RailSection> = railFor(pageLabels)
@@ -82,8 +87,8 @@ fun buildPlayerContent(
     val currentFolder: String? = pageLabels.getOrNull(selectedPage)
     /** Heading text for the selected page, empty when no page is selected. */
     val folderTitle: String = currentFolder.orEmpty()
-    /** Track rows and subfolder headers of the selected page, in playback order. */
-    val entries: List<TrackListEntry> = trackListEntries(
+    /** Track rows and subfolder headers of the selected page, in playback order; the caller's own when it has them. */
+    val pageEntries: List<TrackListEntry> = entries ?: trackListEntries(
         folder = pageFolderFor(folderTitle, pageItems),
         currentIndexInLibrary = currentIndex,
     )
@@ -117,7 +122,7 @@ fun buildPlayerContent(
         sections = sections,
         currentFolder = currentFolder,
         folderTitle = folderTitle,
-        entries = entries,
+        entries = pageEntries,
         deck = deck,
         libraryName = libraryName,
     )
@@ -153,15 +158,12 @@ data class PlayingPlace(
 fun playingPlaceOf(folderTitle: String, playingItems: List<PageEntry>, currentIndex: Int?): PlayingPlace {
     /** Entry of the playing track within its folder, or null when the current index is not in that folder. */
     val entry: PageEntry? = playingItems.firstOrNull { item -> item.index == currentIndex }
-    /** Track rows of the playing folder in list order, built the same way the folder on screen builds its rows. */
-    val rows: List<TrackListEntry> = trackListEntries(
-        folder = pageFolderFor(folderTitle = folderTitle, pageItems = playingItems),
-        currentIndexInLibrary = currentIndex,
-    )
-    /** Position of the playing row among those rows, or -1 when the playing track is not in this folder. */
-    val rowPosition: Int = rows
-        .filterIsInstance<TrackListEntry.RowEntry>()
-        .indexOfFirst { row -> row.row.isCurrent }
+    /** Track items of the playing folder in list order, built the same way the folder on screen builds its rows. */
+    val trackItems: List<FolderListItem.TrackItem> = pageFolderFor(folderTitle = folderTitle, pageItems = playingItems)
+        .items
+        .filterIsInstance<FolderListItem.TrackItem>()
+    /** Position of the playing row among those items, or -1 when the playing track is not in this folder. */
+    val rowPosition: Int = trackItems.indexOfFirst { item -> item.row.indexInLibrary == currentIndex }
     return PlayingPlace(entry = entry, rowPosition = rowPosition, folderTrackCount = playingItems.size)
 }
 

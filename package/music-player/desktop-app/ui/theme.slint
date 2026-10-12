@@ -94,16 +94,16 @@ export global Theme {
         seam: #B0B1BC,
         surface-high: #E8E7EE,
         on-surface: #30323B,
-        on-surface-variant: #5C5E6A,
+        on-surface-variant: #585A65,
         outline: #757780,
         outline-variant: #C5C6D0,
-        primary: #4E5E8B,
+        primary: #455481,
         on-primary: #FFFFFF,
         secondary-container: #DDE2F9,
         secondary-container-hovered: #CBD0E7,
         secondary-container-pressed: #C2C7DE,
         on-secondary-container: #161B2C,
-        match-fill: #CFD9F0,
+        match-fill: #C9D2E9,
         error: #BA1A1A,
         error-container: #F9DEDC,
         on-error-container: #410E0B,
@@ -126,6 +126,10 @@ export global Theme {
     // Accent roles.
     out property <color> primary: root.roles.primary;
     out property <color> on-primary: root.roles.on-primary;
+    // Secondary and on-secondary follow the primary pair, as the Android theme maps them (PlayerTheme.kt: secondary =
+    // primary, onSecondary = onPrimary), so no new derived role is needed.
+    out property <color> secondary: root.roles.primary;
+    out property <color> on-secondary: root.roles.on-primary;
     out property <color> secondary-container: root.roles.secondary-container;
     out property <color> secondary-container-hovered: root.roles.secondary-container-hovered;
     out property <color> secondary-container-pressed: root.roles.secondary-container-pressed;
@@ -148,4 +152,10 @@ export global Theme {
 
     // The 48 logical pixel minimum for every interactive target (C1).
     out property <length> touch-target: 48px;
+
+    // Duration of the fade that a page, the picker overlay, the track menu and a toast play when it appears. It stays
+    // under the 150 ms of the Settings pane cross-fade (D109), it only answers a user action (never autonomous or
+    // decorative motion), and it is one token so the app has one place to change or switch it off. Slint 1.18 exposes
+    // no reduced-motion setting of the OS, so there is none to follow yet.
+    out property <duration> motion-enter: 120ms;
 }

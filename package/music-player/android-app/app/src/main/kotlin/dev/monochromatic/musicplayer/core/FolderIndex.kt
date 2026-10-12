@@ -21,16 +21,6 @@ package dev.monochromatic.musicplayer.core
 // ```
 import dev.monochromatic.musicplayer.Track
 
-// What:     `const val UNFILED_FOLDER_NAME: String = "Unfiled"` names the entry for tracks at the library root.
-// Why:      Root-level tracks have no folder, so they need a visible name that sorts last in the picker.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// export const UNFILED_FOLDER_NAME = "Unfiled";
-// ```
-/** Folder name given to tracks that sit directly at the library root. */
-const val UNFILED_FOLDER_NAME: String = "Unfiled"
-
 // What:     `private const val PATH_SEPARATOR: String = "/"` is the separator between display path segments.
 // Why:      Display paths use `/`, and the split must cut on the same character the path builders join with.
 //
@@ -63,7 +53,7 @@ private const val PARENT_DIRECTORY: String = ".."
 
 // What:     `private const val MIN_FOLDERED_SEGMENTS: Int = 2` is the fewest segments a track path needs to sit
 //           inside a folder: the folder name and the file name.
-// Why:      A single-segment path names a file at the root, so it goes to the Unfiled entry.
+// Why:      A single-segment path names a file at the root, so it goes to the virtual entry of its initial letter.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -138,12 +128,14 @@ sealed interface FolderListItem {
 // ```
 /** One top-level folder, its flat list of rows, and the total number of tracks under it. */
 data class FolderEntry(
-    /** Top-level folder name, or `UNFILED_FOLDER_NAME` for root-level tracks. */
+    /** Top-level folder name, or the letter (A to Z, or #) of the loose tracks of a loose entry. */
     val name: String,
     /** Flat list of track rows and subfolder headers in playback order. */
     val items: List<FolderListItem>,
     /** Every track under this folder, including tracks in deeper subfolders. */
     val trackCount: Int,
+    /** Whether this entry is a virtual folder of loose root-level tracks, named by their initial letter (D28). */
+    val loose: Boolean = false,
 )
 
 // What:     `private data class PlacedRow(val folder: String?, val subfolder: String, val row: FolderTrackRow)`
@@ -267,8 +259,9 @@ private fun folderEntry(name: String, placed: List<PlacedRow>): FolderEntry {
 }
 
 // What:     `fun folderIndex(tracks: List<Track>): List<FolderEntry>` groups the library by top-level folder
-//           and returns the folder entries in name order. Root-level tracks form the Unfiled entry, listed last
-//           and only when such tracks exist. An empty library gives an empty list.
+//           and returns the folder entries in name order. Root-level tracks form one virtual entry per initial
+//           letter, named by that letter (the page they sit on in the picker), listed after the folders, `#` last. An
+//           empty library gives an empty list.
 // Why:      The folder picker and In order playback both need the same flat list, so it is built once here.
 //
 // In TS you'd write (pseudocode):
@@ -288,16 +281,22 @@ fun folderIndex(tracks: List<Track>): List<FolderEntry> {
         .filterNotNull()
         .sortedWith(folderNameOrder())
         .map { name -> folderEntry(name, byFolder.getValue(name)) }
-    /** Root-level tracks, in library order, which form the Unfiled entry. */
-    val unfiled: List<PlacedRow> = byFolder[null].orEmpty()
-    if (unfiled.isEmpty()) {
-        return folders
+    /** Root-level tracks in library order, grouped under the letter of the page each one sits on. */
+    val looseByLabel: Map<String, List<PlacedRow>> = byFolder[null].orEmpty().groupBy { placedRow ->
+        looseFolderLabel(splitSegments(placedRow.row.track.displayPath).firstOrNull().orEmpty())
     }
-    /** Unfiled entry listing the root-level tracks in library order. */
-    val unfiledEntry = FolderEntry(
-        UNFILED_FOLDER_NAME,
-        unfiled.map { placedRow -> FolderListItem.TrackItem(placedRow.row) },
-        unfiled.size,
-    )
-    return folders + unfiledEntry
+    /** Virtual entries of the loose tracks: letters in order, then `#`, each listing its tracks in library order. */
+    val looseEntries: List<FolderEntry> = looseByLabel.keys
+        .sortedWith(compareBy({ label -> label == CATCH_ALL_LABEL }, { label -> label }))
+        .map { label ->
+            /** Tracks that sit on this letter's page. */
+            val rows: List<PlacedRow> = looseByLabel.getValue(label)
+            FolderEntry(
+                label,
+                rows.map { placedRow -> FolderListItem.TrackItem(placedRow.row) },
+                rows.size,
+                loose = true,
+            )
+        }
+    return folders + looseEntries
 }

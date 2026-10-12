@@ -7,12 +7,12 @@
 // ```
 package dev.monochromatic.musicplayer.core
 
-// What:     `enum class TrackMenuAction` declares the seven actions of the track context menu in display order.
+// What:     `enum class TrackMenuAction` declares the six actions of the track context menu in display order.
 // Why:      Decision D7 accepts exactly these actions, and a closed enum keeps an extra action out of the menu.
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// type TrackMenuAction = "play" | "shuffleFromHere" | "details" | "reanalyse"
+// type TrackMenuAction = "play" | "shuffleFromHere" | "details"
 //   | "showInFileManager" | "copyFilename" | "moveToTrash";
 // ```
 /** Closed set of track context menu actions, declared in the order decision D7 displays them. */
@@ -57,7 +57,7 @@ enum class TrackMenuAction(
     SHUFFLE_FROM_HERE(group = 0),
 
     // What:     `DETAILS(group = 1)` opens the file information for the track.
-    // Why:      D7 groups information with re-analysis, separate from playback and file-system actions.
+    // Why:      D7 groups information apart from playback and file-system actions.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -65,16 +65,6 @@ enum class TrackMenuAction(
     // ```
     /** Shows the file information for the track. */
     DETAILS(group = 1),
-
-    // What:     `REANALYSE_TRUE_PEAK(group = 1)` repeats the true-peak analysis for the track.
-    // Why:      Decision D12 keeps re-analysis as the only remaining entry point for analysis results.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // reanalyse: { group: 1, destructive: false },
-    // ```
-    /** Repeats the true-peak analysis of the track. */
-    REANALYSE_TRUE_PEAK(group = 1),
 
     // What:     `SHOW_IN_FILE_MANAGER(group = 2)` reveals the file in the system file manager.
     // Why:      D7 places file-system actions together in the last section.
@@ -119,18 +109,75 @@ fun label(action: TrackMenuAction): String = when (action) {
     TrackMenuAction.PLAY -> "Play"
     TrackMenuAction.SHUFFLE_FROM_HERE -> "Start shuffle from here"
     TrackMenuAction.DETAILS -> "File details"
-    TrackMenuAction.REANALYSE_TRUE_PEAK -> "Re-analyse true peak"
     TrackMenuAction.SHOW_IN_FILE_MANAGER -> "Show in file manager"
     TrackMenuAction.COPY_FILENAME -> "Copy filename"
     TrackMenuAction.MOVE_TO_TRASH -> "Move to trash"
 }
 
 // What:     `fun trackMenuActionsFor(): List<TrackMenuAction>` returns the ordered menu for any track.
-// Why:      D7 and the accepted study show the same seven actions for every track, so no track state is needed.
+// Why:      D7 and the accepted study show the same six actions for every track, so no track state is needed.
 //
 // In TS you'd write (pseudocode):
 // ```ts
 // function trackMenuActionsFor(): readonly TrackMenuAction[] { return allActions; }
 // ```
-/** Returns the seven D7 actions in display order; decision D7 defines no current-track variant. */
+/** Returns the six D7 actions in display order; decision D7 defines no current-track variant. */
 fun trackMenuActionsFor(): List<TrackMenuAction> = TrackMenuAction.entries
+
+// What:     `data class TrackMenuAccessKey(val letter: Char, val labelIndex: Int)` is the access key of one menu row:
+//           the
+//           letter that runs the row while the menu is open, and the position of that letter in the row's label.
+// Why:      D114: every row has one letter, drawn underlined in its label (a second channel besides the letter itself).
+//           Holding the position beside the letter lets the popup underline exactly that character.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// type TrackMenuAccessKey = { letter: string; labelIndex: number };
+// ```
+/** The letter that runs a menu row and the index of that letter in the row's label. */
+data class TrackMenuAccessKey(
+    /** Lowercase letter that runs the row; the key is matched without regard to Shift. */
+    val letter: Char,
+    /** Index of the letter inside [label] of the row, which the popup draws underlined. */
+    val labelIndex: Int,
+)
+
+// What:     `fun accessKey(action: TrackMenuAction): TrackMenuAccessKey` is the one table of the menu's access keys.
+// Why:      D114 asks for one unique letter per row taken from the row's own words: P in Play, S in Start shuffle from
+//           here, D in File details, F in file manager, C in Copy filename and T in trash. The exhaustive `when` makes
+//           a new action fail to compile until it gets a letter, and the tests prove the letters are unique.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// const ACCESS_KEYS: Record<TrackMenuAction, { letter: string; labelIndex: number }> = { /* one row per action */ };
+// ```
+/** Returns the access key of an action: its letter and where that letter sits in the action's label. */
+fun accessKey(action: TrackMenuAction): TrackMenuAccessKey = when (action) {
+    TrackMenuAction.PLAY -> accessKeyIn(action, word = "play", letter = 'p')
+    TrackMenuAction.SHUFFLE_FROM_HERE -> accessKeyIn(action, word = "shuffle", letter = 's')
+    TrackMenuAction.DETAILS -> accessKeyIn(action, word = "details", letter = 'd')
+    TrackMenuAction.SHOW_IN_FILE_MANAGER -> accessKeyIn(action, word = "file", letter = 'f')
+    TrackMenuAction.COPY_FILENAME -> accessKeyIn(action, word = "copy", letter = 'c')
+    TrackMenuAction.MOVE_TO_TRASH -> accessKeyIn(action, word = "trash", letter = 't')
+}
+
+/** Access key whose letter is the first one of [letter] inside [word], found in the label of [action]. */
+private fun accessKeyIn(action: TrackMenuAction, word: String, letter: Char): TrackMenuAccessKey =
+    TrackMenuAccessKey(letter, label(action).lowercase().indexOf(word) + word.indexOf(letter))
+
+// What:     `fun trackMenuActionForAccessKey(input: HostKeyInput): TrackMenuAction?` finds the row a key press runs.
+// Why:      While the menu is open, a bare letter runs its row. A letter with Control, Alt or Meta held is a chord of
+//           the shortcut table, and a repeat of a held key must not run a second row.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// const actionForAccessKey = (k: HostKeyInput) =>
+//   k.ctrl || k.alt || k.meta || k.repeat ? null : actions.find((a) => accessKey(a).letter === k.keyName) ?? null;
+// ```
+/** Returns the menu action whose access letter [input] types with no Control, Alt or Meta held, else null. */
+fun trackMenuActionForAccessKey(input: HostKeyInput): TrackMenuAction? {
+    if (input.ctrl || input.alt || input.meta || input.repeat) {
+        return null
+    }
+    return TrackMenuAction.entries.firstOrNull { action -> accessKey(action).letter.toString() == input.keyName }
+}

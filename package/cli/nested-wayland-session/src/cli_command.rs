@@ -126,6 +126,34 @@ pub(super) fn command() -> Command {
     weight = weight.help("Relative systemd CPU weight for the isolated app");
     command = command.arg(weight);
 
+    let mut accessibility = Arg::new("accessibility");
+    accessibility = accessibility.long("accessibility").action(ArgAction::SetTrue);
+    accessibility = accessibility.help(
+        "Give the child a private AT-SPI accessibility bus that reports accessibility as enabled, \
+         and read the tree it publishes with the a11y control command"
+    );
+    command = command.arg(accessibility);
+
+    let mut repeat_rate = Arg::new("repeat-rate");
+    repeat_rate = repeat_rate.long("repeat-rate").value_name("PER_SECOND");
+    repeat_rate = repeat_rate.default_value("25");
+    repeat_rate = repeat_rate.value_parser(clap::value_parser!(i32).range(0..=1000));
+    repeat_rate = repeat_rate.help(
+        "Key repeat rate announced to the child in repeats per second (0 turns repeat off); \
+         the child generates the repeats itself, as on every Wayland compositor"
+    );
+    command = command.arg(repeat_rate);
+
+    let mut repeat_delay = Arg::new("repeat-delay");
+    repeat_delay = repeat_delay.long("repeat-delay").value_name("MILLISECONDS");
+    repeat_delay = repeat_delay.default_value("200");
+    repeat_delay = repeat_delay.value_parser(clap::value_parser!(i32).range(0..=10000));
+    repeat_delay = repeat_delay.help(
+        "Wait before a held key starts repeating, announced to the child; \
+         the repeat-info control command changes the pair while the child runs"
+    );
+    command = command.arg(repeat_delay);
+
     let mut child = Arg::new("command");
     child = child.value_name("COMMAND").required(true);
     // What: 1.. accepts at least one positional value; trailing_var_arg hands

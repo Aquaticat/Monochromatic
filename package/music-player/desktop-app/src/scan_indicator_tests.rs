@@ -114,13 +114,13 @@ fn status_text_while_scanning() {
 }
 
 // What:     `#[test] fn status_text_while_measuring()` checks the accepted copy with grouped counts.
-// Why:      The study's line is "Analysing true peak · 412 of 1,218", and the text must match it.
+// Why:      The study's line is "Analyzing true peak · 412 of 1,218", and the text must match it.
 #[test]
 fn status_text_while_measuring() {
     let model = scan_indicator_for(false, 412, 1218);
     assert_eq!(
         scan_indicator_status_text(&model),
-        "Analysing true peak · 412 of 1,218"
+        "Analyzing true peak · 412 of 1,218"
     );
 }
 
@@ -131,7 +131,7 @@ fn status_text_wide_count() {
     let model = scan_indicator_for(false, 9_999_998, 9_999_999);
     assert_eq!(
         scan_indicator_status_text(&model),
-        "Analysing true peak · 9,999,998 of 9,999,999"
+        "Analyzing true peak · 9,999,998 of 9,999,999"
     );
 }
 

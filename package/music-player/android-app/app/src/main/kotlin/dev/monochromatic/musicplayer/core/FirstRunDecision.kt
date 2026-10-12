@@ -92,6 +92,8 @@ data class FirstRunInputs(
     // ```
     /** True while Android still shows its permission prompt for music access. */
     val canPromptForPermission: Boolean,
+    /** True from the moment the app opens the permission prompt until the user answers it. */
+    val promptShowing: Boolean = false,
 )
 
 // What:     `data class FirstRunDecision(...)` is the first-run screen to draw and the Allow access action.
@@ -122,6 +124,8 @@ data class FirstRunDecision(
     // ```
     /** Action that the Allow access button performs for this decision. */
     val allowAccess: AllowAccessAction,
+    /** True while the permission prompt is open and unanswered, when the screen stays blank instead of an error. */
+    val awaitingAnswer: Boolean = false,
 )
 
 // What:     `fun firstRunCanPrompt(requestedBefore: Boolean, shouldShowRationale: Boolean): Boolean` says whether
@@ -194,5 +198,11 @@ fun firstRunDecisionFor(inputs: FirstRunInputs): FirstRunDecision {
     } else {
         AllowAccessAction.OpenAppSettings
     }
-    return FirstRunDecision(state = firstRunStateFor(inputs), allowAccess = allowAccess)
+    /** Whether the user has not answered the permission prompt yet, so no verdict about the library exists. */
+    val awaiting: Boolean = inputs.promptShowing && !inputs.permissionGranted && inputs.heldFolderName == null
+    return FirstRunDecision(
+        state = if (awaiting) null else firstRunStateFor(inputs),
+        allowAccess = allowAccess,
+        awaitingAnswer = awaiting,
+    )
 }

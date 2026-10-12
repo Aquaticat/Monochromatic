@@ -239,21 +239,18 @@ pub(super) struct Upsert {
 }
 
 /// What:
-///      `/// What:
-///      `pub(super) enum Write { Put(Upsert), Remove(u64) }`.
-///  One request on the write channel: store a decision, or delete one track's decision.
+///      `pub(super) enum Write { Put(Upsert) }`.
+///  One request on the write channel: store a decision.
 /// Why:
-///       Both writes share one ordered channel, so a removal lands before the upsert that follows it.
+///       A replaced or edited file gets a new fingerprint and so a new decision; nothing deletes an old one by hand (D113).
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// type Write = { kind: "put"; upsert: Upsert } | { kind: "remove"; fingerprint: bigint };
+/// type Write = { kind: "put"; upsert: Upsert };
 /// ```
 pub(super) enum Write {
     /// Store or replace one track's decision.
     Put(Upsert),
-    /// Delete the decision of one track by its fingerprint.
-    Remove(u64),
 }
 
 /// What:
@@ -574,28 +571,6 @@ async fn known(cache: Option<&DecisionCache>, identity: CacheIdentity) -> HashSe
 async fn write(cache: Option<&DecisionCache>, identity: CacheIdentity, request: Write) {
     match request {
         Write::Put(upsert) => return put(cache, identity, upsert).await,
-        Write::Remove(fingerprint) => return remove(cache, identity, fingerprint).await,
-    }
-}
-
-/// What:
-///      `async fn remove(cache, identity, fingerprint)`.
-///  Deletes the one decision stored under `fingerprint` for this identity, if any.
-/// Why:
-///       Re-analysis clears a track's decision before measuring it again; a missing row is normal.
-///
-/// In TS you'd write (pseudocode):
-/// ```ts
-/// async function remove(cache: DecisionCache | null, identity: CacheIdentity, fingerprint: bigint): Promise<void> { ... }
-/// ```
-async fn remove(cache: Option<&DecisionCache>, identity: CacheIdentity, fingerprint: u64) {
-    let Some(decision_cache) = cache else {
-        return;
-    };
-    match decision_cache.remove(fingerprint, identity).await {
-        Ok(true) => tracing::info!(fingerprint, "cache decision removed"),
-        Ok(false) => tracing::debug!(fingerprint, "cache remove found no decision"),
-        Err(error) => tracing::warn!(error = %error, "cache remove failed; decision kept"),
     }
 }
 

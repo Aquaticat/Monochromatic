@@ -5,8 +5,9 @@
 //! Why: sweeps are never cancelled, so the controller needs the generation to drop reports from a
 //! queue that a newer load has replaced.
 
+use std::collections::HashSet;
 use std::path::PathBuf;
-use std::sync::Arc;
+use std::sync::{Arc, Mutex};
 
 use crate::peakcache::CacheHandle;
 use crate::sweep_gate::SweepGate;
@@ -40,6 +41,13 @@ pub enum SweepReport {
         /// Tracks the sweep will visit.
         total: usize,
     },
+    /// Files the sweep could not decode.
+    Unreadable {
+        /// Generation of the queue load that started the sweep.
+        generation: u64,
+        /// Each failed file.
+        files: Vec<PathBuf>,
+    },
 }
 
 /// What:
@@ -69,14 +77,14 @@ pub fn noop_sink() -> SweepSink {
 }
 
 /// What:
-///      `pub(crate) struct SweepJob { tracks, current, cache, sink, generation }`.
+///      `pub(crate) struct SweepJob { tracks, current, cache, sink, generation, gate, claims, quiet }`.
 ///  Everything one sweep needs to start.
 /// Why:
 ///       One value keeps the spawn call small, and the generation travels with the job.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// type SweepJob = { tracks: string[]; current: string | null; cache: CacheHandle; sink: SweepSink; generation: number };
+/// type SweepJob = { tracks: string[]; current: string | null; cache: CacheHandle; sink: SweepSink; generation: number; claims: Set<bigint>; quiet: boolean };
 /// ```
 pub(crate) struct SweepJob {
     /// Every track of the queue in queue order, the current one included.
@@ -91,4 +99,10 @@ pub(crate) struct SweepJob {
     pub(crate) generation: u64,
     /// Pause gate the sweep's workers pass before each claim.
     pub(crate) gate: Arc<SweepGate>,
+    /// Fingerprints that some sweep of this generation has taken, measured or in progress. A worker measures a track only
+    /// when it is the first to take its fingerprint, so a refresh sweep that overlaps the sweep of the load never decodes
+    /// the same file twice.
+    pub(crate) claims: Arc<Mutex<HashSet<u64>>>,
+    /// True for a refresh sweep (D113): it sends no peeked measures and no progress, only what it newly measures or fails.
+    pub(crate) quiet: bool,
 }

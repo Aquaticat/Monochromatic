@@ -14,6 +14,7 @@
 use std::path::{Path, PathBuf};
 use std::time::{Duration, Instant};
 
+use crate::natural_order::natural_cmp;
 use crate::playback::is_audio_file;
 
 /// What:
@@ -58,6 +59,31 @@ fn parse_pause(text: Option<&str>) -> Duration {
 }
 
 /// What:
+///      `fn sort_naturally(paths: &mut Vec<PathBuf>)`.
+///  Sorts sibling paths by file name in natural order (`Track 2` before `Track 10`, case ignored), with the whole
+///  path as the final tie-break.
+/// Why:
+///       The walk order is the queue order, so this one sort decides how rows are listed and in which order they play
+///  (LS5). Sibling paths share their parent, so the file name is the part that differs. The name is read once per path,
+///  not once per comparison, because a flat folder can hold tens of thousands of files.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// paths.sort((a, b) => naturalCmp(basename(a), basename(b)) || (a < b ? -1 : 1));
+/// ```
+fn sort_naturally(paths: &mut Vec<PathBuf>) {
+    let mut keyed: Vec<(String, PathBuf)> = std::mem::take(paths)
+        .into_iter()
+        .map(|path| {
+            let name: String = path.file_name().map_or_else(String::new, |name| return name.to_string_lossy().into_owned());
+            return (name, path);
+        })
+        .collect();
+    keyed.sort_by(|left, right| return natural_cmp(&left.0, &right.0).then_with(|| return left.1.cmp(&right.1)));
+    paths.extend(keyed.into_iter().map(|(_name, path)| return path));
+}
+
+/// What:
 ///      `pub(crate) fn scan_streaming(root: &Path, batch: usize, on_batch: &mut dyn FnMut(&[PathBuf])) -> Vec<PathBuf>`.
 ///  Walks `root` and returns every audio file in queue order, reporting new runs of at least `batch` paths on the way.
 /// Why:
@@ -97,8 +123,8 @@ pub(crate) fn scan_streaming(root: &Path, batch: usize, on_batch: &mut dyn FnMut
                 files.push(path);
             }
         }
-        files.sort();
-        subdirs.sort();
+        sort_naturally(&mut files);
+        sort_naturally(&mut subdirs);
         out.extend(files);
         stack.extend(subdirs.into_iter().rev());
         let waiting: usize = out.len() - reported;

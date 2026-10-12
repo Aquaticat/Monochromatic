@@ -547,7 +547,7 @@ The user chose this explicitly:
 Consequence:
  the "10,412 of 10,412 analysed" row from settings-b is gone,
  and
-**Re-analyse on the track context menu is the only remaining entry point**.
+**Re-analyse on the track context menu is the only remaining entry point** (removed by D113, 2026-10-12).
 
 ### D13. The scan indicator is not permanent
 It appears while analysing and leaves afterwards.
@@ -2988,13 +2988,13 @@ Browsing:
 - Inside a focused list: `Up`, `Down`, `Home`, `End`, `PageUp`, `PageDown` move the focus ring, `Enter` plays the row,
   `Space` on a list keeps play and pause, a letter key moves to the first folder starting with it.
 - Open a folder with the system dialog: `Ctrl+Shift+O`.
-- Rescan the library: `F5`.
+- Rescan the library: no binding (D113 removed `F5`; the library refreshes by itself).
 - Quit (desktop): `Ctrl+Q`.
 
 On the focused track row, or the row the menu is open on:
-- Open its menu: `Menu` key or `Shift+F10`.
+- Open its menu: `Menu` key or `Alt+Enter` (D114 replaced `Shift+F10`, which is Run in JetBrains).
 - Move to trash: `Delete`. Copy path: `Ctrl+Shift+C` (JetBrains copies the path with this).
-- Show in file manager: `Ctrl+Shift+E`. File details: `Alt+Enter`. Re-analyse: `Ctrl+Shift+F5`.
+- Show in file manager: `Ctrl+Shift+E`. File details has no dedicated key (D114: reach it through the menu).
 - With the menu open, `Up`, `Down` and `Enter` choose a row and `Escape` closes it.
 
 Pages:
@@ -3063,6 +3063,13 @@ Slint, or `lerp` and `copy(alpha)` on sRGB values in Compose.
 When no accent is available the fixed baseline from the Fold captures is the root and the same derivation applies.
 Alpha-only layering (state layers over a surface) is allowed because it does not change a color's lightness, chroma or hue.
 
+Retune of 2026-10-12 under B4 (the orchestrator's decision, open to the human's veto): counting the 8 and 12 percent state
+layers, four drawn light-scheme text pairs of the old fixed baseline were below 4.5. The fixed light baseline moved by
+lightness only in OKLCH: primary `#4E5E8B` to `#455481` (delta-E 3.46), on-surface-variant `#5C5E6A` to `#585A65` (1.48)
+and the search match fill `#CFD9F0` to `#C9D2E9` (2.08). Dark is unchanged. Primary is not fitted on the hovered and
+pressed deck-segment fills because primary text is never drawn on them. Rust and Kotlin share one fixture of 52 roots in
+both schemes that a test on each side checks.
+
 ### D109. The single-pane Settings is one full-width column with 16dp margins (2026-10-12)
 
 The human asked for the stock Android Settings layout to be measured on the owned Pixel 9 Pro Fold with its display size
@@ -3123,8 +3130,8 @@ the list.
   crease does not need that: whether the device has a crease is detected through the platform API (on Android the
   Jetpack WindowManager `FoldingFeature` of a vertical fold or hinge, from `WindowInfoTracker`; the desktop has none), and
   without one the split follows the platform default ratio, which the orchestrator reads as the stock Settings value
-  `config_activity_embed_split_ratio` = 0.3636 for the list pane that the stock Settings APK ships (the human's wording
-  was "the default ratio"; this reading is a one-constant change).
+  `config_activity_embed_split_ratio` = 0.3636 for the list pane that the stock Settings APK ships. The human
+  confirmed on 2026-10-12 that 0.3636 is the ratio on a device without a crease; the setting is closed.
   No row or editor moves when the selection changes (the same stability as the Folders panel).
   The selected row is shown with a filled selection shape in the secondary container role plus a bold title (two
   channels, not color alone), and the first row, Track rows, is selected when Settings opens so the right pane is never
@@ -3175,6 +3182,63 @@ Decision (the orchestrator's, on the human's standing instruction to decide, ope
 in-memory index of normalized names in each app, with first and second character buckets, a best-500 list per first
 character, off-thread batch normalization with an append-only write lock, search on a worker thread, and a refresh signal
 after every batch so open results update in place (D111). Turso stays the store of the peak cache only.
+
+### D113. Refresh and re-analysis are automatic and never exposed to the user (2026-10-12)
+
+The human said that refreshing the library and re-analyzing true peaks must always be handled perfectly by the app and
+not be exposed as user actions. This supersedes D12's menu entry "Re-analyse true peak" (the last manual entry point) and
+the D106 rows `F5` (rescan) and `Ctrl+Shift+F5` (re-analyse).
+
+- No rescan or re-analyze command exists anywhere in the user interface, keyboard map, menus, tooltips or settings, on
+  both platforms. Trash and Undo keep reloading the library internally.
+- The library follows the disk by itself: changes are detected and applied without a user action (desktop: the live
+  watcher with its catch-up rescan; Android: observers of the source plus a reload when the app returns to the front).
+- Analysis follows the files by itself: a new, replaced or edited file (its fingerprint changed) is measured again, a file
+  that failed to decode is retried when the library next changes or the app next starts, and a failure is reported once
+  per file in plain words (D83) instead of offering a retry button.
+- The D107 notification stays the only analysis surface.
+
+### D114. The track menu opens with Menu or Alt+Enter, and every menu row has an access key (2026-10-12)
+
+The human noticed that `Shift+F10` is Run in JetBrains' keymap, which D106 uses as its tie-breaker. Decided by the human:
+
+- The track row's menu opens with the `Menu` key or `Alt+Enter` (JetBrains' key for the actions on the item under the
+  cursor). `Shift+F10` is not bound.
+- File details has no dedicated key; the menu reaches it.
+- Every menu row has an access key, as JetBrains and desktop menus do: one letter per row, drawn underlined in the row
+  label (a second channel besides the letter itself is the underline), and pressing the letter while the menu is open runs
+  that row and closes the menu. Letters are unique within the menu, chosen from the row's own words (for example Play,
+  Shuffle from here, Details, Copy filename, Show in file manager, Move to trash), and the rows' `Up`, `Down`, `Enter`,
+  `Escape` keys stay. On Android the access keys work with an attached keyboard.
+
+### D115. Readings made while fixing the list defects (2026-10-12)
+
+The orchestrator's readings of earlier decisions, adopted from the desktop lists work and open to the human's veto:
+
+- D22 and C1: the scrollbar's grab zone is 12 px across the scroll axis (D22), and the thumb is never shorter than 48 px
+  along it (C1). The thumb widens from 4 to 8 px on hover or drag, so state is shown by color and width.
+- D31: names take the width they need, up to the pane. A longer name ends in an ellipsis, with the full name as a tooltip
+  (only while it is cut) and as the accessible label. A highlighted Search match is never the part that is cut.
+- D1 and D18: the Shuffle segment keeps the width of "Shuffle Camellia" for every folder name, so the deck never
+  re-lays itself out while the user browses; a longer name gets the middle ellipsis on the name only.
+- D28: each writing system after the first starts with a 1 px hairline in the rail, which also separates look-alike Latin,
+  Cyrillic and Greek letters.
+- D36: the playing row carries a 4 px bar in the primary role on its left edge besides bold and the soft fill, so the
+  emphasis does not depend on the script of the title.
+- The Hangul syllable that renders as two jamo in some sessions is a font fallback gap, not an app or renderer defect:
+  `doc/troubleshooting/slint-hangul-split-jamo-droid-sans-fallback.md`. Open question: bundle a Hangul-capable font.
+
+### D116. No bundled Hangul font, and no optimized test profile (2026-10-12)
+
+Two questions left open by earlier work, decided by the orchestrator on the human's standing instruction to decide, open to the human's veto:
+
+- No Hangul font is bundled. The app already depends on system fonts for every CJK script (Inter has none), so bundling
+  one script would be inconsistent and a full CJK bundle costs tens of megabytes. A session whose fontconfig picks a
+  fallback without that syllable shows it as two jamo; the cause and the Slint constraint are in
+  `doc/troubleshooting/slint-hangul-split-jamo-droid-sans-fallback.md`.
+- `[profile.dev]` and `[profile.test]` keep their defaults. An `opt-level = 1` test profile ran a 771-test suite in
+  3.99 s instead of 8.9 s in one sandbox, but made a cold dependency build 12.5 minutes instead of about 4, and that
+  cold build hits every fresh worktree and CI run. Revisit if the suite grows.
 
 ## Pending after the theme picks (2026-09-04)
 

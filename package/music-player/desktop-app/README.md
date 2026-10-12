@@ -36,31 +36,30 @@ backend differs by target.
 - Transport:
    play/pause,
    seek,
-   volume,
    next/prev,
-   a three-state shuffle (off,
-   within page,
-   all),
-   and a
-  "repeat track" toggle.
+   and one playback mode of four:
+   Repeat,
+   In order,
+   Shuffle (the folder on screen),
+   and Shuffle all.
+   There is no volume control in the app (D43): the operating system's mixer sets the level.
 - Playback scope:
-   the shuffle mode also chooses what playback loops over.
-   Off and within-page confine playback to
-  the current page (the track's top-level folder,
-   or its A-Z/`#` letter bucket for a root-level track);
-   off plays
-  the page in load order,
-   within-page shuffles it.
-   All spans the whole queue,
+   the mode also chooses what playback walks.
+   Repeat replays the current track when it ends.
+   In order and Shuffle the folder confine playback to
+  the current page (the track's top-level folder under the opened folder,
+   or the virtual folder named by the first letter, A to Z or `#`, for a track directly in the opened folder);
+   In order plays the page in name order,
+   Shuffle the folder shuffles it.
+   Shuffle all spans the whole queue,
    shuffled.
-   When "repeat track" is
-  off,
-   reaching the end of the scope loops the scope (the page,
-   or the whole queue);
-   when on,
-   the current track
-  replays at its natural end,
-   while a manual next/prev still moves within the scope.
+   In order stops at the end of the folder (D2: "In order = play to the end of the folder and stop"):
+   the player pauses with the first track of the folder loaded,
+   and Play starts the folder again.
+   No later decision supersedes D2 or D6.
+   A manual Next at the last track still wraps to the first.
+   Shuffle the folder and Shuffle all start a new cycle when every track has played.
+   Play with nothing selected starts the first track of the folder on screen.
    This deliberately cannot
   express non-shuffle with whole-queue repeat:
    when playing in order,
@@ -81,8 +80,8 @@ backend differs by target.
    CoreAudio on macOS,
    WASAPI on Windows),
    so the player itself never resamples.
-   Gapless
-  playback is permanently out of scope.
+   Playback is gapless between tracks of the same sample rate and channel count:
+  the next track is opened a moment before the current one ends and follows it in the same stream.
 - Output safety:
    per-track true-peak normalization,
    always on.
@@ -159,12 +158,12 @@ The crate is a library plus a thin binary so the pure logic is unit-testable wit
   repeat-track flag),
    with a seedable PRNG for deterministic shuffle tests.
    The playback scope is the current
-  track's page (off and within-page,
-   computed via `pagination`) or the whole queue (all),
-   and it always loops;
-  there is no stop-at-end mode.
-   `display_paths` builds the UI list as each track's path relative to the queue's
-  common root (via `relpath`).
+  track's page (In order and Shuffle the folder,
+   computed via `pagination`) or the whole queue (Shuffle all).
+   In order stops at the end of its page;
+  a manual Next wraps.
+   `display_paths` builds the UI list as each track's path relative to the opened folder (via `relpath`),
+  so a library with one top-level folder keeps that folder's name.
 - `src/session.rs`:
    save and restore of the last session under the platform config directory,
    pruning tracks
@@ -282,20 +281,21 @@ The crate is a library plus a thin binary so the pure logic is unit-testable wit
    `run` builds a
   `Controller` and drives it from the command channel.
 - `src/pagination.rs`:
-   pure queue pagination on two axes.
+   pure queue pagination.
    `paginate` groups each track's relative display path:
-  a track in a subfolder gets a page per top-level folder under the loaded root (one level only;
+  a track in a subfolder gets a page per top-level folder under the opened folder (one level only;
    the label is
   that folder,
    with deeper nesting shown in the row path),
-   and a track at the loaded root gets a first-letter
-  page (the 26 English letters A-Z,
+   and a track directly in the opened folder sits in a virtual folder named by its first letter
+  (the 26 English letters A-Z,
    case-insensitive,
    plus a `#` catch-all for digits,
    symbols,
    CJK,
    and
   non-English letters).
+   Search names the folder of such a track the same way (`root_level_folder_label`).
    Pages sort folder-pages-first (case-insensitively by label,
    so lowercase-led folder
   names like `daniwellP` and `r-906` interleave with the capitalized names instead of trailing after `Zedd`),
@@ -361,75 +361,18 @@ The crate is a library plus a thin binary so the pure logic is unit-testable wit
    so the engine and queue model stay
   unaware of pagination.
 - `ui/app.slint`:
-   the window markup (seek bar,
-   volume slider,
-   one combined control row holding Settings then Open,
-  a plain-HTML-styled three-state shuffle radio group,
-   the prev/play-pause/next transport buttons,
-   and the
-  "repeat track" checkbox,
-   and the scrolling queue area holding the page-tab bar and the
-  queue list).
-   The control row is a FlexboxLayout:
-   the four groups spread across the row with at least 48px
-  between them (a 48px taffy column gap plus space-between),
-   and wrap onto more rows when the window is too
-  narrow to fit them.
-   The
-  queue is paginated on two axes:
-   a track in a subfolder gets a page per top-level folder under the loaded root
-  (one level only;
-   the tab is that folder),
-   and a track at the loaded root gets a first-letter page (A-Z plus a
-  `#` catch-all).
-   Each tab shows one page.
-   Wide windows show the complete page grid beside the selected page's
-  rows as two independent scroll containers,
-   each with its own Flickable and scrollbar,
-   so a long track list
-  scrolls without moving the tab bar and a tall tab grid scrolls without moving the list.
-   Narrow windows collapse
-  them into the original vertical tab-then-list order under one shared Flickable and scrollbar.
+   the window markup (see the `ui/*.slint` files it imports).
+   The folder picker lists the folders and the virtual letter folders of loose files,
+   with a rail that jumps by letter or writing system (D28).
+   Wide windows show the picker and the transport deck in the left pane and the selected folder's
+  rows in the right pane,
+   each its own scroll container;
+   narrow windows show one pane at a time.
    The switch is an
   explicit width breakpoint,
    because the
   breakpointless wrapping `FlexboxLayout` root created a Slint `Flickable` layout-info loop on Slint 1.17;
    see `../../../doc/troubleshooting/slint-flickable-flexbox-layout-loop.md`.
-   The full page grid remains
-  visible,
-   so late-alphabet artists stay discoverable.
-   Page selectors default to wrapping Chromium-like tabs.
-   Their labels use `10px` inline padding on each side,
-   half the earlier `20px` inset.
-   Persisted style integers retain their stable mapping,
-   and unknown values still fall back to radio controls.
-   Each style has one centralized `included` toggle in `src/ui_page_style.rs` `BUILD_STYLES`.
-   Settings lists only included styles,
-   and disabled persisted selections resolve safely without renumbering values.
-   `../../../doc/runbook/music-player-page-control-styles.md` documents matching desktop and Android changes.
-   Settings also offers flat multi-row Material Design 1 tabs with selected underlines,
-   joined content-width segmented buttons,
-   raised content-width Chromium-like tabs,
-   reflective hardware caps with a runtime-accent LED state over one full-width machined plate,
-   and the previous rounded buttons.
-   Segmented sections and visible outlines stay fitted to label content;
-   unused row width remains transparent and unframed.
-   LED caps remain content-width,
-   while their shared backplate always fills the available page-control width.
-   In the light scene,
-   the `#f7f8fa` plate remains visibly lighter than the `#eceef1` page ground.
-   LED legends use at least the normal body-label size,
-   matching labels such as Volume.
-   Active legends remain white,
-   so selected fills stay dark enough for clear contrast across runtime accents and ambient scenes.
-   Independent OKLCH lightness and chroma mixing retains most available accent chroma,
-   keeping selected backgrounds vibrant.
-   Every application color operation uses OKLCH,
-   including alpha changes and operations outside LED controls.
-   The choice applies immediately and persists across launches.
-   Each wide page-selector FlexboxLayout pins `align-content` and
-  `cross-axis-alignment` to start (both default to stretch),
-   so its controls keep their natural size instead of inflating to fill the taller list column.
    Each scroll region is driven by a prominent custom
   scrollbar in a right-hand gutter,
    since the default
@@ -458,8 +401,8 @@ The crate is a library plus a thin binary so the pure logic is unit-testable wit
    second toggles to play),
    so no
   real double-click handling is needed.
-   The window title shows the playing track's list path (the same
-  `folder/.../file` string the queue row shows) while audio plays,
+   The window title shows the playing track's title (the one the deck shows, without folder, extension or the prefix
+  its folder's files share, D86) while audio plays,
    and reverts to "Music Player" when paused.
   The custom controls take their colours from the `Theme` roles in `ui/theme.slint`
    rather than hardcoded values,
@@ -635,17 +578,104 @@ The scale tests run in the normal `mise run //package/music-player/desktop-app:t
 and 1,000,000 tracks, and both print the median with the minimum and maximum of five runs in release builds.
 Run them with `--release` and `--no-capture` to read the numbers.
 
+## Keyboard
+
+The keyboard map and the focus model are decision D106 (extending D102) in `package/music-player/design/decisions.md`.
+`src/keymap_bindings.rs` holds the whole table (`BINDINGS`) and the pure classifier in `src/keymap.rs` reads it, so the
+key hint badges, the tooltips and the menu rows draw their texts from the same rows.
+Control is Ctrl on Windows and Linux; on macOS the primary modifier is Command (`held_modifiers` in `src/ui_keys.rs`
+swaps the two because Slint reports them swapped there).
+
+### Bindings
+
+Playback, anywhere on the player page (Space also works with the track list, the folder list or a button focused;
+on a focused button Space and Enter press that button instead):
+
+- Space toggles play and pause.
+- Ctrl+Left and Ctrl+Right go to the previous and the next track (macOS: Command+Shift+[ and Command+Shift+]).
+- Alt+Left and Alt+Right seek 10 s back and forward; with Shift, 60 s. A held key repeats.
+- Ctrl+M cycles the playback mode; Ctrl+Shift+1 to 4 pick Repeat, In order, Shuffle folder and Shuffle all.
+- Ctrl+Home restarts the track.
+
+Browsing:
+
+- Ctrl+F opens Search; double Shift opens it too (two Shift taps, the second released within 400 ms of the first
+  press, on the player page only).
+- Ctrl+Alt+S opens Settings (macOS: Command+,).
+- Ctrl+O opens the folder picker (on the folded layout the picker overlay; on the two-pane layout it focuses the
+  folder list); Ctrl+Shift+O asks for the system folder dialog.
+- Alt+1 and Alt+2 focus the folder list and the track list.
+- Alt+Up and Alt+Down show the previous and the next folder; Ctrl+G reveals the playing track (macOS: Command+L) and
+  Ctrl+Shift+G shows the playing track's folder.
+- Ctrl+Q quits. There is no key for refreshing the library or for measuring a track again: both happen by themselves
+  (D113).
+
+In a focused list:
+
+- Up, Down, Home, End, PageUp and PageDown move the ring; Enter plays the row (on the playing row it pauses) or shows
+  the folder.
+- In the folder list a letter jumps to the first folder starting with it, and Left and Right move like Up and Down.
+- On a track row: Menu or Alt+Enter opens the row menu (Shift+F10 is not used, it is Run in JetBrains), Delete moves the
+  file to the trash, Ctrl+Shift+C copies the file name, Ctrl+Shift+E shows the file in the file manager. File details
+  has no
+  key of its own; it is a menu row.
+  While the menu is open Up, Down and Enter choose a row, Escape closes it, and the access letter of a row runs it and
+  closes
+  the menu (D114). Every row draws its letter underlined: P Play, S Start shuffle from here, D File details, F Show in
+  file
+  manager, C Copy filename, M Move to trash. The letters are one table in `src/track_menu.rs`.
+
+Pages:
+
+- Escape closes the innermost thing: the track menu, the folder picker overlay, then the page (Search, Settings).
+- In Settings the template line's first Escape returns to its list row and the second leaves Settings; on the
+  single-form editor page Escape returns to the Settings list. Ctrl+Enter applies the template and Ctrl+Shift+Backspace
+  resets it. Ctrl+F and double Shift do nothing in Settings.
+- In the Search field bare keys are text; Up and Down still move through the results and Enter opens one.
+
+### Focus model
+
+Tab and Shift+Tab walk the folder picker (the Open pill; on the folded layout the folder trigger first), the folder and
+track lists, the deck controls (seek bar, Previous, Play, Next, mode group), then Search and Settings, and wrap; no
+element traps the keyboard. Every focusable element draws a 2 px `primary` ring plus its state layer, only while the
+keyboard is in use: a key press turns the ring on and a pointer press turns it off.
+
+### Key hint badges
+
+Holding modifiers for 300 ms shows a small badge (the key letter) on each control that the held set triggers;
+holding more modifiers narrows the badges to the chords of exactly that set; releasing hides them. The badges take no
+pointer input and move no content; they are drawn from `Theme` roles.
+
+### Known limits
+
+- The end-to-end run presses the Menu key through the nested compositor (0.4.0 or newer); the window tests press it too.
+- Ctrl+Shift+3 and 4 may be taken by the screenshot shortcuts of macOS, and the digit chords assume a layout where
+  Shift+digit gives the usual symbol; neither is verified here, and the macOS and Windows key mapping is untested.
+
+### End-to-end run
+
+`mise run //package/music-player/desktop-app:test:e2e` builds the release binary, then hosts it in the nested
+compositor that mise has installed (0.4.0 or newer; an older one is refused before the run starts) with scratch
+XDG directories and a generated library (the 1k scale library plus tone tracks), and
+presses every shortcut as a real key event. It plays into its own PipeWire null sink (checked by node id against
+every output stream of the app, and stops at once if one links elsewhere), never touches another player process, and
+prints one pass, fail or not-injectable line per shortcut. State is read from the app's `ui_state` log lines, from
+screenshots and from files; `E2E_ONLY` (a check id or group prefix), `E2E_OUT` (default `target/e2e`, with
+screenshots and `e2e-summary.json`), `E2E_TMP` and `E2E_LIBRARY_GENERATOR` tune it. Run it alone.
+The runner itself is the `package/music-player/desktop-e2e` package (see its `README.md`);
+the task only builds the release binary and calls that package's command from this directory.
+
 ## Environment overrides
 
 `MUSIC_PLAYER_COLOR_SCHEME` forces the window's color scheme.
 Set it to `light` or `dark`.
-Leave it unset to follow the operating system's scheme.
+Leave it unset, or empty, to follow the operating system's scheme.
 Any other value is logged and ignored, so the window follows the system.
 Verification runs use it to capture both schemes without changing the host's theme.
 
 `MUSIC_PLAYER_ACCENT` replaces the system accent as the theme root.
 Set it to six hex digits such as `6060C0` or `#6060C0`.
-Leave it unset to follow the system accent.
+Leave it unset, or empty, to follow the system accent.
 Any other value is logged and ignored.
 It sets `Theme.accent-override`, which previews and tests can also set (transparent follows the system).
 Verification runs use it to capture several accents without changing the host's theme.
@@ -664,394 +694,66 @@ Inter is licensed under the SIL Open Font License 1.1 (`LICENSES/OFL-1.1.txt`).
 Text sizes are the logical pixel sizes in `ui/theme.slint`, and main text is 16px.
 The template editor's code fields keep `Noto Sans Mono`.
 
-## Page navigation UX choices
+## Folder navigation UX choices
 
-Wide windows show the full page-control grid beside the selected page's rows as two independent scroll containers,
-so the page grid and the track list scroll separately;
- narrow windows keep the original vertical tab-then-list
-order under one shared Flickable.
- This preserves the everything-shown-at-once browsing model when the viewport has
-room and keeps every page button discoverable.
+Wide windows show the folder picker beside the selected folder's rows as two independent scroll containers,
+so the picker and the track list scroll separately;
+ narrow windows show one pane at a time with a folder button in the header.
+ The picker lists every folder, so late-alphabet artists stay discoverable.
 
 Rejected alternatives:
 
-- Auto-collapse after each page click:
-   rejected because collapsing content above the track list changes the shared
-  scroll geometry immediately after selection,
+- Auto-collapse after each folder click:
+   rejected because collapsing content above the track list changes the scroll geometry immediately after selection,
    which risks surprising jumps.
-- Height-capped page navigation plus `More pages`:
-   rejected because hidden overflow makes late-alphabet artists
-  such as Y and Z less discoverable.
+- Height-capped navigation plus `More folders`:
+   rejected because hidden overflow makes late-alphabet artists such as Y and Z less discoverable.
 - Text-link index:
-   rejected because it weakens the button affordance used by active and inactive page tabs.
-- Visible `Tracks` skip button:
-   rejected because a skip link mixed into the page grid looks like a page despite
-  not being one;
-   focus-only skip links remain an accessibility pattern,
-   not the primary navigation here.
-- Separate scroll containers in the narrow layout too:
-   rejected because two panes in a compact window would keep
-  page navigation consuming vertical space while the track list scrolls,
-   and would add a second scroll position in
-  a small player.
-   Wide windows do split into two independent scroll containers,
-   where the horizontal room makes the
-  separate panes worthwhile.
-- Breakpointless wrapping `FlexboxLayout` inside `Flickable`:
-   rejected after source-auditing Slint's 1.17 layout path,
-   because `Flickable` forwards preferred width from layout children and wrapped flex cross-axis layout
-  needs the assigned width.
-   This produced binding-loop warnings and runtime `Recursion detected` panics.
-   The
-  current breakpoint keeps the wide and narrow geometries explicit while preserving complete page-button
-  discoverability.
+   rejected because it weakens the button affordance.
 
-Three threads cooperate:
- the Slint event loop (UI),
- the engine controller thread,
- and PipeWire's own realtime
-thread.
- The UI and engine talk over a command channel;
- updates return via `slint::invoke_from_event_loop`.
- The
-engine and the realtime callback share audio through a single-producer/single-consumer ring buffer.
+## Library states and messages
 
-## Build environment
+Titles follow D86: a title is the file name without its extension and without the text that every file of its folder
+starts with, cut back to a space or punctuation mark (`かめりあ(Camellia) - Aegis` shows as `Aegis`).
+Nothing is removed for a single file, from `01 Song` and `02 Song` (they share only `0`), or when a title would be
+left empty.
+The deck heading and the window title use the same cleaned title, so the deck reads `folder / title` without the
+folder twice.
+Files and folders of a folder are listed in natural order (`Track 2` before `Track 10`, case ignored).
+A library with one top-level folder shows that folder's own name; files directly in the opened folder sit in virtual
+folders named by their first letter.
 
-Cargo work runs on the host when the native development libraries are present,
- and falls back to the Fedora
-container defined by `Containerfile` otherwise.
- Each task evaluates a `host_ok` predicate (cargo on PATH plus
-`pkg-config --exists libpipewire-0.3 fontconfig freetype2`);
- when all resolve it builds natively,
- and when
-any is missing it runs the identical cargo command in podman.
- On an immutable-style Fedora the host libraries are
-layered with:
+While a folder is being read the window shows "Reading your library" (not "No folder is open"), the deck is dimmed and
+takes
+no input, and the folder button opens nothing.
+"No folder is open" appears only when neither a saved folder nor a music folder exists.
+Play with nothing selected starts the first track of the folder on screen; with nothing to play it stays paused.
 
-```bash
-rpm-ostree install pipewire-devel fontconfig-devel freetype-devel
-```
+The library and the true peaks follow the disk by themselves (D113); no key, button or menu row refreshes or
+re-analyzes.
+The file watcher reports any change under the opened folder after a short quiet time.
+A changed list of files (new, removed or renamed files) reloads the queue and measures what is new.
+An unchanged list still starts a quiet refresh sweep: every file whose size or modified time changed since it was
+measured
+is decoded again, so a file replaced or edited in place gets its new true peak while the app runs (the file that is
+playing
+is measured by the playback path).
+That sweep shows no progress and decodes no file twice, because the sweep of the load and the refresh sweep share the
+fingerprints they have taken.
+A file that failed to decode has no stored result, so each later sweep tries it again; the person is told once per file
+(and once more if the file changes and still fails), and the row keeps its mark until a peak is measured for it.
 
-libopus is not layered:
- the `opus` crate is pinned to the opusic-sys backend,
- which compiles libopus 1.6.1 from
-source via CMake,
- so the host needs `cmake` (provided by the repo-wide mise `aqua:Kitware/CMake` tool) and a
-generator (the host's system `make`) rather than a system libopus.
- The container installs `cmake`/`ninja-build`
-itself (it cannot see host mise tools).
- The runtime GUI/audio libraries (mesa,
- wayland,
- libxkbcommon,
- fontconfig,
-freetype) and a CJK font ship with a KDE desktop already,
- and libclang for the bindgen step is present via the
-layered LLVM.
- The `run` task always
-RUNS the binary directly on the host so the window,
- audio,
- D-Bus,
- and KDE taskbar use the host session natively;
-a container-built binary (Fedora 41 glibc) still links only against runtime libraries present on the host
-(Fedora 44+),
- so the fallback path executes natively too.
- The Rust toolchain comes from the repo-wide mise `rust`
-tool on the host and from rustup (current stable) in the container,
- not Fedora's `rust` package,
- because Slint 1.17.0 needs rustc 1.92 or newer;
- see the `slint`
-dependency comment in `Cargo.toml` and `../../../doc/troubleshooting/slint-flickable-smooth-scroll.md`.
-
-The `*:container` tasks force the podman path regardless of host libraries,
- so the container build stays
-asserted even on a fully provisioned host;
- `verify:container` is the umbrella assertion (image,
- build,
- clippy,
-test in the container).
-
-For OS taskbar progress,
- the `run` task installs two files onto the host before launching:
- the freshly built
-binary into `~/.local/bin/music-player`,
- and `share/applications/monochromatic.music-player.desktop` into
-`~/.local/share/applications`.
- The binary install is what makes the `.desktop` launcher work from the shell:
- its
-`Exec=music-player` is resolved on the systemd user PATH (which includes `~/.local/bin` but not this package's
-`target/release`),
- so launching from KDE without the install fails with "binary not found".
- Installing both means
-the KDE launcher and `mise run` exercise the exact same binary.
- With the `.desktop` present,
- the shell can resolve
-`application://monochromatic.music-player.desktop`.
- The window's Wayland app id is stamped to
-`monochromatic.music-player` (matching the file's `StartupWMClass`) by a winit window-attributes hook,
- and the
-`com.canonical.Unity.LauncherEntry` `Update` signal (carrying `progress` and `progress-visible`) is emitted on the
-host session bus.
- KDE Plasma renders the progress natively;
- GNOME needs Dash-to-Dock;
- other shells silently
-ignore it.
- A freshly installed `.desktop` file may need one login cycle before the shell associates it.
-
-The same Slint XDG-portal watcher that supplies the dark/light colour scheme also reads
-`org.freedesktop.appearance accent-color` and live-updates on change.
- The app reads that accent through `SlintInternal.accent-color` (not through the Slint palette,
- which keeps only its own lightness) and derives every theme colour from it in OKLCH, see "Theme colours" above.
- When the desktop environment or portal exposes no accent-color setting,
- Slint reports a transparent accent and the app uses its Fold baseline root instead,
- so the feature degrades gracefully rather than failing.
-
-The image installs `google-noto-sans-cjk-fonts`.
- Slint 1.16's femtovg renderer lays out text with parley and
-fontique with system fonts enabled,
- which falls back per script to a system font for glyphs the primary font
-lacks;
- without a CJK font in the container,
- Japanese,
- Chinese,
- and Korean filenames render as blank boxes.
-
-The source comments follow the repository's `dum-dum-non-ts` convention:
- every concept-introducing line carries a
-plain-English explanation and a TypeScript translation,
- because the maintainer reads TypeScript fluently and Rust
-less so.
-
-### macOS (Apple Silicon)
-
-On macOS every mise task takes a native cargo branch first (`process.platform !== 'linux'`):
- no pkg-config or
-PipeWire probe,
- no podman fallback (a Linux container cannot produce a macOS binary),
- and no Linux bindgen env.
-The audio backend is CoreAudio via cpal (`src/output_cpal.rs`,
- shared with the Windows WASAPI path),
- the window is
-AppKit via winit,
- and the Wayland app id and the LauncherEntry taskbar progress compile to no-ops (macOS exposes no
-dock progress API).
- The background measurement sweep drops itself to background QoS rather than Linux `SCHED_IDLE`,
-through `libc`'s `pthread_set_qos_class_self_np`.
-
-Prerequisites on a bare machine:
-
-- A Rust toolchain with `cargo` on PATH.
-   Homebrew's `rustup` (`brew install rustup`) is keg-only:
-   the
-  `cargo`/`rustc` proxies live in `$(brew --prefix rustup)/bin` (`/opt/homebrew/opt/rustup/bin`),
-   which is not on
-  PATH by default,
-   and `~/.cargo/bin` is never created.
-   Add that keg bin to PATH as the formula caveat says
-  (`echo 'export PATH="$(brew --prefix rustup)/bin:$PATH"' >> ~/.zshrc`),
-   then `rustup default stable`.
-   Note that
-  `rustup run <toolchain> cargo build` does NOT work here (rustup looks for `rustc` in the uncreated
-  `~/.cargo/bin`);
-   see `../../../doc/troubleshooting/homebrew-rustup-keg-only-proxies.md`.
-- `cmake` plus the Command Line Tools C compiler.
-   The `opus` crate is pinned to the opusic-sys backend,
-   which
-  compiles libopus 1.6.1 from source via CMake (no system libopus needed).
-   The repo's mise `aqua:Kitware/CMake`
-  tool provides `cmake`;
-   `brew install cmake` also works.
-   CMake uses the system `make` generator.
-   bindgen uses
-  the Command Line Tools' libclang automatically,
-   so no `LIBCLANG_PATH` is needed.
-
-Always build on the external `/Volumes/MacData` disk,
- never under `~` on the internal disk.
- The Apple Silicon
-machine's internal disk is only about 251 GB and is mostly consumed by macOS and its data volume (roughly 76 GB
-free as of 2026-06),
- so a Rust `target/` directory or a synced verification tree will fill it.
- The external
-`/Volumes/MacData` volume is far larger (about 477 GB,
- 370 GB free),
- so put the checkout,
- the build,
- and any
-synced tree there,
- for example `/Volumes/MacData/music-player-verify`.
- Point cargo at it explicitly when the
-source is elsewhere with `CARGO_TARGET_DIR=/Volumes/MacData/<name>/target`.
-
-If the GPU OpenGL path misbehaves,
- force the software renderer with `SLINT_BACKEND=winit-software`.
-
-### Windows (x86_64, MSVC)
-
-On Windows every mise task takes the same native cargo branch as macOS (`process.platform !== 'linux'`):
- no
-pkg-config or PipeWire probe,
- no podman fallback (a Linux container cannot produce a Windows binary),
- and no
-Linux bindgen env.
- The audio backend is WASAPI via cpal (`src/output_cpal.rs`,
- shared with the macOS CoreAudio
-path),
- the window is Win32 via winit,
- and the Wayland app id compiles to a no-op.
- The Linux D-Bus LauncherEntry
-also compiles to a no-op,
- but the taskbar progress bar is driven natively through the `ITaskbarList3` COM interface
-in `src/ui_progress.rs`,
- and the background measurement sweep uses `THREAD_PRIORITY_IDLE`.
- The `windows` crate
-(pinned to 0.62) supplies both,
- unified with the same `windows` version cpal 0.18 and the Slint stack already pull.
-
-The build targets `x86_64-pc-windows-msvc` and links with LLVM's `lld-link.exe` (pinned for that target in
-`.cargo/config.toml`),
- not the default MSVC `link.exe`.
- Prerequisites on a bare machine:
-
-- Rustup with the msvc host and a nightly toolchain (`rustup toolchain install nightly`),
-   matching the Linux and
-  macOS builds.
-   `cargo` and `rustc` land on PATH under `%USERPROFILE%\.cargo\bin`.
-- Visual Studio (or Build Tools) with the Desktop C++ workload,
-   for the MSVC CRT and Windows SDK import
-  libraries that `lld-link` links against.
-   rustc discovers them automatically and passes them as `/LIBPATH:`.
-- `cmake` on PATH.
-   The `opus` crate is pinned to the opusic-sys backend,
-   which builds libopus 1.6.1 from source
-  through the cmake crate (cmake drives the MSVC C compiler from Visual Studio).
-   libopus 1.6.1's
-  `cmake_minimum_required` is 3.16,
-   so CMake 4.
-  x configures it with no `CMAKE_POLICY_VERSION_MINIMUM` override.
-- LLVM on PATH.
-   `lld-link.exe` ships in LLVM's `bin` directory (`C:\Program Files\LLVM\bin`),
-   which the LLVM
-  installer does not add to PATH by default;
-   add it so the linker resolves.
-- `cargo-nextest` for the `test` task (the repo installs it as a mise tool,
-   so `mise run ...:test` finds it).
-
-mise runs task logic through node eval on Windows too (a per-task `shell = "node --input-type=module-typescript -e"`),
- so the
-`mise run //package/music-player/desktop-app:...` commands below work unchanged.
- If the GPU OpenGL path
-misbehaves,
- force the software renderer with `SLINT_BACKEND=winit-software`.
-
-See `HANDOVER.windows-toolchain-and-check.md` for the step-by-step toolchain setup and the window/audio check.
-
-## Commands
-
-All commands run through mise tasks.
- On Linux,
- build,
- lint,
- and test run on the host when the dev libraries are
-present and fall back to `podman run` otherwise;
- on macOS and Windows they always build natively with cargo (see
-the platform subsections above).
- `run` builds the same way and then executes the binary directly.
- Run them from
-this package directory,
- or prefix with the package path from the repository root.
-
-```bash
-# build the container image (only needed for the container path; the host
-# fallback also builds it automatically when missing)
-mise run //package/music-player/desktop-app:image
-
-# compile checks (host if dev libs present, else container)
-mise run //package/music-player/desktop-app:lint          # cargo check
-mise run //package/music-player/desktop-app:lint:clippy   # clippy, warnings denied
-
-# tests (queue, session, decode-per-codec)
-mise run //package/music-player/desktop-app:test
-
-# release build
-mise run //package/music-player/desktop-app:build
-
-# build, install to ~/.local/bin + ~/.local/share/applications,
-# then run the GUI on the host (optional single folder or file arg)
-mise run //package/music-player/desktop-app:run -- path/to/folder
-
-# force the container path (asserts the container build still works on any host)
-mise run //package/music-player/desktop-app:verify:container
-
-# regenerate the per-codec test fixtures with host ffmpeg (rarely needed)
-mise run //package/music-player/desktop-app:gen:fixtures
-```
-
-The binary also accepts a single optional path argument:
- a folder becomes the Source Root,
- and a file makes its parent folder the Source Root with that file preselected.
- A second positional argument is a parse error.
-The argument loads paused;
- pass `--start-playing` to begin playback immediately instead.
- It is the only way to make the player auto-play on launch,
- so without it (and on every launch with no path) the app opens paused and waits for the play button.
-The Open button uses the XDG desktop portal folder picker,
- and a chosen folder becomes the new Source Root,
- scanned recursively;
- a folder opened this way also loads paused.
- The picker offers folders only,
- so preselecting a single file is available only from the command line.
-Argument parsing uses the `clap` crate,
- so `--help` and `--version` are available.
-
-## Distribution and signing
-
-For distribution outside the app stores,
- the macOS build ships as a signed,
- notarized `.app` and the Windows build
-as an Authenticode-signed `.exe`.
- Each binary is built on its own operating system (the Mach-O on the Mac,
- the
-`.exe` on Windows,
- as in the platform subsections above),
- then bundled and signed from the Linux box:
- `rcodesign`
-signs and notarizes the macOS app,
- and `osslsigncode` (in `Containerfile.sign`) signs the Windows exe.
-Cross-compiling the GUI from Linux is out of scope,
- so only the signing is cross-platform.
- The signing identity is
-a registered organization,
- so the maintainer's legal name does not appear in the public signature.
-
-The per-OS binary is copied into `dist/` (gitignored) after building,
- then:
-
-```bash
-# macOS: assemble the .app, sign it, then notarize + staple it
-mise run //package/music-player/desktop-app:bundle:macos
-mise run //package/music-player/desktop-app:sign:macos
-mise run //package/music-player/desktop-app:notarize:macos
-
-# Windows: Authenticode-sign the exe (osslsigncode in the sign container)
-mise run //package/music-player/desktop-app:sign:windows
-
-# self-signed end-to-end smoke test of the whole pipeline (no real credentials)
-mise run //package/music-player/desktop-app:verify:signing
-
-# regenerate the app icon (.icns + .ico) after editing asset/icon.svg
-mise run //package/music-player/desktop-app:gen:icons
-```
-
-Each sign task reads its real credentials from environment variables and falls back to a throwaway self-signed
-identity when they are unset,
- so the pipeline runs today;
- self-signed artifacts are not distributable.
- Acquiring
-the real credentials is a one-time human task documented in `HANDOVER.macos-signing-credentials.md` and
-`HANDOVER.windows-signing-credentials.md`.
- The design and the rejected alternatives are recorded in
-`../../../doc/decisions/desktop-app-code-signing.md`.
+A file that cannot be decoded is skipped, named in a message ("`name` can't be played."; several files collapse to a
+count),
+and its row shows "Can't be played".
+When the selected file leaves the folder, the row disappears, playback stops, the elapsed time resets, a message names
+the file,
+and the view moves to the neighboring folder if the folder on screen is gone.
+Undo of Move to trash finds the file even when the library was opened through a symbolic link
+(the folder is resolved before the comparison), and says plainly when the file is no longer in the trash.
+`Open folder` on Linux needs the desktop portal or `zenity`; with neither, a message says to install `zenity` or to
+start the player
+with a folder on the command line.
 
 ## Session
 
@@ -1059,9 +761,9 @@ On exit the engine saves the Source Root path,
  the Selected Track path (if one was selected),
  the playback position,
  volume,
- shuffle mode,
- repeat-track flag,
- and page-control style to a JSON file under the platform config directory (`$XDG_CONFIG_HOME/musicplayer` on Linux,
+ the playback mode,
+ and the two saved template texts to a JSON file under the platform config directory (`$XDG_CONFIG_HOME/musicplayer`
+ on Linux,
 `~/Library/Application Support/dev.monochromatic.musicplayer` on macOS,
  the roaming AppData config directory on
 Windows,
@@ -1091,7 +793,10 @@ argument is given,
  The directory is resolved from `XDG_MUSIC_DIR`,
  then the XDG
 user-dirs file,
- then the `xdg-user-dir MUSIC` command;
+ then the `xdg-user-dir MUSIC` command,
+ then the `Music` folder inside the home folder (D95: a library is always open),
+ taking the first of these that is an existing folder;
+ only when none exists does the window say that no folder is open;
  running on the host,
  these resolve directly,
  so no

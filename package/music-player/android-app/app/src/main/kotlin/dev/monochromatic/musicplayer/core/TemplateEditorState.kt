@@ -62,7 +62,7 @@ const val TEMPLATE_KEPT_NOTE: String = "Rows keep the last valid template."
 // ```ts
 // const TEMPLATE_SAMPLE_TRACKS = [
 //   { title: "Track title", len: 200, peak: "\u22121.0 dBTP", place: 1, total: 16 },
-//   { title: "Track not analysed yet", len: 200, peak: undefined, place: 2, total: 16 },
+//   { title: "Track not analyzed yet", len: 200, peak: undefined, place: 2, total: 16 },
 // ];
 // ```
 /** Stand-in tracks the preview uses while the open library holds no track. */
@@ -82,7 +82,7 @@ val TEMPLATE_SAMPLE_TRACKS: List<PlayingTrackFields> = listOf(
     ),
     PlayingTrackFields(
         track = TrackFields(
-            title = "Track not analysed yet",
+            title = "Track not analyzed yet",
             file = "File name",
             ext = "flac",
             folder = "Folder",
@@ -210,7 +210,9 @@ data class TemplateEditorState(
     // ```
     /** Every distinct mistake of the open template's current text, over all preview tracks. */
     val errors: List<TemplateError>
-        get() = resultsFor(kind, text).flatMap { result -> mistakesOf(result) }.distinct()
+        get() = previewTracks
+            .flatMap { track -> templateMistakes(text, templateTrackFor(kind, track), kind.fields) }
+            .distinct()
 
     // What:     `val isValid: Boolean` tells whether the open template's current text applies.
     // Why:      Validity decides whether the text becomes the applied template and whether errors show.
@@ -232,7 +234,7 @@ data class TemplateEditorState(
     // ```
     /** One line per mistake of the open template's current text, in template order. */
     val mistakeLines: List<String>
-        get() = errorLines(errors)
+        get() = errorSentences(errors, ParsedTemplateCache.parsedFor(text))
 
     // What:     `val previewRows: List<TemplatePreviewRow>` gives each preview track its applied line.
     // Why:      The rows keep the last template that applied, so a mistake never changes what the rows show.
@@ -282,7 +284,7 @@ data class TemplateEditorState(
                     label = field.label,
                     mode = field.mode,
                     insert = "mi(" + field.mode + ")",
-                    value = source.fieldText(field.mode).orEmpty(),
+                    value = fieldValueText(field.mode, source),
                 )
             }
         }
@@ -543,19 +545,6 @@ private fun templateTrackFor(template: TemplateKind, track: PlayingTrackFields):
     TemplateKind.PLAYING_TRACK -> track
 }
 
-// What:     `private fun mistakesOf(...)` lists the mistakes of one engine result.
-// Why:      A shown result has none, and a refused one lists its own.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// function mistakesOf(result) { return result.kind === "refused" ? result.errors : []; }
-// ```
-/** The mistakes one engine result reports, or none when the text applied. */
-private fun mistakesOf(result: TemplateResult): List<TemplateError> = when (result) {
-    is TemplateResult.Shown -> emptyList()
-    is TemplateResult.Refused -> result.errors
-}
-
 // What:     `private fun clampOffset(...)` keeps a caret offset inside the text.
 // Why:      The field can report offsets past the end after an edit, and the state must never hold them.
 //
@@ -578,3 +567,23 @@ private fun insideFormula(text: String, caret: Int): Boolean = parseTemplate(tex
     part is FormulaPart && caret > part.start && caret <= (if (part.closed) part.end - 1 else part.end)
 }
 //endregion
+
+// What:     `private fun fieldValueText(mode: String, source: TemplateTrack): String` gives the sample value of a
+//           field.
+// Why:      The Duration field holds a number of seconds in templates, but the list of fields shows it as minutes and
+//           seconds, the way the rows show it.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// const fieldValueText = (mode: string, source: TemplateTrack) => mode === "len" ? duration(source.len) :
+// source.field(mode) ?? "";
+// ```
+/** Sample value of one field: the duration as m:ss, everything else as the track states it. */
+private fun fieldValueText(mode: String, source: TemplateTrack): String {
+    /** The field as the track states it, or null when the track has no value. */
+    val raw: String? = source.fieldText(mode)
+    if (mode == "len") {
+        return raw?.toDoubleOrNull()?.let { seconds -> durationText(seconds) }.orEmpty()
+    }
+    return raw.orEmpty()
+}

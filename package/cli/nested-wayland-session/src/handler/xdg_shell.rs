@@ -34,7 +34,7 @@ use smithay::{
         wayland_protocols::xdg::shell::server::xdg_toplevel,
         wayland_server::protocol::{wl_seat, wl_surface::WlSurface},
     },
-    utils::{Serial, SERIAL_COUNTER},
+    utils::Serial,
     wayland::{
         compositor::with_states,
         shell::xdg::{
@@ -97,10 +97,9 @@ fn set_fullscreen(surface: &ToplevelSurface, geometry: ScreenGeometry) {
         // Why:      Tell the client it is fullscreen so it draws edge-to-edge.
         state.states.set(xdg_toplevel::State::Fullscreen);
 
-        // What:     `state.states.set(xdg_toplevel::State::Activated);`. Adds the
-        //           activated (focused) flag.
-        // Why:      Slint renders active styling and starts drawing when activated.
-        state.states.set(xdg_toplevel::State::Activated);
+        // What:     The activated flag is not set here; `crate::focus` sets and clears it
+        //           for the window that has keyboard focus.
+        // Why:      Only the focused window is active, and a dialog takes that from its parent.
 
         // What:     `state.size = Some((w, h).into());`. Sets the pending size. The
         //           `(i32, i32)` tuple `.into()` converts into `Size<i32, Logical>` (the
@@ -218,20 +217,26 @@ impl XdgShellHandler for Compositor {
         // Why:      Put the one window on screen, filling the output from the top-left.
         self.space.map_element(window, (0, 0), true);
 
-        // What:     `let serial = SERIAL_COUNTER.next_serial();`. Get a fresh protocol
-        //           serial (a monotonically increasing event id).
-        // Why:      `set_focus` needs a serial to order the focus event.
-        let serial = SERIAL_COUNTER.next_serial();
+        // What:     `crate::focus::focus_surface(self, wl_surface);`. Make the new toplevel the
+        //           most recently focused one, give it keyboard focus, and mark it activated.
+        // Why:      Synthetic key input reaches the newest window, as on a desktop where a new
+        //           window takes focus, and the focus order remembers what to return to.
+        crate::focus::focus_surface(self, wl_surface);
+    }
 
-        // What:     `if let Some(keyboard) = self.seat.get_keyboard() { keyboard.set_focus(
-        //           self, Some(wl_surface), serial); }`. `get_keyboard()` returns
-        //           `Option<KeyboardHandle>`; the `if let` runs only when the seat has a
-        //           keyboard (it always does here). `set_focus` directs keystrokes to the
-        //           surface; `Some(wl_surface)` is the new focus target.
-        // Why:      So synthetic key input reaches the app immediately.
-        if let Some(keyboard) = self.seat.get_keyboard() {
-            keyboard.set_focus(self, Some(wl_surface), serial);
-        }
+    /// What:
+    ///      `fn toplevel_destroyed(&mut self, surface: ToplevelSurface)`.
+    ///  Called when a toplevel is destroyed or its client disconnects.
+    /// Why:
+    ///       Keyboard focus returns to the most recently focused remaining window,
+    ///  as a desktop does when a dialog closes.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// toplevelDestroyed(surface: ToplevelSurface): void { focus.toplevelGone(this, surface.wlSurface); }
+    /// ```
+    fn toplevel_destroyed(&mut self, surface: ToplevelSurface) {
+        crate::focus::toplevel_gone(self, surface.wl_surface());
     }
 
     /// What:

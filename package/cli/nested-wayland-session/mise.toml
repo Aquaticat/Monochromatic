@@ -1361,3 +1361,481 @@ if (hostCheck.status !== 0 || hostCheck.stdout.toString().trim() !== 'b true') {
 }
 console.log('Host contract comparison done')
 '''
+
+[tasks."inspect:input"]
+description = "Verify key names, chords, holds with client key repeat, Unicode typing, exact resize, pointer options, cursor shape, window focus return, and quoted multi-file drops through the control socket and real clients"
+# The binary under test is ./target/release/monochromatic-nested-wayland-session unless NWS_BINARY names another.
+# Needs slint-viewer, and python3 with GTK 4 for the drop target. Every check runs and is reported; any failure exits 1.
+shell = "node --input-type=module-typescript -e"
+run = '''
+const { spawn } = await import('node:child_process')
+const { once } = await import('node:events')
+const { createConnection } = await import('node:net')
+const { mkdtempSync, mkdirSync, writeFileSync, readFileSync, existsSync, openSync, realpathSync } = await import('node:fs')
+const { tmpdir } = await import('node:os')
+const { join } = await import('node:path')
+const { setTimeout: wait } = await import('node:timers/promises')
+const { default: assert } = await import('node:assert/strict')
+const binary = process.env.NWS_BINARY ?? './target/release/monochromatic-nested-wayland-session'
+const evidence = mkdtempSync(join(tmpdir(), 'nested-input-'))
+// Every key, pointer, and size report of the scene is one line on the client's standard output, prefixed with the scene name.
+const scene = name => [
+  'export component Scene inherits Window {',
+  '    callback ev(string);',
+  '    property <int> seq;',
+  '    function emit(text: string) { root.seq += 1; root.ev(root.seq + "@" + text); }',
+  '    background: #202020;',
+  '    pure function name(t: string) -> string {',
+  '        if (t == Key.F1) { return "F1"; } if (t == Key.F5) { return "F5"; } if (t == Key.F10) { return "F10"; }',
+  '        if (t == Key.F12) { return "F12"; } if (t == Key.F24) { return "F24"; } if (t == Key.Menu) { return "Menu"; }',
+  '        if (t == Key.Insert) { return "Insert"; } if (t == Key.Delete) { return "Delete"; } if (t == Key.Home) { return "Home"; }',
+  '        if (t == Key.End) { return "End"; } if (t == Key.PageUp) { return "PageUp"; } if (t == Key.PageDown) { return "PageDown"; }',
+  '        if (t == Key.SysReq) { return "SysReq"; } if (t == Key.Pause) { return "Pause"; } if (t == Key.ScrollLock) { return "ScrollLock"; }',
+  '        if (t == Key.Shift) { return "Shift"; } if (t == Key.Control) { return "Control"; } if (t == Key.Alt) { return "Alt"; }',
+  '        if (t == Key.Meta) { return "Meta"; } if (t == Key.RightArrow) { return "Right"; } if (t == Key.LeftArrow) { return "Left"; }',
+  '        if (t == Key.Escape) { return "Escape"; } if (t == Key.Return) { return "Return"; } if (t == " ") { return "Space"; }',
+  '        return t;',
+  '    }',
+  '    function mods(m: KeyboardModifiers) -> string {',
+  '        return (m.control ? "C" : "-") + (m.shift ? "S" : "-") + (m.alt ? "A" : "-") + (m.meta ? "M" : "-");',
+  '    }',
+  '    FocusScope {',
+  '        capture-key-pressed(e) => { root.emit("kp:" + root.name(e.text) + ":" + (e.repeat ? "R" : "n") + ":" + root.mods(e.modifiers)); reject }',
+  '        capture-key-released(e) => { root.emit("kr:" + root.name(e.text)); reject }',
+  '        init => { self.focus(); }',
+  '        TextInput {',
+  '            x: 0px; y: 0px; width: 500px; height: 40px; color: white; font-size: 24px;',
+  '            edited => { root.emit("text:" + self.text); }',
+  '            init => { self.focus(); }',
+  '        }',
+  '    }',
+  '    TouchArea {',
+  '        x: 0px; y: 60px; width: parent.width; height: parent.height - 60px; mouse-cursor: pointer;',
+  '        scroll-event(e) => { root.emit("scroll:" + e.delta-x / 1px + "," + e.delta-y / 1px + ":" + root.mods(e.modifiers)); return accept; }',
+  '        pointer-event(e) => { root.emit("ptr:" + (e.kind == PointerEventKind.down ? "down" : e.kind == PointerEventKind.up ? "up" : "other")',
+  '            + ":" + (e.button == PointerEventButton.left ? "left" : e.button == PointerEventButton.right ? "right" : "other")',
+  '            + ":" + root.mods(e.modifiers) + ":" + self.mouse-x / 1px + "," + self.mouse-y / 1px); }',
+  '        double-clicked => { root.emit("double"); }',
+  '        moved => { root.emit("moved:" + self.mouse-x / 1px + "," + self.mouse-y / 1px); }',
+  '    }',
+  '    changed width => { root.emit("size:" + self.width / 1px + "x" + self.height / 1px); }',
+  '    changed height => { root.emit("size:" + self.width / 1px + "x" + self.height / 1px); }',
+  '    Timer { interval: 700ms; running: true; triggered => { root.emit("ready"); self.running = false; } }',
+  '}',
+  '',
+].join('\n').replace('Scene', name)
+mkdirSync(evidence, { recursive: true })
+writeFileSync(join(evidence, 'scene-a.slint'), scene('SceneA'))
+writeFileSync(join(evidence, 'scene-b.slint'), scene('SceneB'))
+// A GTK 4 window that prints the file paths GTK itself decodes from a dropped text/uri-list.
+writeFileSync(join(evidence, 'drop-target.py'), [
+  'import gi, json',
+  'gi.require_version("Gtk", "4.0")',
+  'from gi.repository import Gtk, Gdk, GLib',
+  'loop = GLib.MainLoop()',
+  'win = Gtk.Window(title="drop target")',
+  'win.set_default_size(400, 300)',
+  'target = Gtk.DropTarget.new(Gdk.FileList, Gdk.DragAction.COPY)',
+  'def on_drop(_target, value, x, y):',
+  '    print("DROP " + json.dumps([f.get_path() for f in value.get_files()]), flush=True)',
+  '    return True',
+  'target.connect("drop", on_drop)',
+  'win.add_controller(target)',
+  'win.present()',
+  'loop.run()',
+  '',
+].join('\n'))
+// A scene with a button, a checked box, and a label, to read back through AT-SPI.
+writeFileSync(join(evidence, 'accessible.slint'), [
+  'import { Button, CheckBox } from "std-widgets.slint";',
+  'export component Scene inherits Window {',
+  '    background: #202020;',
+  '    VerticalLayout {',
+  '        padding: 10px; spacing: 10px;',
+  '        Button { text: "Play"; }',
+  '        CheckBox { text: "Shuffle"; checked: true; }',
+  '        Text { text: "Now playing: Bj\u00f6rk"; color: white; accessible-role: text; }',
+  '    }',
+  '}',
+  '',
+].join('\n'))
+const results = []
+// NWS_CHECKS is a regular expression that selects checks by name, for a quick run of a few.
+const selected = process.env.NWS_CHECKS === undefined ? undefined : new RegExp(process.env.NWS_CHECKS)
+const check = async (name, body) => {
+  if (selected !== undefined && !selected.test(name)) return
+  try {
+    await body()
+    results.push({ name, ok: true })
+    console.log('PASS ' + name)
+  } catch (error) {
+    results.push({ name, ok: false, message: String(error.message ?? error) })
+    console.log('FAIL ' + name + ': ' + String(error.message ?? error).split('\n')[0])
+  }
+}
+const control = (socketPath, line) => new Promise((resolve, reject) => {
+  const socket = createConnection(socketPath)
+  let reply = ''
+  socket.on('error', reject)
+  socket.on('data', chunk => {
+    reply += chunk
+    if (reply.includes('\n')) { socket.end(); resolve(reply.trim()) }
+  })
+  socket.write(line + '\n')
+})
+const untilTrue = async (label, probe, limit = 10000) => {
+  const started = performance.now()
+  while (performance.now() - started < limit) {
+    if (await probe()) return
+    await wait(25)
+  }
+  assert.fail('timed out waiting for ' + label)
+}
+// Starts a nested session that hosts `client`, and returns its control and the lines the client printed.
+const startSession = async ({ name, options = [], client, env = {} }) => {
+  const socketPath = join(evidence, name + '.sock')
+  const output = []
+  const session = spawn(binary, ['--socket', socketPath, ...options, '--', ...client], {
+    stdio: ['ignore', 'pipe', openSync(join(evidence, name + '-session.log'), 'w')], env: { ...process.env, ...env },
+  })
+  session.stdout.on('data', chunk => output.push(chunk))
+  const lines = () => Buffer.concat(output).toString().split('\n').filter(Boolean)
+  const exited = once(session, 'exit')
+  await untilTrue('the control socket of ' + name, () => existsSync(socketPath), 30000)
+  const ctl = async line => {
+    for (let attempt = 0; ; attempt += 1) {
+      try { return await control(socketPath, line) } catch (error) {
+        if (attempt > 40) throw error
+        await wait(100)
+      }
+    }
+  }
+  // The viewer runs one process per report, so lines can arrive out of order; each carries its sequence number.
+  // Only the unbroken run from 1 is trusted, so a late straggler never reorders what a check sees.
+  const events = () => {
+    const bySequence = new Map(lines().filter(line => line.startsWith('EV ')).map(line => {
+      const [sequence, ...payload] = line.slice(3).split('@')
+      return [Number(sequence), payload.join('@')]
+    }))
+    // The first reports can be lost before the viewer installs its handler, so counting starts at the "ready" report.
+    const ready = [...bySequence].find(([, payload]) => payload === 'ready')
+    if (ready === undefined) return []
+    const ordered = []
+    while (bySequence.has(ready[0] + 1 + ordered.length)) ordered.push(bySequence.get(ready[0] + 1 + ordered.length))
+    return ordered
+  }
+  const stop = async () => {
+    try { await ctl('quit') } catch { session.kill() }
+    await exited
+  }
+  return { ctl, lines, events, stop, session, socketPath }
+}
+// Waits for a promise, failing after `limit` milliseconds so a feature that does not work cannot hang the task.
+const within = async (promise, label, limit = 15000) => {
+  let timer
+  const timeout = new Promise((_, reject) => { timer = setTimeout(() => reject(new Error('timed out waiting for ' + label)), limit) })
+  try { return await Promise.race([promise, timeout]) } finally { clearTimeout(timer) }
+}
+const pngSize = path => { const buffer = readFileSync(path); return [buffer.readUInt32BE(16), buffer.readUInt32BE(20)] }
+const viewer = file => ['slint-viewer', '--on', 'ev', 'echo EV $1', file]
+// Sends a command and returns the events the client reported until `done` accepts them, or 3 s pass.
+const act = async (s, command, done = events => events.length > 0, limit = 3000) => {
+  const before = s.events().length
+  const reply = await s.ctl(command)
+  const started = performance.now()
+  while (performance.now() - started < limit && !done(s.events().slice(before))) await wait(25)
+  return { reply, events: s.events().slice(before) }
+}
+const A = await startSession({
+  name: 'a', options: ['--size', '800x600', '--repeat-rate', '20', '--repeat-delay', '100'],
+  client: ['env', 'WAYLAND_DEBUG=client', ...viewer(join(evidence, 'scene-a.slint'))],
+})
+try {
+  await untilTrue('the scene to report ready', () => A.lines().some(line => line.endsWith('@ready')), 60000)
+  await wait(500)
+
+  //#region keys: names, raw codes, chords
+  await check('key f10 by name', async () => {
+    const { reply, events } = await act(A, 'key f10', events => events.includes('kr:F10'))
+    assert.equal(reply, 'ok'); assert.deepEqual(events, ['kp:F10:n:----', 'kr:F10'])
+  })
+  await check('key code:68 is evdev F10', async () => {
+    const { reply, events } = await act(A, 'key code:68', events => events.includes('kr:F10'))
+    assert.equal(reply, 'ok'); assert.deepEqual(events, ['kp:F10:n:----', 'kr:F10'])
+  })
+  await check('key Menu opens the context-menu key', async () => {
+    const { events } = await act(A, 'key Menu', events => events.includes('kr:Menu'))
+    assert.deepEqual(events, ['kp:Menu:n:----', 'kr:Menu'])
+  })
+  await check('key shift+F10 presses the modifier first and releases it last', async () => {
+    const { events } = await act(A, 'key shift+F10', events => events.includes('kr:Shift'))
+    assert.deepEqual(events, ['kp:Shift:n:-S--', 'kp:F10:n:-S--', 'kr:F10', 'kr:Shift'])
+  })
+  await check('key ctrl+shift+f24 reaches F24 with both modifiers in order', async () => {
+    const { events } = await act(A, 'key Ctrl+Shift+F24', events => events.includes('kr:Control'))
+    assert.deepEqual(events, ['kp:Control:n:C---', 'kp:Shift:n:CS--', 'kp:F24:n:CS--', 'kr:F24', 'kr:Shift', 'kr:Control'])
+  })
+  await check('key names for the navigation and system cluster', async () => {
+    for (const [name, seen] of [['Insert', 'Insert'], ['Delete', 'Delete'], ['Home', 'Home'], ['End', 'End'], ['Page_Up', 'PageUp'],
+      ['PgDn', 'PageDown'], ['Print', 'SysReq'], ['Pause', 'Pause'], ['Scroll_Lock', 'ScrollLock'], ['F1', 'F1'], ['F12', 'F12']]) {
+      const { events } = await act(A, 'key ' + name, events => events.includes('kr:' + seen))
+      assert.deepEqual(events, ['kp:' + seen + ':n:----', 'kr:' + seen], name)
+    }
+  })
+  await check('key press and release of a chord keep the keys down between', async () => {
+    const pressed = await act(A, 'key ctrl+shift+f5 press', events => events.includes('kp:F5:n:CS--'))
+    assert.deepEqual(pressed.events, ['kp:Control:n:C---', 'kp:Shift:n:CS--', 'kp:F5:n:CS--'])
+    const released = await act(A, 'key ctrl+shift+f5 release', events => events.includes('kr:Control'))
+    assert.deepEqual(released.events, ['kr:F5', 'kr:Shift', 'kr:Control'])
+  })
+  await check('key refuses an unknown name and presses nothing for a chord with one', async () => {
+    const before = A.events().length
+    assert.equal(await A.ctl('key bogus'), 'err unknown key: bogus')
+    assert.equal(await A.ctl('key ctrl+nokey+f10'), 'err unknown key: nokey')
+    assert.equal(await A.ctl('key code:99999'), 'err unknown key: code:99999')
+    await wait(300)
+    assert.equal(A.events().length, before)
+  })
+  await check('repeat-info reads and sets the announced pair', async () => {
+    assert.equal(await A.ctl('repeat-info'), 'ok rate=20 delay=100')
+    assert.equal(await A.ctl('repeat-info 20 100'), 'ok unchanged')
+    assert.equal(await A.ctl('repeat-info 30 150'), 'ok changed')
+    assert.equal(await A.ctl('repeat-info'), 'ok rate=30 delay=150')
+    assert.equal(await A.ctl('repeat-info 20 100'), 'ok changed')
+  })
+  await check('key hold makes the client repeat a non-modifier key at the announced rate', async () => {
+    const { events } = await act(A, 'key Right hold 1000', events => events.includes('kr:Right'), 4000)
+    const repeats = events.filter(event => event === 'kp:Right:R:----').length
+    // 20 repeats a second after 100 ms leaves about 18 repeats in a second; the client's timer sets the exact count.
+    assert(repeats >= 12 && repeats <= 24, 'repeat events: ' + repeats)
+    assert.equal(events[0], 'kp:Right:n:----'); assert.equal(events.at(-1), 'kr:Right')
+  })
+  await check('key hold on a modifier produces no repeats', async () => {
+    const { events } = await act(A, 'key Shift hold 800', events => events.includes('kr:Shift'), 4000)
+    assert.deepEqual(events, ['kp:Shift:n:-S--', 'kr:Shift'])
+  })
+  await check('repeat-info with rate 0 turns client repeat off', async () => {
+    assert.equal(await A.ctl('repeat-info 0 100'), 'ok changed')
+    const { events } = await act(A, 'key Right hold 600', events => events.includes('kr:Right'), 4000)
+    assert.deepEqual(events, ['kp:Right:n:----', 'kr:Right'])
+    assert.equal(await A.ctl('repeat-info 20 100'), 'ok changed')
+  })
+  //#endregion
+
+  //#region type: Unicode text delivered as key text
+  const typed = async (text, expected) => {
+    // The text field accumulates; the last text event after the command is the whole text so far.
+    const { reply } = await act(A, 'type ' + text, events => events.some(event => event === 'text:' + expected), 6000)
+    assert.equal(reply, 'ok')
+    assert(A.events().some(event => event === 'text:' + expected), 'no text event ' + expected + '; last was ' + A.events().filter(event => event.startsWith('text:')).at(-1))
+  }
+  await check('type delivers US text with Shift', async () => { await typed('Hello!', 'Hello!') })
+  await check('type delivers accented Latin text (Björk)', async () => { await typed('Björk', 'Hello!Björk') })
+  await check('type delivers kana', async () => { await typed('かめりあ', 'Hello!Björkかめりあ') })
+  await check('type delivers Hangul, CJK, and an emoji outside the BMP', async () => {
+    await typed('한국어日本😀', 'Hello!Björkかめりあ한국어日本😀')
+  })
+  await check('type restores the keymap so later keys are ordinary', async () => {
+    // The last typed character's release can still be in flight.
+    await wait(500)
+    // The client's own protocol log shows every keymap it was sent, by size in bytes: the first is the session's,
+    // and typing off-layout text sends a larger one with the spare keys and then the first one again.
+    const sizes = [...readFileSync(join(evidence, 'a-session.log'), 'utf8').matchAll(/wl_keyboard[@#]\d+\.keymap\(\d+, fd \d+, (\d+)\)/g)].map(match => Number(match[1]))
+    assert(sizes.length >= 3, 'keymap events seen: ' + sizes.join(','))
+    assert(Math.max(...sizes) > sizes[0], 'typing never sent a keymap with spare keys: ' + sizes.join(','))
+    assert.equal(sizes.at(-1), sizes[0], 'the last keymap is not the original one: ' + sizes.join(','))
+    const { events } = await act(A, 'key ctrl+a', events => events.includes('kr:Control'))
+    assert.deepEqual(events, ['kp:Control:n:C---', 'kp:a:n:C---', 'kr:a', 'kr:Control'])
+  })
+  await check('type refuses a control character before sending any key', async () => {
+    const before = A.events().length
+    assert.equal(await A.ctl('type a\u0001b'), 'err type cannot send the control character U+0001 at position 1')
+    await wait(300)
+    assert.equal(A.events().length, before)
+  })
+  //#endregion
+
+  //#region resize: exact sizes
+  for (const [width, height] of [[599, 401], [600, 400], [601, 399], [443, 300]]) {
+    await check('resize ' + width + 'x' + height + ' is exact in the screenshot and in the client', async () => {
+      const { reply } = await act(A, 'resize ' + width + ' ' + height, events => events.includes('size:' + width + 'x' + height), 5000)
+      assert.equal(reply, 'ok')
+      assert(A.events().includes('size:' + width + 'x' + height), 'the client never reported ' + width + 'x' + height)
+      const path = join(evidence, 'resize-' + width + '.png')
+      assert.equal(await A.ctl('screenshot ' + path), 'ok')
+      assert.deepEqual(pngSize(path), [width, height])
+    })
+  }
+  await check('resize at a fractional scale rounds the capture, not the logical size', async () => {
+    assert.equal(await A.ctl('resize 599 400'), 'ok')
+    assert.equal(await A.ctl('scale 1.25'), 'ok changed')
+    const path = join(evidence, 'resize-scaled.png')
+    assert.equal(await A.ctl('screenshot ' + path), 'ok')
+    assert.deepEqual(pngSize(path), [749, 500])
+    assert.equal(await A.ctl('scale 1'), 'ok changed')
+    assert.equal(await A.ctl('resize 800 600'), 'ok')
+  })
+  //#endregion
+
+  //#region pointer
+  await wait(500)
+  await check('click count=2 is a double click', async () => {
+    const { events } = await act(A, 'click 100 200 left count=2 interval=60', events => events.filter(event => event.startsWith('ptr:up')).length >= 2)
+    assert(events.includes('double'), events.join(' '))
+    assert.equal(events.filter(event => event.startsWith('ptr:down:left')).length, 2)
+  })
+  await check('click with mods holds the modifiers during the press', async () => {
+    const { events } = await act(A, 'click 100 200 right mods=ctrl+shift', events => events.includes('kr:Control'))
+    assert(events.includes('ptr:down:right:CS--:100,140'), events.join(' '))
+    assert(events.indexOf('kp:Shift:n:CS--') < events.indexOf('ptr:down:right:CS--:100,140'))
+    assert(events.indexOf('ptr:up:right:CS--:100,140') < events.indexOf('kr:Shift'))
+  })
+  await check('wheel of one notch, a quarter notch, and with ctrl', async () => {
+    const whole = await act(A, 'wheel 100 200 0 1', events => events.some(event => event.startsWith('scroll:')))
+    assert(whole.events.includes('scroll:0,-60:----'), whole.events.join(' '))
+    const quarter = await act(A, 'wheel 100 200 0 0.25', events => events.some(event => event.startsWith('scroll:')))
+    assert(quarter.events.some(event => /^scroll:-?0,-2\.5:----$/.test(event)), quarter.events.join(' '))
+    const held = await act(A, 'wheel 100 200 0 1 mods=ctrl', events => events.includes('kr:Control'))
+    assert(held.events.some(event => event.startsWith('scroll:') && event.endsWith(':C---')), held.events.join(' '))
+    assert.match(await A.ctl('wheel 100 200 0 0.001'), /^err wheel amounts are both smaller/)
+  })
+  await check('scroll delivers touchpad pixel deltas in steps', async () => {
+    const { events } = await act(A, 'scroll 100 200 0 30 steps=3 step-ms=20', events => events.filter(event => event.startsWith('scroll:')).length >= 4)
+    const deltas = events.filter(event => event.startsWith('scroll:')).map(event => Number(event.split(':')[1].split(',')[1]))
+    assert.equal(deltas.slice(0, 3).reduce((sum, value) => sum + value, 0), -30, events.join(' '))
+  })
+  await check('drag moves in steps between press and release', async () => {
+    const { events } = await act(A, 'drag 50 100 250 100 steps=4 step-ms=30', events => events.some(event => event.startsWith('ptr:up')), 4000)
+    const moved = events.filter(event => event.startsWith('moved:')).map(event => Number(event.slice(6).split(',')[0]))
+    assert.deepEqual(moved, [100, 150, 200, 250], events.join(' '))
+    assert(events.findIndex(event => event.startsWith('ptr:down')) < events.findIndex(event => event.startsWith('moved:')))
+    assert(events.findIndex(event => event.startsWith('moved:250')) < events.findIndex(event => event.startsWith('ptr:up')))
+  })
+  await check('cursor reports the shape the client asked for under the pointer', async () => {
+    await A.ctl('move 100 200'); await untilTrue('pointer cursor', async () => await A.ctl('cursor') === 'ok pointer')
+    await A.ctl('move 100 20'); await untilTrue('text cursor', async () => await A.ctl('cursor') === 'ok text')
+  })
+  //#endregion
+
+  //#region windows
+  await check('windows, focus, display, and close', async () => {
+    const windows = await A.ctl('windows')
+    assert.match(windows, /^ok 1 index=0 app-id=\S* title=SceneA%20-%20scene-a\.slint%20-%20Slint%20Viewer focused=true$/)
+    assert.match(await A.ctl('focus'), /^ok index=0 .* focused=true$/)
+    assert.match(await A.ctl('display'), /^ok wayland-\d+$/)
+    assert.equal(await A.ctl('close 5'), 'err no window with index 5; there are 1')
+  })
+  await check('a11y without --accessibility names the option to add', async () => {
+    assert.equal(await A.ctl('a11y'), 'err no accessibility service (start with --accessibility)')
+  })
+  //#endregion
+
+  //#region focus return with a second client
+  const display = (await A.ctl('display')).slice(3)
+  const secondClient = async signal => {
+    const second = spawn('slint-viewer', ['--on', 'ev', 'echo EV $1', join(evidence, 'scene-b.slint')], {
+      env: { ...process.env, WAYLAND_DISPLAY: display }, stdio: ['ignore', 'pipe', openSync(join(evidence, 'second-client.log'), 'a')],
+    })
+    const secondOutput = []
+    second.stdout.on('data', chunk => secondOutput.push(chunk))
+    const secondExited = once(second, 'exit')
+    await untilTrue('a second window', async () => (await A.ctl('windows')).startsWith('ok 2 '), 30000)
+    await untilTrue('keyboard focus on the second window', async () => (await A.ctl('focus')).includes('title=SceneB'), 5000)
+    await A.ctl('key x')
+    await untilTrue('the key to reach the second window', () => Buffer.concat(secondOutput).toString().includes('kp:x:n'))
+    return { second, secondExited, signal }
+  }
+  await check('focus returns to the first window after the second one is terminated', async () => {
+    const { second, secondExited } = await secondClient('SIGTERM')
+    second.kill('SIGTERM'); await within(secondExited, 'the second client to exit')
+    await untilTrue('focus back on the first window', async () => (await A.ctl('focus')).includes('title=SceneA'), 5000)
+    const { events } = await act(A, 'key y', events => events.includes('kr:y'))
+    assert.deepEqual(events.filter(event => !event.startsWith('text:')), ['kp:y:n:----', 'kr:y'])
+  })
+  await check('focus returns to the first window after the second client is killed', async () => {
+    const { second, secondExited } = await secondClient('SIGKILL')
+    second.kill('SIGKILL'); await within(secondExited, 'the second client to exit')
+    await untilTrue('focus back on the first window', async () => (await A.ctl('focus')).includes('title=SceneA'), 5000)
+    const { events } = await act(A, 'key z', events => events.includes('kr:z'))
+    assert.deepEqual(events.filter(event => !event.startsWith('text:')), ['kp:z:n:----', 'kr:z'])
+  })
+  await check('close asks the focused window to close and focus returns', async () => {
+    const { second, secondExited } = await secondClient('close')
+    assert.equal(await A.ctl('close'), 'ok')
+    try { await within(secondExited, 'the second client to close after the close request') } catch (error) { second.kill('SIGKILL'); throw error }
+    await untilTrue('focus back on the first window', async () => (await A.ctl('focus')).includes('title=SceneA'), 5000)
+  })
+  //#endregion
+} finally {
+  await A.stop()
+}
+
+//#region drop-file: names with spaces, several files, GTK decodes them
+mkdirSync(join(evidence, 'drop work', 'my dir'), { recursive: true })
+const dropFiles = ['my dir/a b.mp3', '100%.mp3', 'ö 日本 #1.mp3', "q'uote.mp3"]
+for (const file of dropFiles) writeFileSync(join(evidence, 'drop work', file), '')
+const D = await startSession({
+  name: 'd', options: ['--size', '800x600'],
+  client: ['python3', join(evidence, 'drop-target.py')],
+  env: { GSETTINGS_BACKEND: 'memory', GTK_USE_PORTAL: '0', NO_AT_BRIDGE: '1' },
+})
+try {
+  await untilTrue('the drop target window', async () => (await D.ctl('windows')).startsWith('ok 1 '), 60000)
+  await wait(1500)
+  const drops = () => D.lines().filter(line => line.startsWith('DROP ')).map(line => JSON.parse(line.slice(5)))
+  // The compositor resolves each path with canonicalize, so the expected paths are resolved the same way.
+  const resolved = file => realpathSync(join(evidence, 'drop work', file))
+  await check('drop-file with a quoted path that has spaces drops the exact file', async () => {
+    assert.equal(await D.ctl('drop-file "' + join(evidence, 'drop work', dropFiles[0]) + '"'), 'ok')
+    await untilTrue('the drop', () => drops().length >= 1, 8000)
+    assert.deepEqual(drops()[0], [resolved(dropFiles[0])])
+  })
+  await check('drop-file takes several files and a position, with percent, non-ASCII, hash, and quote characters', async () => {
+    const quoted = dropFiles.slice(1).map(file => '"' + join(evidence, 'drop work', file) + '"').join(' ')
+    assert.equal(await D.ctl('drop-file ' + quoted + ' at 300 200'), 'ok')
+    await untilTrue('the second drop', () => drops().length >= 2, 8000)
+    assert.deepEqual(drops()[1], dropFiles.slice(1).map(resolved))
+  })
+  await check('drop-file fails whole for a file that does not exist', async () => {
+    const reply = await D.ctl('drop-file "' + join(evidence, 'drop work', 'nope b.mp3') + '"')
+    assert.match(reply, /^err resolving drop-file path .*nope b\.mp3/)
+    await wait(500)
+    assert.equal(drops().length, 2)
+  })
+} finally {
+  await D.stop()
+}
+//#endregion
+
+//#region accessibility: the toolkit's tree over a private AT-SPI bus
+const T = await startSession({
+  name: 't', options: ['--size', '400x300', '--accessibility'],
+  client: ['slint-viewer', join(evidence, 'accessible.slint')],
+})
+try {
+  await check('a11y lists the button, the checked box, and the label the toolkit publishes', async () => {
+    let answer = ''
+    await untilTrue('the application tree', async () => {
+      answer = await T.ctl('a11y')
+      return answer.includes('role=push%20button name=Play')
+    }, 30000)
+    const records = answer.replace(/^ok \d+ /, '').split('; ')
+    assert(records[0].startsWith('depth=0 role=application name=slint-viewer'), records[0])
+    assert(records.some(record => /^depth=1 role=frame .* states=\S*focused\S* bounds=0,0,400,300$/.test(record)), answer)
+    assert(records.some(record => /^depth=2 role=push%20button name=Play states=\S*focusable\S* bounds=10,10,380,\d+$/.test(record)), answer)
+    assert(records.some(record => /^depth=2 role=check%20box name=Shuffle states=checked,\S* bounds=/.test(record)), answer)
+    assert(records.some(record => record.startsWith('depth=2 role=label name=Now%20playing%3A%20Bj%C3%B6rk ')), answer)
+  })
+} finally {
+  await T.stop()
+}
+//#endregion
+
+const failed = results.filter(result => !result.ok)
+console.log('Evidence: ' + evidence)
+console.log(results.length - failed.length + ' of ' + results.length + ' input checks passed')
+if (failed.length > 0) {
+  for (const result of failed) console.log('FAILED ' + result.name + ': ' + result.message)
+  process.exit(1)
+}
+'''

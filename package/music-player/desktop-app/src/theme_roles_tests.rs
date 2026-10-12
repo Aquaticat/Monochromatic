@@ -95,45 +95,99 @@ fn surfaces_of(set: &RoleSet) -> Vec<Srgb8> {
     return vec![set.canvas, set.deck, set.current_row, set.surface_high];
 }
 
-/// What: `assert_text_contrast(label, foreground, background, minimum)` fails with the names in the message.
+/// What: `assert_ratio(label, foreground, background, minimum)` fails with the names in the message.
 fn assert_ratio(label: &str, foreground: Srgb8, background: Srgb8, minimum: f64) {
     let ratio: f64 = contrast_ratio(foreground, background);
     assert!(ratio >= minimum, "{label}: {foreground:?} on {background:?} is {ratio:.3}, below {minimum}");
 }
 
-/// What: `check_scheme_contrast(label, set)` asserts every text pair of one scheme at AA (4.5, 3 for outlines).
-fn check_scheme_contrast(label: &str, set: &RoleSet) {
-    let surfaces: Vec<Srgb8> = surfaces_of(set);
-    for surface in &surfaces {
-        assert_ratio(&format!("{label} on-surface"), set.on_surface, *surface, 4.5);
-        let pressed: Srgb8 = composite_over(set.on_surface, PRESSED_ALPHA, *surface);
-        assert_ratio(&format!("{label} on-surface pressed"), set.on_surface, pressed, 4.5);
+/// What: `TextState` is one drawn foreground on one drawn background, with the ratio it must reach.
+/// Why:  the guarantee is a list of these, so a test can show which pairs a color set fails instead of stopping at
+///       the first one.
+struct TextState {
+    label: String,
+    foreground: Srgb8,
+    background: Srgb8,
+    minimum: f64,
+}
+
+/// What: `push_state(states, label, foreground, background, minimum)` appends one pair to the list.
+fn push_state(states: &mut Vec<TextState>, label: &str, foreground: Srgb8, background: Srgb8, minimum: f64) {
+    states.push(TextState { label: label.to_string(), foreground, background, minimum });
+}
+
+/// What: `text_states(set)` is the whole contrast guarantee of one scheme: every text or outline pair the window
+/// draws, at rest and under the state layers it carries (hover 8 percent, pressed and focus 12 percent).
+/// Why:  one list feeds the sweep, the baseline check and the positive control. The pairs follow the `.slint` files:
+///       text on the four surfaces under an on-surface layer (rows, menus, snackbar, buttons); the rail letter in
+///       primary on the selected fill under an on-secondary-container layer (`folders.slint`); text on the selected
+///       fill and its OKLCH hovered and pressed fills (`deck.slint`, `settings.slint`); on-primary on primary under
+///       its own layer (`first_run.slint`, `deck.slint`); text on the match fill. Primary is not drawn on the OKLCH
+///       hovered and pressed fills, so those two pairs are not part of the list.
+fn text_states(set: &RoleSet) -> Vec<TextState> {
+    let mut states: Vec<TextState> = Vec::new();
+    let surface_names: [&str; 4] = ["canvas", "deck", "current-row", "surface-high"];
+    for (surface_name, surface) in surface_names.into_iter().zip(surfaces_of(set)) {
+        let hovered: Srgb8 = composite_over(set.on_surface, HOVER_ALPHA, surface);
+        let pressed: Srgb8 = composite_over(set.on_surface, PRESSED_ALPHA, surface);
+        for (text_name, text) in [("on-surface", set.on_surface), ("on-surface-variant", set.on_surface_variant), ("primary", set.primary)] {
+            push_state(&mut states, &format!("{text_name} on the {surface_name}"), text, surface, 4.5);
+            push_state(&mut states, &format!("{text_name} on the {surface_name}, hovered"), text, hovered, 4.5);
+            push_state(&mut states, &format!("{text_name} on the {surface_name}, pressed"), text, pressed, 4.5);
+        }
     }
-    // Secondary and accent text sit on every surface, at rest and under the hover layer. The pressed layer lasts
-    // only while the button is held.
-    for surface in &surfaces {
-        let hovered: Srgb8 = composite_over(set.on_surface, HOVER_ALPHA, *surface);
-        assert_ratio(&format!("{label} on-surface-variant"), set.on_surface_variant, *surface, 4.5);
-        assert_ratio(&format!("{label} on-surface-variant hovered"), set.on_surface_variant, hovered, 4.5);
-        assert_ratio(&format!("{label} primary text"), set.primary, *surface, 4.5);
-        assert_ratio(&format!("{label} primary hovered"), set.primary, hovered, 4.5);
+    let fill: Srgb8 = set.secondary_container;
+    let fill_hover_layer: Srgb8 = composite_over(set.on_secondary_container, HOVER_ALPHA, fill);
+    let fill_pressed_layer: Srgb8 = composite_over(set.on_secondary_container, PRESSED_ALPHA, fill);
+    for (fill_name, background) in [
+        ("selected fill", fill),
+        ("selected fill, hovered (OKLCH)", set.secondary_container_hovered),
+        ("selected fill, pressed (OKLCH)", set.secondary_container_pressed),
+        ("selected fill, hover layer", fill_hover_layer),
+        ("selected fill, pressed layer", fill_pressed_layer),
+    ] {
+        push_state(&mut states, &format!("on-secondary-container on the {fill_name}"), set.on_secondary_container, background, 4.5);
     }
-    for fill in [set.secondary_container, set.secondary_container_hovered, set.secondary_container_pressed] {
-        assert_ratio(&format!("{label} on-secondary-container"), set.on_secondary_container, fill, 4.5);
+    for (fill_name, background) in [
+        ("selected fill", fill),
+        ("selected fill, hover layer", fill_hover_layer),
+        ("selected fill, pressed layer", fill_pressed_layer),
+    ] {
+        push_state(&mut states, &format!("primary on the {fill_name}"), set.primary, background, 4.5);
     }
-    // Primary text on the selected fill (the rail letter), at rest.
-    assert_ratio(&format!("{label} primary on the selected fill"), set.primary, set.secondary_container, 4.5);
-    assert_ratio(&format!("{label} on-primary"), set.on_primary, set.primary, 4.5);
-    let primary_pressed: Srgb8 = composite_over(set.on_primary, PRESSED_ALPHA, set.primary);
-    assert_ratio(&format!("{label} on-primary pressed"), set.on_primary, primary_pressed, 4.5);
-    assert_ratio(&format!("{label} on-surface on the match fill"), set.on_surface, set.match_fill, 4.5);
-    assert_ratio(&format!("{label} on-surface-variant on the match fill"), set.on_surface_variant, set.match_fill, 4.5);
-    assert_ratio(&format!("{label} outline on the canvas"), set.outline, set.canvas, 3.0);
-    assert_ratio(&format!("{label} outline on the deck"), set.outline, set.deck, 3.0);
+    push_state(&mut states, "on-primary on primary", set.on_primary, set.primary, 4.5);
+    for (layer_name, alpha) in [("hovered", HOVER_ALPHA), ("pressed", PRESSED_ALPHA)] {
+        let layered: Srgb8 = composite_over(set.on_primary, alpha, set.primary);
+        push_state(&mut states, &format!("on-primary on primary, {layer_name}"), set.on_primary, layered, 4.5);
+    }
+    push_state(&mut states, "on-surface on the match fill", set.on_surface, set.match_fill, 4.5);
+    push_state(&mut states, "on-surface-variant on the match fill", set.on_surface_variant, set.match_fill, 4.5);
+    push_state(&mut states, "outline on the canvas", set.outline, set.canvas, 3.0);
+    push_state(&mut states, "outline on the deck", set.outline, set.deck, 3.0);
     // The fixed error pairs hold too, so the guarantee covers every text pair in the window.
-    assert_ratio(&format!("{label} on-error-container"), set.on_error_container, set.error_container, 4.5);
-    assert_ratio(&format!("{label} error on the container"), set.error, set.error_container, 3.0);
-    assert_ratio(&format!("{label} error text on the canvas"), set.error, set.canvas, 4.5);
+    push_state(&mut states, "on-error-container on the error container", set.on_error_container, set.error_container, 4.5);
+    push_state(&mut states, "error on the error container", set.error, set.error_container, 3.0);
+    push_state(&mut states, "error text on the canvas", set.error, set.canvas, 4.5);
+    return states;
+}
+
+/// What: `failing_states(set)` names every pair of `text_states` below its minimum, with the measured ratio.
+/// Why:  returns the list instead of panicking, so the positive control can compare it to the known failures.
+fn failing_states(set: &RoleSet) -> Vec<String> {
+    let mut failing: Vec<String> = Vec::new();
+    for state in text_states(set) {
+        let ratio: f64 = contrast_ratio(state.foreground, state.background);
+        if ratio < state.minimum {
+            failing.push(format!("{} ({ratio:.3} below {})", state.label, state.minimum));
+        }
+    }
+    return failing;
+}
+
+/// What: `check_scheme_contrast(label, set)` asserts that no pair of one scheme falls below its minimum.
+fn check_scheme_contrast(label: &str, set: &RoleSet) {
+    let failing: Vec<String> = failing_states(set);
+    assert!(failing.is_empty(), "{label}: {failing:?}");
 }
 
 #[test]
@@ -194,24 +248,115 @@ fn no_accent_and_the_baseline_color_derive_the_same_palette() {
     assert_eq!(derive_roles(None), derive_roles(Some(BASELINE_ROOT)));
 }
 
+/// What: the roles whose baseline was retuned for B4 (contrast in every drawn state), as `(scheme, name, old hex,
+/// largest delta-E allowed)`.
+/// Why:  these moved in lightness only; each bound is the measured delta-E rounded up, so a further drift fails.
+fn retuned_roles() -> Vec<(&'static str, &'static str, u32, f64)> {
+    return vec![
+        // Primary text under the pressed and hover layers on the selected fill and on surface-high.
+        ("light", "primary", 0x4E5E8B, 3.6),
+        // Secondary text under the pressed layer on surface-high.
+        ("light", "on-surface-variant", 0x5C5E6A, 1.6),
+        // Derived from the primary, so it follows it.
+        ("light", "match-fill", 0xCFD9F0, 2.2),
+    ];
+}
+
 #[test]
 fn the_baseline_stays_close_to_the_old_fixed_values() {
-    // ΔE (OKLab times 100): about 1 is a just-noticeable difference. The measured maximum is 0 (the table is fitted to the captures); the bound
-    // leaves room for a deliberate small retune and fails on a real drift.
+    // ΔE (OKLab times 100): about 1 is a just-noticeable difference. Every role not retuned for B4 stays under 0.5
+    // (the table is fitted to the captures); each retuned role has its own explicit bound in `retuned_roles`.
     let palette: ThemePalette = derive_roles(None);
+    let retuned: Vec<(&str, &str, u32, f64)> = retuned_roles();
     let mut largest: f64 = 0.0;
     let mut largest_name: String = String::new();
     for (name, dark, light) in old_fixed_values() {
         for (scheme_name, set, old) in [("dark", &palette.dark, dark), ("light", &palette.light, light)] {
             let delta: f64 = delta_e_ok(lookup(set, name), hex(old));
+            let is_retuned: bool = retuned.iter().any(|(retuned_scheme, retuned_name, _, _)| {
+                return *retuned_scheme == scheme_name && *retuned_name == name;
+            });
+            if is_retuned {
+                continue;
+            }
             if delta > largest {
                 largest = delta;
                 largest_name = format!("{scheme_name} {name}");
             }
         }
     }
-    println!("largest baseline delta-E vs the old fixed values: {largest:.3} ({largest_name})");
+    println!("largest baseline delta-E vs the old fixed values, retuned roles aside: {largest:.3} ({largest_name})");
     assert!(largest < 0.5, "baseline drifted: {largest:.3} at {largest_name}");
+}
+
+#[test]
+fn the_retuned_roles_moved_in_lightness_only_and_within_their_bounds() {
+    let palette: ThemePalette = derive_roles(None);
+    for (scheme_name, name, old, bound) in retuned_roles() {
+        let set: &RoleSet = if scheme_name == "dark" { &palette.dark } else { &palette.light };
+        let delta: f64 = delta_e_ok(lookup(set, name), hex(old));
+        println!("retuned {scheme_name} {name}: {old:06X} to {:?}, delta-E {delta:.3}", lookup(set, name));
+        assert!(delta > 0.5, "{scheme_name} {name} did not move ({delta:.3}), so it is not a retuned role");
+        assert!(delta < bound, "{scheme_name} {name} moved {delta:.3}, over its bound {bound}");
+        let before: Oklch = srgb_to_oklch(hex(old));
+        let after: Oklch = srgb_to_oklch(lookup(set, name));
+        assert!(after.lightness < before.lightness, "{name} must get darker in the light scheme");
+        // 8-bit rounding limits the hue accuracy of a low-chroma color, so the bound is loose but far below a clip.
+        assert!((after.hue - before.hue).abs() < 2.0, "{name} hue moved from {} to {}", before.hue, after.hue);
+    }
+}
+
+/// What: `old_light_roles()` is the light scheme as `ui/theme.slint` held it before the B4 retune.
+/// Why:  the positive control of the contrast list: a color set known to fall below AA must be reported as failing.
+fn old_light_roles() -> RoleSet {
+    let mut set: RoleSet = derive_roles(None).light;
+    for (name, _dark, light) in old_fixed_values() {
+        let color: Srgb8 = hex(light);
+        match name {
+            "primary" => set.primary = color,
+            "on-surface-variant" => set.on_surface_variant = color,
+            _ => {}
+        }
+    }
+    set.match_fill = hex(0xCFD9F0);
+    set.secondary_container_hovered = hex(0xCBD0E7);
+    set.secondary_container_pressed = hex(0xC2C7DE);
+    return set;
+}
+
+#[test]
+fn the_baseline_passes_every_drawn_state_in_both_schemes() {
+    let palette: ThemePalette = derive_roles(None);
+    check_scheme_contrast("baseline dark", &palette.dark);
+    check_scheme_contrast("baseline light", &palette.light);
+}
+
+#[test]
+fn the_contrast_list_reports_the_states_the_old_light_baseline_failed_a_positive_control() {
+    // Without this, a list that cannot fail would make the sweep above prove nothing. The old light literals fell
+    // below AA in exactly these drawn states (the settings card and back-tonal surfaces no longer exist, D109).
+    let failing: Vec<String> = failing_states(&old_light_roles());
+    println!("old light baseline falls below AA in: {failing:#?}");
+    for expected in [
+        "on-surface-variant on the surface-high, pressed",
+        "primary on the surface-high, pressed",
+        "primary on the selected fill, hover layer",
+        "primary on the selected fill, pressed layer",
+    ] {
+        let found: bool = failing.iter().any(|entry| {
+            return entry.starts_with(expected);
+        });
+        assert!(found, "the list missed {expected}: {failing:?}");
+    }
+    assert_eq!(failing.len(), 4, "the old light baseline failed in an unexpected set of states: {failing:?}");
+}
+
+#[test]
+fn the_contrast_list_reports_a_lightened_secondary_text_color_on_the_new_baseline() {
+    // A second control on the new baseline: lightening on-surface-variant by a few steps must be reported.
+    let mut set: RoleSet = derive_roles(None).light;
+    set.on_surface_variant = hex(0x80828D);
+    assert!(!failing_states(&set).is_empty());
 }
 
 #[test]

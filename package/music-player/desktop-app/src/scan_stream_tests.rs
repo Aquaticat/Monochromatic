@@ -133,3 +133,30 @@ fn the_scan_pause_is_whole_milliseconds_or_nothing() {
     assert_eq!(parse_pause(Some("-5")), Duration::ZERO);
     assert_eq!(pause_from_environment(), Duration::ZERO, "the test process sets no pause");
 }
+
+// What:     Files and folders of the walk come in natural order: `Loose 2` before `Loose 10`, `Album 2` before `Album 10`.
+// Why:      LS5 of the second polish review: loose tracks sorted as text (`Loose 1`, `Loose 10`, `Loose 11`, `Loose 2`).
+#[test]
+fn the_walk_lists_numbered_names_in_natural_order() {
+    let nanos: u128 = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .map_or(0, |elapsed| return elapsed.as_nanos());
+    let root: PathBuf = std::env::temp_dir().join(format!("music-player-natural-{}-{nanos}", std::process::id()));
+    for folder in ["Album 10", "Album 2"] {
+        std::fs::create_dir_all(root.join(folder)).expect("the fixture folder is created");
+        std::fs::write(root.join(folder).join("x.flac"), b"x").expect("the fixture file is written");
+    }
+    for name in ["Loose 11.wav", "Loose 2.wav", "Loose 1.wav", "Loose 10.wav"] {
+        std::fs::write(root.join(name), b"x").expect("the fixture file is written");
+    }
+    let walked: Vec<PathBuf> = scan_streaming(&root, usize::MAX, &mut |_batch| {});
+    let shown: Vec<String> = walked
+        .iter()
+        .map(|path| return path.strip_prefix(&root).expect("every track is under the root").display().to_string())
+        .collect();
+    assert_eq!(
+        shown,
+        vec!["Loose 1.wav", "Loose 2.wav", "Loose 10.wav", "Loose 11.wav", "Album 2/x.flac", "Album 10/x.flac"]
+    );
+    std::fs::remove_dir_all(&root).expect("the fixture is removed");
+}

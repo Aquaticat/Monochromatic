@@ -1,15 +1,23 @@
 //! Keyboard shortcut classifier,
 //!  ported from `KeyboardMap.kt`,
 //!  which follows the
-//! accepted keyboard-map prototype.
+//! accepted keyboard-map prototype (D102),
+//!  and extended with the D106 table.
 //!
-//! The rule groups run in the prototype's order,
-//!  and the first group that yields
-//! an action decides the result.
+//! The classifier reads one key press together with the page the window shows,
+//!  the focus zone that
+//! received the key,
+//!  and the popup state.
+//!  Every chord lives in the table of `keymap_bindings`,
+//!  so the
+//! classifier,
+//!  the key hint badges,
+//!  the tooltips and the menu rows all read the same rows.
 //!  Unknown platform names are rejected by
 //! `KeyboardPlatform::from_name` before a request can be built,
-//!  so
-//! `shortcut_action` never sees one.
+//!  so `shortcut_action` never sees one.
+
+use crate::keymap_bindings::{Scope, binding_matching, popup_binding_matching};
 
 /// What:
 ///      `pub enum KeyboardPlatform` names the two keyboard maps the classifier understands.
@@ -126,7 +134,7 @@ impl std::fmt::Display for KeymapError {
 impl std::error::Error for KeymapError {}
 
 /// What:
-///      `pub enum ShortcutOwner` names the focus owner that received a key.
+///      `pub enum ShortcutOwner` names who owns the keys of a focus zone.
 /// Why:
 ///      Owners decide whether a key belongs to the player or to a widget.
 ///
@@ -152,6 +160,134 @@ pub enum ShortcutOwner {
 }
 
 /// What:
+///      `pub enum KeyRoute` names the page the window shows over the player.
+/// Why:
+///      Most chords belong to the player page only,
+///  and Settings,
+///  its editor page and Search each answer a few keys of their own (D106).
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// type KeyRoute = "player" | "search" | "settings" | "editor-page";
+/// ```
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum KeyRoute {
+    /// The player: folder picker,
+    ///  track list and transport deck.
+    Player,
+    /// The Search page.
+    Search,
+    /// The Settings page,
+    ///  including the template editor in its right pane on a wide window.
+    Settings,
+    /// The full-width template editor page of a narrow window.
+    EditorPage,
+}
+
+/// What:
+///      `pub enum FocusZone` names the kind of element that holds keyboard focus.
+/// Why:
+///      D102 gives some keys to the playback area and others to the focused control or text field,
+///  and the list keys of D106 act only inside a list,
+///  so the classifier needs the zone and not just the page.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// type FocusZone = "surface" | "folder-list" | "track-list" | "seek" | "mode-group" | "deck-button"
+///   | "button" | "text-field" | "settings-list";
+/// ```
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum FocusZone {
+    /// No element has focus,
+    ///  or the window's key scope itself does.
+    Surface,
+    /// The folder picker list.
+    FolderList,
+    /// The track list.
+    TrackList,
+    /// The seek bar.
+    Seek,
+    /// The playback mode group.
+    ModeGroup,
+    /// Previous,
+    ///  play and pause,
+    ///  or next.
+    DeckButton,
+    /// Any other button,
+    ///  such as Search,
+    ///  Settings,
+    ///  Open,
+    ///  Back,
+    ///  Clear or Reset.
+    Button,
+    /// A text field: the Search query or the template line.
+    TextField,
+    /// The Settings list.
+    SettingsList,
+}
+
+/// Methods of `FocusZone`.
+impl FocusZone {
+    /// What:
+    ///      `from_int` reads the zone number the window reports.
+    /// Why:
+    ///      Slint passes the zone as an integer,
+    ///  and an unknown number must fall back to the surface rather than invent a zone.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// const fromInt = (n: number): FocusZone => ZONES[n] ?? "surface";
+    /// ```
+    pub fn from_int(value: i32) -> Self {
+        return match value {
+            1 => Self::FolderList,
+            2 => Self::TrackList,
+            3 => Self::Seek,
+            4 => Self::ModeGroup,
+            5 => Self::DeckButton,
+            6 => Self::Button,
+            7 => Self::TextField,
+            8 => Self::SettingsList,
+            _ => Self::Surface,
+        };
+    }
+
+    /// What:
+    ///      `owner` gives who owns the keys of this zone.
+    /// Why:
+    ///      A text field keeps its own keys,
+    ///  a button or a group of options keeps Enter,
+    ///  Space and the arrows,
+    ///  and the rest of the playback area gets transport keys.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// const owner = (zone: FocusZone): ShortcutOwner => ...;
+    /// ```
+    pub fn owner(self) -> ShortcutOwner {
+        return match self {
+            Self::TextField => ShortcutOwner::Editor,
+            Self::ModeGroup | Self::DeckButton | Self::Button | Self::SettingsList => ShortcutOwner::Control,
+            Self::Surface | Self::FolderList | Self::TrackList | Self::Seek => ShortcutOwner::Player,
+        };
+    }
+
+    /// What:
+    ///      `in_playback_area` is true for the zones where transport chords such as Control+M work.
+    /// Why:
+    ///      D102 limits transport keys to the playback area so editing fields and the other pages' controls keep their keys;
+    ///  the deck and the lists belong to the playback area.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// const inPlaybackArea = (zone: FocusZone) => !["button", "text-field", "settings-list"].includes(zone);
+    /// ```
+    pub fn in_playback_area(self) -> bool {
+        return !matches!(self, Self::Button | Self::TextField | Self::SettingsList);
+    }
+}
+
+/// What:
 ///      `pub enum ShortcutAction` lists every result the classifier can return.
 /// Why:
 ///      Each variant maps to one named result,
@@ -160,7 +296,7 @@ pub enum ShortcutOwner {
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// type ShortcutAction = "toggle" | "owner" | "ignore-repeat" | "search" | "picker" | "settings"
-///   | "previous" | "next" | "close-popup" | "back" | "reveal" | "mode" | "unbound";
+///   | "previous" | "next" | "close-popup" | "back" | "reveal" | "mode" | "unbound" | "seek-back" | /* ... */;
 /// ```
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum ShortcutAction {
@@ -170,9 +306,9 @@ pub enum ShortcutAction {
     Owner,
     /// Escape closes the open popup.
     ClosePopup,
-    /// Opens or focuses Search.
+    /// Opens Search.
     Search,
-    /// Opens the current-library folder picker.
+    /// Opens or closes the folder picker.
     Picker,
     /// Opens in-app Settings.
     Settings,
@@ -192,12 +328,93 @@ pub enum ShortcutAction {
     Previous,
     /// Moves to the next track.
     Next,
+    /// Seeks 10 seconds back.
+    SeekBack,
+    /// Seeks 10 seconds forward.
+    SeekForward,
+    /// Seeks 60 seconds back.
+    SeekBackLong,
+    /// Seeks 60 seconds forward.
+    SeekForwardLong,
+    /// Picks the Repeat mode.
+    ModeRepeat,
+    /// Picks the In order mode.
+    ModeInOrder,
+    /// Picks the Shuffle the folder mode.
+    ModeShuffleFolder,
+    /// Picks the Shuffle all mode.
+    ModeShuffleAll,
+    /// Restarts the track.
+    Restart,
+    /// Shows the previous folder.
+    PreviousFolder,
+    /// Shows the next folder.
+    NextFolder,
+    /// Shows the folder of the playing track.
+    RevealFolder,
+    /// Moves keyboard focus to the folder picker.
+    FocusFolders,
+    /// Moves keyboard focus to the track list.
+    FocusTracks,
+    /// Moves the list focus ring up one entry.
+    ListUp,
+    /// Moves the list focus ring down one entry.
+    ListDown,
+    /// Moves the list focus ring to the first entry.
+    ListHome,
+    /// Moves the list focus ring to the last entry.
+    ListEnd,
+    /// Moves the list focus ring up one page.
+    ListPageUp,
+    /// Moves the list focus ring down one page.
+    ListPageDown,
+    /// Activates the entry under the list focus ring.
+    ListActivate,
+    /// Moves the folder focus ring to the first folder that starts with this letter.
+    ListLetter(char),
+    /// Opens the system folder dialog.
+    OpenFolderDialog,
+    /// Quits the application.
+    Quit,
+    /// Opens the menu of the focused track row.
+    RowMenu,
+    /// Moves the focused track row to the trash.
+    RowTrash,
+    /// Copies the focused track row's file name.
+    RowCopy,
+    /// Shows the focused track row in the file manager.
+    RowShow,
+    /// Runs the track menu row whose access letter was pressed while the menu is open.
+    MenuAccess(char),
+    /// Moves the track menu's highlighted row up.
+    MenuUp,
+    /// Moves the track menu's highlighted row down.
+    MenuDown,
+    /// Runs the track menu's highlighted row.
+    MenuChoose,
+    /// Closes the folder picker overlay of the folded layout.
+    ClosePicker,
+    /// Moves the Search page's result highlight up.
+    SearchUp,
+    /// Moves the Search page's result highlight down.
+    SearchDown,
+    /// Opens the highlighted Search result.
+    SearchOpen,
+    /// Moves focus from the template field to the Settings list.
+    SettingsFocusList,
+    /// Applies the template and leaves the editor.
+    EditorApply,
+    /// Resets the open template to its default.
+    EditorReset,
+    /// Leaves the template editor page for the Settings list.
+    EditorLeave,
 }
 
 /// Methods of `ShortcutAction`.
 impl ShortcutAction {
     /// What:
-    ///      `wire_name` returns the action text exactly as the prototype returns it.
+    ///      `wire_name` returns the action text exactly as the prototype returns it,
+    ///  and a kebab-case name for the actions D106 adds.
     /// Why:
     ///      Tests and any future bridge compare the same spelling the prototype uses.
     ///
@@ -220,6 +437,46 @@ impl ShortcutAction {
             Self::Mode => "mode",
             Self::Previous => "previous",
             Self::Next => "next",
+            Self::SeekBack => "seek-back",
+            Self::SeekForward => "seek-forward",
+            Self::SeekBackLong => "seek-back-long",
+            Self::SeekForwardLong => "seek-forward-long",
+            Self::ModeRepeat => "mode-repeat",
+            Self::ModeInOrder => "mode-in-order",
+            Self::ModeShuffleFolder => "mode-shuffle-folder",
+            Self::ModeShuffleAll => "mode-shuffle-all",
+            Self::Restart => "restart",
+            Self::PreviousFolder => "previous-folder",
+            Self::NextFolder => "next-folder",
+            Self::RevealFolder => "reveal-folder",
+            Self::FocusFolders => "focus-folders",
+            Self::FocusTracks => "focus-tracks",
+            Self::ListUp => "list-up",
+            Self::ListDown => "list-down",
+            Self::ListHome => "list-home",
+            Self::ListEnd => "list-end",
+            Self::ListPageUp => "list-page-up",
+            Self::ListPageDown => "list-page-down",
+            Self::ListActivate => "list-activate",
+            Self::ListLetter(_) => "list-letter",
+            Self::OpenFolderDialog => "open-folder-dialog",
+            Self::Quit => "quit",
+            Self::RowMenu => "row-menu",
+            Self::RowTrash => "row-trash",
+            Self::RowCopy => "row-copy",
+            Self::RowShow => "row-show",
+            Self::MenuAccess(_) => "menu-access",
+            Self::MenuUp => "menu-up",
+            Self::MenuDown => "menu-down",
+            Self::MenuChoose => "menu-choose",
+            Self::ClosePicker => "close-picker",
+            Self::SearchUp => "search-up",
+            Self::SearchDown => "search-down",
+            Self::SearchOpen => "search-open",
+            Self::SettingsFocusList => "settings-focus-list",
+            Self::EditorApply => "editor-apply",
+            Self::EditorReset => "editor-reset",
+            Self::EditorLeave => "editor-leave",
         };
     }
 }
@@ -234,8 +491,8 @@ impl ShortcutAction {
 /// ```ts
 /// type ShortcutRequest = {
 ///   platform: KeyboardPlatform; key: string; ctrl: boolean; meta: boolean; alt: boolean;
-///   shift: boolean; repeat: boolean; owner: ShortcutOwner; inPopup: boolean;
-///   inSearch: boolean; inSettings: boolean; composing: boolean;
+///   shift: boolean; repeat: boolean; zone: FocusZone; route: KeyRoute; inPopup: boolean;
+///   pickerOverlay: boolean; composing: boolean;
 /// };
 /// ```
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -257,15 +514,14 @@ pub struct ShortcutRequest {
     pub shift: bool,
     /// True when the event is an auto-repeat of a held key.
     pub repeat: bool,
-    /// Focus owner that received the key.
-    pub owner: ShortcutOwner,
-    /// True while a popup is open.
+    /// Kind of element that received the key.
+    pub zone: FocusZone,
+    /// Page the window shows.
+    pub route: KeyRoute,
+    /// True while a popup (the track menu) is open.
     pub in_popup: bool,
-    /// True while Search is open.
-    pub in_search: bool,
-    /// True while the Settings page is the visible page and no text field is editing a template line,
-    ///  so Escape closes Settings (D110).
-    pub in_settings: bool,
+    /// True while the folder picker covers the track list on the folded layout.
+    pub picker_overlay: bool,
     /// True while an input method is composing text.
     pub composing: bool,
 }
@@ -273,23 +529,20 @@ pub struct ShortcutRequest {
 /// What:
 ///      `pub fn shortcut_action` classifies one key press into the action the prototype would take.
 /// Why:
-///      It is the port of the prototype's classifier,
+///      It is the port of the prototype's classifier extended with D106,
 ///  and the first group that matches decides.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// function shortcutAction(request: ShortcutRequest): ShortcutAction {
-///   return composingOrPopupAction(request) ?? searchAndPickerAction(request) ?? /* ... */ ?? "unbound";
+///   return composingOrPopupAction(request) ?? tableAction(request) ?? ownerAction(request);
 /// }
 /// ```
 pub fn shortcut_action(request: &ShortcutRequest) -> ShortcutAction {
     return composing_or_popup_action(request)
-        .or_else(|| return search_and_picker_action(request))
-        .or_else(|| return settings_action(request))
-        .or_else(|| return reveal_action(request))
-        .or_else(|| return owner_action(request))
-        .or_else(|| return player_key_action(request))
-        .unwrap_or(ShortcutAction::Unbound);
+        .or_else(|| return table_action(request))
+        .or_else(|| return list_letter_action(request))
+        .unwrap_or_else(|| return owner_action(request));
 }
 
 /// What:
@@ -297,13 +550,13 @@ pub fn shortcut_action(request: &ShortcutRequest) -> ShortcutAction {
 ///  and an open popup.
 /// Why:
 ///      These rules come first,
-///  so a composing key or a popup key never reaches a shortcut.
+///  so a composing key or a popup key never reaches a shortcut except the few the open track menu answers.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// function composingOrPopupAction(request: ShortcutRequest): ShortcutAction | null {
 ///   if (request.composing) return "owner";
-///   if (request.inPopup) return request.key === "Escape" ? "close-popup" : "owner";
+///   if (request.inPopup) return popupAction(request);
 ///   return null;
 /// }
 /// ```
@@ -312,377 +565,182 @@ fn composing_or_popup_action(request: &ShortcutRequest) -> Option<ShortcutAction
         return Some(ShortcutAction::Owner);
     }
     if request.in_popup {
-        if request.key == "Escape" {
-            return Some(ShortcutAction::ClosePopup);
-        }
-        return Some(ShortcutAction::Owner);
+        return Some(popup_action(request));
     }
     return None;
 }
 
 /// What:
-///      `search_and_picker_action` handles primary plus F (Search) and primary plus O (folder picker).
+///      `popup_action` answers a key while the track menu is open:
+///  Escape closes it,
+///  Up,
+///  Down and Enter choose a row,
+///  an access letter runs its row,
+///  and the track row chords act on the row the menu is open on.
 /// Why:
-///      Search and the folder picker are the first letter shortcuts in the prototype's order.
+///      D106 gives the open menu those keys and nothing else,
+///  so every other key stays with the popup.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function searchAndPickerAction(request: ShortcutRequest): ShortcutAction | null {
-///   if (isPrimaryLetter(request, "f")) return "search";
-///   if (isPrimaryLetter(request, "o")) return "picker";
-///   return null;
+/// function popupAction(request: ShortcutRequest): ShortcutAction {
+///   if (request.key === "Escape") return "close-popup";
+///   return popupBinding(request)?.action ?? "owner";
 /// }
 /// ```
-fn search_and_picker_action(request: &ShortcutRequest) -> Option<ShortcutAction> {
-    if is_primary_letter(request, "f") {
-        return Some(ShortcutAction::Search);
+fn popup_action(request: &ShortcutRequest) -> ShortcutAction {
+    if request.key == "Escape" {
+        return ShortcutAction::ClosePopup;
     }
-    if is_primary_letter(request, "o") {
-        return Some(ShortcutAction::Picker);
+    if let Some(binding) = popup_binding_matching(request) {
+        return if request.repeat && !binding.repeats {
+            ShortcutAction::IgnoreRepeat
+        } else {
+            binding.action
+        };
     }
-    return None;
+    return menu_access_action(request).unwrap_or(ShortcutAction::Owner);
 }
 
 /// What:
-///      `settings_action` handles the two Settings chords,
-///  one for each keyboard map.
+///      `menu_access_action` maps a plain letter pressed while the track menu is open to the row it runs.
 /// Why:
-///      Settings chords come after the letter shortcuts and before reveal in the prototype's order.
+///      D114 gives every menu row an access letter; the letters come from the one table in `track_menu`, so the underline
+///  the window draws and the key this accepts cannot disagree. A letter held with Control, Alt or Meta is not an access
+///  key, and a held-down letter does not run the row twice.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function settingsAction(request: ShortcutRequest): ShortcutAction | null {
-///   if (platform === "mac" && onlyMeta && key === ",") return "settings";
-///   if (platform === "windows-linux" && onlyCtrlAlt && lowerKey === "s") return "settings";
-///   return null;
+/// function menuAccessAction(r: ShortcutRequest): ShortcutAction | null {
+///   if (r.ctrl || r.meta || r.alt || r.key.length !== 1) return null;
+///   return accessAction(r.key) === null ? null : r.repeat ? "ignore-repeat" : { kind: "menu-access", letter: r.key.toLowerCase() };
 /// }
 /// ```
-fn settings_action(request: &ShortcutRequest) -> Option<ShortcutAction> {
-    if request.platform == KeyboardPlatform::Mac && only_meta(request) && request.key == "," {
-        return Some(ShortcutAction::Settings);
+fn menu_access_action(request: &ShortcutRequest) -> Option<ShortcutAction> {
+    if request.ctrl || request.meta || request.alt {
+        return None;
     }
-    if request.platform == KeyboardPlatform::WindowsLinux
-        && only_ctrl_alt(request)
-        && has_letter_key(request, "s")
-    {
-        return Some(ShortcutAction::Settings);
+    let mut characters = request.key.chars();
+    let first = characters.next()?;
+    if characters.next().is_some() {
+        return None;
     }
-    return None;
-}
-
-/// What:
-///      `reveal_action` handles the reveal chord,
-///  which uses G on Windows and Linux and L on macOS.
-/// Why:
-///      Reveal focuses the current track without a transport action,
-///  so it has its own group.
-///
-/// In TS you'd write (pseudocode):
-/// ```ts
-/// function revealAction(request: ShortcutRequest): ShortcutAction | null {
-///   if (isPrimaryLetter(request, request.platform === "mac" ? "l" : "g")) return "reveal";
-///   return null;
-/// }
-/// ```
-fn reveal_action(request: &ShortcutRequest) -> Option<ShortcutAction> {
-    if is_primary_letter(request, reveal_key_for(request.platform)) {
-        return Some(ShortcutAction::Reveal);
-    }
-    return None;
-}
-
-/// What:
-///      `owner_action` decides keys by who owns focus:
-///  Escape back from Search or from Settings,
-///  editors and controls,
-///      and any non-player surface.
-/// Why:
-///      Text and controls keep their own keys,
-///  and surfaces that are not the player stay unbound.
-///
-/// In TS you'd write (pseudocode):
-/// ```ts
-/// function ownerAction(request: ShortcutRequest): ShortcutAction | null {
-///   if (request.key === "Escape" && (request.inSearch || request.inSettings)) return "back";
-///   if (owner === "editor" || owner === "control") return "owner";
-///   if (owner !== "player") return "unbound";
-///   return null;
-/// }
-/// ```
-fn owner_action(request: &ShortcutRequest) -> Option<ShortcutAction> {
-    if request.key == "Escape" && (request.in_search || request.in_settings) {
-        return Some(ShortcutAction::Back);
-    }
-    if matches!(request.owner, ShortcutOwner::Editor | ShortcutOwner::Control) {
-        return Some(ShortcutAction::Owner);
-    }
-    if request.owner != ShortcutOwner::Player {
-        return Some(ShortcutAction::Unbound);
-    }
-    return None;
-}
-
-/// What:
-///      `player_key_action` handles the keys the player owns:
-///  repeat,
-///  Space,
-///  Control plus M,
-///      and the two track-change chords per map.
-/// Why:
-///      These keys act only when the playback area has focus,
-///  which the owner group has already checked.
-///
-/// In TS you'd write (pseudocode):
-/// ```ts
-/// function playerKeyAction(request: ShortcutRequest): ShortcutAction | null {
-///   if (repeat) return "ignore-repeat";
-///   if (noModifiers && key === " ") return "toggle";
-///   if (onlyCtrl && lowerKey === "m") return "mode";
-///   // ...the Windows and Linux arrows and the macOS brackets follow...
-///   return null;
-/// }
-/// ```
-fn player_key_action(request: &ShortcutRequest) -> Option<ShortcutAction> {
+    crate::track_menu::access_action(first)?;
     if request.repeat {
         return Some(ShortcutAction::IgnoreRepeat);
     }
-    if no_modifiers(request) && request.key == " " {
-        return Some(ShortcutAction::Toggle);
+    return Some(ShortcutAction::MenuAccess(first.to_lowercase().next()?));
+}
+
+/// What:
+///      `table_action` looks the key up in the D106 table.
+/// Why:
+///      One table holds every chord,
+///  and a repeated press of a chord that must not repeat is reported as `IgnoreRepeat` so the window still uses the key.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function tableAction(request: ShortcutRequest): ShortcutAction | null {
+///   const binding = bindingMatching(request);
+///   if (!binding) return null;
+///   return request.repeat && !binding.repeats ? "ignore-repeat" : binding.action;
+/// }
+/// ```
+fn table_action(request: &ShortcutRequest) -> Option<ShortcutAction> {
+    let binding = binding_matching(request)?;
+    if request.repeat && !binding.repeats {
+        return Some(ShortcutAction::IgnoreRepeat);
     }
-    if only_ctrl(request) && has_letter_key(request, "m") {
-        return Some(ShortcutAction::Mode);
+    return Some(binding.action);
+}
+
+/// What:
+///      `list_letter_action` maps a plain letter or digit in the folder list to a jump to the first folder that starts with it.
+/// Why:
+///      The table lists named keys only,
+///  and the letter shortcut accepts any character,
+///  so it has its own rule.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function listLetterAction(r: ShortcutRequest): ShortcutAction | null {
+///   if (r.route !== "player" || r.zone !== "folder-list" || r.ctrl || r.meta || r.alt) return null;
+///   return isSingleLetterOrDigit(r.key) ? { kind: "list-letter", letter: r.key.toLowerCase() } : null;
+/// }
+/// ```
+fn list_letter_action(request: &ShortcutRequest) -> Option<ShortcutAction> {
+    if request.route != KeyRoute::Player
+        || request.zone != FocusZone::FolderList
+        || request.ctrl
+        || request.meta
+        || request.alt
+    {
+        return None;
     }
-    if request.platform == KeyboardPlatform::WindowsLinux && only_ctrl(request) {
-        if request.key == "ArrowLeft" {
-            return Some(ShortcutAction::Previous);
-        }
-        if request.key == "ArrowRight" {
-            return Some(ShortcutAction::Next);
-        }
+    let mut characters = request.key.chars();
+    let first = characters.next()?;
+    if characters.next().is_some() || !first.is_alphanumeric() {
+        return None;
     }
-    if request.platform == KeyboardPlatform::Mac && only_meta_shift(request) {
-        if request.key == "[" || request.key == "{" {
-            return Some(ShortcutAction::Previous);
-        }
-        if request.key == "]" || request.key == "}" {
-            return Some(ShortcutAction::Next);
-        }
-    }
-    return None;
+    let lowered = first.to_lowercase().next()?;
+    return Some(ShortcutAction::ListLetter(lowered));
 }
 
 /// What:
-///      `is_primary_letter` is true when only the primary modifier is held and the key is the given letter.
+///      `owner_action` decides what an unmatched key means by who owns focus:
+///  editors and controls keep it,
+///  and the rest of the window leaves it unbound.
 /// Why:
-///      Search,
-///  the folder picker,
-///  and reveal all use this same combination with different letters.
+///      Text and controls keep their own keys,
+///  and a key nobody binds must reach them untouched.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// const isPrimaryLetter = (request: ShortcutRequest, letter: string) =>
-///   isPlainPrimary(request) && request.key.toLowerCase() === letter;
+/// function ownerAction(request: ShortcutRequest): ShortcutAction {
+///   return request.zone.owner === "player" ? "unbound" : "owner";
+/// }
 /// ```
-fn is_primary_letter(request: &ShortcutRequest, letter: &str) -> bool {
-    return is_plain_primary(request) && has_letter_key(request, letter);
-}
-
-/// What:
-///      `is_plain_primary` is true when the primary modifier is held,
-///  the other one is not,
-///      and neither Alt nor Shift is held.
-/// Why:
-///      Every letter shortcut needs exactly this modifier combination.
-///
-/// In TS you'd write (pseudocode):
-/// ```ts
-/// const isPlainPrimary = (request: ShortcutRequest) =>
-///   primary && !otherPrimary && !request.altKey && !request.shiftKey;
-/// ```
-fn is_plain_primary(request: &ShortcutRequest) -> bool {
-    let primary = primary_pressed(request);
-    let other_primary = other_primary_pressed(request);
-    return primary && !other_primary && no_alt_or_shift(request);
-}
-
-/// What:
-///      `has_letter_key` compares the key text,
-///  ignoring letter case,
-///  with a lowercase letter.
-/// Why:
-///      A shortcut must match the letter whether or not Shift changed its case.
-///
-/// In TS you'd write (pseudocode):
-/// ```ts
-/// const hasLetterKey = (request: ShortcutRequest, letter: string) => request.key.toLowerCase() === letter;
-/// ```
-fn has_letter_key(request: &ShortcutRequest, letter: &str) -> bool {
-    return request.key.to_lowercase() == letter;
-}
-
-/// What:
-///      `no_modifiers` is true when Control,
-///  Command or Meta,
-///  Alt,
-///  and Shift are all released.
-/// Why:
-///      Plain keys such as Space must not fire while any modifier is held.
-///
-/// In TS you'd write (pseudocode):
-/// ```ts
-/// const noModifiers = (r: ShortcutRequest) => !r.ctrlKey && !r.metaKey && !r.altKey && !r.shiftKey;
-/// ```
-fn no_modifiers(request: &ShortcutRequest) -> bool {
-    return !request.ctrl && !request.meta && no_alt_or_shift(request);
-}
-
-/// What:
-///      `only_ctrl` is true when Control is held and Meta,
-///  Alt,
-///  and Shift are released.
-/// Why:
-///      Control-only chords,
-///  such as Control plus M and the Windows and Linux track arrows,
-///  need this.
-///
-/// In TS you'd write (pseudocode):
-/// ```ts
-/// const onlyCtrl = (r: ShortcutRequest) => r.ctrlKey && !r.metaKey && !r.altKey && !r.shiftKey;
-/// ```
-fn only_ctrl(request: &ShortcutRequest) -> bool {
-    return request.ctrl && !request.meta && no_alt_or_shift(request);
-}
-
-/// What:
-///      `only_meta` is true when Meta (Command) is held and Control,
-///  Alt,
-///  and Shift are released.
-/// Why:
-///      The macOS Settings chord is Command with no other modifier.
-///
-/// In TS you'd write (pseudocode):
-/// ```ts
-/// const onlyMeta = (r: ShortcutRequest) => r.metaKey && !r.ctrlKey && !r.altKey && !r.shiftKey;
-/// ```
-fn only_meta(request: &ShortcutRequest) -> bool {
-    return request.meta && !request.ctrl && no_alt_or_shift(request);
-}
-
-/// What:
-///      `only_ctrl_alt` is true when Control and Alt are held and Meta and Shift are released.
-/// Why:
-///      The Windows and Linux Settings chord is Control plus Alt with no other modifier.
-///
-/// In TS you'd write (pseudocode):
-/// ```ts
-/// const onlyCtrlAlt = (r: ShortcutRequest) => r.ctrlKey && r.altKey && !r.metaKey && !r.shiftKey;
-/// ```
-fn only_ctrl_alt(request: &ShortcutRequest) -> bool {
-    return request.ctrl && request.alt && no_meta_or_shift(request);
-}
-
-/// What:
-///      `only_meta_shift` is true when Meta and Shift are held and Control and Alt are released.
-/// Why:
-///      The macOS track-change chords are Command plus Shift with no other modifier.
-///
-/// In TS you'd write (pseudocode):
-/// ```ts
-/// const onlyMetaShift = (r: ShortcutRequest) => r.metaKey && r.shiftKey && !r.ctrlKey && !r.altKey;
-/// ```
-fn only_meta_shift(request: &ShortcutRequest) -> bool {
-    return request.meta && request.shift && no_ctrl_or_alt(request);
-}
-
-/// What:
-///      `no_alt_or_shift` is true when Alt and Shift are both released.
-/// Why:
-///      Most shortcut rules require Alt and Shift to be off,
-///  so the check has a single name.
-///
-/// In TS you'd write (pseudocode):
-/// ```ts
-/// const noAltOrShift = (r: ShortcutRequest) => !r.altKey && !r.shiftKey;
-/// ```
-fn no_alt_or_shift(request: &ShortcutRequest) -> bool {
-    return !request.alt && !request.shift;
-}
-
-/// What:
-///      `no_meta_or_shift` is true when Meta and Shift are both released.
-/// Why:
-///      The Control-plus-Alt chord must not also have Meta or Shift held.
-///
-/// In TS you'd write (pseudocode):
-/// ```ts
-/// const noMetaOrShift = (r: ShortcutRequest) => !r.metaKey && !r.shiftKey;
-/// ```
-fn no_meta_or_shift(request: &ShortcutRequest) -> bool {
-    return !request.meta && !request.shift;
-}
-
-/// What:
-///      `no_ctrl_or_alt` is true when Control and Alt are both released.
-/// Why:
-///      The macOS bracket chords must not also have Control or Alt held.
-///
-/// In TS you'd write (pseudocode):
-/// ```ts
-/// const noCtrlOrAlt = (r: ShortcutRequest) => !r.ctrlKey && !r.altKey;
-/// ```
-fn no_ctrl_or_alt(request: &ShortcutRequest) -> bool {
-    return !request.ctrl && !request.alt;
-}
-
-/// What:
-///      `primary_pressed` reads the primary modifier:
-///  Control on Windows and Linux,
-///  Command on macOS.
-/// Why:
-///      Each keyboard map has one primary modifier,
-///  and the letter shortcuts check it first.
-///
-/// In TS you'd write (pseudocode):
-/// ```ts
-/// const primaryPressed = (request: ShortcutRequest) => request.platform === "mac" ? request.meta : request.ctrl;
-/// ```
-fn primary_pressed(request: &ShortcutRequest) -> bool {
-    return match request.platform {
-        KeyboardPlatform::WindowsLinux => request.ctrl,
-        KeyboardPlatform::Mac => request.meta,
+fn owner_action(request: &ShortcutRequest) -> ShortcutAction {
+    return match request.zone.owner() {
+        ShortcutOwner::Editor | ShortcutOwner::Control => ShortcutAction::Owner,
+        ShortcutOwner::Player | ShortcutOwner::Surface => ShortcutAction::Unbound,
     };
 }
 
 /// What:
-///      `other_primary_pressed` reads the modifier that is not primary on this platform.
+///      `scope_allows` tells whether a table row applies to this request's page and focus zone.
 /// Why:
-///      A letter shortcut must not also have that other modifier pressed.
+///      The same key means different things per page and per zone,
+///  and keeping the test here lets the table stay plain data.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// const otherPrimaryPressed = (request: ShortcutRequest) => request.platform === "mac" ? request.ctrl : request.meta;
+/// const scopeAllows = (scope: Scope, r: ShortcutRequest): boolean => ...;
 /// ```
-fn other_primary_pressed(request: &ShortcutRequest) -> bool {
-    return match request.platform {
-        KeyboardPlatform::WindowsLinux => request.meta,
-        KeyboardPlatform::Mac => request.ctrl,
-    };
-}
-
-/// What:
-///      `reveal_key_for` returns the lowercase letter that triggers reveal on this platform.
-/// Why:
-///      Reveal uses G on Windows and Linux and L on macOS,
-///  and the classifier compares against it.
-///
-/// In TS you'd write (pseudocode):
-/// ```ts
-/// const revealKeyFor = (platform: KeyboardPlatform): string => platform === "mac" ? "l" : "g";
-/// ```
-fn reveal_key_for(platform: KeyboardPlatform) -> &'static str {
-    return match platform {
-        KeyboardPlatform::WindowsLinux => "g",
-        KeyboardPlatform::Mac => "l",
+pub(crate) fn scope_allows(scope: Scope, request: &ShortcutRequest) -> bool {
+    let on_player = request.route == KeyRoute::Player;
+    return match scope {
+        Scope::Anywhere => true,
+        Scope::PlayerPage => on_player,
+        Scope::PlaybackArea => on_player && request.zone.in_playback_area(),
+        Scope::SpaceZones => {
+            on_player
+                && matches!(
+                    request.zone,
+                    FocusZone::Surface | FocusZone::FolderList | FocusZone::TrackList | FocusZone::Seek
+                )
+        }
+        Scope::ListZone => on_player && matches!(request.zone, FocusZone::FolderList | FocusZone::TrackList),
+        Scope::FolderList => on_player && request.zone == FocusZone::FolderList,
+        Scope::TrackList => on_player && request.zone == FocusZone::TrackList,
+        Scope::Popup => on_player && request.in_popup,
+        Scope::PickerOverlay => on_player && request.picker_overlay,
+        Scope::SearchPage => request.route == KeyRoute::Search,
+        Scope::SearchField => request.route == KeyRoute::Search && request.zone == FocusZone::TextField,
+        Scope::SettingsIdle => request.route == KeyRoute::Settings && request.zone != FocusZone::TextField,
+        Scope::SettingsField => request.route == KeyRoute::Settings && request.zone == FocusZone::TextField,
+        Scope::EditorPage => request.route == KeyRoute::EditorPage,
+        Scope::EditorOrSettings => matches!(request.route, KeyRoute::Settings | KeyRoute::EditorPage),
     };
 }
 

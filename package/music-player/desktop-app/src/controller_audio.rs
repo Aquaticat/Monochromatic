@@ -230,14 +230,14 @@ impl Controller {
         // const positionSecs = this.audibleSecs();
         // ```
         let position_secs = self.audible_secs();
-        // What:     `Session::load().page_control_style` reads only the UI preference
-        //           from the existing session before the playback snapshot replaces it.
-        // Why:      Page style belongs to the UI rather than the audio controller, but
-        //           controller shutdown must preserve the independently saved choice.
+        // What:     `Session::load()` reads the saved template texts from the existing session before the playback snapshot
+        //           replaces it.
+        // Why:      The templates belong to the UI rather than the audio controller, but controller shutdown must
+        //           preserve the independently saved texts.
         //
         // In TS you'd write (pseudocode):
         // ```ts
-        // const pageControlStyle = Session.load().pageControlStyle;
+        // const stored = Session.load();
         // ```
         let stored = Session::load();
         // What:     `Session { ... }`. Build the record from the Source Root + state.
@@ -259,7 +259,6 @@ impl Controller {
             position_secs,
             volume: self.volume,
             playback_mode: self.queue.playback_mode(),
-            page_control_style: stored.page_control_style,
             track_rows_template: stored.track_rows_template,
             playing_template: stored.playing_template,
         }
@@ -452,7 +451,23 @@ impl Controller {
         // ```ts
         // this.sourceRoot = root;
         // ```
+        // What:     `self.emit(Update::Reading { name });`. Tell the window the walk has started, before the walk blocks this
+        //           thread.
+        // Why:      Until the queue arrives the window used to say "No folder is open" (EM1); now it can say that the
+        //           folder is being read.
+        self.emit(Update::Reading {
+            name: crate::controller_measures::display_name_of(&root),
+        });
         self.source_root = Some(root.clone());
+        // A newly opened folder starts with no file reported as unplayable, so its rows are marked again.
+        if let Ok(mut reported) = self.reported_unplayable.lock() {
+            reported.clear();
+        }
+        // What:     `self.queue.set_display_root(Some(root.clone()));`. Tell the queue which folder its names and pages are
+        //           relative to, before the tracks arrive.
+        // Why:      A library with one top-level folder keeps that folder in its names, while loose files stay in the
+        //           virtual folders of their first letters, as in the picker and in Search (LS1).
+        self.queue.set_display_root(Some(root.clone()));
         // What:     `self.rewatch_source_root();`. Point the file watcher at the new root so
         //           its changes drive live `Rescan`s.
         // Why:      Live updating follows whatever is currently open.
@@ -524,6 +539,9 @@ impl Controller {
         // const maxAttempts = this.queue.len();
         // ```
         let max_attempts = self.queue.len();
+        // What:     `let mut failed: Vec<PathBuf> = Vec::new();`. The files this call could not open.
+        // Why:      They are announced once when the call ends, so the window can name them (PB1).
+        let mut failed: Vec<PathBuf> = Vec::new();
         // What:     `let mut attempts = 0;`. Count of failed opens so far.
         // Why:      Compare against `max_attempts` to bound the loop.
         //
@@ -589,6 +607,7 @@ impl Controller {
                 // ```
                 Ok(source) => {
                     self.install_source(source, &path);
+                    self.report_unplayable(failed);
                     return true;
                 }
                 // What:     `Err(e) => { ... }`. Could not open this file; bind the error.
@@ -617,6 +636,7 @@ impl Controller {
                     // attempts += 1;
                     // ```
                     attempts += 1;
+                    failed.push(path.clone());
                     // What:     `if attempts >= max_attempts { return false; }`. Give up after
                     //           trying every track once (advance loops, so it never returns
                     //           `None` on its own for a non-empty queue).
@@ -627,6 +647,7 @@ impl Controller {
                     // if (attempts >= maxAttempts) return false;
                     // ```
                     if attempts >= max_attempts {
+                        self.report_unplayable(failed);
                         return false;
                     }
                     // What:     `self.queue.advance(false);`. Step forward within the scope;
@@ -681,6 +702,10 @@ impl Controller {
         // this.staged = null;
         // ```
         self.staged = None;
+
+        // What:     `self.loaded_file = Some((path, fingerprint))`. Remember which file the decoder was opened on.
+        // Why:      A rescan compares it with the file on disk, so a paused track whose file was replaced is loaded again (D113).
+        self.loaded_file = crate::peakcache::fingerprint(path).map(|key| return (path.to_path_buf(), key));
 
         // What:     `self.prepare_peak_for_path(path);`. Start the current-track
         //           peak swap path: cache hit applies immediately; cache miss sets
@@ -1303,7 +1328,7 @@ impl Controller {
     /// ```ts
     /// onTrackEnd(): void { const moved = this.queue.advance(true); this.afterMove(moved); }
     /// ```
-    fn on_track_end(&mut self) {
+    pub(crate) fn on_track_end(&mut self) {
         // What:     `let moved = self.queue.advance(true);`. `true` = natural end, letting
         //           repeat-one replay the same track.
         // Why:      Honour the repeat mode.

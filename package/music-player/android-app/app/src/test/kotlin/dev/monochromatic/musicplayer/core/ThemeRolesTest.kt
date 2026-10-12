@@ -31,39 +31,140 @@ class ThemeRolesTest {
         return roots
     }
 
+    /** One drawn foreground on one drawn background, with the ratio it must reach. */
+    private data class TextState(
+        /** Name of the pair for the failure message. */
+        val label: String,
+        /** Text or outline color. */
+        val foreground: Srgb8,
+        /** Color it is drawn on, after any state layer. */
+        val background: Srgb8,
+        /** Ratio the pair must reach. */
+        val minimum: Double,
+    )
+
+    /** Text colors drawn on the four surfaces, with their names. */
+    private fun surfaceTexts(set: RoleSet): List<Pair<String, Srgb8>> =
+        listOf("on-surface" to set.onSurface, "on-surface-variant" to set.onSurfaceVariant, "primary" to set.primary)
+
+    /** The four surfaces text is drawn on, with their names. */
+    private fun namedSurfaces(set: RoleSet): List<Pair<String, Srgb8>> =
+        listOf(
+            "canvas" to set.canvas,
+            "deck" to set.deck,
+            "current-row" to set.currentRow,
+            "surface-high" to set.surfaceHigh,
+        )
+
+    /** Text pairs on the surfaces at rest and under the on-surface hover and pressed (also focus) layers. */
+    private fun surfaceStates(set: RoleSet): List<TextState> {
+        val states = mutableListOf<TextState>()
+        for ((surfaceName, surface) in namedSurfaces(set)) {
+            val hovered: Srgb8 = compositeOver(set.onSurface, HOVER_ALPHA, surface)
+            val pressed: Srgb8 = compositeOver(set.onSurface, PRESSED_ALPHA, surface)
+            for ((textName, text) in surfaceTexts(set)) {
+                states += TextState("$textName on the $surfaceName", text, surface, AA_TEXT)
+                states += TextState("$textName on the $surfaceName, hovered", text, hovered, AA_TEXT)
+                states += TextState("$textName on the $surfaceName, pressed", text, pressed, AA_TEXT)
+            }
+        }
+        return states
+    }
+
+    /** Pairs on the selected fill, on primary and on the match fill, and the outline and error pairs. */
+    private fun fillStates(set: RoleSet): List<TextState> {
+        val states = mutableListOf<TextState>()
+        val fill: Srgb8 = set.secondaryContainer
+        val hoverLayer: Srgb8 = compositeOver(set.onSecondaryContainer, HOVER_ALPHA, fill)
+        val pressedLayer: Srgb8 = compositeOver(set.onSecondaryContainer, PRESSED_ALPHA, fill)
+        val contentFills: List<Pair<String, Srgb8>> = listOf(
+            "selected fill" to fill,
+            "selected fill, hovered (OKLCH)" to set.secondaryContainerHovered,
+            "selected fill, pressed (OKLCH)" to set.secondaryContainerPressed,
+            "selected fill, hover layer" to hoverLayer,
+            "selected fill, pressed layer" to pressedLayer,
+        )
+        for ((name, background) in contentFills) {
+            states += TextState("on-secondary-container on the $name", set.onSecondaryContainer, background, AA_TEXT)
+        }
+        // Primary is drawn only on the selected fill and the layers over it (the rail letter), not on the OKLCH fills.
+        for ((name, background) in listOf(contentFills[0], contentFills[3], contentFills[4])) {
+            states += TextState("primary on the $name", set.primary, background, AA_TEXT)
+        }
+        states += TextState("on-primary on primary", set.onPrimary, set.primary, AA_TEXT)
+        for ((name, alpha) in listOf("hovered" to HOVER_ALPHA, "pressed" to PRESSED_ALPHA)) {
+            val layered: Srgb8 = compositeOver(set.onPrimary, alpha, set.primary)
+            states += TextState("on-primary on primary, $name", set.onPrimary, layered, AA_TEXT)
+        }
+        states += TextState("on-surface on the match fill", set.onSurface, set.matchFill, AA_TEXT)
+        states += TextState("on-surface-variant on the match fill", set.onSurfaceVariant, set.matchFill, AA_TEXT)
+        states += TextState("outline on the canvas", set.outline, set.canvas, AA_NON_TEXT)
+        states += TextState("outline on the deck", set.outline, set.deck, AA_NON_TEXT)
+        states += TextState("on-error-container on the container", set.onErrorContainer, set.errorContainer, AA_TEXT)
+        states += TextState("error on the error container", set.error, set.errorContainer, AA_NON_TEXT)
+        states += TextState("error text on the canvas", set.error, set.canvas, AA_TEXT)
+        return states
+    }
+
+    /** The whole contrast guarantee of one scheme: every pair the window draws, with its state layers. */
+    private fun textStates(set: RoleSet): List<TextState> = surfaceStates(set) + fillStates(set)
+
+    /** Names every pair of [textStates] below its minimum, with the measured ratio. */
+    private fun failingStates(set: RoleSet): List<String> = textStates(set).mapNotNull { state ->
+        val ratio: Double = contrastRatio(state.foreground, state.background)
+        if (ratio < state.minimum) "${state.label} ($ratio below ${state.minimum})" else null
+    }
+
     /** Asserts one contrast pair with a message naming it. */
     private fun assertRatio(label: String, foreground: Srgb8, background: Srgb8, minimum: Double) {
         val ratio: Double = contrastRatio(foreground, background)
         assertTrue("$label: ${foreground.toHex()} on ${background.toHex()} is $ratio, below $minimum", ratio >= minimum)
     }
 
-    /** Asserts every text pair of one scheme at AA (4.5, and 3 for outlines and the error icon). */
+    /** Asserts that no pair of one scheme falls below its minimum. */
     private fun checkSchemeContrast(label: String, set: RoleSet) {
-        val surfaces: List<Srgb8> = listOf(set.canvas, set.deck, set.currentRow, set.surfaceHigh)
-        for (surface in surfaces) {
-            val pressed: Srgb8 = compositeOver(set.onSurface, PRESSED_ALPHA, surface)
-            val hovered: Srgb8 = compositeOver(set.onSurface, HOVER_ALPHA, surface)
-            assertRatio("$label on-surface", set.onSurface, surface, AA_TEXT)
-            assertRatio("$label on-surface pressed", set.onSurface, pressed, AA_TEXT)
-            assertRatio("$label on-surface-variant", set.onSurfaceVariant, surface, AA_TEXT)
-            assertRatio("$label on-surface-variant hovered", set.onSurfaceVariant, hovered, AA_TEXT)
-            assertRatio("$label primary text", set.primary, surface, AA_TEXT)
-            assertRatio("$label primary hovered", set.primary, hovered, AA_TEXT)
+        val failing: List<String> = failingStates(set)
+        assertTrue("$label: $failing", failing.isEmpty())
+    }
+
+    /** The light scheme as the player held it before the B4 retune: primary and on-surface-variant of the captures. */
+    private fun oldLightRoles(): RoleSet = deriveRoles(null).light.copy(
+        primary = Srgb8.fromRgbInt(0x4E5E8B),
+        onSurfaceVariant = Srgb8.fromRgbInt(0x5C5E6A),
+        matchFill = Srgb8.fromRgbInt(0xCFD9F0),
+        secondaryContainerHovered = Srgb8.fromRgbInt(0xCBD0E7),
+        secondaryContainerPressed = Srgb8.fromRgbInt(0xC2C7DE),
+    )
+
+    /** Confirms the baseline passes every drawn state in both schemes. */
+    @Test
+    fun theBaselinePassesEveryDrawnStateInBothSchemes() {
+        val palette: ThemePalette = deriveRoles(null)
+        checkSchemeContrast("baseline dark", palette.dark)
+        checkSchemeContrast("baseline light", palette.light)
+    }
+
+    /** Positive control: the list reports exactly the states the old light baseline fell below AA in. */
+    @Test
+    fun theContrastListReportsTheStatesTheOldLightBaselineFailed() {
+        val failing: List<String> = failingStates(oldLightRoles())
+        println("old light baseline falls below AA in: $failing")
+        for (expected in listOf(
+            "on-surface-variant on the surface-high, pressed",
+            "primary on the surface-high, pressed",
+            "primary on the selected fill, hover layer",
+            "primary on the selected fill, pressed layer",
+        )) {
+            assertTrue("the list missed $expected: $failing", failing.any { entry -> entry.startsWith(expected) })
         }
-        for (fill in listOf(set.secondaryContainer, set.secondaryContainerHovered, set.secondaryContainerPressed)) {
-            assertRatio("$label on-secondary-container", set.onSecondaryContainer, fill, AA_TEXT)
-        }
-        assertRatio("$label primary on the selected fill", set.primary, set.secondaryContainer, AA_TEXT)
-        assertRatio("$label on-primary", set.onPrimary, set.primary, AA_TEXT)
-        val onPrimaryPressed: Srgb8 = compositeOver(set.onPrimary, PRESSED_ALPHA, set.primary)
-        assertRatio("$label on-primary pressed", set.onPrimary, onPrimaryPressed, AA_TEXT)
-        assertRatio("$label on-surface on the match fill", set.onSurface, set.matchFill, AA_TEXT)
-        assertRatio("$label on-surface-variant on the match fill", set.onSurfaceVariant, set.matchFill, AA_TEXT)
-        assertRatio("$label outline on the canvas", set.outline, set.canvas, AA_NON_TEXT)
-        assertRatio("$label outline on the deck", set.outline, set.deck, AA_NON_TEXT)
-        assertRatio("$label on-error-container", set.onErrorContainer, set.errorContainer, AA_TEXT)
-        assertRatio("$label error on the container", set.error, set.errorContainer, AA_NON_TEXT)
-        assertRatio("$label error text on the canvas", set.error, set.canvas, AA_TEXT)
+        assertEquals("unexpected failing states: $failing", 4, failing.size)
+    }
+
+    /** Positive control: a lightened secondary text color on the new baseline is reported. */
+    @Test
+    fun theContrastListReportsALightenedSecondaryTextColor() {
+        val lightened: RoleSet = deriveRoles(null).light.copy(onSurfaceVariant = Srgb8.fromRgbInt(0x80828D))
+        assertTrue(failingStates(lightened).isNotEmpty())
     }
 
     /** Confirms AA text contrast on every surface and state layer for more than a thousand roots in both schemes. */
@@ -127,9 +228,18 @@ class ThemeRolesTest {
         for ((name, dark, light) in old) {
             val darkRole: Srgb8 = palette.dark.toNamedList().first { pair -> pair.first == name }.second
             val lightRole: Srgb8 = palette.light.toNamedList().first { pair -> pair.first == name }.second
-            largest = maxOf(largest, deltaEOk(darkRole, Srgb8.fromRgbInt(dark)), deltaEOk(lightRole, Srgb8.fromRgbInt(light)))
+            val darkDelta: Double = deltaEOk(darkRole, Srgb8.fromRgbInt(dark))
+            val lightDelta: Double = deltaEOk(lightRole, Srgb8.fromRgbInt(light))
+            val bound: Double? = RETUNED_LIGHT_BOUNDS[name]
+            if (bound == null) {
+                largest = maxOf(largest, darkDelta, lightDelta)
+            } else {
+                println("retuned light $name: ${Srgb8.fromRgbInt(light).toHex()} to ${lightRole.toHex()}, $lightDelta")
+                assertTrue("$name moved $lightDelta, over its bound $bound", lightDelta in BASELINE_DRIFT_LIMIT..bound)
+                largest = maxOf(largest, darkDelta)
+            }
         }
-        println("largest baseline delta-E vs the old fixed values: $largest")
+        println("largest baseline delta-E vs the old fixed values, retuned roles aside: $largest")
         assertTrue("baseline drifted: $largest", largest < BASELINE_DRIFT_LIMIT)
     }
 
@@ -252,6 +362,9 @@ class ThemeRolesTest {
 
         /** Largest OKLab distance (times 100) the baseline may drift from the pre-D108 values. */
         const val BASELINE_DRIFT_LIMIT: Double = 0.5
+
+        /** Light roles retuned for B4 (lightness only) with the largest OKLab distance each may have moved. */
+        val RETUNED_LIGHT_BOUNDS: Map<String, Double> = mapOf("primary" to 3.6, "onSurfaceVariant" to 1.6)
 
         /** Primary hue offsets of the dark and light tables. */
         const val DARK_PRIMARY_OFFSET: Double = 4.7

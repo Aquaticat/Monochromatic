@@ -188,19 +188,17 @@ pub fn apply(state: &mut Compositor, target: ScreenGeometry) -> Result<(), Strin
             framebuffer_height = framebuffer.h,
             expected_width,
             expected_height,
-            "parent compositor kept the nested window size",
+            "parent compositor kept the nested window size; captures keep the requested size",
         );
-        return Err(format!(
-            "the parent compositor kept the nested window at {}x{} physical pixels instead of \
-             {expected_width}x{expected_height} ({}x{} logical at scale {}); it may be maximized, \
-             tiled, or fullscreen there: make it a normal window and retry",
-            framebuffer.w,
-            framebuffer.h,
-            target.logical_width,
-            target.logical_height,
-            target.scale.factor(),
-        ));
     }
+
+    // What:     `let exact: Size<i32, Physical> = target.physical_size().into();`. The output
+    //           mode is the requested logical size times the scale, rounded as
+    //           wp_fractional_scale_v1 prescribes, whatever size the parent gave the window.
+    // Why:      Screenshots and recordings are rendered off screen at the mode size, so
+    //           599x400 is captured as 599x400 even when the parent only makes windows of even
+    //           sizes. Only the on-screen window, which is minimized, shows the difference.
+    let exact: Size<i32, Physical> = target.physical_size().into();
 
     // What:     `let previous = state.screen.geometry;` copies the current geometry (the type
     //           is `Copy`, so this is a value copy, not a move).
@@ -208,7 +206,7 @@ pub fn apply(state: &mut Compositor, target: ScreenGeometry) -> Result<(), Strin
     //           an unchanged logical size sends no configure, so a scale switch reaches the
     //           client without a resize.
     let previous = state.screen.geometry;
-    set_mode(state, framebuffer, target.scale != previous.scale, target.scale);
+    set_mode(state, exact, target.scale != previous.scale, target.scale);
     state.screen.geometry = target;
     if target.logical_width != previous.logical_width || target.logical_height != previous.logical_height {
         reconfigure_fullscreen(state);
@@ -221,6 +219,8 @@ pub fn apply(state: &mut Compositor, target: ScreenGeometry) -> Result<(), Strin
         scale = target.scale.factor(),
         framebuffer_width = framebuffer.w,
         framebuffer_height = framebuffer.h,
+        mode_width = exact.w,
+        mode_height = exact.h,
         "applied nested screen geometry",
     );
     return Ok(());
@@ -354,14 +354,16 @@ pub fn resize(state: &mut Compositor, width: i32, height: i32) -> Response {
 ///           nested scale,
 ///  so captures do not depend on which host output shows the window.
 pub fn parent_resized(state: &mut Compositor, size: Size<i32, Physical>) {
-    // What:     `.map(|mode| mode.size)` reads the size out of the optional current mode.
-    // Why:      Our own `apply` already set the mode to this size; ignore that echo.
-    let current = state.output.current_mode().map(|mode| return mode.size);
-    if current == Some(size) {
-        return;
-    }
+    // What:     `after_parent_resize` returns the current geometry when the parent's window is
+    //           within the parent's scale of the requested physical size.
+    // Why:      Our own `apply` asked for this size (rounded up to the parent's pixel grid), so
+    //           that echo, and the first resize event of a fresh window, must not change the
+    //           exact size a test asked for.
     let parent_scale = state.backend.window().scale_factor();
     let target = state.screen.geometry.after_parent_resize((size.w, size.h), parent_scale);
+    if target == state.screen.geometry {
+        return;
+    }
     tracing::info!(width = size.w, height = size.h, parent_scale, "parent compositor resized the nested window");
     // What:     `if let Err(message) = ...` runs the block only for the failure variant.
     // Why:      A target derived from this framebuffer fits it, so failure means the parent

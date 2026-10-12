@@ -50,15 +50,14 @@ import dev.monochromatic.musicplayer.core.measureEncodeDurations
 import dev.monochromatic.musicplayer.core.measureNextBatch
 import dev.monochromatic.musicplayer.core.measurePeakFromReply
 
-// What:     `import java.io.File`, `FileNotFoundException`, and `IOException` name the file and the failures it raises.
-// Why:      The duration cache is one file, and a missing descriptor or a failed write is an expected, logged outcome.
+// What:     `import java.io.File` and `IOException` name the file and the failure it raises.
+// Why:      The duration cache is one file, and a failed write is an expected, logged outcome.
 //
 // In TS you'd write (pseudocode):
 // ```ts
 // import { readFile, writeFile } from "fs/promises";
 // ```
 import java.io.File
-import java.io.FileNotFoundException
 import java.io.IOException
 
 // What:     Coroutine imports for the dispatcher and the context switch.
@@ -91,22 +90,12 @@ private const val MEASURE_TAG: String = "TrackMeasures"
 /** Milliseconds in one second, to turn a stored duration into seconds. */
 private const val MEASURE_MS_PER_SEC: Double = 1000.0
 
-// What:     `private const val MEASURE_SINGLE_WORKER: Int = 1` is the worker count of a one-track measure.
-// Why:      A re-analysis measures one track, so the coordinator runs one worker.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// const MEASURE_SINGLE_WORKER = 1;
-// ```
-/** Worker count of the one-track sweep that a re-analysis runs. */
-private const val MEASURE_SINGLE_WORKER: Int = 1
-
 // What:     `object TrackMeasures { ... }` is the process-wide provider of the track measures.
 // Why:      One owner holds the duration cache in memory and writes it to one file, so two readers never race on it.
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// const TrackMeasures = { readMeasures, refreshPage, reanalyse };
+// const TrackMeasures = { readMeasures, refreshPage };
 // ```
 /**
  * Reads the duration and true peak of library tracks, caching durations by fingerprint and never decoding for a peak.
@@ -202,55 +191,6 @@ object TrackMeasures {
             attempted += batch.map { track -> track.uri }
             publish(readMeasures(context, batch))
         }
-    }
-
-    // What:     `suspend fun reanalyse(context, track): TrackMeasure?` clears one track's cached decision and measures
-    //           it again.
-    // Why:      A track's peak is replaced only after its file opens, so an unreadable file keeps its cached value.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // async function reanalyse(track: Track): Promise<TrackMeasure | null> { ... }
-    // ```
-    /**
-     * Re-measures one track from its file and returns its new measure, or null when the file cannot be read or
-     * no exact peak results.
-     */
-    suspend fun reanalyse(context: Context, track: Track): TrackMeasure? = withContext(Dispatchers.IO) {
-        Log.i(MEASURE_TAG, "track re-analysis started")
-        /** URI of the track document or media item. */
-        val uri: Uri = track.uri.toUri()
-        /** Cache key of the track, or null when its size cannot be read. */
-        val fingerprint: Long = TrackFingerprint.of(context, uri) ?: return@withContext null
-        if (!isReadable(context, uri)) {
-            return@withContext null
-        }
-        /** True when the native cache held a decision for the track and removed it. */
-        val removed: Boolean = NativeBridge.nativeInvalidateTrack(TruePeakGain.handle(context), fingerprint)
-        Log.i(MEASURE_TAG, "track decision cleared for re-analysis removed=$removed")
-        /** Outcome tally of the single-track sweep. */
-        val tally: SweepTally = sweepTracksInParallel(
-            items = listOf(track),
-            workers = MEASURE_SINGLE_WORKER,
-            dispatcher = foregroundSweepDispatcher,
-            flushBatch = MEASURE_SINGLE_WORKER,
-            notifyEvery = 0,
-            maxTracks = MEASURE_SINGLE_WORKER,
-            process = { item -> measureAndCache(context, item.uri.toUri(), foregroundSweepDispatcher) },
-            onFlush = { },
-            onProgress = { _, _ -> },
-        )
-        if (tally.measured != MEASURE_SINGLE_WORKER) {
-            Log.w(MEASURE_TAG, "track re-analysis produced no measurement")
-            return@withContext null
-        }
-        /** Measure of the track after the new measurement, read back from the cache. */
-        val measure: TrackMeasure? = readMeasures(context, listOf(track))[track.uri]
-        if (measure?.peakExact != true) {
-            Log.w(MEASURE_TAG, "track re-analysis left no exact peak")
-            return@withContext null
-        }
-        return@withContext measure
     }
 
     // What:     `private suspend fun measureOf(context, track): TrackMeasure` reads one track's duration and peak.
@@ -363,22 +303,6 @@ object TrackMeasures {
         val reply: FloatArray? = NativeBridge.nativePeekPeak(TruePeakGain.handle(context), fingerprint)
         return measurePeakFromReply(reply)
     }
-
-    // What:     `private fun isReadable(context, uri): Boolean` checks that a file opens before anything is cleared.
-    // Why:      Clearing the cached peak of an unreadable file would leave the track with no peak at all.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // async function isReadable(uri: string): Promise<boolean> { ... }
-    // ```
-    /** True when the track's file opens for reading, so a re-analysis can start from it. */
-    private fun isReadable(context: Context, uri: Uri): Boolean =
-        try {
-            context.contentResolver.openFileDescriptor(uri, "r")?.use { true } ?: false
-        } catch (expectedFailure: FileNotFoundException) {
-            Log.w(MEASURE_TAG, "track file cannot be opened for re-analysis", expectedFailure)
-            false
-        }
 
     // What:     `private fun rememberDuration(...)` records one fingerprint's duration in memory and marks it dirty.
     // Why:      The file is written once per batch, not once per track.
