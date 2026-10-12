@@ -21,6 +21,9 @@ import { refusalText, } from '../refusal-text.ts';
 // rule is that a run always ships, so a record the models were never told is
 // the entry's page shipped without the tense block, not the entry stopped. The
 // YAML is read with the same `yaml` parser the package reads front matter with.
+// A `died` of a kind the feature cannot read is recorded as no death too, named at
+// warn and on the artifact's findings, for the same reason: the artifact must tell
+// that entry from one that records no death.
 
 /**
  What the pinned corpus holds for an entry's `info.yml`.
@@ -151,6 +154,24 @@ function parseEntryInfoYaml(
 }
 
 /**
+ The clause the warning and the finding share for a `died` of a kind the feature
+ cannot read: it names the key and the kind the value held and quotes none of the
+ value, which is a person's metadata.
+
+ @param kind - phrase naming the kind of the value, as `unreadableDeathKindOf` words it
+
+ @returns The clause, without closing punctuation, which each sentence supplies
+
+ @example
+ ```ts
+ const clause = unreadableDeathClause({ kind: 'a truth value', },);
+ ```
+ */
+function unreadableDeathClause({ kind, }: { readonly kind: string; },): string {
+  return `info.died is ${kind}, which is neither text nor a finite number`;
+}
+
+/**
  Reads one entry's `info.yml` at the pin and parses it, saying so when its
  `died` holds a value the feature cannot read or the file refuses to parse.
 
@@ -208,8 +229,7 @@ export async function readEntryInfoRecord(
     // value unrecorded either way.
     for (const kind of unreadableDeathKindOf({ entryInfo: info, },)) {
       l?.warn(
-        `ENTRY INFO entry=${entryId}: info.died is ${kind}, which is neither text nor a finite number, `
-          + 'so no death is recorded for it',
+        `ENTRY INFO entry=${entryId}: ${unreadableDeathClause({ kind, },)}, so no death is recorded for it`,
       );
     }
     return {
@@ -242,12 +262,15 @@ export async function readEntryInfoRecord(
 /**
  The findings the artifact records for what the entry's `info.yml` came to, so a
  later reader can tell an entry that records no death from one whose record was
- unreadable. They ride the preparation's alignment findings, the channel every
- artifact already records.
+ unreadable, or whose `died` held a value of a kind the feature cannot read. They
+ ride the preparation's alignment findings, the channel every artifact already
+ records.
 
  @param entryInfo - what the pass read of the entry's `info.yml`
 
- @returns One finding for an unreadable record, none for a record or an absence
+ @returns One finding for an unreadable record, one per unreadable kind of `died`
+ in a parsed record (naming the key and the kind and quoting no value), none for
+ an absence or a record whose `died` is recorded or blank
 
  @example
  ```ts
@@ -257,9 +280,14 @@ export async function readEntryInfoRecord(
 export function entryInfoFindingsOf(
   { entryInfo, }: { readonly entryInfo: EntryInfoRecord; },
 ): readonly string[] {
-  if (entryInfo.kind !== 'unreadable')
+  if (entryInfo.kind === 'absent')
     return [];
-  return [`entry info: ${entryInfo.refusal} No death is recorded for the entry.`,];
+  if (entryInfo.kind === 'unreadable')
+    return [`entry info: ${entryInfo.refusal} No death is recorded for the entry.`,];
+  return unreadableDeathKindOf({ entryInfo: entryInfo.info, },)
+    .map(function findingOfKind(kind,): string {
+      return `entry info: ${unreadableDeathClause({ kind, },)}. No death is recorded for the entry.`;
+    },);
 }
 
 //endregion Entry info record
