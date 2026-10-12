@@ -1,72 +1,7 @@
-// Bottom-edge scan status bar and the transient feedback overlay (D83, D84, D26).
-// Both components take their data from the caller and never reflow the content beneath them.
+// The transient feedback overlay (D83). It takes its data from the caller and never reflows the content beneath it.
+// True-peak analysis progress has no component here: it is a system notification (D107).
 import { Theme } from "theme.slint";
 import { StateLayer } from "state_layer.slint";
-
-// Height of the scan bar, fixed so that showing or hiding it never changes the caller's layout (D13, D26).
-// The bar paints the progress line on its top edge and one status line below it, with no controls (D84).
-export component ScanIndicator inherits Rectangle {
-    // Shows the bar while the library is scanned or true peaks are measured; hidden keeps the 56px geometry.
-    in property <bool> visible-model: false;
-    // One line of status copy, already formatted by the Rust side (for example `Scanning library`).
-    in property <string> status-text: "";
-    // Completed share from 0 to 1; a negative value draws the indeterminate line.
-    in property <float> fraction: -1;
-
-    height: 56px;
-    background: Theme.current-row;
-    visible: root.visible-model;
-
-    // Progress line on the top edge, 4px tall as the Android linear indicator.
-    Rectangle {
-        x: 0px;
-        y: 0px;
-        width: parent.width;
-        height: 4px;
-        background: Theme.secondary-container;
-        clip: true;
-
-        // Determinate fill, sized from the completed share.
-        if root.fraction >= 0 : Rectangle {
-            x: 0px;
-            y: 0px;
-            width: parent.width * max(0, min(1, root.fraction));
-            height: parent.height;
-            background: Theme.primary;
-        }
-
-        // Indeterminate segment that sweeps across the track.
-        if root.fraction < 0 : Rectangle {
-            y: 0px;
-            width: parent.width * 0.3;
-            height: parent.height;
-            background: Theme.primary;
-            x: (parent.width - self.width) * indeterminate-phase;
-        }
-    }
-
-    // Repeats the sweep while the indicator is indeterminate; ping-pong over the track.
-    in-out property <float> indeterminate-phase: 0;
-    animate indeterminate-phase {
-        duration: 1600ms;
-        iteration-count: -1;
-        easing: ease-in-out;
-    }
-
-    // Status text in the 16px inset row below the progress line, one line, elided.
-    Text {
-        x: 16px;
-        y: 4px;
-        width: parent.width - 32px;
-        height: parent.height - 4px;
-        text: root.status-text;
-        font-size: Theme.body-small;
-        color: Theme.on-surface-variant;
-        vertical-alignment: center;
-        overflow: elide;
-        wrap: no-wrap;
-    }
-}
 
 // One feedback message. `kind` is 0 for an error (warning glyph, error container) and 1 for an Undo message.
 // `action-label` is empty when the message offers no action button.

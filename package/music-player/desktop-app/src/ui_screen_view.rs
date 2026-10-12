@@ -102,8 +102,6 @@ pub struct ScreenState {
     pub editor: Option<TemplateEditorState>,
     /// Length and peak of each library path, as the engine has reported them.
     pub measures: HashMap<std::path::PathBuf, TrackMeasure>,
-    /// The true-peak sweep's `(done, total)` while it runs, or `None` once it has finished.
-    pub analysis: Option<(usize, usize)>,
     /// Whether the engine has reported the opened folder, even when it reported that none is open.
     pub root_known: bool,
     /// Display name of the opened folder, or `None` when no folder is open.

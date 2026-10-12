@@ -1,5 +1,5 @@
 // Root window of the desktop player. Composes the finished components (cover and unfolded layouts, track list,
-// folder picker, transport deck, search, first run, scan indicator, feedback, track menu) and exposes the
+// folder picker, transport deck, search, first run, feedback, track menu) and exposes the
 // engine-facing properties and callbacks that the Rust side binds. Width below 600 px uses the folded cover
 // layout; 600 px and wider uses the unfolded two-pane layout (D44, D47 to D77, D83 to D105).
 // Inter Variable (SIL OFL 1.1, see LICENSES/OFL-1.1.txt) is bundled so the text looks the same on every machine;
@@ -12,7 +12,7 @@ import { FolderPickerPane, FolderRailCell, FolderName } from "folders.slint";
 import { CoverTopRow, UnfoldedFoldersHeader, UnfoldedTrackHeader } from "bars.slint";
 import { TrackListPane, TrackListRow } from "tracks.slint";
 import { SearchPage, SearchRow } from "search.slint";
-import { ScanIndicator, FeedbackOverlay, FeedbackItem } from "overlays.slint";
+import { FeedbackOverlay, FeedbackItem } from "overlays.slint";
 import { FirstRunPane } from "first_run.slint";
 import { TrackMenu, TrackMenuItem } from "menu.slint";
 import { SettingsPage, SettingsTemplateRow } from "settings.slint";
@@ -100,10 +100,7 @@ export component AppWindow inherits Window {
     in property <string> search-status-title: "";
     in property <string> search-status-detail: "";
 
-    // Scan indicator and feedback view models.
-    in property <bool> scan-visible: false;
-    in property <string> scan-status-text: "";
-    in property <float> scan-fraction: -1;
+    // Feedback view model.
     in property <[FeedbackItem]> feedback-items: [];
 
     // Settings and template editor view models; the Rust side fills them while either route is open.
@@ -404,17 +401,7 @@ export component AppWindow inherits Window {
         back => { root.editor-back(); }
     }
 
-    // Scan indicator along the bottom while the library is analysed.
-    if root.scan-visible : ScanIndicator {
-        x: 0px;
-        y: root.height - self.height;
-        width: root.width;
-        visible-model: root.scan-visible;
-        status-text: root.scan-status-text;
-        fraction: root.scan-fraction;
-    }
-
-    // Feedback messages stack above the scan indicator (D29, D83).
+    // Feedback messages float near the bottom edge (D29, D83).
     FeedbackOverlay {
         x: 12px;
         y: root.height - self.preferred-height - 96px;

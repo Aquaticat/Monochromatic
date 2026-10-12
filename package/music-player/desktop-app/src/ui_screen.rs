@@ -81,12 +81,8 @@ pub(crate) fn apply_update(app: &AppWindow, update: &Update) {
             });
             project(app);
         }
-        Update::Analysis { done, total } => {
-            update_state(|state| {
-                state.analysis = (done < total).then_some((*done, *total));
-            });
-            crate::ui_overlays::project_scan(app);
-        }
+        // The window draws no analysis indicator (D107); the system indicator takes this update in main.rs.
+        Update::Analysis { .. } => {}
         Update::SourceRoot(name) => {
             update_state(|state| {
                 state.root_known = true;

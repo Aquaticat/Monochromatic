@@ -40,7 +40,6 @@ fn check_cover_width_elements() {
         assert_eq!(count_of(&app, "CoverTopRow"), 1, "scheme {scheme}: cover top row");
         assert_eq!(count_of(&app, "TrackListPane"), 1, "scheme {scheme}: track list");
         assert_eq!(count_of(&app, "TransportDeck"), 1, "scheme {scheme}: transport deck");
-        assert_eq!(count_of(&app, "ScanIndicator"), 0, "scheme {scheme}: scan indicator hidden without analysis");
     }
 }
 

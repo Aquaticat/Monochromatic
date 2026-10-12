@@ -18,6 +18,7 @@ use truepeak_core::Decision;
 //           sleep (measure.rs no longer imports it), clock + epoch for unique names.
 // Why:      Wait for the async sweep, and build a collision-free throwaway cache path.
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
+use std::sync::{Mutex, PoisonError};
 
 // What:     `fn temp_cache(tag: &str) -> PathBuf`. A fresh throwaway cache-file path.
 // Why:      Point the cache at disposable state, never the real config dir.
@@ -30,6 +31,7 @@ fn sweep_job(tracks: Vec<PathBuf>, cache: CacheHandle) -> SweepJob {
         cache,
         sink: crate::sweep_report::noop_sink(),
         generation: 1,
+        gate: Arc::new(SweepGate::new()),
     };
 }
 
@@ -158,6 +160,121 @@ fn parallel_sweep_measures_every_track() {
 
     // What:     clean up the temp database + Turso sidecars.
     // Why:      No droppings.
+    let _ = std::fs::remove_file(&path);
+    let _ = std::fs::remove_file(path.with_extension("db-wal"));
+    let _ = std::fs::remove_file(path.with_extension("db-shm"));
+}
+
+/// What: `collecting_sink` builds a sink that keeps every report, and the list it fills.
+/// Why: the gate tests read the progress reports to tell a finished sweep from a parked one.
+fn collecting_sink() -> (SweepSink, Arc<Mutex<Vec<SweepReport>>>) {
+    let reports = Arc::new(Mutex::new(Vec::new()));
+    let log = Arc::clone(&reports);
+    let sink: SweepSink = Arc::new(move |report| {
+        log.lock().unwrap_or_else(PoisonError::into_inner).push(report);
+    });
+    return (sink, reports);
+}
+
+/// What: `final_progress_seen` is true once the sweep has reported `done == total` for `total` tracks.
+/// Why: the coordinator sends that report after every worker has been joined, so it marks the sweep's end.
+fn final_progress_seen(reports: &Arc<Mutex<Vec<SweepReport>>>, total: usize) -> bool {
+    return reports
+        .lock()
+        .unwrap_or_else(PoisonError::into_inner)
+        .iter()
+        .any(|report| return matches!(report, SweepReport::Progress { done, total: all, .. } if *done == total && *all == total));
+}
+
+/// What: `three_fixture_tracks` lists three short decodable fixtures.
+/// Why: the gate tests need a few distinct tracks to claim.
+fn three_fixture_tracks() -> Vec<PathBuf> {
+    return vec![
+        PathBuf::from("fixture/tone.flac"),
+        PathBuf::from("fixture/tone.mp3"),
+        PathBuf::from("fixture/tone.wav"),
+    ];
+}
+
+/// What: `wait_for` polls `condition` every 25 ms up to `seconds` seconds.
+/// Why: the sweep runs on detached threads, so tests wait for its effects.
+fn wait_for(seconds: u64, mut condition: impl FnMut() -> bool) -> bool {
+    for _ in 0..(seconds * 40) {
+        if condition() {
+            return true;
+        }
+        thread::sleep(Duration::from_millis(25));
+    }
+    return condition();
+}
+
+// What: a sweep started while the gate is paused claims no track, and resuming lets it measure every track.
+// Why: D107: pausing stops new claims and resume continues them. This is the guard test for the gate: without the
+// admission check in `run_worker` the paused sweep measures at once and the first assertion fails.
+#[test]
+fn a_paused_sweep_claims_no_track_until_it_is_resumed() {
+    let path = temp_cache("gate-pause");
+    let cache = CacheHandle::open_at(path.clone());
+    let tracks = three_fixture_tracks();
+    let (sink, reports) = collecting_sink();
+    let gate = Arc::new(SweepGate::new());
+    gate.set_paused(true);
+    spawn_queue_measurement(SweepJob {
+        tracks: tracks.clone(),
+        current: None,
+        cache: cache.clone(),
+        sink,
+        generation: 1,
+        gate: Arc::clone(&gate),
+    });
+
+    thread::sleep(Duration::from_millis(600));
+    for track in &tracks {
+        let key = peakcache::fingerprint(track).expect("fixture has a fingerprint");
+        assert!(cache.get(key).is_none(), "a paused sweep measured {}", track.display());
+    }
+    assert!(!final_progress_seen(&reports, tracks.len()), "a paused sweep finished");
+
+    gate.set_paused(false);
+    assert!(wait_for(20, || return final_progress_seen(&reports, tracks.len())), "the resumed sweep never finished");
+    for track in &tracks {
+        let key = peakcache::fingerprint(track).expect("fixture has a fingerprint");
+        assert!(wait_for(10, || return cache.get(key).is_some()), "the resumed sweep skipped {}", track.display());
+    }
+
+    let _ = std::fs::remove_file(&path);
+    let _ = std::fs::remove_file(path.with_extension("db-wal"));
+    let _ = std::fs::remove_file(path.with_extension("db-shm"));
+}
+
+// What: closing the gate while the sweep is parked ends the sweep without measuring anything.
+// Why: shutdown while paused must not hang the coordinator that joins the workers.
+#[test]
+fn closing_the_gate_while_paused_ends_the_sweep_without_hanging() {
+    let path = temp_cache("gate-close");
+    let cache = CacheHandle::open_at(path.clone());
+    let tracks = three_fixture_tracks();
+    let (sink, reports) = collecting_sink();
+    let gate = Arc::new(SweepGate::new());
+    gate.set_paused(true);
+    spawn_queue_measurement(SweepJob {
+        tracks: tracks.clone(),
+        current: None,
+        cache: cache.clone(),
+        sink,
+        generation: 1,
+        gate: Arc::clone(&gate),
+    });
+
+    thread::sleep(Duration::from_millis(300));
+    assert!(!final_progress_seen(&reports, tracks.len()));
+    gate.close();
+    assert!(wait_for(20, || return final_progress_seen(&reports, tracks.len())), "the sweep hung after the gate closed");
+    for track in &tracks {
+        let key = peakcache::fingerprint(track).expect("fixture has a fingerprint");
+        assert!(cache.get(key).is_none(), "a closed gate still let {} be measured", track.display());
+    }
+
     let _ = std::fs::remove_file(&path);
     let _ = std::fs::remove_file(path.with_extension("db-wal"));
     let _ = std::fs::remove_file(path.with_extension("db-shm"));

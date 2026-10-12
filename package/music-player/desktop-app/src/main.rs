@@ -295,7 +295,7 @@ use std::time::Instant;
 /// ```ts
 /// import { Command, PlaybackMode, Update } from "music-player/command";
 /// ```
-use music_player::command::Command;
+use music_player::command::{Command, Update};
 
 /// What:
 ///      `use music_player::cli::Cli;`.
@@ -367,6 +367,16 @@ use music_player::session::Session;
 /// import { Launcher } from "music-player/launcher";
 /// ```
 use music_player::launcher::{self, Launcher};
+
+/// What: `use music_player::analysis_notification::{AnalysisNotifier, Identity, NotifierConfig};`.
+///  The system indicator for the true-peak analysis, and the app identity it shows.
+/// Why:
+///       D107 replaces the in-app banner with a Plasma job or a freedesktop notification.
+use music_player::analysis_notification::{AnalysisNotifier, Identity, NotifierConfig};
+
+/// What: `use music_player::sweep_gate::SweepGate;`. The pause gate of the background analysis sweep.
+/// Why: the indicator's Pause and Resume buttons stop and restart the sweep workers through it (D107).
+use music_player::sweep_gate::SweepGate;
 
 /// What:
 ///      `use clap::Parser;`.
@@ -791,6 +801,23 @@ fn color_scheme_from_env() -> i32 {
     };
 }
 
+/// What: `start_analysis_notifier` starts the system indicator for the true-peak analysis (D107).
+/// Why: its Pause and Resume go to the sweep gate, which parks the sweep workers before their next claim; the callback
+/// only flips the gate, so it returns at once. The name and icon are those of the shipped desktop file, so a run
+/// without the installed file still gets a named header.
+fn start_analysis_notifier() -> AnalysisNotifier {
+    let identity = Identity {
+        desktop_entry: music_player::identity::APP_ID.to_string(),
+        app_name: "Music Player".to_string(),
+        app_icon: "multimedia-player".to_string(),
+    };
+    return AnalysisNotifier::spawn(NotifierConfig::session(
+        identity,
+        true,
+        Box::new(|paused| SweepGate::shared().set_paused(paused)),
+    ))
+}
+
 /// What:
 ///      `fn main() -> Result<()>`.
 ///  The entry point.
@@ -1047,7 +1074,15 @@ fn main() -> Result<()> {
     // ```ts
     // const engine = Engine.spawn(update => postToUiThread(() => applyUpdate(app, update)));
     // ```
+    let analysis_notifier = start_analysis_notifier();
+    let update_notifier = analysis_notifier.clone();
     let engine = Rc::new(Engine::spawn(move |update| {
+        // What:     post the sweep's progress to the system indicator before the window sees the update.
+        // Why:      D107: the indicator runs on its own thread, so this only queues a message; the window draws no
+        //           analysis indicator at all.
+        if let Update::Analysis { done, total } = &update {
+            update_notifier.report(*done, *total);
+        }
         // What:     `let update_weak = weak.clone();`. `.clone()` of a weak handle is
         //           cheap (bumps a refcount); the outer closure is called repeatedly so
         //           it cannot move `weak` out, hence a fresh per-call clone under its
@@ -1266,6 +1301,12 @@ fn main() -> Result<()> {
     // await app.run();
     // return;
     // ```
-    app.run()?;
+    // What:     run the event loop, then close the indicator and release the sweep before the engine drops.
+    // Why:      a Plasma job or notification must not outlive the app, and a sweep parked by Pause must not wait for a
+    //           resume that can no longer come.
+    let run_result = app.run();
+    analysis_notifier.shutdown();
+    SweepGate::shared().close();
+    run_result?;
     return Ok(())
 }

@@ -704,3 +704,21 @@ pub mod controller_measures;
 /// export * as scanIndicator from "./scan_indicator";
 /// ```
 pub mod scan_indicator;
+
+/// What: `pub mod sweep_gate;` the pause gate of the background true-peak sweep (`src/sweep_gate.rs`).
+/// Why: the analysis indicator's Pause and Resume stop and restart the sweep workers through it (D107).
+pub mod sweep_gate;
+
+/// What: `pub mod analysis_notification_logic;` the pure rules of the analysis indicator.
+/// Why: what to show, when to send it and when to open, pause or close it need no bus, so they are tested without one.
+pub mod analysis_notification_logic;
+
+/// What: `pub mod analysis_notification_wire;` the D-Bus messages of the analysis indicator, Linux only.
+/// Why: the Plasma job view and the freedesktop notification exist only on Linux desktops; `zbus` is a Linux-only
+/// dependency.
+#[cfg(target_os = "linux")]
+pub mod analysis_notification_wire;
+
+/// What: `pub mod analysis_notification;` the analysis indicator's handle and its D-Bus thread (D107).
+/// Why: the system notification replaces the in-app banner; off Linux the handle does nothing.
+pub mod analysis_notification;

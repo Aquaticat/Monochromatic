@@ -9,6 +9,7 @@ use std::path::PathBuf;
 use std::sync::Arc;
 
 use crate::peakcache::CacheHandle;
+use crate::sweep_gate::SweepGate;
 use crate::track_measure::TrackMeasure;
 
 /// What:
@@ -88,4 +89,6 @@ pub(crate) struct SweepJob {
     pub(crate) sink: SweepSink,
     /// Generation of the queue load that started the job.
     pub(crate) generation: u64,
+    /// Pause gate the sweep's workers pass before each claim.
+    pub(crate) gate: Arc<SweepGate>,
 }

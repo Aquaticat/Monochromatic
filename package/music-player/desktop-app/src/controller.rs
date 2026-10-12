@@ -110,6 +110,7 @@ use crate::decode::{AudioSpec, Source};
 /// import { spawnQueueMeasurement } from "./measure";
 /// ```
 use crate::measure::spawn_queue_measurement;
+use crate::sweep_gate::SweepGate;
 use crate::sweep_report::{SweepJob, SweepSink, noop_sink};
 use std::sync::Arc;
 
@@ -898,6 +899,7 @@ impl Controller {
             cache: self.peaks.clone(),
             sink: Arc::clone(&self.sweep_sink),
             generation: self.analysis_generation,
+            gate: SweepGate::shared(),
         });
     }
 

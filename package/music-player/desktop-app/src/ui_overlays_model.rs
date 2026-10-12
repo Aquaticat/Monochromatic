@@ -6,7 +6,6 @@
 
 use music_player::feedback::{FeedbackKind, FeedbackQueue};
 use music_player::first_run::{ANALYSIS_EXPLANATION, FirstRunState, first_run_copy};
-use music_player::scan_indicator::{ScanIndicatorModel, scan_indicator_for};
 
 use crate::ui_screen_view::ScreenState;
 
@@ -65,30 +64,6 @@ fn first_run_kind(state: &ScreenState) -> Option<FirstRunState> {
         (Some(_), true) => Some(FirstRunState::FolderNoAudio),
         (Some(_), false) => None,
     };
-}
-
-/// What: `scan_view` chooses the scan indicator's model from the sweep's progress.
-/// Why: the bar shows while the sweep runs and is hidden with no progress, using the same rules as the scan indicator module.
-pub fn scan_view(analysis: Option<(usize, usize)>) -> ScanIndicatorModel {
-    return match analysis {
-        Some((done, total)) => scan_indicator_for(false, saturating_count(done), saturating_count(total)),
-        None => scan_indicator_for(false, 0, 0),
-    };
-}
-
-/// What: `scan_fraction` gives the bar's fill as a share of the total, or `-1` for an indeterminate bar.
-/// Why: the Slint bar draws a determinate fill for values from zero to one and a sliding bar for any negative value.
-pub fn scan_fraction(model: &ScanIndicatorModel) -> f32 {
-    if model.total <= 0 {
-        return -1.0;
-    }
-    return model.done as f32 / model.total as f32;
-}
-
-/// What: `saturating_count` converts a count to the signed width the scan indicator uses.
-/// Why: a count above the signed range is clamped rather than wrapped.
-fn saturating_count(value: usize) -> i32 {
-    return i32::try_from(value).unwrap_or(i32::MAX);
 }
 
 #[derive(Clone, Debug, PartialEq, Eq)]

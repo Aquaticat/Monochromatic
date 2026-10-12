@@ -70,6 +70,13 @@ use crate::measure_peek::peek_measures;
 use crate::peakcache::{self, CacheHandle};
 
 /// What:
+///      `use crate::sweep_gate::{Admission, SweepGate};`.
+///  The pause gate and its answer.
+/// Why:
+///       Each worker passes the gate before it claims a track (D107).
+use crate::sweep_gate::{Admission, SweepGate};
+
+/// What:
 ///      `use crate::sweep_report::{SweepJob, SweepReport, SweepSink};`.
 ///  The job the controller starts and the reports the sweep sends back.
 /// Why:
@@ -225,6 +232,8 @@ struct SweepShared {
     sink: SweepSink,
     /// Generation of the queue load that started this sweep.
     generation: u64,
+    /// Pause gate every worker passes before it claims a track (D107).
+    gate: Arc<SweepGate>,
 }
 
 /// What:
@@ -284,6 +293,7 @@ fn run_sweep(job: SweepJob) {
         known: job.cache.known_fingerprints(),
         sink: Arc::clone(&job.sink),
         generation: job.generation,
+        gate: Arc::clone(&job.gate),
     });
     // What:     `report_progress(&shared, 0)` when there is work. Show the bar as the analysis starts.
     // Why:      D26: the scan bar appears when analysis starts and leaves when it finishes.
@@ -657,6 +667,13 @@ fn run_worker(shared: Arc<SweepShared>) {
     // ```
     let mut last_report = Instant::now();
     loop {
+        // What:     ask the pause gate for admission before claiming; leave when it is closed.
+        // Why:      D107: a pause stops new claims, a track already claimed finishes, and a resume wakes parked
+        //           workers. Closing the gate at shutdown releases them so the sweep's joins cannot hang.
+        if shared.gate.admit() == Admission::Stop {
+            tracing::info!(generation = shared.generation, "warming worker stops: the sweep gate is closed");
+            break;
+        }
         // What:     claim the next index; stop when the cursor is past the end.
         // Why:      `fetch_add` hands each track to exactly one worker.
         //

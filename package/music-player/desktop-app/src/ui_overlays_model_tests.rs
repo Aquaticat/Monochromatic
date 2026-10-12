@@ -2,7 +2,6 @@
 
 use super::*;
 use music_player::feedback::FeedbackMessage;
-use music_player::scan_indicator::scan_indicator_status_text;
 
 #[test]
 fn first_run_is_hidden_before_the_library_loads() {
@@ -63,21 +62,6 @@ fn first_run_is_hidden_until_the_engine_reports_the_folder() {
         ..ScreenState::default()
     };
     assert_eq!(first_run_view(&state), None);
-}
-
-#[test]
-fn scan_view_shows_the_count_while_the_sweep_runs() {
-    let model = scan_view(Some((412, 1218)));
-    assert!(model.visible());
-    assert_eq!(scan_indicator_status_text(&model), "Analysing true peak \u{00B7} 412 of 1,218");
-    assert!((scan_fraction(&model) - 412.0 / 1218.0).abs() < 1e-6);
-}
-
-#[test]
-fn scan_view_is_hidden_without_progress() {
-    let model = scan_view(None);
-    assert!(!model.visible());
-    assert!(scan_fraction(&model) < 0.0);
 }
 
 #[test]

@@ -242,6 +242,19 @@ The crate is a library plus a thin binary so the pure logic is unit-testable wit
    and Windows `THREAD_PRIORITY_IDLE`,
    with a
   no-op on any other target.
+- `src/sweep_gate.rs`:
+   the pause gate of the background sweep (D107).
+   Every sweep worker asks the gate for admission before it claims the next track,
+   so Pause stops new claims, a track already being decoded finishes, Resume wakes the parked workers,
+   and closing the gate at shutdown releases them.
+- `src/analysis_notification_logic.rs`, `src/analysis_notification_wire.rs`, `src/analysis_notification.rs`:
+   the true-peak analysis indicator (D107), which replaced the in-app banner.
+   On KDE it is a Plasma job (`org.kde.kuiserver`) with a native Pause button;
+   elsewhere it is one freedesktop notification replaced in place; with neither, analysis runs without an indicator.
+   The logic file holds the pure rules (rate limit of two updates a second, skipping repeats, pause and dismissal),
+   the wire file holds the D-Bus messages (Linux only),
+   and the handle runs them on its own thread so the window and the sweep workers never wait on the bus.
+   Protocol facts and pitfalls: `doc/troubleshooting/plasma-job-view-progress-protocol.md`.
 - `src/peak_swap.rs`:
    current-track peak swap orchestration.
    Cache hits return the measured gain immediately;
