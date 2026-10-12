@@ -317,7 +317,6 @@ pub fn conclude_commit_transaction<F: RepositoryFacts>(
         added_paths: final_added,
         worktree_records: final_worktree,
     };
-    workspace.finish_transaction();
     let completed = complete_landed_transaction(PostLandingRequest {
         context,
         plan: &plan,
@@ -326,6 +325,9 @@ pub fn conclude_commit_transaction<F: RepositoryFacts>(
     if let Err(error) = completed {
         return Err(TransactionStop::Message(error.to_string()));
     }
+    // The completion removed the shadow and the directory, so the workspace has nothing left to dispose of; on a
+    // failure the landing's mark stays, and recovery finishes what the completion did not.
+    workspace.finish_transaction();
     workspace.mark_disposed();
     let mut events: Vec<PolicyEvent> = settled_events;
     events.extend(loop_events);
