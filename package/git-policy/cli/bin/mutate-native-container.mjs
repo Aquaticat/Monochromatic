@@ -276,12 +276,16 @@ async function main() {
   if (!isContentAddressedId(base))
     throw new NativeVerificationError('Test image did not resolve to a full content-addressed image ID; run native:test:container first.');
   console.log(`Mutation evidence: ${evidence}`);
-  await runPlantedControls({
-    base,
-    limits,
-    context: context.path,
-    evidence,
-  });
+  // Parallel campaigns over one tested snapshot prove the harness once; `NATIVE_MUTATION_SKIP_PLANTED=1` skips the repeat.
+  if (process.env.NATIVE_MUTATION_SKIP_PLANTED === '1')
+    console.log('Planted controls skipped: another campaign over this snapshot ran them.');
+  else
+    await runPlantedControls({
+      base,
+      limits,
+      context: context.path,
+      evidence,
+    });
   const cargoHome = process.env
     .CARGO_HOME
     ?? join(
