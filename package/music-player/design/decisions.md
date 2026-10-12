@@ -3240,6 +3240,20 @@ Two questions left open by earlier work, decided by the orchestrator on the huma
   3.99 s instead of 8.9 s in one sandbox, but made a cold dependency build 12.5 minutes instead of about 4, and that
   cold build hits every fresh worktree and CI run. Revisit if the suite grows.
 
+### D117. A focus ring is only a ring, drawn like a CSS outline but hugging the element (2026-10-12)
+
+The human asked that focus rings look like what HTML and CSS draw, except that CSS rings are always rectangles and ours
+hug the element, and that a focus ring be merely a ring with no other change such as a background color. This replaces
+the "2 px ring plus the state layer" wording of D106 and the focus fill of the earlier focus work.
+
+- The ring is an outline: 2 px (dp on Android) wide, drawn outside the element with a 2 px gap (CSS `outline: 2px solid;
+  outline-offset: 2px`), and it is the element's own shape grown by the gap: a pill stays a pill, a circle a circle, a
+  rounded rectangle keeps its radius plus the gap. It is never clipped by a parent and never moves content.
+- It appears for keyboard focus only (CSS `:focus-visible`), in the `primary` role, at 3:1 or better against the
+  surface it sits on (WCAG 2.2 focus appearance).
+- Focus adds no fill, tint, state layer, bold or size change. Hover and pressed keep their own state layers.
+- The ring and the element boundary are the two visible channels (position and shape, plus color), not a fill.
+
 ## Pending after the theme picks (2026-09-04)
 
 - **Order of remaining work** — my recommendation:
