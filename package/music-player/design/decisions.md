@@ -3063,6 +3063,13 @@ Slint, or `lerp` and `copy(alpha)` on sRGB values in Compose.
 When no accent is available the fixed baseline from the Fold captures is the root and the same derivation applies.
 Alpha-only layering (state layers over a surface) is allowed because it does not change a color's lightness, chroma or hue.
 
+Retune of 2026-10-12 under B4 (the orchestrator's decision, open to the human's veto): counting the 8 and 12 percent state
+layers, four drawn light-scheme text pairs of the old fixed baseline were below 4.5. The fixed light baseline moved by
+lightness only in OKLCH: primary `#4E5E8B` to `#455481` (delta-E 3.46), on-surface-variant `#5C5E6A` to `#585A65` (1.48)
+and the search match fill `#CFD9F0` to `#C9D2E9` (2.08). Dark is unchanged. Primary is not fitted on the hovered and
+pressed deck-segment fills because primary text is never drawn on them. Rust and Kotlin share one fixture of 52 roots in
+both schemes that a test on each side checks.
+
 ### D109. The single-pane Settings is one full-width column with 16dp margins (2026-10-12)
 
 The human asked for the stock Android Settings layout to be measured on the owned Pixel 9 Pro Fold with its display size
