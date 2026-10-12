@@ -198,7 +198,9 @@ Run memory-heavy checks serially within the shared budget.
 The package Oxlint tasks now retain the tested single-thread,
 512-MiB Node old-space,
 and 768-MiB Go soft-limit settings;
-verification of that persisted task route is the remaining resource check.
+`proc_3c0c` verified that persisted task route without caller-supplied memory settings.
+It passed the same 77 files and 486 rules with zero warnings/errors,
+and the OOM-kill counter remained at three.
 
 All shell commands and process startups now use these aggregate limits:
 4 GiB memory,
@@ -249,7 +251,8 @@ The maintained kernel build,
 type check,
 full units,
 and full-package lint have passed.
-Finish only the persisted resource-task check and document closeout for that work.
+The persisted resource-task route also passed;
+continue the native decision-consumer work after the document closeout.
 Do not rerun the full private native parent merely because a new session starts.
 
 Then complete the existing native decision consumer,

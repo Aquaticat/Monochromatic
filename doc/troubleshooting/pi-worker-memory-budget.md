@@ -91,7 +91,12 @@ The worker settings are now encoded in `package/pi-plugin/auto-mode/mise.toml`
 for both Oxlint tasks,
 through the shared `auto_mode_lint_resources` task variable.
 They preserve the existing Node options and do not disable lint rules.
-The persisted task route still needs a confirming invocation without caller-supplied memory settings.
+`proc_3c0c` confirmed the persisted task route without caller-supplied memory settings.
+It again passed all 77 files with 486 rules,
+zero warnings,
+and zero errors.
+The slice's OOM-kill counter remained at three,
+so neither successful run added a kill.
 
 `GOMEMLIMIT` is a [soft Go runtime limit](https://go.dev/doc/gc-guide#Memory_limit),
 not the hard combined worker limit.
