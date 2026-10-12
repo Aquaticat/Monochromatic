@@ -83,6 +83,8 @@ export type CatRun = {
 
  @param signal - the entry's stop, a bound that outlasts the work by default
 
+ @param dark - seats no provider serves, none by default
+
  @returns The section, the seats asked and the sheets shown
 
  @example
@@ -97,12 +99,14 @@ export async function runCatPass(
     prepared = preparedCatPage(),
     english = archiveEnglishOf({ prepared, },),
     signal = AbortSignal.timeout(HANG_STOP_MS,),
+    dark = new Set<RosterModelId>(),
   }: {
     readonly behave: SeatScript;
     readonly entryCacheDir: string;
     readonly prepared?: PreparedDocumentPair;
     readonly english?: readonly string[];
     readonly signal?: AbortSignal;
+    readonly dark?: ReadonlySet<RosterModelId>;
   },
 ): Promise<CatRun> {
   /**
@@ -119,6 +123,7 @@ export async function runCatPass(
         behave,
         asked,
         sheets,
+        dark,
       },),
       prepared,
       projected: projectedCatPage({

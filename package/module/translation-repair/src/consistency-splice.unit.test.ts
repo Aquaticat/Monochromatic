@@ -154,6 +154,87 @@ await describe({
           },
         },),
         it({
+          name: 'GIVES A LETTER BEYOND THE FIRST PLANE THE RECEIVING PLACE\'S CASE, reading the whole character and not '
+            + 'the first half of its pair',
+          fn: async () => {
+            const small = String.fromCodePoint(0x1_04_28,);
+            const capital = String.fromCodePoint(0x1_04_00,);
+            expect(planConsistencyEdit({
+              chosen: locatedAt({ core: `${small} cat naps`, start: 0, },),
+              target: locatedAt({ core: `${capital} cat sleeps`, start: 9, },),
+            },),).toEqual({
+              kind: 'replace',
+              start: 9,
+              end: 9 + `${capital} cat sleeps`.length,
+              text: `${capital} cat naps`,
+            },);
+          },
+        },),
+        it({
+          name: 'LEAVES A QUOTE THAT OPENS ON A DIGIT ALONE, each digit being its own',
+          fn: async () => {
+            expect(planConsistencyEdit({
+              chosen: locatedAt({ core: '3 cats nap', start: 0, },),
+              target: locatedAt({ core: '4 cats sleep', start: 9, },),
+            },),).toEqual({ kind: 'replace', start: 9, end: 21, text: '3 cats nap', },);
+          },
+        },),
+        it({
+          name: 'GIVES THE FIRST LETTER AFTER AN OPENING MARK THE RECEIVING PLACE\'S CASE, a quotation mark or an emphasis '
+            + 'mark opening both quotes',
+          fn: async () => {
+            expect([
+              planConsistencyEdit({
+                chosen: locatedAt({ core: '“The cat naps”', start: 0, },),
+                target: locatedAt({ core: '“the cat naps”', start: 9, },),
+              },),
+              planConsistencyEdit({
+                chosen: locatedAt({ core: '*The cat* naps', start: 0, },),
+                target: locatedAt({ core: '*the cat* dozes', start: 9, },),
+              },),
+            ],).toEqual([
+              { kind: 'same', },
+              { kind: 'replace', start: 9, end: 24, text: '*the cat* naps', },
+            ],);
+          },
+        },),
+        it({
+          name: 'LEAVES A QUOTE MADE OF OPENING MARKS ALONE AS IT IS, there being no letter to give a case',
+          fn: async () => {
+            expect([
+              planConsistencyEdit({
+                chosen: locatedAt({ core: '((', start: 0, },),
+                target: locatedAt({ core: 'the cat', start: 9, },),
+              },),
+              planConsistencyEdit({
+                chosen: locatedAt({ core: 'The cat', start: 0, },),
+                target: locatedAt({ core: '**', start: 9, },),
+              },),
+            ],).toEqual([
+              { kind: 'replace', start: 9, end: 16, text: '((', },
+              { kind: 'replace', start: 9, end: 11, text: 'The cat', },
+            ],);
+          },
+        },),
+        it({
+          name: 'REPLACES A RECEIVING QUOTE THAT BEGINS WITH THE CHOSEN QUOTE, and one at the start or the end of its English',
+          fn: async () => {
+            expect([
+              planConsistencyEdit({
+                chosen: locatedAt({ core: 'the kitten', start: 30, },),
+                target: locatedAt({ core: 'the kitten naps on the mat', start: 0, },),
+              },),
+              planConsistencyEdit({
+                chosen: locatedAt({ core: 'the kitten', start: 0, },),
+                target: locatedAt({ core: 'the kitten naps', start: 17, },),
+              },),
+            ],).toEqual([
+              { kind: 'replace', start: 0, end: 26, text: 'the kitten', },
+              { kind: 'replace', start: 17, end: 32, text: 'the kitten', },
+            ],);
+          },
+        },),
+        it({
           name: 'FINDS A FRAME\'S PLACE ALREADY IN THE CHOSEN PATTERN when only its slot differs',
           fn: async () => {
             expect(planConsistencyEdit({

@@ -15,6 +15,7 @@ import {
 import {
   ConsistencyInvariantError,
   exchangeFailureText,
+  refusalText,
 } from '../dist/final/node/index.mjs';
 
 await describe({
@@ -41,11 +42,19 @@ await describe({
           },
         },),
         it({
-          name: 'RECORDS ONLY ITS CLASS NAME where a failure is recorded, its sentence staying with the log and the stack',
+          name: 'RECORDS ITS OWN SENTENCE where a failure is recorded, since every site writes it from positions and '
+            + 'vocabulary words and never from page text',
           fn: async () => {
-            expect(exchangeFailureText({
-              error: new ConsistencyInvariantError({ invariant: 'a group lists no place', },),
-            },),).toBe('refused by ConsistencyInvariantError',);
+            const error = new ConsistencyInvariantError({ invariant: 'a group lists no place', },);
+            expect({
+              marked: error.messageNamesOnly,
+              stored: exchangeFailureText({ error, },),
+              logged: refusalText({ error, },),
+            },).toEqual({
+              marked: true,
+              stored: 'unreachable: a group lists no place',
+              logged: 'unreachable: a group lists no place',
+            },);
           },
         },),
       ],

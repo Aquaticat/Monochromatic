@@ -67,6 +67,23 @@ const SENTENCE: ConsistencySubject = {
 };
 
 /**
+ The sheet's subject when the entry records a death and the first place's
+ English narrates its subject in the present tense.
+ */
+const TENSE_SUBJECT: ConsistencySubject = {
+  ...SENTENCE,
+  occurrences: [
+    {
+      ...(TWO_PLACES[0] as ConsistencyOccurrenceView),
+      english: { kind: 'present', text: 'Mittens is asleep in the sunny window.', },
+    },
+    TWO_PLACES[1] as ConsistencyOccurrenceView,
+  ],
+  lifeEnded: true,
+  subjectNames: ['Mittens',],
+};
+
+/**
  Every message of an exchange, joined.
 
  @param subject - what the sheet shows
@@ -296,6 +313,81 @@ await describe({
               namesRule: true,
               references: true,
             },);
+          },
+        },),
+        it({
+          name: 'SHOWS A LABELLED TENSE BLOCK for each slice\'s English that has a present-tense candidate, after the '
+            + 'places and before the end mark, when the entry records a death',
+          fn: async () => {
+            const [, user,] = buildConsistencyMessages({ subject: TENSE_SUBJECT, },);
+            const fence = fenceOpening({ content: user?.content ?? '', label: 'TENSE CANDIDATES', },);
+            expect({
+              fenced: fence !== '',
+              block: (user?.content ?? '').split('\n',).slice(
+                (user?.content ?? '').split('\n',).findIndex(function opens(line,): boolean {
+                  return line.includes('TENSE CANDIDATES',);
+                },),
+              ),
+            },).toEqual({
+              fenced: true,
+              block: [
+                `${fence} TENSE CANDIDATES ${fence}`,
+                'These sentences match present-tense shapes in a memorial page about a person who has died.',
+                'Check each against the house tense rule. A candidate may be a trait, a standing fact or a quotation',
+                'the rule leaves alone, so it is a question for you and not a finding against the text.',
+                'OCCURRENCE 1 TRANSLATION:',
+                '- "Mittens is asleep in the sunny window." (matched "Mittens is", rule copula-or-auxiliary)',
+                fence,
+                `${fence} END ${fence}`,
+                'Reply with JSON only: {"reason":"...","quotes":[{"label":"OCCURRENCE 1","quote":"..."}],"choice":"OCCURRENCE 1","keep":[]}',
+              ],
+            },);
+          },
+        },),
+        it({
+          name: 'SHOWS NO TENSE BLOCK where the entry records no death, however the English reads, or where no English has a candidate',
+          fn: async () => {
+            expect([
+              sheetText({ subject: { ...TENSE_SUBJECT, lifeEnded: false, }, },),
+              sheetText({ subject: { ...TENSE_SUBJECT, subjectNames: [], }, },),
+              sheetText({ subject: { ...SENTENCE, lifeEnded: true, }, },),
+            ].map(function shows(text,): boolean {
+              return text.includes('TENSE CANDIDATES',);
+            },),).toEqual([false, false, false,],);
+          },
+        },),
+        it({
+          name: 'LISTS A SLICE\'S TENSE CANDIDATES ONCE under the first place that shows its English, however many places stand in it',
+          fn: async () => {
+            const first = TENSE_SUBJECT.occurrences[0] as ConsistencyOccurrenceView;
+            const text = sheetText({
+              subject: {
+                ...TENSE_SUBJECT,
+                occurrences: [first, { ...first, markStart: 12, markEnd: 18, },],
+              },
+            },);
+            expect([
+              text.split('- "Mittens is asleep in the sunny window."',).length - 1,
+              text.includes('OCCURRENCE 2 TRANSLATION:',),
+            ],).toEqual([1, false,],);
+          },
+        },),
+        it({
+          name: 'SHOWS A FRAME\'S REPLY SHAPE WITH THE SLOT BESIDE THE QUOTE, and a repeated run\'s without one',
+          fn: async () => {
+            const [, frame,] = buildConsistencyMessages({
+              subject: {
+                repeat: { kind: 'refrain', prefix: '所以这只猫一定是', suffix: '的小宝贝', },
+                occurrences: TWO_PLACES.map(function slotted(place,): ConsistencyOccurrenceView {
+                  return { ...place, slotSource: '胖胖', };
+                },),
+              },
+            },);
+            const [, run,] = buildConsistencyMessages({ subject: SENTENCE, },);
+            expect([
+              frame?.content.includes('"quotes":[{"label":"OCCURRENCE 1","quote":"...","slot":"..."}]',),
+              run?.content.includes('"slot"',),
+            ],).toEqual([true, false,],);
           },
         },),
         it({

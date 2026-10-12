@@ -113,7 +113,8 @@ await describe({
         );
         expect(warned.some(function namesTheSecond(line,): boolean {
           return line.includes(
-            "group 2 asked failed (refused by ConsistencyInvariantError), and the failure thrown is group 1 asked's",
+            'group 2 asked failed (unreachable: a repeat group lists no place, and the detector reports a repeat only where '
+              + "it stands in two), and the failure thrown is group 1 asked's",
           );
         },),).toBe(true,);
       },

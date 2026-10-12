@@ -13,6 +13,7 @@ import {
   type BudgetView,
   type ChatJsonOutcome,
   type ChatJsonRequest,
+  NoProviderForModelError,
   type PreparedDocumentPair,
   prepareDocumentPair,
   type ProjectedLanes,
@@ -329,6 +330,8 @@ function sheetOf<ValueT,>({ request, }: { readonly request: ChatJsonRequest<Valu
 
  @param sheets - sink for the messages of every structured call, in order
 
+ @param dark - seats no provider serves, which the router refuses before any reply
+
  @returns Client to drive the consistency pass with
 
  @example
@@ -341,10 +344,12 @@ export function scriptedJudgeClient(
     behave,
     asked,
     sheets,
+    dark = new Set<RosterModelId>(),
   }: {
     readonly behave: SeatScript;
     readonly asked: RosterModelId[];
     readonly sheets: string[];
+    readonly dark?: ReadonlySet<RosterModelId>;
   },
 ): RunClient {
   return {
@@ -353,6 +358,12 @@ export function scriptedJudgeClient(
     chatText: unservedCall,
     quotas: unservedCall,
     chatJson: function chatJson<ValueT,>(request: ChatJsonRequest<ValueT>,): Promise<ChatJsonOutcome<ValueT>> {
+      if (dark.has(request.modelId,)) {
+        return Promise.reject(new NoProviderForModelError({
+          modelId: request.modelId,
+          reason: 'every provider serving this model is out of budget',
+        },),);
+      }
       /**
        Calls the client has had before this one.
        */

@@ -12,6 +12,7 @@
 import {
   ArtifactParseError,
   asLocated,
+  locatedContradicted,
   reasonContradicted,
 } from '../../dist/final/node/index.mjs';
 import {
@@ -113,7 +114,7 @@ await describe({
               { reason: 'not-found', quotes: ['the cat naps',], slots: [], },
             ] as const;
             expect(cases.map(function contradicts(each,): boolean {
-              return reasonContradicted(each,);
+              return reasonContradicted({ ...each, framed: true, },);
             },),).toEqual([
               true,
               false,
@@ -129,6 +130,87 @@ await describe({
               true,
               false,
             ],);
+          },
+        },),
+        it({
+          name: 'CONTRADICTS A REASON THE PASS COULD NOT HAVE REACHED: a missing, ambiguous, overlapping or markup reason '
+            + 'beside no agreed quote, and a slot reason in a repeated run, beside no slot, or against the words',
+          fn: async () => {
+            const cases = [
+              { reason: 'not-found', quotes: [], slots: [], framed: false, },
+              { reason: 'ambiguous', quotes: [], slots: [], framed: false, },
+              { reason: 'overlaps-another', quotes: [], slots: [], framed: false, },
+              { reason: 'overlaps-another', quotes: ['the cat naps',], slots: [], framed: false, },
+              { reason: 'not-found', quotes: ['.',], slots: [], framed: false, },
+              { reason: 'markup', quotes: [], slots: [], framed: false, },
+              { reason: 'markup', quotes: ['the **cat naps',], slots: [], framed: false, },
+              { reason: 'markup', quotes: ['the cat naps',], slots: [], framed: false, },
+              { reason: 'markup', quotes: ['the cat naps',], slots: ['**naps',], framed: true, },
+              { reason: 'slot-no-agreement', quotes: ['the cat naps',], slots: [], framed: false, },
+              { reason: 'slot-not-found', quotes: ['the cat naps',], slots: ['dozes',], framed: true, },
+              { reason: 'slot-not-found', quotes: ['the cat naps',], slots: ['naps',], framed: true, },
+              { reason: 'slot-not-found', quotes: ['the cat naps',], slots: [], framed: true, },
+              { reason: 'slot-not-found', quotes: [], slots: [], framed: true, },
+              { reason: 'slot-ambiguous', quotes: ['the cat naps',], slots: ['a',], framed: true, },
+              { reason: 'slot-ambiguous', quotes: ['the cat naps',], slots: ['cat',], framed: true, },
+              { reason: 'slot-whole', quotes: ['the cat naps',], slots: ['the cat naps',], framed: true, },
+              { reason: 'slot-whole', quotes: ['the cat naps',], slots: ['naps',], framed: true, },
+              { reason: 'slot-whole', quotes: ['the **cat naps',], slots: ['the **cat naps',], framed: true, },
+              { reason: 'slot-ambiguous', quotes: ['the cat naps',], slots: [' ',], framed: true, },
+            ] as const;
+            expect(cases.map(function contradicts(each,): boolean {
+              return reasonContradicted(each,);
+            },),).toEqual([
+              true,
+              true,
+              true,
+              false,
+              true,
+              true,
+              false,
+              true,
+              false,
+              true,
+              false,
+              true,
+              true,
+              true,
+              false,
+              true,
+              false,
+              true,
+              true,
+              true,
+            ],);
+          },
+        },),
+      ],
+    },),
+    describe({
+      name: locatedContradicted.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'CONTRADICTS A LOCATED RENDERING THE PASS WOULD HAVE LEFT UNLOCATED: words that show nothing, markup '
+            + 'cut in two, and a frame\'s slot that is all of the words',
+          fn: async () => {
+            expect([
+              locatedContradicted({ rendering: { kind: 'located', quote: 'the cat naps.', }, framed: false, },),
+              locatedContradicted({ rendering: { kind: 'located', quote: '...', }, framed: false, },),
+              locatedContradicted({ rendering: { kind: 'located', quote: 'the **cat naps', }, framed: false, },),
+              locatedContradicted({
+                rendering: { kind: 'located', quote: 'the cat naps', slot: 'naps', },
+                framed: true,
+              },),
+              locatedContradicted({
+                rendering: { kind: 'located', quote: 'the cat naps', slot: 'the cat naps', },
+                framed: true,
+              },),
+              locatedContradicted({
+                rendering: { kind: 'located', quote: 'the cat naps', slot: '**naps', },
+                framed: true,
+              },),
+            ],).toEqual([false, true, true, false, true, true,],);
           },
         },),
       ],

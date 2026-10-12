@@ -96,6 +96,7 @@ const MARKED_CLASSES: readonly string[] = [
   'CheckerQuorumError',
   'CitedReferenceFetchError',
   'CollapsedHeadingError',
+  'ConsistencyInvariantError',
   'ConsolidationLedgerGapError',
   'ContributorCompletenessError',
   'CorpusReadError',
@@ -409,6 +410,9 @@ const NAMED_PARTS: Record<string, string> = {
   'kindAndRemedy': 'a corpus read failure kind in brackets and the one of four fixed remedy sentences keyed by '
     + 'that closed union (CorpusReadError, REMEDY_SENTENCES), quoting no path, revision or content',
   'String(seats,)': 'count of seats in the roster the bench was handed (BenchReportError)',
+  'invariant': 'authored sentence at every throw site of the consistency pass, built from slice indexes, group '
+    + 'numbers, OCCURRENCE labels, offsets and vocabulary words and quoting no page text, which each site was read '
+    + 'for (ConsistencyInvariantError)',
 };
 
 /**
@@ -418,9 +422,6 @@ const NAMED_PARTS: Record<string, string> = {
  an oversight, and the next reader would have to re-derive each of these.
  */
 const WITHHELD: Record<string, string> = {
-  ConsistencyInvariantError: 'forwards each site\'s own sentence, which names indexes, counts and vocabulary '
-    + 'words and never text; unreachable by construction, and the consistency pass records only the class name '
-    + 'of a failure it contained',
   ArtifactProvenanceError: 'expected and observed carry whatever field disagreed, which may be text',
   PreparationIdentityError: 'quotes the string it refused, which a caller may have read from any file; the '
     + 'artifact reader refuses a stored identity by shape in its own words instead (ledger B34)',

@@ -9,7 +9,9 @@
  @module
  */
 
+import { createHash, } from 'node:crypto';
 import { chmodSync, } from 'node:fs';
+import { writeFile, } from 'node:fs/promises';
 
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
@@ -22,13 +24,30 @@ import {
 
 import {
   type ArtifactConsistency,
+  buildConsistencyMessages,
+  CONSISTENCY_CACHE_VERSION,
+  consistencyKey,
+  hashContent,
   NO_CONSISTENCY,
   parseConsistency,
   prepareDocumentPair,
   type RosterModelId,
+  RUN_LATE_JUDGES,
   runPassConsistency,
 } from '../../dist/final/node/index.mjs';
 import { HANG_STOP_MS, } from '../hang-stop.test-fixture.ts';
+import {
+  alterStored,
+  everySeatQuotes,
+  fourthAlreadyFollows,
+  outcomesByGroup,
+  sentencePage,
+  sentenceQuoteSpansTheRefrain,
+  sharedSlicePage,
+  slotWithTheName,
+  storedGathers,
+  withBlankedBlocks,
+} from './consistency-edge.test-fixture.ts';
 import { warnLinesDuring, } from '../console-warn-lines.test-fixture.ts';
 import { scratchDir, } from '../scratch-dir.test-fixture.ts';
 import { SCRIPTED_STAGE_SETTINGS, } from '../stage-settings.test-fixture.ts';
@@ -374,21 +393,7 @@ await describe({
             const prepared = preparedCatPage();
             const archive = archiveEnglishOf({ prepared, },);
             const run = await runCatPass({
-              behave: function fourthAlreadyFollows({ sheet, },): SeatBehaviour {
-                return isRefrainSheet({ sheet, },)
-                  ? {
-                    kind: 'answers',
-                    text: ballotText({
-                      quotes: [
-                        ...REFRAIN_QUOTES.slice(0, 3,),
-                        { label: 'OCCURRENCE 4', quote: 'So this cat must be a warm little treasure.', slot: 'warm', },
-                      ],
-                      choice: 'OCCURRENCE 1',
-                      keep: [],
-                    },),
-                  }
-                  : firstPlaceWins({ sheet, },);
-              },
+              behave: fourthAlreadyFollows,
               entryCacheDir: dir.path,
               prepared,
               english: [
@@ -606,11 +611,7 @@ await describe({
               [0, { kind: 'none', reason: 'no-quorum', },],
               [0, { kind: 'none', reason: 'no-quorum', },],
             ],);
-            expect(run.consistency.groups.flatMap(function outcomes(group,): readonly string[] {
-              return group.occurrences.map(function outcomeOf(occurrence,): string {
-                return occurrence.outcome;
-              },);
-            },).every(function untouched(outcome,): boolean {
+            expect(outcomesByGroup({ consistency: run.consistency, },).flat().every(function untouched(outcome,): boolean {
               return outcome === 'untouched';
             },),).toBe(true,);
           },
@@ -743,25 +744,7 @@ await describe({
           fn: async () => {
             await using dir = await scratchDir({ prefix: 'pass-consistency-', },);
             const run = await runCatPass({
-              behave: function sentenceQuoteSpansTheRefrain({ sheet, },): SeatBehaviour {
-                return isRefrainSheet({ sheet, },)
-                  ? firstPlaceWins({ sheet, },)
-                  : {
-                    kind: 'answers',
-                    text: ballotText({
-                      quotes: [
-                        SENTENCE_QUOTES[0] as Record<string, string>,
-                        {
-                          label: 'OCCURRENCE 2',
-                          quote: 'the sunlight on the sill lulled the kitten to sleep, and the fish snacks smiled too. '
-                            + 'So this cat has to be a sweet little darling',
-                        },
-                      ],
-                      choice: 'OCCURRENCE 1',
-                      keep: [],
-                    },),
-                  };
-              },
+              behave: sentenceQuoteSpansTheRefrain,
               entryCacheDir: dir.path,
             },);
             expect(outcomesOf({ consistency: run.consistency, group: 1, },),).toEqual([
@@ -845,26 +828,13 @@ await describe({
             + 'other groups or the pass',
           fn: async () => {
             await using dir = await scratchDir({ prefix: 'pass-consistency-', },);
-            const whole = preparedCatPage();
-            const prepared = {
-              ...whole,
-              slices: whole.slices.map(function blanked(slice,) {
-                return {
-                  ...slice,
-                  source: {
-                    ...slice.source,
-                    nodes: slice.source.nodes.map(function wrong(node,) {
-                      return { ...node, text: '＊'.repeat(node.text.length,), };
-                    },),
-                  },
-                };
-              },),
-            };
+            const prepared = withBlankedBlocks({ prepared: preparedCatPage(), },);
             const run = await runCatPass({ behave: firstPlaceWins, entryCacheDir: dir.path, prepared, },);
             /**
              What each group's handling failed with: the offsets of its first place read other words in the block shown.
              */
-            const detail = 'refused by ConsistencyInvariantError';
+            const detail = 'unreachable: the offsets of a place point at other words in the text shown than in the whole '
+              + 'original (slice 0), and both are cut from the same offsets';
             expect(run.consistency.groups.map(function verdictOf(group,): unknown {
               return group.verdict;
             },),).toEqual([
@@ -900,10 +870,464 @@ await describe({
               groups: [],
               slices: [],
               findings: [
-                'the consistency pass stopped (refused by ConsistencyInvariantError), so no slice was changed',
+                'the consistency pass stopped (unreachable: slice 2 of the preparation has no comparison row, and the '
+                + 'comparison is derived from rows of that preparation), so no slice was changed',
               ],
             },);
             expect(asked,).toEqual([],);
+          },
+        },),
+        it({
+          name: 'RECORDS THE SEAT THE ROSTER ASKED, never a seat key the reply carries, and stores only a ballot\'s own fields',
+          fn: async () => {
+            await using dir = await scratchDir({ prefix: 'pass-consistency-', },);
+            const run = await runCatPass({
+              behave: function repliesWithExtraKeys({ sheet, },): SeatBehaviour {
+                const behaviour = firstPlaceWins({ sheet, },);
+                return (behaviour.kind === 'answers')
+                  ? {
+                    kind: 'answers',
+                    text: JSON.stringify({ ...JSON.parse(behaviour.text,), seat: 'imposter', note: 'extra', },),
+                  }
+                  : behaviour;
+              },
+              entryCacheDir: dir.path,
+            },);
+            const seats = run.consistency.groups.flatMap(function seatsOf(group,): readonly string[] {
+              return (group.verdict.kind === 'asked')
+                ? group.verdict.ballots.map(function seatOf(ballot,): string {
+                  return ballot.seat;
+                },)
+                : [];
+            },);
+            expect(seats.every(function asked(seat,): boolean {
+              return run.asked.some(function wasAsked(roster,): boolean {
+                return roster === seat;
+              },);
+            },),).toBe(true,);
+            expect(seats.length > 0,).toBe(true,);
+            const stored = await storedGathers({ dir: dir.path, },);
+            expect(stored.flatMap(function keysOf({ parsed, },): readonly string[] {
+              const record = parsed.record as { readonly voices: readonly Record<string, unknown>[]; };
+              return record.voices.map(function keys(voice,): string {
+                return Object.keys(voice,).toSorted().join(',',);
+              },);
+            },).every(function plain(keys,): boolean {
+              return keys === 'choice,keep,quotes,reason,seat';
+            },),).toBe(true,);
+          },
+        },),
+        it({
+          name: 'ASKS AGAIN WHEN A STORED GATHER CANNOT BE ONE A FRESH GATHER MADE: a quorum of zero, fewer ballots than '
+            + 'the quorum, or one seat heard twice',
+          fn: async () => {
+            const alterations: readonly (readonly [
+              string,
+              (record: Record<string, unknown>,) => unknown,
+            ])[] = [
+              ['quorum zero', function noQuorum(record,): unknown {
+                return { ...record, quorum: 0, };
+              },],
+              ['too few ballots', function fewBallots(record,): unknown {
+                return { ...record, voices: (record.voices as unknown[]).slice(0, 1,), };
+              },],
+              ['one seat twice', function twiceHeard(record,): unknown {
+                const [first,] = record.voices as unknown[];
+                return { ...record, voices: [first, first, first, first, first,], };
+              },],
+            ];
+            const resumedAsked: Record<string, number> = {};
+            for (const [label, change,] of alterations) {
+              /* oxlint-disable no-await-in-loop -- three runs, each over its own directory */
+              await using dir = await scratchDir({ prefix: 'pass-consistency-', },);
+              await runCatPass({ behave: firstPlaceWins, entryCacheDir: dir.path, },);
+              await alterStored({ dir: dir.path, change, },);
+              const again = await runCatPass({ behave: firstPlaceWins, entryCacheDir: dir.path, },);
+              resumedAsked[label] = again.asked.length > 0 ? 1 : 0;
+              /* oxlint-enable no-await-in-loop */
+            }
+            expect(resumedAsked,).toEqual({ 'quorum zero': 1, 'too few ballots': 1, 'one seat twice': 1, },);
+          },
+        },),
+        it({
+          name: 'ASKS AGAIN FOR A GATHER WHOSE STORED FILE IS CUT SHORT OR ANSWERS ANOTHER KEY, and resumes the other',
+          fn: async () => {
+            await using dir = await scratchDir({ prefix: 'pass-consistency-', },);
+            const first = await runCatPass({ behave: firstPlaceWins, entryCacheDir: dir.path, },);
+            const [torn, foreign,] = await storedGathers({ dir: dir.path, },);
+            await writeFile(
+              nonNullishOrThrow(torn,).path,
+              JSON.stringify(torn?.parsed,).slice(0, 40,),
+              'utf8',
+            );
+            await writeFile(
+              nonNullishOrThrow(foreign,).path,
+              JSON.stringify({ ...foreign?.parsed, cacheKey: 'another-question', },),
+              'utf8',
+            );
+            const again = await runCatPass({ behave: firstPlaceWins, entryCacheDir: dir.path, },);
+            expect(again.sheets.length,).toBe(first.sheets.length,);
+            expect(outcomesByGroup({ consistency: again.consistency, },),)
+              .toEqual(outcomesByGroup({ consistency: first.consistency, },),);
+          },
+        },),
+        it({
+          name: 'CLOSES ON THE QUORUM OF THE SEATS A PROVIDER SERVES when most of the bench is dark, and carries the '
+            + 'winner on that many ballots',
+          fn: async () => {
+            await using dir = await scratchDir({ prefix: 'pass-consistency-', },);
+            const run = await runCatPass({
+              behave: firstPlaceWins,
+              entryCacheDir: dir.path,
+              dark: new Set(RUN_LATE_JUDGES.slice(3,),),
+            },);
+            const sentence = nonNullishOrThrow(run.consistency.groups[0],);
+            expect(sentence.verdict.kind === 'asked'
+              ? [sentence.verdict.quorum, sentence.verdict.usable >= 2, sentence.verdict.winner,]
+              : [],).toEqual([2, true, { kind: 'chosen', label: 'OCCURRENCE 1', },],);
+          },
+        },),
+        it({
+          name: 'LEAVES A GROUP AS IT STANDS WHEN THE SEATS A PROVIDER SERVES ANSWER BELOW THE SHORT BENCH\'S QUORUM',
+          fn: async () => {
+            await using dir = await scratchDir({ prefix: 'pass-consistency-', },);
+            const run = await runCatPass({
+              behave: refrainAnsweredInOrder({ answers: [refrainChoosing({ choice: 'OCCURRENCE 1', },),], },),
+              entryCacheDir: dir.path,
+              dark: new Set(RUN_LATE_JUDGES.slice(3,),),
+            },);
+            const refrain = nonNullishOrThrow(run.consistency.groups[1],);
+            expect(refrain.verdict.kind === 'asked'
+              ? [refrain.verdict.quorum, refrain.verdict.usable, refrain.verdict.winner,]
+              : [],).toEqual([2, 1, { kind: 'none', reason: 'no-quorum', },],);
+          },
+        },),
+        it({
+          name: 'CARRIES THE SENTENCE INTO A PLACE WHOSE WORDS SIT INSIDE BALANCED EMPHASIS, replacing the emphasised '
+            + 'words with the chosen ones when the quote holds both markers',
+          fn: async () => {
+            await using dir = await scratchDir({ prefix: 'pass-consistency-', },);
+            const run = await runCatPass({
+              behave: everySeatQuotes({
+                quotes: [
+                  SENTENCE_QUOTES[0] as Record<string, string>,
+                  { label: 'OCCURRENCE 2', quote: 'the **sunlight on the sill** lulled the kitten to sleep', },
+                ],
+                choice: 'OCCURRENCE 1',
+                keep: [],
+              },),
+              entryCacheDir: dir.path,
+              prepared: sentencePage(),
+              english: [
+                '## One\n\nThe sunny window put the kitten to sleep.',
+                '## Two\n\nIn the evening, the **sunlight on the sill** lulled the kitten to sleep, and the fish snacks smiled too.',
+              ],
+            },);
+            expect(changedTexts({ consistency: run.consistency, },),).toEqual([
+              [1, '## Two\n\nIn the evening, the sunny window put the kitten to sleep, and the fish snacks smiled too.',],
+            ],);
+          },
+        },),
+        it({
+          name: 'NEVER LEAVES A SLICE WITH UNBALANCED MARKS WHEN A QUOTE STARTS INSIDE EMPHASIS, A LINK, A CODE SPAN OR '
+            + 'A FOOTNOTE AND ENDS OUTSIDE IT',
+          fn: async () => {
+            /**
+             English of the second slice and the quote that cuts across its markup.
+             */
+            const cuts = [
+              {
+                english: '## Two\n\nIn the evening, the **sunlight on the sill** lulled the kitten to sleep, and the fish snacks smiled too.',
+                quote: 'on the sill** lulled the kitten to sleep',
+              },
+              {
+                english: '## Two\n\nIn the evening, [the sunlight on the sill](https://cats.example/sill) lulled the kitten to sleep, '
+                  + 'and the fish snacks smiled too.',
+                quote: 'sill](https://cats.example/sill) lulled the kitten to sleep',
+              },
+              {
+                english: '## Two\n\nIn the evening, `the sunlight on the sill` lulled the kitten to sleep, and the fish snacks smiled too.',
+                quote: 'sill` lulled the kitten to sleep',
+              },
+            ];
+            const marks = ['**', '[', ']', '(', ')', '`',];
+            const damaged: string[] = [];
+            for (const cut of cuts) {
+              /* oxlint-disable no-await-in-loop -- three runs, each over its own directory */
+              await using dir = await scratchDir({ prefix: 'pass-consistency-', },);
+              const run = await runCatPass({
+                behave: everySeatQuotes({
+                  quotes: [
+                    SENTENCE_QUOTES[0] as Record<string, string>,
+                    { label: 'OCCURRENCE 2', quote: cut.quote, },
+                  ],
+                  choice: 'OCCURRENCE 1',
+                  keep: [],
+                },),
+                entryCacheDir: dir.path,
+                prepared: sentencePage(),
+                english: ['## One\n\nThe sunny window put the kitten to sleep.', cut.english,],
+              },);
+              for (const [, text,] of changedTexts({ consistency: run.consistency, },)) {
+                for (const mark of marks) {
+                  const before = cut.english.split(mark,).length;
+                  const after = text.split(mark,).length;
+                  if ((before % 2) !== (after % 2))
+                    damaged.push(`${mark} in ${text}`,);
+                }
+              }
+              /* oxlint-enable no-await-in-loop */
+            }
+            expect(damaged,).toEqual([],);
+          },
+        },),
+        it({
+          name: 'NEVER STRANDS A FOOTNOTE DEFINITION OR CARRIES A FOOTNOTE MARK WITHOUT ITS DEFINITION when a quote holds one',
+          fn: async () => {
+            await using dir = await scratchDir({ prefix: 'pass-consistency-', },);
+            const run = await runCatPass({
+              behave: everySeatQuotes({
+                quotes: [
+                  { label: 'OCCURRENCE 1', quote: 'The sunny window put the kitten to sleep[^1]', },
+                  { label: 'OCCURRENCE 2', quote: 'the sunlight on the sill lulled the kitten to sleep', },
+                ],
+                choice: 'OCCURRENCE 1',
+                keep: [],
+              },),
+              entryCacheDir: dir.path,
+              prepared: sentencePage(),
+              english: [
+                '## One\n\nThe sunny window put the kitten to sleep[^1].\n\n[^1]: A note.',
+                '## Two\n\nIn the evening, the sunlight on the sill lulled the kitten to sleep, and the fish snacks smiled too.',
+              ],
+            },);
+            expect(changedTexts({ consistency: run.consistency, },).filter(function carriesMark([, text,],): boolean {
+              return text.includes('[^1]',);
+            },),).toEqual([],);
+          },
+        },),
+        it({
+          name: 'REPLACES ONE PLACE\'S WORDS WITH THE CHOSEN QUOTE WHEN THE CHOSEN QUOTE IS THE START OF ITS SLICE AND THE '
+            + 'RECEIVING QUOTE IS THE END OF ITS OWN, closing punctuation staying where it stands',
+          fn: async () => {
+            await using dir = await scratchDir({ prefix: 'pass-consistency-', },);
+            const run = await runCatPass({
+              behave: everySeatQuotes({
+                quotes: [
+                  { label: 'OCCURRENCE 1', quote: 'The sunny window put the kitten to sleep.', },
+                  { label: 'OCCURRENCE 2', quote: 'the sunlight on the sill lulled the kitten to sleep, and the fish snacks smiled too.', },
+                ],
+                choice: 'OCCURRENCE 1',
+                keep: [],
+              },),
+              entryCacheDir: dir.path,
+              prepared: sharedSlicePage(),
+            },);
+            expect(changedTexts({ consistency: run.consistency, },),).toEqual([
+              [0, 'The sunny window put the kitten to sleep.\n\nIn the evening, the sunny window put the kitten to sleep.',],
+            ],);
+          },
+        },),
+        it({
+          name: 'LEAVES BOTH PLACES OF ONE SLICE UNLOCATED WHEN THEIR QUOTES OVERLAP, since one run of words cannot be '
+            + 'two renderings, and changes nothing',
+          fn: async () => {
+            await using dir = await scratchDir({ prefix: 'pass-consistency-', },);
+            const run = await runCatPass({
+              behave: everySeatQuotes({
+                quotes: [
+                  { label: 'OCCURRENCE 1', quote: 'The sunny window', },
+                  { label: 'OCCURRENCE 2', quote: 'The sunny window put the kitten to sleep', },
+                ],
+                choice: 'OCCURRENCE 1',
+                keep: [],
+              },),
+              entryCacheDir: dir.path,
+              prepared: sharedSlicePage(),
+            },);
+            const sentence = nonNullishOrThrow(run.consistency.groups[0],);
+            expect({
+              renderings: sentence.occurrences.map(function renderingOf(occurrence,): unknown {
+                return occurrence.rendering;
+              },),
+              winner: (sentence.verdict.kind === 'asked') ? sentence.verdict.winner : null,
+              outcomes: outcomesOf({ consistency: run.consistency, group: 0, },),
+              changed: run.consistency.slices,
+            },).toEqual({
+              renderings: [
+                { kind: 'unlocated', reason: 'overlaps-another', },
+                { kind: 'unlocated', reason: 'overlaps-another', },
+              ],
+              winner: { kind: 'none', reason: 'chosen-unlocated', },
+              outcomes: ['untouched', 'untouched',],
+              changed: [],
+            },);
+          },
+        },),
+        it({
+          name: 'READS A REPEAT THAT CONTAINS AN HTML COMMENT IN ONE PLACE, the place\'s offsets covering the comment, and '
+            + 'the record reads back through the reader',
+          fn: async () => {
+            await using dir = await scratchDir({ prefix: 'pass-consistency-', },);
+            const prepared = prepareDocumentPair({
+              sourceText: '## 一\n\n窗台上的阳光让小猫睡着了。\n\n## 二\n\n傍晚，窗台上的阳光<!-- 注 -->让小猫睡着了，小鱼干也笑了。\n',
+              targetText: '## One\n\nThe sunny window put the kitten to sleep.\n\n## Two\n\nIn the evening, the sunlight on the sill '
+                + 'lulled the kitten to sleep, and the fish snacks smiled too.\n',
+            },);
+            const run = await runCatPass({ behave: firstPlaceWins, entryCacheDir: dir.path, prepared, },);
+            const group = nonNullishOrThrow(run.consistency.groups[0],);
+            expect(group.occurrences.map(function widthOf(occurrence,): number {
+              return occurrence.endOffset - occurrence.startOffset;
+            },),).toEqual([12, 22,],);
+            expect(outcomesOf({ consistency: run.consistency, group: 0, },),).toEqual(['chosen', 'replaced',],);
+            expect(parseConsistency({
+              value: structuredClone(run.consistency,),
+              path: 'cat.consistency',
+              writesSection: true,
+              sliceIndexes: new Set([0, 1, 2, 3,],),
+            },),).toEqual(run.consistency,);
+          },
+        },),
+        it({
+          name: 'FINDS NO GROUP IN A REPEAT BETWEEN STRAIGHT QUOTATION MARKS, asking nobody',
+          fn: async () => {
+            await using dir = await scratchDir({ prefix: 'pass-consistency-', },);
+            const prepared = prepareDocumentPair({
+              sourceText: '## 一\n\n她说"窗台上的阳光让小猫睡着了"。\n\n## 二\n\n他喊"窗台上的阳光让小猫睡着了"！\n',
+              targetText: '## One\n\nShe said "the sunny window put the kitten to sleep".\n\n## Two\n\nHe said "the sunlight on the sill lulled the kitten to sleep".\n',
+            },);
+            const run = await runCatPass({ behave: firstPlaceWins, entryCacheDir: dir.path, prepared, },);
+            expect({ consistency: run.consistency, asked: run.asked, },).toEqual({ consistency: NO_CONSISTENCY, asked: [], },);
+          },
+        },),
+        it({
+          name: 'SHOWS EVERY SHEET THE TENSE CANDIDATES OF EACH SLICE\'S ENGLISH when the entry records a death, and a '
+            + 'sheet of an entry that records none nothing of the kind',
+          fn: async () => {
+            await using dir = await scratchDir({ prefix: 'pass-consistency-', },);
+            const whole = preparedCatPage();
+            const archive = archiveEnglishOf({ prepared: whole, },);
+            const english = [
+              '## One\n\nMittens is asleep in the sunny window. So this cat must be a chubby little treasure.',
+              ...archive.slice(1,),
+            ];
+            const died = await runCatPass({
+              behave: firstPlaceWins,
+              entryCacheDir: dir.path,
+              prepared: { ...whole, lifeEnded: true, subjectNames: ['Mittens',], },
+              english,
+            },);
+            await using other = await scratchDir({ prefix: 'pass-consistency-', },);
+            const living = await runCatPass({ behave: firstPlaceWins, entryCacheDir: other.path, prepared: whole, english, },);
+            expect([
+              died.sheets.length > 0,
+              died.sheets.every(function showsBlock(sheet,): boolean {
+                return sheet.includes('OCCURRENCE 1 TRANSLATION:\n- "Mittens is asleep in the sunny window." '
+                  + '(matched "Mittens is", rule copula-or-auxiliary)',);
+              },),
+              living.sheets.some(function showsBlock(sheet,): boolean {
+                return sheet.includes('TENSE CANDIDATES',);
+              },),
+            ],).toEqual([true, true, false,],);
+          },
+        },),
+        it({
+          name: 'ASKS AGAIN WHEN THE ENTRY\'S RECORDED DEATH OR ITS SUBJECT NAMES CHANGE, though the English shown is the same',
+          fn: async () => {
+            await using dir = await scratchDir({ prefix: 'pass-consistency-', },);
+            const whole = preparedCatPage();
+            await runCatPass({ behave: firstPlaceWins, entryCacheDir: dir.path, prepared: whole, },);
+            const living = await runCatPass({ behave: firstPlaceWins, entryCacheDir: dir.path, prepared: whole, },);
+            const died = await runCatPass({
+              behave: firstPlaceWins,
+              entryCacheDir: dir.path,
+              prepared: { ...whole, lifeEnded: true, subjectNames: ['Mittens',], },
+            },);
+            const diedAgain = await runCatPass({
+              behave: firstPlaceWins,
+              entryCacheDir: dir.path,
+              prepared: { ...whole, lifeEnded: true, subjectNames: ['Mittens',], },
+            },);
+            const renamed = await runCatPass({
+              behave: firstPlaceWins,
+              entryCacheDir: dir.path,
+              prepared: { ...whole, lifeEnded: true, subjectNames: ['Mittens', 'Tabby',], },
+            },);
+            expect([
+              living.asked.length,
+              died.asked.length > 0,
+              diedAgain.asked.length,
+              renamed.asked.length > 0,
+            ],).toEqual([0, true, 0, true,],);
+          },
+        },),
+        it({
+          name: 'ASKS AGAIN WHEN THE DECLARED IDENTITY CHANGES, the recorded death date among it, since the sheet shows it',
+          fn: async () => {
+            await using dir = await scratchDir({ prefix: 'pass-consistency-', },);
+            const whole = preparedCatPage();
+            const first = await runCatPass({
+              behave: firstPlaceWins,
+              entryCacheDir: dir.path,
+              prepared: { ...whole, identityContext: '- died: 2025-02-26', lifeEnded: true, },
+            },);
+            const same = await runCatPass({
+              behave: firstPlaceWins,
+              entryCacheDir: dir.path,
+              prepared: { ...whole, identityContext: '- died: 2025-02-26', lifeEnded: true, },
+            },);
+            const moved = await runCatPass({
+              behave: firstPlaceWins,
+              entryCacheDir: dir.path,
+              prepared: { ...whole, identityContext: '- died: 2025-03-01', lifeEnded: true, },
+            },);
+            expect([first.asked.length > 0, same.asked.length, moved.asked.length > 0,],).toEqual([true, 0, true,],);
+          },
+        },),
+        it({
+          name: 'KEEPS THE KEY OF A SHEET FOR AN ENTRY THAT RECORDS NO DEATH AS ONE JSON VALUE OF THE VERSION, THE SHEET\'S '
+            + 'DIGEST AND THE BENCH, and moves it for an entry that does by the death and the subject names',
+          fn: async () => {
+            const messages = buildConsistencyMessages({
+              subject: {
+                repeat: { kind: 'maximal', wording: '窗台上的阳光让小猫睡着了', },
+                occurrences: [
+                  {
+                    sliceIndex: 0,
+                    paragraph: '窗台上的阳光让小猫睡着了。',
+                    markStart: 0,
+                    markEnd: 12,
+                    english: { kind: 'present', text: 'The sunny window put the kitten to sleep.', },
+                  },
+                ],
+              },
+            },);
+            const modelIds = RUN_LATE_JUDGES.slice(0, 2,);
+            const bare = createHash('sha256',)
+              .update(
+                JSON.stringify({
+                  version: CONSISTENCY_CACHE_VERSION,
+                  sheet: hashContent({ content: JSON.stringify(messages,), },),
+                  roster: modelIds,
+                },),
+                'utf8',
+              )
+              .digest('hex',);
+            const keys = {
+              plain: consistencyKey({ messages, modelIds, },),
+              living: consistencyKey({ messages, modelIds, lifeEnded: false, subjectNames: ['Mittens',], },),
+              died: consistencyKey({ messages, modelIds, lifeEnded: true, subjectNames: ['Mittens',], },),
+              diedNamed: consistencyKey({ messages, modelIds, lifeEnded: true, subjectNames: ['Mittens', 'Tabby',], },),
+              diedUnnamed: consistencyKey({ messages, modelIds, lifeEnded: true, },),
+            };
+            expect([
+              keys.plain === bare,
+              keys.living === bare,
+              keys.died !== bare,
+              keys.diedNamed !== keys.died,
+              keys.diedUnnamed !== keys.died,
+              keys.diedUnnamed !== bare,
+            ],).toEqual([true, true, true, true, true, true,],);
           },
         },),
         it({
@@ -938,27 +1362,7 @@ await describe({
             const { result: run, warned: warnings, } = await warnLinesDuring({
               run: async function passWithTheNameDropped(): Promise<CatRun> {
                 return await runCatPass({
-              behave: function slotWithTheName({ sheet, },): SeatBehaviour {
-                return isRefrainSheet({ sheet, },)
-                  ? {
-                    kind: 'answers',
-                    text: ballotText({
-                      quotes: [
-                        REFRAIN_QUOTES[0] as Record<string, string>,
-                        {
-                          label: 'OCCURRENCE 2',
-                          quote: 'So this cat is surely Mittens, a lazy little treasure.',
-                          slot: 'lazy',
-                        },
-                        REFRAIN_QUOTES[2] as Record<string, string>,
-                        REFRAIN_QUOTES[3] as Record<string, string>,
-                      ],
-                      choice: 'OCCURRENCE 1',
-                      keep: [],
-                    },),
-                  }
-                  : firstPlaceWins({ sheet, },);
-              },
+              behave: slotWithTheName,
               entryCacheDir: dir.path,
               prepared,
               english: [archive[0] as string, named, archive[2] as string, archive[3] as string,],

@@ -9,6 +9,7 @@
  */
 
 import {
+  caught,
   DEFAULT_CONCURRENCY,
   describe,
   expect,
@@ -16,10 +17,10 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
+  ConsistencyInvariantError,
   type ConsistencyEnglish,
   type ConsistencyVoice,
   countConsistency,
-  quoteCore,
   winnerOf,
 } from '../dist/final/node/index.mjs';
 
@@ -159,33 +160,6 @@ await describe({
   name: '',
   concurrency: 1,
   children: [
-    describe({
-      name: quoteCore.name,
-      concurrency: DEFAULT_CONCURRENCY,
-      children: [
-        it({
-          name: 'TAKES THE CLOSING PUNCTUATION AND SPACE OFF A QUOTE\'S END and nothing else',
-          fn: async () => {
-            expect({
-              full: quoteCore({ quote: 'the cat naps.', },),
-              many: quoteCore({ quote: 'the cat naps...!? ', },),
-              wide: quoteCore({ quote: '小猫在睡觉。', },),
-              inner: quoteCore({ quote: 'the cat, napping', },),
-              quoted: quoteCore({ quote: 'she said "hi"', },),
-              none: quoteCore({ quote: '.!', },),
-            },).toEqual({
-              full: 'the cat naps',
-              many: 'the cat naps',
-              wide: '小猫在睡觉',
-              inner: 'the cat, napping',
-              quoted: 'she said "hi"',
-              none: '',
-            },);
-          },
-        },),
-      ],
-    },),
-
     describe({
       name: countConsistency.name,
       concurrency: DEFAULT_CONCURRENCY,
@@ -402,6 +376,158 @@ await describe({
               core: QUOTE_ONE,
               start: 0,
             },);
+          },
+        },),
+        it({
+          name: 'LOCATES A QUOTE AT THE START AND AT THE END OF ITS ENGLISH, and one holding a character beyond the first '
+            + 'plane, offsets counted in the units the English is cut in',
+          fn: async () => {
+            const cat = String.fromCodePoint(0x1_F6_3A,);
+            const places = [
+              { label: 'OCCURRENCE 1', english: { kind: 'present', text: `The cat naps ${cat} all day`, }, },
+              { label: 'OCCURRENCE 2', english: { kind: 'present', text: `${cat} Then the cat dozed`, }, },
+            ] as const;
+            const count = countConsistency({
+              voices: threeAlike({
+                over: {
+                  quotes: [
+                    { label: 'OCCURRENCE 1', quote: `The cat naps ${cat} all day`, },
+                    { label: 'OCCURRENCE 2', quote: `${cat} Then the cat dozed`, },
+                  ],
+                },
+              },),
+              places,
+              framed: false,
+              quorum: 2,
+            },);
+            expect(count.renderings,).toEqual([
+              {
+                kind: 'located',
+                quote: `The cat naps ${cat} all day`,
+                core: `The cat naps ${cat} all day`,
+                start: 0,
+              },
+              {
+                kind: 'located',
+                quote: `${cat} Then the cat dozed`,
+                core: `${cat} Then the cat dozed`,
+                start: 0,
+              },
+            ],);
+          },
+        },),
+        it({
+          name: 'LEAVES A LEADING SPACE OF A QUOTE OUT OF THE WORDS A REPLACEMENT TAKES OR GIVES, the offset naming the first '
+            + 'visible character',
+          fn: async () => {
+            const count = countOver({
+              voices: threeAlike({
+                over: {
+                  quotes: [
+                    { label: 'OCCURRENCE 1', quote: ' sunny window put the kitten to sleep', },
+                    { label: 'OCCURRENCE 2', quote: QUOTE_TWO, },
+                  ],
+                },
+              },),
+            },);
+            expect(count.renderings[0],).toEqual({
+              kind: 'located',
+              quote: ' sunny window put the kitten to sleep',
+              core: 'sunny window put the kitten to sleep',
+              start: 4,
+            },);
+          },
+        },),
+        it({
+          name: 'COUNTS A SLOT ONLY AMONG THE BALLOTS THAT GAVE THE AGREED QUOTE, so a slot a majority gave beside other '
+            + 'quotes is no slot of this one',
+          fn: async () => {
+            /**
+             Ballot quoting the first place with this quote and slot.
+             */
+            function quoting({ seat, quote, slot, }: { readonly seat: string; readonly quote: string; readonly slot: string; },): ConsistencyVoice {
+              return voiceOf({ seat, over: { quotes: [{ label: 'OCCURRENCE 1', quote, slot, },], }, },);
+            }
+            const count = countConsistency({
+              voices: [
+                quoting({ seat: 'a', quote: 'So this cat must be a chubby little treasure', slot: 'chubby', },),
+                quoting({ seat: 'b', quote: 'So this cat must be a chubby little treasure', slot: 'little', },),
+                quoting({ seat: 'c', quote: 'So this cat must be a chubby', slot: 'chubby', },),
+              ],
+              places: PLACES,
+              framed: true,
+              quorum: 2,
+            },);
+            expect(count.renderings[0],).toEqual({ kind: 'unlocated', reason: 'slot-no-agreement', },);
+          },
+        },),
+        it({
+          name: 'LEAVES A FRAME\'S PLACE UNLOCATED WHEN ITS SLOT IS THE WHOLE OF ITS QUOTE, since no word of the frame '
+            + 'is left for the pattern to carry',
+          fn: async () => {
+            const count = countConsistency({
+              voices: threeAlike({
+                over: {
+                  quotes: [{ label: 'OCCURRENCE 1', quote: 'chubby little treasure.', slot: 'chubby little treasure', },],
+                },
+              },),
+              places: [
+                {
+                  label: 'OCCURRENCE 1',
+                  english: { kind: 'present', text: 'So this cat is a chubby little treasure.', },
+                },
+                PLACES[1] as (typeof PLACES)[number],
+              ],
+              framed: true,
+              quorum: 2,
+            },);
+            expect(count.renderings[0],).toEqual({ kind: 'unlocated', reason: 'slot-whole', },);
+          },
+        },),
+        it({
+          name: 'LEAVES A FRAME\'S PLACE UNLOCATED WHEN ITS SLOT CUTS MARKUP INSIDE A QUOTE THAT HOLDS ITS MARKUP IN PAIRS',
+          fn: async () => {
+            const count = countConsistency({
+              voices: threeAlike({
+                over: {
+                  quotes: [{
+                    label: 'OCCURRENCE 1',
+                    quote: 'So this cat is a **chubby** little treasure',
+                    slot: 'chubby** little',
+                  },],
+                },
+              },),
+              places: [
+                {
+                  label: 'OCCURRENCE 1',
+                  english: { kind: 'present', text: 'So this cat is a **chubby** little treasure.', },
+                },
+                PLACES[1] as (typeof PLACES)[number],
+              ],
+              framed: true,
+              quorum: 2,
+            },);
+            expect(count.renderings[0],).toEqual({ kind: 'unlocated', reason: 'markup', },);
+          },
+        },),
+        it({
+          name: 'REFUSES A CHOSEN LABEL THE SHEET NEVER SHOWED, since a usable ballot cannot name one and a winner at '
+            + 'index minus one would read as a place',
+          fn: async () => {
+            const refusal = caught(function winnerOfUnknown(): unknown {
+              return winnerOf({
+                usable: 3,
+                quorum: 2,
+                chosen: ['OCCURRENCE 9',],
+                labels: ['OCCURRENCE 1', 'OCCURRENCE 2',],
+                renderings: [],
+              },);
+            },);
+            expect(refusal,).toBeInstanceOf(ConsistencyInvariantError,);
+            expect(String(refusal,),).toBe(
+              'ConsistencyInvariantError: unreachable: the label OCCURRENCE 9 a majority chose is no label of the sheet, '
+              + 'and a usable ballot chooses a label the sheet showed',
+            );
           },
         },),
         it({

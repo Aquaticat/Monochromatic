@@ -22,22 +22,34 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
+  type ArtifactConsistency,
   ArtifactParseError,
   NO_CONSISTENCY,
   parseConsistency,
   parseSettledTwoLaneArtifact,
+  type PreparedDocumentPair,
 } from '../../dist/final/node/index.mjs';
 import { scratchDir, } from '../scratch-dir.test-fixture.ts';
 import {
+  archiveEnglishOf,
   ballotText,
   firstPlaceWins,
+  isRefrainSheet,
   preparedCatPage,
   REFRAIN_QUOTES,
   refrainAnsweredInOrder,
   refrainChoosing,
   type SeatBehaviour,
   type SeatScript,
+  SENTENCE_QUOTES,
 } from './consistency-page.test-fixture.ts';
+import {
+  fourthAlreadyFollows,
+  outcomesByGroup,
+  sentenceQuoteSpansTheRefrain,
+  slotWithTheName,
+  withBlankedBlocks,
+} from './consistency-edge.test-fixture.ts';
 import { runCatPass, } from './consistency-run.test-fixture.ts';
 import {
   appendAt,
@@ -74,6 +86,43 @@ async function sectionOf(
   const run = await runCatPass({
     behave,
     entryCacheDir: dir.path,
+  },);
+  return structuredClone(run.consistency,);
+}
+
+/**
+ Plain JSON of the section the pass writes over a page a case states.
+
+ @param behave - what each seat does when asked
+
+ @param prepared - preparation of the page, the cat page by default
+
+ @param english - what each slice ships, the archive by default
+
+ @returns The section as a file holds it
+
+ @example
+ ```ts
+ const section = await sectionOfRun({ behave: firstPlaceWins, },);
+ ```
+ */
+async function sectionOfRun(
+  {
+    behave,
+    prepared,
+    english,
+  }: {
+    readonly behave: SeatScript;
+    readonly prepared?: PreparedDocumentPair;
+    readonly english?: readonly string[];
+  },
+): Promise<ArtifactConsistency> {
+  await using dir = await scratchDir({ prefix: 'consistency-read-', },);
+  const run = await runCatPass({
+    behave,
+    entryCacheDir: dir.path,
+    ...((prepared === undefined) ? {} : { prepared, }),
+    ...((english === undefined) ? {} : { english, }),
   },);
   return structuredClone(run.consistency,);
 }
@@ -515,17 +564,33 @@ await describe({
         it({
           name: 'READS A GROUP WHOSE HANDLING FAILED AND A GROUP WITH A PLACE IN NO SLICE, as written',
           fn: async () => {
+            const place = {
+              label: 'OCCURRENCE 1',
+              sliceIndex: 0,
+              startOffset: 6,
+              endOffset: 18,
+              line: 3,
+              rendering: { kind: 'unlocated', reason: 'not-asked', },
+              outcome: 'untouched',
+            };
             const group = {
               repeat: { kind: 'maximal', wording: '窗台上的阳光让小猫睡着了', },
-              occurrences: [],
-              unplaced: [{ startOffset: 6, endOffset: 18, line: 3, reason: 'crosses-slice-end', },],
-              verdict: { kind: 'failed', detail: 'refused by ConsistencyInvariantError', },
+              occurrences: [
+                place,
+                { ...place, label: 'OCCURRENCE 2', sliceIndex: 2, startOffset: 85, endOffset: 97, line: 11, },
+              ],
+              unplaced: [{ startOffset: 120, endOffset: 132, line: 14, reason: 'crosses-slice-end', },],
+              verdict: {
+                kind: 'failed',
+                detail: 'unreachable: slice 2 of the preparation has no comparison row, and the comparison is derived '
+                  + 'from rows of that preparation',
+              },
             };
             expect(readWritten({ value: { groups: [group,], slices: [], findings: ['one finding',], }, },),)
               .toEqual({ groups: [group,], slices: [], findings: ['one finding',], },);
             expect(refusalOf({
               value: {
-                groups: [{ ...group, unplaced: [{ startOffset: 6, endOffset: 18, line: 3, reason: 'lost', },], },],
+                groups: [{ ...group, unplaced: [{ startOffset: 120, endOffset: 132, line: 14, reason: 'lost', },], },],
                 slices: [],
                 findings: [],
               },
@@ -707,6 +772,287 @@ await describe({
               return message.includes('cat.consistency.groups[0].occurrences[0]',)
                 && message.includes('a place that ends after it starts',);
             },),).toBe(true,);
+          },
+        },),
+        it({
+          name: 'READS BACK EACH OUTCOME AND EACH REASON THE PASS WRITES, a floor refusal, an overlap, a place that already '
+            + 'follows, a place with no English, a quote standing twice, a group whose handling failed',
+          fn: async () => {
+            const prepared = preparedCatPage();
+            const archive = archiveEnglishOf({ prepared, },);
+            const sections: Record<string, ArtifactConsistency> = {
+              keptFloor: await sectionOfRun({
+                behave: slotWithTheName,
+                prepared: { ...prepared, declaredNames: ['Mittens',], },
+                english: [
+                  archive[0] as string,
+                  '## Two\n\nThe smell of fish in the kitchen woke the kitten. So this cat is surely Mittens, a lazy little treasure.',
+                  archive[2] as string,
+                  archive[3] as string,
+                ],
+              },),
+              overlapped: await sectionOfRun({
+                behave: sentenceQuoteSpansTheRefrain,
+              },),
+              following: await sectionOfRun({
+                behave: fourthAlreadyFollows,
+                english: [
+                  archive[0] as string,
+                  archive[1] as string,
+                  archive[2] as string,
+                  '## Four\n\nThe rain in the yard sent the kitten running home. So this cat must be a warm little treasure.',
+                ],
+              },),
+              alike: await sectionOfRun({
+                behave: firstPlaceWins,
+                english: [archive[0] as string, archive[1] as string, archive[0] as string, archive[3] as string,],
+              },),
+              noEnglish: await sectionOfRun({
+                behave: firstPlaceWins,
+                english: [archive[0] as string, '', archive[2] as string, archive[3] as string,],
+              },),
+              twice: await sectionOfRun({
+                behave: function quotesTheSecond({ sheet, },): SeatBehaviour {
+                  return isRefrainSheet({ sheet, },)
+                    ? firstPlaceWins({ sheet, },)
+                    : {
+                      kind: 'answers',
+                      text: ballotText({
+                        quotes: [
+                          SENTENCE_QUOTES[0] as Record<string, string>,
+                          { label: 'OCCURRENCE 2', quote: 'the kitten to sleep', },
+                        ],
+                        choice: 'OCCURRENCE 1',
+                        keep: [],
+                      },),
+                    };
+                },
+                english: [
+                  archive[0] as string,
+                  archive[1] as string,
+                  '## Three\n\nIn the evening, the sunlight lulled the kitten to sleep, and the kitten to sleep again. '
+                  + 'So this cat has to be a sweet little darling.',
+                  archive[3] as string,
+                ],
+              },),
+              failed: await sectionOfRun({
+                behave: firstPlaceWins,
+                prepared: withBlankedBlocks({ prepared, },),
+              },),
+            };
+            const outcome = Object.fromEntries(Object.entries(sections,).map(function read(
+              [name, section,],
+            ): readonly [string, string] {
+              return [name, refusalOf({ value: section, },),];
+            },),);
+            expect(outcome,).toEqual({
+              keptFloor: 'not refused',
+              overlapped: 'not refused',
+              following: 'not refused',
+              alike: 'not refused',
+              noEnglish: 'not refused',
+              twice: 'not refused',
+              failed: 'not refused',
+            },);
+            expect(Object.entries(sections,).map(function outcomesIn([name, section,],): readonly [string, readonly string[]] {
+              return [name, outcomesByGroup({ consistency: section, },).flat(),];
+            },),).toEqual([
+              ['keptFloor', ['chosen', 'replaced', 'chosen', 'kept-floor', 'replaced', 'replaced',],],
+              ['overlapped', ['chosen', 'replaced', 'chosen', 'replaced', 'overlapped', 'replaced',],],
+              ['following', ['chosen', 'replaced', 'chosen', 'replaced', 'replaced', 'consistent',],],
+              ['alike', ['consistent', 'consistent', 'chosen', 'replaced', 'unlocated', 'replaced',],],
+              ['noEnglish', ['chosen', 'replaced', 'chosen', 'unlocated', 'replaced', 'replaced',],],
+              ['twice', ['chosen', 'unlocated', 'chosen', 'replaced', 'replaced', 'replaced',],],
+              ['failed', ['untouched', 'untouched', 'untouched', 'untouched', 'untouched', 'untouched',],],
+            ],);
+          },
+        },),
+        it({
+          name: 'REFUSES SLOT OFFSETS A REPEATED RUN\'S PLACE CARRIES ALONE, A SLOT THAT LIES OUTSIDE ITS PLACE, AND A SLOT '
+            + 'THAT ENDS BEFORE IT STARTS',
+          fn: async () => {
+            const section = await sectionOf({},);
+            const messages = [
+              [setAt({ path: placePath({ group: 0, place: 0, field: ['slotStartOffset',], },), value: 7, },),],
+              [setAt({ path: placePath({ group: 0, place: 0, field: ['slotEndOffset',], },), value: 9, },),],
+              [
+                setAt({ path: placePath({ group: 1, place: 0, field: ['slotStartOffset',], },), value: 12, },),
+                setAt({ path: placePath({ group: 1, place: 0, field: ['slotEndOffset',], },), value: 9, },),
+              ],
+              [
+                setAt({ path: placePath({ group: 1, place: 0, field: ['slotStartOffset',], },), value: 2, },),
+                setAt({ path: placePath({ group: 1, place: 0, field: ['slotEndOffset',], },), value: 4, },),
+              ],
+            ].map(function refusedWith(edits,): string {
+              return refusalAfter({ section, edits, },);
+            },);
+            expect(messages.map(function refused(message,): boolean {
+              return message !== 'not refused';
+            },),).toEqual([true, true, true, true,],);
+          },
+        },),
+        it({
+          name: 'REFUSES A GROUP OF FEWER THAN TWO PLACES THAT IS SAID TO HAVE BEEN CONSIDERED, since only a skip for too '
+            + 'few places can have one: no English, already consistent, or failed',
+          fn: async () => {
+            const place = {
+              label: 'OCCURRENCE 1',
+              sliceIndex: 0,
+              startOffset: 6,
+              endOffset: 18,
+              line: 3,
+              rendering: { kind: 'unlocated', reason: 'not-asked', },
+              outcome: 'untouched',
+            };
+            const base = {
+              repeat: { kind: 'maximal', wording: '窗台上的阳光让小猫睡着了', },
+              occurrences: [place,],
+              unplaced: [],
+            };
+            expect([
+              { ...base, verdict: { kind: 'not-asked', reason: 'no-english', }, },
+              { ...base, verdict: { kind: 'not-asked', reason: 'consistent', },
+                occurrences: [{ ...place, outcome: 'consistent', },], },
+              { ...base, verdict: { kind: 'failed', detail: 'unreachable: a group lists no place', }, },
+              { ...base, verdict: { kind: 'not-asked', reason: 'too-few-placed', }, },
+            ].map(function refusalOfOne(group,): string {
+              return refusalOf({ value: { groups: [group,], slices: [], findings: [], }, },);
+            },).map(function refused(message,): boolean {
+              return message !== 'not refused';
+            },),).toEqual([true, true, true, false,],);
+          },
+        },),
+        it({
+          name: 'REFUSES A GROUP WHOSE PLACES SHARE A SLICE THAT IS SAID TO READ ALIKE, since the pass asks the bench when two '
+            + 'places stand in one slice',
+          fn: async () => {
+            const place = {
+              label: 'OCCURRENCE 1',
+              sliceIndex: 0,
+              startOffset: 6,
+              endOffset: 18,
+              line: 3,
+              rendering: { kind: 'unlocated', reason: 'not-asked', },
+              outcome: 'consistent',
+            };
+            expect(refusalOf({
+              value: {
+                groups: [{
+                  repeat: { kind: 'maximal', wording: '窗台上的阳光让小猫睡着了', },
+                  occurrences: [place, { ...place, label: 'OCCURRENCE 2', startOffset: 30, endOffset: 42, line: 5, },],
+                  unplaced: [],
+                  verdict: { kind: 'not-asked', reason: 'consistent', },
+                },],
+                slices: [],
+                findings: [],
+              },
+            },),).toContain('cat.consistency.groups[0].occurrences[1].sliceIndex',);
+          },
+        },),
+        it({
+          name: 'REFUSES A SEAT THAT IS HEARD TWICE in one group\'s ballots, since a gather hears each seat once',
+          fn: async () => {
+            const section = await sectionOf({},);
+            const first = valueAt({ root: section, path: ['groups', 0, 'verdict', 'ballots', 0,], },);
+            const usable = valueAt({ root: section, path: ['groups', 0, 'verdict', 'usable',], },) as number;
+            expect(refusalAfter({
+              section,
+              edits: [
+                appendAt({ path: ['groups', 0, 'verdict', 'ballots',], value: first, },),
+                setAt({ path: ['groups', 0, 'verdict', 'usable',], value: usable + 1, },),
+              ],
+            },),).toContain('cat.consistency.groups[0].verdict.ballots[',);
+          },
+        },),
+        it({
+          name: 'REFUSES A REASON A PLACE WAS NOT LOCATED FOR THAT NO BALLOT OR GROUP COULD HAVE GIVEN: a missing or '
+            + 'ambiguous quote where no quote won, a slot reason beside no quote or in a repeated run',
+          fn: async () => {
+            const split = await sectionOf({
+              behave: fiveAlike({ quotes: REFRAIN_QUOTES, choice: 'OCCURRENCE 1', keep: [], },),
+            },);
+            const noQuote = await sectionOf({
+              behave: refrainAnsweredInOrder({
+                answers: ['a', 'b', 'c', 'd', 'e',].map(function answerWith(word,): SeatBehaviour {
+                  return {
+                    kind: 'answers',
+                    text: ballotText({
+                      quotes: refrainQuotesWithSecond({ over: { quote: `So this cat is surely a ${word} little treasure.`, }, },),
+                      choice: 'OCCURRENCE 1',
+                      keep: [],
+                    },),
+                  };
+                },),
+              },),
+            },);
+            const rendering = (reason: string,): JsonEdit[] => [
+              setAt({ path: placePath({ group: 1, place: 1, field: ['rendering',], },), value: { kind: 'unlocated', reason, }, },),
+              setAt({ path: placePath({ group: 1, place: 1, field: ['outcome',], },), value: 'unlocated', },),
+            ];
+            const sentence = (reason: string,): JsonEdit[] => [
+              setAt({ path: placePath({ group: 0, place: 1, field: ['rendering',], },), value: { kind: 'unlocated', reason, }, },),
+              setAt({ path: placePath({ group: 0, place: 1, field: ['outcome',], },), value: 'unlocated', },),
+            ];
+            expect(valueAt({ root: noQuote, path: placePath({ group: 1, place: 1, field: ['rendering', 'reason',], },), },),)
+              .toBe('no-agreement',);
+            expect([
+              refusalAfter({ section: noQuote, edits: rendering('not-found',), },),
+              refusalAfter({ section: noQuote, edits: rendering('ambiguous',), },),
+              refusalAfter({ section: noQuote, edits: rendering('slot-not-found',), },),
+              refusalAfter({ section: noQuote, edits: rendering('slot-ambiguous',), },),
+              refusalAfter({ section: noQuote, edits: rendering('slot-empty',), },),
+              refusalAfter({ section: split, edits: sentence('slot-no-agreement',), },),
+              refusalAfter({ section: split, edits: sentence('slot-not-found',), },),
+            ].map(function refused(message,): boolean {
+              return message !== 'not refused';
+            },),).toEqual([true, true, true, true, true, true, true,],);
+          },
+        },),
+        it({
+          name: 'REFUSES A LOCATED RENDERING THAT SHOWS A READER NOTHING, since the pass reads such a quote as empty',
+          fn: async () => {
+            const dots = await sectionOf({
+              behave: fiveAlike({
+                quotes: refrainQuotesWithSecond({ over: { quote: '...', }, },),
+                choice: 'OCCURRENCE 1',
+                keep: [],
+              },),
+            },);
+            expect(refusalAfter({
+              section: dots,
+              edits: [
+                setAt({
+                  path: placePath({ group: 1, place: 1, field: ['rendering',], },),
+                  value: { kind: 'located', quote: '...', slot: 'lazy', },
+                },),
+                setAt({ path: placePath({ group: 1, place: 1, field: ['outcome',], },), value: 'replaced', },),
+              ],
+            },),).not.toBe('not refused',);
+          },
+        },),
+        it({
+          name: 'REFUSES A SLICE THAT HOLDS BOTH A REPLACED PLACE AND A PLACE THE FLOORS REFUSED, since the floors answer for '
+            + 'a slice once, and an overlap that no kept replacement in its slice explains',
+          fn: async () => {
+            const section = await sectionOf({},);
+            const mixed = refusalAfter({
+              section,
+              edits: [setAt({ path: placePath({ group: 1, place: 2, field: ['outcome',], },), value: 'kept-floor', },),],
+            },);
+            const slices = valueAt({ root: section, path: ['slices',], },) as readonly { readonly sliceIndex: number; }[];
+            const lone = refusalAfter({
+              section,
+              edits: [
+                setAt({ path: placePath({ group: 1, place: 1, field: ['outcome',], },), value: 'overlapped', },),
+                setAt({
+                  path: ['slices',],
+                  value: slices.filter(function notFirst(row,): boolean {
+                    return row.sliceIndex !== 1;
+                  },),
+                },),
+              ],
+            },);
+            expect([mixed !== 'not refused', lone !== 'not refused',],).toEqual([true, true,],);
           },
         },),
         it({

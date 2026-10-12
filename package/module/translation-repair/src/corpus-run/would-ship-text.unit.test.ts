@@ -436,6 +436,57 @@ await describe({
       },),
 
       it({
+        name: 'WALKS THE DECIDERS FROM THE PAGE ASSEMBLY DOWN, each surfacing at one slice when the one above it is '
+          + 'taken away: the assembly, the consistency pass, the polish',
+        fn: async () => {
+          /**
+           What the page assembly trimmed at the slice.
+           */
+          const assembly = {
+            trimmed: [{ sliceIndex: 0, replacementText: 'The cat naps[^1].', },],
+            withdrawn: [],
+            findings: [],
+          };
+          /**
+           Reads the polished source with the deciders a case keeps.
+           */
+          function ladderRung(
+            { assemblyKept, consistencyKept, }: { readonly assemblyKept: boolean; readonly consistencyKept: boolean; },
+          ): WouldShipReading {
+            return firstReadingOf({
+              source: {
+                ...polishedSource(),
+                ...(consistencyKept ? { consistency: CONSISTENCY_AT_ZERO, } : {}),
+                ...(assemblyKept ? { pageAssembly: assembly, } : {}),
+              } as unknown as WouldShipSource,
+            },);
+          }
+          expect([
+            ladderRung({ assemblyKept: true, consistencyKept: true, },),
+            ladderRung({ assemblyKept: false, consistencyKept: true, },),
+            ladderRung({ assemblyKept: false, consistencyKept: false, },),
+          ],).toEqual([
+            { kind: 'wording', text: 'The cat naps[^1].', decidedBy: 'page-assembly', },
+            { kind: 'wording', text: CONSISTENT_NAP, decidedBy: 'consistency', },
+            { kind: 'wording', text: POLISHED_NAP, decidedBy: 'polish', },
+          ],);
+        },
+      },),
+
+      it({
+        name: 'GIVES THE ARCHIVE BACK WHERE THE PAGE ASSEMBLY WITHDREW THE SLICE, whatever the consistency pass wrote there',
+        fn: async () => {
+          expect(firstReadingOf({
+            source: {
+              ...polishedSource(),
+              consistency: CONSISTENCY_AT_ZERO,
+              pageAssembly: { trimmed: [], withdrawn: [0,], findings: [], },
+            } as unknown as WouldShipSource,
+          },),).toEqual({ kind: 'wording', text: ARCHIVE_NAP, decidedBy: 'archive', },);
+        },
+      },),
+
+      it({
         name: 'LEAVES THE POLISH IN FORCE at a slice the consistency pass did not change, however many other '
           + 'slices it did',
         fn: async () => {

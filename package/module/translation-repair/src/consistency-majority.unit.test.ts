@@ -160,6 +160,66 @@ await describe({
       ],
     },),
     describe({
+      name: 'the strict-majority boundary',
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'AGREES ONLY WHEN MORE THAN HALF OF THE USABLE BALLOTS GIVE THE SAME CHOICE, QUOTE, SLOT OR KEPT PLACE, '
+            + 'at every count from one to six, odd and even',
+          fn: async () => {
+            /**
+             Ballots of which `agreeing` give the text everyone is asked about and the rest give another.
+             */
+            function splitting(
+              { usable, agreeing, }: { readonly usable: number; readonly agreeing: number; },
+            ): readonly ConsistencyVoice[] {
+              return Array.from(
+                { length: usable, },
+                function oneSeat(
+                  _unused,
+                  at,
+                ): ConsistencyVoice {
+                  const agrees = at < agreeing;
+                  return voiceOf({
+                    seat: `seat-${String(at,)}`,
+                    over: {
+                      choice: agrees ? 'OCCURRENCE 1' : 'OCCURRENCE 2',
+                      quotes: [{ label: 'OCCURRENCE 1', quote: agrees ? 'the cat naps' : 'the cat dozes', slot: agrees ? 'naps' : 'dozes', },],
+                      keep: agrees ? ['OCCURRENCE 2',] : [],
+                    },
+                  },);
+                },
+              );
+            }
+            const found: Record<string, readonly boolean[]> = {};
+            for (const usable of [1, 2, 3, 4, 5, 6,]) {
+              found[String(usable,)] = Array.from(
+                { length: usable + 1, },
+                function atAgreeing(
+                  _unused,
+                  agreeing,
+                ): boolean {
+                  const voices = splitting({ usable, agreeing, },);
+                  return (majorityChoiceOf({ voices, },)[0] === 'OCCURRENCE 1')
+                    && (agreedQuoteOf({ voices, label: 'OCCURRENCE 1', },)[0] === 'the cat naps')
+                    && (agreedSlotOf({ voices, label: 'OCCURRENCE 1', },)[0] === 'naps')
+                    && isKeptByMajority({ voices, label: 'OCCURRENCE 2', },);
+                },
+              );
+            }
+            expect(found,).toEqual({
+              1: [false, true,],
+              2: [false, false, true,],
+              3: [false, false, true, true,],
+              4: [false, false, false, true, true,],
+              5: [false, false, false, true, true, true,],
+              6: [false, false, false, false, true, true, true,],
+            },);
+          },
+        },),
+      ],
+    },),
+    describe({
       name: usableVoicesOf.name,
       concurrency: DEFAULT_CONCURRENCY,
       children: [
