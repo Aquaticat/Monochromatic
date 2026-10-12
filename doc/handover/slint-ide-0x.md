@@ -270,8 +270,8 @@ the items after it are the record of 2026-10-05 and older.
     annotation, sidebar, theme, search, and watch guards, all passing.
     The landing message lists them as still running because they were; they finished green afterwards.
     A release profile tile build was never timed (the test builds are debug and take about 600 ms each).
-  - The user wants the real feel checked by hand: scrolling under load with the installed build.
-    The installed single file at `~/.local/bin/monochromatic-ide` predates stages 1 and 2.
+  - The installed single file at `~/.local/bin/monochromatic-ide` predates stages 1 and 2; reinstalling it is a
+    separate action in the user's real home.
   - Soft wrap is in progress on the branch `feat/ide-soft-wrap` (worktree `.claude/worktrees/ide-wrap`), not landed:
     slice 1 (IntelliJ break rules, wrapped shaping, multi-row geometry; library only) is committed and gated;
     slice 2 (wrap width, row heights, worker shaping in chunks, painting, no horizontal scrolling, gutter with the
