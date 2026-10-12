@@ -3080,8 +3080,14 @@ the list is full width with no maximum column width and no centering (this repla
 earlier redesign), 16 dp side margin so a card is the page width minus 32 dp, rows 72 dp tall with a 40 dp circular icon
 at x = 32 dp and the title at x = 84 dp, 2 dp between rows of one group and 16 dp between groups, with the group corner
 rounding already built.
-Where the music player's page has no leading icon (D87 and D99 give two text rows), the title keeps its 16 dp inset and
-the row height stays 72 dp for a two-line row.
+The music player's template rows (D87 and D99) had no icon; the human asked that an icon be picked for each from
+Material Symbols and embedded, so every row has the stock leading icon and keeps the 72 dp two-line height.
+The orchestrator picked `queue_music` for the Track rows template and `play_circle` for the Playing track template, in
+the Outlined style at weight 400 on the 24 px grid, drawn in a 40 dp circle filled with the secondary container role
+(D108 derivation) with the icon in the on-secondary-container role.
+They are embedded as vector path data in each app, with no icon font, no download and no network access at run time,
+the way the app already embeds its other icons; the Material Symbols license (Apache 2.0) text goes under `LICENSES/`
+and the README names the source.
 
 ## Pending after the theme picks (2026-09-04)
 
