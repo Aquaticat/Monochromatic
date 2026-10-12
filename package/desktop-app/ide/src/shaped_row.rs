@@ -139,7 +139,19 @@ impl ShapedRow {
     /// visualRowBytes(index: number): [number, number] | undefined;
     /// ```
     pub fn visual_row_bytes(&self, index: usize) -> Option<Range<usize>> {
-        return self.layout.lines().nth(index).map(|line| line.text_range());
+        // What: The end is clamped to the display text, because an empty line reports one byte past it.
+        // Why: The rows must tile the display text exactly, so no range may name a byte the text lacks.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // const end = Math.min(range.end, text.length);
+        // ```
+        let length = self.projection.text.len();
+        return self
+            .layout
+            .lines()
+            .nth(index)
+            .map(|line| line.text_range().start..line.text_range().end.min(length));
     }
 
     /// Row-local source characters of visual row `index`, or nothing when the row does not exist.
