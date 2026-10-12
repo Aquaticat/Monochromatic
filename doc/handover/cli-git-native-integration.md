@@ -111,9 +111,18 @@ New modules (each with its `*_tests.rs` where it has pure logic; the transaction
 
 ## Remaining
 
-- Merge `feat/cli-git-native-transactions` again, then run on the final head: the container gate
-  (`GIT_POLICY_NATIVE_IMAGE_TAG=integration`), `native:clippy`, the Git 2.55.0 probe, `cli.fuzz:smoke`.
-- Mutation of the files created or changed here (`native:mutation:scoped`).
+The transactions branch (`52bafbb72a`) and the landing branch (`97d461f366`) are both merged into this branch.
+The integrator agent stopped on a usage limit at `ec02ccf1e6`; the steps below are still open.
+
+- Rerun, on the final head, the container gate (`GIT_POLICY_NATIVE_IMAGE_TAG=integration`), `native:clippy`, the Git 2.55.0
+  probe and `cli.fuzz:smoke`.
+  The logs from the last passing run (`int-gate9.log`, `int-fuzz4.log`, `int-e2e-final.log`, seed 6: 38 runs,
+  10 baseline pass, 26 concurrency pass, 2 skips) predate the last two test-only commits.
+- Dispose of two mutants from the campaign over this branch's files (67 tested, 59 caught, 6 unviable):
+  one missed at `commit_transaction.rs:552:30` (`||` to `&&` in `run_commit_transaction`; the line numbers moved after
+  later commits, so locate it by the function) and one timeout at `commit_preparation.rs:210:27`
+  (the match guard in `retry_while_active` replaced by `true`, which retries any failure without end).
+  Each needs a test that kills it, or a code-based proof that it cannot be killed.
 - Further e2e seeds.
 
 ## Rerun commands
