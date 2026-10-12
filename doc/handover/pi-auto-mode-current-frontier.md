@@ -653,6 +653,18 @@ empty,
 and replaced prompt inputs,
 with original ownership and bootstrap cleanup controls retained.
 
+The code-owned obligation consumer in `ab498c0` retains unread metadata as
+`tool-metadata-observation-gap`.
+Required red `proc_527b` failed before the consumer existed;
+the action-policy parent passed `proc_2389`.
+Canonical `proc_9cc0` passed declared,
+hidden,
+and unread-accessor metadata cases.
+The accessor gap survives admitted `none` estimates for captured clauses and the whole request.
+Restoring the declaration cannot repair its original received-input gap.
+These are conditional metadata obligations,
+not removal of the remaining `request-source-domain` placeholder.
+
 The remaining delivery target is decision-specific domain closure and maintained host/runtime integration.
 Constructor metadata alone does not account for earlier configuration processing,
 extension registration,
