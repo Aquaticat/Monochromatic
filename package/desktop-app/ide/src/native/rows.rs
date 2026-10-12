@@ -32,6 +32,8 @@ use ide_app::annotation::{Held, rank};
 use ide_app::line_rows::LineRows;
 /// The mapping itself and the height of one code row.
 use ide_app::row_map::{CODE_ROW, RowMap};
+/// A wrap width must be a positive number of pixels.
+use ide_app::wrap::has_wrap_width;
 /// The stamp naming a displayed text,
 ///  and one line's block of virtual rows.
 use ide_app::{language::identity::DocumentStamp, virtual_row::Block};
@@ -47,6 +49,9 @@ use ide_app::{language::identity::DocumentStamp, virtual_row::Block};
 /// import { type Model, ArrayModel } from 'slint';
 /// ```
 use slint::{Model, ModelRc, VecModel};
+/// The held clock of the tests.
+#[cfg(test)]
+use std::cell::Cell;
 /// `Rc` shares the persistent model between the state and the window;
 ///  `Duration` and `Instant` time held space.
 use std::{
@@ -76,17 +81,19 @@ const SCROLL_QUIET: Duration = Duration::from_millis(200);
 ///  the displayed text's stamp,
 ///  the annotation store's change counter,
 ///  the display scale as exact bits,
-///  and the counter of changes to the measured visual rows;
+///  the counter of changes to the measured visual rows,
+///  and the wrap width as exact bits (zero while the view has none);
 ///  `type` names the tuple once.
 /// Why:
-///  Blocks are assembled again only when one of the first three changed;
-///  the map is rebuilt when any of the four did.
+///  Blocks are assembled again only when the stamp, the version, the scale, or the width changed,
+///  because a hint stands where its character is drawn and a message breaks to the text area;
+///  the map is rebuilt when any of the five did.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// type RowKey = [stamp: DocumentStamp, version: number, scale: number, measured: number];
+/// type RowKey = [stamp: DocumentStamp, version: number, scale: number, measured: number, width: number];
 /// ```
-pub(super) type RowKey = (DocumentStamp, u64, u32, u64);
+pub(super) type RowKey = (DocumentStamp, u64, u32, u64, u32);
 
 /// What:
 ///  A freshly assembled vertical layout that is not installed yet:
@@ -150,6 +157,11 @@ pub(super) fn absorb(
     return changed;
 }
 
+/// The width of the text area blocks are made for, or nothing while the view has none.
+fn wrap_of(current: &State) -> Option<f32> {
+    return has_wrap_width(current.width).then_some(current.width);
+}
+
 /// The key the displayed text,
 ///  its annotations,
 ///  the display `scale`,
@@ -161,6 +173,7 @@ fn wanted_key(current: &State, scale: f32) -> RowKey {
         current.annotations.version(),
         scale.to_bits(),
         current.wrap_version,
+        wrap_of(current).map_or(0, f32::to_bits),
     );
 }
 
@@ -190,9 +203,9 @@ fn rebuilt(current: &mut State, scale: f32) -> Option<Rebuilt> {
         // `None`: nothing a block depends on changed.
         return None;
     }
-    let blocks_current = current
-        .row_key
-        .is_some_and(|known| return (known.0, known.1, known.2) == (key.0, key.1, key.2));
+    let blocks_current = current.row_key.is_some_and(|known| {
+        return (known.0, known.1, known.2, known.4) == (key.0, key.1, key.2, key.4);
+    });
     // What: Destructuring `&mut State` lends fields separately.
     // Why: Assembly changes the store's packing cache and uses the shaper while the document is only read.
     //
@@ -200,6 +213,7 @@ fn rebuilt(current: &mut State, scale: f32) -> Option<Rebuilt> {
     // ```ts
     // const { document, shaper, annotations } = current;
     // ```
+    let wrap = wrap_of(current);
     let State {
         document,
         shaper,
@@ -212,7 +226,7 @@ fn rebuilt(current: &mut State, scale: f32) -> Option<Rebuilt> {
         // `clone` copies the list of shared block pointers, not the blocks.
         kept.clone()
     } else {
-        annotations.assemble(key.0, document, shaper, scale)
+        annotations.assemble(key.0, document, shaper, scale, wrap)
     };
     let mut raised = Vec::new();
     for block in &blocks {
@@ -276,12 +290,45 @@ pub(super) fn refresh(current: &mut State, scale: f32) -> Option<RowMap> {
     return install(current, layout);
 }
 
+/// What:
+///  The moment the scrolling rule reads as now:
+///  the system clock,
+///  or in tests the instant they hold it at.
+/// Why:
+///  The rule asks whether 200 ms have passed since the last scroll step;
+///  a test that sleeps through that time can be overtaken by a loaded host,
+///  so a test holds this clock still and moves it by exactly the time it means.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function quietNow(): number { return heldClock ?? performance.now(); }
+/// ```
+pub(super) fn quiet_now() -> Instant {
+    #[cfg(test)]
+    if let Some(held) = HELD_CLOCK.with(Cell::get) {
+        return held;
+    }
+    return Instant::now();
+}
+
+// The instant a test holds the scrolling rule's clock at, if it does; each test thread has its own.
+#[cfg(test)]
+thread_local! {
+    static HELD_CLOCK: Cell<Option<Instant>> = const { Cell::new(None) };
+}
+
+/// Hold the scrolling rule's clock at `at`, or let it run again with `None`.
+#[cfg(test)]
+pub(super) fn hold_clock(at: Option<Instant>) {
+    HELD_CLOCK.with(|held| held.set(at));
+}
+
 /// Whether the reader scrolled so recently that a wheel animation may still be running.
 fn scrolling(current: &State) -> bool {
     // `is_some_and` answers false when the view never scrolled and otherwise asks the closure.
     return current
         .scrolled_at
-        .is_some_and(|at| return at.elapsed() < SCROLL_QUIET);
+        .is_some_and(|at| return quiet_now().saturating_duration_since(at) < SCROLL_QUIET);
 }
 
 /// What:

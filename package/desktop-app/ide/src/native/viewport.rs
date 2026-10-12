@@ -16,9 +16,8 @@ use ide_app::row_map::CODE_ROW;
 use ide_app::wrap::has_wrap_width;
 /// ComponentHandle supplies weak references for callback lifetimes.
 use slint::ComponentHandle;
-/// Checked shared ownership remains confined to the UI thread;
-///  `Instant` times the reader's scrolling.
-use std::{cell::RefCell, rc::Rc, time::Instant};
+/// Checked shared ownership remains confined to the UI thread.
+use std::{cell::RefCell, rc::Rc};
 
 /// What:
 ///  The materialized tile spans this many view heights: one above the view, the view, and one below.
@@ -244,8 +243,8 @@ pub(super) fn bind_viewport(owner: &AppWindow, shared: &Rc<RefCell<State>>) {
         let mut current = state.borrow_mut();
         // An offset nobody announced is the reader scrolling: by wheel, by touch, or by a drag past an edge.
         if offset != current.offset {
-            // `Some(Instant::now())` records this moment as the latest scroll.
-            current.scrolled_at = Some(Instant::now());
+            // `Some(...)` records this moment as the latest scroll.
+            current.scrolled_at = Some(rows::quiet_now());
         }
         let changed = place_scrolled(&mut current, offset, viewport_width, height);
         drop(current);

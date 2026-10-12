@@ -111,7 +111,7 @@ fn block(
         position: hint.0,
         text: hint.1.to_string(),
     }];
-    let (hint_rows, hints) = pack(&row, &labels, &mut shaper, 1.0);
+    let (hint_rows, hints) = pack(&row, &labels, &mut shaper, 1.0, None);
     let mut rows = Vec::new();
     for (start, severity, text) in messages {
         rows.push(MessageRow {

@@ -364,6 +364,40 @@ impl TextShaper {
     /// rowLayout(text: string, scale: number): Layout;
     /// ```
     pub fn row_layout(&mut self, text: &str, scale: f32) -> Layout<u32> {
+        return self.build_row(text, scale, None);
+    }
+
+    /// What:
+    ///  Break the text of one virtual row into pieces that each fit `width` logical pixels,
+    ///  in the face and size [`Self::row_layout`] sets it;
+    ///  a token wider than the width breaks inside it.
+    ///  The answer is the pieces in reading order, trailing blanks dropped;
+    ///  an empty text has none.
+    /// Why:
+    ///  Hint labels and message rows wrap to the width of the code they stand over,
+    ///  and a block's height is the number of pieces,
+    ///  so the break comes from the same shaping that paints each piece.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// wrapRowText(text: string, scale: number, width: number): string[];
+    /// ```
+    pub fn wrap_row_text(&mut self, text: &str, scale: f32, width: f32) -> Vec<String> {
+        let layout = self.build_row(text, scale, Some(width));
+        let mut pieces = Vec::new();
+        for line in layout.lines() {
+            let range = line.text_range();
+            let piece = text[range.start..range.end.min(text.len())].trim_end();
+            if !piece.is_empty() {
+                pieces.push(piece.to_string());
+            }
+        }
+        tracing::trace!(width, pieces = pieces.len(), "wrapped virtual row text");
+        return pieces;
+    }
+
+    /// Shape virtual-row text in the interface face, broken at `wrap` logical pixels or not at all.
+    fn build_row(&mut self, text: &str, scale: f32, wrap: Option<f32>) -> Layout<u32> {
         let mut builder = self
             .layouts
             .ranged_builder(&mut self.fonts, text, scale, true);
@@ -375,8 +409,12 @@ impl TextShaper {
         builder.push_default(StyleProperty::FontStyle(FontStyle::Normal));
         builder.push_default(StyleProperty::LineHeight(LineHeight::Absolute(ROW_HEIGHT)));
         builder.push_default(StyleProperty::Brush(ROW_ROLE));
+        if wrap.is_some() {
+            // A token wider than the width has to break inside it, as it does in the source text.
+            builder.push_default(StyleProperty::OverflowWrap(OverflowWrap::Anywhere));
+        }
         let mut layout = builder.build(text);
-        layout.break_all_lines(None);
+        layout.break_all_lines(wrap.map(|width| return width * scale));
         return layout;
     }
 

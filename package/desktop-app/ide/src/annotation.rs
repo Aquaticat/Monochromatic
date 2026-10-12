@@ -232,6 +232,29 @@ pub struct Held {
 }
 
 /// What:
+///  How much shaping assembling blocks has done so far:
+///  lines whose hints were packed,
+///  message rows whose width was measured,
+///  and message rows that had to be broken to a width.
+/// Why:
+///  Packing and breaking run on the window thread when the text area changes width,
+///  and the structural tests compare these counts before and after to prove what a resize costs.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// type AssemblyWork = { packed: number; measured: number; broken: number };
+/// ```
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+pub struct AssemblyWork {
+    /// Lines whose hints were packed against the shaped line.
+    pub packed: u64,
+    /// Message rows shaped to learn their width.
+    pub measured: u64,
+    /// Message rows wider than the text area, broken by shaping.
+    pub broken: u64,
+}
+
+/// What:
 ///  The latest snapshots,
 ///  a position index over every diagnostic,
 ///  the hints and message rows grouped by
@@ -270,13 +293,26 @@ pub struct Annotations {
     ///  from every hint snapshot of the `labelled` revision.
     labels: BTreeMap<usize, Vec<Label>>,
     /// Packed hint rows per line,
-    ///  computed on demand at `placed_scale`.
+    ///  computed on demand at `placed_scale` and `placed_wrap`.
     placed: BTreeMap<usize, (usize, Vec<HintPlace>)>,
     /// Physical pixels per logical pixel the entries of `placed` were packed at.
     placed_scale: f32,
+    /// The wrap width in logical pixels the entries of `placed` and `wrapped` were made at,
+    ///  or nothing while the source view has no width.
+    placed_wrap: Option<f32>,
     /// Message rows per line for the held diagnostics,
-    ///  worst first.
+    ///  worst first,
+    ///  broken at 80 columns.
     messages: BTreeMap<usize, Vec<MessageRow>>,
+    /// Shaped width of each row of `messages` per line at `placed_scale`,
+    ///  measured once so a new wrap width shapes only the rows that are wider than it.
+    natural: BTreeMap<usize, Vec<f32>>,
+    /// The rows of `messages` broken again to fit `placed_wrap`,
+    ///  per line,
+    ///  made on demand.
+    wrapped: BTreeMap<usize, Vec<MessageRow>>,
+    /// Shaping done for blocks so far.
+    work: AssemblyWork,
     /// The text revision `held` belongs to.
     held_for: Option<DocumentStamp>,
     /// Space held open after an external change,
@@ -522,6 +558,9 @@ impl Annotations {
             messages.insert(line, message_rows(&problems));
         }
         self.messages = messages;
+        // The rows measured and broken for the earlier messages describe lines that may now hold other rows.
+        self.natural.clear();
+        self.wrapped.clear();
     }
 
     /// What:
@@ -590,6 +629,11 @@ impl Annotations {
             _ => false,
         };
         return same_hints && same_diagnostics;
+    }
+
+    /// The shaping assembling blocks has done so far.
+    pub fn work(&self) -> AssemblyWork {
+        return self.work;
     }
 
     /// The change counter:

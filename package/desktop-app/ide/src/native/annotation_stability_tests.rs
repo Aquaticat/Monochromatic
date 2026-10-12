@@ -26,6 +26,8 @@ use super::annotation_tests::{TEXT_LEFT, TEXT_TOP, hint, problem};
 ///  its opener,
 ///  and its bounded wait.
 use super::find_tests::{Reader, eventually, reader};
+/// The clock the scrolling rule reads, which a test holds and moves.
+use super::rows::hold_clock;
 /// Snapshot records exactly as the Language module builds them.
 use ide_app::language::{
     diagnostics::{Diagnostic, DiagnosticsSnapshot, Severity, SourceGroup},
@@ -49,7 +51,10 @@ use ide_app::{
 /// ```
 use slint::{Rgba8Pixel, SharedPixelBuffer, platform::update_timers_and_animations};
 /// Disposable fixtures and shared snapshot pointers.
-use std::{fs, sync::Arc};
+use std::{fs, sync::Arc, time::Duration};
+
+/// More than the 200 ms of stillness after which rows may move the view; a test moves its held clock by this.
+const QUIET_PASSED: Duration = Duration::from_millis(250);
 
 /// Characters per line of the numbered fixture:
 ///  `line NNN: value` and its terminator.
@@ -474,6 +479,16 @@ fn rows_above_the_view_wait_until_scrolling_has_stopped() {
     // The scroll re-centers the tile on the worker; the frames are compared only once it is swapped in.
     super::overscan_tile_tests::settle_tile(&reader.source);
     let before = frame(window);
+    // What: From here on the scrolling rule reads a clock this test holds and moves by exactly the time it means.
+    // Why: Sleeping through the 200 ms quiet time and racing it in the other direction both depend on the host's
+    //      load; a render that came 200 ms after a scroll step on a loaded host once showed the rows early.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // let now = Date.now(); holdClock(now);
+    // ```
+    let mut now = std::time::Instant::now();
+    hold_clock(Some(now));
     // What: A closure that scrolls one pixel away and back, as the reader's wheel would.
     // Why: Taking a frame takes time; the scroll the rows must wait for has to be the latest thing that
     //      happened when they arrive.
@@ -511,6 +526,8 @@ fn rows_above_the_view_wait_until_scrolling_has_stopped() {
         "a change that also moves the offset waits as a whole"
     );
     // Scrolling has stopped: the rows are shown and nothing above line 104's block moves.
+    now += QUIET_PASSED;
+    hold_clock(Some(now));
     eventually("rows that waited for scrolling were never shown", || {
         return reader.source.borrow().row_map.block_height(10) == row;
     });
@@ -529,7 +546,9 @@ fn rows_above_the_view_wait_until_scrolling_has_stopped() {
     assert_eq!(shown.block_height(104), row);
     // A scroll step whose change handler has not run yet is scrolling too: rows that arrive in the render
     // right after it wait, and are shown once scrolling has stopped.
-    idle();
+    now += QUIET_PASSED;
+    hold_clock(Some(now));
+    update_timers_and_animations();
     let resting = -window.get_scroll_y();
     window.set_scroll_y(-(resting + 3.0));
     inject(
@@ -546,6 +565,8 @@ fn rows_above_the_view_wait_until_scrolling_has_stopped() {
         0.0,
         "rows above the view were shown during a scroll step whose change handler had not run yet"
     );
+    now += QUIET_PASSED;
+    hold_clock(Some(now));
     eventually(
         "rows that waited for a scroll step were never shown",
         || {

@@ -265,6 +265,13 @@ mod watch_scope_tests;
 ///  faster than polling could.
 #[cfg(test)]
 mod watch_tests;
+/// Hints and message rows on wrapped lines:
+///  their place above the first visual row,
+///  their width,
+///  presses on them,
+///  and new window widths.
+#[cfg(test)]
+mod wrap_annotation_tests;
 /// Home, End, Up, Down, paging, word motion, drags, and multi-clicks on wrapped lines.
 #[cfg(test)]
 mod wrap_keys_tests;

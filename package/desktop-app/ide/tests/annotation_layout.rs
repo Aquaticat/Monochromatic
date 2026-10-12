@@ -116,7 +116,7 @@ fn with_block(
     let document = Document::new(source);
     let mut shaper = TextShaper::new();
     let row = shaper.row(&document, line, 1.0);
-    let (hint_rows, hints) = pack(&row, labels, &mut shaper, 1.0);
+    let (hint_rows, hints) = pack(&row, labels, &mut shaper, 1.0, None);
     let block = Arc::new(Block {
         line,
         hint_rows,
