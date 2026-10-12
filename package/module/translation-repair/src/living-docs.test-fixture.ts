@@ -164,7 +164,7 @@ async function translationRepairDocs({ family, }: { readonly family: string; },)
  const paths = await withParts({ path: 'doc/planning/naps.md', },); // ['doc/planning/naps.md', 'doc/planning/naps-part-01.md']
  ```
  */
-export async function withParts({ path, }: { readonly path: string; },): Promise<readonly string[]> {
+async function withParts({ path, }: { readonly path: string; },): Promise<readonly string[]> {
   /**
    Folder holding the doc, from the repository root.
    */
