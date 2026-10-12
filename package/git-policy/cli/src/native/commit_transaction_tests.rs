@@ -5,7 +5,7 @@
 
 use super::*;
 use crate::candidate_prediction::CandidateRequest;
-use crate::capture_invocation::{capture_invocation_base, capture_invocation_layout};
+use crate::capture_invocation::{InvocationCapture, InvocationLayout, capture_invocation_base, capture_invocation_layout};
 use crate::command_test_support::os_arguments;
 use crate::commit_index::IndexSelection;
 use crate::config_schema::PolicyConfig;
@@ -21,13 +21,30 @@ use crate::worktree_identity::resolve_worktree_identity;
 use std::ffi::OsString;
 use std::path::{Path, PathBuf};
 
-/// The overlay every command of one fixture carries: its git directory and its work tree.
+/// The capture of a fixture repository, read through its own context.
+fn capture_of(context: &GitContext, repo: &Path) -> InvocationCapture {
+    let layout: InvocationLayout = match capture_invocation_layout(context, repo, false) {
+        Ok(found) => found,
+        Err(error) => panic!("layout of the fixture: {error:?}"),
+    };
+    return match capture_invocation_base(context, repo, layout) {
+        Ok(found) => found,
+        Err(error) => panic!("capture of the fixture: {error:?}"),
+    };
+}
+
+/// The overlay every command of one fixture carries: its git directory, its work tree, and a Git identity.
+///  The identity keeps the shadow commit working on a machine with no global identity.
 fn fixture_context(repo: &Path) -> GitContext {
     return GitContext {
         real_git: PathBuf::from(REAL_GIT),
         overlay: vec![
             (OsString::from("GIT_DIR"), repo.join(".git").into_os_string()),
             (OsString::from("GIT_WORK_TREE"), repo.as_os_str().to_os_string()),
+            (OsString::from("GIT_AUTHOR_NAME"), OsString::from("Fixture")),
+            (OsString::from("GIT_AUTHOR_EMAIL"), OsString::from("fixture@example.invalid")),
+            (OsString::from("GIT_COMMITTER_NAME"), OsString::from("Fixture")),
+            (OsString::from("GIT_COMMITTER_EMAIL"), OsString::from("fixture@example.invalid")),
         ],
         global_prefix: Vec::new(),
     };
@@ -60,9 +77,7 @@ fn a_selected_change_prepares_a_commit_outside_head() {
         &[],
     )
     .expect("identity of the fixture");
-    let capture = capture_invocation_layout(&context, repo.as_path(), false)
-        .and_then(|layout| capture_invocation_base(&context, repo.as_path(), layout))
-        .expect("capture of the fixture");
+    let capture: InvocationCapture = capture_of(&context, repo.as_path());
     let registry: PathBuf = root.join("registry");
     let transaction_id: &str = "0b6c2c1e-6f5b-4d0e-9a55-3f5d8e2f6a20";
     let paths: TransactionPaths = transaction_paths(registry.as_path(), &capture.layout.common_dir, transaction_id);
@@ -135,9 +150,7 @@ fn a_commit_outside_a_worktree_stops_before_any_directory_is_created() {
     let root: PathBuf = fixture("transaction-outside");
     let repo: PathBuf = changed_repository(root.as_path());
     let context: GitContext = fixture_context(repo.as_path());
-    let capture = capture_invocation_layout(&context, repo.as_path(), false)
-        .and_then(|layout| capture_invocation_base(&context, repo.as_path(), layout))
-        .expect("capture of the fixture");
+    let capture: InvocationCapture = capture_of(&context, repo.as_path());
     let registry: PathBuf = root.join("registry");
     let pathspecs: Vec<String> = vec![String::from("a.txt")];
     let base_commit: String = git_text(repo.as_path(), &["rev-parse", "HEAD"]);
