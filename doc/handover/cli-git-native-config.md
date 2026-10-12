@@ -1,0 +1,258 @@
+# cli-git native repository configuration
+
+## Purpose and how to respond
+
+This branch expresses the repository's own cli-git configuration in the native wrapper's format
+and proves that the native wrapper decides like the incumbent TypeScript wrapper under it.
+It answers the work-queue item
+"This repository's translated configuration must list all four optional policies and set `rulesFile`"
+in `doc/handover/cli-git-rust-implementation.md`.
+
+Branch `feat/cli-git-native-config`,
+worktree `.claude/worktrees/cli-git-lane-config`,
+created from the transactions head `13f60ef1b1`.
+Paths starting with `src/`, `bin/` or `mise.toml` are relative to `package/git-policy/cli/`;
+every other path is repository-relative.
+
+Respond by merging the branch into the integration branch.
+Two things stay open for the people who own them:
+the two policies the native wrapper cannot evaluate yet (see `Blocking rows`),
+and the per-worktree rules file (see `Rules file in a linked worktree`).
+
+## Status
+
+The configuration, the differential check, and the control that binds the shipped file are committed.
+The last differential run against the committed head showed 36 equal rows, 36 pending rows and 0 different rows.
+Commits on this branch after `13f60ef1b1`:
+
+- `fab9c47b79` adds `cli-git.config.jsonc`.
+- `108a326616` adds the differential check and its mise task.
+- `31bad9874a` adds the configuration control and the gate snapshot entry for the shipped file.
+
+The container gate image and the Clippy result are in `Gate results`.
+
+## The native format and how the incumbent maps onto it
+
+The native wrapper reads one file, `cli-git.config.jsonc`, at the top level Git reports
+(`src/native/config_file.rs:56`).
+The incumbent's `cli-git.config.ts` and `cli-git.config.mjs` are never read or run natively;
+when one sits beside the JSONC file, only `git cli-git check` reports it (`src/native/config_file.rs:69`).
+The top-level keys are `policies`, `hooks`, `indexLock` and `landing` (`src/native/config_parse.rs:52`).
+
+The four optional policies are `markdown/autofix`, `mono/forbidden-root-context`, `mono/dependent-version-bump`
+and `security/forbidden-strings`.
+Each one is off unless the file lists it (`off_unless_listed` rows in `src/native/policy_registry.rs:184` to `:208`),
+and an empty file and no file behave identically.
+This is the user decision of 2026-10-05
+(`doc/handover/cli-git-rust-implementation.md:1255` to `:1260`).
+
+The mapping from `cli-git.config.ts` to `cli-git.config.jsonc`, setting by setting:
+
+- `markdown/autofix` at `warn` with `exclude: ['package/ssg/']` (`cli-git.config.ts:35`)
+  becomes `["warn", { "rules": ["lfs-image-url"], "exclude": ["package/ssg/"] }]`.
+  The rule list is the incumbent's default, now stated.
+  The native option set is `rules` and `exclude` only (`src/native/config_policies.rs:278`).
+- `mono/forbidden-root-context` at `error` (`cli-git.config.ts:41`) becomes `"error"`.
+- `mono/dependent-version-bump` is absent from `cli-git.config.ts`
+  but ran at its default severity, `error`, through the registered repository plugin.
+  It is listed at `"error"` explicitly
+  (`doc/handover/cli-git-rust-implementation.md:1255` to `:1260` names this consequence).
+- `security/forbidden-strings` at `error` (`cli-git.config.ts:42`) becomes
+  `["error", { "builtinRules": true, "rulesFile": ".cache/forbidden-strings.rules.txt" }]`.
+  `builtinRules` is the schema default, stated as the incumbent states it.
+  `rulesFile` is new in the native format (`src/native/config_policies.rs:153`, `src/native/config_schema.rs:130`):
+  the scanner reads the file it names relative to the top level,
+  else the `FORBIDDEN_STRINGS_RULES` variable, else `forbidden-strings.local.txt`
+  (`src/native/scanner_selection.rs:115`; user decision at `doc/handover/cli-git-rust-implementation.md:1293`).
+  The value is the path the root `mise.toml` gives `FORBIDDEN_STRINGS_RULES` (line 1319),
+  so both wrappers read one file.
+- The incumbent's `executable` option has no counterpart:
+  the scanner is linked into the native wrapper and the option set is `builtinRules` and `rulesFile` only
+  (`src/native/config_schema.rs:117` to `:130`).
+- `plugins` and `trust` (including `children: true`) have no counterpart:
+  executable configuration and its consent protocol are retired
+  (`doc/planning/cli-git-rust-behavior-ledger.md:878` to `:895`; `src/native/config_parse.rs:54` to `:60`).
+- The five built-in policies keep their defaults and need no lines.
+
+## Decisions and their reasons
+
+- The JSONC file is added beside `cli-git.config.ts`, and the TypeScript file stays.
+  The incumbent still reads it, and the differential check needs both.
+  The native `check` reports the TypeScript file as ignored (see `Facts the integrator must know`).
+  Deleting the TypeScript file belongs to the cutover, after the incumbent is retired.
+- `rulesFile` names `.cache/forbidden-strings.rules.txt` rather than relying on the variable.
+  The user chose the configured option first so that a wrapper started without the variable does not silently
+  scan with the built-in rules only.
+- The differential check compares byte-for-byte output of direct commands (`cli-git check`, `cli-git fix`) and `add`.
+  `git commit` is still refused natively, so a commit cannot be compared.
+  `--no-enforce-*` controls are not used anywhere;
+  the policy filter `--policy <id>` isolates one policy at a time instead.
+- A row where the native wrapper refuses because it does not implement an enabled policy counts as pending,
+  never as equal.
+  `--require-all-equal` turns pending rows into failures; use it once both policies are ported.
+- The control that binds the shipped file is a Rust unit test over the real loader
+  (`src/native/config_repository_tests.rs`), not a copy of the file in a test.
+  It needs the file in the container snapshot,
+  so `bin/test-native-container.mjs` copies `cli-git.config.jsonc` into the image next to `clippy.toml`.
+  The inline translation in `src/native/config_parse_acceptance_tests.rs:102` is a separate parser control
+  and can drift;
+  the new control is the one tied to the file the repository ships.
+- Candidate sets build the forbidden-string hit from fragments so no source file here carries a matching literal.
+  The fixture rules file is a copy of the committed `forbidden-strings.append.txt`;
+  the generated cache also carries embargoed local rules and is never read.
+
+## Evidence
+
+The differential check builds, per candidate set, one disposable repository for each wrapper.
+Each holds the real `cli-git.config.ts`, the real `cli-git.config.jsonc`, a baseline commit made by real Git,
+the scanner at the path the incumbent configuration names, and the rules file where `rulesFile` names it.
+The incumbent runs from source (`src/index.ts`) with `FORBIDDEN_STRINGS_RULES` set;
+the native wrapper runs without that variable, so `rulesFile` is what is exercised.
+Twelve probes run per set: `check` with every policy, `check --policy <id>` and `fix --policy <id>` for each of the five
+content policies, and `add`.
+
+Candidate sets:
+
+- `clean-control`, a file that passes every policy.
+- `missing-final-newline`, a file lacking its final newline.
+- `forbidden-string-from-rules-file`, a line that only the appendix rule `ncd-reserved-shortcodes` matches.
+- `forbidden-root-context`, a new root `CONTEXT.md`.
+- `dependent-version-change`, a hand-bumped workspace package with a publishable dependent.
+- `markdown-autofix-touch`, a Markdown file with an image link to an LFS-tracked file.
+
+Each probe `check --policy <id>` also asserts that the incumbent reports the named set's policy and no other,
+so a set that stops triggering fails the run instead of passing as equal.
+
+Result against the committed head with Git 2.55.0 (the host's, `/usr/bin/git`):
+72 rows, 36 equal, 36 pending, 0 different.
+Every `check --policy` and `fix --policy` row for `final-newline`, `security/forbidden-strings`
+and `mono/forbidden-root-context` is equal in all six sets.
+That includes the forbidden-string finding from the `rulesFile` path, the missing-final-newline finding and its fix
+(the file bytes, the index and `git status` after the fix match), and the root-context finding.
+
+Positive controls (the check can fail):
+
+- Removing the `mono/dependent-version-bump` line makes the `dependent-version-change` set fail on its
+  `check` and `fix` rows (native stays silent where the incumbent reports `dependent-version-stale`).
+- Removing the `mono/forbidden-root-context` line makes `forbidden-root-context` fail.
+- Removing the `markdown/autofix` line makes `markdown-autofix-touch` fail.
+- Removing `rulesFile` makes `forbidden-string-from-rules-file` fail
+  (the native scan then misses the appendix-only rule).
+- Each removal was made in the working tree, the check run, and the file restored; the tree was clean afterwards.
+
+The Rust control (`src/native/config_repository_tests.rs`, four tests) passes on the shipped file
+and fails when any one line is removed:
+the `markdown/autofix` line (two tests fail), the `mono/dependent-version-bump` line,
+the `mono/forbidden-root-context` line, the `security/forbidden-strings` line (two tests fail),
+or only `rulesFile`.
+Each failure names the policy that is missing.
+
+## Blocking rows
+
+The 36 pending rows are exactly the rows where the native wrapper refuses:
+`ShippedChecks` returns an unavailable outcome for `markdown/autofix` and `mono/dependent-version-bump`
+whenever the lifecycle requested candidates (`src/native/policy_checks.rs:378` and `:427` to `:432`).
+Because the translated configuration lists both, every native `git add`, `git cli-git check` without a narrowing
+`--policy`, and `fix` for those two policies exits 2 with
+"the native Markdown linter, which the policy markdown/autofix needs, is not implemented ..."
+or "planning dependent version bumps, which the policy mono/dependent-version-bump needs, is not implemented ...",
+even for a clean tree.
+The incumbent exits 0 for the clean set and for `add` of every set except the forbidden-string and root-context sets,
+where it exits 1 with the finding on stderr.
+The blocker is therefore the two unported policies (the open items in the main handover),
+not the configuration.
+
+What each unported policy must produce, taken from the incumbent in the same fixtures:
+
+- `markdown/autofix` on `doc.md`: one `finding` event, `policyId` `markdown/autofix`, `severity` `warn`,
+  code `markdown/autofix/markdown-autofix`,
+  message `monochromatic-lint --fix (markdown/lfs-image-url) rewrites doc.md.`,
+  exit 0 on `check` and on `add` (the event goes to stderr on `add`).
+- `mono/dependent-version-bump` on a hand-bumped `package/module/a/package.json`:
+  exit 1, one `finding` event at `error`,
+  code `mono/dependent-version-bump/dependent-version-stale` on `package/module/b/package.json`,
+  `fix` `available`; `fix --policy mono/dependent-version-bump` exits 0, prints a `fix-summary` naming that manifest
+  and rewrites its version.
+  The incumbent skips this policy for `add` (`src/optional/repository-policy/dependent-version-bump-policy.ts`,
+  the pre-forward guard in `findDependentBumps`), while the native stub refuses `add` for it;
+  the port must reproduce the skip.
+
+Once both are ported, run the differential with `--require-all-equal`.
+
+## Rules file in a linked worktree
+
+`rulesFile` is relative to the top level of the worktree Git runs in.
+The file is generated by `mise run file-enforcer` into the gitignored `.cache/`,
+so a fresh linked worktree has none (this worktree has none).
+Measured with both wrappers in a disposable repository that has the configuration and no `.cache`:
+the native `git cli-git check --policy security/forbidden-strings --all` exits 2 with an `engine-failure` event,
+code `policy-incomplete`,
+message "cli-git could not load the forbidden-strings rules, so no file was scanned: read rules
+<root>/.cache/forbidden-strings.rules.txt: No such file or directory (os error 2).";
+the incumbent exits 2 with `plugin-threw` and "Forbidden-strings scanner exited with infrastructure status 2."
+when its variable names a missing file.
+Both fail closed.
+The difference in practice: the incumbent follows the variable, which a shell started in the main checkout points at
+the main checkout's cache, so it worked in worktrees without their own cache;
+the native wrapper follows the worktree.
+Before the cutover each worktree needs `mise run file-enforcer`,
+or the ignored-state copy must bring `.cache`; whether the copy does so was not measured here.
+
+## Facts the integrator must know
+
+- The incumbent's decisions for the five content policies are unchanged by this branch;
+  nothing outside the configuration file, the new `bin/` modules, one `mise.toml` task and one test module changed.
+- `git cli-git check` (native) prints a `configuration-warning` event, code `legacy-config-ignored`, as its first event
+  while `cli-git.config.ts` sits beside the JSONC file.
+  The differential removes that one event, renumbers the events after it, and fails if it is absent or repeated.
+  Delete `cli-git.config.ts` at the cutover and this notice disappears.
+- Native `check` and `fix` events match the incumbent's field for field, in the same key order, for the three ported
+  policies; the differential compares bytes, not parsed values.
+- Files outside this lane that changed: `src/native/config_file.rs` gains a test-module registration at its end,
+  and `bin/test-native-container.mjs` gains one snapshot entry and one `COPY` line for the shipped file.
+  No configuration-loading fix was needed.
+- The main handover item "This repository's translated configuration must list all four optional policies and set
+  `rulesFile`" can be ticked on merge; this branch does not edit that file.
+- The generated root `mise.toml` keeps `FORBIDDEN_STRINGS_RULES`; the standalone scanner and CI still use it.
+
+## Gate results
+
+Pending until the container gate and Clippy runs below finish; replaced by the result when they do.
+
+## Trailing gates
+
+No gate was skipped.
+The differential's pending rows are the open work and are listed under `Blocking rows`.
+Windows checks are not affected: the new Rust test reads a file through `std::fs` and a relative path only.
+
+## Rerun commands
+
+Build the native wrapper once, then run the differential from the repository root:
+
+```sh
+# doc/handover/cli-git-native-config.md: build the native wrapper the differential starts by path
+mise run //package/git-policy/cli:native:build
+mise run //package/git-policy/cli:native:config:differential
+mise run //package/git-policy/cli:native:config:differential -- --scenario dependent-version-change
+mise run //package/git-policy/cli:native:config:differential -- --require-all-equal
+```
+
+The options are `--native <path>` (default `target/debug/cli-git-native`), `--scanner <path>`
+(default: this checkout's release scanner, else the main checkout's), `--scenario <name>` and `--require-all-equal`.
+The incumbent's Markdown policy needs `monochromatic-lint`, found with `mise which monochromatic-lint`.
+
+Run the control that binds the shipped file:
+
+```sh
+# doc/handover/cli-git-native-config.md: the four tests of the shipped configuration
+mise run //package/git-policy/cli:native:test:host -- repository_tests
+```
+
+Run the container gate and Clippy (heavy; through the slot limiter):
+
+```sh
+# doc/handover/cli-git-native-config.md: the gate and the lint, through the host slot limiter
+export GIT_POLICY_NATIVE_IMAGE_TAG=config
+node "${HOME}/temp/agent/gate-slot.ts" mise run //package/git-policy/cli:native:test:container
+node "${HOME}/temp/agent/gate-slot.ts" mise run //package/git-policy/cli:native:clippy
+```
