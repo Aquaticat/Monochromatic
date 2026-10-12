@@ -168,7 +168,7 @@ fn unsafe_paths_are_rejected_by_the_path_rule() {
 #[test]
 fn header_and_directive_violations_are_rejected() {
     let good: String = String::from_utf8(final_newline_patch(BASE, PROPOSED).bytes).expect("UTF-8 patch");
-    let variants: [String; 14] = [
+    let variants: [String; 15] = [
         good.replace(&format!("index {BASE}..{PROPOSED} 100644\n"), ""),
         format!("{good}index {BASE}..{PROPOSED} 100644\n"),
         good.replace("diff --git a/f.txt b/f.txt", "diff --git a/g.txt b/g.txt"),
@@ -183,6 +183,7 @@ fn header_and_directive_violations_are_rejected() {
         format!("{good}diff --git a/g.txt b/g.txt\n"),
         format!("{good}--- a/g.txt\n"),
         format!("{good}+++ b/g.txt\n"),
+        good.replace(&format!("{PROPOSED} 100644"), "fedc 100644"),
     ];
     for text in variants {
         let patch: PolicyPatch = PolicyPatch { target_id: String::from("t"), path: String::from("f.txt"), bytes: text.clone().into_bytes() };
