@@ -2,25 +2,30 @@ import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 
 import {
   isCommentFinding,
-  type ParseFinding,
   type RepairDocument,
 } from './parse-document.ts';
 import {
   BREAK,
   QUOTE_CLOSERS,
   QUOTE_OPENERS,
+  STRAIGHT_QUOTE,
   TAG_LETTERS,
   URL_SCHEMES,
 } from './repeat-groups-bounds.ts';
-import type { WordingStream, } from './repeat-groups-types.ts';
+import type {
+  HiddenRange,
+  WordingStream,
+} from './repeat-groups-types.ts';
 
 //region Repeat groups wording
 // The wording stream of a page: the characters of its body paragraphs, with
 // breaks where inline markup cuts a run and where a paragraph ends. Blocks are
 // read off the package's parse (`parseDocument`), so front matter, headings,
 // blockquotes, footnote definitions, lists and code never reach this reading.
-// The parse also reports the HTML comments it blanked before reading, and those
-// are cut here too, since a reader never sees them.
+// What a reader never sees is read as whitespace: the HTML comments the parse
+// blanked before reading, and the tags of the containers it dissolved, which
+// the parse widens an edge paragraph over. Neither cuts a run, and neither
+// lends its own text to the inline cuts or to the test for markup.
 
 /**
  Index of the first close character after a start, when no line break comes first.
@@ -80,7 +85,7 @@ function closingIndex(
  const end = cutEndAt({ body: 'see https://cat.example.invalid/x now', index: 4, },);
  ```
  */
-function cutEndAt(
+export function cutEndAt(
   {
     body,
     index,
@@ -160,7 +165,7 @@ function cutEndAt(
  const covered = cutSetOf({ body: '猫咪`代码`', },);
  ```
  */
-function cutSetOf({ body, }: { readonly body: string; },): ReadonlySet<number> {
+export function cutSetOf({ body, }: { readonly body: string; },): ReadonlySet<number> {
   /**
    Indexes covered by a cut.
    */
@@ -202,7 +207,7 @@ function cutSetOf({ body, }: { readonly body: string; },): ReadonlySet<number> {
  const markup = hasMarkupOpener({ body: '猫咪<b>晒</b>', },);
  ```
  */
-function hasMarkupOpener({ body, }: { readonly body: string; },): boolean {
+export function hasMarkupOpener({ body, }: { readonly body: string; },): boolean {
   if (body.includes('{',))
     return true;
   for (let index = 0; (index + 1) < body.length; index++) {
@@ -219,10 +224,52 @@ function hasMarkupOpener({ body, }: { readonly body: string; },): boolean {
 }
 
 /**
- Indexes of a paragraph that an HTML comment covers, where the parse blanked
- the comment before reading the page.
+ Ranges of a page that no reader sees: each HTML comment the parse blanked
+ before reading, closed or left open, and the two tags of each container it
+ dissolved. The parse widens an edge paragraph over the tags of its container,
+ so a paragraph's raw text can hold them.
 
- @param findings - the parse's comment findings, with absolute offsets
+ @param document - parsed page
+
+ @returns Absolute offset ranges, in no particular order
+
+ @example
+ ```ts
+ const ranges = hiddenRangesOf({ document, },);
+ ```
+ */
+export function hiddenRangesOf({ document, }: { readonly document: RepairDocument; },): readonly HiddenRange[] {
+  return [
+    ...document.parseFindings
+      .filter(function isComment(finding,): boolean {
+      return isCommentFinding({ finding, },);
+    },)
+      .map(function commentRange(finding,): HiddenRange {
+      return {
+        startOffset: finding.startOffset,
+        endOffset: finding.endOffset,
+      };
+    },),
+    ...document.containers
+      .flatMap(function tagRanges(container,): readonly HiddenRange[] {
+      return [
+        {
+          startOffset: container.openerStartOffset,
+          endOffset: container.openerEndOffset,
+        },
+        {
+          startOffset: container.closerStartOffset,
+          endOffset: container.closerEndOffset,
+        },
+      ];
+    },),
+  ];
+}
+
+/**
+ Indexes of a paragraph that fall inside a hidden range.
+
+ @param ranges - hidden ranges of the page, with absolute offsets
 
  @param startOffset - absolute offset where the paragraph begins
 
@@ -232,34 +279,32 @@ function hasMarkupOpener({ body, }: { readonly body: string; },): boolean {
 
  @example
  ```ts
- const covered = commentCoverOf({ findings, startOffset: 0, endOffset: 12, },);
+ const covered = hiddenCoverOf({ ranges, startOffset: 0, endOffset: 12, },);
  ```
  */
-function commentCoverOf(
+export function hiddenCoverOf(
   {
-    findings,
+    ranges,
     startOffset,
     endOffset,
   }: {
-    readonly findings: readonly ParseFinding[];
+    readonly ranges: readonly HiddenRange[];
     readonly startOffset: number;
     readonly endOffset: number;
   },
 ): ReadonlySet<number> {
   /**
-   Indexes covered by a comment.
+   Indexes covered by a hidden range.
    */
   const covered = new Set<number>();
-  for (const finding of findings) {
-    if (!isCommentFinding({ finding, },))
-      continue;
+  for (const range of ranges) {
     for (
       let offset = Math.max(
-        finding.startOffset,
+        range.startOffset,
         startOffset,
       );
       offset < Math.min(
-        finding.endOffset,
+        range.endOffset,
         endOffset,
       );
       offset++
@@ -267,6 +312,40 @@ function commentCoverOf(
       covered.add(offset - startOffset,);
   }
   return covered;
+}
+
+/**
+ A paragraph with the units at some indexes replaced by spaces, so that what
+ no reader sees lends the inline cuts and the test for markup no text of its own.
+
+ @param body - raw paragraph text
+
+ @param covered - indexes, in UTF-16 units, to blank
+
+ @returns Text of the same length with each covered unit a space
+
+ @example
+ ```ts
+ const seen = blankedAt({ body: '猫<!-- 注 -->咪', covered: new Set([1, 2, 3, 4, 5, 6, 7, 8, 9, 10,]), },);
+ ```
+ */
+export function blankedAt(
+  {
+    body,
+    covered,
+  }: {
+    readonly body: string;
+    readonly covered: ReadonlySet<number>;
+  },
+): string {
+  /**
+   Units of the paragraph, each blanked where covered.
+   */
+  const units: string[] = [];
+  for (let index = 0; index < body.length; index++) {
+    units.push(covered.has(index,) ? ' ' : body.charAt(index,),);
+  }
+  return units.join('',);
 }
 
 /**
@@ -300,11 +379,21 @@ export function wordingEndAt(
 /**
  Reads the body paragraphs of a parsed document as one wording stream.
 
- A paragraph carrying markup is left out whole. An inline cut, and an HTML
- comment the parse blanked, leaves a break, and so does the end of each
- paragraph. Whitespace is dropped without a break, since the rule compares
- non-space characters. A stray closing quotation mark leaves the depth at zero,
- so later quoted speech in the paragraph still reads as quoted.
+ A paragraph carrying markup outside its inline cuts is left out whole. An inline cut leaves a break,
+ and so does the end of each paragraph. Whitespace, an HTML comment the parse
+ blanked and the tags of a dissolved container are dropped without a break,
+ since the rule compares the characters a reader sees and a comment inside a
+ sentence does not end it. Neither a comment nor a container tag lends its text
+ to the inline cuts or to the test for markup, and neither does a cut: a brace
+ or a tag inside inline code or a bare URL is no expression and no tag.
+
+ A quotation opens at an opening mark (or at a straight double quotation mark
+ with none open in the paragraph) and closes at a closing mark (or the next
+ straight one). The opening mark counts as inside it and the closing mark as
+ outside. A mark that never closes quotes the rest of its paragraph, and no
+ later one, since the next paragraph of a quotation opens it again. A stray
+ closing mark leaves the depth at zero, so later quoted speech in the paragraph
+ still reads as quoted.
 
  @param text - full page text, the offsets of the document's nodes index into it
 
@@ -337,10 +426,14 @@ export function wordingStreamOf(
   const offsets: number[] = [];
 
   /**
-   Quotation depth before each wording character.
+   Quotation depth at each wording character, zero at a break.
    */
   const depths: number[] = [];
 
+  /**
+   Ranges of the page no reader sees, read once for every paragraph.
+   */
+  const hiddenRanges = hiddenRangesOf({ document, },);
   for (const node of document.nodes) {
     if ((node.zone !== 'body') || (node.kind !== 'paragraph'))
       continue;
@@ -352,25 +445,48 @@ export function wordingStreamOf(
       node.startOffset,
       node.endOffset,
     );
-    if (hasMarkupOpener({ body, },))
-      continue;
+
+    /**
+     Indexes of this paragraph that no reader sees.
+     */
+    const hidden = hiddenCoverOf({
+      ranges: hiddenRanges,
+      startOffset: node.startOffset,
+      endOffset: node.endOffset,
+    },);
+
+    /**
+     The paragraph as the inline cuts read it.
+     */
+    const seen = blankedAt({
+      body,
+      covered: hidden,
+    },);
 
     /**
      Indexes of this paragraph that inline cuts cover.
      */
-    const covered = new Set([
-      ...cutSetOf({ body, },),
-      ...commentCoverOf({
-        findings: document.parseFindings,
-        startOffset: node.startOffset,
-        endOffset: node.endOffset,
-      },),
-    ],);
+    const cuts = cutSetOf({ body: seen, },);
+
+    /**
+     The paragraph as the markup test reads it: what a cut covers is no markup of the paragraph.
+     */
+    const outsideCuts = blankedAt({
+      body: seen,
+      covered: cuts,
+    },);
+    if (hasMarkupOpener({ body: outsideCuts, },))
+      continue;
 
     /**
      Open quotation depth so far in this paragraph.
      */
     let depth = 0;
+
+    /**
+     Whether a straight double quotation mark is open in this paragraph.
+     */
+    let straightOpen = false;
 
     /**
      Whether the last character pushed was a break, so that no two breaks stand together.
@@ -386,7 +502,9 @@ export function wordingStreamOf(
        */
       const here = index;
       index += char.length;
-      if (covered.has(here,)) {
+      if (hidden.has(here,))
+        continue;
+      if (cuts.has(here,)) {
         if (!broken) {
           chars.push(BREAK,);
           offsets.push(-1,);
@@ -404,6 +522,15 @@ export function wordingStreamOf(
           0,
           depth - 1,
         );
+      if (char === STRAIGHT_QUOTE) {
+        depth = straightOpen
+          ? Math.max(
+            0,
+            depth - 1,
+          )
+          : depth + 1;
+        straightOpen = !straightOpen;
+      }
       chars.push(char,);
       offsets.push(node.startOffset + here,);
       depths.push(depth,);

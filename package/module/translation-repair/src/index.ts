@@ -61,7 +61,6 @@ export {
   type UnplacedReason,
 } from './repeat-groups-types.ts';
 export { repeatGroupsOf, } from './repeat-groups.ts';
-export { maximalRunsOf, } from './repeat-groups-runs.ts';
 export {
   type MaskedCommentRegion,
   maskHtmlComments,
@@ -250,6 +249,7 @@ export * from './document-barrel.ts';
 export * from './nesting-barrel.ts';
 export * from './floor-barrel.ts';
 export * from './text-fold-barrel.ts';
+export * from './repeat-groups-barrel.ts';
 export * from './footnote-barrel.ts';
 export * from './generation-barrel.ts';
 export * from './lane-barrel.ts';

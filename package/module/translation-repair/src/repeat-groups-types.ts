@@ -207,9 +207,32 @@ export type WordingStream = {
 
   /**
    Open quotation depth at each character, zero at a break. An opening mark
-   already counts as inside its quotation and a closing mark as outside it.
+   already counts as inside its quotation and a closing mark as outside it;
+   a straight double quotation mark opens a quotation when none is open in the
+   paragraph and closes the open one otherwise.
    */
   readonly depths: readonly number[];
+};
+
+/**
+ A stretch of a page that no reader sees, such as an HTML comment or the tag of
+ a container the parse dissolved.
+
+ @example
+ ```ts
+ const range: HiddenRange = { startOffset: 4, endOffset: 16, };
+ ```
+ */
+export type HiddenRange = {
+  /**
+   Absolute offset of the range's first unit.
+   */
+  readonly startOffset: number;
+
+  /**
+   Absolute exclusive end offset of the range.
+   */
+  readonly endOffset: number;
 };
 
 /**

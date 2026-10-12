@@ -1,16 +1,18 @@
 import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 
 import type { ContentChunk, } from './chunk-placement.ts';
+import { lineStartsOf, } from './line-starts.ts';
 import { parseDocument, } from './parse-document.ts';
 import {
   REFRAIN_SLOT_MAXIMUM,
   REFRAIN_SLOT_MINIMUM,
 } from './repeat-groups-bounds.ts';
+import { compareFoundRepeats, } from './repeat-groups-order.ts';
 import {
   clausesOf,
-  maximalRunsOf,
   refrainFramesOf,
-} from './repeat-groups-runs.ts';
+} from './repeat-groups-refrain.ts';
+import { maximalRunsOf, } from './repeat-groups-runs.ts';
 import type {
   FoundRepeat,
   LocatedSpan,
@@ -30,9 +32,13 @@ import {
 // slices that hold it. Detection is deterministic and judges nothing.
 
 /**
- The slice holding a span whole, or the reason none does.
+ The slice holding a span whole, or the reason none does. Where several slices
+ hold it whole, the one with the lowest index places it, so the answer never
+ depends on the order the slices come in. Where none does, the span is
+ reported as crossing a slice end if some slice holds its start, and as in no
+ slice otherwise.
 
- @param slices - chunks of the page
+ @param slices - chunks of the page, in any order, which may overlap
 
  @param span - source span of the occurrence
 
@@ -52,18 +58,41 @@ function placementOf(
     readonly span: Span;
   },
 ): Placement {
-  for (const slice of slices) {
-    if ((slice.startOffset > span.startOffset) || (span.startOffset >= slice.endOffset))
-      continue;
-    if (span.endOffset > slice.endOffset) {
-      return {
-        kind: 'unplaced',
-        reason: 'crosses-slice-end',
-      };
-    }
+  /**
+   Slices holding the span's first unit.
+   */
+  const holdingStart = slices.filter(function holdsStart(slice,): boolean {
+    return (slice.startOffset <= span.startOffset) && (span.startOffset < slice.endOffset);
+  },);
+
+  /**
+   Indexes of the slices that hold the span whole.
+   */
+  const holdingWhole = holdingStart
+    .filter(function holdsEnd(slice,): boolean {
+    return span.endOffset <= slice.endOffset;
+  },)
+    .map(function indexOfSlice(slice,): number {
+    return slice.sliceIndex;
+  },);
+  if (holdingWhole.length > 0) {
     return {
       kind: 'placed',
-      sliceIndex: slice.sliceIndex,
+      sliceIndex: holdingWhole.reduce(function lowest(
+        a,
+        b,
+      ): number {
+        return Math.min(
+          a,
+          b,
+        );
+      },),
+    };
+  }
+  if (holdingStart.length > 0) {
+    return {
+      kind: 'unplaced',
+      reason: 'crosses-slice-end',
     };
   }
   return {
@@ -73,34 +102,46 @@ function placementOf(
 }
 
 /**
- One-based line a source offset falls on.
+ One-based line a source offset falls on, by binary search over where the lines start.
 
- @param text - full page text
+ @param lineStarts - offset each line of the page starts at, ascending from zero
 
- @param offset - absolute offset in that text
+ @param offset - absolute offset in the page
 
  @returns Line number counted from one
 
  @example
  ```ts
- const line = lineOf({ text: 'a\nb', offset: 2, },);
+ const line = lineOf({ lineStarts: [0, 2,], offset: 2, },);
  ```
  */
 function lineOf(
   {
-    text,
+    lineStarts,
     offset,
   }: {
-    readonly text: string;
+    readonly lineStarts: readonly number[];
     readonly offset: number;
   },
 ): number {
-  return text.slice(
-    0,
-    offset,
-  )
-    .split('\n',)
-    .length;
+  /**
+   Indexes the answer can still be, the lowest and the highest, narrowed until they meet.
+   */
+  const range = {
+    low: 0,
+    high: lineStarts.length - 1,
+  };
+  while (range.low < range.high) {
+    /**
+     Index halfway between, rounded up so that the range always shrinks.
+     */
+    const middle = Math.ceil((range.low + range.high) / 2,);
+    if (nonNullishOrThrow(lineStarts[middle],) <= offset)
+      range.low = middle;
+    else
+      range.high = middle - 1;
+  }
+  return range.low + 1;
 }
 
 /**
@@ -109,22 +150,22 @@ function lineOf(
 
  @param spans - places the repeat stands
 
- @param text - full page text, which the line numbers index into
+ @param lineStarts - offset each line of the page starts at
 
  @returns Whether the repeat is reported
 
  @example
  ```ts
- const reported = isReported({ spans, text, },);
+ const reported = isReported({ spans, lineStarts, },);
  ```
  */
 function isReported(
   {
     spans,
-    text,
+    lineStarts,
   }: {
     readonly spans: readonly Span[];
-    readonly text: string;
+    readonly lineStarts: readonly number[];
   },
 ): boolean {
   if (spans.some(function isQuoted(span,): boolean {
@@ -136,30 +177,11 @@ function isReported(
    */
   const lines = new Set(spans.map(function lineOfSpan(span,): number {
     return lineOf({
-      text,
+      lineStarts,
       offset: span.startOffset,
     },);
   },),);
   return lines.size > 1;
-}
-
-/**
- Start offset of a found repeat's first occurrence, which orders the groups.
-
- @param repeat - found repeat with at least one occurrence
-
- @returns Absolute offset of its first occurrence
-
- @example
- ```ts
- const start = firstStartOf(repeat,);
- ```
- */
-function firstStartOf(repeat: FoundRepeat,): number {
-  return Math.min(...repeat.spans
-    .map(function startOf(span,): number {
-    return span.startOffset;
-  },),);
 }
 
 /**
@@ -170,24 +192,24 @@ function firstStartOf(repeat: FoundRepeat,): number {
 
  @param slices - chunks of the page
 
- @param text - full page text
+ @param lineStarts - offset each line of the page starts at
 
  @returns Repeat group with each occurrence placed in its slice, or listed as unplaced
 
  @example
  ```ts
- const group = placedRepeat({ repeat, slices, text, },);
+ const group = placedRepeat({ repeat, slices, lineStarts, },);
  ```
  */
 function placedRepeat(
   {
     repeat,
     slices,
-    text,
+    lineStarts,
   }: {
     readonly repeat: FoundRepeat;
     readonly slices: readonly ContentChunk[];
-    readonly text: string;
+    readonly lineStarts: readonly number[];
   },
 ): RepeatGroup {
   /**
@@ -202,7 +224,7 @@ function placedRepeat(
         span,
       },),
       line: lineOf({
-        text,
+        lineStarts,
         offset: span.startOffset,
       },),
     };
@@ -284,8 +306,11 @@ function placedRepeat(
  Finds every repeat of source wording in a page, body paragraphs only, and
  places each occurrence in the slice that holds it.
 
- Repeats are returned in page order of their first occurrence. A group holding
- a quoted occurrence, or whose occurrences all sit on one line, is left out.
+ Repeats are returned in page order of their first occurrence; where two start
+ at the same offset a maximal repeat lists before a refrain, then the one whose
+ first occurrence ends sooner, then by the later occurrences' starts, so the
+ order depends on the page alone. A group holding a quoted occurrence, or whose
+ occurrences all sit on one line, is left out.
  A repeat contained in a longer one is reported on its own where its occurrences
  differ, as the design's census counts them.
 
@@ -320,6 +345,11 @@ export function repeatGroupsOf(
    Parsed page, whose body paragraphs are the only wording read.
    */
   const document = parseDocument({ text, },);
+
+  /**
+   Offset each line of the page starts at, read once for every occurrence's line.
+   */
+  const lineStarts = lineStartsOf({ text, },);
 
   /**
    Wording stream of the body paragraphs.
@@ -412,20 +442,23 @@ export function repeatGroupsOf(
     .filter(function reportedOnly(repeat,): boolean {
       return isReported({
         spans: repeat.spans,
-        text,
+        lineStarts,
       },);
     },)
     .toSorted(function inPageOrder(
       a,
       b,
     ): number {
-      return firstStartOf(a,) - firstStartOf(b,);
+      return compareFoundRepeats({
+        first: a,
+        second: b,
+      },);
     },)
     .map(function placed(repeat,): RepeatGroup {
       return placedRepeat({
         repeat,
         slices,
-        text,
+        lineStarts,
       },);
     },);
 }

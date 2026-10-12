@@ -286,27 +286,23 @@ export function classify({ lines, }: { readonly lines: readonly string[]; },): r
   const fences = lines.map(function isFence(line,): boolean {
     return FENCE_LINE.test(line,);
   },);
+  /**
+   Fence markers seen so far in the walk over the lines, counted once per line so the walk is linear in the lines.
+   */
+  const seen = { markers: 0, };
   return lines.map(function roleOf(
     line,
     index,
   ): string {
-    if (fences[index] === true)
+    if (fences[index] === true) {
+      seen.markers++;
       return 'fence';
-    /**
-     Fence markers up to and including this line; an odd count leaves the line inside a fenced block.
-     */
-    const markersSoFar = fences.slice(
-      0,
-      index + 1,
-    )
-      .filter(function isMarker(fence,): boolean {
-      return fence;
-    },)
-      .length;
+    }
+    // An odd count of markers before the line leaves it inside a fenced block.
     return lineRole({
       line,
       index,
-      inFence: (markersSoFar % FENCE_PAIR) === 1,
+      inFence: (seen.markers % FENCE_PAIR) === 1,
     },);
   },);
 }

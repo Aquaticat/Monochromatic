@@ -69,6 +69,13 @@ export const QUOTE_OPENERS: string = '「“『';
 export const QUOTE_CLOSERS: string = '」”』';
 
 /**
+ Straight double quotation mark, which opens a quotation when none of its kind is open
+ in the paragraph and closes the one that is, since one character stands for both ends.
+ The pinned corpus writes it in body wording, so it counts as quotation like the paired marks.
+ */
+export const STRAIGHT_QUOTE: string = '"';
+
+/**
  Character standing between two runs of wording, so that no repeat spans it.
 
  Built from its code point rather than written as an escape, so that no
@@ -83,7 +90,7 @@ export const BREAK: string = String.fromCodePoint(0,);
 export const TAG_LETTERS: string = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
 
 /**
- Scheme of a bare URL that counts as markup, the longer one first.
+ Schemes a bare URL begins with, which make it markup.
  */
 export const URL_SCHEMES: readonly string[] = [
   'https://',

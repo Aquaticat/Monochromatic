@@ -2,22 +2,11 @@ import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 
 import {
   BREAK,
-  CLAUSE_BOUNDARY,
   MAXIMAL_REPEAT_MINIMUM,
-  REFRAIN_CLAUSE_MINIMUM,
-  REFRAIN_PREFIX_MINIMUM,
-  REFRAIN_SLOT_MAXIMUM,
-  REFRAIN_SLOT_MINIMUM,
-  REFRAIN_SUFFIX_MINIMUM,
 } from './repeat-groups-bounds.ts';
-import type {
-  Clause,
-  WordingStream,
-} from './repeat-groups-types.ts';
 
 //region Repeat groups runs
-// The finders: maximal runs over the wording stream, the clauses cut from it,
-// and the refrain frames two clauses share.
+// The finder of maximal runs over the wording stream.
 
 /**
  Whether every occurrence reads the same wording character at one shift from
@@ -71,7 +60,15 @@ function agreeAt(
 /**
  Maximal runs of at least the minimum length that stand at two or more places,
  each with its occurrences as stream indices, the run extended as far as every
- occurrence agrees.
+ occurrence agrees. Runs are listed in the order their first window of the
+ minimum length appears in the stream.
+
+ COST: one pass over the windows, then for each window group that is not the
+ previous window's group moved right by one, an extension over its occurrences
+ as long as the run, so a stretch copied whole is extended once and not once
+ per window. The work is linear in the stream for prose and grows with the
+ product of occurrences and run length only for text that repeats in
+ nested stretches.
 
  @param stream - wording stream
 
@@ -133,6 +130,43 @@ export function maximalRunsOf(
   for (const positions of positionsOf.values()) {
     if (positions.length < 2)
       continue;
+
+    // A group whose every occurrence follows one more shared character, and
+    // whose window one place earlier is held by exactly as many places, is
+    // that earlier group moved right by one: the same run, reported from there.
+    // Skipping it keeps the extension of a run from repeating for every window
+    // of a long run, which grew with the square of the run length.
+    if (agreeAt({
+      stream,
+      positions,
+      shift: -1,
+    },)) {
+      /**
+       Stream index one place before the group's first occurrence.
+       */
+      const before = nonNullishOrThrow(positions[0],) - 1;
+
+      /**
+       Window of the minimum length that begins there, as the map keys it.
+       */
+      const earlierWindow = stream.slice(
+        before,
+        before + MAXIMAL_REPEAT_MINIMUM,
+      )
+        .join('',);
+
+      /**
+       Places that hold the earlier window.
+       */
+      const earlierPlaces = positionsOf.get(earlierWindow,);
+      if (earlierPlaces === undefined) {
+        throw new Error(
+          'unreachable: the window one place before a group whose occurrences all agree there holds a break, though the window of the group holds none',
+        );
+      }
+      if (earlierPlaces.length === positions.length)
+        continue;
+    }
 
     /**
      Characters the occurrences agree on after the minimum, on the right.
@@ -203,312 +237,6 @@ export function maximalRunsOf(
     },);
   }
   return runs;
-}
-
-/**
- Clauses of the wording stream: runs of wording between clause boundaries,
- breaks and the end, of at least the clause minimum.
-
- @param wording - wording stream of the page
-
- @param stream - the characters of that stream, as one string per character
-
- @returns Clauses in page order
-
- @example
- ```ts
- const clauses = clausesOf({ wording, stream, },);
- ```
- */
-export function clausesOf(
-  {
-    wording,
-    stream,
-  }: {
-    readonly wording: WordingStream;
-    readonly stream: readonly string[];
-  },
-): readonly Clause[] {
-  /**
-   Clauses found, in page order.
-   */
-  const clauses: Clause[] = [];
-
-  /**
-   Stream index where the clause being read begins.
-   */
-  let start = 0;
-  for (let index = 0; index <= stream.length; index++) {
-    /**
-     Character ending the clause here, or the end of the stream.
-     */
-    const edge = (index === stream.length) ? BREAK : nonNullishOrThrow(stream[index],);
-    if ((edge !== BREAK) && (!CLAUSE_BOUNDARY.includes(edge,)))
-      continue;
-    if ((index - start) >= REFRAIN_CLAUSE_MINIMUM) {
-      /**
-       Characters of the clause, one code point each.
-       */
-      const points = stream.slice(
-        start,
-        index,
-      );
-      clauses.push({
-        start,
-        end: index,
-        points,
-        text: points.join('',),
-        quoted: nonNullishOrThrow(wording.depths[start],) > 0,
-      },);
-    }
-    start = index + 1;
-  }
-  return clauses;
-}
-
-/**
- Length of the common prefix of two character lists.
-
- @param a - first list, one code point per element
-
- @param b - second list, one code point per element
-
- @returns Count of equal leading characters
-
- @example
- ```ts
- const shared = commonPrefixLength({ a: [...'猫咪',], b: [...'猫狗',], },);
- ```
- */
-function commonPrefixLength({
-  a,
-  b,
-}: {
-  readonly a: readonly string[];
-  readonly b: readonly string[]
-},): number {
-  /**
-   Count of leading characters equal so far.
-   */
-  let length = 0;
-  while ((length < a.length) && (length < b.length)
-    && (a[length] === b[length]))
-    length++;
-  return length;
-}
-
-/**
- Length of the common suffix of two character lists.
-
- @param a - first list, one code point per element
-
- @param b - second list, one code point per element
-
- @returns Count of equal trailing characters
-
- @example
- ```ts
- const shared = commonSuffixLength({ a: [...'胖猫咪吧',], b: [...'瘦猫咪吧',], },);
- ```
- */
-function commonSuffixLength({
-  a,
-  b,
-}: {
-  readonly a: readonly string[];
-  readonly b: readonly string[]
-},): number {
-  /**
-   Count of trailing characters equal so far.
-   */
-  let length = 0;
-  while (
-    (length < a.length)
-    && (length < b.length)
-      && (a[a.length - 1
-        - length] === b[b.length - 1
-          - length])
-  )
-    length++;
-  return length;
-}
-
-/**
- Refrain frames: clauses that share a prefix and a suffix and differ only in a
- slot of the bounded length, grouped by frame, with the frames that hold at
- least two distinct clauses.
-
- @param clauses - clauses of the page in page order
-
- @returns Frames with the clauses carrying each, in page order
-
- @example
- ```ts
- const frames = refrainFramesOf({ clauses, },);
- ```
- */
-export function refrainFramesOf(
-  {
-    clauses,
-  }: {
-    readonly clauses: readonly Clause[];
-  },
-): readonly {
-  readonly prefix: string;
-  readonly suffix: string;
-  readonly prefixLength: number;
-  readonly suffixLength: number;
-  readonly members: readonly Clause[];
-}[] {
-  /**
-   Clauses that share their first prefix-minimum characters, which is where a frame can begin.
-   */
-  const buckets = new Map<string, Clause[]>();
-  for (const clause of clauses) {
-    /**
-     Leading characters the clause is bucketed under.
-     */
-    const lead = clause.points
-      .slice(
-        0,
-        REFRAIN_PREFIX_MINIMUM,
-      )
-      .join('',);
-    /**
-     Clauses already in this bucket.
-     */
-    const bucket = buckets.get(lead,) ?? [];
-    bucket.push(clause,);
-    buckets.set(
-      lead,
-      bucket,
-    );
-  }
-
-  /**
-   Clauses carried by each frame, keyed by prefix length, prefix and suffix.
-   */
-  const frames = new Map<string, {
-    readonly prefix: string;
-    readonly suffix: string;
-    readonly prefixLength: number;
-    readonly suffixLength: number;
-    readonly members: Set<Clause>;
-  }>();
-  for (const bucket of buckets.values()) {
-    for (const [x, left,] of bucket.entries()) {
-      for (const right of bucket.slice(x + 1,)) {
-        if (left.text === right.text)
-          continue;
-        /**
-         Shared prefix of the pair, at least the prefix minimum.
-         */
-        const prefixLength = commonPrefixLength({
-          a: left.points,
-          b: right.points,
-        },);
-        /**
-         Shared suffix of the pair, capped so each slot keeps one character.
-         */
-        const suffixLength = Math.min(
-          commonSuffixLength({
-            a: left.points,
-            b: right.points,
-          },),
-          Math.min(
-            left.points
-              .length,
-            right.points
-              .length,
-          ) - 1
-            - prefixLength,
-        );
-        if ((prefixLength < REFRAIN_PREFIX_MINIMUM) || (suffixLength < REFRAIN_SUFFIX_MINIMUM))
-          continue;
-        /**
-         Slot length of the first clause.
-         */
-        const leftSlot = left.points
-          .length
-          - prefixLength
-          - suffixLength;
-        /**
-         Slot length of the second clause.
-         */
-        const rightSlot = right.points
-          .length
-          - prefixLength
-          - suffixLength;
-        if (
-          (leftSlot < REFRAIN_SLOT_MINIMUM)
-          || (rightSlot < REFRAIN_SLOT_MINIMUM)
-            || (leftSlot > REFRAIN_SLOT_MAXIMUM)
-            || (rightSlot > REFRAIN_SLOT_MAXIMUM)
-        )
-          continue;
-        /**
-         Prefix the pair shares.
-         */
-        const prefix = left.points
-          .slice(
-            0,
-            prefixLength,
-          )
-          .join('',);
-        /**
-         Suffix the pair shares.
-         */
-        const suffix = left.points
-          .slice(left.points
-            .length
-            - suffixLength,)
-          .join('',);
-        /**
-         Key of this frame, unambiguous because the prefix length leads it.
-         */
-        const key = `${String(prefixLength,)}:${prefix}:${suffix}`;
-        /**
-         Frame record, created on the first pair that forms it.
-         */
-        const frame = frames.get(key,) ?? {
-          prefix,
-          suffix,
-          prefixLength,
-          suffixLength,
-          members: new Set<Clause>(),
-        };
-        frame.members
-          .add(left,);
-        frame.members
-          .add(right,);
-        frames.set(
-          key,
-          frame,
-        );
-      }
-    }
-  }
-
-  return [...frames.values(),]
-    .filter(function holdsTwo(frame,): boolean {
-      return frame.members
-        .size
-        >= 2;
-    },)
-    .map(function inPageOrder(frame,) {
-      return {
-        prefix: frame.prefix,
-        suffix: frame.suffix,
-        prefixLength: frame.prefixLength,
-        suffixLength: frame.suffixLength,
-        members: [...frame.members,].toSorted(function byStart(
-          a,
-          b,
-        ): number {
-          return a.start - b.start;
-        },),
-      };
-    },);
 }
 
 //endregion Repeat groups runs
