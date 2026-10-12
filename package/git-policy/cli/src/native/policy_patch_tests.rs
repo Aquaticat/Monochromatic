@@ -191,3 +191,11 @@ fn header_and_directive_violations_are_rejected() {
         assert!(matches!(outcome, Err(PatchError::Rejected(_))), "{text}: {outcome:?}");
     }
 }
+
+/// Each failure variant displays exactly its message, so diagnostics print the reason unchanged.
+#[test]
+fn each_failure_displays_exactly_its_message() {
+    assert_eq!(PatchError::Rejected(String::from("grammar")).to_string(), "grammar");
+    assert_eq!(PatchError::Conflict(String::from("conflict")).to_string(), "conflict");
+    assert_eq!(PatchError::Failed(String::from("failed")).to_string(), "failed");
+}
