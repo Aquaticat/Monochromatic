@@ -20,8 +20,8 @@ The resumption probe found the expected slice limits,
 no active managed jobs,
 and no additional OOM kills beyond the recorded count of one.
 The maintained kernel files have no intervening package commits since the pause.
-Resume built-artifact tests and lint,
-then the named native decision and approval integrations.
+Maintained built-artifact tests and full-package lint have since passed.
+Continue the named native governing-domain and runtime integrations.
 
 At pause intake,
 the process manager reported no running jobs,
@@ -601,10 +601,61 @@ Eleven-document rendering passed `proc_c7e4` before this final evidence update.
 
 The unassociated ordinary request domain and other unconsumed producer relationships remain explicit.
 
+## Constructor declaration metadata
+
+The decision consumer cannot account for an original hidden schema instruction
+when constructor capture retains only names and descriptions.
+Private `119bbd34` / `proc_c8f0` reproduced that specific missing field.
+`35b34cf8` extends the existing original-frame observation,
+manager input pool,
+and `native-content-json` source view with supported declaration metadata.
+No new source registry or request parser is introduced.
+
+Owner and native declared/hidden metadata checks passed `proc_bcaa`.
+Each native case made two local request exchanges and one authored semantic assessment,
+with zero protected executions or provider requests.
+The declared schema instruction appeared in the native request;
+the hidden instruction did not,
+but both reached the original source view and indexed assessment questions.
+These are source-delivery mechanisms,
+not model accuracy or governing-domain closure.
+
+The initial probe inspected input schemas only.
+The native consumer exposed the read tool's non-enumerable output-schema `~kind` property
+through the recorded `SessionInputCaptureError` in `proc_80c7` and the property diagnostic in `proc_fa3d`.
+The metadata copier now preserves string-keyed non-enumerable data in an owned JSON view.
+It does not invoke getters or freeze borrowed schemas.
+Shared metadata is charged for every serialized occurrence under the unchanged aggregate bounds;
+message copying still rejects aliases and non-enumerable data.
+Symbols,
+accessors,
+and unsupported declaration slots cannot certify complete capture.
+The selector records unread top-level slots as explicit observation gaps;
+unsupported nested shapes latch capture failure.
+
+`proc_f50e` caught reversed property order in the first owned-copy implementation.
+The copier now reserves owned properties in original order before visiting their values.
+The unchanged name/description byte-order assertion,
+constructor controls,
+and native getter parity passed `proc_7057`.
+The integrated input parent then reached an obsolete description-only assertion in
+`agent-state-native.test.mjs` (`proc_6961`).
+That assertion now checks the retained description and added metadata without dropping callback-order checks.
+The corrected input parent and original-judgment variants are running.
+
+The remaining delivery target is decision-specific domain closure and maintained host/runtime integration.
+Constructor metadata alone does not account for earlier configuration processing,
+extension registration,
+other processing boundaries,
+or cross-root applicability.
+The original source limits,
+manager-only post-emission growth,
+and irreversible failure retirement remain in force.
+
 ## Original Session constructor tool descriptions
 
-This is the active private increment;
-the completed manager checkpoint predates this runtime change.
+This historical description-only checkpoint completed before the constructor metadata extension.
+The completed manager checkpoint predates this runtime change.
 Native `prepareLoadout` can replace declared descriptions,
 and hidden tools need not appear in a model request.
 The original definition text remains a separate potentially governing input.
@@ -638,9 +689,12 @@ They require the constructor-specific view,
 original source/publication references,
 unchanged request bytes,
 and indexed assessment questions.
-Schema,
+At this historical checkpoint,
+schema,
 executable,
-and other opaque fields are not inspected.
+and other opaque fields were not inspected.
+The 2026-10-12 constructor metadata extension preserves supported declaration data;
+executable hooks remain capabilities rather than copied instruction prose.
 Native constructor parity passed `93c75a07` / `proc_9cc4`.
 The getter counters matched the baseline,
 including zero construction-time reads of `execute`,
