@@ -103,19 +103,22 @@ Enumeration had to see justified sites too,
 ## Results
 
 1631 unique JS and TS regex sites,
- plus 28 on surfaces the rule cannot reach.
+ plus 28 on surfaces the rule cannot reach,
+ of which 10 are excluded on provenance and 18 are filed.
 
-- **308 unnecessary sites in tracked first-party code**,
+- **298 unnecessary sites in tracked first-party code**,
   one issue each:
-  249 in active trees and 59 in `package-paused/`.
+  239 in active trees and 59 in `package-paused/`.
   By surface:
   280 JS and TS,
-  22 inside HTML `<script>` blocks,
+  12 inside HTML `<script>` blocks,
   5 Kotlin,
   1 inline YAML script.
-- **105 of the 308 carry a disable justification**,
+- **105 of the 298 carry a disable justification**,
   drawn from 40 distinct justification texts.
   Each of those issues quotes the justification and answers it.
+  The other 193 carry none,
+  because no gate could ask for one.
 - **116 necessary sites** under the criterion,
   each with a recorded reason and no issue.
   Two sites were moved out of the necessary set on individual review,
@@ -151,7 +154,25 @@ Enumeration had to see justified sites too,
   because the earlier sweep replaced them with text-scan helpers.
   Recorded as a verified decision rather than an oversight.
 
-Replacement shapes across the 308,
+- **10 sites excluded on provenance**,
+  found by tracing generators and directory ownership rather than by a filename marker:
+  9 in `package/music-player/design/questions/template-editor.html`,
+  an 18.6 MB file that `package/music-player/design/template-editor.mjs:121` writes from
+  `template-editor.template.html`
+  (whose own 9 sites are filed),
+  and 1 in `package/music-player/design/uploads/music-player-mockup.html`,
+  which `package/music-player/design/HANDOFF.md:3208` describes as part of
+  "the user's own mockup,
+  screenshots and reference images".
+  Both were filed in the first round and closed afterwards:
+  the generated ones as duplicates of the template issues,
+  the upload as not planned.
+  No other file in the filed population carries a generated marker in its first 1200
+  bytes,
+  and `template-editor.html` carries none at all,
+  which is why provenance tracing rather than marker matching decided it.
+
+Replacement shapes across the 298,
  derived from the pattern tokenizer:
  field extractions between literal delimiters,
  literal-plus-character-run scans,
@@ -302,8 +323,8 @@ All timings are Node v26.11.1 on this machine,
 
 ## Gate coverage
 
-202 of the 308 unnecessary sites carry no justification,
- because no gate can ask for one.
+192 of the 298 unnecessary sites are invisible to every gate,
+ and a further 193rd carries no justification but is one the gate does report.
 Issue #679 carries the full breakdown and the deciding evidence;
  in summary:
  163 JS and TS sites in packages with no `lint:oxlint` task,
@@ -312,8 +333,8 @@ Issue #679 carries the full breakdown and the deciding evidence;
  10 in `doc/` scripts no package task covers;
  1 in a `.cjs` file that `package/config/oxlint/src/config-base.ts:63` excludes through
  `ignorePatterns`;
- and 28 on surfaces a JavaScript rule cannot express
- (22 HTML script blocks,
+ and 18 on surfaces a JavaScript rule cannot express
+ (12 HTML script blocks,
  5 Kotlin,
  1 inline YAML script).
 No CI workflow runs a workspace-wide lint,
@@ -381,8 +402,19 @@ The harness is committed beside this document in
 - `supplement.mjs` adds the Kotlin,
   HTML,
   and YAML sites and the two reclassifications.
-- `generate.mjs` writes one issue payload per site.
+- `fix-html-patterns.mjs` resolves each HTML script-block site to its own regex
+  literal,
+  slicing on byte offsets.
+- `generate.mjs` writes one issue payload per site,
+  disambiguating titles when one source line carries several distinct sites.
 - `reconcile.mjs` corrects already-filed issues in place and files the rest.
+- `repair-labels.mjs`,
+  `repair-titles.mjs`,
+  and `close-excluded.mjs` are the correction passes:
+  labels after a call that removed and added in one request,
+  titles and bodies after post-filing corrections,
+  and closure of the sites excluded on provenance.
+- `verify.mjs` reconciles the ledger against the tracker.
 - `evidence.mjs` and `evidence2.mjs` hold the measurements,
   with `evidence2.mjs` superseding the two mis-constructed probes in `evidence.mjs`.
 
