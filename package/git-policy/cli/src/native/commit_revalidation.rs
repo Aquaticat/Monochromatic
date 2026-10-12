@@ -257,3 +257,8 @@ pub fn revalidate_replay<F: RepositoryFacts>(
         hook_changes,
     });
 }
+
+/// Controls for this module stay out of the release executable.
+#[cfg(test)]
+#[path = "commit_revalidation_tests.rs"]
+mod tests;

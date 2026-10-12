@@ -615,3 +615,8 @@ pub fn run_commit_transaction<F: RepositoryFacts>(
         pathspecs: pathspecs.as_slice(),
     });
 }
+
+/// Controls for this module stay out of the release executable.
+#[cfg(test)]
+#[path = "commit_transaction_tests.rs"]
+mod tests;

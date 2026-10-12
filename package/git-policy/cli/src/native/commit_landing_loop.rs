@@ -558,3 +558,8 @@ fn run_loop<F: RepositoryFacts>(
         }
     }
 }
+
+/// Controls for this module stay out of the release executable.
+#[cfg(test)]
+#[path = "commit_landing_loop_tests.rs"]
+mod tests;

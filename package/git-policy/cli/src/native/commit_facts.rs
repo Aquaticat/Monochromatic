@@ -164,3 +164,8 @@ impl<F: RepositoryFacts> RepositoryFacts for &mut F {
         return (**self).transaction_context();
     }
 }
+
+/// Controls for this module stay out of the release executable.
+#[cfg(test)]
+#[path = "commit_facts_tests.rs"]
+mod tests;
