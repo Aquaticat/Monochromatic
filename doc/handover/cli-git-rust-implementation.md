@@ -1542,19 +1542,28 @@ that is verification, not a decision for the user.
   all six lanes are merged into `feat/cli-git-native-transactions`, with the container gate and native Clippy green.
   Each lane's evidence doc `doc/handover/cli-git-native-<lane>.md` holds its gates and a `Trailing gates` heading
   with the mutation campaigns that trail the cutover and their exact rerun commands.
-  Slice 6 (preparation policy convergence) has the patch grammar and the private index apply
-  (`policy_patch_validate.rs`, `policy_patch.rs`).
-  Still to do in slice 6: convergence wiring, added-path admission, hook-staged changes,
-  `commit-normalization/no-change`, convergence snapshots, the three binary acceptance cases and the differential
-  JSONL; a hook config does not suppress `hooksPath` scripts on Git 2.55.0, so the pre-commit case sets the hooks
+  Slice 6 (preparation policy convergence) is done at the library level
+  (`commit_convergence.rs`, `commit_policy_preparation.rs`, `private_index_stage.rs`, `policy_patch*.rs`);
+  its mutation controls are being finished.
+  Added-path admission has no caller because no shipped policy proposes a path outside the candidate set;
+  the differential JSONL and the binary-level acceptance cases wait for the native commit path.
+  A hook config does not suppress `hooksPath` scripts on Git 2.55.0, so the pre-commit case sets the hooks
   directory explicitly.
-  Slice 7 runs as two lanes: `landing` (phase markers and the landing loop, `feat/cli-git-native-landing`)
-  and `post-landing` (post-landing completion, `feat/cli-git-native-post-landing`).
-  The `signals-fix` lane (`feat/cli-git-native-signals-fix`) fixes a host-only flake in
-  `signal_relay::tests::signal_during_start_is_relayed_after_the_child_starts`.
-  After those: merge the three branches, slice 9 (the transaction boundary replaces the commit refusal),
-  the incumbent's `e2e/` scenarios against the native executable, the closing gates, the translated repository
-  configuration, coordinated native installation, consumer migration, documentation and retirement of the TypeScript.
+  Slice 7 runs as two lanes: `landing` (`feat/cli-git-native-landing`, done, its mutation results recorded in
+  `doc/handover/cli-git-native-landing.md`) and `post-landing` (`feat/cli-git-native-post-landing`, in gates).
+  The signal relay flake fix is merged into the transactions branch.
+  Two more lanes run beside them: `e2e` (the incumbent's `e2e/` suite pointed at the native executable) and
+  `config` (the translated repository configuration), each with its evidence doc.
+  The transactions worktree finishes the slice 6 mutation controls and adds no feature code.
+  Facts read from the incumbent that the integration follows:
+  the landing lock is taken inside the landing attempt (`commit-landing.ts`), not held through preparation;
+  a maintenance failure never stops the post-commit hook (`commit-transaction-conclusion.ts`).
+  Next, a Sonnet integrator in `feat/cli-git-native-integration` merges the lanes and the transactions branch,
+  owns the rest of slice 8 (the replay and reland loop and the starvation reservation, which about 14 e2e scenarios
+  need), the slice 9 wiring and the removal of the commit refusal, and drives the incumbent from its TypeScript source
+  for the differential JSONL.
+  Then the `e2e` suite runs against the native commit path, followed by the closing gates, coordinated native
+  installation, consumer migration, documentation and retirement of the TypeScript.
 - [ ] Gates that trail the cutover (user decision 2026-10-10: the code ships first, the gate runs afterward):
   the Windows checks and the release-artifact performance gates;
   the old-and-new wrapper interop matrix (one-direction fixtures where the incumbent writes and native reads stay);

@@ -3063,6 +3063,32 @@ Slint, or `lerp` and `copy(alpha)` on sRGB values in Compose.
 When no accent is available the fixed baseline from the Fold captures is the root and the same derivation applies.
 Alpha-only layering (state layers over a surface) is allowed because it does not change a color's lightness, chroma or hue.
 
+### D109. Settings is one full-width column with 16dp margins; stock Settings has no two-pane form here (2026-10-12)
+
+The human asked for the stock Android Settings layout to be measured on the owned Pixel 9 Pro Fold with its display size
+changed only through Settings (and Developer options' Smallest width as the fallback), then on a Pixel Tablet, and said
+that if neither shows two panes the conclusion is that two-pane Settings does not exist.
+It was measured with a headful emulator (record in `/home/user/temp/agent/agent-settings-ref3/notes.txt`):
+stock Settings of this Android 17 image logs `isSettingsSplitSupported = false` and shows one full-width column at every
+size tried, from 320 dp to 1200 dp on the Fold's inner display (default 851 dp), at all five Display size steps, on the
+folded cover (443 dp), and at 1101, 1280 and 1506 dp on a Pixel Tablet.
+The split is gated by the `settings_ui/settings_support_large_screen` flag, which this build leaves unset and refuses
+to let a shell set, so the conclusion rests on this build; no two-pane measurements exist and none are invented.
+
+The music player's Settings page therefore has one form on every window width, following the measured stock layout:
+the list is full width with no maximum column width and no centering (this replaces the 640 dp centered column of the
+earlier redesign), 16 dp side margin so a card is the page width minus 32 dp, rows 72 dp tall with a 40 dp circular icon
+at x = 32 dp and the title at x = 84 dp, 2 dp between rows of one group and 16 dp between groups, with the group corner
+rounding already built.
+The music player's template rows (D87 and D99) had no icon; the human asked that an icon be picked for each from
+Material Symbols and embedded, so every row has the stock leading icon and keeps the 72 dp two-line height.
+The orchestrator picked `queue_music` for the Track rows template and `play_circle` for the Playing track template, in
+the Outlined style at weight 400 on the 24 px grid, drawn in a 40 dp circle filled with the secondary container role
+(D108 derivation) with the icon in the on-secondary-container role.
+They are embedded as vector path data in each app, with no icon font, no download and no network access at run time,
+the way the app already embeds its other icons; the Material Symbols license (Apache 2.0) text goes under `LICENSES/`
+and the README names the source.
+
 ## Pending after the theme picks (2026-09-04)
 
 - **Order of remaining work** — my recommendation:
