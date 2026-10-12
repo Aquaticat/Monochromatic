@@ -221,6 +221,30 @@ Time: 0.008
 OK (2 tests)
 ```
 
+## Working agent launch: headful, host GPU, no container (2026-10-12)
+
+An agent session drove the owned Pixel 9 Pro Fold AVD for hours with a headless container launch that passed
+`-feature -Vulkan` under `xvfb-run` (software rendering, 2 CPUs and 6 GiB for a 4 GiB guest) and met repeated System UI
+and Pixel Launcher ANRs, a `qemu` segmentation fault and an ANR loop.
+The same AVD booted cleanly when launched headfully as its own systemd user unit, on the host GPU:
+
+```bash
+systemd-run --user --unit=agent-fold-headful --collect --property=MemoryMax=12G \
+  --setenv=DISPLAY=:0 --setenv=WAYLAND_DISPLAY=wayland-0 --setenv=XDG_RUNTIME_DIR=/run/user/1000 \
+  --setenv=DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/1000/bus --setenv=ANDROID_HOME=/home/user/Android/Sdk \
+  --setenv=ANDROID_EMULATOR_WAIT_TIME_BEFORE_KILL=90 \
+  /home/user/Android/Sdk/emulator/emulator -avd Pixel9ProFold_Fresh_5FXdOc -ports 5582,5583 \
+  -no-snapshot -no-audio -no-boot-anim -gpu host -camera-back none -camera-front none -memory 4096 -cores 4 -no-metrics
+```
+
+(The owned AVD also needs its own `HOME`, `ANDROID_USER_HOME` and `ANDROID_AVD_HOME`, and a private adb server port, as
+in the agent's notes.)
+Result: `sys.boot_completed=1` after 98 s, no ANR dialog and no crash, with the journal naming the AMD Radeon RX 7600
+as the GL and Vulkan device, at a load average above 60 on 16 cores.
+So the failures were launch flags and container limits, not host load.
+Use this form for agent sessions: no `-no-window`, no `xvfb-run`, no container, Vulkan left at its default.
+The window opens on the human's session; close it with `adb emu kill` after `sync`.
+
 ## Separate incident: mid-session SIGSEGV under llvmpipe in a container (2026-10-05)
 
 This is recorded here as the nearest topic.
