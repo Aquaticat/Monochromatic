@@ -172,10 +172,16 @@ const JS_DETECTOR = "the repo's own `no-restricted-syntax/no-regex` rule (`packa
 /**
  Whether a package actually defines a task, checked against a full
  `mise tasks ls --all` dump rather than assumed from the task templates.
+ The match is anchored on the task-name column, because a substring test reports
+ `test` as present for a package that only defines `test:unit`.
  */
 function taskExists(packageDir, task) {
   if (packageDir === null) return false;
-  return TASK_LIST.includes(`//${packageDir}:${task}`);
+  const wanted = `//${packageDir}:${task}`;
+  return TASK_LIST.split('\n').some((line) => {
+    const name = /^[^\s]+/.exec(line);
+    return name !== null && name[0] === wanted;
+  });
 }
 
 function verificationSteps(finding, gateIssue) {

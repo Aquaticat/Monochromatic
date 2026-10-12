@@ -38,6 +38,11 @@ It is excluded from the audit population:
 - `generate.mjs` writes one issue payload per site.
 - `reconcile.mjs` corrects already-filed issues in place,
   then files the rest.
+- `repair-labels.mjs` re-applies issue labels after a pass that removed and added
+  labels in one `gh issue edit` call,
+  because GitHub applies the removals last.
+- `index-update.mjs` builds the grouped issue list for the index issue from the ledger.
+- `inject-scopes.mjs` writes the computed per-scope counts into the index issue body.
 - `evidence.mjs` holds the first measurement round.
 - `evidence2.mjs` supersedes two mis-constructed probes in `evidence.mjs`
   (the fence-strip input and the re-export matcher input) and adds the replacement-side
