@@ -30,7 +30,9 @@ use std::ffi::OsString;
 use std::path::PathBuf;
 use std::rc::Rc;
 use crate::policy_events::PolicyEvent;
-use crate::commit_policy_preparation::{CommitPreparationInput, CommitPreparationOutcome, NativeCommit, NO_CHANGE_CODE, NO_CHANGE_CORE_ID, NO_CHANGE_MESSAGE, prepare_commit_policies};
+use crate::commit_preparation::PREPARED_FILENAME;
+use crate::transaction_journal::PreparedRecord;
+use crate::commit_policy_preparation::{CommitPreparationError, CommitPreparationInput, CommitPreparationOutcome, NativeCommit, NO_CHANGE_CODE, NO_CHANGE_CORE_ID, NO_CHANGE_MESSAGE, prepare_commit_policies};
 use crate::transaction_git::{GitRequest, run_git};
 
 /// A fixed transaction ID of the shape the registry accepts.
@@ -528,4 +530,82 @@ fn real_index_blob(repo: &Path, index: &Path) -> String {
     let mut fields = text.split_whitespace();
     let _mode = fields.next();
     return fields.next().expect("the index names a blob").to_string();
+}
+
+/// Runs the commit path's preparation over a fixture whose private commit index holds the given uncorrected entry.
+fn prepare_through_policies(prepared_for: &Fixture, uncorrected: &[u8]) -> Result<CommitPreparationOutcome, CommitPreparationError> {
+    let objects: PathBuf = shadow_objects(prepared_for);
+    let stage: PrivateStage<'_> = PrivateStage {
+        context: &git_context(),
+        cwd: prepared_for.repo.as_path(),
+        index: prepared_for.commit_index.as_path(),
+        object_directory: Some(objects.as_path()),
+    };
+    let entry: Correction = Correction {
+        path: b"a.txt".to_vec(),
+        mode: CandidateMode::Regular,
+        before: Rc::from(uncorrected),
+        after: Rc::from(uncorrected),
+    };
+    assert_eq!(stage_correction(&stage, &entry), Ok(()), "the uncorrected entry is staged");
+    let overlay: Vec<(OsString, OsString)> = vec![
+        (OsString::from("GIT_DIR"), prepared_for.repo.join(".git").into_os_string()),
+        (OsString::from("GIT_WORK_TREE"), prepared_for.repo.as_os_str().to_os_string()),
+        (OsString::from("GIT_INDEX_FILE"), prepared_for.commit_index.as_os_str().to_os_string()),
+        (OsString::from("GIT_OBJECT_DIRECTORY"), objects.as_os_str().to_os_string()),
+    ];
+    let facts = git_facts(std::path::Path::new(REAL_GIT), &[], overlay.as_slice());
+    let mut checks = shipped_checks(
+        facts,
+        os_arguments(&[]),
+        LifecycleContent::Requested(CandidateRequest::Staged(vec![OsString::from("a.txt")])),
+        Vec::<PathBuf>::new(),
+    );
+    let request: StageRequest = StageRequest {
+        trigger: Trigger::PreForward,
+        config: PolicyConfig::defaults(),
+        controls: no_controls(),
+        selected: Vec::new(),
+    };
+    let hooks: PreparationHooks = PreparationHooks {
+        directory: prepared_for.transaction.join("hooks"),
+        silenced_events: INCUMBENT_SILENCED_EVENTS.iter().map(|event| { return String::from(*event); }).collect(),
+    };
+    let commit_args: Vec<String> = vec![String::from("-m"), String::from("changed")];
+    return prepare_commit_policies(CommitPreparationInput {
+        request: &request,
+        checks: &mut checks,
+        context: &git_context(),
+        cwd: prepared_for.repo.as_path(),
+        index: prepared_for.commit_index.as_path(),
+        object_directory: objects.as_path(),
+        native: NativeCommit {
+            capture: &prepared_for.capture,
+            shadow: prepared_for.shadow.as_path(),
+            hooks: &hooks,
+            global_args: &[],
+            commit_args: commit_args.as_slice(),
+        },
+        journal_directory: prepared_for.transaction.as_path(),
+        committed_paths: vec![String::from("a.txt")],
+    });
+}
+
+/// Corrections that change the tree prepare the commit, and the prepared record names the committed path.
+#[test]
+fn a_correction_that_changes_the_tree_prepares_the_commit() {
+    let root: PathBuf = fixture("preparation-changes-tree");
+    let prepared_for: Fixture = prepared_fixture(root.as_path(), None);
+    let outcome: CommitPreparationOutcome = match prepare_through_policies(&prepared_for, b"changed") {
+        Ok(found) => found,
+        Err(error) => panic!("the corrected change prepares: {error:?}"),
+    };
+    let CommitPreparationOutcome::Prepared { changed_paths, .. } = outcome else {
+        panic!("a correction that changes the tree is a commit, not a no-change result");
+    };
+    assert_eq!(changed_paths, vec![String::from("a.txt")]);
+    let record: String = std::fs::read_to_string(prepared_for.transaction.join(PREPARED_FILENAME)).expect("prepared record");
+    let parsed: PreparedRecord = parse_prepared(record.as_bytes()).expect("parse the prepared record");
+    assert_eq!(parsed.committed_paths, vec![String::from("a.txt")]);
+    remove(root.as_path());
 }
