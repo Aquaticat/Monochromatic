@@ -371,3 +371,41 @@ fn hints_far_from_the_view_are_packed_again_when_the_view_comes_near() {
     });
     opened.window.hide().expect("close wrap window");
 }
+
+/// A hint that arrives while the worker builds the tile for a new width makes that tile stale; the window asks for
+///  another instead of waiting for an event that may never come, and ends with a tile of the new width and the hint.
+#[test]
+fn a_hint_arriving_while_a_resized_tile_is_built_does_not_strand_the_window() {
+    let (_project, opened) = open(&long_text(8));
+    settled(&opened);
+    let wide = opened.source.borrow().width;
+    resize(&opened.window, TEXT_LEFT + 300.0, 660.0);
+    // The worker's tile for the narrow width is in flight, or finished and not yet taken in: no poll has run.
+    {
+        let current = opened.source.borrow();
+        assert!(
+            current.width < wide,
+            "the narrow width did not reach the state"
+        );
+        assert!(
+            current.tile_job.is_some(),
+            "the resize asked the worker for a tile"
+        );
+    }
+    annotate_line(&opened);
+    until(
+        "the window did not settle on a tile of the new width",
+        || {
+            let current = opened.source.borrow();
+            return current.shown.width == current.width
+                && current.scroll_wanted.is_none()
+                && current.tile_job.is_none();
+        },
+    );
+    settled(&opened);
+    assert!(
+        block(&opened, LINE).is_some_and(|found| return !found.messages.is_empty()),
+        "the block of the annotated line is missing"
+    );
+    opened.window.hide().expect("close wrap window");
+}

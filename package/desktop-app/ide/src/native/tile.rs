@@ -382,10 +382,18 @@ fn apply(window: &AppWindow, state: &Rc<RefCell<State>>, reply: anyhow::Result<T
         if current.tile_job == Some(built.bounds) {
             current.tile_job = None;
         }
-        tracing::debug!(first = built.bounds.first, "discarded stale source tile");
+        // A tile is still wanted when the window waits for one: the displayed tile stays on screen until it arrives,
+        // so a discarded tile (a hint arrived while it was built, for instance) must be asked for again.
+        let wanted = current.scroll_wanted.is_some();
+        tracing::debug!(
+            first = built.bounds.first,
+            wanted,
+            remapped,
+            "discarded stale source tile"
+        );
         drop(current);
-        if remapped {
-            // The map moved even though the tile was not shown; the window follows it.
+        if remapped || wanted {
+            // The map moved even though the tile was not shown, or a tile is still wanted; the window follows.
             render(window, state);
         }
         return;

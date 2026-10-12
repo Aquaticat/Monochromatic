@@ -1281,6 +1281,9 @@ They therefore wrap at the same width as the code.
   so a resize costs the window thread one packing for each hinted line near the view
   and not for each line the view ever passed.
   Lines that wait keep the heights of the old width, which move the lines after them, never the lines in view.
+- A hint or message that arrives while the worker builds the tile for a new width makes that tile stale.
+  The window drops it and asks the worker for another at once (`tile::apply`), because the displayed tile stays on
+  screen meanwhile and no later event is certain to ask.
 - The block of a wrapped line and the hover, press, and Ctrl+click rules are those of any block:
   a point over the block belongs to its line and to no character,
   and a press on it acts on the first visual row of the line.
