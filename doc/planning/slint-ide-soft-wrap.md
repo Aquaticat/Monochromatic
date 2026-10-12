@@ -166,7 +166,7 @@ Read from the crate source that matches `Cargo.lock` (checksum verified), withou
 
 ## Order of work
 
-Status as of 2026-10-11 (the branch `feat/ide-soft-wrap`):
+Status as of 2026-10-12 (the branch `feat/ide-soft-wrap`):
 
 1. Layout model: **built.**
    The wrap width is part of the row cache (every kept row carries the width it is broken at),
@@ -191,14 +191,34 @@ Status as of 2026-10-11 (the branch `feat/ide-soft-wrap`):
    and two quick presses on different rows of one line are two single clicks.
    Slice 3 also fixed two layout defects its tests found: the continuation indent was doubled at scale 2,
    and a blank hanging on the last row left a counted row with no characters.
-5. Annotations, find, and selection on visual rows: **partly built.**
+5. Annotations, find, and selection on visual rows: **built.**
    Underlines, find rectangles, and selection ink are per visual row.
-   Hints and message rows still stand above the first visual row of their line and are cut at the right edge of
-   the text area; wrapping them is not built.
-6. Tests, guards, and the README: **built** for what is built above.
+   Hints and message rows are fitted to the text area's width: hints are packed against the line as it is broken,
+   a hint that would pass the right edge ends at it, a label wider than the area breaks into pieces,
+   and a message line is broken again at the width as a whole, with its 12-row cap kept and a message that would
+   pass the edge moved left.
+   The block of a line stands over its first visual row, because the user decided on 2026-10-05 that virtual rows stand
+   over the code line; IntelliJ puts a block inlay over the visual row that holds its offset
+   (`VisualLinesIterator.setInlays`), which is a known difference.
+   A new wrap width packs the hinted lines near the view at once and the others when the view comes near them.
+6. Tests, guards, and the README: **built.**
    The guards `caret-room`, `find-match-visual-rows`, and `underline-visual-row` replace `caret-room`,
    `horizontal-tile`, and `scroll-extent`; `horizontal-resets-column` guards the Left and Right keys,
    not scrolling, and stays.
+   Slice 4 added guards for the annotation rows, the clip of a tall line, the character budget of the tab passes,
+   and the caret stops of a very long line.
+7. Slice 4 (2026-10-12), the last: **built.**
+   Besides item 5 above:
+   the caret stops of a line were found in time that grew with the square of its length
+   (100,000 characters took over 90 s to open in a debug build) and now grow with its length;
+   a tile of lines wrapped to more rows than the 64 MiB raster limit holds is painted in a clip of the rows near the
+   view instead of being refused;
+   tab correction was measured to settle after 4 to 76 passes with no bound known beforehand,
+   so it keeps a bound, now a budget of characters shaped (the passes a line gets fall with its length);
+   a test that raced the 200 ms scroll quiet time reads a clock the test holds;
+   and scrolling inside a built tile of a wrapped file is counted to do no source work.
+   The README (`package/desktop-app/ide/README.md`, "Soft wrap") holds the numbers and the list of known differences
+   from IntelliJ.
 
 ## Not decided here
 

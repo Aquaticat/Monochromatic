@@ -1191,6 +1191,8 @@ Labels are shown as the server sent them,
 without padding spaces,
 in the source ink at 70 percent,
 without a box.
+On a wrapped line a hint is read at the x of the visual row its character is drawn on
+(see [Rows fitted to the text area](#rows-fitted-to-the-text-area)).
 
 The packing never looks back at an earlier row,
 so a call with several short arguments can take one row per argument:
@@ -1215,12 +1217,14 @@ starting at the pixel x of the diagnostic's first character.
 - Line breaks: each line of a message starts a row.
   Blank lines are dropped;
   indentation is kept.
-- Long lines: a line wraps at a blank once it reaches 80 characters (`WRAP_COLUMNS`),
+- Long lines: a line first wraps at a blank once it reaches 80 characters (`WRAP_COLUMNS`),
   wide characters counting as two;
   a longer word is cut.
   Every row after a message's first is indented by 16 px (`CONTINUATION_INDENT`).
-  The limit is a count of characters,
-  so the height of a block is known without shaping its text.
+  That first break is a count of characters,
+  so the rows at the first break are known without shaping their text.
+  A row wider than the text area is then broken again to fit it
+  (see [Rows fitted to the text area](#rows-fitted-to-the-text-area)).
 - Cap per message: 12 rows (`MESSAGE_ROWS`).
   The last row of a longer message reads `… N more lines`.
 - Cap per line: 8 messages (`LINE_MESSAGES`).
@@ -1229,17 +1233,58 @@ starting at the pixel x of the diagnostic's first character.
 - A range over several lines: its message stands over the first line of the range only;
   every line of the range is underlined.
 
-Message and hint rows do not wrap to the window yet:
-a row that starts far to the right is cut at the right edge of the text area,
-because the source view has no horizontal scrolling.
-Its full text stays in the source view's accessible description while the caret touches its diagnostic.
-Wrapping these rows belongs to the annotation part of the soft wrap work.
-`narrow-dark-1x.png` shows that at the default window width.
-
 A message cut by either cap is spelled out in full in the source view's accessible description
 while the caret touches its diagnostic,
 up to eight problems.
 There is no pointer or keyboard way to read the rest on screen yet.
+
+#### Rows fitted to the text area
+
+The source view has no horizontal scrolling,
+so no row of a block may pass the right edge of the text area.
+The text area is the width the code wraps at (see [Soft wrap](#soft-wrap)),
+and the blocks are made for that width and made again when it changes.
+No IntelliJ source read for this work speaks for these rows:
+none of it wraps a block inlay or draws a diagnostic message in the text.
+They therefore wrap at the same width as the code.
+`design/screenshots/2026-10-12-wrap-annotations-applied/` shows them at two window widths in both schemes.
+
+- A block stands over the first visual row of its line, whatever row its hints and messages belong to.
+  The user decided that virtual rows stand over the code line (2026-10-05, see [Placement](#placement)).
+  IntelliJ places a block inlay over the visual row that holds its offset;
+  see [Known differences from IntelliJ](#known-differences-from-intellij).
+- A hint is packed against the line as it is broken at the wrap width, not against the unbroken line.
+  Its x is the x of its character on the visual row the character is drawn on.
+  A hint that would pass the right edge of the text area ends at the edge instead.
+  A label wider than the text area breaks, with the shaper that paints it, into pieces on rows of their own;
+  the later pieces start at the left edge.
+- A message line with a row wider than the text area is joined and broken again at its width as a whole
+  (`MessageRow::gap` records how a row follows the one before it: a blank, or nothing where a word was cut),
+  so only its last row is short and a cut word stays whole.
+  The first row of a message may use all of the width and every later row is 16 px in,
+  so a row that is not itself continued breaks in two steps.
+  The pieces after the first are continued rows.
+- A message keeps its cap of 12 rows after this second break.
+  The last row then reads `… N more lines`, where N counts the rows left out.
+- A message whose widest row would pass the text area from the x of its diagnostic moves left, as a whole,
+  until the widest row ends at the edge.
+- The height of a block is the number of its rows after these breaks,
+  so the vertical map and the scroll extent follow the width.
+- The width of every message row is measured once for each display scale and kept,
+  so a new width shapes again only the rows wider than it.
+  `Annotations::work` counts the lines packed, the rows measured, and the rows broken by shaping;
+  the structural tests compare the counts before and after a resize.
+- A new wrap width makes the packing of a hinted line stale.
+  The lines near the view (the requested tile and one tile on each side) are packed again at once;
+  the others keep what they had until the view comes near them,
+  which the row key records (`Annotations::stale_in`),
+  so a resize costs the window thread one packing for each hinted line near the view
+  and not for each line the view ever passed.
+  Lines that wait keep the heights of the old width, which move the lines after them, never the lines in view.
+- The block of a wrapped line and the hover, press, and Ctrl+click rules are those of any block:
+  a point over the block belongs to its line and to no character,
+  and a press on it acts on the first visual row of the line.
+  Underlines stand on the visual rows they mark, with or without a block.
 
 #### Virtual rows are not source text
 
@@ -1305,7 +1350,8 @@ so the map also holds the visual row count of every line (`src/line_rows.rs`),
 in shared chunks of 256 lines with the rows above each chunk summed,
 and `locate`, `page`, and the extents count a wrapped line by its height.
 Blocks come from `Annotations::assemble` (`src/annotation/blocks.rs`),
-which packs a line's hints once per snapshot and scale and counts message rows without shaping.
+which packs a line's hints once per snapshot, scale, and wrap width,
+and breaks message rows to the text area (see [Rows fitted to the text area](#rows-fitted-to-the-text-area)).
 
 ### Overscan tile
 
@@ -1434,24 +1480,111 @@ depends on where the row broke.
 The displayed tile stays on screen until the tile for the new width arrives.
 Measured on 2026-10-11, breaking 50,000 kept layouts again took 40 to 80 ms.
 
-Tab correction on a wrapped line repeats shaping until the corrections agree, at most 40 passes (`TAB_PASSES`).
+Tab correction on a wrapped line repeats shaping until the corrections agree (`layout_wrapped_with_tabs`).
 Row `n` of a line is right after `n + 1` passes, because a row depends only on the rows before it,
-so a line with tabs inside it is exact up to 40 rows.
-A line with tabs inside it that wraps over more rows keeps the corrections of its last pass:
-bounded and deterministic, but its tabs on the later rows may stand off their stops.
+so a line with tabs inside it is exact up to as many rows as it gets passes.
 The first bound, four passes, was not enough:
 `tab_correction_settles_at_every_width` swept widths from 40 to 700 px at two scales over two tab-heavy lines
 and found tabs off their stops at 40 px.
 A tab that ends its row can make two corrections repeat forever;
 the loop then ends with the layout whose corrections are smaller, the one in which that tab fits.
 
-A line so long that its tile would pass the 64 MiB raster limit is refused with the raster diagnostic instead of
-being painted: at a text width of 782 px that is about 894 rows at scale 1 (about 75,000 characters in one line) and
-about 223 rows at scale 2 (about 18,700 characters).
-Before the wrap a single row of such a line was painted and scrolled sideways; clipping the tile to the view inside a
-very tall line is not built.
-Shaping such a line is also slow, because the display projection of a line is quadratic in its length
-(a line of 100,000 characters took longer than 90 s in a debug build and was not opened by any test).
+Whether the correction can settle at a bounded cost was measured on 2026-10-12 in the release profile,
+on a host with a load of 40 to 90, with the bound lifted:
+
+- A line with a tab every few characters settled after 76 passes at 20,000 and 40,000 characters
+  and after 74 at 100,000 characters (255 to 1,265 rows).
+- A line of irregular words, blanks, and tabs settled after 4, 7, and 54 passes
+  at 5,000, 20,000, and 100,000 characters.
+- The count never came near the number of rows, but it is not known beforehand and it passed the former bound of 40.
+- Every pass shapes the whole line.
+  With 40 passes the 100,000 character lines took 2.3 s and 4.8 s on the window thread, where a first tile is built;
+  the 20,000 character line of the first kind took 0.43 s.
+
+A correction that settles at a bounded cost therefore cannot be promised, and the bound stays,
+now as a budget of characters shaped rather than a count of passes (`passes_for`, `TAB_BUDGET`):
+a line gets 40 passes (`TAB_PASSES`) up to 25,000 characters,
+a longer line gets the budget of 1,000,000 characters divided by its length, and never fewer than 4 (`TAB_MIN_PASSES`).
+A line of 100,000 characters gets 10 passes; after the budget the same lines took about 0.4 to 0.6 s
+(shaping one such line without tabs takes 50 to 70 ms).
+A line that wraps over more rows than it gets passes keeps the corrections of its last pass:
+bounded and deterministic, but its tabs on the later rows may stand off their stops.
+That is the one place where the wrap trades exactness for a bound on the window thread's work.
+`row_of`, which finds the row of a tab, is a binary search, and the shaper counts its passes (`TextShaper::tab_passes`).
+
+#### Lines taller than one raster
+
+A tile is one image, and an image may hold 64 MiB (`MAX_RASTER_BYTES`).
+The raster is as wide as the text area plus 24 px, so its height is limited:
+at a text width of 782 px that is 866 code rows at scale 1 and 215 at scale 2
+(about 74,000 and 18,500 characters of ordinary text in one line).
+A window whose three view heights pass the limit is limited the same way:
+at a text width of 1918 px and scale 2 the cap is 2,135 px, less than three views of 1,080 px.
+`render::tile_cap` is the largest tile height in logical pixels, one code row short of the limit for rounding.
+A tile of lines taller than that is clipped instead of refused (`Viewport::clip`, `viewport::band_clip`):
+
+- The clip is the three view heights around the view, cut to the cap,
+  with its edges on whole code rows, as two distances below the top of the first materialized line's block
+  (so a row that appears above the tile moves the clip with it, `ShapedView::rebase`).
+- The tile's identity (`TileBounds`, the frame stamp) carries the clip,
+  the view must stay a quarter of a view height clear of its edges (`viewport::holds`),
+  and leaving them re-centers the tile on the worker as for any tile.
+  Scrolling inside a clip does no work, as inside any built tile.
+- `TextRaster::draw` already skips the visual rows of a layout that lie outside the raster,
+  so a line of thousands of rows costs only the rows in the clip.
+  The gutter lists only the rows in the clip (`rows::measure`).
+- A view so tall that it and a quarter of its height on each side pass the cap can never be held,
+  so such a tile is placed again at every scroll step; a window that tall has no better answer.
+- The raster still refuses a tile past the limit with its diagnostic, for a caller that did not clip.
+
+The caret stops of a line were found in time that grew with the square of its length:
+`project_line` walked the graphemes through a flat string view, and every lookup scanned the string.
+A line of 100,000 characters took longer than 90 s to open in a debug build.
+Measured on 2026-10-12 in a debug build on a loaded host, the projection alone took 0.37 s at 10,000 characters,
+1.2 s at 20,000, and 5.1 s at 40,000, a factor of four for every doubling,
+while shaping and breaking the same lines took 29, 65, and 123 ms.
+A line past 1 KiB (`FLAT_LINE_BYTES`) is now copied into a rope first, whose chunks bound each lookup;
+the projection of 100,000 characters took 0.5 s in the same build, and in the release profile 13 to 20 ms
+(the former walk took 8 ms at 20,000 and 190 ms at 100,000 characters there, measured in isolation).
+`text_projection_tests` counts the bytes the lookups scan and compares the stops with a flat walk.
+Shaping and breaking a line of 100,000 characters without tabs takes 50 to 70 ms in the release profile,
+about 1.2 s in a debug build, and the window thread does it once, when the tile that holds the line is first built.
+
+#### What the window thread pays
+
+Measured on 2026-10-12 with the release bundle (`dist/monochromatic-ide`, sha1 `13505a6f`, built from commit
+`9151379037`) in the nested compositor at 1100 by 660 pixels, with the debug lines of `tile.rs` and `render.rs` timing
+the window-thread functions.
+The host's load was 37 to 43 throughout, so the numbers are not those of an idle machine.
+Only sessions in which the frame recorder dropped nothing count; all 10 sessions were counted and none was discarded.
+Each session opened the file, waited for the pass to finish, scrolled 60 wheel notches down and 60 up with a 16 ms wait
+after each notch and the recorder running,
+and resized the window to 900 and back to 1100 pixels.
+The times are the time inside the window-thread functions, never the time to the next frame:
+the toolkit's image upload happens after them and is not in these numbers,
+and the longest gap between painted frames was not measured.
+
+A file of 50,000 lines of about 110 characters, most of them wrapped to two rows (6 sessions):
+
+- Taking in a finished tile (`tile::apply`, timed in `tile::poll`):
+  while opening, 19 tiles, median 0.14 ms, 95th percentile 0.38 ms, largest 0.38 ms;
+  while scrolling, 123 re-centers, median 0.26 ms, 95th percentile 1.0 ms, largest 16 ms;
+  after the resizes, 12 tiles, median 0.44 ms, 95th percentile 0.54 ms, largest 0.54 ms.
+- Taking in the output of the measurement pass (`tile::apply_pass`, timed in `tile::poll`):
+  while opening, 1,649 outputs, median 0.07 ms, 95th percentile 0.39 ms, largest 4.2 ms;
+  after the resizes, 172 outputs, median 0.11 ms, 95th percentile 0.28 ms, largest 1.2 ms.
+  The pass was done during the opening of each session; the scroll window held no output.
+- Building a tile on the window thread (measuring its lines and painting it): 18 builds while opening,
+  median 1.6 ms, largest 23 ms (the first tile and the two that follow it); none while scrolling or resizing.
+
+A file of one line of 200,000 characters (4 sessions):
+the first build of a tile on the window thread took 164 to 228 ms in every session,
+which is the time to shape that line once, a second build took 10 to 13 ms, and a third took 167 to 174 ms in two sessions and 4 to 6 ms in the others;
+taking in a re-centered tile took a median of 0.11 ms, a 95th percentile of 2.7 ms, and at most 7.2 ms (88 tiles).
+Shaping and breaking 100,000 characters without tabs takes 50 to 70 ms in the same profile when timed alone.
+The window thread therefore still waits once, about the time of one shaping of the line, when such a file is opened,
+and once more in two of the four sessions;
+no scroll step entered a build, which is what these counts show, and not that no frame was late.
 
 Structural tests, independent of host load, count what the window thread does.
 `wrap_tests` opens 50,000 lines and asserts that the window thread shaped almost nothing
@@ -1459,6 +1592,37 @@ and that one poll applied at most `TAKE_LIMIT` lines.
 A re-center during the pass is built on the worker with no row shaped on the window thread, and it is not discarded.
 A resize shapes nothing again.
 A mixed file proves that no visible pixel moves when rows above the view change height.
+`wrap_clip_tests` scrolls inside a built tile of a wrapped file and inside the clip of one tall line:
+no render, no shaped row, no painted tile, and no image on the window thread (guard `wrapped-tile-holds`);
+it walks the view through a 100,000 character line and asserts the raster stays within the limit and holds the view,
+that the gutter lists only the rows of the clip, and that opening the file shapes each of its lines once.
+`wrap_annotation_tests` shows that a resize with hints and messages on a wrapped line builds no tile on the window
+thread and packs only the hinted lines near the view.
+`text_projection_tests` and `tab_layout_tests` count the work of the caret stops and of the tab passes.
+
+#### Known differences from IntelliJ
+
+Everything the user did not decide follows IntelliJ IDEA Community (`doc/planning/slint-ide-soft-wrap.md`).
+These are the places where the source view differs, and why:
+
+- The wrap mark stands in the gutter, on every continuation row, because the user said so;
+  IntelliJ paints it in the text area and, by default, only on the caret's line.
+- A block of hints and messages stands over the first visual row of its line.
+  IntelliJ puts a block inlay over the visual row that holds its offset (`VisualLinesIterator.setInlays`),
+  and a block below a line under the visual row that holds it.
+  The user decided that virtual rows stand over the code line (2026-10-05); no block stands under a line here.
+- Hints and messages are broken at the width of the code.
+  The IntelliJ source read for this work does not wrap a block inlay and draws no diagnostic message in the text.
+- The caret cannot stand in the indent of a continuation row or in virtual space,
+  so Home has one step fewer on a continuation row and on a line of blanks only.
+- IntelliJ gives its identifier-symbol break rule a lower weight than the others.
+  Parley keeps the rightmost opportunity whatever its weight, so the rule counts like the others.
+- A line that wraps over more rows than its tab-correction passes keep their last corrections
+  (see [Soft wrap](#soft-wrap)); IntelliJ measures each tab on the row it stands on.
+- A tile of a very tall line holds only the rows near the view; IntelliJ paints the rows in the view.
+- Lines the background measurement has not reached count as one row, so the scroll extent grows while it runs.
+- There is no switch for soft wrap, because the user asked for it to be always on.
+- Thai, Lao, Khmer, and Myanmar get no dictionary-based breaks (Parley's `complex-scripts` feature is off).
 
 ### Stability
 
@@ -1477,6 +1641,9 @@ so the rules for what may move are part of the placement.
   a change that would move the scroll offset waits until the offset has been still for 200 ms
   (`rows::SCROLL_QUIET`),
   so a wheel animation is never cut short.
+  The rule reads the time through `rows::quiet_now`, which a test can hold still and move by exactly the time it means
+  (`rows_above_the_view_wait_until_scrolling_has_stopped` does, so no host load can run the 200 ms out between a
+  scroll and the rows that must wait for it; with the former real sleeps it failed whenever a stall passed 200 ms).
   A render that comes after a scroll step whose change handler has not run yet
   (the window's offset differs from the one last placed) counts as scrolling too;
   under host load a recording showed such a render moving the first visible line by 3 px before this rule.
