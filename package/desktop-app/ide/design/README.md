@@ -1316,3 +1316,49 @@ one fresh session per question and scheme.
   Against the box's fill beside the cell,
   the plate's boundary measures 5.92 hovered and 12.41 pressed in the dark scheme,
   and 4.74 and 14.94 in the light one.
+
+## Applied frames of the 2026-10-12 soft wrap
+
+`screenshots/2026-10-12-soft-wrap-applied/` holds frames of the application built from the branch
+`feat/ide-soft-wrap`,
+in the light and the dark scheme,
+for the always-on soft wrap.
+
+### File names of the 2026-10-12 frames
+
+- `wrap-<scheme>.png`:
+  the sample file just after it opens, caret in the first column of the first line.
+- `wrap-<scheme>-selection.png`:
+  a click on the second visual row of the first line,
+  then a Shift+click on the sixth line,
+  so the selection runs across wrapped and unwrapped lines.
+
+Every frame is 1100 by 660 pixels at scale 1.
+
+### How the 2026-10-12 frames were produced
+
+`soft-wrap-shots.mjs` in this directory writes a sample Rust file into a disposable project,
+hosts the built `monochromatic-ide` in the nested compositor
+(`package/cli/nested-wayland-session`, `--size 1100x660`, `--color-scheme light` and `dark`),
+and takes each screenshot once two captures in a row are identical and the window is drawn.
+The script needs `WAYLAND_DISPLAY` and `XDG_RUNTIME_DIR` of a running Wayland session:
+
+```sh
+# design/soft-wrap-shots.mjs usage
+node design/soft-wrap-shots.mjs target/release/monochromatic-ide "${HOME}/temp/agent/soft-wrap-frames"
+```
+
+The compositor's `button down`, `move`, and `button up` sequence did not start a drag selection in this session,
+so the selection frames use the Shift+click path instead.
+
+### What the 2026-10-12 frames show
+
+- Wrapped lines carry their number on the first visual row only.
+  Every continuation row shows the wrap indicator in the gutter, in the same gray in both schemes.
+- A continuation row starts at the indent of its line,
+  and a line whose indent is a tab breaks back to the tab's width.
+- A token with no break opportunity (the line of `x` characters) breaks at the width of the text area,
+  and the last glyph of each row stands whole inside the pane.
+- There is no horizontal scrollbar and no horizontal scroll range.
+- The selection in the `-selection` frames covers each visual row from its first selected glyph to its end,
+  and the caret of the click stands on the second visual row of the first line, not at the end of the first.
