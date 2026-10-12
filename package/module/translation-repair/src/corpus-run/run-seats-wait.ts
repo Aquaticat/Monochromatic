@@ -88,7 +88,13 @@ export type JudgeSeatPhase =
  phase (ledger X12) and leans on the wide bench, as the preparation does. The
  page consistency pass, which asks the late bench which rendering of a repeated
  wording every place should follow, leans on the wide bench as the lane contest
- that asks the same bench does.
+ that asks the same bench does, and on the translators as well: it then asks the
+ translate stage's writer bench (`seats.translators`) to carry the chosen
+ rendering to each receiving place, so a phase that read only the wide bench
+ would neither wait for the writers nor check them before the carry asks for
+ them. A writer bench below its floor with no hold to wait out therefore makes
+ the reading refuse (`run-seats-floor.ts`), which `runPassConsistency` contains:
+ the page ships without the pass.
  */
 const BENCHES_BY_PHASE: Readonly<Record<JudgeSeatPhase, readonly BenchName[]>> = {
   preparation: ['wide',],
@@ -109,7 +115,10 @@ const BENCHES_BY_PHASE: Readonly<Record<JudgeSeatPhase, readonly BenchName[]>> =
     'slate',
     'wide',
   ],
-  'page consistency': ['wide',],
+  'page consistency': [
+    'wide',
+    'translators',
+  ],
 };
 
 /**
