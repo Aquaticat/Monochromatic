@@ -168,7 +168,7 @@ fn unsafe_paths_are_rejected_by_the_path_rule() {
 #[test]
 fn header_and_directive_violations_are_rejected() {
     let good: String = String::from_utf8(final_newline_patch(BASE, PROPOSED).bytes).expect("UTF-8 patch");
-    let variants: [String; 7] = [
+    let variants: [String; 14] = [
         good.replace(&format!("index {BASE}..{PROPOSED} 100644\n"), ""),
         format!("{good}index {BASE}..{PROPOSED} 100644\n"),
         good.replace("diff --git a/f.txt b/f.txt", "diff --git a/g.txt b/g.txt"),
@@ -176,6 +176,13 @@ fn header_and_directive_violations_are_rejected() {
         good.replace(" 100644\n", " 100000\n"),
         good.replace("--- a/f.txt\n", "rename from f.txt\n--- a/f.txt\n"),
         good.replace(&format!("{PROPOSED} 100644"), &format!("{}G{} 100644", &PROPOSED[..1], &PROPOSED[2..])),
+        format!("{good}diff --git a/f.txt b/f.txt\n"),
+        format!("{good}--- a/f.txt\n"),
+        format!("{good}+++ b/f.txt\n"),
+        good.replace("--- a/f.txt\n", ""),
+        format!("{good}diff --git a/g.txt b/g.txt\n"),
+        format!("{good}--- a/g.txt\n"),
+        format!("{good}+++ b/g.txt\n"),
     ];
     for text in variants {
         let patch: PolicyPatch = PolicyPatch { target_id: String::from("t"), path: String::from("f.txt"), bytes: text.clone().into_bytes() };
