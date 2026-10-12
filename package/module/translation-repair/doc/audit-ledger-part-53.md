@@ -390,7 +390,15 @@ armed three Monitors (the first matched its own `ps` filter and was stopped),
 and counted the suite log's lines in about twenty calls;
 one earlier call ended in `; echo done`.
 The owner saw it and asked for better briefs.
-The lead sent the agent the unit form and a blocking wait the same day.
+The lead sent the agent the unit form and a blocking wait the same day;
+the agent ran its last suite as a unit and waited on it with `wait-unit.ts`.
+Its hand-back disclosed four more slips:
+a file read with `sed --quiet`,
+a backslash-u escape typed once in a probe,
+eight throwaway probe files made and removed under `src`
+while it looked for a lint panic's trigger,
+and a build of the git-policy CLI's dist so one test file could import it.
+None reached the patch.
 
 Prevention:
 the shared facts now give the waiting rule:

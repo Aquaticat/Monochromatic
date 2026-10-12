@@ -59,12 +59,23 @@ each choice an agent left open is recorded beside its ledger entry.
   lint clean,
   49 of 49 scans),
   and the phase's wait on the writer bench in `4ec390fe87` and `f8d47c38aa`.
-- IN FLIGHT.
+- LANDED.
   An independent review of the rebuild found no path to the page around the bench and the floors,
   and twelve defects (ledger B451 to B462);
-  one agent,
-  owning every consistency and seat-reading file,
-  fixes all of them.
+  one agent fixed all of them,
+  merged as `d9bcaf2787` (cases) and `1a31a4a244` (code),
+  with `CONSISTENCY_CACHE_VERSION` at 3.
+- DOCS SPLIT.
+  The owner ruled that a Markdown file holds at most 1,000 lines;
+  the 38 translation-repair docs past it,
+  this snapshot among them,
+  are now indexes at their own paths with their parts beside them
+  in `a2eb509e92` (ledger M163),
+  and `doc-line-limit.unit.test.ts` keeps them there.
+- IN FLIGHT.
+  Gate g81 on `1a31a4a244`,
+  and a second independent review of the fix,
+  which also weighs the fixer's eight open choices.
 - THE GEMMA SEATS.
   Bedrock answers both with HTTP 401 for an expired token.
   The owner does not top up Bedrock (2026-09-07),
@@ -73,8 +84,8 @@ each choice an agent left open is recorded beside its ledger entry.
   A new key would bring them back,
   and is the owner's to issue or not.
 - NEXT.
-  Merge those fixes,
-  gate the merged head,
+  Read the gate and the review,
+  fix what the review finds,
   read the replay of the TianqiChen66623 artifact's ballots through it,
   then walk "Before a run launches" and relaunch `TianqiChen666` as `TianqiChen66624`,
   reading the refrain and the repeated sentence for one rendering each.

@@ -240,7 +240,13 @@ Found on 2026-10-12 (UTC) by a reviewer that read every changed file,
 ran twenty mutations and fuzzed six hundred benches;
 it found no path where model output reaches the page without the bench and every floor,
 and no failure that stops an entry.
-Being fixed in work open when this entry was written:
+Fixed on 2026-10-12 in `d9bcaf2787` (the cases) and `1a31a4a244` (the code);
+`CONSISTENCY_CACHE_VERSION` moved to 3,
+and generation 16 kept its number,
+since no run has written it.
+The fixer's replay of TianqiChen66623's ballots through the fixed build matched the replay before the fix byte for byte,
+and every place that located before still locates at the same offset with word boundaries enforced.
+Each finding:
 
 - B451:
   two receiving places in one paragraph:
@@ -291,6 +297,21 @@ Being fixed in work open when this entry was written:
   touching spans unlocated,
   an overlap check that ignores the slice,
   and an abort swallowed in a group's settlement.
+  Each mutation now fails a case of its own module's test.
+
+The fixer left eight choices open:
+a carry recorded under each label of a block rather than once with a list of labels;
+words in no single block tried as a splice of the whole English rather than left uncarried;
+edge marks taken off only when they enclose the quote or pair with nothing in it;
+the writers' absence logged once as an error while the pass goes on;
+a writer's block withheld when it loses another place's words;
+a run-off's reason kept as a section finding;
+a `<details>` paragraph given without its closing tag;
+and blockquote markers kept in the block text.
+An independent review of the fix weighs each before the next run.
+The fixer also reported a semantic-bridge panic the lint prints for `consistency-edge-marks.ts`
+and counts in no total;
+its trigger was not found.
 
 ## Process mistakes in this audit
 
