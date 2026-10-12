@@ -59,6 +59,10 @@ run = "cargo test --locked --offline --lib --"
 description = "Run the native binary-level tests matching `-- <filter>...` on the host against the host's Git; the gate's Git 2.56.0 stays the authority"
 run = "cargo test --locked --offline --test native_binary --"
 
+[tasks."native:differential:commit"]
+description = "Commit the same change through the incumbent (from source) and the native wrapper in identical disposable repositories and compare exit codes, events, commits, indexes and worktrees; build the native wrapper first with native:build; `-- --case <name>` selects one case"
+run = "node bin/differential-commit.mjs"
+
 [tasks."native:differential:dependent-version"]
 description = "Compare the incumbent TypeScript dependent-version planner with the native one: `-- record`, `-- check`, or `-- corpus [--seed n] [--count n] [--probes n] [--plant name]`"
 run = "node bin/dependent-version-differential.mjs"
