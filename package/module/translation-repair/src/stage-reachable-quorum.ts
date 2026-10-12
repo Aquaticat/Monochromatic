@@ -16,12 +16,15 @@ import { rosterQuorumSize, } from './roster-quorum-size.ts';
 // its quorum at 6 of 11, heard 5, spent its retry rounds re-asking the three
 // refused seats, and interrupted the entry provider-unavailable at 382 s.
 //
-// THE FLOOR IS TWO VOICES, as the select minimum's is two ballots: no stage
-// is decided by a single model, and a bench with one reachable seat, or none,
-// is an outage rather than a quorum.
+// THE FLOOR IS TWO VOICES WHEN THE BENCH IS SHORT, as the select minimum's is
+// two ballots: a short bench is not closed on a single model, and one with
+// one reachable seat, or none, is an outage rather than a quorum. A bench
+// that is not short closes on its own quorum, which is one voice for a seated
+// bench of one or two seats (after the run withholds seats, ledger B420);
+// the floor does not raise that.
 
 /**
- Fewest heard voices a stage may close on, whatever the bench.
+ Fewest heard voices a short bench may close on.
  */
 export const MIN_STAGE_VOICES = 2;
 
