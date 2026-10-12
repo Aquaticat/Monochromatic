@@ -712,7 +712,23 @@ Not reachable yet: nothing calls either module, and the wrapper still refuses `g
 
 Gates at head `7b6ebfe46c` (committed code, run through `gate-slot.ts`): native Clippy exit 0; container gate (`native:test:container`, Git 2.56.0) exit 0 with 1331 library tests passing. The host library run passes except the ten recorded Git 2.55 option-table comparisons.
 
-Slice 6 mutation (scoped runs through `gate-slot.ts`, one per file): `commit_convergence.rs` finished with 12 mutants tested in 38 minutes: 2 caught, 5 unviable and 5 timeouts. The five timeouts are the `snapshots_equal`, `record_path` and its `!` mutants, each hitting the 300 second per-mutant bound, so they are unverified and are not counted as kills; `record_path` and `snapshots_equal` need a multi-pass control before they can be called killed. The runs for `commit_policy_preparation.rs`, `private_index_stage.rs`, `candidate_prediction.rs`, `policy_patch_validate.rs` and `policy_patch.rs` were still in progress when this line was written.
+Slice 6 mutation, scoped runs through `gate-slot.ts`, one per file. The five sources below are unchanged since
+`44abe6639a`, the head the runs started from, so the results apply to the current code. A mutant is killed when a
+control fails under it; a timeout is recorded separately and is not a kill.
+
+- `commit_convergence.rs`: 12 tested, 2 caught, 5 unviable, 5 timeouts. The timeouts (`snapshots_equal`, `record_path`
+  and the `!` in `record_path`) hit the 300 second bound and are unverified. They need a multi-pass control before they count.
+- `commit_policy_preparation.rs`: 18 tested, 15 caught, 1 unviable, 2 missed. Both are killed by
+  `commit_preparation::tests::a_correction_that_changes_the_tree_prepares_the_commit` (`85b146e469`), which fails under
+  each mutant when applied on the host.
+- `private_index_stage.rs`: 8 tested, 7 caught, 1 unviable, 0 missed.
+- `candidate_prediction.rs`: 16 tested, 8 caught, 8 unviable, 0 missed.
+- `policy_patch_validate.rs`: 57 tested, 50 caught, 7 missed. All seven are killed: the six header-count and directive
+  mutants by `header_and_directive_violations_are_rejected` with duplicated, missing and extra-file headers (`a2db4d71af`),
+  and the delimiter-offset mutant by a short new revision, which panics under the mutant (`a20665fc44`). Each was
+  applied on the host and restored.
+- `policy_patch.rs`: 2 tested, 1 caught, 1 missed. The missed mutant replaces the `Display` body with `Ok`; it is killed by
+  `policy_patch::tests::each_failure_displays_exactly_its_message` (`529950eceb`), applied on the host and restored.
 
 Stop of feature work in this branch. The remaining slice 8 work and the slice 9 wiring (command path to
 `run_commit_transaction`, landing, the post-landing lane's API, the command frontier change) move to a separate
