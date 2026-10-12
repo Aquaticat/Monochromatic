@@ -319,7 +319,9 @@ export async function carveSettled(
       // like the pages, listed last so a refused page read is still the
       // refusal an input reports.
       readSettledEntryInfo({
-        artifact: settled.artifact,
+        generation: settled.artifact
+          .artifactSchemaVersion,
+        entryId,
         pin,
         readFile,
       },),

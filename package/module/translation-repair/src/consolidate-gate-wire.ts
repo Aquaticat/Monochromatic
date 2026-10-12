@@ -20,6 +20,11 @@ import {
   tenseCandidateGroups,
   tenseCandidateLines,
 } from './tense-candidate-block.ts';
+import {
+  ARCHIVE_TENSE_LABEL,
+  CONSOLIDATED_TENSE_LABEL,
+  STANDING_TENSE_LABEL,
+} from './tense-candidate-labels.ts';
 
 //region Consolidate gate wire
 // Asks whether the rendering this run WROTE should replace the one that would
@@ -319,6 +324,34 @@ export function buildConsolidateGateMessages(
   { subject, }: { readonly subject: ConsolidateGateSubject; },
 ): readonly ChatMessage[] {
   /**
+   Tense candidates of the texts on offer, shown only where the entry records a
+   death, after the passages with the other evidence about them.
+   */
+  const tenseGroups = tenseCandidateGroups({
+    lifeEnded: subject.lifeEnded === true,
+    ...((subject.subjectNames === undefined) ? {} : { subjectNames: subject.subjectNames, }),
+    texts: [
+      {
+        label: ARCHIVE_TENSE_LABEL,
+        text: subject.incumbentText,
+      },
+      {
+        label: CONSOLIDATED_TENSE_LABEL,
+        text: subject.consolidatedText,
+      },
+      {
+        label: STANDING_TENSE_LABEL,
+        text: subject.standingText,
+      },
+    ],
+  },);
+  /**
+   Lines the tense block encloses, which are the sentences as the detector
+   reads them (marks dropped, links unwrapped) and so can hold a longer run of
+   the fence character than any text they were read from.
+   */
+  const tenseLines = tenseCandidateLines({ groups: tenseGroups, },);
+  /**
    Fence long enough to enclose every text without one closing early.
    */
   const fence = selectFence({
@@ -331,6 +364,7 @@ export function buildConsolidateGateMessages(
       subject.referenceContext ?? '',
       subject.standingRefusal ?? '',
       subject.archiveDisputeNote ?? '',
+      tenseLines.join('\n',),
     ],
   },);
   /**
@@ -391,15 +425,15 @@ export function buildConsolidateGateMessages(
     sourceText: subject.sourceText,
     renderings: [
       {
-        label: 'ARCHIVE RENDERING',
+        label: ARCHIVE_TENSE_LABEL,
         text: subject.incumbentText,
       },
       {
-        label: 'CANDIDATE "consolidated"',
+        label: CONSOLIDATED_TENSE_LABEL,
         text: subject.consolidatedText,
       },
       {
-        label: 'CANDIDATE "standing"',
+        label: STANDING_TENSE_LABEL,
         text: subject.standingText,
       },
     ],
@@ -419,35 +453,13 @@ export function buildConsolidateGateMessages(
     ];
 
   /**
-   Tense candidates of the texts on offer, shown only where the entry records a
-   death, after the passages with the other evidence about them.
-   */
-  const tenseGroups = tenseCandidateGroups({
-    lifeEnded: subject.lifeEnded === true,
-    ...((subject.subjectNames === undefined) ? {} : { subjectNames: subject.subjectNames, }),
-    texts: [
-      {
-        label: 'ARCHIVE RENDERING',
-        text: subject.incumbentText,
-      },
-      {
-        label: 'CANDIDATE "consolidated"',
-        text: subject.consolidatedText,
-      },
-      {
-        label: 'CANDIDATE "standing"',
-        text: subject.standingText,
-      },
-    ],
-  },);
-  /**
    The tense block, fenced like the other blocks, or nothing when no text has a candidate.
    */
   const tenseBlock = (tenseGroups.length === 0)
     ? []
     : [
       `${fence} TENSE CANDIDATES ${fence}`,
-      ...tenseCandidateLines({ groups: tenseGroups, },),
+      ...tenseLines,
       fence,
       '',
     ];

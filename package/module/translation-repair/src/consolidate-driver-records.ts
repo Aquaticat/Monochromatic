@@ -10,7 +10,7 @@ import type { PreparedSheetFacts, } from './prepared-sheet-facts.ts';
 import type { TwinStored, } from './twin-memo.ts';
 
 //region Consolidate driver records
-// The consolidation driver's small readers, moved out of
+// The consolidation driver's small helpers, moved out of
 // `consolidate-driver.ts` at its line budget: what a fresh purchase leaves a
 // twin, which lane a contest verdict backed, and the artifact record of one
 // settled slice.

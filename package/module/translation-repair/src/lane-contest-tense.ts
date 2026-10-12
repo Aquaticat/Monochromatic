@@ -4,6 +4,11 @@ import {
   tenseCandidateGroups,
   type TenseCandidateGroup,
 } from './tense-candidate-block.ts';
+import {
+  ARCHIVE_TENSE_LABEL,
+  REPAIR_TENSE_LABEL,
+  TRANSLATE_TENSE_LABEL,
+} from './tense-candidate-labels.ts';
 
 //region Lane contest tense
 // THE TENSE CANDIDATES OF THE THREE TEXTS A LANE CONTEST OFFERS, in one place
@@ -55,15 +60,15 @@ export function laneContestTenseGroups(
     ...((subjectNames === undefined) ? {} : { subjectNames, }),
     texts: [
       {
-        label: 'ARCHIVE RENDERING',
+        label: ARCHIVE_TENSE_LABEL,
         text: incumbentText,
       },
       {
-        label: 'CANDIDATE "repair"',
+        label: REPAIR_TENSE_LABEL,
         text: repairText,
       },
       {
-        label: 'CANDIDATE "translate"',
+        label: TRANSLATE_TENSE_LABEL,
         text: translateText,
       },
     ],

@@ -1,8 +1,8 @@
 //region Present-tense barrel
 // Everything the tense candidates are made of and shown with: the detector and
 // the readings it stands on, the block a judging sheet carries, the finding a
-// contest slice records, and the entry's `info.yml` reader the death fact comes
-// from.
+// contest slice and a consolidation slice record, the labels both spell, and
+// the entry's `info.yml` reader the death fact comes from.
 //
 // Split out of `index.ts` when that file reached its line budget, on the
 // audience ground the other barrels used: these symbols answer one question,
@@ -46,6 +46,11 @@ export {
   type PreparedSheetFacts,
 } from './prepared-sheet-facts.ts';
 export {
+  CONTEST_TENSE_LABELS,
+  shippedTenseLabelOf,
+} from './tense-candidate-labels.ts';
+export {
+  EntryInfoParseError,
   type EntryInfoRecord,
   readEntryInfoRecord,
 } from './corpus-run/entry-info-record.ts';

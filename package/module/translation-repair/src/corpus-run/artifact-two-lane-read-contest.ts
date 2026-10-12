@@ -20,6 +20,7 @@ import {
 } from './artifact-two-lane-contest.ts';
 import { parseContestBallot, } from './artifact-two-lane-read-contest-ballot.ts';
 import { parseRecordedTenseCandidates, } from './artifact-two-lane-read-tense.ts';
+import { CONTEST_TENSE_LABELS, } from '../tense-candidate-labels.ts';
 import {
   contestEligibilityRequired,
   parseContestEligibility,
@@ -339,6 +340,7 @@ function parseContestSlice(
       tenseCandidates: parseRecordedTenseCandidates({
         value: slice.tenseCandidates,
         path: `${path}.tenseCandidates`,
+        labels: CONTEST_TENSE_LABELS,
       },),
     };
   return {

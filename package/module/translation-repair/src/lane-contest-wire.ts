@@ -443,6 +443,23 @@ export function buildLaneContestMessages(
   { subject, }: { readonly subject: LaneContestSubject; },
 ): readonly ChatMessage[] {
   /**
+   Tense candidates of each text on offer, shown only where the entry records
+   a death, after the passages with the other evidence about them.
+   */
+  const tenseGroups = laneContestTenseGroups({
+    lifeEnded: subject.lifeEnded === true,
+    ...((subject.subjectNames === undefined) ? {} : { subjectNames: subject.subjectNames, }),
+    incumbentText: subject.incumbentText,
+    repairText: subject.repairText,
+    translateText: subject.translateText,
+  },);
+  /**
+   Lines the tense block encloses, which are the sentences as the detector
+   reads them (marks dropped, links unwrapped) and so can hold a longer run of
+   the fence character than any text they were read from.
+   */
+  const tenseLines = tenseCandidateLines({ groups: tenseGroups, },);
+  /**
    Fence long enough to enclose every text without one closing early.
    */
   const fence = selectFence({
@@ -454,6 +471,7 @@ export function buildLaneContestMessages(
       subject.identityContext ?? '',
       subject.referenceContext ?? '',
       subject.archiveDisputeNote ?? '',
+      tenseLines.join('\n',),
     ],
   },);
 
@@ -581,24 +599,13 @@ export function buildLaneContestMessages(
     ];
 
   /**
-   Tense candidates of each text on offer, shown only where the entry records
-   a death, after the passages with the other evidence about them.
-   */
-  const tenseGroups = laneContestTenseGroups({
-    lifeEnded: subject.lifeEnded === true,
-    ...((subject.subjectNames === undefined) ? {} : { subjectNames: subject.subjectNames, }),
-    incumbentText: subject.incumbentText,
-    repairText: subject.repairText,
-    translateText: subject.translateText,
-  },);
-  /**
    The tense block, fenced like the other blocks, or nothing when no text has a candidate.
    */
   const tenseBlock = (tenseGroups.length === 0)
     ? []
     : [
       `${fence} TENSE CANDIDATES ${fence}`,
-      ...tenseCandidateLines({ groups: tenseGroups, },),
+      ...tenseLines,
       fence,
       '',
     ];

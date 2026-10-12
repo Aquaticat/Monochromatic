@@ -45,7 +45,7 @@ import type { StageSettings, } from '../stage-settings.ts';
  the contest's publication verdict refuses a winner merging their lines
 
  @param sheetFacts - what the page tells every sheet and key: the declared names,
- whether the original's entry records a death, the name the translation
+ whether the original's entry records a death, the names the translation
  declares for its subject, and what the pages the original cites say; each
  left out where the page lacks it
 

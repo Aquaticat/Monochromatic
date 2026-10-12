@@ -123,7 +123,7 @@ export function leadingMarkWidth({ text, }: { readonly text: string; },): number
  `refused to parse ${yamlRefusalSite({ cause, },)}`;
  ```
  */
-function yamlRefusalSite({ cause, }: { readonly cause: Readonly<Error>; },): string {
+export function yamlRefusalSite({ cause, }: { readonly cause: Readonly<Error>; },): string {
   if (!(cause instanceof YAMLError))
     return `at ${NAMED_POSITION_UNSTATED} (${cause.name})`;
 

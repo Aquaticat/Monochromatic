@@ -18,6 +18,8 @@ import {
   parseVerdict,
 } from './artifact-two-lane-read-consolidate-parts.ts';
 import { parseRecordedTenseCandidates, } from './artifact-two-lane-read-tense.ts';
+import { shippedTenseLabelOf, } from '../tense-candidate-labels.ts';
+import type { TenseCandidateGroup, } from '../tense-candidate-block.ts';
 import { parseConsolidationPolish, } from './artifact-two-lane-read-polish.ts';
 
 //region Artifact consolidated slice read
@@ -161,6 +163,58 @@ function parseGate(
 }
 
 /**
+ Reads the tense finding a consolidation slice records for the wording it ships.
+
+ A SLICE THAT SHIPS NO WORDING OF ITS OWN (the archive kept, or nothing
+ changed) has no shipped text to read a finding from; the contest record holds
+ the candidates of what it leaves, so a finding here is refused rather than
+ dropped unread.
+
+ @param value - recorded `tenseCandidates` value, absent when the record carries none
+
+ @param shipped - wording the slice ships, already read
+
+ @param path - artifact path of the value, for refusals
+
+ @returns The finding as a record fragment, empty when the slice carries none
+
+ @throws {@link ArtifactParseError} when a slice that ships no wording of its own carries a finding, or when the finding
+ is not a non-empty list of groups under the one label the sheets gave the shipped wording
+
+ @example
+ ```ts
+ const tense = parseShippedTense({ value: undefined, shipped: { kind: 'unchanged', }, path: 'x.tenseCandidates', },);
+ ```
+ */
+function parseShippedTense(
+  {
+    value,
+    shipped,
+    path,
+  }: {
+    readonly value: unknown;
+    readonly shipped: ArtifactConsolidateSlice['shipped'];
+    readonly path: string;
+  },
+): { readonly tenseCandidates?: readonly TenseCandidateGroup[]; } {
+  if (value === undefined)
+    return {};
+  if ((shipped.kind === 'archive') || (shipped.kind === 'unchanged')) {
+    throw new ArtifactParseError({
+      path,
+      reason: 'no tense candidates, since a slice that ships no wording of its own has no shipped text to read them from',
+    },);
+  }
+  return {
+    tenseCandidates: parseRecordedTenseCandidates({
+      value,
+      path,
+      labels: [shippedTenseLabelOf({ kind: shipped.kind, }),],
+    },),
+  };
+}
+
+/**
  Reads one consolidated slice under generation-selected shape.
 
  @param value - slice record
@@ -282,14 +336,14 @@ export function parseConsolidateSlice(
     terminal,
     path: `${path}.shipped`,
   },);
-  // A SLICE THAT SHIPS NO WORDING OF ITS OWN has no shipped text to read a
-  // finding from; the contest record holds the candidates of what it leaves.
-  if ((record.tenseCandidates !== undefined) && ((shipped.kind === 'archive') || (shipped.kind === 'unchanged'))) {
-    throw new ArtifactParseError({
-      path: `${path}.tenseCandidates`,
-      reason: 'no tense candidates, since a slice that ships no wording of its own has no shipped text to read them from',
-    },);
-  }
+  /**
+   The tense finding the record carries, none when it carries none.
+   */
+  const tense = parseShippedTense({
+    value: record.tenseCandidates,
+    shipped,
+    path: `${path}.tenseCandidates`,
+  },);
   return {
     sliceIndex,
     terminal,
@@ -319,14 +373,7 @@ export function parseConsolidateSlice(
         },),
       }
       : {}),
-    ...((record.tenseCandidates === undefined)
-      ? {}
-      : {
-        tenseCandidates: parseRecordedTenseCandidates({
-          value: record.tenseCandidates,
-          path: `${path}.tenseCandidates`,
-        },),
-      }),
+    ...tense,
   };
 }
 

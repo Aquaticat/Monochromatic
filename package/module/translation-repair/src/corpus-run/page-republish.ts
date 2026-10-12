@@ -8,6 +8,7 @@ import { rethrowUnlessMissingPath, } from '../missing-path-error.ts';
 import { refusalText, } from '../refusal-text.ts';
 import { readRunJson, } from '../run-json-read.ts';
 import { artifactFileNameOf, } from './artifact-file-name.ts';
+import type { TwoLaneArtifactGeneration, } from './artifact-two-lane-contract.ts';
 import { parseSettledTwoLaneArtifact, } from './artifact-two-lane-read.ts';
 import type { ParsedTwoLaneArtifact, } from './artifact-two-lane-read-contract.ts';
 import { rebuildPreparation, } from './artifact-two-lane-rebuild.ts';
@@ -84,6 +85,14 @@ export type CorpusPairReader = (
      Commit the artifact's texts were read at.
      */
     corpusSha: string;
+
+    /**
+     Generation of the artifact, which decides whether the entry's `info.yml`
+     is read too (`readSettledEntryInfo`): only an artifact of a generation
+     whose run told its models the recorded death needs it, so a missing or
+     damaged `info.yml` changes nothing about the replay of an earlier one.
+     */
+    generation: TwoLaneArtifactGeneration;
   }>,
 ) => Promise<CorpusPairText>;
 
@@ -259,6 +268,7 @@ async function rebuildPage(
     } = await readPair({
       entryId: artifact.id,
       corpusSha: artifact.corpusSha,
+      generation: artifact.artifactSchemaVersion,
     },);
     /**
      The carve the artifact's recipe gives, over the archive the run carved:

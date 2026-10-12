@@ -127,7 +127,7 @@ export type PreparedDocumentPair = {
    Declared names of the page's subject on the translation side (`name` in its
    front matter, then each alias in `info.alias`), which the tense candidates
    read as subjects. Present only when {@link PreparedDocumentPair.lifeEnded}
-   is true and the translation declares a name.
+   is true and the translation declares a name or an alias.
    */
   readonly subjectNames?: readonly string[];
 

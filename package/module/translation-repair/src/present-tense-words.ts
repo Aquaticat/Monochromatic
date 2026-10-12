@@ -1,8 +1,12 @@
+import { codePointAt, } from './code-points.ts';
+
 //region Word reading
 // Words of a sentence and the neighbours the present-tense rules compare: the
 // word after a subject past one run of whitespace, and the word before it. No
-// pattern is compiled, so a declared name is compared as text and never read as
-// a regular expression.
+// pattern is compiled from a declared name, so a name is compared as text and
+// never read as a regular expression. Text is read one whole character at a
+// time, so a letter of a script without case, or beyond the first plane, is a
+// letter like any other.
 
 /**
  One word of a sentence with the offsets it occupies there.
@@ -30,11 +34,17 @@ export type WordToken = {
 };
 
 /**
- Whether a character is a letter, read as a character that has a case.
+ Whether a whole character is a letter of any script, cased or not, or a mark
+ that joins one.
 
- @param character - one character of text
+ READ BY GENERAL CATEGORY, ONE WHOLE CHARACTER AT A TIME. A letter was once
+ whatever has a lower-case form that differs from its upper-case one, which is
+ no letter of Han or Hangul and no half of a surrogate pair, so a name written
+ in either script, or beyond the first plane, never opened a word.
 
- @returns Whether the character has a lower-case and an upper-case form that differ
+ @param character - one whole character of text, as `codePointAt` of `code-points.ts` reads it
+
+ @returns Whether the character is a letter or a combining mark
 
  @example
  ```ts
@@ -42,13 +52,14 @@ export type WordToken = {
  ```
  */
 function isLetterCharacter({ character, }: { readonly character: string; },): boolean {
-  return (character.toLowerCase() !== character.toUpperCase());
+  // oxlint-disable-next-line no-restricted-syntax/no-regex -- Unicode letter and mark classes have no string-API equivalent and a declared name may be written in any script; input is ONE character and the pattern carries no quantifier or alternation outside the class, so it cannot backtrack.
+  return /^[\p{L}\p{M}]$/u.test(character,);
 }
 
 /**
  Whether a character continues a word: a letter, a straight or typographic apostrophe, or a hyphen.
 
- @param character - one character of text, empty past the end
+ @param character - one whole character of text, empty past the end
 
  @returns Whether the character belongs inside a word
 
@@ -170,11 +181,24 @@ export function wordsOf({ sentence, }: { readonly sentence: string; },): readonl
      Offset where the word being read begins, negative between words.
      */
     let wordStart = -1;
-    for (let index = 0; index <= sentence.length; index += 1) {
+
+    /**
+     Offset of the next character to read.
+     */
+    let index = 0;
+    while (index <= sentence.length) {
       /**
-       Whether the character at this offset continues a word; past the end, nothing does.
+       Whole character at this offset, one UTF-16 unit or two, empty past the end.
        */
-      const inWord = isWordCharacter({ character: sentence.charAt(index,), },);
+      const character = codePointAt({
+        text: sentence,
+        at: index,
+      },);
+
+      /**
+       Whether that character continues a word; past the end, nothing does.
+       */
+      const inWord = isWordCharacter({ character, },);
       if (inWord && (wordStart < 0)) {
         wordStart = index;
       }
@@ -186,6 +210,11 @@ export function wordsOf({ sentence, }: { readonly sentence: string; },): readonl
         },));
         wordStart = -1;
       }
+      // Past the end the character is empty, so the step of one leaves the loop.
+      index += Math.max(
+        1,
+        character.length,
+      );
     }
     return words;
   })();
@@ -348,7 +377,12 @@ export function namesAt(
    Offset just past the name in the sentence.
    */
   const end = start + name.length;
-  if (isWordCharacter({ character: sentence.charAt(end,), },)) {
+  if (isWordCharacter({
+    character: codePointAt({
+      text: sentence,
+      at: end,
+    },),
+  },)) {
     return false;
   }
   return foldWord({
@@ -375,8 +409,8 @@ export function isSEndingWord({ word, }: { readonly word: string; },): boolean {
   if ((word.length < 2) || (!word.endsWith('s',))) {
     return false;
   }
-  for (let index = 0; index < word.length; index += 1) {
-    if (!isLetterCharacter({ character: word.charAt(index,), },)) {
+  for (const character of word) {
+    if (!isLetterCharacter({ character, },)) {
       return false;
     }
   }

@@ -173,8 +173,10 @@ export function translateSlateEvidence(
           text: archiveDisputeNote,
         },
       ]),
-    // Tense candidates of the ballot texts, last, so a judge reads the texts
-    // before a flag on them. Shown only where the entry records a death.
+    // Tense candidates of the ballot texts, the last of the evidence. The sheet
+    // prints all evidence before the numbered candidates, so a judge reads the
+    // flags first and the texts they name after, under the numbers the flags
+    // give them. Shown only where the entry records a death.
     ...((tenseGroups.length === 0)
       ? []
       : [

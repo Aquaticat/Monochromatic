@@ -3,7 +3,7 @@ import type { PreparedDocumentPair, } from './prepared-document-pair.ts';
 //region Prepared sheet facts
 // WHAT A PREPARED PAGE TELLS EVERY JUDGING SHEET AND EVERY CACHE KEY ABOUT THE
 // PAGE AS A WHOLE, gathered in one place: the declared names, the pages the
-// original cites, whether the original's entry records a death, and the name the
+// original cites, whether the original's entry records a death, and the names the
 // translation declares for its subject. Four call sites carried the same four
 // conditional spreads, and a fifth fact added to one and not to the others would
 // have reached some sheets and not their keys.
@@ -29,7 +29,7 @@ export type PreparedSheetFacts = {
 
   /**
    Names the translation declares for its subject, its display name and its
-   aliases, present only with a recorded death and a declared name.
+   aliases, present only with a recorded death and a declared name or alias.
    */
   readonly subjectNames?: readonly string[];
 

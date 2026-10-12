@@ -1,5 +1,6 @@
 import type { ArtifactConsolidateSlice, } from './corpus-run/artifact-two-lane-consolidate.ts';
 import { tenseCandidateGroups, } from './tense-candidate-block.ts';
+import { shippedTenseLabelOf, } from './tense-candidate-labels.ts';
 
 //region Consolidation shipped tense
 // THE TENSE CANDIDATES OF THE TEXT A CONSOLIDATION SLICE SHIPPED, kept on the
@@ -14,18 +15,6 @@ import { tenseCandidateGroups, } from './tense-candidate-block.ts';
 //
 // A FINDING, NOT A VERDICT. Like the contest's, it counts toward no verdict, no
 // flawed archive and no run-off.
-
-/**
- Label the consolidation gate gives the consolidated wording, which a reader of
- the finding finds again on that sheet.
- */
-const CONSOLIDATED_LABEL = 'CANDIDATE "consolidated"';
-
-/**
- Label the sheets give the archive's own wording, which an incumbent that stood
- in ships.
- */
-const ARCHIVE_LABEL = 'ARCHIVE RENDERING';
 
 /**
  Adds to a consolidation record the tense candidates of the wording it ships,
@@ -69,7 +58,7 @@ export function withShippedTenseCandidates(
   /**
    What the sheets called the shipped wording.
    */
-  const label = (shipped.kind === 'consolidated') ? CONSOLIDATED_LABEL : ARCHIVE_LABEL;
+  const label = shippedTenseLabelOf({ kind: shipped.kind, });
   /**
    The shipped wording's candidates, as one group or none.
    */

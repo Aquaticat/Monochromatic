@@ -362,7 +362,8 @@ export async function readArtifactSubjects(
       // the run's models saw; listed last so a refused page read is still the
       // refusal an input reports.
       readSettledEntryInfo({
-        artifact,
+        generation: artifact.artifactSchemaVersion,
+        entryId: artifact.id,
         pin,
         readFile,
       },),

@@ -1,3 +1,5 @@
+import type { Logger, } from '@monochromatic-dev/module-logger/ts';
+
 import type {
   CorpusPin,
   readCorpusFile,
@@ -15,6 +17,7 @@ import {
   ARTIFACT_SCHEMA_VERSION_V12,
   ARTIFACT_SCHEMA_VERSION_V5,
   artifactGenerationRecordsTense,
+  type TwoLaneArtifactGeneration,
 } from './artifact-two-lane-contract.ts';
 import type { ParsedTwoLaneArtifact, } from './artifact-two-lane-read-contract.ts';
 import { carveDivergence, } from './artifact-two-lane-rebuild-rows.ts';
@@ -472,38 +475,47 @@ export function rebuildPreparation(
  of an earlier generation reads nothing, so a damaged `info.yml` at an old
  commit refuses no replay that never needed it.
 
- @param artifact - parsed artifact whose entry is read
+ @param generation - generation of the artifact whose entry is read
+
+ @param entryId - directory name of the artifact's entry
 
  @param pin - corpus checkout and the artifact's own commit
 
  @param readFile - document reader at the pin
 
- @returns The parsed record, or the absence for an entry with no `info.yml` and for an earlier generation; the absence is recorded in silence, since the commands that replay an artifact pin their terminal output
+ @param l - logger the absence is named on, left out by a command whose terminal output is pinned, which then records the absence in silence
+
+ @returns The parsed record, or the absence for an entry with no `info.yml` and for an earlier generation, which is not read at all
 
  @throws {@link Error} when the file exists but is not readable or not YAML, for a generation that reads it
 
  @example
  ```ts
- const entryInfo = await readSettledEntryInfo({ artifact, pin, readFile: readCorpusFile, },);
+ const entryInfo = await readSettledEntryInfo({ generation: artifact.artifactSchemaVersion, entryId: artifact.id, pin, readFile: readCorpusFile, },);
  ```
  */
 export async function readSettledEntryInfo(
   {
-    artifact,
+    generation,
+    entryId,
     pin,
     readFile,
+    l,
   }: {
-    readonly artifact: ParsedTwoLaneArtifact;
+    readonly generation: TwoLaneArtifactGeneration;
+    readonly entryId: string;
     readonly pin: CorpusPin;
     readonly readFile: typeof readCorpusFile;
+    readonly l?: Logger;
   },
 ): Promise<EntryInfoRecord> {
-  if (!artifactGenerationRecordsTense({ generation: artifact.artifactSchemaVersion, },))
+  if (!artifactGenerationRecordsTense({ generation, },))
     return { kind: 'absent', };
   return await readEntryInfoRecord({
     pin,
-    entryId: artifact.id,
+    entryId,
     readFile,
+    ...((l === undefined) ? {} : { l, }),
   },);
 }
 

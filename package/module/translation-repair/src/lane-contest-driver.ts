@@ -98,7 +98,7 @@ function comparedSliceName({ item, }: { readonly item: { readonly sliceIndex: nu
  @param modelIds - roster to ask
 
  @param sheetFacts - what the page tells every sheet and key: the declared names,
- whether the original's entry records a death, the name the translation
+ whether the original's entry records a death, the names the translation
  declares for its subject, and what the pages the original cites say; each
  left out where the page lacks it
 

@@ -1,6 +1,9 @@
 import { wordForCount, } from './count-word.ts';
 import { hanItemsClause, } from './identity-han-items.ts';
-import { isJsonRecord, } from './json-guard.ts';
+import {
+  isJsonArray,
+  isJsonRecord,
+} from './json-guard.ts';
 import { isLatinLetterOrMark, } from './latin-letters.ts';
 
 //region Identity context
@@ -174,7 +177,9 @@ export function extractDeclaredIdentity(
  switched the feature off for its entry without a word. A finite number is
  recorded as the text of that number; a number with no text of its own (not a
  number, infinity) and any other non-text value stay undeclared, as they do
- for every other identity field.
+ for every other identity field; `unreadableDeathKindOf` names such a value, so
+ the reader of the entry's `info.yml` can say so once instead of this function
+ saying it at every call.
 
  @param entryInfo - parsed `info.yml` of the entry, `unknown` because corpus metadata is hand-edited
 
@@ -207,6 +212,60 @@ export function recordedDeathOf(
     record: info,
     key: 'died',
   },);
+}
+
+/**
+ Names the kind of a `died` value that {@link recordedDeathOf} leaves
+ unrecorded without it being a blank, so a reader of the entry's `info.yml` can
+ say so: a hand-edited `died: true` would otherwise switch the feature off for
+ its entry in silence.
+
+ NO WORD FOR WHAT IS NO MISTAKE. A `died` that is absent, text (blank text
+ included) or a finite number is recorded or is an entry with no death, and one
+ left blank (`died:` with no value, which YAML reads as null) is the same
+ absence; none of them is named here.
+
+ @param entryInfo - parsed `info.yml` of the entry, `unknown` because corpus metadata is hand-edited
+
+ @returns One phrase naming the kind of the value, or none when the value is recorded or is no mistake
+
+ @example
+ ```ts
+ const kinds = unreadableDeathKindOf({ entryInfo: { info: { died: true, }, }, },);
+ ```
+ */
+export function unreadableDeathKindOf(
+  { entryInfo, }: { readonly entryInfo: unknown; },
+): readonly string[] {
+  if (!isJsonRecord(entryInfo,))
+    return [];
+
+  /**
+   Nested `info` record of the entry, empty when the entry has none.
+   */
+  const info = isJsonRecord(entryInfo.info,)
+    ? entryInfo.info
+    : {};
+  /**
+   Raw `died` value, still untyped.
+   */
+  const { died, } = info;
+  // Absent, blank (YAML reads `died:` with no value as null) and text are recorded or no mistake.
+  if (died === undefined)
+    return [];
+  if (died === null)
+    return [];
+  if ((typeof died) === 'string')
+    return [];
+  if ((typeof died) === 'number')
+    return Number.isFinite(died,) ? [] : ['a number that is not finite',];
+  if ((typeof died) === 'boolean')
+    return ['a truth value',];
+  if (isJsonArray(died,))
+    return ['a list',];
+  if (isJsonRecord(died,))
+    return ['a record',];
+  return [`a value of type ${typeof died}`,];
 }
 
 /**
@@ -248,7 +307,9 @@ function deathLines(
   if (!isDeclared(source.died,))
     return [];
   return [
-    `- died: the date this person died, as the corpus records it: "${source.died}".`,
+    // Written as a JSON string, so a quotation mark or a line break in a hand-edited
+    // value cannot close the line or start another; a date reads the same.
+    `- died: the date this person died, as the corpus records it: ${JSON.stringify(source.died,)}.`,
   ];
 }
 

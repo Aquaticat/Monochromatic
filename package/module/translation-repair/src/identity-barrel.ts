@@ -20,6 +20,7 @@ export {
   type DeclaredIdentity,
   extractDeclaredIdentity,
   sourcePronounLines,
+  unreadableDeathKindOf,
 } from './identity-context.ts';
 
 //endregion Identity barrel
