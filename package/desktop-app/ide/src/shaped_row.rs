@@ -235,18 +235,9 @@ impl ShapedRow {
         return rows;
     }
 
-    /// The side the engine draws a caret at display byte `byte` on:
-    ///  at the end of a text that has an empty tail, the end of the last row, whatever side was asked for.
-    fn at_text_end(&self, byte: usize, affinity: Affinity) -> Affinity {
-        if self.has_empty_tail() && byte >= self.projection.text.len() {
-            return Affinity::Upstream;
-        }
-        return affinity;
-    }
-
     /// Physical x of the caret at display byte `byte` on the side `affinity` names.
     fn cursor_x(&self, byte: usize, affinity: Affinity) -> f32 {
-        let cursor = Cursor::from_byte_index(&self.layout, byte, self.at_text_end(byte, affinity));
+        let cursor = Cursor::from_byte_index(&self.layout, byte, affinity);
         // What: `as f32` narrows the engine's 64-bit coordinate to the 32-bit float advances use.
         // Why: Parley's geometry uses `f64`; glyph advances and Slint coordinates use `f32`.
         //
