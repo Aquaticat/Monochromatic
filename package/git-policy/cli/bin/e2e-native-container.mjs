@@ -16,6 +16,11 @@
    `usage_seed`, `usage_scenario` and `usage_git` (set by mise from `--seed`, `--scenario` and `--git`)
    select the seed, the scenario names and the Git versions.
 
+ - `surface` runs `e2e/wrapper-surface-probe.ts` once with each wrapper in that image and prints, per command,
+   whether the two wrappers agree on exit code, standard output and standard error.
+   The probe sends the non-commit Git commands that the scenarios use (and a few the wrapper refuses) through the
+   wrapper, so it shows differences on the surface that does not wait for the commit path.
+
  The base image comes from `mise run //package/git-policy/cli:test:e2e:concurrent:image`; this script never builds it,
  because it needs the packed incumbent and a network the suite does not use.
  */
@@ -216,6 +221,69 @@ async function runSuite() {
       '/fixture/e2e/concurrent-e2e-consumer.ts',
     ],
   });
+}
+
+/**
+ Run the surface probe in the native image with one wrapper.
+
+ @param {{ wrapper: 'incumbent' | 'native' }} request - wrapper whose `git` the probe drives
+ @returns {Promise<string[]>} the probe's result lines, one per command in order,
+   each a label, a tab, and the command's exit code and masked output as JSON
+ */
+async function runProbe({ wrapper }) {
+  const outcome = await runCommand({
+    command: 'podman',
+    args: [
+      'run',
+      '--memory=2g',
+      '--cpus=2',
+      '--rm',
+      '--network=none',
+      '--env',
+      `E2E_WRAPPER=${wrapper}`,
+      '--volume',
+      `${resolve('e2e')}:/fixture/e2e:ro,Z`,
+      '--volume',
+      `${resolve('../../module/caught-value')}:/fixture/caught-value:ro,Z`,
+      nativeImage,
+      'node',
+      '/fixture/e2e/wrapper-surface-probe.ts',
+    ],
+    capture: true,
+  });
+  return outcome.stdout
+    .split('\n')
+    .filter(function isResult(line) {
+      return line.includes('\t');
+    });
+}
+
+/** Run the probe with both wrappers, print the comparison, and fail when any command differs. */
+async function compareSurface() {
+  const [incumbent, native] = await Promise.all([
+    runProbe({ wrapper: 'incumbent' }),
+    runProbe({ wrapper: 'native' }),
+  ]);
+  if ((incumbent.length === 0) || (incumbent.length !== native.length))
+    throw new NativeVerificationError(
+      `The probe produced ${String(incumbent.length)} incumbent and ${String(native.length)} native results.`,
+    );
+  const differing = incumbent.flatMap(function compare(
+    left,
+    index
+  ) {
+    const right = native[index] ?? '';
+    const label = left.split('\t')[0] ?? left;
+    console.log(`${left === right ? 'SAME' : 'DIFF'} ${label}`);
+    if (left !== right) {
+      console.log(`  incumbent: ${left}`);
+      console.log(`  native:    ${right}`);
+    }
+    return left === right ? [] : [label];
+  });
+  console.log(`${String(incumbent.length - differing.length)} of ${String(incumbent.length)} commands agree`);
+  if (differing.length > 0)
+    throw new NativeVerificationError(`The wrappers differ on: ${differing.join(', ')}`);
 }
 
 /** Dispatch on the subcommand. */

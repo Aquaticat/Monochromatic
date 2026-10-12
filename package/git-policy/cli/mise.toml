@@ -410,6 +410,11 @@ flag "--git <versions>" help="Comma-separated Git versions to run (2.39.5, 2.40.
 '''
 run = "node bin/e2e-native-container.mjs run"
 
+[tasks.'test:e2e:concurrent:native:surface']
+description = "Send the non-commit Git commands the e2e scenarios use through the incumbent and the native wrapper in the native e2e image and compare exit codes and output"
+depends = ["test:e2e:concurrent:native:image"]
+run = "node bin/e2e-native-container.mjs surface"
+
 [tasks."native:lock:scanner"]
 description = "Seed the native wrapper lockfile from the linked scanner's lockfile, then let Cargo add only the wrapper's own packages, so both lock the same registry versions"
 run = ["cp ../../cli/forbidden-strings/Cargo.lock Cargo.lock", "cargo update --workspace --offline"]
