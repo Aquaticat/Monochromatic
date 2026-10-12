@@ -28,6 +28,11 @@
 //!  with no session bus (or a shell that ignores the
 //! protocol) the signal is silently dropped and playback is unaffected.
 
+/// What: `pub mod taskbar_state;` the pure state machine that decides what the taskbar bar shows.
+/// Why: the decision (one meaning at a time, whole percents, a rate limit, a clean reset on a track change) is
+/// separate from the D-Bus emit below, so it can be tested without a bus or a window.
+pub mod taskbar_state;
+
 /// What:
 ///      `use std::collections::HashMap;`.
 ///  The owned hash-map type.
@@ -494,25 +499,36 @@ impl Launcher {
                 ("progress", Value::F64(clamped)),
                 ("progress-visible", Value::Bool(visible)),
             ]);
-            // What:     `let _ = connection.emit_signal(None::<&str>, SIGNAL_PATH, LAUNCHER_INTERFACE, UPDATE_MEMBER, &(self.app_uri.as_str(), properties));`.
-            //           Broadcast the signal. `None::<&str>` is the destination (a
+            // What:     `let emitted = connection.emit_signal(None::<&str>, SIGNAL_PATH, LAUNCHER_INTERFACE, UPDATE_MEMBER, &(self.app_uri.as_str(), properties));`.
+            //           Broadcast the signal and keep the returned `Result`. `None::<&str>` is the destination (a
             //           turbofish-typed `None` so the generic resolves); the body is the
-            //           borrowed tuple `&(appUri, properties)` -> `(sa{sv})`. `let _ =`
-            //           DISCARDS the returned `Result` on purpose.
-            // Why:      A failed emit (bus dropped) must not interrupt playback, and
-            //           logging here would spam at the position-update rate.
+            //           borrowed tuple `&(appUri, properties)` -> `(sa{sv})`.
+            // Why:      The caller now sends only when the whole percent or the visibility changes, so logging
+            //           each send is cheap and shows exactly what the taskbar was told.
             //
             // In TS you'd write (pseudocode):
             // ```ts
-            // this.connection.emitSignal(null, SIGNAL_PATH, LAUNCHER_INTERFACE, "Update", [this.appUri, properties]);
+            // const emitted = tryEmit(this.connection, SIGNAL_PATH, LAUNCHER_INTERFACE, "Update", [this.appUri, properties]);
             // ```
-            let _ = connection.emit_signal(
+            let emitted = connection.emit_signal(
                 None::<&str>,
                 SIGNAL_PATH,
                 LAUNCHER_INTERFACE,
                 UPDATE_MEMBER,
                 &(self.app_uri.as_str(), properties),
             );
+            // What:     `if let Err(error) = emitted { ... } else { ... }`. Log the failure, or the value sent.
+            // Why:      A failed emit (bus dropped) must not interrupt playback, but it should leave a trace.
+            //
+            // In TS you'd write (pseudocode):
+            // ```ts
+            // if (emitted.error) log.warn(emitted.error); else log.debug(clamped, visible);
+            // ```
+            if let Err(error) = emitted {
+                tracing::warn!(%error, progress = clamped, visible, "launcher entry update failed");
+            } else {
+                tracing::debug!(progress = clamped, visible, "launcher entry update sent");
+            }
         }
     }
 }
