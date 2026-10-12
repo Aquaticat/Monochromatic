@@ -213,6 +213,21 @@ pub fn has_valid_landing_lease(
     }
 }
 
+/// What:
+///  The owner token a landing lease in the environment carries.
+/// Why:
+///   A nested landing holds the ancestor's lock by that token, never by the lease text around it.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// JSON.parse(environment.CLI_GIT_LANDING_LEASE).token
+/// ```
+pub fn landing_lease_token(environment: &[(OsString, OsString)]) -> Option<String> {
+    let lease: String = nonempty_variable(environment, LANDING_LEASE_VARIABLE)?;
+    let value = parse_object(lease.as_str())?;
+    return string_field(&value, "token").map(String::from);
+}
+
 /// Lease formatting and validation controls stay out of the release executable.
 #[cfg(test)]
 #[path = "transaction_lease_tests.rs"]

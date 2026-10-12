@@ -269,8 +269,8 @@ pub fn selected_worktree_records(
         let destination = repository_root.join(path_from_bytes(change.path.as_slice()));
         match inspect_worktree_file(destination.as_path(), git_mode, &change.original, &change.replacement) {
             Ok(WorktreeFileState::Original(_)) => {}
+            // A missing copy is reported as a conflict by the inspection, so it is skipped here with the other conflicts.
             Ok(_) => continue,
-            Err(error) if error.kind() == std::io::ErrorKind::NotFound => continue,
             Err(error) => {
                 return Err(GitFailure(format!(
                     "reading {} failed: {error}",

@@ -174,12 +174,8 @@ pub fn revalidate_replay<F: RepositoryFacts>(
     let root: &Path = context.capture.layout.repository_root.as_path();
     let index: PathBuf = replayed_index_path(workspace.landing.directory.as_path(), replay);
     let directory: PathBuf = workspace.landing.directory.join(format!("replay-{replay}"));
-    // Subsumption may have created the directory for its base index already.
-    if let Err(error) = create_private_directory(directory.as_path())
-        && error.kind() != std::io::ErrorKind::AlreadyExists
-    {
-        return Err(failed(format!("creating {} failed: {error}", directory.display())));
-    }
+    ensure_replay_directory(directory.as_path())
+        .map_err(|error| { return failed(format!("creating {} failed: {error}", directory.display())); })?;
     read_replayed_index(git, cwd, workspace.object_directory.as_path(), index.as_path(), merged_tree)?;
     move_shadow_head(
         git,
@@ -187,7 +183,7 @@ pub fn revalidate_replay<F: RepositoryFacts>(
         cwd,
         context.capture.layout.target_ref.as_str(),
         onto,
-        context.capture.layout.symbolic_head == SymbolicHead::Detached,
+        is_detached(&context.capture.layout.symbolic_head),
     )?;
     let candidate_paths: Vec<String> =
         list_changed_index_paths(git, cwd, index.as_path(), onto, workspace.object_directory.as_path())?;
@@ -256,6 +252,35 @@ pub fn revalidate_replay<F: RepositoryFacts>(
         committed_paths: candidate_paths,
         hook_changes,
     });
+}
+
+/// What:
+///  Make the directory of one replay, accepting one that subsumption already made for its base index.
+/// Why:
+///   Every other failure leaves the replay without a place for its index.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// await mkdir(directory, { mode: 0o700 }).catch((error) => { if (error.code !== 'EEXIST') throw error; });
+/// ```
+pub fn ensure_replay_directory(directory: &Path) -> std::io::Result<()> {
+    match create_private_directory(directory) {
+        Err(error) if error.kind() != std::io::ErrorKind::AlreadyExists => return Err(error),
+        Ok(()) | Err(_) => return Ok(()),
+    }
+}
+
+/// What:
+///  Whether the invocation started on a detached `HEAD`.
+/// Why:
+///   A detached replay moves the shadow `HEAD` itself; a branch replay moves the branch.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// symbolicHead.kind === 'detached'
+/// ```
+pub fn is_detached(head: &SymbolicHead) -> bool {
+    return *head == SymbolicHead::Detached;
 }
 
 /// Controls for this module stay out of the release executable.

@@ -18,16 +18,13 @@ use super::recovery_landing::RecoveryPlace;
 use super::recovery_scan::recover_dead_landings;
 use super::replay_reservation::{LandingReservation, ReservationError, acquire_reserved_landing_lock};
 use super::transaction_git::GitContext;
-use super::transaction_lease::has_valid_landing_lease;
+use super::transaction_lease::{has_valid_landing_lease, landing_lease_token};
 use super::transaction_registry::LANDING_LOCK_NAME;
 use std::ffi::OsString;
 use std::path::{Path, PathBuf};
 
 /// Module tag for diagnostics.
 const TAG: &str = "acquireLandingLock";
-
-/// The landing lease variable, whose token an inherited view carries.
-const LANDING_LEASE_VARIABLE: &str = "CLI_GIT_LANDING_LEASE";
 
 /// What:
 ///  The landing lock directory of one worktree's registry.
@@ -72,11 +69,7 @@ pub fn acquire_landing_lock(
 ) -> Result<OwnerLock, RecoveryError> {
     let directory: PathBuf = landing_lock_directory(layout);
     let lock: OwnerLock = if landing_is_nested(layout, environment) {
-        let token: String = environment
-            .iter()
-            .find(|(name, _)| { return name.as_os_str() == LANDING_LEASE_VARIABLE; })
-            .map(|(_, value)| { return value.to_string_lossy().into_owned(); })
-            .unwrap_or_default();
+        let token: String = landing_lease_token(environment).unwrap_or_default();
         debug(TAG, format!("leaving {} to the ancestor that holds it", directory.display()).as_str());
         OwnerLock::inherited(directory.as_path(), token.as_str())
     } else {
