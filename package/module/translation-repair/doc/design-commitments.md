@@ -537,6 +537,12 @@ Part of [the package README](../README.md).
   2026-10-11:
   "Yes,
   replace it").
+  A repeat with a quoted occurrence stays out of the groups
+  (owner,
+  2026-10-11:
+  "Leave quoted repeats out").
+  The repeats are located by ledger B423;
+  the pass that judges them is still being built.
 - **The past-tense rule gets a deterministic aid,
   never a deterministic verdict.**
   Owner,
@@ -554,6 +560,15 @@ Part of [the package README](../README.md).
   and confirmed by the owner the same day:
   "Candidates to judges,
   as described".
+  The owner's answers later that day,
+  each the recommended option:
+  every model sees the recorded death date in the identity block
+  ("Every model sees it");
+  the artifact records the candidates on contest and consolidation slices
+  ("Contest and consolidation");
+  the subject is the front matter `name` and every declared alias
+  ("Name and declared aliases").
+  Built as ledger B419.
 - **A dictionary entry for 扑面而来.**
   Owner,
   2026-10-11:

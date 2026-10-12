@@ -118,6 +118,11 @@ the agents writing the changes of ledger B365 to B378 chained six read-only call
 one ran a heredoc and then `node` in one call,
 and one edited files through inline `node --eval` scripts,
 one of which lost its backticks to the shell.
+On 2026-10-11 (UTC) the lead chained four `&&` steps in one call,
+and created an agent worktree through the Git wrapper without `--no-worktree-copy`,
+so it copied 888 MB of ignored logger files and held the settlement lock for over 45 minutes;
+the script that sets up agent worktrees then ran under `mise exec`,
+where `git` was plain Git and refused the flag (ledger M152).
 
 The rule:
 a Bash call holds at most three steps joined by `&&`,
@@ -130,6 +135,8 @@ An edit script goes through the Write tool and runs in a call of its own,
 in a later response than the write,
 under a name no earlier script used.
 Git runs from the repository root or with `git -C`.
+An agent worktree is created with `--no-worktree-copy` from a shell whose `git` is the wrapper,
+then set up.
 A process is stopped by its own id,
 or by the task id of the call that started it,
 never by name or pattern.
@@ -627,6 +634,9 @@ A claim about what a writer writes is measured over that writer's stored output,
 with a control the measurement must flag;
 the package's fixtures are its own copies,
 not the writer's output.
+A check's log counts only with its exit status and its own verdict line:
+a docs commit was recorded as Markdown-lint clean from a log holding only the logger's sink timeout,
+and no line from the linter (ledger M151).
 
 What enforces it:
 habit;
@@ -900,6 +910,11 @@ and no cache version moved (M25);
 the correction then checked three of six versions (M28);
 a key gained a field from a flag's name,
 not from what the field changes (M37).
+The tense-candidate change (ledger B419) moved no version,
+since every affected stage's run shape names the recorded death and the subject names,
+so its key moves for exactly the entries whose question changed;
+the three pinned-key witnesses were read first,
+and kept their pinned strings for an entry that records no death.
 
 The rule:
 a commit changing a floor,
@@ -4468,6 +4483,14 @@ so a row that was no object passed into every later reading,
 keyed as `undefined` or ending one in a type error (ledger B313).
 A file's elements are checked where the file is read,
 not only its outer shape.
+
+The first draft of the tense-candidate record let the contest reader accept `tenseCandidates` from generation 14,
+while the generation 15 `sole-lane` path returned before the key was read,
+and its writer wrote the key on every slice,
+so a sole-lane record would have been read with the key dropped (ledger B419).
+A key a reader accepts on one path of its function is read on every path that accepts it,
+or refused on the paths that do not read it,
+and the writer writes it only where the reader reads it.
 
 The rule:
 a file this package writes and a later run parses is written through `writeFileAtomic`.

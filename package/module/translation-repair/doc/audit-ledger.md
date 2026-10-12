@@ -35379,6 +35379,149 @@ front-matter insertions stay on the roster;
 `soleLaneOf` answers both lanes rather than throwing on a row where neither or both lanes are not applicable,
 so a reader refuses it as a parse error;
 a runs directory holding generation 14 artifacts is refused on resume.
+The lead kept each of these on 2026-10-11 (UTC),
+under the owner's instruction of that day to decide the remaining items without asking.
+
+### B419: no judge was shown which wordings narrate an ended life in the present tense
+
+Red `a1f98e76d4`,
+fixed in `afeac61dbb`.
+
+Found on 2026-10-11 (UTC) in the read of TianqiChen66622,
+which shipped the archive's present-tense narration of its subject
+because the judges left the archive standing.
+The census of that day over the 92 pinned archive pages
+labelled 80 of 536 detector hits by hand:
+about 68% precision when traits of the person count,
+about 24% when only narrated acts count.
+A detector that weak cannot refuse a wording or mark a text flawed,
+so the owner chose to show its hits to the judges as candidates.
+
+The fix:
+`present-tense-candidates.ts`,
+with the readings it stands on
+(`present-tense-text.ts`,
+`present-tense-words.ts`,
+`present-tense-vocabulary.ts`),
+returns each candidate with its sentence,
+matched words and rule,
+skips quotations,
+blockquotes,
+headings,
+code and HTML through the shared slice grammar,
+and reads nothing where the entry records no death.
+The subject is every name the translation declares,
+the front matter `name` and each alias in `info.alias`
+(`subject-names.ts`;
+a comma-joined string or a list),
+the longest tried first.
+`corpus-run/entry-info-record.ts` reads `people/<id>/info.yml` at the pin;
+`identity-context.ts` reads `died` by the rule every identity field follows,
+a bare year included,
+and the identity block every stage reads names the date.
+The lane contest,
+the translate slate,
+the consolidation slate,
+its run-off over the tied finalists
+and the consolidation gate
+print a labelled tense block for each text with a candidate
+(`tense-candidate-block.ts`,
+each sentence written as a JSON string);
+no verdict,
+flawed-archive count or run-off reads it.
+Artifact generation 15 records the candidates for the audit trail,
+on a contest slice (`lane-contest-tense.ts`)
+and,
+for the wording that shipped,
+on a consolidation slice (`consolidate-shipped-tense.ts`);
+the readers refuse the key in generation 14 and earlier,
+on a `sole-lane` slice,
+which asks no judge,
+and on a consolidation slice that ships no wording of its own.
+Replays tell the death only for a generation 15 artifact,
+whose models saw it,
+so an earlier artifact replays with the block its models saw.
+No cache version moved:
+each affected stage's run shape names the death and the subject names,
+so an entry that records a death asks a new question under a new key,
+and the three pinned-key witnesses keep their strings.
+
+The port onto the branch head found a defect in the first draft:
+its reader allowed the key from generation 14,
+while the generation 15 `sole-lane` path (B425) returned before the key was read,
+and its writer wrote the key on every slice,
+so a sole-lane record would have been read with the key dropped.
+The writer now skips a sole-lane slice and the reader refuses the key there.
+The same port first logged an absent `info.yml` to standard output in two built commands whose terminal output is pinned;
+the replays now record an absence in silence.
+
+Decided by the owner on 2026-10-11 (UTC):
+every model sees the death date;
+the record holds candidates on contest and consolidation slices;
+the subject names are the front matter `name` and its declared aliases.
+Decided by the lead under the owner's instruction of the same day:
+generation 15 alone;
+no cache version bump;
+a bare year counts as a recorded death;
+the replay readers take the death date,
+`corpus-run/page-republish.ts` included,
+whose page never depends on the identity block
+but whose pass already fails on a damaged `info.yml` at prepare.
+
+### B423: nothing located the repeated wording a page-level consistency pass would read
+
+Red `0916175337`,
+fixed in `7bd373eb3f`.
+
+Found on 2026-10-11 (UTC) in the read of TianqiChen66622,
+whose source repeats one refrain four times and one sentence twice,
+and whose page renders the refrain four ways and the sentence two ways.
+The owner asked for a page-level consistency pass,
+and nothing in the package located the repeats it would read.
+
+The fix:
+`repeatGroupsOf` (`repeat-groups.ts`) reads the body paragraphs of a page through `parseDocument`
+and returns maximal repeats of twelve or more characters
+and refrain frames
+(a shared prefix of four or more characters,
+a shared suffix of three or more,
+and a varying slot of one to eight),
+each occurrence placed in the slice that holds it whole.
+An occurrence no slice holds,
+as a sealed original or a refused section leaves it,
+is listed in the group's `unplaced` with its offsets and why;
+the first draft threw `unreachable:` there,
+and both shapes reach it.
+A group with a quoted occurrence,
+or with every occurrence on one line,
+is left out.
+Hardened on the way to the merge:
+an opening quotation mark counts as inside the quote,
+a stray closing mark no longer drives the depth below zero,
+an HTML comment inside a paragraph is no wording,
+and lengths count code points where the first draft counted UTF-16 units.
+
+The `repeat-census` task (read-only,
+spends no quota) reruns the design's line reading
+beside the package's detection over the 92 pinned entries.
+At `7bd373eb3f` the line reading finds 76 groups on 48 pages
+(68 maximal,
+8 refrain);
+the package finds 6 groups on 5 pages with no occurrence unplaced,
+the line reading's 11 body-only groups less the same-line and quoted ones;
+the live page's four refrain lines and two sentence lines are both found.
+
+Decided by the owner on 2026-10-11 (UTC):
+quoted repeats stay out of the groups.
+Kept by the lead under the owner's instruction of the same day:
+occurrences no slice holds whole are listed rather than refused;
+lengths and slot bounds count code points while the line reading keeps UTF-16 units;
+a paragraph holding `{` or an inline tag is left out whole,
+where the alternative cuts only the tag;
+the census modules sit on the own-test allowlist;
+`maximalRunsOf` is exported through the index as a test seam;
+same-line repeats stay out of the groups,
+as the design recommended.
 
 ## Process mistakes in this audit
 
@@ -38348,6 +38491,45 @@ where the wrong root (M134) and the type check beside a rebuild (M132) are recur
 and the piped exit is new;
 and "Commit messages",
 whose rule that a constant or count a message names is read from its source first (M84) this repeats.
+
+### M151: a lint log with no verdict was read as clean
+
+Status:
+happened on 2026-10-11 (UTC);
+the commit stood after a rerun.
+The docs commit `38780d0830` was recorded as Markdown-lint clean from a log
+that held only the logger's sink timeout (T9) and no line from the linter.
+The rerun on the same bytes exited 0 with no finding,
+so the claim had no evidence when it was made.
+
+Prevention:
+a check's log counts only with its exit status and its own verdict line;
+a log holding neither is no result.
+`mistake-prevention.md`,
+"Claims without their evidence".
+
+### M152: an agent worktree was created with the ignored-state copy the lead's own script avoids
+
+Status:
+happened on 2026-10-11 (UTC);
+the two waiting worktrees were recreated within the hour.
+`git worktree add` through the repository's Git wrapper copies the source worktree's ignored files;
+the branch worktree's `node_modules/.monochromatic` held 888 MB of logger files,
+and the copy held the settlement lock for over 45 minutes,
+so two later worktree creations waited behind it.
+The lead's scratch script for agent worktrees already passes `--no-worktree-copy`
+and installs dependencies in seconds
+(`doc/troubleshooting/cli-git-worktree-copy-install-stall.md` at the repository root names that flag as the workaround).
+When the script was then run under `mise exec` from the scratch folder,
+`git` resolved to plain Git,
+which refuses the flag.
+The same stretch chained four `&&` steps in one command against the limit of three.
+
+Prevention:
+agent worktrees are created with `--no-worktree-copy` from a shell whose `git` is the wrapper,
+and only then set up by the script.
+`mistake-prevention.md`,
+"Shell commands".
 
 ### M79: a coverage census measuring compressed code
 
