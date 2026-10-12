@@ -113,6 +113,26 @@ pub(crate) struct LineRequest<'a> {
     pub(crate) wrap: Option<f32>,
 }
 
+/// What:
+///  The part of a tile's lines that its raster holds,
+///  as two distances in logical pixels from the top of the first materialized line's block.
+/// Why:
+///  A tile holds whole lines, and one line wrapped to thousands of rows would pass the raster limit.
+///  The clip keeps the rows near the view; rows outside it are not painted,
+///  and the gutter and the other row lists leave them out.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// type Clip = { top: number; bottom: number };
+/// ```
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct Clip {
+    /// Where the raster starts, below the top of the first line's block.
+    pub top: f32,
+    /// Where the raster ends, below the top of the first line's block.
+    pub bottom: f32,
+}
+
 /// Logical dimensions and scale of the source viewport.
 #[derive(Clone, Copy, PartialEq)]
 pub struct Viewport {
@@ -128,6 +148,9 @@ pub struct Viewport {
     /// Wrap width in logical pixels that every line is broken at,
     ///  or nothing to leave lines unbroken.
     pub wrap: Option<f32>,
+    /// The part of the materialized lines the raster holds,
+    ///  or nothing for all of them.
+    pub clip: Option<Clip>,
 }
 
 /// Viewport text and selection geometry share these exact shaped rows.
@@ -142,7 +165,7 @@ pub struct ShapedView {
     pub height: u32,
     /// Top of the raster in logical pixels from the top of the text:
     ///  the top of the first materialized
-    /// line's block.
+    /// line's block, or the clip's top below it.
     pub origin: f32,
     /// The vertical mapping this frame was shaped against;
     ///  rows outside the frame are placed by it.
@@ -190,6 +213,8 @@ pub struct TextShaper {
     shaped_rows: u64,
     /// Kept rows broken again at a new wrap width instead of being shaped again, never reset.
     rebroken_rows: u64,
+    /// Corrective shaping passes of tab-bearing wrapped lines since this shaper was made.
+    tab_passes: u64,
 }
 
 /// Constructing a default shaper registers the bundled source font.
@@ -239,6 +264,7 @@ impl TextShaper {
             rows: RowCache::default(),
             shaped_rows: 0,
             rebroken_rows: 0,
+            tab_passes: 0,
         });
     }
 
@@ -608,6 +634,12 @@ impl TextShaper {
         return self.shaped_rows;
     }
 
+    /// Corrective passes the tab correction of wrapped lines has shaped since this shaper was made;
+    ///  the structural tests compare it with the bound a line's length allows.
+    pub fn tab_passes(&self) -> u64 {
+        return self.tab_passes;
+    }
+
     /// Typography this shaper was built with, so a second shaper can produce the same glyphs.
     pub fn typography(&self) -> &SourceTypography {
         return &self.typography;
@@ -625,6 +657,7 @@ impl TextShaper {
             rows: RowCache::default(),
             shaped_rows: 0,
             rebroken_rows: 0,
+            tab_passes: 0,
         };
     }
 
@@ -725,9 +758,14 @@ impl TextShaper {
             rows.push(ShapedRow { top, ..shaped });
         }
         let width = (viewport.width.max(1.0) * viewport.scale).ceil() as u32;
-        // The raster spans every materialized line with its block; an empty frame is still one row tall.
-        let origin = placed.block_top(viewport.first);
-        let extent = (placed.block_top(last) - origin).max(CODE_ROW);
+        // The raster spans every materialized line with its block, or the clip of them; an empty frame is still one
+        // row tall.
+        let first_top = placed.block_top(viewport.first);
+        let (origin, extent) = match viewport.clip {
+            Some(clip) => (first_top + clip.top, clip.bottom - clip.top),
+            None => (first_top, placed.block_top(last) - first_top),
+        };
+        let extent = extent.max(CODE_ROW);
         let height = (extent * viewport.scale).ceil() as u32;
         let mut view = ShapedView {
             rows,

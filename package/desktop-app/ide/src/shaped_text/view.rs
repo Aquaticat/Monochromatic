@@ -43,7 +43,9 @@ impl ShapedView {
         if self.map == *map {
             return false;
         }
-        let shift = map.block_top(self.viewport.first) - self.origin;
+        // The clip's top is a distance below the first line's block, which stays fixed when rows above move.
+        let skip = self.viewport.clip.map_or(0.0, |clip| return clip.top);
+        let shift = map.block_top(self.viewport.first) + skip - self.origin;
         // `clone` copies the mapping so rows outside the frame are placed by the current one.
         self.map = map.clone();
         if shift == 0.0 {

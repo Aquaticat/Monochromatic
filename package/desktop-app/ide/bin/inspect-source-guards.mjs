@@ -35,6 +35,17 @@ const replaceOne = (text, before, after, occurrence = 0) => {
 };
 const equality = 'assertion `left == right` failed';
 const cases = [
+  // A line past the raster limit is painted in a clip that follows the view, in a raster within the limit.
+  { name: 'clip-chosen', file: 'src/native/viewport.rs', before: 'if bottom - first_top <= cap {', after: 'if true {', native: true, test: 'a_line_past_the_raster_limit_is_painted_in_a_clip_that_follows_the_view', failure: 'the window shows an error' },
+  { name: 'clip-edges', file: 'src/native/viewport.rs', before: 'Some(clip) => (first_top + clip.top, first_top + clip.bottom),', after: 'Some(_) => (first_top, current.row_map.block_top(end)),', native: true, test: 'a_line_past_the_raster_limit_is_painted_in_a_clip_that_follows_the_view', failure: 'does not hold the view' },
+  { name: 'clip-gutter', file: 'src/native/rows.rs', before: 'if view.viewport.clip.is_some() && (top + CODE_ROW <= band.0 || top >= band.1) {', after: 'if false {', native: true, test: 'a_line_past_the_raster_limit_is_painted_in_a_clip_that_follows_the_view', failure: 'the gutter lists' },
+  { name: 'clip-cap', file: 'src/native/render.rs', before: 'let rows = MAX_RASTER_BYTES / 4 / columns;', after: 'let rows = MAX_RASTER_BYTES / 1 / columns;', native: true, test: 'a_line_past_the_raster_limit_is_painted_in_a_clip_that_follows_the_view', failure: 'the window shows an error' },
+  { name: 'clip-origin', file: 'src/shaped_text.rs', before: 'Some(clip) => (first_top + clip.top, clip.bottom - clip.top),', after: 'Some(clip) => (first_top, clip.bottom - clip.top),', integration: 'wrap_rows', test: 'a_clipped_tile_holds_the_pixels_of_its_band', failure: equality },
+  { name: 'clip-rebase', file: 'src/shaped_text/view.rs', before: 'let skip = self.viewport.clip.map_or(0.0, |clip| return clip.top);', after: 'let skip = 0.0;', integration: 'wrap_rows', test: 'a_clipped_tile_holds_the_pixels_of_its_band', failure: equality },
+  { name: 'wrapped-tile-holds', file: 'src/native/viewport.rs', before: 'if shown.width == width && holds(current, shown, view, height) {', after: 'if false && holds(current, shown, view, height) {', native: true, test: 'scrolling_inside_a_built_tile_of_a_wrapped_file_does_no_source_work', failure: 'entered render' },
+  // Tab correction: the passes a line gets fall with its length, so the characters shaped stay near a budget.
+  { name: 'tab-budget', file: 'src/tab_layout.rs', before: 'for _ in 0..passes_for(projection.text.len()) {', after: 'for _ in 0..TAB_PASSES {', lib: true, test: 'tab_layout::tests::a_long_tabbed_line_shapes_no_more_passes_than_its_length_allows', failure: 'more than the' },
+  { name: 'tab-budget-formula', file: 'src/tab_layout.rs', before: 'return (TAB_BUDGET / length.max(1)).clamp(TAB_MIN_PASSES, TAB_PASSES);', after: 'return TAB_PASSES;', lib: true, test: 'tab_layout::tests::passes_fall_with_the_length_of_the_line', failure: equality },
   // A very long line: its caret stops come from a rope, so the lookups of the walk scan chunks, not the whole line.
   { name: 'long-line-stops', file: 'src/text_projection.rs', before: 'let slice = if source.len() <= FLAT_LINE_BYTES {', after: 'let slice = if true {', lib: true, test: 'text_projection::tests::the_work_of_finding_stops_grows_with_the_line_not_its_square', failure: 'the lookups scanned' },
   // Tab stops: the half-space rule, the unusable-advance guard, and the scale conversion of corrections.

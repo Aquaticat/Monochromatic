@@ -115,7 +115,38 @@ pub(crate) fn layout_with_tabs(
 ///  correctly: row `n` is right after at most `n + 1` passes, because a row depends only on the rows before it.
 ///  A line of a hundred rows is a text of ten thousand characters; this bound is far above any source line with tabs
 ///  inside it, and a pass costs about one shaping of the line.
-const TAB_PASSES: usize = 40;
+pub const TAB_PASSES: usize = 40;
+
+/// What:
+///  Most characters the corrective passes of one line may shape in all.
+/// Why:
+///  Every pass shapes the whole line, so a line of a hundred thousand characters would cost forty shapings:
+///  measured on 2026-10-12 in the release profile, 2.3 to 4.8 s for such a line on a loaded host.
+///  The passes allowed fall with the length of the line, so the work stays near this many characters,
+///  and the tabs on the first rows of a very long line are exact while those far down may stand off their stops.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// export const TAB_BUDGET = 1_000_000;
+/// ```
+pub const TAB_BUDGET: usize = 1_000_000;
+
+/// Fewest corrective passes any line gets, however long it is.
+pub const TAB_MIN_PASSES: usize = 4;
+
+/// What:
+///  How many corrective passes a line of `length` bytes gets: [`TAB_PASSES`] for a line short enough,
+///  otherwise the budget divided by its length, and never fewer than [`TAB_MIN_PASSES`].
+/// Why:
+///  The bound on the work depends on the line, not only on a count of passes.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function passesFor(length: number): number { return clamp(TAB_BUDGET / Math.max(length, 1), TAB_MIN_PASSES, TAB_PASSES); }
+/// ```
+pub fn passes_for(length: usize) -> usize {
+    return (TAB_BUDGET / length.max(1)).clamp(TAB_MIN_PASSES, TAB_PASSES);
+}
 
 /// Two corrections closer than this in logical pixels are the same correction.
 const SPACING_TOLERANCE: f32 = 0.001;
@@ -146,13 +177,26 @@ pub(crate) fn tabs_on_first_row(layout: &Layout<u32>, tabs: &[usize]) -> bool {
 /// function rowOf(layout: Layout, byte: number): number;
 /// ```
 fn row_of(layout: &Layout<u32>, byte: usize) -> usize {
-    let mut row = 0;
-    for (index, line) in layout.lines().enumerate() {
-        if line.text_range().start <= byte {
-            row = index;
+    // What: Row starts ascend, so the rows that start at or before the byte are a prefix; a binary search finds its end.
+    // Why: A line of thousands of rows asks this once for every tab in every pass.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const count = partitionPoint(rows, (row) => row.start <= byte); return Math.max(count - 1, 0);
+    // ```
+    let (mut low, mut high) = (0, layout.len());
+    while low < high {
+        let middle = low + (high - low) / 2;
+        if layout
+            .get(middle)
+            .is_some_and(|line| return line.text_range().start <= byte)
+        {
+            low = middle + 1;
+        } else {
+            high = middle;
         }
     }
-    return row;
+    return low.saturating_sub(1);
 }
 
 /// Extra advance for each tab of a wrapped layout, in logical pixels, so every tab ends on a stop.
@@ -258,7 +302,7 @@ pub(crate) fn layout_wrapped_with_tabs(
     let space = shaper.space_advance(scale);
     // The corrections and the layout of the pass before the current one.
     let mut before: Option<(Vec<(usize, f32)>, Layout<u32>)> = None;
-    for _ in 0..TAB_PASSES {
+    for _ in 0..passes_for(projection.text.len()) {
         let next = wrapped_spacings(&layout, projection, &spacings, scale, space);
         if same_spacings(&next, &spacings) {
             break;
@@ -279,9 +323,14 @@ pub(crate) fn layout_wrapped_with_tabs(
             spacings: &next,
             wrap: Some(width),
         };
+        shaper.count_tab_pass();
         let relaid = shaper.wrapped_line_layout(corrected);
         before = Some((spacings, std::mem::replace(&mut layout, relaid)));
         spacings = next;
     }
     return layout;
 }
+
+#[cfg(test)]
+#[path = "tab_layout_tests.rs"]
+mod tests;

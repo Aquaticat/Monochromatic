@@ -65,6 +65,7 @@ fn repeated_viewport_renders_preserve_pixels() {
         width: 1300.0,
         scale: 1.0,
         wrap: None,
+        clip: None,
     };
     let colors = CodeColors {
         foreground: [240, 240, 240, 255],

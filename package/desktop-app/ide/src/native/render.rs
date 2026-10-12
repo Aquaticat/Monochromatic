@@ -9,6 +9,7 @@ use super::{
     tile::{self, TileBounds},
     tile_build::{TileJob, build_tile},
     ui::SourceSelection,
+    viewport::place,
 };
 /// Paint identity and the frame rectangles come from the same shaped rows.
 use ide_app::annotation_layout::AnnotationColors;
@@ -28,6 +29,8 @@ use ide_app::source_frame::FrameStamp;
 use ide_app::text_raster::CodeColors;
 /// A wrap width must be a positive number of pixels.
 use ide_app::wrap::has_wrap_width;
+/// The most bytes a raster may hold, and the height of one code row.
+use ide_app::{row_map::CODE_ROW, text_raster::MAX_RASTER_BYTES};
 /// Toolkit images and models carry owned source presentation data.
 use slint::{
     ComponentHandle, Image, ModelRc, Rgba8Pixel, SharedPixelBuffer, SharedString, VecModel,
@@ -157,6 +160,29 @@ impl Paint {
     }
 }
 
+/// What:
+///  The tallest tile in logical pixels whose raster stays within [`MAX_RASTER_BYTES`]
+///  at wrap width `width` and display `scale`.
+/// Why:
+///  A tile is one image of the text area's width, so the limit on its bytes is a limit on its height;
+///  a tile of lines taller than this is clipped to the rows near the view instead of being refused.
+///  One code row is kept free for the rounding of the raster's size up to whole pixels.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function tileCap(width: number, scale: number): number;
+/// ```
+pub(super) fn tile_cap(width: f32, scale: f32) -> f32 {
+    let raster = if has_wrap_width(width) {
+        (width + RASTER_MARGIN).ceil()
+    } else {
+        UNWRAPPED_RASTER_WIDTH
+    };
+    let columns = ((raster * scale).ceil() as u64).max(1);
+    let rows = MAX_RASTER_BYTES / 4 / columns;
+    return ((rows as f32 / scale).floor() - CODE_ROW).max(CODE_ROW);
+}
+
 /// The viewport of a tile at `bounds`: its lines broken at the wrap width, and a raster as wide as the text area.
 pub(super) fn viewport_of(bounds: TileBounds, scale: f32) -> Viewport {
     let wrap = has_wrap_width(bounds.width).then_some(bounds.width);
@@ -168,6 +194,7 @@ pub(super) fn viewport_of(bounds: TileBounds, scale: f32) -> Viewport {
         }),
         scale,
         wrap,
+        clip: bounds.clip,
     };
 }
 
@@ -368,6 +395,12 @@ pub(super) fn render(window: &AppWindow, state: &Rc<RefCell<State>>) {
         window.get_viewport_height(),
     );
     let mut current = state.borrow_mut();
+    // The size limit of a tile depends on the display scale, so a new scale asks for the tile to be placed again.
+    if current.scale != factor {
+        current.scale = factor;
+        let (offset, width, height) = view_now;
+        place(&mut current, offset, width, height);
+    }
     let sign = ensure_sign(&mut current, factor);
     // No frame is painted against a map that no longer describes the displayed text and its annotations.
     let mut scrolled = rows::settle(&mut current, factor, view_now, false);

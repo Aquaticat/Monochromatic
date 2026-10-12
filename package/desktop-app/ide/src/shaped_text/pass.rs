@@ -69,6 +69,11 @@ impl TextShaper {
         self.rows.set_capacity(lines);
     }
 
+    /// Count one corrective pass of the tab correction.
+    pub(crate) fn count_tab_pass(&mut self) {
+        self.tab_passes += 1;
+    }
+
     /// Kept rows broken again at a new wrap width instead of being shaped again, since this shaper was made.
     pub fn rebroken_rows(&self) -> u64 {
         return self.rebroken_rows;

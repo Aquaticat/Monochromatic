@@ -63,7 +63,7 @@ fn await_worker_ready(state: &Rc<RefCell<State>>) {
 }
 
 /// Scroll to `offset` and let the toolkit deliver the viewport-changed callback.
-fn scroll_to(window: &AppWindow, offset: f32) {
+pub(super) fn scroll_to(window: &AppWindow, offset: f32) {
     window.set_scroll_y(-offset);
     update_timers_and_animations();
 }
@@ -105,7 +105,7 @@ fn until_worker_reply(state: &Rc<RefCell<State>>, before: u64) {
 }
 
 /// Zero the test counters so the assertions count only what follows.
-fn reset(state: &Rc<RefCell<State>>) {
+pub(super) fn reset(state: &Rc<RefCell<State>>) {
     let mut current = state.borrow_mut();
     current.renders = 0;
     current.tiles_painted = 0;
@@ -118,7 +118,7 @@ fn reset(state: &Rc<RefCell<State>>) {
 }
 
 /// Renders, painted tiles, shaped rows, and images set on the window thread since the last reset, in that order.
-fn counts(state: &Rc<RefCell<State>>) -> [u64; 4] {
+pub(super) fn counts(state: &Rc<RefCell<State>>) -> [u64; 4] {
     let current = state.borrow();
     return [
         current.renders,
@@ -129,7 +129,7 @@ fn counts(state: &Rc<RefCell<State>>) -> [u64; 4] {
 }
 
 /// Tiles the worker answered, rows it shaped, tiles swapped in, and tiles discarded, since the last reset.
-fn worker_counts(state: &Rc<RefCell<State>>) -> [u64; 4] {
+pub(super) fn worker_counts(state: &Rc<RefCell<State>>) -> [u64; 4] {
     let current = state.borrow();
     return [
         current.worker_tiles,

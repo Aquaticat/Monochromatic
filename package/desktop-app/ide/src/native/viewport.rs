@@ -12,6 +12,8 @@ use ide_app::document::ReadingAffinity;
 ///  the least a line can take,
 ///  which bounds how many lines a view can show.
 use ide_app::row_map::CODE_ROW;
+/// The part of a tall tile's lines its raster holds.
+use ide_app::shaped_text::Clip;
 /// A wrap width must be a positive number of pixels.
 use ide_app::wrap::has_wrap_width;
 /// ComponentHandle supplies weak references for callback lifetimes.
@@ -71,9 +73,30 @@ pub(super) fn holds(current: &State, bounds: TileBounds, view: f32, height: f32)
     let lines = current.document.text().len_lines();
     let edge = RECENTER_EDGE_VIEWS * height;
     let end = (bounds.first + bounds.count).min(lines);
-    let top_held = bounds.first == 0 || view >= current.row_map.block_top(bounds.first) + edge;
-    let bottom_held = end >= lines || view + height <= current.row_map.block_top(end) - edge;
+    let (top, bottom) = tile_edges(current, bounds, end);
+    // The top of the text and its bottom are always held; with a clip they can lie inside a line.
+    let top_held = top <= 0.0 || view >= top + edge;
+    let bottom_held = bottom >= current.row_map.height() || view + height <= bottom - edge;
     return top_held && bottom_held;
+}
+
+/// What:
+///  The top and bottom edge of the raster a tile at `bounds` holds, in logical pixels from the top of the text:
+///  the clip below the first line's block when there is one, otherwise the blocks of its first and last lines.
+///  `end` is the line after the tile's last.
+/// Why:
+///  The view must stay clear of these edges, and they move with the live vertical mapping.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function tileEdges(current: State, bounds: TileBounds, end: number): [top: number, bottom: number];
+/// ```
+fn tile_edges(current: &State, bounds: TileBounds, end: usize) -> (f32, f32) {
+    let first_top = current.row_map.block_top(bounds.first);
+    return match bounds.clip {
+        Some(clip) => (first_top + clip.top, first_top + clip.bottom),
+        None => (first_top, current.row_map.block_top(end)),
+    };
 }
 
 /// What:
@@ -169,6 +192,7 @@ pub(super) fn place(current: &mut State, offset: f32, viewport_width: f32, heigh
         current.first = shown.first;
         current.count = shown.count;
         current.width = shown.width;
+        current.clip = shown.clip;
         return false;
     }
     // What: The tile is re-centered on the view: one view height of overscan above it and one below.
@@ -185,7 +209,52 @@ pub(super) fn place(current: &mut State, offset: f32, viewport_width: f32, heigh
     current.first = first;
     current.count = last.saturating_sub(first) + 1 + TILE_SPARE_LINES;
     current.width = width;
+    current.clip = clip_for(current, (tile_start, tile_end));
     return true;
+}
+
+/// What:
+///  The part of the lines just chosen for the tile that its raster holds:
+///  nothing while the lines fit one raster,
+///  otherwise the rows of `band`, the three view heights around the view, cut down to the raster limit.
+///  The edges are whole code rows below the first line's block.
+/// Why:
+///  A tile holds whole lines, and a line wrapped to thousands of rows would pass the raster limit.
+///  The band is where the view can go before the next re-center, so the rows outside it are never needed.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function clipFor(current: State, band: [top: number, bottom: number]): Clip | undefined;
+/// ```
+fn clip_for(current: &State, band: (f32, f32)) -> Option<Clip> {
+    let lines = current.document.text().len_lines();
+    let end = (current.first + current.count).min(lines);
+    let first_top = current.row_map.block_top(current.first);
+    let bottom = current.row_map.block_top(end);
+    let cap = render::tile_cap(current.width, current.scale);
+    if bottom - first_top <= cap {
+        return None;
+    }
+    let mut from = band.0.max(first_top);
+    let mut to = band.1.min(bottom);
+    if to - from > cap {
+        // A window taller than the limit: the raster is the middle of the band, as far as it reaches.
+        let middle = (from + to) / 2.0;
+        from = middle - cap / 2.0;
+        to = middle + cap / 2.0;
+    }
+    // Whole code rows below the first line's block keep the raster on whole pixels at the usual scales.
+    let top = ((from - first_top) / CODE_ROW).floor().max(0.0) * CODE_ROW;
+    let mut cut = ((to - first_top) / CODE_ROW).ceil() * CODE_ROW;
+    cut = cut.min(bottom - first_top).max(top + CODE_ROW);
+    tracing::debug!(
+        first = current.first,
+        top,
+        bottom = cut,
+        cap,
+        "clipped a tile of lines taller than one raster"
+    );
+    return Some(Clip { top, bottom: cut });
 }
 
 /// What:
@@ -240,7 +309,14 @@ pub(super) fn bind_viewport(owner: &AppWindow, shared: &Rc<RefCell<State>>) {
         // ```ts
         // const changed = place(state.current, offset, width, height);
         // ```
+        let scale = weak
+            .upgrade()
+            .map(|window| return window.window().scale_factor());
         let mut current = state.borrow_mut();
+        if let Some(scale) = scale {
+            // The size limit of the tile depends on the display scale.
+            current.scale = scale;
+        }
         // An offset nobody announced is the reader scrolling: by wheel, by touch, or by a drag past an edge.
         if offset != current.offset {
             // `Some(...)` records this moment as the latest scroll.

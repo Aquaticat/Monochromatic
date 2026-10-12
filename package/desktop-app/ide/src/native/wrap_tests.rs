@@ -101,7 +101,7 @@ pub(super) fn open(text: &str) -> (tempfile::TempDir, Reader) {
 }
 
 /// The rows of the window's visible viewport as RGBA pixels, read from the source image.
-fn shown(window: &AppWindow) -> Vec<[u8; 4]> {
+pub(super) fn shown(window: &AppWindow) -> Vec<[u8; 4]> {
     let scale = window.window().scale_factor();
     let image = window
         .get_source_image()

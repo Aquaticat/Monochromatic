@@ -113,6 +113,7 @@ fn viewport(count: usize, wrap: f32) -> Viewport {
         width: wrap + 24.0,
         scale: 1.0,
         wrap: Some(wrap),
+        clip: None,
     };
 }
 
@@ -350,6 +351,7 @@ fn a_message_far_to_the_right_moves_left_to_stay_inside_the_text_area() {
         &document,
         Viewport {
             wrap: None,
+            clip: None,
             ..viewport(1, 560.0)
         },
         &[],

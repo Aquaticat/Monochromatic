@@ -25,6 +25,7 @@ fn viewport() -> Viewport {
         width: 1044.0,
         scale: 1.25,
         wrap: None,
+        clip: None,
     };
 }
 
@@ -120,6 +121,7 @@ fn materialization_scale_theme_and_syntax_invalidate() {
                 &document,
                 Viewport {
                     wrap: Some(500.0),
+                    clip: None,
                     ..area
                 },
                 colors(),

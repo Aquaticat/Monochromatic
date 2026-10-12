@@ -15,10 +15,10 @@ use ide_app::language::diagnostics::Severity;
 use ide_app::line_rows::LineRows;
 /// The vertical mapping under test.
 use ide_app::row_map::{CODE_ROW, Place, RowMap};
-/// Shaper, viewport, and the rasterizer whose ink is read back.
-use ide_app::shaped_text::{TextShaper, Viewport};
-/// Palette of the raster tests.
-use ide_app::text_raster::{CodeColors, TextRaster};
+/// Shaper, viewport, the clip of a very tall line, and the rasterizer whose ink is read back.
+use ide_app::shaped_text::{Clip, TextShaper, Viewport};
+/// Palette of the raster tests, and the limit of one raster.
+use ide_app::text_raster::{CodeColors, MAX_RASTER_BYTES, TextRaster};
 /// The wrap indicator chain.
 use ide_app::wrap_sign::{SIGN_INK, SIGN_PAIRS, Sign, choose_sign};
 
@@ -166,6 +166,7 @@ fn viewport(first: usize, count: usize, wrap: f32) -> Viewport {
         width: wrap + 24.0,
         scale: 1.0,
         wrap: Some(wrap),
+        clip: None,
     };
 }
 
@@ -614,6 +615,7 @@ fn a_tile_past_the_raster_limit_is_refused_not_painted() {
             width: 100.0,
             scale: 3.0,
             wrap: Some(100.0),
+            clip: None,
         },
         &[],
         &plain,
@@ -632,4 +634,150 @@ fn a_tile_past_the_raster_limit_is_refused_not_painted() {
             .is_some_and(|text| return text.contains("64 MiB")),
         "the oversized tile was not refused with the raster limit: {message:?}"
     );
+}
+
+/// Words of the shape `word12 ` until the text holds `length` characters, in one line without a terminator.
+fn words(length: usize) -> String {
+    let mut text = String::new();
+    let mut number = 0;
+    while text.len() < length {
+        text.push_str(&format!("word{number} "));
+        number += 1;
+    }
+    text.truncate(length);
+    return text;
+}
+
+/// The palette of the pixel checks.
+const PALETTE: CodeColors = CodeColors {
+    foreground: [0, 0, 0, 255],
+    selected: [255, 255, 255, 255],
+    dark: false,
+};
+
+/// A clipped tile's raster holds exactly the pixels its band has in the unclipped raster of the same lines,
+///  its origin and height follow the clip, and a clip changes nothing about the rows' places.
+#[test]
+fn a_clipped_tile_holds_the_pixels_of_its_band() {
+    let document = Document::new(&format!("short\n{}", words(9000)));
+    let mut shaper = TextShaper::new();
+    let plain = RowMap::plain(2);
+    let whole = shaper.prepare_rows(&document, viewport(1, 1, 300.0), &[], &plain);
+    let rows = whole.rows[0].visual_rows();
+    assert!(rows > 40, "the fixture wraps to many rows: {rows}");
+    let band = Clip {
+        top: 10.0 * CODE_ROW,
+        bottom: 30.0 * CODE_ROW,
+    };
+    let clipped = shaper.prepare_rows(
+        &document,
+        Viewport {
+            clip: Some(band),
+            ..viewport(1, 1, 300.0)
+        },
+        &[],
+        &plain,
+    );
+    assert_eq!(clipped.origin, CODE_ROW + band.top);
+    assert_eq!(clipped.height as f32, band.bottom - band.top);
+    assert_eq!(clipped.width, whole.width);
+    assert_eq!(
+        clipped.rows[0].top, whole.rows[0].top,
+        "a clip moves no row"
+    );
+    let mut raster = TextRaster::new();
+    let full = raster.paint(&whole, PALETTE, 0.0).expect("whole raster");
+    let part = raster
+        .paint(&clipped, PALETTE, 0.0)
+        .expect("clipped raster");
+    let row_bytes = full.width as usize * 4;
+    let from = band.top as usize * row_bytes;
+    let to = band.bottom as usize * row_bytes;
+    assert_eq!(part.bytes.len(), to - from);
+    assert!(
+        part.bytes == full.bytes[from..to],
+        "the clipped raster differs from its band of the whole raster"
+    );
+    assert!(
+        part.bytes.chunks(4).any(|pixel| return pixel[3] > 0),
+        "the band has ink"
+    );
+    // A rebase keeps the clip's distance below the first line's block.
+    let mut moved = shaper.prepare_rows(
+        &document,
+        Viewport {
+            clip: Some(band),
+            ..viewport(1, 1, 300.0)
+        },
+        &[],
+        &plain,
+    );
+    let lowered = RowMap::new(2, &[(0, 26.0)]);
+    assert!(moved.rebase(&lowered));
+    assert_eq!(moved.origin, 26.0 + CODE_ROW + band.top);
+}
+
+/// At the real limit a line that no raster can hold is refused whole and painted in a clip, at both display scales:
+///  the band's raster is within the limit, and every code row of it has ink.
+#[test]
+fn a_line_past_the_real_limit_paints_inside_a_clip() {
+    let document = Document::new(&words(100_000));
+    let mut shaper = TextShaper::new();
+    let plain = RowMap::plain(1);
+    for scale in [1.0_f32, 2.0] {
+        let base = Viewport {
+            scale,
+            ..viewport(0, 1, 782.0)
+        };
+        let whole = shaper.prepare_rows(&document, base, &[], &plain);
+        let rows = whole.rows[0].visual_rows();
+        let columns = u64::from(whole.width);
+        let limit_rows = MAX_RASTER_BYTES / 4 / columns;
+        assert!(
+            (rows as f32 * CODE_ROW * scale) as u64 > limit_rows,
+            "scale {scale}: {rows} rows of the line fit one raster of {limit_rows} rows"
+        );
+        let refused = TextRaster::new().paint(&whole, PALETTE, 0.0);
+        assert!(
+            refused.is_err(),
+            "scale {scale}: the whole line was painted past the limit"
+        );
+        // A band of 200 code rows from the middle of the line: well inside the limit at both scales.
+        let top = (rows as f32 / 2.0).floor() * CODE_ROW;
+        let band = Clip {
+            top,
+            bottom: top + 150.0 * CODE_ROW,
+        };
+        let clipped = shaper.prepare_rows(
+            &document,
+            Viewport {
+                clip: Some(band),
+                ..base
+            },
+            &[],
+            &plain,
+        );
+        let pixels = TextRaster::new()
+            .paint(&clipped, PALETTE, 0.0)
+            .expect("the clipped band is painted");
+        assert!(
+            u64::from(pixels.width) * u64::from(pixels.height) * 4 <= MAX_RASTER_BYTES,
+            "scale {scale}: the clipped raster passes the limit"
+        );
+        assert_eq!(pixels.height as f32, 150.0 * CODE_ROW * scale);
+        let row_pixels = (CODE_ROW * scale) as usize;
+        let width = pixels.width as usize;
+        for code_row in 0..150 {
+            let mut inked = false;
+            for y in code_row * row_pixels..(code_row + 1) * row_pixels {
+                inked |= pixels.bytes[y * width * 4..(y + 1) * width * 4]
+                    .chunks(4)
+                    .any(|pixel| return pixel[3] > 0);
+            }
+            assert!(
+                inked,
+                "scale {scale}: code row {code_row} of the band has no ink"
+            );
+        }
+    }
 }

@@ -56,6 +56,7 @@ fn laid_out(source: &str, visible: &Visible) -> (Document, ShapedView, Annotatio
         width: 900.0,
         scale: 1.0,
         wrap: None,
+        clip: None,
     };
     let view = shaper.prepare(&document, viewport, &[]);
     let frame = lay_out(&view, visible, &mut shaper, COLORS);
@@ -131,6 +132,7 @@ fn with_block(
         width: 900.0,
         scale: 1.0,
         wrap: None,
+        clip: None,
     };
     let view = shaper.prepare_rows(&document, viewport, &[], &map);
     let visible = Visible {

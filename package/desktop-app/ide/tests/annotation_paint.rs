@@ -62,6 +62,7 @@ fn painted(source: &str, visible: &Visible, inks: AnnotationColors) -> (ShapedVi
         width: 700.0,
         scale: 1.0,
         wrap: None,
+        clip: None,
     };
     // Rows are placed by the vertical mapping the visible blocks call for.
     let mut raised = Vec::new();
@@ -404,6 +405,7 @@ fn selected_underlines_take_the_selected_ink() {
         width: 700.0,
         scale: 1.0,
         wrap: None,
+        clip: None,
     };
     let mut view = shaper.prepare(&document, viewport, &[]);
     let visible = Visible {

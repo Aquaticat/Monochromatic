@@ -41,7 +41,7 @@ use ide_app::refresh_policy::SourceRefresh;
 /// The one vertical mapping between pixels and source lines.
 use ide_app::row_map::RowMap;
 /// Shared shaping replaces terminal-column assumptions in native hit testing.
-use ide_app::shaped_text::{ShapedView, TextShaper};
+use ide_app::shaped_text::{Clip, ShapedView, TextShaper};
 /// Paint identity prevents caret movement from rebuilding source pixels.
 use ide_app::source_frame::FrameStamp;
 /// Raster output retains the exact glyph positions used by selection.
@@ -272,6 +272,10 @@ mod watch_tests;
 ///  and new window widths.
 #[cfg(test)]
 mod wrap_annotation_tests;
+/// A line wrapped to more rows than one raster holds is painted in a clip,
+///  and scrolling inside a built tile of a wrapped file does no source work.
+#[cfg(test)]
+mod wrap_clip_tests;
 /// Home, End, Up, Down, paging, word motion, drags, and multi-clicks on wrapped lines.
 #[cfg(test)]
 mod wrap_keys_tests;
@@ -332,6 +336,10 @@ struct State {
     first: usize,
     /// Bounded number of materialized source lines.
     count: usize,
+    /// The part of those lines the next tile holds, when they are too tall for one raster.
+    clip: Option<Clip>,
+    /// Physical pixels per logical pixel as of the last render or viewport report, which the tile's size limit uses.
+    scale: f32,
     /// What:
     ///  The wrap width in logical pixels every line is broken at, or zero before the window reported one.
     /// Why:
@@ -551,6 +559,8 @@ impl State {
             styles: SourceStyles::from([]),
             first: 0,
             count: 32,
+            clip: None,
+            scale: 1.0,
             width: 0.0,
             wrap_rows: LineRows::plain(lines),
             wrap_text: None,
@@ -581,6 +591,7 @@ impl State {
                 first: 0,
                 count: 32,
                 width: 0.0,
+                clip: None,
             },
             scroll_wanted: None,
             tile_job: None,

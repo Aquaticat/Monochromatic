@@ -37,6 +37,7 @@ fn stamp(document: &Document, visible: Visible, inks: AnnotationColors) -> Frame
         width: 1044.0,
         scale: 1.0,
         wrap: None,
+        clip: None,
     };
     let colors = CodeColors {
         foreground: [240, 240, 240, 255],

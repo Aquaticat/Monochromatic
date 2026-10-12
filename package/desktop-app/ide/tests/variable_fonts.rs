@@ -21,6 +21,7 @@ fn viewport() -> Viewport {
         width: 400.0,
         scale: 1.25,
         wrap: None,
+        clip: None,
     };
 }
 

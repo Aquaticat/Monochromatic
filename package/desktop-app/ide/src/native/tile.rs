@@ -11,23 +11,31 @@ use super::tile_build::{TileBuilt, TileJob, TileWorker};
 use super::tile_pass::{PassJob, PassKey, PassOutput, TAKE_LIMIT};
 /// Parent state, the window, and the viewport's hold rule.
 use super::{AppWindow, State, viewport::holds};
+/// The part of a tall tile's lines its raster holds.
+use ide_app::shaped_text::Clip;
 /// A wrap width must be a positive number of pixels.
 use ide_app::wrap::has_wrap_width;
 /// Timer and toolkit-string bridges for the poll and the error message.
 use slint::{ComponentHandle, SharedString, TimerMode};
 /// Poll period of the worker's reply slot, the same as the other background pollers.
-use std::{cell::RefCell, rc::Rc, sync::Arc, time::Duration};
+use std::{
+    cell::RefCell,
+    rc::Rc,
+    sync::Arc,
+    time::{Duration, Instant},
+};
 
 /// What:
 ///  Position and width of one materialized tile:
-///  its first line, its line count, and the wrap width its lines are broken at.
+///  its first line, its line count, the wrap width its lines are broken at,
+///  and the part of those lines its raster holds when they are too tall for one.
 /// Why:
 ///  The requested tile and the displayed tile are both values of this type,
 ///  so a result can be checked against the window it was built for.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// type TileBounds = { first: number; count: number; width: number };
+/// type TileBounds = { first: number; count: number; width: number; clip?: Clip };
 /// ```
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub(super) struct TileBounds {
@@ -37,6 +45,8 @@ pub(super) struct TileBounds {
     pub(super) count: usize,
     /// Wrap width in logical pixels, or zero while the view has no width yet.
     pub(super) width: f32,
+    /// The rows of those lines the raster holds, below the top of the first line's block; nothing for all of them.
+    pub(super) clip: Option<Clip>,
 }
 
 /// The tile the reader's view needs next, as last placed.
@@ -45,6 +55,7 @@ pub(super) fn requested(current: &State) -> TileBounds {
         first: current.first,
         count: current.count,
         width: current.width,
+        clip: current.clip,
     };
 }
 
@@ -240,8 +251,16 @@ pub(super) fn poll(window: &AppWindow, state: &Rc<RefCell<State>>) {
         (polled, pass)
     };
     // The tile comes first: it may change which lines the displayed tile holds, and so which lines the output may set.
+    // Each apply is timed: it is the window thread's whole cost of taking in the worker's result.
     match polled {
-        Ok(Some(reply)) => apply(window, state, reply),
+        Ok(Some(reply)) => {
+            let started = Instant::now();
+            apply(window, state, reply);
+            tracing::debug!(
+                elapsed_us = started.elapsed().as_micros() as u64,
+                "window thread applied a finished tile"
+            );
+        }
         Ok(None) => {}
         Err(error) => {
             tracing::error!(%error, "source tile worker stopped");
@@ -249,7 +268,14 @@ pub(super) fn poll(window: &AppWindow, state: &Rc<RefCell<State>>) {
         }
     }
     if let Some(output) = pass {
+        let started = Instant::now();
+        let lines = output.lines.len();
         apply_pass(window, state, output);
+        tracing::debug!(
+            elapsed_us = started.elapsed().as_micros() as u64,
+            lines,
+            "window thread applied the output of the measurement pass"
+        );
     }
 }
 
@@ -381,6 +407,7 @@ fn apply(window: &AppWindow, state: &Rc<RefCell<State>>, reply: anyhow::Result<T
     // The requested window now equals what is shown; a newer job still in flight may replace it.
     current.first = bounds.first;
     current.count = bounds.count;
+    current.clip = bounds.clip;
     current.scroll_wanted = None;
     if current.tile_job == Some(bounds) {
         current.tile_job = None;

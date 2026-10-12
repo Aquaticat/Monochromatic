@@ -565,6 +565,11 @@ pub(super) fn measure(current: &State, anchor_line: i32) -> Placement {
     // ```
     let mut next_block = 0;
     if let Some(view) = &current.shaped {
+        // The raster's vertical extent, which only a clipped tile limits the gutter to.
+        let band = (
+            view.origin,
+            view.origin + view.height as f32 / view.viewport.scale,
+        );
         for row in &view.rows {
             while next_block < current.blocks.len() && current.blocks[next_block].line < row.row {
                 next_block += 1;
@@ -576,7 +581,12 @@ pub(super) fn measure(current: &State, anchor_line: i32) -> Placement {
                 .and_then(|block| return block.messages.first())
                 .map_or(0, |worst| return i32::from(rank(worst.severity)) + 1);
             for visual in 0..row.visual_rows() {
-                tops.push(row.top + row.visual_row_offset(visual, view.viewport.scale));
+                let top = row.top + row.visual_row_offset(visual, view.viewport.scale);
+                // A clipped tile paints only the rows inside its raster, and the gutter has an entry for just those.
+                if view.viewport.clip.is_some() && (top + CODE_ROW <= band.0 || top >= band.1) {
+                    continue;
+                }
+                tops.push(top);
                 // The number belongs to the first visual row; a continuation row shows the wrap indicator instead.
                 numbers.push(if visual == 0 {
                     i32::try_from(row.row + 1).unwrap_or(i32::MAX)
