@@ -32,8 +32,10 @@ import { ConsistencyInvariantError, } from '../consistency-invariant-error.ts';
 // another. Replacements are applied slice by slice, the earlier group winning
 // wherever two overlap (the later is recorded `overlapped`), and the slice
 // with its replacements made is put through every floor as one text: a slice
-// the floors refuse keeps the wording it had, and every replacement meant for
-// it is recorded `kept-floor` (the owner's ruling of 2026-10-11).
+// the floors refuse keeps the wording it had, and every replacement made in it
+// is recorded `kept-floor` (the owner's ruling of 2026-10-11). A replacement
+// already left out for overlapping an earlier one stays `overlapped`, whether
+// the floors then pass or refuse its slice.
 
 /**
  What the pass came to once the replacements were applied.

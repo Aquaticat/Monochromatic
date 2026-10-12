@@ -7,7 +7,6 @@ import type { SyntheticClient, } from '../chat-contract.ts';
 import { wordForCount, } from '../count-word.ts';
 import { exchangeFailureLogText, } from '../exchange-failure-text.ts';
 import type { ConsistencyVoice, } from '../consistency-count-types.ts';
-import { MIN_STAGE_VOICES, } from '../stage-reachable-quorum.ts';
 import {
   buildConsistencyMessages,
   type ConsistencySubject,
@@ -90,10 +89,17 @@ function voiceOf(
 }
 
 /**
- Whether a stored gather is one a fresh gather over this bench could have
- made: a quorum within the bench and no smaller than a stage closes on, and
- that many ballots at least, no more than the bench has, each from a seat of
- the bench and each seat once.
+ Whether the ballots of a stored gather are ones a fresh gather over this
+ bench could have heard: each from a seat of the bench and each seat once,
+ which also bounds them by the bench's size.
+
+ THE QUORUM IS NOT THIS CHECK'S QUESTION. A stored record has already passed
+ the cache's own check (`isConsistencyRecord` in `pass-consistency-cache.ts`:
+ a quorum of one at least, and no fewer ballots than it), and no bound on the
+ quorum can be sharper than that: a gather closes on one voice when the bench
+ seats one or two, or when the run withheld all but one or two of its seats
+ (the key names the whole bench, not the seats left), so a floor of two would
+ ask again a gather this pass made and spent paid calls on.
 
  @param record - the stored gather
 
@@ -122,18 +128,7 @@ function recordFits(
     .map(function seatOf(voice,): string {
     return voice.seat;
   },);
-  return (record.quorum >= Math.min(
-    MIN_STAGE_VOICES,
-    modelIds.length,
-  ))
-    && (record.quorum <= modelIds.length)
-    && (record.voices
-      .length
-      >= record.quorum)
-    && (record.voices
-      .length
-      <= modelIds.length)
-    && (new Set(seats,).size === seats.length)
+  return (new Set(seats,).size === seats.length)
     && seats.every(function isSeated(seat,): boolean {
       return modelIds.some(function isSeat(modelId,): boolean {
         return modelId === seat;
@@ -224,7 +219,7 @@ export async function askConsistencyBench(
   },)) ? stored : undefined;
   if ((stored !== undefined) && (cached === undefined)) {
     al.warn(
-      'the stored ballots cannot be an answer of this bench (a quorum or a seat a gather could not have closed on), so the question is asked again',
+      'the stored ballots cannot be an answer of this bench (a seat heard twice, or a seat the bench does not have), so the question is asked again',
     );
   }
   if (cached !== undefined) {
