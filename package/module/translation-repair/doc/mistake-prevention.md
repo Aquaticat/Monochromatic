@@ -5007,8 +5007,11 @@ A command that ends inside ten minutes runs in the foreground with the Bash time
 A longer one runs as its own `systemd-run --user` unit with its output in a scratch log,
 followed by one foreground call to `wait-unit.ts <unit>.service` in the lead's scratch folder,
 which returns only when the unit ends and prints its result;
-a timed-out wait is repeated once, not replaced by polling.
-No Monitor, `pgrep` or `ps` loop, or line count of a growing log stands in for it.
+a timed-out wait is repeated once,
+not replaced by polling.
+No Monitor,
+`pgrep` or `ps` loop,
+or line count of a growing log stands in for it.
 
 What enforces it:
 the shared facts every brief points to carry the waiting rule and the exact unit form;

@@ -39430,7 +39430,9 @@ Prevention:
 the shared facts now give the waiting rule:
 foreground with the Bash timeout at 600000 for a command inside ten minutes,
 otherwise a `systemd-run --user` unit and one blocking call to `wait-unit.ts`,
-and no Monitor, process loop or line count.
+and no Monitor,
+process loop
+or line count.
 `doc/mistake-prevention.md` holds it under "How an agent waits".
 
 ### M79: a coverage census measuring compressed code
