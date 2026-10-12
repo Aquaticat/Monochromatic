@@ -105,7 +105,8 @@ impl TextShaper {
         if tabbed && !tabs_on_first_row(&row.layout, &row.projection.tabs) {
             return false;
         }
-        let space = self.space_advance(scale);
+        // The advance is physical, and the indent is built in logical pixels (see `wrapped_line_layout`).
+        let space = self.space_advance(scale) / scale;
         break_wrapped(&mut row.layout, &row.projection.text, scale, width, space);
         if tabbed && !tabs_on_first_row(&row.layout, &row.projection.tabs) {
             return false;

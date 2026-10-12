@@ -285,7 +285,9 @@ impl TextShaper {
             };
             return self.build_line(unwrapped);
         }
-        let space = self.space_advance(request.scale);
+        // The advance is physical; the indent that is built from it is in logical pixels and is scaled once more
+        // where the layout takes it, so a physical advance would double the indent at scale 2.
+        let space = self.space_advance(request.scale) / request.scale;
         let mut layout = self.build_line(request);
         break_wrapped(&mut layout, request.text, request.scale, width, space);
         return layout;

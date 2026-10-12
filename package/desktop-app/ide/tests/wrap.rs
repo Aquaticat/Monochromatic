@@ -188,20 +188,21 @@ fn emoji_sequences_and_combining_marks_never_split() {
 #[test]
 fn continuation_row_starts_at_the_indent() {
     let text = "    let total = first_value + second_value + third_value + fourth_value + fifth;";
-    let scale = 1.0;
-    let row = wrapped(text, 220.0, scale);
-    assert!(row.visual_rows() > 1, "the line wraps");
-    let space = space_advance(scale);
-    let expected = continuation_indent(text, space);
-    let start = row.visual_row_sources(1).expect("second row").start;
-    let caret = row.caret_at(start, ReadingAffinity::Downstream, scale);
-    assert_eq!(caret.row, 1);
-    assert!(
-        (caret.x - expected).abs() < 0.01,
-        "indent {} vs {}",
-        caret.x,
-        expected
-    );
+    for scale in [1.0, 2.0] {
+        let row = wrapped(text, 220.0, scale);
+        assert!(row.visual_rows() > 1, "the line wraps");
+        let space = space_advance(scale);
+        let expected = continuation_indent(text, space);
+        let start = row.visual_row_sources(1).expect("second row").start;
+        let caret = row.caret_at(start, ReadingAffinity::Downstream, scale);
+        assert_eq!(caret.row, 1);
+        assert!(
+            (caret.x - expected).abs() < 0.01,
+            "scale {scale}: the continuation row starts at {} where the indent is {}",
+            caret.x,
+            expected
+        );
+    }
 }
 
 /// Tab-bearing lines wrap, and the tiling holds with tabs in the rows.
