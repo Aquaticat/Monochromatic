@@ -599,6 +599,29 @@ await describe({
           },
         },),
         it({
+          name: 'ANSWERS A DAMAGED info.yml with the unreadable record instead of raising, so the entry the preparation reads '
+            + 'it for still ships (the owner\'s rule)',
+          fn: async () => {
+            /**
+             Readers over an invented corpus whose one entry has a file that is not YAML.
+             */
+            const reads = outsideReadsFrom({
+              env: {},
+              fetchFn: exaStub().fetchFn,
+              pin: PIN,
+              listPeople: listNoPeople,
+              readFile: async function readDamaged() {
+                return 'info: [\n';
+              },
+            },);
+            expect(await reads.entryInfo({ entryId: 'gum', l, },),).toEqual({
+              kind: 'unreadable',
+              refusal: 'The info.yml of entry gum at the pin refused to parse at line 2 column 1 (BAD_INDENT); '
+                + 'corpus metadata parses upstream, so this signals corruption.',
+            },);
+          },
+        },),
+        it({
           name: 'READS THE NAMES EVERY ENTRY DECLARES at the pin it is handed, through the lister and reader it is handed',
           fn: async () => {
             /**

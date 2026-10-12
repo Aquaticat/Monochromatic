@@ -36,6 +36,7 @@ import {
   fixedPagePath,
   messageText,
   parseSettledTwoLaneArtifact,
+  readEntryInfoRecord,
   settleEntry,
   type ChatJsonOutcome,
   type ChatJsonRequest,
@@ -1611,6 +1612,101 @@ await describe({
           ...asked.workTitles,
           ...asked.references,
         ],),).toEqual(new Set([ENTRY.sourceText,],),);
+      },
+    },),
+    it({
+      name: 'SHIPS THE PAGE OF AN ENTRY WHOSE info.yml IS DAMAGED, read through the real info.yml reader, and records on '
+        + 'the artifact that the record was unreadable and no death was told to the models (the owner\'s rule: a run always ships)',
+      fn: async () => {
+        await using dirs = await throwawayDirs();
+        await using reference = await throwawayDirs();
+        // THE ENTRY AS ONE WHOSE info.yml RECORDS NO DEATH, which the damaged file must leave it exactly as.
+        await settleEntry({
+          client: entryClient({ served: [], },),
+          entry: ENTRY,
+          artifactsDir: reference.artifactsDir,
+          publishDir: reference.publishDir,
+          declinedDir: reference.declinedDir,
+          sliceCacheDir: reference.sliceCacheDir,
+          tip: 'a'.repeat(40,),
+          pipelineDigest: DIGEST,
+          pin: ENTRY_PIN,
+          outsideReads: NO_OUTSIDE_READS,
+          pictureSources: NO_PICTURE_SOURCES,
+          hardCapMs: HANG_STOP_MS,
+          baseSignal: new AbortController().signal,
+          overlap: PASS_FALLBACK_OVERLAP,
+          stageSettings: SCRIPTED_STAGE_SETTINGS,
+        },);
+        await settleEntry({
+          client: entryClient({ served: [], },),
+          entry: ENTRY,
+          artifactsDir: dirs.artifactsDir,
+          publishDir: dirs.publishDir,
+          declinedDir: dirs.declinedDir,
+          sliceCacheDir: dirs.sliceCacheDir,
+          tip: 'a'.repeat(40,),
+          pipelineDigest: DIGEST,
+          pin: ENTRY_PIN,
+          outsideReads: {
+            ...NO_OUTSIDE_READS,
+            entryInfo: function damagedEntryInfo({ entryId, l, },) {
+              return readEntryInfoRecord({
+                pin: ENTRY_PIN,
+                entryId,
+                readFile: async function damagedFile() {
+                  return 'info: [\n';
+                },
+                l,
+              },);
+            },
+          },
+          pictureSources: NO_PICTURE_SOURCES,
+          hardCapMs: HANG_STOP_MS,
+          baseSignal: new AbortController().signal,
+          overlap: PASS_FALLBACK_OVERLAP,
+          stageSettings: SCRIPTED_STAGE_SETTINGS,
+        },);
+
+        expect(await artifactNames({ artifactsDir: dirs.artifactsDir, },),).toEqual(['CatEntry1.json',],);
+        expect(await readFile(
+          fixedPagePath({
+            publishDir: dirs.publishDir,
+            entryId: ENTRY.id,
+          },),
+          'utf8',
+        ),).toBe(await readFile(
+          fixedPagePath({
+            publishDir: reference.publishDir,
+            entryId: ENTRY.id,
+          },),
+          'utf8',
+        ),);
+        /**
+         Artifact the entry wrote, through the production parser.
+         */
+        const artifact = parseSettledTwoLaneArtifact({
+          value: JSON.parse(await readFile(
+            join(dirs.artifactsDir, 'CatEntry1.json',),
+            'utf8',
+          ),),
+        },);
+        /**
+         Artifact the entry wrote with no info.yml, whose findings the damaged entry's keep and add one to.
+         */
+        const referenceArtifact = parseSettledTwoLaneArtifact({
+          value: JSON.parse(await readFile(
+            join(reference.artifactsDir, 'CatEntry1.json',),
+            'utf8',
+          ),),
+        },);
+        expect(artifact.preparation
+          .alignmentFindings,).toEqual([
+          ...referenceArtifact.preparation
+            .alignmentFindings,
+          'entry info: The info.yml of entry CatEntry1 at the pin refused to parse at line 2 column 1 (BAD_INDENT); '
+          + 'corpus metadata parses upstream, so this signals corruption. No death is recorded for the entry.',
+        ],);
       },
     },),
     it({

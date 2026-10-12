@@ -29,6 +29,7 @@ import {
   completedArms,
   messageText,
   makeInsertionChunk,
+  type PreparedSheetFacts,
   readTrialLedger,
   runSliceArms,
   type SyntheticClient,
@@ -40,6 +41,7 @@ import {
 import { rejectionOf, } from '../rejecting-call.test-fixture.ts';
 import { scratchDir, } from '../scratch-dir.test-fixture.ts';
 import { slicePairOf, } from './slice-pair-of.test-fixture.ts';
+import { DEATH_LINE, } from './window-trial-probe-draw.test-fixture.ts';
 import { HANG_STOP_MS, } from '../hang-stop.test-fixture.ts';
 import { SCRIPTED_STAGE_SETTINGS, } from '../stage-settings.test-fixture.ts';
 
@@ -93,6 +95,34 @@ const SLICES: readonly ChunkPair[] = [
     target: 'In the evening she returns to the fire.',
   },),
 ];
+
+/**
+ Three-slice document whose middle slice is archive English narrating its named subject in the present tense, so
+ the detector finds a candidate in it once the entry records a death.
+ */
+const NARRATING_SLICES: readonly ChunkPair[] = [
+  SLICES[0] as ChunkPair,
+  slicePairOf({
+    sliceIndex: 1,
+    source: '猫猫在窗台上打盹，尾巴垂在暖气片旁边。',
+    target: 'Mittens naps on the windowsill, tail by the radiator.',
+  },),
+  SLICES[2] as ChunkPair,
+];
+
+/**
+ Page facts of an entry that records a death and declares its subject's name.
+ */
+const DEATH_FACTS: PreparedSheetFacts = {
+  identityContext: DEATH_LINE,
+  lifeEnded: true,
+  subjectNames: ['Mittens',],
+};
+
+/**
+ First line of the block a sheet carries for tense candidates.
+ */
+const TENSE_BLOCK_LINE = 'These sentences match present-tense shapes in a memorial page about a person who has died.';
 
 /**
  Client whose translators drift on every call, so a rebought slate would show.
@@ -274,6 +304,7 @@ await describe({
           signal: AbortSignal.timeout(HANG_STOP_MS,),
           perCallTimeoutMs: HANG_STOP_MS,
           l,
+          sheetFacts: {},
           stageSettings: SCRIPTED_STAGE_SETTINGS,
         },);
 
@@ -305,6 +336,7 @@ await describe({
           signal: AbortSignal.timeout(HANG_STOP_MS,),
           perCallTimeoutMs: HANG_STOP_MS,
           l,
+          sheetFacts: {},
           stageSettings: SCRIPTED_STAGE_SETTINGS,
         },);
 
@@ -338,6 +370,7 @@ await describe({
           signal: AbortSignal.timeout(HANG_STOP_MS,),
           perCallTimeoutMs: HANG_STOP_MS,
           l,
+          sheetFacts: {},
           stageSettings: SCRIPTED_STAGE_SETTINGS,
         },);
 
@@ -374,6 +407,7 @@ await describe({
           signal: AbortSignal.timeout(HANG_STOP_MS,),
           perCallTimeoutMs: HANG_STOP_MS,
           l,
+          sheetFacts: {},
           stageSettings: SCRIPTED_STAGE_SETTINGS,
         },);
 
@@ -409,6 +443,7 @@ await describe({
           signal: AbortSignal.timeout(HANG_STOP_MS,),
           perCallTimeoutMs: HANG_STOP_MS,
           l,
+          sheetFacts: {},
           stageSettings: SCRIPTED_STAGE_SETTINGS,
         },);
 
@@ -445,6 +480,7 @@ await describe({
           signal: AbortSignal.timeout(HANG_STOP_MS,),
           perCallTimeoutMs: HANG_STOP_MS,
           l,
+          sheetFacts: {},
           stageSettings: SCRIPTED_STAGE_SETTINGS,
         },);
 
@@ -468,6 +504,7 @@ await describe({
           signal: AbortSignal.timeout(HANG_STOP_MS,),
           perCallTimeoutMs: HANG_STOP_MS,
           l,
+          sheetFacts: {},
           stageSettings: SCRIPTED_STAGE_SETTINGS,
         },);
 
@@ -497,6 +534,7 @@ await describe({
           signal: AbortSignal.timeout(HANG_STOP_MS,),
           perCallTimeoutMs: HANG_STOP_MS,
           l,
+          sheetFacts: {},
           stageSettings: SCRIPTED_STAGE_SETTINGS,
         },);
 
@@ -529,6 +567,7 @@ await describe({
           signal: AbortSignal.timeout(HANG_STOP_MS,),
           perCallTimeoutMs: HANG_STOP_MS,
           l,
+          sheetFacts: {},
           stageSettings: SCRIPTED_STAGE_SETTINGS,
         },);
         /**
@@ -545,6 +584,80 @@ await describe({
         // And it refused before buying anything.
         expect(rig.served
           .count,).toBe(0,);
+      },
+    },),
+    it({
+      name: 'SHOWS EVERY JUDGE THE TENSE CANDIDATES of the ballot texts on all three arms, and every voice the identity '
+        + 'block naming the death, when the entry records one, so the instrument measures the sheet the pass asks',
+      fn: async () => {
+        await using scratch = await scratchDir({ prefix: 'window-slice-', },);
+        const rig = driftingClient();
+        await runSliceArms({
+          client: rig.client,
+          slices: NARRATING_SLICES,
+          sliceIndex: 1,
+          sliceClass: 'relocation',
+          entryId: 'Mittens',
+          protocol: 'protocol-one',
+          ledgerPath: freshLedger({ dir: scratch.path, },),
+          done: new Set<string>(),
+          models: MODELS,
+          signal: AbortSignal.timeout(HANG_STOP_MS,),
+          perCallTimeoutMs: HANG_STOP_MS,
+          l,
+          sheetFacts: DEATH_FACTS,
+          stageSettings: SCRIPTED_STAGE_SETTINGS,
+        },);
+
+        expect(rig.judgeSheets
+          .map(function carries(sheet,): readonly boolean[] {
+            return [sheet.includes(TENSE_BLOCK_LINE,), sheet.includes(DEATH_LINE,),];
+          },),).toEqual(Array.from(
+          { length: 3 * MODELS.judgeModelIds.length, },
+          function carriesBoth(): readonly boolean[] {
+            return [true, true,];
+          },
+        ),);
+        expect(rig.translateSheets
+          .map(function carries(sheet,): boolean {
+            return sheet.includes(DEATH_LINE,);
+          },),).toEqual(Array.from(
+          { length: MODELS.translatorModelIds.length, },
+          function carriesIdentity(): boolean {
+            return true;
+          },
+        ),);
+      },
+    },),
+    it({
+      name: 'SHOWS NO TENSE BLOCK AND NO DEATH when the entry records none, on the slice that shows both when it does, '
+        + 'which separates a block the page facts bring from one every sheet carries',
+      fn: async () => {
+        await using scratch = await scratchDir({ prefix: 'window-slice-', },);
+        const rig = driftingClient();
+        await runSliceArms({
+          client: rig.client,
+          slices: NARRATING_SLICES,
+          sliceIndex: 1,
+          sliceClass: 'relocation',
+          entryId: 'Mittens',
+          protocol: 'protocol-one',
+          ledgerPath: freshLedger({ dir: scratch.path, },),
+          done: new Set<string>(),
+          models: MODELS,
+          signal: AbortSignal.timeout(HANG_STOP_MS,),
+          perCallTimeoutMs: HANG_STOP_MS,
+          l,
+          sheetFacts: {},
+          stageSettings: SCRIPTED_STAGE_SETTINGS,
+        },);
+
+        expect(rig.judgeSheets
+          .length,).toBe(3 * MODELS.judgeModelIds.length,);
+        expect(rig.judgeSheets
+          .some(function carries(sheet,): boolean {
+            return sheet.includes(TENSE_BLOCK_LINE,) || sheet.includes(DEATH_LINE,);
+          },),).toBe(false,);
       },
     },),
     it({
@@ -570,6 +683,7 @@ await describe({
             signal: AbortSignal.timeout(HANG_STOP_MS,),
             perCallTimeoutMs: HANG_STOP_MS,
             l,
+            sheetFacts: {},
             stageSettings: SCRIPTED_STAGE_SETTINGS,
           },);
         },);
@@ -614,6 +728,7 @@ await describe({
           signal: AbortSignal.timeout(HANG_STOP_MS,),
           perCallTimeoutMs: HANG_STOP_MS,
           l,
+          sheetFacts: {},
           stageSettings: SCRIPTED_STAGE_SETTINGS,
         },);
         /**
@@ -643,6 +758,7 @@ await describe({
           signal: AbortSignal.timeout(HANG_STOP_MS,),
           perCallTimeoutMs: HANG_STOP_MS,
           l,
+          sheetFacts: {},
           stageSettings: SCRIPTED_STAGE_SETTINGS,
         },);
         expect(present.translateSheets

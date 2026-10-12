@@ -352,8 +352,9 @@ await describe({
       },
     },),
     it({
-      name: 'LEAVES THE PAGE ABSENT AND NAMES THE ENTRY when the info.yml of an artifact of the generation that reads it '
-        + 'is damaged, quoting none of the file',
+      name: 'WRITES THE PAGE of an artifact of the generation that reads the info.yml although that file is damaged, '
+        + 'reading it as an entry that records no death and warning of it, quoting none of the file (the owner\'s rule: a run '
+        + 'always ships, so the page its artifact ships is never refused over the record)',
       fn: async () => {
         await using clone = await makeCorpusPassClone({ entries: [{
           id: ENTRY,
@@ -384,10 +385,22 @@ await describe({
           l: capturingLogger({ messages, },),
         },);
 
+        expect(await readFile(
+          join(
+            layout.publishDir,
+            'people',
+            ENTRY,
+            'page.en.md',
+          ),
+          'utf8',
+        ),).toBe(TARGET_DOC,);
         expect(messages,).toEqual([
-          'REPUBLISH LEFT entry=CatEntry1 why=missing: page left as it was; because=The info.yml of entry CatEntry1 at the '
-          + 'pin refused to parse at line 2 column 1 (BAD_INDENT); corpus metadata parses upstream, so this signals corruption.',
-          'republish: 1 settled page judged, 0 rewritten, 1 left',
+          'ENTRY INFO entry=CatEntry1: The info.yml of entry CatEntry1 at the pin refused to parse at line 2 column 1 '
+          + '(BAD_INDENT); corpus metadata parses upstream, so this signals corruption. No death is recorded for the entry, and '
+          + 'it goes on as one whose info.yml records none',
+          'publish: wrote 2 slices into a page of 81 characters',
+          'REPUBLISHED entry=CatEntry1 why=missing: page rewritten from its artifact',
+          'republish: 1 settled page judged, 1 rewritten, 0 left',
         ],);
       },
     },),

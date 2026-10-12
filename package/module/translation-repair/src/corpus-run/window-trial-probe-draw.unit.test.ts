@@ -30,6 +30,8 @@ import {
   CAT_PIN,
   CLEAN_SOURCE,
   CLEAN_TARGET,
+  DEATH_LINE,
+  FLAGGED_IDENTITY,
   FLAGGED_SOURCE,
   FLAGGED_TARGET,
 } from './window-trial-probe-draw.test-fixture.ts';
@@ -119,9 +121,128 @@ await describe({
           },
         ],);
         expect(drawn.slices.length,).toBe(3,);
+        // THE INFO RECORD IS READ AFTER BOTH PAGES, so an entry with one side is skipped before it is asked for.
         expect(asked,).toEqual([
           'people/Mittens/page.md',
           'people/Mittens/page.en.md',
+          'people/Mittens/info.yml',
+        ],);
+      },
+    },),
+    it({
+      name: 'READS THE DEATH THE ENTRY\'S info.yml RECORDS and returns the page facts of the preparation it drew, the flag '
+        + 'and the identity block naming the date, so the arms are judged on the sheet the pass asks',
+      fn: async () => {
+        const { logger, lines, } = capturingLoggerPair();
+
+        /**
+         What the entry contributes.
+         */
+        const drawn = await drawEntry({
+          entryId: 'Mittens',
+          pin: CAT_PIN,
+          readPage: scriptedPages({
+            pages: new Map([
+              [
+                'people/Mittens/page.md',
+                FLAGGED_SOURCE,
+              ],
+              [
+                'people/Mittens/page.en.md',
+                FLAGGED_TARGET,
+              ],
+              [
+                'people/Mittens/info.yml',
+                'info:\n  died: 2025-02-26\n',
+              ],
+            ],),
+            asked: [],
+          },),
+          l: logger,
+        },);
+
+        expect(drawn.sheetFacts,).toEqual({
+          identityContext: `${DEATH_LINE}\n${FLAGGED_IDENTITY}`,
+          lifeEnded: true,
+        },);
+        expect(drawn.picks.length,).toBe(2,);
+        expect(lines,).toEqual([],);
+      },
+    },),
+    it({
+      name: 'DRAWS THE ENTRY WITH NO DEATH, and says so, when it has no info.yml at the pin',
+      fn: async () => {
+        const { logger, lines, } = capturingLoggerPair();
+
+        /**
+         What the entry contributes.
+         */
+        const drawn = await drawEntry({
+          entryId: 'Mittens',
+          pin: CAT_PIN,
+          readPage: scriptedPages({
+            pages: new Map([
+              [
+                'people/Mittens/page.md',
+                FLAGGED_SOURCE,
+              ],
+              [
+                'people/Mittens/page.en.md',
+                FLAGGED_TARGET,
+              ],
+            ],),
+            asked: [],
+          },),
+          l: logger,
+        },);
+
+        expect(drawn.sheetFacts,).toEqual({ identityContext: FLAGGED_IDENTITY, },);
+        expect(drawn.picks.length,).toBe(2,);
+        expect(lines,).toEqual([
+          `ENTRY INFO entry=Mittens: no info.yml at the pin (corpus read failed for people/Mittens/info.yml at ${CAT_PIN.commitSha} `
+          + '(missing-object); the commit has no such path: check the path, or pin a commit that has it.), '
+          + 'so no death is recorded for it',
+        ],);
+      },
+    },),
+    it({
+      name: 'DRAWS THE ENTRY WITH NO DEATH, and warns that the record was unreadable, when its info.yml is not YAML, '
+        + 'since a run always ships and the arms of its slices are still bought',
+      fn: async () => {
+        const { logger, lines, } = capturingLoggerPair();
+
+        /**
+         What the entry contributes.
+         */
+        const drawn = await drawEntry({
+          entryId: 'Mittens',
+          pin: CAT_PIN,
+          readPage: scriptedPages({
+            pages: new Map([
+              [
+                'people/Mittens/page.md',
+                FLAGGED_SOURCE,
+              ],
+              [
+                'people/Mittens/page.en.md',
+                FLAGGED_TARGET,
+              ],
+              [
+                'people/Mittens/info.yml',
+                'info: [\n',
+              ],
+            ],),
+            asked: [],
+          },),
+          l: logger,
+        },);
+
+        expect(drawn.sheetFacts,).toEqual({ identityContext: FLAGGED_IDENTITY, },);
+        expect(drawn.picks.length,).toBe(2,);
+        expect(lines,).toEqual([
+          'ENTRY INFO entry=Mittens: The info.yml of entry Mittens at the pin refused to parse at line 2 column 1 '
+          + '(BAD_INDENT); corpus metadata parses upstream, so this signals corruption. No death is recorded for the entry, '
+          + 'and it goes on as one whose info.yml records none',
         ],);
       },
     },),
@@ -154,6 +275,11 @@ await describe({
 
         expect(drawn.picks,).toEqual([],);
         expect(drawn.slices.length,).toBe(2,);
+        expect(drawn.sheetFacts,).toEqual({
+          identityContext: 'NAMES AND LINKED TEXT THE ARCHIVE RENDERS ON THIS PAGE (render the same person or title the same way '
+            + 'everywhere; a declared name inside a title takes its declared form):\n- 第一节 (heading): "Section one"\n'
+            + '- 第二节 (heading): "Section two"',
+        },);
       },
     },),
     it({
@@ -181,6 +307,7 @@ await describe({
 
         expect(drawn,).toEqual({
           picks: [],
+          sheetFacts: {},
           slices: [],
         },);
         expect(lines,).toEqual([

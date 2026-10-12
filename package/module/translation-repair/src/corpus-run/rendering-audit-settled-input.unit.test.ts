@@ -379,6 +379,46 @@ await describe({
         },),
 
         it({
+          name: 'OFFERS THE ARTIFACT of the generation that reads the info.yml although that file is damaged at its own commit, '
+            + 'with the identity block of a run that recorded no death for the entry, instead of refusing the replay',
+          fn: async () => {
+            await using corpus = await makeCorpus({ infoYml: 'info: [\n', },);
+            await using archive = await scratchDir({ prefix: 'settled-audit-archive-', },);
+
+            /**
+             Preparation the run made, which recorded no death for the entry.
+             */
+            const prepared = prepareDocumentPair({
+              sourceText: SOURCE_PAGE,
+              targetText: TARGET_PAGE,
+            },);
+            await writeArtifact({
+              archiveDir: archive.path,
+              runSet: 'first',
+              prepared,
+              corpusSha: corpus.commitSha,
+              entryId: ENTRY_ID,
+            },);
+
+            /**
+             Subjects the artifact offers.
+             */
+            const { subjects, } = await readArtifactSubjects({
+              archiveDir: archive.path,
+              runSetDir: 'first',
+              runSet: 'first',
+              artifactFile: `${ENTRY_ID}.json`,
+              cloneDir: corpus.cloneDir,
+              readFile: readCorpusFile,
+            },);
+            expect(subjects[0]?.identity,).toEqual({
+              kind: 'declared',
+              context: prepared.identityContext,
+            },);
+          },
+        },),
+
+        it({
           name: 'reports NO DECLARED NAMES as a positive answer when the pair declares none, rather '
             + 'than as a missing field, so a later reader can tell "this pair declared nothing" from '
             + '"nobody recorded whether it did"',

@@ -798,6 +798,40 @@ await describe({
           },
         },),
         it({
+          name: 'CARVES AS THE RUN DID an artifact of the generation that reads the info.yml although that file is damaged, '
+            + 'since the run shipped the entry with no death recorded, and the carve is refused for nothing the run did not meet',
+          fn: async () => {
+            await using damaged = await throwawayCorpus({ infoYml: 'info: [\n', },);
+            await using runs = await scratchDir({ prefix: 'whiskers-settled-runs-', },);
+            /**
+             How the run carved the pair, with no death recorded for the entry.
+             */
+            const carved = prepareDocumentPair({
+              sourceText: SOURCE_PAGE,
+              targetText: TARGET_PAGE,
+            },);
+            await writeArtifact({
+              runsDir: runs.path,
+              prepared: carved,
+              corpusSha: damaged.commitSha,
+              strip: [],
+            },);
+            /**
+             Carve of the entry whose info.yml is damaged.
+             */
+            const carve = await carveSettled({
+              entryId: ENTRY_ID,
+              runsDir: runs.path,
+              cloneDir: damaged.cloneDir,
+              readFile: readCorpusFile,
+            },);
+            if (carve.kind !== 'settled')
+              throw new Error(`expected a settled carve, got ${carve.kind}`,);
+            expect(carve.prepared.lifeEnded,).toBe(false,);
+            expect(carve.prepared.identityContext,).toBe(carved.identityContext,);
+          },
+        },),
+        it({
           name: 'FORWARDS an unsettled or legacy answer without reading the corpus',
           fn: async () => {
             await using runs = await scratchDir({ prefix: 'whiskers-settled-runs-', },);

@@ -14,9 +14,11 @@ import {
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
+import { parse as parseYaml, } from 'yaml';
 
 import {
   CorpusReadError,
+  entryInfoFindingsOf,
   prepareDocumentPair,
   readEntryInfoRecord,
 } from '../../dist/final/node/index.mjs';
@@ -56,6 +58,28 @@ async function missingInfoFixture(): Promise<string> {
     cause: { stderr: 'fatal: path \'people/tabby/info.yml\' does not exist in \'deadbeef\'', },
     commit: 'held',
   },);
+}
+
+/**
+ What the YAML parser says of a text it refuses, which is what a reader forwarding it would repeat.
+
+ @param text - text handed to the parser
+
+ @returns The parser's refusal as text, empty when it parses the text
+
+ @example
+ ```ts
+ const said = parserRefusalOf({ text: 'info: [\n', },);
+ ```
+ */
+function parserRefusalOf({ text, }: { readonly text: string; },): string {
+  try {
+    parseYaml(text,);
+  }
+  catch (error) {
+    return String(error,);
+  }
+  return '';
 }
 
 //region Entry info record tests
@@ -229,32 +253,90 @@ await describe({
         },),
 
         it({
-          name: 'REFUSES an info.yml that is not YAML with an error naming the entry and where the parser stopped, '
-            + 'quoting none of the file and carrying no parser error that does',
+          name: 'RECORDS AN info.yml THAT IS NOT YAML as unreadable, carrying the refusal that names the entry and where the '
+            + 'parser stopped, and warns that no death is recorded for it, so a run ships the entry (the owner\'s rule)',
           fn: async () => {
             /**
-             What the reader threw, if anything.
+             Lines the reader wrote at their levels.
              */
-            let caught: unknown = undefined;
-            try {
-              await readEntryInfoRecord({
-                pin: PIN,
-                entryId: 'mittens',
-                readFile: async function unreadableFixture() {
-                  return 'info: [\n';
-                },
-                l: capturingLogger({ messages: [], },),
-              },);
-            }
-            catch (error) {
-              caught = error;
-            }
-            expect(String(caught,),).toBe(
-              'EntryInfoParseError: The info.yml of entry mittens at the pin refused to parse at line 2 column 1 (BAD_INDENT); '
+            const lines: string[] = [];
+            /**
+             What the reader answered for the damaged file.
+             */
+            const record = await readEntryInfoRecord({
+              pin: PIN,
+              entryId: 'mittens',
+              readFile: async function unreadableFixture() {
+                return 'info: [\n';
+              },
+              l: levelCapturingLogger({ lines, },),
+            },);
+            /**
+             Sentence the refusal carries.
+             */
+            const refusal = 'The info.yml of entry mittens at the pin refused to parse at line 2 column 1 (BAD_INDENT); '
+              + 'corpus metadata parses upstream, so this signals corruption.';
+            expect(record,).toEqual({
+              kind: 'unreadable',
+              refusal,
+            },);
+            expect(lines,).toEqual([
+              `warn ENTRY INFO entry=mittens: ${refusal} No death is recorded for the entry, and it goes on as one whose `
+              + 'info.yml records none',
+            ],);
+          },
+        },),
+
+        it({
+          name: 'QUOTES NONE OF A DAMAGED info.yml in the record or in the warning, since the parser\'s own message embeds a '
+            + 'code frame of the file, which holds a person\'s dates and handles',
+          fn: async () => {
+            /**
+             File whose failing line holds a handle.
+             */
+            const damaged = 'info:\n  born: [whiskers-secret\n';
+            /**
+             What the parser says of it, which is what the reader must not repeat.
+             */
+            const parserSaid = parserRefusalOf({ text: damaged, },);
+            // POSITIVE CONTROL: the parser's own message does quote the handle, so a reader that forwarded it would show.
+            expect(parserSaid.includes('whiskers-secret',),).toBe(true,);
+            /**
+             Lines the reader wrote at their levels.
+             */
+            const lines: string[] = [];
+            /**
+             What the reader answered for the damaged file.
+             */
+            const record = await readEntryInfoRecord({
+              pin: PIN,
+              entryId: 'mittens',
+              readFile: async function unreadableWithHandle() {
+                return damaged;
+              },
+              l: levelCapturingLogger({ lines, },),
+            },);
+            expect(record.kind,).toBe('unreadable',);
+            expect(JSON.stringify([record, lines,],).includes('whiskers-secret',),).toBe(false,);
+            expect(lines.length,).toBe(1,);
+          },
+        },),
+
+        it({
+          name: 'RECORDS AN info.yml THAT IS NOT YAML as unreadable in silence when no logger is given, as a command with '
+            + 'pinned terminal output reads it',
+          fn: async () => {
+            expect(await readEntryInfoRecord({
+              pin: PIN,
+              entryId: 'mittens',
+              readFile: async function unreadableFixture() {
+                return 'info: [\n';
+              },
+            },),).toEqual({
+              kind: 'unreadable',
+              refusal: 'The info.yml of entry mittens at the pin refused to parse at line 2 column 1 (BAD_INDENT); '
                 + 'corpus metadata parses upstream, so this signals corruption.',
-            );
-            expect(Error.isError(caught,) && (caught.cause === undefined),).toBe(true,);
-            expect(Error.isError(caught,) && ('messageNamesOnly' in caught) && (caught.messageNamesOnly === true),).toBe(true,);
+            },);
           },
         },),
 
@@ -361,6 +443,41 @@ await describe({
               kind: 'read',
               info: { info: { died: true, }, },
             },);
+          },
+        },),
+      ],
+    },),
+    describe({
+      name: entryInfoFindingsOf.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'SAYS THE RECORD WAS UNREADABLE and that no death is recorded for the entry, in the refusal\'s own words, so '
+            + 'a reader of the artifact can tell it from an entry that records no death',
+          fn: async () => {
+            expect(entryInfoFindingsOf({
+              entryInfo: {
+                kind: 'unreadable',
+                refusal: 'The info.yml of entry mittens at the pin refused to parse at line 2 column 1 (BAD_INDENT); '
+                  + 'corpus metadata parses upstream, so this signals corruption.',
+              },
+            },),).toEqual([
+              'entry info: The info.yml of entry mittens at the pin refused to parse at line 2 column 1 (BAD_INDENT); '
+              + 'corpus metadata parses upstream, so this signals corruption. No death is recorded for the entry.',
+            ],);
+          },
+        },),
+
+        it({
+          name: 'SAYS NOTHING OF AN ABSENT FILE or of a parsed one, which each record what they hold and no unreadable record',
+          fn: async () => {
+            expect(entryInfoFindingsOf({ entryInfo: { kind: 'absent', }, },),).toEqual([],);
+            expect(entryInfoFindingsOf({
+              entryInfo: {
+                kind: 'read',
+                info: { info: { died: '2025-02-26', }, },
+              },
+            },),).toEqual([],);
           },
         },),
       ],

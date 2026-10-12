@@ -37,6 +37,8 @@ import {
 } from '../provider-status-failure.test-fixture.ts';
 import { scratchDir, } from '../scratch-dir.test-fixture.ts';
 import { slicePairOf, } from './slice-pair-of.test-fixture.ts';
+import { DEATH_LINE, } from './window-trial-probe-draw.test-fixture.ts';
+import { scriptedTrialClient, } from './window-trial-scripted-client.test-fixture.ts';
 import { HANG_STOP_MS, } from '../hang-stop.test-fixture.ts';
 import { SCRIPTED_STAGE_SETTINGS, } from '../stage-settings.test-fixture.ts';
 
@@ -144,6 +146,7 @@ await describe({
           signal: AbortSignal.timeout(HANG_STOP_MS,),
           perCallTimeoutMs: HANG_STOP_MS,
           l,
+          sheetFacts: {},
           stageSettings: SCRIPTED_STAGE_SETTINGS,
         },);
 
@@ -172,6 +175,7 @@ await describe({
           signal: AbortSignal.timeout(HANG_STOP_MS,),
           perCallTimeoutMs: HANG_STOP_MS,
           l: warningRecordingLogger({ base: l, warnings, },),
+          sheetFacts: {},
           stageSettings: SCRIPTED_STAGE_SETTINGS,
         },);
 
@@ -239,6 +243,7 @@ await describe({
           signal: stop.signal,
           perCallTimeoutMs: HANG_STOP_MS,
           l: warningRecordingLogger({ base: l, warnings, },),
+          sheetFacts: {},
           stageSettings: SCRIPTED_STAGE_SETTINGS,
         },);
 
@@ -249,6 +254,71 @@ await describe({
           }, as the caller stopped the round`,
           'Mittens/0 (relocation): refused, refused by AbortError',
         ],);
+      },
+    },),
+    it({
+      name: 'HANDS THE PAGE FACTS ON TO THE ARMS, so a slice drawn from an entry that records a death is judged on sheets '
+        + 'carrying the tense candidates of the ballot texts and the identity block naming the date',
+      fn: async () => {
+        await using scratch = await scratchDir({ prefix: 'window-pick-', },);
+        const rig = scriptedTrialClient({
+          narrowBallot: 0,
+          wideBallot: 0,
+        },);
+        /**
+         Block that heads the tense candidates on a sheet.
+         */
+        const tenseLine = 'These sentences match present-tense shapes in a memorial page about a person who has died.';
+        const outcome = await runPick({
+          client: rig.client,
+          slices: [
+            slicePairOf({
+              sliceIndex: 0,
+              source: '小猫在窗台上睡觉。',
+              target: 'The cat sleeps on the windowsill.',
+            },),
+            slicePairOf({
+              sliceIndex: 1,
+              source: '猫猫在窗台上打盹，尾巴垂在暖气片旁边。',
+              target: 'Mittens naps on the windowsill, tail by the radiator.',
+            },),
+            slicePairOf({
+              sliceIndex: 2,
+              source: '傍晚她回到炉火旁。',
+              target: 'In the evening she returns to the fire.',
+            },),
+          ],
+          pick: {
+            entryId: 'Mittens',
+            sliceIndex: 1,
+            sliceClass: 'relocation',
+          },
+          entryId: 'Mittens',
+          protocol: 'protocol-one',
+          ledgerPath: freshLedger({ dir: scratch.path, },),
+          done: new Set<string>(),
+          models: MODELS,
+          signal: AbortSignal.timeout(HANG_STOP_MS,),
+          perCallTimeoutMs: HANG_STOP_MS,
+          l,
+          sheetFacts: {
+            identityContext: DEATH_LINE,
+            lifeEnded: true,
+            subjectNames: ['Mittens',],
+          },
+          stageSettings: SCRIPTED_STAGE_SETTINGS,
+        },);
+
+        expect(outcome.kind,).toBe('bought',);
+        expect(rig.judgeSheets
+          .map(function carries(sheet,): readonly boolean[] {
+            return [sheet.includes(tenseLine,), sheet.includes(DEATH_LINE,),];
+          },),).toEqual(Array.from(
+          { length: 3 * MODELS.judgeModelIds.length, },
+          function carriesBoth(): readonly boolean[] {
+            return [true, true,];
+          },
+        ),);
       },
     },),
     it({
@@ -281,6 +351,7 @@ await describe({
           signal: AbortSignal.timeout(HANG_STOP_MS,),
           perCallTimeoutMs: HANG_STOP_MS,
           l,
+          sheetFacts: {},
           stageSettings: SCRIPTED_STAGE_SETTINGS,
         },);
 

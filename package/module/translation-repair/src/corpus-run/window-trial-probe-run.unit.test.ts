@@ -51,6 +51,8 @@ import {
   CAT_PIN,
   CLEAN_SOURCE,
   CLEAN_TARGET,
+  DEATH_LINE,
+  FLAGGED_IDENTITY,
   FLAGGED_SOURCE,
   FLAGGED_TARGET,
 } from './window-trial-probe-draw.test-fixture.ts';
@@ -127,6 +129,25 @@ const PAGES: ReadonlyMap<string, string> = new Map([
   [
     'people/Tabby/page.en.md',
     CLEAN_TARGET,
+  ],
+  ...[...FLAGGED_IDS,
+    'Tabby',].map(function infoOf(id,): readonly [string, string] {
+    return [
+      `people/${id}/info.yml`,
+      'info:\n  born: \'2019-05-02\'\n',
+    ];
+  },),
+  [
+    'people/Mimi/page.md',
+    FLAGGED_SOURCE,
+  ],
+  [
+    'people/Mimi/page.en.md',
+    FLAGGED_TARGET,
+  ],
+  [
+    'people/Mimi/info.yml',
+    'info:\n  died: 2025-02-26\n',
   ],
 ]);
 
@@ -451,6 +472,53 @@ await describe({
         expect(clients.length,).toBe(2,);
         expect(clients[0] === rig.client,).toBe(false,);
         expect(clients[1] === rig.client,).toBe(true,);
+      },
+    },),
+    it({
+      name: 'HANDS the buyer of each slice the page facts of its entry\'s preparation, so an entry that records a death is '
+        + 'bought on sheets that tell the judges so',
+      fn: async () => {
+        await using scratch = await scratchDir({ prefix: 'window-trial-run-facts-', },);
+        const rig = scriptedTrialClient({
+          narrowBallot: 0,
+          wideBallot: 0,
+        },);
+        /**
+         Page facts each slice was bought with.
+         */
+        const facts: unknown[] = [];
+        const { logger, } = capturingLoggerPair();
+
+        await runWindowTrial({
+          runsDir: scratch.path,
+          headSha: HEAD,
+          makeClient: function makeClient(): SyntheticClient {
+            return rig.client;
+          },
+          pin: CAT_PIN,
+          listPeople: listing({ ids: ['Mimi',], },),
+          readPage: readScripted,
+          pickSlice: async function recordingFacts({ sheetFacts, },): Promise<PickOutcome> {
+            facts.push(sheetFacts,);
+            return {
+              kind: 'bought',
+              rows: [],
+            };
+          },
+          roster: ROSTER,
+          perCallTimeoutMs: HANG_STOP_MS,
+          l: logger,
+          stageSettings: SCRIPTED_STAGE_SETTINGS,
+        },);
+
+        /**
+         Facts of the entry that records a death.
+         */
+        const recorded = {
+          identityContext: `${DEATH_LINE}\n${FLAGGED_IDENTITY}`,
+          lifeEnded: true,
+        };
+        expect(facts,).toEqual([recorded, recorded,],);
       },
     },),
     it({

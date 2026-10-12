@@ -1,7 +1,8 @@
 /**
  Guards ledger X18: what the preparation's evidence rounds report (the
- reference attestation's findings, the page title lexicon's) reaches the
- entry's findings on every way out of the preparation. The way out through a
+ reference attestation's findings, the page title lexicon's, and the finding for
+ an entry whose info.yml was unreadable) reaches the entry's findings on every
+ way out of the preparation. The way out through a
  corrected archive once rebuilt its findings from the re-preparation and
  dropped the attestation's.
 
@@ -80,6 +81,12 @@ const RENDERED = 'The kitten sang the song twice.';
  What the one page the original links says.
  */
 const REFERENCE_LINES = '- reference 1 https://cats.example/posts/mittens ("Mittens"): Mittens had a brother who sat by the stove.';
+
+/**
+ Sentence the info.yml reader gave for a file that refused to parse.
+ */
+const UNREADABLE_REFUSAL = 'The info.yml of entry CatEntry at the pin refused to parse at line 2 column 1 (BAD_INDENT); '
+  + 'corpus metadata parses upstream, so this signals corruption.';
 
 /**
  How the archive reviewers answer an unclaimed block.
@@ -218,6 +225,10 @@ async function prepared(
     outsideReads: {
       ...NO_OUTSIDE_READS,
       references: async () => REFERENCE_LINES,
+      entryInfo: async () => ({
+        kind: 'unreadable',
+        refusal: UNREADABLE_REFUSAL,
+      } as const),
     },
     stageSettings: SCRIPTED_STAGE_SETTINGS,
   },);
@@ -248,6 +259,7 @@ function evidenceReported({ findings, }: { readonly findings: readonly string[];
     pageTitles: findings.some(function reportsLexicon(finding,): boolean {
       return finding.startsWith('page title lexicon settled 1 of 1',);
     },),
+    unreadableEntryInfo: findings.includes(`entry info: ${UNREADABLE_REFUSAL} No death is recorded for the entry.`,),
   };
 }
 
@@ -268,6 +280,7 @@ await describe({
           reviewed: false,
           attestation: true,
           pageTitles: true,
+          unreadableEntryInfo: true,
         },);
       },
     },),
@@ -287,6 +300,7 @@ await describe({
           archiveStands: true,
           attestation: true,
           pageTitles: true,
+          unreadableEntryInfo: true,
         },);
       },
     },),
@@ -306,6 +320,7 @@ await describe({
           corrected: true,
           attestation: true,
           pageTitles: true,
+          unreadableEntryInfo: true,
         },);
       },
     },),
