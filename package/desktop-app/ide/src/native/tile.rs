@@ -239,19 +239,22 @@ pub(super) fn poll(window: &AppWindow, state: &Rc<RefCell<State>>) {
         stop_when_idle(&mut current);
         (polled, pass)
     };
-    if let Some(output) = pass {
-        apply_pass(window, state, output);
-    }
+    // The tile comes first: it may change which lines the displayed tile holds, and so which lines the output may set.
     let reply = match polled {
-        Ok(Some(reply)) => reply,
-        Ok(None) => return,
+        Ok(Some(reply)) => Some(reply),
+        Ok(None) => None,
         Err(error) => {
             tracing::error!(%error, "source tile worker stopped");
             window.set_error_message(SharedString::from(format!("{error:#}")));
-            return;
+            None
         }
     };
-    apply(window, state, reply);
+    if let Some(reply) = reply {
+        apply(window, state, reply);
+    }
+    if let Some(output) = pass {
+        apply_pass(window, state, output);
+    }
 }
 
 /// What:
@@ -370,6 +373,12 @@ fn apply(window: &AppWindow, state: &Rc<RefCell<State>>, reply: anyhow::Result<T
     // The map may have moved since the job was queued; the tile's rows move with it, and its own lines did not change.
     let mut view = built.view;
     view.rebase(&current.row_map);
+    // What: A tile at a new width asks for the measurement walk again.
+    // Why: A measurement never touches the displayed tile, so the lines the old tile held kept the heights of the
+    //      old width; the walk finds the worker's kept rows by lookup, so asking again costs little.
+    if current.shown.width != bounds.width {
+        current.pass_posted = None;
+    }
     current.shaped = Some(view);
     current.frame_stamp = Some(built.stamp);
     current.shown = bounds;
@@ -384,6 +393,7 @@ fn apply(window: &AppWindow, state: &Rc<RefCell<State>>, reply: anyhow::Result<T
     {
         current.tiles_applied += 1;
     }
+    sync_pass(window, state, &mut current, factor);
     drop(current);
     show(
         window,

@@ -1430,12 +1430,23 @@ The displayed tile stays on screen until the tile for the new width arrives.
 Measured on 2026-10-11, breaking 50,000 kept layouts again took 40 to 80 ms.
 
 Tab correction on a wrapped line repeats shaping until the corrections agree, at most 40 passes (`TAB_PASSES`).
-Row `n` of a line is right after `n + 1` passes, because a row depends only on the rows before it.
+Row `n` of a line is right after `n + 1` passes, because a row depends only on the rows before it,
+so a line with tabs inside it is exact up to 40 rows.
+A line with tabs inside it that wraps over more rows keeps the corrections of its last pass:
+bounded and deterministic, but its tabs on the later rows may stand off their stops.
 The first bound, four passes, was not enough:
 `tab_correction_settles_at_every_width` swept widths from 40 to 700 px at two scales over two tab-heavy lines
 and found tabs off their stops at 40 px.
 A tab that ends its row can make two corrections repeat forever;
 the loop then ends with the layout whose corrections are smaller, the one in which that tab fits.
+
+A line so long that its tile would pass the 64 MiB raster limit is refused with the raster diagnostic instead of
+being painted: at a text width of 782 px that is about 894 rows at scale 1 (about 75,000 characters in one line) and
+about 223 rows at scale 2 (about 18,700 characters).
+Before the wrap a single row of such a line was painted and scrolled sideways; clipping the tile to the view inside a
+very tall line is not built.
+Shaping such a line is also slow, because the display projection of a line is quadratic in its length
+(a line of 100,000 characters took longer than 90 s in a debug build and was not opened by any test).
 
 Structural tests, independent of host load, count what the window thread does.
 `wrap_tests` opens 50,000 lines and asserts that the window thread shaped almost nothing

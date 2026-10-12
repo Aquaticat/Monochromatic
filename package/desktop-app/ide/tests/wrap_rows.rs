@@ -555,3 +555,40 @@ fn underlines_across_a_wrap_break_stand_on_their_own_rows() {
         "the error ink stands on exactly the two rows the mark crosses"
     );
 }
+
+/// A wrapped line so tall that its tile would pass the raster limit is refused with a diagnostic, never a panic.
+///  The limit is 64 MiB of pixels: at a text width of 782 px that is about 894 rows at scale 1 (about 75,000
+///  characters in one line) and about 223 rows at scale 2 (about 18,700).
+#[test]
+fn a_tile_past_the_raster_limit_is_refused_not_painted() {
+    // 15,000 characters at 100 px, scale 3: 1,350 rows of 72 physical pixels, 300 px wide, 117 MB.
+    let document = Document::new(&"x".repeat(15_000));
+    let mut shaper = TextShaper::new();
+    let plain = RowMap::plain(1);
+    let view = shaper.prepare_rows(
+        &document,
+        Viewport {
+            first: 0,
+            count: 1,
+            width: 100.0,
+            scale: 3.0,
+            wrap: Some(100.0),
+        },
+        &[],
+        &plain,
+    );
+    assert!(view.rows[0].visual_rows() > 1000);
+    let colors = CodeColors {
+        foreground: [0, 0, 0, 255],
+        selected: [255, 255, 255, 255],
+        dark: false,
+    };
+    let refused = TextRaster::new().paint(&view, colors, 0.0);
+    let message = refused.err().map(|error| return format!("{error:#}"));
+    assert!(
+        message
+            .as_deref()
+            .is_some_and(|text| return text.contains("64 MiB")),
+        "the oversized tile was not refused with the raster limit: {message:?}"
+    );
+}

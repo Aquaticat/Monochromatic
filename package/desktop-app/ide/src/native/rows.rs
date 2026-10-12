@@ -13,7 +13,7 @@
 ///  the stamp of the displayed text,
 ///  and the choice of the
 /// materialized lines for an offset.
-use super::{AppWindow, State, annotate::displayed, viewport::place};
+use super::{AppWindow, State, annotate::displayed, tile::requested, viewport::place};
 /// What:
 ///  `Assoc` says which side of inserted text a mapped position stays on;
 ///  `ChangeSet` is Helix's edit list.
@@ -345,7 +345,12 @@ pub(super) fn settle(
     }
     // `?` leaves with nothing when no position changed.
     install(current, layout)?;
-    place(current, kept, width, height);
+    // A re-center that waits for the worker and is still needed under new bounds (a measurement moved the rows,
+    // or the width changed again) stays a worker re-center, never a build on the window thread.
+    let waiting = current.scroll_wanted.is_some();
+    if place(current, kept, width, height) && waiting && current.shown.width > 0.0 {
+        current.scroll_wanted = Some(requested(current));
+    }
     tracing::debug!(
         before = offset,
         after = kept,

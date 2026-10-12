@@ -573,23 +573,59 @@ fn a_click_on_a_continuation_row_places_the_caret_in_that_row() {
             "caret row {visual}"
         );
     }
-    // Far right of the first row: the caret stands at the end of that row, not at the start of the next.
-    let far = LogicalPosition::new(TEXT_LEFT + 750.0, HEADER + 12.0 + window.get_scroll_y());
-    window.window().dispatch_event(WindowEvent::PointerPressed {
-        position: far,
-        button: PointerEventButton::Left,
-    });
-    window
-        .window()
-        .dispatch_event(WindowEvent::PointerReleased {
-            position: far,
+    window.hide().expect("close wrap window");
+}
+
+/// A click on either side of a wrap offset keeps the side that was clicked: left of the first glyph of the lower row
+///  the caret stands on the lower row, right of the last glyph of the upper row it stands on the upper row.
+#[test]
+fn a_click_at_a_wrap_offset_keeps_the_side_that_was_clicked() {
+    // A token without break opportunities breaks at the width, so no space hangs at the end of a row.
+    let (_project, opened) = open(&format!("{}\n", "m".repeat(400)));
+    settled(&opened);
+    let window = &opened.window;
+    let click = |position: LogicalPosition| {
+        std::thread::sleep(Duration::from_millis(520));
+        window.window().dispatch_event(WindowEvent::PointerPressed {
+            position,
             button: PointerEventButton::Left,
         });
-    update_timers_and_animations();
+        window
+            .window()
+            .dispatch_event(WindowEvent::PointerReleased {
+                position,
+                button: PointerEventButton::Left,
+            });
+        update_timers_and_animations();
+    };
+    let wrap_offset = {
+        let current = opened.source.borrow();
+        let row = &current.shaped.as_ref().expect("view").rows[0];
+        row.source_start + row.visual_row_sources(1).expect("second row").start
+    };
+    click(LogicalPosition::new(
+        TEXT_LEFT + 1.0,
+        HEADER + 24.0 + 12.0 + window.get_scroll_y(),
+    ));
+    assert_eq!(opened.source.borrow().document.position().head, wrap_offset);
+    assert_eq!(
+        window.get_caret_y(),
+        26.0,
+        "left of the lower row's first glyph the caret is on the lower row"
+    );
+    click(LogicalPosition::new(
+        TEXT_LEFT + 784.0,
+        HEADER + 12.0 + window.get_scroll_y(),
+    ));
+    assert_eq!(
+        opened.source.borrow().document.position().head,
+        wrap_offset,
+        "the end of the upper row is the same offset"
+    );
     assert_eq!(
         window.get_caret_y(),
         2.0,
-        "the caret stays on the upper row at its end"
+        "right of the upper row's last glyph the caret is on the upper row"
     );
     window.hide().expect("close wrap window");
 }
@@ -629,5 +665,52 @@ fn shift_wheel_does_not_scroll_and_there_is_no_horizontal_motion() {
     until("a plain wheel turn did not scroll the view", || {
         return window.get_scroll_y() < 0.0;
     });
+    window.hide().expect("close wrap window");
+}
+
+/// Two resizes in a row, with the view moved between them, leave no line at a width it is no longer wrapped to.
+#[test]
+fn a_drag_resize_leaves_no_stale_heights() {
+    let (release, gate) = std::sync::mpsc::channel();
+    *PASS_GATE.lock().expect("pass gate") = Some(gate);
+    let (_project, opened) = open(&long_text(1200));
+    let window = &opened.window;
+    let scale = window.window().scale_factor();
+    // Let the first pass finish at the first width, then move the view far from where the second pass will start.
+    for _ in 0..40 {
+        let _ = release.send(());
+    }
+    settled(&opened);
+    let height = window.get_viewport_height();
+    window.set_scroll_y(-(40.0 * height));
+    settled(&opened);
+    resize(window, 900.0, 660.0);
+    window.set_scroll_y(0.0);
+    resize(window, 800.0, 660.0);
+    for _ in 0..80 {
+        let _ = release.send(());
+    }
+    until("the final width did not reach the state", || {
+        return opened.source.borrow().width == window.get_viewport_width() - CARET_ROOM;
+    });
+    settled(&opened);
+    let current = opened.source.borrow();
+    let lines = current.document.text().len_lines();
+    let mut shaper = TextShaper::new();
+    let fresh = shaper.measure_lines(&current.document, 0..lines, scale, Some(current.width), &[]);
+    let mut stale = Vec::new();
+    for (line, rows) in fresh.lines {
+        if current.row_map.rows_of(line) != rows {
+            stale.push((line, current.row_map.rows_of(line), rows));
+        }
+    }
+    assert!(
+        stale.is_empty(),
+        "{} lines keep a stale height, first: {:?}",
+        stale.len(),
+        &stale[..stale.len().min(5)]
+    );
+    drop(current);
+    drop(release);
     window.hide().expect("close wrap window");
 }
