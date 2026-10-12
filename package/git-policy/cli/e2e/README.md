@@ -20,7 +20,8 @@ mise run //package/git-policy/cli:test:e2e:concurrent --seed 1 --scenario shared
 - `test:e2e:concurrent` depends on `test:e2e:concurrent:image`,
   which depends on `pack:npm`.
   Every run therefore tests the current build.
-- Every run prints its seed and a replay command first,
+- Every run prints the selected wrapper and the executable it verified,
+  its seed and a replay command,
   then one line per scenario and Git version,
   then a summary.
   The task exits non-zero when any scenario fails or errors.
@@ -28,6 +29,24 @@ mise run //package/git-policy/cli:test:e2e:concurrent --seed 1 --scenario shared
   `--git` takes comma-separated versions among `2.39.5`,
   `2.40.0`,
   and `2.55.0`.
+
+The same scenarios run against the native executable (`src/native/`) with the native tasks:
+
+```sh
+# package/git-policy/cli: run from the repository root
+mise run //package/git-policy/cli:test:e2e:concurrent:native
+mise run //package/git-policy/cli:test:e2e:concurrent:native --seed 1 --scenario baseline-explicit-commit --git 2.55.0
+```
+
+- `E2E_WRAPPER` (`incumbent` by default, or `native`) selects the directory whose `git` shadows the real Git
+  (`wrapper-selection-fixture.ts`);
+  the consumer checks that this `git` is a script for the incumbent and an ELF executable for the native one,
+  and prints the result first.
+  Scenarios, invariants and the report do not change with the selection.
+- `test:e2e:concurrent:native:image` compiles the release `cli-git-native` in `rust:1.97-bookworm`
+  and links it as `/opt/native/bin/git` in a copy of the `cli-git-concurrent-e2e` image;
+  build that image first with `test:e2e:concurrent:image`.
+  `GIT_POLICY_NATIVE_IMAGE_TAG` names the native image's tag, so concurrent worktrees never share one.
 
 Regenerate the committed trace with real Git on the host.
 It mines this checkout by default;
