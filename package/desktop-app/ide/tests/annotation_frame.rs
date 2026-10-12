@@ -44,7 +44,7 @@ fn stamp(document: &Document, visible: Visible, inks: AnnotationColors) -> Frame
         dark: true,
     };
     // `Arc::new` shares the visible list, as the renderer shares it with the layout.
-    return FrameStamp::new(document, viewport, 0.0, colors, SourceStyles::from([]))
+    return FrameStamp::new(document, viewport, colors, SourceStyles::from([]))
         .with_annotations(Arc::new(visible), inks);
 }
 

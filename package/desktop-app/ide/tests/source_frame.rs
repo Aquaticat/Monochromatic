@@ -13,7 +13,7 @@ use ide_app::{
 /// Source-image fixture with explicit physical geometry and system colors.
 fn stamp(document: &Document) -> FrameStamp {
     // Borrow source and empty syntax without transferring their ownership.
-    return FrameStamp::new(document, viewport(), 0.0, colors(), SourceStyles::from([]));
+    return FrameStamp::new(document, viewport(), colors(), SourceStyles::from([]));
 }
 
 /// Standard logical viewport,
@@ -95,22 +95,29 @@ fn materialization_scale_theme_and_syntax_invalidate() {
     let original = stamp(&document);
     let mut area = viewport();
     area.first = 1;
-    assert!(original != FrameStamp::new(&document, area, 0.0, colors(), SourceStyles::from([])));
+    assert!(original != FrameStamp::new(&document, area, colors(), SourceStyles::from([])));
     area = viewport();
     area.count += 1;
-    assert!(original != FrameStamp::new(&document, area, 0.0, colors(), SourceStyles::from([])));
+    assert!(original != FrameStamp::new(&document, area, colors(), SourceStyles::from([])));
     area = viewport();
     area.width += 1.0;
-    assert!(original != FrameStamp::new(&document, area, 0.0, colors(), SourceStyles::from([])));
+    assert!(original != FrameStamp::new(&document, area, colors(), SourceStyles::from([])));
     area = viewport();
     area.scale = 1.5;
-    assert!(original != FrameStamp::new(&document, area, 0.0, colors(), SourceStyles::from([])));
+    assert!(original != FrameStamp::new(&document, area, colors(), SourceStyles::from([])));
+    // The wrap width decides where every line breaks, so a frame at another width is another frame.
+    area = viewport();
+    area.wrap = Some(500.0);
+    assert!(original != FrameStamp::new(&document, area, colors(), SourceStyles::from([])));
+    area.wrap = Some(501.0);
     assert!(
-        original
+        FrameStamp::new(&document, area, colors(), SourceStyles::from([]))
             != FrameStamp::new(
                 &document,
-                viewport(),
-                0.25,
+                Viewport {
+                    wrap: Some(500.0),
+                    ..area
+                },
                 colors(),
                 SourceStyles::from([])
             )
@@ -118,17 +125,17 @@ fn materialization_scale_theme_and_syntax_invalidate() {
     let mut palette = colors();
     palette.dark = false;
     assert!(
-        original != FrameStamp::new(&document, viewport(), 0.0, palette, SourceStyles::from([]))
+        original != FrameStamp::new(&document, viewport(), palette, SourceStyles::from([]))
     );
     palette = colors();
     palette.foreground = [0, 0, 0, 255];
     assert!(
-        original != FrameStamp::new(&document, viewport(), 0.0, palette, SourceStyles::from([]))
+        original != FrameStamp::new(&document, viewport(), palette, SourceStyles::from([]))
     );
     palette = colors();
     palette.selected = [0, 0, 0, 255];
     assert!(
-        original != FrameStamp::new(&document, viewport(), 0.0, palette, SourceStyles::from([]))
+        original != FrameStamp::new(&document, viewport(), palette, SourceStyles::from([]))
     );
     let styles = [StyleSpan {
         start: 0,

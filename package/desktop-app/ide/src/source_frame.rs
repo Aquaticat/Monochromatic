@@ -38,8 +38,6 @@ pub struct FrameStamp {
     ///  physical scale,
     ///  and tile width.
     viewport: Viewport,
-    /// Horizontal tile origin affects subpixel glyph positions.
-    horizontal: f32,
     /// Foreground and selection colors include current system appearance.
     colors: CodeColors,
     /// Shared immutable classifications prevent copying the whole span list on each caret step.
@@ -79,7 +77,6 @@ impl PartialEq for FrameStamp {
         return self.revision == other.revision
             && self.selection == other.selection
             && self.viewport == other.viewport
-            && self.horizontal == other.horizontal
             && self.colors == other.colors
             && (Arc::ptr_eq(&self.styles, &other.styles) || self.styles == other.styles)
             && (Arc::ptr_eq(&self.matches, &other.matches) || self.matches == other.matches)
@@ -96,7 +93,6 @@ impl FrameStamp {
     pub fn new(
         document: &Document,
         viewport: Viewport,
-        horizontal: f32,
         colors: CodeColors,
         styles: SourceStyles,
     ) -> Self {
@@ -113,7 +109,6 @@ impl FrameStamp {
             revision: document.revision(),
             selection,
             viewport,
-            horizontal,
             colors,
             styles,
             matches: Arc::from([]),

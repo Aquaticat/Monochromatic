@@ -234,6 +234,42 @@ impl TextRaster {
     }
 
     /// What:
+    ///  Paint one layout alone, at the physical `origin`, in one `ink`, into a new tile of `size` physical pixels.
+    /// Why:
+    ///  Small images, such as the gutter's wrap indicator, are set by the same glyph path as source text.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// paintLayout(layout: Layout, origin: [number, number], ink: Rgba, size: [number, number]): Pixels;
+    /// ```
+    pub fn paint_layout(
+        &mut self,
+        layout: &Layout<u32>,
+        origin: (f32, f32),
+        ink: [u8; 4],
+        size: (u32, u32),
+    ) -> Result<SourcePixels> {
+        let (width, height) = size;
+        let mut bytes = vec![0; (u64::from(width) * u64::from(height) * 4) as usize];
+        let mut tile = Tile {
+            bytes: &mut bytes,
+            width,
+            height,
+        };
+        let colors = CodeColors {
+            foreground: ink,
+            selected: ink,
+            dark: false,
+        };
+        self.draw(layout, origin, colors, Some(ink), &[], &mut tile)?;
+        return Ok(SourcePixels {
+            width,
+            height,
+            bytes,
+        });
+    }
+
+    /// What:
     ///  Composite every glyph of `layout` into `tile`,
     ///  moved by the physical `origin` (x,
     ///  then y).

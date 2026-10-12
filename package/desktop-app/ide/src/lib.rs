@@ -27,6 +27,9 @@ pub mod tab_stop;
 /// Soft-wrap break rules from IntelliJ, as Parley line-break overrides,
 ///  and the continuation indent of a wrapped line.
 pub mod wrap;
+/// The wrap indicator of the gutter:
+///  IntelliJ's symbol chain checked against the fonts, its color, and the arrow drawn when no symbol fits.
+pub mod wrap_sign;
 
 /// Two-pass shaping that widens each tab's stand-in space to its stop.
 mod tab_layout;

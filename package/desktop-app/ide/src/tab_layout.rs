@@ -108,8 +108,14 @@ pub(crate) fn layout_with_tabs(
     return shaper.line_layout(&projection.text, scale, roles, &spacings);
 }
 
-/// Passes of the wrapped tab correction; each pass re-measures the layout the previous pass produced.
-const TAB_PASSES: usize = 4;
+/// What:
+///  Most passes of the wrapped tab correction.
+/// Why:
+///  A correction moves the breaks of the rows after it, and each pass fixes the corrections of the rows it measured
+///  correctly: row `n` is right after at most `n + 1` passes, because a row depends only on the rows before it.
+///  A line of a hundred rows is a text of ten thousand characters; this bound is far above any source line with tabs
+///  inside it, and a pass costs about one shaping of the line.
+const TAB_PASSES: usize = 40;
 
 /// Two corrections closer than this in logical pixels are the same correction.
 const SPACING_TOLERANCE: f32 = 0.001;
@@ -206,11 +212,25 @@ fn same_spacings(left: &[(usize, f32)], right: &[(usize, f32)]) -> bool {
         });
 }
 
-/// Shape `projection` broken at `width` with each tab widened to its stop on its own visual row.
-///
-/// The first layout has no corrections; each later pass removes the corrections of the previous pass from every row,
-///  recomputes the stops, and stops when the corrections no longer change or after `TAB_PASSES` passes.
+/// Total extra advance of a correction list, the measure by which the fitting of two lists is compared.
+fn total_extra(spacings: &[(usize, f32)]) -> f32 {
+    return spacings.iter().map(|(_, extra)| return *extra).sum();
+}
+
+/// What:
+///  Shape `projection` broken at `width` with each tab widened to its stop on its own visual row.
+///  The first layout has no corrections;
+///  each later pass removes the corrections of the previous pass from every row,
+///  recomputes the stops,
+///  and stops when the corrections no longer change.
+/// Why:
 ///  A correction can move a break, so the passes repeat until the rows agree.
+///  Row `n` depends only on rows before it, so the passes settle within the number of rows plus one.
+///  The one exception is a tab that ends its row: widened to its stop it no longer fits and moves to the next row,
+///  where the stop needs no widening, and unwidened it fits again.
+///  Such a pair of corrections repeats forever, so a correction equal to the one two passes back ends the loop
+///  with the layout that has the smaller corrections, the one in which the tab fits.
+///  At most `TAB_PASSES` passes run in any case, so the result is always deterministic and bounded.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -236,20 +256,32 @@ pub(crate) fn layout_wrapped_with_tabs(
         return layout;
     }
     let space = shaper.space_advance(scale);
+    // The corrections and the layout of the pass before the current one.
+    let mut before: Option<(Vec<(usize, f32)>, Layout<u32>)> = None;
     for _ in 0..TAB_PASSES {
         let next = wrapped_spacings(&layout, projection, &spacings, scale, space);
         if same_spacings(&next, &spacings) {
             break;
         }
-        spacings = next;
+        // A correction that repeats the one before the current pass is a cycle.
+        if let Some((earlier, earlier_layout)) = before.take()
+            && same_spacings(&next, &earlier)
+        {
+            if total_extra(&earlier) < total_extra(&spacings) {
+                return earlier_layout;
+            }
+            return layout;
+        }
         let corrected = LineRequest {
             text: &projection.text,
             scale,
             roles,
-            spacings: &spacings,
+            spacings: &next,
             wrap: Some(width),
         };
-        layout = shaper.wrapped_line_layout(corrected);
+        let relaid = shaper.wrapped_line_layout(corrected);
+        before = Some((spacings, std::mem::replace(&mut layout, relaid)));
+        spacings = next;
     }
     return layout;
 }

@@ -79,7 +79,7 @@ fn matches_inside_a_ligature_use_selection_geometry_without_reshaping() {
     let view = shaper.prepare(&document, viewport(0, 1), &[]);
     let found = ranges(&document, "=");
     assert_eq!(found.len(), 3);
-    let marks = rectangles(&view, &found, None, 0.0, 500.0);
+    let marks = rectangles(&view, &found, None);
     assert_eq!(marks.len(), 3);
     for (index, mark) in marks.iter().enumerate() {
         document.select(ReadingPosition {
@@ -122,7 +122,7 @@ fn active_match_is_excluded_from_other_match_rectangles() {
     let mut shaper = TextShaper::new();
     let view = shaper.prepare(&document, viewport(0, 1), &[]);
     let found = ranges(&document, "needle");
-    let every = rectangles(&view, &found, None, 0.0, 500.0);
+    let every = rectangles(&view, &found, None);
     // What: `Some(found[1])` wraps a copy of the second match as the active one.
     // Why: Only the exactly selected match is excluded; its neighbours stay marked.
     //
@@ -130,7 +130,7 @@ fn active_match_is_excluded_from_other_match_rectangles() {
     // ```ts
     // const others = rectangles(view, found, found[1], 0, 500);
     // ```
-    let others = rectangles(&view, &found, Some(found[1]), 0.0, 500.0);
+    let others = rectangles(&view, &found, Some(found[1]));
     assert_eq!(every.len(), 3);
     assert_eq!(
         others.len(),
@@ -141,15 +141,15 @@ fn active_match_is_excluded_from_other_match_rectangles() {
     assert_eq!(others[1].x, every[2].x);
 }
 
-/// Only materialized rows and the horizontal tile produce rectangles.
+/// Only materialized rows produce rectangles.
 #[test]
-fn rectangles_are_limited_to_materialized_rows_and_the_horizontal_tile() {
+fn rectangles_are_limited_to_materialized_rows() {
     let document = Document::new(&"needle and a far needle\n".repeat(100));
     let mut shaper = TextShaper::new();
     let found = ranges(&document, "needle");
     assert_eq!(found.len(), 200);
     let view = shaper.prepare(&document, viewport(10, 5), &[]);
-    let marks = rectangles(&view, &found, None, 0.0, 500.0);
+    let marks = rectangles(&view, &found, None);
     assert_eq!(
         marks.len(),
         10,
@@ -158,22 +158,9 @@ fn rectangles_are_limited_to_materialized_rows_and_the_horizontal_tile() {
     for mark in &marks {
         assert!(mark.y >= 10.0 * 24.0 && mark.y < 15.0 * 24.0);
     }
-    let far = marks[1].x;
-    let near_only = rectangles(&view, &found, None, 0.0, far - 1.0);
-    assert_eq!(
-        near_only.len(),
-        5,
-        "rectangles right of the horizontal tile were kept"
-    );
-    let far_only = rectangles(&view, &found, None, far, 500.0);
-    assert_eq!(
-        far_only.len(),
-        5,
-        "rectangles left of the horizontal tile were kept"
-    );
     let empty = shaper.prepare(&document, viewport(500, 5), &[]);
-    assert!(rectangles(&empty, &found, None, 0.0, 500.0).is_empty());
-    assert!(rectangles(&view, &[], None, 0.0, 500.0).is_empty());
+    assert!(rectangles(&empty, &found, None).is_empty());
+    assert!(rectangles(&view, &[], None).is_empty());
 }
 
 /// Tabs,
@@ -192,7 +179,7 @@ fn rectangles_follow_tabs_wide_glyphs_and_combining_marks() {
             FindRange { start: 9, end: 10 }
         ]
     );
-    let marks = rectangles(&view, &cats, None, 0.0, 500.0);
+    let marks = rectangles(&view, &cats, None);
     assert_eq!(marks.len(), 2);
     let tab = view.range(0, 1)[0];
     assert!(
@@ -202,7 +189,7 @@ fn rectangles_follow_tabs_wide_glyphs_and_combining_marks() {
     assert!(marks[0].width > 1.0 && (marks[0].width - marks[1].width).abs() < 0.01);
     let accent = ranges(&document, "e\u{301}");
     assert_eq!(accent, [FindRange { start: 6, end: 8 }]);
-    let accented = rectangles(&view, &accent, None, 0.0, 500.0);
+    let accented = rectangles(&view, &accent, None);
     let before = view.range(5, 6)[0];
     assert_eq!(accented.len(), 1);
     assert!(
