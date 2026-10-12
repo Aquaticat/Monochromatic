@@ -28,7 +28,7 @@ use std::time::{Duration, Instant};
 const CONCLUSION_VARIABLE: &str = "CLI_GIT_LANDING_CONCLUSION";
 
 /// How long a control waits for a child or a marker before it gives up.
-const PATIENCE: Duration = Duration::from_secs(120);
+const PATIENCE: Duration = Duration::from_secs(60);
 
 /// The child process of the controls below:
 ///  it opens the world's transaction as its own and lands the prepared commit.
@@ -88,9 +88,13 @@ fn finish(mut child: Child) -> ExitStatus {
 }
 
 /// Wait for a marker file the child writes when it reaches a phase.
-fn await_marker(path: &Path) {
+/// A child that ends without writing it never will, so that ends the wait at once instead of after the patience.
+fn await_marker(path: &Path, child: &mut Child) {
     let deadline: Instant = Instant::now() + PATIENCE;
     while !path.exists() {
+        if let Some(status) = child.try_wait().expect("the child can be polled") {
+            assert!(path.exists(), "the child ended with {status} before {} appeared; see child.log", path.display());
+        }
         assert!(Instant::now() < deadline, "{} never appeared", path.display());
         std::thread::sleep(Duration::from_millis(20));
     }
@@ -185,8 +189,8 @@ fn a_target_moved_during_the_landing_loses_the_compare_and_swap() {
     let world: World = World::build(&fixture);
     let marker_directory: PathBuf = markers(&world);
     let signal: String = format!("objects-migrated:pause:{}", marker_directory.display());
-    let child: Child = spawn_child(&world, signal.as_str());
-    await_marker(marker_directory.join("objects-migrated.reached").as_path());
+    let mut child: Child = spawn_child(&world, signal.as_str());
+    await_marker(marker_directory.join("objects-migrated.reached").as_path(), &mut child);
     let winner: String = git_text(
         &fixture,
         world.repo.as_path(),
@@ -220,8 +224,8 @@ fn an_install_failing_after_the_branch_advanced_leaves_the_lock_for_recovery() {
     let world: World = World::build(&fixture);
     let marker_directory: PathBuf = markers(&world);
     let signal: String = format!("ref-updated:pause:{}", marker_directory.display());
-    let child: Child = spawn_child(&world, signal.as_str());
-    await_marker(marker_directory.join("ref-updated.reached").as_path());
+    let mut child: Child = spawn_child(&world, signal.as_str());
+    await_marker(marker_directory.join("ref-updated.reached").as_path(), &mut child);
     std::fs::remove_file(world.directory.join("post-1.index")).expect("remove the recorded post-index");
     std::fs::write(marker_directory.join("ref-updated.release"), b"").expect("release");
     let status: ExitStatus = finish(child);
@@ -262,8 +266,8 @@ fn an_amend_that_loses_the_compare_and_swap_is_not_replayable() {
     let world: World = World::build(&fixture);
     let marker_directory: PathBuf = markers(&world);
     let signal: String = format!("objects-migrated:pause:{}", marker_directory.display());
-    let child: Child = spawn_child_with(&world, signal.as_str(), "amend");
-    await_marker(marker_directory.join("objects-migrated.reached").as_path());
+    let mut child: Child = spawn_child_with(&world, signal.as_str(), "amend");
+    await_marker(marker_directory.join("objects-migrated.reached").as_path(), &mut child);
     let winner: String = git_text(
         &fixture,
         world.repo.as_path(),
