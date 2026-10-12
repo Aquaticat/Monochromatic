@@ -3080,6 +3080,15 @@ the list is full width with no maximum column width and no centering (this repla
 earlier redesign), 16 dp side margin so a card is the page width minus 32 dp, rows 72 dp tall with a 40 dp circular icon
 at x = 32 dp and the title at x = 84 dp, 2 dp between rows of one group and 16 dp between groups, with the group corner
 rounding already built.
+The human then rejected Google's tinted backgrounds ("the non-transparent gray-ish bg is uncalled for; everything should
+be in one color, white or black"): the page, the header, the cards and the rows all use the one canvas color of the
+player, pure white in light (D34) and pure black in dark (D41), with no separate page tint, card fill or header band
+(this removes the `settings-page`, `settings-card` and header-band tokens of the earlier redesign).
+Groups and rows are therefore separated by the spacing above and by their text and icons alone, with no fill, border or
+divider line (the divider lines were already removed on 2026-10-11), and the group corner rounding survives only as the
+shape of the pressed, hovered and selected states.
+Fills that carry state or an icon are not backgrounds in this sense and stay: the 40 dp icon circle and the selection fill
+of D110, each a role derived from the accent under D108.
 The music player's template rows (D87 and D99) had no icon; the human asked that an icon be picked for each from
 Material Symbols and embedded, so every row has the stock leading icon and keeps the 72 dp two-line height.
 The orchestrator picked `queue_music` for the Track rows template and `play_circle` for the Playing track template, in
