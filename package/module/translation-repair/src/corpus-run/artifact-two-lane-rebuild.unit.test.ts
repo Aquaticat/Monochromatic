@@ -88,7 +88,8 @@ function writeAndRead(
 
   /**
    The artifact without the consistency section, which generations before
-   fifteen do not carry.
+   fifteen do not carry; a generation fifteen fixture keeps the section, which
+   its reader requires.
    */
   const { consistency: ignored, ...olderThanFifteen } = written;
   /**
@@ -102,7 +103,7 @@ function writeAndRead(
   );
   return parseSettledTwoLaneArtifact({
     value: {
-      ...olderThanFifteen,
+      ...((generation === 15) ? written : olderThanFifteen),
       artifactSchemaVersion: generation,
       preparation,
     },

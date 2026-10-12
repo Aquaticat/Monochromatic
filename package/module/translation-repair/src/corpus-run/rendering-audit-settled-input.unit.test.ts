@@ -353,12 +353,20 @@ await describe({
               `${ENTRY_ID}.json`,
             );
             /**
-             Artifact as parsed, restamped as the generation before the one that tells the death.
+             Artifact as parsed, before it is restamped.
              */
-            const restamped = JSON.parse(await readFile(artifactPath, 'utf8',),) as {
-              artifactSchemaVersion: number;
+            const { consistency: ignored, ...written } = JSON.parse(await readFile(artifactPath, 'utf8',),) as Record<
+              string,
+              unknown
+            >;
+            /**
+             The artifact restamped as the generation before the one that tells the death, without the
+             consistency section, which that generation does not carry.
+             */
+            const restamped = {
+              ...written,
+              artifactSchemaVersion: 14,
             };
-            restamped.artifactSchemaVersion = 14;
             await writeFile(artifactPath, JSON.stringify(restamped,),);
 
             /**
