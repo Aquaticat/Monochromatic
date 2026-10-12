@@ -133,8 +133,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-// What:     `import androidx.compose.ui.Alignment` aligns the feedback overlay and scan bar to the bottom start edge.
-// Why:      The overlay stacks above the scan bar at the bottom of the player, and it never reflows the content.
+// What:     `import androidx.compose.ui.Alignment` aligns the feedback overlay to the bottom start edge.
+// Why:      The overlay floats at the bottom of the player, and it never reflows the content.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -143,7 +143,7 @@ import kotlinx.coroutines.withContext
 import androidx.compose.ui.Alignment
 
 // What:     `import androidx.compose.ui.unit.Dp` and `dp` size the feedback overlay inset.
-// Why:      The overlay sits 16dp from the edges and from the scan bar, and the inset is a named constant.
+// Why:      The overlay sits 16dp from the edges, and the inset is a named constant.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -195,9 +195,7 @@ import dev.monochromatic.musicplayer.core.SearchState
 import dev.monochromatic.musicplayer.core.TemplateEditorState
 import dev.monochromatic.musicplayer.core.TemplateKind
 import dev.monochromatic.musicplayer.core.FeedbackMessage
-import dev.monochromatic.musicplayer.core.ScanIndicatorModel
 import dev.monochromatic.musicplayer.core.buildPlayerContent
-import dev.monochromatic.musicplayer.core.scanIndicatorFor
 import dev.monochromatic.musicplayer.core.searchLibrary
 
 // What:     `sealed interface PlayerRoute` names the four destinations the host can show.
@@ -382,13 +380,13 @@ private fun loadStoredTemplates(context: Context): Map<TemplateKind, String> =
     TemplateKind.entries.associateWith { kind -> SessionStore.loadTemplate(context, kind) }
 
 // What:     `private val PLAYER_HOST_FEEDBACK_INSET: Dp = 16.dp` is the gap between the overlay and the screen edges.
-// Why:      The feedback overlay keeps this inset from the start, end, and bottom edges, and from the scan bar.
+// Why:      The feedback overlay keeps this inset from the start, end, and bottom edges.
 //
 // In TS you'd write (pseudocode):
 // ```ts
 // const PLAYER_HOST_FEEDBACK_INSET = 16; // dp
 // ```
-/** Inset between the feedback overlay and the start, end, and bottom edges of the player, and above the scan bar. */
+/** Inset between the feedback overlay and the start, end, and bottom edges of the player. */
 private val PLAYER_HOST_FEEDBACK_INSET: Dp = 16.dp
 
 // What:     `private val TRACK_MENU_INNER_INSET: Dp = 12.dp` is the track menu's start inset on the inner panes.
@@ -1473,15 +1471,6 @@ fun playerHost(
         ) {
             when (route) {
                 PlayerRoute.Player -> {
-                    /**
-                     * Scan indicator for this frame, idle while the first-run pane holds the screen
-                     *     because no sweep runs then.
-                     */
-                    val scanModel: ScanIndicatorModel = scanIndicatorFor(
-                        loading = state.loading && firstRunContent == null,
-                        measured = SweepProgress.snapshot.done,
-                        total = SweepProgress.snapshot.total,
-                    )
                     Box(modifier = Modifier.fillMaxSize()) {
                         if (firstRunContent != null) {
                             firstRunContent { go(PlayerRoute.Settings) }
@@ -1517,8 +1506,9 @@ fun playerHost(
                                 onDismiss = { menuTarget = null },
                             )
                         }
-                        // The overlay and the scan bar share one bottom column, so the overlay sits above the bar and
-                        // neither one changes the layout of the player beneath.
+                        // The feedback overlay floats at the bottom edge and never changes the layout beneath it.
+                        // True-peak analysis shows no in-app indicator (D107): its progress is a system notification,
+                        // so nothing here reserves space for it.
                         Column(modifier = Modifier.align(Alignment.BottomStart).fillMaxWidth()) {
                             /**
                              * Messages in display order, Undo above Error, drawn only while at least one is visible.
@@ -1539,7 +1529,6 @@ fun playerHost(
                                     ),
                                 )
                             }
-                            scanIndicator(model = scanModel, modifier = Modifier.fillMaxWidth())
                         }
                     }
                 }

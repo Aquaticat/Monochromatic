@@ -1159,6 +1159,17 @@ class MainActivity : ComponentActivity() {
     /** Holder that starts media trash and restore requests through the launcher and delivers each result. */
     private val trashRequest: TrashMediaStoreRequest = TrashMediaStoreRequest(trashResultLauncher)
 
+    // What:     `private val analysisNotificationPermission` asks for the notification permission once.
+    // Why:      D107 puts the true-peak analysis progress in a system notification, which Android 13 and later gate
+    //           behind a permission; the asker registers its launcher here because that must happen before start.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // private readonly analysisNotificationPermission = new AnalysisNotificationPermission(this);
+    // ```
+    /** Asks for the notification permission once, when the first true-peak analysis starts. */
+    private val analysisNotificationPermission: AnalysisNotificationPermission = AnalysisNotificationPermission(this)
+
     // What:     `private var heldFolderName: String? by mutableStateOf(null)` is the held folder's display name.
     // Why:      The first-run copy names the folder, and composition must redraw when the held folder changes.
     //
@@ -1435,6 +1446,8 @@ class MainActivity : ComponentActivity() {
         // Auto-start the one-time parallel true-peak index (no user action). Legal here because the
         // activity is foregrounded; PeakSweepService self-stops fast if the initial index is done.
         PeakSweepService.startIfNeeded(this)
+        // Ask for the notification permission once, when the analysis that just started reports its first total.
+        analysisNotificationPermission.start()
         // What:     `enableEdgeToEdge()` draws the app behind the system bars. (Folds in the
         //           old inline note: draw edge to edge, the platform default on targetSdk
         //           35+, and let the `Scaffold` apply the system-bar insets.)

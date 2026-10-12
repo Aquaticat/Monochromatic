@@ -6,11 +6,15 @@
 // incremental upkeep of newly added tracks to the low-priority background worker. See
 // DECISION.peak-sweep-parallelism.md for the on-device benchmark that set the worker count and
 // priority.
+//
+// Decision D107: this service is the process owner of the analysis notification. Its mandatory foreground
+// notification IS the progress notification (title, count, determinate bar, Pause and Resume button), posted
+// from a coroutine of its own so the sweep workers and the UI thread never wait on the notification service.
+// The sweep lives as long as this service, which outlives the activity; the pause gate is process-wide
+// (AnalysisControl) because the button is a broadcast receiver.
 
 package dev.monochromatic.musicplayer
 
-import android.app.Notification
-import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.Service
 import android.content.Context
@@ -18,15 +22,20 @@ import android.content.Intent
 import android.content.pm.ServiceInfo
 import android.os.Build
 import android.os.IBinder
+import android.os.SystemClock
 import android.util.Log
-import androidx.core.app.NotificationCompat
 import androidx.core.app.ServiceCompat
 import androidx.core.content.ContextCompat
 import androidx.core.content.edit
 import androidx.core.net.toUri
+import dev.monochromatic.musicplayer.core.AnalysisNotificationContent
+import dev.monochromatic.musicplayer.core.AnalysisNotificationPublisher
+import dev.monochromatic.musicplayer.core.AnalysisUpdatePacer
+import dev.monochromatic.musicplayer.core.analysisNotificationContent
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
@@ -34,43 +43,73 @@ import kotlinx.coroutines.launch
 /**
  * Foreground service that performs the one-time parallel true-peak index of the whole library.
  * Auto-started from [MainActivity] when the app is opened and the initial sweep has not yet
- * completed; self-terminates as soon as the library is fully measured.
+ * completed; self-terminates as soon as the library is fully measured. Its foreground notification
+ * is the analysis progress notification of decision D107.
  */
 class PeakSweepService : Service() {
     /** Service-scoped coroutine scope for the sweep; cancelled in [onDestroy]. */
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
+    /** Publisher of the run in progress, or null before the first start command; touched on the main thread. */
+    private var publisher: AnalysisNotificationPublisher? = null
+
+    /** Job of the run in progress, so a repeated start command does not begin a second sweep. */
+    private var sweepJob: Job? = null
+
     /** Bound clients are not supported; this service is start-only. */
     override fun onBind(intent: Intent?): IBinder? = null
 
-    /** Promotes the service to foreground, runs the sweep, persists the done flag, then stops. */
+    /**
+     * Promotes the service to foreground, runs the sweep, persists the done flag, then stops. A start command
+     * that arrives while a sweep runs (the activity was recreated) only refreshes the foreground promotion.
+     */
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        ensureChannel()
-        ServiceCompat.startForeground(
-            this,
-            NOTIFICATION_ID,
-            buildNotification(0, 0),
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC
-            } else {
-                0
-            },
+        ensureAnalysisChannel(this)
+        /** Publisher of the run that is already in progress, if there is one. */
+        val running: AnalysisNotificationPublisher? = publisher
+        if (running != null && sweepJob?.isActive == true) {
+            Log.i(TAG, "PeakSweepService start command ignored: a sweep is already running")
+            promoteToForeground(running.currentContent())
+            return START_NOT_STICKY
+        }
+        /** Frame shown until the library is read and the total is known, an indeterminate bar. */
+        val firstFrame: AnalysisNotificationContent = analysisNotificationContent(done = 0, total = 0, paused = false)
+        promoteToForeground(firstFrame)
+        /** Pacer that knows the first frame was posted by the foreground promotion. */
+        val pacer = AnalysisUpdatePacer()
+        pacer.markPosted(content = firstFrame, nowMs = SystemClock.elapsedRealtime())
+        /** Publisher that posts paced updates from a coroutine of its own. */
+        val newPublisher = AnalysisNotificationPublisher(
+            paused = AnalysisControl.pauseGate.paused,
+            pacer = pacer,
+            clockMs = SystemClock::elapsedRealtime,
+            post = { content -> postContent(content) },
+            remove = { removeNotification() },
         )
-        scope.launch {
+        publisher = newPublisher
+        sweepJob = scope.launch {
+            /** Posting loop, on the IO dispatcher because a post is a binder call. */
+            val poster: Job = launch(Dispatchers.IO) { newPublisher.run() }
             /** True only when the sweep walked the whole library without being cut short. */
-            val completed = runSweep()
+            val completed: Boolean = try {
+                runSweep(newPublisher)
+            } finally {
+                newPublisher.abandon()
+            }
+            poster.join()
+            AnalysisControl.setActiveTotal(0)
             if (completed) {
                 markInitialSweepDone(applicationContext)
             }
             ServiceCompat.stopForeground(this@PeakSweepService, ServiceCompat.STOP_FOREGROUND_REMOVE)
-            stopSelf(startId)
+            stopSelf()
         }
         return START_NOT_STICKY
     }
 
     /** Loads the library and measures every uncached track across the parallel decode pool. */
-    private suspend fun runSweep(): Boolean {
-        // A previous sweep's counts must not carry into this one, or a full count would hide the new bar.
+    private suspend fun runSweep(newPublisher: AnalysisNotificationPublisher): Boolean {
+        AnalysisControl.pauseGate.resume()
         SweepProgress.reset()
         /** The production track enumeration, the exact list the background worker also walks. */
         val tracks = LibrarySource.load(applicationContext)
@@ -78,8 +117,9 @@ class PeakSweepService : Service() {
             Log.i(TAG, "PeakSweepService found no library to index")
             return false
         }
-        // The total is known once the library is, so the scan indicator shows zero of the total before any flush.
         SweepProgress.report(done = 0, total = tracks.size)
+        newPublisher.report(done = 0, total = tracks.size)
+        AnalysisControl.setActiveTotal(tracks.size)
         /** Outcome tally from the shared parallel coordinator over the foreground decode pool. */
         val tally = try {
             sweepTracksInParallel(
@@ -92,54 +132,68 @@ class PeakSweepService : Service() {
                 process = { track ->
                     measureAndCache(applicationContext, track.uri.toUri(), foregroundSweepDispatcher)
                 },
-                // The native decision cache commits each write itself, so there is nothing to flush.
                 onFlush = { },
                 onProgress = { done, total ->
                     SweepProgress.report(done = done, total = total)
-                    postProgress(done, total)
+                    newPublisher.report(done = done, total = total)
                 },
+                pauseGate = AnalysisControl.pauseGate,
             )
         } catch (cancellation: CancellationException) {
-            // A stopped sweep must not leave its last count on the scan indicator.
             SweepProgress.reset()
             throw cancellation
         }
-        // The sweep returned, so every track it was given is visited and the indicator reads done of total.
         SweepProgress.report(done = tally.total, total = tally.total)
+        newPublisher.report(done = tally.total, total = tally.total)
+        newPublisher.complete()
         Log.i(TAG, "PeakSweepService indexed ${tally.processed} of ${tally.total} tracks")
         return true
     }
 
-    /** Creates the low-importance (silent) progress channel once; a no-op if it already exists. */
-    private fun ensureChannel() {
-        /** The system notification service this service posts its foreground notification through. */
-        val manager = getSystemService(NotificationManager::class.java)
-        if (manager.getNotificationChannel(CHANNEL_ID) == null) {
-            manager.createNotificationChannel(
-                NotificationChannel(CHANNEL_ID, CHANNEL_NAME, NotificationManager.IMPORTANCE_LOW),
-            )
+    /** Promotes the service to foreground with the notification for [content]. */
+    private fun promoteToForeground(content: AnalysisNotificationContent) {
+        ServiceCompat.startForeground(
+            this,
+            ANALYSIS_NOTIFICATION_ID,
+            buildAnalysisNotification(this, content),
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC
+            } else {
+                0
+            },
+        )
+    }
+
+    /**
+     * Posts [content] over the foreground notification. Called from the posting coroutine only; a failure is
+     * logged and swallowed so one refused post cannot end the posting loop.
+     */
+    private fun postContent(content: AnalysisNotificationContent) {
+        runCatching {
+            getSystemService(NotificationManager::class.java)
+                .notify(ANALYSIS_NOTIFICATION_ID, buildAnalysisNotification(this, content))
+        }.onFailure { refused ->
+            Log.w(TAG, "PeakSweepService could not post the analysis notification", refused)
         }
     }
 
-    /** Builds the ongoing progress notification; [total] of 0 renders an indeterminate bar. */
-    private fun buildNotification(done: Int, total: Int): Notification =
-        NotificationCompat.Builder(this, CHANNEL_ID)
-            .setContentTitle(CHANNEL_NAME)
-            .setContentText(if (total > 0) "$done of $total tracks" else "Starting")
-            .setSmallIcon(android.R.drawable.stat_notify_sync)
-            .setOngoing(true)
-            .setProgress(total, done, total == 0)
-            .setForegroundServiceBehavior(NotificationCompat.FOREGROUND_SERVICE_IMMEDIATE)
-            .build()
-
-    /** Refreshes the foreground notification with current progress. */
-    private fun postProgress(done: Int, total: Int) {
-        getSystemService(NotificationManager::class.java).notify(NOTIFICATION_ID, buildNotification(done, total))
+    /**
+     * Takes the notification away: ends the foreground promotion with removal, then cancels any plain copy.
+     * Called from the posting coroutine after the final value, so no post can follow it.
+     */
+    private fun removeNotification() {
+        runCatching {
+            ServiceCompat.stopForeground(this, ServiceCompat.STOP_FOREGROUND_REMOVE)
+            getSystemService(NotificationManager::class.java).cancel(ANALYSIS_NOTIFICATION_ID)
+        }.onFailure { refused ->
+            Log.w(TAG, "PeakSweepService could not remove the analysis notification", refused)
+        }
     }
 
     /** Cancels the sweep scope so a destroyed service does not leak its workers. */
     override fun onDestroy() {
         scope.cancel()
+        AnalysisControl.setActiveTotal(0)
         super.onDestroy()
     }
 
@@ -150,7 +204,7 @@ class PeakSweepService : Service() {
      */
     override fun onTimeout(startId: Int) {
         Log.w(TAG, "PeakSweepService hit the foreground-service time limit; stopping")
-        stopSelf(startId)
+        stopSelf()
     }
 
     /** Static entry points and tuning constants for the sweep service. */
@@ -158,20 +212,11 @@ class PeakSweepService : Service() {
         /** Shared logcat tag with the rest of the sweep code. */
         private const val TAG = "PeakSweep"
 
-        /** Notification channel id for the indexing progress notification. */
-        private const val CHANNEL_ID = "peak-sweep"
-
-        /** User-visible channel and notification title. */
-        private const val CHANNEL_NAME = "Indexing audio levels"
-
-        /** Fixed id of the single foreground notification this service posts. */
-        private const val NOTIFICATION_ID = 4201
-
         /** Fresh measurements between disk flushes: small enough to bound loss when killed, large
          *  enough that the full-file JSON rewrite stays cheap (the cache is about 120 KB). */
         private const val FLUSH_BATCH = 32
 
-        /** Visit count between notification refreshes, so the UI updates without thrashing. */
+        /** Visit count between progress reports, so the sweep reports without thrashing. */
         private const val NOTIFY_EVERY = 16
 
         /** Private preferences file holding the one-time initial-sweep flag. */

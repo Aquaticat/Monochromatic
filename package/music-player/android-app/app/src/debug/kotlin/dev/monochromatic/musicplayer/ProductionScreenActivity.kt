@@ -226,9 +226,7 @@ import dev.monochromatic.musicplayer.core.FeedbackKind
 import dev.monochromatic.musicplayer.core.FeedbackMessage
 import dev.monochromatic.musicplayer.core.FeedbackQueue
 import dev.monochromatic.musicplayer.core.FirstRunState
-import dev.monochromatic.musicplayer.core.ScanIndicatorModel
 import dev.monochromatic.musicplayer.core.TemplateKind
-import dev.monochromatic.musicplayer.core.scanIndicatorFor
 import dev.monochromatic.musicplayer.core.searchLibrary
 import dev.monochromatic.musicplayer.core.TrashRecord
 import dev.monochromatic.musicplayer.core.TrashRoute
@@ -347,16 +345,6 @@ private const val SCENE_FIRST_RUN_SYSTEM_EMPTY: String = "first-run-system-empty
 /** Scene name of the first-run pane for a chosen folder with no audio. */
 private const val SCENE_FIRST_RUN_FOLDER_EMPTY: String = "first-run-folder-empty"
 
-// What:     `private const val SCENE_SCAN_MEASURING: String = "scan-measuring"` draws the scan bar mid-sweep.
-// Why:      The captures need the bar at a fixed count to check its layout.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// const SCENE_SCAN_MEASURING = "scan-measuring";
-// ```
-/** Scene name of the player with the scan bar at a fixed count. */
-private const val SCENE_SCAN_MEASURING: String = "scan-measuring"
-
 // What:     `private const val SCENE_FEEDBACK_BOTH: String = "feedback-both"` draws Undo and Error together.
 // Why:      The captures need both overlay messages visible to check their order and stacking.
 //
@@ -396,26 +384,6 @@ private const val SCENE_TRASH_UNDO: String = "trash-undo"
 // ```
 /** Folder name that the folder no-audio scene shows in its headline. */
 private const val SAMPLE_FOLDER_NAME: String = "Camellia"
-
-// What:     `private const val SAMPLE_SCAN_DONE: Int = 412` is the visited count of the scan scene.
-// Why:      The design record fixes the bar at 412 of 1,218, so the capture matches the record.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// const SAMPLE_SCAN_DONE = 412;
-// ```
-/** Tracks visited in the scan scene, matching the count in the design record. */
-private const val SAMPLE_SCAN_DONE: Int = 412
-
-// What:     `private const val SAMPLE_SCAN_TOTAL: Int = 1218` is the total of the scan scene.
-// Why:      The design record fixes the bar at 412 of 1,218, so the capture matches the record.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// const SAMPLE_SCAN_TOTAL = 1218;
-// ```
-/** Tracks in the scan scene, matching the total in the design record. */
-private const val SAMPLE_SCAN_TOTAL: Int = 1218
 
 // What:     `private val SAMPLE_OVERLAY_INSET: Dp = 16.dp` is the overlay inset the player host uses.
 // Why:      The debug overlay scenes place messages at the same inset as the production host.
@@ -781,20 +749,6 @@ private fun ProductionScreenHost(startWithPicker: Boolean, scene: String) {
                 folderName = SAMPLE_FOLDER_NAME,
                 actions = sampleFirstRunActions(),
             )
-            // What:     `SCENE_SCAN_MEASURING` draws the scan bar over the player at 412 of 1218 tracks.
-            // Why:      The capture shows the bar's fixed layout at the count named in the decision record.
-            //
-            // In TS you'd write (pseudocode):
-            // ```ts
-            // case "scan-measuring": return <Player overlay={<ScanIndicator done={412} total={1218} />} />;
-            // ```
-            SCENE_SCAN_MEASURING -> sampleOverlayScene(
-                model = model,
-                actions = actions,
-                pickerOpen = pickerOpen,
-                messages = emptyList(),
-                scanModel = scanIndicatorFor(loading = false, measured = SAMPLE_SCAN_DONE, total = SAMPLE_SCAN_TOTAL),
-            )
             // What:     `SCENE_FEEDBACK_BOTH` draws the Undo message above the Error message over the player.
             // Why:      The capture shows both overlay messages at once, Undo above Error, at their content width.
             //
@@ -807,14 +761,12 @@ private fun ProductionScreenHost(startWithPicker: Boolean, scene: String) {
                 actions = actions,
                 pickerOpen = pickerOpen,
                 messages = sampleFeedbackMessages(),
-                scanModel = scanIndicatorFor(loading = false, measured = 0, total = 0),
             )
             SCENE_TRASH_UNDO -> sampleOverlayScene(
                 model = model,
                 actions = actions,
                 pickerOpen = pickerOpen,
                 messages = listOf(trashUndoMessage(sampleTrashRecord())),
-                scanModel = scanIndicatorFor(loading = false, measured = 0, total = 0),
             )
             SCENE_TRACK_MENU -> sampleTrackMenuScene(model = model, actions = actions, pickerOpen = pickerOpen)
             else -> throw IllegalArgumentException("Unknown ProductionScreenActivity scene: $scene")
@@ -871,15 +823,13 @@ private fun sampleFeedbackMessages(): List<FeedbackMessage> {
     return FeedbackQueue.EMPTY.show(message = error, nowMs = 0L).show(message = undo, nowMs = 0L).visible()
 }
 
-// What:     `private fun sampleOverlayScene(...)` draws the player with the feedback overlay and the scan bar at the
-//           bottom.
-// Why:      The overlay and the bar share one bottom column, so the capture shows the same stacking as the production
-//           host.
+// What:     `private fun sampleOverlayScene(...)` draws the player with the feedback overlay at the bottom.
+// Why:      The overlay floats over the player, so the capture shows the same placement as the production host.
 //
 // In TS you'd write (pseudocode):
 // ```ts
 // function SampleOverlayScene(props): UIElement { return
-//           <Player><BottomColumn>{feedback}{scan}</BottomColumn></Player>; }
+//           <Player><BottomColumn>{feedback}</BottomColumn></Player>; }
 // ```
 // What:     `private fun sampleTrashRecord(): TrashRecord` builds one Undo record over the second Camellia track.
 // Why:      The trash-undo scene shows the production message text for a real sample name, without touching any file.
@@ -938,14 +888,13 @@ private fun sampleTrackMenuScene(
     }
 }
 
-/** Draws the player over the sample library with the feedback overlay and the scan bar stacked at the bottom. */
+/** Draws the player over the sample library with the feedback overlay at the bottom. */
 @Composable
 private fun sampleOverlayScene(
     model: PlayerContentModel,
     actions: PlayerContentActions,
     pickerOpen: Boolean,
     messages: List<FeedbackMessage>,
-    scanModel: ScanIndicatorModel,
 ) {
     Box(modifier = Modifier.fillMaxSize()) {
         playerContent(model = model, pickerOpen = pickerOpen, actions = actions)
@@ -958,7 +907,6 @@ private fun sampleOverlayScene(
                     modifier = Modifier.padding(SAMPLE_OVERLAY_INSET),
                 )
             }
-            scanIndicator(model = scanModel, modifier = Modifier.fillMaxWidth())
         }
     }
 }

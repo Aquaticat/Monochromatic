@@ -21,6 +21,7 @@ package dev.monochromatic.musicplayer
 // ```
 import android.app.Activity
 import android.app.PendingIntent
+import android.content.ContentResolver
 import android.content.Context
 import android.content.IntentSender
 import android.net.Uri
@@ -38,6 +39,7 @@ import dev.monochromatic.musicplayer.core.TrackActionFailure
 import dev.monochromatic.musicplayer.core.TrashRecord
 import dev.monochromatic.musicplayer.core.TrashRoute
 import dev.monochromatic.musicplayer.core.copyMatches
+import dev.monochromatic.musicplayer.core.isDescendantDocumentId
 import dev.monochromatic.musicplayer.core.mimeTypeFor
 import java.io.File
 import java.io.FileNotFoundException
@@ -409,30 +411,50 @@ internal fun parentIdOf(context: Context, treeUri: Uri, documentUri: Uri): Strin
     /** Document id of the file itself. */
     val documentId: String = DocumentsContract.getDocumentId(documentUri)
     /** Ancestor ids whose path text the document id starts with, so each one really contains the document. */
-    val ancestors: List<String> = path.path.filter { ancestor ->
-        ancestor != documentId && documentId.startsWith(ancestorPrefixOf(ancestor))
-    }
+    val ancestors: List<String> = path.path.filter { ancestor -> isDescendantDocumentId(ancestor, documentId) }
     /** Nearest ancestor, which is the one with the longest id. */
     val parent: String = ancestors.maxByOrNull { ancestor -> ancestor.length } ?: return null
     /** Folder URI that the document is recreated under. */
     val parentUri: Uri = DocumentsContract.buildDocumentUriUsingTree(treeUri, parent)
-    if (!DocumentsContract.isChildDocument(resolver, parentUri, documentUri)) {
+    if (!parentContainsDocument(
+            resolver = resolver,
+            parentUri = parentUri,
+            documentUri = documentUri,
+            parentId = parent,
+            documentId = documentId,
+        )
+    ) {
         Log.w(LOG_TAG, "$TRASH_FLOW_TAG parent not confirmed by provider")
         return null
     }
     return parent
 }
 
-// What:     `private fun ancestorPrefixOf(ancestor: String): String` gives the text a child id starts with.
-// Why:      A volume root ends in a colon and has no slash, so its children start with the id itself rather than id
-//           plus slash.
+// What:     `private fun parentContainsDocument(...)` asks whether a folder contains a document.
+// Why:      `DocumentsContract.isChildDocument` exists only from API 29 (Android 10), and the app supports API 26 and
+//           later, where calling it throws `NoSuchMethodError`. Older versions compare the path text of the two
+//           document ids instead, the same rule that picked the candidate parent, so the answer stays equal for the
+//           path-shaped ids the candidate list is built from.
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// function ancestorPrefixOf(id: string): string { return id.endsWith(":") ? id : `${id}/`; }
+// function parentContainsDocument(a): boolean {
+//   return sdk >= 29 ? provider.isChild(a) : isDescendantDocumentId(a.parentId, a.documentId);
+// }
 // ```
-/** Returns the text that every child of the given ancestor id starts with. */
-private fun ancestorPrefixOf(ancestor: String): String = if (ancestor.endsWith(":")) ancestor else "$ancestor/"
+/** Returns whether the provider (API 29 and later) or the id path text (API 26 to 28) puts the document inside. */
+private fun parentContainsDocument(
+    resolver: ContentResolver,
+    parentUri: Uri,
+    documentUri: Uri,
+    parentId: String,
+    documentId: String,
+): Boolean {
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+        return DocumentsContract.isChildDocument(resolver, parentUri, documentUri)
+    }
+    return isDescendantDocumentId(parentId, documentId)
+}
 
 // What:     `private fun copyToCache(...)` copies the document bytes into the app cache and verifies the copy.
 // Why:      The original is deleted only after this returns, so a failed or short copy leaves the file in place.

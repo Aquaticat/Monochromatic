@@ -8,7 +8,7 @@
 package dev.monochromatic.musicplayer
 
 // What:     `import androidx.compose.runtime.getValue` and `setValue` let the delegated snapshot be read and written.
-// Why:      The snapshot is a Compose state, so reading it in composition redraws the scan indicator on change.
+// Why:      The snapshot is a Compose state, so reading it in composition refreshes the page measures on change.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -27,7 +27,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.mutableStateOf
 
 // What:     `data class SweepProgressSnapshot(...)` holds the visited and total counts of the sweep as one value.
-// Why:      One immutable value keeps the two counts consistent, so the UI never draws a done count from one report
+// Why:      One immutable value keeps the two counts consistent, so the UI never reads a done count from one report
 //           beside a total from another.
 //
 // In TS you'd write (pseudocode):
@@ -37,7 +37,7 @@ import androidx.compose.runtime.mutableStateOf
 /** Visited and total counts of the true-peak sweep, read together as one value. */
 data class SweepProgressSnapshot(
     // What:     `val done: Int` is the number of tracks the sweep has visited.
-    // Why:      The scan indicator shows this count against the total.
+    // Why:      The page host refreshes the peaks shown on screen each time this count moves.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -46,7 +46,7 @@ data class SweepProgressSnapshot(
     /** Tracks the sweep has visited, never more than the total. */
     val done: Int,
     // What:     `val total: Int` is the number of tracks the sweep will visit.
-    // Why:      Zero means the total is not known yet, and the indicator stays hidden until it is known.
+    // Why:      Zero means the total is not known yet.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -57,7 +57,7 @@ data class SweepProgressSnapshot(
 )
 
 // What:     `internal val SWEEP_PROGRESS_IDLE: SweepProgressSnapshot` is the snapshot before any sweep reports.
-// Why:      Before the first report the total is unknown, so the indicator has nothing to draw.
+// Why:      Before the first report the total is unknown.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -67,8 +67,8 @@ data class SweepProgressSnapshot(
 internal val SWEEP_PROGRESS_IDLE: SweepProgressSnapshot = SweepProgressSnapshot(done = 0, total = 0)
 
 // What:     `internal fun sweepProgressMerge(...)` merges one reported count into the current snapshot.
-// Why:      The parallel workers report out of order, so a lower done count must never move the bar back; a new total
-//           starts a new count; and both counts are clamped so the bar never passes its total.
+// Why:      The parallel workers report out of order, so a lower done count must never move the count back; a new total
+//           starts a new count; and both counts are clamped so the count never passes its total.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -89,7 +89,7 @@ internal fun sweepProgressMerge(
 ): SweepProgressSnapshot {
     /** Total with negative values treated as zero, so an unknown total never reaches the counts. */
     val total: Int = reportedTotal.coerceAtLeast(0)
-    /** Reported done count clamped into the total, so overshoot cannot pass the bar. */
+    /** Reported done count clamped into the total, so overshoot cannot pass the total. */
     val clampedDone: Int = reportedDone.coerceIn(0, total)
     if (total != current.total) {
         return SweepProgressSnapshot(done = clampedDone, total = total)
@@ -98,7 +98,7 @@ internal fun sweepProgressMerge(
 }
 
 // What:     `object SweepProgress` is the process-wide holder of the sweep's counts.
-// Why:      The sweep runs in the app process and the player host draws it, so one holder carries the counts between
+// Why:      The sweep runs in the app process and the player host reads it, so one holder carries the counts between
 //           them without a binder; the sweep writes it and the UI only reads it.
 //
 // In TS you'd write (pseudocode):
@@ -109,11 +109,11 @@ internal fun sweepProgressMerge(
  * Process-wide sweep progress, written from the sweep service and read by the player host.
  *
  * The sweep reports from its parallel workers, so [report] is synchronized; composition reads [snapshot]
- * and redraws when it changes.
+ * and recomposes when it changes. The analysis notification (D107) is fed by the service directly, not from here.
  */
 object SweepProgress {
     // What:     `var snapshot: SweepProgressSnapshot by mutableStateOf(SWEEP_PROGRESS_IDLE)` is the observable count.
-    // Why:      A Compose state lets the host read the counts in composition and redraw the scan indicator on change.
+    // Why:      A Compose state lets the host read the counts in composition and refresh the page measures on change.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -148,7 +148,7 @@ object SweepProgress {
     // ```ts
     // reset(): void { this.snapshot = SWEEP_PROGRESS_IDLE; }
     // ```
-    /** Clears the counts so the scan indicator has no total to draw. */
+    /** Clears the counts so no stale total remains. */
     fun reset() {
         snapshot = SWEEP_PROGRESS_IDLE
     }
