@@ -275,3 +275,51 @@ fn releasing_after_a_landing_tolerates_a_vanished_lock() {
     assert!(!real_pid_path(index.as_path()).exists());
     remove(root.as_path());
 }
+
+/// A release finds the PID file already gone: it is not an error.
+#[test]
+#[cfg(unix)]
+fn releasing_after_a_landing_tolerates_a_vanished_pid_file() {
+    let (root, index): (PathBuf, PathBuf) = index_in("real-lock-release-no-pid");
+    let directory: PathBuf = transaction_in(root.as_path());
+    let lock: RealIndexLock = acquire_landing_index_lock(index.as_path(), directory.as_path(), 1, 100, "landed nothing")
+        .expect("a free index is lockable");
+    std::fs::remove_file(real_pid_path(index.as_path())).expect("remove the PID file");
+    lock.release_after_landing().expect("an absent PID file is not an error");
+    assert!(!real_lock_path(index.as_path()).exists());
+    remove(root.as_path());
+}
+
+/// A PID path that cannot be read as a file is an error of the release, and the lock is still removed first.
+#[test]
+#[cfg(unix)]
+fn releasing_after_a_landing_reports_an_unreadable_pid_file() {
+    let (root, index): (PathBuf, PathBuf) = index_in("real-lock-release-bad-pid");
+    let directory: PathBuf = transaction_in(root.as_path());
+    let lock: RealIndexLock = acquire_landing_index_lock(index.as_path(), directory.as_path(), 1, 100, "landed nothing")
+        .expect("a free index is lockable");
+    std::fs::remove_file(real_pid_path(index.as_path())).expect("remove the PID file");
+    std::fs::create_dir(real_pid_path(index.as_path())).expect("a directory where the PID file was");
+    let failure: String = lock.release_after_landing().expect_err("a directory cannot be read as the PID file");
+    assert!(!failure.is_empty());
+    assert!(!real_lock_path(index.as_path()).exists());
+    remove(root.as_path());
+}
+
+/// A PID file that cannot be created for a reason other than existing fails the acquisition and removes the lock.
+/// The index name is as long as a file name may be with the lock suffix, so the PID name is one too long.
+#[test]
+#[cfg(unix)]
+fn a_pid_file_that_cannot_be_created_fails_the_acquisition() {
+    let root: PathBuf = crate::test_support::fixture("real-lock-pid-too-long");
+    let directory: PathBuf = transaction_in(root.as_path());
+    let index: PathBuf = root.join("i".repeat(250));
+    let failure: CoordinationFailure =
+        match acquire_landing_index_lock(index.as_path(), directory.as_path(), 1, 100, "landed nothing") {
+            Ok(_) => panic!("the PID file name is too long"),
+            Err(found) => found,
+        };
+    assert!(matches!(&failure, CoordinationFailure::Stop(text) if text.contains("~pid.lock")), "{failure:?}");
+    assert!(!real_lock_path(index.as_path()).exists(), "the lock is removed again");
+    remove(root.as_path());
+}

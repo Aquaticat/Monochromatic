@@ -17,11 +17,15 @@
 /// The world the child lands in, and the shared fixtures.
 use super::landing_support::{Opened, WORLD_VARIABLE, World, git_text, land};
 use super::support::{Fixture, TRANSACTION_ID, fixture, git, remove, run_wrapped};
+use git_policy_cli::transaction_journal::Conclusion;
 use git_policy_cli::transaction_phase::PHASE_SIGNAL_VARIABLE;
 use std::os::unix::process::ExitStatusExt;
 use std::path::{Path, PathBuf};
 use std::process::{Child, Command, ExitStatus, Stdio};
 use std::time::{Duration, Instant};
+
+/// Environment variable asking the child to land an amend.
+const CONCLUSION_VARIABLE: &str = "CLI_GIT_LANDING_CONCLUSION";
 
 /// How long a control waits for a child or a marker before it gives up.
 const PATIENCE: Duration = Duration::from_secs(120);
@@ -35,6 +39,10 @@ fn child_lands() {
     let root: PathBuf = PathBuf::from(std::env::var_os(WORLD_VARIABLE).expect("the world to land in"));
     let world: World = World::attach(root.as_path());
     let mut opened: Opened = world.open();
+    // A control that needs an amend asks for it by name; the capture's conclusion is the only difference.
+    if std::env::var_os(CONCLUSION_VARIABLE).is_some_and(|value| { return value == "amend"; }) {
+        opened.capture.layout.conclusion = Conclusion::Amend;
+    }
     let result = land(&world, &mut opened, &world.commit_payload());
     let line: String = match &result {
         Ok(outcome) => format!("ok {outcome:?}"),
@@ -46,10 +54,16 @@ fn child_lands() {
 
 /// Start the child with a marker armed.
 fn spawn_child(world: &World, signal: &str) -> Child {
+    return spawn_child_with(world, signal, "none");
+}
+
+/// Start the child with a marker armed and a conclusion kind for its capture.
+fn spawn_child_with(world: &World, signal: &str, conclusion: &str) -> Child {
     let log = std::fs::File::create(world.root.join("child.log")).expect("child log");
     return Command::new(std::env::current_exe().expect("test binary"))
         .args(["--exact", "landing_crash::child_lands", "--ignored", "--nocapture"])
         .env(WORLD_VARIABLE, &world.root)
+        .env(CONCLUSION_VARIABLE, conclusion)
         .env(PHASE_SIGNAL_VARIABLE, signal)
         .stdin(Stdio::null())
         .stdout(log.try_clone().expect("log handle"))
@@ -229,5 +243,31 @@ fn a_malformed_marker_fails_the_landing_and_releases_the_lock() {
     assert!(!world.index_lock().exists());
     assert!(!world.pid_file().exists());
     assert_eq!(git_text(&fixture, world.repo.as_path(), &["rev-parse", "refs/heads/main"]), world.base);
+    remove(&fixture);
+}
+
+/// An amend that loses the compare-and-swap is not replayable, even though the winner names a commit.
+#[test]
+fn an_amend_that_loses_the_compare_and_swap_is_not_replayable() {
+    let fixture: Fixture = fixture("landing-swap-lost-amend");
+    let world: World = World::build(&fixture);
+    let marker_directory: PathBuf = markers(&world);
+    let signal: String = format!("objects-migrated:pause:{}", marker_directory.display());
+    let child: Child = spawn_child_with(&world, signal.as_str(), "amend");
+    await_marker(marker_directory.join("objects-migrated.reached").as_path());
+    let winner: String = git_text(
+        &fixture,
+        world.repo.as_path(),
+        &["commit-tree", world.base_tree.as_str(), "-p", world.base.as_str(), "-m", "winner"],
+    );
+    git(&fixture, world.repo.as_path(), &["update-ref", "refs/heads/main", winner.as_str(), world.base.as_str()]);
+    std::fs::write(marker_directory.join("objects-migrated.release"), b"").expect("release");
+    let status: ExitStatus = finish(child);
+    assert!(status.success(), "the child failed; see child.log");
+    let result: String = std::fs::read_to_string(world.root.join("child-result.txt")).expect("the child's result");
+    assert_eq!(
+        result,
+        format!("ok HeadMoved {{ current: Commit(\"{winner}\"), replayable: false }}\npreserved=false\n")
+    );
     remove(&fixture);
 }
