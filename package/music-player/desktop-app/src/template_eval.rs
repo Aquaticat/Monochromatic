@@ -14,7 +14,7 @@
 ///  imports the number reader and the text functions that `tf` and `tc` call.
 /// Why:
 ///  Each function keeps its rule in its own module.
-use crate::template_format::{as_number, capitalize_first_unit, format_seconds, keep_code_points};
+use crate::template_format::{as_number, capitalize_first_unit, format_seconds, keep_code_points, unknown_format_letter};
 /// What:
 ///  imports the function table,
 ///  the field and result types,
@@ -163,7 +163,8 @@ impl TemplateEvaluation<'_> {
     ///  `fn evaluate_tf(&mut self, call: &CallNode, values: &[String]) -> String` formats seconds with the given format or the default `m:ss`.
     /// Why:
     ///  Missing seconds show nothing,
-    ///  but text that is not a number is a mistake.
+    ///  but text that is not a number is a mistake,
+    ///  and so is a format with a letter that is not `h`, `m` or `s` outside apostrophes.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -171,6 +172,16 @@ impl TemplateEvaluation<'_> {
     /// ```
     fn evaluate_tf(&mut self, call: &CallNode, values: &[String]) -> String {
         let raw = values.first().map_or("", String::as_str);
+        let format = values.get(1).map_or("m:ss", String::as_str);
+        // The format is checked even when the track has no duration, so a typo in it never hides behind an empty field.
+        if let Some(letter) = unknown_format_letter(format) {
+            self.errors.push(TemplateError {
+                subject: String::from("tf"),
+                message: format!("unknown format letter {letter}"),
+                at: call.start,
+            });
+            return String::new();
+        }
         if raw.is_empty() {
             return String::new();
         }
@@ -182,7 +193,6 @@ impl TemplateEvaluation<'_> {
             });
             return String::new();
         };
-        let format = values.get(1).map_or("m:ss", String::as_str);
         return format_seconds(seconds, format);
     }
 

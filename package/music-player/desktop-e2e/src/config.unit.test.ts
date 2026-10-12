@@ -50,6 +50,17 @@ await describe({
       },
     },),
     it({
+      name: 'lets the compositor path be replaced, for a build that is not installed yet',
+      fn: async ({ expect, }) => {
+        const config = loadRunConfig({
+          appDir: '/work/app',
+          home: '/home/tester',
+          overrides: { compositorPath: '/work/nws/target/release/monochromatic-nested-wayland-session', },
+        },);
+        expect(config.compositorPath,).toBe('/work/nws/target/release/monochromatic-nested-wayland-session',);
+      },
+    },),
+    it({
       name: 'pins the compositor version the checks were probed on',
       fn: async ({ expect, }) => {
         expect(PINNED_COMPOSITOR_VERSION,).toBe('0.3.0',);
@@ -65,7 +76,7 @@ await describe({
     it({
       name: 'reads only the variables that are set',
       fn: async ({ expect, }) => {
-        const names = ['E2E_LIBRARY_GENERATOR', 'E2E_ONLY', 'E2E_OUT', 'E2E_TMP',] as const;
+        const names = ['E2E_COMPOSITOR', 'E2E_LIBRARY_GENERATOR', 'E2E_ONLY', 'E2E_OUT', 'E2E_TMP',] as const;
         const saved = names.map((name,) => [name, process.env[name],] as const);
         for (const name of names)
           Reflect.deleteProperty(process.env, name,);
@@ -75,7 +86,9 @@ await describe({
         expect(overridesFromEnvironment(),).toEqual({ only: 'seek', outputRoot: '/out', },);
         process.env.E2E_LIBRARY_GENERATOR = '/g.ts';
         process.env.E2E_TMP = '/t';
+        process.env.E2E_COMPOSITOR = '/c/nested';
         expect(overridesFromEnvironment(),).toEqual({
+          compositorPath: '/c/nested',
           generatorPath: '/g.ts',
           only: 'seek',
           outputRoot: '/out',

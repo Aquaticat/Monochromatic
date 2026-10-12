@@ -1,5 +1,5 @@
 /**
- Checks of the wide session about the track menu and Delete, and the checks that the compositor cannot inject.
+ Checks of the wide session about the track menu and Delete.
  
  @example
  ```ts
@@ -59,7 +59,7 @@ const AFTER_DELETE_MS = 400;
 const MENU_OPEN_TIMEOUT_MS = 4_000;
 
 /**
- Records the track-menu and Delete checks, and the four checks that cannot run here.
+ Records the track-menu and Delete checks.
  
  @param context - the run's context
  
@@ -274,29 +274,5 @@ export async function checkMenuAndDelete(
       await session.shot('after-delete',);
       return `moved to ${trashed}`;
     },
-  },);
-  recorder.skip({
-    id: 'row/menu-key',
-    title: 'the Menu key opens the row menu',
-    reason:
-      'the compositor 0.3.0 cannot inject it: "key menu tap" answers "err unknown key: menu"; the window tests press it',
-  },);
-  recorder.skip({
-    id: 'row/shift-f10',
-    title: 'Shift+F10 opens the row menu',
-    reason:
-      'the compositor 0.3.0 cannot inject F10: "key f10 tap" answers "err unknown key: f10"; the window tests press it',
-  },);
-  recorder.skip({
-    id: 'row/ctrl-shift-f5',
-    title: 'Ctrl+Shift+F5 re-analyses the row',
-    reason:
-      'the compositor 0.3.0 cannot inject F5: "key f5 tap" answers "err unknown key: f5"; the window tests press it',
-  },);
-  recorder.skip({
-    id: 'browse/f5',
-    title: 'F5 rescans the library',
-    reason:
-      'the compositor 0.3.0 cannot inject F5: "key f5 tap" answers "err unknown key: f5"; the window tests press it',
   },);
 }

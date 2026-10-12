@@ -32,6 +32,28 @@ fn number_text_matches_javascript_string() {
     assert_eq!(number_text(1e301), "1e+301");
 }
 
+// What: `fn unknown_format_letter_finds_letters_outside_apostrophes(...)` checks each rule of the format letter scan.
+// Why: TE5: only h, m and s are time letters, apostrophes keep other words, and every other character is a separator.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// expect(unknownFormatLetter("m min")).toBe("i");
+// ```
+#[test]
+fn unknown_format_letter_finds_letters_outside_apostrophes() {
+    assert_eq!(unknown_format_letter("m:ss"), None);
+    assert_eq!(unknown_format_letter("hh:mm:ss"), None);
+    assert_eq!(unknown_format_letter("m min"), Some('i'));
+    assert_eq!(unknown_format_letter("MM"), Some('M'));
+    assert_eq!(unknown_format_letter("q:q"), Some('q'));
+    assert_eq!(unknown_format_letter("m' min'"), None);
+    assert_eq!(unknown_format_letter("'h'm:ss"), None);
+    assert_eq!(unknown_format_letter("m \u{e9}"), Some('\u{e9}'));
+    assert_eq!(unknown_format_letter("m / s, 1.5"), None);
+    assert_eq!(unknown_format_letter(""), None);
+    assert_eq!(unknown_format_letter("m'unclosed"), None, "an unclosed apostrophe keeps the rest as text, as format_seconds does");
+}
+
 // What: `fn number_text_prints_special_values(...)` checks NaN, both infinities, and zero.
 // Why: A duration that is not finite still has to print, so the text must match JavaScript's words for them.
 //

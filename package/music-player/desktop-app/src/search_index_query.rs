@@ -13,6 +13,7 @@
 
 use std::thread;
 
+use crate::pagination::root_level_folder_label;
 use crate::search_index::{FOLDER_BIT, ROOT_FOLDER_SLOT, SearchIndex, UNFILED};
 use crate::search_index_batch::folder_of;
 use crate::search_index_rank::{Ranked, fast_tier, select_best};
@@ -211,7 +212,7 @@ impl SearchIndex {
         let (top_folder, segments) = folder_of(path);
         let folder_name: String = match top_folder {
             Some(name) if segments >= 2 => name.to_string(),
-            _ => UNFILED.to_string(),
+            _ => root_level_folder_label(path),
         };
         return SearchResult {
             kind: SearchResultKind::Track,

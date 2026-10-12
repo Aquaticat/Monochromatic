@@ -17,6 +17,7 @@ import { wait, } from '@monochromatic-dev/module-async-time/ts';
 
 import {
   chordKeys,
+  type Condition,
   focusIs,
   routeIs,
   sequenceOf,
@@ -102,6 +103,24 @@ const BARE_KEYS = sequenceOf([
     key: '3',
   },),
 ],);
+
+/**
+ Condition builder: the Search query is exactly the given text.
+ 
+ @param text - the query the field must hold
+ 
+ @returns the condition
+ 
+ @example
+ ```ts
+ queryIs('Björk',);
+ ```
+ */
+function queryIs(text: string,): Condition {
+  return function hasQuery(state: UiState,): boolean {
+    return state.search_query === text;
+  };
+}
 
 /**
  Records the tooltip, Search and double Shift checks of the wide session.
@@ -295,6 +314,51 @@ export async function checkSearchAndTooltip(
         until: isPlayerPage,
         what: 'the player page',
       },);
+    },
+  },);
+  await recorder.check({
+    id: 'search/unicode-text',
+    title: 'typing Björk, かめりあ and Hangul with an emoji puts exactly that text in the Search field',
+    body: async function unicodeTextReachesField(): Promise<string> {
+      await press({
+        session,
+        act: chordKeys({
+          mods: ['ctrl',],
+          key: 'f',
+        },),
+        until: isSearchWithField,
+        what: 'the Search page with the query field focused',
+      },);
+
+      /**
+       The words typed in turn; each replaces the whole query.
+       */
+      const words = [
+        'Björk',
+        'かめりあ',
+        '한국어😀',
+      ];
+      for (const word of words) {
+        // oxlint-disable-next-line eslint/no-await-in-loop -- each word replaces the one before it
+        await session.chord({
+          mods: ['ctrl',],
+          key: 'a',
+        },);
+        // oxlint-disable-next-line eslint/no-await-in-loop -- each word replaces the one before it
+        await press({
+          session,
+          act: typeText(word,),
+          until: queryIs(word,),
+          what: `the query ${word}`,
+        },);
+      }
+      await press({
+        session,
+        act: tapKey('escape',),
+        until: isPlayerPage,
+        what: 'the player page',
+      },);
+      return `the field held ${words.join(', ',)} exactly`;
     },
   },);
 }

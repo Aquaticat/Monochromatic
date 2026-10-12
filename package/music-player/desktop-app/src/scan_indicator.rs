@@ -169,7 +169,7 @@ pub fn scan_indicator_status_text(model: &ScanIndicatorModel) -> String {
     if model.phase == ScanIndicatorPhase::MeasuringTruePeak {
         let done_text = scan_indicator_count_text(model.done);
         let total_text = scan_indicator_count_text(model.total);
-        return format!("Analysing true peak · {done_text} of {total_text}");
+        return format!("Analyzing true peak · {done_text} of {total_text}");
     }
     return String::new();
 }

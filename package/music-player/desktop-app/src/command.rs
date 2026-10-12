@@ -473,6 +473,18 @@ pub enum Command {
     /// ```
     Rescan,
     /// What:
+    ///      `NoLibrary` a fieldless variant: the launch found no folder to open.
+    /// Why:
+    ///       The window shows "No folder is open" only when told so. Before this command the engine said it at start,
+    ///  before it knew whether a saved folder or the music folder was about to open, so a library that was being read
+    ///  looked like no library (the polish review finding EM1).
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// { kind: "noLibrary" }
+    /// ```
+    NoLibrary,
+    /// What:
     ///      `Quit` a fieldless variant.
     /// Why:
     ///       Shut the engine thread down.
@@ -492,16 +504,6 @@ pub enum Command {
     /// { kind: "sweepReport"; report: SweepReport }
     /// ```
     SweepReport(SweepReport),
-    /// What:
-    ///      `ReanalyseTrack(PathBuf)` asks for one track's decision to be discarded and measured again.
-    /// Why:
-    ///       The track menu's Re-analyse action sends this for the track it names.
-    ///
-    /// In TS you'd write (pseudocode):
-    /// ```ts
-    /// { kind: "reanalyseTrack"; path: string }
-    /// ```
-    ReanalyseTrack(PathBuf),
 }
 
 /// What:
@@ -878,6 +880,51 @@ pub enum Update {
         /// The folder's display name, or `None`.
         Option<String>,
     ),
+    /// What:
+    ///      `Reading { name }` says the engine has started reading the folder called `name` and has not finished.
+    /// Why:
+    ///       The walk of a big library or a slow disk takes seconds, and the window used to say "No folder is open"
+    ///  until it ended (the polish review finding EM1). The window shows a "reading your library" state from this
+    ///  update until the `Queue` update that ends the walk.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// { kind: "reading"; name: string }
+    /// ```
+    Reading {
+        /// The folder's display name.
+        name: String,
+    },
+    /// What:
+    ///      `Unplayable(Vec<PathBuf>)` lists files that were skipped because they could not be opened for playback.
+    /// Why:
+    ///       A track that cannot be decoded used to be skipped silently (the polish review finding PB1, D83). The window
+    ///  names the file in a message and marks its row.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// { kind: "unplayable"; paths: string[] }
+    /// ```
+    Unplayable(
+        /// The files that failed to open, in the order they were tried.
+        Vec<PathBuf>,
+    ),
+    /// What:
+    ///      `FileGone { path, was_playing }` says the rescan found the selected track's file missing from the folder.
+    /// Why:
+    ///       The row vanishes and playback stops; without a message the user cannot tell why (the polish review
+    ///  finding PB2, D9 and D83).
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// { kind: "fileGone"; path: string; wasPlaying: boolean }
+    /// ```
+    FileGone {
+        /// The path of the missing file.
+        path: PathBuf,
+        /// Whether audio was playing when the file left, so playback stopped.
+        was_playing: bool,
+    },
     /// What:
     ///      `ScanBatch { first_index, names }` reports tracks the folder walk has found while it is still walking.
     /// Why:

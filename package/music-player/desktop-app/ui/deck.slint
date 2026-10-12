@@ -13,6 +13,11 @@ component ModeSegment inherits Rectangle {
     in property <bool> selected;
     // Visible text of the segment.
     in property <string> label;
+    // End of the visible text, drawn right after the label when the label is cut with an ellipsis, so the text reads
+    // "start...end" (D1's middle ellipsis for the Shuffle segment's folder name); empty for no tail.
+    in property <string> label-tail: "";
+    // True to center the text inside its label width, which keeps a short name in the middle of the fixed-width Shuffle segment.
+    in property <bool> center-label: false;
     // Width the label is laid out in, already capped for the shuffle folder name.
     in property <length> label-width;
     // Font size of the label, already multiplied by the text scale.
@@ -153,10 +158,19 @@ component ModeSegment inherits Rectangle {
         fill: Theme.on-secondary-container;
     }
 
+    // Width of the tail, on a whole pixel; zero without a tail.
+    property <length> tail-width: root.label-tail == "" ? 0px : ceil(tail-text.preferred-width / 1px) * 1px;
+    // Room for the label text before the tail.
+    property <length> label-room: max(0px, root.shown-width - root.tail-width);
+    // Width the label text takes: its own width, or the room when it is cut.
+    property <length> label-drawn: min(ceil(label-text.preferred-width / 1px) * 1px, root.label-room);
+    // Left edge of the text: after the check slot, and moved to the middle of the label width when asked to center.
+    property <length> text-x: root.content-x + root.slot-w + (root.center-label ? max(0px, round((root.shown-width - root.label-drawn - root.tail-width) / 2 / 1px) * 1px) : 0px);
+
     // Visible label, placed after the check slot this segment shows. Long text elides at the end.
-    Text {
-        x: root.content-x + root.slot-w;
-        width: root.shown-width;
+    label-text := Text {
+        x: root.text-x;
+        width: root.label-drawn;
         height: root.height;
         text: root.label;
         font-size: root.label-size;
@@ -167,6 +181,21 @@ component ModeSegment inherits Rectangle {
         vertical-alignment: center;
         wrap: no-wrap;
         overflow: elide;
+        accessible-role: none;
+    }
+    // End of the text after the ellipsis (empty unless the label was shortened).
+    tail-text := Text {
+        visible: root.label-tail != "";
+        x: root.text-x + root.label-drawn;
+        height: root.height;
+        text: root.label-tail;
+        font-size: root.label-size;
+        font-family: root.font-family;
+        font-weight: 500;
+        color: root.selected ? Theme.on-secondary-container : Theme.on-surface;
+        horizontal-alignment: left;
+        vertical-alignment: center;
+        wrap: no-wrap;
         accessible-role: none;
     }
 
@@ -214,6 +243,13 @@ component ModeSegment inherits Rectangle {
     }
 }
 
+// Whether the deck is switched off. The Rust side sets it while the library has no track to play (reading, empty or
+// without audio): the deck then looks dimmed, takes no pointer input and no keyboard focus, so it never looks live
+// with nothing loaded. A global rather than a property keeps the window files unchanged.
+export global DeckState {
+    in property <bool> disabled: false;
+}
+
 // The transport deck. Every size is in logical pixels, and `text-scale` multiplies only the fonts,
 // so the 200 percent text capture grows its labels while the 48px targets keep their size.
 export component TransportDeck inherits Rectangle {
@@ -233,6 +269,10 @@ export component TransportDeck inherits Rectangle {
     in property <int> mode;
     // Folder name shown after the shuffle prefix in the shuffle segment.
     in property <string> shuffle-folder-label;
+    // The folder name without its last few characters and those characters, which the Shuffle segment shows around a
+    // middle ellipsis when the whole name is wider than the cap (D1: the `Shuffle` prefix stays complete).
+    in property <string> shuffle-folder-head: "";
+    in property <string> shuffle-folder-tail: "";
     // Multiplier for every font size; 2.0 reproduces the 200 percent text capture.
     in property <float> text-scale: 1.0;
     // Typeface family for every text in the deck; an empty string selects the platform default.
@@ -552,17 +592,20 @@ export component TransportDeck inherits Rectangle {
     property <length> slider-w: max(0px, root.width - 2 * root.pad-x - 2 * root.time-w - 2 * root.control-gap);
     // Top of the slider bar, centered in the seek row.
     property <length> track-y: root.seek-y + (root.target - root.track-h) / 2;
-    // Thumb center on the track.
-    property <length> thumb-x: root.slider-x + root.slider-w * root.fraction;
-    // Width of the filled part: the thumb center less the thumb half width and the 6px gap.
-    property <length> filled-w: max(0px, root.thumb-x - 8px - root.slider-x);
-    // Left edge of the unfilled part: the thumb center plus the thumb half width and the 6px gap.
-    property <length> unfilled-x: root.thumb-x + 8px;
+    // Thumb center on the track. It moves between half a thumb width inside each end, so at position 0 the thumb's left edge
+    // sits exactly on the track start and at the end its right edge sits on the track end. Centering it on the end points
+    // pushed it 2 px outside the track at 0 and hid the first 8 px of the track behind its gap, which read as two bars.
+    // Rounded to a whole pixel so the thumb never straddles pixels.
+    property <length> thumb-x: root.round-px(root.slider-x + root.thumb-w / 2 + (root.slider-w - root.thumb-w) * root.fraction);
+    // Width of the filled part: the thumb's left edge less the 6px gap.
+    property <length> filled-w: max(0px, root.thumb-x - root.thumb-w / 2 - 6px - root.slider-x);
+    // Left edge of the unfilled part: the thumb's right edge plus the 6px gap.
+    property <length> unfilled-x: root.thumb-x + root.thumb-w / 2 + 6px;
     // Width of the unfilled part, never negative.
     property <length> unfilled-w: max(0px, root.slider-x + root.slider-w - root.unfilled-x);
 
     // Filled part of the track; its right end is square next to the thumb gap.
-    Rectangle {
+    seek-filled := Rectangle {
         x: root.slider-x;
         y: root.track-y;
         width: root.filled-w;
@@ -579,7 +622,7 @@ export component TransportDeck inherits Rectangle {
         background: Theme.primary;
     }
     // Unfilled part of the track, rounded on the right end only.
-    Rectangle {
+    seek-unfilled := Rectangle {
         x: root.unfilled-x;
         y: root.track-y;
         width: root.unfilled-w;
@@ -606,8 +649,9 @@ export component TransportDeck inherits Rectangle {
         background: Theme.primary;
     }
     // Thumb drawn as a thin vertical bar at the playhead; it widens slightly while the pointer is over the track.
-    Rectangle {
-        x: root.thumb-x - self.width / 2;
+    seek-thumb := Rectangle {
+        // Centered on the playhead, but never past either end of the track, so the hover growth cannot push the thumb out.
+        x: max(root.slider-x, min(root.slider-x + root.slider-w - self.width, root.thumb-x - self.width / 2));
         y: root.seek-y + (root.target - root.thumb-h) / 2;
         width: root.thumb-w + (seek-touch.has-hover ? 2px : 0px);
         height: root.thumb-h;
@@ -644,6 +688,7 @@ export component TransportDeck inherits Rectangle {
     // Keyboard seek bar: a focus stop over the track. Left and Right move 5 seconds, Home and End jump to the ends. The
     // 12 percent layer and the 2 px ring show the focus in two channels.
     seek-stop := PlayerStop {
+        enabled: Focus.player-active && !DeckState.disabled;
         label: "seek";
         zone: 3;
         activates: false;
@@ -753,6 +798,7 @@ export component TransportDeck inherits Rectangle {
     }
 
     prev-stop := PlayerStop {
+        enabled: Focus.player-active && !DeckState.disabled;
         label: "previous";
         zone: 5;
         x: root.transport-x;
@@ -838,6 +884,7 @@ export component TransportDeck inherits Rectangle {
     }
 
     play-stop := PlayerStop {
+        enabled: Focus.player-active && !DeckState.disabled;
         label: "play";
         zone: 5;
         x: root.transport-x + root.target + root.control-gap;
@@ -848,12 +895,15 @@ export component TransportDeck inherits Rectangle {
             root.toggle-play();
         }
     }
+    // The ring of the play button is drawn around the whole 48 px target, 2 px outside the filled circle. The circle is
+    // filled with the same primary role as the ring, so a ring drawn on the circle's own edge merged with it and showed
+    // nothing; the 2 px gap of canvas between them keeps the ring a second, visible channel next to the 12 percent layer.
     FocusRing {
-        x: root.transport-x + root.target + root.control-gap + (root.target - root.circle) / 2;
-        y: root.transport-y + (root.target - root.circle) / 2;
-        width: root.circle;
-        height: root.circle;
-        radius: root.circle / 2;
+        x: root.transport-x + root.target + root.control-gap;
+        y: root.transport-y;
+        width: root.target;
+        height: root.target;
+        radius: root.target / 2;
         active: play-stop.ring;
     }
 
@@ -907,6 +957,7 @@ export component TransportDeck inherits Rectangle {
     }
 
     next-stop := PlayerStop {
+        enabled: Focus.player-active && !DeckState.disabled;
         label: "next";
         zone: 5;
         x: root.transport-x + 2 * (root.target + root.control-gap);
@@ -984,7 +1035,13 @@ export component TransportDeck inherits Rectangle {
     }
 
     // Shuffle segment text width: the full label, capped at the reference name's width.
-    property <length> shuffle-w: min(m-shuffle-folder.preferred-width, m-shuffle-cap.preferred-width);
+    // Always the cap, whatever the folder is called (LS6): the width of this segment decides whether the mode control fits one
+    // row, and a width that followed the name moved the transport, the seek bar and the mode control every time the user
+    // browsed to a folder with a longer or shorter name. D1 caps the name's width at the rendered "Camellia"; it never asked
+    // for a shorter segment for a shorter name.
+    property <length> shuffle-w: m-shuffle-cap.preferred-width;
+    // True when the whole name is wider than the cap, so the segment shows the head, an ellipsis and the tail.
+    property <bool> shuffle-truncated: m-shuffle-folder.preferred-width > m-shuffle-cap.preferred-width;
     // Label widths per segment, in mode order, each rounded up to a whole pixel so segment and content positions stay on pixels.
     property <length> text-w-0: root.round-up-px(m-repeat.preferred-width);
     // Label width of the in-order segment.
@@ -1059,6 +1116,7 @@ export component TransportDeck inherits Rectangle {
         // Keyboard stop of the whole group: one Tab stop. The arrows move the selection, and the ring is drawn on the
         // selected segment.
         mode-stop := PlayerStop {
+            enabled: Focus.player-active && !DeckState.disabled;
             label: "mode-group";
             zone: 4;
             activates: false;
@@ -1128,7 +1186,9 @@ export component TransportDeck inherits Rectangle {
             ring: mode-stop.ring && root.mode == 2;
             badge: Keys.badges.mode-shuffle-folder;
             tip: "Shuffle the folder (" + Keys.texts.mode-shuffle-folder + ")";
-            label: "Shuffle " + root.shuffle-folder-label;
+            label: "Shuffle " + (root.shuffle-truncated ? root.shuffle-folder-head : root.shuffle-folder-label);
+            label-tail: root.shuffle-truncated ? root.shuffle-folder-tail : "";
+            center-label: true;
             label-width: root.text-w-2;
             label-size: root.font-label;
             check-slot: root.check-slot;
@@ -1167,6 +1227,18 @@ export component TransportDeck inherits Rectangle {
             x: parent.width - self.width;
             y: 0px;
             text: Keys.badges.mode-cycle;
+        }
+    }
+
+    // Switched-off cover: dims every control and swallows pointer input while the library has nothing to play.
+    if DeckState.disabled : Rectangle {
+        x: 0px;
+        y: 0px;
+        width: root.width;
+        height: root.height;
+        background: Theme.deck.with-alpha(0.62);
+        TouchArea {
+            mouse-cursor: not-allowed;
         }
     }
 

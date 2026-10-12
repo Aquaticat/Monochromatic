@@ -32,6 +32,7 @@
 /// ```ts
 /// type Path = string;
 /// ```
+use std::collections::HashSet;
 use std::path::{Path, PathBuf};
 
 /// What:
@@ -112,7 +113,7 @@ use crate::decode::{AudioSpec, Source};
 use crate::measure::spawn_queue_measurement;
 use crate::sweep_gate::SweepGate;
 use crate::sweep_report::{SweepJob, SweepSink, noop_sink};
-use std::sync::Arc;
+use std::sync::{Arc, Mutex};
 
 /// What:
 ///      `use crate::output::Output;`.
@@ -443,6 +444,12 @@ pub(crate) struct Controller {
     pub(crate) sweep_sink: SweepSink,
     /// Generation of the newest queue load; reports from older generations are dropped.
     pub(crate) analysis_generation: u64,
+    /// Fingerprints taken by the sweeps of the newest queue load, shared with every refresh sweep of that load.
+    pub(crate) sweep_claims: Arc<Mutex<HashSet<u64>>>,
+    /// Files already reported as unplayable, so a failure is told once until the file decodes again (D113, D83).
+    pub(crate) reported_unplayable: Mutex<HashSet<PathBuf>>,
+    /// The file the decoder was opened on and the fingerprint it had then, so a change of that file is noticed (D113).
+    pub(crate) loaded_file: Option<(PathBuf, u64)>,
     /// What:
     ///      `pending: Vec<f32>`.
     ///  Gained samples decoded but not yet fully pushed.
@@ -532,6 +539,9 @@ impl Controller {
             staged: None,
             sweep_sink: noop_sink(),
             analysis_generation: 0,
+            sweep_claims: Arc::new(Mutex::new(HashSet::new())),
+            reported_unplayable: Mutex::new(HashSet::new()),
+            loaded_file: None,
             pending: Vec::new(),
             pending_pos: 0,
         }
@@ -799,7 +809,7 @@ impl Controller {
     /// ```ts
     /// setPlaying(on: boolean): void { ... }
     /// ```
-    fn set_playing(&mut self, on: bool) {
+    pub(crate) fn set_playing(&mut self, on: bool) {
         // What:     No wait before marking playback on. A pending true-peak measurement
         //           keeps the fallback gain, and the engine loop swaps the exact gain in later.
         // Why:      Play from pause must not add up to a second of silence while the
@@ -863,7 +873,7 @@ impl Controller {
     ///   this.emit({ kind: "position", secs: 0 });
     /// }
     /// ```
-    fn emit_no_track(&self) {
+    pub(crate) fn emit_no_track(&self) {
         // What:     `self.emit(Update::NowPlaying { index: None, name: String::new(), duration: 0.0 });`.
         //           Struct-variant literal: `index: None` is the absent `Option<usize>` (the UI
         //           maps it to its -1 "no highlight" sentinel); `String::new()` builds a fresh
@@ -916,6 +926,9 @@ impl Controller {
         // this.analysisGeneration += 1;
         // ```
         self.analysis_generation = self.analysis_generation.wrapping_add(1);
+        // What:     `self.sweep_claims = new set`. A new load starts with no fingerprint taken.
+        // Why:      The claims of the replaced queue's sweeps must not make this load's sweep skip a file.
+        self.sweep_claims = Arc::new(Mutex::new(HashSet::new()));
         // What:     `let current = self.queue.current_path().cloned();`. The track playback is on.
         // Why:      The fan-out skips it, because the current-track worker owns that one.
         //
@@ -938,6 +951,8 @@ impl Controller {
             sink: Arc::clone(&self.sweep_sink),
             generation: self.analysis_generation,
             gate: SweepGate::shared(),
+            claims: Arc::clone(&self.sweep_claims),
+            quiet: false,
         });
     }
 
@@ -996,15 +1011,6 @@ impl Controller {
                 self.emit(Update::Library(self.queue.tracks().to_vec()));
                 self.emit(Update::Queue(self.queue.display_paths()));
                 self.emit_source_root();
-                // What:     `self.start_queue_measurement();`. Pre-measure the whole queue
-                //           in the background (true-peak normalization cache).
-                // Why:      Every queue load (open or auto-load) warms the peak cache.
-                //
-                // In TS you'd write (pseudocode):
-                // ```ts
-                // this.startQueueMeasurement();
-                // ```
-                self.start_queue_measurement();
                 // What:     `match select { Some(sel) => ..., None => ... }`. A single-file
                 //           launch carries `Some(file)` to preselect; a folder open or
                 //           auto-load carries `None`.
@@ -1073,24 +1079,36 @@ impl Controller {
                         }
                     }
                 }
+                // What:     `self.start_queue_measurement();`. Pre-measure the whole queue in the background (true-peak
+                //           normalization cache), AFTER the open has decided which track is current.
+                // Why:      Every queue load warms the peak cache, and the sweep skips the current track because the
+                //           playback path measures it. `set_tracks` leaves the cursor on the first track until the
+                //           branch above clears it, so a sweep started earlier skipped the first track of every
+                //           plain open and its row never got a true peak until it played (LS9).
+                //
+                // In TS you'd write (pseudocode):
+                // ```ts
+                // this.startQueueMeasurement(); // after the selection is settled
+                // ```
+                self.start_queue_measurement();
             }
-            // What:     `Command::TogglePlay => self.set_playing(!self.playing)`. Flip
-            //           play/pause (`!` negates the current flag).
-            // Why:      The play/pause button.
+            // What:     `Command::TogglePlay => self.toggle_playing()`. Pause when playing, otherwise start (see
+            //           `controller_flow.rs`).
+            // Why:      The play/pause button; with nothing loaded it starts the first track instead of flipping to Pause.
             //
             // In TS you'd write (pseudocode):
             // ```ts
             // case "togglePlay": this.setPlaying(!this.playing); break;
             // ```
-            Command::TogglePlay => self.set_playing(!self.playing),
-            // What:     `Command::Play => self.set_playing(true)`. Explicit play.
-            // Why:      Explicit play command.
+            Command::TogglePlay => self.toggle_playing(),
+            // What:     `Command::Play => self.start_playing()`. Explicit play.
+            // Why:      Explicit play command; with nothing loaded it starts the first track.
             //
             // In TS you'd write (pseudocode):
             // ```ts
             // case "play": this.setPlaying(true); break;
             // ```
-            Command::Play => self.set_playing(true),
+            Command::Play => self.start_playing(),
             // What:     `Command::Pause => self.set_playing(false)`. Explicit pause.
             // Why:      Explicit pause command.
             //
@@ -1445,15 +1463,21 @@ impl Controller {
                     //           the UI back to the first page) and re-running
                     //           `start_queue_measurement` (which re-reads those files and so
                     //           re-arms the watcher) on an empty diff spins a ~500ms feedback
-                    //           loop. A pure content modify (same paths) is likewise a no-op
-                    //           here; its peak fingerprint changes, so it self-heals as a cache
-                    //           miss on the next decode, not via a rescan sweep.
+                    //           loop. The watcher now ignores access events, so the loop is gone;
+                    //           an unchanged list still starts a quiet refresh sweep (below), which
+                    //           measures any file whose fingerprint changed (D113) and nothing else.
                     //
                     // In TS you'd write (pseudocode):
                     // ```ts
                     // if (arraysEqual(fresh, this.queue.tracks())) return;
                     // ```
                     if fresh.as_slice() == self.queue.tracks() {
+                        // What:     `self.refresh_measurement();`. Measure again any file whose size or modified time changed.
+                        // Why:      D113: a file replaced or edited in place keeps its path, so the queue is the same, but its
+                        //           fingerprint changed and its true peak must follow by itself. The quiet sweep skips every
+                        //           known fingerprint and the watcher ignores the reads it makes, so it cannot loop.
+                        self.reload_current_when_its_file_changed();
+                        self.refresh_measurement();
                         return;
                     }
                     // What:     `let selected_path = self.queue.current_path().cloned();`. The
@@ -1483,6 +1507,7 @@ impl Controller {
                     // const idx = selectedPath ? tracks.indexOf(selectedPath) : -1;
                     // ```
                     match selected_path
+                        .clone()
                         .and_then(|p| return self.queue.tracks().iter().position(|t| return *t == p))
                     {
                         // What:     `Some(idx) => { ... }`. The Selected Track survived: re-anchor
@@ -1514,11 +1539,20 @@ impl Controller {
                         // this.emit({ kind: "position", secs: 0 }); if (this.playing) this.setPlaying(false);
                         // ```
                         None => {
+                            let was_playing = self.playing;
                             self.queue.clear_selection();
                             self.emit_reconciled();
                             self.emit(Update::Position(0.0));
                             if self.playing {
                                 self.set_playing(false);
+                            }
+                            // What:     `if let Some(path) = selected_path { self.emit(Update::FileGone { path, was_playing }); }`.
+                            //           Say which file left, when there was a selected file.
+                            // Why:      The row vanished and playback stopped with no word (PB2, D9, D83); the window
+                            //           explains it in a message.
+                            if let Some(path) = selected_path {
+                                tracing::info!(path = %path.display(), was_playing, "the selected track's file left the folder");
+                                self.emit(Update::FileGone { path, was_playing });
                             }
                         }
                     }
@@ -1542,7 +1576,9 @@ impl Controller {
             // case "quit": break; // handled in run()'s drain loop
             // ```
             Command::SweepReport(report) => self.handle_sweep_report(report),
-            Command::ReanalyseTrack(path) => self.reanalyse_track(path),
+            // What:     `Command::NoLibrary => self.emit_source_root()`. Say that no folder is open.
+            // Why:      The launch found neither a saved folder nor a music folder; the window then offers to open one.
+            Command::NoLibrary => self.emit_source_root(),
             Command::Quit => {}
         }
     }
@@ -1585,14 +1621,15 @@ impl Controller {
                     self.set_playing(false);
                 }
             }
-            // What:     `None => self.set_playing(false)`. End of queue: stop.
-            // Why:      Nothing more to play.
+            // What:     `None => self.stop_at_scope_end()`. Nothing follows: stop, and put the cursor back on the first
+            //           track of the scope, loaded and paused.
+            // Why:      D2: In order stops at the end of the folder. Play then starts the folder again from the top.
             //
             // In TS you'd write (pseudocode):
             // ```ts
-            // else this.setPlaying(false);
+            // else this.stopAtScopeEnd();
             // ```
-            None => self.set_playing(false),
+            None => self.stop_at_scope_end(),
         }
     }
 }

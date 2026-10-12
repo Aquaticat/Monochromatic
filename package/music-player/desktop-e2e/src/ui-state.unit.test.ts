@@ -30,6 +30,12 @@ const APP_STATE = {
   unfolded: true,
   picker_open: false,
   menu_open: false,
+  menu_x: 0,
+  menu_y: 0,
+  menu_width: 0,
+  menu_height: 0,
+  folder_scroll: 0,
+  track_scroll: 0,
   folder: 'Aaa Tones',
   ring_track: null,
   ring_track_title: null,
@@ -45,6 +51,8 @@ const APP_STATE = {
   settings_selected: 0,
   ring_visible: true,
   focus_request: 0,
+  deck_disabled: false,
+  first_run_title: '',
   badges: ['search=Ctrl+F',],
 };
 

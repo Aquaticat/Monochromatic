@@ -28,7 +28,7 @@ node package/music-player/desktop-e2e/src/cli.ts --app-dir package/music-player/
 The output has one `PASS`,
  `FAIL` or `SKIP` line per check,
  then a table and a summary such as
-`74 passed, 0 failed, 5 not injectable; 57.3 s`.
+`<passed> passed, 0 failed, 1 not injectable; <seconds> s`.
 The command exits with a non-zero status when a check fails or a safety stop ends the run.
 Run it alone:
  it refuses to start while another run of this suite is active.
@@ -41,12 +41,15 @@ Run it alone:
    `pgrep`,
    ImageMagick (`magick`),
    and `wl-paste`.
-- The nested compositor `monochromatic-nested-wayland-session` at version 0.3.0,
-   installed through mise.
-  The version is pinned because the control API and the key names were probed on it.
-  It answers `unknown key` for F5,
-   F10 and Menu,
-   which is why five checks are recorded as not injectable.
+- The nested compositor `monochromatic-nested-wayland-session` at version 0.4.0 or newer,
+   installed through mise (the run starts the install named by `PINNED_COMPOSITOR_VERSION` in `src/config.ts`),
+   or any executable named by `E2E_COMPOSITOR`.
+  The run asks the compositor for `--version` before it starts and refuses an older one with the way out.
+  Version 0.4.0 adds the key names the checks press (Menu, F10 and the other F keys,
+   chords, `hold` with the client's key repeat), Unicode typing, exact odd sizes,
+   focus return after a dialog, and the `windows` and `repeat-info` commands.
+  One check stays recorded as not injectable:
+   a held Shift with repeats cannot occur, because modifier keys never repeat on Wayland.
 
 ## Isolation
 
@@ -79,6 +82,11 @@ Run it alone:
    scratch root;
    default `temp/agent/music-player-e2e` under the home directory,
    created with mode 0700.
+- `E2E_COMPOSITOR`:
+   path of the compositor executable;
+   default the mise install of `PINNED_COMPOSITOR_VERSION`.
+   Use it to run against a build that is not installed yet,
+   such as `package/cli/nested-wayland-session/target/release/monochromatic-nested-wayland-session`.
 - `E2E_LIBRARY_GENERATOR`:
    path of the library generator script that materializes the one-thousand-track library;
    default `temp/agent/agent-scale/make-scale-library.ts` under the home directory.
@@ -90,7 +98,7 @@ Run it alone:
    thirty loose files,
    one artist folder of thirty short tracks between the two tone folders,
    and the tone folders themselves.
-   The full suite passes with the fallback (74 checks and 5 not injectable),
+   The full suite passes with the fallback (every check, and 1 not injectable),
    so the suite needs no out-of-repository input.
 
 ## Layout
@@ -113,6 +121,14 @@ Run it alone:
    `src/report.ts` and `src/selection.ts` record outcomes,
    print the table and summary,
    and apply the filter.
+- `src/wide-interaction.ts` and `src/narrow-interaction.ts` hold the click-through checks:
+   while Search covers the player, a click on its empty area changes nothing under it (wide and narrow window),
+   and a click on the body of a toast does not reach the track row under it.
+  Each proves its click points are live first (the same click plays a row, or changes the mode, once the page or the toast is gone).
+- `src/wide-menu.ts` holds the menu placement checks:
+   a right click opens the track menu at the pointer in the two-pane layout,
+   and the menu is wider than the 280 px that cut its longest shortcut hint.
+   The app reports the menu card's position and size in its `ui_state` lines (`menu_x`, `menu_y`, `menu_width`, `menu_height`).
 - `src/wide-*.ts`,
    `src/narrow-session.ts`,
    `src/dialog-session.ts`,
@@ -133,7 +149,7 @@ The unit tests cover everything that needs no display:
  the log parser,
  the filter,
  the scenario table (every check id belongs to a session the filter reaches,
- and the suite keeps 74 checks and 5 not-injectable ones),
+ and the suite keeps its published count of checks that run and its 1 not-injectable one),
  the command lines sent to the compositor,
  the routing proof with allowed and rejected graphs,
  the unit and process guards,

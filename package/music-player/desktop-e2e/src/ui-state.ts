@@ -38,12 +38,40 @@ export const NO_INDEX = -1;
 export type UiState = {
   readonly badges: readonly string[];
   readonly current_index: number;
+  /**
+   Whether the transport deck is switched off, as it is while the library is read or holds nothing to play.
+   */
+  readonly deck_disabled: boolean;
   readonly duration: number;
+  /**
+   Headline of the first-run pane, or the empty string while that pane is not shown.
+   */
+  readonly first_run_title: string;
   readonly focus: string;
   readonly focus_request: number;
   readonly folder: string;
+  /**
+   How far the folder picker's names are scrolled down, in whole pixels, 0 at the top.
+   */
+  readonly folder_scroll: number;
+  /**
+   Height of the open track menu in window pixels, 0 while no menu is open.
+   */
+  readonly menu_height: number;
   readonly menu_open: boolean;
   readonly menu_ring: number;
+  /**
+   Width of the open track menu in window pixels, 0 while no menu is open.
+   */
+  readonly menu_width: number;
+  /**
+   Left edge of the open track menu in window pixels, 0 while no menu is open.
+   */
+  readonly menu_x: number;
+  /**
+   Top edge of the open track menu in window pixels, 0 while no menu is open.
+   */
+  readonly menu_y: number;
   readonly mode: number;
   readonly picker_open: boolean;
   readonly playing: boolean;
@@ -58,6 +86,10 @@ export type UiState = {
   readonly search_ring: number;
   readonly seq: number;
   readonly settings_selected: number;
+  /**
+   How far the track list on screen is scrolled down, in whole pixels, 0 at the top.
+   */
+  readonly track_scroll: number;
   readonly unfolded: boolean;
   readonly zone: string;
 };
@@ -323,9 +355,17 @@ export function decodeUiState(value: unknown,): UiState {
       fields: value,
       key: 'current_index',
     },),
+    deck_disabled: flagField({
+      fields: value,
+      key: 'deck_disabled',
+    },),
     duration: numberField({
       fields: value,
       key: 'duration',
+    },),
+    first_run_title: textField({
+      fields: value,
+      key: 'first_run_title',
     },),
     focus: textField({
       fields: value,
@@ -339,6 +379,14 @@ export function decodeUiState(value: unknown,): UiState {
       fields: value,
       key: 'folder',
     },),
+    folder_scroll: numberField({
+      fields: value,
+      key: 'folder_scroll',
+    },),
+    menu_height: numberField({
+      fields: value,
+      key: 'menu_height',
+    },),
     menu_open: flagField({
       fields: value,
       key: 'menu_open',
@@ -346,6 +394,18 @@ export function decodeUiState(value: unknown,): UiState {
     menu_ring: indexField({
       fields: value,
       key: 'menu_ring',
+    },),
+    menu_width: numberField({
+      fields: value,
+      key: 'menu_width',
+    },),
+    menu_x: numberField({
+      fields: value,
+      key: 'menu_x',
+    },),
+    menu_y: numberField({
+      fields: value,
+      key: 'menu_y',
     },),
     mode: numberField({
       fields: value,
@@ -402,6 +462,10 @@ export function decodeUiState(value: unknown,): UiState {
     settings_selected: numberField({
       fields: value,
       key: 'settings_selected',
+    },),
+    track_scroll: numberField({
+      fields: value,
+      key: 'track_scroll',
     },),
     unfolded: flagField({
       fields: value,

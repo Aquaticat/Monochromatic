@@ -7,7 +7,7 @@
 
 use music_player::command::{Command, PlaybackMode};
 use music_player::keymap::ShortcutAction;
-use music_player::track_menu::{TrackMenuAction, track_menu_actions_for};
+use music_player::track_menu::{TrackMenuAction, access_action, track_menu_actions_for};
 
 use crate::AppWindow;
 use crate::ui_host::Host;
@@ -46,7 +46,6 @@ pub(crate) fn run(window: &AppWindow, host: &dyn Host, action: ShortcutAction, c
         | ShortcutAction::ModeShuffleFolder
         | ShortcutAction::ModeShuffleAll
         | ShortcutAction::Restart
-        | ShortcutAction::Rescan
         | ShortcutAction::OpenFolderDialog
         | ShortcutAction::Quit => run_playback_action(host, action),
         ShortcutAction::Search
@@ -71,8 +70,7 @@ pub(crate) fn run(window: &AppWindow, host: &dyn Host, action: ShortcutAction, c
         | ShortcutAction::RowTrash
         | ShortcutAction::RowCopy
         | ShortcutAction::RowShow
-        | ShortcutAction::RowDetails
-        | ShortcutAction::RowReanalyse
+        | ShortcutAction::MenuAccess(_)
         | ShortcutAction::MenuUp
         | ShortcutAction::MenuDown
         | ShortcutAction::MenuChoose
@@ -92,7 +90,7 @@ pub(crate) fn run(window: &AppWindow, host: &dyn Host, action: ShortcutAction, c
 /// Why: they need the host and no window.
 fn run_playback_action(host: &dyn Host, action: ShortcutAction) -> bool {
     match action {
-        ShortcutAction::Toggle => host.send(Command::TogglePlay),
+        ShortcutAction::Toggle => crate::ui_wire::toggle_play(host),
         ShortcutAction::Previous => host.send(Command::Prev),
         ShortcutAction::Next => host.send(Command::Next),
         ShortcutAction::Mode => cycle_mode(host),
@@ -105,7 +103,6 @@ fn run_playback_action(host: &dyn Host, action: ShortcutAction) -> bool {
         ShortcutAction::ModeShuffleFolder => set_mode(host, PlaybackMode::ShufflePage),
         ShortcutAction::ModeShuffleAll => set_mode(host, PlaybackMode::ShuffleAll),
         ShortcutAction::Restart => host.send(Command::Seek(0.0)),
-        ShortcutAction::Rescan => host.send(Command::Rescan),
         ShortcutAction::OpenFolderDialog => host.pick_folder(),
         ShortcutAction::Quit => host.quit(),
         _ => return false,
@@ -297,8 +294,6 @@ fn menu_action_of(action: ShortcutAction) -> Option<TrackMenuAction> {
         ShortcutAction::RowTrash => Some(TrackMenuAction::MoveToTrash),
         ShortcutAction::RowCopy => Some(TrackMenuAction::CopyFilename),
         ShortcutAction::RowShow => Some(TrackMenuAction::ShowInFileManager),
-        ShortcutAction::RowDetails => Some(TrackMenuAction::Details),
-        ShortcutAction::RowReanalyse => Some(TrackMenuAction::ReanalyseTruePeak),
         _ => None,
     };
 }
@@ -312,6 +307,12 @@ fn run_row_action(window: &AppWindow, host: &dyn Host, action: ShortcutAction, c
         ShortcutAction::MenuUp => move_menu_ring(window, -1),
         ShortcutAction::MenuDown => move_menu_ring(window, 1),
         ShortcutAction::MenuChoose => choose_menu_row(window, host),
+        ShortcutAction::MenuAccess(letter) => {
+            let Some(menu_action) = access_action(letter) else {
+                return false;
+            };
+            run_chord_on_row(window, host, menu_action, true);
+        }
         other => {
             let Some(menu_action) = menu_action_of(other) else {
                 return false;
@@ -341,7 +342,7 @@ fn run_chord_on_row(window: &AppWindow, host: &dyn Host, action: TrackMenuAction
 }
 
 /// What: `request_row_menu` asks the track list to open the menu of the row with the ring, as a right click would.
-/// Why: Menu and Shift+F10 open the focused row's menu (D106); the list knows where the row is on screen.
+/// Why: Menu and Alt+Enter open the focused row's menu (D106, D114); the list knows where the row is on screen.
 fn request_row_menu(window: &AppWindow) {
     let (rows, ring) = read_state(|state: &ScreenState| return (state.shown_rows.clone(), state.ring_track));
     let Some(position) = rows.iter().position(|row| return row.kind == 0 && Some(row.index) == ring) else {

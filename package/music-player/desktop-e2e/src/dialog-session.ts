@@ -1,9 +1,10 @@
 /**
  The dialog session: Ctrl+Shift+O in a session of its own.
  
- The system folder dialog is a window of its own. The nested compositor does not hand keyboard focus back to the
- player window after that dialog closes (probed: after Escape closed it and after a click on the player, no key
- reached the app), so no later key could be pressed in the same session.
+ The system folder dialog is a window of its own. Compositor 0.3.0 did not hand keyboard focus back to the player
+ window after that dialog closed (probed: after Escape closed it and after a click on the player, no key reached the
+ app), which is why this session is separate from the wide one. Compositor 0.4.0 returns focus to the window that had
+ it, and the second check proves that a key reaches the player afterwards.
  
  @example
  ```ts
@@ -17,6 +18,8 @@
 
 import { wait, } from '@monochromatic-dev/module-async-time/ts';
 
+import { chordKeys, } from './actions.ts';
+import { isSearchWithField, } from './conditions.ts';
 import {
   type RunContext,
   startContextSession,
@@ -29,6 +32,7 @@ import {
 } from './image.ts';
 import { WIDE_WINDOW, } from './layout.ts';
 import { pollUntil, } from './poll.ts';
+import { press, } from './press.ts';
 import { SESSION_READY_MS, } from './timing.ts';
 import type { UiState, } from './ui-state.ts';
 
@@ -193,6 +197,34 @@ export async function runDialogSession(context: RunContext,): Promise<void> {
       },);
       return `a dialog covered ${seen.difference
         .count} pixels, and Escape closed it`;
+    },
+  },);
+  await recorder.check({
+    id: 'dialog/focus-returns',
+    title: 'after the system folder dialog closes, the player window has the keyboard again and a key reaches it',
+    body: async function keysReachPlayerAfterDialog(): Promise<string> {
+      /**
+       The compositor's list of windows: only the player is left, and it has keyboard focus.
+       */
+      const windows = await session.send('windows',);
+      expect({
+        condition: windows.startsWith('ok 1 ',) && windows.includes('focused=true',),
+        message: `the compositor lists "${windows}" after the dialog closed`,
+      },);
+
+      /**
+       The state with Search open, which only a key that reached the player can cause.
+       */
+      const state = await press({
+        session,
+        act: chordKeys({
+          mods: ['ctrl',],
+          key: 'f',
+        },),
+        until: isSearchWithField,
+        what: 'Search opened by Ctrl+F after the dialog',
+      },);
+      return `${windows}; Ctrl+F opened ${state.route} with focus ${state.focus}`;
     },
   },);
 }

@@ -24,11 +24,15 @@ import { WIDE_WINDOW, } from './layout.ts';
 import { SESSION_READY_MS, } from './timing.ts';
 import type { UiState, } from './ui-state.ts';
 import { checkBadges, } from './wide-badges.ts';
+import { checkBreakpoint, } from './wide-breakpoint.ts';
+import { checkClickThrough, } from './wide-interaction.ts';
 import {
   checkBrowsing,
   checkFolderList,
 } from './wide-browse.ts';
 import { checkDoubleShift, } from './wide-double-shift.ts';
+import { checkLists, } from './wide-lists.ts';
+import { checkMenuPlacement, } from './wide-menu.ts';
 import { checkLaunchAndFocus, } from './wide-focus.ts';
 import { checkPlayback, } from './wide-playback.ts';
 import { checkMenuAndDelete, } from './wide-row-menu.ts';
@@ -140,6 +144,10 @@ export async function runWideSession(context: RunContext,): Promise<void> {
     context,
     session,
   },);
+  await checkMenuPlacement({
+    context,
+    session,
+  },);
   await checkSearchAndTooltip({
     context,
     session,
@@ -153,6 +161,18 @@ export async function runWideSession(context: RunContext,): Promise<void> {
     session,
   },);
   await checkBadges({
+    context,
+    session,
+  },);
+  await checkClickThrough({
+    context,
+    session,
+  },);
+  await checkLists({
+    context,
+    session,
+  },);
+  await checkBreakpoint({
     context,
     session,
   },);

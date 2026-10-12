@@ -47,8 +47,6 @@ impl RecordingHost {
             Command::SetPlaybackMode(mode) => format!("mode {mode:?}"),
             Command::SetPageScope(indices) => format!("scope {}", indices.len()),
             Command::SelectIndex(index) => format!("select {index}"),
-            Command::Rescan => "rescan".to_owned(),
-            Command::ReanalyseTrack(_) => "reanalyse".to_owned(),
             _ => "other".to_owned(),
         };
     }

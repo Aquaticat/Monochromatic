@@ -8,6 +8,7 @@
 import { Theme } from "theme.slint";
 import { StateLayer } from "state_layer.slint";
 import { Focus, FocusStop, FocusRing, Keys } from "focus.slint";
+import { Scrollbar, LastInput } from "scrollbar.slint";
 
 // One row of the Templates section: the template's name, the line it currently yields and its leading icon.
 export struct SettingsTemplateRow {
@@ -213,7 +214,7 @@ export component SettingsPage inherits Rectangle {
     }
 
     // Body below the header. The rows scroll when the text grows past the window.
-    Flickable {
+    body-flick := Flickable {
         x: 0px;
         y: root.header-height;
         width: root.width;
@@ -389,6 +390,19 @@ export component SettingsPage inherits Rectangle {
                     }
                 }
             }
+        }
+    }
+
+    // Scrollbar (D22): always visible and draggable for the pointer, a fading non-interactive bar for touch. It is after the
+    // rows, so it is above them, and a touch area ignores the wheel, so the wheel still scrolls the list below it.
+    Scrollbar {
+        x: root.width - self.width;
+        y: body-flick.y;
+        height: body-flick.height;
+        content-y: body-flick.content-y;
+        content-height: body-flick.content-height;
+        scroll-to(y) => {
+            body-flick.content-y = y;
         }
     }
 }

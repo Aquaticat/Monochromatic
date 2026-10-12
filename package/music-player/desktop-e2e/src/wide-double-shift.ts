@@ -164,6 +164,6 @@ export async function checkDoubleShift(
     id: 'double-shift/repeat',
     title: 'a held Shift with repeats is not a double tap',
     reason:
-      'modifier keys send no repeat events through the compositor, so this case cannot be produced here; the pure detector test covers it',
+      'a modifier key never repeats on Wayland (the client skips modifiers when it repeats a held key, so holding Shift gives one press and one release, as on a real desktop); the case cannot occur, and the pure detector test covers the sequence',
   },);
 }

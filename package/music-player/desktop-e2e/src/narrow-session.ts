@@ -34,6 +34,7 @@ import {
   press,
   tabSequence,
 } from './press.ts';
+import { checkNarrowClickThrough, } from './narrow-interaction.ts';
 import { SESSION_READY_MS, } from './timing.ts';
 import type { UiState, } from './ui-state.ts';
 
@@ -420,5 +421,9 @@ export async function runNarrowSession(context: RunContext,): Promise<void> {
         what: 'the player page',
       },);
     },
+  },);
+  await checkNarrowClickThrough({
+    context,
+    session,
   },);
 }

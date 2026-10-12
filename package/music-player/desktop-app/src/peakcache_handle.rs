@@ -328,17 +328,6 @@ impl CacheHandle {
     /// ```ts
     /// knownFingerprints(): Set<bigint> { ... }
     /// ```
-    pub(crate) fn remove(&self, fingerprint: u64) {
-        // What:     Send the removal; ignore a closed actor.
-        // Why:      The write channel is ordered, so a later upsert for the same track lands after this removal.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // writeTx.send({ kind: "remove", fingerprint });
-        // ```
-        let _ = self.write_tx.send(Write::Remove(fingerprint));
-    }
-
     pub(crate) fn known_fingerprints(&self) -> HashSet<u64> {
         // What:     Make the reply pair; send `Known`.
         // Why:      The actor replies with a clone of its in-memory key set.

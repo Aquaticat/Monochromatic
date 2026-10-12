@@ -8,22 +8,23 @@
 //!  so it is fully
 //! unit-tested.
 //!
-//! Playback has a SCOPE that it loops over,
-//!  chosen by the shuffle mode:
+//! Playback has a SCOPE that it walks,
+//!  chosen by the playback mode:
 //!
 //! - `PlaybackMode::InOrder` and `PlaybackMode::ShufflePage` confine playback to the
-//!   current track's PAGE (its top-level folder under the loaded root,
-//!    or its
-//!   A-Z/`#` letter bucket for a root-level track;
+//!   current track's PAGE (its top-level folder under the opened folder,
+//!    or the page of the
+//!   loose files for a track directly in it;
 //!    the same grouping the UI tabs
 //!   use,
 //!    computed by the `pagination` module).
-//!    `Off` plays the page in load
-//!   order;
-//!    `WithinPage` shuffles the page.
-//!    Either way,
-//!    reaching the end of the
-//!   page loops back to its start.
+//!    `InOrder` plays the page in load
+//!   order and STOPS at its end (D2:
+//!    "In order = play to the end of the folder and stop");
+//!    `ShufflePage` shuffles the page and,
+//!    when every track has played,
+//!    starts a new cycle.
+//!    A manual Next at the end of the page wraps to its start.
 //! - `PlaybackMode::ShuffleAll` scopes playback to the whole queue,
 //!    shuffled,
 //!    and loops
@@ -50,8 +51,8 @@
 //!  a manual Next/Prev still moves within the scope.
 //!
 //! Design decision (deliberate):
-//!  because `Off`/`WithinPage` are page-confined
-//! and always loop the page,
+//!  because `InOrder` is page-confined
+//! and stops at the end of the page,
 //!  there is no way to play the whole queue in load
 //! order and loop the whole queue (non-shuffle + repeat-all).
 //!  When not
@@ -137,6 +138,8 @@ pub struct Queue {
     /// private tracks: string[];
     /// ```
     tracks: Vec<PathBuf>,
+    /// The opened folder that display names and pages are relative to, or `None` to strip the shared directory.
+    display_root: Option<PathBuf>,
     /// What:
     ///      `order: Vec<usize>`.
     ///  A growable array of indices into `tracks`.
@@ -318,6 +321,7 @@ impl Queue {
         // ```
         return Queue {
             tracks: Vec::new(),
+            display_root: None,
             order: Vec::new(),
             pos: None,
             mode: PlaybackMode::InOrder,
@@ -520,7 +524,23 @@ impl Queue {
         // ```ts
         // return relativeDisplayPaths(this.tracks);
         // ```
-        return crate::relpath::relative_display_paths(&self.tracks)
+        return crate::relpath::relative_display_paths_in(&self.tracks, self.display_root.as_deref())
+    }
+
+    /// What:
+    ///      `pub fn set_display_root(&mut self, root: Option<PathBuf>)` names the opened folder that display names and
+    ///  pages are relative to.
+    /// Why:
+    ///       A library with one top-level folder must keep that folder in its names, and loose files must form one
+    ///  page; both need the opened folder, not the longest directory the tracks share (LS1). Set it before the tracks.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// setDisplayRoot(root: string | null): void { this.displayRoot = root; }
+    /// ```
+    pub fn set_display_root(&mut self, root: Option<PathBuf>) {
+        tracing::debug!(root = ?root, "the queue's display root is set");
+        self.display_root = root;
     }
 
     /// What:
@@ -732,7 +752,7 @@ impl Queue {
         //           keys track by track instead of grouping every display name into pages.
         // Why:      the playback scope and the visible page still agree (same grouping rules, tested against
         //           `paginate`), without the allocation per name that cost over a second at one million tracks.
-        match crate::relpath::page_scope_for_anchor(&self.tracks, anchor) {
+        match crate::relpath::page_scope_for_anchor_in(&self.tracks, anchor, self.display_root.as_deref()) {
             Some(indices) => return indices,
             None => return (0..self.tracks.len()).collect(),
         }
@@ -1108,7 +1128,7 @@ impl Queue {
             return None;
         }
         if !self.page_scope.contains(&track) {
-            self.page_scope = match crate::relpath::page_scope_for_anchor(&self.tracks, track) {
+            self.page_scope = match crate::relpath::page_scope_for_anchor_in(&self.tracks, track, self.display_root.as_deref()) {
                 Some(indices) => indices,
                 None => (0..self.tracks.len()).collect(),
             };
@@ -1203,7 +1223,8 @@ impl Queue {
     ///   if (natural && this.repeatTrack) return this.order[pos];
     ///   const next = pos + 1;
     ///   if (next < this.order.length) { this.pos = next; return this.order[next]; }
-    ///   this.pos = 0; return this.order[0]; // loop the scope (page or all)
+    ///   if (natural && this.mode === "in_order") return null; // D2: In order stops at the end of the folder
+    ///   this.pos = 0; return this.order[0]; // a manual Next loops the scope (page or all)
     /// }
     /// ```
     pub fn advance(&mut self, natural: bool) -> Option<usize> {
@@ -1327,10 +1348,24 @@ impl Queue {
             // ```
             return Some(self.order[next]);
         }
+        // What:     `if natural && self.mode == PlaybackMode::InOrder { return None; }`. A track that ended by itself
+        //           at the last slot of the scope has nothing after it; the cursor stays on that track.
+        // Why:      D2: "In order = play to the end of the folder and stop". The polish review finding PB4: the scope
+        //           looped forever. The caller stops playback and calls `rewind_scope`. A manual Next (`natural` false)
+        //           still wraps to the start, because Next must always have a target and `load_current` steps past
+        //           unreadable files with it.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // if (natural && this.mode === "in_order") return null;
+        // ```
+        if natural && self.mode == PlaybackMode::InOrder {
+            tracing::info!(slot = pos, "In order reached the end of the scope; nothing follows");
+            return None;
+        }
         // What:     `self.pos = Some(0);`. Past the end of the scope: wrap to its start.
         //           `Some(0)` wraps index 0.
-        // Why:      Off loops the page. There is no "stop at end" mode (only repeat-track
-        //           changes natural-end).
+        // Why:      A manual Next loops the page.
         //
         // In TS you'd write (pseudocode):
         // ```ts
@@ -1385,7 +1420,53 @@ impl Queue {
         if pos + 1 < self.order.len() {
             return Some(self.order[pos + 1]);
         }
+        // In order stops at the end of the scope, so no track is staged behind the last one; `advance(true)` agrees.
+        if self.mode == PlaybackMode::InOrder {
+            return None;
+        }
         return Some(self.order[self.sequential_start])
+    }
+
+    /// What:
+    ///      `pub fn first_in_scope(&self) -> Option<usize>` is the first track of the displayed page, or the first
+    ///  track of the queue when no page has been shown to the engine yet; `None` for an empty queue.
+    /// Why:
+    ///       Play with nothing selected starts here (the polish review finding EM2): the button used to flip to Pause
+    ///  and nothing played.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// firstInScope(): number | null { return this.pageScope[0] ?? (this.tracks.length ? 0 : null); }
+    /// ```
+    pub fn first_in_scope(&self) -> Option<usize> {
+        if let Some(first) = self.page_scope.first() {
+            return Some(*first);
+        }
+        if self.tracks.is_empty() {
+            return None;
+        }
+        return Some(0);
+    }
+
+    /// What:
+    ///      `pub fn rewind_scope(&mut self) -> Option<usize>` puts the cursor on the first track of the scope and returns
+    ///  it, or `None` when nothing is queued.
+    /// Why:
+    ///       After In order has played its scope to the end and stopped, Play must start the folder again from its first
+    ///  track, as a disc player does; leaving the cursor on the last track would end again at once.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// rewindScope(): number | null { if (!this.order.length) return null; this.pos = this.sequentialStart; return this.order[this.pos]; }
+    /// ```
+    pub fn rewind_scope(&mut self) -> Option<usize> {
+        if self.order.is_empty() {
+            return None;
+        }
+        let slot: usize = self.sequential_start.min(self.order.len() - 1);
+        self.pos = Some(slot);
+        tracing::info!(slot, track = self.order[slot], "the cursor is back on the first track of the scope");
+        return Some(self.order[slot]);
     }
 
     /// What:
@@ -1496,7 +1577,7 @@ impl Queue {
         // ```
         let last = self.order.len() - 1;
         // What:     `self.pos = Some(last);`. Set the cursor to the last slot.
-        // Why:      Wrap behaviour (the scope always loops).
+        // Why:      Wrap behaviour (Previous at the start of the scope goes to its last track).
         //
         // In TS you'd write (pseudocode):
         // ```ts

@@ -30,6 +30,7 @@ import {
 } from '@monochromatic-dev/module-logger/ts';
 
 import { runCommand, } from './command.ts';
+import { compositorVersionProblem, } from './compositor-version.ts';
 import type { RunConfig, } from './config.ts';
 import type { RunContext, } from './context.ts';
 import { runDialogSession, } from './dialog-session.ts';
@@ -39,6 +40,7 @@ import { buildLibrary, } from './library.ts';
 import { runNarrowSession, } from './narrow-session.ts';
 import { createNullSink, } from './pipewire.ts';
 import { runQuitSession, } from './quit-session.ts';
+import { runStatesSession, } from './states-session.ts';
 import { createRecorder, } from './recorder.ts';
 import {
   type Outcome,
@@ -78,15 +80,18 @@ const SESSION_RUNNERS: Readonly<Record<SessionName, (context: RunContext,) => Pr
   narrow: runNarrowSession,
   dialog: runDialogSession,
   quit: runQuitSession,
+  states: runStatesSession,
   visual: runVisualSessions,
 };
 
 /**
- Checks what the run needs before it touches anything: the release binary, a reachable PipeWire, and no other run.
+ Checks what the run needs before it touches anything: the release binary, a compositor of the needed version, a
+ reachable PipeWire, and no other run.
  
  @param config - paths of the run
  
- @throws CheckFailureError when the binary is missing, PipeWire is unreachable, or another run is active
+ @throws CheckFailureError when the binary is missing, the compositor is missing or too old, PipeWire is unreachable, or
+ another run is active
  
  @example
  ```ts
@@ -97,6 +102,30 @@ export async function checkPreconditions(config: RunConfig,): Promise<void> {
   expect({
     condition: await pathExists(config.releaseBinary,),
     message: `the release binary ${config.releaseBinary} does not exist; the task builds it first`,
+  },);
+
+  expect({
+    condition: await pathExists(config.compositorPath,),
+    message: `the compositor ${config.compositorPath} does not exist; install it or set E2E_COMPOSITOR`,
+  },);
+
+  /**
+   What the compositor prints for `--version`.
+   */
+  const version = await runCommand({
+    command: config.compositorPath,
+    args: ['--version',],
+  },);
+  /**
+   Why the compositor cannot run the checks, empty when it can.
+   */
+  const versionProblem = compositorVersionProblem({
+    output: version.stdout,
+    path: config.compositorPath,
+  },);
+  expect({
+    condition: versionProblem === '',
+    message: versionProblem,
   },);
 
   /**

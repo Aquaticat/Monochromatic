@@ -50,8 +50,6 @@ pub enum Scope {
     /// The player page,
     ///  whatever holds focus.
     PlayerPage,
-    /// The player page with focus anywhere except a text field.
-    PlayerNotTyping,
     /// The player page with focus on the lists,
     ///  the deck or the surface (not a text field or another page's control).
     PlaybackArea,
@@ -131,8 +129,6 @@ const C: &[Modifier] = &[Modifier::Ctrl];
 const A: &[Modifier] = &[Modifier::Alt];
 /// Alt with Shift.
 const AS: &[Modifier] = &[Modifier::Alt, Modifier::Shift];
-/// Shift alone.
-const S: &[Modifier] = &[Modifier::Shift];
 
 /// What:
 ///      `row` builds a table row that applies to both maps,
@@ -313,7 +309,6 @@ pub static BINDINGS: &[Binding] = &[
     row(ShortcutAction::FocusFolders, A, &["1"], Scope::PlayerPage),
     row(ShortcutAction::FocusTracks, A, &["2"], Scope::PlayerPage),
     row(ShortcutAction::OpenFolderDialog, PS, &["o"], Scope::PlayerPage),
-    row(ShortcutAction::Rescan, NONE, &["F5"], Scope::PlayerNotTyping),
     row(ShortcutAction::Quit, P, &["q"], Scope::Anywhere),
     // Inside a focused list: the arrows, Home, End, the page keys, Enter. A letter has its own rule in the classifier.
     row(ShortcutAction::ListUp, NONE, &["ArrowUp"], Scope::ListZone).repeating(),
@@ -325,14 +320,12 @@ pub static BINDINGS: &[Binding] = &[
     row(ShortcutAction::ListPageUp, NONE, &["PageUp"], Scope::ListZone).repeating(),
     row(ShortcutAction::ListPageDown, NONE, &["PageDown"], Scope::ListZone).repeating(),
     row(ShortcutAction::ListActivate, NONE, &["Enter"], Scope::ListZone),
-    // The focused track row: its menu, trash, copy, show, details and re-analyse.
+    // The focused track row: its menu (Menu key or Alt+Enter), trash, copy and show.
     row(ShortcutAction::RowMenu, NONE, &["ContextMenu"], Scope::TrackList),
-    row(ShortcutAction::RowMenu, S, &["F10"], Scope::TrackList),
+    row(ShortcutAction::RowMenu, A, &["Enter"], Scope::TrackList),
     row(ShortcutAction::RowTrash, NONE, &["Delete"], Scope::TrackList).in_menu(),
     row(ShortcutAction::RowCopy, PS, &["c"], Scope::TrackList).in_menu(),
     row(ShortcutAction::RowShow, PS, &["e"], Scope::TrackList).in_menu(),
-    row(ShortcutAction::RowDetails, A, &["Enter"], Scope::TrackList).in_menu(),
-    row(ShortcutAction::RowReanalyse, PS, &["F5"], Scope::TrackList).in_menu(),
 ];
 
 /// What:

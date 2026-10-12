@@ -33,7 +33,7 @@ pub(crate) trait Host {
     fn quit(&self);
 
     /// What: `run_row_action` performs one track menu action on the row the menu target names.
-    /// Why: the row chords (Delete, copy, show, details, re-analyse) and the open menu's Enter share the menu's actions.
+    /// Why: the row chords (Delete, copy, show) and the open menu's Enter share the menu's actions.
     fn run_row_action(&self, window: &AppWindow, action: TrackMenuAction);
 }
 

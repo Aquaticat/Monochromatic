@@ -18,6 +18,7 @@ use truepeak_core::Decision;
 //           sleep (measure.rs no longer imports it), clock + epoch for unique names.
 // Why:      Wait for the async sweep, and build a collision-free throwaway cache path.
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
+use std::collections::HashSet;
 use std::sync::{Mutex, PoisonError};
 
 // What:     `fn temp_cache(tag: &str) -> PathBuf`. A fresh throwaway cache-file path.
@@ -32,6 +33,8 @@ fn sweep_job(tracks: Vec<PathBuf>, cache: CacheHandle) -> SweepJob {
         sink: crate::sweep_report::noop_sink(),
         generation: 1,
         gate: Arc::new(SweepGate::new()),
+        claims: Arc::new(Mutex::new(HashSet::new())),
+        quiet: false,
     };
 }
 
@@ -226,6 +229,8 @@ fn a_paused_sweep_claims_no_track_until_it_is_resumed() {
         sink,
         generation: 1,
         gate: Arc::clone(&gate),
+        claims: Arc::new(Mutex::new(HashSet::new())),
+        quiet: false,
     });
 
     thread::sleep(Duration::from_millis(600));
@@ -264,6 +269,8 @@ fn closing_the_gate_while_paused_ends_the_sweep_without_hanging() {
         sink,
         generation: 1,
         gate: Arc::clone(&gate),
+        claims: Arc::new(Mutex::new(HashSet::new())),
+        quiet: false,
     });
 
     thread::sleep(Duration::from_millis(300));
@@ -278,4 +285,83 @@ fn closing_the_gate_while_paused_ends_the_sweep_without_hanging() {
     let _ = std::fs::remove_file(&path);
     let _ = std::fs::remove_file(path.with_extension("db-wal"));
     let _ = std::fs::remove_file(path.with_extension("db-shm"));
+}
+
+/// What: `peak_reports_for` counts the measures with a true peak that the reports carry for tracks whose path ends with `name`.
+/// Why: one such measure is one decode of that file.
+fn peak_reports_for(reports: &Arc<Mutex<Vec<SweepReport>>>, name: &str) -> usize {
+    return reports
+        .lock()
+        .unwrap_or_else(PoisonError::into_inner)
+        .iter()
+        .map(|report| {
+            return match report {
+                SweepReport::Measures { measures, .. } => measures
+                    .iter()
+                    .filter(|(path, measure)| return path.ends_with(name) && measure.peak_dbtp.is_some())
+                    .count(),
+                _ => 0,
+            };
+        })
+        .sum();
+}
+
+#[test]
+fn two_sweeps_of_one_load_decode_a_track_only_once() {
+    let path = temp_cache("claims");
+    let cache = CacheHandle::open_at(path.clone());
+    let tracks = three_fixture_tracks();
+    let (sink, reports) = collecting_sink();
+    let claims: Arc<Mutex<HashSet<u64>>> = Arc::new(Mutex::new(HashSet::new()));
+    for quiet in [false, true] {
+        spawn_queue_measurement(SweepJob {
+            tracks: tracks.clone(),
+            current: None,
+            cache: cache.clone(),
+            sink: Arc::clone(&sink),
+            generation: 1,
+            gate: Arc::new(SweepGate::new()),
+            claims: Arc::clone(&claims),
+            quiet,
+        });
+    }
+    assert!(wait_for(20, || return final_progress_seen(&reports, tracks.len())), "the sweep of the load finished");
+    thread::sleep(Duration::from_millis(1_000));
+    for name in ["tone.flac", "tone.mp3", "tone.wav"] {
+        assert_eq!(peak_reports_for(&reports, name), 1, "{name} was decoded once, not once per sweep");
+    }
+    let _ = std::fs::remove_file(&path);
+}
+
+#[test]
+fn a_file_that_cannot_be_decoded_is_tried_again_by_the_next_sweep_of_the_same_load() {
+    let path = temp_cache("retry");
+    let cache = CacheHandle::open_at(path.clone());
+    let broken = std::env::temp_dir().join(format!("music-player-broken-{}.flac", std::process::id()));
+    std::fs::write(&broken, b"this is not audio").expect("the broken file is written");
+    let (sink, reports) = collecting_sink();
+    let claims: Arc<Mutex<HashSet<u64>>> = Arc::new(Mutex::new(HashSet::new()));
+    let unreadable = |log: &Arc<Mutex<Vec<SweepReport>>>| {
+        return log
+            .lock()
+            .unwrap_or_else(PoisonError::into_inner)
+            .iter()
+            .filter(|report| return matches!(report, SweepReport::Unreadable { .. }))
+            .count();
+    };
+    for (round, quiet) in [(1, false), (2, true)] {
+        spawn_queue_measurement(SweepJob {
+            tracks: vec![broken.clone()],
+            current: None,
+            cache: cache.clone(),
+            sink: Arc::clone(&sink),
+            generation: 1,
+            gate: Arc::new(SweepGate::new()),
+            claims: Arc::clone(&claims),
+            quiet,
+        });
+        assert!(wait_for(10, || return unreadable(&reports) >= round), "sweep {round} reported the broken file");
+    }
+    let _ = std::fs::remove_file(&broken);
+    let _ = std::fs::remove_file(&path);
 }

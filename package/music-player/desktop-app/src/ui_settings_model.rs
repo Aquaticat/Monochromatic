@@ -59,8 +59,10 @@ pub struct EditorView {
     pub has_help: bool,
     /// Insertable fields in list order.
     pub fields: Vec<EditorField>,
-    /// Notes drawn under the preview.
+    /// Notes drawn under the preview: where its rows come from.
     pub notes: Vec<String>,
+    /// The note that says the rows keep the last valid template, or empty while the template applies.
+    pub kept_note: String,
     /// Whether Reset to default is offered.
     pub can_reset: bool,
 }
@@ -124,7 +126,8 @@ pub fn editor_view(editor: &TemplateEditorState) -> EditorView {
                 value: field.value,
             })
             .collect(),
-        notes: editor.preview_notes().into_iter().map(str::to_string).collect(),
+        notes: vec![editor.source_note().to_string()],
+        kept_note: editor.kept_note().map_or_else(String::new, str::to_string),
         can_reset: editor.can_reset(),
     };
 }

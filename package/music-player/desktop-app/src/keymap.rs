@@ -374,8 +374,6 @@ pub enum ShortcutAction {
     ListLetter(char),
     /// Opens the system folder dialog.
     OpenFolderDialog,
-    /// Rescans the library.
-    Rescan,
     /// Quits the application.
     Quit,
     /// Opens the menu of the focused track row.
@@ -386,10 +384,8 @@ pub enum ShortcutAction {
     RowCopy,
     /// Shows the focused track row in the file manager.
     RowShow,
-    /// Shows the details of the focused track row.
-    RowDetails,
-    /// Re-analyses the true peak of the focused track row.
-    RowReanalyse,
+    /// Runs the track menu row whose access letter was pressed while the menu is open.
+    MenuAccess(char),
     /// Moves the track menu's highlighted row up.
     MenuUp,
     /// Moves the track menu's highlighted row down.
@@ -464,14 +460,12 @@ impl ShortcutAction {
             Self::ListActivate => "list-activate",
             Self::ListLetter(_) => "list-letter",
             Self::OpenFolderDialog => "open-folder-dialog",
-            Self::Rescan => "rescan",
             Self::Quit => "quit",
             Self::RowMenu => "row-menu",
             Self::RowTrash => "row-trash",
             Self::RowCopy => "row-copy",
             Self::RowShow => "row-show",
-            Self::RowDetails => "row-details",
-            Self::RowReanalyse => "row-reanalyse",
+            Self::MenuAccess(_) => "menu-access",
             Self::MenuUp => "menu-up",
             Self::MenuDown => "menu-down",
             Self::MenuChoose => "menu-choose",
@@ -581,6 +575,7 @@ fn composing_or_popup_action(request: &ShortcutRequest) -> Option<ShortcutAction
 ///  Escape closes it,
 ///  Up,
 ///  Down and Enter choose a row,
+///  an access letter runs its row,
 ///  and the track row chords act on the row the menu is open on.
 /// Why:
 ///      D106 gives the open menu those keys and nothing else,
@@ -597,13 +592,44 @@ fn popup_action(request: &ShortcutRequest) -> ShortcutAction {
     if request.key == "Escape" {
         return ShortcutAction::ClosePopup;
     }
-    return popup_binding_matching(request).map_or(ShortcutAction::Owner, |binding| {
+    if let Some(binding) = popup_binding_matching(request) {
         return if request.repeat && !binding.repeats {
             ShortcutAction::IgnoreRepeat
         } else {
             binding.action
         };
-    });
+    }
+    return menu_access_action(request).unwrap_or(ShortcutAction::Owner);
+}
+
+/// What:
+///      `menu_access_action` maps a plain letter pressed while the track menu is open to the row it runs.
+/// Why:
+///      D114 gives every menu row an access letter; the letters come from the one table in `track_menu`, so the underline
+///  the window draws and the key this accepts cannot disagree. A letter held with Control, Alt or Meta is not an access
+///  key, and a held-down letter does not run the row twice.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function menuAccessAction(r: ShortcutRequest): ShortcutAction | null {
+///   if (r.ctrl || r.meta || r.alt || r.key.length !== 1) return null;
+///   return accessAction(r.key) === null ? null : r.repeat ? "ignore-repeat" : { kind: "menu-access", letter: r.key.toLowerCase() };
+/// }
+/// ```
+fn menu_access_action(request: &ShortcutRequest) -> Option<ShortcutAction> {
+    if request.ctrl || request.meta || request.alt {
+        return None;
+    }
+    let mut characters = request.key.chars();
+    let first = characters.next()?;
+    if characters.next().is_some() {
+        return None;
+    }
+    crate::track_menu::access_action(first)?;
+    if request.repeat {
+        return Some(ShortcutAction::IgnoreRepeat);
+    }
+    return Some(ShortcutAction::MenuAccess(first.to_lowercase().next()?));
 }
 
 /// What:
@@ -696,7 +722,6 @@ pub(crate) fn scope_allows(scope: Scope, request: &ShortcutRequest) -> bool {
     return match scope {
         Scope::Anywhere => true,
         Scope::PlayerPage => on_player,
-        Scope::PlayerNotTyping => on_player && request.zone != FocusZone::TextField,
         Scope::PlaybackArea => on_player && request.zone.in_playback_area(),
         Scope::SpaceZones => {
             on_player

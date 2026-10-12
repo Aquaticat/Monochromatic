@@ -22,8 +22,9 @@ import { TemplateEditor, EditorFieldRow, EditorPreviewRow } from "template_edito
 // Root window. Properties named after engine messages (track-name, position, duration, playing, volume,
 // playback-mode, current-index) are written from Rust; view models are pushed by the ui_* glue modules.
 export component AppWindow inherits Window {
-    // Window title mirrors the playing track while audio plays, and reverts to "Music Player" when paused or idle.
-    title: root.playing && root.track-name != "" ? root.track-name : "Music Player";
+    // Window title mirrors the playing track's cleaned title (the one the deck shows, without folder, extension or
+    // shared prefix) while audio plays, and reverts to "Music Player" when paused or idle.
+    title: root.playing && root.deck-title != "" ? root.deck-title : "Music Player";
     min-width: 360px;
     preferred-width: 480px;
     preferred-height: 600px;
@@ -94,7 +95,7 @@ export component AppWindow inherits Window {
     // Position and height of the ringed track row in the list.
     in property <length> track-ring-offset: 0px;
     in property <length> track-ring-height: 48px;
-    // The Menu key and Shift+F10 ask for the ringed row's menu with these.
+    // The Menu key and Alt+Enter ask for the ringed row's menu with these.
     in property <int> track-menu-tick: 0;
     in property <int> track-menu-index: -1;
     in property <length> track-menu-offset: 0px;
@@ -114,6 +115,8 @@ export component AppWindow inherits Window {
 
     // Folder picker and library view models.
     in property <string> folder-title: "";
+    // Title of the folded layout's header: the folder shown, or the library's name while no folder page exists (EM5).
+    in property <string> folded-title: "";
     in-out property <bool> picker-open: false;
     in property <bool> library-available: true;
     in property <[FolderRailCell]> rail-cells: [];
@@ -138,6 +141,9 @@ export component AppWindow inherits Window {
     in property <string> deck-folder: "";
     in property <string> deck-subtitle: "";
     in property <string> shuffle-folder-label: "";
+    // The folder name without its last few characters, and those characters, for the Shuffle segment's middle ellipsis (D1).
+    in property <string> shuffle-folder-head: "";
+    in property <string> shuffle-folder-tail: "";
 
     // First run replaces the track area; 0 hides it.
     in property <int> first-run-state: 0;
@@ -191,13 +197,38 @@ export component AppWindow inherits Window {
     in property <bool> editor-has-help: false;
     in property <[EditorFieldRow]> editor-fields: [];
     in property <[string]> editor-notes: [];
+    // Note that the rows keep the last valid template; empty while the typed template applies.
+    in property <string> editor-kept-note: "";
     in property <bool> editor-can-reset: false;
 
     // Track menu view model; the popup is shown from the row's request.
     in property <string> menu-title: "";
     in property <[TrackMenuItem]> menu-items: [];
+    // Where the pointer asked for the menu, in window coordinates (the list reports them that way).
     property <length> menu-x: 0px;
     property <length> menu-y: 0px;
+    // Size of the open menu card, written by the card itself (a popup's content cannot be read from outside it). The
+    // width follows the rows (280 px or more), so no shortcut hint is cut.
+    in-out property <length> menu-card-width: 280px;
+    in-out property <length> menu-card-height: 0px;
+    // Where the menu card sits after it is pulled back inside the window, in window coordinates, so the whole card stays
+    // visible. The popup takes its position from these, and the state log and the window tests read them to check that the
+    // menu opens at the pointer.
+    out property <length> menu-card-x: max(0px, min(root.menu-x, root.width - root.menu-card-width));
+    out property <length> menu-card-y: max(0px, min(root.menu-y, root.height - root.menu-card-height));
+    // Fade-in progress of the page on top (Search, Settings, the narrow editor page) and of the folded layout's folder picker
+    // overlay: 1 at rest. Opening one drops it to 0 at once and animates it back to 1 over `Theme.motion-enter`. The drop is
+    // made with a zero-length animation, because the `animate` block would otherwise animate the drop too, the same device as
+    // the Settings pane fade below. A page and the overlay are destroyed when they close, so only the fade in is seen.
+    // (A binding that only follows the route cannot do this: Slint reads it first when the page is built, so the first
+    // opening would have no value to animate from.)
+    property <float> page-enter: 1;
+    property <float> picker-enter: 1;
+    property <bool> enter-reset: false;
+    animate page-enter, picker-enter {
+        duration: root.enter-reset ? 0ms : Theme.motion-enter;
+        easing: ease-out;
+    }
 
     // Callbacks to Rust, one per user action.
     callback toggle-play();
@@ -261,6 +292,12 @@ export component AppWindow inherits Window {
     // The narrow editor page has no field that takes focus on its own, so the key scope holds it there too; without a
     // focused element the window delivers no key to the key scope at all.
     changed route => {
+        if (root.route != 0) {
+            root.enter-reset = true;
+            root.page-enter = 0;
+            root.enter-reset = false;
+            root.page-enter = 1;
+        }
         Focus.player-active = root.route == 0;
         if (root.route == 0 || root.route == 3) {
             key-scope.focus();
@@ -271,6 +308,13 @@ export component AppWindow inherits Window {
     // back; a list that was asked for takes it again one frame later.
     changed picker-open => {
         key-scope.focus();
+        // The overlay of the folded layout fades in each time the picker opens (see page-enter).
+        if (root.picker-open) {
+            root.enter-reset = true;
+            root.picker-enter = 0;
+            root.enter-reset = false;
+            root.picker-enter = 1;
+        }
     }
     changed first-run-state => {
         if (root.route == 0) {
@@ -312,7 +356,7 @@ export component AppWindow inherits Window {
     VerticalLayout {
         visible: !root.unfolded && root.route < 2;
         cover-top := CoverTopRow {
-            folder-title: root.folder-title;
+            folder-title: root.folded-title;
             picker-open: root.picker-open;
             show-search: root.library-available;
             toggle-picker => { root.toggle-picker(); }
@@ -332,6 +376,7 @@ export component AppWindow inherits Window {
         }
         if root.first-run-state == 0 && root.picker-open : FolderPickerPane {
             vertical-stretch: 1;
+            opacity: root.picker-enter;
             cells: root.rail-cells;
             names: root.folder-names;
             current-folder: root.current-folder;
@@ -374,6 +419,8 @@ export component AppWindow inherits Window {
             playing: root.playing;
             mode: root.playback-mode;
             shuffle-folder-label: root.shuffle-folder-label;
+            shuffle-folder-head: root.shuffle-folder-head;
+            shuffle-folder-tail: root.shuffle-folder-tail;
             seek(s) => { root.seek(s); }
             previous => { root.prev(); }
             toggle-play => { root.toggle-play(); }
@@ -476,6 +523,8 @@ export component AppWindow inherits Window {
             playing: root.playing;
             mode: root.playback-mode;
             shuffle-folder-label: root.shuffle-folder-label;
+            shuffle-folder-head: root.shuffle-folder-head;
+            shuffle-folder-tail: root.shuffle-folder-tail;
             seek(s) => { root.seek(s); }
             previous => { root.prev(); }
             toggle-play => { root.toggle-play(); }
@@ -488,7 +537,9 @@ export component AppWindow inherits Window {
     }
 
     // The search and settings buttons, last in the Tab order and in the same place in both layouts. They hide with the
-    // player, and a page drawn over the player covers them.
+    // player, and a page drawn over the player covers them. Neither D106 nor D79 sets a Tab position for them: D106 gives
+    // each its own chord (Ctrl+F, Ctrl+Alt+S) and D79 only asks that leaving Search returns to the control that opened it.
+    // They stay last, so Tab walks the folders, the tracks and the deck first, as the first review verified.
     HeaderActions {
         x: 0px;
         y: 0px;
@@ -504,6 +555,7 @@ export component AppWindow inherits Window {
     // Search route drawn over the player. Unfolded, it covers only the right pane, where the track list is, so the
     // folder picker and the deck on the left stay visible and usable; folded, it covers the whole window.
     if root.route == 1 : SearchPage {
+        opacity: root.page-enter;
         x: root.unfolded ? root.width / 2 : 0px;
         y: 0px;
         width: root.unfolded ? root.width / 2 : root.width;
@@ -526,6 +578,7 @@ export component AppWindow inherits Window {
     // Settings route: the Templates rows. Narrow, a tap opens that template's editor page. Wide, the page is the left pane
     // and a row selects the template that the right pane edits in place.
     if root.route == 2 : SettingsPage {
+        opacity: root.page-enter;
         x: 0px;
         y: 0px;
         width: root.settings-list-width;
@@ -548,7 +601,7 @@ export component AppWindow inherits Window {
         width: root.width - root.settings-list-width;
         height: root.height;
         embedded: true;
-        pane-opacity: root.settings-pane-opacity;
+        pane-opacity: root.settings-pane-opacity * root.page-enter;
         title: root.editor-title;
         text: root.editor-text;
         preview-rows: root.editor-preview-rows;
@@ -558,6 +611,7 @@ export component AppWindow inherits Window {
         has-help: root.editor-has-help;
         fields: root.editor-fields;
         notes: root.editor-notes;
+        kept-note: root.editor-kept-note;
         can-reset: root.editor-can-reset;
         text-edited(t, start, end) => { root.editor-text-edited(t, start, end); }
         focus-changed(focused) => { root.editor-focus-changed(focused); }
@@ -572,6 +626,7 @@ export component AppWindow inherits Window {
         y: 0px;
         width: root.width;
         height: root.height;
+        pane-opacity: root.page-enter;
         title: root.editor-title;
         text: root.editor-text;
         preview-rows: root.editor-preview-rows;
@@ -581,6 +636,7 @@ export component AppWindow inherits Window {
         has-help: root.editor-has-help;
         fields: root.editor-fields;
         notes: root.editor-notes;
+        kept-note: root.editor-kept-note;
         can-reset: root.editor-can-reset;
         text-edited(t, start, end) => { root.editor-text-edited(t, start, end); }
         focus-changed(focused) => { root.editor-focus-changed(focused); }
@@ -589,12 +645,13 @@ export component AppWindow inherits Window {
         back => { root.editor-back(); }
     }
 
-    // Feedback messages float near the bottom edge (D29, D83).
+    // Feedback messages float near the bottom edge (D29, D83). On the unfolded layout they stay over the track pane, so a
+    // long message never crosses the pane divider or covers the transport of the left pane.
     FeedbackOverlay {
-        x: 12px;
+        x: root.unfolded ? root.width / 2 + 12px : 12px;
         y: root.height - self.preferred-height - 96px;
-        width: root.width - 24px;
-        available-width: root.width - 24px;
+        width: (root.unfolded ? root.width / 2 : root.width) - 24px;
+        available-width: (root.unfolded ? root.width / 2 : root.width) - 24px;
         items: root.feedback-items;
         dismiss(id) => { root.feedback-dismiss(id); }
         action(id) => { root.feedback-action(id); }
@@ -604,12 +661,24 @@ export component AppWindow inherits Window {
 
     // Track action menu, shown at the row position that requested it. Escape and outside clicks dismiss it.
     track-menu-popup := PopupWindow {
-        // The menu opens at the click point, pulled back so the whole card stays inside the window.
-        x: max(0px, min(root.menu-x, root.width - 280px));
-        y: max(0px, min(root.menu-y, root.height - menu-card.height));
-        width: 280px;
+        // The menu opens at the click point, pulled back so the whole card stays inside the window. The point is in
+        // window coordinates, which is the frame of this popup's parent (the window), so no pane offset is added.
+        x: root.menu-card-x;
+        y: root.menu-card-y;
+        width: menu-card.card-width;
         menu-card := TrackMenu {
             width: parent.width;
+            // The root clamps the position with the card's size, so the card reports it when it is built and when it changes.
+            init => {
+                root.menu-card-width = self.card-width;
+                root.menu-card-height = self.height;
+            }
+            changed card-width => {
+                root.menu-card-width = self.card-width;
+            }
+            changed height => {
+                root.menu-card-height = self.height;
+            }
             title: root.menu-title;
             items: root.menu-items;
             ring: root.menu-ring;

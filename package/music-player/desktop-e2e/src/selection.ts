@@ -18,7 +18,7 @@
 /**
  The sessions of a run, in the order they run.
  */
-export type SessionName = 'dialog' | 'narrow' | 'quit' | 'visual' | 'wide';
+export type SessionName = 'dialog' | 'narrow' | 'quit' | 'states' | 'visual' | 'wide';
 
 /**
  The group prefixes and exact ids that bring a session into a filtered run.
@@ -53,6 +53,10 @@ export const SESSION_RULES: readonly SessionRule[] = [
       'audio',
       'track',
       'tooltip',
+      'menu',
+      'click-through',
+      'lists',
+      'layout',
     ],
     exact: [],
   },
@@ -61,6 +65,7 @@ export const SESSION_RULES: readonly SessionRule[] = [
     prefixes: [
       'folded',
       'editor-page',
+      'click-through',
     ],
     exact: [],
   },
@@ -73,6 +78,11 @@ export const SESSION_RULES: readonly SessionRule[] = [
   {
     name: 'quit',
     prefixes: ['quit',],
+    exact: [],
+  },
+  {
+    name: 'states',
+    prefixes: ['states',],
     exact: [],
   },
   {
@@ -91,7 +101,7 @@ export const SESSION_RULES: readonly SessionRule[] = [
  
  @example
  ```ts
- sessionsFor({ only: '', },); // all five
+ sessionsFor({ only: '', },); // all six
  ```
  */
 export function sessionsFor(

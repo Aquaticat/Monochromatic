@@ -21,13 +21,13 @@ await describe({
     it({
       name: 'runs every session in order for an empty filter',
       fn: async ({ expect, }) => {
-        expect(sessionsFor({ only: '', },),).toEqual(['wide', 'narrow', 'dialog', 'quit', 'visual',],);
+        expect(sessionsFor({ only: '', },),).toEqual(['wide', 'narrow', 'dialog', 'quit', 'states', 'visual',],);
       },
     },),
     it({
       name: 'runs the wide session for the group prefixes of its checks',
       fn: async ({ expect, }) => {
-        for (const only of ['start', 'focus/ring-moves', 'seek', 'row/delete', 'badges', 'double-shift', 'audio', 'tooltip',])
+        for (const only of ['start', 'focus/ring-moves', 'seek', 'row/delete', 'badges', 'double-shift', 'audio', 'tooltip', 'menu/opens-at-pointer',])
           expect(sessionsFor({ only, },),).toEqual(['wide',],);
       },
     },),
@@ -36,7 +36,10 @@ await describe({
       fn: async ({ expect, }) => {
         expect(sessionsFor({ only: 'folded/tab-order', },),).toEqual(['narrow',],);
         expect(sessionsFor({ only: 'editor-page', },),).toEqual(['narrow',],);
+        expect(sessionsFor({ only: 'click-through/search-narrow', },),).toEqual(['wide', 'narrow',],);
+        expect(sessionsFor({ only: 'click-through/search-wide', },),).toEqual(['wide', 'narrow',],);
         expect(sessionsFor({ only: 'quit', },),).toEqual(['quit',],);
+        expect(sessionsFor({ only: 'states/in-order-stops', },),).toEqual(['states',],);
         expect(sessionsFor({ only: 'visual/dark', },),).toEqual(['visual',],);
       },
     },),

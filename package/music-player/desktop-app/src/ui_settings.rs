@@ -23,6 +23,11 @@ use crate::{AppWindow, EditorFieldRow, EditorPreviewRow, SettingsTemplateRow};
 type SaveTemplates = fn(Option<&str>, Option<&str>) -> std::io::Result<()>;
 
 thread_local! {
+    /// What: the text of each template whose draft did not apply when the editor was last left, as (track rows, playing track).
+    /// Why: leaving the editor rebuilds it from the applied texts, which used to drop a draft that did not apply without a
+    /// word; the draft is kept here for the rest of the run (it is never saved to the session, because it does not apply),
+    /// and the next editor shows it again with its mistakes and the note that the rows keep the last valid template.
+    static KEPT_DRAFTS: std::cell::RefCell<(Option<String>, Option<String>)> = const { std::cell::RefCell::new((None, None)) };
     /// What: the persistence function of this UI thread.
     /// Why: only the event-loop thread saves templates, and tests replace it per test thread.
     static SAVER: std::cell::Cell<SaveTemplates> = const { std::cell::Cell::new(Session::save_templates) };
@@ -131,6 +136,19 @@ pub(crate) fn build_editor(state: &ScreenState) -> TemplateEditorState {
             let length = text.encode_utf16().count();
             editor = editor.open(kind).with_edit(TemplateEditorEdit {
                 text: text.to_string(),
+                selection_start: length,
+                selection_end: length,
+            });
+        }
+    }
+    // A draft that did not apply when the editor was left comes back as the draft; it does not change what is applied.
+    let (kept_track_rows, kept_playing) = KEPT_DRAFTS.with(|cell| return cell.borrow().clone());
+    for (kind, kept) in [(TemplateKind::TrackRows, kept_track_rows), (TemplateKind::PlayingTrack, kept_playing)] {
+        if let Some(text) = kept {
+            let length = text.encode_utf16().count();
+            tracing::debug!(?kind, "restoring a draft that did not apply");
+            editor = editor.open(kind).with_edit(TemplateEditorEdit {
+                text,
                 selection_start: length,
                 selection_end: length,
             });
@@ -288,6 +306,7 @@ fn commit_templates() {
         tracing::debug!("no editor value to commit");
         return;
     };
+    remember_drafts_that_do_not_apply();
     // A template the user never changed is stored as None and applied as its default text, which is the same template.
     let changed = read_state(|state| {
         return effective_text(TemplateKind::TrackRows, state.track_rows_template.as_deref())
@@ -308,6 +327,24 @@ fn commit_templates() {
         state.playing_template = playing;
         state.editor = Some(build_editor(state).open(open_kind));
     });
+}
+
+/// What: `remember_drafts_that_do_not_apply` keeps the text of every template whose draft does not apply, and forgets the rest.
+/// Why: the editor is rebuilt from the applied texts when it is left, so a draft that does not apply would otherwise vanish
+/// without a word; a draft that does apply is the applied text and needs no keeping.
+fn remember_drafts_that_do_not_apply() {
+    let kept = read_state(|state| {
+        let editor = state.editor.as_ref()?;
+        let draft_of = |kind: TemplateKind| {
+            let opened = editor.open(kind);
+            return if opened.is_valid() { None } else { Some(opened.text().to_string()) };
+        };
+        return Some((draft_of(TemplateKind::TrackRows), draft_of(TemplateKind::PlayingTrack)));
+    });
+    if let Some(drafts) = kept {
+        tracing::debug!(track_rows = drafts.0.is_some(), playing = drafts.1.is_some(), "drafts that do not apply are kept");
+        KEPT_DRAFTS.with(|cell| *cell.borrow_mut() = drafts);
+    }
 }
 
 /// What: `effective_text` gives the text a template actually uses: the saved one, or the default when none is saved.
@@ -387,6 +424,7 @@ pub(crate) fn project_pages(window: &AppWindow) {
             .collect(),
     ));
     window.set_editor_notes(model_of(page.notes.iter().map(|note| return note.as_str().into()).collect()));
+    window.set_editor_kept_note(page.kept_note.as_str().into());
     window.set_editor_can_reset(page.can_reset);
 }
 

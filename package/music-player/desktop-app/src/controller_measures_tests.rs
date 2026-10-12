@@ -1,12 +1,13 @@
 // What:     Unit tests for `controller_measures.rs`, pulled in by `#[cfg(test)] #[path = "controller_measures_tests.rs"] mod tests;`.
 // Why:      Reports from a replaced queue must never reach the window, the folder name must be sent for each state,
-//           and re-analysis must change the row before it measures again.
+//           and nothing offers a manual re-analysis (D113).
 
 // What:     `use super::*;` brings the controller methods and their imports into the test scope.
 // Why:      The tests drive the methods on a real controller built with a recording callback.
 use super::*;
 
-use std::sync::Mutex;
+use std::path::PathBuf;
+use std::sync::{Arc, Mutex};
 
 use crate::controller::Controller;
 use crate::peakcache::CacheHandle;
@@ -103,19 +104,4 @@ fn decision_measure_of_the_playing_track_is_published() {
     };
     controller.publish_decision_measure(Path::new("/music/a.flac"), &decision);
     assert_eq!(tags(&log), vec!["measures:1".to_string()]);
-}
-
-#[test]
-fn reanalyse_of_a_readable_track_shows_its_length_before_measuring() {
-    let (controller, log) = recording_controller();
-    let track = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("fixture").join("tone.wav");
-    controller.reanalyse_track(track);
-    assert_eq!(tags(&log), vec!["measures:1".to_string()]);
-}
-
-#[test]
-fn reanalyse_of_a_missing_track_sends_nothing() {
-    let (controller, log) = recording_controller();
-    controller.reanalyse_track(PathBuf::from("/nonexistent/missing.flac"));
-    assert!(tags(&log).is_empty());
 }

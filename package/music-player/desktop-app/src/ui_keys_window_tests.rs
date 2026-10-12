@@ -203,10 +203,16 @@ fn ctrl_shift_o_asks_for_the_system_folder_dialog() {
 }
 
 #[test]
-fn f5_rescans_the_library() {
+fn f5_and_ctrl_shift_f5_do_nothing_because_the_library_refreshes_by_itself() {
     let (app, host) = unfolded();
     tap(&app, "F5");
-    assert_eq!(host.sent_texts(), ["rescan"]);
+    chord(&app, &["Ctrl", "Shift"], "F5");
+    chord(&app, &["Alt"], "2");
+    tap(&app, "Down");
+    tap(&app, "F5");
+    chord(&app, &["Ctrl", "Shift"], "F5");
+    assert!(host.sent_texts().iter().all(|text| return !text.contains("rescan") && !text.contains("reanalyse")), "{:?}", host.sent_texts());
+    assert!(host.row_actions.borrow().is_empty(), "no row action ran");
 }
 
 #[test]
@@ -353,17 +359,9 @@ fn the_row_chords_act_on_the_row_under_the_ring() {
     tap(&app, "Delete");
     chord(&app, &["Ctrl", "Shift"], "C");
     chord(&app, &["Ctrl", "Shift"], "E");
-    chord(&app, &["Alt"], "Enter");
-    chord(&app, &["Ctrl", "Shift"], "F5");
     assert_eq!(
         *host.row_actions.borrow(),
-        [
-            TrackMenuAction::MoveToTrash,
-            TrackMenuAction::CopyFilename,
-            TrackMenuAction::ShowInFileManager,
-            TrackMenuAction::Details,
-            TrackMenuAction::ReanalyseTruePeak,
-        ]
+        [TrackMenuAction::MoveToTrash, TrackMenuAction::CopyFilename, TrackMenuAction::ShowInFileManager]
     );
     assert_eq!(read_state(|state| return state.menu_index), Some(2), "they all named row 2");
 }
@@ -379,8 +377,8 @@ fn the_row_chords_do_nothing_outside_the_track_list() {
 }
 
 #[test]
-fn the_menu_key_and_shift_f10_open_the_menu_of_the_ringed_row() {
-    for open in [(&[][..], "Menu"), (&["Shift"][..], "F10")] {
+fn the_menu_key_and_alt_enter_open_the_menu_of_the_ringed_row_and_shift_f10_does_not() {
+    for open in [(&[][..], "Menu"), (&["Alt"][..], "Enter")] {
         let (app, _host) = unfolded();
         chord(&app, &["Alt"], "2");
         tap(&app, "Down");
@@ -389,6 +387,56 @@ fn the_menu_key_and_shift_f10_open_the_menu_of_the_ringed_row() {
         assert!(app.get_menu_open(), "{open:?} opened the menu");
         assert_eq!(read_state(|state| return state.menu_index), Some(2));
         assert_eq!(app.get_menu_ring(), 0, "it opens with its first row highlighted");
+    }
+    let (app, _host) = unfolded();
+    chord(&app, &["Alt"], "2");
+    tap(&app, "Down");
+    chord(&app, &["Shift"], "F10");
+    advance(32);
+    assert!(!app.get_menu_open(), "Shift+F10 is Run in JetBrains and opens nothing (D114)");
+}
+
+#[test]
+fn an_access_letter_runs_its_row_and_closes_the_menu() {
+    for action in music_player::track_menu::track_menu_actions_for() {
+        let (app, host) = unfolded();
+        chord(&app, &["Alt"], "2");
+        tap(&app, "Menu");
+        advance(32);
+        assert!(app.get_menu_open());
+        let letter = music_player::track_menu::access_key(*action).to_string();
+        tap(&app, &letter);
+        assert_eq!(*host.row_actions.borrow(), [*action], "{letter} ran {action:?}");
+        assert!(!app.get_menu_open(), "{letter} closed the menu");
+    }
+}
+
+#[test]
+fn a_letter_that_is_not_an_access_key_leaves_the_menu_open_and_runs_nothing() {
+    let (app, host) = unfolded();
+    chord(&app, &["Alt"], "2");
+    tap(&app, "Menu");
+    advance(32);
+    tap(&app, "z");
+    chord(&app, &["Ctrl"], "p");
+    assert!(app.get_menu_open());
+    assert!(host.row_actions.borrow().is_empty());
+}
+
+#[test]
+fn each_menu_row_underlines_its_access_letter_in_its_label() {
+    let (app, _host) = unfolded();
+    chord(&app, &["Alt"], "2");
+    tap(&app, "Menu");
+    advance(32);
+    let items = app.get_menu_items();
+    assert_eq!(items.row_count(), music_player::track_menu::track_menu_actions_for().len());
+    for (item, action) in items.iter().zip(music_player::track_menu::track_menu_actions_for()) {
+        let (before, access, after) = music_player::track_menu::access_label(*action);
+        assert_eq!(item.label_before.as_str(), before);
+        assert_eq!(item.access.as_str(), access);
+        assert_eq!(item.label_after.as_str(), after);
+        assert_eq!(format!("{}{}{}", item.label_before, item.access, item.label_after), item.label.as_str(), "the parts join into the label");
     }
 }
 
@@ -435,7 +483,7 @@ fn every_menu_row_shows_its_shortcut_right_aligned_in_the_row() {
     tap(&app, "Menu");
     advance(32);
     let shortcuts: Vec<String> = app.get_menu_items().iter().map(|item| return item.shortcut.to_string()).collect();
-    assert_eq!(shortcuts, ["Enter", "", "Alt+Enter", "Ctrl+Shift+F5", "Ctrl+Shift+E", "Ctrl+Shift+C", "Delete"]);
+    assert_eq!(shortcuts, ["Enter", "", "", "Ctrl+Shift+E", "Ctrl+Shift+C", "Delete"]);
 }
 
 // ---- Tooltips and badges ----
@@ -585,11 +633,11 @@ fn a_key_between_the_shift_taps_cancels_the_double_tap() {
     let (app, host) = unfolded();
     tap_shift(&app);
     advance(30);
-    tap(&app, "F5");
+    chord(&app, &["Ctrl"], "m");
     advance(30);
     tap_shift(&app);
     assert_eq!(app.get_route(), Route::Player.to_int());
-    assert_eq!(host.sent_texts(), ["rescan"]);
+    assert!(host.sent_texts().iter().any(|text| return text.starts_with("mode")), "the key between the taps was used: {:?}", host.sent_texts());
 }
 
 #[test]

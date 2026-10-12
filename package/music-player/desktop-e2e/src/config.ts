@@ -3,7 +3,8 @@
  
  Environment variables: `E2E_ONLY` (a check id or group prefix to run alone), `E2E_OUT` (screenshots and summary,
  default `target/e2e` under the app directory), `E2E_TMP` (scratch root, default `temp/agent/music-player-e2e` under the
- home directory), `E2E_LIBRARY_GENERATOR` (the library generator script).
+ home directory), `E2E_LIBRARY_GENERATOR` (the library generator script), `E2E_COMPOSITOR` (the compositor executable,
+ default the pinned mise install).
  
  @example
  ```ts
@@ -19,7 +20,7 @@ import { join, } from 'node:path';
 
 /**
  The compositor version the checks were probed on. The control API and the key names the checks use belong to this
- version; it answers "unknown key" for F5, F10 and Menu, and another version could change that.
+ version; it answers "unknown key" for Menu, and another version could change that.
  */
 export const PINNED_COMPOSITOR_VERSION = '0.3.0';
 
@@ -40,6 +41,7 @@ export type RunConfig = {
  Values that replace the defaults, each present only when the user set it.
  */
 export type RunOverrides = {
+  readonly compositorPath?: string;
   readonly generatorPath?: string;
   readonly only?: string;
   readonly outputRoot?: string;
@@ -47,8 +49,8 @@ export type RunOverrides = {
 };
 
 /**
- Reads the overrides from the environment variables `E2E_ONLY`, `E2E_OUT`, `E2E_TMP` and
- `E2E_LIBRARY_GENERATOR`.
+ Reads the overrides from the environment variables `E2E_ONLY`, `E2E_OUT`, `E2E_TMP`, `E2E_LIBRARY_GENERATOR` and
+ `E2E_COMPOSITOR`.
  
  @returns the overrides whose variables are set
  
@@ -62,12 +64,14 @@ export function overridesFromEnvironment(): RunOverrides {
    Values of the variables, each possibly unset.
    */
   const {
+    E2E_COMPOSITOR,
     E2E_LIBRARY_GENERATOR,
     E2E_ONLY,
     E2E_OUT,
     E2E_TMP,
   } = process.env;
   return {
+    ...E2E_COMPOSITOR === undefined ? {} : { compositorPath: E2E_COMPOSITOR, },
     ...E2E_LIBRARY_GENERATOR === undefined ? {} : { generatorPath: E2E_LIBRARY_GENERATOR, },
     ...E2E_ONLY === undefined ? {} : { only: E2E_ONLY, },
     ...E2E_OUT === undefined ? {} : { outputRoot: E2E_OUT, },
@@ -105,8 +109,9 @@ export function loadRunConfig(
   return {
     appDir,
     // The pinned install is used directly: the mise shim on PATH needs the user's trusted config, which the systemd unit
-    // that hosts the compositor does not have.
-    compositorPath: join(
+    // that hosts the compositor does not have. E2E_COMPOSITOR names another executable, such as a build that is not
+    // installed yet.
+    compositorPath: overrides.compositorPath ?? join(
       home,
       '.local',
       'share',

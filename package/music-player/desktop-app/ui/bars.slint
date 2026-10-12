@@ -116,7 +116,7 @@ component IconTarget inherits Rectangle {
     }
 }
 
-// Tonal pill with the folder glyph and the Open dir label: 40 px tall visible inside a 48 px target.
+// Tonal pill with the folder glyph and the Open folder label: 40 px tall visible inside a 48 px target.
 // Start padding 16 px, 18 px glyph, 8 px gap, 14 px label, and 24 px end padding, per the M3 tonal button with an icon.
 component OpenPill inherits Rectangle {
     // Key hint badge text; empty draws none.
@@ -148,7 +148,7 @@ component OpenPill inherits Rectangle {
             x: 42px;
             y: 0px;
             height: 40px;
-            text: "Open dir";
+            text: "Open folder";
             font-size: Theme.label-large;
             font-weight: 500;
             vertical-alignment: center;
@@ -161,7 +161,7 @@ component OpenPill inherits Rectangle {
     }
     open-touch := TouchArea {
         accessible-role: button;
-        accessible-label: "Open dir";
+        accessible-label: "Open folder";
         mouse-cursor: pointer;
         clicked => {
             Focus.ring-visible = false;

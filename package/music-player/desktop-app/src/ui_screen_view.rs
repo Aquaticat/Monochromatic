@@ -15,7 +15,8 @@ use music_player::track_entries::{deck_folder_label, track_title_for};
 use music_player::track_measure::{TrackMeasure, lookup_for_positions};
 use std::collections::HashMap;
 
-use crate::ui_screen_rows::{ListRow, Picker, PickerName, list_rows, picker};
+use crate::ui_screen_rows::{ListRow, Picker, PickerName, list_rows, picker, strip_shared_prefixes, mark_unplayable};
+use music_player::title_prefix::{display_title, shared_prefix_len};
 use crate::ui_screen_scroll::ScrollRequest;
 use crate::ui_templates::{playing_subtitle, playing_track};
 use music_player::template_editor_state::TemplateEditorState;
@@ -104,6 +105,10 @@ pub struct ScreenState {
     pub menu_index: Option<usize>,
     /// Whether the engine has reported the library at least once.
     pub loaded: bool,
+    /// Whether the engine is reading a folder right now: set when the walk starts, cleared when its queue arrives.
+    pub reading: bool,
+    /// Library paths that could not be opened for playback, which their rows mark.
+    pub unplayable: std::collections::HashSet<std::path::PathBuf>,
     /// Saved track rows template text, or None for the default.
     pub track_rows_template: Option<String>,
     /// Saved playing track template text, or None for the default.
@@ -158,6 +163,13 @@ impl ScreenState {
         };
     }
 
+    /// What: `deck_disabled` tells whether the transport deck is switched off.
+    /// Why: with no track to play (a folder being read, or a library without audio) the seek bar, the transport and
+    /// the mode group would look live and do nothing (the polish review finding EM2).
+    pub fn deck_disabled(&self) -> bool {
+        return self.reading || self.names.is_empty();
+    }
+
     /// What: `menu_target` gives the open track menu's queue index, display name and absolute path.
     /// Why: a menu action runs on the row the menu was opened for, and that row can leave the queue meanwhile.
     pub fn menu_target(&self) -> Option<(usize, String, std::path::PathBuf)> {
@@ -204,6 +216,47 @@ fn playing_page_label(pages: &PageIndex, index: Option<usize>) -> String {
         .map_or_else(String::new, |page| return page.label.clone());
 }
 
+/// What: `parent_of` is the directory part of a display name, or empty for a loose file.
+/// Why: tracks of one directory share it, and only they can share a filename prefix.
+fn parent_of(name: &str) -> &str {
+    return name.rsplit_once('/').map_or("", |(parent, _file)| return parent);
+}
+
+/// What: `deck_title_of` is the title the deck and the window title show for the playing track: its file name without
+/// the extension and without the prefix its directory's files share (D86), or without the directory's own name.
+/// Why: the deck heading reads `folder / title`; with the whole file name it repeated the folder
+/// (`かめりあ(Camellia) / かめりあ(Camellia) - Aegis`, the polish review finding LS3). The directory is the playing
+/// track's own, which need not be the folder on screen, so its files are found through the page index.
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// const deckTitleOf = (s: ScreenState) => displayTitle(stem(s.trackName), sharedPrefixLen(siblingStems(s)), folderName(s));
+/// ```
+fn deck_title_of(state: &ScreenState, pages: &PageIndex) -> String {
+    if state.track_name.is_empty() {
+        return String::new();
+    }
+    let stem: String = track_title_for(&state.track_name);
+    let Some(page) = state
+        .current_index
+        .and_then(|index| return pages.page_of_index(index))
+        .and_then(|position| return pages.page(position))
+    else {
+        return stem;
+    };
+    let parent: &str = parent_of(&state.track_name);
+    let siblings: Vec<String> = page
+        .indices()
+        .iter()
+        .filter_map(|index| return state.names.get(*index as usize))
+        .filter(|name| return parent_of(name) == parent)
+        .map(|name| return track_title_for(name))
+        .collect();
+    let borrowed: Vec<&str> = siblings.iter().map(String::as_str).collect();
+    let prefix: usize = shared_prefix_len(&borrowed);
+    let folder: &str = if parent.is_empty() { "" } else { parent.rsplit_once('/').map_or(parent, |(_up, name)| return name) };
+    return display_title(&stem, prefix, folder).to_string();
+}
+
 /// What: `view` projects the state into the window's models using the supporting-line function.
 /// Why: rows, picker and deck all come from the one shared `build_player_content` result.
 ///
@@ -242,7 +295,11 @@ pub fn view(state: &ScreenState, supporting_line: &dyn Fn(&TrackFields) -> Optio
         measures,
     };
     let content = build_player_content(&input, supporting_line);
-    let rows = list_rows(&content.entries);
+    // A virtual letter folder (loose files) is not a directory, so its name is never stripped from a title.
+    let strip_folder: &str = if all_pages.page(selected).is_some_and(|page| return page.identity.starts_with("root:")) { "" } else { content.folder_title.as_str() };
+    let mut rows = list_rows(&content.entries);
+    strip_shared_prefixes(&mut rows, strip_folder);
+    mark_unplayable(&mut rows, &state.paths, &state.unplayable);
     let page_key = all_pages.page(selected).map_or_else(String::new, |page| return page.identity.clone());
     let picker_model = picker(&content.sections, &content.folder_title);
     let deck_subtitle = match (playing_position, playing_name) {
@@ -253,11 +310,7 @@ pub fn view(state: &ScreenState, supporting_line: &dyn Fn(&TrackFields) -> Optio
         }
         _ => content.deck.subtitle.clone(),
     };
-    let deck_title = if state.track_name.is_empty() {
-        String::new()
-    } else {
-        track_title_for(&state.track_name)
-    };
+    let deck_title = deck_title_of(state, &all_pages);
     let deck_folder = deck_folder_label(&state.track_name, &playing_page_label(&all_pages, state.current_index));
     return ScreenView {
         folder_title: content.folder_title,

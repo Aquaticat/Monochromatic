@@ -1,7 +1,7 @@
-//! Controller side of the per-track measures: forwards sweep reports, re-analyses one track, names the opened folder.
+//! Controller side of the per-track measures: forwards sweep reports, refreshes them when files change, and names the opened folder.
 //!
 //! What: `impl Controller` methods that turn sweep reports into `Update::Measures` and `Update::Analysis`,
-//! discard the decision of one track on request, and announce the opened folder's display name.
+//! and announce the opened folder's display name.
 //! Why: the controller owns the queue generation and the cache handle, so stale reports are dropped here.
 
 use std::path::{Path, PathBuf};
@@ -11,11 +11,10 @@ use truepeak_core::Decision;
 
 use crate::command::Update;
 use crate::controller::Controller;
-use crate::duration_probe::probe_duration_secs;
-use crate::measure::spawn_track_measurement;
-use crate::peakcache;
-use crate::sweep_report::SweepReport;
-use crate::track_measure::{measure_from_decision, measure_from_duration};
+use crate::measure::spawn_queue_measurement;
+use crate::sweep_gate::SweepGate;
+use crate::sweep_report::{SweepJob, SweepReport};
+use crate::track_measure::measure_from_decision;
 
 /// What:
 ///      `fn display_name_of(root: &Path) -> String`.
@@ -27,7 +26,7 @@ use crate::track_measure::{measure_from_decision, measure_from_duration};
 /// ```ts
 /// const displayNameOf = (root: string) => basename(root) || root;
 /// ```
-fn display_name_of(root: &Path) -> String {
+pub(crate) fn display_name_of(root: &Path) -> String {
     return root
         .file_name()
         .map_or_else(|| return root.display().to_string(), |name| return name.to_string_lossy().into_owned());
@@ -66,6 +65,7 @@ impl Controller {
                     tracing::debug!(generation, current = self.analysis_generation, "dropped measures from a replaced queue");
                     return;
                 }
+                self.forget_reports_of_decoded(&measures);
                 self.emit(Update::Measures(measures));
             }
             SweepReport::Progress { generation, done, total } => {
@@ -74,6 +74,13 @@ impl Controller {
                     return;
                 }
                 self.emit(Update::Analysis { done, total });
+            }
+            SweepReport::Unreadable { generation, files } => {
+                if generation != self.analysis_generation {
+                    tracing::debug!(generation, current = self.analysis_generation, "dropped unreadable files from a replaced queue");
+                    return;
+                }
+                self.report_unplayable_once(files);
             }
         }
     }
@@ -93,60 +100,127 @@ impl Controller {
     }
 
     /// What:
-    ///      `pub(crate) fn reanalyse_track(&self, path: PathBuf)`.
-    ///  Discards one track's cached decision, shows its length without a peak, and measures it again.
+    ///      `pub(crate) fn refresh_measurement(&self)`.
+    ///  Starts a quiet sweep over the current queue for files whose size or modified time changed since they were measured.
     /// Why:
-    ///       The track menu's Re-analyse action must change the row at once and end with a fresh exact peak.
+    ///       D113: analysis follows the files by itself. A file replaced or edited on disk keeps its path, so the queue does
+    ///  not change and no load runs; this sweep measures it again, skips every file with a known fingerprint, shares the
+    ///  claims of the load's own sweep so nothing is decoded twice, and sends no progress and no peeked rows. A file that
+    ///  failed to decode earlier has no decision, so it is tried again here.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
-    /// reanalyseTrack(path: string): void { cache.remove(key); emit(measures: [[path, lengthOnly(path)]]); spawnTrackMeasurement(path, key); }
+    /// refreshMeasurement(): void { spawnQueueMeasurement({ tracks, current, cache, sink, generation, claims, quiet: true }); }
     /// ```
-    pub(crate) fn reanalyse_track(&self, path: PathBuf) {
-        // What:     `let Some(key) = peakcache::fingerprint(&path) else { ... };`. Key the track.
-        // Why:      A file without a fingerprint has no cache entry to discard or to write.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // const key = fingerprint(path); if (key === null) return;
-        // ```
-        let Some(key) = peakcache::fingerprint(&path) else {
-            tracing::warn!(path = %path.display(), "re-analysis skipped: the file has no fingerprint");
+    pub(crate) fn refresh_measurement(&self) {
+        if self.queue.tracks().is_empty() {
+            return;
+        }
+        tracing::debug!(tracks = self.queue.tracks().len(), generation = self.analysis_generation, "refresh sweep started");
+        spawn_queue_measurement(SweepJob {
+            tracks: self.queue.tracks().to_vec(),
+            current: self.queue.current_path().cloned(),
+            cache: self.peaks.clone(),
+            sink: Arc::clone(&self.sweep_sink),
+            generation: self.analysis_generation,
+            gate: SweepGate::shared(),
+            claims: Arc::clone(&self.sweep_claims),
+            quiet: true,
+        });
+    }
+
+    /// What:
+    ///      `pub(crate) fn reload_current_when_its_file_changed(&mut self)`.
+    ///  Loads the selected track again, paused, when its file changed on disk since the decoder opened it and nothing is playing.
+    /// Why:
+    ///       D113: the sweep leaves the selected track to the playback path, which measures it only when it loads. A paused
+    ///  track whose file was replaced would keep the old decoder, the old peak and the old gain until the person picked it
+    ///  again. A playing track is left alone, because loading it again would cut the audio; it picks up the new file when it
+    ///  is loaded next. The reload starts at the beginning of the file, because the old position may not exist in the new one.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// reloadCurrentWhenItsFileChanged(): void {
+    ///   const [path, key] = this.loadedFile ?? []; if (!path || path !== this.queue.currentPath() || this.playing) return;
+    ///   if (fingerprint(path) !== key) this.loadCurrent();
+    /// }
+    /// ```
+    pub(crate) fn reload_current_when_its_file_changed(&mut self) {
+        let Some(current) = self.queue.current_path().cloned() else {
             return;
         };
-        // What:     `self.peaks.remove(key);`. Queue the removal of the track's decision.
-        // Why:      The write channel is ordered, so the new decision written later lands after this removal.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // this.peaks.remove(key);
-        // ```
-        self.peaks.remove(key);
-        // What:     emit the length from the header with no peak, so the row changes at once.
-        // Why:      The old peak is no longer valid; the row shows the length until the new measurement lands.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // this.emit({ kind: "measures", measures: [[path, { durationSecs: probeDurationSecs(path), peakDbtp: null }]] });
-        // ```
-        self.emit(Update::Measures(vec![(path.clone(), measure_from_duration(probe_duration_secs(&path)))]));
-        // What:     `spawn_track_measurement(path, key, ...)`. Decode the track once more in its own thread.
-        // Why:      Re-analysis is a single full decode, so it does not go through the sweep's known-set skip.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // startTrackMeasurement(path, key, this.peaks, this.sweepSink, this.analysisGeneration);
-        // ```
-        spawn_track_measurement(
-            path,
-            key,
-            self.peaks.clone(),
-            Arc::clone(&self.sweep_sink),
-            self.analysis_generation,
-        );
+        let Some((loaded_path, loaded_key)) = self.loaded_file.clone() else {
+            return;
+        };
+        if loaded_path != current || self.source.is_none() {
+            return;
+        }
+        let Some(now) = crate::peakcache::fingerprint(&current) else {
+            return;
+        };
+        if now == loaded_key {
+            return;
+        }
+        if self.playing {
+            tracing::info!(path = %current.display(), "the playing file changed on disk; it is loaded again when it next loads");
+            return;
+        }
+        tracing::info!(path = %current.display(), "the selected file changed on disk; loading it again, paused");
+        if !self.load_current() {
+            self.emit_no_track();
+        }
+    }
+
+    /// What:
+    ///      `pub(crate) fn report_unplayable_once(&self, files: Vec<PathBuf>)`.
+    ///  Tells the window about the files it has not yet been told about.
+    /// Why:
+    ///       D113 and D83: a failure is reported once per file in plain words. The same broken file fails again at every
+    ///  later sweep, and a person who already saw the message does not need it again. A file that is still being written
+    ///  fails with each partial state it passes through, so the report is per file and not per state of the file; it is
+    ///  forgotten when a peak is measured for the file (it decodes now), so a file that breaks again is told again.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// reportUnplayableOnce(files: string[]): void { const fresh = files.filter(f => reported.add(f)); if (fresh.length) emit({ kind: "unplayable", paths: fresh }); }
+    /// ```
+    pub(crate) fn report_unplayable_once(&self, files: Vec<PathBuf>) {
+        let fresh: Vec<PathBuf> = match self.reported_unplayable.lock() {
+            Ok(mut reported) => files.into_iter().filter(|file| return reported.insert(file.clone())).collect(),
+            Err(_poisoned) => files,
+        };
+        if fresh.is_empty() {
+            tracing::debug!("every unplayable file was already reported");
+            return;
+        }
+        self.emit_unplayable(fresh);
+    }
+
+    /// What:
+    ///      `fn forget_reports_of_decoded(&self, measures: &[(PathBuf, TrackMeasure)])`.
+    ///  Forgets the failure report of every file that now has a measured peak.
+    /// Why:
+    ///       A file that decodes again was fixed or replaced; if it breaks later the person is told again (D113).
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// forgetReportsOfDecoded(measures: [string, TrackMeasure][]): void { for (const [p, m] of measures) if (m.peakDbtp !== null) reported.delete(p); }
+    /// ```
+    fn forget_reports_of_decoded(&self, measures: &[(PathBuf, crate::track_measure::TrackMeasure)]) {
+        if let Ok(mut reported) = self.reported_unplayable.lock() {
+            for (path, measure) in measures {
+                if measure.peak_dbtp.is_some() {
+                    reported.remove(path);
+                }
+            }
+        }
     }
 }
 
 #[cfg(test)]
 #[path = "controller_measures_tests.rs"]
 mod tests;
+
+#[cfg(test)]
+#[path = "controller_refresh_tests.rs"]
+mod refresh_tests;

@@ -12,7 +12,7 @@ use crate::keymap::{FocusZone, KeyRoute, shortcut_action};
 fn request_for_row(binding: &Binding, platform: KeyboardPlatform, key: &str) -> ShortcutRequest {
     let held = binding.required(platform);
     let (route, zone, in_popup, picker_overlay) = match binding.scope {
-        Scope::Anywhere | Scope::PlayerPage | Scope::PlayerNotTyping | Scope::PlaybackArea | Scope::SpaceZones => {
+        Scope::Anywhere | Scope::PlayerPage | Scope::PlaybackArea | Scope::SpaceZones => {
             (KeyRoute::Player, FocusZone::Surface, false, false)
         }
         Scope::ListZone | Scope::TrackList => (KeyRoute::Player, FocusZone::TrackList, false, false),
@@ -116,14 +116,11 @@ fn every_action_a_control_or_a_menu_row_shows_has_a_chord_text_on_both_maps() {
         ShortcutAction::FocusFolders,
         ShortcutAction::FocusTracks,
         ShortcutAction::OpenFolderDialog,
-        ShortcutAction::Rescan,
         ShortcutAction::Quit,
         ShortcutAction::RowMenu,
         ShortcutAction::RowTrash,
         ShortcutAction::RowCopy,
         ShortcutAction::RowShow,
-        ShortcutAction::RowDetails,
-        ShortcutAction::RowReanalyse,
         ShortcutAction::ListActivate,
         ShortcutAction::Back,
         ShortcutAction::EditorReset,
@@ -156,14 +153,11 @@ fn chord_texts_match_the_decision_on_windows_and_linux() {
     assert_eq!(text(ShortcutAction::FocusFolders), "Alt+1");
     assert_eq!(text(ShortcutAction::FocusTracks), "Alt+2");
     assert_eq!(text(ShortcutAction::OpenFolderDialog), "Ctrl+Shift+O");
-    assert_eq!(text(ShortcutAction::Rescan), "F5");
     assert_eq!(text(ShortcutAction::Quit), "Ctrl+Q");
     assert_eq!(text(ShortcutAction::RowMenu), "Menu");
     assert_eq!(text(ShortcutAction::RowTrash), "Delete");
     assert_eq!(text(ShortcutAction::RowCopy), "Ctrl+Shift+C");
     assert_eq!(text(ShortcutAction::RowShow), "Ctrl+Shift+E");
-    assert_eq!(text(ShortcutAction::RowDetails), "Alt+Enter");
-    assert_eq!(text(ShortcutAction::RowReanalyse), "Ctrl+Shift+F5");
     assert_eq!(text(ShortcutAction::ListActivate), "Enter");
     assert_eq!(text(ShortcutAction::Back), "Escape");
     assert_eq!(text(ShortcutAction::EditorReset), "Ctrl+Shift+Backspace");
@@ -217,8 +211,6 @@ fn rows_marked_for_the_open_menu_are_the_menu_navigation_and_the_row_chords() {
             ShortcutAction::RowTrash,
             ShortcutAction::RowCopy,
             ShortcutAction::RowShow,
-            ShortcutAction::RowDetails,
-            ShortcutAction::RowReanalyse,
         ]
     );
 }

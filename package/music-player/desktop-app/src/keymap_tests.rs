@@ -306,9 +306,9 @@ fn d106_seek_repeats_but_toggles_do_not() {
     );
 }
 
-// What:     `#[test] fn d106_browsing_rows_classify_as_expected()` checks folders, focus, dialog, rescan and quit.
+// What:     `#[test] fn d106_browsing_rows_classify_as_expected()` checks folders, focus, dialog and quit.
 // Why:      D106 Browsing: Alt+Up and Alt+Down change folder, Ctrl+Shift+G reveals the folder, Alt+1 and Alt+2 focus lists,
-//           Ctrl+Shift+O opens the dialog, F5 rescans, Ctrl+Q quits.
+//           Ctrl+Shift+O opens the dialog, Ctrl+Q quits. F5 is unbound (D113: the library refreshes by itself).
 #[test]
 fn d106_browsing_rows_classify_as_expected() {
     assert_action("browsing: Alt+Up shows the previous folder", ShortcutAction::PreviousFolder, &alt("ArrowUp"));
@@ -317,7 +317,7 @@ fn d106_browsing_rows_classify_as_expected() {
     assert_action("browsing: Alt+1 focuses the folder picker", ShortcutAction::FocusFolders, &alt("1"));
     assert_action("browsing: Alt+2 focuses the track list", ShortcutAction::FocusTracks, &alt("2"));
     assert_action("browsing: Ctrl+Shift+O opens the system dialog", ShortcutAction::OpenFolderDialog, &ctrl_shift("O"));
-    assert_action("browsing: F5 rescans the library", ShortcutAction::Rescan, &pressed("F5"));
+    assert_action("browsing: F5 is unbound, the library refreshes by itself (D113)", ShortcutAction::Unbound, &pressed("F5"));
     assert_action("browsing: Ctrl+Q quits", ShortcutAction::Quit, &ctrl("q"));
     assert_action(
         "browsing: Ctrl+Q quits from Settings too",
@@ -379,23 +379,23 @@ fn d106_list_rows_classify_as_expected() {
 }
 
 // What:     `#[test] fn d106_track_row_rows_classify_as_expected()` checks the keys on the focused track row.
-// Why:      D106: Menu key or Shift+F10 open the menu, Delete trashes, Ctrl+Shift+C copies, Ctrl+Shift+E shows, Alt+Enter details,
-//           Ctrl+Shift+F5 re-analyses.
+// Why:      D106 and D114: the Menu key or Alt+Enter opens the menu, Delete trashes, Ctrl+Shift+C copies, Ctrl+Shift+E shows.
+//           Shift+F10 (Run in JetBrains), F5 and Ctrl+Shift+F5 are unbound (D113, D114).
 #[test]
 fn d106_track_row_rows_classify_as_expected() {
     let row = |request: ShortcutRequest| return in_zone(FocusZone::TrackList, request);
     assert_action("row: Menu key opens the menu", ShortcutAction::RowMenu, &row(pressed("ContextMenu")));
+    assert_action("row: Alt+Enter opens the menu", ShortcutAction::RowMenu, &row(alt("Enter")));
     assert_action(
-        "row: Shift+F10 opens the menu",
-        ShortcutAction::RowMenu,
+        "row: Shift+F10 is unbound",
+        ShortcutAction::Unbound,
         &row(ShortcutRequest { shift: true, ..pressed("F10") }),
     );
     assert_action("row: Delete moves to the trash", ShortcutAction::RowTrash, &row(pressed("Delete")));
     assert_action("row: Ctrl+Shift+C copies", ShortcutAction::RowCopy, &row(ctrl_shift("C")));
     assert_action("row: Ctrl+Shift+E shows in the file manager", ShortcutAction::RowShow, &row(ctrl_shift("E")));
-    assert_action("row: Alt+Enter shows the details", ShortcutAction::RowDetails, &row(alt("Enter")));
-    assert_action("row: Ctrl+Shift+F5 re-analyses", ShortcutAction::RowReanalyse, &row(ctrl_shift("F5")));
-    assert_action("row: F5 alone still rescans", ShortcutAction::Rescan, &row(pressed("F5")));
+    assert_action("row: Ctrl+Shift+F5 is unbound (D113)", ShortcutAction::Unbound, &row(ctrl_shift("F5")));
+    assert_action("row: F5 is unbound (D113)", ShortcutAction::Unbound, &row(pressed("F5")));
     assert_action("not on a row: Delete does nothing", ShortcutAction::Unbound, &pressed("Delete"));
     assert_action("not on a row: Ctrl+Shift+C does nothing", ShortcutAction::Unbound, &ctrl_shift("C"));
     assert_action(
@@ -414,11 +414,19 @@ fn d106_menu_rows_classify_as_expected() {
     assert_action("menu: Enter", ShortcutAction::MenuChoose, &in_menu(pressed("Enter")));
     assert_action("menu: Escape", ShortcutAction::ClosePopup, &in_menu(pressed("Escape")));
     assert_action("menu: Delete trashes the menu's row", ShortcutAction::RowTrash, &in_menu(pressed("Delete")));
-    assert_action("menu: Alt+Enter shows the details", ShortcutAction::RowDetails, &in_menu(alt("Enter")));
+    assert_action("menu: Alt+Enter has no meaning inside the open menu", ShortcutAction::Owner, &in_menu(alt("Enter")));
     assert_action("menu: Ctrl+Shift+E shows the file", ShortcutAction::RowShow, &in_menu(ctrl_shift("E")));
     assert_action("menu: Space stays with the menu", ShortcutAction::Owner, &in_menu(pressed(" ")));
     assert_action("menu: Ctrl+Q is not offered to the menu", ShortcutAction::Owner, &in_menu(ctrl("q")));
-    assert_action("menu: a letter stays with the menu", ShortcutAction::Owner, &in_menu(pressed("a")));
+    assert_action("menu: a letter that is no access key stays with the menu", ShortcutAction::Owner, &in_menu(pressed("a")));
+    assert_action("menu: p runs Play", ShortcutAction::MenuAccess('p'), &in_menu(pressed("p")));
+    assert_action("menu: a capital letter counts too", ShortcutAction::MenuAccess('m'), &in_menu(pressed("M")));
+    assert_action("menu: Ctrl+p is not an access key", ShortcutAction::Owner, &in_menu(ctrl("p")));
+    assert_action(
+        "menu: a held access key does not run twice",
+        ShortcutAction::IgnoreRepeat,
+        &in_menu(ShortcutRequest { repeat: true, ..pressed("p") }),
+    );
     assert_action(
         "menu: a held Down keeps moving",
         ShortcutAction::MenuDown,

@@ -62,6 +62,46 @@ const HOLD_MS = 900;
 const AFTER_HOLD_MS = 300;
 
 /**
+ Repeats a second announced for the counted hold.
+ */
+const SLOW_REPEAT_RATE = 5;
+
+/**
+ Delay before the first repeat announced for the counted hold, in milliseconds.
+ */
+const SLOW_REPEAT_DELAY_MS = 400;
+
+/**
+ How long the counted hold lasts, in milliseconds: the press, then repeats at 400, 600, 800, 1000 and 1200 ms.
+ */
+const COUNTED_HOLD_MS = 1_300;
+
+/**
+ Least and most seconds the counted hold may gain, around the six presses of 10 s each (the press and five repeats).
+ */
+const COUNTED_MIN_GAIN_S = 45;
+
+/**
+ See `COUNTED_MIN_GAIN_S`.
+ */
+const COUNTED_MAX_GAIN_S = 75;
+
+/**
+ Seconds one Alt+Right press seeks.
+ */
+const SEEK_PRESS_S = 10;
+
+/**
+ The repeat rate the compositor announces unless a check changes it, in repeats a second.
+ */
+const DEFAULT_REPEAT_RATE = 25;
+
+/**
+ The repeat delay the compositor announces unless a check changes it, in milliseconds.
+ */
+const DEFAULT_REPEAT_DELAY_MS = 200;
+
+/**
  Smallest step of the seek bar's arrow keys, in seconds.
  */
 const BAR_STEP_S = 1;
@@ -278,6 +318,66 @@ export async function checkSeeking(
         message: `only ${gained.toFixed(1,)} s gained while held: no repeat reached the seek`,
       },);
       return `${gained.toFixed(1,)} s gained in 0.9 s (each press is 10 s)`;
+    },
+  },);
+  await recorder.check({
+    id: 'seek/hold-repeat-count',
+    title: 'a held Alt+Right repeats at the rate and delay the compositor announces, and not at all when repeat is off',
+    body: async function holdRepeatFollowsAnnouncedRate(): Promise<string> {
+      await press({
+        session,
+        act: chordKeys({
+          mods: ['ctrl',],
+          key: 'home',
+        },),
+        until: isAtStart,
+        what: 'the start',
+      },);
+
+      /**
+       Position before the first hold.
+       */
+      const first = (await session.last()).position;
+      await session.ok(`repeat-info ${SLOW_REPEAT_RATE} ${SLOW_REPEAT_DELAY_MS}`,);
+      await session.ok(`key alt+right hold ${COUNTED_HOLD_MS}`,);
+      await wait(AFTER_HOLD_MS,);
+
+      /**
+       Seconds gained with a repeat of 5 a second after 400 ms: the press itself and five repeats.
+       */
+      const repeated = (await session.last()).position - first;
+      await press({
+        session,
+        act: chordKeys({
+          mods: ['ctrl',],
+          key: 'home',
+        },),
+        until: isAtStart,
+        what: 'the start again',
+      },);
+
+      /**
+       Position before the second hold.
+       */
+      const second = (await session.last()).position;
+      await session.ok('repeat-info 0 400',);
+      await session.ok(`key alt+right hold ${COUNTED_HOLD_MS}`,);
+      await wait(AFTER_HOLD_MS,);
+
+      /**
+       Seconds gained with repeat off: the press alone.
+       */
+      const single = (await session.last()).position - second;
+      await session.ok(`repeat-info ${DEFAULT_REPEAT_RATE} ${DEFAULT_REPEAT_DELAY_MS}`,);
+      expect({
+        condition: (repeated >= COUNTED_MIN_GAIN_S) && (repeated <= COUNTED_MAX_GAIN_S),
+        message: `${repeated.toFixed(1,)} s gained at 5 repeats a second after 400 ms; expected about 60 s`,
+      },);
+      expect({
+        condition: Math.abs(single - SEEK_PRESS_S,) < SEEK_TOLERANCE_S,
+        message: `${single.toFixed(1,)} s gained with repeat off; expected one press, ${SEEK_PRESS_S} s`,
+      },);
+      return `${repeated.toFixed(1,)} s with repeat 5 a second after 400 ms, ${single.toFixed(1,)} s with repeat off`;
     },
   },);
   await recorder.check({

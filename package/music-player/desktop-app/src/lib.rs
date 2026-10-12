@@ -301,6 +301,39 @@ pub mod controller;
 pub mod controller_audio;
 
 /// What:
+///      `pub mod controller_flow;` the third `impl Controller` block (`src/controller_flow.rs`).
+/// Why:
+///       Play with nothing selected, the stop at the end of a folder and the report of unplayable files.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// // more methods of the same `controller` class, in another file
+/// ```
+pub mod controller_flow;
+
+/// What:
+///      `pub mod default_library;` the choice of the folder to open when no session names one (`src/default_library.rs`).
+/// Why:
+///       D95: a library is always open, so the home `Music` folder is the last place to look.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// export * as defaultLibrary from "./default_library";
+/// ```
+pub mod default_library;
+
+/// What:
+///      `pub mod dialog_backend;` whether a folder chooser can open (`src/dialog_backend.rs`).
+/// Why:
+///       `Open folder` must say what to do when no chooser exists (the polish review finding PB5).
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// export * as dialogBackend from "./dialog_backend";
+/// ```
+pub mod dialog_backend;
+
+/// What:
 ///      `pub mod engine;` the worker-thread front door (`src/engine.rs`).
 /// Why:
 ///       Spawns the worker and drives a `Controller` from the command channel.
@@ -328,7 +361,7 @@ pub mod watch;
 ///      `pub mod pagination;` the queue-pagination module (`src/pagination.rs`).
 /// Why:
 ///       Pure grouping of display paths into folder pages (subfolder tracks) and
-///           A-Z + `#` letter pages (root-level tracks),
+///           A-Z + `#` letter pages (root-level tracks, virtual folders named by their letter),
 ///  unit-tested.
 ///
 /// In TS you'd write (pseudocode):
@@ -336,6 +369,28 @@ pub mod watch;
 /// export * as pagination from "./pagination";
 /// ```
 pub mod pagination;
+
+/// What:
+///      `pub mod natural_order;` the natural name order (`src/natural_order.rs`).
+/// Why:
+///       The folder walk sorts file and folder names so `Track 2` comes before `Track 10`.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// export * as naturalOrder from "./natural_order";
+/// ```
+pub mod natural_order;
+
+/// What:
+///      `pub mod title_prefix;` the shared filename prefix removal of D86 (`src/title_prefix.rs`).
+/// Why:
+///       Rows and the deck show titles without the text every file of the folder starts with.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// export * as titlePrefix from "./title_prefix";
+/// ```
+pub mod title_prefix;
 
 /// What:
 ///      `pub mod page_index;` the page index built once per library (`src/page_index.rs`).
@@ -444,6 +499,19 @@ pub mod template_tokens;
 /// export * as templateParse from "./template_parse";
 /// ```
 pub mod template_parse;
+
+/// What:
+///      `pub mod template_plain;` writes the editor's mistake lines as plain sentences
+///  (`src/template_plain.rs`).
+/// Why:
+///       The engine keeps its short notes,
+///  and the editor shows one plain sentence per problem.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// export * as templatePlain from "./template_plain";
+/// ```
+pub mod template_plain;
 
 /// What:
 ///      `pub mod template_eval;` shows a template's text for one track,

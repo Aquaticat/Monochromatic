@@ -515,10 +515,13 @@ fn the_icon_circle_uses_the_secondary_pair_and_the_editor_header_is_the_canvas_c
     assert!(circle.contains("background: Theme.secondary;"), "the circle fill is the secondary role");
     assert!(circle.contains("fill: Theme.on-secondary;"), "the glyph is the on-secondary role");
     let editor = include_str!("../ui/template_editor.slint");
-    let from_band = &editor[editor.find("Header band with the Back target").expect("the header band exists")..];
-    let band = &from_band[..from_band.find("Divider under the header").expect("the divider follows the band")];
-    assert!(band.contains("background: Theme.canvas;"), "the band is the canvas color");
+    // D109: the page header has no band of its own, so the page's canvas color shows through, and no divider under it.
+    let from_band = &editor[editor.find("Page header with the Back target").expect("the page header exists")..];
+    let band = &from_band[..from_band.find("Reset to default, at the right end of the header").expect("the Reset button follows the header")];
+    assert!(!band.contains("background:"), "the header paints no band, so the canvas shows");
     assert!(!band.contains("surface-high"), "no surface-high band");
+    assert!(editor.contains("background: Theme.canvas;"), "the page itself is the canvas color");
+    assert!(!editor.contains("Divider under the header"), "the editor page draws no divider under its header");
     assert!(editor.contains("background: Theme.outline-variant;"), "the preview hairlines stay");
     assert!(editor.contains("border-color: root.mistake-lines.length > 0"), "the field outline stays");
 }

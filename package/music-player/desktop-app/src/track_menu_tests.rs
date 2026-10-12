@@ -10,7 +10,7 @@ use super::*;
 
 use std::collections::HashSet;
 
-// What:     `#[test] fn order_matches_decision_d7()` checks the list follows the seven D7 actions in order.
+// What:     `#[test] fn order_matches_decision_d7()` checks the list follows the D7 actions in order (six since D113 removed Re-analyze).
 // Why:      The menu must show the actions in exactly the order the decision lists them.
 #[test]
 fn order_matches_decision_d7() {
@@ -20,7 +20,6 @@ fn order_matches_decision_d7() {
             TrackMenuAction::Play,
             TrackMenuAction::ShuffleFromHere,
             TrackMenuAction::Details,
-            TrackMenuAction::ReanalyseTruePeak,
             TrackMenuAction::ShowInFileManager,
             TrackMenuAction::CopyFilename,
             TrackMenuAction::MoveToTrash,
@@ -49,11 +48,14 @@ fn details_label_is_accepted() {
     assert_eq!(label(TrackMenuAction::Details), "File details");
 }
 
-// What:     `#[test] fn reanalyse_label_is_accepted()` checks the re-analysis action's wording.
-// Why:      Decision D12 names this action as the only entry point for re-analysis.
+// What:     `#[test] fn no_row_offers_to_analyze_again()` checks that no menu row names re-analysis or a rescan.
+// Why:      D113: refresh and re-analysis are automatic and never exposed, so the menu has no entry for either.
 #[test]
-fn reanalyse_label_is_accepted() {
-    assert_eq!(label(TrackMenuAction::ReanalyseTruePeak), "Re-analyse true peak");
+fn no_row_offers_to_analyze_again() {
+    for action in track_menu_actions_for() {
+        let text = label(*action).to_lowercase();
+        assert!(!text.contains("analy") && !text.contains("rescan") && !text.contains("refresh"), "{text}");
+    }
 }
 
 // What:     `#[test] fn show_label_is_accepted()` checks the file manager action's wording.
@@ -122,12 +124,12 @@ fn non_destructive_actions_are_not_marked() {
 }
 
 // What:     `#[test] fn divider_flags_follow_d7_groups()` checks where the dividers fall in the full menu.
-// Why:      Dividers appear before File details and before Show in file manager only.
+// Why:      Dividers appear before File details and before Show in file manager only (Re-analyze is gone, D113).
 #[test]
 fn divider_flags_follow_d7_groups() {
     assert_eq!(
         track_menu_divider_flags(track_menu_actions_for()),
-        [false, false, true, false, true, false, false]
+        [false, false, true, true, false, false]
     );
 }
 
@@ -195,4 +197,44 @@ fn details_suffix_joins_value_with_separator() {
 #[test]
 fn details_suffix_keeps_value_exact() {
     assert_eq!(track_menu_details_suffix(Some(" -1.2 dBTP ")), " ·  -1.2 dBTP ");
+}
+
+// What:     `#[test] fn every_row_has_one_unique_access_letter_taken_from_its_own_label()` checks the access table.
+// Why:      D114: one unique letter per row, from the row's own words, drawn underlined; the letters live in one table.
+#[test]
+fn every_row_has_one_unique_access_letter_taken_from_its_own_label() {
+    let mut seen: HashSet<char> = HashSet::new();
+    for action in track_menu_actions_for() {
+        let letter = access_key(*action);
+        assert!(letter.is_alphabetic() && letter.is_lowercase(), "{action:?} has the access letter {letter:?}");
+        assert!(label(*action).to_lowercase().contains(letter), "{letter} is a letter of {}", label(*action));
+        assert!(seen.insert(letter), "{letter} is used by two rows");
+    }
+    assert_eq!(seen.len(), track_menu_actions_for().len());
+}
+
+// What:     `#[test] fn each_access_letter_finds_its_row_whatever_its_case()` checks the lookup.
+// Why:      The key classifier names a row from the pressed letter, so the lookup must invert the table exactly.
+#[test]
+fn each_access_letter_finds_its_row_whatever_its_case() {
+    for action in track_menu_actions_for() {
+        let letter = access_key(*action);
+        assert_eq!(access_action(letter), Some(*action));
+        assert_eq!(access_action(letter.to_ascii_uppercase()), Some(*action));
+    }
+    assert_eq!(access_action('z'), None);
+    assert_eq!(access_action('1'), None);
+}
+
+// What:     `#[test] fn the_label_splits_around_its_access_letter_and_joins_back()` checks the underline split.
+// Why:      The window draws the middle part underlined; the three parts must join into the visible label.
+#[test]
+fn the_label_splits_around_its_access_letter_and_joins_back() {
+    for action in track_menu_actions_for() {
+        let (before, key, after) = access_label(*action);
+        assert_eq!(format!("{before}{key}{after}"), label(*action));
+        assert_eq!(key.to_lowercase(), access_key(*action).to_string());
+    }
+    assert_eq!(access_label(TrackMenuAction::Details), ("File ".to_string(), "d".to_string(), "etails".to_string()));
+    assert_eq!(access_label(TrackMenuAction::ShowInFileManager).1, "f");
 }

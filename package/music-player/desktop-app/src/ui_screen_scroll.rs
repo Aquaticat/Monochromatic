@@ -75,6 +75,55 @@ pub fn row_offset_px(rows: &[ListRow], index: usize) -> f32 {
     return rows.iter().take(index).map(row_height_px).sum();
 }
 
+/// What: `row_tops_px` gives the distance from the top of the list to the top of every row, and one more entry for the end
+/// of the last row, which is the height of the whole content.
+/// Why: the pane builds only the rows on screen, so it asks for the row at a scroll offset and for where a row starts; one
+/// pass over the rows answers both with a binary search however long the list is.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// const rowTopsPx = (rows: ListRow[]): number[] => {
+///   const tops = [0];
+///   for (const row of rows) tops.push(tops[tops.length - 1] + rowHeightPx(row));
+///   return tops;
+/// };
+/// ```
+pub fn row_tops_px(rows: &[ListRow]) -> Vec<f32> {
+    let mut tops = Vec::with_capacity(rows.len() + 1);
+    let mut top = 0.0_f32;
+    tops.push(top);
+    for row in rows {
+        top += row_height_px(row);
+        tops.push(top);
+    }
+    return tops;
+}
+
+/// What: `row_at_px` gives the index of the row that contains `offset` pixels from the top of the list, clamped to the
+/// first and last row, or 0 for an empty list.
+/// Why: the pane's first built row is the one at the top of its viewport; an offset above the list (a bounce) is the first
+/// row and one below the end is the last.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// const rowAtPx = (tops: number[], offset: number): number =>
+///   Math.max(0, Math.min(tops.length - 2, upperBound(tops, offset) - 1));
+/// ```
+pub fn row_at_px(tops: &[f32], offset: f32) -> usize {
+    let rows = tops.len().saturating_sub(1);
+    if rows == 0 {
+        return 0;
+    }
+    let after = tops.partition_point(|top| return *top <= offset);
+    return after.saturating_sub(1).min(rows - 1);
+}
+
+/// What: `top_of_px` gives where the row at `index` starts, or the end of the content for an index past the last row.
+/// Why: the pane places its first built row at this distance from the top of the content.
+pub fn top_of_px(tops: &[f32], index: usize) -> f32 {
+    return tops.get(index).or_else(|| return tops.last()).copied().unwrap_or(0.0);
+}
+
 /// What: `playing_position` gives the list index of the playing row, or None when no row on this page plays.
 /// Why: `current_row_position` reports -1 for no row, and the scroll code needs an index it can use or skip.
 fn playing_position(rows: &[ListRow]) -> Option<usize> {

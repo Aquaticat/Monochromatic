@@ -5,6 +5,13 @@
  @module
  */
 
+import {
+  chmod,
+  mkdir,
+  mkdtemp,
+  rm,
+  writeFile,
+} from 'node:fs/promises';
 import { join, } from 'node:path';
 import { tmpdir, } from 'node:os';
 
@@ -33,6 +40,55 @@ await describe({
         expect((caught as Error).message,).toBe(
           `the release binary ${join(appDir, 'target', 'release', 'music-player',)} does not exist; the task builds it first`,
         );
+      },
+    },),
+    it({
+      name: 'refuses a compositor that does not exist, before asking PipeWire',
+      fn: async ({ expect, }) => {
+        const appDir = await mkdtemp(join(tmpdir(), 'e2e-pre-',),);
+        await mkdir(join(appDir, 'target', 'release',), { recursive: true, },);
+        await writeFile(join(appDir, 'target', 'release', 'music-player',), '',);
+        const compositor = join(appDir, 'no-such-compositor',);
+        let caught: unknown;
+        try {
+          await checkPreconditions(loadRunConfig({
+            appDir,
+            home: tmpdir(),
+            overrides: { compositorPath: compositor, },
+          },),);
+        }
+        catch (error: unknown) {
+          caught = error;
+        }
+        await rm(appDir, { recursive: true, force: true, },);
+        expect((caught as Error).message,).toBe(
+          `the compositor ${compositor} does not exist; install it or set E2E_COMPOSITOR`,
+        );
+      },
+    },),
+    it({
+      name: 'refuses a compositor older than the checks need, naming both ways out',
+      fn: async ({ expect, }) => {
+        const appDir = await mkdtemp(join(tmpdir(), 'e2e-pre-',),);
+        await mkdir(join(appDir, 'target', 'release',), { recursive: true, },);
+        await writeFile(join(appDir, 'target', 'release', 'music-player',), '',);
+        const compositor = join(appDir, 'old-compositor',);
+        await writeFile(compositor, '#!/usr/bin/env node\nconsole.log("monochromatic-nested-wayland-session 0.3.0");\n',);
+        await chmod(compositor, 0o700,);
+        let caught: unknown;
+        try {
+          await checkPreconditions(loadRunConfig({
+            appDir,
+            home: tmpdir(),
+            overrides: { compositorPath: compositor, },
+          },),);
+        }
+        catch (error: unknown) {
+          caught = error;
+        }
+        await rm(appDir, { recursive: true, force: true, },);
+        expect((caught as Error).message,).toContain(`the compositor ${compositor} is 0.3.0`,);
+        expect((caught as Error).message,).toContain('E2E_COMPOSITOR',);
       },
     },),
   ],

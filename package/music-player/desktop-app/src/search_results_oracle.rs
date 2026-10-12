@@ -7,6 +7,8 @@
 
 use std::cmp::Ordering;
 
+use crate::pagination::root_level_folder_label;
+use crate::search_index_batch::folder_of;
 use crate::folder_index::{FolderEntry, FolderListItem, FolderTrackRow, UNFILED_FOLDER_NAME, folder_index};
 use crate::folder_rail::collation_key;
 use crate::search_matcher::{
@@ -227,7 +229,13 @@ fn candidates_for(query: &str, terms: &[String], tracks: &[Track]) -> Vec<Search
     for entry in &entries {
         for item in &entry.items {
             if let FolderListItem::TrackItem(row) = item {
-                candidates.extend(track_candidate(row, &entry.name, query, terms));
+                // A root-level track sits in the virtual folder of its letter, as in the picker.
+                let folder_name: String = if folder_of(&row.track.display_path).1 < 2 {
+                    root_level_folder_label(&row.track.display_path)
+                } else {
+                    entry.name.clone()
+                };
+                candidates.extend(track_candidate(row, &folder_name, query, terms));
             }
         }
     }

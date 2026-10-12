@@ -52,6 +52,38 @@ impl ScreenState {
         return shared;
     }
 
+
+    /// What: `set_names_keeping_place` replaces the queue names after a rescan and, when the selected folder is gone,
+    /// selects the folder now at the same place in the list.
+    /// Why: deleting the last file of the folder on screen used to switch the view to the first folder with no word
+    /// (the polish review finding PB2). The nearest folder keeps the user in the same part of the list.
+    pub fn set_names_keeping_place(&mut self, names: &[String]) -> Arc<Vec<String>> {
+        let previous_position: usize = self.selected_page_position();
+        let had_selection: bool = !self.selected_key.is_empty();
+        let shared: Arc<Vec<String>> = self.set_names(names);
+        if !had_selection || self.page_index.position_of_identity(&self.selected_key).is_some() {
+            return shared;
+        }
+        let count: usize = self.page_index.page_count();
+        if count == 0 {
+            return shared;
+        }
+        let nearest: usize = previous_position.min(count - 1);
+        if let Some(page) = self.page_index.page(nearest) {
+            tracing::info!(from = %self.selected_key, to = %page.identity, "the selected folder is gone; its neighbor is shown");
+            self.selected_key = page.identity.clone();
+        }
+        return shared;
+    }
+
+    /// What: `set_source_root_name` records the opened folder's name.
+    /// Why: the first-run copy and the header name the folder; the pages are built from the names alone (loose files sit in
+    /// the virtual folders of their letters, as in Search), so the name does not touch them.
+    pub fn set_source_root_name(&mut self, name: Option<String>) {
+        self.root_known = true;
+        self.source_root_name = name;
+    }
+
     /// What: `current_pages` is the page index of the current names.
     /// Why: a state whose names were assigned without `set_names` (a test fixture) still gets correct pages: the
     /// index is rebuilt for that call only, which is slow but never wrong.

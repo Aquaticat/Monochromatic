@@ -80,7 +80,7 @@ fn results_are_keyed_by_position_or_name() {
         name: "Song".to_string(),
         parent_context: None,
         index_in_library: Some(7),
-        folder_name: "Unfiled".to_string(),
+        folder_name: "S".to_string(),
         tier: 0,
         name_highlights: Vec::new(),
         parent_highlights: Vec::new(),

@@ -14,7 +14,7 @@ use music_player::feedback::{FeedbackKind, FeedbackMessage, FeedbackQueue};
 use slint::ComponentHandle;
 
 use crate::ui_files::{FileActionError, restore_from_trash};
-use crate::ui_overlays_model::{feedback_rows, first_run_view};
+use crate::ui_overlays_model::{Hold, feedback_rows, first_run_view, visible_time_ms};
 use crate::ui_screen::{model_of, read_state};
 use crate::{AppWindow, FeedbackItem};
 
@@ -50,16 +50,24 @@ fn now_ms() -> i64 {
     return CLOCK_START.with(|start| return i64::try_from(start.elapsed().as_millis()).unwrap_or(i64::MAX));
 }
 
-/// What: `add_message` shows one message and returns its id.
-/// Why: every feedback path goes through this, so ids and timestamps stay consistent.
-fn add_message(kind: FeedbackKind, text: &str, action_label: Option<&str>, undo_path: Option<PathBuf>) -> Option<String> {
+/// What: `add_message` shows one message for the time its text and `hold` call for, and returns its id.
+/// Why: every feedback path goes through this, so ids and timestamps stay consistent; a long message or one with an action
+/// stays longer than the fixed 4 s the queue would give it.
+fn add_message(kind: FeedbackKind, text: &str, hold: Hold, action_label: Option<&str>, undo_path: Option<PathBuf>) -> Option<String> {
     let outcome = OVERLAYS.with(|cell| {
         let mut state = cell.borrow_mut();
         state.next_id += 1;
         let prefix = if kind == FeedbackKind::Undo { "undo" } else { "error" };
         let id = format!("{prefix}-{}", state.next_id);
         let message = FeedbackMessage::new(&id, text, kind, action_label).ok()?;
-        state.queue = state.queue.show(message, now_ms());
+        let duration_ms = visible_time_ms(text, hold);
+        state.queue = match state.queue.show_for(message, now_ms(), duration_ms) {
+            Ok(queue) => queue,
+            Err(error) => {
+                tracing::warn!(%error, duration_ms, "feedback duration rejected");
+                return None;
+            }
+        };
         if let Some(path) = undo_path {
             state.undo_targets.push((id.clone(), path));
         }
@@ -68,10 +76,17 @@ fn add_message(kind: FeedbackKind, text: &str, action_label: Option<&str>, undo_
     return outcome;
 }
 
+/// What: `first_message_expires_in_ms` gives how long the oldest visible message still has to stay, or None with no message.
+/// Why: the window tests check how long each kind of message is meant to stay without waiting for it to expire.
+#[cfg(test)]
+pub(crate) fn first_message_expires_in_ms() -> Option<i64> {
+    return OVERLAYS.with(|cell| return cell.borrow().queue.next_expiry_ms()).map(|expiry| return expiry - now_ms());
+}
+
 /// What: `show_error` shows an error message with the failure text.
 /// Why: a failed file action must be reported instead of looking successful.
 pub(crate) fn show_error(window: &AppWindow, text: &str) {
-    add_message(FeedbackKind::Error, text, None, None);
+    add_message(FeedbackKind::Error, text, Hold::Brief, None, None);
     project(window);
 }
 
@@ -84,14 +99,14 @@ pub(crate) fn show_file_error(window: &AppWindow, error: &FileActionError) {
 /// What: `show_undo` shows the message that restores `path` from the trash, with an Undo action.
 /// Why: D8 offers Undo for Move to trash; the target path is kept so Undo can find the trashed copy.
 pub(crate) fn show_undo(window: &AppWindow, text: &str, path: PathBuf) {
-    add_message(FeedbackKind::Undo, text, Some("Undo"), Some(path));
+    add_message(FeedbackKind::Undo, text, Hold::Long, Some("Undo"), Some(path));
     project(window);
 }
 
 /// What: `show_trash_notice` shows a trash move message that has no Undo action.
 /// Why: a platform that cannot restore from the trash still reports the move, without offering Undo.
 pub(crate) fn show_trash_notice(window: &AppWindow, text: &str) {
-    add_message(FeedbackKind::Undo, text, None, None);
+    add_message(FeedbackKind::Undo, text, Hold::Brief, None, None);
     project(window);
 }
 
@@ -99,7 +114,14 @@ pub(crate) fn show_trash_notice(window: &AppWindow, text: &str) {
 /// Why: a keyboard action such as File details reports its result as a message; this is the same message kind as the
 /// trash notice, named for what it is used for.
 pub(crate) fn show_notice(window: &AppWindow, text: &str) {
-    add_message(FeedbackKind::Undo, text, None, None);
+    add_message(FeedbackKind::Undo, text, Hold::Brief, None, None);
+    project(window);
+}
+
+/// What: `show_long_notice` shows a plain message with no action that stays long enough to read in full.
+/// Why: File details lists a file name, its size and its folder, which takes longer to read than a one-line confirmation.
+pub(crate) fn show_long_notice(window: &AppWindow, text: &str) {
+    add_message(FeedbackKind::Undo, text, Hold::Long, None, None);
     project(window);
 }
 

@@ -188,7 +188,26 @@ fn unfiled_tracks_are_searched_by_title() {
     let result: &SearchResult = only(items_of(&state));
     assert_eq!(result.kind, SearchResultKind::Track);
     assert_eq!(result.parent_context, None);
-    assert_eq!(result.folder_name, UNFILED_FOLDER_NAME);
+    assert_eq!(result.folder_name, "C", "a root-level track sits in the virtual folder of its letter, as in the picker");
+}
+
+// What:     Root-level tracks name the same virtual folder in Search as the picker's page for them.
+// Why:      LS1: Search said `Unfiled` while the picker said `A`; non-letter initials share the `#` folder.
+#[test]
+fn root_level_tracks_name_their_picker_letter_folder() {
+    let state: SearchState = search("e", &["Eleven.flac", "5 elements.wav", "élan.wav", "Rock/Echo.flac"]);
+    let folders: Vec<(String, String)> = items_of(&state)
+        .iter()
+        .filter(|item| return item.kind == SearchResultKind::Track)
+        .map(|item| return (item.name.clone(), item.folder_name.clone()))
+        .collect();
+    assert!(folders.contains(&("Eleven".to_string(), "E".to_string())), "{folders:?}");
+    assert!(folders.contains(&("5 elements".to_string(), "#".to_string())), "{folders:?}");
+    assert!(folders.contains(&("élan".to_string(), "#".to_string())), "{folders:?}");
+    assert!(folders.contains(&("Echo".to_string(), "Rock".to_string())), "{folders:?}");
+    assert!(!folders.iter().any(|(_, folder)| return folder == "Unfiled"));
+    let adele: SearchState = search("adele", &["Adele-Meow.mp3"]);
+    assert_eq!(only(items_of(&adele)).folder_name, "A");
 }
 
 // What:     `#[test]` marks the next function as a test case.

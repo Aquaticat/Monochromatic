@@ -26,3 +26,13 @@ fn other_text_is_an_error_naming_the_value() {
     assert_eq!(error, ColorSchemeError::Unknown("Dark".to_string()));
     assert!(error.to_string().contains("\"Dark\""));
 }
+
+#[test]
+fn an_empty_variable_counts_as_unset() {
+    assert_eq!(scheme_override(Some("")), Ok(FOLLOW_SYSTEM));
+}
+
+#[test]
+fn a_blank_variable_counts_as_unset() {
+    assert_eq!(scheme_override(Some("  ")), Ok(FOLLOW_SYSTEM));
+}

@@ -6,11 +6,11 @@ use super::*;
 use crate::template_model::TemplateResult;
 
 // What: `fn sample_tracks_show_an_analysed_and_an_unanalysed_stand_in(...)` checks the two stand-in tracks.
-// Why: The empty-library preview shows one analysed and one not yet analysed track, as the study does.
+// Why: The empty-library preview shows one analyzed and one not yet analyzed track, as the study does.
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// expect(TEMPLATE_SAMPLE_TRACKS.map(t => t.track.title)).toEqual(["Track title", "Track not analysed yet"]);
+// expect(TEMPLATE_SAMPLE_TRACKS.map(t => t.track.title)).toEqual(["Track title", "Track not analyzed yet"]);
 // ```
 #[test]
 fn sample_tracks_show_an_analysed_and_an_unanalysed_stand_in() {
@@ -18,7 +18,7 @@ fn sample_tracks_show_an_analysed_and_an_unanalysed_stand_in() {
     assert_eq!(samples.len(), 2);
     assert_eq!(samples[0].track.title, "Track title");
     assert_eq!(samples[0].track.peak.as_deref(), Some("\u{2212}1.0 dBTP"));
-    assert_eq!(samples[1].track.title, "Track not analysed yet");
+    assert_eq!(samples[1].track.title, "Track not analyzed yet");
     assert_eq!(samples[1].track.peak, None);
     assert_eq!(samples[1].place_in_folder, Some(2));
     assert_eq!(samples[0].tracks_in_folder, Some(16));

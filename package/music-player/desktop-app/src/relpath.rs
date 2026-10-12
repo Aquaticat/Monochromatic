@@ -84,11 +84,29 @@ const SEPARATOR: &str = "/";
 /// }
 /// ```
 pub fn relative_display_paths(tracks: &[PathBuf]) -> Vec<String> {
+    return relative_display_paths_in(tracks, None);
+}
+
+/// What:
+///      `pub fn relative_display_paths_in(tracks: &[PathBuf], root: Option<&Path>) -> Vec<String>`.
+///  Like `relative_display_paths`, but relative to the opened folder `root` when every track lies under it, so a
+///  library with one top-level folder keeps that folder in its names.
+/// Why:
+///       Stripping the longest shared directory made `Music/Artist/*.flac` look like loose files and hid the folder
+///  (the polish review finding LS1). The folder walk's own batch names are already relative to the root, so Search and
+///  the queue now agree for every library, not only for those with several top-level entries. Without a root, or when
+///  a track lies outside it, the shared directory is stripped as before.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// const relativeDisplayPathsIn = (tracks: string[], root?: string) => tracks.map((t) => relativeTo(root ?? commonDir(tracks), t));
+/// ```
+pub fn relative_display_paths_in(tracks: &[PathBuf], root: Option<&Path>) -> Vec<String> {
     if tracks.is_empty() {
         return Vec::new();
     }
-    let prefix_len: usize = shared_prefix_len(tracks);
-    // Join the components after the shared prefix.
+    let prefix_len: usize = display_prefix_len(tracks, root);
+    // Join the components after the stripped prefix.
     return tracks
         .iter()
         .map(|path| {
@@ -105,6 +123,37 @@ pub fn relative_display_paths(tracks: &[PathBuf]) -> Vec<String> {
             return relative;
         })
         .collect();
+}
+
+/// What:
+///      `fn display_prefix_len(tracks: &[PathBuf], root: Option<&Path>) -> usize`.
+///  How many leading components every display name drops: the components of `root` when every track lies strictly
+///  under it, otherwise the shared directory of the tracks.
+/// Why:
+///       One rule picks the prefix for the names and for the page keys, so a track's page never disagrees with its name.
+fn display_prefix_len(tracks: &[PathBuf], root: Option<&Path>) -> usize {
+    let Some(root_path) = root else {
+        return shared_prefix_len(tracks);
+    };
+    let root_parts: Vec<std::borrow::Cow<'_, str>> = normal_parts(root_path).collect();
+    if root_parts.is_empty() {
+        tracing::debug!(root = %root_path.display(), "the opened folder has no named component; the shared directory is stripped");
+        return shared_prefix_len(tracks);
+    }
+    let all_under_root: bool = tracks.iter().all(|path| {
+        let mut parts = normal_parts(path);
+        for root_part in &root_parts {
+            if parts.next().is_none_or(|part| return part != *root_part) {
+                return false;
+            }
+        }
+        return parts.next().is_some();
+    });
+    if all_under_root {
+        return root_parts.len();
+    }
+    tracing::debug!(root = %root_path.display(), "a track lies outside the opened folder; the shared directory is stripped");
+    return shared_prefix_len(tracks);
 }
 
 /// What:
@@ -145,7 +194,7 @@ fn shared_prefix_len(tracks: &[PathBuf]) -> usize {
 ///  Which page of the queue a display name belongs to.
 /// Why:
 ///       `pagination` puts a name with a folder in that folder's page,
-///  a root-level name starting with an ASCII letter in that letter's page,
+///  a root-level name starting with an ASCII letter in that letter's page (a virtual folder named by the letter),
 ///  and any other root-level name in the `#` page.
 #[derive(PartialEq, Eq)]
 enum PageKey<'a> {
@@ -160,7 +209,7 @@ enum PageKey<'a> {
 /// What:
 ///      `fn page_key_of(path: &Path, prefix_len: usize) -> PageKey<'_>`.
 ///  The page of one track,
-///  from its first two components after the shared prefix.
+///  from its first two components after the dropped prefix.
 /// Why:
 ///       It gives the same page as `paginate` gives the display name,
 ///  without building the name.
@@ -192,8 +241,18 @@ fn page_key_of(path: &Path, prefix_len: usize) -> PageKey<'_> {
 /// const pageScopeForAnchor = (tracks: string[], anchor: number) => tracks.flatMap((_, i) => pageKey(i) === pageKey(anchor) ? [i] : []);
 /// ```
 pub fn page_scope_for_anchor(tracks: &[PathBuf], anchor: usize) -> Option<Vec<usize>> {
+    return page_scope_for_anchor_in(tracks, anchor, None);
+}
+
+/// What:
+///      `pub fn page_scope_for_anchor_in(tracks, anchor, root) -> Option<Vec<usize>>`.
+///  `page_scope_for_anchor` for names that are relative to the opened folder `root` (see `relative_display_paths_in`).
+/// Why:
+///       The engine's playback scope must be the page the window shows, and the window groups the names
+///  `relative_display_paths_in` makes, so both must drop the same prefix.
+pub fn page_scope_for_anchor_in(tracks: &[PathBuf], anchor: usize, root: Option<&Path>) -> Option<Vec<usize>> {
     let anchor_path: &PathBuf = tracks.get(anchor)?;
-    let prefix_len: usize = shared_prefix_len(tracks);
+    let prefix_len: usize = display_prefix_len(tracks, root);
     let wanted: PageKey<'_> = page_key_of(anchor_path, prefix_len);
     return Some(
         tracks

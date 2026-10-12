@@ -16,6 +16,12 @@ use crate::ui_playback::int_to_playback_mode;
 use crate::ui_screen::{project, read_state, update_state};
 use crate::ui_screen_view::{select_folder_label, selected_page_scope};
 
+thread_local! {
+    /// What: the main window, for messages raised from a worker thread through the event loop.
+    /// Why: the folder chooser runs off the UI thread and, when none exists, must show a message in the window.
+    static MAIN_WINDOW: std::cell::RefCell<Option<slint::Weak<AppWindow>>> = const { std::cell::RefCell::new(None) };
+}
+
 /// What: `wire` registers every library-screen callback on the window.
 /// Why: the callbacks share the engine handle, so they are registered together after the engine starts.
 ///
@@ -24,6 +30,9 @@ use crate::ui_screen_view::{select_folder_label, selected_page_scope};
 /// function wire(app: AppWindow, engine: Engine): void { ... }
 /// ```
 pub(crate) fn wire(app: &AppWindow, engine: &Rc<Engine>) {
+    MAIN_WINDOW.with(|cell| {
+        *cell.borrow_mut() = Some(app.as_weak());
+    });
     let host: Rc<dyn Host> = Rc::clone(engine) as Rc<dyn Host>;
     wire_host_callbacks(app, &host);
     let open_sender = engine.sender();
@@ -61,7 +70,7 @@ fn wire_transport(app: &AppWindow, host: &Rc<dyn Host>) {
     let toggle_host = Rc::clone(host);
     app.on_toggle_play(move || {
         mark_user_acted();
-        toggle_host.send(Command::TogglePlay);
+        toggle_play(toggle_host.as_ref());
     });
     let prev_host = Rc::clone(host);
     app.on_prev(move || {
@@ -114,7 +123,8 @@ fn wire_library(app: &AppWindow, host: &Rc<dyn Host>) {
     app.on_toggle_picker(move || {
         if let Some(window) = picker_weak.upgrade() {
             update_state(|state| {
-                state.picker_open = !state.picker_open;
+                // An empty library has nothing to list, so the folder button does not open an empty picker (EM5).
+                state.picker_open = !state.picker_open && !state.names.is_empty();
             });
             project(&window);
         }
@@ -186,6 +196,20 @@ fn wire_keys(app: &AppWindow, host: &Rc<dyn Host>) {
 /// Why: the native dialog blocks, so it runs off the event-loop thread; the engine receives the chosen root.
 pub(crate) fn open_folder_dialog(sender: music_player::engine::CommandSender) {
     std::thread::spawn(move || {
+        // What:     the chooser is checked before it opens.
+        // Why:      the dialog library answers "nothing" both for Cancel and for "no chooser installed" (PB5); only a
+        //           missing chooser needs a message, and only the check can tell the two apart.
+        if music_player::dialog_backend::dialog_backend_missing() {
+            tracing::warn!("no folder chooser is available; the user is told how to proceed");
+            let _ = slint::invoke_from_event_loop(|| {
+                MAIN_WINDOW.with(|cell| {
+                    if let Some(window) = cell.borrow().as_ref().and_then(slint::Weak::upgrade) {
+                        crate::ui_overlays::show_error(&window, music_player::dialog_backend::NO_DIALOG_MESSAGE);
+                    }
+                });
+            });
+            return;
+        }
         if let Some(dir) = rfd::FileDialog::new().pick_folder() {
             sender.send(Command::OpenRoot {
                 root: dir,
@@ -195,7 +219,6 @@ pub(crate) fn open_folder_dialog(sender: music_player::engine::CommandSender) {
         }
     });
 }
-
 
 /// What: `play_row` plays a track row: the playing row toggles play and pause, another row loads and plays.
 /// Why: a click on an unselected row starts it, matching the Android track list; `SelectIndex` loads paused,
@@ -225,4 +248,17 @@ pub(crate) fn select_folder(engine: &dyn Host, label: &str) {
     if let Some(scope) = chosen_scope {
         engine.send(Command::SetPageScope(scope));
     }
+}
+
+/// What: `toggle_play` is the play and pause button and key: with nothing selected it first sends the shown page's
+/// scope, so the engine starts the first track of the folder on screen.
+/// Why: the engine knows no shown page until it is told one, and Play with nothing selected must start the first row of
+/// the page the user is looking at (EM2).
+pub(crate) fn toggle_play(engine: &dyn Host) {
+    let nothing_selected: bool = read_state(|state| return state.current_index.is_none() && !state.names.is_empty());
+    if nothing_selected {
+        let scope: Vec<usize> = read_state(selected_page_scope);
+        engine.send(Command::SetPageScope(scope));
+    }
+    engine.send(Command::TogglePlay);
 }

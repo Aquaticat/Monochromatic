@@ -6,16 +6,66 @@
 //! Why: the ring position is state the row chords act on (Delete, copy, details), so the Rust side owns it and pushes it
 //! to the window; the movement rules themselves are the pure functions of `list_focus`.
 
+use std::cell::RefCell;
+
 use music_player::keymap::{FocusZone, ShortcutAction};
 use music_player::list_focus::{ListMove, first_starting_with, move_focus, start_focus};
 use slint::ComponentHandle;
 
 use crate::AppWindow;
 use crate::Focus;
+use crate::TrackLayout;
 use crate::ui_host::Host;
 use crate::ui_screen::{project, read_state, update_state};
 use crate::ui_screen_rows::{ListRow, PickerName};
-use crate::ui_screen_scroll::{row_height_px, row_offset_px};
+use crate::ui_screen_scroll::{row_at_px, row_height_px, row_offset_px, row_tops_px, top_of_px};
+
+thread_local! {
+    /// What: the top of every row of the track list the window shows, and one more entry for the end of the content.
+    /// Why: the pane builds only the rows on screen, and asks for the row at a scroll offset through a pure callback that
+    /// must answer from plain memory; the window's own model would cost a copy of the row per probe.
+    static TRACK_TOPS: RefCell<Vec<f32>> = const { RefCell::new(Vec::new()) };
+}
+
+/// What: `publish_track_layout` gives the window the layout of the whole track list: where every row starts and how tall
+/// the content is.
+/// Why: the pane builds only the rows that are on screen, so it needs the layout of all the rows to place them, to size the
+/// scroll range and its scrollbar, and to find the first row at a scroll offset. The callbacks are installed on the first
+/// call, and each call bumps the generation so a pane asks again after the rows changed.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function publishTrackLayout(win: AppWindow, rows: ListRow[]): void {
+///   tops = rowTopsPx(rows);
+///   win.trackLayout.totalHeight = tops.at(-1) ?? 0;
+///   win.trackLayout.generation += 1;
+/// }
+/// ```
+pub(crate) fn publish_track_layout(window: &AppWindow, rows: &[ListRow]) {
+    let tops = row_tops_px(rows);
+    let total = tops.last().copied().unwrap_or(0.0);
+    TRACK_TOPS.with(|cell| {
+        *cell.borrow_mut() = tops;
+    });
+    let layout = window.global::<TrackLayout>();
+    if !layout.get_wired() {
+        layout.on_row_at(|offset: f32, _generation: i32| {
+            return TRACK_TOPS.with(|cell| {
+                return i32::try_from(row_at_px(&cell.borrow(), offset)).unwrap_or(i32::MAX);
+            });
+        });
+        layout.on_top_of(|index: i32, _generation: i32| {
+            return TRACK_TOPS.with(|cell| {
+                return top_of_px(&cell.borrow(), usize::try_from(index).unwrap_or(0));
+            });
+        });
+        layout.set_wired(true);
+        tracing::debug!("the track layout callbacks are installed");
+    }
+    layout.set_total_height(total);
+    layout.set_generation(layout.get_generation().wrapping_add(1));
+    tracing::debug!(rows = rows.len(), total_height = total, "the track layout was published");
+}
 
 /// What: `track_position_of` finds the list position of the track row with library index `ring`.
 /// Why: the ring is stored by library index, which survives a re-projection, while movement works on list positions.
@@ -179,7 +229,10 @@ pub(crate) fn apply(window: &AppWindow, host: &dyn Host, zone: FocusZone, action
 pub(crate) fn list_focused(window: &AppWindow, zone: i32) {
     if FocusZone::from_int(zone) == FocusZone::TrackList {
         let (rows, ring, playing) = read_state(|state| return (state.shown_rows.clone(), state.ring_track, state.current_index));
-        if track_position_of(&rows, ring).is_some() {
+        // A ring that is already on a row is placed again, which scrolls the row into view: Tab back onto a list whose ring
+        // was left out of view must show the ring (LS2).
+        if let Some(position) = track_position_of(&rows, ring) {
+            place_track_ring(window, &rows, position);
             return;
         }
         let preferred = playing.and_then(|current| return i32::try_from(current).ok()).and_then(|current| {
@@ -190,7 +243,8 @@ pub(crate) fn list_focused(window: &AppWindow, zone: i32) {
         }
     } else {
         let (names, ring, folder) = read_state(|state| return (state.shown_names.clone(), state.ring_folder.clone(), state.shown_folder.clone()));
-        if folder_position_of(&names, ring.as_deref()).is_some() {
+        if let Some(position) = folder_position_of(&names, ring.as_deref()) {
+            place_folder_ring(window, &names, position);
             return;
         }
         let preferred = folder_position_of(&names, Some(folder.as_str()));

@@ -30,7 +30,7 @@ fn track_rows_list_seven_fields_in_order() {
     assert_eq!(track_template_fields()[6].label, "True peak");
     assert_eq!(
         track_template_fields()[6].description,
-        "The true peak with its unit, such as \u{2212}1.2 dBTP, or nothing before the file is analysed."
+        "The true peak with its unit, such as \u{2212}1.2 dBTP, or nothing before the file is analyzed."
     );
 }
 

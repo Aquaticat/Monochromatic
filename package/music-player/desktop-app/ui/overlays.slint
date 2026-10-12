@@ -49,6 +49,23 @@ export component FeedbackOverlay inherits Rectangle {
             height: max(48px, row.preferred-height);
             background: card.container;
             border-radius: 24px;
+            // Fade in when the message appears, so it does not pop onto the deck (D83). It starts at 0 and `init` raises it
+            // to 1, which plays the animation; the host removes the message when its time runs out or it is dismissed.
+            property <float> enter: 0;
+            opacity: card.enter;
+            animate enter { duration: Theme.motion-enter; easing: ease-out; }
+            init => {
+                card.enter = 1;
+            }
+
+            // Pointer shield over the whole card, under the Undo and dismiss controls. A Rectangle passes clicks through,
+            // so a click on the message text used to press the Previous, Play or Next button that the card covers. It is
+            // not a control, so it has no hover layer and keeps the default cursor.
+            body-shield := TouchArea {
+                width: parent.width;
+                height: parent.height;
+                mouse-cursor: default;
+            }
 
             row := HorizontalLayout {
                 padding-left: 16px;

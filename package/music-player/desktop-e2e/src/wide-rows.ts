@@ -1,5 +1,5 @@
 /**
- Checks of the wide session about the row chords that copy, show in the file manager, and show details.
+ Checks of the wide session about the row chords that copy and show in the file manager, and the menu keys (Alt+Enter and the access letters).
  
  @example
  ```ts
@@ -16,25 +16,28 @@ import { readFile, } from 'node:fs/promises';
 import { wait, } from '@monochromatic-dev/module-async-time/ts';
 
 import {
+  chordKeys,
   tapKey,
 } from './actions.ts';
 import { readClipboard, } from './clipboard.ts';
-import { ringIsOnTrashFile, } from './conditions.ts';
+import {
+  isMenuClosed,
+  ringIsOnTrashFile,
+} from './conditions.ts';
 import type { RunContext, } from './context.ts';
 import { expect, } from './errors.ts';
-import {
-  diffBox,
-  loadImage,
-} from './image.ts';
 import { pollUntil, } from './poll.ts';
-import { press, } from './press.ts';
+import {
+  noEffect,
+  nothingMoved,
+  press,
+} from './press.ts';
 import type { Session, } from './session.ts';
 import { EFFECT_SETTLE_MS, } from './timing.ts';
-
-/**
- Fewest differing pixels that prove a notice appeared.
- */
-const MIN_NOTICE_PIXELS = 200;
+import {
+  indexText,
+  type UiState,
+} from './ui-state.ts';
 
 /**
  How many times the file manager stub's record is read.
@@ -47,7 +50,23 @@ const RECORD_LOOKS = 20;
 const RECORD_PAUSE_MS = 200;
 
 /**
- Records the copy, file-manager and details checks of the wide session, with the ring in the last folder.
+ Condition: the track menu is open with its first row highlighted, as the keyboard opens it.
+ 
+ @param state - a state of the app
+ 
+ @returns whether the menu is open and its ring is on the first row
+ 
+ @example
+ ```ts
+ menuHasFirstRow(state,);
+ ```
+ */
+function menuHasFirstRow(state: UiState,): boolean {
+  return state.menu_open && (state.menu_ring === 0);
+}
+
+/**
+ Records the copy, file-manager and menu-key checks of the wide session, with the ring in the last folder.
  
  @param context - the run's context
  
@@ -153,46 +172,106 @@ export async function checkRowChords(
     },
   },);
   await recorder.check({
+    id: 'row/shift-f10-unbound',
+    title: 'Shift+F10 opens nothing: it is Run in JetBrains and is not used (D114)',
+    body: async function shiftF10IsUnbound(): Promise<string> {
+      await noEffect({
+        session,
+        act: chordKeys({
+          mods: ['shift',],
+          key: 'f10',
+        },),
+        watch: nothingMoved,
+        what: 'Shift+F10 on a track row',
+      },);
+      return 'no menu, no page change, no shortcut use';
+    },
+  },);
+  await recorder.check({
     id: 'row/alt-enter',
-    title: 'Alt+Enter shows the details notice of the row',
-    body: async function altEnterShowsDetails(): Promise<string> {
+    title: 'Alt+Enter opens the row menu with its first row highlighted (D114)',
+    body: async function altEnterOpensMenu(): Promise<string> {
       /**
-       Screenshot before the chord.
+       The state with the menu open and the first row highlighted.
        */
-      const before = await session.shot('before-details',);
+      const state = await press({
+        session,
+        act: chordKeys({
+          mods: ['alt',],
+          key: 'enter',
+        },),
+        until: menuHasFirstRow,
+        what: 'the menu with its first row highlighted',
+      },);
+      await press({
+        session,
+        act: tapKey('escape',),
+        until: isMenuClosed,
+        what: 'the menu closing',
+      },);
+      return `menu_open ${state.menu_open}, menu_ring ${indexText(state.menu_ring,)}, ${state.menu_width} px wide`;
+    },
+  },);
+  await recorder.check({
+    id: 'row/menu-key',
+    title: 'the Menu key opens the row menu with its first row highlighted (D114)',
+    body: async function menuKeyOpensMenu(): Promise<string> {
+      await press({
+        session,
+        act: tapKey('escape',),
+        until: isMenuClosed,
+        what: 'Escape closing the menu Alt+Enter opened',
+      },);
 
       /**
-       Details uses before the chord.
+       The state with the menu open and the first row highlighted.
        */
-      const used = await session.used('row-details',);
-      await session.chord({
-        mods: ['alt',],
-        key: 'enter',
+      const state = await press({
+        session,
+        act: tapKey('menu',),
+        until: menuHasFirstRow,
+        what: 'the menu with its first row highlighted',
+      },);
+      return `menu_open ${state.menu_open}, menu_ring ${indexText(state.menu_ring,)}, ${state.menu_width} px wide`;
+    },
+  },);
+  await recorder.check({
+    id: 'row/menu-access-key',
+    title: 'the access letter D of File details runs that row and closes the menu',
+    body: async function accessLetterRunsRow(): Promise<string> {
+      await press({
+        session,
+        act: chordKeys({
+          mods: ['alt',],
+          key: 'enter',
+        },),
+        until: menuHasFirstRow,
+        what: 'the menu opening',
+      },);
+
+      /**
+       How often an access letter ran a row before this one.
+       */
+      const used = await session.used('menu-access',);
+      await session.shot('before-access-key',);
+      await press({
+        session,
+        act: tapKey('d',),
+        until: isMenuClosed,
+        what: 'the menu closing',
       },);
       await wait(EFFECT_SETTLE_MS,);
       expect({
-        condition: await session.used('row-details',) === (used
+        condition: await session.used('menu-access',) === (used
           + 1),
-        message: 'Alt+Enter was not used as the details action',
+        message: 'the letter D was not used as an access letter',
       },);
 
       /**
-       Screenshot after the chord.
+       Screenshot with the notice that File details shows.
        */
-      const after = await session.shot('details-notice',);
-
-      /**
-       How the screenshots differ.
-       */
-      const delta = diffBox({
-        a: await loadImage(before,),
-        b: await loadImage(after,),
-      },);
-      expect({
-        condition: delta.count > MIN_NOTICE_PIXELS,
-        message: `no notice appeared (${delta.count} pixels differ)`,
-      },);
-      return `${delta.count} pixels changed, in ${JSON.stringify(delta.box,)}`;
+      const after = await session.shot('access-key-notice',);
+      return `the menu closed after one use of an access letter; ${after}`;
     },
   },);
 }

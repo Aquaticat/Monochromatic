@@ -66,12 +66,12 @@ fn system_no_audio_title_is_exact() {
 }
 
 // What:     `#[test] fn system_no_audio_body_is_exact()` checks the device library body word for word.
-// Why:      The body says the library was checked completely and names a folder alternative.
+// Why:      The body says the library has no audio and names a folder alternative, in plain words (EM4).
 #[test]
 fn system_no_audio_body_is_exact() {
     assert_eq!(
         copy_of(FirstRunState::SystemNoAudio, None).body,
-        "The device music library was checked completely. You can open a folder that is not listed there."
+        "The device music library has no audio files. You can open a different folder instead."
     );
 }
 
@@ -90,7 +90,7 @@ fn system_no_audio_offers_folder_then_settings() {
 fn folder_no_audio_inserts_folder_name() {
     assert_eq!(
         copy_of(FirstRunState::FolderNoAudio, Some("Cult of Luna")).title,
-        "No audio found in Cult of Luna"
+        "No audio found in\nCult of Luna"
     );
 }
 
@@ -100,18 +100,18 @@ fn folder_no_audio_inserts_folder_name() {
 fn folder_no_audio_uses_the_supplied_name() {
     assert_eq!(
         copy_of(FirstRunState::FolderNoAudio, Some("Albums")).title,
-        "No audio found in Albums"
+        "No audio found in\nAlbums"
     );
 }
 
 // What:     `#[test] fn folder_no_audio_body_is_exact()` checks the folder body word for word.
-// Why:      The body states that the folder was checked completely and that changing it changes the source.
+// Why:      The body says in plain words that the folder holds nothing to play and what to do (EM4).
 #[test]
 fn folder_no_audio_body_is_exact() {
     assert_eq!(
         copy_of(FirstRunState::FolderNoAudio, Some("Albums")).body,
-        "The chosen folder was checked completely and contains no supported audio files. \
-         Opening a different folder changes the music source."
+        "This folder and its subfolders have no audio files the player can play. \
+         Open a different folder to try again."
     );
 }
 
@@ -227,4 +227,37 @@ fn no_folder_open_offers_open_folder_then_settings() {
 #[test]
 fn no_folder_open_ignores_a_folder_name() {
     assert_eq!(copy_of(FirstRunState::NoFolderOpen, Some("Albums")).title, "No folder is open");
+}
+
+// What:     `#[test] fn the_folder_name_sits_on_its_own_line_so_a_hyphenated_name_is_never_split_by_the_headline()`.
+// Why:      EM4: `No audio found in lib-noaudio` wrapped inside the name at its hyphen.
+#[test]
+fn the_folder_name_sits_on_its_own_line_so_a_hyphenated_name_is_never_split_by_the_headline() {
+    let title = copy_of(FirstRunState::FolderNoAudio, Some("lib-noaudio")).title;
+    assert_eq!(title.lines().collect::<Vec<_>>(), ["No audio found in", "lib-noaudio"]);
+}
+
+// What:     `#[test] fn reading_says_the_library_is_being_read_and_names_no_folder()`.
+// Why:      EM1: while the walk runs the window said "No folder is open"; the reading copy follows D69's wording.
+#[test]
+fn reading_says_the_library_is_being_read_and_names_no_folder() {
+    let copy = copy_of(FirstRunState::Reading, None);
+    assert_eq!(copy.title, "Reading your library");
+    assert_eq!(copy.primary_action, None, "nothing is wrong, so there is no action to take");
+    assert_eq!(copy.secondary_actions, [SETTINGS_LABEL]);
+    assert!(!copy.explains_analysis);
+    assert_eq!(copy_of(FirstRunState::Reading, Some("Albums")), copy, "the copy takes no folder name");
+}
+
+// What:     `#[test] fn no_copy_uses_the_jargon_the_polish_review_found()`.
+// Why:      EM4: "was checked completely" and "changes the music source" read like internals; "dir" is jargon.
+#[test]
+fn no_copy_uses_the_jargon_the_polish_review_found() {
+    for state in FirstRunState::ALL {
+        let copy = copy_of(state, Some("Albums"));
+        let text = format!("{} {}", copy.title, copy.body).to_lowercase();
+        for banned in ["checked completely", "music source", " dir "] {
+            assert!(!text.contains(banned), "{state:?} still says {banned:?}");
+        }
+    }
 }

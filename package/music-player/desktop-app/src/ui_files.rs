@@ -24,7 +24,7 @@ pub enum FileActionError {
     Clipboard(String),
     /// The file could not be moved to the trash.
     Trash(String),
-    /// The file could not be restored from the trash.
+    /// The file could not be restored from the trash; the text is the whole plain sentence to show.
     Restore(String),
 }
 
@@ -36,7 +36,7 @@ impl fmt::Display for FileActionError {
             Self::Spawn(detail) => write!(formatter, "The file manager could not be started: {detail}"),
             Self::Clipboard(detail) => write!(formatter, "The clipboard could not be written: {detail}"),
             Self::Trash(detail) => write!(formatter, "The file could not be moved to the trash: {detail}"),
-            Self::Restore(detail) => write!(formatter, "The file could not be restored: {detail}"),
+            Self::Restore(sentence) => formatter.write_str(sentence),
         };
     }
 }
@@ -113,7 +113,72 @@ pub fn copy_text(text: &str) -> Result<(), FileActionError> {
 /// function moveToTrash(path: string): void { ... };
 /// ```
 pub fn move_to_trash(path: &Path) -> Result<(), FileActionError> {
-    return trash::delete(path).map_err(|error| return FileActionError::Trash(error.to_string()));
+    trash::delete(path).map_err(|error| return FileActionError::Trash(error.to_string()))?;
+    remember_trashed(path);
+    return Ok(());
+}
+
+/// What: `remember_trashed` records that this player just moved `path` to the trash.
+/// Why: see `was_just_trashed`; kept apart from the trash call so a test can record a path without touching the real trash.
+fn remember_trashed(path: &Path) {
+    if let Ok(mut trashed) = TRASHED.lock() {
+        trashed.push((path.to_path_buf(), std::time::Instant::now()));
+    }
+}
+
+/// What: `comparable_path` is a path with its folder resolved through symlinks and its file name kept.
+/// Why: a trashed file no longer exists, so the file itself cannot be resolved, but its folder can. The trash records the
+/// folder as the system resolved it, while the player may have opened the library through a symlinked path (the polish
+/// review finding PB3: Undo failed with "is not in the trash" for a library opened through a symlink).
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// const comparablePath = (p: string) => join(realpathSync(dirname(p)), basename(p));
+/// ```
+pub fn comparable_path(path: &Path) -> Option<PathBuf> {
+    let name = path.file_name()?;
+    let parent = path.parent()?;
+    let resolved = match std::fs::canonicalize(parent) {
+        Ok(resolved) => resolved,
+        Err(error) => {
+            tracing::debug!(parent = %parent.display(), %error, "the folder of a trashed path cannot be resolved");
+            return None;
+        }
+    };
+    return Some(resolved.join(name));
+}
+
+/// What: `same_original_path` tells whether a trash item came from `wanted`, comparing the paths as written first and
+/// then with their folders resolved through symlinks.
+/// Why: Undo must find the item however the library path was spelled; see `comparable_path`.
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// const sameOriginalPath = (a: string, b: string) => a === b || comparablePath(a) === comparablePath(b);
+/// ```
+pub fn same_original_path(original: &Path, wanted: &Path) -> bool {
+    if original == wanted {
+        return true;
+    }
+    let (Some(left), Some(right)) = (comparable_path(original), comparable_path(wanted)) else {
+        return false;
+    };
+    return left == right;
+}
+
+/// How long a trashed path counts as "just trashed".
+const JUST_TRASHED: std::time::Duration = std::time::Duration::from_secs(15);
+
+/// Paths moved to the trash by this player and when.
+static TRASHED: std::sync::Mutex<Vec<(PathBuf, std::time::Instant)>> = std::sync::Mutex::new(Vec::new());
+
+/// What: `was_just_trashed` tells whether this player moved `path` to the trash in the last few seconds.
+/// Why: the rescan then reports the file as gone, and the trash message already explains it; a second message about
+/// the same file would be noise.
+pub fn was_just_trashed(path: &Path) -> bool {
+    let Ok(mut trashed) = TRASHED.lock() else {
+        return false;
+    };
+    trashed.retain(|(_path, when)| return when.elapsed() < JUST_TRASHED);
+    return trashed.iter().any(|(trashed_path, _when)| return trashed_path == path);
 }
 
 /// What: `can_restore_from_trash` tells whether `restore_from_trash` works on this platform.
@@ -132,14 +197,23 @@ pub fn can_restore_from_trash() -> bool {
     all(unix, not(any(target_os = "macos", target_os = "ios", target_os = "android")))
 ))]
 pub fn restore_from_trash(path: &Path) -> Result<(), FileActionError> {
-    let items = trash::os_limited::list().map_err(|error| return FileActionError::Restore(error.to_string()))?;
+    let name: String = path.file_name().map_or_else(|| return path.display().to_string(), |name| return name.to_string_lossy().into_owned());
+    let items = trash::os_limited::list().map_err(|error| {
+        tracing::warn!(path = %path.display(), %error, "the trash could not be listed for Undo");
+        return FileActionError::Restore(format!("{name} could not be put back: the trash could not be read."));
+    })?;
     let newest = items
         .into_iter()
-        .filter(|item| return item.original_path() == path)
+        .filter(|item| return same_original_path(&item.original_path(), path))
         .max_by_key(|item| return item.time_deleted)
-        .ok_or_else(|| return FileActionError::Restore(format!("{} is not in the trash", path.display())))?;
-    return trash::os_limited::restore_all([newest])
-        .map_err(|error| return FileActionError::Restore(error.to_string()));
+        .ok_or_else(|| {
+            tracing::warn!(path = %path.display(), "no item in the trash came from this path");
+            return FileActionError::Restore(format!("{name} is not in the trash any more, so it could not be put back."));
+        })?;
+    return trash::os_limited::restore_all([newest]).map_err(|error| {
+        tracing::warn!(path = %path.display(), %error, "the trash could not restore the file");
+        return FileActionError::Restore(format!("{name} could not be put back from the trash."));
+    });
 }
 
 /// What: `restore_from_trash` on macOS reports that the trash crate cannot restore files there.
