@@ -3037,9 +3037,12 @@ The orchestrator decided the details on the human's standing instruction to deci
   that D84 records.
 - Android posts it on its own low-importance channel. Android 13 and later need the notification permission: the app asks
   for it once, when the first analysis starts, and if it is declined the analysis runs without any indicator.
-- Linux desktop posts it through the freedesktop notification service with the progress hint that KDE draws as a bar,
-  replacing one notification in place rather than posting a new one per update, and updates it at a limited rate.
-  Where no notification service answers, analysis runs without an indicator.
+- Linux desktop on KDE Plasma reports it as a Plasma job through `org.kde.kuiserver` (the job view that Dolphin's
+  compress action uses and that the human's own `compress-to-sqfs` service menu script drives): the notifications applet
+  shows the app's name and icon, the title `Analyzing true peak`, the count as the info line, a determinate bar with the
+  percent, and a native Pause button (the job is suspendable, not killable, because D84 keeps analysis non-optional).
+  Where `org.kde.kuiserver` is absent, Linux falls back to one freedesktop notification replaced in place, with the
+  progress hint, updated at a limited rate. Where neither answers, analysis runs without an indicator.
   macOS and Windows get the same behavior through their own notification APIs in a later step.
 - The taskbar progress of the desktop app (the `LauncherEntry` hint) keeps its own meaning and is not changed here.
 
