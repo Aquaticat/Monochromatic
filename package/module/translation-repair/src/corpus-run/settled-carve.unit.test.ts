@@ -50,6 +50,7 @@ import {
   scratchDir,
   scratchDirWith,
 } from '../scratch-dir.test-fixture.ts';
+import { restampedAsGenerationFourteen, } from './generation-restamp.test-fixture.ts';
 import { rawResultFor, } from './lane-result-evidence.test-fixture.ts';
 import { rejectionOf, } from './rejection-of.test-fixture.ts';
 import { fixtureGit, REAL_GIT, } from '../hermetic-git-run.test-fixture.ts';
@@ -774,12 +775,11 @@ await describe({
             // Restamped as the generation before the one that tells the death.
             await writeFile(
               artifactPath,
-              JSON.stringify({
-                ...JSON.parse(await readFile(
+              restampedAsGenerationFourteen({
+                text: await readFile(
                   artifactPath,
                   'utf8',
-                ),),
-                artifactSchemaVersion: 14,
+                ),
               },),
             );
             /**

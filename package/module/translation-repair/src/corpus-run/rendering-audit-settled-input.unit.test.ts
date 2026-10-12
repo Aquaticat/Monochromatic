@@ -38,6 +38,7 @@ import {
 } from '../../dist/final/node/index.mjs';
 import { refusalOrder, } from '../refusal-order.test-fixture.ts';
 import { scratchDir, } from '../scratch-dir.test-fixture.ts';
+import { restampedAsGenerationFourteen, } from './generation-restamp.test-fixture.ts';
 import { pageReadsRefusingLastFor, } from './ordered-page-reads.test-fixture.ts';
 import { rejectionOf, } from './rejection-of.test-fixture.ts';
 import {
@@ -352,22 +353,11 @@ await describe({
               'first',
               `${ENTRY_ID}.json`,
             );
-            /**
-             Artifact as parsed, before it is restamped.
-             */
-            const { consistency: ignored, ...written } = JSON.parse(await readFile(artifactPath, 'utf8',),) as Record<
-              string,
-              unknown
-            >;
-            /**
-             The artifact restamped as the generation before the one that tells the death, without the
-             consistency section, which that generation does not carry.
-             */
-            const restamped = {
-              ...written,
-              artifactSchemaVersion: 14,
-            };
-            await writeFile(artifactPath, JSON.stringify(restamped,),);
+            // Restamped as the generation before the one that tells the death.
+            await writeFile(
+              artifactPath,
+              restampedAsGenerationFourteen({ text: await readFile(artifactPath, 'utf8',), },),
+            );
 
             /**
              Subjects the artifact offers.

@@ -37,6 +37,7 @@ import {
 import { capturingLogger, } from '../capturing-logger.test-fixture.ts';
 import { scratchDir, } from '../scratch-dir.test-fixture.ts';
 import { makeCorpusPassClone, } from './corpus-pass-clone.test-fixture.ts';
+import { restampedAsGenerationFourteen, } from './generation-restamp.test-fixture.ts';
 import { settledArtifactText, } from './settled-artifact.test-fixture.ts';
 
 /**
@@ -100,10 +101,7 @@ function artifactAt({ corpusSha, }: { readonly corpusSha: string; },): string {
  ```
  */
 function artifactOfGenerationFourteen({ corpusSha, }: { readonly corpusSha: string; },): string {
-  return JSON.stringify({
-    ...JSON.parse(artifactAt({ corpusSha, },),),
-    artifactSchemaVersion: 14,
-  },);
+  return restampedAsGenerationFourteen({ text: artifactAt({ corpusSha, },), },);
 }
 
 /**
