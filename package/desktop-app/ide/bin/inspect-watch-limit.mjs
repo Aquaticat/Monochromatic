@@ -150,7 +150,9 @@ try {
   const startLines = own().length;
   // A file created in the last folder, which sorts last and so waits on the limit.
   await wait(3000);
-  const unwatched = join(project, 'folder-' + String(folders - 1).padStart(3, '0'));
+  // The IDE logs canonical paths and the scratch root can be a symlink (the agent scratch lives on another drive),
+  // so the log is searched by the canonical folder path.
+  const unwatched = join(realpathSync(project), 'folder-' + String(folders - 1).padStart(3, '0'));
   const createdAt = Date.now();
   writeFileSync(join(unwatched, 'created-under-limit.txt'), 'seen through the sweep\n');
   await wait(seconds * 1000 - 3000);
