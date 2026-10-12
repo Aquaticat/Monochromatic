@@ -64,6 +64,23 @@ It is a separate workflow investigation,
 not a gate on migration delivery.
 
 
+## Maintained-package integration in progress
+
+The shared AST adapter repair is complete:
+issue #593 is closed after rebuilt consumer checks,
+generated lockfile refresh `e801aa1e5f`,
+and the 18-document check `proc_b14d`.
+Documentation is committed in `7135c69304`.
+
+The deterministic directive resolver,
+authorization constraints,
+and outcome calculation are being moved into `package/pi-plugin/auto-mode/src/`.
+Their established semantics remain separate from source admission and execution permission.
+The package port does not discharge the native compiler's unconditional domain premise.
+The native path also still lacks the approval-context connection to its existing approval binder.
+These are remaining delivery integrations,
+not additional user authorization gates or reasons to reopen source-inventory campaigns.
+
 ## Original rendered prompt-input contributions
 
 The serializer consumer now accounts for original host,
