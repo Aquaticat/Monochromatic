@@ -35,6 +35,8 @@ const replaceOne = (text, before, after, occurrence = 0) => {
 };
 const equality = 'assertion `left == right` failed';
 const cases = [
+  // A very long line: its caret stops come from a rope, so the lookups of the walk scan chunks, not the whole line.
+  { name: 'long-line-stops', file: 'src/text_projection.rs', before: 'let slice = if source.len() <= FLAT_LINE_BYTES {', after: 'let slice = if true {', lib: true, test: 'text_projection::tests::the_work_of_finding_stops_grows_with_the_line_not_its_square', failure: 'the lookups scanned' },
   // Tab stops: the half-space rule, the unusable-advance guard, and the scale conversion of corrections.
   { name: 'tab-half-space', file: 'src/tab_stop.rs', before: 'if distance < space / 2.0 {', after: 'if false {', integration: 'tab_stop', test: 'tab_narrower_than_half_a_space_uses_the_following_stop', failure: 'a sliver tab was kept instead of the next stop' },
   { name: 'tab-unusable-space', file: 'src/tab_stop.rs', before: 'if !usable {', after: 'if false {', integration: 'tab_stop', test: 'unusable_space_advance_keeps_one_space_width', failure: equality },
@@ -121,9 +123,10 @@ if (only && selected.length !== only.size) throw new Error('Unknown guard name i
 const results = [];
 const baselined = new Set();
 const run = (item, phase) => {
-  const command = item.native
-    ? ['cargo', 'nextest', 'run', '--offline', '--features', 'slint/mcp', '--bin', 'monochromatic-ide', '--filter-expr', 'test(' + item.test + ')']
-    : ['cargo', 'test', '--offline', '--no-default-features', '--test', item.integration, item.test, '--', '--nocapture'];
+  // A case names a native test, a unit test of the library (`lib`), or an integration test file.
+  let command = ['cargo', 'test', '--offline', '--no-default-features', '--test', item.integration, item.test, '--', '--nocapture'];
+  if (item.native) command = ['cargo', 'nextest', 'run', '--offline', '--features', 'slint/mcp', '--bin', 'monochromatic-ide', '--filter-expr', 'test(' + item.test + ')'];
+  if (item.lib) command = ['cargo', 'test', '--offline', '--no-default-features', '--lib', item.test, '--', '--nocapture'];
   const result = spawnSync('podman', [
     'run', '--rm', '--network=none', '--memory=2g', '--cpus=2', '--pids-limit=512',
     '--ulimit', 'nofile=4096:4096', '--security-opt', 'label=disable',
