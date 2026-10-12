@@ -24,6 +24,41 @@ and the reason is recorded in
 
 ## Where the work stands
 
+### 2026-10-12: the four patches merged, reviewed, and the relaunch of TianqiChen666
+
+This checkpoint follows the one of 2026-10-11 and says what landed after it.
+Times are UTC.
+On 2026-10-11 the owner said to make the remaining decisions without asking;
+each choice an agent left open is recorded beside its ledger entry.
+
+- LANDED.
+  L6's sole-lane verdict for insertions the archive lacks (ledger B425,
+  artifact generation 15);
+  a seat that throws on every call withheld from its benches (B420 to B422);
+  the forfeit read by majority (B424);
+  the tense candidates shown to every judge of an entry that records a death
+  (B419,
+  reviewed in B432 and B433);
+  the repeated-source-line finder (B423,
+  reviewed in B434 to B436);
+  and the page-level consistency pass that asks the wide bench to choose one rendering of each repeat
+  and carries it to every place by code (B431,
+  reviewed in B443 to B446,
+  with tests of its own in B437 to B440).
+  A damaged `info.yml` now ships its entry with no death recorded (B441),
+  as does a `died` of an unreadable kind (B447),
+  and the window trial asks the sheets the pass asks (B442).
+- MERGING.
+  Pieces of work built apart broke each other's fixtures twice
+  (ledger M153 and M156);
+  the rule is now in `mistake-prevention.md`,
+  "Work merged from parallel briefs".
+- NEXT.
+  Walk "Before a run launches" and relaunch `TianqiChen666` as `TianqiChen66623`
+  into a fresh runs directory through the runbook's unit form,
+  then read its page against the source,
+  with the refrain lines and the repeated sentence of TianqiChen66622 read for one rendering each.
+
 ### 2026-10-11: TianqiChen66622 read, the owner's answers, and the fixes before the next launch
 
 The checkpoint of 2026-10-03 handed the package to a trial model;
@@ -5423,12 +5458,10 @@ each read off the pass log and the shipped page:
 
 ## What to do next
 
-As of 2026-10-11 (UTC),
+As of 2026-10-12 (UTC),
 the next action is the newest checkpoint's "NEXT":
-merge the four agent patches in flight,
-gate the merged head,
-write the docs batch,
-walk "Before a run launches" and relaunch `TianqiChen666` through the runbook's unit form.
+walk "Before a run launches" and relaunch `TianqiChen666` as `TianqiChen66623` through the runbook's unit form,
+then read the page against the source.
 The numbered items keep the queue as the sessions of 2026-09-08 to 2026-09-26 left it;
 read each against its date.
 
