@@ -25,6 +25,7 @@ import {
   focusIs,
   tapKey,
 } from './actions.ts';
+import { isMenuClosed, } from './conditions.ts';
 import { expect, } from './errors.ts';
 import { pollUntil, } from './poll.ts';
 import type { Session, } from './session.ts';
@@ -91,6 +92,37 @@ export async function press(
     what,
     after,
     ...timeoutMs === undefined ? {} : { timeoutMs, },
+  },);
+}
+
+/**
+ Closes the track menu when it is open, so a check starts from a closed menu whatever ran before it. A closed menu
+ sends no key: Escape on a closed menu writes no state line, so waiting for one would end only when an unrelated line
+ (a position tick, a late focus line) happened to arrive.
+ 
+ @param session - the session to press in
+ 
+ @throws CheckFailureError when the menu stays open after Escape
+ 
+ @example
+ ```ts
+ await closeMenuIfOpen({ session, },);
+ ```
+ */
+export async function closeMenuIfOpen(
+  {
+    session,
+  }: {
+    readonly session: Session;
+  },
+): Promise<void> {
+  if (isMenuClosed(await session.last(),))
+    return;
+  await press({
+    session,
+    act: tapKey('escape',),
+    until: isMenuClosed,
+    what: 'Escape closing the track menu a check before left open',
   },);
 }
 

@@ -131,11 +131,12 @@ export function isMenuClosed(state: UiState,): boolean {
 }
 
 /**
- Condition: a menu row has the ring.
+ Condition: the track menu is open and a menu row has the ring. A closed menu never counts, because the app keeps the
+ ring of the menu it closed until the next menu opens.
  
  @param state - a state of the app
  
- @returns whether the menu shows a ring row
+ @returns whether the open menu shows a ring row
  
  @example
  ```ts
@@ -143,7 +144,7 @@ export function isMenuClosed(state: UiState,): boolean {
  ```
  */
 export function menuHasRing(state: UiState,): boolean {
-  return state.menu_ring !== NO_INDEX;
+  return state.menu_open && (state.menu_ring !== NO_INDEX);
 }
 
 /**

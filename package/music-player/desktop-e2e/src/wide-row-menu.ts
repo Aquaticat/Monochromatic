@@ -31,7 +31,10 @@ import { expect, } from './errors.ts';
 import { pathExists, } from './files.ts';
 import { WIDE_POINTS, } from './layout.ts';
 import { pollUntil, } from './poll.ts';
-import { press, } from './press.ts';
+import {
+  closeMenuIfOpen,
+  press,
+} from './press.ts';
 import type { Session, } from './session.ts';
 import {
   indexText,
@@ -96,6 +99,12 @@ export async function checkMenuAndDelete(
     id: 'row/menu-keys',
     title: 'in the open track menu Down, Up, Enter and Escape work (menu opened by right click)',
     body: async function menuKeysWork(): Promise<string> {
+      await closeMenuIfOpen({ session, },);
+
+      /**
+       Sequence number of the latest state before the right click, so an earlier menu's state never counts as this one.
+       */
+      const beforeClick = await session.seq();
       await session.click({
         ...WIDE_POINTS.trackRow,
         button: 'right',
@@ -107,6 +116,7 @@ export async function checkMenuAndDelete(
       const open = await session.waitState({
         predicate: isMenuOpen,
         what: 'the track menu opening',
+        after: beforeClick,
         timeoutMs: MENU_OPEN_TIMEOUT_MS,
       },);
 

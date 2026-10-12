@@ -28,6 +28,7 @@ import type { RunContext, } from './context.ts';
 import { expect, } from './errors.ts';
 import { pollUntil, } from './poll.ts';
 import {
+  closeMenuIfOpen,
   noEffect,
   nothingMoved,
   press,
@@ -216,12 +217,7 @@ export async function checkRowChords(
     id: 'row/menu-key',
     title: 'the Menu key opens the row menu with its first row highlighted (D114)',
     body: async function menuKeyOpensMenu(): Promise<string> {
-      await press({
-        session,
-        act: tapKey('escape',),
-        until: isMenuClosed,
-        what: 'Escape closing the menu Alt+Enter opened',
-      },);
+      await closeMenuIfOpen({ session, },);
 
       /**
        The state with the menu open and the first row highlighted.
@@ -231,6 +227,14 @@ export async function checkRowChords(
         act: tapKey('menu',),
         until: menuHasFirstRow,
         what: 'the menu with its first row highlighted',
+      },);
+
+      // Leave the menu closed, so the checks after this one start from the same state in any run order.
+      await press({
+        session,
+        act: tapKey('escape',),
+        until: isMenuClosed,
+        what: 'Escape closing the menu the Menu key opened',
       },);
       return `menu_open ${state.menu_open}, menu_ring ${indexText(state.menu_ring,)}, ${state.menu_width} px wide`;
     },

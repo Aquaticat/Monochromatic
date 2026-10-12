@@ -27,8 +27,10 @@ import {
   tapKey,
   typeText,
 } from './actions.ts';
+import { menuHasRing, } from './conditions.ts';
 import type { Session, } from './session.ts';
 import {
+  closeMenuIfOpen,
   noEffect,
   nothingMoved,
   press,
@@ -114,6 +116,8 @@ function fakeSession(focusScript: readonly string[] = [],): Fake {
     },
     tap: async (key: string,) => {
       calls.push(`tap ${key}`,);
+      if (key === 'escape')
+        holder.last = { ...holder.last, menu_open: false, seq: holder.seq++, };
       if (key === 'tab') {
         holder.last = { ...holder.last, focus: focusScript[holder.tabs] ?? holder.last.focus, seq: holder.seq++, };
         holder.tabs++;
@@ -377,6 +381,62 @@ await describe({
         const walk = await tabSequence({ session, expected: ['a', 'a',], key: tapKey('tab',), },);
         expect(walk,).toBe('a > a',);
         expect(calls.filter((call,) => call === 'tap tab',),).toHaveLength(2,);
+      },
+    },),
+  ],
+},);
+
+await describe({
+  name: closeMenuIfOpen.name,
+  children: [
+    it({
+      name: 'presses nothing and waits for nothing when the menu is already closed',
+      fn: async ({ expect, }) => {
+        const { calls, session, } = fakeSession();
+        await closeMenuIfOpen({ session, },);
+        expect(calls,).toEqual([],);
+      },
+    },),
+    it({
+      name: 'presses Escape and waits for a closed state newer than the press when the menu is open',
+      fn: async ({ expect, }) => {
+        const { calls, session, setLast, } = fakeSession();
+        setLast(state({ menu_open: true, menu_ring: 0, },),);
+        await closeMenuIfOpen({ session, },);
+        expect(calls,).toEqual([
+          'tap escape',
+          'wait Escape closing the track menu a check before left open after 10',
+        ],);
+      },
+    },),
+  ],
+},);
+
+await describe({
+  name: menuHasRing.name,
+  children: [
+    it({
+      name: 'is true for an open menu with a ring row',
+      fn: async ({ expect, }) => {
+        expect(
+          menuHasRing(state({ menu_open: true, menu_ring: 0, },),),
+        ).toBe(true,);
+      },
+    },),
+    it({
+      name: 'is false for an open menu without a ring row',
+      fn: async ({ expect, }) => {
+        expect(
+          menuHasRing(state({ menu_open: true, menu_ring: -1, },),),
+        ).toBe(false,);
+      },
+    },),
+    it({
+      name: 'is false for a closed menu that still reports the ring of the menu it closed',
+      fn: async ({ expect, }) => {
+        expect(
+          menuHasRing(state({ menu_open: false, menu_ring: 0, },),),
+        ).toBe(false,);
       },
     },),
   ],
