@@ -712,7 +712,7 @@ Not reachable yet: nothing calls either module, and the wrapper still refuses `g
 
 Gates at head `7b6ebfe46c` (committed code, run through `gate-slot.ts`): native Clippy exit 0; container gate (`native:test:container`, Git 2.56.0) exit 0 with 1331 library tests passing. The host library run passes except the ten recorded Git 2.55 option-table comparisons.
 
-Slice 6 mutation: the scoped run over `commit_convergence.rs`, `commit_policy_preparation.rs`, `private_index_stage.rs`, `candidate_prediction.rs`, `policy_patch_validate.rs` and `policy_patch.rs` was still running at this head; its results are not recorded here until it ends.
+Slice 6 mutation (scoped runs through `gate-slot.ts`, one per file): `commit_convergence.rs` finished with 12 mutants tested in 38 minutes: 2 caught, 5 unviable and 5 timeouts. The five timeouts are the `snapshots_equal`, `record_path` and its `!` mutants, each hitting the 300 second per-mutant bound, so they are unverified and are not counted as kills; `record_path` and `snapshots_equal` need a multi-pass control before they can be called killed. The runs for `commit_policy_preparation.rs`, `private_index_stage.rs`, `candidate_prediction.rs`, `policy_patch_validate.rs` and `policy_patch.rs` were still in progress when this line was written.
 
 Stop of feature work in this branch. The remaining slice 8 work and the slice 9 wiring (command path to
 `run_commit_transaction`, landing, the post-landing lane's API, the command frontier change) move to a separate
