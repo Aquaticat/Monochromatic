@@ -547,7 +547,7 @@ The user chose this explicitly:
 Consequence:
  the "10,412 of 10,412 analysed" row from settings-b is gone,
  and
-**Re-analyse on the track context menu is the only remaining entry point**.
+**Re-analyse on the track context menu is the only remaining entry point** (removed by D113, 2026-10-12).
 
 ### D13. The scan indicator is not permanent
 It appears while analysing and leaves afterwards.
@@ -2988,13 +2988,13 @@ Browsing:
 - Inside a focused list: `Up`, `Down`, `Home`, `End`, `PageUp`, `PageDown` move the focus ring, `Enter` plays the row,
   `Space` on a list keeps play and pause, a letter key moves to the first folder starting with it.
 - Open a folder with the system dialog: `Ctrl+Shift+O`.
-- Rescan the library: `F5`.
+- Rescan the library: no binding (D113 removed `F5`; the library refreshes by itself).
 - Quit (desktop): `Ctrl+Q`.
 
 On the focused track row, or the row the menu is open on:
 - Open its menu: `Menu` key or `Shift+F10`.
 - Move to trash: `Delete`. Copy path: `Ctrl+Shift+C` (JetBrains copies the path with this).
-- Show in file manager: `Ctrl+Shift+E`. File details: `Alt+Enter`. Re-analyse: `Ctrl+Shift+F5`.
+- Show in file manager: `Ctrl+Shift+E`. File details: `Alt+Enter`. No re-analyse binding (D113).
 - With the menu open, `Up`, `Down` and `Enter` choose a row and `Escape` closes it.
 
 Pages:
@@ -3182,6 +3182,21 @@ Decision (the orchestrator's, on the human's standing instruction to decide, ope
 in-memory index of normalized names in each app, with first and second character buckets, a best-500 list per first
 character, off-thread batch normalization with an append-only write lock, search on a worker thread, and a refresh signal
 after every batch so open results update in place (D111). Turso stays the store of the peak cache only.
+
+### D113. Refresh and re-analysis are automatic and never exposed to the user (2026-10-12)
+
+The human said that refreshing the library and re-analyzing true peaks must always be handled perfectly by the app and
+not be exposed as user actions. This supersedes D12's menu entry "Re-analyse true peak" (the last manual entry point) and
+the D106 rows `F5` (rescan) and `Ctrl+Shift+F5` (re-analyse).
+
+- No rescan or re-analyze command exists anywhere in the user interface, keyboard map, menus, tooltips or settings, on
+  both platforms. Trash and Undo keep reloading the library internally.
+- The library follows the disk by itself: changes are detected and applied without a user action (desktop: the live
+  watcher with its catch-up rescan; Android: observers of the source plus a reload when the app returns to the front).
+- Analysis follows the files by itself: a new, replaced or edited file (its fingerprint changed) is measured again, a file
+  that failed to decode is retried when the library next changes or the app next starts, and a failure is reported once
+  per file in plain words (D83) instead of offering a retry button.
+- The D107 notification stays the only analysis surface.
 
 ## Pending after the theme picks (2026-09-04)
 
