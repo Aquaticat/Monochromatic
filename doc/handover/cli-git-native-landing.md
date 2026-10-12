@@ -37,11 +37,10 @@ Out of scope (owned by other lanes or slices):
 ## Status
 
 Done, gated and committed on this branch.
-Steps 1 to 4 of the lane plan are complete; mutation results are below.
+Head `4fd2aafb59`; the container gate, host Clippy and the per-file mutation campaigns below ran on it
+(the mutation images were built from heads that differ from it only in test files).
 
 ### Built
-
-Commits, oldest first:
 
 - `a3e65b4dea`, `e71143ce51`: `transaction_phase.rs`, the phase markers.
 - `2ec23af3fa`: `landing_support.rs` (target comparison, nonce reflog message, compare-and-swap),
@@ -51,6 +50,11 @@ Commits, oldest first:
 - `d7f390002c`: lint fixes (implicit return, shadowing) in the files above.
 - `ee925b3955`: `landing_attempt.rs`, `landing_findings.rs`, the acceptance tests
   (`binary_landing_support.rs`, `binary_landing_tests.rs`, `binary_landing_crash_tests.rs`) and five planted controls.
+- `613522828c` to `4fd2aafb59`: controls found by mutation (PID file release and creation failures, an amend that
+  loses the swap, literal pathspecs, guarded resets, captured-path drops), bounded waits so that a defect fails
+  a test instead of hanging it, and a wider bound for the wrapper's recovery status under load.
+- `13fe865399`: this document and `package/git-policy/cli/bin/mutate-native-container-noplanted.mjs`
+  (see Mutation).
 
 ### API for the integrator
 
@@ -77,37 +81,91 @@ Commits, oldest first:
 
 Host runs use Git 2.55.0 (`/usr/bin/git`); container runs use Git 2.56.0.
 
-- Unit: `real_index_lock` 13 tests (9 added), `landing_findings` 6, `landing_attempt` 2.
-- Binary (`native_binary`, filter `landing`): 25 passed, 1 ignored (the child helper `landing_crash::child_lands`).
+- Unit, host: `real_index_lock` 18, `landing_index` 9, `transaction_phase` 11 (1 ignored child helper),
+  `landing_findings` 6, `landing_attempt` 2.
+- Binary (`native_binary`, filter `landing`), host: 26 passed, 1 ignored (the child helper `landing_crash::child_lands`).
   - `landing::*` (17): landed commit and journal bytes, second process's staged path survives, unborn and detached
     targets, conclusion cleanup, branch switch (to a branch and to detached `HEAD`) with the rendered
     `concurrent-commit/branch-switched` line, head-moved with `replayable` for an ordinary commit, amend, merge,
     cherry-pick and revert conclusions, a deleted target and a normalization, normalization landed and on an
     unborn branch, a failed migration, a failed landing record, a foreign lock of a dead owner.
-  - `landing_crash::*` (7 plus the helper): a SIGKILL at each of `landing-locked`, `objects-migrated`, `ref-updated`
+  - `landing_crash::*` (8 plus the helper): a SIGKILL at each of `landing-locked`, `objects-migrated`, `ref-updated`
     and `index-installed` in a child process running the landing API, then the built wrapper's `git status`
     recovers it (exit 0, branch, index tree, status output, nonce once or never in the branch and `HEAD` reflogs,
     no lock, no PID file, no keep, no transaction directory, no shadow, `git fsck --strict` clean);
-    a target moved while the child is paused after migration loses the compare-and-swap;
+    a target moved while the child is paused after migration loses the compare-and-swap, for an ordinary commit
+    (replayable) and for an amend (not replayable);
     an install failing after the branch advanced leaves the lock for recovery;
     a malformed marker variable fails the landing and releases the lock.
-- Container gate (Git 2.56.0), tag `landing`, image `2561ecd96dfb3fd63a80fdf5435f9c9391056e311e51a1f87259446d473a7961`,
-  tree at `ee925b3955`: 1365 library tests passed (5 ignored), 74 binary tests passed (1 ignored),
-  1 candidate consumer test passed, Clippy clean.
-- Host Clippy (`native:clippy`, all targets, `-D warnings`) clean.
-  The Linux gates never compile the `#[cfg(not(unix))]` blocks; `native:clippy:windows` could not run because the
-  host lacks the `x86_64-pc-windows-gnu` target (see the trailing gates).
+- Container gate (Git 2.56.0), tag `landing`, head `4fd2aafb59`,
+  image `59c23cb4060dc9d2efa62f32db6d0d4079b6245b23fa8a9442cf92aa032b5735`:
+  1374 library tests passed (5 ignored), 75 binary tests passed (1 ignored), 1 candidate consumer test passed,
+  Clippy with `-D warnings` clean.
+- Host Clippy (`native:clippy`, all targets, `-D warnings`) clean on the same tree.
+- Not run: `native:clippy:windows` (the host lacks the `x86_64-pc-windows-gnu` target).
+  The attempt adds no `cfg(not(unix))` code; see the trailing gates.
 
 ### Mutation
 
-MUTATION_PENDING
+Each file ran alone through `gate-slot.ts` with `--timeout 600`, after the container gate built the image.
+The planted-control phase ran once, with the unmodified `bin/mutate-native-container.mjs`, on head `ee925b3955`
+(evidence `package/git-policy/cli/target/verification/native-mutation-Qj2qNr/planted-controls.json`):
+all 62 controls were noticed, including the five this lane added.
+Every later head differs from that one in test files only, which can add failing tests but not remove one,
+and the lane's source files are byte-identical; so the per-file runs use
+`bin/mutate-native-container-noplanted.mjs`, a copy of the campaign script with phase 1 removed
+(each repeat of phase 1 costs about four and a half hours of container runs).
+Rerun the unmodified script instead if a source file changes.
+
+Counts are from the final run of each file.
+
+- `landing_support.rs`: 9 mutants, 8 caught, 1 unviable, 0 missed, 0 timeouts.
+- `landing_objects.rs`: 2 mutants, 2 caught.
+- `landing_findings.rs`: 8 mutants, 7 caught, 1 unviable.
+- `landing_index.rs`: 33 mutants, 33 caught.
+  The first run caught 24 and missed 9; the survivors were `literal_pathspecs` (two), `changed_since_captured`
+  (four), `reset_guarded_paths`, and two inverted filters in `compute_landing_post_index`.
+  They are killed by `explicit_paths_are_reset_with_literal_pathspecs_disabled_for_the_magic_prefix`,
+  `index_mode_removes_a_captured_path_the_landed_tree_dropped`,
+  `index_mode_tolerates_a_captured_index_that_cannot_form_a_tree` and
+  `explicit_path_mode_resets_a_guarded_path_that_nobody_restaged`.
+- `transaction_phase.rs`: 24 mutants, 23 caught, 1 unviable, 0 missed, 0 timeouts.
+  The first run had four timeouts (`==` to `!=` in `parse_phase_signal`, `!` deleted in `await_release`, the
+  `reach_with_value` body and its `filter`): the controls waited for a marker that never appeared or for a
+  release that never ended.
+  They now fail instead of waiting: `await_marker` ends when the child ended, `reach_bounded` and
+  `acquire_bounded` fail after a bound, and `pause_waits_for_the_release_file` asserts the pause lasted.
+  The second run caught all of them.
+- `landing_attempt.rs`: 20 mutants, 15 caught, 4 unviable, 1 missed, 0 timeouts.
+  Missed: `landing_attempt.rs:584:48` (`==` to `!=` in `detached: capture.layout.symbolic_head == SymbolicHead::Detached`).
+  It is equivalent: the flag only adds `--no-deref` to `update-ref`, which changes nothing for the two targets
+  that can reach it, a branch ref (not symbolic) or `HEAD` while detached (not symbolic), because
+  `land_locked` returns `BranchSwitched` before the swap unless the current `HEAD` equals the captured one,
+  and `target_ref` is `HEAD` exactly when the captured one is `Detached`.
+  No input can make the flag matter, so no test can observe it; the incumbent passes it as defense in depth.
+- `real_index_lock.rs`: 40 mutants, 26 caught, 6 unviable, 7 missed, 1 timeout.
+  The seven missed are all inside `#[cfg(not(unix))]` functions that the Linux build does not compile, so the
+  mutated source builds the same binary: `same_file_identity` at line 240, `create_exclusive` at lines 278
+  (both return values) and 282 (guard `true`, guard `false`, `==` to `!=`), and `created_identity` at line 331.
+  A Windows run is a trailing gate.
+  The timeout is `create_exclusive` (unix) returning `Ok(false)` at line 255: the acquisition then waits for a
+  holder that does not exist, so every test that takes a lock spins and the test binary never ends.
+  It is detected, not unverified: `a_free_index_is_locked_without_waiting` bounds the acquisition and fails,
+  confirmed by applying the mutant by hand to the source and running that test, which then failed.
+  cargo-mutants cannot attribute it because the other tests hang.
+  The first run also missed the unix guard `true` at line 260; the new
+  `a_lock_that_cannot_be_created_is_a_stop_and_not_a_wait` kills it.
+
+The five planted controls added by this lane (`landing branch-switch check`, `landing head-moved check`,
+`landing releases the index lock when it lands nothing`, `landing hands the directory back after a lost
+compare-and-swap`, `landing journals the index lock before announcing it`) were noticed in the campaign above.
 
 ### Git 2.55.0
 
 The host Git is 2.55.0, so every host run above is a 2.55.0 run of the same tests; no test needed a version branch.
-Probe (`${HOME}/temp/agent/landing-reftable-probe.ts`, real Git 2.55.0): `update-ref -m` of a branch HEAD points at writes the
-message once to the branch and `HEAD` reflogs, and `update-ref --no-deref HEAD` on a detached `HEAD` writes the `HEAD`
-reflog, identically for the files and the reftable backends.
+A probe with real Git 2.55.0 (a scratch script, not kept) showed that `update-ref -m` of a branch that `HEAD` points
+at writes the message once to the branch and `HEAD` reflogs, and that `update-ref --no-deref HEAD` on a detached
+`HEAD` writes the `HEAD` reflog, identically for the files and the reftable backends.
 The container tests use the files backend only; the reftable behavior of the landing is probed, not tested.
 
 ## Choices open to veto
@@ -183,6 +241,11 @@ mise run //package/git-policy/cli:native:test:binary:host -- landing
 # Gates, through the host slot limiter.
 GIT_POLICY_NATIVE_IMAGE_TAG=landing node "${HOME}/temp/agent/gate-slot.ts" mise run //package/git-policy/cli:native:test:container
 node "${HOME}/temp/agent/gate-slot.ts" mise run //package/git-policy/cli:native:clippy
-# Mutation of this lane's files, after the container gate.
-GIT_POLICY_NATIVE_IMAGE_TAG=landing node "${HOME}/temp/agent/gate-slot.ts" mise run //package/git-policy/cli:native:mutation:scoped -- --file src/native/real_index_lock.rs --file src/native/landing_attempt.rs --file src/native/landing_findings.rs --file src/native/landing_support.rs --file src/native/landing_objects.rs --file src/native/landing_index.rs --file src/native/transaction_phase.rs
+# Mutation of one file after the container gate; the script with the planted controls needs about four and a half hours first.
+cd package/git-policy/cli
+GIT_POLICY_NATIVE_IMAGE_TAG=landing node "${HOME}/temp/agent/gate-slot.ts" mise run //package/git-policy/cli:native:mutation:scoped -- --timeout 600 --file src/native/landing_attempt.rs
+GIT_POLICY_NATIVE_IMAGE_TAG=landing node "${HOME}/temp/agent/gate-slot.ts" env GIT_POLICY_NATIVE_IMAGE_TAG=landing node bin/mutate-native-container-noplanted.mjs --timeout 600 --file src/native/landing_attempt.rs
 ```
+
+Files to run one at a time: `real_index_lock`, `landing_attempt`, `landing_support`, `landing_objects`,
+`landing_index`, `landing_findings`, `transaction_phase`, all under `src/native/` with the `.rs` suffix.
