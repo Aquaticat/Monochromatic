@@ -4,7 +4,7 @@
  It runs the non-commit Git commands of `wrapper-surface-steps-fixture.ts` through the selected wrapper
  in a disposable linked-worktree repository
  and prints one line per command on standard output:
- the label, a tab, and JSON holding the arguments, the exit code, and the output with object IDs masked.
+ the label, a tab, the exit code, a tab, and JSON holding the arguments and the output with object IDs masked.
  The selected wrapper comes from `E2E_WRAPPER` (see `wrapper-selection-fixture.ts`).
  `mise run //package/git-policy/cli:test:e2e:concurrent:native:surface` runs it once per wrapper and compares the two.
 
@@ -33,16 +33,30 @@ import {
 //region Probe
 
 /**
- Length of a full object ID in hexadecimal digits.
+ Hexadecimal digits of an abbreviated object ID as `git log --oneline` prints it.
  */
-const OBJECT_ID_LENGTH = 40;
+const ABBREVIATED_OBJECT_ID_LENGTH = 7;
 
 /**
- Whether a token is a full lowercase hexadecimal object ID.
+ Hexadecimal digits of a full SHA-1 object ID.
+ */
+const FULL_OBJECT_ID_LENGTH = 40;
+
+/**
+ Digit counts of full and abbreviated object IDs, which `git log --oneline` prints with seven.
+ */
+const OBJECT_ID_LENGTHS: ReadonlySet<number> = new Set([
+  ABBREVIATED_OBJECT_ID_LENGTH,
+  FULL_OBJECT_ID_LENGTH,
+]);
+
+/**
+ Whether a token is a lowercase hexadecimal object ID, full or abbreviated.
+ A token needs at least one decimal digit, so seven-letter words such as `defaced` stay readable.
 
  @param token - whitespace-delimited token
 
- @returns true for a 40-digit hexadecimal token
+ @returns true for a seven or forty digit hexadecimal token holding a decimal digit
 
  @example
  ```ts
@@ -50,15 +64,19 @@ const OBJECT_ID_LENGTH = 40;
  ```
  */
 function isObjectId(token: string,): boolean {
-  return (token.length === OBJECT_ID_LENGTH)
+  return OBJECT_ID_LENGTHS.has(token.length,)
     && token.split('',)
     .every(function hexDigit(character,) {
-    return '0123456789abcdef'.includes(character,);
-  },);
+        return '0123456789abcdef'.includes(character,);
+      },)
+    && token.split('',)
+    .some(function decimalDigit(character,) {
+        return '0123456789'.includes(character,);
+      },);
 }
 
 /**
- Masks full object IDs, which differ between runs, one linear pass over the lines and tokens.
+ Masks object IDs, which differ between runs, one linear pass over the lines and tokens.
 
  @param text - command output
 
@@ -147,9 +165,8 @@ async function probe(): Promise<void> {
       cwd: repository.worktree,
       env: repository.wrapperEnv,
     },);
-    console.log(`${label}\t${JSON.stringify({
-      args,
-      exitCode: outcome.exitCode,
+    console.log(`${label}\t${String(outcome.exitCode,)}\t${JSON.stringify({
+      args: args.map(maskObjectIds,),
       stdout: maskObjectIds(outcome.stdout,),
       stderr: maskObjectIds(outcome.stderr,),
     },)}`,);

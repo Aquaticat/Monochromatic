@@ -228,7 +228,7 @@ async function runSuite() {
 
  @param {{ wrapper: 'incumbent' | 'native' }} request - wrapper whose `git` the probe drives
  @returns {Promise<string[]>} the probe's result lines, one per command in order,
-   each a label, a tab, and the command's exit code and masked output as JSON
+   each a label, a tab, the exit code, a tab, and the arguments and masked output as JSON
  */
 async function runProbe({ wrapper }) {
   const outcome = await runCommand({
@@ -260,10 +260,10 @@ async function runProbe({ wrapper }) {
 
 /** Run the probe with both wrappers, print the comparison, and fail when any command differs. */
 async function compareSurface() {
-  const [incumbent, native] = await Promise.all([
-    runProbe({ wrapper: 'incumbent' }),
-    runProbe({ wrapper: 'native' }),
-  ]);
+  // Sequential on purpose: both runs relabel the same `e2e/` mount privately (`:Z`), which concurrent containers
+  // would contest.
+  const incumbent = await runProbe({ wrapper: 'incumbent' });
+  const native = await runProbe({ wrapper: 'native' });
   if ((incumbent.length === 0) || (incumbent.length !== native.length))
     throw new NativeVerificationError(
       `The probe produced ${String(incumbent.length)} incumbent and ${String(native.length)} native results.`,
@@ -273,13 +273,13 @@ async function compareSurface() {
     index
   ) {
     const right = native[index] ?? '';
-    const label = left.split('\t')[0] ?? left;
-    console.log(`${left === right ? 'SAME' : 'DIFF'} ${label}`);
+    const [label, exitCode] = left.split('\t');
+    console.log(`${left === right ? 'SAME' : 'DIFF'} ${label} (incumbent exit ${exitCode})`);
     if (left !== right) {
       console.log(`  incumbent: ${left}`);
       console.log(`  native:    ${right}`);
     }
-    return left === right ? [] : [label];
+    return left === right ? [] : [label ?? ''];
   });
   console.log(`${String(incumbent.length - differing.length)} of ${String(incumbent.length)} commands agree`);
   if (differing.length > 0)
@@ -290,11 +290,18 @@ async function compareSurface() {
 async function main() {
   const [subcommand, ...extra] = process.argv
     .slice(2);
-  if ((extra.length > 0) || ((subcommand !== 'image') && (subcommand !== 'run')))
-    throw new NativeVerificationError('Usage: node bin/e2e-native-container.mjs image|run');
-  await (subcommand === 'image'
-    ? buildImage()
-    : runSuite());
+  const actions = {
+    image: buildImage,
+    run: runSuite,
+    surface: compareSurface,
+  };
+  const action = Object.entries(actions)
+    .find(function named([name]) {
+      return name === subcommand;
+    })?.[1];
+  if ((extra.length > 0) || (action === undefined))
+    throw new NativeVerificationError('Usage: node bin/e2e-native-container.mjs image|run|surface');
+  await action();
 }
 
 await main();
