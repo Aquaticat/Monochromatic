@@ -32,6 +32,7 @@
 use crate::control_tables::{CONTROL_TOKENS, POSSIBLE_ALIASES, TABLE_COMMANDS, VALUELESS_TOKENS};
 use git_policy_cli::candidate_error::{CandidateError, CandidateFailure};
 use git_policy_cli::candidate_prediction::{CandidateRequest, PreparedCandidates};
+use git_policy_cli::command_commit::parse_commit_region;
 use git_policy_cli::global_arguments::{GlobalOutcome, global_layout};
 use git_policy_cli::policy_checks::{ShippedChecks, shipped_checks};
 use git_policy_cli::policy_content::LifecycleContent;
@@ -677,8 +678,12 @@ pub fn check_frontier(arguments: &[OsString], mode: u8) -> FrontierSeen {
     let forwarded: Vec<OsString> = match outcome {
         WrappedOutcome::Exit { code, stderr } => {
             assert!(code == 1 || code == 2, "a stop exits 1 or 2, got {code}");
+            // A real commit writes its own events and diagnostics while it runs, so its ending carries no text.
+            let commit_wrote_itself: bool = stderr.is_empty()
+                && stripped.layout.outcome == GlobalOutcome::Command
+                && stripped.arguments[stripped.layout.prefix_len].as_encoded_bytes() == b"commit";
             assert!(
-                stderr.ends_with('\n'),
+                stderr.ends_with('\n') || commit_wrote_itself,
                 "a stop explains itself: {arguments:?}"
             );
             if code == 1 {
@@ -700,8 +705,10 @@ pub fn check_frontier(arguments: &[OsString], mode: u8) -> FrontierSeen {
     let word: &[u8] = stripped.arguments[stripped.layout.prefix_len].as_encoded_bytes();
     let region: &[OsString] = &stripped.arguments[stripped.layout.prefix_len + 1..];
     if word == b"commit" {
+        // A region that Git's option table refuses is forwarded so that Git reports its own refusal, and commits nothing.
         assert!(
-            may_be_dry_run(region, COMMIT_DRY_RUN_STARTS, COMMIT_DRY_RUN_LETTER),
+            may_be_dry_run(region, COMMIT_DRY_RUN_STARTS, COMMIT_DRY_RUN_LETTER)
+                || parse_commit_region(region, &[]).is_err(),
             "a real commit was forwarded: {arguments:?}"
         );
     }
