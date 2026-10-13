@@ -19,7 +19,7 @@ The native executable commits for real.
 The incumbent's end-to-end suite passes against the native executable on Git 2.55.0: 36 of 38 scenarios pass and 2 skip
 by design (seeds 1 to 9; one run in the last batch failed once on a kill-window leftover, see `Results`).
 The commit differential against the incumbent (from source) finds 10 of 10 cases equal.
-The gated head is `0ff1379f7d` (the commit that follows it only records this document). The container gate
+The gated head is `0c4d65094e` (the commit that follows it only records this document). The container gate
 (which includes Clippy with `-D warnings` over all targets), the fuzz smoke and the mutation campaigns are green or
 fully accounted for in `Results`. Nothing remains open.
 
@@ -97,13 +97,28 @@ New modules (each with its `*_tests.rs` where it has pure logic; the transaction
   timing-dependent window shared with the incumbent design, not a deterministic native defect.
   Each full run takes about 6 to 33 minutes depending on host load. The scenarios the suite calls `sigkill-phase-*`,
   `reservation-after-lost-races` and `branch-switch-during-commit` are real passes.
-- Container gate (`native:test:container`, Git 2.56.0 image tag `integration`, image id
-  `a3e4065b45b33096677f39e783afc53213d41728eecd44911cfc199d0dcdc38c`, Clippy `-D warnings` over all targets included),
-  run through `gate-slot.ts` on `0ff1379f7d`: green. Library 1632 passed, 6 ignored; binary 104 passed, 1 ignored;
-  1 candidate-consumer test passed. Earlier runs on a host with load average 40 to 75 failed
+- Container gate (`native:test:container`, Git 2.56.0, image tag `followup`, image id
+  `7975b36ab8f98ed3eb57ca68ef6a01d22431c840b64c4f1d911606dbefc607ff`, Clippy `-D warnings` over all targets included),
+  run through `gate-slot.ts` on `0c4d65094e`: green. Library 1633 passed, 6 ignored; binary 105 passed, 1 ignored;
+  1 candidate-consumer test passed. The host Clippy task (`native:clippy`) is clean on the same head. Earlier runs on a
+  host with load average 40 to 75 failed
   `markdown::the_real_linter_rewrites_through_add_check_and_fix` and, once,
   `coordination::a_live_foreign_owner_is_waited_for_and_named` or `a_dead_foreign_lock_is_refused_and_left_in_place`
   on the 5-second command bound; each passes when the host is quieter, and the bound was not changed.
+- Garbage in `objects/pack` after a commit (the flake of `commit::a_pathspec_file_selects_the_committed_paths`, which
+  failed once in a mutation baseline with `garbage: 2`): not a defect of the native commit and not a leftover. Git's own
+  detached `git maintenance run --auto --quiet --detach`, which the landing starts as native `git commit` does
+  (`src/native/maintenance_run.rs`), repacks in the background: `git repack -d -l -q --cruft --write-midx` writes
+  `tmp_pack_*` and `tmp_idx_*` files that `git count-objects -v` reports as garbage until the repack renames them. The
+  Git 2.56.0 image starts that repack after the second landing even in a repository of 11 objects (it settles to one
+  pack plus `multi-pack-index`, 0 garbage), so `assert_nothing_left` raced with it: 45 of 100 runs of the test failed in
+  the container (2 parallel), none of 800 on the host's Git 2.55.0, which starts no repack at that size. Fix, test only:
+  `edited_repository` in `src/native/binary_commit_tests.rs` sets `maintenance.autoDetach false`, so the wrapper
+  returns after the maintenance finished; the assertion message now lists the pack directory. Control
+  `commit::a_landing_returns_after_its_automatic_maintenance_finished` (a `gc.autoPackLimit` of 1 and 8 MiB of
+  incompressible files make the repack outlast the wrapper's last steps) failed 20 of 20 runs without the config line
+  and passed 20 of 20 with it (host). After the fix the test passed 150 of 150 runs in the container and the control
+  20 of 20.
 - Git 2.55.0 probe (host Git 2.55.0, `native:test:host` and `native:test:binary:host`, on an earlier head, before the last test-only commits): the library
   tests fail only the 2.56.0 comparisons (`command_options::git_tests` four tests, `command_branch_create::git_tests`
   three, `command_add` table, `git_metadata`, `global_arguments`) and the test that needs the built linter (11 failed,
@@ -136,6 +151,11 @@ New modules (each with its `*_tests.rs` where it has pure logic; the transaction
   `a_capture_lists_worktree_changes_for_all_or_include`, and `retry_while_active` with its guard replaced by `true`
   fails `the_guard_wait_retries_only_while_another_holder_is_active` at once (its closures panic past their call cap, so the
   mutant no longer loops).
+- Mutation of `src/native/commit_convergence.rs` (12 mutants, `bin/mutate-native-container-noplanted.mjs`, report
+  `target/verification/native-mutation-6BnlGO`): 7 caught, 5 unviable, 0 missed, 0 timeouts. The one survivor of the
+  earlier campaign, `CommitPasses::snapshots_equal` replaced by `false`, is killed by
+  `commit_convergence::tests::stored_states_compare_equal_exactly_when_the_corrected_bytes_match`, which stores a
+  correction and its reversal and compares the three stored states; it failed with the mutant applied by hand.
 - Not mine and left alone: `mise.lock` shows a working-tree edit (`nightly-2026-10-11` to `nightly-2026-10-12`) that
   `mise run` wrote; it is not committed.
 
@@ -173,6 +193,10 @@ systemd-run --user --unit=int-e2e --collect --property=MemoryMax=10G \
   --working-directory="$PWD/package/git-policy/cli" --setenv=PATH="$PATH" --setenv=HOME="$HOME" \
   --setenv=GIT_POLICY_NATIVE_IMAGE_TAG=integration node "$HOME/temp/agent/gate-slot.ts" \
   mise run //package/git-policy/cli:test:e2e:concurrent:native --seed 1 --git 2.55.0
+
+# one mutation scope without the planted-control phase (the container gate must have built the image tag first)
+cd package/git-policy/cli && GIT_POLICY_NATIVE_IMAGE_TAG=integration node "${HOME}/temp/agent/gate-slot.ts" \
+  node bin/mutate-native-container-noplanted.mjs --file src/native/commit_convergence.rs --timeout 900
 
 # the container gate
 GIT_POLICY_NATIVE_IMAGE_TAG=integration node "${HOME}/temp/agent/gate-slot.ts" \
