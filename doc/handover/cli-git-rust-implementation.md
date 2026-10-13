@@ -1582,8 +1582,20 @@ that is verification, not a decision for the user.
   `node_modules/.bin/git` shim and an empty `package/git-policy/cli/node_modules/.bin`) were removed on 2026-10-14 by
   explicit path, never with `git clean -X`, which would remove the live `.cache/cli-git-bin` link and the rules file;
   afterwards `mise run sync:files` leaves the repository unchanged.
-  Still open from the retirement: `native:interop` cannot run until an incumbent provisioning step builds the pinned
-  revision (trailing gate), the `slopo.ignore.txt` entries for deleted files (lines 45, 50, 69, 200, 309, 324, 373)
+  Audit of 2026-10-14 (user: the old wrapper must be nowhere to be found and unusable): the main checkout has no old
+  entry point (the package is a private verification harness without `bin`, `main` or `dist`, and its `node_modules`
+  link and the `.changeset` ignore entry name that harness), `type -a git` resolves to the native link first, and no
+  old process runs.
+  The old shims and built output were removed by explicit ignored path from every other worktree (13 shims, 6 `dist`
+  directories; the lane worktrees `cli-git-lane-interop` and `-pathbytes` had none), the tracked old copies at older
+  branch heads stay history, and the zero-byte `node_modules/.bin/git` in `Monochromatic-but-every-file-0-bytes`
+  (not a repository) cannot run.
+  Interop decision (user): the interop matrix runs once against an incumbent built in a throwaway container from the
+  pinned revision, the results are recorded, and then everything that can build or run the old wrapper
+  (`provision-incumbent.mjs`, the incumbent image steps in `bin/interop-native-container.mjs`, the live-incumbent
+  scripts under `native-interop/`) is deleted, leaving static captured fixtures.
+  Still open from the retirement: the interop run and that deletion (lane `interop`),
+  the `slopo.ignore.txt` entries for deleted files (lines 45, 50, 69, 200, 309, 324, 373)
   wait for a fresh `slopo analyze` report, and the SPEC sections the plan did not name were not re-verified line by
   line.
   Both wrappers shared `.git/cli-git*` state while sessions were mixed; the incumbent is no longer on any `PATH`.
@@ -1602,9 +1614,9 @@ that is verification, not a decision for the user.
   to lower it, write the new integer to that file, never write `cpu.max` by hand).
   The service also prints ALERT and CLEAR lines for CPU, memory and IO pressure, scheduler lag and temperature;
   details and the follow command are in `doc/runbook/claude-cpu-cap.md`.
-  Agents need no per-job throttles but keep heavy parallelism modest (at most two heavy jobs at once, none while
-  the load average is above about 40); heavy gates run through `~/temp/agent/gate-slot.ts` (six slots) because their
-  time limits assume bounded host load.
+  Agents need no per-job throttles and no limit on heavy jobs beyond the shared cap (user, 2026-10-14: all Claude Code
+  bash is limited together); heavy gates still run through `~/temp/agent/gate-slot.ts` (six slots) because their
+  time limits assume bounded host load, and memory (62 GiB, not bounded by the cap) is the resource to watch.
   Commands started with `systemd-run` leave the shared cap, so do not use it for work that should count.
   `nproc` reports 16 inside shells with a restricted affinity; use `nproc --all` or `lscpu` for the real count.
   Open: the `replay-core` branch holds unmerged mutation work, `monochromatic-lint` shim lookup fails outside the
