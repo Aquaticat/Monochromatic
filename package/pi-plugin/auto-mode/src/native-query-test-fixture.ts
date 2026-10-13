@@ -18,9 +18,17 @@ function* nativeExceptionTarget(): Generator<string> {
  Falsy values and proxies are valid inputs to Generator.prototype.throw.
 
  @param value - exact simulated native exception
+
+ @example
+ ```ts
+ const failures = thrownValues(() => { throwNativeValue(false); });
+ // failures contains the original false exception.
+ ```
  */
 export function throwNativeValue(value: unknown,): void {
-  /** Fresh suspended-start iterator throws its input without entering the body. */
+  /**
+   Fresh suspended-start iterator throws its input without entering the body.
+   */
   const target = nativeExceptionTarget();
   target.throw(value,);
 }
@@ -31,9 +39,17 @@ export function throwNativeValue(value: unknown,): void {
  @param run - tested operation
 
  @returns original thrown-value occurrences, empty on normal return
+
+ @example
+ ```ts
+ const failures = thrownValues(() => { throwNativeValue(undefined); });
+ // failures has an occurrence even though its value is undefined.
+ ```
  */
 export function thrownValues(run: () => void,): readonly unknown[] {
-  /** Test-local list retains exact values without formatting them. */
+  /**
+   Test-local list retains exact values without formatting them.
+   */
   const values: unknown[] = [];
   try {
     run();

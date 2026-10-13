@@ -16,17 +16,29 @@ export type NativeQueryCapture = (frame: unknown,) => undefined;
  Failure operations do not authenticate frames, establish coverage, or authorize execution.
  */
 export type NativeQueryObservation = {
-  /** Forward original input frame before native lookup starts. */
+  /**
+   Forward original input frame before native lookup starts.
+   */
   readonly captureInput: (frame: unknown,) => void;
-  /** Forward original output frame after native lookup succeeds. */
+  /**
+   Forward original output frame after native lookup succeeds.
+   */
   readonly captureOutput: (frame: unknown,) => void;
-  /** Prevent a caught observer failure from permitting later native consumption. */
+  /**
+   Prevent a caught observer failure from permitting later native consumption.
+   */
   readonly assertHealthy: () => void;
-  /** Retain independent failures when native error reporting also throws. */
+  /**
+   Retain independent failures when native error reporting also throws.
+   */
   readonly reportFailed: (input: {
-    /** Native callback failure delivered to its original reporter. */
+    /**
+     Native callback failure delivered to its original reporter.
+     */
     readonly nativeError: unknown;
-    /** Failure from that reporter, including falsy thrown values. */
+    /**
+     Failure from that reporter, including falsy thrown values.
+     */
     readonly reportError: unknown;
   },) => never;
 };
@@ -60,15 +72,25 @@ const l = tagged({ tag: 'auto-mode-native-query-observation', },);
  ```
  */
 export function createNativeQueryObservation(
-  { captureInput: inputReceiver, captureOutput: outputReceiver, }: {
+  {
+    captureInput: inputReceiver,
+    captureOutput: outputReceiver,
+  }: {
     readonly captureInput: NativeQueryCapture;
     readonly captureOutput: NativeQueryCapture;
   },
 ): NativeQueryObservation {
-  /** Attribute this lifetime without inspecting any caller-owned material. */
-  const rl = tagged({ tag: createNativeQueryObservation.name, l, },);
+  /**
+   Attribute this lifetime without inspecting any caller-owned material.
+   */
+  const rl = tagged({
+    tag: createNativeQueryObservation.name,
+    l,
+  },);
   rl.debug('creating native query observation lifetime',);
-  /** Owned state acquires a failure field even when the thrown value is undefined. */
+  /**
+   Owned state acquires a failure field even when the thrown value is undefined.
+   */
   const state: { failure?: { readonly error: unknown; }; } = {};
 
   /**
@@ -79,8 +101,13 @@ export function createNativeQueryObservation(
    @throws original receiver failure without replacing its value
    */
   function captureInput(frame: unknown,): void {
-    /** Keep input entry diagnostics separate from output processing. */
-    const il = tagged({ tag: captureInput.name, l: rl, },);
+    /**
+     Keep input entry diagnostics separate from output processing.
+     */
+    const il = tagged({
+      tag: captureInput.name,
+      l: rl,
+    },);
     il.debug('observing native query input',);
     try {
       inputReceiver(frame,);
@@ -99,8 +126,13 @@ export function createNativeQueryObservation(
    @throws original receiver failure without replacing its value
    */
   function captureOutput(frame: unknown,): void {
-    /** Output processing retains its own diagnostic boundary. */
-    const ol = tagged({ tag: captureOutput.name, l: rl, },);
+    /**
+     Output processing retains its own diagnostic boundary.
+     */
+    const ol = tagged({
+      tag: captureOutput.name,
+      l: rl,
+    },);
     ol.debug('observing native query output',);
     try {
       outputReceiver(frame,);
@@ -117,11 +149,17 @@ export function createNativeQueryObservation(
    @throws first original receiver failure, including undefined
    */
   function assertHealthy(): void {
-    /** No query values or failure objects are formatted by the logger. */
-    const al = tagged({ tag: assertHealthy.name, l: rl, },);
+    /**
+     No query values or failure objects are formatted by the logger.
+     */
+    const al = tagged({
+      tag: assertHealthy.name,
+      l: rl,
+    },);
     al.debug('checking native query observation lifetime',);
     if (state.failure !== undefined)
-      throw state.failure.error;
+      throw state.failure
+        .error;
   }
 
   /**
@@ -136,24 +174,42 @@ export function createNativeQueryObservation(
    @throws original reporter failure when no observation failure occurred
    */
   function reportFailed(
-    { nativeError, reportError, }: {
+    {
+      nativeError,
+      reportError,
+    }: {
       readonly nativeError: unknown;
       readonly reportError: unknown;
     },
   ): never {
-    /** Reporting diagnostics never format untrusted thrown values. */
-    const el = tagged({ tag: reportFailed.name, l: rl, },);
+    /**
+     Reporting diagnostics never format untrusted thrown values.
+     */
+    const el = tagged({
+      tag: reportFailed.name,
+      l: rl,
+    },);
     el.debug('retaining native query error-reporting failure',);
     if (state.failure !== undefined) {
       throw new AggregateError(
-        [state.failure.error, nativeError, reportError,],
+        [
+          state.failure
+            .error,
+          nativeError,
+          reportError,
+        ],
         'Original loadout query observation and native error reporting did not complete',
       );
     }
     throw reportError;
   }
 
-  return Object.freeze({ captureInput, captureOutput, assertHealthy, reportFailed, },);
+  return Object.freeze({
+    captureInput,
+    captureOutput,
+    assertHealthy,
+    reportFailed,
+  },);
 }
 
 //endregion Original observation failure retention

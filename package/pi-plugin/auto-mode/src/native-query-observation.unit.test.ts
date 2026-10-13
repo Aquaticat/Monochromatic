@@ -23,11 +23,17 @@ await describe({
         const input = {};
         const output = {};
         const receivers = {
-          captureInput: function recordInput(frame: unknown,): undefined { received.push(frame,); },
-          captureOutput: function recordOutput(frame: unknown,): undefined { received.push(frame,); },
+          captureInput: function recordInput(this: void, frame: unknown,): undefined {
+            received.push(frame,);
+          },
+          captureOutput: function recordOutput(this: void, frame: unknown,): undefined {
+            received.push(frame,);
+          },
         };
         const observation = createNativeQueryObservation(receivers,);
-        receivers.captureInput = function replaced(): undefined { throw new Error('Replacement must not be called',); };
+        receivers.captureInput = function replaced(): undefined {
+          throw new Error('Replacement must not be called',);
+        };
         observation.captureInput(input,);
         observation.captureOutput(output,);
         observation.assertHealthy();
@@ -60,7 +66,9 @@ await describe({
                   throwNativeValue(original,);
               },
             },);
-            const first = thrownValues(function capture() { observation[phase]({},); },);
+            const first = thrownValues(function capture() {
+              observation[phase]({},);
+            },);
             expect(first.length,).toBe(1,);
             expect(first[0],).toBe(original,);
             behavior.fails = false;
@@ -70,7 +78,9 @@ await describe({
             expect(after[0],).toBe(original,);
             const nativeError = new Error('Native callback failed',);
             const reportError = new Error('Native reporting failed',);
-            const [aggregate,] = thrownValues(function report() { observation.reportFailed({ nativeError, reportError, },); },);
+            const [aggregate,] = thrownValues(function report() {
+              observation.reportFailed({ nativeError, reportError, },);
+            },);
             if (!(aggregate instanceof AggregateError))
               throw new Error('Expected observation and native reporting failures together',);
             expect(aggregate.errors,).toEqual([original, nativeError, reportError,],);
@@ -88,8 +98,12 @@ await describe({
           captureInput(): undefined { throwNativeValue(false,); },
           captureOutput(): undefined { throw later; },
         },);
-        expect(thrownValues(function input() { observation.captureInput({},); },),).toEqual([false,],);
-        expect(thrownValues(function output() { observation.captureOutput({},); },),).toEqual([later,],);
+        expect(thrownValues(function input() {
+          observation.captureInput({},);
+        },),).toEqual([false,],);
+        expect(thrownValues(function output() {
+          observation.captureOutput({},);
+        },),).toEqual([later,],);
         expect(thrownValues(observation.assertHealthy,),).toEqual([false,],);
       },
     },),
@@ -107,7 +121,9 @@ await describe({
           captureInput(): undefined { throwNativeValue(original,); },
           captureOutput(): undefined {},
         },);
-        expect(thrownValues(function capture() { observation.captureInput({},); },)[0],).toBe(original,);
+        expect(thrownValues(function capture() {
+          observation.captureInput({},);
+        },)[0],).toBe(original,);
         expect(thrownValues(observation.assertHealthy,)[0],).toBe(original,);
         expect(reflections.length,).toBe(0,);
         Reflect.getPrototypeOf(original,);
@@ -127,7 +143,9 @@ await describe({
             captureInput(): undefined {},
             captureOutput(): undefined {},
           },);
-          const failures = thrownValues(function report() { observation.reportFailed({ nativeError: 'callback', reportError, },); },);
+          const failures = thrownValues(function report() {
+            observation.reportFailed({ nativeError: 'callback', reportError, },);
+          },);
           expect(failures.length,).toBe(1,);
           expect(failures[0],).toBe(reportError,);
           observation.assertHealthy();
