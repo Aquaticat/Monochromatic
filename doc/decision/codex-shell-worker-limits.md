@@ -12,8 +12,8 @@ This request authorizes this focused exception to the general Codex integration 
 
 ## Implementation
 
-The maintained hook is
-[`codex-worker-hook.ts`](../../package/dev-script/task-util/src/codex-worker-hook.ts).
+The maintained hook is the Rust `codex-worker-limit` binary in
+[`task-util`](../../package/dev-script/task-util/native/codex-worker-limit/main.rs).
 Codex's native Bash `PreToolUse` hook adds a cgroup membership write before the original command.
 The command cannot continue when attachment fails.
 The hook retains native sandbox and approval handling.
@@ -53,4 +53,16 @@ A disposable Codex sandbox successfully joined a separate test slice's child and
 `memory.swap.max=0`,
 `cpu.max=200000 100000`,
 and `pids.max=256` from its parent.
-The persistent hook installation and native host verification are pending.
+The initial TypeScript implementation was rejected after 30 unchanged-input measurements:
+62.26 ms median,
+67.51 ms at the 95th percentile,
+and 167.34 ms maximum.
+The shell-only control measured 2.40 ms median.
+The measurement includes process startup and hook execution;
+it does not isolate TypeScript processing from Node startup.
+
+The user requires per-command hook overhead below 30 ms and requested a Rust implementation.
+The suggested `jq` shortcut was unnecessary and was never installed as a hook.
+The Rust helper uses `serde_json` directly.
+Measure native host dispatch as well as standalone helper execution before claiming the latency target.
+Persistent hook installation and native host verification are pending.

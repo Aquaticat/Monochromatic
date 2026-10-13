@@ -1,0 +1,24 @@
+[package]
+name = "monochromatic-dev-script-task-util"
+version = "0.0.2"
+edition = "2024"
+license = "LGPL-3.0-or-later"
+description = "Native resource-limit hook for agent shell execution"
+repository = "https://github.com/Aquaticat/Monochromatic.git"
+readme = "README.md"
+publish = false
+
+[[bin]]
+name = "codex-worker-limit"
+path = "native/codex-worker-limit/main.rs"
+
+[dependencies]
+serde_json = "1"
+
+[profile.release]
+lto = true
+codegen-units = 1
+strip = true
+overflow-checks = true
+
+[workspace]

@@ -34,3 +34,16 @@ extends = "test:unit"
 [tasks.buildAndTest]
 description = "Build the seven node entries, then run unit tests against the built testing seam"
 run = ["mise run build", "mise run test:unit"]
+
+[tasks."build:worker-limit"]
+description = "Build the native Codex worker hook"
+run = "cargo build --release --jobs 1 --bin codex-worker-limit"
+
+[tasks."lint:worker-limit"]
+description = "Check the native worker hook with the canonical Rust lints"
+run = "cargo clippy --locked --all-targets --jobs 1 -- --deny warnings"
+
+[tasks."test:worker-limit"]
+description = "Exercise the release worker hook through disposable CLI fixtures"
+depends = ["build:worker-limit"]
+run = "node src/codex-worker-limit.unit.test.ts"
