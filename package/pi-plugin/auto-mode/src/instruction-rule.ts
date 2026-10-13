@@ -50,6 +50,28 @@ export type InstructionRule = {
 const MAX_PRIORITY = 255;
 
 /**
+ Validate priority without deriving authority from its numeric value.
+
+ @param input - priority already established by calling code
+
+ @returns integer within the existing precedence range
+
+ @throws {@link InstructionResolutionInputError} for unsupported priorities
+
+ @example
+ ```ts
+ readInstructionPriority(0);
+ ```
+ */
+export function readInstructionPriority(input: unknown,): number {
+  if (((typeof input) !== 'number') || (!Number.isInteger(input,))
+    || (input < 0)
+    || (input > MAX_PRIORITY))
+    throw new InstructionResolutionInputError('Instruction priority must be a code-established integer from 0 through 255',);
+  return input;
+}
+
+/**
  Read the closed rule shape without executing input properties.
 
  @param input - compiler-owned fact candidate
@@ -80,7 +102,6 @@ export function readInstructionRule(input: unknown,): InstructionRule {
    Narrow each primitive independently; record shape does not authenticate its meaning.
    */
   const {
-    priority,
     effect,
     applicability,
   } = values;
@@ -88,10 +109,10 @@ export function readInstructionRule(input: unknown,): InstructionRule {
    Bounded identity correlates diagnostics, never authority.
    */
   const id = readPolicyIdentity(values.id,);
-  if (((typeof priority) !== 'number') || (!Number.isInteger(priority,))
-    || (priority < 0)
-    || (priority > MAX_PRIORITY))
-    throw new InstructionResolutionInputError('Instruction priority must be a code-established integer from 0 through 255',);
+  /**
+   Numeric validity remains separate from source authority.
+   */
+  const priority = readInstructionPriority(values.priority,);
   if ((effect !== 'permit') && (effect !== 'prohibit')
     && (effect !== 'require-approval')
     && (effect !== 'unresolved'))
