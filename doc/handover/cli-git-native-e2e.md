@@ -1,5 +1,13 @@
 # Native end-to-end lane: the incumbent's e2e suite against the native executable
 
+Note,
+ 2026-10-14:
+ the retirement of the TypeScript wrapper deleted the tasks `test:e2e:concurrent:native:surface`,
+ `test:e2e:concurrent` and `pack:npm` that this record names,
+ and rewrote `test:e2e:concurrent:image` to build the base image alone.
+The record is `doc/handover/cli-git-native-retire.md`;
+the incumbent that this record compares against is the commit `f4fc1fa213ece65672e4314983a75266837892f9`.
+
 Branch `feat/cli-git-native-e2e`, based on the transactions head `13f60ef1b1`, merged into the integration branch.
 This file holds the current state only; when the state changes, replace the text instead of appending.
 

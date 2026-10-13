@@ -38,6 +38,16 @@ Nothing in the real installation was installed,
 What remains is in `Steps that remain`,
  `User-boundary verification` and `Order of the retirement commits`.
 
+Retirement state on 2026-10-14:
+the retirement commits are on the branch `feat/cli-git-native-retire`
+(record,
+ gates,
+ leftovers and the cleanup list for the main checkout:
+ `doc/handover/cli-git-native-retire.md`).
+The sections below describe the plan and the facts that led to it;
+where they say a file "will be deleted" or "stays",
+ the branch is the outcome.
+
 Facts measured on 2026-10-12 carry that date;
  facts measured on 2026-10-13 say so.
 The scout of 2026-10-12 read `main` at `e1890fb471`.
