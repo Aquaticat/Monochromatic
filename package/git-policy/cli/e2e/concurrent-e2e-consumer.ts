@@ -1,11 +1,13 @@
 #!/usr/bin/env node
 /**
  Container entry point of the concurrent-commit end-to-end suite.
- Run only through `mise run //package/git-policy/cli:test:e2e:concurrent`,
+ Run only through `mise run //package/git-policy/cli:test:e2e:concurrent:native`,
  which starts it inside a bounded,
- network-isolated Podman container.
+ network-isolated Podman container with the native executable.
 
  Environment:
+ `E2E_WRAPPER` names the wrapper whose `git` shadows the real Git:
+ `native` (the default and the only value);
  `E2E_SEED` replays a seed;
  `E2E_SCENARIOS` and `E2E_GIT_VERSIONS` are comma-separated filters.
  Output is terminal report text (AGENTS.md TLG exception):
@@ -21,6 +23,7 @@ import { readFile, } from 'node:fs/promises';
 import { join, } from 'node:path';
 
 import { assertCommitShapeTrace, } from './commit-shape-trace-fixture.ts';
+import { WRAPPER_BIN, } from './repository-fixture.ts';
 import {
   formatResult,
   runPassed,
@@ -35,6 +38,10 @@ import {
   parseSeed,
   SEED_MODULUS,
 } from './seeded-random-fixture.ts';
+import {
+  verifyWrapperExecutable,
+  WRAPPER_KIND,
+} from './wrapper-selection-fixture.ts';
 
 //region Configuration
 
@@ -143,8 +150,12 @@ async function runSuite(): Promise<void> {
   const versionFilter = splitFilter(process.env
     .E2E_GIT_VERSIONS
     ?? '',);
+  console.log(await verifyWrapperExecutable({
+    kind: WRAPPER_KIND,
+    bin: WRAPPER_BIN,
+  },),);
   console.log(`seed=${String(seed,)}${generated ? ' (generated)' : ''}`,);
-  console.log(`replay: mise run //package/git-policy/cli:test:e2e:concurrent --seed ${String(seed,)}`,);
+  console.log(`replay: mise run //package/git-policy/cli:test:e2e:concurrent:native --seed ${String(seed,)}`,);
   /**
    Committed trace.
    */

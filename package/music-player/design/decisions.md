@@ -235,6 +235,10 @@ Per the MD3 list spec (one-line 56,
 title;
  line two is `duration · true-peak` (e.g. `4:35 · −1.2 dBTP`),
  tabular numerals.
+Note added 2026-10-06:
+ line two is now what the supporting-line template yields (D81),
+ and its default is `$tf(mi(len), m:ss)$ $mi(peak)$`,
+ which reads `4:35 −1.2 dBTP` without the dot (D93).
 **Rejected.**
  Single-line rows (rows-a) and a columnar table layout (rows-b).
 
@@ -469,9 +473,15 @@ width,
  auto-dismissing after a few seconds.
  It does not span
 the window and does not push anything.
- Collision with the error bar (D9) is still open.
+ Collision with the error bar is now settled by D29.
 
 ### D9. Missing files and renamed folders = candidate err-b
+
+The layout-reserving error-bar presentation is superseded by D83.
+Vanished-row removal,
+count-collapsed failures and renamed-folder behavior remain applicable.
+Historical accepted treatment:
+
 The list stays clean:
  a file that has vanished **drops out of the list**,
  and a
@@ -523,13 +533,21 @@ Analyse true peak in the background       OFF in the mock
  Grouped cards with section headers and an analysis-status row
 (settings-b).
 
+D84 (2026-10-05) removes the third row:
+analysis is automatic and non-optional,
+so Settings has no analysis switch.
+D85 removes the closing sentence that says the pane is short.
+D86 (2026-10-05) removes the two remaining rows:
+both behaviours are always on and are not settings.
+Nothing of settings-a's content is left.
+
 ### D12. Analysis status lives nowhere after the first run
 The user chose this explicitly:
  once analysis is done it never needs to be seen again.
 Consequence:
  the "10,412 of 10,412 analysed" row from settings-b is gone,
  and
-**Re-analyse on the track context menu is the only remaining entry point**.
+**Re-analyse on the track context menu is the only remaining entry point** (removed by D113, 2026-10-12).
 
 ### D13. The scan indicator is not permanent
 It appears while analysing and leaves afterwards.
@@ -761,8 +779,8 @@ this behaviour is Android-only by nature.
 
 ## F. Input
 
-### F1. Keyboard map — DRAFT ONLY (candidate keys-a)
-Not reviewed by the user.
+### F1. Keyboard map — DRAFT ONLY (candidate keys-a), superseded by D102
+Not reviewed by the user; the map the human accepted in D102 replaces it.
  Current draft:
 ```text
 Space        play / pause
@@ -779,7 +797,8 @@ Ctrl ,       settings
 Media keys are expected to work on both platforms (MPRIS on Linux,
  media session on
 Android).
- The Android media notification has not been designed.
+ D82 accepts Android's standard media notification presentation,
+ with no custom notification design round.
 
 ---
 
@@ -931,6 +950,11 @@ and is never explained in place.
  which now
 only applies when no system library exists or the user declined it.
 
+D84 (2026-10-05) supersedes the ask-before-analysing prompt and its four
+answers:
+true-peak analysis is automatic and non-optional.
+Automatic opening of the system music library stands.
+
 ### D28. The picker rail adapts to the library's writing systems (revises D3, D17)
 **Only writing systems present in the library get a section in the rail:**
  Latin A–Z,
@@ -951,7 +975,15 @@ that every non-Latin name used to fall into.
 **This decision covers the rail only.**
  Presentation of the names is D31.
 
-### D29. Undo toast floats above the error bar — both visible (candidate toast-a)
+### D29. Undo toast floats above the error bar, both visible (candidate toast-a)
+
+D83 supersedes the error-bar owner and its layout reservation.
+The remaining overlay requirements still apply:
+content width,
+left alignment,
+16dp owner separation and no player-layout push.
+Historical collision treatment:
+
 Closes the collision.
  The toast is content-width,
  left-aligned,
@@ -1258,7 +1290,9 @@ adjustment belongs to the system:
  hardware keys,
  the system media session,
  and whatever
-the future media notification round settles for the notification surface.
+Android's standard notification presentation.
+D82 removes the custom media-notification design round;
+functional media-session integration remains separate.
 **Why.**
  The user's instruction of 2026-09-17.
  It removes a control the system already owns and
@@ -1297,6 +1331,8 @@ the seams.
  and L2 pure ramp without hairlines.
 
 ### D46. Cover picker opened state = P4, temporary pre-1.x decision (2026-09-23)
+D104 (2026-10-10) later adds the upward caret while open, drops the pre-1.x revisit and defers further improvement to another major version.
+
 Use P4 as the current design baseline for the folded cover screen:
  the app-bar folder title
 and caret open the picker in the list slot,
@@ -1777,7 +1813,9 @@ the user rejected that color and specified a color **derived from the
 selected theme and adjusted in OKLCH**.
 A3 makes the OS accent the theme source.
 The revised debug fixture uses `MaterialTheme.colorScheme.primary` and the
-existing `mixOklchWithNeutral` utility to derive light and dark match fills,
+existing `mixOklchWithNeutral` utility to derive light and dark match fills
+(note 2026-10-13: that utility is deleted, and the Search match fill is now a role derived in
+`core/ThemeRoles.kt`, D108),
 with bold text as a second cue.
 No fixed purple swatch,
 new production Search feature,
@@ -2277,6 +2315,1013 @@ D77's accessible-action naming direction and the need for visible distinction
 before activation remain intact;
 no automatic suffix restoration or collision fallback is selected.
 No production implementation is authorized by this clarification.
+
+### D82. Accept Android's standard media notification presentation
+
+The human explicitly chose no special designs for Android media notifications.
+Accept the presentation Android provides;
+do not build notification variants or ask for appearance,
+layout or custom-action design preferences.
+This closes the custom notification design backlog item.
+Functional playback/session wiring and truthful metadata remain implementation
+responsibilities,
+not proof supplied by this design choice.
+No production implementation,
+live playback or real-device notification mutation is authorized here.
+
+### D83. Error feedback is an auto-dismissing, dismissible overlay
+
+The human rejected a bar that changes player layout.
+Use a floating toast/snackbar for error feedback,
+with automatic expiry and immediate manual dismissal.
+Try to fit the message in two visible lines.
+When more detail would need additional lines,
+direct the user to capture Android logs rather than expanding the message
+or reserving player space.
+Full operation details belong in tagged diagnostics,
+not a growing on-screen bar.
+
+This supersedes D9's layout-reserving bar and D29's bar-specific collision
+owner,
+not their truthful outcome requirements or the Undo capability gate.
+Feedback appearing,
+expiring or being dismissed must not resize the folder browser,
+track viewport or deck.
+Do not reinterpret an accepted request as successful trash or log capture
+as actual storage recovery.
+
+The current work remains an isolated authored design study.
+No production storage,
+playback,
+IME or TalkBack operation is authorized by this presentation change.
+
+### D84. True-peak analysis is automatic and non-optional (2026-10-05)
+
+The human withdrew D11's `Analyse true peak in the background` row:
+Settings provides no switch for analysis,
+because true-peak analysis is automatic and not optional.
+This supersedes D11's third row and D27's ask-before-analysing prompt,
+whose four answers (`Scan once`,
+`Always scan`,
+`Dismiss once`,
+`Dismiss forever`) existed only to make analysis optional.
+D27's automatic opening of an available system music library stands.
+D12's Re-analyse on the track menu stands.
+D26's scan bar stands;
+reading its Pause/Resume control as a temporary pause that does not make
+analysis optional is this record's interpretation,
+not the human's statement.
+When analysis runs is not selected here.
+No production implementation is authorized by this record.
+
+### D85. The Settings pane has no closing sentence (2026-10-05)
+
+The human dropped settings-a's closing paragraph,
+`That's everything. There is no library to configure, no tags to read, and no audio processing beyond normalisation — so this pane stays short until the app grows.`
+D11's wording about the pane saying out loud that it is short is withdrawn
+with it.
+The sentence was mock copy that no decision chose,
+and D81 already adds template configuration to Settings.
+
+D86 (2026-10-05) then removes the pane's two remaining rows.
+
+### D86. Prefix stripping and resume are always on, not settings (2026-10-05)
+
+The human withdrew D11's two remaining rows:
+`Strip common prefixes from filenames` and `Resume where I left off` are
+always on and are not settings.
+This supersedes the same-day answer that only the analysis switch goes,
+which `HANDOFF.md` recorded under the two-row Settings publication.
+
+The behaviours stand as D11 described them,
+without a switch:
+titles are shown without a common filename prefix,
+as in `Another Xronixle` for
+`かめりあ(Camellia) - Another Xronixle.flac`,
+and launch restores folder,
+track and position,
+paused.
+
+With D84 and D85,
+nothing of settings-a's content remains.
+Settings stays a destination only because D81 places template configuration
+there;
+that content is undesigned (section 11e of `open-questions.md`).
+The Fold placement used by the Settings study was adopted from D50,
+D51 and existing Settings behaviour,
+not accepted,
+and this record does not change that.
+The published two-row Settings study is withdrawn by this record.
+
+A scoped source reading on the same day,
+not an acceptance of production:
+Android `PlaybackService` already loads a persisted session through
+`SessionStore.load` when it starts,
+with no setting;
+whether it restores folder,
+track and position paused as D11 words it was not checked.
+`core/RelPath.kt` strips the longest common directory prefix from displayed
+paths and `rowDisplay` strips a folder label;
+a search of Android and desktop production source found no code that removes
+a shared filename prefix or the extension as D11's example does.
+No production implementation is authorized by this record.
+
+D87 (2026-10-05) answers what the Settings page then holds:
+nothing.
+
+### D87. The Settings page stays and is empty (2026-10-05)
+
+Asked nothing further,
+the human said of the Settings page:
+leave it empty.
+Settings therefore remains a destination with its header and its way back,
+and draws no row,
+no sentence and no placeholder below the header.
+This supersedes the reading in D86 that Settings stays only because of D81;
+it stays because the human kept it.
+D81's template configuration is still placed in Settings and still
+undesigned (section 11e of `open-questions.md`),
+so the page is empty until that is designed.
+The Fold placement of the page remains adopted from D50,
+D51 and existing Settings behaviour,
+not separately accepted.
+The human also said that an empty page needs no study,
+so no native study of the empty page is built;
+the withdrawn two-row study is kept as a record and is not replaced.
+No production implementation is authorized by this record.
+
+### D88. Nothing is locked by hash (2026-10-05)
+
+The published first-run study had been left uncorrected on the ground that
+its review verification bound the page by hash.
+Told so,
+the human said:
+do not lock by hash,
+ever.
+
+What follows from it:
+
+- No check fails or refuses because a page,
+  template,
+  builder,
+  test or record differs from a recorded digest.
+- A recorded digest is never a reason to leave something uncorrected or to put a correction off.
+- Review-verification records carry no digest of a page,
+  template,
+  builder,
+  test,
+  manifest or report.
+  Those fields were removed from the published records under
+  `questions/evidence/` on this date,
+  and each record says so in `pageDigestsRemoved`.
+
+A narrower reading the agent adopted,
+not the human's words,
+and open to veto:
+digests that only name what was captured stay for now.
+Those are the digest of each published screenshot in a witness manifest,
+the digest of the debug APK that produced a set of captures,
+and the digests of browser screenshots that were looked at.
+The builders still compare each embedded screenshot with its manifest digest,
+and some still require the manifest's APK digest to equal a value written in the builder.
+Under the widest reading of the human's words those are locks too.
+Removing them is asked of the human,
+not done.
+
+Asked the same day,
+the human answered:
+remove both.
+So the narrower reading is withdrawn.
+No builder compares a screenshot with a digest,
+and no builder requires an APK digest or a prototype commit to equal a
+value written in it.
+A manifest may still say which APK and which commit produced its captures;
+that is a statement,
+and nothing is checked against it.
+What a builder checks about an image is what it measures from the image itself.
+
+On 2026-10-06 the agent reported that its private emulator-capture scripts,
+which are outside this repository,
+still compared the study APK's digest:
+to keep one set of captures to one build,
+and before replacing the package already installed in the emulator.
+One such comparison had refused a capturing visit the night before.
+Asked whether D88 covers those scripts too,
+the human answered yes,
+remove them.
+The scripts that run a visit now tell builds apart by commit name and replace the study's package by its application id.
+Those changed scripts were checked for syntax only;
+no visit has run with them yet.
+Scripts of finished studies still hold such comparisons;
+they are not run any more,
+and one that is reused gets the same change first.
+
+Asked the same day whether to make this a rule for the whole repository in `AGENTS.md`,
+the human declined:
+"There are legit (rare) situations in which locking by hash is desired."
+So D88 binds this package's design evidence and its capture tooling,
+and is not a ban for the repository at large.
+
+### D89. The template language and editor follow KWGT, with stated omissions (2026-10-05)
+
+The human named KWGT (Kustom Widget Maker) as precedent for D81's template
+editor and had it run first-hand in a throwaway emulator.
+`doc/planning/music-player-template-editor.md` lists what KWGT's formula
+language and editor do,
+with a recommendation to keep or omit each.
+The human answered:
+"I'll go with your recommendations with what to omit and keep."
+
+Kept:
+
+- literal text with formulas between a pair of delimiters;
+- field functions that take a mode word,
+  with the player's own fields;
+- nested calls and formatting functions;
+- text conversion for case and for cutting to a length;
+- `if` and comparisons,
+  so a row can say what to show when a field has no value;
+- a live preview on every keystroke;
+- signature and argument help while typing;
+- error lines that name the function and the problem;
+- a field list that inserts at the caret.
+
+Omitted:
+
+- arithmetic,
+  unless a use appears;
+- global variables;
+- markup for colour,
+  bold,
+  italic and the like;
+- functions for weather,
+  battery,
+  network,
+  calendar,
+  notifications and web content;
+- silence about a formula left open,
+  which the player reports instead;
+- saved favourite formulas;
+- the button row for markup,
+  colour and the globe.
+
+Not decided by this answer,
+because the note recommended nothing there:
+the rest of text conversion,
+regular-expression match and combined conditions,
+whether the preview uses stand-in values or a real track,
+whether ready-made examples are offered,
+and whether an edit applies as typed or on an explicit save.
+Those go to the built editor study as variants.
+
+Also undecided:
+the field inventory and names,
+which row types get templates,
+default templates,
+fallback for an empty field or an invalid template,
+the exact delimiter and function spelling,
+and the editor's layout on the Fold.
+D81's limits stand:
+title customization is not implied,
+and D77's visible distinction before activation remains required.
+No production implementation is authorized by this record.
+
+### D90. The agent's picks for the template entries left open by D89 (2026-10-05)
+
+Asked whether the entries D89 left open were the human's to pick,
+the human answered:
+you choose,
+but for extremely obscure features (for a music player) like regex lean on no.
+
+The agent's picks,
+each open to the human's veto:
+
+- Text conversion stays at case and cutting to a length.
+  Cutting with an ellipsis,
+  padding,
+  splitting and regular-expression replace are omitted.
+  A row already shortens text that does not fit,
+  and the others have no evident use in a track row.
+- Regular-expression match is omitted.
+- Combining conditions with `&` and `|` is omitted,
+  unless a use appears.
+  A nested `if` covers the case of two fields that may each be absent.
+- The preview shows real tracks from the open library,
+  not stand-in values,
+  so the user sees their own names and the rows where a field has no value.
+  Stand-in values are used only when no library is open.
+  (D95,
+  2026-10-06:
+  a library is always open,
+  so stand-ins are used only while the open library holds no track.)
+- No list of ready-made examples.
+  The default template is the example,
+  and the field list inserts at the caret.
+- An edit applies as typed while the template is valid,
+  as Android settings do,
+  with a way back to the default.
+  While the template is invalid the rows keep the last valid template and
+  the editor shows the error.
+  There is no separate save step.
+
+These are picks about scope and behavior,
+not about appearance.
+The editor's layout on the Fold is still to be built and looked at.
+No production implementation is authorized by this record.
+
+### D91. The editor's preview scrolls with the page (2026-10-06)
+
+The editor study built three layouts of the preview,
+because at 200% text the baseline loses the preview while typing inside a call:
+the preview at the top of one scrolling page,
+both preview rows fixed under the header,
+and only the two result lines fixed under the header.
+The agent ranked the fixed result lines first and the scrolling baseline last.
+
+Asked through the question tool with the review page open,
+the human chose none of the offered options and wrote:
+"I've seen the preview,
+and I have to say this isn't the way.
+Least surprises vs the base platform is more appropriate,
+and it doesn't prevent users from wanting to see more in a easy manner.
+Preview scrolls."
+
+So the preview scrolls with the page,
+as the baseline has it,
+and nothing is fixed under the header.
+The two pinned layouts are rejected.
+The reason given is a standard beyond this page:
+prefer what surprises least against the base platform,
+when the user can still reach the rest easily.
+The agent's ranking weighed what stays in view at 200% text over that,
+and was wrong for this human.
+
+The rule the second build added,
+that the page scrolls while the field has focus so the lines under it clear the keyboard,
+was not asked about and is not decided by this answer.
+No production implementation is authorized by this record.
+
+### D92. The template language has no conditionals (2026-10-06)
+
+The study's assumptions were put to the human through the question tool:
+one template for the track row's supporting line;
+KWGT's spelling,
+with `mi`,
+`tf`,
+`tc`,
+`if` and `+`;
+the fields `title`,
+`file`,
+`ext`,
+`folder`,
+`path`,
+`len` and `peak`;
+the default template;
+and the D90 picks.
+The human answered:
+"Keep except conditionals.
+This is templating.
+For prior arts:
+We're not Vue,
+we're just HTML."
+
+So:
+
+- The language has no conditional.
+  `if` and the comparisons that exist only to feed it are removed.
+  This supersedes the entry of D89 that kept them.
+- Everything else put in that question stands and is no longer only assumed:
+  the one template studied,
+  the spelling without `if`,
+  the field list,
+  and the D90 picks.
+- The default template used `if` to leave out the true peak,
+  its separator and its unit while a file is not analysed.
+  It cannot stand as written.
+  What a row shows around a field that has no value is therefore open again,
+  and is asked of the human with options,
+  not picked by the agent.
+
+No production implementation is authorized by this record.
+
+### D93. An empty field is plain substitution (2026-10-06)
+
+Asked through the question tool what a template shows around a field that has no value,
+now that it has no conditional,
+the human chose plain substitution over optional brackets
+(foobar2000's `[...]`,
+which its reference calls a conditional section)
+and over before-and-after arguments
+(in the manner of git's `% x` placeholders).
+
+So:
+
+- Text outside `$...$` is always shown,
+  and a field with no value yields nothing,
+  as text in HTML would.
+  A separator a user writes next to an empty field stays in the line.
+- `mi(peak)` yields the true peak with its unit,
+  for example `−1.2 dBTP`,
+  and nothing while the file is not analysed yet.
+- The default template is `$tf(mi(len), m:ss)$ $mi(peak)$`.
+  An analysed file reads `4:35 −1.2 dBTP`;
+  one not analysed yet reads `5:12`.
+  The middle dot between duration and peak that C2 describes is gone from the default line.
+  Analysis is automatic (D84),
+  so the missing peak is temporary.
+
+No production implementation is authorized by this record.
+
+### D94. Where the page rests while typing is the platform's (2026-10-06)
+
+The second editor build replaced the platform's own scrolling to a focused field with an authored rule:
+scroll so the lines under the field clear the keyboard by 8dp,
+and never scroll the field's upper edge out of view.
+Asked through the question tool whether that should also follow the platform,
+as D91 asks of the preview,
+the human chose the platform default.
+
+So the authored rule is removed.
+When the field takes focus and the keyboard opens,
+the page rests wherever Android puts a focused text field.
+The first build's captures showed what that costs at 200% text:
+the last line under the field can end flush against the keyboard,
+and the field's label can slide under the header when the field and its help are taller than the visible page.
+This supersedes the last paragraph of D91,
+which left the rule undecided.
+
+No production implementation is authorized by this record.
+
+### D95. A library is always open (2026-10-06)
+
+Shown the rebuilt editor study,
+whose last state previewed sample values under the note that no library is open,
+the human wrote:
+"What do you mean 'No library open'?
+The app should always have a library open,
+even if the opened library is empty.
+It auto opens OS default library if no sessions are in the store."
+
+So no screen of the player has a state without a library.
+When no session is stored,
+the app opens the operating system's default library (D27),
+and that library may hold no track.
+The editor's preview uses sample values only while the open library holds no track,
+and says so.
+This corrects the reading of D90 that spoke of no library being open.
+
+Whether this also removes the first-run study's state without an opened source
+(`evidence/first-run-access-boundaries.md`)
+is put to the human,
+not assumed.
+
+No production implementation is authorized by this record.
+
+### D96. Scrolling suffices to reach the field list (2026-10-06)
+
+With the keyboard open the list of insertable fields sits under the template field and is mostly out of view.
+Asked through the question tool whether that is worth designing for under D91's standard,
+the human answered that scrolling suffices.
+The field list stays where it is.
+
+No production implementation is authorized by this record.
+
+### D97. Which rows get templates: one built version, for approval (2026-10-06)
+
+Asked what comes next in the template round,
+the human wrote:
+"Field list and other rows are pretty inconsequential and you only need to build one version
+(according to the best of your design skills)
+and ask for me to approve.
+Do both."
+
+The field list needs nothing more (D96).
+For the other rows the agent builds one version,
+its own design,
+and asks for approval;
+`doc/planning/music-player-template-editor.md` holds the proposal.
+Nothing in that proposal is decided until the human approves it.
+
+No production implementation is authorized by this record.
+
+### D98. The template editor is accepted as shown (2026-10-06)
+
+Shown the rebuilt review page with the empty library in place of no library (D95),
+and asked through the question tool whether the editor under `What is decided` was right as shown,
+the human answered "Right as shown".
+The question also stated the agent's reading that the field list stays where it is (D96)
+and invited a correction;
+none was given.
+D89 to D96 stand as the editor's design,
+evidenced by `evidence/template-editor-boundaries.md`.
+Typing is not connected in that study,
+so real typing remains untried.
+
+No production implementation is authorized by this record.
+
+### D99. Two lines get templates: track rows and the playing track (2026-10-06)
+
+The human approved the D97 version as built.
+Settings lists two templates under `Templates`:
+
+- `Track rows`,
+  the supporting line of a track row,
+  with the default `$tf(mi(len), m:ss)$ $mi(peak)$` (D93).
+- `Playing track`,
+  the line under the playing track's title in the deck,
+  with the default `$mi(track)$ of $mi(total)$ $mi(peak)$`,
+  which reads `1 of 16 −1.2 dBTP`,
+  or `1 of 16` before analysis.
+  Its fields are the track fields and two more:
+  `track`,
+  the file's place in its folder,
+  and `total`,
+  how many tracks the folder holds.
+
+Each editor is titled with its template's name,
+so the track rows' editor is `Track rows`,
+not `Supporting line`.
+The playing track's preview shows two files as rows.
+The deck's line loses its middle dot.
+Search results are not templated:
+their second line stays the parent folder D77 requires.
+Folder names and every title stay as they are.
+This closes the row-type coverage D81 left open.
+
+No production implementation is authorized by this record.
+
+### D100. First run: access declined stays, no source opened goes (2026-10-06)
+
+Asked which of the first-run study's states survive D95,
+the human chose to keep the state where Android's music permission is refused
+and to drop the state with no source opened.
+Under D95 the system library is open even when its tracks cannot be read,
+so the kept state shows that library as open but unreadable,
+offering to grant access or to open a folder.
+D10's empty state,
+which D27 had narrowed to no system library or a declined one,
+now applies only to this declined state.
+The first-run study (`evidence/first-run-access-boundaries.md`) is to be rebuilt for this;
+the agent's version of its copy is proposed in `doc/planning/music-player-first-run-access.md`.
+
+No production implementation is authorized by this record.
+
+### D101. The declined first-run state is approved as built (2026-10-06)
+
+The human approved the agent's version of the declined state as built:
+
+- Title `The device music library can't be read`.
+- Body `It is open as your library, but access to music on this device was not granted. Allow access, or open a folder instead.`
+- Buttons in this order:
+  `Allow access` filled,
+  then `Open a folder` and Settings outlined.
+- The true-peak explanation below the buttons,
+  as D10 asks.
+- The inner panel's left half blank,
+  as in the no-audio states.
+
+The question stated that once Android stops showing its permission prompt after repeated refusals,
+`Allow access` can only open the app's page in Android's settings,
+and that at 200% text the state now scrolls slightly on both panels.
+`evidence/first-run-access-boundaries.md` holds the study.
+
+No production implementation is authorized by this record.
+
+### D102. The keyboard map is accepted as built (2026-10-10)
+
+Asked whether to accept the whole IntelliJ-aligned keyboard map shown at `questions/keyboard-map.prototype.html`,
+the human answered `Accept as built`.
+This closes D25's request for one whole-map pass and replaces the F1 draft.
+On Windows and Linux, then macOS:
+
+- Search `Ctrl+F` and `Command+F`;
+  the folder picker `Ctrl+O` and `Command+O` (both from D25).
+- Settings `Ctrl+Alt+S` and `Command+Comma`.
+- Jump to the playing track `Ctrl+G` and `Command+L`.
+- Previous and next track `Ctrl+Left` and `Ctrl+Right`, and `Command+Shift+[` and `Command+Shift+]`.
+- Space toggles play and pause, and `Ctrl+M` cycles the end-of-track mode;
+  these and previous and next work only while the playback area has focus,
+  so editing fields and focused controls keep their own keys.
+- Bare arrows keep their native behavior.
+  There is no seek or volume on them,
+  so Up and Down have no special meaning after D43 removed in-app volume.
+- Escape closes the innermost popup, otherwise leaves Search.
+- Media and volume keys stay with the operating system.
+
+Which keys Linux compositors and macOS actually deliver, media-key delivery,
+accessibility traversal and IME behavior were not exercised;
+the implementation has to verify them with their real owners.
+Implementing the map is developer work.
+No production implementation is authorized by this record.
+
+### D103. Remaining Search behavior is closed as a design item (2026-10-10)
+
+Asked whether to close the open-questions entry on Search behavior left after D51 and D52,
+the human chose to close it and keep the verification notes.
+Every design choice in it is decided (D58 to D74).
+Native focus restoration, system Back, IME and TalkBack behavior stay listed as implementation gates
+in `open-questions.md` and the Search evidence records,
+and need verification when an implementation is authorized.
+No production implementation is authorized by this record.
+
+### D104. The folded-cover picker is P5 without its container (2026-10-10)
+
+Asked whether to approve the agent's P5 for the folded cover's folder picker,
+the human answered:
+approve P5, but remove the container,
+with no further build and capture round.
+The human added that they are still unsatisfied with the picker,
+and will deal with that and any further improvement in another major version of the app.
+
+So the design is P4 whose caret points up while the picker is open and down otherwise.
+The title is not wrapped in a tonal container,
+and nothing else about P4 changes:
+the app-bar title and caret open the picker in the list area while the deck stays visible,
+and the folder names, letter rail and deck are as D46 and D17 settle.
+The open state is shown by the caret's direction and by the picker replacing the track list;
+a second marker on the trigger itself was not chosen.
+The captures in `questions/cover-picker-revisit.html` show P5 with its container,
+so they are evidence of the built candidate and not of this decision;
+no capture of the decided state exists,
+and opening, closing, Back, focus return and TalkBack are unmeasured for it.
+D46 stays a provisional baseline that the human has said they will revisit in another major version;
+the before-1.x revisit is closed by this answer.
+
+No production implementation is authorized by this record.
+
+### D105. Move to trash on Android follows what the platform allows (2026-10-10)
+
+Asked how to implement D8's immediate delete with Undo on Android,
+where a delete reaches files by two routes that behave differently,
+the human chose:
+for a folder the user opened through the picker (a persisted storage-access grant)
+the app deletes immediately and Undo copies the file back,
+and for the device-wide system music library the app uses Android's own trash request with its system confirmation.
+The copy-back creates a new document with the same name and bytes,
+so its timestamps and identity change;
+the system library's Undo is Android's own restore, not the in-app overlay.
+D8 stays the design for every source where the platform allows it.
+
+This is a platform-feasibility decision made during production implementation.
+
+### D106. Nearly every action has a keyboard shortcut, chosen as JetBrains would (2026-10-11)
+
+The human asked that nearly every action have a shortcut, for two reasons: better end-to-end testing through real key
+input, and a more keyboard-friendly app, and said that when in doubt the choice is whatever JetBrains would have picked.
+The orchestrator decided the table on the human's standing instruction to decide remaining questions.
+It extends D102, whose bindings all stay.
+Windows and Linux first; on macOS the same action takes the Command-based JetBrains macOS binding where D102 gives one,
+and otherwise Command in place of Ctrl and Option in place of Alt.
+
+Kept from D102: Search `Ctrl+F`, folder picker `Ctrl+O`, Settings `Ctrl+Alt+S`, jump to the playing track `Ctrl+G`,
+previous and next track `Ctrl+Left` and `Ctrl+Right`, play and pause `Space`, end-of-track mode `Ctrl+M`,
+`Escape` closes the innermost popup and otherwise leaves the current page.
+
+Playback:
+- Seek back and forward 10 seconds: `Alt+Left` and `Alt+Right` (JetBrains navigates back and forward with these);
+  60 seconds with `Shift` added.
+- Pick a playback mode directly: `Ctrl+Shift+1` to `Ctrl+Shift+4` (Repeat, In order, Shuffle the folder, Shuffle all).
+- Restart the track: `Ctrl+Home`.
+
+Browsing:
+- Previous and next folder: `Alt+Up` and `Alt+Down` (JetBrains moves to the previous and next member with these).
+- Jump to the folder of the playing track: `Ctrl+Shift+G`.
+- Focus the folder picker `Alt+1` and the track list `Alt+2`, the way JetBrains opens its tool windows.
+- Inside a focused list: `Up`, `Down`, `Home`, `End`, `PageUp`, `PageDown` move the focus ring, `Enter` plays the row,
+  `Space` on a list keeps play and pause, a letter key moves to the first folder starting with it.
+- Open a folder with the system dialog: `Ctrl+Shift+O`.
+- Rescan the library: no binding (D113 removed `F5`; the library refreshes by itself).
+- Quit (desktop): `Ctrl+Q`.
+
+On the focused track row, or the row the menu is open on:
+- Open its menu: `Menu` key or `Alt+Enter` (D114 replaced `Shift+F10`, which is Run in JetBrains).
+- Move to trash: `Delete`. Copy path: `Ctrl+Shift+C` (JetBrains copies the path with this).
+- Show in file manager: `Ctrl+Shift+E`. File details has no dedicated key (D114: reach it through the menu).
+- With the menu open, `Up`, `Down` and `Enter` choose a row and `Escape` closes it.
+
+Pages:
+- In Settings, `Enter` opens the focused row; in the template editor `Ctrl+Enter` applies and leaves, and `Escape`
+  leaves, and `Ctrl+Shift+Backspace` resets the template to its default.
+- In Search, `Up` and `Down` move through the results, `Enter` opens the focused result, `Escape` leaves.
+
+Search also opens on a double tap of `Shift` (JetBrains Search Everywhere): two presses and releases of Shift within
+400 ms with no other key between them, on the player page only. Settings and the template editor are modal pages
+where Search is not offered, so `Ctrl+F` and double Shift do nothing there (a human correction of 2026-10-11).
+
+Key hints (asked for by the human on 2026-10-11): while the modifiers of a shortcut are all held down, every control
+that has such a shortcut shows its key as a small badge on or beside it, for example `F` on the Search button while
+`Ctrl` is held, and `Alt+Left` style remainders such as `Left` and `Right` on the seek controls while `Alt` is held;
+holding more modifiers narrows the badges to the bindings that use them. The badges appear after the modifiers have
+been held for 300 ms, so quick chords never flash them, and disappear when any required modifier is released.
+Badges never take pointer input and do not move other content.
+
+Discoverability: the shortcut is shown in each menu row and in the tooltip of every button that has one.
+A command palette on `Ctrl+Shift+A` (JetBrains Find Action) that lists every action with its shortcut is wanted and
+is a later item, because it is a new screen.
+
+Bare keys never fire while a text field has focus, and the playback keys follow D102's focus rule.
+Every shortcut is covered by an end-to-end test that presses the real keys through the nested compositor and reads the
+resulting state, which is the second reason for this decision.
+
+### D107. True-peak analysis progress is a system notification, never an in-app banner (2026-10-11)
+
+The human said the analysis banner should never block anything, changed their mind about the bar, and asked for a
+system notification with a progress bar, noting that both Android and KDE can show one.
+This supersedes D26's 56dp bottom bar and D13's appearance and disappearance of that bar on both platforms:
+the player screen draws no analysis indicator and reserves no space for one, so nothing it shows can cover or move content.
+
+The orchestrator decided the details on the human's standing instruction to decide remaining questions:
+
+- The notification is titled `Analyzing true peak`, its text is the count `412 of 1,218`, and it shows a determinate
+  progress bar.
+  It is silent, low priority and ongoing while analysis runs, and it is removed when analysis finishes.
+- D26's Pause and Resume control stays as the action button on the notification, with the same temporary-pause reading
+  that D84 records.
+- Android posts it on its own low-importance channel. Android 13 and later need the notification permission: the app asks
+  for it once, when the first analysis starts, and if it is declined the analysis runs without any indicator.
+- Linux desktop on KDE Plasma reports it as a Plasma job through `org.kde.kuiserver` (the job view that Dolphin's
+  compress action uses and that the human's own `compress-to-sqfs` service menu script drives): the notifications applet
+  shows the app's name and icon, the title `Analyzing true peak`, the count as the info line, a determinate bar with the
+  percent, and a native Pause button (the job is suspendable, not killable, because D84 keeps analysis non-optional).
+  Where `org.kde.kuiserver` is absent, Linux falls back to one freedesktop notification replaced in place, with the
+  progress hint, updated at a limited rate. Where neither answers, analysis runs without an indicator.
+  macOS and Windows get the same behavior through their own notification APIs in a later step.
+- The taskbar progress of the desktop app (the `LauncherEntry` hint) keeps its own meaning and is not changed here.
+
+### D108. The OS accent is the theme root and every derived color is computed in OKLCH (2026-10-11)
+
+The human confirmed that the desktop has to follow the OS accent as A3 says (it did not: `ui/theme.slint` used fixed
+primaries), and stated that every color manipulation after a root color is obtained must be done in OKLCH.
+Obtaining the root color is not a manipulation, and it is the only thing taken from the platform on either system:
+the desktop root is the portal, Windows or macOS accent that Slint 1.18 exposes, and the Android root is the system accent
+(on API 31 and later the middle tone of the system accent palette, `android.R.color.system_accent1_500`; the human
+corrected an earlier reading of this record that kept the platform's own `dynamicLightColorScheme` and
+`dynamicDarkColorScheme` roles, so Android's HCT-derived roles are not used).
+From the root, on both platforms, everything the app derives (tonal steps, container and on-container roles, hover and pressed layers,
+mixes with neutral, match highlights as in D59, gradients and any lightening or darkening) is computed by moving
+lightness, chroma and hue in OKLCH and converting back to sRGB with gamut handling.
+It is never computed by sRGB mixing or by HSV or HSL operations, such as `Color.brighter`, `Color.darker` or `Color.mix` in
+Slint, or `lerp` and `copy(alpha)` on sRGB values in Compose.
+When no accent is available the fixed baseline from the Fold captures is the root and the same derivation applies.
+Alpha-only layering (state layers over a surface) is allowed because it does not change a color's lightness, chroma or hue.
+
+Retune of 2026-10-12 under B4 (the orchestrator's decision, open to the human's veto): counting the 8 and 12 percent state
+layers, four drawn light-scheme text pairs of the old fixed baseline were below 4.5. The fixed light baseline moved by
+lightness only in OKLCH: primary `#4E5E8B` to `#455481` (delta-E 3.46), on-surface-variant `#5C5E6A` to `#585A65` (1.48)
+and the search match fill `#CFD9F0` to `#C9D2E9` (2.08). Dark is unchanged. Primary is not fitted on the hovered and
+pressed deck-segment fills because primary text is never drawn on them. Rust and Kotlin share one fixture of 52 roots in
+both schemes that a test on each side checks.
+
+### D109. The single-pane Settings is one full-width column with 16dp margins (2026-10-12)
+
+The human asked for the stock Android Settings layout to be measured on the owned Pixel 9 Pro Fold with its display size
+changed only through Settings (and Developer options' Smallest width as the fallback), then on a Pixel Tablet, and said
+that if neither shows two panes the conclusion is that two-pane Settings does not exist.
+It was measured with a headful emulator (record in `/home/user/temp/agent/agent-settings-ref3/notes.txt`):
+stock Settings of the Play-store Android 17 image shows one full-width column at every size tried, from 320 dp to
+1200 dp on the Fold's inner display (default 851 dp), at all five Display size steps, on the folded cover (443 dp),
+and at 1101, 1280 and 1506 dp on a Pixel Tablet.
+The first conclusion drawn from that, that two-pane stock Settings does not exist, was wrong and is withdrawn:
+a later round with the human's instruction to set the large-screen option found that the split is gated by the system
+properties `persist.settings.large_screen_opt.enabled` and `persist.settings.large_screen_opt_for_dp.enabled` (either
+one; read once per Settings process in `ActivityEmbeddingUtils`), which a production build such as the Play-store image does not let
+a shell set; on a rootable image (`google_apis_ps16k`, API 37.1, `userdebug`) setting one gives two panes at 720 dp
+current width and above.
+Measurements of that stock two-pane form are in `/home/user/temp/agent/agent-settings-ref3/round4/` (list pane 0.3632 of
+the window, rows 72.6 dp, selected row filled in the detail pane's color as a pill of about 27.5 dp corners, no divider,
+cross-fade when the selection changes, the detail pane starting on the first destination, a sub-page in the detail pane
+gets a Navigate up button) and are the reference for D110, not the target: D110 overrides the ratio on a crease and the
+tinted backgrounds.
+
+The music player's Settings page therefore has one form on every window width, following the measured stock layout:
+the list is full width with no maximum column width and no centering (this replaces the 640 dp centered column of the
+earlier redesign), 16 dp side margin so a card is the page width minus 32 dp, rows 72 dp tall with a 40 dp circular icon
+at x = 32 dp and the title at x = 84 dp, 2 dp between rows of one group and 16 dp between groups, with the group corner
+rounding already built.
+The human then rejected Google's tinted backgrounds ("the non-transparent gray-ish bg is uncalled for; everything should
+be in one color, white or black"): the page, the header, the cards and the rows all use the one canvas color of the
+player, pure white in light (D34) and pure black in dark (D41), with no separate page tint, card fill or header band
+(this removes the `settings-page`, `settings-card` and header-band tokens of the earlier redesign).
+Groups and rows are therefore separated by the spacing above and by their text and icons alone, with no fill, border or
+divider line (the divider lines were already removed on 2026-10-11), and the group corner rounding survives only as the
+shape of the pressed, hovered and selected states.
+Fills that carry state or an icon are not backgrounds in this sense and stay: the 40 dp icon circle and the selection fill
+of D110, each a role derived from the accent under D108.
+The music player's template rows (D87 and D99) had no icon; the human asked that an icon be picked for each from
+Material Symbols and embedded, so every row has the stock leading icon and keeps the 72 dp two-line height.
+The orchestrator picked `queue_music` for the Track rows template and `play_circle` for the Playing track template, in
+the Outlined style at weight 400 on the 24 px grid, drawn in a 40 dp circle filled with the secondary container role
+(D108 derivation) with the icon in the on-secondary-container role.
+They are embedded as vector path data in each app, with no icon font, no download and no network access at run time,
+the way the app already embeds its other icons; the Material Symbols license (Apache 2.0) text goes under `LICENSES/`
+and the README names the source.
+
+### D110. Settings is two panes of half the screen each when unfolded, and its text dodges the crease (2026-10-12)
+
+The human has seen Google's two-pane Settings and does not fully agree with it, and decided that this player's Settings
+still takes two panes on the unfolded screen, each exactly half of the screen, with text kept out of the crease.
+This replaces D109's "one form on every width" for the wide case; D109's measurements, row geometry and icons stand for
+the list.
+
+- Wide means the same condition under which the player shows two panes (the unfolded Fold inner display on Android, a
+  window of 600 px or more on desktop). Below that, Settings stays the single full-width page of D109, where a tap on a row
+  opens that template's editor page and Back returns.
+- Wide: the left pane is the Settings list of D109 (heading, rows with icons, 72 dp rows, group rounding) and the right
+  pane is the editor of the selected row (D89 to D99), shown in place so selecting a row never navigates.
+  On a device with a crease the panes are exactly half of the window each. The human then added that a device without a
+  crease does not need that: whether the device has a crease is detected through the platform API (on Android the
+  Jetpack WindowManager `FoldingFeature` of a vertical fold or hinge, from `WindowInfoTracker`; the desktop has none), and
+  without one the split follows the platform default ratio, which the orchestrator reads as the stock Settings value
+  `config_activity_embed_split_ratio` = 0.3636 for the list pane that the stock Settings APK ships. The human
+  confirmed on 2026-10-12 that 0.3636 is the ratio on a device without a crease; the setting is closed.
+  No row or editor moves when the selection changes (the same stability as the Folders panel).
+  The selected row is shown with a filled selection shape in the secondary container role plus a bold title (two
+  channels, not color alone), and the first row, Track rows, is selected when Settings opens so the right pane is never
+  empty.
+- Crease: only on a device where the API reports a crease. E2 governs there. Text, labels and other informative marks in either pane keep a
+  clearance of `max(7.5 mm, crease width)` in total across the center, shared half to each pane, measured in physical
+  units and never stored as a fixed dp value; backgrounds, row and card containers, hit regions and the selection fill may
+  span the center. Where a row's title would reach the band, it ends before the band (ellipsis) and the right pane's
+  content starts after it.
+  Desktop windows have no crease, so there the split follows the default ratio and the clearance is the pane's ordinary
+  16 dp inset. The same holds for a tablet or any other large screen whose API reports no crease.
+- Back closes Settings in the wide form and in the single form alike, and in the wide form Escape closes it too.
+
+### D111. Search works while scanning is still running (hard requirement, 2026-10-12)
+
+The human stated it as a hard requirement on Search: it must still be functional while the library is still being scanned.
+It binds both platforms and whatever engine D47 to D74 end up on:
+
+- Search is available from the moment any track is known. It is never disabled, hidden or replaced by a scanning state,
+  and the analysis sweep (D84) never gates it either.
+- Each keystroke searches every track known at that moment. While the scan keeps adding tracks, the open Search page
+  refreshes its results in place, keeping the query, the caret and the scroll position, and without moving a row the user
+  is about to tap.
+- Neither the scan nor the sweep blocks a keystroke: the index takes track additions incrementally in small batches, no lock
+  or transaction is held across a scan batch, and the per-keystroke latency target holds while scanning, as it does at rest.
+- The requirement is tested with a scan that is deliberately slow, on both platforms, by typing while tracks arrive and
+  checking that results appear for the tracks already known and later for the new ones.
+
+### D112. Search runs on an in-memory index, not on Turso search (2026-10-12)
+
+The human suggested replacing the app's own search algorithm with Turso's built-in search. Both Turso mechanisms were
+measured against D47 to D74, D111 and the 1,000,000-track bar (scratch record in `/home/user/temp/agent/agent-tursofts/`):
+
+- Turso's two ways to search are full-text search (Tantivy, `USING fts`) and vector search. Neither is exact for the rules
+  without Rust re-applying them: FTS has no custom ranking or rerank hook (only `fts_score` ordering is pushed into the
+  index; any other `ORDER BY` makes SQLite sort every candidate, which measured seven to ten times slower than Rust at
+  1,000,000), and `fts_highlight` highlights whole tokens only and returns tagged text, not ranges.
+  Vector search is similarity, not containment: no query had an exact result at the 500 cap, and exact results needed k
+  at or above the match count at 250 to 390 ms per query; the only vector index (`toy_vector_sparse_ivf`) built 200,000
+  rows in 209 s.
+- Turso FTS with word-start grams does satisfy the rules (parity 44 of 44) and stays usable while a scan adds tracks, but
+  it still needs the same in-memory table of normalized names, adds a 186 MiB index file, a 26 to 33 s rebuild and
+  multi-second write transactions at 10,000-row batches, needs the `turso_core` source patched to compile on the newest
+  nightly, makes the Android library 26 percent larger, and is experimental. In 0.8.2 a plain `ORDER BY ... LIMIT n` over
+  an FTS-matched table returns wrong rows unless written `LIMIT n OFFSET 0`.
+
+Decision (the orchestrator's, on the human's standing instruction to decide, open to the human's veto): Search uses an
+in-memory index of normalized names in each app, with first and second character buckets, a best-500 list per first
+character, off-thread batch normalization with an append-only write lock, search on a worker thread, and a refresh signal
+after every batch so open results update in place (D111). Turso stays the store of the peak cache only.
+
+### D113. Refresh and re-analysis are automatic and never exposed to the user (2026-10-12)
+
+The human said that refreshing the library and re-analyzing true peaks must always be handled perfectly by the app and
+not be exposed as user actions. This supersedes D12's menu entry "Re-analyse true peak" (the last manual entry point) and
+the D106 rows `F5` (rescan) and `Ctrl+Shift+F5` (re-analyse).
+
+- No rescan or re-analyze command exists anywhere in the user interface, keyboard map, menus, tooltips or settings, on
+  both platforms. Trash and Undo keep reloading the library internally.
+- The library follows the disk by itself: changes are detected and applied without a user action (desktop: the live
+  watcher with its catch-up rescan; Android: observers of the source plus a reload when the app returns to the front).
+- Analysis follows the files by itself: a new, replaced or edited file (its fingerprint changed) is measured again, a file
+  that failed to decode is retried when the library next changes or the app next starts, and a failure is reported once
+  per file in plain words (D83) instead of offering a retry button.
+- The D107 notification stays the only analysis surface.
+
+### D114. The track menu opens with Menu or Alt+Enter, and every menu row has an access key (2026-10-12)
+
+The human noticed that `Shift+F10` is Run in JetBrains' keymap, which D106 uses as its tie-breaker. Decided by the human:
+
+- The track row's menu opens with the `Menu` key or `Alt+Enter` (JetBrains' key for the actions on the item under the
+  cursor). `Shift+F10` is not bound.
+- File details has no dedicated key; the menu reaches it.
+- Every menu row has an access key, as JetBrains and desktop menus do: one letter per row, drawn underlined in the row
+  label (a second channel besides the letter itself is the underline), and pressing the letter while the menu is open runs
+  that row and closes the menu. Letters are unique within the menu, chosen from the row's own words (for example Play,
+  Shuffle from here, Details, Copy filename, Show in file manager, Move to trash), and the rows' `Up`, `Down`, `Enter`,
+  `Escape` keys stay. On Android the access keys work with an attached keyboard.
+
+### D115. Readings made while fixing the list defects (2026-10-12)
+
+The orchestrator's readings of earlier decisions, adopted from the desktop lists work and open to the human's veto:
+
+- D22 and C1: the scrollbar's grab zone is 12 px across the scroll axis (D22), and the thumb is never shorter than 48 px
+  along it (C1). The thumb widens from 4 to 8 px on hover or drag, so state is shown by color and width.
+- D31: names take the width they need, up to the pane. A longer name ends in an ellipsis, with the full name as a tooltip
+  (only while it is cut) and as the accessible label. A highlighted Search match is never the part that is cut.
+- D1 and D18: the Shuffle segment keeps the width of "Shuffle Camellia" for every folder name, so the deck never
+  re-lays itself out while the user browses; a longer name gets the middle ellipsis on the name only.
+- D28: each writing system after the first starts with a 1 px hairline in the rail, which also separates look-alike Latin,
+  Cyrillic and Greek letters.
+- D36: the playing row carries a 4 px bar in the primary role on its left edge besides bold and the soft fill, so the
+  emphasis does not depend on the script of the title.
+- The Hangul syllable that renders as two jamo in some sessions is a font fallback gap, not an app or renderer defect:
+  `doc/troubleshooting/slint-hangul-split-jamo-droid-sans-fallback.md`. Open question: bundle a Hangul-capable font.
+
+### D116. No bundled Hangul font, and no optimized test profile (2026-10-12)
+
+Two questions left open by earlier work, decided by the orchestrator on the human's standing instruction to decide, open to the human's veto:
+
+- No Hangul font is bundled. The app already depends on system fonts for every CJK script (Inter has none), so bundling
+  one script would be inconsistent and a full CJK bundle costs tens of megabytes. A session whose fontconfig picks a
+  fallback without that syllable shows it as two jamo; the cause and the Slint constraint are in
+  `doc/troubleshooting/slint-hangul-split-jamo-droid-sans-fallback.md`.
+- `[profile.dev]` and `[profile.test]` keep their defaults. An `opt-level = 1` test profile ran a 771-test suite in
+  3.99 s instead of 8.9 s in one sandbox, but made a cold dependency build 12.5 minutes instead of about 4, and that
+  cold build hits every fresh worktree and CI run. Revisit if the suite grows.
+
+### D117. A focus ring is only a ring, drawn the way Firefox draws it but hugging the element (2026-10-12)
+
+The human asked that focus rings look like what HTML and CSS draw, except that CSS rings are rectangles and ours hug the
+element, that a focus ring be merely a ring with no other change such as a background color, and, when told that browser
+default outlines are broken lines, that the app follow whatever the latest Firefox desktop source does. The source
+(mozilla-firefox/firefox, `layout/style/res/ua.css` rule `:focus-visible { outline: 1px auto; }`, painted by
+`Theme::PaintAutoStyleOutline` in `widget/Theme.cpp`) draws two solid rings, not a broken line. This replaces the
+"2 px ring plus the state layer" wording of D106 and the focus fill of the earlier focus work.
+
+- The ring is the pair Firefox paints: an inner ring 2 px (dp on Android) wide in the `primary` role, flush against the
+  element's edge (Firefox's default `outline-offset` is 0, so there is no gap), and an outer ring 1 px wide in the
+  `on-primary` role around it, which keeps the ring readable on any surface because `on-primary` contrasts with
+  `primary`.
+- Both rings are solid and follow the element's own shape: the inner ring's inner radius is the element's corner radius
+  and each ring's outer radius is the radius plus the widths inside it, so a pill stays a pill, a circle a circle and a
+  rounded rectangle keeps its curve; an element with square corners gets a 2 px outer radius, as in Firefox.
+- The ring is drawn outside the element, is never clipped by a parent and never moves content.
+- It appears for keyboard focus only (CSS `:focus-visible`).
+- Focus adds no fill, tint, state layer, bold or size change. Hover and pressed keep their own state layers.
+- The human chose Firefox over Chromium on 2026-10-12. Chromium draws the same two solid rings (2 px next to the element,
+  1 px outside, flush) in a neutral focus color with a white or #101010 outer ring; it was rejected because it carries no
+  accent and its neutral pair conflicts with D118.
+
+### D118. Grays are always accented unless the root color is completely neutral (2026-10-12)
+
+The human decided that every gray the app draws carries the accent's hue, unless the root color itself has no hue at all.
+This narrows D108's near-gray rule and D41's stable neutrals.
+
+- A root is completely neutral only when it has no chroma at all (its three 8-bit channels are equal). Then every gray is
+  a true gray. A root with any chroma, however small, gives every gray the root's hue; a nearly gray root is not
+  treated as gray.
+- The tint of a gray is the role's own tint (it does not shrink when the root is weakly chromatic and does not grow when
+  it is vivid); accent roles still scale with the root's chroma.
+- Pure black and pure white (the canvas of D109) are not grays and stay as they are. The dark deck, the rail seam, the
+  outlines, the surfaces and the text variants are grays and take the tint, in both schemes and on both platforms, from
+  the same derivation and the shared fixture.
+
+### D119. Context menus sit on the pure canvas color (2026-10-12)
+
+The human decided that the background of a context menu is pure white in the light scheme and pure black in the dark
+scheme, the same canvas color as D109, with no tint. The menu stays distinguishable from the content under it by its
+existing boundary (outline or shadow), not by a fill; if it has none, it gets a 1 px outline in the `outline-variant`
+role, because a pure black menu over a pure black page would otherwise have no edge.
+
+### D120. Focus ring on filled elements and clipped rows, and the dead page controls (2026-10-12)
+
+The human answered three questions raised by the D117 build.
+
+- An element filled with `primary` (the desktop Play circle, the first-run primary pill) keeps the D117 ring as written:
+  the 2 px `primary` near ring merges with the fill and only the 1 px `on-primary` outer ring shows. There is no
+  per-element color swap, gap or inside ring for them.
+- Rows and fields that sit flush inside a clipped list (track rows, folder rows, Search results, template editor
+  fields) draw the same two rings just inside their own edge, because an outside ring would be clipped by the list.
+  This is the only exception to "outside the element" in D117.
+- The Android page-control chain (`FoldablePageControls.kt`, `LedPageControls.kt`, `PageControlStyle.kt`, the
+  `pageTabs` block in `MainActivity.kt`, the session-store style functions and their tests) had no callers and is
+  deleted, which removes the last opaque gray literals outside D118's derivation.
+  Current state (note added 2026-10-13): the human approved the deletion on 2026-10-12 and `1635237e73` made it,
+  but that commit left `LedPageControls.kt` as a 24-line stub holding `ledSelectedFill`. The stub is gone too, and with
+  it the Compose OKLCH adapters in `OklchComposeColor.kt` (`mixOklchWithNeutral`, `OklchNeutralMix`, `withOklchAlpha`,
+  `oklchGradientStops`, `OKLCH_BLACK_LIGHTNESS`, `OKLCH_WHITE_LIGHTNESS`), which only the stub and `OklchColorTest.kt`
+  still called; the adapters and that test file are deleted. The only OKLCH code left in the Android app is
+  `core/OklchColor.kt`, called by `core/ThemeRoles.kt`. The page-control runbook, fold plan and handover under `doc/`
+  are deleted for the same reason, and the Android README no longer describes the styles. Desktop has had no
+  page-control styles since the `AppWindow` replacement of 2026-10-10.
+- D118 as built also floors accent chroma at the largest gray tint of the scheme for every non-neutral root, so no
+  accent is grayer than a gray; this is the orchestrator's reading and stays open to the human's veto.
+
+### D121. Closed veto windows: accent floor, AA retune, Turso bugs, targetSdk (2026-10-13)
+
+The human answered four questions that had been open as orchestrator adoptions.
+
+- The accent chroma floor of D118 stays: for a non-neutral root, accent chroma is at least the largest gray tint of the
+  scheme. A completely neutral root keeps accents at chroma 0.
+- The D108 light retune stays (primary `#4E5E8B` to `#455481`, delta-E 3.46; on-surface-variant `#5C5E6A` to
+  `#585A65`; match fill `#CFD9F0` to `#C9D2E9`), so the D108 veto window is closed.
+- The two Turso bugs written up in issue 678 are not filed upstream for now; nothing is published under the human's
+  identity until they ask. D112 (in-memory index) stands.
+- Android `targetSdk` stays on 36 with no extra emulator passes for API 33, 34 and 36; D107 on those levels remains
+  unverified.
 
 ## Pending after the theme picks (2026-09-04)
 

@@ -15,7 +15,7 @@ import {
   LINKUP_WEB_SEARCH_TOOL_NAME,
   registerPiLinkup,
   type LinkupConfig,
-  type LinkupToolClient,
+  type SearchFetchToolClient,
 } from '../dist/final/node/index.mjs';
 
 //region Fixtures
@@ -34,7 +34,7 @@ const CONFIG: LinkupConfig = {
 /**
  Client fixture unused during registration.
  */
-const CLIENT: LinkupToolClient = {
+const CLIENT: SearchFetchToolClient = {
   async search() {
     return {
       provider: 'exa',

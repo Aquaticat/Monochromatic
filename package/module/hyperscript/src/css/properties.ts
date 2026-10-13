@@ -3,7 +3,8 @@
  
  Omits disallowed properties from csstype's `PropertiesHyphen` and excludes
  banned at-rules from the at-rule name union, enforcing the project's
- CSS conventions at the type level (replacing stylelint's runtime checks).
+ CSS conventions at the type level (the checks the retired stylelint config
+ performed at runtime).
  */
 import type {
   AtRules,

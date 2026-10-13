@@ -1,5 +1,5 @@
 // Terminal prototype window. Slint owns the pixel scroll position through the
-// Flickable's viewport-y. Rust receives that pixel offset, maps it to a whole
+// Flickable's content-y. Rust receives that pixel offset, maps it to a whole
 // libghostty-vt row plus a fractional remainder, asks libghostty-vt for the
 // whole-row viewport, and then places the visible cells at absolute row
 // positions inside the Flickable content. Slint's pixel viewport translation
@@ -183,12 +183,12 @@ export component AppWindow inherits Window {
                 Flickable {
                     width: parent.width;
                     height: parent.height;
-                    viewport-width: self.width;
-                    viewport-height: max(root.content-height, self.height);
-                    viewport-y <=> root.scroll-y;
+                    content-width: self.width;
+                    content-height: max(root.content-height, self.height);
+                    content-y <=> root.scroll-y;
 
-                    changed viewport-y => {
-                        root.scroll-changed((0px - self.viewport-y) / 1px);
+                    changed content-y => {
+                        root.scroll-changed((0px - self.content-y) / 1px);
                     }
 
                     content := Rectangle {

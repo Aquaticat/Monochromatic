@@ -1,8 +1,10 @@
 //! Desktop-shell integration for the terminal prototype.
 
-/// What:     `use i_slint_backend_winit::winit::platform::wayland::WindowAttributesExtWayland;`
+/// What:
+///      `use i_slint_backend_winit::winit::platform::wayland::WindowAttributesExtWayland;`
 ///           imports the trait that adds `with_name` to winit window attributes.
-/// Why:      Slint's default backend selector has no hook for Wayland app id.
+/// Why:
+///       Slint's default backend selector has no hook for Wayland app id.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -10,9 +12,11 @@
 /// ```
 use i_slint_backend_winit::winit::platform::wayland::WindowAttributesExtWayland;
 
-/// What:     `use i_slint_backend_winit::winit::window::WindowAttributes;` imports
+/// What:
+///      `use i_slint_backend_winit::winit::window::WindowAttributes;` imports
 ///           the creation-time window settings record.
-/// Why:      The app-id hook receives and returns this exact type.
+/// Why:
+///       The app-id hook receives and returns this exact type.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -20,9 +24,12 @@ use i_slint_backend_winit::winit::platform::wayland::WindowAttributesExtWayland;
 /// ```
 use i_slint_backend_winit::winit::window::WindowAttributes;
 
-/// What:     `pub const APP_ID: &str = "monochromatic.terminal";` declares a public
-///           borrowed string constant. Sibling `String` would allocate at runtime.
-/// Why:      Wayland app id and `.desktop` StartupWMClass must stay identical.
+/// What:
+///      `pub const APP_ID: &str = "monochromatic.terminal";` declares a public
+///           borrowed string constant.
+///  Sibling `String` would allocate at runtime.
+/// Why:
+///       Wayland app id and `.desktop` StartupWMClass must stay identical.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -30,9 +37,11 @@ use i_slint_backend_winit::winit::window::WindowAttributes;
 /// ```
 pub const APP_ID: &str = "monochromatic.terminal";
 
-/// What:     `pub fn set_window_app_id(...) -> WindowAttributes` declares a public
+/// What:
+///      `pub fn set_window_app_id(...) -> WindowAttributes` declares a public
 ///           hook function used by Slint's winit backend builder.
-/// Why:      KDE and other shells associate windows with desktop files by app id.
+/// Why:
+///       KDE and other shells associate windows with desktop files by app id.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

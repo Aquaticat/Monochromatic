@@ -172,7 +172,8 @@ fn consume_signal(signals: &OwnedFd) -> io::Result<()> {
     return Ok(());
 }
 
-/// Installs watch before scan, then rescans after draining creation race events.
+/// Installs watch before scan,
+///  then rescans after draining creation race events.
 pub fn prepare_application_watch(
     roots: ScanRoots<'_>,
     mark: u32,

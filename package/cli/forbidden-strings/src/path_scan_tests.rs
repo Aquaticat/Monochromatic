@@ -1,7 +1,10 @@
-//! Component-level matching, redaction, and path selection tests.
+//! Component-level matching,
+//!  redaction,
+//!  and path selection tests.
 
 /// Imports production name scanner and logical-path selection.
-use super::{logical_path, scan_path};
+use super::{logical_path, scan_path, scan_normalized_records};
+use crate::ScanFinding;
 
 /// Compiles runtime rules in memory without touching any user-owned cache.
 fn load_rules(text: &str) -> crate::frx_load::LoadedRules {
@@ -93,19 +96,35 @@ fn navigation_markers_are_not_segments() {
     assert_eq!(hit.findings, vec!["../[REDACTED]/a.txt:name:1 rule=0"]);
 }
 
-/// A repo-local absolute positional file is named by its repository-relative path.
+/// A repo-local absolute positional file is named by its repository-relative path in native spelling.
+///
+/// Each root is paired with a file path built from that root:
+///  the canonical root,
+/// which Windows spells with a `\\?\` verbatim prefix,
+/// and the plain temporary directory,
+///  the non-verbatim form Windows `current_dir` reports.
+/// The relative name is native (`nested\test.txt` on Windows),
+///  and the pathname scan displays it with `/` everywhere.
 #[test]
 fn absolute_path_under_root_uses_relative_name() {
-    let dir = std::env::temp_dir().join(format!("name-root-{}", std::process::id()));
+    let loaded = load_rules("VAULTTOKEN_LONG\n");
+    let dir: std::path::PathBuf = std::env::temp_dir().join(format!("name-root-{}", std::process::id()));
     std::fs::create_dir_all(dir.join("nested")).expect("create path fixture");
-    let file = dir.join("nested/test.txt");
-    std::fs::write(&file, "clean").expect("write path fixture");
-    let root = std::fs::canonicalize(&dir).expect("canonical root");
-    assert_eq!(logical_path(file.to_str().expect("utf8 path"), Some(&root)), "nested/test.txt");
+    std::fs::write(dir.join("nested").join("test.txt"), "clean").expect("write path fixture");
+    let canonical: std::path::PathBuf = std::fs::canonicalize(&dir).expect("canonical root");
+    // Joining with the host separator gives the expected native relative spelling on every platform.
+    let expected: std::path::PathBuf = std::path::Path::new("nested").join("test.txt");
+    for root in [canonical.as_path(), dir.as_path()] {
+        let file: std::path::PathBuf = root.join("nested").join("test.txt");
+        let logical: String = logical_path(file.to_str().expect("utf8 path"), Some(root));
+        assert_eq!(logical.as_str(), expected.to_str().expect("utf8 expected name"), "root {root:?}");
+        assert_eq!(scan_path(&logical, &loaded).display, "nested/test.txt", "root {root:?}");
+    }
     std::fs::remove_dir_all(&dir).expect("remove path fixture");
 }
 
-/// A symlink is named by its own entry, not the clean target it points at.
+/// A symlink is named by its own entry,
+///  not the clean target it points at.
 #[test]
 #[cfg(unix)]
 fn symlink_name_is_not_replaced_by_target() {
@@ -127,6 +146,24 @@ fn external_name_keeps_supplied_segments() {
     assert_eq!(logical_path("/external/private/file.txt", Some(root)), "/external/private/file.txt");
 }
 
+/// Explicit native-prefix boundaries exercise shared policy on every verification host.
+#[test]
+fn supplied_volume_prefix_skips_each_part_before_counting_names() {
+    let loaded = load_rules("VAULTTOKEN_LONG\n");
+    let drive = scan_normalized_records(b"C:/VAULTTOKEN_LONG/VAULTTOKEN_LONG", 1, &loaded);
+    assert_eq!(drive.display, "C\\x3a/[REDACTED]/[REDACTED]");
+    assert_eq!(drive.findings, vec![
+        ScanFinding::Name { component: 1, rule: String::from("0") },
+        ScanFinding::Name { component: 2, rule: String::from("0") },
+    ]);
+    let network = scan_normalized_records(b"//VAULTTOKEN_LONG/VAULTTOKEN_LONG/VAULTTOKEN_LONG", 2, &loaded);
+    assert_eq!(network.display, "//VAULTTOKEN_LONG/VAULTTOKEN_LONG/[REDACTED]");
+    assert_eq!(network.findings, vec![ScanFinding::Name { component: 1, rule: String::from("0") }]);
+    let navigation = scan_normalized_records(b".//../VAULTTOKEN_LONG", 0, &loaded);
+    assert_eq!(navigation.display, ".//../[REDACTED]");
+    assert_eq!(navigation.findings, vec![ScanFinding::Name { component: 1, rule: String::from("0") }]);
+}
+
 /// Native Windows volume markers are not searchable directory-name segments.
 #[test]
 #[cfg(windows)]
@@ -138,4 +175,21 @@ fn windows_volume_prefix_is_not_name_segment() {
     assert_eq!(network.findings, vec!["//server/share/[REDACTED]/clean.txt:name:1 rule=0"]);
     let drive_relative = scan_path("C:VAULTTOKEN_LONG.txt", &loaded);
     assert_eq!(drive_relative.findings, vec!["C\\x3a/[REDACTED]:name:1 rule=0"]);
+}
+
+/// Native Windows device-namespace prefixes are skipped exactly,
+///  so the following name is scanned.
+#[test]
+#[cfg(windows)]
+fn windows_device_namespace_prefix_is_not_name_segment() {
+    let loaded = load_rules("VAULTTOKEN_LONG\n");
+    let port = scan_path("\\\\.\\COM1\\VAULTTOKEN_LONG\\clean.txt", &loaded);
+    assert_eq!(port.findings, vec!["//./COM1/[REDACTED]/clean.txt:name:1 rule=0"]);
+    let volume = scan_path("\\\\.\\C:\\VAULTTOKEN_LONG\\clean.txt", &loaded);
+    assert_eq!(volume.findings, vec!["//./C\\x3a/[REDACTED]/clean.txt:name:1 rule=0"]);
+    let pipe = scan_path("\\\\.\\pipe\\VAULTTOKEN_LONG.with.dots", &loaded);
+    assert_eq!(pipe.findings, vec!["//./pipe/[REDACTED]:name:1 rule=0"]);
+    let clean = scan_path("\\\\.\\COM1\\clean\\clean.txt", &loaded);
+    assert_eq!(clean.display, "//./COM1/clean/clean.txt");
+    assert!(clean.findings.is_empty());
 }

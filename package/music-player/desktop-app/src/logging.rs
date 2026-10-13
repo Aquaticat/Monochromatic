@@ -1,13 +1,21 @@
-//! The desktop tracing subscriber: a stderr sink with an env-filter.
+//! The desktop tracing subscriber:
+//!  a stderr sink with an env-filter.
 //!
 //! The binary installs this once at startup so every `tracing` event from this crate and
-//! the shared `truepeak-core` reaches stderr. The level is read from `RUST_LOG` (default
-//! `info`). We deliberately do NOT bridge the `log` facade: ICU's `log`-routed
-//! CJK-segmentation warnings must stay silent, exactly as they are today with no `log`
+//! the shared `truepeak-core` reaches stderr.
+//!  The level is read from `RUST_LOG` (default
+//! `info`).
+//!  We deliberately do NOT bridge the `log` facade:
+//!  ICU's `log`-routed
+//! CJK-segmentation warnings must stay silent,
+//!  exactly as they are today with no `log`
 //! subscriber installed (see the `icu_provider` note in Cargo.toml).
 
-/// What:     `use tracing_subscriber::EnvFilter;`. The filter that reads `RUST_LOG`.
-/// Why:      Lets an operator raise or lower the level without a rebuild.
+/// What:
+///      `use tracing_subscriber::EnvFilter;`.
+///  The filter that reads `RUST_LOG`.
+/// Why:
+///       Lets an operator raise or lower the level without a rebuild.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -15,8 +23,13 @@
 /// ```
 use tracing_subscriber::EnvFilter;
 
-/// What:     `pub fn init()`. Install the global tracing subscriber once, to stderr.
-/// Why:      One startup call gives every crate's events a sink; using `set_global_default`
+/// What:
+///      `pub fn init()`.
+///  Install the global tracing subscriber once,
+///  to stderr.
+/// Why:
+///       One startup call gives every crate's events a sink;
+///  using `set_global_default`
 ///           rather than `.init()` leaves the `log` facade unbridged so ICU's silenced
 ///           CJK-segmentation warnings do not revive.
 ///

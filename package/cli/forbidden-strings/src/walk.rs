@@ -180,7 +180,7 @@ pub fn list_files(root: &str) -> Result<Vec<String>> {
     // ```ts
     // const files = makeSharedArray<string>();
     // ```
-    let files: Arc<Mutex<Vec<String>>> = Arc::new(Mutex::new(Vec::new()));
+    let shared_files: Arc<Mutex<Vec<String>>> = Arc::new(Mutex::new(Vec::new()));
 
     // What:     `WalkBuilder::new(root).hidden(false).ignore(false)
     //           .filter_entry(...).build_parallel()` configures and
@@ -273,7 +273,7 @@ pub fn list_files(root: &str) -> Result<Vec<String>> {
         // ```ts
         // const filesRef = files;
         // ```
-        let files = Arc::clone(&files);
+        let files = Arc::clone(&shared_files);
         return Box::new(move |entry| {
             // What:     `let Ok(e) = entry else { return ...; };`
             //           is a `let-else` pattern: if `entry` (a
@@ -376,7 +376,7 @@ pub fn list_files(root: &str) -> Result<Vec<String>> {
     // const out = files.takeOrClone();
     // return out;
     // ```
-    let mut files = match Arc::try_unwrap(files) {
+    let mut files = match Arc::try_unwrap(shared_files) {
         Ok(m) => m.into_inner().map_err(|e| anyhow!("walk poisoned: {}", e))?,
         Err(arc) => arc.lock().map_err(|e| anyhow!("walk poisoned: {}", e))?.clone(),
     };

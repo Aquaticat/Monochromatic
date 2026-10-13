@@ -389,6 +389,8 @@ export async function ensureMiseWindows(): Promise<string> {
       '-d',
       IMAGES_DIR,
     ],
+    notFoundRemedy:
+      'mvm unpacks mise for the Windows template with `unzip`; install the host package that provides it.',
   },);
 
   await unlink(zipPath,);

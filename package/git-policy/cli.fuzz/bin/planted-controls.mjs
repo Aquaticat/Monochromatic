@@ -1,0 +1,261 @@
+#!/usr/bin/env node
+/**
+ * Positive controls for the fuzz invariants.
+ * Plants one defect at a time in a disposable copy of the subject and requires the generator controls,
+ * which call the same invariant functions as the fuzz targets, to fail.
+ * The worktree is only read; every edit and build happens under the operating system's temporary directory.
+ */
+import { spawnSync } from 'node:child_process';
+import { cp, mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join, resolve } from 'node:path';
+
+import { dependentVersionPlants } from './planted-dependent-version.mjs';
+import { markdownPlants } from './planted-markdown.mjs';
+
+/** Preserve the failed verification boundary rather than masking it with a cleanup error. */
+class PlantedControlError extends Error {}
+
+/** Repository-relative inputs the helper library needs to build. */
+const inputs = [
+  'package/git-policy/cli/Cargo.toml',
+  'package/git-policy/cli/Cargo.lock',
+  'package/git-policy/cli/README.md',
+  'package/git-policy/cli/src/native',
+  'package/git-policy/cli.fuzz/Cargo.toml',
+  'package/git-policy/cli.fuzz/Cargo.lock',
+  'package/git-policy/cli.fuzz/src',
+  'package/git-policy/cli.fuzz/fuzz_targets',
+  'package/rust-module/jsonc-edit/Cargo.toml',
+  'package/rust-module/jsonc-edit/Cargo.lock',
+  'package/rust-module/jsonc-edit/src',
+  'package/rust-module/jsonc-edit/fixtures',
+  // The subject links the scanner; `build.rs` and `data` hold the embedded baseline its library compiles in.
+  'package/cli/forbidden-strings/Cargo.toml',
+  'package/cli/forbidden-strings/Cargo.lock',
+  'package/cli/forbidden-strings/build.rs',
+  'package/cli/forbidden-strings/src',
+  'package/cli/forbidden-strings/data',
+  'package/rust-module/forbidden-regex/Cargo.toml',
+  'package/rust-module/forbidden-regex/Cargo.lock',
+  'package/rust-module/forbidden-regex/src',
+];
+
+/**
+ * Defects with observable behavior, one per invariant family.
+ * Each `from` must occur exactly once so a control cannot silently stop applying.
+ * Removing a flag from a mutation list alone changes nothing, because unlisted flags already
+ * require configuration; the first plant therefore also lists the flag as presentation.
+ */
+const plants = [
+  {
+    name: 'PID file text keeps trailing whitespace before the pid prefix is read',
+    file: 'package/git-policy/cli/src/native/index_lock_evidence.rs',
+    edits: [{ from: 'let trimmed: &str = super::js_text::trim_javascript_end(text);', to: 'let trimmed: &str = text;' }],
+  },
+  {
+    name: 'start ticks past the safe integers are accepted',
+    file: 'package/git-policy/cli/src/native/process_start.rs',
+    edits: [{ from: 'if ticks > super::json_record::MAX_SAFE_INTEGER {', to: 'if ticks > i64::MAX {' }],
+  },
+  {
+    name: 'branch -d is treated as a presentation letter',
+    file: 'package/git-policy/cli/src/native/config_loading.rs',
+    edits: [
+      { from: 'b"cCdDfmMut"', to: 'b"cCDfmMut"' },
+      { from: 'b"vqrai"', to: 'b"vqraid"' },
+    ],
+  },
+  {
+    name: 'a bare git skips configuration',
+    file: 'package/git-policy/cli/src/native/config_loading.rs',
+    edits: [{
+      from: 'if layout.outcome == GlobalOutcome::NoCommand {\n        return ConfigLoading::Required;',
+      to: 'if layout.outcome == GlobalOutcome::NoCommand {\n        return ConfigLoading::Skip;',
+    }],
+  },
+  {
+    name: 'a separated global value is not consumed',
+    file: 'package/git-policy/cli/src/native/global_arguments.rs',
+    edits: [{ from: 'is_value = true;', to: 'is_value = false;' }],
+  },
+  {
+    name: 'warn is read as error',
+    file: 'package/git-policy/cli/src/native/policy_registry.rs',
+    edits: [{
+      from: 'if name == "warn" {\n        return Some(Severity::Warn);',
+      to: 'if name == "warn" {\n        return Some(Severity::Error);',
+    }],
+  },
+  {
+    name: 'the landing section is rejected as unknown',
+    file: 'package/git-policy/cli/src/native/config_parse.rs',
+    edits: [{
+      from: 'key == "hooks" || key == "indexLock" || key == "landing"',
+      to: 'key == "hooks" || key == "indexLock"',
+    }],
+  },
+  {
+    name: 'a control spelling is removed anywhere in a region read without a table',
+    file: 'package/git-policy/cli/src/native/wrapper_invocation.rs',
+    edits: [{ from: 'break;', to: 'continue;' }],
+  },
+  {
+    name: 'keep-going is removed without being recorded',
+    file: 'package/git-policy/cli/src/native/wrapper_controls.rs',
+    edits: [{
+      from: 'ControlMeaning::KeepGoing => controls.keep_going = true,',
+      to: 'ControlMeaning::KeepGoing => controls.keep_going = false,',
+    }],
+  },
+  {
+    name: 'a publishing push skips the manual-push gate',
+    file: 'package/git-policy/cli/src/native/wrapped_command.rs',
+    edits: [{
+      from: 'if any_policy_applies(&gate_request, gated.as_slice()) {',
+      to: 'if false {',
+    }],
+  },
+  {
+    name: 'object content past its declared size is accepted',
+    file: 'package/git-policy/cli/src/native/candidate_batch.rs',
+    edits: [{ from: "if terminator[0] != b'\\n' {", to: 'if false {' }],
+  },
+  {
+    name: 'an object reply for another object is accepted',
+    file: 'package/git-policy/cli/src/native/candidate_batch.rs',
+    edits: [{
+      from: 'if requested.is_some() && requested.as_ref() != Some(&object) {',
+      to: 'if false {',
+    }],
+  },
+  {
+    name: 'a path whose index records changed is left out of the staged delta',
+    file: 'package/git-policy/cli/src/native/candidate_stage.rs',
+    edits: [{ from: 'if later != Some(*records) {', to: 'if later.is_none() {' }],
+  },
+  {
+    name: 'a rules file named with .. is accepted',
+    file: 'package/git-policy/cli/src/native/config_rules_file.rs',
+    edits: [{
+      from: 'if component == "." || component == ".." {',
+      to: 'if component == "." {',
+    }],
+  },
+  {
+    name: 'an owner lock record naming PID 0 is accepted',
+    file: 'package/git-policy/cli/src/native/owner_lock_record.rs',
+    edits: [{
+      from: 'if token.is_empty() || owner_pid < 1 || identity.is_empty() {',
+      to: 'if token.is_empty() || identity.is_empty() {',
+    }],
+  },
+  {
+    name: 'the start time is read from the field before it',
+    file: 'package/git-policy/cli/src/native/process_identity.rs',
+    edits: [{ from: 'const LINUX_START_FIELD_INDEX: usize = 19;', to: 'const LINUX_START_FIELD_INDEX: usize = 18;' }],
+  },
+  {
+    name: 'a journal record of another schema version is accepted',
+    file: 'package/git-policy/cli/src/native/transaction_journal_parse.rs',
+    edits: [{
+      from: 'if !number_equals(&map, "schemaVersion", JOURNAL_SCHEMA_VERSION)\n        || string_field',
+      to: 'if string_field',
+    }],
+  },
+  {
+    name: 'a capture record with sequence 0 is accepted',
+    file: 'package/git-policy/cli/src/native/capture_records.rs',
+    edits: [{ from: 'Some(number) if number >= 1 => return Ok(number),', to: 'Some(number) if number >= 0 => return Ok(number),' }],
+  },
+  {
+    name: 'a sequence file with a leading zero is accepted',
+    file: 'package/git-policy/cli/src/native/capture_store.rs',
+    edits: [{
+      from: "if digits.is_empty() || (digits.len() > 1 && digits[0] == b'0') {",
+      to: 'if digits.is_empty() {',
+    }],
+  },
+  {
+    name: 'extra final line feeds are kept',
+    file: 'package/git-policy/cli/src/native/policy_final_newline.rs',
+    edits: [{
+      from: 'if content_end + 1 == bytes.len() {',
+      to: 'if content_end < bytes.len() {',
+    }],
+  },
+  ...dependentVersionPlants,
+  ...markdownPlants,
+];
+
+/** Run the generator controls in the disposable sidecar; report status and the failing control names. */
+function controls({ root }) {
+  const run = spawnSync('cargo', ['test', '--lib', '--offline', '--locked', '--', '--test-threads=2'], {
+    cwd: join(root, 'package/git-policy/cli.fuzz'),
+    encoding: 'utf8',
+    env: { ...process.env, CARGO_TARGET_DIR: join(root, 'target') },
+    maxBuffer: 16 * 1024 * 1024,
+  });
+  if (run.error)
+    throw new PlantedControlError('cargo could not start.', { cause: run.error });
+  const output = `${run.stdout}\n${run.stderr}`;
+  return {
+    status: run.status,
+    failed: [...output.matchAll(/^test (\S+) \.\.\. FAILED$/gmu)].map(match => match[1]),
+    passed: [...output.matchAll(/^test (\S+) \.\.\. ok$/gmu)].length,
+    output,
+  };
+}
+
+/** Apply one plant's edits to its file text, refusing an edit that does not match exactly once. */
+function planted({ plant, original }) {
+  let text = original;
+  for (const edit of plant.edits) {
+    const occurrences = text.split(edit.from).length - 1;
+    if (occurrences !== 1)
+      throw new PlantedControlError(`Planted control "${plant.name}" matches ${occurrences} times in ${plant.file}; it must match exactly once.`);
+    text = text.replace(edit.from, edit.to);
+  }
+  return text;
+}
+
+/** Copy the inputs, prove the unplanted controls pass, then require every plant to fail a control. */
+async function main() {
+  const repository = resolve(import.meta.dirname, '../../../..');
+  const root = await mkdtemp(join(tmpdir(), 'cli-git-fuzz-planted-'));
+  const evidenceRoot = join(process.cwd(), 'target', 'verification');
+  await mkdir(evidenceRoot, { recursive: true });
+  const evidence = await mkdtemp(join(evidenceRoot, 'planted-'));
+  try {
+    for (const input of inputs)
+      await cp(join(repository, input), join(root, input), { recursive: true });
+    const baseline = controls({ root });
+    if (baseline.status !== 0 || baseline.passed === 0) {
+      await writeFile(join(evidence, 'baseline.log'), baseline.output);
+      throw new PlantedControlError(`Unplanted generator controls did not pass; inspect ${evidence}.`);
+    }
+    console.log(`Unplanted controls: ${baseline.passed} passed`);
+    const results = [];
+    for (const plant of plants) {
+      const path = join(root, plant.file);
+      const original = await readFile(path, 'utf8');
+      await writeFile(path, planted({ plant, original }));
+      const run = controls({ root });
+      await writeFile(path, original);
+      // A compile error is not an observation: the plant must build and a named control must fail.
+      const noticed = run.status !== 0 && run.failed.length > 0;
+      results.push({ name: plant.name, file: plant.file, edits: plant.edits, status: run.status, failed: run.failed, noticed });
+      await writeFile(join(evidence, `planted-${results.length - 1}.log`), run.output);
+      console.log(`Planted defect "${plant.name}": ${noticed ? `noticed by ${run.failed.join(', ')}` : 'NOT noticed'}`);
+    }
+    await writeFile(join(evidence, 'results.json'), JSON.stringify({ baselinePassed: baseline.passed, results }, null, 2) + '\n');
+    console.log(`Planted-control evidence: ${evidence}`);
+    const unnoticed = results.filter(result => !result.noticed);
+    if (unnoticed.length > 0)
+      throw new PlantedControlError(`Planted defects were not noticed: ${unnoticed.map(result => result.name).join('; ')}.`);
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+}
+
+await main();

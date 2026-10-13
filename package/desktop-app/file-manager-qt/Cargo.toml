@@ -7,9 +7,13 @@ publish = false
 description = "Qt/cxx-qt desktop file-manager: native Wayland drag-and-drop, successor to the Slint prototype."
 
 [lints.clippy]
+complexity = { level = "allow", priority = -1 }
 disallowed_methods = "deny"
 implicit_return = "deny"
 needless_return = "allow"
+shadow_reuse = "deny"
+shadow_same = "deny"
+shadow_unrelated = "deny"
 
 [[bin]]
 name = "monochromatic-file-manager-qt"

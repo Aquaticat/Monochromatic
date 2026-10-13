@@ -1,15 +1,23 @@
 //! US-QWERTY character/key-name to Linux evdev keycode tables.
 //!
 //! Synthetic keyboard input is expressed as evdev keycodes (the values in
-//! `linux/input-event-codes.h`). The compositor's keyboard uses the default US xkb
-//! layout, so mapping a character to the keycode-plus-shift that produces it under that
-//! layout is a fixed table. This is display-independent and unit-tested directly.
+//! `linux/input-event-codes.h`).
+//!  The compositor's keyboard uses the default US xkb
+//! layout,
+//!  so mapping a character to the keycode-plus-shift that produces it under that
+//! layout is a fixed table.
+//!  This is display-independent and unit-tested directly.
 
 /// Evdev keycode of the left Shift modifier (`KEY_LEFTSHIFT`).
 ///
-/// What:     `pub const LEFT_SHIFT: u32 = 42;`. Unsigned 32-bit; the raw evdev code.
-/// Why:      Typing an uppercase or shifted character wraps the key tap in a Shift
-///           press/release, and the input layer needs this code.
+/// What:
+///      `pub const LEFT_SHIFT: u32 = 42;`.
+///  Unsigned 32-bit;
+///  the raw evdev code.
+/// Why:
+///       Typing an uppercase or shifted character wraps the key tap in a Shift
+///           press/release,
+///  and the input layer needs this code.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -19,10 +27,15 @@ pub const LEFT_SHIFT: u32 = 42;
 
 /// Map a character to `(evdev_keycode, needs_shift)` under the US layout.
 ///
-/// What:     `pub fn char_to_key(character: char) -> Option<(u32, bool)>`. Returns the
-///           keycode and whether Shift must be held, or `None` for characters not on a
+/// What:
+///      `pub fn char_to_key(character: char) -> Option<(u32, bool)>`.
+///  Returns the
+///           keycode and whether Shift must be held,
+///  or `None` for characters not on a
 ///           US keyboard (which the caller skips).
-/// Why:      `type <text>` turns each character into a key tap; this is the lookup.
+/// Why:
+///       `type <text>` turns each character into a key tap;
+///  this is the lookup.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -55,6 +68,8 @@ pub fn char_to_key(character: char) -> Option<(u32, bool)> {
     // Why:      Cover the printable US-keyboard characters a test is likely to type.
     match character {
         ' ' => return Some((57, false)),
+        '\t' => return Some((15, false)),
+        '\n' => return Some((28, false)),
         '1' => return Some((2, false)),
         '!' => return Some((2, true)),
         '2' => return Some((3, false)),
@@ -103,9 +118,12 @@ pub fn char_to_key(character: char) -> Option<(u32, bool)> {
 
 /// Map a lowercase ASCII letter to its evdev keycode.
 ///
-/// What:     `fn letter_code(letter: char) -> Option<u32>`. Private helper covering
+/// What:
+///      `fn letter_code(letter: char) -> Option<u32>`.
+///  Private helper covering
 ///           `a`..=`z`.
-/// Why:      Keep the 26-entry letter table out of `char_to_key`'s symbol match.
+/// Why:
+///       Keep the 26-entry letter table out of `char_to_key`'s symbol match.
 fn letter_code(letter: char) -> Option<u32> {
     // What:     `match letter { 'a' => Some(30), ... }`. The QWERTY letter-to-code table.
     // Why:      One authoritative place for letter keycodes.
@@ -140,13 +158,21 @@ fn letter_code(letter: char) -> Option<u32> {
     }
 }
 
-/// Map a key name (`enter`, `space`, or a single character) to its evdev keycode.
+/// Map a key name (`enter`,
+///  `f10`,
+///  `code:68`,
+///  or a single character) to its evdev keycode.
 ///
-/// What:     `pub fn named_key(name: &str) -> Option<u32>`. Returns the code for a named
-///           key, or for a one-character name delegates to `char_to_key` (dropping the
-///           Shift flag, since `key` presses a raw key). `None` for unknown names.
-/// Why:      The `key <name>` command presses named keys (Enter, arrows) and single
-///           characters alike.
+/// What:
+///      `pub fn named_key(name: &str) -> Option<u32>`.
+///  Delegates to `key_name::resolve`,
+///  which knows every kernel key name,
+///  the spoken aliases,
+///  and the raw `code:<n>` form.
+///  `None` for unknown names.
+/// Why:
+///       The `key <name>` command presses named keys and single characters alike;
+///  the tables live in `key_name` and `key_table`.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -156,55 +182,18 @@ fn letter_code(letter: char) -> Option<u32> {
 /// @example
 /// ```ts
 /// namedKey("enter"); // => 28
-/// namedKey("a");     // => 30
+/// namedKey("f10");   // => 68
 /// ```
 pub fn named_key(name: &str) -> Option<u32> {
-    // What:     `match name { ... }`. Named keys first; the `_` arm handles single
-    //           characters. Alternatives (`|`) accept common spellings.
-    // Why:      Accept both symbolic names and bare characters.
-    match name {
-        "enter" | "return" => return Some(28),
-        "escape" | "esc" => return Some(1),
-        "tab" => return Some(15),
-        "space" => return Some(57),
-        "backspace" => return Some(14),
-        "delete" | "del" => return Some(111),
-        "up" => return Some(103),
-        "down" => return Some(108),
-        "left" => return Some(105),
-        "right" => return Some(106),
-        "home" => return Some(102),
-        "end" => return Some(107),
-        "pageup" => return Some(104),
-        "pagedown" => return Some(109),
-        _ => {
-            // What:     `let mut chars = name.chars();`. Iterator over the name's characters.
-            // Why:      Detect the single-character case.
-            let mut chars = name.chars();
-
-            // What:     `let first = chars.next()?;`. Take the first character, or `None`
-            //           (an empty name) via `?`.
-            // Why:      A single-character name maps through `char_to_key`.
-            let first = chars.next()?;
-
-            // What:     `if chars.next().is_some() { return None; }`. More than one
-            //           character and not a known name means unknown.
-            // Why:      Reject multi-character names we do not recognise.
-            if chars.next().is_some() {
-                return None;
-            }
-
-            // What:     `char_to_key(first).map(|(code, _shift)| code)`. Reuse the character
-            //           table, discarding the Shift flag. Tail expression.
-            // Why:      A bare character key press uses only the keycode.
-            return char_to_key(first).map(|(code, _shift)| return code)
-        }
-    }
+    return crate::key_name::resolve(name)
 }
 
-/// What:     `#[cfg(test)] #[path = "keymap_tests.rs"] mod tests;`. Declares the keymap
+/// What:
+///      `#[cfg(test)] #[path = "keymap_tests.rs"] mod tests;`.
+///  Declares the keymap
 ///           unit test module from the sibling file.
-/// Why:      Keep the keycode-table tests beside the tables.
+/// Why:
+///       Keep the keycode-table tests beside the tables.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

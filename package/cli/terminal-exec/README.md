@@ -43,13 +43,24 @@ On Windows,
 2. `cmd.exe`:
     always available
 
+## Configured launch arguments
+
+After desktop-entry tokenization,
+the launcher preserves the configured `Exec` arguments in their original order.
+It does not remove or rewrite `--gtk-single-instance=false`,
+`--gtk-single-instance=true`,
+or other terminal-specific switches.
+The desktop entry owns that policy;
+terminal-specific consequences of selecting an existing instance remain the terminal's responsibility.
+
 ## Usage
 
-````sh
+```sh
+# Command syntax.
 terminal-exec [options] [--] [command [args...]]
-```text
+```
 
-**Options:**
+### Options
 
 - `--app-id=VALUE`: set the terminal window app ID / class
 - `--title=VALUE`: set the terminal window title
@@ -57,7 +68,7 @@ terminal-exec [options] [--] [command [args...]]
 - `--hold`: keep the terminal open after the command finishes
 - `--` or `-e`: delimiter between options and the command
 
-**Examples:**
+### Examples
 
 ```sh
 # Open default terminal
@@ -68,7 +79,7 @@ terminal-exec bash -l
 
 # Open terminal with title and working directory
 terminal-exec --title="Build logs" --dir=/tmp -- tail -f build.log
-```text
+```
 
 ## Configuration (Linux)
 
@@ -77,7 +88,7 @@ Create `~/.config/xdg-terminals.list` to explicitly set preferred terminals:
 ```text
 com.mitchellh.ghostty.desktop
 org.kde.konsole.desktop
-````
+```
 
 First valid entry wins.
  Entries listed here bypass `OnlyShowIn`/`NotShowIn` checks.

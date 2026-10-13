@@ -1,25 +1,25 @@
 /**
  Pi Search Fetch extension entry point.
- 
- Registers provider-neutral search and fetch tools with global host blocklist enforcement
- and no web-answer or account-management surfaces.
- 
+
+ Registers the shared provider-neutral search and fetch tools with pi,
+ keeping global host blocklist enforcement and no account-management surfaces.
+ Behavior lives in \@monochromatic-dev/agent-harness-shared-search-fetch;
+ this module only wires pi registration.
+
  @module
  */
 
 import type { ExtensionAPI, } from '@earendil-works/pi-coding-agent';
+import {
+  createSearchFetchClient,
+  loadLinkupConfig,
+  type LinkupConfig,
+  type SearchFetchToolClient,
+} from '@monochromatic-dev/agent-harness-shared-search-fetch/ts';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 import {
-  loadLinkupConfig,
-  type LinkupConfig,
-} from './config.ts';
-import {
-  createSearchFetchClient,
-} from './search-fetch-client.ts';
-import {
   createLinkupTools,
-  type LinkupToolClient,
 } from './tools.ts';
 
 /**
@@ -45,7 +45,7 @@ const l = tagged({
 /**
  Options for registering Pi Search Fetch with injected dependencies.
  */
-type RegisterPiLinkupOptions = {
+export type RegisterPiLinkupOptions = {
   /**
    Pi extension API.
    */
@@ -57,7 +57,7 @@ type RegisterPiLinkupOptions = {
   /**
    Provider-routing client used by tools.
    */
-  readonly client: LinkupToolClient;
+  readonly client: SearchFetchToolClient;
 };
 
 //endregion Types
@@ -72,7 +72,7 @@ type RegisterPiLinkupOptions = {
  @example
  ```ts
  // In ~/.pi/agent/settings.json:
- { "packages": ["./packages/pi-plugin/search-fetch"] }
+ { "packages": ["@monochromatic-dev/pi-plugin-search-fetch"] }
  ```
  */
 export default async function piLinkup(pi: ExtensionAPI,): Promise<void> {
@@ -118,7 +118,7 @@ export default async function piLinkup(pi: ExtensionAPI,): Promise<void> {
  registerPiLinkup({ pi, config, client });
  ```
  */
-function registerPiLinkup(options: RegisterPiLinkupOptions,): void {
+export function registerPiLinkup(options: RegisterPiLinkupOptions,): void {
   /**
    Logger tagged for registration.
    */
@@ -143,137 +143,24 @@ function registerPiLinkup(options: RegisterPiLinkupOptions,): void {
 
 //endregion Extension entry point
 
-export { createLinkupClient, } from './client.ts';
+//region Public re-exports
+
 export {
-  loadLinkupConfig,
-} from './config.ts';
-export {
-  configPathForHome,
-  legacyConfigPathForHome,
-} from './config-paths.ts';
-export {
-  filterBlockedSearchResults,
-  findBlockedHostMatch,
-  findBlockedUrlMatch,
-  isBlockedHost,
-  isBlockedUrl,
-  normalizeBlocklist,
-  normalizeBlocklistEntry,
-  normalizeHostForPolicy,
-} from './domain-policy.ts';
-export {
-  createExaClient,
-  exaForwardableBlocklist,
-} from './exa-client.ts';
-export {
-  createGhClient,
-  GhFetchError,
-} from './gh-client.ts';
-export {
-  createGhCommandRunner,
-  runGhCommand,
-} from './gh-process.ts';
-export { planGitHubFetch, } from './github-url-plan.ts';
-export {
-  isPrintableAscii,
-  validateEndpointFragment,
-  validatePositionalPathArgument,
-  validateReferenceNumber,
-  validateTokenArgument,
-} from './github-url-validation.ts';
-export {
-  filterFetchResponseDataImages,
-  filterMarkdownDataImages,
-} from './markdown-data-image-filter.ts';
-export {
-  createSearchFetchClient,
-} from './search-fetch-client.ts';
-export {
-  createJsonContent,
-  createLinkupToolOutput,
-  createWarningContent,
-  LINKUP_VISIBLE_JSON_MAX_BYTES,
-} from './tool-output.ts';
-export {
-  FETCH_FIXED_BEHAVIOR,
   LINKUP_WEB_FETCH_TOOL_NAME,
   LINKUP_WEB_SEARCH_TOOL_NAME,
-  LinkupWebFetchParametersSchema,
-  LinkupWebSearchParametersSchema,
-  SEARCH_FIXED_BEHAVIOR,
-  collectIgnoredKeys,
+} from '@monochromatic-dev/agent-harness-shared-search-fetch/ts';
+export {
   createLinkupTools,
 } from './tools.ts';
-export { registerPiLinkup, };
-export type {
-  FetchLike,
-  FetchOptions,
-  LinkupClient,
-  LinkupClientOptions,
-  LinkupFetchRequestBody,
-  LinkupSearchRequestBody,
-  LinkupWebFetchInput,
-  LinkupWebSearchInput,
-  SearchOptions,
-} from './client.ts';
 export type {
   LinkupConfig,
-  LinkupConfigSource,
-  LoadLinkupConfigOptions,
-} from './config.ts';
-export type {
-  BlocklistMatch,
-  SearchResultFilterResult,
-} from './domain-policy.ts';
-export type {
-  ExaClient,
-  ExaClientOptions,
-  ExaContentsRequestBody,
-  ExaSearchRequestBody,
-} from './exa-client.ts';
-export type {
-  GhClient,
-  GhClientFetchOptions,
-  GhClientOptions,
-  GhCommandNotRan,
-  GhCommandOutcome,
-  GhCommandRan,
-  GhCommandRequest,
-  GhCommandRunner,
-  GhCommandRunnerOptions,
-  GhFetchAttempt,
-  GhInvocation,
-  GhMarkdownResponse,
-  GitHubFetchRequestKind,
-  GitHubFetchPlan,
-  GitHubRefPathSplit,
-  PlannedGitHubFetch,
-  TokenValidation,
-  UnplannedGitHubFetch,
-} from './github-fetch-types.ts';
-export type {
-  FetchResponseDataImageFilterResult,
-  MarkdownDataImageFilterResult,
-} from './markdown-data-image-filter.ts';
-export type {
-  ProviderFallback,
-  ProviderResponse,
-  SearchFetchClient,
-  SearchFetchClientOptions,
-  SearchFetchProvider,
-} from './search-fetch-client.ts';
-export type {
-  JsonContentResult,
-  LinkupToolDetails,
-  LinkupToolOutputOptions,
-  TextContentItem,
-  WarningContentOptions,
-} from './tool-output.ts';
+  LinkupWebFetchInput,
+  LinkupWebSearchInput,
+  SearchFetchToolClient,
+} from '@monochromatic-dev/agent-harness-shared-search-fetch/ts';
 export type {
   CreateLinkupToolsOptions,
-  LinkupToolClient,
   LinkupToolDefinition,
-  LinkupWebFetchParams,
-  LinkupWebSearchParams,
 } from './tools.ts';
-export type { RegisterPiLinkupOptions, };
+
+//endregion Public re-exports

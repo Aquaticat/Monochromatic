@@ -54,6 +54,7 @@ documented "only where absent" contract.
 Use `fast-check` property tests,
  the established TypeScript precedent in this
 repo (`package/module/test/src/format-error.property.unit.test.ts`).
+The test moved on 2026-10-04 to `package/module/test-diagnostic/src/format-error.property.unit.test.ts`.
  The
 Rust `cargo-fuzz` setup in `package/cli/forbidden-strings.fuzz` does not apply
 to a TypeScript package.

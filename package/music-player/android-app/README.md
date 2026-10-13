@@ -110,38 +110,32 @@ mise run //package/music-player/android-app:test:instrumented:device
 ```bash
 mise run //package/music-player/android-app:lint
 mise run //package/music-player/android-app:lint:detekt
-mise run //package/music-player/android-app:lint:rust
 mise run //package/music-player/android-app:clean
 ```
 
 - `lint` runs Android Lint against the debug variant.
 - `lint:detekt` enforces the repository's Kotlin documentation rules.
-- `lint:rust` runs the repository's Rust line-budget and rustdoc checks over the nested crate.
+- The root `mise run lint` runs the repository's Rust line-budget and rustdoc checks over the nested crate.
 - `clean` removes Gradle build outputs.
   It does not remove the Rust target directory or generated JNI libraries.
 
-## Design records and runbooks
+## Design records
 
-Use durable decisions and runbooks for architecture and maintenance context:
+Use durable decisions for architecture and maintenance context:
 
 - [Android port decision](../../../doc/decision/music-player-android-port.md)
 - [Source Root session decision](../../../doc/decision/music-player-session-source-root.md)
 - [Live-update rescan decision](../../../doc/decision/music-player-live-update-rescan.md)
 - [Just-in-time shuffle decision](../../../doc/decision/music-player-jit-shuffle.md)
 - [Peak-sweep parallelism decision](DECISION.peak-sweep-parallelism.md)
-- [Page-control style runbook](../../../doc/runbook/music-player-page-control-styles.md)
 
-## Page-control default
+## Settings icons
 
-Chromium-like tabs are the first-install page-control style.
-Their labels use `10dp` inline padding on each side,
-half the earlier `20dp` inset.
-Persisted style integers retain their stable mapping,
-and unknown values still fall back to radio controls.
-Each style has one centralized `includedInBuild` toggle on its enum line in `PageControlStyle.kt`.
-Settings lists only included styles,
-and disabled persisted selections resolve safely without renumbering values.
-`../../../doc/runbook/music-player-page-control-styles.md` documents matching Android and desktop changes.
+The Settings rows carry the Material Symbols `queue_music` and `play_circle` icons,
+embedded as vector path data in [`SettingsIcons.kt`](app/src/main/kotlin/dev/monochromatic/musicplayer/SettingsIcons.kt).
+The icons are Apache License 2.0 material from `google/material-design-icons`,
+and the license text is `LICENSES/Apache-2.0.txt` at the repository root.
+The source files, commit and style are named in the [package README](../README.md#third-party-icons).
 
 ## Custom control sizing
 
@@ -153,23 +147,162 @@ Custom interactive Compose controls reserve at least `48dp` by `48dp` inside lay
 Do not rely on Compose expanding touch targets outside undersized bounds,
 because adjacent expanded targets can overlap.
 
-## Full-width wrapped LED plate
+## Theme and crease
 
-Super fun LED segmented buttons use one connected machined backplate even when controls wrap.
-Compose packs content-width caps into rows,
-but one rounded plate always fills the complete available width and combined row height.
-Unused row width remains plate material rather than becoming control width or a separate row island.
-In light mode,
-the `#f7f8fa` plate remains visibly lighter than the `#eceef1` page ground.
-Cap end-corner ownership still follows each packed row,
-and `placeRelative` preserves cap order in RTL.
-LED legends use `MaterialTheme.typography.bodyLarge`,
-matching ordinary body labels such as Volume while retaining semibold weight.
-Active-cap legend text is always white,
-independent of runtime accent or ambient scene.
-Every application color operation uses OKLCH,
-including Chromium colors and alpha changes outside LED controls.
-The selected fill remains dark enough to contrast clearly with its white legend,
-even when the runtime Material accent is very light.
-Independent OKLCH lightness and chroma mixing retains most available accent chroma,
-keeping the selected background vibrant instead of muddy.
+The theme follows the system accent as its only platform color (A3, D108).
+On API 31 and later the root is the middle tone of the system accent palette, `android.R.color.system_accent1_500`,
+and below that it is the Fold baseline `#4E5E8B`.
+Every role is then derived from the root in OKLCH by
+[`core/ThemeRoles.kt`](app/src/main/kotlin/dev/monochromatic/musicplayer/core/ThemeRoles.kt),
+using the one OKLCH implementation in
+[`core/OklchColor.kt`](app/src/main/kotlin/dev/monochromatic/musicplayer/core/OklchColor.kt).
+Both are ports of the desktop's `oklch.rs` and `theme_roles.rs`,
+and `app/src/test/resources/theme-roles-vector.txt` (written by the Rust code, with its source hashes in the header)
+proves that the same root gives the same sRGB roles in Kotlin and Rust.
+[`PlayerTheme.kt`](app/src/main/kotlin/dev/monochromatic/musicplayer/PlayerTheme.kt) maps the roles onto every
+Material 3 slot,
+so the platform's `dynamicLightColorScheme` and `dynamicDarkColorScheme` are not used,
+and carries the roles Material has no slot for (the Search match fill) in `LocalThemeRoles`.
+Dark keeps a pure-black canvas under every root (D41) and light keeps a white canvas (D34).
+Every other gray, the dark deck included, carries the root's hue unless the root is completely neutral (D118),
+so the deck is `#0A0A0D` only at the baseline root, and no accent is grayer than the grays of its scheme (D121).
+The track menu card is the canvas color itself, with a 1 dp `outline-variant` outline (D119),
+and every text role is fitted to WCAG AA on the surfaces it is drawn on, for any root.
+The app draws no gradient.
+A future one must interpolate in OKLCH (D108), because Android blends gradient stops in sRGB.
+
+The crease comes from Jetpack WindowManager (D110, E2):
+[`CreaseDetection.kt`](app/src/main/kotlin/dev/monochromatic/musicplayer/CreaseDetection.kt) reads the window's
+`FoldingFeature` list through `WindowInfoTracker`,
+and [`core/CreaseReading.kt`](app/src/main/kotlin/dev/monochromatic/musicplayer/core/CreaseReading.kt) decides:
+a vertical fold is a crease,
+its reported width is the width of its bounds,
+and the clearance is `max(7.5 mm, reported width)`.
+Until the first layout report the `android.hardware.sensor.hinge_angle` system feature stands in.
+The player, Settings and Search read the same answer.
+
+On the unfolded player each pane provides its own clearance
+([`PaneClearanceLocals.kt`](app/src/main/kotlin/dev/monochromatic/musicplayer/PaneClearanceLocals.kt),
+rule in [`core/PaneClearance.kt`](app/src/main/kotlin/dev/monochromatic/musicplayer/core/PaneClearance.kt)):
+text in the left pane (folder names, the deck, the undo toast) ends half of `max(7.5 mm, crease width)` before the
+shared edge,
+text in the right pane (header, track rows, subfolder headers, the empty notice, the first-run text) starts that far
+after it,
+and backgrounds and containers still span the band.
+A window with no crease keeps the ordinary insets.
+
+## Keyboard and focus
+
+An attached keyboard gets the D106 map.
+[`core/KeyBindings.kt`](app/src/main/kotlin/dev/monochromatic/musicplayer/core/KeyBindings.kt) is the table, one row per
+chord with its scope, and `KeyBindingsTest` has one test per chord.
+The older D102 chords stay in `core/KeyboardMap.kt`; `core/HostKeyboardModel.kt` asks the table first, then the older
+classifier.
+Implemented: `Alt+Left` and `Alt+Right` seek 10 seconds (60 with `Shift`), `Ctrl+Home` restarts,
+`Ctrl+Shift+1` to `Ctrl+Shift+4` pick the mode, `Alt+Up` and `Alt+Down` pick the previous and next folder,
+`Ctrl+Shift+G` shows the playing track's folder, `Alt+1` and `Alt+2` focus the folder names and the track list,
+`Ctrl+Shift+O` opens the system folder chooser, `Escape` closes the cover's folder picker,
+inside a focused list the arrows, `Home`, `End`, `PageUp`, `PageDown` and `Enter`
+(a letter jumps in the rail and the names),
+and on a track row `Menu` or `Alt+Enter` open its menu (D114), and `Delete`, `Ctrl+Shift+C` and `Ctrl+Shift+E`
+trash it, copy its file name and show it in the file manager (also from the open menu).
+There is no rescan or re-analysis key (D113) and no `Shift+F10`.
+Left out on Android: the key hint badges, tooltips, `Ctrl+Q` and double `Shift`.
+
+The folder rail, the folder names and the track list are each one focus stop (`Tab` passes them in one step) with their
+own focus ring, moved by the arrow keys; their entries take no focus of their own,
+so TalkBack still reads every entry through its semantics.
+The focus indicator is a ring and nothing else (D117), drawn the way Firefox draws `:focus-visible` but hugging the
+element: a 2 dp ring in the `primary` role flush against the element's edge, and a 1 dp ring in the `on-primary` role
+around it, which keeps the ring readable on any surface.
+Both rings follow the element's own shape (a pill stays a pill, a circle a circle, and a square corner gets a 2 dp outer
+radius), reach 3 dp outside the element by default and move no content.
+Every ring shows for keyboard focus only (CSS `:focus-visible`): the element or its list has focus and the last input
+was a key, which the app reads from Compose's input mode, the same mechanism for a button, an icon button, a row that
+takes focus itself and an entry of a one-stop list.
+A tap or a touch that follows a key press hides the ring even though the list still holds focus, and the next key press
+shows it again.
+An entry that sits flush inside a list that clips its children (a track row, a rail cell, a Search result, a template
+editor field) draws the same two rings just inside its own edge instead (D120): the 1 dp `on-primary` ring on the edge
+and the 2 dp `primary` ring inside it, with the same corner radii as the outside pair.
+Such a list reserves no padding around its entries, and the text keeps its place by starting 8 dp beyond the inner edge
+of the ring at least.
+The folder names are not flush in a clipping list (the wrapped lines have room around them), so their rings stay outside,
+and the track menu rows keep their reserved room.
+Focus adds no fill, tint, state layer, bold or size change; hover and press keep their own state layers.
+The drawing is [`FocusRing.kt`](app/src/main/kotlin/dev/monochromatic/musicplayer/FocusRing.kt) and the geometry, a spec
+of widths, gap and square-corner radius, is
+[`core/FocusRingGeometry.kt`](app/src/main/kotlin/dev/monochromatic/musicplayer/core/FocusRingGeometry.kt).
+The geometry also holds the placement (outside or inside) and the keyboard-only rule, so `FocusRingGeometryTest` states
+both.
+`FOCUS_RING_OUTSET` is the room that a clipping parent leaves for an outside ring, which only the track menu still does.
+`FocusRingContrastTest` checks the `primary` ring at 3 to 1 or better against every surface a focused element sits on,
+and the `on-primary` ring against the `primary` ring, in both appearances and over a sweep of accent roots.
+
+## Playback modes and the track menu
+
+`In order` plays to the end of the folder on screen and then stops,
+with the first track of that folder loaded and paused (D2);
+`Next` still wraps around,
+and `Repeat` replays the one track.
+`core/Queue.kt` returns no next track for a natural end in `In order`,
+and `PlayerController.handleNaturalEnd` turns that into the stop.
+Every entry of the system playlist has its own id (`core/PlaybackEntryIds.kt`),
+so a short folder in a shuffle mode can queue the same file again without the duplicate-id crash of the first review.
+
+The track menu has six rows,
+and each has one access key taken from its own words
+(`core/TrackMenuAction.kt`, one table):
+`P` for Play, `S` for Start shuffle from here, `D` for File details, `F` for Show in file manager, `C` for Copy filename
+and `T` for Move to trash.
+The letter is underlined in the label,
+and pressing it with a hardware keyboard while the menu is open runs the row and closes the menu.
+File details has no key of its own outside the menu.
+
+## The library and the analysis follow the files
+
+There is no rescan or re-analysis action (D113).
+The system library follows a `ContentObserver` on the MediaStore audio collection,
+and a library from a folder grant is read again when the app returns to the front;
+both go through one debounced rescan in `PlaybackService`,
+and a change that arrives while a load runs is answered once the load ends (`core/RescanPlan.kt`).
+
+The analysis service decides what to measure from a ledger of the files it has swept
+(`core/SweepLedger.kt`, stored in `sweep-ledger.bin`).
+A file is new work when its address is unknown or when its size or modification time changed
+(`core/TrackSignatures.kt`, read with the rows of the scan),
+so a replaced or edited file is measured again.
+A file that could not be decoded is tried again at the next start and whenever the library gains new work,
+and it is reported once, in plain words, with no retry button
+(`AnalysisFailures.kt`, shown by `PlayerHost.kt`).
+The measures that the open page shows are read again when the analysis measured their tracks (`MeasureInvalidation`).
+
+## Search and a library of a million tracks
+
+Search answers from an in-memory index (D112), never from composition.
+[`core/SearchService.kt`](app/src/main/kotlin/dev/monochromatic/musicplayer/core/SearchService.kt) owns the index and a
+worker thread that answers each query,
+and [`SearchHost.kt`](app/src/main/kotlin/dev/monochromatic/musicplayer/SearchHost.kt) hands the newest answer to the
+Search page.
+The index keeps the normalized track and top-level folder names in one array,
+buckets of word starts by their first, first two and first three UTF-16 units,
+and a cached best-500 list per first character (`core/SearchIndex*.kt`).
+A term of up to three units is answered from the buckets alone,
+and a longer term is verified on the narrowed candidates.
+Answers equal the old matcher's (tier, kind, name, library index, count, truncated flag and highlight ranges):
+the old implementation is kept as a test oracle in `src/test/.../core/ReferenceSearch.kt`,
+and `SearchIndexParityTest` and `ScaleSearchTest` compare the two on randomized and synthetic libraries up to 1,000,000
+tracks.
+
+A scan never blocks the screen (D111).
+`LibraryScanner` hands each batch of found tracks to `LibraryIngest`, which sorts, derives the pages and builds the
+Search index on its own thread, then gives the main thread a finished `BuiltLibrary` to swap in.
+Search receives the new tracks after the player shows them and signals the open Search page,
+which re-answers in place:
+the query, the caret and the scroll position stay,
+and results are keyed by track so a row the user is about to tap does not move.
+While a scan runs an empty answer reads "Still looking through your library" and the Search button stays enabled.
+
+`./gradlew :app:testDebugUnitTest` includes the 1,000,000-track cases, so its test JVM runs with a 3 GiB heap and the
+serial collector (`app/build.gradle.kts`): G1's loop strip mining made short counted loops about twenty times slower on
+the development host, which made timings measure the collector.

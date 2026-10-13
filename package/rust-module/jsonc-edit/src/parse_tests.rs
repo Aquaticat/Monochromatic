@@ -1,14 +1,23 @@
-//! What: Parser and emitter conformance probes at the public crate interface.
-//! Why: Compilation alone does not show that comments, depth limits, UTF-16 escapes and exact
-//!           numbers survive a parse, emit and reparse cycle.
+//! What:
+//!  Parser and emitter conformance probes at the public crate interface.
+//! Why:
+//!  Compilation alone does not show that comments,
+//!  depth limits,
+//!  UTF-16 escapes and exact
+//!           numbers survive a parse,
+//!  emit and reparse cycle.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
 //! describe('JSONC parser', () => { /* valid, invalid, comments, UTF-16 */ });
 //! ```
 
-/// What: Borrow public parser, emitter, and value tags from this crate.
-/// Why: Unit tests should exercise the same small interface a consumer would use.
+/// What:
+///  Borrow public parser,
+///  emitter,
+///  and value tags from this crate.
+/// Why:
+///  Unit tests should exercise the same small interface a consumer would use.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -37,7 +46,8 @@ fn valid_documents_round_trip() {
     }
 }
 
-/// Check the JSONC-only root and grammar gates, not JSON5 syntax.
+/// Check the JSONC-only root and grammar gates,
+///  not JSON5 syntax.
 #[test]
 fn invalid_documents_fail() {
     for source in [
@@ -99,7 +109,8 @@ fn deep_array_emit_and_reparse() {
     eprintln!("deep emit: after drop");
 }
 
-/// Check a deep record chain can emit, reparse and clean up without a stack abort.
+/// Check a deep record chain can emit,
+///  reparse and clean up without a stack abort.
 #[test]
 fn deep_record_emit_and_reparse() {
     let source = format!("{}0{}", "{\"k\":".repeat(512), "}".repeat(512));
@@ -157,8 +168,10 @@ fn deep_error_cleanup() {
     eprintln!("deep error: after root trailing error");
 }
 
-/// What: Fail before examining malformed input beyond the 512th container opener.
-/// Why: The owned parser should bound its frame count even when the tail is invalid.
+/// What:
+///  Fail before examining malformed input beyond the 512th container opener.
+/// Why:
+///  The owned parser should bound its frame count even when the tail is invalid.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -269,9 +282,9 @@ fn inline_comment_after_comma_stays_on_value() {
     assert_eq!(entries[0].value.comment.as_ref().expect("first value comment").text, " inline");
     assert!(entries[1].key.comment.is_none());
     let again = parse_jsonc(&emit_jsonc_value(&parsed)).expect("canonical record reparses");
-    let JsoncKind::Record { entries } = &again.kind else { panic!("expected record"); };
-    assert_eq!(entries[0].value.comment.as_ref().expect("retained value comment").text, " inline");
-    assert!(entries[1].key.comment.is_none());
+    let JsoncKind::Record { entries: reparsed_entries } = &again.kind else { panic!("expected record"); };
+    assert_eq!(reparsed_entries[0].value.comment.as_ref().expect("retained value comment").text, " inline");
+    assert!(reparsed_entries[1].key.comment.is_none());
 }
 
 /// Check a raw-token adapter can reuse strict UTF-16 decoding and comment merging.
@@ -347,9 +360,9 @@ fn comment_text_cannot_break_jsonc_syntax() {
             }
             let once = emit_jsonc_value(&state);
             let again = parse_jsonc(&once).expect("edited comment remains parseable");
-            let JsoncKind::Record { entries } = &again.kind else { panic!("expected record"); };
-            let retained = if on_key { entries[0].key.comment.as_ref() }
-                else { entries[0].value.comment.as_ref() };
+            let JsoncKind::Record { entries: reparsed_entries } = &again.kind else { panic!("expected record"); };
+            let retained = if on_key { reparsed_entries[0].key.comment.as_ref() }
+                else { reparsed_entries[0].value.comment.as_ref() };
             assert_eq!(retained.expect("comment owner survives").text, body, "{once}");
             let twice = emit_jsonc_value(&again);
             let thrice = emit_jsonc_value(&parse_jsonc(&twice).expect("canonical output reparses"));
@@ -358,9 +371,14 @@ fn comment_text_cannot_break_jsonc_syntax() {
     }
 }
 
-/// A block comment body may contain a bare CR, and a `//` comment ends at CR, so a body with one
-/// must never be emitted in trailing form. Fuzzing found this: the emitted document no longer
-/// parsed, because the comment terminated early and the rest of the body became code.
+/// A block comment body may contain a bare CR,
+///  and a `//` comment ends at CR,
+///  so a body with one
+/// must never be emitted in trailing form.
+///  Fuzzing found this:
+///  the emitted document no longer
+/// parsed,
+///  because the comment terminated early and the rest of the body became code.
 #[test]
 fn block_comment_body_with_cr_survives_round_trip() {
     let source = "[1 /* a\rb */]";
@@ -386,7 +404,8 @@ fn merged_comment_body_with_cr_survives_round_trip() {
     assert!(!body.contains('\r') || emitted.contains("/*"), "a CR body was emitted as a // line: {emitted:?}");
 }
 
-/// A block comment at offset zero exercises the scan loop's first iteration, where an arithmetic
+/// A block comment at offset zero exercises the scan loop's first iteration,
+///  where an arithmetic
 /// mistake on the offset underflows rather than merely miscounting.
 #[test]
 fn leading_block_comment_at_offset_zero_parses() {
@@ -395,7 +414,8 @@ fn leading_block_comment_at_offset_zero_parses() {
     assert_eq!(body.as_deref(), Some(" lead "), "leading block comment body");
 }
 
-/// A block comment body may contain a lone star or slash; only the pair closes it.
+/// A block comment body may contain a lone star or slash;
+///  only the pair closes it.
 #[test]
 fn block_comment_body_may_contain_lone_star_and_slash() {
     let document = parse_jsonc("{\"a\":/* a * b / c */1}").expect("lone star and slash parse");
@@ -412,7 +432,8 @@ fn block_comment_at_end_of_input_is_attached() {
     assert_eq!(body.as_deref(), Some(" tail "), "end-of-input block comment body");
 }
 
-/// A space inside a string is emitted literally; only control characters and surrogates are escaped.
+/// A space inside a string is emitted literally;
+///  only control characters and surrogates are escaped.
 #[test]
 fn string_body_keeps_spaces_literal() {
     let document = parse_jsonc("{\"s\":\"a b\"}").expect("string with a space parses");
@@ -421,7 +442,8 @@ fn string_body_keeps_spaces_literal() {
     assert!(!emitted.contains("\\u0020"), "space was escaped in {emitted:?}");
 }
 
-/// A lone slash is not a comment opener, and the refusal must name the character rather than
+/// A lone slash is not a comment opener,
+///  and the refusal must name the character rather than
 /// reporting the end of input that a mistaken comment scan would run into.
 #[test]
 fn lone_slash_is_rejected_naming_the_character() {
@@ -431,7 +453,8 @@ fn lone_slash_is_rejected_naming_the_character() {
     assert_eq!(error.message, "expected comma or container close", "refusal named the wrong failure");
 }
 
-/// Canonical layout indents two spaces per level, so a nesting arithmetic mistake is visible.
+/// Canonical layout indents two spaces per level,
+///  so a nesting arithmetic mistake is visible.
 #[test]
 fn canonical_layout_indents_each_nesting_level() {
     let document = parse_jsonc("{\"a\":{\"b\":{\"c\":1}}}").expect("nested document parses");
@@ -446,7 +469,8 @@ fn canonical_layout_indents_each_nesting_level() {
     assert!(pads.contains(&6), "no line indented three levels in {emitted:?}");
 }
 
-/// A single-line value comment is emitted after the value on the same line, which is what
+/// A single-line value comment is emitted after the value on the same line,
+///  which is what
 /// distinguishes trailing placement from leading placement.
 #[test]
 fn single_line_value_comment_emits_trailing() {
@@ -455,9 +479,13 @@ fn single_line_value_comment_emits_trailing() {
     assert!(emitted.contains("1, // note"), "comment did not trail the value in {emitted:?}");
 }
 
-/// What:     Report the indentation of the first emitted line carrying a needle.
-/// Why:      A substring search cannot pin indentation, because a deeper pad contains every shallower
-///           one; the indent has to be measured on its own line.
+/// What:
+///      Report the indentation of the first emitted line carrying a needle.
+/// Why:
+///       A substring search cannot pin indentation,
+///  because a deeper pad contains every shallower
+///           one;
+///  the indent has to be measured on its own line.
 fn indent_of_line_containing(emitted: &str, needle: &str) -> usize {
     for line in emitted.lines() {
         if line.contains(needle) {
@@ -467,7 +495,8 @@ fn indent_of_line_containing(emitted: &str, needle: &str) -> usize {
     panic!("no emitted line contains {needle} in {emitted:?}");
 }
 
-/// A lone slash after the root is trailing content, not a comment opener.
+/// A lone slash after the root is trailing content,
+///  not a comment opener.
 #[test]
 fn trailing_lone_slash_is_rejected() {
     let error = parse_jsonc("{\"a\":1} /").expect_err("a lone slash must be rejected");
@@ -486,7 +515,8 @@ fn constructed_text_keeps_spaces_literal() {
     assert!(!emitted.contains("\\u0020"), "space was escaped in {emitted:?}");
 }
 
-/// Array nesting indents two spaces per level, the same way record nesting does.
+/// Array nesting indents two spaces per level,
+///  the same way record nesting does.
 #[test]
 fn array_nesting_indents_each_level() {
     let document = parse_jsonc("[[[1]]]").expect("nested arrays parse");

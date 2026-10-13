@@ -9,7 +9,10 @@ This loader applies that mark to sockets created in Ghostty,
  Steam,
  Helium,
  Pale Moon,
- and Firefox Nightly cgroups without enumerating their destination IPs.
+ Firefox Nightly,
+ ChatGPT,
+ Interpreter,
+ and Qure cgroups without enumerating their destination IPs.
 
 ## How it works
 
@@ -46,7 +49,10 @@ List Ghostty,
  Steam,
  Helium,
  Pale Moon,
- and Firefox Nightly targets without attaching:
+ Firefox Nightly,
+ ChatGPT,
+ Interpreter,
+ and Qure targets without attaching:
 
 ```sh
 wg-quicker-exempt list-targets <uid>
@@ -162,15 +168,36 @@ Release builds omit injection seam.
    Detached application watcher owns Ghostty,
    Steam,
    Helium,
-   and Firefox Nightly service enumeration plus future-cgroup inotify coverage.
+   Firefox Nightly,
+   ChatGPT,
+   Interpreter,
+   and Qure service enumeration plus future-cgroup inotify coverage.
    It periodically rescans Helium,
    Pale Moon,
-   and Firefox Nightly processes.
+   Firefox Nightly,
+   ChatGPT,
+   Interpreter,
+   and Qure processes.
    Firefox Nightly matching accepts exact `firefox` and `firefox-bin` names only under a `firefox-nightly` directory.
+   ChatGPT matching accepts every executable inside the root-owned `/usr/lib/chatgpt` package tree,
+   which includes the subprocess agents that application spawns.
+   Interpreter matching accepts every executable whose name begins with `interpreter`,
+   which also includes the same vendor's terminal agent.
+   Qure matching accepts every executable whose name begins with `qure`,
+   which covers its AppImage file,
+   its mounted Electron image,
+   its bundled pytest runner,
+   and the agents its bundled CLI wrappers exec.
+   Qure's Chromium-generic helpers,
+   such as `chrome_crashpad_handler`,
+   carry no such name and bypass only while they share a matched cgroup.
 - Process discovery attaches entire current cgroup.
    If Helium,
    Pale Moon,
-   or Firefox Nightly shares that cgroup with another process,
+   Firefox Nightly,
+   ChatGPT,
+   Interpreter,
+   or Qure shares that cgroup with another process,
    every sibling's newly created sockets receive exemption until cgroup disappears or watcher stops.
 - A newly started process-discovered application can create sockets before next periodic rescan,
    whose interval is 250 milliseconds.

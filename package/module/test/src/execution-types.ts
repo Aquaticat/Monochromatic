@@ -3,7 +3,7 @@
  */
 
 import type { Logger, } from '@monochromatic-dev/module-logger/ts';
-import type { SandboxOwner, } from './sandbox-owner.ts';
+import type { SandboxOwner, } from '@monochromatic-dev/module-test-sandbox/ts';
 
 /**
  Test and suite bodies share the same observation boundary.

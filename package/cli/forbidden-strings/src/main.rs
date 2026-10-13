@@ -1,4 +1,7 @@
 //! main support for the forbidden-strings scanner.
+/// The standalone process owns panic output;
+///  loading the library never changes a host's hook.
+mod process_boundary;
 /// Imports dependencies used by this module.
 // What:     `use forbidden_strings::run_cli_from_env;` imports the
 //           public lib entry point. The crate's library target is
@@ -33,16 +36,33 @@ use forbidden_strings::run_cli_from_env;
 // ```
 use std::process::ExitCode;
 
+/// Select the existing environment filter without introducing a captured fallback callback.
+fn logging_filter() -> tracing_subscriber::EnvFilter {
+    if let Ok(filter) = tracing_subscriber::EnvFilter::try_from_default_env() {
+        return filter;
+    }
+    return tracing_subscriber::EnvFilter::new("info");
+}
+
+/// Initialize the existing logger and run the CLI inside the process's unwind boundary.
+fn initialized_cli() -> anyhow::Result<i32> {
+    // Keep all startup logging behavior inside the same failure boundary as rule loading and scanning.
+    tracing_subscriber::fmt()
+        .with_env_filter(logging_filter())
+        .with_writer(std::io::stderr)
+        .init();
+    return run_cli_from_env();
+}
+
 /// Implements `main`.
 // What:     `fn main() -> ExitCode` is the program entry point. It
 //           dispatches to `run_cli_from_env` and converts the
 //           returned `Result<i32>` into an `ExitCode`. The
 //           `Err` arm prints the catastrophic error to stderr with
 //           a fixed `forbidden-strings:` prefix and exits 2; the
-//           lib never produces an `Err` today (every recoverable
-//           error path eprintln's and returns `Ok(2)`), but the
-//           shape is reserved so future panics or unwrap-failures
-//           in the lib have somewhere to surface.
+//           process boundary also catches unexpected unwinds and emits
+//           a fixed redacted failure. The startup hook omits payloads;
+//           the separate catch boundary determines the final status.
 // Why:      Keep `main` to a five-line wrapper so the lib is the
 //           sole carrier of business logic, and tests can drive
 //           every code path without spawning a subprocess.
@@ -69,23 +89,13 @@ fn main() -> ExitCode {
     // try { process.exit(code); }
     // catch (e) { console.error(`forbidden-strings: ${e}`); process.exit(2); }
     // ```
-    // Install the stderr tracing subscriber (RUST_LOG, default info); scan findings stay on stdout.
-    tracing_subscriber::fmt()
-        .with_env_filter(
-            tracing_subscriber::EnvFilter::try_from_default_env()
-                .unwrap_or_else(|_| return tracing_subscriber::EnvFilter::new("info")),
-        )
-        .with_writer(std::io::stderr)
-        .init();
-    match run_cli_from_env() {
-        Ok(code) => return ExitCode::from(code as u8),
-        Err(e) => {
-            // eprintln, not tracing: this is the user-facing CLI error contract
-            // ("forbidden-strings: <msg>" on stderr) that integration tests assert; a tracing
-            // event's target and level prefix would break that contract. The tracing subscriber
-            // installed above carries the compiler's rule-rejection warnings instead.
-            eprintln!("forbidden-strings: {}", e);
-            return ExitCode::from(2)
-        }
-    }
+    // Install once before logger initialization or worker creation, never around individual concurrent scans.
+    std::panic::set_hook(Box::new(process_boundary::omit_panic_payload));
+    // The hook controls only output; the separate named-operation boundary catches unwinds and returns exit 2.
+    return process_boundary::run(initialized_cli);
 }
+
+/// Process-isolated filter controls do not alter production startup or the embedding host's environment.
+#[cfg(test)]
+#[path = "main_logging_tests.rs"]
+mod logging_tests;

@@ -50,7 +50,10 @@ None.
 
 ## Status
 
-Version 0.1.0 is being built out in this package.
+Version 0.1.1 is being built out in this package.
+ It differs from 0.1.0 in two fixes found by fuzzing:
+ a comment body carrying a bare CR is emitted in block form instead of as a `//` line it would end early,
+ and replacing a scalar document root is refused.
  The public API and its usage examples land with the ported modules;
  this README grows as each surface is added rather than documenting items that do not exist yet.
 

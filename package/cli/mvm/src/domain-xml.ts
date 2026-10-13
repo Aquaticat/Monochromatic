@@ -10,6 +10,8 @@ import {
   commonDevices,
   hypervFeatures,
   ideCdromDevices,
+  sharedMemoryBacking,
+  virtiofsShare,
 } from './domain-xml-builders.ts';
 import type { OsFamily, } from './registry.ts';
 
@@ -135,6 +137,8 @@ export function domainXml(
     readonly seedIsoPath?: string;
     /**
      Absolute path to a host directory shared via virtiofs.
+     Omitted on a host where libvirt finds no `virtiofsd`: the domain then has
+     neither the share nor the shared memory backing the share needs.
      */
     readonly sharedDir?: string;
   },
@@ -220,29 +224,7 @@ export function domainXml(
 
   // virtiofs shared directory for host-guest file transfer
   if (sharedDir !== undefined) {
-    devices.push(
-      h({
-        tag: 'filesystem',
-        attrs: {
-          type: 'mount',
-          accessmode: 'passthrough',
-        },
-        children: [
-          h({
-            tag: 'driver',
-            attrs: { type: 'virtiofs', },
-          },),
-          h({
-            tag: 'source',
-            attrs: { dir: sharedDir, },
-          },),
-          h({
-            tag: 'target',
-            attrs: { dir: 'mvm-shared', },
-          },),
-        ],
-      },),
-    );
+    devices.push(virtiofsShare(sharedDir,),);
   }
 
   // IDE CDROMs for Windows template creation (Windows ISO, autounattend, virtio-win)
@@ -272,21 +254,7 @@ export function domainXml(
 
   // virtiofs requires shared memory backed by memfd
   if (sharedDir !== undefined) {
-    domainChildren.push(
-      h({
-        tag: 'memoryBacking',
-        children: [
-          h({
-            tag: 'source',
-            attrs: { type: 'memfd', },
-          },),
-          h({
-            tag: 'access',
-            attrs: { mode: 'shared', },
-          },),
-        ],
-      },),
-    );
+    domainChildren.push(sharedMemoryBacking(),);
   }
 
   return h({

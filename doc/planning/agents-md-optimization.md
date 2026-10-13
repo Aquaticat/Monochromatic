@@ -2167,7 +2167,9 @@ Placements chosen during assembly (no earlier record):
 WC2 to "Cross-runtime and scripts",
 VKI to "Hazardous commands",
 VHI to "Communication style",
-ATS with CXD and HDM under "User interfaces",
+ATS with CXD and HDM under "User interfaces"
+(ATS moved on 2026-10-05 to the "Target size" section of `.agents/skills/visual-design-review/SKILL.md`,
+by user decision),
 which sits before "TSDoc comments".
 
 ```text

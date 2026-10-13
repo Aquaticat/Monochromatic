@@ -1,0 +1,1798 @@
+# cli-git and unified-linter implementation
+
+## Authority
+
+Implementation authorized on 2026-10-04 by the user's "Do it."
+The user subsequently selected a simple handwritten merge inside the linter for now.
+Do not wait for the deepmerge fork or implement a separate merge package.
+The accepted scope is in
+[`cli-git-rust-implementation.md`](../planning/cli-git-rust-implementation.md)
+and
+[`unified-linter.md`](../planning/unified-linter.md).
+
+## Handoff 2026-10-05
+
+This session hands off to Claude Opus after the Astra usage limit was reached.
+The three scope-limited delegate sessions
+(scanner verification,
+native LFS URL evaluation,
+processors) have all returned.
+
+### Session-owner state
+
+Main session work since the delegates started:
+
+- Bounded fixpoint loop (`fix_loop.rs`) with cycle detection,
+  ten-pass cap,
+  and mandatory final check;
+  170-test gate passed (`proc_0fca`).
+- Native cli-git wrapper foundations in `package/git-policy/cli/src/native/`:
+  `global_arguments.rs` (Git 2.56.0 `handle_options` parity,
+  9 tests passed in container `proc_d019`)
+  and `config_loading.rs` (lazy policy-loading classification).
+  The classification gate (`proc_c227`) passed all 9 tests
+  but Clippy failed with `if_same_then_else` in `config_loading.rs:188`.
+  Fix that condition merge before continuing the wrapper.
+  The wrapper has its own `Cargo.toml`,
+  `native:lock`/`native:format`/`native:check`/`native:test:container` tasks,
+  and its test fixture uses the audited Git 2.56.0 image
+  `6ec87f6d290a2f59bda5b3ffd4197058fe0749d02b4978c877e8edf6dc38802a`.
+- Processor implementation from the delegate is now committed (`ff5706ef3`)
+  after the delegated session's guardrail blocked its scoped commits.
+  Formatter-only deltas committed as `00777e5ef`.
+- A trust rule for private scratch audit helpers and bounded container verification
+  under `~/temp/agent` was accepted in this session,
+  so the blocked LFS URL evaluation can resume.
+
+### Delegate outcomes
+
+#### Scanner embedding verification
+
+(`doc/handover/scanner-native-verification.md`,
+commit `f0635c911`):
+complete.
+Release suite passed 158 library tests,
+2 binary-boundary tests,
+4 public embedding tests,
+40 CLI integration tests,
+and 8 pathname tests.
+Clippy passed across scanner and every fuzz-sidecar target.
+ASan embedding fuzzing passed 256,297 runs.
+Panic controls passed with independent observations
+(hook ownership, unwind outcomes, real parallel CLI faults).
+Mutation: 147 mutants, 122 caught, 22 unviable, 3 survivors;
+startup follow-up caught all 5 mutants including the logging-filter survivor.
+Remaining limitation:
+two Windows-native prefix-detection mutants survive on Linux;
+the full mutation gate stays non-green pending Windows-native verification.
+Scoped paths are committed and clean.
+
+#### Native LFS URL evaluation
+
+(`doc/planning/native-lfs-url-normalization-evaluation.md`,
+commit `afa351721`):
+blocked before candidate vetting by the private-helper permission gate.
+Local measurements completed:
+Node v26.10.0 with Ada 4.0.0,
+consumed `lfsObjectBase` contract documented
+(parse without base,
+clear credentials/query/fragment,
+serialize,
+remove one final slash,
+preserve literal prefix matching).
+No candidate is recommended or adopted.
+With the newly accepted trust rule the queue can resume at
+frozen discovery queries and candidate screening.
+Do not treat the Rust `url` family or Ada bindings as preselected winners.
+
+#### Processors
+
+(`doc/handover/unified-linter-processors.md`):
+implemented and committed (`ff5706ef3`),
+verified at 203 native tests (33 processor tests),
+Clippy,
+standalone built-library consumer,
+84 systematic cases,
+1,024 seeded fuzz cases,
+and 5/5 guard-focused mutants caught
+(immutable image `62a207e21b353bf4b0b047e67d9424a2720eda1c1d7286b006150ddd9f96188a`).
+Interface:
+`extract`,
+`VirtualSource::check_rust` (host-mapped findings,
+no synthetic-main reporting),
+`project_diagnostic`,
+`project_fix` (container-preserving atomic groups),
+explicit processing failure for unresolvable virtual semantics.
+The final handover document still needs a render check
+and the delegate's scoped mutation campaign was still running when it returned.
+Integration into executable orchestration and global fuzzing remains.
+
+### Mutation state
+
+- Full snapshot campaign (`proc_3d86`, older snapshot):
+  439 mutants, 18 missed, 367 caught, 52 unviable, 2 timeouts.
+  Survivors include `rust_inferred_constants.rs` argument-index arithmetic.
+- Markdown-scoped rerun (`proc_ea56`):
+  496 mutants, 17 missed, 442 caught, 26 unviable, 11 timeouts.
+  Survivors concentrate in `markdown_tables.rs` cell boundaries,
+  `markdown_prose_context.rs` continuation prefixes,
+  `markdown_break_points.rs`, and `markdown_block_start.rs`.
+  Full inventory:
+  `package/linter/monochromatic-lint/target/verification/`.
+- Fuzz campaign `campaign-KqhBLf` passed
+  (147,101 merge, 13,394 configuration, 1,185 rust-style,
+  539 explicit-types, 64,366 Markdown/MDX including tables and prose).
+
+## Resumption 2026-10-05
+
+Claude Opus resumed from the `Handoff 2026-10-05` section on the user's instruction to continue with subagents.
+The main session coordinates and integrates;
+delegates own disjoint files and write their own evidence documents.
+This document and the coverage ledger are edited only by the main session.
+
+### Done by the main session
+
+- `if_same_then_else` in `config_loading.rs` is fixed (`2680f7cb6`);
+  `mise run //package/git-policy/cli:native:test:container` passed 9 tests and Clippy.
+- Verification runners take an overridable image tag (`cd54f8b64`):
+  `GIT_POLICY_NATIVE_IMAGE_TAG` for the wrapper runner
+  and `MONOCHROMATIC_LINT_IMAGE_TAG` for the linter test, Clippy and mutation runners,
+  both defaulting to `development`.
+  Two snapshots building one fixed tag could run each other's image.
+  The wrapper override was exercised with default and custom tags;
+  the linter runners get their first run from the delegates' gates.
+- `doc/handover/unified-linter-processors.md` passed its render check.
+- The processor delegate's last campaign
+  (`package/linter/monochromatic-lint/target/verification/processors-mutation-VrbPEr`)
+  finished with 5 caught and none missed.
+  That campaign plants 5 guard removals;
+  an unrestricted cargo-mutants pass over the `processors*.rs` files has not run.
+
+### Delegates and ownership
+
+- Linter executable (main checkout):
+  owns `package/linter/monochromatic-lint` and `package/linter/monochromatic-lint.fuzz`
+  except the files listed for the mutation-survivor delegate.
+  Slices: rule coverage audit, binary and orchestration, binary-level container tests,
+  fuzz sidecar extension, differential comparison against both incumbents.
+  Evidence: `doc/handover/unified-linter-executable.md`.
+- Native wrapper foundation (main checkout):
+  owns `package/git-policy/cli/src/native` except `command_*.rs` and `rule_*.rs`,
+  the crate manifest and lockfile, the native runner, and the `native:*` tasks.
+  Slices: `cli-git.config.jsonc` loader, real-Git resolution and forwarding with the executable entry,
+  management-command skeleton, wrapper mutation runner, `package/git-policy/cli.fuzz`.
+  Evidence: `doc/handover/cli-git-native-foundation.md`.
+- Behavior ledger (documentation only):
+  `doc/planning/cli-git-rust-behavior-ledger.md`,
+  the first step of the accepted implementation sequence, which had not been written.
+- LFS URL normalizer selection (documentation and one fixture):
+  see `User correction: no vetting decision gate`.
+- Scanner Windows-native verification:
+  the two retained survivors at `package/cli/forbidden-strings/src/path_name_bytes.rs:36`,
+  through a Windows virtual machine;
+  evidence goes into `doc/handover/scanner-native-verification.md`.
+- Linter mutation survivors (queued, linked worktree
+  `.claude/worktrees/linter-mutation-survivors`, branch `test/linter-mutation-survivors`):
+  owns `markdown_block_start.rs`, `markdown_break_points.rs`, `markdown_code.rs`, `markdown_commands.rs`,
+  `markdown_headings.rs`, `markdown_prose_context.rs`, `markdown_source.rs`, `markdown_tables.rs`,
+  `rust_inferred_constants.rs`, their tests, `bin/mutate-container.mjs`, and the `mutation*` tasks.
+  Inventories: `mutation-1vJeuS` (full campaign, 18 missed, 2 timeouts)
+  and `mutation-p3QH2L` (Markdown rerun, 17 missed, 11 timeouts)
+  under `package/linter/monochromatic-lint/target/verification`.
+  Evidence: `doc/handover/unified-linter-mutation-survivors.md`.
+- Git command parser and pure rule cores (queued, linked worktree
+  `.claude/worktrees/cli-git-native-command-parser`, branch `feat/cli-git-native-command-parser`):
+  ports `package/git-policy/cli/src/parser` and the decision cores of `src/rule`
+  into `command_*.rs` and `rule_*.rs`.
+  Evidence: `doc/handover/cli-git-native-command-parser.md`.
+
+The two queued delegates wait for a free slot:
+this session allows 5 concurrent subagents.
+Their branches are cherry-picked onto `main` by the main session,
+which unions `src/native/lib.rs` and reruns both package gates on the integrated tree.
+
+Every delegate in that list has reported;
+`Delegate results` has each outcome.
+Running at the last update of this document (2026-10-06, relaunched at 08:10):
+
+- Dependent-version planning in Rust with a differential proof against the TypeScript planner
+  (linked worktree `.claude/worktrees/cli-git-dependent-version`,
+  branch `feat/cli-git-native-dependent-version`),
+  evidence `doc/handover/cli-git-native-dependent-version.md` on that branch.
+- Linter publication and cutover (linked worktree `.claude/worktrees/linter-cutover`, branch `feat/linter-cutover`):
+  `monochromatic-jsonc-edit` 0.1.1 and `monochromatic-lint` 0.1.0 through `cargo-publish.yml` after CI dry runs,
+  then step 7 of `doc/planning/unified-linter.md` as one change.
+  The delegate lands the version bump that triggers publication;
+  the main session lands the cutover.
+  Evidence: `doc/handover/unified-linter-cutover.md` on that branch.
+- The commit path (linked worktree `.claude/worktrees/cli-git-transactions`, branch `feat/cli-git-native-transactions`):
+  locks and journals with incumbent interoperability, registry and recovery, hook dispatch,
+  the commit transaction, signals, auto-push and worktree copy, in gated slices.
+  Evidence: `doc/handover/cli-git-native-transactions.md` on that branch.
+- `markdown/autofix` through the native linter, and the `pathBytes` event field
+  (linked worktree `.claude/worktrees/cli-git-markdown-autofix`, branch `feat/cli-git-native-markdown-autofix`).
+  Evidence: `doc/handover/cli-git-native-markdown-autofix.md` on that branch.
+
+The content-policy delegate and the linter gaps delegate have reported;
+see `Content policies over candidates` and `Linter mutation close`.
+The scanner's Windows suite through `mvm` alone has reported;
+its result is in the work queue item `Scanner on Windows`.
+Reported and recorded under `Delegate results`:
+the scanner Windows follow-up,
+the open-decision brief,
+the native policy engine,
+the candidate content layer's own work,
+and mvm.
+The main session ran the cargo-mutants option prototype itself;
+see `Mutation timeouts and the cargo-mutants exit status`.
+
+### Delegate results
+
+#### Behavior ledger
+
+Complete,
+[`cli-git-rust-behavior-ledger.md`](../planning/cli-git-rust-behavior-ledger.md),
+last commit `ab7ff3f89`.
+It records 112 responsibilities:
+92 retained and 20 retired,
+each retirement cited to the planning text.
+Line numbers are valid at `cd54f8b64` for the TypeScript source and `SPEC.md`,
+and at `df25471a9` for native files.
+The delegate reports 632 `path:line` citations checked by script for existing files and in-range lines,
+and no advisor review (the tool was overloaded).
+The main session spot-checked one claim against source:
+`package/git/executable/src/self-shim.ts:212` returns `false` from the self-shim test for any native executable header,
+so the TypeScript resolver would accept a native wrapper as real Git.
+That is a cutover item for the resolver's surviving TypeScript consumers.
+
+Findings sent on to the wrapper foundation delegate:
+
+- the native registry gave the optional policies an `Off` default,
+  while the incumbent runs `mono/dependent-version-bump` at `error` without the root configuration listing it;
+- the Rust resolver must prove by a binary-level test that it never resolves to a copy of itself.
+
+The ledger's `Open questions` section lists 21 behaviors the planning documents do not determine,
+and its `Spec and code disagreements` section lists 13.
+Working default for both:
+the incumbent's behavior where the ledger does not list it as a defect,
+Git's own convention where it does,
+each recorded as open to veto by the delegate that implements it.
+None blocks the slices in flight.
+The first ones that will need the user are in the transaction phase:
+the native form of the generated hook entries (Node scripts today),
+and whether lock birth-identity strings must match the incumbent's so both versions judge each other's locks.
+
+The ledger also measured the incumbent with `tokei` 15.0.0, tests and fixtures excluded:
+312 files and 40,559 code lines,
+of which `policy-engine` is 135 files and 18,582 lines
+and worktree copy is 25 files and 3,755 lines.
+
+#### LFS URL normalizer
+
+Selected,
+see the `Selected owner` section of
+[`native-lfs-url-normalization-evaluation.md`](../planning/native-lfs-url-normalization-evaluation.md)
+(commits `eeb3f5e75`, `5c39793e1`, `c8da20019`, `78350705c`).
+The owner is a standard-library-only function in the linter crate,
+`lfs_object_base(endpoint: &str) -> Result<String, LfsUrlRejection>`,
+restricted to plain ASCII `http` and `https` endpoints,
+with 12 named rejections in a fixed evaluation order.
+It adds no crate;
+the Rust `url` crate would have added 8 to the linter lockfile and was never built or measured.
+`fixtures/lfs-url-parity.json` holds 868 endpoint cases and 73 `.lfsconfig` cases captured from the incumbent
+on Node v26.10.0 with Ada 4.0.0.
+The main session recounted the endpoint cases from the file:
+459 accepted with the incumbent's exact output,
+289 that the incumbent accepts and the native function rejects,
+and 120 that both reject.
+The delegate reports no case where both accept and return different strings
+across the fixture, a 2,160-case matrix, and 1,000,000 seeded random inputs,
+with 12 single-fault variants of the normalizer each failing at least one fixture case.
+
+Accepted by the user on 2026-10-05 (see `User decisions 2026-10-05`):
+the 289 native-only rejections are a deliberate behavior change.
+Endpoints such as `ssh://` schemes, IPv6 literals, Unicode hosts, and dot segments
+get a named error natively instead of the incumbent's normalized output.
+This repository's endpoint and every endpoint in the incumbent's tests are in the accepted class.
+
+Limits the delegate stated:
+only Linux x64 was measured;
+equality on acceptance rests on differential evidence and a partial reading of Ada's host path, not a proof
+(reading the source found a host-length divergence that 1,000,000 random inputs had missed);
+the reference source is scratch code and has not been through the crate's Clippy configuration.
+The linter executable delegate has the contract and is porting `markdown/lfs-image-url`.
+
+#### Processor mutation campaign
+
+The first unrestricted cargo-mutants pass over `src/processors*.rs`,
+run by the main session from the snapshot at `9be97dce4` with image tag `processors-full`
+(`mise run //package/linter/monochromatic-lint:mutation:processors:files`, 2,641 seconds).
+Result:
+380 mutants,
+302 caught,
+52 missed,
+24 unviable,
+2 timeouts.
+Evidence:
+`package/linter/monochromatic-lint/target/verification/mutation-exJwfB`
+(base image `57e310bd9253f1fd6e84437012336fb14c9ecf36fef71091b3fd9fe15beab3f5`).
+Missed by file:
+`processors_spans.rs` 15,
+`processors_docs.rs` 14,
+`processors_rewrite.rs` 12,
+`processors.rs` 3,
+`processors_prepare.rs` 3,
+`processors_projection.rs` 3,
+`processors_fences.rs` 1,
+`processors_model.rs` 1.
+Timeouts:
+`processors_docs.rs:223` and `processors_lines.rs:45`, both `+=` replaced by `*=`.
+The earlier "5 of 5 caught" result came from five planted guard removals
+and does not describe coverage of these modules.
+Disposition is queued for a delegate in the linked worktree `.claude/worktrees/linter-processor-survivors`
+(branch `test/linter-processor-survivors`, based on `9be97dce4`).
+
+#### Scanner Windows-native verification
+
+The two retained survivors at `package/cli/forbidden-strings/src/path_name_bytes.rs:36` are caught on native Windows
+by the existing test `path_scan::tests::windows_volume_prefix_is_not_name_segment`.
+Detail and evidence:
+`doc/handover/scanner-native-verification.md`, section `Windows-native follow-up` (commit `0fa9f3761`),
+and `package/cli/forbidden-strings/target/verification/windows-native-8Wo0tM`.
+Target:
+Windows Server 2025 evaluation build 10.0.26100.1742,
+`rustc` 1.97.0,
+`x86_64-pc-windows-gnu`,
+built and tested inside a disposable 4 vCPU / 8 GiB virtual machine that was destroyed afterwards.
+A positive-control mutant failed 14 tests.
+
+Limits of that closure:
+
+- Only the GNU ABI ran;
+  the published binaries are MSVC.
+- The unmutated Windows baseline is not green.
+  `tests/integration.rs` does not compile on Windows (Unix-only permission APIs),
+  and six tests fail for causes not established,
+  so the result is differential:
+  each mutant adds exactly one failing test to the baseline's set.
+- One manual run on one snapshot, not a recurring gate.
+
+New defect found by that run, not fixed:
+device-namespace pathnames fail open on Windows.
+`\\.\COM1\<forbidden name>\clean.txt` produced no finding and no masking.
+The main session confirmed the mechanism by reading the source:
+`count_prefix_parts` (`src/path_name_bytes.rs:44`) counts the `.` of `\\.\` as a prefix part,
+while `src/path_scan.rs:129` treats a `.` component as navigation and continues without consuming a prefix part,
+so the remaining prefix skips swallow the first real name.
+Drive, UNC, and `\\?\` forms behaved correctly.
+Proposed, awaiting the user:
+fix it with target-independent tests that run on Linux,
+with Windows confirmation later.
+
+Host notes from that run:
+
+- The `mvm` MCP tools did not work on this host:
+  `virsh` and `qemu-img` exist only inside the `org.virt_manager.virt-manager` Flatpak,
+  and no `virtiofsd` is available,
+  so the delegate drove the `mvm` CLI through scratch shims and moved files over loopback HTTP.
+  A troubleshooting entry for this is not written yet.
+- The Windows template's evaluation license had lapsed.
+  The delegate ran `slmgr.vbs /rearm` on the disposable overlay only;
+  the template is unchanged.
+
+#### Linter executable
+
+Complete,
+evidence in [`unified-linter-executable.md`](unified-linter-executable.md)
+(commits `2cdcea1f3`, `9adb2f918`, `c46396109`, `6b260a81e`, `4b6d46b9a`, `2aab0b324`, `a4b2f08dc`).
+`monochromatic-lint` builds as a binary with orchestration, stdin fixing, every designed flag,
+core processing findings, panic containment and mode-preserving atomic writes.
+All 17 designed rules have an implementation and tests;
+`markdown/lfs-image-url` was ported against `fixtures/lfs-url-parity.json`
+(all 868 endpoint and 73 configuration cases).
+The main session read the final gate log for source commit `2aab0b324`:
+`lint:container` exit 0,
+335 library tests and 10 executable tests passed,
+Clippy clean,
+image `59eb21a45a09dfd956606f040fb66aec6fa3393f608dbdba4e899cfc7c559173`.
+The fuzz sidecar gained an `orchestration` target;
+a 30-second smoke of all six targets exited 0
+(`package/linter/monochromatic-lint.fuzz/target/verification/campaign-IvsNWV`).
+
+Differential comparison against both incumbents over this repository,
+read-only, with fixes only in throwaway worktrees:
+
+- Rust:
+  all 185 findings under the draft configuration match the incumbent exactly, spans included;
+  the incumbent's other 222 are hidden by the draft's added `**/*.fuzz/**` and `doc/audit/**` exemptions,
+  and without them both report 407.
+- Markdown:
+  of about 52,000 findings, 623 differ,
+  all in 9 files after their first character outside the Basic Multilingual Plane:
+  607 are the incumbent's issue #559 offset bug
+  and 16 are the same positions in different column units.
+- Fixes:
+  byte-identical to the incumbent with #559 corrected,
+  except one fuzz seed where the native rule removes a trailing `\.` completely;
+  a second fix pass changes nothing.
+
+Open to veto, from that document's `Decisions open for veto` section:
+exit 2 for processing findings and for a missing configuration,
+the `core/*` finding codes,
+per-file LFS root discovery,
+an in-crate SHA-256,
+strict JSON for `--print-config`,
+and UTF-16 Markdown columns.
+
+What the draft configuration would do to this repository at cutover,
+which the user needs to see before the cutover step:
+
+- `rust/no-anonymous-functions` at `error` reports 1,215 findings in `.rs` files
+  and 207 more in Markdown snippets and doc tests,
+  with no burn-down block covering either.
+- Snippet `require-rustdoc` warnings number 1,142 in 200 files
+  (the design estimated 905);
+  710 are the file-level rustdoc requirement.
+- `--fix` under the draft rewrites 693 `.rs` files (comment lines only) and 185 Markdown files,
+  and rustdoc line-break fixes leave two spaces after `///`.
+
+Not done:
+a mutation campaign over the new orchestration modules,
+Windows and release-build runs,
+a fuzz campaign longer than the smoke,
+85 `require-rustdoc` findings in the crate's own older modules,
+and a file-size limit (the incumbent skips files over 5 MiB).
+Commit `a4b2f08dc` is scoped `docs(handover)` but also changes both package READMEs.
+
+#### Linter Markdown and constant-slot mutation survivors
+
+Dispositioned on branch `test/linter-mutation-survivors` (head `4fa031de1`),
+evidence in [`unified-linter-mutation-survivors.md`](unified-linter-mutation-survivors.md).
+Several survivors were redundant guards or hand-stepped index arithmetic;
+those were restructured (slice scans, `rfind`, a parity flag) rather than excluded,
+and the non-equivalent ones gained controls.
+Scoped reruns against test image `f1ccc6b562a7aed6507b6d19af275edb33d2da0b727c692d44f5e9cf41c94111`
+(source `1e257034b`; the gate before them passed 217 tests and Clippy):
+
+- constant-slot scope (`mutation-yE1SL2`):
+  14 mutants, 12 caught, 0 missed, 2 unviable;
+- parent-lookup scope (`mutation-BmlHMt`):
+  4 mutants, 4 caught;
+- Markdown scope (`mutation-BX2JYq`):
+  424 mutants, 394 caught, 0 missed, 26 unviable, 4 timeouts, so the task still exits 3.
+
+The 4 timeouts:
+`markdown_definitions.rs:44` and `markdown_punctuation.rs:64` still use hand-stepped loops,
+and the two `MarkdownSource::parent` replacements make every ancestor walk spin
+(the parent-lookup scope catches those two in under a second).
+Main-session choice, open to veto:
+bound ancestor walks by the arena's node count so a cycle becomes a typed error,
+instead of adding a mutant exclusion to the Markdown scope.
+That and the two loops are queued.
+The delegate also noted that cargo-mutants 27.1.0 needs `-- -- a b` to pass two test filters,
+and that the unscoped suite's 139 seconds leave about 41 seconds of margin under the 180-second mutant timeout.
+
+#### Processor mutation survivors
+
+Dispositioned on branch `test/linter-processor-survivors`,
+evidence in [`unified-linter-processor-survivors.md`](unified-linter-processor-survivors.md)
+and `package/linter/monochromatic-lint/target/verification/processor-survivors-mutation-w00nRd`.
+All 52 missed mutants were planted by hand from their recorded spans;
+49 failed under the new exact-position, margin, refusal-text and whole-text tests.
+The other 3 sat on code the parsers cannot reach
+(a carriage return after a lexed line comment, and a fence whose decoded lines outnumber its authored lines),
+and that code was removed.
+Rerun after the changes,
+over test image `48f1112dda8a331248860032ba641dc900154d87f7522225c829826d5e5cb126`
+(228 tests and Clippy passed first):
+374 mutants,
+348 caught,
+0 missed,
+24 unviable,
+2 timeouts.
+No processor defect was found on unmutated input,
+but one test gap mattered:
+the refusal of an insertion between `\r` and `\n` in a `///` line was the only guard against
+turning `/// Alpha.\r\n` into `/// Alpha.\rX\n`,
+and no test pinned which refusal fired.
+It is now pinned.
+
+#### Integration of both survivor branches
+
+Landed on `main` at `7e10fefd0` and pushed.
+The main session cherry-picked 18 commits from `test/linter-mutation-survivors`
+and 8 from `test/linter-processor-survivors` (excluding their shared `9be97dce4`, applied once)
+onto a branch in the linked worktree `.claude/worktrees/integrate-linter`.
+The only conflict was two tasks appended at the end of the package `mise.toml`;
+both were kept.
+Gates on the integrated tree, image tag `integrate-linter`:
+the first 18 commits passed 349 library and 10 executable tests and Clippy (286 seconds),
+and all 26 passed 374 library and 10 executable tests and Clippy with no warnings (351 seconds).
+`main` moved twice during landing,
+so the branch was rebased onto it;
+`package/linter`, `package/rust-module/jsonc-edit` and `clippy.toml` were verified byte-identical
+to the gated head before the fast-forward.
+The other sessions' commits in between touched only unrelated packages.
+Creating the integration branch inside an existing worktree was refused by the `branch-worktree-only` policy,
+which requires `git worktree add -b`.
+
+Choices the main session settled, open to veto:
+
+- The 2 processor timeouts (`processors_docs.rs` and `processors_lines.rs`, both `+=` to `*=` on a zero counter)
+  are restructured so no mutation can spin,
+  the same treatment as the Markdown loops,
+  rather than counting exit 3 as a pass in the mutation runner.
+  Queued with the Markdown timeouts.
+- The test that calls the internal `host_range` function directly stays:
+  no input through `VirtualSource` reaches the guard it pins,
+  and the guard stays as defense against future callers.
+- The fence line-count simplification stays,
+  because the repository removes provably redundant code instead of recording mutant exclusions.
+
+#### Scanner device-namespace fail-open
+
+Fixed on `main` (`833483171`),
+detail in `doc/handover/scanner-native-verification.md`.
+The cause was broader than the Windows run reported:
+any Windows prefix part spelled `.` or `..`,
+or an empty device name,
+was displayed but not counted off,
+so the first real name after the prefix escaped scanning.
+Failing forms included `\\.\COM1\<name>`, `\\.\..\<name>`, `\\server\..\<name>`, and `\\?\UNC\..\share\<name>`,
+so the earlier statement that verbatim forms were unaffected was wrong.
+The scan now counts one prefix part per non-empty component before classifying `.` and `..` as navigation,
+matching how `count_prefix_parts` defines a part.
+13 new target-independent tests failed before the fix and pass after;
+8 controls passed both times.
+Final tree:
+`test:container` passed 180 library, 4 binary-unit, 2 embedding, 2 cache-warning, 40 CLI and 8 pathname tests,
+and Clippy was clean
+(images `sha256:9c1d8dbb303da6872c0413f16b1150f968ca48beb336effd5b36c3312cf9f393`
+and `sha256:167b707f83ff9e89580ad4fce5a391ec3a566b1edd2563e31cdd64ed841ad06f`).
+Still open:
+native Windows confirmation at a snapshot containing the fix,
+a mutation rerun over `path_scan.rs` (no task scopes the pathname files),
+and the `#[cfg(windows)]` test, which has never been compiled.
+`lint:rust` reports 8 older `require-rustdoc` findings in `load_request.rs`, `process_boundary.rs` and `scanner.rs`.
+A concurrent session's commit `8fdbbded9` (`test(desktop-app-ide): ...`) swept in the 17 pre-fix tests;
+the delegate posted a corrective commit comment on it rather than amending.
+
+#### Native wrapper foundation
+
+Complete on `main`,
+evidence in [`cli-git-native-foundation.md`](cli-git-native-foundation.md)
+(17 commits from `df25471a9` to `48a1b5756`).
+Delivered:
+the typed `cli-git.config.jsonc` schema and loader,
+real-Git resolution with self-exclusion,
+Unix `exec` forwarding verified byte for byte against Git 2.56.0,
+the child environment,
+JSONL `engine-failure` and `configuration-warning` events,
+the `git cli-git check|fix` grammar,
+retired trust commands that explain themselves,
+a bounded mutation runner,
+and the `package/git-policy/cli.fuzz` sidecar with three ASAN targets.
+The native executable stops every repository-changing command with exit 2,
+because policy execution does not exist yet;
+it is not installed and does not shadow `git`.
+The main session read the final gate evidence
+(`package/git-policy/cli/target/verification/native-dtC4QT`):
+tests and Clippy passed on image `16f09e939ecefa1a500520d1b4ed0d9745e1f373305101cbb02743dcb1fc212a`;
+the delegate reports 145 unit and 21 binary-level tests.
+Both ledger findings are acted on:
+every registry default equals the incumbent's `defaultSeverity`, pinned by a test,
+and `resolution::wrapper_never_selects_itself_or_a_copy_of_itself` drives the built binary through
+symlinks, hard links and byte copies earlier and later on `PATH`,
+with a planted guard removal that makes it fail.
+Mutation:
+the last full campaign (`native-mutation-3CvHMl`) had 513 mutants,
+429 caught,
+56 unviable,
+11 missed and 17 timeouts;
+one missed mutant was later killed by a 64 KiB bound control,
+8 of the remaining 10 are in `#[cfg(not(unix))]` code the Linux gate never compiles,
+and 2 are documented as equivalent.
+Fuzz smoke:
+975,367, 359,412 and 49,392 executions on the three targets with no crash.
+A flaky "Text file busy" fixture failure was diagnosed
+(another test thread forking while a script was open for writing)
+and fixed by writing fixtures through child processes:
+74 failures in 400 runs at 16 threads before, 0 after.
+
+Three of the following were decided by the user afterwards
+(optional-policy defaults, the configuration root, and the legacy-file notice;
+see `User decisions 2026-10-05`).
+Open to veto at the time (detail in the foundation document):
+namespaced policy names;
+"option C" defaults, where the 4 policies that came from plugins are off when no `cli-git.config.jsonc` exists;
+a bare severity accepted for option-taking policies;
+the configuration root following `--git-dir` and `--work-tree`;
+a legacy `.ts` config beside JSONC reported on every configuration-loading command;
+symlinked configuration rejected and a 1 MiB size cap;
+retired trust commands exiting 0;
+exit 2 for every wrapper failure;
+the new `configuration-warning` event;
+the plugin and trust failure codes dropped.
+Dependency needs recorded, not solved:
+forwarding a signal from a waiting wrapper to its Git child needs signal handling the standard library lacks
+(`signal-hook` or `libc`);
+that is a technology choice for the transaction phase, where the wrapper waits instead of `exec`ing.
+Oxlint reports 2 errors (banned `spawnSync`, banned `try...finally`) and several warnings in
+`bin/test-native-container.mjs` and `bin/mutate-native-container.mjs`;
+the linter package's runner scripts share the pattern.
+Windows and macOS code paths were never compiled.
+
+#### Native command parser and rule cores
+
+Complete on branch `feat/cli-git-native-command-parser`,
+evidence in [`cli-git-native-command-parser.md`](cli-git-native-command-parser.md).
+It ports Git 2.56.0 `parse-options` tokenization,
+the facts of `commit`, `push`, `status`, `add`, `reset`, `clean`, `stash`, `config` and branch creation,
+and the pure cores of commit-only, atomic-push, status-hints, require-root and the index and sequencer checks,
+with no process spawning or filesystem access.
+Its gate passed 186 tests and Clippy.
+Real-Git oracles:
+2,591 argument lists against `git rev-parse --parseopt`,
+29 option tables against `--git-completion-helper-all`,
+and 625 `branch`, `checkout` and `switch` argument lists run against a fixture repository.
+Hand-planted mutations:
+114 in the first rounds with every survivor killed or its branch removed as unable to change an answer.
+Integrated on `main` at `7d103c174` and pushed:
+one merge commit `0a1959a3b` (the only conflict was the module list in `src/native/lib.rs`, resolved as the union),
+then `e23f6fa18` removed the duplicated escape-hatch module in favor of `escape_hatch.rs`
+and shared the identical test helpers `REAL_GIT` and `remove`.
+The merged tree passed the wrapper gate with 322 unit and 21 binary-level tests and Clippy
+(image tag `integrate-cli-git`, evidence `native-g7bnkQ`).
+Landing merged `main` in once more (`7d103c174`);
+the wrapper paths were verified byte-identical to the gated head before the fast-forward.
+Open questions it raised, with the main session's working answers
+(open to veto, except the require-root root, which the user decided; see `User decisions 2026-10-05`):
+
+- A parser `OptionError` means Git itself refuses the command:
+  forward it unchanged and let Git report the error, as the delegate recommends,
+  so the wrapper never invents a different diagnosis of an invalid command.
+- Require-root compares against the top level Git reports,
+  matching the foundation's choice that the configuration root follows `--git-dir` and `--work-tree`;
+  the incumbent's nearest-marker walk is recorded as the difference.
+- Branch-creation facts read option names and argument counts only,
+  so `--track=bogus` still counts as creation:
+  keep rejecting it, because Git refuses it anyway and the policy's job is the worktree-first rule.
+- Wrapper controls before the subcommand must be stripped from the global prefix before any rule runs;
+  the policy engine owns that.
+
+#### Wrapper runner lint
+
+`bin/test-native-container.mjs` and `bin/mutate-native-container.mjs` now pass Oxlint with no errors or warnings
+(commits `6bc2f15f3`, `9b99e49f3`, `9cd9935d5`; detail in the foundation document's
+`Runners under the Oxlint configuration` section).
+`spawnSync` became asynchronous `spawn` with the output cap kept,
+`try...finally` became `await using` over disposable temporary directories and containers,
+and regexes became single-pass string checks.
+The gate on old and new scripts reported identical counts (322 unit and 21 binary-level tests, Clippy)
+on the same image with byte-identical evidence files,
+and a planted failing test still failed the task and left no temporary directory or container.
+This was done before the engine phase because every later wrapper gate runs through these scripts.
+
+Proposed, not applied:
+type-aware Oxlint reports many `typescript(no-unsafe-*)` findings on every `bin/*.mjs` in the repository
+because those scripts sit outside every `tsconfig.json` include list,
+so `process` and `node:` imports have no types there.
+The delegate measured 30 such findings on one helper without `/// <reference types="node" />` and 0 with it.
+The configuration-level fix (a tsconfig that includes `bin/**/*.mjs`) changes shared configuration
+that file-enforcer may own,
+so it needs its own change after checking `file-enforcer.config.ts`.
+
+#### Engine phase launched
+
+The policy engine with the pre-forward built-ins and argv transforms (main checkout,
+evidence `doc/handover/cli-git-native-policy-engine.md`)
+and the candidate content layer with the scanner adapter (worktree `.claude/worktrees/cli-git-candidates`,
+branch `feat/cli-git-native-candidates`, evidence `doc/handover/cli-git-native-candidates.md`).
+The engine brief pins, each with a binary-level test:
+wrapper controls stripped before any rule core runs
+(today `git --cli-git-keep-going status` from a subdirectory would pass require-root);
+one hatch-removal mechanism for detection and removal;
+an explicit exit-2 refusal, derived from the behavior ledger,
+for every command whose incumbent behavior needs unported processing;
+a typed unavailable result for unsupported triggers;
+and a read-only fast path that loads no configuration and starts no extra Git process.
+The candidate brief requires a bounded Git process count for N staged candidates with a naive-reader positive control,
+and staged-versus-worktree byte isolation for the scanner.
+The optional policies follow once both land.
+The wrapper's 16 spinning mutation timeouts wait until the engine delegate releases the native modules.
+
+#### Second API session limit and file-enforcer manifests
+
+All four running delegates stopped again on the API session limit and were resumed from their transcripts.
+The engine and candidate delegates had not written anything yet.
+The linter mutation runner and the scanner's Windows virtual machine (`mvm-wbase-20261005`) kept running
+through the interruption;
+a subagent that dies does not take its background processes with it,
+so a resumed delegate must check them by process and evidence directory rather than wait for a notification.
+
+A concurrent session's file-enforcer run left `package/git-policy/cli/Cargo.toml`
+and `package/git-policy/cli.fuzz/Cargo.toml` modified.
+`file-enforcer.config.ts` owns package Cargo manifests:
+it derives `package.homepage` from the crate path
+and pins `libfuzzer-sys` with the `arbitrary-derive` feature for fuzz sidecars.
+The delegates' hand-written wrapper manifests had never been through it.
+The main session committed its output as `ff3559d89`,
+with the fuzz lockfile regenerated through `mise run //package/git-policy/cli.fuzz:lock`
+(adds `derive_arbitrary` and its four proc-macro crates only).
+
+Rule `WC2` in `AGENTS.md` now covers package `Cargo.toml` files (`0ae51048d`);
+see `User decisions 2026-10-05`.
+
+#### Mutation timeouts and the cargo-mutants exit status
+
+23 timeouts were recorded across the linter and wrapper campaigns:
+15 from `+=` replaced by `*=`,
+3 from `-=` replaced by `/=`,
+3 from `+=` replaced by `-=` in the wrapper's index-stepping argument scanners,
+and 2 from constant replacements of `MarkdownSource::parent`.
+cargo-mutants 27.1.0 exits 3 when any mutant times out and has no option to change that,
+so no campaign containing one could pass.
+Cause, reproduction, per-crate cost of the exclusion and the upstream state:
+`doc/troubleshooting/cargo-mutants-timeout-exit-status.md` (`ee7d77b01`).
+
+After the user's decision (see `User decisions 2026-10-05`):
+
+- All three mutation runners pass `--exclude-re` for the two stalling replacement kinds:
+  linter `af8431372`,
+  wrapper `d86b7463c`,
+  scanner `703a1c21d`.
+  Measured with `cargo mutants --list --no-config`,
+  the patterns remove 32 of 1,672 linter mutants,
+  34 of 1,230 wrapper mutants
+  and 5 of 526 scanner mutants.
+- The wrapper's three scanners visit argument slices instead of stepping an index (`d1c02273a`).
+- The linter's ancestor walks are bounded,
+  so a circular parent lookup is a typed error;
+  the delegate had also reshaped the linter's stalling loops before the decision arrived.
+  Detail: `doc/handover/unified-linter-mutation-close.md`, section `Timeouts removed`.
+
+Still open:
+the linter's three campaigns and the wrapper campaign must each be rerun to 0 missed and 0 timeouts
+on the final trees;
+the delegates own those runs.
+
+The troubleshooting entry's upstream check required a prototype of the option upstream issue 545 describes.
+The main session wrote it against `v27.1.0` in a disposable clone
+(`doc/troubleshooting/cargo-mutants-timeout-exit-status.patch`, `b7918044f`, results `61565a1a4`):
+`--accept` and an `accept` configuration key with the values `timeout` and `missed`.
+In a container without network,
+an unpatched build exits 3 on a crate with one timing-out mutant,
+and the patched build exits 0 with timeouts accepted,
+2 when a missed mutant remains,
+and 0 with both accepted or with the configuration key.
+The format check passes;
+the two unit tests and six Clippy errors that fail on the patched tree fail identically on the unpatched tree.
+The full upstream integration suite was not run.
+The 26 upstream integration tests that cover help, completions, configuration and options also pass.
+On the user's decision the patch was posted as a comment on issue 545;
+see `User decisions 2026-10-05`.
+
+#### Open-decision brief
+
+`doc/planning/cli-git-rust-open-decisions.md` (`07bc2f24b`) works through every item of the behavior ledger's
+`Open questions`,
+plus choices the delegate found outside that list.
+Its `Verdict summary` separates the two outcomes.
+
+Thirteen items are settled by evidence and are adopted unless the user vetoes them;
+the section `Settled by evidence` lists each with its determining source.
+Two of them have consequences worth the user's attention:
+
+- The manual-push gate applies without a configuration file,
+  which follows from "`{}` and no file behave identically".
+  In a repository with no configuration,
+  each real push then gains a dry-run negotiation with the remote.
+  The native code already behaves this way.
+- The spec requires recovery to run before read-only commands once recovery is ported,
+  while the engine delegate's read-only fast path deliberately does nothing extra.
+  That conflict is not settled here;
+  it goes to the user with the transactions-phase questions.
+
+Twenty-two items need the user,
+in the batches of the brief's `Question batches` section.
+The optional-policies batch is answered (see `User decisions 2026-10-05`).
+Still to ask:
+the transactions phase (nine questions in three batches)
+and cutover (ten questions in three batches).
+
+Findings from the brief that are not questions:
+
+- A `commit` reached through an alias bypasses the commit rules.
+  Measured with the installed incumbent in a disposable repository:
+  `git commit -a -m direct` is rejected with `commit-only/all-flag`,
+  and `git -c alias.c=commit c -a -m aliased` creates the commit.
+  The native executable reproduces it.
+  Whether to resolve aliases is one of the transactions-phase questions.
+- This host's `/usr/bin/git` is 2.55.0 and the newest upstream tag is `v2.56.0`,
+  so any run-time check for the supported Git fails here until Git is upgraded.
+- The ledger's citations into the native source are stale by a few lines,
+  and its `Open questions` still lists the three items decided earlier;
+  the brief re-cites at native commit `4bef275e6`.
+
+#### Third API session limit
+
+All five running delegates stopped on the API session limit at about 17:20 on 2026-10-05
+and were resumed from their transcripts at 18:51.
+No container was running at that point,
+so each was told to judge its interrupted campaign from the evidence directory rather than assume it finished.
+The mvm delegate had about 27 modified and 4 new files uncommitted;
+it was told to commit before each next step.
+The open-decision brief existed only as an untracked file.
+The linter mutation delegate stopped once more on 2026-10-06,
+on an API authentication error (HTTP 403) during its second round,
+and was resumed again.
+
+#### Weekly limit
+
+All four running delegates stopped on the account's weekly limit at about 04:19 on 2026-10-06,
+and that Claude Code session ended with them.
+The user continued in a new session at 08:00,
+where the earlier delegates no longer exist,
+so the main session inventoried what each had left and launched fresh delegates with that state in their briefs:
+
+- Candidate layer:
+  merge commit `27af8f580` (main as of `817fb1daa`) existed,
+  with an unreviewed, uncommitted failure-code mapping module and its tests;
+  `main` had moved 12 commits since.
+- Scanner Windows suite:
+  two scratch drivers in `~/temp/agent/scanner-windows-mvm-20261006/`,
+  no virtual machine created.
+- Linter gaps and dependent-version port:
+  nothing written.
+
+The three delegates still running (content policies, dependent-version port, linter gaps)
+stopped again on the API session limit in the afternoon of 2026-10-06
+and were resumed from their transcripts at 16:01,
+each told to judge its interrupted run from its evidence directory.
+No container was running then.
+
+A second weekly limit stopped the four delegates of the evening of 2026-10-06
+(linter cutover, commit path, Markdown autofix, dependent-version wiring);
+it reset on 2026-10-10 and the session continued with new delegates on a cheaper model, as the user asked.
+State found on 2026-10-10:
+
+- Linter cutover: five commits on `feat/linter-cutover`, tree clean, and `monochromatic-jsonc-edit` 0.1.1 published
+  (crates.io lists 0.1.1).
+  `monochromatic-lint` does not exist on crates.io:
+  the first publication needs a crates.io API token, which only the user can create
+  (`doc/handover/unified-linter-cutover.md`, section `Blocker`).
+  The cutover cannot land before that publication, so the linter stays out of the relaunch.
+- Linter publication, done the same day after the user created a crates.io token with the publish-new,
+  publish-update and trusted-publishing scopes:
+  `monochromatic-lint` 0.1.0 was published from the cutover branch,
+  the trusted publisher (`Aquaticat/Monochromatic`, `cargo-publish.yml`, no environment) was added through the crates.io API
+  with that token, and the workflow dispatched with dry-run off created the 0.1.0 release with eight archives over OIDC.
+  `mise` then compiled the crate instead of downloading an archive,
+  because `cargo-binstall` does not look under a `monochromatic-lint-v<version>` tag.
+  0.1.1 carries `[package.metadata.binstall]` and installs in 11.5 s;
+  `mise` also no longer may use its built-in installer (`binstall_native = false`).
+  Evidence: `doc/troubleshooting/mise-cargo-binstall-falls-back-to-compiling.md` on `feat/linter-cutover`.
+  The branch has main merged (39 conflicts: the five deleted packages, rustdoc style edits and `mise.no-env.toml`)
+  and the comment-only Rust fixes re-applied.
+  A delegate is producing the consumer differential (old and new linter findings on the same tree).
+  Landing still needs the choreography below: the installed commit wrapper hardcodes
+  `package/cli/markdown-lint/src/cli.ts`, so after the deletion lands every commit with a Markdown file fails in
+  `markdown/autofix` until the wrapper's `dist` is rebuilt from the landed source.
+- Linter cutover landed on 2026-10-10 as `b111c0ca39` (fast-forward, pushed); evidence in
+  `doc/handover/unified-linter-cutover.md`.
+  The five incumbent linter packages are deleted, `cli-git.config.ts` takes the Markdown policy defaults,
+  `monochromatic-lint` 0.1.1 is pinned in `mise.no-env.toml` and installed, and the wrapper `dist` in the main checkout was replaced
+  by the one built from the landed source.
+  The user approved `git cli-git trust --yes` for the changed config and committing the two uncommitted files
+  (`pnpm-lock.yaml`, `package/config/pnpr/config.yaml`) that blocked the fast-forward.
+  Open from it: the new linter reports 123 `semantic-line-breaks` findings on `///` lines inside fenced Rust blocks
+  (the incumbent treated fences as code), which needs a linter fix and a 0.1.2;
+  about 56,000 shared Markdown findings remain (step 8), and the old Markdown gate was already red on main.
+- Delegate reports of 2026-10-10 (all pushed feature branches by auto-push, which is fine):
+  Markdown autofix with `pathBytes` passes the container gate (633 unit, 43 binary, 1 consumer) and fuzz,
+  and its mutation campaign left one real survivor in `markdown_exclude.rs:95:39` that needs a test;
+  the two `event_path.rs:173` base64 survivors are equivalent.
+  Dependent-version wiring passes (680 unit, 43 binary, 1 consumer; release-bump differential identical in four scenarios)
+  with one survivor, `policy_dependent_version.rs:255:66`, in a filter no probe could reach with a deleted candidate.
+  The user corrected the gate on 2026-10-10: it requires every mutant to be caught or justified as impossible to catch,
+  not exactly zero missed.
+  A justification must rest on code (the call chain that makes the mutant equivalent), not on failed probes,
+  so the delegate was told to trace every producer of the filtered list and either write that proof or kill the mutant with a test.
+  The commit path finished slice 3's leaf modules (829 library tests, planted controls, fuzz) and keeps going.
+- The user's instruction of 2026-10-10: focus on finishing cli-git; pre-existing Markdown lint findings can wait.
+  The fenced-code false-positive fix for the linter (123 findings, repro `~/temp/agent/momoa-probe/fence.md`)
+  was started and stopped before any commit, and is deferred with step 8.
+- Landing order decided on 2026-10-10: Markdown autofix first, then dependent-version wiring (both edit
+  `src/native/policy_checks.rs`; each needs a gate rerun on the merge with main, because the cutover changed
+  `package/git-policy`), then the commit path.
+- Delegates relaunched on 2026-10-10 on the Haiku model, as the user asked: dependent-version wiring, Markdown autofix
+  with `pathBytes`, the commit path from slice 3, and the consumer differential.
+- Commit path: slices 0 to 2 committed (HEAD `4397a98c8`), seven untracked files of the next slice.
+- Markdown autofix and `pathBytes`: committed through merge `b89b38252`, evidence file untracked.
+- Dependent-version wiring: wiring and controls committed (HEAD `cd344723a`), tree clean.
+
+#### Linter mutation close
+
+Evidence in `doc/handover/unified-linter-mutation-close.md` (`a5033325b`), section `Result`.
+On one test image built from linter source tree `ceb495865521beda0f988a536435ffd69cc1d100`,
+with the two excluded replacement kinds:
+
+- Executable scope (new): 184 mutants, 131 caught, 53 that do not compile, 0 missed, 0 timeouts.
+- Markdown scope: 742 mutants, 698 caught, 44 that do not compile, 0 missed, 0 timeouts.
+- Processor scope: 355 mutants, 330 caught, 25 that do not compile, 0 missed, 0 timeouts.
+- Gate before them: 384 library and 12 executable tests, Clippy clean.
+
+No mutant exposed a defect on unmutated input.
+The campaigns did expose unbounded work under mutation in both Markdown tree walks.
+Ancestor and descendant walks are now bounded by the node count,
+and five Markdown rules report a walk failure as one `core/processing-failure` finding;
+the descendant bound extends the ancestor choice and is open to the same veto.
+On this source every mutant of the two excluded kinds was already being caught,
+so for the linter the exclusion guards future loops and costs the mutants listed in
+`doc/troubleshooting/cargo-mutants-timeout-exit-status.md`.
+
+The delegate named what is still open,
+and the main session sent all of it back as the next piece of the same task:
+six production files no campaign has mutated,
+a listing proof that the union of scopes equals the unscoped mutant list,
+the scopes not yet rerun on the final tree,
+four quick tests the executable scope skips by name,
+linting on the main thread for one file or `--concurrency 1` (a possible stack overflow where the main stack is small),
+the untested `set_hook` call and worker stack size,
+and a rerun of the fuzz sidecar against the final library.
+
+The gaps round closed all of them;
+evidence in `doc/handover/unified-linter-mutation-close.md`, sections `Result` and `Gaps round`.
+Final test image `7526e26a714499174ff012c45175059ac39127333510cc8fa405264c902499f7`,
+linter source tree `c5f934d97d7579d9eca66741241ecc47291cc877`;
+its gate passed 389 library tests (1 ignored), 13 binary tests and Clippy.
+
+- Coverage by listing (`mutation:coverage`):
+  the union of every scope's `--list` equals the unscoped listing,
+  1,650 mutants with none outside a scope,
+  and each scope's listing equals the names in its final campaign's outcomes.
+  The union had been 347 short before this round;
+  a core scope and a sharded semantic scope (1,200 seconds per mutant, judged against its baselines) close it.
+  Dropping the core scope makes the check fail with 202 mutants outside, the positive control.
+- Every scope ended with 0 missed.
+  The executable scope recorded one timeout,
+  a mutant whose own test had already failed
+  while two unrelated concurrency tests ran past 180 seconds at host load 45 to 95;
+  rerunning that file on the same image caught it in 1.1 seconds.
+- Linting now always runs on a thread with the explicit 8 MiB stack.
+  Before the change, one file, `--concurrency 1` and `--stdin` each overflowed the main stack under a 1 MiB limit
+  (`thread 'main' has overflowed its stack`, exit 134);
+  after it all five cases exit 0,
+  and a binary test fails when the thread is removed.
+- The panic hook call and the stack size are pinned by tests that fail when mutated.
+- The fuzz sidecar gained planted-defect controls (all six noticed) and passed its controls and smoke run.
+- Still open:
+  no Windows or release build was run;
+  two backend settings are pinned rather than tested by behavior,
+  because no fixture in the container can observe them;
+  and on a loaded host the executable scope's slowest caught mutant took 146 seconds against its 180 second limit.
+- Observed once and not reduced:
+  two concurrent `podman build` runs whose Containerfiles differed only in `CMD`
+  committed one image with the first build's `CMD`,
+  so one shard ran another shard's mutants.
+  The runner now passes the command to `podman create` and checks it (`416d00ee1`).
+  No troubleshooting entry exists yet, because the cause was not reduced to a reproduction.
+
+#### Content policies over candidates
+
+Landed on `main` on 2026-10-06 as `83463b49a`,
+a fast-forward to a merge of `main` into the branch;
+every path the gate image reads was byte-identical to the gated commit `e4725f72c`.
+Evidence in `doc/handover/cli-git-native-content-policies.md`.
+
+- The native executable now runs `git add`, `git cli-git check` and `git cli-git fix` with
+  `final-newline`,
+  `security/forbidden-strings` (with the `rulesFile` option, then `FORBIDDEN_STRINGS_RULES`, then the default file)
+  and `mono/forbidden-root-context`.
+  It still refuses, with exit 2 and one line, whenever `markdown/autofix` is enabled and there are candidates.
+  `mono/dependent-version-bump` no longer refuses: it is wired on `feat/cli-git-native-dependent-version`
+  (see `doc/handover/cli-git-native-dependent-version.md`, section "Wiring into the native executable").
+- `git add` costs a fixed 6 Git processes and a direct command 5, for 1, 20 or 200 files.
+- Failures carry `content-unavailable` or `policy-incomplete` by cause,
+  and engine-failure events never carry a candidate pathname.
+- Direct `fix` converges full-content corrections in memory and installs them atomically with rollback;
+  `git add` applies no fixes, as in the incumbent.
+- Gate on `e4725f72c`: 578 unit, 39 binary-level and 1 consumer test, Clippy
+  (image `30a8e6112b2a3723be78c4b379dfd130b44baa960df6525eb8b7c2d9b05589f7`).
+- Differential against the incumbent, both by path in disposable repositories:
+  44 commands over 17 cases,
+  32 identical in every field,
+  12 different and each intentional
+  (the failure code by cause, a non-UTF-8 name the incumbent cannot handle,
+  repository-relative paths from a subdirectory as the spec requires,
+  an incumbent `fix` defect from a subdirectory,
+  and the spec's exit status for a pathspec that matches nothing).
+- Mutation: 411 mutants, 0 missed;
+  13 timeouts on a loaded host were all caught on a rerun of the same image.
+- Fuzz: three new targets, 14 planted defects noticed, every target's smoke run exit 0.
+- Not built, although adopted on 2026-10-06:
+  the optional `pathBytes` field for a non-UTF-8 path in an event.
+  The delegate read the decision brief, which still listed it as open,
+  rather than the adoption in this document;
+  the brief now has an `Outcome` section saying where the answers are.
+- The fuzz seeds of `final-newline` were given a final newline by the installed wrapper when committed;
+  the target's generated input still reaches both cases.
+
+#### Dependent-version planner
+
+The planning core of `mono/dependent-version-bump` is in Rust on branch `feat/cli-git-native-dependent-version`
+(gated at `fee63c86e`; evidence `doc/handover/cli-git-native-dependent-version.md` on the branch).
+It is pure with respect to the repository and not yet wired into the engine.
+
+- Gate: 605 unit tests (82 of them the planner's), 37 binary-level tests, Clippy.
+- Differential against the TypeScript planner, seed `20261006`:
+  61 unit-test scenarios, 17 real-repository cases and 2,000 generated workspaces identical;
+  152 of 175 targeted probes differ, every one as predicted and recorded as intentional with its reason
+  (for example a byte order mark is kept, duplicate and unpaired-surrogate names are refused,
+  nesting is capped, and an empty name terminates where the TypeScript scan hangs).
+  Three planted defects were each reported by the harness.
+- Mutation: 206 mutants, 0 missed;
+  one timeout was caught when its file was rerun once on the same image.
+- Fuzz: a new `dependent_version` target, planted controls noticed, smoke run exit 0.
+  Its dictionary first used escapes libFuzzer rejects;
+  `doc/troubleshooting/libfuzzer-dictionary-escapes.md` records why.
+- The delegate's long runs started from its shell died several times without an identified cause;
+  it ran the last sequence as a `systemd-run --user` unit.
+  No such unit was left afterwards.
+
+Sent back to the same delegate:
+merge `main` again (it now holds the content policies),
+wire the planner into `ShippedChecks` for direct `check` and `fix`,
+prove that `git cli-git fix --all --policy mono/dependent-version-bump` gives the same bumps
+as the standalone release task on the release workflow's input,
+and gate, fuzz and mutate the merged, wired tree.
+The commit trigger waits for the commit path.
+
+#### Native policy engine
+
+Complete for commands that need no commit transaction, worktree copy or manual-push scanning;
+evidence in `doc/handover/cli-git-native-policy-engine.md` (last commit `53e6b6180`),
+final source tree `348d94cbe`.
+The wrapper is not near cutover:
+the commit path,
+which is the reason for the rewrite,
+is not started.
+
+- Gate on the final tree:
+  442 unit and 37 binary-level tests,
+  Clippy with warnings denied
+  (`package/git-policy/cli/target/verification/native-eqKHwb`).
+- Mutation over every file of `src/native/` with the two excluded replacement kinds:
+  1,208 mutants,
+  1,074 caught,
+  134 that do not compile,
+  0 missed,
+  0 timeouts.
+  Two earlier campaigns on a loaded host recorded timeouts that clustered at host stalls
+  and became catches on a quieter rerun of the same image.
+  The first campaign also found five missed mutants and four real stalls in the command parser,
+  all removed with tests or by restructuring.
+- Fuzz:
+  a new `wrapper_controls` target,
+  nine planted defects noticed,
+  every target's smoke run exit 0.
+- The native executable refuses, with exit 2 and one line naming what is missing,
+  everything it cannot yet do correctly:
+  every real commit,
+  `git add` while a content policy is on (with defaults, every plain `git add`),
+  a push that is not provably a dry run,
+  and direct `check` or `fix` over content policies.
+  The section `Refusal frontier` lists all eight cases with their tests.
+- `policy-incomplete` exists as a code (`090c147e7`) but no engine path emits it yet:
+  a policy whose own machinery can fail needs a second failing outcome in `run_policy_stage`.
+- The section `Engine interface for the optional-policy phase` names the seam the next phase extends
+  (`PolicyChecks::check`, `ShippedChecks`, `CandidateSource`).
+- Left for the main session:
+  `doc/handover/cli-git-native-foundation.md` still describes the executable and the survivor counts
+  as they were before this delegate
+  (its section `Superseded passages elsewhere` lists the passages),
+  and a new `native:lint:rust` task reports 263 `require-rustdoc` findings in `src/native/`,
+  212 of them on `use` statements;
+  it is not part of the gate.
+
+#### Candidate content layer and scanner adapter
+
+Complete on branch `feat/cli-git-native-candidates` (`30c854f96`, gated at `d34761d35`);
+evidence in `doc/handover/cli-git-native-candidates.md` on that branch.
+
+- Gate: 398 unit, 21 binary-level and 1 public-interface test, Clippy
+  (`native-fm9zle`), against a 322 and 21 baseline.
+- A counting wrapper around real Git measured 2 Git processes for 1, 20 and 200 staged candidates;
+  the positive control, a per-file reader, spawned 1, 20 and 200.
+- The scanner sees staged bytes, not worktree bytes, in each swap the tests construct.
+- Mutation: 147 mutants, 114 caught, 33 that do not compile, 0 missed, 0 timeouts, no exclusions needed.
+- The wrapper lockfile is seeded from the scanner's lockfile (155 packages, 153 identical),
+  through a new `native:lock:scanner` task;
+  open to veto.
+- Nothing is reachable from the executable yet,
+  and these candidate sources are not provided:
+  the `git add` staged delta,
+  tracked non-candidate files,
+  multi-commit listings for manual push,
+  and worktree bytes for direct `check`.
+- Landed on `main` on 2026-10-06 as `c6cab0800`, a fast-forward to a merge of `main` into the branch.
+  The merged tree was gated at `571fe1003`:
+  523 unit, 37 binary-level and 1 public-interface test, Clippy
+  (image `8ff0051a5b9a132ffa5ef1b01347039511d7ad3098a79831116d30ff0f1919e4`);
+  the failure-code mapping's campaign had 0 missed and 0 timeouts,
+  eight hand-planted mapping defects were all noticed,
+  and every fuzz target's smoke run exited 0.
+  Before the fast-forward the landing script proved that every path the gate image reads
+  (`package/git-policy`, `package/cli/forbidden-strings`, `package/rust-module`, `clippy.toml`)
+  was byte-identical to `571fe1003`.
+  The worktree, the local branch and the remote branch are removed.
+- The failure-code mapping (`scanner_failure_code.rs`) is pure and has no caller yet;
+  the branch's handover section `What the engine must add` lists what the content-policy phase wires.
+
+#### mvm on a Flatpak-only libvirt host
+
+Complete and committed (`f0d86a092` to `85ec58ea4`);
+evidence in `doc/handover/mvm-flatpak-libvirt.md`,
+diagnosis in `doc/troubleshooting/mvm-libvirt-flatpak-only-host.md`.
+
+- `mvm` finds `virsh` and `qemu-img` on `PATH`,
+  through `MVM_VIRSH_COMMAND` and `MVM_QEMU_IMG_COMMAND`,
+  or inside the `org.virt_manager.virt-manager` Flatpak;
+  this host needs no setting.
+- Without `virtiofsd`,
+  files move through the guest agent
+  (about 0.2 to 0.4 MiB/s to the guest, about 3 MiB/s back).
+- Both guest-agent defects from the scanner's Windows run are handled:
+  an unanswered status poll is asked again,
+  and every command prints a fresh marker so a reused process ID cannot return an older result.
+  Neither was reproduced on a real guest;
+  a stand-in `virsh` reproduces both.
+- Real runs with the built command-line program, no shim and no hand-started daemon:
+  Alpine and Windows Server 2025 guests created,
+  commands run,
+  files of 32 bytes, 1 MiB and 64 MiB round-tripped with matching SHA-256.
+  One 64 MiB push to Windows failed when the agent went silent for almost three minutes under host load;
+  the retry was then extended to five minutes (`95d283d0e`) and a second Windows guest took the file whole.
+- The `mvm` MCP tools are unverified from a session:
+  every running Claude Code session still holds an old server process.
+  The user must restart the sessions that should use them.
+- Nine choices are open to veto and seven items remain;
+  the delegate's report sections `Decisions open to the human's veto` and `What remains` list them.
+
+A new delegate is rerunning the scanner's Windows suite through the `mvm` command-line program alone,
+which is also the first real consumer run of these changes.
+
+#### Scanner Windows baseline and prefix confirmation
+
+Detail: `doc/handover/scanner-native-verification.md`,
+from `Windows virtual machine and bridges` to `Guest agent findings`.
+
+- The prefix fix `833483171` is confirmed on Windows:
+  a probe showed the name scanned and masked for all 18 prefix forms,
+  and `windows_device_namespace_prefix_is_not_name_segment` compiled and passed there for the first time.
+- The whole Windows suite at `fe805727c` ran 234 tests and passed 232, with none ignored or filtered.
+  Five earlier baseline failures are fixed.
+  The two that remain are the blocked-cache-root tests,
+  which differ only in the reason word the platform reports.
+- The pathname mutation scope on Windows tested 57 mutants:
+  53 caught,
+  none missed,
+  4 unviable,
+  no timeouts,
+  with the same names as the Linux campaign.
+- After the user accepted the platform difference,
+  `aaf4c08e7` makes both tests assert the platform's reason
+  (`unreadable` on Unix, `missing` on Windows)
+  and `40fb4cdef` documents it.
+  No virtual machine was started for that change,
+  so the Windows suite has not been observed green:
+  234 of 234 from `aaf4c08e7` on is expected, not measured.
+- Two guest-agent bridge defects surfaced and were worked around in the run's own client:
+  `mvm exec` exits 1 when one status poll exceeds the agent's 5-second timeout
+  although the guest command keeps running,
+  and an unread exit status keyed by process ID alone was returned for a later command that reused the ID.
+  They are in the brief of the delegate that is changing mvm.
+- The delegate finished at `703a1c21d`:
+  `test:container` passed 182 library, 4 binary-unit, 2 embedding, 2 cache-warning, 40 CLI and 8 pathname tests,
+  with `lint:clippy:container`, `lint:clippy:windows` and `lint:rust` clean.
+  `lint:clippy:windows` compiles the Windows branch of both changed tests and runs neither.
+- The scanner's mutation runner gained a `--list` flag (`cd1b9d1db`),
+  not asked for,
+  used to measure the exclusion through the runner itself.
+  In the pathname scope the exclusion removes three mutants that every retained campaign had caught
+  and none had timed out on,
+  so for the scanner the user's "in any of our mutation runs" costs three caught mutants and removes no timeout.
+
+Still open:
+one Windows run at or after `aaf4c08e7` with both tests unfiltered and the failing positive control beside it,
+whose mutation campaign also drops the two Windows-only `--skip` filters for those tests;
+MSVC, which is unexercised;
+and two non-blocking choices the delegate left
+(the rustdoc of `platform_absolute_path`,
+and `logical_path` with verbatim or differently cased Windows paths),
+described in `doc/handover/scanner-native-verification.md`,
+section `Decisions left after the Windows baseline follow-up`.
+
+#### Isolated worktree settings
+
+`.claude/settings.local.json` sets `worktree.baseRef` to `head`
+and `worktree.symlinkDirectories` to `package/cli/forbidden-strings/target`.
+An isolated agent then starts from the local checkout
+and needs only `mise run prepare:pnpm:install` (15.5 seconds measured) before its first commit.
+Listing `node_modules` as well failed the first commit
+and would resolve workspace packages into the main checkout,
+so it is not listed.
+A worktree that has changes is left for the caller to remove,
+and its branch is auto-pushed.
+Evidence and the cleanup order:
+`doc/troubleshooting/claude-code-worktree-create-hook-no-path.md`,
+section `Worktree settings chosen and tested`.
+Both probe worktrees and the pushed probe branch are removed.
+
+### User decisions 2026-10-05
+
+Asked through the question tool, with context restated, as rule `QRX` requires.
+
+- No parity rule goes into `AGENTS.md`.
+  The main session proposed a rule that choices settled by a parity measurement against an incumbent
+  are adopted with evidence instead of waiting for acceptance.
+  The user declined:
+  "AGENTS.md are read by all types of agents and adding this rule is inviting lesser, weaker agents to bomb me."
+  Rejected idea; do not re-propose.
+  The correction in `User correction: no vetting decision gate` still stands for this session's work.
+- Rule `WC2` is extended to package `Cargo.toml` files (`0ae51048d`, with the regenerated `CLAUDE.md`).
+  The rule stays at 197 characters, inside the tagged-rule budget.
+- file-enforcer gets no check mode.
+  The user:
+  "Check mode is delibrately not built because it'd go against file-enforcer's naming and philosophy."
+  The issue was framed around where enforcement should run instead:
+  [#607](https://github.com/Aquaticat/Monochromatic/issues/607),
+  "file-enforcer: new managed files can be committed before they are enforced".
+  Do not propose a drift-reporting mode.
+- `cctt` is unregistered from `WorktreeCreate`,
+  in `.claude/settings.local.json` and the terminal-title README (`495f36355`).
+  Built-in worktree isolation works again.
+  Detail: `doc/troubleshooting/claude-code-worktree-create-hook-no-path.md`, section `Fix applied`.
+- Both Claude Code `worktree` settings are set and tested,
+  the option the user picked over leaving isolation unprovisioned.
+  Result: `Isolated worktree settings` under `Delegate results`.
+- The restricted LFS URL normalizer is kept.
+  The 289 endpoint forms the old linter accepts and the native one refuses are accepted as a behavior change.
+- The wrapper's four optional policies (forbidden-strings, forbidden-root-context, dependent-version-bump,
+  Markdown autofix) run only when `cli-git.config.jsonc` lists them.
+  This replaces the foundation's "option C", where a present file turned all nine on;
+  `{}` and no file now behave identically.
+  Cutover consequence:
+  this repository's translated config must list all four,
+  including `mono/dependent-version-bump`, which the incumbent ran at `error` without the root config naming it.
+- The wrapper's repository root is the top level Git reports,
+  for both configuration lookup and require-root,
+  honoring `--git-dir`, `--work-tree` and their environment forms.
+  The incumbent's nearest-marker walk is an intentional difference.
+- A legacy `cli-git.config.ts` beside the JSONC file is reported only by `git cli-git check`.
+  Ordinary commands stay silent about it during the rollback period.
+  A legacy file with no JSONC file stays a migration error.
+- `rust/no-anonymous-functions` rolls out at `warn` everywhere and is raised to `error` when the count reaches zero.
+  The user chose this over a per-file burn-down list;
+  the draft configuration in `doc/planning/unified-linter.md` is updated.
+- Mutation timeouts.
+  Asked first whether to exclude, restructure or patch,
+  the user answered:
+  "Can we change the tool to not do that?"
+  The source says no for 27.1.0
+  (`doc/troubleshooting/cargo-mutants-timeout-exit-status.md`).
+  Asked again with that answer,
+  the user chose to skip the two stalling replacement kinds in every mutation runner
+  and fix the five timeouts those kinds do not cover in code.
+  `+=` replaced by `-=` stays in every campaign.
+- mvm learns this host's setup,
+  where libvirt exists only inside the `org.virt_manager.virt-manager` Flatpak and there is no `virtiofsd`,
+  instead of each run carrying its own shims.
+  A delegate owns `package/cli/mvm` for this;
+  diagnosis: `doc/troubleshooting/mvm-libvirt-flatpak-only-host.md`.
+  The mvm tools in a running session need a reload by the user after the build.
+- The scanner keeps reporting the platform's own reason for a cache root blocked by a regular file
+  (`unreadable` on Unix, `missing` on Windows).
+  The user accepted the difference rather than mapping either platform onto the other;
+  the tests and the README state it.
+
+- The scanner's private rules file is named by a `rulesFile` option in `cli-git.config.jsonc` first,
+  then by `FORBIDDEN_STRINGS_RULES`,
+  then by the default file.
+  The user chose this over keeping the variable alone (silent built-in-only scan when it is absent)
+  and over configuration alone.
+  Implemented in the optional-policies phase;
+  this repository's translated configuration must then set `rulesFile`.
+- The failure code of a shipped policy that could not finish is chosen by cause:
+  `content-unavailable` when repository content or a fact could not be read,
+  `policy-incomplete` when the policy's own machinery failed.
+  `plugin-threw` is not carried over and no code is added.
+  The engine delegate adds `policy-incomplete` to the native code set.
+- The dependent-version bump ends with one implementation, in the native wrapper:
+  the release task calls `git cli-git fix` for that policy
+  and the TypeScript planning code is deleted at cutover.
+  Before that,
+  both entry points must be shown to give the same result on the release workflow's input,
+  and the release workflow must be able to build or fetch the native executable.
+- The cargo-mutants prototype is posted as a comment on upstream issue 545
+  (the user chose a comment over a pull request and over keeping it local):
+  <https://github.com/sourcefrog/cargo-mutants/issues/545#issuecomment-6005242222>.
+
+- A signal that reaches the wrapper while it waits for Git is caught:
+  the wrapper passes it to Git only when the sender was a process and not the terminal,
+  waits for Git,
+  releases its locks and removes the transaction.
+  Chosen over ending at once (today) and over relaying every signal.
+- When real Git was ended by a signal, the wrapper exits with 128 plus the signal number.
+- Hook entry files on Linux and macOS are symbolic links to the wrapper named after the hook;
+  the wrapper acts on the name it was started under.
+- Hook entry files on Windows are `<hook>.exe` hard links to the wrapper,
+  or copies when the Git directory is on another volume.
+  This rests on reading Git's source;
+  nothing was run on Windows.
+  The user selected no option for this one and wrote:
+  "I'm going with all your recommendations this turn".
+- On 2026-10-06 the user wrote:
+  "I'm approving publishing to crates.io for this session."
+  This satisfies the standing requirement that the first crates.io publication needs explicit approval,
+  for the session in which it was given.
+  It unblocks the linter's cutover (plan step 7 of `doc/planning/unified-linter.md`)
+  and the `monochromatic-jsonc-edit` 0.1.1 publication it needs.
+
+The no-config, repository-root and legacy-config decisions were sent to the engine delegate,
+which owns the affected modules,
+to implement with tests before building further on those defaults.
+The failure-code decision went to the engine delegate as well,
+and the failure-code and rules-file decisions to the candidate-layer delegate,
+whose scanner adapter they describe;
+neither changes that branch's scope.
+The engine delegate landed the optional-policy and legacy-config decisions as `329de1b97`.
+
+#### Standing instruction for this session
+
+In the same answer the user added:
+"for this session,
+for options that blows all other options out of the water,
+adopt them directly,
+no need to burn a question on that."
+The main session therefore adopts a clearly dominant option,
+records it with its reason under `Adopted without a question`,
+and keeps it open to veto;
+it asks only where options trade real costs against each other.
+The instruction is for this session and is not a repository rule.
+
+#### Adopted without a question
+
+From the transactions-phase items of `doc/planning/cli-git-rust-open-decisions.md`,
+each for the reason given;
+all remain open to the user's veto.
+
+- Locks and journals interoperate with the incumbent in both directions while both are in use,
+  including identical process birth-identity strings.
+  The implementation plan states this as its default,
+  and the alternatives need a moment when no session is committing,
+  which this repository rarely has.
+  A better identity scheme can follow after the rollback period.
+- A legacy `cli-git-transaction` directory makes the native wrapper stop with instructions
+  to run the previous executable once.
+  No instance exists in this checkout,
+  the format was superseded on 2026-09-25,
+  and the previous executable stays available through the rollback period.
+- The test-only crash switch (`CLI_GIT_TEST_ONLY_PHASE_SIGNAL`) is in the release executable.
+  The plan requires container tests to exercise the installed executable,
+  and the landing steps can be reached only through that switch;
+  Git itself reads `GIT_TEST_*` variables in its ordinary executable.
+- A file name that is not UTF-8 appears in an event as a readable `path`
+  plus a new optional `pathBytes` field with the exact bytes.
+  It only adds a field,
+  where escaping in place would change every existing name that contains a backslash
+  and replacing bytes would make the file unidentifiable.
+- An alias that expands to `commit` gets the commit rules.
+  Measured:
+  `git -c alias.c=commit c -a` commits today while `git commit -a` is rejected,
+  so keeping today's behavior keeps a one-argument bypass of the rules.
+- Recovery of interrupted transactions also runs before read-only commands,
+  as the spec and the incumbent do,
+  for every command that already asks Git for the repository location.
+  The check is one directory lookup after a query that runs anyway,
+  and without it `git status` after a crash can show a state recovery was about to repair.
+  Commands that start no Git process (`version`, `help`, native queries) stay exempt.
+- The read-only fast path's accepted contract is what the engine delegate measured:
+  no configuration or lease read,
+  no Git process for exempt commands,
+  exactly one (the location query) otherwise.
+  The plan's "no extra work" cannot hold together with the decision that the root is what Git reports.
+- For the scanner adapter,
+  `policy-incomplete` also covers an unrepresentable pathname,
+  a stale candidate and a pathname with a line break:
+  none is a failure to read repository content,
+  and the incumbent treated the line-break case as an engine failure.
+
+From the cutover items of the same brief,
+on the same basis and equally open to veto:
+
+- The wrapper checks the Git version once before work that depends on it (a commit, hooks, locks);
+  read-only commands are never checked.
+  Checking on every command costs a Git process each time,
+  and checking only at install misses a later change of Git.
+- Git 2.56.0 or newer counts as supported.
+  Requiring the exact release would stop commits after every system update of Git.
+  This host's Git is 2.55.0,
+  so it must be upgraded before cutover;
+  that is a change to the user's system and not something the main session does.
+- The retired trust commands print their explanation and exit 0.
+  Nothing outside the retiring workflow calls them,
+  and exit 0 lets one set of instructions serve both wrappers during rollback.
+- The whole native test suite runs on hosted macOS and Windows runners on every wrapper change.
+  This departs from the brief's ranking,
+  which put the platform-specific suites first:
+  the scanner's Windows run in this session found a platform difference in code believed neutral
+  (the cache-root reason),
+  hosted runners are free for this public repository,
+  and the cost is waiting time plus installing Git 2.56.0 on each runner.
+- The wrapper's line for `git --version` and its note for `git status` are printed first,
+  on standard error,
+  and the command is then handed to Git whole.
+  Printing after Git would keep the wrapper alive behind every such command,
+  and dropping them loses the only place the rules are shown.
+- `MONOCHROMATIC_VERBOSE` stays the switch for verbose diagnostics,
+  shared with the TypeScript tools.
+- The hk cleanup task is kept and moved to a TypeScript package that survives cutover.
+  Whether another machine still has the old settings cannot be measured from here,
+  and keeping it costs one move.
+  If the user knows that no machine does,
+  retiring it is the simpler end state.
+- The performance bar is "faster than the incumbent",
+  per scenario and by more than the measured noise.
+  The rewrite was requested because the wrapper felt slow,
+  and every other bar lets a slower result pass.
+- The commit the user reported at 8.9 seconds (staging and committing one Markdown file)
+  becomes a measured and gated scenario with this repository's real policies.
+
+No item of the brief is left unasked.
+
+### User correction: no vetting decision gate
+
+The main session briefed `markdown/lfs-image-url` as blocked on a vetting decision by the user.
+The user replied (2026-10-05):
+"we don't need a vetting decision here."
+The gate is removed.
+The normalizer owner is chosen by measurement:
+the option that reproduces the incumbent on a differential corpus with the least added dependency footprint.
+The delegate commits `package/linter/monochromatic-lint/fixtures/lfs-url-parity.json`
+and a `Selected owner` section in
+[`native-lfs-url-normalization-evaluation.md`](../planning/native-lfs-url-normalization-evaluation.md);
+the linter delegate then ports the rule and may add a selected crate to the manifest.
+The differential test stays because the rule's findings and edits must match the incumbent;
+that is verification, not a decision for the user.
+
+### Environment findings
+
+- Tool-managed worktree isolation failed in this repository until the registration was removed
+  (see `User decisions 2026-10-05`):
+  `.claude/settings.local.json` registers `cctt` (the terminal-title plugin) for the `WorktreeCreate` hook.
+  A command hook on that event must create the worktree and print its path;
+  `cctt` prints none,
+  so Claude Code reports "hook succeeded but returned no worktree path".
+  Workaround used: `git worktree add -b <branch> .claude/worktrees/<name> main`
+  (`.claude/` is ignored at `.gitignore:125`),
+  with the delegate told to keep every path inside that root.
+- The second-opinion command from the generated `CLAUDE.md`
+  (`pi --model openai-codex/gpt-5.6-sol`) exited 1 with "No API key found for openai-codex";
+  pi also reports that model retired in favor of `gpt-6.1-sol`.
+  The advisor was consulted alone.
+
+## Work queue
+
+- [x] Unified-linter foundation: JSONC schema, ordered merge, command interface, and artifact tests.
+- [ ] Unified-linter Rust and Markdown/MDX rules, processors, fix mapping, and consumer parity.
+  Rules, processors and the executable are implemented and gated;
+  differential comparison is recorded under `Resumption 2026-10-05`.
+  Mutation testing is complete (`Linter mutation close`).
+  Remaining: the cutover of the plan's step 7.
+  The user approved crates.io publication for this session on 2026-10-06.
+  The repository's `monochromatic-jsonc-edit` source carries two fuzz-found fixes that the published 0.1.0 lacks
+  while still declaring 0.1.0,
+  so that crate needs a 0.1.1 publication before the linter is published against it.
+- [x] Newly requested explicit Rust annotations and anonymous-function ban, with container, mutation, and fuzz controls.
+- [x] Forbidden-strings structured embedding interface and standalone parity.
+  The two Windows-native survivors are caught on Windows (GNU ABI, differential against a red baseline).
+- [x] Scanner on Windows: the prefix fail-open fix (`833483171`) is confirmed on Windows,
+  and on 2026-10-06 the whole suite passed 234 of 234 at `fb64be854`
+  beside a positive control that failed the expected 14 tests
+  (`doc/handover/scanner-native-verification.md`, section `Windows run with mvm alone`).
+  Not exercised: the MSVC and aarch64 Windows targets.
+- [ ] Scanner pathname mutation scope on Windows without a timeout.
+  The 2026-10-06 run missed nothing but recorded one timeout
+  after its mutant had already failed nine tests;
+  the stall was in an unrelated test,
+  and on two reruns of that mutant the unmutated baseline's test time went from 21.7 to 83.9 seconds and then past
+  the 120 second limit as host load rose to 167 on 16 processors.
+  The cause (host load or the guest's real-time malware scanning) was not separated.
+  Rerun when the host is quiet,
+  once with real-time scanning excluded for the build directory in the throwaway guest,
+  to tell the two apart.
+- [ ] Mutation gates exit 0 with the two excluded replacement kinds, 0 missed and 0 timeouts.
+  Done for the wrapper's engine (`348d94cbe`), the candidate layer and the content policies,
+  and for every linter scope.
+  Left: the scanner on Windows.
+- [x] cargo-mutants upstream check: the option from upstream issue 545 is prototyped and verified
+  (`doc/troubleshooting/cargo-mutants-timeout-exit-status.md`, section `Prototype`).
+- [x] The user chose to post the cargo-mutants prototype as a comment on upstream issue 545; it is posted.
+- [x] Transactions-phase decisions: four answered by the user,
+  the rest adopted under the standing instruction (`User decisions 2026-10-05`).
+- [x] Cutover decisions: all adopted under the standing instruction and open to veto
+  (`User decisions 2026-10-05`, section `Adopted without a question`).
+- [x] Git version: the user decided on 2026-10-10 that Git 2.55.0 (this host) is acceptable,
+  so the native minimum is lowered from 2.56.0 to 2.55.0 and Git-dependent behavior is probed against 2.55.0 too.
+- [ ] Commit path, run as parallel lanes from 2026-10-10 (user: no hybrid, the old TypeScript implementation goes,
+  wait for the native commit path and parallelize better).
+  Lanes branch from `feat/cli-git-native-transactions` at `0faec78d77`,
+  each with its own evidence file `doc/handover/cli-git-native-<lane>.md` and worktree `.claude/worktrees/cli-git-lane-<lane>`:
+  `hooks` (slice 4), `capture` (slice 5), `replay-core` (slice 8 without the landing lock),
+  `auto-push` (slice 9 auto-push, post-commit lifecycle, manual-push listings), `signals` (slice 10 and maintenance),
+  `worktree-copy` (slice 11).
+  The transactions branch finishes slice 3, then the lanes are merged into it,
+  and the remaining serial slices (6 preparation policies, 7 landing, 9 integration) follow.
+  Heavy gates run through `~/temp/agent/gate-slot.ts` (four host-wide slots).
+  At most five delegates run at once.
+  Delegates default to Haiku; the orchestrator may send any task to Sonnet without per-task proof (user, 2026-10-11),
+  and records each Haiku failure in `doc/limitation/haiku.md`.
+  Current state:
+  the native executable commits for real; `feat/cli-git-native-integration` merged every lane and wired
+  `git commit` to the native transaction
+  (record, results and rerun commands: `doc/handover/cli-git-native-integration.md`;
+  each lane's own doc `doc/handover/cli-git-native-<lane>.md` holds its gates and its `Trailing gates`).
+  The incumbent's end-to-end suite passes against the native executable on Git 2.55.0
+  (36 of 38 scenarios pass; the 2 `replay-unavailable-*` scenarios skip because the floor is Git 2.55.0),
+  the commit differential against the incumbent finds 10 of 10 cases equal,
+  and the configuration differential finds 72 rows with none failing.
+  The container gate, Clippy, the fuzz smoke and the mutation campaigns of the integration files are green on the gated
+  head `0ff1379f7d`.
+  Facts read from the incumbent that the port follows: the landing lock is taken inside the landing attempt, not held
+  through preparation; a maintenance failure never stops the `post-commit` hook (`post_landing.rs` owns that order).
+  The `rulesFile` is relative to the worktree and `.cache/` is generated by `mise run file-enforcer`,
+  so a fresh worktree fails closed until it exists; the options are in `doc/handover/cli-git-native-config.md`.
+  State on 2026-10-14 (resumed after the hardware change; 0.1.2 is pinned and installed):
+  the native commit path, the worktree-copy lifecycle, the rules-cache copy and the push-environment fix are on `main`.
+  `monochromatic-git-policy-cli` 0.1.2 is published (crates.io and GitHub release) and Trusted Publishing is configured.
+  0.1.0 made every Markdown commit exit 2 (post-commit linter lookup); 0.1.1 fixed that but its push paths cleared the
+  environment, so a user credential helper such as `gh auth git-credential` could not run and both the automatic and
+  the manual push failed; 0.1.2 passes the invocation environment (lane `push-env`, evidence in
+  `doc/handover/cli-git-native-push-env.md`).
+  The repository installs the crate as a `cargo:` mise tool whose postinstall links `.cache/cli-git-bin/git`,
+  placed first in `_.path`; the hk cleanup task, the performance harness and the CI jobs that needed the wrapper are
+  retired or migrated (record: `doc/planning/cli-git-native-cutover.md`).
+  The switch is live: the pin is 0.1.2, the link in the main checkout is installed, and the installed wrapper was
+  verified at the user boundary (a signed commit auto-pushed with real credentials, a manual push and a Markdown
+  commit); every process of the user is on the native `PATH` (the count of sessions on the old `PATH` is zero).
+  The user's decisions are no hybrid, the old TypeScript goes, and the rollback window ended with that verification.
+  The pinned incumbent revision, the last commit that contains the TypeScript wrapper and the four authoring packages,
+  is `f4fc1fa213ece65672e4314983a75266837892f9`; the retirement commits were merged into `main` on 2026-10-14
+  (merge `9e633292e7`; record, per-commit evidence and leftovers: `doc/handover/cli-git-native-retire.md`),
+  and the order is in `doc/planning/cli-git-native-cutover.md`, section `Order of the retirement commits`.
+  The TypeScript under `package/git-policy/cli/src` outside `native`, `cli-git.config.ts`, the four authoring packages
+  and the differentials are gone; the package keeps the native crate, the e2e runner, the interop bins and the fuzz
+  sidecar.
+  Not yet done for the push fix: scoped mutation of `wrapped_command.rs` and of `auto_push_single_flight.rs`
+  (documentation changes only), and the two new planted controls have never run (a mutation run with the planted phase).
+  Rehearsals in a throwaway repository with a local bare remote did not cover credentialed remotes, which is how the
+  push defect escaped; keep a real-remote check in every release verification.
+  The ignored leftovers in the main checkout (the four package directories, the cli `dist` and `.cache`, the old
+  `node_modules/.bin/git` shim and an empty `package/git-policy/cli/node_modules/.bin`) were removed on 2026-10-14 by
+  explicit path, never with `git clean -X`, which would remove the live `.cache/cli-git-bin` link and the rules file;
+  afterwards `mise run sync:files` leaves the repository unchanged.
+  Audit of 2026-10-14 (user: the old wrapper must be nowhere to be found and unusable): the main checkout has no old
+  entry point (the package is a private verification harness without `bin`, `main` or `dist`, and its `node_modules`
+  link and the `.changeset` ignore entry name that harness), `type -a git` resolves to the native link first, and no
+  old process runs.
+  The old shims and built output were removed by explicit ignored path from every other worktree (13 shims, 6 `dist`
+  directories; the lane worktrees `cli-git-lane-interop` and `-pathbytes` had none), the tracked old copies at older
+  branch heads stay history, and the zero-byte `node_modules/.bin/git` in `Monochromatic-but-every-file-0-bytes`
+  (not a repository) cannot run.
+  Interop decision (user): the interop matrix runs once against an incumbent built in a throwaway container from the
+  pinned revision, the results are recorded, and then everything that can build or run the old wrapper
+  (`provision-incumbent.mjs`, the incumbent image steps in `bin/interop-native-container.mjs`, the live-incumbent
+  scripts under `native-interop/`) is deleted, leaving static captured fixtures.
+  Still open from the retirement: the interop run and that deletion (lane `interop`),
+  the `slopo.ignore.txt` entries for deleted files (lines 45, 50, 69, 200, 309, 324, 373)
+  wait for a fresh `slopo analyze` report, and the SPEC sections the plan did not name were not re-verified line by
+  line.
+  Both wrappers shared `.git/cli-git*` state while sessions were mixed; the incumbent is no longer on any `PATH`.
+  User decisions of 2026-10-13: install by publishing the crate (the `cargo:` mise tool route); the hk cleanup task is
+  retired; the rollback window ends right after the installed wrapper is verified; the first native CI workflow covers
+  Linux only; keep `index.lock` after a post-advance failure so recovery can finish; copy the rules cache when the
+  wrapper creates a worktree.
+  Standing authorization (user, 2026-10-13): bump and publish any updates of the native wrapper crate and its
+  `forbidden-strings` dependency during this session, after the gate, a dry-run publish and a real-credential
+  commit have passed.
+  CPU cap (user, 2026-10-14; the hold of 2026-10-13 was released on 2026-10-14): the host is a 16 core, 32 thread
+  Ryzen 9 7950X with 62 GiB RAM, and Claude tool commands and gates share one cap.
+  The cap started at 75 percent (30 of 32 threads) and was lowered to 28 on 2026-10-14 after temperature and
+  CPU-pressure alerts; the user service `claude-cpu-watch.service` enforces the value in
+  `~/.config/claude-cpu-cap/threads` (the file holds the current value and persists across reboots;
+  to lower it, write the new integer to that file, never write `cpu.max` by hand).
+  The service also prints ALERT and CLEAR lines for CPU, memory and IO pressure, scheduler lag and temperature;
+  details and the follow command are in `doc/runbook/claude-cpu-cap.md`.
+  Agents need no per-job throttles and no limit on heavy jobs beyond the shared cap (user, 2026-10-14: all Claude Code
+  bash is limited together); heavy gates still run through `~/temp/agent/gate-slot.ts` (six slots) because their
+  time limits assume bounded host load, and memory (62 GiB, not bounded by the cap) is the resource to watch.
+  Commands started with `systemd-run` leave the shared cap, so do not use it for work that should count.
+  `nproc` reports 16 inside shells with a restricted affinity; use `nproc --all` or `lscpu` for the real count.
+  Open: the `replay-core` branch holds unmerged mutation work, `monochromatic-lint` shim lookup fails outside the
+  repository (the linter must be on `PATH` as a real binary), and the trailing gates below are untouched.
+- [ ] Gates that trail the cutover (user decision 2026-10-10: the code ships first, the gate runs afterward):
+  the Windows checks and the release-artifact performance gates;
+  the old-and-new wrapper interop matrix (one-direction fixtures where the incumbent writes and native reads stay);
+  the long fuzz campaigns (fuzz targets, planted-defect controls and a short smoke run stay in the gate);
+  mutation campaigns on non-core modules (hooks plumbing, auto-push, automatic maintenance, signals);
+  and the `pathBytes` field for non-UTF-8 paths in events.
+  Locks, journal, capture, shadow repository, preparation, policies, landing, replay, recovery and the worktree copy
+  keep full mutation gating.
+  Features do not trail: signals, automatic maintenance and the linked-worktree copy are part of the cutover.
+  Widened on 2026-10-11 (user: "I authorize moving more mutation to trail the cutover"):
+  the lane mutation campaigns (capture, replay-core, worktree-copy, auto-push and the slice 3 rerun)
+  trail the cutover too, after each lane's container gate and planted controls.
+  Mutation for the serial slices 6, 7 and 9 and the closing gates stays in the cutover until the user widens it again.
+  Each lane records what it skipped under a `Trailing gates` heading in its evidence file.
+  Trailing is not stopping (user, 2026-10-10): the cutover does not end the work.
+  Right after it, without a pause, the queue continues with these gates in the order listed
+  (the interop matrix and the old-format fixtures first, then fuzz campaigns, non-core mutation,
+  the `pathBytes` field, the Windows checks and the release-artifact performance gates),
+  each recorded and closed like any other gate,
+  and then the retirement of the old TypeScript implementation is verified complete.
+- [x] Rust cli-git configuration, Git resolution/argv, static policies, and management commands
+  for commands that need no commit transaction:
+  on `main`, final engine tree `348d94cbe` (`Native policy engine`).
+- [x] Merge the candidate content layer into `main` (`c6cab0800`).
+- [x] Content policies over candidates for `git add` and the direct commands:
+  `final-newline`, `security/forbidden-strings` and `mono/forbidden-root-context` (`83463b49a`).
+- [ ] `markdown/autofix` through the native linter executable,
+  and the `pathBytes` event field adopted for non-UTF-8 paths.
+- [x] `mono/dependent-version-bump`: landed on `main` (`doc/handover/cli-git-native-dependent-version.md`).
+- [x] This repository's translated configuration lists all four optional policies and sets `rulesFile` (`cli-git.config.jsonc`, `doc/handover/cli-git-native-config.md`).
+- [ ] Manual-push listings for the content policies, with the push lifecycle.
+- [ ] Rust cli-git transactions, hooks, locks, replay, recovery, worktree copy, and auto-push.
+- [ ] Container integration, mutation testing, fuzzing, platform checks, and release-artifact performance gates.
+  Mutation survivors from both campaigns need disposition or new controls.
+- [ ] Coordinated native installation, consumer migration, documentation, and retirement of old implementations.
+- [x] Native LFS URL normalization: owner selected by differential measurement,
+  and `markdown/lfs-image-url` is in the native linter (`LFS URL normalizer` and `Linter executable` results).
+- [x] Behavior ledger for the wrapper (`doc/planning/cli-git-rust-behavior-ledger.md`).
+
+Each item needs its own passing evidence before completion.
+The native wrapper is the production tool since 2026-10-14.
+Version bumps of the native wrapper crate and of `forbidden-strings` are authorized for the session of 2026-10-13/14
+(see the standing authorization above); any other first crates.io publication needs explicit user approval.
+The user chose continuous execution:
+finish the queue or identify a genuine blocker rather than ending on a progress report.
+
+## Prerequisites and evidence
+
+- Rust JSONC prerequisite:
+  `mise run //package/rust-module/jsonc-edit:test:debug` passed on 2026-10-04.
+- Latest Git:
+  the official `https://git-scm.com/downloads` page reports 2.56.0;
+  the official `git/git` tag list corroborates `v2.56.0`.
+  Use that exact stable release for the initial latest-only container fixture.
+- The deepmerge fork exists as `Aquaticat/deepmerge-ts`,
+  and the repository has the public JSON corpus in `package/module/deepmerge-ts.fuzz/src/json-case.ts`.
+  Fork work is unnecessary after the user's handwritten-merge instruction.
+  Do not read or copy its embargoed `*.local.*` findings into public artifacts.
+
+## Completed slices
+
+The handwritten merge is implemented in `package/linter/monochromatic-lint/src/config_merge.rs`.
+It uses the parser's value model,
+merges every key's full input group together,
+concatenates arrays,
+preserves first-seen key order,
+and selects the last value on any kind mismatch.
+The public JSON corpus is copied from the existing sidecar;
+no generic deepmerge package is added.
+
+Verification:
+
+- `mise run //package/linter/monochromatic-lint:lint:types` passed.
+- `mise run //package/linter/monochromatic-lint:test:container` passed in a mount-free,
+  network-disabled 2 GiB / 2 CPU container.
+- Tests include the independent corpus,
+  a wrong-pairwise-fold positive control,
+  and the parser's 512-container limit.
+- The first comment-ownership fixture failed because comments after a comma on the same line belong to the preceding value.
+  The fixture now uses separate lines and asserts that the intended final comment is present before testing ownership.
+
+JSONC schema validation and nearest/explicit configuration discovery are implemented.
+The loader rejects null,
+decoded duplicate keys,
+unknown fields/rules/options,
+invalid UTF-16 text,
+and invalid exact-integer limits before merging.
+Explicit config uses cwd as its pattern base;
+nearest config is used alone.
+Memory-backed discovery tests do not read host-wide configuration,
+and native adapter tests use owned disposable directories.
+
+The container suite now passes 23 tests.
+Cargo check and Clippy pass.
+The first mutation campaign generated 62 mutants:
+53 caught,
+1 missed,
+and 8 unviable.
+The missed mutation changed the LFS option-name guard from conjunction to disjunction.
+Added rejection cases for an exclusion on the wrong rule and an unrelated option on the LFS rule.
+The rerun caught all 54 viable mutants;
+8 remain unviable because rustc E0277 rejects generated `Default` construction for non-Default domain types.
+No mutant exclusions were added.
+Reports are under
+`package/linter/monochromatic-lint/target/verification/mutation-eXe8bh`
+and
+`package/linter/monochromatic-lint/target/verification/mutation-YOFJ8l`.
+
+The mutation runner uses cargo-mutants 27.1.0 inside a mount-free,
+network-disabled 2 GiB / 2 CPU container.
+`--in-place` applies only to the disposable container's source snapshot;
+that tool rejects an explicit `--jobs` with `--in-place`,
+so the runner leaves jobs implicit and retains Cargo's bounded compiler concurrency.
+The runner retains diagnostic reports before deleting its owned container.
+
+Configuration pattern matching,
+resolved defaults,
+atomic grouped source edits,
+JSONL finding serialization,
+and the existing Rust rules are implemented.
+The last completed container run passed 56 tests;
+Cargo check and Clippy passed with the aligned parser dependencies.
+The extern-crate fixture initially assumed a named diagnostic;
+source inspection confirmed its identifier is a `NAME_REF`,
+so the fixture now preserves the incumbent's nameless message.
+
+The enlarged core mutation campaign generated 205 mutants:
+181 caught,
+7 missed,
+and 17 unviable.
+Added controls for exact ignore patterns,
+adjacent edits in both selection orders,
+an unterminated string token ending at EOF,
+and final lines without LF.
+Two reported comparison mutants were equivalent because an empty slice cannot end in LF;
+the redundant nonempty guards were removed instead of adding exclusions.
+The updated core campaign still needs rerunning.
+Evidence:
+`package/linter/monochromatic-lint/target/verification/mutation-pgvqN1`.
+
+The fuzz sidecar is implemented at `package/linter/monochromatic-lint.fuzz`.
+The first completed ASAN campaigns recorded 243,146 structured merge executions
+and 17,634 mixed raw/generated configuration executions,
+both exit 0.
+Evidence:
+`package/linter/monochromatic-lint.fuzz/target/verification/campaign-Bx5G2Z`.
+Those runs cover schema/merge foundations,
+not the subsequently added pattern matcher,
+edit engine,
+or language rules.
+The shared ordinary JSONC generator has a depth cap of 4;
+the separate 512-depth unit control remains necessary.
+
+Fuzz build containers read the installed nightly compiler through a read-only mount.
+SELinux label isolation is disabled only for those build containers,
+avoiding relabeling the shared host toolchain.
+Fuzz execution itself has no host mounts,
+retains normal label isolation,
+and runs under 2 GiB / 2 CPU / 128 PID bounds.
+The runner resolves the actual PATH-selected cargo-fuzz 0.13.2 rather than assuming Cargo home's older binary.
+The first dictionary attempt used a JSON newline escape;
+libFuzzer requires hexadecimal escapes,
+so the dictionary now uses `\\x0a`.
+The runner now requires a positive reported execution count as well as exit 0,
+so dictionary/setup failures cannot masquerade as clean fuzzing.
+
+Rust parser dependency correction:
+`ra-ap-rustc_lexer` 0.165.0 asserts equal Unicode-table versions.
+The fresh lock selected unicode-ident 1.0.26 (Unicode 18)
+with unicode-properties 0.1.4 (Unicode 17),
+causing rustc E0080.
+The manifest now pins unicode-ident 1.0.24 and unicode-properties 0.1.4,
+the same Unicode 17 pair as the incumbent;
+compilation and the Rust container suite pass.
+An explicit dependency-fetch task prepares all target archives before offline vendoring.

@@ -24,7 +24,9 @@ fn scanner(root: &std::path::Path) -> Command {
     return command;
 }
 
-/// Exercises name-only, content-only, and combined redaction at the CLI boundary.
+/// Exercises name-only,
+///  content-only,
+///  and combined redaction at the CLI boundary.
 #[test]
 fn pathname_hit_masks_the_name_in_every_finding() {
     let root = fixture("name-and-content");

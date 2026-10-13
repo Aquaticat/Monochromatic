@@ -340,5 +340,82 @@ Preserving Node 22 is second because it retains broader support but requires an 
 Do not file an issue against Node or CAC.
 Track any engine-floor or downleveling decision in this repository.
 
+## Node 26.10.0 copied into a Node 24 fixture lacked a shared library
+
+### Symptom and boundary
+
+During the cli-git rewrite evaluation on 2026-10-04,
+a disposable fixture copied the host's Node 26.10.0 executable over a Node 24.11.0 image's executable.
+The Linux dynamic loader failed before any JavaScript or performance measurement ran:
+
+```text
+# Dynamic-loader stderr from the disposable policy fixture
+node: error while loading shared libraries: libatomic.so.1: cannot open shared object file: No such file or directory
+```
+
+The container command exited 127.
+This was an agent-authored fixture packaging error,
+not the reported slow-commit incident and not a Node language compatibility failure.
+
+### Evidence and verification
+
+On the host,
+`ldd` on the exact copied executable reported:
+
+```text
+# ldd on the host's Node 26.10.0 executable
+libatomic.so.1 => /usr/lib64/libatomic.so.1
+```
+
+The failing fixture extended local image
+`9b764e5240b8c4721640320ac499b3b3440612e3109481fb2df8ce48705f51e8`,
+which was built on the Node 24.11.0 cli-git end-to-end runtime.
+Copying the executable did not supply its shared-library dependencies.
+This conclusion uses the loader diagnostic and the exact binary's dependency listing;
+no upstream source defect is asserted.
+
+The corrected fixture uses the locally installed `node:26-slim` image,
+ID `8469107207880d917ddc60bb6aa76f35bb44965420f266840e1dea8758ff186b`,
+and copies the same host Node executable into that runtime.
+It then copies the existing Git executables,
+installed cli-git package,
+and benchmark inputs into the image.
+That combination launched Node 26.10.0,
+executed the Markdown CLI,
+and reached cli-git's configuration validation.
+A subsequent `Policy markdown/autofix options failed Valibot validation` error was a separate fixture-input error,
+not a shared-library failure.
+
+### Workaround and limits
+
+Use a runtime image that supplies the copied executable's dependencies,
+then verify the actual executable and consumer invocation.
+Do not treat an executable file alone as the complete Node runtime distribution.
+Changing the image also changes the userspace environment;
+measure all comparison variants in that same corrected image.
+The configuration error does not establish a passing performance run.
+
+### Upstream filing decision
+
+1.  Upstream fault:
+    no;
+    the evaluation fixture replaced a binary without its required runtime libraries.
+2.  Upstream fix:
+    unnecessary;
+    the fixture image is repository-owned.
+3.  Supported use:
+    no claim is made that a copied executable supports an arbitrary older runtime image.
+4.  Contribution policy:
+    not applicable to this local fixture correction.
+5.  Upstream willingness:
+    not applicable;
+    no upstream change is requested.
+6.  Prototype:
+    the corrected image launches the exact copied Node version and reaches application code.
+
+No upstream filing or draft is warranted.
+Reproduction inputs and subsequent measurement scope are recorded in
+[`cli-git-rust-rewrite.md`](../planning/cli-git-rust-rewrite.md).
+
 [node-24]: https://nodejs.org/en/blog/release/v24.0.0
 [runtime-contract-ci]: https://github.com/Aquaticat/Monochromatic/actions/runs/33219232827

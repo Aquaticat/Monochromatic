@@ -22,10 +22,11 @@
   ],
   "dependencies": {
     "@monochromatic-dev/module-async-time": "workspace:*",
-    "@monochromatic-dev/module-caught-value": "workspace:*",
-    "@monochromatic-dev/module-fs-path": "workspace:*",
     "@monochromatic-dev/module-logger": "workspace:*",
     "@monochromatic-dev/module-numeric-format": "workspace:*",
+    "@monochromatic-dev/module-test-diagnostic": "workspace:*",
+    "@monochromatic-dev/module-test-expect": "workspace:*",
+    "@monochromatic-dev/module-test-sandbox": "workspace:*",
     "chai": "catalog:",
     "expect-type": "catalog:",
     "chai-as-promised": "catalog:",
@@ -37,12 +38,11 @@
   "devDependencies": {
     "@monochromatic-dev/config-rolldown": "workspace:*",
     "@monochromatic-dev/config-typescript": "workspace:*",
-    "@monochromatic-dev/module-const": "workspace:*",
+    "@monochromatic-dev/module-caught-value": "workspace:*",
     "@types/node": "catalog:",
     "@types/chai": "catalog:",
     "@types/chai-as-promised": "catalog:",
     "@types/sinon-chai": "catalog:",
-    "fast-check": "catalog:",
     "typescript": "catalog:"
   }
 }

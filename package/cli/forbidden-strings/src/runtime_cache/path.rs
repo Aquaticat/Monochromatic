@@ -143,8 +143,8 @@ fn environment_absolute_path(
     value: Option<&std::ffi::OsString>,
     platform: HostPlatform,
 ) -> Result<PathBuf, CacheRootError> {
-    let value = value.ok_or(CacheRootError::Unavailable)?;
-    return platform_absolute_path(value, platform)
+    let present = value.ok_or(CacheRootError::Unavailable)?;
+    return platform_absolute_path(present, platform)
 }
 
 /// Validates path with selected target semantics so every platform branch is host-testable.

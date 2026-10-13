@@ -3728,6 +3728,9 @@ Replace with proper punctuation or restructure sentence.
 
 ### package/module/test/src/expect.ts
 
+Moved on 2026-10-04 to `package/module/test-expect/src/expect.ts`.
+The recorded lines retain their historical positions.
+
 - Line 215:
    /** Negated matchers -- every method asserts the opposite.
    */

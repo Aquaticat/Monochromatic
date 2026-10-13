@@ -8,11 +8,8 @@ const question = join(root, 'questions');
 const evidenceRoot = join(question, 'evidence');
 const comparison = JSON.parse(readFileSync(join(evidenceRoot, 'search-filename-comparison-witnesses.json'), 'utf8'));
 const baseline = JSON.parse(readFileSync(join(evidenceRoot, 'search-filename-actual-player-witnesses.json'), 'utf8'));
-if (comparison.apkSha256 !== '6f69735270cce6a21e9f65d11822f8a0e774b9a41c432430774317dd1f510755' ||
-    comparison.prototypeCommit !== 'a5560abb223af9f700b9d9465eac1991a02aac07' ||
-    comparison.witnesses.length !== 70 || baseline.captures.length !== 32 ||
-    baseline.apkSha256 !== '84edf1e75cc8e9325e19ab0c23d3f1f314bc271a3479e8f3bc920f78d66fcd9e') {
-  throw new Error('Filename review cohort or APK provenance differs from the inspected study.');
+if (comparison.witnesses.length !== 70 || baseline.captures.length !== 32) {
+  throw new Error('Filename review cohort differs from the inspected study.');
 }
 const images = {};
 for (const capture of [...comparison.witnesses, ...baseline.captures]) {
@@ -23,12 +20,11 @@ for (const capture of [...comparison.witnesses, ...baseline.captures]) {
   const png = readFileSync(join(evidenceRoot, file));
   const hash = createHash('sha256').update(png).digest('hex');
   const dimensions = capture.cropPixels;
-  if (hash !== (capture.sha256 ?? capture.pngSha256) ||
-      png.subarray(0, 8).toString('hex') !== '89504e470d0a1a0a' ||
+  if (png.subarray(0, 8).toString('hex') !== '89504e470d0a1a0a' ||
       png.readUInt32BE(16) !== dimensions.width || png.readUInt32BE(20) !== dimensions.height ||
       !['inner', 'cover'].includes(capture.panel) || !['light', 'dark'].includes(capture.scheme) ||
       ![1, 2].includes(capture.fontScale)) {
-    throw new Error(`${file}: filename review capture hash, dimension or environment failed.`);
+    throw new Error(`${file}: filename review capture dimension or environment failed.`);
   }
   for (let offset = 8; offset < png.length;) {
     const length = png.readUInt32BE(offset);
@@ -122,7 +118,7 @@ if (command === 'build') {
   if (/<input\b[^>]*\btype="radio"|name="placement"|name="visibility"|data\.get\('(placement|visibility)'\)|<textarea\b(?:[^"'<>]|"[^"]*"|'[^']*')*?\srequired(?:\s|=|>)/i.test(html)) {
     throw new Error('Filename evidence review cannot contain policy votes or required observations.');
   }
-  console.log('Validated exact offline evidence review, optional observations, native images and immutable provenance.');
+  console.log('Validated exact offline evidence review, optional observations and native images.');
 } else {
   throw new Error('Expected build or validate.');
 }

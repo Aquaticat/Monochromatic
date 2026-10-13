@@ -66,6 +66,13 @@ Results therefore reflect hosts-file,
 split-horizon,
 and other operating-system resolution behavior at that moment.
 
+A hostname whose answers rotate between resolutions contributes only the addresses current at generation time.
+Measured on 2026-10-06,
+`huggingface.co` returned three distinct address sets within ten minutes behind CloudFront,
+so a generated value can omit every address a later client actually connects to.
+Applications that must stay outside the tunnel regardless of destination need the `wg-quicker`
+`ExemptMark` cgroup exemption instead of a domain entry.
+
 The command does not add DNS caching,
 retries,
 TTL handling,
@@ -80,6 +87,9 @@ for example `AS41231`.
 Each entry contributes every network and single address assigned to that ASN by the [IPinfo Lite database][ipinfo-lite].
 The same expansion works in allowed and disallowed inputs.
 An ASN contributing no networks writes one warning to stderr for that entry and contributes nothing.
+IPinfo Lite coverage is incomplete for some vendors:
+[missing OpenAI and Anthropic ASNs](../../../doc/troubleshooting/ipinfo-lite-missing-openai-anthropic-asns.md)
+records the measured 2026-10-06 gaps and the workarounds that replaced them.
 
 ASN resolution comes from `@monochromatic-dev/module-wg-allowedips` through a static source import.
 Fresh `cache_AS<number>.txt` snapshots avoid network access.

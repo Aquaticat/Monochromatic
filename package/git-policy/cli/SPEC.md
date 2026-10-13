@@ -13,551 +13,65 @@ tests,
 and user documentation must conform to it.
 Changing a settled product behavior requires a new decision update rather than an implementation shortcut.
 
-Npm registry publication is not part of this specification.
-Issue #358 records that indefinitely deferred action.
+The implementation is the native Rust executable `cli-git-native` (`src/native/`),
+ published as the crate
+`monochromatic-git-policy-cli`.
+The TypeScript implementation (authoring API,
+ plugins,
+ trust registry and the bundled MJS artifact) is retired.
+Its last commit is `f4fc1fa213ece65672e4314983a75266837892f9`,
+ and the sections that specified it were removed from
+this file;
+ they remain readable at that commit.
 
 ## Module seams
 
-The package has these external seams:
+The executable has these external seams:
 
 - the shadowing `git` executable;
-- the side-effect-free authoring and optional-policy exports from `@monochromatic-dev/git-policy-cli`;
-- repository-root config artifacts;
-- JSONL policy events;
-- the per-account exact-snapshot trust registry.
+- the repository-root configuration file `cli-git.config.jsonc`;
+- JSONL policy events.
 
-The package has internal seams for filesystem identity,
+It has internal seams for filesystem identity,
 real-Git execution,
-account-home lookup,
 clock,
-registry storage,
 process liveness and birth identity,
 lock-holder evidence,
 and prompts.
 Production adapters own operating-system effects.
 Disposable tests replace those adapters without production environment overrides.
 
-Importing authoring or optional-policy exports must not inspect process arguments,
-read files,
-resolve Git,
-resolve external scanner executables,
-write output,
-register a policy,
-or start the executable.
+## Single executable and shipped policies
 
-## Single artifact and shipped optional policies
+The release artifact is one executable,
+ `cli-git-native`.
+Every policy is compiled into it;
+ no configuration loads code,
+ and there are no plugins.
+The built-in policies run at their default severity without being listed.
+The optional policies (`markdown/autofix`,
+ `mono/forbidden-root-context`,
+ `mono/dependent-version-bump` and
+`security/forbidden-strings`) run only where `cli-git.config.jsonc` lists them.
+A no-config invocation therefore runs the built-ins only.
 
-The public cli-git tarball contains exactly one MJS artifact.
-That artifact exports authoring declarations and optional repo-owned policies,
-and is also the executable named by the `git` bin entry.
-Cli-git's own module graph uses static imports and must not emit shared chunks,
-secondary MJS entries,
-or package-relative dynamic imports.
-Bundled library implementations may retain their dynamic imports.
-Exact stored MJS configuration execution may use one computed dynamic import so top-level `await` remains supported.
-Neither exemption may emit another artifact or load an untrusted package-relative target.
-Direct-invocation detection calls CLI startup only when Node executes the artifact as the program entry.
-Importing it as a module remains side-effect free.
+The forbidden-strings scanner is linked into the executable and needs no separate installation.
+`markdown/autofix` runs the `monochromatic-lint` executable,
+ which must be on an absolute `PATH` entry.
 
-Repo-owned policy implementations remain in separate workspace source packages for ownership and focused tests.
-The cli-git build statically bundles them into the one artifact.
-No private workspace policy package may remain as a runtime or declaration dependency of the packed artifact.
+## Policy re-run after replay
 
-Importing an optional policy returns its plugin definition only.
-It never changes the built-in registry or enabled policy set.
-A consumer enables it by registering the plugin under a chosen namespace in trusted config.
-A no-config invocation therefore retains built-ins only.
-
-The root package export includes `repositoryPolicyPlugin` and,
-after issue #354 lands,
-`forbiddenStringsPlugin`.
-The forbidden-strings export bundles its Node adapter but not the Rust scanner binary.
-Scanner lookup defaults to `forbidden-strings` on `PATH` only when the enabled policy executes.
-
-## Public authoring declarations
-
-The public package exports the following semantic declarations.
-Implementation may split them across source files,
-but the package root re-exports them.
-
-```ts
-import type * as v from 'valibot';
-
-export type PolicySeverity = 'off' | 'warn' | 'error';
-
-export type ActivePolicySeverity = Exclude<PolicySeverity, 'off'>;
-
-export type PolicyTrigger =
-  | 'pre-forward'
-  | 'post-commit'
-  | 'manual-push'
-  | 'direct-check'
-  | 'direct-fix';
-
-export type GitObjectId = string;
-
-export declare const ABSENT_GIT_VALUE: unique symbol;
-
-export type AbsentGitValue = typeof ABSENT_GIT_VALUE;
-
-export type RepositoryPath = string;
-
-export type CandidateFileMode =
-  | 'regular'
-  | 'executable'
-  | 'symlink'
-  | 'submodule';
-
-export type CandidateChange =
-  | 'added'
-  | 'modified'
-  | 'deleted';
-
-export type CandidateFile = {
-  readonly targetId: string;
-  readonly path: RepositoryPath;
-  readonly revision: GitObjectId | AbsentGitValue;
-  readonly mode: CandidateFileMode;
-  readonly change: CandidateChange;
-  readonly bytes: () => Promise<Uint8Array>;
-};
-
-export type TrackedFile = {
-  readonly targetId: string;
-  readonly path: RepositoryPath;
-  readonly revision: GitObjectId;
-  readonly mode: CandidateFileMode;
-  readonly headRevision: GitObjectId | AbsentGitValue;
-  readonly bytes: () => Promise<Uint8Array>;
-  readonly headBytes: () => Promise<Uint8Array | AbsentGitValue>;
-};
-
-export type PushUpdate = {
-  readonly localOid: GitObjectId | AbsentGitValue;
-  readonly remoteOid: GitObjectId | AbsentGitValue;
-  readonly remoteName: string;
-  readonly remoteRef: string;
-};
-
-export type PolicyCommandFacts = {
-  readonly rawArgs: readonly string[];
-  readonly transformedArgs: readonly string[];
-  readonly subcommand: string | AbsentGitValue;
-  readonly effectiveCwd: string;
-  readonly repositoryRoot: string;
-  readonly escapedPolicyIds: ReadonlySet<string>;
-};
-
-export type LazyPolicyGitFacts = {
-  readonly candidates: () => Promise<readonly CandidateFile[]>;
-  readonly trackedFiles: (request: Readonly<{ pathspecs: readonly string[] }>) => Promise<readonly TrackedFile[]>;
-  readonly headOid: () => Promise<GitObjectId | AbsentGitValue>;
-  readonly landedCommitOid: () => Promise<GitObjectId | AbsentGitValue>;
-  readonly pushUpdates: () => Promise<readonly PushUpdate[]>;
-};
-
-export type PolicyContext = {
-  readonly candidateVersion: number;
-  readonly canApplyPatches: boolean;
-  readonly trigger: PolicyTrigger;
-  readonly command: PolicyCommandFacts;
-  readonly git: LazyPolicyGitFacts;
-  readonly signal: AbortSignal;
-};
-
-export type FindingLocation = {
-  readonly byteStart: number;
-  readonly byteEnd: number;
-};
-
-export type PolicyPatch = {
-  readonly kind: 'git-unified';
-  readonly targetId: string;
-  readonly path: RepositoryPath;
-  readonly bytes: Uint8Array;
-};
-
-export type PolicyFinding = {
-  readonly code: string;
-  readonly message: string;
-  readonly path?: RepositoryPath;
-  readonly location?: FindingLocation;
-  readonly patch?: PolicyPatch;
-};
-
-export type PolicyCheckInput<TOptions> = {
-  readonly context: PolicyContext;
-  readonly options: Readonly<TOptions>;
-};
-
-export type PolicyInput =
-  | Readonly<{ kind: 'worktree'; pathspecs: readonly string[]; }>
-  | Readonly<{ kind: 'executable'; path: string; }>
-  | Readonly<{ kind: 'revision'; rev: string; }>
-  | Readonly<{ kind: 'env'; name: string; }>;
-
-export type PolicyInputs =
-  | 'unrestricted'
-  | Readonly<{ external: readonly PolicyInput[]; }>;
-
-export type PolicyInputsDeclaration<TOptions> =
-  | PolicyInputs
-  | ((options: Readonly<TOptions>) => PolicyInputs);
-
-export type PolicyDefinition<
-  TOptions = undefined,
-  TName extends string = string,
-> = {
-  readonly name: TName;
-  readonly defaultSeverity: PolicySeverity;
-  readonly warnSafe: boolean;
-  readonly triggers: readonly PolicyTrigger[];
-  readonly options?: Readonly<v.GenericSchema<unknown, TOptions>>;
-  readonly inputs?: PolicyInputsDeclaration<TOptions>;
-  readonly check: (input: PolicyCheckInput<TOptions>) => Promise<readonly PolicyFinding[]>;
-};
-
-export type PluginDefinition<
-  TPolicies extends readonly PolicyDefinition<unknown>[] =
-    readonly PolicyDefinition<unknown>[],
-  TName extends string = string,
-> = {
-  readonly name: TName;
-  readonly policies: TPolicies;
-};
-
-export type PolicySetting<TOptions = unknown> =
-  | PolicySeverity
-  | readonly [PolicySeverity, TOptions];
-
-export type BuiltInPolicyId =
-  | 'require-root'
-  | 'linked-worktree-only'
-  | 'branch-worktree-only'
-  | 'add-explicit';
-
-export type PluginMap = Readonly<Record<string, PluginDefinition>>;
-
-export type CliGitConcurrencyConfig = {
-  readonly hooks?: {
-    readonly concurrentCommits?: boolean;
-  };
-  readonly indexLock?: {
-    readonly unprovenOwnerTimeoutMs?: number;
-  };
-  readonly landing?: {
-    readonly reserveAfterLostRaces?: number;
-  };
-};
-
-export type CliGitConfig<TPlugins extends PluginMap = PluginMap> =
-  CliGitConcurrencyConfig & {
-    readonly plugins?: TPlugins;
-    readonly policies?: Readonly<Record<string, PolicySetting>>;
-    readonly trust?: {
-      readonly children?: boolean;
-    };
-  };
-
-type CliGitConfigInput = CliGitConcurrencyConfig & {
-  readonly plugins?: PluginMap;
-  readonly policies?: Readonly<Record<string, unknown>>;
-  readonly trust?: {
-    readonly children?: boolean;
-  };
-};
-
-type ConfigPlugins<TConfig extends CliGitConfigInput> =
-  TConfig extends { readonly plugins: infer TPlugins extends PluginMap }
-    ? TPlugins
-    : never;
-
-type ConfigPolicies<TConfig extends CliGitConfigInput> =
-  TConfig extends {
-    readonly policies: infer TPolicies extends Readonly<Record<string, unknown>>;
-  }
-    ? TPolicies
-    : never;
-
-type PluginPolicyForId<
-  TPlugins extends PluginMap,
-  TId extends string,
-> = TId extends `${infer TNamespace}/${infer TName}`
-  ? TNamespace extends keyof TPlugins
-    ? Extract<TPlugins[TNamespace]['policies'][number], PolicyDefinition<unknown, TName>>
-    : never
-  : never;
-
-type AllowedPolicySetting<
-  TConfig extends CliGitConfigInput,
-  TId extends PropertyKey,
-> = TId extends BuiltInPolicyId
-  ? PolicySeverity
-  : TId extends string
-    ? [PluginPolicyForId<ConfigPlugins<TConfig>, TId>] extends [never]
-      ? never
-      : PluginPolicyForId<ConfigPlugins<TConfig>, TId> extends PolicyDefinition<infer TOptions>
-        ? PolicySetting<TOptions>
-        : never
-    : never;
-
-type CheckedPolicySettings<TConfig extends CliGitConfigInput> = {
-  readonly [TId in keyof ConfigPolicies<TConfig>]:
-    ConfigPolicies<TConfig>[TId] extends AllowedPolicySetting<TConfig, TId>
-      ? ConfigPolicies<TConfig>[TId]
-      : never;
-};
-
-export declare function definePolicy<
-  const TName extends string,
-  const TOptions = undefined,
->(
-  definition: Readonly<PolicyDefinition<Readonly<TOptions>, TName>>,
-): PolicyDefinition<Readonly<TOptions>, TName>;
-
-export declare function definePlugin<
-  const TName extends string,
-  const TPolicies extends readonly PolicyDefinition<unknown>[],
->(
-  definition: PluginDefinition<TPolicies, TName>,
-): PluginDefinition<TPolicies, TName>;
-
-export declare function defineConfig<const TConfig extends CliGitConfigInput>(
-  config: TConfig
-    & CliGitConfig<ConfigPlugins<TConfig>>
-    & { readonly policies?: CheckedPolicySettings<TConfig> },
-): TConfig;
-
-export declare function definePolicyOptions<const TInput, const TOutput>(
-  schema: Readonly<v.GenericSchema<TInput, TOutput>>,
-): v.GenericSchema<TInput, TOutput>;
-```
-
-### Declaration invariants
-
-- `definePolicy`,
-  `definePlugin`,
-  `defineConfig`,
-  and `definePolicyOptions` return their argument unchanged.
-- `defineConfig` derives valid plugin policy IDs and option outputs from the concrete namespace map and preserved policy
-  tuple.
-  Unknown IDs and wrong option values are TypeScript errors when definitions are statically known.
-- Runtime config loading still validates the resulting value rather than trusting TypeScript types.
-- Policy and plugin names are non-empty kebab-case identifiers without `/`.
-- Consumer namespaces are non-empty kebab-case identifiers without `/`.
-- Built-in IDs are their policy names.
-- Plugin IDs are `<namespace>/<policy-name>`.
-- Duplicate effective IDs are config failures.
-- A policy default may be `off`.
-- Omitted options become the policy schema's documented default only when the schema supplies one.
-  Otherwise omitted required options are a config failure.
-- A policy without an option schema receives `undefined`.
-- Plugin declaration order is the array order.
-- Config namespace order is JavaScript own-string-key insertion order.
-- The engine copies returned arrays,
-  finding objects,
-  sets,
-  argument arrays,
-  and patch bytes before retaining them.
-- `RepositoryPath` values use Git's slash-separated repository-relative form.
-  Absolute paths,
-  empty paths,
-  `.` segments,
-  `..` segments,
-  NUL,
-  and backslash separators are invalid.
-- `GitObjectId` is opaque to plugins.
-  The engine validates object IDs before invoking Git.
-- `targetId` is invocation-local and opaque.
-  Plugins must return the exact target ID supplied by a candidate.
-- `revision` is `ABSENT_GIT_VALUE` for a mutable candidate and a Git object ID for immutable historical content.
-- Deleted and submodule candidates reject `bytes()` with a typed engine-owned unavailable-content error.
-- `bytes()` returns a fresh copy on every call.
-- Lazy methods memoize success or failure for one `candidateVersion`.
-- Any candidate mutation increments `candidateVersion` and creates a new context.
-- Inside a commit transaction,
-  `headOid()` returns the recorded preparation base,
-  or the replay parent during revalidation after a replay,
-  and never re-reads live `HEAD`.
-  `landedCommitOid()` returns the OID the landing wrote by compare-and-swap.
-- Policy cancellation uses `signal`.
-  Returning after cancellation is ignored;
-  throwing because of cancellation remains an engine event rather than a finding.
-
-### Policy completion
-
-A check completes only after its returned promise resolves and every lazy operation it awaited completed successfully.
-An exception,
-rejection,
-invalid return value,
-invalid finding,
-or required unavailable candidate is an engine failure.
-An empty finding array is a successful clean result.
-
-The engine invokes one policy at a time.
-Policy code may use `Promise.all` internally when its own checks are independent.
-
-## Policy inputs and read sets
-
-`inputs` tells the engine what a policy reads outside its `PolicyContext`,
-so a replayed commit re-runs only the policies whose inputs could have changed.
-Precedent:
-Nx task `inputs`,
-broad when absent.
-
-- An omitted `inputs` means `'unrestricted'`.
-  An unrestricted policy always re-runs after a replay.
-- `{ external: [] }` declares that the policy reads only through its context.
-- `inputs` may be a static value or a function of the validated policy options,
-  so option-dependent inputs such as a configured executable are expressible.
-  Config loading calls the function once with the parsed options of each enabled policy
-  and keeps the validated result on the registered policy
-  (see "Configuration validation");
-  a disabled policy's function is never called.
-- `PolicyInput` kinds and their fingerprints:
-  - `worktree`:
-    Git pathspecs from the worktree root,
-    fingerprinted by every matching tracked or untracked path,
-    ignored paths included,
-    with a SHA-256 digest of each regular file,
-    the target of each symbolic link,
-    or the path's absence.
-    Ignored files count because a policy reads worktree bytes whatever `.gitignore` says,
-    and the default forbidden-strings rules file is ignored;
-    a broad pathspec therefore walks ignored directories,
-    so declarations keep pathspecs narrow.
-    Inherited `GIT_LITERAL_PATHSPECS`,
-    `GIT_GLOB_PATHSPECS`,
-    `GIT_NOGLOB_PATHSPECS`,
-    and `GIT_ICASE_PATHSPECS` are removed,
-    so a declaration keeps Git's default pathspec semantics.
-    An empty pathspec list is invalid.
-  - `executable`:
-    a path with a separator,
-    resolved from the worktree root,
-    or a name looked up along `PATH`,
-    fingerprinted by the resolved path with its no-follow device,
-    inode,
-    size,
-    and modification time in nanoseconds,
-    the final link target with the same identity,
-    and a SHA-256 digest of the target's bytes.
-    A missing executable fingerprints as missing.
-  - `revision`:
-    a Git revision,
-    fingerprinted by the object `git cat-file --batch-check` resolves it to in the shadow repository,
-    or Git's `missing` or `ambiguous` line,
-    with the private `HEAD` at the preparation base and again at the replay parent.
-    A revision must be one line and must not start with `-`.
-  - `env`:
-    a variable name without `=`,
-    fingerprinted by its value or absence.
-- No path,
-  pathspec,
-  revision,
-  or variable name may contain NUL.
-- A thrown `inputs` function or an invalid result is a config failure with exit `2`.
-
-Fingerprints are taken for the union of every enabled pre-forward policy's declared inputs,
-once before preparation's first policy pass
-and once before each revalidation,
-so a change between the two re-runs the policies that declared it.
-A snapshot starts one `git ls-files` per distinct `worktree` input,
-one `git cat-file --batch-check` for every `revision` input,
-and no process for `executable` and `env` inputs.
-A fingerprint that cannot be taken,
-such as a pathspec outside the repository,
-never matches,
-so its policies always re-run.
-
-The engine gives each policy run its own `PolicyContext` whose `git` member records reads
-while delegating to the shared facts,
-so memoization is unchanged.
-A read set holds:
-
-- the candidate list
-  (path,
-  mode,
-  change,
-  and content object ID);
-- the paths whose `bytes()` ran;
-- each `trackedFiles` pathspec request with its result entries
-  (path,
-  mode,
-  object ID,
-  and the parent's object ID);
-- the values `headOid()`,
-  `landedCommitOid()`,
-  and `pushUpdates()` returned,
-  when they ran.
-
-Object IDs are the fingerprints,
-so no content is hashed.
-A read that failed,
-or a non-deleted candidate without an object ID,
-makes the set unreplayable.
-Recording stops when the policy completes
-(see "Policy completion");
-a lazy read after completion is not part of the set.
-
-Inside a commit transaction the engine keeps every completed run of a policy that declares inputs,
-with its read set,
-its input fingerprints,
-and its findings,
-in memory for the transaction's lifetime.
-During revalidation after a clean replay,
-each pass consults these runs,
-newest first,
-before running a declared policy;
-it reuses a run's findings instead of running the policy when:
-
-- the run proposed no patch;
-- every declared input fingerprints as it did when the run was recorded;
-- replaying every recorded read against the pass's candidate state returns the same identities.
-  Validation reads are memoized once per pass.
-
-Every unrestricted policy re-runs,
-and preparation never reuses.
-A reused run is equivalent to running the policy,
-so the ordered sequence is unchanged:
-a re-run policy that proposes a patch ends the pass,
-and the next pass starts again at the first policy against the patched state,
-where each later policy either finds a run recorded against matching reads or re-runs.
+After a clean replay,
+ revalidation converges all policies again over the replayed tree and the shadow `HEAD` at the
+replay parent,
+ and re-runs `pre-commit` whenever the tree differs from the one it last approved.
+No recorded policy run is reused:
+ the executable keeps no per-policy read sets or input fingerprints.
+The retired TypeScript wrapper reused a run when its declared inputs and recorded reads were unchanged;
+that design (the `inputs` declaration and the read-set validation) is specified in this file at the last incumbent
+commit `f4fc1fa213ece65672e4314983a75266837892f9`.
 Re-run findings and patches follow the ordinary whole-sequence convergence rules
 (see "Whole-sequence fixing").
-
-The shipped policies declare:
-
-- `repository/forbidden-root-context` and `repository/dependent-version-bump`:
-  `{ external: [] }`;
-- `final-newline` and `add-explicit`:
-  `{ external: [] }`,
-  because they read only candidate bytes and command arguments;
-- `forbidden-strings/forbidden-strings`:
-  a function of its options naming the configured scanner as an `executable` input,
-  `FORBIDDEN_STRINGS_RULES` as an `env` input,
-  and the one rules file the scanner reads as a literal `worktree` pathspec:
-  the path `FORBIDDEN_STRINGS_RULES` names,
-  or `forbidden-strings.local.txt` in the repository root.
-  The scanner's compiled-rules cache is keyed by rules content,
-  and its `.git` lookup is fixed for a commit,
-  so neither is an input.
-  A rules path outside the repository cannot be fingerprinted,
-  so such a configuration always re-runs;
-- `markdown-lint/autofix`:
-  `'unrestricted'`,
-  because its configured command may read anything
-  and its `lfs-image-url` rule reads `.lfsconfig`,
-  `.gitattributes`,
-  and every image a candidate links;
-- `require-root`,
-  `linked-worktree-only`,
-  and `branch-worktree-only`:
-  `'unrestricted'`,
-  because they read filesystem or Git state no input kind names.
-
-A traced fixture runs each declared shipped policy under `strace`
-and fails when the policy touches a file or starts a program its declaration does not name.
 
 ## Finding and patch validation
 
@@ -579,7 +93,7 @@ A patch is valid only when all conditions hold:
 - finding has `path`;
 - patch path equals finding path;
 - patch target ID identifies the same mutable candidate and path;
-- revision is `ABSENT_GIT_VALUE`;
+- revision is absent;
 - patch bytes are one textual unified Git diff;
 - old and new paths resolve to exactly the candidate path;
 - no rename,
@@ -625,126 +139,61 @@ A tracked target naming a candidate path at the candidate's exact revision appli
 A patch that applies but produces identical bytes is invalid rather than a convergence change.
 Patch validation failure exits `2` and identifies the policy and path without echoing patch bytes.
 
-## Authoring example
-
-This minimal plugin rejects a root context file.
-
-```ts
-import {
-  defineConfig,
-  definePlugin,
-  definePolicy,
-  type PolicyFinding,
-} from '@monochromatic-dev/git-policy-cli';
-
-const forbiddenRootContext = definePolicy({
-  name: 'forbidden-root-context',
-  defaultSeverity: 'error',
-  warnSafe: true,
-  triggers: [
-    'pre-forward',
-    'direct-check',
-  ],
-  async check({ context, }): Promise<readonly PolicyFinding[]> {
-    const candidates = await context.git.candidates();
-    const hasRootContext = candidates.some(
-      function isRootContext(candidate,): boolean {
-        return candidate.path === 'CONTEXT.md'
-          && candidate.change !== 'deleted';
-      },
-    );
-
-    if (!hasRootContext)
-      return [];
-
-    return [{
-      code: 'root-context-forbidden',
-      message: 'Root CONTEXT.md is forbidden; read source directly.',
-      path: 'CONTEXT.md',
-    },];
-  },
-});
-
-const repositoryPlugin = definePlugin({
-  name: 'repository',
-  policies: [forbiddenRootContext,],
-});
-
-export default defineConfig({
-  plugins: {
-    mono: repositoryPlugin,
-  },
-  policies: {
-    'mono/forbidden-root-context': 'error',
-  },
-  trust: {
-    children: true,
-  },
-});
-```
-
-A policy with options passes a Valibot schema directly.
-
-```ts
-import * as v from 'valibot';
-import {
-  definePolicy,
-  definePolicyOptions,
-  type PolicyFinding,
-} from '@monochromatic-dev/git-policy-cli';
-
-const options = definePolicyOptions(v.object({
-  marker: v.optional(v.string(), 'forbidden'),
-}),);
-
-export const markerPolicy = definePolicy({
-  name: 'marker',
-  defaultSeverity: 'off',
-  warnSafe: true,
-  triggers: ['direct-check',],
-  options,
-  async check({ options: parsedOptions, }): Promise<readonly PolicyFinding[]> {
-    return [{
-      code: 'configured-marker',
-      message: parsedOptions.marker,
-    },];
-  },
-});
-```
-
-Consumer-built MJS must bundle the authoring imports away.
-A hand-written self-contained MJS artifact may export the equivalent raw object.
-
 ## Configuration validation
 
-Config loading performs these steps in order:
+The wrapper reads `cli-git.config.jsonc` at the repository top level.
+The file is JSON with comments,
+ at most 1 MiB,
+ and data only:
+ it never names code to run.
+Without the file the defaults apply.
+Legacy executable configuration files (`cli-git.config.mjs`,
+ `cli-git.config.ts`) are never read or executed:
+beside a JSONC file they produce a `legacy-config-ignored` configuration warning,
+and alone they are a configuration failure that asks for the translation.
 
-1.  Validate top-level object shape.
-2.  Validate concurrency keys
-    (see "Concurrency configuration").
-3.  Validate plugin namespaces and plugin values.
-4.  Register built-ins in fixed order.
-5.  Register plugins in namespace and declaration order.
-6.  Resolve each effective policy ID.
-7.  Apply omitted declared defaults.
-8.  Parse configured option values through the policy's Valibot schema.
-9.  Resolve each enabled policy's `inputs`,
-    calling an `inputs` function with the parsed options,
-    validate the result,
-    and keep it on the registered policy.
-10. Emit configuration warnings for explicit unsafe `warn` settings.
-11. Validate trust declaration.
+Config parsing validates the following.
+It visits the top-level keys in document order and reports the first failure it meets,
+so the numbered items are the checks,
+ not a fixed sequence:
+
+1.  Parse the JSONC text;
+     a syntax error names its byte offset.
+2.  Validate that the top level is an object with no duplicate keys.
+3.  Validate each top-level key:
+     only `policies`,
+     `hooks`,
+     `indexLock` and `landing` exist.
+    `plugins` and `trust` are refused with an explanation of the retirement.
+4.  Validate `policies`:
+     each key is a known policy ID,
+     and each value is a severity (`off`,
+     `warn` or `error`),
+    for a policy that has options a `[severity, options]` array,
+    or an options object alone,
+     which names the policy at its default severity.
+5.  Validate each policy's options against its fixed schema;
+     a policy without options takes none.
+    `markdown/autofix` accepts `rules` (only `lfs-image-url`;
+     a repeated rule is refused) and `exclude`;
+    `security/forbidden-strings` accepts `builtinRules` and `rulesFile`.
+6.  Validate the concurrency keys (see "Concurrency configuration").
+7.  Resolve the rules file of `security/forbidden-strings`:
+     `rulesFile`,
+     else the environment variable
+    `FORBIDDEN_STRINGS_RULES`,
+     else `forbidden-strings.local.txt` at the repository top level,
+     which may be absent.
+    A file named by `rulesFile` or by the variable must exist.
+8.  Emit configuration warnings for explicit unsafe `warn` settings.
 
 Unknown top-level keys,
 unknown or mistyped concurrency keys,
 unknown policy IDs,
-duplicate IDs,
+duplicate keys,
 invalid severities,
-missing required options,
-options supplied to a schema-less policy,
-Valibot failures,
-and invalid or throwing `inputs` declarations exit `2` before any policy runs.
-Valibot issues are rendered into an engine-failure event without serializing arbitrary schema objects.
+unknown or mistyped options,
+and an unreadable or oversized file exit `2` before any policy runs.
 
 ### Concurrency configuration
 
@@ -790,7 +239,7 @@ Mixed commands classify from arguments.
 Any unknown alias,
 external command,
 future command,
-or ambiguous form loads trusted config.
+or ambiguous form loads config.
 
 Short-circuit global version and help forms preserve real Git behavior and do not load config.
 Management dispatch occurs only when the parsed subcommand is exactly `cli-git`.
@@ -802,27 +251,27 @@ The accepted grammar is:
 
 ```text
 git [<git-global-options>] cli-git (--help | -h)
-git [<git-global-options>] cli-git trust [--yes] [(--help | -h)]
-git [<git-global-options>] cli-git untrust
-git [<git-global-options>] cli-git status
 git [<git-global-options>] cli-git check [--policy <id>]... --all
 git [<git-global-options>] cli-git check [--policy <id>]... -- <pathspec>...
 git [<git-global-options>] cli-git fix [--policy <id>]... --all
 git [<git-global-options>] cli-git fix [--policy <id>]... -- <pathspec>...
 ```
 
+The retired forms `trust [--yes]`,
+ `untrust` and `status` still parse.
+They print an explanation to stderr,
+ change nothing and exit `0`;
+with `--help` the explanation goes to stdout.
+They read no configuration and need no Git.
+
 Rules:
 
 - Management parsing uses the internal argv region parser.
-- Namespace and trust help write human-readable text to stdout and exit `0`.
+- Namespace help writes human-readable text to stdout and exits `0`.
 - Help returns before resolving real Git,
   recovering transactions,
-  discovering repository config,
-  building a trust candidate,
-  or accessing the trust registry.
-- `--help` and `-h` are valid at the namespace and for `trust` only.
-- A trust help flag takes precedence over `--yes` and performs no consent operation.
-- `--yes` is valid only for `trust`.
+  or discovering repository config.
+- `--help` and `-h` are valid at the namespace.
 - `--policy` is repeatable only for `check` and `fix`.
 - Repeated identical policy IDs are deduplicated while preserving first occurrence order.
 - `--all` and `-- <pathspec>...` are mutually exclusive and one is required.
@@ -830,59 +279,12 @@ Rules:
 - Tokens after `--` are passed to real Git pathspec expansion without wrapper reinterpretation.
 - Unknown management flags and extra positionals are usage errors with exit `2`.
 - A usage error never loads repository config.
-- `check` and `fix` load trusted config after grammar and scope validation.
-- `trust`,
-  `untrust`,
-  and `status` never execute live repository config during preflight.
+- `check` and `fix` load config after grammar and scope validation.
 - `fix` changes selected worktree files and verifies every real index blob is unchanged.
 
-Non-help trust management emits one compact LF-terminated JSON object on stdout.
-These management objects carry `schemaVersion` but no policy-event `sequence`.
-Successful help emits human-readable stdout rather than a management object.
-Human trust and recursive-authority disclosures remain on stderr.
-
-```ts
-export type TrustSummary = {
-  readonly schemaVersion: 1;
-  readonly type: 'trust-summary';
-  readonly configPath: string;
-  readonly trusted: true;
-};
-
-export type TrustStatus = {
-  readonly schemaVersion: 1;
-  readonly type: 'trust-status';
-  readonly configPresent: boolean;
-  readonly trusted: boolean;
-  readonly unchanged: boolean;
-  readonly configPath?: string;
-  readonly filesystemId?: string;
-  readonly reason:
-    | 'no-config'
-    | 'untrusted'
-    | 'trusted'
-    | 'changed'
-    | 'corrupt';
-};
-
-export type UntrustSummary = {
-  readonly schemaVersion: 1;
-  readonly type: 'untrust-summary';
-  readonly configPath: string | null;
-  readonly removed: boolean;
-  readonly affectedRoots: readonly string[];
-};
-```
-
-`status` inspects exact trust state without executing live config.
-`configPath` and `filesystemId` are absent when no supported config is present.
-Deleted-config recovery uses `null` for `UntrustSummary.configPath` because no canonical config path remains.
-Trust management failures emit one schema-version-one `engine-failure` event on stdout and exit `2`.
-A `config-untrusted` event names the affected configuration and gives both recovery commands:
-interactive `git cli-git trust` and explicit noninteractive `git cli-git trust --yes`.
-A classified `TrustedConfigError` retains its stable code;
-an unclassified management or recovery failure uses `trust-failed`.
-This schema supersedes the temporary built-in policy inventory from the first policy-engine slice.
+Direct `check` and `fix` emit policy events on stdout.
+A configuration failure of `check` or `fix` emits one schema-version-one `engine-failure` event with code
+`config-invalid` on stdout and exits `2`.
 
 ## Lifecycle
 
@@ -890,7 +292,7 @@ This schema supersedes the temporary built-in policy inventory from the first po
 
 Built-in policies run against raw semantic command facts.
 Fixed transforms then produce `transformedArgs`.
-Plugin policies run against the predicted candidate set for the transformed command.
+Optional policies run against the predicted candidate set for the transformed command.
 `canApplyPatches` authorizes only engine-owned policy patch application,
 not arbitrary repository mutation.
 It is true only when a private commit transaction or direct-fix operation owns safe patch application.
@@ -1232,7 +634,7 @@ Each pass runs:
 
 1. built-in policies in fixed order;
 2. fixed transforms in fixed order;
-3. plugin policies in namespace and declaration order.
+3. optional policies in registry order.
 
 The built-in order is
 `require-root`,
@@ -1280,7 +682,6 @@ Only events derived from the stable pass are emitted as findings.
 
 Each event is one compact JSON object followed by LF.
 Fields not listed for an event are absent rather than carrying a JSON `null` value.
-The in-process `ABSENT_GIT_VALUE` sentinel is never serialized.
 Unknown fields may be added only in a backward-compatible schema revision.
 New event types,
 new optional fields,
@@ -1304,25 +705,6 @@ export type EventBase = {
 ```
 
 `sequence` starts at `0` for each cli-git invocation and increments by one in emission order.
-Trust management objects use the separate schema specified in `Management grammar`.
-
-### Trust warning object
-
-```ts
-export type TrustWarningObject = {
-  readonly schemaVersion: 1;
-  readonly type: 'trust-warning';
-  readonly code:
-    | 'relaxed-entry-malformed'
-    | 'relaxed-entry-filesystem-mismatch'
-    | 'typescript-package-import-not-invalidated';
-  readonly message: string;
-};
-```
-
-A trust warning is not a policy event and has no `sequence`.
-It is one compact LF-terminated JSON object on stderr.
-It may accompany direct-command policy JSONL on stdout without corrupting that stream.
 
 ### Finding event
 
@@ -1335,10 +717,17 @@ export type FindingEvent = EventBase & {
   readonly code: string;
   readonly message: string;
   readonly path?: RepositoryPath;
+  readonly pathBytes?: string;
   readonly location?: FindingLocation;
   readonly fix: 'none' | 'available';
 };
 ```
+
+`path` is text.
+A Git pathname that is not valid UTF-8 appears in `path` with each invalid sequence replaced by U+FFFD,
+and `pathBytes` then carries the exact pathname bytes as standard padded base64 (RFC 4648 section 4).
+`pathBytes` is absent whenever `path` is the exact name.
+The retired TypeScript wrapper stopped on such a name and never emitted the field.
 
 `code` is the complete `<policy-id>/<policy-local-code>` value.
 Patch bytes are never emitted.
@@ -1356,7 +745,7 @@ export type ConfigurationWarningEvent = EventBase & {
   readonly type: 'configuration-warning';
   readonly trigger: PolicyTrigger;
   readonly policyId: string;
-  readonly code: 'warn-unsafe';
+  readonly code: 'warn-unsafe' | 'legacy-config-ignored';
   readonly message: string;
 };
 ```
@@ -1412,9 +801,7 @@ and cannot be disabled or assigned a severity through repository config.
   or a normalization found the target moved since preparation,
   or any commit found that the target no longer names a commit
   (a deleted branch),
-  so there is nothing to replay onto,
-  or a commit found the target moved on a Git without replay plumbing
-  (see "Compatibility and degradation").
+  so there is nothing to replay onto.
 - `concurrent-commit/branch-switched`:
   the symbolic `HEAD` target differs from the one recorded at invocation.
 
@@ -1433,10 +820,15 @@ export type FixSummaryEvent = EventBase & {
   readonly trigger: 'pre-forward' | 'direct-fix';
   readonly passes: number;
   readonly changedPaths: readonly RepositoryPath[];
+  readonly changedPathBytes?: readonly string[];
 };
 ```
 
 `changedPaths` are unique and sorted by Git path byte order.
+When any changed pathname is not valid UTF-8,
+`changedPathBytes` lists the base64 bytes of every changed path,
+entry for entry in the same order as `changedPaths`;
+otherwise it is absent.
 The event is absent when no bytes changed.
 
 ### Engine failure event
@@ -1444,10 +836,7 @@ The event is absent when no bytes changed.
 ```ts
 export type EngineFailureCode =
   | 'config-invalid'
-  | 'config-untrusted'
-  | 'config-changed'
   | 'core-incomplete'
-  | 'plugin-threw'
   | 'policy-incomplete'
   | 'content-unavailable'
   | 'patch-invalid'
@@ -1455,9 +844,7 @@ export type EngineFailureCode =
   | 'fix-cycle'
   | 'fix-pass-limit'
   | 'transaction-failed'
-  | 'index-lock-unproven-owner'
-  | 'trust-consent-unavailable'
-  | 'trust-failed';
+  | 'index-lock-unproven-owner';
 
 export type EngineFailureEvent = EventBase & {
   readonly type: 'engine-failure';
@@ -1466,9 +853,11 @@ export type EngineFailureEvent = EventBase & {
   readonly trigger?: PolicyTrigger;
   readonly policyId?: string;
   readonly path?: RepositoryPath;
+  readonly pathBytes?: string;
 };
 ```
 
+`path` and `pathBytes` follow the finding event's rules.
 One causal engine-failure event is emitted for an engine exit.
 `core-incomplete` means a fixed transform failed unexpectedly rather than producing an expected core finding.
 `index-lock-unproven-owner` means a foreign `index.lock` with a dead or unproven owner outlasted
@@ -1578,10 +967,6 @@ and preserves the successful commit command's exit code `0`.
 
 Wrapper policy events use stderr.
 Direct `check` and `fix` policy events use stdout.
-Trust management summaries,
-statuses,
-and failures use stdout;
-human trust disclosures use stderr.
 Real Git inherits normal stdio.
 Debug logs must not corrupt the selected JSONL event stream.
 
@@ -1590,9 +975,7 @@ When real Git does not run:
 - `0` means clean or warnings only;
 - `1` means final error findings;
 - `2` means usage,
-  trust,
   config,
-  plugin,
   patch,
   transaction,
   or engine failure.
@@ -1620,350 +1003,6 @@ the native `git commit` that runs during private preparation is the real Git run
   or lock failure that is not a core finding exits `2` with an engine-failure event;
 - a landed commit exits `0` unless post-commit policies block,
   which returns `2` as above.
-
-## Trust registry schema version 1
-
-### Account-derived root
-
-Production registry roots are:
-
-- Linux and macOS:
-  `<os-account-home>/.local/state/cli-git/trust/v1`;
-- Windows:
-  `<os-account-home>/AppData/Local/cli-git/trust/v1`.
-
-The account home comes from an operating-system account adapter,
-not `HOME`,
-`USERPROFILE`,
-XDG,
-AppData,
-or repository environment variables.
-Failure to resolve the account home is a trust failure.
-Tests inject the complete registry root through an internal adapter unavailable from config or production environment.
-The account-derived or injected root must be lexically identical to its native real path;
-any symlink or junction in its ancestor chain fails closed.
-
-### Reversible record path
-
-A trust identity is:
-
-```ts
-export type TrustIdentity = {
-  readonly filesystemId: string;
-  readonly canonicalConfigPath: string;
-};
-```
-
-Encode each UTF-8 identity field with unpadded base64url.
-Do not hash it.
-The record path is:
-
-```text
-<root>/records/<base64url-filesystem-id>/path/<path-chunk-0>/<path-chunk-1>/.../record.json
-```
-
-Split encoded canonical path into fixed 120-character chunks;
-only the last chunk may be shorter.
-An empty encoded value is invalid.
-Decoding every segment must reproduce the exact identity stored in `record.json`.
-A mismatch is corruption and fails closed.
-This reversible hierarchy avoids filesystem component limits while preserving the complete identity.
-
-### Record metadata
-
-`record.json` is UTF-8 JSON with this shape:
-
-```ts
-export type TrustSourceRecord = {
-  readonly canonicalPath: string;
-  readonly snapshotFile: string;
-  readonly size: string;
-  readonly mtimeNanoseconds: string;
-};
-
-export type TrustRecord = {
-  readonly schemaVersion: 1;
-  readonly identity: TrustIdentity;
-  readonly repositoryRoot: string;
-  readonly format: 'mjs' | 'typescript';
-  readonly sources: readonly TrustSourceRecord[];
-  readonly executableSnapshotFile: string;
-  readonly executableSize: string;
-  readonly recursiveChildren: boolean;
-  readonly authorizingRoots: readonly TrustIdentity[];
-  readonly recordedAt: string;
-};
-```
-
-Sizes and nanosecond values are decimal strings to avoid JSON integer precision loss.
-`recordedAt` is an RFC 3339 UTC audit timestamp and never participates in trust equality.
-Source order is canonical config entry first,
-then canonical relative-module path byte order.
-Authorizing roots use canonical path byte order and contain no duplicates.
-
-Snapshot file paths are slash-separated record-relative names beneath `snapshots/`.
-They cannot be absolute or contain empty,
-`.` ,
-or `..` segments.
-MJS executes its stored source snapshot.
-TypeScript executes its stored one-chunk ESM bundle.
-No metadata field contains a digest or hash.
-
-### Atomicity and permissions
-
-Write a complete sibling temporary record directory,
-fsync its files and directories where supported,
-validate it by reopening with no-follow semantics,
-then atomically exchange or rename it into place.
-Interrupted temporary directories are ignored and recoverable.
-Readers never follow symlinks or reparse-point substitutions inside the registry.
-
-On POSIX:
-
-- registry and record directories are mode `0700`;
-- metadata and snapshots are mode `0600`;
-- every registry-owned directory and file belongs to current effective account;
-- unexpected ownership or group or other permission bits fail closed.
-
-On Windows,
-the registry adapter disables inheritance and applies an ACL limited to the current account and system administrators
-to every registry directory,
-metadata file,
-and snapshot.
-Every read independently verifies the protected ACL and required principals.
-Failure to apply or verify protection fails closed.
-
-### MJS self-containment
-
-MJS preflight decodes strict UTF-8 and parses ECMAScript module syntax without execution.
-Static imports,
-re-exports,
-and literal dynamic imports may name only Node built-ins.
-Local paths,
-package names,
-computed dynamic imports,
-and additional artifact assets are rejected.
-These checks constrain declared artifact module edges,
-not ambient authority after consent:
-trusted code can still use Node built-ins such as filesystem,
-module,
-or process APIs to access live state.
-
-### Exact comparison and execution
-
-MJS candidate capture opens the canonical config with no-follow semantics before resolving filesystem identity.
-On Linux,
-identity resolution targets `/proc/<pid>/fd/<fd>` without resolving that descriptor link first,
-so mount identity comes from the opened object.
-On hosts without a process-addressable descriptor path,
-identity resolution remains path-based but is bracketed by same-handle metadata before and after reading,
-final live-path device and inode agreement,
-and exact byte length.
-Degraded filesystem identity remains explicit in the trust disclosure rather than writing logger text into JSONL event streams.
-
-Strict MJS trust compares live entry bytes to the stored executable snapshot.
-Strict TypeScript trust compares every tracked live source byte sequence to its stored source snapshot and does not
-rebuild during ordinary Git commands.
-Comparison streams bytes and does not compute a digest.
-After source equality,
-execution opens the already validated stored executable snapshot.
-The live entry path is never imported.
-This closes entry-file compare-then-swap only.
-Trusted code retains ambient Node authority and can deliberately read or dynamically load other live files;
-self-containment validation does not sandbox or intercept that behavior.
-
-For TypeScript,
-explicit trust always builds a candidate bundle before consent.
-Only explicit trust or a relaxed metadata-triggered rebuild compares candidate bundle bytes to the stored bundle for
-disclosure and replacement.
-Ordinary strict execution never rebuilds or claims to derive expected bundle bytes.
-Persistent replacement occurs only after both consent stages and config validation succeed.
-
-## Trust consent protocol
-
-Root preflight safely reads bytes and metadata but does not execute config.
-It emits a human-readable disclosure to stderr containing every item required by the decision.
-Interactive approval accepts only an explicit affirmative response.
-Empty or invalid completed input declines without installing a new record.
-When stdin or stderr is not a terminal,
-or input ends before a response,
-cli-git emits `trust-consent-unavailable`
-and recommends `git cli-git trust --yes` after review.
-The failed attempt installs or replaces no record;
-a previous record remains unchanged.
-
-Root approval authorizes execution of the candidate stored artifact in temporary registry state.
-Validation failure deletes temporary state.
-If config does not declare child authority,
-validated root state is installed atomically.
-
-If config declares `trust.children: true`,
-a second disclosure names the canonical repository root and states that current and future descendant mounts inherit
-authority.
-Declining the second stage installs ordinary root trust with `recursiveChildren: false`.
-Unavailable consent during the second stage installs or replaces no record;
-a previous record remains unchanged.
-Accepting installs it with `recursiveChildren: true`.
-`--yes` prints and accepts every applicable disclosure.
-
-## Recursive enrollment and revocation
-
-A recursive root authorizes config paths whose canonical repository roots are strict descendants of the authorized
-canonical root.
-The path test is component-aware,
-not string-prefix matching.
-Filesystem identity does not restrict inheritance:
-recursive authority intentionally covers same-filesystem and mounted-volume descendants.
-Before authorizing a new enrollment,
-every covering recursive root must retain its exact trusted identity and bytes.
-A missing,
-changed,
-or mount-replaced root cannot authorize new records.
-
-First descendant encounter builds or validates config in private state,
-stores exact snapshots,
-and records every currently authorizing recursive root.
-It does not prompt.
-An auto-enrolled descendant may itself retain `recursiveChildren: true` without another prompt because its authority stays
-inside an already consented outer subtree;
-removing that inherited outer authority cascades through the nested root.
-A mount replacement at the same canonical path has a different filesystem identity and cannot reuse the previous
-record.
-If an unchanged outer root still authorizes the path,
-the replacement receives a new exact auto-enrollment.
-Later byte changes fail closed and require explicit trust.
-
-Explicitly trusting a descendant adds an independent self-authorizer that survives outer-root removal.
-Record updates are provenance transactions across all affected record directories.
-
-For `untrust`:
-
-1. Resolve the exact current identity without executing config.
-2. Compute every inherited descendant record affected by that identity.
-3. If the target is a recursive root nested beneath authorizing recursive roots,
-   include those outer roots and their inherited descendants.
-4. Print the complete affected recursive-root list.
-5. Acquire deterministic registry locks in encoded identity byte order.
-6. Write the complete new provenance state privately.
-7. Atomically install every new record or removal journal.
-8. Fsync changed record parents and the private journal directory before transaction completion.
-9. Recover interrupted transactions before any later trust operation.
-
-Journals use no-follow private-file validation and reject symbolic links,
-non-files,
-unsafe ownership,
-unsafe modes,
-and unsafe Windows ACLs.
-When the target config was deleted,
-`untrust` resolves the canonical repository root and revokes its sole matching stored record without executing code.
-
-Every journal writer holds the recursive-operation lock
-(see "Locks")
-from publishing its journal until settling it.
-Readers that take no lock,
-namely config loading in every wrapped Git command,
-`git cli-git status`,
-and the deleted-config `untrust` lookup,
-read without the lock while no journal is published.
-When one is,
-they take the lock,
-waiting without a time limit while its owner lives,
-recover every journal still published,
-each of which then belongs to a dead holder,
-and release it before reading.
-So a command never fails because another process is mid-transaction,
-and never reads records a live transaction has only partly settled.
-Journal owner PIDs are not consulted:
-a PID alone cannot tell a live owner from an unrelated process that reused it.
-
-A descendant with an independent explicit authorizer remains installed after inherited authorizers are removed.
-
-## Relaxed-mode parser
-
-The raw value is a comma-separated sequence.
-A percent escape is exactly `%25` for percent or `%2C` for comma,
-accepted case-insensitively on decode and emitted uppercase on encode.
-No other percent escape is valid.
-Decode each entry,
-then split on the first colon.
-Both fields must be non-empty.
-Filesystem ID must satisfy the fs-id module's colon-free validated output grammar.
-Canonical path must equal platform canonicalization of the config under consideration.
-
-Malformed entries emit one prominent warning per raw entry and are ignored.
-A well-formed entry naming the current path with a nonmatching filesystem ID emits a suspicious-entry warning and is
-ignored.
-Well-formed entries for other paths remain quiet even when their volume is absent.
-No entry waives first trust.
-
-For a previously trusted MJS identity with an exact matching entry,
-compare stored and live size plus modification time.
-A metadata change copies live bytes into a private candidate snapshot,
-reruns self-containment checks,
-executes and validates that private stored candidate,
-then atomically installs it and uses the validated config value for the invocation.
-Failure exits `2` and retains the previous record without executing it for that invocation.
-When metadata is unchanged,
-relaxed mode intentionally continues executing the previous stored snapshot even if an attacker preserved metadata while
-changing live bytes.
-
-For a previously trusted TypeScript identity with an exact matching entry,
-compare stored and live size plus modification time for tracked sources.
-Any metadata change triggers a private rebuild.
-A successful rebuild executes and validates the private stored candidate,
-then atomically replaces source and executable snapshots and uses that validated config value.
-Failure exits `2` and retains the previous record without executing it for that invocation.
-
-## TypeScript build contract
-
-Lazily import Rolldown only when a TypeScript trust build is required.
-Invoke its public `rolldown()` interface with:
-
-- Node platform;
-- ESM format;
-- one output chunk;
-- dependencies bundled by default;
-- `codeSplitting: false`;
-- `tsconfig: false` so no consumer TypeScript project configuration is read;
-- in-memory generation in the private build directory.
-
-Close the disposable bundle after generation,
-including failure paths,
-so native workers and the async runtime cannot retain the process.
-Accept exactly one JavaScript chunk and no asset,
-source-map,
-native binary,
-or additional chunk.
-Reject unresolved imports except Node built-ins.
-Reject nonliteral dynamic imports whose targets cannot be bundled.
-
-Resolve cli-git's package root and `/ts` subpath to the dedicated authoring source entry in the running installed
-artifact.
-For every other bare import from the entry or a tracked relative source,
-use bundled consumer resolution first.
-When that resolution is absent,
-derive the unscoped package's first segment or the scoped package's first two segments and fall back to the installed
-artifact only when that package name occurs in cli-git's packed runtime dependencies.
-Do not expose unrelated packages from the installation prefix.
-
-Extract the tracked relative-local source graph from Rolldown chunk module metadata and canonicalize every path.
-The graph must include the entry.
-Modules outside the repository root,
-symlink escapes,
-and missing graph entries fail trust.
-Bare package modules are bundled but excluded from source invalidation and produce a trust warning.
-After bundle generation completes,
-re-capture the entry identity and every tracked source;
-identity,
-exact bytes,
-size,
-and mtime must still match build inputs before trust can proceed.
-
-Relaxed-entry parser warnings use distinct stable codes for malformed entries and current-path filesystem-identity
-mismatches.
-A TypeScript rebuild that bundles package imports emits `typescript-package-import-not-invalidated`.
-Concurrent relaxed rebuilds may serialize successfully or one may fail closed on the per-record writer lock;
-a later invocation must load the complete winning record without repair.
 
 ## Transaction protocol
 
@@ -2484,10 +1523,10 @@ validates one-target ordinary text patches,
 applies them sequentially through `git apply --cached --3way`,
 and restarts the whole ordered policy sequence after exact candidate changes.
 Only the final unchanged pass emits findings.
-Each policy run's read set stays in memory for revalidation
-(see "Policy inputs and read sets");
+Revalidation after a replay runs every policy again
+(see "Policy re-run after replay");
 recovery never revalidates,
-so the journal does not record it.
+so the journal records no policy result.
 Policy exceptions,
 patch conflicts,
 and failed Git hooks discard private state without changing real index,
@@ -2954,11 +1993,9 @@ in a private directory `<tx>/replay-<r>/`:
      or detached `HEAD`)
     to `<current>`,
     so policies and hooks see the parent the commit will have.
-3.  Fingerprint the declared policy inputs,
-    then re-run cli-git policies against the paths the replayed tree changes relative to `<current>`:
-    every unrestricted policy runs,
-    and a declared policy keeps a recorded result while its reads and inputs hold
-    (see "Policy inputs and read sets").
+3.  Re-run cli-git policies against the paths the replayed tree changes relative to `<current>`:
+    every policy runs
+    (see "Policy re-run after replay").
     Patches converge under the ordinary pass-limit and cycle rules,
     and policy-added paths follow "Added paths",
     checked against the real index captured at invocation.
@@ -3336,24 +2373,6 @@ is retired by the next acquirer.
   bounded wait for an owner record without evidence,
   held only by applicable sources
   (see "Linked-worktree ignored-state synchronization").
-- Trust registry recursive-operation lock,
-  `<registry-root>/recursive-operation.lock`,
-  taken by every explicit trust,
-  untrust,
-  and recursive enrollment,
-  and by a reader that finds a published provenance journal
-  (see "Recursive enrollment and revocation"):
-  unbounded wait while its owner lives.
-  The candidate directory and owner record get the registry's private modes
-  and Windows ACL protection before publication
-  (see "Atomicity and permissions").
-  A PID-only owner record written by an earlier build is retired once its PID no longer runs;
-  while that PID runs,
-  and while the lock holds a malformed record or no record,
-  the owner is unproven,
-  and the acquirer backs off with Git's jittered quadratic schedule for up to 1000 ms,
-  then fails with a diagnostic naming the lock and the evidence
-  and leaves the lock in place.
 
 An owner is alive only while its PID names a running process with the recorded birth identity.
 On Linux a process in state `Z`
@@ -3550,72 +2569,22 @@ and preserves conflicting evidence after unrelated ref or index movement.
 
 ### Compatibility and degradation
 
-Cli-git has no version gate.
-Git 2.40.0 is the oldest release with every feature it uses;
-Git 2.39.5,
-Debian bookworm's Git,
-is the oldest release the container suite verifies,
-with replay degraded.
-Private preparation dispatches hooks through `git hook run --ignore-missing`,
-which Git 2.36.0 introduced;
-older releases are unverified.
-Features newer than that degrade one at a time,
-each detected by what Git does rather than by its version string:
+The executable requires real Git 2.55.0 or newer for commits,
+ hooks and the locks that coordinate with them.
+It asks Git for its version once per invocation before that work,
+and on an older Git it runs nothing and emits an `engine-failure` event with code `content-unavailable` and exit `2`,
+whose message names the real Git it found,
+the version Git reported and the remedy (upgrade Git,
+ then run the command again).
+Read-only commands are never checked.
+Features that Git introduced after 2.55.0 are not assumed.
 
-- Replay plumbing,
-  `git merge-tree --write-tree --merge-base`
-  (Git 2.40.0).
-  After a commit's first lost landing race,
-  and before any replay work,
-  cli-git runs `git merge-tree --write-tree --merge-base=<winner> <winner> <winner>`:
-  exit `0` proves the option,
-  exit `129`,
-  Git's usage status for an unknown option,
-  proves its absence,
-  and any other status fails the transaction.
-  The merge of the winning commit with itself yields that commit's own tree,
-  so the probe writes no object.
-  The answer is kept per Git executable for the rest of the process.
-  Usage text is not read,
-  because its spelling changed from `--merge-base <commit>` in Git 2.40.0
-  to `--[no-]merge-base <tree-ish>` in Git 2.55.0.
-  Without the option,
-  the commit fails with `concurrent-commit/head-moved` and exit `1`
-  (see "Core finding event"),
-  emitting no `landing-race-lost` event and leaving ref,
-  real index,
-  and worktree bytes unchanged,
-  the fail-fast behavior that predates replay.
-  A commit that lands on its first attempt never runs the probe.
-- `core.lockfilePid`
-  (Git 2.54.0).
-  Cli-git still injects it
-  (see "Lock PID injection");
-  an older Git ignores the unknown key and writes no PID file,
-  so a foreign `index.lock` holder is proven alive only by an open-descriptor scan.
-  A native `git commit` waiting in its editor keeps no descriptor open,
-  so a wrapped commit or index writer waits for it only up to `indexLock.unprovenOwnerTimeoutMs`
-  and then fails with `index-lock-unproven-owner` and exit `2`
-  instead of waiting for it without a time limit.
-- Config-based hooks,
-  `hook.<name>.command`
-  (Git 2.54.0).
-  An older Git runs none,
-  natively or through the wrapper,
-  and ignores the `hook.<event>.enabled=false` entries the dispatcher passes.
-
-Observed on Git 2.39.5 and 2.40.0 on 2026-09-26:
-an ordinary commit lands;
-a native `git commit` holding `index.lock` in its editor makes a concurrent wrapped commit fail after 1000 ms
-with `index-lock-unproven-owner`,
-naming "no PID file";
-a `hook.probe.command` `pre-commit` hook runs neither natively nor through the wrapper.
-On Git 2.39.5,
-before the probe existed,
-the commit that lost the race exited `2` with `transaction-failed` carrying `git merge-tree` usage text;
-nothing landed,
-its staged entry stayed,
-and `git fsck --strict` was clean.
+The retired TypeScript wrapper had no version gate and degraded one feature at a time on Git 2.39.5 and 2.40.0:
+a probe of `git merge-tree --write-tree --merge-base` (fail fast with `concurrent-commit/head-moved` without it),
+the `core.lockfilePid` key of Git 2.54.0,
+ and config-based hooks of Git 2.54.0.
+That design and the observations of 2026-09-26 are in this section at commit
+`f4fc1fa213ece65672e4314983a75266837892f9`.
 
 ### Required disposable fixtures
 
@@ -3778,30 +2747,6 @@ Landing and replay:
   and a worktree edit or real-index restage made after the hook ran is kept;
 - a staged blob is absent from the real object store while the commit is held in `pre-commit`,
   and a real `gc --prune=now` then keeps the commit whole;
-- missing replay plumbing fails a moved-target commit with `transaction-failed`.
-
-Policy inputs and read sets:
-
-- each lazy method records exactly its read,
-  memoized second calls still record per policy,
-  and a policy reading nothing records an empty set;
-- through the built wrapper,
-  a context-only policy skips after a disjoint replay,
-  an unrestricted policy re-runs,
-  and a declared `worktree` input changed by the winning commit forces a re-run;
-- each `worktree`,
-  `executable`,
-  `revision`,
-  and `env` fingerprint changes when its input changes and stays equal otherwise,
-  and each changed fingerprint forces a re-run;
-- engine passes mixing reused and re-run policies keep the ordered sequence:
-  a re-run patch ends the pass and later policies are re-evaluated against the patched state;
-- each shipped declaration is traced against the files and programs its policy touches;
-- an option-derived `inputs` function receives the parsed options;
-- invalid `inputs` shapes,
-  an unknown kind,
-  an empty pathspec list,
-  and a throwing `inputs` function are config failures.
 
 Capture order:
 
@@ -3914,16 +2859,17 @@ crash recovery,
 or lock contention,
 so this suite is an inherent part of the transaction protocol.
 
-- A mise task packs the npm tarball and runs a consumer script inside `podman` with stated memory and CPU bounds,
-  following the `test:built:trust` precedent.
-- The image provides every Git version under test:
-  Git 2.40.0,
-  the oldest release with every feature cli-git uses,
-  and the current release,
-  each running the whole catalog,
-  plus Git 2.39.5,
-  which runs the scenarios that never replay and the ones proving replay degrades to fail-fast
-  (see "Compatibility and degradation").
+- A mise task (`test:e2e:concurrent:native`) builds the release executable into an image and runs a consumer script
+  inside `podman` with stated memory and CPU bounds.
+- The image provides Git 2.39.5,
+   2.40.0 and 2.55.0.
+  The native executable requires Git 2.55.0
+  (see "Compatibility and degradation"),
+  so the supported run is `--git 2.55.0`,
+   which runs the whole catalog.
+  The two older versions stay in the image from the retired wrapper's suite;
+  the native executable refuses them,
+   so runs on them fail by design.
   Distribution images that ship an older Git do not qualify as the only Git.
 - Each run creates new repositories and a local bare remote inside the container,
   never touching host repositories.
@@ -4040,21 +2986,17 @@ Explicit dry runs bypass manual-push policies.
 Pure ref deletion is clean.
 Indeterminate required content exits `2` with `content-unavailable`.
 
-Default scanner resolution uses `forbidden-strings` from `PATH`.
-An explicit policy option may choose another executable.
-Always invoke the scanner with an argument array and no shell.
-Before explicit temporary-file scanning,
+The scanner is linked into the executable and runs in-process;
+ no scanner executable is resolved or started.
+Before scanning,
 apply the scanner's path-anchored `--all` exclusions for its configured rules file and canonical self-match sources.
 Do not exclude unrelated nested files sharing those basenames.
-Exit `1` is parsed as redacted findings;
+Findings are redacted;
 the scanner must not expose matched bytes.
-Missing executable,
-unexpected non-finding status,
-process interruption,
-malformed output,
-and scanner-owned materialized-file read failure throw from the plugin.
-A thrown plugin callback emits `plugin-threw` and exits `2`;
-invalid completed plugin output emits `policy-incomplete`.
+A missing rules file named by configuration,
+a scanner failure,
+and a materialized-file read failure are engine failures that exit `2`;
+an incomplete policy result emits `policy-incomplete`.
 The policy defaults to error and is warn-unsafe.
 Preserve the independent SLSA-attested CI invocation.
 
@@ -4098,17 +3040,14 @@ command,
 filesystem cache state,
 and stdio sink.
 Network operations use a local bare remote.
-Scanner and plugin fixtures are deterministic and local.
+Scanner fixtures are deterministic and local.
 
 Measure these scenarios separately:
 
 - no config forwarded command;
 - known read-only command;
-- strict trusted MJS;
-- strict trusted cached TypeScript;
-- relaxed TypeScript rebuild;
 - built-in validator;
-- external scanner;
+- linked scanner;
 - normalizer clean path;
 - normalizer changed path;
 - post-commit policy and local auto-push;
@@ -4255,37 +3194,19 @@ CI compares like-for-like scenarios and reports both absolute and relative regre
 
 Before release readiness:
 
-- package README exists and matches this interface;
-- lint has zero warnings;
-- type checks pass;
-- every exported code path has a test;
-- built artifacts contain the Node shebang;
-- `npm pack` contains only intended runtime,
-  declarations,
-  README,
-  licenses,
-  and package metadata;
-- a disposable non-workspace project installs the tarball;
-- that project imports every authoring helper without CLI side effects;
-- its PATH resolves the packaged `git` first;
-- wrapper and all management commands run through the built shim;
-- MJS and TypeScript trust execute stored artifacts;
+- the package README exists and matches this interface;
+- Clippy reports no warning and the crate's tests pass in the bounded container
+  (`mise run //package/git-policy/cli:native:test:container`);
+- the release executable builds with `cargo build --release --locked --bin cli-git-native`;
+- the `git` that `PATH` resolves first leads to `cli-git-native`
+  (`readlink --canonicalize "$(command -v git)"`);
+- the wrapper and all management commands run through the installed executable;
 - direct fix proves index preservation;
 - the container end-to-end suite
   (see "Container end-to-end suite")
-  passes on Git 2.39.5,
-  Git 2.40.0,
-  and the current release;
-- Linux,
-  macOS,
-  and Windows trust adapters have real-host evidence.
+  passes;
+- a signed commit lands and auto-pushes with the user's real credential helper,
+   and a manual push succeeds.
 
-No step uploads to npm.
-
-## Contract fixture verification
-
-Issue #341 verifies the declarations and authoring examples in a disposable TypeScript consumer.
-It also parses every management command form with a management parser fixture and rejects the mutually exclusive or missing
-scope forms.
-Runtime slices must replace those contract fixtures with built-package user-boundary tests rather than relying on the
-document-only evidence.
+The crate is published to crates.io by `.github/workflows/cargo-publish.yml`;
+ no step uploads to npm.

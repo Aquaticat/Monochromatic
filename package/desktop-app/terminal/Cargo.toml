@@ -7,9 +7,13 @@ publish = false
 description = "Slint desktop terminal prototype backed by Ghostty's libghostty-vt core."
 
 [lints.clippy]
+complexity = { level = "allow", priority = -1 }
 disallowed_methods = "deny"
 implicit_return = "deny"
 needless_return = "allow"
+shadow_reuse = "deny"
+shadow_same = "deny"
+shadow_unrelated = "deny"
 
 [lib]
 name = "terminal_app"
@@ -27,10 +31,10 @@ anyhow = "1"
 # backend lets the app stamp its Wayland app id before the window is created. The
 # slint-build build-dependency in this file must stay in this same release family
 # because the markup compiler and runtime are versioned together.
-# "1.17.0" here is Cargo's default caret requirement (">=1.17.0, <2.0.0"), not an
+# "1.18.1" here is Cargo's default caret requirement (">=1.18.1, <2.0.0"), not an
 # exact pin: unlike pnpm, where a bare version string pins the exact release,
-# Cargo already lets `cargo update` move to any newer 1.x release past 1.17.0.
-i-slint-backend-winit = "1.17.0"
+# Cargo already lets `cargo update` move to any newer 1.x release past 1.18.1.
+i-slint-backend-winit = "1.18.1"
 # Safe Rust binding for Ghostty's terminal core. Default features are disabled
 # because this prototype renders text cells only and does not need Kitty images.
 libghostty-vt = { version = "0.1.1", default-features = false }
@@ -43,9 +47,9 @@ libghostty-vt = { version = "0.1.1", default-features = false }
 # implementation code; the source delta only updates optional serde imports.
 # Revert to a crates.io release once one includes nix 0.29 or newer.
 portable-pty = { git = "https://github.com/wezterm/wezterm", rev = "f78f72f2f18bf459561e3681f016365273d3e281" }
-# "1.17.0" here is Cargo's default caret requirement (">=1.17.0, <2.0.0"), not an
+# "1.18.1" here is Cargo's default caret requirement (">=1.18.1, <2.0.0"), not an
 # exact pin, the same as i-slint-backend-winit and slint-build in this file.
-slint = { version = "1.17.0", features = ["backend-winit", "renderer-femtovg", "renderer-software"] }
+slint = { version = "1.18.1", features = [ "backend-winit", "renderer-femtovg", "renderer-software", ], }
 # The logging facade and its subscriber. tracing routes this prototype's callback-error
 # diagnostics as structured events; tracing-subscriber installs the stderr sink (RUST_LOG,
 # default info) so failures are visible when launched from a terminal.
@@ -55,9 +59,9 @@ tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 [build-dependencies]
 # Must match the `slint` release family used for this crate's slint and
 # i-slint-backend-winit dependencies because the compiler and runtime are
-# versioned together. "1.17.0" here is Cargo's default caret requirement
-# (">=1.17.0, <2.0.0"), not an exact pin.
-slint-build = "1.17.0"
+# versioned together. "1.18.1" here is Cargo's default caret requirement
+# (">=1.18.1, <2.0.0"), not an exact pin.
+slint-build = "1.18.1"
 
 # Standalone crate: its own workspace root, so no ancestor Cargo.toml can absorb it.
 # Enforced by file-enforcer (doc/planning/cargo-toml-file-enforcer.md).

@@ -21,7 +21,7 @@ import {
 import { domainXml, } from './domain-xml.ts';
 import { ensureImage, } from './image.ts';
 import type { LinuxImageSpec, } from './registry.ts';
-import { spawn, } from './spawn.ts';
+import { qemuImg, } from './qemu-img.ts';
 import {
   TEMPLATE_VM_NAME,
   templateVmGuard,
@@ -118,8 +118,7 @@ export async function ensureLinuxTemplate(spec: LinuxImageSpec,): Promise<string
   await using _cleanup = templateVmGuard(rl,);
 
   rl.info('creating overlay disk from base image...',);
-  await spawn({
-    command: 'qemu-img',
+  await qemuImg({
     args: [
       'create',
       '-f',
@@ -166,8 +165,7 @@ export async function ensureLinuxTemplate(spec: LinuxImageSpec,): Promise<string
   await waitForShutdown({ name: TEMPLATE_VM_NAME, },);
 
   rl.info('converting overlay to standalone template image...',);
-  await spawn({
-    command: 'qemu-img',
+  await qemuImg({
     args: [
       'convert',
       '-O',

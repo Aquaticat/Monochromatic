@@ -1,14 +1,27 @@
 //! The Unix-socket control API.
 //!
-//! A dedicated thread owns the listening socket and does all blocking line I/O. For each
-//! request line it parses a `Command`, forwards it to the main (event-loop) thread over a
-//! calloop channel together with a one-shot reply channel, waits for the `Response`, and
-//! writes it back. Executing on the main thread is required because screenshot readback
-//! and input injection must touch the GL context and seat, which live there.
+//! A dedicated thread owns the listening socket and does all blocking line I/O.
+//!  For each
+//! request line it parses a `Command`,
+//!  forwards it to the main (event-loop) thread over a
+//! calloop channel together with a one-shot reply channel,
+//!  waits for the `Response`,
+//!  and
+//! writes it back.
+//!  Executing on the main thread is required because screenshot readback
+//! and input injection must touch the GL context and seat,
+//!  which live there.
 
-/// What:     Grouped `use` of the blocking I/O traits, the Unix socket types, paths, the
-///           one-shot reply channel, and threads.
-/// Why:      The control thread reads lines and writes responses; the reply channel bridges
+/// What:
+///      Grouped `use` of the blocking I/O traits,
+///  the Unix socket types,
+///  paths,
+///  the
+///           one-shot reply channel,
+///  and threads.
+/// Why:
+///       The control thread reads lines and writes responses;
+///  the reply channel bridges
 ///           back from the main thread.
 ///
 /// In TS you'd write (pseudocode):
@@ -22,45 +35,61 @@ use std::{
     sync::mpsc::{sync_channel, SyncSender},
 };
 
-/// What:     Grouped `use` of the calloop channel (cross-thread source) and loop handle,
-///           plus winit's `PhysicalSize` for the resize request.
-/// Why:      Register the channel as an event source and request a window resize.
-use smithay::reexports::{
-    calloop::{
-        channel::{channel, Event, Sender},
-        LoopHandle,
-    },
-    winit::dpi::PhysicalSize,
+/// What:
+///      Grouped `use` of the calloop channel (cross-thread source) and loop handle.
+/// Why:
+///       Register the channel as an event source on the main loop.
+use smithay::reexports::calloop::{
+    channel::{channel, Event, Sender},
+    LoopHandle,
 };
 
-/// What:     `use anyhow::{Context, Result};`. Error helpers.
-/// Why:      Socket binding and thread spawning return `Result`.
+/// What:
+///      `use anyhow::{Context, Result};`.
+///  Error helpers.
+/// Why:
+///       Socket binding and thread spawning return `Result`.
 use anyhow::{Context, Result};
 
-/// What:     `use tracing::{info, warn};`. Structured log macros.
-/// Why:      Report listening, accept errors, and connection errors.
+/// What:
+///      `use tracing::{info, warn};`.
+///  Structured log macros.
+/// Why:
+///       Report listening,
+///  accept errors,
+///  and connection errors.
 use tracing::{info, warn};
 
-/// What:     Grouped `use` of the protocol, input, keymap, screenshot, and state items.
-/// Why:      `execute` dispatches parsed commands into these subsystems.
+/// What:
+///      Grouped `use` of the protocol,
+///  input,
+///  keymap,
+///  screenshot,
+///  and state items.
+/// Why:
+///       `execute` dispatches parsed commands into these subsystems.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// import { parseCommand, formatResponse, Command, Response } from "./protocol"; ...
 /// ```
 use crate::{
-    child, dnd, encoder, input, keymap,
+    child, dnd, encoder, input,
     protocol::{format_response, parse_command, Command, Response},
     recorder, screenshot,
     state::Compositor,
 };
 
-/// A command forwarded from the control thread to the main thread, with a reply channel.
+/// A command forwarded from the control thread to the main thread,
+///  with a reply channel.
 ///
-/// What:     `pub struct ControlRequest { pub command: Command, pub reply:
-///           SyncSender<Response> }`. `SyncSender<Response>` is the sending half of a
+/// What:
+///      `pub struct ControlRequest { pub command: Command, pub reply:
+///           SyncSender<Response> }`.
+///  `SyncSender<Response>` is the sending half of a
 ///           bounded one-shot channel the main thread answers on.
-/// Why:      Carries both the work and the way to return its result across threads.
+/// Why:
+///       Carries both the work and the way to return its result across threads.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -73,12 +102,19 @@ pub struct ControlRequest {
     pub reply: SyncSender<Response>,
 }
 
-/// Bind the control socket, register the channel source, and spawn the control thread.
+/// Bind the control socket,
+///  register the channel source,
+///  and spawn the control thread.
 ///
-/// What:     `pub fn start(loop_handle: &LoopHandle<Compositor>, socket_path: &Path) ->
-///           Result<()>`. Borrows the loop handle (to insert the channel source) and the
-///           socket path. The loop-handle lifetime is elided, matching `child.rs`.
-/// Why:      One call from `run` wires the whole control API when a socket is requested.
+/// What:
+///      `pub fn start(loop_handle: &LoopHandle<Compositor>, socket_path: &Path) ->
+///           Result<()>`.
+///  Borrows the loop handle (to insert the channel source) and the
+///           socket path.
+///  The loop-handle lifetime is elided,
+///  matching `child.rs`.
+/// Why:
+///       One call from `run` wires the whole control API when a socket is requested.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -108,12 +144,8 @@ pub fn start(loop_handle: &LoopHandle<Compositor>, socket_path: &Path) -> Result
                 // What:     `let response = execute(state, request.command);`. Run the
                 //           command against the live state on the main thread.
                 // Why:      Produce the result to send back.
-                let response = execute(state, request.command);
-
-                // What:     `let _ = request.reply.send(response);`. Send the result back;
-                //           discard the send error (the control thread may have hung up).
-                // Why:      Deliver the response to the waiting control thread.
-                let _ = request.reply.send(response);
+                // The timed commands (hold, drag, double click) answer later from the timeline.
+                crate::control_run::run(state, request.command, request.reply);
             }
         })
         .map_err(|err| anyhow::anyhow!("registering the control channel source failed: {err}"))?;
@@ -134,9 +166,13 @@ pub fn start(loop_handle: &LoopHandle<Compositor>, socket_path: &Path) -> Result
 
 /// Bind (and clean up any stale) the control Unix socket.
 ///
-/// What:     `fn bind_listener(path: &Path) -> Result<UnixListener>`. Removes a stale
-///           socket file if present, then binds.
-/// Why:      A leftover socket file from a previous run would make `bind` fail.
+/// What:
+///      `fn bind_listener(path: &Path) -> Result<UnixListener>`.
+///  Removes a stale
+///           socket file if present,
+///  then binds.
+/// Why:
+///       A leftover socket file from a previous run would make `bind` fail.
 fn bind_listener(path: &Path) -> Result<UnixListener> {
     // What:     `if path.exists() { std::fs::remove_file(path).with_context(...)?; }`.
     //           Remove a pre-existing socket file.
@@ -161,11 +197,15 @@ fn bind_listener(path: &Path) -> Result<UnixListener> {
     return Ok(listener)
 }
 
-/// The control thread body: accept connections and handle each in turn.
+/// The control thread body:
+///  accept connections and handle each in turn.
 ///
-/// What:     `fn control_thread(listener: UnixListener, sender: Sender<ControlRequest>)`.
+/// What:
+///      `fn control_thread(listener: UnixListener, sender: Sender<ControlRequest>)`.
 ///           Owns the listener and the channel sender.
-/// Why:      Serialises control clients (a test harness connects one at a time), keeping
+/// Why:
+///       Serialises control clients (a test harness connects one at a time),
+///  keeping
 ///           the protocol simple.
 fn control_thread(listener: UnixListener, sender: Sender<ControlRequest>) {
     // What:     `for incoming in listener.incoming() { ... }`. Iterate accepted connections;
@@ -194,11 +234,16 @@ fn control_thread(listener: UnixListener, sender: Sender<ControlRequest>) {
     }
 }
 
-/// Handle one control connection: read request lines and write response lines.
+/// Handle one control connection:
+///  read request lines and write response lines.
 ///
-/// What:     `fn handle_connection(stream: UnixStream, sender: &Sender<ControlRequest>) ->
-///           Result<()>`. Reads until the client closes the connection.
-/// Why:      Implements the line-per-request, line-per-response loop for one client.
+/// What:
+///      `fn handle_connection(stream: UnixStream, sender: &Sender<ControlRequest>) ->
+///           Result<()>`.
+///  Reads until the client closes the connection.
+/// Why:
+///       Implements the line-per-request,
+///  line-per-response loop for one client.
 fn handle_connection(stream: UnixStream, sender: &Sender<ControlRequest>) -> Result<()> {
     // What:     `let reader_half = stream.try_clone().context(...)?;`. Duplicate the socket
     //           fd so one half reads while the other writes.
@@ -217,11 +262,10 @@ fn handle_connection(stream: UnixStream, sender: &Sender<ControlRequest>) -> Res
     // What:     `for line in reader.lines() { ... }`. Iterate the connection's lines;
     //           `lines()` yields `Result<String>` per line, ending at EOF.
     // Why:      One request per line.
-    for line in reader.lines() {
-        // What:     `let line = line.context("reading a control line")?;`. Unwrap the read
-        //           result.
-        // Why:      Propagate a read error out of the connection loop.
-        let line = line.context("reading a control line")?;
+    for line_result in reader.lines() {
+        // What:     context adds a diagnostic before ? unwraps the read result.
+        // Why:      Keep the I/O result distinct from the decoded control line.
+        let line = line_result.context("reading a control line")?;
 
         // What:     `let response = dispatch_line(&line, sender);`. Parse and execute the
         //           line (or produce an error response).
@@ -248,11 +292,15 @@ fn handle_connection(stream: UnixStream, sender: &Sender<ControlRequest>) -> Res
     return Ok(())
 }
 
-/// Parse one line and, if valid, run it on the main thread and await its response.
+/// Parse one line and,
+///  if valid,
+///  run it on the main thread and await its response.
 ///
-/// What:     `fn dispatch_line(line: &str, sender: &Sender<ControlRequest>) -> Response`.
+/// What:
+///      `fn dispatch_line(line: &str, sender: &Sender<ControlRequest>) -> Response`.
 ///           Always returns a `Response` (parse errors become `Err` responses).
-/// Why:      Bridge the control thread to the main thread for one command.
+/// Why:
+///       Bridge the control thread to the main thread for one command.
 fn dispatch_line(line: &str, sender: &Sender<ControlRequest>) -> Response {
     // What:     `let command = match parse_command(line) { Ok(c) => c, Err(message) =>
     //           return Response::Err(message) };`. Parse; a parse error short-circuits to an
@@ -294,10 +342,13 @@ fn dispatch_line(line: &str, sender: &Sender<ControlRequest>) -> Response {
 
 /// Execute a command against the live compositor state (runs on the main thread).
 ///
-/// What:     `pub fn execute(state: &mut Compositor, command: Command) -> Response`.
+/// What:
+///      `pub fn execute(state: &mut Compositor, command: Command) -> Response`.
 ///           Dispatches each command variant to its subsystem and maps the outcome to a
 ///           `Response`.
-/// Why:      The single place command semantics live; called from the channel source.
+/// Why:
+///       The single place command semantics live;
+///  called from the channel source.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -318,45 +369,72 @@ pub fn execute(state: &mut Compositor, command: Command) -> Response {
                 Err(err) => return Response::Err(format!("{err:#}")),
             }
         }
-        Command::Click { x, y, button } => {
-            // What:     `input::click(state, x, y, button);`. Inject the click.
+        Command::Click { x, y, button, .. } => {
+            // What:     `input::click(state, x, y, button);`. Inject the click. A double click or
+            //           a click with modifiers never gets here: the timeline plans it.
             // Why:      Perform the requested click.
             input::click(state, x, y, button);
             return Response::Ok
         }
+        Command::Wheel { x, y, horizontal, vertical, .. } => {
+            match crate::input_wheel::wheel(state, x, y, horizontal, vertical) {
+                Ok(()) => return Response::Ok,
+                Err(error) => return Response::Err(format!("{error:#}")),
+            }
+        }
+        Command::Drag { .. } | Command::Scroll { .. } => {
+            return Response::Err("timed pointer commands run through the timeline".to_string())
+        }
         Command::Key { name, action } => {
-            // What:     `match keymap::named_key(&name) { Some(evdev) => { input::key(...);
-            //           Response::Ok } None => Response::Err(...) }`. Resolve the key name;
-            //           error on an unknown key.
+            // What:     `parse_chord(&name)` resolves every key of the chord; the first unknown
+            //           name fails the whole command before any key is pressed.
             // Why:      Only inject keys we can map to an evdev code.
-            match keymap::named_key(&name) {
-                Some(evdev) => {
-                    input::key(state, evdev, action);
-                    return Response::Ok
+            match crate::key_chord::parse_chord(&name) {
+                Ok(chord) => {
+                    match crate::input_key::apply(state, &chord, action) {
+                        Ok(()) => return Response::Ok,
+                        Err(error) => return Response::Err(format!("{error:#}")),
+                    }
                 }
-                None => return Response::Err(format!("unknown key: {name}")),
+                Err(message) => return Response::Err(message),
             }
         }
         Command::Type(text) => {
-            // What:     `input::type_text(state, &text);`. Type the run of text.
+            // What:     `input_text::type_text(state, &text)`. Type the run of text, switching to
+            //           spare Unicode keys for characters the layout lacks.
             // Why:      Perform the requested typing.
-            input::type_text(state, &text);
-            return Response::Ok
+            match crate::input_text::type_text(state, &text) {
+                Ok(()) => return Response::Ok,
+                Err(error) => return Response::Err(format!("{error:#}")),
+            }
+        }
+        Command::RepeatInfo(change) => return crate::control_session::repeat_info(state, change),
+        Command::Focus => return crate::window_list::focus_response(state),
+        Command::Windows => return crate::window_list::windows_response(state),
+        Command::CloseWindow(index) => return crate::window_list::close_response(state, index),
+        Command::Cursor => return crate::control_session::cursor(state),
+        Command::Accessibility => return crate::a11y_tree::response(state),
+        Command::Display => {
+            return Response::OkWith(state.socket_name.to_string_lossy().into_owned())
         }
         Command::Resize { width, height } => {
-            // What:     `resize(state, width, height);`. Request the window resize.
-            // Why:      Change the nested screen size.
-            resize(state, width, height);
-            return Response::Ok
+            // What:     `screen::resize(state, width, height)`. Apply the new logical size.
+            // Why:      Change the nested screen size at once, keeping the output scale.
+            return crate::screen::resize(state, width, height);
         }
-        Command::DropFile { path, x, y } => {
-            // What:     `match dnd::drop_file(state, &path, x, y) { Ok(()) => Response::Ok,
+        Command::Scale(scale) => {
+            // What:     `screen::switch_scale(state, scale)`. Apply the new output scale.
+            // Why:      Keep the logical size so the client sees a scale change, not a resize.
+            return crate::screen::switch_scale(state, scale);
+        }
+        Command::DropFile { paths, x, y } => {
+            // What:     `match dnd::drop_file(state, &paths, x, y) { Ok(()) => Response::Ok,
             //           Err(err) => Response::Err(format!("{err:#}")) }`. Originate the
             //           compositor-side drag; map the outcome. `{err:#}` renders the anyhow
             //           context chain.
             // Why:      Report a drop-file setup failure (missing file, unmapped app) with its
             //           cause; the drop itself completes asynchronously on the release timer.
-            match dnd::drop_file(state, &path, x, y) {
+            match dnd::drop_file(state, &paths, x, y) {
                 Ok(()) => return Response::Ok,
                 Err(err) => return Response::Err(format!("{err:#}")),
             }
@@ -392,27 +470,63 @@ pub fn execute(state: &mut Compositor, command: Command) -> Response {
                 None => return Response::Err("not recording".to_string()),
             }
         }
+        Command::ColorScheme(preference) => {
+            // What:     `.as_ref()` turns the owned optional portal into an optional borrow,
+            //           so the state keeps owning it.
+            // Why:      Only the private portal started by `--color-scheme` is ever switched;
+            //           without one the helper refuses instead of reaching another bus.
+            //
+            // In TS you'd write (pseudocode):
+            // ```ts
+            // return switchColorScheme(state.appearancePortal, preference);
+            // ```
+            return crate::control_color_scheme::switch(state.appearance_portal.as_ref(), preference);
+        }
+        Command::AccentColor(color) => {
+            return crate::control_accent::switch(state.appearance_portal.as_ref(), color);
+        }
+        Command::Notification(verb) => {
+            return crate::control_notification::run(state.notifications.as_ref(), &verb);
+        }
+        Command::Job(verb) => {
+            return crate::control_job::run(state.notifications.as_ref(), &verb);
+        }
+        Command::Move { x, y } => {
+            // What:     `input_pointer::move_pointer(state, x, y)`. Moves the pointer with no
+            //           button, mapping a failure to an `err` line.
+            // Why:      Hover is the only effect; the hosted client sees enter and motion events.
+            match crate::input_pointer::move_pointer(state, x, y) {
+                Ok(()) => return Response::Ok,
+                Err(err) => return Response::Err(format!("{err:#}")),
+            }
+        }
+        Command::Button { action, button } => {
+            // What:     `input_pointer::button(state, action, button)`. Presses or releases at
+            //           the current pointer position; a repeated state answers `err`.
+            // Why:      Lets a test hold a press across a pause and a movement.
+            match crate::input_pointer::button(state, action, button) {
+                Ok(()) => return Response::Ok,
+                Err(err) => return Response::Err(format!("{err:#}")),
+            }
+        }
+        Command::Title => return crate::control_window::title_response(state),
+        Command::AppId => return crate::control_window::app_id_response(state),
+        Command::Launcher => {
+            // What:     `control_launcher::latest(state.launcher.as_ref(), state.start_time)`.
+            //           Reads the newest update from the listener, or refuses without a bus.
+            // Why:      The start time is the clock every update is stamped with.
+            return crate::control_launcher::latest(state.launcher.as_ref(), state.start_time);
+        }
+        Command::LauncherLog { count } => {
+            return crate::control_launcher::log(state.launcher.as_ref(), count);
+        }
+        Command::LauncherClear => {
+            return crate::control_launcher::clear(state.launcher.as_ref());
+        }
         Command::Quit => {
             // Ask hosted client to close before tearing down its Wayland connection.
             child::request_hosted_client_shutdown(state);
             return Response::Ok;
         }
     }
-}
-
-/// Request that the nested winit window (and thus the output) resize.
-///
-/// What:     `fn resize(state: &mut Compositor, width: i32, height: i32)`. Asks winit for a
-///           new inner size; the actual `WinitEvent::Resized` follows and updates the
-///           output.
-/// Why:      A control command should be able to change the screen size mid-test.
-fn resize(state: &mut Compositor, width: i32, height: i32) {
-    // What:     `let _ = state.backend.window().request_inner_size(PhysicalSize::new(width
-    //           as u32, height as u32));`. Request the resize; discard the returned optional
-    //           immediate size. The parent compositor may honour or ignore it.
-    // Why:      Best-effort resize; the resulting `Resized` event does the real update.
-    let _ = state
-        .backend
-        .window()
-        .request_inner_size(PhysicalSize::new(width as u32, height as u32));
 }

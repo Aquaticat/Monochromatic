@@ -3,6 +3,14 @@
 # shares one channel. mise still applies that toolchain to tasks run in this
 # directory; cargo-fuzz needs the nightly it provides.
 
+[tasks."lint:clippy:container"]
+description = "Check all fuzz sidecar targets with Clippy in the bounded mount-free offline snapshot"
+run = "node bin/smoke-container.mjs --clippy"
+
+[tasks."smoke:embedding:container"]
+description = "Fuzz native embedding snapshots with ASan in a mount-free offline 2 GiB / 2 CPU container"
+run = "node bin/smoke-container.mjs"
+
 [tasks.test]
 description = "cargo nextest run --lib (unit tests for the structured generator)"
 # Scoped to `--lib`: the library target hosts the generator unit tests
@@ -19,7 +27,7 @@ run = "cargo clippy --fix --allow-dirty --allow-staged --all-targets"
 
 [tasks."lint:clippy"]
 description = "Run Clippy over every Rust target with warnings denied"
-run = "cargo clippy --release --all-targets -- -D warnings"
+run = "cargo clippy --release --all-targets -- --deny warnings"
 
 [tasks.list]
 description = "List all fuzz targets"
@@ -111,3 +119,7 @@ if (replays.length === 0) {
 const inputs = replays.length === 0 ? corpusDirs : replays
 execFileSync('cargo', ['fuzz', 'run', '--fuzz-dir', '.', target, '--sanitizer', 'address', '--target', 'x86_64-unknown-linux-gnu', ...inputs, '--', '-dict=dictionary/forbidden-strings.dict', ...flags], { stdio: 'inherit' })
 """
+
+[tasks."lock:members"]
+description = "Record a changed version of a path dependency in this lockfile without moving any other locked version"
+run = "cargo update --offline --workspace"

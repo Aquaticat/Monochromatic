@@ -23,6 +23,9 @@ The report is attached to `package/webapp-productivity/rss/src/index.ts`,
  at `1:1`,
  which is the file whose analysis is lost.
 
+The historical `package/module/test/src/expect-matchers.ts` moved on 2026-10-04
+ to `package/module/test-expect/src/expect-matchers.ts`.
+
 An earlier reading of mine named `package/module/test/src/expect-matchers.ts` instead,
  inferred from diagnostics printed near the panic in an interleaved log.
 That was wrong,
@@ -209,6 +212,7 @@ Does not reproduce,
  each run completing with findings and no panic:
 
 ```bash
+# Historical command; the file moved to package/module/test-expect/src/expect-matchers.ts on 2026-10-04.
 # 7 findings, no panic
 node package/dev-script/task-util/dist/final/node/oxlint-wrapper.mjs --type-aware package/module/test/src/expect-matchers.ts
 
@@ -370,6 +374,16 @@ tuple data,
  which an instantiated type does not carry.
  So the shape to look for when this fires elsewhere is a `?? []` or `: []` fallback beside a non-tuple array type,
 not a declared tuple.
+
+This site no longer exists.
+ On 2026-10-12 the statusline package replaced both of its regex sites with linear scanners,
+ so `findGerundInText` moved to
+`package/claude-code-plugin/statusline/src/gerund.ts`
+ and takes its matches from a scanner that returns a plain array,
+ with no `?? []` fallback beside a `RegExpMatchArray`.
+`mise run //package/claude-code-plugin/statusline:lint` now reports no omitted callable summaries for that package,
+ which is the same warning quoted from the run that found this trigger.
+ The trigger shape is unchanged and is what to look for in other packages.
 
 A narrower catch would recover the 16.
  The panic surfaces when a type crosses the sync bridge,

@@ -546,6 +546,103 @@ for (let itemIndex = 0; itemIndex < items.length; itemIndex++)
 items.forEach(function processItem(item, itemIndex) { ... })
 ```
 
+### Duplication and pattern ownership
+
+Two checks that apply to every change,
+not only to duplicate-code reports.
+The three-letter codes are repository-wide handles,
+unique across `AGENTS.md`,
+the skills and the package docs,
+so other documents can cite them.
+
+`GRW` A repeated shape needs an owner.
+When a diff adds,
+keeps or approves a shape that already exists elsewhere,
+name what owns the pattern:
+a shared function,
+a base class,
+a macro,
+a factory,
+a lint rule,
+or a written convention.
+"It is only two places" and "it is too small to extract" are not answers,
+because a pattern instantiated twice is a template for the third copy and the count then grows
+without anyone deciding.
+If nothing should own it,
+say why the pattern is closed instead:
+it cannot recur
+(a protocol fixed elsewhere,
+a pair of complements,
+one instance per platform),
+or each instance is data rather than code
+(a test case,
+a probe input,
+a benchmark arm).
+
+Severity:
+WARNING when the shape exists in two places,
+BLOCKER when the diff adds a third copy or the shape already exists at ten or more sites.
+
+```ts
+// Bad -- flag as WARNING: one policy, two spellings, no owner
+function isNonEmptyLine(line: string,): boolean {
+  return line !== '';
+}
+
+// elsewhere in the repository
+function hasText(line: string,): boolean {
+  return line.length > 0;
+}
+
+// Good: one owner, and every call site imports it
+import { isNonEmptyLine, } from '@monochromatic-dev/agent-harness-shared-text-scan';
+```
+
+Measured example from this repository:
+`this.name = '...'` sits at 210 sites across 146 files,
+every one hand-written,
+and a duplicate-code review dismissed twelve clusters of them as trivial boilerplate because no
+rule asked who owns the pattern.
+The idiom was two sites when it was first written.
+
+`TWS` Two-sided code states its choice.
+When a change adds or keeps two sides of one behaviour
+(sync and async,
+mirror event handlers,
+complementary predicates,
+per-arity overloads,
+fork and upstream adapters,
+per-locale renderers),
+the diff or its commit message names which of three arrangements applies:
+the sides share a core,
+one side is generated from the other,
+or both are hand-written on purpose.
+Silence is how a repository reaches 22 hand-written sync and async pairs and 519 duplicated tokens
+between `runPipe` and `runPipeAsync`.
+
+Exception:
+where identical code on both sides is what makes an observed difference meaningful,
+as in differential-fuzz adapters,
+hand-writing both is the method and the commit says so.
+
+Severity:
+WARNING for a new pair with no stated choice,
+BLOCKER when the pair shares roughly 50 or more tokens of identical body and still has none.
+
+```ts
+// Bad -- flag as WARNING: a new twin, with no stated choice anywhere
+export function readCssFile(path: string,): string { ... }
+export async function readCssFileAsync(path: string,): Promise<string> { ... }
+
+// Good: the choice is recorded where the pair is declared
+/**
+ Both sides are hand-written. The sync path serves build startup and cannot
+ await; the async path serves plugins. A shared core was rejected because the
+ sync side cannot call it.
+ */
+export function readCssFile(path: string,): string { ... }
+```
+
 ### Security
 
 - No hardcoded secrets,

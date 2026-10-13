@@ -5,8 +5,8 @@
  */
 
 import type {
-  Node as UnbashNode,
-  Redirect as UnbashRedirect,
+  SyntaxNode as UnbashNode,
+  Redirection as UnbashRedirect,
 } from 'unbash';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 import { redirectOnlyCommand, } from './convert.ts';
@@ -113,10 +113,7 @@ function visitRemainingAfterCase(
           context,
         },
         ...redirectWorkItems({
-          redirects: [
-            ...redirects,
-            ...node.redirects,
-          ],
+          redirects,
           context,
         },),
       ],
@@ -243,7 +240,7 @@ function visitRemainingNode(
         {
           kind: 'node',
           node: node.body,
-          redirects: node.redirects,
+          redirects: EMPTY_REDIRECTS,
           context: functionContext,
         },
         ...redirectWorkItems({

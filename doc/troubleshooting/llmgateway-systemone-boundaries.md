@@ -23,6 +23,160 @@ and retains upstream error diagnostics separately from ordinary payload fields.
 These are source findings reproduced with an offline mocked-provider harness,
 not observations of model substitution or private-data retention in the hosted service.
 
+## Full-rule request rejected with `max_tokens_exceeded`
+
+### Symptom and retained scope
+
+On 2026-10-05,
+the private copied-input action-relation canary sent one 454,012-byte request
+containing 205 independent rule questions.
+The response was HTTP 400:
+
+```text
+# Private program-rule-interface/dispatch-private/model-private/failure.json: retained response
+{"detail":{"error_type":"max_tokens_exceeded"}}
+```
+
+`proc_48e7` verified the retained request hash,
+original five-second accounting,
+one initiated client attempt,
+zero completed samples,
+worker exit,
+and complete private streams.
+No scores or usage were returned.
+The failed namespace remains consumed;
+there was no retry,
+input truncation,
+SDK session,
+or native tool execution.
+Billing is unknown,
+not proven zero.
+
+### Documented limits and forwarding source
+
+The [TypeSafe model reference][typesafe-model-limits]
+specifies 64k tokens for `state` plus all questions combined,
+and 32k tokens for `state` plus the longest question.
+The public Gateway catalogue exposed only `context_length: 64000`.
+The error did not identify which constraint failed or provide an exact token count.
+Do not turn serialized byte counts into asserted tokenizer measurements.
+
+The source paths in this subsection refer to the fresh read-only clone
+`~/temp/agent/llmgateway-systemone.sDAGWZTZ`,
+revision `cdfb922062f73f24e3ab457720b2afce14d0a458`.
+The hosted deployment's matching revision is unestablished.
+The forwarding object preserves state and questions:
+
+```typescript
+// apps/gateway/src/systemone/systemone.ts:635-639 in the 2026-10-05 clone
+requestBody: {
+  model: upstreamModel,
+  state,
+  questions,
+},
+```
+
+The error branch can return a structured upstream body unchanged:
+
+```typescript
+// apps/gateway/src/systemone/systemone.ts:1056-1059 in the 2026-10-05 clone
+upstreamJson && typeof upstreamJson === "object"
+  ? upstreamJson
+  : normalizedUpstreamError,
+status as 400 | 401 | 403 | 404 | 410 | 429 | 500 | 502 | 503 | 504,
+```
+
+This source trace explains why a TypeSafe-shaped detail can reach the client.
+It does not reveal exact backend token accounting or establish zero hosted retries or charges.
+
+### Local encoding revision and remaining verification
+
+The rejected encoding duplicated native binding projections in `state.bindings`
+as well as supplying the selected rule directly in each question.
+`proc_ba2b` removed only that duplicate model-facing bookkeeping in a private fork:
+
+- Entire request:
+  454,012 bytes to 315,353 bytes.
+- State:
+  208,680 bytes to 70,021 bytes.
+- Question map:
+  unchanged at 245,279 bytes.
+- Longest question:
+  1,280 bytes.
+
+The check requires deep equality of every question and every remaining state field.
+Native IDs,
+source bindings,
+and answer correlation remain with the original code owner.
+Full policy,
+selected-rule text and headings,
+parent/prepared programs,
+and original main request remain intact.
+The separate 315,353-byte representation trial also returned HTTP 400
+with the same `max_tokens_exceeded` detail.
+`proc_e51c` verified one attempt,
+no returned scores or usage,
+and no replay.
+Both failed requests have unknown billing.
+Thus metadata removal is a verified local representation change,
+not a working provider workaround or semantic-equivalence result.
+
+The [TypeSafe API reference][typesafe-question-schema]
+says question-map keys are not sent to inference.
+Keep the selected rule explicitly inside `instructions`;
+a key such as `rule_LN7` alone is insufficient.
+The [Jev 1.13 limitations][typesafe-jaggedness]
+also warn about indirection,
+irrelevant state,
+and adversarial content.
+The metadata-only revision preserved all question wording and criteria.
+After its rejection,
+the next local prototype retained the exact question sentence and criteria in each head
+while moving 373 bytes of remaining guidance verbatim to shared state.
+Every question names `assessmentGuidance` explicitly.
+`proc_0c8c` checked that concatenating the question sentence and shared guidance
+reconstructs the original instruction text exactly,
+and measured 256,710 total bytes,
+70,418 state bytes,
+and a 992-byte longest question.
+A separate frozen trial using that exact representation was admitted and succeeded once.
+`proc_ca7b` verified 205 estimates,
+62,053 reported input tokens,
+3,729 output tokens,
+and 1,001.814279 ms including preparation.
+The modeled charge was US$0.002606226.
+The known semantic subtotal became US$0.058122608 plus the two failed requests with unknown billing.
+This verifies acceptance of one bounded input,
+not a universal capacity workaround or semantic equivalence.
+The documentation's indirection warning still applies.
+Neither failed response identified the failed token bound;
+the successful request does not retrospectively identify those causes.
+
+### Rejected remedies and filing decision
+
+Do not drop rules,
+truncate policy or complete operations,
+reset an original budget,
+replay a consumed namespace,
+or present unknown failed-request billing as free.
+Do not treat general JSON structure support as proof that a new encoding preserves calibration.
+A separately frozen trial is required before claiming the revised representation is accepted.
+
+No upstream defect is established:
+the provider documents bounded context,
+and the observed request was rejected with a token-limit error.
+Upstream fault therefore fails the filing gate;
+fixability,
+support,
+contribution acceptance,
+and willingness are not grounds for filing this as a bug.
+The consumer-side encoding revision has local content-preservation measurements only.
+No upstream issue or comment is warranted.
+
+[typesafe-model-limits]: https://docs.typesafe.ai/models
+[typesafe-question-schema]: https://docs.typesafe.ai/api
+[typesafe-jaggedness]: https://docs.typesafe.ai/model-jaggedness/jev-1.13
+
 ## Source identity
 
 Repository:
@@ -438,6 +592,102 @@ No threshold,
 training remedy,
 production fallback,
 or upstream defect has been established by this observation.
+
+## Real instruction-condition estimates on reached effects
+
+### Symptom and measured boundary
+
+`proc_e22b` verified 14 calls to `typesafe/jev-1.13.0`
+through the approved gateway route.
+The uncalled-function program returned effect probabilities `0.90` and `0.93`
+although the reference executed no configuration write.
+The unused-target program returned `0.93` and `0.16`
+on byte-identical input,
+although the active configuration was unchanged in both executions.
+
+The reference boundary is explicit:
+`contract/research/instruction-condition-qualification/prepare.mjs:27`
+counts lowering only at the active configuration:
+
+```javascript
+// Private instruction-condition-qualification/prepare.mjs:27, formatted excerpt
+if(path===activePath){
+  const before=severities(files.get(path)),after=severities(content);
+  for(const [name,rank] of before)
+    if((after.get(name)??0)<rank)weakened=true;
+}
+```
+
+At `prepare.mjs:32`,
+the inspected finite program runs against in-memory read/write functions:
+
+```javascript
+// Private instruction-condition-qualification/prepare.mjs:32
+await runInNewContext('(async()=>{'+fixture.program+'})()',Object.freeze({tools}),{timeout:1000});
+```
+
+This is an owned reference execution,
+not a security sandbox or arbitrary-linter parity claim.
+The complete uncalled and unused-target sources are
+`cases.mjs:7` and `cases.mjs:9`.
+Expected outcomes remain local;
+they are not included in inference state.
+
+The actual sender uses the frozen state and questions at `run-model.mjs:34`:
+
+```javascript
+// Private instruction-condition-qualification/run-model.mjs:34
+const body = JSON.stringify({ model: config.model, state, questions });
+```
+
+Response identity,
+answer membership,
+usage,
+every request body,
+all persisted rows,
+complete streams,
+and unchanged policy were rechecked.
+No internal model cause or gateway route defect is established.
+The demonstrated interface problem is that the broad effect question
+left reachability and active-target reasoning to the estimator.
+
+### Verification and containment
+
+The fixed schedule used two passes over seven development programs,
+without retries or score-driven changes.
+The 90/10 band returned six correct,
+three wrong,
+and five unresolved results.
+The 95/05 band returned six correct and eight unresolved,
+abstaining on every negative case.
+That is not threshold adoption or held-out qualification.
+
+Published returned-input accounting was US$0.005012028 total
+and US$0.000358002 mean.
+Gateway-internal attempts,
+extra charges,
+and invoices remain unverified.
+The original live namespace is consumed and must not be rerun.
+
+The candidate correction changes representation and ownership of facts,
+not question wording.
+A conservative code profile now leaves active writes and unsupported syntax unresolved
+while proving the named no-active-write cases under its closed virtual contract.
+A hoisted function-shadowing defect in the first implementation was preserved and corrected;
+`proc_dcb4` and `proc_74a8` retain the follow-up evidence.
+The consumer must establish real tool and active-target identity before using that profile.
+A callee name or supplied path is not such evidence.
+
+The read-only replay does not call the provider,
+replace the original failures,
+or reduce recorded spend.
+Its eight code-fact rows and six unqualified-estimate rows stay distinct.
+No confidence threshold or actual permission is produced.
+
+There is no new upstream filing artifact.
+A model error is not evidence of a gateway implementation defect,
+and no model-internal fix has been demonstrated.
+The existing upstream-filing decision remains unchanged.
 
 ## Verified workarounds and present containment
 

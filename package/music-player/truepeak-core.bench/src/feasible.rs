@@ -1,14 +1,24 @@
 //! The feasible no-classifier model.
 //!
-//! The corrected `/4` budget is far too tight for a full-scan classifier: it has room
-//! for only a couple of extra full scans, while no probe or metadata feature separates
-//! the ~120 hot-master violators that precisely. So the feasible policy ships NO
-//! violator classifier at all. Instead it probes every long track and applies a single
-//! fixed margin large enough to cover the worst under-read, which guarantees zero
-//! violations. The objective then becomes: spend the budget on probe density (more,
+//! The corrected `/4` budget is far too tight for a full-scan classifier:
+//!  it has room
+//! for only a couple of extra full scans,
+//!  while no probe or metadata feature separates
+//! the ~120 hot-master violators that precisely.
+//!  So the feasible policy ships NO
+//! violator classifier at all.
+//!  Instead it probes every long track and applies a single
+//! fixed margin large enough to cover the worst under-read,
+//!  which guarantees zero
+//! violations.
+//!  The objective then becomes:
+//!  spend the budget on probe density (more,
 //! shorter windows cover more distinct regions and shrink the gaps that cause
-//! under-read) so the required margin, and thus the worst-case too-quiet error, is as
-//! small as possible. This module sweeps density and reports the best feasible margin.
+//! under-read) so the required margin,
+//!  and thus the worst-case too-quiet error,
+//!  is as
+//! small as possible.
+//!  This module sweeps density and reports the best feasible margin.
 
 /// Imports the corpus track record.
 use crate::corpus::Track;
@@ -19,10 +29,12 @@ use std::collections::HashSet;
 /// Imports the shared dB and policy math.
 use truepeak_core::{Policy, default_policy, peak_dbtp};
 
-/// The too-loud bound in dB; the margin must keep every error at or below it.
+/// The too-loud bound in dB;
+///  the margin must keep every error at or below it.
 const TOO_LOUD_DB: f64 = 1.0 / 2.0;
 
-/// Convert a linear peak to dBTP, treating silence as a very negative level.
+/// Convert a linear peak to dBTP,
+///  treating silence as a very negative level.
 fn db(peak: f64) -> f64 {
     if peak <= 0.0 {
         return f64::NEG_INFINITY
@@ -40,18 +52,26 @@ pub struct Feasible {
     pub margin_db: f64,
     /// Worst-case too-quiet error this margin causes (the negated margin).
     pub worst_quiet_db: f64,
-    /// Decoded seconds: short tracks full-scanned plus one probe per long track.
+    /// Decoded seconds:
+    ///  short tracks full-scanned plus one probe per long track.
     pub probe_decoded_secs: f64,
     /// Whether the margin stays inside the `-2.0 dB` bound and the budget holds.
     pub feasible: bool,
 }
 
-/// Evaluate one density: the fixed margin it needs and the decoded cost it pays.
+/// Evaluate one density:
+///  the fixed margin it needs and the decoded cost it pays.
 ///
-/// What: for the loud long tracks (true peak above the ceiling, where gain applies),
-/// find the worst under-read against the probe; the margin must cover it. Why: a single
+/// What:
+///  for the loud long tracks (true peak above the ceiling,
+///  where gain applies),
+/// find the worst under-read against the probe;
+///  the margin must cover it.
+///  Why:
+///  a single
 /// margin at or above the worst under-read minus the too-loud bound guarantees no track
-/// exceeds the bounds, with no full-scan classifier.
+/// exceeds the bounds,
+///  with no full-scan classifier.
 pub fn evaluate_density(
     tracks: &[Track],
     candidate: Candidate,
@@ -91,7 +111,8 @@ pub fn evaluate_density(
     }
 }
 
-/// A provenance-dependent margin: a smaller fixed margin for reliably-not-hot sources
+/// A provenance-dependent margin:
+///  a smaller fixed margin for reliably-not-hot sources
 /// (lossless and yt-dlp) and a larger one for the rest.
 #[derive(Clone, Copy, Debug)]
 pub struct ProvenanceMargin {
@@ -99,15 +120,21 @@ pub struct ProvenanceMargin {
     pub margin_safe_db: f64,
     /// Margin for the remaining (untagged lossy) tracks.
     pub margin_unsafe_db: f64,
-    /// Worst-case too-quiet error, the negated larger margin.
+    /// Worst-case too-quiet error,
+    ///  the negated larger margin.
     pub worst_quiet_db: f64,
 }
 
 /// Compute the provenance-dependent margins for a probe density.
 ///
-/// What: split the loud long tracks by provenance and take each group's worst under-read;
-/// each group's margin must cover its own worst gap-miss. Why: the safe group under-reads
-/// less on average, so a smaller margin keeps its tracks louder, lowering the average
+/// What:
+///  split the loud long tracks by provenance and take each group's worst under-read;
+/// each group's margin must cover its own worst gap-miss.
+///  Why:
+///  the safe group under-reads
+/// less on average,
+///  so a smaller margin keeps its tracks louder,
+///  lowering the average
 /// too-quiet error even though the worst case is still set by the louder margin.
 pub fn provenance_margin(
     tracks: &[Track],
@@ -146,9 +173,13 @@ pub fn provenance_margin(
 
 /// Sweep probe densities and return the feasible one with the smallest margin.
 ///
-/// What: tries a grid of `(window_count, threshold)` and keeps the in-bound, in-budget
-/// density whose fixed margin (and thus worst-case too-quiet error) is smallest. Why:
-/// this is the real objective once the classifier is dropped: minimize the worst-case
+/// What:
+///  tries a grid of `(window_count, threshold)` and keeps the in-bound,
+///  in-budget
+/// density whose fixed margin (and thus worst-case too-quiet error) is smallest.
+///  Why:
+/// this is the real objective once the classifier is dropped:
+///  minimize the worst-case
 /// too-quiet error by spending the budget on probe coverage.
 pub fn best_feasible(
     tracks: &[Track],

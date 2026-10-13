@@ -31,8 +31,12 @@ const AGENT_POLL_INTERVAL_MS = MS_PER_SECOND;
 
 /**
  Default maximum milliseconds to wait for guest agent before giving up.
+ Five minutes: on 2026-10-05 a fresh Alpine VM's agent first answered 45 seconds
+ after start on a busy host, and a Windows VM's agent about 80 seconds after a
+ reboot, so the earlier 15 seconds failed `mvm create` although the VM was fine.
+ The wait ends as soon as the agent answers.
  */
-const DEFAULT_AGENT_TIMEOUT_MS = 15_000;
+const DEFAULT_AGENT_TIMEOUT_MS = 300_000;
 
 /**
  Milliseconds between VM state polls when waiting for shutdown.
@@ -50,7 +54,7 @@ const SHUTDOWN_TIMEOUT_MS = 120_000;
  
  @param name - VM name without the mvm- prefix
  
- @param timeoutMs - Maximum milliseconds to wait (defaults to 15s)
+ @param timeoutMs - Maximum milliseconds to wait (defaults to five minutes)
  
  @throws Error when the guest agent does not respond within the timeout
  

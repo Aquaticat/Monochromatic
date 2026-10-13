@@ -1,5 +1,9 @@
-//! What:    Eager determinization: turn a node into a `Dfa` by enumerating derivative states.
-//! Why:     This file is the Rust module that groups the build implementation, so the
+//! What:
+//!     Eager determinization:
+//!  turn a node into a `Dfa` by enumerating derivative states.
+//! Why:
+//!      This file is the Rust module that groups the build implementation,
+//!  so the
 //!          compiler gives those items one namespace and sibling modules can import that name.
 //!
 //! In TS you'd write (pseudocode):
@@ -7,8 +11,11 @@
 //! // module build: see exported functions and types below.
 //! ```
 
-/// What:    Imports the hash map used to intern states.
-/// Why:     The code below uses `HashMap` directly; importing from `std/collections` keeps each
+/// What:
+///     Imports the hash map used to intern states.
+/// Why:
+///      The code below uses `HashMap` directly;
+///  importing from `std/collections` keeps each
 ///          call site focused on the matcher logic instead of the full Rust path.
 ///
 /// In TS you'd write (pseudocode):
@@ -17,8 +24,11 @@
 /// ```
 use std::collections::HashMap;
 
-/// What:    Imports the node algebra being determinized.
-/// Why:     The code below uses `Node` directly; importing from `crate/ast/node` keeps each call
+/// What:
+///     Imports the node algebra being determinized.
+/// Why:
+///      The code below uses `Node` directly;
+///  importing from `crate/ast/node` keeps each call
 ///          site focused on the matcher logic instead of the full Rust path.
 ///
 /// In TS you'd write (pseudocode):
@@ -27,8 +37,11 @@ use std::collections::HashMap;
 /// ```
 use crate::ast::node::Node;
 
-/// What:    Imports the boundary context driving derivatives and acceptance.
-/// Why:     The code below uses `Ctx` directly; importing from `crate/context` keeps each call
+/// What:
+///     Imports the boundary context driving derivatives and acceptance.
+/// Why:
+///      The code below uses `Ctx` directly;
+///  importing from `crate/context` keeps each call
 ///          site focused on the matcher logic instead of the full Rust path.
 ///
 /// In TS you'd write (pseudocode):
@@ -37,8 +50,11 @@ use crate::ast::node::Node;
 /// ```
 use crate::context::Ctx;
 
-/// What:    Imports the byte derivative.
-/// Why:     The code below uses `derivative` directly; importing from `crate/derivative` keeps
+/// What:
+///     Imports the byte derivative.
+/// Why:
+///      The code below uses `derivative` directly;
+///  importing from `crate/derivative` keeps
 ///          each call site focused on the matcher logic instead of the full Rust path.
 ///
 /// In TS you'd write (pseudocode):
@@ -47,8 +63,11 @@ use crate::context::Ctx;
 /// ```
 use crate::derivative::derivative;
 
-/// What:    Imports the error type for the state cap.
-/// Why:     The code below uses `CompileError` directly; importing from `crate/error` keeps each
+/// What:
+///     Imports the error type for the state cap.
+/// Why:
+///      The code below uses `CompileError` directly;
+///  importing from `crate/error` keeps each
 ///          call site focused on the matcher logic instead of the full Rust path.
 ///
 /// In TS you'd write (pseudocode):
@@ -57,8 +76,11 @@ use crate::derivative::derivative;
 /// ```
 use crate::error::CompileError;
 
-/// What:    Imports nullability for acceptance masks.
-/// Why:     The code below uses `nullable` directly; importing from `crate/nullable` keeps each
+/// What:
+///     Imports nullability for acceptance masks.
+/// Why:
+///      The code below uses `nullable` directly;
+///  importing from `crate/nullable` keeps each
 ///          call site focused on the matcher logic instead of the full Rust path.
 ///
 /// In TS you'd write (pseudocode):
@@ -67,8 +89,11 @@ use crate::error::CompileError;
 /// ```
 use crate::nullable::nullable;
 
-/// What:    Imports the byte-class computation.
-/// Why:     The code below uses `compute_classes` directly; importing from `crate/dfa/classes`
+/// What:
+///     Imports the byte-class computation.
+/// Why:
+///      The code below uses `compute_classes` directly;
+///  importing from `crate/dfa/classes`
 ///          keeps each call site focused on the matcher logic instead of the full Rust path.
 ///
 /// In TS you'd write (pseudocode):
@@ -77,8 +102,12 @@ use crate::nullable::nullable;
 /// ```
 use crate::dfa::classes::compute_classes;
 
-/// What:    Imports the table type and its acceptance-bit helper.
-/// Why:     The code below uses `Dfa`, `accept_bit` directly; importing from `crate/dfa/table`
+/// What:
+///     Imports the table type and its acceptance-bit helper.
+/// Why:
+///      The code below uses `Dfa`,
+///  `accept_bit` directly;
+///  importing from `crate/dfa/table`
 ///          keeps each call site focused on the matcher logic instead of the full Rust path.
 ///
 /// In TS you'd write (pseudocode):
@@ -87,12 +116,17 @@ use crate::dfa::classes::compute_classes;
 /// ```
 use crate::dfa::table::{Dfa, accept_bit};
 
-/// A determinization state: a residual node plus its incoming boundary bits.
+/// A determinization state:
+///  a residual node plus its incoming boundary bits.
 ///
-/// What: the residual regex together with whether the previous byte was a
-/// newline (`at_line_start`) and a word byte (`prev_word`). Why: those two bits
+/// What:
+///  the residual regex together with whether the previous byte was a
+/// newline (`at_line_start`) and a word byte (`prev_word`).
+///  Why:
+///  those two bits
 /// are the parts of the boundary context that a residual cannot recover on its
-/// own, so they must be part of the state's identity.
+/// own,
+///  so they must be part of the state's identity.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -102,8 +136,11 @@ use crate::dfa::table::{Dfa, accept_bit};
 /// ```
 #[derive(Clone, PartialEq, Eq, Hash)]
 struct StateKey {
-    /// What:    The residual regex after the bytes that lead to this state.
-    /// Why:     `node` stores the residual regex after the bytes that lead to this state, so
+    /// What:
+    ///     The residual regex after the bytes that lead to this state.
+    /// Why:
+    ///      `node` stores the residual regex after the bytes that lead to this state,
+    ///  so
     ///          matcher code reads that precomputed state by name instead of recomputing or
     ///          passing it separately.
     ///
@@ -112,9 +149,12 @@ struct StateKey {
     /// node: Node;
     /// ```
     node: Node,
-    /// What:    Whether this position is a line start (previous byte was a newline).
-    /// Why:     `at_line_start` stores whether this position is a line start (previous byte was
-    ///          a newline), so matcher code reads that precomputed state by name instead of
+    /// What:
+    ///     Whether this position is a line start (previous byte was a newline).
+    /// Why:
+    ///      `at_line_start` stores whether this position is a line start (previous byte was
+    ///          a newline),
+    ///  so matcher code reads that precomputed state by name instead of
     ///          recomputing or passing it separately.
     ///
     /// In TS you'd write (pseudocode):
@@ -122,8 +162,11 @@ struct StateKey {
     /// at_line_start: boolean;
     /// ```
     at_line_start: bool,
-    /// What:    Whether the previous byte was a word byte.
-    /// Why:     `prev_word` stores whether the previous byte was a word byte, so matcher code
+    /// What:
+    ///     Whether the previous byte was a word byte.
+    /// Why:
+    ///      `prev_word` stores whether the previous byte was a word byte,
+    ///  so matcher code
     ///          reads that precomputed state by name instead of recomputing or passing it
     ///          separately.
     ///
@@ -137,11 +180,19 @@ struct StateKey {
 /// Largest number of sub-nodes a single derivative residual may hold before the
 /// build bails.
 ///
-/// What: a ceiling on one residual regex's node count. Why: a real rule's residuals
-/// stay small (tens to a few hundred nodes, since bounded class repetition unrolls
-/// into STATES, not large residual NODES); only pathological nested repetition or
-/// complement-over-repetition grows a residual past this, and that explodes memory and
-/// time before the state-count cap fires, so a tight ceiling aborts it fast (to the
+/// What:
+///  a ceiling on one residual regex's node count.
+///  Why:
+///  a real rule's residuals
+/// stay small (tens to a few hundred nodes,
+///  since bounded class repetition unrolls
+/// into STATES,
+///  not large residual NODES);
+///  only pathological nested repetition or
+/// complement-over-repetition grows a residual past this,
+///  and that explodes memory and
+/// time before the state-count cap fires,
+///  so a tight ceiling aborts it fast (to the
 /// counting back-end or a clean error) while leaving every real rule on the DFA.
 ///
 /// In TS you'd write (pseudocode):
@@ -152,9 +203,12 @@ const RESIDUAL_NODE_CAP: usize = 2_000;
 
 /// Reports whether a node holds more than [`RESIDUAL_NODE_CAP`] sub-nodes.
 ///
-/// What: a bounded structural walk that stops as soon as the budget is spent, so it
+/// What:
+///  a bounded structural walk that stops as soon as the budget is spent,
+///  so it
 /// is cheap on the common small residual and never itself walks an unbounded tree.
-/// Why: the build uses it to abort before a giant residual is cloned into a state.
+/// Why:
+///  the build uses it to abort before a giant residual is cloned into a state.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -173,7 +227,7 @@ fn residual_too_large(node: &Node) -> bool {
                 return parts.iter().any(|child| return spend(child, budget))
             }
             Node::Comp(inner) => return spend(inner, budget),
-            Node::Repeat { node, .. } => return spend(node, budget),
+            Node::Repeat { node: body, .. } => return spend(body, budget),
             _ => return false,
         }
     }
@@ -181,9 +235,12 @@ fn residual_too_large(node: &Node) -> bool {
     return spend(node, &mut budget)
 }
 
-/// What:    Unit tests for the DFA build and its residual guard, in a sidecar (max-lines
+/// What:
+///     Unit tests for the DFA build and its residual guard,
+///  in a sidecar (max-lines
 ///          exempt).
-/// Why:     The package keeps that concept in a separate Rust file so this module can refer to
+/// Why:
+///      The package keeps that concept in a separate Rust file so this module can refer to
 ///          it by name.
 ///
 /// In TS you'd write (pseudocode):
@@ -194,12 +251,18 @@ fn residual_too_large(node: &Node) -> bool {
 #[path = "build_tests.rs"]
 mod tests;
 
-/// Builds a DFA from a (search-wrapped) node, abandoning past `cap` states.
+/// Builds a DFA from a (search-wrapped) node,
+///  abandoning past `cap` states.
 ///
-/// What: BFS over derivative states, computing per-class transitions and a
-/// per-state acceptance mask, until no new state appears or `cap` is hit. Why:
+/// What:
+///  BFS over derivative states,
+///  computing per-class transitions and a
+/// per-state acceptance mask,
+///  until no new state appears or `cap` is hit.
+///  Why:
 /// eager determinization yields a flat table that matches with no per-byte
-/// allocation and no lazy-cache lock; a caller selecting a back-end passes a small
+/// allocation and no lazy-cache lock;
+///  a caller selecting a back-end passes a small
 /// `cap` so a blowup fails fast and it can fall back to the counting engine.
 ///
 /// In TS you'd write (pseudocode):
@@ -219,7 +282,9 @@ pub fn build_dfa_within(root: Node, cap: usize) -> Result<Dfa, CompileError> {
     // const MAX_U16_STATES: number = 65_534;
     // ```
     const MAX_U16_STATES: usize = 65_534;
-    let cap = cap.min(MAX_U16_STATES);
+    // The clamped budget gets its own name so it never shadows the caller's `cap`
+    // parameter; every enforcement below spends the clamped value.
+    let state_cap = cap.min(MAX_U16_STATES);
     let classes = compute_classes(&root);
     let nc = classes.nclasses;
     let mut index: HashMap<StateKey, u32> = HashMap::new();
@@ -264,7 +329,7 @@ pub fn build_dfa_within(root: Node, cap: usize) -> Result<Dfa, CompileError> {
         // // Same step as the Rust statement below, written with ordinary TS objects/functions.
         // ```
         if residual_too_large(&node) {
-            return Err(CompileError::StateCap { limit: cap });
+            return Err(CompileError::StateCap { limit: state_cap });
         }
         let at_ls = states[i].at_line_start;
         let pw = states[i].prev_word;
@@ -291,8 +356,8 @@ pub fn build_dfa_within(root: Node, cap: usize) -> Result<Dfa, CompileError> {
             );
             trans.push(next);
         }
-        if states.len() > cap {
-            return Err(CompileError::StateCap { limit: cap });
+        if states.len() > state_cap {
+            return Err(CompileError::StateCap { limit: state_cap });
         }
         i += 1;
     }
@@ -306,22 +371,26 @@ pub fn build_dfa_within(root: Node, cap: usize) -> Result<Dfa, CompileError> {
     // ```ts
     // // Same step as the Rust statement below, written with ordinary TS objects/functions.
     // ```
-    let trans: Vec<u16> = trans.into_iter().map(|target| return target as u16).collect();
+    let trans_u16: Vec<u16> = trans.into_iter().map(|target| return target as u16).collect();
     return Ok(Dfa::from_parts(
         nc as u32,
         classes.class_map,
         classes.class_word,
         classes.class_newline,
-        trans,
+        trans_u16,
         accept,
         start as u16,
         states.len() as u16,
     ))
 }
 
-/// Returns the id of `key`, interning it on first sight.
+/// Returns the id of `key`,
+///  interning it on first sight.
 ///
-/// What: hash-map lookup with append-on-miss. Why: equal residual states must
+/// What:
+///  hash-map lookup with append-on-miss.
+///  Why:
+///  equal residual states must
 /// collapse to one id so the automaton stays finite.
 ///
 /// In TS you'd write (pseudocode):
@@ -342,9 +411,14 @@ fn intern(index: &mut HashMap<StateKey, u32>, states: &mut Vec<StateKey>, key: S
 
 /// Computes the 4-bit acceptance mask of a state.
 ///
-/// What: tests nullability under each `(word_after, line_end)` boundary, with the
-/// state's own `line_start`/`word_before` fixed. Why: acceptance depends on the
-/// upcoming byte, so the matcher needs all four answers precomputed per state.
+/// What:
+///  tests nullability under each `(word_after, line_end)` boundary,
+///  with the
+/// state's own `line_start`/`word_before` fixed.
+///  Why:
+///  acceptance depends on the
+/// upcoming byte,
+///  so the matcher needs all four answers precomputed per state.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

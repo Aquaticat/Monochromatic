@@ -76,7 +76,8 @@ Run from this directory:
    each invariant is shown to panic on a deliberately broken input,
    so a quiet campaign is evidence rather than silence.
 - `mise run lint:clippy` runs Clippy over every target with warnings denied.
-- `mise run lint:rust` runs the repository Rust linter over this package.
+- `mise run //:lint:monochromatic-lint -- package/rust-module/jsonc-edit.fuzz` runs the repository linter over this package,
+  where `monochromatic-lint.config.jsonc` exempts fuzz sidecars from `rust/max-lines` and `rust/require-rustdoc`.
 - `mise run list` lists the fuzz targets.
 - `mise run build` builds every target with AddressSanitizer.
 - `mise run smoke` runs every target for 30 seconds with the dictionary.

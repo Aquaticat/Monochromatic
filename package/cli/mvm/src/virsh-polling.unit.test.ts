@@ -16,14 +16,12 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { waitForGuestExecStatus, } from './guest-exec-status.ts';
 import {
   waitForGuestAgent,
   waitForShutdown,
-} from './virsh-wait.ts';
+} from '../dist/final/node/index.mjs';
 
 type FakeVirshMode =
-  | 'guest-status'
   | 'guest-ready-second'
   | 'guest-timeout'
   | 'shutdown-second';
@@ -50,12 +48,7 @@ catch (error) {
 }
 count += 1;
 writeFileSync(counterPath, String(count));
-if (mode === 'guest-status') {
-  process.stdout.write(count === 1
-    ? '{"return":{"exited":false}}\\n'
-    : '{"return":{"exited":true,"exitcode":7,"out-data":"b3V0","err-data":"ZXJy"}}\\n');
-}
-else if (mode === 'guest-ready-second') {
+if (mode === 'guest-ready-second') {
   if (count === 1) {
     process.stderr.write('guest agent unavailable\\n');
     process.exitCode = 1;
@@ -143,24 +136,6 @@ await describe({
   name: 'virsh polling',
   concurrency: 1,
   children: [
-    it({
-      name: 'polls guest exec status immediately and retries until completion',
-      fn: async () => {
-        await using fixture = await installFakeVirsh('guest-status',);
-        const status = await waitForGuestExecStatus({
-          fullName: 'mvm-test',
-          pid: 42,
-          pollIntervalMs: 0,
-        },);
-        expect(status,).toEqual({
-          exited: true,
-          exitcode: 7,
-          'out-data': 'b3V0',
-          'err-data': 'ZXJy',
-        },);
-        expect(await readCallCount(fixture,),).toBe(2,);
-      },
-    },),
     it({
       name: 'retries guest agent readiness after a failed first attempt',
       fn: async () => {

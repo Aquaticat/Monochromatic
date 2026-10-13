@@ -49,6 +49,16 @@ export function requireToken(): string {
 
 //endregion Token
 
+//region Host tools
+
+/**
+ Advice shown when an OpenSSH executable the hetzner backend runs does not exist.
+ */
+export const OPENSSH_REMEDY =
+  'The hetzner backend needs an OpenSSH client (`ssh`, `scp` and `ssh-keygen`), version 9.0 or newer, on PATH; install the host package that provides it.';
+
+//endregion Host tools
+
 //region Defaults and labels
 
 /**

@@ -142,20 +142,20 @@ VHI:
 ### Proactivity calibration
 
 PX1:
- Take authorized steps unasked;
- skip "should I...".
-Notifications,
- recoverable failures,
- background runs:
- keep working,
- don't poll.
-Stop only at completion or genuine blocker.
+ Take authorized steps unasked,
+ including recovery.
+While verification runs,
+ advance independent queued work without changing its inputs.
+Don't poll;
+ stop only at completion or a genuine blocker.
 
 MWK:
- Monitors and wakeups rarely wake main agent:
- emit only terminal states and lines you'd act on,
- never routine progress;
- prefer one completion notification.
+ Monitors,
+ wakeups,
+ and waiting subagents rarely wake main agent:
+ wait in one command that ends at a terminal state;
+ emit only lines you'd act on,
+ never routine progress.
 
 PXQ:
  "Completion" means the queue:
@@ -311,6 +311,18 @@ OPA:
  "(Recommended)" on top label;
  full ranking with adjacent-pair reasons in surrounding prose.
 
+QRX:
+ Asking for decisions:
+ batch them in the question tool and re-explain each item's context in plain words;
+ never rely on the user recalling earlier messages.
+
+UQT:
+ Anything the user must see or answer (handoffs,
+ proposals,
+ flagged choices):
+ put it in the question tool;
+ transcript prose may go unread.
+
 YKZ:
  Before ranking several options:
  widen to plausible alternatives (with their libraries and repo incumbents);
@@ -372,9 +384,10 @@ RPB:
  then ask user to reconnect/re-authorize/restart before concluding unreachable.
 
 FCH:
- Doc points elsewhere for substance:
- fetch that before concluding;
- never hedge ("likely contains") about a document one tool call away.
+ Substance not in view:
+ fetch it or read on before concluding,
+ whether a doc points elsewhere or mandated steps sit later in the file.
+ Never hedge ("likely contains") about text one read away.
 
 ### Name the verification step
 
@@ -451,6 +464,24 @@ NXR:
  never repeat the same synchronous call;
  rerun in background or with a bound.
 
+INH:
+ A user-interrupted tool call (`Request interrupted`,
+ `doesn't want to proceed`) may be half-applied,
+ not refused:
+ inspect the files,
+ processes,
+ and installs it touched before acting.
+
+UPN:
+ Upgrades name their tool (`mise upgrade <tool>`,
+ never bare):
+ a bare upgrade installs unrelated toolchains and rewrites lockfiles that every session's builds share.
+
+TRB:
+ External tool fails with a diagnostic:
+ `rg` its message in `doc/troubleshooting/` before any workaround;
+ follow a recorded verified workaround as written.
+
 EDR:
  Parallel tool calls may run in any order,
  so a command reading a fresh edit can see the pre-edit file;
@@ -467,10 +498,12 @@ RGP:
  always pass `.` or an absolute path.
 
 ATH:
- Before using `${HOME}/temp/agent` scratch:
- `mkdir --parents` it,
- then `chmod 700`;
- trust checks reject group/other permission bits.
+ Scratch goes in `${HOME}/temp/agent`,
+ never `/tmp` or the harness scratchpad
+ (reboots wipe them);
+ first `mkdir --parents` it,
+ then `chmod 700`
+ (trust checks reject group/other bits).
 
 CLN:
  Investigating package source:
@@ -481,7 +514,9 @@ CLN:
 APQ:
  Auto-push fires in third-party clones too:
  before committing in one,
- run `git remote set-url --push origin DISABLED`.
+ run `git remote set-url --push origin DISABLED`;
+ never in this repo's linked worktrees,
+ which share its `.git/config`.
 
 BOP:
  `~` in shell output is a display-only home-dir substitution by the `bash-output-filter` hook;
@@ -668,13 +703,12 @@ CM2:
  `shell = "node --input-type=module-typescript -e"` only for logic.
 
 WC2:
- file-enforcer generates root files (`CLAUDE.md`,
- `mise.toml`,
- ...):
- check `file-enforcer.config.ts` before editing root config;
+ file-enforcer manages root files (`CLAUDE.md`,
+ ...) and package `Cargo.toml`:
+ check `file-enforcer.config.ts` before editing or adding one;
  if managed,
  edit its source,
- run file-enforcer,
+ run it,
  commit output as-is.
 
 ### Simplification
@@ -823,12 +857,6 @@ HDM:
  Agent-authored HTML follows the viewer's system color scheme:
  build + verify light and dark;
  open it in current system mode.
-
-ATS:
- Custom interactive elements (web,
- Android):
- explicit min 48px/dp layout width + height;
- never rely on touch area expanding past bounds where neighbors can overlap.
 
 ### TSDoc comments
 

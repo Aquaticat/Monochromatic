@@ -9,6 +9,16 @@ start an API 37 x86_64 AVD headlessly with `-gpu swiftshader_indirect` or `-gpu 
 Failure mode:
 `qemu-system-x86_64-headless` receives `SIGSEGV` before Android finishes booting.
 
+## Rule for agents: headful only (2026-10-13)
+
+Never launch an emulator with `-no-window`, under `xvfb-run`, or in a container, and never let a brief permit it.
+Headless launches broke repeatedly: a container launch hung for 2.8 hours, two container boots on 2026-10-13 hung on
+software rendering, and the human reports that headless emulators break frequently.
+The only launch form for agent sessions is the one in "Working agent launch: headful, host GPU, no container":
+a window on the host GPU, as its own systemd user unit with `MemoryMax`.
+If that launch fails, stop and report the error; do not fall back to a headless form.
+The headless commands below are the evidence of the original crash and stay as a record, not as instructions.
+
 ## Symptom
 
 The process reaches the full-startup phase,
@@ -208,8 +218,8 @@ emulator -avd Pixel_9_Pro_Fold -no-audio -gpu host -no-snapshot-load
 
 This comparison changes renderer and window mode together;
  the prior read-only
-headless `-gpu host` positive control is the evidence that a window is not required for
-host-GPU success on this host.
+headless `-gpu host` positive control showed that a window is not required for host-GPU success on this host.
+That is a fact about the crash only: agents still launch headful (see "Rule for agents").
  The music-player APK and test APK installed on that emulator.
 The real Android instrumentation runner then executed the migration suite:
 
@@ -220,6 +230,175 @@ Time: 0.008
 
 OK (2 tests)
 ```
+
+## Working agent launch: headful, host GPU, no container (2026-10-12)
+
+An agent session drove the owned Pixel 9 Pro Fold AVD for hours with a headless container launch that passed
+`-feature -Vulkan` under `xvfb-run` (software rendering, 2 CPUs and 6 GiB for a 4 GiB guest) and met repeated System UI
+and Pixel Launcher ANRs, a `qemu` segmentation fault and an ANR loop.
+The same AVD booted cleanly when launched headfully as its own systemd user unit, on the host GPU:
+
+```bash
+systemd-run --user --unit=agent-fold-headful --collect --property=MemoryMax=12G \
+  --setenv=DISPLAY=:0 --setenv=WAYLAND_DISPLAY=wayland-0 --setenv=XDG_RUNTIME_DIR=/run/user/1000 \
+  --setenv=DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/1000/bus --setenv=ANDROID_HOME=/home/user/Android/Sdk \
+  --setenv=ANDROID_EMULATOR_WAIT_TIME_BEFORE_KILL=90 \
+  /home/user/Android/Sdk/emulator/emulator -avd Pixel9ProFold_Fresh_5FXdOc -ports 5582,5583 \
+  -no-snapshot -no-audio -no-boot-anim -gpu host -camera-back none -camera-front none -memory 4096 -cores 4 -no-metrics
+```
+
+(The owned AVD also needs its own `HOME`, `ANDROID_USER_HOME` and `ANDROID_AVD_HOME`, and a private adb server port, as
+in the agent's notes.)
+Result: `sys.boot_completed=1` after 98 s, no ANR dialog and no crash, with the journal naming the AMD Radeon RX 7600
+as the GL and Vulkan device, at a load average above 60 on 16 cores.
+So the failures were launch flags and container limits, not host load.
+Use this form for agent sessions: no `-no-window`, no `xvfb-run`, no container, Vulkan left at its default.
+The window opens on the human's session; close it with `adb emu kill` after `sync`.
+
+## Separate incident: mid-session SIGSEGV under llvmpipe in a container (2026-10-05)
+
+This is recorded here as the nearest topic.
+It is not shown to be the SwiftShader boot crash:
+the emulator version,
+renderer and timing all differ.
+
+Android Emulator 37.2.12.0 (build_id 16428233) ran an owned Pixel 9 Pro Fold
+AVD copy headlessly under Xvfb in `podman run --memory=6g --cpus=2`,
+with `-gpu host -feature -Vulkan -memory 4096 -cores 2`.
+Startup reported:
+
+```text
+# Android Emulator startup diagnostic
+ERROR        | Your GPU cannot be used for hardware rendering. Consider using software rendering.
+INFO         | Graphics Adapter Android Emulator OpenGL ES Translator (llvmpipe (LLVM 20.1.2, 256 bits))
+```
+
+The guest booted and worked for about 16 minutes,
+through 24 screenshot captures,
+then the emulator crashed during scripted touch input.
+The container's shell printed `Segmentation fault (core dumped)` and the
+emulator command returned `139`.
+`coredumpctl info` names the emitter and signal:
+
+```text
+# coredumpctl info 2301587
+Executable: .../emulator/qemu/linux-x86_64/qemu-system-x86_64-headless
+Signal: 11 (SEGV)
+Stack trace of thread 229:
+#0  0x00007fc75dd89adc n/a (/usr/lib/x86_64-linux-gnu/libc.so.6 + 0x19badc)
+```
+
+Only that frame was resolved,
+so the faulting emulator code is not identified.
+The owner log's last lines before the fault were repeated
+`gles_v2_imp.cpp:... error null ctx` messages from the GL translator.
+An earlier visit with the same command that completed normally logged the
+same message,
+so those lines do not distinguish the crash.
+Host load averaged about 40 to 50 at the time;
+no out-of-memory event was looked for.
+
+The same container command completed whole visits before and after this
+crash,
+so it is intermittent on this host.
+No workaround was verified;
+the visit was repeated.
+A crash leaves the guest's changed settings and the AVD's lock in place;
+see [the lock recurrence](android-emulator-37-disposable-avd-lock-after-hard-stop.md).
+
+### Second occurrence the same day
+
+The same container command crashed again later on 2026-10-05,
+about a quarter of an hour after its start,
+after twelve first-run study states had been captured.
+The emulator's output again ended with `Segmentation fault (core dumped)`
+and the owner exited with status 1.
+`coredumpctl list --since 19:00` reported `No coredumps found`,
+so no stack was read this time.
+The host's one-minute load average had risen from under 1 to between 70
+and 96 during the visit,
+driven by other work on the host.
+That both crashes came under heavy load is an observation,
+not an established cause.
+
+The next boot's first reading of `font_scale` was `2.0`,
+the value the capture had set before the crash,
+so a crash leaves the last written guest setting on disk.
+The remedy that was used is not a fix for the crash:
+the capture now keeps each finished state in one cohort folder and a later
+boot continues from the first missing state,
+with each view naming the boot that made it.
+
+### Third occurrence the same day
+
+A third crash followed that evening,
+a few minutes into a visit,
+after five views of another study.
+Three of those views had the system keyboard open,
+which the earlier crashed visits never did.
+The emulator's output again ended with `Segmentation fault (core dumped)`.
+The host's load average was between 21 and 30 this time,
+well under the earlier two,
+so heavy load is not required for the crash.
+Whether the keyboard matters is not known from one case.
+
+After this one,
+visits are repeated by a bounded driver until the cohort is complete:
+at most eight visits,
+each in the same 6 GiB,
+2 CPU container,
+stopping early if two visits in a row add no view.
+After each crash it checks for owners and moves the stale locks to a backup,
+as [the lock record](android-emulator-37-disposable-avd-lock-after-hard-stop.md)
+prescribes.
+
+### Fourth and fifth occurrences the same day
+
+Two more visits under that driver ended the same way,
+each with `Segmentation fault (core dumped)` as the emulator's last line:
+one after 19 views,
+with a load average near 27 read a few minutes after it,
+and one after 18 views,
+with a load average of 53 read a few minutes after it.
+During the second of these,
+the agent was also running a browser check in a separate 2 CPU container.
+Between them,
+one visit captured 32 views and shut down without a crash.
+
+So on this host the crash came after 5,
+19 and 18 views in three visits and not at all in a fourth of 32 views.
+That is too few visits to say whether load,
+the keyboard or the number of views decides it.
+The driver's answer stays the same:
+keep every finished view,
+record the crash,
+move the stale locks after the owner checks,
+and boot again.
+
+### A visit that was killed, not a segmentation fault
+
+Later that night a visit ended differently.
+After 59 views in about 25 minutes,
+the emulator's guest process was `Killed` and its command returned `137`.
+The output has no segmentation fault line.
+`podman events` for that container reports its end and no out-of-memory event,
+and the kernel log could not be read without privileges.
+So the cause is not established:
+the 6 GiB bound of the container is a candidate and nothing more.
+The stale locks it left were moved the same way and the next visit booted.
+It is counted here because it interrupts a capture exactly as the crash does,
+and must not be reported as one.
+
+### After a reboot of the host
+
+On 2026-10-06,
+after the host had been restarted,
+the first visit of a new capture ended with `Segmentation fault (core dumped)` after 25 views.
+The host's load average read about 35 to 60 during that hour,
+from other work on the machine.
+The next visit lost no view to a crash but ended when one guest command exceeded its 60 second bound,
+and the third completed the cohort and shut down cleanly.
+A fresh boot of the host therefore did not stop the crash.
 
 ## Verified workarounds
 

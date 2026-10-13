@@ -1,13 +1,25 @@
-//! xdg-shell handler: map the one hosted toplevel fullscreen and focus it.
+//! xdg-shell handler:
+//!  map the one hosted toplevel fullscreen and focus it.
 //!
-//! A general compositor lets windows float, move, and resize. This fixture hosts
-//! exactly one app and keeps it filling the whole nested screen, so `new_toplevel`
-//! configures the window fullscreen and gives it keyboard focus, and the
+//! A general compositor lets windows float,
+//!  move,
+//!  and resize.
+//!  This fixture hosts
+//! exactly one app and keeps it filling the whole nested screen,
+//!  so `new_toplevel`
+//! configures the window fullscreen and gives it keyboard focus,
+//!  and the
 //! move/resize/grab requests are deliberately ignored.
 
-/// What:     Grouped `use` of the xdg-shell types, popup helpers, the toplevel state
-///           enum, focus/serial utilities, and the delegate macro.
-/// Why:      Everything the handler and the two free functions below reference.
+/// What:
+///      Grouped `use` of the xdg-shell types,
+///  popup helpers,
+///  the toplevel state
+///           enum,
+///  focus/serial utilities,
+///  and the delegate macro.
+/// Why:
+///       Everything the handler and the two free functions below reference.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -18,12 +30,11 @@ use smithay::{
     desktop::{
         find_popup_root_surface, get_popup_toplevel_coords, PopupKind, PopupManager, Space, Window,
     },
-    output::Output,
     reexports::{
         wayland_protocols::xdg::shell::server::xdg_toplevel,
         wayland_server::protocol::{wl_seat, wl_surface::WlSurface},
     },
-    utils::{Serial, SERIAL_COUNTER},
+    utils::Serial,
     wayland::{
         compositor::with_states,
         shell::xdg::{
@@ -33,8 +44,11 @@ use smithay::{
     },
 };
 
-/// What:     `use crate::state::Compositor;`. Our state type.
-/// Why:      The handler is `impl XdgShellHandler for Compositor`.
+/// What:
+///      `use crate::state::Compositor;`.
+///  Our state type.
+/// Why:
+///       The handler is `impl XdgShellHandler for Compositor`.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -42,31 +56,32 @@ use smithay::{
 /// ```
 use crate::state::Compositor;
 
-/// Configure one toplevel to fill the output: set fullscreen + activated + the
-/// output size as its pending size.
+/// The logical screen size the toplevel is configured with.
+use crate::screen_geometry::ScreenGeometry;
+
+/// Configure one toplevel to fill the screen:
+///  set fullscreen + activated + the
+/// logical screen size as its pending size.
 ///
-/// What:     `fn set_fullscreen(surface: &ToplevelSurface, output: &Output)`. Private
-///           helper borrowing the toplevel and output read-only.
-/// Why:      Both the initial map and every resize need the same "fill the screen"
-///           configuration, so it lives in one place.
+/// What:
+///      `fn set_fullscreen(surface: &ToplevelSurface, geometry: ScreenGeometry)`.
+///           Private helper borrowing the toplevel;
+///  the geometry is a small copied value.
+/// Why:
+///       Both the initial map and every resize need the same "fill the screen"
+///           configuration,
+///  so it lives in one place.
+///  The size is the logical one:
+///  the
+///           output mode is physical,
+///  which at scale 2 would configure the client twice too
+///           large and put every logical click in the wrong place.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function setFullscreen(surface, output) { ... }
+/// function setFullscreen(surface, geometry) { ... }
 /// ```
-fn set_fullscreen(surface: &ToplevelSurface, output: &Output) {
-    // What:     `let size = output.current_mode().map(|m| m.size).unwrap_or_default();`.
-    //           `current_mode()` returns `Option<Mode>`; `.map(|m| m.size)` pulls the
-    //           `Size<i32, Physical>` when present; `.unwrap_or_default()` substitutes a
-    //           zero size if the output has no mode yet.
-    // Why:      The size the window should fill is the output's current resolution.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // const size = output.currentMode()?.size ?? { w: 0, h: 0 };
-    // ```
-    let size = output.current_mode().map(|m| return m.size).unwrap_or_default();
-
+fn set_fullscreen(surface: &ToplevelSurface, geometry: ScreenGeometry) {
     // What:     `surface.with_pending_state(|state| { ... });`. Runs the closure with a
     //           mutable borrow of the toplevel's not-yet-sent configure state.
     // Why:      Stage the fullscreen flags and size so the next `send_configure` carries
@@ -82,31 +97,35 @@ fn set_fullscreen(surface: &ToplevelSurface, output: &Output) {
         // Why:      Tell the client it is fullscreen so it draws edge-to-edge.
         state.states.set(xdg_toplevel::State::Fullscreen);
 
-        // What:     `state.states.set(xdg_toplevel::State::Activated);`. Adds the
-        //           activated (focused) flag.
-        // Why:      Slint renders active styling and starts drawing when activated.
-        state.states.set(xdg_toplevel::State::Activated);
+        // What:     The activated flag is not set here; `crate::focus` sets and clears it
+        //           for the window that has keyboard focus.
+        // Why:      Only the focused window is active, and a dialog takes that from its parent.
 
-        // What:     `state.size = Some((size.w, size.h).into());`. Sets the pending
-        //           size. `(size.w, size.h)` is an `(i32, i32)` tuple; `.into()`
-        //           converts it into `Size<i32, Logical>` (the type `state.size`
-        //           expects). `Some(...)` marks the size as specified.
-        // Why:      Ask the client to draw exactly the output's pixel dimensions (scale
-        //           is 1, so logical equals physical here).
+        // What:     `state.size = Some((w, h).into());`. Sets the pending size. The
+        //           `(i32, i32)` tuple `.into()` converts into `Size<i32, Logical>` (the
+        //           type `state.size` expects). `Some(...)` marks the size as specified.
+        // Why:      Ask the client for the logical screen size; the client multiplies
+        //           it by the fractional scale to size its buffer.
         //
         // In TS you'd write (pseudocode):
         // ```ts
-        // state.size = { w: size.w, h: size.h };
+        // state.size = { w: geometry.logicalWidth, h: geometry.logicalHeight };
         // ```
-        state.size = Some((size.w, size.h).into());
+        state.size = Some((geometry.logical_width, geometry.logical_height).into());
     });
 }
 
 /// Reconfigure every mapped toplevel to fill the (possibly resized) output.
 ///
-/// What:     `pub fn reconfigure_fullscreen(state: &mut Compositor)`. Iterates the
-///           space's windows, re-applies `set_fullscreen`, and sends a fresh configure.
-/// Why:      When the nested screen is resized, the hosted app must be told the new
+/// What:
+///      `pub fn reconfigure_fullscreen(state: &mut Compositor)`.
+///  Iterates the
+///           space's windows,
+///  re-applies `set_fullscreen`,
+///  and sends a fresh configure.
+/// Why:
+///       When the nested screen is resized,
+///  the hosted app must be told the new
 ///           size so it redraws to fill it.
 ///
 /// In TS you'd write (pseudocode):
@@ -118,9 +137,8 @@ pub fn reconfigure_fullscreen(state: &mut Compositor) {
     //           .filter_map(|w| w.toplevel().cloned()).collect();`. `filter_map` keeps
     //           only windows that have a toplevel, cloning each; `.collect()` gathers
     //           them into an owned `Vec`.
-    // Why:      Collect first so we no longer borrow `state.space` while calling
-    //           `set_fullscreen` (which borrows `state.output`), avoiding an
-    //           overlapping-borrow error.
+    // Why:      Collect first so we no longer borrow `state.space` while sending
+    //           configures, avoiding an overlapping-borrow error.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -136,9 +154,9 @@ pub fn reconfigure_fullscreen(state: &mut Compositor) {
     //           turn (`&toplevels` iterates references).
     // Why:      Reconfigure and notify each window.
     for toplevel in &toplevels {
-        // What:     `set_fullscreen(toplevel, &state.output);`. Stage the new size.
-        // Why:      Update the pending configure to the new output size.
-        set_fullscreen(toplevel, &state.output);
+        // What:     `set_fullscreen(toplevel, state.screen.geometry);`. Stage the new size.
+        // Why:      Update the pending configure to the new logical screen size.
+        set_fullscreen(toplevel, state.screen.geometry);
 
         // What:     `toplevel.send_configure();`. Send the staged configure to the client.
         // Why:      Deliver the new size so the app redraws.
@@ -148,21 +166,34 @@ pub fn reconfigure_fullscreen(state: &mut Compositor) {
 
 /// Implement the xdg-shell handler.
 ///
-/// What:     `impl XdgShellHandler for Compositor`. Provides the shell state accessor
+/// What:
+///      `impl XdgShellHandler for Compositor`.
+///  Provides the shell state accessor
 ///           and the toplevel/popup lifecycle hooks.
-/// Why:      This is where a new app window becomes a fullscreen, focused window.
+/// Why:
+///       This is where a new app window becomes a fullscreen,
+///  focused window.
 impl XdgShellHandler for Compositor {
-    /// What:     `fn xdg_shell_state(&mut self) -> &mut XdgShellState`. Mutable accessor.
-    /// Why:      Smithay mutates shell bookkeeping through it.
+    /// What:
+    ///      `fn xdg_shell_state(&mut self) -> &mut XdgShellState`.
+    ///  Mutable accessor.
+    /// Why:
+    ///       Smithay mutates shell bookkeeping through it.
     fn xdg_shell_state(&mut self) -> &mut XdgShellState {
         // What:     `&mut self.xdg_shell_state`. Mutable borrow (tail expression).
         // Why:      Return the shell state.
         return &mut self.xdg_shell_state
     }
 
-    /// What:     `fn new_toplevel(&mut self, surface: ToplevelSurface)`. Called when the
-    ///           app creates its main window. Consumes the `surface` by value.
-    /// Why:      Configure it fullscreen, map it at the origin, and focus it.
+    /// What:
+    ///      `fn new_toplevel(&mut self, surface: ToplevelSurface)`.
+    ///  Called when the
+    ///           app creates its main window.
+    ///  Consumes the `surface` by value.
+    /// Why:
+    ///       Configure it fullscreen,
+    ///  map it at the origin,
+    ///  and focus it.
     fn new_toplevel(&mut self, surface: ToplevelSurface) {
         // What:     `let wl_surface = surface.wl_surface().clone();`. Grab an owned clone
         //           of the underlying `wl_surface` before `surface` is moved into the
@@ -171,10 +202,10 @@ impl XdgShellHandler for Compositor {
         //           `surface` is consumed.
         let wl_surface = surface.wl_surface().clone();
 
-        // What:     `set_fullscreen(&surface, &self.output);`. Stage the fullscreen
+        // What:     `set_fullscreen(&surface, self.screen.geometry);`. Stage the fullscreen
         //           configure on the new toplevel.
-        // Why:      The first configure (sent on first commit) will carry fullscreen size.
-        set_fullscreen(&surface, &self.output);
+        // Why:      The first configure (sent on first commit) will carry the logical size.
+        set_fullscreen(&surface, self.screen.geometry);
 
         // What:     `let window = Window::new_wayland_window(surface);`. Wrap the
         //           toplevel in a desktop `Window`, consuming `surface`.
@@ -186,25 +217,34 @@ impl XdgShellHandler for Compositor {
         // Why:      Put the one window on screen, filling the output from the top-left.
         self.space.map_element(window, (0, 0), true);
 
-        // What:     `let serial = SERIAL_COUNTER.next_serial();`. Get a fresh protocol
-        //           serial (a monotonically increasing event id).
-        // Why:      `set_focus` needs a serial to order the focus event.
-        let serial = SERIAL_COUNTER.next_serial();
-
-        // What:     `if let Some(keyboard) = self.seat.get_keyboard() { keyboard.set_focus(
-        //           self, Some(wl_surface), serial); }`. `get_keyboard()` returns
-        //           `Option<KeyboardHandle>`; the `if let` runs only when the seat has a
-        //           keyboard (it always does here). `set_focus` directs keystrokes to the
-        //           surface; `Some(wl_surface)` is the new focus target.
-        // Why:      So synthetic key input reaches the app immediately.
-        if let Some(keyboard) = self.seat.get_keyboard() {
-            keyboard.set_focus(self, Some(wl_surface), serial);
-        }
+        // What:     `crate::focus::focus_surface(self, wl_surface);`. Make the new toplevel the
+        //           most recently focused one, give it keyboard focus, and mark it activated.
+        // Why:      Synthetic key input reaches the newest window, as on a desktop where a new
+        //           window takes focus, and the focus order remembers what to return to.
+        crate::focus::focus_surface(self, wl_surface);
     }
 
-    /// What:     `fn new_popup(&mut self, surface: PopupSurface, _positioner:
-    ///           PositionerState)`. Called when the app opens a popup (menu/tooltip).
-    /// Why:      Track and position it so it renders correctly.
+    /// What:
+    ///      `fn toplevel_destroyed(&mut self, surface: ToplevelSurface)`.
+    ///  Called when a toplevel is destroyed or its client disconnects.
+    /// Why:
+    ///       Keyboard focus returns to the most recently focused remaining window,
+    ///  as a desktop does when a dialog closes.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// toplevelDestroyed(surface: ToplevelSurface): void { focus.toplevelGone(this, surface.wlSurface); }
+    /// ```
+    fn toplevel_destroyed(&mut self, surface: ToplevelSurface) {
+        crate::focus::toplevel_gone(self, surface.wl_surface());
+    }
+
+    /// What:
+    ///      `fn new_popup(&mut self, surface: PopupSurface, _positioner:
+    ///           PositionerState)`.
+    ///  Called when the app opens a popup (menu/tooltip).
+    /// Why:
+    ///       Track and position it so it renders correctly.
     fn new_popup(&mut self, surface: PopupSurface, _positioner: PositionerState) {
         // What:     `self.unconstrain_popup(&surface);`. Adjust the popup so it stays on
         //           screen relative to its parent.
@@ -219,9 +259,12 @@ impl XdgShellHandler for Compositor {
         let _ = self.popups.track_popup(PopupKind::Xdg(surface));
     }
 
-    /// What:     `fn reposition_request(&mut self, surface: PopupSurface, positioner:
-    ///           PositionerState, token: u32)`. The app asks to move an existing popup.
-    /// Why:      Recompute and acknowledge the new popup geometry.
+    /// What:
+    ///      `fn reposition_request(&mut self, surface: PopupSurface, positioner:
+    ///           PositionerState, token: u32)`.
+    ///  The app asks to move an existing popup.
+    /// Why:
+    ///       Recompute and acknowledge the new popup geometry.
     fn reposition_request(&mut self, surface: PopupSurface, positioner: PositionerState, token: u32) {
         // What:     `surface.with_pending_state(|state| { state.geometry =
         //           positioner.get_geometry(); state.positioner = positioner; });`. Stage
@@ -242,15 +285,22 @@ impl XdgShellHandler for Compositor {
         surface.send_repositioned(token);
     }
 
-    /// What:     `fn move_request(&mut self, _surface: ToplevelSurface, _seat:
-    ///           wl_seat::WlSeat, _serial: Serial) {}`. The app asks to be dragged.
-    /// Why:      A single fullscreen fixture window never moves; ignore the request.
+    /// What:
+    ///      `fn move_request(&mut self, _surface: ToplevelSurface, _seat:
+    ///           wl_seat::WlSeat, _serial: Serial) {}`.
+    ///  The app asks to be dragged.
+    /// Why:
+    ///       A single fullscreen fixture window never moves;
+    ///  ignore the request.
     fn move_request(&mut self, _surface: ToplevelSurface, _seat: wl_seat::WlSeat, _serial: Serial) {}
 
-    /// What:     `fn resize_request(&mut self, _surface: ToplevelSurface, _seat:
+    /// What:
+    ///      `fn resize_request(&mut self, _surface: ToplevelSurface, _seat:
     ///           wl_seat::WlSeat, _serial: Serial, _edges: xdg_toplevel::ResizeEdge) {}`.
     ///           The app asks to be interactively resized.
-    /// Why:      The fixture controls the size (via the control API), not the client;
+    /// Why:
+    ///       The fixture controls the size (via the control API),
+    ///  not the client;
     ///           ignore.
     fn resize_request(
         &mut self,
@@ -261,9 +311,13 @@ impl XdgShellHandler for Compositor {
     ) {
     }
 
-    /// What:     `fn grab(&mut self, _surface: PopupSurface, _seat: wl_seat::WlSeat,
-    ///           _serial: Serial) {}`. The app requests a popup grab (keyboard capture).
-    /// Why:      Not needed for scripted testing; ignore.
+    /// What:
+    ///      `fn grab(&mut self, _surface: PopupSurface, _seat: wl_seat::WlSeat,
+    ///           _serial: Serial) {}`.
+    ///  The app requests a popup grab (keyboard capture).
+    /// Why:
+    ///       Not needed for scripted testing;
+    ///  ignore.
     fn grab(&mut self, _surface: PopupSurface, _seat: wl_seat::WlSeat, _serial: Serial) {}
 }
 
@@ -273,11 +327,17 @@ delegate_xdg_shell!(Compositor);
 
 /// Send the initial configure for a toplevel or popup on its first commit.
 ///
-/// What:     `pub fn handle_commit(popups: &mut PopupManager, space: &Space<Window>,
-///           surface: &WlSurface)`. Free function called from the compositor commit
-///           hook. Mutably borrows the popup manager, read-only borrows the space and
+/// What:
+///      `pub fn handle_commit(popups: &mut PopupManager, space: &Space<Window>,
+///           surface: &WlSurface)`.
+///  Free function called from the compositor commit
+///           hook.
+///  Mutably borrows the popup manager,
+///  read-only borrows the space and
 ///           surface.
-/// Why:      A client cannot draw until it receives its first configure; this sends it
+/// Why:
+///       A client cannot draw until it receives its first configure;
+///  this sends it
 ///           exactly once for whichever kind of surface committed.
 ///
 /// In TS you'd write (pseudocode):
@@ -349,13 +409,18 @@ pub fn handle_commit(popups: &mut PopupManager, space: &Space<Window>, surface: 
 
 /// Popup-unconstraining helper attached to the compositor state.
 ///
-/// What:     `impl Compositor { fn unconstrain_popup(&self, popup: &PopupSurface) { ... } }`.
+/// What:
+///      `impl Compositor { fn unconstrain_popup(&self, popup: &PopupSurface) { ... } }`.
 ///           A second `impl` block adding one private method.
-/// Why:      Keep popup geometry clamping beside the rest of the xdg-shell code.
+/// Why:
+///       Keep popup geometry clamping beside the rest of the xdg-shell code.
 impl Compositor {
-    /// What:     `fn unconstrain_popup(&self, popup: &PopupSurface)`. Clamp the popup so
+    /// What:
+    ///      `fn unconstrain_popup(&self, popup: &PopupSurface)`.
+    ///  Clamp the popup so
     ///           it fits on the output relative to its parent window.
-    /// Why:      Prevent popups from rendering off the edge of the nested screen.
+    /// Why:
+    ///       Prevent popups from rendering off the edge of the nested screen.
     fn unconstrain_popup(&self, popup: &PopupSurface) {
         // What:     `let Ok(root) = find_popup_root_surface(&PopupKind::Xdg(popup.clone()))
         //           else { return; };`. `find_popup_root_surface` returns a `Result`; the

@@ -1,5 +1,8 @@
 # harper:ignore
 
+# mise.toml is generated from mise.no-env.toml by file-enforcer (file-enforcer.config.ts, generateMiseToml).
+# Edit mise.no-env.toml and run file-enforcer; never hand-edit mise.toml.
+
 # mise configuration - replaces proto and moon
 # https://mise.jdx.dev/configuration.html
 # After cloning, run `mise trust` to mark this file as trustworthy.
@@ -92,7 +95,10 @@ age = "latest"
 # The alias prevents Mise's false missing-component loop; see
 # doc/troubleshooting/mise-rust-preview-component-reinstall.md.
 # ASAN backtrace symbolization uses the system llvm-symbolizer (not a rustup component).
-rust = { version = "nightly", components = "clippy,rust-src,llvm-tools" }
+# The Android ABIs of the music player's native library (package/music-player/android-app/rust, built by cargo-ndk).
+# Without these targets a floating newest nightly cannot build it, and mise forces RUSTUP_TOOLCHAIN to that nightly.
+# mise adds missing targets to an installed toolchain on the next `mise install`.
+rust = { version = "nightly", components = "clippy,rust-src,llvm-tools", targets = "aarch64-linux-android,x86_64-linux-android" }
 cargo-binstall = "latest"
 "cargo:timeout-cli" = "latest"
 
@@ -105,6 +111,29 @@ cargo-binstall = "latest"
 # desktop apps install nextest inside their Containerfiles instead, since the
 # container filesystem does not see host mise tools.
 "cargo:cargo-nextest" = "latest"
+
+# The unified Rust, Markdown and MDX linter behind the root lint:monochromatic-lint
+# and format:monochromatic-lint tasks and the Markdown commit policy. Pinned because a
+# new version can add or change rules, which must land together with the repository's
+# monochromatic-lint.config.jsonc. The cargo backend resolves through cargo-binstall
+# to the prebuilt release archive when one exists for the platform.
+"cargo:monochromatic-lint" = "0.1.1"
+
+# The Git policy wrapper (package/git-policy/cli), installed from the published crate. Pinned so a release of the
+# wrapper reaches the repository only together with its configuration and policies. The crate's binary is
+# `cli-git-native`; the postinstall links it as `git` in the gitignored per-worktree directory `.cache/cli-git-bin`,
+# which file-enforcer puts first in `_.path`. The link never lives in the tool's own `bin/`, because mise would then
+# create a global `git` shim. `when = "always"` relinks on every `mise install`, so a new worktree gets its link even
+# when the tool is already installed. The link is made under a temporary name and moved over `git`, so a concurrent
+# `git` never sees a missing file. `os = ["linux"]` because only Linux archives are released and the code was never
+# built elsewhere. Details: doc/planning/cli-git-native-cutover.md, section `Install the published tool`.
+"cargo:monochromatic-git-policy-cli" = { version = "0.1.2", os = ["linux"], postinstall = { run = "mkdir --parents \"$MISE_CONFIG_ROOT/.cache/cli-git-bin\" && ln --symbolic \"$MISE_TOOL_INSTALL_PATH/bin/cli-git-native\" \"$MISE_CONFIG_ROOT/.cache/cli-git-bin/.git.$$\" && mv --no-target-directory \"$MISE_CONFIG_ROOT/.cache/cli-git-bin/.git.$$\" \"$MISE_CONFIG_ROOT/.cache/cli-git-bin/git\"", when = "always" } }
+
+# The nested Wayland compositor that hosts one GUI app for screenshots and synthetic input
+# (package/cli/nested-wayland-session). Not pinned: mise.lock records the resolved version. The crate's
+# cargo-binstall metadata points the cargo backend at the per-crate release archive, so no from-source
+# build runs. Releases carry Linux archives only.
+"cargo:monochromatic-nested-wayland-session" = "latest"
 
 # CMake for building vendored C libraries from Rust -sys crates. music-player's
 # `opus` dependency (pinned to opus-rs git HEAD in
@@ -269,6 +298,11 @@ uvx = true
 [settings.npm]
 package_manager = "pnpm"
 
+# Cargo tools install through the cargo-binstall this file declares, never through mise's
+# built-in installer, which mise 2027.7.0 turns on by default when cargo-binstall is absent.
+[settings.cargo]
+binstall_native = false
+
 [hooks]
 # Runs at first `cd` before any tool is installed, so it must be cross-platform
 # and depend only on mise itself (the one guaranteed prerequisite). It delegates
@@ -314,7 +348,7 @@ if (failed.length > 0) { throw new Error(`fanout child tasks failed: ${failed.jo
 # current task's direct children. The target suffix is `FANOUT_TASK` when set
 # (used by wrapper tasks whose own name differs from the fanned-out suffix),
 # else derived from MISE_TASK_NAME by stripping the root `//:` prefix (mise
-# names the root config's tasks `//:build`, `//:lint:rust`, etc.). Enumerating
+# names the root config's tasks `//:build`, `//:lint:detekt`, etc.). Enumerating
 # real tasks means packages lacking the task are skipped, exactly like the
 # native glob. A bounded worker pool (availableParallelism) keeps ~90 package
 # linter subtrees from spawning at once; `watch:*` fans out unbounded so every
@@ -651,14 +685,6 @@ run = "slopo analyze"
 description = "Regenerate mise.lock from active tool declarations"
 run = "mise lock"
 
-[tasks."cleanup:hk-git-config"]
-description = "Remove only retired hook.hk-* keys from explicit Git configuration scopes"
-usage = '''
-flag "--local" help="Clean current repository configuration"
-flag "--global" help="Clean per-user global configuration"
-'''
-run = "node package/git-policy/cli/src/maintenance/hk-config-cleanup-command.ts"
-
 #endregion Utility Tasks
 
 #region Build Tasks
@@ -848,17 +874,17 @@ run = [{ tasks = ["watch:build", "watch:test"] }]
 
 # Step 1 fans out (via the JS cross-package fanout, not the native glob) to every
 # package's own `lint`, whose intra-package fanout already runs that package's
-# lint:oxlint, lint:types, lint:rust, lint:detekt, lint:clippy, lint:tofu. Step 2
-# runs only the repo-wide linters that have NO per-package task (dprint, stylelint,
-# markdown). lint:rust / lint:detekt are deliberately absent from step 2: every
-# package carrying them also has a `lint` reached by step 1, so listing them here
-# too would invoke each package's lint:rust / lint:detekt twice.
+# lint:oxlint, lint:types, lint:detekt, lint:clippy, lint:tofu. Step 2 runs only
+# the repo-wide linters that have NO per-package task: dprint, and
+# monochromatic-lint for Rust, Markdown and MDX. lint:detekt is deliberately
+# absent from step 2: every package carrying it also has a `lint` reached by
+# step 1, so listing it here too would invoke each package's lint:detekt twice.
 [tasks."lint"]
 description = "Lint"
 shell = "node --input-type=module-typescript -e"
 run = [
   "{{vars.fanout_packages}}",
-  { tasks = ["lint:dprint", "lint:stylelint", "lint:markdown"] },
+  { tasks = ["lint:dprint", "lint:monochromatic-lint"] },
 ]
 [tasks."lint".env]
 OXLINT_THREADS = "1"
@@ -873,41 +899,17 @@ hide = true
 description = "Check formatting with dprint"
 run = "dprint check --list-different"
 
-[tasks."lint:stylelint"]
-hide = true
-description = "Lint CSS with Stylelint, optionally restricted to specific files or globs"
-usage = 'arg "[args]" var=#true help="File paths or globs (when provided, only those are linted)"'
-shell = "node --input-type=module-typescript -e"
-run = """
-{{vars.parse_usage_args}}
-const { execFileSync } = await import('node:child_process')
-const args = parseUsageArgs(process.env.usage_args ?? '')
-const stylelintArgs = ['--ignore-path', '.gitignore', ...(args.length === 0 ? ['**/*.{css,astro,html}'] : args)]
-execFileSync('stylelint', stylelintArgs, { stdio: 'inherit' })
-"""
-
-# Lints Markdown and MDX with @monochromatic-dev/cli-markdown-lint, run from
-# TypeScript source under Bun (no build-before-lint step, closing issue #231).
-# No-arg walks the whole tree, filtering by extension and honouring .gitignore;
-# file/dir paths restrict the walk. Exits non-zero when violations remain.
-[tasks."lint:markdown"]
-hide = true
-description = "Lint Markdown and MDX with cli-markdown-lint, optionally restricted to specific files"
+# Lints Rust, Markdown and MDX with monochromatic-lint, the cargo:monochromatic-lint
+# tool, under the root monochromatic-lint.config.jsonc
+# (doc/planning/unified-linter.md). It replaces the per-package lint:rust tasks and
+# the Node Markdown linter. No-arg walks the whole tree, honouring .gitignore;
+# file/dir paths restrict the walk. Exits 1 on error findings and 2 when the run
+# could not be completed; warnings alone exit 0.
+[tasks."lint:monochromatic-lint"]
+description = "Lint Rust, Markdown and MDX with monochromatic-lint, optionally restricted to specific paths"
 # No usage spec: mise appends post-`--` args to the command as a real argv vector
-# (preserving spaces). The cli defaults to walking `.` when no paths are given
-# (see package/cli/markdown-lint/src/run.ts).
-run = "node package/cli/markdown-lint/src/cli.ts --lfs-image-exclude=package/ssg/"
-
-[tasks."lint:rust"]
-description = "Enforce the code-line budget and required rustdoc on .rs via monochromatic-rust-linter, fanned out per package"
-# Standalone convenience task (documented in package READMEs), NOT part of the `lint`
-# aggregate: `mise run lint` already reaches every package's lint:rust through step 1.
-# Fans out (via the JS cross-package fanout) to each package's own `lint:rust`, which
-# runs the rust-linter (max-lines + require-rustdoc) over only that package's Rust
-# source, mirroring `lint:detekt`'s per-package fanout. Pre-existing over-budget
-# files keep this red until they are split; tracked in issue #235.
-shell = "node --input-type=module-typescript -e"
-run = "{{vars.fanout_packages}}"
+# (preserving spaces). The linter walks `.` when no paths are given.
+run = "monochromatic-lint"
 
 [tasks."lint:detekt"]
 description = "Enforce KDoc on Kotlin via the custom detekt rule set (kotlin-linter), fanned out per package"
@@ -924,8 +926,9 @@ run = "{{vars.fanout_packages}}"
 
 # Formatter orchestration
 # dprint handles formatting (CSS, JSON, YAML, TOML, HTML).
-# After dprint, stylelint --fix and oxlint --fix run in parallel
-# to apply auto-fixable lint rules that formatters can't cover.
+# After dprint, format:oxlint and format:monochromatic-lint run in parallel
+# to apply auto-fixable lint rules that formatters can't cover; they touch
+# disjoint files (TypeScript, and Rust, Markdown and MDX).
 #
 # Previously attempted dprint-plugin-exec for inline chaining, but exec is
 # incompatible with tools that modify files in-place (oxlint) or exit non-zero
@@ -935,13 +938,8 @@ run = "{{vars.fanout_packages}}"
 description = "Format all files"
 run = [
   "dprint fmt",
-  { tasks = ["format:stylelint", "format:oxlint", "format:markdown"] },
+  { tasks = ["format:oxlint", "format:monochromatic-lint"] },
 ]
-
-[tasks."format:stylelint"]
-hide = true
-description = "Auto-fix CSS with Stylelint"
-run = 'stylelint --fix --ignore-path .gitignore "**/*.{css,astro,html}"'
 
 [tasks."format:oxlint"]
 hide = true
@@ -949,18 +947,20 @@ description = "Auto-fix each package with Oxlint using package-local tsconfig"
 shell = "node --input-type=module-typescript -e"
 run = "{{vars.fanout_packages}}"
 
-# Applies cli-markdown-lint autofixes (e.g. no-pipe-tables converting pipe
-# tables to HTML, semantic-line-breaks inserting breaks) over the whole tree or
-# the given file paths. dprint handles markdown *formatting*; this is for lint
-# fixes dprint cannot do. In the root `format` task it runs after dprint
-# (sequential), so it sees already-formatted files.
-[tasks."format:markdown"]
+# Applies monochromatic-lint fixes (e.g. no-pipe-tables converting pipe tables to
+# HTML, semantic-line-breaks inserting breaks in Markdown and in rustdoc) over the
+# whole tree or the given paths. This is the only markdown gate: dprint's markdown
+# plugin is disabled in package/config/dprint/index.json ("Formats ordered list
+# markers wrongly"), so `dprint fmt` leaves .md files untouched and no separate
+# markdown formatting pass exists. In the root `format` task it still runs after
+# dprint (sequential), which matters only for the file types dprint does
+# format.
+[tasks."format:monochromatic-lint"]
 hide = true
-description = "Apply cli-markdown-lint autofixes, optionally restricted to specific files"
+description = "Apply monochromatic-lint fixes to Rust, Markdown and MDX, optionally restricted to specific paths"
 # No usage spec: mise appends post-`--` args after `--fix` as a real argv vector.
-# The cli defaults to walking `.` when no paths are given
-# (see package/cli/markdown-lint/src/run.ts).
-run = "node package/cli/markdown-lint/src/cli.ts --fix --lfs-image-exclude=package/ssg/"
+# The linter walks `.` when no paths are given.
+run = "monochromatic-lint --fix"
 
 #region Validation and Check Tasks
 
@@ -1211,7 +1211,14 @@ run = "changeset status --verbose"
 description = "Apply pending changesets to package versions and changelogs, patch-bump dependents they miss, then refresh the lockfile"
 # The ripple runs between the two: changesets ignores most workspace packages, and the Version Packages commit is authored in CI
 # where the cli-git dependent-version-bump policy never runs (doc/decision/private-npm-registry.md).
-run = ["changeset version", "mise run //package/git-policy/repository:bump:dependents", "pnpm install --lockfile-only"]
+# The native executable runs the ripple by its own name, not as `git`: the changesets action runs git commands of its own
+# in the same environment, and the wrapper refuses `git add .`. `cli-git-native` is on PATH from the mise tool locally and from
+# the release job's build step in CI.
+run = [
+  "changeset version",
+  "cli-git-native cli-git fix --all --policy mono/dependent-version-bump",
+  "pnpm install --lockfile-only",
+]
 
 [tasks."changeset:build"]
 description = "Build every package the changeset publish plan will publish"

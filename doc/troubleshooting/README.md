@@ -12,7 +12,6 @@ Issues related to TypeScript configuration,
 
 - TypeScript path warnings with dprint
 - [Learning Rust canonical HTML conflicts with dprint and Stylelint](dprint.md#bug-4-learning-rusts-canonical-compact-html-conflicts-with-repository-formatting-policy)
-- Stylelint and postcss-html resolution
 - Type predicate assignment errors with complex conditional types
 
 ### [Testing](testing.md)
@@ -111,6 +110,14 @@ Retired `@narumitw/pi-goal` behavior and migration:
 - paused or interrupted goals block unrelated built-in and custom tools
 - cached package files are not active configuration
 - migrate globally to repository-owned `@monochromatic-dev/pi-goal`
+
+### [OpenAI OAuth requests hit Cloudflare 520](openai-api-oauth-cloudflare-520.md)
+
+Why pi's OpenAI models fail while `status.openai.com` reads fully operational:
+
+- valid ChatGPT OAuth tokens get Cloudflare `520` origin errors on `api.openai.com`
+- unauthenticated and invalid-credential requests to the same host still return clean `401` JSON
+- the same model ids answer through the `llmgateway-devpass` provider and through `codex exec`
 
 ### [C-Like Comment Syntax](c-like-comments.md)
 

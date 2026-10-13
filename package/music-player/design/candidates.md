@@ -25,7 +25,7 @@ Candidate descriptions are historical unless a named decision explicitly
 makes them the current baseline.
 MD3-on-Slint feasibility and implementing the keyboard map are
 developer-owned;
-the single revised keyboard-map design remains open.
+the keyboard-map design is settled by D102.
 
 ## Historical inventory
 
@@ -122,7 +122,7 @@ which were left as historical style comparisons.
 <tr>
 <td>**settings-a**</td>
 <td>860×600</td>
-<td>Three flat switch rows; says out loud that the pane is short.</td>
+<td>Three flat switch rows; says out loud that the pane is short. D84 (2026-10-05) removes the third row, `Analyse true peak in the background`, because true-peak analysis is automatic and not optional; D85 (2026-10-05) removes the closing sentence. D86 (2026-10-05) removes the two remaining rows: prefix stripping and resume are always on and are not settings.</td>
 </tr>
 <tr>
 <td>**tabletop-c**</td>
@@ -552,7 +552,7 @@ the visible dynamic rail line.
 <tr>
 <td>**first-run-a**</td>
 <td>411×923</td>
-<td>**Settled behaviour (D27).** Auto-opens the system music library and asks before analysing: Scan once / Always scan / Dismiss once / Dismiss forever, all 48dp. Interactive — walks into the scan-F bar, the dismissed state and always-scan.</td>
+<td>**Settled behaviour (D27).** Auto-opens the system music library and asks before analysing: Scan once / Always scan / Dismiss once / Dismiss forever, all 48dp. Interactive — walks into the scan-F bar, the dismissed state and always-scan. D84 (2026-10-05) supersedes the ask-before-analysing prompt and its four answers: true-peak analysis is automatic and not optional. Automatic opening of the system music library stands.</td>
 </tr>
 <tr>
 <td>**toast-a**</td>
@@ -1130,7 +1130,7 @@ flow was exercised,
  but it neither proves the native TouchAreas were activated nor
 measures the target phone geometry.
 D21's global hotkey and Settings row are not inherited by the Search page.
-D25's Ctrl+F reservation remains open with the whole keyboard map.
+D25's Ctrl+F reservation is part of the keyboard map D102 accepted.
  At that retired round,
  Search targets and result effects/ranking were still design questions;
  D58 to D61 and D63 to D80 now settle the visible and interaction goals.

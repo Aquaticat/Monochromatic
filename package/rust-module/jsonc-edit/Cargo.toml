@@ -1,6 +1,6 @@
 [package]
 name = "monochromatic-jsonc-edit"
-version = "0.1.0"
+version = "0.1.1"
 authors = ["Aquaticat"]
 categories = ["parser-implementations", "encoding"]
 documentation = "https://docs.rs/monochromatic-jsonc-edit"
@@ -21,9 +21,13 @@ repository = "https://github.com/Aquaticat/Monochromatic.git"
 description = "Comment-preserving JSONC parse, immutable edit, and canonical emit for Rust: every object key and value keeps one queryable attached comment, numbers compare by exact mathematical value while retaining their source spelling, and escaped unpaired UTF-16 surrogates survive as code units."
 
 [lints.clippy]
+complexity = { level = "allow", priority = -1 }
 disallowed_methods = "deny"
 implicit_return = "deny"
 needless_return = "allow"
+shadow_reuse = "deny"
+shadow_same = "deny"
+shadow_unrelated = "deny"
 
 [lib]
 name = "monochromatic_jsonc_edit"

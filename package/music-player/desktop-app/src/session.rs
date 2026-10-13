@@ -1,6 +1,8 @@
-//! Desktop session persistence. Current JSON stores one `playback_mode`; former
+//! Desktop session persistence.
+//!  Current JSON stores one `playback_mode`;
+//!  former
 //! `shuffle` and `repeat_track` fields exist only in the private read model used
-//! during migration.
+//! during migration. The former `page_control_style` key is ignored on read and no longer written.
 
 /// Owned filesystem path used for the source root and selected track.
 use std::path::PathBuf;
@@ -14,73 +16,13 @@ use crate::command::PlaybackMode;
 /// Shared application identity used to resolve the config directory.
 use crate::identity;
 
-/// Saved visual treatment for library page selectors.
-#[derive(Clone, Copy, Debug, Default, PartialEq, Serialize, Deserialize)]
-pub enum PageControlStyle {
-    /// Radio indicators and labels in a wrapping group.
-    Radio,
-    /// Flat wrapping Material Design 1 tabs with selected underlines.
-    Md1Tabs,
-    /// Filled or outlined rounded buttons.
-    RoundedButtons,
-    /// Joined content-width buttons with selected fill.
-    SegmentedButtons,
-    /// Content-width browser tabs with active-tab silhouettes.
-    #[default]
-    ChromiumTabs,
-    /// Reflective hardware caps with latched LED selection.
-    LedSegmentedButtons,
-}
-
-/// Converts page styles at the Slint integer boundary.
-impl PageControlStyle {
-    /// Converts this style to Slint's stable integer representation.
-    pub fn to_int(self) -> i32 {
-        if self == PageControlStyle::Md1Tabs {
-            return 1;
-        }
-        if self == PageControlStyle::RoundedButtons {
-            return 2;
-        }
-        if self == PageControlStyle::SegmentedButtons {
-            return 3;
-        }
-        if self == PageControlStyle::ChromiumTabs {
-            return 4;
-        }
-        if self == PageControlStyle::LedSegmentedButtons {
-            return 5;
-        }
-        return 0;
-    }
-
-    /// Decodes Slint's integer representation with a radio fallback.
-    pub fn from_int(value: i32) -> PageControlStyle {
-        if value == 1 {
-            return PageControlStyle::Md1Tabs;
-        }
-        if value == 2 {
-            return PageControlStyle::RoundedButtons;
-        }
-        if value == 3 {
-            return PageControlStyle::SegmentedButtons;
-        }
-        if value == 4 {
-            return PageControlStyle::ChromiumTabs;
-        }
-        if value == 5 {
-            return PageControlStyle::LedSegmentedButtons;
-        }
-        return PageControlStyle::Radio;
-    }
-}
-
 /// Current session shape written to disk.
 #[derive(Clone, Debug, PartialEq, Serialize)]
 pub struct Session {
     /// Opened directory whose scan produces the queue.
     pub source_root: Option<PathBuf>,
-    /// Selected track path, or no selection.
+    /// Selected track path,
+    ///  or no selection.
     pub selected: Option<PathBuf>,
     /// Resume position in seconds.
     pub position_secs: f64,
@@ -88,8 +30,10 @@ pub struct Session {
     pub volume: f32,
     /// Single selected completion and transport behavior.
     pub playback_mode: PlaybackMode,
-    /// Selected page-navigation treatment.
-    pub page_control_style: PageControlStyle,
+    /// Track rows template text the user edited, or None to use the default.
+    pub track_rows_template: Option<String>,
+    /// Playing track template text the user edited, or None to use the default.
+    pub playing_template: Option<String>,
 }
 
 /// Private permissive input shape that recognizes current and former fields.
@@ -106,12 +50,16 @@ struct StoredSession {
     volume: f32,
     /// Current wire text when it is a string.
     playback_mode: Option<String>,
-    /// Former shuffle enum text, used only when `playback_mode` is absent.
+    /// Former shuffle enum text,
+    ///  used only when `playback_mode` is absent.
     shuffle: Option<String>,
-    /// Former independent repeat flag, including whether the key was present.
+    /// Former independent repeat flag,
+    ///  including whether the key was present.
     repeat_track: Option<bool>,
-    /// Current page-control preference.
-    page_control_style: PageControlStyle,
+    /// Track rows template text, when the user edited it.
+    track_rows_template: Option<String>,
+    /// Playing track template text, when the user edited it.
+    playing_template: Option<String>,
 }
 
 /// Supplies defaults for missing fields in the permissive input shape.
@@ -126,7 +74,8 @@ impl Default for StoredSession {
             playback_mode: None,
             shuffle: None,
             repeat_track: None,
-            page_control_style: PageControlStyle::ChromiumTabs,
+            track_rows_template: None,
+            playing_template: None,
         };
     }
 }
@@ -141,12 +90,15 @@ impl Default for Session {
             position_secs: 0.0,
             volume: 1.0,
             playback_mode: PlaybackMode::InOrder,
-            page_control_style: PageControlStyle::ChromiumTabs,
+            track_rows_template: None,
+            playing_template: None,
         };
     }
 }
 
-/// Loads, migrates, and saves sessions.
+/// Loads,
+///  migrates,
+///  and saves sessions.
 impl Session {
     /// Converts permissive input into current state and reports whether to rewrite.
     fn from_stored(stored: StoredSession, has_current_mode: bool) -> (Session, bool) {
@@ -177,7 +129,8 @@ impl Session {
                 position_secs: stored.position_secs,
                 volume: stored.volume,
                 playback_mode,
-                page_control_style: stored.page_control_style,
+                track_rows_template: stored.track_rows_template,
+                playing_template: stored.playing_template,
             },
             should_rewrite,
         );
@@ -200,7 +153,10 @@ impl Session {
         return Ok(Session::from_stored(stored, has_current_mode).0);
     }
 
-    /// Reads the session file, returning defaults after any path, I/O, or parse failure.
+    /// Reads the session file,
+    ///  returning defaults after any path,
+    ///  I/O,
+    ///  or parse failure.
     pub fn load() -> Session {
         let Some(path) = session_path() else {
             return Session::default();
@@ -219,6 +175,24 @@ impl Session {
     }
 
     /// Writes only the current session shape to the app config directory.
+    /// What: `load_templates` reads the two saved template texts, None where the user kept the default.
+    /// Why: the editor and the track list start from the saved texts on launch.
+    pub fn load_templates() -> (Option<String>, Option<String>) {
+        let session = Session::load();
+        return (session.track_rows_template, session.playing_template);
+    }
+
+    /// What: `save_templates` writes both template texts and keeps the playback fields as they are.
+    /// Why: the template editor saves here, and the playback record is rewritten by the controller separately.
+    pub fn save_templates(track_rows: Option<&str>, playing: Option<&str>) -> std::io::Result<()> {
+        let mut session = Session::load();
+        session.track_rows_template = track_rows.map(str::to_string);
+        session.playing_template = playing.map(str::to_string);
+        return session.save();
+    }
+
+    /// What: `save` writes the playback record as JSON to the session file.
+    /// Why: the controller and the template editor both persist through this one file.
     pub fn save(&self) -> std::io::Result<()> {
         let Some(path) = session_path() else {
             return Ok(());

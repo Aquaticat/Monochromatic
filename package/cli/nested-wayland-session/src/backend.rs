@@ -1,15 +1,29 @@
-//! Winit backend initialisation: the nested window, its GLES renderer, the output,
+//! Winit backend initialisation:
+//!  the nested window,
+//!  its GLES renderer,
+//!  the output,
 //! and the dmabuf protocol state.
 //!
 //! This runs while the process's `WAYLAND_DISPLAY` still points at the PARENT
-//! compositor (the host session), so the winit window becomes a client of the host.
-//! It mirrors anvil's proven winit path: build the renderer, query the render node so
-//! we can advertise dmabuf v4 modifier feedback (falling back to v3), and bind the
+//! compositor (the host session),
+//!  so the winit window becomes a client of the host.
+//! It mirrors anvil's proven winit path:
+//!  build the renderer,
+//!  query the render node so
+//! we can advertise dmabuf v4 modifier feedback (falling back to v3),
+//!  and bind the
 //! EGL display for Mesa's legacy hardware-acceleration path.
 
-/// What:     Grouped `use` of the renderer traits, EGL device query, winit backend,
-///           output types, transform, dmabuf types, and the display handle.
-/// Why:      Everything `init_backend` references.
+/// What:
+///      Grouped `use` of the renderer traits,
+///  EGL device query,
+///  winit backend,
+///           output types,
+///  transform,
+///  dmabuf types,
+///  and the display handle.
+/// Why:
+///       Everything `init_backend` references.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -30,8 +44,11 @@ use smithay::{
     wayland::dmabuf::{DmabufFeedbackBuilder, DmabufState},
 };
 
-/// What:     `use anyhow::{Context, Result};`. Error helpers.
-/// Why:      `init_backend` returns `Result` and attaches context to winit failures.
+/// What:
+///      `use anyhow::{Context, Result};`.
+///  Error helpers.
+/// Why:
+///       `init_backend` returns `Result` and attaches context to winit failures.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -39,13 +56,19 @@ use smithay::{
 /// ```
 use anyhow::{Context, Result};
 
-/// What:     `use tracing::{info, warn};`. Structured log macros.
-/// Why:      Report the chosen dmabuf version and hardware-acceleration status.
+/// What:
+///      `use tracing::{info, warn};`.
+///  Structured log macros.
+/// Why:
+///       Report the chosen dmabuf version and hardware-acceleration status.
 use tracing::{info, warn};
 
-/// What:     `use crate::{cli::Config, state::BackendPieces};`. Our config input and the
+/// What:
+///      `use crate::{cli::Config, state::BackendPieces};`.
+///  Our config input and the
 ///           carrier struct for the built pieces.
-/// Why:      `init_backend` reads the requested size from `Config` and returns
+/// Why:
+///       `init_backend` reads the requested size from `Config` and returns
 ///           `BackendPieces`.
 ///
 /// In TS you'd write (pseudocode):
@@ -53,13 +76,18 @@ use tracing::{info, warn};
 /// import { Config } from "./cli";
 /// import { BackendPieces } from "./state";
 /// ```
-use crate::{cli::Config, state::BackendPieces};
+use crate::{cli::Config, screen_geometry::ScreenGeometry, state::BackendPieces};
 
 /// Milli-hertz refresh rate reported for the nested output (60.000 Hz).
 ///
-/// What:     `const OUTPUT_REFRESH_MHZ: i32 = 60_000;`. Signed `i32`; Smithay reports
-///           refresh in millihertz, so 60 Hz is 60000.
-/// Why:      Named so the magic number is not repeated at the mode-construction site.
+/// What:
+///      `const OUTPUT_REFRESH_MHZ: i32 = 60_000;`.
+///  Signed `i32`;
+///  Smithay reports
+///           refresh in millihertz,
+///  so 60 Hz is 60000.
+/// Why:
+///       Named so the magic number is not repeated at the mode-construction site.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -67,12 +95,18 @@ use crate::{cli::Config, state::BackendPieces};
 /// ```
 pub const OUTPUT_REFRESH_MHZ: i32 = 60_000;
 
-/// Build the winit backend, the nested output, and the dmabuf state.
+/// Build the winit backend,
+///  the nested output,
+///  and the dmabuf state.
 ///
-/// What:     `pub fn init_backend(display_handle: &DisplayHandle, config: &Config) ->
-///           Result<(BackendPieces, WinitEventLoop)>`. Borrows the display handle and
-///           config, returns the built pieces plus the winit event source to register.
-/// Why:      Isolate all the winit/EGL/dmabuf construction from the state wiring.
+/// What:
+///      `pub fn init_backend(display_handle: &DisplayHandle, config: &Config) ->
+///           Result<(BackendPieces, WinitEventLoop)>`.
+///  Borrows the display handle and
+///           config,
+///  returns the built pieces plus the winit event source to register.
+/// Why:
+///       Isolate all the winit/EGL/dmabuf construction from the state wiring.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -87,19 +121,37 @@ pub fn init_backend(
     display_handle: &DisplayHandle,
     config: &Config,
 ) -> Result<(BackendPieces, WinitEventLoop)> {
-    // What:     `let attributes = WindowAttributes::default().with_title(...)
-    //           .with_inner_size(PhysicalSize::new(w, h));`. Builds the winit window
-    //           request. `config.width as u32` casts the signed dimension to the
-    //           unsigned type `PhysicalSize::new` wants.
-    // Why:      The nested window's inner size is the screen resolution the app fills.
+    // What:     `ScreenGeometry { ... }` records the logical size and scale from the command
+    //           line; `physical_size()` multiplies them into the framebuffer size.
+    // Why:      The window is the framebuffer, so it starts at logical size times scale. The
+    //           parent's own scale is unknown until the window exists, so the first request is
+    //           in physical pixels; `screen::parent_resized` corrects any rounding afterwards.
     //
     // In TS you'd write (pseudocode):
     // ```ts
-    // const attributes = { title: "...", innerSize: { width: config.width, height: config.height } };
+    // const geometry = { logicalWidth: config.width, logicalHeight: config.height, scale: config.scale };
+    // const [physicalWidth, physicalHeight] = geometry.physicalSize();
+    // ```
+    let geometry = ScreenGeometry {
+        logical_width: config.width,
+        logical_height: config.height,
+        scale: config.scale,
+    };
+    let (physical_width, physical_height) = geometry.physical_size();
+
+    // What:     `let attributes = WindowAttributes::default().with_title(...)
+    //           .with_inner_size(PhysicalSize::new(w, h));`. Builds the winit window
+    //           request. `physical_width as u32` casts the signed dimension to the
+    //           unsigned type `PhysicalSize::new` wants.
+    // Why:      The nested window's inner size is the framebuffer the app is drawn into.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const attributes = { title: "...", innerSize: { width: physicalWidth, height: physicalHeight } };
     // ```
     let attributes = WindowAttributes::default()
         .with_title("nested-wayland-session")
-        .with_inner_size(PhysicalSize::new(config.width as u32, config.height as u32));
+        .with_inner_size(PhysicalSize::new(physical_width as u32, physical_height as u32));
 
     // What:     `let (mut backend, winit) = winit::init_from_attributes::<GlesRenderer>(
     //           attributes).map_err(...)?;`. Creates the backend + event loop. The
@@ -111,12 +163,26 @@ pub fn init_backend(
     let (mut backend, winit) = winit::init_from_attributes::<GlesRenderer>(attributes)
         .map_err(|err| anyhow::anyhow!("winit backend init failed: {err}"))?;
 
+    // What:     `backend.window().set_minimized(true);`. Asks the parent compositor to minimize
+    //           the new window; winit sends the request for `xdg_toplevel.set_minimized` on
+    //           Wayland and ignores un-minimize there. The parent may ignore the request.
+    // Why:      The nested session is a fixture, not something the user watches; it launches
+    //           minimized so it never covers the desktop. Capture does not depend on the parent
+    //           presenting the window: the frame pacing timer and the recorder's own timer
+    //           (see `frame_pacing.rs` and the README's Frame pacing section) keep the hosted app drawing.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // window.setMinimized(true);
+    // ```
+    backend.window().set_minimized(true);
+
     // What:     `let mode = Mode { size: (config.width, config.height).into(), refresh:
     //           OUTPUT_REFRESH_MHZ };`. The output's video mode. `(w, h).into()` builds
     //           a `Size<i32, Physical>` from the tuple.
     // Why:      Describe the nested screen's resolution and refresh to clients.
     let mode = Mode {
-        size: (config.width, config.height).into(),
+        size: (physical_width, physical_height).into(),
         refresh: OUTPUT_REFRESH_MHZ,
     };
 
@@ -143,15 +209,15 @@ pub fn init_backend(
     let _global = output.create_global::<crate::state::Compositor>(display_handle);
 
     // What:     `output.change_current_state(Some(mode), Some(Transform::Flipped180),
-    //           None, Some((0, 0).into()));`. Sets the active mode, a Y-flip transform
-    //           (winit's framebuffer origin is top-left, opposite Wayland's), no scale
-    //           change (`None`), and position `(0, 0)`.
-    // Why:      Make the mode current and correct the vertical flip so screenshots are
-    //           upright.
+    //           Some(geometry.scale.advertised()), Some((0, 0).into()));`. Sets the active
+    //           mode, a Y-flip transform (winit's framebuffer origin is top-left, opposite
+    //           Wayland's), the starting output scale, and position `(0, 0)`.
+    // Why:      Make the mode current, correct the vertical flip so screenshots are upright,
+    //           and advertise `--scale` through `wl_output.scale` from the first bind on.
     output.change_current_state(
         Some(mode),
         Some(Transform::Flipped180),
-        None,
+        Some(geometry.scale.advertised()),
         Some((0, 0).into()),
     );
 
@@ -257,6 +323,7 @@ pub fn init_backend(
             dmabuf_state,
             dmabuf_global,
             dmabuf_feedback,
+            geometry,
         },
         winit,
     ))

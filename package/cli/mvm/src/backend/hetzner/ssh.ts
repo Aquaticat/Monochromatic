@@ -24,8 +24,15 @@ import nanoSpawn from 'nano-spawn';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 import type { ExecResult, } from '../../exec.ts';
+import {
+  ExecutableNotFoundError,
+  isMissingExecutable,
+} from '../../spawn-errors.ts';
 import { spawn, } from '../../spawn.ts';
-import { SSH_USER, } from './config.ts';
+import {
+  OPENSSH_REMEDY,
+  SSH_USER,
+} from './config.ts';
 import { PRIVATE_KEY_PATH, } from './ssh-key.ts';
 
 /**
@@ -223,12 +230,21 @@ export function scpPullArgs(
  
  @throws the original value when it is not a subprocess error
  
+ @throws {@link ExecutableNotFoundError} when `ssh` itself does not exist, which is not a result of the remote command
+ 
  @example
  ```ts
  try { await nanoSpawn('ssh', args); } catch (err) { return execResultFromError(err); }
  ```
  */
 function execResultFromError(error: unknown,): ExecResult {
+  if (isMissingExecutable(error,)) {
+    throw new ExecutableNotFoundError({
+      cause: error,
+      executable: 'ssh',
+      remedy: OPENSSH_REMEDY,
+    },);
+  }
   if ((error !== null) && ((typeof error) === 'object')
     && ('stdout' in error)
     && ('stderr' in error)) {
@@ -386,6 +402,14 @@ export async function sshShell({ ip, }: { readonly ip: string; },): Promise<void
     );
   }
   catch (error: unknown) {
+    if (isMissingExecutable(error,)) {
+      rl.debug('ssh does not exist on PATH',);
+      throw new ExecutableNotFoundError({
+        cause: error,
+        executable: 'ssh',
+        remedy: OPENSSH_REMEDY,
+      },);
+    }
     if ((error !== null) && ((typeof error) === 'object')
       && ('exitCode' in error)) {
       /**
@@ -439,6 +463,7 @@ export async function scpPush(
       hostPath,
       ip,
     },),],
+    notFoundRemedy: OPENSSH_REMEDY,
   },);
   return guestPath;
 }
@@ -504,6 +529,7 @@ export async function scpPull(
       ip,
       localPath,
     },),],
+    notFoundRemedy: OPENSSH_REMEDY,
   },);
   return readFile(localPath,);
 }

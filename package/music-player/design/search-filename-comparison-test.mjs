@@ -73,12 +73,13 @@ try {
   if (invoke('build').status !== 0 || invoke('validate').status !== 0) throw new Error('Quoted required word misread as attribute.');
   writeFileSync(quotedPath, quotedOriginal);
   if (invoke('build').status !== 0) throw new Error('Quoted-value positive control did not restore.');
-  const wrongHash = structuredClone(comparison);
-  wrongHash.witnesses[0].sha256 = '0'.repeat(64);
-  expectRejection({ data: wrongHash, diagnostic: 'capture hash, dimension or environment failed' });
   const traversal = structuredClone(comparison);
   traversal.witnesses[0].file = '../outside.png';
   expectRejection({ data: traversal, diagnostic: 'outside the allowed evidence boundary' });
+  // The digest case that used to reach this condition is gone with D88; a wrong recorded width reaches it directly.
+  const wrongWidth = structuredClone(comparison);
+  wrongWidth.witnesses[0].cropPixels.width += 1;
+  expectRejection({ data: wrongWidth, diagnostic: 'filename review capture dimension or environment failed' });
   const mismatchedName = structuredClone(comparison);
   mismatchedName.witnesses[0].scene = 'another-scene';
   expectRejection({ data: mismatchedName, diagnostic: 'filename and capture metadata disagree' });
@@ -104,7 +105,7 @@ try {
   if (changed.status === 0 || !changed.stderr.includes('differs from template and checked evidence')) {
     throw new Error('Changed output was not rejected.');
   }
-  console.log('Filename review disposable positive, hash, traversal, metadata, exact-scroll and changed-output checks passed.');
+  console.log('Filename review disposable positive, traversal, dimension, metadata, exact-scroll and changed-output checks passed.');
 } finally {
   rmSync(fixture, { recursive: true, force: true });
 }

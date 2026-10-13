@@ -17,7 +17,7 @@ import {
 import {
   parseStatuslineInput,
   renderStatusline,
-} from './statusline.ts';
+} from '../dist/final/node/statusline.mjs';
 
 /**
  Stable render timestamp used by rate-limit tests.
@@ -222,7 +222,17 @@ await describe({
             );
             await writeFile(
               transcriptPath,
-              'Assistant is compiling, then testing the statusline.',
+              `${JSON.stringify({
+                type: 'assistant',
+                message: {
+                  content: [
+                    {
+                      type: 'text',
+                      text: 'Assistant is compiling, then testing the statusline.',
+                    },
+                  ],
+                },
+              },)}\n`,
             );
 
             const line = await renderStatusline({

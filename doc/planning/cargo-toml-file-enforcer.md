@@ -86,7 +86,10 @@ Comment-preserving property edits.
 - `[lints.clippy]`:
    canonical `disallowed_methods = "deny"`,
   `implicit_return = "deny"`,
-   `needless_return = "allow"`.
+   `needless_return = "allow"`,
+   `shadow_reuse = "deny"`,
+   `shadow_same = "deny"`,
+   `shadow_unrelated = "deny"`.
    Universal baseline,
    inserted where the block is absent.
 - `[workspace]`:
@@ -195,6 +198,14 @@ Because ownership is self-healing,
    established,
    but a migration pass to explicit returns is a separate tracked
    task.
+- `shadow_reuse`,
+  `shadow_same`,
+  and `shadow_unrelated = "deny"` (commit `53c1e01a9`) report every
+  name-rebinding shadow across the fleet.
+  The complete fallout ledger,
+  one entry per finding,
+  lives in [issue #604](https://github.com/Aquaticat/Monochromatic/issues/604),
+  along with the Slint generated-code remedy.
 - `file-manager` and `file-manager-gtk-sticky` gain
    `disallowed_methods = "deny"`,
    so `Result::unwrap` (banned by the root

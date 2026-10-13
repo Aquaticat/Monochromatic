@@ -275,3 +275,72 @@ export function commonDevices(osFamily: OsFamily,): readonly string[] {
 }
 
 //endregion Common devices
+
+//region virtiofs share
+
+/**
+ Generates the virtiofs device that exposes a host directory to the guest
+ under the mount tag `mvm-shared`. libvirt starts a `virtiofsd` for it, so a
+ domain with this device only starts on a host where libvirt finds one.
+
+ @param sharedDir - Absolute path to the host directory to share
+
+ @returns XML string for the `<filesystem>` element
+
+ @example
+ ```ts
+ virtiofsShare('/vms/dev/shared'); // => '<filesystem type="mount" accessmode="passthrough">...'
+ ```
+ */
+export function virtiofsShare(sharedDir: string,): string {
+  return h({
+    tag: 'filesystem',
+    attrs: {
+      type: 'mount',
+      accessmode: 'passthrough',
+    },
+    children: [
+      h({
+        tag: 'driver',
+        attrs: { type: 'virtiofs', },
+      },),
+      h({
+        tag: 'source',
+        attrs: { dir: sharedDir, },
+      },),
+      h({
+        tag: 'target',
+        attrs: { dir: 'mvm-shared', },
+      },),
+    ],
+  },);
+}
+
+/**
+ Generates the shared memory backing a virtiofs device requires:
+ guest memory in a memfd that `virtiofsd` can map.
+
+ @returns XML string for the `<memoryBacking>` element
+
+ @example
+ ```ts
+ sharedMemoryBacking(); // => '<memoryBacking><source type="memfd" /><access mode="shared" /></memoryBacking>'
+ ```
+ */
+export function sharedMemoryBacking(): string {
+  return h({
+    tag: 'memoryBacking',
+    children: [
+      h({
+        tag: 'source',
+        attrs: { type: 'memfd', },
+      },),
+      h({
+        tag: 'access',
+        attrs: { mode: 'shared', },
+      },),
+    ],
+  },);
+}
+
+//endregion virtiofs share

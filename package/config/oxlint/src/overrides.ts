@@ -145,8 +145,8 @@ const configOverride = {
  */
 const jestMatcherApiOverride = {
   files: [
-    '**/module/test/src/expect.ts',
-    '**/module/test/src/expect-matchers.ts',
+    '**/module/test-expect/src/expect.ts',
+    '**/module/test-expect/src/expect-matchers.ts',
   ],
   rules: {
     'no-restricted-syntax/no-rest-params': 'off',

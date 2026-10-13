@@ -19,7 +19,7 @@ import {
   textTitleEntry,
   TOOL_TITLE_ENTRY_MISSING,
   type ToolTitleRegistry,
-} from './index.ts';
+} from '@monochromatic-dev/agent-harness-shared-terminal-title';
 
 await describe({
   name: buildToolTitle.name,

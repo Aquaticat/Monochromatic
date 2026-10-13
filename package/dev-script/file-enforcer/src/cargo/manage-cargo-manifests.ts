@@ -39,7 +39,7 @@ const CARGO_MANIFEST_EXCLUDED_FRAGMENTS = [
  
  @example
  ```ts
- isFirstPartyManifest('package/linter/rust/Cargo.toml'); // true
+ isFirstPartyManifest('package/linter/monochromatic-lint/Cargo.toml'); // true
  ```
  */
 function isFirstPartyManifest(manifestPath: string,): boolean {
@@ -59,7 +59,7 @@ function isFirstPartyManifest(manifestPath: string,): boolean {
  
  @example
  ```ts
- await enforceManifest({ manifestPath: 'package/linter/rust/Cargo.toml', spec, });
+ await enforceManifest({ manifestPath: 'package/linter/monochromatic-lint/Cargo.toml', spec, });
  ```
  */
 async function enforceManifest(

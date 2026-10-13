@@ -121,6 +121,18 @@ jobs:
       - name: Install dependencies
         run: mise exec node pnpm -- pnpm install --frozen-lockfile
 
+      # changeset:version runs the dependent-version ripple through the native cli-git executable, built from this checkout
+      # with the runner's rustup toolchain. --locked builds the versions Cargo.lock records; the release profile keeps
+      # panic = "unwind", which the linked scanner requires.
+      - name: Build the native cli-git executable from the checkout
+        working-directory: package/git-policy/cli
+        run: cargo build --release --locked --bin cli-git-native
+
+      # The executable is exposed under its own name, never as git: the changesets action runs git commands of its own
+      # in the same environment, and the wrapper refuses bulk staging.
+      - name: Expose the native cli-git executable to later steps
+        run: printf '%s\n' "$GITHUB_WORKSPACE/package/git-policy/cli/target/release" >> "$GITHUB_PATH"
+
       - name: Open or update the version pull request
         uses: changesets/action/version@8488615a623b1b9c987934bb89eae8af6a946ac1
         with:

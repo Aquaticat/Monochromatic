@@ -22,7 +22,8 @@
 # no system opus-devel is needed) and the host's system `make` is its generator.
 # The cargo_dispatch var (node -e) probes pkg-config for those libraries; when any
 # is missing containerCargo runs the same cargo command in podman instead (package
-# dir bind-mounted at /work, cargo registry in a named volume, `label=disable` to
+# dir bind-mounted at /work plus the sibling ../truepeak-core and the Android test
+# resources mounted read-only, cargo registry in a named volume, `label=disable` to
 # skip SELinux relabeling of the host tree). The *:container tasks call
 # containerCargo directly to force the podman path regardless of host libraries;
 # verify:container is the umbrella assertion.
@@ -55,7 +56,8 @@ SLINT_ENABLE_EXPERIMENTAL_FEATURES = "1"
 #   at the versioned host libclang, and BINDGEN_EXTRA_CLANG_ARGS supplies the clang
 #   resource dir (globbed so an LLVM bump needs no edit) since libclang in
 #   /usr/lib64 looks beside itself for stdbool.h under /usr/lib/clang/<v>.
-# - containerCargo(args): build the image when missing, then run cargo in podman.
+# - containerCargo(args): build the image when missing, then run cargo in podman, with ../truepeak-core and the Android
+#   test resources mounted read-only beside /work (a Cargo path dependency and the theme-roles drift fixture).
 # - runCargo(args): native off Linux, else host when hostOk, else container.
 # Its imported bindings (execFileSync, globSync) are reused by inline follow-ups,
 # so those must not reimport them.
@@ -79,7 +81,20 @@ const containerCargo = (cargoArgs) => {
   // ElementHandle / MCP introspection APIs refuse to run without this debug info.
   // Production build tasks never set it, so their container binaries stay lean.
   const debugInfoEnv = process.env.SLINT_EMIT_DEBUG_INFO ? ['-e', 'SLINT_EMIT_DEBUG_INFO=1'] : []
-  execFileSync('podman', ['run', '--rm', '--security-opt', 'label=disable', ...debugInfoEnv, '-v', `${process.cwd()}:/work`, '-v', 'music-player-cargo:/cargo', '-w', '/work', 'localhost/monochromatic/music-player', 'cargo', ...cargoArgs], { stdio: 'inherit' })
+  // The crate reads two paths outside its own directory, and the container mounts only the package directory at
+  // /work, so each is mounted read-only where the same relative path from /work finds it: ../truepeak-core is the
+  // Cargo path dependency, and ../android-app/app/src/test/resources holds the theme-roles-vector.txt fixture that
+  // src/theme_roles_fixture_tests.rs compares with the Rust derivation. A missing source fails here by name, never
+  // as a skipped test or a bare podman statfs error.
+  const { resolve } = process.getBuiltinModule('node:path')
+  const { existsSync } = process.getBuiltinModule('node:fs')
+  const siblingMounts = [['../truepeak-core', '/truepeak-core'], ['../android-app/app/src/test/resources', '/android-app/app/src/test/resources']]
+  const siblingMountArgs = siblingMounts.flatMap(([relative, inside]) => {
+    const host = resolve(process.cwd(), relative)
+    if (!existsSync(host)) { throw new Error(`containerCargo needs ${host} (mounted read-only at ${inside}) but it does not exist; run the task from the checked-out package/music-player/desktop-app directory of a full checkout`) }
+    return ['-v', `${host}:${inside}:ro`]
+  })
+  execFileSync('podman', ['run', '--rm', '--security-opt', 'label=disable', ...debugInfoEnv, '-v', `${process.cwd()}:/work`, ...siblingMountArgs, '-v', 'music-player-cargo:/cargo', '-w', '/work', 'localhost/monochromatic/music-player', 'cargo', ...cargoArgs], { stdio: 'inherit' })
 }
 const runCargo = (cargoArgs) => {
   if (process.platform !== 'linux') { execFileSync('cargo', cargoArgs, { stdio: 'inherit' }) }
@@ -135,13 +150,6 @@ run = """
 runCargo(['clippy', '--fix', '--allow-dirty', '--allow-staged', '--allow-no-vcs', '--all-targets'])
 """
 
-[tasks."lint:rust"]
-description = "Run monochromatic-rust-linter (max-lines + require-rustdoc) over this package's .rs"
-# Runs on the HOST, not in the container: the linter is a separate crate with
-# no pipewire/opus/clang deps, so it needs no container. .gitignore-aware
-# walking skips target/ (including Slint's generated .rs).
-run = "cargo run --quiet --manifest-path ../../linter/rust/Cargo.toml -- ."
-
 [tasks.test]
 description = "cargo nextest run (macOS/Windows native, else Linux host if dev libs present, else container)"
 # The native (non-Linux) branch needs cargo-nextest on PATH (`cargo install
@@ -163,7 +171,7 @@ description = "Build --features slint/mcp (debug) and run HEADLESS with the embe
 usage = '''
 arg "[args]" var=#true help="File or folder paths to enqueue (loaded PAUSED)"
 '''
-# The embedded MCP server (Slint 1.17 `slint/mcp` feature, activated by
+# The embedded MCP server (Slint 1.18 `slint/mcp` feature, activated by
 # SLINT_MCP_PORT) exposes get_element_tree / find_elements_by_id / take_screenshot
 # / click_element / set_element_value etc. over MCP Streamable HTTP on
 # 127.0.0.1:<port>/mcp. The repo-root .mcp.json points Claude at that URL, so a
@@ -205,10 +213,25 @@ execFileSync(bin, extras, { stdio: 'inherit' })
 
 [tasks."lint:slint"]
 description = "Type-check ui/app.slint with slint-viewer --check (compiles the markup, opens no window, exits non-zero on error)"
-# slint-viewer is the same 1.17 compiler family as slint-build, and
+# slint-viewer is the same 1.18 compiler family as slint-build, and
 # SLINT_ENABLE_EXPERIMENTAL_FEATURES (from [env]) enables the FlexboxLayout builtin
 # the UI uses, so this catches .slint markup errors fast without a full Rust build.
 run = "slint-viewer --check ui/app.slint"
+
+[tasks."test:e2e"]
+description = "Release build, then press every D106 shortcut as a real key event in the nested compositor (own PipeWire null sink, scratch XDG dirs)"
+# One task builds, then runs the end-to-end suite, in this order, so a stale binary is never exercised. The suite is the
+# package/music-player/desktop-e2e package: it hosts the release binary in the monochromatic-nested-wayland-session that
+# mise has installed (found with `mise where`, any version from 0.4.0 on), presses keys through the compositor's control socket, and reads state from the app's `ui_state` log lines (the release
+# build has no MCP server), from screenshots, files and the nested clipboard. The command runs in this directory, where
+# it finds target/release/music-player and writes screenshots and e2e-summary.json to target/e2e.
+# Environment: E2E_ONLY (a check id or group prefix to run alone), E2E_OUT (screenshots and summary, default
+# target/e2e), E2E_TMP (scratch root), E2E_LIBRARY_GENERATOR (the library generator script), E2E_COMPOSITOR (a
+# compositor executable to use instead of the mise install).
+run = [
+  { tasks = ["build"] },
+  "node ../desktop-e2e/src/cli.ts",
+]
 
 [tasks.screenshot]
 description = "Render ui/app.slint to target/app.slint.png HEADLESS; set SLINT_SCREENSHOT_WIDTH/HEIGHT for responsive snapshots"
@@ -333,6 +356,32 @@ if (process.platform !== 'linux') {
   bin = './target/release/music-player'
 }
 const extras = parseUsageArgs(process.env.usage_args ?? '')
+execFileSync(bin, extras, { stdio: 'inherit' })
+"""
+
+[tasks."run-quick"]
+description = "Release-optimised build WITHOUT link-time optimisation, then run it on the host for fast iteration (pass file/folder paths after --)"
+usage = '''
+arg "[args]" var=#true help="File or folder paths to enqueue"
+'''
+# Middle path between `run` (thin LTO since 2026-10-11, the distributed binary) and `run-debug` (unoptimised, too slow
+# to analyse a library). Measured on this crate on a loaded 16-core host (load average 27 to 43, so compare the settings with each
+# other, not the absolute numbers): rebuilding only this crate took ~300 s with fat LTO, ~60 s with thin LTO and
+# ~17 s with LTO off (two runs each, within 3 s of each other); the binary is 41.6 MB, 46.4 MB and 46.7 MB. Fat LTO
+# spends 287 of the 302 s of rustc time in `LLVM_fatlto` (rustc -Ztime-passes), not in compiling this crate's code.
+# `CARGO_PROFILE_RELEASE_LTO=off` overrides the profile for this run only, so Cargo.toml (generated by file-enforcer)
+# is untouched, and a separate target directory keeps the `run` build cache warm. Like `run-debug`, it does NOT
+# install into ~/.local/bin or the .desktop file.
+shell = "node --input-type=module-typescript -e"
+run = """
+{{vars.cargo_dispatch}}
+{{vars.parse_usage_args}}
+const { join } = await import('node:path')
+process.env.CARGO_PROFILE_RELEASE_LTO = 'off'
+process.env.CARGO_TARGET_DIR = join(process.cwd(), 'target', 'quick')
+runCargo(['build', '--release'])
+const extras = parseUsageArgs(process.env.usage_args ?? '')
+const bin = process.platform === 'win32' ? './target/quick/release/music-player.exe' : './target/quick/release/music-player'
 execFileSync(bin, extras, { stdio: 'inherit' })
 """
 

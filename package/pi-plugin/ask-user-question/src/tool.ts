@@ -31,11 +31,11 @@ import {
 export const ASK_USER_QUESTION_TOOL_NAME = 'ask_user_question';
 
 /**
- One unrestricted model-authored question.
+ One free-form string per call, carrying any number of model-authored questions.
  */
 const AskUserQuestionParameters: TObject<{ question: TString; }> = Type.Object({
   question: Type.String({
-    description: 'Free-form question text to show in the Pi transcript while waiting for the user answer.',
+    description: 'Free-form question text to show in the Pi transcript while waiting for the user answer. May contain multiple questions (for example numbered) so one call carries a whole round of questions.',
   }),
 },);
 
@@ -114,7 +114,7 @@ function createAskUserQuestionTool(
   return {
     name: ASK_USER_QUESTION_TOOL_NAME,
     label: 'Ask User Question',
-    description: 'Ask the user free-form questions and block model execution until the user submits or cancels a multiline answer in the default editor.',
+    description: 'Ask the user free-form questions and block model execution until the user submits or cancels a multiline answer in the default editor. A call carries one free-form string, and that string may contain any number of questions (for example numbered), so batch a whole round of questions into one call instead of calling once per question; the user answers them together in one multiline answer.',
     promptSnippet: 'Ask the user free-form questions and wait for a multiline answer',
     parameters: AskUserQuestionParameters,
     executionMode: 'sequential',

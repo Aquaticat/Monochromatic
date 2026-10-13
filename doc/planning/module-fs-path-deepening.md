@@ -135,7 +135,8 @@ Files outside the package that name a finder or the git error (measured 2026-09-
 - `package/module/matrix/src/matrix.ts`
 - `package/module/matrix/src/root.ts` (deleted)
 - `package/module/test/src/format-error.ts` (dynamic import site,
-   changed mechanically)
+   changed mechanically).
+  Moved on 2026-10-04 to `package/module/test-diagnostic/src/format-error.ts`.
 - `package/module/token-count/src/cli.unit.test.ts`
 - `package/oxlint-plugin/test-support/src/index.ts`
 - `package/ssg/aquati.cat/src/lib/git-dates.ts`

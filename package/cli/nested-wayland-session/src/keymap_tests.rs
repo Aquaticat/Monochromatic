@@ -50,6 +50,16 @@ fn named_keys_and_single_characters_resolve() {
     assert_eq!(named_key(""), None);
 }
 
+/// Modifier names use the Linux evdev codes so shortcut probes reach the hosted client's real seat.
+#[test]
+fn named_modifiers_resolve_to_native_keycodes() {
+    // Some is the expected native code, not a text character or a host-global input operation.
+    assert_eq!(named_key("ctrl"), Some(29));
+    assert_eq!(named_key("shift"), Some(42));
+    assert_eq!(named_key("alt"), Some(56));
+    assert_eq!(named_key("meta"), Some(125));
+}
+
 #[test]
 fn left_shift_constant_is_the_evdev_code() {
     assert_eq!(LEFT_SHIFT, 42);
