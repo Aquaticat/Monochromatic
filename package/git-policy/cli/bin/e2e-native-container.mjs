@@ -56,6 +56,8 @@ const baseTag = process.env
   ?? 'latest';
 /** Image holding the Git builds, Node and `ssh-keygen`. */
 const baseImage = `localhost/cli-git-concurrent-e2e:${baseTag}`;
+/** Converts the base image build time from milliseconds to the seconds the log line reports. */
+const MILLISECONDS_PER_SECOND = 1_000;
 /** Compiler image on the same Debian release (bookworm) as the base image's Node image. */
 const compilerImage = 'docker.io/library/rust:1.97-bookworm';
 
@@ -140,7 +142,7 @@ async function buildBase() {
       resolve('e2e'),
     ],
   });
-  console.log(`built ${baseImage} in ${String(Math.round((performance.now() - startedAt) / 1000))} s`);
+  console.log(`built ${baseImage} in ${String(Math.round((performance.now() - startedAt) / MILLISECONDS_PER_SECOND))} s`);
 }
 
 /** Build the two-stage image: compile the release executable, then link it as `git` into the end-to-end image. */

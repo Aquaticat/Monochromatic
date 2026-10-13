@@ -12,8 +12,8 @@ and an invariant checker judges every run.
 
 ```sh
 # package/git-policy/cli: run from the repository root
-mise run //package/git-policy/cli:test:e2e:concurrent:native
-mise run //package/git-policy/cli:test:e2e:concurrent:native --seed 1
+mise run //package/git-policy/cli:test:e2e:concurrent:native --git 2.55.0
+mise run //package/git-policy/cli:test:e2e:concurrent:native --seed 1 --git 2.55.0
 mise run //package/git-policy/cli:test:e2e:concurrent:native --seed 1 --scenario shared-file-overlapping-hunks --git 2.55.0
 ```
 
@@ -29,6 +29,9 @@ mise run //package/git-policy/cli:test:e2e:concurrent:native --seed 1 --scenario
   `--git` takes comma-separated versions among `2.39.5`,
   `2.40.0`,
   and `2.55.0`.
+- The native executable requires Git 2.55.0 or newer, so the supported run selects `--git 2.55.0`.
+  Without `--git`, the 2.39.5 and 2.40.0 runs fail by design (measured on 2026-10-14, seed 91442351:
+  52 of 114 runs failed, all on those two versions; with `--git 2.55.0` and seed 1, 36 scenarios pass and 2 skip).
 
 The TypeScript wrapper that this suite first verified is retired;
  its last commit is
