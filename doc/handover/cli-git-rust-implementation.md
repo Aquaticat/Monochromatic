@@ -1585,7 +1585,9 @@ that is verification, not a decision for the user.
   commit have passed.
   CPU hold (user, 2026-10-13, raised to 75 percent on 2026-10-14, until "release hold"): the host is a 16 core, 32 thread
   Ryzen 9 7950X with 62 GiB RAM, and Claude tool commands and gates share one 75 percent cap, the `claude-code-bash`
-  cgroup (`cpu.max` 2400000 100000, 24 of 32 threads, runtime setting that does not survive a reboot).
+  cgroup (`cpu.max` 3000000 100000, 30 of 32 threads on 2026-10-14; the user may lower it two threads at a time, so read
+  `cpu.max` in `/sys/fs/cgroup/user.slice/user-1000.slice/user@1000.service/app.slice/claude-code-bash/` for the current
+  value; a runtime setting that does not survive a reboot).
   Heavy work runs through `~/temp/agent/gate-slot.ts` (six slots at `nice --adjustment=19`, no per-slot quota; the
   command stays in the shared cgroup), and oxlint and tsc run with at most four threads.
   Commands started with `systemd-run` leave the shared cap, so use them only for jobs that need their own limit.
