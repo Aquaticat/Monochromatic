@@ -111,9 +111,6 @@ object SessionStore {
     /** Former repeat-track key, retained only as migration input. */
     private const val LEGACY_KEY_REPEAT: String = "repeat_track"
 
-    /** Persisted page-control style key. */
-    private const val KEY_PAGE_CONTROL_STYLE: String = "page_control_style"
-
     // What:     `private const val KEY_AUDIO_ACCESS_REQUESTED: String = "audio_access_requested"` names the request
     //           flag.
     // Why:      The first-run decision needs to know whether this app already asked Android for music access, because
@@ -234,20 +231,6 @@ object SessionStore {
             putString(KEY_PLAYBACK_MODE, session.playbackMode.storedName)
             remove(LEGACY_KEY_SHUFFLE)
             remove(LEGACY_KEY_REPEAT)
-        }
-    }
-
-    /** Loads saved style with Chromium first-install and radio unknown-value fallback. */
-    internal fun loadPageControlStyle(context: Context): PageControlStyle {
-        /** Persisted enum name, or null when no style was saved. */
-        val storedName: String? = prefs(context).getString(KEY_PAGE_CONTROL_STYLE, null)
-        return PageControlStyle.fromStoredName(storedName)
-    }
-
-    /** Persists one page-control style selection. */
-    internal fun savePageControlStyle(context: Context, style: PageControlStyle) {
-        prefs(context).edit {
-            putString(KEY_PAGE_CONTROL_STYLE, style.name)
         }
     }
 
