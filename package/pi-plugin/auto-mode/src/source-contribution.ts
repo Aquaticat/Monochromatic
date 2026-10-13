@@ -42,7 +42,8 @@ export function consumeSourceAssociations(inputs: SourceContributionInputs,): So
   /** Unresolved original associations remain independent domain obligations. */
   const issues: SourceContributionIssue[] = [];
   for (const contribution of inputs.requestSourceContributions ?? []) {
-    if ((inputs.requestObservation?.sourceContributions !== inputs.requestSourceContributions)
+    if ((inputs.requestObservation === undefined)
+      || (inputs.requestObservation.sourceContributions !== inputs.requestSourceContributions)
       || (contribution.request !== inputs.requestObservation.request)) {
       throw new PolicyInputBindingError('Source contribution belongs to a different original serialized request',);
     }
