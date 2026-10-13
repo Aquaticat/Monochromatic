@@ -475,7 +475,10 @@ pub(super) fn render(window: &AppWindow, state: &Rc<RefCell<State>>) {
         if !outcome.complete {
             rewrap::defer(&mut current, "the lines of the tile are over the allowance");
         } else if !rewrap::raster_fits(&current, outcome.bounds, factor) {
-            rewrap::defer(&mut current, "the raster of the settled tile is too large for one frame");
+            rewrap::defer(
+                &mut current,
+                "the raster of the settled tile is too large for one frame",
+            );
         } else {
             measured_here = Some(outcome.bounds);
         }

@@ -103,12 +103,9 @@ fn spent(reader: &Reader) -> Spent {
 
 /// Report a new window width to the toolkit and run the change handlers once: the render the new width causes.
 fn change_width(reader: &Reader, text_width: f32, height: f32) {
-    reader
-        .window
-        .window()
-        .dispatch_event(WindowEvent::Resized {
-            size: LogicalSize::new(TEXT_LEFT + text_width, height),
-        });
+    reader.window.window().dispatch_event(WindowEvent::Resized {
+        size: LogicalSize::new(TEXT_LEFT + text_width, height),
+    });
     update_timers_and_animations();
 }
 
@@ -262,7 +259,10 @@ fn the_first_frame_after_a_new_width_is_wrapped_to_it() {
 
     let after = spent(&opened);
     let width = wrap_width(window.get_viewport_width()).expect("a width");
-    assert!(width < wide, "the window got narrower: {width} against {wide}");
+    assert!(
+        width < wide,
+        "the window got narrower: {width} against {wide}"
+    );
     {
         let current = opened.source.borrow();
         assert_eq!(current.width, width);
@@ -274,10 +274,18 @@ fn the_first_frame_after_a_new_width_is_wrapped_to_it() {
         let view = current.shaped.as_ref().expect("shaped view");
         assert_eq!(view.viewport.wrap, Some(width));
         for row in &view.rows {
-            assert_eq!(row.wrap, Some(width), "line {} is not broken at it", row.row);
+            assert_eq!(
+                row.wrap,
+                Some(width),
+                "line {} is not broken at it",
+                row.row
+            );
         }
         let wide_rows = overflowing(view, width);
-        assert!(wide_rows.is_empty(), "rows wider than the width: {wide_rows:?}");
+        assert!(
+            wide_rows.is_empty(),
+            "rows wider than the width: {wide_rows:?}"
+        );
         let repacked = current.annotations.work().packed - packed;
         assert!(
             (1..=3).contains(&repacked),
@@ -328,7 +336,10 @@ fn the_first_frame_after_a_new_width_is_wrapped_to_it() {
         assert_eq!(rects(&view.matches), rects(&fresh.matches));
         assert!(!fresh.matches.is_empty());
         let caret = fresh.caret(&current.document);
-        assert_eq!((window.get_caret_x(), window.get_caret_y()), (caret.x, caret.y));
+        assert_eq!(
+            (window.get_caret_x(), window.get_caret_y()),
+            (caret.x, caret.y)
+        );
     }
     assert_eq!(
         numbers(&window.get_source_selections()),
@@ -354,7 +365,10 @@ fn the_first_frame_after_a_new_width_is_wrapped_to_it() {
     // The block of the annotated line follows the width: more message rows, and the far hint where the line breaks.
     let found = block(&opened, LINE).expect("block");
     let rows_after = opened.source.borrow().row_map.rows_of(LINE);
-    assert!(rows_after > rows_before, "{rows_after} against {rows_before}");
+    assert!(
+        rows_after > rows_before,
+        "{rows_after} against {rows_before}"
+    );
     {
         let current = opened.source.borrow();
         assert_eq!(current.row_map.block_height(LINE), found.height());
@@ -375,7 +389,10 @@ fn the_first_frame_after_a_new_width_is_wrapped_to_it() {
         let expected = shaper
             .wrapped_row(&current.document, LINE, 1.0, width)
             .caret_x(start_of(&opened, LINE) + 200, 1.0);
-        assert_eq!(found.hints[1].x, expected, "the far hint stands where the line breaks");
+        assert_eq!(
+            found.hints[1].x, expected,
+            "the far hint stands where the line breaks"
+        );
     }
     // A frame drawn now keeps the tile: nothing is built again.
     window.window().take_snapshot().expect("the new frame");
@@ -401,7 +418,10 @@ fn a_press_right_after_a_new_width_lands_on_the_new_rows() {
         let view = current.shaped.as_ref().expect("shaped view");
         let shaped = &view.rows[1];
         let rows = shaped.visual_rows();
-        assert!(rows >= 4, "the second line wraps to {rows} rows at this width");
+        assert!(
+            rows >= 4,
+            "the second line wraps to {rows} rows at this width"
+        );
         (shaped.source_rows()[3].clone(), shaped.row)
     };
     let top = opened.source.borrow().row_map.code_top(head_on_row);
@@ -430,8 +450,14 @@ fn a_press_right_after_a_new_width_lands_on_the_new_rows() {
 fn a_new_width_on_fifty_thousand_lines_costs_a_bounded_amount() {
     let mut text = String::new();
     for number in 0..50_000 {
-        let tail = if number % 7 == 0 { " // trailing words words words words words words words words" } else { "" };
-        text.push_str(&format!("fn item_{number}(value: u32) -> u32 {{ value + {number} }}{tail}\n"));
+        let tail = if number % 7 == 0 {
+            " // trailing words words words words words words words words"
+        } else {
+            ""
+        };
+        text.push_str(&format!(
+            "fn item_{number}(value: u32) -> u32 {{ value + {number} }}{tail}\n"
+        ));
     }
     let release = hold_the_pass();
     let (_project, opened) = open(&text);
@@ -442,12 +468,18 @@ fn a_new_width_on_fifty_thousand_lines_costs_a_bounded_amount() {
     assert_eq!(first.rewrapped, 1, "{first:?}");
     assert_eq!(first.painted, 1, "{first:?}");
     assert_eq!(first.images, 1, "{first:?}");
-    assert!(first.charged.0 <= REWRAP_LINES && first.charged.1 <= REWRAP_WORK, "{first:?}");
+    assert!(
+        first.charged.0 <= REWRAP_LINES && first.charged.1 <= REWRAP_WORK,
+        "{first:?}"
+    );
     assert!(
         first.shaped + first.rebroken <= first.charged.0 as u64,
         "more lines were brought in than were charged: {first:?}"
     );
-    assert!(first.shaped + first.rebroken <= REWRAP_LINES as u64, "{first:?}");
+    assert!(
+        first.shaped + first.rebroken <= REWRAP_LINES as u64,
+        "{first:?}"
+    );
     // A second width finds the first tile's lines in the cache.
     start_counting(&opened);
     change_width(&opened, 700.0, 660.0);
@@ -541,7 +573,10 @@ fn lines_over_the_work_allowance_are_left_to_the_worker() {
     start_counting(&opened);
     change_width(&opened, 500.0, 660.0);
     let step = spent(&opened);
-    assert_eq!(step.deferred, 1, "the change of width was not left to the worker: {step:?}");
+    assert_eq!(
+        step.deferred, 1,
+        "the change of width was not left to the worker: {step:?}"
+    );
     assert_eq!(step.rewrapped, 0, "{step:?}");
     assert_eq!(
         step.painted, 0,
@@ -553,7 +588,10 @@ fn lines_over_the_work_allowance_are_left_to_the_worker() {
     );
     {
         let current = opened.source.borrow();
-        assert!(current.scroll_wanted.is_some(), "the change was queued for the worker");
+        assert!(
+            current.scroll_wanted.is_some(),
+            "the change was queued for the worker"
+        );
         assert!(
             current.shown.width > current.width,
             "the old tile stays until the worker's arrives"
@@ -607,7 +645,10 @@ fn tabbed_lines_are_charged_for_their_corrective_passes_and_left_to_the_worker()
     start_counting(&opened);
     change_width(&opened, 500.0, 660.0);
     let step = spent(&opened);
-    assert_eq!(step.deferred, 1, "the change of width was not left to the worker: {step:?}");
+    assert_eq!(
+        step.deferred, 1,
+        "the change of width was not left to the worker: {step:?}"
+    );
     assert_eq!(
         step.painted, 0,
         "the window thread painted a tile for a change over the allowance: {step:?}"
@@ -661,14 +702,20 @@ fn a_line_of_two_hundred_thousand_characters_is_left_to_the_worker() {
     start_counting(&opened);
     change_width(&opened, 500.0, 660.0);
     let step = spent(&opened);
-    assert_eq!(step.deferred, 1, "the change of width was not left to the worker: {step:?}");
+    assert_eq!(
+        step.deferred, 1,
+        "the change of width was not left to the worker: {step:?}"
+    );
     assert_eq!(step.rewrapped, 0, "{step:?}");
     assert_eq!(
         step.painted, 0,
         "the window thread painted a tile for a change over the allowance: {step:?}"
     );
     assert_eq!(step.shaped, 0, "the window thread shaped a line: {step:?}");
-    assert_eq!(step.rebroken, 0, "the window thread broke a line again: {step:?}");
+    assert_eq!(
+        step.rebroken, 0,
+        "the window thread broke a line again: {step:?}"
+    );
     assert_eq!(step.images, 0, "{step:?}");
     until("the worker's tile did not arrive", || {
         let current = opened.source.borrow();
@@ -689,7 +736,12 @@ fn a_line_of_two_hundred_thousand_characters_is_left_to_the_worker() {
 #[test]
 fn a_view_with_more_lines_than_the_allowance_is_left_to_the_worker() {
     // A raster of the limit is far past the bound, or holds more lines than the allowance, at every size.
-    for (width, scale) in [(300.0_f32, 1.0_f32), (1100.0, 1.0), (1100.0, 2.0), (3800.0, 1.0)] {
+    for (width, scale) in [
+        (300.0_f32, 1.0_f32),
+        (1100.0, 1.0),
+        (1100.0, 2.0),
+        (3800.0, 1.0),
+    ] {
         let cap = tile_cap(width, scale);
         let columns = ((width + 24.0).ceil() * scale).ceil() as u64;
         let bytes = columns * (cap * scale).floor() as u64 * 4;
@@ -729,7 +781,10 @@ fn a_view_with_more_lines_than_the_allowance_is_left_to_the_worker() {
         opened.source.borrow().count,
         window.get_viewport_height()
     );
-    assert_eq!(step.deferred, 1, "the change of width was not left to the worker: {step:?}");
+    assert_eq!(
+        step.deferred, 1,
+        "the change of width was not left to the worker: {step:?}"
+    );
     assert_eq!(
         step.painted, 0,
         "the window thread painted a tile for a view over the allowance: {step:?}"
@@ -778,7 +833,10 @@ fn a_tile_with_a_huge_raster_is_left_to_the_worker() {
     change_width(&opened, 700.0, 660.0);
     let step = spent(&opened);
     assert!(opened.source.borrow().count <= REWRAP_LINES);
-    assert_eq!(step.deferred, 1, "the change of width was not left to the worker: {step:?}");
+    assert_eq!(
+        step.deferred, 1,
+        "the change of width was not left to the worker: {step:?}"
+    );
     assert_eq!(
         step.painted, 0,
         "the window thread painted a tile whose raster passes the bound: {step:?}"
@@ -847,7 +905,11 @@ fn a_measurement_applied_before_the_tile_of_a_new_width_leaves_no_stale_heights(
     });
     start_counting(&opened);
     change_width(&opened, 500.0, 660.0);
-    assert_eq!(spent(&opened).deferred, 1, "the change of width was not left to the worker");
+    assert_eq!(
+        spent(&opened).deferred,
+        1,
+        "the change of width was not left to the worker"
+    );
     let lines = opened.source.borrow().document.text().len_lines();
     build_release
         .send(())

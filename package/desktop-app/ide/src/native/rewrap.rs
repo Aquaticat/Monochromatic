@@ -5,10 +5,10 @@
 
 /// The parent state, the tile bounds, and the tile's raster size.
 use super::{State, render::viewport_of, tile};
-/// The budget a measurement spends, and what it found.
-use ide_app::shaped_text::{Budget, Measured};
 /// The height of one code row.
 use ide_app::row_map::CODE_ROW;
+/// The budget a measurement spends, and what it found.
+use ide_app::shaped_text::{Budget, Measured};
 /// A wrap width must be a positive number of pixels.
 use ide_app::wrap::has_wrap_width;
 
@@ -172,11 +172,17 @@ pub(super) fn begin(current: &mut State) -> Option<Allowance> {
         return None;
     }
     if requested.count > REWRAP_LINES {
-        defer(current, "the tile holds more lines than the allowance covers");
+        defer(
+            current,
+            "the tile holds more lines than the allowance covers",
+        );
         return None;
     }
     if !raster_fits(current, requested, current.scale) {
-        defer(current, "the raster of the tile is larger than the window thread paints in one frame");
+        defer(
+            current,
+            "the raster of the tile is larger than the window thread paints in one frame",
+        );
         return None;
     }
     return Some(Allowance::new());

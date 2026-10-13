@@ -13,10 +13,10 @@ use super::annotation_tests::{TEXT_TOP, above, block, click, hint, painted, prob
 use super::caret_tests::position;
 /// The reader fixture.
 use super::find_tests::Reader;
-/// The most lines the window thread brings in for one new width.
-use super::rewrap::REWRAP_LINES;
 /// The counters of the window thread's work.
 use super::overscan_tile_tests::{counts, reset};
+/// The most lines the window thread brings in for one new width.
+use super::rewrap::REWRAP_LINES;
 /// Window sizing for exact text widths.
 use super::sidebar_tests::{TEXT_LEFT, resize};
 /// Wrapped fixtures, the open reader, and bounded waits.
