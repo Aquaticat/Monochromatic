@@ -645,6 +645,38 @@ not completed domain closure,
 a maintained host launch path,
 or installed activation.
 
+## Decision-domain consumer frontier
+
+`2b0d054c` / `proc_382f` isolates the remaining decision-domain obligation through the native provider serializer.
+Authored permission,
+prohibition,
+and no-instruction cases each bind 26 original sources and interpret 26 clauses.
+Their five represented request contributions are accounted for;
+those contribution records still describe partial origin coverage.
+The only remaining diagnostic in these cases is `request-source-domain`.
+Every case remains unresolved with no protected execution or provider request.
+Authored semantic answers establish neither model accuracy nor original-domain completeness.
+
+`proc_6f9b` runs the separate resolution acceptance.
+Its permission case fails the required domain-closure assertion;
+the later prohibition and no-instruction acceptance cases were not reached.
+This does not justify deleting the hold:
+original-owner domain membership,
+applicable scope,
+and valid delegation still need their code-owned consumer.
+No closed-host-profile policy or new completeness interface has been adopted.
+
+A preparatory control exposed an independent obligation hidden by the universal hold.
+`373eab30` / `proc_8594` showed that an admitted `potential-instruction` request estimate
+left no specific use obligation when other issues were absent.
+`c5375b8b` now retains `request-material-instruction-use` independently.
+Potential material may repeat indexed text;
+the new diagnostic creates neither another directive nor uniform authority for the request.
+Pure request,
+semantic-policy,
+and compiler tests passed `proc_b09d`.
+The native request-use/domain contrast is running in `proc_01d8`.
+
 ## Native metadata-query receipts
 
 `94f39f5e` / `proc_666b` reached a separate required retention failure.
