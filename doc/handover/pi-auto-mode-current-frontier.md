@@ -728,9 +728,12 @@ Historical inputs do not become active ancestry.
 `proc_dfd4` passed their owner controls and the manager-handoff lifecycle cases.
 Unpublished original callback inputs retain a source-publication failure rather than disappearing.
 `946a4cae` / `proc_2f77` passed the affected message-history regression and final option consumers.
-The new controls now belong to the broad input parent,
-whose affected rerun is in progress.
-The historical broad input-parent result does not cover this addition.
+`85aae781` / `proc_9251` passed all 219 input-parent cases with empty child stderr and no provider requests.
+`a54546f6` / `proc_c28e` separately passed historical-input canonical assessment:
+the next request assesses the same original source,
+without promoting the prior prompt into current ancestry.
+That follow-up is now in the parent but was not part of its 219-case run.
+The source/action parents still need their affected regression checks.
 
 The run-owner helper task initially failed with Node `EEXIST` on a historical output directory.
 `b672127d` uses unique disposable output directories and preserves historical artifacts.
