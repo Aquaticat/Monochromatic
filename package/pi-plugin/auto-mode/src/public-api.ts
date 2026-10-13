@@ -118,6 +118,7 @@ export type {
   ContributionCarrier,
   ContributionPublication,
   ContributionRequestObservation,
+  ContributionMessageRun,
   ContributionRun,
   ContributionRunCarrier,
   ContributionSource,
