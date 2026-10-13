@@ -43,6 +43,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.ProvidableCompositionLocal
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.runtime.getValue
@@ -96,6 +97,7 @@ import dev.monochromatic.musicplayer.core.TrackListEntry
 import dev.monochromatic.musicplayer.core.TrackMenuAction
 import dev.monochromatic.musicplayer.core.ringAfter
 import dev.monochromatic.musicplayer.core.startFocus
+import dev.monochromatic.musicplayer.core.TrackRowLineSource
 import dev.monochromatic.musicplayer.core.TrackRowModel
 import dev.monochromatic.musicplayer.core.currentPositionOf
 import dev.monochromatic.musicplayer.core.entryKeyOf
@@ -176,6 +178,19 @@ private val HEADER_TOP_PADDING: Dp = 16.dp
 internal val LocalTrackRowMenuOpener: ProvidableCompositionLocal<((Int, MenuAnchorRect) -> Unit)?> =
     staticCompositionLocalOf { null }
 
+// What:     `internal val LocalTrackRowLines` carries the supporting-line source from the host to every track row.
+// Why:      The analysis publishes measures many times a second. The host keeps the list of rows unchanged and each
+//           visible row reads its own line from this source, so a new measure recomposes only the rows it belongs to
+//           and never rebuilds a list of thousands of rows (ANR on the main thread).
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// const LocalTrackRowLines = createContext<TrackRowLineSource | null>(null);
+// ```
+/** Composition local holding the source of the rows' supporting lines, or null when the entries carry their own. */
+internal val LocalTrackRowLines: ProvidableCompositionLocal<TrackRowLineSource?> =
+    staticCompositionLocalOf { null }
+
 // What:     `val HostKeyLocalRevealFolder: ProvidableCompositionLocal<Int>` carries the folder reveal count.
 // Why:      The host bumps the count when the deck's folder part is tapped, and the track list scrolls to the playing
 //           track's subfolder header. It sits here, not beside HostKeyLocalReveal, because the list is its only reader.
@@ -210,6 +225,8 @@ fun trackListPane(
 ) {
     /** Scroll state of the list, which the page and reveal effects move. */
     val listState = rememberLazyListState()
+    /** Source of each row's supporting line, or null when the entries already carry theirs. */
+    val rowLines: TrackRowLineSource? = LocalTrackRowLines.current
     /** Position of the playing row among the entries, or null when no row in this list is playing. */
     val currentPosition: Int? = currentPositionOf(entries)
     /** Page identity the page effect last handled, or null before its first run. */
@@ -315,7 +332,7 @@ fun trackListPane(
         itemsIndexed(items = entries, key = { _, entry -> entryKeyOf(entry) }) { position, entry ->
             when (entry) {
                 is TrackListEntry.RowEntry -> trackRow(
-                    row = entry.row,
+                    row = rowWithLine(row = entry.row, lines = rowLines),
                     onPlay = onPlay,
                     onOpenMenu = onOpenMenu,
                     ringed = zone.focused && ringPosition == position,
@@ -432,6 +449,31 @@ private fun menuAnchorOfRect(bounds: Rect): MenuAnchorRect = MenuAnchorRect(
     right = bounds.right.roundToInt(),
     bottom = bounds.bottom.roundToInt(),
 )
+
+// What:     `@Composable private fun rowWithLine(row: TrackRowModel, lines: TrackRowLineSource?): TrackRowModel` gives
+//           the row the supporting line that its own measure produces.
+// Why:      The line is read through `derivedStateOf`, so a measure that arrives for another track does not recompose
+//           this row, and a measure that leaves this row's line unchanged does not either.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// function rowWithLine(row: TrackRowModel, lines: TrackRowLineSource | null): TrackRowModel {
+//   const line = useDerived(() => lines?.lineOf(row.indexInLibrary));
+//   return lines === null ? row : { ...row, supportingLine: line };
+// }
+// ```
+/** Returns the row with the line [lines] computes for it from its own measure, or the row itself without a source. */
+@Composable
+private fun rowWithLine(row: TrackRowModel, lines: TrackRowLineSource?): TrackRowModel {
+    if (lines == null) {
+        return row
+    }
+    /** Line of this row, recomputed when its measure changes and published only when the text differs. */
+    val line: String? by remember(lines, row.indexInLibrary) {
+        derivedStateOf { lines.lineOf(row.indexInLibrary) }
+    }
+    return row.copy(supportingLine = line)
+}
 
 // What:     `@Composable private fun trackRow(...)` draws one playable track row.
 // Why:      The current row gets the D42 surface background and a bold title, and every row plays on tap.

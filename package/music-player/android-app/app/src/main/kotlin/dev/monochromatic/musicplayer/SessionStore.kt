@@ -80,6 +80,7 @@ import dev.monochromatic.musicplayer.core.TemplateTrack
 import dev.monochromatic.musicplayer.core.TrackFields
 import dev.monochromatic.musicplayer.core.evaluateTemplate
 import dev.monochromatic.musicplayer.core.parseTemplate
+import java.util.concurrent.ConcurrentHashMap
 
 // What:     `object` creates one stateless singleton, unlike an instantiable `class`.
 // Why:      Session persistence needs no per-instance state.
@@ -246,7 +247,13 @@ object SessionStore {
     fun warmUp(context: Context) {
         Log.i(LOG_TAG, "warm-up read ${prefs(context).all.size} saved values")
         audioAccessRequestedCache = prefs(context).getBoolean(KEY_AUDIO_ACCESS_REQUESTED, false)
+        // The player host reads both templates on its first frame; checking a saved template parses and evaluates it
+        // (StrictMode flagged 435 ms on the main thread), so the check runs here once and the host finds the answer.
+        TemplateKind.entries.forEach { kind -> loadTemplate(context, kind) }
     }
+
+    /** The template text of each kind as last read or written here, so the main thread never checks one again. */
+    private val templateCache: ConcurrentHashMap<TemplateKind, String> = ConcurrentHashMap()
 
     /** The music-access request flag as last read or written here; the first-run decision asks on every frame. */
     @Volatile
@@ -325,6 +332,11 @@ object SessionStore {
     // ```
     /** Returns the stored text of one template, or its default when nothing valid is stored. */
     fun loadTemplate(context: Context, kind: TemplateKind): String {
+        /** Text this kind answered before, which a read or a save in this process already settled. */
+        val cached: String? = templateCache[kind]
+        if (cached != null) {
+            return cached
+        }
         /** Text saved under this template's key, or null when nothing is saved. */
         val stored: String? = prefs(context).getString(templateKey(kind), null)
         /** Text the screens use: the stored text when it applies, otherwise the kind's default. */
@@ -332,6 +344,7 @@ object SessionStore {
         if (stored != null && text != stored) {
             Log.w(LOG_TAG, "stored template did not apply, default used kind=${kind.name}")
         }
+        templateCache[kind] = text
         return text
     }
 
@@ -344,6 +357,7 @@ object SessionStore {
     // ```
     /** Persists the text of one template under its own preference key. */
     fun saveTemplate(context: Context, kind: TemplateKind, text: String) {
+        templateCache[kind] = text
         prefs(context).edit {
             putString(templateKey(kind), text)
         }
