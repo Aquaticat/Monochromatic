@@ -9,9 +9,6 @@ import type {
   SourceContribution, SourceContributionAssociation, SourceContributionInputs,
 } from '@monochromatic-dev/pi-plugin-auto-mode';
 
-/** Fixture mutation tests alter original borrowed records, never production state. */
-type Mutable<Value> = { -readonly [Key in keyof Value]: Value[Key]; };
-
 /** Native contribution profiles have independently checkable original memberships. */
 export const contributionProfiles = [
   'base', 'base-without-carrier', 'replacement', 'forced', 'section', 'snippet',
@@ -27,29 +24,29 @@ export type ContributionFixtureProfile = typeof contributionProfiles[number];
 /** Exposed disposable references make copying, mutation and borrowed freezing observable. */
 export type ContributionFixture = {
   /** Original source whose references are reused by all relevant memberships. */
-  readonly source: Mutable<ContributionSource>;
+  readonly source: { -readonly [Key in keyof ContributionSource]: ContributionSource[Key]; };
   /** Original request-bound view. */
-  readonly view: Mutable<ContributionSourceView>;
+  readonly view: { -readonly [Key in keyof ContributionSourceView]: ContributionSourceView[Key]; };
   /** Original system or message publication. */
-  readonly publication: Mutable<ContributionPublication>;
+  readonly publication: { -readonly [Key in keyof ContributionPublication]: ContributionPublication[Key]; };
   /** Original captured current run. */
-  readonly run: Mutable<ContributionRun>;
+  readonly run: { -readonly [Key in keyof ContributionRun]: ContributionRun[Key]; };
   /** Original emitting run, possibly distinct from the current run. */
-  readonly emitting: Mutable<ContributionRun>;
+  readonly emitting: { -readonly [Key in keyof ContributionRun]: ContributionRun[Key]; };
   /** Original retained origin, present independently of active ancestry. */
-  readonly retained: Mutable<RetainedContributionOrigin>;
+  readonly retained: { -readonly [Key in keyof RetainedContributionOrigin]: RetainedContributionOrigin[Key]; };
   /** Original base source carrier. */
-  readonly carrier: Mutable<ContributionCarrier>;
+  readonly carrier: { -readonly [Key in keyof ContributionCarrier]: ContributionCarrier[Key]; };
   /** Original base run carrier. */
-  readonly runCarrier: Mutable<ContributionRunCarrier>;
+  readonly runCarrier: { -readonly [Key in keyof ContributionRunCarrier]: ContributionRunCarrier[Key]; };
   /** Original association may be altered without replacing other owner references. */
-  readonly association: Mutable<SourceContributionAssociation>;
+  readonly association: { -readonly [Key in keyof SourceContributionAssociation]: SourceContributionAssociation[Key]; };
   /** Original serialized contribution. */
-  readonly contribution: Mutable<SourceContribution>;
+  readonly contribution: { -readonly [Key in keyof SourceContribution]: SourceContribution[Key]; };
   /** Original request receipt. */
-  readonly observation: Mutable<ContributionRequestObservation>;
+  readonly observation: { -readonly [Key in keyof ContributionRequestObservation]: ContributionRequestObservation[Key]; };
   /** Consumer inputs retain the exact original contribution-list reference. */
-  readonly inputs: Mutable<SourceContributionInputs>;
+  readonly inputs: { -readonly [Key in keyof SourceContributionInputs]: SourceContributionInputs[Key]; };
 };
 
 /**
@@ -84,7 +81,7 @@ export function createContributionFixture(profile: ContributionFixtureProfile,):
   /** Separate retained origin does not add an ancestor. */
   const retained = { source, publication, runOccurrence: occurrence, };
   /** Fixture paths populate only their corresponding membership. */
-  const emitting: Mutable<ContributionRun> = {
+  const emitting: ContributionFixture['emitting'] = {
     occurrence, renderOccurrence, systemPublication: publication,
     replacementInputs: profile === 'replacement' ? [source,] : [],
     ...(profile === 'forced' ? { forcedPromptInput: source, forcedPublication: publication, } : {}),
@@ -98,7 +95,7 @@ export function createContributionFixture(profile: ContributionFixtureProfile,):
     ...(profile.endsWith('expanded',) ? { expandedPromptInput: source, expandedPromptPublication: publication, } : {}),
   };
   /** Retained histories and active ancestor paths are deliberately disjoint. */
-  const run: Mutable<ContributionRun> = profile.startsWith('ancestor-',)
+  const run: ContributionFixture['run'] = profile.startsWith('ancestor-',)
     ? { occurrence: {}, replacementInputs: [], ancestors: [emitting,], }
     : profile.startsWith('retained-',)
     ? { occurrence: {}, replacementInputs: [], ancestors: [], retainedMessageOrigins: [retained,], }
@@ -106,7 +103,7 @@ export function createContributionFixture(profile: ContributionFixtureProfile,):
   /** Base input publication uses existing original carrier membership. */
   const carrier = { source, }, runCarrier = { sourceOccurrences: [source.occurrence,], };
   /** Association fields retain originals rather than constructing equal replacements. */
-  const association: Mutable<SourceContributionAssociation> = {
+  const association: ContributionFixture['association'] = {
     source, sourceOccurrence: source.occurrence,
     ...(profile.startsWith('base',) ? {
       runCarrier, ...(profile === 'base' ? { carrier, } : {}),
