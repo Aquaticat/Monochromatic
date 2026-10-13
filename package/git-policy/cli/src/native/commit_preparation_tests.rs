@@ -515,3 +515,14 @@ fn either_signature_header_marks_the_commit_signed() {
     assert!(!signed_with("", "gpgsig in the message\n\ngpgsig-sha256 too"));
     remove(root.as_path());
 }
+
+/// Each preparation failure displays its own words.
+#[test]
+fn each_preparation_failure_displays_its_own_words() {
+    assert_eq!(
+        PreparationError::NativeExit { exit_code: 3 }.to_string(),
+        "git commit exited 3 during private preparation; nothing landed."
+    );
+    assert_eq!(PreparationError::Git(GitFailure(String::from("git words"))).to_string(), "git words");
+    assert_eq!(PreparationError::Write(String::from("write words")).to_string(), "write words");
+}
