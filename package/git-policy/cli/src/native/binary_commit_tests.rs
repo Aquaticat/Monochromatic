@@ -458,3 +458,26 @@ fn include_commits_the_named_path_together_with_the_staged_changes() {
     assert_nothing_left(&fixture, repo.as_path());
     remove_settled(&fixture);
 }
+
+/// `--pathspec-from-file` names the committed paths from a file, and `-` reads them from standard input.
+#[test]
+fn a_pathspec_file_selects_the_committed_paths() {
+    let fixture: Fixture = fixture("commit-pathspec-file");
+    let repo: PathBuf = edited_repository(&fixture, "repo");
+    std::fs::write(repo.join("b.txt"), b"b\n").expect("b");
+    std::fs::write(repo.join("list.txt"), b"a.txt\n").expect("list");
+    let landed: Observed = run_commit(&fixture, repo.as_path(), &["commit", "--message=listed", "--pathspec-from-file=list.txt"]);
+    assert_eq!(landed.code, Some(0), "{}", stderr_of(&landed));
+    assert_eq!(git_text(&fixture, repo.as_path(), &["show", "HEAD:a.txt"]), "one\ntwo\n");
+    assert_eq!(git_text(&fixture, repo.as_path(), &["ls-tree", "--name-only", "HEAD"]).contains("b.txt"), false);
+    std::fs::write(repo.join("a.txt"), b"one\ntwo\nthree\n").expect("edit a again");
+    let from_input: Observed = observe(
+        &mut wrapped_commit(&fixture, repo.as_path(), &["commit", "--message=piped", "--pathspec-from-file=-"]),
+        b"a.txt\n",
+    );
+    assert_eq!(from_input.code, Some(0), "{}", stderr_of(&from_input));
+    assert_eq!(git_text(&fixture, repo.as_path(), &["show", "HEAD:a.txt"]), "one\ntwo\nthree\n");
+    assert_eq!(git_text(&fixture, repo.as_path(), &["log", "-1", "--format=%s"]).trim(), "piped");
+    assert_nothing_left(&fixture, repo.as_path());
+    remove_settled(&fixture);
+}
