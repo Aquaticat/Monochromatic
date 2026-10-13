@@ -262,7 +262,7 @@ fn named_path_is_matched_literally() {
 #[test]
 fn named_path_with_glob_characters_is_found_literally() {
     let root: PathBuf = fixture("selection-named-glob-name");
-    let source: PathBuf = ignoring(root.as_path(), "source", "[x].txt\n");
+    let source: PathBuf = ignoring(root.as_path(), "source", "\\[x\\].txt\n");
     std::fs::write(source.join("[x].txt"), b"bracketed").expect("bracketed");
     std::fs::write(source.join("x.txt"), b"plain").expect("plain");
     let roots: Vec<String> = read_named_ignored_roots(
