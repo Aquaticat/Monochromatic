@@ -30,6 +30,8 @@ use serde_json::{Value, json};
 #[test]
 #[ignore = "requires installed Codex and local loopback sockets; run the test:host task"]
 fn installed_host_rewrites_commands() -> io::Result<()> {
+    // Prevent a host-launched process from recursively starting another host fixture.
+    assert!(std::env::var_os("CODEX_BASH_LIMIT_HOST_FIXTURE").is_none());
     // What: `?` propagates setup failures; paths own their data while references borrow it.
     // Why: Everything written by the host belongs to this independent fixture.
     //
@@ -51,14 +53,17 @@ fn installed_host_rewrites_commands() -> io::Result<()> {
     // format! interpolates a numeric port into fixed TOML text; no user text crosses this boundary.
     let config = format!("model = 'fixture'\nmodel_provider = 'local-fixture'\napproval_policy = 'never'\nsandbox_mode = 'workspace-write'\n[model_providers.local-fixture]\nname = 'Local deterministic fixture'\nbase_url = 'http://127.0.0.1:{port}/v1'\nwire_api = 'responses'\n[features]\nhooks = true\n");
     fs::write(home.join("config.toml"), config)?;
-    // json! escapes paths; env! embeds Cargo's compiled binary path.
+    // Shell-quote both filenames at the command boundary; the installed host reads command only.
+    let command = format!("'{}' --hook '{}'", env!("CARGO_BIN_EXE_codex-bash-limit").replace('\'', "'\\''"), path.replace('\'', "'\\''"));
+    // json! encodes the resulting shell command at the separate JSON boundary.
     let hooks = json!({"hooks":{"PreToolUse":[{"matcher":"Bash","hooks":[{
-        "type":"command","command":env!("CARGO_BIN_EXE_codex-bash-limit"),"args":["--hook",path]
+        "type":"command","command":command
     }]}]}});
     fs::write(home.join("hooks.json"), hooks.to_string())?;
     let stderr = fs::File::create(parent.join("host-stderr.log"))?;
     // Some gives an environment override; Command owns the launched process until cleanup.
     let mut child = Command::new("codex").args(["--no-daemon", "app-server", "--listen", "stdio://"])
+        .env("CODEX_BASH_LIMIT_HOST_FIXTURE", "1")
         .env("CODEX_HOME", &home).current_dir(&parent)
         .stdin(Stdio::piped()).stdout(Stdio::piped()).stderr(stderr).spawn()?;
     // take moves each pipe out of the child handle, leaving an absent Option behind.
