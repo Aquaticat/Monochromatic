@@ -13,12 +13,12 @@ use std::process::{Child, Command, Stdio};
 use std::time::{Duration, Instant};
 
 /// The bound of one commit under host load, in seconds; the shared 5-second bound is for single Git commands.
-const COMMIT_BOUND_SECONDS: &str = "120";
+pub(super) const COMMIT_BOUND_SECONDS: &str = "120";
 
 /// Remove the fixture once nothing writes into it any more.
 ///  A landed commit may leave a maintenance child finishing for a moment under load, and removing a directory that
 ///  still gains entries fails with "Directory not empty"; the removal is tried again for up to five seconds.
-fn remove_settled(fixture: &Fixture) {
+pub(super) fn remove_settled(fixture: &Fixture) {
     for _ in 0..50 {
         if std::fs::remove_dir_all(&fixture.root).is_ok() || !fixture.root.exists() {
             return;
@@ -46,7 +46,7 @@ fn run_commit(fixture: &Fixture, directory: &Path, arguments: &[&str]) -> Observ
 }
 
 /// The text of a Git query against the repository.
-fn git_text(fixture: &Fixture, repo: &Path, arguments: &[&str]) -> String {
+pub(super) fn git_text(fixture: &Fixture, repo: &Path, arguments: &[&str]) -> String {
     let output = git(fixture, repo, arguments);
     return String::from_utf8_lossy(output.stdout.as_slice()).into_owned();
 }
@@ -66,7 +66,7 @@ fn edited_repository(fixture: &Fixture, name: &str) -> PathBuf {
 ///  Detached, Git 2.56.0 repacks even a repository this small in the background, and its `tmp_pack_*` and `tmp_idx_*`
 ///  files are what `git count-objects -v` reports as garbage while the repack runs; a check made right after the
 ///  wrapper returns then races with it.
-fn keep_maintenance_in_the_foreground(fixture: &Fixture, repo: &Path) {
+pub(super) fn keep_maintenance_in_the_foreground(fixture: &Fixture, repo: &Path) {
     git(fixture, repo, &["config", "maintenance.autoDetach", "false"]);
 }
 
@@ -85,7 +85,7 @@ fn pack_entries(pack_directory: &Path) -> Vec<String> {
 }
 
 /// What a finished transaction must leave: no transaction directory, no lock, no shadow repository, no `.keep`.
-fn assert_nothing_left(fixture: &Fixture, repo: &Path) {
+pub(super) fn assert_nothing_left(fixture: &Fixture, repo: &Path) {
     let git_dir: PathBuf = repo.join(".git");
     let registry: Vec<String> = std::fs::read_dir(git_dir.join("cli-git-transactions"))
         .map(|entries| {
@@ -349,7 +349,7 @@ fn a_pre_commit_hook_restaging_a_file_is_kept() {
 }
 
 /// Waits until a phase marker exists, or fails the control.
-fn await_marker(path: &Path) {
+pub(super) fn await_marker(path: &Path) {
     let started: Instant = Instant::now();
     while !path.exists() {
         assert!(started.elapsed() < Duration::from_secs(90), "the marker {} never appeared", path.display());
