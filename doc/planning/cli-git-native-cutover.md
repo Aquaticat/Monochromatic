@@ -14,18 +14,22 @@ The user's standing decision is that there is no hybrid and the old TypeScript g
  and the section `User decisions 2026-10-05`).
 
 State on 2026-10-13:
-the crate `monochromatic-git-policy-cli` 0.1.0 is published on crates.io,
-the GitHub release `monochromatic-git-policy-cli-v0.1.0` carries the Linux gnu x86_64 and aarch64 archives,
+the crate `monochromatic-git-policy-cli` 0.1.1 is published on crates.io,
+the GitHub release `monochromatic-git-policy-cli-v0.1.1` carries the Linux gnu x86_64 and aarch64 archives,
 and Trusted Publishing is configured for the crate.
+Version 0.1.0 is also published;
+ it must not be pinned (see `Why the pin is 0.1.1`).
 The install lane (branch `feat/cli-git-native-install`,
- from `main` at `0f79ccf033`) made every repository edit
+ from `main` at `0f79ccf033`,
+ merged with `main` at `4e3eda3798`) made every repository edit
 that does not switch the live `git`:
-the tool entry,
+the tool entry pinned to 0.1.1,
 the `_.path` entry,
 the lock entry,
 the retirement of the hk cleanup and of the performance harness,
 the release build as the package `build` task,
-and the CI jobs that need the wrapper.
+the CI jobs that need the wrapper,
+and the native recognition in `package/git/executable`.
 Nothing in the real installation was installed,
  replaced,
  or published by that lane;
@@ -33,8 +37,6 @@ Nothing in the real installation was installed,
  mise directories and `PATH` (see `Evidence basis`).
 What remains is in `Steps that remain`,
  `User-boundary verification` and `Order of the retirement commits`.
-One defect found by the install lane's isolated run blocks the switch for Markdown commits
-(see `Blocker found in the isolated run`).
 
 Facts measured on 2026-10-12 carry that date;
  facts measured on 2026-10-13 say so.
@@ -197,8 +199,11 @@ Probes run on 2026-10-13 by the install lane,
    `git commit` of a text file and of a Markdown file,
    the two refusals,
    and the leftover search of hazard 1.
-- `strace` of the Markdown commit (system calls `execve`,
-   `statx` and `newfstatat` only) to locate the post-commit failure of `Blocker found in the isolated run`.
+- `strace` of the Markdown commit with 0.1.0 (system calls `execve`,
+   `statx` and `newfstatat` only) to locate the post-commit failure described under `Why the pin is 0.1.1`.
+- The same throwaway-repository run again with the 0.1.1 archive installed from the published release through the
+   throwaway-project block of `Steps that remain`,
+   plus `git worktree add` from a repository that has a gitignored `.cache/forbidden-strings.rules.txt`.
 - The dependent-version release step on the real repository:
    two clones of the install branch with the version of `package/module/async-time` raised,
    one through `node package/git-policy/repository/src/bump-dependents.ts`,
@@ -320,7 +325,7 @@ directory,
 ### The native executable and how it is built
 
 - The crate is `package/git-policy/cli/Cargo.toml` (`name = "monochromatic-git-policy-cli"`,
-   `version = "0.1.0"`,
+   `version = "0.1.1"`,
    published;
    see `Publication state`).
   Its binary is `cli-git-native` (`[[bin]]`,
@@ -361,9 +366,9 @@ directory,
   `git diff 0ff1379f7d e1890fb471 -- package/git-policy/cli` is empty,
    so current `main` has the gated crate.
 - Release artifacts exist since 2026-10-13:
-   the release `monochromatic-git-policy-cli-v0.1.0` carries `x86_64-unknown-linux-gnu` and
+   the release `monochromatic-git-policy-cli-v0.1.1` (and `-v0.1.0`) carries `x86_64-unknown-linux-gnu` and
    `aarch64-unknown-linux-gnu` archives built by `gpc-build-binary` in `.github/workflows/cargo-publish.yml`.
-  The installed x86_64 file is 9,313,296 bytes,
+  The installed x86_64 file is 9,300,536 bytes for 0.1.1 (9,313,296 for 0.1.0),
    dynamically linked against `libgcc_s.so.1` and `libc.so.6` (`ldd`),
    and needs symbol version `GLIBC_2.39` at most (`objdump -T`),
    so a host older than glibc 2.39 (for example Debian 12 or Ubuntu 22.04) cannot run it.
@@ -581,7 +586,7 @@ The main checkout's `.claude/settings.json` has no hit;
    because a `warn` finding exits 0),
    runs `cli-git check --policy final-newline --all`,
    then stages a file without a final newline and requires the policy to refuse it.
-  Run on 2026-10-13 against the installed 0.1.0 executable in a clone of the install branch:
+  Run on 2026-10-13 against the installed 0.1.0 and 0.1.1 executables in a clone of the install branch:
    exit 0,
    the clean pass and the refused control (a `legacy-config-ignored` warning prints until
    `cli-git.config.ts` is deleted).
@@ -615,28 +620,26 @@ The main checkout's `.claude/settings.json` has no hit;
 
 - `package/git/executable` (the shared real-Git resolver,
    `@monochromatic-dev/git-executable`):
-  migrate before install.
-   `package/git/executable/src/self-shim.ts:185-243` `isGitPolicySelfShim` returns "not a shim"
-  for any ELF,
-   PE or Mach-O header (`:212`),
-   and the markers (`:139-171`) match only the incumbent's package name and
-  `dist` path.
-   So the resolver would select the native `git` as "real Git" for its other consumers:
-  `resolveRealGit` is called by `package/pi-plugin/auto-mode/src/git-worktree-read-allowlist.ts:290` and by the hk cleanup command (retired with `src/`;
-   see `Decisions`).
-   On this host the common-path rule masks it (`package/git/executable/src/resolve-real-git.ts`
+  done on the install branch (commit `1e5c35a886`).
+   `isGitPolicySelfShim` in `src/self-shim.ts` returns "not a shim" for any ELF,
+   PE or Mach-O header,
+   and its markers match only the incumbent's package name and `dist` path,
+   so the resolver would have selected the native `git` as "real Git" for its other consumers
+  (`resolveRealGit` is called by `package/pi-plugin/auto-mode/src/git-worktree-read-allowlist.ts`).
+   On this host the common-path rule masks it (`src/resolve-real-git.ts`
   promotes `/usr/bin/git` when PATH exposes it),
    but not on a host whose Git is elsewhere.
   Reading whole binaries is not an option (`doc/troubleshooting/starship-cli-git-command-timeout.md`).
-  Change:
-   also treat a candidate whose `realpath` basename is `cli-git-native` as the wrapper,
-  which holds because the installed `git` is a symlink to the file `cli-git-native` (see `Install the published tool`).
-  Keep the existing script markers,
+  The function now also returns true for a candidate whose `realpath` basename is `cli-git-native` or
+   `cli-git-native.exe`,
+   which holds because the installed `git` is a symlink to that file;
+   the script markers stay,
    so a stale incumbent shim is still rejected.
-  Tests to change:
-   `package/git/executable/src/native-executable.unit.test.ts:29` (a marker inside an ELF must still
-  not be scanned) and `package/git/executable/src/resolve-real-git.unit.test.ts:79,92,102,540`.
-  `package/git/executable/README.md:9` documents the marker behavior.
+  Two tests in `src/native-executable.unit.test.ts` cover it (a link skipped for a later native Git,
+   and a PATH holding
+   only the link reporting `RealGitNotFoundError`);
+   both fail with the check disabled (run on 2026-10-13).
+  `README.md` documents it.
   The native side already rejects the incumbent's markers (`src/native/real_git_candidate.rs:91-94`,
   test `src/native/binary_resolution_tests.rs:206`);
    keep them while stale shims can exist.
@@ -1013,15 +1016,15 @@ revision).
 
 ## Publication state
 
-The crate `monochromatic-git-policy-cli` 0.1.0 is on crates.io,
-the GitHub release `monochromatic-git-policy-cli-v0.1.0` lists the `x86_64-unknown-linux-gnu` and
+The crate `monochromatic-git-policy-cli` 0.1.1 (and 0.1.0) is on crates.io,
+the GitHub release `monochromatic-git-policy-cli-v0.1.1` lists the `x86_64-unknown-linux-gnu` and
 `aarch64-unknown-linux-gnu` archives,
 and Trusted Publishing is configured for the crate (state reported to the install lane on 2026-10-13;
 the install lane read the release only through `cargo-binstall`'s download described under `Isolated verification`).
 Archives are named `monochromatic-git-policy-cli-<version>-<target>.tar.gz` and hold
 `monochromatic-git-policy-cli-<version>-<target>/cli-git-native` and `README.md`.
 
-A fix to the crate (the blocker below) is a new version through the same path:
+A fix to the crate (as 0.1.1 was for the defect under `Why the pin is 0.1.1`) is a new version through the same path:
 raise `version` in `package/git-policy/cli/Cargo.toml` (and the lock entries that follow it),
 land the change on `main`,
 and let `.github/workflows/cargo-publish.yml` run.
@@ -1089,10 +1092,11 @@ How the `cargo:` backend names things (mise 2026.10.0,
 
 ### What the repository has
 
-On the install branch (commit `8f0d946a24`):
+On the install branch (commit `8f0d946a24`,
+ pin raised to 0.1.1 in `35887bf67c`):
 
 - `mise.no-env.toml`:
-   the entry `"cargo:monochromatic-git-policy-cli"` with `version = "0.1.0"` (pinned,
+   the entry `"cargo:monochromatic-git-policy-cli"` with `version = "0.1.1"` (pinned,
    with the
   reason in a comment),
    `os = ["linux"]` (only Linux archives are released),
@@ -1112,7 +1116,7 @@ On the install branch (commit `8f0d946a24`):
    the `_.path` entry,
    and the other `_.path` lines unchanged.
 - `mise.lock`:
-   one block `[[tools."cargo:monochromatic-git-policy-cli"]]` with `version = "0.1.0"`,
+   one block `[[tools."cargo:monochromatic-git-policy-cli"]]` with `version = "0.1.1"`,
    from `mise lock cargo:monochromatic-git-policy-cli` (a dry run first);
    the run rewrote no other entry.
   It printed the warning "preserving unavailable dependency sidecar ... .mise/locks/pipx-slopo/0.9.0",
@@ -1166,15 +1170,19 @@ Rollback is pinning the previous version,
 
 ### Isolated verification
 
-Run on 2026-10-13 from the install worktree against the real release,
- with a disposable `HOME`,
+Run on 2026-10-13 against the real releases.
+The install itself ran from the install worktree (0.1.0) and from a throwaway project (0.1.1,
+ the pinned version).
+The environment was a disposable `HOME`,
  `XDG_*` directories and
 `MISE_DATA_DIR`,
  `MISE_CACHE_DIR`,
  `MISE_CONFIG_DIR` and `MISE_STATE_DIR` under a `mktemp --directory` in
 `${HOME}/temp/agent`,
- `MISE_TRUSTED_CONFIG_PATHS` limited to the worktree,
-and `MISE_CEILING_PATHS` at the worktree's parent.
+ and,
+ from the worktree,
+ `MISE_TRUSTED_CONFIG_PATHS` limited to the worktree and `MISE_CEILING_PATHS` at the
+worktree's parent.
 Facts the first attempts showed:
 
 - Without `MISE_CEILING_PATHS`,
@@ -1183,53 +1191,69 @@ Facts the first attempts showed:
    mise also loads the main checkout's `mise.toml` (an ancestor directory) and its `_.file` of the encrypted
    `.env.local.json`.
   A throwaway project outside the main checkout (the block under `Steps that remain`) is not affected.
-- The install failed with "tool ... requires configured install dependency 'rust@nightly',
+- The install from the worktree failed with "tool ... requires configured install dependency 'rust@nightly',
    but its selected version is not installed"
    because the root config declares `rust` and `cargo-binstall`,
    which the `cargo:` backend needs first.
   A fresh data directory would install the nightly toolchain with its components and Android targets;
    the probe copied the live `installs/rust` links and `installs/cargo-binstall` into the disposable data directory
    instead.
-  The throwaway project of `Steps that remain` declares neither,
-   so it needs `cargo-binstall` from its own config or
-   the same copy.
+  The throwaway project of `Steps that remain` declares `cargo-binstall` itself and no `rust`,
+   and needs neither copy.
 
-Results:
+Results for 0.1.1,
+ from the throwaway project:
 
-- `mise install cargo:monochromatic-git-policy-cli`:
-   exit 0 in 19.2 seconds wall.
-  `cargo-binstall` reported "The package monochromatic-git-policy-cli v0.1.0 (x86_64-unknown-linux-gnu) has been
-  downloaded from github.com" and "Done in 7.45s":
+- `mise install`:
+   exit 0,
+   two tools (`cargo-binstall` and the wrapper) in 16.1 seconds,
+   17.1 seconds wall.
+  `cargo-binstall` reported "The package monochromatic-git-policy-cli v0.1.1 (x86_64-unknown-linux-gnu) has been
+  downloaded from github.com" and "Done in 8.15s":
    the prebuilt archive path,
    not a source build.
-  The installed file is 9,313,296 bytes.
+  The installed file is 9,300,536 bytes,
+   dynamically linked against `libgcc_s.so.1` and `libc.so.6`,
+   and needs
+  `GLIBC_2.39` at most (host glibc 2.43).
 - `.cache/cli-git-bin/git` is a symlink to
-  `<data>/installs/cargo-monochromatic-git-policy-cli/0.1.0/bin/cli-git-native`.
-  A second `mise install` from `package/git-policy/cli` reported "already installed" and left the link at the repository
-  root (`$MISE_CONFIG_ROOT` is the root that declares the tool).
-- The binary is a dynamically linked ELF that needs `GLIBC_2.39` at most (host glibc 2.43).
+  `<data>/installs/cargo-monochromatic-git-policy-cli/0.1.1/bin/cli-git-native`
+  (0.1.0 from the worktree:
+   the same shape,
+   and a second `mise install` from `package/git-policy/cli` reported "already installed" and left the link at the
+   repository root,
+   because `$MISE_CONFIG_ROOT` is the root that declares the tool).
 - Throwaway repository (disposable `HOME`,
    `GIT_CONFIG_NOSYSTEM=1`,
    `commit.gpgsign false`,
    the repository's `cli-git.config.jsonc` committed in it,
-   `.cache/forbidden-strings.rules.txt` copied in,
+   a committed `.gitignore` with `.cache/`,
+   `.cache/forbidden-strings.rules.txt` copied into the source repository,
    `PATH` = link directory,
    the installed `monochromatic-lint` directory,
    `/usr/bin`,
    `/bin`):
   `command -v git` printed the link;
-   `readlink --canonicalize` of it ended in `cli-git-native`;
    `git --version` printed `git version 2.55.0` (the real Git,
    resolved through the wrapper);
    `git cli-git --help` printed the usage and exited 0;
    `git cli-git status` exited 0 and printed the "is retired" sentence on standard error;
-   `git worktree add -b work <path>` through the wrapper exited 0 and printed
+   `git worktree add -b work <path>` through the wrapper,
+   run in the source repository,
+   exited 0 and printed
    "cli-git:
-   copied 0 ignored filesystem entries from ... into 1 new worktree.";
+   copied 1 ignored filesystem entry from ... into 1 new worktree.";
+   the new worktree had `.cache/forbidden-strings.rules.txt` (14,482 bytes,
+   mode 600);
    `git add -- a.txt` exited 0;
    `git commit --message ... -- a.txt` exited 0 and `git log --oneline` listed the commit;
+   `git status --short` printed nothing;
    `git add .` exited 1 with `add-explicit/bulk-add-rejected`;
-   `git commit -a -m x` exited 1 with `commit-only/all-flag`.
+   `git commit -a -m x` exited 1 with `commit-only/all-flag`;
+   `git add -- doc/x.md` and `git commit --message 'docs: x' -- doc/x.md` exited 0 with nothing on standard error
+   (no `engine-failure` event and no `commit-landed` event,
+   so no blocked outcome);
+   `git cli-git check --all` exited 0.
 - Leftovers after those commands,
    in the throwaway's common git directory:
    no directory matching `cli-git-transactions/<uuid>`,
@@ -1240,59 +1264,31 @@ Results:
    no `*.lock` and no `*.pending` entry;
    `cli-git/shadow` and `cli-git-worktree-copy/v1` existed and were empty.
 - Signing was disabled in the throwaway (a hermetic `HOME` has no key) and is not verified there.
-- A commit of a Markdown file ended differently:
-   see `Blocker found in the isolated run`.
+- Auto-push was not exercised.
+- `bin/final-newline-workflow.mjs` against this 0.1.1 executable:
+   exit 0 (clean clone passed,
+   staged control refused).
 
-### Blocker found in the isolated run
+### Why the pin is 0.1.1
 
-A commit that touches a Markdown file lands the commit and then exits 2.
-In the throwaway repository with the repository's configuration (which lists `markdown/autofix`),
-`git commit --message 'docs: x' -- doc/x.md` through the installed 0.1.0 executable printed on standard error:
-
-- an `engine-failure` event with `"code":"policy-incomplete"`,
-   `"trigger":"post-commit"`,
-   `"policyId":"markdown/autofix"` and the message
-   "cli-git could not find monochromatic-lint in any absolute directory on PATH ...",
-- then a `commit-landed` event with `"outcome":"post-commit-blocked"` and the message
-   "Commit ... remains local;
-   post-commit gate blocked automatic backup."
-
-The commit exists in the log;
- the exit status is 2;
- the automatic backup (push) is blocked.
-`monochromatic-lint` was on `PATH` as an absolute directory,
- and `strace -f -e trace=execve,statx,newfstatat` of the same command showed the pre-commit stage finding and
- starting it from that directory;
- the post-commit stage made no lookup at all.
-
-Cause read in the source (`package/git-policy/cli/src/native/post_commit.rs`,
- `run_staged_gate`):
- the post-commit checks come from `shipped_checks(...)` and are not given the invocation's environment,
- so their Markdown linter is `executable_linter(&[])` (the default in `policy_checks.rs`),
- which has no `PATH` to search.
-`entry.rs` and `management.rs` assign `checks.markdown.linter = Box::new(executable_linter(environment))` after building
- their checks;
- `post_commit.rs` and `PostCommitRequest` have no such assignment or field.
-A text-file commit in the same throwaway exited 0 with no event.
-The same missing assignment probably applies to the forbidden-strings rules variable
- (`checks.scanner_settings.rules_variable` is set from the environment only in `entry.rs`),
- which the install lane did not exercise at the post-commit trigger.
-
-Consequence:
- until the post-commit stage is given the invocation's environment,
- every Markdown commit (including the doc-only verification commit of `User-boundary verification`,
- item 3,
- and every documentation commit after the switch) exits 2 and is not pushed.
-It is a defect in the published 0.1.0,
- so the fix is a new crate version,
- the same publication path as above,
- a pin change in `mise.no-env.toml`,
- `mise run lock:mise`,
- and `mise install` in the install worktree before the switch.
-The container gate did not catch it:
- `src/native/binary_markdown_tests.rs` has no match for `post-commit`,
- `post_commit` or `PostCommit`,
- and `src/native/post_commit_tests.rs` has no match for `markdown`.
+Version 0.1.0 landed a Markdown commit and then exited 2:
+ in the throwaway repository with the repository's configuration (which lists `markdown/autofix`),
+ `git commit --message 'docs: x' -- doc/x.md` printed an `engine-failure` event
+ (`"code":"policy-incomplete"`,
+  `"trigger":"post-commit"`,
+  message "cli-git could not find monochromatic-lint in any absolute directory on PATH ...")
+ and a `commit-landed` event with `"outcome":"post-commit-blocked"`,
+ so the automatic backup was blocked.
+`monochromatic-lint` was on `PATH`;
+ `strace` showed the pre-commit stage finding it and the post-commit stage making no lookup.
+The cause was in `package/git-policy/cli/src/native/post_commit.rs`:
+ the post-commit checks were built without the invocation's environment,
+ so their Markdown linter had no `PATH` (commit `b9fab0f843` on `main` gives the stage the environment and the
+ configured options).
+Never pin below 0.1.1.
+The container gate of 0.1.0 had no test for this:
+ `src/native/binary_markdown_tests.rs` had no match for `post-commit`
+ and `src/native/post_commit_tests.rs` none for `markdown`.
 
 ## Installation sequence with rollback
 
@@ -1300,26 +1296,31 @@ The container gate did not catch it:
 
 1.  The pinned crate version is published with its release archives and passed the isolated verification of
     `Steps that remain`,
-     step 3.
-    Version 0.1.0 does not qualify for Markdown commits (see `Blocker found in the isolated run`).
+     step 2.
+    Version 0.1.1 qualifies (2026-10-13);
+     0.1.0 does not (see `Why the pin is 0.1.1`).
 2.  The container gate passes on the head that is pinned and landed,
      with
     `GIT_POLICY_NATIVE_IMAGE_TAG=cutover` and every container command through
     `node "${HOME}/temp/agent/gate-slot.ts"`.
-    On the install branch head `d39c883c4d` (crate sources equal to `main` at `0f79ccf033`) the gate with
-    `GIT_POLICY_NATIVE_IMAGE_TAG=install` exited 0 on 2026-10-13:
+    On the install branch head `76a70b8fb9` (crate sources equal to `main` at `4e3eda3798`,
+     which is 0.1.1) the gate
+    with `GIT_POLICY_NATIVE_IMAGE_TAG=install` exited 0 on 2026-10-13:
      image `localhost/git-policy-native-test:install` id
-    `b5025545a037710e1e328906d89a9f205bf16def1777b2fa04e7550c1b05d079`,
-    library 1653 passed,
+    `b15ea7a8690b6438c88d3533f9a7c405768948b500c0c748c0a44f27937b23fe`,
+    library 1657 passed,
      0 failed,
      6 ignored;
-     `native_binary` 115 passed,
+     `native_binary` 116 passed,
      0 failed,
      1 ignored;
     `native_candidates` 1 passed;
      the `cli-git-native` unit target 0 tests;
-    `mise run //package/git-policy/cli:native:clippy` (`-D warnings`,
-     all targets) exited 0 with no diagnostic.
+    the gate's Clippy (`-D warnings`,
+     all targets) finished without a diagnostic.
+    The host task `native:clippy` was run on the earlier head `d39c883c4d` (crate sources of `main` at `0f79ccf033`) and
+    exited 0;
+     it was not rerun after the merge.
     The installed bytes come from the release workflow's toolchain,
      not from that gate,
      so the user-boundary
@@ -1489,10 +1490,7 @@ The install branch already holds the tool entry,
 retirements,
  the `build` task and the CI jobs (see `Decisions` and `Install the published tool`).
 
-1.  Land the migrations that do not need the native wrapper installed and do not affect the incumbent:
-    the `package/git/executable` native recognition and its tests (see `Sibling packages`);
-    the docs that are true under both wrappers;
-    the dead duplicate-code dismissals of the deleted `perf/*.ts` files in `slopo.ignore.txt`
+1.  Remove the dead duplicate-code dismissals of the deleted `perf/*.ts` files from `slopo.ignore.txt`
     (lines 45,
      50,
      69,
@@ -1500,32 +1498,23 @@ retirements,
      hashes `fd8e709c61cb`,
      `ca593422f3b5`,
      `5e87bcf79430`,
-    `9dec8705a47d` and `24a1be12cae0`;
-     the header counts at line 40 change with them,
-     and `slopo analyze` was not run).
+    `9dec8705a47d` and `24a1be12cae0`).
+    The install lane did not do it:
+     the file is an inventory keyed to a `slopo analyze` report of 2026-10-07 with per-section live and dead counts
+     (header and section titles),
+     and its own convention keeps or annotates dead keys instead of deleting them,
+     so the edit needs a fresh report to recount and a decision on annotate-or-remove.
+    It does not block the switch.
+    The other documentation edits of `Consumer inventory` change what is true only after the switch and belong to
+    the retirement commits.
     Keep `cli-git.config.ts`,
      the root dependency,
      the cli manifest and `src/` untouched.
-2.  Fix `Blocker found in the isolated run` in the crate (give the post-commit checks the invocation's environment,
-     with a
-    test that fails without it),
-     pass the container gate,
-     raise the crate version,
-     publish it through the path under
-    `Publication state`,
-     and pin it:
-     change the version in `mise.no-env.toml`,
-     run `mise run sync:files` (restore the
-    `_.path` list to the full-install list if the checkout has a partial install,
-     see `What the repository has`),
-    run `mise lock cargo:monochromatic-git-policy-cli` (check that the lock diff is the one block),
-     and commit.
-3.  Verify the published artifact in isolation,
+2.  Verify the pinned published artifact in isolation,
      with a throwaway data directory and project,
      before the switch.
-    The block ran end to end on 2026-10-13 for 0.1.0 (10.8 seconds,
-     link created,
-     prebuilt archive).
+    This ran end to end for 0.1.1 on 2026-10-13 (see `Isolated verification`);
+     repeat it whenever the pin changes.
     `PROJECT` holds a `mise.toml` with `cargo-binstall = "latest"` (the `cargo:` backend installs through it) and the
     tool entry copied from `mise.no-env.toml`,
      made with:
@@ -1561,11 +1550,10 @@ retirements,
     `$V/data/installs/cargo-monochromatic-git-policy-cli/<version>/bin/cli-git-native`.
     Then run items 1 and 2 of `User-boundary verification` with
     `BIN="$V/proj/.cache/cli-git-bin"` (skip its `ROOT` line) and `MAIN` set to the main checkout,
-     add a Markdown commit to item 2 (it must exit 0 with the fixed version),
      and delete `$V`.
     A run from inside a worktree of this repository instead of a separate project also needs `MISE_CEILING_PATHS` set to
     the worktree's parent (see `Isolated verification`).
-4.  Land the install branch on `main`,
+3.  Land the install branch on `main`,
      made through the incumbent (the branch holds the tool entry,
      the first `_.path`
     entry,
@@ -1575,7 +1563,7 @@ retirements,
     (it did,
      in the install worktree on 2026-10-13,
      after an inherited `/home/user/.elan/bin` entry).
-5.  In the main checkout and in each active worktree:
+4.  In the main checkout and in each active worktree:
      merge `main` (the main checkout pulls it),
      run `mise run sync:files` (and restore a partial-install `_.path` drift,
      see `What the repository has`),
@@ -1585,8 +1573,8 @@ retirements,
     Sessions started before this step keep the shim until restarted (hazard 4),
      and a session started from the main checkout takes its link from the main checkout,
      so `mise install` there is what switches such sessions;
-    the shim and `dist` stay until step 8.
-6.  Repeat the hazard 1 detection immediately before the first native commit.
+    the shim and `dist` stay until step 7.
+5.  Repeat the hazard 1 detection immediately before the first native commit.
     The switch is atomic per process start,
      so no quiet period is required by design
     (`doc/planning/cli-git-rust-open-decisions.md`,
@@ -1594,17 +1582,17 @@ retirements,
      option A),
     but the reverse direction is not tested,
      so prefer a moment with no transaction directories.
-7.  Run `User-boundary verification` through the real `PATH`.
-8.  When it passes,
+6.  Run `User-boundary verification` through the real `PATH`.
+7.  When it passes,
      the rollback window is over (see `Decisions`).
     Delete `cli-git.config.ts` and reword `cli-git.config.jsonc:2`,
      only when the hazard 4 count of sessions on the
     old `PATH` is zero (hazard 6 explains what those sessions lose otherwise).
     Commit through the native wrapper.
-9.  Record the installation in `doc/handover/cli-git-rust-implementation.md` and
+8.  Record the installation in `doc/handover/cli-git-rust-implementation.md` and
     `doc/handover/cli-git-native-integration.md` by replacing the superseded text;
     that commit is also the doc-only verification commit.
-10. Start the retirement (`Order of the retirement commits`) at once;
+9.  Start the retirement (`Order of the retirement commits`) at once;
     no waiting period follows the verification.
 
 ### User-boundary verification
@@ -1671,8 +1659,10 @@ Both checks use the installed `git` on the resolved PATH,
     Also commit a Markdown file there (copy the repository's `cli-git.config.jsonc` and
     `.cache/forbidden-strings.rules.txt` into the throwaway first,
      with `monochromatic-lint` on `PATH`):
-     it must exit 0 (version 0.1.0 exits 2,
-     see `Blocker found in the isolated run`).
+     it must exit 0 with nothing on standard error (version 0.1.0 exits 2,
+     see `Why the pin is 0.1.1`;
+     0.1.1 exits 0,
+     2026-10-13).
      The throwaway disables signing on purpose,
     because a hermetic `HOME` has no signing key;
      signing is checked by item 3 instead.
@@ -1699,7 +1689,8 @@ Both checks use the installed `git` on the resolved PATH,
     A failure here with `config-invalid` is hazard 3,
      not a defect;
      `policy-incomplete` with trigger `pre-forward` and a missing rules file is hazard 3 too;
-     `policy-incomplete` with trigger `post-commit` and the message about `monochromatic-lint` is the blocker.
+     `policy-incomplete` with trigger `post-commit` and the message about `monochromatic-lint` is the 0.1.0 defect
+     and means a version below 0.1.1 is installed.
 4.  Auto-push:
      with auto-push enabled (`APG`) the commit pushes the branch;
     a push failure is a result to read,
@@ -1707,7 +1698,7 @@ Both checks use the installed `git` on the resolved PATH,
 
 ### Rollback
 
-Before the verification passes (step 7 of `Steps that remain`),
+Before the verification passes (step 6 of `Steps that remain`),
  the incumbent is still installed and rollback is a
 change of `PATH`:
 
@@ -1829,14 +1820,14 @@ Each step is its own commit,
 - Hosts older than glibc 2.39:
    the release archive's x86_64 file needs `GLIBC_2.39`;
    no older host was tried.
-- Whether the missing environment at the post-commit stage also affects `security/forbidden-strings` (the rules
-  variable) and the other Markdown-independent policies at that trigger:
-   only the Markdown policy was exercised.
+- Whether `security/forbidden-strings` reports a finding at the post-commit trigger with 0.1.1:
+   the throwaway commits had the rules file present and exited 0,
+   and no commit with a forbidden string was made.
 - Whether `mise run sync:files` leaves the committed `mise.toml` unchanged on a checkout with a full `pnpm install`:
   inferred from the main checkout's directory listing (48 entries,
    equal to the committed list),
    not run there.
-- The prebuilt archive path of `mise install` was exercised for 0.1.0 on x86_64 Linux only;
+- The prebuilt archive path of `mise install` was exercised for 0.1.0 and 0.1.1 on x86_64 Linux only;
   the aarch64 archive and any macOS or Windows host were not.
 - Whether the unanchored `include` entries of `package/linter/monochromatic-lint/Cargo.toml` package a stray
   `README.md` from a subdirectory (the new crate's list is anchored;
