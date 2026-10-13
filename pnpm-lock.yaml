@@ -457,9 +457,6 @@ importers:
       '@monochromatic-dev/dev-script-task-util':
         specifier: workspace:*
         version: link:package/dev-script/task-util
-      '@monochromatic-dev/git-policy-cli':
-        specifier: workspace:*
-        version: link:package/git-policy/cli
       '@monochromatic-dev/module-image-diff':
         specifier: workspace:*
         version: link:package/module/image-diff
