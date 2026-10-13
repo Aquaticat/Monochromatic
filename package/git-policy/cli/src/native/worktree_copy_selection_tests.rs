@@ -258,6 +258,23 @@ fn named_path_is_matched_literally() {
     remove(root.as_path());
 }
 
+/// A file whose name looks like a glob or pathspec magic is found by its literal name.
+#[test]
+fn named_path_with_glob_characters_is_found_literally() {
+    let root: PathBuf = fixture("selection-named-glob-name");
+    let source: PathBuf = ignoring(root.as_path(), "source", "[x].txt\n");
+    std::fs::write(source.join("[x].txt"), b"bracketed").expect("bracketed");
+    std::fs::write(source.join("x.txt"), b"plain").expect("plain");
+    let roots: Vec<String> = read_named_ignored_roots(
+        &git_context(),
+        source.as_path(),
+        &[String::from("[x].txt")],
+    )
+    .expect("roots");
+    assert_eq!(roots, vec![String::from("[x].txt")]);
+    remove(root.as_path());
+}
+
 /// A name that could leave the worktree is refused before Git or the filesystem is asked.
 #[test]
 fn unsafe_named_path_is_refused() {

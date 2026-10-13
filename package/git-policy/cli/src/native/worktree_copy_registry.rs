@@ -6,7 +6,8 @@
 //! Why:
 //!  A worktree that Git registered before failing still receives the ignored files,
 //!  so the comparison runs after Git returns whatever its status was.
-//!  The main worktree is never observed, so its invocations cost no filesystem reads.
+//!  The main worktree is observed only when the caller names repository paths to copy from it
+//!  (`observe_copy_source`), so its other invocations cost no filesystem reads.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts

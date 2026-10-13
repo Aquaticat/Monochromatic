@@ -10,6 +10,8 @@
 //!  command creates or moves worktrees after alias resolution) with the native modules that already own them,
 //!  passes the repository identity and the effective working directory, and supplies the runner that starts real Git
 //!  with the lease token in its environment. This module never runs the commit refusal; it is not wired yet.
+//!  A main-checkout source is a bypass unless the caller also names `Invocation::main_checkout_paths` (the configured
+//!  forbidden-strings rules file); then only those paths are copied, and only when Git ignores them.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
