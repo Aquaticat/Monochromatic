@@ -478,7 +478,7 @@ fn release_owned_lock_with(
     }
     let proof: Result<Option<String>, RecoveryError> =
         owned_lock_mismatch_with(journal, lock_path, identity_of_filesystem);
-    let mismatch: Option<String> = match proof {
+    let proven: Option<String> = match proof {
         Ok(found) => found,
         Err(error) => {
             // Another recoverer of the same dead transaction may have released the lock after the existence
@@ -494,7 +494,7 @@ fn release_owned_lock_with(
             return Ok(LockRelease::Absent);
         }
     };
-    if let Some(mismatch) = mismatch {
+    if let Some(mismatch) = proven {
         debug(
             "releaseOwnedLock",
             format!("leaving lock another owner holds: {mismatch}").as_str(),

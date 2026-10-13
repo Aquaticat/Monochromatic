@@ -279,13 +279,18 @@ fn a_lock_released_by_a_peer_mid_release_is_absent() {
         LockRelease::Absent
     );
     std::fs::write(&lock, b"").expect("lock again");
-    let journal: LockIdentity = lock_identity_of(lock.as_path());
+    let second_journal: LockIdentity = lock_identity_of(lock.as_path());
     assert_eq!(
-        release_owned_lock_with(&journal, lock.as_path(), identity_before_a_peer_removed_the_lock)
+        release_owned_lock_with(&second_journal, lock.as_path(), identity_before_a_peer_removed_the_lock)
             .expect("the removed lock is absent"),
         LockRelease::Absent
     );
     remove(root.as_path());
+}
+
+/// Probe for a mechanism that answers nothing.
+fn no_identity(_path: &Path) -> Option<String> {
+    return None;
 }
 
 /// A lock that still exists but cannot be identified stays an error:
@@ -296,7 +301,7 @@ fn an_unidentifiable_lock_is_still_an_error() {
     let lock: PathBuf = root.join("index.lock");
     std::fs::write(&lock, b"").expect("lock");
     let journal: LockIdentity = lock_identity_of(lock.as_path());
-    let error: RecoveryError = release_owned_lock_with(&journal, lock.as_path(), |_: &Path| None)
+    let error: RecoveryError = release_owned_lock_with(&journal, lock.as_path(), no_identity)
         .expect_err("unidentified");
     assert!(error.0.starts_with("unable to resolve the filesystem identity for "));
     assert!(lock.exists());
