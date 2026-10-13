@@ -49,6 +49,25 @@ CPU temperature 95 degrees Celsius (raised from 90 by the user on 2026-10-13), s
 IO pressure is not watched on purpose: the user's drives are slow, and the user decided on 2026-10-13
 that IO pressure is non-actionable.
 
+## Sample log for judging temperatures
+
+Every 10 seconds the service appends one CSV line to
+`~/.local/share/claude-cpu-cap/samples/<local date>.csv` and keeps 14 days.
+The columns are UTC time, Tctl, Tccd1, Tccd2, package watts, average clock, CPU pressure, one-minute load and the cap,
+then the six Corsair fan RPMs and the Corsair temperature reading.
+The meaning of that last reading is unconfirmed: CoolerControl labels it `temp1`, and the controller is a Commander Core XT.
+The fan values come from the local CoolerControl API with an access token kept in
+`~/.config/claude-cpu-cap/cc-token` (owner-only permissions).
+When the token is rejected, for example after the user rotates it, the service prints one `FAN-READ-FAILED` line,
+leaves the fan columns empty, and prints `FAN-READ-RECOVERED` once a working token is in the file.
+Alert lines carry package watts and the average clock, but not fan speed:
+the only hwmon fan sensor is the GPU's, and the case fans sit behind the Corsair controller.
+
+Read the settled temperature per power bucket with `node ~/.local/share/claude-cpu-cap/summarize-samples.ts <days>`.
+A sample counts as settled when the previous 2 minutes stayed in the same 20 watt bucket,
+so alert-time spikes do not hide the steady state.
+No stress test is run for this; it only records what the machine does under real work (user decision, 2026-10-13).
+
 ## Known gaps
 
 - Units started with `systemd-run --user` (`ide7-gate*`, `tr-gate-*`) get their own cgroup in `app.slice`
