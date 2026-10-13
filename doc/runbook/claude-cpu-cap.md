@@ -44,8 +44,10 @@ Read them with `journalctl --user --unit=claude-cpu-watch --follow --lines=0 --o
 - `CAP-APPLIED`: the quota was rewritten (the cgroup is new, or the file changed).
 - `WATCHER-STOPPED` or a systemd stop line: nothing is watching until the unit restarts.
 
-Limits: CPU pressure `some avg10` 40, memory pressure `some avg10` 10, IO pressure `full avg10` 20,
+Limits: CPU pressure `some avg10` 40, memory pressure `some avg10` 10,
 CPU temperature 90 degrees Celsius, scheduler lag 250 ms.
+IO pressure is not watched on purpose: the user's drives are slow, and the user decided on 2026-10-13
+that IO pressure is non-actionable.
 
 ## Known gaps
 
