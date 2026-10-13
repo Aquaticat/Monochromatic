@@ -15,8 +15,8 @@ The operating instructions live in `doc/runbook/claude-cpu-cap.md`.
 - Claude tool commands, including gate jobs run through `gate-slot.ts`, share one cap.
   It was 24 threads, then 30 by user request ("still exploring the new CPU"), then 28 after the tone-down rule.
   The user raised it back to 30 at about 18:55 EDT because their fan curve is more aggressive (full speed from 61
-  degrees instead of 65, as the user described it). The curve read back from CoolerControl still showed 65 at that
-  moment, so the edit may not have been saved yet.
+  degrees instead of 65). The curve read back from CoolerControl still showed 65 at that
+  moment; the user saved it a few minutes later and it now reads 100% at 61 degrees (30%/45%/60% at 40/50/60).
 - Tone-down rule from the user: if the system gets bad, lower the cap 2 threads at a time.
 - IO pressure is non-actionable (the user's drives are slow) and is not watched.
 - The temperature alert limit is 95 degrees Celsius (raised from 90 by the user).
@@ -47,7 +47,8 @@ The operating instructions live in `doc/runbook/claude-cpu-cap.md`.
   The previous version (which already had the user's own 75-degree to 100% edit) is saved at
   `~/temp/agent/cc-spec/silent-before.json`; restore it with `PUT /profiles`.
   The user then changed it themselves and will keep adjusting it, because they cannot tolerate much noise while the
-  machine is quiet. At 18:50 EDT it read: 30% at 40, 45% at 50, 60% at 60, 100% at 65 and above.
+  machine is quiet.
+  Current curve: 30% at 40, 45% at 50, 60% at 60, 100% at 61 and above (saved by the user about 18:57 EDT).
   The fan profile belongs to the user now; this session does not edit it unless asked.
 - Session-only items that die with the session: the Monitor (30-minute expiry, re-arm each time) and a one-shot cron
   check (job `f4aeb83b`, 22:05 EDT on 2026-10-13) that ends the watch if nothing weird happened.
