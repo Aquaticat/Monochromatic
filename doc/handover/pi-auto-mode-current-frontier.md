@@ -645,6 +645,39 @@ not completed domain closure,
 a maintained host launch path,
 or installed activation.
 
+## Maintained source-local heading consumer
+
+Main `876b63c06c` adds `package/pi-plugin/auto-mode/src/heading-context.ts` and its reference types.
+Private `bbd6a767` removes the duplicated heading-consumption body in favor of the maintained export.
+The native compiler still authenticates original batch membership and candidate issuance,
+and revalidates dependencies after code policy callbacks.
+No heading estimate lowers a directive,
+assigns authority,
+or closes the host domain.
+
+`proc_7cbf` passed initial build/types;
+`proc_99c3` passed formatting/lint on the changed files with zero diagnostics.
+Built-artifact controls cover equal independent groups,
+original references and callback receiver,
+admission/abstention,
+invalid selection and question shapes,
+and exact falsy callback failures.
+A disabled empty selection remains supported;
+missing policy or candidate handles reject selected malformed input.
+Those malformed shapes are outside native owner-issued records.
+Final build,
+unit,
+lint,
+and native consumer verification are in progress.
+
+A read-only Git diff command emitted the existing logger sink-verification timeout
+and exceeded its command deadline before the planned commit/build calls started.
+The background diff reader `proc_b03c` completed and confirmed formatting-only changes.
+No logger setting,
+Git policy,
+or resource limit was changed;
+the diagnostic does not establish a cause for the delay.
+
 ## Maintained bootstrap semantic admission
 
 Main `ad46df49bf` ports configured-policy copying and original program-profile matching into

@@ -451,6 +451,29 @@ source capture,
 and native error reporting remain the adapter's responsibilities.
 This does not replace the installed judge or supply a maintained host launcher.
 
+## Migration heading-context interpretation
+
+`consumeHeadingContexts` retains original candidate and evidence references for source-local heading groups.
+It checks the original question kind,
+model attribution,
+content relationship,
+and synchronous Boolean code acceptance.
+Native integration still authenticates the complete batch and revalidates dependencies after callbacks.
+Equal text in independent groups does not merge their identities.
+
+Admitted `none` concerns only the selected group's independent heading content.
+Potential or unknown content remains separate from directive meaning,
+source authority,
+and governing-domain completeness.
+The consumer produces no directive or permission.
+It freezes owned results,
+not borrowed candidates,
+evidence,
+or callbacks.
+Final unit,
+lint,
+and native integration checks remain pending.
+
 ## Migration semantic admission configuration
 
 `copySemanticAdmissionPolicy` copies an explicitly configured bootstrap declaration.
