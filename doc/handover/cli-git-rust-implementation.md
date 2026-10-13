@@ -1563,27 +1563,17 @@ that is verification, not a decision for the user.
   The repository installs the crate as a `cargo:` mise tool whose postinstall links `.cache/cli-git-bin/git`,
   placed first in `_.path`; the hk cleanup task, the performance harness and the CI jobs that needed the wrapper are
   retired or migrated (record: `doc/planning/cli-git-native-cutover.md`).
-  The switch is NOT live: the pin is still 0.1.1, the link in the main checkout was removed, and this checkout, its
-  sessions and its subagents still run the TypeScript wrapper.
-  Resume here, in order:
-  1. Re-pin the tool to 0.1.2 in `mise.no-env.toml`, regenerate with `mise run sync:files` and `mise lock`
-  (never hand-edit the lockfile), run `mise install` in the main checkout (recreates the link; hazard 1 scan first:
-  no `cli-git-transactions/<uuid>`, no `*.lock` directory, no `index.lock` under `.git`).
-  2. In a shell whose `PATH` starts with `.cache/cli-git-bin` (prove it with `readlink --canonicalize "$(command -v git)"`
-  ending in `cli-git-native`), make a doc-only signed commit and let the auto-push run with the real credentials;
-  also run a manual `git push`. If either fails, remove the link again and diagnose; do not leave it armed.
-  3. Retirement commits (below).
-  Rehearsals that passed on 0.1.1 (throwaway repository, real signing configuration, local bare remote): signed Markdown
-  and text commits exit 0 and reach the remote, a pattern from the tracked appendix is refused, nothing is left behind;
-  they did not cover credentialed remotes, which is how the push defect escaped.
+  The switch is live: the pin is 0.1.2, the link in the main checkout is installed, and the installed wrapper was
+  verified at the user boundary (a signed commit auto-pushed with real credentials, a manual push and a Markdown
+  commit); every process of the user is on the native `PATH` (the count of sessions on the old `PATH` is zero).
+  The user's decisions are no hybrid, the old TypeScript goes, and the rollback window ended with that verification.
+  The pinned incumbent revision, the last commit that contains the TypeScript wrapper and the four authoring packages,
+  is `f4fc1fa213ece65672e4314983a75266837892f9`; the retirement commits are made on the branch
+  `feat/cli-git-native-retire` (record, per-commit evidence and leftovers: `doc/handover/cli-git-native-retire.md`),
+  and the order is in `doc/planning/cli-git-native-cutover.md`, section `Order of the retirement commits`.
   Not yet done for the push fix: scoped mutation of `wrapped_command.rs` and of `auto_push_single_flight.rs`
   (documentation changes only), and the two new planted controls have never run (a mutation run with the planted phase).
-  Sessions started before the switch keep the TypeScript shim until restarted (70 processes, 4 of them Claude
-  sessions, on 2026-10-13), and both wrappers share `.git/cli-git*` state, so a mixed fleet is the designed state.
-  Retirement (delete `cli-git.config.ts`, the TypeScript under `package/git-policy/cli/src` outside `native`, then
-  the four `git-policy` TypeScript packages) silently drops optional policies for old-`PATH` sessions and removes
-  their `git` when the manifest shrinks, so ask the user whether to wait for those sessions to restart if the count is
-  above zero.
+  Both wrappers shared `.git/cli-git*` state while sessions were mixed; the incumbent is no longer on any `PATH`.
   User decisions of 2026-10-13: install by publishing the crate (the `cargo:` mise tool route); the hk cleanup task is
   retired; the rollback window ends right after the installed wrapper is verified; the first native CI workflow covers
   Linux only; keep `index.lock` after a post-advance failure so recovery can finish; copy the rules cache when the
