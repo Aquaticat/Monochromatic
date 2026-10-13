@@ -29,11 +29,12 @@ jobs:
         node-version: 26.5.0
         package-manager-cache: false
 
-    - name: Set up pnpm
-      run: npm install --global pnpm@11.10.0
-
-    - name: Install git-policy-cli dependency closure
-      run: pnpm install --frozen-lockfile --filter @monochromatic-dev/git-policy-cli...
+    # The runner's rustup toolchain builds the wrapper, as the release job of cargo-publish.yml does.
+    # --locked builds the dependency versions the crate's Cargo.lock records; the release profile keeps panic = "unwind",
+    # which the linked scanner requires.
+    - name: Build the native wrapper from the checkout
+      working-directory: package/git-policy/cli
+      run: cargo build --release --locked --bin cli-git-native
 
     - name: Check final newlines in isolated repository
-      run: node package/git-policy/cli/src/trust/fixture/final-newline-workflow.ts
+      run: node package/git-policy/cli/bin/final-newline-workflow.mjs package/git-policy/cli/target/release/cli-git-native
