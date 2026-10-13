@@ -112,6 +112,23 @@ export type {
   SemanticAdmissionPolicy,
   SemanticAdmissionScope,
 } from './semantic-admission-types.ts';
+export { consumeUnitAdoptions, } from './unit-adoption.ts';
+export { selectUnitAdoptionPairs, } from './unit-adoption-profile.ts';
+export {
+  UnitAdoptionBindingError,
+  type UnitAdoptionEvidence,
+  type UnitAdoptionPair,
+  type UnitRuleProjection,
+} from './unit-adoption-binding.ts';
+export type {
+  UnitAdoptionInputs,
+  UnitAdoptionInterpretation,
+  UnitAdoptionResult,
+  UnitAuthority,
+  UnitClauseInterpretation,
+  UnitRegisteredAuthority,
+  UnitSourceView,
+} from './unit-adoption-types.ts';
 export { consumeHeadingContexts, } from './heading-context.ts';
 export type {
   HeadingContentEstimate,
