@@ -7,6 +7,7 @@ description = "Native resource-limit hook for agent shell execution"
 repository = "https://github.com/Aquaticat/Monochromatic.git"
 readme = "README.md"
 publish = false
+homepage = "https://github.com/Aquaticat/Monochromatic/tree/main/package/dev-script/task-util"
 
 [[bin]]
 name = "codex-worker-limit"
@@ -22,3 +23,13 @@ strip = true
 overflow-checks = true
 
 [workspace]
+
+# Canonical lint policy, enforced by file-enforcer (doc/planning/cargo-toml-file-enforcer.md).
+[lints.clippy]
+complexity = { level = "allow", priority = -1 }
+disallowed_methods = "deny"
+implicit_return = "deny"
+needless_return = "allow"
+shadow_reuse = "deny"
+shadow_same = "deny"
+shadow_unrelated = "deny"
