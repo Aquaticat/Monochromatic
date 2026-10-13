@@ -259,7 +259,13 @@ export function installNativePolicyHooks(
    @returns whether this installation finished its detachment operations
    */
   function isDetached(): boolean {
-    const sl = tagged({ tag: isDetached.name, l: rl, },);
+    /**
+     Read diagnostics remain separate from operations that change detachment state.
+     */
+    const sl = tagged({
+      tag: isDetached.name,
+      l: rl,
+    },);
     sl.debug('reading native runtime detachment state',);
     return state.detached;
   }

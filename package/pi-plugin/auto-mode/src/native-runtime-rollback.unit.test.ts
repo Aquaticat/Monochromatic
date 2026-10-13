@@ -55,7 +55,8 @@ await describe({
         if (!(failure instanceof AggregateError))
           throw new Error('Expected installation and cleanup aggregate',);
         expect(failure.errors[0],).toBe(original,);
-        const [, removal,]: readonly unknown[] = failure.errors;
+        const errors: readonly unknown[] = failure.errors;
+        const [, removal,] = errors;
         expect(failure.cause,).toBe(original,);
         if (!(removal instanceof AggregateError))
           throw new Error('Expected original cleanup aggregate',);
