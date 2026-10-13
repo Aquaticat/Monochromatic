@@ -631,7 +631,13 @@ The full unit task `proc_8ac8` passed its authored meaning,
 prerequisite,
 shape,
 and ownership cases.
-Final formatting and native lowering-consumer verification remain pending at this checkpoint.
+Final build/types passed `proc_c0ac`;
+full units and changed-file lint passed `proc_186b`.
+Full package lint `proc_be6e` covered 81 files and 486 rules with zero diagnostics.
+`proc_173a` verified the maintained lowering export and catalog agreement,
+then passed all 32 canonical compiler scenarios.
+Action/source parents passed `proc_527c` and `proc_33db`,
+including incumbent fixture approval choices and irreversible retirement.
 
 These native scenarios still retain the independent governing-domain obligation.
 This is maintained computation used by the private native path,
