@@ -258,20 +258,20 @@ each choice an agent left open is recorded beside its ledger entry.
   The owner ruled that a Markdown file holds at most 1,000 lines (ledger M163).
   A first split cut the 38 translation-repair docs past it by size into numbered parts in `a2eb509e92`,
   and the owner rejected it (ledger M165).
-  The 22 records outside the history archive are now filed by subject,
+  Those docs and the history archive are now filed by subject,
   phase or span of dates:
   each keeps its path as an index,
   and its files stand beside it,
   named for what they hold;
   this snapshot is one of them.
-  The 16 history files past the limit stay whole under a recorded allowance until the archive is re-filed.
+  The history archive's numbered segments were joined again by group and filed the same way.
   `doc-line-limit.unit.test.ts` holds the limit,
   refuses a file named by a counter,
   and refuses a file its record's index does not link.
 - IN FLIGHT.
-  Gate g81 on `1a31a4a244`,
-  and a second independent review of the fix,
-  which also weighs the fixer's eight open choices.
+  The second review's five defects are fixed in `bfd89d4baa` (cases) and `e91da9ea8f` (code),
+  with `CONSISTENCY_CACHE_VERSION` at 4,
+  and a third independent review of that fix is running.
 - THE GEMMA SEATS.
   Bedrock answers both with HTTP 401 for an expired token.
   The owner does not top up Bedrock (2026-09-07),

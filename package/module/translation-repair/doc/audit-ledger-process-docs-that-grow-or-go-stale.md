@@ -140,12 +140,35 @@ and `cut` on result lines),
 which the shared facts forbid because a capped listing hides what comes after the cap,
 and once let the split verifier print its whole failure list to the console
 where the report file it had already written was the thing to read.
+After committing,
+the lead compared the commit with the checked worktree by a diff that cannot see files the worktree's index does not hold,
+so the 260 new files were listed as missing and the listing filled the console;
+the comparison that fits is one over the folders' files.
 
 Fixed by the second split:
 each doc's files were planned by hand or by a reader who read the stretch being cut,
 ledger entries are filed by the family the prevention doc already gives them,
 logs are filed by date and clock span,
 and stretches with no heading had headings added at their real shifts of subject before any cut.
+
+The history archive had the same fault from an earlier hand:
+the split of 2026-09-01 cut it into 12 groups and then,
+by size,
+into 44 files named by segment and part,
+with cuts inside lists and sections.
+The second split first left it alone under an exemption from the name rule and 16 allowances past the limit,
+recorded as waiting to be re-filed;
+on 2026-10-13 its segments were joined again by group,
+each join checked against the last committed pre-split file,
+and the groups were filed by what they hold,
+after which the exemption and the allowances were removed.
+
+The Markdown linter reports 32 line-break findings on four files of the OpenRouter pass log whose text obeys the rule.
+They come from the linter reading positions wrongly after characters outside the Basic Multilingual Plane
+(repository issue 559,
+whose fix on the TypeScript linter is deferred by the unified-linter decision),
+not from the split:
+replacing each such character with a plain letter leaves no finding.
 
 Prevention:
 a split is designed from what the text is about,

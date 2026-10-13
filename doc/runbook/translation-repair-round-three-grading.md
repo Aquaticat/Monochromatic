@@ -318,7 +318,7 @@ whether the lane's schema-mismatch was a provider window or a standing condition
 closed on 2026-08-12:
 the lost voices were a provider's channel marker left in front of Kimi-K3's JSON,
 and a parser fix reads past it
-([the marker came back one character longer](../handover/translation-repair-history-04-2026-08-12-to-15-segment-02-part-01.md#the-marker-came-back-one-character-longer)
+([the marker came back one character longer](../handover/translation-repair-history-2026-08-12-to-15-channel-marker-recurrence-and-lost-run-log.md#the-marker-came-back-one-character-longer)
 records the fix and its later widening).
 
 ## What this round cannot tell you

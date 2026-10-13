@@ -5,21 +5,34 @@
 The finite redesign stopped after Candidate M on 2026-09-01.
 Read the [timestamped failure report](../audit/translation-repair-redesign-failure-2026-09-01.md),
 the [current handover](translation-repair.md),
-and the [document map](translation-repair-document-map.md) before historical segments.
+and the [document map](translation-repair-document-map.md) before the historical record.
 No historical next-action list authorizes a corpus run,
 model call,
 spent-prompt retry,
 or successor implementation.
 
-This index replaces one append-only historical file with 44 segments in 12 chronological groups.
-Every original byte was assigned to one chronological group before formatting.
-Later split audits record exact raw-part reassembly as formatted groups were divided into navigable segments.
+This index replaces one append-only historical file,
+written from 2026-07-16 to 2026-09-01,
+with a record in chronological groups.
+Each group has its own index,
+which carries the stop condition and lists the group's files;
+each file holds one subject or one span of days and is named for it.
 Superseded claims remain historical evidence,
 not current instruction.
 
-Dates in the segments are the working day as written at the time,
+The split of 2026-09-01 cut the file into groups and then,
+by size,
+into segments named by number,
+and the audits of that day linked from the [document map](translation-repair-document-map.md) describe that layout.
+On 2026-10-13 the segments of each group were joined again,
+with the titles and continuation headings that split had added removed,
+and filed by what they hold.
+Headings were added where a long stretch had none;
+no other wording changed.
+
+Dates in the record are the working day as written at the time,
 with no zone,
-and the segments are kept byte for byte rather than redated.
+and the record is kept as written rather than redated.
 An owner answer given between 20:00 and 24:00 EDT
 (00:00 to 04:00 UTC)
 can carry the day before its UTC date:
@@ -32,7 +45,7 @@ and the package's own docs and source
 date owner answers by their UTC day
 (ledger D12 in `package/module/translation-repair/doc/audit-ledger.md`).
 
-Task numbers in the segments (`#N`,
+Task numbers in the record (`#N`,
 "task N") are the writing session's task-tracker ids,
 not GitHub issues,
 and are kept as written;
@@ -40,104 +53,74 @@ the document map's "Task numbers in these documents" says how to read them.
 
 ## Chronological groups
 
-1.  Early foundation:
-    milestone one,
-    initial provider behavior,
-    and early package state.
-    [segment 1.1](translation-repair-history-01-early-foundation-segment-01-part-01.md),
-    [segment 1.2](translation-repair-history-01-early-foundation-segment-01-part-02.md),
-    [segment 2.1](translation-repair-history-01-early-foundation-segment-02-subpart-01.md),
-    [segment 2.2](translation-repair-history-01-early-foundation-segment-02-subpart-02.md),
-    [segment 2.3](translation-repair-history-01-early-foundation-segment-02-subpart-03.md),
-    [segment 2.4](translation-repair-history-01-early-foundation-segment-02-subpart-04.md),
-    [segment 3.1](translation-repair-history-01-early-foundation-segment-03-part-01.md),
-    [segment 3.2](translation-repair-history-01-early-foundation-segment-03-part-02.md).
-2.  2026-08-05 to 2026-08-07:
-    roster repair,
-    rebasing,
-    and measurable repair quality.
-    [segment 1.1](translation-repair-history-02-2026-08-05-to-07-segment-01-part-01.md),
-    [segment 1.2](translation-repair-history-02-2026-08-05-to-07-segment-01-part-02.md),
-    [segment 2.1](translation-repair-history-02-2026-08-05-to-07-segment-02-part-01.md),
-    [segment 2.2](translation-repair-history-02-2026-08-05-to-07-segment-02-part-02.md).
-3.  2026-08-07 to 2026-08-12:
-    run interpretation,
-    deadlines,
-    naturalness,
-    and round-three grading.
-    [segment 1.1](translation-repair-history-03-2026-08-07-to-12-segment-01-part-01.md),
-    [segment 1.2](translation-repair-history-03-2026-08-07-to-12-segment-01-part-02.md),
-    [segment 2](translation-repair-history-03-2026-08-07-to-12-segment-02.md).
-4.  2026-08-12 to 2026-08-15:
-    probe blindness,
-    attribution,
-    voting,
-    and cache incidents.
-    [segment 1.1](translation-repair-history-04-2026-08-12-to-15-segment-01-part-01.md),
-    [segment 1.2](translation-repair-history-04-2026-08-12-to-15-segment-01-part-02.md),
-    [segment 2.1](translation-repair-history-04-2026-08-12-to-15-segment-02-part-01.md),
-    [segment 2.2](translation-repair-history-04-2026-08-12-to-15-segment-02-part-02.md),
-    [segment 3](translation-repair-history-04-2026-08-12-to-15-segment-03.md).
-5.  2026-08-15 to 2026-08-19:
-    package review and reading-stage transition.
-    [segment 1.1](translation-repair-history-05-2026-08-15-to-19-segment-01-part-01.md),
-    [segment 1.2](translation-repair-history-05-2026-08-15-to-19-segment-01-part-02.md),
-    [segment 2.1](translation-repair-history-05-2026-08-15-to-19-segment-02-part-01.md),
-    [segment 2.2](translation-repair-history-05-2026-08-15-to-19-segment-02-part-02.md),
-    [segment 2.3](translation-repair-history-05-2026-08-15-to-19-segment-02-part-03.md).
-6.  2026-08-19 to 2026-08-21:
-    reading-stage runs,
-    window experiments,
-    and scope correction.
-    [segment 1.1](translation-repair-history-06-2026-08-19-to-21-segment-01-part-01.md),
-    [segment 1.2](translation-repair-history-06-2026-08-19-to-21-segment-01-part-02.md).
-7.  2026-08-21 to 2026-08-23:
-    consolidation,
-    publisher work,
-    pairing sweeps,
-    and boundary verification.
-    [segment 1.1](translation-repair-history-07-2026-08-21-to-23-segment-01-part-01.md),
-    [segment 1.2](translation-repair-history-07-2026-08-21-to-23-segment-01-part-02.md),
-    [segment 2](translation-repair-history-07-2026-08-21-to-23-segment-02.md).
-8.  2026-08-23 decisions:
-    absence evidence,
-    self-certification,
-    and width decisions.
-    [segment 1.1](translation-repair-history-08-2026-08-23-decisions-segment-01-part-01.md),
-    [segment 1.2](translation-repair-history-08-2026-08-23-decisions-segment-01-part-02.md),
-    [segment 2.1](translation-repair-history-08-2026-08-23-decisions-segment-02-part-01.md),
-    [segment 2.2](translation-repair-history-08-2026-08-23-decisions-segment-02-part-02.md).
-9.  2026-08-23 to 2026-08-24:
-    checker width,
-    ballots,
-    publication verification,
-    and generation changes.
-    [segment 1.1](translation-repair-history-09-2026-08-23-to-24-segment-01-part-01.md),
-    [segment 1.2](translation-repair-history-09-2026-08-23-to-24-segment-01-part-02.md),
-    [segment 2](translation-repair-history-09-2026-08-23-to-24-segment-02.md).
-10.  2026-08-25 calibration:
-     calibration tooling,
-     telemetry,
-     errors,
-     and provider boundaries.
-     [segment 1.1](translation-repair-history-10-2026-08-25-calibration-segment-01-part-01.md),
-    [segment 1.2](translation-repair-history-10-2026-08-25-calibration-segment-01-part-02.md),
-     [segment 2.1](translation-repair-history-10-2026-08-25-calibration-segment-02-part-01.md),
-    [segment 2.2](translation-repair-history-10-2026-08-25-calibration-segment-02-part-02.md),
-     [segment 3](translation-repair-history-10-2026-08-25-calibration-segment-03.md).
-11.  2026-08-26 audit:
-     package audit and pre-redesign open state.
-     [segment 1](translation-repair-history-11-2026-08-26-audit-segment-01.md).
-12.  2026-09-01 stop:
-     Candidate M terminal disposition and canonical-report links.
-     [segment 1](translation-repair-history-12-2026-09-01-stop-segment-01.md).
+- [The first handover document, 2026-07-16 to 2026-08-15](translation-repair-history-first-handover-to-2026-08-15.md):
+  milestone one,
+  initial provider behaviour,
+  the corpus passes of late July,
+  the early package state,
+  and the work of 2026-08-13 to 2026-08-15 that the document recorded last.
+- [2026-08-05 to 2026-08-07](translation-repair-history-2026-08-05-to-07.md):
+  roster repair,
+  rebasing,
+  and measurable repair quality.
+- [2026-08-07 to 2026-08-12](translation-repair-history-2026-08-07-to-12.md):
+  run interpretation,
+  deadlines,
+  naturalness,
+  and round-three grading.
+- [2026-08-12 to 2026-08-15](translation-repair-history-2026-08-12-to-15.md):
+  probe blindness,
+  attribution,
+  voting,
+  and cache incidents.
+- [2026-08-15 to 2026-08-19](translation-repair-history-2026-08-15-to-19.md):
+  package review and the transition to a reading stage.
+- [2026-08-19 to 2026-08-21](translation-repair-history-2026-08-19-to-21.md):
+  reading-stage runs,
+  window experiments,
+  and scope correction.
+- [2026-08-21 to 2026-08-23](translation-repair-history-2026-08-21-to-23.md):
+  the document that began on the 21st and ended on the 23rd,
+  so its last items are 2026-08-23 work too;
+  the next entry is a separate record of the 23rd alone:
+  consolidation,
+  publisher work,
+  pairing sweeps,
+  and boundary verification.
+- [2026-08-23, the work recorded for that day alone](translation-repair-history-2026-08-23-single-day.md):
+  absence evidence and its decision,
+  the lane contest question,
+  self-certification,
+  producing roster width,
+  cross-language pairing,
+  and two smaller fixes.
+- [2026-08-23 to 2026-08-24](translation-repair-history-2026-08-23-to-24.md):
+  work that reached the 24th:
+  checker width,
+  ballots,
+  publication verification,
+  and generation changes.
+- [2026-08-24 to 2026-08-25](translation-repair-history-2026-08-24-to-25.md):
+  work that reached the 25th,
+  where the 2026-08-23 to 2026-08-24 entry stops at the 24th:
+  the editor and writer calibrations,
+  telemetry,
+  error text,
+  provider boundaries,
+  and the reach of the test suite.
+- [2026-08-26, the package audit and the work after it](translation-repair-history-2026-08-26-audit-and-the-work-after-it.md):
+  the audit and its close,
+  then the overlap and straggler-grace measurements
+  and the readiness signal the owner rejected.
+- [Stop of 2026-09-01](translation-repair-history-2026-09-01-stop.md):
+  Candidate M's terminal disposition and the links to the canonical report.
 
 ## Redaction timing
 
 The
 [package-local redaction policy](../../package/module/translation-repair/doc/redaction-timing.md)
 defers documentation redaction while the package remains unfinished and not production-ready.
-Historical segments preserve corpus,
+The historical files preserve corpus,
 review,
 calibration,
 and takeover evidence for later package work.

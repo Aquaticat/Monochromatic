@@ -2,18 +2,13 @@
 
 ## Current status
 
-From 2026-10-03 the owner is away for about 48 hours,
-and a trial model,
+From 2026-10-03 to 2026-10-05 a trial model,
 MiMo 2.6 Pro,
-works the package on the branch `translation-repair-mimo-trial`.
+worked the package on the branch `translation-repair-mimo-trial` while the owner was away.
 Its start point and log is
 [`translation-repair-mimo-trial-2026-10-03.md`](translation-repair-mimo-trial-2026-10-03.md),
-which names the state that day:
-`98e94e584` fails one case,
-the empty-label contributor link now numbered B126;
-B123 is written into the audit ledger from the commit message that queued it;
-and T8's next batch reads against a fresh whole-suite census,
-since the cut of the remaining bundles was never committed.
+whose "Outcome:
+merged on 2026-10-05" records that the branch was merged by fast-forward and what was restored after it.
 
 As of 2026-09-29,
 work is on the LEGACY slice pipeline,
@@ -110,24 +105,48 @@ Start with:
 Candidate detail files are evidence,
 not authorization to reuse their prompts or resume their graphs.
 Before formatting,
-the split script assigned every byte of the pre-split comparison to the index or one detail file.
+the split script of 2026-09-01 assigned every byte of the pre-split comparison to the index or one detail file.
 Its pre-split SHA-256 was
 `933df3bccd51b986bd325d6fd540c4b972d4a5288ebbb205096cfba66398eac9`.
+On 2026-10-13 the K to M file,
+past the line limit,
+became an index with one file per candidate,
+its wording unchanged.
 
 ## Chronological history
 
 [`translation-repair-history.md`](translation-repair-history.md)
-is the chronological index for 12 groups and 44 navigable segments.
-The pre-split source had SHA-256
-`56bdbdf2a0d5b7198b0ff75b428d7b00a2e9218ae28e25f9421895f5ce51aa8d`.
-Every source byte was assigned to one chronological group,
-and every group byte was assigned to an initial segment before stop banners or formatting were added.
+is the chronological index.
+It lists the groups;
+each group's own index lists that group's files,
+one subject or span of days to a file.
+Every file opened directly says in its opening lines that it is historical evidence
+and that the stop condition in its group's index applies;
+each group index carries the Candidate M implementation stop as "Current stop condition".
+
+The split of 2026-09-01 cut the pre-split source,
+SHA-256 `56bdbdf2a0d5b7198b0ff75b428d7b00a2e9218ae28e25f9421895f5ce51aa8d`,
+into 12 groups and,
+by size,
+44 segments named by number.
 The
 [`translation-repair-history-secondary-split-2026-09-01.json`](../audit/translation-repair-history-secondary-split-2026-09-01.json)
 and
 [`translation-repair-history-indented-split-2026-09-01.json`](../audit/translation-repair-history-indented-split-2026-09-01.json)
-audits record exact raw-part reassembly for later segment splits.
-Every directly opened segment carries the current Candidate M implementation stop.
+audits record exact raw-part reassembly for those segments,
+and name files that no longer exist.
+On 2026-10-13 each group's segments were joined again and filed by what they hold.
+The titles,
+stop banners and continuation headings the earlier split had added to each segment were removed,
+one stop banner kept per group,
+and headings were added where a long stretch had none.
+The joined groups were compared word for word,
+in order,
+with the last committed pre-split file (`aef3c4cf55^`):
+the only words that differ are the group titles,
+the stop banners,
+and the 2026-09-01 stop section,
+which was written after that commit.
 
 Historical claims can be superseded by later segments.
 The timestamped failure report and current handover take precedence.
@@ -146,6 +165,10 @@ and the 2026-09-06 snapshot as current.
 The pre-split handover had SHA-256
 `285c54e35836750d110a544bd9e93ae08980b0cb989e4eef95820af478a670aa`.
 Every pre-split byte was assigned to the current handover or one dated snapshot before formatting.
+On 2026-10-13 the 2026-08-25 to 2026-08-27 snapshot,
+past the line limit,
+became an index with a file per subject,
+its wording unchanged.
 
 Dated snapshots are historical evidence.
 Do not follow their next-action lists without reconciling them against the current implementation stop.
@@ -234,10 +257,11 @@ one number names different work in different sessions,
 none is a GitHub issue,
 and a bare `#N` on GitHub links an unrelated one
 (`AGENTS.md` rules XNS and XN2).
-The history segments,
+The history files,
 dated snapshots,
-run-continuity parts and interface-candidate files are kept byte for byte,
-as their split audits require.
+run-continuity parts and interface-candidate files keep their wording and their numbers as written.
+Where one of them passed the line limit it was filed into several files on 2026-10-13,
+which moved text between files and added headings and nothing else.
 The living documents name the work instead:
 the translation-repair decision records,
 the current handover and its snapshot,

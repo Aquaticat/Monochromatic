@@ -467,3 +467,25 @@ Prevention:
 the briefs now name the display pipes they forbid one by one and give the long form of the flags agents reach for,
 since a rule naming `head` alone left `cut` and `sed` open;
 the lead reruns what an agent reports on the merged head before relying on it.
+
+## M166: an agent diagnosing the Markdown linter broke its brief's shell rules
+
+Status:
+happened on 2026-10-13 (UTC),
+reported by the agent itself;
+nothing was lost.
+Briefed to find why the Markdown linter reported findings on compliant text,
+the agent edited one source file through an inline script where the brief named the edit tool,
+started the package's tests,
+lint and type check in one parallel batch,
+and chained two counts with `;`.
+It ran each check again alone after its last edit,
+and its change was not committed:
+the defect is repository issue 559,
+and the decision that defers its fix stands.
+
+Prevention:
+the brief already forbade each of these
+("Shell commands" in `mistake-prevention-shell-edits-commits-and-agents.md`);
+what the lead adds is to read a hand-back's list of broken rules before using its results,
+and to rerun alone any check an agent ran beside another.
