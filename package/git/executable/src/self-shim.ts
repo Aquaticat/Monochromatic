@@ -1,5 +1,9 @@
 import { constants, } from 'node:fs';
-import { open, } from 'node:fs/promises';
+import {
+  open,
+  realpath,
+} from 'node:fs/promises';
+import { basename, } from 'node:path';
 
 //region Native executable recognition
 
@@ -164,9 +168,19 @@ const SELF_SHIM_MARKERS: ReadonlySet<string> = new Set([
 ],);
 
 /**
+ File names of the native Git policy wrapper executable (the crate binary), which the installed `git` link resolves to.
+ */
+const NATIVE_WRAPPER_FILE_NAMES: ReadonlySet<string> = new Set([
+  'cli-git-native',
+  'cli-git-native.exe',
+],);
+
+/**
  Checks whether candidate script delegates to Git policy wrapper.
  
- Native executables return after one header read.
+ A candidate whose resolved file name is the native wrapper executable is the wrapper,
+ because the installed `git` is a link to that file.
+ Other native executables return after one header read.
  Only scripts and unknown formats undergo complete text inspection.
  
  @param candidatePath - Absolute candidate executable path.
@@ -196,6 +210,12 @@ export async function isGitPolicySelfShim(candidatePath: string,): Promise<boole
   const candidateStats = await candidate.stat();
   if (!candidateStats.isFile())
     throw new GitCandidateFileTypeError(candidatePath,);
+  /**
+   Final file name after links resolve, so the installed `git` link names the wrapper executable.
+   */
+  const resolvedName = basename(await realpath(candidatePath,),);
+  if (NATIVE_WRAPPER_FILE_NAMES.has(resolvedName,))
+    return true;
   /**
    Fixed native-signature prefix.
    */
