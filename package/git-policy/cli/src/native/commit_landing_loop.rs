@@ -22,6 +22,7 @@ use super::commit_transaction::{CommitInvocation, TransactionStop, failed};
 use super::commit_workspace::CommitWorkspace;
 use super::commit_worktree_records::{HookChanges, settled_entry};
 use super::diagnostic_log::debug;
+use super::event_path::EventPath;
 use super::landing_attempt::{LandingOutcome, LandingPayload, LandingRequest, land_transaction};
 use super::landing_findings::{LANDING_FINDING_EXIT_CODE, landing_finding};
 use super::landing_objects::migrate_shadow_objects;
@@ -291,7 +292,11 @@ fn replay_candidate<F: RepositoryFacts>(
             )?;
             let last: Vec<PolicyEvent> = vec![PolicyEvent::ReplayConflict {
                 target_ref: input.capture.layout.target_ref.clone(),
-                paths: conflict.paths,
+                paths: conflict
+                    .paths
+                    .iter()
+                    .map(|path| { return EventPath::from_git_bytes(path.as_slice()); })
+                    .collect(),
                 winning_oid: conflict.winning_oid,
                 prepared_oid: conflict.prepared_oid,
             }];

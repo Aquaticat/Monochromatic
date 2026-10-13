@@ -90,6 +90,14 @@ fn committed_names(fixture: &Fixture, repo: &Path) -> Vec<Vec<u8>> {
         .collect();
 }
 
+/// The bytes of the file `BAD_NAME` in `HEAD`,
+///  read by naming the file with its exact bytes.
+fn head_blob(fixture: &Fixture, repo: &Path) -> Vec<u8> {
+    let mut spec: Vec<u8> = b"HEAD:".to_vec();
+    spec.extend_from_slice(BAD_NAME);
+    return git(fixture, repo, &[OsString::from("show"), OsString::from_vec(spec)]).stdout;
+}
+
 /// A commit of a name that is not UTF-8 lands it with its exact bytes and prints nothing,
 ///  with the file alone or beside a tracked name that is not UTF-8.
 #[test]
@@ -155,16 +163,21 @@ fn a_commit_correction_of_a_name_that_is_not_utf8_reports_the_exact_bytes() {
     remove_settled(&fixture);
 }
 
-/// A dry run at `error` severity reports the finding with the exact bytes and exits 1.
+/// A selection made with `--include` applies no correction, so a finding at `error` severity blocks the commit and
+///  names the exact bytes, and nothing lands.
 #[test]
 fn a_blocking_commit_finding_names_the_exact_bytes() {
     let fixture: Fixture = fixture("event-path-commit-blocked");
     let repo: PathBuf = configured(&fixture, Some("{ \"policies\": { \"final-newline\": \"error\" } }\n"));
-    std::fs::write(repo.join(bad_name()), b"no newline").expect("file");
+    std::fs::write(repo.join(bad_name()), b"fine\n").expect("base file");
+    git(&fixture, repo.as_path(), &["add", "--all"]);
+    git(&fixture, repo.as_path(), &["commit", "--quiet", "--message=base"]);
+    let head: String = git_text(&fixture, repo.as_path(), &["rev-parse", "HEAD"]);
+    std::fs::write(repo.join(bad_name()), b"no newline").expect("edit");
     let blocked: Observed = run_os(
         &fixture,
         repo.as_path(),
-        &commit_arguments(&["--dry-run", "--message=bad"], bad_name().as_os_str()),
+        &commit_arguments(&["--include", "--message=bad"], bad_name().as_os_str()),
     );
     assert_eq!(
         (blocked.code, stderr_of(&blocked)),
@@ -175,10 +188,11 @@ fn a_blocking_commit_finding_names_the_exact_bytes() {
                  \"policyId\":\"final-newline\",\"severity\":\"error\",\
                  \"code\":\"final-newline/noncanonical-final-newline\",\
                  \"message\":\"Non-empty text file must end with exactly one LF byte.\",\
-                 \"path\":\"{BAD_TEXT}\",\"pathBytes\":\"{BAD_BYTES}\",\"fix\":\"available\"}}\n"
+                 \"path\":\"{BAD_TEXT}\",\"pathBytes\":\"{BAD_BYTES}\",\"fix\":\"none\"}}\n"
             )
         )
     );
+    assert_eq!(git_text(&fixture, repo.as_path(), &["rev-parse", "HEAD"]), head);
     remove_settled(&fixture);
 }
 
@@ -292,6 +306,235 @@ fn names_that_are_utf8_keep_the_old_shape() {
                 .to_string()
         )
     );
+    assert_nothing_left(&fixture, repo.as_path());
+    remove_settled(&fixture);
+}
+
+/// The configuration that turns the forbidden-strings policy on with a rules file holding one needle.
+fn forbidden_configuration(repo: &Path, needle: &str) {
+    std::fs::create_dir(repo.join("rules")).expect("rules directory");
+    std::fs::write(repo.join("rules/private.txt"), format!("{needle}\n")).expect("rules");
+    std::fs::write(
+        repo.join("cli-git.config.jsonc"),
+        "{ \"policies\": { \"final-newline\": \"off\", \"security/forbidden-strings\": [\"error\", { \"builtinRules\": false, \"rulesFile\": \"rules/private.txt\" }] } }\n",
+    )
+    .expect("configuration");
+}
+
+/// The forbidden-strings finding keeps the scanner's masked display of the name and never carries the bytes,
+///  on `git add` and on a commit,
+///  because the exact bytes would undo the masking of a matched segment.
+#[test]
+fn the_forbidden_strings_finding_for_a_name_that_is_not_utf8_has_no_exact_bytes() {
+    let fixture: Fixture = fixture("event-path-forbidden");
+    let repo: PathBuf = configured(&fixture, None);
+    let needle: String = ["PLANTED", "PATH", "NEEDLE"].join("_");
+    forbidden_configuration(repo.as_path(), needle.as_str());
+    std::fs::write(repo.join(bad_name()), format!("{needle}\n")).expect("file");
+    let expected: String = "{\"schemaVersion\":1,\"sequence\":0,\"type\":\"finding\",\"trigger\":\"pre-forward\",\
+         \"policyId\":\"security/forbidden-strings\",\"severity\":\"error\",\
+         \"code\":\"security/forbidden-strings/forbidden-string\",\
+         \"message\":\"Forbidden string matched at line 1 (rule 0).\",\"path\":\"bad\\\\xff.txt\",\"fix\":\"none\"}\n"
+        .to_string();
+    let added: Observed = run_os(&fixture, repo.as_path(), &[OsString::from("add"), OsString::from("--"), bad_name()]);
+    assert_eq!((added.code, stderr_of(&added)), (Some(1), expected.clone()));
+    git(&fixture, repo.as_path(), &["add", "--", "cli-git.config.jsonc", "rules/private.txt"]);
+    git(&fixture, repo.as_path(), &["commit", "--quiet", "--message=configuration"]);
+    let committed: Observed = run_os(&fixture, repo.as_path(), &commit_arguments(&["--include", "--message=bad"], bad_name().as_os_str()));
+    assert_eq!((committed.code, stderr_of(&committed)), (Some(1), expected));
+    remove_settled(&fixture);
+}
+
+/// Index mode (`commit -a`) lands an edit of a tracked name that is not UTF-8, corrected,
+///  and the summary lists the exact bytes.
+#[test]
+fn a_commit_of_all_tracked_changes_lands_a_name_that_is_not_utf8() {
+    let fixture: Fixture = fixture("event-path-commit-all");
+    let repo: PathBuf = configured(&fixture, None);
+    std::fs::write(repo.join(bad_name()), b"one\n").expect("base file");
+    git(&fixture, repo.as_path(), &["add", "--all"]);
+    git(&fixture, repo.as_path(), &["commit", "--quiet", "--message=base"]);
+    std::fs::write(repo.join(bad_name()), b"one\ntwo").expect("edit");
+    let landed: Observed = run_os(
+        &fixture,
+        repo.as_path(),
+        &[OsString::from("commit"), OsString::from("-a"), OsString::from("--no-only"), OsString::from("--message=all")],
+    );
+    assert_eq!(
+        (landed.code, stderr_of(&landed)),
+        (
+            Some(0),
+            format!(
+                "{{\"schemaVersion\":1,\"sequence\":0,\"type\":\"fix-summary\",\"trigger\":\"pre-forward\",\
+                 \"passes\":1,\"changedPaths\":[\"{BAD_TEXT}\"],\"changedPathBytes\":[\"{BAD_BYTES}\"]}}\n"
+            )
+        )
+    );
+    assert_eq!(head_blob(&fixture, repo.as_path()), b"one\ntwo\n");
+    assert_eq!(std::fs::read(repo.join(bad_name())).expect("worktree copy"), b"one\ntwo\n");
+    assert_eq!(committed_names(&fixture, repo.as_path()), vec![BAD_NAME.to_vec()]);
+    assert_eq!(porcelain(&fixture, repo.as_path()), "");
+    assert_nothing_left(&fixture, repo.as_path());
+    remove_settled(&fixture);
+}
+
+/// A repository whose base commit tracks `name` with the content `one\n`,
+///  and whose worktree copy then holds `edited`.
+fn tracked(fixture: &Fixture, name: &OsStr, edited: &[u8]) -> PathBuf {
+    let repo: PathBuf = configured(fixture, None);
+    std::fs::write(repo.join(name), b"one\n").expect("base file");
+    git(fixture, repo.as_path(), &["add", "--all"]);
+    git(fixture, repo.as_path(), &["commit", "--quiet", "--message=base"]);
+    std::fs::write(repo.join(name), edited).expect("edit");
+    return repo;
+}
+
+/// A name staged with plain Git commits in index mode with its exact bytes.
+#[test]
+fn a_staged_name_that_is_not_utf8_commits_in_index_mode() {
+    let fixture: Fixture = fixture("event-path-index-mode");
+    let repo: PathBuf = configured(&fixture, None);
+    std::fs::write(repo.join(bad_name()), b"fine\n").expect("file");
+    git(&fixture, repo.as_path(), &[OsString::from("add"), OsString::from("--"), bad_name()]);
+    let landed: Observed = run_os(
+        &fixture,
+        repo.as_path(),
+        &[OsString::from("commit"), OsString::from("--no-only"), OsString::from("--message=staged")],
+    );
+    assert_eq!((landed.code, stderr_of(&landed)), (Some(0), String::new()));
+    assert_eq!(committed_names(&fixture, repo.as_path()), vec![BAD_NAME.to_vec()]);
+    assert_nothing_left(&fixture, repo.as_path());
+    remove_settled(&fixture);
+}
+
+/// A correction that restores the base makes a no-change normalization,
+///  and its summary lists the exact bytes.
+#[test]
+fn a_no_change_normalization_of_a_name_that_is_not_utf8_reports_the_exact_bytes() {
+    let fixture: Fixture = fixture("event-path-no-change");
+    let repo: PathBuf = tracked(&fixture, bad_name().as_os_str(), b"one");
+    let head: String = git_text(&fixture, repo.as_path(), &["rev-parse", "HEAD"]);
+    let result: Observed = run_os(&fixture, repo.as_path(), &commit_arguments(&["--message=x"], bad_name().as_os_str()));
+    let stderr: String = stderr_of(&result);
+    assert_eq!(result.code, Some(1), "{stderr}");
+    assert!(
+        stderr.starts_with(
+            format!(
+                "{{\"schemaVersion\":1,\"sequence\":0,\"type\":\"fix-summary\",\"trigger\":\"pre-forward\",\
+                 \"passes\":1,\"changedPaths\":[\"{BAD_TEXT}\"],\"changedPathBytes\":[\"{BAD_BYTES}\"]}}\n"
+            )
+            .as_str()
+        ),
+        "{stderr}"
+    );
+    assert!(stderr.contains("\"code\":\"commit-normalization/no-change\""), "{stderr}");
+    assert_eq!(git_text(&fixture, repo.as_path(), &["rev-parse", "HEAD"]), head);
+    assert_eq!(std::fs::read(repo.join(bad_name())).expect("worktree copy"), b"one\n");
+    assert_nothing_left(&fixture, repo.as_path());
+    remove_settled(&fixture);
+}
+
+/// A `pre-commit` hook that re-stages a name that is not UTF-8 has its change kept in the commit.
+#[test]
+fn a_pre_commit_hook_restaging_a_name_that_is_not_utf8_is_kept() {
+    let fixture: Fixture = fixture("event-path-hook");
+    let repo: PathBuf = tracked(&fixture, bad_name().as_os_str(), b"one\ntwo\n");
+    super::support::executable(
+        repo.join(".git/hooks/pre-commit").as_path(),
+        b"#!/bin/sh\nname=$(printf 'bad\\377.txt')\nprintf 'hooked\\n' >> \"$name\"\ngit add -- \"$name\"\n",
+    );
+    let landed: Observed = run_os(&fixture, repo.as_path(), &commit_arguments(&["--message=hooked"], bad_name().as_os_str()));
+    assert_eq!(landed.code, Some(0), "{}", stderr_of(&landed));
+    assert_eq!(head_blob(&fixture, repo.as_path()), b"one\ntwo\nhooked\n");
+    assert_eq!(porcelain(&fixture, repo.as_path()), "");
+    assert_nothing_left(&fixture, repo.as_path());
+    remove_settled(&fixture);
+}
+
+/// An amend replaces the head commit with the exact bytes of a name that is not UTF-8.
+#[test]
+fn an_amend_of_a_name_that_is_not_utf8_lands_it() {
+    let fixture: Fixture = fixture("event-path-amend");
+    let repo: PathBuf = tracked(&fixture, bad_name().as_os_str(), b"one\ntwo\n");
+    let landed: Observed = run_os(
+        &fixture,
+        repo.as_path(),
+        &commit_arguments(&["--amend", "--message=amended"], bad_name().as_os_str()),
+    );
+    assert_eq!((landed.code, stderr_of(&landed)), (Some(0), String::new()));
+    assert_eq!(head_blob(&fixture, repo.as_path()), b"one\ntwo\n");
+    assert_eq!(git_text(&fixture, repo.as_path(), &["rev-list", "--count", "HEAD"]).trim(), "2");
+    assert_nothing_left(&fixture, repo.as_path());
+    remove_settled(&fixture);
+}
+
+/// A commit that lost the landing race replays onto the winner and lands both files,
+///  `name` among them, without a conflict.
+fn replayed_names(fixture_name: &str, name: &OsStr) -> (Fixture, PathBuf, String) {
+    let fixture: Fixture = fixture(fixture_name);
+    let repo: PathBuf = tracked(&fixture, name, b"one\ntwo\n");
+    std::fs::write(repo.join("b.txt"), b"b\n").expect("b");
+    git(&fixture, repo.as_path(), &["add", "--", "b.txt"]);
+    let markers: PathBuf = fixture.root.join("markers");
+    std::fs::create_dir(&markers).expect("marker directory");
+    let slow: Child = wrapped_os(&fixture, repo.as_path(), &commit_arguments(&["--message=slow"], name))
+        .env("CLI_GIT_TEST_ONLY_PHASE_SIGNAL", format!("preparation-done:pause:{}", markers.display()))
+        .stdout(Stdio::null())
+        .stderr(Stdio::piped())
+        .spawn()
+        .expect("the slow commit starts");
+    await_marker(markers.join("preparation-done.reached").as_path());
+    let fast: Observed = run_os(&fixture, repo.as_path(), &commit_arguments(&["--message=fast"], OsStr::new("b.txt")));
+    assert_eq!(fast.code, Some(0), "{}", stderr_of(&fast));
+    std::fs::write(markers.join("preparation-done.release"), b"").expect("release the slow commit");
+    let finished = slow.wait_with_output().expect("the slow commit ends");
+    let stderr: String = String::from_utf8_lossy(finished.stderr.as_slice()).into_owned();
+    assert_eq!(finished.status.code(), Some(0), "{stderr}");
+    assert!(stderr.contains("\"type\":\"commit-replayed\""), "{stderr}");
+    return (fixture, repo, stderr);
+}
+
+/// A replayed commit of a name that is not UTF-8 lands it with its exact bytes.
+#[test]
+fn a_replayed_commit_of_a_name_that_is_not_utf8_lands_it() {
+    let (fixture, repo, _stderr): (Fixture, PathBuf, String) = replayed_names("event-path-replay", bad_name().as_os_str());
+    assert_eq!(committed_names(&fixture, repo.as_path()), vec![b"b.txt".to_vec(), BAD_NAME.to_vec()]);
+    assert_eq!(head_blob(&fixture, repo.as_path()), b"one\ntwo\n");
+    assert_eq!(porcelain(&fixture, repo.as_path()), "");
+    remove_settled(&fixture);
+}
+
+/// A replayed commit of a UTF-8 name with a non-ASCII character lands it once under its own name.
+#[test]
+fn a_replayed_commit_of_a_non_ascii_utf8_name_lands_it() {
+    let (fixture, repo, _stderr): (Fixture, PathBuf, String) = replayed_names("event-path-replay-utf8", OsStr::new("café.txt"));
+    assert_eq!(committed_names(&fixture, repo.as_path()), vec![b"b.txt".to_vec(), "café.txt".as_bytes().to_vec()]);
+    assert_eq!(porcelain(&fixture, repo.as_path()), "");
+    remove_settled(&fixture);
+}
+
+/// A commit killed after its ref moved is completed by recovery from the journal,
+///  which holds the exact bytes of a name that is not UTF-8:
+///  the worktree copy receives its correction.
+#[test]
+fn recovery_completes_a_killed_commit_of_a_name_that_is_not_utf8() {
+    let fixture: Fixture = fixture("event-path-recovery");
+    let repo: PathBuf = tracked(&fixture, bad_name().as_os_str(), b"one\ntwo");
+    let markers: PathBuf = fixture.root.join("markers");
+    std::fs::create_dir(&markers).expect("marker directory");
+    // The kill marker ends the wrapper with SIGKILL, which `observe` would take for its own time bound.
+    let killed = wrapped_os(&fixture, repo.as_path(), &commit_arguments(&["--message=killed"], bad_name().as_os_str()))
+        .env("CLI_GIT_TEST_ONLY_PHASE_SIGNAL", format!("ref-updated:kill:{}", markers.display()))
+        .stdin(Stdio::null())
+        .output()
+        .expect("the killed commit runs");
+    assert!(markers.join("ref-updated.reached").exists(), "the wrapper reached the marker: {}", String::from_utf8_lossy(&killed.stderr));
+    let recovered: Observed = run_os(&fixture, repo.as_path(), &[OsString::from("status"), OsString::from("--porcelain=v1")]);
+    assert_eq!((recovered.code, stderr_of(&recovered)), (Some(0), String::new()));
+    assert_eq!(committed_names(&fixture, repo.as_path()), vec![BAD_NAME.to_vec()]);
+    assert_eq!(head_blob(&fixture, repo.as_path()), b"one\ntwo\n");
+    assert_eq!(std::fs::read(repo.join(bad_name())).expect("worktree copy"), b"one\ntwo\n");
+    assert_eq!(porcelain(&fixture, repo.as_path()), "");
     assert_nothing_left(&fixture, repo.as_path());
     remove_settled(&fixture);
 }

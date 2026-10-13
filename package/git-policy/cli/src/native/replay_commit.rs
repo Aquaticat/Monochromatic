@@ -108,8 +108,8 @@ pub struct Replayed {
 pub struct ReplayConflict {
     /// First landed commit after the base that touches a conflicting path.
     pub winning_oid: String,
-    /// Conflicting paths in Git path byte order.
-    pub paths: Vec<String>,
+    /// Conflicting paths in Git path byte order, as the exact bytes Git reported.
+    pub paths: Vec<Vec<u8>>,
     /// The prepared commit the replay could not land.
     pub prepared_oid: String,
 }
