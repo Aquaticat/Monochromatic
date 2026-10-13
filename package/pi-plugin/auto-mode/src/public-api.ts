@@ -102,6 +102,20 @@ export {
   InputReceiptBudgetError,
 } from './input-receipt-budget.ts';
 
+export { SemanticAdmissionPolicyError, } from './semantic-admission-error.ts';
+export { consumeRequestMaterial, } from './request-material.ts';
+export { retainRequestMaterialObligations, } from './request-material-obligations.ts';
+export type {
+  RequestMaterialAdmission,
+  RequestMaterialEstimateValue,
+  RequestMaterialEvidence,
+  RequestMaterialInputs,
+  RequestMaterialInterpretation,
+  RequestMaterialJudgment,
+  RequestMaterialPremiseIssue,
+  RequestMaterialRelation,
+} from './request-material-types.ts';
+
 //endregion Deterministic migration kernel
 
 //region Native observation mechanisms do not authenticate frames or authorize execution
