@@ -14,8 +14,7 @@
 import { spawn } from 'node:child_process';
 import { once } from 'node:events';
 import {
-  mkdtemp,
-  rm,
+  mkdtempDisposable,
   writeFile,
 } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
@@ -39,10 +38,26 @@ export class FinalNewlineWorkflowError extends Error {
  status exists to compare.
  @throws {FinalNewlineWorkflowError} The command could not start or ended by a signal.
  */
-async function runCommand({ command, args, cwd, }) {
-  const child = spawn(command, [...args,], { cwd, stdio: 'inherit', },);
-  const [status, signal,] = await once(child, 'exit',);
-  if (typeof status !== 'number')
+async function runCommand({
+  command,
+  args,
+  cwd,
+}) {
+  const child = spawn(
+    command,
+    [...args,],
+    {
+      cwd,
+      stdio: 'inherit',
+    },
+  );
+  /** @type {unknown[]} */
+  const exitEvent = await once(
+    child,
+    'exit',
+  );
+  const [status, signal,] = exitEvent;
+  if ((typeof status) !== 'number')
     throw new FinalNewlineWorkflowError(`${command} ${args.join(' ',)} ended by signal ${String(signal,)}`,);
   return status;
 }
@@ -56,46 +71,88 @@ async function runCommand({ command, args, cwd, }) {
  */
 async function main(executable) {
   const workspace = process.cwd();
-  const parent = await mkdtemp(join(tmpdir(), 'cli-git-final-newline-',),);
-  try {
-    const scanRoot = join(parent, 'repository',);
-    const clone = await runCommand({
-      command: '/usr/bin/git',
-      args: ['clone', '--quiet', '--local', '--no-hardlinks', workspace, scanRoot,],
-      cwd: parent,
-    },);
-    if (clone !== 0)
-      throw new FinalNewlineWorkflowError(`git clone of ${workspace} exited with ${String(clone,)}`,);
-    await writeFile(
-      join(scanRoot, 'cli-git.config.jsonc',),
-      '{ "policies": { "final-newline": "error" } }\n',
-      'utf8',
+  // The disposable parent keeps the policy from observing or changing checkout state and is removed on every exit.
+  await using parent = await mkdtempDisposable(join(
+    tmpdir(),
+    'cli-git-final-newline-',
+  ),);
+  const scanRoot = join(
+    parent.path,
+    'repository',
+  );
+  const clone = await runCommand({
+    command: '/usr/bin/git',
+    args: [
+      'clone',
+      '--quiet',
+      '--local',
+      '--no-hardlinks',
+      workspace,
+      scanRoot,
+    ],
+    cwd: parent.path,
+  },);
+  if (clone !== 0)
+    throw new FinalNewlineWorkflowError(`git clone of ${workspace} exited with ${String(clone,)}`,);
+  await writeFile(
+    join(
+      scanRoot,
+      'cli-git.config.jsonc',
+    ),
+    '{ "policies": { "final-newline": "error" } }\n',
+    'utf8',
+  );
+  const check = [
+    'cli-git',
+    'check',
+    '--policy',
+    'final-newline',
+    '--all',
+  ];
+  const clean = await runCommand({
+    command: executable,
+    args: check,
+    cwd: scanRoot,
+  },);
+  if (clean !== 0) {
+    throw new FinalNewlineWorkflowError(
+      `the final-newline policy exited with ${String(clean,)} over the clean clone`,
     );
-    const check = ['cli-git', 'check', '--policy', 'final-newline', '--all',];
-    const clean = await runCommand({ command: executable, args: check, cwd: scanRoot, },);
-    if (clean !== 0)
-      throw new FinalNewlineWorkflowError(`the final-newline policy exited with ${String(clean,)} over the clean clone`,);
-    await writeFile(join(scanRoot, 'final-newline-control.txt',), 'no final newline', 'utf8',);
-    const staged = await runCommand({
-      command: '/usr/bin/git',
-      args: ['add', '--', 'final-newline-control.txt',],
-      cwd: scanRoot,
-    },);
-    if (staged !== 0)
-      throw new FinalNewlineWorkflowError(`git add of the control file exited with ${String(staged,)}`,);
-    const control = await runCommand({ command: executable, args: check, cwd: scanRoot, },);
-    if (control === 0)
-      throw new FinalNewlineWorkflowError(
-        'the final-newline policy accepted a staged file without a final newline, so the check cannot fail',
-      );
-    console.log('final-newline workflow check passed: the clean clone passed and the staged control was refused',);
   }
-  finally {
-    await rm(parent, { recursive: true, force: true, },);
+  await writeFile(
+    join(
+      scanRoot,
+      'final-newline-control.txt',
+    ),
+    'no final newline',
+    'utf8',
+  );
+  const staged = await runCommand({
+    command: '/usr/bin/git',
+    args: [
+      'add',
+      '--',
+      'final-newline-control.txt',
+    ],
+    cwd: scanRoot,
+  },);
+  if (staged !== 0)
+    throw new FinalNewlineWorkflowError(`git add of the control file exited with ${String(staged,)}`,);
+  const control = await runCommand({
+    command: executable,
+    args: check,
+    cwd: scanRoot,
+  },);
+  if (control === 0) {
+    throw new FinalNewlineWorkflowError(
+      'the final-newline policy accepted a staged file without a final newline, so the check cannot fail',
+    );
   }
+  console.log('final-newline workflow check passed: the clean clone passed and the staged control was refused',);
 }
 
-const executableArgument = process.argv[2];
-if (executableArgument === undefined || executableArgument.length === 0)
+const [executableArgument,] = process.argv
+  .slice(2,);
+if ((executableArgument === undefined) || (executableArgument.length === 0))
   throw new FinalNewlineWorkflowError('pass the path of the cli-git-native executable as the only argument',);
 await main(resolve(executableArgument,),);
