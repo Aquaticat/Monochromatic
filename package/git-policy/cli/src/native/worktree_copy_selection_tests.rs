@@ -168,3 +168,214 @@ fn listing_outside_a_repository_fails_with_cause() {
     assert!(failure.0.contains("not a git repository"));
     remove(root.as_path());
 }
+
+/// A source with an ignored cache directory that holds the named file next to a sibling, and another ignored root.
+fn source_with_named_file(parent: &Path, name: &str) -> PathBuf {
+    let source: PathBuf = ignoring(parent, name, ".cache/\nnode_modules/\n");
+    std::fs::create_dir_all(source.join(".cache")).expect("cache");
+    std::fs::write(source.join(".cache/rules.txt"), b"rule").expect("rules");
+    std::fs::write(source.join(".cache/other.txt"), b"other").expect("other");
+    std::fs::create_dir_all(source.join("node_modules/pkg")).expect("modules");
+    std::fs::write(source.join("node_modules/pkg/index.js"), b"x").expect("module file");
+    return source;
+}
+
+/// An ignored named file is selected by itself, and nothing else the source ignores comes along.
+#[test]
+fn named_ignored_file_is_selected_alone() {
+    let root: PathBuf = fixture("selection-named");
+    let source: PathBuf = source_with_named_file(root.as_path(), "source");
+    let roots: Vec<String> = read_named_ignored_roots(
+        &git_context(),
+        source.as_path(),
+        &[String::from(".cache/rules.txt")],
+    )
+    .expect("roots");
+    assert_eq!(roots, vec![String::from(".cache/rules.txt")]);
+    remove(root.as_path());
+}
+
+/// A named file the source does not have selects nothing and is not an error.
+#[test]
+fn absent_named_file_selects_nothing() {
+    let root: PathBuf = fixture("selection-named-absent");
+    let source: PathBuf = source_with_named_file(root.as_path(), "source");
+    let roots: Vec<String> = read_named_ignored_roots(
+        &git_context(),
+        source.as_path(),
+        &[String::from(".cache/missing.txt")],
+    )
+    .expect("roots");
+    assert!(roots.is_empty(), "{roots:?}");
+    remove(root.as_path());
+}
+
+/// A named file that is tracked, or that exists but no ignore rule covers, is never selected.
+#[test]
+fn named_file_that_git_does_not_ignore_is_not_selected() {
+    let root: PathBuf = fixture("selection-named-unignored");
+    let source: PathBuf = source_with_named_file(root.as_path(), "source");
+    std::fs::write(source.join("plain.txt"), b"plain").expect("plain");
+    std::fs::write(source.join("tracked.txt"), b"tracked").expect("tracked");
+    git(source.as_path(), &["add", "tracked.txt"]);
+    let roots: Vec<String> = read_named_ignored_roots(
+        &git_context(),
+        source.as_path(),
+        &[String::from("plain.txt"), String::from("tracked.txt")],
+    )
+    .expect("roots");
+    assert!(roots.is_empty(), "{roots:?}");
+    remove(root.as_path());
+}
+
+/// A named directory is not expanded: only a name Git lists exactly is selected.
+#[test]
+fn named_directory_selects_nothing() {
+    let root: PathBuf = fixture("selection-named-directory");
+    let source: PathBuf = source_with_named_file(root.as_path(), "source");
+    let roots: Vec<String> =
+        read_named_ignored_roots(&git_context(), source.as_path(), &[String::from(".cache")])
+            .expect("roots");
+    assert!(roots.is_empty(), "{roots:?}");
+    remove(root.as_path());
+}
+
+/// A pathspec magic or glob in a configured name is matched literally, never expanded.
+#[test]
+fn named_path_is_matched_literally() {
+    let root: PathBuf = fixture("selection-named-literal");
+    let source: PathBuf = source_with_named_file(root.as_path(), "source");
+    let roots: Vec<String> = read_named_ignored_roots(
+        &git_context(),
+        source.as_path(),
+        &[
+            String::from(".cache/*.txt"),
+            String::from(":(glob).cache/**"),
+        ],
+    )
+    .expect("roots");
+    assert!(roots.is_empty(), "{roots:?}");
+    remove(root.as_path());
+}
+
+/// A file whose name looks like a glob or pathspec magic is found by its literal name.
+#[test]
+fn named_path_with_glob_characters_is_found_literally() {
+    let root: PathBuf = fixture("selection-named-glob-name");
+    let source: PathBuf = ignoring(root.as_path(), "source", "\\[x\\].txt\n");
+    std::fs::write(source.join("[x].txt"), b"bracketed").expect("bracketed");
+    std::fs::write(source.join("x.txt"), b"plain").expect("plain");
+    let roots: Vec<String> = read_named_ignored_roots(
+        &git_context(),
+        source.as_path(),
+        &[String::from("[x].txt")],
+    )
+    .expect("roots");
+    assert_eq!(roots, vec![String::from("[x].txt")]);
+    remove(root.as_path());
+}
+
+/// A name that could leave the worktree is refused before Git or the filesystem is asked.
+#[test]
+fn unsafe_named_path_is_refused() {
+    let root: PathBuf = fixture("selection-named-unsafe");
+    let source: PathBuf = source_with_named_file(root.as_path(), "source");
+    for unsafe_path in ["../escape", "/abs", ""] {
+        let failure: WorktreeCopyError = read_named_ignored_roots(
+            &git_context(),
+            source.as_path(),
+            &[String::from(unsafe_path)],
+        )
+        .expect_err(unsafe_path);
+        assert!(
+            failure
+                .0
+                .starts_with("cli-git: Git returned unsafe ignored path "),
+            "{unsafe_path}"
+        );
+    }
+    remove(root.as_path());
+}
+
+/// The explicit selection reaches the named files only, while the standard selection reaches every ignored root.
+#[test]
+fn selection_modes_choose_the_roots() {
+    let root: PathBuf = fixture("selection-modes");
+    let source: PathBuf = source_with_named_file(root.as_path(), "source");
+    let named: Vec<String> = select_roots(
+        &git_context(),
+        source.as_path(),
+        &[],
+        &CopySelection::Paths(vec![String::from(".cache/rules.txt")]),
+    )
+    .expect("named");
+    assert_eq!(named, vec![String::from(".cache/rules.txt")]);
+    let all: Vec<String> =
+        select_roots(&git_context(), source.as_path(), &[], &CopySelection::Ignored)
+            .expect("all");
+    assert_eq!(
+        all,
+        vec![String::from(".cache"), String::from("node_modules")]
+    );
+    remove(root.as_path());
+}
+
+/// The selection asks about the source worktree it was given, never about the repository the user's global options pick.
+#[test]
+fn selection_ignores_the_users_global_git_options() {
+    let root: PathBuf = fixture("selection-global-options");
+    let source: PathBuf = source_with_named_file(root.as_path(), "source");
+    let mut context: GitContext = git_context();
+    context.global_prefix = vec![
+        "--git-dir".into(),
+        root.join("elsewhere").into_os_string(),
+    ];
+    let named: Vec<String> = read_named_ignored_roots(
+        &context,
+        source.as_path(),
+        &[String::from(".cache/rules.txt")],
+    )
+    .expect("named roots");
+    assert_eq!(named, vec![String::from(".cache/rules.txt")]);
+    let all: Vec<String> =
+        read_ignored_roots(&context, source.as_path(), &[]).expect("ignored roots");
+    assert_eq!(
+        all,
+        vec![String::from(".cache"), String::from("node_modules")]
+    );
+    remove(root.as_path());
+}
+
+/// The ignore question for a special entry is asked about the source worktree, whatever global options the user passed.
+#[cfg(unix)]
+#[test]
+fn special_entry_check_ignores_the_users_global_git_options() {
+    let root: PathBuf = fixture("selection-global-options-special");
+    let source: PathBuf = ignoring(root.as_path(), "source", "ignored-pipe\n");
+    make_fifo(source.join("ignored-pipe").as_path());
+    let mut context: GitContext = git_context();
+    context.global_prefix = vec![
+        "--git-dir".into(),
+        root.join("elsewhere").into_os_string(),
+    ];
+    let roots: Vec<String> = read_ignored_roots(&context, source.as_path(), &[]).expect("roots");
+    assert!(roots.contains(&String::from("ignored-pipe")), "{roots:?}");
+    remove(root.as_path());
+}
+
+/// A special entry inside an excluded nested root is skipped even when the outer ignore rules would cover it.
+#[cfg(unix)]
+#[test]
+fn special_entries_under_an_excluded_root_are_not_selected() {
+    let root: PathBuf = fixture("selection-excluded-pipe");
+    let source: PathBuf = ignoring(root.as_path(), "source", "pipe\n");
+    std::fs::create_dir_all(source.join("nested")).expect("nested");
+    make_fifo(source.join("nested/pipe").as_path());
+    make_fifo(source.join("pipe").as_path());
+    let excluded: Vec<PathBuf> =
+        vec![std::fs::canonicalize(source.join("nested")).expect("canonical")];
+    let roots: Vec<String> =
+        read_ignored_roots(&git_context(), source.as_path(), excluded.as_slice()).expect("roots");
+    assert_eq!(roots, vec![String::from("pipe")]);
+    remove(root.as_path());
+}

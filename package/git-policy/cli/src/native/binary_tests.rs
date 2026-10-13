@@ -78,3 +78,7 @@ mod landing_crash;
 /// Real commits through the transaction: landing, policies, replay and conflict.
 #[path = "binary_commit_tests.rs"]
 mod commit;
+
+/// The linked-worktree ignored-state copy: the rules file reaches new worktrees, and an interrupted copy recovers.
+#[path = "binary_worktree_copy_tests.rs"]
+mod worktree_copy;

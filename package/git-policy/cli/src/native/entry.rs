@@ -24,7 +24,7 @@ use super::effective_target::default_allowed_worktree_dirs;
 use super::forwarding::replace_process_with_real_git;
 use super::index_writer_forward::{CoordinatedForward, CoordinatedRun, run_coordinated_forward};
 use super::index_writer_commands::is_index_writer;
-use super::forwarded_command::{ResolvedCommand, resolve_forwarded_command};
+use super::forwarded_command::{ResolvedCommand, creates_or_moves_worktrees, resolve_forwarded_command};
 use super::invocation_config::{config_invalid_event, load_identity_config};
 use super::config_file::LoadedConfig;
 use super::repository_location::RepositoryLocation;
@@ -41,10 +41,12 @@ use super::policy_content::LifecycleContent;
 use super::real_git::{ResolutionInputs, process_resolution_inputs, resolve_real_git};
 use super::real_git_candidate::same_file;
 use super::repository_facts::{GitFacts, RepositoryFacts, git_facts};
+use super::rule_require_root::{RequireRootDecision, decide_require_root};
 /// The variable that names the forbidden-strings rules file.
 use super::scanner_selection::RULES_VARIABLE;
 use super::wrapped_command::{WrappedOutcome, run_wrapped_command};
 use super::wrapper_controls::{Controls, no_controls, strip_global_controls};
+use super::worktree_copy_forward::{CopyFacts, ForwardedRun, copy_applies, run_forwarded_git};
 use super::wrapper_invocation::{StrippedInvocation, strip_wrapper_controls};
 /// What:
 ///  `OsString` is owned operating-system text of raw OS bytes (sibling `String`
@@ -211,7 +213,21 @@ pub fn plan_invocation(
             arguments: forwarded,
             stderr,
         } => {
-            return forward_action(real_git, forwarded, overlay, stderr, environment, &mut checks);
+            // The opt-out, Git's help and version forms, and the commands that need no repository
+            // (`version`, `help`, `init`, `clone`, user-level `config`) never settle a copy.
+            let copy_bypassed: bool = stripped.controls.skip_worktree_copy
+                || stripped.layout.outcome != GlobalOutcome::Command
+                || decide_require_root(forwarded.as_slice(), &[])
+                    != RequireRootDecision::NeedsRepositoryRoot;
+            return forward_action(
+                real_git,
+                forwarded,
+                overlay,
+                stderr,
+                environment,
+                copy_bypassed,
+                &mut checks,
+            );
         }
         WrappedOutcome::Exit { code, stderr } => {
             return Action::Exit {
@@ -275,6 +291,21 @@ pub fn run_process(arguments: &[OsString], environment: &[(OsString, OsString)])
             write_stream(&mut std::io::stderr(), stderr.as_str());
             return run_coordinated_action(&forward);
         }
+        Action::ForwardSettled {
+            real_git,
+            arguments: forwarded,
+            overlay,
+            copy,
+            stderr,
+        } => {
+            write_stream(&mut std::io::stderr(), stderr.as_str());
+            return finish_forwarded(run_forwarded_git(
+                real_git.as_path(),
+                forwarded.as_slice(),
+                overlay.as_slice(),
+                Some(&*copy),
+            ));
+        }
         Action::Exit {
             code,
             stdout,
@@ -282,6 +313,26 @@ pub fn run_process(arguments: &[OsString], environment: &[(OsString, OsString)])
         } => {
             // `&mut` lends each stream for writing.
             write_stream(&mut std::io::stdout(), stdout.as_str());
+            write_stream(&mut std::io::stderr(), stderr.as_str());
+            return code;
+        }
+    }
+}
+
+/// What:
+///  The exit code of a forwarded run, after printing the text of a run that failed.
+/// Why:
+///   A settled run keeps the wrapper alive around Git, so the exit code returns here instead of replacing the process.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// process.exitCode = outcome.exitCode;
+/// ```
+fn finish_forwarded(run: ForwardedRun) -> i32 {
+    // `match` on the ending: a status, or a failure with its own text.
+    match run {
+        ForwardedRun::Ran(code) => return code,
+        ForwardedRun::Failed { stderr, code } => {
             write_stream(&mut std::io::stderr(), stderr.as_str());
             return code;
         }
@@ -326,14 +377,17 @@ fn run_coordinated_action(forward: &CoordinatedForward) -> i32 {
 /// What:
 ///  Choose how a forwarded command runs:
 ///  plainly,
-///  or under the landing lock when it writes the real index.
+///  under the landing lock when it writes the real index,
+///  and settled by the linked-worktree copy when it runs from a linked worktree or a bare repository
+///  (or creates a worktree from a main checkout whose configuration names the rules file).
+///  `copy_bypassed` is true for the wrapper's opt-out and for Git's help and version forms.
 /// Why:
-///   Only index writers inside a repository coordinate,
-///  with the configured patience.
+///   Only these commands need the wrapper to outlive Git or to hold a lock around it;
+///  everything else keeps the exact process replacement.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// if (!isIndexWriter(command)) forward(args); else await forwardToRealGit({ ..., unprovenOwnerTimeoutMs });
+/// if (!isIndexWriter(command) && !copyApplies) forward(args); else await forwardToRealGit({ ..., unprovenOwnerTimeoutMs });
 /// ```
 fn forward_action(
     real_git: PathBuf,
@@ -341,6 +395,7 @@ fn forward_action(
     overlay: Vec<(OsString, OsString)>,
     stderr: String,
     environment: &[(OsString, OsString)],
+    copy_bypassed: bool,
     checks: &mut ShippedChecks<GitFacts>,
 ) -> Action {
     let context: GitContext = GitContext {
@@ -349,7 +404,8 @@ fn forward_action(
         global_prefix: Vec::new(),
     };
     let command: ResolvedCommand = resolve_forwarded_command(&context, arguments.as_slice());
-    if !is_index_writer(&command) {
+    let writes_index: bool = is_index_writer(&command);
+    if !writes_index && copy_bypassed {
         return Action::Forward {
             real_git,
             arguments,
@@ -369,15 +425,63 @@ fn forward_action(
             stderr,
         };
     }
-    let loaded: LoadedConfig = match load_identity_config(&location.identity) {
-        Ok(found) => found,
-        Err(error) => {
-            return Action::Exit {
-                code: ENGINE_FAILURE_EXIT_CODE,
-                stdout: String::new(),
-                stderr: config_invalid_event(&error),
+    let loaded: Option<LoadedConfig> = match configuration_needed(&location.identity, &command, writes_index) {
+        false => None,
+        true => match load_identity_config(&location.identity) {
+            Ok(found) => Some(found),
+            Err(error) => {
+                return Action::Exit {
+                    code: ENGINE_FAILURE_EXIT_CODE,
+                    stdout: String::new(),
+                    stderr: config_invalid_event(&error),
+                };
+            }
+        },
+    };
+    let creates_or_moves: bool = creates_or_moves_worktrees(&command);
+    // Only a main checkout hands over the configured rules file; `copy_applies` limits it to a creating command.
+    let main_checkout_paths: Vec<String> = match (&location.identity, &loaded) {
+        (WorktreeIdentity::MainWorktree { .. }, Some(found)) => found
+            .config
+            .policies
+            .forbidden_strings
+            .rules_file
+            .iter()
+            .cloned()
+            .collect(),
+        _ => Vec::new(),
+    };
+    let copy: Option<CopyFacts> =
+        if !copy_bypassed && copy_applies(&location.identity, creates_or_moves, main_checkout_paths.as_slice()) {
+            Some(CopyFacts {
+                identity: location.identity.clone(),
+                creates_or_moves,
+                main_checkout_paths,
+                global_prefix: checks.facts.transaction_context().global_prefix,
+                environment: environment.to_vec(),
+            })
+        } else {
+            None
+        };
+    if !writes_index {
+        let Some(facts) = copy else {
+            return Action::Forward {
+                real_git,
+                arguments,
+                overlay,
+                stderr,
             };
-        }
+        };
+        return Action::ForwardSettled {
+            real_git,
+            arguments,
+            overlay,
+            copy: Box::new(facts),
+            stderr,
+        };
+    }
+    let Some(found) = loaded else {
+        return failure("the repository configuration was not loaded for an index writer");
     };
     return Action::ForwardCoordinated {
         forward: Box::new(CoordinatedForward {
@@ -387,10 +491,27 @@ fn forward_action(
             identity: location.identity,
             command,
             environment: environment.to_vec(),
-            timeout_ms: loaded.config.concurrency.index_lock.unproven_owner_timeout_ms,
+            timeout_ms: found.config.concurrency.index_lock.unproven_owner_timeout_ms,
+            copy,
         }),
         stderr,
     };
+}
+
+/// What:
+///  Whether the forwarded command needs the repository configuration.
+/// Why:
+///   An index writer reads its patience from it, and a main checkout reads the rules file name from it;
+///  linked worktrees and bare repositories need no configuration for the copy, so their commands load nothing new.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// isIndexWriter(command) || (identity.kind === 'main-worktree' && createsOrMovesWorktrees(command))
+/// ```
+fn configuration_needed(identity: &WorktreeIdentity, command: &ResolvedCommand, writes_index: bool) -> bool {
+    return writes_index
+        || (matches!(identity, WorktreeIdentity::MainWorktree { .. })
+            && creates_or_moves_worktrees(command));
 }
 
 /// What:

@@ -443,15 +443,6 @@ pub mod git_builtins;
 ///  and the refusal notice.
 pub mod unported;
 
-/// Durable commit-transaction and worktree-copy state left in a repository.
-pub mod pending_state;
-
-/// Which commands need unported work:
-///  commits,
-///  worktree copies,
-///  aliases and leases.
-pub mod refusal_frontier;
-
 /// The lifecycle of one wrapped Git command,
 ///  from refusals to forwarding.
 pub mod wrapped_command;
@@ -880,3 +871,6 @@ pub mod worktree_copy_recovery;
 /// The linked-worktree ignored-state copy around one forwarded Git invocation: the integrator's entry point.
 #[cfg(unix)]
 pub mod worktree_copy;
+
+/// Which forwarded invocations the copy applies to, and the child run that carries its settlement lease.
+pub mod worktree_copy_forward;

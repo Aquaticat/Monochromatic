@@ -19,7 +19,7 @@ use super::worktree_copy_error::{WorktreeCopyError, raw_failure, wrap_raw};
 use super::worktree_copy_manifest::{
     EntryKind, WorktreeCopyEntry, apply_entry_modes, collect_entry_manifest,
 };
-use super::worktree_copy_selection::{STAGE_PREFIX, filesystem_path, read_ignored_roots};
+use super::worktree_copy_selection::{CopySelection, STAGE_PREFIX, filesystem_path, select_roots};
 use crate::json_record::quote;
 use std::path::{Path, PathBuf};
 
@@ -280,13 +280,14 @@ pub fn stage_ignored_snapshot(
     source_root: &Path,
     destination_root: &Path,
     registered_roots: &[PathBuf],
+    selection: &CopySelection,
 ) -> Result<StagedSnapshot, WorktreeCopyError> {
     let nested: Vec<PathBuf> = registered_roots
         .iter()
         .filter(|root| return root.as_path() != source_root && root.starts_with(source_root))
         .cloned()
         .collect();
-    let git_selected: Vec<String> = read_ignored_roots(context, source_root, nested.as_slice())?;
+    let git_selected: Vec<String> = select_roots(context, source_root, nested.as_slice(), selection)?;
     let destination_parent: &Path = destination_root.parent().unwrap_or(destination_root);
     let unique: String = random_uuid().map_err(|error| return raw_failure(&error.0))?;
     let stage_container: PathBuf = destination_parent.join(format!("{STAGE_PREFIX}{unique}"));

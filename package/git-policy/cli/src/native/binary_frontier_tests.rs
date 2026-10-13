@@ -27,8 +27,6 @@ use super::support::{
     Fixture, Observed, TRANSACTION_ID, fixture, git, observe, porcelain, registered_transaction,
     remove, repository, run_direct, run_wrapped, silent_success, stderr_of, stopped_with, wrapped,
 };
-use git_policy_cli::refusal_frontier::REFUSED_LEASE_VARIABLES;
-use git_policy_cli::unported::{Unported, unported_notice};
 use std::ffi::OsStr;
 use std::path::{Path, PathBuf};
 
@@ -251,83 +249,11 @@ fn a_real_push_is_scanned_and_forwarded() {
     remove(&fixture);
 }
 
-/// From a linked worktree,
-///  creating a worktree and running a possible alias are refused.
-#[test]
-fn worktree_creation_and_aliases_are_refused_from_a_linked_worktree() {
-    let fixture: Fixture = fixture("frontier-worktree");
-    let (repo, linked): (PathBuf, PathBuf) = repository_with_linked_worktree(&fixture);
-    assert_eq!(
-        run_wrapped(
-            &fixture,
-            linked.as_path(),
-            &["worktree", "add", "--quiet", "-b", "second", "../second"]
-        ),
-        stopped_with(unported_notice(&Unported::WorktreeCopy, "worktree").as_str())
-    );
-    assert_eq!(
-        run_wrapped(
-            &fixture,
-            linked.as_path(),
-            &[
-                "-c",
-                "alias.wta=worktree add",
-                "wta",
-                "--quiet",
-                "-b",
-                "third",
-                "../third"
-            ]
-        ),
-        stopped_with(unported_notice(&Unported::AliasResolution, "wta").as_str())
-    );
-    assert!(!fixture.root.join("second").exists());
-    assert!(!fixture.root.join("third").exists());
-    assert_eq!(
-        refs(&fixture, repo.as_path()),
-        "refs/heads/main\nrefs/heads/topic\n"
-    );
-    // Positive controls: the opt-out, another worktree subcommand and the main worktree are forwarded.
-    assert_eq!(
-        run_wrapped(
-            &fixture,
-            linked.as_path(),
-            &[
-                "worktree",
-                "add",
-                "--no-worktree-copy",
-                "--quiet",
-                "-b",
-                "second",
-                "../second"
-            ]
-        )
-        .code,
-        Some(0)
-    );
-    assert!(fixture.root.join("second/.git").exists());
-    assert_eq!(
-        run_wrapped(&fixture, linked.as_path(), &["worktree", "prune"]),
-        silent_success()
-    );
-    assert_eq!(
-        run_wrapped(
-            &fixture,
-            repo.as_path(),
-            &["worktree", "add", "--quiet", "-b", "fourth", "../fourth"]
-        )
-        .code,
-        Some(0)
-    );
-    assert!(fixture.root.join("fourth/.git").exists());
-    remove(&fixture);
-}
-
-/// Live transactions,
-///  an interrupted worktree copy and an inherited lease stop a guarded command;
+/// Live transactions no longer stop a guarded command and a broken transaction record does;
 /// dead transactions are recovered first.
+/// Worktree-copy leases and journals no longer stop a guarded command: the forwarding settles them.
 #[test]
-fn leftover_state_and_leases_refuse_guarded_commands() {
+fn leftover_transaction_state_refuses_guarded_commands() {
     let fixture: Fixture = fixture("frontier-state");
     let (repo, linked): (PathBuf, PathBuf) = repository_with_linked_worktree(&fixture);
     let guarded: [&str; 3] = ["reset", "--soft", "HEAD"];
@@ -412,51 +338,18 @@ fn leftover_state_and_leases_refuse_guarded_commands() {
     );
     assert!(legacy.exists());
     std::fs::remove_dir(&legacy).expect("remove legacy directory");
-    // An interrupted worktree copy concerns the linked worktree, not the main one.
-    let journals: PathBuf = repo.join(".git/cli-git-worktree-copy/v1");
-    std::fs::create_dir_all(journals.join("settlement.lock")).expect("settlement lock");
+    // A worktree-copy journal or lease in the environment no longer stops a guarded command;
+    // the forwarding recovers or honors it.
     assert_eq!(
-        run_wrapped(&fixture, linked.as_path(), &guarded),
+        observe(
+            wrapped(&fixture)
+                .current_dir(&repo)
+                .env("CLI_GIT_WORKTREE_COPY_LEASE", "inherited")
+                .args(guarded),
+            b""
+        ),
         silent_success()
     );
-    std::fs::write(journals.join("0123.json"), b"{}").expect("journal");
-    assert_eq!(
-        run_wrapped(&fixture, linked.as_path(), &guarded),
-        stopped_with(
-            unported_notice(&Unported::WorktreeCopyRecovery(journals.clone()), "reset").as_str()
-        )
-    );
-    assert_eq!(
-        run_wrapped(&fixture, repo.as_path(), &guarded),
-        silent_success()
-    );
-    std::fs::remove_file(journals.join("0123.json")).expect("remove journal");
-    // Each unported lease variable stops the guarded command, and none stops a read-only one.
-    for variable in REFUSED_LEASE_VARIABLES {
-        assert_eq!(
-            observe(
-                wrapped(&fixture)
-                    .current_dir(&repo)
-                    .env(variable, "inherited")
-                    .args(guarded),
-                b""
-            ),
-            stopped_with(unported_notice(&Unported::InheritedLease(variable), "reset").as_str()),
-            "{variable}"
-        );
-        assert_eq!(
-            observe(
-                wrapped(&fixture)
-                    .current_dir(&repo)
-                    .env(variable, "inherited")
-                    .args(["rev-parse", "--is-inside-work-tree"]),
-                b""
-            )
-            .stdout,
-            b"true\n",
-            "{variable}"
-        );
-    }
     // The landing lease does not stop a guarded command that writes no index: coordination honours it.
     assert_eq!(
         observe(

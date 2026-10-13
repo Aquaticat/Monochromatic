@@ -48,7 +48,6 @@ use super::diagnostics::EngineFailureCode;
 use super::global_arguments::GlobalOutcome;
 use super::invocation_config::{config_invalid_event, load_identity_config};
 use super::manual_push_lifecycle::manual_push_scope;
-use super::pending_state::pending_state;
 use super::policy_checks::ShippedChecks;
 /// What the command offers its content policies.
 use super::policy_content::LifecycleContent;
@@ -59,7 +58,6 @@ use super::policy_events::{PolicyEvent, render_policy_events};
 use super::policy_pass::{PassResult, policies_of_kind, run_policy_pass};
 use super::policy_registry::PolicyId;
 use super::policy_trigger::Trigger;
-use super::refusal_frontier::{command_frontier, inherited_lease};
 use super::repository_facts::RepositoryFacts;
 use super::repository_location::RepositoryLocation;
 /// Startup recovery as a command step.
@@ -239,7 +237,7 @@ fn every_policy() -> Vec<PolicyId> {
 
 /// What:
 ///  Prepare a command that loads configuration:
-///  refuse unported work,
+///  recover dead transactions,
 ///  read the
 ///       configuration of the worktree Git reports,
 ///  and say what a content policy may
@@ -250,30 +248,20 @@ fn every_policy() -> Vec<PolicyId> {
 ///  or an ending".
 /// Why:
 ///   The order is the installed wrapper's:
-///  leases and leftover state come before
+///  dead transactions are recovered before
 ///       configuration,
 ///  and a commit is refused only after its configuration was accepted,
 ///       so an invalid file is always reported as such.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// async function prepareGuardedCommand(stripped, environment, checks, command): Promise<PolicyConfig>; // throws the ending
+/// async function prepareGuardedCommand(stripped, environment, checks): Promise<PolicyConfig>; // throws the ending
 /// ```
 fn prepare_guarded_command<F: RepositoryFacts>(
     stripped: &StrippedInvocation,
     environment: &[(OsString, OsString)],
     checks: &mut ShippedChecks<F>,
-    command: &str,
 ) -> Result<CliGitConfig, WrappedOutcome> {
-    // `if let Some(variable) = ...` runs only when a lease variable is present.
-    if let Some(variable) = inherited_lease(environment) {
-        // `Err(x)` is the failure case of `Result`; `String::new()` is empty owned text.
-        return Err(refused(
-            String::new(),
-            &Unported::InheritedLease(variable),
-            command,
-        ));
-    }
     // `match` unpacks the location answer; a failure to ask Git stops the command.
     let location: RepositoryLocation = match checks.facts.location() {
         Ok(found) => found,
@@ -300,9 +288,6 @@ fn prepare_guarded_command<F: RepositoryFacts>(
             }
         }
     }
-    if let Some(what) = pending_state(&location.identity, stripped.controls.skip_worktree_copy) {
-        return Err(refused(String::new(), &what, command));
-    }
     let config: CliGitConfig = match load_identity_config(&location.identity) {
         Ok(loaded) => loaded.config,
         Err(error) => {
@@ -312,9 +297,6 @@ fn prepare_guarded_command<F: RepositoryFacts>(
             });
         }
     };
-    if let Some(what) = command_frontier(stripped, &location.identity) {
-        return Err(refused(String::new(), &what, command));
-    }
     // `.clone()` copies the scanner and Markdown options the configuration chose.
     checks.scanner_settings.options = config.policies.forbidden_strings.clone();
     checks.markdown.options = config.policies.markdown_autofix.clone();
@@ -451,7 +433,7 @@ pub fn run_wrapped_command<F: RepositoryFacts>(
     let loaded: Option<CliGitConfig> = if skips_config {
         None
     } else {
-        match prepare_guarded_command(stripped, environment, checks, command.as_str()) {
+        match prepare_guarded_command(stripped, environment, checks) {
             Ok(found) => Some(found),
             Err(ending) => return ending,
         }

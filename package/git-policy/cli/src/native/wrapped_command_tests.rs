@@ -36,7 +36,6 @@ use crate::policy_trigger::Trigger;
 use crate::repository_location::RepositoryLocation;
 use crate::rule_add_explicit::decide_add_explicit;
 use crate::test_support::{fixture, remove, repository};
-use crate::unported::{Unported, unported_notice};
 use crate::worktree_identity::WorktreeIdentity;
 use crate::wrapper_invocation::{StrippedInvocation, strip_wrapper_controls};
 use std::ffi::OsString;
@@ -95,14 +94,6 @@ fn forwards(values: &[&str]) -> WrappedOutcome {
     return WrappedOutcome::Forward {
         arguments: os_arguments(values),
         stderr: String::new(),
-    };
-}
-
-/// The ending "exit 2 with the notice for this unported work".
-fn refuses(what: &Unported, command: &str) -> WrappedOutcome {
-    return WrappedOutcome::Exit {
-        code: 2,
-        stderr: unported_notice(what, command),
     };
 }
 
@@ -301,7 +292,6 @@ fn read_only_commands_skip_configuration_and_refusals() {
 }
 
 /// Preparation order:
-///  lease,
 ///  location,
 ///  leftover state,
 ///  configuration,
@@ -310,16 +300,7 @@ fn read_only_commands_skip_configuration_and_refusals() {
 fn a_guarded_command_is_prepared_in_order() {
     let root: PathBuf = configured("wrapped-order", "this is not JSONC");
     let registry: PathBuf = registered(root.as_path(), true);
-    let lease: [(&str, &str); 1] = [("CLI_GIT_WORKTREE_COPY_LEASE", "")];
-    // 1. A worktree copy lease stops the command before Git is asked anything.
-    assert_eq!(
-        run(&["commit", "-m", "x"], unanswerable(), &lease),
-        (
-            refuses(&Unported::InheritedLease("CLI_GIT_WORKTREE_COPY_LEASE"), "commit"),
-            Vec::<String>::new()
-        )
-    );
-    // 2. Without the location nothing else can be decided.
+    // 1. Without the location nothing else can be decided.
     assert_eq!(
         run(&["commit", "-m", "x"], unanswerable(), &[]),
         (
@@ -330,7 +311,7 @@ fn a_guarded_command_is_prepared_in_order() {
             location_only()
         )
     );
-    // 3. A live transaction no longer refuses a guarded command, so the configuration is read next.
+    // 2. A live transaction no longer refuses a guarded command, so the configuration is read next.
     let (outcome, touched): (WrappedOutcome, Vec<String>) =
         run(&["commit", "-m", "x"], at_root(root.as_path()), &[]);
     assert_eq!(touched, location_only());
@@ -348,7 +329,7 @@ fn a_guarded_command_is_prepared_in_order() {
         WrappedOutcome::Exit { ref stderr, .. } if stderr.contains("commit transactions recorded")
     ));
     assert!(!registry.join(TRANSACTION_ID).exists());
-    // 4. The invalid configuration is reported before the commit refusal.
+    // 3. The invalid configuration is reported before the commit refusal.
     let (invalid, invalid_asked) = run(&["commit", "-m", "x"], at_root(root.as_path()), &[]);
     assert_eq!(invalid_asked, location_only());
     match invalid {
@@ -667,47 +648,11 @@ fn worktree_policies_read_the_location() {
     }
 }
 
-/// From a linked worktree,
-///  creating a worktree and running a possible alias are refused.
+/// Worktree creation, aliases and the opt-out are all forwarded from every kind of location:
+///  the linked-worktree copy settles them when Git runs, not here.
 #[test]
-fn worktree_creation_and_aliases_are_refused_where_copies_are_synchronized() {
+fn worktree_creation_and_aliases_are_forwarded_from_every_location() {
     let linked: RepositoryLocation = linked_worktree("/r", "/w");
-    assert_eq!(
-        run(
-            &["worktree", "add", "../topic"],
-            located(linked.clone()),
-            &[]
-        ),
-        (
-            refuses(&Unported::WorktreeCopy, "worktree"),
-            location_only()
-        )
-    );
-    assert_eq!(
-        run(&["st"], located(linked.clone()), &[]),
-        (refuses(&Unported::AliasResolution, "st"), location_only())
-    );
-    assert_eq!(
-        run(
-            &["worktree", "add", "--no-worktree-copy", "../topic"],
-            located(linked.clone()),
-            &[]
-        ),
-        (forwards(&["worktree", "add", "../topic"]), location_only())
-    );
-    assert_eq!(
-        run(&["worktree", "list"], located(linked), &[]),
-        (forwards(&["worktree", "list"]), location_only())
-    );
-    // In the main worktree neither needs the copy.
-    for values in [vec!["worktree", "add", "../topic"], vec!["st"]] {
-        assert_eq!(
-            run(values.as_slice(), scripted_facts(), &[]),
-            (forwards(values.as_slice()), location_only()),
-            "{values:?}"
-        );
-    }
-    // A bare repository synchronizes copies too.
     let bare: RepositoryLocation = RepositoryLocation {
         identity: WorktreeIdentity::BareRepository {
             common_dir: PathBuf::from("/b.git"),
@@ -715,13 +660,35 @@ fn worktree_creation_and_aliases_are_refused_where_copies_are_synchronized() {
         },
         prefix: Vec::<u8>::new(),
     };
-    assert_eq!(
-        run(&["worktree", "add", "../topic"], located(bare), &[]),
-        (
-            refuses(&Unported::WorktreeCopy, "worktree"),
-            location_only()
-        )
-    );
+    for location in [linked, bare] {
+        for values in [
+            vec!["worktree", "add", "../topic"],
+            vec!["st"],
+            vec!["worktree", "list"],
+        ] {
+            assert_eq!(
+                run(values.as_slice(), located(location.clone()), &[]),
+                (forwards(values.as_slice()), location_only()),
+                "{values:?}"
+            );
+        }
+        assert_eq!(
+            run(
+                &["worktree", "add", "--no-worktree-copy", "../topic"],
+                located(location.clone()),
+                &[]
+            ),
+            (forwards(&["worktree", "add", "../topic"]), location_only())
+        );
+    }
+    // In the main worktree the same commands are forwarded.
+    for values in [vec!["worktree", "add", "../topic"], vec!["st"]] {
+        assert_eq!(
+            run(values.as_slice(), scripted_facts(), &[]),
+            (forwards(values.as_slice()), location_only()),
+            "{values:?}"
+        );
+    }
 }
 
 /// Findings of `git add` come from what it would stage:

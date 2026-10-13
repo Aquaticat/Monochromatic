@@ -189,11 +189,16 @@ This worktree has none: Claude Code's worktree isolation created it, and nothing
 
 What the ignored-state copy does (by the ledger section `Linked-worktree ignored-state copy`,
 `doc/planning/cli-git-rust-behavior-ledger.md:3371` onward):
-it runs for `git worktree add` and `git worktree move` only when the source is a linked worktree,
-copies every path Git reports as ignored, and bypasses a main-worktree source.
-So `.cache` is copied into a worktree created from another linked worktree through the wrapper,
-and is not copied into one created from the main checkout or by another tool.
-That the copy really carries `.cache` was not run here; it follows from the selection rule.
+it runs for `git worktree add` and `git worktree move`, and copies every path Git reports as ignored when the source
+is a linked worktree or a bare repository.
+The incumbent bypasses a main-worktree source;
+the native executable (branch `feat/cli-git-native-rules-cache`, `doc/handover/cli-git-native-rules-cache.md`)
+copies exactly one path from a main-checkout source, the configured `rulesFile`, and only when Git ignores it and the
+checkout has it.
+So a worktree created through the native wrapper from the main checkout or from a linked worktree gets
+`.cache/forbidden-strings.rules.txt`, and a source without that file copies nothing, so the missing-file error below stands.
+A worktree created by another tool, or with `--no-worktree-copy`, still has no `.cache`.
+The copy runs in the executable as measured by the binary tests in `src/native/binary_worktree_copy_tests.rs`.
 
 Measured with both wrappers in a disposable repository that has the configuration and no `.cache`:
 the native `git cli-git check --policy security/forbidden-strings --all` exits 2 with an `engine-failure` event,
@@ -223,15 +228,15 @@ blocks `git add` and the commit.
   (`doc/handover/cli-git-rust-implementation.md:1293`) and that a missing explicit file is an error,
   so a worktree never scans with fewer rules than the repository names.
   The native error names the missing path.
-- Option: the ignored-state copy brings `.cache`.
-  It already does for worktrees created from a linked worktree through the wrapper (see above);
-  it cannot help a worktree created from the main checkout or by another tool.
+- Chosen by the user on 2026-10-12: the ignored-state copy brings `.cache/forbidden-strings.rules.txt`
+  when the native wrapper creates a worktree, from a main checkout and from a linked worktree.
+  It cannot help a worktree created by another tool.
 - Option: file-enforcer runs when a worktree is created.
   It would cover every creator, but it makes worktree creation depend on the generator and its scaffolding of the
   embargoed local appendix.
 - Option: each worktree runs `mise run file-enforcer` first.
   This needs no code and is what `doc/runbook/forbidden-strings-out-of-band-rules.md` already tells contributors to do.
-  The veto, if any, is to make one of the other two options mandatory before the cutover.
+  The veto, if any, is to make one of the other options mandatory before the cutover.
 
 ## Facts the integrator must know
 

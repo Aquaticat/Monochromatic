@@ -10,6 +10,8 @@
 //!  command creates or moves worktrees after alias resolution) with the native modules that already own them,
 //!  passes the repository identity and the effective working directory, and supplies the runner that starts real Git
 //!  with the lease token in its environment. This module never runs the commit refusal; it is not wired yet.
+//!  A main-checkout source is a bypass unless the caller also names `Invocation::main_checkout_paths` (the configured
+//!  forbidden-strings rules file); then only those paths are copied, and only when Git ignores them.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
@@ -24,7 +26,7 @@ use super::worktree_copy_recovery::{
     recover_pending_worktree_copies, recover_worktree_copy_transactions, report_recovered,
 };
 use super::worktree_copy_registry::{
-    CreatedWorktrees, WorktreeCopyObservation, find_created_worktrees, observe_worktree_repository,
+    CreatedWorktrees, WorktreeCopyObservation, find_created_worktrees, observe_copy_source,
 };
 use super::worktree_copy_transaction::synchronize_created_worktree;
 use super::worktree_identity::WorktreeIdentity;
@@ -76,6 +78,9 @@ pub struct Invocation {
     pub short_circuit: bool,
     /// The lease token inherited from an outer settlement, when the environment carried one.
     pub inherited_token: Option<String>,
+    /// Repository paths a main-checkout source hands over (the configured rules file);
+    ///  empty keeps the main checkout a bypass, and linked and bare sources ignore it.
+    pub main_checkout_paths: Vec<String>,
     /// The real Git executable and the variables every Git child receives.
     pub context: GitContext,
 }
@@ -210,6 +215,7 @@ fn synchronize_after(
                     source.as_path(),
                     destination.root.as_path(),
                     found.registered_roots.as_slice(),
+                    &observation.selection,
                 )?;
             }
         }
@@ -242,8 +248,11 @@ fn settle_under_lock(
     lease_token: &str,
     stderr: &mut dyn Write,
 ) -> Result<Settlement, WorktreeCopyError> {
-    let refreshed: Option<WorktreeCopyObservation> =
-        observe_worktree_repository(&identity_after_lock()?, invocation.effective_cwd.as_path())?;
+    let refreshed: Option<WorktreeCopyObservation> = observe_copy_source(
+        &identity_after_lock()?,
+        invocation.effective_cwd.as_path(),
+        invocation.main_checkout_paths.as_slice(),
+    )?;
     let observation: WorktreeCopyObservation = match refreshed {
         Some(observed) if observed.common_dir == first.common_dir => observed,
         _ => return Err(repository_changed()),
@@ -295,8 +304,11 @@ fn settle_invocation(
     if invocation.opted_out || invocation.short_circuit {
         return forward_only(run_git);
     }
-    let Some(observation) =
-        observe_worktree_repository(&invocation.identity, invocation.effective_cwd.as_path())?
+    let Some(observation) = observe_copy_source(
+        &invocation.identity,
+        invocation.effective_cwd.as_path(),
+        invocation.main_checkout_paths.as_slice(),
+    )?
     else {
         return forward_only(run_git);
     };

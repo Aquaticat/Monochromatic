@@ -47,6 +47,7 @@ fn stage_mirrors_selected_entries_with_modes_and_links() {
         source.as_path(),
         destination.as_path(),
         &[std::fs::canonicalize(source.as_path()).expect("canonical")],
+        &CopySelection::Ignored,
     )
     .expect("staged");
     assert_eq!(staged.stage_container.parent(), destination.parent());
@@ -132,6 +133,7 @@ fn nested_registered_worktree_is_not_copied() {
             .as_path(),
         destination.as_path(),
         &[nested_root],
+        &CopySelection::Ignored,
     )
     .expect("staged");
     assert!(
@@ -169,6 +171,7 @@ fn failed_copy_removes_its_stage() {
             .as_path(),
         destination.as_path(),
         &[],
+        &CopySelection::Ignored,
     )
     .expect_err("fifo");
     assert!(
@@ -220,6 +223,7 @@ fn staging_under_a_missing_parent_fails_with_cause() {
             .as_path(),
         destination.as_path(),
         &[],
+        &CopySelection::Ignored,
     )
     .expect_err("missing parent");
     assert!(failure.0.contains("No such file or directory"));

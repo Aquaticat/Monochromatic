@@ -314,6 +314,101 @@ pub fn read_ignored_roots(
     return Ok(collapse_ignored_roots(all.as_slice()));
 }
 
+/// What:
+///  Which of a source's ignored paths one copy takes:
+///  every ignored root, or only the named repository paths.
+/// Why:
+///   A linked or bare source hands over all of its ignored state, as the incumbent does;
+///  a main checkout holds the repository's heavy ignored trees, so it hands over only what the caller names.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// type CopySelection = { kind: 'ignored' } | { kind: 'paths'; paths: readonly string[] };
+/// ```
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub enum CopySelection {
+    /// Every path Git's standard exclusion stack ignores, plus the ignored special entries.
+    Ignored,
+    /// Only these repository paths, and only the ones Git ignores and the source has.
+    Paths(Vec<String>),
+}
+
+/// What:
+///  The named repository paths that exist in the source and that Git's standard exclusion stack ignores.
+/// Why:
+///   A configured file such as the forbidden-strings rules is copied by name, so the source is never enumerated;
+///  a name Git does not list exactly (absent, tracked, not ignored, or a directory) selects nothing,
+///  which leaves the destination without it instead of inventing it.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// async function readNamedIgnoredRoots({ sourceRoot, paths, gitPath }): Promise<readonly string[]>;
+/// ```
+pub fn read_named_ignored_roots(
+    context: &GitContext,
+    source_root: &Path,
+    paths: &[String],
+) -> Result<Vec<String>, WorktreeCopyError> {
+    let mut selected: Vec<String> = Vec::new();
+    for path in paths {
+        assert_safe_repository_path(path.as_str())?;
+        let request: GitRequest = GitRequest {
+            cwd: source_root.to_path_buf(),
+            arguments: vec![
+                "ls-files".into(),
+                "--others".into(),
+                "--ignored".into(),
+                "--exclude-standard".into(),
+                "-z".into(),
+                "--".into(),
+                // `top` anchors the name at the worktree root and `literal` turns off globbing and magic.
+                format!(":(top,literal){path}").into(),
+            ],
+            without_prefix: true,
+            ..GitRequest::default()
+        };
+        let output = run_git(context, &request).map_err(|error| return raw_failure(&error))?;
+        if output.code != Some(0) {
+            return Err(raw_failure(&String::from_utf8_lossy(
+                output.stderr.as_slice(),
+            )));
+        }
+        // Git lists a directory's files rather than the directory, so only an exact name is a file Git ignores.
+        let listed: bool = output
+            .stdout
+            .split(|byte| return *byte == 0)
+            .any(|field| return field == path.as_bytes());
+        if listed {
+            selected.push(path.clone());
+        }
+    }
+    return Ok(collapse_ignored_roots(selected.as_slice()));
+}
+
+/// What:
+///  The collapsed repository paths one copy takes from a source under the chosen selection.
+/// Why:
+///   Staging asks one question whichever source it copies from, so the selection mode is decided in one place.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// const roots = selection.kind === 'ignored' ? await readIgnoredRoots(...) : await readNamedIgnoredRoots(...);
+/// ```
+pub fn select_roots(
+    context: &GitContext,
+    source_root: &Path,
+    excluded_roots: &[PathBuf],
+    selection: &CopySelection,
+) -> Result<Vec<String>, WorktreeCopyError> {
+    // `match` on the selection: the full listing for linked and bare sources, the named lookup otherwise.
+    match selection {
+        CopySelection::Ignored => return read_ignored_roots(context, source_root, excluded_roots),
+        CopySelection::Paths(paths) => {
+            return read_named_ignored_roots(context, source_root, paths.as_slice());
+        }
+    }
+}
+
 /// Selection controls stay out of the release executable.
 #[cfg(test)]
 #[path = "worktree_copy_selection_tests.rs"]

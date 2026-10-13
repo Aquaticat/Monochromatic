@@ -27,7 +27,7 @@ fn common_of(source: &Path) -> PathBuf {
 
 /// A staged snapshot of the source, as the copy would produce it.
 fn stage(source: &Path, destination: &Path) -> StagedSnapshot {
-    return stage_ignored_snapshot(&git_context(), source, destination, &[]).expect("staged");
+    return stage_ignored_snapshot(&git_context(), source, destination, &[], &CopySelection::Ignored).expect("staged");
 }
 
 /// Entries of the destination with their content, sorted, for comparison.
@@ -80,6 +80,7 @@ fn completed_synchronization_leaves_no_journal_or_stage() {
         source.as_path(),
         destination_canonical.as_path(),
         &[],
+        &CopySelection::Ignored,
     )
     .expect("synchronized");
     assert_eq!(copied, 4);
