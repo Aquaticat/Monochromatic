@@ -287,9 +287,23 @@ the items after it are the record of 2026-10-05 and older.
     IntelliJ differs and the package README lists it); a resize packs only the hinted lines near the view and the
     others when the view comes near; tab correction past its budget may leave later tabs off their stops on a very
     tall line.
-    Open: release window-thread numbers in the README were measured on a bundle that predates the last fixes and do not
-    show smoothness; the longest frame gap was not measured; the installed single file at
-    `~/.local/bin/monochromatic-ide` predates stages 1, 2 and soft wrap.
+    Frame measurement of the final bundle (sha1 `a57508d468`, release, nested compositor 0.4.0, recorder at 60 fps,
+    143 valid runs of 145, scratch `~/temp/agent/ide-wrap-s5/`, results in `results-all.jsonl`): at host load below
+    20 the longest gap while scrolling a 50,000 line file was at most 50 ms in 17 runs and none passed 100 ms, for the
+    wrap build and for the three earlier builds alike. At load 20 to 100, 9 of 17 wrap runs had a longest gap over
+    100 ms (up to 417), and so did 4 of 8 stage 2 runs, 4 of 8 stage 1 runs, and 4 of 7 runs of the build without
+    overscan. Run-to-run spread of one build and condition (17 to 308 ms, stage 1 up to 800) is as large as every
+    difference between builds, so no build can be called smoother; the load fell from 70 to 3 during the series, so
+    round number stands in for load. Two things the numbers do show: a continuous resize drag (1100 to 600 px at about
+    1560 px per second) leaves the old tile on screen until the worker's tile for the new width arrives, so 72 to 81 of
+    about 101 frames per run showed text running past the right edge or stopping short, in stretches of 384 to 1,371 ms,
+    and the picture settled 25 to 127 ms after the last resize step; the longest gap in resize runs stayed 17 to 60 ms
+    and no frame was blank. Open time at 50,000 lines: first non-flat frame median 1,152 ms (879 to 1,160 below load
+    10), whole file measured median 2,710 ms (3 to 15 s at load 30 to 60).
+    Open decision for the user: during a drag resize, either keep the worker-only tile (current, smooth gaps, stale
+    wrapping for up to about a second) or re-break and paint the visible rows on the window thread (IntelliJ's way, no
+    stale frame, costs about 1.6 ms median per tile on the window thread, 23 ms at the worst measured).
+    Open: the installed single file at `~/.local/bin/monochromatic-ide` predates stages 1, 2 and soft wrap.
     Both flaky tests of the guard runs were fixed in this work: the scroll quiet-time test reads a clock a test can
     hold, and find reveal measures its own line first (it failed 3 of 16 runs at baseline).
   - The IDE checks used compositor builds inside each worktree's `target` directory, which were 0.1.1 (no minimized
