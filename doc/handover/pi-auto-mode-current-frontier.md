@@ -733,7 +733,11 @@ Unpublished original callback inputs retain a source-publication failure rather 
 the next request assesses the same original source,
 without promoting the prior prompt into current ancestry.
 That follow-up is now in the parent but was not part of its 219-case run.
-The source/action parents still need their affected regression checks.
+Affected action/source parents passed `proc_b6d4` and `proc_9144`,
+including source identity,
+manager-only handoff,
+approval ownership,
+and irreversible retirement.
 
 The run-owner helper task initially failed with Node `EEXIST` on a historical output directory.
 `b672127d` uses unique disposable output directories and preserves historical artifacts.
