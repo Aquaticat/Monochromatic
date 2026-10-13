@@ -79,35 +79,9 @@ type LineAllowance = {
 };
 
 /**
- Why a file of the history archive may pass the limit for now.
- */
-const HISTORY_REASON = 'a file of the frozen history archive, kept byte for byte until the archive is re-filed by what '
-  + 'each file holds';
-
-/**
  Docs allowed past the limit, each at the size it has.
  */
 const ALLOWANCES: readonly LineAllowance[] = [
-  ...([
-    ['01-early-foundation-segment-01-part-01', 1_140,],
-    ['01-early-foundation-segment-01-part-02', 1_105,],
-    ['01-early-foundation-segment-02-subpart-04', 1_086,],
-    ['01-early-foundation-segment-03-part-01', 1_505,],
-    ['01-early-foundation-segment-03-part-02', 1_266,],
-    ['05-2026-08-15-to-19-segment-01-part-01', 1_014,],
-    ['05-2026-08-15-to-19-segment-01-part-02', 1_101,],
-    ['05-2026-08-15-to-19-segment-02-part-01', 1_004,],
-    ['05-2026-08-15-to-19-segment-02-part-02', 1_030,],
-    ['06-2026-08-19-to-21-segment-01-part-01', 1_008,],
-    ['06-2026-08-19-to-21-segment-01-part-02', 1_006,],
-    ['07-2026-08-21-to-23-segment-01-part-01', 1_003,],
-    ['07-2026-08-21-to-23-segment-02', 1_252,],
-    ['08-2026-08-23-decisions-segment-01-part-01', 1_004,],
-    ['08-2026-08-23-decisions-segment-02-part-01', 1_004,],
-    ['11-2026-08-26-audit-segment-01', 1_399,],
-  ] as const).map(function historyFile([name, lines,],): LineAllowance {
-    return { path: join('doc', 'handover', `translation-repair-history-${name}.md`,), lines, reason: HISTORY_REASON, };
-  },),
   {
     path: join('doc', 'planning', 'wire-the-heading-aligner.md',),
     lines: 1_509,
@@ -117,19 +91,16 @@ const ALLOWANCES: readonly LineAllowance[] = [
 ];
 
 /**
- Name stems whose files keep a counter in their names, with the reason.
+ Name stems whose files keep a counter in their names, with the reason. None now: the history archive, the last
+ record named by segment, was re-filed by what each file holds.
  */
-const COUNTER_NAME_EXEMPTIONS: readonly { readonly opening: string; readonly reason: string; }[] = [
-  {
-    opening: 'translation-repair-history-',
-    reason: 'the frozen history archive, named by segment before the rule and due to be re-filed by content',
-  },
-];
+const COUNTER_NAME_EXEMPTIONS: readonly { readonly opening: string; readonly reason: string; }[] = [];
 
 /**
  Words that count a file where a subject belongs, when digits follow them.
  */
 const COUNTER_WORDS: ReadonlySet<string> = new Set(['part', 'segment', 'subpart', 'chunk', 'section', 'page',],);
+
 /**
  Stems of repository-level translation-repair docs whose names do not start
  with `translation-repair`.
