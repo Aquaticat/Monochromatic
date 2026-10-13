@@ -233,10 +233,17 @@ and the decisions D106 to D119 at the end of `package/music-player/design/decisi
 - Empty Folders pane at 443 px with a saved session (2026-10-13): about 130 resize and restart cycles never reproduced
   it. The folded picker opened by Alt+1 or Ctrl+O before the library arrived did show no names, and that is fixed with
   five window tests; whether it was the original sighting is unproven.
-- Stale docs: the screenshot gallery and treatment text in
-  `package/music-player/README.md`, which still show the replaced desktop page-tab window and the deleted Android
-  page-control styles. The peak-sweep start path in `android-app/HANDOVER.peak-sweep-optimization.md` and
-  `android-app/DECISION.peak-sweep-parallelism.md` was corrected on 2026-10-13.
+- Android focus ring on lists (2026-10-13, `6afe69c81a`): track lists and the folder picker now show the ring only
+  after a keyboard input (they drew it from list focus alone), and flush entries of clipped lists (track rows, Search
+  results, template fields, letter rail cells) draw it just inside their edge (D120) with no reserved padding, which
+  had clipped the rail cell ring. Folder names and menu rows keep the outside ring. Verified: detekt, 1044 unit tests,
+  lintDebug, eleven mutations killed, before and after captures on the Fold emulator. Not verified: the Compose
+  call-site wiring has no unit test; the template field ring was never seen on the device; dark scheme, cover display,
+  the menu popup's keyboard ring, TalkBack and a real keyboard; the Android gallery PNGs predate this change (the
+  first row of a list sits 3 dp higher now) and were not retaken. The emulator ran with `-no-window` on the host GPU.
+- Stale docs: none known. The README gallery and the Android page-control text were rewritten on 2026-10-13, and the
+  peak-sweep start path in `android-app/HANDOVER.peak-sweep-optimization.md` and
+  `android-app/DECISION.peak-sweep-parallelism.md` was corrected.
 - Hygiene: `~/temp/agent/agent-polish2/work/` and `~/temp/agent/agent-refresh-cost/lib-1m` (12 GB) hold scratch libraries
   that can be deleted. A failed decode is retried at every library change, one decode per failed file per change.
 - Rate limit: on 2026-10-12 the Sonnet weekly limit stopped five agents mid-run; a re-login lifted it and they were
