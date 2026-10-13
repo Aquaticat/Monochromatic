@@ -20,11 +20,20 @@ import { describe, expect, it, } from '@monochromatic-dev/module-test/ts';
  @returns internal outcome of fixture composition
  */
 function outcome(clauses: readonly unknown[],): GuardOutcome {
+  /**
+   Keep each authored clause's missing premises when composing fixture facts.
+   */
   const lowered = clauses.map(lowerEstablishedClause,);
   return resolveGuardOutcome({
-    premises: lowered.some(function missing(value,) { return value.missingPremises.length > 0; },) ? 'incomplete' : 'complete',
-    rules: lowered.flatMap(function rules(value,) { return value.rules; },),
-    authorizationRequirements: lowered.flatMap(function requirements(value,) { return value.authorizationRequirements; },),
+    premises: lowered.some(function missing(value,) {
+      return value.missingPremises.length > 0;
+    },) ? 'incomplete' : 'complete',
+    rules: lowered.flatMap(function rules(value,) {
+      return value.rules;
+    },),
+    authorizationRequirements: lowered.flatMap(function requirements(value,) {
+      return value.authorizationRequirements;
+    },),
   },);
 }
 
@@ -123,7 +132,9 @@ await describe({
       return it({
         name: `rejects unsupported relationship input ${index}`,
         fn: async function checkMalformed() {
-          expect(function lowerInvalid() { lowerEstablishedClause(input,); },).toThrow(InstructionResolutionInputError,);
+          expect(function lowerInvalid() {
+            lowerEstablishedClause(input,);
+          },).toThrow(InstructionResolutionInputError,);
         },
       },);
     },),
@@ -131,15 +142,28 @@ await describe({
       name: 'rejects getters and proxies before observation with working positive controls',
       fn: async function checkObservation() {
         const reads: string[] = [];
-        const accessor = { id: 'getter', get relation() { reads.push('relation',); return 'permission'; }, };
+        const accessor = {
+          id: 'getter',
+          get relation() {
+            reads.push('relation',);
+            return 'permission';
+          },
+        };
         const proxy = new Proxy({ satisfaction: 'satisfied', }, {
-          getPrototypeOf(): object { reads.push('proxy',); return Object.prototype; },
+          getPrototypeOf(): object {
+            reads.push('proxy',);
+            return Object.prototype;
+          },
         },);
-        expect(function getter() { lowerEstablishedClause(accessor,); },).toThrow(InstructionResolutionInputError,);
+        expect(function getter() {
+          lowerEstablishedClause(accessor,);
+        },).toThrow(InstructionResolutionInputError,);
         expect(function nestedProxy() {
           lowerEstablishedClause({ id: 'proxy', priority: 0, relation: 'prerequisite', authorization: proxy, },);
         },).toThrow(InstructionResolutionInputError,);
-        expect(function outerProxy() { lowerEstablishedClause(proxy,); },).toThrow(InstructionResolutionInputError,);
+        expect(function outerProxy() {
+          lowerEstablishedClause(proxy,);
+        },).toThrow(InstructionResolutionInputError,);
         expect(reads,).toEqual([],);
         Reflect.get(accessor, 'relation',);
         Reflect.getPrototypeOf(proxy,);
