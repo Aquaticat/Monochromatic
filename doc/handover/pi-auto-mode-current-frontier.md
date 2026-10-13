@@ -678,9 +678,19 @@ limit naming,
 and nullable-number condition diagnostics.
 `a56b345955` preserves the same limit with an explicit constant and checks prior lowering explicitly.
 `proc_2cf2` passed formatting/lint with zero diagnostics.
-Final type,
-unit,
-and native verification remain pending.
+Final implementation `af11516512` passed build/types `proc_c342`.
+`cd4e211d21` adds original reader and lost-state controls.
+`proc_a53e` passed package units and type checks;
+`proc_53ad` passed 12-file lint with zero diagnostics.
+`proc_54c8` passed exact maintained-export identity and all 36 native incorporation scenarios,
+with empty child stderr and zero provider requests or protected executions.
+`proc_c2f8` passed the complete action-policy regression task.
+The native scenarios preserve source/member identity,
+registered priority,
+independent target meaning,
+implementation-fact gaps,
+cancellation,
+and preparation-inclusive expiry.
 No domain closure,
 production semantic qualification,
 installed host,
