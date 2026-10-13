@@ -589,6 +589,134 @@ fn lines_over_the_work_allowance_are_left_to_the_worker() {
     window.hide().expect("close wrap window");
 }
 
+/// Lines with a tab are charged for the corrective passes of their tabs: a view of ordinary short tabbed lines is more
+///  work than the allowance covers, goes to the worker, and the lines the old tile held and the new one does not are
+///  measured at the new width by the pass that follows.
+#[test]
+fn tabbed_lines_are_charged_for_their_corrective_passes_and_left_to_the_worker() {
+    let mut text = String::new();
+    for number in 0..400 {
+        text.push_str(&format!(
+            "\tlet value_{number} = compute_total(first_item, second_item, third_item);\n"
+        ));
+    }
+    let (_project, opened) = open(&text);
+    settled(&opened);
+    let window = &opened.window;
+    let scale = window.window().scale_factor();
+    start_counting(&opened);
+    change_width(&opened, 500.0, 660.0);
+    let step = spent(&opened);
+    assert_eq!(step.deferred, 1, "{step:?}");
+    assert_eq!(
+        step.painted, 0,
+        "the window thread painted a tile for a change over the allowance: {step:?}"
+    );
+    assert!(
+        step.shaped + step.rebroken <= 9,
+        "the window thread brought in more lines than the allowance pays for: {step:?}"
+    );
+    until("the worker's tile did not arrive", || {
+        let current = opened.source.borrow();
+        return current.tile_job.is_none()
+            && current.scroll_wanted.is_none()
+            && current.shown.width == current.width;
+    });
+    settled(&opened);
+    let current = opened.source.borrow();
+    let lines = current.document.text().len_lines();
+    let mut shaper = TextShaper::new();
+    let fresh = shaper.measure_lines(&current.document, 0..lines, scale, Some(current.width), &[]);
+    let mut stale = Vec::new();
+    for (line, rows) in fresh.lines {
+        if current.row_map.rows_of(line) != rows {
+            stale.push((line, current.row_map.rows_of(line), rows));
+        }
+    }
+    assert!(
+        stale.is_empty(),
+        "{} lines keep a stale height, first: {:?}",
+        stale.len(),
+        &stale[..stale.len().min(5)]
+    );
+    drop(current);
+    window.hide().expect("close wrap window");
+}
+
+/// A tile the worker built for a new width is discarded when a hint arrives meanwhile, and the whole-file pass has
+///  already finished by then, skipping the lines the old tile held: once the tile is asked for again and swapped in,
+///  the pass is asked for again too, and the lines only the old tile held end at the heights of the new width.
+#[test]
+fn a_discarded_tile_for_a_new_width_still_leaves_no_stale_heights() {
+    let mut text = String::new();
+    for number in 0..400 {
+        text.push_str(&format!(
+            "\tlet value_{number} = compute_total(first_item, second_item, third_item);\n"
+        ));
+    }
+    let release = hold_the_pass();
+    for _ in 0..100 {
+        let _ = release.send(());
+    }
+    let (_project, opened) = open(&text);
+    settled(&opened);
+    let window = &opened.window;
+    let scale = window.window().scale_factor();
+    for _ in 0..100 {
+        let _ = release.send(());
+    }
+    start_counting(&opened);
+    change_width(&opened, 500.0, 660.0);
+    assert_eq!(spent(&opened).deferred, 1);
+    // The worker builds the tile and measures the whole file while the window thread does not poll.
+    std::thread::sleep(std::time::Duration::from_millis(1500));
+    let stamp = displayed(&opened.source.borrow());
+    set_annotations(
+        window,
+        &opened.source,
+        Some(Arc::new(HintsSnapshot {
+            stamp,
+            first_line: 0,
+            last_line: 400,
+            hints: vec![hint(start_of(&opened, 0) + 20, ": u32")],
+        })),
+        None,
+    );
+    // The first poll finds the tile stale, asks for another, and applies the pass that skipped the old tile's lines.
+    update_timers_and_animations();
+    until("the second tile did not arrive", || {
+        let current = opened.source.borrow();
+        return current.tile_job.is_none()
+            && current.scroll_wanted.is_none()
+            && current.shown.width == current.width;
+    });
+    settled(&opened);
+    let current = opened.source.borrow();
+    assert!(
+        current.tiles_discarded >= 1,
+        "the first tile was not discarded: {}",
+        current.tiles_discarded
+    );
+    let lines = current.document.text().len_lines();
+    let mut shaper = TextShaper::new();
+    let fresh = shaper.measure_lines(&current.document, 0..lines, scale, Some(current.width), &[]);
+    let mut stale = Vec::new();
+    for (line, rows) in fresh.lines {
+        if current.row_map.rows_of(line) != rows {
+            stale.push((line, current.row_map.rows_of(line), rows));
+        }
+    }
+    assert!(
+        stale.is_empty(),
+        "{} lines keep a stale height, first: {:?}",
+        stale.len(),
+        &stale[..stale.len().min(5)]
+    );
+    drop(current);
+    drop(release);
+    window.hide().expect("close wrap window");
+}
+
 /// One line of two hundred thousand characters is not shaped or broken on the window thread: the change goes to the
 ///  worker, and its tile is swapped in when it arrives.
 #[test]
