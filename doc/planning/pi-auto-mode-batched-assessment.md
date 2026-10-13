@@ -1,5 +1,58 @@
 # Batched axioms with a three-call assessment ceiling
 
+## Decisions HTTP contract intake on 2026-10-13
+
+The user supplied LLM Gateway's October 12 announcement and Decisions guide,
+then explicitly excluded introducing the `openai` npm package.
+Keep direct HTTP transport.
+Do not install an SDK or upgrade dependencies for this endpoint.
+
+Read-only checks confirmed the
+[announcement](https://llmgateway.io/changelog/openai-compatible-decisions-api),
+[Decisions guide](https://docs.llmgateway.io/features/decisions),
+and [HTTP reference](https://docs.llmgateway.io/v1_decisions).
+No inference request was made.
+The announcement keeps Jev available on `/v1/systemone`;
+its deprecation date is to be announced separately.
+This intake does not adopt a different model or qualification policy.
+
+The new wire contract requires an explicit adapter,
+not only a changed URL:
+
+- `state` becomes string `input` for the current text-only assessment.
+  Preserve the exact retained `originalRequestBody` string inside that outer envelope.
+  Never parse and reconstruct the original request.
+- Question IDs become `name` values in an ordered question array.
+  The local decoder must check original count,
+  names,
+  ordering,
+  answer types,
+  and option membership.
+- Legacy `noul` becomes `predicate`;
+  choice criteria become `choices`;
+  score criteria become `levels`.
+  Existing structured question instructions also need explicit text encoding.
+- Answer maps become arrays,
+  and probability records become arrays of named values.
+  A question-level `refusal` must remain unresolved for that original question,
+  never become zero probability,
+  permission,
+  or a lost batch member.
+- Recheck the final encoded wire size under the existing one-MiB limit.
+  Preserve the original preparation-inclusive deadline,
+  attempts,
+  cancellation,
+  source/evidence identities,
+  and code-owned admission.
+
+Vendor descriptions of calibrated probabilities are not qualification evidence for this guard.
+The new endpoint does not establish complete host receipt,
+source authority,
+applicable scope,
+delegation,
+or installed activation.
+Its transport implementation and decoder checks remain unimplemented.
+
 ## Accepted next policy-consumer slice
 
 The user accepted this slice on 2026-10-08.
