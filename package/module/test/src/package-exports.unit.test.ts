@@ -11,6 +11,8 @@ await describe({
         : await import('../dist/final/neutral/index.mjs');
       const exportNames = Object.keys(harness,).toSorted();
       expect(exportNames,).toEqual([
+        'DEFAULT_CONCURRENCY',
+        'caught',
         'createScopedExpect',
         'describe',
         'expect',
