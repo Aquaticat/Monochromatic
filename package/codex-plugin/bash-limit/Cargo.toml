@@ -1,5 +1,5 @@
 [package]
-name = "monochromatic-dev-script-task-util"
+name = "monochromatic-codex-plugin-bash-limit"
 version = "0.0.2"
 edition = "2024"
 license = "LGPL-3.0-or-later"
@@ -7,11 +7,11 @@ description = "Native resource-limit hook for agent shell execution"
 repository = "https://github.com/Aquaticat/Monochromatic.git"
 readme = "README.md"
 publish = false
-homepage = "https://github.com/Aquaticat/Monochromatic/tree/main/package/dev-script/task-util"
+homepage = "https://github.com/Aquaticat/Monochromatic/tree/main/package/codex-plugin/bash-limit"
 
 [[bin]]
-name = "codex-worker-limit"
-path = "native/codex-worker-limit/main.rs"
+name = "codex-bash-limit"
+path = "src/main.rs"
 
 [dependencies]
 serde_json = "1"

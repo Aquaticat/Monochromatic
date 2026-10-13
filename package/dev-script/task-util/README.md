@@ -26,30 +26,6 @@ mise run buildAndTest -- package/dev-script/task-util/src/build-and-test.unit.te
 
 ## Binaries
 
-### codex-worker-limit
-
-Native Rust helper for Codex's Bash `PreToolUse` hook.
-It checks the shared Linux worker cgroup limits and prepends a membership write to the original command.
-An attachment failure stops the shell before that command executes.
-Codex's native sandbox and approval handling remain in place.
-
-`--initialize <absolute-parent-cgroup>` starts the configured slice if needed and creates its `codex` child.
-`--hook <absolute-parent-cgroup>` consumes Codex's JSON event on stdin and emits a command rewrite.
-Every error exits with status 2,
-which Codex treats as a blocked hook call.
-
-```sh
-# Repository root
-mise run //package/dev-script/task-util:build:worker-limit
-mise run //package/dev-script/task-util:test:worker-limit
-mise run //package/dev-script/task-util:lint:worker-limit
-```
-
-Installation,
-resource values,
-and measured overhead are recorded in
-[`codex-shell-worker-limits.md`](../../../doc/decision/codex-shell-worker-limits.md).
-
 ### task-command
 
 Wraps command execution to work around task runner limitations where tasks with

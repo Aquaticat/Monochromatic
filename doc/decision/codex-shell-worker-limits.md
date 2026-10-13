@@ -12,8 +12,8 @@ This request authorizes this focused exception to the general Codex integration 
 
 ## Implementation
 
-The maintained hook is the Rust `codex-worker-limit` binary in
-[`task-util`](../../package/dev-script/task-util/native/codex-worker-limit/main.rs).
+The maintained hook is the Rust `codex-bash-limit` binary in
+[`codex-plugin/bash-limit`](../../package/codex-plugin/bash-limit/src/main.rs).
 Codex's native Bash `PreToolUse` hook adds a cgroup membership write before the original command.
 The command cannot continue when attachment fails.
 The hook retains native sandbox and approval handling.
@@ -66,3 +66,12 @@ The suggested `jq` shortcut was unnecessary and was never installed as a hook.
 The Rust helper uses `serde_json` directly.
 Measure native host dispatch as well as standalone helper execution before claiming the latency target.
 Persistent hook installation and native host verification are pending.
+
+## Package and test ownership
+
+The user specified `package/codex-plugin/bash-limit` on 2026-10-13.
+This is a standalone Rust crate.
+Rust integration tests run through nextest;
+TypeScript does not test this crate.
+The earlier mixed-language placement in `task-util` was rejected and removed.
+Native fixture migration and verification are pending.
