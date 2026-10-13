@@ -23,15 +23,9 @@ await describe({
   name: parseWrapperKind.name,
   children: [
     it({
-      name: 'selects the incumbent for an empty value so runs without the variable keep their meaning',
+      name: 'selects the native executable for an empty value, the only wrapper there is',
       fn: async () => {
-        expect(parseWrapperKind('',),).toBe('incumbent',);
-      },
-    },),
-    it({
-      name: 'selects the incumbent by name',
-      fn: async () => {
-        expect(parseWrapperKind('incumbent',),).toBe('incumbent',);
+        expect(parseWrapperKind('',),).toBe('native',);
       },
     },),
     it({
@@ -41,10 +35,13 @@ await describe({
       },
     },),
     it({
-      name: 'rejects other values instead of falling back to the incumbent',
+      name: 'rejects other values, including the retired incumbent, instead of falling back to a default',
       fn: async () => {
         expect(function wrongCase() {
           return parseWrapperKind('Native',);
+        },).toThrow(WrapperSelectionError,);
+        expect(function retired() {
+          return parseWrapperKind('incumbent',);
         },).toThrow(WrapperSelectionError,);
         expect(function unknown() {
           return parseWrapperKind('shell',);
@@ -52,9 +49,8 @@ await describe({
       },
     },),
     it({
-      name: 'maps each kind to its own directory',
+      name: 'maps the native kind to its directory',
       fn: async () => {
-        expect(WRAPPER_BINS.incumbent,).toBe('/opt/cli-git/node_modules/.bin',);
         expect(WRAPPER_BINS.native,).toBe('/opt/native/bin',);
       },
     },),
@@ -65,10 +61,10 @@ await describe({
   name: verifyWrapperExecutable.name,
   children: [
     it({
-      name: 'accepts an ELF git as native and a script git as incumbent, and rejects each as the other kind',
+      name: 'accepts an ELF git as native, and rejects a script git and an absent git',
       fn: async () => {
         /**
-         Disposable directory holding one fake `git` per kind.
+         Disposable directory holding a fake ELF `git` and a fake script `git`.
          */
         await using root = await mkdtempDisposable(join(tmpdir(), 'wrapper-selection-',),);
         const elf = join(root.path, 'elf',);
@@ -80,11 +76,7 @@ await describe({
         await writeFile(join(script, 'git',), '#!/usr/bin/env node\n',);
         expect(await verifyWrapperExecutable({ kind: 'native', bin: elf, },),)
           .toBe(`wrapper=native ${join(elf, 'git',)} (ELF executable)`,);
-        expect(await verifyWrapperExecutable({ kind: 'incumbent', bin: script, },),)
-          .toBe(`wrapper=incumbent ${join(script, 'git',)} (Node script)`,);
         await expect(verifyWrapperExecutable({ kind: 'native', bin: script, },),)
-          .rejects.toThrow(WrapperSelectionError,);
-        await expect(verifyWrapperExecutable({ kind: 'incumbent', bin: elf, },),)
           .rejects.toThrow(WrapperSelectionError,);
         await expect(verifyWrapperExecutable({ kind: 'native', bin: join(root.path, 'absent',), },),)
           .rejects.toThrow(WrapperSelectionError,);

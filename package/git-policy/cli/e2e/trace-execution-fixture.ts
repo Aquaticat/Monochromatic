@@ -1,5 +1,5 @@
 /**
- Executes planned trace operations through the packed wrapper with bounded concurrency.
+ Executes planned trace operations through the wrapper with bounded concurrency.
 
  @module
  */

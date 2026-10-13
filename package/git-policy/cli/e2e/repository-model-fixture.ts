@@ -85,7 +85,7 @@ export type ScenarioRepository = Readonly<{
    */
   editorProgram: string;
   /**
-   Environment whose PATH puts the packed wrapper first.
+   Environment whose PATH puts the wrapper first.
    */
   wrapperEnv: NodeJS.ProcessEnv;
   /**
