@@ -174,9 +174,10 @@ for (const item of selected) {
   // A guard whose rule is enforced at two places names the second place in `also`, and both are removed together.
   const edits = [item, ...(item.also ?? [])].map(edit => ({ path: join(source, edit.file), original: readFileSync(join(source, edit.file), 'utf8'), edit }));
   try {
-    for (const { path, original, edit } of edits) {
-      const changed = replaceOne(original, edit.before, edit.after, edit.occurrence);
-      if (changed === original) throw new Error('Mutation did not change ' + edit.file);
+    for (const { path, edit } of edits) {
+      const current = readFileSync(path, 'utf8');
+      const changed = replaceOne(current, edit.before, edit.after, edit.occurrence);
+      if (changed === current) throw new Error('Mutation did not change ' + edit.file);
       writeFileSync(path, changed);
     }
     run(item, 'removed');

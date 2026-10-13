@@ -17,7 +17,7 @@ use super::render::{Paint, render, tile_cap, viewport_of};
 /// The allowance the window thread may spend on one new width.
 use super::rewrap::{REWRAP_LINES, REWRAP_RASTER_BYTES, REWRAP_WORK};
 /// Window sizing for exact text widths.
-use super::sidebar_tests::{TEXT_LEFT, resize};
+use super::sidebar_tests::TEXT_LEFT;
 /// The worker's pass gate.
 use super::tile_build::{BUILD_GATE, PASS_GATE};
 /// The wrap width rule.
