@@ -4,7 +4,7 @@ This runbook records how Claude sessions on the 16 core, 32 thread host are limi
 and how to tone the limit down or up.
 The user decided on 2026-10-13: the whole account may use all 32 threads,
 and Claude tool commands (including gate jobs run through `gate-slot.ts`) share one cap,
-currently 30 threads.
+currently 30 threads (lowered to 28 by the tone-down rule, then raised back by the user).
 
 ## What enforces the limits
 
@@ -57,9 +57,23 @@ The columns are UTC time, Tctl, Tccd1, Tccd2, package watts, average clock, CPU 
 then the six Corsair fan RPMs and the Corsair temperature reading.
 That last reading is the Corsair controller's temperature probe,
 which the user attached to the top of the air cooler (CoolerControl labels it `temp1`),
-so it follows the air leaving the heatsink and should rise under sustained load; it is not an ambient reading.
+so it was expected to follow the air leaving the heatsink.
+In the first 33 minutes of data it stayed between 25.5 and 26.2 degrees from 42 to 149 W,
+so it behaves like a room-temperature reading; the cause is not found (see the handover).
 The fan values come from the local CoolerControl API with an access token kept in
 `~/.config/claude-cpu-cap/cc-token` (owner-only permissions).
+The remaining columns judge how well the CPU hands heat to the cooler:
+package watts split between the first chiplet (cores 0 to 7) and the second (cores 8 to 15),
+the six motherboard readings of the `gigabyte_wmi` driver, the ACPI zone, the NVMe temperature, and a `burst` flag.
+No source names what the six motherboard readings measure on the B650 GAMING X AX (the driver reads six numbered
+firmware channels), so they are logged raw;
+the third one (`board3_c`) follows the CPU temperature, the fifth moves by about 3 degrees with load,
+and the rest stay within 2 degrees.
+The ACPI zone is constant at 16.8 degrees.
+The core split assumes the first eight cores form the first chiplet; 251 of 253 clear rows agree with it
+(the chiplet drawing more watts is the one with the hotter CCD).
+While package power steps by more than 25 watts between two 2-second passes, the service logs every pass for 90 seconds
+(`burst` is 1), because the first seconds after a load step show the die-to-heatsink path best.
 When the token is rejected, for example after the user rotates it, the service prints one `FAN-READ-FAILED` line,
 leaves the fan columns empty, and prints `FAN-READ-RECOVERED` once a working token is in the file.
 Alert lines carry package watts and the average clock, but not fan speed:
