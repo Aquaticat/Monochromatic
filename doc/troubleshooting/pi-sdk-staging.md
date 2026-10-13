@@ -1,5 +1,100 @@
 # Pi 0.87.1 nominal dependency inventory rejects the configured workspace graph
 
+## Pi 1.1.0 extension receipt fixtures and main-only imports
+
+### Symptoms
+
+The first extension receipt fixture failed with Node's
+`TypeError: Cannot read properties of undefined (reading 'description')`
+in `extension-tool-input.test.mjs` (`proc_af3f` and `proc_f39c`).
+It queried `session.getToolDefinition()` while configuring `tools: []`.
+Binding extensions did not resolve the lookup.
+The earlier explanation that binding caused the missing definition was incorrect.
+
+The expanded stager also failed with
+`TypeError: Cannot read properties of undefined (reading '.')`
+at `metadata.exports[subpath]` (`proc_5a5e`).
+That helper assumed every native dependency declared an export map.
+
+### Source findings
+
+In installed Pi 1.1.0,
+`package/pi-plugin/auto-mode/node_modules/@earendil-works/pi-coding-agent/dist/core/sdk.js:153`
+selects an allowlist from the explicit tool option:
+
+```javascript
+// Installed Pi 1.1.0 dist/core/sdk.js:153
+const allowedToolNames = toolModifiers
+    ? options.noTools === "all"
+        ? selectedToolNames
+        : undefined
+    : (options.tools ?? (options.noTools === "all" ? [] : undefined));
+```
+
+`package/pi-plugin/auto-mode/node_modules/@earendil-works/pi-coding-agent/dist/core/agent-session.js:2821`
+filters extension definitions before placing them in the session definition registry:
+
+```text
+// Installed Pi 1.1.0 dist/core/agent-session.js:2821
+.filter((tool) => this._isAllowedTool(tool.definition.name));
+```
+
+The native registration map and the session's allowed definition registry are different evidence surfaces.
+Installed `dist/core/extensions/loader.js:231` receives and validates `registerTool(tool)`,
+then replaces `extension.tools` by name before calling `runtime.refreshTools()`.
+An excluded session definition does not prove registration never received the input.
+
+The installed `@earendil-works/pi-tui` 1.1.0 `package.json` has
+`"type": "module"` and `"main": "dist/index.js"`,
+without `exports`.
+The owned stager's unconditional export-map lookup caused the import failure.
+
+### Correction and verification
+
+The fixture now checks the native extension registration map directly.
+An additional `--allow-hidden` case names the tool in the allowlist
+and verifies the session definition while its hidden exposure still prevents activation.
+This distinguishes received input,
+registration,
+allowed definitions,
+and active declarations without assigning policy authority to any of them.
+
+The stager uses the package's declared `main` only for a root import when `exports` is absent.
+It preserves native package-relative loader resolution
+and stages resource and extension loader observations without changing installed files.
+`proc_1073` passed the original receipt test;
+`proc_6749` passed resource bounds,
+inline excluded/allowed registration,
+and actual file loading with a native Pi AI compatibility import.
+The stager reported SDK 1.1.0 and 13 copied native modules.
+All those fixtures made zero provider requests.
+
+The owning inner command is
+`mise --no-env --no-hooks run --skip-tools test:extension-tool-input`
+in private `contract/integration/native-batch`.
+Use the restricted worker wrapper recorded in the current frontier.
+The default and `--allow-hidden` cases are separate controls;
+changing the allowlist is not required to retain a rejected or excluded original receipt.
+
+### Rejected remedies and upstream filing decision
+
+Do not infer original-input absence from a filtered session registry.
+Do not weaken the source-domain requirement,
+downgrade Pi,
+or guess a package entry filename to avoid these fixture and stager errors.
+
+No upstream filing is warranted:
+
+- Upstream fault is not established;
+  the failures were owned test and staging assumptions.
+- Fixability is demonstrated by the consumer changes and native invocations.
+- Supported SDK allowlisting and package entry metadata remain unchanged.
+- Contribution policy was not investigated because no upstream defect is being proposed.
+- Maintainer willingness is not asserted and does not override the failed fault condition.
+- No upstream patch prototype is needed for these consumer-side corrections.
+
+There is no upstream issue or comment draft to add.
+
 ## Private document verification still imported the deleted Markdown CLI
 
 ### Symptom and owner change

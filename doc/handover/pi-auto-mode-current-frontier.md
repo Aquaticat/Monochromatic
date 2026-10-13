@@ -601,6 +601,79 @@ Eleven-document rendering passed `proc_c7e4` before this final evidence update.
 
 The unassociated ordinary request domain and other unconsumed producer relationships remain explicit.
 
+## Original loadout callback output gap
+
+The next concrete domain failure is verified by `1e60894f` / `proc_eb28`.
+Its native single-output control retained the callback instruction.
+When a later callback replaced that description,
+native loadout processing still reached the expected final description,
+but the original callback output was absent from governing sources.
+`Agent.state.tools` observes the combined result,
+not every earlier callback output received by the host.
+
+The remedy must observe original callback input/output processing,
+preserve receiver and getter behavior,
+and retain later failure and cancellation semantics.
+No implementation has been added for this gap yet.
+The existing limits and the prohibition on invented domain completeness remain unchanged.
+
+## Original extension registration inputs
+
+The native extension API can receive a tool definition,
+then replace it under the same name before any loadout or request exposes the original text.
+`3cee6795` / `proc_f002` reached the required retention failure after verifying the native registration map.
+The earlier fixture failures queried the filtered session registry;
+[the staging diagnosis](../troubleshooting/pi-sdk-staging.md) records that correction.
+
+The private implementation reuses the existing bounded input store and publication aliases.
+The native resource loader owns its registration receipts in a private field.
+`registerTool` observation occurs on the actual argument frame before native validation and map updates.
+The source kind is `native-resource-tool-input`,
+origin `native-extension-register-tool`,
+location `extensionTool`,
+and method `registerTool`.
+Original resource occurrences and publication references remain distinct from Session occurrences,
+registration success,
+authority,
+and payload eligibility.
+
+The staged SDK now copies 13 native modules,
+including the resource and extension loaders,
+without editing installed sources or historical generated artifacts.
+Resource records retain the one-MiB resource bound;
+Session records retain their four-MiB bound.
+Native counter readers also enforce the shared 64-input/four-MiB limit across both owners.
+The combined resource observation remains bounded to one MiB.
+None of these counters establishes governing-domain completeness.
+
+`proc_6749` passed owner limits,
+inline excluded/allowed definitions,
+and actual file-loaded extension replacement.
+`proc_ceb6` passed rejected-registration retention and irreversible collector retirement.
+Getter counts matched installed behavior:
+description zero/zero and parameters three/three.
+Native and observer falsy failures stayed exact.
+`proc_bcf4` passed canonical retention and entry/binding/oversize/reset/disposal controls,
+with zero protected executions or provider requests.
+New resource receipts cannot enter the manager-only post-emission handoff.
+
+Action/source parents passed `proc_797c`.
+Before aggregate-counter changes,
+`proc_8d4b` passed original-source variants and all 181 integrated input cases with empty child stderr.
+The counter controls passed `proc_9aa1`;
+`proc_9143` accepted 64 combined native receipts and rejected 65 while each store remained below its own cap.
+The disposable guard omission `proc_df1c` failed with
+`Missing expected exception (InputReceiptBudgetError)`.
+The maintained guard was not removed.
+`proc_d80a` passed the final aggregate-counter integration:
+original-source variants and all 182 integrated input cases,
+with empty child stderr and zero provider requests.
+
+This repairs original extension-input loss.
+It does not close `request-source-domain`,
+qualify model accuracy,
+or complete maintained installation and genuine approval verification.
+
 ## Original Agent tool-setter receipts
 
 The native `Agent.state.tools` setter receives declaration data even when the caller later clears or restores it.
