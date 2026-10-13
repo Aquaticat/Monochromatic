@@ -1584,9 +1584,11 @@ that is verification, not a decision for the user.
   `forbidden-strings` dependency during this session, after the gate, a dry-run publish and a real-credential
   commit have passed.
   CPU hold (user, 2026-10-13, raised to 75 percent on 2026-10-14, until "release hold"): the host is a 16 core, 32 thread
-  Ryzen 9 7950X with 62 GiB RAM; heavy work runs only through `~/temp/agent/gate-slot.ts` (six slots, each capped at
-  400 percent CPU, lowest weight, 24 of 32 threads at most) or the `systemd-run --user --scope` prefix with
-  `CPUQuota=400%`, and oxlint and tsc run with at most four threads.
+  Ryzen 9 7950X with 62 GiB RAM, and Claude tool commands and gates share one 75 percent cap, the `claude-code-bash`
+  cgroup (`cpu.max` 2400000 100000, 24 of 32 threads, runtime setting that does not survive a reboot).
+  Heavy work runs through `~/temp/agent/gate-slot.ts` (six slots at `nice --adjustment=19`, no per-slot quota; the
+  command stays in the shared cgroup), and oxlint and tsc run with at most four threads.
+  Commands started with `systemd-run` leave the shared cap, so use them only for jobs that need their own limit.
   `nproc` reports 16 inside shells with a restricted affinity; use `nproc --all` or `lscpu` for the real count.
   Open: the `replay-core` branch holds unmerged mutation work, `monochromatic-lint` shim lookup fails outside the
   repository (the linter must be on `PATH` as a real binary), and the trailing gates below are untouched.
