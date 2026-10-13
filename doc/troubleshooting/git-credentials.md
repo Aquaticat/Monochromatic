@@ -185,6 +185,78 @@ binary in all gh invocations on this machine.
   indirection (shim -> mise binary,
    not shim -> gh binary).
 
+## Native push wrapper loses the inherited environment
+
+### Observed failure and contrast
+
+During auto-mode migration work,
+commit `59d5d36943` was saved locally,
+but its auto-push reported
+`fatal: could not read Username for 'https://github.com': No such device or address`.
+A separate `git push origin main` in `proc_67eb` failed in `git-policy-cli` with
+`code: content-unavailable` and
+`Git could not determine push updates` wrapping the same Git credential diagnostic.
+Neither invocation establishes a successful push.
+
+In the same restricted launcher,
+`gh auth status` reported an active keyring account,
+and `git config --show-origin --get-regexp credential` showed the stable mise shim helper.
+`git ls-remote origin refs/heads/main` then succeeded.
+These probes distinguish this push-path failure from a universally unavailable credential or remote.
+They do not prove token expiry or a broken version-pinned helper.
+
+### Source evidence
+
+The native manual-push path in
+`package/git-policy/cli/src/native/wrapped_command.rs:535`
+supplies only the child overlay to `PushGit`:
+
+```rust
+// package/git-policy/cli/src/native/wrapped_command.rs
+let git = PushGit {
+    real_git: context.real_git,
+    cwd,
+    environment: context.overlay,
+};
+```
+
+The post-commit path does the same at
+`package/git-policy/cli/src/native/commit_command.rs:223`.
+`package/git-policy/cli/src/native/auto_push_single_flight.rs:202`
+clears the environment before applying that field:
+
+```rust
+// package/git-policy/cli/src/native/auto_push_single_flight.rs
+command
+    .current_dir(&git.cwd)
+    .env_clear()
+    .envs(git.environment.iter().map(|pair| {
+        return (&pair.0, &pair.1);
+    }))
+    .args(arguments);
+```
+
+`package/git-policy/cli/src/native/child_environment.rs:307`
+constructs the overlay from lock-PID configuration additions and the forward-target marker,
+not the full caller environment.
+Its stated contract explicitly requires the remaining caller environment to be inherited.
+The push builder therefore conflicts with that overlay contract.
+This source finding is consistent with the credential failure;
+no patched-binary contrast has yet established recovery for this incident.
+
+### Disposition
+
+No credential settings,
+tokens,
+Git policies,
+or wrapper source were changed during this diagnosis.
+Repeating the ordinary push did not recover it.
+The migration continues with local commits;
+remote publication remains unverified.
+This is a repository-owned wrapper finding,
+not evidence of an upstream Git or GitHub CLI defect.
+No upstream report or speculative configuration workaround is warranted by these observations.
+
 ## Token expiry note
 
 `gh auth status` may show a `gho_*` token (OAuth) rather than a
