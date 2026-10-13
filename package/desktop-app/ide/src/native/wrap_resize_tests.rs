@@ -16,6 +16,8 @@ use super::overscan_tile_tests::{counts, reset, worker_counts};
 use super::render::{Paint, render, tile_cap, viewport_of};
 /// The allowance the window thread may spend on one new width.
 use super::rewrap::{REWRAP_LINES, REWRAP_RASTER_BYTES, REWRAP_WORK};
+/// The scrolling rule's clock and the check for a map that waits.
+use super::rows::{due, hold_clock};
 /// Window sizing for exact text widths.
 use super::sidebar_tests::TEXT_LEFT;
 /// The worker's pass gate.
@@ -939,6 +941,18 @@ fn a_measurement_applied_before_the_tile_of_a_new_width_leaves_no_stale_heights(
             && current.shown.width == current.width;
     });
     settled(&opened);
+    // What: The map follows the table of heights only once the reader has stopped scrolling for the quiet time, and
+    //       the final tile and measurement of this test come within it of the scroll that started it, so the clock
+    //       of that rule is moved past it and the window is asked until the map has caught up.
+    // Why: The heights this test compares are those of the map; a fast host reaches the comparison before the quiet
+    //      time has passed, which is the rule working and not a stale height.
+    hold_clock(Some(
+        std::time::Instant::now() + std::time::Duration::from_secs(10),
+    ));
+    until("the map did not follow the table of heights", || {
+        return !due(&mut opened.source.borrow_mut(), scale);
+    });
+    hold_clock(None);
     let current = opened.source.borrow();
     let mut shaper = TextShaper::new();
     let fresh = shaper.measure_lines(&current.document, 0..lines, scale, Some(current.width), &[]);
