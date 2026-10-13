@@ -90,6 +90,15 @@ import androidx.compose.material3.Surface
 // ```
 import androidx.compose.runtime.Composable
 
+// What:     `import androidx.compose.runtime.CompositionLocalProvider` hands one value to every composable below it.
+// Why:      The scenes name the playing track through the same composition local the production host provides.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// import { Provider } from "react"; // a context provider
+// ```
+import androidx.compose.runtime.CompositionLocalProvider
+
 // What:     `import androidx.compose.runtime.getValue` and `setValue` let a delegated state be read and written.
 // Why:      The host keeps the picker and the selected page in delegated state.
 //
@@ -546,7 +555,10 @@ class ProductionScreenActivity : ComponentActivity() {
             playerTheme {
                 // A Surface supplies the content color and canvas, as the production activity's root does.
                 Surface(modifier = Modifier.fillMaxSize()) {
-                    ProductionScreenHost(startWithPicker = startWithPicker, scene = scene)
+                    // The sample rows carry no playing flag, so the scenes name the playing track as the host does.
+                    CompositionLocalProvider(LocalPlayingIndex provides SAMPLE_CURRENT_INDEX) {
+                        ProductionScreenHost(startWithPicker = startWithPicker, scene = scene)
+                    }
                 }
             }
         }

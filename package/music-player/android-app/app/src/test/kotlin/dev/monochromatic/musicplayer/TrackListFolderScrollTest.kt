@@ -39,16 +39,16 @@ import org.junit.Test
 /** Verifies which list item the folder reveal scrolls to for each arrangement of playing row and headers. */
 class TrackListFolderScrollTest {
     // What:     `private fun row(...)` builds one track row entry.
-    // Why:      Each case states only the library index and whether the row is the playing one.
+    // Why:      Each case states only the library index; the playing row is named to the function under test by its
+    //           index, because the rows of a page carry no playing flag.
     //
     // In TS you'd write (pseudocode):
     // ```ts
-    // const row = (index: number, current = false): TrackListEntry =>
-    //   ({ kind: "row", row: { indexInLibrary: index, current } });
+    // const row = (index: number): TrackListEntry => ({ kind: "row", row: { indexInLibrary: index } });
     // ```
-    /** Builds one track row entry with the given library index and playing flag. */
-    private fun row(index: Int, current: Boolean = false): TrackListEntry = TrackListEntry.RowEntry(
-        TrackRowModel(indexInLibrary = index, title = "Track $index", supportingLine = null, isCurrent = current),
+    /** Builds one track row entry with the given library index. */
+    private fun row(index: Int): TrackListEntry = TrackListEntry.RowEntry(
+        TrackRowModel(indexInLibrary = index, title = "Track $index", supportingLine = null, isCurrent = false),
     )
 
     // What:     `private fun header(...)` builds one subfolder header entry.
@@ -67,15 +67,15 @@ class TrackListFolderScrollTest {
     // In TS you'd write (pseudocode):
     // ```ts
     // test("playing row in subfolder", () => {
-    //   expect(folderScrollIndexFor([row(0), header("Live"), row(1, true)])).toBe(1);
+    //   expect(folderScrollIndexFor([row(0), header("Live"), row(1)], 1)).toBe(1);
     // });
     // ```
     /** A playing row inside a subfolder scrolls to that subfolder's header. */
     @Test
     fun playingRowInSubfolderScrollsToItsHeader() {
         /** Own track, then the Live subfolder header with the playing track under it. */
-        val entries: List<TrackListEntry> = listOf(row(0), header("Live"), row(1, current = true), row(2))
-        assertEquals(1, folderScrollIndexFor(entries))
+        val entries: List<TrackListEntry> = listOf(row(0), header("Live"), row(1), row(2))
+        assertEquals(1, folderScrollIndexFor(entries, playingIndex = 1))
     }
 
     // What:     `@Test fun playingRowDirectlyInFolderScrollsToTop()` checks a playing row with no header above it.
@@ -84,15 +84,15 @@ class TrackListFolderScrollTest {
     // In TS you'd write (pseudocode):
     // ```ts
     // test("playing row in folder", () => {
-    //   expect(folderScrollIndexFor([row(0, true), header("Live"), row(1)])).toBe(0);
+    //   expect(folderScrollIndexFor([row(0), header("Live"), row(1)], 0)).toBe(0);
     // });
     // ```
     /** A playing row directly in the folder, with only subfolders after it, scrolls to the top of the list. */
     @Test
     fun playingRowDirectlyInFolderScrollsToTop() {
         /** Own playing track first, then a subfolder header with its own tracks after it. */
-        val entries: List<TrackListEntry> = listOf(row(0, current = true), header("Live"), row(1))
-        assertEquals(0, folderScrollIndexFor(entries))
+        val entries: List<TrackListEntry> = listOf(row(0), header("Live"), row(1))
+        assertEquals(0, folderScrollIndexFor(entries, playingIndex = 0))
     }
 
     // What:     `@Test fun nearestHeaderAboveThePlayingRowWins()` checks a playing row under a later subfolder.
@@ -101,7 +101,7 @@ class TrackListFolderScrollTest {
     // In TS you'd write (pseudocode):
     // ```ts
     // test("nearest header", () => {
-    //   expect(folderScrollIndexFor([row(0), header("Live"), row(1), header("Remix"), row(2, true)])).toBe(3);
+    //   expect(folderScrollIndexFor([row(0), header("Live"), row(1), header("Remix"), row(2)], 2)).toBe(3);
     // });
     // ```
     /** With several subfolders above the playing row, the scroll goes to the nearest header, which is the row's own. */
@@ -113,9 +113,9 @@ class TrackListFolderScrollTest {
             header("Live"),
             row(1),
             header("Remix"),
-            row(2, current = true),
+            row(2),
         )
-        assertEquals(3, folderScrollIndexFor(entries))
+        assertEquals(3, folderScrollIndexFor(entries, playingIndex = 2))
     }
 
     // What:     `@Test fun playingOwnTrackBeforeAnyHeaderScrollsToTop()` checks an own track listed first.
@@ -124,15 +124,15 @@ class TrackListFolderScrollTest {
     // In TS you'd write (pseudocode):
     // ```ts
     // test("own track before headers", () => {
-    //   expect(folderScrollIndexFor([row(0), row(1, true), header("Live"), row(2)])).toBe(0);
+    //   expect(folderScrollIndexFor([row(0), row(1), header("Live"), row(2)], 1)).toBe(0);
     // });
     // ```
     /** A playing own track listed before every subfolder header scrolls to the top of the list. */
     @Test
     fun playingOwnTrackBeforeAnyHeaderScrollsToTop() {
         /** Two own tracks, the second playing, then a subfolder header and its track. */
-        val entries: List<TrackListEntry> = listOf(row(0), row(1, current = true), header("Live"), row(2))
-        assertEquals(0, folderScrollIndexFor(entries))
+        val entries: List<TrackListEntry> = listOf(row(0), row(1), header("Live"), row(2))
+        assertEquals(0, folderScrollIndexFor(entries, playingIndex = 1))
     }
 
     // What:     `@Test fun noPlayingRowScrollsToTop()` checks a list with no playing row.
@@ -140,14 +140,14 @@ class TrackListFolderScrollTest {
     //
     // In TS you'd write (pseudocode):
     // ```ts
-    // test("no playing row", () => expect(folderScrollIndexFor([header("Live"), row(1)])).toBe(0));
+    // test("no playing row", () => expect(folderScrollIndexFor([header("Live"), row(1)], null)).toBe(0));
     // ```
     /** A list without a playing row scrolls to the top, even when it has subfolder headers. */
     @Test
     fun noPlayingRowScrollsToTop() {
         /** Subfolder header and its track, neither of them playing. */
         val entries: List<TrackListEntry> = listOf(header("Live"), row(1))
-        assertEquals(0, folderScrollIndexFor(entries))
+        assertEquals(0, folderScrollIndexFor(entries, playingIndex = null))
     }
 
     // What:     `@Test fun emptyListScrollsToTop()` checks an empty list.
@@ -155,11 +155,11 @@ class TrackListFolderScrollTest {
     //
     // In TS you'd write (pseudocode):
     // ```ts
-    // test("empty list", () => expect(folderScrollIndexFor([])).toBe(0));
+    // test("empty list", () => expect(folderScrollIndexFor([], null)).toBe(0));
     // ```
     /** An empty list gives the top of the list as the target. */
     @Test
     fun emptyListScrollsToTop() {
-        assertEquals(0, folderScrollIndexFor(emptyList()))
+        assertEquals(0, folderScrollIndexFor(emptyList(), playingIndex = null))
     }
 }
