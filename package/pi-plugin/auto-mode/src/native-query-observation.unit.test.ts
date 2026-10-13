@@ -9,24 +9,7 @@ import {
 } from '@monochromatic-dev/pi-plugin-auto-mode';
 import { describe, expect, it, } from '@monochromatic-dev/module-test/ts';
 
-/**
- Record thrown values without confusing undefined with normal return.
-
- @param run - tested operation
-
- @returns thrown-value occurrences, empty on normal return
- */
-function thrownValues(run: () => void,): readonly unknown[] {
-  /** Test-local occurrence list retains exact values without formatting them. */
-  const values: unknown[] = [];
-  try {
-    run();
-  }
-  catch (error) {
-    values.push(error,);
-  }
-  return values;
-}
+import { throwNativeValue, thrownValues, } from './native-query-test-fixture.ts';
 
 await describe({
   name: createNativeQueryObservation.name,
@@ -37,13 +20,20 @@ await describe({
       name: 'forwards original frames to their fixed receivers without freezing borrowed values',
       fn: async function checkForwarding() {
         const received: unknown[] = [];
-        const input = {}, output = {};
+        const input = {};
+        const output = {};
         const receivers = {
-          captureInput(frame: unknown,): undefined { received.push(frame,); },
-          captureOutput(frame: unknown,): undefined { received.push(frame,); },
+          captureInput: function recordInput(this: void, frame: unknown,): undefined {
+            received.push(frame,);
+          },
+          captureOutput: function recordOutput(this: void, frame: unknown,): undefined {
+            received.push(frame,);
+          },
         };
         const observation = createNativeQueryObservation(receivers,);
-        receivers.captureInput = function replaced(): undefined { throw new Error('Replacement must not be called',); };
+        receivers.captureInput = function replaced(): undefined {
+          throw new Error('Replacement must not be called',);
+        };
         observation.captureInput(input,);
         observation.captureOutput(output,);
         observation.assertHealthy();
@@ -65,22 +55,32 @@ await describe({
         return it({
           name: `${phase} retains exact failure ${index} after successful recapture`,
           fn: async function checkFailure() {
-            let fails = true;
+            const behavior = { fails: true, };
             const observation = createNativeQueryObservation({
-              captureInput(): undefined { if (fails) throw original; },
-              captureOutput(): undefined { if (fails) throw original; },
+              captureInput(): undefined {
+                if (behavior.fails)
+                  throwNativeValue(original,);
+              },
+              captureOutput(): undefined {
+                if (behavior.fails)
+                  throwNativeValue(original,);
+              },
             },);
-            const first = thrownValues(function capture() { observation[phase]({},); },);
+            const first = thrownValues(function capture() {
+              observation[phase]({},);
+            },);
             expect(first.length,).toBe(1,);
             expect(first[0],).toBe(original,);
-            fails = false;
+            behavior.fails = false;
             observation[phase]({},);
             const after = thrownValues(observation.assertHealthy,);
             expect(after.length,).toBe(1,);
             expect(after[0],).toBe(original,);
             const nativeError = new Error('Native callback failed',);
             const reportError = new Error('Native reporting failed',);
-            const [aggregate,] = thrownValues(function report() { observation.reportFailed({ nativeError, reportError, },); },);
+            const [aggregate,] = thrownValues(function report() {
+              observation.reportFailed({ nativeError, reportError, },);
+            },);
             if (!(aggregate instanceof AggregateError))
               throw new Error('Expected observation and native reporting failures together',);
             expect(aggregate.errors,).toEqual([original, nativeError, reportError,],);
@@ -95,11 +95,15 @@ await describe({
       fn: async function checkFirstFailure() {
         const later = new Error('Later output failure',);
         const observation = createNativeQueryObservation({
-          captureInput(): undefined { throw false; },
+          captureInput(): undefined { throwNativeValue(false,); },
           captureOutput(): undefined { throw later; },
         },);
-        expect(thrownValues(function input() { observation.captureInput({},); },),).toEqual([false,],);
-        expect(thrownValues(function output() { observation.captureOutput({},); },),).toEqual([later,],);
+        expect(thrownValues(function input() {
+          observation.captureInput({},);
+        },),).toEqual([false,],);
+        expect(thrownValues(function output() {
+          observation.captureOutput({},);
+        },),).toEqual([later,],);
         expect(thrownValues(observation.assertHealthy,),).toEqual([false,],);
       },
     },),
@@ -108,13 +112,18 @@ await describe({
       fn: async function checkProxyFailure() {
         const reflections: object[] = [];
         const original = new Proxy({}, {
-          getPrototypeOf(target: object,): object { reflections.push(target,); return Object.prototype; },
+          getPrototypeOf(target: object,): object {
+            reflections.push(target,);
+            return Object.prototype;
+          },
         },);
         const observation = createNativeQueryObservation({
-          captureInput(): undefined { throw original; },
+          captureInput(): undefined { throwNativeValue(original,); },
           captureOutput(): undefined {},
         },);
-        expect(thrownValues(function capture() { observation.captureInput({},); },)[0],).toBe(original,);
+        expect(thrownValues(function capture() {
+          observation.captureInput({},);
+        },)[0],).toBe(original,);
         expect(thrownValues(observation.assertHealthy,)[0],).toBe(original,);
         expect(reflections.length,).toBe(0,);
         Reflect.getPrototypeOf(original,);
@@ -134,7 +143,9 @@ await describe({
             captureInput(): undefined {},
             captureOutput(): undefined {},
           },);
-          const failures = thrownValues(function report() { observation.reportFailed({ nativeError: 'callback', reportError, },); },);
+          const failures = thrownValues(function report() {
+            observation.reportFailed({ nativeError: 'callback', reportError, },);
+          },);
           expect(failures.length,).toBe(1,);
           expect(failures[0],).toBe(reportError,);
           observation.assertHealthy();

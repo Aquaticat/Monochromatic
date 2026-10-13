@@ -576,7 +576,8 @@ carry D11's accepted Settings pane into the current Fold player and its
 light/dark schemes.
 The source audit is done.
 Production Settings is a page-control chooser,
-not D11's three rows.
+not D11's three rows
+(note 2026-10-13: the chooser and every page-control style are deleted, D120, and Settings follows D109).
 The proposed placement to build follows D51:
 Settings on the right of the inner panel with the browser and deck kept,
 and one full-width destination on the cover.
@@ -7169,7 +7170,8 @@ adjusted in OKLCH.
 D59 records the directive.
 The corrected debug-only prototype commit `b471ec537` derives span fill
 from `MaterialTheme.colorScheme.primary` (the A3 OS accent) through the
-existing `mixOklchWithNeutral` utility;
+existing `mixOklchWithNeutral` utility
+(note 2026-10-13: that utility is deleted, and the match fill is now a `core/ThemeRoles.kt` role, D108);
 it changes neither result membership nor item activation.
 The installed disposable APK and local build share SHA-256
 `7195af99031158bfb8efce2abab3c98ebaf17928739c290010bc6dea1317244f`.

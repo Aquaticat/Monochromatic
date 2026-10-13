@@ -207,18 +207,11 @@ and the decisions D106 to D119 at the end of `package/music-player/design/decisi
 
 ### Open, not started
 
-- Waiting on the human:
-  - the play circle and the first-run primary pill are filled with `primary`, so the 2 px near ring merges with the
-    fill and the disc looks about 2 px larger while focused (the spec is kept as written; the alternatives are a gap
-    or an `on-primary` ring inside);
-  - rows in clipped lists (tracks, folders, Search results, template editor fields) draw the ring just inside their own
-    edge, because an outside ring would be clipped;
-  - deleting the dead page-control chain on Android (`FoldablePageControls.kt`, `LedPageControls.kt`,
-    `PageControlStyle.kt`, the `pageTabs` block in `MainActivity.kt`, `SessionStore.loadPageControlStyle` and
-    `savePageControlStyle`, two test files), the only place the old gray literals remain; an agent's delete was denied
-    by the permission system;
-  - the D108 retune (primary moved 3.46 delta-E), the D112 veto, the accent chroma floor of D118 (orchestrator reading),
-    filing the two Turso bugs from issue 678, and `targetSdk` staying on 36 until a device test.
+- Nothing waits on the human. D120 and D121 (2026-10-12 and 2026-10-13) answered every question this handover had
+  open: the ring on `primary`-filled elements stays as specified, rows in clipped lists draw the ring just inside their
+  edge, the page-control chain was deleted (`1635237e73`; its leftover stub, the Compose OKLCH adapters and the docs
+  that described the styles went on 2026-10-13), the accent chroma floor and the D108 retune stay, the two Turso bugs
+  are not filed, and `targetSdk` stays on 36. Ask any new question through the question tool, never in prose.
 - Known defects not fixed: Android can hit an ANR in `PlayerHostModel.rowEntriesFor` (`PlayerHost.kt:534`) when a very
   large folder (thousands of rows) is selected, because rows rebuild on every analysis step (report in
   `~/temp/agent/agent-android-final/bugreport1/br1.zip`); `loadTemplate` runs on the main thread once (435 ms).
@@ -232,14 +225,44 @@ and the decisions D106 to D119 at the end of `package/music-player/design/decisi
   no device latency is subtracted from the audible position; cross-format joins are not gapless.
 - Not repeated on the device after the last Android changes: loose tracks, `In order` at the end of a folder, Search
   below the status bar, light and dark with three accents (dark was done).
-- Stale docs: `HANDOVER.peak-sweep-optimization.md` and `DECISION.peak-sweep-parallelism.md` in `android-app` still say
-  the service starts from `MainActivity.onCreate`; the Rust comment blocks the repo's skill asks for; the polish list
-  (task 64: empty Folders pane at 443 px with a persisted session, README taskbar text).
+- Stale docs: the Rust comment blocks the repo's skill asks for; the polish list (task 64: empty Folders pane at 443 px
+  with a persisted session, README taskbar text); the screenshot gallery and treatment text in
+  `package/music-player/README.md`, which still show the replaced desktop page-tab window and the deleted Android
+  page-control styles. The peak-sweep start path in `android-app/HANDOVER.peak-sweep-optimization.md` and
+  `android-app/DECISION.peak-sweep-parallelism.md` was corrected on 2026-10-13.
 - Hygiene: `~/temp/agent/agent-polish2/work/` and `~/temp/agent/agent-refresh-cost/lib-1m` (12 GB) hold scratch libraries
   that can be deleted. A failed decode is retried at every library change, one decode per failed file per change.
 - Rate limit: on 2026-10-12 the Sonnet weekly limit stopped five agents mid-run; a re-login lifted it and they were
   resumed. Their work is committed; check `git log` before relaunching anything.
 - Never verified: a real Plasma session, macOS, Windows, real Android hardware, Android API 33 to 36 for D107.
+
+### Mistakes made in this effort, and what corrected them
+
+Read these before repeating them. Each one cost the human a correction.
+
+- Loose tracks were misread twice (first as an "Unfiled" folder, then as flat entries). The human decided that a loose
+  root track lives in a virtual folder named by its rail letter (D28 for non-Latin initials, "#" for the rest). Reviewer
+  finding LS1/M2 ("A" as a defect) was not a defect.
+- The 0.3636 split ratio on devices without a crease (D110) and the Hangul font and test profile (D116) were listed as
+  open after the human had decided them. Check `decisions.md` before listing anything as open.
+- F5, Ctrl+Shift+F5, Shift+F10 and a "Re-analyze" menu row were added unasked. Refresh and re-analysis are never exposed
+  (D113); Shift+F10 is "Run" in JetBrains and is unbound (D114).
+- The nested compositor was pinned to 0.4.0 in the e2e config and committed (`e64f02e07e`) before the human said it
+  needs no pin because the repo controls it. The pin was removed in `a0552c4cfc`.
+- The compositor was said to be unable to do something it could do after a feature was added; the human had already
+  authorized adding features to it.
+- Browser focus-ring behavior was asserted from memory. Reading the Firefox and Chromium sources showed the memory was
+  of the 2019 Firefox `outline: 1px dotted`, and D117 was revised twice before the Firefox form was chosen.
+- The agent-reported failed-decode retry rule (retry only when a path is named) contradicted D113 ("next library
+  change") and was sent back before it was accepted. Compare agent output against the decision text, not the agent's
+  own summary.
+- Decisions were left as "waiting on the human" in prose and in this handover instead of asked through the question
+  tool. Corrected on 2026-10-13; the same day the answers became D120 and D121.
+- A turn ended with tracked work still queued (the polish list), and the report said "not started". Tracked work left
+  means start the next item in the same turn.
+- A wait loop that used `pgrep --full` matched itself and ran for 14 hours; it was killed by PID. Wait on a unit state
+  or a file, never on a pattern that can match the waiting command.
+- A command ran `rg` without a path and read the worktree root. Always pass a path.
 
 ## Queue
 

@@ -29,7 +29,7 @@
 //     service to load once a source can be read, and shows `playerScreen`, which
 //     draws the first-run pane over the player when the open source needs it.
 //   - `playerScreen`: the desktop's narrow layout with responsive progress/transport
-//     and volume/end-of-track pairs, source actions, settings, page controls, and tracks.
+//     and volume/end-of-track pairs, source actions, settings, and tracks.
 //     Each playback pair shares one line when it fits and wraps as a complete group when
 //     the window narrows.
 //     Tap a track to play; tap the playing track to pause/resume.
