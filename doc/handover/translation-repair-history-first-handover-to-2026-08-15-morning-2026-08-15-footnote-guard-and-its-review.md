@@ -3,6 +3,7 @@
 The guard that checks the reassembled document for broken footnotes in both lanes,
 the measured lane budget,
 and the review that found a withdrawn rewrite still recorded as shipped and footnote labels folded differently by the parser.
+Its first paragraph continues the night recorded in `translation-repair-history-first-handover-to-2026-08-15-overnight-2026-08-14-roster-guard-preparation-translate-lane-driver-cache-poisoning-and-open-questions.md`.
 
 Part of [Translation repair history: the first handover document, to 2026-08-15](translation-repair-history-first-handover-to-2026-08-15.md),
 which lists every file of this record.

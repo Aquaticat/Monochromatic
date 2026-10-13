@@ -5,6 +5,8 @@ the reruns of the section and block sets,
 the cache invalidation nobody would have reported,
 the verdict guards shown to fail,
 and the second reviewer on the anchoring change.
+Its first paragraph continues the coverage probe recorded in `translation-repair-history-2026-08-15-to-19-section-census-and-coverage-probe.md`,
+whose split candidates it opens with.
 
 Part of [Translation repair history: 2026-08-15 to 2026-08-19](translation-repair-history-2026-08-15-to-19.md),
 which lists every file of this record.

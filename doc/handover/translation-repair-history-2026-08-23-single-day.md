@@ -10,18 +10,18 @@ New text goes into the file whose subject it belongs to;
 a file that would pass the limit gives up a subject to a new file,
 named for that subject and listed here.
 
-- [Translation repair history 2026-08-23: asking whether the archived text is publishable on the lane contest](translation-repair-history-2026-08-23-single-day-lane-contest-archive-question.md):
+- [Translation repair history 2026-08-23: option B for the archived text on the lane contest, adopted, built and verified live](translation-repair-history-2026-08-23-single-day-lane-contest-archive-option-b-adopted-built-and-verified.md):
   The adoption of option B on a standing instruction,
   the build plan drawn after reading the deciding source,
   what landed and the guard-proof probe that nearly reported a false null,
   the live check that the new field costs no voices,
   and the guard for a contested slice whose archive is absent.
   Sections:
-  - [#181 adopted: option B, on a standing instruction rather than a fresh preference](translation-repair-history-2026-08-23-single-day-lane-contest-archive-question.md#181-adopted-option-b-on-a-standing-instruction-rather-than-a-fresh-preference)
-  - [#181: the build plan, after reading the deciding source](translation-repair-history-2026-08-23-single-day-lane-contest-archive-question.md#181-the-build-plan-after-reading-the-deciding-source)
-  - [#181: what landed, and the GFP that nearly reported a false null](translation-repair-history-2026-08-23-single-day-lane-contest-archive-question.md#181-what-landed-and-the-gfp-that-nearly-reported-a-false-null)
-  - [#181 verified live: the field costs no voices, and the archive loses on every slice](translation-repair-history-2026-08-23-single-day-lane-contest-archive-question.md#181-verified-live-the-field-costs-no-voices-and-the-archive-loses-on-every-slice)
-  - [#181 closed: the absent archive is guarded, and the case was measured before it was built](translation-repair-history-2026-08-23-single-day-lane-contest-archive-question.md#181-closed-the-absent-archive-is-guarded-and-the-case-was-measured-before-it-was-built)
+  - [#181 adopted: option B, on a standing instruction rather than a fresh preference](translation-repair-history-2026-08-23-single-day-lane-contest-archive-option-b-adopted-built-and-verified.md#181-adopted-option-b-on-a-standing-instruction-rather-than-a-fresh-preference)
+  - [#181: the build plan, after reading the deciding source](translation-repair-history-2026-08-23-single-day-lane-contest-archive-option-b-adopted-built-and-verified.md#181-the-build-plan-after-reading-the-deciding-source)
+  - [#181: what landed, and the GFP that nearly reported a false null](translation-repair-history-2026-08-23-single-day-lane-contest-archive-option-b-adopted-built-and-verified.md#181-what-landed-and-the-gfp-that-nearly-reported-a-false-null)
+  - [#181 verified live: the field costs no voices, and the archive loses on every slice](translation-repair-history-2026-08-23-single-day-lane-contest-archive-option-b-adopted-built-and-verified.md#181-verified-live-the-field-costs-no-voices-and-the-archive-loses-on-every-slice)
+  - [#181 closed: the absent archive is guarded, and the case was measured before it was built](translation-repair-history-2026-08-23-single-day-lane-contest-archive-option-b-adopted-built-and-verified.md#181-closed-the-absent-archive-is-guarded-and-the-case-was-measured-before-it-was-built)
 - [Translation repair history 2026-08-23: the produced-volume bound reaching the wire and the re-ask](translation-repair-history-2026-08-23-single-day-produced-volume-bound-on-the-wire.md):
   The two gaps found reviewing the first produced-volume bound:
   a claim no test supported and a re-ask that carried no bound,
@@ -53,7 +53,7 @@ named for that subject and listed here.
   - [Task 186, draw A is running](translation-repair-history-2026-08-23-single-day-producing-roster-width-probe.md#task-186-draw-a-is-running)
   - [Task 186, what draw A measured](translation-repair-history-2026-08-23-single-day-producing-roster-width-probe.md#task-186-what-draw-a-measured)
   - [Task 186 ANSWERED: the width does not decide it, on both readings](translation-repair-history-2026-08-23-single-day-producing-roster-width-probe.md#task-186-answered-the-width-does-not-decide-it-on-both-readings)
-- [Translation repair history 2026-08-23: whether the coverage wire can vote absence, and whether the votes are right](translation-repair-history-2026-08-23-single-day-coverage-probe-absence-controls.md):
+- [Translation repair history 2026-08-23: whether the coverage wire can vote absence, whether the votes are right, and the background-wait trap met on the way](translation-repair-history-2026-08-23-single-day-coverage-probe-absence-controls-and-the-pgrep-self-match-trap.md):
   The coverage probe's persistence gap that was already closed,
   the background-wait trap met while running it,
   the grading of carried verdicts,
@@ -61,13 +61,13 @@ named for that subject and listed here.
   the breadth run over six entries,
   and the page-length signal that corroborates the absence verdicts without a model.
   Sections:
-  - [Task 106, one of its two decision-independent items is already done](translation-repair-history-2026-08-23-single-day-coverage-probe-absence-controls.md#task-106-one-of-its-two-decision-independent-items-is-already-done)
-  - [Waiting on a background run: `pgrep -f` matches the agent's own shell](translation-repair-history-2026-08-23-single-day-coverage-probe-absence-controls.md#waiting-on-a-background-run-pgrep--f-matches-the-agents-own-shell)
-  - [`#106` option A: the carried verdicts are self-consistent, which is not yet an answer](translation-repair-history-2026-08-23-single-day-coverage-probe-absence-controls.md#106-option-a-the-carried-verdicts-are-self-consistent-which-is-not-yet-an-answer)
-  - [`#106` ANSWERED for the block scale: the coverage wire can vote absence](translation-repair-history-2026-08-23-single-day-coverage-probe-absence-controls.md#106-answered-for-the-block-scale-the-coverage-wire-can-vote-absence)
-  - [`#106` option A is DONE: the wire reads the passage, so the null is about the corpus](translation-repair-history-2026-08-23-single-day-coverage-probe-absence-controls.md#106-option-a-is-done-the-wire-reads-the-passage-so-the-null-is-about-the-corpus)
-  - [`#106` BREADTH: the block-scale null was a fact about ONE ENTRY, not about the wire](translation-repair-history-2026-08-23-single-day-coverage-probe-absence-controls.md#106-breadth-the-block-scale-null-was-a-fact-about-one-entry-not-about-the-wire)
-  - [The absence verdicts are corroborated by a signal that consults no model](translation-repair-history-2026-08-23-single-day-coverage-probe-absence-controls.md#the-absence-verdicts-are-corroborated-by-a-signal-that-consults-no-model)
+  - [Task 106, one of its two decision-independent items is already done](translation-repair-history-2026-08-23-single-day-coverage-probe-absence-controls-and-the-pgrep-self-match-trap.md#task-106-one-of-its-two-decision-independent-items-is-already-done)
+  - [Waiting on a background run: `pgrep -f` matches the agent's own shell](translation-repair-history-2026-08-23-single-day-coverage-probe-absence-controls-and-the-pgrep-self-match-trap.md#waiting-on-a-background-run-pgrep--f-matches-the-agents-own-shell)
+  - [`#106` option A: the carried verdicts are self-consistent, which is not yet an answer](translation-repair-history-2026-08-23-single-day-coverage-probe-absence-controls-and-the-pgrep-self-match-trap.md#106-option-a-the-carried-verdicts-are-self-consistent-which-is-not-yet-an-answer)
+  - [`#106` ANSWERED for the block scale: the coverage wire can vote absence](translation-repair-history-2026-08-23-single-day-coverage-probe-absence-controls-and-the-pgrep-self-match-trap.md#106-answered-for-the-block-scale-the-coverage-wire-can-vote-absence)
+  - [`#106` option A is DONE: the wire reads the passage, so the null is about the corpus](translation-repair-history-2026-08-23-single-day-coverage-probe-absence-controls-and-the-pgrep-self-match-trap.md#106-option-a-is-done-the-wire-reads-the-passage-so-the-null-is-about-the-corpus)
+  - [`#106` BREADTH: the block-scale null was a fact about ONE ENTRY, not about the wire](translation-repair-history-2026-08-23-single-day-coverage-probe-absence-controls-and-the-pgrep-self-match-trap.md#106-breadth-the-block-scale-null-was-a-fact-about-one-entry-not-about-the-wire)
+  - [The absence verdicts are corroborated by a signal that consults no model](translation-repair-history-2026-08-23-single-day-coverage-probe-absence-controls-and-the-pgrep-self-match-trap.md#the-absence-verdicts-are-corroborated-by-a-signal-that-consults-no-model)
 - [Translation repair history 2026-08-23: what proves a passage was never translated, and its build](translation-repair-history-2026-08-23-single-day-absence-verdict-decision-and-landings.md):
   The decision delegated by the owner to take the roster's absence verdict,
   gate insertion on deterministic corroboration and land both scales,

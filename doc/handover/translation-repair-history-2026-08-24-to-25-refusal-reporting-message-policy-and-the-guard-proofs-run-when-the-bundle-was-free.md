@@ -1,4 +1,4 @@
-# Translation repair history 2026-08-24 to 2026-08-25: reporting refusals at entry points and which error messages may be repeated
+# Translation repair history 2026-08-24 to 2026-08-25: reporting refusals at entry points, which error messages may be repeated, and the guard proofs run once the bundle was free
 
 The wrapping of every entry point decided by measuring four cells,
 the rule deciding which error classes may repeat their message and the guard that enforces it,

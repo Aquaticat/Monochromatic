@@ -17,6 +17,8 @@ named for that subject and listed here.
   the running tally of findings when the slice reports were verified,
   the claims of earlier sessions overturned against a primary source,
   and the two items found while auditing.
+  Its last item gives a line count against a cap for the single working handover file the audit read,
+  not for any file of this record.
 - [Translation repair history 2026-08-26 audit: the major findings landed](translation-repair-history-2026-08-26-audit-and-the-work-after-it-major-findings-landed.md):
   The state of the tree when the fixes began,
   and every major finding landed with its commit and its checks.

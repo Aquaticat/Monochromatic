@@ -4,6 +4,8 @@ The owner's instruction of 2026-08-20 that there is no full corpus pass,
 the rule that replaces it of sizing a run to its question,
 what the earlier stops cost,
 and the two-entry validation that started.
+The sections its warning says size their work against a corpus-wide pass are not in this file;
+they are in the other files of this record.
 
 Part of [Translation repair history: 2026-08-19 to 2026-08-21](translation-repair-history-2026-08-19-to-21.md),
 which lists every file of this record.

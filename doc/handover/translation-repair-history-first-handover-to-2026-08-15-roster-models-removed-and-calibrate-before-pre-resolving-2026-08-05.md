@@ -3,6 +3,7 @@
 The two roster models that stopped existing,
 the alias trap that left six distinct models,
 and the user instruction to pre-resolve unambiguous grading items only after measuring agreement against the 100 items already graded.
+The alias trap is also recorded in `translation-repair-history-2026-08-05-to-07-roster-repair-quorum-rule-and-concurrency.md`.
 
 Part of [Translation repair history: the first handover document, to 2026-08-15](translation-repair-history-first-handover-to-2026-08-15.md),
 which lists every file of this record.

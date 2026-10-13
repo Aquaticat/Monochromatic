@@ -1,4 +1,4 @@
-# Translation repair history, first handover document: milestone one reference run and the repair-phase build, 2026-07-17
+# Translation repair history, first handover document: milestone one reference run, the repair-phase build and the first milestone two number with the retry-to-quorum directive, 2026-07-17
 
 The 93-minute reference run that closed milestone one at an ensemble recall of 0.981,
 the notes on deadlines,

@@ -4,6 +4,7 @@ The far-longer precondition that did not reproduce after the pairing change,
 the corpus-wide tail census with its paired same-entry comparisons,
 the conclusion that overreached and was corrected later the same day,
 and the far-shorter case that reproduced and exposed the settled-neither fallback.
+The correction its verdict says is made later is recorded in `translation-repair-history-2026-08-21-to-23-far-longer-tail-and-the-note-floor.md`.
 
 Part of [Translation repair history: 2026-08-21 to 2026-08-23](translation-repair-history-2026-08-21-to-23.md),
 which lists every file of this record.

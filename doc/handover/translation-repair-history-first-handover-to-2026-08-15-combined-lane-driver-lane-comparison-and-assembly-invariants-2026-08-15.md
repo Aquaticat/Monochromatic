@@ -4,6 +4,8 @@ One list of items about the driver that runs both lanes over one preparation wit
 the per-slice comparison of what each lane decided,
 the review findings recorded as tasks,
 and the assembly invariants added after them.
+Its first paragraph continues the translate lane driver recorded in `translation-repair-history-first-handover-to-2026-08-15-overnight-2026-08-14-roster-guard-preparation-translate-lane-driver-cache-poisoning-and-open-questions.md`
+and the footnote guard recorded in `translation-repair-history-first-handover-to-2026-08-15-morning-2026-08-15-footnote-guard-and-its-review.md`.
 
 Part of [Translation repair history: the first handover document, to 2026-08-15](translation-repair-history-first-handover-to-2026-08-15.md),
 which lists every file of this record.

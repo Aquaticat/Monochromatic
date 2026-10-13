@@ -57,6 +57,8 @@ named for that subject and listed here.
   the rule that replaces it of sizing a run to its question,
   what the earlier stops cost,
   and the two-entry validation that started.
+  The sections its warning says size their work against a corpus-wide pass are not in this file;
+  they are in the other files of this record.
 - [Translation repair history 2026-08-19 to 2026-08-21: damage instruments that see past one slice](translation-repair-history-2026-08-19-to-21-damage-instruments-beyond-one-slice.md):
   The assembly-level repetition check,
   wired into both lanes,

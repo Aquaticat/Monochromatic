@@ -1,4 +1,4 @@
-# Translation repair history 2026-08-23: whether the coverage wire can vote absence, and whether the votes are right
+# Translation repair history 2026-08-23: whether the coverage wire can vote absence, whether the votes are right, and the background-wait trap met on the way
 
 The coverage probe's persistence gap that was already closed,
 the background-wait trap met while running it,

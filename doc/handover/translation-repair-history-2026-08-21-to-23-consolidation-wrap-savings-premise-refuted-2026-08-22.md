@@ -4,6 +4,9 @@ The wrap task closed on a savings premise that measurement refuted,
 the stronger justification found in the same data,
 that both deciders approved bytes the run then changed,
 and the change that wraps proposals before the slate is built.
+The heading of its section also names the building of the publisher;
+that half is filed in `translation-repair-history-2026-08-21-to-23-document-publisher-built-and-verified-2026-08-22.md`,
+and this file holds the wrap half.
 
 Part of [Translation repair history: 2026-08-21 to 2026-08-23](translation-repair-history-2026-08-21-to-23.md),
 which lists every file of this record.

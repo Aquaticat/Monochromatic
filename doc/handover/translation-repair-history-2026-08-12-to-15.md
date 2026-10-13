@@ -29,6 +29,9 @@ named for that subject and listed here.
   the quote-anchoring and silent-refiner findings,
   the aligner fix that was never wired in,
   and the consolidated list of every open decision at the end of it.
+  The same night is also recorded in `translation-repair-history-first-handover-to-2026-08-15-overnight-2026-08-13-alignment-rebuild-and-round-three-grading-steps.md`,
+  in the first handover group,
+  which records the alignment fix refuted and rebuilt.
   Sections:
   - [Overnight autonomous stretch, 2026-08-13 (03:20 to 05:00 UTC)](translation-repair-history-2026-08-12-to-15-overnight-2026-08-13-census-of-unread-signals-and-open-decisions.md#overnight-autonomous-stretch-2026-08-13-0320-to-0500-utc)
   - [Overnight autonomous stretch, continued (05:00 to 05:20 UTC)](translation-repair-history-2026-08-12-to-15-overnight-2026-08-13-census-of-unread-signals-and-open-decisions.md#overnight-autonomous-stretch-continued-0500-to-0520-utc)

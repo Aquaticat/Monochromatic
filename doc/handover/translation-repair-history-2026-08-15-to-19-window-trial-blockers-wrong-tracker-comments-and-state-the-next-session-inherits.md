@@ -1,4 +1,4 @@
-# Translation repair history 2026-08-15 to 2026-08-19: the window trial's blockers and the state the next session inherits
+# Translation repair history 2026-08-15 to 2026-08-19: the window trial's blockers, the comments filed on the wrong tracker and the state the next session inherits
 
 The pre-flight and plumbing for running production selection with a wider window,
 the review finding that the two-arm design does not measure the window,

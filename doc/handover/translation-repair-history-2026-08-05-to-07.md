@@ -26,6 +26,8 @@ named for that subject and listed here.
   The synthetic roster repaired after two models were withdrawn,
   the quorum rule changed to half the roster,
   and per-model concurrency measured.
+  The alias trap is also recorded in `translation-repair-history-first-handover-to-2026-08-15-roster-models-removed-and-calibrate-before-pre-resolving-2026-08-05.md`,
+  in the first handover group.
 - [Translation repair history 2026-08-05 to 2026-08-07: the recall benchmark and its first run](translation-repair-history-2026-08-05-to-07-recall-benchmark-and-run-001.md):
   Recall made measurable by planting known omissions,
   and what recall run 001 found.

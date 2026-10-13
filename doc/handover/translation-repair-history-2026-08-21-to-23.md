@@ -28,6 +28,9 @@ named for that subject and listed here.
   the stronger justification found in the same data,
   that both deciders approved bytes the run then changed,
   and the change that wraps proposals before the slate is built.
+  The heading of its section also names the building of the publisher;
+  that half is filed in `translation-repair-history-2026-08-21-to-23-document-publisher-built-and-verified-2026-08-22.md`,
+  and this file holds the wrap half.
 - [Translation repair history 2026-08-21 to 2026-08-23: the document publisher that writes fixed pages into a new directory tree, 2026-08-22](translation-repair-history-2026-08-21-to-23-document-publisher-built-and-verified-2026-08-22.md):
   The publisher that writes fixed pages into a new directory tree,
   why it runs inside the pass,
@@ -62,6 +65,7 @@ named for that subject and listed here.
   what the exclusion buys,
   and the second commit's blocker,
   a collision with the policy that protects page-only content.
+  The partial-prefix figures its opening mentions are recorded in `translation-repair-history-2026-08-21-to-23-ratio-guard-instrument-and-estimator-choice.md`.
   Sections:
   - [2026-08-22, sweep complete: production pairing never manufactures a flag, and contamination outlives it](translation-repair-history-2026-08-21-to-23-roster-sweep-result-and-median-baseline.md#2026-08-22-sweep-complete-production-pairing-never-manufactures-a-flag-and-contamination-outlives-it)
   - [2026-08-22, `#163` Commit A: the median landed, and the file's own history was wrong about why](translation-repair-history-2026-08-21-to-23-roster-sweep-result-and-median-baseline.md#2026-08-22-163-commit-a-the-median-landed-and-the-files-own-history-was-wrong-about-why)
@@ -82,6 +86,7 @@ named for that subject and listed here.
   the corpus-wide tail census with its paired same-entry comparisons,
   the conclusion that overreached and was corrected later the same day,
   and the far-shorter case that reproduced and exposed the settled-neither fallback.
+  The correction its verdict says is made later is recorded in `translation-repair-history-2026-08-21-to-23-far-longer-tail-and-the-note-floor.md`.
   Sections:
   - [2026-08-23: #157 removed the far-longer case #163's note was built to catch](translation-repair-history-2026-08-21-to-23-size-note-boundary-verification.md#2026-08-23-157-removed-the-far-longer-case-163s-note-was-built-to-catch)
   - [2026-08-23: the boundary verification's answer, and the gap it found](translation-repair-history-2026-08-21-to-23-size-note-boundary-verification.md#2026-08-23-the-boundary-verifications-answer-and-the-gap-it-found)
@@ -91,6 +96,7 @@ named for that subject and listed here.
   the assertions skipped for a property of the converter,
   the note that the runner's verdict lines count suites rather than tests,
   and what remained open afterwards.
+  The false-citation chain its opening mentions is recorded in `translation-repair-history-2026-08-21-to-23-advisor-attribution-and-live-pass-warnings.md`.
 - [Translation repair history 2026-08-21 to 2026-08-23: how often neither lane wins](translation-repair-history-2026-08-21-to-23-settled-neither-measurement.md):
   The measurement across every ballot-carrying artifact of the path where neither candidate wins and the archive stands,
   why the gate is not failing and nothing owns the question,
@@ -123,6 +129,7 @@ named for that subject and listed here.
   the fix threaded along an existing path,
   what the tests prove,
   and the repair lane left uncovered.
+  The two finished tasks its opening names are not recorded in any other file of this record.
 
 ## Current stop condition
 

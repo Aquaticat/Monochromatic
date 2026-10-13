@@ -3,6 +3,9 @@
 The record of the 2026-08-13 session,
 in which the alignment fix was refuted and rebuilt and the recurring walls were reduced,
 with the steps for grading round three and the ruling that kept the probe in shadow mode.
+The same night is also recorded,
+with the aligner fix that was never wired in,
+in `translation-repair-history-2026-08-12-to-15-overnight-2026-08-13-census-of-unread-signals-and-open-decisions.md`.
 
 Part of [Translation repair history: the first handover document, to 2026-08-15](translation-repair-history-first-handover-to-2026-08-15.md),
 which lists every file of this record.

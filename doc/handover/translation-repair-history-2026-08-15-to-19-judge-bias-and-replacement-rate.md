@@ -4,6 +4,9 @@ The measurements of 2026-08-16 on the selection judges:
 self-preference measured as a paired excess,
 position bias refused twice for two different reasons,
 and the archive replacement rate found higher than the earlier question assumed.
+Its first paragraph takes the remaining items of a task whose first parts are recorded in
+`translation-repair-history-2026-08-15-to-19-fidelity-trial-fixtures-and-the-relocation-hazard-they-turned-up.md`
+and `translation-repair-history-2026-08-15-to-19-state-after-the-displacement-screen-rebuild-landed-commits-open-run-and-stalled-reviews.md`.
 
 Part of [Translation repair history: 2026-08-15 to 2026-08-19](translation-repair-history-2026-08-15-to-19.md),
 which lists every file of this record.

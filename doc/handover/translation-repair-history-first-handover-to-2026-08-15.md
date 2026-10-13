@@ -12,22 +12,34 @@ New text goes into the file whose subject it belongs to;
 a file that would pass the limit gives up a subject to a new file,
 named for that subject and listed here.
 
+- [Translation repair history, first handover document: the goal of the package and where the work lived, with the commit list](translation-repair-history-first-handover-to-2026-08-15-goal-and-where-work-lived.md):
+  The goal of the package as the first handover document stated it:
+  a pure function from original and translated text to validated issues and a conservative repaired candidate,
+  built for individually unreliable models,
+  and the places the work lived:
+  the worktree and the branch it moved to,
+  the committed driver and probe and how to run them,
+  where run outputs stay out of git,
+  and the commits on the branch.
+  Sections:
+  - [Goal](translation-repair-history-first-handover-to-2026-08-15-goal-and-where-work-lived.md#goal)
+  - [Where work lives](translation-repair-history-first-handover-to-2026-08-15-goal-and-where-work-lived.md#where-work-lives)
 - [Translation repair history, first handover document: milestone one benchmark runs and the Xu_Yushu polish loop](translation-repair-history-first-handover-to-2026-08-15-milestone-one-benchmark-runs-and-xu-yushu-polish-loop.md):
   The status narrative of milestone one up to 2026-07-17:
   the first six benchmark runs and why they failed,
   the user pivot to polishing one document end to end,
   tolerant parsing and automatic alignment,
   and the passes of the Xu_Yushu loop.
-- [Translation repair history, first handover document: milestone one reference run and the repair-phase build, 2026-07-17](translation-repair-history-first-handover-to-2026-08-15-milestone-one-reference-run-and-the-repair-phase-build-2026-07-17.md):
+- [Translation repair history, first handover document: milestone one reference run, the repair-phase build and the first milestone two number with the retry-to-quorum directive, 2026-07-17](translation-repair-history-first-handover-to-2026-08-15-milestone-one-reference-run-repair-phase-build-and-first-milestone-two-number-2026-07-17.md):
   The 93-minute reference run that closed milestone one at an ensemble recall of 0.981,
   the notes on deadlines,
   concurrency and the driver environment,
   the repair stages built and checked live on DarlinChit,
   and the first milestone two number with the directive to retry lost voices up to quorum.
   Sections:
-  - [Milestone one reference run, per-call deadlines and pack-scaled concurrency](translation-repair-history-first-handover-to-2026-08-15-milestone-one-reference-run-and-the-repair-phase-build-2026-07-17.md#milestone-one-reference-run-per-call-deadlines-and-pack-scaled-concurrency)
-  - [Repair-phase stages built and checked live](translation-repair-history-first-handover-to-2026-08-15-milestone-one-reference-run-and-the-repair-phase-build-2026-07-17.md#repair-phase-stages-built-and-checked-live)
-  - [First milestone two number and the retry-to-quorum directive](translation-repair-history-first-handover-to-2026-08-15-milestone-one-reference-run-and-the-repair-phase-build-2026-07-17.md#first-milestone-two-number-and-the-retry-to-quorum-directive)
+  - [Milestone one reference run, per-call deadlines and pack-scaled concurrency](translation-repair-history-first-handover-to-2026-08-15-milestone-one-reference-run-repair-phase-build-and-first-milestone-two-number-2026-07-17.md#milestone-one-reference-run-per-call-deadlines-and-pack-scaled-concurrency)
+  - [Repair-phase stages built and checked live](translation-repair-history-first-handover-to-2026-08-15-milestone-one-reference-run-repair-phase-build-and-first-milestone-two-number-2026-07-17.md#repair-phase-stages-built-and-checked-live)
+  - [First milestone two number and the retry-to-quorum directive](translation-repair-history-first-handover-to-2026-08-15-milestone-one-reference-run-repair-phase-build-and-first-milestone-two-number-2026-07-17.md#first-milestone-two-number-and-the-retry-to-quorum-directive)
 - [Translation repair history, first handover document: milestone two accumulation procedure, lexical-graded runs 1 to 20 and the Chinese-anchored judge, 2026-07-17](translation-repair-history-first-handover-to-2026-08-15-milestone-two-accumulation-procedure-lexical-runs-1-to-20-and-the-chinese-anchored-judge-2026-07-17.md):
   The procedure for the milestone two accumulation loop,
   the first twenty budgeted runs graded by word overlap,
@@ -50,6 +62,8 @@ named for that subject and listed here.
   the last runs,
   the promotion of the rule and the closing run that ended the accumulation loop,
   and the notes left at the compaction after run 23.
+  Its last item says a mirror of the current state is in the task state section;
+  that section is now `translation-repair-history-first-handover-to-2026-08-15-task-state-checklist-of-the-early-tasks.md`.
   Sections:
   - [Milestone two declared complete](translation-repair-history-first-handover-to-2026-08-15-milestone-two-derivability-probe-editor-ab-and-closure-2026-07-18.md#milestone-two-declared-complete)
   - [Derivability probe and editor rule addendum built](translation-repair-history-first-handover-to-2026-08-15-milestone-two-derivability-probe-editor-ab-and-closure-2026-07-18.md#derivability-probe-and-editor-rule-addendum-built)
@@ -135,7 +149,7 @@ named for that subject and listed here.
   Sections:
   - [Pass 6 run 020: false block on Mio and the anchor veto](translation-repair-history-first-handover-to-2026-08-15-pass-6-mio-false-block-and-runs-020-to-030-2026-07-25.md#pass-6-run-020-false-block-on-mio-and-the-anchor-veto)
   - [Pass 6 runs 021 to 030](translation-repair-history-first-handover-to-2026-08-15-pass-6-mio-false-block-and-runs-020-to-030-2026-07-25.md#pass-6-runs-021-to-030)
-- [Translation repair history, first handover document: milestone three round one with the sheet, gate verdict and six precision fixes, 2026-07-25 to 26](translation-repair-history-first-handover-to-2026-08-15-milestone-three-round-one-gate-verdict-and-the-six-fixes-2026-07-25-to-26.md):
+- [Translation repair history, first handover document: milestone three round one: the sample tooling and sheet, the safety pre-check, the gate verdict and six precision fixes, 2026-07-25 to 26](translation-repair-history-first-handover-to-2026-08-15-milestone-three-round-one-sample-tooling-safety-pre-check-gate-verdict-and-the-six-fixes-2026-07-25-to-26.md):
   The precision sample tooling and the sheet drawn on 2026-07-25,
   the safety-invariant pre-check,
   the user-graded verdict that failed the gate on 2026-07-26,
@@ -144,13 +158,13 @@ named for that subject and listed here.
   kept here in the order the record has them,
   newest first.
   Sections:
-  - [The six precision fixes landed and round two begun](translation-repair-history-first-handover-to-2026-08-15-milestone-three-round-one-gate-verdict-and-the-six-fixes-2026-07-25-to-26.md#the-six-precision-fixes-landed-and-round-two-begun)
-  - [Declared identity given to the critics](translation-repair-history-first-handover-to-2026-08-15-milestone-three-round-one-gate-verdict-and-the-six-fixes-2026-07-25-to-26.md#declared-identity-given-to-the-critics)
-  - [Diagnosis of the segmentation cluster: index drift, container nesting and entity identity](translation-repair-history-first-handover-to-2026-08-15-milestone-three-round-one-gate-verdict-and-the-six-fixes-2026-07-25-to-26.md#diagnosis-of-the-segmentation-cluster-index-drift-container-nesting-and-entity-identity)
-  - [Round one gate verdict: failed on precision](translation-repair-history-first-handover-to-2026-08-15-milestone-three-round-one-gate-verdict-and-the-six-fixes-2026-07-25-to-26.md#round-one-gate-verdict-failed-on-precision)
-  - [Coverage bar met and the round one sheet drawn](translation-repair-history-first-handover-to-2026-08-15-milestone-three-round-one-gate-verdict-and-the-six-fixes-2026-07-25-to-26.md#coverage-bar-met-and-the-round-one-sheet-drawn)
-  - [Stratified precision-sample tooling](translation-repair-history-first-handover-to-2026-08-15-milestone-three-round-one-gate-verdict-and-the-six-fixes-2026-07-25-to-26.md#stratified-precision-sample-tooling)
-  - [Safety-invariant pre-check over the settled artifacts](translation-repair-history-first-handover-to-2026-08-15-milestone-three-round-one-gate-verdict-and-the-six-fixes-2026-07-25-to-26.md#safety-invariant-pre-check-over-the-settled-artifacts)
+  - [The six precision fixes landed and round two begun](translation-repair-history-first-handover-to-2026-08-15-milestone-three-round-one-sample-tooling-safety-pre-check-gate-verdict-and-the-six-fixes-2026-07-25-to-26.md#the-six-precision-fixes-landed-and-round-two-begun)
+  - [Declared identity given to the critics](translation-repair-history-first-handover-to-2026-08-15-milestone-three-round-one-sample-tooling-safety-pre-check-gate-verdict-and-the-six-fixes-2026-07-25-to-26.md#declared-identity-given-to-the-critics)
+  - [Diagnosis of the segmentation cluster: index drift, container nesting and entity identity](translation-repair-history-first-handover-to-2026-08-15-milestone-three-round-one-sample-tooling-safety-pre-check-gate-verdict-and-the-six-fixes-2026-07-25-to-26.md#diagnosis-of-the-segmentation-cluster-index-drift-container-nesting-and-entity-identity)
+  - [Round one gate verdict: failed on precision](translation-repair-history-first-handover-to-2026-08-15-milestone-three-round-one-sample-tooling-safety-pre-check-gate-verdict-and-the-six-fixes-2026-07-25-to-26.md#round-one-gate-verdict-failed-on-precision)
+  - [Coverage bar met and the round one sheet drawn](translation-repair-history-first-handover-to-2026-08-15-milestone-three-round-one-sample-tooling-safety-pre-check-gate-verdict-and-the-six-fixes-2026-07-25-to-26.md#coverage-bar-met-and-the-round-one-sheet-drawn)
+  - [Stratified precision-sample tooling](translation-repair-history-first-handover-to-2026-08-15-milestone-three-round-one-sample-tooling-safety-pre-check-gate-verdict-and-the-six-fixes-2026-07-25-to-26.md#stratified-precision-sample-tooling)
+  - [Safety-invariant pre-check over the settled artifacts](translation-repair-history-first-handover-to-2026-08-15-milestone-three-round-one-sample-tooling-safety-pre-check-gate-verdict-and-the-six-fixes-2026-07-25-to-26.md#safety-invariant-pre-check-over-the-settled-artifacts)
 - [Translation repair history, first handover document: pass 7 run records, throughput and the first round two signals, 2026-07-26 to 27](translation-repair-history-first-handover-to-2026-08-15-pass-7-run-records-throughput-and-first-round-two-signals-2026-07-26-to-27.md):
   The detached launch that survived the harness kills and the run records of the second accumulation round,
   newest first,
@@ -220,14 +234,18 @@ named for that subject and listed here.
   The two roster models that stopped existing,
   the alias trap that left six distinct models,
   and the user instruction to pre-resolve unambiguous grading items only after measuring agreement against the 100 items already graded.
+  The alias trap is also recorded in `translation-repair-history-2026-08-05-to-07-roster-repair-quorum-rule-and-concurrency.md`.
 - [Translation repair history, first handover document: overnight of 2026-08-13 and the round three grading steps](translation-repair-history-first-handover-to-2026-08-15-overnight-2026-08-13-alignment-rebuild-and-round-three-grading-steps.md):
   The record of the 2026-08-13 session,
   in which the alignment fix was refuted and rebuilt and the recurring walls were reduced,
   with the steps for grading round three and the ruling that kept the probe in shadow mode.
+  The same night is also recorded,
+  with the aligner fix that was never wired in,
+  in `translation-repair-history-2026-08-12-to-15-overnight-2026-08-13-census-of-unread-signals-and-open-decisions.md`.
   Sections:
   - [Overnight of 2026-08-13: alignment fix rebuilt and the recurring walls](translation-repair-history-first-handover-to-2026-08-15-overnight-2026-08-13-alignment-rebuild-and-round-three-grading-steps.md#overnight-of-2026-08-13-alignment-fix-rebuilt-and-the-recurring-walls)
   - [Steps for the round three grading and the probe shadow-mode ruling](translation-repair-history-first-handover-to-2026-08-15-overnight-2026-08-13-alignment-rebuild-and-round-three-grading-steps.md#steps-for-the-round-three-grading-and-the-probe-shadow-mode-ruling)
-- [Translation repair history, first handover document: overnight of 2026-08-14 into 15 with the pick-up note, the roster guard, shared preparation, the poisonable cache and the open questions](translation-repair-history-first-handover-to-2026-08-15-overnight-2026-08-14-roster-guard-preparation-cache-poisoning-and-open-questions.md):
+- [Translation repair history, first handover document: overnight of 2026-08-14 into 15 with the pick-up note, the roster guard, shared preparation, the translate lane driver and alignment guard, the poisonable cache and the open questions](translation-repair-history-first-handover-to-2026-08-15-overnight-2026-08-14-roster-guard-preparation-translate-lane-driver-cache-poisoning-and-open-questions.md):
   The pick-up note of 2026-08-15 that sent the reader to the open decisions,
   and the first half of the overnight session:
   the roster guard rewritten to measure available weight,
@@ -237,18 +255,21 @@ named for that subject and listed here.
   the translate lane driver,
   and the discovery that an aborted run cached slices nobody examined.
   It ends with the questions that blocked the next step.
+  The census correction that its opening summary mentions is not a passage of this file or of any other file of this record under that name;
+  the census of 2026-08-13 and its corrections to earlier claims are in `translation-repair-history-2026-08-12-to-15-overnight-2026-08-13-census-of-unread-signals-and-open-decisions.md`.
   Sections:
-  - [Immediate next steps](translation-repair-history-first-handover-to-2026-08-15-overnight-2026-08-14-roster-guard-preparation-cache-poisoning-and-open-questions.md#immediate-next-steps)
-  - [Summary of the overnight session of 2026-08-14 into 15](translation-repair-history-first-handover-to-2026-08-15-overnight-2026-08-14-roster-guard-preparation-cache-poisoning-and-open-questions.md#summary-of-the-overnight-session-of-2026-08-14-into-15)
-  - [Roster guard, merged authorship and the roster-width bench](translation-repair-history-first-handover-to-2026-08-15-overnight-2026-08-14-roster-guard-preparation-cache-poisoning-and-open-questions.md#roster-guard-merged-authorship-and-the-roster-width-bench)
-  - [Guard corrections, shared preparation and calibrated mismatch threshold](translation-repair-history-first-handover-to-2026-08-15-overnight-2026-08-14-roster-guard-preparation-cache-poisoning-and-open-questions.md#guard-corrections-shared-preparation-and-calibrated-mismatch-threshold)
-  - [Translate lane driver, alignment guard and the roster-width bench result](translation-repair-history-first-handover-to-2026-08-15-overnight-2026-08-14-roster-guard-preparation-cache-poisoning-and-open-questions.md#translate-lane-driver-alignment-guard-and-the-roster-width-bench-result)
-  - [Slice cache poisoned by aborted runs](translation-repair-history-first-handover-to-2026-08-15-overnight-2026-08-14-roster-guard-preparation-cache-poisoning-and-open-questions.md#slice-cache-poisoned-by-aborted-runs)
-  - [Questions that blocked the next step](translation-repair-history-first-handover-to-2026-08-15-overnight-2026-08-14-roster-guard-preparation-cache-poisoning-and-open-questions.md#questions-that-blocked-the-next-step)
+  - [Immediate next steps](translation-repair-history-first-handover-to-2026-08-15-overnight-2026-08-14-roster-guard-preparation-translate-lane-driver-cache-poisoning-and-open-questions.md#immediate-next-steps)
+  - [Summary of the overnight session of 2026-08-14 into 15](translation-repair-history-first-handover-to-2026-08-15-overnight-2026-08-14-roster-guard-preparation-translate-lane-driver-cache-poisoning-and-open-questions.md#summary-of-the-overnight-session-of-2026-08-14-into-15)
+  - [Roster guard, merged authorship and the roster-width bench](translation-repair-history-first-handover-to-2026-08-15-overnight-2026-08-14-roster-guard-preparation-translate-lane-driver-cache-poisoning-and-open-questions.md#roster-guard-merged-authorship-and-the-roster-width-bench)
+  - [Guard corrections, shared preparation and calibrated mismatch threshold](translation-repair-history-first-handover-to-2026-08-15-overnight-2026-08-14-roster-guard-preparation-translate-lane-driver-cache-poisoning-and-open-questions.md#guard-corrections-shared-preparation-and-calibrated-mismatch-threshold)
+  - [Translate lane driver, alignment guard and the roster-width bench result](translation-repair-history-first-handover-to-2026-08-15-overnight-2026-08-14-roster-guard-preparation-translate-lane-driver-cache-poisoning-and-open-questions.md#translate-lane-driver-alignment-guard-and-the-roster-width-bench-result)
+  - [Slice cache poisoned by aborted runs](translation-repair-history-first-handover-to-2026-08-15-overnight-2026-08-14-roster-guard-preparation-translate-lane-driver-cache-poisoning-and-open-questions.md#slice-cache-poisoned-by-aborted-runs)
+  - [Questions that blocked the next step](translation-repair-history-first-handover-to-2026-08-15-overnight-2026-08-14-roster-guard-preparation-translate-lane-driver-cache-poisoning-and-open-questions.md#questions-that-blocked-the-next-step)
 - [Translation repair history, first handover document: morning of 2026-08-15 with the footnote guard on the reassembled document and its review](translation-repair-history-first-handover-to-2026-08-15-morning-2026-08-15-footnote-guard-and-its-review.md):
   The guard that checks the reassembled document for broken footnotes in both lanes,
   the measured lane budget,
   and the review that found a withdrawn rewrite still recorded as shipped and footnote labels folded differently by the parser.
+  Its first paragraph continues the night recorded in `translation-repair-history-first-handover-to-2026-08-15-overnight-2026-08-14-roster-guard-preparation-translate-lane-driver-cache-poisoning-and-open-questions.md`.
   Sections:
   - [Footnote guard on the reassembled document and the lane budget audit](translation-repair-history-first-handover-to-2026-08-15-morning-2026-08-15-footnote-guard-and-its-review.md#footnote-guard-on-the-reassembled-document-and-the-lane-budget-audit)
   - [Review of the footnote guard](translation-repair-history-first-handover-to-2026-08-15-morning-2026-08-15-footnote-guard-and-its-review.md#review-of-the-footnote-guard)
@@ -257,6 +278,8 @@ named for that subject and listed here.
   the per-slice comparison of what each lane decided,
   the review findings recorded as tasks,
   and the assembly invariants added after them.
+  Its first paragraph continues the translate lane driver recorded in `translation-repair-history-first-handover-to-2026-08-15-overnight-2026-08-14-roster-guard-preparation-translate-lane-driver-cache-poisoning-and-open-questions.md`
+  and the footnote guard recorded in `translation-repair-history-first-handover-to-2026-08-15-morning-2026-08-15-footnote-guard-and-its-review.md`.
   Sections:
   - [One driver for both lanes that chooses between neither](translation-repair-history-first-handover-to-2026-08-15-combined-lane-driver-lane-comparison-and-assembly-invariants-2026-08-15.md#one-driver-for-both-lanes-that-chooses-between-neither)
   - [Per-slice lane comparison, the review findings recorded as tasks and the assembly invariants](translation-repair-history-first-handover-to-2026-08-15-combined-lane-driver-lane-comparison-and-assembly-invariants-2026-08-15.md#per-slice-lane-comparison-the-review-findings-recorded-as-tasks-and-the-assembly-invariants)
@@ -270,6 +293,7 @@ named for that subject and listed here.
   each with the measurement that says why it can wait,
   the passes stopped on purpose,
   and what the translate driver landed and left undone.
+  The reviews its first paragraph refers to are the three reviews of the morning of 2026-08-15 recorded in `translation-repair-history-first-handover-to-2026-08-15-combined-lane-driver-lane-comparison-and-assembly-invariants-2026-08-15.md`.
   Sections:
   - [Review findings deliberately not acted on](translation-repair-history-first-handover-to-2026-08-15-review-findings-not-acted-on-and-state-left-on-2026-08-15.md#review-findings-deliberately-not-acted-on)
   - [Passes stopped on purpose and the wiring still to do](translation-repair-history-first-handover-to-2026-08-15-review-findings-not-acted-on-and-state-left-on-2026-08-15.md#passes-stopped-on-purpose-and-the-wiring-still-to-do)
@@ -320,6 +344,8 @@ model call,
 spent-prompt retry,
 or successor implementation.
 
+## What this document said it was for, and how it relates to the current handover
+
 WHAT THIS IS.
 Everything this project learned before the stretch the current handover covers,
 kept whole because the evidence in it is why later decisions look the way they do.
@@ -338,101 +364,3 @@ its oldest sections move here unchanged.
 
 READ THIS ONE when you need the reasoning behind a decision the current handover only cites,
 or when a measurement is quoted without its method.
-
-## Goal
-
-`@monochromatic-dev/module-translation-repair`:
-a pure fn taking (original zh text,
-translated en text)
-and returning validated issues plus a conservative repaired candidate.
-Built for individually unreliable flat-rate models;
-no single model output is ever a decision point.
-
-Everything starts as a pure fn (user requirement);
-consumers and deployment are deliberately out of scope for now.
-
-## Where work lives
-
-- Worktree `${HOME}/worktrees/translation-repair`,
-  branch
-  `translation-repair-rebased` since 2026-08-06.
-  The work MOVED off
-  `translation-repair`:
-  that branch is protected against force-push,
-  so the
-  rebase onto main could never land on it,
-  and the remote copy is frozen at the
-  pre-rebase history.
-  Work on `translation-repair-rebased` from now on,
-  and
-  treat `origin/translation-repair` as stale rather than as the branch to push
-  to.
-  The pre-rebase tip is also kept locally as
-  `translation-repair-prerebase-backup`.
-  Moved 2026-07-24 (`git worktree move`) out of the old in-repo
-  `.claude/worktrees/translation-repair`,
-  which risked the same stray-cleanup loss
-  as `${HOME}/temp`;
-  it now sits alongside the repo's other worktrees under
-  `${HOME}/worktrees/`.
-  After the move,
-  run `mise trust` at the new path.
-- Use `/usr/bin/git` for commits in this worktree for this session (user authorization):
-  the policy shim fails because the `forbidden-strings` scanner is a gitignored Rust build artifact
-  (`package/cli/forbidden-strings/target/release/`) absent from fresh worktrees.
-- `.env.local.json` copied from main worktree;
-  `TRANSLATION_REPAIR_SYNTHETIC_API_KEY` resolves through mise sops (verified by name,
-  never print values).
-- Corpus-pass driver and sentinel probe are COMMITTED SOURCE (2026-07-24,
-  user
-  directive "driver and probe should be source code") under
-  `package/module/translation-repair/src/corpus-run/`:
-  `run-config.ts` (shared roster,
-  budgets,
-  corpus pin,
-  worktree/runs-dir
-  resolvers,
-  client factory),
-  `corpus-pass.ts` (full-corpus accumulation pass),
-  `sentinel-probe.ts` (named-entry validation).
-  They import the pipeline from
-  SIBLING SOURCE and are `import.meta.main`-guarded,
-  following the repo's
-  executable-in-src pattern (e.g. `package/dev-script/watch-restart/src/cli.ts`);
-  no hardcoded dist path.
-  Run via mise tasks (package `mise.toml`):
-  `mise run //package/module/translation-repair:corpus-pass` (append `-- --plan`
-  for the zero-quota setup check that verifies imports,
-  corpus reads,
-  filtering,
-  ordering,
-  key injection,
-  and client construction),
-  and
-  `mise run //package/module/translation-repair:sentinel-probe -- <id>...`.
-  Only the RUN OUTPUTS stay gitignored and out of git:
-  per-entry artifacts,
-  `attempts.json`,
-  and run logs live in
-  `node_modules/.monochromatic/translation-repair-runs/` (gitignored so
-  UNLICENSED-corpus-derived artifacts can never be committed,
-  and outside
-  `${HOME}/temp` so cleanup cannot wipe them;
-  AGENTS.md rules TMP and NMD).
-  Override that dir with `TRANSLATION_REPAIR_RUNS_DIR`.
-- Commits on branch:
-  `16864f509` scaffold,
-  `70aaaf557` catalog remark/MDX parser stack,
-  `da689f628` document model and segmentation core,
-  `401aa7db8` this handover,
-  `411931d21` issue model and deterministic anchor validation,
-  `c38ffd823` injected-transport Synthetic model client,
-  `96eb1f68a` thinking-dominated output and API refusal field handling,
-  `7347a73f7` pinned local corpus reads (plus `resolveGit` barrel export),
-  `4cd25ae95` seeded-error benchmark harness and scorecard,
-  `8f209692a` streamed chat completions,
-  `2c90224ba` per-call deadlines (first,
-  broken attempt via `AbortSignal.any`),
-  `18a8e95ca` pack-scaled concurrency plus working timer-driven deadlines,
-  `735e1b34e` seed derivation skips MDX/JSX delimiter-bearing sentences,
-  plus docs commits after each task.

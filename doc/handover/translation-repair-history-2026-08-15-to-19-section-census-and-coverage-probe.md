@@ -4,6 +4,8 @@ The section-level census that refuted the plan it was run to support,
 four findings from the section review,
 the body-token experiment that made alignment worse,
 and the model-based coverage probe with its section-scale and block-scale results.
+Its first paragraph picks up landings four and five,
+and landing four's guard and grouper are recorded in `translation-repair-history-2026-08-15-to-19-block-grouper-and-the-pairing-measurement.md`.
 
 Part of [Translation repair history: 2026-08-15 to 2026-08-19](translation-repair-history-2026-08-15-to-19.md),
 which lists every file of this record.

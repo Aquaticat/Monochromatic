@@ -88,12 +88,17 @@ named for that subject and listed here.
 - [Translation repair history 2026-08-07 to 2026-08-12: round three graded, the repair sheet judged ungradeable](translation-repair-history-2026-08-07-to-12-round-three-graded-and-repair-sheet-not-gradeable.md):
   The round-three grading result (the gate not met),
   the duplicate-exclusion decision and the grader calibration,
-  the reading of the repair sheet that found scope and quality failures the probe missed,
-  and the state at the 2026-08-12 compaction with the decision to re-plan the milestone.
+  and the reading of the repair sheet that found scope and quality failures the probe missed.
   Sections:
   - [Round three is GRADED, and the gate is not met](translation-repair-history-2026-08-07-to-12-round-three-graded-and-repair-sheet-not-gradeable.md#round-three-is-graded-and-the-gate-is-not-met)
   - [The repair sheet is not gradeable, and the reason is not the sheet](translation-repair-history-2026-08-07-to-12-round-three-graded-and-repair-sheet-not-gradeable.md#the-repair-sheet-is-not-gradeable-and-the-reason-is-not-the-sheet)
-  - [State at the 2026-08-12 compaction](translation-repair-history-2026-08-07-to-12-round-three-graded-and-repair-sheet-not-gradeable.md#state-at-the-2026-08-12-compaction)
+- [Translation repair history 2026-08-07 to 2026-08-12: the state at the 2026-08-12 compaction: the decision to re-plan, the two classes of false positive, the open tasks and what landed](translation-repair-history-2026-08-07-to-12-state-at-the-2026-08-12-compaction-replan-decision-false-positive-classes-and-open-tasks.md):
+  The state at the 2026-08-12 compaction:
+  the two user decisions taken after the repair sheet was read,
+  to stop and re-plan the milestone and to let the running pass finish with its repairs discarded,
+  the analysis of the eight round-three false positives as two classes,
+  the open tasks in the order the plan touches them,
+  and everything that landed in the session.
 
 ## Current stop condition
 

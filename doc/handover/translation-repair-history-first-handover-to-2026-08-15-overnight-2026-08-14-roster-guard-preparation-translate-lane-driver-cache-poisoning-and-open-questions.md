@@ -1,4 +1,4 @@
-# Translation repair history, first handover document: overnight of 2026-08-14 into 15 with the pick-up note, the roster guard, shared preparation, the poisonable cache and the open questions
+# Translation repair history, first handover document: overnight of 2026-08-14 into 15 with the pick-up note, the roster guard, shared preparation, the translate lane driver and alignment guard, the poisonable cache and the open questions
 
 The pick-up note of 2026-08-15 that sent the reader to the open decisions,
 and the first half of the overnight session:
@@ -9,6 +9,8 @@ lane-neutral splicing,
 the translate lane driver,
 and the discovery that an aborted run cached slices nobody examined.
 It ends with the questions that blocked the next step.
+The census correction that its opening summary mentions is not a passage of this file or of any other file of this record under that name;
+the census of 2026-08-13 and its corrections to earlier claims are in `translation-repair-history-2026-08-12-to-15-overnight-2026-08-13-census-of-unread-signals-and-open-decisions.md`.
 
 Part of [Translation repair history: the first handover document, to 2026-08-15](translation-repair-history-first-handover-to-2026-08-15.md),
 which lists every file of this record.

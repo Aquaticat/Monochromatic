@@ -4,6 +4,7 @@ The translate and repair lanes when the incumbent is absent,
 the removal of the wrong-success state,
 the departure from the review recorded for veto,
 and the external review of that landing with its four fixed defects and recorded items.
+Its first paragraph is the third landing of a task whose first two landings are recorded in `translation-repair-history-2026-08-15-to-19-insertion-anchors-and-delivery-ledger.md`.
 
 Part of [Translation repair history: 2026-08-15 to 2026-08-19](translation-repair-history-2026-08-15-to-19.md),
 which lists every file of this record.

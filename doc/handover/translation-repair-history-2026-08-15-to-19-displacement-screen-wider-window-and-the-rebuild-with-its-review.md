@@ -3,7 +3,7 @@
 The displacement screen built and run,
 the wider-window trial,
 the finding that the screen counted four different things and its rebuild into a classification,
-the corrections to the numbers the state record gave,
+the corrections to the numbers the handover gave,
 and the second review of the rebuild with what was deferred on purpose.
 
 Part of [Translation repair history: 2026-08-15 to 2026-08-19](translation-repair-history-2026-08-15-to-19.md),
@@ -472,7 +472,7 @@ calibrate;
 and the symmetric conservation test,
 which the measurement refuted.
 
-## Corrections to the state record, and the second review of the rebuild
+## Corrections to the numbers the handover gave, and the second review of the rebuild
 
 ### Three corrections to what this document said an hour ago
 

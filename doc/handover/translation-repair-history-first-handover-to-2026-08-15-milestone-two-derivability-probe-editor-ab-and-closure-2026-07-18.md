@@ -7,6 +7,8 @@ the A/B of the clause-enumeration rule,
 the last runs,
 the promotion of the rule and the closing run that ended the accumulation loop,
 and the notes left at the compaction after run 23.
+Its last item says a mirror of the current state is in the task state section;
+that section is now `translation-repair-history-first-handover-to-2026-08-15-task-state-checklist-of-the-early-tasks.md`.
 
 Part of [Translation repair history: the first handover document, to 2026-08-15](translation-repair-history-first-handover-to-2026-08-15.md),
 which lists every file of this record.

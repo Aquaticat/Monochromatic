@@ -6,6 +6,8 @@ how the source was partitioned into ten slices and read under seven lenses,
 the running tally of findings when the slice reports were verified,
 the claims of earlier sessions overturned against a primary source,
 and the two items found while auditing.
+Its last item gives a line count against a cap for the single working handover file the audit read,
+not for any file of this record.
 
 Part of [Translation repair history: 2026-08-26, the package audit and the work after it](translation-repair-history-2026-08-26-audit-and-the-work-after-it.md),
 which lists every file of this record.

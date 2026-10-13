@@ -7,6 +7,7 @@ the census that sets a source-relative bound,
 the fix threaded along an existing path,
 what the tests prove,
 and the repair lane left uncovered.
+The two finished tasks its opening names are not recorded in any other file of this record.
 
 Part of [Translation repair history: 2026-08-21 to 2026-08-23](translation-repair-history-2026-08-21-to-23.md),
 which lists every file of this record.

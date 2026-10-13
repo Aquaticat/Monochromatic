@@ -4,6 +4,7 @@ The review findings set aside,
 each with the measurement that says why it can wait,
 the passes stopped on purpose,
 and what the translate driver landed and left undone.
+The reviews its first paragraph refers to are the three reviews of the morning of 2026-08-15 recorded in `translation-repair-history-first-handover-to-2026-08-15-combined-lane-driver-lane-comparison-and-assembly-invariants-2026-08-15.md`.
 
 Part of [Translation repair history: the first handover document, to 2026-08-15](translation-repair-history-first-handover-to-2026-08-15.md),
 which lists every file of this record.

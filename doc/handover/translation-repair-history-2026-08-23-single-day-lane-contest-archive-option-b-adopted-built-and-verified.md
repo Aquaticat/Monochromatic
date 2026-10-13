@@ -1,4 +1,4 @@
-# Translation repair history 2026-08-23: asking whether the archived text is publishable on the lane contest
+# Translation repair history 2026-08-23: option B for the archived text on the lane contest, adopted, built and verified live
 
 The adoption of option B on a standing instruction,
 the build plan drawn after reading the deciding source,

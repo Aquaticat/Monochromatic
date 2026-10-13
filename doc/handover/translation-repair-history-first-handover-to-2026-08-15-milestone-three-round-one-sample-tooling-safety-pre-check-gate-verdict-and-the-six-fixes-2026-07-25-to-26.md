@@ -1,4 +1,4 @@
-# Translation repair history, first handover document: milestone three round one with the sheet, gate verdict and six precision fixes, 2026-07-25 to 26
+# Translation repair history, first handover document: milestone three round one: the sample tooling and sheet, the safety pre-check, the gate verdict and six precision fixes, 2026-07-25 to 26
 
 The precision sample tooling and the sheet drawn on 2026-07-25,
 the safety-invariant pre-check,

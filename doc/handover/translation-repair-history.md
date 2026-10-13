@@ -62,7 +62,11 @@ the document map's "Task numbers in these documents" says how to read them.
 - [2026-08-05 to 2026-08-07](translation-repair-history-2026-08-05-to-07.md):
   roster repair,
   rebasing,
-  and measurable repair quality.
+  the recall benchmark,
+  the editor ensemble and the naturalness lane,
+  measurable repair quality,
+  and the introduced-defect probe;
+  the roster alias trap is also recorded in the first handover entry.
 - [2026-08-07 to 2026-08-12](translation-repair-history-2026-08-07-to-12.md):
   run interpretation,
   deadlines,
@@ -72,24 +76,42 @@ the document map's "Task numbers in these documents" says how to read them.
   probe blindness,
   attribution,
   voting,
-  and cache incidents.
+  and cache incidents;
+  the first handover entry records the nights of 2026-08-13 to 2026-08-15 too,
+  so those nights appear in both entries.
 - [2026-08-15 to 2026-08-19](translation-repair-history-2026-08-15-to-19.md):
-  package review and the transition to a reading stage.
+  the whole-day review of the night of 2026-08-15,
+  the settled artifact's version,
+  slice identity and cache keys,
+  insertion anchors and the delivery ledger,
+  the lane handed a passage the archive never translated,
+  the block grouper,
+  the section census and coverage probe,
+  quote anchoring,
+  the fidelity trial and the displacement screen,
+  judge bias,
+  and the window trial's blockers.
 - [2026-08-19 to 2026-08-21](translation-repair-history-2026-08-19-to-21.md):
   reading-stage runs,
   window experiments,
   and scope correction.
 - [2026-08-21 to 2026-08-23](translation-repair-history-2026-08-21-to-23.md):
-  the document that began on the 21st and ended on the 23rd,
-  so its last items are 2026-08-23 work too;
-  the next entry is a separate record of the 23rd alone:
+  the document that began on the 21st and ended on the 23rd:
   consolidation,
-  publisher work,
-  pairing sweeps,
-  and boundary verification.
+  the document publisher,
+  the roster sweep and median baseline,
+  and the size note;
+  six of its files are 2026-08-23 work,
+  the far-longer tail and the note floor,
+  the naturalness auditor window,
+  repetition findings merged by occurrence,
+  the settled-neither measurement,
+  the size note boundary verification
+  and the throw-assertion sweep finish,
+  while the next entry is a separate record of the 23rd alone.
 - [2026-08-23, the work recorded for that day alone](translation-repair-history-2026-08-23-single-day.md):
   absence evidence and its decision,
-  the lane contest question,
+  adopting option B for the archived text on the lane contest,
   self-certification,
   producing roster width,
   cross-language pairing,

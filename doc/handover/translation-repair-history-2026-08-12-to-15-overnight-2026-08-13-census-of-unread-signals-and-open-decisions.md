@@ -5,6 +5,9 @@ the defects it fixed,
 the quote-anchoring and silent-refiner findings,
 the aligner fix that was never wired in,
 and the consolidated list of every open decision at the end of it.
+The same night is also recorded in `translation-repair-history-first-handover-to-2026-08-15-overnight-2026-08-13-alignment-rebuild-and-round-three-grading-steps.md`,
+in the first handover group,
+which records the alignment fix refuted and rebuilt.
 
 Part of [Translation repair history: 2026-08-12 to 2026-08-15](translation-repair-history-2026-08-12-to-15.md),
 which lists every file of this record.

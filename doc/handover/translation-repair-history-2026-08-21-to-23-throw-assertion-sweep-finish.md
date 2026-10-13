@@ -5,6 +5,7 @@ the one real defect the sweep caught,
 the assertions skipped for a property of the converter,
 the note that the runner's verdict lines count suites rather than tests,
 and what remained open afterwards.
+The false-citation chain its opening mentions is recorded in `translation-repair-history-2026-08-21-to-23-advisor-attribution-and-live-pass-warnings.md`.
 
 Part of [Translation repair history: 2026-08-21 to 2026-08-23](translation-repair-history-2026-08-21-to-23.md),
 which lists every file of this record.
