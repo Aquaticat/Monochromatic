@@ -19,10 +19,13 @@ use super::overscan_tile_tests::{counts, reset};
 use super::rewrap::REWRAP_LINES;
 /// Window sizing for exact text widths.
 use super::sidebar_tests::{TEXT_LEFT, resize};
+/// The worker's build gate.
+use super::tile_build::{BUILD_GATE, PASS_GATE};
 /// Wrapped fixtures, the open reader, and bounded waits.
 use super::wrap_tests::{long_text, open, settled, tabbed_text, until};
 /// Snapshot records exactly as the Language module builds them.
 use ide_app::{
+    document::{ReadingAffinity, ReadingPosition},
     language::{
         diagnostics::{DiagnosticsSnapshot, Severity, SourceGroup},
         hints::HintsSnapshot,
@@ -328,6 +331,88 @@ fn a_new_width_left_to_the_worker_keeps_the_displayed_tile_until_the_workers_til
         narrow > before,
         "the message is {narrow} rows at the narrow width and {before} at the wide one"
     );
+    window.hide().expect("close wrap window");
+}
+
+/// Wait until the worker has taken the held build from the gate slot.
+fn until_build_started(message: &str) {
+    until(message, || {
+        return BUILD_GATE.lock().expect("build gate").is_none();
+    });
+}
+
+/// Short lines with a tab, so many that a tile of them is more work than the window thread's allowance covers, and
+///  short enough that no line changes its rows when the width changes a little.
+fn short_tabbed_text(count: usize) -> String {
+    let mut text = String::new();
+    for number in 0..count {
+        text.push_str(&format!(
+            "\tlet value_{number} = compute_total(first_item, second_item, third_item);\n"
+        ));
+    }
+    return text;
+}
+
+/// A tile the worker builds for a new width goes stale when the text on screen changes during its build, and the window
+///  asks for another tile at once, because the displayed tile stays on screen meanwhile and no later event is certain
+///  to ask. No line changes its rows at the new width, so the discard moves nothing and only the wanted tile calls for
+///  a render; the change is made in the state directly so that nothing else renders.
+#[test]
+fn a_tile_discarded_while_the_window_waits_for_one_is_asked_for_again() {
+    let (_project, opened) = open(&short_tabbed_text(300));
+    settled(&opened);
+    let window = &opened.window;
+    let wide = opened.source.borrow().width;
+    // The measurement of the new width is held back: its output would render the window and so ask for the tile.
+    let (hold_the_pass, pass_gate) = std::sync::mpsc::channel();
+    *PASS_GATE.lock().expect("pass gate") = Some(pass_gate);
+    let (release, gate) = std::sync::mpsc::channel();
+    *BUILD_GATE.lock().expect("build gate") = Some(gate);
+    resize(window, TEXT_LEFT + 700.0, 660.0);
+    until_build_started("the worker did not start the held build");
+    assert!(
+        opened.source.borrow().width < wide,
+        "the window did not get narrower"
+    );
+    {
+        let mut current = opened.source.borrow_mut();
+        assert!(
+            current.scroll_wanted.is_some(),
+            "the window waits for a tile"
+        );
+        let viewport = current.document.position().viewport;
+        current.document.select(ReadingPosition {
+            anchor: 1,
+            head: 5,
+            viewport,
+            affinity: ReadingAffinity::Downstream,
+        });
+    }
+    release
+        .send(())
+        .expect("the build is waiting for its release");
+    until("the stale tile was not discarded", || {
+        return opened.source.borrow().tiles_discarded >= 1;
+    });
+    let start = std::time::Instant::now();
+    loop {
+        update_timers_and_animations();
+        {
+            let current = opened.source.borrow();
+            if current.shown.width == current.width
+                && current.tile_job.is_none()
+                && current.scroll_wanted.is_none()
+            {
+                break;
+            }
+        }
+        assert!(
+            start.elapsed() < std::time::Duration::from_secs(15),
+            "the discarded tile was not asked for again"
+        );
+        std::thread::sleep(std::time::Duration::from_millis(2));
+    }
+    drop(hold_the_pass);
     window.hide().expect("close wrap window");
 }
 

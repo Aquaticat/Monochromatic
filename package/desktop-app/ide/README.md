@@ -1608,7 +1608,7 @@ at a text width of 3,600 px), a window about 3,300 px tall, and a file of 50,000
 A change over any bound is left to the worker with nothing shaped on the window thread beyond the first refused line.
 The guards `resize-on-window-thread`, `drawn-frame-after-resize`, `rewrap-lines-bound`, `rewrap-work-budget`,
 `rewrap-tab-passes`, `rewrap-raster-bound`, `rewrap-view-past-cap`, `pass-again-after-new-width`,
-and (annotations) `deferred-width-stays-on-worker`
+and (annotations) `deferred-width-stays-on-worker` and `discarded-tile-asked-again`
 remove each rule in a disposable copy and must make the named test fail.
 
 Measured on 2026-10-13 with the release bundle (sha1 `2d8e01e9`, built from commit `f851815582`; the later commits
