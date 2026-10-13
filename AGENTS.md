@@ -590,6 +590,19 @@ VKI:
  never `ydotool` from an agent command (key-down can cancel the caller before key-up,
  wedging desktop input).
 
+EMW:
+ Android emulators run headful on the host GPU as their own systemd user unit;
+ never `-no-window`,
+ `xvfb-run`,
+ or a container (headless launches crashed and hung for hours).
+Launch fails:
+ stop and report the error.
+
+EMB:
+ Briefs for agents that use an emulator repeat the headful rule and name the launch form in
+ `doc/troubleshooting/android-emulator-37-software-renderer-sigsegv.md`;
+ a brief never permits `-no-window`.
+
 ### Essential commands
 
 CM1:
