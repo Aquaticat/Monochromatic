@@ -409,6 +409,64 @@ A separately deployed broker must own release events behind a narrow API.
 See
 [`doc/troubleshooting/ydotool-interrupted-key-release.md`](../../../doc/troubleshooting/ydotool-interrupted-key-release.md).
 
+## Migration clause lowering
+
+`lowerEstablishedClause` maps code-admitted clause relationships into directive facts,
+authorization prerequisites,
+and independent missing premises.
+It does not authenticate a model response,
+source authority,
+operation coverage,
+or approval sufficiency.
+Unknown or unsupported meanings remain broader than uncertainty among supported effects.
+A satisfied prerequisite grants no permission;
+an unmet prerequisite cannot override a prohibition.
+
+The private native integration links the maintained exports for these deterministic computations.
+The original request,
+source,
+judgment,
+and human-approval owners remain required before any result can authorize execution.
+
+## Migration query observation
+
+`createNativeQueryObservation` retains the first unexpected input or output observation failure.
+Native adapters supply synchronous receivers and forward original frames.
+The helper does not authenticate those frames,
+assign source authority,
+or prove complete coverage.
+A callback catching an observer failure cannot restore that observation lifetime.
+Native reporting failures preserve their original value when there was no observer failure;
+otherwise an aggregate retains the observer,
+callback,
+and reporting failures.
+Borrowed frames,
+callbacks,
+and thrown values remain mutable.
+
+The private query adapter delegates failure retention to this maintained export.
+Original argument-frame construction,
+query result identity,
+source capture,
+and native error reporting remain the adapter's responsibilities.
+This does not replace the installed judge or supply a maintained host launcher.
+
+## Migration input accounting
+
+`assertOriginalInputBudget` validates resource and Session receipt counters,
+then enforces their shared 64-occurrence/four-MiB serialized-record limit.
+It preserves the original counter profile without invoking accessors,
+reflecting on proxies,
+or freezing borrowed records.
+The counters must come from fixed native readers;
+valid shapes and arithmetic establish neither ownership nor governing-domain completeness.
+Resource-local,
+per-source,
+and copier limits remain separate.
+
+This maintained helper is part of the ongoing migration.
+Its export does not activate the private native runtime or replace the installed judge pipeline.
+
 ## Logging
 
 The package uses tagged loggers from `@monochromatic-dev/module-logger`.

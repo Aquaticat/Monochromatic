@@ -601,6 +601,147 @@ Eleven-document rendering passed `proc_c7e4` before this final evidence update.
 
 The unassociated ordinary request domain and other unconsumed producer relationships remain explicit.
 
+## Maintained policy computation in the native prototype
+
+The native prototype now imports the maintained package's actual built exports for directive resolution,
+authorization requirements,
+outcome calculation,
+and shared input-budget arithmetic.
+The canonical private implementations were replaced with import adapters,
+not copied into another runtime implementation.
+The existing SDK stager resolves the package-declared entry before fixtures change their home directory.
+No source registry,
+request parse,
+or completeness flag was added.
+
+The maintained input-budget implementation is
+`package/pi-plugin/auto-mode/src/input-receipt-budget.ts`.
+Build/types passed `proc_eeaf`;
+full package units and changed-file lint passed `proc_fc5d` with zero lint diagnostics.
+`proc_512e` verified exact maintained function identities and passed all 32 canonical compiler scenarios.
+`proc_b709` verified the actual native combined 64/65 receipt boundary through the maintained helper.
+The built-artifact guard omission `proc_1bd6` failed the required exception assertion in a disposable copy.
+Its first attempt was a minified-whitespace fixture mismatch,
+not a guard-sensitivity result.
+
+Clause-to-fact lowering is also being moved into maintained TypeScript,
+with the shared priority validator reused by both the resolver and lowering.
+`proc_ca39` passed its build/types after correcting TypeScript `TS9010` with an explicit exported type.
+The full unit task `proc_8ac8` passed its authored meaning,
+prerequisite,
+shape,
+and ownership cases.
+Final build/types passed `proc_c0ac`;
+full units and changed-file lint passed `proc_186b`.
+Full package lint `proc_be6e` covered 81 files and 486 rules with zero diagnostics.
+`proc_173a` verified the maintained lowering export and catalog agreement,
+then passed all 32 canonical compiler scenarios.
+Action/source parents passed `proc_527c` and `proc_33db`,
+including incumbent fixture approval choices and irreversible retirement.
+
+These native scenarios still retain the independent governing-domain obligation.
+This is maintained computation used by the private native path,
+not completed domain closure,
+a maintained host launch path,
+or installed activation.
+
+## Native metadata-query receipts
+
+`94f39f5e` / `proc_666b` reached a separate required retention failure.
+The control changes a tool namespace inside a callback,
+reads it through the actual native `getNamespace` capability,
+then restores the definition before the callback returns.
+When the callback publishes the value as a description,
+retention succeeds.
+When only the native query processes it,
+the original instruction is absent from governing sources.
+This is a processed live edit,
+not an edit undone before processing.
+
+The callback input and output snapshots did not close this return-value path.
+`3705ded2` added query-result receipts;
+`proc_cab7` passed the published-output and query-only contrast.
+A failure-path test then demonstrated that query arguments also need an entry receipt:
+`f98aa363` / `proc_6d89` lost an extra instruction argument when the native namespace getter threw.
+`f87569f7` now captures inputs before lookup and outputs after successful lookup.
+Both phases use the existing Session pool and shared limits without deduplication.
+
+The observed capabilities are `getExposure`,
+`getNamespace`,
+and `getPromptGuidelines`.
+Sources use kind `native-tool-loadout-query-input`,
+origin `native-tool-loadout-query`,
+location `toolLoadoutQuery`,
+and view `original-tool-loadout-query-view`.
+Companion metadata distinguishes `queryPhase: input` and `queryPhase: output`.
+Publication belongs to the actual observation frame,
+not the borrowed result,
+argument,
+or query function.
+Receipt creates no authority,
+registration,
+payload capability,
+or permission.
+
+`78cf7af5` / `proc_99eb` passed owner and native controls.
+They preserve query receiver behavior,
+arity,
+returned array identity,
+one/one namespace getter counts,
+and native getter failure reporting.
+Unexpected false and undefined failures remain exact at both observation phases.
+A callback catching the failure cannot restore eligibility or permit later native consumption.
+Independent callback/reporting failures remain represented rather than replacing the observation failure.
+Expected profile refusal preserves the raw native result and invokes no proxy reflection.
+Original arguments remain retained when native lookup fails.
+Owner tests retain source-byte,
+serialized-record,
+shared occurrence,
+and aggregate expanded-container bounds.
+
+`proc_df5e` passed canonical query-only review and the lifecycle controls:
+pre-request receipt,
+pre-binding growth,
+post-binding growth,
+oversize output after a retained input,
+reset,
+and disposal.
+The canonical query value is absent from the native request but present in original source bindings,
+assessment policies,
+and indexed questions.
+It remains unresolved with two local exchanges,
+one authored assessment,
+and no protected execution or provider request.
+The query controls now belong to the input parent;
+its historical 198-case pass predates these additions and is not evidence for them.
+Affected compiler/source regressions passed `proc_a0e6`:
+32 compiler cases with empty child stderr,
+plus the original-source variants and construction/cleanup controls.
+No provider calls or genuine human approvals occurred.
+
+This repairs a named processing boundary,
+not decision-specific domain closure,
+maintained host delivery,
+or installed activation.
+The initial query staging failure `proc_3495` was an unmapped owned import;
+`b8077a0e` added only its exact URL to the incumbent import map.
+The first native parity attempt `proc_e6cf` expected exposure `default`;
+native exposure was `direct`,
+and the fixture was corrected without changing native behavior.
+
+## Maintained query observation lifetime
+
+`56b562852f` adds `src/native-query-observation.ts` and built-artifact tests to the maintained auto-mode package.
+`proc_b197` passed build and types.
+The private adapter now delegates its failure lifetime to the package export;
+original argument-frame construction and returned-value identity remain local.
+The existing stager and export-identity test include this function.
+Unit/lint verification and the native import-cutover controls are pending.
+This moves failure-lifecycle code out of scratch,
+not source ownership,
+governing-domain closure,
+or host launch.
+
 ## Original loadout callback inputs
 
 `41a49c45` / `proc_c6a4` established a separate input-side loss.
@@ -647,6 +788,9 @@ Getter counts match one/one;
 unexpected false and undefined failures stop before callback entry,
 and reset does not rebind original publications.
 `proc_aca8` passed the shared declaration-metadata regression.
+Before the maintained-kernel import change,
+`proc_9120` passed all 198 integrated input cases and the original-source variants.
+Action/source parents passed `proc_5331` and `proc_faca`.
 
 Argument snapshots do not establish the values later returned by query capabilities,
 valid delegation,
