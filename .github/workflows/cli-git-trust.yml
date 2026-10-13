@@ -175,7 +175,7 @@ jobs:
       run: mise exec node pnpm -- pnpm install --frozen-lockfile --filter @monochromatic-dev/git-policy-cli...
 
     - name: Build at supported runtime
-      run: mise run //package/git-policy/cli:build
+      run: mise run //package/git-policy/cli:build:js
 
     - name: Run representative source tests at supported runtime
       run: >-
