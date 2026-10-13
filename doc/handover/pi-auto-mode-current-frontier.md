@@ -601,6 +601,22 @@ Eleven-document rendering passed `proc_c7e4` before this final evidence update.
 
 The unassociated ordinary request domain and other unconsumed producer relationships remain explicit.
 
+## Original loadout callback output gap
+
+The next concrete domain failure is verified by `1e60894f` / `proc_eb28`.
+Its native single-output control retained the callback instruction.
+When a later callback replaced that description,
+native loadout processing still reached the expected final description,
+but the original callback output was absent from governing sources.
+`Agent.state.tools` observes the combined result,
+not every earlier callback output received by the host.
+
+The remedy must observe original callback input/output processing,
+preserve receiver and getter behavior,
+and retain later failure and cancellation semantics.
+No implementation has been added for this gap yet.
+The existing limits and the prohibition on invented domain completeness remain unchanged.
+
 ## Original extension registration inputs
 
 The native extension API can receive a tool definition,

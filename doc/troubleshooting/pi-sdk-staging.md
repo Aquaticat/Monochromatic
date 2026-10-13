@@ -85,7 +85,8 @@ or guess a package entry filename to avoid these fixture and stager errors.
 
 No upstream filing is warranted:
 
-- Upstream fault is not established; the failures were owned test and staging assumptions.
+- Upstream fault is not established;
+  the failures were owned test and staging assumptions.
 - Fixability is demonstrated by the consumer changes and native invocations.
 - Supported SDK allowlisting and package entry metadata remain unchanged.
 - Contribution policy was not investigated because no upstream defect is being proposed.
