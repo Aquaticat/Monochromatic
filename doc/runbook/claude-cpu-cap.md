@@ -60,6 +60,14 @@ which the user attached to the top of the air cooler (CoolerControl labels it `t
 so it follows the air leaving the heatsink and should rise under sustained load; it is not an ambient reading.
 The fan values come from the local CoolerControl API with an access token kept in
 `~/.config/claude-cpu-cap/cc-token` (owner-only permissions).
+The remaining columns judge how well the CPU hands heat to the cooler:
+package watts split between the first chiplet (cores 0 to 7) and the second (cores 8 to 15),
+the six motherboard readings of the `gigabyte_wmi` driver, the ACPI zone, the NVMe temperature, and a `burst` flag.
+No source names what the six motherboard readings measure on the B650 GAMING X AX (the driver reads six numbered
+firmware channels), so they are logged raw; in the first minutes of data only the third one followed CPU load.
+The core split assumes the first eight cores form the first chiplet; compare it with the chiplet temperatures to confirm.
+While package power steps by more than 25 watts between two 2-second passes, the service logs every pass for 90 seconds
+(`burst` is 1), because the first seconds after a load step show the die-to-heatsink path best.
 When the token is rejected, for example after the user rotates it, the service prints one `FAN-READ-FAILED` line,
 leaves the fan columns empty, and prints `FAN-READ-RECOVERED` once a working token is in the file.
 Alert lines carry package watts and the average clock, but not fan speed:
