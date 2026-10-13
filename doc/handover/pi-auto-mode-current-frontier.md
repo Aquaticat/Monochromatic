@@ -736,7 +736,22 @@ and the fixture was corrected without changing native behavior.
 The private adapter now delegates its failure lifetime to the package export;
 original argument-frame construction and returned-value identity remain local.
 The existing stager and export-identity test include this function.
-Unit/lint verification and the native import-cutover controls are pending.
+Final source is `e64644ae85`.
+Build/types passed `proc_95dd`;
+full package units and four-file lint passed `proc_02e6` with zero lint diagnostics.
+The native import cutover passed `proc_c3b0`,
+including exact export identity,
+owner and native failure controls,
+query-only review,
+and lifecycle retirement.
+`71cd85fb` / `proc_921c` removed the continuation check in a disposable built copy.
+The intact control passed;
+the changed artifact reached the required missing-exception assertion after successful recapture.
+The maintained artifact was not modified.
+
+No lint protection was disabled.
+An owned optional failure field replaced the root-level mutable binding;
+the test fixture uses native `Generator.throw` to produce foreign JavaScript exceptions.
 This moves failure-lifecycle code out of scratch,
 not source ownership,
 governing-domain closure,
