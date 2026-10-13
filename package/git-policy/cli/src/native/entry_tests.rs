@@ -520,6 +520,18 @@ fn the_opt_out_and_short_circuit_forms_are_not_settled() {
             &["worktree", "add", "--quiet", "-b", "second", "../second"]
         ))
     );
+    // Commands that need no repository are never asked about their location.
+    for rest in [vec!["version"], vec!["help", "worktree"], vec!["config", "--global", "--list"]] {
+        assert_eq!(
+            plan_invocation(
+                in_directory(linked.as_path(), rest.as_slice()).as_slice(),
+                &[],
+                &resolution
+            ),
+            forward(in_directory(linked.as_path(), rest.as_slice())),
+            "{rest:?}"
+        );
+    }
     assert_eq!(
         plan_invocation(
             in_directory(linked.as_path(), &["--version"]).as_slice(),

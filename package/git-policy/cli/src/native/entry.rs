@@ -41,6 +41,7 @@ use super::policy_content::LifecycleContent;
 use super::real_git::{ResolutionInputs, process_resolution_inputs, resolve_real_git};
 use super::real_git_candidate::same_file;
 use super::repository_facts::{GitFacts, RepositoryFacts, git_facts};
+use super::rule_require_root::{RequireRootDecision, decide_require_root};
 /// The variable that names the forbidden-strings rules file.
 use super::scanner_selection::RULES_VARIABLE;
 use super::wrapped_command::{WrappedOutcome, run_wrapped_command};
@@ -212,9 +213,12 @@ pub fn plan_invocation(
             arguments: forwarded,
             stderr,
         } => {
-            // The opt-out, and Git's help and version forms, never settle a copy.
+            // The opt-out, Git's help and version forms, and the commands that need no repository
+            // (`version`, `help`, `init`, `clone`, user-level `config`) never settle a copy.
             let copy_bypassed: bool = stripped.controls.skip_worktree_copy
-                || stripped.layout.outcome != GlobalOutcome::Command;
+                || stripped.layout.outcome != GlobalOutcome::Command
+                || decide_require_root(forwarded.as_slice(), &[])
+                    != RequireRootDecision::NeedsRepositoryRoot;
             return forward_action(
                 real_git,
                 forwarded,
