@@ -101,6 +101,21 @@ The operating instructions live in `doc/runbook/claude-cpu-cap.md`.
     `board6_c` move at most 2 degrees. `acpi_c` is constant at 16.8, so it is not informative.
   - Pressure stayed at or under 11.4 and the one-minute load at or under 20 in the window,
     so the 40 limit was not tested.
+- Memory pressure, measured at 19:30 EDT (the user asked why tasks stall with so much memory in total):
+  - The host is not short of memory: `MemAvailable` 45 GiB of 62 GiB, `user-1000.slice` peaked at 46 GB against a
+    `memory.high` of 59.8 GB that it never reached (0 high events).
+  - The `claude-code-bash` cgroup has a 8,000,000,000 byte limit (`CLAUDE_CODE_TOOL_MEMORY_LIMIT` in
+    `~/.claude/settings.json` line 9) shared by every session's tool commands. Its peak is 8,000,282,624 bytes
+    and `memory.events` counts 1,055,909 `max` events since boot, so it hits its own limit constantly.
+    Inside a cgroup at its limit, each allocation reclaims in that cgroup, and the stalls count as memory pressure
+    for the whole host. At 19:16 the cgroup read `some avg10` 8.03, the host 8.25.
+  - Other cgroups at their limit: a podman container with a 2 GB limit (540 `max` events).
+  - Not proven: at the instant of the 19:16 alert the cgroup held 1.96 GB, below its limit, and `memory.peak` is a
+    lifetime figure. The `max` event counter was not captured around the alert.
+  - A link to the CPU cap is plausible but unproven: more parallel jobs under the same 8 GB limit means more reclaim.
+  - The earlier framing in this handover and in the conversation, "RAM is full and the kernel reclaims", was wrong.
+    Since-boot counters (direct reclaim 98 million pages scanned, 12.2 million swapped to zram) fit cgroup-local
+    reclaim, which direct reclaim counters include.
 - Reference points found online (different benches): 78 degrees at 142 W on a 240 mm AIO (forum report),
   86.1 degrees at about 204 W on a water loop, 87 degrees at 200 W for an NH-D15 G2 on a 9950X.
   Neither fixes an expected value for this setup.
