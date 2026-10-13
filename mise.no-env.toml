@@ -127,7 +127,7 @@ cargo-binstall = "latest"
 # when the tool is already installed. The link is made under a temporary name and moved over `git`, so a concurrent
 # `git` never sees a missing file. `os = ["linux"]` because only Linux archives are released and the code was never
 # built elsewhere. Details: doc/planning/cli-git-native-cutover.md, section `Install the published tool`.
-"cargo:monochromatic-git-policy-cli" = { version = "0.1.0", os = ["linux"], postinstall = { run = "mkdir --parents \"$MISE_CONFIG_ROOT/.cache/cli-git-bin\" && ln --symbolic \"$MISE_TOOL_INSTALL_PATH/bin/cli-git-native\" \"$MISE_CONFIG_ROOT/.cache/cli-git-bin/.git.$$\" && mv --no-target-directory \"$MISE_CONFIG_ROOT/.cache/cli-git-bin/.git.$$\" \"$MISE_CONFIG_ROOT/.cache/cli-git-bin/git\"", when = "always" } }
+"cargo:monochromatic-git-policy-cli" = { version = "0.1.1", os = ["linux"], postinstall = { run = "mkdir --parents \"$MISE_CONFIG_ROOT/.cache/cli-git-bin\" && ln --symbolic \"$MISE_TOOL_INSTALL_PATH/bin/cli-git-native\" \"$MISE_CONFIG_ROOT/.cache/cli-git-bin/.git.$$\" && mv --no-target-directory \"$MISE_CONFIG_ROOT/.cache/cli-git-bin/.git.$$\" \"$MISE_CONFIG_ROOT/.cache/cli-git-bin/git\"", when = "always" } }
 
 # The nested Wayland compositor that hosts one GUI app for screenshots and synthetic input
 # (package/cli/nested-wayland-session). Not pinned: mise.lock records the resolved version. The crate's
