@@ -645,6 +645,29 @@ not completed domain closure,
 a maintained host launch path,
 or installed activation.
 
+## Maintained bootstrap semantic admission
+
+Main `ad46df49bf` ports configured-policy copying and original program-profile matching into
+`package/pi-plugin/auto-mode/src/semantic-admission-policy.ts` and `semantic-admission-scope.ts`.
+Private `dc349792` delegates through the incumbent maintained-artifact link.
+The native adapter still fixes definition IDs and the expected model from the actual wire contract.
+A caller's extra model field is not read or used to override that contract.
+No default acceptance,
+production qualification,
+source authority,
+or complete-domain policy is added.
+
+Initial build/types passed `proc_cf5e`.
+Formatter `proc_648b` reported the nullable-return type,
+an unbound fixture method,
+and style diagnostics.
+The configured-policy copier now requires present input;
+absence stays with native bootstrap and still means no configured consumer.
+No lint rule was suppressed or relaxed.
+Final unit,
+lint,
+and native consumer checks remain pending.
+
 ## Maintained whole-request content consumer
 
 `package/pi-plugin/auto-mode/src/request-material.ts` and `request-material-obligations.ts`

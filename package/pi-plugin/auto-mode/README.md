@@ -451,6 +451,33 @@ source capture,
 and native error reporting remain the adapter's responsibilities.
 This does not replace the installed judge or supply a maintained host launcher.
 
+## Migration semantic admission configuration
+
+`copySemanticAdmissionPolicy` copies an explicitly configured bootstrap declaration.
+The native adapter handles absent configuration before calling it and fixes each implemented definition ID.
+Only model,
+definition,
+program profile,
+and acceptance callback fields are allowed.
+Facts,
+coverage,
+qualification,
+and verdict fields are rejected.
+Accessors are not invoked;
+proxy configurations reject before reflection.
+Borrowed callbacks remain unfrozen.
+
+`inspectSemanticAdmissionScope` matches every original program inspection to the captured profile
+and requires clause candidates only for clause-selecting consumers.
+The native adapter fixes the expected model from its actual wire contract,
+not an action argument.
+A matching scope selects a consumer;
+it neither invokes the acceptance callback nor establishes semantic truth or permission.
+No production acceptance criterion is installed by these helpers.
+Final unit,
+lint,
+and native cutover verification remain pending.
+
 ## Migration original request interpretation
 
 `consumeRequestMaterial` checks the selected question,
