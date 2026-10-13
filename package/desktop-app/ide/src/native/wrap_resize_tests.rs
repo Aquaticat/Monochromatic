@@ -19,11 +19,11 @@ use super::rewrap::{REWRAP_LINES, REWRAP_RASTER_BYTES, REWRAP_WORK};
 /// Window sizing for exact text widths.
 use super::sidebar_tests::{TEXT_LEFT, resize};
 /// The worker's pass gate.
-use super::tile_build::PASS_GATE;
+use super::tile_build::{BUILD_GATE, PASS_GATE};
 /// The wrap width rule.
 use super::viewport::wrap_width;
 /// Wrapped fixtures, the open reader, and bounded waits.
-use super::wrap_tests::{long_text, open, settled, until};
+use super::wrap_tests::{long_line, long_text, open, settled, until};
 /// Library types that give the expected values.
 use ide_app::{
     document::ReadingPosition,
@@ -820,5 +820,91 @@ fn the_workers_re_break_converges_after_a_width_taken_at_once() {
         &stale[..stale.len().min(5)]
     );
     drop(current);
+    window.hide().expect("close wrap window");
+}
+
+/// Lines that start with a tab and wrap to several rows: a tile of them is more work than the window thread's allowance
+///  covers, so every new width goes to the worker.
+fn tabbed_text(count: usize) -> String {
+    let mut text = String::new();
+    for number in 0..count {
+        text.push('\t');
+        text.push_str(&long_line(number));
+        text.push('\n');
+    }
+    return text;
+}
+
+/// The worker's measurement of a new width is applied before the tile for it is swapped in: the lines the old tile
+///  held and the new tile does not are skipped by that application, so the measurement must be asked for again once
+///  the tile is shown. The view jumps away while the first tile build is held, so the build for the view the
+///  window ends at starts only after the measurement output waits at the window.
+#[test]
+fn a_measurement_applied_before_the_tile_of_a_new_width_leaves_no_stale_heights() {
+    let release = hold_the_pass();
+    for _ in 0..400 {
+        let _ = release.send(());
+    }
+    let (_project, opened) = open(&tabbed_text(1300));
+    settled(&opened);
+    let window = &opened.window;
+    let scale = window.window().scale_factor();
+    let height = window.get_viewport_height();
+    let (build_release, build_gate) = std::sync::mpsc::channel();
+    *BUILD_GATE.lock().expect("build gate") = Some(build_gate);
+    window.set_scroll_y(-(40.0 * height));
+    update_timers_and_animations();
+    until("the worker did not start the held build", || {
+        return BUILD_GATE.lock().expect("build gate").is_none();
+    });
+    start_counting(&opened);
+    change_width(&opened, 500.0, 660.0);
+    assert_eq!(spent(&opened).deferred, 1, "the change of width was not left to the worker");
+    let lines = opened.source.borrow().document.text().len_lines();
+    build_release
+        .send(())
+        .expect("the held build is waiting for its release");
+    // Nothing advances timers here, so the window takes neither the tile nor the measurement until both wait.
+    let start = std::time::Instant::now();
+    loop {
+        let waiting = opened
+            .source
+            .borrow()
+            .tile_worker
+            .as_ref()
+            .map_or(0, |worker| return worker.pending_pass_lines());
+        if waiting >= lines {
+            break;
+        }
+        assert!(
+            start.elapsed() < std::time::Duration::from_secs(90),
+            "the worker measured only {waiting} of {lines} lines"
+        );
+        std::thread::sleep(std::time::Duration::from_millis(2));
+    }
+    until("the tile for the new width did not arrive", || {
+        let current = opened.source.borrow();
+        return current.tile_job.is_none()
+            && current.scroll_wanted.is_none()
+            && current.shown.width == current.width;
+    });
+    settled(&opened);
+    let current = opened.source.borrow();
+    let mut shaper = TextShaper::new();
+    let fresh = shaper.measure_lines(&current.document, 0..lines, scale, Some(current.width), &[]);
+    let mut stale = Vec::new();
+    for (line, rows) in fresh.lines {
+        if current.row_map.rows_of(line) != rows {
+            stale.push((line, current.row_map.rows_of(line), rows));
+        }
+    }
+    assert!(
+        stale.is_empty(),
+        "{} lines keep a stale height, first: {:?}",
+        stale.len(),
+        &stale[..stale.len().min(5)]
+    );
+    drop(current);
+    drop(release);
     window.hide().expect("close wrap window");
 }
