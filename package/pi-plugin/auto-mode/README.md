@@ -470,10 +470,13 @@ not permission supplied by incorporation.
 Independent implementation-fact gaps remain outside this consumer.
 
 The private native compiler now delegates selection and consumption to maintained exports.
-Initial build/types and formatting checks passed;
-final unit,
-lint,
-and native integration checks remain pending.
+Build,
+types,
+package units,
+changed-file lint,
+the native incorporation scenarios,
+and action-policy regressions passed.
+Original source membership and target meaning remain separate requirements.
 This does not close the governing domain or install the migrated host.
 
 ## Migration heading-context interpretation
