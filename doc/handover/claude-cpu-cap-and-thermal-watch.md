@@ -105,6 +105,8 @@ The operating instructions live in `doc/runbook/claude-cpu-cap.md`.
 - The Corsair probe sits on top of the air cooler's heatsink. Its tape cannot be bent, so the tip cannot touch the
   fins (user, 2026-10-13). It therefore reads the top surface and the air around it, which matches the flat
   25.5 to 26.2 degree reading; it is not a heatsink-fin reading. It cannot separate contact from airflow problems.
+  The user's view: it still gives a room or case temperature, which is useful.
+  Treat it as the ambient reference (about 25.8 degrees in the first window) when comparing Tctl against watts.
 - The `fan1` reading in `sensors` belongs to the GPU, not a CPU fan. An early claim based on it was wrong.
 - Motherboard: Gigabyte B650 GAMING X AX rev 1.3. The six `gigabyte_wmi` readings are unlabeled and no source maps them.
   Early data: only the third one tracked CPU load.
@@ -121,7 +123,7 @@ The operating instructions live in `doc/runbook/claude-cpu-cap.md`.
 
 - Which cooler variant is installed, and is it mounted correctly (offset, paste, base shape)?
 - Is 90 degrees a peak or a settled value at a given wattage? The sample log is collecting the answer.
-- What do the six motherboard readings measure, and is there a usable ambient reference?
+- What do the six motherboard readings measure? (The ambient reference is the Corsair probe; see the hardware facts.)
 - The probe cannot touch the fins (answered above), so fin or exhaust temperature stays unmeasured.
   Contact versus airflow now has to be judged from Tctl against watts and fan speed.
 - A higher fan floor was offered and not taken: the user is balancing noise themselves and edits the curve.
