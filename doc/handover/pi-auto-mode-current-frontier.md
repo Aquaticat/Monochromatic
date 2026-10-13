@@ -675,7 +675,11 @@ the new diagnostic creates neither another directive nor uniform authority for t
 Pure request,
 semantic-policy,
 and compiler tests passed `proc_b09d`.
-The native request-use/domain contrast is running in `proc_01d8`.
+`proc_01d8` passed the native whole-request scenarios with empty child stderr
+and the decision-domain contrasts.
+The potential-instruction contrast retains both `request-source-domain` and `request-material-instruction-use`;
+the request-content `none` contrasts retain only `request-source-domain`.
+No protected operation or provider request occurred.
 
 ## Native metadata-query receipts
 
