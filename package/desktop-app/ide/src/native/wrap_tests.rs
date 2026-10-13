@@ -668,12 +668,23 @@ fn shift_wheel_does_not_scroll_and_there_is_no_horizontal_motion() {
     window.hide().expect("close wrap window");
 }
 
+/// Lines with a tab, so many that a tile of them is more than the window thread's allowance covers: every new width
+///  goes to the worker.
+fn tabbed_text(count: usize) -> String {
+    let mut text = String::new();
+    for number in 0..count {
+        text.push_str(&format!(
+            "\tlet value_{number} = compute_total(first_item, second_item, third_item);\n"
+        ));
+    }
+    return text;
+}
+
 /// Two resizes in a row, with the view moved between them, leave no line at a width it is no longer wrapped to.
-#[test]
-fn a_drag_resize_leaves_no_stale_heights() {
+fn drag_resize_leaves_no_stale_heights(text: &str) {
     let (release, gate) = std::sync::mpsc::channel();
     *PASS_GATE.lock().expect("pass gate") = Some(gate);
-    let (_project, opened) = open(&long_text(1200));
+    let (_project, opened) = open(text);
     let window = &opened.window;
     let scale = window.window().scale_factor();
     // Let the first pass finish at the first width, then move the view far from where the second pass will start.
@@ -713,4 +724,18 @@ fn a_drag_resize_leaves_no_stale_heights() {
     drop(current);
     drop(release);
     window.hide().expect("close wrap window");
+}
+
+/// Two resizes with the view moved between them, each taken at once by the window thread.
+#[test]
+fn a_drag_resize_leaves_no_stale_heights() {
+    drag_resize_leaves_no_stale_heights(&long_text(1200));
+}
+
+/// The same two resizes where each goes to the worker, which the displayed tile outlives: the lines only the old tile
+///  held are measured at the new width after the tile for it is swapped in.
+#[test]
+fn a_drag_resize_of_widths_left_to_the_worker_leaves_no_stale_heights() {
+    let text = tabbed_text(1300);
+    drag_resize_leaves_no_stale_heights(&text);
 }
