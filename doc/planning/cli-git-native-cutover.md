@@ -894,9 +894,8 @@ unchanged until an incumbent-provisioning step from the pinned revision exists.
    as the sibling `package/cli/forbidden-strings`
   does),
    so `prepareAndBuild` keeps producing an artifact;
-   every root `mise run build` then compiles the crate (about 71
-seconds on this host in one run,
-   `Publishing the native crate`).
+   every root `mise run build` then compiles the crate (about 71 seconds in one run on this host;
+   see `Publishing the native crate` for why that is not a clean-machine figure).
    Do not leave the templates that run `rolldown` in place.
 - `test:e2e:concurrent:image` (`:349`) loses `depends = ["pack:npm"]`,
   the `TARBALL` build argument and the context `dist/pack`;
@@ -1010,7 +1009,7 @@ Real publication is the orchestrator's act,
   The text of one message in `src/native/scanner_adapter.rs:67` names the crate and is reworded with it.
   The mise tool name becomes `cargo:monochromatic-git-policy-cli`.
 - Keeping the bare name is the alternative:
-   skip the rename step in the sequence below and substitute the name.
+   skip the rename in `Minimal changes` and substitute the name wherever this document names the crate.
 - The binary stays `cli-git-native`.
   Renaming it before first publication would touch 21 files outside `doc/` (counted with `rg --files-with-matches`);
   the word "native" loses its contrast with the incumbent after retirement,
@@ -1088,7 +1087,10 @@ Registry state on 2026-10-13:
      behind the slot limiter,
      under unrelated load);
     the binary is 9,028,800 bytes.
-    That bounds the cost of a source install through the `cargo:` backend.
+    That bounds the cost of a source install through the `cargo:` backend on this host only:
+     the user's `~/.cargo/config.toml` sets a shared `build-dir` (`doc/decision/cargo-build-dir-host-cache.md`),
+     so a fresh `CARGO_TARGET_DIR` does not guarantee cold intermediates,
+     and the figure is not a clean-machine install time.
     The build script's slowness is contained by `[profile.release.build-override] opt-level = 3`,
     which applies because the crate declares its own `[workspace]`.
 
@@ -1130,7 +1132,8 @@ Does not block `cargo publish`,
   The tag layout is `<crate>-v<version>`;
    copy the table from `package/linter/monochromatic-lint/Cargo.toml` and
   keep only the Linux targets.
-- No release jobs in `.github/workflows/cargo-publish.yml` for this crate (see the steps below).
+- No release jobs in `.github/workflows/cargo-publish.yml` for this crate (see `Publication steps in order`,
+   step 4).
 
 Does not block:
 
@@ -1147,7 +1150,7 @@ Does not block:
    so the
   `path` plus `version` form stays in the repository.
 - `[[test]]` targets and the compile-time files:
-   the `include` below keeps `src/native/**/*.rs`,
+   the `include` of `Minimal changes` keeps `src/native/**/*.rs`,
    the two non-Rust
   files and the lockfile.
   `src/native/config_repository_tests.rs:36` reads a path outside the crate,
@@ -1171,7 +1174,7 @@ In `package/git-policy/cli/Cargo.toml` (managed by file-enforcer,
  so run `mise run sync:files` after editing):
 
 - Set `name = "monochromatic-git-policy-cli"` and `version = "0.1.0"`.
-- Delete `publish = false` and the comment above it.
+- Delete `publish = false` (`Cargo.toml:10`) and its comment (`Cargo.toml:9`).
   The file-enforcer guard on `package.publish` is present-seeded
   (`file-enforcer.config.ts`,
    `CARGO_STATIC_ENFORCEMENTS`;
@@ -1320,7 +1323,8 @@ The tool entry for `mise.no-env.toml` (the pin needs a comment,
 # Pinned so a release of the wrapper reaches the repository only together with its configuration and policies.
 # The postinstall links the executable as `git` in a gitignored per-worktree directory that `_.path` puts first.
 # It never lives in the tool's own `bin/`, because mise would then create a global `git` shim.
-"cargo:monochromatic-git-policy-cli" = { version = "0.1.0", postinstall = { run = "mkdir --parents \"$MISE_CONFIG_ROOT/.cache/cli-git-bin\" && ln --symbolic \"$MISE_TOOL_INSTALL_PATH/bin/cli-git-native\" \"$MISE_CONFIG_ROOT/.cache/cli-git-bin/.git.$$\" && mv --no-target-directory \"$MISE_CONFIG_ROOT/.cache/cli-git-bin/.git.$$\" \"$MISE_CONFIG_ROOT/.cache/cli-git-bin/git\"", when = "always" } }
+# `os = ["linux"]` because only Linux archives are released and the code never compiled elsewhere.
+"cargo:monochromatic-git-policy-cli" = { version = "0.1.0", os = ["linux"], postinstall = { run = "mkdir --parents \"$MISE_CONFIG_ROOT/.cache/cli-git-bin\" && ln --symbolic \"$MISE_TOOL_INSTALL_PATH/bin/cli-git-native\" \"$MISE_CONFIG_ROOT/.cache/cli-git-bin/.git.$$\" && mv --no-target-directory \"$MISE_CONFIG_ROOT/.cache/cli-git-bin/.git.$$\" \"$MISE_CONFIG_ROOT/.cache/cli-git-bin/git\"", when = "always" } }
 ```
 
 The `_.path` change is in `generateMiseToml` in `file-enforcer.config.ts` (the array that starts with
@@ -1330,7 +1334,21 @@ The `_.path` change is in `generateMiseToml` in `file-enforcer.config.ts` (the a
 Never edit the generated `mise.toml` by hand.
 Then `mise run lock:mise` records the version in `mise.lock`.
 
-Each worktree needs `mise install` once after it merges the change,
+Why per worktree and not one user-level directory:
+ the pin and the link live in the same checkout,
+ so a worktree on an older pin keeps its own version,
+ and one worktree's `mise install` never repoints the link of another.
+The cost is that `.cache/cli-git-bin` of the main checkout serves every session started from the main checkout,
+ in whatever worktree they later enter,
+ because the session's `PATH` is fixed at its start.
+`os = ["linux"]` was probed:
+ on this Linux host `os = ["macos"]` made `mise install` install nothing ("all tools are installed"),
+ and `os = ["linux"]` made `mise install --dry-run` report "would install".
+No workflow installs the tool by default:
+ every `jdx/mise-action` step in `.github/workflows` runs `mise install` with named tools,
+ so the entry reaches a runner only when a step names it.
+
+Each checkout needs `mise install` once after it merges the change,
  because the link directory is per worktree;
 until then its `PATH` entry points at a missing directory and `git` resolves to `/usr/bin/git` without the wrapper.
 That is the same failure mode the incumbent has when `node_modules/.bin/git` is missing.
@@ -1563,8 +1581,7 @@ commit each step before the next (`GCE`).
 
     Expected:
      `mise install` takes the prebuilt archive (a few seconds;
-     a compile of about 70 seconds means the
-    release archives were not found,
+     a compile that takes a minute or more means the release archives were not found,
      see `doc/troubleshooting/mise-cargo-binstall-falls-back-to-compiling.md`);
     `.cache/cli-git-bin/git` is a symlink to `$V/data/installs/cargo-monochromatic-git-policy-cli/<version>/bin/cli-git-native`.
     Then run items 1 and 2 of `User-boundary verification` with
@@ -1579,13 +1596,15 @@ commit each step before the next (`GCE`).
      then
     `mise run lock:mise`).
     Check that `mise env --json` prints `<root>/.cache/cli-git-bin` before any `node_modules/.bin`.
-5.  In each active worktree:
-     merge `main`,
+5.  In the main checkout and in each active worktree:
+     merge `main` (the main checkout pulls it),
      run `mise run sync:files`,
      run `mise install`,
      then check
     `command -v git` (identity item of `User-boundary verification`).
-    Existing sessions keep the shim until restarted (hazard 4);
+    Sessions started before this step keep the shim until restarted (hazard 4),
+     and a session started from the main checkout takes its link from the main checkout,
+     so `mise install` there is what switches such sessions;
     the shim and `dist` stay until step 8.
 6.  Repeat the hazard 1 detection immediately before the first native commit.
     The switch is atomic per process start,
@@ -1614,7 +1633,9 @@ Both checks use the installed `git` on the resolved PATH,
  not an explicit executable path.
 
 1.  Identity.
-     `command -v git` prints `<worktree root>/.cache/cli-git-bin/git`;
+     `command -v git` prints `<root>/.cache/cli-git-bin/git`,
+     where `<root>` is the checkout whose `mise.toml` set the session's `PATH` (a session started from the main checkout uses the main checkout's link in every worktree it enters;
+     `mise exec -- sh -c 'command -v git'` shows a worktree's own environment);
     `readlink --canonicalize "$(command -v git)"` ends in `cli-git-native`;
     `git --version` prints `git version 2.55.0`;
     `git cli-git status` prints the "is retired" sentence,
@@ -1665,7 +1686,7 @@ Both checks use the installed `git` on the resolved PATH,
     was not part of the 2026-10-12 run).
      The throwaway disables signing on purpose,
     because a hermetic `HOME` has no signing key;
-     signing is checked by the next item instead.
+     signing is checked by item 3 instead.
 
 3.  A doc-only commit in this repository,
      from a linked worktree that has merged `main` and has run `mise run sync:files` and `mise install` (so `cli-git.config.jsonc`,
@@ -1712,7 +1733,8 @@ change of `PATH`:
     A shell activated inside a worktree falls through to that worktree's own shim,
     which already fails today for lack of a `dist` (see `PATH mechanics on this host`),
     so it loses nothing it had.
-    Then revert the switch commit and run `mise run sync:files`,
+    Removing the main checkout's link rolls back every session started from the main checkout at once.
+     Then revert the switch commit and run `mise run sync:files`,
      so new sessions stop adding the directory and the
     tool entry is gone.
 3.  Verify with `git cli-git status` (JSON `trust-status`,
@@ -1787,7 +1809,12 @@ Each step is its own commit,
     list them first with `git clean --dry-run -d -X` (`GCL`,
      `GC2`) and check stray git-dir entries with `ls -d` and
     `git check-ignore --verbose` (`GCR`).
-    The rollback-window decision covers deleting them;
+    Remove them by explicit path,
+     never with `git clean -X`:
+     its listing includes `.cache/cli-git-bin`,
+     the link every session depends on,
+     and `.cache/forbidden-strings.rules.txt`.
+     The rollback-window decision covers deleting them;
     the hazard 4 count of sessions still on the shim must be zero first.
 6.  After the trailing gates are recorded (interop matrix,
     long fuzz,
@@ -1810,7 +1837,8 @@ Each step is its own commit,
   The source-install fallback was measured only as a build:
    about 71 seconds,
    one run,
-   9,028,800 bytes.
+   9,028,800 bytes,
+   on a host with a shared cargo `build-dir`.
 - Whether file-enforcer keeps a deleted `publish = false` deleted:
   derived from the present-seeded guard in `file-enforcer.config.ts` and `doc/planning/cargo-toml-file-enforcer.md`,
    not
