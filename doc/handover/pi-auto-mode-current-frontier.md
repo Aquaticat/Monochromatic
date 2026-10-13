@@ -727,8 +727,10 @@ Historical inputs do not become active ancestry.
 `8f7161f8` adds live-root and old-alias checks;
 `proc_dfd4` passed their owner controls and the manager-handoff lifecycle cases.
 Unpublished original callback inputs retain a source-publication failure rather than disappearing.
-Affected message/option regressions are still being checked;
-the historical broad input-parent result does not cover this addition.
+`946a4cae` / `proc_2f77` passed the affected message-history regression and final option consumers.
+The new controls now belong to the broad input parent,
+whose affected rerun is in progress.
+The historical broad input-parent result does not cover this addition.
 
 The run-owner helper task initially failed with Node `EEXIST` on a historical output directory.
 `b672127d` uses unique disposable output directories and preserves historical artifacts.
