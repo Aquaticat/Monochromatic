@@ -1,7 +1,10 @@
 import type { Logger, } from '@monochromatic-dev/module-logger/ts';
 
 import type { SyntheticClient, } from '../chat-contract.ts';
-import type { CarryBlock, } from '../consistency-carry.ts';
+import type {
+  CarryBlock,
+  SpliceOnlyKind,
+} from '../consistency-carry-standing.ts';
 import type { ConsistencyRendering, } from '../consistency-count-types.ts';
 import type { ConsistencyPlan, } from '../consistency-splice.ts';
 import type { DeclaredNamePair, } from '../linked-title-declared-name.ts';
@@ -28,10 +31,16 @@ import type { ConsistencyPlace, } from './pass-consistency-group.ts';
 
  @example
  ```ts
- const edit: PendingEdit = { placePositions: [1,], sliceIndex: 3, start: 0, end: 12, text: 'the cat naps', };
+ const edit: PendingEdit = { kind: 'splice', placePositions: [1,], sliceIndex: 3, start: 0, end: 12, text: 'the cat naps', };
  ```
  */
 export type PendingEdit = {
+  /**
+   What the replacement is: the words of one code splice, or a writer's whole
+   block, which can change words of other places that stand in the block.
+   */
+  readonly kind: 'splice' | 'block';
+
   /**
    Positions, among the group's places, of the receiving places this replacement
    carries the chosen rendering to: one for the words of a code splice, every
@@ -117,7 +126,7 @@ export type CarryReceiver = LocatedPlace & {
 
  @example
  ```ts
- const unit: CarryUnit = { block, writable: true, receivers: [receiver,], keeping: [], };
+ const unit: CarryUnit = { block, writable: true, spliceOnlyIn: [], receivers: [receiver,], keeping: [], };
  ```
  */
 export type CarryUnit = {
@@ -134,15 +143,24 @@ export type CarryUnit = {
   readonly writable: boolean;
 
   /**
+   The kind of block (a table, a code block, a setext heading) that holds the
+   words of the receiving places where no paragraph rewrite can carry words to
+   them, as a list of zero or one; none for a paragraph, a heading and words in
+   no single block.
+   */
+  readonly spliceOnlyIn: readonly SpliceOnlyKind[];
+
+  /**
    The receiving places in the block, in page order, at least one.
    */
   readonly receivers: readonly CarryReceiver[];
 
   /**
-   The English words of the group's other places inside the block that must come
-   out of any rewrite as they went in: the chosen place's words when it stands
-   in the block, and the words of a place the majority keeps for its context or
-   that already reads as the chosen place does.
+   The English words of other places inside the block that must come out of any
+   rewrite as they went in: the chosen place's words when it stands in the
+   block, the words of a place the majority keeps for its context or that
+   already reads as the chosen place does, and the located words of every place
+   of every other group of the page, whatever became of that place.
    */
   readonly keeping: readonly string[];
 };

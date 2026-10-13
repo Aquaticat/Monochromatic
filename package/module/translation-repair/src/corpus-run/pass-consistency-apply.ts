@@ -22,6 +22,10 @@ import {
   consistencyFloorVerdict,
 } from './pass-consistency-floors.ts';
 import type { ConsistencySliceFacts, } from './pass-consistency-slices.ts';
+import {
+  editsChangingLocatedWords,
+  type LeftOutEdit,
+} from './pass-consistency-apply-located.ts';
 import type { SettledGroup, } from './pass-consistency-types.ts';
 import { ConsistencyInvariantError, } from '../consistency-invariant-error.ts';
 
@@ -40,6 +44,17 @@ import { ConsistencyInvariantError, } from '../consistency-invariant-error.ts';
 // places of one group that a block holds are carried by one replacement
 // (`pass-consistency-carry.ts`), so no two replacements of a group address the
 // same words.
+//
+// A BLOCK REPLACEMENT THAT CHANGES THE WORDS ANOTHER GROUP LOCATED IS LEFT OUT.
+// A writer's block for one group can cover a place of another group, and the
+// groups settle at the same time, so the writer is only asked to keep those words
+// (`pass-consistency-carry-units.ts`). Here the replacement that covers another
+// group's located place and changes its words is left out whichever group comes
+// first, recorded `overlapped` for every place it carried, with a finding and a
+// warning that name both. A code splice replaces only the words of its own
+// receiving places, so it is left out only against a place another group keeps
+// (`pass-consistency-apply-located.ts`); against another group's receiving place
+// the earlier group wins.
 //
 // A REPLACEMENT CARRIES SEVERAL PLACES WHEN A WRITER'S BLOCK DOES: the block is
 // rewritten once for every receiving place in it, so the replacement is named by
@@ -342,11 +357,64 @@ export function applyConsistency(
     const currentText = facts.current
       .text;
     /**
+     The block replacements that change the words another group located, which are not made.
+     */
+    const leftOut = editsChangingLocatedWords({
+      settled,
+      sliceIndex: facts.sliceIndex,
+      english: currentText,
+    },)
+      .map(function namedLeftOut({
+        group,
+        edit,
+        other,
+      },): {
+        readonly id: string;
+        readonly other: LeftOutEdit['other'];
+      } {
+        return {
+          id: editId({
+            group,
+            places: edit.placePositions,
+          },),
+          other,
+        };
+      },);
+    for (const {
+      id,
+      other,
+    } of leftOut) {
+      /**
+       What is reported of the replacement left out.
+       */
+      const sentence = `slice ${String(facts.sliceIndex,)}: the consistency replacement of ${id} was left out because it `
+        + `changes the words that group ${String(other.group + 1,)} ${other.label} located`;
+      al.warn(sentence,);
+      findings.push(sentence,);
+    }
+    recordOutcome({
+      carriers,
+      ids: leftOut.map(function idOf({ id, },): string {
+        return id;
+      },),
+      outcome: 'overlapped',
+    },);
+    /**
+     The replacements that are made, where they do not overlap an earlier one.
+     */
+    const toMake = edits.filter(function isMade({ id, },): boolean {
+      return !leftOut.some(function isLeftOut(left,): boolean {
+        return left.id === id;
+      },);
+    },);
+    if (toMake.length === 0)
+      continue;
+    /**
      The slice with every replacement that does not overlap an earlier one made.
      */
     const made = applyConsistencyEdits({
       english: currentText,
-      edits,
+      edits: toMake,
     },);
     recordOutcome({
       carriers,

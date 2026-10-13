@@ -4,6 +4,18 @@
  Generation of the page consistency pass's cached answers (the owner's ruling
  of 2026-10-11).
 
+ Version four (the review of 2026-10-13): what the writers and the judges are
+ shown changed again, before any pass wrote version three. The words of every
+ place of every other group that stand in a block are listed to keep, not only
+ those of the group's own places, and the writer sheet's rule about them names
+ places of this repeat or of another; the choice sheet shows the judges the
+ words each receiving place replaces (THE WORDS TO REPLACE, numbered as the
+ writer sheet numbers them) and says so in its rules; a place in a table, a code
+ block or a setext heading is carried by the code splice alone, so no writer is
+ asked about it. The sheets of the carry changed, so no stored answer of version
+ three is resumed. The stored shapes did not change: a stored answer is still
+ the heard voices with the quorum the gather closed on.
+
  Version three: what the pass asks changed again, before any pass wrote version
  two. A quote locates only at the boundaries of words, so a quote or a slot that
  stood inside a longer word no longer locates and the spans carried change; a
@@ -47,6 +59,6 @@
  const material = JSON.stringify({ version: CONSISTENCY_CACHE_VERSION, sheet, roster, },);
  ```
  */
-export const CONSISTENCY_CACHE_VERSION = 3;
+export const CONSISTENCY_CACHE_VERSION = 4;
 
 //endregion Consistency cache version

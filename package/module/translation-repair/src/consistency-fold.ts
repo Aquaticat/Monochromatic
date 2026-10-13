@@ -1,5 +1,14 @@
+import { isAsciiDigit, } from './ascii-letters.ts';
+import {
+  codePointAt,
+  codePointBefore,
+} from './code-points.ts';
 import { edgeFreeWordsOf, } from './consistency-edge-marks.ts';
 import { ConsistencyInvariantError, } from './consistency-invariant-error.ts';
+import {
+  isLatinLetter,
+  isLatinLetterOrMark,
+} from './latin-letters.ts';
 import { normalizePunctuation, } from './quote-normalize.ts';
 import { wordStarts, } from './word-bounds.ts';
 
@@ -16,6 +25,14 @@ import { wordStarts, } from './word-bounds.ts';
 // where the quote stands in the English as the English holds it, at the
 // boundaries of words (`word-bounds.ts`). The span the English holds is what
 // every later step uses, never the judge's string.
+//
+// A WORD HERE IS ALSO JOINED BY ITS OWN MARKS, for this locator alone (the
+// glossary's reading in `word-bounds.ts` is unchanged): a hyphen or an
+// apostrophe between two letters, and a full stop or a comma between two digits,
+// join them into one word, so `so` is no stand inside `so-called`, `t` none
+// inside `don't`, `dog` none inside `dog's` and `5 dollars` none inside
+// `0.5 dollars`. A Greek letter, a Han character or an emoji beside a word joins
+// nothing, as before.
 //
 // THE FOLD IS NOT ONE UNIT TO ONE, since a run of whitespace folds to one or two
 // units, so the folded English carries a map from each folded unit back to the
@@ -236,10 +253,129 @@ export function foldedWordsOf({ text, }: { readonly text: string; },): string {
 }
 
 /**
+ Marks that join the two letters beside them into one word.
+ */
+const LETTER_JOINERS = '-\'';
+
+/**
+ Marks that join the two digits beside them into one number.
+ */
+const DIGIT_JOINERS = '.,';
+
+/**
+ Whether the character at an offset of a folded English joins the two characters
+ beside it into one word: a hyphen or an apostrophe between two letters, a full
+ stop or a comma between two digits.
+
+ @param text - folded English
+
+ @param at - offset of the character asked about, which may lie outside the text
+
+ @returns Whether the character there is a joint
+
+ @example
+ ```ts
+ const joint = isJointAt({ text: 'so-called', at: 2, },); // true
+ ```
+ */
+function isJointAt(
+  {
+    text,
+    at,
+  }: {
+    readonly text: string;
+    readonly at: number;
+  },
+): boolean {
+  if ((at < 0) || (at >= text.length))
+    return false;
+  /**
+   The character at the offset, one UTF-16 unit.
+   */
+  const joiner = text.charAt(at,);
+  /**
+   The whole character before it.
+   */
+  const before = codePointBefore({
+    text,
+    at,
+  },);
+  /**
+   The whole character after it.
+   */
+  const after = codePointAt({
+    text,
+    at: at + 1,
+  },);
+  if (LETTER_JOINERS.includes(joiner,)) {
+    return isLatinLetterOrMark({ character: before, },)
+      && isLatinLetter({ character: after, },);
+  }
+  return DIGIT_JOINERS.includes(joiner,)
+    && isAsciiDigit({ character: before, },)
+    && isAsciiDigit({ character: after, },);
+}
+
+/**
+ Every start of a needle in a folded English where it stands at the boundaries
+ of words and neither of its edges is a joint of a longer word.
+
+ @param folded - English in the fold
+
+ @param needle - folded words looked for
+
+ @returns Start offsets in the folded English, in ascending order
+
+ @example
+ ```ts
+ const starts = apartStartsOf({ folded: 'the so-called cat', needle: 'so', },); // []
+ ```
+ */
+function apartStartsOf(
+  {
+    folded,
+    needle,
+  }: {
+    readonly folded: string;
+    readonly needle: string;
+  },
+): readonly number[] {
+  return wordStarts({
+    text: folded,
+    needle,
+    end: 'word',
+  },)
+    .filter(function standsApart(at,): boolean {
+      /**
+       Offset one past the last unit of the stand.
+       */
+      const end = at + needle.length;
+      /**
+       The offsets of the two units either side of each edge of the stand.
+       */
+      const edges = [
+        at - 1,
+        at,
+        end - 1,
+        end,
+      ];
+      return !edges.some(function isEdgeJoint(offset,): boolean {
+        return isJointAt({
+          text: folded,
+          at: offset,
+        },);
+      },);
+    },);
+}
+
+/**
  Where a quote's words stand in an English, once, never or more than once, at
  the boundaries of words: a Latin letter or digit at the first or last
  character of the words may not have another beside it in the English, so `so`
- is not found inside `also`. Han text needs no boundary.
+ is not found inside `also`, and an edge of the words that is a joint of a
+ longer word (a hyphen or an apostrophe between two letters, a full stop or a
+ comma between two digits) is no boundary, so `so` is not found inside
+ `so-called`. Han text needs no boundary.
 
  @param haystack - the English as the place holds it
 
@@ -281,12 +417,11 @@ export function locateWords(
     ends,
   } = foldWithOffsets({ text: haystack, },);
   /**
-   Where the words stand in the folded English, at word boundaries, overlaps included.
+   Where the words stand in the folded English, at word boundaries and at no joint of a longer word, overlaps included.
    */
-  const stands = wordStarts({
-    text: folded,
+  const stands = apartStartsOf({
+    folded,
     needle,
-    end: 'word',
   },);
   /**
    Where the words first stand in the folded English.
@@ -316,8 +451,9 @@ export function locateWords(
 }
 
 /**
- How many times a quote's words stand in an English, at word boundaries,
- overlaps included, read in the same fold as {@link locateWords}.
+ How many times a quote's words stand in an English, at word boundaries and at
+ no joint of a longer word, overlaps included, read in the same fold as
+ {@link locateWords}.
 
  @param haystack - the English as the place holds it
 
@@ -339,11 +475,10 @@ export function standsOf(
     readonly words: string;
   },
 ): number {
-  return wordStarts({
-    text: foldWithOffsets({ text: haystack, },)
+  return apartStartsOf({
+    folded: foldWithOffsets({ text: haystack, },)
       .folded,
     needle: foldedWordsOf({ text: words, },),
-    end: 'word',
   },)
     .length;
 }

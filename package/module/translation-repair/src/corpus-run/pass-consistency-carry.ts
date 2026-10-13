@@ -1,10 +1,8 @@
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 import { allInInputOrder, } from '../all-in-input-order.ts';
-import {
-  blockHolding,
-  carryOffersOf,
-} from '../consistency-carry.ts';
+import { carryOffersOf, } from '../consistency-carry.ts';
+import { blockStandingOf, } from '../consistency-carry-standing.ts';
 import {
   exchangeFailureLogText,
   exchangeFailureText,
@@ -275,20 +273,28 @@ function holdingOf(
   readonly carried: UnitCarried;
 } {
   try {
+    /**
+     Where the receiving place's words stand among the blocks of its English.
+     */
+    const {
+      block,
+      spliceOnlyIn,
+    } = blockStandingOf({
+      english: englishOf({ place: receiver.place, },),
+      start: receiver.rendering
+        .start,
+      end: receiver.rendering
+        .start
+        + receiver.rendering
+        .core
+        .length,
+    },);
     return {
       kind: 'held',
       held: {
         receiver,
-        block: blockHolding({
-          english: englishOf({ place: receiver.place, },),
-          start: receiver.rendering
-            .start,
-          end: receiver.rendering
-            .start
-            + receiver.rendering
-            .core
-            .length,
-        },),
+        block,
+        spliceOnlyIn,
       },
     };
   }

@@ -113,6 +113,7 @@ function editsOf(
             `the splice won for ${receiver.label}, whose words cannot be moved by code, and a splice is offered only when every receiving place of the block can be spliced`, },);
         }
         return {
+          kind: 'splice',
           placePositions: [receiver.position,],
           sliceIndex,
           start: plan.start,
@@ -123,6 +124,7 @@ function editsOf(
   }
   return [
     {
+      kind: 'block',
       placePositions: unit.receivers
         .map(function positionOf({ position, },): number {
           return position;
@@ -237,10 +239,7 @@ export async function choose(
     modelIds: context.judgeModelIds,
     subject: {
       repeat,
-      receiving: shown.receiving
-        .map(function viewOf({ view, },) {
-          return view;
-        },),
+      receiving: shown.receiving,
       chosen: shown.chosen,
       keeping: shown.keeping,
       ...((shown.before === undefined) ? {} : { before: shown.before, }),

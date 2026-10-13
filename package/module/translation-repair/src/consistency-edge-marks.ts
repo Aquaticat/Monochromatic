@@ -1,3 +1,4 @@
+import { ConsistencyInvariantError, } from './consistency-invariant-error.ts';
 import { isClosing, } from './consistency-quote-bounds.ts';
 import { continuesLatinWord, } from './latin-letters.ts';
 
@@ -15,6 +16,13 @@ import { continuesLatinWord, } from './latin-letters.ts';
 // THE FOLD HAS TURNED CURLY QUOTES, SINGLE AND DOUBLE, AND THE CORNER BRACKETS
 // INTO THE STRAIGHT ONES (`quote-normalize.ts`), so only the straight marks and
 // the ASCII brackets are met here.
+//
+// AN APOSTROPHE AT A WORD EDGE IS PART OF THE WORD (`'Tis`, `goin'`, `the cats'`).
+// A single quotation mark that touches a letter on one side and is neither
+// closed nor opened by a mark across the quote stays in the span; one that
+// touches no letter is read by counting as before. A pair that encloses the
+// whole quote is still trimmed, with an apostrophe inside it left in place
+// (`'the cats' bowl'` names `the cats' bowl`).
 //
 // A FIXED POINT: edges are taken off one character at a time, the words read
 // again after each, until neither edge moves. A mark exposed by taking another
@@ -126,9 +134,121 @@ function openerOf({ point, }: { readonly point: string; },): readonly string[] {
 }
 
 /**
+ The straight single quotation mark, which is also the apostrophe.
+ */
+const APOSTROPHE = '\'';
+
+/**
+ What a quotation mark is among the words.
+
+ `interior` stands between two word characters (the apostrophe of `wasn't`).
+ `matched` is a single quotation mark that opens before a letter and is closed
+ by a mark after one, or closes after a letter and has an opener before it.
+ `apostrophe` is a single quotation mark that touches a letter on one side and
+ is neither closed nor opened by a matching mark across the stretch read (the
+ `'` of `'Tis`, `goin'` and `the cats'`), so it is part of the word it touches.
+ `bare` touches no letter, or is a double quotation mark, and can only pair by
+ counting. `absent` marks a position that holds no mark of the kind read.
+ */
+type MarkRole = 'absent' | 'interior' | 'apostrophe' | 'matched' | 'bare';
+
+/**
+ What each quotation mark of one kind in a stretch of the words is: a mark
+ between two word characters, a single mark that opens or closes a pair, a
+ single mark that is an apostrophe, or a mark that only counts. The roles are
+ listed by position among the words, `absent` at every position that holds no
+ such mark.
+
+ @param points - the words, one whole character each
+
+ @param from - first position read
+
+ @param to - exclusive position the reading stops at
+
+ @param mark - the quotation mark read
+
+ @returns The roles, indexed by position among the words
+
+ @example
+ ```ts
+ const roles = markRolesIn({ points: Array.from('the cats\'',), from: 0, to: 9, mark: '\'', },); // ['absent', ..., 'apostrophe']
+ ```
+ */
+function markRolesIn(
+  {
+    points,
+    from,
+    to,
+    mark,
+  }: {
+    readonly points: readonly string[];
+    readonly from: number;
+    readonly to: number;
+    readonly mark: string;
+  },
+): readonly MarkRole[] {
+  // Both are built by this one pass, in position order, and read by no one before it ends.
+  /**
+   The role of each mark met, indexed by position, mutated only inside this function.
+   */
+  const roles = Array.from(
+    { length: to, },
+    function absentRole(): MarkRole {
+      return 'absent';
+    },
+  );
+  /**
+   Positions of the openers not yet closed, innermost last, mutated only inside this function.
+   */
+  const open: number[] = [];
+  for (
+    let at = from;
+    at < to;
+    at += 1
+  ) {
+    if (points[at] !== mark)
+      continue;
+    /**
+     Whether a word character stands before the mark.
+     */
+    const wordBefore = continuesLatinWord({ character: points[at - 1] ?? '', },);
+    /**
+     Whether a word character stands after it.
+     */
+    const wordAfter = continuesLatinWord({ character: points[at + 1] ?? '', },);
+    if (wordBefore && wordAfter) {
+      roles[at] = 'interior';
+    }
+    else if ((mark !== APOSTROPHE) || ((!wordBefore) && (!wordAfter))) {
+      roles[at] = 'bare';
+    }
+    else if (wordAfter) {
+      // An opener is an apostrophe until a closer after it takes it.
+      roles[at] = 'apostrophe';
+      open.push(at,);
+    }
+    else {
+      /**
+       The innermost opener still open, none when nothing before the mark opened.
+       */
+      const opener = open.pop();
+      if (opener === undefined) {
+        roles[at] = 'apostrophe';
+      }
+      else {
+        roles[opener] = 'matched';
+        roles[at] = 'matched';
+      }
+    }
+  }
+  return roles;
+}
+
+/**
  How many quotation marks of one kind a stretch of the words holds that can
  pair: those not standing between two word characters, such as the apostrophe
- of `wasn't`.
+ of `wasn't`, and, for the single mark, not an apostrophe that touches a letter
+ and has no matching mark across the stretch.
 
  @param points - the words, one whole character each
 
@@ -158,22 +278,84 @@ function pairableMarksIn(
     readonly mark: string;
   },
 ): number {
-  return points.slice(
+  return markRolesIn({
+    points,
     from,
     to,
-  )
-    .filter(function isPairable(
-      point,
-      offset,
-    ): boolean {
-      /**
-       Position of the mark among the words.
-       */
-      const at = from + offset;
-      return (point === mark) && (!(continuesLatinWord({ character: points[at - 1] ?? '', },)
-        && continuesLatinWord({ character: points[at + 1] ?? '', },)));
+    mark,
+  },)
+    .filter(function isPairable(role,): boolean {
+      return (role === 'matched') || (role === 'bare');
     },)
     .length;
+}
+
+/**
+ What the quotation mark at one position of the words is, read over all of
+ them: an edge mark that touches a letter and pairs with no mark across the
+ words is an apostrophe and part of the word.
+
+ @param points - the words, one whole character each
+
+ @param at - position of the mark, which holds a quotation mark
+
+ @returns The role of the mark
+
+ @throws {@link ConsistencyInvariantError} when the position holds no quotation mark
+
+ @example
+ ```ts
+ const role = markRoleAt({ points: Array.from('\'Tis',), at: 0, },); // 'apostrophe'
+ ```
+ */
+function markRoleAt(
+  {
+    points,
+    at,
+  }: {
+    readonly points: readonly string[];
+    readonly at: number;
+  },
+): MarkRole {
+  /**
+   The mark at the position.
+   */
+  const mark = points[at] ?? '';
+  /**
+   The role of every mark of that kind among all the words, by position.
+   */
+  const roles = markRolesIn({
+    points,
+    from: 0,
+    to: points.length,
+    mark,
+  },);
+  /**
+   The role of the mark asked about.
+   */
+  const role = roles[at] ?? 'absent';
+  if (role === 'absent') {
+    throw new ConsistencyInvariantError({ invariant:
+      `position ${String(at,)} of the words holds no quotation mark of the kind read, and the role of a quotation mark is asked only for a position that holds one`, },);
+  }
+  return role;
+}
+
+/**
+ Whether a quotation mark at an edge belongs to the words: it pairs with a mark
+ across them, or it is an apostrophe that touches a letter.
+
+ @param role - what the mark is among all the words
+
+ @returns Whether the edge keeps it
+
+ @example
+ ```ts
+ const keeps = isWordMark({ role: 'apostrophe', },); // true
+ ```
+ */
+function isWordMark({ role, }: { readonly role: MarkRole; },): boolean {
+  return (role === 'apostrophe') || (role === 'matched');
 }
 
 /**
@@ -298,6 +480,16 @@ function dropsAtStart({ points, }: { readonly points: readonly string[]; },): bo
   if (isClosing({ point, },))
     return true;
   if (isQuoteMark({ point, },)) {
+    // A MARK THAT TOUCHES A LETTER AND PAIRS ACROSS THE WORDS, OR PAIRS WITH NOTHING, IS PART OF THEM.
+    /**
+     What the first mark is among all the words.
+     */
+    const role = markRoleAt({
+      points,
+      at: 0,
+    },);
+    if (isWordMark({ role, },))
+      return false;
     return (pairableMarksIn({
       points,
       from: 1,
@@ -342,6 +534,15 @@ function dropsAtEnd({ points, }: { readonly points: readonly string[]; },): bool
   if (isClosing({ point, },))
     return true;
   if (isQuoteMark({ point, },)) {
+    /**
+     What the last mark is among all the words.
+     */
+    const role = markRoleAt({
+      points,
+      at: points.length - 1,
+    },);
+    if (isWordMark({ role, },))
+      return false;
     return (pairableMarksIn({
       points,
       from: 0,

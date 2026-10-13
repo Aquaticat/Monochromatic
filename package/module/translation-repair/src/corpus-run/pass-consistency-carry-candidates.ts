@@ -3,7 +3,7 @@ import {
   type Logger,
 } from '@monochromatic-dev/module-logger/ts';
 
-import type { CarryBlock, } from '../consistency-carry.ts';
+import type { CarryBlock, } from '../consistency-carry-standing.ts';
 import { standsOf, } from '../consistency-fold.ts';
 import { exchangeFailureLogText, } from '../exchange-failure-text.ts';
 import type { DeclaredNamePair, } from '../linked-title-declared-name.ts';

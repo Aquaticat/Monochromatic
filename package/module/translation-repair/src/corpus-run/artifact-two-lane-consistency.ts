@@ -39,9 +39,9 @@ import type { UnplacedReason, } from '../repeat-groups-types.ts';
  carried it. `kept-context` is a place a strict majority kept for its
  surroundings. `kept-floor` is a place whose replacement a floor refused.
  `overlapped` is a place whose replacement overlaps one of an earlier group in
- the same slice and was left out for it; it never names an overlap with a
- place of its own group, whose places in one block are carried by one
- replacement. `unlocated` is a place whose rendering the ballots did not pin
+ the same slice, or changes the words of a place another group located or
+ keeps, and was left out for it; it never names an overlap with a place of its
+ own group, whose places in one block are carried by one replacement. `unlocated` is a place whose rendering the ballots did not pin
  down. `untouched` is a place of a group that decided nothing. `kept-current`
  (generation sixteen) is a place whose carry ended with its own English
  standing: the choice among the candidates kept it, reached no decision, had no

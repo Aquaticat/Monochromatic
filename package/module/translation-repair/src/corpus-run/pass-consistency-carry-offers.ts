@@ -1,6 +1,6 @@
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
-import { blockHolding, } from '../consistency-carry.ts';
+import { blockHolding, } from '../consistency-carry-standing.ts';
 import type {
   CarryChosenPlace,
   CarryReceivingPlace,
@@ -35,6 +35,15 @@ import { RUN_PER_CALL_TIMEOUT_MS, } from './run-config.ts';
 // moved into every receiving place of the block by code, where that is possible
 // and the floors pass it, and the blocks the translate stage's writer bench
 // writes for it. And what the sheets of both questions show of the places.
+//
+// THE SPLICE IS NOT HELD TO THE WORDS OF OTHER GROUPS. It replaces the exact
+// words of its own receiving places and nothing else, so it can change another
+// group's words only where those words overlap its own, and that meeting is
+// settled where all the groups' replacements are applied
+// (`pass-consistency-apply.ts`): the earlier group wins an overlap of two
+// receiving places, and a replacement is left out where it changes the words of
+// a place another group keeps. A writer's block, which can rewrite words well
+// away from its receiving places, is held to the listed words here.
 
 /**
  What both sheets of a block's carry show of its places.
@@ -391,10 +400,16 @@ export async function writtenOffers(
     };
   }
   if (!unit.writable) {
+    /**
+     The kind of block that holds the words, none for words in no single block.
+     */
+    const [kind,] = unit.spliceOnlyIn;
     return {
       written: [],
       findings: [
-        `consistency-writers-not-asked (${unitLabelsOf({ unit, },)}): the words that render the repeated wording lie in no single block of the English, so no paragraph can be rewritten`,
+        (kind === undefined)
+          ? `consistency-writers-not-asked (${unitLabelsOf({ unit, },)}): the words that render the repeated wording lie in no single block of the English, so no paragraph can be rewritten`
+          : `consistency-writers-not-asked (${unitLabelsOf({ unit, },)}): the words that render the repeated wording stand in a ${kind}, so no paragraph can be rewritten`,
       ],
     };
   }

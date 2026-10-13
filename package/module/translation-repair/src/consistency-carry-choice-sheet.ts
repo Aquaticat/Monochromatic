@@ -4,13 +4,14 @@ import { citedReferenceBlockText, } from './cited-reference-rule.ts';
 import {
   aroundBlocksOf,
   type CarryChosenPlace,
+  type CarryReceivingPlace,
   chosenEnglishBlocksOf,
   keepingBlockOf,
   originalBlocksOf,
   receivingLabel,
+  replaceBlocksOf,
 } from './consistency-carry-sheet-parts.ts';
 import {
-  type ConsistencyOccurrenceView,
   type ConsistencyRepeat,
   repeatBlockOf,
   repeatedTextOf,
@@ -68,7 +69,7 @@ export type CarryChoiceCandidate = {
 
  @example
  ```ts
- const subject: CarryChoiceSubject = { repeat, receiving: [view,], chosen, keeping: [], candidates, };
+ const subject: CarryChoiceSubject = { repeat, receiving: [place,], chosen, keeping: [], candidates, };
  ```
  */
 export type CarryChoiceSubject = {
@@ -78,10 +79,11 @@ export type CarryChoiceSubject = {
   readonly repeat: ConsistencyRepeat;
 
   /**
-   The receiving places of the block as the consistency sheet shows them, in
-   page order, at least one.
+   The receiving places of the block as the consistency sheet shows them, each
+   with the words of its English that the carry replaces, in page order, at
+   least one.
    */
-  readonly receiving: readonly ConsistencyOccurrenceView[];
+  readonly receiving: readonly CarryReceivingPlace[];
 
   /**
    The chosen place: its ORIGINAL, the words its English holds for the repeated
@@ -160,6 +162,8 @@ function choiceRules(
 
 Your task is to choose the candidate that renders the ORIGINAL best under the house rules while rendering the repeated wording as the CHOSEN RENDERING renders it in every receiving place. In each ORIGINAL the repeated wording is enclosed between ${marks.open} and ${marks.close}; the marks are not part of the text.
 
+The words of the current paragraph that now render the repeated wording in each receiving place are shown as THE WORDS TO REPLACE (numbered, one for each receiving place, when there are several); they are what a candidate replaces.
+
 Judge each candidate on these, in this order:
 - It renders everything the ORIGINAL says, and adds nothing the ORIGINAL does not support. A word that renders Chinese outside the repeated wording in the chosen place (such as an "also" the chosen place carries for a word before its repeated wording) is an addition here unless this place's ORIGINAL has the Chinese it renders.
 - It renders the repeated wording as the CHOSEN RENDERING does in every receiving place, with a frame's slot rendered with that place's own slot content.
@@ -235,10 +239,14 @@ export function buildCarryChoiceMessages(
       .slot
       ?? '',
     ...subject.receiving
-      .flatMap(function textsOf(view,): readonly string[] {
+      .flatMap(function textsOf({
+        view,
+        span,
+      },): readonly string[] {
         return [
           view.paragraph,
           view.slotSource ?? '',
+          span,
         ];
       },),
     ...subject.candidates
@@ -273,7 +281,7 @@ export function buildCarryChoiceMessages(
    */
   const receivingBlocks = subject.receiving
     .map(function blocksOf(
-      view,
+      { view, },
       position,
     ): string {
       return originalBlocksOf({
@@ -341,6 +349,11 @@ export function buildCarryChoiceMessages(
       }${
         keepingBlockOf({
           keeping: subject.keeping,
+          fence,
+        },)
+      }${
+        replaceBlocksOf({
+          receiving: subject.receiving,
           fence,
         },)
       }${candidateBlocks.join('',)}${tenseBlock}${fence} END ${fence}\nReply with JSON only: {"reason":"...","choice":"<the label of the candidate you choose>"}`,

@@ -23,7 +23,7 @@ import type {
  @param path - where the slices sit, for the parse error
 
  @throws {@link ArtifactParseError} when a slice holds both fates, or an overlap
- has no replacement beside it
+ has neither a replacement nor a located place of another group beside it
 
  @example
  ```ts
@@ -45,6 +45,37 @@ function assertSliceFates(
   const places = groups.flatMap(function placesOf(group,): readonly ArtifactConsistencyOccurrence[] {
     return group.occurrences;
   },);
+  // AN OVERLAP NEEDS SOMETHING IN ITS SLICE TO OVERLAP: a replacement or a refused one (an earlier group's replacement
+  // won the words), or a located place of another group whose words the replacement would have changed.
+  /**
+   Whether a slice holds a located place of a group other than the one a place belongs to.
+
+   @param sliceIndex - slice asked about
+
+   @param place - the place that ended overlapped
+
+   @returns Whether another group located words in the slice
+   */
+  function holdsOthersLocated(
+    {
+      sliceIndex,
+      place,
+    }: {
+      readonly sliceIndex: number;
+      readonly place: ArtifactConsistencyOccurrence;
+    },
+  ): boolean {
+    return groups.some(function locatesIn({ occurrences, },): boolean {
+      if (occurrences.includes(place,))
+        return false;
+      return occurrences.some(function isLocatedHere({
+        sliceIndex: otherSlice,
+        rendering,
+      },): boolean {
+        return (otherSlice === sliceIndex) && (rendering.kind === 'located');
+      },);
+    },);
+  }
   /**
    Whether a slice holds a place that ended in an outcome.
 
@@ -82,10 +113,14 @@ function assertSliceFates(
       && (!holds({
         sliceIndex: place.sliceIndex,
         outcome: 'kept-floor',
+      },))
+      && (!holdsOthersLocated({
+        sliceIndex: place.sliceIndex,
+        place,
       },))) {
       throw new ArtifactParseError({
         path,
-        reason: `a replacement in slice ${String(place.sliceIndex,)} for the overlapped place to overlap`,
+        reason: `a replacement, or a located place of another group, in slice ${String(place.sliceIndex,)} for the overlapped place to overlap`,
       },);
     }
   }

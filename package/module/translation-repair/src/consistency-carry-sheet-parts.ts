@@ -130,6 +130,48 @@ export function originalBlocksOf(
 }
 
 /**
+ The fenced blocks that show the words each receiving place's English renders
+ the repeated wording with, which the carry replaces. Both sheets of a block's
+ carry show them, under the same labels: bare for the only receiving place,
+ numbered from one when a block holds several.
+
+ @param receiving - the receiving places of the block, in page order
+
+ @param fence - fence no shown text contains
+
+ @returns The blocks, each ending in a line break
+
+ @example
+ ```ts
+ const blocks = replaceBlocksOf({ receiving, fence, },);
+ ```
+ */
+export function replaceBlocksOf(
+  {
+    receiving,
+    fence,
+  }: {
+    readonly receiving: readonly CarryReceivingPlace[];
+    readonly fence: string;
+  },
+): string {
+  return receiving
+    .map(function replaceBlockOf(
+      place,
+      position,
+    ): string {
+      return `${fence} ${
+        receivingLabel({
+          name: 'THE WORDS TO REPLACE',
+          position,
+          count: receiving.length,
+        },)
+      } ${fence}\n${place.span}\n`;
+    },)
+    .join('',);
+}
+
+/**
  The fenced blocks of the original blocks before and after the one that holds
  the receiving places.
 

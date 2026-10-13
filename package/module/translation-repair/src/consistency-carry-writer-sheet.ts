@@ -9,6 +9,7 @@ import {
   keepingBlockOf,
   originalBlocksOf,
   receivingLabel,
+  replaceBlocksOf,
 } from './consistency-carry-sheet-parts.ts';
 import {
   type ConsistencyRepeat,
@@ -175,7 +176,7 @@ function writerRules(
    The rule about the words of other places inside the paragraph.
    */
   const keepingRule = keeping
-    ? '\n- The paragraph also holds words of other places of the same repeat (WORDS OF OTHER PLACES TO KEEP EXACTLY). They stay exactly as they are, character for character, wherever they stand.'
+    ? '\n- The paragraph also holds words of other places, of this repeat or of another (WORDS OF OTHER PLACES TO KEEP EXACTLY). They stay exactly as they are, character for character, wherever they stand.'
     : '';
   return [
     `You are a bilingual Chinese-to-English translator working on a memorial archive.
@@ -320,23 +321,6 @@ export function buildCarryWriterMessages(
         marks,
       },);
     },);
-  /**
-   The words each receiving place's English renders the repeated wording with.
-   */
-  const replaceBlocks = subject.receiving
-    .map(function replaceBlockOf(
-      place,
-      position,
-    ): string {
-      return `${fence} ${
-        receivingLabel({
-          name: 'THE WORDS TO REPLACE',
-          position,
-          count: subject.receiving
-            .length,
-        },)
-      } ${fence}\n${place.span}\n`;
-    },);
   return [
     {
       role: 'system',
@@ -382,7 +366,12 @@ export function buildCarryWriterMessages(
           keeping: subject.keeping,
           fence,
         },)
-      }${replaceBlocks.join('',)}${fence} CURRENT ENGLISH PARAGRAPH ${fence}\n${subject.paragraph}\n${tenseBlock}${fence} END ${fence}`,
+      }${
+        replaceBlocksOf({
+          receiving: subject.receiving,
+          fence,
+        },)
+      }${fence} CURRENT ENGLISH PARAGRAPH ${fence}\n${subject.paragraph}\n${tenseBlock}${fence} END ${fence}`,
     },
   ];
 }

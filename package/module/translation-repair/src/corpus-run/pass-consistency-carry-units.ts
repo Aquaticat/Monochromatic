@@ -1,4 +1,8 @@
-import type { CarryBlock, } from '../consistency-carry.ts';
+import { compareCodePoints, } from '../code-points.ts';
+import type {
+  CarryBlock,
+  SpliceOnlyKind,
+} from '../consistency-carry-standing.ts';
 import { ConsistencyInvariantError, } from '../consistency-invariant-error.ts';
 import type { ConsistencyPlace, } from './pass-consistency-group.ts';
 import type { ConsistencySliceFacts, } from './pass-consistency-slices.ts';
@@ -18,7 +22,14 @@ import type {
 // receiving place (the chosen place, a place the majority keeps for its context,
 // a place that already reads as the chosen place does) keeps its words inside a
 // block that is rewritten: they are listed with the unit, and a rewrite that
-// changes them is withheld.
+// changes them is withheld. So do the located words of every place of every
+// OTHER group of the page that stand in the block: another group's carry may
+// replace them, and that is settled where the edits are applied, but this
+// group's rewrite of a block never takes them away unasked.
+//
+// A TABLE, A CODE BLOCK OR A SETEXT HEADING HOLDS NO PARAGRAPH A WRITER CAN
+// REWRITE. The unit of such a place is the whole English, as for words that lie
+// in no block, and it names the kind, so the finding says what the place stood in.
 
 /**
  A receiving place with the block of its English that holds its words.
@@ -39,6 +50,13 @@ export type HeldReceiver = {
    or one: none where the words lie in no single block.
    */
   readonly block: readonly CarryBlock[];
+
+  /**
+   The kind of block (a table, a code block, a setext heading) that holds its
+   words where no paragraph rewrite can carry words to them, as a list of zero
+   or one.
+   */
+  readonly spliceOnlyIn: readonly SpliceOnlyKind[];
 };
 
 /**
@@ -76,49 +94,135 @@ const KEPT_OUTCOMES: ReadonlySet<string> = new Set([
 ],);
 
 /**
+ Whether a place with this provisional outcome keeps its words: the chosen
+ place, a place the majority keeps for its context, or a place that already
+ reads as the chosen place does.
+
+ @param outcome - the place's provisional outcome
+
+ @returns Whether a carry must leave the place's words as they are
+
+ @example
+ ```ts
+ const keeps = isKeptOutcome({ outcome: 'chosen', },); // true
+ ```
+ */
+export function isKeptOutcome({ outcome, }: { readonly outcome: string; },): boolean {
+  return KEPT_OUTCOMES.has(outcome,);
+}
+
+/**
  The words of the group's places that a carry must leave as they are: the
  chosen place, the places the majority keeps for their context and the places
  that already read as the chosen place does, each as its located rendering.
 
+ The words of every place of every other group of the page that has a located
+ rendering are listed with them, whatever became of the place: that group's
+ carry may replace them, and this group's rewrite of a block must not.
+
  @param decided - the group with its renderings and provisional outcomes
 
- @returns The words with their slice and offset, in page order
+ @param others - the page's other groups, in any order; the result does not depend on it
+
+ @returns The words with their slice and offset, in page order and without
+ repeats
 
  @example
  ```ts
- const kept = keptWordsOf({ decided, },);
+ const kept = keptWordsOf({ decided, others: [], },);
  ```
  */
-export function keptWordsOf({ decided, }: { readonly decided: DecidedGroup; },): readonly KeptWords[] {
-  return decided.places
-    .flatMap(function keptOf(
-      place,
-      position,
-    ): readonly KeptWords[] {
+export function keptWordsOf(
+  {
+    decided,
+    others = [],
+  }: {
+    readonly decided: DecidedGroup;
+    readonly others?: readonly DecidedGroup[];
+  },
+): readonly KeptWords[] {
+  /**
+   The words of this group that stay, then the located words of every other group.
+   */
+  const listed: readonly KeptWords[] = [
+    ...decided.places
+      .flatMap(function keptOf(
+        place,
+        position,
+      ): readonly KeptWords[] {
+        /**
+         This place's rendering.
+         */
+        const rendering = decided.renderings[position];
+        /**
+         This place's provisional outcome.
+         */
+        const outcome = decided.outcomes[position];
+        if (rendering === undefined)
+          return [];
+        if (rendering.kind !== 'located')
+          return [];
+        if (outcome === undefined)
+          return [];
+        if (!isKeptOutcome({ outcome, },))
+          return [];
+        return [
+          {
+            sliceIndex: place.slice
+              .sliceIndex,
+            start: rendering.start,
+            core: rendering.core,
+          },
+        ];
+      },),
+    ...others.flatMap(function locatedOf(other,): readonly KeptWords[] {
+      return other.places
+        .flatMap(function locatedPlaceOf(
+          place,
+          position,
+        ): readonly KeptWords[] {
+          /**
+           This place's rendering.
+           */
+          const rendering = other.renderings[position];
+          return (rendering?.kind === 'located')
+            ? [
+              {
+                sliceIndex: place.slice
+                  .sliceIndex,
+                start: rendering.start,
+                core: rendering.core,
+              },
+            ]
+            : [];
+        },);
+    },),
+  ];
+  return listed
+    .toSorted(function inPageOrder(
+      left,
+      right,
+    ): number {
+      return (left.sliceIndex - right.sliceIndex) || (left.start - right.start)
+        || compareCodePoints({
+          left: left.core,
+          right: right.core,
+        },);
+    },)
+    .filter(function isFirstOfItsKind(
+      words,
+      at,
+      sorted: readonly KeptWords[],
+    ): boolean {
       /**
-       This place's rendering.
+       The words just before these in page order.
        */
-      const rendering = decided.renderings[position];
-      /**
-       This place's provisional outcome.
-       */
-      const outcome = decided.outcomes[position];
-      if (rendering === undefined)
-        return [];
-      if (rendering.kind !== 'located')
-        return [];
-      if (outcome === undefined)
-        return [];
-      if (!KEPT_OUTCOMES.has(outcome,))
-        return [];
-      return [
-        {
-          sliceIndex: place.slice
-            .sliceIndex,
-          start: rendering.start,
-          core: rendering.core,
-        },
-      ];
+      const before = sorted[at - 1];
+      if (before === undefined)
+        return true;
+      return (before.sliceIndex !== words.sliceIndex)
+        || (before.start !== words.start)
+        || (before.core !== words.core);
     },);
 }
 
@@ -248,7 +352,13 @@ function unitKeyOf({ held, }: { readonly held: HeldReceiver; },): string {
    The block, none where the words lie in no single block.
    */
   const [block,] = held.block;
-  return (block === undefined) ? `${slice}:whole` : `${slice}:${String(block.start,)}:${String(block.end,)}`;
+  if (block !== undefined)
+    return `${slice}:${String(block.start,)}:${String(block.end,)}`;
+  /**
+   The kind of block that holds the words where no paragraph can, none for words in no block.
+   */
+  const [kind,] = held.spliceOnlyIn;
+  return `${slice}:whole:${kind ?? ''}`;
 }
 
 /**
@@ -256,7 +366,7 @@ function unitKeyOf({ held, }: { readonly held: HeldReceiver; },): string {
 
  @param members - the receivers of one stretch, in page order
 
- @returns The block of their English, and whether a writer can be given it
+ @returns The block of their English, whether a writer can be given it, and the kind of block no paragraph rewrite can carry words into that holds the words
 
  @throws {@link ConsistencyInvariantError} when the receivers' slice carries no English
 
@@ -270,6 +380,7 @@ function stretchOf(
 ): {
   readonly block: CarryBlock;
   readonly writable: boolean;
+  readonly spliceOnlyIn: readonly SpliceOnlyKind[];
 } {
   /**
    The first receiver, whose slice and block every member shares.
@@ -287,6 +398,7 @@ function stretchOf(
     return {
       block,
       writable: true,
+      spliceOnlyIn: [],
     };
   }
   /**
@@ -303,6 +415,7 @@ function stretchOf(
       text: english,
     },
     writable: false,
+    spliceOnlyIn: first.spliceOnlyIn,
   };
 }
 
@@ -363,6 +476,7 @@ export function unitsOf(
       const {
         block,
         writable,
+        spliceOnlyIn,
       } = stretchOf({ members, },);
       /**
        The slice the members stand in.
@@ -375,6 +489,7 @@ export function unitsOf(
       return {
         block,
         writable,
+        spliceOnlyIn,
         receivers: members.map(function receiverOf({ receiver, },): CarryReceiver {
           return receiver;
         },),

@@ -12,69 +12,47 @@ import { mapOverlapped, } from '../overlapped-map.ts';
 import type { SliceCache, } from '../slice-cache.ts';
 import type { StageSettings, } from '../stage-settings.ts';
 import type { RosterModelId, } from '../synthetic-catalog.ts';
-import { askConsistencyBench, } from './pass-consistency-ask.ts';
+import {
+  type AskedDecision,
+  decideAskedGroup,
+  type PreparedGroup,
+} from './pass-consistency-bench-decide.ts';
 import {
   type ConsistencyCacheValue,
   openConsistencyCache,
 } from './pass-consistency-cache.ts';
 import { carryAll, } from './pass-consistency-carry.ts';
 import { keptWordsOf, } from './pass-consistency-carry-units.ts';
-import {
-  type ConsistencyPlace,
-  occurrenceViewOf,
-  repeatOf,
-} from './pass-consistency-group.ts';
-import { askRunOff, } from './pass-consistency-run-off.ts';
-import {
-  countAsked,
-  runOffReasonOf,
-  settleAsked,
-  settleCarried,
-} from './pass-consistency-settle.ts';
+import { settleCarried, } from './pass-consistency-settle.ts';
 import type {
   CarryWriters,
+  DecidedGroup,
   SettledGroup,
 } from './pass-consistency-types.ts';
-import {
-  settleFailed,
-  unplacedOf,
-} from './pass-consistency-unasked.ts';
+import { settleFailed, } from './pass-consistency-unasked.ts';
 import type { PipelineDigest, } from './pipeline-digest.ts';
 import type { RunClient, } from './run-client-contract.ts';
-import { RUN_PER_CALL_TIMEOUT_MS, } from './run-config.ts';
 import { readPhaseSeats, } from './run-seats-read.ts';
-import type { RepeatGroup, } from '../repeat-groups-types.ts';
+
+export {
+  type AskedDecision,
+  decideAskedGroup,
+  type PreparedGroup,
+} from './pass-consistency-bench-decide.ts';
 
 //region Pass consistency bench
 // ASKING THE JUDGE BENCH ABOUT EVERY GROUP THAT NEEDS IT, side by side, and
 // settling what it says: the first round's ballots, a run-off among the places
 // that tied for first, and the carry of the chosen rendering to each receiving
-// place by the writer bench and a choice among candidates. The seats are read
+// place by the writer bench and a choice among candidates. EVERY GROUP IS DECIDED
+// BEFORE ANY IS CARRIED, so each carry is told the located words of the other
+// groups it must not rewrite away. The seats are read
 // when the first group needs them and not before, so a page that repeats nothing
 // the bench must judge reads no meter and waits out no hold.
 
 /**
- A group with the places a slice holds whole.
-
- @example
- ```ts
- const prepared: PreparedGroup = { group, places, };
- ```
- */
-export type PreparedGroup = {
-  /**
-   The group the detector found.
-   */
-  readonly group: RepeatGroup;
-
-  /**
-   The places a slice holds whole.
-   */
-  readonly places: readonly ConsistencyPlace[];
-};
-
-/**
- Asks the bench about one group and settles it, containing whatever goes wrong.
+ Carries the chosen rendering of a decided group to its receiving places and
+ settles the group, containing whatever goes wrong.
 
  @param client - provider client
 
@@ -84,7 +62,9 @@ export type PreparedGroup = {
 
  @param text - whole original
 
- @param prepared - the group and its places
+ @param decision - the group decided
+
+ @param others - the page's other decided groups, whose located words the carry must leave as they are
 
  @param cache - store an earlier answer is read from
 
@@ -112,7 +92,7 @@ export type PreparedGroup = {
 
  @example
  ```ts
- const settled = await settleAskedGroup({ client, modelIds, writers, text, prepared, cache, declared: [], declaredNames: [], signal, l, stageSettings, },);
+ const settled = await settleAskedGroup({ client, modelIds, writers, text, decision, others: [], cache, declared: [], declaredNames: [], signal, l, stageSettings, },);
  ```
  */
 async function settleAskedGroup(
@@ -121,7 +101,8 @@ async function settleAskedGroup(
     modelIds,
     writers,
     text,
-    prepared,
+    decision,
+    others,
     cache,
     identityContext,
     referenceContext,
@@ -137,7 +118,8 @@ async function settleAskedGroup(
     readonly modelIds: readonly RosterModelId[];
     readonly writers: CarryWriters;
     readonly text: string;
-    readonly prepared: PreparedGroup;
+    readonly decision: AskedDecision;
+    readonly others: readonly DecidedGroup[];
     readonly cache: SliceCache<ConsistencyCacheValue>;
     readonly identityContext?: string;
     readonly referenceContext?: string;
@@ -150,6 +132,8 @@ async function settleAskedGroup(
     readonly stageSettings: StageSettings;
   },
 ): Promise<SettledGroup> {
+  if (decision.kind === 'failed')
+    return decision.settled;
   /**
    Logger pre-tagged with this function's name.
    */
@@ -158,92 +142,10 @@ async function settleAskedGroup(
     l,
   },);
   /**
-   The repeated wording or frame.
+   The group decided, with the places the chosen rendering is still to reach.
    */
-  const repeat = repeatOf({
-    group: prepared.group,
-    text,
-  },);
-  /**
-   The places no slice holds whole.
-   */
-  const unplaced = unplacedOf({ group: prepared.group, },);
+  const { decided, } = decision;
   try {
-    /**
-     The sheet the first round and the run-off show.
-     */
-    const subject = {
-      repeat,
-      occurrences: prepared.places
-        .map(function viewOf(place,) {
-          return occurrenceViewOf({
-            place,
-            text,
-          },);
-        },),
-      ...((identityContext === undefined) ? {} : { identityContext, }),
-      ...((referenceContext === undefined) ? {} : { referenceContext, }),
-      ...((lifeEnded === undefined) ? {} : { lifeEnded, }),
-      ...((subjectNames === undefined) ? {} : { subjectNames, }),
-    };
-    /**
-     The first round's ballots.
-     */
-    const asked = await askConsistencyBench({
-      client,
-      modelIds,
-      subject,
-      cache,
-      signal,
-      exchangeTimeoutMs: RUN_PER_CALL_TIMEOUT_MS,
-      l: gl,
-      stageSettings,
-    },);
-    /**
-     What they come to, and the places that tied for first when they tie.
-     */
-    const count = countAsked({
-      repeat,
-      places: prepared.places,
-      asked,
-    },);
-    if (count.finalists
-      .length
-      > 0) {
-      gl.info(`asking the bench once more: ${runOffReasonOf({
-        count,
-        asked,
-      },)}`,);
-    }
-    /**
-     The bench asked once more among the places that tied for first, absent when none tied.
-     */
-    const runOff = (count.finalists
-      .length
-      === 0)
-      ? undefined
-      : await askRunOff({
-        client,
-        modelIds,
-        subject,
-        finalists: count.finalists,
-        renderings: count.renderings,
-        cache,
-        signal,
-        exchangeTimeoutMs: RUN_PER_CALL_TIMEOUT_MS,
-        l: gl,
-        stageSettings,
-      },);
-    /**
-     The group decided, with the places the chosen rendering is still to reach.
-     */
-    const decided = settleAsked({
-      repeat,
-      places: prepared.places,
-      unplaced,
-      asked,
-      ...((runOff === undefined) ? {} : { runOff, }),
-    },);
     /**
      The chosen place, none when no place won.
      */
@@ -269,21 +171,24 @@ async function settleAskedGroup(
             l: gl,
             stageSettings,
           },
-          repeat,
+          repeat: decision.repeat,
           chosen,
           receivers: decided.receivers,
-          kept: keptWordsOf({ decided, },),
+          kept: keptWordsOf({
+            decided,
+            others,
+          },),
         },),
     },);
   }
   catch (error) {
     if (signal.aborted)
       throw error;
-    gl.error(`the bench could not be asked or counted (${exchangeFailureLogText({ error, },)}); the places stay as they stand`,);
+    gl.error(`the carry could not be made (${exchangeFailureLogText({ error, },)}); the places stay as they stand`,);
     return settleFailed({
-      repeat,
-      places: prepared.places,
-      unplaced,
+      repeat: decision.repeat,
+      places: decided.places,
+      unplaced: decision.unplaced,
       detail: exchangeFailureText({ error, },),
     },);
   }
@@ -310,6 +215,29 @@ function groupAskedName(
   },
 ): string {
   return `group ${String(position + 1,)} asked`;
+}
+
+/**
+ Names a group carried, for the line that reports a failure left unthrown.
+
+ @param position - position of the group among those carried
+
+ @returns Name of the group
+
+ @example
+ ```ts
+ const name = groupAskedCarriedName({ item, position: 0, },); // 'group 1 carried'
+ ```
+ */
+function groupAskedCarriedName(
+  {
+    position,
+  }: {
+    readonly item: AskedDecision;
+    readonly position: number;
+  },
+): string {
+  return `group ${String(position + 1,)} carried`;
 }
 
 /**
@@ -461,16 +389,54 @@ export async function askAll(
     dir: entryCacheDir,
     generation: pipelineDigest,
   },);
-  return await mapOverlapped({
+  // EVERY GROUP IS DECIDED BEFORE ANY GROUP IS CARRIED. A block rewrite for one group can cover the words another
+  // group located, and what that group located is known only once its ballots are counted, so the carries wait for the
+  // decisions and each is told the located words of every other group, whichever order the groups finished in.
+  /**
+   Every group decided, or failed, in page order.
+   */
+  const decisions = await mapOverlapped({
     items: toAsk,
     overlap,
-    oneItem: async function askOne({ item, },): Promise<SettledGroup> {
+    oneItem: async function decideOne({ item, },): Promise<AskedDecision> {
+      return await decideAskedGroup({
+        client,
+        modelIds: seats.lateJudges,
+        text,
+        prepared: item,
+        cache,
+        ...((identityContext === undefined) ? {} : { identityContext, }),
+        ...((referenceContext === undefined) ? {} : { referenceContext, }),
+        ...((lifeEnded === undefined) ? {} : { lifeEnded, }),
+        ...((subjectNames === undefined) ? {} : { subjectNames, }),
+        signal,
+        l,
+        stageSettings,
+      },);
+    },
+    signal,
+    l,
+    nameOf: groupAskedName,
+  },);
+  /**
+   The groups that were decided, in page order, which every carry reads the others of.
+   */
+  const decidedGroups = decisions.flatMap(function decidedOf(decision,): readonly DecidedGroup[] {
+    return (decision.kind === 'decided') ? [decision.decided,] : [];
+  },);
+  return await mapOverlapped({
+    items: decisions,
+    overlap,
+    oneItem: async function carryOne({ item, },): Promise<SettledGroup> {
       return await settleAskedGroup({
         client,
         modelIds: seats.lateJudges,
         writers,
         text,
-        prepared: item,
+        decision: item,
+        others: decidedGroups.filter(function isAnother(group,): boolean {
+          return (item.kind === 'decided') && (group !== item.decided);
+        },),
         cache,
         ...((identityContext === undefined) ? {} : { identityContext, }),
         ...((referenceContext === undefined) ? {} : { referenceContext, }),
@@ -485,7 +451,7 @@ export async function askAll(
     },
     signal,
     l,
-    nameOf: groupAskedName,
+    nameOf: groupAskedCarriedName,
   },);
 }
 

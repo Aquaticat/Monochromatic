@@ -63,13 +63,18 @@ export {
   runOffWinnerOf,
 } from './consistency-run-off.ts';
 export {
-  blockHolding,
-  type CarryBlock,
   type CarryChoice,
   carryChoiceOf,
   type CarryOffer,
   carryOffersOf,
 } from './consistency-carry.ts';
+export {
+  type BlockStanding,
+  blockHolding,
+  blockStandingOf,
+  type CarryBlock,
+  type SpliceOnlyKind,
+} from './consistency-carry-standing.ts';
 export {
   buildCarryWriterMessages,
   type CarryWriterSubject,
@@ -82,6 +87,7 @@ export {
   keepingBlockOf,
   originalBlocksOf,
   receivingLabel,
+  replaceBlocksOf,
 } from './consistency-carry-sheet-parts.ts';
 export {
   buildCarryChoiceMessages,
@@ -200,6 +206,7 @@ export {
   englishOf,
   englishOfUnit,
   type HeldReceiver,
+  isKeptOutcome,
   type KeptWords,
   keptWordsOf,
   sliceOfUnit,
@@ -243,11 +250,17 @@ export {
   applyConsistency,
 } from './corpus-run/pass-consistency-apply.ts';
 export {
+  editsChangingLocatedWords,
+  type LeftOutEdit,
+} from './corpus-run/pass-consistency-apply-located.ts';
+export {
   askConsistencyBench,
   type ConsistencyAsked,
 } from './corpus-run/pass-consistency-ask.ts';
 export {
   askAll,
+  type AskedDecision,
+  decideAskedGroup,
   type PreparedGroup,
   writersOf,
 } from './corpus-run/pass-consistency-bench.ts';
