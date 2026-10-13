@@ -451,6 +451,31 @@ source capture,
 and native error reporting remain the adapter's responsibilities.
 This does not replace the installed judge or supply a maintained host launcher.
 
+## Migration same-source incorporation
+
+`selectUnitAdoptionPairs` preserves the supported structural profile:
+a source must contain exactly a tagged adopter and a whole quoted target,
+with at most 64 source opportunities.
+Selection alone establishes neither incorporation meaning nor authority.
+
+`consumeUnitAdoptions` checks original pair,
+member,
+source-projection,
+authority,
+and request-scope references.
+Adoption-only meaning cannot override a conflicting primitive interpretation of the complete adopter.
+Target meaning is independently admitted before lowering with the original registered priority.
+A target prerequisite remains a constraint,
+not permission supplied by incorporation.
+Independent implementation-fact gaps remain outside this consumer.
+
+The private native compiler now delegates selection and consumption to maintained exports.
+Initial build/types and formatting checks passed;
+final unit,
+lint,
+and native integration checks remain pending.
+This does not close the governing domain or install the migrated host.
+
 ## Migration heading-context interpretation
 
 `consumeHeadingContexts` retains original candidate and evidence references for source-local heading groups.

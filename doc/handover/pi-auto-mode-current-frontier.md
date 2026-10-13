@@ -645,6 +645,47 @@ not completed domain closure,
 a maintained host launch path,
 or installed activation.
 
+## Maintained bounded unit incorporation
+
+Main `f82323d386` ports `unit-adoption.ts` and the structural pair selector,
+with binding,
+meaning,
+and type siblings.
+The native compiler now imports those maintained consumers through the existing stager.
+Original batch authentication and dependency revalidation remain with native owners.
+The accepted same-source two-unit profile and 64-source opportunity bound remain unchanged.
+
+Scope still requires the original member,
+exact adopter/target projections,
+original authority/source membership,
+and matching original request scope.
+Primitive adopter meaning cannot be silently combined with adoption-only control meaning.
+Target permission,
+prohibition,
+prerequisite,
+or no-op meaning remains independent of incorporation.
+Independent implementation-fact gaps stay unresolved.
+
+`proc_b660` passed initial build/types.
+Built-artifact controls exercise meaning combinations,
+structural selection,
+original identity,
+authority/request scope,
+prior lowering,
+and malformed or unadmitted inputs.
+`proc_376a` reported documentation,
+limit naming,
+and nullable-number condition diagnostics.
+`a56b345955` preserves the same limit with an explicit constant and checks prior lowering explicitly.
+`proc_2cf2` passed formatting/lint with zero diagnostics.
+Final type,
+unit,
+and native verification remain pending.
+No domain closure,
+production semantic qualification,
+installed host,
+or genuine approval result is claimed.
+
 ## Maintained source-local heading consumer
 
 Main `876b63c06c` adds `package/pi-plugin/auto-mode/src/heading-context.ts` and its reference types.

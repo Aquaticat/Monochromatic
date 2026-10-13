@@ -308,9 +308,15 @@ export function consumeUnitAdoptions(
       'none',
     ].includes(targetRelation,))
       continue;
-    if (targetClause.lowered !== undefined
-      && (targetClause.lowered.rules.length > 0
-        || targetClause.lowered.authorizationRequirements.length > 0))
+    if ((targetClause.lowered !== undefined)
+      && ((targetClause.lowered
+        .rules
+        .length
+        > 0)
+        || (targetClause.lowered
+          .authorizationRequirements
+          .length
+          > 0)))
       throw new UnitAdoptionBindingError('Quoted target was already lowered without its incorporation scope',);
     /**
      Maintained lowering validates priority and keeps prerequisites separate from permission.
