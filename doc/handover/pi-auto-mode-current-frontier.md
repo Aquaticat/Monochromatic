@@ -637,7 +637,16 @@ and unread metadata obligations.
 Its canonical fixture initially assumed that codemode leaves the description suffix unchanged;
 `proc_2125` then exposed incorrect fixture cleanup ordering.
 The fixture now preserves native description composition and disposes/awaits idle before detaching.
-Canonical review and input-specific native parity are being rechecked.
+`proc_54a3` passed canonical review and input-specific native parity.
+The original input appears in exact source bindings,
+assessment policies,
+and indexed questions while absent from the native request.
+The outcome remains unresolved,
+with two local request exchanges and one authored assessment.
+Getter counts match one/one;
+unexpected false and undefined failures stop before callback entry,
+and reset does not rebind original publications.
+`proc_aca8` passed the shared declaration-metadata regression.
 
 Argument snapshots do not establish the values later returned by query capabilities,
 valid delegation,
