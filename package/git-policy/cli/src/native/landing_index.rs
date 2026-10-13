@@ -289,11 +289,11 @@ fn reset_guarded_paths(
         if before == now {
             untouched.push(path);
         } else {
-            let path: String = path_message_text(path.as_slice());
+            let shown: String = path_message_text(path.as_slice());
             warn(
                 TAG,
                 &format!(
-                    "A commit hook changed {path}, but it was staged again while the commit ran; the committed bytes are in HEAD and your staged entry was kept. Compare them with git diff --cached -- {path}."
+                    "A commit hook changed {shown}, but it was staged again while the commit ran; the committed bytes are in HEAD and your staged entry was kept. Compare them with git diff --cached -- {shown}."
                 ),
             );
         }
