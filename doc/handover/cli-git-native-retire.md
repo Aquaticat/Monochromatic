@@ -74,8 +74,10 @@ The pinned incumbent revision,
   lines,
    and the `mise.toml` path entry `package/git-policy/cli/node_modules/.bin`.
 - `7c7e5c8140` names a constant that oxlint flagged and states the Git floor of the end-to-end run.
-- The commit that adds this file also adds the in-place notes to four lane records and the state paragraph of the
-  cutover runbook.
+- `d42107ec3b` adds this file, the in-place notes to four lane records and the state paragraph of the cutover
+  runbook.
+- The commit after it rewrites the `SPEC.md` section `Compatibility and degradation` and the e2e README paragraphs that
+  described a Git 2.40.0 floor, and corrects the cleanup list and the lint baseline of this file.
 
 ## Deviations and decisions
 
@@ -103,6 +105,11 @@ The pinned incumbent revision,
 - An unset `E2E_WRAPPER` selects native;
    the value `incumbent` is refused.
 - The step 4 `mise.toml` change is the one line the generator removes for the cli package.
+  None of the harness's remaining dependencies (`config-typescript`,
+   `module-caught-value`,
+   `module-logger`,
+  `module-test`) declares a `bin`,
+   which is why `package/git-policy/cli/node_modules/.bin` no longer exists.
   `mise run sync:files` in this worktree also removes 13 other `node_modules/.bin` path entries (eight under
   `package/claude-code-plugin`,
    plus `package/dev-script/file-enforcer`,
@@ -166,9 +173,12 @@ All through `node "${HOME}/temp/agent/gate-slot.ts"` with `GIT_POLICY_NATIVE_IMA
   `lint:oxlint:paths` passed on the touched TypeScript files and on `bin/e2e-native-container.mjs`.
   The whole-package `lint:oxlint` reports diagnostics in `bin/build-git-test-image.mjs`,
    `bin/mutate-native-*.mjs`
-  and `native-interop/*.mjs` (none in a file this branch changed beyond the one fixed);
-   they were not measured before
-  the branch.
+  and `native-interop/*.mjs`,
+   none in a file this branch changed.
+  They predate the branch:
+  on a detached worktree of `f4fc1fa213` the same two-file run (`bin/build-git-test-image.mjs`,
+  `native-interop/support.mjs`) reported 98 warnings and 6 errors,
+  and on this branch it reports the identical counts.
 - `monochromatic-lint` on the touched Markdown files:
    no finding on an added line.
   Rendering checked with `render-docs.ts` for `SPEC.md`,
@@ -203,6 +213,9 @@ All through `node "${HOME}/temp/agent/gate-slot.ts"` with `GIT_POLICY_NATIVE_IMA
    10 dead" and the other sections) refer to a report generated on
   2026-10-07,
    and removing keys would make those counts wrong without a new report.
+- The `SPEC.md` section `Compatibility and degradation` was rewritten for the Git 2.55.0 floor,
+  and the e2e README says the 2.39.5 and 2.40.0 runs fail by design;
+  the image still carries those two Git builds.
 - `SPEC.md` still describes,
    in sections the plan did not name,
    the hook dispatcher,
@@ -239,9 +252,6 @@ Listed read-only on 2026-10-14 with `ls -d` and `git check-ignore --verbose`;
    `pack` and `perf`;
    2.2 MiB).
 - `package/git-policy/cli/.cache` (holds `typescript`).
-- `package/git-policy/cli/node_modules` (1.5 GiB;
-   `pnpm install` prunes the links,
-   the directory may remain).
 - `package/git-policy/api`,
    `package/git-policy/forbidden-strings`,
    `package/git-policy/markdown-lint` and
@@ -250,11 +260,20 @@ Listed read-only on 2026-10-14 with `ls -d` and `git check-ignore --verbose`;
    `.cache` and `node_modules` remain in each;
   remove the four directories.
 - `node_modules/.bin/git`:
-   the incumbent's shim (3,598 bytes);
-   `pnpm install` removes it once `package.json:36` is
-  gone,
-   otherwise remove that one file.
-  The first `PATH` entry `.cache/cli-git-bin` shadows it either way.
+  the incumbent's shim (3,598 bytes).
+  Measured in the worktree:
+  after the root dependency was gone,
+  `pnpm install --frozen-lockfile --offline` (also with `--force`) left the file in place,
+  so `pnpm install` does not remove it.
+  Remove that one file by explicit path.
+  The first `PATH` entry `.cache/cli-git-bin` shadows it meanwhile.
+- `package/git-policy/cli/node_modules` stays:
+  pnpm manages it,
+   and the harness's unit tests need its links to `module-test`,
+  `module-logger` and `module-caught-value`.
+  `pnpm install` in the main checkout prunes the incumbent's closure from it.
+- After the merge,
+   run `mise run sync:files` in the main checkout and confirm that `mise.toml` does not change.
 - The main checkout has an uncommitted change to `pnpm-lock.yaml`;
    it was not touched and will collide with this
   branch's lockfile edits (three hunks in total) at merge.

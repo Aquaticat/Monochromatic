@@ -79,13 +79,21 @@ The native image adds `/opt/native/bin/git`,
  a link to the release executable,
  on top of this image.
 
-Git 2.40.0 is the oldest release with every feature cli-git uses,
+The native executable requires Git 2.55.0 or newer and runs nothing on an older Git
+(`SPEC.md` "Compatibility and degradation"),
+so only the 2.55.0 runs are supported ones.
+The rest of this section describes why the image also carries 2.39.5 and 2.40.0:
+the retired TypeScript wrapper degraded on them,
+ and the suite kept the versions.
+
+For the retired wrapper,
+ Git 2.40.0 was the oldest release with every feature it used,
 because it is the first whose `git merge-tree` accepts `--merge-base`:
 `Documentation/RelNotes/2.40.0.adoc` says "`merge-tree` learns a new `--merge-base` option",
 and `--write-tree` itself arrived in 2.38.0.
 Git 2.39.5,
 Debian bookworm's Git,
-proves that cli-git degrades without that option
+proved that the retired wrapper degraded without that option
 (`SPEC.md` "Compatibility and degradation"):
 a commit that loses a landing race fails fast with `concurrent-commit/head-moved` instead of replaying.
 Git 2.55.0 is the current release;
