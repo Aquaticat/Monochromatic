@@ -72,6 +72,11 @@ export {
 //region Deterministic migration kernel remains separate from native evidence admission
 
 export { type AuthorizationRequirement, } from './authorization-requirement.ts';
+export {
+  CLAUSE_RELATIONS,
+  type LoweredClause,
+  lowerEstablishedClause,
+} from './clause-lowering.ts';
 export { inspectAuthorizationRequirements, } from './authorization-requirements.ts';
 export {
   type GuardOutcome,
