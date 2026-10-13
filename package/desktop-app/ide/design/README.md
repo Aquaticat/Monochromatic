@@ -1316,3 +1316,113 @@ one fresh session per question and scheme.
   Against the box's fill beside the cell,
   the plate's boundary measures 5.92 hovered and 12.41 pressed in the dark scheme,
   and 4.74 and 14.94 in the light one.
+
+## Applied frames of the 2026-10-12 soft wrap
+
+`screenshots/2026-10-12-soft-wrap-applied/` holds frames of the application built from the branch
+`feat/ide-soft-wrap`,
+in the light and the dark scheme,
+for the always-on soft wrap.
+
+### File names of the 2026-10-12 frames
+
+- `wrap-<scheme>.png`:
+  the sample file just after it opens, caret in the first column of the first line.
+- `wrap-<scheme>-selection.png`:
+  a click on the second visual row of the first line,
+  then a Shift+click on the sixth line,
+  so the selection runs across wrapped and unwrapped lines.
+
+Every frame is 1100 by 660 pixels at scale 1.
+
+### How the 2026-10-12 frames were produced
+
+`soft-wrap-shots.mjs` in this directory writes a sample Rust file into a disposable project,
+hosts the built `monochromatic-ide` in the nested compositor
+(`package/cli/nested-wayland-session`, `--size 1100x660`, `--color-scheme light` and `dark`),
+and takes each screenshot once two captures in a row are identical and the window is drawn.
+The script needs `WAYLAND_DISPLAY` and `XDG_RUNTIME_DIR` of a running Wayland session:
+
+```sh
+# design/soft-wrap-shots.mjs usage
+node design/soft-wrap-shots.mjs target/release/monochromatic-ide "${HOME}/temp/agent/soft-wrap-frames"
+```
+
+The compositor's `button down`, `move`, and `button up` sequence did not start a drag selection in this session,
+so the selection frames use the Shift+click path instead.
+
+A probe on 2026-10-12 found why a held-button drag can fail to start.
+`button down` presses where the compositor's pointer already is, and a pointer that was never moved has no surface
+under it.
+With `move 400 56`, then `button down`, then `move` to two points further down, the application logged the press
+and the screenshot with the button held showed a selection from the first wrapped row across the rows below it.
+With `button down` first and the same two `move` commands after it, the application logged no press and no selection
+appeared.
+So the application drags correctly and the driver needs a `move` to the starting point before `button down`.
+The sequence of the earlier session was not recorded, so whether it lacked that first `move` is not known.
+The headless native test `a_drag_selects_across_visual_rows` drags across wrapped rows through real window events.
+
+### What the 2026-10-12 frames show
+
+- Wrapped lines carry their number on the first visual row only.
+  Every continuation row shows the wrap indicator in the gutter, in the same gray in both schemes.
+- A continuation row starts at the indent of its line,
+  and a line whose indent is a tab breaks back to the tab's width.
+- A token with no break opportunity (the line of `x` characters) breaks at the width of the text area,
+  and the last glyph of each row stands whole inside the pane.
+- There is no horizontal scrollbar and no horizontal scroll range.
+- The selection in the `-selection` frames covers each visual row from its first selected glyph to its end,
+  and the caret of the click stands on the second visual row of the first line, not at the end of the first.
+
+## Applied frames of the 2026-10-12 hints and messages on wrapped lines
+
+`screenshots/2026-10-12-wrap-annotations-applied/` holds frames of the application built from the branch
+`feat/ide-soft-wrap`,
+in the light and the dark scheme,
+for the hint and message rows of a wrapped line.
+The user decided on 2026-10-05 that hints and messages stand on rows over the code line
+(see the 2026-10-05 UI batch 3 above);
+the frames show that decision on lines that wrap,
+and the one place where the built behavior differs from IntelliJ's:
+a block stands over the first visual row of its line, and IntelliJ's block inlay over the visual row that holds its
+offset.
+
+### File names of the hints and messages frames
+
+- `wrap-annotations-<scheme>-<size>.png`:
+  the sample file just after it opens, with its hints and diagnostics injected.
+  `<scheme>` is `light` or `dark`,
+  and `<size>` is `wide` (1100 by 660 pixels) or `narrow` (760 by 660 pixels).
+  Every frame is at scale 1.
+
+### How the hints and messages frames were produced
+
+`wrap-annotation-shots.mjs` in this directory writes a sample Rust file into a disposable project,
+writes the hints and diagnostics of the scene as the inspection file,
+and hosts a debug build of `monochromatic-ide` in the nested compositor
+(`package/cli/nested-wayland-session`, `--color-scheme light` and `dark`, both sizes).
+It takes each screenshot once two captures in a row are identical and the window is drawn.
+The hints and diagnostics come from the debug-only inspection path (`IDE_INSPECT_ANNOTATIONS`,
+`src/native/inspect.rs`), which release builds do not contain,
+so the application must be a debug build (`mise run //package/desktop-app/ide:build:debug`).
+The script needs `WAYLAND_DISPLAY` and `XDG_RUNTIME_DIR` of a running Wayland session:
+
+```sh
+# design/wrap-annotation-shots.mjs usage
+node design/wrap-annotation-shots.mjs target/debug/monochromatic-ide "${HOME}/temp/agent/wrap-annotation-frames" target/debug/runtime
+```
+
+### What the hints and messages frames show
+
+- A hint stands over the first visual row of its line at the x of its character on the visual row that character is on:
+  in `wide`, the hint `second:` over line 3 stands at the x of `second_value`, which is on the second visual row.
+  The blocks of lines 3 and 5 stand over their first rows, and the line after a wrapped line starts under its last
+  visual row.
+- A message whose widest row would pass the text area from the x of its diagnostic moves left, as a whole:
+  in `wide`, the error message of line 3 starts left of `second_value`, so that its widest row ends inside the pane.
+- A message row wider than the text area is broken again at the width of the text area,
+  the first row of a message using all of it and the rows after it standing 16 px in:
+  the same messages take one more row or two in `narrow`, and the rows are filled, not cut at the pane edge.
+- The underlines stand under the characters they mark on their own visual rows,
+  and the severity letters stand beside the first visual row of each line.
+- The wrap indicator stands in the gutter on every continuation row, as in the 2026-10-12 soft wrap frames.

@@ -149,6 +149,7 @@ fn native_source_does_not_show_an_in_place_save_before_it_finishes() {
         anchor: 2,
         head: 6,
         viewport: 0,
+        affinity: ide_app::document::ReadingAffinity::Downstream,
     });
     render(&window, &state);
     let mut seen = Vec::new();
@@ -192,6 +193,7 @@ fn native_source_does_not_show_a_deleted_file_before_its_rewrite_finishes() {
         anchor: 2,
         head: 6,
         viewport: 0,
+        affinity: ide_app::document::ReadingAffinity::Downstream,
     });
     render(&window, &state);
     let mut seen = Vec::new();
@@ -252,6 +254,7 @@ fn write_wait_pause_sweep() {
                 anchor: 2,
                 head: 6,
                 viewport: 0,
+                affinity: ide_app::document::ReadingAffinity::Downstream,
             });
             render(&window, &state);
             let mut seen = Vec::new();

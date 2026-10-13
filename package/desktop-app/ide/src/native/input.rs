@@ -6,8 +6,10 @@
 use super::{AppWindow, State, render, viewport::follow};
 /// Geometry-free caret movement over source characters.
 use ide_app::caret_motion::{Motion, moved};
-/// Source offsets remain independent of rendered pixels.
-use ide_app::document::ReadingPosition;
+/// Source offsets remain independent of rendered pixels, and the side of a soft-wrap offset is part of a click.
+use ide_app::document::{ReadingAffinity, ReadingPosition};
+/// Home and End follow the visual rows of the caret's line.
+use ide_app::line_boundary::{Edge, moved_to_edge};
 /// Click counting and unit-wise drag extension.
 use ide_app::pointer_selection::{ClickCounter, Granularity, extended, unit};
 /// Line-wise movement by shaped pixel position with a remembered column.
@@ -56,27 +58,38 @@ struct Drag {
 ///  `usize` is an address-sized index (siblings `u32`,
 ///  `u64`);
 /// `f32` is a 32-bit float (sibling `f64`).
+///  The answer is the character position under the pointer and the side of a soft-wrap offset it was clicked on.
 /// Why:
 ///  A drag can leave the materialized rows;
-///  such a line is shaped on demand
+///  such a line is shaped on demand, at the wrap width,
 /// so the pointer still resolves by glyph geometry instead of falling back to the line start.
+///  `y` is the logical distance below the top of the line's first visual row,
+///  so a click on a continuation row resolves in that row.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function pointerPosition(current: State, line: number, x: number, scale: number): number;
+/// function pointerPosition(current: State, line: number, x: number, y: number, scale: number): [number, Affinity];
 /// ```
-fn pointer_position(current: &mut State, line: usize, x: f32, scale: f32) -> usize {
-    // What: Destructuring `&mut State` lends three fields separately.
+fn pointer_position(
+    current: &mut State,
+    line: usize,
+    point: (f32, f32),
+    scale: f32,
+) -> (usize, ReadingAffinity) {
+    let (x, y) = point;
+    let within = (y - current.row_map.code_top(line)).max(0.0);
+    // What: Destructuring `&mut State` lends fields separately.
     // Why: The shaper must be mutable while the document and the shaped view are only read.
     //
     // In TS you'd write (pseudocode):
     // ```ts
-    // const { document, shaper, shaped } = current;
+    // const { document, shaper, shaped, width } = current;
     // ```
     let State {
         document,
         shaper,
         shaped,
+        width,
         ..
     } = current;
     // What: `if let Some(view)` runs only when a viewport has been shaped.
@@ -89,11 +102,15 @@ fn pointer_position(current: &mut State, line: usize, x: f32, scale: f32) -> usi
     if let Some(view) = shaped {
         for candidate in &view.rows {
             if candidate.row == line {
-                return candidate.hit(x, view.viewport.scale);
+                let hit = candidate.hit_at(x, within, view.viewport.scale);
+                let side = candidate.click_affinity(hit, within, view.viewport.scale);
+                return (hit, side);
             }
         }
     }
-    return shaper.row(document, line, scale).hit(x, scale);
+    let shaped_line = shaper.wrapped_row(document, line, scale, *width);
+    let hit = shaped_line.hit_at(x, within, scale);
+    return (hit, shaped_line.click_affinity(hit, within, scale));
 }
 
 /// Bind pointer selection without letting the UI mutate source text.
@@ -141,7 +158,8 @@ pub(super) fn bind_pointer(owner: &AppWindow, shared: &Rc<RefCell<State>>) {
         let mut current = press_state.borrow_mut();
         // A press on a line's virtual rows acts on that line: the rows belong to the code row beneath them.
         let line = current.row_map.line_at(y);
-        let hit = pointer_position(&mut current, line, x, window.window().scale_factor());
+        let (hit, side) =
+            pointer_position(&mut current, line, (x, y), window.window().scale_factor());
         let mut position = current.document.position();
         let mut pressed = press_drag.borrow_mut();
         if extend {
@@ -151,7 +169,11 @@ pub(super) fn bind_pointer(owner: &AppWindow, shared: &Rc<RefCell<State>>) {
             pressed.origin = (position.anchor, position.anchor);
             position.head = hit;
         } else {
-            let granularity = pressed.clicks.press(Instant::now(), line, x);
+            // A multi-click stays on one visual row: two quick presses on different rows of a wrapped line are
+            // two single clicks, as the distance between them is a row. The row is counted over the whole text.
+            let visual = current.row_map.visual_row_at(line, y);
+            let row = line + current.row_map.line_rows().extra_before(line) + visual;
+            let granularity = pressed.clicks.press(Instant::now(), row, x);
             let (start, end) = unit(current.document.text().slice(..), hit, granularity);
             pressed.granularity = granularity;
             pressed.origin = (start, end);
@@ -174,6 +196,12 @@ pub(super) fn bind_pointer(owner: &AppWindow, shared: &Rc<RefCell<State>>) {
             "source pointer press"
         );
         drop(pressed);
+        // A caret at a soft-wrap offset stays on the side that was clicked.
+        position.affinity = if position.head == hit {
+            side
+        } else {
+            ReadingAffinity::Downstream
+        };
         current.document.select(position);
         drop(current);
         render(&window, &press_state);
@@ -187,18 +215,42 @@ pub(super) fn bind_pointer(owner: &AppWindow, shared: &Rc<RefCell<State>>) {
         let mut current = state.borrow_mut();
         // A drag over virtual rows extends to the line they belong to, like a press there.
         let line = current.row_map.line_at(y);
-        let hit = pointer_position(&mut current, line, x, window.window().scale_factor());
+        let (hit, side) =
+            pointer_position(&mut current, line, (x, y), window.window().scale_factor());
         let pressed = drag.borrow();
+        let granularity = pressed.granularity;
         let (anchor, head) = extended(
             current.document.text().slice(..),
             pressed.origin,
-            pressed.granularity,
+            granularity,
             hit,
         );
         drop(pressed);
         let mut position = current.document.position();
         position.anchor = anchor;
         position.head = head;
+        position.affinity = if head == hit {
+            side
+        } else {
+            ReadingAffinity::Downstream
+        };
+        // What: `?granularity` logs the value in its debug form, as a named field.
+        // Why: A drag that never reaches this callback and one that reaches it with the wrong unit look alike
+        // on screen; the log tells them apart.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // logger.debug('source pointer drag', { line, granularity, anchor, head });
+        // ```
+        tracing::debug!(
+            line,
+            y,
+            x,
+            ?granularity,
+            anchor,
+            head,
+            "source pointer drag"
+        );
         current.document.select(position);
         drop(current);
         // A drag past an edge of the view scrolls just far enough to show where the selection now ends.
@@ -228,10 +280,8 @@ fn horizontal(key: &SharedString, control: bool) -> Option<Motion> {
         plain = Some(Motion::Right);
         modified = Some(Motion::WordRight);
     } else if *key == SharedString::from(Key::Home) {
-        plain = Some(Motion::LineStart);
         modified = Some(Motion::DocumentStart);
     } else if *key == SharedString::from(Key::End) {
-        plain = Some(Motion::LineEnd);
         modified = Some(Motion::DocumentEnd);
     }
     if control {
@@ -240,12 +290,35 @@ fn horizontal(key: &SharedString, control: bool) -> Option<Motion> {
     return plain;
 }
 
-/// Signed line count for Up,
+/// What:
+///  `Option<Edge>` is Home or End without Control, or nothing.
+/// Why:
+///  Plain Home and End follow the visual rows of a wrapped line, which only the shaped line knows;
+///  with Control they go to the ends of the document instead.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function edge(key: string, control: boolean): Edge | undefined;
+/// ```
+fn edge(key: &SharedString, control: bool) -> Option<Edge> {
+    if control {
+        return None;
+    }
+    if *key == SharedString::from(Key::Home) {
+        return Some(Edge::Home);
+    }
+    if *key == SharedString::from(Key::End) {
+        return Some(Edge::End);
+    }
+    return None;
+}
+
+/// Signed visual row count for Up,
 ///  Down,
 ///  PageUp,
 ///  and PageDown,
 ///  and whether the view pages along with the caret.
-/// `pages` pairs the whole lines one page holds above the top line with those from the top line down.
+/// `pages` pairs the whole visual rows one page holds above the top row with those from the top row down.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -279,6 +352,7 @@ pub(super) fn bind_keys(owner: &AppWindow, shared: &Rc<RefCell<State>>) {
             anchor: 0,
             head: end,
             viewport: 0,
+            affinity: ReadingAffinity::Downstream,
         });
         drop(current);
         if let Some(window) = select_window.upgrade() {
@@ -304,32 +378,53 @@ pub(super) fn bind_keys(owner: &AppWindow, shared: &Rc<RefCell<State>>) {
         let mut position = current.document.position();
         let start = position.anchor.min(position.head);
         let end = position.anchor.max(position.head);
-        // A page is the whole lines that fit in the view, at least one, and the pixels exactly those lines take:
-        // counted from the top line down for PageDown and upwards from it for PageUp.
+        // A page is the whole visual rows that fit in the view, at least one, and the pixels exactly those rows take:
+        // counted from the top row down for PageDown and upwards from it for PageUp.
         let (down, down_pixels) = current.row_map.page(offset, height, true);
         let (up, up_pixels) = current.row_map.page(offset, height, false);
         let mut scrolled = 0.0;
-        if let Some(motion) = horizontal(&key, control) {
+        // Only Home, End, and the vertical keys choose a side of a wrap offset; every other move takes the default.
+        let mut side = ReadingAffinity::Downstream;
+        let edge_key = edge(&key, control);
+        let motion_key = horizontal(&key, control);
+        if edge_key.is_some() || motion_key.is_some() {
             // A horizontal key names a new aim even when the caret cannot move, such as Home at a line start.
             column = None;
-            // Without Shift, Left and Right first collapse a selection to the side they point at.
-            if !shift && start != end && motion == Motion::Left {
-                position.head = start;
-            } else if !shift && start != end && motion == Motion::Right {
-                position.head = end;
-            } else {
-                position.head = moved(current.document.text().slice(..), position.head, motion);
+            if let Some(which) = edge_key {
+                // Home and End follow the visual row of the caret, on the shaped line.
+                let State {
+                    document,
+                    shaper,
+                    width,
+                    ..
+                } = &mut *current;
+                let place = moved_to_edge(shaper, document, scale, *width, which);
+                position.head = place.head;
+                side = place.affinity;
+            } else if let Some(motion) = motion_key {
+                // Without Shift, Left and Right first collapse a selection to the side they point at.
+                if !shift && start != end && motion == Motion::Left {
+                    position.head = start;
+                } else if !shift && start != end && motion == Motion::Right {
+                    position.head = end;
+                } else {
+                    position.head = moved(current.document.text().slice(..), position.head, motion);
+                }
             }
         } else if let Some((rows, paging)) = vertical_rows(&key, (up as isize, down as isize))
             && !control
         {
             // Destructure the mutable borrow so the shaper can work while the document is lent read-only.
             let State {
-                document, shaper, ..
+                document,
+                shaper,
+                width,
+                ..
             } = &mut *current;
-            let landed = vertical(shaper, document, scale, rows, column);
+            let landed = vertical(shaper, document, scale, *width, rows, column);
             column = Some(landed);
             position.head = landed.head;
+            side = landed.affinity;
             if paging && rows > 0 {
                 scrolled = down_pixels;
             } else if paging {
@@ -338,6 +433,7 @@ pub(super) fn bind_keys(owner: &AppWindow, shared: &Rc<RefCell<State>>) {
         } else {
             return;
         }
+        position.affinity = side;
         if !shift {
             position.anchor = position.head;
         }
@@ -346,6 +442,7 @@ pub(super) fn bind_keys(owner: &AppWindow, shared: &Rc<RefCell<State>>) {
             shift,
             anchor = position.anchor,
             head = position.head,
+            affinity = ?position.affinity,
             paged = scrolled,
             "source caret key"
         );

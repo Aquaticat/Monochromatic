@@ -36,6 +36,8 @@ fn stamp(document: &Document, visible: Visible, inks: AnnotationColors) -> Frame
         count: 27,
         width: 1044.0,
         scale: 1.0,
+        wrap: None,
+        clip: None,
     };
     let colors = CodeColors {
         foreground: [240, 240, 240, 255],
@@ -43,7 +45,7 @@ fn stamp(document: &Document, visible: Visible, inks: AnnotationColors) -> Frame
         dark: true,
     };
     // `Arc::new` shares the visible list, as the renderer shares it with the layout.
-    return FrameStamp::new(document, viewport, 0.0, colors, SourceStyles::from([]))
+    return FrameStamp::new(document, viewport, colors, SourceStyles::from([]))
         .with_annotations(Arc::new(visible), inks);
 }
 
@@ -65,6 +67,7 @@ fn block(label: &str, message: &str, held: f32) -> Block {
             start: 0,
             continued: false,
             severity: Severity::Error,
+            gap: None,
             text: message.to_string(),
         }],
         held: (0.0, held),

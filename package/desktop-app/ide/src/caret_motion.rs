@@ -49,9 +49,9 @@ pub enum Motion {
     WordLeft,
     /// To the end of the current or next word.
     WordRight,
-    /// To the first character of the line.
+    /// To the first character of the logical line, whichever visual row the caret is on.
     LineStart,
-    /// To the end of the line,
+    /// To the end of the logical line, whichever visual row the caret is on,
     ///  before its terminator.
     LineEnd,
     /// To the first character of the text.

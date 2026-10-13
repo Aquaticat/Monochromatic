@@ -63,7 +63,7 @@ fn await_worker_ready(state: &Rc<RefCell<State>>) {
 }
 
 /// Scroll to `offset` and let the toolkit deliver the viewport-changed callback.
-fn scroll_to(window: &AppWindow, offset: f32) {
+pub(super) fn scroll_to(window: &AppWindow, offset: f32) {
     window.set_scroll_y(-offset);
     update_timers_and_animations();
 }
@@ -105,7 +105,7 @@ fn until_worker_reply(state: &Rc<RefCell<State>>, before: u64) {
 }
 
 /// Zero the test counters so the assertions count only what follows.
-fn reset(state: &Rc<RefCell<State>>) {
+pub(super) fn reset(state: &Rc<RefCell<State>>) {
     let mut current = state.borrow_mut();
     current.renders = 0;
     current.tiles_painted = 0;
@@ -118,7 +118,7 @@ fn reset(state: &Rc<RefCell<State>>) {
 }
 
 /// Renders, painted tiles, shaped rows, and images set on the window thread since the last reset, in that order.
-fn counts(state: &Rc<RefCell<State>>) -> [u64; 4] {
+pub(super) fn counts(state: &Rc<RefCell<State>>) -> [u64; 4] {
     let current = state.borrow();
     return [
         current.renders,
@@ -129,7 +129,7 @@ fn counts(state: &Rc<RefCell<State>>) -> [u64; 4] {
 }
 
 /// Tiles the worker answered, rows it shaped, tiles swapped in, and tiles discarded, since the last reset.
-fn worker_counts(state: &Rc<RefCell<State>>) -> [u64; 4] {
+pub(super) fn worker_counts(state: &Rc<RefCell<State>>) -> [u64; 4] {
     let current = state.borrow();
     return [
         current.worker_tiles,
@@ -230,8 +230,10 @@ fn leaving_the_overscan_tile_re_centers_on_the_worker_thread() {
     assert_eq!(discarded, 0, "no fresh tile is discarded");
     let current = state.borrow();
     let count = current.count as u64;
+    // The measurement pass keeps every line it shaped, so the worker may find all of the tile's lines in its cache;
+    // it must never shape more lines than the tile holds.
     assert!(
-        worker_rows > 0 && worker_rows < count,
+        worker_rows < count,
         "the worker shaped {worker_rows} rows of {count}; lines it shares with the previous tile must come from its cache"
     );
     let view = current.shaped.as_ref().expect("swapped-in source view");
@@ -241,15 +243,17 @@ fn leaving_the_overscan_tile_re_centers_on_the_worker_thread() {
         "the gutter and line numbers describe the tile whose rows are shown"
     );
     assert_eq!(
-        window.get_first_line() as usize,
-        view.viewport.first,
+        window.get_row_numbers().row_data(0),
+        Some(view.viewport.first as i32 + 1),
         "the first line number belongs to the swapped-in tile"
     );
     assert_eq!(
-        window.get_line_tops().row_count(),
-        (view.viewport.first + view.viewport.count).min(current.document.text().len_lines())
-            - view.viewport.first,
-        "one line-number row per materialized line of the swapped-in tile"
+        window.get_row_tops().row_count(),
+        view.rows
+            .iter()
+            .map(|row| return row.visual_rows())
+            .sum::<usize>(),
+        "one gutter entry per visual row of the swapped-in tile"
     );
     assert_eq!(
         window.get_image_y(),

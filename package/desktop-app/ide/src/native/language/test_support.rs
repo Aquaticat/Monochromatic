@@ -310,6 +310,8 @@ pub(super) fn reader_with(
     window.show().expect("show language window");
     render(&window, &source);
     window.window().take_snapshot().expect("initial layout");
+    // The layout gave the view its width; a tile for it may still be on the worker.
+    crate::native::overscan_tile_tests::settle_tile(&source);
     window.invoke_focus_source();
     return LanguageReader {
         window,
@@ -335,6 +337,7 @@ pub(super) fn caret(reader: &LanguageReader, position: usize) {
     let mut reading = current.document.position();
     reading.anchor = position;
     reading.head = position;
+    reading.affinity = ide_app::document::ReadingAffinity::Downstream;
     current.document.select(reading);
     drop(current);
     render(&reader.window, &reader.source);
@@ -381,7 +384,7 @@ pub(super) fn escape(reader: &LanguageReader) {
 pub(super) fn point(reader: &LanguageReader, line: usize, x: f32) -> LogicalPosition {
     let top = reader.source.borrow().row_map.code_top(line);
     return LogicalPosition::new(
-        TEXT_LEFT + x + reader.window.get_scroll_x(),
+        TEXT_LEFT + x,
         TEXT_TOP + top + 12.0 + reader.window.get_scroll_y(),
     );
 }
@@ -401,7 +404,7 @@ pub(super) fn point(reader: &LanguageReader, line: usize, x: f32) -> LogicalPosi
 pub(super) fn above(reader: &LanguageReader, line: usize, x: f32, rise: f32) -> LogicalPosition {
     let top = reader.source.borrow().row_map.code_top(line);
     return LogicalPosition::new(
-        TEXT_LEFT + x + reader.window.get_scroll_x(),
+        TEXT_LEFT + x,
         TEXT_TOP + top - rise + reader.window.get_scroll_y(),
     );
 }

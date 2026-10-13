@@ -12,6 +12,8 @@
 ///  hint labels,
 ///  and the severity order.
 use crate::annotation::{Label, Mark, Visible, rank};
+/// The side of a soft-wrap offset a position is read on.
+use crate::document::ReadingAffinity;
 /// Severities as the Language module names them.
 use crate::language::diagnostics::Severity;
 /// One shaped source row and its caret and range geometry.
@@ -94,6 +96,10 @@ impl AnnotationColors {
 pub struct Underline {
     /// Source line the run lies on.
     pub row: usize,
+    /// How far below the top of the line's first visual row the run's visual row starts,
+    ///  in logical pixels;
+    ///  zero for a line that is not wrapped.
+    pub offset: f32,
     /// Left edge.
     pub x: f32,
     /// Horizontal extent.
@@ -183,27 +189,32 @@ pub struct AnnotationFrame {
 /// ```
 fn runs(row: &ShapedRow, mark: Mark, scale: f32, out: &mut Vec<Underline>) {
     let row_end = row.source_start + row.source_len();
-    let end_x = row.caret_x(row_end, scale);
+    // The end of the text is on the last visual row of the line.
+    let end = row.caret_at(row_end, ReadingAffinity::Upstream, scale);
+    let end_offset = row.visual_row_offset(end.row, scale);
     if mark.start == mark.end {
         if mark.start < row.source_start || mark.start > row_end {
             return;
         }
-        let x = row.caret_x(mark.start, scale);
-        let mut left = x;
+        let caret = row.caret_at(mark.start, ReadingAffinity::Downstream, scale);
+        let mut left = caret.x;
         if mark.start < row_end {
-            left = (x - TERMINATOR_MARK / 2.0).max(0.0);
+            left = (caret.x - TERMINATOR_MARK / 2.0).max(0.0);
         }
         out.push(Underline {
             row: row.row,
+            offset: row.visual_row_offset(caret.row, scale),
             x: left,
             width: TERMINATOR_MARK,
             severity: mark.severity,
         });
         return;
     }
+    // One run per visual row the range crosses, each at its own row's offset.
     for rect in row.range(mark.start, mark.end, scale) {
         out.push(Underline {
             row: row.row,
+            offset: rect.y - row.top,
             x: rect.x,
             width: rect.width,
             severity: mark.severity,
@@ -212,7 +223,8 @@ fn runs(row: &ShapedRow, mark: Mark, scale: f32, out: &mut Vec<Underline>) {
     if mark.start <= row_end && mark.end > row_end {
         out.push(Underline {
             row: row.row,
-            x: end_x,
+            offset: end_offset,
+            x: end.x,
             width: TERMINATOR_MARK,
             severity: mark.severity,
         });
@@ -222,6 +234,7 @@ fn runs(row: &ShapedRow, mark: Mark, scale: f32, out: &mut Vec<Underline>) {
 /// What:
 ///  Pack the hints of one line onto hint rows.
 ///  `row` is the line's shaped code row,
+///  broken at `wrap` logical pixels when the source view wraps,
 ///  `labels` its hints
 ///       in position order;
 ///  `&mut TextShaper` is lent to measure each label.
@@ -237,37 +250,73 @@ fn runs(row: &ShapedRow, mark: Mark, scale: f32, out: &mut Vec<Underline>) {
 ///  only the current row is considered,
 ///  so reading the rows top
 ///      to bottom follows the source left to right.
+///  The source view has no horizontal scrolling,
+///  so a hint that would pass the text area ends at its right edge instead,
+///  and a label wider than the text area breaks into pieces on rows of their own,
+///  the later pieces at the left edge.
+///  The position's x is read on the visual row the position is drawn on,
+///  which is why the row must be the wrapped one.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function pack(row: ShapedRow, labels: Label[], shaper: TextShaper, scale: number): [rows: number, places: HintPlace[]];
+/// function pack(row: ShapedRow, labels: Label[], shaper: TextShaper, scale: number,
+///   wrap?: number): [rows: number, places: HintPlace[]];
 /// ```
 pub fn pack(
     row: &ShapedRow,
     labels: &[Label],
     shaper: &mut TextShaper,
     scale: f32,
+    wrap: Option<f32>,
 ) -> (usize, Vec<HintPlace>) {
     let mut places = Vec::new();
     let mut rows: usize = 0;
     // Right edge of the last hint placed on the current row.
     let mut end: f32 = 0.0;
     for label in labels {
-        let x = row.caret_x(label.position, scale);
+        let at = row.caret_x(label.position, scale);
         let width = shaper.row_layout(&label.text, scale).full_width() / scale;
-        if rows == 0 || x < end + HINT_GAP {
-            rows += 1;
+        // What: A label wider than the text area is cut into pieces that each fit it; any other label is one piece.
+        // Why: Nothing may pass the right edge of the text area, which nothing scrolls to.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // const pieces = wrap !== undefined && width > wrap ? shaper.wrapRowText(label.text, scale, wrap) : [label.text];
+        // ```
+        let pieces = match wrap {
+            Some(limit) if width > limit => shaper.wrap_row_text(&label.text, scale, limit),
+            _ => vec![label.text.clone()],
+        };
+        let single = pieces.len() == 1;
+        for (index, piece) in pieces.into_iter().enumerate() {
+            let piece_width = if single {
+                width
+            } else {
+                shaper.row_layout(&piece, scale).full_width() / scale
+            };
+            let mut x = if index == 0 { at } else { 0.0 };
+            if let Some(limit) = wrap {
+                x = x.min((limit - piece_width).max(0.0));
+            }
+            if rows == 0 || index > 0 || x < end + HINT_GAP {
+                rows += 1;
+            }
+            places.push(HintPlace {
+                row: rows - 1,
+                position: label.position,
+                x,
+                width: piece_width,
+                text: piece,
+            });
+            end = x + piece_width;
         }
-        places.push(HintPlace {
-            row: rows - 1,
-            position: label.position,
-            x,
-            width,
-            // `clone` copies the label so the placement owns its text.
-            text: label.text.clone(),
-        });
-        end = x + width;
     }
+    tracing::trace!(
+        rows,
+        hints = places.len(),
+        ?wrap,
+        "packed the hints of a line"
+    );
     return (rows, places);
 }
 
@@ -322,13 +371,13 @@ pub fn lay_out(
         };
         for hint in &block.hints {
             let layout = shaper.row_layout(&hint.text, scale);
-            let x = row.caret_x(hint.position, scale);
+            // The packing placed the hint at its position's x on the wrapped row, held inside the text area.
             let width = layout.full_width() / scale;
-            extent = extent.max(x + width);
+            extent = extent.max(hint.x + width);
             texts.push(RowText {
                 line: block.line,
                 rise: block.hint_rise(hint.row),
-                x,
+                x: hint.x,
                 width,
                 layout,
                 ink: colors.hint,
@@ -336,24 +385,52 @@ pub fn lay_out(
                 severity: None,
             });
         }
-        for (index, message) in block.messages.iter().enumerate() {
-            let layout = shaper.row_layout(&message.text, scale);
-            let mut x = row.caret_x(message.start, scale);
-            if message.continued {
-                x += CONTINUATION_INDENT;
+        // What: A message is its first row and the continued rows after it; all start at one x.
+        // Why: The source view has no horizontal scrolling, so the x is the diagnostic's own unless the widest of
+        //      its rows would then pass the text area, and the whole message then moves left together.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // for (const message of groupBy(block.messages, (r) => !r.continued)) { ... }
+        // ```
+        let mut first = 0;
+        while first < block.messages.len() {
+            let mut end = first + 1;
+            while end < block.messages.len() && block.messages[end].continued {
+                end += 1;
             }
-            let width = layout.full_width() / scale;
-            extent = extent.max(x + width);
-            texts.push(RowText {
-                line: block.line,
-                rise: block.message_rise(index),
-                x,
-                width,
-                layout,
-                ink: colors.severity(message.severity),
-                // `Some(...)` records the severity the row's ink and first word show.
-                severity: Some(message.severity),
-            });
+            let mut shaped = Vec::new();
+            let mut reach: f32 = 0.0;
+            for message in &block.messages[first..end] {
+                let layout = shaper.row_layout(&message.text, scale);
+                let width = layout.full_width() / scale;
+                let indent = if message.continued {
+                    CONTINUATION_INDENT
+                } else {
+                    0.0
+                };
+                reach = reach.max(indent + width);
+                shaped.push((layout, width, indent));
+            }
+            let mut x = row.caret_x(block.messages[first].start, scale);
+            if let Some(limit) = view.viewport.wrap {
+                x = x.min((limit - reach).max(0.0));
+            }
+            for (offset, (layout, width, indent)) in shaped.into_iter().enumerate() {
+                let message = &block.messages[first + offset];
+                extent = extent.max(x + indent + width);
+                texts.push(RowText {
+                    line: block.line,
+                    rise: block.message_rise(first + offset),
+                    x: x + indent,
+                    width,
+                    layout,
+                    ink: colors.severity(message.severity),
+                    // `Some(...)` records the severity the row's ink and first word show.
+                    severity: Some(message.severity),
+                });
+            }
+            first = end;
         }
     }
     // What: `sort_by_key` is stable; `3 - rank` puts hints first and errors last.

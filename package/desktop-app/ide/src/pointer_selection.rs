@@ -82,7 +82,7 @@ pub enum Granularity {
 struct Press {
     /// When the button went down.
     at: Instant,
-    /// Source row under the pointer.
+    /// Visual row under the pointer, counted from the first row of the text.
     row: usize,
     /// Logical x inside the source text.
     x: f32,
@@ -113,7 +113,7 @@ pub struct ClickCounter {
 impl ClickCounter {
     /// Record a press and return the unit it selects.
     ///
-    /// A press continues the multi-click when it follows within [`CLICK_INTERVAL`] on the same row
+    /// A press continues the multi-click when it follows within [`CLICK_INTERVAL`] on the same visual row
     /// and within [`CLICK_SLOP`] pixels.
     ///  A fourth press starts over with a single click.
     ///

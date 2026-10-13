@@ -56,7 +56,7 @@ use helix_core::Rope;
 /// ```ts
 /// type Shared<T> = Readonly<T>; // and a Map whose keys are iterated in ascending order
 /// ```
-use std::{collections::BTreeMap, sync::Arc, time::Instant};
+use std::{collections::BTreeMap, ops::Range, sync::Arc, time::Instant};
 
 /// Blocks of virtual rows per line:
 ///  hint accumulation,
@@ -232,6 +232,58 @@ pub struct Held {
 }
 
 /// What:
+///  The hint rows of one line packed at one wrap width.
+/// Why:
+///  A new width makes the packing of a line stale; the lines near the view are packed again at once,
+///  and the others keep this packing until the view comes near them.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// type Placed = { wrap?: number; rows: number; hints: HintPlace[] };
+/// ```
+#[derive(Clone, Debug)]
+struct Placed {
+    /// The wrap width in logical pixels the line was packed at, or nothing while the view had none.
+    wrap: Option<f32>,
+    /// Number of hint rows.
+    rows: usize,
+    /// The hints with their rows and x.
+    hints: Vec<HintPlace>,
+}
+
+/// The message rows of one line broken to one wrap width.
+#[derive(Clone, Debug)]
+struct Fitted {
+    /// The wrap width in logical pixels the rows were broken at.
+    wrap: Option<f32>,
+    /// The rows.
+    rows: Vec<MessageRow>,
+}
+
+/// What:
+///  How much shaping assembling blocks has done so far:
+///  lines whose hints were packed,
+///  message rows whose width was measured,
+///  and message rows that had to be broken to a width.
+/// Why:
+///  Packing and breaking run on the window thread when the text area changes width,
+///  and the structural tests compare these counts before and after to prove what a resize costs.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// type AssemblyWork = { packed: number; measured: number; broken: number };
+/// ```
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+pub struct AssemblyWork {
+    /// Lines whose hints were packed against the shaped line.
+    pub packed: u64,
+    /// Message rows shaped to learn their width.
+    pub measured: u64,
+    /// Message rows wider than the text area, broken by shaping.
+    pub broken: u64,
+}
+
+/// What:
 ///  The latest snapshots,
 ///  a position index over every diagnostic,
 ///  the hints and message rows grouped by
@@ -270,13 +322,23 @@ pub struct Annotations {
     ///  from every hint snapshot of the `labelled` revision.
     labels: BTreeMap<usize, Vec<Label>>,
     /// Packed hint rows per line,
-    ///  computed on demand at `placed_scale`.
-    placed: BTreeMap<usize, (usize, Vec<HintPlace>)>,
+    ///  computed on demand at `placed_scale`, each at the wrap width it records.
+    placed: BTreeMap<usize, Placed>,
     /// Physical pixels per logical pixel the entries of `placed` were packed at.
     placed_scale: f32,
     /// Message rows per line for the held diagnostics,
-    ///  worst first.
+    ///  worst first,
+    ///  broken at 80 columns.
     messages: BTreeMap<usize, Vec<MessageRow>>,
+    /// Shaped width of each row of `messages` per line at `placed_scale`,
+    ///  measured once so a new wrap width shapes only the rows that are wider than it.
+    natural: BTreeMap<usize, Vec<f32>>,
+    /// The rows of `messages` broken again to fit a wrap width,
+    ///  per line,
+    ///  made on demand.
+    wrapped: BTreeMap<usize, Fitted>,
+    /// Shaping done for blocks so far.
+    work: AssemblyWork,
     /// The text revision `held` belongs to.
     held_for: Option<DocumentStamp>,
     /// Space held open after an external change,
@@ -499,9 +561,10 @@ impl Annotations {
     ///  worst first,
     ///  as rows.
     /// Why:
-    ///  The number of rows above a line must be known for every line of the file without shaping,
+    ///  The rows at the first break (80 columns) are known for every line of the file without shaping,
     ///  so the
-    ///      vertical mapping is complete as soon as diagnostics are.
+    ///      vertical mapping is complete as soon as diagnostics are;
+    ///  a row wider than the text area is broken again when the blocks are assembled.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -522,6 +585,9 @@ impl Annotations {
             messages.insert(line, message_rows(&problems));
         }
         self.messages = messages;
+        // The rows measured and broken for the earlier messages describe lines that may now hold other rows.
+        self.natural.clear();
+        self.wrapped.clear();
     }
 
     /// What:
@@ -590,6 +656,33 @@ impl Annotations {
             _ => false,
         };
         return same_hints && same_diagnostics;
+    }
+
+    /// The shaping assembling blocks has done so far.
+    pub fn work(&self) -> AssemblyWork {
+        return self.work;
+    }
+
+    /// What:
+    ///  Whether a line in `focus` holds hint rows or message rows made for a wrap width other than `wrap`.
+    /// Why:
+    ///  A new width is applied to the lines near the view at once and to the others when the view comes near;
+    ///  the window asks this to know that the blocks must be assembled again after the view moved.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// staleIn(wrap: number | undefined, focus: Range): boolean;
+    /// ```
+    pub fn stale_in(&self, wrap: Option<f32>, focus: &Range<usize>) -> bool {
+        let hints = self
+            .placed
+            .range(focus.clone())
+            .any(|(_, placed)| return placed.wrap != wrap);
+        let messages = self
+            .wrapped
+            .range(focus.clone())
+            .any(|(_, fitted)| return fitted.wrap != wrap);
+        return hints || messages;
     }
 
     /// The change counter:

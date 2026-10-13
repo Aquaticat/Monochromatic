@@ -57,7 +57,7 @@ const TEXT_TOP: f32 = 32.0;
 ///  in the middle of the line.
 fn point(window: &AppWindow, row: usize, x: f32) -> LogicalPosition {
     return LogicalPosition::new(
-        TEXT_LEFT + x + window.get_scroll_x(),
+        TEXT_LEFT + x,
         TEXT_TOP + row as f32 * 24.0 + 12.0 + window.get_scroll_y(),
     );
 }

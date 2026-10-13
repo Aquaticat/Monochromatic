@@ -52,10 +52,12 @@ pub const CONTINUATION_INDENT: f32 = 16.0;
 ///  `usize` is the count type (siblings `u32`,
 ///  `u64`).
 /// Why:
-///  Long messages wrap instead of widening the scroll range without bound.
+///  Long messages wrap instead of running on without bound.
 ///  The limit is counted in
 ///      characters,
-///  so the number of rows never depends on the window or on shaping.
+///  so this first break never depends on the window or on shaping;
+///  a row wider than the text area is then broken again to fit it
+///  (`Annotations::assemble`).
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -106,7 +108,8 @@ pub struct HintPlace {
 ///  One row of a diagnostic message.
 /// Why:
 ///  Rows are derived from the message text alone,
-///  so a line's row count is known without shaping.
+///  so a line's row count at the first break is known without shaping;
+///  a row wider than the text area is broken again by shaping when the blocks are assembled.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -123,6 +126,20 @@ pub struct MessageRow {
     /// Severity,
     ///  which selects the row's ink.
     pub severity: Severity,
+    /// What:
+    ///  How the row's text follows the row before it,
+    ///  or nothing when it starts a line of the message.
+    /// Why:
+    ///  The rows made by the break at 80 columns are one line of prose;
+    ///  a row wider than the text area is broken again from the whole line, not from each row alone,
+    ///  which would leave a short tail on every row.
+    ///  The joiner is a blank where the break was at a blank and nothing where a word was cut.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// gap?: ' ' | '';
+    /// ```
+    pub gap: Option<&'static str>,
     /// Row text.
     pub text: String,
 }
@@ -250,8 +267,30 @@ fn columns(character: char) -> usize {
 /// function wrap(line: string, limit: number): string[];
 /// ```
 pub fn wrap(line: &str, limit: usize) -> Vec<String> {
+    // `map` keeps the text of each row and drops how it follows the row before it.
+    return wrap_gapped(line, limit)
+        .into_iter()
+        .map(|(text, _)| return text)
+        .collect();
+}
+
+/// What:
+///  [`wrap`] with, for each row, how its text follows the row before it:
+///  nothing for the first row,
+///  a blank where the break was at a blank,
+///  and an empty joiner where a word was cut.
+/// Why:
+///  A row broken again from the whole line needs the line back,
+///  and joining the rows with blanks would put a blank into a cut word.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function wrapGapped(line: string, limit: number): [text: string, gap?: ' ' | ''][];
+/// ```
+fn wrap_gapped(line: &str, limit: usize) -> Vec<(String, Option<&'static str>)> {
     // `Vec::new()` and `String::new()` create the empty list and the empty row the loops fill.
     let mut rows = Vec::new();
+    let mut gap: Option<&'static str> = None;
     let mut current = String::new();
     let mut width: usize = 0;
     for character in line.chars() {
@@ -273,7 +312,8 @@ pub fn wrap(line: &str, limit: usize) -> Vec<String> {
             needed += columns(character);
         }
         if started && width + 1 + needed > limit {
-            rows.push(current);
+            rows.push((current, gap));
+            gap = Some(" ");
             current = String::new();
             width = 0;
             started = false;
@@ -284,7 +324,8 @@ pub fn wrap(line: &str, limit: usize) -> Vec<String> {
         }
         for character in word.chars() {
             if width + columns(character) > limit && width > 0 {
-                rows.push(current);
+                rows.push((current, gap));
+                gap = Some("");
                 current = String::new();
                 width = 0;
             }
@@ -294,7 +335,7 @@ pub fn wrap(line: &str, limit: usize) -> Vec<String> {
         started = true;
     }
     if started {
-        rows.push(current);
+        rows.push((current, gap));
     }
     return rows;
 }
@@ -321,16 +362,17 @@ fn rows_of(problem: &Problem) -> Vec<MessageRow> {
     let mut texts = Vec::new();
     for line in describe(problem).lines() {
         // `extend` appends every wrapped row of this message line.
-        texts.extend(wrap(line.trim_end(), WRAP_COLUMNS));
+        texts.extend(wrap_gapped(line.trim_end(), WRAP_COLUMNS));
     }
     let total = texts.len();
     let mut rows = Vec::new();
-    for (index, text) in texts.into_iter().enumerate() {
+    for (index, (text, gap)) in texts.into_iter().enumerate() {
         if total > MESSAGE_ROWS && index + 1 == MESSAGE_ROWS {
             rows.push(MessageRow {
                 start: problem.mark.start,
                 continued: true,
                 severity: problem.mark.severity,
+                gap: None,
                 // `format!` builds the text from a template, like a TS template literal.
                 text: format!("… {} more lines", total + 1 - MESSAGE_ROWS),
             });
@@ -340,6 +382,7 @@ fn rows_of(problem: &Problem) -> Vec<MessageRow> {
             start: problem.mark.start,
             continued: index > 0,
             severity: problem.mark.severity,
+            gap,
             text,
         });
     }
@@ -369,6 +412,7 @@ pub fn message_rows(problems: &[&Problem]) -> Vec<MessageRow> {
                 start: problem.mark.start,
                 continued: false,
                 severity: problem.mark.severity,
+                gap: None,
                 text: format!(
                     "{hidden} more on this line, the worst: {}",
                     severity_name(problem.mark.severity)

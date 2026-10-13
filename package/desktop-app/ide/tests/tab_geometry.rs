@@ -31,6 +31,8 @@ fn shaped(source: &str, scale: f32) -> (Document, ShapedView) {
         count: 4,
         width: 600.0,
         scale,
+        wrap: None,
+        clip: None,
     };
     // What: `&document` lends the source to the shaper; the tuple hands both values to the caller.
     // Why: The view borrows nothing from the document after shaping, so both can be returned together.
@@ -195,6 +197,7 @@ fn hit_selection_and_copy_treat_a_tab_as_one_source_character() {
         anchor: 2,
         head: 3,
         viewport: 0,
+        affinity: ide_app::document::ReadingAffinity::Downstream,
     });
     assert_eq!(
         document.selected_text(),
@@ -205,6 +208,7 @@ fn hit_selection_and_copy_treat_a_tab_as_one_source_character() {
         anchor: 0,
         head: 4,
         viewport: 0,
+        affinity: ide_app::document::ReadingAffinity::Downstream,
     });
     assert_eq!(document.selected_text(), "ab\tc");
 }
