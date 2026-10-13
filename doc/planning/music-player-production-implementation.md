@@ -212,9 +212,14 @@ and the decisions D106 to D119 at the end of `package/music-player/design/decisi
   edge, the page-control chain was deleted (`1635237e73`; its leftover stub, the Compose OKLCH adapters and the docs
   that described the styles went on 2026-10-13), the accent chroma floor and the D108 retune stay, the two Turso bugs
   are not filed, and `targetSdk` stays on 36. Ask any new question through the question tool, never in prose.
-- Known defects not fixed: Android can hit an ANR in `PlayerHostModel.rowEntriesFor` (`PlayerHost.kt:534`) when a very
-  large folder (thousands of rows) is selected, because rows rebuild on every analysis step (report in
-  `~/temp/agent/agent-android-final/bugreport1/br1.zip`); `loadTemplate` runs on the main thread once (435 ms).
+- Android large folders (2026-10-13): rows are now keyed by track (`core/TrackRowLineSource.kt`), so an analysis step
+  no longer rebuilds the page; on the Fold emulator with 10 000 tracks in one folder frame p99 went from 400, 450, 109 ms
+  to 69, 53, 48 ms and main-thread CPU from 31.5, 31.7, 21.7 s to 13.4, 15.9, 16.6 s. No actual ANR was ever
+  reproduced, before or after (the original came from one bug report, `~/temp/agent/agent-android-final/bugreport1/`).
+  Still open: `controller.mergeMeasures` copies the library-wide measures map on the main thread per 24-track batch; a
+  playing-track change rebuilds the full row list; the `refreshPage` effect restarts from the top of the page on every
+  sweep step, so rows deep in a huge page get their measures only when the sweep ends; the 435 ms `loadTemplate`
+  violation did not reproduce, so the template cache in `SessionStore.warmUp` is unproven.
 - Review findings left open: look-alike letters (rail hairlines address it), red accent against the error roles, cold
   restore scroll, scroll anchoring when rows above change height, `project()` about 120 ms at 100k rows, the 117 px
   phantom view on the Android idle deck.
@@ -225,8 +230,10 @@ and the decisions D106 to D119 at the end of `package/music-player/design/decisi
   no device latency is subtracted from the audible position; cross-format joins are not gapless.
 - Not repeated on the device after the last Android changes: loose tracks, `In order` at the end of a folder, Search
   below the status bar, light and dark with three accents (dark was done).
-- Stale docs: the Rust comment blocks the repo's skill asks for; the polish list (task 64: empty Folders pane at 443 px
-  with a persisted session, README taskbar text); the screenshot gallery and treatment text in
+- Empty Folders pane at 443 px with a saved session (2026-10-13): about 130 resize and restart cycles never reproduced
+  it. The folded picker opened by Alt+1 or Ctrl+O before the library arrived did show no names, and that is fixed with
+  five window tests; whether it was the original sighting is unproven.
+- Stale docs: the screenshot gallery and treatment text in
   `package/music-player/README.md`, which still show the replaced desktop page-tab window and the deleted Android
   page-control styles. The peak-sweep start path in `android-app/HANDOVER.peak-sweep-optimization.md` and
   `android-app/DECISION.peak-sweep-parallelism.md` was corrected on 2026-10-13.
