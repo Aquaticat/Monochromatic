@@ -149,6 +149,34 @@ The operating instructions live in `doc/runbook/claude-cpu-cap.md`.
 - Switching to ZFS or CachyOS: not recommended yet, since nothing shows the filesystem is the limit.
   Another handover, `doc/handover/cachyos-zfs-vm-validation.md`, exists; it was not read here.
 
+## Per-session limits (researched, nothing implemented)
+
+The user asked on 2026-10-13 whether every session can have its own limits.
+They pointed at `tweakcc` hoping to learn something, and said not to patch the binary; it was not patched.
+`tweakcc unpack` of version 2.1.296 yields only a bytecode stub (no `claude-code-bash` in it),
+so the findings come from reading the readable source strings inside the binary with `strings`.
+
+- Claude Code names the tool cgroup with a constant, `claude-code-bash`, and creates it as a sibling of the cgroup
+  that Claude itself runs in: `<parent of Claude's own cgroup>/claude-code-bash`, with `memory.max` set from
+  `CLAUDE_CODE_TOOL_MEMORY_LIMIT`. If Claude's own cgroup path already contains a `claude-code-bash` segment,
+  it logs "nested: already capped" and reuses it. The tool cgroup is not named per session.
+- Every session started from a terminal surface lives in `app.slice/app-ghostty-surface-transient-N.scope`,
+  so its parent is `app.slice` and all of them share `app.slice/claude-code-bash`. That is the whole reason it is shared.
+- There is no CPU setting in Claude Code. `CLAUDE_CODE_TOOL_MEMORY_CGROUP_EXCLUDE` only picks which helper classes
+  (mcp, lsp, hooks, plugin, tmux, helper, agent) stay outside the cgroup.
+- Verified by a real run: `systemd-run --user --scope --slice=claude-probe.slice -- claude --print ...` put the
+  session's Bash tool in `.../user@1000.service/claude.slice/claude-probe.slice/claude-code-bash`, a separate cgroup.
+  (A dash in a slice name nests it: `claude-probe.slice` sits inside `claude.slice`.)
+  The probe slices were stopped afterwards. Interactive sessions were not tested.
+- So per-session limits need no patch: start each session in its own slice, and put `MemoryMax=` and `CPUQuota=` on that
+  slice, which covers both the session and its tool cgroup. A drop-in directory `claude-.slice.d` in
+  `~/.config/systemd/user/` would apply to every `claude-*.slice`, and limits on `claude.slice` would be a shared total.
+- Not decided: the per-session numbers, whether to keep a shared total, and how sessions get launched
+  (a `claude` wrapper in `PATH`, a shell function, or `spawn-claude`). Running sessions keep the shared cgroup until
+  restarted, because Claude reads its own cgroup path once at startup.
+- The CPU watcher writes `cpu.max` only into `app.slice/claude-code-bash`. Per-session slices would carry their
+  limits in systemd properties, and the watcher would need a decision about how to tone those down.
+
 ## Open questions
 
 - Which cooler variant is installed, and is it mounted correctly (offset, paste, base shape)?
