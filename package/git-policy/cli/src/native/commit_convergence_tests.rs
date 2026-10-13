@@ -138,3 +138,51 @@ fn a_correction_the_index_cannot_take_is_a_patch_conflict() {
     assert!(coded, "{:?}", outcome.pass.events);
     remove(root.as_path());
 }
+
+/// The loop's cycle check reads the stored states through `snapshots_equal`:
+///  a correction and its reversal store a state equal to the uncorrected one,
+///  and no other pair of the three states is equal.
+#[test]
+fn stored_states_compare_equal_exactly_when_the_corrected_bytes_match() {
+    let (root, repo, index): (PathBuf, PathBuf, PathBuf) = scene("commit-convergence-states", b"changed");
+    let facts = git_facts(Path::new(REAL_GIT), &[], overlay(repo.as_path(), index.as_path()).as_slice());
+    let mut checks: ShippedChecks<_> = shipped_checks(
+        facts,
+        os_arguments(&[]),
+        LifecycleContent::Requested(CandidateRequest::Staged(vec![OsString::from("a.txt")])),
+        Vec::<PathBuf>::new(),
+    );
+    let request: StageRequest = StageRequest {
+        trigger: Trigger::PreForward,
+        config: PolicyConfig::defaults(),
+        controls: no_controls(),
+        selected: Vec::new(),
+    };
+    checks.can_apply_patches = true;
+    let context = git_context();
+    let mut passes: CommitPasses<'_, _> = CommitPasses::new(CommitConvergenceInput {
+        request: &request,
+        checks: &mut checks,
+        stage: PrivateStage {
+            context: &context,
+            cwd: repo.as_path(),
+            index: index.as_path(),
+            object_directory: None,
+        },
+    });
+    assert_eq!(passes.run_pass(0), ConvergencePass::Proposed);
+    assert!(passes.apply(1), "the final-newline correction is written");
+    let reversal: Correction = Correction {
+        path: b"a.txt".to_vec(),
+        mode: crate::candidate_object::CandidateMode::Regular,
+        before: std::rc::Rc::from(b"changed\n".as_slice()),
+        after: std::rc::Rc::from(b"changed".as_slice()),
+    };
+    passes.checks.content.propose(reversal);
+    assert!(passes.apply(2), "the reversal is written");
+    assert!(!passes.snapshots_equal(0, 1), "the corrected state differs from the uncorrected one");
+    assert!(!passes.snapshots_equal(1, 2), "the reversed state differs from the corrected one");
+    assert!(passes.snapshots_equal(0, 2), "the reversed state repeats the uncorrected one");
+    assert!(passes.snapshots_equal(1, 1), "a state equals itself");
+    remove(root.as_path());
+}
