@@ -15,6 +15,65 @@ import org.junit.Test
 
 /** Ports the Rust `theme_roles_tests.rs` guarantees: AA for any root, fixed roles, gray roots, the cap, layers. */
 class ThemeRolesTest {
+    /**
+     * Roots that look gray but have unequal channels (D118: they are chromatic and must still tint every gray), plus
+     * every fifth gray level with each channel raised by one step in turn and the equal-channel gray itself.
+     */
+    private fun nearGrayRoots(): List<Srgb8> {
+        val roots = mutableListOf<Srgb8>()
+        for (value in listOf(0x808088, 0x7F8080, 0x8A8A8B, 0x8A8B8A, 0x808081, 0xFEFFFF, 0x010100, 0x7A7F9A)) {
+            roots += Srgb8.fromRgbInt(value)
+        }
+        for (level in 0..CHANNEL_TOP step LEVEL_STEP) {
+            val raised: Int = minOf(level + 1, CHANNEL_TOP)
+            roots += Srgb8(level, level, level)
+            roots += Srgb8(raised, level, level)
+            roots += Srgb8(level, raised, level)
+            roots += Srgb8(level, level, raised)
+        }
+        return roots
+    }
+
+    /** True when the three 8-bit channels of the root are equal. */
+    private fun isCompletelyNeutral(root: Srgb8): Boolean = root.red == root.green && root.green == root.blue
+
+    /** The spread between the largest and the smallest channel, 0 for a true gray. */
+    private fun channelSpread(color: Srgb8): Int =
+        maxOf(color.red, color.green, color.blue) - minOf(color.red, color.green, color.blue)
+
+    /** Names of the gray roles of both schemes (D118); the canvases are pure black or white and are not grays. */
+    private fun grayRoleNames(): List<String> = listOf(
+        "deck", "currentRow", "surfaceHigh", "onSurface", "onSurfaceVariant", "outline", "outlineVariant",
+    )
+
+    /** Names of the accent roles of one scheme; the light on-primary is pure white and cannot carry chroma. */
+    private fun accentRoleNames(scheme: ThemeScheme): List<String> {
+        val names: List<String> = listOf(
+            "primary", "secondaryContainer", "secondaryContainerHovered", "secondaryContainerPressed",
+            "onSecondaryContainer", "matchFill",
+        )
+        return if (scheme == ThemeScheme.DARK) names + "onPrimary" else names
+    }
+
+    /** The gray roles of one scheme with their finished colors. */
+    private fun grayColors(set: RoleSet): List<Pair<String, Srgb8>> {
+        val names: List<String> = grayRoleNames()
+        return set.toNamedList().filter { pair -> pair.first in names }
+    }
+
+    /** The accent roles of one scheme with their finished colors. */
+    private fun accentColors(set: RoleSet, scheme: ThemeScheme): List<Pair<String, Srgb8>> {
+        val names: List<String> = accentRoleNames(scheme)
+        return set.toNamedList().filter { pair -> pair.first in names }
+    }
+
+    /** Names the gray roles whose measured chroma is at or below the floor, with the chroma. */
+    private fun grayRolesBelowFloor(set: RoleSet): List<String> =
+        grayColors(set).mapNotNull { (name, color) ->
+            val chroma: Double = srgbToOklch(color).chroma
+            if (chroma > GRAY_CHROMA_FLOOR && channelSpread(color) >= 2) null else "$name ${color.toHex()} ($chroma)"
+        }
+
     /** Every test root: hues every 10 degrees by lightness and chroma spreads, plus grays and the extremes. */
     private fun sweptRoots(): List<Srgb8> {
         val roots = mutableListOf<Srgb8>()
@@ -25,9 +84,12 @@ class ThemeRolesTest {
                 }
             }
         }
-        for (value in listOf(0xFF0000, 0xFFD000, 0xFFFF00, 0x00FF00, 0x0000FF, 0x6060C0, 0, 0xFFFFFF, 0x808080, 0x7F7F80)) {
+        val extremes: List<Int> =
+            listOf(0xFF0000, 0xFFD000, 0xFFFF00, 0x00FF00, 0x0000FF, 0x6060C0, 0, 0xFFFFFF, 0x808080, 0x7F7F80)
+        for (value in extremes) {
             roots += Srgb8.fromRgbInt(value)
         }
+        roots += nearGrayRoots()
         return roots
     }
 
@@ -195,14 +257,15 @@ class ThemeRolesTest {
         }
     }
 
-    /** Confirms the dark canvas, the deck and the seam, the light canvas and white on-primary, and error roles are fixed. */
+    /**
+     * Confirms the pure black and white roles, white on-primary and the error roles are fixed. The dark deck is not
+     * among them any more (D118): it is a gray and takes the root's tint.
+     */
     @Test
     fun fixedRolesDoNotFollowTheAccent() {
         for (root in sweptRoots()) {
             val palette: ThemePalette = deriveRoles(root)
             assertEquals(Srgb8(0x00, 0x00, 0x00), palette.dark.canvas)
-            assertEquals(Srgb8(0x0A, 0x0A, 0x0D), palette.dark.deck)
-            assertEquals(Srgb8(0x00, 0x00, 0x00), palette.dark.seam)
             assertEquals(Srgb8(0xFF, 0xFF, 0xFF), palette.light.canvas)
             assertEquals(Srgb8(0xFF, 0xFF, 0xFF), palette.light.onPrimary)
             assertEquals(Srgb8(0xFF, 0xB4, 0xAB), palette.dark.error)
@@ -216,7 +279,7 @@ class ThemeRolesTest {
         val palette: ThemePalette = deriveRoles(null)
         val old: List<Triple<String, Int, Int>> = listOf(
             Triple("canvas", 0x000000, 0xFFFFFF), Triple("deck", 0x0A0A0D, 0xF4F3FA),
-            Triple("currentRow", 0x121318, 0xF4F3FA), Triple("seam", 0x000000, 0xB0B1BC),
+            Triple("currentRow", 0x121318, 0xF4F3FA),
             Triple("onSurface", 0xE4E5F0, 0x30323B), Triple("onSurfaceVariant", 0xC5C6D0, 0x5C5E6A),
             Triple("outline", 0x8E9099, 0x757780), Triple("outlineVariant", 0x44464F, 0xC5C6D0),
             Triple("primary", 0xBAC5EE, 0x4E5E8B), Triple("onPrimary", 0x1F2D52, 0xFFFFFF),
@@ -243,22 +306,162 @@ class ThemeRolesTest {
         assertTrue("baseline drifted: $largest", largest < BASELINE_DRIFT_LIMIT)
     }
 
-    /** Confirms a gray root gives gray roles (except the fixed error roles and the fixed dark deck). */
+    /** Confirms the dark deck is a table gray that reproduces the old literal `#0A0A0D` at the baseline exactly. */
     @Test
-    fun aGrayRootYieldsGrayRoles() {
-        val terms: RootTerms = rootTerms(Srgb8(0x80, 0x80, 0x80))
-        assertEquals(srgbToOklch(BASELINE_ROOT).hue, terms.hue, 0.0)
-        assertTrue(terms.scale < 0.01)
-        val palette: ThemePalette = deriveRoles(Srgb8(0x80, 0x80, 0x80))
-        for ((label, set) in listOf("dark" to palette.dark, "light" to palette.light)) {
-            for ((name, color) in set.toNamedList()) {
-                if (name.startsWith("error") || name == "onErrorContainer" || (name == "deck" && label == "dark")) {
+    fun theDarkDeckReproducesTheOldLiteralAtTheBaseline() {
+        assertEquals(Srgb8(0x0A, 0x0A, 0x0D), deriveRoles(null).dark.deck)
+    }
+
+    /** Confirms only three equal channels make a root completely neutral, and no weaker root counts. */
+    @Test
+    fun completelyNeutralMeansThreeEqualChannelsAndNoWeakerRootCounts() {
+        var largestGrayChroma = 0.0
+        for (level in 0..CHANNEL_TOP) {
+            val gray = Srgb8(level, level, level)
+            val terms: RootTerms = rootTerms(gray)
+            assertTrue("gray $level must be completely neutral", terms.completelyNeutral)
+            assertEquals(0.0, terms.scale, 0.0)
+            largestGrayChroma = maxOf(largestGrayChroma, srgbToOklch(gray).chroma)
+            for (offset in ONE_STEP_OFFSETS) {
+                val red: Int = level + offset.first
+                val green: Int = level + offset.second
+                val blue: Int = level + offset.third
+                if (listOf(red, green, blue).any { channel -> channel !in 0..CHANNEL_TOP }) {
                     continue
                 }
-                val spread: Int = maxOf(color.red, color.green, color.blue) - minOf(color.red, color.green, color.blue)
-                assertTrue("$label $name ${color.toHex()} is not gray", spread <= 2)
+                val off = Srgb8(red, green, blue)
+                val offTerms: RootTerms = rootTerms(off)
+                assertTrue("${off.toHex()} has chroma and must not be neutral", !offTerms.completelyNeutral)
+                assertTrue("${off.toHex()} must keep a positive scale", offTerms.scale > 0.0)
+                assertTrue("${off.toHex()} must measure above 1e-3", srgbToOklch(off).chroma > 1.0e-3)
+                assertEquals("${off.toHex()} must keep its own hue", srgbToOklch(off).hue, offTerms.hue, 0.0)
             }
         }
+        assertEquals("equal-channel roots read exactly zero chroma", 0.0, largestGrayChroma, 0.0)
+    }
+
+    /** Confirms a completely neutral root gives equal channels for every gray role and every non-error role. */
+    @Test
+    fun aCompletelyNeutralRootGivesEqualChannelsForEveryGrayRole() {
+        for (level in 0..CHANNEL_TOP) {
+            val palette: ThemePalette = deriveRoles(Srgb8(level, level, level))
+            for ((scheme, set) in listOf(ThemeScheme.DARK to palette.dark, ThemeScheme.LIGHT to palette.light)) {
+                for ((name, color) in grayColors(set)) {
+                    assertEquals("$scheme $name ${color.toHex()} under gray $level", 0, channelSpread(color))
+                }
+                for ((name, color) in set.toNamedList()) {
+                    if (name.startsWith("error") || name == "onErrorContainer") {
+                        continue
+                    }
+                    assertEquals("$scheme $name ${color.toHex()} tinted under gray $level", 0, channelSpread(color))
+                }
+            }
+        }
+    }
+
+    /** Confirms every gray role of every weakly chromatic root keeps chroma above the floor and two 8-bit steps. */
+    @Test
+    fun everyGrayRoleOfAWeaklyChromaticRootKeepsAVisibleTint() {
+        var checked = 0
+        for (root in sweptRoots()) {
+            if (isCompletelyNeutral(root) || srgbToOklch(root).chroma >= WEAK_ROOT_CHROMA) {
+                continue
+            }
+            val palette: ThemePalette = deriveRoles(root)
+            for ((scheme, set) in listOf(ThemeScheme.DARK to palette.dark, ThemeScheme.LIGHT to palette.light)) {
+                assertEquals("$scheme under ${root.toHex()}", emptyList<String>(), grayRolesBelowFloor(set))
+                checked += grayRoleNames().size
+            }
+        }
+        assertTrue("the tint check ran on only $checked roles", checked > MINIMUM_TINT_CHECKS)
+    }
+
+    /** Positive control: the floor check does report the true grays that a completely neutral root gives. */
+    @Test
+    fun theFloorCheckReportsTrueGraysAPositiveControl() {
+        val palette: ThemePalette = deriveRoles(Srgb8(0x80, 0x80, 0x80))
+        assertEquals(grayRoleNames().size, grayRolesBelowFloor(palette.dark).size)
+        assertEquals(grayRoleNames().size, grayRolesBelowFloor(palette.light).size)
+    }
+
+    /** Confirms a nearly gray root gives the gray roles its own hue, not the baseline hue. */
+    @Test
+    fun aWeaklyChromaticRootGivesTheGrayRolesTheRootHueNotTheBaselineHue() {
+        val weak = Srgb8(0x7F, 0x80, 0x80)
+        val rootHue: Double = srgbToOklch(weak).hue
+        val baselineHue: Double = srgbToOklch(BASELINE_ROOT).hue
+        assertTrue("the control root must be far from the baseline hue", abs(rootHue - baselineHue) > 60.0)
+        assertEquals(rootHue, rootTerms(weak).hue, 0.0)
+        val palette: ThemePalette = deriveRoles(weak)
+        for ((scheme, set) in listOf(ThemeScheme.DARK to palette.dark, ThemeScheme.LIGHT to palette.light)) {
+            for (name in listOf("onSurface", "onSurfaceVariant", "outline", "outlineVariant")) {
+                val color: Oklch = srgbToOklch(set.toNamedList().first { pair -> pair.first == name }.second)
+                val fromRoot: Double = wrapHue(color.hue - rootHue + 540.0) - 180.0
+                val fromBaseline: Double = wrapHue(color.hue - baselineHue + 540.0) - 180.0
+                assertTrue("$scheme $name hue ${color.hue} vs root hue $rootHue", abs(fromRoot) < ROLE_HUE_SPREAD)
+                assertTrue("$scheme $name hue ${color.hue} near the baseline", abs(fromBaseline) > ROLE_HUE_SPREAD)
+            }
+        }
+    }
+
+    /** Confirms a weak root's accent roles are never grayer than the grays, measured from the final 8-bit colors. */
+    @Test
+    fun anAccentRoleOfAWeaklyChromaticRootIsNeverGrayerThanTheGrays() {
+        var checked = 0
+        for (root in sweptRoots()) {
+            if (isCompletelyNeutral(root) || srgbToOklch(root).chroma >= WEAK_ROOT_CHROMA) {
+                continue
+            }
+            val palette: ThemePalette = deriveRoles(root)
+            for ((scheme, set) in listOf(ThemeScheme.DARK to palette.dark, ThemeScheme.LIGHT to palette.light)) {
+                for ((name, color) in accentColors(set, scheme)) {
+                    val chroma: Double = srgbToOklch(color).chroma
+                    assertTrue(
+                        "$scheme $name ${color.toHex()} has chroma $chroma under ${root.toHex()}",
+                        chroma > ACCENT_CHROMA_FLOOR,
+                    )
+                    checked += 1
+                }
+            }
+        }
+        assertTrue("the accent check ran on only $checked roles", checked > MINIMUM_TINT_CHECKS)
+    }
+
+    /** Confirms a completely neutral root keeps every accent role at chroma zero, so each is a true gray. */
+    @Test
+    fun aCompletelyNeutralRootKeepsEveryAccentRoleAtChromaZero() {
+        for (level in listOf(0x00, 0x40, 0x80, 0xC0, 0xFF)) {
+            val palette: ThemePalette = deriveRoles(Srgb8(level, level, level))
+            for ((scheme, set) in listOf(ThemeScheme.DARK to palette.dark, ThemeScheme.LIGHT to palette.light)) {
+                for ((name, color) in accentColors(set, scheme)) {
+                    assertEquals("$scheme $name ${color.toHex()} under gray $level", 0, channelSpread(color))
+                }
+            }
+        }
+    }
+
+    /** Confirms the weak root gives the accent the gray floor and the vivid root keeps its scaled chroma. */
+    @Test
+    fun theAccentFloorRaisesAWeakRootsAccentButNotAVividRootsOrTheBaselines() {
+        assertEquals(Srgb8(0xBA, 0xC5, 0xEE), deriveRoles(null).dark.primary)
+        assertEquals(Srgb8(0xFF, 0xFF, 0xFF), deriveRoles(null).light.onPrimary)
+        val weak: Double = srgbToOklch(deriveRoles(Srgb8(0x7F, 0x80, 0x80)).dark.primary).chroma
+        val vivid: Double = srgbToOklch(deriveRoles(Srgb8(0xFF, 0x00, 0x00)).dark.primary).chroma
+        assertTrue("weak primary chroma $weak", weak > ACCENT_CHROMA_FLOOR)
+        assertTrue("vivid primary chroma $vivid is not above the baseline's 0.0589", vivid > 0.0589)
+    }
+
+    /** Confirms accent roles still scale with a weak root's chroma while the gray roles keep their own tint. */
+    @Test
+    fun accentRolesStillScaleWithTheRootChromaWhileGraysDoNot() {
+        val weak: ThemePalette = deriveRoles(Srgb8(0x80, 0x80, 0x88))
+        val baseline: ThemePalette = deriveRoles(null)
+        val weakPrimary: Double = srgbToOklch(weak.dark.primary).chroma
+        val baselinePrimary: Double = srgbToOklch(baseline.dark.primary).chroma
+        assertTrue("primary $weakPrimary vs $baselinePrimary", weakPrimary < baselinePrimary * ACCENT_SHRINK_LIMIT)
+        assertTrue(rootTerms(Srgb8(0x80, 0x80, 0x88)).scale in 0.0..ACCENT_SHRINK_LIMIT)
+        assertEquals(1.0, rootTerms(null).scale, 0.0)
+        assertTrue(srgbToOklch(weak.dark.onSurface).chroma > GRAY_CHROMA_FLOOR)
     }
 
     /** Confirms a more vivid accent gives a more vivid primary up to the cap, and that past the cap nothing changes. */
@@ -378,5 +581,40 @@ class ThemeRolesTest {
 
         /** Fewest hue checks that must run. */
         const val MINIMUM_HUE_CHECKS: Int = 20
+
+        /** Largest 8-bit channel value. */
+        const val CHANNEL_TOP: Int = 255
+
+        /** The six one-step moves of one channel away from a gray, as red, green and blue offsets. */
+        val ONE_STEP_OFFSETS: List<Triple<Int, Int, Int>> = listOf(
+            Triple(1, 0, 0), Triple(0, 1, 0), Triple(0, 0, 1), Triple(-1, 0, 0), Triple(0, -1, 0), Triple(0, 0, -1),
+        )
+
+        /** Distance between the gray levels of the near-gray roots. */
+        const val LEVEL_STEP: Int = 5
+
+        /** Root chroma below which a root counts as weak in the tint checks. */
+        const val WEAK_ROOT_CHROMA: Double = 0.02
+
+        /**
+         * Smallest chroma, measured in OKLCH from the final 8-bit colors, that every gray role keeps under a weakly
+         * chromatic root. The lowest value measured over roots stepping one degree of hue is 0.00455 (the dark deck).
+         */
+        const val GRAY_CHROMA_FLOOR: Double = 0.004
+
+        /**
+         * Smallest chroma, measured from the final 8-bit colors, that every accent role keeps under a weakly chromatic
+         * root. The lowest value measured over the weak roots is 0.01313 (the dark pressed selected fill).
+         */
+        const val ACCENT_CHROMA_FLOOR: Double = 0.012
+
+        /** Fewest gray-role checks that must run. */
+        const val MINIMUM_TINT_CHECKS: Int = 1000
+
+        /** Largest distance in degrees between a gray role's hue and the root hue (role offsets reach 17 degrees). */
+        const val ROLE_HUE_SPREAD: Double = 25.0
+
+        /** Share of the baseline primary chroma a weak root's primary must stay under. */
+        const val ACCENT_SHRINK_LIMIT: Double = 0.3
     }
 }

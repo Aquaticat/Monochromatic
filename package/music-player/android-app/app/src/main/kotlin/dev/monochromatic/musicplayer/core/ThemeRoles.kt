@@ -4,8 +4,13 @@
 // converted to 8-bit sRGB with chroma-reduction gamut mapping. This is a line-for-line port of the desktop's
 // `desktop-app/src/theme_roles.rs`; the shared vector `app/src/test/resources/theme-roles-vector.txt` (written by the
 // Rust code) proves that both give the same roles for the same root.
-// Fixed on purpose: the dark canvas, rail seam and deck stay the stable neutrals of D41, the light canvas stays white
-// (D34, D45), and the error roles are semantic constants that follow no accent.
+// Grays (D118): every gray role (surfaces, deck, outlines, text variants) carries the root's hue at its own fixed
+// tint, whatever the root's chroma, unless the root is completely neutral (its three 8-bit channels are equal); then
+// every gray role is a true gray. Accent roles still scale with the root's chroma, but for a root that is not
+// completely neutral they never fall below the largest gray tint of their scheme, so an accent is never grayer than
+// the surfaces (the orchestrator's reading of D118, open to the human's veto).
+// Fixed on purpose: the dark and light canvas are pure black (D41) and pure white (D34, D45), which are not grays and
+// cannot carry a tint; the error roles are semantic constants that follow no accent.
 // Contrast guarantee: after the lightness targets are placed, every text role is moved in lightness (chroma and hue
 // kept, gamut-mapped again) until its WCAG ratio holds on every surface and state layer it is drawn on, so AA holds
 // for ANY root color. The baseline passes without any adjustment.
@@ -39,17 +44,6 @@ internal val BASELINE_ROOT: Srgb8 = Srgb8(red = 0x4E, green = 0x5E, blue = 0x8B)
 // ```
 /** Largest root chroma that scales the roles, so a neon accent cannot turn every container garish. */
 internal const val ROOT_CHROMA_CAP: Double = 0.15
-
-// What:     `internal const val ACHROMATIC_ROOT_CHROMA: Double = 0.004` is the root chroma below which the hue is
-//           meaningless.
-// Why:      A gray accent has no hue, so the baseline hue is used and the roles stay gray through the scaled chroma.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// const ACHROMATIC_ROOT_CHROMA = 0.004;
-// ```
-/** Root chroma below which the root has no usable hue and the baseline hue is used instead. */
-internal const val ACHROMATIC_ROOT_CHROMA: Double = 0.004
 
 // What:     `internal const val TEXT_TARGET_RATIO: Double = 4.52` is the contrast ratio text is fitted to.
 // Why:      AA asks 4.5; the margin keeps another renderer's rounding of a translucent layer from dropping below it.
@@ -166,8 +160,6 @@ internal data class RoleSet(
     val deck: Srgb8,
     /** Background of the playing row. */
     val currentRow: Srgb8,
-    /** Hairline between structural surfaces. */
-    val seam: Srgb8,
     /** Menus, search header and snackbar surface. */
     val surfaceHigh: Srgb8,
     /** Primary text and icons. */
@@ -204,7 +196,6 @@ internal data class RoleSet(
         "canvas" to canvas,
         "deck" to deck,
         "currentRow" to currentRow,
-        "seam" to seam,
         "surfaceHigh" to surfaceHigh,
         "onSurface" to onSurface,
         "onSurfaceVariant" to onSurfaceVariant,
@@ -257,8 +248,10 @@ private data class RoleSpec(
 )
 
 // What:     `private sealed interface Role` says how one role is obtained: fixed, neutral or accent.
-// Why:      `Fixed` ignores the root; `Neutral` roles are tinted by the root hue but never gain chroma from a vivid
-//           root (the surfaces stay neutral); `Accent` roles scale their chroma with the root chroma.
+// Why:      `Fixed` ignores the root (pure black, pure white and the semantic error colors); `Neutral` roles are the
+//           grays: they take the root hue at their own tint, never shrunk by a weak root and never grown by a vivid one
+//           (D118), and are true grays only when the root is completely neutral; `Accent` roles scale their chroma with
+//           the root chroma.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -272,7 +265,7 @@ private sealed interface Role {
         val color: Srgb8,
     ) : Role
 
-    /** A role tinted by the root hue whose chroma never exceeds the baseline's. */
+    /** A gray: the root hue at the role's own chroma, or chroma 0 when the root is completely neutral. */
     data class Neutral(
         /** Target relative to the root. */
         val spec: RoleSpec,
@@ -318,8 +311,6 @@ private data class SchemeSpec(
     val deck: Role,
     /** Playing row background. */
     val currentRow: Role,
-    /** Structural hairline. */
-    val seam: Role,
     /** Menu surface. */
     val surfaceHigh: Role,
     /** Primary content. */
@@ -350,11 +341,14 @@ private data class SchemeSpec(
 // primary #4E5E8B, secondary container #353B4D and #DDE2F9, and so on. Two light roles were then retuned darker in
 // lightness only (B4): primary from 0.4883 to 0.4545 and on-surface-variant from 0.4844 to 0.4685, the smallest steps
 // that put every drawn state at AA at the baseline. The numbers are copied from the Rust tables.
-/** Dark scheme table. D41: the canvas, the rail seam and the deck are stable neutrals under every accent. */
+/**
+ * Dark scheme table. D41, D118: the canvas is pure black under every accent (black is not a gray and, at lightness
+ * 0, no chroma can show). The deck is a gray: the baseline reproduces the old literal `#0A0A0D` exactly, and every
+ * other root gives it its own hue at the same tint.
+ */
 private val DARK_SPEC: SchemeSpec = SchemeSpec(
     canvas = fixed(0x000000),
-    deck = fixed(0x0A0A0D),
-    seam = fixed(0x000000),
+    deck = neutral(lightness = 0.1463, chroma = 0.0064, hueOffset = 17.0),
     currentRow = neutral(lightness = 0.1879, chroma = 0.0103, hueOffset = 7.9),
     surfaceHigh = neutral(lightness = 0.2408, chroma = 0.0115, hueOffset = 9.4),
     onSurface = neutral(lightness = 0.9244, chroma = 0.0149, hueOffset = 13.4),
@@ -370,11 +364,10 @@ private val DARK_SPEC: SchemeSpec = SchemeSpec(
     onErrorContainer = fixed(0xF9DEDC),
 )
 
-/** Light scheme table. D34, D45: a flat white canvas with hairline seams; on-primary is pure white (chroma 0). */
+/** Light scheme table. D34, D45: a flat white canvas with hairline dividers; on-primary is pure white (chroma 0). */
 private val LIGHT_SPEC: SchemeSpec = SchemeSpec(
     canvas = fixed(0xFFFFFF),
     deck = neutral(lightness = 0.9669, chroma = 0.0093, hueOffset = 24.2),
-    seam = neutral(lightness = 0.7630, chroma = 0.0156, hueOffset = 13.3),
     currentRow = neutral(lightness = 0.9669, chroma = 0.0093, hueOffset = 24.2),
     surfaceHigh = neutral(lightness = 0.9308, chroma = 0.0094, hueOffset = 24.2),
     onSurface = neutral(lightness = 0.3188, chroma = 0.0162, hueOffset = 7.0),
@@ -390,61 +383,87 @@ private val LIGHT_SPEC: SchemeSpec = SchemeSpec(
     onErrorContainer = fixed(0x410E0B),
 )
 
-// What:     `internal data class RootTerms` holds the only two numbers the derivation takes from the root.
-// Why:      `hue` places every role on the color wheel and `scale` is the root chroma relative to the baseline's,
-//           capped by `ROOT_CHROMA_CAP`; the root's own lightness is never used, since each role has its own target.
+// What:     `internal data class RootTerms` holds what the derivation takes from the root.
+// Why:      `hue` places every role on the color wheel, `scale` is the root chroma relative to the baseline's,
+//           capped by `ROOT_CHROMA_CAP`, and `completelyNeutral` (D118) is true only when the root's three 8-bit
+//           channels are equal; the root's own lightness is never used, since each role has its own target.
+//           `accentChromaFloor` is the least chroma an accent role may have: `rootTerms` leaves it 0 because it
+//           depends on the scheme, and `deriveScheme` sets it to the scheme's largest gray tint unless the root is
+//           completely neutral.
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// type RootTerms = { hue: number; scale: number };
+// type RootTerms = { hue: number; scale: number; completelyNeutral: boolean; accentChromaFloor: number };
 // ```
-/** The hue and the capped relative chroma that the derivation takes from the root. */
+/** The hue, the capped relative chroma, the neutrality and the accent chroma floor of the derivation. */
 internal data class RootTerms(
     /** Root hue in degrees, 0 up to 360. */
     val hue: Double,
-    /** Root chroma over the baseline chroma, capped. */
+    /** Root chroma over the baseline chroma, capped; exactly 0 for a completely neutral root. */
     val scale: Double,
+    /** True only when the root's red, green and blue are equal; then every gray role has chroma 0. */
+    val completelyNeutral: Boolean,
+    /** Least chroma of any accent role; set per scheme by `deriveScheme`, 0 from `rootTerms`. */
+    val accentChromaFloor: Double,
 )
 
 // What:     `internal fun rootTerms(root)` reads the root; null (no system accent) is the baseline.
-// Why:      A root with almost no chroma has no meaningful hue (an accent of pure gray), so it takes the baseline hue;
-//           its roles then end up gray because their chroma scales with the near-zero chroma.
+// Why:      D118: a root is completely neutral only when its three 8-bit channels are equal, which is exactly
+//           "no chroma at all" for a stored color. Equality is the test, not a chroma threshold: the 256 equal-channel
+//           roots measure at most 3.7e-8 in OKLCH chroma (float noise) and the least chromatic unequal root, #FEFFFF,
+//           measures 1.06e-3, so any threshold between them agrees with equality, and equality needs no tuned
+//           constant that Rust and Kotlin could disagree on. A neutral root has no hue (the baseline hue is kept so
+//           the value is deterministic) and scale 0; any other root, however weakly chromatic, keeps its own hue.
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// const lch = toOklch(root ?? BASELINE_ROOT);
-// return { hue: lch.chroma < 0.004 ? baselineHue : lch.hue, scale: Math.min(lch.chroma, 0.15) / baselineChroma };
+// const used = root ?? BASELINE_ROOT;
+// const neutral = used.red === used.green && used.green === used.blue;
+// if (neutral) return { hue: baselineHue, scale: 0, completelyNeutral: true };
+// const lch = toOklch(used);
+// return { hue: lch.hue, scale: Math.min(lch.chroma, 0.15) / baselineChroma, completelyNeutral: false };
 // ```
-/** Reads the hue and the relative chroma of the root, with the baseline as the default root. */
+/** Reads the hue, the relative chroma and the neutrality of the root, with the baseline as the default root. */
 internal fun rootTerms(root: Srgb8?): RootTerms {
     /** The baseline root in OKLCH. */
     val baseline: Oklch = srgbToOklch(BASELINE_ROOT)
+    /** The root, or the baseline when the system exposes no accent. */
+    val used: Srgb8 = root ?: BASELINE_ROOT
+    if (used.red == used.green && used.green == used.blue) {
+        return RootTerms(hue = baseline.hue, scale = 0.0, completelyNeutral = true, accentChromaFloor = 0.0)
+    }
     /** The root in OKLCH. */
-    val lch: Oklch = srgbToOklch(root ?: BASELINE_ROOT)
-    /** Hue the roles are placed on. */
-    val hue: Double = if (lch.chroma < ACHROMATIC_ROOT_CHROMA) baseline.hue else lch.hue
-    return RootTerms(hue = hue, scale = minOf(lch.chroma, ROOT_CHROMA_CAP) / baseline.chroma)
+    val lch: Oklch = srgbToOklch(used)
+    return RootTerms(
+        hue = lch.hue,
+        scale = minOf(lch.chroma, ROOT_CHROMA_CAP) / baseline.chroma,
+        completelyNeutral = false,
+        accentChromaFloor = 0.0,
+    )
 }
 
 // What:     `private fun resolveOklch(role, terms)` is the role's target color before gamut mapping.
-// Why:      `Neutral` chroma scales only down with the root (a vivid accent does not tint the surfaces more than the
-//           baseline does); `Accent` chroma scales both ways.
+// Why:      `Neutral` chroma is the role's own tint for every root that is not completely neutral (D118: a weak root
+//           does not shrink it and a vivid root does not grow it) and 0 for a completely neutral root; `Accent`
+//           chroma scales with the root in both directions but never falls below `accentChromaFloor`, so for a root
+//           with any chroma an accent is never grayer than the grays.
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// neutral: { lightness, chroma: chroma * Math.min(1, scale), hue: (rootHue + hueOffset) % 360 }
+// neutral: { lightness, chroma: terms.completelyNeutral ? 0 : chroma, hue: (rootHue + hueOffset) % 360 }
+// accent:  { lightness, chroma: Math.max(chroma * terms.scale, terms.accentChromaFloor), hue: ... }
 // ```
 /** Resolves a role to its OKLCH target for this root. */
 private fun resolveOklch(role: Role, terms: RootTerms): Oklch = when (role) {
     is Role.Fixed -> srgbToOklch(role.color)
     is Role.Neutral -> Oklch(
         lightness = role.spec.lightness,
-        chroma = role.spec.chroma * minOf(terms.scale, 1.0),
+        chroma = if (terms.completelyNeutral) 0.0 else role.spec.chroma,
         hue = wrapHue(terms.hue + role.spec.hueOffset),
     )
     is Role.Accent -> Oklch(
         lightness = role.spec.lightness,
-        chroma = role.spec.chroma * terms.scale,
+        chroma = maxOf(role.spec.chroma * terms.scale, terms.accentChromaFloor),
         hue = wrapHue(terms.hue + role.spec.hueOffset),
     )
 }
@@ -692,14 +711,24 @@ private fun fitAccent(
 // Search match fill (D59): the primary moved toward the neutral end in OKLCH, with the Android shares, then fitted so
 // both text roles stay legible on it.
 // What:     `private fun deriveMatchFill(...)` derives the opaque Search match highlight.
-// Why:      D59 wants it derived from the accent in OKLCH, and the fit keeps both text roles legible on it.
+// Why:      D59 wants it derived from the accent in OKLCH, and the fit keeps both text roles legible on it. It is an
+//           accent role, so its chroma never falls below the accent floor either.
 //
 // In TS you'd write (pseudocode):
 // ```ts
 // const deriveMatchFill = (scheme, primary, onSurface, onSurfaceVariant) => { ... };
 // ```
 /** Derives the opaque Search match highlight from the fitted primary and text roles. */
-private fun deriveMatchFill(scheme: ThemeScheme, primary: Srgb8, onSurface: Srgb8, onSurfaceVariant: Srgb8): Srgb8 {
+private fun deriveMatchFill(
+    scheme: ThemeScheme,
+    primary: Srgb8,
+    texts: Pair<Srgb8, Srgb8>,
+    accentChromaFloor: Double,
+): Srgb8 {
+    /** Primary text color. */
+    val onSurface: Srgb8 = texts.first
+    /** Secondary text color. */
+    val onSurfaceVariant: Srgb8 = texts.second
     /** Whether this is the dark scheme. */
     val dark: Boolean = scheme == ThemeScheme.DARK
     /** Share of lightness moved toward the neutral end. */
@@ -713,7 +742,7 @@ private fun deriveMatchFill(scheme: ThemeScheme, primary: Srgb8, onSurface: Srgb
     /** Match fill before the contrast fit. */
     val matchStart = Oklch(
         lightness = primaryLch.lightness + (neutralEnd - primaryLch.lightness) * lightnessShare,
-        chroma = primaryLch.chroma * (1.0 - chromaShare),
+        chroma = maxOf(primaryLch.chroma * (1.0 - chromaShare), accentChromaFloor),
         hue = primaryLch.hue,
     )
     return oklchToSrgb8(
@@ -724,7 +753,30 @@ private fun deriveMatchFill(scheme: ThemeScheme, primary: Srgb8, onSurface: Srgb
     )
 }
 
-// What:     `internal fun deriveScheme(terms, scheme)` derives every role of one scheme.
+// What:     `private fun grayTintCeiling(spec)` is the largest chroma among the gray (`Neutral`) rows of one scheme.
+// Why:      The reading of D118 that an accent is never grayer than the grays needs one number per scheme: the
+//           strongest tint any gray of that scheme carries (the dark scheme's is 0.0153, the light scheme's 0.0193).
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// Math.max(...Object.values(spec).filter((role) => "neutral" in role).map((role) => role.neutral.chroma))
+// ```
+/** Returns the largest chroma among the gray rows of the scheme table. */
+private fun grayTintCeiling(spec: SchemeSpec): Double {
+    /** The rows that are grays; the canvas is fixed and carries no tint. */
+    val rows: List<Role> = listOf(
+        spec.deck,
+        spec.currentRow,
+        spec.surfaceHigh,
+        spec.onSurface,
+        spec.onSurfaceVariant,
+        spec.outline,
+        spec.outlineVariant,
+    )
+    return rows.filterIsInstance<Role.Neutral>().maxOf { row -> row.spec.chroma }
+}
+
+// What:     `internal fun deriveScheme(fromRoot, scheme)` derives every role of one scheme.
 // Why:      Places each role from its target, then fits lightness so each text pair holds AA: content on its surface
 //           and layers, accent text on every surface it is drawn on, outlines against the canvas and deck.
 //
@@ -734,10 +786,16 @@ private fun deriveMatchFill(scheme: ThemeScheme, primary: Srgb8, onSurface: Srgb
 // const surfaces = [canvas, deck, currentRow, surfaceHigh].map(resolve);
 // // fit onSecondaryContainer, onSurface, onSurfaceVariant, outline, primary, onPrimary, then derive matchFill
 // ```
-/** Derives every role of one scheme from the root terms. */
-internal fun deriveScheme(terms: RootTerms, scheme: ThemeScheme): RoleSet {
+/** Derives every role of one scheme from the root terms [fromRoot]. */
+internal fun deriveScheme(fromRoot: RootTerms, scheme: ThemeScheme): RoleSet {
     /** Role table of the scheme. */
     val spec: SchemeSpec = if (scheme == ThemeScheme.DARK) DARK_SPEC else LIGHT_SPEC
+    // D118 reading: every accent role is at least as chromatic as the strongest gray of this scheme, unless the root
+    // is completely neutral, where every accent stays at chroma 0.
+    /** The root terms with this scheme's accent chroma floor filled in. */
+    val terms: RootTerms = fromRoot.copy(
+        accentChromaFloor = if (fromRoot.completelyNeutral) 0.0 else grayTintCeiling(spec),
+    )
     // Text moves toward white on a dark scheme and toward black on a light one to gain contrast.
     /** Lightness endpoint that text moves toward. */
     val towardText: Double = if (scheme == ThemeScheme.DARK) 1.0 else 0.0
@@ -758,7 +816,6 @@ internal fun deriveScheme(terms: RootTerms, scheme: ThemeScheme): RoleSet {
         canvas = surfaces.canvas,
         deck = surfaces.deck,
         currentRow = surfaces.currentRow,
-        seam = resolveSrgb(spec.seam, terms),
         surfaceHigh = surfaces.surfaceHigh,
         onSurface = text.onSurface,
         onSurfaceVariant = text.onSurfaceVariant,
@@ -770,7 +827,12 @@ internal fun deriveScheme(terms: RootTerms, scheme: ThemeScheme): RoleSet {
         secondaryContainerHovered = hovered,
         secondaryContainerPressed = pressed,
         onSecondaryContainer = text.onSecondaryContainer,
-        matchFill = deriveMatchFill(scheme, accentFit.primary, text.onSurface, text.onSurfaceVariant),
+        matchFill = deriveMatchFill(
+            scheme = scheme,
+            primary = accentFit.primary,
+            texts = Pair(text.onSurface, text.onSurfaceVariant),
+            accentChromaFloor = terms.accentChromaFloor,
+        ),
         error = resolveSrgb(spec.error, terms),
         errorContainer = resolveSrgb(spec.errorContainer, terms),
         onErrorContainer = resolveSrgb(spec.onErrorContainer, terms),

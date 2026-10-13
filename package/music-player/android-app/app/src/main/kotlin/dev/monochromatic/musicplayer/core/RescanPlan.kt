@@ -43,6 +43,17 @@ class RescanPlan {
         return true
     }
 
+    /**
+     * Reports that the app came back to the front, or that the activity bound to the running service.
+     *
+     * Before the first load nothing is asked, because that load reads the disk anyway; afterwards every return asks
+     * for a rescan, so files added while the app was away appear with no user action (D113).
+     *
+     * @param libraryLoaded whether the first library load has started
+     * @return true when a debounced rescan should be requested
+     */
+    fun foreground(libraryLoaded: Boolean): Boolean = libraryLoaded
+
     /** Records that a library load or rescan began. */
     fun loadStarted() {
         loading = true

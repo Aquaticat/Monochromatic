@@ -25,6 +25,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -65,6 +66,7 @@ import dev.monochromatic.musicplayer.core.MenuAnchorRect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.input.pointer.PointerEvent
 import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.isSecondaryPressed
@@ -120,6 +122,17 @@ private val ROW_MIN_HEIGHT: Dp = 48.dp
 // ```
 /** Horizontal inset of a row's text from the pane edges. */
 private val ROW_HORIZONTAL_PADDING: Dp = 16.dp
+
+// What:     `private val ROW_RING_TEXT_GAP: Dp = 8.dp` is the least space between a row's focus ring and its text.
+// Why:      Beside the crease the row's box starts at the crease clearance, which is as far as the text used to start,
+//           so without this gap the ring would touch the first letters of a ringed row.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// const ROW_RING_TEXT_GAP = 8;
+// ```
+/** Least distance from a row's box, which the focus ring hugs, to the start and end of its text. */
+private val ROW_RING_TEXT_GAP: Dp = 8.dp
 
 // What:     `private val ROW_VERTICAL_PADDING: Dp = 12.dp` insets a row's text from its top and bottom.
 // Why:      A one-line row with this inset reaches the 48dp minimum height.
@@ -261,6 +274,7 @@ fun trackListPane(
     }
     LazyColumn(
         state = listState,
+        contentPadding = PaddingValues(vertical = FOCUS_RING_OUTSET),
         modifier = modifier
             .onGloballyPositioned { coordinates -> listBounds = coordinates.boundsInWindow() }
             .listZone(zone = HostKeyZone.TRACKS, state = zone) { command ->
@@ -447,6 +461,10 @@ private fun trackRow(
     val titleWeight: FontWeight? = if (row.isCurrent) FontWeight.Bold else null
     /** Window-space bounds of this row from its last layout, or null before the row is first placed. */
     var rowBounds: MenuAnchorRect? by remember { mutableStateOf<MenuAnchorRect?>(null) }
+    /** Start of the row's box: the pane's clearance plus the room the focus ring needs outside it. */
+    val ringStart: Dp = LocalPaneStartClearance.current + FOCUS_RING_OUTSET
+    /** End of the row's box, likewise. */
+    val ringEnd: Dp = LocalPaneEndClearance.current + FOCUS_RING_OUTSET
     /** Action that opens this row's menu anchored to the row, or null when no menu opener is provided. */
     val openMenuForRow: (() -> Unit)? = onOpenMenu?.let { open ->
         {
@@ -456,10 +474,11 @@ private fun trackRow(
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .heightIn(min = ROW_MIN_HEIGHT)
             .onGloballyPositioned { coordinates -> rowBounds = menuAnchorOfRect(coordinates.boundsInWindow()) }
+            .padding(start = ringStart, end = ringEnd)
+            .heightIn(min = ROW_MIN_HEIGHT)
             .background(rowBackground)
-            .keyboardFocusRing(visible = ringed)
+            .keyboardFocusRing(visible = ringed, shape = RectangleShape)
             .focusProperties { canFocus = false }
             .combinedClickable(
                 role = Role.Button,
@@ -479,8 +498,8 @@ private fun trackRow(
             }
             .semantics { selected = row.isCurrent }
             .padding(
-                start = paneStartInset(ROW_HORIZONTAL_PADDING),
-                end = paneEndInset(ROW_HORIZONTAL_PADDING),
+                start = (paneStartInset(ROW_HORIZONTAL_PADDING) - ringStart).coerceAtLeast(ROW_RING_TEXT_GAP),
+                end = (paneEndInset(ROW_HORIZONTAL_PADDING) - ringEnd).coerceAtLeast(ROW_RING_TEXT_GAP),
                 top = ROW_VERTICAL_PADDING,
                 bottom = ROW_VERTICAL_PADDING,
             ),

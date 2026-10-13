@@ -16,6 +16,16 @@ package dev.monochromatic.musicplayer
 // import { TrackMenuAction, label } from "core/TrackMenuAction";
 // import { MenuAnchorRect, menuAnchorOffset } from "core/MenuAnchor";
 // ```
+import androidx.compose.ui.input.key.key
+import dev.monochromatic.musicplayer.core.menuRowAfter
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.graphics.Color
+import androidx.compose.material3.ColorScheme
+import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.foundation.BorderStroke
 import dev.monochromatic.musicplayer.core.MenuAnchorOffset
 import dev.monochromatic.musicplayer.core.MenuAnchorRect
 import dev.monochromatic.musicplayer.core.MenuAnchorRequest
@@ -152,6 +162,28 @@ private val MENU_CORNER_RADIUS: Dp = 12.dp
 // ```
 /** Shadow elevation of the popup container. */
 private val MENU_ELEVATION: Dp = 3.dp
+
+// What:     `private val MENU_OUTLINE_WIDTH: Dp = 1.dp` is the thickness of the menu's outline.
+// Why:      D119 puts the menu on the canvas color, so a black menu over a black page needs an edge besides its
+//           shadow; the outline-variant role at 1 dp is that edge in both appearances.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// const MENU_OUTLINE_WIDTH = "1dp";
+// ```
+/** Thickness of the outline that marks the menu's edge. */
+private val MENU_OUTLINE_WIDTH: Dp = 1.dp
+
+// What:     `internal fun trackMenuContainerColor(scheme)` names the color the menu is filled with.
+// Why:      D119 puts the menu on the pure canvas color (white in light, black in dark) with no tint; naming the choice
+//           lets a test pin it to the canvas slot, which the theme tests already pin to pure white and pure black.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// const trackMenuContainerColor = (scheme: ColorScheme) => scheme.surface;
+// ```
+/** Returns the fill of the track menu: the scheme's canvas slot, untinted. */
+internal fun trackMenuContainerColor(scheme: ColorScheme): Color = scheme.surface
 
 // What:     `private val ITEM_MIN_TARGET: Dp = 48.dp` is the minimum touch target of one action row.
 // Why:      Every action keeps a 48dp minimum target, matching the touch-target rule of the design study.
@@ -341,6 +373,8 @@ fun trackMenuPopup(
     // ```
     /** Secondary text color used for the dB value on the File details row. */
     val secondary = MaterialTheme.colorScheme.onSurfaceVariant
+    /** Row that holds the keyboard ring, or null until the first Down or Up (D114). */
+    var activeRow: Int? by remember { mutableStateOf<Int?>(null) }
     /** Focus target of the popup, so the menu's own key handler receives the keys of a hardware keyboard. */
     val menuFocus: FocusRequester = remember { FocusRequester() }
     LaunchedEffect(Unit) {
@@ -357,6 +391,27 @@ fun trackMenuPopup(
                 // The row chords of D106 (Delete, Alt+Enter and the Ctrl+Shift chords) act on the row the menu is
                 // open on, so the popup window, which receives its own keys, asks the key table about them.
                 .onPreviewKeyEvent { event ->
+                    if (event.type == KeyEventType.KeyDown) {
+                        when (event.key) {
+                            Key.DirectionDown, Key.DirectionUp -> {
+                                activeRow = menuRowAfter(
+                                    current = activeRow,
+                                    count = actions.size,
+                                    step = if (event.key == Key.DirectionDown) 1 else -1,
+                                )
+                                return@onPreviewKeyEvent true
+                            }
+                            Key.Enter, Key.NumPadEnter -> {
+                                /** Row that holds the ring, which Enter runs. */
+                                val ringed: Int? = activeRow
+                                if (ringed != null) {
+                                    onSelect(actions[ringed])
+                                    return@onPreviewKeyEvent true
+                                }
+                            }
+                            else -> Unit
+                        }
+                    }
                     /**
                      * Menu action of the row chord or the access letter (D114) that this key-down presses, or null
                      * when it presses neither.
@@ -376,10 +431,17 @@ fun trackMenuPopup(
                 .focusRequester(menuFocus)
                 .focusable(),
             shape = RoundedCornerShape(MENU_CORNER_RADIUS),
-            color = MaterialTheme.colorScheme.surfaceContainer,
+            // D119: the menu sits on the pure canvas color, white in light and black in dark, with no tint; its edge
+            // is the shadow and a 1 dp outline-variant outline, because a black menu over a black page has no shadow.
+            color = trackMenuContainerColor(MaterialTheme.colorScheme),
+            border = BorderStroke(width = MENU_OUTLINE_WIDTH, color = MaterialTheme.colorScheme.outlineVariant),
             shadowElevation = MENU_ELEVATION,
         ) {
-            Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
+            Column(
+                modifier = Modifier
+                    .verticalScroll(rememberScrollState())
+                    .padding(bottom = FOCUS_RING_OUTSET),
+            ) {
                 // What:     `Text` draws the track name as the heading above the action rows.
                 // Why:      D7 headed the menu with the track name, kept to one line with an ellipsis.
                 //
@@ -456,7 +518,11 @@ fun trackMenuPopup(
                             top = ROW_VERTICAL_PADDING,
                             bottom = ROW_VERTICAL_PADDING,
                         ),
-                        modifier = Modifier.widthIn(min = ITEM_MIN_TARGET).heightIn(min = ITEM_MIN_TARGET),
+                        modifier = Modifier
+                            .padding(horizontal = FOCUS_RING_OUTSET)
+                            .widthIn(min = ITEM_MIN_TARGET)
+                            .heightIn(min = ITEM_MIN_TARGET)
+                            .keyboardFocusRing(visible = activeRow == index, shape = RectangleShape),
                     )
                 }
             }

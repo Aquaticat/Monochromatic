@@ -39,4 +39,23 @@ class RescanPlanTest {
         assertFalse(plan.signal())
         assertTrue(plan.loadFinished())
     }
+
+    /** Returning to the front asks for a rescan once the library has loaded, and asks for none before. */
+    @Test
+    fun returningToTheFrontAsksForARescanOnlyAfterTheFirstLoad() {
+        val plan = RescanPlan()
+        assertFalse("the first load reads the disk itself", plan.foreground(libraryLoaded = false))
+        assertTrue(plan.foreground(libraryLoaded = true))
+    }
+
+    /** A return that comes while a load runs is kept and answered once, like any other signal. */
+    @Test
+    fun aReturnDuringALoadIsAnsweredOnceWhenTheLoadEnds() {
+        val plan = RescanPlan()
+        plan.loadStarted()
+        assertTrue(plan.foreground(libraryLoaded = true))
+        assertFalse("the debounced signal waits for the load", plan.signal())
+        assertTrue(plan.loadFinished())
+        assertFalse(plan.loadFinished())
+    }
 }

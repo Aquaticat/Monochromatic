@@ -662,6 +662,10 @@ import androidx.compose.runtime.DisposableEffect
 // ```ts
 // import type { Lifecycle } from "androidx/lifecycle";
 // ```
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import androidx.lifecycle.Lifecycle
 
 // What:     `import androidx.lifecycle.LifecycleEventObserver` is the observer type that receives lifecycle events.
@@ -1301,7 +1305,7 @@ class MainActivity : ComponentActivity() {
                 // ```ts
                 // local.rescan();
                 // ```
-                local.rescan()
+                local.rescanOnForeground()
             }
         }
 
@@ -1376,7 +1380,13 @@ class MainActivity : ComponentActivity() {
         // ```ts
         // this.heldFolderName = heldRoot(this)?.name ?? null;
         // ```
-        heldFolderName = LibraryRoot.heldRoot(this)?.let { treeUri -> heldFolderNameOf(treeUri) }
+        // The grant is read on the I/O dispatcher (its preference file and permission list are disk reads), so the
+        // library heading shows its generic name for the first frame when a folder is held.
+        lifecycleScope.launch {
+            heldFolderName = withContext(Dispatchers.IO) {
+                LibraryRoot.heldRoot(this@MainActivity)?.let { treeUri -> heldFolderNameOf(treeUri) }
+            }
+        }
         // What:     `Log.i(LOG_TAG, "MainActivity.onCreate")` logs an info line at activity
         //           creation. There is no variant suffix because the current build has one engine
         //           and no `BuildConfig.FLAVOR` constant.
@@ -1583,7 +1593,7 @@ class MainActivity : ComponentActivity() {
         // ```ts
         // this.binder?.rescan();
         // ```
-        binder?.rescan()
+        binder?.rescanOnForeground()
     }
 
     // What:     `override fun onStop() { ... }` overrides the lifecycle hook called when the

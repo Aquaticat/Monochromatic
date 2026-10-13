@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
-<manifest xmlns:android='http://schemas.android.com/apk/res/android'>
+<manifest xmlns:android='http://schemas.android.com/apk/res/android' xmlns:tools='http://schemas.android.com/tools'>
   <!-- Debug builds log main-thread I/O through StrictMode (see DebugApplication). -->
-  <application android:name='.DebugApplication'>
+  <application android:name='.DebugApplication' tools:replace='android:name'>
     <!-- Debug-only host that renders the production player screen over authored sample data for screenshots. -->
     <activity
       android:name='.ProductionScreenActivity'

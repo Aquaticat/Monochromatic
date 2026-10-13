@@ -41,8 +41,8 @@ class LibraryFeed(
     /** Tracks found so far in arrival order. */
     private val arrival = ArrayList<Track>()
 
-    /** Shared prefix of the raw paths found so far. */
-    private val prefix = CommonPrefix()
+    /** Shared prefix of the raw paths found so far, created with the first track because its URI names the root. */
+    private var prefix: CommonPrefix? = null
 
     /** Number of leading segments that the paths in the index have lost. */
     private var stripped: Int = 0
@@ -56,10 +56,12 @@ class LibraryFeed(
         if (added.isEmpty()) {
             return
         }
-        added.forEach { track -> prefix.add(track.displayPath) }
+        /** Shared prefix of this scan, cut at the library root named by the first track's source. */
+        val shared: CommonPrefix = prefix ?: CommonPrefix(displayRootOf(added.first().uri)).also { prefix = it }
+        added.forEach { track -> shared.add(track.displayPath) }
         arrival.addAll(added)
-        /** Segments that every path found so far shares. */
-        val strip: Int = prefix.count
+        /** Segments that every path found so far shares, up to the library root. */
+        val strip: Int = shared.count
         /** Display paths of the new tracks under the shared prefix. */
         val names: List<String> = added.map { track -> relativeOf(track.displayPath, strip) }
         search.append(generation, names, added.map { track -> track.uri })

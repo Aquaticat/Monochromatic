@@ -17,16 +17,6 @@ package dev.monochromatic.musicplayer.core
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
-// What:     `private const val FOCUS_LAYER_OPACITY: Double = 0.10` is the focus state layer's opacity.
-// Why:      It must equal `FOCUS_LAYER_ALPHA` of the app package, which the core test cannot import.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// const FOCUS_LAYER_OPACITY = 0.1;
-// ```
-/** Opacity of the on-surface layer under the focus ring, equal to the value that the drawing code uses. */
-private const val FOCUS_LAYER_OPACITY: Double = 0.10
-
 // What:     `private const val RING_MINIMUM_RATIO: Double = 3.0` is the minimum contrast of a user interface part.
 // Why:      The review asked every focus indicator for 3 to 1 or better against the surface it sits on.
 //
@@ -39,14 +29,14 @@ private const val RING_MINIMUM_RATIO: Double = 3.0
 
 // What:     `class FocusRingContrastTest` measures the ring color against every surface in both appearances.
 // Why:      The ring is drawn in the primary role, so the derived primary must stay 3 to 1 away from the canvas,
-//           the deck, the playing row, the menu surface, the selected fill and each of them under the focus layer,
-//           for the baseline root and for a sweep of accent roots.
+//           the deck, the playing row, the menu surface and the selected fill, for the baseline root and for a sweep
+//           of accent roots. Focus adds no fill (D117), so the surfaces are measured as they are.
 //
 // In TS you'd write (pseudocode):
 // ```ts
 // describe("focus ring contrast", () => { /* cases */ });
 // ```
-/** Checks that the primary role, which the focus ring uses, reaches 3 to 1 on every surface and under the layer. */
+/** Checks that the primary role, which the focus ring uses, reaches 3 to 1 on every surface. */
 class FocusRingContrastTest {
     /** Accent roots: the baseline, six hues at medium lightness and chroma, and the grays and extremes. */
     private fun roots(): List<Srgb8?> {
@@ -72,17 +62,16 @@ class FocusRingContrastTest {
         "selected-fill" to set.secondaryContainer,
     )
 
-    /** Checks the ring on every surface of one scheme, at rest and under the focus layer. */
+    /** Checks the near ring on every surface of one scheme, and the outer ring against the near ring. */
     private fun assertRingContrast(label: String, set: RoleSet) {
         for ((name, surface) in surfaces(set)) {
-            /** The surface as drawn under the focus state layer of the on-surface role. */
-            val layered: Srgb8 = compositeOver(set.onSurface, FOCUS_LAYER_OPACITY, surface)
-            for ((state, background) in listOf("at rest" to surface, "under the focus layer" to layered)) {
-                /** Contrast of the ring against the surface in this state. */
-                val ratio: Double = contrastRatio(set.primary, background)
-                assertTrue("$label ring on $name $state: $ratio", ratio >= RING_MINIMUM_RATIO)
-            }
+            /** Contrast of the near ring, the primary role, against the surface. */
+            val ratio: Double = contrastRatio(set.primary, surface)
+            assertTrue("$label near ring on $name: $ratio", ratio >= RING_MINIMUM_RATIO)
         }
+        /** Contrast of the outer ring, the on-primary role, against the near ring it surrounds. */
+        val outerRatio: Double = contrastRatio(set.onPrimary, set.primary)
+        assertTrue("$label outer ring on the near ring: $outerRatio", outerRatio >= RING_MINIMUM_RATIO)
     }
 
     /** The ring reaches 3 to 1 on every surface for the baseline root, in light and in dark. */

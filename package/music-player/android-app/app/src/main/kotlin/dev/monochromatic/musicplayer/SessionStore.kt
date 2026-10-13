@@ -251,6 +251,24 @@ object SessionStore {
         }
     }
 
+    // What:     `fun warmUp(context: Context)` reads the session file in full.
+    // Why:      The first-run decision and the restore read it on the main thread; reading it first on a worker thread
+    //           leaves it in memory, so those reads do not touch the disk (StrictMode flagged 529 ms there).
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // function warmUp(): void { storage.readAll(); }
+    // ```
+    /** Reads every saved session value, off the main thread, so a later read on the main thread finds it in memory. */
+    fun warmUp(context: Context) {
+        Log.i(LOG_TAG, "warm-up read ${prefs(context).all.size} saved values")
+        audioAccessRequestedCache = prefs(context).getBoolean(KEY_AUDIO_ACCESS_REQUESTED, false)
+    }
+
+    /** The music-access request flag as last read or written here; the first-run decision asks on every frame. */
+    @Volatile
+    private var audioAccessRequestedCache: Boolean? = null
+
     // What:     `fun loadAudioAccessRequested(context: Context): Boolean` reads the request flag.
     // Why:      The first-run decision reads it on every composition, and a missing flag means no request was made yet.
     //
@@ -259,8 +277,17 @@ object SessionStore {
     // function loadAudioAccessRequested(context: Context): boolean { return storage.getBoolean(KEY, false); }
     // ```
     /** Returns whether this app has already asked Android for music access, or false when nothing was saved. */
-    fun loadAudioAccessRequested(context: Context): Boolean =
-        prefs(context).getBoolean(KEY_AUDIO_ACCESS_REQUESTED, false)
+    fun loadAudioAccessRequested(context: Context): Boolean {
+        /** The flag as it was last read or written in this process, or null before the first of either. */
+        val known: Boolean? = audioAccessRequestedCache
+        if (known != null) {
+            return known
+        }
+        /** The flag read from the preference file. */
+        val stored: Boolean = prefs(context).getBoolean(KEY_AUDIO_ACCESS_REQUESTED, false)
+        audioAccessRequestedCache = stored
+        return stored
+    }
 
     // What:     `fun saveAudioAccessRequested(context: Context, requested: Boolean)` writes the request flag.
     // Why:      The flag is written before the permission prompt opens, so a process death during the prompt still
@@ -273,6 +300,7 @@ object SessionStore {
     // ```
     /** Records whether this app has asked Android for music access. */
     fun saveAudioAccessRequested(context: Context, requested: Boolean) {
+        audioAccessRequestedCache = requested
         prefs(context).edit {
             putBoolean(KEY_AUDIO_ACCESS_REQUESTED, requested)
         }
@@ -408,5 +436,5 @@ object SessionStore {
     // ```
     /** Opens the app-private session preference file. */
     private fun prefs(context: Context): SharedPreferences =
-        context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        context.applicationContext.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
 }
