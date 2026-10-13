@@ -58,6 +58,9 @@ const l = tagged({ tag: 'auto-mode-input-receipt-budget', },);
  @throws {@link InputReceiptBudgetError} for unsupported counter records
  */
 function readInputUsage(input: unknown,): InputUsage {
+  /**
+   Keep counter-shape diagnostics within their validation boundary.
+   */
   const rl = tagged({ tag: readInputUsage.name, l, },);
   rl.debug('validating original input usage counters',);
   if ((input === null) || (typeof input !== 'object') || isProxy(input,)
@@ -66,14 +69,26 @@ function readInputUsage(input: unknown,): InputUsage {
     rl.debug('input usage does not match the ordinary counter record profile',);
     throw new InputReceiptBudgetError('Native input usage requires its ordinary counter record',);
   }
+  /**
+   Inspect occurrence count without evaluating an accessor.
+   */
   const count = Object.getOwnPropertyDescriptor(input, 'count',);
+  /**
+   Inspect serialized-record size independently of the count descriptor.
+   */
   const bytes = Object.getOwnPropertyDescriptor(input, 'bytes',);
   if (count === undefined || bytes === undefined
     || !Object.hasOwn(count, 'value',) || !Object.hasOwn(bytes, 'value',)) {
     rl.debug('input usage is missing data counters',);
     throw new InputReceiptBudgetError('Native input usage is outside its counter profile',);
   }
+  /**
+   Descriptor shape does not establish a valid counter domain.
+   */
   const countValue: unknown = count.value;
+  /**
+   Retain byte usage as untrusted until its numeric checks succeed.
+   */
   const byteValue: unknown = bytes.value;
   if (typeof countValue !== 'number' || !Number.isSafeInteger(countValue,) || countValue < 0
     || typeof byteValue !== 'number' || !Number.isSafeInteger(byteValue,) || byteValue < 0) {
@@ -106,9 +121,18 @@ function readInputUsage(input: unknown,): InputUsage {
 export function assertOriginalInputBudget(
   { resource, session, }: { readonly resource: unknown; readonly session: unknown; },
 ): void {
+  /**
+   Attribute aggregate refusal separately from record-shape validation.
+   */
   const rl = tagged({ tag: assertOriginalInputBudget.name, l, },);
   rl.debug('checking shared original input receipt limits',);
+  /**
+   Resource ownership remains the fixed reader's responsibility.
+   */
   const resourceUsage = readInputUsage(resource,);
+  /**
+   Session usage joins the same aggregate without receiving another allowance.
+   */
   const sessionUsage = readInputUsage(session,);
   if (resourceUsage.count + sessionUsage.count > INPUT_COUNT_LIMIT
     || resourceUsage.bytes + sessionUsage.bytes > INPUT_BYTE_LIMIT) {
