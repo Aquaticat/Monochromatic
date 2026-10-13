@@ -262,7 +262,9 @@ Per the lane brief's Trailing gates decision, these gates were not run before th
 ## Choices open to veto
 
 - The hk cleanup is ported as a library module with no runnable entry.
-  The root task `cleanup:hk-git-config` (in the root `mise.toml`) still runs the TypeScript file.
+  The root task `cleanup:hk-git-config` (in the root `mise.toml`) ran the TypeScript file;
+  it was retired on 2026-10-13,
+  and the module has no consumer.
   A runnable entry needs a new `[[bin]]` in the native crate or a subcommand, and a root `mise.toml` edit;
   both are shared files outside this lane, so the integrator decides the entry.
 - The hk cleanup prints no `info` lines, which the TypeScript prints with `rl.info`.
@@ -292,8 +294,8 @@ Per the lane brief's Trailing gates decision, these gates were not run before th
 - `lib.rs` gained four `pub mod` declarations at its end (`maintenance_decision`, `maintenance_run`,
   `maintenance_hk_config`, `signal_relay`), each with a doc comment.
 - `bin/native-planted-controls.mjs` gained seven control objects before the array's closing bracket.
-- `src/native/maintenance_hk_config.rs` does not run under the native binary; the root `cleanup:hk-git-config` task
-  still runs TypeScript.
+- `src/native/maintenance_hk_config.rs` does not run under the native binary;
+  the root `cleanup:hk-git-config` task ran TypeScript and was retired on 2026-10-13.
 - Clippy: the five findings listed under `Gate results` are in base files this lane did not touch.
   They make the crate-level Clippy gate fail on the base branch; the integrator should fix them there.
 - Git versions: the maintenance and signal tests passed against host Git 2.55.0 and, in the container, against Git
