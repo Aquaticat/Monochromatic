@@ -194,6 +194,95 @@ Filed in:
 - [Translation repair handover 2026-09-06: the Mio12 wording follow-up of 2026-09-10](translation-repair-handover-2026-09-06-checkpoint-2026-09-10-mio12-wording-follow-up.md)
 - [Translation repair handover 2026-09-06: the Mio passes of 2026-09-09 and 2026-09-10 and the state before them](translation-repair-handover-2026-09-06-passes-mio8-to-mio12-and-handoff-state-2026-09-07-to-09-10.md)
 
+### 2026-10-13: paused for a hardware change, with the third review's fixes uncommitted
+
+The owner stopped the session at about 18:00 UTC to change the machine's processor.
+This checkpoint follows the one of 2026-10-12.
+Nothing was running when it was written:
+no pass,
+no gate,
+no agent.
+
+- LANDED.
+  The history archive is filed by what each file holds,
+  in `c05ac36b8c` (the guard) and `33d0c875ae` (the docs),
+  both pushed:
+  twelve groups named by phase or span of dates,
+  each an index over files named for one subject,
+  none past 916 lines.
+  An independent reading of the first re-filing found a file of unrelated items,
+  four group names untrue of part of their files,
+  a cut in the middle of a thought and index headings with nothing under them;
+  each is fixed in that commit.
+  A second independent reading of those fixes is still owed.
+- THE THIRD REVIEW.
+  The third independent review of the consistency pass proved eight defects in `e91da9ea8f`.
+  Their fixes are written in three agent worktrees under `~/temp/agent/tr-fan`,
+  each at `e91da9ea8f`,
+  and none is committed,
+  merged or recorded in the ledger:
+    - `w140`,
+      quote marks and word joints:
+      a single mark at a quote's edge that pairs with nothing is taken off,
+      the located span holds the apostrophe of the word at its edge and leaves a quotation mark where it is,
+      and the Unicode hyphens and the modifier letter apostrophe join as the ASCII ones do.
+      New modules `consistency-single-marks.ts` and `consistency-word-joints.ts`;
+      `consistency-edge-marks.ts` rewritten;
+      `consistency-fold.ts` and `text-fold-barrel.ts` changed.
+      Build,
+      type check,
+      57 consistency test files and lint were clean (`s157/cycle-1.log`);
+      the source scans were not run there.
+      `CONSISTENCY_CACHE_VERSION` stays 4,
+      on the word of `consistency-cache-version.ts` that a change to how quotes are located moves no key.
+    - `w142`,
+      standing and four cases that could not fail:
+      a setext heading told by its lines,
+      HTML table markup and inline preformatted text given a standing.
+      Complete:
+      lint clean,
+      49 scans pass,
+      patch in `s156/patch.diff`,
+      report with four ledger paragraphs in `s156/handback-n106.md`.
+      This one changes what a choice sheet says,
+      so whether the cache version moves is decided at the merge.
+    - `w141`,
+      splice arbitration and the overlap record,
+      stopped part way:
+      a splice is held to every located place of another group,
+      a place whose words an applied replacement changed is recorded `overlapped` and names what it gave way to,
+      and the artifact generation moves from 16 to 17.
+      Lint and the scans were clean after its last edit;
+      the type check,
+      the touched test files,
+      the four probes and all 26 mutants were not run on its last build.
+      `s155/handback-n105.md` lists every file,
+      what is proven and the exact steps left,
+      and the four choices its author left open to veto.
+- THE GEMMA SEATS.
+  Unchanged from the checkpoint of 2026-10-12:
+  nothing waits on them.
+- NEXT.
+  After the restart,
+  unlock the volume that holds `~/temp/agent` and confirm the three worktrees are as described
+  (`git status` in each;
+  nothing else holds their work).
+  Finish `w141` by the steps in its report.
+  Merge the three into one keyless worktree;
+  they change disjoint files except the barrels,
+  where `w141` adds `consistency-apply-barrel.ts` and `w140` adds exports to `text-fold-barrel.ts`.
+  Run the full gate on the merged tree,
+  have a reviewer who wrote none of it read the merged fixes,
+  write the ledger entries
+  (the first review's and the second review's decisions,
+  the third review's eight defects,
+  and the slips made on the way),
+  then commit the cases first and the code second;
+  a draft of the cases commit's message is in `s157/msg-tests.txt`.
+  Then walk "Before a run launches" and relaunch `TianqiChen666` as `TianqiChen66624`,
+  reading the refrain and the repeated sentence for one rendering each.
+  The second reading of the history re-filing can run beside any of this.
+
 ### 2026-10-12: the four patches merged, reviewed, and the relaunch of TianqiChen666
 
 This checkpoint follows the one of 2026-10-11 and says what landed after it.
