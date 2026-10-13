@@ -645,6 +645,116 @@ not completed domain closure,
 a maintained host launch path,
 or installed activation.
 
+## Maintained bounded unit incorporation
+
+Main `f82323d386` ports `unit-adoption.ts` and the structural pair selector,
+with binding,
+meaning,
+and type siblings.
+The native compiler now imports those maintained consumers through the existing stager.
+Original batch authentication and dependency revalidation remain with native owners.
+The accepted same-source two-unit profile and 64-source opportunity bound remain unchanged.
+
+Scope still requires the original member,
+exact adopter/target projections,
+original authority/source membership,
+and matching original request scope.
+Primitive adopter meaning cannot be silently combined with adoption-only control meaning.
+Target permission,
+prohibition,
+prerequisite,
+or no-op meaning remains independent of incorporation.
+Independent implementation-fact gaps stay unresolved.
+
+`proc_b660` passed initial build/types.
+Built-artifact controls exercise meaning combinations,
+structural selection,
+original identity,
+authority/request scope,
+prior lowering,
+and malformed or unadmitted inputs.
+`proc_376a` reported documentation,
+limit naming,
+and nullable-number condition diagnostics.
+`a56b345955` preserves the same limit with an explicit constant and checks prior lowering explicitly.
+`proc_2cf2` passed formatting/lint with zero diagnostics.
+Final type,
+unit,
+and native verification remain pending.
+No domain closure,
+production semantic qualification,
+installed host,
+or genuine approval result is claimed.
+
+## Maintained source-local heading consumer
+
+Main `876b63c06c` adds `package/pi-plugin/auto-mode/src/heading-context.ts` and its reference types.
+Private `bbd6a767` removes the duplicated heading-consumption body in favor of the maintained export.
+The native compiler still authenticates original batch membership and candidate issuance,
+and revalidates dependencies after code policy callbacks.
+No heading estimate lowers a directive,
+assigns authority,
+or closes the host domain.
+
+`proc_7cbf` passed initial build/types;
+`proc_99c3` passed formatting/lint on the changed files with zero diagnostics.
+Built-artifact controls cover equal independent groups,
+original references and callback receiver,
+admission/abstention,
+invalid selection and question shapes,
+and exact falsy callback failures.
+A disabled empty selection remains supported;
+missing policy or candidate handles reject selected malformed input.
+Those malformed shapes are outside native owner-issued records.
+Final Main `8f6bf8e93b` passed build/types `proc_3577` and package units plus four-file lint `proc_a2d4`.
+The lint result had zero diagnostics.
+`proc_4580` passed exact maintained-export identity and all ten native heading scenarios,
+with empty child stderr and zero provider requests or protected executions.
+`proc_506b` passed the complete action-policy regression task.
+Original equal-text groups remain distinct;
+heading `none` discharges only its own source-local content obligation,
+not the independent request-domain hold.
+
+A read-only Git diff invocation emitted `@monochromatic-dev/module-logger`'s diagnostic:
+`logger internal error: sink verification failed for entry 3: Timed out after 5000ms: sink 3 verify`.
+It exceeded its command deadline before the planned commit/build calls started.
+The existing [sink-verification investigation](../troubleshooting/cli-git-logger-sink-verify-timeout.md)
+does not establish a cause for this occurrence.
+The background diff reader `proc_b03c` completed and confirmed formatting-only changes.
+No logger setting,
+Git policy,
+or resource limit was changed;
+the diagnostic does not establish a cause for the delay.
+
+## Maintained bootstrap semantic admission
+
+Main `ad46df49bf` ports configured-policy copying and original program-profile matching into
+`package/pi-plugin/auto-mode/src/semantic-admission-policy.ts` and `semantic-admission-scope.ts`.
+Private `dc349792` delegates through the incumbent maintained-artifact link.
+The native adapter still fixes definition IDs and the expected model from the actual wire contract.
+A caller's extra model field is not read or used to override that contract.
+No default acceptance,
+production qualification,
+source authority,
+or complete-domain policy is added.
+
+Initial build/types passed `proc_cf5e`.
+Formatter `proc_648b` reported the nullable-return type,
+an unbound fixture method,
+and style diagnostics.
+The configured-policy copier now requires present input;
+absence stays with native bootstrap and still means no configured consumer.
+No lint rule was suppressed or relaxed.
+Final Main `0f79ccf033` passed build/types `proc_329e` and package units plus six-file lint `proc_8f09`.
+The lint result had zero diagnostics.
+Private `0ca19921` verifies that native bootstrap preserves absent policies and ignores caller model overrides.
+`proc_4711` passed exact maintained-export identity and all 32 native compiler scenarios,
+with empty child stderr and zero provider requests.
+`proc_784c` passed the complete action-policy regression task.
+These checks do not qualify model accuracy,
+close the governing domain,
+or install the migrated host.
+
 ## Maintained whole-request content consumer
 
 `package/pi-plugin/auto-mode/src/request-material.ts` and `request-material-obligations.ts`

@@ -7,7 +7,9 @@ use super::*;
 use crate::auto_push_single_flight::PushGit;
 use crate::policy_registry::{PolicyId, Severity};
 use crate::repository_facts::RepositoryFacts;
-use crate::test_support::{fixture, git, remove};
+use crate::config_schema::ForbiddenStringsOptions;
+use crate::scanner_test_support::{needle, run_isolated};
+use crate::test_support::{executable, fixture, git, remove};
 use crate::wrapper_controls::no_controls;
 use std::path::PathBuf;
 
@@ -34,6 +36,11 @@ fn fixture_environment() -> Vec<(OsString, OsString)> {
 
 /// A repository with a baseline commit (`stable.txt`) and one landed commit that adds `landed.txt`.
 fn landed_repository(name: &str, landed_bytes: &str) -> (PathBuf, String) {
+    return landed_file(name, "landed.txt", landed_bytes);
+}
+
+/// A repository with a baseline commit (`stable.txt`) and one landed commit that adds `file`.
+fn landed_file(name: &str, file: &str, landed_bytes: &str) -> (PathBuf, String) {
     let root = fixture(name);
     git(&root, &["init", "--quiet", "--initial-branch=main"]);
     git(&root, &["config", "user.email", "cli-git@example.invalid"]);
@@ -41,8 +48,8 @@ fn landed_repository(name: &str, landed_bytes: &str) -> (PathBuf, String) {
     std::fs::write(root.join("stable.txt"), "stable content\n").expect("stable file");
     git(&root, &["add", "stable.txt"]);
     git(&root, &["commit", "--quiet", "-m", "baseline"]);
-    std::fs::write(root.join("landed.txt"), landed_bytes).expect("landed file");
-    git(&root, &["add", "landed.txt"]);
+    std::fs::write(root.join(file), landed_bytes).expect("landed file");
+    git(&root, &["add", file]);
     git(&root, &["commit", "--quiet", "-m", "landed"]);
     let landed = String::from_utf8_lossy(&git(&root, &["rev-parse", "HEAD"]).stdout)
         .trim()
@@ -75,6 +82,7 @@ fn request<'request>(
         arguments: &[],
         global_prefix,
         overlay,
+        environment: overlay,
         config,
         controls,
     };
@@ -323,5 +331,152 @@ fn the_landed_delta_lists_only_the_changed_paths_as_added() {
         })
         .collect();
     assert_eq!(paths, vec!["landed.txt".to_owned()], "{paths:?}");
+    remove(&root);
+}
+
+/// The default configuration with the forbidden-strings policy at error and its options chosen.
+fn with_scanner(options: ForbiddenStringsOptions) -> PolicyConfig {
+    let mut config: PolicyConfig = with_severity(PolicyId::ForbiddenStrings, Severity::Error);
+    config.forbidden_strings = options;
+    return config;
+}
+
+/// Whether the gate reported a forbidden-strings finding.
+fn reports_the_needle(outcome: &PostCommitGate) -> bool {
+    return outcome.events.iter().any(|event| {
+        return matches!(event, PolicyEvent::Finding(finding) if finding.policy == PolicyId::ForbiddenStrings);
+    });
+}
+
+/// A repository whose landed commit holds the planted token and whose worktree holds `rules.txt` naming it.
+fn landed_needle() -> (PathBuf, String) {
+    let (root, landed) = landed_repository("pc-scanner", format!("first\n{}\n", needle()).as_str());
+    std::fs::write(root.join("rules.txt"), format!("{}\n", needle())).expect("rules file");
+    return (root, landed);
+}
+
+/// The configuration's rules file reaches the post-commit scanner: with the built-in rules off, the file is the
+/// only rule, and the landed token is found in it.
+#[test]
+fn the_configured_rules_file_reaches_the_post_commit_scanner() {
+    run_isolated(
+        "post_commit::tests::the_configured_rules_file_reaches_the_post_commit_scanner",
+        "pc-config-rules",
+        configured_rules,
+    );
+}
+
+/// The body of `the_configured_rules_file_reaches_the_post_commit_scanner`.
+fn configured_rules(_work: &Path) {
+    let (root, landed) = landed_needle();
+    let prefix = prefix_for(&root);
+    let overlay = fixture_environment();
+    let outcome = run_post_commit_gate(&request(
+        &landed,
+        &prefix,
+        &overlay,
+        with_scanner(ForbiddenStringsOptions {
+            builtin_rules: false,
+            rules_file: Some(String::from("rules.txt")),
+        }),
+        no_controls(),
+    ));
+    assert!(outcome.blocked, "{outcome:?}");
+    assert!(reports_the_needle(&outcome), "{outcome:?}");
+    remove(&root);
+}
+
+/// The invocation's `FORBIDDEN_STRINGS_RULES` reaches the post-commit scanner when the configuration names no file.
+#[test]
+fn the_rules_variable_reaches_the_post_commit_scanner() {
+    run_isolated(
+        "post_commit::tests::the_rules_variable_reaches_the_post_commit_scanner",
+        "pc-variable-rules",
+        variable_rules,
+    );
+}
+
+/// The body of `the_rules_variable_reaches_the_post_commit_scanner`.
+fn variable_rules(_work: &Path) {
+    let (root, landed) = landed_needle();
+    let prefix = prefix_for(&root);
+    let overlay = fixture_environment();
+    let mut environment = fixture_environment();
+    environment.push((OsString::from("FORBIDDEN_STRINGS_RULES"), OsString::from("rules.txt")));
+    let mut asked = request(
+        &landed,
+        &prefix,
+        &overlay,
+        with_scanner(ForbiddenStringsOptions {
+            builtin_rules: false,
+            rules_file: None,
+        }),
+        no_controls(),
+    );
+    asked.environment = environment.as_slice();
+    let outcome = run_post_commit_gate(&asked);
+    assert!(outcome.blocked, "{outcome:?}");
+    assert!(reports_the_needle(&outcome), "{outcome:?}");
+    remove(&root);
+}
+
+/// The default configuration with `markdown/autofix` at warn, since the policy is off by default.
+fn with_markdown() -> PolicyConfig {
+    return with_severity(PolicyId::MarkdownAutofix, Severity::Warn);
+}
+
+/// A PATH holding `bin` and the system programs.
+fn path_with(bin: &Path) -> Vec<(OsString, OsString)> {
+    let mut path: OsString = bin.as_os_str().to_os_string();
+    path.push(":/usr/bin:/bin");
+    return vec![(OsString::from("PATH"), path)];
+}
+
+/// A landed Markdown file is checked by the linter found on the invocation's PATH, not on an empty one.
+#[test]
+fn the_linter_is_found_on_the_invocations_path() {
+    let (root, landed) = landed_file("pc-linter", "landed.md", "# T\n\nplain\n");
+    let bin: PathBuf = root.join("linter-bin");
+    std::fs::create_dir(&bin).expect("linter directory");
+    executable(bin.join("monochromatic-lint").as_path(), b"#!/bin/sh\ncat\n");
+    let prefix = prefix_for(&root);
+    let overlay = fixture_environment();
+    let environment = path_with(bin.as_path());
+    let mut asked = request(&landed, &prefix, &overlay, with_markdown(), no_controls());
+    asked.environment = environment.as_slice();
+    let outcome = run_post_commit_gate(&asked);
+    assert!(!outcome.blocked, "{outcome:?}");
+    assert!(outcome.events.is_empty(), "{outcome:?}");
+    remove(&root);
+}
+
+/// Without a linter on the invocation's PATH a landed Markdown file is unchecked and blocks the backup, naming the
+/// post-commit trigger; the same file, once the configuration excludes it, needs no linter.
+#[test]
+fn the_markdown_options_reach_the_post_commit_policy() {
+    let (root, landed) = landed_file("pc-markdown-options", "landed.md", "# T\n\nplain\n");
+    let prefix = prefix_for(&root);
+    let overlay = fixture_environment();
+    let unchecked = run_post_commit_gate(&request(&landed, &prefix, &overlay, with_markdown(), no_controls()));
+    assert!(unchecked.blocked, "{unchecked:?}");
+    assert!(
+        unchecked.events.iter().any(|event| {
+            return matches!(
+                event,
+                PolicyEvent::EngineFailure {
+                    code: EngineFailureCode::PolicyIncomplete,
+                    trigger: Some(Trigger::PostCommit),
+                    policy: Some(PolicyId::MarkdownAutofix),
+                    ..
+                }
+            );
+        }),
+        "{unchecked:?}"
+    );
+    let mut config: PolicyConfig = with_markdown();
+    config.markdown_autofix.exclude = vec![String::from("landed.md")];
+    let excluded = run_post_commit_gate(&request(&landed, &prefix, &overlay, config, no_controls()));
+    assert!(!excluded.blocked, "{excluded:?}");
+    assert!(excluded.events.is_empty(), "{excluded:?}");
     remove(&root);
 }

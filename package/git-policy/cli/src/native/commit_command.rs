@@ -216,6 +216,7 @@ fn post_commit(command: &CommitCommand<'_>, invocation: &CommitInvocation<'_>, l
         arguments: command.arguments,
         global_prefix: command.context.global_prefix.as_slice(),
         overlay: command.context.overlay.as_slice(),
+        environment: command.environment,
         config: command.config.policies.clone(),
         controls: command.controls.clone(),
     };

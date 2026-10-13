@@ -111,8 +111,10 @@ Option A, shaping every line at the wrap width, is affordable on a worker thread
 - Parley's `OverflowWrap::Anywhere` and `set_line_break_override` behaved as assumed, no row start fell inside a grapheme
   in the cases tried, and the layout width scales with the builder scale (use `width * scale`).
   The syntax brush runs of production were not pushed, so shaping cost is a lower bound.
-  966 of 57,938 rows reported an advance wider than the width at width 600; the cause is not investigated
-  (a hanging space or the indent are the candidates).
+  966 of 57,938 rows reported an advance wider than the width at width 600. The advance includes the hanging space;
+  the visible advance fits every row (test `every_row_of_real_source_fits_its_width`, 98,020 rows of the crate's own
+  source at widths 600, 900, 1400 and scales 1, 2). Ten rows break inside a token that has no rule opportunity
+  and is wider than a row, which is the intended fallback; the test excuses exactly those.
 
 The decision follows from the numbers and from the smoothness requirement:
 shaping and re-breaking run on the worker in chunks, starting at the viewport and spreading outward;

@@ -406,3 +406,128 @@ fn row_of_byte(row: &ShapedRow, byte: usize) -> usize {
     }
     return row.visual_rows().saturating_sub(1);
 }
+
+/// Lines of the crate's own Rust source: real code with ordinary identifiers, comments, strings, and long lines.
+fn source_lines() -> Vec<String> {
+    let mut lines = Vec::new();
+    let mut files: Vec<_> = std::fs::read_dir(concat!(env!("CARGO_MANIFEST_DIR"), "/src"))
+        .expect("the source folder is readable")
+        .map(|entry| {
+            return entry.expect("a directory entry").path();
+        })
+        .filter(|path| {
+            return path
+                .extension()
+                .is_some_and(|extension| return extension == "rs");
+        })
+        .collect();
+    files.sort();
+    for path in files {
+        let text = std::fs::read_to_string(&path).expect("a source file is readable");
+        lines.extend(
+            text.lines()
+                .filter(|line| {
+                    return !line.trim().is_empty();
+                })
+                .map(str::to_string),
+        );
+    }
+    return lines;
+}
+
+/// Logical width of the unbroken token around `byte`: the stretch between the nearest rule opportunities on each side.
+fn token_width_around(text: &str, byte: usize, scale: f32) -> f32 {
+    let characters: Vec<(usize, char)> = text.char_indices().collect();
+    let mut start = 0;
+    let mut end = text.len();
+    for pair in characters.windows(2) {
+        let boundary = pair[1].0;
+        if intellij_break(pair[0].1, pair[1].1) {
+            if boundary <= byte {
+                start = boundary;
+            } else {
+                end = boundary;
+                break;
+            }
+        }
+    }
+    let token = &text[start..end];
+    let document = Document::new(token);
+    let mut shaper = TextShaper::new();
+    return shaper
+        .row(&document, 0, scale)
+        .caret_x(token.chars().count(), scale);
+}
+
+/// Row boundaries that are neither a rule opportunity nor inside a token wider than the width a row has.
+///
+/// A token with no opportunity breaks where the width is exceeded, so a boundary inside one is expected.
+fn unexcused_breaks(row: &ShapedRow, width: f32, scale: f32) -> Vec<(char, char)> {
+    let text = row.projection.text.as_str();
+    let indent = continuation_indent(text, space_advance(scale));
+    let mut unexcused = Vec::new();
+    for index in 1..row.visual_rows() {
+        let byte = row.visual_row_bytes(index).expect("row exists").start;
+        let before = text[..byte].chars().last().expect("text before a boundary");
+        let after = text[byte..].chars().next().expect("text after a boundary");
+        if !intellij_break(before, after) && token_width_around(text, byte, scale) <= width - indent
+        {
+            unexcused.push((before, after));
+        }
+    }
+    return unexcused;
+}
+
+/// Real source at the widths and scales the window uses: every row's visible advance fits the width, every row tiles
+/// the text, every boundary is a rule opportunity or inside a token wider than a row, and no row starts inside a
+/// grapheme. An earlier measurement counted rows whose raw advance passed the width (966 of 57,938 at width 600);
+/// the advance includes a hanging space, so this test measures the visible advance.
+#[test]
+fn every_row_of_real_source_fits_its_width() {
+    let lines = source_lines();
+    assert!(lines.len() > 1000, "the crate has source lines to shape");
+    let mut rows = 0;
+    let mut wrapped_lines = 0;
+    let mut inside_tokens = 0;
+    let mut failures = Vec::new();
+    for scale in [1.0, 2.0] {
+        for width in [600.0, 900.0, 1400.0] {
+            let mut shaper = TextShaper::new();
+            for (index, text) in lines.iter().enumerate() {
+                let document = Document::new(text);
+                let row = shaper.wrapped_row(&document, 0, scale, width);
+                rows += row.visual_rows();
+                if row.visual_rows() > 1 {
+                    wrapped_lines += 1;
+                }
+                if !boundaries_are_break_opportunities(&row) {
+                    inside_tokens += 1;
+                }
+                let unexcused = unexcused_breaks(&row, width, scale);
+                if !(rows_tile_the_text(&row)
+                    && rows_fit_width(&row, width, scale)
+                    && unexcused.is_empty()
+                    && rows_start_on_graphemes(&row))
+                {
+                    failures.push(format!(
+                        "line {index} width {width} scale {scale} unexcused {unexcused:?}: {text}"
+                    ));
+                }
+            }
+        }
+    }
+    assert!(
+        wrapped_lines > 100,
+        "some lines wrap at these widths: {wrapped_lines}"
+    );
+    assert!(
+        inside_tokens > 0,
+        "the corpus has a token wider than a row, so the excuse is exercised"
+    );
+    assert!(
+        failures.is_empty(),
+        "{} of {rows} rows broke a rule, first: {:?}",
+        failures.len(),
+        &failures[..failures.len().min(3)]
+    );
+}
