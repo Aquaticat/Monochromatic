@@ -72,6 +72,12 @@ export {
 //region Deterministic migration kernel remains separate from native evidence admission
 
 export { type AuthorizationRequirement, } from './authorization-requirement.ts';
+export {
+  CLAUSE_RELATIONS,
+  type ClauseRelation,
+  type LoweredClause,
+  lowerEstablishedClause,
+} from './clause-lowering.ts';
 export { inspectAuthorizationRequirements, } from './authorization-requirements.ts';
 export {
   type GuardOutcome,
@@ -91,7 +97,22 @@ export {
   InstructionResolutionInputError,
 } from './policy-data.ts';
 
+export {
+  assertOriginalInputBudget,
+  InputReceiptBudgetError,
+} from './input-receipt-budget.ts';
+
 //endregion Deterministic migration kernel
+
+//region Native observation mechanisms do not authenticate frames or authorize execution
+
+export {
+  createNativeQueryObservation,
+  type NativeQueryCapture,
+  type NativeQueryObservation,
+} from './native-query-observation.ts';
+
+//endregion Native observation mechanisms
 
 //region Internal verification exports exercise the same bundled policy as Pi
 
