@@ -209,15 +209,17 @@ They do not prove token expiry or a broken version-pinned helper.
 
 The native manual-push path in
 `package/git-policy/cli/src/native/wrapped_command.rs:535`
-supplies only the child overlay to `PushGit`:
+supplies only the child overlay to `PushGit`.
+This is an annotated source listing,
+not a standalone Rust program:
 
-```rust
-// package/git-policy/cli/src/native/wrapped_command.rs
-let git = PushGit {
-    real_git: context.real_git,
-    cwd,
-    environment: context.overlay,
-};
+```text
+# package/git-policy/cli/src/native/wrapped_command.rs
+535: let git = PushGit {
+536:     real_git: context.real_git,
+537:     cwd,
+538:     environment: context.overlay,
+539: };
 ```
 
 The post-commit path does the same at
@@ -225,15 +227,15 @@ The post-commit path does the same at
 `package/git-policy/cli/src/native/auto_push_single_flight.rs:202`
 clears the environment before applying that field:
 
-```rust
-// package/git-policy/cli/src/native/auto_push_single_flight.rs
-command
-    .current_dir(&git.cwd)
-    .env_clear()
-    .envs(git.environment.iter().map(|pair| {
-        return (&pair.0, &pair.1);
-    }))
-    .args(arguments);
+```text
+# package/git-policy/cli/src/native/auto_push_single_flight.rs
+204: command
+205:     .current_dir(&git.cwd)
+206:     .env_clear()
+207:     .envs(git.environment.iter().map(|pair| {
+208:         return (&pair.0, &pair.1);
+209:     }))
+210:     .args(arguments);
 ```
 
 `package/git-policy/cli/src/native/child_environment.rs:307`
