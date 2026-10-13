@@ -11,4 +11,4 @@ depends = ["lint:types"]
 
 [tasks.test]
 description = "Run native Rust integration tests through nextest"
-run = "cargo nextest run --locked --release --jobs 1 --test-threads 1"
+run = "cargo nextest run --locked --release --build-jobs 1 --test-threads 1"

@@ -74,4 +74,9 @@ This is a standalone Rust crate.
 Rust integration tests run through nextest;
 TypeScript does not test this crate.
 The earlier mixed-language placement in `task-util` was rejected and removed.
-Native fixture migration and verification are pending.
+Native fixtures now invoke the built Rust binary from Rust integration tests.
+Nextest verification is pending.
+
+The installed nextest help identifies `--jobs` as an alias of `--test-threads`.
+Compilation concurrency uses `--build-jobs`.
+The package task sets each independent limit to 1.
