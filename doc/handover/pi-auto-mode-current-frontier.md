@@ -665,13 +665,20 @@ and exact falsy callback failures.
 A disabled empty selection remains supported;
 missing policy or candidate handles reject selected malformed input.
 Those malformed shapes are outside native owner-issued records.
-Final build,
-unit,
-lint,
-and native consumer verification are in progress.
+Final Main `8f6bf8e93b` passed build/types `proc_3577` and package units plus four-file lint `proc_a2d4`.
+The lint result had zero diagnostics.
+`proc_4580` passed exact maintained-export identity and all ten native heading scenarios,
+with empty child stderr and zero provider requests or protected executions.
+`proc_506b` passed the complete action-policy regression task.
+Original equal-text groups remain distinct;
+heading `none` discharges only its own source-local content obligation,
+not the independent request-domain hold.
 
-A read-only Git diff command emitted the existing logger sink-verification timeout
-and exceeded its command deadline before the planned commit/build calls started.
+A read-only Git diff invocation emitted `@monochromatic-dev/module-logger`'s diagnostic:
+`logger internal error: sink verification failed for entry 3: Timed out after 5000ms: sink 3 verify`.
+It exceeded its command deadline before the planned commit/build calls started.
+The existing [sink-verification investigation](../troubleshooting/cli-git-logger-sink-verify-timeout.md)
+does not establish a cause for this occurrence.
 The background diff reader `proc_b03c` completed and confirmed formatting-only changes.
 No logger setting,
 Git policy,

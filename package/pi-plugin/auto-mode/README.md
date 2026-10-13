@@ -470,9 +470,14 @@ It freezes owned results,
 not borrowed candidates,
 evidence,
 or callbacks.
-Final unit,
-lint,
-and native integration checks remain pending.
+Build,
+types,
+package units,
+changed-file lint,
+all native heading scenarios,
+and action-policy regressions passed.
+The private native compiler now calls the exact maintained export.
+This does not close the governing domain or install the migrated host.
 
 ## Migration semantic admission configuration
 
