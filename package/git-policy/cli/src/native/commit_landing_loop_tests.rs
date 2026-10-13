@@ -118,7 +118,7 @@ fn completions_are_retargeted_to_the_replayed_blobs() {
     };
     let record = |path: &str, mode: &str| {
         return AddedPath {
-            path: String::from(path),
+            path: path.as_bytes().to_vec(),
             git_mode: String::from(mode),
             original_oid: String::from("o"),
             intended_oid: String::from("old"),
@@ -131,7 +131,7 @@ fn completions_are_retargeted_to_the_replayed_blobs() {
     )
     .expect("retargeted");
     assert_eq!(retargeted.len(), 1, "{retargeted:?}");
-    assert_eq!(retargeted[0].path, "same.txt");
+    assert_eq!(retargeted[0].path, b"same.txt");
     assert_eq!(retargeted[0].intended_oid, blob);
     assert_eq!(retargeted[0].original_oid, "o");
     remove(root.as_path());
@@ -149,12 +149,17 @@ fn a_lost_race_moves_the_counters_up_by_one() {
 /// A path named by both lists is kept once, in first-seen order.
 #[test]
 fn replay_paths_are_the_union_without_repeats() {
-    let committed: Vec<String> = vec![String::from("a"), String::from("b")];
+    let committed: Vec<Vec<u8>> = vec![b"a".to_vec(), b"b".to_vec()];
     assert_eq!(
-        union_paths(committed.as_slice(), vec![String::from("b"), String::from("c"), String::from("c")]),
-        vec!["a", "b", "c"]
+        union_paths(committed.as_slice(), vec![b"b".to_vec(), b"c".to_vec(), b"c".to_vec()]),
+        vec![b"a".to_vec(), b"b".to_vec(), b"c".to_vec()]
     );
-    assert_eq!(union_paths(&[], Vec::new()), Vec::<String>::new());
+    assert_eq!(union_paths(&[], Vec::new()), Vec::<Vec<u8>>::new());
+    // Names that read alike without being the same bytes stay two paths.
+    assert_eq!(
+        union_paths(&[b"caf\xe9".to_vec()], vec![b"caf\xe8".to_vec(), b"caf\xe9".to_vec()]),
+        vec![b"caf\xe9".to_vec(), b"caf\xe8".to_vec()]
+    );
 }
 
 /// The replay events keep the lost race first, name the base, and add the headers event only for dropped headers.

@@ -158,7 +158,7 @@ fn overlapping_hunks_conflict_and_the_prepared_commit_cherry_picks() {
     let ReplayOutcome::Conflict(conflict) = outcome else {
         panic!("expected a conflict");
     };
-    assert_eq!(conflict.paths, vec![String::from("c.txt")]);
+    assert_eq!(conflict.paths, vec![b"c.txt".to_vec()]);
     assert_eq!(conflict.winning_oid, fixtures.current);
     assert_eq!(conflict.prepared_oid, fixtures.prepared);
     git(fixtures.repo.as_path(), &["checkout", "--quiet", "--detach", fixtures.base.as_str()]);
@@ -278,7 +278,7 @@ fn an_adjacent_edit_without_the_landed_edit_conflicts() {
     let ReplayOutcome::Conflict(conflict) = replay_scene(&fixtures) else {
         panic!("expected a conflict");
     };
-    assert_eq!(conflict.paths, vec![String::from("c.txt")]);
+    assert_eq!(conflict.paths, vec![b"c.txt".to_vec()]);
     remove(fixtures.root.as_path());
 }
 
@@ -320,13 +320,13 @@ fn delete_against_modify_conflicts_either_way_round() {
     let ReplayOutcome::Conflict(first) = replay_scene(&landed_modifies) else {
         panic!("a prepared deletion against a landed modification must conflict");
     };
-    assert_eq!(first.paths, vec![String::from("c.txt")]);
+    assert_eq!(first.paths, vec![b"c.txt".to_vec()]);
     remove(landed_modifies.root.as_path());
     let landed_deletes = custom_scene("replay-commit-delete-landed", b"line 1\nline 2\n", &modify, &delete);
     let ReplayOutcome::Conflict(second) = replay_scene(&landed_deletes) else {
         panic!("a landed deletion against a prepared modification must conflict");
     };
-    assert_eq!(second.paths, vec![String::from("c.txt")]);
+    assert_eq!(second.paths, vec![b"c.txt".to_vec()]);
     remove(landed_deletes.root.as_path());
 }
 

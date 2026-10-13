@@ -8,7 +8,7 @@ fn record(repo: &Path, path: &str, original: &[u8], intended: &[u8], git_mode: &
     let original_oid: String = hash(repo, original);
     let intended_oid: String = hash(repo, intended);
     return AddedPath {
-        path: String::from(path),
+        path: path.as_bytes().to_vec(),
         git_mode: String::from(git_mode),
         original_oid,
         intended_oid,
@@ -241,10 +241,10 @@ fn completion_rewrites_only_originals() {
         None,
     )
     .expect("install");
-    assert_eq!(result.rewritten, vec![String::from("fix.txt")]);
+    assert_eq!(result.rewritten, vec![b"fix.txt".to_vec()]);
     assert_eq!(
         result.conflicted,
-        vec![String::from("edited.txt"), String::from("gone.txt")]
+        vec![b"edited.txt".to_vec(), b"gone.txt".to_vec()]
     );
     assert_eq!(
         std::fs::read(repo.join("fix.txt")).expect("fixed"),

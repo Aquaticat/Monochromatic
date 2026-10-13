@@ -4,6 +4,7 @@
 use super::*;
 use crate::replay_object::parse_raw_commit;
 use crate::test_support::{fixture, git, git_context, git_text, remove, repository};
+use std::ffi::OsStr;
 use std::path::PathBuf;
 
 /// The empty tree of the SHA-1 object format.
@@ -27,18 +28,23 @@ fn lines(second: &str, eleventh: &str) -> String {
 
 /// Base, landed (`main`), and prepared (`prepared`) commits: base is line text, landed edits line 2, prepared edits `prepared_second`.
 fn scenario(name: &str, prepared_second: &str, prepared_eleventh: &str) -> (PathBuf, String, String, String) {
+    return scenario_for_file(name, OsStr::new("c.txt"), prepared_second, prepared_eleventh);
+}
+
+/// The same three commits over the file `file`, whose name may be any bytes.
+fn scenario_for_file(name: &str, file: &OsStr, prepared_second: &str, prepared_eleventh: &str) -> (PathBuf, String, String, String) {
     let root: PathBuf = fixture(name);
     let repo: PathBuf = repository(root.as_path(), "repo");
-    std::fs::write(repo.join("c.txt"), lines("line 2", "line 11")).expect("base");
+    std::fs::write(repo.join(file), lines("line 2", "line 11")).expect("base");
     git(repo.as_path(), &["add", "--all"]);
     git(repo.as_path(), &["commit", "--quiet", "--message=base"]);
     let base: String = rev(repo.as_path(), "HEAD");
     git(repo.as_path(), &["checkout", "--quiet", "-b", "prepared"]);
-    std::fs::write(repo.join("c.txt"), lines(prepared_second, prepared_eleventh)).expect("prepared");
+    std::fs::write(repo.join(file), lines(prepared_second, prepared_eleventh)).expect("prepared");
     git(repo.as_path(), &["commit", "--quiet", "--all", "--message=prepared"]);
     let prepared: String = rev(repo.as_path(), "HEAD");
     git(repo.as_path(), &["checkout", "--quiet", "main"]);
-    std::fs::write(repo.join("c.txt"), lines("LANDED", "line 11")).expect("landed");
+    std::fs::write(repo.join(file), lines("LANDED", "line 11")).expect("landed");
     git(repo.as_path(), &["commit", "--quiet", "--all", "--message=landed"]);
     let current: String = rev(repo.as_path(), "HEAD");
     return (root, base, current, prepared);
@@ -84,13 +90,67 @@ fn overlapping_hunks_conflict_and_name_the_winning_commit() {
     let repo: PathBuf = root.join("repo");
     let merged: ReplayMerge = merge_replay_tree(&git_context(), repo.join(".git").as_path(), repo.as_path(), &base, &current, &prepared)
         .expect("merge");
-    assert_eq!(merged, ReplayMerge::Conflict { paths: vec![String::from("c.txt")] });
-    let winner: String = first_commit_touching(&git_context(), repo.as_path(), Some(&base), &current, &[String::from("c.txt")])
+    assert_eq!(merged, ReplayMerge::Conflict { paths: vec![b"c.txt".to_vec()] });
+    let winner: String = first_commit_touching(&git_context(), repo.as_path(), Some(&base), &current, &[b"c.txt".to_vec()])
         .expect("winner");
     assert_eq!(winner, current);
-    let nothing: String = first_commit_touching(&git_context(), repo.as_path(), Some(&current), &current, &[String::from("c.txt")])
+    let nothing: String = first_commit_touching(&git_context(), repo.as_path(), Some(&current), &current, &[b"c.txt".to_vec()])
         .expect("nothing");
     assert_eq!(nothing, current);
+    remove(root.as_path());
+}
+
+/// A conflict over a name that is not UTF-8 reports its exact bytes, and the winning commit is found by them.
+#[test]
+fn a_conflict_over_a_name_that_is_not_utf8_reports_its_exact_bytes() {
+    use std::os::unix::ffi::OsStringExt;
+    let file: std::ffi::OsString = std::ffi::OsString::from_vec(b"caf\xe9.txt".to_vec());
+    let (root, base, current, prepared) = scenario_for_file("replay-merge-conflict-odd", file.as_os_str(), "PREPARED", "line 11");
+    let repo: PathBuf = root.join("repo");
+    let merged: ReplayMerge = merge_replay_tree(&git_context(), repo.join(".git").as_path(), repo.as_path(), &base, &current, &prepared)
+        .expect("merge");
+    assert_eq!(merged, ReplayMerge::Conflict { paths: vec![b"caf\xe9.txt".to_vec()] });
+    let winner: String = first_commit_touching(&git_context(), repo.as_path(), Some(&base), &current, &[b"caf\xe9.txt".to_vec()])
+        .expect("winner");
+    assert_eq!(winner, current);
+    // A path that no commit touched leaves the current target as the answer.
+    let other: String = first_commit_touching(&git_context(), repo.as_path(), Some(&base), &current, &[b"caf\xe8.txt".to_vec()])
+        .expect("other");
+    assert_eq!(other, current);
+    remove(root.as_path());
+}
+
+/// Conflicting names come back in byte order, each once.
+#[test]
+fn conflicting_names_are_sorted_by_their_bytes() {
+    use std::os::unix::ffi::OsStringExt;
+    let root: PathBuf = fixture("replay-merge-conflict-order");
+    let repo: PathBuf = repository(root.as_path(), "repo");
+    let names: [&[u8]; 3] = [b"z.txt", b"caf\xe9.txt", b"a.txt"];
+    for name in names {
+        std::fs::write(repo.join(std::ffi::OsString::from_vec(name.to_vec())), lines("line 2", "line 11")).expect("base");
+    }
+    git(repo.as_path(), &["add", "--all"]);
+    git(repo.as_path(), &["commit", "--quiet", "--message=base"]);
+    let base: String = rev(repo.as_path(), "HEAD");
+    git(repo.as_path(), &["checkout", "--quiet", "-b", "prepared"]);
+    for name in names {
+        std::fs::write(repo.join(std::ffi::OsString::from_vec(name.to_vec())), lines("PREPARED", "line 11")).expect("prepared");
+    }
+    git(repo.as_path(), &["commit", "--quiet", "--all", "--message=prepared"]);
+    let prepared: String = rev(repo.as_path(), "HEAD");
+    git(repo.as_path(), &["checkout", "--quiet", "main"]);
+    for name in names {
+        std::fs::write(repo.join(std::ffi::OsString::from_vec(name.to_vec())), lines("LANDED", "line 11")).expect("landed");
+    }
+    git(repo.as_path(), &["commit", "--quiet", "--all", "--message=landed"]);
+    let current: String = rev(repo.as_path(), "HEAD");
+    let merged: ReplayMerge = merge_replay_tree(&git_context(), repo.join(".git").as_path(), repo.as_path(), &base, &current, &prepared)
+        .expect("merge");
+    assert_eq!(
+        merged,
+        ReplayMerge::Conflict { paths: vec![b"a.txt".to_vec(), b"caf\xe9.txt".to_vec(), b"z.txt".to_vec()] }
+    );
     remove(root.as_path());
 }
 
