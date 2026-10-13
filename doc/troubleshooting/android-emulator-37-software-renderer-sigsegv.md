@@ -9,6 +9,16 @@ start an API 37 x86_64 AVD headlessly with `-gpu swiftshader_indirect` or `-gpu 
 Failure mode:
 `qemu-system-x86_64-headless` receives `SIGSEGV` before Android finishes booting.
 
+## Rule for agents: headful only (2026-10-13)
+
+Never launch an emulator with `-no-window`, under `xvfb-run`, or in a container, and never let a brief permit it.
+Headless launches broke repeatedly: a container launch hung for 2.8 hours, two container boots on 2026-10-13 hung on
+software rendering, and the human reports that headless emulators break frequently.
+The only launch form for agent sessions is the one in "Working agent launch: headful, host GPU, no container":
+a window on the host GPU, as its own systemd user unit with `MemoryMax`.
+If that launch fails, stop and report the error; do not fall back to a headless form.
+The headless commands below are the evidence of the original crash and stay as a record, not as instructions.
+
 ## Symptom
 
 The process reaches the full-startup phase,
@@ -208,8 +218,8 @@ emulator -avd Pixel_9_Pro_Fold -no-audio -gpu host -no-snapshot-load
 
 This comparison changes renderer and window mode together;
  the prior read-only
-headless `-gpu host` positive control is the evidence that a window is not required for
-host-GPU success on this host.
+headless `-gpu host` positive control showed that a window is not required for host-GPU success on this host.
+That is a fact about the crash only: agents still launch headful (see "Rule for agents").
  The music-player APK and test APK installed on that emulator.
 The real Android instrumentation runner then executed the migration suite:
 

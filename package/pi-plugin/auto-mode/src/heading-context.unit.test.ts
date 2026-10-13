@@ -44,8 +44,10 @@ await describe({
       return it({
         name: `retains original equal-text groups for ${choice} without directive lowering`,
         fn: async function checkRelation() {
-          const a = fixture(choice,), b = fixture(choice,);
-          const candidates = [a.candidate, b.candidate,], records = [a.record, b.record,];
+          const a = fixture(choice,);
+          const b = fixture(choice,);
+          const candidates = [a.candidate, b.candidate,];
+          const records = [a.record, b.record,];
           const result = consumeHeadingContexts({ records, candidates, policy: a.policy, },);
           expect(result.length,).toBe(2,);
           for (const [index, interpretation,] of result.entries()) {

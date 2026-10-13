@@ -666,7 +666,9 @@ async function generateMiseToml(): Promise<void> {
 # https://mise.jdx.dev/environments/secrets/sops.html
 _.file = [{ path = ".env.local.json", redact = true }]
 
-# Every workspace bin dir, globbed from what is installed on disk rather than
+# The first entry is the gitignored per-worktree directory .cache/cli-git-bin that holds the git link to the
+# installed Git policy wrapper (the postinstall of the cargo:monochromatic-git-policy-cli tool in mise.no-env.toml).
+# The rest are workspace bin dirs, globbed from what is installed on disk rather than
 # read from workspace metadata. So this list changes with install state: a fresh
 # clone, a pruned package, or a pnpm install that adds a dependency all move it.
 # That is expected, and the regenerated list is committed as file-enforcer
@@ -677,6 +679,9 @@ _.path = [
 ${
     [
       ...new Set([
+        // The Git policy wrapper's gitignored link directory, created by the mise tool postinstall,
+        // must precede every other bin directory.
+        '.cache/cli-git-bin',
         'node_modules/.bin',
         ...(await Array.fromAsync(glob('package/*/*/node_modules/.bin',),)).toSorted(),
       ]),

@@ -514,6 +514,48 @@ const plantedControls = [
     to: 'let _ = write_lock_record;',
     failing: 'real_index_lock::tests::a_landing_lock_journals_its_identity_and_announces_the_process',
   },
+  {
+    name: 'post-commit stage ignores the invocation PATH for the Markdown linter',
+    file: 'src/native/post_commit.rs',
+    from: '    checks.markdown.linter = Box::new(executable_linter(request.environment));',
+    to: '    checks.markdown.linter = Box::new(executable_linter(&[]));',
+    failing: 'post_commit::tests::the_linter_is_found_on_the_invocations_path',
+  },
+  {
+    name: 'post-commit stage ignores the forbidden-strings rules variable',
+    file: 'src/native/post_commit.rs',
+    from: '    checks.scanner_settings.rules_variable = environment_value(request.environment, RULES_VARIABLE);',
+    to: '    checks.scanner_settings.rules_variable = None;',
+    failing: 'post_commit::tests::the_rules_variable_reaches_the_post_commit_scanner',
+  },
+  {
+    name: 'post-commit stage ignores the configured forbidden-strings options',
+    file: 'src/native/post_commit.rs',
+    from: '    checks.scanner_settings.options = request.config.forbidden_strings.clone();',
+    to: '    checks.scanner_settings.options = PolicyConfig::defaults().forbidden_strings;',
+    failing: 'post_commit::tests::the_configured_rules_file_reaches_the_post_commit_scanner',
+  },
+  {
+    name: 'post-commit stage ignores the configured Markdown options',
+    file: 'src/native/post_commit.rs',
+    from: '    checks.markdown.options = request.config.markdown_autofix.clone();',
+    to: '    checks.markdown.options = PolicyConfig::defaults().markdown_autofix;',
+    failing: 'post_commit::tests::the_markdown_options_reach_the_post_commit_policy',
+  },
+  {
+    name: 'auto-push Git children drop the invocation environment',
+    file: 'src/native/commit_command.rs',
+    from: 'environment: environment_with_overlay(command.environment, command.context.overlay.as_slice()),',
+    to: 'environment: environment_with_overlay(&command.environment[..0], command.context.overlay.as_slice()),',
+    failing: 'push_environment::an_auto_push_after_a_landed_commit_runs_git_with_the_invocation_environment',
+  },
+  {
+    name: 'manual-push probe Git children drop the invocation environment',
+    file: 'src/native/wrapped_command.rs',
+    from: 'environment: environment_with_overlay(environment, context.overlay.as_slice()),',
+    to: 'environment: environment_with_overlay(&environment[..0], context.overlay.as_slice()),',
+    failing: 'push_environment::a_manual_push_probes_and_pushes_with_the_invocation_environment',
+  },
 ];
 
 /**

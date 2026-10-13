@@ -49,7 +49,10 @@ export type HeadingContextEvidence = {
   /**
    Explicit unresolved answers need not carry a value.
    */
-  readonly answer: { readonly status: string; readonly value?: HeadingContentEstimate; };
+  readonly answer: {
+    readonly status: string;
+    readonly value?: HeadingContentEstimate
+  };
 };
 
 /**

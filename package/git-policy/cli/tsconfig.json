@@ -2,7 +2,6 @@
   "extends": "@monochromatic-dev/config-typescript/dom",
   "include": [
     "src/**/*.ts",
-    "perf/**/*.ts",
     "e2e/**/*.ts",
     "*.config.ts",
     "package.json",

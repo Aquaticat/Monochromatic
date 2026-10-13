@@ -112,6 +112,44 @@ export type {
   SemanticAdmissionPolicy,
   SemanticAdmissionScope,
 } from './semantic-admission-types.ts';
+export { PolicyInputBindingError, } from './policy-input-binding-error.ts';
+export { consumeSourceAssociations, } from './source-contribution.ts';
+export type {
+  ContributionCarrier,
+  ContributionPublication,
+  ContributionRequestObservation,
+  ContributionMessageRun,
+  ContributionRun,
+  ContributionRunCarrier,
+  ContributionSource,
+  ContributionSourceView,
+  RetainedContributionOrigin,
+  SourceContribution,
+  SourceContributionAssociation,
+  SourceContributionInputs,
+} from './source-contribution-types.ts';
+export type {
+  SourceContributionIssue,
+  SourceContributionResult,
+  SourceContributionUse,
+} from './source-contribution-result.ts';
+export { consumeUnitAdoptions, } from './unit-adoption.ts';
+export { selectUnitAdoptionPairs, } from './unit-adoption-profile.ts';
+export {
+  UnitAdoptionBindingError,
+  type UnitAdoptionEvidence,
+  type UnitAdoptionPair,
+  type UnitRuleProjection,
+} from './unit-adoption-binding.ts';
+export type {
+  UnitAdoptionInputs,
+  UnitAdoptionInterpretation,
+  UnitAdoptionResult,
+  UnitAuthority,
+  UnitClauseInterpretation,
+  UnitRegisteredAuthority,
+  UnitSourceView,
+} from './unit-adoption-types.ts';
 export { consumeHeadingContexts, } from './heading-context.ts';
 export type {
   HeadingContentEstimate,

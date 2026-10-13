@@ -451,6 +451,89 @@ source capture,
 and native error reporting remain the adapter's responsibilities.
 This does not replace the installed judge or supply a maintained host launcher.
 
+## Migration original source contributions
+
+`consumeSourceAssociations` accounts for individual original serialized contributions,
+using the existing request receipt,
+source views,
+carriers,
+run publications,
+active ancestors,
+and separately retained message origins.
+Copied references and equal content cannot substitute for original membership.
+Its owned result containers are frozen;
+borrowed sources and publications remain untouched.
+
+The consumer and `PolicyInputBindingError` now have maintained implementations.
+The private native adapter delegates through the existing artifact link.
+Build,
+type checks,
+package units,
+native serializer scenarios,
+and action-policy regressions have passed.
+Lint and final delivery verification remain in progress.
+These partial links establish neither complete host receipt nor authority,
+scope,
+delegation,
+or permission.
+The governing-domain hold remains.
+
+## Migration same-source incorporation
+
+`selectUnitAdoptionPairs` preserves the supported structural profile:
+a source must contain exactly a tagged adopter and a whole quoted target,
+with at most 64 source opportunities.
+Selection alone establishes neither incorporation meaning nor authority.
+
+`consumeUnitAdoptions` checks original pair,
+member,
+source-projection,
+authority,
+and request-scope references.
+Adoption-only meaning cannot override a conflicting primitive interpretation of the complete adopter.
+Target meaning is independently admitted before lowering with the original registered priority.
+A target prerequisite remains a constraint,
+not permission supplied by incorporation.
+Independent implementation-fact gaps remain outside this consumer.
+
+The private native compiler now delegates selection and consumption to maintained exports.
+Build,
+types,
+package units,
+changed-file lint,
+the native incorporation scenarios,
+and action-policy regressions passed.
+Original source membership and target meaning remain separate requirements.
+This does not close the governing domain or install the migrated host.
+
+## Migration heading-context interpretation
+
+`consumeHeadingContexts` retains original candidate and evidence references for source-local heading groups.
+It checks the original question kind,
+model attribution,
+content relationship,
+and synchronous Boolean code acceptance.
+Native integration still authenticates the complete batch and revalidates dependencies after callbacks.
+Equal text in independent groups does not merge their identities.
+
+Admitted `none` concerns only the selected group's independent heading content.
+Potential or unknown content remains separate from directive meaning,
+source authority,
+and governing-domain completeness.
+The consumer produces no directive or permission.
+It freezes owned results,
+not borrowed candidates,
+evidence,
+or callbacks.
+Build,
+types,
+package units,
+changed-file lint,
+all native heading scenarios,
+and action-policy regressions passed.
+The private native compiler now calls the exact maintained export.
+This does not close the governing domain or install the migrated host.
+
 ## Migration semantic admission configuration
 
 `copySemanticAdmissionPolicy` copies an explicitly configured bootstrap declaration.

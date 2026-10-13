@@ -120,6 +120,16 @@ cargo-binstall = "latest"
 # to the prebuilt release archive when one exists for the platform.
 "cargo:monochromatic-lint" = "0.1.1"
 
+# The Git policy wrapper (package/git-policy/cli), installed from the published crate. Pinned so a release of the
+# wrapper reaches the repository only together with its configuration and policies. The crate's binary is
+# `cli-git-native`; the postinstall links it as `git` in the gitignored per-worktree directory `.cache/cli-git-bin`,
+# which file-enforcer puts first in `_.path`. The link never lives in the tool's own `bin/`, because mise would then
+# create a global `git` shim. `when = "always"` relinks on every `mise install`, so a new worktree gets its link even
+# when the tool is already installed. The link is made under a temporary name and moved over `git`, so a concurrent
+# `git` never sees a missing file. `os = ["linux"]` because only Linux archives are released and the code was never
+# built elsewhere. Details: doc/planning/cli-git-native-cutover.md, section `Install the published tool`.
+"cargo:monochromatic-git-policy-cli" = { version = "0.1.2", os = ["linux"], postinstall = { run = "mkdir --parents \"$MISE_CONFIG_ROOT/.cache/cli-git-bin\" && ln --symbolic \"$MISE_TOOL_INSTALL_PATH/bin/cli-git-native\" \"$MISE_CONFIG_ROOT/.cache/cli-git-bin/.git.$$\" && mv --no-target-directory \"$MISE_CONFIG_ROOT/.cache/cli-git-bin/.git.$$\" \"$MISE_CONFIG_ROOT/.cache/cli-git-bin/git\"", when = "always" } }
+
 # The nested Wayland compositor that hosts one GUI app for screenshots and synthetic input
 # (package/cli/nested-wayland-session). Not pinned: mise.lock records the resolved version. The crate's
 # cargo-binstall metadata points the cargo backend at the per-crate release archive, so no from-source
@@ -676,14 +686,6 @@ run = "slopo analyze"
 description = "Regenerate mise.lock from active tool declarations"
 run = "mise lock"
 
-[tasks."cleanup:hk-git-config"]
-description = "Remove only retired hook.hk-* keys from explicit Git configuration scopes"
-usage = '''
-flag "--local" help="Clean current repository configuration"
-flag "--global" help="Clean per-user global configuration"
-'''
-run = "node package/git-policy/cli/src/maintenance/hk-config-cleanup-command.ts"
-
 #endregion Utility Tasks
 
 #region Build Tasks
@@ -1210,7 +1212,14 @@ run = "changeset status --verbose"
 description = "Apply pending changesets to package versions and changelogs, patch-bump dependents they miss, then refresh the lockfile"
 # The ripple runs between the two: changesets ignores most workspace packages, and the Version Packages commit is authored in CI
 # where the cli-git dependent-version-bump policy never runs (doc/decision/private-npm-registry.md).
-run = ["changeset version", "mise run //package/git-policy/repository:bump:dependents", "pnpm install --lockfile-only"]
+# The native executable runs the ripple by its own name, not as `git`: the changesets action runs git commands of its own
+# in the same environment, and the wrapper refuses `git add .`. `cli-git-native` is on PATH from the mise tool locally and from
+# the release job's build step in CI.
+run = [
+  "changeset version",
+  "cli-git-native cli-git fix --all --policy mono/dependent-version-bump",
+  "pnpm install --lockfile-only",
+]
 
 [tasks."changeset:build"]
 description = "Build every package the changeset publish plan will publish"
@@ -1258,7 +1267,9 @@ buildPublishPlan();
 # https://mise.jdx.dev/environments/secrets/sops.html
 _.file = [{ path = ".env.local.json", redact = true }]
 
-# Every workspace bin dir, globbed from what is installed on disk rather than
+# The first entry is the gitignored per-worktree directory .cache/cli-git-bin that holds the git link to the
+# installed Git policy wrapper (the postinstall of the cargo:monochromatic-git-policy-cli tool in mise.no-env.toml).
+# The rest are workspace bin dirs, globbed from what is installed on disk rather than
 # read from workspace metadata. So this list changes with install state: a fresh
 # clone, a pruned package, or a pnpm install that adds a dependency all move it.
 # That is expected, and the regenerated list is committed as file-enforcer
@@ -1266,6 +1277,7 @@ _.file = [{ path = ".env.local.json", redact = true }]
 # file-enforcer.config.ts. Issue #335 tracks deriving it from workspace metadata
 # instead, which would make it stable across environments.
 _.path = [
+  ".cache/cli-git-bin",
   "node_modules/.bin",
   "package/agent-harness-shared/search-fetch/node_modules/.bin",
   "package/agent-harness-shared/truncate/node_modules/.bin",

@@ -173,7 +173,8 @@ pub struct PushCoordinationPaths {
 /// What:
 ///  The real Git a coordinator runs, where, and with which environment.
 /// Why:
-///   The incumbent's coordination inherits the wrapper's environment, so the caller passes it in
+///   The incumbent's coordination inherits the wrapper's whole environment plus the child-environment overlay,
+///  so the caller passes that complete environment in (`environment_with_overlay`)
 ///  and nothing is read from the process environment here.
 ///
 /// In TS you'd write (pseudocode):
@@ -186,7 +187,7 @@ pub struct PushGit {
     pub real_git: PathBuf,
     /// Directory the commit landed in.
     pub cwd: PathBuf,
-    /// Environment every Git child receives.
+    /// Complete environment every Git child receives: the invocation's variables with the overlay applied.
     pub environment: Vec<(OsString, OsString)>,
 }
 

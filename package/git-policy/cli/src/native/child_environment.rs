@@ -317,6 +317,37 @@ pub fn child_environment_overlay(
     return overlay;
 }
 
+/// What:
+///  The complete environment of a Git child that is started with a cleared environment:
+///  the caller's variables, with every name the overlay sets replaced by the overlay's value.
+/// Why:
+///   The incumbent's push coordination, push and manual-push probe inherit the whole process environment
+///  (`HOME`, `PATH`, `SSH_AUTH_SOCK`, the user's `GIT_*` variables) plus the overlay,
+///  and a credential helper or transport needs them;
+///  the overlay alone would start Git with an almost empty environment.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// ({ ...process.env, ...Object.fromEntries(overlay) })
+/// ```
+pub fn environment_with_overlay(
+    environment: &[(OsString, OsString)],
+    overlay: &[(OsString, OsString)],
+) -> Vec<(OsString, OsString)> {
+    // `mut` lets the overlay entries be appended after the surviving caller entries.
+    let mut result: Vec<(OsString, OsString)> = Vec::with_capacity(environment.len() + overlay.len());
+    for (name, value) in environment {
+        let replaced: bool = overlay.iter().any(|(overlaid, _value)| {
+            return overlaid == name;
+        });
+        if !replaced {
+            result.push((name.clone(), value.clone()));
+        }
+    }
+    result.extend(overlay.iter().cloned());
+    return result;
+}
+
 /// Lookup and count-parsing controls,
 ///  checked against real Git.
 #[cfg(test)]

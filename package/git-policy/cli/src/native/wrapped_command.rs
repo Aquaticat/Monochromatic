@@ -36,6 +36,7 @@
 /// ```
 use super::action::ENGINE_FAILURE_EXIT_CODE;
 use super::auto_push_single_flight::PushGit;
+use super::child_environment::environment_with_overlay;
 /// `git add` asks for what it would stage.
 use super::candidate_prediction::CandidateRequest;
 use super::command_options::OptionError;
@@ -476,7 +477,7 @@ pub fn run_wrapped_command<F: RepositoryFacts>(
         let gated: Vec<PolicyId> = every_policy();
         if any_policy_applies(&gate_request, gated.as_slice()) {
             // The push's scope is discovered before any policy reads content; a discovery failure refuses the push.
-            if let Err(failure) = prepare_manual_push(checks, command_region(stripped)) {
+            if let Err(failure) = prepare_manual_push(checks, environment, command_region(stripped)) {
                 events.push(PolicyEvent::EngineFailure {
                     code: EngineFailureCode::ContentUnavailable,
                     message: failure.message,
@@ -517,6 +518,7 @@ pub fn run_wrapped_command<F: RepositoryFacts>(
 /// ```
 fn prepare_manual_push<F: RepositoryFacts>(
     checks: &mut ShippedChecks<F>,
+    environment: &[(OsString, OsString)],
     post_subcommand: &[OsString],
 ) -> Result<(), super::manual_push_lifecycle::ManualPushFailure> {
     let worktree: Option<PathBuf> = match checks.facts.location() {
@@ -535,7 +537,7 @@ fn prepare_manual_push<F: RepositoryFacts>(
     let git = PushGit {
         real_git: context.real_git,
         cwd,
-        environment: context.overlay,
+        environment: environment_with_overlay(environment, context.overlay.as_slice()),
     };
     let scope = manual_push_scope(&git, context.global_prefix.as_slice(), post_subcommand)?;
     checks.candidates = LifecycleContent::Requested(CandidateRequest::Pushed(scope));

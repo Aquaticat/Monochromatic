@@ -45,7 +45,11 @@ export function consumeHeadingContexts<
   const Candidate extends object,
   const Evidence extends HeadingContextEvidence,
 >(
-  { records, candidates, policy, }: {
+  {
+    records,
+    candidates,
+    policy,
+  }: {
     readonly records: readonly Evidence[];
     readonly candidates: readonly Candidate[];
     readonly policy?: HeadingContextAdmission;
@@ -54,20 +58,30 @@ export function consumeHeadingContexts<
   /**
    Attribute this consumption without inspecting or serializing original material.
    */
-  const rl = tagged({ tag: consumeHeadingContexts.name, l, },);
+  const rl = tagged({
+    tag: consumeHeadingContexts.name,
+    l,
+  },);
   rl.debug('consuming original source-local heading groups',);
   if (records.length !== candidates.length)
     throw new SemanticAdmissionPolicyError('Heading estimates differ from the selected original source groups',);
-  if (records.length > 0 && policy === undefined)
+  if ((records.length > 0) && (policy === undefined))
     throw new SemanticAdmissionPolicyError('Selected heading estimates require their configured code policy',);
   /**
    Owned result storage retains borrowed original identities.
    */
   const interpretations: HeadingContextInterpretation<Candidate, Evidence>[] = [];
   for (const [index, record,] of records.entries()) {
-    if (record.definitionId !== 'heading_instruction_content' || record.definition.type !== 'choice'
-      || record.binding.claimScope !== 'program-heading-context'
-      || record.binding.headingContext.kind !== 'source-heading-context') {
+    if ((record.definitionId !== 'heading_instruction_content') || (record.definition
+      .type
+      !== 'choice')
+      || (record.binding
+        .claimScope
+        !== 'program-heading-context')
+      || (record.binding
+        .headingContext
+        .kind
+        !== 'source-heading-context')) {
       throw new SemanticAdmissionPolicyError('Heading context requires its original aggregate content question',);
     }
     /**
@@ -76,35 +90,54 @@ export function consumeHeadingContexts<
     const candidate = candidates[index];
     if (candidate === undefined)
       throw new SemanticAdmissionPolicyError('Heading candidate is absent from its selected original source group',);
-    if (record.answer.status === 'estimate' && policy !== undefined && record.model === policy.model) {
+    if ((record.answer
+      .status
+      === 'estimate') && (policy !== undefined)
+      && (record.model === policy.model)) {
       /**
        Pass the original answer value to code policy rather than a reconstruction.
        */
       const { value, } = record.answer;
-      if (value === undefined || (value.choice !== 'none'
-        && value.choice !== 'potential-instruction' && value.choice !== 'unknown')) {
+      if ((value === undefined) || ((value.choice !== 'none')
+        && (value.choice !== 'potential-instruction')
+        && (value.choice !== 'unknown'))) {
         throw new SemanticAdmissionPolicyError('Heading answer is outside the fixed aggregate content relationship',);
       }
       /**
        Only Boolean admission may select a relationship for this original source group.
        */
       const admitted = policy.accepts(value,);
-      if (typeof admitted !== 'boolean') {
+      if ((typeof admitted) !== 'boolean') {
         throw new SemanticAdmissionPolicyError(
           'Heading-context policy must synchronously admit or abstain, not classify authoritative directives',
         );
       }
       if (admitted) {
         rl.debug('code policy admitted original heading content relationship',);
-        interpretations.push(Object.freeze({ candidate, evidence: record, admission: 'admitted', relation: value.choice, permission: false, },),);
+        interpretations.push(Object.freeze({
+          candidate,
+          evidence: record,
+          admission: 'admitted',
+          relation: value.choice,
+          permission: false,
+        },),);
         continue;
       }
     }
-    else if (record.answer.status !== 'estimate' && record.answer.status !== 'unresolved') {
+    else if ((record.answer
+      .status
+      !== 'estimate') && (record.answer
+        .status
+        !== 'unresolved')) {
       throw new SemanticAdmissionPolicyError('Heading evidence is not a usable estimate or explicit unresolved answer',);
     }
     rl.debug('abstaining from original heading content relationship',);
-    interpretations.push(Object.freeze({ candidate, evidence: record, admission: 'abstained', permission: false, },),);
+    interpretations.push(Object.freeze({
+      candidate,
+      evidence: record,
+      admission: 'abstained',
+      permission: false,
+    },),);
   }
   return Object.freeze(interpretations,);
 }

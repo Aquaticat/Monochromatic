@@ -13,6 +13,7 @@
 //! const post = await runPostCommitLifecycle({ ... }); await autoPush({ ... });
 //! ```
 use super::auto_push_single_flight::PushGit;
+use super::child_environment::environment_with_overlay;
 use super::commit_transaction::{CommitInvocation, TransactionResult, TransactionStop, run_commit_transaction};
 use super::config_schema::CliGitConfig;
 use super::command_commit::CommitRegion;
@@ -216,13 +217,14 @@ fn post_commit(command: &CommitCommand<'_>, invocation: &CommitInvocation<'_>, l
         arguments: command.arguments,
         global_prefix: command.context.global_prefix.as_slice(),
         overlay: command.context.overlay.as_slice(),
+        environment: command.environment,
         config: command.config.policies.clone(),
         controls: command.controls.clone(),
     };
     let git: PushGit = PushGit {
         real_git: command.context.real_git.clone(),
         cwd: invocation.cwd.to_path_buf(),
-        environment: command.context.overlay.clone(),
+        environment: environment_with_overlay(command.environment, command.context.overlay.as_slice()),
     };
     let mut stderr = std::io::stderr();
     match run_post_commit(&request, &git, &mut stderr) {
