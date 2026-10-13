@@ -279,7 +279,7 @@ Read these before repeating them. Each one cost the human a correction.
 - A command ran `rg` without a path and read the worktree root. Always pass a path.
 - I wrote in a brief that `-no-window` on the host GPU had worked, and the agent launched a headless emulator, which
   the human reports breaks frequently, although this handover already said to launch headfully. The ban is now the
-  rules EMW and EMB in `AGENTS.md`, a section in the troubleshooting document, and the brief of every emulator agent:
+  rules EMW and EMB in the `android-emulator` skill (`.agents/skills/android-emulator/SKILL.md`), a section in the troubleshooting document, and the brief of every emulator agent:
   headful on the host GPU as its own systemd unit, never `-no-window`, `xvfb-run` or a container, and on a failed
   launch report the error instead of falling back.
 
