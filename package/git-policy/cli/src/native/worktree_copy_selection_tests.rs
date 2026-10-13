@@ -362,3 +362,20 @@ fn special_entry_check_ignores_the_users_global_git_options() {
     assert!(roots.contains(&String::from("ignored-pipe")), "{roots:?}");
     remove(root.as_path());
 }
+
+/// A special entry inside an excluded nested root is skipped even when the outer ignore rules would cover it.
+#[cfg(unix)]
+#[test]
+fn special_entries_under_an_excluded_root_are_not_selected() {
+    let root: PathBuf = fixture("selection-excluded-pipe");
+    let source: PathBuf = ignoring(root.as_path(), "source", "pipe\n");
+    std::fs::create_dir_all(source.join("nested")).expect("nested");
+    make_fifo(source.join("nested/pipe").as_path());
+    make_fifo(source.join("pipe").as_path());
+    let excluded: Vec<PathBuf> =
+        vec![std::fs::canonicalize(source.join("nested")).expect("canonical")];
+    let roots: Vec<String> =
+        read_ignored_roots(&git_context(), source.as_path(), excluded.as_slice()).expect("roots");
+    assert_eq!(roots, vec![String::from("pipe")]);
+    remove(root.as_path());
+}
