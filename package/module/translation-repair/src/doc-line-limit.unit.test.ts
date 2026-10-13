@@ -1,10 +1,18 @@
 /**
- Guards the length of the package's Markdown docs and of the repository-level
- translation-repair docs (ledger M163). The owner ruled on 2026-10-12 that a
- Markdown file holds at most 1,000 lines, and up to 2,000 where the lead
- records why 1,000 is too tight. The audit ledger had grown to 41,252 lines and
- the OpenRouter pass log to 26,295, each appended to with no bound, so a reader
- or an agent could open neither whole.
+ Guards the length and the naming of the package's Markdown docs and of the
+ repository-level translation-repair docs (ledger M163 and M165). The owner
+ ruled on 2026-10-12 that a Markdown file holds at most 1,000 lines, and up to
+ 2,000 where the lead records why 1,000 is too tight. The audit ledger had
+ grown to 41,252 lines and the OpenRouter pass log to 26,295, each appended to
+ with no bound, so a reader or an agent could open neither whole.
+
+ A RECORD PAST THE LIMIT keeps its path as an index and files its sections
+ beside it, each file one subject, phase or span of dates and named for it. The
+ first split cut at whichever heading came before the limit and numbered the
+ pieces; the owner rejected it, since a numbered name says nothing of what a
+ file holds. So a file named by a counter is a finding, and so is a file that
+ names a record whose index does not link it, which no reader starting at the
+ index would find.
 
  WHAT IS READ is every `.md` file in the package's `doc` folder, its README,
  and every doc under the repository's `doc` families whose name starts with
@@ -21,7 +29,11 @@ import {
   readdir,
   readFile,
 } from 'node:fs/promises';
-import { join, } from 'node:path';
+import {
+  basename,
+  dirname,
+  join,
+} from 'node:path';
 
 import {
   describe,
@@ -29,7 +41,11 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { REPOSITORY_ROOT, } from './living-docs.test-fixture.ts';
+import { isAsciiDigits, } from '../dist/final/node/index.mjs';
+import {
+  REPOSITORY_ROOT,
+  withFiles,
+} from './living-docs.test-fixture.ts';
 import { expectNoFindings, } from './scan-findings.test-fixture.ts';
 
 /**
@@ -63,10 +79,57 @@ type LineAllowance = {
 };
 
 /**
- Docs allowed past the limit; none is.
+ Why a file of the history archive may pass the limit for now.
  */
-const ALLOWANCES: readonly LineAllowance[] = [];
+const HISTORY_REASON = 'a file of the frozen history archive, kept byte for byte until the archive is re-filed by what '
+  + 'each file holds';
 
+/**
+ Docs allowed past the limit, each at the size it has.
+ */
+const ALLOWANCES: readonly LineAllowance[] = [
+  ...([
+    ['01-early-foundation-segment-01-part-01', 1_140,],
+    ['01-early-foundation-segment-01-part-02', 1_105,],
+    ['01-early-foundation-segment-02-subpart-04', 1_086,],
+    ['01-early-foundation-segment-03-part-01', 1_505,],
+    ['01-early-foundation-segment-03-part-02', 1_266,],
+    ['05-2026-08-15-to-19-segment-01-part-01', 1_014,],
+    ['05-2026-08-15-to-19-segment-01-part-02', 1_101,],
+    ['05-2026-08-15-to-19-segment-02-part-01', 1_004,],
+    ['05-2026-08-15-to-19-segment-02-part-02', 1_030,],
+    ['06-2026-08-19-to-21-segment-01-part-01', 1_008,],
+    ['06-2026-08-19-to-21-segment-01-part-02', 1_006,],
+    ['07-2026-08-21-to-23-segment-01-part-01', 1_003,],
+    ['07-2026-08-21-to-23-segment-02', 1_252,],
+    ['08-2026-08-23-decisions-segment-01-part-01', 1_004,],
+    ['08-2026-08-23-decisions-segment-02-part-01', 1_004,],
+    ['11-2026-08-26-audit-segment-01', 1_399,],
+  ] as const).map(function historyFile([name, lines,],): LineAllowance {
+    return { path: join('doc', 'handover', `translation-repair-history-${name}.md`,), lines, reason: HISTORY_REASON, };
+  },),
+  {
+    path: join('doc', 'planning', 'wire-the-heading-aligner.md',),
+    lines: 1_509,
+    reason: 'one investigation of seven attempts whose later sections point at earlier ones by position; cut at any '
+      + 'attempt, four of those pointers would lead into another file',
+  },
+];
+
+/**
+ Name stems whose files keep a counter in their names, with the reason.
+ */
+const COUNTER_NAME_EXEMPTIONS: readonly { readonly opening: string; readonly reason: string; }[] = [
+  {
+    opening: 'translation-repair-history-',
+    reason: 'the frozen history archive, named by segment before the rule and due to be re-filed by content',
+  },
+];
+
+/**
+ Words that count a file where a subject belongs, when digits follow them.
+ */
+const COUNTER_WORDS: ReadonlySet<string> = new Set(['part', 'segment', 'subpart', 'chunk', 'section', 'page',],);
 /**
  Stems of repository-level translation-repair docs whose names do not start
  with `translation-repair`.
@@ -153,7 +216,8 @@ function lengthFindings(
        */
       const bound = Math.min(allowed.get(count.path,)?.lines ?? LINE_LIMIT, ALLOWED_CEILING,);
       return (count.lines > bound)
-        ? [`${count.path}: ${String(count.lines,)} lines, past its bound of ${String(bound,)}; split it at a heading`,]
+        ? [`${count.path}: ${String(count.lines,)} lines, past its bound of ${String(bound,)}; file a subject or a span of `
+          + 'dates in a file named for it',]
         : [];
     },),
     ...allowances.flatMap(function stale(allowance,): readonly string[] {
@@ -168,6 +232,127 @@ function lengthFindings(
       return (lines <= LINE_LIMIT) ? [`${allowance.path}: allowed, but holds ${String(lines,)} lines, within the limit`,] : [];
     },),
   ];
+}
+
+/**
+ Every doc whose name ends in a counter where a subject belongs, each as one
+ finding. A counter is `part`, `segment`, `subpart`, `chunk`, `section` or
+ `page` followed by digits, or a name whose last word is digits alone and no
+ part of a date.
+
+ @param paths - docs' paths from the repository root
+
+ @param exemptions - name stems left alone
+
+ @returns Findings, in the order of the paths
+
+ @example
+ ```ts
+ counterNameFindings({ paths: ['doc/cat-part-02.md',], exemptions: [], },); // one finding
+ ```
+ */
+function counterNameFindings(
+  {
+    paths,
+    exemptions,
+  }: {
+    readonly paths: readonly string[];
+    readonly exemptions: readonly { readonly opening: string; }[];
+  },
+): readonly string[] {
+  return paths.flatMap(function named(path,): readonly string[] {
+    /**
+     Doc's name without its folder or extension.
+     */
+    const stem = basename(path, '.md',);
+    if (exemptions.some(function opens({ opening, },): boolean {
+      return stem.startsWith(opening,);
+    },))
+      return [];
+    /**
+     Name's words, as its hyphens part them.
+     */
+    const words = stem.split('-',);
+    /**
+     Name's last word and the one before it, empty where the name is too short to have one.
+     */
+    const [before, last,] = [words.at(-2,) ?? '', words.at(-1,) ?? '',];
+    /**
+     Whether the name carries a date, as year, month and day apart or as eight digits run together; its span
+     may close on a bare day or month.
+     */
+    const dated = words.some(function opensDate(word, at,): boolean {
+      if (!isAsciiDigits({ text: word, },))
+        return false;
+      if (word.length === 8)
+        return true;
+      return (word.length === 4)
+        && isAsciiDigits({ text: words[at + 1] ?? '', },)
+        && isAsciiDigits({ text: words[at + 2] ?? '', },);
+    },);
+    /**
+     Whether the name's last word is a number.
+     */
+    const numbered = isAsciiDigits({ text: last, },);
+    /**
+     Whether the name ends in a counter word and its number.
+     */
+    const counted = numbered && COUNTER_WORDS.has(before,);
+    /**
+     Whether the name ends in a number no date in it accounts for.
+     */
+    const bare = numbered && (!dated);
+    return (counted || bare)
+      ? [`${path}: named by a counter; name the file for the subject or the span of dates it holds`,]
+      : [];
+  },);
+}
+
+/**
+ Every file that names a record it is part of while that record's index does
+ not link it, each as one finding.
+
+ @param docs - each doc's path and text
+
+ @returns Findings, in the order of the docs
+
+ @example
+ ```ts
+ unlistedFileFindings({ docs: [{ path: 'doc/cat.md', text: '# Cat\n', },], },); // none
+ ```
+ */
+function unlistedFileFindings(
+  { docs, }: { readonly docs: readonly { readonly path: string; readonly text: string; }[]; },
+): readonly string[] {
+  /**
+   Each doc's text, by path.
+   */
+  const texts = new Map(docs.map(function byPath(doc,): [string, string,] {
+    return [doc.path, doc.text,];
+  },),);
+  return docs.flatMap(function filed(doc,): readonly string[] {
+    /**
+     Line naming the record this doc is part of, absent when it names none.
+     */
+    const line = doc.text.split('\n',).find(function namesRecord(candidate,): boolean {
+      return candidate.startsWith('Part of [',) && candidate.endsWith('.md),',);
+    },);
+    if (line === undefined)
+      return [];
+    /**
+     Record's file name, from the link's target.
+     */
+    const record = line.slice(line.lastIndexOf('](',) + 2, -2,);
+    /**
+     Record's index text, absent when no doc read has that path.
+     */
+    const index = texts.get(join(dirname(doc.path,), record,),);
+    if (index === undefined)
+      return [`${doc.path}: part of ${record}, which no doc read has as its path`,];
+    return index.includes(`](${basename(doc.path,)})`,)
+      ? []
+      : [`${doc.path}: part of ${record}, whose text does not link it; list the file in that index`,];
+  },);
 }
 
 /**
@@ -247,9 +432,9 @@ await describe({
             { path: 'doc/vet.md', lines: 1_200, reason: 'a vet since moved', },
           ],
         },),).toEqual([
-          'doc/purr.md: 1001 lines, past its bound of 1000; split it at a heading',
-          'doc/tail.md: 1601 lines, past its bound of 1600; split it at a heading',
-          'doc/paw.md: 2500 lines, past its bound of 2000; split it at a heading',
+          'doc/purr.md: 1001 lines, past its bound of 1000; file a subject or a span of dates in a file named for it',
+          'doc/tail.md: 1601 lines, past its bound of 1600; file a subject or a span of dates in a file named for it',
+          'doc/paw.md: 2500 lines, past its bound of 2000; file a subject or a span of dates in a file named for it',
           'doc/paw.md: allowed 2500 lines, past the ceiling of 2000',
           'doc/bowl.md: allowed, but holds 900 lines, within the limit',
           'doc/vet.md: allowed, but no doc read has that path',
@@ -278,6 +463,68 @@ await describe({
           return { path, lines: lineCount({ text: await readFile(join(REPOSITORY_ROOT, path,), 'utf8',), },), };
         },),);
         expectNoFindings({ findings: lengthFindings({ counts, allowances: ALLOWANCES, },), },);
+      },
+    },),
+    it({
+      name: 'FINDS a name ending in a counter word and its number or in a bare number, and passes a name ending in a '
+        + 'subject, in a date, in a clock span, or under an exempted stem',
+      fn: async () => {
+        expect(counterNameFindings({
+          paths: [
+            'doc/cat-part-02.md',
+            'doc/cat-segment-1.md',
+            'doc/cat-naps-on-the-sofa.md',
+            'doc/cat-2026-09-22.md',
+            'doc/cat-2026-09-22-0020-to-0350-utc.md',
+            'doc/cat-2026-08-25-to-27.md',
+            'doc/cat-reading-20260826.md',
+            'doc/cat-naps-3.md',
+            'doc/old-cat-part-01.md',
+          ],
+          exemptions: [{ opening: 'old-cat-', },],
+        },),).toEqual([
+          'doc/cat-part-02.md: named by a counter; name the file for the subject or the span of dates it holds',
+          'doc/cat-segment-1.md: named by a counter; name the file for the subject or the span of dates it holds',
+          'doc/cat-naps-3.md: named by a counter; name the file for the subject or the span of dates it holds',
+        ],);
+      },
+    },),
+    it({
+      name: 'FINDS a file part of a record whose index does not link it and one part of a record no doc has, and '
+        + 'passes a file its index links and a doc part of no record',
+      fn: async () => {
+        expect(unlistedFileFindings({
+          docs: [
+            { path: 'doc/cat.md', text: '# Cat\n\n- [Naps](cat-naps.md):\n', },
+            { path: 'doc/cat-naps.md', text: '# Naps\n\nPart of [Cat](cat.md),\nwhich lists every file.\n', },
+            { path: 'doc/cat-meals.md', text: '# Meals\n\nPart of [Cat](cat.md),\nwhich lists every file.\n', },
+            { path: 'doc/cat-walks.md', text: '# Walks\n\nPart of [Dog](dog.md),\nwhich lists every file.\n', },
+            { path: 'doc/bowl.md', text: '# Bowl\n', },
+          ],
+        },),).toEqual([
+          'doc/cat-meals.md: part of cat.md, whose text does not link it; list the file in that index',
+          'doc/cat-walks.md: part of dog.md, which no doc read has as its path',
+        ],);
+      },
+    },),
+    it({
+      name: 'FINDS NO DOC NAMED BY A COUNTER and no file its record does not list, and reads the audit ledger as '
+        + 'an index with files',
+      fn: async () => {
+        /**
+         Every doc the guard reads.
+         */
+        const paths = await readGuardedDocs();
+        expect((await withFiles({ path: join('package', 'module', 'translation-repair', 'doc', 'audit-ledger.md',), },)).length,)
+          .toBeGreaterThan(20,);
+        expectNoFindings({ findings: counterNameFindings({ paths, exemptions: COUNTER_NAME_EXEMPTIONS, },), },);
+        /**
+         Each doc's text.
+         */
+        const docs = await Promise.all(paths.map(async function withText(path,): Promise<{ readonly path: string; readonly text: string; }> {
+          return { path, text: await readFile(join(REPOSITORY_ROOT, path,), 'utf8',), };
+        },),);
+        expectNoFindings({ findings: unlistedFileFindings({ docs, },), },);
       },
     },),
   ],

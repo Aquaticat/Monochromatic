@@ -145,7 +145,7 @@ export const PACKAGE_EXEMPTIONS: readonly PositionExemption[] = [
     reason: 'sizes past a band\'s bound, a comparison',
   },
   {
-    path: 'doc/mistake-prevention-part-01.md',
+    path: 'doc/mistake-prevention-shell-edits-commits-and-agents.md',
     holds: 'breaking the rule after it took its current wording',
     reason: 'after the rule took its wording, an order in time',
   },
@@ -160,12 +160,12 @@ export const PACKAGE_EXEMPTIONS: readonly PositionExemption[] = [
     reason: 'a fixture quoting the spend log\'s own line',
   },
   {
-    path: 'doc/audit-ledger-part-16.md',
+    path: 'doc/audit-ledger-doc-conventions-and-their-guards.md',
     holds: 'the heading after it; the living-docs case',
     reason: 'the heading that closes a kept range, named in the guard that reads it',
   },
   {
-    path: 'doc/audit-ledger-part-54.md',
+    path: 'doc/audit-ledger-process-docs-that-grow-or-go-stale.md',
     holds: 'account paragraphs that pointed at the paragraph before them',
     reason: 'M60\'s heading, naming the mistake it records',
   },
@@ -216,22 +216,22 @@ export const PACKAGE_EXEMPTIONS: readonly PositionExemption[] = [
  */
 export const REPOSITORY_EXEMPTIONS: readonly PositionExemption[] = [
   {
-    path: 'doc/handover/translation-repair-handover-2026-09-06-part-07.md',
+    path: 'doc/handover/translation-repair-handover-2026-09-06-letter-and-classes-nineteen-to-twenty-three-2026-09-08-to-09-09.md',
     holds: 'note above Hanasaka',
     reason: PAGE_TEXT,
   },
   {
-    path: 'doc/planning/translation-repair-openrouter-2026-09-03-part-06.md',
+    path: 'doc/planning/translation-repair-openrouter-2026-09-03-2026-09-08-0038-to-1127-utc.md',
     holds: 'the former lover',
     reason: 'a noun phrase: a lover in the page\'s story',
   },
   {
-    path: 'doc/planning/translation-repair-openrouter-2026-09-03-part-19.md',
+    path: 'doc/planning/translation-repair-openrouter-2026-09-03-2026-09-23-2210-to-2355-utc.md',
     holds: 'Chinese line above them',
     reason: PAGE_TEXT,
   },
   {
-    path: 'doc/planning/translation-repair-openrouter-2026-09-03-part-20.md',
+    path: 'doc/planning/translation-repair-openrouter-2026-09-03-2026-09-24-0345-to-0715-utc.md',
     holds: 'Chinese line above them',
     reason: PAGE_TEXT,
   },

@@ -723,7 +723,7 @@ await describe({
           return path.includes('translation-repair-handover-',);
         },),).toBe(true,);
         expect(files.some(function isPassLog({ path, },): boolean {
-          return path.includes('translation-repair-openrouter-2026-09-03-part-',);
+          return path.includes('translation-repair-openrouter-2026-09-03-proposal-',);
         },),).toBe(true,);
         expectNoFindings({
           findings: files.flatMap(function inFile(prose,): readonly string[] {

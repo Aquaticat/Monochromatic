@@ -161,14 +161,14 @@ type KeptRange = {
 
   /**
    Heading line that opens the stretch, exactly as written; absent when the
-   stretch opens at the file's first line, as in a later part of a doc split
-   across parts (ledger M163).
+   stretch opens at the file's first line, as where a whole file of a record
+   is kept (ledger M165).
    */
   readonly from?: string;
 
   /**
    Heading line that closes it, exactly as written; absent when the stretch
-   runs to the file's last line, as in a part that a later part continues.
+   runs to the file's last line.
    */
   readonly to?: string;
 };
@@ -179,23 +179,21 @@ type KeptRange = {
  */
 const TAKEOVER_RANGES: readonly KeptRange[] = [
   {
-    path: join('doc', 'handover', 'translation-repair-handover-2026-09-06-part-03.md',),
-    from: '### Latest checkpoint: V4.1 judge admission on 2026-09-11',
+    path: join('doc', 'handover', 'translation-repair-handover-2026-09-06-checkpoints-2026-09-11-v41-admission-and-writer-preparation.md',),
   },
   {
-    path: join('doc', 'handover', 'translation-repair-handover-2026-09-06-part-04.md',),
+    path: join('doc', 'handover', 'translation-repair-handover-2026-09-06-checkpoint-2026-09-10-mio12-wording-follow-up.md',),
   },
   {
-    path: join('doc', 'handover', 'translation-repair-handover-2026-09-06-part-05.md',),
-    to: '## Repository state',
+    path: join('doc', 'handover', 'translation-repair-handover-2026-09-06-passes-mio8-to-mio12-and-handoff-state-2026-09-07-to-09-10.md',),
   },
   {
-    path: join('doc', 'planning', 'translation-repair-readiness-signal-part-03.md',),
+    path: join('doc', 'planning', 'translation-repair-readiness-signal-mio-verse-remedy-and-follow-up-evidence-2026-09-10.md',),
     from: '## Archive correction has current-stage evidence; audit and temporal context remain (2026-09-10)',
     to: '## Naming has current-stage evidence; archive and context work remains (2026-09-10)',
   },
   {
-    path: join('doc', 'planning', 'translation-repair-openrouter-2026-09-03-part-33.md',),
+    path: join('doc', 'planning', 'translation-repair-openrouter-2026-09-03-2026-09-10.md',),
     from: '## Clustered panels and complete repair evidence implemented, 2026-09-10',
     to: '## Naming scope reaches a bounded production stage, 2026-09-10',
   },
@@ -549,25 +547,25 @@ await describe({
          Three parts of one doc, the kept stretch running from the first into the third.
          */
         const files = [
-          { path: 'doc/cat-part-01.md', text: [`${TASK_WORD} 1 naps`, '## Kept', `${TASK_WORD} 2 naps`,].join('\n',), },
-          { path: 'doc/cat-part-02.md', text: [`${TASK_WORD} 3 naps`, `${TASK_WORD} 4 naps`,].join('\n',), },
-          { path: 'doc/cat-part-03.md', text: [`${TASK_WORD} 5 naps`, '## After', `${TASK_WORD} 6 naps`,].join('\n',), },
+          { path: 'doc/cat-naps.md', text: [`${TASK_WORD} 1 naps`, '## Kept', `${TASK_WORD} 2 naps`,].join('\n',), },
+          { path: 'doc/cat-purrs.md', text: [`${TASK_WORD} 3 naps`, `${TASK_WORD} 4 naps`,].join('\n',), },
+          { path: 'doc/cat-zoomies.md', text: [`${TASK_WORD} 5 naps`, '## After', `${TASK_WORD} 6 naps`,].join('\n',), },
         ];
         expect(wordCitations({
           files,
           ranges: [
-            { path: 'doc/cat-part-01.md', from: '## Kept', },
-            { path: 'doc/cat-part-02.md', },
-            { path: 'doc/cat-part-03.md', to: '## After', },
+            { path: 'doc/cat-naps.md', from: '## Kept', },
+            { path: 'doc/cat-purrs.md', },
+            { path: 'doc/cat-zoomies.md', to: '## After', },
           ],
-        },),).toEqual(['doc/cat-part-01.md:1 1', 'doc/cat-part-03.md:3 6',],);
+        },),).toEqual(['doc/cat-naps.md:1 1', 'doc/cat-zoomies.md:3 6',],);
         expect(wordCitations({ files, ranges: [], },),).toEqual([
-          'doc/cat-part-01.md:1 1',
-          'doc/cat-part-01.md:3 2',
-          'doc/cat-part-02.md:1 3',
-          'doc/cat-part-02.md:2 4',
-          'doc/cat-part-03.md:1 5',
-          'doc/cat-part-03.md:3 6',
+          'doc/cat-naps.md:1 1',
+          'doc/cat-naps.md:3 2',
+          'doc/cat-purrs.md:1 3',
+          'doc/cat-purrs.md:2 4',
+          'doc/cat-zoomies.md:1 5',
+          'doc/cat-zoomies.md:3 6',
         ],);
       },
     },),
@@ -609,7 +607,7 @@ await describe({
          */
         const files = await readPackageTexts();
         expect(files.some(function isLedger({ path, },): boolean {
-          return path.startsWith(join('doc', 'audit-ledger-part-',),);
+          return path.startsWith(join('doc', 'audit-ledger-process-',),);
         },),).toBe(true,);
         expect(files.some(function isSource({ path, },): boolean {
           return path.startsWith('src',) && path.endsWith('.ts',);

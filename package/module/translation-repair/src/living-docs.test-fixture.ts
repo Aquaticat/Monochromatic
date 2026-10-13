@@ -51,6 +51,21 @@ const CURRENT_PLANNING: readonly string[] = [
 ];
 
 /**
+ One neighbour of a record's index, judged for whether it is a file of that record.
+ */
+type JudgedNeighbour = {
+  /**
+   Neighbour's file name.
+   */
+  readonly name: string;
+
+  /**
+   Whether its text names the record as the one it is part of.
+   */
+  readonly belongs: boolean;
+};
+
+/**
  The living repository-level docs, as paths from the repository root.
  */
 type LivingRepositoryDocs = {
@@ -151,42 +166,79 @@ async function translationRepairDocs({ family, }: { readonly family: string; },)
 }
 
 /**
- A doc and its parts: a doc past the line limit is kept as an index at its own
- path and parts beside it named `<stem>-part-NN.md` (ledger M163), so a guard
- reading the index alone would read none of its text.
+ A record and the files it is kept in: a doc past the line limit keeps its
+ path as an index and files its sections beside it as
+ `<stem>-<what the file holds>.md` (ledger M165), so a guard reading the index
+ alone would read little of its text. A file belongs to the record when its
+ name opens with the record's stem and its own text says which record it is
+ part of; a neighbour that only shares the stem, as a dated snapshot shares the
+ canonical handover's, is not taken.
 
- @param path - doc's path from the repository root
+ @param path - record's path from the repository root
 
- @returns The doc, then its parts in order
+ @returns The record's index, then its files in name order
 
  @example
  ```ts
- const paths = await withParts({ path: 'doc/planning/naps.md', },); // ['doc/planning/naps.md', 'doc/planning/naps-part-01.md']
+ const paths = await withFiles({ path: 'doc/planning/naps.md', },); // ['doc/planning/naps.md', 'doc/planning/naps-on-the-sofa.md']
  ```
  */
-async function withParts({ path, }: { readonly path: string; },): Promise<readonly string[]> {
+export async function withFiles({ path, }: { readonly path: string; },): Promise<readonly string[]> {
   /**
-   Folder holding the doc, from the repository root.
+   Folder holding the record, from the repository root.
    */
   const folder = dirname(path,);
   /**
-   What a part's name opens with.
+   Record's file name.
+   */
+  const indexName = basename(path,);
+  /**
+   What a file's name opens with.
    */
   const opening = `${basename(
     path,
     '.md',
-  )}-part-`;
+  )}-`;
+  /**
+   Neighbours whose names open with the record's stem.
+   */
+  const candidates = (await readdir(join(
+    REPOSITORY_ROOT,
+    folder,
+  ),))
+    .filter(function sharesStem(name,): boolean {
+      return name.startsWith(opening,) && name.endsWith('.md',);
+    },)
+    .toSorted();
+  /**
+   Each candidate with whether its text names this record as the one it is part of.
+   */
+  const judged = await Promise.all(candidates.map(async function judge(name,): Promise<JudgedNeighbour> {
+    /**
+     Candidate's lines.
+     */
+    const lines = (await readFile(
+      join(
+        REPOSITORY_ROOT,
+        folder,
+        name,
+      ),
+      'utf8',
+    )).split('\n',);
+    return {
+      name,
+      belongs: lines.some(function namesRecord(line,): boolean {
+        return line.startsWith('Part of [',) && line.endsWith(`](${indexName}),`,);
+      },),
+    };
+  },),);
   return [
     path,
-    ...(await readdir(join(
-      REPOSITORY_ROOT,
-      folder,
-    ),))
-      .filter(function isPart(name,): boolean {
-        return name.startsWith(opening,) && name.endsWith('.md',);
+    ...judged
+      .filter(function belongsToRecord({ belongs, },): boolean {
+        return belongs;
       },)
-      .toSorted()
-      .map(function inFolder(name,): string {
+      .map(function inFolder({ name, },): string {
         return join(
           folder,
           name,
@@ -237,17 +289,27 @@ export async function readLivingRepositoryDocs(): Promise<LivingRepositoryDocs> 
     snapshot,
   );
   /**
+   The snapshot and the files it is kept in.
+   */
+  const snapshotFiles = await withFiles({ path: snapshotPath, },);
+  /**
+   Links in the snapshot and in each of its files.
+   */
+  const snapshotLinks = (await Promise.all(snapshotFiles.map(async function linksIn(path,): Promise<readonly string[]> {
+    return linkTargets({ text: await readFile(
+      join(
+        REPOSITORY_ROOT,
+        path,
+      ),
+      'utf8',
+    ), },);
+  },),)).flat();
+  /**
    Every target the handover and its snapshot link.
    */
   const linked = new Set([
     ...indexLinks,
-    ...linkTargets({ text: await readFile(
-      join(
-        REPOSITORY_ROOT,
-        snapshotPath,
-      ),
-      'utf8',
-    ), },),
+    ...snapshotLinks,
   ],);
   /**
    Planning docs listed as current that neither links.
@@ -264,15 +326,15 @@ export async function readLivingRepositoryDocs(): Promise<LivingRepositoryDocs> 
   return {
     decisionRecords: await translationRepairDocs({ family: 'decision', },),
     handover: [
-      ...await withParts({ path: HANDOVER_INDEX, },),
-      ...await withParts({ path: snapshotPath, },),
+      HANDOVER_INDEX,
+      ...snapshotFiles,
     ],
     operations: [
       ...await translationRepairDocs({ family: 'runbook', },),
       ...await translationRepairDocs({ family: 'troubleshooting', },),
     ],
     currentPlanning: (await Promise.all(CURRENT_PLANNING.map(function underPlanning(name,): Promise<readonly string[]> {
-      return withParts({ path: join(
+      return withFiles({ path: join(
         'doc',
         'planning',
         name,
