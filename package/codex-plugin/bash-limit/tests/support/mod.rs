@@ -40,8 +40,7 @@ pub fn fixture() -> io::Result<PathBuf> {
     // Request a private unique directory; its quote and space exercise shell escaping.
     let output = Command::new("mktemp")
         .arg("--directory")
-        .arg("--tmpdir").arg(scratch)
-        .arg("codex-'quoted path'-XXXXXXXX")
+        .arg(scratch.join("codex-'quoted path'-XXXXXXXX"))
         .output()?;
     if !output.status.success() {
         // What: `Err` signals failure; sibling `Ok` signals success.
@@ -51,7 +50,8 @@ pub fn fixture() -> io::Result<PathBuf> {
         // ```ts
         // throw new Error('mktemp could not create the fixture');
         // ```
-        return Err(io::Error::other("mktemp could not create the fixture"));
+        // Decode stderr for the failure report, replacing only invalid diagnostic bytes.
+        return Err(io::Error::other(String::from_utf8_lossy(&output.stderr).into_owned()));
     }
     // Decode mktemp's bytes without substituting invalid characters.
     let text = String::from_utf8(output.stdout).map_err(io::Error::other)?;
