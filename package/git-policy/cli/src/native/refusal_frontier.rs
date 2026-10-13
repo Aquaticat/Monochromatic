@@ -39,8 +39,6 @@
 /// import { parseCommitRegion } from './command_commit.ts';
 /// ```
 use super::child_environment::environment_value;
-use super::command_commit::{CommitRegion, parse_commit_region};
-use super::command_options::OptionError;
 use super::command_worktree::changes_worktree_registrations;
 use super::git_builtins::is_git_builtin;
 use super::unported::Unported;
@@ -83,6 +81,26 @@ pub const LEASE_VARIABLES: &[&str] = &[
 ];
 
 /// What:
+///  The lease variables whose holders are not ported yet,
+///  so an inherited value still stops a guarded
+///  command.
+///  The landing lease is not here:
+///  an index writer honours it through coordination.
+///  The preparation lease is not here either:
+///  a command inside a transaction's hook proceeds, and recovery is skipped when the lease is valid.
+/// Why:
+///   A nested `git add` inside a coordinated `git rebase --exec` inherits the landing lease and must
+///   proceed;
+///  refusing it would deadlock the rebase.
+///  A nested `git add` inside a `pre-commit` hook inherits the preparation lease and must proceed too.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// const REFUSED_LEASE_VARIABLES = ['CLI_GIT_WORKTREE_COPY_LEASE'];
+/// ```
+pub const REFUSED_LEASE_VARIABLES: &[&str] = &["CLI_GIT_WORKTREE_COPY_LEASE"];
+
+/// What:
 ///  The first lease variable present in the environment,
 ///  if any.
 ///       `&[(OsString, OsString)]` borrows the environment as name/value pairs;
@@ -97,8 +115,8 @@ pub const LEASE_VARIABLES: &[&str] = &[
 /// function inheritedLease(environment: [string, string][]): string | undefined;
 /// ```
 pub fn inherited_lease(environment: &[(OsString, OsString)]) -> Option<&'static str> {
-    // `for variable in LEASE_VARIABLES` borrows each name; `*variable` copies it out.
-    for variable in LEASE_VARIABLES {
+    // `for variable in REFUSED_LEASE_VARIABLES` borrows each name; `*variable` copies it out.
+    for variable in REFUSED_LEASE_VARIABLES {
         if environment_value(environment, variable).is_some() {
             // `Some(x)` is the "present" case of `Option`.
             return Some(*variable);
@@ -106,30 +124,6 @@ pub fn inherited_lease(environment: &[(OsString, OsString)]) -> Option<&'static 
     }
     // `None` is the "absent" case.
     return None;
-}
-
-/// What:
-///  Whether Git's own option table reads the tokens after `commit` as a dry run.
-///       `&[OsString]` borrows those tokens,
-///  already free of wrapper controls.
-/// Why:
-///   Only a dry run stays outside the commit transaction.
-///  A region the table refuses
-///       is not known to be a dry run,
-///  so it is treated as a real commit.
-///
-/// In TS you'd write (pseudocode):
-/// ```ts
-/// function commitIsDryRun(region: string[]): boolean { try { return parseCommitRegion(region).isDryRun; } catch { return false; } }
-/// ```
-fn commit_is_dry_run(region: &[OsString]) -> bool {
-    // `&[]` is an empty list of wrapper flags: they were removed before this point.
-    let parsed: Result<CommitRegion, OptionError> = parse_commit_region(region, &[]);
-    // `match` unpacks the `Result`: `Ok` carries the facts, `Err(_)` ignores the refusal.
-    match parsed {
-        Ok(found) => return found.dry_run,
-        Err(_) => return false,
-    }
 }
 
 /// What:
@@ -181,10 +175,8 @@ pub fn command_frontier(
     let word: &[u8] = command_word(stripped);
     let region: &[OsString] = command_region(stripped);
     if word == b"commit" {
-        if commit_is_dry_run(region) {
-            return None;
-        }
-        return Some(Unported::CommitTransaction);
+        // A real commit runs through the commit transaction; a dry run is forwarded.
+        return None;
     }
     if !synchronizes_worktree_copies(identity) || stripped.controls.skip_worktree_copy {
         return None;

@@ -343,8 +343,11 @@ name = "git-policy-cli"
 version = "0.0.1"
 dependencies = [
  "forbidden-strings",
+ "getrandom",
  "ignore",
+ "libc",
  "monochromatic-jsonc-edit",
+ "serde_json",
  "tempfile",
 ]
 

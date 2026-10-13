@@ -114,6 +114,45 @@ function isNativeSourceGlob(scope) {
   return true;
 }
 
+/** Test timeout, in seconds, that cargo-mutants applies to each mutant when no `--timeout` option is given. */
+// Raised from 90 so a loaded host does not turn slow mutants into timeouts; a `--timeout` option overrides it.
+const defaultTimeoutSeconds = 300;
+/** Largest test timeout, in seconds, a `--timeout` option may request. */
+const maximumTimeoutSeconds = 3600;
+
+/**
+ Split `--timeout <seconds>` from the repeated `--file` scopes; the timeout defaults to `defaultTimeoutSeconds`.
+
+ @param {readonly string[]} options - command-line arguments after the script path
+ @returns {{ timeoutSeconds: number, examine: string[], scopeOptions: string[] }} timeout, the mutant-name patterns of
+   the repeated `--examine <regex>` options (only matching mutants are tried), and the arguments left for `parseScopes`
+ */
+function parseTimeout(options) {
+  let timeoutSeconds = defaultTimeoutSeconds;
+  /** @type {string[]} */
+  const scopeOptions = [];
+  /** @type {string[]} */
+  const examine = [];
+  for (let index = 0; index < options.length; index += 2) {
+    const flag = options[index];
+    const value = options[index + 1];
+    if (flag === '--examine') {
+      if ((value === undefined) || !/^[A-Za-z0-9_|:.*?()\\ -]+$/u.test(value))
+        throw new NativeVerificationError(`--examine must be a regular expression of plain characters, got ${String(value)}.`);
+      examine.push(value);
+      continue;
+    }
+    if (flag !== '--timeout') {
+      scopeOptions.push(flag ?? '', value ?? '');
+      continue;
+    }
+    if ((value === undefined) || !/^[1-9][0-9]*$/.test(value) || (Number(value) > maximumTimeoutSeconds))
+      throw new NativeVerificationError(`--timeout must be a whole number of seconds from 1 to ${maximumTimeoutSeconds}, got ${value}.`);
+    timeoutSeconds = Number(value);
+  }
+  return { timeoutSeconds, examine, scopeOptions };
+}
+
 /**
  Accept only repeated `--file <glob>` scopes; anything else is a usage error.
 
@@ -138,10 +177,11 @@ function parseScopes(options) {
 /**
  cargo-mutants command the campaign image runs.
 
- @param {{ scopes: readonly string[] }} request - `src/native` file globs; empty mutates every file
+ @param {{ scopes: readonly string[], examine: readonly string[], timeoutSeconds: number }} request - `src/native` file
+   globs, mutant-name patterns to restrict to, and per-mutant test limit
  @returns {string[]} complete argument array, also recorded in the manifest
  */
-function mutationCommand({ scopes }) {
+function mutationCommand({ scopes, examine, timeoutSeconds }) {
   return [
     'cargo',
     'mutants',
@@ -152,7 +192,7 @@ function mutationCommand({ scopes }) {
     '--build-timeout',
     '300',
     '--timeout',
-    '90',
+    String(timeoutSeconds),
     '--no-config',
     '--no-shuffle',
     '--output',
@@ -165,6 +205,12 @@ function mutationCommand({ scopes }) {
         kind,
       ];
     }),
+    ...examine.flatMap(function examineArguments(pattern) {
+      return [
+        '--re',
+        pattern,
+      ];
+    }),
     // Scoped runs are evidence for the named files only. The unmutated baseline still runs over everything.
     ...scopes.flatMap(function scopeArguments(scope) {
       return [
@@ -172,13 +218,31 @@ function mutationCommand({ scopes }) {
         scope,
       ];
     }),
+    ...baselineSkipArguments(),
   ];
+}
+
+/**
+ Test-path arguments that skip one named test in the baseline and every mutant run.
+
+ Opt-in through `NATIVE_MUTATION_BASELINE_SKIP`, which names one test path such as `module::tests::name`.
+ Unset, the campaign runs every test.
+
+ @returns {string[]} `['--', '--', '--skip', name]` or no arguments
+ */
+function baselineSkipArguments() {
+  const name = process.env.NATIVE_MUTATION_BASELINE_SKIP;
+  if (name === undefined || name === '') return [];
+  if (!/^[a-z_][a-z0-9_]*(::[a-z_][a-z0-9_]*)+$/u.test(name))
+    throw new NativeVerificationError(`NATIVE_MUTATION_BASELINE_SKIP must be a test path, got ${name}.`);
+  return ['--', '--', '--skip', name];
 }
 
 /** Build and run the tool over an immutable input image, then retain its complete report. */
 async function main() {
-  const scopes = parseScopes(process.argv
+  const { timeoutSeconds, examine, scopeOptions } = parseTimeout(process.argv
     .slice(2));
+  const scopes = parseScopes(scopeOptions);
   await using context = await mkdtempDisposable(join(
     tmpdir(),
     'cli-git-native-mutation-',
@@ -212,12 +276,16 @@ async function main() {
   if (!isContentAddressedId(base))
     throw new NativeVerificationError('Test image did not resolve to a full content-addressed image ID; run native:test:container first.');
   console.log(`Mutation evidence: ${evidence}`);
-  await runPlantedControls({
-    base,
-    limits,
-    context: context.path,
-    evidence,
-  });
+  // Parallel campaigns over one tested snapshot prove the harness once; `NATIVE_MUTATION_SKIP_PLANTED=1` skips the repeat.
+  if (process.env.NATIVE_MUTATION_SKIP_PLANTED === '1')
+    console.log('Planted controls skipped: another campaign over this snapshot ran them.');
+  else
+    await runPlantedControls({
+      base,
+      limits,
+      context: context.path,
+      evidence,
+    });
   const cargoHome = process.env
     .CARGO_HOME
     ?? join(
@@ -240,7 +308,7 @@ async function main() {
       'cargo-mutants',
     ),
   );
-  const command = mutationCommand({ scopes });
+  const command = mutationCommand({ scopes, examine, timeoutSeconds });
   await writeFile(
     join(
       context.path,

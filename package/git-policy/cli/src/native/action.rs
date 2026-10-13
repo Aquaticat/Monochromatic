@@ -22,6 +22,7 @@
 /// ```
 use std::ffi::OsString;
 /// `PathBuf` is an owned filesystem path of raw OS bytes.
+use super::index_writer_forward::CoordinatedForward;
 use std::path::PathBuf;
 
 /// What:
@@ -69,6 +70,16 @@ pub enum Action {
         overlay: Vec<(OsString, OsString)>,
         /// Complete warning event lines,
         ///  written to standard error before Git starts.
+        stderr: String,
+    },
+    /// Forward an index writer under its landing lock:
+    ///  coordinate,
+    ///  run Git as a child,
+    ///  release.
+    ForwardCoordinated {
+        /// What the coordinated run needs.
+        forward: Box<CoordinatedForward>,
+        /// Warning events written to standard error before the coordination starts.
         stderr: String,
     },
     /// Stop without running the caller's command.

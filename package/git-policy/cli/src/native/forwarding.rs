@@ -131,7 +131,7 @@ pub fn exit_code(outcome: ChildOutcome) -> i32 {
 /// ```ts
 /// function outcomeOf(status: { code: number | null; signal: number | null }): ChildOutcome;
 /// ```
-fn outcome_of(status: std::process::ExitStatus) -> ChildOutcome {
+pub(crate) fn outcome_of(status: std::process::ExitStatus) -> ChildOutcome {
     // `if let Some(code) = ...` runs only when the child exited normally.
     if let Some(code) = status.code() {
         return ChildOutcome::Exited(code);

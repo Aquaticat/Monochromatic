@@ -121,7 +121,7 @@ fn autofix(sequence: u64, trigger: &str, severity: &str, path: &str, fix: &str) 
     return format!(
         "{{\"schemaVersion\":1,\"sequence\":{sequence},\"type\":\"finding\",\"trigger\":\"{trigger}\",\
          \"policyId\":\"markdown/autofix\",\"severity\":\"{severity}\",\"code\":\"markdown/autofix/markdown-autofix\",\
-         \"message\":\"markdown-lint --fix (lfs-image-url) rewrites {path}.\",\"path\":\"{path}\",\"fix\":\"{fix}\"}}\n"
+         \"message\":\"monochromatic-lint --fix (markdown/lfs-image-url) rewrites {path}.\",\"path\":\"{path}\",\"fix\":\"{fix}\"}}\n"
     );
 }
 

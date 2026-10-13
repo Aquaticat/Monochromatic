@@ -96,6 +96,14 @@ async function copySourceSnapshot({ context }) {
         'clippy.toml',
       ),
     },
+    // The configuration control in `src/native/config_repository_tests.rs` reads the repository's own file.
+    {
+      from: resolve('../../../cli-git.config.jsonc'),
+      to: join(
+        context,
+        'cli-git.config.jsonc',
+      ),
+    },
   ];
   const copies = await Promise.allSettled(entries.map(function copyEntry(entry) {
     return cp(
@@ -149,6 +157,7 @@ async function main() {
       'COPY --chown=1000:1000 vendor /work/vendor',
       'COPY --chown=1000:1000 cargo-config /work/.cargo',
       'COPY clippy.toml /work/clippy.toml',
+      'COPY cli-git.config.jsonc /work/cli-git.config.jsonc',
       'RUN ["mkdir", "--parents", "/home/tester/.cargo"]',
       'RUN ["chown", "--recursive", "1000:1000", "/work/package", "/home/tester"]',
       'ENV HOME=/home/tester CARGO_HOME=/home/tester/.cargo CARGO_NET_OFFLINE=true CARGO_BUILD_JOBS=2 CARGO_PROFILE_DEV_DEBUG=0 CARGO_INCREMENTAL=0',

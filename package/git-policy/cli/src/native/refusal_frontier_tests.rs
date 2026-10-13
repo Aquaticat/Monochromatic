@@ -15,7 +15,7 @@
 
 /// The frontier under test,
 ///  its inputs and the argument builders.
-use super::{LEASE_VARIABLES, command_frontier, inherited_lease};
+use super::{LEASE_VARIABLES, REFUSED_LEASE_VARIABLES, command_frontier, inherited_lease};
 use crate::command_test_support::{byte_argument, os_arguments};
 use crate::unported::Unported;
 use crate::worktree_identity::WorktreeIdentity;
@@ -57,42 +57,15 @@ fn frontier(values: &[&str], identity: &WorktreeIdentity) -> Option<Unported> {
     return command_frontier(&stripped, identity);
 }
 
-/// A commit that is not provably a dry run is stopped at every location.
+/// No commit is a frontier: a real commit runs through the transaction and a dry run is forwarded.
 #[test]
-fn every_commit_but_a_dry_run_needs_the_transaction() {
+fn no_commit_is_stopped_at_the_frontier() {
     for identity in locations() {
         for values in [
-            vec!["commit"],
             vec!["commit", "-m", "x"],
-            vec!["commit", "-m", "x", "--", "file"],
-            vec!["commit", "--amend", "--no-edit"],
-            vec!["commit", "-a", "-m", "x"],
-            vec!["commit", "--allow-empty", "--message=x"],
-            vec!["-C", "dir", "--no-pager", "commit", "-m", "x"],
-            vec!["commit", "--dry-run", "--no-dry-run"],
-            vec!["commit", "-m", "--dry-run"],
-            vec!["commit", "--", "--dry-run"],
-            vec!["commit", "--no-enforce-only", "-m", "x"],
-            vec!["--cli-git-keep-going", "commit", "-m", "x"],
-            // Git refuses these regions; a refusal this table got wrong must not forward a commit.
-            vec!["commit", "--no-such-option"],
-            vec!["commit", "--dry-run", "--no-such-option"],
-        ] {
-            assert_eq!(
-                frontier(values.as_slice(), &identity),
-                Some(Unported::CommitTransaction),
-                "{values:?} {identity:?}"
-            );
-        }
-        for values in [
-            vec!["commit", "--dry-run"],
             vec!["commit", "--dry-run", "-m", "x"],
-            vec!["commit", "-m", "x", "--dry-run", "--", "file"],
-            vec!["commit", "--no-dry-run", "--dry-run"],
-            vec!["commit", "--no-enforce-only", "--dry-run"],
-            vec!["-C", "dir", "commit", "--dry-run"],
-            // Git accepts an unambiguous abbreviation of a long option.
-            vec!["commit", "--dry"],
+            vec!["commit", "--no-such-option"],
+            vec!["-C", "dir", "--no-pager", "commit", "-m", "x"],
         ] {
             assert_eq!(
                 frontier(values.as_slice(), &identity),
@@ -235,7 +208,13 @@ fn an_inherited_lease_is_found_by_name() {
     ];
     assert_eq!(inherited_lease(&[]), None);
     assert_eq!(inherited_lease(unrelated.as_slice()), None);
-    for variable in LEASE_VARIABLES {
+    // The landing lease is honoured by coordination, not refused here.
+    let landing: Vec<(OsString, OsString)> = vec![(
+        OsString::from("CLI_GIT_LANDING_LEASE"),
+        OsString::from("token"),
+    )];
+    assert_eq!(inherited_lease(landing.as_slice()), None);
+    for variable in REFUSED_LEASE_VARIABLES {
         for value in ["", "token"] {
             let mut environment: Vec<(OsString, OsString)> = unrelated.clone();
             environment.push((OsString::from(variable), OsString::from(value)));
@@ -247,14 +226,14 @@ fn an_inherited_lease_is_found_by_name() {
         }
     }
     let both: Vec<(OsString, OsString)> = vec![
+        (OsString::from("CLI_GIT_LANDING_LEASE"), OsString::from("b")),
         (
             OsString::from("CLI_GIT_WORKTREE_COPY_LEASE"),
             OsString::from("a"),
         ),
-        (OsString::from("CLI_GIT_LANDING_LEASE"), OsString::from("b")),
     ];
     assert_eq!(
         inherited_lease(both.as_slice()),
-        Some("CLI_GIT_LANDING_LEASE")
+        Some("CLI_GIT_WORKTREE_COPY_LEASE")
     );
 }

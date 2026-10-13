@@ -22,6 +22,14 @@ use super::child_environment::{
 };
 use super::effective_target::default_allowed_worktree_dirs;
 use super::forwarding::replace_process_with_real_git;
+use super::index_writer_forward::{CoordinatedForward, CoordinatedRun, run_coordinated_forward};
+use super::index_writer_commands::is_index_writer;
+use super::forwarded_command::{ResolvedCommand, resolve_forwarded_command};
+use super::invocation_config::{config_invalid_event, load_identity_config};
+use super::config_file::LoadedConfig;
+use super::repository_location::RepositoryLocation;
+use super::transaction_git::GitContext;
+use super::worktree_identity::WorktreeIdentity;
 use super::global_arguments::{GlobalLayout, GlobalOutcome, global_layout};
 use super::management::plan_management;
 /// The linter the executable gives the Markdown policy.
@@ -32,7 +40,7 @@ use super::policy_checks::{ShippedChecks, shipped_checks};
 use super::policy_content::LifecycleContent;
 use super::real_git::{ResolutionInputs, process_resolution_inputs, resolve_real_git};
 use super::real_git_candidate::same_file;
-use super::repository_facts::{GitFacts, git_facts};
+use super::repository_facts::{GitFacts, RepositoryFacts, git_facts};
 /// The variable that names the forbidden-strings rules file.
 use super::scanner_selection::RULES_VARIABLE;
 use super::wrapped_command::{WrappedOutcome, run_wrapped_command};
@@ -203,12 +211,7 @@ pub fn plan_invocation(
             arguments: forwarded,
             stderr,
         } => {
-            return Action::Forward {
-                real_git,
-                arguments: forwarded,
-                overlay,
-                stderr,
-            };
+            return forward_action(real_git, forwarded, overlay, stderr, environment, &mut checks);
         }
         WrappedOutcome::Exit { code, stderr } => {
             return Action::Exit {
@@ -268,6 +271,10 @@ pub fn run_process(arguments: &[OsString], environment: &[(OsString, OsString)])
             );
             return ENGINE_FAILURE_EXIT_CODE;
         }
+        Action::ForwardCoordinated { forward, stderr } => {
+            write_stream(&mut std::io::stderr(), stderr.as_str());
+            return run_coordinated_action(&forward);
+        }
         Action::Exit {
             code,
             stdout,
@@ -279,6 +286,111 @@ pub fn run_process(arguments: &[OsString], environment: &[(OsString, OsString)])
             return code;
         }
     }
+}
+
+/// What:
+///  Run a coordinated forward:
+///  print its failure,
+///  run Git under the landing lock,
+///  or replace the process when no coordination applies after all.
+/// Why:
+///   The lock must outlive Git,
+///  so only a run that takes no lock may replace the process.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// const outcome = await forwardToRealGit({ ... }); process.exitCode = outcome.exitCode;
+/// ```
+fn run_coordinated_action(forward: &CoordinatedForward) -> i32 {
+    match run_coordinated_forward(forward) {
+        CoordinatedRun::Ran(code) => return code,
+        CoordinatedRun::Failed { stderr, code } => {
+            write_stream(&mut std::io::stderr(), stderr.as_str());
+            return code;
+        }
+        CoordinatedRun::NotCoordinated => {
+            let error: std::io::Error = replace_process_with_real_git(
+                forward.real_git.as_path(),
+                forward.arguments.as_slice(),
+                forward.overlay.as_slice(),
+            );
+            write_stream(
+                &mut std::io::stderr(),
+                format!("cli-git: cannot start {}: {error}\n", forward.real_git.display()).as_str(),
+            );
+            return ENGINE_FAILURE_EXIT_CODE;
+        }
+    }
+}
+
+/// What:
+///  Choose how a forwarded command runs:
+///  plainly,
+///  or under the landing lock when it writes the real index.
+/// Why:
+///   Only index writers inside a repository coordinate,
+///  with the configured patience.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// if (!isIndexWriter(command)) forward(args); else await forwardToRealGit({ ..., unprovenOwnerTimeoutMs });
+/// ```
+fn forward_action(
+    real_git: PathBuf,
+    arguments: Vec<OsString>,
+    overlay: Vec<(OsString, OsString)>,
+    stderr: String,
+    environment: &[(OsString, OsString)],
+    checks: &mut ShippedChecks<GitFacts>,
+) -> Action {
+    let context: GitContext = GitContext {
+        real_git: real_git.clone(),
+        overlay: overlay.clone(),
+        global_prefix: Vec::new(),
+    };
+    let command: ResolvedCommand = resolve_forwarded_command(&context, arguments.as_slice());
+    if !is_index_writer(&command) {
+        return Action::Forward {
+            real_git,
+            arguments,
+            overlay,
+            stderr,
+        };
+    }
+    let location: RepositoryLocation = match checks.facts.location() {
+        Ok(found) => found,
+        Err(message) => return failure(message.as_str()),
+    };
+    if location.identity == WorktreeIdentity::OutsideWorktree {
+        return Action::Forward {
+            real_git,
+            arguments,
+            overlay,
+            stderr,
+        };
+    }
+    let loaded: LoadedConfig = match load_identity_config(&location.identity) {
+        Ok(found) => found,
+        Err(error) => {
+            return Action::Exit {
+                code: ENGINE_FAILURE_EXIT_CODE,
+                stdout: String::new(),
+                stderr: config_invalid_event(&error),
+            };
+        }
+    };
+    return Action::ForwardCoordinated {
+        forward: Box::new(CoordinatedForward {
+            real_git,
+            arguments,
+            overlay,
+            identity: location.identity,
+            command,
+            environment: environment.to_vec(),
+            timeout_ms: loaded.config.concurrency.index_lock.unproven_owner_timeout_ms,
+        }),
+        stderr,
+    };
 }
 
 /// What:

@@ -387,3 +387,60 @@ fn a_fix_summary_lists_every_path_s_bytes_once_one_is_not_utf8() {
         "{last}"
     );
 }
+
+/// The concurrent-commit events have the incumbent's field order and sequence numbering.
+#[test]
+fn concurrent_commit_events_have_the_incumbent_shape() {
+    let events: Vec<PolicyEvent> = vec![
+        PolicyEvent::LandingRaceLost {
+            attempt: 2,
+            winning_oid: String::from("abc"),
+        },
+        PolicyEvent::LandingReserved { lost_races: 2 },
+        PolicyEvent::CommitReplayed {
+            prepared_oid: String::from("p"),
+            from_base: Some(String::from("b")),
+            onto: String::from("o"),
+            oid: String::from("n"),
+        },
+        PolicyEvent::CommitReplayed {
+            prepared_oid: String::from("p"),
+            from_base: None,
+            onto: String::from("o"),
+            oid: String::from("n"),
+        },
+        PolicyEvent::ReplayHeadersDropped {
+            prepared_oid: String::from("p"),
+            oid: String::from("n"),
+            headers: vec![String::from("x-one")],
+        },
+        PolicyEvent::ReplayHeadersDropped {
+            prepared_oid: String::from("p"),
+            oid: String::from("n"),
+            headers: vec![String::from("x-one"), String::from("x-two")],
+        },
+        PolicyEvent::ReplayConflict {
+            target_ref: String::from("refs/heads/main"),
+            paths: vec![String::from("a.txt"), String::from("b.txt")],
+            winning_oid: String::from("w"),
+            prepared_oid: String::from("p"),
+        },
+    ];
+    assert_eq!(
+        render_policy_events(0, events.as_slice()),
+        concat!(
+            "{\"schemaVersion\":1,\"sequence\":0,\"type\":\"landing-race-lost\",\"attempt\":2,\"winningOid\":\"abc\"}\n",
+            "{\"schemaVersion\":1,\"sequence\":1,\"type\":\"landing-reserved\",\"lostRaces\":2}\n",
+            "{\"schemaVersion\":1,\"sequence\":2,\"type\":\"commit-replayed\",\"preparedOid\":\"p\",\"fromBase\":\"b\",\"onto\":\"o\",\"oid\":\"n\"}\n",
+            "{\"schemaVersion\":1,\"sequence\":3,\"type\":\"commit-replayed\",\"preparedOid\":\"p\",\"onto\":\"o\",\"oid\":\"n\"}\n",
+            "{\"schemaVersion\":1,\"sequence\":4,\"type\":\"replay-headers-dropped\",\"preparedOid\":\"p\",\"oid\":\"n\",\"headers\":[\"x-one\"],\"message\":\"Replaying signed commit p as n dropped its x-one header, because Git can re-sign only the headers git commit-tree writes.\"}\n",
+            "{\"schemaVersion\":1,\"sequence\":5,\"type\":\"replay-headers-dropped\",\"preparedOid\":\"p\",\"oid\":\"n\",\"headers\":[\"x-one\",\"x-two\"],\"message\":\"Replaying signed commit p as n dropped its x-one, x-two headers, because Git can re-sign only the headers git commit-tree writes.\"}\n",
+            "{\"schemaVersion\":1,\"sequence\":6,\"type\":\"core-finding\",\"trigger\":\"pre-forward\",\"coreId\":\"concurrent-commit\",\"code\":\"concurrent-commit/replay-conflict\",\"message\":\"refs/heads/main moved while this commit was prepared, and replaying it conflicts with w in a.txt, b.txt; nothing landed. The prepared commit p stays in the object store until gc expires it: resolve with git cherry-pick p.\",\"paths\":[\"a.txt\",\"b.txt\"],\"winningOid\":\"w\",\"preparedOid\":\"p\"}\n",
+        )
+    );
+    // Only the conflict blocks the command.
+    assert!(event_blocks(&events[6]));
+    for event in &events[..6] {
+        assert!(!event_blocks(event), "{event:?}");
+    }
+}

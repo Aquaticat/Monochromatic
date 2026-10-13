@@ -567,3 +567,52 @@ fn direct_candidates_are_every_selected_worktree_file() {
     );
     remove(root.as_path());
 }
+
+/// `StagedAtBase` marks additions against the recorded base, not against a `HEAD` another landing moved;
+///  an unborn base marks every entry added, and no pathspec means no candidate.
+#[test]
+fn staged_at_base_compares_with_the_recorded_base_and_not_the_moved_head() {
+    let root: PathBuf = fixture("predict-staged-at-base");
+    let repo: PathBuf = base(root.as_path(), "repo");
+    let recorded: String = String::from_utf8_lossy(git(repo.as_path(), &["rev-parse", "HEAD"]).stdout.as_slice())
+        .trim()
+        .to_string();
+    std::fs::write(repo.join("fresh.txt"), b"fresh\n").expect("fresh");
+    git(repo.as_path(), &["add", "--", "fresh.txt"]);
+    // Another landing moves HEAD by committing the same path.
+    git(repo.as_path(), &["commit", "--quiet", "--message=moved", "--only", "--", "fresh.txt"]);
+    let scope: Vec<OsString> = vec![OsString::from(":(top,literal)fresh.txt")];
+    let live: Vec<(String, CandidateChange)> =
+        listed(&prepare_with(repo.as_path(), &[], &CandidateRequest::Staged(scope.clone())).expect("staged"));
+    assert_eq!(live, vec![(String::from("fresh.txt"), CandidateChange::Modified)]);
+    let object = crate::candidate_object::parse_object_id(recorded.as_bytes()).expect("object name");
+    let at_base: Vec<(String, CandidateChange)> = listed(
+        &prepare_with(
+            repo.as_path(),
+            &[],
+            &CandidateRequest::StagedAtBase { base: Some(object), pathspecs: scope.clone() },
+        )
+        .expect("at base"),
+    );
+    assert_eq!(at_base, vec![(String::from("fresh.txt"), CandidateChange::Added)]);
+    let unborn: Vec<(String, CandidateChange)> = listed(
+        &prepare_with(
+            repo.as_path(),
+            &[],
+            &CandidateRequest::StagedAtBase {
+                base: None,
+                pathspecs: vec![OsString::from(":(top,literal)tracked.txt")],
+            },
+        )
+        .expect("unborn"),
+    );
+    assert_eq!(unborn, vec![(String::from("tracked.txt"), CandidateChange::Added)]);
+    let nothing = prepare_with(
+        repo.as_path(),
+        &[],
+        &CandidateRequest::StagedAtBase { base: None, pathspecs: Vec::new() },
+    )
+    .expect("empty scope");
+    assert!(nothing.version.candidates().is_empty());
+    remove(root.as_path());
+}

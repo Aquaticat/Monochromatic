@@ -16,6 +16,7 @@
 #![cfg(unix)]
 
 /// Import the decision under test and shared fixtures.
+use crate::config_schema::DEFAULT_UNPROVEN_OWNER_TIMEOUT_MS;
 use super::{MANAGEMENT_COMMAND, plan_invocation};
 use crate::action::{Action, ENGINE_FAILURE_EXIT_CODE};
 use crate::child_environment::FORWARD_TARGET_VARIABLE;
@@ -23,7 +24,7 @@ use crate::config_file::CONFIG_FILE_NAME;
 use crate::management_arguments::MANAGEMENT_HELP;
 use crate::real_git::{Platform, ResolutionInputs};
 use crate::test_support::{REAL_GIT, executable, fixture, remove, repository};
-use crate::unported::{Unported, unported_notice};
+
 use std::ffi::OsString;
 use std::path::{Path, PathBuf};
 
@@ -104,29 +105,40 @@ pub(super) fn stopped(action: Action) -> String {
             return stderr;
         }
         Action::Forward { .. } => panic!("expected a stop action, got {action:?}"),
+        Action::ForwardCoordinated { .. } => panic!("a coordinated forward is not expected in this control"),
     }
 }
 
-/// The forward action of `forward`,
-///  with these warning events written first.
-fn forward_after(arguments: Vec<OsString>, warnings: &str) -> Action {
-    // `match` takes the plain forward apart and rebuilds it with the warnings.
-    match forward(arguments) {
-        Action::Forward {
-            real_git,
-            arguments: forwarded,
-            overlay,
-            ..
-        } => {
-            return Action::Forward {
-                real_git,
-                arguments: forwarded,
-                overlay,
-                stderr: String::from(warnings),
-            };
-        }
-        Action::Exit { .. } => panic!("the plain forward is a forward"),
-    }
+/// What:
+///  Check that a planned `git add` in a repository is coordinated,
+///  with the given arguments,
+///  warnings,
+///  real Git and lock-PID overlay,
+///  and the default unproven-owner budget.
+/// Why:
+///   The identity and the lease are the repository's own,
+///  so only the fixed fields are compared.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// expect(plan).toMatchObject({ kind: 'forward-coordinated', args, stderr, unprovenOwnerTimeoutMs: 1000 });
+/// ```
+fn assert_coordinated_add(action: Action, arguments: &[OsString], warnings: &str) {
+    let Action::ForwardCoordinated { forward: planned, stderr } = action else {
+        panic!("an index writer is coordinated, got a different action");
+    };
+    assert_eq!(stderr, warnings);
+    assert_eq!(planned.arguments.as_slice(), arguments);
+    assert_eq!(planned.real_git, PathBuf::from(REAL_GIT));
+    let Action::Forward {
+        overlay: expected_overlay,
+        ..
+    } = forward(arguments.to_vec())
+    else {
+        panic!("the fixture is a plain forward");
+    };
+    assert_eq!(planned.overlay, expected_overlay);
+    assert_eq!(planned.timeout_ms, DEFAULT_UNPROVEN_OWNER_TIMEOUT_MS);
 }
 
 /// The final-newline warning of `git add` about `file`.
@@ -218,6 +230,7 @@ fn inspection_commands_are_forwarded_without_wrapper_controls() {
             Action::Forward { .. } => {
                 panic!("{prefix:?}: a command below the top level is stopped")
             }
+        Action::ForwardCoordinated { .. } => panic!("a coordinated forward is not expected in this control"),
         }
     }
     remove(root.as_path());
@@ -268,6 +281,7 @@ fn management_namespace_is_answered_by_the_wrapper() {
             assert_eq!(stdout, "");
         }
         Action::Forward { .. } => panic!("the management namespace is never forwarded"),
+        Action::ForwardCoordinated { .. } => panic!("a coordinated forward is not expected in this control"),
     }
     // The global prefix reaches the direct command: it selects the repository whose file is read.
     resolution.path = OsString::from("/usr/bin");
@@ -292,6 +306,7 @@ fn management_namespace_is_answered_by_the_wrapper() {
             assert_eq!(stderr, "");
         }
         Action::Forward { .. } => panic!("the management namespace is never forwarded"),
+        Action::ForwardCoordinated { .. } => panic!("a coordinated forward is not expected in this control"),
     }
     remove(root.as_path());
 }
@@ -336,22 +351,25 @@ fn policy_commands_validate_configuration_then_run_policies() {
     std::fs::write(repo.join("file"), b"no final newline").expect("file");
     // No configuration file: the defaults apply, and the built-in content policy reads
     // what the add would stage and warns before Git runs.
-    assert_eq!(
+    assert_coordinated_add(
         plan_invocation(arguments.as_slice(), &[], &resolution),
-        forward_after(arguments.clone(), FILE_WARNING)
+        arguments.as_slice(),
+        FILE_WARNING,
     );
     // A valid file is accepted and its settings are used.
     std::fs::write(&source, r#"{ "policies": { "final-newline": "off" } }"#).expect("valid config");
-    assert_eq!(
+    assert_coordinated_add(
         plan_invocation(arguments.as_slice(), &[], &resolution),
-        forward(arguments.clone())
+        arguments.as_slice(),
+        "",
     );
     // A legacy file beside it is not mentioned by an ordinary command: only
     // `git cli-git check` reports it.
     std::fs::write(&legacy, "export default {};").expect("legacy config");
-    assert_eq!(
+    assert_coordinated_add(
         plan_invocation(arguments.as_slice(), &[], &resolution),
-        forward(arguments.clone())
+        arguments.as_slice(),
+        "",
     );
     // An invalid key is exactly one config-invalid event and no refusal notice.
     std::fs::write(&source, r#"{ "policies": { "unknown": "off" } }"#).expect("invalid config");
@@ -401,14 +419,15 @@ fn policy_commands_outside_a_worktree_use_defaults() {
             "{rest:?}"
         );
     }
-    // A commit is refused wherever it is typed.
-    assert_eq!(
-        stopped(plan_invocation(
-            in_directory(plain.as_path(), &["commit", "-m", "x"]).as_slice(),
-            &[],
-            &resolution,
-        )),
-        unported_notice(&Unported::CommitTransaction, "commit")
-    );
+    // A commit outside a repository ends on Git's own refusal to find one, and creates nothing.
+    match plan_invocation(
+        in_directory(plain.as_path(), &["commit", "-m", "x"]).as_slice(),
+        &[],
+        &resolution,
+    ) {
+        Action::Exit { code, .. } => assert_eq!(code, 1),
+        other => panic!("expected the commit to end, got {other:?}"),
+    }
+    assert!(!plain.join(".git").exists());
     remove(root.as_path());
 }

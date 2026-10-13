@@ -162,7 +162,7 @@ fn the_check_reports_each_noncanonical_text_file() {
         LifecycleContent::Requested(CandidateRequest::Add(vec![OsString::from("--all")]));
     let mut content: ContentState = ContentState::new();
     assert_eq!(
-        check_final_newline(&mut content, &lifecycle, &mut facts, Trigger::PreForward),
+        check_final_newline(&mut content, &lifecycle, &mut facts, Trigger::PreForward, false),
         PolicyOutcome::Findings(vec![
             finding("a-extra.txt"),
             finding("b-missing.txt"),
@@ -171,7 +171,7 @@ fn the_check_reports_each_noncanonical_text_file() {
     );
     // A check proposes nothing; only a direct fix offers and proposes each correction.
     assert_eq!(
-        check_final_newline(&mut content, &lifecycle, &mut facts, Trigger::DirectCheck),
+        check_final_newline(&mut content, &lifecycle, &mut facts, Trigger::DirectCheck, false),
         PolicyOutcome::Findings(vec![
             finding("a-extra.txt"),
             finding("b-missing.txt"),
@@ -180,7 +180,7 @@ fn the_check_reports_each_noncanonical_text_file() {
     );
     assert_eq!(content.take_proposals(), Vec::<Correction>::new());
     assert_eq!(
-        check_final_newline(&mut content, &lifecycle, &mut facts, Trigger::DirectFix),
+        check_final_newline(&mut content, &lifecycle, &mut facts, Trigger::DirectFix, false),
         PolicyOutcome::Findings(vec![
             finding_with("a-extra.txt", true),
             finding_with("b-missing.txt", true),
@@ -217,7 +217,8 @@ fn the_check_reports_each_noncanonical_text_file() {
             &mut ContentState::new(),
             &LifecycleContent::None,
             &mut idle,
-            Trigger::DirectFix
+            Trigger::DirectFix,
+            false
         ),
         PolicyOutcome::Findings(Vec::new())
     );
@@ -228,7 +229,8 @@ fn the_check_reports_each_noncanonical_text_file() {
             &mut ContentState::new(),
             &lifecycle,
             &mut scripted_facts(),
-            Trigger::DirectCheck
+            Trigger::DirectCheck,
+            false
         ),
         PolicyOutcome::Failed {
             code: EngineFailureCode::ContentUnavailable,
@@ -263,6 +265,7 @@ fn the_check_reports_each_noncanonical_text_file() {
         &only,
         &mut unreadable_facts,
         Trigger::PreForward,
+        false,
     ) {
         PolicyOutcome::Failed { code, .. } => {
             assert_eq!(code, EngineFailureCode::ContentUnavailable);

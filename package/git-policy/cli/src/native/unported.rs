@@ -63,7 +63,7 @@ use std::path::PathBuf;
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// type Unported =
-///   | { kind: 'commit-transaction' | 'worktree-copy' | 'alias-resolution' }
+///   | { kind: 'worktree-copy' | 'alias-resolution' }
 ///   | { kind: 'transaction-recovery' | 'worktree-copy-recovery'; directory: string }
 ///   | { kind: 'inherited-lease'; variable: string }
 ///   | { kind: 'lifecycle'; trigger: PolicyTrigger }
@@ -71,8 +71,6 @@ use std::path::PathBuf;
 /// ```
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum Unported {
-    /// The private-index transaction every `git commit` except a dry run goes through.
-    CommitTransaction,
     /// Copying ignored files into a worktree created or moved from a linked worktree or
     /// a bare repository.
     WorktreeCopy,
@@ -135,11 +133,6 @@ pub fn unported_from_unavailable(unavailable: Unavailable) -> Unported {
 fn unported_subject(what: &Unported) -> String {
     match what {
         // `String::from` copies compiled-in text into owned text.
-        Unported::CommitTransaction => {
-            return String::from(
-                "the commit transaction that every git commit except a dry run goes through",
-            );
-        }
         Unported::WorktreeCopy => {
             return String::from(
                 "copying ignored files into a worktree created or moved from a linked worktree \

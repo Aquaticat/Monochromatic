@@ -49,6 +49,16 @@ const inputs = [
  */
 const plants = [
   {
+    name: 'PID file text keeps trailing whitespace before the pid prefix is read',
+    file: 'package/git-policy/cli/src/native/index_lock_evidence.rs',
+    edits: [{ from: 'let trimmed: &str = super::js_text::trim_javascript_end(text);', to: 'let trimmed: &str = text;' }],
+  },
+  {
+    name: 'start ticks past the safe integers are accepted',
+    file: 'package/git-policy/cli/src/native/process_start.rs',
+    edits: [{ from: 'if ticks > super::json_record::MAX_SAFE_INTEGER {', to: 'if ticks > i64::MAX {' }],
+  },
+  {
     name: 'branch -d is treated as a presentation letter',
     file: 'package/git-policy/cli/src/native/config_loading.rs',
     edits: [
@@ -135,6 +145,40 @@ const plants = [
     edits: [{
       from: 'if component == "." || component == ".." {',
       to: 'if component == "." {',
+    }],
+  },
+  {
+    name: 'an owner lock record naming PID 0 is accepted',
+    file: 'package/git-policy/cli/src/native/owner_lock_record.rs',
+    edits: [{
+      from: 'if token.is_empty() || owner_pid < 1 || identity.is_empty() {',
+      to: 'if token.is_empty() || identity.is_empty() {',
+    }],
+  },
+  {
+    name: 'the start time is read from the field before it',
+    file: 'package/git-policy/cli/src/native/process_identity.rs',
+    edits: [{ from: 'const LINUX_START_FIELD_INDEX: usize = 19;', to: 'const LINUX_START_FIELD_INDEX: usize = 18;' }],
+  },
+  {
+    name: 'a journal record of another schema version is accepted',
+    file: 'package/git-policy/cli/src/native/transaction_journal_parse.rs',
+    edits: [{
+      from: 'if !number_equals(&map, "schemaVersion", JOURNAL_SCHEMA_VERSION)\n        || string_field',
+      to: 'if string_field',
+    }],
+  },
+  {
+    name: 'a capture record with sequence 0 is accepted',
+    file: 'package/git-policy/cli/src/native/capture_records.rs',
+    edits: [{ from: 'Some(number) if number >= 1 => return Ok(number),', to: 'Some(number) if number >= 0 => return Ok(number),' }],
+  },
+  {
+    name: 'a sequence file with a leading zero is accepted',
+    file: 'package/git-policy/cli/src/native/capture_store.rs',
+    edits: [{
+      from: "if digits.is_empty() || (digits.len() > 1 && digits[0] == b'0') {",
+      to: 'if digits.is_empty() {',
     }],
   },
   {
