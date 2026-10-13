@@ -193,7 +193,6 @@ async function main() {
       'ENV HOME=/home/tester CARGO_HOME=/home/tester/.cargo CARGO_NET_OFFLINE=true CARGO_BUILD_JOBS=2 CARGO_INCREMENTAL=0',
       `COPY --from=${nodeImage} /usr/local/bin/node /usr/local/bin/node`,
       'COPY opt-cli-git /opt/cli-git',
-      'COPY native-interop /fixture/native-interop',
       'USER 1000:1000',
       'WORKDIR /work/package/git-policy/cli',
       // The release executable, and the library's ignored probes, which a driver runs with
@@ -201,6 +200,8 @@ async function main() {
       'RUN ["cargo", "build", "--offline", "--locked", "--release", "--bin", "cli-git-native"]',
       'RUN ["cargo", "test", "--offline", "--locked", "--release", "--lib", "--no-run"]',
       'USER 0:0',
+      // Copied after the compilation steps so editing a driver never rebuilds the native executable.
+      'COPY native-interop /fixture/native-interop',
       'RUN ["mkdir", "--parents", "/opt/native/bin"]',
       // The native executable gets its `git` name only inside this disposable image, never on the host.
       'RUN ["ln", "--symbolic", "/work/package/git-policy/cli/target/release/cli-git-native", "/opt/native/bin/git"]',

@@ -12,7 +12,9 @@ import { once } from 'node:events';
 import {
   mkdir,
   mkdtemp,
+  readdir,
   readFile,
+  stat,
   writeFile,
 } from 'node:fs/promises';
 import { join } from 'node:path';
@@ -146,15 +148,16 @@ export async function runOk(request) {
 /**
  Create a disposable repository with one commit made by real Git.
 
- @param {{ name: string }} request - label for the fresh directory
+ @param {{ name: string, fixedRoot?: string }} request - label for the fresh directory, or the exact parent
+   directory to use (transaction records name absolute paths, so captured fixtures need a stable location)
  @returns {Promise<{ root: string, repository: string, home: string }>} parent directory, repository and home
  */
-export async function createRepository({ name }) {
+export async function createRepository({ name, fixedRoot }) {
   await mkdir(
     '/work/scratch',
     { recursive: true },
   );
-  const root = await mkdtemp(join(
+  const root = fixedRoot ?? await mkdtemp(join(
     '/work/scratch',
     `${name}-`,
   ));
@@ -412,4 +415,188 @@ export async function runNativeProbe({
     .filter(function isAnswer(line) {
       return /^(identity|busy|acquired|released)/u.test(line);
     });
+}
+
+/** Directory of each wrapper under test, by the name drivers use for it. */
+export const WRAPPER_BIN = {
+  incumbent: INCUMBENT_BIN,
+  native: NATIVE_BIN,
+};
+
+/**
+ Run `git` through one wrapper in a fixture and return the outcome without judging it.
+
+ @param {{ wrapper: 'incumbent' | 'native', fixture: { repository: string, home: string }, args: readonly string[],
+   extra?: Record<string, string> }} request - wrapper, repository, Git arguments and added variables
+ @returns {Promise<RunOutcome>} exit state and output
+ */
+export function runThrough({
+  wrapper,
+  fixture,
+  args,
+  extra = {},
+}) {
+  return run({
+    command: 'git',
+    args,
+    cwd: fixture.repository,
+    env: runEnvironment({
+      home: fixture.home,
+      wrapperBin: WRAPPER_BIN[wrapper],
+      extra: { MONOCHROMATIC_WARN: 'false', ...extra },
+    }),
+  });
+}
+
+/**
+ Start `git` through one wrapper in the background.
+
+ @param {{ wrapper: 'incumbent' | 'native', fixture: { repository: string, home: string }, args: readonly string[],
+   extra?: Record<string, string> }} request - as for `runThrough`
+ @returns {BackgroundRun} the child and a promise of its outcome
+ */
+export function startThrough({
+  wrapper,
+  fixture,
+  args,
+  extra = {},
+}) {
+  return startBackground({
+    command: 'git',
+    args,
+    cwd: fixture.repository,
+    env: runEnvironment({
+      home: fixture.home,
+      wrapperBin: WRAPPER_BIN[wrapper],
+      extra: { MONOCHROMATIC_WARN: 'false', ...extra },
+    }),
+  });
+}
+
+/**
+ Run real Git in a fixture and return its trimmed output.
+
+ @param {{ repository: string, home: string }} fixture - repository and home
+ @param {readonly string[]} args - Git arguments
+ @returns {Promise<string>} trimmed standard output
+ */
+export async function realGit(fixture, args) {
+  return (await runOk({
+    command: REAL_GIT,
+    args,
+    cwd: fixture.repository,
+    env: runEnvironment({ home: fixture.home }),
+  })).trim();
+}
+
+/**
+ Entry names of a directory, or none when it does not exist.
+
+ @param {string} directory - directory to list
+ @returns {Promise<string[]>} entry names
+ */
+export async function namesIn(directory) {
+  try {
+    return await readdir(directory);
+  }
+  catch (error) {
+    if ((error instanceof Error) && ('code' in error) && (error.code === 'ENOENT'))
+      return [];
+    throw error;
+  }
+}
+
+/**
+ Everything either wrapper may leave behind in a repository after a transaction ends.
+
+ @param {{ repository: string }} fixture - repository
+ @returns {Promise<string[]>} descriptions of each leftover, none when the repository is quiescent
+ */
+export async function leftovers(fixture) {
+  const gitDir = join(
+    fixture.repository,
+    '.git',
+  );
+  const found = [];
+  for (const name of await namesIn(join(
+    gitDir,
+    'cli-git-transactions',
+  )))
+    found.push(`cli-git-transactions/${name}`);
+  for (const name of await namesIn(join(
+    gitDir,
+    'cli-git',
+    'shadow',
+  )))
+    found.push(`cli-git/shadow/${name}`);
+  for (const name of await namesIn(gitDir)) {
+    if (name === 'index.lock')
+      found.push('index.lock');
+  }
+  for (const name of await namesIn(join(
+    gitDir,
+    'objects',
+    'pack',
+  ))) {
+    if (name.endsWith('.keep'))
+      found.push(`objects/pack/${name}`);
+  }
+  if (await pathExists(join(
+    gitDir,
+    'cli-git-captures',
+    'capture.lock',
+  )))
+    found.push('cli-git-captures/capture.lock');
+  return found;
+}
+
+/**
+ Whether a path exists.
+
+ @param {string} path - path to test
+ @returns {Promise<boolean>} true when something is there
+ */
+export async function pathExists(path) {
+  try {
+    await stat(path);
+    return true;
+  }
+  catch (error) {
+    if ((error instanceof Error) && ('code' in error) && (error.code === 'ENOENT'))
+      return false;
+    throw error;
+  }
+}
+
+/**
+ Collects every check of a matrix driver instead of stopping at the first failure,
+ so one failing combination never hides the others; the driver ends with `finish`.
+
+ @returns {{ check: (request: { condition: boolean, message: string }) => boolean, finish: () => void }} recorder
+ */
+export function createMatrix() {
+  /** @type {string[]} */
+  const failures = [];
+  let passed = 0;
+  return {
+    check({
+      condition,
+      message,
+    }) {
+      if (condition) {
+        passed += 1;
+        console.log(`ok: ${message}`);
+      }
+      else {
+        failures.push(message);
+        console.log(`FAIL: ${message}`);
+      }
+      return condition;
+    },
+    finish() {
+      console.log(`${String(passed)} checks passed, ${String(failures.length)} failed`);
+      if (failures.length > 0)
+        throw new InteropError(`${String(failures.length)} checks failed:\n${failures.join('\n')}`);
+    },
+  };
 }
