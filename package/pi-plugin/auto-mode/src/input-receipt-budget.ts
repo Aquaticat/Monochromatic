@@ -61,24 +61,43 @@ function readInputUsage(input: unknown,): InputUsage {
   /**
    Keep counter-shape diagnostics within their validation boundary.
    */
-  const rl = tagged({ tag: readInputUsage.name, l, },);
+  const rl = tagged({
+    tag: readInputUsage.name,
+    l,
+  },);
   rl.debug('validating original input usage counters',);
-  if ((input === null) || (typeof input !== 'object') || isProxy(input,)
+  if ((input === null) || ((typeof input) !== 'object')
+    || isProxy(input,)
     || (Object.getPrototypeOf(input,) !== Object.prototype)
-    || (Reflect.ownKeys(input,).length !== 2)) {
+    || (Reflect.ownKeys(input,)
+      .length
+      !== 2)) {
     rl.debug('input usage does not match the ordinary counter record profile',);
     throw new InputReceiptBudgetError('Native input usage requires its ordinary counter record',);
   }
   /**
    Inspect occurrence count without evaluating an accessor.
    */
-  const count = Object.getOwnPropertyDescriptor(input, 'count',);
+  const count = Object.getOwnPropertyDescriptor(
+    input,
+    'count',
+  );
   /**
    Inspect serialized-record size independently of the count descriptor.
    */
-  const bytes = Object.getOwnPropertyDescriptor(input, 'bytes',);
-  if (count === undefined || bytes === undefined
-    || !Object.hasOwn(count, 'value',) || !Object.hasOwn(bytes, 'value',)) {
+  const bytes = Object.getOwnPropertyDescriptor(
+    input,
+    'bytes',
+  );
+  if ((count === undefined) || (bytes === undefined)
+    || (!Object.hasOwn(
+      count,
+      'value',
+    ))
+    || (!Object.hasOwn(
+      bytes,
+      'value',
+    ))) {
     rl.debug('input usage is missing data counters',);
     throw new InputReceiptBudgetError('Native input usage is outside its counter profile',);
   }
@@ -90,12 +109,18 @@ function readInputUsage(input: unknown,): InputUsage {
    Retain byte usage as untrusted until its numeric checks succeed.
    */
   const byteValue: unknown = bytes.value;
-  if (typeof countValue !== 'number' || !Number.isSafeInteger(countValue,) || countValue < 0
-    || typeof byteValue !== 'number' || !Number.isSafeInteger(byteValue,) || byteValue < 0) {
+  if (((typeof countValue) !== 'number') || (!Number.isSafeInteger(countValue,))
+    || (countValue < 0)
+    || ((typeof byteValue) !== 'number')
+    || (!Number.isSafeInteger(byteValue,))
+    || (byteValue < 0)) {
     rl.debug('input usage counters are not nonnegative safe integers',);
     throw new InputReceiptBudgetError('Native input usage is outside its counter profile',);
   }
-  return { count: countValue, bytes: byteValue, };
+  return {
+    count: countValue,
+    bytes: byteValue,
+  };
 }
 
 /**
@@ -119,12 +144,21 @@ function readInputUsage(input: unknown,): InputUsage {
  ```
  */
 export function assertOriginalInputBudget(
-  { resource, session, }: { readonly resource: unknown; readonly session: unknown; },
+  {
+    resource,
+    session,
+  }: {
+    readonly resource: unknown;
+    readonly session: unknown
+  },
 ): void {
   /**
    Attribute aggregate refusal separately from record-shape validation.
    */
-  const rl = tagged({ tag: assertOriginalInputBudget.name, l, },);
+  const rl = tagged({
+    tag: assertOriginalInputBudget.name,
+    l,
+  },);
   rl.debug('checking shared original input receipt limits',);
   /**
    Resource ownership remains the fixed reader's responsibility.
@@ -134,8 +168,8 @@ export function assertOriginalInputBudget(
    Session usage joins the same aggregate without receiving another allowance.
    */
   const sessionUsage = readInputUsage(session,);
-  if (resourceUsage.count + sessionUsage.count > INPUT_COUNT_LIMIT
-    || resourceUsage.bytes + sessionUsage.bytes > INPUT_BYTE_LIMIT) {
+  if (((resourceUsage.count + sessionUsage.count) > INPUT_COUNT_LIMIT)
+    || ((resourceUsage.bytes + sessionUsage.bytes) > INPUT_BYTE_LIMIT)) {
     rl.debug('combined resource and Session receipts exceed the original aggregate budget',);
     throw new InputReceiptBudgetError(
       'Combined original resource and session receipts exceed the shared 64-input or four-MiB budget',

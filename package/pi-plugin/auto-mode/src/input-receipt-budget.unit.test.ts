@@ -38,7 +38,9 @@ await describe({
       return it({
         name: `rejects combined overflow ${index} even when independently supplied`,
         fn: async function checkOverflow() {
-          expect(function combine() { assertOriginalInputBudget(input,); },).toThrow(InputReceiptBudgetError,);
+          expect(function combine() {
+            assertOriginalInputBudget(input,);
+          },).toThrow(InputReceiptBudgetError,);
         },
       },);
     },),
@@ -99,7 +101,8 @@ await describe({
           const reads: string[] = [];
           const usage = Object.defineProperty({ count: 0, bytes: 0, }, field, {
             enumerable: true,
-            get() { reads.push(field,); return 0; },
+            get() { reads.push(field,);
+            return 0; },
           },);
           expect(function check() {
             assertOriginalInputBudget({ resource: usage, session: { count: 0, bytes: 0, }, },);
