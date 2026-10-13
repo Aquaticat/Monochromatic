@@ -970,7 +970,19 @@ Nothing was published,
 
 ### State
 
-Everything that does not itself publish is committed on the branch:
+Everything that does not itself publish is committed on the branch.
+Commit `efdcfb7a72` is an intermediate state that does not build the wrapper:
+it raises `forbidden-strings` to `0.5.0` while the wrapper's manifest still requires `^0.4.1` of the path
+dependency,
+ which Cargo then refuses to resolve (reproduced in a throwaway clone with `cargo metadata --offline`).
+It was pushed before this was noticed and cannot be amended.
+Branch `feat/cli-git-native-publish-prep-step1`,
+ one commit `263d89dcc0` on `beb44949e7`,
+ is the same bump plus the
+raised requirement and the relocked wrapper and fuzz lockfiles,
+ and `cargo metadata --locked --offline` succeeds
+in `package/git-policy/cli` and `package/git-policy/cli.fuzz` there.
+Merging it into this branch is clean and yields the tree of this branch exactly (`git merge-tree`).
 
 - `efdcfb7a72`:
    `package/cli/forbidden-strings` is `0.5.0`.
@@ -1023,6 +1035,8 @@ Differences of the new jobs from the `ml-*` jobs:
   the release tag is `monochromatic-git-policy-cli-v<version>`.
 - `cargo package --locked` and `cargo publish --locked` are used,
   and the binary is built with `--bin cli-git-native`.
+- `gpc-create-release` also needs `gpc-publish-crate` (commit `8e69f0401c`),
+  so a run that cannot publish creates no release.
 - A smoke step runs `cli-git-native cli-git --help` from each built target before it is archived.
 - `gpc-publish-crate` first waits (60 attempts,
    30 seconds apart) until the crates.io index lists the
@@ -1070,7 +1084,7 @@ Verification without publishing,
 - `mise run //package/git-policy/cli:native:clippy` through the slot limiter:
    exit 0,
    finished without a diagnostic.
-  Commits after `41bc87db00` change only this document.
+  Commits after `41bc87db00` change only the workflow job dependency in `8e69f0401c` and this document.
 - In a clean `--depth 1` clone of the branch head,
   `cargo package --locked --list` lists 537 entries before the include fix and 536 files after it,
   which are `src/native/**/*.rs`,
@@ -1118,17 +1132,30 @@ Verification without publishing,
 ### Steps that remain
 
 The orchestrator and the owner run these in order.
-The order matters because the new jobs also start on the push that lands the manifest:
-`gpc-create-release` needs only `gpc-detect` and `gpc-build-binary`,
-so landing the branch on `main` before the crate is published and its Trusted Publishing form is saved makes
-`gpc-publish-crate` fail at the authentication step while the release is still created.
+The order matters because the new jobs also start on the push that lands the manifest.
+`gpc-create-release` needs `gpc-publish-crate`,
+so landing the branch on `main` before the crate is published and its Trusted Publishing form is saved makes the run
+fail at the authentication step and creates no release;
+ the archives are still built and kept as artifacts for seven
+days,
+ and the run can be repeated by a dispatch once the crate exists.
 
 1.  Release `forbidden-strings` 0.5.0.
-    Push commit `efdcfb7a72` alone to `main` (it touches only `forbidden-strings`,
-     its sidecar and the bench).
+    Push commit `263d89dcc0` of branch `feat/cli-git-native-publish-prep-step1` to `main`,
+     not `efdcfb7a72` (see `State`).
     If `main` moved,
-     cherry-pick it instead.
-    The jobs `fs-*` of `.github/workflows/cargo-publish.yml` detect the bump and publish through Trusted Publishing.
+     cherry-pick it onto `main` and rerun `cargo metadata --locked --offline` in `package/git-policy/cli`.
+    The unprefixed jobs of `.github/workflows/cargo-publish.yml` detect the bump (`package/cli/forbidden-strings/Cargo.toml`
+    `version` differs from the push's `before`) and publish through Trusted Publishing.
+    If the push did not start the run,
+     or it failed before the upload,
+     dispatch it:
+    `gh workflow run cargo-publish.yml --ref main -f crate=forbidden-strings -f dry-run=false`.
+    The `detect` job publishes the version found in `Cargo.toml` at that ref for `crate=forbidden-strings`
+    (read in the workflow;
+     the dispatch was not run),
+     and the unprefixed publish step is not idempotent,
+     so never dispatch it after the version reached crates.io.
     Check `curl -sS https://crates.io/api/v1/crates/forbidden-strings/0.5.0` and `gh release view forbidden-strings-v0.5.0`.
 2.  Verify without a patch,
      in a clean clone of the branch head,
@@ -1158,7 +1185,7 @@ so landing the branch on `main` before the crate is published and its Trusted Pu
      workflow `cargo-publish.yml`,
      empty environment),
     then revoke the bootstrap token.
-6.  Land the branch on `main`.
+6.  Land the branch on `main` (merging step 1's branch first or at the same time is harmless).
     The push starts `gpc-detect` (version `0.0.1` before,
      `0.1.0` after),
      which authenticates,
