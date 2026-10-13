@@ -645,6 +645,29 @@ not completed domain closure,
 a maintained host launch path,
 or installed activation.
 
+## Remaining native metadata-query receipt
+
+`94f39f5e` / `proc_666b` reached a separate required retention failure.
+The control changes a tool namespace inside a callback,
+reads it through the actual native `getNamespace` capability,
+then restores the definition before the callback returns.
+When the callback publishes the value as a description,
+retention succeeds.
+When only the native query processes it,
+the original instruction is absent from governing sources.
+This is a processed live edit,
+not an edit undone before processing.
+
+The callback input and output snapshots do not close this return-value path.
+No query-receipt implementation has been added yet.
+The next change must retain the actual query material through the existing owner,
+without changing native query results,
+borrowed objects,
+error values,
+or the shared limits.
+This remains part of governing-domain completion,
+not a reason to narrow the accepted domain or claim complete coverage.
+
 ## Original loadout callback inputs
 
 `41a49c45` / `proc_c6a4` established a separate input-side loss.
