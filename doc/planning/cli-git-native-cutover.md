@@ -106,7 +106,9 @@ How to use it:
   pin the last incumbent revision (its hash goes in the retirement commit and the behavior ledger);
   delete the commit,
    configuration and dependent-version differentials;
-  keep `native:interop` and give it an incumbent-provisioning step from the pinned revision.
+  keep `native:interop` and give it an incumbent-provisioning step from the pinned revision
+  (superseded: the matrix ran once against a rebuilt incumbent and the user then had the incumbent tooling deleted,
+  `doc/handover/cli-git-native-interop.md`).
 - Release and CI jobs:
   build the crate from the checkout with `cargo build --release --locked`.
   Done for `final-newline.yml` and for the `version` job of `npm-release.yml`.

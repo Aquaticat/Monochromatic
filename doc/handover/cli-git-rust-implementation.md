@@ -1582,10 +1582,11 @@ that is verification, not a decision for the user.
   `node_modules/.bin/git` shim and an empty `package/git-policy/cli/node_modules/.bin`) were removed on 2026-10-14 by
   explicit path, never with `git clean -X`, which would remove the live `.cache/cli-git-bin` link and the rules file;
   afterwards `mise run sync:files` leaves the repository unchanged.
-  Still open from the retirement: `native:interop` cannot run until an incumbent provisioning step builds the pinned
-  revision (trailing gate), the `slopo.ignore.txt` entries for deleted files (lines 45, 50, 69, 200, 309, 324, 373)
-  wait for a fresh `slopo analyze` report, and the SPEC sections the plan did not name were not re-verified line by
-  line.
+  Still open from the retirement: the `slopo.ignore.txt` entries for deleted files (lines 45, 50, 69, 200, 309, 324,
+  373) wait for a fresh `slopo analyze` report, and the SPEC sections the plan did not name were not re-verified line
+  by line.
+  The interop matrix ran against an incumbent rebuilt from the pinned revision and the incumbent tooling was then
+  deleted by the user's decision (`doc/handover/cli-git-native-interop.md`).
   Both wrappers shared `.git/cli-git*` state while sessions were mixed; the incumbent is no longer on any `PATH`.
   User decisions of 2026-10-13: install by publishing the crate (the `cargo:` mise tool route); the hk cleanup task is
   retired; the rollback window ends right after the installed wrapper is verified; the first native CI workflow covers
@@ -1608,13 +1609,18 @@ that is verification, not a decision for the user.
   Commands started with `systemd-run` leave the shared cap, so do not use it for work that should count.
   `nproc` reports 16 inside shells with a restricted affinity; use `nproc --all` or `lscpu` for the real count.
   Open: the `replay-core` branch holds unmerged mutation work, `monochromatic-lint` shim lookup fails outside the
-  repository (the linter must be on `PATH` as a real binary), and the trailing gates below are untouched.
+  repository (the linter must be on `PATH` as a real binary), and the trailing gates below, except the interop matrix, are untouched.
 - [ ] Gates that trail the cutover (user decision 2026-10-10: the code ships first, the gate runs afterward):
   the Windows checks and the release-artifact performance gates;
-  the old-and-new wrapper interop matrix (one-direction fixtures where the incumbent writes and native reads stay);
   the long fuzz campaigns (fuzz targets, planted-defect controls and a short smoke run stay in the gate);
   mutation campaigns on non-core modules (hooks plumbing, auto-push, automatic maintenance, signals);
   and the `pathBytes` field for non-UTF-8 paths in events.
+  Done: the old-and-new wrapper interop matrix and the old-format fixtures (user decision 2026-10-10, run once on
+  2026-10-13): crash recovery, lock waits, hook dispatch and the old-format fixtures pass in both directions;
+  the mixed-concurrency scenario with a killed worker still fails sometimes when incumbent and native survivors
+  race to recover it, which is recorded as an open finding, and two native defects found on the way are fixed.
+  By the user's decision the incumbent tooling and the drivers that need it were then deleted; the plain-file
+  fixtures and their native-only reader stay (`doc/handover/cli-git-native-interop.md`).
   Locks, journal, capture, shadow repository, preparation, policies, landing, replay, recovery and the worktree copy
   keep full mutation gating.
   Features do not trail: signals, automatic maintenance and the linked-worktree copy are part of the cutover.
@@ -1625,8 +1631,8 @@ that is verification, not a decision for the user.
   Each lane records what it skipped under a `Trailing gates` heading in its evidence file.
   Trailing is not stopping (user, 2026-10-10): the cutover does not end the work.
   Right after it, without a pause, the queue continues with these gates in the order listed
-  (the interop matrix and the old-format fixtures first, then fuzz campaigns, non-core mutation,
-  the `pathBytes` field, the Windows checks and the release-artifact performance gates),
+  (fuzz campaigns, non-core mutation, the `pathBytes` field, the Windows checks and the release-artifact performance
+  gates),
   each recorded and closed like any other gate,
   and then the retirement of the old TypeScript implementation is verified complete.
 - [x] Rust cli-git configuration, Git resolution/argv, static policies, and management commands
