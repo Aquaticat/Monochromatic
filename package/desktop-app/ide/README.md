@@ -1652,6 +1652,24 @@ By load band:
   A step takes a few milliseconds typically and up to a few frame periods at the largest,
   so it can still make one frame late.
 
+A second series on 2026-10-13 ran after the host's CPU was replaced (`nproc` reports 30; one-minute load 5.7 to 10.8
+at the start of every session, so every session is in the band below 20) with the bundle of the final tree
+(sha1 `9c60b963`, from tree `1a7214f4f9`) and, in the same series and order, the earlier `final` bundle:
+six sessions of each build and file in the 16 ms drag, none excluded (the recorder dropped nothing).
+Run-to-run spread is small here: the longest gap was 17.1 to 17.7 ms in 11 of 12 `final` sessions (33.3 ms once)
+and 17.0 to 18.0 ms in all 12 sessions of the new build.
+Frames that do not fit were 76 to 82 per session for `final` and 74 to 77 for the new build;
+the longest stretch of them was 650 to 767 ms for `final` on code50k and 650 to 1,302 ms on long2000, and 633 to 650 ms
+for the new build on both files;
+the picture settled after the last resize step in 24.0 to 26.7 ms for the new build
+against 23.2 to 109.1 ms for `final`.
+No frame was blank or flat, and the last frame fitted in every session.
+The window-thread step took a median of 3.0 to 3.3 ms on code50k (largest 5.7 to 10.7 ms, first step 5.5 to 10.7 ms)
+and 5.9 to 6.8 ms on long2000 (largest 13.5 to 15.3 ms); every step of every session was taken at once and none
+was left to the worker.
+In the 100 ms drag of this series (3 sessions each) frames that do not fit were 44, 42, and 50 of about 265 for `final`
+and 0, 8, and 19 for the new build, and the longest stretch of such frames was 33 to 50 ms against 0 to 17 ms.
+
 The unchanged count of frames that do not fit has a cause that was looked at in the frames themselves.
 In the 16 ms drag, kept frames of one session show the window at the new size with the previous step's content:
 at 1075 pixels the text is wrapped for 1100 and cut by the edge, and on the way back a strip of another shade stands
