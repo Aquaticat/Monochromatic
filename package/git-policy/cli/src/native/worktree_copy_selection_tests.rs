@@ -319,3 +319,46 @@ fn selection_modes_choose_the_roots() {
     );
     remove(root.as_path());
 }
+
+/// The selection asks about the source worktree it was given, never about the repository the user's global options pick.
+#[test]
+fn selection_ignores_the_users_global_git_options() {
+    let root: PathBuf = fixture("selection-global-options");
+    let source: PathBuf = source_with_named_file(root.as_path(), "source");
+    let mut context: GitContext = git_context();
+    context.global_prefix = vec![
+        "--git-dir".into(),
+        root.join("elsewhere").into_os_string(),
+    ];
+    let named: Vec<String> = read_named_ignored_roots(
+        &context,
+        source.as_path(),
+        &[String::from(".cache/rules.txt")],
+    )
+    .expect("named roots");
+    assert_eq!(named, vec![String::from(".cache/rules.txt")]);
+    let all: Vec<String> =
+        read_ignored_roots(&context, source.as_path(), &[]).expect("ignored roots");
+    assert_eq!(
+        all,
+        vec![String::from(".cache"), String::from("node_modules")]
+    );
+    remove(root.as_path());
+}
+
+/// The ignore question for a special entry is asked about the source worktree, whatever global options the user passed.
+#[cfg(unix)]
+#[test]
+fn special_entry_check_ignores_the_users_global_git_options() {
+    let root: PathBuf = fixture("selection-global-options-special");
+    let source: PathBuf = ignoring(root.as_path(), "source", "ignored-pipe\n");
+    make_fifo(source.join("ignored-pipe").as_path());
+    let mut context: GitContext = git_context();
+    context.global_prefix = vec![
+        "--git-dir".into(),
+        root.join("elsewhere").into_os_string(),
+    ];
+    let roots: Vec<String> = read_ignored_roots(&context, source.as_path(), &[]).expect("roots");
+    assert!(roots.contains(&String::from("ignored-pipe")), "{roots:?}");
+    remove(root.as_path());
+}
