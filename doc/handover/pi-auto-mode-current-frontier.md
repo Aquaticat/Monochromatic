@@ -664,9 +664,15 @@ and style diagnostics.
 The configured-policy copier now requires present input;
 absence stays with native bootstrap and still means no configured consumer.
 No lint rule was suppressed or relaxed.
-Final unit,
-lint,
-and native consumer checks remain pending.
+Final Main `0f79ccf033` passed build/types `proc_329e` and package units plus six-file lint `proc_8f09`.
+The lint result had zero diagnostics.
+Private `0ca19921` verifies that native bootstrap preserves absent policies and ignores caller model overrides.
+`proc_4711` passed exact maintained-export identity and all 32 native compiler scenarios,
+with empty child stderr and zero provider requests.
+`proc_784c` passed the complete action-policy regression task.
+These checks do not qualify model accuracy,
+close the governing domain,
+or install the migrated host.
 
 ## Maintained whole-request content consumer
 

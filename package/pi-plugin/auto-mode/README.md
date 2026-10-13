@@ -474,9 +474,13 @@ not an action argument.
 A matching scope selects a consumer;
 it neither invokes the acceptance callback nor establishes semantic truth or permission.
 No production acceptance criterion is installed by these helpers.
-Final unit,
-lint,
-and native cutover verification remain pending.
+Build,
+types,
+package units,
+changed-file lint,
+all native compiler scenarios,
+and the action-policy regression task passed.
+The native model binding and absent-policy behavior remain unchanged.
 
 ## Migration original request interpretation
 
