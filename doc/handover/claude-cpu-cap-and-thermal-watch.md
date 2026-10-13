@@ -51,9 +51,13 @@ The operating instructions live in `doc/runbook/claude-cpu-cap.md`.
   Current curve: 30% at 40, 45% at 50, 60% at 60, 100% at 61 and above (saved by the user about 18:57 EDT).
   The fan profile belongs to the user now; this session does not edit it unless asked.
 - Session-only items that die with the session: the Monitor (30-minute expiry, re-arm each time) and a one-shot cron
-  check (job `f4aeb83b`, 22:05 EDT on 2026-10-13) that ends the watch if nothing weird happened.
-  It was first set for 21:19 (job `90c90261`), then pushed back to 4 hours after the CPU pressure alert at 18:02:37,
-  the latest weird event at that point.
+  check (job `df76cdac`, 23:19 EDT on 2026-10-13) that ends the watch if nothing weird happened.
+  It was first set for 21:19 (job `90c90261`), pushed back to 22:05 (job `f4aeb83b`) after the CPU pressure alert at
+  18:02:37, then to 23:19 after the memory pressure alert at 19:16:45 (the latest weird event so far).
+- The 19:16:45 memory pressure alert (16.4, limit 10) came at cap 30 and 132 W; it cleared at 3.7 within about a minute.
+  Tctl was 77.6 degrees and 41 GiB were available. The `claude-code-bash` cgroup held 2 GB of its 8 GB limit, and the
+  host ran a 5 GB `qemu-system-x86` process. The cap was left at 30: one short blip is not a degraded system, and
+  nothing shows the CPU cap caused it. A repeat or a longer episode is the trigger to lower it.
 - Other sessions were told about each change by cross-session message.
   `gate-slot.ts` (in `~/temp/agent`, outside the repo) no longer wraps commands in a `systemd-run` scope,
   so gate commands stay under the shared cap.
