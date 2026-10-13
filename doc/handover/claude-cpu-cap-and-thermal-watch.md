@@ -51,7 +51,8 @@ The operating instructions live in `doc/runbook/claude-cpu-cap.md`.
   While writing 4 GiB to `/var/home`, the encryption workers sat near 0.3% CPU and the machine was 77% idle.
 - That write ran at 88.5 MB/s; raw reads of the NVMe partition ran at 187 MB/s (one request in flight)
   and 325 MiB/s (8 parallel readers). Other sessions were doing IO at the time, so these are lower bounds.
-- The NVMe is healthy (2% worn, 0 errors, 48 degrees). Its PCIe link runs at 8 GT/s x4 while it reports 16 GT/s as maximum.
+- The NVMe is healthy (2% worn, 0 errors, 48 degrees).
+  Its PCIe link runs at 8 GT/s x4 while it reports 16 GT/s as maximum.
   The cause of the low disk speed is not found. The volumes have no `no_read_workqueue` or `no_write_workqueue` flag.
 - Hot episodes: 94.8 to 96.1 degrees at 135 W and 4483 MHz (boost off), with CPU pressure near 57.
   A later alert at 91.1 degrees had the fans at 2000 to 2600 RPM. Idle runs about 54 degrees at 60 W.
@@ -88,7 +89,8 @@ The operating instructions live in `doc/runbook/claude-cpu-cap.md`.
 - The hold paragraph in `doc/handover/cli-git-rust-implementation.md` should point to this work.
   The session `monochromatic-18` was asked to update it.
 - A reboot has not been tested against the persistent setup.
-- After the token rotation, the new token goes into `~/.config/claude-cpu-cap/cc-token`; until then the fan columns stay empty.
+- After the token rotation, the new token goes into `~/.config/claude-cpu-cap/cc-token`;
+  until then the fan columns stay empty.
 
 ## Next actions
 
