@@ -1,6 +1,6 @@
 # `api.openai.com` (ChatGPT OAuth, pi `openai` provider, codex-cli 0.162.1): every credentialed request returns Cloudflare `520`, while unauthenticated requests return clean `401` JSON
 
-Observed 2026-10-13 between 20:49 and 20:56 UTC from this workstation.
+Observed 2026-10-13 between 20:50 and 21:05 UTC from this workstation.
 OpenAI's own status page read "We're fully operational" for the whole window,
 so the headline status is not evidence that the OpenAI-backed models in pi work.
 
@@ -217,7 +217,8 @@ egress filtering) and this doc does not apply.
 
 - `GET https://api.openai.com/v1/models` with no auth header:
    `HTTP 401` JSON,
-   4 of 4,
+   6 of 6 over two probe runs,
+   plus one `curl` request,
    92ms to 198ms,
   `cf-ray=a4a1399fbea2a3f1-YYZ`.
 - `GET https://api.openai.com/v1/models` with `Bearer sk-invalid-probe-000`:
@@ -256,16 +257,19 @@ All failures were the same variant:
 
 - `GET /v1/models` with the real OAuth bearer:
    `HTTP 520`,
-   5 of 5 attempts,
+   7 of 7 attempts,
    72ms to 249ms,
   rays `a4a139a0587fa3f1-YYZ`,
    `a4a139a18c7ba3f1-YYZ`,
    `a4a139a35b27a3f1-YYZ`,
-   `a4a139a47f81a3f1-YYZ`.
+   `a4a139a47f81a3f1-YYZ`,
+   `a4a14c2aabf45163-YYZ`;
+  two earlier attempts were not recorded with their rays.
 - `POST /v1/responses` with the real OAuth bearer,
    `model: gpt-6-astra`:
    `HTTP 520`,
-   228ms.
+   228ms then 144ms on a second attempt,
+   ray `a4a14c2b9f7c5163-YYZ`.
 - `POST /v1/responses` with the real OAuth bearer,
    `model: gpt-6.1-sol`:
    `HTTP 520`,
@@ -310,6 +314,9 @@ which drops Responses-only features such as stored previous-response ids,
 reasoning item replay,
 and `service_tier: priority`.
 
+On 2026-10-13 the user declined re-routing pi's OpenAI model ids through this provider,
+so it stays a documented fallback rather than an applied configuration change.
+
 ### Use the Codex backend path for one-off checks
 
 `codex exec --sandbox read-only --skip-git-repo-check '<prompt>'` reaches the model through
@@ -327,7 +334,7 @@ so nothing in pi is repaired by it.
 ### Retry with a bound
 
 Cloudflare marks the error `retryable: true` with `retry_after: 60`.
-Ten credentialed requests spread over 7 minutes all returned `520`,
+Ten credentialed requests spread over 15 minutes all returned `520`,
 so short backoff did not recover inside the observation window.
 
 Tradeoff:
@@ -440,21 +447,29 @@ No new issue should be opened.
    fails the gate.
 
 Decision:
- do not file a new issue,
- and do not post the comment below without the user's explicit
-authorization,
- since `openai/codex` is not this repository and posting is an external action.
-The draft is kept because it is additive to issue 45569:
+ do not file a new issue.
+The comment draft below is additive to issue 45569:
 that thread has no deterministic reproducer and no isolation between the credential path and the
 transport path,
 and this one supplies both.
+Posting to `openai/codex` is an external action on a repository this project does not own,
+so it was held for authorization;
+the user authorized it on 2026-10-13,
+and the comment went up as
+[comment 6155282654][posted-comment]
+at 21:11:37 UTC.
+The posted text differs from the draft kept here only in recomputed attempt counts,
+the ray ids added by a second probe run,
+and an observation window widened to 20:50 through 21:05 UTC.
+The draft stays as the audited artifact this decision was made from.
 
 ~~~md
 Additive evidence: deterministic HTTP 520 on `api.openai.com` for valid ChatGPT OAuth tokens,
 with invalid-credential controls staying healthy
 
-Do not file as-is. This is a comment draft for openai/codex issue 45569, not a new issue, and it
-needs the repository owner's authorization before posting.
+Posted 2026-10-13 as openai/codex issue 45569 comment 6155282654 with the user's authorization.
+Kept here as the audited draft. The posted text carries recomputed attempt counts, the ray ids
+from a second probe run, and a window of 20:50 to 21:05 UTC.
 
 Observed 2026-10-13 20:49 to 20:56 UTC, codex-cli 0.162.1, Node v26.11.1, Linux workstation,
 ChatGPT-plan login (`codex login status` reports `Logged in using ChatGPT`).
@@ -501,4 +516,8 @@ Codex responses endpoint got, and the model-catalog refresh timeout suggests one
 - OpenAI status history: <https://status.openai.com/history>.
 - Incident cited in this doc: <https://status.openai.com/incidents/01M4T4ZCM54D3ZPTQXRSWFG0XS>.
 - Duplicate report: <https://github.com/openai/codex/issues/45569>.
+- Comment posted to that report:
+   [comment 6155282654][posted-comment].
 - Independent monitor used for window timing only: <https://cutoffreport.com/down/openai>.
+
+[posted-comment]: https://github.com/openai/codex/issues/45569#issuecomment-6155282654
