@@ -13,6 +13,8 @@ use super::annotation_tests::{TEXT_TOP, above, block, click, hint, painted, prob
 use super::caret_tests::position;
 /// The reader fixture.
 use super::find_tests::Reader;
+/// The most lines the window thread brings in for one new width.
+use super::rewrap::REWRAP_LINES;
 /// The counters of the window thread's work.
 use super::overscan_tile_tests::{counts, reset};
 /// Window sizing for exact text widths.
@@ -240,14 +242,14 @@ fn a_new_window_width_breaks_the_block_again() {
         return opened.source.borrow().width < wide;
     });
     settled(&opened);
-    // The blocks follow the width at once, but the window thread builds no tile for it: the worker's tile is swapped in.
+    // The blocks follow the width at once, and so does the tile: the window thread paints it once, within its allowance.
     let [_, tiles, rows, images] = counts(&opened.source);
-    assert_eq!(tiles, 0, "the window thread painted a tile for the resize");
-    assert_eq!(rows, 0, "the window thread shaped lines for the resize");
-    assert_eq!(
-        images, 1,
-        "the worker's tile for the new width is swapped in once"
+    assert_eq!(tiles, 1, "the window thread paints the tile for the resize");
+    assert!(
+        rows <= REWRAP_LINES as u64,
+        "the window thread shaped {rows} lines for the resize"
     );
+    assert_eq!(images, 1, "the tile for the new width is set once");
     let repacked = opened.source.borrow().annotations.work().packed - packed;
     assert!(
         (1..=3).contains(&repacked),

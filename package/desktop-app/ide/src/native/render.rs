@@ -5,6 +5,7 @@
 use super::{
     AppWindow, State, annotate,
     find::present::present,
+    rewrap::{self, Allowance},
     rows,
     tile::{self, TileBounds},
     tile_build::{TileJob, build_tile},
@@ -302,52 +303,90 @@ fn ensure_sign(current: &mut State, factor: f32) -> Option<SharedPixelBuffer<Rgb
 }
 
 /// What:
+///  What measuring the requested tile found: the tile that holds only lines whose heights the map has, the offset the
+///  view moved to while the heights settled, and whether the measurement finished.
+/// Why:
+///  A measurement that spends an allowance can stop short, and the caller then leaves the tile to the worker.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// type Measure = { bounds: TileBounds; scrolled?: number; complete: boolean };
+/// ```
+struct Measure {
+    /// The tile asked for after the last round.
+    bounds: TileBounds,
+    /// The offset the window must take, when the heights above the view changed.
+    scrolled: Option<f32>,
+    /// False when the allowance ran out before the tile's lines were all measured.
+    complete: bool,
+}
+
+/// What:
 ///  Measure the lines of `requested` on the window thread and keep the view still across what that teaches,
 ///  until the tile asked for holds only lines whose heights the map already has.
 ///  `offset` is the view's offset, changed when the heights above it changed;
 ///  the answer is the final offset and the final tile.
+///  With an `allowance` every line is charged before it is shaped, broken again, or packed,
+///  and the measurement stops at the first that does not fit.
 /// Why:
 ///  A tile built here must agree with the map it is placed by.
 ///  The lines are shaped once on the way and kept in the shaper's cache, so the build that follows only copies them.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function measureRequested(current: State, factor: number, view: [number, number, number]): [Tile, number | undefined];
+/// function measureRequested(current: State, factor: number, view: [number, number, number],
+///   first?: number, allowance?: Allowance): Measure;
 /// ```
 fn measure_requested(
     current: &mut State,
     factor: f32,
     view: (f32, f32, f32),
     first: Option<f32>,
-) -> (TileBounds, Option<f32>) {
+    mut allowance: Option<&mut Allowance>,
+) -> Measure {
     let (offset_now, width, height) = view;
     let mut offset = first.unwrap_or(offset_now);
     let mut scrolled = first;
     let mut requested = tile::requested(current);
     if !has_wrap_width(requested.width) {
-        return (requested, scrolled);
+        return Measure {
+            bounds: requested,
+            scrolled,
+            complete: true,
+        };
     }
     // Each round can move the view and so the tile; three rounds settle any text whose lines above the view
     // are measured by the pass already, which is every text but one that was just jumped into.
     for _ in 0..3 {
-        let measured = {
-            let State {
-                shaper,
-                document,
-                styles,
-                ..
-            } = &mut *current;
-            shaper.measure_lines(
-                document,
-                requested.first..requested.first + requested.count,
-                factor,
-                Some(requested.width),
-                styles,
-            )
+        let found = match allowance.as_deref_mut() {
+            Some(spending) => spending.measure(current, factor, requested),
+            None => {
+                let State {
+                    shaper,
+                    document,
+                    styles,
+                    ..
+                } = &mut *current;
+                Some(shaper.measure_lines(
+                    document,
+                    requested.first..requested.first + requested.count,
+                    factor,
+                    Some(requested.width),
+                    styles,
+                ))
+            }
+        };
+        let Some(measured) = found else {
+            return Measure {
+                bounds: requested,
+                scrolled,
+                complete: false,
+            };
         };
         #[cfg(debug_assertions)]
         {
             current.rows_shaped += measured.shaped;
+            current.rows_rebroken += measured.rebroken;
         }
         if !rows::absorb(current, measured.lines) {
             break;
@@ -358,14 +397,27 @@ fn measure_requested(
         }
         requested = tile::requested(current);
     }
-    return (requested, scrolled);
+    // The tile the last round asked for is built next, so its lines must be paid for too; those the cache holds
+    // at the width cost nothing.
+    let paid = match allowance.as_deref_mut() {
+        Some(spending) => spending.measure(current, factor, requested).is_some(),
+        None => true,
+    };
+    return Measure {
+        bounds: requested,
+        scrolled,
+        complete: paid,
+    };
 }
 
 /// Render shared shaped rows,
 ///  releasing state before any Slint setter can reenter.
 ///
-/// A tile whose only change is the reader's scroll, or the wrap width, is built by the tile worker,
+/// A tile whose only change is the reader's scroll is built by the tile worker,
 ///  and the displayed tile stays on screen until its result is swapped in.
+/// A new wrap width is taken here, within an allowance (`rewrap`): the lines near the view are broken again,
+///  the tile is painted for the new width, and the frame that follows shows it;
+///  a width whose lines do not fit the allowance is built by the tile worker like a scroll re-center.
 /// Every other change builds the requested tile here, as before.
 pub(super) fn render(window: &AppWindow, state: &Rc<RefCell<State>>) {
     #[cfg(debug_assertions)]
@@ -402,8 +454,35 @@ pub(super) fn render(window: &AppWindow, state: &Rc<RefCell<State>>) {
         place(&mut current, offset, width, height);
     }
     let sign = ensure_sign(&mut current, factor);
+    // What: A new wrap width the viewport just reported is taken here, within an allowance, or left to the worker.
+    // Why: The frame that follows must not show the old width's text in a window of the new width.
+    let mut allowance = rewrap::begin(&mut current);
+    let rewrap_started = allowance.as_ref().map(|_| {
+        return (
+            Instant::now(),
+            current.shaper.shaped_rows(),
+            current.shaper.rebroken_rows(),
+        );
+    });
     // No frame is painted against a map that no longer describes the displayed text and its annotations.
-    let mut scrolled = rows::settle(&mut current, factor, view_now, false);
+    // The step for a new width installs the blocks even while the reader scrolls: the frame needs them now.
+    let mut scrolled = rows::settle(&mut current, factor, view_now, allowance.is_some());
+    // The lines of the tile for the new width are measured and the view kept still, each line paid for first.
+    let mut measured_here = None;
+    if let Some(spending) = allowance.as_mut() {
+        let outcome = measure_requested(&mut current, factor, view_now, scrolled, Some(spending));
+        scrolled = outcome.scrolled;
+        if !outcome.complete {
+            rewrap::defer(&mut current, "the lines of the tile are over the allowance");
+        } else if !rewrap::raster_fits(&current, outcome.bounds, factor) {
+            rewrap::defer(&mut current, "the raster of the settled tile is too large for one frame");
+        } else {
+            measured_here = Some(outcome.bounds);
+        }
+    }
+    if measured_here.is_none() {
+        allowance = None;
+    }
     let paint = Paint::new(window, &current);
     let requested = tile::requested(&current);
     let shown = current.shown;
@@ -424,7 +503,9 @@ pub(super) fn render(window: &AppWindow, state: &Rc<RefCell<State>>) {
     let mut pixels = None;
     let mut matches_changed = false;
     let mut notice = None;
-    if same_inputs && requested == shown {
+    // What a new width cost: when it began, the lines and work charged, the lines shaped and broken again, and the tile.
+    let mut rewrapped = None;
+    if measured_here.is_none() && same_inputs && requested == shown {
         // What: Destructuring lends the cached frame for change and the map for reading at once.
         // Why: The materialized lines are unchanged, but rows above them may not be: the frame then keeps
         //      its pixels and only moves, and its find rectangles are handed over at their new place.
@@ -436,7 +517,7 @@ pub(super) fn render(window: &AppWindow, state: &Rc<RefCell<State>>) {
         {
             matches_changed = true;
         }
-    } else if same_inputs && current.scroll_wanted == Some(requested) {
+    } else if measured_here.is_none() && same_inputs && current.scroll_wanted == Some(requested) {
         // A scroll re-center or a new wrap width: the worker builds the requested tile, and the displayed tile
         // stays on screen meanwhile, moved to where the map now puts it.
         let State {
@@ -458,9 +539,16 @@ pub(super) fn render(window: &AppWindow, state: &Rc<RefCell<State>>) {
         // Any other change builds the requested tile here, and any tile still queued for the worker is dropped.
         let build_started = Instant::now();
         tile::cancel(&mut current);
-        // The map learns the heights of the lines the tile holds first, so the tile and the map agree.
-        let (settled, moved) = measure_requested(&mut current, factor, view_now, scrolled);
-        scrolled = moved;
+        // The map learns the heights of the lines the tile holds first, so the tile and the map agree;
+        // a new width has had that done already, within its allowance.
+        let settled = match measured_here {
+            Some(bounds) => bounds,
+            None => {
+                let outcome = measure_requested(&mut current, factor, view_now, scrolled, None);
+                scrolled = outcome.scrolled;
+                outcome.bounds
+            }
+        };
         let built_job = job(&current, settled, &paint);
         let result = {
             let State { shaper, raster, .. } = &mut *current;
@@ -480,6 +568,24 @@ pub(super) fn render(window: &AppWindow, state: &Rc<RefCell<State>>) {
                     clipped = settled.clip.is_some(),
                     "window thread measured and built a tile"
                 );
+                if let (Some(spending), Some((at, shaped, rebroken))) =
+                    (allowance.as_ref(), rewrap_started)
+                {
+                    #[cfg(debug_assertions)]
+                    {
+                        current.rewrapped += 1;
+                        current.rewrap_spent = (spending.lines(), spending.work());
+                    }
+                    rewrapped = Some((
+                        at,
+                        (spending.lines(), spending.work()),
+                        (
+                            current.shaper.shaped_rows() - shaped,
+                            current.shaper.rebroken_rows() - rebroken,
+                        ),
+                        settled,
+                    ));
+                }
                 current.shown = settled;
                 let mut view = built.view;
                 view.rebase(&current.row_map);
@@ -518,6 +624,19 @@ pub(super) fn render(window: &AppWindow, state: &Rc<RefCell<State>>) {
     };
     drop(current);
     show(window, state, frame);
+    // The whole step the window thread took for a new width, from the allowance to the last setter of the frame.
+    if let Some((at, (charged_lines, charged_work), (shaped, rebroken), settled)) = rewrapped {
+        tracing::debug!(
+            elapsed_us = at.elapsed().as_micros() as u64,
+            first = settled.first,
+            count = settled.count,
+            charged_lines,
+            charged_work,
+            shaped,
+            rebroken,
+            "window thread re-wrapped for a new width"
+        );
+    }
 }
 
 /// Present the displayed frame: its image and offsets, its gutter, rectangles, and caret, then the other readings.
