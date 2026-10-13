@@ -409,6 +409,25 @@ A separately deployed broker must own release events behind a narrow API.
 See
 [`doc/troubleshooting/ydotool-interrupted-key-release.md`](../../../doc/troubleshooting/ydotool-interrupted-key-release.md).
 
+## Migration clause lowering
+
+`lowerEstablishedClause` maps code-admitted clause relationships into directive facts,
+authorization prerequisites,
+and independent missing premises.
+It does not authenticate a model response,
+source authority,
+operation coverage,
+or approval sufficiency.
+Unknown or unsupported meanings remain broader than uncertainty among supported effects.
+A satisfied prerequisite grants no permission;
+an unmet prerequisite cannot override a prohibition.
+
+The private native integration links the maintained exports for these deterministic computations.
+The original request,
+source,
+judgment,
+and human-approval owners remain required before any result can authorize execution.
+
 ## Migration input accounting
 
 `assertOriginalInputBudget` validates resource and Session receipt counters,

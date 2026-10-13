@@ -601,6 +601,44 @@ Eleven-document rendering passed `proc_c7e4` before this final evidence update.
 
 The unassociated ordinary request domain and other unconsumed producer relationships remain explicit.
 
+## Maintained policy computation in the native prototype
+
+The native prototype now imports the maintained package's actual built exports for directive resolution,
+authorization requirements,
+outcome calculation,
+and shared input-budget arithmetic.
+The canonical private implementations were replaced with import adapters,
+not copied into another runtime implementation.
+The existing SDK stager resolves the package-declared entry before fixtures change their home directory.
+No source registry,
+request parse,
+or completeness flag was added.
+
+The maintained input-budget implementation is
+`package/pi-plugin/auto-mode/src/input-receipt-budget.ts`.
+Build/types passed `proc_eeaf`;
+full package units and changed-file lint passed `proc_fc5d` with zero lint diagnostics.
+`proc_512e` verified exact maintained function identities and passed all 32 canonical compiler scenarios.
+`proc_b709` verified the actual native combined 64/65 receipt boundary through the maintained helper.
+The built-artifact guard omission `proc_1bd6` failed the required exception assertion in a disposable copy.
+Its first attempt was a minified-whitespace fixture mismatch,
+not a guard-sensitivity result.
+
+Clause-to-fact lowering is also being moved into maintained TypeScript,
+with the shared priority validator reused by both the resolver and lowering.
+`proc_ca39` passed its build/types after correcting TypeScript `TS9010` with an explicit exported type.
+The full unit task `proc_8ac8` passed its authored meaning,
+prerequisite,
+shape,
+and ownership cases.
+Final formatting and native lowering-consumer verification remain pending at this checkpoint.
+
+These native scenarios still retain the independent governing-domain obligation.
+This is maintained computation used by the private native path,
+not completed domain closure,
+a maintained host launch path,
+or installed activation.
+
 ## Original loadout callback inputs
 
 `41a49c45` / `proc_c6a4` established a separate input-side loss.
@@ -647,6 +685,9 @@ Getter counts match one/one;
 unexpected false and undefined failures stop before callback entry,
 and reset does not rebind original publications.
 `proc_aca8` passed the shared declaration-metadata regression.
+Before the maintained-kernel import change,
+`proc_9120` passed all 198 integrated input cases and the original-source variants.
+Action/source parents passed `proc_5331` and `proc_faca`.
 
 Argument snapshots do not establish the values later returned by query capabilities,
 valid delegation,
