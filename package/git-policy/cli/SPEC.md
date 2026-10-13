@@ -726,7 +726,19 @@ export type FindingEvent = EventBase & {
 `path` is text.
 A Git pathname that is not valid UTF-8 appears in `path` with each invalid sequence replaced by U+FFFD,
 and `pathBytes` then carries the exact pathname bytes as standard padded base64 (RFC 4648 section 4).
-`pathBytes` is absent whenever `path` is the exact name.
+`pathBytes` is absent whenever `path` is the exact name,
+including a name that holds U+FFFD itself and a name that holds a backslash.
+A reader can therefore rely on this rule:
+when an event has no `pathBytes`, its `path` is the exact name,
+with one exception.
+A finding of `security/forbidden-strings` reports the scanner's masked display of the name in `path`
+(a byte that is not UTF-8 shown as `\xNN`, and a matched segment masked),
+and never has `pathBytes`,
+because the exact bytes would undo the masking.
+Every other event that names a file reports the exact name this way,
+on `git add`, on a commit (landed, blocked, normalized, replayed or recovered), and on direct `check` and `fix`.
+A `message` may also name a file; there the name is readable text with each invalid sequence replaced by U+FFFD,
+and only the `path` fields above carry the exact bytes.
 The retired TypeScript wrapper stopped on such a name and never emitted the field.
 
 `code` is the complete `<policy-id>/<policy-local-code>` value.
@@ -774,6 +786,7 @@ export type CoreFindingEvent = EventBase & {
     | 'concurrent-commit/branch-switched';
   readonly message: string;
   readonly paths?: readonly RepositoryPath[];
+  readonly pathsBytes?: readonly string[];
   readonly winningOid?: GitObjectId;
   readonly preparedOid?: GitObjectId;
 };
@@ -808,6 +821,10 @@ and cannot be disabled or assigned a severity through repository config.
 `paths`,
 `winningOid`,
 and `preparedOid` are present only for `concurrent-commit/replay-conflict`.
+When any conflicting pathname is not valid UTF-8,
+`pathsBytes` lists the base64 bytes of every path in `paths`,
+entry for entry in the same order;
+otherwise it is absent.
 Every `concurrent-commit` finding leaves ref,
 real index,
 and worktree bytes unchanged by cli-git.
@@ -1170,6 +1187,21 @@ files are mode `0600`,
 and every read uses no-follow checks that reject symbolic links,
 non-regular files,
 and unsafe ownership.
+
+A path in a record is the exact pathname bytes.
+Where it is a JSON string,
+a pathname that is not valid UTF-8 is written as its text with each invalid sequence replaced by U+FFFD,
+and the record adds the base64 of the exact bytes beside it:
+`pathBytes` in each object of `addedPaths` and `selectedWorktreePaths`,
+`committedPathBytes` beside `committedPaths`,
+and `selectedPathspecBytes` beside `selectedPathspecs`
+(the list form names every entry once any entry needs it,
+the object form only its own).
+A record whose paths are all valid UTF-8 has none of these fields and is byte for byte what the retired wrapper wrote,
+and a reader treats a missing field as "the text is the exact name".
+A record whose bytes do not read as the text beside them is malformed.
+`captured.json` keeps its own form,
+with every path decoded as Latin-1.
 
 `landing-<n>.json` records the expected old OID,
 the new OID

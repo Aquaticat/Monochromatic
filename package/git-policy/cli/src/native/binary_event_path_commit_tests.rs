@@ -538,3 +538,57 @@ fn recovery_completes_a_killed_commit_of_a_name_that_is_not_utf8() {
     assert_nothing_left(&fixture, repo.as_path());
     remove_settled(&fixture);
 }
+
+/// A linter that fails stands in for the real one, because the control is about the event and not about Markdown.
+fn failing_linter_path(fixture: &Fixture) -> OsString {
+    let directory: PathBuf = fixture.root.join("linter");
+    std::fs::create_dir_all(&directory).expect("linter directory");
+    super::support::executable(
+        directory.join("monochromatic-lint").as_path(),
+        b"#!/bin/sh\necho 'monochromatic-lint: broken on purpose' >&2\nexit 3\n",
+    );
+    let mut path: OsString = fixture.root.join("bin").into_os_string();
+    path.push(":");
+    path.push(directory);
+    path.push(":/usr/bin:/bin");
+    return path;
+}
+
+/// A Markdown file the linter could not check, named by bytes that are not UTF-8, stops `git add` and a commit
+///  with an engine failure that carries the exact bytes, and nothing is staged or landed.
+#[test]
+fn an_unchecked_markdown_name_that_is_not_utf8_is_reported_with_its_exact_bytes() {
+    let fixture: Fixture = fixture("event-path-markdown");
+    let repo: PathBuf = configured(&fixture, Some("{ \"policies\": { \"final-newline\": \"off\", \"markdown/autofix\": \"warn\" } }\n"));
+    let name: OsString = OsString::from_vec(b"caf\xe9.md".to_vec());
+    std::fs::write(repo.join(".lfsconfig"), b"[lfs]\n\turl = https://lfs.example.com/org/repo\n").expect("lfsconfig");
+    std::fs::write(repo.join(".gitattributes"), b"*.png filter=lfs diff=lfs merge=lfs -text\n").expect("attributes");
+    std::fs::write(repo.join(&name), b"# T\n").expect("markdown");
+    let path: OsString = failing_linter_path(&fixture);
+    let reason: &str = "monochromatic-lint exited with status 3, which its one-rule configuration never produces: broken on purpose";
+    let expected = |sequence_type: &str| -> String {
+        return format!(
+            "{{\"schemaVersion\":1,\"sequence\":0,\"type\":\"engine-failure\",\"code\":\"policy-incomplete\",\
+             \"message\":\"{reason}. The Markdown candidate was not checked and nothing was changed; fix the cause, \
+             or pass --no-enforce-markdown/autofix to skip this policy for one command.\",\
+             \"trigger\":\"{sequence_type}\",\"policyId\":\"markdown/autofix\",\
+             \"path\":\"caf\u{fffd}.md\",\"pathBytes\":\"Y2Fm6S5tZA==\"}}\n"
+        );
+    };
+    let mut add: Command = wrapped_os(&fixture, repo.as_path(), &[OsString::from("add"), OsString::from("--"), name.clone()]);
+    add.env("PATH", &path);
+    let added: Observed = observe(&mut add, b"");
+    assert_eq!((added.code, stderr_of(&added)), (Some(2), expected("pre-forward")));
+    assert_eq!(git(&fixture, repo.as_path(), &["ls-files", "-z"]).stdout, Vec::<u8>::new());
+    git(&fixture, repo.as_path(), &[OsString::from("add"), OsString::from("--"), name.clone()]);
+    git(&fixture, repo.as_path(), &["commit", "--quiet", "--message=base"]);
+    let head: String = git_text(&fixture, repo.as_path(), &["rev-parse", "HEAD"]);
+    std::fs::write(repo.join(&name), b"# T\n\nedited\n").expect("edit");
+    let mut commit: Command = wrapped_os(&fixture, repo.as_path(), &commit_arguments(&["--message=edited"], name.as_os_str()));
+    commit.env("PATH", &path);
+    let committed: Observed = observe(&mut commit, b"");
+    assert_eq!((committed.code, stderr_of(&committed)), (Some(2), expected("pre-forward")));
+    assert_eq!(git_text(&fixture, repo.as_path(), &["rev-parse", "HEAD"]), head);
+    assert_nothing_left(&fixture, repo.as_path());
+    remove_settled(&fixture);
+}
