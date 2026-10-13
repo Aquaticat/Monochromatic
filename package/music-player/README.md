@@ -278,9 +278,10 @@ the app says so and offers to open a folder instead.
 
 ## Gallery
 
-The gallery shows the desktop application.
-This README carries no Android capture of the current build,
-so the Android behaviour it describes comes from the source and from the decision record.
+The gallery has a desktop section and an Android section.
+Each says how its captures were taken.
+
+### Desktop
 
 Every capture is a screenshot of the release build in the repository's nested Wayland compositor,
 taken with the session helpers of [`desktop-e2e`](desktop-e2e).
@@ -294,7 +295,7 @@ Captures hold the application window only,
 with no system bars or notifications.
 The only paths visible are synthetic and relative to the library.
 
-### Two panes
+#### Two panes
 
 Wide windows show the folder list and the transport deck on one side,
 and the selected folder's tracks on the other.
@@ -311,7 +312,7 @@ and Shuffle all.
 
 ![Two-pane window in dark appearance with a playing track](https://monochromatic-lfs.aquaticat.workers.dev/ddba79bac4be96b743db6691afa2b1dcc40ef73841fe8d5a512b9fd15f4ee2a0/package/music-player/asset/readme/desktop-two-pane-dark.png)
 
-### Search
+#### Search
 
 Search covers the track pane.
 The query `lan` finds a loose track,
@@ -324,7 +325,7 @@ The ring on the first result shows keyboard focus.
 
 ![Search results for a query in dark appearance](https://monochromatic-lfs.aquaticat.workers.dev/babc2d7c1b94a2a85e1b60117d9a775e9bab3bf9b36487c58f8c5e17b534555b/package/music-player/asset/readme/desktop-search-dark.png)
 
-### Settings
+#### Settings
 
 The Track rows template is selected when Settings opens.
 Its editor,
@@ -335,7 +336,7 @@ and the list of insertable fields fill the second pane.
 
 ![Settings with the Track rows template in dark appearance](https://monochromatic-lfs.aquaticat.workers.dev/eb725dda5b69c22394904bf5cf10c27c10dc812d92d1f8a39a5680b754632277/package/music-player/asset/readme/desktop-settings-dark.png)
 
-### Track menu and key hints
+#### Track menu and key hints
 
 The menu was opened on the playing row with the `Menu` key.
 Each row has an underlined access letter,
@@ -354,7 +355,7 @@ The ring on the track row shows keyboard focus.
 
 ![Key hint badges while Ctrl is held](https://monochromatic-lfs.aquaticat.workers.dev/85b1c6e6648f84384e835cef9127d0a81e73b6185605f852af004cb9a5c00fec/package/music-player/asset/readme/desktop-hints-dark.png)
 
-### Narrow window
+#### Narrow window
 
 A window narrower than 600 pixels shows one pane.
 The header carries the folder button with a caret,
@@ -369,11 +370,106 @@ and the deck stays in view.
 
 ![Narrow window with the folder list open in light appearance](https://monochromatic-lfs.aquaticat.workers.dev/bb95684ccd34f954143784071729b4cea92b71ed38e447547b158ccdf39bcff2/package/music-player/asset/readme/desktop-narrow-folders-light.png)
 
-### Empty library
+#### Empty library
 
 A folder without playable audio says so and offers to open a different folder.
 
 ![Empty library state in light appearance](https://monochromatic-lfs.aquaticat.workers.dev/c40cbdc76be430bc7b22468051e6aff8f469d6bf8caf27bb941dfbf0b897d27d/package/music-player/asset/readme/desktop-empty-light.png)
+
+### Android
+
+Every capture is a screenshot of the debug build of this checkout.
+It ran on an Android Emulator 37.2.12.0 with the Pixel 9 Pro Fold virtual device on Android 17 (API 37),
+using the host GPU and no audio device.
+Keys were sent to the emulator with `adb shell input`.
+The library is the device-wide MediaStore collection,
+and it holds only generated files:
+invented artist folders and track names with generated tones.
+The accent comes from the system accent of the emulator's wallpaper,
+not from the baseline `#4E5E8B`.
+Captures hold the app area only:
+the status bar and the gesture bar are cropped away,
+so no clock,
+notification,
+or carrier name appears.
+The cover display captures are 1080 pixels wide and the inner display captures are 2076 pixels wide,
+the widths of the two panels.
+The PNGs were stripped of capture metadata.
+The only paths visible are synthetic and relative to the library.
+
+#### Cover display
+
+On the closed foldable the app has one pane.
+The folder button in the header opens the folder list in place of the track list,
+and the deck stays in view.
+The letter rail at the left jumps between letters,
+and the selected folder,
+`Aster Vale`,
+is underlined.
+The line under the playing title reads `4 of 9` with the track's true peak.
+
+![Cover display with the folder list open in light appearance](https://monochromatic-lfs.aquaticat.workers.dev/b89584991247b2e50442be03eae3d7ffb3a3bb5300a3d71e83f7cf3fe8286291/package/music-player/asset/readme/android-cover-library-light.png)
+
+With the folder list closed,
+the track list fills the display above the deck.
+Rows sit under their subfolder headings with a track count,
+and each row shows its duration and true peak.
+The playing track has bold text and a soft fill,
+and the deck shows a pause control.
+The mode group offers Repeat,
+In order,
+Shuffle Aster Vale (its name is shortened to fit),
+and Shuffle all,
+with a check mark on In order.
+
+![Cover display with the track list and the deck in dark appearance](https://monochromatic-lfs.aquaticat.workers.dev/1d589fe188ecc82d9cbd80c744b36ce52a083b82cfb419ddedf2a008805df1bf/package/music-player/asset/readme/android-cover-player-dark.png)
+
+Search is its own page with one header that holds Back,
+the query,
+and Clear.
+The query `lan` finds a loose track,
+a folder,
+and a track with its parent folder,
+each with the matching text highlighted.
+The on-screen keyboard was closed before the capture so that the results fill the display.
+
+![Search results for a query on the cover display in light appearance](https://monochromatic-lfs.aquaticat.workers.dev/582ac24c13d7449c7219890dbfd8c39fd3b85b9fee8f2dd3186688df8661f909/package/music-player/asset/readme/android-cover-search-light.png)
+
+The menu was opened on the playing row with the `Menu` key,
+after `Alt+2` had focused the track list.
+A ring around the row and a ring around Start shuffle from here show keyboard focus,
+which the `Down` and `Up` keys move through the six rows.
+Each row has an underlined access letter,
+and Move to trash has a red label and a trash icon.
+
+![Track menu opened with the keyboard on the cover display in dark appearance](https://monochromatic-lfs.aquaticat.workers.dev/d1b1acaf10655d3e57fdbdb10695db9940578131b9cd7d742eabb2376ef6aa1a/package/music-player/asset/readme/android-cover-menu-dark.png)
+
+On the cover display Settings is a single pane.
+It lists the two templates,
+Track rows and Playing track,
+each with a preview line.
+
+![Settings on the cover display in light appearance](https://monochromatic-lfs.aquaticat.workers.dev/38060578083a8d54d0789ac615244bdddaaf8e8add7fb05c9e3f6c1296b703d1/package/music-player/asset/readme/android-cover-settings-light.png)
+
+#### Inner display
+
+Unfolded,
+the left pane holds the folder list with the deck beneath it,
+and the right pane holds the tracks of the selected folder under their subfolder headings.
+The playing track has bold text and a soft fill,
+and the mode group wraps to two rows.
+
+![Inner display with two panes in light appearance and a playing track](https://monochromatic-lfs.aquaticat.workers.dev/120a5d39518743b6d91e935507c9ce2202dc01108ed2341f62cee6ae30f29860/package/music-player/asset/readme/android-inner-two-pane-light.png)
+
+![Inner display with two panes in dark appearance and a playing track](https://monochromatic-lfs.aquaticat.workers.dev/4384c24aa25790016829801c5e13c7b8ef6d631b9aadbdd476d1b9c219e4d30d/package/music-player/asset/readme/android-inner-two-pane-dark.png)
+
+On the inner display Settings keeps the template list on the left with Track rows selected.
+The right pane shows that template's preview from the open library,
+its template text,
+and the fields that can be inserted,
+each with an example value and its `mi(...)` name.
+
+![Settings with the Track rows template on the inner display in dark appearance](https://monochromatic-lfs.aquaticat.workers.dev/d09cd01cfc17b434647a0cf10a59b0e70646e737d670501d8a44d61075dd3174/package/music-player/asset/readme/android-inner-settings-dark.png)
 
 ## Design record
 
@@ -565,7 +661,7 @@ Mise.
 Use synthetic audio and folder names when creating visual fixtures.
 The desktop captures in the gallery come from the session helpers of [`desktop-e2e`](desktop-e2e),
 which play into a private null sink.
-The method of the gallery that this one replaced is retained in
+The method of this gallery, and the facts for retaking the Android gallery, are in
 [`doc/handover/music-player-readme-and-gallery.md`](../../doc/handover/music-player-readme-and-gallery.md).
 
 ## Related documentation

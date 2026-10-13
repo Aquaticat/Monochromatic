@@ -9,11 +9,14 @@ It holds twelve PNGs of the desktop app:
 the two-pane window, Search, Settings and the track menu, each in light and dark,
 plus the key hint badges (dark), the narrow player (dark), the narrow folder list (light) and the empty library (light).
 
-There is no Android gallery.
+The Android gallery holds eight PNGs retaken on 2026-10-13 from a debug build of commit `c6a3f9fde2` on the
+Pixel 9 Pro Fold emulator (API 37, host GPU) with a generated library of invented artists:
+the cover display (library light, player dark, Search light, track menu dark, Settings light) and the inner display
+(two panes light and dark, two-pane Settings dark).
+Each was cropped to remove the status bar and gesture bar at native width, with demo mode on while capturing.
 Every earlier Android capture was removed because it predated the focus ring, gray and menu decisions (D117 to D119)
 or showed names from a private corpus and a carrier name.
-The README says it carries no Android capture of the current build.
-Retake the Android gallery only from a final build, with the facts in "Android captures".
+Retake the Android gallery after any change to those surfaces, with the facts in "Android captures".
 
 Last updated: 2026-10-13.
 
@@ -122,14 +125,14 @@ The full record is `doc/planning/lfs-readme-image-rendering.md`.
 - The objects reach R2 on push, so the URLs resolve only afterwards.
   `mise run //package/config/lfs-r2-worker:check:markdown-urls` sends a `HEAD` request for every embedded URL and
   asserts status 200, an image content type, and the pointer's size.
-- On 2026-10-13 the oid in each of the twelve README image URLs equals the sha256 of its file.
+- On 2026-10-13 the oid in each of the twelve desktop README image URLs equals the sha256 of its file,
+  and so does each of the eight Android ones.
 
 ## Next actions
 
-1. Push, run the URL check task, and open the README on github.com in a logged-out browser to confirm that all twelve
+1. Push, run the URL check task, and open the README on github.com in a logged-out browser to confirm that all twenty
    images load (`naturalWidth` above zero).
-2. Retake the Android gallery from a final build, with the facts in "Android captures",
-   and add it to the README's Gallery section.
+2. Retake the Android gallery after the next visible change, with the facts in "Android captures".
 3. Keep the image store of the extracted repository undecided until the extraction plan settles it.
 
 ## References
