@@ -200,6 +200,26 @@ fn a_dead_transaction_holding_only_its_index_lock_waits_for_the_landing_lock() {
     scene.finish();
 }
 
+/// A transaction that another recoverer finished after this one inspected the registry has nothing left to recover:
+///  it needs no landing lock and its landing entry check reports nothing instead of failing on the missing directory.
+#[test]
+fn a_transaction_a_peer_removed_after_inspection_needs_no_landing_lock() {
+    let scene: Scene = Scene::new("recovery-scan-vanished", false);
+    scene.capture();
+    scene.land(LandingOperation::Commit, Vec::new());
+    let entries: Vec<RegistryEntry> = list_transaction_entries(scene.registry.as_path()).expect("listing");
+    let inspected: InspectedEntry = inspect_registry_entry(&entries[0]).expect("inspected");
+    assert!(needs_landing_lock(&inspected).expect("present"));
+    std::fs::remove_dir_all(scene.directory.as_path()).expect("the peer removes the transaction");
+    assert!(!needs_landing_lock(&inspected).expect("a vanished transaction needs no lock"));
+    assert!(!entered_landing_unless_vanished(scene.directory.as_path()).expect("vanished"));
+    // A path that exists but cannot be listed is still a failure.
+    let file: PathBuf = scene.root.join("not-a-directory");
+    std::fs::write(file.as_path(), b"x").expect("file");
+    assert!(entered_landing_unless_vanished(file.as_path()).is_err());
+    scene.finish();
+}
+
 /// A failure stops recovery at that transaction and keeps its directory.
 #[test]
 fn failures_keep_their_directory() {

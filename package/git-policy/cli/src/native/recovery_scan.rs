@@ -150,7 +150,34 @@ fn needs_landing_lock(inspected: &InspectedEntry) -> Result<bool, RecoveryError>
     if inspected.entry.kind != EntryKind::Transaction || inspected.dead_owner().is_none() {
         return Ok(false);
     }
-    return entered_landing(inspected.entry.path.as_path());
+    return entered_landing_unless_vanished(inspected.entry.path.as_path());
+}
+
+/// What:
+///  `entered_landing`, answering "no" for a transaction directory that is gone.
+/// Why:
+///   Another recoverer of the same dead transaction may finish and remove it between this recoverer's registry listing
+///       and this check; a transaction that no longer exists has nothing to recover,
+///  whereas a directory that exists but cannot be listed stays an error.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// try { return await enteredLanding(directory); } catch (e) { if (e.code === 'ENOENT') return false; throw e; }
+/// ```
+fn entered_landing_unless_vanished(directory: &Path) -> Result<bool, RecoveryError> {
+    match entered_landing(directory) {
+        Ok(entered) => return Ok(entered),
+        Err(error) => {
+            if directory.exists() {
+                return Err(error);
+            }
+            debug(
+                "recoverRegisteredTransactions",
+                format!("transaction finished while recovery listed it: {}", directory.display()).as_str(),
+            );
+            return Ok(false);
+        }
+    }
 }
 
 /// What:
@@ -183,7 +210,7 @@ pub fn recover_dead_landings(
         let Some(record) = item.dead_owner() else {
             continue;
         };
-        if !entered_landing(item.entry.path.as_path())? {
+        if !entered_landing_unless_vanished(item.entry.path.as_path())? {
             continue;
         }
         debug(
