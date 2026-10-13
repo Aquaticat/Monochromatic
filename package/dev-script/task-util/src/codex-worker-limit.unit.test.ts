@@ -62,7 +62,7 @@ await describe({
     ].map(function shellBoundary(command,) {
       return it({
         name: `preserves shell source and status for ${JSON.stringify(command,)}`,
-        fn: () => {
+        fn: async () => {
           const parent = fixture();
           try {
             const rewritten = commandFromHook({ parent, command, },);
@@ -82,7 +82,7 @@ await describe({
     },),
     it({
       name: 'attachment failure prevents the original payload after a successful positive control',
-      fn: () => {
+      fn: async () => {
         const parent = fixture();
         try {
           const rewritten = commandFromHook({ parent, command: "printf 'payload-executed'", },);
@@ -108,7 +108,7 @@ await describe({
     ].map(function changedControl([name, value,],) {
       return it({
         name: `blocks unexpected ${name} value ${JSON.stringify(value,)}`,
-        fn: () => {
+        fn: async () => {
           const parent = fixture();
           try {
             if (name === undefined || value === undefined)
@@ -134,7 +134,7 @@ await describe({
     ].map(function invalidEvent(input,) {
       return it({
         name: `blocks invalid event ${input}`,
-        fn: () => {
+        fn: async () => {
           const result = spawnSync(binary, ['--hook', scratch,], { input, encoding: 'utf8', },);
           expect(result.status,).toBe(2,);
           expect(result.stdout,).toBe('',);
@@ -143,7 +143,7 @@ await describe({
     },),
     it({
       name: 'initialization preserves existing controls and permits an explicit finite CPU increase',
-      fn: () => {
+      fn: async () => {
         const parent = fixture();
         try {
           rmSync(join(parent, 'codex',), { recursive: true, },);
