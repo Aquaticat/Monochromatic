@@ -589,7 +589,7 @@ const plantedControls = [
     file: 'src/native/commit_transaction.rs',
     from: '                return os_from_path_bytes(pathspec.as_slice());',
     to: '                return OsString::from(String::from_utf8_lossy(pathspec.as_slice()).into_owned());',
-    failing: 'event_path_commit::a_commit_of_a_name_that_is_not_utf8_lands_with_its_exact_bytes',
+    failing: 'commit_transaction::tests::the_candidate_request_keeps_the_bytes_of_a_name_that_is_not_utf8',
   },
   {
     name: 'a correction of a name that is not UTF-8 is staged under its exact bytes',
