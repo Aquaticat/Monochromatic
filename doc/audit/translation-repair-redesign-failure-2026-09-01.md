@@ -663,7 +663,7 @@ then read private complete pages only when authorized quality review requires it
 [candidate-h-evidence]: ../planning/translation-repair-interface-candidates-h-j.md#candidate-h-proposal-closed-world-verdict-with-bounded-defect-evidence
 [candidate-i-evidence]: ../planning/translation-repair-interface-candidates-h-j.md#candidate-i-plan-candidate-scoped-compact-ballots
 [candidate-j-evidence]: ../planning/translation-repair-interface-candidates-h-j.md#candidate-i-posture-after-kimi-route-rejection
-[candidate-k-evidence]: ../planning/translation-repair-interface-candidates-k-m-part-01.md#candidate-k-plan-three-family-authors-with-conjunctive-review-units
-[candidate-l-evidence]: ../planning/translation-repair-interface-candidates-k-m-part-02.md#candidate-l-plan-lean-realization-with-readable-verification
-[candidate-m-evidence]: ../planning/translation-repair-interface-candidates-k-m-part-03.md#candidate-m-plan-risk-attested-authors-and-role-split-challengers
+[candidate-k-evidence]: ../planning/translation-repair-interface-candidates-k-m-candidate-k-three-family-authors-and-review-units.md#candidate-k-plan-three-family-authors-with-conjunctive-review-units
+[candidate-l-evidence]: ../planning/translation-repair-interface-candidates-k-m-candidate-l-lean-realization-and-readable-verification.md#candidate-l-plan-lean-realization-with-readable-verification
+[candidate-m-evidence]: ../planning/translation-repair-interface-candidates-k-m-candidate-m-risk-attested-authors-and-role-split-challengers.md#candidate-m-plan-risk-attested-authors-and-role-split-challengers
 [candidate-m-calibration-gist]: https://gist.github.com/Aquaticat/6ff4fd2f600fc257064aa32eee4c9753/b6c9fb5ebf943a5cd8cfeebbb4c6a2fbbc1e6654

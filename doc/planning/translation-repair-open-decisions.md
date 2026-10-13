@@ -65,198 +65,105 @@ The records for 1 to 10 are:
     re-arming the idle windows:
     `doc/decision/translation-repair-runaway-call-termination.md`.
 
-WHAT `#121` ADDED,
-08-19.
-Two new questions,
-9 and 10,
-and one correction that needed no question
-at all.
+## Contents
 
--   THE IDLE WINDOWS' STATED REASON WAS WRONG,
-    THE VALUES WEREN'T.
-    The 95.6 s median
-    `STREAM_FIRST_BYTE_MS` and `STREAM_IDLE_MS` were disabled against is superseded 77 to 93 times
-    by first production traffic,
-    but the tail still holds completed calls at 183755 ms,
-    124992 ms,
-    and (three weeks earlier,
-    a different roster) 347099 ms,
-    the last within 3.6 percent of the
-    360000 ms deadline.
-    Both constants stay at 600000;
-    only their TSDoc changed,
-    in
-    `doc/decision/translation-repair-runaway-call-termination.md` and commit `3893825b2`.
-    This
-    needed no question because the evidence pointed one way:
-    nothing on record would have let a
-    tighter window avoid killing a healthy call.
--   THE STRAGGLER GRACE'S CUT POPULATION IS COUNTED TO THE END OF THE PASS:
-    19 cuts,
-    not the
-    audit's mid-flight 10,
-    sixteen of them `hf:zai-org/GLM-5.2` and two newly `hf:Qwen/Qwen3.6-27B`.
-    What to do about that concentration is Question 9.
--   WHETHER TO ACTIVELY RE-ARM THE IDLE WINDOWS BELOW 600000,
-    trading the deadline's six-minute
-    ceiling for something faster on a genuinely dead call,
-    is Question 10.
-    The measurement above
-    settles the premise;
-    it does not settle how much of the documented tail risk is worth paying
-    against.
+This record is kept as one file per subject or span,
+each of at most 1,000 lines and named for what it holds.
+New text goes into the file whose subject it belongs to;
+a file that would pass the limit gives up a subject to a new file,
+named for that subject and listed here.
 
-WHAT A FOURTH NIGHT CHANGED,
-08-17.
-One new question,
-Question 8,
-and one gate that is no longer a gate.
-Nothing
-below was answered in between and nothing changed its answer.
+- [Translation repair open decisions: what changed night by night, 2026-08-15 to 2026-08-19](translation-repair-open-decisions-changes-by-night-2026-08-15-to-2026-08-19.md):
+  The dated notes that told the owner what moved between readings of the questions,
+  newest first from 2026-08-19 back to the second night,
+  then the long list of what landed on 2026-08-15 and 2026-08-16 after the first writing.
+  Sections:
+  - [What `#121` added on 2026-08-19](translation-repair-open-decisions-changes-by-night-2026-08-15-to-2026-08-19.md#what-121-added-on-2026-08-19)
+  - [What the fourth night changed, 2026-08-17](translation-repair-open-decisions-changes-by-night-2026-08-15-to-2026-08-19.md#what-the-fourth-night-changed-2026-08-17)
+  - [What the third night changed, 2026-08-16 into 2026-08-17](translation-repair-open-decisions-changes-by-night-2026-08-15-to-2026-08-19.md#what-the-third-night-changed-2026-08-16-into-2026-08-17)
+  - [What the second night changed, 2026-08-16](translation-repair-open-decisions-changes-by-night-2026-08-15-to-2026-08-19.md#what-the-second-night-changed-2026-08-16)
+  - [What landed after the first writing, 2026-08-15 to 2026-08-16](translation-repair-open-decisions-changes-by-night-2026-08-15-to-2026-08-19.md#what-landed-after-the-first-writing-2026-08-15-to-2026-08-16)
+- [Translation repair open decisions: how wide the producing rosters should be (question 1)](translation-repair-open-decisions-producing-roster-width.md):
+  Question 1 with its roster-width measurements,
+  options and ranking,
+  the 2026-08-23 measurement that width does not decide the outcome,
+  and the owner's ruling that keeps three producers and sends checker width to measurement.
+- [Translation repair open decisions: the transcribed-image class (question 2)](translation-repair-open-decisions-transcribed-image-class.md):
+  Question 2 on blockquotes that transcribe letters held as images in the Chinese pages,
+  the overnight census of target-only blocks,
+  the options,
+  and the ruling that built the two-reader image reading and refused the paired-quote ratio guard.
+- [Translation repair open decisions: whether the critic stage survives (question 3)](translation-repair-open-decisions-critic-stage.md):
+  Question 3 on whether critics stay in the translate path,
+  what dropping them saves,
+  the blocking behaviour that cannot stay,
+  and the options and ranking.
+- [Translation repair open decisions: what a self-certifying checker's verdict is worth (question 4)](translation-repair-open-decisions-self-certifying-checker-verdict.md):
+  Question 4 on the weight of a checker's verdict about text it helped write,
+  with the three weighting options and the ranking.
+- [Translation repair open decisions: the lane replaces most of the archive's English (question 5)](translation-repair-open-decisions-archive-english-replacement-rate.md):
+  Question 5,
+  the largest question:
+  the bench finding that the judges replace most of the archive's English,
+  the fidelity trials with deletion,
+  insertion and alteration fixtures,
+  the displacement screen and its corrected corpus numbers,
+  and the five options with the ranking.
+- [Translation repair open decisions: what a thin roster's verdict is worth to the cache (question 6)](translation-repair-open-decisions-thin-roster-verdict-and-cache.md):
+  Question 6 on caching slices that fewer models than the stage asks for examined,
+  with the measured population and three options.
+- [Translation repair open decisions: what the non-translation block counts against (question 7)](translation-repair-open-decisions-non-translation-block-denominator.md):
+  Question 7 on the denominator of the one whole-document refusal,
+  the coverage census over the pinned corpus,
+  and the three options.
+- [Translation repair open decisions: where the rendering audit runs (question 8)](translation-repair-open-decisions-rendering-audit-placement.md):
+  Question 8 on where the rendering audit runs now that it works,
+  answered on 2026-08-16 with the standalone option over every settled artifact,
+  kept with the superseded ranking as the record of what the answer was chosen against.
+- [Translation repair open decisions: the straggler grace's one-model tax (question 9)](translation-repair-open-decisions-straggler-grace-model-tax.md):
+  Question 9 on who pays the straggler grace's remaining cost,
+  the six options from leaving the window to re-asking a cut voice,
+  and the ranking.
+- [Translation repair open decisions: re-arming the idle windows below the deadline (question 10)](translation-repair-open-decisions-idle-window-re-arming.md):
+  Question 10 on whether to arm the first-byte and idle windows below the 360000 ms deadline,
+  what a false trip costs,
+  and the three options with the ranking.
+- [Translation repair open decisions: the numbered decisions taken without the owner](translation-repair-open-decisions-taken-without-the-owner.md):
+  Decisions 1 to 28,
+  each open to veto:
+  validation and selection rosters,
+  footnote integrity at assembly,
+  the two-lane driver and its results,
+  the bench cost split,
+  what withdrawn and repaired mean,
+  cache keys,
+  placement chunks and unfilled passages,
+  and the proof that a passage was never translated.
+- [Translation repair open decisions: the absence vote controls of 2026-08-23](translation-repair-open-decisions-absence-vote-controls-2026-08-23.md):
+  The two measurements of 2026-08-23 under the question of whether a passage was ever translated:
+  the control showing the coverage wire can vote absence,
+  and the six-entry run showing the earlier null was one entry.
+  Sections:
+  - [MEASURED 2026-08-23: the absence vote is reachable, so the block-scale null is about the corpus](translation-repair-open-decisions-absence-vote-controls-2026-08-23.md#measured-2026-08-23-the-absence-vote-is-reachable-so-the-block-scale-null-is-about-the-corpus)
+  - [AND THE NULL ITSELF WAS ONE ENTRY, measured the same day](translation-repair-open-decisions-absence-vote-controls-2026-08-23.md#and-the-null-itself-was-one-entry-measured-the-same-day)
+- [Translation repair open decisions: decisions taken without the owner on 2026-08-21](translation-repair-open-decisions-taken-on-2026-08-21.md):
+  Four decisions of 2026-08-21,
+  all vetoable:
+  closing the consolidation-fault issue with nothing built,
+  the refuted free wrapping version,
+  the refuted expansion band,
+  and the changed verification protocol for the resume path.
+- [Translation repair open decisions: whether the editor calibration overlaps slices by default (question 11)](translation-repair-open-decisions-calibration-slice-overlap.md):
+  Question 11 with the 2026-08-26 overlap measurement,
+  the three options,
+  the owner's decision of overlap 4,
+  and the later move of the pass fallback.
+- [Translation repair open decisions: whether the straggler window moves from 180000 ms (question 12)](translation-repair-open-decisions-straggler-window-length.md):
+  Question 12 with the arms that measured a longer window,
+  arm D read the same evening,
+  and the owner's decision of 300000 ms for the calibration.
 
--   THE WINDOW TRIAL FINISHED,
-    all 327 arms,
-    zero refusals.
-    Widening the judge's
-    context did NOT move selection:
-    over the 109 slices it read,
-    the wide arm
-    decided differently from a narrow arm 18 times and the two identically
-    configured narrow arms differed 21 times,
-    so the effect is smaller than the
-    noise it was measured against.
-    The result and the pre-registered reading it
-    fired are in `doc/planning/translation-repair-window-trial.md`.
--   ITS NEGATIVE CONTROL MEASURED SOMETHING NOBODY ASKED FOR,
-    and it constrains
-    how any single pass may be read:
-    the per-slice preserve-or-replace decision
-    is about 19 percent unstable between identical runs.
-    Rates over many slices
-    survive that;
-    per-slice claims and small comparisons do not.
--   THE LAUNCH GATE IS LIFTED.
-    The corpus pass was held only because the trial
-    was competing for the same six models,
-    and it is done.
--   THE RENDERING AUDIT WORKS,
-    and Question 8 asks where it should run.
-    Both
-    live arms ran three times:
-    the planted defect was found in every run,
-    by all
-    three auditors in two of them and by two of three in the last,
-    where the
-    remaining voice's only claim failed to anchor.
-    The faithful control drew no
-    claims at all,
-    in any run.
--   QUOTA WAS SPENT,
-    deliberately and in small amounts:
-    three runs of two audit
-    arms against a three-model roster.
-    Everything else was unit tests against
-    the synthetic client.
-
-WHAT A THIRD NIGHT CHANGED,
-08-16 into 08-17.
-None of the questions below were answered in between and none of them changed
-its answer:
-the night went on the artifact reader,
-two resume guards and the
-last of the invariants review,
-so this is a note about what is now built rather
-than about anything you have to re-decide.
-
--   THE VERSION 2 ARTIFACT PARSER IS IN,
-    and with it a refusal the adversarial
-    list called for and I had dropped:
-    a ledger naming one slice twice used to
-    pass every relation,
-    because they all join by POSITION,
-    so two rows naming
-    slice 5 agree with each other,
-    with their evidence,
-    and with the slice
-    count.
--   TWO RESUME GUARDS,
-    one of which corrects a claim this repository made in
-    three places.
-    The mixed-generation trap was recorded as unguarded;
-    it was
-    not.
-    `assertResumableGeneration` already refuses a directory whose artifacts
-    record another pipeline digest,
-    and a build that writes version 1 cannot
-    share a digest with one that writes version 2.
-    What was genuinely open is
-    the drift opt-in,
-    which promises that naming a required commit keeps a mixed
-    pool readable:
-    true of build drift,
-    false of schema drift.
-    That hole is
-    closed and the new guard is deliberately NOT overridable.
--   `#103` IS FULLY CLOSED,
-    and two of its three remaining items turned out to
-    be built already.
-    Re-reading them cost less than rebuilding them.
--   NOTHING SPENT YOUR QUOTA.
-    The only runs were plan-mode,
-    which makes no model
-    call,
-    and unit tests against the synthetic client.
--   `#105`'S FIRST ITEM,
-    the decline-rate measurement that gates its decision,
-    still cannot run:
-    it wants the real roster,
-    and the launch gate holds while
-    the window trial is live.
-
-WHAT A SECOND NIGHT CHANGED,
-08-16,
-since none of these questions were answered
-in between and you should not re-read the whole document to find it:
-
--   QUESTION 5'S OPTION E GOT DEARER,
-    and it is the top-ranked option.
-    The
-    production re-run it calls for cannot be a two-arm comparison;
-    that design
-    measures the window and a resampled candidate slate at once.
-    It is three
-    arms now,
-    with the slate held fixed,
-    which needs a refactor first.
-    Priced in
-    option E.
-    The RANKING did not move.
--   NOTHING ELSE HERE CHANGED ITS ANSWER.
-    The rest of the night went on making
-    the instrument honest rather than on new findings:
-    a window index that
-    silently returned "no window" now throws,
-    the cache key that would have
-    made both arms of that comparison identical is fixed and pinned,
-    and the
-    hop that carries the window to the judges is now a test that was shown to
-    fail without it.
--   ONE THING I GOT WRONG AND FIXED,
-    recorded because it touched your
-    repository.
-    Six comments about this work were posted onto unrelated GitHub
-    issues:
-    the task-tracker ids in this document collide with GitHub issue
-    numbers,
-    and `#84`,
-    `#106`,
-    `#107` and `#108` are real tickets about other
-    things.
-    The comments have been rewritten in place as misfiled notes,
-    no
-    content was lost,
-    and `AGENTS.md` now carries the rule that would have
-    prevented it.
+## How the document was first written and in what order to read it
 
 Written overnight on 2026-08-14 to 15,
 while the translate lane was built out.
@@ -303,290 +210,71 @@ and my
 own answer is in it,
 so delegating is cheap.
 
-WHAT LANDED AFTER THIS DOCUMENT WAS FIRST WRITTEN,
-so you are not reading
-yesterday's state:
+## Decisions I took without you, veto cheaply
 
--   Both lanes now run from one driver that arbitrates nothing,
-    and each lane
-    result names the slices it shipped and withdrew rather than only counting
-    them.
-    Decisions 16 and 17,
-    both open to veto.
--   The bench prices sending and answering separately now.
-    Decision 18.
--   QUESTION 1'S COST BULLET CHANGED,
-    because the same bench rows were re-read
-    per stage at no new cost and the previous reading was half wrong.
-    Read that
-    bullet again if you answer Question 1 from cost.
--   THE ASSEMBLY CONTRACT WAS REBUILT,
-    in decisions 20,
-    21 and 22.
-    Three things
-    changed that a reader of a count needs to know.
-    A contradictory cached slice
-    is now discarded and recomputed rather than reaching assembly,
-    so one bad
-    file costs one slice.
-    An assembly that changes no byte now ships nothing,
-    whatever its slices decided.
-    And the shipped set is DERIVED from the
-    surviving replacements and checked against the document's own bytes rather
-    than accepted as a separate list.
--   WHAT `withdrawn` MEANS IS WIDER THAN IT WAS.
-    It used to be an integrity veto
-    and nothing else.
-    It now says the document does not carry that slice's
-    change,
-    for any of three reasons,
-    and only the findings say which.
-    If you
-    were going to read `withdrawnSliceCount` as footnote damage,
-    do not;
-    it
-    would over-count.
--   ONE SUSPECTED DEFECT WAS REFUTED RATHER THAN FIXED,
-    `#97`.
-    The claim was
-    that a checker verdict recorded as `resolved` might describe pre-refinement
-    text.
-    A checker DOES run after refinement,
-    and any issue it fails to
-    re-confirm rolls back the whole slice.
-    Measured over the 56 settled
-    artifacts:
-    32 resolved-and-refined slices against 32 re-check findings,
-    zero
-    violations,
-    with the probe validated first.
-    Nothing to build.
--   THE EMPTY-ROSTER REFUSAL WAS BUILT for every role except the critics.
-    A lane
-    configured with nobody in a required role now refuses before buying
-    anything,
-    at all three depths a caller can enter at.
-    The quiet path is still
-    right for OUTAGES and is untouched;
-    what is refused is the deterministic
-    case,
-    before any work is done.
-    CRITICS ARE STILL UNGUARDED,
-    and that is
-    Question 3's doing rather than an oversight:
-    if the critic stage survives,
-    an empty critic roster is a misconfiguration and belongs in the same check,
-    and if it does not survive,
-    an empty critic roster is the intended
-    configuration.
-    A second review sharpened the cost of leaving it open:
-    the
-    stage RUNS today,
-    so an empty critic roster today produces exactly the quiet
-    vacuous pass this check exists to refuse.
-    Task `#93` carries the remainder.
--   THE ASSEMBLY AND SLICE-RECORD CONTRACTS WERE HARDENED AGAIN overnight on the
-    15th,
-    after a second review of the same code.
-    Three of these change numbers
-    you may read,
-    so they are worth knowing before you read any:
-    -   A NATURALNESS REFINEMENT THAT LANDS BACK ON THE ARCHIVE WORDING is now
-        recorded as unchanged,
-        and its slice's resolved-issue credit is dropped.
-        The rewriter is measured against the accuracy text it rewrites,
-        so it
-        can move off that text right back onto the archive's own words;
-        that was
-        being recorded as a change,
-        which would have named the slice in the
-        shipped set and then failed the whole document at assembly.
-    -   A FRESHLY SETTLED SLICE RECORD is now checked against its own text
-        before it is cached,
-        on both lanes,
-        exactly as a resumed one is.
-        Only
-        one direction of that contradiction was ever caught downstream:
-        a record
-        claiming a change it did not make is refused at assembly,
-        while one
-        DENYING a change it made was dropped in silence.
-    -   REFINEMENT NOW HONORS THE ABORT.
-        It had none:
-        a torn-down exchange
-        surfaced as whichever stage happened to fail,
-        and a phase that settled
-        under an abort returned a document that read as a finished run.
-        A fully
-        cached document still finishes,
-        because what a stopped run cannot do is
-        buy what it is missing.
--   A REPO-WIDE LINT GAP was measured while doing that,
-    and it is a question for
-    you rather than a defect:
-    `doc/planning/unused-import-lint-policy.md`.
-    It
-    blocks nothing.
--   THE EVENING OF THE 15TH went to the cache-key review and to the first two
-    landings of one-sided slicing.
-    NONE OF IT ADDS A QUESTION,
-    which is why it
-    is a list rather than a section:
-    every choice in it was settled by a review,
-    by your ruling on the cache keys,
-    or by the design already recorded in
-    `#100`.
-    Decisions 23 to 25 carry the reasoning,
-    and what changed is:
-    -   A SLICE'S CACHE KEY NO LONGER NAMES ITS POSITION,
-        on both lanes,
-        which
-        is the change you authorized to land while the window is free.
-        A record
-        is now keyed by what was asked,
-        and the answer to that question does not
-        depend on where in the document it was asked;
-        a resumed record is
-        re-stamped with the index it is resumed under.
-        Both caches were measured
-        empty first,
-        so nothing was discarded.
-    -   A REFUSAL THAT NAMES A SLICE BY NUMBER IS NO LONGER STORED.
-        It was the
-        one thing in a stored record that did depend on position,
-        so it would
-        have survived the key change and reported the wrong slice number after a
-        resume.
-        The number is now derived at the document level,
-        where the
-        positions are known.
-    -   A COLD RUN AND A WARM ONE NOW BUY THE SAME THING.
-        Both lanes memoized
-        every settled slice in process,
-        including ones the cache deliberately
-        refused to persist,
-        so a document with two identical sections bought one
-        of them on a cold run and two on a resumed one,
-        and no count said so.
-    -   A CHUNK CAN NOW NAME A PLACE rather than only cover text,
-        and assembly
-        refuses every placement shape that would move or overwrite existing
-        wording.
-        Nothing produces such an anchor yet,
-        deliberately:
-        `#100` lands
-        the producers last,
-        so by the time a section with no translation is
-        sliced,
-        the assembly it flows into already refuses what it must.
-    -   THE BLANK LINE BETWEEN TWO BLOCKS HAS AN OWNER,
-        which is assembly rather
-        than the prompt.
-        This closes `#101`.
-    -   THE LANES CAN NOW BE HANDED A SLICE THE ARCHIVE NEVER TRANSLATED,
-        which
-        is the third landing of `#100`.
-        The translate lane refuses to settle one
-        it could not fill rather than reporting a settled slice carrying the
-        empty string,
-        and the repair lane says the question does not apply
-        rather than sending critics to complain about a blank.
-        Decisions 26 and
-        27 carry the two choices in it that are yours to veto;
-        nothing produces
-        such a slice yet,
-        so no run changes today.
--   THE NIGHT OF THE 15TH INTO THE 16TH went to the quote anchoring chain and to
-    building `#84`'s instrument.
-    One item here changes a number you may read and
-    one adds a question,
-    so both are stated plainly:
-    -   QUOTE ANCHORING COULD ANCHOR A CRITIC'S QUOTE TO THE WRONG OCCURRENCE.
-        Ambiguity was judged inside each matching pass rather than over the
-        broadest form the chain accepts,
-        so a quote appearing twice under
-        whitespace folding could still bind to the first.
-        The three passes are
-        now one,
-        over one normalization.
-        MEASURED COST:
-        zero.
-        Across three
-        corpus passes,
-        16,479 real critic quotes,
-        not one became ambiguous under
-        the stricter rule,
-        and a positive control proved the probe could see
-        ambiguity when it exists (566 hits when the same needles were searched
-        over whole pages).
-        The slice cache version moved for it,
-        since the
-        change alters which claims survive while every keyed input stays
-        identical.
-    -   `#84` NOW HAS AN INSTRUMENT AND A FIRST READING,
-        which Question 5 carries
-        in full.
-        The short version:
-        over four entries the judges chose the
-        complete text in all sixteen trials,
-        which rules out keeping what they
-        were handed and preferring a ballot position,
-        and CANNOT rule out
-        preferring the longer text,
-        because a deleted sentence makes the
-        complete candidate the longer one every time.
-        An insertion fixture,
-        whose
-        correct answer is the shorter candidate,
-        is built and running.
-    -   TWO OF SIX JUDGES ABSTAINED ON ELEVEN OF SIXTEEN of those trials,
-        both
-        refusing the pair because the archive's own handle romanisation violates
-        the sheet's exact-names criterion.
-        That is worth knowing before Question
-        6,
-        since it means the effective roster on such slices is four voices.
+Filed in:
 
-## Parts
+- [Translation repair open decisions: the numbered decisions taken without the owner](translation-repair-open-decisions-taken-without-the-owner.md)
+- [Translation repair open decisions: the absence vote controls of 2026-08-23](translation-repair-open-decisions-absence-vote-controls-2026-08-23.md)
+- [Translation repair open decisions: decisions taken without the owner on 2026-08-21](translation-repair-open-decisions-taken-on-2026-08-21.md)
 
-This document is kept in parts of at most 1000 lines each,
-split at its headings;
-the list gives their order and the sections each part holds.
-New text goes into the part holding its section,
-and a part that would pass the limit is split into a new part listed after it.
+## Question 13: entry time to complete after quality hardening
 
-- [Part 01](translation-repair-open-decisions-part-01.md)
-  - Question 1:
-    how wide should the producing rosters be
-  - Question 2:
-    the transcribed-image class
-- [Part 02](translation-repair-open-decisions-part-02.md)
-  - Question 3:
-    does the critic stage survive
-  - Question 4:
-    what a self-certifying checker's verdict is worth
-  - Question 5:
-    the lane replaces most of the archive's English
-- [Part 03](translation-repair-open-decisions-part-03.md)
-  - Question 6:
-    what a thin roster's verdict is worth to the cache
-  - Question 7:
-    what the non-translation block counts against
-  - Question 8:
-    where the rendering audit runs,
-    now that it works
-  - Question 9:
-    what to do about the straggler grace's one-model tax
-  - Question 10:
-    whether to re-arm the idle windows below the deadline
-  - Decisions I took without you,
-    veto cheaply
-- [Part 04](translation-repair-open-decisions-part-04.md)
-- [Part 05](translation-repair-open-decisions-part-05.md)
-  - Question 11:
-    whether the editor calibration overlaps slices by default
-  - Question 12:
-    whether the straggler window moves from 180000 ms
-  - Question 13:
-    entry time to complete after quality hardening
-  - Open on 2026-09-24
+Generation-12 `Weideriche_` and pull-request 386 `Carena0442` runs were stopped after correctness blockers.
+They are partial phase traces,
+not completion samples or matched arms:
+they have different corpus inputs and pipeline digests,
+and overlapped against shared provider capacity.
+Their elapsed-time ratio cannot establish scaling or concurrency effect.
+
+Owner set fresh `Carena0442` median below two hours as objective without weakening quality.
+No new validation launches before generation-13 correctness commit,
+partial-log phase attribution,
+and matched performance plan.
+
+`doc/planning/translation-repair-entry-time-to-complete.md` is authoritative protocol.
+It requires phase attribution,
+post-quorum grace accounting,
+completed-versus-abandoned call separation,
+cache state,
+slice and source size,
+run-to-run band,
+and verified publication-quality outcome before recommendation.
+
+## Open on 2026-09-24
+
+Every numbered question in this document is answered.
+The items below are the owner questions and the open observations of the 2026-09-16 to 2026-09-24 sessions
+that have not been put or not been built;
+the pass log carries the evidence under the read that found each.
+
+- The placeholder block "**Come back later!**" on XingZ60
+  (the archive block review removed it 5 of 6 on XingZ627 and XingZ628,
+  kept it on XingZ626,
+  XingZ630 and XingZ631,
+  rewrote it into an under-construction warning on XingZ629):
+  whether a placeholder the archive's translator left is apparatus the page owes,
+  to be kept as the archive has it,
+  or a block the review may remove.
+  Never put to the owner;
+  the page is right either way by the review's own vote,
+  and the double blank line its removal left is fixed (class ninety-four).
+- The coined character 螐 on XingZ60:
+  "A wu[^7] bird" on XingZ630,
+  "A little wun[^7]" beside "螐儿" on XingZ631.
+  An observation,
+  not built:
+  a coined character has no pinyin reading and no corpus rendering,
+  so the handle rule of 2026-09-22 does not reach it.
+- The repair lane's own floor let a three-line closing quote into the lane contest on shi_Yumiaoya16;
+  class one hundred two closed the consolidation side
+  (the lane-text offer now carries `lineStructured`),
+  and the repair lane's floor is unchanged.
+  Not reproduced since.
+- An empty standing with no valid lane text still fails at publish rather than at once
+  (noted with class eighty-seven,
+  never reached).
+- The coverage admission logged `coverage=carried` without the evidence regions;
+  built in 0ab0abdd8 (class one hundred eleven):
+  every stand-aside of the fold names its reason at warn,
+  and every passage still carried prints its evidence regions at the admission.
