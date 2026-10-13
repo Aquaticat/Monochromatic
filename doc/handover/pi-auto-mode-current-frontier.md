@@ -649,7 +649,9 @@ The counter controls passed `proc_9aa1`;
 The disposable guard omission `proc_df1c` failed with
 `Missing expected exception (InputReceiptBudgetError)`.
 The maintained guard was not removed.
-Final aggregate-counter integration verification is running.
+`proc_d80a` passed the final aggregate-counter integration:
+original-source variants and all 182 integrated input cases,
+with empty child stderr and zero provider requests.
 
 This repairs original extension-input loss.
 It does not close `request-source-domain`,
