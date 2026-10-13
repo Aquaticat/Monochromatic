@@ -1,8 +1,7 @@
 // The one OKLCH implementation of the app (D108): sRGB and OKLCH conversion, gamut mapping by chroma reduction, WCAG
 // contrast and OKLCH mixing, all in Double and with no Compose or Android import, so it runs on the JVM unit tests.
 // It is a line-for-line port of the desktop's `desktop-app/src/oklch.rs`, so the same root gives the same sRGB roles in
-// Kotlin and Rust (the shared test vector `theme-roles-vector.txt` proves that). The Compose-facing adapters in
-// `OklchComposeColor.kt` call into this file and add no math of their own.
+// Kotlin and Rust (the shared test vector `theme-roles-vector.txt` proves that). `ThemeRoles.kt` is its only caller.
 // Gamut handling: a requested lightness, chroma and hue that sRGB cannot show keeps its lightness and hue, and the
 // chroma is reduced by binary search until it fits. Per-channel clipping is never used, because it shifts the hue.
 
