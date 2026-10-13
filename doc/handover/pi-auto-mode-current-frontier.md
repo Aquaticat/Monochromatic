@@ -645,6 +645,31 @@ not completed domain closure,
 a maintained host launch path,
 or installed activation.
 
+## Maintained whole-request content consumer
+
+`package/pi-plugin/auto-mode/src/request-material.ts` and `request-material-obligations.ts`
+now own the whole-request content consumer and its independent unresolved-use obligations.
+Private `43db5919` replaces those implementations with exact maintained-export links.
+`SemanticAdmissionPolicyError` is shared with the native semantic-policy consumer.
+Original batch authentication,
+request-source ownership,
+and post-callback dependency checks remain with the incumbent native owners.
+No authority,
+directive,
+complete domain,
+or production semantic qualification is inferred from the content estimate.
+
+Initial build/types passed `proc_664d`.
+Built-artifact tests cover equal-byte foreign requests,
+model attribution,
+Boolean acceptance,
+original callbacks and failure values,
+borrowed mutability,
+and independent potential-instruction use without a domain hold.
+Final tests,
+lint,
+and native consumer verification are in progress.
+
 ## Maintained native hook lifetime
 
 `f04d34e79d` introduces `package/pi-plugin/auto-mode/src/native-runtime-hooks.ts`.
@@ -694,6 +719,10 @@ and native start-error preservation.
 Disposable omission `proc_49ef` reached the intended missing-exception assertion:
 `An undisposed native session must retain policy ownership`.
 The original maintained artifact was not modified.
+`proc_9bdc` passed the native review-failure controls.
+`proc_0354` passed full-package lint on 89 files with 486 rules and zero diagnostics.
+`proc_5fe0` passed 20-document lint/render;
+the rendered hook sections were read back.
 The hook helper does not close the governing domain,
 move the remaining capture/host graph,
 or activate the installed plugin.

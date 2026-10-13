@@ -451,6 +451,28 @@ source capture,
 and native error reporting remain the adapter's responsibilities.
 This does not replace the installed judge or supply a maintained host launcher.
 
+## Migration original request interpretation
+
+`consumeRequestMaterial` checks the selected question,
+original request identity,
+source-bound request identity,
+serving-model attribution,
+and synchronous Boolean policy acceptance.
+Native callers still authenticate complete-batch membership and revalidate the original owners after callbacks.
+The interpretation retains the exact request and evidence references without freezing borrowed objects.
+It does not parse or re-encode the request,
+assign authority,
+or lower directives.
+
+`retainRequestMaterialObligations` preserves existing source-domain and unrelated premises.
+Admitted `potential-instruction` adds an independent `request-material-instruction-use` obligation;
+unknown or unadmitted content keeps an interpretation obligation.
+Admitted `none` does not certify source completeness or grant execution permission.
+The private compiler now delegates these consumers to maintained exports;
+final unit,
+lint,
+and native cutover verification remain in progress.
+
 ## Migration native hook lifetime
 
 `installNativePolicyHooks` owns slot installation,
