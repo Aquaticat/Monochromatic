@@ -63,14 +63,15 @@ impl std::error::Error for ColorSchemeError {}
 
 /// What:
 ///      `pub fn scheme_override(value: Option<&str>) -> Result<i32, ColorSchemeError>`.
-///  The override for an absent, `light`, or `dark` value; an error for anything else.
+///  The override for an absent, empty, `light`, or `dark` value; an error for anything else.
 /// Why:
-///       Unset means follow the system, and each named scheme maps to one fixed value.
+///       Unset means follow the system, and an empty variable (`MUSIC_PLAYER_COLOR_SCHEME=`) counts as unset, as the
+///  accent variable already does; each named scheme maps to one fixed value.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// function schemeOverride(value: string | undefined): number {
-///   if (value === undefined) return FOLLOW_SYSTEM;
+///   if (value === undefined || value.trim() === "") return FOLLOW_SYSTEM;
 ///   if (value === "light") return LIGHT;
 ///   if (value === "dark") return DARK;
 ///   throw new ColorSchemeError(value);
@@ -79,6 +80,10 @@ impl std::error::Error for ColorSchemeError {}
 pub fn scheme_override(value: Option<&str>) -> Result<i32, ColorSchemeError> {
     return match value {
         None => Ok(FOLLOW_SYSTEM),
+        Some(blank) if blank.trim().is_empty() => {
+            tracing::debug!("the color scheme variable is empty; following the system");
+            Ok(FOLLOW_SYSTEM)
+        }
         Some("light") => Ok(LIGHT),
         Some("dark") => Ok(DARK),
         Some(other) => Err(ColorSchemeError::Unknown(other.to_string())),

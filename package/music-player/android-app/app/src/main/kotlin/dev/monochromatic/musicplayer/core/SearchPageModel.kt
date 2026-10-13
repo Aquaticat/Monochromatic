@@ -88,6 +88,12 @@ const val SEARCH_UNAVAILABLE_DETAIL: String = "The current library can't be sear
 // ```ts
 // export const SEARCH_EMPTY_INVENTORY_TITLE = "No music found in your audio library.";
 // ```
+/** Headline while the library is still being scanned and nothing has matched yet (D69, D111). */
+const val SEARCH_SCANNING_TITLE: String = "Still looking through your library"
+
+/** Supporting line under the scanning headline: the list fills in by itself, so no retry is needed (D111). */
+const val SEARCH_SCANNING_DETAIL: String = "Results appear here as more music is found."
+
 /** Headline for a confirmed empty searchable inventory (D69). */
 const val SEARCH_EMPTY_INVENTORY_TITLE: String = "No music found in your audio library."
 
@@ -213,7 +219,8 @@ data class SearchRowSemantics(
     val stateLabel: String?,
 )
 
-// What:     `fun searchStatusLine(state: SearchState): SearchStatusLine?` picks the copy for a non-result state.
+// What:     `fun searchStatusLine(state: SearchState, complete: Boolean): SearchStatusLine?` picks the copy for a
+//           non-result state.
 // Why:      Each state needs its own truthful wording (D69 to D71), and a result list has no status line.
 //
 // In TS you'd write (pseudocode):
@@ -224,8 +231,19 @@ data class SearchRowSemantics(
  * Returns the headline and support line for a Search state, or null when the state draws a result list.
  *
  * An unavailable source is worded without a cause or recovery (D71). A completed no-match names the query (D70).
+ * While the scan is unfinished ([complete] is false), a no-match and an empty inventory are not verdicts: the page
+ * says it is still looking and that results will appear by themselves (D69, D111). It never hides the query field or
+ * disables Search.
  */
-fun searchStatusLine(state: SearchState): SearchStatusLine? =
+fun searchStatusLine(state: SearchState, complete: Boolean = true): SearchStatusLine? =
+    when {
+        !complete && (state is SearchState.NoMatch || state == SearchState.EmptyInventory) ->
+            SearchStatusLine(title = SEARCH_SCANNING_TITLE, detail = SEARCH_SCANNING_DETAIL)
+        else -> completedStatusLine(state)
+    }
+
+/** Returns the status line of a state that is a verdict, or null when the state draws a result list. */
+private fun completedStatusLine(state: SearchState): SearchStatusLine? =
     when (state) {
         SearchState.EmptyQuery -> SearchStatusLine(title = SEARCH_PROMPT_TITLE, detail = SEARCH_PROMPT_DETAIL)
         SearchState.EmptyInventory -> SearchStatusLine(title = SEARCH_EMPTY_INVENTORY_TITLE, detail = null)
@@ -416,3 +434,48 @@ fun isClearVisible(query: String): Boolean = query.isNotBlank()
 // ```
 /** First result index, which is where a restored query begins (D67). */
 const val SEARCH_RESTORED_RESULT_INDEX: Int = 0
+
+// What:     `fun searchStateFor(query: String, answer: SearchAnswer?, hasService: Boolean): SearchState` picks what the
+//           page draws for the typed query.
+// Why:      A blank query shows the invitation at once, without waiting for the worker (D70). A query whose answer has
+//           not arrived keeps drawing an empty list, not a verdict, because no evidence about it exists yet (D69).
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// const searchStateFor = (q: string, answer: SearchAnswer | null, hasService: boolean): SearchState => { /* ... */ };
+// ```
+/**
+ * Returns the state the Search page draws for [query] given the newest [answer] of this visit.
+ *
+ * Without a service the page is unavailable (D71). A blank query is the invitation. A query that has no answer yet,
+ * or only an answer to a blank query, draws an empty result list until its answer arrives.
+ */
+fun searchStateFor(query: String, answer: SearchAnswer?, hasService: Boolean): SearchState {
+    if (!hasService) {
+        return SearchState.Unavailable
+    }
+    if (searchTerms(query).isEmpty()) {
+        return SearchState.EmptyQuery
+    }
+    /** The answer's state, unless it answered a blank query. */
+    val answered: SearchState? = answer?.state?.takeIf { state -> state != SearchState.EmptyQuery }
+    return answered ?: SearchState.Results(items = emptyList(), truncated = false)
+}
+
+// What:     `fun playingResultId(state: SearchState, playingUri: String?): Int?` finds the result row that is playing.
+// Why:      A result's number is its number in the Search index, not its position in the library, so the playing track
+//           is found by URI among the rows that are shown, which are at most `SEARCH_RESULT_LIMIT`.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// const playingResultId = (state: SearchState, uri: string | null) => items(state).find((r) => r.trackUri === uri)?.id;
+// ```
+/** Returns the index-number of the shown track result whose URI is [playingUri], or null when none is shown. */
+fun playingResultId(state: SearchState, playingUri: String?): Int? {
+    if (playingUri == null || state !is SearchState.Results) {
+        return null
+    }
+    return state.items.firstOrNull { result ->
+        result.kind == SearchResultKind.TRACK && result.trackUri == playingUri
+    }?.indexInLibrary
+}

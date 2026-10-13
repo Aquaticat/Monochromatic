@@ -1,8 +1,13 @@
 // Template editor page for one open template (D89, D91, D94, D96, D98). The host owns the template text, the
 // preview rows, the mistake lines, the help and the field list. This page draws them and reports edits, caret
 // moves, focus, field taps, Reset and Back. The whole body scrolls as one page, so the preview scrolls with it (D91).
+// On a wide window the page is embedded in Settings' right pane (D110): it then has no header band, divider or Back
+// target (the Settings header owns Back) and shows only the template's name as the pane title; the host fades it in
+// each time the selected template changes.
 import { Theme } from "theme.slint";
 import { StateLayer } from "state_layer.slint";
+import { Focus, FocusStop, FocusRing, KeyBadge, Keys } from "focus.slint";
+import { Scrollbar, LastInput } from "scrollbar.slint";
 
 // One insertable field row: its name, the call a tap inserts, and its value for the first preview track.
 export struct EditorFieldRow {
@@ -26,6 +31,7 @@ export struct EditorPreviewRow {
 export component TemplateEditor inherits Rectangle {
     background: Theme.canvas;
     clip: true;
+    opacity: root.pane-opacity;
 
     // Heading of the page header, which names the open template, such as Track rows.
     in property <string> title;
@@ -43,10 +49,18 @@ export component TemplateEditor inherits Rectangle {
     in property <bool> has-help: false;
     // Insertable fields listed under the Fields heading, one row each.
     in property <[EditorFieldRow]> fields: [];
-    // Notes drawn under the preview, one paragraph each, in order.
+    // Notes drawn under the preview, one paragraph each, in order: where the preview rows come from.
     in property <[string]> notes: [];
+    // The note that says the rows keep the last valid template, or empty while the typed template applies. Its line is
+    // always reserved under the notes, so it appears without moving the field or anything under it.
+    in property <string> kept-note: "";
     // Whether the Reset to default control is offered, which is when the text differs from the default.
     in property <bool> can-reset: false;
+    // True when the page sits in Settings' right pane: no header band, divider or Back, just the pane title.
+    in property <bool> embedded: false;
+    // Opacity of the whole page, 1 at rest. The host lowers it to 0 when the selected template changes and raises it
+    // back to 1 over 150 ms, which is the cross-fade between the old and the new template.
+    in property <float> pane-opacity: 1;
 
     // Fires after each edit and each caret or selection move. Arguments are the whole text, then the selection
     // start and end as UTF-8 byte offsets into that text. Slint 1.17 has no substring call, so the host converts
@@ -68,6 +82,12 @@ export component TemplateEditor inherits Rectangle {
     property <string> error-path: "M12 2 C6.48 2 2 6.48 2 12 s4.48 10 10 10 s10 -4.48 10 -10 S17.52 2 12 2 Z "
         + "M13 17 h-2 v-2 h2 v2 Z M13 13 h-2 L11 7 h2 v6 Z";
 
+    // Height of the header area above the body: 64 px in both forms, the height of the Settings header (D109), with no band
+    // and no divider. The editor page used to be 72 px with a divider, which made the Settings sub-page jump in height.
+    property <length> header-extent: 64px;
+    // Width of the Reset to default button, which sits at the right end of the header while the template differs from its
+    // default. The header title always leaves this room, so the title never moves when the button appears.
+    property <length> reset-width: reset-measure.preferred-width + 24px;
     // Keeps the field in step with a text the host sets, such as a reset or an inserted field. Typed text
     // already matches the host's copy, so the comparison leaves the caret alone while the user types.
     changed text => {
@@ -86,33 +106,59 @@ export component TemplateEditor inherits Rectangle {
         );
     }
 
-    // Height of the area under the template field: the mistake lines when present, else the help, else nothing.
-    property <length> supporting-height: root.mistake-lines.length > 0
-        ? root.mistake-lines.length * 16px
-        : (root.has-help ? 16px + help-description.preferred-height : 0px);
+    // Height of the area under the template field: the mistake lines when present, else the help, else nothing, but never
+    // under 64 px (four lines). Typing opens and closes the help and the mistake lines on every keystroke, and a height that
+    // followed them moved the Fields list up and down under the user's hands; 64 px holds the longest help (the signature and
+    // three lines of the format description on a phone-wide window) and two or three mistake sentences, and only longer
+    // content grows the area.
+    property <length> supporting-height: max(64px, root.mistake-lines.length > 0
+        ? mistake-column.preferred-height
+        : (root.has-help ? 16px + help-description.preferred-height : 0px));
 
-    // Header band with the Back target and the page title, as the Android destination header.
-    Rectangle {
+    // Width probe for the Reset to default label, never shown.
+    reset-measure := Text {
+        visible: false;
+        text: "Reset to default";
+        font-size: Theme.label-large;
+        font-weight: 500;
+    }
+
+    // Pane title when embedded: the template's name in the title role, 64 px tall like the Settings header beside it. It
+    // leaves room at the right for the Reset button.
+    if root.embedded : Text {
+        x: 16px;
+        y: 0px;
+        width: max(0px, root.width - 16px - 8px - root.reset-width - 8px);
+        height: 64px;
+        text: root.title;
+        font-size: Theme.title-large;
+        color: Theme.on-surface;
+        vertical-alignment: center;
+        overflow: elide;
+    }
+
+    // Page header with the Back target and the page title, on the canvas with no band and no divider, in the same geometry
+    // as the Settings header (D109): 64 px tall, a 56 px Back circle 16 px from the edge, the title at x = 98.
+    if !root.embedded : Rectangle {
         x: 0px;
         y: 0px;
         width: root.width;
-        height: 72px;
-        background: Theme.surface-high;
+        height: root.header-extent;
 
-        // Circular hover and pressed layer, 40 px centered in the 48 px Back target.
+        // Circular hover and pressed layer over the 56 px Back target.
         StateLayer {
-            x: 20px;
-            y: 16px;
-            width: 40px;
-            height: 40px;
-            radius: 20px;
+            x: 16px;
+            y: 4px;
+            width: 56px;
+            height: 56px;
+            radius: 28px;
             tint: Theme.on-surface;
             hovered: back-touch.has-hover;
             pressed: back-touch.pressed;
         }
         Path {
-            x: 28px;
-            y: 24px;
+            x: 32px;
+            y: 20px;
             width: 24px;
             height: 24px;
             viewbox-width: 24;
@@ -122,17 +168,41 @@ export component TemplateEditor inherits Rectangle {
         }
         back-touch := TouchArea {
             x: 16px;
-            y: 12px;
-            width: 48px;
-            height: 48px;
+            y: 4px;
+            width: 56px;
+            height: 56px;
             mouse-cursor: pointer;
-            clicked => { root.back(); }
+            accessible-role: button;
+            accessible-label: "Back";
+            clicked => {
+                Focus.ring-visible = false;
+                root.back();
+            }
+            Tooltip {
+                text: @markdown("Back (\{Keys.texts.back})");
+            }
+        }
+        back-stop := FocusStop {
+            label: "editor-back";
+            x: 16px;
+            y: 4px;
+            width: 56px;
+            height: 56px;
+            activated => { root.back(); }
+        }
+        FocusRing {
+            x: 16px;
+            y: 4px;
+            width: 56px;
+            height: 56px;
+            round: true;
+            active: back-stop.ring;
         }
         Text {
-            x: 72px;
+            x: 98px;
             y: 0px;
-            width: root.width - 72px - 16px;
-            height: 72px;
+            width: max(0px, root.width - 98px - 8px - root.reset-width - 8px);
+            height: root.header-extent;
             text: root.title;
             font-size: Theme.title-large;
             color: Theme.on-surface;
@@ -141,21 +211,68 @@ export component TemplateEditor inherits Rectangle {
         }
     }
 
-    // Divider under the header, one logical pixel in the outline role.
-    Rectangle {
-        x: 0px;
-        y: 72px;
-        width: root.width;
-        height: 1px;
-        background: Theme.outline;
+    // Reset to default, at the right end of the header in both forms, offered only while the template differs from its
+    // default. It sat below the seven field rows, where it was reachable only after scrolling to the bottom; in the header
+    // it is always in view, and its room is reserved, so it appears without moving the title.
+    if root.can-reset : Rectangle {
+        x: root.width - 8px - root.reset-width;
+        y: 8px;
+        width: root.reset-width;
+        height: 48px;
+        // Pill-shaped hover and pressed layer over the text button, matching its 48 px target.
+        StateLayer {
+            width: parent.width;
+            height: parent.height;
+            radius: 24px;
+            tint: Theme.on-surface;
+            hovered: reset-touch.has-hover;
+            pressed: reset-touch.pressed;
+        }
+        Text {
+            x: 12px;
+            width: parent.width - 24px;
+            height: parent.height;
+            text: "Reset to default";
+            font-size: Theme.label-large;
+            font-weight: 500;
+            color: Theme.primary;
+            horizontal-alignment: center;
+            vertical-alignment: center;
+        }
+        reset-touch := TouchArea {
+            mouse-cursor: pointer;
+            accessible-role: button;
+            accessible-label: "Reset to default";
+            accessible-action-default => { root.reset(); }
+            clicked => {
+                Focus.ring-visible = false;
+                root.reset();
+            }
+            Tooltip {
+                text: @markdown("Reset to default (\{Keys.texts.editor-reset})");
+            }
+        }
+        reset-stop := FocusStop {
+            label: "reset";
+            activated => { root.reset(); }
+        }
+        FocusRing {
+            radius: 24px;
+            active: reset-stop.ring;
+        }
+        KeyBadge {
+            x: parent.width - self.width;
+            y: 0px;
+            text: Keys.badges.editor-reset;
+        }
     }
 
     // Body that scrolls below the header. Its content height is the stacked sections below.
     flick := Flickable {
         x: 0px;
-        y: 73px;
+        y: root.header-extent;
         width: root.width;
-        height: root.height - 73px;
+        height: root.height - root.header-extent;
         content-width: root.width;
         content-height: body.preferred-height;
 
@@ -173,7 +290,9 @@ export component TemplateEditor inherits Rectangle {
                     y: 16px;
                     width: parent.width - 32px;
                     height: 20px;
-                    text: "Preview";
+                    // While the typed text does not apply, the rows show the last valid template, and the heading says so, in
+                    // words, so a kept preview never reads as a broken one.
+                    text: root.kept-note == "" ? "Preview" : "Preview of the last valid template";
                     font-size: Theme.label-large;
                     font-weight: 500;
                     color: Theme.on-surface-variant;
@@ -227,21 +346,49 @@ export component TemplateEditor inherits Rectangle {
                 }
             }
 
+            // The kept-template note. Its 24 px line is always there, empty or not, so the note appearing the moment the text stops
+            // applying moves nothing: the field and everything under it used to drop by the height of a note.
+            Rectangle {
+                height: 24px;
+                Text {
+                    x: 16px;
+                    y: 8px;
+                    width: parent.width - 32px;
+                    height: 16px;
+                    text: root.kept-note;
+                    font-size: Theme.body-small;
+                    color: Theme.on-surface-variant;
+                    overflow: elide;
+                }
+            }
+
             // Template field with its notched label, then the mistake lines or help under it.
             Rectangle {
                 height: 8px + field-box.height + (root.supporting-height > 0px ? 4px + root.supporting-height : 0px);
 
-                // Outline of the field, 4 px corners. The mistake state draws the error role at 2 px.
+                // Outline of the field, 4 px corners. The mistake state draws the error role at 2 px. Focus changes nothing
+                // here: the outline keeps its width and color, and the ring below shows the focus (D117).
                 field-box := Rectangle {
                     x: 16px;
                     y: 8px;
                     width: root.width - 32px;
                     height: max(56px, field-input.preferred-height + 16px);
                     border-radius: 4px;
-                    border-width: root.mistake-lines.length > 0 || field-input.has-focus ? 2px : 1px;
-                    border-color: root.mistake-lines.length > 0
-                        ? Theme.error
-                        : (field-input.has-focus ? Theme.primary : Theme.outline);
+                    border-width: root.mistake-lines.length > 0 ? 2px : 1px;
+                    border-color: root.mistake-lines.length > 0 ? Theme.error : Theme.outline;
+                }
+
+                // Focus ring of the text field, flush outside its outline. A text field shows it for any focus, a click
+                // included, as a browser's focus-visible rule does for a text input. It is drawn before the label patch
+                // below, so the patch breaks the ring where the label sits, as it breaks the outline: a ring line across the
+                // label's letters would be unreadable.
+                FocusRing {
+                    x: field-box.x;
+                    y: field-box.y;
+                    width: field-box.width;
+                    height: field-box.height;
+                    radius: 4px;
+                    active: field-input.has-focus;
                 }
 
                 // Canvas-coloured patch that breaks the outline behind the label, as a floating label does.
@@ -258,9 +405,7 @@ export component TemplateEditor inherits Rectangle {
                         text: "Template";
                         font-size: Theme.body-small;
                         vertical-alignment: center;
-                        color: root.mistake-lines.length > 0
-                            ? Theme.error
-                            : (field-input.has-focus ? Theme.primary : Theme.on-surface-variant);
+                        color: root.mistake-lines.length > 0 ? Theme.error : Theme.on-surface-variant;
                     }
                 }
 
@@ -291,6 +436,14 @@ export component TemplateEditor inherits Rectangle {
                     }
                     changed has-focus => {
                         root.focus-changed(self.has-focus);
+                        // The template line is a text field (zone 7): it keeps every bare key.
+                        if (self.has-focus) {
+                            Focus.zone = 7;
+                            Focus.label = "template-field";
+                        } else if (Focus.zone == 7) {
+                            Focus.zone = 0;
+                            Focus.label = "";
+                        }
                     }
                 }
 
@@ -303,31 +456,33 @@ export component TemplateEditor inherits Rectangle {
                     height: root.supporting-height;
                     clip: true;
 
-                    for line[index] in root.mistake-lines : Rectangle {
+                    // One sentence per problem. A sentence wraps onto a second line instead of being cut, because each names the
+                    // call and what to change.
+                    mistake-column := VerticalLayout {
                         x: 0px;
-                        y: index * 16px;
+                        y: 0px;
                         width: parent.width;
-                        height: 16px;
-                        Path {
-                            x: 32px;
-                            y: 0px;
-                            width: 16px;
-                            height: 16px;
-                            viewbox-width: 24;
-                            viewbox-height: 24;
-                            commands: root.error-path;
-                            fill: Theme.error;
-                        }
-                        Text {
-                            x: 52px;
-                            y: 0px;
-                            width: parent.width - 52px - 16px;
-                            height: 16px;
-                            text: line;
-                            font-size: Theme.body-small;
-                            color: Theme.error;
-                            vertical-alignment: center;
-                            overflow: elide;
+                        for line in root.mistake-lines : Rectangle {
+                            height: max(20px, line-text.preferred-height + 4px);
+                            Path {
+                                x: 32px;
+                                y: 2px;
+                                width: 16px;
+                                height: 16px;
+                                viewbox-width: 24;
+                                viewbox-height: 24;
+                                commands: root.error-path;
+                                fill: Theme.error;
+                            }
+                            line-text := Text {
+                                x: 52px;
+                                y: 2px;
+                                width: parent.width - 52px - 16px;
+                                text: line;
+                                wrap: word-wrap;
+                                font-size: Theme.body-small;
+                                color: Theme.error;
+                            }
                         }
                     }
 
@@ -431,41 +586,30 @@ export component TemplateEditor inherits Rectangle {
                     width: parent.width;
                     height: 64px;
                     mouse-cursor: pointer;
-                    clicked => { root.insert-field(index); }
+                    accessible-role: button;
+                    accessible-label: "Insert " + field.insert;
+                    clicked => {
+                        Focus.ring-visible = false;
+                        root.insert-field(index);
+                    }
                 }
-            }
-
-            // Reset to default, offered only when the open template differs from its default.
-            if root.can-reset : Rectangle {
-                height: 72px;
-                // Pill-shaped hover and pressed layer over the text button, matching its 48 px target.
-                StateLayer {
-                    x: 4px;
-                    y: 8px;
-                    width: reset-text.preferred-width + 24px;
-                    height: 48px;
-                    radius: 24px;
-                    tint: Theme.on-surface;
-                    hovered: reset-touch.has-hover;
-                    pressed: reset-touch.pressed;
+                field-stop := FocusStop {
+                    label: "insert-field-" + index;
+                    x: 0px;
+                    y: 0px;
+                    width: parent.width;
+                    height: 64px;
+                    activated => { root.insert-field(index); }
                 }
-                reset-text := Text {
-                    x: 16px;
-                    y: 8px;
-                    height: 48px;
-                    text: "Reset to default";
-                    font-size: Theme.label-large;
-                    font-weight: 500;
-                    color: Theme.primary;
-                    vertical-alignment: center;
-                }
-                reset-touch := TouchArea {
-                    x: 4px;
-                    y: 8px;
-                    width: reset-text.preferred-width + 24px;
-                    height: 48px;
-                    mouse-cursor: pointer;
-                    clicked => { root.reset(); }
+                // A field row is as wide as the page, which ends at the window's edge, so its ring is drawn on the row's own
+                // edge, inside it (see the track rows). No fill goes with it.
+                FocusRing {
+                    x: 0px;
+                    y: 0px;
+                    width: parent.width;
+                    height: 64px;
+                    inside: true;
+                    active: field-stop.ring;
                 }
             }
 
@@ -473,6 +617,19 @@ export component TemplateEditor inherits Rectangle {
             Rectangle {
                 height: 16px;
             }
+        }
+    }
+
+    // Scrollbar (D22): always visible and draggable for the pointer, a fading non-interactive bar for touch. It is after the
+    // rows, so it is above them, and a touch area ignores the wheel, so the wheel still scrolls the list below it.
+    Scrollbar {
+        x: root.width - self.width;
+        y: flick.y;
+        height: flick.height;
+        content-y: flick.content-y;
+        content-height: flick.content-height;
+        scroll-to(y) => {
+            flick.content-y = y;
         }
     }
 }

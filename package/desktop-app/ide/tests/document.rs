@@ -10,7 +10,7 @@
 /// ```ts
 /// import { Document, ReadingPosition } from 'ide-app/document';
 /// ```
-use ide_app::document::{Document, ReadingPosition};
+use ide_app::document::{Document, ReadingAffinity, ReadingPosition};
 
 /// Verify the user's caret example without any file writes.
 #[test]
@@ -27,6 +27,7 @@ fn caret_follows_surviving_word() {
         anchor: 9,
         head: 9,
         viewport: 7,
+        affinity: ReadingAffinity::Downstream,
     });
     let reload = doc.prepare_reload("I was a big cat.");
     // What: assert macros terminate a test when its condition fails.
@@ -43,7 +44,8 @@ fn caret_follows_surviving_word() {
         ReadingPosition {
             anchor: 10,
             head: 10,
-            viewport: 8
+            viewport: 8,
+            affinity: ReadingAffinity::Downstream,
         }
     );
 }
@@ -57,6 +59,7 @@ fn selected_region_follows_replacement_not_literal_match() {
         anchor: 2,
         head: 6,
         viewport: 0,
+        affinity: ReadingAffinity::Downstream,
     });
     let reload = doc.prepare_reload("I was a big cat, but now I am a human!");
     assert!(doc.apply_reload(reload));
@@ -73,6 +76,7 @@ fn backwards_selection_preserves_direction() {
         anchor: 6,
         head: 2,
         viewport: 0,
+        affinity: ReadingAffinity::Downstream,
     });
     let reload = doc.prepare_reload("I was a big cat, but now I am a human!");
     assert!(doc.apply_reload(reload));
@@ -108,6 +112,7 @@ fn reload_maps_latest_reading_position() {
         anchor: 11,
         head: 14,
         viewport: 7,
+        affinity: ReadingAffinity::Downstream,
     });
     assert!(doc.apply_reload(reload));
     assert_eq!(doc.selected_text(), "cat");
@@ -121,6 +126,7 @@ fn unicode_prefix_preserves_selection() {
         anchor: 2,
         head: 6,
         viewport: 0,
+        affinity: ReadingAffinity::Downstream,
     });
     let reload = doc.prepare_reload("猫 was a big cat, am a");
     assert!(doc.apply_reload(reload));
@@ -135,9 +141,44 @@ fn deletion_clamps_positions() {
         anchor: 0,
         head: 3,
         viewport: 2,
+        affinity: ReadingAffinity::Downstream,
     });
     let reload = doc.prepare_reload("");
     assert!(doc.apply_reload(reload));
     assert_eq!(doc.position(), ReadingPosition::default());
     assert_eq!(doc.selected_text(), "");
+}
+
+/// The side of a wrap offset is part of the position: selecting keeps it,
+///  and a reload keeps it only for a head that did not move.
+#[test]
+fn the_side_of_a_wrap_offset_is_kept_by_selection_and_by_a_reload_that_leaves_the_head() {
+    let mut doc = Document::new("I was a big cat.");
+    doc.select(ReadingPosition {
+        anchor: 9,
+        head: 9,
+        viewport: 0,
+        affinity: ReadingAffinity::Upstream,
+    });
+    assert_eq!(
+        doc.position().affinity,
+        ReadingAffinity::Upstream,
+        "a selection keeps the side it names"
+    );
+    let after = doc.prepare_reload("I was a big cat, again.");
+    assert!(doc.apply_reload(after));
+    assert_eq!(doc.position().head, 9);
+    assert_eq!(
+        doc.position().affinity,
+        ReadingAffinity::Upstream,
+        "a reload that leaves the head keeps its side"
+    );
+    let before = doc.prepare_reload("So I was a big cat, again.");
+    assert!(doc.apply_reload(before));
+    assert_eq!(doc.position().head, 12, "the insertion moved the head");
+    assert_eq!(
+        doc.position().affinity,
+        ReadingAffinity::Downstream,
+        "a head that moved takes the default side"
+    );
 }

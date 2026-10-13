@@ -38,7 +38,7 @@ pub struct FirstRunView {
 /// const firstRunView = (s: ScreenState): FirstRunView | null => s.loaded && s.names.length === 0 ? copy : null;
 /// ```
 pub fn first_run_view(state: &ScreenState) -> Option<FirstRunView> {
-    if !state.names.is_empty() {
+    if !state.names.is_empty() && !state.reading {
         return None;
     }
     let kind = first_run_kind(state)?;
@@ -54,8 +54,11 @@ pub fn first_run_view(state: &ScreenState) -> Option<FirstRunView> {
 }
 
 /// What: `first_run_kind` chooses the first-run state that matches the opened folder.
-/// Why: no folder open gets the choose-a-folder copy; an opened folder with no tracks names itself; before the engine reports, nothing shows.
+/// Why: a folder being read gets the reading copy (EM1); no folder open gets the choose-a-folder copy; an opened folder with no tracks names itself; before the engine reports, nothing shows.
 fn first_run_kind(state: &ScreenState) -> Option<FirstRunState> {
+    if state.reading {
+        return Some(FirstRunState::Reading);
+    }
     if !state.root_known {
         return None;
     }
@@ -64,6 +67,35 @@ fn first_run_kind(state: &ScreenState) -> Option<FirstRunState> {
         (Some(_), true) => Some(FirstRunState::FolderNoAudio),
         (Some(_), false) => None,
     };
+}
+
+/// What: `Hold` is how long a kind of message is meant to stay: a short confirmation, or a message the user acts on or reads
+/// in full.
+/// Why: one fixed 4 s cut off the File details path and left too little time to press Undo.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum Hold {
+    /// A confirmation or a short error: at least 4 s.
+    Brief,
+    /// A message with an action or a long detail: at least 8 s.
+    Long,
+}
+
+/// What: `visible_time_ms` gives how long a message stays on screen, in milliseconds.
+/// Why: the time is the larger of the floor of its `Hold` and a reading allowance of 2 s plus 60 ms per character, so a long
+/// message stays long enough to read, and no message stays longer than 15 s.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// const visibleTimeMs = (text: string, hold: Hold) => Math.min(15_000, Math.max(hold === "long" ? 8_000 : 4_000, 2_000 + 60 * [...text].length));
+/// ```
+pub fn visible_time_ms(text: &str, hold: Hold) -> i64 {
+    let floor: i64 = match hold {
+        Hold::Brief => 4_000,
+        Hold::Long => 8_000,
+    };
+    let characters = i64::try_from(text.chars().count()).unwrap_or(i64::MAX / 100);
+    let reading = 2_000_i64.saturating_add(characters.saturating_mul(60));
+    return reading.max(floor).min(15_000);
 }
 
 #[derive(Clone, Debug, PartialEq, Eq)]

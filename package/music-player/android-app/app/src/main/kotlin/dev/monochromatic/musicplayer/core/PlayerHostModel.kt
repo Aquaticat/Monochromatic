@@ -188,6 +188,28 @@ object PlayerHostModel {
     // ```ts
     // function contentWithTemplates(base, page, current, duration, rowsTpl, playingTpl): Model { /* ... */ }
     // ```
+    // What:     `fun rowEntriesFor(...)` builds the selected page's rows with the saved track-row template.
+    // Why:      Building 1,000 rows is the costly part of the model; the host builds them once per change of page,
+    //           playing row, template or measures, and not on every position tick.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // function rowEntriesFor(title, page, current, template, measures): TrackListEntry[] { /* ... */ }
+    // ```
+    /** Builds the selected page's track rows and headers, each row carrying its template supporting line. */
+    fun rowEntriesFor(
+        folderTitle: String,
+        pageItems: List<PageEntry>,
+        currentIndex: Int?,
+        trackRowsTemplate: String,
+        measuresByIndex: Map<Int, TrackMeasure> = emptyMap(),
+    ): List<TrackListEntry> = trackListEntries(
+        folder = pageFolderFor(folderTitle = folderTitle, pageItems = pageItems),
+        currentIndexInLibrary = currentIndex,
+        template = trackRowsTemplate,
+        measuresByIndex = measuresByIndex,
+    )
+
     /** Applies the saved track-row and playing-track templates to a screen model built from the controller. */
     fun contentWithTemplates(
         base: PlayerContentModel,
@@ -199,12 +221,14 @@ object PlayerHostModel {
         playingPlace: PlayingPlace,
         playingMeasure: TrackMeasure?,
         measuresByIndex: Map<Int, TrackMeasure> = emptyMap(),
+        rowEntries: List<TrackListEntry>? = null,
     ): PlayerContentModel {
         /** Track rows and subfolder headers of the selected page, each row carrying its template supporting line. */
-        val entries: List<TrackListEntry> = trackListEntries(
-            folder = pageFolderFor(folderTitle = base.folderTitle, pageItems = pageItems),
-            currentIndexInLibrary = currentIndex,
-            template = trackRowsTemplate,
+        val entries: List<TrackListEntry> = rowEntries ?: rowEntriesFor(
+            folderTitle = base.folderTitle,
+            pageItems = pageItems,
+            currentIndex = currentIndex,
+            trackRowsTemplate = trackRowsTemplate,
             measuresByIndex = measuresByIndex,
         )
         /** Deck subtitle from the playing template for the playing folder, or the built line when refused. */

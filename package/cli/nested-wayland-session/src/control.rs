@@ -74,7 +74,7 @@ use tracing::{info, warn};
 /// import { parseCommand, formatResponse, Command, Response } from "./protocol"; ...
 /// ```
 use crate::{
-    child, dnd, encoder, input, keymap,
+    child, dnd, encoder, input,
     protocol::{format_response, parse_command, Command, Response},
     recorder, screenshot,
     state::Compositor,
@@ -144,12 +144,8 @@ pub fn start(loop_handle: &LoopHandle<Compositor>, socket_path: &Path) -> Result
                 // What:     `let response = execute(state, request.command);`. Run the
                 //           command against the live state on the main thread.
                 // Why:      Produce the result to send back.
-                let response = execute(state, request.command);
-
-                // What:     `let _ = request.reply.send(response);`. Send the result back;
-                //           discard the send error (the control thread may have hung up).
-                // Why:      Deliver the response to the waiting control thread.
-                let _ = request.reply.send(response);
+                // The timed commands (hold, drag, double click) answer later from the timeline.
+                crate::control_run::run(state, request.command, request.reply);
             }
         })
         .map_err(|err| anyhow::anyhow!("registering the control channel source failed: {err}"))?;
@@ -373,36 +369,53 @@ pub fn execute(state: &mut Compositor, command: Command) -> Response {
                 Err(err) => return Response::Err(format!("{err:#}")),
             }
         }
-        Command::Click { x, y, button } => {
-            // What:     `input::click(state, x, y, button);`. Inject the click.
+        Command::Click { x, y, button, .. } => {
+            // What:     `input::click(state, x, y, button);`. Inject the click. A double click or
+            //           a click with modifiers never gets here: the timeline plans it.
             // Why:      Perform the requested click.
             input::click(state, x, y, button);
             return Response::Ok
         }
-        Command::Wheel { x, y, horizontal, vertical } => {
+        Command::Wheel { x, y, horizontal, vertical, .. } => {
             match crate::input_wheel::wheel(state, x, y, horizontal, vertical) {
                 Ok(()) => return Response::Ok,
                 Err(error) => return Response::Err(format!("{error:#}")),
             }
         }
+        Command::Drag { .. } | Command::Scroll { .. } => {
+            return Response::Err("timed pointer commands run through the timeline".to_string())
+        }
         Command::Key { name, action } => {
-            // What:     `match keymap::named_key(&name) { Some(evdev) => { input::key(...);
-            //           Response::Ok } None => Response::Err(...) }`. Resolve the key name;
-            //           error on an unknown key.
+            // What:     `parse_chord(&name)` resolves every key of the chord; the first unknown
+            //           name fails the whole command before any key is pressed.
             // Why:      Only inject keys we can map to an evdev code.
-            match keymap::named_key(&name) {
-                Some(evdev) => {
-                    input::key(state, evdev, action);
-                    return Response::Ok
+            match crate::key_chord::parse_chord(&name) {
+                Ok(chord) => {
+                    match crate::input_key::apply(state, &chord, action) {
+                        Ok(()) => return Response::Ok,
+                        Err(error) => return Response::Err(format!("{error:#}")),
+                    }
                 }
-                None => return Response::Err(format!("unknown key: {name}")),
+                Err(message) => return Response::Err(message),
             }
         }
         Command::Type(text) => {
-            // What:     `input::type_text(state, &text);`. Type the run of text.
+            // What:     `input_text::type_text(state, &text)`. Type the run of text, switching to
+            //           spare Unicode keys for characters the layout lacks.
             // Why:      Perform the requested typing.
-            input::type_text(state, &text);
-            return Response::Ok
+            match crate::input_text::type_text(state, &text) {
+                Ok(()) => return Response::Ok,
+                Err(error) => return Response::Err(format!("{error:#}")),
+            }
+        }
+        Command::RepeatInfo(change) => return crate::control_session::repeat_info(state, change),
+        Command::Focus => return crate::window_list::focus_response(state),
+        Command::Windows => return crate::window_list::windows_response(state),
+        Command::CloseWindow(index) => return crate::window_list::close_response(state, index),
+        Command::Cursor => return crate::control_session::cursor(state),
+        Command::Accessibility => return crate::a11y_tree::response(state),
+        Command::Display => {
+            return Response::OkWith(state.socket_name.to_string_lossy().into_owned())
         }
         Command::Resize { width, height } => {
             // What:     `screen::resize(state, width, height)`. Apply the new logical size.
@@ -414,14 +427,14 @@ pub fn execute(state: &mut Compositor, command: Command) -> Response {
             // Why:      Keep the logical size so the client sees a scale change, not a resize.
             return crate::screen::switch_scale(state, scale);
         }
-        Command::DropFile { path, x, y } => {
-            // What:     `match dnd::drop_file(state, &path, x, y) { Ok(()) => Response::Ok,
+        Command::DropFile { paths, x, y } => {
+            // What:     `match dnd::drop_file(state, &paths, x, y) { Ok(()) => Response::Ok,
             //           Err(err) => Response::Err(format!("{err:#}")) }`. Originate the
             //           compositor-side drag; map the outcome. `{err:#}` renders the anyhow
             //           context chain.
             // Why:      Report a drop-file setup failure (missing file, unmapped app) with its
             //           cause; the drop itself completes asynchronously on the release timer.
-            match dnd::drop_file(state, &path, x, y) {
+            match dnd::drop_file(state, &paths, x, y) {
                 Ok(()) => return Response::Ok,
                 Err(err) => return Response::Err(format!("{err:#}")),
             }

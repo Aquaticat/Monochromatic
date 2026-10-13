@@ -162,7 +162,7 @@ class FolderDisplayNameTest {
     /** Confirms that a missing or blank folder name gives the MediaStore name. */
     @Test
     fun libraryNameFallsBackToMediaStore() {
-        assertEquals("MediaStore", libraryDisplayName(null))
-        assertEquals("MediaStore", libraryDisplayName("   "))
+        assertEquals("Music library", libraryDisplayName(null))
+        assertEquals("Music library", libraryDisplayName("   "))
     }
 }

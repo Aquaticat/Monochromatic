@@ -170,10 +170,10 @@ class FolderIndexTest {
     // ```ts
     // test("root-level tracks go to Unfiled last", () => { /* ... */ });
     // ```
-    /** Verifies root-level tracks form one Unfiled entry listed after the named folders. */
+    /** Verifies root-level tracks form one virtual letter entry per initial, listed after the named folders. */
     @Test
-    fun rootLevelTracksGoToUnfiledLast() {
-        /** Two root-level tracks interleaved with two folders, one of which sorts after Unfiled. */
+    fun rootLevelTracksGoToTheirLetterEntriesLast() {
+        /** Two root-level tracks interleaved with two folders, one of which sorts after the letters. */
         val tracks = listOf(
             track("Loose.flac"),
             track("Zed/z.flac"),
@@ -182,12 +182,29 @@ class FolderIndexTest {
         )
         /** Folder entries built from the mixed library. */
         val entries = folderIndex(tracks)
-        assertEquals(listOf("Camellia", "Zed", UNFILED_FOLDER_NAME), entries.map { entry -> entry.name })
-        assertEquals(
-            listOf(trackItem(tracks, 0), trackItem(tracks, 3)),
-            entries.last().items,
+        assertEquals(listOf("Camellia", "Zed", "A", "L"), entries.map { entry -> entry.name })
+        assertEquals(listOf(false, false, true, true), entries.map { entry -> entry.loose })
+        assertEquals(listOf(trackItem(tracks, 3)), entries[2].items)
+        assertEquals(listOf(trackItem(tracks, 0)), entries[3].items)
+        assertEquals(1, entries.last().trackCount)
+    }
+
+    /** Verifies loose tracks share the letter entry of their base letter, and anything else lands on the # entry. */
+    @Test
+    fun looseTracksFoldAccentsAndKeepNonLatinInitialsOnTheHashEntry() {
+        /** Loose tracks whose initials are an accented capital, its plain twin, a lowercase letter, CJK and a digit. */
+        val tracks = listOf(
+            track("Émilie.flac"),
+            track("Eno.flac"),
+            track("echo.flac"),
+            track("初音.flac"),
+            track("1 song.flac"),
         )
-        assertEquals(2, entries.last().trackCount)
+        /** Entries of the loose tracks. */
+        val entries = folderIndex(tracks)
+        assertEquals(listOf("E", "#"), entries.map { entry -> entry.name })
+        assertEquals(listOf(trackItem(tracks, 0), trackItem(tracks, 1), trackItem(tracks, 2)), entries[0].items)
+        assertEquals(listOf(trackItem(tracks, 3), trackItem(tracks, 4)), entries[1].items)
     }
 
     // What:     `@Test fun noUnfiledEntryWhenNoTrackSitsAtRoot()` checks the absent case.
@@ -197,9 +214,9 @@ class FolderIndexTest {
     // ```ts
     // test("no Unfiled entry when no track sits at the root", () => { /* ... */ });
     // ```
-    /** Verifies no Unfiled entry appears when every track sits inside a folder. */
+    /** Verifies no letter entry appears when every track sits inside a folder. */
     @Test
-    fun noUnfiledEntryWhenNoTrackSitsAtRoot() {
+    fun noLetterEntryWhenNoTrackSitsAtRoot() {
         assertEquals(listOf("Camellia"), folderIndex(listOf(track("Camellia/c.flac"))).map { entry -> entry.name })
     }
 

@@ -40,6 +40,26 @@ private const val PAUSE_LABEL: String = "Pause"
 /** Label of the button that resumes a paused analysis. */
 private const val RESUME_LABEL: String = "Resume"
 
+// What:     `fun deleteLegacyAnalysisChannel(context)` removes the channel that builds before D107 created.
+// Why:      A person who upgrades after the first analysis finished never starts another sweep, so the sweep
+//           service never runs its channel setup and the old "Indexing audio levels" entry would stay in the
+//           system settings for good. The activity calls this on every launch; deleting a missing channel is a
+//           no-op.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// function deleteLegacyAnalysisChannel(context) { manager.deleteChannel("peak-sweep"); }
+// ```
+/**
+ * Deletes the `peak-sweep` notification channel of earlier builds, so the system settings list only the current
+ * analysis channel. Safe to call when the channel does not exist.
+ *
+ * @param context any context of this app
+ */
+internal fun deleteLegacyAnalysisChannel(context: Context) {
+    context.getSystemService(NotificationManager::class.java).deleteNotificationChannel(LEGACY_CHANNEL_ID)
+}
+
 // What:     `fun ensureAnalysisChannel(context)` creates the silent low-importance channel and drops the old one.
 // Why:      D107 wants a silent, low-priority notification on its own channel. Importance low already means no
 //           sound; the explicit sound and vibration settings keep it silent whatever the system default is.
@@ -57,9 +77,9 @@ private const val RESUME_LABEL: String = "Resume"
  * @param context any context of this app
  */
 internal fun ensureAnalysisChannel(context: Context) {
+    deleteLegacyAnalysisChannel(context)
     /** The system notification service that owns the channels. */
     val manager: NotificationManager = context.getSystemService(NotificationManager::class.java)
-    manager.deleteNotificationChannel(LEGACY_CHANNEL_ID)
     if (manager.getNotificationChannel(ANALYSIS_CHANNEL_ID) != null) {
         return
     }
@@ -91,7 +111,7 @@ internal fun buildAnalysisNotification(context: Context, content: AnalysisNotifi
     /** Builder on the silent channel with the fixed parts of the notification. */
     val builder: NotificationCompat.Builder = NotificationCompat.Builder(context, ANALYSIS_CHANNEL_ID)
         .setContentTitle(ANALYSIS_NOTIFICATION_TITLE)
-        .setSmallIcon(android.R.drawable.stat_notify_sync)
+        .setSmallIcon(R.drawable.ic_stat_analysis)
         .setCategory(NotificationCompat.CATEGORY_PROGRESS)
         .setPriority(NotificationCompat.PRIORITY_LOW)
         .setSilent(true)

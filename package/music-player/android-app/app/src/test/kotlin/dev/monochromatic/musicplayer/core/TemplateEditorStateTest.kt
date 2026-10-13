@@ -22,6 +22,12 @@ import org.junit.Test
 
 /** Verifies the editor state's transitions, previews, validation, notes, fields and help. */
 class TemplateEditorStateTest {
+    /** Sentence for the misspelt field peek. */
+    private val PEEK_SENTENCE: String = "mi has no field called peek. Pick a name from the Fields list."
+
+    /** Sentence for the misspelt field seek. */
+    private val SEEK_SENTENCE: String = "mi has no field called seek. Pick a name from the Fields list."
+
     // What:     `private val anotherXronixle` is the first authored library track of the study.
     // Why:      The expected preview lines in these tests come from the study's copy of this track.
     //
@@ -201,7 +207,7 @@ class TemplateEditorStateTest {
         assertEquals(
             listOf(
                 TemplatePreviewRow("Track title", "3:20 −1.0 dBTP"),
-                TemplatePreviewRow("Track not analysed yet", "3:20 "),
+                TemplatePreviewRow("Track not analyzed yet", "3:20 "),
             ),
             state.previewRows,
         )
@@ -220,7 +226,7 @@ class TemplateEditorStateTest {
         /** The field list of the editor with an empty library. */
         val fields: List<TemplateEditorFieldEntry> = TemplateEditorState.initial(emptyList()).fields
         assertEquals("Track title", fields[0].value)
-        assertEquals("200", fields[5].value)
+        assertEquals("3:20", fields[5].value)
     }
 
     // What:     `fun libraryPreviewTakesFirstTwoTracks` checks that the preview draws two rows from a longer library.
@@ -254,7 +260,7 @@ class TemplateEditorStateTest {
         val fields: List<TemplateEditorFieldEntry> = TemplateEditorState.initial(library).fields
         assertEquals(7, fields.size)
         assertEquals(TemplateEditorFieldEntry("Title", "title", "mi(title)", "Another Xronixle"), fields[0])
-        assertEquals("275", fields[5].value)
+        assertEquals("4:35", fields[5].value)
         assertEquals("−1.2 dBTP", fields[6].value)
     }
 
@@ -333,7 +339,7 @@ class TemplateEditorStateTest {
         val state: TemplateEditorState = TemplateEditorState.initial(library)
             .typed("\$tf(mi(len), m:ss)\$ \$mi(peek)\$")
         assertFalse(state.isValid)
-        assertEquals(listOf("mi: unknown field peek"), state.mistakeLines)
+        assertEquals(listOf(PEEK_SENTENCE), state.mistakeLines)
         assertEquals(TemplateEditorState.initial(library).previewRows, state.previewRows)
         assertEquals(listOf(TEMPLATE_LIBRARY_NOTE, TEMPLATE_KEPT_NOTE), state.previewNotes)
     }
@@ -351,7 +357,7 @@ class TemplateEditorStateTest {
         /** The editor state after the open formula is typed. */
         val state: TemplateEditorState = TemplateEditorState.initial(library).typed("\$tf(mi(len), m:ss)")
         assertEquals(
-            listOf("formula: the \$ at character 1 has no closing \$"),
+            listOf("The \$ at character 1 has no closing \$. Add a \$ where the formula ends."),
             state.mistakeLines,
         )
     }
@@ -368,7 +374,7 @@ class TemplateEditorStateTest {
     fun trackOnlyFieldIsRefusedInTrackRows() {
         /** The editor state after the playing track's field is typed into track rows. */
         val state: TemplateEditorState = TemplateEditorState.initial(library).typed("\$mi(track)\$")
-        assertEquals(listOf("mi: unknown field track"), state.mistakeLines)
+        assertEquals(listOf("mi has no field called track. Pick a name from the Fields list."), state.mistakeLines)
     }
 
     // What:     `fun validEditBecomesAppliedText` types a valid template that differs from the custom one.
@@ -623,7 +629,70 @@ class TemplateEditorStateTest {
     fun errorLinesKeepTemplateOrder() {
         /** The editor state after a template with two unknown fields. */
         val state: TemplateEditorState = TemplateEditorState.initial(library).typed("\$mi(peek)\$ \$mi(seek)\$")
-        assertEquals(listOf("mi: unknown field peek", "mi: unknown field seek"), state.mistakeLines)
+        assertEquals(listOf(PEEK_SENTENCE, SEEK_SENTENCE), state.mistakeLines)
+    }
+
+    /** A template with an unknown field and a missing bracket lists both mistakes, not only the first. */
+    @Test
+    fun everyMistakeIsListedAsAPlainSentence() {
+        /** The editor state after the template of the polish review's example. */
+        val state: TemplateEditorState = TemplateEditorState.initial(library)
+            .typed("\$mi(bogus)\$ and \$tf(mi(len)\$")
+        assertEquals(
+            listOf(
+                "mi has no field called bogus. Pick a name from the Fields list.",
+                "tf is missing its closing bracket. Add a ) after its last value.",
+            ),
+            state.mistakeLines,
+        )
+    }
+
+    /** One formula with several slips gets one sentence, so a single typo is not listed three times. */
+    @Test
+    fun aFormulaWithSeveralSlipsGetsOneSentence() {
+        /** The editor state after one formula with an unknown field and an unknown mode. */
+        val state: TemplateEditorState = TemplateEditorState.initial(library)
+            .typed("\$tc(zap, mi(bogus))\$")
+        assertEquals(1, state.mistakeLines.size)
+    }
+
+    /** A format letter the desktop rejects is rejected here too, with a sentence that says what to use. */
+    @Test
+    fun anUnknownFormatLetterIsRefusedWithAPlainSentence() {
+        /** The editor state after a duration format with a stray letter. */
+        val state: TemplateEditorState = TemplateEditorState.initial(library).typed("\$tf(mi(len), q:q)\$")
+        assertFalse(state.isValid)
+        assertEquals(
+            listOf("tf does not know the format letter q. Use h, m or s, and put any other words between apostrophes."),
+            state.mistakeLines,
+        )
+    }
+
+    /** Sentences are listed in template order whichever mistake the evaluator found first. */
+    @Test
+    fun aParseMistakeBeforeAnUnknownFieldKeepsTemplateOrder() {
+        /** The editor state after a missing bracket followed by an unknown field. */
+        val state: TemplateEditorState = TemplateEditorState.initial(library)
+            .typed("\$tf(mi(len)\$ and \$mi(bogus)\$")
+        assertEquals(
+            listOf(
+                "tf is missing its closing bracket. Add a ) after its last value.",
+                "mi has no field called bogus. Pick a name from the Fields list.",
+            ),
+            state.mistakeLines,
+        )
+    }
+
+    /** While the draft is invalid the Settings line keeps showing the last valid template's text. */
+    @Test
+    fun settingsLineKeepsTheLastValidTemplateWhileTheDraftIsInvalid() {
+        /** The editor after one valid change and then an invalid draft. */
+        val valid: TemplateEditorState = TemplateEditorState.initial(library).typed("\$mi(title)\$ here")
+        val invalid: TemplateEditorState = valid.typed("\$mi(bogus)\$ and \$tf(mi(len)\$")
+        assertFalse(invalid.isValid)
+        assertEquals("Another Xronixle here", valid.settingsLine(TemplateKind.TRACK_ROWS))
+        assertEquals(valid.settingsLine(TemplateKind.TRACK_ROWS), invalid.settingsLine(TemplateKind.TRACK_ROWS))
+        assertEquals(valid.previewRows, invalid.previewRows)
     }
 
     // What:     `fun resetWithoutMistakeHidesKeptNote` checks the note once the template applies again.

@@ -19,15 +19,6 @@ package dev.monochromatic.musicplayer
 // ```
 import android.os.Bundle
 
-// What:     `import android.os.Build` reads the API level before using dynamic color.
-// Why:      Dynamic color exists from Android 12, so older devices use the static scheme.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// import { Build } from "android/os";
-// ```
-import android.os.Build
-
 // What:     `import android.util.Log` writes the composition line the debug run is checked against.
 // Why:      The screenshot run confirms which layout and picker state the host composed.
 //
@@ -36,15 +27,6 @@ import android.os.Build
 // import { Log } from "android/util";
 // ```
 import android.util.Log
-
-// What:     `import android.content.Context` types the context that dynamic color needs.
-// Why:      The dynamic color APIs take a Context, which the composition supplies.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// import type { Context } from "android/content";
-// ```
-import android.content.Context
 
 // What:     `import androidx.activity.ComponentActivity` is the base class of the host activity.
 // Why:      The host uses Compose through the same base class as the production activity.
@@ -95,48 +77,9 @@ import androidx.compose.foundation.layout.padding
 // ```
 import androidx.compose.foundation.layout.fillMaxSize
 
-// What:     `import androidx.compose.material3.ColorScheme` names the color scheme type.
-// Why:      The host builds the same scheme as the production activity and passes it to the theme.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// import type { ColorScheme } from "material3";
-// ```
-import androidx.compose.material3.ColorScheme
-
-// What:     `import androidx.compose.material3.MaterialTheme` applies the color scheme to the host content.
-// Why:      The production screen reads its colors from the theme.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// import { MaterialTheme } from "material3";
-// ```
-import androidx.compose.material3.MaterialTheme
-
 // What:     `import androidx.compose.material3.Surface` is the themed background container.
 // Why:      The host wraps its scenes in one, as the production activity does, so text inherits the right color.
 import androidx.compose.material3.Surface
-
-// What:     `import androidx.compose.material3.darkColorScheme` and `lightColorScheme` are the pre-Android-12 schemes.
-// Why:      The production activity falls back to these schemes on older devices, and the host must match it.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// import { darkColorScheme, lightColorScheme } from "material3";
-// ```
-import androidx.compose.material3.darkColorScheme
-import androidx.compose.material3.lightColorScheme
-
-// What:     `import androidx.compose.material3.dynamicDarkColorScheme` and `dynamicLightColorScheme` are the
-//           wallpaper schemes.
-// Why:      The production activity uses these schemes on Android 12 and later, and the host must match it.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// import { dynamicDarkColorScheme, dynamicLightColorScheme } from "material3";
-// ```
-import androidx.compose.material3.dynamicDarkColorScheme
-import androidx.compose.material3.dynamicLightColorScheme
 
 // What:     `import androidx.compose.runtime.Composable` marks the functions that emit UI.
 // Why:      The host's screen function emits UI.
@@ -160,24 +103,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 
-// What:     `import androidx.compose.foundation.isSystemInDarkTheme` reads the system appearance.
-// Why:      The host picks the dark or light scheme from the same appearance as the production activity.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// import { isSystemInDarkTheme } from "compose/foundation";
-// ```
-import androidx.compose.foundation.isSystemInDarkTheme
-
-// What:     `import androidx.compose.ui.graphics.Color` names the true-black scheme color.
-// Why:      The dark scheme uses true black for its background and surface, as the production activity does.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// import type { Color } from "compose/ui/graphics";
-// ```
-import androidx.compose.ui.graphics.Color
-
 // What:     `import androidx.compose.ui.Modifier` sizes the host's outer box.
 // Why:      The outer box fills the window so the width measurement matches the production screen.
 //
@@ -189,15 +114,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-
-// What:     `import androidx.compose.ui.platform.LocalContext` supplies the Android context to the scheme helper.
-// Why:      The dynamic color APIs need a Context, and the composition provides one.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// import { LocalContext } from "compose/ui/platform";
-// ```
-import androidx.compose.ui.platform.LocalContext
 
 // What:     `import dev.monochromatic.musicplayer.core.Page` and `paginate` build the authored pages.
 // Why:      The sample library goes through the same pagination the production controller uses.
@@ -626,9 +542,8 @@ class ProductionScreenActivity : ComponentActivity() {
         /** Scene to draw, from the `scene` intent extra, or the player when the extra is absent. */
         val scene: String = intent.getStringExtra(EXTRA_SCENE) ?: SCENE_PLAYER
         setContent {
-            /** Color scheme matching the production activity for the current appearance. */
-            val colorScheme: ColorScheme = sampleColorScheme()
-            MaterialTheme(colorScheme = colorScheme) {
+            // The production activity's theme: the palette derived from the system accent (A3, D108).
+            playerTheme {
                 // A Surface supplies the content color and canvas, as the production activity's root does.
                 Surface(modifier = Modifier.fillMaxSize()) {
                     ProductionScreenHost(startWithPicker = startWithPicker, scene = scene)
@@ -917,6 +832,7 @@ private fun sampleSearchPage(query: String, model: PlayerContentModel, actions: 
     /** Search state the page draws for the query over the sample library. */
     val results: SearchState = searchLibrary(query = query, tracks = SAMPLE_TRACKS, available = true)
     searchPage(
+        creaseWidthPx = rememberCrease().widthPxOrNull,
         state = results,
         query = query,
         onQueryChange = {},
@@ -935,31 +851,4 @@ private fun sampleSearchPage(query: String, model: PlayerContentModel, actions: 
             )
         },
     )
-}
-
-// What:     `@Composable private fun sampleColorScheme(): ColorScheme` picks the scheme the production activity uses.
-// Why:      The host copies the production scheme so the screenshots show the same colors, including
-//           true black in dark mode.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// function sampleColorScheme(): ColorScheme { /* dynamic on Android 12+, true black in dark mode */ }
-// ```
-/** Returns dynamic Material roles with a true-black background and surface in dark mode. */
-@Composable
-private fun sampleColorScheme(): ColorScheme {
-    /** Whether the system is in dark mode. */
-    val dark: Boolean = isSystemInDarkTheme()
-    /** Android context that the dynamic color APIs need. */
-    val context: Context = LocalContext.current
-    /** Scheme from the wallpaper on Android 12 and later, or the static scheme on older devices. */
-    val scheme: ColorScheme = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-        if (dark) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
-    } else {
-        if (dark) darkColorScheme() else lightColorScheme()
-    }
-    if (!dark) {
-        return scheme
-    }
-    return scheme.copy(background = Color.Black, surface = Color.Black)
 }

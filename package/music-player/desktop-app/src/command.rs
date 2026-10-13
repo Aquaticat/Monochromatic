@@ -463,15 +463,41 @@ pub enum Command {
     ///  if its file left the root while playing,
     ///  playback stops and the
     ///           selection clears).
-    ///  Sent by the file watcher on a debounced change,
-    ///  and on
-    ///           any "rescan required" signal.
+    ///  Sent by the file watcher when it lost events (an overflow of the kernel queue, an error)
+    ///  and once after each registration of the watch;
+    ///  a change that names its paths arrives as `SourceChanged` instead (D113).
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
     /// { kind: "rescan" }
     /// ```
     Rescan,
+    /// What:
+    ///      `SourceChanged(Change)` the file watcher names what changed under the Source Root.
+    /// Why:
+    ///       D113: a refresh looks only at the named paths (and the folders among them), so one replaced file costs a few
+    ///  lookups at a million tracks. `Rescan` is the case where the watcher lost events.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// { kind: "sourceChanged"; change: Change }
+    /// ```
+    SourceChanged(
+        /// The paths the debounced events named.
+        crate::change_set::Change,
+    ),
+    /// What:
+    ///      `NoLibrary` a fieldless variant: the launch found no folder to open.
+    /// Why:
+    ///       The window shows "No folder is open" only when told so. Before this command the engine said it at start,
+    ///  before it knew whether a saved folder or the music folder was about to open, so a library that was being read
+    ///  looked like no library (the polish review finding EM1).
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// { kind: "noLibrary" }
+    /// ```
+    NoLibrary,
     /// What:
     ///      `Quit` a fieldless variant.
     /// Why:
@@ -492,16 +518,6 @@ pub enum Command {
     /// { kind: "sweepReport"; report: SweepReport }
     /// ```
     SweepReport(SweepReport),
-    /// What:
-    ///      `ReanalyseTrack(PathBuf)` asks for one track's decision to be discarded and measured again.
-    /// Why:
-    ///       The track menu's Re-analyse action sends this for the track it names.
-    ///
-    /// In TS you'd write (pseudocode):
-    /// ```ts
-    /// { kind: "reanalyseTrack"; path: string }
-    /// ```
-    ReanalyseTrack(PathBuf),
 }
 
 /// What:
@@ -877,5 +893,82 @@ pub enum Update {
     SourceRoot(
         /// The folder's display name, or `None`.
         Option<String>,
+    ),
+    /// What:
+    ///      `Reading { name }` says the engine has started reading the folder called `name` and has not finished.
+    /// Why:
+    ///       The walk of a big library or a slow disk takes seconds, and the window used to say "No folder is open"
+    ///  until it ended (the polish review finding EM1). The window shows a "reading your library" state from this
+    ///  update until the `Queue` update that ends the walk.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// { kind: "reading"; name: string }
+    /// ```
+    Reading {
+        /// The folder's display name.
+        name: String,
+    },
+    /// What:
+    ///      `Unplayable(Vec<PathBuf>)` lists files that were skipped because they could not be opened for playback.
+    /// Why:
+    ///       A track that cannot be decoded used to be skipped silently (the polish review finding PB1, D83). The window
+    ///  names the file in a message and marks its row.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// { kind: "unplayable"; paths: string[] }
+    /// ```
+    Unplayable(
+        /// The files that failed to open, in the order they were tried.
+        Vec<PathBuf>,
+    ),
+    /// What:
+    ///      `FileGone { path, was_playing }` says the rescan found the selected track's file missing from the folder.
+    /// Why:
+    ///       The row vanishes and playback stops; without a message the user cannot tell why (the polish review
+    ///  finding PB2, D9 and D83).
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// { kind: "fileGone"; path: string; wasPlaying: boolean }
+    /// ```
+    FileGone {
+        /// The path of the missing file.
+        path: PathBuf,
+        /// Whether audio was playing when the file left, so playback stopped.
+        was_playing: bool,
+    },
+    /// What:
+    ///      `ScanBatch { first_index, names }` reports tracks the folder walk has found while it is still walking.
+    /// Why:
+    ///       D111: Search must work while the library is still being scanned. A track's position in the walk is its
+    ///  position in the queue, so `first_index` places the batch; `first_index == 0` starts a new library. The final
+    ///  `Queue` update follows when the walk ends. The window does nothing with this update; the Search index
+    ///  takes it on the engine thread.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// { kind: "scanBatch"; firstIndex: number; names: string[] }
+    /// ```
+    ScanBatch {
+        /// Queue position of the first name in `names`.
+        first_index: usize,
+        /// Names of the new tracks, relative to the opened folder.
+        names: Vec<String>,
+    },
+    /// What:
+    ///      `Duration(f64)` says the playing track's file was replaced by one of another length.
+    /// Why:
+    ///       D113: a replaced file that plays is loaded again where it was, without announcing the track again (which would
+    ///  move the page and reset the seek bar), so only the seek bar's length changes.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// { kind: "duration"; secs: number }
+    /// ```
+    Duration(
+        /// The new file's length in seconds.
+        f64,
     ),
 }

@@ -65,7 +65,13 @@ mod ui_screen;
 
 mod ui_screen_rows;
 
+mod ui_notices;
+
+mod ui_screen_pages;
+
 mod ui_screen_scroll;
+
+mod ui_screen_throttle;
 
 mod ui_screen_view;
 
@@ -79,11 +85,75 @@ mod ui_templates;
 
 mod ui_search_model;
 
+mod ui_search_anchor;
+
+mod ui_search_apply;
+
 mod ui_wire;
 
 mod ui_files;
 
 mod ui_keys;
+
+mod ui_keys_actions;
+
+mod ui_keys_focus;
+
+mod ui_host;
+
+mod ui_lists;
+
+mod ui_hints;
+
+mod ui_state_log;
+
+/// Shared helpers of the window tests that press real key events.
+#[cfg(test)]
+mod ui_test_support;
+
+/// Window tests of the focus model: Tab order, rings and the lists' focus keys.
+#[cfg(test)]
+mod ui_keys_focus_tests;
+
+/// Window tests of every D106 shortcut, pressed as real key events on the testing backend.
+#[cfg(test)]
+mod ui_keys_window_tests;
+
+/// Window tests of the empty, reading and failure states.
+#[cfg(test)]
+mod ui_states_window_tests;
+
+/// Window tests of the second polish review's interaction defects: click-through, menu position, rings, headers, fades.
+#[cfg(test)]
+mod ui_interaction_window_tests;
+
+/// Window tests of the list defects of the second polish review: long names, picker reveal, breakpoint scroll, scrollbars.
+#[cfg(test)]
+mod ui_lists_window_tests;
+
+/// Rendered tests of the list defects: the ellipsis, the playing-row marker and the scrollbar, read from pixels.
+#[cfg(test)]
+mod ui_lists_render_tests;
+
+/// Shared helpers of the rendered window tests: the software-rendered window, its pixels and rounded-box geometry.
+#[cfg(test)]
+mod ui_render_support;
+
+/// Rendered tests of the focus ring on the player page (D117): its band, its shape and what focus leaves unchanged.
+#[cfg(test)]
+mod ui_focus_ring_tests;
+
+/// Rendered tests of the focus ring on the other pages (D117) and of the menu card's color (D119).
+#[cfg(test)]
+mod ui_focus_ring_pages_tests;
+
+/// Rendered tests of the track menu: the ring on a row (D117) and the card's color and outline (D119).
+#[cfg(test)]
+mod ui_focus_ring_menu_tests;
+
+/// Rendered tests of the focus ring component alone: its shapes, and a ring above a clipping parent.
+#[cfg(test)]
+mod ui_focus_ring_fixture_tests;
 
 mod ui_menu;
 
@@ -97,6 +167,20 @@ mod ui_overlays_model;
 #[cfg(test)]
 #[path = "ui_layout_tests.rs"]
 mod ui_layout_tests;
+
+/// Synthetic libraries for the scale tests; the library crate compiles the same file.
+#[cfg(test)]
+#[path = "scale_library_tests.rs"]
+mod scale_library_tests;
+
+/// Scale tests of the window projection and the Search service at 1k to 1M tracks (`src/scale_tests.rs`).
+#[cfg(test)]
+mod scale_tests;
+
+/// Search page tests with the testing backend: refresh in place while a slow scan adds tracks (D111).
+#[cfg(test)]
+#[path = "ui_search_ingest_tests.rs"]
+mod ui_search_ingest_tests;
 
 /// What:
 ///      `mod ui_theme;` loads the sibling `ui_theme.rs` module.
@@ -687,7 +771,8 @@ fn xdg_user_dir_music() -> Option<PathBuf> {
 ///  then the XDG user-dirs
 ///           file via the `directories` crate,
 ///  then the `xdg-user-dir MUSIC`
-///           command.
+///           command,
+///  then `Music` inside the home folder (D95: a library is always open).
 ///  Returns `None` unless one yields an existing directory.
 /// Why:
 ///       The containerized `run` task bind-mounts the host music folder and
@@ -706,81 +791,27 @@ fn xdg_user_dir_music() -> Option<PathBuf> {
 /// function musicDir(): string | null { ... }
 /// ```
 fn music_dir() -> Option<PathBuf> {
-    // What:     `std::env::var_os("XDG_MUSIC_DIR")`. Read an environment variable as
-    //           an `Option<OsString>` (raw OS bytes, not required to be UTF-8).
-    //           Sibling: `var(...)` returns `Result<String, _>` and errors on
-    //           non-UTF-8; `var_os` returns `None` when unset and never errors. This
-    //           expression starts a method chain whose value is the function tail.
-    // Why:      Paths may hold non-UTF-8 bytes, and "unset" is not an error here, so
-    //           `var_os` (not `var`) is the right reader.
+    // What:     the places to look, in order: `XDG_MUSIC_DIR`, the user-dirs file, the `xdg-user-dir` tool, then `Music`
+    //           inside the home folder. Each later place is computed only if the earlier ones gave no folder.
+    // Why:      D95: a library is always open. A home folder with a `Music` folder but no user-dirs entry used to show
+    //           the "No folder is open" screen (EM7). The first place that is an existing folder wins, so a variable
+    //           pointing at a missing folder falls through instead of ending the search.
     //
     // In TS you'd write (pseudocode):
     // ```ts
-    // return (process.env.XDG_MUSIC_DIR ?? userDirs()?.audioDir ?? xdgUserDirMusic())
-    //   ?.let((p) => isDir(p) ? p : null) ?? null;
+    // return [process.env.XDG_MUSIC_DIR, userDirs()?.audioDir, xdgUserDirMusic(), join(homedir(), "Music")].find(isDir) ?? null;
     // ```
-    return std::env::var_os("XDG_MUSIC_DIR")
-        // What:     `.map(PathBuf::from)`. On `Some(osStr)`, convert the `OsString`
-        //           into an owned `PathBuf`; passing `PathBuf::from` (the function
-        //           itself) is the closure shorthand. `None` stays `None`.
-        // Why:      We want a path, not a raw OS string.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // // (process.env.XDG_MUSIC_DIR as path | undefined)
-        // ```
-        .map(PathBuf::from)
-        // What:     `.or_else(|| ...)`. If the env var was unset (`None`), run the
-        //           zero-argument closure `|| ...` to compute a fallback. `or_else`
-        //           is LAZY: the closure runs only on `None` (sibling `.or(x)` would
-        //           evaluate `x` eagerly).
-        // Why:      A native run has no `XDG_MUSIC_DIR` env; read the user-dirs file
-        //           only when needed.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // // ?? userDirs()?.audioDir
-        // ```
-        .or_else(|| {
-            // What:     `directories::UserDirs::new().and_then(|dirs| dirs.audio_dir().map(|p| p.to_path_buf()))`.
-            //           `UserDirs::new()` is `Option<UserDirs>`; `.and_then(...)` runs
-            //           the closure only when present and flattens the nested
-            //           `Option`; `dirs.audio_dir()` is `Option<&Path>` parsed from the
-            //           XDG user-dirs file; `.map(|p| p.to_path_buf())` turns the
-            //           borrowed `&Path` into an owned `PathBuf`.
-            // Why:      Standard music-dir lookup for a native (non-container) run.
-            // Gotcha:   `.and_then` is the `Option`-flattening combinator (`flatMap`),
-            //           NOT `.map`; using `.map` here would give `Option<Option<_>>`.
-            //
-            // In TS you'd write (pseudocode):
-            // ```ts
-            // userDirs()?.audioDir;
-            // ```
-            return directories::UserDirs::new()
-                .and_then(|dirs| return dirs.audio_dir().map(|p| return p.to_path_buf()))
-        })
-        // What:     `.or_else(xdg_user_dir_music)`. If both the env var and the
-        //           user-dirs file came up empty, fall back to the `xdg-user-dir`
-        //           command. Passing the function by name is the closure shorthand
-        //           (its signature `() -> Option<PathBuf>` matches what `or_else`
-        //           wants).
-        // Why:      Final fallback for setups where only the tool knows the path.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // // ?? xdgUserDirMusic()
-        // ```
-        .or_else(xdg_user_dir_music)
-        // What:     `.filter(|p| p.is_dir())`. Keep the path only if the closure is
-        //           `true`, i.e. it exists and is a directory; otherwise the whole
-        //           `Option` becomes `None`. `|p|` borrows the path.
-        // Why:      Do not feed a missing or non-directory path to the engine.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // // ?.let((p) => isDir(p) ? p : null)
-        // ```
-        .filter(|p| return p.is_dir())
+    let from_environment = std::iter::once(std::env::var_os("XDG_MUSIC_DIR").map(PathBuf::from));
+    let from_user_dirs = std::iter::once_with(|| {
+        return directories::UserDirs::new().and_then(|dirs| return dirs.audio_dir().map(|p| return p.to_path_buf()));
+    });
+    let from_tool = std::iter::once_with(xdg_user_dir_music);
+    let from_home = std::iter::once_with(|| {
+        return directories::BaseDirs::new().map(|dirs| return music_player::default_library::home_music_folder(dirs.home_dir()));
+    });
+    return music_player::default_library::first_existing_dir(
+        from_environment.chain(from_user_dirs).chain(from_tool).chain(from_home),
+    );
 }
 
 /// What:
@@ -1048,7 +1079,7 @@ fn main() -> Result<()> {
 
     // Derive every runtime LED pigment through OKLCH coordinates.
 
-    // Restore page-control preference and register settings persistence.
+    // Register settings persistence.
 
     // What:     `let launcher = Launcher::new();`. Construct the KDE taskbar-progress
     //           emitter (a cheap-to-clone session-bus handle, or a no-op without a
@@ -1101,12 +1132,23 @@ fn main() -> Result<()> {
     // ```
     let analysis_notifier = start_analysis_notifier();
     let update_notifier = analysis_notifier.clone();
+    // The Search service answers on its own thread and takes scan batches from the engine thread (D111, D112).
+    let search_service = ui_search::start_service(&app);
+    let scan_service = search_service.clone();
     let engine = Rc::new(Engine::spawn(move |update| {
         // What:     post the sweep's progress to the system indicator before the window sees the update.
         // Why:      D107: the indicator runs on its own thread, so this only queues a message; the window draws no
         //           analysis indicator at all.
         if let Update::Analysis { done, total } = &update {
             update_notifier.report(*done, *total);
+        }
+        // What:     hand tracks the folder walk has found to the Search index, on the engine thread.
+        // Why:      D111: Search works while the library is still being scanned; the window needs no part in it.
+        if matches!(update, Update::ScanBatch { .. }) {
+            if let Update::ScanBatch { first_index, names } = update {
+                scan_service.stream_batch(first_index, names);
+            }
+            return;
         }
         // What:     `let update_weak = weak.clone();`. `.clone()` of a weak handle is
         //           cheap (bumps a refcount); the outer closure is called repeatedly so
@@ -1308,6 +1350,12 @@ fn main() -> Result<()> {
                     volume: session.volume,
                     playback_mode: session.playback_mode,
                 });
+            } else {
+                // What:     `engine.send(Command::NoLibrary);`. Say that there is nothing to open.
+                // Why:      The window shows "No folder is open" only when told so (EM1); the engine no longer says it
+                //           at start, before this decision.
+                tracing::info!("no saved folder and no music folder; the window offers to open one");
+                engine.send(Command::NoLibrary);
             }
         }
     }

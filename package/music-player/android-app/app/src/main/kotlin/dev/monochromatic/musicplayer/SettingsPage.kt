@@ -435,7 +435,7 @@ private fun settingsHeader(title: String, backDescription: String, onBack: () ->
         // ```
         /** Round button that holds the Back arrow and returns to the player. */
         Box(
-            modifier = Modifier.size(SETTINGS_BACK_SIZE).clip(CircleShape)
+            modifier = Modifier.size(SETTINGS_BACK_SIZE).focusRing(CircleShape).clip(CircleShape)
                 .clickable(role = Role.Button, onClick = onBack),
             contentAlignment = Alignment.Center,
         ) {
@@ -538,6 +538,7 @@ private fun settingsTemplateRow(
     Row(
         modifier = Modifier.fillMaxWidth()
             .defaultMinSize(minHeight = SETTINGS_ROW_HEIGHT_DP.dp)
+            .focusRing(shape)
             .clip(shape)
             .background(fill)
             .semantics { if (selected != null) this.selected = selected }

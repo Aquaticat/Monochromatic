@@ -2,7 +2,7 @@
 //!  Current JSON stores one `playback_mode`;
 //!  former
 //! `shuffle` and `repeat_track` fields exist only in the private read model used
-//! during migration.
+//! during migration. The former `page_control_style` key is ignored on read and no longer written.
 
 /// Owned filesystem path used for the source root and selected track.
 use std::path::PathBuf;
@@ -15,67 +15,6 @@ use crate::command::PlaybackMode;
 
 /// Shared application identity used to resolve the config directory.
 use crate::identity;
-
-/// Saved visual treatment for library page selectors.
-#[derive(Clone, Copy, Debug, Default, PartialEq, Serialize, Deserialize)]
-pub enum PageControlStyle {
-    /// Radio indicators and labels in a wrapping group.
-    Radio,
-    /// Flat wrapping Material Design 1 tabs with selected underlines.
-    Md1Tabs,
-    /// Filled or outlined rounded buttons.
-    RoundedButtons,
-    /// Joined content-width buttons with selected fill.
-    SegmentedButtons,
-    /// Content-width browser tabs with active-tab silhouettes.
-    #[default]
-    ChromiumTabs,
-    /// Reflective hardware caps with latched LED selection.
-    LedSegmentedButtons,
-}
-
-/// Converts page styles at the Slint integer boundary.
-impl PageControlStyle {
-    /// Converts this style to Slint's stable integer representation.
-    pub fn to_int(self) -> i32 {
-        if self == PageControlStyle::Md1Tabs {
-            return 1;
-        }
-        if self == PageControlStyle::RoundedButtons {
-            return 2;
-        }
-        if self == PageControlStyle::SegmentedButtons {
-            return 3;
-        }
-        if self == PageControlStyle::ChromiumTabs {
-            return 4;
-        }
-        if self == PageControlStyle::LedSegmentedButtons {
-            return 5;
-        }
-        return 0;
-    }
-
-    /// Decodes Slint's integer representation with a radio fallback.
-    pub fn from_int(value: i32) -> PageControlStyle {
-        if value == 1 {
-            return PageControlStyle::Md1Tabs;
-        }
-        if value == 2 {
-            return PageControlStyle::RoundedButtons;
-        }
-        if value == 3 {
-            return PageControlStyle::SegmentedButtons;
-        }
-        if value == 4 {
-            return PageControlStyle::ChromiumTabs;
-        }
-        if value == 5 {
-            return PageControlStyle::LedSegmentedButtons;
-        }
-        return PageControlStyle::Radio;
-    }
-}
 
 /// Current session shape written to disk.
 #[derive(Clone, Debug, PartialEq, Serialize)]
@@ -91,8 +30,6 @@ pub struct Session {
     pub volume: f32,
     /// Single selected completion and transport behavior.
     pub playback_mode: PlaybackMode,
-    /// Selected page-navigation treatment.
-    pub page_control_style: PageControlStyle,
     /// Track rows template text the user edited, or None to use the default.
     pub track_rows_template: Option<String>,
     /// Playing track template text the user edited, or None to use the default.
@@ -119,8 +56,6 @@ struct StoredSession {
     /// Former independent repeat flag,
     ///  including whether the key was present.
     repeat_track: Option<bool>,
-    /// Current page-control preference.
-    page_control_style: PageControlStyle,
     /// Track rows template text, when the user edited it.
     track_rows_template: Option<String>,
     /// Playing track template text, when the user edited it.
@@ -139,7 +74,6 @@ impl Default for StoredSession {
             playback_mode: None,
             shuffle: None,
             repeat_track: None,
-            page_control_style: PageControlStyle::ChromiumTabs,
             track_rows_template: None,
             playing_template: None,
         };
@@ -156,7 +90,6 @@ impl Default for Session {
             position_secs: 0.0,
             volume: 1.0,
             playback_mode: PlaybackMode::InOrder,
-            page_control_style: PageControlStyle::ChromiumTabs,
             track_rows_template: None,
             playing_template: None,
         };
@@ -196,7 +129,6 @@ impl Session {
                 position_secs: stored.position_secs,
                 volume: stored.volume,
                 playback_mode,
-                page_control_style: stored.page_control_style,
                 track_rows_template: stored.track_rows_template,
                 playing_template: stored.playing_template,
             },

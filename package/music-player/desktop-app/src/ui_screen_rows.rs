@@ -6,6 +6,7 @@
 //! tested without a window.
 
 use music_player::folder_rail::RailSection;
+use music_player::title_prefix::{display_title, shared_prefix_len};
 use music_player::track_entries::TrackListEntry;
 
 /// What: `ListRow` is one plain row of the track list (kind 0 a track, kind 1 a subfolder header).
@@ -34,7 +35,7 @@ pub struct ListRow {
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// type PickerCell = { key: string; label: string };
+/// type PickerCell = { key: string; label: string; sectionStart: boolean };
 /// ```
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct PickerCell {
@@ -42,6 +43,8 @@ pub struct PickerCell {
     pub key: String,
     /// Text drawn in the rail.
     pub label: String,
+    /// True for the first cell of a writing system other than the first one, which the rail separates with a hairline (D28).
+    pub section_start: bool,
 }
 
 /// What: `PickerName` is one row of the rail-ordered name list (a heading row or a folder name).
@@ -110,6 +113,74 @@ fn list_row(entry: &TrackListEntry) -> ListRow {
     };
 }
 
+/// What: `UNPLAYABLE_ROW_TEXT` is the second line of a row whose file could not be opened for playback.
+/// Why: PB1 asks for a mark on the row; the second line replaces the length and loudness, which are not known for a file
+/// that cannot be read, and states the problem in words.
+pub const UNPLAYABLE_ROW_TEXT: &str = "Can't be played";
+
+/// What: `mark_unplayable` gives every row whose file failed to open the second line `UNPLAYABLE_ROW_TEXT`.
+/// Why: the engine reports the failed paths once, and the rows are rebuilt on every projection, so the mark is applied
+/// here from the remembered set.
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// rows.forEach((row) => { if (row.kind === 0 && unplayable.has(paths[row.index])) row.supporting = "Can't be played"; });
+/// ```
+pub fn mark_unplayable(rows: &mut [ListRow], paths: &[std::path::PathBuf], unplayable: &std::collections::HashSet<std::path::PathBuf>) {
+    if unplayable.is_empty() {
+        return;
+    }
+    for row in rows.iter_mut().filter(|row| return row.kind == 0) {
+        let path = usize::try_from(row.index).ok().and_then(|index| return paths.get(index));
+        if path.is_some_and(|known| return unplayable.contains(known)) {
+            row.supporting = UNPLAYABLE_ROW_TEXT.to_string();
+        }
+    }
+}
+
+/// What: `folder_name_of_header` is the name of the directory a header row stands for: its last path component.
+/// Why: a header shows the subfolder path (`Album/Disc 1`), and only the directory's own name can repeat in a title.
+fn folder_name_of_header(header: &str) -> &str {
+    return header.rsplit_once('/').map_or(header, |(_parent, name)| return name);
+}
+
+/// What: `strip_shared_prefixes` removes, from the titles of each run of track rows, the text every title of the run
+/// starts with (D86), or the directory's own name for a run of one.
+/// Why: a run of rows between two headers is the tracks of one directory; the first run is the page's own directory,
+/// named `page_label`. The polish review finding LS3: rows repeated the artist (`かめりあ(Camellia) - Aegis`).
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// for (const run of runsOfTrackRows(rows)) { const n = sharedPrefixLen(run.map((r) => r.title)); run.forEach((r) => r.title = displayTitle(r.title, n, run.folder)); }
+/// ```
+pub fn strip_shared_prefixes(rows: &mut [ListRow], page_label: &str) {
+    let mut folder: String = page_label.to_string();
+    let mut start: usize = 0;
+    for position in 0..=rows.len() {
+        let is_boundary: bool = position == rows.len() || rows[position].kind != 0;
+        if !is_boundary {
+            continue;
+        }
+        strip_run(&mut rows[start..position], &folder);
+        if position < rows.len() {
+            folder = folder_name_of_header(&rows[position].title).to_string();
+        }
+        start = position + 1;
+    }
+}
+
+/// What: `strip_run` strips one run of track rows of one directory.
+/// Why: the shared prefix is found once for the run and applied to each title.
+fn strip_run(run: &mut [ListRow], folder: &str) {
+    if run.is_empty() {
+        return;
+    }
+    let titles: Vec<String> = run.iter().map(|row| return row.title.clone()).collect();
+    let borrowed: Vec<&str> = titles.iter().map(String::as_str).collect();
+    let prefix: usize = shared_prefix_len(&borrowed);
+    for (row, title) in run.iter_mut().zip(titles.iter()) {
+        row.title = display_title(title, prefix, folder).to_string();
+    }
+}
+
 /// What: `track_count_text` gives "1 track" or "N tracks".
 /// Why: headers show a count in the same words the Android list uses.
 pub fn track_count_text(count: usize) -> String {
@@ -142,10 +213,15 @@ pub fn picker(sections: &[RailSection], current_folder: &str) -> Picker {
     let mut cells: Vec<PickerCell> = Vec::new();
     let mut names: Vec<PickerName> = Vec::new();
     let mut current_cell: String = String::new();
-    for cell in sections.iter().flat_map(|section| return section.cells.iter()) {
+    let cells_with_section = sections
+        .iter()
+        .flat_map(|section| return section.cells.iter().enumerate().map(|(position, cell)| return (position == 0, cell)));
+    for (first_of_section, cell) in cells_with_section {
         cells.push(PickerCell {
             key: cell.label.clone(),
             label: cell.label.clone(),
+            // The first cell overall has nothing above it to separate from.
+            section_start: first_of_section && !cells.is_empty(),
         });
         names.push(PickerName {
             name: String::new(),

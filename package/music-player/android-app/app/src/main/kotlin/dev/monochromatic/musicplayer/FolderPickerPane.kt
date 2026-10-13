@@ -48,6 +48,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.foundation.verticalScroll
 
 // What:     Imports from `androidx.compose.material3` and `runtime` bring in the theme accessor, text,
@@ -60,7 +61,17 @@ import androidx.compose.foundation.verticalScroll
 // ```
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.foundation.relocation.BringIntoViewRequester
+import androidx.compose.foundation.relocation.bringIntoViewRequester
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.focus.focusProperties
+import dev.monochromatic.musicplayer.core.HostKeyZone
+import dev.monochromatic.musicplayer.core.KeyActivateRow
+import dev.monochromatic.musicplayer.core.ringAfter
+import dev.monochromatic.musicplayer.core.startFocus
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -85,14 +96,14 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
 
-// What:     `private val RAIL_WIDTH: Dp = 48.dp` is the width of the letter rail column.
+// What:     `private val RAIL_WIDTH: Dp = 48.dp + FOCUS_RING_OUTSET * 2` is the width of the letter rail column.
 // Why:      One 48dp cell fills the column, so the rail is exactly one touch target wide.
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// const RAIL_WIDTH = 48;
+// const RAIL_WIDTH = 48 + 4 * 2;
 // ```
-/** Width of the letter rail column, one minimum touch target. */
+/** Width of the letter rail column: one minimum touch target and the room for its focus ring on both sides. */
 private val RAIL_WIDTH: Dp = 48.dp
 
 // What:     `private val RAIL_CELL_SIZE: Dp = 48.dp` is the side of each rail cell.
@@ -142,6 +153,12 @@ private val RAIL_BOUNDARY_WIDTH: Dp = 1.dp
 // ```ts
 // const NAME_TARGET_MIN = 48;
 // ```
+/** Number of folder names that Page up and Page down move the focus ring by. */
+private const val NAMES_PAGE: Int = 10
+
+/** Number of rail cells that Page up and Page down move the focus ring by. */
+private const val RAIL_PAGE_CELLS: Int = 8
+
 /** Minimum width and height of one folder name target. */
 private val NAME_TARGET_MIN: Dp = 48.dp
 
@@ -372,6 +389,27 @@ fun folderPickerPane(
     val scope = rememberCoroutineScope()
     /** Cell the user last tapped on the rail, forgotten when the current folder changes. */
     val tappedCellKey = remember(currentFolder) { mutableStateOf<String?>(null) }
+    /** Focus state of the folder name list as one keyboard stop, whose focus ring marks one name. */
+    val namesZone: ListZoneState = rememberListZone(HostKeyZone.NAMES)
+    /** Every folder name in list order, which is the order the ring walks. */
+    val names: List<String> = remember(sections) { cells.flatMap { cell -> cell.names } }
+    /** Folder name the focus ring is on, or null when the ring has not started. */
+    var ringName: String? by remember { mutableStateOf<String?>(null) }
+    LaunchedEffect(namesZone.focused) {
+        if (namesZone.focused && ringName !in names) {
+            ringName = startFocus(
+                selectable = names.map { true },
+                preferred = names.indexOf(currentFolder).takeIf { at -> at >= 0 },
+            )?.let { at -> names[at] }
+        }
+    }
+    LaunchedEffect(ringName) {
+        /** Position of the cell that lists the ringed name, which must be on screen for the ring to be seen. */
+        val cellIndex: Int? = itemIndexForFolder(sections, ringName)
+        if (cellIndex != null && listState.layoutInfo.visibleItemsInfo.none { item -> item.index == cellIndex }) {
+            listState.scrollToItem(cellIndex)
+        }
+    }
     Row(modifier = modifier.fillMaxSize()) {
         letterRail(
             sections = sections,
@@ -406,10 +444,33 @@ fun folderPickerPane(
             state = listState,
             modifier = Modifier
                 .weight(1f)
-                .fillMaxHeight(),
+                .fillMaxHeight()
+                .listZone(zone = HostKeyZone.NAMES, state = namesZone) { command ->
+                    if (command == KeyActivateRow) {
+                        ringName?.let { name -> onSelectFolder(name) }
+                        return@listZone ringName != null
+                    }
+                    /** Name the ring moves to, or null when the command does not move it. */
+                    val moved: Int? = ringAfter(
+                        command = command,
+                        selectable = names.map { true },
+                        labels = names,
+                        current = names.indexOf(ringName).takeIf { at -> at >= 0 },
+                        page = NAMES_PAGE,
+                    )
+                    if (moved != null) {
+                        ringName = names[moved]
+                    }
+                    moved != null
+                },
         ) {
             items(items = cells, key = { cell -> cell.key }) { cell ->
-                cellNames(cell = cell, currentFolder = currentFolder, onSelectFolder = onSelectFolder)
+                cellNames(
+                    cell = cell,
+                    currentFolder = currentFolder,
+                    ringName = if (namesZone.focused) ringName else null,
+                    onSelectFolder = onSelectFolder,
+                )
             }
         }
     }
@@ -423,19 +484,59 @@ fun folderPickerPane(
 // function letterRail(props: { sections: RailSection[]; currentCellKey: string | null;
 //   onCellSelected(key: string): void }): UIElement;
 // ```
-/** Draws the rail column, with a hairline before every section after the first. */
+/**
+ * Draws the rail column, with a hairline before every section after the first.
+ *
+ * The rail is one keyboard focus stop. While it holds focus a focus ring marks one cell, the arrow, Home, End and
+ * page keys move the ring, a typed letter jumps to the first cell with that glyph, and Enter does what a tap on the
+ * cell does. The cells themselves take no focus, so Tab passes the rail in one step (D106).
+ */
 @Composable
 private fun letterRail(
     sections: List<RailSection>,
     currentCellKey: String?,
     onCellSelected: (String) -> Unit,
 ) {
+    /** Focus state of the rail as one list. */
+    val zone: ListZoneState = rememberListZone(HostKeyZone.FOLDERS)
+    /** Every cell in rail order, which is the order the ring walks. */
+    val cells: List<RailCell> = cellsInOrder(sections)
+    /** Key of the cell the focus ring is on, or null when the ring has not started. */
+    var ringKey: String? by remember { mutableStateOf<String?>(null) }
+    LaunchedEffect(zone.focused) {
+        if (zone.focused && cells.none { cell -> cell.key == ringKey }) {
+            ringKey = startFocus(
+                selectable = cells.map { true },
+                preferred = cells.indexOfFirst { cell -> cell.key == currentCellKey }.takeIf { at -> at >= 0 },
+            )?.let { at -> cells[at].key }
+        }
+    }
     Column(
         modifier = Modifier
             .width(RAIL_WIDTH)
             .fillMaxHeight()
             .verticalScroll(rememberScrollState())
-            .selectableGroup(),
+            .padding(vertical = FOCUS_RING_OUTSET)
+            .selectableGroup()
+            .listZone(zone = HostKeyZone.FOLDERS, state = zone) { command ->
+                if (command == KeyActivateRow) {
+                    ringKey?.let { key -> onCellSelected(key) }
+                    return@listZone ringKey != null
+                }
+                /** Cell the ring moves to, or null when the command does not move it. */
+                val moved: Int? = ringAfter(
+                    command = command,
+                    selectable = cells.map { true },
+                    labels = cells.map { cell -> cell.label },
+                    current = cells.indexOfFirst { cell -> cell.key == ringKey }.takeIf { at -> at >= 0 },
+                    page = RAIL_PAGE_CELLS,
+                )
+                if (moved != null) {
+                    ringKey = cells[moved].key
+                }
+                moved != null
+            },
+        horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         sections.forEachIndexed { sectionIndex, section ->
             if (sectionIndex > 0) {
@@ -450,6 +551,7 @@ private fun letterRail(
                 railCellTarget(
                     cell = cell,
                     selected = cell.key == currentCellKey,
+                    ringed = zone.focused && cell.key == ringKey,
                     onClick = { onCellSelected(cell.key) },
                 )
             }
@@ -464,12 +566,26 @@ private fun letterRail(
 // ```ts
 // function railCellTarget(props: { cell: RailCell; selected: boolean; onClick(): void }): UIElement;
 // ```
-/** Draws one rail label, highlighted with a circle and bold text when it is the current cell. */
+/**
+ * Draws one rail label, highlighted with a circle and bold text when it is the current cell.
+ *
+ * The cell takes no keyboard focus of its own; [ringed] draws the rail's focus ring on it while the rail is focused.
+ */
 @Composable
-private fun railCellTarget(cell: RailCell, selected: Boolean, onClick: () -> Unit) {
+private fun railCellTarget(cell: RailCell, selected: Boolean, ringed: Boolean, onClick: () -> Unit) {
+    /** Lets the rail scroll the ringed cell into view when a key moves the ring there. */
+    val bringIntoView = remember { BringIntoViewRequester() }
+    LaunchedEffect(ringed) {
+        if (ringed) {
+            bringIntoView.bringIntoView()
+        }
+    }
     Box(
         modifier = Modifier
             .size(RAIL_CELL_SIZE)
+            .bringIntoViewRequester(bringIntoView)
+            .keyboardFocusRing(visible = ringed, shape = CircleShape)
+            .focusProperties { canFocus = false }
             .selectable(selected = selected, onClick = onClick, role = Role.RadioButton),
         contentAlignment = Alignment.Center,
     ) {
@@ -513,6 +629,7 @@ private fun railCellTarget(cell: RailCell, selected: Boolean, onClick: () -> Uni
 private fun cellNames(
     cell: RailCell,
     currentFolder: String?,
+    ringName: String?,
     onSelectFolder: (String) -> Unit,
 ) {
     Column(modifier = Modifier.fillMaxWidth()) {
@@ -521,7 +638,7 @@ private fun cellNames(
             modifier = Modifier.padding(
                 start = HEADING_START,
                 top = HEADING_TOP,
-                end = HEADING_END,
+                end = paneEndInset(HEADING_END),
                 bottom = HEADING_BOTTOM,
             ),
             color = MaterialTheme.colorScheme.primary,
@@ -530,7 +647,7 @@ private fun cellNames(
         FlowRow(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(start = NAMES_START, end = NAMES_END, bottom = NAMES_BOTTOM)
+                .padding(start = NAMES_START, end = paneEndInset(NAMES_END), bottom = NAMES_BOTTOM)
                 .selectableGroup(),
             horizontalArrangement = Arrangement.spacedBy(NAME_SPACING),
         ) {
@@ -538,6 +655,7 @@ private fun cellNames(
                 folderNameTarget(
                     name = name,
                     selected = name == currentFolder,
+                    ringed = name == ringName,
                     onClick = { onSelectFolder(name) },
                 )
             }
@@ -552,9 +670,14 @@ private fun cellNames(
 // ```ts
 // function folderNameTarget(props: { name: string; selected: boolean; onClick(): void }): UIElement;
 // ```
-/** Draws one folder name with the selection bar on the bottom edge of its target. */
+/**
+ * Draws one folder name with the selection bar on the bottom edge of its target.
+ *
+ * The target takes no keyboard focus of its own; [ringed] draws the name list's focus ring on it while the list is
+ * focused.
+ */
 @Composable
-private fun folderNameTarget(name: String, selected: Boolean, onClick: () -> Unit) {
+private fun folderNameTarget(name: String, selected: Boolean, ringed: Boolean, onClick: () -> Unit) {
     /** Color of the name text and the selection bar, both taken from the primary role when selected. */
     val accentColor: Color = MaterialTheme.colorScheme.primary
     /** Text color of the name, primary when it is the current folder and on-surface otherwise. */
@@ -568,6 +691,8 @@ private fun folderNameTarget(name: String, selected: Boolean, onClick: () -> Uni
     Box(
         modifier = Modifier
             .defaultMinSize(minWidth = NAME_TARGET_MIN, minHeight = NAME_TARGET_MIN)
+            .keyboardFocusRing(visible = ringed, shape = RectangleShape)
+            .focusProperties { canFocus = false }
             .selectable(selected = selected, onClick = onClick, role = Role.RadioButton)
             .drawBehind {
                 if (selected) {

@@ -74,7 +74,8 @@ the displayed word reflects what Claude was most recently talking about.
     tool results,
     attachments,
     and user entries are ignored
-6. A regex finds all words matching `\b[a-z]+-?[a-z]*ing\b` (including hyphenated compounds)
+6. A single-pass scanner reports every word that ends in `-ing` between word boundaries,
+    including hyphenated compounds such as `type-checking`
 7. A noise filter removes non-activity words (pronouns,
     prepositions,
     adjectives,

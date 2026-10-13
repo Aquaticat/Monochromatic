@@ -2,11 +2,12 @@
 // prepared by the Rust module `first_run`, so this component only lays out text and buttons.
 import { Theme } from "theme.slint";
 import { StateLayer } from "state_layer.slint";
+import { Focus, PlayerStop, FocusRing } from "focus.slint";
 
 // Pane that shows one first-run state as a scrollable column of copy and actions.
 export component FirstRunPane inherits Rectangle {
-    // First-run screen: 0 declined, 1 system library with no audio, 2 chosen folder with no audio.
-    // The copy already differs per state, so the layout does not branch on it.
+    // First-run screen: 0 none, otherwise the pane is shown. The copy already differs per state, so the layout does not
+    // branch on it.
     in property <int> state: 0;
     // Name of the chosen folder, for the caller to build the headline; the pane draws only `title`.
     in property <string> folder-name: "";
@@ -37,8 +38,9 @@ export component FirstRunPane inherits Rectangle {
 
         content := VerticalLayout {
             width: root.width;
-            // Wide panels start the text beside the blank left half (D101); narrow panels use the 24px edge.
-            padding-left: root.width >= 600px ? root.width / 2 + 24px : 24px;
+            // The text starts at the 24px edge, like the Search prompt. D101's blank left half is the folder pane beside this
+            // one in the two-pane layout; indenting by half of this pane as well pushed the text to the far right (EM3).
+            padding-left: 24px;
             padding-right: 24px;
             padding-top: 24px;
             padding-bottom: 24px;
@@ -60,7 +62,7 @@ export component FirstRunPane inherits Rectangle {
             }
 
             // Filled action, content width with a 48px minimum target (D101 order: filled first).
-            if root.primary-label != "" : Rectangle {
+            if root.primary-label != "" : primary-pill := Rectangle {
                 horizontal-stretch: 0;
                 width: primary-row.preferred-width;
                 height: max(48px, primary-row.preferred-height);
@@ -88,12 +90,28 @@ export component FirstRunPane inherits Rectangle {
                 }
                 primary-touch := TouchArea {
                     mouse-cursor: pointer;
-                    clicked => { root.primary(); }
+                    accessible-role: button;
+                    accessible-label: root.primary-label;
+                    clicked => {
+                        Focus.ring-visible = false;
+                        root.primary();
+                    }
+                }
+                primary-stop := PlayerStop {
+                    label: "first-run-primary";
+                    activated => { root.primary(); }
+                }
+                // The ring is outside the pill, flush with its edge. Its near ring is the same primary role as the pill's fill, so
+                // the 1 px on-primary ring around it is what sets the ring apart from the canvas. The content column keeps
+                // 24 px around the pill, more than the 3 px the ring reaches.
+                FocusRing {
+                    radius: 24px;
+                    active: primary-stop.ring;
                 }
             }
 
             // Outlined actions, one per label in order, each a 48px minimum target.
-            for label[index] in root.secondary-labels : Rectangle {
+            for label[index] in root.secondary-labels : secondary-pill := Rectangle {
                 horizontal-stretch: 0;
                 width: secondary-row.preferred-width;
                 height: max(48px, secondary-row.preferred-height);
@@ -123,7 +141,20 @@ export component FirstRunPane inherits Rectangle {
                 }
                 secondary-touch := TouchArea {
                     mouse-cursor: pointer;
-                    clicked => { root.secondary(index); }
+                    accessible-role: button;
+                    accessible-label: label;
+                    clicked => {
+                        Focus.ring-visible = false;
+                        root.secondary(index);
+                    }
+                }
+                secondary-stop := PlayerStop {
+                    label: "first-run-secondary-" + index;
+                    activated => { root.secondary(index); }
+                }
+                FocusRing {
+                    radius: 24px;
+                    active: secondary-stop.ring;
                 }
             }
 

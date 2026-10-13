@@ -103,10 +103,16 @@ fn duration_formats_follow_the_format_letters() {
     assert_shows("$tf(4000, h:mm:ss)$", &analysed_track, "1:06:40");
     assert_shows("$tf(4000, hh:mm:ss)$", &analysed_track, "01:06:40");
     assert_shows("$tf(59.9, m:ss)$", &analysed_track, "0:59");
-    assert_shows("$tf(mi(len), \"m min\")$", &analysed_track, "4 4in");
+    // TE5: a letter that is not h, m or s outside apostrophes is a mistake, not text; it used to print as itself.
+    assert_refuses("$tf(mi(len), \"m min\")$", &analysed_track, &["tf: unknown format letter i"]);
+    assert_refuses("$tf(mi(len), \"MM:SS\")$", &analysed_track, &["tf: unknown format letter M"]);
+    assert_refuses("$tf(mi(len), q:q)$", &analysed_track, &["tf: unknown format letter q"]);
+    assert_refuses("$tf(mi(len), q:q)$", &bare(), &["tf: unknown format letter q"]);
+    assert_shows("$tf(mi(len), \"m'.'ss\")$", &analysed_track, "4.35");
+    assert_shows("$tf(mi(len), \"m / ss\")$", &analysed_track, "4 / 35");
     assert_shows("$tf(mi(len), \"m' min'\")$", &analysed_track, "4 min");
     assert_shows(
-        "$tf(4000, \"h' hours' and m' minutes'\")$",
+        "$tf(4000, \"h' hours and 'm' minutes'\")$",
         &analysed_track,
         "1 hours and 6 minutes",
     );

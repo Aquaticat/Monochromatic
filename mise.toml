@@ -96,7 +96,10 @@ age = "latest"
 # The alias prevents Mise's false missing-component loop; see
 # doc/troubleshooting/mise-rust-preview-component-reinstall.md.
 # ASAN backtrace symbolization uses the system llvm-symbolizer (not a rustup component).
-rust = { version = "nightly", components = "clippy,rust-src,llvm-tools" }
+# The Android ABIs of the music player's native library (package/music-player/android-app/rust, built by cargo-ndk).
+# Without these targets a floating newest nightly cannot build it, and mise forces RUSTUP_TOOLCHAIN to that nightly.
+# mise adds missing targets to an installed toolchain on the next `mise install`.
+rust = { version = "nightly", components = "clippy,rust-src,llvm-tools", targets = "aarch64-linux-android,x86_64-linux-android" }
 cargo-binstall = "latest"
 "cargo:timeout-cli" = "latest"
 

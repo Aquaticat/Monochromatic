@@ -49,6 +49,12 @@ Each item names the IntelliJ source it comes from
   Home goes to the start of the visual row, and from there to the first non-blank column of the logical line's first row;
   End goes to the end of the visual row (trailing blanks skipped), and from there to the logical line end.
   Shift variants extend the selection.
+  The built rules are IntelliJ's in full (`src/line_boundary.rs`):
+  on the first row Home alternates between the line start and the first non-blank character,
+  and End first goes before the trailing blanks, then to the end of the row, then to the end of the line,
+  and on the last row from the line end back before its trailing blanks.
+  Two steps are left out because the caret cannot stand in the indent of a continuation row or in virtual space:
+  the move into the indent, and the smart-indent column of a line of blanks only.
 - Up and Down keep a remembered pixel x across vertical moves and move by visual rows
   (`CaretImpl.myDesiredX`); horizontal moves clear it.
   PageUp and PageDown move by visual rows.
@@ -147,7 +153,12 @@ Read from the crate source that matches `Cargo.lock` (checksum verified), withou
   The breaker also exposes per row `set_line_x` and `set_line_max_advance`; its glyph shift is unverified.
   The plan's earlier note that a per row width is impossible was wrong (a narrower width is possible).
 - Trailing whitespace: an overflowing space hangs on the upper row and is part of its range and advance;
-  `Layout::width()` excludes it and `full_width()` includes it. A tab does not hang.
+  `Layout::width()` excludes it and `full_width()` includes it.
+  A tab hangs like a space: measured on 2026-10-12 at a width of 26 columns, a token of 26 glyphs followed by a tab
+  or by a space ends its row with that blank, and a second blank after it starts the next row
+  (so a continuation row can start with a tab).
+  When the last blank of a text overflows the width, the engine also adds one line with no characters after the last
+  row; the source view does not count that line (`ShapedRow::has_empty_tail`).
 - Tabs: Parley 0.11.1 has no tab stops; `src/tab_layout.rs` measures them on an unbroken layout and corrects with
   letter spacing, which must be redone per row (see `doc/troubleshooting/parley-tab-stops.md`).
 - Still unverified: runtime behavior of the indent and the breaker setters, the UAX 14 class of a tab, and whether
@@ -155,18 +166,59 @@ Read from the crate source that matches `Cargo.lock` (checksum verified), withou
 
 ## Order of work
 
-1. Layout model: wrap width into the row key, Parley breaking with the IntelliJ rules and indent,
-   visual row counts in `RowMap`, whole-file height measurement.
-2. Geometry readback: per visual line y in `ShapedRow` (`range`, `hit`, `caret_x`), affinity in `ReadingPosition`.
-3. Gutter and scrolling: numbers on first rows only, the wrap indicator (IntelliJ's glyph chain and color),
-   removal of horizontal scrolling.
-4. Keys and pointer: Home, End, Up, Down, PageUp, PageDown, click, drag, triple click.
-5. Annotations, find, and selection on visual rows.
-6. Tests, guards, and the README: the tests and guards that assert horizontal scrolling or one row per line
-   (`caret_tests`, `find_tests`, `sidebar_layout_tests`, `annotation_paint_tests`, `find_paint`, `row_map`,
-   `vertical_motion`, `reading_boundaries`, `annotation_layout`, `tab_geometry`, and the guards
-   `horizontal-resets-column`, `caret-room`, `horizontal-tile`, `scroll-extent`) are rewritten to wrap,
-   and each new guard is seen failing.
+Status as of 2026-10-12 (the branch `feat/ide-soft-wrap`):
+
+1. Layout model: **built.**
+   The wrap width is part of the row cache (every kept row carries the width it is broken at),
+   the tile's `Viewport` and `FrameStamp`, and the tile job;
+   Parley breaks with the IntelliJ rules and indent (`src/wrap.rs`, `src/shaped_text.rs`);
+   `RowMap` holds the visual rows of every line (`src/line_rows.rs`, `src/row_map.rs`);
+   the tile worker measures the whole text at the wrap width in chunks from the view outward
+   (`src/native/tile_pass.rs`), and breaks its kept rows again on a resize instead of shaping them.
+2. Geometry readback: **built.**
+   Caret, selection, find rectangles, underlines, and the terminator mark are placed on their visual row;
+   hits resolve the visual row (`hit_at`); a click keeps the clicked side of a wrap offset in
+   `State::caret_affinity` until slice 3, which moved it into `ReadingPosition::affinity`.
+3. Gutter and scrolling: **built.**
+   One gutter entry per visual row, the number on first rows only, the wrap indicator (IntelliJ's symbol chain checked
+   against the fonts, `c0c0c0`, or a drawn arrow) on continuation rows;
+   horizontal scrolling is gone.
+4. Keys and pointer: **built.**
+   Click placement, hover, and Ctrl+click resolve the visual row; the caret scrolls its visual row into view.
+   Home, End, Up, Down, PageUp, and PageDown move by visual rows with a remembered pixel x,
+   the side of a wrap offset is part of the reading position,
+   drags run across visual rows, a double click takes a word that spans rows, a triple click takes the whole line,
+   and two quick presses on different rows of one line are two single clicks.
+   Slice 3 also fixed two layout defects its tests found: the continuation indent was doubled at scale 2,
+   and a blank hanging on the last row left a counted row with no characters.
+5. Annotations, find, and selection on visual rows: **built.**
+   Underlines, find rectangles, and selection ink are per visual row.
+   Hints and message rows are fitted to the text area's width: hints are packed against the line as it is broken,
+   a hint that would pass the right edge ends at it, a label wider than the area breaks into pieces,
+   and a message line is broken again at the width as a whole, with its 12-row cap kept and a message that would
+   pass the edge moved left.
+   The block of a line stands over its first visual row, because the user decided on 2026-10-05 that virtual rows stand
+   over the code line; IntelliJ puts a block inlay over the visual row that holds its offset
+   (`VisualLinesIterator.setInlays`), which is a known difference.
+   A new wrap width packs the hinted lines near the view at once and the others when the view comes near them.
+6. Tests, guards, and the README: **built.**
+   The guards `caret-room`, `find-match-visual-rows`, and `underline-visual-row` replace `caret-room`,
+   `horizontal-tile`, and `scroll-extent`; `horizontal-resets-column` guards the Left and Right keys,
+   not scrolling, and stays.
+   Slice 4 added guards for the annotation rows, the clip of a tall line, the character budget of the tab passes,
+   and the caret stops of a very long line.
+7. Slice 4 (2026-10-12), the last: **built.**
+   Besides item 5 above:
+   the caret stops of a line were found in time that grew with the square of its length
+   (100,000 characters took over 90 s to open in a debug build) and now grow with its length;
+   a tile of lines wrapped to more rows than the 64 MiB raster limit holds is painted in a clip of the rows near the
+   view instead of being refused;
+   tab correction was measured to settle after 4 to 76 passes with no bound known beforehand,
+   so it keeps a bound, now a budget of characters shaped (the passes a line gets fall with its length);
+   a test that raced the 200 ms scroll quiet time reads a clock the test holds;
+   and scrolling inside a built tile of a wrapped file is counted to do no source work.
+   The README (`package/desktop-app/ide/README.md`, "Soft wrap") holds the numbers and the list of known differences
+   from IntelliJ.
 
 ## Not decided here
 

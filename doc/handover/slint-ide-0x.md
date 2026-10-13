@@ -272,14 +272,32 @@ the items after it are the record of 2026-10-05 and older.
     A release profile tile build was never timed (the test builds are debug and take about 600 ms each).
   - The installed single file at `~/.local/bin/monochromatic-ide` predates stages 1 and 2; reinstalling it is a
     separate action in the user's real home.
-  - Soft wrap is in progress on the branch `feat/ide-soft-wrap` (worktree `.claude/worktrees/ide-wrap`), not landed:
-    slice 1 (IntelliJ break rules, wrapped shaping, multi-row geometry; library only) is committed and gated;
-    slice 2 (wrap width, row heights, worker shaping in chunks, painting, no horizontal scrolling, gutter with the
-    indicator) is with a Sonnet subagent; slice 3 is keys, pointer, and the affinity bit in `ReadingPosition`
-    (a field added with a mechanical edit of the existing struct literals); slice 4 is annotations, find, and
-    selection per visual fragment, plus the remaining tests and guards.
-    The plan `doc/planning/slint-ide-soft-wrap.md` holds the decisions: the layout (option A on the worker), the
-    indicator (IntelliJ's glyph chain and color, in the gutter), and the Parley findings.
+  - Soft wrap landed on main at `db43b5c97e` (branch `feat/ide-soft-wrap`, worktree `.claude/worktrees/ide-wrap`,
+    through `a973a163f1`, package tree `80e74506a4`; the merged tree `b63b63eb7f` adds only the check-script fix below).
+    Four slices: IntelliJ break rules and wrapped shaping; wrap width, per-line visual rows, whole-file measurement on
+    the tile worker, wrapped painting, the gutter number on first rows and the arrow on continuation rows, no horizontal
+    scrolling; Home, End, Up, Down, and paging by visual row, the wrap side stored in `ReadingPosition`, pointer and
+    multi-click by visual row; hints and message rows wrapped, a rope view that removes the quadratic cost of a
+    100000 character line (about 0.5 s in a debug build against over 90 s before), a clipped tile for a line past the
+    raster limit, and a character budget for tab correction.
+    Gates on the branch tip: lint:clippy, lint:rustfmt, lint:slint, lint:release, test, test:cli, test:native (163 of
+    163, 5 skipped), bundle, inspect:bundle, inspect:bundle-guards, and the sidebar (18), theme (7), find (39),
+    annotation (65), and source (77) guards, all status 0; the new guards were seen failing.
+    Recorded deviations: blocks stay above the first visual row of their line (the user's decision of 2026-10-05;
+    IntelliJ differs and the package README lists it); a resize packs only the hinted lines near the view and the
+    others when the view comes near; tab correction past its budget may leave later tabs off their stops on a very
+    tall line.
+    Open: release window-thread numbers in the README were measured on a bundle that predates the last fixes and do not
+    show smoothness; the longest frame gap was not measured; the installed single file at
+    `~/.local/bin/monochromatic-ide` predates stages 1, 2 and soft wrap.
+    Both flaky tests of the guard runs were fixed in this work: the scroll quiet-time test reads a clock a test can
+    hold, and find reveal measures its own line first (it failed 3 of 16 runs at baseline).
+  - The IDE checks used compositor builds inside each worktree's `target` directory, which were 0.1.1 (no minimized
+    launch) in the root checkout and four worktrees, so checks opened visible windows on the user's desktop. Those
+    five binaries were replaced with the mise-installed 0.4.0, and the four `bin/inspect-*.mjs` scripts and the `native`
+    task now spawn the compositor from PATH; `bin/nested-compositor.mjs` refuses a version below 0.4.0. On the merged
+    tree `inspect:bundle` (10 of 10) and `inspect:bundle-guards` passed through it; `inspect-idle-cost`,
+    `inspect-log-stall`, `inspect-watch-limit`, and the `native` task had a syntax check only.
   - The nested compositor now launches minimized (`package/cli/nested-wayland-session`, the user confirmed it works),
     version 0.1.2 is published on crates.io with a GitHub release of Linux archives, and the repository's mise tool
     list installs it through cargo-binstall as `cargo:monochromatic-nested-wayland-session` (source:

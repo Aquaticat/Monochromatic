@@ -7,7 +7,8 @@
 // The literals below are the roles for the baseline root, so a viewer or preview that runs no Rust still renders the
 // accepted look; a test keeps them equal to what Rust derives. Do not edit them by hand: change `theme_roles.rs`, and
 // the failing test prints the new literals.
-// Dark mode uses a true black canvas (D41) and a fixed #0A0A0D deck; light is flat with hairline seams (D34, D45).
+// The canvas is pure black in dark mode (D41) and pure white in light (D34, D45); every gray (deck, rows, surfaces,
+// outlines, text variants) carries the root hue unless the root is completely neutral (D118).
 import { Palette } from "std-widgets.slint";
 
 // One scheme's color roles, written as a whole by the Rust side.
@@ -18,16 +19,8 @@ export struct RoleSet {
     deck: color,
     // Background of the playing row.
     current-row: color,
-    // Hairline between structural surfaces.
-    seam: color,
     // Menus, search header and snackbar surface.
     surface-high: color,
-    // Settings page background.
-    settings-page: color,
-    // Settings grouped card background.
-    settings-card: color,
-    // Round Back button fill.
-    back-tonal: color,
     // Primary text and icons.
     on-surface: color,
     // Secondary text and icons.
@@ -76,11 +69,7 @@ export global Theme {
         canvas: #000000,
         deck: #0A0A0D,
         current-row: #121318,
-        seam: #000000,
         surface-high: #1E1F25,
-        settings-page: #181920,
-        settings-card: #2A2C34,
-        back-tonal: #23252E,
         on-surface: #E4E5F0,
         on-surface-variant: #C5C6D0,
         outline: #8E9099,
@@ -100,22 +89,18 @@ export global Theme {
         canvas: #FFFFFF,
         deck: #F4F3FA,
         current-row: #F4F3FA,
-        seam: #B0B1BC,
         surface-high: #E8E7EE,
-        settings-page: #EEEDF6,
-        settings-card: #FAF8FE,
-        back-tonal: #E1E2ED,
         on-surface: #30323B,
-        on-surface-variant: #5C5E6A,
+        on-surface-variant: #585A65,
         outline: #757780,
         outline-variant: #C5C6D0,
-        primary: #4E5E8B,
+        primary: #455481,
         on-primary: #FFFFFF,
         secondary-container: #DDE2F9,
         secondary-container-hovered: #CBD0E7,
         secondary-container-pressed: #C2C7DE,
         on-secondary-container: #161B2C,
-        match-fill: #CFD9F0,
+        match-fill: #C9D2E9,
         error: #BA1A1A,
         error-container: #F9DEDC,
         on-error-container: #410E0B,
@@ -126,7 +111,6 @@ export global Theme {
     out property <color> canvas: root.roles.canvas;
     out property <color> deck: root.roles.deck;
     out property <color> current-row: root.roles.current-row;
-    out property <color> seam: root.roles.seam;
     out property <color> surface-high: root.roles.surface-high;
 
     // Content.
@@ -138,6 +122,10 @@ export global Theme {
     // Accent roles.
     out property <color> primary: root.roles.primary;
     out property <color> on-primary: root.roles.on-primary;
+    // Secondary and on-secondary follow the primary pair, as the Android theme maps them (PlayerTheme.kt: secondary =
+    // primary, onSecondary = onPrimary), so no new derived role is needed.
+    out property <color> secondary: root.roles.primary;
+    out property <color> on-secondary: root.roles.on-primary;
     out property <color> secondary-container: root.roles.secondary-container;
     out property <color> secondary-container-hovered: root.roles.secondary-container-hovered;
     out property <color> secondary-container-pressed: root.roles.secondary-container-pressed;
@@ -149,10 +137,6 @@ export global Theme {
     out property <color> error-container: root.roles.error-container;
     out property <color> on-error-container: root.roles.on-error-container;
 
-    // Android Settings surfaces: the tinted page, the grouped row cards, and the tonal fill of the round Back button.
-    out property <color> settings-page: root.roles.settings-page;
-    out property <color> settings-card: root.roles.settings-card;
-    out property <color> back-tonal: root.roles.back-tonal;
 
     // Type scale in logical pixels (Material 3 roles used by the design).
     out property <length> body-large: 16px;
@@ -164,4 +148,10 @@ export global Theme {
 
     // The 48 logical pixel minimum for every interactive target (C1).
     out property <length> touch-target: 48px;
+
+    // Duration of the fade that a page, the picker overlay, the track menu and a toast play when it appears. It stays
+    // under the 150 ms of the Settings pane cross-fade (D109), it only answers a user action (never autonomous or
+    // decorative motion), and it is one token so the app has one place to change or switch it off. Slint 1.18 exposes
+    // no reduced-motion setting of the OS, so there is none to follow yet.
+    out property <duration> motion-enter: 120ms;
 }

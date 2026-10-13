@@ -132,6 +132,62 @@ pub fn is_non_spacing_mark(character: char) -> bool {
     return false;
 }
 
+/// What:
+///      `fn attaches_to_previous(character: char, after_joiner: bool) -> bool`.
+///  Reports whether a character continues the cluster before it: a non-spacing mark, a zero width joiner, the character
+///  after a joiner, or a Hangul vowel or final jamo.
+/// Why:
+///       A name is cut between clusters, never inside one: a letter with its accent, an emoji sequence or a Hangul
+///  syllable written as separate jamo must stay in one piece on screen.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// const attachesToPrevious = (c: string, afterJoiner: boolean) =>
+///   afterJoiner || c === "\u200d" || /\p{Mn}/u.test(c) || /[\u1160-\u11ff\ud7b0-\ud7ff]/u.test(c);
+/// ```
+fn attaches_to_previous(character: char, after_joiner: bool) -> bool {
+    let code_point: u32 = u32::from(character);
+    return after_joiner
+        || character == '\u{200D}'
+        || is_non_spacing_mark(character)
+        || (0x1160..=0x11FF).contains(&code_point)
+        || (0xD7B0..=0xD7FF).contains(&code_point);
+}
+
+/// What:
+///      `pub fn split_tail_clusters(text: &str, count: usize) -> (String, String)`.
+///  Splits `text` into everything before its last `count` clusters and those last clusters.
+/// Why:
+///       D1 shortens a long folder name in the Shuffle label with a middle ellipsis: the start, an ellipsis and the end.
+///  The deck draws the start with a trailing ellipsis and the end after it, and the end must begin on a cluster
+///  boundary. A text of `count` clusters or fewer has no start, so its whole text is the end.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// const splitTailClusters = (text: string, count: number): [string, string] => {
+///   const clusters = [...new Intl.Segmenter().segment(text)].map((part) => part.segment);
+///   return [clusters.slice(0, -count).join(""), clusters.slice(-count).join("")];
+/// };
+/// ```
+pub fn split_tail_clusters(text: &str, count: usize) -> (String, String) {
+    let mut starts: Vec<usize> = Vec::new();
+    let mut after_joiner = false;
+    for (index, character) in text.char_indices() {
+        if starts.is_empty() || !attaches_to_previous(character, after_joiner) {
+            starts.push(index);
+        }
+        after_joiner = character == '\u{200D}';
+    }
+    if count == 0 {
+        return (text.to_owned(), String::new());
+    }
+    let Some(first_tail) = starts.len().checked_sub(count).and_then(|position| return starts.get(position)) else {
+        return (String::new(), text.to_owned());
+    };
+    let (head, tail) = text.split_at(*first_tail);
+    return (head.to_owned(), tail.to_owned());
+}
+
 /// Unit tests in `non_spacing_mark_tests.rs`,
 ///  pulled in at this point.
 #[cfg(test)]

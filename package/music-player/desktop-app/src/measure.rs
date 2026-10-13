@@ -44,7 +44,7 @@ use std::path::{Path, PathBuf};
 ///  Shared ownership for the sweep's inputs.
 /// Why:
 ///       Every worker reads the same track list, cursor and snapshot.
-use std::sync::Arc;
+use std::sync::{Arc, Mutex};
 
 /// What:
 ///      `use std::sync::atomic::{AtomicUsize, Ordering};`.
@@ -88,7 +88,8 @@ use crate::sweep_report::{SweepJob, SweepReport, SweepSink};
 ///  The measure a finished decode reports.
 /// Why:
 ///       A decode yields a decision, and the window needs its length and peak.
-use crate::track_measure::measure_from_decision;
+use crate::duration_probe::probe_duration_secs;
+use crate::track_measure::{measure_from_decision, measure_from_duration};
 
 /// What:
 ///      `use crate::truepeak::resolve_full;`.
@@ -96,6 +97,9 @@ use crate::track_measure::measure_from_decision;
 /// Why:
 ///       The measure phase and the re-analysis both decode through this one entry point.
 use crate::truepeak::resolve_full;
+
+/// The kind of a cached decision, to tell an exact one from an estimate.
+use truepeak_core::DecisionKind;
 
 /// What:
 ///      `const MEASURE_REPORT_CHUNK: usize = 128;`.
@@ -140,71 +144,17 @@ pub(crate) fn spawn_queue_measurement(job: SweepJob) {
     // ```ts
     // startWorker(() => runSweep(job));
     // ```
-    thread::spawn(move || run_sweep(job));
-}
-
-/// What:
-///      `pub(crate) fn spawn_track_measurement(...)`.
-///  Decodes one track in a detached thread, stores the decision, and reports its measure.
-/// Why:
-///       Re-analysis measures one track on request, outside the sweep's known-set skip.
-///
-/// In TS you'd write (pseudocode):
-/// ```ts
-/// function spawnTrackMeasurement(path: string, key: bigint, cache: CacheHandle, sink: SweepSink, generation: number): void { ... }
-/// ```
-pub(crate) fn spawn_track_measurement(
-    path: PathBuf,
-    key: u64,
-    cache: CacheHandle,
-    sink: SweepSink,
-    generation: u64,
-) {
-    // What:     `thread::spawn(move || run_track_measurement(...));`. Detach one decode.
-    // Why:      The request returns at once; the window hears the result through the sink.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // startWorker(() => runTrackMeasurement(path, key, cache, sink, generation));
-    // ```
-    thread::spawn(move || run_track_measurement(path, key, cache, sink, generation));
-}
-
-/// What:
-///      `fn run_track_measurement(...)`.
-///  Decodes one track, upserts its decision, and reports the measure; a decode failure is logged.
-/// Why:
-///       A failed decode leaves the earlier cache state in place, so the window keeps what it showed.
-///
-/// In TS you'd write (pseudocode):
-/// ```ts
-/// function runTrackMeasurement(path: string, key: bigint, cache: CacheHandle, sink: SweepSink, generation: number): void { ... }
-/// ```
-fn run_track_measurement(
-    path: PathBuf,
-    key: u64,
-    cache: CacheHandle,
-    sink: SweepSink,
-    generation: u64,
-) {
-    // What:     `match resolve_full(&path) { ... }`. Decode the whole file once.
-    // Why:      Re-analysis is user-initiated, so it runs at normal priority and reports its own failure.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // try { const d = resolveFull(path); cache.upsert(key, d); sink(...); } catch (e) { warn(e); }
-    // ```
-    match resolve_full(&path) {
-        Ok(decision) => {
-            cache.upsert(key, decision);
-            tracing::info!(key, "re-analysis stored a decision");
-            sink(SweepReport::Measures {
-                generation,
-                measures: vec![(path, measure_from_decision(&decision))],
-            });
+    thread::spawn(move || {
+        let sink: SweepSink = Arc::clone(&job.sink);
+        let (generation, refresh_id): (u64, Option<u64>) = (job.generation, job.refresh_id);
+        // A refresh sweep tells the coalescer it ended even when the coordinator panicked, or the follow-up would never start.
+        if std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| return run_sweep(job))).is_err() {
+            tracing::error!(generation, "the sweep coordinator panicked");
         }
-        Err(error) => tracing::warn!(path = %path.display(), error = %error, "re-analysis could not decode the track"),
-    }
+        if let Some(id) = refresh_id {
+            sink(SweepReport::RefreshDone { generation, id });
+        }
+    });
 }
 
 /// What:
@@ -234,6 +184,14 @@ struct SweepShared {
     generation: u64,
     /// Pause gate every worker passes before it claims a track (D107).
     gate: Arc<SweepGate>,
+    /// Fingerprints taken by any sweep of this generation.
+    claims: Arc<Mutex<HashSet<u64>>>,
+    /// Files that could not be decoded, reported together when the sweep ends.
+    failed: Mutex<Vec<PathBuf>>,
+    /// True for a refresh sweep, which reports no progress.
+    quiet: bool,
+    /// True when `tracks` holds only changed files and `known` is empty: exactness is asked of the cache per file.
+    listed: bool,
 }
 
 /// What:
@@ -263,7 +221,13 @@ fn run_sweep(job: SweepJob) {
     // ```ts
     // peekAll(job);
     // ```
-    report_peeked_measures(&job);
+    // A refresh sweep (D113) leaves the rows as they are; only what it newly measures or fails is reported.
+    if !job.quiet {
+        report_peeked_measures(&job.tracks, &job);
+    } else if !job.announce.is_empty() {
+        // A refresh announces the files that are new to the list by peek, so their rows have a length at once (D113).
+        report_peeked_measures(&job.announce, &job);
+    }
     // What:     `let measure_tracks = job.tracks minus the current track`. The tracks the fan-out visits.
     // Why:      The current track is measured by `peak_swap`, so the sweep leaves it alone.
     //
@@ -290,10 +254,14 @@ fn run_sweep(job: SweepJob) {
         cursor: AtomicUsize::new(0),
         visited: AtomicUsize::new(0),
         cache: job.cache.clone(),
-        known: job.cache.known_fingerprints(),
+        known: if job.listed { HashSet::new() } else { job.cache.known_fingerprints() },
         sink: Arc::clone(&job.sink),
         generation: job.generation,
         gate: Arc::clone(&job.gate),
+        claims: Arc::clone(&job.claims),
+        failed: Mutex::new(Vec::new()),
+        quiet: job.quiet,
+        listed: job.listed,
     });
     // What:     `report_progress(&shared, 0)` when there is work. Show the bar as the analysis starts.
     // Why:      D26: the scan bar appears when analysis starts and leaves when it finishes.
@@ -302,7 +270,7 @@ fn run_sweep(job: SweepJob) {
     // ```ts
     // if (total > 0) sink({ kind: "progress", done: 0, total });
     // ```
-    if total > 0 {
+    if total > 0 && !job.quiet {
         report_progress(&shared, 0);
     }
     // What:     `let workers = worker_count(total);`. The fan-out width.
@@ -346,9 +314,10 @@ fn run_sweep(job: SweepJob) {
     // ```ts
     // if (total > 0) sink({ kind: "progress", done: total, total });
     // ```
-    if total > 0 {
+    if total > 0 && !job.quiet {
         report_progress(&shared, total);
     }
+    report_unreadable(&shared);
     tracing::info!(generation = job.generation, "warming sweep finished");
 }
 
@@ -362,8 +331,8 @@ fn run_sweep(job: SweepJob) {
 /// ```ts
 /// function reportPeekedMeasures(job: SweepJob): void { for (const chunk of chunks(job.tracks)) job.sink(peekMeasures(chunk)); }
 /// ```
-fn report_peeked_measures(job: &SweepJob) {
-    for chunk in job.tracks.chunks(MEASURE_REPORT_CHUNK) {
+fn report_peeked_measures(tracks: &[PathBuf], job: &SweepJob) {
+    for chunk in tracks.chunks(MEASURE_REPORT_CHUNK) {
         let measures = peek_measures(chunk, &job.cache);
         (job.sink)(SweepReport::Measures {
             generation: job.generation,
@@ -695,7 +664,7 @@ fn run_worker(shared: Arc<SweepShared>) {
         // const done = ++shared.visited;
         // ```
         let done = shared.visited.fetch_add(1, Ordering::Relaxed) + 1;
-        if last_report.elapsed() >= PROGRESS_INTERVAL {
+        if !shared.quiet && last_report.elapsed() >= PROGRESS_INTERVAL {
             report_progress(&shared, done);
             last_report = Instant::now();
         }
@@ -731,8 +700,20 @@ fn measure_one(path: &Path, shared: &SweepShared) {
     // ```ts
     // if (shared.known.has(key)) return;
     // ```
-    if shared.known.contains(&key) {
+    if already_exact(shared, key) {
         tracing::debug!(key, "skip: already exact");
+        return;
+    }
+    // What:     `if !claims.insert(key) { return; }`. Take the fingerprint, or leave the file to the sweep that took it.
+    // Why:      A refresh sweep (D113) can run beside the sweep of the load; whoever claims a fingerprint first decodes it,
+    //           so no file is decoded twice for the same size and modified time.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // if (!shared.claims.add(key)) return;
+    // ```
+    if !claim(shared, key) {
+        tracing::debug!(key, "skip: another sweep took it");
         return;
     }
     // What:     `let decision = match resolve_full(path) { ... };`. Decode the whole file.
@@ -746,6 +727,22 @@ fn measure_one(path: &Path, shared: &SweepShared) {
         Ok(decision) => decision,
         Err(error) => {
             tracing::debug!(path = %path.display(), cause = %error, "skip: decode failed");
+            // What:     release the claim, remember the failure, and report the row's length without a peak.
+            // Why:      A failure is retried by the next sweep (D113); the row must not keep the peak of the file that was
+            //           there before; the failures of one sweep are reported together when it ends.
+            //
+            // In TS you'd write (pseudocode):
+            // ```ts
+            // claims.delete(key); failed.push([path, key]); sink(lengthOnly(path));
+            // ```
+            release_claim(shared, key);
+            if let Ok(mut failed) = shared.failed.lock() {
+                failed.push(path.to_path_buf());
+            }
+            (shared.sink)(SweepReport::Measures {
+                generation: shared.generation,
+                measures: vec![(path.to_path_buf(), measure_from_duration(probe_duration_secs(path)))],
+            });
             return;
         }
     };
@@ -755,6 +752,80 @@ fn measure_one(path: &Path, shared: &SweepShared) {
         generation: shared.generation,
         measures: vec![(path.to_path_buf(), measure_from_decision(&decision))],
     });
+}
+
+/// What:
+///      `fn already_exact(shared: &SweepShared, key: u64) -> bool`.
+///  True when the cache already holds an exact decision for the fingerprint.
+/// Why:
+///       A sweep over the whole queue reads one snapshot of the exact fingerprints; a sweep over a few changed files asks
+///  the cache about each file, because the snapshot of a library of a million tracks costs more than the whole refresh.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function alreadyExact(shared: SweepShared, key: bigint): boolean { return shared.listed ? cache.get(key)?.kind !== "probe" && cache.get(key) !== null : shared.known.has(key); }
+/// ```
+fn already_exact(shared: &SweepShared, key: u64) -> bool {
+    if shared.listed {
+        return shared.cache.get(key).is_some_and(|decision| return decision.kind != DecisionKind::ProbeEstimate);
+    }
+    return shared.known.contains(&key);
+}
+
+/// What:
+///      `fn claim(shared: &SweepShared, key: u64) -> bool`.
+///  Takes a fingerprint for this generation; true when the caller is the first to take it.
+/// Why:
+///       Two sweeps of one generation (the load's and a refresh) never decode the same file twice. A poisoned lock counts as
+///  taken by the caller, so a worker never skips a file because another thread panicked.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function claim(shared: SweepShared, key: bigint): boolean { if (shared.claims.has(key)) return false; shared.claims.add(key); return true; }
+/// ```
+fn claim(shared: &SweepShared, key: u64) -> bool {
+    return match shared.claims.lock() {
+        Ok(mut claims) => claims.insert(key),
+        Err(_poisoned) => true,
+    };
+}
+
+/// What:
+///      `fn release_claim(shared: &SweepShared, key: u64)`.
+///  Gives a fingerprint back after a failed decode.
+/// Why:
+///       A file that could not be decoded is tried again when the library next changes (D113), so its claim must not stay.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function releaseClaim(shared: SweepShared, key: bigint): void { shared.claims.delete(key); }
+/// ```
+fn release_claim(shared: &SweepShared, key: u64) {
+    if let Ok(mut claims) = shared.claims.lock() {
+        claims.remove(&key);
+    }
+}
+
+/// What:
+///      `fn report_unreadable(shared: &SweepShared)`.
+///  Sends the files this sweep could not decode, in one report, when there are any.
+/// Why:
+///       One report per sweep lets the controller tell the person once, in one message with a count (D83, D9).
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function reportUnreadable(shared: SweepShared): void { if (shared.failed.length) shared.sink({ kind: "unreadable", files: shared.failed }); }
+/// ```
+fn report_unreadable(shared: &SweepShared) {
+    let Ok(mut failed) = shared.failed.lock() else {
+        return;
+    };
+    if failed.is_empty() {
+        return;
+    }
+    let files: Vec<PathBuf> = std::mem::take(&mut *failed);
+    tracing::info!(files = files.len(), generation = shared.generation, "the sweep could not decode some files");
+    (shared.sink)(SweepReport::Unreadable { generation: shared.generation, files });
 }
 
 /// What:

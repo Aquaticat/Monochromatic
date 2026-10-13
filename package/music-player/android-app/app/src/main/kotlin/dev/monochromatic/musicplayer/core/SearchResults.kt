@@ -20,15 +20,6 @@ package dev.monochromatic.musicplayer.core
 // ```
 import dev.monochromatic.musicplayer.Track
 
-// What:     `import java.text.Collator` brings in the locale-aware comparator type.
-// Why:      Names with the same relevance are ordered by the same collator the folder rail uses.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// // Intl.Collator
-// ```
-import java.text.Collator
-
 // What:     `const val SEARCH_RESULT_LIMIT: Int = 500` caps how many results one search returns.
 // Why:      A huge library must not build an unbounded list, and the result reports when the cap cut it short.
 //
@@ -38,17 +29,6 @@ import java.text.Collator
 // ```
 /** Largest number of results one search returns before the list is cut short. */
 const val SEARCH_RESULT_LIMIT: Int = 500
-
-// What:     `private const val PATH_SEPARATOR: Char = '/'` separates the segments of a display path.
-// Why:      The parent context is the display path without its last segment, so the split must use the
-//           same separator.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// const PATH_SEPARATOR = "/";
-// ```
-/** Separator between the segments of a display path. */
-private const val PATH_SEPARATOR: Char = '/'
 
 // What:     `enum class SearchResultKind { FOLDER, TRACK }` names the two kinds of Search result.
 // Why:      The row needs to know whether a tap opens a folder (D72) or plays a track (D73).
@@ -108,6 +88,12 @@ data class SearchResult(
     val nameHighlights: List<SearchHighlight>,
     /** Ranges of the parent context to emphasize, in the context's own offsets, and empty for a folder. */
     val parentHighlights: List<SearchHighlight>,
+    /**
+     * URI of the track, or null for a folder and for an index built without URIs. The running app resolves a tap and
+     * the playing row through it, because [indexInLibrary] is the track's number in the index, which is its arrival
+     * number while a scan is running and differs from its position in the sorted library.
+     */
+    val trackUri: String? = null,
 )
 
 // What:     `sealed interface SearchState` lists the five states the Search page can be in.
@@ -183,185 +169,15 @@ sealed interface SearchState {
     ) : SearchState
 }
 
-// What:     `private data class SearchCandidate(...)` pairs a result with the values used only for ordering.
-// Why:      The display path and normalized length decide order but are not shown, so they stay out of the result.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// type SearchCandidate = { result: SearchResult; normalizedLength: number; sortPath: string };
-// ```
-/** A matched result together with the sort keys that order it. */
-private data class SearchCandidate(
-    /** The result that will be shown if the candidate survives the limit. */
-    val result: SearchResult,
-    /** Length of the normalized, trimmed name, used before the collator to order equal tiers. */
-    val normalizedLength: Int,
-    /** Display path of the folder or track, used as the last ordering key before the kind and library position. */
-    val sortPath: String,
-)
-
-// What:     `private fun parentContextFor(displayPath: String): String?` returns the folder path that holds a track,
-//           or null for a root-level track.
-// Why:      The second line of a track result names its folder (D77). A root-level track has no parent folder, so
-//           it has no second line, and no parent is invented for it.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// const parentContextFor = (path: string) => path.includes("/") ? path.slice(0, path.lastIndexOf("/")) : null;
-// ```
-/** Returns the folder path of a track as displayed, or null when the track sits at the library root. */
-private fun parentContextFor(displayPath: String): String? {
-    /** The display path without its last segment, which is empty for a root-level track. */
-    val parent: String = displayPath.substringBeforeLast(PATH_SEPARATOR, "")
-    if (parent.isEmpty()) {
-        return null
-    }
-    return parent
-}
-
-// What:     `private fun isUnfiledEntry(entry: FolderEntry): Boolean` tells the root-level Unfiled entry apart from a
-//           real top-level folder that happens to be named `Unfiled`.
-// Why:      A real folder must stay searchable by its name (D60), while the root-level group must not appear as a
-//           folder result. Real folder tracks always sit under `Unfiled/`, and root-level tracks never do.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// const isUnfiledEntry = (entry: FolderEntry) => entry.name === "Unfiled" && entry.items.every(isRootTrack);
-// ```
-/** Reports whether a folder entry is the root-level group rather than a real folder named `Unfiled`. */
-private fun isUnfiledEntry(entry: FolderEntry): Boolean {
-    if (entry.name != UNFILED_FOLDER_NAME) {
-        return false
-    }
-    /** Prefix that every track of a real folder named `Unfiled` carries in its display path. */
-    val folderPrefix: String = UNFILED_FOLDER_NAME + PATH_SEPARATOR
-    return entry.items.all { item ->
-        item is FolderListItem.TrackItem && !item.row.track.displayPath.startsWith(folderPrefix)
-    }
-}
-
-// What:     `private fun folderCandidate(entry: FolderEntry, query: String, terms: List<String>): SearchCandidate?`
-//           builds a folder result when the folder's own name matches.
-// Why:      Only the folder's name is matched (D60), so the folder's tracks never enter the list through it.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// function folderCandidate(entry: FolderEntry, query: string, terms: string[]): SearchCandidate | null { /* ... */ }
-// ```
-/** Builds a folder result for an entry whose name matches every term, or returns null when it does not. */
-private fun folderCandidate(entry: FolderEntry, query: String, terms: List<String>): SearchCandidate? {
-    /** Normalized, trimmed folder name that the matcher compares. */
-    val normalizedName: String = normalizeForSearch(entry.name).trim()
-    /** Relevance tier of the folder name, or null when the name does not match, which returns early. */
-    val tier: Int = matchTier(normalizedName, terms) ?: return null
-    return SearchCandidate(
-        result = SearchResult(
-            kind = SearchResultKind.FOLDER,
-            name = entry.name,
-            parentContext = null,
-            indexInLibrary = null,
-            folderName = entry.name,
-            tier = tier,
-            nameHighlights = highlightRanges(entry.name, query),
-            parentHighlights = emptyList(),
-        ),
-        normalizedLength = normalizedName.length,
-        sortPath = entry.name,
-    )
-}
-
-// What:     `private fun trackCandidate(row: FolderTrackRow, folderName: String, query: String, terms: List<String>)`
-//           builds a track result when the track's own title matches.
-// Why:      Only the final file name without its extension is matched (D60). Its folder path is context,
-//           never a source of hits.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// function trackCandidate(row, folderName, query, terms): SearchCandidate | null { /* ... */ }
-// ```
-/** Builds a track result for a row whose title matches every term, or returns null when it does not. */
-private fun trackCandidate(
-    row: FolderTrackRow,
-    folderName: String,
-    query: String,
-    terms: List<String>,
-): SearchCandidate? {
-    /** Display path of the track, which supplies the title, the context, and the sort path. */
-    val displayPath: String = row.track.displayPath
-    /** Title of the track, which is its file name without the last extension. */
-    val title: String = trackTitleFor(displayPath)
-    /** Normalized, trimmed title that the matcher compares. */
-    val normalizedTitle: String = normalizeForSearch(title).trim()
-    /** Relevance tier of the track title, or null when the title does not match, which returns early. */
-    val tier: Int = matchTier(normalizedTitle, terms) ?: return null
-    /** Folder path that holds the track, shown as its context line, or null for a root-level track. */
-    val parentContext: String? = parentContextFor(displayPath)
-    return SearchCandidate(
-        result = SearchResult(
-            kind = SearchResultKind.TRACK,
-            name = title,
-            parentContext = parentContext,
-            indexInLibrary = row.indexInLibrary,
-            folderName = folderName,
-            tier = tier,
-            nameHighlights = highlightRanges(title, query),
-            parentHighlights = if (parentContext == null) emptyList() else highlightRanges(parentContext, query),
-        ),
-        normalizedLength = normalizedTitle.length,
-        sortPath = displayPath,
-    )
-}
-
-// What:     `private fun candidatesFor(query: String, terms: List<String>, tracks: List<Track>)` returns the
-//           `List<SearchCandidate>` of every folder and track that matches, before ordering and the limit.
-// Why:      Folders come from the folder index without its root-level group, and tracks come from every folder's
-//           track rows, so each track is searched exactly once.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// function candidatesFor(query: string, terms: string[], tracks: Track[]): SearchCandidate[] { /* ... */ }
-// ```
-/** Gathers every matching folder result and track result for the library, unordered. */
-private fun candidatesFor(query: String, terms: List<String>, tracks: List<Track>): List<SearchCandidate> {
-    /** Folder entries of the library, one per top-level folder plus the root-level group when it has tracks. */
-    val entries: List<FolderEntry> = folderIndex(tracks)
-    /** Folder results for entries whose own name matches, with the root-level group excluded. */
-    val folderMatches: List<SearchCandidate> = entries
-        .filterNot { entry -> isUnfiledEntry(entry) }
-        .mapNotNull { entry -> folderCandidate(entry, query, terms) }
-    /** Track results for every track row of every entry, each carrying its owning folder name. */
-    val trackMatches: List<SearchCandidate> = entries.flatMap { entry ->
-        entry.items
-            .filterIsInstance<FolderListItem.TrackItem>()
-            .mapNotNull { item -> trackCandidate(item.row, entry.name, query, terms) }
-    }
-    return folderMatches + trackMatches
-}
-
-// What:     `private fun candidateOrder(collator: Collator): Comparator<SearchCandidate>` orders candidates
-//           for display.
-// Why:      Ordering runs tier first, then shorter names, then collator order, then display path, then kind
-//           and library position, so two equal results never swap places between repeated searches.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// const candidateOrder = (collator: Intl.Collator) => (a, b) => a.tier - b.tier || a.len - b.len || /* ... */ 0;
-// ```
-/** Builds the total order used to rank candidates, using the given collator for names. */
-private fun candidateOrder(collator: Collator): Comparator<SearchCandidate> =
-    compareBy<SearchCandidate>({ candidate -> candidate.result.tier }, { candidate -> candidate.normalizedLength })
-        .thenComparator { left, right -> collator.compare(left.result.name, right.result.name) }
-        .thenComparator { left, right -> compareByCodePoint(left.sortPath, right.sortPath) }
-        .thenBy { candidate -> candidate.result.kind }
-        .thenComparator { left, right -> compareValues(left.result.indexInLibrary, right.result.indexInLibrary) }
-
 // What:     `fun searchLibrary(query: String, tracks: List<Track>, available: Boolean): SearchState` answers one
-//           Search query against the library.
-// Why:      The page must know which of the four states applies, and a source failure must win over the query state.
+//           Search query against a list of tracks by indexing them once.
+// Why:      The page must know which of the five states applies, and a source failure must win over the query state.
+//           The running app keeps one `SearchIndex` alive instead (D112); this one-shot form serves callers that hold a
+//           plain list, and it builds the same index, so both give the same answers.
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// function searchLibrary(query: string, tracks: Track[], available: boolean): SearchState { /* ... */ }
+// function searchLibrary(query: string, tracks: Track[], available: boolean): SearchState { /* index, then search */ }
 // ```
 /**
  * Evaluates one query against the library and reports the page state.
@@ -375,23 +191,8 @@ fun searchLibrary(query: String, tracks: List<Track>, available: Boolean): Searc
     if (!available) {
         return SearchState.Unavailable
     }
-    /** Normalized query terms, which every match must satisfy. */
-    val terms: List<String> = searchTerms(query)
-    if (terms.isEmpty()) {
-        return SearchState.EmptyQuery
-    }
-    if (tracks.isEmpty()) {
-        return SearchState.EmptyInventory
-    }
-    /** Every matching folder and track, before ordering and the limit. */
-    val candidates: List<SearchCandidate> = candidatesFor(query, terms, tracks)
-    if (candidates.isEmpty()) {
-        return SearchState.NoMatch(query.trim())
-    }
-    /** Candidates in display order, with the strongest matches first. */
-    val ordered: List<SearchCandidate> = candidates.sortedWith(candidateOrder(railCollator()))
-    return SearchState.Results(
-        items = ordered.take(SEARCH_RESULT_LIMIT).map { candidate -> candidate.result },
-        truncated = ordered.size > SEARCH_RESULT_LIMIT,
-    )
+    /** Index of the given tracks, in list order so a track's number is its position in the list. */
+    val index = SearchIndex()
+    index.appendPaths(tracks.map { track -> track.displayPath }, tracks.map { track -> track.uri })
+    return index.search(query)
 }

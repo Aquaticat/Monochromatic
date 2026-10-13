@@ -201,6 +201,19 @@ pub mod thread_priority;
 pub mod playback;
 
 /// What:
+///      `pub mod playback_clock;` the audible playback clock (`src/playback_clock.rs`):
+///           position from the frames the output consumed,
+///  and the end-of-track drain decision.
+/// Why:
+///       Pure arithmetic kept apart so it is unit-tested without an audio device.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// export * as playbackClock from "./playbackClock";
+/// ```
+pub mod playback_clock;
+
+/// What:
 ///      `pub mod progress;` the progress-surface debounce helper module.
 /// Why:
 ///       The binary uses this pure,
@@ -288,6 +301,39 @@ pub mod controller;
 pub mod controller_audio;
 
 /// What:
+///      `pub mod controller_flow;` the third `impl Controller` block (`src/controller_flow.rs`).
+/// Why:
+///       Play with nothing selected, the stop at the end of a folder and the report of unplayable files.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// // more methods of the same `controller` class, in another file
+/// ```
+pub mod controller_flow;
+
+/// What:
+///      `pub mod default_library;` the choice of the folder to open when no session names one (`src/default_library.rs`).
+/// Why:
+///       D95: a library is always open, so the home `Music` folder is the last place to look.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// export * as defaultLibrary from "./default_library";
+/// ```
+pub mod default_library;
+
+/// What:
+///      `pub mod dialog_backend;` whether a folder chooser can open (`src/dialog_backend.rs`).
+/// Why:
+///       `Open folder` must say what to do when no chooser exists (the polish review finding PB5).
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// export * as dialogBackend from "./dialog_backend";
+/// ```
+pub mod dialog_backend;
+
+/// What:
 ///      `pub mod engine;` the worker-thread front door (`src/engine.rs`).
 /// Why:
 ///       Spawns the worker and drives a `Controller` from the command channel.
@@ -301,8 +347,8 @@ pub mod engine;
 /// What:
 ///      `pub mod watch;` the Source Root file watcher (`src/watch.rs`).
 /// Why:
-///       Watches the current Source Root and sends `Command::Rescan` on a debounced
-///           change,
+///       Watches the current Source Root and reports the paths that changed (`Command::SourceChanged`) after a
+///           debounce, or everything (`Command::Rescan`) when events were lost,
 ///  so the queue live-updates while the app runs.
 ///
 /// In TS you'd write (pseudocode):
@@ -315,7 +361,7 @@ pub mod watch;
 ///      `pub mod pagination;` the queue-pagination module (`src/pagination.rs`).
 /// Why:
 ///       Pure grouping of display paths into folder pages (subfolder tracks) and
-///           A-Z + `#` letter pages (root-level tracks),
+///           A-Z + `#` letter pages (root-level tracks, virtual folders named by their letter),
 ///  unit-tested.
 ///
 /// In TS you'd write (pseudocode):
@@ -323,6 +369,39 @@ pub mod watch;
 /// export * as pagination from "./pagination";
 /// ```
 pub mod pagination;
+
+/// What:
+///      `pub mod natural_order;` the natural name order (`src/natural_order.rs`).
+/// Why:
+///       The folder walk sorts file and folder names so `Track 2` comes before `Track 10`.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// export * as naturalOrder from "./natural_order";
+/// ```
+pub mod natural_order;
+
+/// What:
+///      `pub mod title_prefix;` the shared filename prefix removal of D86 (`src/title_prefix.rs`).
+/// Why:
+///       Rows and the deck show titles without the text every file of the folder starts with.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// export * as titlePrefix from "./title_prefix";
+/// ```
+pub mod title_prefix;
+
+/// What:
+///      `pub mod page_index;` the page index built once per library (`src/page_index.rs`).
+/// Why:
+///       The window reads the selected page from this index instead of regrouping every name on each projection.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// export * as pageIndex from "./page_index";
+/// ```
+pub mod page_index;
 
 /// What:
 ///      `pub mod relpath;` the relative-path display module (`src/relpath.rs`).
@@ -420,6 +499,19 @@ pub mod template_tokens;
 /// export * as templateParse from "./template_parse";
 /// ```
 pub mod template_parse;
+
+/// What:
+///      `pub mod template_plain;` writes the editor's mistake lines as plain sentences
+///  (`src/template_plain.rs`).
+/// Why:
+///       The engine keeps its short notes,
+///  and the editor shows one plain sentence per problem.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// export * as templatePlain from "./template_plain";
+/// ```
+pub mod template_plain;
 
 /// What:
 ///      `pub mod template_eval;` shows a template's text for one track,
@@ -611,6 +703,94 @@ pub mod search_matcher;
 pub mod search_results;
 
 /// What:
+///      `pub mod search_index;` the in-memory Search index (`src/search_index.rs`).
+/// Why:
+///       D112 moves Search onto normalized names in memory with first-character buckets,
+///  so a keystroke tests a bucket instead of the whole library.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// export * as searchIndex from "./search_index";
+/// ```
+pub mod search_index;
+
+/// What:
+///      `mod search_index_text;` the text arena and title normalizer of the index (`src/search_index_text.rs`).
+/// Why:
+///       One buffer per list of names keeps a million names to a few allocations.
+mod search_index_text;
+
+/// What:
+///      `mod search_index_batch;` batch preparation for the index (`src/search_index_batch.rs`).
+/// Why:
+///       Normalization and key extraction run before the write lock is taken.
+mod search_index_batch;
+
+/// What:
+///      `mod search_index_rank;` the tier test and best-five-hundred selection (`src/search_index_rank.rs`).
+/// Why:
+///       Ranking needs integer keys first and string keys only for ties.
+mod search_index_rank;
+
+/// What:
+///      `mod search_index_top;` the single-character answer cache (`src/search_index_top.rs`).
+/// Why:
+///       A one-character query matches a large share of the library,
+///  so its answer is kept and merged with later tracks.
+mod search_index_top;
+
+/// What:
+///      `mod search_index_query;` query answering for the index (`src/search_index_query.rs`).
+/// Why:
+///       Keeps `SearchIndex::search` and row building apart from the index storage.
+mod search_index_query;
+
+/// What:
+///      `pub mod search_service;` the Search worker thread, append path and refresh signal (`src/search_service.rs`).
+/// Why:
+///       D111 and D112 need queries answered off the window thread while a scan appends tracks under a short lock.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// export * as searchService from "./search_service";
+/// ```
+pub mod search_service;
+
+/// What:
+///      `mod search_worker;` the threads behind the Search service (`src/search_worker.rs`).
+/// Why:
+///       Keeps the query worker and the warm-up thread apart from the public handle.
+mod search_worker;
+
+/// What:
+///      `mod search_stream;` the thread that appends streamed scan batches (`src/search_stream.rs`).
+/// Why:
+///       The engine thread only hands names over; preparing and pushing them happen here.
+mod search_stream;
+
+/// What:
+///      `pub mod search_feed;` feeding a whole library into the Search service (`src/search_feed.rs`).
+/// Why:
+///       A library that arrives as one list must reach the index in batches, off the window thread.
+pub mod search_feed;
+
+/// What:
+///      `pub(crate) mod scan_stream;` the folder walk that reports tracks while it walks (`src/scan_stream.rs`).
+/// Why:
+///       D111: Search must work while the library is still being scanned, so the walk hands out batches as it goes.
+pub(crate) mod scan_stream;
+
+/// Synthetic libraries for the scale tests (`src/scale_library_tests.rs`), compiled for tests only.
+#[cfg(test)]
+#[path = "scale_library_tests.rs"]
+mod scale_library_tests;
+
+/// Search index scale tests (`src/search_scale_tests.rs`): 1,000 to 1,000,000 tracks.
+#[cfg(test)]
+#[path = "search_scale_tests.rs"]
+mod search_scale_tests;
+
+/// What:
 ///      `pub mod search_page_model;` the search page's view model (`src/search_page_model.rs`).
 /// Why:
 ///       One pure builder turns the query and results into the rows and states the page draws.
@@ -632,6 +812,58 @@ pub mod search_page_model;
 /// export * as keymap from "./keymap";
 /// ```
 pub mod keymap;
+
+/// What:
+///      `pub mod keymap_bindings;` the D106 binding table (`src/keymap_bindings.rs`).
+/// Why:
+///       One table of chords feeds the classifier,
+///  the key hint badges,
+///  the tooltips and the menu rows,
+///  so they cannot disagree.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// export * as keymapBindings from "./keymap_bindings";
+/// ```
+pub mod keymap_bindings;
+
+/// What:
+///      `pub mod double_shift;` the double tap of Shift detector (`src/double_shift.rs`).
+/// Why:
+///       Search opens on two quick taps of Shift (D106),
+///  and the timing rule is pure logic with injected time.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// export * as doubleShift from "./double_shift";
+/// ```
+pub mod double_shift;
+
+/// What:
+///      `pub mod key_hints;` the key hint badge state and texts (`src/key_hints.rs`).
+/// Why:
+///       Badges appear after the modifiers of a shortcut have been held for 300 ms (D106),
+///  and the timing and narrowing rules are pure logic with injected time.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// export * as keyHints from "./key_hints";
+/// ```
+pub mod key_hints;
+
+/// What:
+///      `pub mod list_focus;` the focus ring position inside the folder and track lists (`src/list_focus.rs`).
+/// Why:
+///       Arrow keys,
+///  Home,
+///  End,
+///  the page keys and letters move the ring by pure rules that are unit-tested.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// export * as listFocus from "./list_focus";
+/// ```
+pub mod list_focus;
 
 /// What:
 ///      `pub mod first_run;` the first-run walkthrough state (`src/first_run.rs`).
@@ -673,6 +905,10 @@ pub mod feedback;
 /// Why: the rows and the deck read these values through the template fields.
 pub mod track_measure;
 
+/// What: `pub(crate) mod track_measure_page;` the in-place measure writer and the page lookup.
+/// Why: they live beside `track_measure`, which re-exports them, to keep that file short.
+pub(crate) mod track_measure_page;
+
 /// What: `pub mod duration_probe;` reads a file length from its container header.
 /// Why: rows show lengths before the slow true-peak measurement finishes.
 pub mod duration_probe;
@@ -680,6 +916,50 @@ pub mod duration_probe;
 /// What: `pub mod measure_peek;` reads each track's cached decision and header length without decoding.
 /// Why: the sweep reports lengths and cached peaks as soon as a queue loads.
 pub mod measure_peek;
+
+/// What: `pub mod change_set;` what the file watcher saw change: some paths, or everything (D113).
+/// Why: the refresh looks at the named paths instead of walking the library.
+pub mod change_set;
+
+/// What: `pub(crate) mod walk_order;` the folder walk's order as a comparison, for binary search in the queue.
+/// Why: deciding whether a named path is listed must cost a few comparisons at a million tracks.
+pub(crate) mod walk_order;
+
+/// What: `pub(crate) mod disk_view;` the questions the refresh planner asks the disk.
+/// Why: the planner is tested at a million tracks without a million files.
+pub(crate) mod disk_view;
+
+/// What: `pub(crate) mod change_plan;` from named paths to queue edits.
+/// Why: a replaced file must cost lookups for that file only.
+pub(crate) mod change_plan;
+
+/// What: `pub(crate) mod refresh_coalescer;` at most one refresh sweep runs, with one merged follow-up.
+/// Why: overlapping sweeps would stat the same files twice.
+pub(crate) mod refresh_coalescer;
+
+/// What: `pub mod controller_refresh;` the controller side of refreshing the library when the watcher reports changes.
+/// Why: the cost of a refresh follows what changed.
+pub mod controller_refresh;
+
+/// What: `refresh_test_support`, shared helpers of the refresh tests (test builds only).
+/// Why: the planner, coalescer and controller tests share a disposable folder, a random generator and an in-memory disk.
+#[cfg(test)]
+pub(crate) mod refresh_test_support;
+
+/// What: `refresh_scale_support`, the million-track library of the refresh tests (test builds only).
+/// Why: the planner and the controller are measured at normal operation's largest size.
+#[cfg(test)]
+pub(crate) mod refresh_scale_support;
+
+/// What: `refresh_scale_tests`, one refresh event at a million tracks (test builds only).
+/// Why: 1,000,000 tracks is normal operation, so this test belongs to the normal suite.
+#[cfg(test)]
+#[path = "refresh_scale_tests.rs"]
+mod refresh_scale_tests;
+
+/// What: `pub mod controller_reload;` loads the selected track again where it was when its file was replaced.
+/// Why: a replaced file that plays keeps its place, peak and gain current without a toast.
+pub mod controller_reload;
 
 /// What: `pub mod sweep_report;` the reports a background sweep sends to the engine.
 /// Why: the controller needs the generation of each report to drop stale ones.
@@ -734,3 +1014,15 @@ pub mod analysis_notification_wire;
 /// What: `pub mod analysis_notification;` the analysis indicator's handle and its D-Bus thread (D107).
 /// Why: the system notification replaces the in-app banner; off Linux the handle does nothing.
 pub mod analysis_notification;
+
+/// What:
+///      `pub mod settings_layout;` the Settings page's layout numbers (`src/settings_layout.rs`).
+/// Why:
+///       The pane widths and row geometry of D109 and D110 live once as pure functions,
+///  and the window tests compare the real layout with them.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// export * as settingsLayout from "./settings_layout";
+/// ```
+pub mod settings_layout;

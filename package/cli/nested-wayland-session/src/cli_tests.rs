@@ -54,6 +54,22 @@ fn defaults_are_preserved() {
     assert_eq!(config.app_cpu_weight, None);
     assert!(!config.isolate);
     assert_eq!(config.scale, OutputScale::ONE);
+    // The announced key repeat pair keeps the values earlier versions sent.
+    assert_eq!((config.repeat_rate, config.repeat_delay), (25, 200));
+}
+
+/// The key repeat pair is configurable and bounded.
+#[test]
+fn repeat_options_set_and_bound_the_announced_pair() {
+    let config = parse_args(&args(&["--repeat-rate", "30", "--repeat-delay=600", "app"])).unwrap();
+    assert_eq!((config.repeat_rate, config.repeat_delay), (30, 600));
+    let off = parse_args(&args(&["--repeat-rate", "0", "app"])).unwrap();
+    assert_eq!(off.repeat_rate, 0);
+    for bad in [["--repeat-rate", "1001"], ["--repeat-rate", "-1"], ["--repeat-delay", "10001"], ["--repeat-delay", "soon"]] {
+        let mut argv = bad.to_vec();
+        argv.push("app");
+        assert!(parse_args(&args(&argv)).is_err(), "{bad:?}");
+    }
 }
 
 /// The startup scale accepts the runtime verb's values in both option spellings.

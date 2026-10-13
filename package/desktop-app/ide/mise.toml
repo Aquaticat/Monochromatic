@@ -230,6 +230,15 @@ run = """
 runCargo(['test', '--no-default-features', '--lib', '--tests'])
 """
 
+[tasks."test:wrap"]
+description = "Run the soft-wrap break rule unit tests and the wrapping integration tests in the bounded container"
+shell = "node --input-type=module-typescript -e"
+run = """
+{{vars.cargo}}
+runCargo(['test', '--no-default-features', '--lib', 'wrap::'])
+runCargo(['test', '--no-default-features', '--test', 'wrap', '--test', 'wrap_rows', '--test', 'row_map', '--test', 'wrap_keys', '--test', 'vertical_motion'])
+"""
+
 [tasks."test:native"]
 depends = ["runtime", "notices"]
 description = "Exercise native window events and fonts in process-isolated headless tests"
@@ -395,7 +404,7 @@ description = "Check the vertical row mapping, virtual-row rules, inlay-hint and
 shell = "node --input-type=module-typescript -e"
 run = """
 {{vars.cargo}}
-runCargo(['test', '--no-default-features', '--test', 'row_map', '--test', 'virtual_row', '--test', 'annotation', '--test', 'annotation_frame', '--test', 'annotation_layout', '--test', 'annotation_paint', '--test', 'annotation_placement', '--test', 'source_frame', '--', '--nocapture'])
+runCargo(['test', '--no-default-features', '--test', 'row_map', '--test', 'virtual_row', '--test', 'annotation', '--test', 'annotation_frame', '--test', 'annotation_layout', '--test', 'annotation_paint', '--test', 'annotation_placement', '--test', 'wrap_annotations', '--test', 'source_frame', '--', '--nocapture'])
 """
 
 [tasks."test:annotations-native"]
@@ -849,7 +858,8 @@ writeFileSync(sourceFile, lines.join(String.fromCharCode(10)))
 }
 console.error('IDE_NATIVE_SOCKET=' + socket)
 console.error('IDE_NATIVE_FIXTURE=' + sourceFile)
-const compositor = resolve('../../cli/nested-wayland-session/target/release/monochromatic-nested-wayland-session')
+const { compositor, demandCurrentCompositor } = await import(resolve('bin/nested-compositor.mjs'))
+demandCurrentCompositor()
 // IDE_NATIVE_SIZE starts the nested screen at another size; a locked host session ignores the control socket's resize.
 const size = process.env.IDE_NATIVE_SIZE ?? '1100x660'
 if (!/^[1-9][0-9]*x[1-9][0-9]*$/.test(size)) { throw new Error('IDE_NATIVE_SIZE must be WIDTHxHEIGHT') }

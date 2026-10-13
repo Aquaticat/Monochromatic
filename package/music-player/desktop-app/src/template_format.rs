@@ -358,6 +358,31 @@ fn is_exponent_marker(symbol: char) -> bool {
 }
 
 /// What:
+///  `pub fn unknown_format_letter(format: &str) -> Option<char>` finds the first letter of a format that is neither a time letter nor
+///  inside apostrophes.
+/// Why:
+///  `h`, `m` and `s` are the only time letters, and a stray letter such as the `i` of `m min` used to print as itself, so a
+///  typo looked like a working format. Letters between apostrophes are kept text, and every other character is a separator.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// const unknownFormatLetter = (format: string) => outsideApostrophes(format).find((c) => /\p{L}/u.test(c) && !"hms".includes(c));
+/// ```
+pub fn unknown_format_letter(format: &str) -> Option<char> {
+    let mut kept = false;
+    for letter in format.chars() {
+        if letter == '\'' {
+            kept = !kept;
+            continue;
+        }
+        if !kept && letter.is_alphabetic() && !matches!(letter, 'h' | 'm' | 's') {
+            return Some(letter);
+        }
+    }
+    return None;
+}
+
+/// What:
 ///  `pub fn format_seconds(seconds: f64, format: &str) -> String` fills a format's time letters with hours,
 ///  minutes,
 ///  and seconds.

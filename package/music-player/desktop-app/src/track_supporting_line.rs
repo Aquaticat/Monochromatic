@@ -9,11 +9,16 @@
 //!  so the template engine is reached only through this module.
 
 /// What:
-///      `use crate::template_eval::evaluate_template;` imports the one function that shows a template's text.
+///      `use crate::template_eval::evaluate_parsed_template;` imports the one function that shows a parsed template's text.
 /// Why:
 ///       Evaluation is the only place that reads field values and runs functions,
 ///  so this module reuses it.
-use crate::template_eval::evaluate_template;
+use crate::template_eval::evaluate_parsed_template;
+/// What:
+///      `use crate::template_parse::parse_template;` imports the parser.
+/// Why:
+///       The template is parsed once when the function is built, not once per row.
+use crate::template_parse::parse_template;
 /// What:
 ///      `use crate::template_model::{...};` imports the field list,
 ///  the result type,
@@ -27,7 +32,7 @@ use crate::template_model::{TemplateField, TemplateResult, TrackFields, track_te
 ///      `pub fn supporting_line_from_template(template) -> impl Fn(&TrackFields) -> Option<String>`.
 ///  Returns a function that shows the template's text for one track.
 /// Why:
-///       The returned closure owns the template text and the track field list,
+///       The returned closure owns the parsed template and the track field list,
 ///  so the caller can pass it
 ///  to `track_list_entries` or `build_player_content` without holding either one.
 ///
@@ -40,10 +45,10 @@ use crate::template_model::{TemplateField, TemplateResult, TrackFields, track_te
 /// };
 /// ```
 pub fn supporting_line_from_template(template: &str) -> impl Fn(&TrackFields) -> Option<String> {
-    let owned_template: String = template.to_string();
+    let parsed = parse_template(template);
     let fields: Vec<TemplateField> = track_template_fields();
     return move |track: &TrackFields| -> Option<String> {
-        return match evaluate_template(&owned_template, track, &fields) {
+        return match evaluate_parsed_template(&parsed, track, &fields) {
             TemplateResult::Shown(text) => Some(text.trim().to_string()).filter(|trimmed| return !trimmed.is_empty()),
             TemplateResult::Refused(_) => None,
         };

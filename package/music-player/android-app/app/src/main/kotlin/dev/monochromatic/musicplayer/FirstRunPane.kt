@@ -15,6 +15,7 @@ package dev.monochromatic.musicplayer
 // ```ts
 // import { firstRunCopy, FirstRunState } from "core/FirstRunState";
 // ```
+import androidx.compose.foundation.shape.CircleShape
 import dev.monochromatic.musicplayer.core.ALLOW_ACCESS_LABEL
 import dev.monochromatic.musicplayer.core.ANALYSIS_EXPLANATION
 import dev.monochromatic.musicplayer.core.FirstRunCopy
@@ -285,7 +286,12 @@ fun firstRunPane(
     val copy: FirstRunCopy = firstRunCopy(state = state, folderName = folderName)
     BoxWithConstraints(modifier = modifier.fillMaxSize().windowInsetsPadding(WindowInsets.systemBars)) {
         /** Start inset that keeps the text beside the blank left half on wide layouts. */
-        val start: Dp = firstRunStartPadding(maxWidth = maxWidth)
+        val start: Dp = if (maxWidth >= WIDE_LAYOUT_MIN_WIDTH) {
+            // On a creased screen the text also keeps the crease clearance of the right pane (E2, D110).
+            firstRunStartPadding(maxWidth = maxWidth) - EDGE_PADDING + paneStartInset(EDGE_PADDING)
+        } else {
+            firstRunStartPadding(maxWidth = maxWidth)
+        }
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -303,7 +309,8 @@ fun firstRunPane(
                 val onPrimary: () -> Unit = callbackFor(firstRunActionTargetFor(primary), actions)
                 Button(
                     onClick = onPrimary,
-                    modifier = Modifier.defaultMinSize(minWidth = MIN_TARGET, minHeight = MIN_TARGET),
+                    modifier = Modifier.defaultMinSize(minWidth = MIN_TARGET, minHeight = MIN_TARGET)
+                        .focusRing(CircleShape),
                 ) { Text(primary) }
             }
             copy.secondaryActions.forEach { label ->
@@ -311,7 +318,8 @@ fun firstRunPane(
                 val onSecondary: () -> Unit = callbackFor(firstRunActionTargetFor(label), actions)
                 OutlinedButton(
                     onClick = onSecondary,
-                    modifier = Modifier.defaultMinSize(minWidth = MIN_TARGET, minHeight = MIN_TARGET),
+                    modifier = Modifier.defaultMinSize(minWidth = MIN_TARGET, minHeight = MIN_TARGET)
+                        .focusRing(CircleShape),
                 ) { Text(label) }
             }
             if (copy.explainsAnalysis) {

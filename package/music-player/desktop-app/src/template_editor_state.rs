@@ -18,7 +18,7 @@
 /// Why:
 ///  The state builds its previews and edits from them.
 use crate::template_editor::{
-    TEMPLATE_KEPT_NOTE, TEMPLATE_LIBRARY_NOTE, TEMPLATE_PREVIEW_ROW_COUNT, TEMPLATE_SAMPLE_NOTE, TemplateEditorEdit,
+    TEMPLATE_KEPT_EMPTY_NOTE, TEMPLATE_KEPT_NOTE, TEMPLATE_LIBRARY_NOTE, TEMPLATE_PREVIEW_ROW_COUNT, TEMPLATE_SAMPLE_NOTE, TemplateEditorEdit,
     TemplateEditorFieldEntry, TemplateEditorStateError, TemplatePreviewRow, TemplateTexts, clamp_offset, evaluate_for,
     inside_formula, splice_text, template_sample_tracks, track_source,
 };
@@ -42,6 +42,11 @@ use crate::template_help::{TemplateHelp, help_at};
 use crate::template_model::{
     PlayingTrackFields, TemplateError, TemplateKind, TemplateResult, error_lines,
 };
+/// What:
+///  imports the plain mistake sentences.
+/// Why:
+///  The editor lists one plain sentence per problem, not the engine's notes.
+use crate::template_plain::plain_lines;
 
 /// What:
 ///  `pub struct TemplateEditorState` holds both templates,
@@ -260,17 +265,18 @@ impl TemplateEditorState {
     }
 
     /// What:
-    ///  `pub fn mistake_lines(&self) -> Vec<String>` gives the current mistakes as one line each,
+    ///  `pub fn mistake_lines(&self) -> Vec<String>` gives the current problems as one plain sentence each,
     ///  in template order.
     /// Why:
-    ///  The editor names each mistake by the function at fault and lists them top down.
+    ///  The editor names the call at fault and says what to change (D89), and a half-written formula is one problem,
+    ///  not the three follow-on mistakes the parser records for it.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
-    /// get mistakeLines(): string[] { return errorLines(this.errors); }
+    /// get mistakeLines(): string[] { return plainLines(this.text, this.errors); }
     /// ```
     pub fn mistake_lines(&self) -> Vec<String> {
-        return error_lines(&self.errors());
+        return plain_lines(self.text(), &self.errors());
     }
 
     /// What:
@@ -308,16 +314,49 @@ impl TemplateEditorState {
     /// get previewNotes(): string[] { return [usesSample ? SAMPLE_NOTE : LIBRARY_NOTE, ...(valid ? [] : [KEPT_NOTE])]; }
     /// ```
     pub fn preview_notes(&self) -> Vec<&'static str> {
-        let source_note = if self.uses_sample_values {
+        let mut notes = vec![self.source_note()];
+        if let Some(kept) = self.kept_note() {
+            notes.push(kept);
+        }
+        return notes;
+    }
+
+    /// What:
+    ///  `pub fn source_note(&self) -> &'static str` says where the preview rows come from.
+    /// Why:
+    ///  The note under the preview always names the source, library or stand-ins.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// get sourceNote(): string { return this.usesSampleValues ? SAMPLE_NOTE : LIBRARY_NOTE; }
+    /// ```
+    pub fn source_note(&self) -> &'static str {
+        return if self.uses_sample_values {
             TEMPLATE_SAMPLE_NOTE
         } else {
             TEMPLATE_LIBRARY_NOTE
         };
-        let mut notes = vec![source_note];
-        if !self.is_valid() {
-            notes.push(TEMPLATE_KEPT_NOTE);
+    }
+
+    /// What:
+    ///  `pub fn kept_note(&self) -> Option<&'static str>` is the note that says the rows keep the last valid template,
+    ///  present only while the typed text does not apply.
+    /// Why:
+    ///  The page reserves a line for it so it can appear without moving the field, and it says when the kept template
+    ///  shows nothing, because then the preview looks the same as a broken one.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// get keptNote(): string | undefined { return valid ? undefined : keptShowsNothing ? KEPT_EMPTY_NOTE : KEPT_NOTE; }
+    /// ```
+    pub fn kept_note(&self) -> Option<&'static str> {
+        if self.is_valid() {
+            return None;
         }
-        return notes;
+        let shows_nothing = self
+            .applied_line(self.kind, self.first_track())
+            .is_ok_and(|line| return line.trim().is_empty());
+        return Some(if shows_nothing { TEMPLATE_KEPT_EMPTY_NOTE } else { TEMPLATE_KEPT_NOTE });
     }
 
     /// What:

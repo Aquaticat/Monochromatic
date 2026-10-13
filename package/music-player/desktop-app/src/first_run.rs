@@ -61,7 +61,7 @@ pub const ANALYSIS_EXPLANATION: &str = concat!(
 );
 
 /// What:
-///      `pub enum FirstRunState` declares the three first-run screens.
+///      `pub enum FirstRunState` declares the first-run screens.
 /// Why:
 ///      Each screen explains an open source that cannot be read or has no audio,
 ///  and the set is closed.
@@ -81,12 +81,14 @@ pub enum FirstRunState {
     FolderNoAudio,
     /// No folder is open, so the desktop asks the user to choose one.
     NoFolderOpen,
+    /// The opened folder is still being read, so its tracks are not known yet.
+    Reading,
 }
 
 /// Methods of `FirstRunState`.
 impl FirstRunState {
     /// What:
-    ///      `pub const ALL` lists the four screens in declaration order.
+    ///      `pub const ALL` lists the five screens in declaration order.
     /// Why:
     ///      Tests walk every state,
     ///  and this list keeps that walk exhaustive.
@@ -95,11 +97,12 @@ impl FirstRunState {
     /// ```ts
     /// const ALL: readonly FirstRunState[] = ["DECLINED", "SYSTEM_NO_AUDIO", "FOLDER_NO_AUDIO"];
     /// ```
-    pub const ALL: [FirstRunState; 4] = [
+    pub const ALL: [FirstRunState; 5] = [
         FirstRunState::Declined,
         FirstRunState::SystemNoAudio,
         FirstRunState::FolderNoAudio,
         FirstRunState::NoFolderOpen,
+        FirstRunState::Reading,
     ];
 }
 
@@ -206,8 +209,8 @@ pub fn first_run_copy(
         FirstRunState::SystemNoAudio => Ok(FirstRunCopy {
             title: "No audio found in the device music library".to_owned(),
             body: concat!(
-                "The device music library was checked completely. ",
-                "You can open a folder that is not listed there.",
+                "The device music library has no audio files. ",
+                "You can open a different folder instead.",
             )
             .to_owned(),
             primary_action: Some(OPEN_FOLDER_LABEL),
@@ -216,6 +219,32 @@ pub fn first_run_copy(
         }),
         FirstRunState::FolderNoAudio => folder_no_audio_copy(folder_name),
         FirstRunState::NoFolderOpen => Ok(no_folder_open_copy()),
+        FirstRunState::Reading => Ok(reading_copy()),
+    };
+}
+
+/// What:
+///      `fn reading_copy() -> FirstRunCopy`.
+///  The copy for a folder that is still being read: says the library is being looked through and that nothing is wrong.
+/// Why:
+///       While the folder walk runs the window used to say "No folder is open" (the polish review finding EM1). The words
+///  follow Search's "Still looking through your library" (D69) and promise nothing the list does not yet do.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// const readingCopy = (): FirstRunCopy => ({ title: "Reading your library", secondaryActions: ["Settings"] });
+/// ```
+fn reading_copy() -> FirstRunCopy {
+    return FirstRunCopy {
+        title: "Reading your library".to_owned(),
+        body: concat!(
+            "Looking through your music for audio files. ",
+            "A large library takes a little while, and the list appears here when it is done.",
+        )
+        .to_owned(),
+        primary_action: None,
+        secondary_actions: vec![SETTINGS_LABEL],
+        explains_analysis: false,
     };
 }
 
@@ -244,8 +273,7 @@ fn no_folder_open_copy() -> FirstRunCopy {
     return FirstRunCopy {
         title: "No folder is open".to_owned(),
         body: concat!(
-            "Open a folder to start. Its audio files and the audio files in its subfolders ",
-            "become the music source.",
+            "Open a folder to start. The player lists the audio files in it and in its subfolders.",
         )
         .to_owned(),
         primary_action: Some(OPEN_FOLDER_LABEL),
@@ -257,10 +285,12 @@ fn no_folder_open_copy() -> FirstRunCopy {
 fn folder_no_audio_copy(folder_name: Option<&str>) -> Result<FirstRunCopy, FirstRunError> {
     let name = non_blank_folder_name(folder_name)?;
     return Ok(FirstRunCopy {
-        title: format!("No audio found in {name}"),
+        // The name sits on its own line, so the headline wraps between "found in" and the name, never inside a name that
+        // contains a hyphen (the polish review finding EM4).
+        title: format!("No audio found in\n{name}"),
         body: concat!(
-            "The chosen folder was checked completely and contains no supported audio files. ",
-            "Opening a different folder changes the music source.",
+            "This folder and its subfolders have no audio files the player can play. ",
+            "Open a different folder to try again.",
         )
         .to_owned(),
         primary_action: Some(OPEN_FOLDER_LABEL),

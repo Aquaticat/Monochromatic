@@ -206,6 +206,54 @@ pub mod frame_pacing;
 /// ```
 pub mod keymap;
 
+/// The minimal AT-SPI accessibility bus services.
+pub mod a11y_service;
+
+/// Reads and formats the hosted application's accessibility tree.
+pub mod a11y_tree;
+
+/// Runs one control request now or as a timed sequence.
+pub mod control_run;
+
+/// Session settings the control socket reads and changes.
+pub mod control_session;
+
+/// Keyboard focus order across several toplevels.
+pub mod focus;
+
+/// Key chords through the nested seat.
+pub mod input_key;
+
+/// Typing text,
+///  with spare Unicode keys for off-layout characters.
+pub mod input_text;
+
+/// Timed input sequences that answer when they end.
+pub mod timeline;
+
+/// Turns the timed commands into step lists.
+pub mod timeline_plan;
+
+/// Keymaps carrying arbitrary Unicode characters.
+pub mod unicode_keymap;
+
+/// `text/uri-list` payloads for dropped files.
+pub mod uri_list;
+
+/// The window listing,
+///  focus,
+///  and close answers.
+pub mod window_list;
+
+/// Chord specs such as `ctrl+shift+f10`.
+pub mod key_chord;
+
+/// Key names resolved to evdev codes.
+pub mod key_name;
+
+/// The kernel key names with their codes.
+pub mod key_table;
+
 /// What:
 ///      `pub mod protocol;`.
 ///  Declares the control-protocol parsing module.

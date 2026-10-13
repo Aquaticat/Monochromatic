@@ -123,6 +123,24 @@ internal data class SettingsPaneSplit(
     val editorTextStartExtraDp: Float,
 )
 
+// What:     `internal fun creaseHalfClearanceDp(creaseWidthPx, density)` is half of the total gap across the crease.
+// Why:      E2 asks for `max(7.5 mm, crease width)` in total, shared half to each side, and Settings and Search both
+//           apply it, so one function owns the rule.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// const creaseHalfClearanceDp = (creaseWidthPx, density) =>
+//   Math.max(CREASE_FLOOR_WIDTH_PX, creaseWidthPx) / 2 / density;
+// ```
+/**
+ * Returns the clearance each side of the crease keeps free of text, in dp.
+ *
+ * @param creaseWidthPx crease width in physical pixels as the platform reports it, zero when it reports none.
+ * @param density physical pixels per dp of the current display.
+ */
+internal fun creaseHalfClearanceDp(creaseWidthPx: Float, density: Float): Float =
+    maxOf(CREASE_FLOOR_WIDTH_PX, creaseWidthPx) / 2f / density
+
 // What:     `internal fun settingsPaneSplit(...)` decides the pane widths and the crease clearance of the wide form.
 // Why:      With a crease the window splits in half and each pane keeps half of `max(7.5 mm, crease width)` clear of
 //           the center; without one the list takes the stock ratio and no clearance is added.
@@ -166,7 +184,7 @@ internal fun settingsPaneSplit(
     /** Half of the window, which is the list pane's width and the editor pane's width up to one odd pixel. */
     val half: Int = windowWidthPx / 2
     /** Half of the total clearance in dp: the larger of the 7.5 mm floor and the reported crease, per pane. */
-    val halfClearanceDp: Float = maxOf(CREASE_FLOOR_WIDTH_PX, creaseWidthPx) / 2f / density
+    val halfClearanceDp: Float = creaseHalfClearanceDp(creaseWidthPx = creaseWidthPx, density = density)
     return SettingsPaneSplit(
         listWidthPx = half,
         editorWidthPx = windowWidthPx - half,

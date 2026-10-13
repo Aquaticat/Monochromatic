@@ -16,6 +16,7 @@ package dev.monochromatic.musicplayer.core
 // ```
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
@@ -43,7 +44,6 @@ class TrackMenuActionsTest {
                 TrackMenuAction.PLAY,
                 TrackMenuAction.SHUFFLE_FROM_HERE,
                 TrackMenuAction.DETAILS,
-                TrackMenuAction.REANALYSE_TRUE_PEAK,
                 TrackMenuAction.SHOW_IN_FILE_MANAGER,
                 TrackMenuAction.COPY_FILENAME,
                 TrackMenuAction.MOVE_TO_TRASH,
@@ -91,17 +91,50 @@ class TrackMenuActionsTest {
         assertEquals("File details", label(TrackMenuAction.DETAILS))
     }
 
-    // What:     `reanalyseLabelIsAccepted` checks the re-analysis action's wording.
-    // Why:      Decision D12 names this action as the only entry point for re-analysis.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // test("reanalyse label", () => expect(label("reanalyse")).toBe("Re-analyse true peak"));
-    // ```
-    /** Confirms the re-analysis action reads Re-analyse true peak. */
+    /** The six actions each have one lowercase access letter, and no two actions share a letter (D114). */
     @Test
-    fun reanalyseLabelIsAccepted() {
-        assertEquals("Re-analyse true peak", label(TrackMenuAction.REANALYSE_TRUE_PEAK))
+    fun accessLettersAreUniqueAndSitInTheirLabels() {
+        val letters = TrackMenuAction.entries.map { action -> accessKey(action).letter }
+        assertEquals(letters.size, letters.toSet().size)
+        TrackMenuAction.entries.forEach { action ->
+            val key = accessKey(action)
+            assertEquals("lowercase letter for $action", key.letter.lowercaseChar(), key.letter)
+            assertTrue("letter is a letter for $action", key.letter.isLetter())
+            assertEquals(
+                "label of $action has its letter at the underlined index",
+                key.letter,
+                label(action)[key.labelIndex].lowercaseChar(),
+            )
+        }
+    }
+
+    /** Pressing each action's letter with no modifier runs exactly that action. */
+    @Test
+    fun eachAccessLetterRunsItsRow() {
+        TrackMenuAction.entries.forEach { action ->
+            val pressed = HostKeyInput(accessKey(action).letter.toString(), ctrl = false, meta = false, alt = false, shift = false, repeat = false)
+            assertEquals(action, trackMenuActionForAccessKey(pressed))
+        }
+    }
+
+    /** Shift does not change the letter, but Control, Alt, Meta and a repeat never run a row. */
+    @Test
+    fun modifiersAndRepeatsAndOtherKeysDoNotRunARow() {
+        val base = HostKeyInput("p", ctrl = false, meta = false, alt = false, shift = false, repeat = false)
+        assertEquals(TrackMenuAction.PLAY, trackMenuActionForAccessKey(base.copy(shift = true)))
+        assertNull(trackMenuActionForAccessKey(base.copy(ctrl = true)))
+        assertNull(trackMenuActionForAccessKey(base.copy(alt = true)))
+        assertNull(trackMenuActionForAccessKey(base.copy(meta = true)))
+        assertNull(trackMenuActionForAccessKey(base.copy(repeat = true)))
+        assertNull(trackMenuActionForAccessKey(base.copy(keyName = "x")))
+        assertNull(trackMenuActionForAccessKey(base.copy(keyName = "Enter")))
+    }
+
+    /** The menu lists six rows and no re-analysis row exists anywhere (D113). */
+    @Test
+    fun noRowOffersReanalysis() {
+        assertEquals(6, trackMenuActionsFor().size)
+        assertTrue(trackMenuActionsFor().none { action -> label(action).contains("analy", ignoreCase = true) })
     }
 
     // What:     `showLabelIsAccepted` checks the file manager action's wording.

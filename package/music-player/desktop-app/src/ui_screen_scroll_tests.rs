@@ -1,8 +1,7 @@
 //! Tests for the scroll request rules in `ui_screen_scroll`.
 
 use super::*;
-use crate::ui_screen_view::{pages, view};
-use music_player::pagination::page_identity;
+use crate::ui_screen_view::view;
 use music_player::template_model::TrackFields;
 
 /// What: `no_supporting_line` is the supporting-line function that never shows text.
@@ -26,7 +25,7 @@ fn list_row(kind: i32, supporting: &str, current: bool) -> ListRow {
 /// Why: the scroll cases need only the queue, the playing index and the request fields.
 fn state_with_queue(names: &[&str], current: Option<usize>) -> ScreenState {
     return ScreenState {
-        names: names.iter().map(|name| return name.to_string()).collect(),
+        names: std::sync::Arc::new(names.iter().map(|name| return name.to_string()).collect()),
         current_index: current,
         ..ScreenState::default()
     };
@@ -264,7 +263,7 @@ fn changing_the_playing_track_alone_requests_nothing() {
 fn changing_the_selected_page_scrolls_to_the_top() {
     let mut state = state_with_queue(&["Abba/one.mp3", "Beta/two.mp3"], None);
     assert_eq!(project_once(&mut state), Some(ScrollRequest::PlayingRow));
-    let beta_key = page_identity(&pages(&state)[1]);
+    let beta_key = state.current_pages().page(1).map(|page| return page.identity.clone()).unwrap_or_default();
     state.selected_key = beta_key;
     assert_eq!(project_once(&mut state), Some(ScrollRequest::Top));
     assert_eq!(project_once(&mut state), None);
@@ -274,7 +273,7 @@ fn changing_the_selected_page_scrolls_to_the_top() {
 fn empty_projections_leave_the_first_reveal_for_the_first_rows() {
     let mut state = state_with_queue(&[], None);
     assert_eq!(project_once(&mut state), None);
-    state.names = vec!["Abba/one.mp3".to_string(), "Abba/two.mp3".to_string()];
+    state.names = std::sync::Arc::new(vec!["Abba/one.mp3".to_string(), "Abba/two.mp3".to_string()]);
     state.current_index = Some(1);
     assert_eq!(project_once(&mut state), Some(ScrollRequest::PlayingRow));
 }
@@ -283,7 +282,7 @@ fn empty_projections_leave_the_first_reveal_for_the_first_rows() {
 fn explicit_request_wins_over_a_page_change_and_is_cleared() {
     let mut state = state_with_queue(&["Abba/one.mp3", "Beta/two.mp3"], None);
     assert_eq!(project_once(&mut state), Some(ScrollRequest::PlayingRow));
-    let beta_key = page_identity(&pages(&state)[1]);
+    let beta_key = state.current_pages().page(1).map(|page| return page.identity.clone()).unwrap_or_default();
     state.selected_key = beta_key;
     state.scroll_request = Some(ScrollRequest::PlayingFolder);
     assert_eq!(project_once(&mut state), Some(ScrollRequest::PlayingFolder));
@@ -318,4 +317,79 @@ fn a_track_started_after_the_user_acted_is_not_revealed() {
     state.startup_reveal_done = true;
     state.current_index = Some(1);
     assert_eq!(project_once(&mut state), None);
+}
+
+// ---- the layout of the whole list, which the pane that builds only the rows on screen asks for ----
+
+#[test]
+fn row_tops_px_lists_where_every_row_starts_and_ends_with_the_content_height() {
+    let rows = [
+        list_row(0, "", false),
+        list_row(1, "2 tracks", false),
+        list_row(0, "4:35", false),
+        list_row(0, "", true),
+    ];
+    assert_eq!(row_tops_px(&rows), vec![0.0, 48.0, 102.0, 174.0, 222.0]);
+}
+
+#[test]
+fn row_tops_px_of_an_empty_list_is_just_the_start() {
+    assert_eq!(row_tops_px(&[]), vec![0.0]);
+}
+
+#[test]
+fn row_at_px_finds_the_row_that_contains_an_offset() {
+    let tops = [0.0, 48.0, 102.0, 174.0, 222.0];
+    assert_eq!(row_at_px(&tops, 0.0), 0);
+    assert_eq!(row_at_px(&tops, 47.9), 0);
+    assert_eq!(row_at_px(&tops, 48.0), 1, "a row starts exactly at its top");
+    assert_eq!(row_at_px(&tops, 101.0), 1);
+    assert_eq!(row_at_px(&tops, 102.0), 2);
+    assert_eq!(row_at_px(&tops, 221.0), 3);
+}
+
+#[test]
+fn row_at_px_clamps_a_bounce_above_the_list_and_a_scroll_past_the_end() {
+    let tops = [0.0, 48.0, 102.0];
+    assert_eq!(row_at_px(&tops, -30.0), 0, "above the list is the first row");
+    assert_eq!(row_at_px(&tops, 102.0), 1, "the end of the content is the last row");
+    assert_eq!(row_at_px(&tops, 5000.0), 1);
+}
+
+#[test]
+fn row_at_px_of_an_empty_list_is_the_first_row() {
+    assert_eq!(row_at_px(&[0.0], 10.0), 0);
+    assert_eq!(row_at_px(&[], 10.0), 0);
+}
+
+#[test]
+fn top_of_px_gives_the_start_of_a_row_and_the_end_of_the_content_past_the_last() {
+    let tops = [0.0, 48.0, 102.0];
+    assert_eq!(top_of_px(&tops, 0), 0.0);
+    assert_eq!(top_of_px(&tops, 1), 48.0);
+    assert_eq!(top_of_px(&tops, 2), 102.0);
+    assert_eq!(top_of_px(&tops, 9), 102.0);
+    assert_eq!(top_of_px(&[], 3), 0.0);
+}
+
+#[test]
+fn row_at_px_and_top_of_px_agree_with_row_offset_px_on_a_hundred_thousand_rows() {
+    // Mixed heights: a header every 50 rows, a second line on every third track.
+    let rows: Vec<ListRow> = (0..100_000)
+        .map(|position| {
+            return if position % 50 == 0 {
+                list_row(1, "50 tracks", false)
+            } else if position % 3 == 0 {
+                list_row(0, "3:00", false)
+            } else {
+                list_row(0, "", false)
+            };
+        })
+        .collect();
+    let tops = row_tops_px(&rows);
+    assert_eq!(tops.len(), rows.len() + 1);
+    for index in [0_usize, 1, 49, 50, 51, 777, 50_000, 99_999] {
+        assert_eq!(top_of_px(&tops, index), row_offset_px(&rows, index), "the top of row {index}");
+        assert_eq!(row_at_px(&tops, top_of_px(&tops, index) + 0.5), index, "the row at the top of row {index}");
+    }
 }

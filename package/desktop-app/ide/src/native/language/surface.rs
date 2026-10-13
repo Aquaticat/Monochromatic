@@ -47,10 +47,9 @@ use std::{cell::RefCell, rc::Rc};
 ///  Where the popup or the list was opened:
 ///  the stamp,
 ///  the caret,
-///  the scroll offsets,
+///  the scroll offset,
 ///  and where
 ///       the anchoring line's code row stood relative to the top edge of the view at that moment.
-///       `(f32, f32)` is a pair of horizontal and vertical offsets.
 /// Why:
 ///  Any later difference means the reader moved on,
 ///  which dismisses the surface.
@@ -64,7 +63,7 @@ use std::{cell::RefCell, rc::Rc};
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// type Origin = { stamp: DocumentStamp; caret: number; scroll: [number, number]; onScreen: number };
+/// type Origin = { stamp: DocumentStamp; caret: number; scroll: number; onScreen: number };
 /// ```
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub(super) struct Origin {
@@ -72,8 +71,8 @@ pub(super) struct Origin {
     pub(super) stamp: DocumentStamp,
     /// Caret head when shown.
     pub(super) caret: usize,
-    /// Scroll offsets when shown.
-    pub(super) scroll: (f32, f32),
+    /// Vertical scroll offset when shown.
+    pub(super) scroll: f32,
     /// Distance of the anchoring line's code row from the top edge of the view when shown.
     pub(super) on_screen: f32,
 }
@@ -113,7 +112,7 @@ pub(super) enum Shown {
 ///  The current origin:
 ///  the displayed stamp,
 ///  the caret head,
-///  the scroll offsets,
+///  the scroll offset,
 ///  and where the
 ///       anchoring line's code row stands relative to the top edge of the view.
 /// Why:
@@ -130,7 +129,7 @@ pub(super) fn origin(window: &AppWindow, state: &State) -> Origin {
     return Origin {
         stamp: displayed(state),
         caret: state.document.position().head,
-        scroll: (window.get_scroll_x(), window.get_scroll_y()),
+        scroll: window.get_scroll_y(),
         on_screen,
     };
 }
@@ -334,7 +333,7 @@ pub(super) fn stale(
     // The reader scrolled when the offset changed and the anchoring line moved on screen with it. Rows
     // arriving change only one of the two; half a pixel of tolerance covers rounding when the view is kept still.
     let line_moved = (now.on_screen - opened.on_screen).abs() > 0.5;
-    if now.scroll.0 != opened.scroll.0 || (now.scroll.1 != opened.scroll.1 && line_moved) {
+    if now.scroll != opened.scroll && line_moved {
         return Some("the view scrolled");
     }
     if pointer && !pointer_over && !window.get_language_popup_has_pointer() {

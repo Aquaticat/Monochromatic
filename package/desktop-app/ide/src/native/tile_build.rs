@@ -3,6 +3,8 @@
 
 /// Requested and displayed tile bounds travel with each job.
 use super::tile::TileBounds;
+/// The background measurement of the whole text, its slots, and its walk.
+use super::tile_pass::{PassControl, PassJob, PassKey, PassOutbox, PassOutput, PassRun};
 /// Worker-start and build failures stay visible diagnostics.
 use anyhow::{Context, Result, bail};
 /// Visible hints and diagnostic marks are paint inputs of the tile.
@@ -34,7 +36,8 @@ use std::{
     panic::{AssertUnwindSafe, catch_unwind},
     sync::{
         Arc,
-        mpsc::{Receiver, SyncSender, TryRecvError, sync_channel},
+        atomic::{AtomicBool, Ordering},
+        mpsc::{Receiver, SyncSender, TryRecvError, TrySendError, sync_channel},
     },
     thread::{self, JoinHandle},
 };
@@ -62,8 +65,6 @@ pub(super) struct TileJob {
     pub(super) typography: SourceTypography,
     /// Materialized lines, width, and scale.
     pub(super) viewport: Viewport,
-    /// Horizontal tile origin.
-    pub(super) horizontal: f32,
     /// Vertical mapping the rows are placed by.
     pub(super) map: RowMap,
     /// Palette of the source glyphs and selection.
@@ -102,6 +103,10 @@ pub(super) struct TileBuilt {
     pub(super) stamp: FrameStamp,
     /// Active match used for the match rectangles.
     pub(super) active: Option<FindRange>,
+    /// What the visual rows measured while shaping the tile's lines are valid for.
+    pub(super) key: PassKey,
+    /// Visual rows of each line of the tile, exact for the wrap width of its key.
+    pub(super) measured: Vec<(usize, usize)>,
     /// Source rows shaped while building this tile, counted in debug builds for the structural tests.
     #[cfg(debug_assertions)]
     pub(super) rows_shaped: u64,
@@ -125,17 +130,18 @@ pub(super) fn build_tile(
     #[cfg(debug_assertions)]
     let before = shaper.shaped_rows();
     let mut view = shaper.prepare_rows(&job.document, job.viewport, &job.styles, &job.map);
-    view.matches = rectangles(
-        &view,
-        &job.ranges,
-        job.active,
-        job.horizontal,
-        job.horizontal + job.viewport.width,
-    );
+    // The lines this tile shaped know their own heights; the window merges them into its table.
+    let mut measured = Vec::new();
+    if job.viewport.wrap.is_some() {
+        for row in &view.rows {
+            measured.push((row.row, row.visual_rows()));
+        }
+    }
+    view.matches = rectangles(&view, &job.ranges, job.active);
     // Annotations are positioned after shaping and never change the geometry inside a code row.
     let frame = lay_out(&view, &job.shown, shaper, job.inks);
     view.annotations = Some(frame);
-    let pixels = raster.paint(&view, job.colors, job.horizontal)?;
+    let pixels = raster.paint(&view, job.colors, 0.0)?;
     // Premultiplied pixels share the font engine's baseline and advances.
     let buffer = SharedPixelBuffer::<Rgba8Pixel>::clone_from_slice(
         &pixels.bytes,
@@ -149,6 +155,13 @@ pub(super) fn build_tile(
         pixels: buffer,
         stamp: job.stamp,
         active: job.active,
+        key: PassKey {
+            file: job.file,
+            revision: job.document.revision(),
+            scale: job.viewport.scale.to_bits(),
+            wrap: job.viewport.wrap.map_or(0, f32::to_bits),
+        },
+        measured,
         #[cfg(debug_assertions)]
         rows_shaped: shaper.shaped_rows() - before,
     });
@@ -162,9 +175,24 @@ fn same_typography(left: &SourceTypography, right: &SourceTypography) -> bool {
 }
 
 /// What:
+///  Most lines the worker's row cache keeps.
+/// Why:
+///  The whole-file pass keeps every line it shaped so that a resize breaks them again instead of shaping them again;
+///  measured on 2026-10-11, 50,000 kept layouts hold about 158 MB (3.2 KB a line), re-breaking them takes 40 to 80 ms
+///  where shaping them takes 1 to 2 s.
+///  A file longer than this keeps the lines nearest the view.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// const KEPT_LAYOUTS = 50_000;
+/// ```
+pub(super) const KEPT_LAYOUTS: usize = 50_000;
+
+/// What:
 ///  The worker's own shaper and raster, plus what the shaper's row cache was built for.
 /// Why:
-///  The row cache keys on revision and scale only, so a change of styles or typography must clear or replace it.
+///  The row cache keys on revision and scale and tags each row with its wrap width,
+///  so a change of styles or typography must clear or replace it.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -184,8 +212,9 @@ struct Tiler {
 /// Build one job with the worker's resources, clearing its row cache when styles or typography changed.
 impl Tiler {
     /// Start from a shaper forked from the window's own, so the worker shares its fonts and typography.
-    fn new(shaper: TextShaper) -> Self {
+    fn new(mut shaper: TextShaper) -> Self {
         let typography = shaper.typography().clone();
+        shaper.keep_layouts(KEPT_LAYOUTS);
         return Self {
             shaper,
             raster: TextRaster::new(),
@@ -194,22 +223,29 @@ impl Tiler {
         };
     }
 
-    /// Build `job`, first making the shaper match its typography and styles.
-    fn build(&mut self, job: TileJob) -> Result<TileBuilt> {
-        if !same_typography(&self.typography, &job.typography) {
-            self.shaper = TextShaper::with_typography(job.typography.clone())?;
-            self.typography = job.typography.clone();
+    /// Make the shaper match `typography` and the cached rows match `styles`.
+    fn adopt(&mut self, typography: &SourceTypography, styles: &SourceStyles) -> Result<()> {
+        if !same_typography(&self.typography, typography) {
+            self.shaper = TextShaper::with_typography(typography.clone())?;
+            self.shaper.keep_layouts(KEPT_LAYOUTS);
+            self.typography = typography.clone();
             self.styles = None;
         }
         // A new styles snapshot can change glyph classes without changing the revision, so cached rows are dropped.
         if !self
             .styles
             .as_ref()
-            .is_some_and(|styles| return Arc::ptr_eq(styles, &job.styles))
+            .is_some_and(|known| return Arc::ptr_eq(known, styles))
         {
             self.shaper.forget_rows();
-            self.styles = Some(Arc::clone(&job.styles));
+            self.styles = Some(Arc::clone(styles));
         }
+        return Ok(());
+    }
+
+    /// Build `job`, first making the shaper match its typography and styles.
+    fn build(&mut self, job: TileJob) -> Result<TileBuilt> {
+        self.adopt(&job.typography, &job.styles)?;
         return build_tile(&mut self.shaper, &mut self.raster, job);
     }
 }
@@ -223,9 +259,23 @@ enum WorkerReply {
     Built(Box<Result<TileBuilt>>),
 }
 
+/// What the window sends the worker.
+/// Why: A tile job carries its inputs; a wake only tells an idle worker to look at the pass slot.
+enum Command {
+    /// Build this tile.
+    Tile(Box<TileJob>),
+    /// A newer pass waits in the pass slot.
+    Wake,
+}
+
 /// Test-only gate: the next build waits for one message before it starts, so a test can hold a job in flight.
 #[cfg(test)]
 pub(super) static BUILD_GATE: std::sync::Mutex<Option<Receiver<()>>> = std::sync::Mutex::new(None);
+
+/// Test-only gate: each chunk of the pass waits for one message before it starts, so a test can release chunks
+/// one at a time. Closing the sender releases the pass for good.
+#[cfg(test)]
+pub(super) static PASS_GATE: std::sync::Mutex<Option<Receiver<()>>> = std::sync::Mutex::new(None);
 
 /// Wait on the test gate once, if a test installed one; the sender stays with the test.
 #[cfg(test)]
@@ -241,31 +291,129 @@ fn hold_at_test_gate() {
     }
 }
 
+/// Whether the next chunk of the pass may run: always, unless a test installed a gate and holds back its token.
+/// A token lets one chunk run; a closed gate lets the pass run freely. The worker keeps serving tile jobs meanwhile.
+#[cfg(test)]
+fn pass_gate_open() -> bool {
+    let Ok(mut slot) = PASS_GATE.lock() else {
+        return true;
+    };
+    let Some(pending) = slot.take() else {
+        return true;
+    };
+    match pending.try_recv() {
+        Ok(()) => {
+            *slot = Some(pending);
+            return true;
+        }
+        Err(TryRecvError::Empty) => {
+            *slot = Some(pending);
+            return false;
+        }
+        Err(TryRecvError::Disconnected) => return true,
+    }
+}
+
+/// What:
+///  The slots and flags the worker shares with the window thread besides its two channels.
+/// Why:
+///  The pass is not a stream of messages: the newest wanted pass sits in one slot,
+///  and what the worker measured coalesces in another.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// type Shared = { control: PassControl; outbox: PassOutbox; wakePending: boolean };
+/// ```
+#[derive(Clone, Default)]
+struct Shared {
+    /// The newest wanted pass.
+    control: Arc<PassControl>,
+    /// What the worker measured and the window has not taken.
+    outbox: Arc<PassOutbox>,
+    /// A wake is queued or the channel is full of commands that will make the worker look.
+    wake_pending: Arc<AtomicBool>,
+}
+
 /// Own the blocking receive loop entirely outside native state.
-fn run(shaper: TextShaper, requests: Receiver<TileJob>, replies: SyncSender<WorkerReply>) {
+fn run(
+    shaper: TextShaper,
+    requests: Receiver<Command>,
+    replies: SyncSender<WorkerReply>,
+    shared: Shared,
+) {
     tracing::debug!("source tile worker started");
     let mut tiler = Tiler::new(shaper);
     if let Err(error) = replies.send(WorkerReply::Ready) {
         tracing::debug!(%error, "source tile reply receiver closed before the worker was ready");
         return;
     }
+    let mut seen = 0_u64;
+    let mut pass: Option<PassRun> = None;
     loop {
-        // What: `match` extracts either an owned job or the closed-channel condition.
-        // Why: Closing the owner ends this thread without an unhandled channel error.
-        let job = match requests.recv() {
-            Ok(job) => job,
-            Err(error) => {
-                tracing::debug!(%error, "source tile request channel closed");
-                return;
+        // What: An idle worker waits for a command; a worker with a pass to carry on only glances at the channel.
+        // Why: A waiting tile job always goes first, and the pass fills the time between jobs.
+        let received = if pass.is_some() {
+            match requests.try_recv() {
+                Ok(command) => Some(command),
+                Err(TryRecvError::Empty) => None,
+                Err(TryRecvError::Disconnected) => {
+                    tracing::debug!("source tile request channel closed");
+                    return;
+                }
+            }
+        } else {
+            match requests.recv() {
+                Ok(command) => Some(command),
+                Err(error) => {
+                    tracing::debug!(%error, "source tile request channel closed");
+                    return;
+                }
             }
         };
-        #[cfg(test)]
-        hold_at_test_gate();
-        let result = tiler.build(job);
-        // A closed receiver means the window is gone; the thread stops instead of retrying.
-        if let Err(error) = replies.send(WorkerReply::Built(Box::new(result))) {
-            tracing::debug!(%error, "source tile reply receiver closed");
-            return;
+        if received.is_some() {
+            shared.wake_pending.store(false, Ordering::SeqCst);
+        }
+        let waiting = received.is_some();
+        if let Some(Command::Tile(job)) = received {
+            #[cfg(test)]
+            hold_at_test_gate();
+            // A tile far from the walk means the reader jumped; the walk goes to the new view next.
+            if let Some(run) = pass.as_mut() {
+                run.refocus(job.bounds.first);
+            }
+            let result = tiler.build(*job);
+            // A closed receiver means the window is gone; the thread stops instead of retrying.
+            if let Err(error) = replies.send(WorkerReply::Built(Box::new(result))) {
+                tracing::debug!(%error, "source tile reply receiver closed");
+                return;
+            }
+        }
+        if let Some(job) = shared.control.take_newer(&mut seen) {
+            match tiler.adopt(&job.typography, &job.styles) {
+                Ok(()) => pass = Some(PassRun::new(job)),
+                Err(error) => {
+                    tracing::error!(%error, "source pass could not adopt its typography");
+                    pass = None;
+                }
+            }
+        }
+        if waiting {
+            // Look for another command before spending time on a chunk.
+            continue;
+        }
+        if let Some(run) = pass.as_mut() {
+            #[cfg(test)]
+            if !pass_gate_open() {
+                // A held-back chunk waits for its token without keeping tile jobs waiting.
+                std::thread::sleep(std::time::Duration::from_millis(1));
+                continue;
+            }
+            let output = run.step(&mut tiler.shaper);
+            let finished = output.done;
+            shared.outbox.push(output);
+            if finished {
+                pass = None;
+            }
         }
     }
 }
@@ -274,29 +422,36 @@ fn run(shaper: TextShaper, requests: Receiver<TileJob>, replies: SyncSender<Work
 const _: fn() = || {
     fn assert_send<T: Send>() {}
     assert_send::<TileJob>();
+    assert_send::<PassJob>();
+    assert_send::<PassOutput>();
     assert_send::<Result<TileBuilt>>();
     assert_send::<TextShaper>();
 };
 
 /// What:
-///  A worker that builds at most one tile at a time and keeps only the newest waiting job.
+///  A worker that builds at most one tile at a time, keeps only the newest waiting job,
+///  and measures the whole text between jobs.
 /// Why:
 ///  Scrolling can ask for many tiles; only the newest one still matches the view.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// class TileWorker { busy = false; waiting?: TileJob }
+/// class TileWorker { busy = false; waiting?: TileJob; passOpen = false }
 /// ```
 pub(super) struct TileWorker {
     /// Taking this sender closes the request channel before joining during Drop.
-    requests: Option<SyncSender<TileJob>>,
+    requests: Option<SyncSender<Command>>,
     /// The window thread polls this receiver without blocking.
     replies: Receiver<WorkerReply>,
+    /// The pass slots shared with the worker thread.
+    shared: Shared,
     /// The worker has reported that its shaper is ready.
     #[cfg(test)]
     ready: bool,
     /// A job is running or its reply is unread.
     busy: bool,
+    /// A pass was posted and its last output has not been taken.
+    pass_open: bool,
     /// Newest job not yet sent; an older waiting job is dropped unbuilt.
     waiting: Option<TileJob>,
     /// Joined on shutdown, never detached.
@@ -305,17 +460,20 @@ pub(super) struct TileWorker {
 
 /// Requests replace each other; polling returns each finished tile in turn.
 impl TileWorker {
-    /// Start a named worker with one request slot and one reply slot, building with `shaper`.
+    /// Start a named worker with a short command queue and one reply slot, building with `shaper`.
     pub(super) fn new(shaper: TextShaper) -> Result<Self> {
-        let (request_sender, request_receiver) = sync_channel(1);
+        // A tile job and a wake can wait together; the window never queues more of either.
+        let (request_sender, request_receiver) = sync_channel(4);
         let (reply_sender, reply_receiver) = sync_channel(1);
+        let shared = Shared::default();
+        let worker_shared = shared.clone();
         let worker = thread::Builder::new()
             .name("ide-source-tile".to_string())
             .spawn(move || {
                 // What: `catch_unwind` (std::panic) stops an unwinding build at the thread boundary.
                 // Why: A detached thread has no join to report a panic, so the panic is logged here instead.
                 let outcome = catch_unwind(AssertUnwindSafe(|| {
-                    run(shaper, request_receiver, reply_sender);
+                    run(shaper, request_receiver, reply_sender, worker_shared);
                 }));
                 if outcome.is_err() {
                     tracing::error!(
@@ -327,9 +485,11 @@ impl TileWorker {
         return Ok(Self {
             requests: Some(request_sender),
             replies: reply_receiver,
+            shared,
             #[cfg(test)]
             ready: false,
             busy: false,
+            pass_open: false,
             waiting: None,
             thread: Some(worker),
         });
@@ -341,15 +501,60 @@ impl TileWorker {
         return self.dispatch();
     }
 
+    /// What:
+    ///  Make `job` the pass the worker carries on between tiles, and wake an idle worker.
+    /// Why:
+    ///  A newer pass replaces an older one, so the slot holds only the newest.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// postPass(job: PassJob): void;
+    /// ```
+    pub(super) fn post_pass(&mut self, job: PassJob) -> Result<()> {
+        self.shared.control.set(job);
+        self.pass_open = true;
+        let sender = self
+            .requests
+            .as_ref()
+            .context("Source tile worker is closed; restart the application")?;
+        if self.shared.wake_pending.swap(true, Ordering::SeqCst) {
+            return Ok(());
+        }
+        return match sender.try_send(Command::Wake) {
+            // A full channel holds commands that make the worker look at the slot anyway.
+            Ok(()) | Err(TrySendError::Full(_)) => Ok(()),
+            Err(TrySendError::Disconnected(_)) => {
+                bail!("Source tile worker is closed; restart the application")
+            }
+        };
+    }
+
+    /// Take what the pass measured since the last take, at most `limit` lines;
+    ///  the pass is no longer open once its last output is taken.
+    pub(super) fn take_pass(&mut self, limit: usize) -> Option<PassOutput> {
+        let output = self.shared.outbox.take(limit)?;
+        if output.done {
+            self.pass_open = false;
+        }
+        return Some(output);
+    }
+
+    /// Measured lines the window has not taken yet; test-only.
+    #[cfg(test)]
+    pub(super) fn pending_pass_lines(&self) -> usize {
+        return self.shared.outbox.waiting_lines();
+    }
+
     /// True once the worker has reported that its shaper is ready to build.
     #[cfg(test)]
     pub(super) fn is_ready(&self) -> bool {
         return self.ready;
     }
 
-    /// True while a job is running, its reply is unread, or a job waits; the poll must continue while this holds.
+    /// True while a job is running, its reply is unread, a job waits, or the pass is not finished;
+    ///  the poll must continue while this holds.
     pub(super) fn is_busy(&self) -> bool {
-        return self.busy || self.waiting.is_some();
+        return self.busy || self.waiting.is_some() || self.pass_open;
     }
 
     /// Close the request channel so the idle worker thread ends, as a crashed worker would; test-only.
@@ -376,7 +581,8 @@ impl TileWorker {
             .as_ref()
             .context("Source tile worker is closed; restart the application")?;
         sender
-            .try_send(job)
+            .try_send(Command::Tile(Box::new(job)))
+            .map_err(|error| return anyhow::anyhow!("{error}"))
             .context("Cannot send a source tile request; restart the application")?;
         self.busy = true;
         return Ok(());
@@ -403,6 +609,7 @@ impl TileWorker {
                 Err(TryRecvError::Disconnected) => {
                     self.busy = false;
                     self.waiting = None;
+                    self.pass_open = false;
                     self.requests.take();
                     bail!(
                         "The source tile worker stopped unexpectedly; restart the application to scroll the source"

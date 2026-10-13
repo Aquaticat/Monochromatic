@@ -147,6 +147,8 @@ pub(super) fn reader(root: &Path, name: &str) -> Reader {
     window.show().expect("show find window");
     render(&window, &source);
     window.window().take_snapshot().expect("initial layout");
+    // The layout gave the view its width; a tile for it may still be on the worker.
+    super::overscan_tile_tests::settle_tile(&source);
     window.invoke_focus_source();
     return Reader {
         window,
@@ -464,9 +466,9 @@ fn native_find_recomputes_after_external_reload_and_follows_selection_correspond
 }
 
 /// Matches are drawn only for materialized rows,
-///  and a far column is scrolled into view.
+///  and a match on a far continuation row is scrolled into view.
 #[test]
-fn native_find_paints_visible_matches_only_and_reveals_far_columns() {
+fn native_find_paints_visible_matches_only_and_reveals_far_rows() {
     let fixture = tempfile::tempdir().expect("disposable paint project");
     let wide = format!("{}needle\n", "x".repeat(400));
     let text = format!("{}{wide}", "needle here\n".repeat(300));
@@ -492,19 +494,27 @@ fn native_find_paints_visible_matches_only_and_reveals_far_columns() {
     );
     chord(window, Key::Shift, Key::Return);
     status(window, "301/301");
-    let horizontal = -window.get_scroll_x();
-    assert!(
-        horizontal > 0.0,
-        "a match 400 columns to the right was not scrolled into view"
-    );
+    // The last match ends a line of 400 characters that wraps, so it stands on a continuation row.
     let reading = reader.source.borrow();
     let view = reading.shaped.as_ref().expect("shaped source");
     let (start, end) = (text.chars().count() - 7, text.chars().count() - 1);
     let rectangle = view.range(start, end)[0];
+    let offset = -window.get_scroll_y();
     assert!(
-        rectangle.x >= horizontal
-            && rectangle.x + rectangle.width <= horizontal + window.get_viewport_width(),
-        "the active match is outside the horizontal viewport"
+        rectangle.y > 24.0 * 301.0,
+        "the match did not stand on a continuation row of its wrapped line: y {}",
+        rectangle.y
+    );
+    assert!(
+        rectangle.y >= offset
+            && rectangle.y + rectangle.height <= offset + window.get_viewport_height(),
+        "the active match is outside the viewport: row at {}, view {offset} to {}",
+        rectangle.y,
+        offset + window.get_viewport_height()
+    );
+    assert!(
+        rectangle.x >= 0.0 && rectangle.x + rectangle.width <= window.get_viewport_width(),
+        "the active match is outside the text area"
     );
     drop(reading);
     window.hide().expect("close paint window");

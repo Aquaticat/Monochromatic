@@ -314,15 +314,15 @@ class TrackListEntriesTest {
     // ```ts
     // test("root file folder field gives no line", () => { /* ... */ });
     // ```
-    /** Verifies a root-level file in the Unfiled entry yields no supporting line for a folder-only template. */
+    /** Verifies a root-level file in its virtual letter entry yields no supporting line for a folder-only template. */
     @Test
     fun rootFileFolderFieldGivesNoLine() {
-        /** Unfiled entry holding one track at the library root. */
+        /** Letter entry holding one track at the library root. */
         val folder: FolderEntry = folderIndex(listOf(track("Loose.flac"))).single()
         val rows: List<TrackRowModel> = trackListEntries(folder, null, "\$mi(folder)\$")
             .filterIsInstance<TrackListEntry.RowEntry>()
             .map { entry -> entry.row }
-        assertEquals(UNFILED_FOLDER_NAME, folder.name)
+        assertEquals("L", folder.name)
         assertEquals(listOf<String?>(null), rows.map { row -> row.supportingLine })
     }
 

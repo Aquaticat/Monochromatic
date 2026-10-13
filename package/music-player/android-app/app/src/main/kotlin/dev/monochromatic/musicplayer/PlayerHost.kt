@@ -111,6 +111,7 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.onFocusChanged
+import dev.monochromatic.musicplayer.core.CreaseState
 import dev.monochromatic.musicplayer.core.TrackActionFailure
 import dev.monochromatic.musicplayer.core.libraryDisplayName
 import dev.monochromatic.musicplayer.core.TrackMenuAction
@@ -119,14 +120,15 @@ import dev.monochromatic.musicplayer.core.TrashRoute
 import dev.monochromatic.musicplayer.core.trackFileNameOf
 import dev.monochromatic.musicplayer.core.mimeTypeFor
 import dev.monochromatic.musicplayer.core.trackActionFailureMessage
+import dev.monochromatic.musicplayer.core.analysisFailureMessage
+import dev.monochromatic.musicplayer.core.trackDetailsMessage
+import dev.monochromatic.musicplayer.core.trackLoadFailureMessage
 import dev.monochromatic.musicplayer.core.trackMenuActionsFor
 import dev.monochromatic.musicplayer.core.trashRouteFor
 import dev.monochromatic.musicplayer.core.trashUndoMessage
-import dev.monochromatic.musicplayer.core.TRACK_REANALYSE_ID
 import dev.monochromatic.musicplayer.core.TrackMeasure
 import dev.monochromatic.musicplayer.core.measureDetailsValue
 import dev.monochromatic.musicplayer.core.measuresByIndex
-import dev.monochromatic.musicplayer.core.trackReanalysingMessage
 import java.util.UUID
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -169,6 +171,7 @@ import androidx.compose.ui.Modifier
 // import { LocalContext } from "compose/ui/platform";
 // ```
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 
 // What:     `import dev.monochromatic.musicplayer.core.PlayerHostModel` and the core types the host reads.
 // Why:      The pure rules and the core values live in the core package and are shared with the tests.
@@ -182,6 +185,10 @@ import dev.monochromatic.musicplayer.core.HostKeyActions
 import dev.monochromatic.musicplayer.core.HostKeyContext
 import dev.monochromatic.musicplayer.core.HostKeyDispatcher
 import dev.monochromatic.musicplayer.core.HostKeyLayout
+import dev.monochromatic.musicplayer.core.HostKeyZone
+import dev.monochromatic.musicplayer.core.adjacentFolderLabel
+import dev.monochromatic.musicplayer.core.rightPaneClearance
+import dev.monochromatic.musicplayer.core.seekTargetSec
 import dev.monochromatic.musicplayer.core.MenuAnchorRect
 import dev.monochromatic.musicplayer.core.PlayingPlace
 import dev.monochromatic.musicplayer.core.playingPlaceOf
@@ -190,13 +197,17 @@ import dev.monochromatic.musicplayer.core.HostKeyRoute
 import dev.monochromatic.musicplayer.core.PlaybackMode
 import dev.monochromatic.musicplayer.core.PlayerHostModel
 import dev.monochromatic.musicplayer.core.SearchActivation
+import dev.monochromatic.musicplayer.core.SearchAnswer
 import dev.monochromatic.musicplayer.core.SearchResult
 import dev.monochromatic.musicplayer.core.SearchState
 import dev.monochromatic.musicplayer.core.TemplateEditorState
 import dev.monochromatic.musicplayer.core.TemplateKind
+import dev.monochromatic.musicplayer.core.TrackListEntry
 import dev.monochromatic.musicplayer.core.FeedbackMessage
 import dev.monochromatic.musicplayer.core.buildPlayerContent
-import dev.monochromatic.musicplayer.core.searchLibrary
+import dev.monochromatic.musicplayer.core.SearchResultKind
+import dev.monochromatic.musicplayer.core.playingResultId
+import dev.monochromatic.musicplayer.core.searchStateFor
 
 // What:     `sealed interface PlayerRoute` names the four destinations the host can show.
 // Why:      One closed type lets the host draw exactly one destination and makes Back a total function.
@@ -457,6 +468,22 @@ fun playerHost(
     var hostHasFocus: Boolean by remember { mutableStateOf(false) }
     /** Whether the Search query field holds focus, as the Search page reports it. */
     var searchFieldFocused: Boolean by remember { mutableStateOf(false) }
+    /** The list that holds keyboard focus (the folder rail or the track list), or none. */
+    var keyZone: HostKeyZone by remember { mutableStateOf(HostKeyZone.NONE) }
+    /** The list that a focus chord asked to take keyboard focus and has not yet done so, or null. */
+    var pendingFocus: HostKeyZone? by remember { mutableStateOf<HostKeyZone?>(null) }
+    /** Callback that the lists report their focus through, kept across frames so readers stay valid. */
+    val reportKeyZone: (HostKeyZone, Boolean) -> Unit = remember {
+        { zone: HostKeyZone, focused: Boolean ->
+            if (focused) {
+                keyZone = zone
+            } else if (keyZone == zone) {
+                keyZone = HostKeyZone.NONE
+            }
+        }
+    }
+    /** Callback that a list calls after it took focus for the pending request. */
+    val clearPendingFocus: () -> Unit = remember { { pendingFocus = null } }
     /** Count of same-visit Search refocus requests, read by the Search page's query field. */
     var searchFocusToken: Int by remember { mutableIntStateOf(0) }
     /** Count of reveal requests, read by the track list to scroll to and focus the playing row. */
@@ -477,6 +504,41 @@ fun playerHost(
     val state: PlayerUiState = controller.uiState
     /** Playback position and duration sampled for this frame. */
     val playbackProgress: PlaybackProgress = rememberPlaybackProgress(controller)
+    /** Measures of the selected page's tracks keyed by load-order index, which is how the rows name their tracks. */
+    val pageMeasures: Map<Int, TrackMeasure> = measuresByIndex(
+        pageIndices = state.pageItems.map { entry -> entry.index },
+        uriAt = controller::uriAt,
+        measures = state.measures,
+    )
+    /** Saved template of the track rows, parsed once by the template cache and applied to every row. */
+    val trackRowsTemplate: String = templates.lastValid.getValue(TemplateKind.TRACK_ROWS)
+    /** Name of the selected page, which titles the folder that the rows belong to. */
+    val pageFolderTitle: String = state.pageLabels.getOrNull(state.selectedPage).orEmpty()
+    // What:     `remember(keys) { ... }` keeps the built rows until one of its keys changes.
+    // Why:      The progress tick recomposes this host several times a second; rebuilding every row and its template
+    //           text on each tick pinned the main thread for a 1,000-row folder (S2). Rows depend on the page, the
+    //           playing row, the template and the measures, never on the position.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const rowEntries = useMemo(() => rowEntriesFor(...), [pageItems, currentIndex, title, template, measures]);
+    // ```
+    /** Rows of the selected page with their template supporting lines, rebuilt only when their inputs change. */
+    val rowEntries: List<TrackListEntry> = remember(
+        state.pageItems,
+        state.currentIndex,
+        pageFolderTitle,
+        trackRowsTemplate,
+        state.measures,
+    ) {
+        PlayerHostModel.rowEntriesFor(
+            folderTitle = pageFolderTitle,
+            pageItems = state.pageItems,
+            currentIndex = state.currentIndex,
+            trackRowsTemplate = trackRowsTemplate,
+            measuresByIndex = pageMeasures,
+        )
+    }
     /** Player model built from the controller snapshot and the sampled progress, before the templates apply. */
     val builtModel: PlayerContentModel = buildPlayerContent(
         pageLabels = state.pageLabels,
@@ -490,17 +552,12 @@ fun playerHost(
         positionSec = playbackProgress.position,
         durationSec = playbackProgress.duration,
         libraryName = libraryName,
+        entries = rowEntries,
     )
     /** Library tracks of the selected page, each keyed by the URI that its measure is stored under. */
     val pageTracks: List<Track> = state.pageItems.mapNotNull { entry ->
         controller.uriAt(entry.index)?.let { uri -> Track(uri = uri, displayPath = entry.name) }
     }
-    /** Measures of the selected page's tracks keyed by load-order index, which is how the rows name their tracks. */
-    val pageMeasures: Map<Int, TrackMeasure> = measuresByIndex(
-        pageIndices = state.pageItems.map { entry -> entry.index },
-        uriAt = controller::uriAt,
-        measures = state.measures,
-    )
     // What:     `LaunchedEffect(pageTracks, SweepProgress.snapshot.done)` reads the page's unmeasured tracks.
     // Why:      A new page or a sweep step (the sweep reports every few tracks) re-checks the peaks shown on the page,
     //           and the batches land on screen as each one is read.
@@ -509,7 +566,10 @@ fun playerHost(
     // ```ts
     // useEffect(() => { refreshPage(pageTracks, () => measures, publish); }, [pageTracks, sweepDone]);
     // ```
-    LaunchedEffect(pageTracks, SweepProgress.snapshot.done) {
+    /** Tracks the analysis measured again, whose shown measures are stale (D113). */
+    val staleMeasures: Set<String> = MeasureInvalidation.pending
+    LaunchedEffect(staleMeasures, pageTracks, SweepProgress.snapshot.done) {
+        controller.dropMeasures(MeasureInvalidation.take())
         TrackMeasures.refreshPage(
             context = context,
             tracks = pageTracks,
@@ -518,11 +578,18 @@ fun playerHost(
         )
     }
     /** Playing track and its place in its own folder, which the deck reads even when that folder is not on screen. */
-    val playingPlace: PlayingPlace = playingPlaceOf(
-        folderTitle = state.playingPageIndex?.let { index -> state.pageLabels.getOrNull(index) }.orEmpty(),
-        playingItems = state.playingItems,
-        currentIndex = state.currentIndex,
-    )
+    val playingPlace: PlayingPlace = remember(
+        state.playingPageIndex,
+        state.pageLabels,
+        state.playingItems,
+        state.currentIndex,
+    ) {
+        playingPlaceOf(
+            folderTitle = state.playingPageIndex?.let { index -> state.pageLabels.getOrNull(index) }.orEmpty(),
+            playingItems = state.playingItems,
+            currentIndex = state.currentIndex,
+        )
+    }
     /** Measure of the playing track, read from the library-wide measures so the deck shows it on any folder. */
     val playingMeasure: TrackMeasure? = state.currentIndex
         ?.let { index -> controller.uriAt(index) }
@@ -533,11 +600,12 @@ fun playerHost(
         pageItems = state.pageItems,
         currentIndex = state.currentIndex,
         durationSec = playbackProgress.duration,
-        trackRowsTemplate = templates.lastValid.getValue(TemplateKind.TRACK_ROWS),
+        trackRowsTemplate = trackRowsTemplate,
         playingTemplate = templates.lastValid.getValue(TemplateKind.PLAYING_TRACK),
         playingPlace = playingPlace,
         playingMeasure = playingMeasure,
         measuresByIndex = pageMeasures,
+        rowEntries = rowEntries,
     )
     /** Editor view with the preview drawn from the selected page and its measured durations and peaks, for Settings. */
     val editor: TemplateEditorState = PlayerHostModel.editorWithPreview(
@@ -618,11 +686,31 @@ fun playerHost(
     // ```ts
     // const openSearchResult = (result: SearchResult) => { /* activation, then back to player */ };
     // ```
+    /**
+     * Returns a track result with its load-order index in the library the player holds now, found by the track's URI.
+     *
+     * The index of a result is the track's number in the Search index, which is its arrival number while a scan runs
+     * and so differs from its position in the sorted library. A track the library no longer holds comes back without an
+     * index, which the activation rules answer by staying in Search (D74).
+     */
+    fun locateInLibrary(result: SearchResult): SearchResult {
+        if (result.kind != SearchResultKind.TRACK) {
+            return result
+        }
+        /** URI of the result's track, or null for an index built without URIs. */
+        val uri: String = result.trackUri ?: return result.copy(indexInLibrary = null)
+        /** Position of that URI in the library now, or -1. */
+        val position: Int = controller.indexOfUri(uri)
+        return result.copy(indexInLibrary = if (position < 0) null else position)
+    }
+
     /** Acts on one Search result, then returns to the player unless the result could not be opened. */
     fun openSearchResult(result: SearchResult) {
+        /** The result with its track located in the library as it is now, or without a position when it is gone. */
+        val located: SearchResult = locateInLibrary(result)
         /** What activating this result does to the player, decided from the result and the playing track. */
         val activation: SearchActivation = PlayerHostModel.searchActivationFor(
-            result = result,
+            result = located,
             pageLabels = state.pageLabels,
             currentIndex = state.currentIndex,
         )
@@ -803,7 +891,7 @@ fun playerHost(
      */
     fun openMenu(index: Int, anchor: MenuAnchorRect) {
         /** Track at the index in load order, or null when the index is out of range. */
-        val track: Track? = controller.libraryTracks().getOrNull(index)
+        val track: Track? = controller.trackAt(index)
         if (track == null) {
             Log.w(LOG_TAG, "player host menu index out of range index=$index")
             return
@@ -876,7 +964,7 @@ fun playerHost(
     suspend fun reconcile() {
         /** Tracks read from the current library after the change. */
         val tracks: List<Track> = withContext(Dispatchers.IO) { LibrarySource.load(context) }
-        controller.reconcileLibrary(tracks)
+        controller.reconcileFromScan(tracks)
         Log.i(LOG_TAG, "player host library reconciled tracks=${tracks.size}")
     }
 
@@ -1129,32 +1217,30 @@ fun playerHost(
         }
     }
 
-    // What:     `fun reanalyseTrack(target: TrackMenuTarget)` measures one track again and reports the outcome.
-    // Why:     The user asked for a fresh peak, so the notice shows while the file is read and the row updates when
-    //           done.
+    // What:     `fun showDetails(target: TrackMenuTarget)` shows the name, size and folder of one track file as a
+    //           notice.
+    // Why:      M5: choosing File details did nothing. The desktop shows these facts as a notice too; the size comes
+    //           from the file provider, so it is read off the main thread.
     //
     // In TS you'd write (pseudocode):
     // ```ts
-    // async function reanalyseTrack(target: TrackMenuTarget): Promise<void> { ... }
+    // async function showDetails(target) { feedback.show(trackDetailsMessage(name, await sizeOf(target), path)); }
     // ```
-    /**
-     * Shows a re-analysing notice, measures the track again on the host scope, then publishes its measure or a failure.
-     */
-    fun reanalyseTrack(target: TrackMenuTarget) {
-        /** Name of the track, used in the notice and any failure message. */
-        val name: String = trackFileNameOf(target.track.displayPath)
-        feedback.showFeedback(trackReanalysingMessage(name))
+    /** Reads the size of the track file and shows its name, size and folder as a notice. */
+    fun showDetails(target: TrackMenuTarget) {
         scope.launch {
-            /** New measure of the track, or null when the file could not be measured again. */
-            val measure: TrackMeasure? = TrackMeasures.reanalyse(context = context, track = target.track)
-            feedback.dismiss(TRACK_REANALYSE_ID)
-            if (measure == null) {
-                Log.w(LOG_TAG, "player host re-analysis failed index=${target.indexInLibrary}")
-                showFailure(TrackActionFailure.REANALYSE_FAILED, name)
-                return@launch
+            /** Size the provider reports for the file, or null when it reports none. */
+            val size: Long? = withContext(Dispatchers.IO) {
+                trackFileSizeBytes(context = context, track = target.track)
             }
-            controller.mergeMeasures(mapOf(target.track.uri to measure))
-            Log.i(LOG_TAG, "player host re-analysis published index=${target.indexInLibrary}")
+            Log.i(LOG_TAG, "player host file details shown index=${target.indexInLibrary} sizeKnown=${size != null}")
+            feedback.showFeedback(
+                trackDetailsMessage(
+                    fileName = trackFileNameOf(target.track.displayPath),
+                    sizeBytes = size,
+                    displayPath = target.track.displayPath,
+                ),
+            )
         }
     }
 
@@ -1175,13 +1261,39 @@ fun playerHost(
             TrackMenuAction.PLAY -> controller.playIndex(target.indexInLibrary)
             TrackMenuAction.SHUFFLE_FROM_HERE ->
                 shuffleFromHere(controller = controller, indexInLibrary = target.indexInLibrary)
-            TrackMenuAction.DETAILS ->
-                Log.i(LOG_TAG, "player host file details shown inline index=${target.indexInLibrary}")
-            TrackMenuAction.REANALYSE_TRUE_PEAK -> reanalyseTrack(target)
+            TrackMenuAction.DETAILS -> showDetails(target)
             TrackMenuAction.SHOW_IN_FILE_MANAGER ->
                 attempt(name) { showInFileManager(context = context, track = target.track) }
             TrackMenuAction.COPY_FILENAME -> attempt(name) { copyFilename(context = context, track = target.track) }
             TrackMenuAction.MOVE_TO_TRASH -> moveToTrash(target)
+        }
+    }
+
+    // What:     `LaunchedEffect(controller.loadFailure)` shows a message when the engine could not open a track.
+    // Why:      M6: the file open runs off the main thread and can stall, so the engine reports its failure later and
+    //           the host words it for the user.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // useEffect(() => { if (loadFailure) feedback.show(trackLoadFailureMessage(reason, name)); }, [loadFailure]);
+    // ```
+    /** The newest failure to open a track file, or null when the last load worked. */
+    val loadFailure: LoadFailureNotice? = controller.loadFailure
+    /** Names of files whose analysis failed for the first time and that the user has not been told about yet (D113). */
+    val analysisFailures: List<String> = AnalysisFailures.pending
+    LaunchedEffect(analysisFailures) {
+        if (analysisFailures.isNotEmpty()) {
+            feedback.showFeedback(analysisFailureMessage(AnalysisFailures.take()))
+        }
+    }
+    LaunchedEffect(loadFailure) {
+        if (loadFailure != null) {
+            /** Display path of the track that failed, or its URI when the library no longer lists it. */
+            val shownName: String = controller.trackAt(controller.indexOfUri(loadFailure.uri))?.displayPath
+                ?: loadFailure.uri
+            feedback.showFeedback(
+                trackLoadFailureMessage(reason = loadFailure.reason, fileName = trackFileNameOf(shownName)),
+            )
         }
     }
 
@@ -1245,8 +1357,10 @@ fun playerHost(
     // ```
     /** Whether the window is wide enough for the two-pane Settings page. */
     val settingsIsWide: Boolean = keyLayout == HostKeyLayout.UNFOLDED
-    /** Crease width in physical pixels when the device has a crease, else null. */
-    val creaseWidthPx: Float? = rememberCreaseWidthPx()
+    /** Crease of this window from the Jetpack WindowManager layout, shared by Settings and Search (D110, E2). */
+    val crease: CreaseState = rememberCrease()
+    /** Crease width in physical pixels when the window has a crease, else null. */
+    val creaseWidthPx: Float? = crease.widthPxOrNull
     // What:     `val keyContext: HostKeyContext` is the host state that the keyboard rules read for this frame.
     // Why:      The owner, the route rules, the layout, and the mode cycle each need the route, popup, focus, and mode.
     //
@@ -1264,6 +1378,8 @@ fun playerHost(
         rootFocused = rootFocused,
         playbackMode = state.playbackMode,
         layout = keyLayout,
+        zone = keyZone,
+        pickerOpen = pickerOpen,
     )
 
     // What:     `val keyActions: HostKeyActions` runs each keyboard command through its on-screen control's path.
@@ -1412,6 +1528,108 @@ fun playerHost(
         override fun closePopup() {
             menuTarget = null
         }
+
+        // What:     `override fun seekBy(seconds: Int)` moves the playhead by a number of seconds.
+        // Why:      Alt+Left and Alt+Right seek through the controller, the same call the seek slider makes.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // seekBy(seconds: number): void { controller.seek(seekTargetSec(pos, dur, seconds)); }
+        // ```
+        /** Seeks by [seconds] inside the playing track, and does nothing while no track is loaded. */
+        override fun seekBy(seconds: Int) {
+            if (state.currentIndex == null) {
+                return
+            }
+            controller.seek(
+                seekTargetSec(
+                    positionSec = controller.positionSec(),
+                    durationSec = controller.durationSec(),
+                    deltaSec = seconds,
+                ),
+            )
+        }
+
+        // What:     `override fun restartTrack()` returns the playhead to the start.
+        // Why:      Ctrl+Home seeks to zero, the same call as dragging the slider to its start.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // restartTrack(): void { controller.seek(0); }
+        // ```
+        /** Seeks to the start of the playing track, and does nothing while no track is loaded. */
+        override fun restartTrack() {
+            if (state.currentIndex != null) {
+                controller.seek(0.0)
+            }
+        }
+
+        // What:     `override fun stepFolder(step: Int)` selects the folder a number of places away.
+        // Why:      Alt+Up and Alt+Down walk the folder order through the same call as tapping a folder name.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // stepFolder(step: number): void {
+        //   const label = adjacent(labels, selected, step); if (label) selectFolder(label);
+        // }
+        // ```
+        /** Selects the folder [step] places from the selected one and stops at the first and last folder. */
+        override fun stepFolder(step: Int) {
+            adjacentFolderLabel(labels = state.pageLabels, selected = state.selectedPage, step = step)
+                ?.let { label -> selectFolder(label) }
+        }
+
+        // What:     `override fun revealPlayingTrackFolder()` shows the folder of the playing track.
+        // Why:      Ctrl+Shift+G runs the same reveal as a tap on the folder part of the deck heading.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // revealPlayingTrackFolder(): void { revealPlayingFolder(); }
+        // ```
+        /** Shows the playing track's folder and scrolls the track list to it. */
+        override fun revealPlayingTrackFolder() {
+            revealPlayingFolder()
+        }
+
+        // What:     `override fun focusZone(zone: HostKeyZone)` asks a list to take keyboard focus.
+        // Why:      Alt+1 and Alt+2 move focus to the folder rail and the track list. On the folded cover only one of
+        //           them is drawn at a time, so the chord first shows the one it asks for.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // focusZone(zone: HostKeyZone): void { if (cover) setPickerOpen(zone === "folders"); pendingFocus = zone; }
+        // ```
+        /** Records the focus request, which the list serves once it is composed. */
+        override fun focusZone(zone: HostKeyZone) {
+            if (keyLayout == HostKeyLayout.FOLDED_COVER) {
+                pickerOpen = zone == HostKeyZone.FOLDERS || zone == HostKeyZone.NAMES
+            }
+            pendingFocus = zone
+        }
+
+        // What:     `override fun openFolderDialog()` opens the system folder chooser.
+        // Why:      Ctrl+Shift+O does what the Open button does.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // openFolderDialog(): void { playerActions.onOpen(); }
+        // ```
+        /** Opens the system folder chooser through the Open button's own action. */
+        override fun openFolderDialog() {
+            playerActions.onOpen()
+        }
+
+        // What:     `override fun closePicker()` closes the folder picker on the folded cover.
+        // Why:      Escape and the system Back button close the picker the same way.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // closePicker(): void { setPickerOpen(false); }
+        // ```
+        /** Closes the folder picker, as the Back button does. */
+        override fun closePicker() {
+            pickerOpen = false
+        }
     }
 
     // What:     `val keyDispatcher: HostKeyDispatcher` runs the command that each consumed key-down resolves to.
@@ -1495,19 +1713,43 @@ fun playerHost(
             HostKeyLocalReveal provides revealToken,
             HostKeyLocalRevealFolder provides folderRevealToken,
             HostKeyLocalSearchField provides reportSearchFieldFocus,
+            HostKeyLocalContext provides keyContext,
+            HostKeyLocalZone provides reportKeyZone,
+            HostKeyLocalFocusRequest provides pendingFocus,
+            HostKeyLocalFocusHandled provides clearPendingFocus,
+            LocalTrackRowKeyActions provides { action: TrackMenuAction, index: Int ->
+                controller.trackAt(index)?.let { track ->
+                    runMenuAction(action = action, target = TrackMenuTarget(indexInLibrary = index, track = track))
+                }
+            },
         ) {
             when (route) {
                 PlayerRoute.Player -> {
                     Box(modifier = Modifier.fillMaxSize()) {
                         if (firstRunContent != null) {
-                            firstRunContent { go(PlayerRoute.Settings) }
+                            // The first-run text starts in the right half, so it reads the right pane's clearance.
+                            paneClearanceProvider(
+                                clearance = rightPaneClearance(
+                                    creaseWidthPx = creaseWidthPx,
+                                    density = LocalDensity.current.density,
+                                ),
+                            ) {
+                                firstRunContent { go(PlayerRoute.Settings) }
+                            }
                         } else {
                             CompositionLocalProvider(
                                 LocalTrackRowMenuOpener provides { index, anchor -> openMenu(index, anchor) },
                             ) {
-                                playerContent(model = model, pickerOpen = pickerOpen, actions = playerActions)
+                                playerContent(
+                                    model = model,
+                                    pickerOpen = pickerOpen,
+                                    actions = playerActions,
+                                    creaseWidthPx = creaseWidthPx,
+                                )
                             }
-                            emptyNotice(state)
+                            rightPaneOnCreasedScreen(keyLayout = keyLayout, creaseWidthPx = creaseWidthPx) {
+                                emptyNotice(state)
+                            }
                         }
                         /** Start inset of the track menu: none on the folded cover, the inner-pane inset otherwise. */
                         val menuStartInset: Dp = if (keyLayout == HostKeyLayout.FOLDED_COVER) {
@@ -1536,7 +1778,14 @@ fun playerHost(
                         // The feedback overlay floats at the bottom edge and never changes the layout beneath it.
                         // True-peak analysis shows no in-app indicator (D107): its progress is a system notification,
                         // so nothing here reserves space for it.
-                        Column(modifier = Modifier.align(Alignment.BottomStart).fillMaxWidth()) {
+                        // On the unfolded screen with a crease the overlay spans the left pane only, ending before the
+                        // crease band, so its text never crosses the fold (E2, D110).
+                        Column(
+                            modifier = Modifier.align(Alignment.BottomStart).feedbackOverlayWidth(
+                                keyLayout = keyLayout,
+                                creaseWidthPx = creaseWidthPx,
+                            ),
+                        ) {
                             /**
                              * Messages in display order, Undo above Error, drawn only while at least one is visible.
                              */
@@ -1560,22 +1809,31 @@ fun playerHost(
                     }
                 }
                 PlayerRoute.Search -> {
-                    /**
-                     * Library tracks in load order, rebuilt once per controller snapshot so each index is a load index.
-                     */
-                    val tracks: List<Track> = remember(state) { controller.libraryTracks() }
-                    /** Search state for the typed query over the library tracks. */
-                    val results: SearchState = remember(query, tracks) {
-                        searchLibrary(query = query, tracks = tracks, available = true)
-                    }
+                    /** The process's Search service, or null when nothing can search. */
+                    val searchHost: SearchHost? = controller.searchHost
+                    // Each visit starts clean (D66), and each edit of the query asks the service for an answer on
+                    // its own worker thread, so no keystroke ranks anything in composition.
+                    LaunchedEffect(searchHost) { searchHost?.beginVisit() }
+                    LaunchedEffect(searchHost, query) { searchHost?.ask(query) }
+                    /** Newest answer of this visit, which keeps the page current as a scan adds tracks (D111). */
+                    val answer: SearchAnswer? = searchHost?.shownAnswer
+                    /** State the page draws for the typed query. */
+                    val results: SearchState = searchStateFor(
+                        query = query,
+                        answer = answer,
+                        hasService = searchHost != null,
+                    )
+                    /** Playing track's URI, which marks its row among the results. */
+                    val playingUri: String? = state.currentIndex?.let { index -> controller.uriAt(index) }
                     searchPage(
+                        creaseWidthPx = creaseWidthPx,
                         state = results,
                         query = query,
                         onQueryChange = { text -> query = text },
                         onBack = { go(PlayerRoute.Player) },
                         onClear = { query = "" },
                         onOpenResult = { result -> openSearchResult(result) },
-                        currentTrackIndex = state.currentIndex,
+                        currentTrackIndex = playingResultId(results, playingUri),
                         deck = {
                             transportDeck(
                                 model = model.deck,
@@ -1583,13 +1841,19 @@ fun playerHost(
                             )
                         },
                         isPlaying = state.playing,
+                        complete = answer?.complete ?: true,
                         folderBrowser = { browserModifier ->
-                            folderPickerPane(
-                                sections = model.sections,
-                                currentFolder = model.currentFolder,
-                                onSelectFolder = { folder -> selectFolder(folder) },
-                                modifier = browserModifier,
-                            )
+                            // The retained browser keeps its header (D51), which also pads for the status bar, so
+                            // the rail letters never draw over the clock while the keyboard shortens the viewport.
+                            Column(modifier = browserModifier) {
+                                unfoldedFoldersHeader(title = model.libraryName, onOpen = playerActions.onOpen)
+                                folderPickerPane(
+                                    sections = model.sections,
+                                    currentFolder = model.currentFolder,
+                                    onSelectFolder = { folder -> selectFolder(folder) },
+                                    modifier = Modifier.weight(1f),
+                                )
+                            }
                         },
                     )
                 }

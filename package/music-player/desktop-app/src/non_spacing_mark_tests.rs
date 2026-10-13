@@ -67,6 +67,54 @@ fn last_range_boundaries_are_respected() {
 }
 
 // What:     `#[test]` marks the next function as a test case.
+// Why:      D1's example: `ExtraordinarilyLongDirectory` shows as `Extr...ory`, so the last three characters are the tail.
+#[test]
+fn split_tail_clusters_takes_the_last_characters() {
+    let (head, tail) = split_tail_clusters("ExtraordinarilyLongDirectory", 3);
+    assert_eq!(head, "ExtraordinarilyLongDirect");
+    assert_eq!(tail, "ory");
+}
+
+// Why:      A name no longer than the tail has no start, so the whole name is the tail and nothing is cut.
+#[test]
+fn split_tail_clusters_of_a_short_name_is_all_tail() {
+    assert_eq!(split_tail_clusters("abc", 3), (String::new(), "abc".to_owned()));
+    assert_eq!(split_tail_clusters("ab", 3), (String::new(), "ab".to_owned()));
+    assert_eq!(split_tail_clusters("", 3), (String::new(), String::new()));
+}
+
+// Why:      A letter and its combining accent are one cluster, so the cut never leaves an accent at the start of the tail.
+#[test]
+fn split_tail_clusters_keeps_a_combining_mark_with_its_letter() {
+    let (head, tail) = split_tail_clusters("Bjo\u{0308}rk Gudmundsdo\u{0301}ttir", 5);
+    assert_eq!(head, "Bjo\u{0308}rk Gudmundsd");
+    assert_eq!(tail, "o\u{0301}ttir");
+}
+
+// Why:      A Hangul syllable written as separate jamo is one cluster; a cut between its jamo would draw them apart.
+#[test]
+fn split_tail_clusters_keeps_hangul_jamo_together() {
+    let name = "\u{1109}\u{1169}\u{1102}\u{1167}\u{11AB}\u{1103}\u{1161}\u{11AB}";
+    let (head, tail) = split_tail_clusters(name, 1);
+    assert_eq!(head, "\u{1109}\u{1169}\u{1102}\u{1167}\u{11AB}");
+    assert_eq!(tail, "\u{1103}\u{1161}\u{11AB}");
+}
+
+// Why:      An emoji joined with a zero width joiner is one cluster, so the cut never splits the sequence.
+#[test]
+fn split_tail_clusters_keeps_a_joined_emoji_sequence_together() {
+    let (head, tail) = split_tail_clusters("ab\u{1F469}\u{200D}\u{1F4BB}", 1);
+    assert_eq!(head, "ab");
+    assert_eq!(tail, "\u{1F469}\u{200D}\u{1F4BB}");
+}
+
+// Why:      A tail of zero clusters keeps the whole text as the start.
+#[test]
+fn split_tail_clusters_with_a_zero_count_keeps_everything_in_the_head() {
+    assert_eq!(split_tail_clusters("abc", 0), ("abc".to_owned(), String::new()));
+}
+
+// What:     `#[test]` marks the next function as a test case.
 // Why:      Binary search needs ascending, disjoint ranges, so a mis-generated table would fail here before any lookup.
 #[test]
 fn table_is_sorted_and_disjoint() {

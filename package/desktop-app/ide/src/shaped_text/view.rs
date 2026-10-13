@@ -7,8 +7,9 @@
 
 /// The frame record these methods belong to and the width of a selected line end.
 use super::{ShapedView, TERMINATOR_MARK};
-/// Canonical source and the current reading position.
-use crate::document::Document;
+/// Canonical source and the current reading position,
+///  and the side of a soft-wrap offset a caret is drawn on.
+use crate::document::{Document, ReadingAffinity};
 /// The one vertical mapping:
 ///  where code rows start and how tall rows and the caret are.
 use crate::row_map::{CARET_HEIGHT, CARET_INSET, CODE_ROW, RowMap};
@@ -42,7 +43,9 @@ impl ShapedView {
         if self.map == *map {
             return false;
         }
-        let shift = map.block_top(self.viewport.first) - self.origin;
+        // The clip's top is a distance below the first line's block, which stays fixed when rows above move.
+        let skip = self.viewport.clip.map_or(0.0, |clip| return clip.top);
+        let shift = map.block_top(self.viewport.first) + skip - self.origin;
         // `clone` copies the mapping so rows outside the frame are placed by the current one.
         self.map = map.clone();
         if shift == 0.0 {
@@ -61,7 +64,8 @@ impl ShapedView {
         return true;
     }
 
-    /// Convert a pointer to a source character using the shaping engine's hit test.
+    /// Convert a pointer to a source character using the shaping engine's hit test,
+    ///  on the first visual row of the line.
     pub fn hit(&self, document: &Document, row: usize, x: f32) -> usize {
         for shaped in &self.rows {
             if shaped.row == row {
@@ -72,19 +76,55 @@ impl ShapedView {
         return document.text().line_to_char(bounded_row);
     }
 
-    /// Return caret x using exactly the same glyph advances as drawing.
-    pub fn caret(&self, document: &Document) -> ReadingRect {
-        let head = document.position().head;
-        let row = document.text().char_to_line(head);
-        let mut x = 0.0;
+    /// What:
+    ///  Convert a pointer at logical `x` and `y` below the top of line `row`'s first visual row to a source character.
+    ///  A point below the line's last row gets the last row.
+    /// Why:
+    ///  A click on a continuation row must resolve in that row,
+    ///  not in the middle of the whole line.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// hitAt(document: Document, row: number, x: number, y: number): number;
+    /// ```
+    pub fn hit_at(&self, document: &Document, row: usize, x: f32, y: f32) -> usize {
         for shaped in &self.rows {
             if shaped.row == row {
-                x = shaped.caret_x(head, self.viewport.scale);
+                return shaped.hit_at(x, y, self.viewport.scale);
+            }
+        }
+        let bounded_row = row.min(document.text().len_lines().saturating_sub(1));
+        return document.text().line_to_char(bounded_row);
+    }
+
+    /// What:
+    ///  Return the caret bar on the side of a soft-wrap offset that the document's reading position names:
+    ///  its x from the glyph advances of the visual row it is drawn on,
+    ///  and its y from that row.
+    /// Why:
+    ///  A caret at a wrap offset is both the end of the upper row and the start of the lower one,
+    ///  and the reading position carries which of the two the reader is on.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// caret(document: Document): ReadingRect;
+    /// ```
+    pub fn caret(&self, document: &Document) -> ReadingRect {
+        let head = document.position().head;
+        let affinity = document.position().affinity;
+        let row = document.text().char_to_line(head);
+        let mut x = 0.0;
+        let mut offset = 0.0;
+        for shaped in &self.rows {
+            if shaped.row == row {
+                let caret = shaped.caret_at(head, affinity, self.viewport.scale);
+                x = caret.x;
+                offset = shaped.visual_row_offset(caret.row, self.viewport.scale);
             }
         }
         return ReadingRect {
             x,
-            y: self.map.code_top(row) + CARET_INSET,
+            y: self.map.code_top(row) + offset + CARET_INSET,
             width: 2.0,
             height: CARET_HEIGHT,
         };
@@ -103,9 +143,12 @@ impl ShapedView {
             // The terminator sits after the row's visible text and has no glyph of its own.
             let row_end = shaped.source_start + shaped.source_len();
             if start <= row_end && end > row_end {
+                // The end of the text is on the last visual row of the line.
+                let caret =
+                    shaped.caret_at(row_end, ReadingAffinity::Upstream, self.viewport.scale);
                 result.push(ReadingRect {
-                    x: shaped.caret_x(row_end, self.viewport.scale),
-                    y: shaped.top,
+                    x: caret.x,
+                    y: shaped.top + shaped.visual_row_offset(caret.row, self.viewport.scale),
                     width: TERMINATOR_MARK,
                     height: CODE_ROW,
                 });

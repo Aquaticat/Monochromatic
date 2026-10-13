@@ -18,6 +18,9 @@ package dev.monochromatic.musicplayer
 // ```ts
 // import { background } from "compose/foundation";
 // ```
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.foundation.background
 
 // What:     `import androidx.compose.foundation.clickable` makes each result row one activatable target.
@@ -631,20 +634,11 @@ import dev.monochromatic.musicplayer.core.searchStatusLine
 // ```ts
 // import { SEARCH_FIELD_LABEL, SEARCH_BACK_LABEL } from "dev.monochromatic.musicplayer/core/SearchPageModel";
 // ```
-import dev.monochromatic.musicplayer.core.CREASE_FLOOR_WIDTH_PX
+import dev.monochromatic.musicplayer.core.creaseHalfClearanceDp
+import dev.monochromatic.musicplayer.core.leftPaneClearance
 import dev.monochromatic.musicplayer.core.SEARCH_BACK_LABEL
 import dev.monochromatic.musicplayer.core.SEARCH_CLEAR_LABEL
 import dev.monochromatic.musicplayer.core.SEARCH_FIELD_LABEL
-
-// What:     `private const val SEARCH_CREASE_HALF_PX: Float` is half the crease in physical pixels.
-// Why:      The clear zone on each side of the fold is half the crease floor, which Settings shares through `core`.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// const SEARCH_CREASE_HALF_PX = CREASE_FLOOR_WIDTH_PX / 2;
-// ```
-/** Half of the crease width in physical pixels, which is the clear zone on each side of the fold. */
-private const val SEARCH_CREASE_HALF_PX: Float = CREASE_FLOOR_WIDTH_PX / 2f
 
 // What:     `private val SEARCH_EDGE_INSET: Dp = 16.dp` is the page's standard edge inset.
 // Why:      Header and row content start at the same 16dp inset on the cover and beside the crease.
@@ -766,46 +760,6 @@ private val SEARCH_SEAM: Dp = 1.dp
 /** True black canvas used behind the page in dark mode. */
 private val SEARCH_TRUE_BLACK: Color = Color(0xFF000000)
 
-// What:     `private const val SEARCH_LIGHT_WHITE_MIX: Float = 0.72f` mixes the light fill toward white.
-// Why:      The light emphasis lifts the accent toward white by this lightness fraction (D59).
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// const SEARCH_LIGHT_WHITE_MIX = 0.72;
-// ```
-/** Lightness fraction the light emphasis fill moves toward white (D59). */
-private const val SEARCH_LIGHT_WHITE_MIX: Float = 0.72f
-
-// What:     `private const val SEARCH_LIGHT_CHROMA_MIX: Float = 0.55f` reduces the light fill's chroma.
-// Why:      Lower chroma keeps the light emphasis calm while the hue still follows the accent (D59).
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// const SEARCH_LIGHT_CHROMA_MIX = 0.55;
-// ```
-/** Chroma fraction the light emphasis fill gives up (D59). */
-private const val SEARCH_LIGHT_CHROMA_MIX: Float = 0.55f
-
-// What:     `private const val SEARCH_DARK_BLACK_MIX: Float = 0.62f` mixes the dark fill toward black.
-// Why:      The dark emphasis darkens the accent by this lightness fraction (D59).
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// const SEARCH_DARK_BLACK_MIX = 0.62;
-// ```
-/** Lightness fraction the dark emphasis fill moves toward black (D59). */
-private const val SEARCH_DARK_BLACK_MIX: Float = 0.62f
-
-// What:     `private const val SEARCH_DARK_CHROMA_MIX: Float = 0.35f` reduces the dark fill's chroma.
-// Why:      Lower chroma keeps the dark emphasis from glowing against black (D59).
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// const SEARCH_DARK_CHROMA_MIX = 0.35;
-// ```
-/** Chroma fraction the dark emphasis fill gives up (D59). */
-private const val SEARCH_DARK_CHROMA_MIX: Float = 0.35f
-
 // What:     `class SearchLayoutException` signals a layout input that cannot be measured.
 // Why:      A non-positive density has no physical meaning, so the page throws instead of guessing a crease.
 //
@@ -835,42 +789,31 @@ private data class SearchPageActions(
     val onOpenResult: (SearchResult) -> Unit,
 )
 
-// What:     `internal fun searchCreaseHalfDp(densityPerDp: Float): Float` converts the crease half to dp.
-// Why:      E2 forbids storing the crease as a fixed dp, so the dp value is derived from the current density.
+// What:     `internal fun searchCreaseHalfDp(densityPerDp, creaseWidthPx): Float` converts the crease half to dp.
+// Why:      E2 forbids storing the crease as a fixed dp, so the dp value is derived from the current density and from
+//           the crease the platform reports; a window without a crease keeps nothing clear (D110).
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// const searchCreaseHalfDp = (pxPerDp: number) => SEARCH_CREASE_HALF_PX / pxPerDp;
+// const searchCreaseHalfDp = (pxPerDp, creaseWidthPx) => creaseWidthPx === null ? 0 : half(creaseWidthPx) / pxPerDp;
 // ```
 /**
- * Returns half the crease width in density-independent pixels for the given physical-pixels-per-dp density.
+ * Returns the clear zone on each side of the crease in density-independent pixels.
  *
+ * @param densityPerDp physical pixels per dp of the current display.
+ * @param creaseWidthPx crease width in physical pixels as the platform reports it (zero when only its presence is
+ *   known), or null when the window has no crease, which keeps no extra clearance.
  * @throws SearchLayoutException when the density is not positive.
  */
-internal fun searchCreaseHalfDp(densityPerDp: Float): Float {
+internal fun searchCreaseHalfDp(densityPerDp: Float, creaseWidthPx: Float?): Float {
     if (densityPerDp <= 0f) {
         throw SearchLayoutException("Density must be positive to convert the crease width, but was $densityPerDp.")
     }
-    return SEARCH_CREASE_HALF_PX / densityPerDp
+    if (creaseWidthPx == null) {
+        return 0f
+    }
+    return creaseHalfClearanceDp(creaseWidthPx = creaseWidthPx, density = densityPerDp)
 }
-
-// What:     `internal fun searchMatchFill(accent: Color, darkScene: Boolean): Color` derives the match fill.
-// Why:      D59 requires the fill to come from the OS accent in OKLCH, not a fixed purple.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// const searchMatchFill = (accent, dark) => mixOklchWithNeutral({ color: accent, ... });
-// ```
-/** Returns the emphasis fill derived from the accent through OKLCH, lighter in light mode and darker in dark mode. */
-internal fun searchMatchFill(accent: Color, darkScene: Boolean): Color =
-    mixOklchWithNeutral(
-        OklchNeutralMix(
-            color = accent,
-            neutralLightness = if (darkScene) OKLCH_BLACK_LIGHTNESS else OKLCH_WHITE_LIGHTNESS,
-            lightnessFraction = if (darkScene) SEARCH_DARK_BLACK_MIX else SEARCH_LIGHT_WHITE_MIX,
-            chromaFraction = if (darkScene) SEARCH_DARK_CHROMA_MIX else SEARCH_LIGHT_CHROMA_MIX,
-        ),
-    )
 
 // What:     `internal fun searchResultKey(result: SearchResult): String` gives each row a stable list key.
 // Why:      The lazy list needs unique keys, and folders and tracks are distinguished by their kind and position.
@@ -925,11 +868,16 @@ internal fun searchHighlightedText(
  * folder browser and the deck stay on the left, and the Search header and results stay on the right (D51). The
  * deck and browser slots are drawn only in the inner layout.
  *
+ * @param creaseWidthPx Width of the window's crease in physical pixels as the platform reports it, or null when the
+ *   window has no crease, in which case the inner arrangement keeps no extra clearance (E2, D110).
  * @param isPlaying Playing state of the current track, or null when the page does not know it.
+ * @param complete Whether the library scan has finished; while it has not, a no-match or empty answer is not final
+ *   and the page says it is still looking (D69, D111).
  * @param folderBrowser Draws the retained folder browser in the upper-left region of the inner layout.
  */
 @Composable
 fun searchPage(
+    creaseWidthPx: Float?,
     state: SearchState,
     query: String,
     onQueryChange: (String) -> Unit,
@@ -940,6 +888,7 @@ fun searchPage(
     deck: @Composable () -> Unit,
     modifier: Modifier = Modifier,
     isPlaying: Boolean? = null,
+    complete: Boolean = true,
     folderBrowser: @Composable (Modifier) -> Unit = {},
 ) {
     /** Whether the system is in dark mode, which selects the true-black canvas and dark emphasis. */
@@ -956,11 +905,11 @@ fun searchPage(
     BoxWithConstraints(modifier = modifier.fillMaxSize().background(canvas)) {
         if (isCoverLayout(maxWidth.value)) {
             searchCoverPage(state = state, query = query, actions = actions, canvas = canvas,
-                currentTrackIndex = currentTrackIndex, isPlaying = isPlaying)
+                currentTrackIndex = currentTrackIndex, isPlaying = isPlaying, complete = complete)
         } else {
-            searchInnerPage(state = state, query = query, actions = actions, canvas = canvas,
-                currentTrackIndex = currentTrackIndex, isPlaying = isPlaying, deck = deck,
-                folderBrowser = folderBrowser)
+            searchInnerPage(creaseWidthPx = creaseWidthPx, state = state, query = query, actions = actions,
+                canvas = canvas, currentTrackIndex = currentTrackIndex, isPlaying = isPlaying, complete = complete,
+                deck = deck, folderBrowser = folderBrowser)
         }
     }
 }
@@ -981,13 +930,14 @@ private fun searchCoverPage(
     canvas: Color,
     currentTrackIndex: Int?,
     isPlaying: Boolean?,
+    complete: Boolean,
 ) {
     Column(modifier = Modifier.fillMaxSize().background(canvas)) {
         Box(modifier = Modifier.fillMaxWidth().windowInsetsTopHeight(WindowInsets.statusBars))
         searchHeader(query = query, actions = actions, startInset = SEARCH_EDGE_INSET, endInset = SEARCH_EDGE_INSET)
         HorizontalDivider(thickness = SEARCH_SEAM, color = MaterialTheme.colorScheme.outline)
         /** Status line for this state, or null when the state draws a result list. */
-        val line: SearchStatusLine? = searchStatusLine(state)
+        val line: SearchStatusLine? = searchStatusLine(state, complete)
         if (line != null) {
             searchCoverStatus(line = line, modifier = Modifier.weight(1f).fillMaxWidth())
         } else if (state is SearchState.Results) {
@@ -1016,28 +966,35 @@ private fun searchCoverPage(
 /** Draws the inner arrangement: the retained browser and deck on the left, and the Search pane on the right. */
 @Composable
 private fun searchInnerPage(
+    creaseWidthPx: Float?,
     state: SearchState,
     query: String,
     actions: SearchPageActions,
     canvas: Color,
     currentTrackIndex: Int?,
     isPlaying: Boolean?,
+    complete: Boolean,
     deck: @Composable () -> Unit,
     folderBrowser: @Composable (Modifier) -> Unit,
 ) {
     /** Density of the current display, used to convert the crease width into dp. */
     val density = LocalDensity.current
     /** Half the crease in dp, which is the clear zone that keeps information off the fold (E2). */
-    val halfCrease: Dp = searchCreaseHalfDp(density.density).dp
+    val halfCrease: Dp = searchCreaseHalfDp(densityPerDp = density.density, creaseWidthPx = creaseWidthPx).dp
     /** Status line for this state, or null when the state draws a result list. */
-    val line: SearchStatusLine? = searchStatusLine(state)
+    val line: SearchStatusLine? = searchStatusLine(state, complete)
     Row(modifier = Modifier.fillMaxSize().background(canvas).imePadding()) {
         Column(modifier = Modifier.weight(1f).fillMaxHeight()) {
             Box(modifier = Modifier.weight(1f).fillMaxWidth()) {
                 folderBrowser(Modifier.fillMaxSize().padding(end = halfCrease + SEARCH_BROWSER_GAP))
             }
             Box(modifier = Modifier.fillMaxWidth()) {
-                deck()
+                // The deck's text keeps the same crease clearance as the player's left pane (E2, D110).
+                paneClearanceProvider(
+                    clearance = leftPaneClearance(creaseWidthPx = creaseWidthPx, density = density.density),
+                ) {
+                    deck()
+                }
             }
         }
         Column(modifier = Modifier.weight(1f).fillMaxHeight()) {
@@ -1107,7 +1064,10 @@ private fun searchHeader(
             .padding(start = startInset, end = endInset),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        IconButton(onClick = actions.onBack, modifier = Modifier.size(SEARCH_TOUCH_TARGET)) {
+        IconButton(
+            onClick = actions.onBack,
+            modifier = Modifier.size(SEARCH_TOUCH_TARGET).focusRing(CircleShape),
+        ) {
             Icon(imageVector = SEARCH_BACK_ICON, contentDescription = SEARCH_BACK_LABEL)
         }
         BasicTextField(
@@ -1138,7 +1098,10 @@ private fun searchHeader(
             },
         )
         if (isClearVisible(query)) {
-            IconButton(onClick = actions.onClear, modifier = Modifier.size(SEARCH_TOUCH_TARGET)) {
+            IconButton(
+                onClick = actions.onClear,
+                modifier = Modifier.size(SEARCH_TOUCH_TARGET).focusRing(CircleShape),
+            ) {
                 Icon(imageVector = SEARCH_CLEAR_ICON, contentDescription = SEARCH_CLEAR_LABEL)
             }
         }
@@ -1238,7 +1201,7 @@ private fun searchResultList(
     LaunchedEffect(query) {
         listState.scrollToItem(0)
     }
-    LazyColumn(state = listState, modifier = modifier) {
+    LazyColumn(state = listState, modifier = modifier, contentPadding = PaddingValues(vertical = FOCUS_RING_OUTSET)) {
         items(items = results, key = { result -> searchResultKey(result) }) { result ->
             searchResultRow(
                 result = result,
@@ -1271,17 +1234,16 @@ private fun searchResultRow(
 ) {
     /** Spoken kind, action and playback state of this row. */
     val rowSpeech: SearchRowSemantics = searchRowSemantics(result, currentTrackIndex, isPlaying)
-    /** Accent-derived fill for every emphasized range in this row. */
-    val fill: Color = searchMatchFill(
-        accent = MaterialTheme.colorScheme.primary,
-        darkScene = isSystemInDarkTheme(),
-    )
+    /** Match fill derived from the accent in OKLCH and fitted for contrast by the theme (D59, D108). */
+    val fill: Color = LocalThemeRoles.current.matchFill.toComposeColor()
     /** Ink color for the emphasized and plain text of this row. */
     val ink: Color = MaterialTheme.colorScheme.onSurface
     Row(
         modifier = Modifier
             .fillMaxWidth()
+            .padding(horizontal = FOCUS_RING_OUTSET)
             .heightIn(min = SEARCH_ROW_MIN_HEIGHT)
+            .focusRing(RectangleShape)
             .clickable(role = Role.Button, onClickLabel = rowSpeech.actionLabel) { onOpenResult(result) }
             .semantics(mergeDescendants = true) {
                 /** Current-track state read from the row's speech, or null when the row is not current. */
@@ -1290,7 +1252,10 @@ private fun searchResultRow(
                     stateDescription = state
                 }
             }
-            .padding(start = startInset, end = endInset),
+            .padding(
+                start = (startInset - FOCUS_RING_OUTSET).coerceAtLeast(0.dp),
+                end = (endInset - FOCUS_RING_OUTSET).coerceAtLeast(0.dp),
+            ),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Box(modifier = Modifier.size(SEARCH_TOUCH_TARGET), contentAlignment = Alignment.Center) {

@@ -18,22 +18,19 @@ use crate::shaped_text::{ReadingRect, ShapedView};
 ///  `f32` is a 32-bit float (sibling `f64`),
 ///  the unit of logical pixels here.
 /// Why:
-///  Only matches inside the materialized rows and horizontal tile become native rectangles,
+///  Only matches inside the materialized rows become native rectangles,
 /// so painting cost follows the viewport,
 ///  not the file.
 ///  The active match is drawn as the selection.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function rectangles(view: ShapedView, ranges: FindRange[], active: FindRange | undefined,
-///   left: number, right: number): ReadingRect[];
+/// function rectangles(view: ShapedView, ranges: FindRange[], active: FindRange | undefined): ReadingRect[];
 /// ```
 pub fn rectangles(
     view: &ShapedView,
     ranges: &[FindRange],
     active: Option<FindRange>,
-    left: f32,
-    right: f32,
 ) -> Vec<ReadingRect> {
     // What: `Vec::new()` creates an empty growable list.
     // Why: The number of visible rectangles is known only after intersecting rows and matches.
@@ -70,9 +67,6 @@ pub fn rectangles(
             continue;
         }
         for rectangle in view.range(range.start, range.end) {
-            if rectangle.x + rectangle.width < left || rectangle.x > right {
-                continue;
-            }
             result.push(rectangle);
         }
     }

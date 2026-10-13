@@ -392,3 +392,38 @@ fn rescan_reflects_disk_and_preserves_selection_by_path() {
     // Why:      Leave no test droppings.
     std::fs::remove_dir_all(&dir).ok();
 }
+
+// What:     `fn a_plain_open_measures_the_first_track_too()`. Open a folder with no preselected file and wait for the sweep.
+// Why:      LS9: `set_tracks` leaves the cursor on the first track until the open clears it, and a sweep started before
+//           the clear skipped that track as "current". A plain open selects nothing, so every track must be measured.
+#[test]
+fn a_plain_open_measures_the_first_track_too() {
+    let nanos = SystemTime::now().duration_since(UNIX_EPOCH).expect("system clock should be after Unix epoch").as_nanos();
+    let root = std::env::temp_dir().join(format!("mp-open-sweep-{}-{nanos}", std::process::id()));
+    std::fs::create_dir_all(&root).expect("the scratch library is created");
+    let first = root.join("a.flac");
+    let second = root.join("b.mp3");
+    std::fs::copy("fixture/tone.flac", &first).expect("the first fixture is copied");
+    std::fs::copy("fixture/tone.mp3", &second).expect("the second fixture is copied");
+    let cache_path = temp_cache("open-sweep");
+    let mut controller = test_controller();
+    controller.peaks = CacheHandle::open_at(cache_path.clone());
+
+    controller.handle_command(Command::OpenRoot { root: root.clone(), select: None, play: false });
+    assert_eq!(controller.queue.current_path(), None, "a plain open selects nothing");
+
+    let first_key = peakcache::fingerprint(&first).expect("the first fixture has a fingerprint");
+    let second_key = peakcache::fingerprint(&second).expect("the second fixture has a fingerprint");
+    let mut both_found = false;
+    for _ in 0..200 {
+        if controller.peaks.get(first_key).is_some() && controller.peaks.get(second_key).is_some() {
+            both_found = true;
+            break;
+        }
+        std::thread::sleep(Duration::from_millis(50));
+    }
+    assert!(both_found, "the sweep measured the first track as well as the second");
+
+    let _ = std::fs::remove_file(&cache_path);
+    std::fs::remove_dir_all(&root).ok();
+}

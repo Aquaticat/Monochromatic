@@ -36,7 +36,7 @@ use super::{AppWindow, State};
 /// The visible subset and the text of one problem.
 use ide_app::annotation::{Visible, describe};
 /// Annotation inks and the positioned frame the raster paints.
-use ide_app::annotation_layout::{AnnotationColors, AnnotationFrame};
+use ide_app::annotation_layout::AnnotationColors;
 /// The stamp naming the displayed text.
 use ide_app::language::identity::DocumentStamp;
 /// Snapshot records,
@@ -255,18 +255,4 @@ pub(super) fn present_problems(window: &AppWindow, text: String) {
     if window.get_caret_problems() != shared {
         window.set_caret_problems(shared);
     }
-}
-
-/// What:
-///  Right edge of the furthest virtual-row text in logical pixels,
-///  or zero without a frame.
-/// Why:
-///  The scroll range must reach hints and messages that end past the widest line.
-///
-/// In TS you'd write (pseudocode):
-/// ```ts
-/// function extent(frame?: AnnotationFrame): number;
-/// ```
-pub(super) fn extent(frame: Option<&AnnotationFrame>) -> f32 {
-    return frame.map_or(0.0, |positioned| return positioned.extent);
 }

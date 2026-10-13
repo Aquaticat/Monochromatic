@@ -14,7 +14,7 @@
 ///  imports the number reader and the text functions that `tf` and `tc` call.
 /// Why:
 ///  Each function keeps its rule in its own module.
-use crate::template_format::{as_number, capitalize_first_unit, format_seconds, keep_code_points};
+use crate::template_format::{as_number, capitalize_first_unit, format_seconds, keep_code_points, unknown_format_letter};
 /// What:
 ///  imports the function table,
 ///  the field and result types,
@@ -28,7 +28,7 @@ use crate::template_model::{
 ///  imports the formula tree types and the template splitter.
 /// Why:
 ///  Evaluation walks the parsed parts in order.
-use crate::template_parse::{CallNode, FormulaNode, TemplatePart, parse_template};
+use crate::template_parse::{CallNode, FormulaNode, ParsedTemplate, TemplatePart, parse_template};
 
 /// What:
 ///  `struct TemplateEvaluation` evaluates formula trees for one track and one allowed field set,
@@ -163,7 +163,8 @@ impl TemplateEvaluation<'_> {
     ///  `fn evaluate_tf(&mut self, call: &CallNode, values: &[String]) -> String` formats seconds with the given format or the default `m:ss`.
     /// Why:
     ///  Missing seconds show nothing,
-    ///  but text that is not a number is a mistake.
+    ///  but text that is not a number is a mistake,
+    ///  and so is a format with a letter that is not `h`, `m` or `s` outside apostrophes.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -171,6 +172,16 @@ impl TemplateEvaluation<'_> {
     /// ```
     fn evaluate_tf(&mut self, call: &CallNode, values: &[String]) -> String {
         let raw = values.first().map_or("", String::as_str);
+        let format = values.get(1).map_or("m:ss", String::as_str);
+        // The format is checked even when the track has no duration, so a typo in it never hides behind an empty field.
+        if let Some(letter) = unknown_format_letter(format) {
+            self.errors.push(TemplateError {
+                subject: String::from("tf"),
+                message: format!("unknown format letter {letter}"),
+                at: call.start,
+            });
+            return String::new();
+        }
         if raw.is_empty() {
             return String::new();
         }
@@ -182,7 +193,6 @@ impl TemplateEvaluation<'_> {
             });
             return String::new();
         };
-        let format = values.get(1).map_or("m:ss", String::as_str);
         return format_seconds(seconds, format);
     }
 
@@ -294,9 +304,23 @@ fn arity_message(definition: &TemplateFunction) -> String {
 /// function evaluateTemplate(text: string, track: TemplateTrack, fields = trackFields): TemplateResult { ... }
 /// ```
 pub fn evaluate_template(text: &str, track: &dyn TemplateTrack, fields: &[TemplateField]) -> TemplateResult {
-    let parsed = parse_template(text);
+    return evaluate_parsed_template(&parse_template(text), track, fields);
+}
+
+/// What:
+///  `pub fn evaluate_parsed_template(parsed: &ParsedTemplate, track: &dyn TemplateTrack, fields: &[TemplateField]) -> TemplateResult`
+///  shows an already parsed template's text for one track, or the mistakes that refuse it.
+/// Why:
+///  A list of rows shows one template for every track, and parsing it again for each row cost about 2.7 microseconds a row,
+///  most of a 30,000-row page's projection; `evaluate_template` parses and calls this, so both give one result.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function evaluateParsedTemplate(parsed: ParsedTemplate, track: TemplateTrack, fields = trackFields): TemplateResult { ... }
+/// ```
+pub fn evaluate_parsed_template(parsed: &ParsedTemplate, track: &dyn TemplateTrack, fields: &[TemplateField]) -> TemplateResult {
     if !parsed.errors.is_empty() {
-        return TemplateResult::Refused(parsed.errors);
+        return TemplateResult::Refused(parsed.errors.clone());
     }
     let mut evaluation = TemplateEvaluation {
         track,

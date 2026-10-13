@@ -12,7 +12,6 @@ fn current_json_round_trip_preserves_fields() {
         position_secs: 12.5,
         volume: 0.7,
         playback_mode: PlaybackMode::ShufflePage,
-        page_control_style: PageControlStyle::Md1Tabs,
         track_rows_template: Some("$mi(title)$".to_string()),
         playing_template: None,
     };
@@ -105,21 +104,16 @@ fn old_track_list_format_keeps_settings() {
     assert_eq!(parsed.playback_mode, PlaybackMode::ShuffleAll);
 }
 
-/// Page-style integer conversion covers every persisted style and its fallback.
+
+/// A session file written before the page style was removed still loads, and the key is not written again (VD7).
 #[test]
-fn page_control_style_integer_conversion_covers_every_style() {
-    assert_eq!(PageControlStyle::default(), PageControlStyle::ChromiumTabs);
-    assert_eq!(PageControlStyle::Radio.to_int(), 0);
-    assert_eq!(PageControlStyle::Md1Tabs.to_int(), 1);
-    assert_eq!(PageControlStyle::RoundedButtons.to_int(), 2);
-    assert_eq!(PageControlStyle::SegmentedButtons.to_int(), 3);
-    assert_eq!(PageControlStyle::ChromiumTabs.to_int(), 4);
-    assert_eq!(PageControlStyle::LedSegmentedButtons.to_int(), 5);
-    assert_eq!(PageControlStyle::from_int(0), PageControlStyle::Radio);
-    assert_eq!(PageControlStyle::from_int(1), PageControlStyle::Md1Tabs);
-    assert_eq!(PageControlStyle::from_int(2), PageControlStyle::RoundedButtons);
-    assert_eq!(PageControlStyle::from_int(3), PageControlStyle::SegmentedButtons);
-    assert_eq!(PageControlStyle::from_int(4), PageControlStyle::ChromiumTabs);
-    assert_eq!(PageControlStyle::from_int(5), PageControlStyle::LedSegmentedButtons);
-    assert_eq!(PageControlStyle::from_int(99), PageControlStyle::Radio);
+fn the_removed_page_control_style_key_is_ignored_on_read_and_absent_from_new_writes() {
+    let old = r#"{"source_root":"/music","volume":0.5,"playback_mode":"in_order","page_control_style":"Md1Tabs"}"#;
+    let loaded = Session::from_json(old).expect("a file with the old key still parses");
+    assert_eq!(loaded.source_root, Some(PathBuf::from("/music")));
+    assert!((loaded.volume - 0.5).abs() < f32::EPSILON);
+    let written = serde_json::to_string(&loaded).expect("the session serializes");
+    assert!(!written.contains("page_control_style"), "new writes drop the key: {written}");
+    let unknown_style = Session::from_json(r#"{"page_control_style":7,"volume":0.25}"#).expect("any value of the old key is ignored");
+    assert!((unknown_style.volume - 0.25).abs() < f32::EPSILON);
 }

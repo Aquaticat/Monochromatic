@@ -16,7 +16,12 @@ package dev.monochromatic.musicplayer
 // ```ts
 // import { PlaybackMode } from "core/PlaybackMode";
 // ```
+import dev.monochromatic.musicplayer.core.RoleSet
 import dev.monochromatic.musicplayer.core.PlaybackMode
+import dev.monochromatic.musicplayer.core.headingLineBudget
+import dev.monochromatic.musicplayer.core.shuffleFolderTextWidthPx
+import dev.monochromatic.musicplayer.core.shuffleLabelSlotWidthPx
+import dev.monochromatic.musicplayer.core.titleLineBudget
 
 // What:     Imports from `androidx.compose.foundation` bring in layout, selection, scrolling,
 //           system inset, and dark-theme helpers.
@@ -24,18 +29,15 @@ import dev.monochromatic.musicplayer.core.PlaybackMode
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// import { isSystemInDarkTheme, verticalScroll } from "compose/foundation";
+// import { verticalScroll } from "compose/foundation";
 // ```
 import androidx.compose.foundation.background
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.defaultMinSize
@@ -53,6 +55,8 @@ import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 
@@ -72,6 +76,7 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedIconButton
 import androidx.compose.material3.SegmentedButtonDefaults
 import androidx.compose.material3.Slider
+import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberSliderState
 import androidx.compose.runtime.Composable
@@ -107,6 +112,7 @@ import androidx.compose.ui.semantics.traversalIndex
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Dp
@@ -172,6 +178,38 @@ private val ONE_LINE_CONTROL_GAP: Dp = 16.dp
 // ```
 /** Largest share of the heading width the folder part may take before it is cut with an ellipsis. */
 private const val FOLDER_MAX_WIDTH_FRACTION: Float = 0.4f
+
+// What:     `private const val LARGE_TEXT_FOLDER_FRACTION: Float = 0.5f` is the folder part's share at large text.
+// Why:      At 150 percent text and more each part wraps, and the folder name gets half the width so it needs fewer
+//           lines before it is cut.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// const LARGE_TEXT_FOLDER_FRACTION = 0.5;
+// ```
+/** Largest share of the heading width the folder part may take at large text sizes. */
+private const val LARGE_TEXT_FOLDER_FRACTION: Float = 0.5f
+
+// What:     `private val HEADING_PART_TEXT_PADDING: Dp = 4.dp` keeps a tappable part's text off its focus ring.
+// Why:      The focus ring is drawn on the edge of the 48dp cell, and text that touches the cell edge touches the ring.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// const HEADING_PART_TEXT_PADDING = 4;
+// ```
+/** Horizontal padding between a tappable heading part's text and its cell edge. */
+private val HEADING_PART_TEXT_PADDING: Dp = 4.dp
+
+// What:     `private val HEADING_SEPARATOR_PADDING: Dp = 4.dp` is the space on each side of the heading's slash.
+// Why:      The spaces of the old ` / ` text are gone, so the slash gets its own small gap, which does not grow
+//           with the 48dp cells around the folder and title.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// const HEADING_SEPARATOR_PADDING = 4;
+// ```
+/** Horizontal padding on each side of the slash between the folder and the title. */
+private val HEADING_SEPARATOR_PADDING: Dp = 4.dp
 
 // What:     `private val SEGMENT_OVERLAP: Dp = (-1).dp` shares one hairline between adjacent segments.
 // Why:      Connected segments overlap by one dp so the outlines read as one control.
@@ -252,16 +290,6 @@ private const val ICON_VIEWPORT: Float = 24f
 // ```
 /** Number of seconds in one minute for the clock label. */
 private const val SECONDS_PER_MINUTE: Long = 60L
-
-// What:     `private val DECK_FIXED_DARK_CONTAINER: Color = Color(0xFF0A0A0D)` is the fixed dark deck.
-// Why:      The accepted dark deck stays one neutral regardless of wallpaper-generated colors.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// const DECK_FIXED_DARK_CONTAINER = 0xff0a0a0d;
-// ```
-/** Fixed neutral ground of the deck in dark mode. */
-private val DECK_FIXED_DARK_CONTAINER: Color = Color(0xFF0A0A0D)
 
 // What:     `private const val SHUFFLE_PREFIX: String = "Shuffle "` is the fixed label prefix.
 // Why:      The folder name follows a stable prefix so the verb stays visible when the name truncates.
@@ -756,37 +784,28 @@ private val SKIP_PREVIOUS_ICON: ImageVector =
 /** Next-track glyph on the right transport button. */
 private val SKIP_NEXT_ICON: ImageVector = deckIcon(name = "Deck.SkipNext", pathData = SKIP_NEXT_PATH)
 
-// What:     `@Composable private fun deckContainerColor()` picks the deck ground for the appearance.
-// Why:      Dark mode keeps the fixed neutral deck, while light mode uses the Material surface role.
+// What:     `internal fun deckContainerColorOf(roles)` picks the deck ground from the derived roles.
+// Why:      The deck is a gray, and every gray carries the accent's hue unless the root is completely neutral
+//           (D118), so both appearances read the derived `deck` role instead of a fixed literal.
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// function deckContainerColor(): Color {
-//   return isSystemInDarkTheme() ? DECK_FIXED_DARK_CONTAINER : scheme.surfaceContainerLow;
-// }
+// const deckContainerColorOf = (roles: RoleSet): Color => toColor(roles.deck);
 // ```
-/** Resolves the deck background from the system appearance. */
-@Composable
-private fun deckContainerColor(): Color {
-    /** Records whether the system is in dark mode. */
-    val dark: Boolean = isSystemInDarkTheme()
-    if (dark) {
-        return DECK_FIXED_DARK_CONTAINER
-    }
-    return MaterialTheme.colorScheme.surfaceContainerLow
-}
+/** Returns the deck background of the derived [roles]: a gray with the accent's hue, in both appearances (D118). */
+internal fun deckContainerColorOf(roles: RoleSet): Color = roles.deck.toComposeColor()
 
-// What:     `@Composable private fun deckHeading(...)` draws the centered `folder / title` line and the subtitle.
-// Why:      The line names the folder and the playing track, and the subtitle holds the caller's status text.
-//           Each part with a tap action is its own button with a 48dp minimum size, and a part without one is
-//           plain text. The folder takes at most 40 percent of the width, so the title keeps the rest.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// function deckHeading(props: { folder: string; title: string; subtitle: string;
-//   onRevealFolder?: () => void; onRevealPlaying?: () => void }): UIElement;
-// ```
-/** Draws the centered folder and title line above the subtitle, with each tappable part as its own button. */
+/** Resolves the deck background from the derived roles of the appearance in use. */
+@Composable
+private fun deckContainerColor(): Color = deckContainerColorOf(LocalThemeRoles.current)
+
+/**
+ * Draws the centered folder and title line above the subtitle, with each tappable part as its own button.
+ *
+ * Each part reserves the same number of lines for every name (one at ordinary text sizes, two from 150 percent), so
+ * the deck keeps its height while tracks change. The folder part sits against the separator and the title part starts
+ * at it, so the 48 dp minimum cells put their spare width on the outer sides and the separator never floats in a gap.
+ */
 @Composable
 private fun deckHeading(
     folder: String,
@@ -795,13 +814,15 @@ private fun deckHeading(
     onRevealFolder: (() -> Unit)?,
     onRevealPlaying: (() -> Unit)?,
 ) {
+    /** Lines each heading part reserves, from the text size. */
+    val lines: Int = headingLineBudget(LocalDensity.current.fontScale)
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
     ) {
         BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
-            /** Widest the folder part may be, which is the fixed share of the heading width. */
-            val folderMaxWidth: Dp = maxWidth * FOLDER_MAX_WIDTH_FRACTION
+            /** Widest the folder part may be: the fixed share of the heading width, and half of it at large text. */
+            val folderMaxWidth: Dp = maxWidth * if (lines > 1) LARGE_TEXT_FOLDER_FRACTION else FOLDER_MAX_WIDTH_FRACTION
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
@@ -815,9 +836,13 @@ private fun deckHeading(
                         onClick = onRevealFolder,
                         clickLabel = "Show folder of playing track",
                         modifier = Modifier.widthIn(max = folderMaxWidth),
+                        lines = lines,
+                        alignment = Alignment.CenterEnd,
+                        textAlign = TextAlign.End,
                     )
                     Text(
-                        text = " / ",
+                        text = "/",
+                        modifier = Modifier.padding(horizontal = HEADING_SEPARATOR_PADDING),
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         style = MaterialTheme.typography.titleMedium,
                         maxLines = 1,
@@ -827,9 +852,13 @@ private fun deckHeading(
                     text = title,
                     style = MaterialTheme.typography.titleMedium,
                     color = Color.Unspecified,
-                    onClick = onRevealPlaying,
+                    // An idle deck has no title, so its part must not be an unlabeled button (M5).
+                    onClick = if (title.isEmpty()) null else onRevealPlaying,
                     clickLabel = "Show playing track",
                     modifier = Modifier.weight(1f, fill = false),
+                    lines = titleLineBudget(LocalDensity.current.fontScale),
+                    alignment = if (folder.isNotEmpty()) Alignment.CenterStart else Alignment.Center,
+                    textAlign = if (folder.isNotEmpty()) TextAlign.Start else TextAlign.Center,
                 )
             }
         }
@@ -841,16 +870,18 @@ private fun deckHeading(
     }
 }
 
-// What:     `@Composable private fun deckHeadingPart(...)` draws one single-line part of the heading.
-// Why:      The folder and the title share the same button rules, a 48dp minimum width and height with the Button
-//           role, so one helper draws both and each part stays its own tap target.
+// What:     `@Composable private fun deckHeadingPart(...)` draws one part of the heading in its own cell.
+// Why:      The folder and the title share the same button rules, so one helper draws both. A part with a tap action
+//           is a cell with a 48dp minimum width and height and the Button role; the text inside it is aligned toward
+//           the separator, so the cell's spare width is padding on the outer side (HZP). A part without one is plain
+//           text with no minimum size.
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// function deckHeadingPart(props: { text: string; style: TextStyle; color: Color;
-//   onClick?: () => void; clickLabel: string }): UIElement;
+// function deckHeadingPart(props: { text: string; style: TextStyle; color: Color; onClick?: () => void;
+//   clickLabel: string; lines: number; alignment: Alignment; textAlign: TextAlign }): UIElement;
 // ```
-/** Draws one single-line heading part, tappable with the given label when [onClick] is given. */
+/** Draws one heading part within a fixed number of lines, tappable with the given label when [onClick] is given. */
 @Composable
 private fun deckHeadingPart(
     text: String,
@@ -859,6 +890,9 @@ private fun deckHeadingPart(
     onClick: (() -> Unit)?,
     clickLabel: String,
     modifier: Modifier,
+    lines: Int,
+    alignment: Alignment,
+    textAlign: TextAlign,
 ) {
     /** Part modifier: a button with a 48dp minimum width and height when tappable, unchanged otherwise. */
     val partModifier: Modifier = if (onClick == null) {
@@ -866,10 +900,20 @@ private fun deckHeadingPart(
     } else {
         modifier
             .defaultMinSize(minWidth = MIN_TARGET, minHeight = MIN_TARGET)
+            .focusRing(RectangleShape)
             .clickable(onClickLabel = clickLabel, role = Role.Button, onClick = onClick)
     }
-    Box(modifier = partModifier, contentAlignment = Alignment.Center) {
-        Text(text = text, color = color, style = style, maxLines = 1, overflow = TextOverflow.Ellipsis)
+    Box(modifier = partModifier, contentAlignment = alignment) {
+        Text(
+            text = text,
+            modifier = if (onClick == null) Modifier else Modifier.padding(horizontal = HEADING_PART_TEXT_PADDING),
+            color = color,
+            style = style,
+            textAlign = textAlign,
+            maxLines = lines,
+            minLines = lines,
+            overflow = TextOverflow.Ellipsis,
+        )
     }
 }
 
@@ -899,6 +943,8 @@ private fun seekRow(positionSec: Double, durationSec: Double, onSeek: (Double) -
         /** Slider state whose thumb is re-pinned to the playback fraction on every recomposition. */
         val sliderState = rememberSliderState()
         sliderState.value = progressFractionFor(positionSec, durationSec)
+        /** Source the slider and its thumb share, so the thumb can show the focus ring (D117). */
+        val sliderSource = remember { MutableInteractionSource() }
         Slider(
             state = sliderState,
             onValueChange = { fraction -> onSeek(fraction.toDouble() * durationSec) },
@@ -907,6 +953,13 @@ private fun seekRow(positionSec: Double, durationSec: Double, onSeek: (Double) -
                 .semantics {
                     contentDescription = "Track position"
                 },
+            interactionSource = sliderSource,
+            thumb = {
+                SliderDefaults.Thumb(
+                    interactionSource = sliderSource,
+                    modifier = Modifier.focusRingOf(sliderSource, CircleShape),
+                )
+            },
         )
         Text(
             text = deckClockLabel(durationSec),
@@ -931,7 +984,7 @@ private fun secondaryTransportButton(
     contentDescription: String,
     onClick: () -> Unit,
 ) {
-    OutlinedIconButton(onClick = onClick) {
+    OutlinedIconButton(onClick = onClick, modifier = Modifier.size(MIN_TARGET).focusRing(CircleShape)) {
         Icon(imageVector = imageVector, contentDescription = contentDescription)
     }
 }
@@ -972,7 +1025,7 @@ private fun transportControls(
                 contentDescription = "Previous track",
                 onClick = onPrevious,
             )
-            FilledIconButton(onClick = onTogglePlay) {
+            FilledIconButton(onClick = onTogglePlay, modifier = Modifier.size(MIN_TARGET).focusRing(CircleShape)) {
                 Icon(
                     imageVector = if (playing) PAUSE_ICON else PLAY_ICON,
                     contentDescription = if (playing) "Pause" else "Play",
@@ -995,7 +1048,12 @@ private fun transportControls(
 // ```ts
 // function shuffleModeLabel(props: { folderName: string; onUnexpectedOverflow(): void }): UIElement;
 // ```
-/** Draws the shuffle-folder label, truncating the folder name in the middle when it is too wide. */
+/**
+ * Draws the shuffle-folder label, truncating the folder name in the middle when it is too wide.
+ *
+ * The label always takes the width of the prefix plus the reference name, whatever the folder is called, and centers
+ * its content in that slot, so the mode control and the deck keep one shape while the user browses folders.
+ */
 @Composable
 private fun shuffleModeLabel(folderName: String, onUnexpectedOverflow: () -> Unit) {
     /** Label text style shared by the prefix and the folder name. */
@@ -1013,13 +1071,25 @@ private fun shuffleModeLabel(folderName: String, onUnexpectedOverflow: () -> Uni
         textMeasurer.measure(text = folderName, style = textStyle).size.width
     }
     /** Folder text width in pixels after applying the cap. */
-    val desiredFolderWidthPixels: Int = minOf(naturalFolderWidthPixels, maximumFolderWidthPixels)
+    val desiredFolderWidthPixels: Int = shuffleFolderTextWidthPx(
+        naturalPx = naturalFolderWidthPixels,
+        referencePx = maximumFolderWidthPixels,
+    )
     /** Folder text width converted to Dp for the layout modifier. */
     val desiredFolderWidth: Dp = with(density) {
         desiredFolderWidthPixels.toDp()
     }
+    /** Pixel width of the prefix, which the fixed slot adds to the reference name's width. */
+    val prefixWidthPixels: Int = remember(textMeasurer, textStyle) {
+        textMeasurer.measure(text = SHUFFLE_PREFIX, style = textStyle).size.width
+    }
+    /** Width of the whole label slot, the same for every folder name. */
+    val slotWidth: Dp = with(density) {
+        shuffleLabelSlotWidthPx(prefixPx = prefixWidthPixels, referencePx = maximumFolderWidthPixels).toDp()
+    }
     Row(
-        modifier = Modifier.clearAndSetSemantics {},
+        modifier = Modifier.width(slotWidth).clearAndSetSemantics {},
+        horizontalArrangement = Arrangement.Center,
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Text(
@@ -1088,6 +1158,7 @@ private fun variableWidthModeSegment(
         shape = shape,
         modifier = modifier
             .defaultMinSize(minWidth = MIN_TARGET, minHeight = MIN_TARGET)
+            .focusRing(shape)
             .semantics {
                 contentDescription = modeAccessibleLabelFor(mode, shuffleFolderLabel)
                 role = Role.RadioButton
@@ -1177,8 +1248,13 @@ private fun oneRowModeControl(
 // ```ts
 // function twoRowModeControl(props: ModeControlProps): UIElement;
 // ```
-/** Draws the four mode segments as a connected two-by-two block. */
-@OptIn(ExperimentalLayoutApi::class)
+/**
+ * Draws the four mode segments as a connected two-by-two block.
+ *
+ * Each row is a plain row of two equal-weight segments, so a label too wide for half the width is clipped and
+ * reported through [onOverflow], which moves the control to four rows. A wrapping flow would instead push the wide
+ * shuffle segment onto a row of its own and leave a ragged block that nothing reports.
+ */
 @Composable
 private fun twoRowModeControl(
     selectedMode: PlaybackMode,
@@ -1187,32 +1263,37 @@ private fun twoRowModeControl(
     onSelectMode: (PlaybackMode) -> Unit,
     onOverflow: () -> Unit,
 ) {
-    FlowRow(
+    Column(
         modifier = Modifier
             .fillMaxWidth()
             .selectableGroup(),
-        maxItemsInEachRow = 2,
-        horizontalArrangement = Arrangement.spacedBy(SEGMENT_OVERLAP),
         verticalArrangement = Arrangement.spacedBy(SEGMENT_OVERLAP),
     ) {
-        MODE_SEGMENT_ORDER.forEachIndexed { index, mode ->
-            /** Outside corner shape for this grid position, with internal corners square. */
-            val shape: Shape = when (index) {
-                0 -> RoundedCornerShape(topStart = SEGMENT_OUTER_RADIUS)
-                1 -> RoundedCornerShape(topEnd = SEGMENT_OUTER_RADIUS)
-                2 -> RoundedCornerShape(bottomStart = SEGMENT_OUTER_RADIUS)
-                else -> RoundedCornerShape(bottomEnd = SEGMENT_OUTER_RADIUS)
+        for (rowStart in MODE_SEGMENT_ORDER.indices step 2) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(SEGMENT_OVERLAP),
+            ) {
+                for (index in rowStart..rowStart + 1) {
+                    /** Outside corner shape for this grid position, with internal corners square. */
+                    val shape: Shape = when (index) {
+                        0 -> RoundedCornerShape(topStart = SEGMENT_OUTER_RADIUS)
+                        1 -> RoundedCornerShape(topEnd = SEGMENT_OUTER_RADIUS)
+                        2 -> RoundedCornerShape(bottomStart = SEGMENT_OUTER_RADIUS)
+                        else -> RoundedCornerShape(bottomEnd = SEGMENT_OUTER_RADIUS)
+                    }
+                    variableWidthModeSegment(
+                        mode = MODE_SEGMENT_ORDER[index],
+                        selectedMode = selectedMode,
+                        shuffleFolderLabel = shuffleFolderLabel,
+                        shape = shape,
+                        modifier = Modifier.weight(1f),
+                        contentPadding = contentPadding,
+                        onSelectMode = onSelectMode,
+                        onOverflow = onOverflow,
+                    )
+                }
             }
-            variableWidthModeSegment(
-                mode = mode,
-                selectedMode = selectedMode,
-                shuffleFolderLabel = shuffleFolderLabel,
-                shape = shape,
-                modifier = Modifier.weight(1f),
-                contentPadding = contentPadding,
-                onSelectMode = onSelectMode,
-                onOverflow = onOverflow,
-            )
         }
     }
 }
@@ -1510,7 +1591,7 @@ fun transportDeck(
     actions: TransportDeckActions,
     modifier: Modifier = Modifier,
 ) {
-    /** Deck background resolved for the current system appearance. */
+    /** Deck background resolved from the derived roles of the current appearance. */
     val containerColor: Color = deckContainerColor()
     Column(
         modifier = modifier
@@ -1518,7 +1599,10 @@ fun transportDeck(
             .windowInsetsPadding(WindowInsets.systemGestures.only(WindowInsetsSides.Horizontal))
             .windowInsetsPadding(WindowInsets.navigationBars)
             .verticalScroll(rememberScrollState())
-            .padding(vertical = DECK_VERTICAL_PADDING),
+            .padding(vertical = DECK_VERTICAL_PADDING)
+            // Content keeps clear of the crease on both sides, so it stays centered on the pane's axis (D18) while
+            // the background above still spans the whole pane.
+            .padding(horizontal = maxOf(paneStartInset(0.dp), paneEndInset(0.dp))),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(DECK_GROUP_SPACING),
     ) {

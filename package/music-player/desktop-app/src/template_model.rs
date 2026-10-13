@@ -59,7 +59,7 @@ pub fn track_template_fields() -> Vec<TemplateField> {
         TemplateField {
             mode: "peak",
             label: "True peak",
-            description: "The true peak with its unit, such as \u{2212}1.2 dBTP, or nothing before the file is analysed.",
+            description: "The true peak with its unit, such as \u{2212}1.2 dBTP, or nothing before the file is analyzed.",
         },
     ];
 }
@@ -304,7 +304,7 @@ pub fn template_function(name: &str) -> Option<TemplateFunction> {
                     name: "format",
                     description: String::from(
                         "Format: h, m and s for hours, minutes and seconds; a doubled letter pads with a zero; \
-                         text between apostrophes is kept. Without it, m:ss.",
+                         text between apostrophes is kept, and any other letter is a mistake. Without it, m:ss.",
                     ),
                 },
             ],

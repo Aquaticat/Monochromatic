@@ -54,6 +54,27 @@ class FirstRunDecisionTest {
     // ```ts
     // const withDeviceAccess = { ...withoutSource, permissionGranted: true };
     // ```
+    @Test
+    fun noVerdictAndABlankScreenWhileThePromptIsUnanswered() {
+        val decision = firstRunDecisionFor(withoutSource.copy(promptShowing = true))
+        assertNull(decision.state)
+        assertTrue(decision.awaitingAnswer)
+    }
+
+    @Test
+    fun theDeclinedScreenShowsOnceThePromptIsAnswered() {
+        val decision = firstRunDecisionFor(withoutSource.copy(promptShowing = false))
+        assertEquals(FirstRunState.DECLINED, decision.state)
+        assertFalse(decision.awaitingAnswer)
+    }
+
+    @Test
+    fun aGrantedPermissionIsNeverAwaitingEvenWhileThePromptFlagIsStillSet() {
+        val decision = firstRunDecisionFor(withDeviceAccess.copy(promptShowing = true))
+        assertFalse(decision.awaitingAnswer)
+        assertEquals(FirstRunState.SYSTEM_NO_AUDIO, decision.state)
+    }
+
     /** Inputs with the music permission granted, no held folder, a finished read, and no track. */
     private val withDeviceAccess: FirstRunInputs = withoutSource.copy(permissionGranted = true)
 

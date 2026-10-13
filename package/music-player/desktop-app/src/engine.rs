@@ -720,15 +720,15 @@ fn run(
     // ```
     let sweep_sender = self_sender.clone();
     controller.sweep_sink = Arc::new(move |report| return sweep_sender.send(Command::SweepReport(report)));
-    // What:     `controller.emit_source_root();`. Tell the window whether a folder is open before any command runs.
-    // Why:      With no saved folder and no music directory nothing else is sent, so the first-run copy needs this signal.
+    // What:     no `emit_source_root` here any more; `Command::NoLibrary` says "nothing to open" when that is true.
+    // Why:      The old start-up signal said "no folder is open" before the launch had decided whether a saved folder or the
+    //           music folder was about to open, so a library being read showed the "No folder is open" copy (EM1).
     //
     // In TS you'd write (pseudocode):
     // ```ts
-    // controller.emitSourceRoot();
+    // // nothing: the window learns about the folder from `reading` and `queue`
     // ```
-    controller.emit_source_root();
-    // What:     `controller.watcher = crate::watch::SourceWatcher::new(move || self_sender.send(Command::Rescan));`.
+    // What:     `controller.watcher = crate::watch::SourceWatcher::new(move |change| self_sender.send(...));`.
     //           Create the file watcher (or `None` if the OS watcher fails) with a change
     //           callback that enqueues `Rescan` and wakes this worker. The closure owns
     //           `self_sender`.
@@ -737,9 +737,14 @@ fn run(
     //
     // In TS you'd write (pseudocode):
     // ```ts
-    // controller.watcher = SourceWatcher.new(() => selfSender.send(Command.Rescan));
+    // controller.watcher = SourceWatcher.new((change) => selfSender.send(change.kind === "everything" ? Command.Rescan : Command.SourceChanged(change)));
     // ```
-    controller.watcher = crate::watch::SourceWatcher::new(move || self_sender.send(Command::Rescan));
+    controller.watcher = crate::watch::SourceWatcher::new(move |change| {
+        return self_sender.send(match change {
+            crate::change_set::Change::Everything => Command::Rescan,
+            paths @ crate::change_set::Change::Paths(_) => Command::SourceChanged(paths),
+        });
+    });
 
     // What:     `loop { ... }`. The main worker loop (Rust's `while (true)`); we `break` on
     //           quit.
@@ -864,7 +869,20 @@ fn run(
         // ```ts
         // const didWork = controller.pumpAudio();
         // ```
-        let did_work = controller.pump_audio();
+        let pumped = controller.pump_audio();
+
+        // What:     `let handed_off = controller.tick_playback();`. Emit the audible position when due and
+        //           start the next track once the output consumed the last frame of the old one.
+        // Why:      Position follows the speakers (frames taken from the ring), not the decoder, and the
+        //           track-end handoff waits for the ring to play out instead of discarding its tail.
+        //           A handoff counts as work so the new track is pumped at once.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // const handedOff = controller.tickPlayback();
+        // ```
+        let handed_off = controller.tick_playback();
+        let did_work = pumped || handed_off;
 
         // What:     `controller.report_audio_meters(&mut meter_reporter);`. Log the output's
         //           underrun counters if a second has passed and they moved.
@@ -893,7 +911,7 @@ fn run(
         // if (!appliedPeak && !didWork) await Promise.race([wokenSignal, sleep(IDLE_PARK_FALLBACK_MS)]);
         // ```
         if !applied_peak && !did_work {
-            thread::park_timeout(Duration::from_millis(IDLE_PARK_FALLBACK_MS));
+            thread::park_timeout(controller.idle_park_timeout(Duration::from_millis(IDLE_PARK_FALLBACK_MS)));
         }
     }
 }

@@ -24,6 +24,7 @@ pub(super) fn reveal(window: &AppWindow, source: &Rc<RefCell<State>>, requested:
         anchor: position,
         head: position,
         viewport: position,
+        affinity: ide_app::document::ReadingAffinity::Downstream,
     });
     // The file may have been installed just now; the map must describe it before a line is placed by it.
     rows::refresh(&mut current, window.window().scale_factor());
@@ -37,12 +38,10 @@ pub(super) fn reveal(window: &AppWindow, source: &Rc<RefCell<State>>, requested:
     drop(current);
     // Update extent before offset so the old height cannot clamp the new offset.
     window.set_content_extent(extent);
-    window.set_scroll_x(0.0);
     window.set_scroll_y(-target);
     let mut scrolled = source.borrow_mut();
     let first = scrolled.row_map.line_at(target);
     scrolled.first = first.saturating_sub(1);
-    scrolled.horizontal = 0.0;
     scrolled.frame_stamp = None;
     let mut reading = scrolled.document.position();
     reading.viewport = scrolled

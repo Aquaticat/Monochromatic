@@ -11,6 +11,9 @@
 // ```
 package dev.monochromatic.musicplayer.core
 
+import dev.monochromatic.musicplayer.LoadFailure
+import java.util.Locale
+
 // What:     `internal const val TRASH_ERROR_ID: String` is the id of the single error message of the track actions.
 // Why:      A fixed id lets the next action error replace the visible one instead of stacking another.
 //
@@ -139,16 +142,6 @@ enum class TrackActionFailure {
     // ```
     /** The file name could not be placed on the clipboard. */
     CLIPBOARD_FAILED,
-
-    // What:     `REANALYSE_FAILED` means one track could not be measured again.
-    // Why:      The file was unreadable, or the measurement produced no peak, so the menu says so and names the file.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // REANALYSE_FAILED = "REANALYSE_FAILED";
-    // ```
-    /** Re-analysis of one track failed because its file could not be read or measured. */
-    REANALYSE_FAILED,
 }
 
 // What:     `fun trackActionFailureMessage(...)` builds the error feedback for one failed track action.
@@ -193,34 +186,7 @@ private fun failureText(failure: TrackActionFailure, name: String): String = whe
     TrackActionFailure.FILE_MANAGER_NO_FOLDER ->
         "Could not open the folder of $name.\nThe app has no folder route for this library."
     TrackActionFailure.CLIPBOARD_FAILED -> "Could not copy the file name of $name."
-    TrackActionFailure.REANALYSE_FAILED -> "Could not re-analyse $name.\nIts file could not be measured."
 }
-
-// What:     `fun trackReanalysingMessage(fileName: String): FeedbackMessage` builds the notice shown while one track is
-//           measured again.
-// Why:      The notice keeps its own id, so the failure and the finished notice never replace each other by mistake.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// function trackReanalysingMessage(fileName: string): FeedbackMessage { ... }
-// ```
-/** Returns the notice that one track is being re-analysed, naming the file. */
-fun trackReanalysingMessage(fileName: String): FeedbackMessage = FeedbackMessage(
-    id = TRACK_REANALYSE_ID,
-    text = "Re-analysing ${shortName(fileName)}",
-    kind = FeedbackKind.NOTICE,
-    actionLabel = null,
-)
-
-// What:     `internal const val TRACK_REANALYSE_ID: String` is the id of the re-analysing notice.
-// Why:      The host dismisses the notice by this id once the measurement finishes.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// const TRACK_REANALYSE_ID = "track-reanalyse";
-// ```
-/** Id of the notice shown while a track is re-analysed. */
-internal const val TRACK_REANALYSE_ID: String = "track-reanalyse"
 
 // What:     `fun trashUndoMessage(record: TrashRecord): FeedbackMessage` builds the Undo message of one trash.
 // Why:      The message carries the record's own id, so its Undo action finds the right record and no other.
@@ -248,3 +214,159 @@ fun trashUndoMessage(record: TrashRecord): FeedbackMessage = FeedbackMessage(
 // ```
 /** Visible label of the Undo action on a trash message. */
 internal const val TRASH_UNDO_ACTION_LABEL: String = "Undo"
+
+// What:     `internal const val TRACK_LOAD_ERROR_ID: String` is the id of the message shown when a tapped track cannot
+//           be opened.
+// Why:      A second failure replaces the first instead of stacking, because the overlay keeps one message per id.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// const TRACK_LOAD_ERROR_ID = "track-load-error";
+// ```
+/** Id of the error message for a track that could not be opened for playback. */
+internal const val TRACK_LOAD_ERROR_ID: String = "track-load-error"
+
+// What:     `fun trackLoadFailureMessage(reason: LoadFailure, fileName: String): FeedbackMessage` words why a tapped
+//           track did not start.
+// Why:      M6: the open of a track file can stall when the media provider is busy; the message says what happened
+//           and what to do, in two lines like the other file errors.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// function trackLoadFailureMessage(reason: LoadFailure, fileName: string): FeedbackMessage { ... }
+// ```
+/** Returns the error message for a track that could not be opened, naming the file and the likely remedy. */
+fun trackLoadFailureMessage(reason: LoadFailure, fileName: String): FeedbackMessage = FeedbackMessage(
+    id = TRACK_LOAD_ERROR_ID,
+    text = when (reason) {
+        LoadFailure.UNREADABLE -> "Could not play ${shortName(fileName)}.\nIts file could not be opened."
+        LoadFailure.TIMED_OUT ->
+            "Could not play ${shortName(fileName)}.\nThe music library did not answer in time. Try again in a moment."
+    },
+    kind = FeedbackKind.ERROR,
+    actionLabel = null,
+)
+
+// What:     `internal const val TRACK_DETAILS_ID: String` is the id of the File details notice.
+// Why:      Choosing File details again on another track replaces the notice instead of stacking.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// const TRACK_DETAILS_ID = "track-details";
+// ```
+/** Id of the notice that shows the details of one track file. */
+internal const val TRACK_DETAILS_ID: String = "track-details"
+
+// What:     `private const val BYTES_PER_UNIT: Double = 1024.0` is the step between the sizes the notice names.
+// Why:      The desktop's File details uses the same step, so both apps print one size the same way.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// const BYTES_PER_UNIT = 1024;
+// ```
+/** Bytes in a kilobyte, megabyte or gigabyte of the printed size. */
+private const val BYTES_PER_UNIT: Double = 1024.0
+
+// What:     `fun humanFileSize(bytes: Long): String` writes a byte count as `1.5 MB`.
+// Why:      File details names the size in the unit a person reads at a glance; the format (one decimal, KB, MB or GB)
+//           is the desktop's `human_size`.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// function humanFileSize(bytes: number): string {
+//   if (bytes >= 1024 ** 3) return (bytes / 1024 ** 3).toFixed(1) + " GB";
+//   if (bytes >= 1024 ** 2) return (bytes / 1024 ** 2).toFixed(1) + " MB";
+//   return (bytes / 1024).toFixed(1) + " KB";
+// }
+// ```
+/** Returns the size as one decimal and the largest unit of KB, MB or GB that keeps it at one or more. */
+fun humanFileSize(bytes: Long): String {
+    /** The size as a fraction so the division below keeps its decimals. */
+    val value: Double = bytes.toDouble()
+    return when {
+        value >= BYTES_PER_UNIT * BYTES_PER_UNIT * BYTES_PER_UNIT ->
+            String.format(Locale.ROOT, "%.1f GB", value / (BYTES_PER_UNIT * BYTES_PER_UNIT * BYTES_PER_UNIT))
+        value >= BYTES_PER_UNIT * BYTES_PER_UNIT ->
+            String.format(Locale.ROOT, "%.1f MB", value / (BYTES_PER_UNIT * BYTES_PER_UNIT))
+        else -> String.format(Locale.ROOT, "%.1f KB", value / BYTES_PER_UNIT)
+    }
+}
+
+// What:     `fun shortFolderOf(displayPath: String): String` names the last two folders of a track's path.
+// Why:      A message about a file says where it sits, but a deep path does not fit a two-line notice; the desktop's
+//           `short_folder` keeps the last two names behind an ellipsis.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// function shortFolderOf(displayPath: string): string {
+//   const folders = displayPath.split("/").slice(0, -1);
+//   return folders.length > 2 ? "…/" + folders.slice(-2).join("/") : folders.join("/");
+// }
+// ```
+/** Returns the folders above the file, shortened to the last two behind an ellipsis, or empty at the library root. */
+fun shortFolderOf(displayPath: String): String {
+    /** Folder names above the file, outermost first. */
+    val folders: List<String> = displayPath.split('/').dropLast(1).filter { name -> name.isNotEmpty() }
+    return if (folders.size > 2) "…/" + folders.takeLast(2).joinToString("/") else folders.joinToString("/")
+}
+
+// What:     `fun trackDetailsMessage(...)` builds the File details notice for one track.
+// Why:      M5: File details did nothing. The desktop shows the file name, the size and the folder as a notice
+//           (`details_text`); Android shows the same facts the same way.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// function trackDetailsMessage(fileName: string, sizeBytes: number | null, displayPath: string): FeedbackMessage { ...
+// }
+// ```
+/** Returns the notice that lists a track file's name, size and folder, with "size unknown" when the size is missing. */
+fun trackDetailsMessage(fileName: String, sizeBytes: Long?, displayPath: String): FeedbackMessage {
+    /** The size text, or the words that say it could not be read. */
+    val size: String = if (sizeBytes == null) "size unknown" else humanFileSize(sizeBytes)
+    /** Where the file sits, or the library root's wording when it sits directly in the library. */
+    val folder: String = shortFolderOf(displayPath).ifEmpty { "library root" }
+    return FeedbackMessage(
+        id = TRACK_DETAILS_ID,
+        text = "${shortName(fileName)}\n$size · $folder",
+        kind = FeedbackKind.NOTICE,
+        actionLabel = null,
+    )
+}
+
+// What:     `internal const val ANALYSIS_FAILED_ID: String` is the id of the message about files that could not be
+//           analyzed.
+// Why:      A later report replaces an earlier one instead of stacking, because the overlay keeps one error at a time.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// const ANALYSIS_FAILED_ID = "analysis-failed";
+// ```
+/** Id of the error message for files whose true-peak analysis failed. */
+internal const val ANALYSIS_FAILED_ID: String = "analysis-failed"
+
+// What:     `fun analysisFailureMessage(fileNames: List<String>): FeedbackMessage` words the failure of the analysis.
+// Why:      D113: a file that cannot be decoded is reported once, in plain words, with no retry button; the app tries
+//           it
+//           again when the library next changes or at the next start, and the message says so.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// function analysisFailureMessage(names: string[]): FeedbackMessage { ... }
+// ```
+/** Returns the error message for one or more files whose true peak could not be measured. */
+fun analysisFailureMessage(fileNames: List<String>): FeedbackMessage {
+    /** The first file named in the message. */
+    val first: String = shortName(fileNames.first())
+    /** What happens next, the same for every count. */
+    val next = "The app tries again when your library changes."
+    return FeedbackMessage(
+        id = ANALYSIS_FAILED_ID,
+        text = if (fileNames.size == 1) {
+            "Could not analyze $first.\nIts file could not be decoded. $next"
+        } else {
+            "Could not analyze ${fileNames.size} files, including $first.\nThey could not be decoded. $next"
+        },
+        kind = FeedbackKind.ERROR,
+        actionLabel = null,
+    )
+}

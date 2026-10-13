@@ -34,7 +34,7 @@ fn starts_on_track_rows_at_its_default() {
 #[test]
 fn track_only_field_is_refused_in_track_rows() {
     let state = typed(&TemplateEditorState::initial(&library()), "$mi(track)$");
-    assert_eq!(state.mistake_lines(), vec!["mi: unknown field track"]);
+    assert_eq!(state.mistake_lines(), vec!["mi has no field called track. Pick a name from the Fields list."]);
 }
 
 // What: `fn open_formula_is_reported(...)` types a formula with no closing dollar sign.
@@ -47,7 +47,7 @@ fn track_only_field_is_refused_in_track_rows() {
 #[test]
 fn open_formula_is_reported() {
     let state = typed(&TemplateEditorState::initial(&library()), "$tf(mi(len), m:ss)");
-    assert_eq!(state.mistake_lines(), vec!["formula: the $ at character 1 has no closing $"]);
+    assert_eq!(state.mistake_lines(), vec!["The $ at character 1 has no closing $. Add a $ where the formula ends."]);
 }
 
 // What: `fn valid_edit_becomes_applied_text(...)` types a valid template and reads the Settings line that follows it.
@@ -256,7 +256,13 @@ fn selection_is_clamped_to_the_text() {
 #[test]
 fn error_lines_keep_template_order() {
     let state = typed(&TemplateEditorState::initial(&library()), "$mi(peek)$ $mi(seek)$");
-    assert_eq!(state.mistake_lines(), vec!["mi: unknown field peek", "mi: unknown field seek"]);
+    assert_eq!(
+        state.mistake_lines(),
+        vec![
+            "mi has no field called peek. Pick a name from the Fields list.",
+            "mi has no field called seek. Pick a name from the Fields list.",
+        ]
+    );
 }
 
 // What: `fn valid_template_removes_the_kept_note(...)` checks the note once the template applies again.
@@ -270,6 +276,28 @@ fn error_lines_keep_template_order() {
 fn valid_template_removes_the_kept_note() {
     let state = typed(&typed(&TemplateEditorState::initial(&library()), "$mi(peek)$"), "$mi(len)$");
     assert!(!state.preview_notes().contains(&TEMPLATE_KEPT_NOTE));
+}
+
+// What: `fn kept_note_says_what_the_rows_keep(...)` types a template that does not apply, after one that did and after a cleared one.
+// Why: TE4: the rows keep the last valid template; when that template shows nothing, a bare preview looks broken, so the
+// note says so.
+#[test]
+fn kept_note_says_what_the_rows_keep() {
+    let initial = TemplateEditorState::initial(&library());
+    assert_eq!(initial.kept_note(), None, "a template that applies has no kept note");
+    let broken = typed(&initial, "$mi(peek)$");
+    assert_eq!(broken.kept_note(), Some(TEMPLATE_KEPT_NOTE));
+    let cleared_then_broken = typed(&typed(&initial, ""), "$mi(nope)$");
+    assert_eq!(cleared_then_broken.kept_note(), Some(TEMPLATE_KEPT_EMPTY_NOTE), "the kept template is the empty one");
+    assert_eq!(typed(&broken, "$mi(len)$").kept_note(), None, "the note goes when the text applies again");
+}
+
+// What: `fn source_note_names_the_library_or_the_stand_ins(...)` reads the note about where the preview rows come from.
+// Why: the page draws it apart from the kept note, which has a reserved line of its own.
+#[test]
+fn source_note_names_the_library_or_the_stand_ins() {
+    assert_eq!(TemplateEditorState::initial(&library()).source_note(), TEMPLATE_LIBRARY_NOTE);
+    assert_eq!(TemplateEditorState::initial(&[]).source_note(), TEMPLATE_SAMPLE_NOTE);
 }
 
 // What: `fn focus_change_keeps_text(...)` checks that focus changes do not touch the text.

@@ -16,12 +16,28 @@ package dev.monochromatic.musicplayer
 // import { TrackMenuAction, label } from "core/TrackMenuAction";
 // import { MenuAnchorRect, menuAnchorOffset } from "core/MenuAnchor";
 // ```
+import androidx.compose.ui.input.key.key
+import dev.monochromatic.musicplayer.core.menuRowAfter
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.graphics.Color
+import androidx.compose.material3.ColorScheme
+import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.foundation.BorderStroke
 import dev.monochromatic.musicplayer.core.MenuAnchorOffset
 import dev.monochromatic.musicplayer.core.MenuAnchorRect
 import dev.monochromatic.musicplayer.core.MenuAnchorRequest
 import dev.monochromatic.musicplayer.core.TrackMenuAction
+import dev.monochromatic.musicplayer.core.accessKey
 import dev.monochromatic.musicplayer.core.label
 import dev.monochromatic.musicplayer.core.menuAnchorOffset
+import dev.monochromatic.musicplayer.core.menuRowActionFor
+import dev.monochromatic.musicplayer.core.trackMenuActionForAccessKey
+import androidx.compose.ui.input.key.KeyEventType
+import androidx.compose.ui.input.key.onPreviewKeyEvent
+import androidx.compose.ui.input.key.type
 
 // What:     Imports from `androidx.compose.foundation` bring in layout size, shape, scrolling, and the layout column.
 // Why:      The popup caps its width, gives each row a 48dp target, scrolls long lists, and rounds the container.
@@ -70,7 +86,11 @@ import androidx.compose.material3.Text
 // ```ts
 // // Composable functions are plain functions in pseudocode.
 // ```
+import androidx.compose.foundation.focusable
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.runtime.remember
 
 // What:     Imports from `androidx.compose.ui` bring in the modifier, the density, and the geometry and unit types.
@@ -109,6 +129,7 @@ import androidx.compose.ui.window.PopupProperties
 // ```
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
 
@@ -141,6 +162,28 @@ private val MENU_CORNER_RADIUS: Dp = 12.dp
 // ```
 /** Shadow elevation of the popup container. */
 private val MENU_ELEVATION: Dp = 3.dp
+
+// What:     `private val MENU_OUTLINE_WIDTH: Dp = 1.dp` is the thickness of the menu's outline.
+// Why:      D119 puts the menu on the canvas color, so a black menu over a black page needs an edge besides its
+//           shadow; the outline-variant role at 1 dp is that edge in both appearances.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// const MENU_OUTLINE_WIDTH = "1dp";
+// ```
+/** Thickness of the outline that marks the menu's edge. */
+private val MENU_OUTLINE_WIDTH: Dp = 1.dp
+
+// What:     `internal fun trackMenuContainerColor(scheme)` names the color the menu is filled with.
+// Why:      D119 puts the menu on the pure canvas color (white in light, black in dark) with no tint; naming the choice
+//           lets a test pin it to the canvas slot, which the theme tests already pin to pure white and pure black.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// const trackMenuContainerColor = (scheme: ColorScheme) => scheme.surface;
+// ```
+/** Returns the fill of the track menu: the scheme's canvas slot, untinted. */
+internal fun trackMenuContainerColor(scheme: ColorScheme): Color = scheme.surface
 
 // What:     `private val ITEM_MIN_TARGET: Dp = 48.dp` is the minimum touch target of one action row.
 // Why:      Every action keeps a 48dp minimum target, matching the touch-target rule of the design study.
@@ -330,18 +373,75 @@ fun trackMenuPopup(
     // ```
     /** Secondary text color used for the dB value on the File details row. */
     val secondary = MaterialTheme.colorScheme.onSurfaceVariant
+    /** Row that holds the keyboard ring, or null until the first Down or Up (D114). */
+    var activeRow: Int? by remember { mutableStateOf<Int?>(null) }
+    /** Focus target of the popup, so the menu's own key handler receives the keys of a hardware keyboard. */
+    val menuFocus: FocusRequester = remember { FocusRequester() }
+    LaunchedEffect(Unit) {
+        menuFocus.requestFocus()
+    }
     Popup(
         popupPositionProvider = positionProvider,
         onDismissRequest = onDismiss,
         properties = PopupProperties(focusable = true, dismissOnBackPress = true, dismissOnClickOutside = true),
     ) {
         Surface(
-            modifier = modifier.widthIn(max = MENU_MAX_WIDTH),
+            modifier = modifier
+                .widthIn(max = MENU_MAX_WIDTH)
+                // The row chords of D106 (Delete, Alt+Enter and the Ctrl+Shift chords) act on the row the menu is
+                // open on, so the popup window, which receives its own keys, asks the key table about them.
+                .onPreviewKeyEvent { event ->
+                    if (event.type == KeyEventType.KeyDown) {
+                        when (event.key) {
+                            Key.DirectionDown, Key.DirectionUp -> {
+                                activeRow = menuRowAfter(
+                                    current = activeRow,
+                                    count = actions.size,
+                                    step = if (event.key == Key.DirectionDown) 1 else -1,
+                                )
+                                return@onPreviewKeyEvent true
+                            }
+                            Key.Enter, Key.NumPadEnter -> {
+                                /** Row that holds the ring, which Enter runs. */
+                                val ringed: Int? = activeRow
+                                if (ringed != null) {
+                                    onSelect(actions[ringed])
+                                    return@onPreviewKeyEvent true
+                                }
+                            }
+                            else -> Unit
+                        }
+                    }
+                    /**
+                     * Menu action of the row chord or the access letter (D114) that this key-down presses, or null
+                     * when it presses neither.
+                     */
+                    val chord: TrackMenuAction? = if (event.type == KeyEventType.KeyDown) {
+                        hostKeyInputOf(event).let { input ->
+                            menuRowActionFor(input) ?: trackMenuActionForAccessKey(input)
+                        }
+                    } else {
+                        null
+                    }
+                    if (chord != null) {
+                        onSelect(chord)
+                    }
+                    chord != null
+                }
+                .focusRequester(menuFocus)
+                .focusable(),
             shape = RoundedCornerShape(MENU_CORNER_RADIUS),
-            color = MaterialTheme.colorScheme.surfaceContainer,
+            // D119: the menu sits on the pure canvas color, white in light and black in dark, with no tint; its edge
+            // is the shadow and a 1 dp outline-variant outline, because a black menu over a black page has no shadow.
+            color = trackMenuContainerColor(MaterialTheme.colorScheme),
+            border = BorderStroke(width = MENU_OUTLINE_WIDTH, color = MaterialTheme.colorScheme.outlineVariant),
             shadowElevation = MENU_ELEVATION,
         ) {
-            Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
+            Column(
+                modifier = Modifier
+                    .verticalScroll(rememberScrollState())
+                    .padding(bottom = FOCUS_RING_OUTSET),
+            ) {
                 // What:     `Text` draws the track name as the heading above the action rows.
                 // Why:      D7 headed the menu with the track name, kept to one line with an ellipsis.
                 //
@@ -393,9 +493,14 @@ fun trackMenuPopup(
                     // ```ts
                     // const rowText = [label(action), action === "details" ? span(secondary, suffix) : null];
                     // ```
-                    /** Visible text of this row, with the File details value in the secondary role. */
+                    /** Visible text of this row: access letter underlined, File details value in the secondary role. */
                     val rowText = buildAnnotatedString {
                         append(label(action))
+                        addStyle(
+                            SpanStyle(textDecoration = TextDecoration.Underline),
+                            accessKey(action).labelIndex,
+                            accessKey(action).labelIndex + 1,
+                        )
                         if (action == TrackMenuAction.DETAILS) {
                             withStyle(SpanStyle(color = secondary)) {
                                 append(trackMenuDetailsSuffix(detailsValue))
@@ -413,7 +518,11 @@ fun trackMenuPopup(
                             top = ROW_VERTICAL_PADDING,
                             bottom = ROW_VERTICAL_PADDING,
                         ),
-                        modifier = Modifier.widthIn(min = ITEM_MIN_TARGET).heightIn(min = ITEM_MIN_TARGET),
+                        modifier = Modifier
+                            .padding(horizontal = FOCUS_RING_OUTSET)
+                            .widthIn(min = ITEM_MIN_TARGET)
+                            .heightIn(min = ITEM_MIN_TARGET)
+                            .keyboardFocusRing(visible = activeRow == index, shape = RectangleShape),
                     )
                 }
             }

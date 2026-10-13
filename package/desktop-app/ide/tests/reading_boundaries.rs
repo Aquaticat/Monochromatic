@@ -61,6 +61,8 @@ fn shaped(source: &str) -> (Document, ShapedView) {
         count: 16,
         width: 800.0,
         scale: 1.0,
+        wrap: None,
+        clip: None,
     };
     // What: `&document` lends the source to the shaper; the tuple hands both values to the caller.
     // Why: Assertions need the document for copying and the view for geometry.
@@ -215,6 +217,7 @@ fn each_grapheme_selects_its_own_extent_and_copies_its_source_characters() {
                     anchor: start,
                     head: end,
                     viewport: 0,
+                    affinity: ide_app::document::ReadingAffinity::Downstream,
                 });
                 let expected: String = characters[start..end].iter().collect();
                 assert_eq!(
@@ -243,6 +246,7 @@ fn selected_terminators_are_copied_and_marked() {
                 anchor: start,
                 head: next,
                 viewport: 0,
+                affinity: ide_app::document::ReadingAffinity::Downstream,
             });
             let expected: String = characters[start..next].iter().collect();
             assert_eq!(
@@ -256,6 +260,8 @@ fn selected_terminators_are_copied_and_marked() {
                 count: 16,
                 width: 800.0,
                 scale: 1.0,
+                wrap: None,
+                clip: None,
             };
             let view = shaper.prepare(&document, viewport, &[]);
             let mut marks = 0;

@@ -2,26 +2,40 @@
 //!  and the window-thread step that swaps a finished tile in.
 
 /// Frame paint inputs and the frame presentation the swap hands over.
-use super::render::{Frame, Paint, show, stamp_for};
+use super::render::{Frame, Paint, render, show, stamp_for};
+/// The vertical mapping's side of the window: measured rows and keeping the view still.
+use super::rows;
 /// The tile worker and its result type.
 use super::tile_build::{TileBuilt, TileJob, TileWorker};
+/// The background measurement of the whole text.
+use super::tile_pass::{PassJob, PassKey, PassOutput, TAKE_LIMIT};
 /// Parent state, the window, and the viewport's hold rule.
 use super::{AppWindow, State, viewport::holds};
+/// The part of a tall tile's lines its raster holds.
+use ide_app::shaped_text::Clip;
+/// A wrap width must be a positive number of pixels.
+use ide_app::wrap::has_wrap_width;
 /// Timer and toolkit-string bridges for the poll and the error message.
 use slint::{ComponentHandle, SharedString, TimerMode};
 /// Poll period of the worker's reply slot, the same as the other background pollers.
-use std::{cell::RefCell, rc::Rc, time::Duration};
+use std::{
+    cell::RefCell,
+    rc::Rc,
+    sync::Arc,
+    time::{Duration, Instant},
+};
 
 /// What:
 ///  Position and width of one materialized tile:
-///  its first line, its line count, its horizontal origin, and the visible width.
+///  its first line, its line count, the wrap width its lines are broken at,
+///  and the part of those lines its raster holds when they are too tall for one.
 /// Why:
 ///  The requested tile and the displayed tile are both values of this type,
 ///  so a result can be checked against the window it was built for.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// type TileBounds = { first: number; count: number; horizontal: number; width: number };
+/// type TileBounds = { first: number; count: number; width: number; clip?: Clip };
 /// ```
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub(super) struct TileBounds {
@@ -29,10 +43,10 @@ pub(super) struct TileBounds {
     pub(super) first: usize,
     /// Number of materialized source lines.
     pub(super) count: usize,
-    /// Horizontal tile origin.
-    pub(super) horizontal: f32,
-    /// Logical width of the visible code area.
+    /// Wrap width in logical pixels, or zero while the view has no width yet.
     pub(super) width: f32,
+    /// The rows of those lines the raster holds, below the top of the first line's block; nothing for all of them.
+    pub(super) clip: Option<Clip>,
 }
 
 /// The tile the reader's view needs next, as last placed.
@@ -40,8 +54,8 @@ pub(super) fn requested(current: &State) -> TileBounds {
     return TileBounds {
         first: current.first,
         count: current.count,
-        horizontal: current.horizontal,
         width: current.width,
+        clip: current.clip,
     };
 }
 
@@ -114,47 +128,201 @@ fn start_poll(window: &AppWindow, state: &Rc<RefCell<State>>, current: &mut Stat
         });
 }
 
+/// What:
+///  What the measurements of the window's text at its current scale and wrap width are valid for.
+///  A window without a wrap width yet has wrap bits of zero.
+/// Why:
+///  A finished tile or pass output is used only when its key is this one.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function currentKey(current: State, scale: number): PassKey;
+/// ```
+pub(super) fn current_key(current: &State, scale: f32) -> PassKey {
+    let wrap = if has_wrap_width(current.width) {
+        current.width.to_bits()
+    } else {
+        0
+    };
+    return PassKey {
+        file: current.file_generation,
+        revision: current.document.revision(),
+        scale: scale.to_bits(),
+        wrap,
+    };
+}
+
+/// What:
+///  Ask the worker to measure the whole text at the current wrap width when it has not been asked yet for this
+///  text, scale, width, and syntax snapshot.
+/// Why:
+///  The pass is what makes the scroll extent exact without any frame waiting for it;
+///  a resize or a new text starts it again, and lines the worker kept are only broken again.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function syncPass(window: AppWindow, state: Shared<State>, current: State, scale: number): void;
+/// ```
+pub(super) fn sync_pass(
+    window: &AppWindow,
+    state: &Rc<RefCell<State>>,
+    current: &mut State,
+    scale: f32,
+) {
+    if !has_wrap_width(current.width) {
+        return;
+    }
+    let key = current_key(current, scale);
+    // The address of the syntax snapshot tells a new snapshot from the one the pass already used.
+    let styles = Arc::as_ptr(&current.styles).cast::<()>() as usize;
+    if current.pass_posted == Some((key, styles)) {
+        return;
+    }
+    if let Err(error) = warm(window, state, current) {
+        tracing::error!(%error, "source tile worker could not start");
+        return;
+    }
+    let job = PassJob {
+        key,
+        document: current.document.clone(),
+        styles: Arc::clone(&current.styles),
+        typography: current.shaper.typography().clone(),
+        scale,
+        wrap: current.width,
+        focus: current.shown.first,
+    };
+    let Some(worker) = current.tile_worker.as_mut() else {
+        return;
+    };
+    match worker.post_pass(job) {
+        Ok(()) => {
+            tracing::debug!(
+                wrap = current.width,
+                focus = current.shown.first,
+                "posted the measurement pass"
+            );
+            current.pass_posted = Some((key, styles));
+            start_poll(window, state, current);
+        }
+        Err(error) => tracing::error!(%error, "source measurement pass request failed"),
+    }
+}
+
 /// Whether a finished tile still describes what is displayed, wanted, and the current view.
 /// Stale inputs are rejected here, so a result from before an edit, a file change, or a theme change is never shown.
+/// The tile's own lines must have the heights the map has for them, which `apply` makes so before asking.
 fn accepts(current: &State, paint: &Paint, built: &TileBuilt, height: f32) -> bool {
     return current.tile_job.is_some()
         && built.file == current.file_generation
-        && built.view.map == current.row_map
         && built.active == paint.active
+        && built.bounds.width == current.width
+        && built
+            .measured
+            .iter()
+            .all(|(line, rows)| return current.row_map.rows_of(*line) == *rows)
         && holds(current, built.bounds, current.offset, height)
         && stamp_for(current, built.bounds, paint) == built.stamp;
 }
 
-/// Take at most one finished tile from the worker and swap it in when it is still valid.
+/// Take at most one finished tile from the worker and what the pass measured, and apply them when they are valid.
 pub(super) fn poll(window: &AppWindow, state: &Rc<RefCell<State>>) {
-    let polled = {
+    let (polled, pass) = {
         let mut current = state.borrow_mut();
         let Some(mut worker) = current.tile_worker.take() else {
             current.tile_poll.stop();
             return;
         };
         let polled = worker.poll();
+        let pass = if polled.is_ok() {
+            worker.take_pass(TAKE_LIMIT)
+        } else {
+            None
+        };
         match &polled {
             Ok(_) => current.tile_worker = Some(worker),
             // A stopped worker is dropped here, so its thread is joined; the next re-center starts a fresh one.
             Err(_) => {
                 current.tile_job = None;
                 current.scroll_wanted = None;
+                current.pass_posted = None;
             }
         }
         stop_when_idle(&mut current);
-        polled
+        (polled, pass)
     };
-    let reply = match polled {
-        Ok(Some(reply)) => reply,
-        Ok(None) => return,
+    // The tile comes first: it may change which lines the displayed tile holds, and so which lines the output may set.
+    // Each apply is timed: it is the window thread's whole cost of taking in the worker's result.
+    match polled {
+        Ok(Some(reply)) => {
+            let started = Instant::now();
+            apply(window, state, reply);
+            tracing::debug!(
+                elapsed_us = started.elapsed().as_micros() as u64,
+                "window thread applied a finished tile"
+            );
+        }
+        Ok(None) => {}
         Err(error) => {
             tracing::error!(%error, "source tile worker stopped");
             window.set_error_message(SharedString::from(format!("{error:#}")));
-            return;
         }
-    };
-    apply(window, state, reply);
+    }
+    if let Some(output) = pass {
+        let started = Instant::now();
+        let lines = output.lines.len();
+        apply_pass(window, state, output);
+        tracing::debug!(
+            elapsed_us = started.elapsed().as_micros() as u64,
+            lines,
+            "window thread applied the output of the measurement pass"
+        );
+    }
+}
+
+/// What:
+///  Apply what the pass measured: the visual rows of lines outside the displayed tile go into the window's table,
+///  and the window renders when any count changed.
+/// Why:
+///  The lines of the displayed tile keep the heights they were painted with;
+///  a pass result must never move the rows of the frame on screen.
+///  A result for another text, scale, or width is dropped.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function applyPass(window: AppWindow, state: Shared<State>, output: PassOutput): void;
+/// ```
+fn apply_pass(window: &AppWindow, state: &Rc<RefCell<State>>, output: PassOutput) {
+    let factor = window.window().scale_factor();
+    let mut current = state.borrow_mut();
+    if output.key != current_key(&current, factor) {
+        tracing::debug!(
+            lines = output.lines.len(),
+            "dropped a measurement for another text or width"
+        );
+        return;
+    }
+    let held = current.shown.first..current.shown.first + current.shown.count;
+    let count = output.lines.len();
+    let changed = rows::absorb(
+        &mut current,
+        output
+            .lines
+            .into_iter()
+            .filter(|(line, _)| return !held.contains(line)),
+    );
+    #[cfg(debug_assertions)]
+    {
+        current.pass_applied += 1;
+        current.pass_lines += count as u64;
+        current.pass_most_lines = current.pass_most_lines.max(count);
+        current.pass_shaped += output.shaped;
+        current.pass_rebroken += output.rebroken;
+    }
+    tracing::debug!(count, changed, done = output.done, "applied a measurement");
+    drop(current);
+    if changed {
+        render(window, state);
+    }
 }
 
 /// Stop the poll timer when no re-center is queued and the worker has nothing in flight; `submit` starts it again.
@@ -185,13 +353,25 @@ fn apply(window: &AppWindow, state: &Rc<RefCell<State>>, reply: anyhow::Result<T
     };
     let factor = window.window().scale_factor();
     let mut current = state.borrow_mut();
-    let paint = Paint::new(window, &current);
-    let height = window.get_viewport_height();
     #[cfg(debug_assertions)]
     {
         current.worker_tiles += 1;
         current.worker_rows_shaped += built.rows_shaped;
     }
+    // What: The heights the tile's own lines measured go into the table first, and the map follows them.
+    // Why: The tile was painted with those heights; the map must agree before the tile can be shown.
+    //      A change above the view moves the offset with it, even while the reader scrolls.
+    let height = window.get_viewport_height();
+    let view_now = (-window.get_scroll_y(), window.get_viewport_width(), height);
+    let mut scrolled = None;
+    let mut remapped = false;
+    if built.key == current_key(&current, factor) {
+        remapped = rows::absorb(&mut current, built.measured.iter().copied());
+        // The map follows the table also when an earlier change of it was still waiting for the reader to stop.
+        scrolled = rows::settle(&mut current, factor, view_now, true);
+        remapped = remapped || scrolled.is_some();
+    }
+    let paint = Paint::new(window, &current);
     // What: `accepts` is a conjunction of cheap identity checks, and the stamp rebuild only runs when the rest pass.
     // Why: A stale tile is common while scrolling fast, and each rejection must cost almost nothing.
     if !accepts(&current, &paint, &built, height) {
@@ -202,19 +382,40 @@ fn apply(window: &AppWindow, state: &Rc<RefCell<State>>, reply: anyhow::Result<T
         if current.tile_job == Some(built.bounds) {
             current.tile_job = None;
         }
-        tracing::debug!(first = built.bounds.first, "discarded stale source tile");
+        // A tile is still wanted when the window waits for one: the displayed tile stays on screen until it arrives,
+        // so a discarded tile (a hint arrived while it was built, for instance) must be asked for again.
+        let wanted = current.scroll_wanted.is_some();
+        tracing::debug!(
+            first = built.bounds.first,
+            wanted,
+            remapped,
+            "discarded stale source tile"
+        );
+        drop(current);
+        if remapped || wanted {
+            // The map moved even though the tile was not shown, or a tile is still wanted; the window follows.
+            render(window, state);
+        }
         return;
     }
     let bounds = built.bounds;
     let pixels = built.pixels;
-    current.shaped = Some(built.view);
+    // The map may have moved since the job was queued; the tile's rows move with it, and its own lines did not change.
+    let mut view = built.view;
+    view.rebase(&current.row_map);
+    // What: A tile at a new width asks for the measurement walk again.
+    // Why: A measurement never touches the displayed tile, so the lines the old tile held kept the heights of the
+    //      old width; the walk finds the worker's kept rows by lookup, so asking again costs little.
+    if current.shown.width != bounds.width {
+        current.pass_posted = None;
+    }
+    current.shaped = Some(view);
     current.frame_stamp = Some(built.stamp);
     current.shown = bounds;
     // The requested window now equals what is shown; a newer job still in flight may replace it.
     current.first = bounds.first;
     current.count = bounds.count;
-    current.horizontal = bounds.horizontal;
-    current.width = bounds.width;
+    current.clip = bounds.clip;
     current.scroll_wanted = None;
     if current.tile_job == Some(bounds) {
         current.tile_job = None;
@@ -223,6 +424,7 @@ fn apply(window: &AppWindow, state: &Rc<RefCell<State>>, reply: anyhow::Result<T
     {
         current.tiles_applied += 1;
     }
+    sync_pass(window, state, &mut current, factor);
     drop(current);
     show(
         window,
@@ -231,9 +433,10 @@ fn apply(window: &AppWindow, state: &Rc<RefCell<State>>, reply: anyhow::Result<T
             pixels: Some(pixels),
             matches_changed: true,
             scale: factor,
-            scrolled: None,
+            scrolled,
             anchor_line: window.get_language_anchor_line(),
             notice: None,
+            sign: None,
         },
     );
 }

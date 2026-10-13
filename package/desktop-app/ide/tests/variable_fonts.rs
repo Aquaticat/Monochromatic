@@ -20,6 +20,8 @@ fn viewport() -> Viewport {
         count: 1,
         width: 400.0,
         scale: 1.25,
+        wrap: None,
+        clip: None,
     };
 }
 
@@ -134,6 +136,7 @@ fn italic_ligatures_keep_source_positions() {
             anchor: position,
             head: position,
             viewport: 0,
+            affinity: ide_app::document::ReadingAffinity::Downstream,
         });
         let view = shaper.prepare(&document, viewport(), &[]);
         let caret = view.caret(&document);
@@ -143,6 +146,7 @@ fn italic_ligatures_keep_source_positions() {
         anchor: 1,
         head: 2,
         viewport: 0,
+        affinity: ide_app::document::ReadingAffinity::Downstream,
     });
     assert_eq!(document.selected_text(), "=");
 }

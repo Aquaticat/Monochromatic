@@ -221,6 +221,22 @@ use crate::audio_meter::MeterSnapshot;
 use crate::error::PlayerError;
 
 /// What:
+///      `pub const FILL_FRAMES_FLOOR: usize = 2_048;`.
+///  An upper bound, in frames, of the audio that can still be on its way to the speakers after the ring ran empty
+///           (about 43 ms at 48 kHz).
+///  The PipeWire backend uses the same number as the smallest buffer it hands over per callback.
+/// Why:
+///       The controller waits this long before it rebuilds the stream at the end of a track whose successor needs
+///  another sample rate, so the last frames are not cut off.
+///  The device buffer here is smaller, so the wait is conservative.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// const FILL_FRAMES_FLOOR = 2048;
+/// ```
+pub const FILL_FRAMES_FLOOR: usize = 2_048;
+
+/// What:
 ///      `pub struct Output { ... }`.
 ///  Owns the cpal output.
 ///  Fields:
@@ -754,6 +770,20 @@ impl Output {
         // ```
         self.playing.store(on, Ordering::Relaxed);
     }
+
+    /// What:
+    ///      `pub fn set_draining(&self, _on: bool)`.
+    ///  Accepts the end-of-track hint and ignores it.
+    /// Why:
+    ///       The PipeWire backend uses the hint to keep the end of a track out of its underrun count;
+    ///  this backend counts no underruns, so there is nothing to silence.
+    ///  The method keeps the engine's call compiling on macOS and Windows.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// setDraining(_on: boolean): void {}
+    /// ```
+    pub fn set_draining(&self, _on: bool) {}
 
     /// What:
     ///      `pub fn meter_snapshot(&self) -> MeterSnapshot`.

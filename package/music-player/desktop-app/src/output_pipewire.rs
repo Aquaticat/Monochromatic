@@ -333,6 +333,25 @@ use crate::audio_meter::{AudioMeter, MeterSnapshot};
 const F32_BYTES: usize = size_of::<f32>();
 
 /// What:
+///      `pub const FILL_FRAMES_FLOOR: usize = 2_048;`.
+///  The fewest frames one output callback hands to PipeWire when the graph asks for less
+///           (about 43 ms at 48 kHz).
+///  `usize` because it is a frame count used for buffer arithmetic.
+/// Why:
+///       One callback per graph cycle (a few milliseconds) would turn every late wake-up of the audio thread
+///  into an audible skip,
+///  while handing over the whole quarter-second buffer made the audible position trail the ring by that much.
+///  This floor bounds the position error and keeps a margin against scheduling jitter.
+///  It is also how much audio can still be on its way to the speakers after the ring ran empty,
+///  so the controller waits that long before it rebuilds the stream.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// const FILL_FRAMES_FLOOR = 2048;
+/// ```
+pub const FILL_FRAMES_FLOOR: usize = 2_048;
+
+/// What:
 ///      `struct ProcessData { ... }`.
 ///  The state the realtime callback owns.
 ///  It is
@@ -435,6 +454,19 @@ struct ProcessData {
     /// meter: AudioMeter;
     /// ```
     meter: Arc<AudioMeter>,
+    /// What:
+    ///      `draining: Arc<AtomicBool>`.
+    ///  Set by the engine once the decoder has pushed the last frame of the track;
+    ///  the callback then stops counting a short buffer as an underrun.
+    /// Why:
+    ///       The last callbacks of a track always find the ring empty;
+    ///  that is the end of the music, not a stutter.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// draining: { value: boolean };
+    /// ```
+    draining: Arc<AtomicBool>,
 }
 
 /// What:
@@ -564,6 +596,19 @@ pub struct Output {
     /// meter: AudioMeter;
     /// ```
     meter: Arc<AudioMeter>,
+    /// What:
+    ///      `draining: Arc<AtomicBool>`.
+    ///  The master copy of the end-of-track flag;
+    ///  each stream's callback gets a clone and `reconfigure` clears it.
+    /// Why:
+    ///       `set_draining` writes it from the engine thread;
+    ///  the realtime callback reads its clone.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// draining: { value: boolean };
+    /// ```
+    draining: Arc<AtomicBool>,
 }
 
 /// What:
@@ -696,6 +741,7 @@ impl Output {
             playing,
             worker,
             meter: Arc::new(AudioMeter::new()),
+            draining: Arc::new(AtomicBool::new(false)),
         })
     }
 
@@ -786,7 +832,17 @@ impl Output {
             playing: Arc::clone(&self.playing),
             worker: self.worker.clone(),
             meter: Arc::clone(&self.meter),
+            draining: Arc::clone(&self.draining),
         };
+
+        // What:     `self.draining.store(false, Ordering::Relaxed);`. A new stream starts a new track.
+        // Why:      The end-of-track flag of the previous stream must not silence this stream's underrun count.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // this.draining.value = false;
+        // ```
+        self.draining.store(false, Ordering::Relaxed);
 
         // What:     `let guard = self.thread_loop.lock();`. Lock the audio loop: while held,
         //           the loop thread will not touch loop objects, so we can safely
@@ -968,7 +1024,7 @@ impl Output {
                             Some(slice) => {
                                 // What:     `let avail_frames = slice.len() / stride;`. How
                                 //           many whole frames fit in this buffer.
-                                // Why:      We fill exactly that many frames.
+                                // Why:      The upper bound for the frames this callback fills.
                                 //
                                 // In TS you'd write (pseudocode):
                                 // ```ts
@@ -976,26 +1032,47 @@ impl Output {
                                 // ```
                                 let avail_frames = slice.len() / stride;
 
-                                // What:     `let want = avail_frames * pd.channels;`.
+                                // What:     `let wanted_frames = usize::try_from(requested_frames).map_or(FILL_FRAMES_FLOOR, |requested| return requested.max(FILL_FRAMES_FLOOR));`
+                                //           then `let fill_frames = avail_frames.min(wanted_frames);`. Fill what the graph
+                                //           asks for this cycle, but at least `FILL_FRAMES_FLOOR` frames, and never more than
+                                //           fits in the buffer.
+                                // Why:      The buffer PipeWire hands over holds about a quarter of a second.
+                                //           Filling all of it moved that much audio out of the ring in one
+                                //           callback, so the audible position trailed what was taken from
+                                //           the ring by up to that much, and a stream that started with an
+                                //           empty ring committed a quarter second of silence at once.
+                                //           Filling only one graph cycle would make every missed deadline of
+                                //           this thread an audible skip; the floor keeps tens of milliseconds
+                                //           of margin while the position error stays below the floor.
+                                //
+                                // In TS you'd write (pseudocode):
+                                // ```ts
+                                // const fillFrames = Math.min(availFrames, Math.max(requestedFrames, FILL_FRAMES_FLOOR));
+                                // ```
+                                let wanted_frames =
+                                    usize::try_from(requested_frames).map_or(FILL_FRAMES_FLOOR, |requested| return requested.max(FILL_FRAMES_FLOOR));
+                                let fill_frames = avail_frames.min(wanted_frames);
+
+                                // What:     `let want = fill_frames * pd.channels;`.
                                 //           Interleaved sample count to produce.
                                 // Why:      Total f32 values to pop/convert.
                                 //
                                 // In TS you'd write (pseudocode):
                                 // ```ts
-                                // const want = availFrames * pd.channels;
+                                // const want = fillFrames * pd.channels;
                                 // ```
-                                let want = avail_frames * pd.channels;
+                                let want = fill_frames * pd.channels;
 
-                                // What:     `pd.meter.record_buffer(requested_frames, avail_frames as u64);`.
+                                // What:     `pd.meter.record_buffer(requested_frames, fill_frames as u64);`.
                                 //           Store the requested and filled frame counts.
                                 // Why:      The engine thread logs them, so the quantum and the
-                                //           buffer size can be checked against each other.
+                                //           frames actually filled can be checked against each other.
                                 //
                                 // In TS you'd write (pseudocode):
                                 // ```ts
-                                // meter.recordBuffer(requestedFrames, availFrames);
+                                // meter.recordBuffer(requestedFrames, fillFrames);
                                 // ```
-                                pd.meter.record_buffer(requested_frames, avail_frames as u64);
+                                pd.meter.record_buffer(requested_frames, fill_frames as u64);
 
                                 // What:     `if pd.scratch.len() < want { pd.scratch.resize(want, 0.0); }`.
                                 //           Grow the scratch buffer if needed, filling new
@@ -1078,7 +1155,12 @@ impl Output {
                                 // ```ts
                                 // if (playing && got < want) meter.recordShort((want - got) / channels);
                                 // ```
-                                if playing && got < want {
+                                //
+                                // What:     `&& !pd.draining.load(Ordering::Relaxed)`. After the engine
+                                //           pushed the last frame of the track, a short buffer is the end
+                                //           of the music, so it is not counted.
+                                // Why:      Otherwise every track end would log "audio output underran".
+                                if playing && got < want && !pd.draining.load(Ordering::Relaxed) {
                                     pd.meter.record_short(((want - got) / pd.channels) as u64);
                                 }
 
@@ -1144,15 +1226,15 @@ impl Output {
                                     slice[off..off + F32_BYTES].copy_from_slice(&bytes);
                                 }
 
-                                // What:     `avail_frames`. Tail of the arm: the number of
+                                // What:     `fill_frames`. Tail of the arm: the number of
                                 //           frames we filled becomes `n_frames`.
                                 // Why:      Report the frame count.
                                 //
                                 // In TS you'd write (pseudocode):
                                 // ```ts
-                                // return availFrames;
+                                // return fillFrames;
                                 // ```
-                                avail_frames
+                                fill_frames
                             }
                             // What:     `None => 0`. No mapped buffer: zero frames.
                             // Why:      Nothing written.
@@ -1417,6 +1499,30 @@ impl Output {
         // Atomics.store(playingFlag, 0, on ? 1 : 0);
         // ```
         self.playing.store(on, Ordering::Relaxed);
+    }
+
+    /// What:
+    ///      `pub fn set_draining(&self, on: bool)`.
+    ///  Tell the output the decoder pushed the last frame of the track,
+    ///  so the empty buffers that follow are not counted as underruns.
+    ///  `reconfigure` clears it.
+    /// Why:
+    ///       The end of a track is silence by design;
+    ///  counting it would make the underrun log cry wolf at every track change.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// setDraining(on: boolean): void { Atomics.store(drainingFlag, 0, on ? 1 : 0); }
+    /// ```
+    pub fn set_draining(&self, on: bool) {
+        // What:     `self.draining.store(on, Ordering::Relaxed);`. Atomic write of the flag.
+        // Why:      Make the new state visible to the audio thread.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // Atomics.store(drainingFlag, 0, on ? 1 : 0);
+        // ```
+        self.draining.store(on, Ordering::Relaxed);
     }
 
     /// What:

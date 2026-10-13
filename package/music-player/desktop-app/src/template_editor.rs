@@ -93,22 +93,34 @@ pub const TEMPLATE_LIBRARY_NOTE: &str = "From your library.";
 pub const TEMPLATE_KEPT_NOTE: &str = "Rows keep the last valid template.";
 
 /// What:
+///  `pub const TEMPLATE_KEPT_EMPTY_NOTE: &str` says the rows keep the last valid template and that it shows nothing.
+/// Why:
+///  A cleared template is valid and shows no second line, so a rejected draft typed after it leaves empty rows,
+///  and the note must say that this is the kept template and not a broken preview.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// const TEMPLATE_KEPT_EMPTY_NOTE = "Rows keep the last valid template, which shows no second line.";
+/// ```
+pub const TEMPLATE_KEPT_EMPTY_NOTE: &str = "Rows keep the last valid template, which shows no second line.";
+
+/// What:
 ///  `pub fn template_sample_tracks() -> Vec<PlayingTrackFields>` holds the two stand-in tracks.
 /// Why:
 ///  Sample values show only while the open library holds no track;
-///  one analysed and one not yet analysed.
+///  one analyzed and one not yet analyzed.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// const TEMPLATE_SAMPLE_TRACKS = [
 ///   { title: "Track title", len: 200, peak: "−1.0 dBTP", place: 1, total: 16 },
-///   { title: "Track not analysed yet", len: 200, peak: undefined, place: 2, total: 16 },
+///   { title: "Track not analyzed yet", len: 200, peak: undefined, place: 2, total: 16 },
 /// ];
 /// ```
 pub fn template_sample_tracks() -> Vec<PlayingTrackFields> {
     return vec![
         stand_in("Track title", Some("\u{2212}1.0 dBTP"), 1),
-        stand_in("Track not analysed yet", None, 2),
+        stand_in("Track not analyzed yet", None, 2),
     ];
 }
 

@@ -24,7 +24,7 @@ use helix_core::{Assoc, ChangeSet, Rope, Transaction, diff::compare_ropes};
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// type ReadingPosition = { anchor: number; head: number; viewport: number };
+/// type ReadingPosition = { anchor: number; head: number; viewport: number; affinity: ReadingAffinity };
 /// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
 pub struct ReadingPosition {
@@ -36,6 +36,32 @@ pub struct ReadingPosition {
     pub head: usize,
     /// Source position attached to the viewport's top visible source line.
     pub viewport: usize,
+    /// The side of a soft-wrap offset the head stands on;
+    ///  it matters only when the head is at the offset where a visual row breaks,
+    ///  and every move that does not choose a side sets `Downstream`.
+    pub affinity: ReadingAffinity,
+}
+
+/// What:
+///  The side of a soft-wrap offset that a reading position stands on:
+///  `Upstream` is the end of the upper visual row,
+///  `Downstream` the start of the lower one.
+/// Why:
+///  One offset is both the end of a row and the start of the next row,
+///  so a caret there needs a side to be drawn on.
+///  `Downstream` is the default because it matches a position with no wrap.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// type ReadingAffinity = 'upstream' | 'downstream';
+/// ```
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+pub enum ReadingAffinity {
+    /// The end of the upper visual row.
+    Upstream,
+    /// The start of the lower visual row.
+    #[default]
+    Downstream,
 }
 
 /// What:
@@ -184,6 +210,7 @@ impl Document {
             anchor: position.anchor.min(end),
             head: position.head.min(end),
             viewport: position.viewport.min(end),
+            affinity: position.affinity,
         };
     }
 
@@ -259,6 +286,16 @@ impl Document {
             mapped.anchor = changes.map_pos(position.anchor, Assoc::After);
         }
         mapped.viewport = changes.map_pos(position.viewport, Assoc::BeforeSticky);
+        // What: The side of a wrap offset survives only a head that stayed at its offset.
+        // Why: A head that moved is at an offset the old side was not chosen for.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // if (mapped.head !== position.head) mapped.affinity = 'downstream';
+        // ```
+        if mapped.head != position.head {
+            mapped.affinity = ReadingAffinity::Downstream;
+        }
         self.text = reload.text;
         self.revision += 1;
         self.select(mapped);

@@ -1,21 +1,19 @@
-//! Controller side of the per-track measures: forwards sweep reports, re-analyses one track, names the opened folder.
+//! Controller side of the per-track measures: forwards sweep reports, refreshes them when files change, and names the opened folder.
 //!
 //! What: `impl Controller` methods that turn sweep reports into `Update::Measures` and `Update::Analysis`,
-//! discard the decision of one track on request, and announce the opened folder's display name.
+//! and announce the opened folder's display name.
 //! Why: the controller owns the queue generation and the cache handle, so stale reports are dropped here.
 
 use std::path::{Path, PathBuf};
+#[cfg(test)]
 use std::sync::Arc;
 
 use truepeak_core::Decision;
 
 use crate::command::Update;
 use crate::controller::Controller;
-use crate::duration_probe::probe_duration_secs;
-use crate::measure::spawn_track_measurement;
-use crate::peakcache;
 use crate::sweep_report::SweepReport;
-use crate::track_measure::{measure_from_decision, measure_from_duration};
+use crate::track_measure::measure_from_decision;
 
 /// What:
 ///      `fn display_name_of(root: &Path) -> String`.
@@ -27,7 +25,7 @@ use crate::track_measure::{measure_from_decision, measure_from_duration};
 /// ```ts
 /// const displayNameOf = (root: string) => basename(root) || root;
 /// ```
-fn display_name_of(root: &Path) -> String {
+pub(crate) fn display_name_of(root: &Path) -> String {
     return root
         .file_name()
         .map_or_else(|| return root.display().to_string(), |name| return name.to_string_lossy().into_owned());
@@ -50,7 +48,7 @@ impl Controller {
     }
 
     /// What:
-    ///      `pub(crate) fn handle_sweep_report(&self, report: SweepReport)`.
+    ///      `pub(crate) fn handle_sweep_report(&mut self, report: SweepReport)`.
     ///  Forwards a sweep report to the window when it belongs to the newest queue load.
     /// Why:
     ///       Sweeps are never cancelled, so a report from a replaced queue must not update the rows or the bar.
@@ -59,13 +57,14 @@ impl Controller {
     /// ```ts
     /// handleSweepReport(report: SweepReport): void { if (report.generation === this.analysisGeneration) this.emit(toUpdate(report)); }
     /// ```
-    pub(crate) fn handle_sweep_report(&self, report: SweepReport) {
+    pub(crate) fn handle_sweep_report(&mut self, report: SweepReport) {
         match report {
             SweepReport::Measures { generation, measures } => {
                 if generation != self.analysis_generation {
                     tracing::debug!(generation, current = self.analysis_generation, "dropped measures from a replaced queue");
                     return;
                 }
+                self.forget_reports_of_decoded(&measures);
                 self.emit(Update::Measures(measures));
             }
             SweepReport::Progress { generation, done, total } => {
@@ -74,6 +73,14 @@ impl Controller {
                     return;
                 }
                 self.emit(Update::Analysis { done, total });
+            }
+            SweepReport::RefreshDone { id, .. } => self.finish_refresh(id),
+            SweepReport::Unreadable { generation, files } => {
+                if generation != self.analysis_generation {
+                    tracing::debug!(generation, current = self.analysis_generation, "dropped unreadable files from a replaced queue");
+                    return;
+                }
+                self.report_unplayable_once(files);
             }
         }
     }
@@ -93,60 +100,59 @@ impl Controller {
     }
 
     /// What:
-    ///      `pub(crate) fn reanalyse_track(&self, path: PathBuf)`.
-    ///  Discards one track's cached decision, shows its length without a peak, and measures it again.
+    ///      `pub(crate) fn report_unplayable_once(&self, files: Vec<PathBuf>)`.
+    ///  Tells the window about the files it has not yet been told about.
     /// Why:
-    ///       The track menu's Re-analyse action must change the row at once and end with a fresh exact peak.
+    ///       D113 and D83: a failure is reported once per file in plain words. The same broken file fails again at every
+    ///  later sweep, and a person who already saw the message does not need it again. A file that is still being written
+    ///  fails with each partial state it passes through, so the report is per file and not per state of the file; it is
+    ///  forgotten when a peak is measured for the file (it decodes now), so a file that breaks again is told again.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
-    /// reanalyseTrack(path: string): void { cache.remove(key); emit(measures: [[path, lengthOnly(path)]]); spawnTrackMeasurement(path, key); }
+    /// reportUnplayableOnce(files: string[]): void { const fresh = files.filter(f => reported.add(f)); if (fresh.length) emit({ kind: "unplayable", paths: fresh }); }
     /// ```
-    pub(crate) fn reanalyse_track(&self, path: PathBuf) {
-        // What:     `let Some(key) = peakcache::fingerprint(&path) else { ... };`. Key the track.
-        // Why:      A file without a fingerprint has no cache entry to discard or to write.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // const key = fingerprint(path); if (key === null) return;
-        // ```
-        let Some(key) = peakcache::fingerprint(&path) else {
-            tracing::warn!(path = %path.display(), "re-analysis skipped: the file has no fingerprint");
-            return;
+    pub(crate) fn report_unplayable_once(&self, files: Vec<PathBuf>) {
+        let fresh: Vec<PathBuf> = match self.reported_unplayable.lock() {
+            Ok(mut reported) => files.into_iter().filter(|file| return reported.insert(file.clone())).collect(),
+            Err(_poisoned) => files,
         };
-        // What:     `self.peaks.remove(key);`. Queue the removal of the track's decision.
-        // Why:      The write channel is ordered, so the new decision written later lands after this removal.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // this.peaks.remove(key);
-        // ```
-        self.peaks.remove(key);
-        // What:     emit the length from the header with no peak, so the row changes at once.
-        // Why:      The old peak is no longer valid; the row shows the length until the new measurement lands.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // this.emit({ kind: "measures", measures: [[path, { durationSecs: probeDurationSecs(path), peakDbtp: null }]] });
-        // ```
-        self.emit(Update::Measures(vec![(path.clone(), measure_from_duration(probe_duration_secs(&path)))]));
-        // What:     `spawn_track_measurement(path, key, ...)`. Decode the track once more in its own thread.
-        // Why:      Re-analysis is a single full decode, so it does not go through the sweep's known-set skip.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // startTrackMeasurement(path, key, this.peaks, this.sweepSink, this.analysisGeneration);
-        // ```
-        spawn_track_measurement(
-            path,
-            key,
-            self.peaks.clone(),
-            Arc::clone(&self.sweep_sink),
-            self.analysis_generation,
-        );
+        if fresh.is_empty() {
+            tracing::debug!("every unplayable file was already reported");
+            return;
+        }
+        self.emit_unplayable(fresh);
+    }
+
+    /// What:
+    ///      `fn forget_reports_of_decoded(&self, measures: &[(PathBuf, TrackMeasure)])`.
+    ///  Forgets the failure report of every file that now has a measured peak.
+    /// Why:
+    ///       A file that decodes again was fixed or replaced; if it breaks later the person is told again (D113).
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// forgetReportsOfDecoded(measures: [string, TrackMeasure][]): void { for (const [p, m] of measures) if (m.peakDbtp !== null) reported.delete(p); }
+    /// ```
+    fn forget_reports_of_decoded(&self, measures: &[(PathBuf, crate::track_measure::TrackMeasure)]) {
+        if let Ok(mut reported) = self.reported_unplayable.lock() {
+            for (path, measure) in measures {
+                if measure.peak_dbtp.is_some() {
+                    reported.remove(path);
+                }
+            }
+        }
     }
 }
 
 #[cfg(test)]
 #[path = "controller_measures_tests.rs"]
 mod tests;
+
+#[cfg(test)]
+#[path = "controller_refresh_tests.rs"]
+mod refresh_tests;
+
+#[cfg(test)]
+#[path = "refresh_cost_tests.rs"]
+mod refresh_cost_tests;
