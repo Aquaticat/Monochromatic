@@ -194,7 +194,8 @@ fn run_settled(
     let context: GitContext = GitContext {
         real_git: real_git.to_path_buf(),
         overlay: overlay.to_vec(),
-        global_prefix: facts.global_prefix.clone(),
+        // Every copy query names absolute paths and leaves the caller's global options out.
+        global_prefix: Vec::new(),
     };
     let invocation: Invocation = Invocation {
         identity: facts.identity.clone(),

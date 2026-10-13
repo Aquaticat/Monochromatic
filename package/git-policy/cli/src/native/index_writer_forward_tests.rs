@@ -89,6 +89,35 @@ fn a_failed_coordination_does_not_run_git() {
     remove(root.as_path());
 }
 
+/// A non-writer that carries the linked-worktree copy still runs here, as a settled child, not as an exec.
+#[test]
+fn a_non_writer_with_a_copy_runs_settled() {
+    let root: PathBuf = fixture("forward-status-copy");
+    let repo: PathBuf = repository(root.as_path(), "repo");
+    let mut forward: CoordinatedForward = add_forward(repo.as_path());
+    forward.command = ResolvedCommand {
+        arguments: forward.arguments.clone(),
+        subcommand_index: 2,
+        subcommand: Some(OsString::from("status")),
+        route: Route::Direct,
+    };
+    forward.arguments = vec![
+        OsString::from("-C"),
+        repo.as_os_str().to_owned(),
+        OsString::from("status"),
+        OsString::from("--short"),
+    ];
+    forward.copy = Some(CopyFacts {
+        identity: forward.identity.clone(),
+        creates_or_moves: false,
+        main_checkout_paths: vec![String::from(".cache/forbidden-strings.rules.txt")],
+        global_prefix: vec![OsString::from("-C"), repo.as_os_str().to_owned()],
+        environment: Vec::new(),
+    });
+    assert_eq!(run_coordinated_forward(&forward), CoordinatedRun::Ran(0));
+    remove(root.as_path());
+}
+
 /// A non-writer is not coordinated and is handed back for an ordinary exec.
 #[test]
 fn a_non_writer_is_not_coordinated() {

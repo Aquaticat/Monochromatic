@@ -319,12 +319,15 @@ fn a_hook_that_creates_a_worktree_runs_under_the_inherited_lease() {
     let hook: PathBuf = repo.join(".git/hooks/post-checkout");
     super::support::executable(
         hook.as_path(),
-        b"#!/bin/sh\nif [ -n \"$CLI_GIT_WORKTREE_COPY_LEASE\" ] && [ ! -e ../nested ]; then\n  printf 'leased' > ../hook-saw-lease\n  git worktree add --quiet -b nested ../nested || exit 1\nfi\n",
+        b"#!/bin/sh\nif [ -n \"$CLI_GIT_WORKTREE_COPY_LEASE\" ] && [ ! -e ../nested ]; then\n  printf 'leased' > ../hook-saw-lease\n  \"$CLI_GIT_TEST_WRAPPER\" worktree add --quiet -b nested ../nested || exit 1\nfi\n",
     );
-    let created: Observed = run_wrapped(
-        &fixture,
-        repo.as_path(),
-        &["worktree", "add", "--quiet", "-b", "one", "../one"],
+    // Git puts its own directory first on a hook's PATH, so the hook names the wrapper explicitly.
+    let created: Observed = observe(
+        wrapped(&fixture)
+            .current_dir(&repo)
+            .env("CLI_GIT_TEST_WRAPPER", fixture.root.join("bin/git"))
+            .args(["worktree", "add", "--quiet", "-b", "one", "../one"]),
+        b"",
     );
     assert_eq!(created.code, Some(0), "{}", stderr_of(&created));
     assert_eq!(
