@@ -294,8 +294,9 @@ fun measureNeedsRead(measure: TrackMeasure?): Boolean = measure == null || measu
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// function nextBatch(page: Track[], known: Map<string, TrackMeasure>, attempted: Set<string>, size: number, startAt = 0):
-//   Track[] {
+// function nextBatch(
+//   page: Track[], known: Map<string, TrackMeasure>, attempted: Set<string>, size: number, startAt = 0,
+// ): Track[] {
 //   const batch: Track[] = [];
 //   for (let offset = 0; offset < page.length && batch.length < size; offset++) {
 //     const track = page[(startAt + offset) % page.length];

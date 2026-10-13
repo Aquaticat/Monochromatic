@@ -597,7 +597,7 @@ fun playerHost(
             controller.uriAt(entry.index)?.let { uri -> Track(uri = uri, displayPath = entry.name) }
         }
     }
-    // What:     `LaunchedEffect(staleMeasures, pageTracks)` reads the page's unmeasured tracks, one pass per sweep step.
+    // What:     `LaunchedEffect(staleMeasures, pageTracks)` reads the page's unmeasured tracks, a pass per sweep step.
     // Why:      A new page or an invalidated measure restarts the reading. A sweep step (the sweep reports every few
     //           tracks) only asks for another pass after the running one, because restarting at every step cancelled
     //           the batch in flight and began again at the top, so the rows of a 10,000 track page got their
