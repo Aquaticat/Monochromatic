@@ -5,9 +5,115 @@
 Resume the axiom-based migration without reopening settled choices or replaying completed phases.
 This current summary complements the
 [historical evidence ledger](pi-auto-mode-axiom-evaluation.md).
-Updated 2026-10-12.
+Updated 2026-10-13.
 
-## Resumed after the break
+## Paused for CPU replacement
+
+The user requested a safe pause for a CPU change on 2026-10-13.
+Implementation is paused.
+Finish only this handover,
+its document verification,
+and scoped commits.
+Do not resume implementation from process-completion notifications.
+Wait for an explicit user request to resume.
+
+At pause intake,
+the process manager reported no running jobs.
+The current handler-result receipt work is a pausing point:
+its required native red,
+implementation,
+owner controls,
+exact failure propagation,
+canonical assessment,
+history/reset behavior,
+shared budget boundary,
+and affected message/option-history regressions are recorded.
+No provider inference call,
+dependency installation,
+or migrated-host activation was performed.
+
+### Current code and evidence
+
+- Maintained source-contribution accounting builds and passes package units and type checks.
+  Latest type/unit verification is `proc_5306`.
+  Native export identity,
+  serializer scenarios,
+  and action-policy results are recorded in
+  "Maintained original source-contribution accounting".
+  The publication test has only reviewed formatter-produced declaration splitting left to checkpoint.
+- Private handler-result implementation is `7bde6d84`.
+  The required red is `3d06c614` / `proc_0b0c`.
+  Native receipt green is `proc_a410`;
+  owner controls are `proc_2f20`;
+  native exact-failure and canonical review are `proc_0389`;
+  lifecycle is `proc_65b4`.
+  Shared-budget controls passed in `proc_85bf` before its obsolete message-count assertion failed.
+  Fixture correction `eaaea58b` passed message/history regressions in `proc_f0c6`.
+- Source-contribution fixture lint is unresolved.
+  Both formatter and ordinary no-fix lint were stopped without diagnostics.
+  Do not infer a cause,
+  claim zero lint errors,
+  relax rules,
+  or repeat the same unbounded verification loop.
+- `request-source-domain` remains unconditional.
+  Complete decision-specific domain closure,
+  remaining maintained capture/compiler/host integration,
+  installation,
+  and genuine Allow / Deny / Stop and cancellation are unfinished.
+  The historical 219-case input parent predates raw handler-result capture.
+
+### Resume checks and next work
+
+The canonical private progress file is
+`/var/home/user/temp/agent/auto-mode-consumer-contract.mDLkyNoP/contract/lifecycle/runtime-continuation/current-progress.json`.
+It retains the active `deliveryCompletion` queue and this pause.
+The maintained package is `package/pi-plugin/auto-mode`.
+Private SDK generators,
+not installed or generated historical SDK files,
+remain the source of the native changes.
+
+After explicit resumption,
+probe the new CPU and re-establish the authorized worker slice before any build or test.
+Every shell and process launch still uses the restricted launcher:
+shared slice `piwork3285273.slice`,
+4 GiB memory,
+zero swap,
+CPU quota 200%,
+and 256 tasks.
+Runtime-only slice settings may disappear on reboot.
+Do not raise policy,
+source,
+or preparation budgets to match the new hardware.
+The existing cgroup probe needs `EXPECTED_MEMORY_MAX=4294967296`,
+not its historical 2-GiB default.
+Keep the Pi host outside the worker slice.
+
+Check repository status and current process state before editing.
+Preserve concurrent work.
+Inspect recorded terminal logs rather than rerunning completed receipt campaigns.
+Address the unresolved fixture-lint behavior with a bounded diagnostic,
+not another blind formatter run.
+Continue owner-backed domain resolution and maintained host delivery,
+not another helper-only port by default.
+Retain the domain hold until its actual evidence exists.
+
+The user explicitly prohibited introducing the `openai` npm package.
+The Decisions API intake in
+[batched assessment](../planning/pi-auto-mode-batched-assessment.md#decisions-http-contract-intake-on-2026-10-13)
+is documentation only.
+Use direct HTTP if that transport is implemented;
+no new model,
+semantic qualification,
+or paid inference campaign was adopted.
+No subagents or further Advisor calls.
+Do not change the settled `AGENTS.md` / `CLAUDE.md` decision about `PXQ`.
+
+Earlier auto-push and manual push failures are recorded in
+[Git credentials](../troubleshooting/git-credentials.md#native-push-wrapper-loses-the-inherited-environment).
+Local commits were retained.
+Do not infer remote publication solely from a successful local commit.
+
+## Historical resumption after the previous break
 
 The user explicitly resumed implementation on 2026-10-12.
 The requested break was completed;
@@ -21,7 +127,8 @@ no active managed jobs,
 and no additional OOM kills beyond the recorded count of one.
 The maintained kernel files have no intervening package commits since the pause.
 Maintained built-artifact tests and full-package lint have since passed.
-Continue the named native governing-domain and runtime integrations.
+That resumption continued the named native governing-domain and runtime integrations;
+the CPU-replacement pause now supersedes it.
 
 At pause intake,
 the process manager reported no running jobs,
@@ -677,10 +784,30 @@ the shared 64-receipt limit,
 source bytes,
 exact unexpected failures,
 and irreversible retirement.
-Native exact-failure,
-canonical review,
-lifecycle,
-and affected regression verification are not complete.
+`proc_0389` passed exact native false,
+undefined,
+and proxy observation failures,
+with zero proxy traps,
+then passed original-source canonical review with two local requests and one assessment.
+`proc_65b4` passed settlement,
+later borrowed-output edits,
+history,
+root reset,
+old-pool observer binding,
+and profile-refusal parity.
+Native result processing continued without invoking the unread getter.
+
+The budget portion of `proc_85bf` passed the combined resource/Session 64/65 boundary
+both with and without a returned result.
+Its message-history test then exposed the old fixture count,
+`23 !== 18`.
+Private `eaaea58b` explicitly checks each complete original result receipt,
+its metadata,
+identity,
+order,
+and settlement retention instead of dropping those sources.
+`proc_f0c6` passed the message-history and handler-option-lifetime tasks.
+The historical 219-case input parent was not rerun and predates this receipt addition.
 This receipt correction does not close `request-source-domain`.
 
 ## Maintained original source-contribution accounting
@@ -730,8 +857,12 @@ including isolated fixture runs.
 Removing unnecessary recursive ancestor types passed build/types `proc_12c4`,
 but did not establish a formatter fix.
 Concrete fixture fields and fixed record shapes likewise have no verified lint result.
-The next probe is the ordinary no-fix lint task,
-rather than another fixpoint run.
+The ordinary no-fix lint `proc_e7e5` also produced no diagnostics
+before being stopped at 426 seconds.
+The fixpoint loop alone does not explain the delay.
+Current fixture shapes passed types and package units in `proc_5306`.
+Stop blind lint reruns;
+the unresolved lint item remains explicit while independent migration work proceeds.
 No lint rule or resource bound was relaxed.
 This increment does not implement decision-domain closure.
 
