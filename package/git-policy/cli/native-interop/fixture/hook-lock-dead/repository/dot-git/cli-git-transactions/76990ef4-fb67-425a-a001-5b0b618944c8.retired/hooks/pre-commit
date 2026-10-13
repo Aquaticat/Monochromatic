@@ -1,0 +1,3 @@
+#!/usr/local/bin/node
+import { dispatch } from "file:///work/scratch/fixture/hook-lock-dead/repository/.git/cli-git-transactions/76990ef4-fb67-425a-a001-5b0b618944c8/hooks/dispatch.mjs";
+await dispatch("pre-commit", process.argv.slice(2));
