@@ -3284,6 +3284,22 @@ scheme, the same canvas color as D109, with no tint. The menu stays distinguisha
 existing boundary (outline or shadow), not by a fill; if it has none, it gets a 1 px outline in the `outline-variant`
 role, because a pure black menu over a pure black page would otherwise have no edge.
 
+### D120. Focus ring on filled elements and clipped rows, and the dead page controls (2026-10-12)
+
+The human answered three questions raised by the D117 build.
+
+- An element filled with `primary` (the desktop Play circle, the first-run primary pill) keeps the D117 ring as written:
+  the 2 px `primary` near ring merges with the fill and only the 1 px `on-primary` outer ring shows. There is no
+  per-element color swap, gap or inside ring for them.
+- Rows and fields that sit flush inside a clipped list (track rows, folder rows, Search results, template editor
+  fields) draw the same two rings just inside their own edge, because an outside ring would be clipped by the list.
+  This is the only exception to "outside the element" in D117.
+- The Android page-control chain (`FoldablePageControls.kt`, `LedPageControls.kt`, `PageControlStyle.kt`, the
+  `pageTabs` block in `MainActivity.kt`, the session-store style functions and their tests) had no callers and is
+  deleted, which removes the last opaque gray literals outside D118's derivation.
+- D118 as built also floors accent chroma at the largest gray tint of the scheme for every non-neutral root, so no
+  accent is grayer than a gray; this is the orchestrator's reading and stays open to the human's veto.
+
 ## Pending after the theme picks (2026-09-04)
 
 - **Order of remaining work** — my recommendation:
