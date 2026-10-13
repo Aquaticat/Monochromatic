@@ -40,11 +40,11 @@ fn watcher_fires_on_file_creation() {
     // What:     `let (tx, rx) = mpsc::channel::<()>();`. A unit-signal channel.
     // Why:      The callback sends `()` so the test can wait for a change.
     let (tx, rx) = mpsc::channel::<()>();
-    // What:     `let mut watcher = SourceWatcher::new(move || { let _ = tx.send(()); }).expect("watcher");`.
+    // What:     `let mut watcher = SourceWatcher::new(move |_change| { let _ = tx.send(()); }).expect("watcher");`.
     //           Build the watcher with a callback that signals the channel; `.expect` fails
     //           the test if the OS watcher cannot start.
     // Why:      Exercise the real constructor and handler wiring.
-    let mut watcher = SourceWatcher::new(move || {
+    let mut watcher = SourceWatcher::new(move |_change| {
         let _ = tx.send(());
     })
     .expect("OS watcher should start");
@@ -96,7 +96,7 @@ fn reading_a_watched_directory_is_not_a_change_but_writing_is() {
     std::fs::create_dir_all(dir.join("sub")).expect("watch fixture directory should be created");
     std::fs::write(dir.join("sub").join("a.flac"), b"x").expect("fixture file should be written");
     let (tx, rx) = mpsc::channel::<()>();
-    let mut watcher = SourceWatcher::new(move || {
+    let mut watcher = SourceWatcher::new(move |_change| {
         let _ = tx.send(());
     })
     .expect("OS watcher should start");
@@ -130,7 +130,7 @@ fn a_burst_of_changes_requests_one_rescan() {
     let dir = std::env::temp_dir().join(format!("mp_watch_burst_{nanos}"));
     std::fs::create_dir_all(&dir).expect("watch fixture directory should be created");
     let (tx, rx) = mpsc::channel::<()>();
-    let mut watcher = SourceWatcher::new(move || {
+    let mut watcher = SourceWatcher::new(move |_change| {
         let _ = tx.send(());
     })
     .expect("OS watcher should start");
@@ -160,7 +160,7 @@ fn a_registration_is_followed_by_exactly_one_catch_up_rescan() {
     std::fs::create_dir_all(dir.join("sub")).expect("watch fixture directory should be created");
     std::fs::write(dir.join("sub").join("a.flac"), b"x").expect("fixture file should be written");
     let (tx, rx) = mpsc::channel::<()>();
-    let mut watcher = SourceWatcher::new(move || {
+    let mut watcher = SourceWatcher::new(move |_change| {
         let _ = tx.send(());
     })
     .expect("OS watcher should start");
@@ -169,6 +169,106 @@ fn a_registration_is_followed_by_exactly_one_catch_up_rescan() {
     // The rescan this triggers reads every directory, as the real one does.
     assert_eq!(std::fs::read_dir(dir.join("sub")).expect("subfolder reads").count(), 1);
     assert!(rx.recv_timeout(Duration::from_millis(2 * DEBOUNCE_MS + 500)).is_err(), "and no second one");
+    drop(watcher);
+    std::fs::remove_dir_all(&dir).ok();
+}
+
+// What:     `fn watched(tag, files) -> (PathBuf, SourceWatcher, Receiver<Change>)`. A throwaway library with the given
+//           files, a watcher on it, and the changes it reports, after the catch-up that follows the registration.
+// Why:      The tests below read what the real notify backend names for each kind of change.
+fn watched(tag: &str, files: &[&str]) -> (std::path::PathBuf, SourceWatcher, mpsc::Receiver<Change>) {
+    let nanos = SystemTime::now().duration_since(UNIX_EPOCH).expect("system clock should be after Unix epoch").as_nanos();
+    let dir = std::env::temp_dir().join(format!("mp_watch_{tag}_{nanos}"));
+    for file in files {
+        std::fs::create_dir_all(dir.join(file).parent().expect("a file has a folder")).expect("watch fixture directory should be created");
+        std::fs::write(dir.join(file), b"first").expect("fixture file should be written");
+    }
+    let (tx, rx) = mpsc::channel::<Change>();
+    let mut watcher = SourceWatcher::new(move |change| {
+        let _ = tx.send(change);
+    })
+    .expect("OS watcher should start");
+    watcher.watch(&dir);
+    assert!(watcher.wait_until_registered(1, Duration::from_secs(10)), "the watch should be registered");
+    assert_eq!(rx.recv_timeout(Duration::from_secs(10)), Ok(Change::Everything), "the registration asks for one catch-up of everything");
+    return (dir, watcher, rx);
+}
+
+// What:     A file written in place is reported by its own path and as a write, not as everything.
+// Why:      D113: the refresh looks at the named path only, so one replaced file must not name the library.
+#[test]
+fn a_file_written_in_place_is_reported_by_its_own_path() {
+    let (dir, watcher, rx) = watched("write", &["sub/a.flac", "sub/b.flac"]);
+    std::fs::write(dir.join("sub").join("a.flac"), b"second, longer").expect("the file is replaced");
+    let change = rx.recv_timeout(Duration::from_secs(10)).expect("a change is reported");
+    let Change::Paths(set) = change else { panic!("a write is not everything: {change:?}") };
+    assert_eq!(set.sorted(), vec![(dir.join("sub").join("a.flac"), false)]);
+    drop(watcher);
+    std::fs::remove_dir_all(&dir).ok();
+}
+
+// What:     A file replaced by a rename is reported by the target path, as an entry that appeared.
+// Why:      Editors and downloaders write a temporary file and rename it over the target.
+#[test]
+fn a_file_replaced_by_a_rename_is_reported_by_the_target_path() {
+    let (dir, watcher, rx) = watched("rename", &["a.flac"]);
+    std::fs::write(dir.join("a.flac.tmp"), b"replacement").expect("the temporary file is written");
+    std::fs::rename(dir.join("a.flac.tmp"), dir.join("a.flac")).expect("renamed over the target");
+    let change = rx.recv_timeout(Duration::from_secs(10)).expect("a change is reported");
+    let Change::Paths(set) = change else { panic!("a rename is not everything: {change:?}") };
+    let named = set.sorted();
+    assert!(named.contains(&(dir.join("a.flac"), true)), "the target is named: {named:?}");
+    drop(watcher);
+    std::fs::remove_dir_all(&dir).ok();
+}
+
+// What:     A folder that is created and filled is reported by the folder, and a file removed by its path.
+// Why:      The watch of a new folder does not exist yet when its files are written, so the folder is what is named.
+#[test]
+fn a_new_folder_and_a_removed_file_are_reported_as_entries_that_appeared_and_went() {
+    let (dir, watcher, rx) = watched("folder", &["a.flac", "b.flac"]);
+    std::fs::create_dir_all(dir.join("album")).expect("the folder is created");
+    std::fs::write(dir.join("album").join("x.flac"), b"x").expect("the file is written");
+    std::fs::remove_file(dir.join("b.flac")).expect("the file is removed");
+    let change = rx.recv_timeout(Duration::from_secs(10)).expect("a change is reported");
+    let Change::Paths(set) = change else { panic!("not everything: {change:?}") };
+    let named = set.sorted();
+    assert!(named.contains(&(dir.join("album"), true)), "the new folder is named: {named:?}");
+    assert!(named.contains(&(dir.join("b.flac"), true)), "the removed file is named: {named:?}");
+    assert!(!named.iter().any(|(path, _)| return path.file_name().is_some_and(|name| return name == "a.flac")), "an untouched file is not named");
+    drop(watcher);
+    std::fs::remove_dir_all(&dir).ok();
+}
+
+// What:     Reading the files and folders of a watched library reports nothing, and a write afterwards does.
+// Why:      The refresh's own reads must never request another refresh; the write at the end is the positive control.
+#[test]
+fn reads_report_no_change_but_the_write_after_them_does() {
+    let (dir, watcher, rx) = watched("reads", &["sub/a.flac"]);
+    for _ in 0..3 {
+        assert_eq!(std::fs::read_dir(dir.join("sub")).expect("reads").count(), 1);
+        assert_eq!(std::fs::read(dir.join("sub").join("a.flac")).expect("reads"), b"first");
+        assert!(std::fs::symlink_metadata(dir.join("sub").join("a.flac")).is_ok());
+    }
+    assert!(rx.recv_timeout(Duration::from_millis(2 * DEBOUNCE_MS + 500)).is_err(), "reads are not changes");
+    std::fs::write(dir.join("sub").join("a.flac"), b"changed").expect("the file is written");
+    assert!(matches!(rx.recv_timeout(Duration::from_secs(10)), Ok(Change::Paths(_))));
+    drop(watcher);
+    std::fs::remove_dir_all(&dir).ok();
+}
+
+// What:     A burst of writes to the same few files is one report that names each file once.
+// Why:      The debounce merges the burst into the union of what was named.
+#[test]
+fn a_burst_of_writes_is_one_report_naming_each_file_once() {
+    let (dir, watcher, rx) = watched("burst", &["a.flac", "b.flac"]);
+    for round in 0..50 {
+        std::fs::write(dir.join("a.flac"), format!("round {round}")).expect("written");
+        std::fs::write(dir.join("b.flac"), format!("round {round}")).expect("written");
+    }
+    let Ok(Change::Paths(set)) = rx.recv_timeout(Duration::from_secs(10)) else { panic!("paths are reported") };
+    assert_eq!(set.sorted(), vec![(dir.join("a.flac"), false), (dir.join("b.flac"), false)]);
+    assert!(rx.recv_timeout(Duration::from_millis(2 * DEBOUNCE_MS)).is_err(), "and only one report");
     drop(watcher);
     std::fs::remove_dir_all(&dir).ok();
 }

@@ -34,6 +34,7 @@ import {
   press,
   tabTo,
 } from './press.ts';
+import { runRingSession, } from './ring-session.ts';
 import {
   SESSION_READY_MS,
 } from './timing.ts';
@@ -236,6 +237,16 @@ export async function runVisualSessions(context: RunContext,): Promise<void> {
   } of VISUAL_VARIANTS)
     // oxlint-disable-next-line eslint/no-await-in-loop -- the sessions must not overlap: one compositor and one app at a time
     await runVisualSession({
+      context,
+      scheme,
+      accent,
+    },);
+  for (const {
+    scheme,
+    accent,
+  } of VISUAL_VARIANTS)
+    // oxlint-disable-next-line eslint/no-await-in-loop -- the sessions must not overlap: one compositor and one app at a time
+    await runRingSession({
       context,
       scheme,
       accent,

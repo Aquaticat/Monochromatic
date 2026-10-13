@@ -32,8 +32,6 @@ component ModeSegment inherits Rectangle {
     in property <length> radius-br: 0px;
     // Bottom-left outside corner radius.
     in property <length> radius-bl: 0px;
-    // True while the keyboard ring is on this segment: the mode group holds focus and this is the selected mode.
-    in property <bool> ring: false;
     // Key hint badge text of this segment; empty draws none.
     in property <string> badge: "";
     // Tooltip text of this segment, with its shortcut.
@@ -199,27 +197,9 @@ component ModeSegment inherits Rectangle {
         accessible-role: none;
     }
 
-    // Keyboard focus: a 12 percent layer and the 2 px ring in the primary role, both with this segment's corner radii, so
-    // the focus shows in two channels. The ring sits inside the 1 px outline.
-    Rectangle {
-        visible: root.ring;
-        background: (root.selected ? Theme.on-secondary-container : Theme.on-surface).with-alpha(0.12);
-        border-top-left-radius: root.r-tl * 1px;
-        border-top-right-radius: root.r-tr * 1px;
-        border-bottom-right-radius: root.r-br * 1px;
-        border-bottom-left-radius: root.r-bl * 1px;
-    }
-    FocusRing {
-        active: root.ring;
-        x: 1px;
-        y: 1px;
-        width: root.width - 2px;
-        height: root.height - 2px;
-        radius-tl: root.r-tl * 1px;
-        radius-tr: root.r-tr * 1px;
-        radius-br: root.r-br * 1px;
-        radius-bl: root.r-bl * 1px;
-    }
+    // Keyboard focus draws nothing here: the ring of the selected segment is drawn by the deck in a layer above all four
+    // segments (D117), because a segment drawn later would otherwise paint over the part of the ring that reaches past
+    // this segment's edge into its neighbour.
 
     // Whole segment is the touch target, never smaller than 48px tall because the parent sets the height.
     segment-touch := TouchArea {
@@ -686,7 +666,7 @@ export component TransportDeck inherits Rectangle {
         }
     }
     // Keyboard seek bar: a focus stop over the track. Left and Right move 5 seconds, Home and End jump to the ends. The
-    // 12 percent layer and the 2 px ring show the focus in two channels.
+    // ring around the 48 px tall pill shows the focus; the bar itself does not change.
     seek-stop := PlayerStop {
         enabled: Focus.player-active && !DeckState.disabled;
         label: "seek";
@@ -716,21 +696,12 @@ export component TransportDeck inherits Rectangle {
             return false;
         }
     }
-    Rectangle {
-        visible: seek-stop.ring;
-        x: root.slider-x;
-        y: root.seek-y;
-        width: root.slider-w;
-        height: root.target;
-        background: Theme.on-surface.with-alpha(0.12);
-        border-radius: root.target / 2;
-    }
     FocusRing {
         x: root.slider-x;
         y: root.seek-y;
         width: root.slider-w;
         height: root.target;
-        radius: root.target / 2;
+        round: true;
         active: seek-stop.ring;
     }
     KeyBadge {
@@ -783,7 +754,6 @@ export component TransportDeck inherits Rectangle {
         radius: root.circle / 2;
         hovered: prev-touch.has-hover;
         pressed: prev-touch.pressed;
-        focused: prev-stop.ring;
         tint: Theme.on-surface;
     }
     Path {
@@ -814,7 +784,7 @@ export component TransportDeck inherits Rectangle {
         y: root.transport-y + (root.target - root.circle) / 2;
         width: root.circle;
         height: root.circle;
-        radius: root.circle / 2;
+        round: true;
         active: prev-stop.ring;
     }
     KeyBadge {
@@ -857,7 +827,6 @@ export component TransportDeck inherits Rectangle {
         radius: root.circle / 2;
         hovered: play-touch.has-hover;
         pressed: play-touch.pressed;
-        focused: play-stop.ring;
         tint: Theme.on-primary;
     }
     Path {
@@ -895,15 +864,14 @@ export component TransportDeck inherits Rectangle {
             root.toggle-play();
         }
     }
-    // The ring of the play button is drawn around the whole 48 px target, 2 px outside the filled circle. The circle is
-    // filled with the same primary role as the ring, so a ring drawn on the circle's own edge merged with it and showed
-    // nothing; the 2 px gap of canvas between them keeps the ring a second, visible channel next to the 12 percent layer.
+    // The ring hugs the filled circle, flush outside it. The circle is filled with the same primary role as the near ring, so
+    // the 1 px on-primary ring around it is what shows the ring against the deck.
     FocusRing {
-        x: root.transport-x + root.target + root.control-gap;
-        y: root.transport-y;
-        width: root.target;
-        height: root.target;
-        radius: root.target / 2;
+        x: root.transport-x + root.target + root.control-gap + (root.target - root.circle) / 2;
+        y: root.transport-y + (root.target - root.circle) / 2;
+        width: root.circle;
+        height: root.circle;
+        round: true;
         active: play-stop.ring;
     }
 
@@ -942,7 +910,6 @@ export component TransportDeck inherits Rectangle {
         radius: root.circle / 2;
         hovered: next-touch.has-hover;
         pressed: next-touch.pressed;
-        focused: next-stop.ring;
         tint: Theme.on-surface;
     }
     Path {
@@ -973,7 +940,7 @@ export component TransportDeck inherits Rectangle {
         y: root.transport-y + (root.target - root.circle) / 2;
         width: root.circle;
         height: root.circle;
-        radius: root.circle / 2;
+        round: true;
         active: next-stop.ring;
     }
     KeyBadge {
@@ -1139,7 +1106,6 @@ export component TransportDeck inherits Rectangle {
             width: root.rows == 1 ? root.seg-w-0 : (root.rows == 2 ? root.two-cell : parent.width);
             height: root.seg-h;
             selected: root.mode == 0;
-            ring: mode-stop.ring && root.mode == 0;
             badge: Keys.badges.mode-repeat;
             tip: "Repeat track (" + Keys.texts.mode-repeat + ")";
             label: "Repeat";
@@ -1162,7 +1128,6 @@ export component TransportDeck inherits Rectangle {
             width: root.rows == 1 ? root.seg-w-1 : (root.rows == 2 ? root.two-cell : parent.width);
             height: root.seg-h;
             selected: root.mode == 1;
-            ring: mode-stop.ring && root.mode == 1;
             badge: Keys.badges.mode-in-order;
             tip: "Play in order (" + Keys.texts.mode-in-order + ")";
             label: "In order";
@@ -1183,7 +1148,6 @@ export component TransportDeck inherits Rectangle {
             width: root.rows == 1 ? root.seg-w-2 : (root.rows == 2 ? root.two-cell : parent.width);
             height: root.seg-h;
             selected: root.mode == 2;
-            ring: mode-stop.ring && root.mode == 2;
             badge: Keys.badges.mode-shuffle-folder;
             tip: "Shuffle the folder (" + Keys.texts.mode-shuffle-folder + ")";
             label: "Shuffle " + (root.shuffle-truncated ? root.shuffle-folder-head : root.shuffle-folder-label);
@@ -1206,7 +1170,6 @@ export component TransportDeck inherits Rectangle {
             width: root.rows == 1 ? root.seg-w-3 : (root.rows == 2 ? root.two-cell : parent.width);
             height: root.seg-h;
             selected: root.mode == 3;
-            ring: mode-stop.ring && root.mode == 3;
             badge: Keys.badges.mode-shuffle-all;
             tip: "Shuffle all folders (" + Keys.texts.mode-shuffle-all + ")";
             label: "Shuffle all";
@@ -1222,6 +1185,54 @@ export component TransportDeck inherits Rectangle {
             activated => {
                 root.select-mode(3);
             }
+        }
+        // The keyboard ring of the group, on the selected segment only (the group is one Tab stop and the arrows move the
+        // selection). It is a layer above all four segments, so no neighbour paints over the part that reaches past the
+        // segment's edge, and it takes each segment's own corner radii: an outside corner is rounded, an inside corner stays
+        // square.
+        FocusRing {
+            x: seg-0.x;
+            y: seg-0.y;
+            width: seg-0.width;
+            height: seg-0.height;
+            radius-tl: seg-0.radius-tl;
+            radius-tr: seg-0.radius-tr;
+            radius-br: seg-0.radius-br;
+            radius-bl: seg-0.radius-bl;
+            active: mode-stop.ring && root.mode == 0;
+        }
+        FocusRing {
+            x: seg-1.x;
+            y: seg-1.y;
+            width: seg-1.width;
+            height: seg-1.height;
+            radius-tl: seg-1.radius-tl;
+            radius-tr: seg-1.radius-tr;
+            radius-br: seg-1.radius-br;
+            radius-bl: seg-1.radius-bl;
+            active: mode-stop.ring && root.mode == 1;
+        }
+        FocusRing {
+            x: seg-2.x;
+            y: seg-2.y;
+            width: seg-2.width;
+            height: seg-2.height;
+            radius-tl: seg-2.radius-tl;
+            radius-tr: seg-2.radius-tr;
+            radius-br: seg-2.radius-br;
+            radius-bl: seg-2.radius-bl;
+            active: mode-stop.ring && root.mode == 2;
+        }
+        FocusRing {
+            x: seg-3.x;
+            y: seg-3.y;
+            width: seg-3.width;
+            height: seg-3.height;
+            radius-tl: seg-3.radius-tl;
+            radius-tr: seg-3.radius-tr;
+            radius-br: seg-3.radius-br;
+            radius-bl: seg-3.radius-bl;
+            active: mode-stop.ring && root.mode == 3;
         }
         KeyBadge {
             x: parent.width - self.width;

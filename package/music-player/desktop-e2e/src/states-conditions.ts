@@ -63,6 +63,40 @@ export function isLibraryReady(state: UiState,): boolean {
 }
 
 /**
+ Condition: the library is shown in the wide two-pane layout. A session starts with the window at its default width
+ and the compositor widens it a moment later, so a key pressed before this state meets the narrow layout and its
+ effect never arrives.
+
+ @param state - a state of the app
+
+ @returns whether the library is shown with a folder, no pane, a working deck and the unfolded layout
+
+ @example
+ ```ts
+ isLibraryReadyUnfolded(state,);
+ ```
+ */
+export function isLibraryReadyUnfolded(state: UiState,): boolean {
+  return isLibraryReady(state,) && state.unfolded;
+}
+
+/**
+ Condition: the wide layout shows the first real folder of the main library, ready to play.
+
+ @param state - a state of the app
+
+ @returns whether `Aaa Folder` is shown in the unfolded layout with a working deck
+
+ @example
+ ```ts
+ firstFolderShownWide(state,);
+ ```
+ */
+export function firstFolderShownWide(state: UiState,): boolean {
+  return isLibraryReadyUnfolded(state,) && (state.folder === 'Aaa Folder');
+}
+
+/**
  Condition: the folder list ring is on the folder called `L`.
 
  @param state - a state of the app

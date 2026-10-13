@@ -667,6 +667,30 @@ impl Queue {
     }
 
     /// What:
+    ///      `pub(crate) fn replace_tracks_with(&mut self, edit: impl FnOnce(Vec<PathBuf>) -> Vec<PathBuf>)`.
+    ///  Replaces the track list by an edited copy of itself, moving the paths instead of cloning them when no page is selected.
+    ///  The scope order is stale until the caller re-anchors the cursor (`restore_index_preserving_page` or `clear_selection`),
+    ///  which it must do at once.
+    /// Why:
+    ///       D113: a refresh that adds or removes a few tracks of a million must not clone a million paths or rebuild the
+    ///  scope twice (the caller re-anchors the selection right after, which rebuilds it). With a page selected the page has to
+    ///  be carried over by name, which `set_tracks` does, so that case hands it a copy.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// replaceTracksWith(edit: (old: string[]) => string[]): void { this.setTracks(edit(this.tracks)); }
+    /// ```
+    pub(crate) fn replace_tracks_with(&mut self, edit: impl FnOnce(Vec<PathBuf>) -> Vec<PathBuf>) {
+        if self.page_scope.is_empty() {
+            let edited: Vec<PathBuf> = edit(std::mem::take(&mut self.tracks));
+            self.tracks = edited;
+            return;
+        }
+        let edited: Vec<PathBuf> = edit(self.tracks.clone());
+        self.set_tracks(edited);
+    }
+
+    /// What:
     ///      `pub fn clear_selection(&mut self)`.
     ///  Drop the current-track selection:
     ///  after

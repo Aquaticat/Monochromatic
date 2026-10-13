@@ -34,8 +34,8 @@ export component TrackMenu inherits Rectangle {
     in property <[TrackMenuItem]> items: [];
     // Extra start inset for the heading, rows and dividers; 12px on the inner panel, 0px on the cover.
     in property <length> start-inset: 0px;
-    // Row the keyboard highlights (Up and Down move it, Enter chooses it), or -1 for none. It is drawn with the 12 percent
-    // layer and the 2 px ring, so the highlight shows in two channels.
+    // Row the keyboard highlights (Up and Down move it, Enter chooses it), or -1 for none. It is drawn as the ring
+    // around the row and nothing else (D117): no fill, so the row's hover and pressed layers keep their own meaning.
     in property <int> ring: -1;
 
     // Fired with the row index when a row is pressed; the menu never closes itself on selection.
@@ -57,9 +57,12 @@ export component TrackMenu inherits Rectangle {
     height: column.preferred-height;
     opacity: root.enter;
     animate enter { duration: Theme.motion-enter; easing: ease-out; }
-    background: Theme.surface-high;
+    // The card is the canvas color itself, pure white in light and pure black in dark, untinted (D119). It is told apart from
+    // the page under it by the 1 px `outline-variant` outline drawn over its edge below, not by a fill.
+    background: Theme.canvas;
     border-radius: 12px;
-    clip: true;
+    // No `clip`: a clip would cut the keyboard ring, which reaches 3 px past the edge of a row as wide as the card. The
+    // last row's layer takes the card's bottom corner radii instead, so no tint pokes out of the rounded corners.
     forward-focus: keys;
 
     // A popup does not give itself keyboard focus: the window's focus item is taken away when the popup opens, and nothing
@@ -104,6 +107,17 @@ export component TrackMenu inherits Rectangle {
         return "M16 9 v10 H8 V9 h8 m-1.5 -6 h-5 l-1 1 H5 v2 h14 V4 h-3.5 l-1 -1 Z M18 7 H6 v12 c0 1.1 0.9 2 2 2 h8 c1.1 0 2 -0.9 2 -2 V7 Z";
     }
 
+    // The card's boundary (D119): a 1 px outline in the `outline-variant` role. A pure black card over a pure black page, or a
+    // pure white card over a pure white page, has no edge without it. It is drawn under the rows, so the keyboard ring of a row
+    // (which reaches past the card's edge) crosses it without a notch, and a row's hover or pressed layer, which is
+    // see-through, tints it instead of hiding it. It takes no pointer input.
+    card-outline := Rectangle {
+        background: transparent;
+        border-width: 1px;
+        border-color: Theme.outline-variant;
+        border-radius: 12px;
+    }
+
     column := VerticalLayout {
         // Heading: the track name, one line, ellipsized, in the secondary role.
         HorizontalLayout {
@@ -143,13 +157,16 @@ export component TrackMenu inherits Rectangle {
                 property <color> foreground: item.destructive ? Theme.error : Theme.on-surface;
 
                 height: max(48px, row.preferred-height);
-                // Rectangular hover, pressed and keyboard layer over the whole action row, below its glyph and label.
+                // Rectangular hover and pressed layer over the whole action row, below its glyph and label. The last row is
+                // rounded at the bottom like the card.
                 StateLayer {
                     tint: Theme.on-surface;
                     hovered: row-touch.has-hover;
                     pressed: row-touch.pressed;
-                    focused: index == root.ring;
+                    radius-bottom: index == root.items.length - 1 ? 12px : 0px;
                 }
+                // Keyboard ring around the row, flush outside it. A row is as wide as the card, so the ring reaches 3 px past
+                // the card's side edges and, on the last row, its bottom edge; the popup does not clip it.
                 FocusRing {
                     active: index == root.ring;
                 }

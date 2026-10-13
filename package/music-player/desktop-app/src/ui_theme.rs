@@ -43,7 +43,6 @@ pub(crate) fn slint_roles(set: &theme_roles::RoleSet) -> RoleSet {
         canvas: slint_color(set.canvas),
         deck: slint_color(set.deck),
         current_row: slint_color(set.current_row),
-        seam: slint_color(set.seam),
         surface_high: slint_color(set.surface_high),
         on_surface: slint_color(set.on_surface),
         on_surface_variant: slint_color(set.on_surface_variant),

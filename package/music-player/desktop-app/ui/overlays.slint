@@ -101,15 +101,20 @@ export component FeedbackOverlay inherits Rectangle {
                 }
 
                 // Action button, 48px target, only when the item carries a label.
-                if item.action-label != "" : Rectangle {
+                if item.action-label != "" : action-target := Rectangle {
                     width: max(48px, action-text.preferred-width + 16px);
                     height: 48px;
-                    // Rectangular hover, pressed and focus layer over the action target, in the card's content color.
+                    // Pill-shaped hover and pressed layer, 40 px tall in the 48 px target, in the card's content color. The
+                    // pill leaves 4 px above and below, more than the 3 px the keyboard ring reaches, so the ring stays
+                    // inside the card.
                     StateLayer {
+                        y: 4px;
+                        width: parent.width;
+                        height: 40px;
+                        radius: 20px;
                         tint: card.content;
                         hovered: action-touch.has-hover;
                         pressed: action-touch.pressed;
-                        focused: action-stop.ring;
                     }
                     action-text := Text {
                         text: item.action-label;
@@ -133,15 +138,18 @@ export component FeedbackOverlay inherits Rectangle {
                         activated => { root.action(item.id); }
                     }
                     FocusRing {
+                        y: 4px;
+                        height: 40px;
+                        round: true;
                         active: action-stop.ring;
                     }
                 }
 
                 // Dismiss control, a 48px target with a 24px close glyph centred inside.
-                Rectangle {
+                dismiss-target := Rectangle {
                     width: 48px;
                     height: 48px;
-                    // Circular hover, pressed and focus layer, 40 px centered in the 48 px dismiss target.
+                    // Circular hover and pressed layer, 40 px centered in the 48 px dismiss target.
                     StateLayer {
                         x: 4px;
                         y: 4px;
@@ -151,7 +159,6 @@ export component FeedbackOverlay inherits Rectangle {
                         tint: card.content;
                         hovered: dismiss-touch.has-hover;
                         pressed: dismiss-touch.pressed;
-                        focused: dismiss-stop.ring;
                     }
                     Path {
                         width: 24px;
@@ -181,7 +188,7 @@ export component FeedbackOverlay inherits Rectangle {
                         y: 4px;
                         width: 40px;
                         height: 40px;
-                        radius: 20px;
+                        round: true;
                         active: dismiss-stop.ring;
                     }
                 }

@@ -7,7 +7,8 @@
 // The literals below are the roles for the baseline root, so a viewer or preview that runs no Rust still renders the
 // accepted look; a test keeps them equal to what Rust derives. Do not edit them by hand: change `theme_roles.rs`, and
 // the failing test prints the new literals.
-// Dark mode uses a true black canvas (D41) and a fixed #0A0A0D deck; light is flat with hairline seams (D34, D45).
+// The canvas is pure black in dark mode (D41) and pure white in light (D34, D45); every gray (deck, rows, surfaces,
+// outlines, text variants) carries the root hue unless the root is completely neutral (D118).
 import { Palette } from "std-widgets.slint";
 
 // One scheme's color roles, written as a whole by the Rust side.
@@ -18,8 +19,6 @@ export struct RoleSet {
     deck: color,
     // Background of the playing row.
     current-row: color,
-    // Hairline between structural surfaces.
-    seam: color,
     // Menus, search header and snackbar surface.
     surface-high: color,
     // Primary text and icons.
@@ -70,7 +69,6 @@ export global Theme {
         canvas: #000000,
         deck: #0A0A0D,
         current-row: #121318,
-        seam: #000000,
         surface-high: #1E1F25,
         on-surface: #E4E5F0,
         on-surface-variant: #C5C6D0,
@@ -91,7 +89,6 @@ export global Theme {
         canvas: #FFFFFF,
         deck: #F4F3FA,
         current-row: #F4F3FA,
-        seam: #B0B1BC,
         surface-high: #E8E7EE,
         on-surface: #30323B,
         on-surface-variant: #585A65,
@@ -114,7 +111,6 @@ export global Theme {
     out property <color> canvas: root.roles.canvas;
     out property <color> deck: root.roles.deck;
     out property <color> current-row: root.roles.current-row;
-    out property <color> seam: root.roles.seam;
     out property <color> surface-high: root.roles.surface-high;
 
     // Content.

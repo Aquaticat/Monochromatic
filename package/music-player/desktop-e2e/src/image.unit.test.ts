@@ -18,10 +18,15 @@ import {
 
 import { runCommand, } from './command.ts';
 import {
+  colorAt,
+  countColor,
   diffBox,
+  diffBoxWithin,
+  differencesWithin,
   type Image,
   loadImage,
   parseSize,
+  sameColor,
 } from './image.ts';
 
 /**
@@ -117,6 +122,80 @@ await describe({
           data[channel] = 1;
           expect(diffBox({ a, b: { ...a, data, }, },).count,).toBe(1,);
         }
+      },
+    },),
+  ],
+},);
+
+await describe({
+  name: diffBoxWithin.name,
+  children: [
+    it({
+      name: 'ignores a difference outside the area and bounds the ones inside it',
+      fn: async ({ expect, }) => {
+        const a = solid(8, 6, 0,);
+        const b = withPixel(withPixel(withPixel(a, 1, 1,), 3, 2,), 7, 5,);
+        expect(diffBoxWithin({ a, b, area: { x: 0, y: 0, width: 5, height: 4, }, },),).toEqual({ count: 2, box: { x: 1, y: 1, width: 3, height: 2, }, },);
+        expect(diffBoxWithin({ a, b, area: { x: 4, y: 0, width: 3, height: 4, }, },),).toEqual({ count: 0, },);
+      },
+    },),
+  ],
+},);
+
+await describe({
+  name: sameColor.name,
+  children: [
+    it({
+      name: 'is true only when all three channels are equal',
+      fn: async ({ expect, }) => {
+        expect(sameColor({ a: [1, 2, 3,], b: [1, 2, 3,], },),).toBe(true,);
+        for (const other of [[0, 2, 3,], [1, 0, 3,], [1, 2, 0,],] as const)
+          expect(sameColor({ a: [1, 2, 3,], b: other, },),).toBe(false,);
+      },
+    },),
+  ],
+},);
+
+await describe({
+  name: colorAt.name,
+  children: [
+    it({
+      name: 'reads the three channels of one pixel',
+      fn: async ({ expect, }) => {
+        const image = withPixel(solid(3, 2, 7,), 1, 1,);
+        expect(colorAt({ image, x: 1, y: 1, },),).toEqual([7, 200, 7,],);
+        expect(colorAt({ image, x: 0, y: 0, },),).toEqual([7, 7, 7,],);
+      },
+    },),
+  ],
+},);
+
+await describe({
+  name: differencesWithin.name,
+  children: [
+    it({
+      name: 'counts the differing pixels inside the rectangle only',
+      fn: async ({ expect, }) => {
+        const a = solid(6, 5, 0,);
+        const b = withPixel(withPixel(a, 1, 1,), 5, 4,);
+        expect(differencesWithin({ a, b, box: { x: 0, y: 0, width: 3, height: 3, }, },),).toBe(1,);
+        expect(differencesWithin({ a, b, box: { x: 0, y: 0, width: 6, height: 5, }, },),).toBe(2,);
+        expect(differencesWithin({ a, b, box: { x: 2, y: 0, width: 3, height: 3, }, },),).toBe(0,);
+      },
+    },),
+  ],
+},);
+
+await describe({
+  name: countColor.name,
+  children: [
+    it({
+      name: 'counts the pixels that are exactly the color, inside the rectangle only',
+      fn: async ({ expect, }) => {
+        const image = withPixel(solid(4, 4, 7,), 2, 2,);
+        expect(countColor({ image, box: { x: 0, y: 0, width: 4, height: 4, }, color: [7, 7, 7,], },),).toBe(15,);
+        expect(countColor({ image, box: { x: 0, y: 0, width: 2, height: 2, }, color: [7, 7, 7,], },),).toBe(4,);
+        expect(countColor({ image, box: { x: 0, y: 0, width: 4, height: 4, }, color: [7, 200, 7,], },),).toBe(1,);
       },
     },),
   ],

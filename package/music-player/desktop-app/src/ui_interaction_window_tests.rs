@@ -296,7 +296,7 @@ fn every_menu_row_is_a_named_button_with_its_shortcut_as_description() {
 // ---- KF1 and VD3: the Play ring and the seek handle ----
 
 #[test]
-fn the_play_button_ring_is_drawn_outside_its_filled_circle() {
+fn the_play_button_ring_is_drawn_flush_outside_its_filled_circle() {
     let (app, _host) = library_window(850.0, 900.0);
     tab_labels(&app, 6);
     assert_eq!(focus_label(&app), "play", "Tab reached Play");
@@ -304,13 +304,17 @@ fn the_play_button_ring_is_drawn_outside_its_filled_circle() {
     let touches = ElementHandle::find_by_accessible_label(&app, "Play").collect::<Vec<_>>();
     let play = touches.iter().find(|touch| return touch.size().width > 0.0).expect("the Play button");
     let (px, py, pw, ph) = box_of(play);
-    // The ring is a FocusRing the size of the whole 48 px target, 2 px outside the 40 px circle, so a ring of the same
-    // primary role as the circle's fill is a separate, visible band and not a thicker circle.
+    // The ring is a FocusRing the size of the 40 px filled circle (the target less 4 px on each side). Its near ring is 2 px
+    // wide and flush outside the circle, and its outer ring is 1 px wide around that, so a ring of the same primary role as the
+    // circle's fill is still a separate band: the outer ring in the on-primary role sets it apart.
+    let boxes_of = |id: &str| return ElementHandle::find_by_element_id(&app, id).map(|ring| return box_of(&ring)).collect::<Vec<_>>();
+    let has = |boxes: &[(f32, f32, f32, f32)], wanted: (f32, f32, f32, f32)| {
+        return boxes.iter().any(|(x, y, width, height)| return (*x - wanted.0).abs() < 0.5 && (*y - wanted.1).abs() < 0.5 && (*width - wanted.2).abs() < 0.5 && (*height - wanted.3).abs() < 0.5);
+    };
     let rings: Vec<(f32, f32, f32, f32)> = ElementHandle::find_by_element_type_name(&app, "FocusRing").map(|ring| return box_of(&ring)).collect();
-    assert!(
-        rings.iter().any(|(x, y, width, height)| return (*x - px).abs() < 0.5 && (*y - py).abs() < 0.5 && (*width - pw).abs() < 0.5 && (*height - ph).abs() < 0.5),
-        "a ring covers the Play target {px},{py} {pw}x{ph}",
-    );
+    assert!(has(&rings, (px + 4.0, py + 4.0, pw - 8.0, ph - 8.0)), "a ring is the filled circle's size");
+    assert!(has(&boxes_of("FocusRing::ring-box"), (px + 2.0, py + 2.0, pw - 4.0, ph - 4.0)), "its near ring is the circle grown by 2 px");
+    assert!(has(&boxes_of("FocusRing::outer-ring"), (px + 1.0, py + 1.0, pw - 2.0, ph - 2.0)), "its outer ring is the circle grown by 3 px");
 }
 
 #[test]

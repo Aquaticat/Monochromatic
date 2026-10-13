@@ -56,7 +56,7 @@ export component SearchPage inherits Rectangle {
     // Changes after a refresh re-ranks the results, so the first visible row keeps its place on screen (D111).
     in property <int> anchor-tick: 0;
     // Result the keyboard highlights (Up and Down move it, Enter opens it), by the `index` of its row; -1 for none. The
-    // query field keeps the typing focus, so this is an active-descendant highlight: a 12 percent layer and a 2 px ring.
+    // query field keeps the typing focus, so this is an active-descendant highlight: the ring and nothing else.
     in property <int> ring: -1;
     // Left inset of the header, the Back target and the result rows, measured from this page's left edge. The
     // inner caller sets it to half the crease plus the standard 16 px inset, and the cover leaves it at 16 px.
@@ -114,7 +114,7 @@ export component SearchPage inherits Rectangle {
         height: root.header-height;
         background: Theme.surface-high;
 
-        // Circular hover, pressed and focus layer, 40 px centered in the 48 px Back target.
+        // Circular hover and pressed layer, 40 px centered in the 48 px Back target.
         StateLayer {
             x: root.content-start-x + 4px;
             y: (parent.height - Theme.touch-target) / 2 + 4px;
@@ -124,7 +124,6 @@ export component SearchPage inherits Rectangle {
             tint: Theme.on-surface;
             hovered: back-touch.has-hover;
             pressed: back-touch.pressed;
-            focused: back-stop.ring;
         }
         Path {
             x: root.content-start-x + (Theme.touch-target - root.icon-size) / 2;
@@ -165,7 +164,7 @@ export component SearchPage inherits Rectangle {
             y: (parent.height - Theme.touch-target) / 2 + 4px;
             width: 40px;
             height: 40px;
-            radius: 20px;
+            round: true;
             active: back-stop.ring;
         }
 
@@ -207,7 +206,7 @@ export component SearchPage inherits Rectangle {
         }
 
         // Clear appears only while the field has text (D65 keeps focus where it is).
-        // Circular hover, pressed and focus layer, 40 px centered in the 48 px Clear target.
+        // Circular hover and pressed layer, 40 px centered in the 48 px Clear target.
         StateLayer {
             x: root.width - root.end-inset - Theme.touch-target + 4px;
             y: (parent.height - Theme.touch-target) / 2 + 4px;
@@ -218,7 +217,6 @@ export component SearchPage inherits Rectangle {
             disabled: field.text == "";
             hovered: clear-touch.has-hover;
             pressed: clear-touch.pressed;
-            focused: clear-stop.ring;
         }
         Path {
             x: root.width - root.end-inset - Theme.touch-target + (Theme.touch-target - root.icon-size) / 2;
@@ -264,7 +262,7 @@ export component SearchPage inherits Rectangle {
             y: (parent.height - Theme.touch-target) / 2 + 4px;
             width: 40px;
             height: 40px;
-            radius: 20px;
+            round: true;
             active: clear-stop.ring;
         }
     }
@@ -399,20 +397,22 @@ export component SearchPage inherits Rectangle {
         height: root.height - root.body-top;
         visible: root.rows.length > 0;
 
-        for row[i] in root.rows: Rectangle {
+        for row[i] in root.rows: result-row := Rectangle {
             width: results.width;
             height: root.row-height;
 
-            // Hover, pressed and keyboard layer over the whole row, below the glyph and the text.
+            // Hover and pressed layer over the whole row, below the glyph and the text.
             StateLayer {
                 width: parent.width;
                 height: parent.height;
                 tint: Theme.on-surface;
                 hovered: row-touch.has-hover;
                 pressed: row-touch.pressed;
-                focused: row.index == root.ring && Focus.ring-visible;
             }
+            // A result is as wide as the page, which ends at the window's edge on the folded layout and at the pane's edge on the
+            // unfolded one, so its ring is drawn on the row's own edge, inside it (see the track rows). No fill goes with it.
             FocusRing {
+                inside: true;
                 active: row.index == root.ring && Focus.ring-visible;
             }
 

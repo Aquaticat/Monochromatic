@@ -31,8 +31,8 @@ backend differs by target.
    The root is watched while the app runs,
    so files added,
    removed,
-   or renamed on disk are reflected live by a debounced rescan,
-   and that same rescan on launch self-corrects the restored queue.
+   or renamed on disk are reflected live by a debounced refresh of the paths that changed,
+   and a full rescan on launch (after the watch is registered) self-corrects the restored queue.
 - Transport:
    play/pause,
    seek,
@@ -439,8 +439,10 @@ each role has a lightness target, a chroma share and a hue offset, converted to 
 lightness and hue (a binary search, never per-channel clipping, which would shift the hue).
 Text roles are then moved in lightness until WCAG AA holds on every surface they are drawn on and under the hover layer,
 so contrast holds for any accent.
-The dark canvas, the rail seam and the deck stay the fixed neutrals of D41, the light canvas stays white,
-and the error roles are constants that follow no accent.
+The canvas stays pure black in dark and pure white in light (D41, D34), and the error roles are constants that follow no
+accent. Every gray (deck, rows, surfaces, outlines, text variants) carries the root hue at its own tint unless the root is
+completely neutral, meaning its three 8-bit channels are equal (D118); an accent role is never less chromatic than the
+strongest gray of its scheme, except under a completely neutral root, where every accent is gray.
 Hover and pressed fills of the selected segment and the search match fill (D59) are OKLCH roles too;
 state layers over a surface stay alpha-only.
 The Rust side (`src/ui_theme.rs`) writes both schemes into `Theme.dark-roles` and `Theme.light-roles` at startup and
@@ -475,7 +477,7 @@ Slint 1.18 exposes no reduced-motion setting (searched in its 1.18.1 crates), so
 While Settings is open the player layouts are hidden, so nothing of the player shows through the fade.
 The first row is selected when Settings opens.
 Up, Down, Home and End move through the rows (selection follows in the wide form, and the single form shows the focused
-row with the hover layer), and Enter or Space activates the focused row.
+row with the focus ring), and Enter or Space activates the focused row.
 Back (the header arrow) and Escape close Settings in both forms.
 Escape closes Settings only while Settings is the visible page and no template line is being edited.
 Closing Settings, or selecting the other row, applies and saves the valid drafts.
@@ -546,7 +548,7 @@ A `stat` per file made the walk of 1,000,000 files take 10.6 seconds instead of 
 the one cold run measured.
 The file watcher registers its recursive watch on its own thread (28 to 45 seconds at 1,000,000 files, where it used to
 run before the walk on the engine thread) and ignores open and close events, which the walk itself raises.
-When a registration ends it asks for one rescan, which catches a change made while it ran.
+When a registration ends it asks for one full rescan, which catches a change made while it ran.
 The queue itself takes its names and page index from one pass each: `Queue::set_tracks` went from 2.2 seconds to 0.5
 at 1,000,000 tracks.
 
@@ -637,8 +639,25 @@ Pages:
 
 Tab and Shift+Tab walk the folder picker (the Open pill; on the folded layout the folder trigger first), the folder and
 track lists, the deck controls (seek bar, Previous, Play, Next, mode group), then Search and Settings, and wrap; no
-element traps the keyboard. Every focusable element draws a 2 px `primary` ring plus its state layer, only while the
-keyboard is in use: a key press turns the ring on and a pointer press turns it off.
+element traps the keyboard. Every focusable element draws the focus ring and nothing else (D117), only while the
+keyboard is in use: a key press turns the ring on and a pointer press turns it off. The template text field shows it for any focus, as a browser does for a text input; the Search query field has no ring of its own, because its caret already shows where the typing goes.
+
+The ring is the pair Firefox paints for `:focus-visible`, hugging the element instead of its bounding box: a 2 px ring in
+the `primary` role flush against the element's edge and a 1 px ring in the `on-primary` role around it, so the ring is
+readable on any surface. Both follow the element's own shape: each corner's radius grows by the widths inside the ring,
+so a pill stays a pill, a circle a circle, and a rounded rectangle keeps its curve; a square corner becomes a 2 px one.
+One component draws it (`FocusRing` in `ui/focus.slint`; its widths, gap, colors and square-corner radius are named
+parameters in `FocusRingStyle`), placed where the element is and given its radius. It reaches 3 px outside the element,
+never moves content, and sits above any sibling that could paint over it. Focus adds no fill, tint, state layer, bold or
+size change: hover and pressed keep their own state layers (`ui/state_layer.slint` has no focus state).
+
+One exception: a row as wide as its pane (a track row, a Search result, a template field row) has no room outside it,
+because its pane ends at the window's edge, so its two rings are drawn on the row's own edge, inside it (`inside` on
+the component). The track menu's rows are as wide as the card, so their ring reaches 3 px past the card's edge; the card
+is not clipped. A card pulled back against the window's edge has its ring cut by the window itself there.
+
+The track menu card is the canvas color itself, pure white in the light scheme and pure black in the dark scheme with no
+tint (D119), and is told apart from the page by a 1 px `outline-variant` outline.
 
 ### Key hint badges
 
@@ -731,17 +750,30 @@ Play with nothing selected starts the first track of the folder on screen; with 
 
 The library and the true peaks follow the disk by themselves (D113); no key, button or menu row refreshes or
 re-analyzes.
-The file watcher reports any change under the opened folder after a short quiet time.
-A changed list of files (new, removed or renamed files) reloads the queue and measures what is new.
-An unchanged list still starts a quiet refresh sweep: every file whose size or modified time changed since it was
-measured
-is decoded again, so a file replaced or edited in place gets its new true peak while the app runs (the file that is
-playing
-is measured by the playback path).
-That sweep shows no progress and decodes no file twice, because the sweep of the load and the refresh sweep share the
-fingerprints they have taken.
-A file that failed to decode has no stored result, so each later sweep tries it again; the person is told once per file
-(and once more if the file changes and still fails), and the row keeps its mark until a peak is measured for it.
+The file watcher reports what changed under the opened folder after a short quiet time: the union of the paths its
+events named, or "everything" when it lost events (an overflow of the kernel queue, an error), after each registration,
+and when a folder is opened.
+Reads of a watched folder are not changes.
+A refresh costs what changed, not the size of the library: the named paths are looked at with one `lstat` each and
+searched by binary search in the queue (`walk_order.rs`, `change_plan.rs`); a named folder has its direct entries
+compared with the queue's, and a folder that is new or was recreated is read once.
+Only an added or a removed file edits the list (in place, without a new load); a replaced file leaves the list alone and
+is measured again when its size or modified time differs from the cache.
+Only "everything" walks and refreshes the whole library, and so does a set of more than 100,000 distinct paths.
+At most one refresh sweep runs; requests that arrive meanwhile merge into one follow-up that covers their union
+(`refresh_coalescer.rs`).
+The refresh sweep shows no progress and decodes no file twice, because the sweep of the load and the refresh sweeps share
+the fingerprints they have taken.
+A file that failed to decode has no stored result, so it is tried again at the next library change, whichever file
+changed (every refresh sweep also takes the small set of files recorded as failed), and in every full refresh.
+The person is told once per file (and once more if the file changes and still fails), and the row keeps its mark until
+a peak is measured for it.
+
+The selected track follows its file (`controller_reload.rs`): when the file that is playing is replaced, the new file is
+opened first and swapped in at the same position (clamped to the new length), the player keeps playing, the peak and the
+gain are worked out again, the seek bar takes the new length, and no message is shown; a replacement that does not open yet
+changes nothing until the next event. A paused selected track keeps its position when the new file has it and starts again
+from zero when it does not.
 
 A file that cannot be decoded is skipped, named in a message ("`name` can't be played."; several files collapse to a
 count),

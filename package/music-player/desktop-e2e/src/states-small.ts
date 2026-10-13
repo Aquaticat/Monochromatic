@@ -14,6 +14,7 @@ import { press, } from './press.ts';
 import type { Session, } from './session.ts';
 import {
   isLibraryReady,
+  isLibraryReadyUnfolded,
   paneNamesFolder,
   ringHasTitle,
   trackListFocused,
@@ -70,6 +71,16 @@ export async function checkSingleFolder(
     id: 'states/natural-order',
     title: 'tracks are listed in natural order: Take 2 before Take 3 before Take 10',
     body: async function tracksInNaturalOrder(): Promise<string> {
+      /*
+       The window opens narrow and is widened a moment later; Alt+2 pressed in the narrow layout writes no state line,
+       so the check starts from the state of the wide layout. The previous check's state is not enough: it matches the
+       first state with the folder, which comes before the widening.
+       */
+      await session.waitState({
+        predicate: isLibraryReadyUnfolded,
+        what: 'the single folder shown in the wide layout',
+        timeoutMs: SESSION_READY_MS,
+      },);
       await press({
         session,
         act: chordKeys({

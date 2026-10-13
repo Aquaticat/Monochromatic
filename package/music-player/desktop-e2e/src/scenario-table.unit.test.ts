@@ -82,7 +82,7 @@ async function declaredIn(file: string, session: SessionName,): Promise<readonly
 }
 
 /**
- Reads every declared id of the suite, with the four visual ids built from their variants.
+ Reads every declared id of the suite, with the visual ids built from their variants (the focus ring check and the ring-only check of each).
  
  @returns all declarations
  */
@@ -93,17 +93,27 @@ async function allDeclared(): Promise<readonly Declared[]> {
     session: 'visual',
     skipped: false,
   }),);
-  return [...fromFiles, ...visual,];
+  const rings = VISUAL_VARIANTS.map(({ scheme, accent, },): Declared => ({
+    id: `visual/rings-${scheme}-${accent}`,
+    session: 'visual',
+    skipped: false,
+  }),);
+  const menus = VISUAL_VARIANTS.map(({ scheme, accent, },): Declared => ({
+    id: `visual/menu-${scheme}-${accent}`,
+    session: 'visual',
+    skipped: false,
+  }),);
+  return [...fromFiles, ...visual, ...rings, ...menus,];
 }
 
 await describe({
   name: 'scenario table',
   children: [
     it({
-      name: 'declares 102 checks that run and 1 that is skipped as not injectable',
+      name: 'declares 110 checks that run and 1 that is skipped as not injectable',
       fn: async ({ expect, }) => {
         const declared = await allDeclared();
-        expect(declared.filter((entry,) => !entry.skipped,),).toHaveLength(102,);
+        expect(declared.filter((entry,) => !entry.skipped,),).toHaveLength(110,);
         expect(declared.filter((entry,) => entry.skipped,).map((entry,) => entry.id,).toSorted(),).toEqual([
           'double-shift/repeat',
         ],);

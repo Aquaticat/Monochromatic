@@ -48,6 +48,13 @@ pub enum SweepReport {
         /// Each failed file.
         files: Vec<PathBuf>,
     },
+    /// A refresh sweep has visited all its tracks and ended.
+    RefreshDone {
+        /// Generation of the queue load the sweep belongs to.
+        generation: u64,
+        /// The number the coalescer gave the sweep when it started it.
+        id: u64,
+    },
 }
 
 /// What:
@@ -105,4 +112,12 @@ pub(crate) struct SweepJob {
     pub(crate) claims: Arc<Mutex<HashSet<u64>>>,
     /// True for a refresh sweep (D113): it sends no peeked measures and no progress, only what it newly measures or fails.
     pub(crate) quiet: bool,
+    /// True when `tracks` holds only the files that changed: whether a file is already measured is then asked of the cache
+    /// one file at a time, because a snapshot of every measured fingerprint costs as much as the library is large.
+    pub(crate) listed: bool,
+    /// The tracks a quiet sweep announces by peek: new rows get their length and any cached peak at once. A loading sweep
+    /// announces all of `tracks` instead.
+    pub(crate) announce: Vec<PathBuf>,
+    /// The number the coalescer gave a refresh sweep, sent back when it ends so the follow-up can start.
+    pub(crate) refresh_id: Option<u64>,
 }

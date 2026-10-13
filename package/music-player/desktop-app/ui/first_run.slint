@@ -62,20 +62,19 @@ export component FirstRunPane inherits Rectangle {
             }
 
             // Filled action, content width with a 48px minimum target (D101 order: filled first).
-            if root.primary-label != "" : Rectangle {
+            if root.primary-label != "" : primary-pill := Rectangle {
                 horizontal-stretch: 0;
                 width: primary-row.preferred-width;
                 height: max(48px, primary-row.preferred-height);
                 background: Theme.primary;
                 border-radius: 24px;
 
-                // Hover, pressed and focus layer over the filled pill, in the content color of the primary fill.
+                // Hover and pressed layer over the filled pill, in the content color of the primary fill.
                 StateLayer {
                     radius: 24px;
                     tint: Theme.on-primary;
                     hovered: primary-touch.has-hover;
                     pressed: primary-touch.pressed;
-                    focused: primary-stop.ring;
                 }
                 primary-row := HorizontalLayout {
                     padding-left: 24px;
@@ -102,18 +101,17 @@ export component FirstRunPane inherits Rectangle {
                     label: "first-run-primary";
                     activated => { root.primary(); }
                 }
-                // The ring sits inside the pill in the on-primary role: the primary role would vanish against the fill.
-                Rectangle {
-                    visible: primary-stop.ring;
-                    background: transparent;
-                    border-width: 2px;
-                    border-color: Theme.on-primary;
-                    border-radius: 24px;
+                // The ring is outside the pill, flush with its edge. Its near ring is the same primary role as the pill's fill, so
+                // the 1 px on-primary ring around it is what sets the ring apart from the canvas. The content column keeps
+                // 24 px around the pill, more than the 3 px the ring reaches.
+                FocusRing {
+                    radius: 24px;
+                    active: primary-stop.ring;
                 }
             }
 
             // Outlined actions, one per label in order, each a 48px minimum target.
-            for label[index] in root.secondary-labels : Rectangle {
+            for label[index] in root.secondary-labels : secondary-pill := Rectangle {
                 horizontal-stretch: 0;
                 width: secondary-row.preferred-width;
                 height: max(48px, secondary-row.preferred-height);
@@ -122,13 +120,12 @@ export component FirstRunPane inherits Rectangle {
                 border-width: 1px;
                 border-color: Theme.outline;
 
-                // Hover, pressed and focus layer over the outlined pill, in the content color of the canvas beneath it.
+                // Hover and pressed layer over the outlined pill, in the content color of the canvas beneath it.
                 StateLayer {
                     radius: 24px;
                     tint: Theme.on-surface;
                     hovered: secondary-touch.has-hover;
                     pressed: secondary-touch.pressed;
-                    focused: secondary-stop.ring;
                 }
                 secondary-row := HorizontalLayout {
                     padding-left: 24px;

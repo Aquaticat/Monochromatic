@@ -32,8 +32,6 @@ component RowShape inherits Rectangle {
     in property <bool> hovered: false;
     // True while the pointer button is held on the row.
     in property <bool> pressed: false;
-    // True while the row holds keyboard focus.
-    in property <bool> focused: false;
     // Corner radii at the top and the bottom edge of the row.
     in property <length> radius-top: 0px;
     in property <length> radius-bottom: 0px;
@@ -44,9 +42,10 @@ component RowShape inherits Rectangle {
     border-bottom-left-radius: root.radius-bottom;
     border-bottom-right-radius: root.radius-bottom;
 
-    // The hover (8 percent) and pressed or focused (12 percent) layer, alpha only so it keeps the surface's lightness and hue.
+    // The hover (8 percent) and pressed (12 percent) layer, alpha only so it keeps the surface's lightness and hue. Keyboard
+    // focus adds nothing here: it is the ring of `FocusRing` and nothing else (D117).
     Rectangle {
-        background: root.pressed || root.focused ? root.tint.with-alpha(0.12) : root.hovered ? root.tint.with-alpha(0.08) : transparent;
+        background: root.pressed ? root.tint.with-alpha(0.12) : root.hovered ? root.tint.with-alpha(0.08) : transparent;
         border-top-left-radius: root.radius-top;
         border-top-right-radius: root.radius-top;
         border-bottom-left-radius: root.radius-bottom;
@@ -145,7 +144,7 @@ export component SettingsPage inherits Rectangle {
         width: root.width;
         height: root.header-height;
 
-        // Circular hover, pressed and focus layer over the 56 px Back target, 16 px from the edge.
+        // Circular hover and pressed layer over the 56 px Back target, 16 px from the edge.
         StateLayer {
             x: 16px;
             y: 4px;
@@ -155,7 +154,6 @@ export component SettingsPage inherits Rectangle {
             tint: Theme.on-surface;
             hovered: back-touch.has-hover;
             pressed: back-touch.pressed;
-            focused: back-stop.ring;
         }
         Path {
             x: 32px;
@@ -197,7 +195,7 @@ export component SettingsPage inherits Rectangle {
             y: 4px;
             width: 56px;
             height: 56px;
-            radius: 28px;
+            round: true;
             active: back-stop.ring;
         }
         Text {
@@ -301,15 +299,15 @@ export component SettingsPage inherits Rectangle {
                         property <length> radius-bottom: self.selected ? root.pill-radius : (index == root.rows.length - 1 ? root.group-radius : root.joint-radius);
                         height: root.row-height;
 
-                        // Selection pill and the hover, pressed and focus layer over it, in the content color of what is
-                        // beneath. The row under the keyboard focus also gets the 2 px ring below, so focus shows in
-                        // two channels; in the wide form focus and selection are the same row.
+                        // Selection pill and the hover and pressed layer over it, in the content color of what is beneath.
+                        // The row under the keyboard focus gets the ring below and no fill; in the wide form focus and
+                        // selection are the same row. The ring follows the row's own corner radii, grown by the widths inside each ring: the
+                        // rounded ends of the group, the small radius at its joints, or the selected pill.
                         row-pill := RowShape {
                             fill: parent.selected ? Theme.secondary-container : transparent;
                             tint: parent.selected ? Theme.on-secondary-container : Theme.on-surface;
                             hovered: row-touch.has-hover;
                             pressed: row-touch.pressed;
-                            focused: parent.keyboard-focused;
                             radius-top: parent.radius-top;
                             radius-bottom: parent.radius-bottom;
                         }

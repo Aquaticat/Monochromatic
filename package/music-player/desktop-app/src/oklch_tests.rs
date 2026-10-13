@@ -153,3 +153,34 @@ fn delta_e_is_zero_for_equal_colors_and_large_for_black_against_white() {
     assert_eq!(delta_e_ok(white, white), 0.0);
     assert!((delta_e_ok(white, black) - 100.0).abs() < 0.01);
 }
+
+#[test]
+fn an_equal_channel_color_reads_as_exactly_achromatic() {
+    // D118: all channels equal means no chroma at all; the ten-digit matrix would otherwise read about 4e-8.
+    for level in 0..=255_u8 {
+        let lch: Oklch = srgb_to_oklch(Srgb8 { red: level, green: level, blue: level });
+        assert_eq!(lch.chroma, 0.0, "gray {level}");
+    }
+    // Positive control: one step on one channel is not achromatic.
+    assert!(srgb_to_oklch(Srgb8 { red: 129, green: 128, blue: 128 }).chroma > 1.0e-3);
+}
+
+#[test]
+fn zero_chroma_always_encodes_to_equal_channels_even_on_a_rounding_boundary() {
+    // Walk lightness through 20000 fine steps and through the exact doubles on each side of every 8-bit boundary of
+    // the gray ramp: a zero-chroma color never comes out with unequal channels.
+    for step in 0..=20_000_u32 {
+        let lightness: f64 = f64::from(step) / 20_000.0;
+        let color: Srgb8 = oklch_to_srgb8(Oklch { lightness, chroma: 0.0, hue: 123.0 });
+        assert!(color.red == color.green && color.green == color.blue, "L {lightness}: {color:?}");
+    }
+    for level in 0..255_u32 {
+        let boundary_encoded: f64 = (f64::from(level) + 0.5) / 255.0;
+        let linear: f64 = if boundary_encoded <= 0.04045 { boundary_encoded / 12.92 } else { ((boundary_encoded + 0.055) / 1.055).powf(2.4) };
+        let boundary_lightness: f64 = linear.cbrt();
+        for nudge in [-1.0e-9, -1.0e-12, 0.0, 1.0e-12, 1.0e-9] {
+            let color: Srgb8 = oklch_to_srgb8(Oklch { lightness: boundary_lightness + nudge, chroma: 0.0, hue: 0.0 });
+            assert!(color.red == color.green && color.green == color.blue, "level {level} nudge {nudge}: {color:?}");
+        }
+    }
+}

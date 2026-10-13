@@ -35,6 +35,9 @@ fn sweep_job(tracks: Vec<PathBuf>, cache: CacheHandle) -> SweepJob {
         gate: Arc::new(SweepGate::new()),
         claims: Arc::new(Mutex::new(HashSet::new())),
         quiet: false,
+        listed: false,
+        announce: Vec::new(),
+        refresh_id: None,
     };
 }
 
@@ -231,6 +234,9 @@ fn a_paused_sweep_claims_no_track_until_it_is_resumed() {
         gate: Arc::clone(&gate),
         claims: Arc::new(Mutex::new(HashSet::new())),
         quiet: false,
+        listed: false,
+        announce: Vec::new(),
+        refresh_id: None,
     });
 
     thread::sleep(Duration::from_millis(600));
@@ -271,6 +277,9 @@ fn closing_the_gate_while_paused_ends_the_sweep_without_hanging() {
         gate: Arc::clone(&gate),
         claims: Arc::new(Mutex::new(HashSet::new())),
         quiet: false,
+        listed: false,
+        announce: Vec::new(),
+        refresh_id: None,
     });
 
     thread::sleep(Duration::from_millis(300));
@@ -323,6 +332,9 @@ fn two_sweeps_of_one_load_decode_a_track_only_once() {
             gate: Arc::new(SweepGate::new()),
             claims: Arc::clone(&claims),
             quiet,
+            listed: false,
+            announce: Vec::new(),
+            refresh_id: None,
         });
     }
     assert!(wait_for(20, || return final_progress_seen(&reports, tracks.len())), "the sweep of the load finished");
@@ -359,6 +371,9 @@ fn a_file_that_cannot_be_decoded_is_tried_again_by_the_next_sweep_of_the_same_lo
             gate: Arc::new(SweepGate::new()),
             claims: Arc::clone(&claims),
             quiet,
+            listed: false,
+            announce: Vec::new(),
+            refresh_id: None,
         });
         assert!(wait_for(10, || return unreadable(&reports) >= round), "sweep {round} reported the broken file");
     }

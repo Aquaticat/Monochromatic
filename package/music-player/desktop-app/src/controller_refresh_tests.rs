@@ -255,7 +255,7 @@ fn a_new_folder_open_forgets_what_was_reported_so_its_rows_are_marked_again() {
 }
 
 #[test]
-fn a_paused_selected_file_that_is_replaced_is_loaded_again_and_a_playing_one_is_not_cut() {
+fn a_paused_selected_file_that_is_replaced_is_loaded_again_and_a_playing_one_is_loaded_again_without_stopping() {
     let mut rig = Rig::new("selected", &[("a.flac", "tone.flac"), ("b.flac", "tone.wav")]);
     let selected = rig.root.join("a.flac");
     rig.controller.handle_command(Command::OpenRoot { root: rig.root.clone(), select: Some(selected.clone()), play: false });
@@ -271,6 +271,11 @@ fn a_paused_selected_file_that_is_replaced_is_loaded_again_and_a_playing_one_is_
     assert!(rig.controller.playing);
     rig.put("a.flac", "tone.opus");
     rig.controller.handle_command(Command::Rescan);
-    assert_eq!(rig.controller.loaded_file, Some(second), "a playing track is not cut off by a change of its file");
-    assert!(rig.controller.playing);
+    let third = rig.controller.loaded_file.clone().expect("the selected file is loaded again");
+    assert_ne!(third.1, second.1, "a playing track follows its new file too (D113)");
+    assert!(rig.controller.playing, "and keeps playing");
 }
+
+/// Tests of the refresh from the paths the watcher names, with the same rig.
+#[path = "controller_refresh_flow_tests.rs"]
+mod flow;

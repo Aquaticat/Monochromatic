@@ -337,3 +337,276 @@ export function diffBox(
     },
   };
 }
+
+/**
+ A color as red, green and blue bytes.
+ */
+export type Color = readonly [
+  red: number,
+  green: number,
+  blue: number,
+];
+
+/**
+ Reads the color of one pixel.
+
+ @param image - the image
+ 
+ @param x - column
+ 
+ @param y - row
+ 
+ @returns the pixel's red, green and blue bytes
+ 
+ @example
+ ```ts
+ colorAt({ image, x: 10, y: 20, },); // [69, 84, 129]
+ ```
+ */
+export function colorAt(
+  {
+    image,
+    x,
+    y,
+  }: {
+    readonly image: Image;
+    readonly x: number;
+    readonly y: number;
+  },
+): Color {
+  /**
+   Where the pixel starts in the raw data.
+   */
+  const offset = pixelOffset({
+    image,
+    x,
+    y,
+  },);
+  return [
+    image.data[offset] ?? 0,
+    image.data[offset + 1] ?? 0,
+    image.data[offset + 2] ?? 0,
+  ];
+}
+
+/**
+ Counts the pixels of a rectangle that differ between two images.
+ 
+ @param a - first image
+ 
+ @param b - second image
+ 
+ @param box - the rectangle to compare, which both images must contain
+ 
+ @returns how many pixels of the rectangle differ
+ 
+ @example
+ ```ts
+ differencesWithin({ a, b, box: { x: 10, y: 10, width: 30, height: 20, }, },);
+ ```
+ */
+export function differencesWithin(
+  {
+    a,
+    b,
+    box,
+  }: {
+    readonly a: Image;
+    readonly b: Image;
+    readonly box: Box;
+  },
+): number {
+  /**
+   Running count in a one-slot holder.
+   */
+  const found = { count: 0, };
+
+  /**
+   The rectangle's edges.
+   */
+  const {
+    x: left,
+    y: top,
+    width,
+    height,
+  } = box;
+  for (let y = top; y < (top + height); y++)
+    for (let x = left; x < (left + width); x++)
+      if (pixelDiffers({
+        a,
+        b,
+        x,
+        y,
+      },))
+        found.count++;
+  return found.count;
+}
+
+/**
+ Tells whether two colors are the same in every channel.
+ 
+ @param a - first color
+ 
+ @param b - second color
+ 
+ @returns whether red, green and blue are all equal
+ 
+ @example
+ ```ts
+ sameColor({ a: [1, 2, 3,], b: [1, 2, 3,], },); // true
+ ```
+ */
+export function sameColor(
+  {
+    a,
+    b,
+  }: {
+    readonly a: Color;
+    readonly b: Color;
+  },
+): boolean {
+  return (a[0] === b[0])
+    && (a[1] === b[1])
+    && (a[2] === b[2]);
+}
+
+/**
+ Counts the pixels of a rectangle that are exactly one color.
+ 
+ @param image - the image
+ 
+ @param box - the rectangle to count in
+ 
+ @param color - the color to count
+ 
+ @returns how many pixels of the rectangle have exactly that color
+ 
+ @example
+ ```ts
+ countColor({ image, box, color: [69, 84, 129], },);
+ ```
+ */
+export function countColor(
+  {
+    image,
+    box,
+    color,
+  }: {
+    readonly box: Box;
+    readonly color: Color;
+    readonly image: Image;
+  },
+): number {
+  /**
+   Running count in a one-slot holder.
+   */
+  const found = { count: 0, };
+
+  /**
+   The rectangle's edges.
+   */
+  const {
+    x: left,
+    y: top,
+    width,
+    height,
+  } = box;
+  for (let y = top; y < (top + height); y++)
+    for (let x = left; x < (left + width); x++)
+      if (sameColor({
+        a: colorAt({
+          image,
+          x,
+          y,
+        },),
+        b: color,
+      },))
+        found.count++;
+  return found.count;
+}
+
+/**
+ Finds the bounding box of the pixels that differ between two images inside a rectangle, and counts them.
+ 
+ @param a - first image
+ 
+ @param b - second image
+ 
+ @param area - the rectangle to look in, which both images must contain
+ 
+ @returns the count, and the bounding box when the count is not zero
+ 
+ @example
+ ```ts
+ const { count, box, } = diffBoxWithin({ a, b, area: { x: 0, y: 0, width: 100, height: 60, }, },);
+ ```
+ */
+export function diffBoxWithin(
+  {
+    a,
+    b,
+    area,
+  }: {
+    readonly a: Image;
+    readonly area: Box;
+    readonly b: Image;
+  },
+): Difference {
+  /**
+   Running count and bounds in a one-slot holder.
+   */
+  const found = {
+    count: 0,
+    minX: Infinity,
+    minY: Infinity,
+    maxX: -1,
+    maxY: -1,
+  };
+
+  /**
+   The rectangle's edges.
+   */
+  const {
+    x: left,
+    y: top,
+    width,
+    height,
+  } = area;
+  for (let y = top; y < (top + height); y++)
+    for (let x = left; x < (left + width); x++)
+      if (pixelDiffers({
+        a,
+        b,
+        x,
+        y,
+      },)) {
+        found.count++;
+        found.minX = Math.min(
+          found.minX,
+          x,
+        );
+        found.minY = Math.min(
+          found.minY,
+          y,
+        );
+        found.maxX = Math.max(
+          found.maxX,
+          x,
+        );
+        found.maxY = Math.max(
+          found.maxY,
+          y,
+        );
+      }
+  if (found.maxX < 0)
+    return { count: found.count, };
+  return {
+    count: found.count,
+    box: {
+      x: found.minX,
+      y: found.minY,
+      width: (found.maxX - found.minX) + 1,
+      height: (found.maxY - found.minY) + 1,
+    },
+  };
+}

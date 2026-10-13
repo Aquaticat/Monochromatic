@@ -98,6 +98,9 @@ use crate::track_measure::{measure_from_decision, measure_from_duration};
 ///       The measure phase and the re-analysis both decode through this one entry point.
 use crate::truepeak::resolve_full;
 
+/// The kind of a cached decision, to tell an exact one from an estimate.
+use truepeak_core::DecisionKind;
+
 /// What:
 ///      `const MEASURE_REPORT_CHUNK: usize = 128;`.
 ///  How many peeked tracks go into one report.
@@ -141,7 +144,17 @@ pub(crate) fn spawn_queue_measurement(job: SweepJob) {
     // ```ts
     // startWorker(() => runSweep(job));
     // ```
-    thread::spawn(move || run_sweep(job));
+    thread::spawn(move || {
+        let sink: SweepSink = Arc::clone(&job.sink);
+        let (generation, refresh_id): (u64, Option<u64>) = (job.generation, job.refresh_id);
+        // A refresh sweep tells the coalescer it ended even when the coordinator panicked, or the follow-up would never start.
+        if std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| return run_sweep(job))).is_err() {
+            tracing::error!(generation, "the sweep coordinator panicked");
+        }
+        if let Some(id) = refresh_id {
+            sink(SweepReport::RefreshDone { generation, id });
+        }
+    });
 }
 
 /// What:
@@ -177,6 +190,8 @@ struct SweepShared {
     failed: Mutex<Vec<PathBuf>>,
     /// True for a refresh sweep, which reports no progress.
     quiet: bool,
+    /// True when `tracks` holds only changed files and `known` is empty: exactness is asked of the cache per file.
+    listed: bool,
 }
 
 /// What:
@@ -208,7 +223,10 @@ fn run_sweep(job: SweepJob) {
     // ```
     // A refresh sweep (D113) leaves the rows as they are; only what it newly measures or fails is reported.
     if !job.quiet {
-        report_peeked_measures(&job);
+        report_peeked_measures(&job.tracks, &job);
+    } else if !job.announce.is_empty() {
+        // A refresh announces the files that are new to the list by peek, so their rows have a length at once (D113).
+        report_peeked_measures(&job.announce, &job);
     }
     // What:     `let measure_tracks = job.tracks minus the current track`. The tracks the fan-out visits.
     // Why:      The current track is measured by `peak_swap`, so the sweep leaves it alone.
@@ -236,13 +254,14 @@ fn run_sweep(job: SweepJob) {
         cursor: AtomicUsize::new(0),
         visited: AtomicUsize::new(0),
         cache: job.cache.clone(),
-        known: job.cache.known_fingerprints(),
+        known: if job.listed { HashSet::new() } else { job.cache.known_fingerprints() },
         sink: Arc::clone(&job.sink),
         generation: job.generation,
         gate: Arc::clone(&job.gate),
         claims: Arc::clone(&job.claims),
         failed: Mutex::new(Vec::new()),
         quiet: job.quiet,
+        listed: job.listed,
     });
     // What:     `report_progress(&shared, 0)` when there is work. Show the bar as the analysis starts.
     // Why:      D26: the scan bar appears when analysis starts and leaves when it finishes.
@@ -312,8 +331,8 @@ fn run_sweep(job: SweepJob) {
 /// ```ts
 /// function reportPeekedMeasures(job: SweepJob): void { for (const chunk of chunks(job.tracks)) job.sink(peekMeasures(chunk)); }
 /// ```
-fn report_peeked_measures(job: &SweepJob) {
-    for chunk in job.tracks.chunks(MEASURE_REPORT_CHUNK) {
+fn report_peeked_measures(tracks: &[PathBuf], job: &SweepJob) {
+    for chunk in tracks.chunks(MEASURE_REPORT_CHUNK) {
         let measures = peek_measures(chunk, &job.cache);
         (job.sink)(SweepReport::Measures {
             generation: job.generation,
@@ -681,7 +700,7 @@ fn measure_one(path: &Path, shared: &SweepShared) {
     // ```ts
     // if (shared.known.has(key)) return;
     // ```
-    if shared.known.contains(&key) {
+    if already_exact(shared, key) {
         tracing::debug!(key, "skip: already exact");
         return;
     }
@@ -733,6 +752,24 @@ fn measure_one(path: &Path, shared: &SweepShared) {
         generation: shared.generation,
         measures: vec![(path.to_path_buf(), measure_from_decision(&decision))],
     });
+}
+
+/// What:
+///      `fn already_exact(shared: &SweepShared, key: u64) -> bool`.
+///  True when the cache already holds an exact decision for the fingerprint.
+/// Why:
+///       A sweep over the whole queue reads one snapshot of the exact fingerprints; a sweep over a few changed files asks
+///  the cache about each file, because the snapshot of a library of a million tracks costs more than the whole refresh.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function alreadyExact(shared: SweepShared, key: bigint): boolean { return shared.listed ? cache.get(key)?.kind !== "probe" && cache.get(key) !== null : shared.known.has(key); }
+/// ```
+fn already_exact(shared: &SweepShared, key: u64) -> bool {
+    if shared.listed {
+        return shared.cache.get(key).is_some_and(|decision| return decision.kind != DecisionKind::ProbeEstimate);
+    }
+    return shared.known.contains(&key);
 }
 
 /// What:

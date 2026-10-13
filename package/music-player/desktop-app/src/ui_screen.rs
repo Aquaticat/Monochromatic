@@ -63,6 +63,7 @@ pub(crate) fn apply_update(app: &AppWindow, update: &Update) {
             crate::ui_state_log::emit(app, "now-playing");
         }
         Update::Reconciled { names, index, name, duration } => {
+            tracing::info!(rows = names.len(), "the library list was reconciled in the window");
             let mut shared = None;
             update_state(|state| {
                 shared = Some(state.set_names_keeping_place(names));
@@ -148,6 +149,13 @@ pub(crate) fn apply_update(app: &AppWindow, update: &Update) {
             } else {
                 crate::ui_overlays::show_notice(app, &crate::ui_notices::file_gone_message(path, *was_playing));
             }
+        }
+        Update::Duration(duration) => {
+            update_state(|state| {
+                state.duration = *duration;
+            });
+            app.set_duration(*duration as f32);
+            app.set_duration_text(format_time(*duration).into());
         }
         Update::PlaybackMode(mode) => {
             update_state(|state| {

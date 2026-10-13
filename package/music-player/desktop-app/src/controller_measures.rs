@@ -5,15 +5,14 @@
 //! Why: the controller owns the queue generation and the cache handle, so stale reports are dropped here.
 
 use std::path::{Path, PathBuf};
+#[cfg(test)]
 use std::sync::Arc;
 
 use truepeak_core::Decision;
 
 use crate::command::Update;
 use crate::controller::Controller;
-use crate::measure::spawn_queue_measurement;
-use crate::sweep_gate::SweepGate;
-use crate::sweep_report::{SweepJob, SweepReport};
+use crate::sweep_report::SweepReport;
 use crate::track_measure::measure_from_decision;
 
 /// What:
@@ -49,7 +48,7 @@ impl Controller {
     }
 
     /// What:
-    ///      `pub(crate) fn handle_sweep_report(&self, report: SweepReport)`.
+    ///      `pub(crate) fn handle_sweep_report(&mut self, report: SweepReport)`.
     ///  Forwards a sweep report to the window when it belongs to the newest queue load.
     /// Why:
     ///       Sweeps are never cancelled, so a report from a replaced queue must not update the rows or the bar.
@@ -58,7 +57,7 @@ impl Controller {
     /// ```ts
     /// handleSweepReport(report: SweepReport): void { if (report.generation === this.analysisGeneration) this.emit(toUpdate(report)); }
     /// ```
-    pub(crate) fn handle_sweep_report(&self, report: SweepReport) {
+    pub(crate) fn handle_sweep_report(&mut self, report: SweepReport) {
         match report {
             SweepReport::Measures { generation, measures } => {
                 if generation != self.analysis_generation {
@@ -75,6 +74,7 @@ impl Controller {
                 }
                 self.emit(Update::Analysis { done, total });
             }
+            SweepReport::RefreshDone { id, .. } => self.finish_refresh(id),
             SweepReport::Unreadable { generation, files } => {
                 if generation != self.analysis_generation {
                     tracing::debug!(generation, current = self.analysis_generation, "dropped unreadable files from a replaced queue");
@@ -97,78 +97,6 @@ impl Controller {
     /// ```
     pub(crate) fn publish_decision_measure(&self, path: &Path, decision: &Decision) {
         self.emit(Update::Measures(vec![(path.to_path_buf(), measure_from_decision(decision))]));
-    }
-
-    /// What:
-    ///      `pub(crate) fn refresh_measurement(&self)`.
-    ///  Starts a quiet sweep over the current queue for files whose size or modified time changed since they were measured.
-    /// Why:
-    ///       D113: analysis follows the files by itself. A file replaced or edited on disk keeps its path, so the queue does
-    ///  not change and no load runs; this sweep measures it again, skips every file with a known fingerprint, shares the
-    ///  claims of the load's own sweep so nothing is decoded twice, and sends no progress and no peeked rows. A file that
-    ///  failed to decode earlier has no decision, so it is tried again here.
-    ///
-    /// In TS you'd write (pseudocode):
-    /// ```ts
-    /// refreshMeasurement(): void { spawnQueueMeasurement({ tracks, current, cache, sink, generation, claims, quiet: true }); }
-    /// ```
-    pub(crate) fn refresh_measurement(&self) {
-        if self.queue.tracks().is_empty() {
-            return;
-        }
-        tracing::debug!(tracks = self.queue.tracks().len(), generation = self.analysis_generation, "refresh sweep started");
-        spawn_queue_measurement(SweepJob {
-            tracks: self.queue.tracks().to_vec(),
-            current: self.queue.current_path().cloned(),
-            cache: self.peaks.clone(),
-            sink: Arc::clone(&self.sweep_sink),
-            generation: self.analysis_generation,
-            gate: SweepGate::shared(),
-            claims: Arc::clone(&self.sweep_claims),
-            quiet: true,
-        });
-    }
-
-    /// What:
-    ///      `pub(crate) fn reload_current_when_its_file_changed(&mut self)`.
-    ///  Loads the selected track again, paused, when its file changed on disk since the decoder opened it and nothing is playing.
-    /// Why:
-    ///       D113: the sweep leaves the selected track to the playback path, which measures it only when it loads. A paused
-    ///  track whose file was replaced would keep the old decoder, the old peak and the old gain until the person picked it
-    ///  again. A playing track is left alone, because loading it again would cut the audio; it picks up the new file when it
-    ///  is loaded next. The reload starts at the beginning of the file, because the old position may not exist in the new one.
-    ///
-    /// In TS you'd write (pseudocode):
-    /// ```ts
-    /// reloadCurrentWhenItsFileChanged(): void {
-    ///   const [path, key] = this.loadedFile ?? []; if (!path || path !== this.queue.currentPath() || this.playing) return;
-    ///   if (fingerprint(path) !== key) this.loadCurrent();
-    /// }
-    /// ```
-    pub(crate) fn reload_current_when_its_file_changed(&mut self) {
-        let Some(current) = self.queue.current_path().cloned() else {
-            return;
-        };
-        let Some((loaded_path, loaded_key)) = self.loaded_file.clone() else {
-            return;
-        };
-        if loaded_path != current || self.source.is_none() {
-            return;
-        }
-        let Some(now) = crate::peakcache::fingerprint(&current) else {
-            return;
-        };
-        if now == loaded_key {
-            return;
-        }
-        if self.playing {
-            tracing::info!(path = %current.display(), "the playing file changed on disk; it is loaded again when it next loads");
-            return;
-        }
-        tracing::info!(path = %current.display(), "the selected file changed on disk; loading it again, paused");
-        if !self.load_current() {
-            self.emit_no_track();
-        }
     }
 
     /// What:
@@ -224,3 +152,7 @@ mod tests;
 #[cfg(test)]
 #[path = "controller_refresh_tests.rs"]
 mod refresh_tests;
+
+#[cfg(test)]
+#[path = "refresh_cost_tests.rs"]
+mod refresh_cost_tests;

@@ -276,7 +276,6 @@ export component TrackListPane inherits Rectangle {
                         height: parent.height;
                         hovered: row-touch.has-hover;
                         pressed: row-touch.pressed;
-                        focused: entry.index == root.ring-index && list-stop.ring;
                         tint: Theme.on-surface;
                     }
 
@@ -354,8 +353,12 @@ export component TrackListPane inherits Rectangle {
                     background: Theme.primary;
                 }
 
-                // Keyboard ring around the row under the ring, inside the row so the pane's clip never cuts it.
+                // Keyboard ring around the row under the ring. A track row is as wide as the pane, and the pane ends at the
+                // window's edge (the folded pane is as wide as the window, the unfolded one ends at its right edge), so there
+                // is no room outside the row for the 3 px of the two rings: this is the one ring drawn on the element's
+                // own edge, inside it. Focus adds no fill to the row.
                 FocusRing {
+                    inside: true;
                     active: entry.kind == 0 && entry.index == root.ring-index && list-stop.ring;
                 }
 
