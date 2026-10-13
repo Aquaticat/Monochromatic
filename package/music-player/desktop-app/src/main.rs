@@ -131,6 +131,10 @@ mod ui_interaction_window_tests;
 #[cfg(test)]
 mod ui_lists_window_tests;
 
+/// Window tests of the folded folder picker: it never opens blank, whatever the library, the saved selection or the size.
+#[cfg(test)]
+mod ui_picker_window_tests;
+
 /// Rendered tests of the list defects: the ellipsis, the playing-row marker and the scrollbar, read from pixels.
 #[cfg(test)]
 mod ui_lists_render_tests;

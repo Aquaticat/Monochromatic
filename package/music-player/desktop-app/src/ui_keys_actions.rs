@@ -192,9 +192,17 @@ fn toggle_picker(window: &AppWindow) {
     }
 }
 
-/// What: `focus_folders` moves the keyboard to the folder picker, opening the overlay first on the folded layout.
+/// What: `focus_folders` moves the keyboard to the folder picker, opening the overlay first on the folded layout. On the
+/// folded layout it does nothing while the queue has no names.
 /// Why: Alt+1 (D106). The target is set before the projection so a picker created by it takes focus when it appears.
+/// The folder button already refuses to open a picker with nothing to list (EM5); the keys must refuse too, or Alt+1 or
+/// Ctrl+O pressed at launch, before the engine has reported the saved library, opens a Folders pane with no rail and no
+/// names that the first-run pane does not cover either.
 fn focus_folders(window: &AppWindow) {
+    if !window.get_unfolded() && read_state(|state: &ScreenState| return state.names.is_empty()) {
+        tracing::debug!("the folder picker was not opened: the library has no folders to list yet");
+        return;
+    }
     set_target(window, FocusTarget::Folders);
     if !window.get_unfolded() {
         update_state(|state| {
