@@ -40,7 +40,7 @@ or migrated-host activation was performed.
   serializer scenarios,
   and action-policy results are recorded in
   "Maintained original source-contribution accounting".
-  The publication test has only reviewed formatter-produced declaration splitting left to checkpoint.
+  The publication test's reviewed formatter-produced declaration splitting was saved in `42baa8e662`.
 - Private handler-result implementation is `7bde6d84`.
   The required red is `3d06c614` / `proc_0b0c`.
   Native receipt green is `proc_a410`;
