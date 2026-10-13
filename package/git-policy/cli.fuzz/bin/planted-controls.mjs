@@ -109,11 +109,6 @@ const plants = [
     }],
   },
   {
-    name: 'a real commit is forwarded',
-    file: 'package/git-policy/cli/src/native/refusal_frontier.rs',
-    edits: [{ from: 'return Some(Unported::CommitTransaction);', to: 'return None;' }],
-  },
-  {
     name: 'a publishing push skips the manual-push gate',
     file: 'package/git-policy/cli/src/native/wrapped_command.rs',
     edits: [{

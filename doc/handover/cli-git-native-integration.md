@@ -60,7 +60,7 @@ New modules (each with its `*_tests.rs` where it has pure logic; the transaction
   `candidate_store.rs` gained `StagedAtBase` (candidates against the recorded base, never the moved `HEAD`);
   `capture_order.rs` reaches the `capture-locked` marker; `owner_lock.rs` gained a view of an ancestor's lock.
 - Wiring: `wrapped_command.rs` runs the transaction for a real commit; a valid preparation lease lets a hook's nested
-  Git command through and skips recovery (`refusal_frontier.rs` keeps refusing only the worktree-copy lease).
+  Git command through and skips recovery (the worktree-copy lease is honored by the forwarding, `src/native/worktree_copy_forward.rs`).
 
 ### Decisions with reasons
 
