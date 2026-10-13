@@ -4,7 +4,7 @@ This runbook records how Claude sessions on the 16 core, 32 thread host are limi
 and how to tone the limit down or up.
 The user decided on 2026-10-13: the whole account may use all 32 threads,
 and Claude tool commands (including gate jobs run through `gate-slot.ts`) share one cap,
-currently 28 threads (30 at first, lowered 2 threads at a time by the tone-down rule).
+currently 30 threads (lowered to 28 by the tone-down rule, then raised back by the user).
 
 ## What enforces the limits
 

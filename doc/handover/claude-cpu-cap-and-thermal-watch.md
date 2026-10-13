@@ -13,7 +13,10 @@ The operating instructions live in `doc/runbook/claude-cpu-cap.md`.
 
 - The whole account may use all 32 threads (a persistent `AllowedCPUs=0-31`).
 - Claude tool commands, including gate jobs run through `gate-slot.ts`, share one cap.
-  It was 24 threads, then 30 by user request ("still exploring the new CPU"), and is 28 after the tone-down rule.
+  It was 24 threads, then 30 by user request ("still exploring the new CPU"), then 28 after the tone-down rule.
+  The user raised it back to 30 at about 18:55 EDT because their fan curve is more aggressive (full speed from 61
+  degrees instead of 65, as the user described it). The curve read back from CoolerControl still showed 65 at that
+  moment, so the edit may not have been saved yet.
 - Tone-down rule from the user: if the system gets bad, lower the cap 2 threads at a time.
 - IO pressure is non-actionable (the user's drives are slow) and is not watched.
 - The temperature alert limit is 95 degrees Celsius (raised from 90 by the user).
@@ -33,7 +36,7 @@ The operating instructions live in `doc/runbook/claude-cpu-cap.md`.
   (replacing the drop-in from 2026-02-22 that held `0-15` and left threads 16 to 31 idle).
 - `claude-cpu-watch.service` (user unit, enabled, linger on) re-applies the quota to the `claude-code-bash` cgroup.
   Claude Code creates that cgroup anew in every boot and has no CPU limit setting, so a service has to do it.
-  The thread count is read from `~/.config/claude-cpu-cap/threads` (28 now) every 2 seconds.
+  The thread count is read from `~/.config/claude-cpu-cap/threads` (30 now) every 2 seconds.
 - The watcher alerts on CPU pressure 40, memory pressure 10, scheduler lag 250 ms and temperature 95.
   The pressure limit of 40 was a first guess and is uncalibrated.
 - It logs a sample every 10 seconds to `~/.local/share/claude-cpu-cap/samples/<date>.csv` (14 days kept):
