@@ -1568,16 +1568,24 @@ that is verification, not a decision for the user.
   commit); every process of the user is on the native `PATH` (the count of sessions on the old `PATH` is zero).
   The user's decisions are no hybrid, the old TypeScript goes, and the rollback window ended with that verification.
   The pinned incumbent revision, the last commit that contains the TypeScript wrapper and the four authoring packages,
-  is `f4fc1fa213ece65672e4314983a75266837892f9`; the retirement commits are made on the branch
-  `feat/cli-git-native-retire` (record, per-commit evidence and leftovers: `doc/handover/cli-git-native-retire.md`),
+  is `f4fc1fa213ece65672e4314983a75266837892f9`; the retirement commits were merged into `main` on 2026-10-14
+  (merge `9e633292e7`; record, per-commit evidence and leftovers: `doc/handover/cli-git-native-retire.md`),
   and the order is in `doc/planning/cli-git-native-cutover.md`, section `Order of the retirement commits`.
+  The TypeScript under `package/git-policy/cli/src` outside `native`, `cli-git.config.ts`, the four authoring packages
+  and the differentials are gone; the package keeps the native crate, the e2e runner, the interop bins and the fuzz
+  sidecar.
   Not yet done for the push fix: scoped mutation of `wrapped_command.rs` and of `auto_push_single_flight.rs`
   (documentation changes only), and the two new planted controls have never run (a mutation run with the planted phase).
   Rehearsals in a throwaway repository with a local bare remote did not cover credentialed remotes, which is how the
   push defect escaped; keep a real-remote check in every release verification.
-  After the retirement branch is merged, the ignored leftovers in the main checkout are removed by explicit path only
-  (the list is in `doc/handover/cli-git-native-retire.md`), never with `git clean -X`, which would remove the live
-  `.cache/cli-git-bin` link and the rules file.
+  The ignored leftovers in the main checkout (the four package directories, the cli `dist` and `.cache`, the old
+  `node_modules/.bin/git` shim and an empty `package/git-policy/cli/node_modules/.bin`) were removed on 2026-10-14 by
+  explicit path, never with `git clean -X`, which would remove the live `.cache/cli-git-bin` link and the rules file;
+  afterwards `mise run sync:files` leaves the repository unchanged.
+  Still open from the retirement: `native:interop` cannot run until an incumbent provisioning step builds the pinned
+  revision (trailing gate), the `slopo.ignore.txt` entries for deleted files (lines 45, 50, 69, 200, 309, 324, 373)
+  wait for a fresh `slopo analyze` report, and the SPEC sections the plan did not name were not re-verified line by
+  line.
   Both wrappers shared `.git/cli-git*` state while sessions were mixed; the incumbent is no longer on any `PATH`.
   User decisions of 2026-10-13: install by publishing the crate (the `cargo:` mise tool route); the hk cleanup task is
   retired; the rollback window ends right after the installed wrapper is verified; the first native CI workflow covers
@@ -1641,8 +1649,9 @@ that is verification, not a decision for the user.
 - [x] Behavior ledger for the wrapper (`doc/planning/cli-git-rust-behavior-ledger.md`).
 
 Each item needs its own passing evidence before completion.
-Current production tools remain active until cutover.
-The first crates.io publication still needs explicit user approval.
+The native wrapper is the production tool since 2026-10-14.
+Version bumps of the native wrapper crate and of `forbidden-strings` are authorized for the session of 2026-10-13/14
+(see the standing authorization above); any other first crates.io publication needs explicit user approval.
 The user chose continuous execution:
 finish the queue or identify a genuine blocker rather than ending on a progress report.
 
