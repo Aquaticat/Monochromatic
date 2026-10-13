@@ -115,11 +115,23 @@ export type {
 export { PolicyInputBindingError, } from './policy-input-binding-error.ts';
 export { consumeSourceAssociations, } from './source-contribution.ts';
 export type {
-  ContributionCarrier, ContributionPublication, ContributionRequestObservation, ContributionRun,
-  ContributionRunCarrier, ContributionSource, ContributionSourceView, RetainedContributionOrigin,
-  SourceContribution, SourceContributionAssociation, SourceContributionInputs,
+  ContributionCarrier,
+  ContributionPublication,
+  ContributionRequestObservation,
+  ContributionRun,
+  ContributionRunCarrier,
+  ContributionSource,
+  ContributionSourceView,
+  RetainedContributionOrigin,
+  SourceContribution,
+  SourceContributionAssociation,
+  SourceContributionInputs,
 } from './source-contribution-types.ts';
-export type { SourceContributionIssue, SourceContributionResult, SourceContributionUse, } from './source-contribution-result.ts';
+export type {
+  SourceContributionIssue,
+  SourceContributionResult,
+  SourceContributionUse,
+} from './source-contribution-result.ts';
 export { consumeUnitAdoptions, } from './unit-adoption.ts';
 export { selectUnitAdoptionPairs, } from './unit-adoption-profile.ts';
 export {
