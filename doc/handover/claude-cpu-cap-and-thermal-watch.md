@@ -58,7 +58,14 @@ The operating instructions live in `doc/runbook/claude-cpu-cap.md`.
   Tctl was 77.6 degrees and 41 GiB were available. The `claude-code-bash` cgroup held 2 GB of its 8 GB limit, and the
   host ran a 5 GB `qemu-system-x86` process. The cap was left at 30: one short blip is not a degraded system, and
   nothing shows the CPU cap caused it. A repeat or a longer episode is the trigger to lower it.
-- Other sessions were told about each change by cross-session message.
+- The user raised the shared `claude-code-bash` memory limit from 8 GB to 32 GB at about 19:45 EDT.
+  The live `memory.max` was written (reads 32000000000) and `CLAUDE_CODE_TOOL_MEMORY_LIMIT` in
+  `~/.claude/settings.json` is now 32000000000 for sessions started later.
+  `doc/troubleshooting/systemd-oomd-reaps-terminal-scope-with-the-agent-in-it.md` still shows 8000000000 as its
+  example and says the limit must sit above the heaviest build's peak; it was not edited.
+  Open check: a session started with the old environment might write 8 GB back; compare `memory.max` later.
+- Other sessions were told about each change by cross-session message
+  (the four peers got the memory limit change at about 19:46 EDT).
   `gate-slot.ts` (in `~/temp/agent`, outside the repo) no longer wraps commands in a `systemd-run` scope,
   so gate commands stay under the shared cap.
 
