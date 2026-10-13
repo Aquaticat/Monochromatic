@@ -1131,6 +1131,8 @@ jobs:
   #   publish job waits until the required forbidden-strings release is in the crates.io index, which lets one push
   #   carry both version bumps.
   # - A smoke step runs each built executable, so a target that links but cannot start produces no release.
+  # - The release also needs gpc-publish-crate, unlike ml-create-release, so a run that cannot authenticate or publish
+  #   creates no immutable release for a crate that is not on crates.io.
   # First publication (0.1.0) is by hand to bootstrap Trusted Publishing
   # (doc/runbook/publish-crate-first-time.md); a later run authenticates, skips the existing upload, and builds the
   # release. The matrix compiles with each runner's preinstalled rustup toolchain, as the matrices above do.
@@ -1372,7 +1374,7 @@ jobs:
         retention-days: 7
 
   gpc-create-release:
-    needs: [gpc-detect, gpc-build-binary]
+    needs: [gpc-detect, gpc-publish-crate, gpc-build-binary]
     if: ${{ needs.gpc-detect.outputs.should_publish == 'true' && !inputs.dry-run }}
     runs-on: ubuntu-latest
     permissions:
