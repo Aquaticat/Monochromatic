@@ -1584,12 +1584,15 @@ that is verification, not a decision for the user.
   `forbidden-strings` dependency during this session, after the gate, a dry-run publish and a real-credential
   commit have passed.
   CPU cap (user, 2026-10-14; the hold of 2026-10-13 was released on 2026-10-14): the host is a 16 core, 32 thread
-  Ryzen 9 7950X with 62 GiB RAM, and Claude tool commands and gates share one 75 percent cap, 30 of 32 threads on
-  2026-10-14, enforced by the user service `claude-cpu-watch.service` from `~/.config/claude-cpu-cap/threads`
-  (persistent across reboots; to lower it, write the new integer to that file, never write `cpu.max` by hand).
+  Ryzen 9 7950X with 62 GiB RAM, and Claude tool commands and gates share one cap.
+  The cap started at 75 percent (30 of 32 threads) and was lowered to 28 on 2026-10-14 after temperature and
+  CPU-pressure alerts; the user service `claude-cpu-watch.service` enforces the value in
+  `~/.config/claude-cpu-cap/threads` (the file holds the current value and persists across reboots;
+  to lower it, write the new integer to that file, never write `cpu.max` by hand).
   The service also prints ALERT and CLEAR lines for CPU, memory and IO pressure, scheduler lag and temperature;
   details and the follow command are in `doc/runbook/claude-cpu-cap.md`.
-  Agents need no per-job throttles; heavy gates still run through `~/temp/agent/gate-slot.ts` (six slots) because their
+  Agents need no per-job throttles but keep heavy parallelism modest (at most two heavy jobs at once, none while
+  the load average is above about 40); heavy gates run through `~/temp/agent/gate-slot.ts` (six slots) because their
   time limits assume bounded host load.
   Commands started with `systemd-run` leave the shared cap, so do not use it for work that should count.
   `nproc` reports 16 inside shells with a restricted affinity; use `nproc --all` or `lscpu` for the real count.
