@@ -1813,7 +1813,9 @@ the user rejected that color and specified a color **derived from the
 selected theme and adjusted in OKLCH**.
 A3 makes the OS accent the theme source.
 The revised debug fixture uses `MaterialTheme.colorScheme.primary` and the
-existing `mixOklchWithNeutral` utility to derive light and dark match fills,
+existing `mixOklchWithNeutral` utility to derive light and dark match fills
+(note 2026-10-13: that utility is deleted, and the Search match fill is now a role derived in
+`core/ThemeRoles.kt`, D108),
 with bold text as a second cue.
 No fixed purple swatch,
 new production Search feature,
@@ -3297,8 +3299,29 @@ The human answered three questions raised by the D117 build.
 - The Android page-control chain (`FoldablePageControls.kt`, `LedPageControls.kt`, `PageControlStyle.kt`, the
   `pageTabs` block in `MainActivity.kt`, the session-store style functions and their tests) had no callers and is
   deleted, which removes the last opaque gray literals outside D118's derivation.
+  Current state (note added 2026-10-13): the human approved the deletion on 2026-10-12 and `1635237e73` made it,
+  but that commit left `LedPageControls.kt` as a 24-line stub holding `ledSelectedFill`. The stub is gone too, and with
+  it the Compose OKLCH adapters in `OklchComposeColor.kt` (`mixOklchWithNeutral`, `OklchNeutralMix`, `withOklchAlpha`,
+  `oklchGradientStops`, `OKLCH_BLACK_LIGHTNESS`, `OKLCH_WHITE_LIGHTNESS`), which only the stub and `OklchColorTest.kt`
+  still called; the adapters and that test file are deleted. The only OKLCH code left in the Android app is
+  `core/OklchColor.kt`, called by `core/ThemeRoles.kt`. The page-control runbook, fold plan and handover under `doc/`
+  are deleted for the same reason, and the Android README no longer describes the styles. Desktop has had no
+  page-control styles since the `AppWindow` replacement of 2026-10-10.
 - D118 as built also floors accent chroma at the largest gray tint of the scheme for every non-neutral root, so no
   accent is grayer than a gray; this is the orchestrator's reading and stays open to the human's veto.
+
+### D121. Closed veto windows: accent floor, AA retune, Turso bugs, targetSdk (2026-10-13)
+
+The human answered four questions that had been open as orchestrator adoptions.
+
+- The accent chroma floor of D118 stays: for a non-neutral root, accent chroma is at least the largest gray tint of the
+  scheme. A completely neutral root keeps accents at chroma 0.
+- The D108 light retune stays (primary `#4E5E8B` to `#455481`, delta-E 3.46; on-surface-variant `#5C5E6A` to
+  `#585A65`; match fill `#CFD9F0` to `#C9D2E9`), so the D108 veto window is closed.
+- The two Turso bugs written up in issue 678 are not filed upstream for now; nothing is published under the human's
+  identity until they ask. D112 (in-memory index) stands.
+- Android `targetSdk` stays on 36 with no extra emulator passes for API 33, 34 and 36; D107 on those levels remains
+  unverified.
 
 ## Pending after the theme picks (2026-09-04)
 

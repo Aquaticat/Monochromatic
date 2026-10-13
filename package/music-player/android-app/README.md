@@ -119,16 +119,15 @@ mise run //package/music-player/android-app:clean
 - `clean` removes Gradle build outputs.
   It does not remove the Rust target directory or generated JNI libraries.
 
-## Design records and runbooks
+## Design records
 
-Use durable decisions and runbooks for architecture and maintenance context:
+Use durable decisions for architecture and maintenance context:
 
 - [Android port decision](../../../doc/decision/music-player-android-port.md)
 - [Source Root session decision](../../../doc/decision/music-player-session-source-root.md)
 - [Live-update rescan decision](../../../doc/decision/music-player-live-update-rescan.md)
 - [Just-in-time shuffle decision](../../../doc/decision/music-player-jit-shuffle.md)
 - [Peak-sweep parallelism decision](DECISION.peak-sweep-parallelism.md)
-- [Page-control style runbook](../../../doc/runbook/music-player-page-control-styles.md)
 
 ## Settings icons
 
@@ -137,18 +136,6 @@ embedded as vector path data in [`SettingsIcons.kt`](app/src/main/kotlin/dev/mon
 The icons are Apache License 2.0 material from `google/material-design-icons`,
 and the license text is `LICENSES/Apache-2.0.txt` at the repository root.
 The source files, commit and style are named in the [package README](../README.md#third-party-icons).
-
-## Page-control default
-
-Chromium-like tabs are the first-install page-control style.
-Their labels use `10dp` inline padding on each side,
-half the earlier `20dp` inset.
-Persisted style integers retain their stable mapping,
-and unknown values still fall back to radio controls.
-Each style has one centralized `includedInBuild` toggle on its enum line in `PageControlStyle.kt`.
-Settings lists only included styles,
-and disabled persisted selections resolve safely without renumbering values.
-`../../../doc/runbook/music-player-page-control-styles.md` documents matching Android and desktop changes.
 
 ## Custom control sizing
 
@@ -159,27 +146,6 @@ Transparent hit padding does not satisfy a requested visible minimum.
 Custom interactive Compose controls reserve at least `48dp` by `48dp` inside layout.
 Do not rely on Compose expanding touch targets outside undersized bounds,
 because adjacent expanded targets can overlap.
-
-## Full-width wrapped LED plate
-
-Super fun LED segmented buttons use one connected machined backplate even when controls wrap.
-Compose packs content-width caps into rows,
-but one rounded plate always fills the complete available width and combined row height.
-Unused row width remains plate material rather than becoming control width or a separate row island.
-In light mode,
-the `#f7f8fa` plate remains visibly lighter than the `#eceef1` page ground.
-Cap end-corner ownership still follows each packed row,
-and `placeRelative` preserves cap order in RTL.
-LED legends use `MaterialTheme.typography.bodyLarge`,
-matching ordinary body labels such as Volume while retaining semibold weight.
-Active-cap legend text is always white,
-independent of runtime accent or ambient scene.
-Every application color operation uses OKLCH,
-including Chromium colors and alpha changes outside LED controls.
-The selected fill remains dark enough to contrast clearly with its white legend,
-even when the runtime Material accent is very light.
-Independent OKLCH lightness and chroma mixing retains most available accent chroma,
-keeping the selected background vibrant instead of muddy.
 
 ## Theme and crease
 
@@ -200,8 +166,8 @@ and carries the roles Material has no slot for (the Search match fill) in `Local
 Dark keeps a pure-black canvas and the `#0A0A0D` deck (D41),
 light keeps a white canvas (D34),
 and every text role is fitted to WCAG AA on the surfaces it is drawn on, for any root.
-Gradients are interpolated in OKLCH through `oklchGradientStops`,
-because Android blends gradient stops in sRGB.
+The app draws no gradient.
+A future one must interpolate in OKLCH (D108), because Android blends gradient stops in sRGB.
 
 The crease comes from Jetpack WindowManager (D110, E2):
 [`CreaseDetection.kt`](app/src/main/kotlin/dev/monochromatic/musicplayer/CreaseDetection.kt) reads the window's

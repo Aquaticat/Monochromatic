@@ -446,7 +446,7 @@ See [`android-app/README.md`](android-app/README.md) for native-build details,
 tests,
  non-destructive device testing,
  lint commands,
- and page-control guidance.
+ and control-sizing guidance.
 
 ### Shared true-peak core
 
@@ -554,7 +554,6 @@ and emulator constraints are retained in
 - [Just-in-time shuffle decision](../../doc/decision/music-player-jit-shuffle.md)
 - [Shared true-peak planning](../../doc/planning/music-player-shared-truepeak-core.md)
 - [True-peak integration handover](../../doc/handover/music-player-truepeak-core-integration.md)
-- [Page-control style runbook](../../doc/runbook/music-player-page-control-styles.md)
 - [Shared-core proposal](PROPOSAL.shared-core.md)
 
 ## License
