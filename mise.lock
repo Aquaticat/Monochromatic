@@ -400,6 +400,11 @@ version = "10.5.0"
 backend = "cargo:fd-find"
 specifiers = ["latest"]
 
+[[tools."cargo:monochromatic-git-policy-cli"]]
+version = "0.1.0"
+backend = "cargo:monochromatic-git-policy-cli"
+specifiers = ["0.1.0"]
+
 [[tools."cargo:monochromatic-lint"]]
 version = "0.1.1"
 backend = "cargo:monochromatic-lint"
