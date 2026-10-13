@@ -12,8 +12,7 @@
 //!  on `direct-check` and `direct-fix`;
 //!  on `pre-forward` it plans only for a
 //!      forwarded `commit`.
-//!  `git commit` is refused before policies run in this executable
-//!      (`refusal_frontier::command_frontier`),
+//!  A real `git commit` runs through the commit transaction instead of being forwarded,
 //!  so `pre-forward` reaches this check only
 //!      for `git add`,
 //!  where the policy finds nothing.

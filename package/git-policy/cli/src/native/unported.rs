@@ -63,28 +63,16 @@ use std::path::PathBuf;
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// type Unported =
-///   | { kind: 'worktree-copy' | 'alias-resolution' }
-///   | { kind: 'transaction-recovery' | 'worktree-copy-recovery'; directory: string }
-///   | { kind: 'inherited-lease'; variable: string }
+///   | { kind: 'transaction-recovery'; directory: string }
 ///   | { kind: 'lifecycle'; trigger: PolicyTrigger }
 ///   | { kind: 'policy-needs'; policy: PolicyId; needs: string };
 /// ```
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum Unported {
-    /// Copying ignored files into a worktree created or moved from a linked worktree or
-    /// a bare repository.
-    WorktreeCopy,
-    /// Resolving a Git alias to the command it runs.
-    AliasResolution,
     /// Recovering,
     ///  or waiting for,
     ///  the commit transactions recorded in this directory.
     TransactionRecovery(PathBuf),
-    /// Recovering the interrupted worktree copies recorded in this directory.
-    WorktreeCopyRecovery(PathBuf),
-    /// Checking the lease in this environment variable,
-    ///  set by a running cli-git.
-    InheritedLease(&'static str),
     /// The policy lifecycle of this trigger.
     Lifecycle(Trigger),
     /// Something one policy needs before it can be evaluated.
@@ -132,35 +120,11 @@ pub fn unported_from_unavailable(unavailable: Unavailable) -> Unported {
 /// ```
 fn unported_subject(what: &Unported) -> String {
     match what {
-        // `String::from` copies compiled-in text into owned text.
-        Unported::WorktreeCopy => {
-            return String::from(
-                "copying ignored files into a worktree created or moved from a linked worktree \
-                 or a bare repository (--no-worktree-copy skips the copy)",
-            );
-        }
-        Unported::AliasResolution => {
-            return String::from(
-                "resolving a Git alias, which decides whether a command run from a linked \
-                 worktree or a bare repository creates or moves a worktree,",
-            );
-        }
         // `format!` builds owned text; `.display()` shows a path, replacing bytes that are not UTF-8.
         Unported::TransactionRecovery(directory) => {
             return format!(
                 "recovering or waiting for the commit transactions recorded in {}",
                 directory.display()
-            );
-        }
-        Unported::WorktreeCopyRecovery(directory) => {
-            return format!(
-                "recovering the interrupted worktree copy recorded in {}",
-                directory.display()
-            );
-        }
-        Unported::InheritedLease(variable) => {
-            return format!(
-                "checking the lease a running cli-git passed in the environment variable {variable}"
             );
         }
         // `*trigger` copies the small trigger value out of the borrowed reason.

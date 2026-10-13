@@ -6,6 +6,7 @@
 //! failed coordination never runs Git.
 
 use super::*;
+use std::path::Path;
 use crate::forwarded_command::Route;
 use crate::owner_lock::try_acquire_owner_lock;
 use crate::test_support::{REAL_GIT, fixture, isolated_overlay, remove, repository};
@@ -42,6 +43,7 @@ fn add_forward(repo: &Path) -> CoordinatedForward {
         command,
         environment: Vec::new(),
         timeout_ms: 50,
+        copy: None,
     };
 }
 
