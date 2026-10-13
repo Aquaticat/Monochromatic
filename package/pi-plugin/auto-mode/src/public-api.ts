@@ -112,6 +112,14 @@ export type {
   SemanticAdmissionPolicy,
   SemanticAdmissionScope,
 } from './semantic-admission-types.ts';
+export { consumeHeadingContexts, } from './heading-context.ts';
+export type {
+  HeadingContentEstimate,
+  HeadingContentRelation,
+  HeadingContextAdmission,
+  HeadingContextEvidence,
+  HeadingContextInterpretation,
+} from './heading-context-types.ts';
 export { consumeRequestMaterial, } from './request-material.ts';
 export { retainRequestMaterialObligations, } from './request-material-obligations.ts';
 export type {
