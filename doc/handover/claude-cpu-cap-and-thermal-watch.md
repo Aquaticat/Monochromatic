@@ -169,6 +169,10 @@ so the findings come from reading the readable source strings inside the binary 
   session's Bash tool in `.../user@1000.service/claude.slice/claude-probe.slice/claude-code-bash`, a separate cgroup.
   (A dash in a slice name nests it: `claude-probe.slice` sits inside `claude.slice`.)
   The probe slices were stopped afterwards. Interactive sessions were not tested.
+- Verified on a throwaway slice (stopped afterwards): `systemctl --user set-property claude-limittest.slice
+  MemoryMax=2G CPUQuota=300%` made the slice's `memory.max` read 2147483648 and `cpu.max` read `300000 100000`,
+  and the `cpu memory pids` controllers were available under `claude.slice`.
+  Depth is not limited here (`cgroup.max.depth` and `cgroup.max.descendants` read `max`).
 - So per-session limits need no patch: start each session in its own slice, and put `MemoryMax=` and `CPUQuota=` on that
   slice, which covers both the session and its tool cgroup. A drop-in directory `claude-.slice.d` in
   `~/.config/systemd/user/` would apply to every `claude-*.slice`, and limits on `claude.slice` would be a shared total.
