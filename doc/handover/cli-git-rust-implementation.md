@@ -1583,14 +1583,14 @@ that is verification, not a decision for the user.
   Standing authorization (user, 2026-10-13): bump and publish any updates of the native wrapper crate and its
   `forbidden-strings` dependency during this session, after the gate, a dry-run publish and a real-credential
   commit have passed.
-  CPU hold (user, 2026-10-13, raised to 75 percent on 2026-10-14, until "release hold"): the host is a 16 core, 32 thread
+  CPU cap (user, 2026-10-14; the hold of 2026-10-13 was released on 2026-10-14): the host is a 16 core, 32 thread
   Ryzen 9 7950X with 62 GiB RAM, and Claude tool commands and gates share one 75 percent cap, the `claude-code-bash`
   cgroup (`cpu.max` 3000000 100000, 30 of 32 threads on 2026-10-14; the user may lower it two threads at a time, so read
   `cpu.max` in `/sys/fs/cgroup/user.slice/user-1000.slice/user@1000.service/app.slice/claude-code-bash/` for the current
-  value; a runtime setting that does not survive a reboot).
-  Heavy work runs through `~/temp/agent/gate-slot.ts` (six slots at `nice --adjustment=19`, no per-slot quota; the
-  command stays in the shared cgroup), and oxlint and tsc run with at most four threads.
-  Commands started with `systemd-run` leave the shared cap, so use them only for jobs that need their own limit.
+  value). It is a runtime setting that does not survive a reboot, so set it again after one; nothing else enforces the ceiling.
+  Agents need no per-job throttles; heavy gates still run through `~/temp/agent/gate-slot.ts` (six slots) because their
+  time limits assume bounded host load.
+  Commands started with `systemd-run` leave the shared cap, so do not use it for work that should count.
   `nproc` reports 16 inside shells with a restricted affinity; use `nproc --all` or `lscpu` for the real count.
   Open: the `replay-core` branch holds unmerged mutation work, `monochromatic-lint` shim lookup fails outside the
   repository (the linter must be on `PATH` as a real binary), and the trailing gates below are untouched.
