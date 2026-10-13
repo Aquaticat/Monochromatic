@@ -468,10 +468,14 @@ or lower directives.
 Admitted `potential-instruction` adds an independent `request-material-instruction-use` obligation;
 unknown or unadmitted content keeps an interpretation obligation.
 Admitted `none` does not certify source completeness or grant execution permission.
-The private compiler now delegates these consumers to maintained exports;
-final unit,
-lint,
-and native cutover verification remain in progress.
+The private compiler delegates these consumers to exact maintained exports.
+Built-artifact units,
+type checking,
+changed-file lint,
+the native request scenarios,
+and the action-policy regressions passed.
+Native domain contrasts still retain the source-domain hold;
+this port does not establish domain closure or install the migrated host.
 
 ## Migration native hook lifetime
 
