@@ -601,21 +601,50 @@ Eleven-document rendering passed `proc_c7e4` before this final evidence update.
 
 The unassociated ordinary request domain and other unconsumed producer relationships remain explicit.
 
-## Original loadout callback output gap
+## Original loadout callback outputs
 
-The next concrete domain failure is verified by `1e60894f` / `proc_eb28`.
+`1e60894f` / `proc_eb28` established the original-output loss.
 Its native single-output control retained the callback instruction.
-When a later callback replaced that description,
-native loadout processing still reached the expected final description,
-but the original callback output was absent from governing sources.
-`Agent.state.tools` observes the combined result,
-not every earlier callback output received by the host.
+A later callback could replace that description before `Agent.state.tools` received the combined result,
+leaving the earlier instruction absent from governing sources.
 
-The remedy must observe original callback input/output processing,
-preserve receiver and getter behavior,
-and retain later failure and cancellation semantics.
-No implementation has been added for this gap yet.
-The existing limits and the prohibition on invented domain completeness remain unchanged.
+`31d9f721` observes each original `prepareLoadout` output before native aggregation.
+The Session input pool owns a distinct observation frame for each received output.
+The source kind and origin are `native-tool-loadout-output`,
+location `toolLoadoutOutput`,
+method `prepareLoadout`,
+and phase `output`.
+The bound view is `original-tool-loadout-output-view`.
+Output objects remain mutable and gain neither publication aliases nor authority.
+Undefined output supplies no prose;
+explicit empty outputs remain distinct receipts.
+The existing count,
+serialized-record,
+source-byte,
+and copier bounds still apply.
+
+`proc_cb31` passed single-output and overwritten-output native cases.
+`3e18bdf0` / `proc_1c6c` passed owner/profile controls and the canonical pre-request,
+pre-binding,
+post-binding,
+oversize,
+reset,
+and disposal paths.
+These used zero provider requests and protected executions.
+`bf115d3b` / `proc_3720` preserved native getter counts:
+descriptions one/one,
+hidden declarations one/one,
+and unused metadata zero/zero.
+Native callback and output-getter falsy errors retain their original extension-error reports.
+Unexpected observer failures leave the native catch as their exact original value,
+without a replacement report or later tool assignment.
+The disposable unwrapping omission `proc_38d4` failed its required exception assertion.
+The maintained guard was never removed.
+
+The expanded input parent is running.
+This output-specific repair does not establish callback-input coverage,
+complete governing-domain closure,
+or maintained host installation.
 
 ## Original extension registration inputs
 
