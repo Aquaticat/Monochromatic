@@ -409,6 +409,22 @@ A separately deployed broker must own release events behind a narrow API.
 See
 [`doc/troubleshooting/ydotool-interrupted-key-release.md`](../../../doc/troubleshooting/ydotool-interrupted-key-release.md).
 
+## Migration input accounting
+
+`assertOriginalInputBudget` validates resource and Session receipt counters,
+then enforces their shared 64-occurrence/four-MiB serialized-record limit.
+It preserves the original counter profile without invoking accessors,
+reflecting on proxies,
+or freezing borrowed records.
+The counters must come from fixed native readers;
+valid shapes and arithmetic establish neither ownership nor governing-domain completeness.
+Resource-local,
+per-source,
+and copier limits remain separate.
+
+This maintained helper is part of the ongoing migration.
+Its export does not activate the private native runtime or replace the installed judge pipeline.
+
 ## Logging
 
 The package uses tagged loggers from `@monochromatic-dev/module-logger`.

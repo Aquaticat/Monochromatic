@@ -91,6 +91,11 @@ export {
   InstructionResolutionInputError,
 } from './policy-data.ts';
 
+export {
+  assertOriginalInputBudget,
+  InputReceiptBudgetError,
+} from './input-receipt-budget.ts';
+
 //endregion Deterministic migration kernel
 
 //region Internal verification exports exercise the same bundled policy as Pi
