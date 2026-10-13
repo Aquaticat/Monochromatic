@@ -144,5 +144,6 @@ unless they go through `gate-slot.ts`.
 
 ## Facts for the orchestrator
 
-- After release of 0.1.2 the mise pin needs re-pinning; this branch does not touch it.
+- 0.1.2 is released (crates.io and GitHub release `monochromatic-git-policy-cli-v0.1.2`, 2026-10-13); the mise pin
+  is still 0.1.1 and is re-pinned by the orchestrator, see the resume steps in `doc/handover/cli-git-rust-implementation.md`.
 - Git 2.55.0 (host) ran both new binary controls green; no difference from the 2.56.0 container run.
