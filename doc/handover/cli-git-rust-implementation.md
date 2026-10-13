@@ -1573,6 +1573,11 @@ that is verification, not a decision for the user.
   and the order is in `doc/planning/cli-git-native-cutover.md`, section `Order of the retirement commits`.
   Not yet done for the push fix: scoped mutation of `wrapped_command.rs` and of `auto_push_single_flight.rs`
   (documentation changes only), and the two new planted controls have never run (a mutation run with the planted phase).
+  Rehearsals in a throwaway repository with a local bare remote did not cover credentialed remotes, which is how the
+  push defect escaped; keep a real-remote check in every release verification.
+  After the retirement branch is merged, the ignored leftovers in the main checkout are removed by explicit path only
+  (the list is in `doc/handover/cli-git-native-retire.md`), never with `git clean -X`, which would remove the live
+  `.cache/cli-git-bin` link and the rules file.
   Both wrappers shared `.git/cli-git*` state while sessions were mixed; the incumbent is no longer on any `PATH`.
   User decisions of 2026-10-13: install by publishing the crate (the `cargo:` mise tool route); the hk cleanup task is
   retired; the rollback window ends right after the installed wrapper is verified; the first native CI workflow covers
@@ -1581,9 +1586,19 @@ that is verification, not a decision for the user.
   Standing authorization (user, 2026-10-13): bump and publish any updates of the native wrapper crate and its
   `forbidden-strings` dependency during this session, after the gate, a dry-run publish and a real-credential
   commit have passed.
-  CPU hold (user, 2026-10-13, until "release hold"): heavy work runs only through `~/temp/agent/gate-slot.ts`
-  (two slots, 400 percent CPU quota, lowest weight) or the `systemd-run --user --scope` prefix with
-  `CPUQuota=200%`, and oxlint and tsc run with at most two threads.
+  CPU cap (user, 2026-10-14; the hold of 2026-10-13 was released on 2026-10-14): the host is a 16 core, 32 thread
+  Ryzen 9 7950X with 62 GiB RAM, and Claude tool commands and gates share one cap.
+  The cap started at 75 percent (30 of 32 threads) and was lowered to 28 on 2026-10-14 after temperature and
+  CPU-pressure alerts; the user service `claude-cpu-watch.service` enforces the value in
+  `~/.config/claude-cpu-cap/threads` (the file holds the current value and persists across reboots;
+  to lower it, write the new integer to that file, never write `cpu.max` by hand).
+  The service also prints ALERT and CLEAR lines for CPU, memory and IO pressure, scheduler lag and temperature;
+  details and the follow command are in `doc/runbook/claude-cpu-cap.md`.
+  Agents need no per-job throttles but keep heavy parallelism modest (at most two heavy jobs at once, none while
+  the load average is above about 40); heavy gates run through `~/temp/agent/gate-slot.ts` (six slots) because their
+  time limits assume bounded host load.
+  Commands started with `systemd-run` leave the shared cap, so do not use it for work that should count.
+  `nproc` reports 16 inside shells with a restricted affinity; use `nproc --all` or `lscpu` for the real count.
   Open: the `replay-core` branch holds unmerged mutation work, `monochromatic-lint` shim lookup fails outside the
   repository (the linter must be on `PATH` as a real binary), and the trailing gates below are untouched.
 - [ ] Gates that trail the cutover (user decision 2026-10-10: the code ships first, the gate runs afterward):
