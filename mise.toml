@@ -1215,7 +1215,11 @@ description = "Apply pending changesets to package versions and changelogs, patc
 # The native executable runs the ripple by its own name, not as `git`: the changesets action runs git commands of its own
 # in the same environment, and the wrapper refuses `git add .`. `cli-git-native` is on PATH from the mise tool locally and from
 # the release job's build step in CI.
-run = ["changeset version", "cli-git-native cli-git fix --all --policy mono/dependent-version-bump", "pnpm install --lockfile-only"]
+run = [
+  "changeset version",
+  "cli-git-native cli-git fix --all --policy mono/dependent-version-bump",
+  "pnpm install --lockfile-only",
+]
 
 [tasks."changeset:build"]
 description = "Build every package the changeset publish plan will publish"
