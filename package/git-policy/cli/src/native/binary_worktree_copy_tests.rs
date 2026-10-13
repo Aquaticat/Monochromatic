@@ -21,6 +21,7 @@ use git_policy_cli::worktree_copy_selection::CopySelection;
 use git_policy_cli::worktree_copy_stage::{StagedSnapshot, stage_ignored_snapshot};
 use git_policy_cli::transaction_git::GitContext;
 use std::ffi::OsStr;
+use std::os::unix::fs::PermissionsExt;
 use std::path::{Path, PathBuf};
 
 /// Where the generated rules file lives, as the configuration's `rulesFile` names it.
@@ -411,5 +412,44 @@ fn moving_a_worktree_is_forwarded_and_prints_no_summary() {
     );
     assert_eq!(moved_again.code, Some(0), "{}", stderr_of(&moved_again));
     assert!(moved_again.stderr.is_empty(), "{}", stderr_of(&moved_again));
+    remove(&fixture);
+}
+
+/// A copy that fails after Git created the worktree ends with status 2 and the copy's own message,
+///  leaves the created worktree in place, and leaves no lock or journal behind.
+#[test]
+fn a_failed_copy_ends_with_status_two_and_its_message() {
+    let fixture: Fixture = fixture("copy-failure");
+    let repo: PathBuf = repository_with_rules(&fixture, false);
+    // A file the caller cannot read cannot be copied, and Git still lists it as an ignored file of the checkout.
+    std::fs::create_dir_all(repo.join(".cache")).expect("cache directory");
+    std::fs::write(repo.join(RULES_FILE), b"rules\n").expect("rules");
+    std::fs::set_permissions(repo.join(RULES_FILE), std::fs::Permissions::from_mode(0o000))
+        .expect("unreadable");
+    let created: Observed = run_wrapped(
+        &fixture,
+        repo.as_path(),
+        &["worktree", "add", "--quiet", "-b", "one", "../one"],
+    );
+    assert_eq!(created.code, Some(2), "{}", stderr_of(&created));
+    assert!(
+        stderr_of(&created).starts_with("cli-git: could not stage ignored state from "),
+        "{}",
+        stderr_of(&created)
+    );
+    assert!(!stderr_of(&created).contains("cli-git: copied"), "{}", stderr_of(&created));
+    assert!(fixture.root.join("one/.git").exists(), "Git created the worktree");
+    assert!(!fixture.root.join("one").join(RULES_FILE).exists());
+    let common: PathBuf = std::fs::canonicalize(repo.join(".git")).expect("common directory");
+    assert!(read_pending_journals(common.as_path()).expect("pending").is_empty());
+    std::fs::set_permissions(repo.join(RULES_FILE), std::fs::Permissions::from_mode(0o600))
+        .expect("readable again");
+    // The failed copy released the lock, so the next creation is not held up.
+    let next: Observed = run_wrapped(
+        &fixture,
+        repo.as_path(),
+        &["worktree", "add", "--no-worktree-copy", "--quiet", "-b", "two", "../two"],
+    );
+    assert_eq!(next.code, Some(0), "{}", stderr_of(&next));
     remove(&fixture);
 }
