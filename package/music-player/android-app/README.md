@@ -163,8 +163,10 @@ proves that the same root gives the same sRGB roles in Kotlin and Rust.
 Material 3 slot,
 so the platform's `dynamicLightColorScheme` and `dynamicDarkColorScheme` are not used,
 and carries the roles Material has no slot for (the Search match fill) in `LocalThemeRoles`.
-Dark keeps a pure-black canvas and the `#0A0A0D` deck (D41),
-light keeps a white canvas (D34),
+Dark keeps a pure-black canvas under every root (D41) and light keeps a white canvas (D34).
+Every other gray, the dark deck included, carries the root's hue unless the root is completely neutral (D118),
+so the deck is `#0A0A0D` only at the baseline root, and no accent is grayer than the grays of its scheme (D121).
+The track menu card is the canvas color itself, with a 1 dp `outline-variant` outline (D119),
 and every text role is fitted to WCAG AA on the surfaces it is drawn on, for any root.
 The app draws no gradient.
 A future one must interpolate in OKLCH (D108), because Android blends gradient stops in sRGB.
@@ -210,9 +212,20 @@ Left out on Android: the key hint badges, tooltips, `Ctrl+Q` and double `Shift`.
 The folder rail, the folder names and the track list are each one focus stop (`Tab` passes them in one step) with their
 own focus ring, moved by the arrow keys; their entries take no focus of their own,
 so TalkBack still reads every entry through its semantics.
-The focus indicator is a 2 dp ring in the primary role over a ten percent state layer
-([`FocusRing.kt`](app/src/main/kotlin/dev/monochromatic/musicplayer/FocusRing.kt));
-`FocusRingContrastTest` checks the ring at 3 to 1 or better on every surface in both appearances.
+The focus indicator is a ring and nothing else (D117), drawn the way Firefox draws `:focus-visible` but hugging the
+element: a 2 dp ring in the `primary` role flush against the element's edge, and a 1 dp ring in the `on-primary` role
+around it, which keeps the ring readable on any surface.
+Both rings follow the element's own shape (a pill stays a pill, a circle a circle, and a square corner gets a 2 dp outer
+radius), reach 3 dp outside the element and move no content.
+A button, icon button or row that takes focus itself shows its rings for keyboard focus only (the last input was a key),
+and an entry of a one-stop list shows them while its list holds focus.
+Focus adds no fill, tint, state layer, bold or size change; hover and press keep their own state layers.
+The drawing is [`FocusRing.kt`](app/src/main/kotlin/dev/monochromatic/musicplayer/FocusRing.kt) and the geometry, a spec
+of widths, gap and square-corner radius, is
+[`core/FocusRingGeometry.kt`](app/src/main/kotlin/dev/monochromatic/musicplayer/core/FocusRingGeometry.kt).
+A list that clips its children leaves `FOCUS_RING_OUTSET` of room around the entries that can take the ring.
+`FocusRingContrastTest` checks the `primary` ring at 3 to 1 or better against every surface a focused element sits on,
+and the `on-primary` ring against the `primary` ring, in both appearances and over a sweep of accent roots.
 
 ## Playback modes and the track menu
 

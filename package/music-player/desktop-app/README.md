@@ -1,7 +1,7 @@
 # music-player
 
 A minimal native music player built with the Slint GUI toolkit.
- On Linux it pairs a Wayland window with a native
+ On Linux it pairs a winit window (Wayland, or X11 when no Wayland display is set) with a native
 PipeWire client;
  on macOS (Apple Silicon) and Windows it pairs a winit window with the OS audio engine through
 cpal (CoreAudio on macOS,
@@ -16,8 +16,12 @@ backend differs by target.
 
 - Output:
    the platform's native stack.
-   Linux uses a Wayland window (no X11 fallback) and PipeWire audio (no
-  ALSA/PulseAudio backends);
+   Linux uses a winit window and PipeWire audio (no
+  ALSA/PulseAudio backends).
+   The window runs on Wayland when `WAYLAND_DISPLAY` (or `WAYLAND_SOCKET`) is set and otherwise on X11 when `DISPLAY` is
+  set, because the Slint `backend-winit` feature turns on both of winit's Linux window systems;
+   with neither variable set, startup fails with winit's error.
+   The X11 libraries (`libX11`, `libxcb`, `libxkbcommon-x11`) are loaded at run time, not linked.
    macOS and Windows use a winit window and the OS audio engine via cpal (CoreAudio on
   macOS,
    WASAPI on Windows).
@@ -336,7 +340,7 @@ The crate is a library plus a thin binary so the pure logic is unit-testable wit
 - `src/launcher.rs`:
    Linux desktop-shell integration.
    `set_window_app_id` is a winit window-attributes hook that
-  stamps the Wayland app id (`monochromatic.music-player`);
+  stamps the Wayland app id (`monochromatic.music-player`, which winit also uses as the X11 `WM_CLASS`);
    `Launcher` emits the
   `com.canonical.Unity.LauncherEntry` `Update` signal on the session bus to drive the taskbar progress;
    what the bar shows is decided by the state machine in `src/launcher/taskbar_state.rs`,
@@ -826,7 +830,6 @@ with a folder on the command line.
 On exit the engine saves the Source Root path,
  the Selected Track path (if one was selected),
  the playback position,
- volume,
  the playback mode,
  and the two saved template texts to a JSON file under the platform config directory (`$XDG_CONFIG_HOME/musicplayer`
  on Linux,
@@ -834,6 +837,8 @@ On exit the engine saves the Source Root path,
  the roaming AppData config directory on
 Windows,
  all resolved by the `directories` crate).
+The file also carries a `volume` field, always `1.0` as written, because no in-app control sets it (D43);
+ a hand-edited value is still restored and multiplies the output gain.
 It deliberately does not save the queue or a current index:
  the queue is re-derived from the Source Root,
  so only the root and the chosen track need persisting,
