@@ -4,7 +4,10 @@
  @module
  */
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
-import type { RequestMaterialInterpretation, RequestMaterialPremiseIssue, } from './request-material-types.ts';
+import type {
+  RequestMaterialInterpretation,
+  RequestMaterialPremiseIssue,
+} from './request-material-types.ts';
 
 /**
  Diagnostics never serialize the interpreted request or borrowed evidence.
@@ -31,7 +34,10 @@ const l = tagged({ tag: 'auto-mode-request-material-obligations', },);
  ```
  */
 export function retainRequestMaterialObligations(
-  { issues, interpretation, }: {
+  {
+    issues,
+    interpretation,
+  }: {
     readonly issues: readonly RequestMaterialPremiseIssue[];
     readonly interpretation: RequestMaterialInterpretation;
   },
@@ -39,7 +45,10 @@ export function retainRequestMaterialObligations(
   /**
    Attribute content-use diagnostics separately from admission policy.
    */
-  const rl = tagged({ tag: retainRequestMaterialObligations.name, l, },);
+  const rl = tagged({
+    tag: retainRequestMaterialObligations.name,
+    l,
+  },);
   rl.debug('retaining original request material obligations',);
   /**
    Unrelated issues retain their exact references and details.
@@ -53,7 +62,7 @@ export function retainRequestMaterialObligations(
       },)
       : issue;
   },);
-  if (interpretation.admission === 'admitted' && interpretation.relation === 'potential-instruction') {
+  if ((interpretation.admission === 'admitted') && (interpretation.relation === 'potential-instruction')) {
     rl.debug('retaining independent potential-instruction use obligation',);
     result.push(Object.freeze({
       premise: 'qualified-rule-interpretation',
@@ -63,7 +72,7 @@ export function retainRequestMaterialObligations(
       reason: 'Original request material may contain operative instructions, including repeated indexed text, but no source-bound consumer establishes their represented or independent governing use. This content estimate supplies neither another directive nor uniform request authority.',
     },),);
   }
-  if (interpretation.admission !== 'admitted' || interpretation.relation === 'unknown') {
+  if ((interpretation.admission !== 'admitted') || (interpretation.relation === 'unknown')) {
     rl.debug('retaining unresolved request-content interpretation',);
     result.push(Object.freeze({
       premise: 'qualified-rule-interpretation',

@@ -47,7 +47,9 @@ await describe({
           const input = location === 'evidence'
             ? { ...f.options, record: { ...f.record, binding: { ...f.record.binding, requestMaterial: copy, }, }, }
             : { ...f.options, inputs: { instructionSources: [{ request: { request: copy, }, },], }, };
-          expect(function invoke() { consumeRequestMaterial(input,); },).toThrow(SemanticAdmissionPolicyError,);
+          expect(function invoke() {
+            consumeRequestMaterial(input,);
+          },).toThrow(SemanticAdmissionPolicyError,);
           expect(f.calls.acceptances,).toBe(0,);
         },
       },);
@@ -135,7 +137,9 @@ await describe({
           const input = { ...f.options, ...(mode === 'absent' ? {} : { record, }), };
           if (mode === 'absent')
             Reflect.deleteProperty(input, 'record',);
-          expect(function invoke() { consumeRequestMaterial(input,); },).toThrow(SemanticAdmissionPolicyError,);
+          expect(function invoke() {
+            consumeRequestMaterial(input,);
+          },).toThrow(SemanticAdmissionPolicyError,);
           expect(f.calls.acceptances,).toBe(0,);
         },
       },);
@@ -153,7 +157,9 @@ await describe({
             const options = boundary === 'reader'
               ? { ...f.options, judgment: { requestMaterialFor: fail, }, }
               : { ...f.options, policy: { ...f.options.policy, accepts: fail, }, };
-            const failures = thrownValues(function invoke() { consumeRequestMaterial(options,); },);
+            const failures = thrownValues(function invoke() {
+              consumeRequestMaterial(options,);
+            },);
             expect(failures.length,).toBe(1,);
             expect(failures[0],).toBe(original,);
           },

@@ -40,7 +40,10 @@ export type RequestMaterialEvidence = {
   /**
    Original request reference cannot be substituted by equal serialized bytes.
    */
-  readonly binding: { readonly claimScope: string; readonly requestMaterial: object; };
+  readonly binding: {
+    readonly claimScope: string;
+    readonly requestMaterial: object
+  };
   /**
    Missing or mismatching attribution prevents semantic admission.
    */
@@ -48,7 +51,10 @@ export type RequestMaterialEvidence = {
   /**
    Unsupported statuses are rejected; an explicit unresolved answer need not have a value.
    */
-  readonly answer: { readonly status: string; readonly value?: RequestMaterialEstimateValue; };
+  readonly answer: {
+    readonly status: string;
+    readonly value?: RequestMaterialEstimateValue
+  };
 };
 
 /**

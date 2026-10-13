@@ -24,7 +24,10 @@ export type RequestMaterialFixture = {
   /**
    Invocation counts distinguish abstention from attempted policy use.
    */
-  readonly calls: { reads: number; acceptances: number; };
+  readonly calls: {
+    reads: number;
+    acceptances: number
+  };
   /**
    Maintained consumer input contract is reused directly.
    */
@@ -52,16 +55,28 @@ export function createRequestMaterialFixture(choice: RequestMaterialRelation = '
   /**
    Mutable counters belong to this fixture alone.
    */
-  const calls = { reads: 0, acceptances: 0, };
+  const calls = {
+    reads: 0,
+    acceptances: 0,
+  };
   /**
    Source and evidence retain the same original request object.
    */
   const record: RequestMaterialEvidence = {
     definitionId: 'request_instruction_content',
     definition: { type: 'choice', },
-    binding: { claimScope: 'program-request', requestMaterial: request, },
+    binding: {
+      claimScope: 'program-request',
+      requestMaterial: request,
+    },
     model: 'fixture-model',
-    answer: { status: 'estimate', value: { choice, probabilities: { [choice]: 1, }, }, },
+    answer: {
+      status: 'estimate',
+      value: {
+        choice,
+        probabilities: { [choice]: 1, },
+      },
+    },
   };
   /**
    No reader or acceptance callback receives an execution capability.
@@ -83,5 +98,10 @@ export function createRequestMaterialFixture(choice: RequestMaterialRelation = '
       },
     },
   };
-  return { request, record, calls, options, };
+  return {
+    request,
+    record,
+    calls,
+    options,
+  };
 }
