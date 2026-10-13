@@ -601,6 +601,49 @@ Eleven-document rendering passed `proc_c7e4` before this final evidence update.
 
 The unassociated ordinary request domain and other unconsumed producer relationships remain explicit.
 
+## Original loadout callback inputs
+
+`41a49c45` / `proc_c6a4` established a separate input-side loss.
+One callback changed a borrowed declaration;
+the next callback actually received that instruction and restored the declaration before final assignment.
+The retained-state control passed,
+but the restored variant lost the original instruction.
+This differs from a direct edit undone before host processing.
+
+`778c4e0d` captures the actual `declared`,
+`callable`,
+and `registered` argument views before each callback.
+It reuses declaration metadata selection and the Session input pool.
+All views share one copier budget,
+including repeated schema references;
+query capabilities remain borrowed and uninvoked.
+The source kind and origin are `native-tool-loadout-input`,
+location `toolLoadoutInput`,
+and bound view `original-tool-loadout-input-view`.
+Companion metadata records `prepareLoadout` and phase `input`.
+No borrowed argument,
+array,
+tool,
+or query function gains a publication or authority.
+Unread declaration fields retain source-specific metadata obligations.
+
+`proc_84cd` passed the retained-state and restored-state native controls.
+The owner task in `proc_2d6c` passed original-frame identity,
+shared 64-input accounting,
+aggregate copying at 4,096 containers,
+byte refusal,
+getter/proxy refusal,
+and unread metadata obligations.
+Its canonical fixture initially assumed that codemode leaves the description suffix unchanged;
+`proc_2125` then exposed incorrect fixture cleanup ordering.
+The fixture now preserves native description composition and disposes/awaits idle before detaching.
+Canonical review and input-specific native parity are being rechecked.
+
+Argument snapshots do not establish the values later returned by query capabilities,
+valid delegation,
+or complete governing-domain closure.
+The maintained runtime and installed host migration remain unfinished.
+
 ## Original loadout callback outputs
 
 `1e60894f` / `proc_eb28` established the original-output loss.
@@ -641,7 +684,9 @@ without a replacement report or later tool assignment.
 The disposable unwrapping omission `proc_38d4` failed its required exception assertion.
 The maintained guard was never removed.
 
-The expanded input parent is running.
+`proc_34a6` passed all 192 integrated input cases with empty child stderr.
+`proc_e13b` passed original-source variants and prompt/input owner tasks.
+Those results precede the subsequent callback-input changes.
 This output-specific repair does not establish callback-input coverage,
 complete governing-domain closure,
 or maintained host installation.
