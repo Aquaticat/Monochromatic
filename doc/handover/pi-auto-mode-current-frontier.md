@@ -645,6 +645,44 @@ not completed domain closure,
 a maintained host launch path,
 or installed activation.
 
+## Original callback-result receipt
+
+The accepted processing-boundary domain includes the complete original extension result received by the host,
+not just fields selected for native processing.
+Private `3d06c614` adds the separate required acceptance task `test:handler-result-domain`.
+In `proc_0b0c`,
+the native-consumed message positive control passed;
+the untransmitted result-field assertion failed.
+The native run owner had retained processed messages and options,
+not that complete received result.
+
+Private `7bde6d84` captures defined `before_agent_start` results before native field selection.
+The observer binds to the original Session input pool before handler dispatch,
+so manager reset cannot redirect the observation into a replacement pool.
+Original one-argument frames own input-only publications;
+borrowed result objects receive no publication or freeze.
+The metadata copier retains supported non-enumerable data and charges shared references per occurrence.
+The existing source,
+copier,
+Session,
+and resource bounds remain unchanged.
+
+`proc_a410` passed both native receipt assertions.
+`proc_2f20` passed owner controls for identity,
+mutability,
+scalar and empty results,
+metadata copying,
+getter/proxy refusal,
+the shared 64-receipt limit,
+source bytes,
+exact unexpected failures,
+and irreversible retirement.
+Native exact-failure,
+canonical review,
+lifecycle,
+and affected regression verification are not complete.
+This receipt correction does not close `request-source-domain`.
+
 ## Maintained original source-contribution accounting
 
 Main `2ea68db692` ports `consumeSourceAssociations` and `PolicyInputBindingError`.
@@ -675,7 +713,26 @@ An explicit missing-receipt guard now supplies the required narrowing.
 Built-artifact identity,
 publication,
 and copied-origin controls are written.
-Formatting and final verification remain in progress.
+Main `13f4df97f7` passed build/types `proc_1d88`
+and built-artifact package units `proc_6abf`.
+Exact maintained consumer and error identity passed in `proc_b724`.
+Its serializer parent failed the enumerable-getter case with no completed review.
+The focused unchanged-runtime case passed `proc_0754`;
+the complete serializer parent then passed `proc_55aa` with 16 scenarios,
+empty child stderr,
+and zero providers.
+No cause or fix is inferred from that recovery.
+The complete action-policy parent passed `proc_108b`.
+
+Full lint remains unfinished.
+Formatter runs were stopped without diagnostics,
+including isolated fixture runs.
+Removing unnecessary recursive ancestor types passed build/types `proc_12c4`,
+but did not establish a formatter fix.
+Concrete fixture fields and fixed record shapes likewise have no verified lint result.
+The next probe is the ordinary no-fix lint task,
+rather than another fixpoint run.
+No lint rule or resource bound was relaxed.
 This increment does not implement decision-domain closure.
 
 ## Maintained bounded unit incorporation
