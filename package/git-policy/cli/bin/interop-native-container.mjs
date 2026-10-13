@@ -7,8 +7,8 @@
  or runs both against one repository, therefore runs here:
  the gate's Git 2.56.0 base,
  the Node executable of the same Debian release,
- the incumbent build that `node_modules/.bin/git` of the main checkout starts,
- with the dependency closure of the packed incumbent in the end-to-end image,
+ the incumbent provisioned from its pinned last revision by `bin/provision-incumbent.mjs` (the packed
+ TypeScript wrapper with its installed dependency closure, installed as `/opt/cli-git`),
  and the native executable built in release mode from this snapshot.
 
  Usage: `node bin/interop-native-container.mjs <driver> [arguments...]`,
@@ -18,7 +18,6 @@
 // program that loads no ambient Node types; this reference loads them, so `process` and `node:` imports stay typed
 // in this file on its own instead of depending on a sibling module that carries the same reference.
 /// <reference types="node" />
-import { createHash } from 'node:crypto';
 import {
   cp,
   mkdir,
@@ -41,6 +40,7 @@ import {
   NativeVerificationError,
   runCommand,
 } from './native-verification-process.mjs';
+import { provisionIncumbent } from './provision-incumbent.mjs';
 
 /** Concurrent worktrees set GIT_POLICY_NATIVE_IMAGE_TAG so one snapshot never runs another's image. */
 const imageTag = process.env
@@ -52,41 +52,19 @@ const interopImage = `localhost/git-policy-native-interop:${imageTag}`;
 const gitBase = '6ec87f6d290a2f59bda5b3ffd4197058fe0749d02b4978c877e8edf6dc38802a';
 /** Node of the gate base's Debian release (trixie), copied as one executable. */
 const nodeImage = 'docker.io/library/node:24-trixie-slim';
-/** The end-to-end image whose `/opt/cli-git` holds the packed incumbent and its installed dependencies. */
-const incumbentImage = 'localhost/cli-git-concurrent-e2e:latest';
-/**
- The incumbent build the installed `git` of the main checkout runs.
- A linked worktree has no build of its own, so it is read from the main worktree,
- the parent of the common Git directory; its hash is recorded with the evidence.
- Real Git answers the question: inside this worktree `git` on the task's `PATH` is the worktree's own
- unbuilt incumbent shim.
-
- @returns {Promise<string>} absolute path of the incumbent's built executable module
- */
-async function incumbentBuildPath() {
-  const common = await runCommand({
-    command: '/usr/bin/git',
-    args: [
-      'rev-parse',
-      '--path-format=absolute',
-      '--git-common-dir',
-    ],
-    capture: true,
-  });
-  return resolve(
-    common.stdout.trim(),
-    '..',
-    'package/git-policy/cli/dist/final/node/index.mjs',
-  );
-}
 
 /**
- Copy the native crate, its path dependencies and the interoperability drivers into the build context.
+ Copy the native crate, its path dependencies, the interoperability drivers and the provisioned incumbent into the
+ build context.
  Copies run concurrently, and every copy settles before this returns or throws.
 
- @param {{ context: string }} request - build context directory receiving the repository-shaped snapshot
+ @param {{ context: string, incumbentStaging: string }} request - build context directory receiving the
+   repository-shaped snapshot, and the provisioned incumbent's `/opt/cli-git` directory
  */
-async function copySnapshot({ context }) {
+async function copySnapshot({
+  context,
+  incumbentStaging,
+}) {
   const subject = join(
     context,
     'package/git-policy/cli',
@@ -143,18 +121,22 @@ async function copySnapshot({ context }) {
       ),
     },
     {
-      from: await incumbentBuildPath(),
+      from: incumbentStaging,
       to: join(
         context,
-        'incumbent-index.mjs',
+        'opt-cli-git',
       ),
     },
   ];
   const copies = await Promise.allSettled(entries.map(function copyEntry(entry) {
+    // The staged `node_modules/.bin/git` is a relative link into the package; it must reach the image as written.
     return cp(
       entry.from,
       entry.to,
-      { recursive: true },
+      {
+        recursive: true,
+        verbatimSymlinks: true,
+      },
     );
   }));
   const failures = copies.filter(function isRejected(copy) {
@@ -185,14 +167,16 @@ async function main() {
     evidenceRoot,
     'interop-',
   ));
-  await copySnapshot({ context: context.path });
+  const incumbent = await provisionIncumbent();
+  await copySnapshot({
+    context: context.path,
+    incumbentStaging: incumbent.staging,
+  });
   await vendorLockedDependencies({ context: context.path });
-  const incumbentSha256 = createHash('sha256')
-    .update(await readFile(join(
-      context.path,
-      'incumbent-index.mjs',
-    )))
-    .digest('hex');
+  const nativeCrateVersion = /^version = "(?<version>[^"]+)"$/mu.exec(await readFile(
+    resolve('Cargo.toml'),
+    'utf8',
+  ))?.groups?.version;
   await writeFile(
     join(
       context.path,
@@ -208,8 +192,7 @@ async function main() {
       'RUN ["chown", "--recursive", "1000:1000", "/work/package", "/work/scratch", "/home/tester"]',
       'ENV HOME=/home/tester CARGO_HOME=/home/tester/.cargo CARGO_NET_OFFLINE=true CARGO_BUILD_JOBS=2 CARGO_INCREMENTAL=0',
       `COPY --from=${nodeImage} /usr/local/bin/node /usr/local/bin/node`,
-      `COPY --from=${incumbentImage} /opt/cli-git /opt/cli-git`,
-      'COPY incumbent-index.mjs /opt/cli-git/node_modules/@monochromatic-dev/git-policy-cli/dist/final/node/index.mjs',
+      'COPY opt-cli-git /opt/cli-git',
       'COPY native-interop /fixture/native-interop',
       'USER 1000:1000',
       'WORKDIR /work/package/git-policy/cli',
@@ -270,8 +253,8 @@ async function main() {
       {
         gitBase,
         nodeImage,
-        incumbentImage,
-        incumbentSha256,
+        incumbent: incumbent.manifest,
+        nativeCrateVersion,
         image,
         limits,
         driver,
