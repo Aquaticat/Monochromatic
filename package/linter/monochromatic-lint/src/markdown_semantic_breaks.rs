@@ -25,14 +25,17 @@ use crate::markdown_source::MarkdownSource;
 /// Import the parsed Markdown source that paragraphs are read from.
 use satteri_ast::mdast::MdastNodeType;
 
+/// Whether a character is whitespace to a JavaScript `trim`,
+///  which the rule this one replaces used:
+///  the byte order mark counts as whitespace there and the next-line control does not.
+fn is_script_whitespace(character: char) -> bool {
+    return (character.is_whitespace() && character != '\u{85}') || character == '\u{feff}';
+}
+
 /// Whether a paragraph's whole source is one tag-like element, such as a component written with JSX braces.
 ///  CommonMark does not read such a tag as HTML, so it parses as prose that has nothing to break.
 fn is_tag_like_paragraph(context: &MarkdownSource, paragraph: u32) -> bool {
-    // Trim the characters a JavaScript `trim` removes so the verdict equals the rule this one replaces:
-    //  the byte order mark counts as whitespace there and the next-line control does not.
-    let text: &str = context.slice(paragraph).trim_matches(|character: char| {
-        (character.is_whitespace() && character != '\u{85}') || character == '\u{feff}'
-    });
+    let text: &str = context.slice(paragraph).trim_matches(is_script_whitespace);
     return text.starts_with('<') && text.ends_with('>');
 }
 
