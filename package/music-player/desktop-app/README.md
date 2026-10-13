@@ -1,7 +1,7 @@
 # music-player
 
 A minimal native music player built with the Slint GUI toolkit.
- On Linux it pairs a Wayland window with a native
+ On Linux it pairs a winit window (Wayland, or X11 when no Wayland display is set) with a native
 PipeWire client;
  on macOS (Apple Silicon) and Windows it pairs a winit window with the OS audio engine through
 cpal (CoreAudio on macOS,
@@ -16,8 +16,12 @@ backend differs by target.
 
 - Output:
    the platform's native stack.
-   Linux uses a Wayland window (no X11 fallback) and PipeWire audio (no
-  ALSA/PulseAudio backends);
+   Linux uses a winit window and PipeWire audio (no
+  ALSA/PulseAudio backends).
+   The window runs on Wayland when `WAYLAND_DISPLAY` (or `WAYLAND_SOCKET`) is set and otherwise on X11 when `DISPLAY` is
+  set, because the Slint `backend-winit` feature turns on both of winit's Linux window systems;
+   with neither variable set, startup fails with winit's error.
+   The X11 libraries (`libX11`, `libxcb`, `libxkbcommon-x11`) are loaded at run time, not linked.
    macOS and Windows use a winit window and the OS audio engine via cpal (CoreAudio on
   macOS,
    WASAPI on Windows).
@@ -66,10 +70,10 @@ backend differs by target.
    playback stays inside the current folder
   rather than jumping to another artist once the folder ends.
 - Metadata:
-   filesystem path only.
-   The queue list shows each track's path relative to the loaded folder (folder
-  plus filename),
+   filesystem path only,
    with no tag parsing and no album art.
+   A track row shows a title cleaned from the file name (D86) and a supporting line from the track rows template
+  (the length and the true peak by default, `$tf(mi(len), m:ss)$ $mi(peak)$`, editable in Settings).
    The seek bar's position and duration come from the
   decoder (frame count over sample rate),
    not from tags.
@@ -96,27 +100,28 @@ backend differs by target.
   level).
    A hard clamp to the valid range backstops measurement error and any residual overshoot.
 - Peak cache:
-   measuring a true peak means decoding the whole file,
-   so each result is memoized on disk under the
-  config directory,
+   an exact true-peak measurement means decoding the whole file,
+   so each result is memoized on disk in a Turso database,
+   `decisions.db` under the config directory (`src/peakcache_service.rs`),
    keyed by an opaque fingerprint (a hash of path,
    size,
    and modified-time).
-   The file stores
-  only `fingerprint -> peak` pairs;
+   The database stores
+  only `fingerprint -> peak` rows;
    no filename,
    path,
    or tag is ever written,
    so it reveals nothing about the
   library.
    On every queue load (an Open or the launch-time auto-load),
-   a background thread pre-measures the queue's non-current tracks into the cache,
+   a background sweep reads each track's cached result and header length at once,
+   then measures the queue's non-current tracks into the cache with one worker per logical core at idle scheduling
+  priority,
    skipping any already cached,
    so re-opening a known folder does little work.
-  The current track uses a one-second swap strategy on a cache miss:
-   start measuring it on a dedicated worker,
-   wait up to one second when playback is about to start,
-   then play with the temporary -1 dBTP ceiling gain if measurement is still pending.
+  The current track never makes playback wait.
+   On a cache miss it starts playing at once with the safe -1 dBTP ceiling gain while a dedicated worker measures it
+  (`src/peak_swap.rs`).
   When the measured gain lands,
    future decoded samples swap to it;
    already-buffered fallback-gain samples are not flushed.
@@ -135,8 +140,8 @@ One demux path (symphonia) feeds two decode paths:
    AIFF.
 - libopus (the `opus` crate) for Opus,
    fed raw packets from symphonia's Ogg demuxer.
-   symphonia 0.5's own Opus
-  decoder is an empty stub,
+   The symphonia 0.6 meta-crate exposes no Opus decoder
+  (`symphonia-codec-opus` exists but is not in its `all` feature set),
    so the dedicated library handles it.
 
 Per-codec decode is covered by one test each over the committed `fixture/` tones.
@@ -149,13 +154,15 @@ The crate is a library plus a thin binary so the pure logic is unit-testable wit
    module root.
 - `src/command.rs`:
    the UI-to-engine `Command` and engine-to-UI `Update` message enums,
-   plus `RepeatMode`.
+   plus `PlaybackMode` (Repeat,
+   In order,
+   Shuffle the folder,
+   Shuffle all).
 - `src/queue.rs`:
    the play-queue model (load order,
    the current scope's playback order,
    cursor,
-   shuffle mode,
-  repeat-track flag),
+   and the one playback mode),
    with a seedable PRNG for deterministic shuffle tests.
    The playback scope is the current
   track's page (In order and Shuffle the folder,
@@ -165,9 +172,13 @@ The crate is a library plus a thin binary so the pure logic is unit-testable wit
    `display_paths` builds the UI list as each track's path relative to the opened folder (via `relpath`),
   so a library with one top-level folder keeps that folder's name.
 - `src/session.rs`:
-   save and restore of the last session under the platform config directory,
-   pruning tracks
-  whose files moved or are not audio files (and remapping the saved cursor onto the survivors).
+   save and restore of the last session under the platform config directory
+  (the Source Root,
+   the selected track path,
+   the position,
+   the playback mode and the two template texts;
+   it keeps no queue,
+   so nothing is pruned or remapped: the launch rescan rebuilds the queue).
 - `src/error.rs`:
    `PlayerError`,
    the single error type all fallible functions return.
@@ -216,24 +227,25 @@ The crate is a library plus a thin binary so the pure logic is unit-testable wit
   `.database_uuid`,
    and other dotfiles) never enter the queue.
 - `src/truepeak.rs`:
-   streaming true-peak measurement.
-   It oversamples each channel ~4x with a cubic
-  (Catmull-Rom) interpolation to estimate inter-sample peaks at constant memory,
-   and turns a measured peak into
-  the attenuate-only normalization gain.
-- `src/peakcache.rs`:
+   the desktop adapter over the shared `truepeak-core` crate,
+   which owns the Catmull-Rom oversampling meter,
+   the measurement policy,
+   the attenuate-only normalization gain and the decision cache.
+   This file hands the desktop decoder to its two resolvers:
+   `resolve_current` for the track about to play and `resolve_full` for the background sweep's exact full scan.
+- `src/peakcache.rs`,
+   `src/peakcache_service.rs` and `src/peakcache_handle.rs`:
    the persistent peak cache.
-   It computes the opaque fingerprint,
-   loads and saves the
-  `fingerprint -> peak` map atomically (write a temp file,
-   then rename),
-   and exposes get/insert.
+   `peakcache.rs` computes the opaque fingerprint and decides where `decisions.db` lives;
+   the Turso-backed actor in `peakcache_service.rs` owns the database,
+   and the synchronous `CacheHandle` in `peakcache_handle.rs` is what the controller and the sweep call.
 - `src/measure.rs`:
    background measurement orchestration.
-   `spawn_queue_measurement` runs the detached background sweep over a queue's non-current tracks,
-   gently
-  (a short sleep between measurements) and never cancelled.
-   The sweep thread first drops itself to the platform's
+   `spawn_queue_measurement` runs the detached background sweep over a queue's non-current tracks:
+   it first reports each track's cached decision and header length,
+   then fans out one worker per logical core,
+   and it is never cancelled (a newer queue load makes the controller drop the older sweep's reports).
+   Every sweep thread first drops itself to the platform's
   lowest scheduling tier so its CPU-bound decoding never competes with the audio thread or the UI:
    Linux
   `SCHED_IDLE`,
@@ -328,11 +340,11 @@ The crate is a library plus a thin binary so the pure logic is unit-testable wit
 - `src/launcher.rs`:
    Linux desktop-shell integration.
    `set_window_app_id` is a winit window-attributes hook that
-  stamps the Wayland app id (`monochromatic.music-player`);
+  stamps the Wayland app id (`monochromatic.music-player`, which winit also uses as the X11 `WM_CLASS`);
    `Launcher` emits the
-  `com.canonical.Unity.LauncherEntry` `Update` signal on the session bus to drive the taskbar progress
-  (fraction = position / duration,
-   hidden when paused).
+  `com.canonical.Unity.LauncherEntry` `Update` signal on the session bus to drive the taskbar progress;
+   what the bar shows is decided by the state machine in `src/launcher/taskbar_state.rs`,
+   described in "Taskbar progress".
    Both are best-effort:
    no session bus or an unsupporting
   shell silently disables progress.
@@ -355,13 +367,15 @@ The crate is a library plus a thin binary so the pure logic is unit-testable wit
    It installs the winit backend with the app-id hook before creating the window,
    creates the
   `Launcher`,
-   and pushes taskbar progress from each position/play-state update.
-   It also derives the pagination
-  view (tabs and the visible page) from the full queue at the property edge,
-   so the engine and queue model stay
-  unaware of pagination.
-- `ui/app.slint`:
-   the window markup (see the `ui/*.slint` files it imports).
+   and hands every engine message to `src/ui_progress.rs`,
+   which feeds the taskbar state machine and the seek bar.
+   The callbacks are wired in `src/ui_wire.rs` and the other `src/ui_*.rs` files.
+   The pages (the folders of the picker and the rows of the selected one) come from a page index
+  (`src/page_index.rs`) that `ScreenState` builds once per queue;
+   the queue builds the same index to scope In order and Shuffle the folder to a page.
+- `ui/app.slint` and `ui/app_window.slint`:
+   `app.slint` is the entry point that `build.rs` compiles;
+   the window markup is in `app_window.slint` (see the `ui/*.slint` files it imports).
    The folder picker lists the folders and the virtual letter folders of loose files,
    with a rail that jumps by letter or writing system (D28).
    Wide windows show the picker and the transport deck in the left pane and the selected folder's
@@ -385,22 +399,17 @@ The crate is a library plus a thin binary so the pure logic is unit-testable wit
    The wheel animation is why the app depends on Slint 1.17 or newer (it is absent from
   the 1.16 releases);
    see `../../../doc/troubleshooting/slint-flickable-smooth-scroll.md`.
-   Rows show each track's path
-  relative to the loaded root (so deeper nesting stays
-  visible).
-   The highlighted row is both the currently selected and the playing track,
-   and the view follows it
-  across track changes,
-   so there is no separate now-playing title.
-   A single click on an unselected row selects
-  it (Rust loads it paused,
-   pausing whatever was playing);
+   The track list shows one folder's rows:
+   a track row has a cleaned title and a supporting line,
+   and a subfolder header labels the tracks under it (D86),
+   so deeper nesting stays visible.
+   The highlighted row is the currently selected and playing track,
+   and the transport deck names it (folder and title).
+   A single click on a row other than the highlighted one loads it and plays it at once,
+   replacing whatever was playing;
    a click on the already-highlighted row toggles
   play/pause.
-   "Double click to play" falls out for free (first click selects,
-   second toggles to play),
-   so no
-  real double-click handling is needed.
+   No double-click handling exists or is needed.
    The window title shows the playing track's title (the one the deck shows, without folder, extension or the prefix
   its folder's files share, D86) while audio plays,
    and reverts to "Music Player" when paused.
@@ -408,13 +417,42 @@ The crate is a library plus a thin binary so the pure logic is unit-testable wit
    rather than hardcoded values,
    so they follow the OS accent colour
   and the light/dark theme (see "Theme colours").
-  Seek-bar movement and platform taskbar progress updates (KDE LauncherEntry on Linux,
-   ITaskbarList3 on Windows)
-  are debounced through the same Rust helper,
-   while play/pause state still emits immediately.
-   This prevents
-  sub-second or zero-duration tracks from flickering the on-screen progress bar or flashing an empty taskbar
-  progress indicator.
+  Seek-bar movement is debounced through the Rust helper in `src/progress.rs` (a tick at most every 250 ms,
+   while a seek,
+   a new track and play or pause state still update immediately),
+   which keeps sub-second or zero-duration tracks from flickering the on-screen progress bar.
+   The taskbar progress does not use that helper;
+   see "Taskbar progress".
+
+## Taskbar progress
+
+The taskbar bar (KDE `LauncherEntry` on Linux,
+ `ITaskbarList3` on Windows,
+ nothing on macOS) means one thing: where the current track is,
+ as a whole percent.
+`src/launcher/taskbar_state.rs` (`TaskbarProgress`) is a state machine that `src/ui_progress.rs` feeds with every engine
+message,
+ never with the window's own position and duration,
+ so a new track resets the position and sets its length in one step.
+It answers with the next value to send,
+ or with nothing when the bar already shows the right thing.
+
+- The bar is shown from the moment a track's bar has been used (playback started or the position moved),
+  and it stays shown while paused,
+  so pausing, or choosing another row, does not hide and show it.
+- The bar is hidden when no track is loaded,
+  when the track has no usable length (a zero or missing duration),
+  when a track is loaded but has not been played or moved since the app started,
+  and when playback has stopped within half a second of the end of the track.
+- The value is a whole percent sent as exactly `percent / 100`,
+  because Plasma shows `qRound(progress * 100)`.
+- While playing,
+  a change of the percent is sent at most once every 250 ms,
+  so a short track or a dragged seek bar cannot flood the bus,
+  and a held change goes out with the next playback tick.
+  Pausing, resuming, the first seek after ordinary playback, a new track, going idle and every change while paused
+  are sent at once.
+- Within a track the percent never moves backward except through a seek.
 
 ## Isolated visual verification
 
@@ -792,7 +830,6 @@ with a folder on the command line.
 On exit the engine saves the Source Root path,
  the Selected Track path (if one was selected),
  the playback position,
- volume,
  the playback mode,
  and the two saved template texts to a JSON file under the platform config directory (`$XDG_CONFIG_HOME/musicplayer`
  on Linux,
@@ -800,6 +837,8 @@ On exit the engine saves the Source Root path,
  the roaming AppData config directory on
 Windows,
  all resolved by the `directories` crate).
+The file also carries a `volume` field, always `1.0` as written, because no in-app control sets it (D43);
+ a hand-edited value is still restored and multiplies the output gain.
 It deliberately does not save the queue or a current index:
  the queue is re-derived from the Source Root,
  so only the root and the chosen track need persisting,

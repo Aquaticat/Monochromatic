@@ -196,18 +196,24 @@ object PlayerHostModel {
     // ```ts
     // function rowEntriesFor(title, page, current, template, measures): TrackListEntry[] { /* ... */ }
     // ```
-    /** Builds the selected page's track rows and headers, each row carrying its template supporting line. */
+    /**
+     * Builds the selected page's track rows and headers, each row carrying its template supporting line.
+     *
+     * @param withSupportingLines false builds the rows without lines, for a host whose rows compute their own line
+     */
     fun rowEntriesFor(
         folderTitle: String,
         pageItems: List<PageEntry>,
         currentIndex: Int?,
         trackRowsTemplate: String,
         measuresByIndex: Map<Int, TrackMeasure> = emptyMap(),
+        withSupportingLines: Boolean = true,
     ): List<TrackListEntry> = trackListEntries(
         folder = pageFolderFor(folderTitle = folderTitle, pageItems = pageItems),
         currentIndexInLibrary = currentIndex,
         template = trackRowsTemplate,
         measuresByIndex = measuresByIndex,
+        withSupportingLines = withSupportingLines,
     )
 
     /** Applies the saved track-row and playing-track templates to a screen model built from the controller. */

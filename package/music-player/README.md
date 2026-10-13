@@ -1,30 +1,29 @@
 # Music Player
 
 Music Player is a native,
- local-first player for people whose music library is already organised in folders.
+local-first player for people whose music library is already organised in folders.
 It treats the directory tree and filenames as the library,
- so an existing collection stays navigable without
-requiring tags,
- albums,
- artwork,
- a server,
- or an import step.
+so an existing collection stays navigable without requiring tags,
+albums,
+artwork,
+a server,
+or an import step.
 
-**Under active development;
- build from source.**
+Status:
+under active development,
+build from source.
 
 Version `0.1.0` builds a Slint desktop application and a Jetpack Compose Android application.
-They provide corresponding product behaviour through separate platform implementations and share true-peak
-metering.
- Their platform UIs,
- storage access,
- and audio output remain native to each platform.
+They provide corresponding product behaviour through separate platform implementations and share true-peak metering.
+Their platform UIs,
+storage access,
+and audio output remain native to each platform.
 
 ## Contents
 
 - [What works today](#what-works-today)
 - [Gallery](#gallery)
-- [Design direction](#design-direction)
+- [Design record](#design-record)
 - [Build from source](#build-from-source)
 - [Architecture](#architecture)
 - [Contributing](#contributing)
@@ -32,111 +31,204 @@ metering.
 
 ## What works today
 
-### Local-library navigation
+### Library sources
 
 A desktop library is a source root and the audio files beneath it.
 Desktop recursively enumerates that root and derives each displayed row from its relative path.
+Desktop watches the root while the app runs and applies the files that were added,
+removed,
+or renamed after a short quiet time.
+It saves the root,
+the selected track,
+the position,
+the playback mode,
+and the two template texts,
+but not the queue,
+so a relaunch rebuilds the queue from disk.
 
 An Android library is either a selected Storage Access Framework tree or the device-wide MediaStore collection.
 The selected tree is recursive.
- MediaStore queries the operating system's indexed collection rather than walking
-one source-root directory.
-
-Both interfaces group tracks into pages:
-
-- A top-level directory becomes one page.
-- Tracks directly in the root become `A` through `Z` and `#` pages,
-   based on the filename.
-- Folder pages sort before letter pages,
-   while each page retains load order.
-- Deeper directories remain visible in a track's relative path.
-
-Desktop watches its selected source root and performs a debounced rescan after files are added,
- removed,
- or
-renamed.
- A relaunch rebuilds the queue from disk rather than restoring a stale saved queue.
-
-Android can read the device-wide MediaStore collection after audio permission is granted.
+MediaStore queries the operating system's indexed collection rather than walking one source-root directory.
 Choosing a folder through the Storage Access Framework gives that persisted folder grant priority,
- including
-when that folder is empty.
- Both Android sources preserve source-relative display paths while using opaque
-content URIs for playback.
+including when that folder is empty.
+Both Android sources preserve source-relative display paths while using opaque content URIs for playback.
+Android follows its source without a user action:
+a `ContentObserver` watches the MediaStore audio collection,
+and a library from a folder grant is read again when the app returns to the front.
 
 The MediaStore source admits only rows Android marks as music.
 An audio-looking file whose MediaStore row lacks that classification is not part of this source,
- even if its
-filename has an otherwise accepted extension.
- Choosing a Storage Access Framework tree instead filters by the
-player's extension allowlist.
+even if its filename has an otherwise accepted extension.
+Choosing a Storage Access Framework tree instead filters by the player's extension allowlist.
+
+A library is always open.
+When no session is stored,
+desktop opens the operating system's music folder,
+and an empty folder shows an explicit empty state.
+Neither app has a refresh or re-analysis action:
+the library and the true-peak measurements follow the files by themselves.
 
 The current UI has no tag-derived browser,
- facets,
- artist view,
- album view,
- or album art.
+facets,
+artist view,
+album view,
+or album art.
 Folder names and filenames are the visible library data.
+
+### Browsing folders
+
+A top-level directory is one folder in the folder list.
+Tracks directly in the root are listed under virtual folders named `A` through `Z` and `#`,
+chosen by the first letter of the filename.
+Folders sort before the letter folders,
+ignoring case,
+and `#` comes last.
+Directories below a folder appear as subfolder headers with their track counts in that folder's track list.
+Deeper directories remain visible in a track's relative path.
+
+A window 600 pixels wide or wider (600 dp on Android) shows two panes:
+the folder list with the transport deck on one side,
+and the selected folder's tracks on the other.
+Each pane scrolls on its own.
+A narrower window shows one pane,
+with a folder button in the header that opens the folder list over the track list while the deck stays in view.
+The folder list carries a rail that jumps by letter.
+
+Desktop rows show a title cleaned from the filename,
+without the extension and without text that every file of the folder starts with,
+and a supporting line.
+The supporting line is the track length and the true peak by default.
+The Settings page edits it.
+
+### Search
+
+Search opens from the header button,
+from `Ctrl+F`,
+and on desktop from a double tap of `Shift`.
+It is its own page with one header that holds Back,
+the query,
+and Clear.
+Folders and tracks appear in one list ranked by relevance,
+and the matching text is highlighted.
+Matches start at the beginning of a word in a name.
+
+Search answers from an in-memory index in each app and stays usable while a scan is still adding tracks:
+the open results update in place and keep the query,
+the caret,
+and the scroll position.
 
 ### Playback
 
 Both applications provide selection,
- play and pause,
- previous and next,
- seeking,
- volume,
- page navigation,
-light and dark appearance,
- and configurable page-control treatments.
-A selected track is the current track.
- On desktop,
- clicking an unselected row selects it paused and clicking
-it again toggles playback.
- On Android,
- tapping another row starts it and tapping the current row toggles it.
+play and pause,
+previous and next,
+seeking,
+and light and dark appearance.
+Neither has a volume control in the app:
+the operating system's mixer sets the level.
+The transport deck shows the playing track with its folder,
+the seek bar,
+and the playback mode.
 
-Desktop supports an in-order page scope,
- page shuffle,
- whole-library shuffle,
- and an independent repeat-track
-toggle.
- Android presents the equivalent completion and transport choices as one persisted mode:
-repeat,
- in order within the selected page,
- shuffle the selected page,
- or shuffle the complete library.
+On desktop,
+clicking a row other than the playing one plays it at once,
+and clicking the playing row toggles play and pause.
+On Android,
+tapping a row plays it.
+
+One playback mode of four applies on both platforms,
+and the app saves it:
+
+- Repeat replays the current track.
+- In order plays the selected folder in name order and stops at its end,
+  with the first track of that folder loaded and paused.
+- Shuffle the folder shuffles the folder on screen.
+- Shuffle all shuffles the whole library.
+
+A manual Next at the last track still wraps to the first.
 
 The Storage Access Framework source accepts these filename suffixes:
- `flac`,
- `wav`,
- `wave`,
- `mp3`,
- `ogg`,
+`flac`,
+`wav`,
+`wave`,
+`mp3`,
+`ogg`,
 `oga`,
- `opus`,
- `m4a`,
- `m4b`,
- `mp4`,
- `aac`,
- `aiff`,
- `aif`,
- and `aifc`.
+`opus`,
+`m4a`,
+`m4b`,
+`mp4`,
+`aac`,
+`aiff`,
+`aif`,
+and `aifc`.
+Desktop folder scans use the same list.
 This extension recognition filters a library source.
- It is not a decoder-support claim.
+It is not a decoder-support claim.
 The MediaStore source relies on Android's music classification instead.
 
 Desktop decodes FLAC,
- WAV and PCM,
- MP3,
- Vorbis in Ogg,
- Opus,
- AAC-LC,
- ALAC,
- ADPCM,
- and AIFF.
+WAV and PCM,
+MP3,
+Vorbis in Ogg,
+Opus,
+AAC-LC,
+ALAC,
+ADPCM,
+and AIFF.
 It opens each track at its native sample rate and leaves device resampling to PipeWire,
- CoreAudio,
- or WASAPI.
+CoreAudio,
+or WASAPI.
+
+### Track menu and keyboard
+
+Every track row has a menu with six rows:
+Play,
+Start shuffle from here,
+File details,
+Show in file manager,
+Copy filename,
+and Move to trash.
+On desktop a right click opens it at the pointer,
+and with a keyboard the `Menu` key or `Alt+Enter` opens it on the focused row.
+On Android a long press opens it,
+and the same two keys work with an attached keyboard.
+Every row has an access letter,
+drawn underlined,
+that runs the row while the menu is open.
+Desktop shows a row's shortcut beside it when the row has one.
+
+Nearly every action has a keyboard shortcut,
+chosen as JetBrains would choose it (D106).
+Desktop draws a small key badge on each control that the held modifiers trigger,
+after the modifiers have been held for 300 ms.
+Keyboard focus draws a ring around the element and changes nothing else about it (D117).
+The tables of keys are in [`desktop-app/README.md`](desktop-app/README.md#keyboard) and
+[`android-app/README.md`](android-app/README.md#keyboard-and-focus).
+
+### Settings
+
+Settings lists two templates,
+Track rows and Playing track,
+which shape the supporting line of a track row and the line under the playing track's title.
+The template language has fields and formatting functions,
+and a preview shows the result for the tracks of the open library.
+A window that is wide enough for two panes (the player's width test) shows the list on one side and the selected
+template's editor on the other,
+so selecting a row never navigates.
+A narrower window shows the list,
+and a row opens that template's editor page.
+The page is drawn on the one canvas color,
+pure white in light and pure black in dark.
+
+### Appearance
+
+Both apps follow the operating system's light or dark setting and its accent color.
+The accent is the only color taken from the platform:
+every other color is derived from it in OKLCH (D108),
+and every text role is fitted to WCAG AA contrast on the surfaces it is drawn on.
+Without an accent the root is the baseline `#4E5E8B`.
+Dark uses a pure black canvas and light a pure white one.
 
 ### Audio safety
 
@@ -144,243 +236,270 @@ Playback targets attenuate-only true-peak normalisation to a `-1 dBTP` ceiling.
 A track that already fits under that ceiling is not boosted.
 The shared [`truepeak-core`](truepeak-core) crate owns meter and gain calculations used by both applications.
 
+True-peak analysis is automatic and not optional.
+It never shows an in-app banner (D107).
+On Linux desktop it reports progress as a Plasma job on KDE,
+or else as one freedesktop notification replaced in place,
+and with neither it runs without an indicator.
+Android posts a progress notification,
+and runs without one if the notification permission is declined.
+macOS and Windows have no indicator yet.
 Desktop stores opaque peak-cache fingerprints rather than filenames,
- paths,
- or tags.
+paths,
+or tags.
 It measures non-current tracks in a background sweep and uses a bounded current-track measurement path.
 
 ### Platform integration
 
 The desktop build uses Slint with winit on every desktop target.
-Linux is Wayland-only and uses PipeWire,
- with no X11,
- ALSA,
- or PulseAudio fallback.
- macOS targets Apple
-Silicon and uses CoreAudio.
- Windows targets `x86_64` and uses WASAPI through cpal.
+Linux targets Wayland and uses PipeWire,
+with no ALSA or PulseAudio backend.
+macOS targets Apple Silicon and uses CoreAudio.
+Windows targets `x86_64` and uses WASAPI through cpal.
 
-The desktop source implements LauncherEntry D-Bus taskbar progress on Linux and native taskbar progress on
-Windows.
- These shell integrations are best-effort and were not verified in the isolated gallery environment,
-so the gallery does not demonstrate them.
+The desktop source implements LauncherEntry D-Bus taskbar progress on Linux and native taskbar progress on Windows.
+These shell integrations are best-effort and are not shown in the gallery.
 
 The Android build declares API 26 as its minimum SDK and API 36 as its target SDK.
-The gallery uses an API 36 emulator.
- Its Kotlin layer owns permissions,
- MediaStore and Storage Access Framework
-access,
- persistence,
- a MediaSession,
- audio focus,
- and foreground-service lifecycle.
- Its Rust engine decodes,
+Its Kotlin layer owns permissions,
+MediaStore and Storage Access Framework access,
+persistence,
+a MediaSession,
+audio focus,
+and foreground-service lifecycle.
+Its Rust engine decodes,
 measures true peak,
- and drives AAudio.
- Background playback is available through Android media controls,
+and drives AAudio.
+Background playback is available through Android media controls,
 including the notification and lock screen.
+The first launch asks for audio access before the library is read.
+If access is declined,
+the app says so and offers to open a folder instead.
 
 ## Gallery
 
-Every gallery panel derives from captures of the current application using synthetic music folders and
-filenames.
- Contact sheets combine those captures.
- Notification and lock-screen panels are system-rendered media
-cards produced by the application's active MediaSession.
-
-The committed PNGs were stripped of capture metadata.
- Application-surface captures exclude system bars.
-Notification and lock-screen captures are cropped to the Music Player media card.
+The gallery has a desktop section and an Android section.
+Each says how its captures were taken.
 
 ### Desktop
 
-Wide desktop playback shows the source actions,
- transport,
- page grid,
- selected-page rows,
- and progress.
+Every capture is a screenshot of the release build in the repository's nested Wayland compositor,
+taken with the session helpers of [`desktop-e2e`](desktop-e2e).
+Audio went to a private PipeWire null sink,
+and the app and the compositor ran in their own systemd user unit.
+The library is synthetic:
+invented artist folders and track names with generated tones.
+The accent is `#4E5E8B`,
+and the PNGs were stripped of capture metadata.
+Captures hold the application window only,
+with no system bars or notifications.
+The only paths visible are synthetic and relative to the library.
 
-![Wide desktop playback with a selected track](https://monochromatic-lfs.aquaticat.workers.dev/48ac7c80011f3c45b0016809397deda51071a3cc685e827c794a957fb1f1a011/package/music-player/asset/readme/desktop-wide-playing.png)
+#### Two panes
 
-Wide layout keeps the page grid and selected-page rows in independent scroll containers.
+Wide windows show the folder list and the transport deck on one side,
+and the selected folder's tracks on the other.
+The playing track has bold text,
+a soft fill,
+and a bar on its leading edge,
+so it does not rely on color alone.
+The mode group under the seek bar offers Repeat,
+In order,
+Shuffle the folder,
+and Shuffle all.
 
-![Wide desktop with independently scrolled page and track panes](https://monochromatic-lfs.aquaticat.workers.dev/a09159a93a7063913f5086bcb9ad40086258bb91ac2425c4ef0a8bfe314387a0/package/music-player/asset/readme/desktop-wide-independent-scroll.png)
+![Two-pane window in light appearance with a playing track](https://monochromatic-lfs.aquaticat.workers.dev/11389787a678c3204a331e24f41086c6b86667e938d0945831b2fb7d487140e8/package/music-player/asset/readme/desktop-two-pane-light.png)
 
-A synthetic stress fixture shows a visible 128-folder page grid.
- Its first folder has 200 hard-linked FLAC rows,
-which demonstrates navigation density rather than a performance limit.
+![Two-pane window in dark appearance with a playing track](https://monochromatic-lfs.aquaticat.workers.dev/ddba79bac4be96b743db6691afa2b1dcc40ef73841fe8d5a512b9fd15f4ee2a0/package/music-player/asset/readme/desktop-two-pane-dark.png)
 
-![Wide desktop with a 128-folder page grid](https://monochromatic-lfs.aquaticat.workers.dev/4b31cde0f5762d7b64dd5a0a79b9357332dc107526216d67d2e3e97193d31e07/package/music-player/asset/readme/desktop-stress-pages.png)
+#### Search
 
-An empty source root has an explicit empty-library state.
+Search covers the track pane.
+The query `lan` finds a loose track,
+a folder,
+and a track with its parent folder,
+each with the matching text highlighted.
+The ring on the first result shows keyboard focus.
 
-![Wide desktop empty-library state](https://monochromatic-lfs.aquaticat.workers.dev/9ac3fe3a3658ee7cf0323f71952ea228a568c0ec0bb8f1180fb48c066d6ff839/package/music-player/asset/readme/desktop-wide-empty.png)
+![Search results for a query in light appearance](https://monochromatic-lfs.aquaticat.workers.dev/63ba17ebabc151776d4507e814ec839369a8e355a76eeff7beda8de470d80a41/package/music-player/asset/readme/desktop-search-light.png)
 
-The desktop app follows dark appearance.
+![Search results for a query in dark appearance](https://monochromatic-lfs.aquaticat.workers.dev/babc2d7c1b94a2a85e1b60117d9a775e9bab3bf9b36487c58f8c5e17b534555b/package/music-player/asset/readme/desktop-search-dark.png)
 
-![Wide desktop in dark appearance](https://monochromatic-lfs.aquaticat.workers.dev/cec6903022c52e359370eff76d6ed8e35b07265a46e1fa6d1789952dbb164b75/package/music-player/asset/readme/desktop-wide-dark.png)
+#### Settings
 
-Narrow windows fold page controls behind a disclosure while retaining the selected page.
+The Track rows template is selected when Settings opens.
+Its editor,
+a preview from the open library,
+and the list of insertable fields fill the second pane.
 
-![Narrow desktop with collapsed page controls](https://monochromatic-lfs.aquaticat.workers.dev/4d09a0f8749cf7371995d308e1d424a4ee05159b9d22210ab274ed0e8b19b088/package/music-player/asset/readme/desktop-narrow-collapsed.png)
+![Settings with the Track rows template in light appearance](https://monochromatic-lfs.aquaticat.workers.dev/2aebcf0a532bd80b74b94f8a3080f7dd4e25c0ffa8f7facb949e32d54f230c6e/package/music-player/asset/readme/desktop-settings-light.png)
 
-![Narrow desktop with revealed page controls](https://monochromatic-lfs.aquaticat.workers.dev/fa11384bbbed9490f61a96f2a2db82241f6259cafd75902c585c48f9a5085345/package/music-player/asset/readme/desktop-narrow-revealed.png)
+![Settings with the Track rows template in dark appearance](https://monochromatic-lfs.aquaticat.workers.dev/eb725dda5b69c22394904bf5cf10c27c10dc812d92d1f8a39a5680b754632277/package/music-player/asset/readme/desktop-settings-dark.png)
 
-The completion control exposes repeat,
- in-order,
- shuffle-page,
- and shuffle-all states.
+#### Track menu and key hints
 
-![Desktop completion-mode states](https://monochromatic-lfs.aquaticat.workers.dev/8c9716da78ef250139ea3d0677a2ce706d60d5ec988bbeac2bdc5366ee70615a/package/music-player/asset/readme/desktop-playback-modes.png)
+The menu was opened on the playing row with the `Menu` key.
+Each row has an underlined access letter,
+and the rows that have a shortcut show it.
 
-The volume control includes a muted state.
+![Track menu opened with the keyboard in light appearance](https://monochromatic-lfs.aquaticat.workers.dev/637bda0a02bc474baaed39d100e6fd57ca54b2d82c0fb83d1b3a623f327fc879/package/music-player/asset/readme/desktop-menu-light.png)
 
-![Desktop muted playback](https://monochromatic-lfs.aquaticat.workers.dev/774f00e8466a0d8ae906ccb112c28fad6279b9783e8b6ba67f4d5356d65a33fc/package/music-player/asset/readme/desktop-muted.png)
+![Track menu opened with the keyboard in dark appearance](https://monochromatic-lfs.aquaticat.workers.dev/9b6327d950aff7890a868cb3eeb09ca38c0a2ad74fc54bd3e8c232bbe28bf418/package/music-player/asset/readme/desktop-menu-dark.png)
 
-All available page-control treatments are represented in the current desktop build.
+Holding `Ctrl` shows a badge on each control that a `Ctrl` chord triggers:
+`F` on Search,
+`G` on the playing track's title,
+`M` on the mode group,
+and `Left` and `Right` on previous and next.
+The ring on the track row shows keyboard focus.
 
-![Desktop page-control treatments: radio, MD1 tabs, rounded buttons, segmented buttons, Chromium tabs, and LED segmented buttons](https://monochromatic-lfs.aquaticat.workers.dev/b30276f611471ec7ef7923b5d1603e2c2d53ad072580fe0c450f2becd5eb4560/package/music-player/asset/readme/desktop-page-controls.png)
+![Key hint badges while Ctrl is held](https://monochromatic-lfs.aquaticat.workers.dev/85b1c6e6648f84384e835cef9127d0a81e73b6185605f852af004cb9a5c00fec/package/music-player/asset/readme/desktop-hints-dark.png)
 
-Settings switches the page-control treatment and returns to the library without changing its source.
+#### Narrow window
 
-![Desktop page-control settings](https://monochromatic-lfs.aquaticat.workers.dev/5b9409882b7070884fdca267f556b1a3dc18495188954ade7318be15def0a1b6/package/music-player/asset/readme/desktop-settings.png)
+A window narrower than 600 pixels shows one pane.
+The header carries the folder button with a caret,
+Search,
+the Open folder button,
+and Settings.
 
-### Android library and navigation
+![Narrow window with the track list and the deck in dark appearance](https://monochromatic-lfs.aquaticat.workers.dev/c598228affe2e3ab81231eb27bf56a7f8ff4266e31bbe2b9f74b0344ec720865/package/music-player/asset/readme/desktop-narrow-player-dark.png)
 
-Audio access is requested before an Android library is read.
+The folder button opens the folder list in place of the track list,
+and the deck stays in view.
 
-![Android audio-permission gate](https://monochromatic-lfs.aquaticat.workers.dev/82e6c54cc54a877b12626682a1005d28e9c1dd489c3588de87fdb9bfecff60a2/package/music-player/asset/readme/android-permission-gate.png)
+![Narrow window with the folder list open in light appearance](https://monochromatic-lfs.aquaticat.workers.dev/bb95684ccd34f954143784071729b4cea92b71ed38e447547b158ccdf39bcff2/package/music-player/asset/readme/desktop-narrow-folders-light.png)
 
-The Android library can be empty or populated.
+#### Empty library
 
-![Android empty and populated library states](https://monochromatic-lfs.aquaticat.workers.dev/f506877a60f9fe5122a1a59041795cd06148e77bb0b11cfc77c6a9e605906826/package/music-player/asset/readme/android-library-states.png)
+A folder without playable audio says so and offers to open a different folder.
 
-The unfolded empty-library state keeps the same explicit no-tracks outcome.
+![Empty library state in light appearance](https://monochromatic-lfs.aquaticat.workers.dev/c40cbdc76be430bc7b22468051e6aff8f469d6bf8caf27bb941dfbf0b897d27d/package/music-player/asset/readme/desktop-empty-light.png)
 
-![Android unfolded empty-library state](https://monochromatic-lfs.aquaticat.workers.dev/5e2abe73428351f5c71fc017454a496540382f0dcd2803e730c3ed67437d92b0/package/music-player/asset/readme/android-empty-library.png)
+### Android
 
-The folded cover display is the ordinary Android layout in this gallery.
-A selected paused track remains visible in the selected page.
+Every capture is a screenshot of the debug build of this checkout.
+It ran on an Android Emulator 37.2.12.0 with the Pixel 9 Pro Fold virtual device on Android 17 (API 37),
+using the host GPU and no audio device.
+Keys were sent to the emulator with `adb shell input`.
+The library is the device-wide MediaStore collection,
+and it holds only generated files:
+invented artist folders and track names with generated tones.
+The accent comes from the system accent of the emulator's wallpaper,
+not from the baseline `#4E5E8B`.
+Captures hold the app area only:
+the status bar and the gesture bar are cropped away,
+so no clock,
+notification,
+or carrier name appears.
+The cover display captures are 1080 pixels wide and the inner display captures are 2076 pixels wide,
+the widths of the two panels.
+The PNGs were stripped of capture metadata.
+The only paths visible are synthetic and relative to the library.
 
-![Android cover display with a paused selected track](https://monochromatic-lfs.aquaticat.workers.dev/5d59036488ded1737b0cdc8a19bb174a8e636630c3d1718cbbb53f0e5f227fdf/package/music-player/asset/readme/android-cover-paused.png)
+#### Cover display
 
-The selected-page disclosure expands page controls on the cover display.
+On the closed foldable the app has one pane.
+The folder button in the header opens the folder list in place of the track list,
+and the deck stays in view.
+The letter rail at the left jumps between letters,
+and the selected folder,
+`Aster Vale`,
+is underlined.
+The line under the playing title reads `4 of 9` with the track's true peak.
 
-![Android cover display with expanded page controls](https://monochromatic-lfs.aquaticat.workers.dev/22d8dab524bd58a0366878e75735999550858b3e62193ec80d08a80dd57c13c3/package/music-player/asset/readme/android-cover-expanded.png)
+![Cover display with the folder list open in light appearance](https://monochromatic-lfs.aquaticat.workers.dev/b89584991247b2e50442be03eae3d7ffb3a3bb5300a3d71e83f7cf3fe8286291/package/music-player/asset/readme/android-cover-library-light.png)
 
-Selecting another page changes the visible track list while retaining the player controls.
+With the folder list closed,
+the track list fills the display above the deck.
+Rows sit under their subfolder headings with a track count,
+and each row shows its duration and true peak.
+The playing track has bold text and a soft fill,
+and the deck shows a pause control.
+The mode group offers Repeat,
+In order,
+Shuffle Aster Vale (its name is shortened to fit),
+and Shuffle all,
+with a check mark on In order.
 
-![Android cover display after page navigation](https://monochromatic-lfs.aquaticat.workers.dev/5df986e23d4ec1a86d0920b81dbe41c852aae02b187428382f68eb53ee186075/package/music-player/asset/readme/android-cover-navigation.png)
+![Cover display with the track list and the deck in dark appearance](https://monochromatic-lfs.aquaticat.workers.dev/1d589fe188ecc82d9cbd80c744b36ce52a083b82cfb419ddedf2a008805df1bf/package/music-player/asset/readme/android-cover-player-dark.png)
 
-The Android app follows dark appearance during playback.
+Search is its own page with one header that holds Back,
+the query,
+and Clear.
+The query `lan` finds a loose track,
+a folder,
+and a track with its parent folder,
+each with the matching text highlighted.
+The on-screen keyboard was closed before the capture so that the results fill the display.
 
-![Android cover display in dark appearance while playing](https://monochromatic-lfs.aquaticat.workers.dev/27849522855e6a1c64c1d138abfa693489caf836aa1774bf197bc2dd4737b092/package/music-player/asset/readme/android-cover-dark-playing.png)
+![Search results for a query on the cover display in light appearance](https://monochromatic-lfs.aquaticat.workers.dev/582ac24c13d7449c7219890dbfd8c39fd3b85b9fee8f2dd3186688df8661f909/package/music-player/asset/readme/android-cover-search-light.png)
 
-Settings exposes the available page-control treatments.
+The menu was opened on the playing row with the `Menu` key,
+after `Alt+2` had focused the track list.
+A ring around the row and a ring around Start shuffle from here show keyboard focus,
+which the `Down` and `Up` keys move through the six rows.
+Each row has an underlined access letter,
+and Move to trash has a red label and a trash icon.
 
-![Android page-control settings](https://monochromatic-lfs.aquaticat.workers.dev/29aa2f5077d03e376a1855031ddb05ffa6e61fbf03d24b9bfdec0311e5dae160/package/music-player/asset/readme/android-settings.png)
+![Track menu opened with the keyboard on the cover display in dark appearance](https://monochromatic-lfs.aquaticat.workers.dev/d1b1acaf10655d3e57fdbdb10695db9940578131b9cd7d742eabb2376ef6aa1a/package/music-player/asset/readme/android-cover-menu-dark.png)
 
-All six Android page-control rendering paths are covered below,
- in this order:
- radio controls,
- multi-row MD1
- tabs,
- rounded buttons,
- segmented buttons,
- Chromium-like tabs,
- and LED segmented buttons.
+On the cover display Settings is a single pane.
+It lists the two templates,
+Track rows and Playing track,
+each with a preview line.
 
-![Android page-control treatments](https://monochromatic-lfs.aquaticat.workers.dev/c983616ba7da9f85c3813f2ef031e01241249fe77df48bb13650023d6459911b/package/music-player/asset/readme/android-page-controls.png)
+![Settings on the cover display in light appearance](https://monochromatic-lfs.aquaticat.workers.dev/38060578083a8d54d0789ac615244bdddaaf8e8add7fb05c9e3f6c1296b703d1/package/music-player/asset/readme/android-cover-settings-light.png)
 
-### Android foldable postures
+#### Inner display
 
-The capture environment uses a Pixel 9 Pro Fold emulator profile.
-Cover,
- unfolded,
- and tabletop postures are represented below.
-The current application is responsive to available orientation and size rather than posture-aware,
- so its
-unfolded and tabletop application layouts are presently the same.
+Unfolded,
+the left pane holds the folder list with the deck beneath it,
+and the right pane holds the tracks of the selected folder under their subfolder headings.
+The playing track has bold text and a soft fill,
+and the mode group wraps to two rows.
 
-![Android cover, unfolded, and tabletop posture comparison](https://monochromatic-lfs.aquaticat.workers.dev/a61338642b74e5238edacc2a8d15c1556052a830dfbb4b881ded46e229c64f9a/package/music-player/asset/readme/android-fold-postures.png)
+![Inner display with two panes in light appearance and a playing track](https://monochromatic-lfs.aquaticat.workers.dev/120a5d39518743b6d91e935507c9ce2202dc01108ed2341f62cee6ae30f29860/package/music-player/asset/readme/android-inner-two-pane-light.png)
 
-![Android unfolded populated library](https://monochromatic-lfs.aquaticat.workers.dev/e9768639fe84068949b370b71ab9bf35dd010dc85ded22241d85594cf7e57657/package/music-player/asset/readme/android-unfolded-library.png)
+![Inner display with two panes in dark appearance and a playing track](https://monochromatic-lfs.aquaticat.workers.dev/4384c24aa25790016829801c5e13c7b8ef6d631b9aadbdd476d1b9c219e4d30d/package/music-player/asset/readme/android-inner-two-pane-dark.png)
 
-![Android tabletop populated library](https://monochromatic-lfs.aquaticat.workers.dev/e9768639fe84068949b370b71ab9bf35dd010dc85ded22241d85594cf7e57657/package/music-player/asset/readme/android-tabletop-library.png)
+On the inner display Settings keeps the template list on the left with Track rows selected.
+The right pane shows that template's preview from the open library,
+its template text,
+and the fields that can be inserted,
+each with an example value and its `mi(...)` name.
 
-### Android media controls
+![Settings with the Track rows template on the inner display in dark appearance](https://monochromatic-lfs.aquaticat.workers.dev/d09cd01cfc17b434647a0cf10a59b0e70646e737d670501d8a44d61075dd3174/package/music-player/asset/readme/android-inner-settings-dark.png)
 
-An active MediaSession creates system media controls while playback continues outside the activity.
+## Design record
 
-![Android notification media card](https://monochromatic-lfs.aquaticat.workers.dev/94e797ca9361688439cc69cf8f9a17a01babb320cc8e7809eef963897c340931/package/music-player/asset/readme/android-notification.png)
+The accepted interface decisions,
+the candidates behind them,
+and the open questions live in the [`design`](design) package,
+with the decision history in [`design/decisions.md`](design/decisions.md).
+Folders and filenames stay canonical.
+Metadata browsing,
+tag-derived facets,
+and album art remain outside the product (D19).
 
-![Android lock-screen media card](https://monochromatic-lfs.aquaticat.workers.dev/45172d2941a5c2fb49e59af512b040b9d8920e6c55f0e634880a830899dd8988/package/music-player/asset/readme/android-lockscreen.png)
-
-## Design direction
-
-This section is intentionally separate from the implemented behaviour above.
-It records the active product direction,
- not a claim that these features have shipped.
-The exploratory interface system,
-visual candidates,
-and complete decision history live in the [`design`](design) package.
-
-### Huge local libraries
-
-The intended experience is immediate navigation through a huge local collection without abandoning the
-filesystem-first model.
- Folders and filenames remain canonical.
- Metadata browsing,
- tag-derived facets,
- and
-album art remain outside the product direction.
-
-The planned Search button opens a separate destination with one integrated
-Back/query/Clear header (D47/D48).
- Folder and track results appear directly
-beneath it without repeating the query as a results heading (D52).
- On the
-unfolded Pixel 9 Pro Fold,
- the selected A composition keeps the playback
-deck bottom-left and lifts it above the keyboard while Search occupies the
-right pane (D50/D51).
- D53 and D54 permit only the observed real floating-Gboard and brief
-font-update-banner overlaps with that unfolded deck.
- The folded cover has one full-width Search page;
-D55 permits its observed floating Gboard to obscure matching labels while
-the query remains visible.
-desktop inherits the Fold's visual direction (D49).
- `Ctrl+F` remains reserved
-for Search,
- but the former command-bar global hotkey was not transferred.
-Search is not implemented in the current interfaces.
-
-The scale targets are independent maxima,
- not one combined fixture:
-
-- Up to 1,000 immediate subdirectories under a source root.
-- Up to 1,000 tracks in one subdirectory.
-- Up to 100,000 tracks across one loaded source root.
-
-These are design targets rather than current performance claims.
-The gallery fixture contains 120 Android tracks,
- and an earlier local desktop exercise measured approximately
-3,600 tracks.
- Neither exercise establishes support at the target limits.
+The scale the design targets is about 1,000 folders (D30) and a library of 1,000,000 tracks.
+[`desktop-app/README.md`](desktop-app/README.md#search-and-scale) records the measurements taken on desktop at 1,000,000
+tracks,
+and `ScaleSearchTest` in the Android app's unit tests builds a library of 1,000,000 tracks for its search index.
+Those numbers come from that README and that test,
+and this README does not restate them as guarantees.
 
 ### Shared core direction
 
-[`PROPOSAL.shared-core.md`](PROPOSAL.shared-core.md) describes the proposed migration to a shared Rust domain
-core with thin desktop and Android adapters.
- Only the shared true-peak meter and gain math have migrated so
-far.
- Queueing,
- pagination,
- session handling,
- decoding,
- output,
- and platform integration still have
-platform-specific implementations.
+[`PROPOSAL.shared-core.md`](PROPOSAL.shared-core.md) describes the proposed migration to a shared Rust domain core with
+thin desktop and Android adapters.
+Only the shared true-peak meter and gain math have migrated so far.
+Queueing,
+pagination,
+session handling,
+decoding,
+output,
+and platform integration still have platform-specific implementations.
 
 ## Build from source
 
@@ -480,9 +599,8 @@ reconciliation,
 worker from the audio callback.
 
 The desktop Source Root is recursive and watched.
- Pagination is derived at the UI boundary,
- which keeps the
-queue and engine independent of the page-control presentation.
+The folders and the rows of the selected one come from a page index that the window state builds once per queue,
+and the queue builds the same index to scope In order and Shuffle the folder to one folder.
 
 ### Android application
 
@@ -541,9 +659,9 @@ Mise.
    then update its handover as the work proceeds.
 
 Use synthetic audio and folder names when creating visual fixtures.
- The capture inventory,
- sanitation method,
-and emulator constraints are retained in
+The desktop captures in the gallery come from the session helpers of [`desktop-e2e`](desktop-e2e),
+which play into a private null sink.
+The method of this gallery, and the facts for retaking the Android gallery, are in
 [`doc/handover/music-player-readme-and-gallery.md`](../../doc/handover/music-player-readme-and-gallery.md).
 
 ## Related documentation
@@ -562,14 +680,22 @@ Music Player is licensed under the [GNU Lesser General Public License, version 3
 
 ### Third-party icons
 
-The Settings rows of the Android app, and later of the desktop app, carry Material Symbols icons.
+The Settings rows of both apps carry Material Symbols icons.
 They come from the [`google/material-design-icons`](https://github.com/google/material-design-icons) repository,
-which is licensed under the Apache License, Version 2.0 (`LICENSES/Apache-2.0.txt` at the repository root).
-Each icon is the Outlined style at weight 400, grade 0 and optical size 24, unfilled, from
-`symbols/web/<name>/materialsymbolsoutlined/<name>_24px.svg` at commit `49d4db35df873165d6bd6ba09b063c7dafbac2f4`:
+which is licensed under the Apache License,
+Version 2.0 (`LICENSES/Apache-2.0.txt` at the repository root).
+Each icon is the Outlined style at weight 400,
+grade 0 and optical size 24,
+unfilled,
+from `symbols/web/<name>/materialsymbolsoutlined/<name>_24px.svg`
+at commit `49d4db35df873165d6bd6ba09b063c7dafbac2f4`:
 
-- `queue_music`, for the Track rows template.
-- `play_circle`, for the Playing track template.
+- `queue_music`,
+  for the Track rows template.
+- `play_circle`,
+  for the Playing track template.
 
-Each app embeds the path data as vector code, with no icon font and no network access at run time.
+Each app embeds the path data as vector code,
+with no icon font and no network access at run time.
 The Android copy is `android-app/app/src/main/kotlin/dev/monochromatic/musicplayer/SettingsIcons.kt`.
+The desktop copy is in `desktop-app/ui/settings.slint`.

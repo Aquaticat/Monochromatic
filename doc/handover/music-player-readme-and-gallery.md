@@ -1,492 +1,145 @@
-# Music player README and current-state gallery
+# Music player README and gallery
 
-Status:
-capture collection in progress.
+## Status
 
-Last updated:
-2026-09-03.
+The desktop gallery in `package/music-player/asset/readme/` is current.
+It was retaken on 2026-10-13 from a release binary built at the repository head,
+hosted in the nested Wayland compositor through the session helpers of the `desktop-e2e` package.
+It holds twelve PNGs of the desktop app:
+the two-pane window, Search, Settings and the track menu, each in light and dark,
+plus the key hint badges (dark), the narrow player (dark), the narrow folder list (light) and the empty library (light).
+
+The Android gallery holds eight PNGs retaken on 2026-10-13 from a debug build of commit `c6a3f9fde2` on the
+Pixel 9 Pro Fold emulator (API 37, host GPU) with a generated library of invented artists:
+the cover display (library light, player dark, Search light, track menu dark, Settings light) and the inner display
+(two panes light and dark, two-pane Settings dark).
+Each was cropped to remove the status bar and gesture bar at native width, with demo mode on while capturing.
+Every earlier Android capture was removed because it predated the focus ring, gray and menu decisions (D117 to D119)
+or showed names from a private corpus and a carrier name.
+Retake the Android gallery after any change to those surfaces, with the facts in "Android captures".
+
+Last updated: 2026-10-13.
 
 ## Goal
 
-Write `package/music-player/README.md` as a comprehensive product and contributor entry point.
-Build a gallery from the current committed applications across desktop and Android layouts,
-including foldable postures.
-Keep implemented behavior visibly separate from the UI and UX direction being explored in Claude Design.
+`package/music-player/README.md` is the product and contributor entry point.
+The component READMEs keep exhaustive commands and implementation detail.
+The gallery shows the current committed applications only, never a Claude Design export,
+and it covers every discrete user-visible branch at least once rather than every combination of dimensions.
+The README states the availability as under active development, build from source.
+It must not imply that the repository extraction in `doc/planning/music-player-repository-extraction.md` has happened.
 
-Update this handover after each decision,
-capture step,
-verification result,
-or blocker.
+## Desktop capture method
 
-## Confirmed decisions
+The capture scripts lived in `${HOME}/temp/agent/readme-shots/`, which is scratch and is not kept.
+Rebuild them from this description.
 
-- README length is not constrained at this stage.
-  Prospective-user,
-  builder,
-  contributor,
-  and architecture-reader needs are additive rather than competing.
-- Use a layered document.
-  The package README owns the product story,
-  library UX,
-  platform overview,
-  behavior summary,
-  architecture overview,
-  component map,
-  build entry points,
-  status,
-  and license.
-  Component READMEs retain exhaustive commands and implementation detail.
-- Write a durable package overview for the current Monochromatic repository.
-  It may be adapted after the approved repository extraction,
-  but it must not imply that extraction has happened.
-- Lead with navigation of very large local music libraries.
-  True-peak protection remains a major product capability,
-  not the opening product promise.
-- Use explicit `Works today` and `Design direction` sections.
-  Never present Claude Design work as implemented behavior.
-- Keep the library filesystem-first.
-  Folders and filenames remain canonical;
-  metadata browsing and album art stay out of scope.
-- The design direction includes track-only global search opened by pressing Control twice.
-  It searches the complete loaded tree even when another page is visible.
-  Folder results and app-command providers are not part of this requirement.
-- Target scale is:
-  - up to 1,000 immediate subdirectories in one opened directory;
-  - up to 1,000 tracks in one subdirectory;
-  - up to 100,000 tracks in the complete opened tree.
-- Use current application screenshots,
-  not a Claude Design export.
-  Capture all agreed user-visible states of the current app.
-- Required form-factor examples named by the user include Android,
-  Pixel 9 Pro Fold unfolded,
-  Pixel 9 Pro Fold tabletop,
-  desktop narrow,
-  and desktop wide.
-  The Pixel 9 Pro Fold cover display in `CLOSED` state is the ordinary Android capture.
-- Use a state-covering gallery matrix.
-  Every discrete user-visible branch must appear in at least one image,
-  but equivalent dimensions do not require every Cartesian combination.
-- State the current availability as `Under active development; build from source`.
-- The scale values are independent maxima under the 100,000-track total cap.
-  A root may have 1,000 immediate subdirectories,
-  and any one subdirectory may contain 1,000 tracks,
-  without requiring every subdirectory to hit that maximum simultaneously.
-- Use the existing `Music Player` name and a concise,
-  plain-spoken voice unless later grilling establishes a conflict.
-- The available foldable emulator is Pixel 9 Pro Fold,
-  not Pixel 6 Fold.
-  The user warned that this AVD has startup and usability quirks.
+### Library
 
-## Current repository evidence
+A small script writes mono 16-bit WAV tones at 22 050 Hz (a sine with its fifth and a slow tremolo) into invented
+artist folders, thirty-five files in all:
+one artist with two albums (nine tracks), twelve more artist folders of one to three tracks each,
+and three loose tracks directly in the root so the virtual letter folders appear.
+A second, empty directory serves the empty-library capture.
+No real library, name or path is ever used.
 
-`package/music-player/` has no package-level README.
-It contains four documented components:
+### Session and audio
 
-- `desktop-app/`:
-  Rust,
-  Slint,
-  PipeWire on Linux,
-  CoreAudio on macOS,
-  and WASAPI on Windows.
-- `android-app/`:
-  Jetpack Compose and Android platform integration over a Rust audio engine.
-- `truepeak-core/`:
-  shared true-peak metering,
-  normalization gain,
-  policy identity,
-  and optional decision-cache service.
-- `truepeak-core.bench/`:
-  corpus evaluation and true-peak policy search.
+`startSession` in `package/music-player/desktop-e2e/src/session.ts` takes the window size, the color scheme, an
+accent, the library and a label.
+It starts the nested compositor with the release binary in a transient systemd user unit and returns helpers:
+`waitState`, `click`, `tap`, `chord`, `down` and `up`, `type`, `last` and `shot`.
+The accent was `4E5E8B`.
+Its config names the app directory, the compositor path, the release binary, a scratch root and an output root.
+`createNullSink` and `currentRouting` in `src/pipewire.ts` give a private PipeWire null sink and prove that the app's
+output streams link only to it.
+Check the routing once after starting a track.
 
-The desktop and Android applications report version `0.1.0`.
-No music-player GitHub release exists.
-The current honest availability is source-build development software unless a later decision changes the wording.
+### Sequence
 
-The approved extraction plan is
-[`doc/planning/music-player-repository-extraction.md`](../planning/music-player-repository-extraction.md).
-It has not been executed.
-The package README must not claim that `Aquaticat/music-player` exists or is authoritative.
+Wide window, 1000 by 800 pixels:
+wait for the player state, wait about four seconds for the analysis to settle, click a track to play it, click a
+folder row, and take the two-pane shot.
+Then `Alt+2`, five `Down` taps and `Menu` for the track menu shot, `Escape`, hold `Ctrl` for 900 ms for the badge shot
+(dark only), `Ctrl+F` and type a short query for Search, `Escape`, and `Ctrl+Alt+S` for Settings.
 
-## Implemented library experience
+Narrow window, 443 by 900 pixels:
+play a row for the player shot, then press the folder button for the folder list shot.
 
-Both applications use one Source Root and derive the queue from current storage instead of persisting a frozen queue.
-The source is scanned recursively.
-Rows show filesystem-derived relative paths rather than parsed tags or album art.
+Empty library, 1000 by 800 pixels, light only.
 
-The current page model is:
+Click coordinates were fixed pixels fitted to the layout at capture time, so find them again after a layout change.
 
-- one page per immediate subdirectory under the Source Root;
-- A to Z pages for tracks directly under the Source Root;
-- a `#` catch-all page for other initial characters.
+### Finishing and limits
 
-The apps restore the selected track,
-position,
-volume,
-playback mode,
-and page-control preference.
-They reconcile added,
-removed,
-and renamed files through rescans.
-Android cold start emits sorted growing batches rather than waiting for the complete scan before displaying rows.
+Convert each shot with `magick <in> -strip -define png:exclude-chunks=date,time <out>` into
+`desktop-<state>-<scheme>.png`, and read every image in full before committing it.
 
-Existing evidence covers an Android library of about 3,600 tracks.
-The earlier blocking scan took several seconds.
-No current benchmark proves the newly selected 100,000-track target,
-so the README must label that scale as a design and verification target until measured.
+The nested compositor draws no desktop title bar and no KDE taskbar progress,
+so those shell-owned states are not in the gallery.
+The Slint embedded MCP server returns a black screenshot from a live winit FemtoVG session,
+so use compositor screenshots, as recorded in `doc/troubleshooting/slint-mcp-winit-femtovg-screenshot.md`.
+Starting and loading indicators do not last long enough for a stable frame and are left out as intermediate frames.
 
-## Search reference clarification
+## Android captures
 
-JetBrains IntelliJ IDEA 2026.2 documentation distinguishes two interactions:
+These facts held for the earlier gallery and are the starting point for the next one.
 
-- pressing Control twice opens `Run Anything`;
-- pressing Shift twice opens `Search Everywhere`.
-
-The requested music-player shortcut combines the Control-twice invocation with global track search.
-The overlay is track-only,
-not a Run Anything-style command palette and not a mixed folder-and-track provider.
-Detailed matching,
-ranking,
-and selection behavior are delegated design choices for implementation work;
-the README must not invent them before code or an accepted design specifies them.
-
-Primary references:
-
-- [IntelliJ IDEA Run Anything](https://www.jetbrains.com/help/idea/running-anything.html)
-- [IntelliJ IDEA Search Everywhere](https://www.jetbrains.com/help/idea/searching-everywhere.html)
-
-## Large-library navigation precedent
-
-Current products treat navigation mechanisms as complementary:
-
-- MusicBee documents A to Z jumping,
-  search,
-  tree browsing,
-  and column filtering in one library UI.
-- Roon added folder drilling for large untamed collections whose metadata views were insufficient.
-- foobar2000 Facets combines linked filters and search.
-
-The user selected only instant global search as the required new mechanism in the current design direction.
-Do not silently add metadata facets,
-pins,
-or a different hierarchy.
-
-Primary references:
-
-- [MusicBee library navigation elements](https://musicbee.fandom.com/wiki/Library_Navigation_Elements)
-- [Roon folder browsing](https://blog.roonlabs.net/folder-browsing/)
-- [foobar2000 Facets](https://www.foobar2000.org/components/view/foo_facets)
-
-## Screenshot environment
-
-No Android target was attached when checked on 2026-09-03.
-The real SDK lists one AVD:
-
-```text
-Pixel_9_Pro_Fold
-```
-
-Relevant paths and versions:
-
-```text
-/var/home/user/Android/Sdk/emulator/emulator
-Android Emulator 37.1.11.0, build 15917651
-/var/home/user/.android/avd/Pixel_9_Pro_Fold.ini
-/mnt/encrypted/Archive/home-user-offload/.android/avd/Pixel_9_Pro_Fold.avd/
-```
-
-The AVD targets Android 37.0 and has fold postures with hinge angles spanning folded,
-tabletop,
-and fully open ranges.
-Its state is stored on the encrypted archive volume.
-There is sufficient measured free space on that volume for disposable capture state.
-
-Known emulator behavior is documented in
-[`doc/troubleshooting/android-emulator-37-software-renderer-sigsegv.md`](
-../troubleshooting/android-emulator-37-software-renderer-sigsegv.md).
-Software rendering with Emulator 37.1.11 crashes in packaged SwiftShader during API 37 boot on this host.
-A host-GPU,
-read-only,
-no-snapshot launch reached `sys.boot_completed=1` in the recorded positive control.
-Use host GPU rendering and disposable state for captures.
-Do not wipe or repurpose the retained AVD data.
-
-The AVD's generated `hardware-qemu.ini` currently records a prior Lavapipe runtime selection.
-Do not trust that stale generated file as the next launch configuration.
-Pass the verified host-GPU arguments explicitly.
-
-A read-only,
-no-snapshot,
-headless host-GPU launch is running under Pi process `music-player-pixel9-fold-readonly`
-(`proc_c7c1`).
-Its retained-AVD files are not writable through this launch.
-The emulator reached boot completion in 34,368 ms and is attached as `emulator-5554`.
-Android reports the `OPENED` device state on the 2,076 by 2,152 inner display at density 390.
-The inactive cover display is 1,080 by 2,424.
-The process retains watches for `SIGSEGV` and emulator panic output.
-
-## Approved visible-state inventory
-
-The gallery covers every discrete application-owned branch at least once,
-not every combination of dimensions.
-Code and existing verification identify these independent dimensions:
-
-- platform and form factor:
-  desktop narrow,
-  desktop wide,
-  Android slab or folded cover display,
-  foldable unfolded,
-  foldable tabletop;
-- ambient theme:
-  dark and light;
-- primary screen:
-  player and settings;
-- library state:
-  permission gate on Android,
-  service connection or loading,
-  empty library,
-  populated library,
-  and selected track;
-- playback state:
-  paused and playing;
-- playback mode:
-  repeat,
-  in order,
-  shuffle current page,
-  and shuffle all;
-- page navigation state:
-  no overflow,
-  collapsed overflow,
-  expanded overflow,
-  selected page outside the initial visible subset,
-  and horizontally scrolled collapsed strip;
-- page-control style:
-  radio,
-  Material Design 1 tabs,
-  legacy rounded buttons,
-  segmented buttons,
-  Chromium-like tabs,
-  and LED segmented buttons;
-- responsive stress state:
-  long page labels,
-  long track paths,
-  wrapped controls,
-  and large text scale;
-- Android system integration:
-  notification and lock-screen playback controls;
-- desktop platform integration:
-  window title while playing and available taskbar progress treatment.
-
-“All states” cannot mean every Cartesian combination without producing redundant images.
-The next grilling round must decide whether the gallery covers every independent state at least once,
-or every combination of selected dimensions.
+- The SDK lists one AVD, `Pixel_9_Pro_Fold`.
+  Emulator 37.1.11 crashes with software rendering during boot, so launch it with host GPU rendering, read-only, with no
+  snapshot and disposable state, and never wipe the retained AVD data.
+  Details: `doc/troubleshooting/android-emulator-37-software-renderer-sigsegv.md`.
+  The generated `hardware-qemu.ini` can record a stale renderer, so pass the verified arguments explicitly.
+- The inner display is 2076 by 2152 at density 390 and the cover display is 1080 by 2424.
+  `cmd device_state` lists `CLOSED`, `HALF_OPENED`, `OPENED` and `REAR_DISPLAY_MODE`.
+  Read it before each fold capture to confirm the posture.
+- A synthetic FLAC library of 120 tracks in ten folders was accepted by MediaStore and by the folder grant.
+  Remove stale copies in another format first.
+- The media notification and the lock screen need `POST_NOTIFICATIONS` granted in the disposable state.
+  Crop those captures to the application-owned media cards.
+- Crop app captures to exclude the status bar and the navigation bar, which can carry a carrier name.
+- The earlier note that unfolded and tabletop looked the same came from an app that ignored the fold.
+  The app now reads the fold through WindowManager (D110), so capture both postures again.
 
 ## Privacy and capture rules
 
-- Use generated or committed synthetic audio names,
-  never the user's real library.
-- Use disposable app state and storage for every capture.
-- Inspect every image region before committing it.
-- Remove or mask status-bar notifications,
-  account names,
-  host paths,
-  device identifiers,
-  unrelated windows,
-  and other personal data.
-- Strip image metadata.
-- Verify the intended rendered state before each capture.
-  Input completion alone is not frame-settlement evidence.
-- Do not capture audio.
-- End desktop browser or MCP sessions and Android emulator processes after capture.
+- Use generated names and audio, disposable app state and storage, and never the user's real library.
+- Inspect every region of every image, and mask or remove notifications, account names, host paths, device
+  identifiers and unrelated windows.
+- Strip image metadata, and do not capture audio.
+- Confirm the intended rendered state before each capture: finished input is not a finished frame.
+- End the nested compositor units and any emulator processes after the captures.
 
-## Delegated implementation choices
+## Images on GitHub
 
-The user ended grilling after accepting every recommendation and authorized autonomous completion.
-Use these defaults unless repository evidence proves one cannot be captured accurately:
+The PNGs are Git LFS objects stored on the R2 worker, and GitHub cannot render those from a relative link.
+The full record is `doc/planning/lfs-readme-image-rendering.md`.
 
-- Show each page-control style at least once,
-  with the Settings screen also naming every included style.
-- Show dark and light themes on both app platforms.
-  Do not multiply every style by every form factor and theme.
-- Include every app-owned discrete screen branch:
-  Android starting,
-  permission gate,
-  loading,
-  empty,
-  populated unselected,
-  selected paused,
-  playing,
-  settings,
-  playback modes,
-  collapsed page overflow,
-  expanded page overflow,
-  selected-page reveal,
-  and a scrolled library;
-  desktop empty,
-  populated unselected,
-  selected paused,
-  playing,
-  settings,
-  narrow collapse and expansion,
-  wide split panes,
-  and independently scrolled panes.
-- Include Android notification and lock-screen playback states,
-  plus desktop title and taskbar progress where the isolated environment renders them.
-- Exclude operating-system permission prompts,
-  folder pickers,
-  hover animation samples,
-  arbitrary slider values,
-  and intermediate animation frames.
-  They are OS-owned or continuous states rather than discrete app branches.
-- Use synthetic filesystem names and audio fixtures that demonstrate deep paths,
-  many pages,
-  long labels,
-  A to Z ordering,
-  the `#` catch-all,
-  and current-track highlighting without exposing personal data.
-- Store committed gallery media under `package/music-player/asset/readme/`,
-  retaining singular directory segments.
-- Prefer one contact sheet per coherent state family plus selected full-size hero captures.
-  This keeps every state inspectable without forcing readers through a long run of near-duplicate full-size images.
-
-## Progress log
-
-- 2026-09-03,
-  10:20 EDT:
-  created this handover after the first README grilling decisions and environment inventory.
-  Committed it as `9274d9823`.
-- 2026-09-03,
-  after 10:20 EDT:
-  corrected the available target name to Pixel 9 Pro Fold,
-  read the existing emulator failure diagnosis,
-  inspected the AVD configuration,
-  and started a read-only host-GPU boot through process `proc_c7c1`.
-  Source inventory confirmed that current Android fold behavior is orientation-based page-control folding;
-  no posture-aware app layout API is present.
-- 2026-09-03,
-  after the emulator start:
-  the verified host-GPU workaround succeeded again.
-  Emulator 37.1.11 reached boot completion in 34,368 ms without the known SwiftShader crash.
-  `cmd device_state` reported supported `CLOSED`,
-  `HALF_OPENED`,
-  `OPENED`,
-  and `REAR_DISPLAY_MODE` states,
-  with `OPENED` active.
-  Display inspection confirmed separate inner and cover displays.
-- 2026-09-03,
-  after the final grilling round:
-  the user accepted all recommendations,
-  ended grilling,
-  and authorized autonomous completion.
-  Settled track-only Control-twice search,
-  independent scale maxima,
-  state-covering rather than Cartesian screenshots,
-  Fold cover display as ordinary Android,
-  and explicit source-build development status.
-- 2026-09-03,
-  during capture preparation:
-  a synthetic FLAC Source Root containing 120 tracks across ten folders was accepted by MediaStore and SAF.
-  The Android app renders the populated library after the stale AAC copies were removed.
-  Desktop's embedded Slint MCP server is listening on port 9315 with the fixture loaded paused.
-  Its screenshot API produced a valid 480 by 600 narrow light capture.
-  The direct JSON-RPC client does not receive an `mcp-session-id` header,
-  but `tools/call` succeeds after `initialize` because the server accepts stateless loopback requests.
-  For timer-driven page-control reveal,
-  take a non-retained screenshot before reading geometry,
-  as documented in `doc/troubleshooting/slint-embedded-mcp-server.md`.
-- 2026-09-03,
-  desktop capture:
-  captured the empty,
-  populated,
-  selected paused,
-  muted playing,
-  settings,
-  narrow collapsed and expanded,
-  selected-page reveal,
-  all six page-control styles,
-  all four playback modes,
-  dark theme,
-  and independently scrolled wide panes.
-  The stress-only desktop fixture used 128 synthetic folders and 200 hard-linked FLAC rows in its first folder.
-  It remains outside the repository and will not be committed.
-- 2026-09-03,
-  live-GPU capture:
-  Slint MCP returned an opaque-black 1280 by 800 image from the winit FemtoVG OpenGL session,
-  while its element tree and the nested compositor's framebuffer capture were populated.
-  `doc/troubleshooting/slint-mcp-winit-femtovg-screenshot.md` records the source trace,
-  upstream duplicate issue and pull request,
-  verified headless and compositor workarounds,
-  and the decision not to add an empty upstream comment.
-  Use nested-compositor captures for live-GPU gallery media.
-  The isolated compositor cannot render KDE taskbar progress or a desktop title bar,
-  so those shell-owned states remain unavailable in the disposable capture environment.
-- 2026-09-03,
-  capture cleanup:
-  stopped every nested compositor and embedded MCP instance after the desktop captures.
-  `ss` found no listener on ports 9315 through 9321;
-  the separately installed user music-player process was left untouched.
-- 2026-09-03,
-  Android gallery capture:
-  rebuilt and installed the debug app on a read-only,
-  no-snapshot,
-  host-GPU Pixel 9 Pro Fold run.
-  A 120-track FLAC library in ten synthetic folders appeared in MediaStore with non-null durations.
-  Captures cover permission gating,
-  empty and populated libraries,
-  selected paused and playing tracks,
-  light and dark themes,
-  settings,
-  collapsed and expanded page controls,
-  selected-page reveal,
-  folded cover,
-  unfolded,
-  and `HALF_OPENED` tabletop posture.
-  `cmd device_state` confirmed the posture before each Fold capture.
-  The current application is orientation-responsive rather than posture-aware,
-  so unfolded and tabletop have the same application layout.
-- 2026-09-03,
-  Android system integration:
-  a synthetic selected FLAC track created an active MediaSession and system media controls.
-  After granting `POST_NOTIFICATIONS` in disposable emulator state,
-  the notification shade and secure lock screen each rendered prev,
-  pause,
-  next,
-  seek,
-  and device controls.
-  The committed crops retain only the application-owned media cards.
-- 2026-09-03,
-  gallery curation:
-  generated `package/music-player/asset/readme/` from reviewed raw captures.
-  Android app captures exclude status and navigation bars.
-  System-integration captures are cropped to their media cards.
-  ImageMagick `-strip` removed metadata,
-  and a PNG chunk walk found only structural,
-  color,
-  background,
-  and image-data chunks in final assets.
-  Contact sheets cover desktop page-control treatments,
-  Android library states,
-  folded navigation states,
-  and Fold postures.
-  Starting and zero-item loading indicators did not hold long enough for a stable capture on this hardware;
-  they remain implemented branches but are excluded as intermediate frames.
-- 2026-09-03,
-  gallery coverage correction:
-  captured Android's six rendered page-control variants from Settings on the Fold cover display,
-  then cropped only application content into `android-page-controls.png`.
-  Added desktop evidence for collapsed narrow page controls,
-  every completion mode,
-  muted playback,
-  and a 128-folder page-grid fixture.
-  The grid's first folder contains 200 hard-linked synthetic FLAC rows;
-  it is state-coverage evidence only,
-  not a scale benchmark.
+- The raw URL of an R2-only object returns the pointer text, and `media.githubusercontent.com` returns 404.
+  The README therefore embeds `https://monochromatic-lfs.aquaticat.workers.dev/<oid>/<repo path>`.
+  The host changed from `an1298.workers.dev` on 2026-10-01.
+- Write a relative image link and commit.
+  The `markdown/autofix` policy of `git-policy-cli` (rule `lfs-image-url` of the markdown linter) puts the Worker URL
+  into the committed file, and a replaced image gets its new oid the same way.
+  The working tree keeps the relative link until you check the file out again.
+- The objects reach R2 on push, so the URLs resolve only afterwards.
+  `mise run //package/config/lfs-r2-worker:check:markdown-urls` sends a `HEAD` request for every embedded URL and
+  asserts status 200, an image content type, and the pointer's size.
+- On 2026-10-13 the oid in each of the twelve desktop README image URLs equals the sha256 of its file,
+  and so does each of the eight Android ones.
 
 ## Next actions
 
-1.  Commit reviewed gallery media and this handover update.
-2.  Write the layered package README and embed the gallery.
-3.  Verify links,
-    commands,
-    capability claims,
-    image privacy,
-    and rendered Markdown.
+1. Push, run the URL check task, and open the README on github.com in a logged-out browser to confirm that all twenty
+   images load (`naturalWidth` above zero).
+2. Retake the Android gallery after the next visible change, with the facts in "Android captures".
+3. Keep the image store of the extracted repository undecided until the extraction plan settles it.
+
+## References
+
+- [MusicBee library navigation elements](https://musicbee.fandom.com/wiki/Library_Navigation_Elements),
+  [Roon folder browsing](https://blog.roonlabs.net/folder-browsing/) and
+  [foobar2000 Facets](https://www.foobar2000.org/components/view/foo_facets) are the navigation precedent that the
+  library design weighed.
+- IntelliJ IDEA treats Control twice as Run Anything and Shift twice as Search Everywhere.
+  The app's double Shift opens Search, as decided in `package/music-player/design/decisions.md` (D106).

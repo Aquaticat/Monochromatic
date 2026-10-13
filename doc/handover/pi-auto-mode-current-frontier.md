@@ -645,6 +645,187 @@ not completed domain closure,
 a maintained host launch path,
 or installed activation.
 
+## Maintained whole-request content consumer
+
+`package/pi-plugin/auto-mode/src/request-material.ts` and `request-material-obligations.ts`
+now own the whole-request content consumer and its independent unresolved-use obligations.
+Private `43db5919` replaces those implementations with exact maintained-export links.
+`SemanticAdmissionPolicyError` is shared with the native semantic-policy consumer.
+Original batch authentication,
+request-source ownership,
+and post-callback dependency checks remain with the incumbent native owners.
+No authority,
+directive,
+complete domain,
+or production semantic qualification is inferred from the content estimate.
+
+Initial build/types passed `proc_664d`.
+Built-artifact tests cover equal-byte foreign requests,
+model attribution,
+Boolean acceptance,
+original callbacks and failure values,
+borrowed mutability,
+and independent potential-instruction use without a domain hold.
+Final tests,
+lint,
+and native consumer verification are in progress.
+
+## Maintained native hook lifetime
+
+`f04d34e79d` introduces `package/pi-plugin/auto-mode/src/native-runtime-hooks.ts`.
+Private `990e177c` removes duplicate hook installation,
+rollback,
+and detachment bookkeeping from `contract/integration/native-batch/runtime.mjs`.
+The original native request,
+judgment,
+collector,
+and tool owners remain unchanged.
+Native bootstrap still checks original identity,
+idle state,
+and an unoccupied executor before owner construction.
+The helper is not an authority or completeness certificate.
+
+Removal remains reverse-order and retryable for failed removers.
+Independent installation,
+cleanup,
+and restoration failures retain their original values.
+Incomplete cleanup leaves the executor occupied.
+Detachment still requires actual Session disposal followed by Agent idle,
+and leaves the invalidated original-request observer on the stream.
+Only the helper's returned method container is frozen.
+
+`proc_e830` passed the initial build and type check.
+The unit portion of `proc_7d13` passed;
+its lint portion failed with 50 warnings and five errors.
+`08cce3b59a` adds native slot failure controls and addresses the diagnosed lint findings.
+`393983938a` / `proc_f09e` passed the final build and type check;
+`proc_4407` passed package units and six-file lint with zero diagnostics.
+The hook controls cover installation,
+partial slot writes,
+rollback,
+independent cleanup failures,
+release retry,
+and exact falsy/proxy failure values.
+
+The first native cutover `proc_f31e` exposed an outdated source-offset assertion.
+Pre-cutover comparison `proc_9b32` reproduced the same failure.
+Private `0a69355c` now explicitly checks the original handler-option sources before constructor metadata.
+`proc_6fa5` passed the maintained native cutover and the pre-cutover comparison,
+including original source/judgment ownership,
+installation rollback,
+retryable native cleanup,
+and native start-error preservation.
+`proc_a1b3` passed all 32 compiler scenarios with empty child stderr and the original-source variants.
+Disposable omission `proc_49ef` reached the intended missing-exception assertion:
+`An undisposed native session must retain policy ownership`.
+The original maintained artifact was not modified.
+`proc_9bdc` passed the native review-failure controls.
+`proc_0354` passed full-package lint on 89 files with 486 rules and zero diagnostics.
+`proc_5fe0` passed 20-document lint/render;
+the rendered hook sections were read back.
+The hook helper does not close the governing domain,
+move the remaining capture/host graph,
+or activate the installed plugin.
+
+## Decision-domain consumer frontier
+
+`2b0d054c` / `proc_382f` isolates the remaining decision-domain obligation through the native provider serializer.
+Authored permission,
+prohibition,
+and no-instruction cases each bind 26 original sources and interpret 26 clauses.
+Their five represented request contributions are accounted for;
+those contribution records still describe partial origin coverage.
+The only remaining diagnostic in these cases is `request-source-domain`.
+Every case remains unresolved with no protected execution or provider request.
+Authored semantic answers establish neither model accuracy nor original-domain completeness.
+
+`proc_6f9b` runs the separate resolution acceptance.
+Its permission case fails the required domain-closure assertion;
+the later prohibition and no-instruction acceptance cases were not reached.
+This does not justify deleting the hold:
+original-owner domain membership,
+applicable scope,
+and valid delegation still need their code-owned consumer.
+No closed-host-profile policy or new completeness interface has been adopted.
+
+A preparatory control exposed an independent obligation hidden by the universal hold.
+`373eab30` / `proc_8594` showed that an admitted `potential-instruction` request estimate
+left no specific use obligation when other issues were absent.
+`c5375b8b` now retains `request-material-instruction-use` independently.
+Potential material may repeat indexed text;
+the new diagnostic creates neither another directive nor uniform authority for the request.
+Pure request,
+semantic-policy,
+and compiler tests passed `proc_b09d`.
+`proc_01d8` passed the native whole-request scenarios with empty child stderr
+and the decision-domain contrasts.
+The potential-instruction contrast retains both `request-source-domain` and `request-material-instruction-use`;
+the request-content `none` contrasts retain only `request-source-domain`.
+No protected operation or provider request occurred.
+
+## Original before-agent-start option inputs
+
+The decision-domain work found an unconsumed original input already present in the run ledger.
+`c567fb4f` / `proc_e511` changes a section in one callback,
+then passes it to another callback that restores the section before rendering.
+The native ledger retains the second callback's original options,
+but the governing source set omitted them.
+The retained-final-state control passed;
+the restored-state assertion failed.
+
+`900864cb` projects `handlerObservations[].before.options` through the existing run owner.
+Sources use `native-run-handler-options-input`,
+location `handlerOptions`,
+and view `original-handler-options-view`.
+Original run membership and observation ordinal authenticate the projection;
+JSON shape does not.
+The projection is `native-content-json`,
+charged to the run ledger and existing source bounds.
+Native callback behavior and request serialization are unchanged.
+No source receives authority,
+registration,
+or payload eligibility.
+`proc_dfce` passed source bounds,
+retained/restored state,
+refresh ancestry,
+and canonical assessment with the original value absent from the native request.
+
+The first projection exposed only active run ancestry.
+`8cac8e60` / `proc_73be` and `proc_5a69` demonstrated loss after settlement and a subsequent prompt.
+`fd78cf05` now retains original references through the existing run history,
+scoped by the native root captured when the run begins.
+Input-only publications belong to owned observation frames,
+not borrowed options.
+The original handler references precede manager references in the combined base view,
+so manager-only append handoff keeps its existing prefix proof.
+Session receipt usage now includes those handler sources before the shared resource/Session check.
+
+`proc_6bc3` passed settlement,
+next-prompt identity,
+root-reset exclusion,
+and actual shared 64/65 receipt boundaries.
+Manager and resource counters alone were below the limit in the refusal control.
+Historical inputs do not become active ancestry.
+`8f7161f8` adds live-root and old-alias checks;
+`proc_dfd4` passed their owner controls and the manager-handoff lifecycle cases.
+Unpublished original callback inputs retain a source-publication failure rather than disappearing.
+`946a4cae` / `proc_2f77` passed the affected message-history regression and final option consumers.
+`85aae781` / `proc_9251` passed all 219 input-parent cases with empty child stderr and no provider requests.
+`a54546f6` / `proc_c28e` separately passed historical-input canonical assessment:
+the next request assesses the same original source,
+without promoting the prior prompt into current ancestry.
+That follow-up is now in the parent but was not part of its 219-case run.
+Affected action/source parents passed `proc_b6d4` and `proc_9144`,
+including source identity,
+manager-only handoff,
+approval ownership,
+and irreversible retirement.
+
+The run-owner helper task initially failed with Node `EEXIST` on a historical output directory.
+`b672127d` uses unique disposable output directories and preserves historical artifacts.
+`proc_61c6` passed the helper controls before the subsequent history/root changes.
+This work does not close the host domain or provide maintained host installation.
+
 ## Native metadata-query receipts
 
 `94f39f5e` / `proc_666b` reached a separate required retention failure.
@@ -736,7 +917,22 @@ and the fixture was corrected without changing native behavior.
 The private adapter now delegates its failure lifetime to the package export;
 original argument-frame construction and returned-value identity remain local.
 The existing stager and export-identity test include this function.
-Unit/lint verification and the native import-cutover controls are pending.
+Final source is `e64644ae85`.
+Build/types passed `proc_95dd`;
+full package units and four-file lint passed `proc_02e6` with zero lint diagnostics.
+The native import cutover passed `proc_c3b0`,
+including exact export identity,
+owner and native failure controls,
+query-only review,
+and lifecycle retirement.
+`71cd85fb` / `proc_921c` removed the continuation check in a disposable built copy.
+The intact control passed;
+the changed artifact reached the required missing-exception assertion after successful recapture.
+The maintained artifact was not modified.
+
+No lint protection was disabled.
+An owned optional failure field replaced the root-level mutable binding;
+the test fixture uses native `Generator.throw` to produce foreign JavaScript exceptions.
 This moves failure-lifecycle code out of scratch,
 not source ownership,
 governing-domain closure,

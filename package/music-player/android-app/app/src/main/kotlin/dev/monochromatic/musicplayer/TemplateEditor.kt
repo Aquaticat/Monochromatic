@@ -16,6 +16,7 @@ package dev.monochromatic.musicplayer
 // ```
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.ui.graphics.RectangleShape
+import dev.monochromatic.musicplayer.core.FocusRingPlacement
 import dev.monochromatic.musicplayer.core.TemplateEditorEdit
 import dev.monochromatic.musicplayer.core.TemplateEditorFieldEntry
 import dev.monochromatic.musicplayer.core.TemplateEditorState
@@ -643,12 +644,15 @@ private fun templateEditorFieldRow(entry: TemplateEditorFieldEntry, onInsert: ()
     ListItem(
         modifier = Modifier.fillMaxWidth()
             .padding(
-                start = DESTINATION_SIDE_INSET - DESTINATION_ROW_INSET + FOCUS_RING_OUTSET,
-                end = DESTINATION_SIDE_INSET - DESTINATION_ROW_INSET + FOCUS_RING_OUTSET,
+                start = DESTINATION_SIDE_INSET - DESTINATION_ROW_INSET,
+                end = DESTINATION_SIDE_INSET - DESTINATION_ROW_INSET,
             )
             .defaultMinSize(minHeight = DESTINATION_TOUCH_TARGET)
-            .focusRing(RectangleShape)
-            .clickable(role = Role.Button, onClick = onInsert),
+            .focusRing(RectangleShape, placement = FocusRingPlacement.INSIDE)
+            .clickable(role = Role.Button, onClick = onInsert)
+            // The ring lies just inside the row's edge (D120), so the content keeps the room it had when the ring
+            // was reserved outside the row.
+            .padding(horizontal = FOCUS_RING_OUTSET),
         supportingContent = {
             Text(
                 text = templateEditorFieldValueText(entry.value),

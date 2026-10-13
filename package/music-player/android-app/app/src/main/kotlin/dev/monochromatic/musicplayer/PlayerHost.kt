@@ -126,9 +126,13 @@ import dev.monochromatic.musicplayer.core.trackLoadFailureMessage
 import dev.monochromatic.musicplayer.core.trackMenuActionsFor
 import dev.monochromatic.musicplayer.core.trashRouteFor
 import dev.monochromatic.musicplayer.core.trashUndoMessage
+import dev.monochromatic.musicplayer.core.RailSection
+import dev.monochromatic.musicplayer.core.TEMPLATE_PREVIEW_ROW_COUNT
 import dev.monochromatic.musicplayer.core.TrackMeasure
+import dev.monochromatic.musicplayer.core.TrackRowLineSource
 import dev.monochromatic.musicplayer.core.measureDetailsValue
 import dev.monochromatic.musicplayer.core.measuresByIndex
+import dev.monochromatic.musicplayer.core.railFor
 import java.util.UUID
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -504,9 +508,9 @@ fun playerHost(
     val state: PlayerUiState = controller.uiState
     /** Playback position and duration sampled for this frame. */
     val playbackProgress: PlaybackProgress = rememberPlaybackProgress(controller)
-    /** Measures of the selected page's tracks keyed by load-order index, which is how the rows name their tracks. */
-    val pageMeasures: Map<Int, TrackMeasure> = measuresByIndex(
-        pageIndices = state.pageItems.map { entry -> entry.index },
+    /** Measures of the previewed rows of the selected page keyed by load-order index, which Settings shows. */
+    val previewMeasures: Map<Int, TrackMeasure> = measuresByIndex(
+        pageIndices = state.pageItems.take(TEMPLATE_PREVIEW_ROW_COUNT).map { entry -> entry.index },
         uriAt = controller::uriAt,
         measures = state.measures,
     )
@@ -515,28 +519,51 @@ fun playerHost(
     /** Name of the selected page, which titles the folder that the rows belong to. */
     val pageFolderTitle: String = state.pageLabels.getOrNull(state.selectedPage).orEmpty()
     // What:     `remember(keys) { ... }` keeps the built rows until one of its keys changes.
-    // Why:      The progress tick recomposes this host several times a second; rebuilding every row and its template
-    //           text on each tick pinned the main thread for a 1,000-row folder (S2). Rows depend on the page, the
-    //           playing row, the template and the measures, never on the position.
+    // Why:      The progress tick recomposes this host several times a second; rebuilding every row on each tick pinned
+    //           the main thread for a 1,000-row folder (S2). Rows depend on the page, the playing row and the folder
+    //           title, never on the position and never on the measures: the analysis publishes measures many times a
+    //           second, and rebuilding 10,000 rows for each of them was an ANR. Each visible row reads its own measure
+    //           through `rowLines` instead.
     //
     // In TS you'd write (pseudocode):
     // ```ts
-    // const rowEntries = useMemo(() => rowEntriesFor(...), [pageItems, currentIndex, title, template, measures]);
+    // const rowEntries = useMemo(() => rowEntriesFor(...), [pageItems, currentIndex, title]);
     // ```
-    /** Rows of the selected page with their template supporting lines, rebuilt only when their inputs change. */
+    /** Rows of the selected page without supporting lines, rebuilt only when the page or the playing row changes. */
     val rowEntries: List<TrackListEntry> = remember(
         state.pageItems,
         state.currentIndex,
         pageFolderTitle,
-        trackRowsTemplate,
-        state.measures,
     ) {
         PlayerHostModel.rowEntriesFor(
             folderTitle = pageFolderTitle,
             pageItems = state.pageItems,
             currentIndex = state.currentIndex,
             trackRowsTemplate = trackRowsTemplate,
-            measuresByIndex = pageMeasures,
+            withSupportingLines = false,
+        )
+    }
+    /** Source of each visible row's supporting line, which reads that row's own measure when the row is drawn. */
+    val rowLines: TrackRowLineSource = remember(state.pageItems, trackRowsTemplate, controller) {
+        TrackRowLineSource.forPage(
+            pageItems = state.pageItems,
+            template = trackRowsTemplate,
+            measureOf = { index -> controller.uriAt(index)?.let { uri -> controller.uiState.measures[uri] } },
+        )
+    }
+    /** Rail built from the page names, rebuilt only when a page appears, disappears or is renamed. */
+    val railSections: List<RailSection> = remember(state.pageLabels) { railFor(state.pageLabels) }
+    /** Playing track and its place in its own folder, which the deck reads even when that folder is not on screen. */
+    val playingPlace: PlayingPlace = remember(
+        state.playingPageIndex,
+        state.pageLabels,
+        state.playingItems,
+        state.currentIndex,
+    ) {
+        playingPlaceOf(
+            folderTitle = state.playingPageIndex?.let { index -> state.pageLabels.getOrNull(index) }.orEmpty(),
+            playingItems = state.playingItems,
+            currentIndex = state.currentIndex,
         )
     }
     /** Player model built from the controller snapshot and the sampled progress, before the templates apply. */
@@ -553,10 +580,14 @@ fun playerHost(
         durationSec = playbackProgress.duration,
         libraryName = libraryName,
         entries = rowEntries,
+        sections = railSections,
+        playingPlace = playingPlace,
     )
     /** Library tracks of the selected page, each keyed by the URI that its measure is stored under. */
-    val pageTracks: List<Track> = state.pageItems.mapNotNull { entry ->
-        controller.uriAt(entry.index)?.let { uri -> Track(uri = uri, displayPath = entry.name) }
+    val pageTracks: List<Track> = remember(state.pageItems, controller.urisSnapshot()) {
+        state.pageItems.mapNotNull { entry ->
+            controller.uriAt(entry.index)?.let { uri -> Track(uri = uri, displayPath = entry.name) }
+        }
     }
     // What:     `LaunchedEffect(pageTracks, SweepProgress.snapshot.done)` reads the page's unmeasured tracks.
     // Why:      A new page or a sweep step (the sweep reports every few tracks) re-checks the peaks shown on the page,
@@ -577,19 +608,6 @@ fun playerHost(
             publish = { updates -> controller.mergeMeasures(updates) },
         )
     }
-    /** Playing track and its place in its own folder, which the deck reads even when that folder is not on screen. */
-    val playingPlace: PlayingPlace = remember(
-        state.playingPageIndex,
-        state.pageLabels,
-        state.playingItems,
-        state.currentIndex,
-    ) {
-        playingPlaceOf(
-            folderTitle = state.playingPageIndex?.let { index -> state.pageLabels.getOrNull(index) }.orEmpty(),
-            playingItems = state.playingItems,
-            currentIndex = state.currentIndex,
-        )
-    }
     /** Measure of the playing track, read from the library-wide measures so the deck shows it on any folder. */
     val playingMeasure: TrackMeasure? = state.currentIndex
         ?.let { index -> controller.uriAt(index) }
@@ -604,14 +622,13 @@ fun playerHost(
         playingTemplate = templates.lastValid.getValue(TemplateKind.PLAYING_TRACK),
         playingPlace = playingPlace,
         playingMeasure = playingMeasure,
-        measuresByIndex = pageMeasures,
         rowEntries = rowEntries,
     )
     /** Editor view with the preview drawn from the selected page and its measured durations and peaks, for Settings. */
     val editor: TemplateEditorState = PlayerHostModel.editorWithPreview(
         editor = templates,
         pageItems = state.pageItems,
-        measuresByIndex = pageMeasures,
+        measuresByIndex = previewMeasures,
     )
 
     // What:     `fun go(next: PlayerRoute)` moves the host to one destination and saves its token.
@@ -1739,6 +1756,7 @@ fun playerHost(
                         } else {
                             CompositionLocalProvider(
                                 LocalTrackRowMenuOpener provides { index, anchor -> openMenu(index, anchor) },
+                                LocalTrackRowLines provides rowLines,
                             ) {
                                 playerContent(
                                     model = model,

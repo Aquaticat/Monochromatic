@@ -451,6 +451,57 @@ source capture,
 and native error reporting remain the adapter's responsibilities.
 This does not replace the installed judge or supply a maintained host launcher.
 
+## Migration original request interpretation
+
+`consumeRequestMaterial` checks the selected question,
+original request identity,
+source-bound request identity,
+serving-model attribution,
+and synchronous Boolean policy acceptance.
+Native callers still authenticate complete-batch membership and revalidate the original owners after callbacks.
+The interpretation retains the exact request and evidence references without freezing borrowed objects.
+It does not parse or re-encode the request,
+assign authority,
+or lower directives.
+
+`retainRequestMaterialObligations` preserves existing source-domain and unrelated premises.
+Admitted `potential-instruction` adds an independent `request-material-instruction-use` obligation;
+unknown or unadmitted content keeps an interpretation obligation.
+Admitted `none` does not certify source completeness or grant execution permission.
+The private compiler now delegates these consumers to maintained exports;
+final unit,
+lint,
+and native cutover verification remain in progress.
+
+## Migration native hook lifetime
+
+`installNativePolicyHooks` owns slot installation,
+reverse-order removal,
+and rollback for the migration runtime.
+The native integration still authenticates the original Agent,
+Session,
+request,
+judgment,
+and registration capabilities before calling this helper.
+It does not establish source coverage or authorize execution.
+
+An installation failure preserves its original value;
+independent cleanup and restoration failures remain in ordered aggregates.
+Incomplete cleanup keeps the executor slot occupied.
+Successful removers are not repeated,
+and failed removers remain available for retry.
+Detachment requires completed Session disposal and an idle Agent.
+The invalidated observer remains on the stream after detachment.
+Borrowed slots and callbacks are not frozen.
+
+The private native runtime now delegates this bookkeeping through the existing maintained-artifact link.
+Built-artifact units,
+type checking,
+changed-file lint,
+and the native cutover passed.
+A disposable built-artifact omission confirms that removing the disposal gate allows premature detachment.
+This is not a maintained host launcher or installed judge cutover.
+
 ## Migration input accounting
 
 `assertOriginalInputBudget` validates resource and Session receipt counters,

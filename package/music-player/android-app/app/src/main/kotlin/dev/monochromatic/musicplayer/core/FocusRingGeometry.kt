@@ -1,8 +1,10 @@
 // The geometry of the keyboard focus ring (D117). The ring is the pair of solid rings that Firefox paints for
 // `:focus-visible { outline: 1px auto }`, hugging the element instead of its box: a near ring of 2 dp flush against the
-// element and an outer ring of 1 dp around it, each following the element's own outline. The numbers live here, without
-// Compose types, as a spec with the widths, the gap and the square-corner radius as parameters, so the JVM tests can
-// state the rule exactly and the drawing code only converts the result to pixels.
+// element and an outer ring of 1 dp around it, each following the element's own outline. An entry that sits flush in a
+// clipped list draws the same pair just inside its own edge instead (D120). The numbers live here, without Compose
+// types, as a spec with the widths, the gap and the square-corner radius as parameters, so the JVM tests can state the
+// rule exactly and the drawing code only converts the result to pixels. Whether the ring shows at all is decided here
+// too: only for keyboard input.
 
 // What:     `package dev.monochromatic.musicplayer.core` places the geometry beside the other pure rules.
 // Why:      The geometry has no Android or Compose types, so unit tests reach it directly.
@@ -197,3 +199,103 @@ fun focusRingBands(width: Float, height: Float, corners: RingCorners, spec: Focu
         ),
     )
 }
+
+// What:     `enum class FocusRingPlacement` says on which side of the element's edge the ring pair is drawn.
+// Why:      D117 draws the pair outside the element; D120 draws the same pair just inside the edge of an entry that
+//           sits flush in a clipped list, where an outside ring would be cut off.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// type FocusRingPlacement = "outside" | "inside";
+// ```
+/** Where the focus ring pair sits relative to the element's own edge. */
+enum class FocusRingPlacement {
+    /** Around the element, reaching [FocusRingSpec.outset] beyond its edge (D117). */
+    OUTSIDE,
+
+    /** Within the element, its outer edge on the element's edge, so a clipping parent cannot cut it (D120). */
+    INSIDE,
+}
+
+// What:     `private fun RingCorners.shrunkBy(amount)` takes every corner radius in by [amount], not below square.
+// Why:      An inside ring is the outside ring of the element taken in by the outset; a rounded corner of radius r
+//           becomes r - outset, so the ring's outer edge meets the element's edge with the element's own radius.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// const shrunkBy = (c: RingCorners, a: number) => mapCorners(c, (r) => Math.max(0, r - a));
+// ```
+/** Returns these corners with every radius reduced by [amount] and never below zero. */
+private fun RingCorners.shrunkBy(amount: Float): RingCorners = RingCorners(
+    topLeft = (topLeft - amount).coerceAtLeast(0f),
+    topRight = (topRight - amount).coerceAtLeast(0f),
+    bottomRight = (bottomRight - amount).coerceAtLeast(0f),
+    bottomLeft = (bottomLeft - amount).coerceAtLeast(0f),
+)
+
+/** Returns this outline moved by [dx] and [dy] with its corners unchanged. */
+private fun RingRect.movedBy(dx: Float, dy: Float): RingRect =
+    RingRect(left = left + dx, top = top + dy, right = right + dx, bottom = bottom + dy, corners = corners)
+
+// What:     `fun focusRingBandsInside(width, height, corners, spec)` computes both rings just inside an element's edge.
+// Why:      D120: an entry flush in a clipped list draws the same two rings, the 2 dp near ring and the 1 dp outer
+//           ring, inside its own edge. The pair keeps its exact shape, so it is the outside pair of the element
+//           taken in by the outset, which leaves the outer ring's outer edge on the element's edge and the content
+//           side of the near ring [FocusRingSpec.outset] inside it.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// const inside = (w, h, c, spec) => translate(focusRingBands(w - 2 * o, h - 2 * o, shrink(c, o), spec), o, o);
+// ```
+/**
+ * Returns the outlines that bound the rings of an element of [width] by [height] with [corners], drawn inside it.
+ *
+ * Coordinates stay relative to the element's top left corner, so the outer edge of the result is the element's own
+ * bounds and nothing reaches beyond them. An element too small to hold the rings gets empty inner outlines.
+ */
+fun focusRingBandsInside(width: Float, height: Float, corners: RingCorners, spec: FocusRingSpec): FocusRingBands {
+    /** How far the pair is taken in from the element's edge. */
+    val inset: Float = spec.outset
+    /** The outside pair of the element taken in by [inset]. */
+    val taken: FocusRingBands = focusRingBands(
+        width = (width - 2f * inset).coerceAtLeast(0f),
+        height = (height - 2f * inset).coerceAtLeast(0f),
+        corners = corners.shrunkBy(inset),
+        spec = spec,
+    )
+    return FocusRingBands(
+        inner = taken.inner.movedBy(dx = inset, dy = inset),
+        middle = taken.middle.movedBy(dx = inset, dy = inset),
+        outer = taken.outer.movedBy(dx = inset, dy = inset),
+    )
+}
+
+// What:     `fun focusRingBandsAt(placement, width, height, corners, spec)` picks the outside or the inside pair.
+// Why:      The drawing routine takes the placement as a parameter, so one function serves every element.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// const focusRingBandsAt = (p, w, h, c, spec) => (p === "inside" ? inside(w, h, c, spec) : outside(w, h, c, spec));
+// ```
+/** Returns the ring outlines of an element for [placement]: around it (D117) or just inside its edge (D120). */
+fun focusRingBandsAt(
+    placement: FocusRingPlacement,
+    width: Float,
+    height: Float,
+    corners: RingCorners,
+    spec: FocusRingSpec,
+): FocusRingBands = when (placement) {
+    FocusRingPlacement.OUTSIDE -> focusRingBands(width = width, height = height, corners = corners, spec = spec)
+    FocusRingPlacement.INSIDE -> focusRingBandsInside(width = width, height = height, corners = corners, spec = spec)
+}
+
+// What:     `fun focusRingShows(focused, lastInputWasKeyboard)` is the one rule for whether a ring is drawn.
+// Why:      D117: a ring appears for keyboard focus only (CSS `:focus-visible`). Focus from a tap or a touch, or a
+//           list that kept focus while the user went back to touching, shows nothing.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// const focusRingShows = (focused: boolean, lastInputWasKeyboard: boolean) => focused && lastInputWasKeyboard;
+// ```
+/** Returns true when an element that [focused] draws its ring, which needs the last input to be the keyboard. */
+fun focusRingShows(focused: Boolean, lastInputWasKeyboard: Boolean): Boolean = focused && lastInputWasKeyboard
