@@ -20,7 +20,7 @@ use super::overscan_tile_tests::{counts, reset};
 /// Window sizing for exact text widths.
 use super::sidebar_tests::{TEXT_LEFT, resize};
 /// Wrapped fixtures, the open reader, and bounded waits.
-use super::wrap_tests::{long_text, open, settled, until};
+use super::wrap_tests::{long_text, open, settled, tabbed_text, until};
 /// Snapshot records exactly as the Language module builds them.
 use ide_app::{
     language::{
@@ -289,6 +289,44 @@ fn a_new_window_width_breaks_the_block_again() {
         rows_at(&opened).0,
         before.0,
         "a wide area restores the rows"
+    );
+    window.hide().expect("close wrap window");
+}
+
+/// A width the window thread's allowance does not cover is left to the worker although the blocks changed with it: the
+///  window thread paints no tile for it, and the tile that arrives holds the blocks broken for the new width.
+#[test]
+fn a_new_width_left_to_the_worker_keeps_the_displayed_tile_until_the_workers_tile_arrives() {
+    let (_project, opened) = open(&tabbed_text(60));
+    settled(&opened);
+    annotate_line(&opened);
+    settled(&opened);
+    let window = &opened.window;
+    let wide = opened.source.borrow().width;
+    let before = block(&opened, LINE).expect("block").messages.len();
+    reset(&opened.source);
+    opened.source.borrow_mut().rewrap_deferred = 0;
+    resize(window, TEXT_LEFT + 300.0, 660.0);
+    until("the narrow width did not reach the state", || {
+        return opened.source.borrow().width < wide;
+    });
+    until("the worker's tile did not arrive", || {
+        let current = opened.source.borrow();
+        return current.tile_job.is_none()
+            && current.scroll_wanted.is_none()
+            && current.shown.width == current.width;
+    });
+    settled(&opened);
+    let [_, tiles, _, _] = counts(&opened.source);
+    assert_eq!(tiles, 0, "the window thread painted a tile for the resize");
+    assert!(
+        opened.source.borrow().rewrap_deferred >= 1,
+        "the change of width was not left to the worker"
+    );
+    let narrow = block(&opened, LINE).expect("block").messages.len();
+    assert!(
+        narrow > before,
+        "the message is {narrow} rows at the narrow width and {before} at the wide one"
     );
     window.hide().expect("close wrap window");
 }

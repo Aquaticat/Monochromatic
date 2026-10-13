@@ -55,6 +55,18 @@ pub(super) fn long_text(count: usize) -> String {
     return text;
 }
 
+/// Lines that start with a tab and wrap to several rows: a tile of them is more work than the window thread's allowance
+///  covers, so every new width goes to the worker.
+pub(super) fn tabbed_text(count: usize) -> String {
+    let mut text = String::new();
+    for number in 0..count {
+        text.push('\t');
+        text.push_str(&long_line(number));
+        text.push('\n');
+    }
+    return text;
+}
+
 /// Advance timers until `ready` holds, failing with `message` after `PATIENCE`.
 pub(super) fn until(message: &str, mut ready: impl FnMut() -> bool) {
     let start = Instant::now();

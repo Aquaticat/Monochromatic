@@ -23,7 +23,7 @@ use super::tile_build::{BUILD_GATE, PASS_GATE};
 /// The wrap width rule.
 use super::viewport::wrap_width;
 /// Wrapped fixtures, the open reader, and bounded waits.
-use super::wrap_tests::{long_line, long_text, open, settled, until};
+use super::wrap_tests::{long_text, open, settled, tabbed_text, until};
 /// Library types that give the expected values.
 use ide_app::{
     document::ReadingPosition,
@@ -821,18 +821,6 @@ fn the_workers_re_break_converges_after_a_width_taken_at_once() {
     );
     drop(current);
     window.hide().expect("close wrap window");
-}
-
-/// Lines that start with a tab and wrap to several rows: a tile of them is more work than the window thread's allowance
-///  covers, so every new width goes to the worker.
-fn tabbed_text(count: usize) -> String {
-    let mut text = String::new();
-    for number in 0..count {
-        text.push('\t');
-        text.push_str(&long_line(number));
-        text.push('\n');
-    }
-    return text;
 }
 
 /// The worker's measurement of a new width is applied before the tile for it is swapped in: the lines the old tile
