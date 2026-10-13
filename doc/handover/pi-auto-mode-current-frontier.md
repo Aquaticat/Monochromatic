@@ -681,6 +681,60 @@ The potential-instruction contrast retains both `request-source-domain` and `req
 the request-content `none` contrasts retain only `request-source-domain`.
 No protected operation or provider request occurred.
 
+## Original before-agent-start option inputs
+
+The decision-domain work found an unconsumed original input already present in the run ledger.
+`c567fb4f` / `proc_e511` changes a section in one callback,
+then passes it to another callback that restores the section before rendering.
+The native ledger retains the second callback's original options,
+but the governing source set omitted them.
+The retained-final-state control passed;
+the restored-state assertion failed.
+
+`900864cb` projects `handlerObservations[].before.options` through the existing run owner.
+Sources use `native-run-handler-options-input`,
+location `handlerOptions`,
+and view `original-handler-options-view`.
+Original run membership and observation ordinal authenticate the projection;
+JSON shape does not.
+The projection is `native-content-json`,
+charged to the run ledger and existing source bounds.
+Native callback behavior and request serialization are unchanged.
+No source receives authority,
+registration,
+or payload eligibility.
+`proc_dfce` passed source bounds,
+retained/restored state,
+refresh ancestry,
+and canonical assessment with the original value absent from the native request.
+
+The first projection exposed only active run ancestry.
+`8cac8e60` / `proc_73be` and `proc_5a69` demonstrated loss after settlement and a subsequent prompt.
+`fd78cf05` now retains original references through the existing run history,
+scoped by the native root captured when the run begins.
+Input-only publications belong to owned observation frames,
+not borrowed options.
+The original handler references precede manager references in the combined base view,
+so manager-only append handoff keeps its existing prefix proof.
+Session receipt usage now includes those handler sources before the shared resource/Session check.
+
+`proc_6bc3` passed settlement,
+next-prompt identity,
+root-reset exclusion,
+and actual shared 64/65 receipt boundaries.
+Manager and resource counters alone were below the limit in the refusal control.
+Historical inputs do not become active ancestry.
+`8f7161f8` adds live-root and old-alias checks;
+`proc_dfd4` passed their owner controls and the manager-handoff lifecycle cases.
+Unpublished original callback inputs retain a source-publication failure rather than disappearing.
+Affected message/option regressions are still being checked;
+the historical broad input-parent result does not cover this addition.
+
+The run-owner helper task initially failed with Node `EEXIST` on a historical output directory.
+`b672127d` uses unique disposable output directories and preserves historical artifacts.
+`proc_61c6` passed the helper controls before the subsequent history/root changes.
+This work does not close the host domain or provide maintained host installation.
+
 ## Native metadata-query receipts
 
 `94f39f5e` / `proc_666b` reached a separate required retention failure.
