@@ -645,6 +645,42 @@ not completed domain closure,
 a maintained host launch path,
 or installed activation.
 
+## Decision-domain consumer frontier
+
+`2b0d054c` / `proc_382f` isolates the remaining decision-domain obligation through the native provider serializer.
+Authored permission,
+prohibition,
+and no-instruction cases each bind 26 original sources and interpret 26 clauses.
+Their five represented request contributions are accounted for;
+those contribution records still describe partial origin coverage.
+The only remaining diagnostic in these cases is `request-source-domain`.
+Every case remains unresolved with no protected execution or provider request.
+Authored semantic answers establish neither model accuracy nor original-domain completeness.
+
+`proc_6f9b` runs the separate resolution acceptance.
+Its permission case fails the required domain-closure assertion;
+the later prohibition and no-instruction acceptance cases were not reached.
+This does not justify deleting the hold:
+original-owner domain membership,
+applicable scope,
+and valid delegation still need their code-owned consumer.
+No closed-host-profile policy or new completeness interface has been adopted.
+
+A preparatory control exposed an independent obligation hidden by the universal hold.
+`373eab30` / `proc_8594` showed that an admitted `potential-instruction` request estimate
+left no specific use obligation when other issues were absent.
+`c5375b8b` now retains `request-material-instruction-use` independently.
+Potential material may repeat indexed text;
+the new diagnostic creates neither another directive nor uniform authority for the request.
+Pure request,
+semantic-policy,
+and compiler tests passed `proc_b09d`.
+`proc_01d8` passed the native whole-request scenarios with empty child stderr
+and the decision-domain contrasts.
+The potential-instruction contrast retains both `request-source-domain` and `request-material-instruction-use`;
+the request-content `none` contrasts retain only `request-source-domain`.
+No protected operation or provider request occurred.
+
 ## Native metadata-query receipts
 
 `94f39f5e` / `proc_666b` reached a separate required retention failure.
@@ -736,7 +772,22 @@ and the fixture was corrected without changing native behavior.
 The private adapter now delegates its failure lifetime to the package export;
 original argument-frame construction and returned-value identity remain local.
 The existing stager and export-identity test include this function.
-Unit/lint verification and the native import-cutover controls are pending.
+Final source is `e64644ae85`.
+Build/types passed `proc_95dd`;
+full package units and four-file lint passed `proc_02e6` with zero lint diagnostics.
+The native import cutover passed `proc_c3b0`,
+including exact export identity,
+owner and native failure controls,
+query-only review,
+and lifecycle retirement.
+`71cd85fb` / `proc_921c` removed the continuation check in a disposable built copy.
+The intact control passed;
+the changed artifact reached the required missing-exception assertion after successful recapture.
+The maintained artifact was not modified.
+
+No lint protection was disabled.
+An owned optional failure field replaced the root-level mutable binding;
+the test fixture uses native `Generator.throw` to produce foreign JavaScript exceptions.
 This moves failure-lifecycle code out of scratch,
 not source ownership,
 governing-domain closure,
