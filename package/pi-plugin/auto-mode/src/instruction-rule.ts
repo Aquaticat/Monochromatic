@@ -57,10 +57,16 @@ const MAX_PRIORITY = 255;
  @returns integer within the existing precedence range
 
  @throws {@link InstructionResolutionInputError} for unsupported priorities
+
+ @example
+ ```ts
+ readInstructionPriority(0);
+ ```
  */
 export function readInstructionPriority(input: unknown,): number {
   if (((typeof input) !== 'number') || (!Number.isInteger(input,))
-    || (input < 0) || (input > MAX_PRIORITY))
+    || (input < 0)
+    || (input > MAX_PRIORITY))
     throw new InstructionResolutionInputError('Instruction priority must be a code-established integer from 0 through 255',);
   return input;
 }

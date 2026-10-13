@@ -23,7 +23,9 @@ function outcome(clauses: readonly unknown[],): GuardOutcome {
   /**
    Keep each authored clause's missing premises when composing fixture facts.
    */
-  const lowered = clauses.map(lowerEstablishedClause,);
+  const lowered = clauses.map(function lowerClause(clause,) {
+    return lowerEstablishedClause(clause,);
+  },);
   return resolveGuardOutcome({
     premises: lowered.some(function missing(value,) {
       return value.missingPremises.length > 0;

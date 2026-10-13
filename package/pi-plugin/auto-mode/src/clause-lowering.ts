@@ -8,7 +8,10 @@ import {
   type AuthorizationRequirement,
   readAuthorizationRequirement,
 } from './authorization-requirement.ts';
-import { type InstructionRule, readInstructionPriority, } from './instruction-rule.ts';
+import {
+  type InstructionRule,
+  readInstructionPriority,
+} from './instruction-rule.ts';
 import {
   InstructionResolutionInputError,
   readPolicyIdentity,
@@ -112,14 +115,22 @@ export function lowerEstablishedClause(input: unknown,): LoweredClause {
   /**
    Preserve the function boundary without logging submitted clause content.
    */
-  const rl = tagged({ tag: lowerEstablishedClause.name, l, },);
+  const rl = tagged({
+    tag: lowerEstablishedClause.name,
+    l,
+  },);
   rl.debug('lowering an admitted internal clause relationship',);
   /**
    Extra fields cannot turn model metadata into admitted facts.
    */
   const value = readPolicyRecord({
     input,
-    fields: ['id', 'priority', 'relation', 'authorization',],
+    fields: [
+      'id',
+      'priority',
+      'relation',
+      'authorization',
+    ],
   },);
   /**
    Identity remains bounded without establishing its source.
@@ -135,7 +146,10 @@ export function lowerEstablishedClause(input: unknown,): LoweredClause {
    Only absent priority leaves authority unresolved; invalid supplied priorities fail.
    */
   const priority = value.priority === undefined ? undefined : readInstructionPriority(value.priority,);
-  if (Object.hasOwn(value, 'authorization',) && relation !== 'prerequisite')
+  if (Object.hasOwn(
+    value,
+    'authorization',
+  ) && (relation !== 'prerequisite'))
     throw new InstructionResolutionInputError('Authorization facts belong only to an established prerequisite',);
   /**
    Each invocation owns its output arrays independently of submitted records.
@@ -151,55 +165,82 @@ export function lowerEstablishedClause(input: unknown,): LoweredClause {
   const missingPremises: ClausePremise[] = [];
   if (relation === 'none') {
     rl.debug('no operative relationship contributes a directive or prerequisite',);
-    return sealLowering({ rules, authorizationRequirements, missingPremises, },);
+    return sealLowering({
+      rules,
+      authorizationRequirements,
+      missingPremises,
+    },);
   }
   if (priority === undefined) {
     rl.debug('clause has no established authority priority',);
     missingPremises.push('instruction-authority-and-scope',);
   }
-  switch (relation) {
-    case 'unknown':
-    case 'unsupported': {
-      rl.debug('clause meaning retains interpretation uncertainty',);
-      missingPremises.push('qualified-rule-interpretation',);
-      return sealLowering({ rules, authorizationRequirements, missingPremises, },);
-    }
-    case 'permission':
-    case 'prohibition': {
-      if (priority !== undefined) {
-        rl.debug('retaining a directive with code-established priority',);
-        rules.push(Object.freeze({
-          id,
-          priority,
-          effect: relation === 'permission' ? 'permit' : 'prohibit',
-          applicability: 'applies',
-        },),);
-      }
-      return sealLowering({ rules, authorizationRequirements, missingPremises, },);
-    }
-    case 'prerequisite': {
-      /**
-       Missing facts remain unresolved; explicit invalid values are not treated as absence.
-       */
-      const facts: Readonly<Record<string, unknown>> = Object.hasOwn(value, 'authorization',)
-        ? readPolicyRecord({ input: value.authorization, fields: ['satisfaction', 'channel',], },)
-        : {};
-      /**
-       Validate prerequisite facts even when source authority remains unavailable.
-       */
-      const requirement = readAuthorizationRequirement({
-        id,
-        applicability: 'applies',
-        satisfaction: Object.hasOwn(facts, 'satisfaction',) ? facts.satisfaction : 'unresolved',
-        channel: Object.hasOwn(facts, 'channel',) ? facts.channel : 'unresolved',
-      },);
-      if (priority !== undefined) {
-        rl.debug('retaining an independent authorization prerequisite',);
-        authorizationRequirements.push(requirement,);
-      }
-      return sealLowering({ rules, authorizationRequirements, missingPremises, },);
-    }
+  if ((relation === 'unknown') || (relation === 'unsupported')) {
+    rl.debug('clause meaning retains interpretation uncertainty',);
+    missingPremises.push('qualified-rule-interpretation',);
+    return sealLowering({
+      rules,
+      authorizationRequirements,
+      missingPremises,
+    },);
   }
+  if ((relation === 'permission') || (relation === 'prohibition')) {
+    if (priority !== undefined) {
+      rl.debug('retaining a directive with code-established priority',);
+      rules.push(Object.freeze({
+        id,
+        priority,
+        effect: relation === 'permission' ? 'permit' : 'prohibit',
+        applicability: 'applies',
+      },),);
+    }
+    return sealLowering({
+      rules,
+      authorizationRequirements,
+      missingPremises,
+    },);
+  }
+  // A new meaning label must get its own lowering branch instead of falling into prerequisite handling.
+  rl.debug(`validating remaining ${relation satisfies 'prerequisite'} facts`,);
+  /**
+   Missing facts remain unresolved; explicit invalid values are not treated as absence.
+   */
+  const facts: Readonly<Record<string, unknown>> = Object.hasOwn(
+    value,
+    'authorization',
+  )
+    ? readPolicyRecord({
+      input: value.authorization,
+      fields: [
+        'satisfaction',
+        'channel',
+      ],
+    },)
+    : {};
+  /**
+   Validate prerequisite facts even when source authority remains unavailable.
+   */
+  const requirement = readAuthorizationRequirement({
+    id,
+    applicability: 'applies',
+    satisfaction: Object.hasOwn(
+      facts,
+      'satisfaction',
+    ) ? facts.satisfaction : 'unresolved',
+    channel: Object.hasOwn(
+      facts,
+      'channel',
+    ) ? facts.channel : 'unresolved',
+  },);
+  if (priority !== undefined) {
+    rl.debug('retaining an independent authorization prerequisite',);
+    authorizationRequirements.push(requirement,);
+  }
+  return sealLowering({
+    rules,
+    authorizationRequirements,
+    missingPremises,
+  },);
 }
 
 //endregion Admitted relationships
