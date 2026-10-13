@@ -21,6 +21,9 @@ The operating instructions live in `doc/runbook/claude-cpu-cap.md`.
 - Boost and PBO stay off. The user disabled them (`/sys/devices/system/cpu/cpufreq/boost` is 0).
 - Commit eagerly.
 - The user allowed storing the CoolerControl token on disk and will rotate it on 2026-10-14.
+- The 4-hour stop-working check is pushed back to 4 hours after every weird event (user rule, 2026-10-13).
+  Weird means any alert except IO pressure, a cap change, `WATCHER-ERROR`, an unresolved `FAN-READ-FAILED`,
+  or a `WATCHER-STOPPED` the session did not cause.
 
 ## Current state
 
@@ -38,8 +41,10 @@ The operating instructions live in `doc/runbook/claude-cpu-cap.md`.
   30% at 40 degrees and below, 45% at 50, 60% at 60, 85% at 70, 100% at 75 and above, from Tctl, no smoothing.
   The previous version (which already had the user's own 75-degree to 100% edit) is saved at
   `~/temp/agent/cc-spec/silent-before.json`; restore it with `PUT /profiles`.
-- Session-only items that die with the session: the Monitor (30-minute expiry, re-arm each time) and a 4-hour cron
-  check at 21:19 EDT on 2026-10-13 (job `90c90261`) that ends the watch if nothing weird happened.
+- Session-only items that die with the session: the Monitor (30-minute expiry, re-arm each time) and a one-shot cron
+  check (job `f4aeb83b`, 22:05 EDT on 2026-10-13) that ends the watch if nothing weird happened.
+  It was first set for 21:19 (job `90c90261`), then pushed back to 4 hours after the CPU pressure alert at 18:02:37,
+  the latest weird event at that point.
 - Other sessions were told about each change by cross-session message.
   `gate-slot.ts` (in `~/temp/agent`, outside the repo) no longer wraps commands in a `systemd-run` scope,
   so gate commands stay under the shared cap.
@@ -56,6 +61,33 @@ The operating instructions live in `doc/runbook/claude-cpu-cap.md`.
   The cause of the low disk speed is not found. The volumes have no `no_read_workqueue` or `no_write_workqueue` flag.
 - Hot episodes: 94.8 to 96.1 degrees at 135 W and 4483 MHz (boost off), with CPU pressure near 57.
   A later alert at 91.1 degrees had the fans at 2000 to 2600 RPM. Idle runs about 54 degrees at 60 W.
+- Analysis of the sample log, 18:11 to 18:44 EDT on 2026-10-13 (336 rows, 173 of them burst rows, cap 28 throughout;
+  scratch scripts `~/temp/agent/analyze-samples.ts`, `analyze-columns.ts`, `analyze-mapping.ts`, outside the repo):
+  - No settled data above 80 W exists yet. The loads were three short bursts, and Tctl rose from about 65 to 94.5
+    degrees in about 25 seconds as package power climbed from 105 to 149 W, then fell within 4 to 6 seconds
+    once power dropped.
+  - Time at or above Tctl 85 was 42 seconds, 90 was 16 seconds, 93 was 6 seconds, and 95 was 0 seconds in the window.
+    Highest value 94.5 degrees at 149 W for one 2-second sample, with the first fan at about 2030 RPM,
+    its highest observed speed, so the fans were already at their top at the spike.
+  - Settled Tctl, 40 to 80 W: 55 degrees at 45 to 55 W, 58 at 60 to 70 W, 62 at 70 to 80 W.
+    The quiet-load slope is 0.29 degrees per watt (130 rows).
+    A straight-line extension to 149 W gives about 82 degrees, so the 94 degree spikes sit about 12 degrees above
+    that line; this is an extrapolation, not a measurement, and fan speed also rises with load.
+  - Verdict for this window: about 90 degrees was a short peak, not a settled value.
+    The earlier alerts at 17:27 to 17:49 lasted at least 6 seconds each and are before the log starts,
+    so whether a sustained 120 W or more settles below 95 is still unanswered.
+  - The first chiplet is cores 0 to 7: in 251 of 253 rows with a clear gap, the chiplet with more watts was the one
+    with the hotter CCD (Tccd1 vs Tccd2), consistent with that mapping.
+    Chiplet 1 drew about 53 W against 48 W for chiplet 2 at the 149 W peak.
+  - The Corsair probe stayed between 25.5 and 26.2 degrees across 42 to 149 W (correlation with watts -0.12).
+    It does not follow heat from the cooler, so it measures something near room temperature.
+    The cause is not known (probe not in the exhaust stream, loose contact, or a slow sensor).
+    It cannot yet serve as the heatsink-exhaust reference the user wanted.
+  - Motherboard readings: `board3_c` follows load (52 to 94 degrees, correlation 0.83 with watts), so it matches the
+    CPU reading. `board5_c` moves a little with load (39 to 42). `board1_c`, `board2_c`, `board4_c`,
+    `board6_c` move at most 2 degrees. `acpi_c` is constant at 16.8, so it is not informative.
+  - Pressure stayed at or under 11.4 and the one-minute load at or under 20 in the window,
+    so the 40 limit was not tested.
 - Reference points found online (different benches): 78 degrees at 142 W on a 240 mm AIO (forum report),
   86.1 degrees at about 204 W on a water loop, 87 degrees at 200 W for an NH-D15 G2 on a 9950X.
   Neither fixes an expected value for this setup.
@@ -83,7 +115,11 @@ The operating instructions live in `doc/runbook/claude-cpu-cap.md`.
 - Which cooler variant is installed, and is it mounted correctly (offset, paste, base shape)?
 - Is 90 degrees a peak or a settled value at a given wattage? The sample log is collecting the answer.
 - What do the six motherboard readings measure, and is there a usable ambient reference?
-- Is the first chiplet really cores 0 to 7? Compare chiplet watts with chiplet temperatures.
+- Why does the Corsair probe read near 26 degrees at any load? Is it touching the heatsink exhaust path?
+  Ask the user to check where it sits (the raw `temp1` reading in CoolerControl can confirm the logged value).
+- Is a larger fan floor worth it? The spikes outrun the fans (about 1300 RPM at a spike's start, about 2000
+  RPM 6 to 8 seconds later), but the user cares about heat above 75 degrees, not noise, so a higher floor below
+  60 degrees is a possible proposal, not a decision.
 - Is 40 the right pressure limit? Judge from settled data.
 - `ide7`, `ide8`, and `tr-gate` units run outside the cap (their own cgroups).
 - The hold paragraph in `doc/handover/cli-git-rust-implementation.md` should point to this work.
@@ -94,7 +130,8 @@ The operating instructions live in `doc/runbook/claude-cpu-cap.md`.
 
 ## Next actions
 
-1. Re-arm the Monitor on each expiry; react to alerts with the tone-down rule.
+1. Re-arm the Monitor on each expiry; react to alerts with the tone-down rule,
+   and push the 4-hour check back to 4 hours after each weird event.
 2. When a session has run sustained load, run `node ~/.local/share/claude-cpu-cap/summarize-samples.ts 1`.
    It still needs a chiplet comparison and a (Tctl minus probe) per watt figure.
 3. At the 4-hour check, end the watch if nothing is open; keep the service running.
@@ -103,3 +140,4 @@ The operating instructions live in `doc/runbook/claude-cpu-cap.md`.
 ## Commits so far
 
 - `6bb8cc9a7d`, `25909f463a`, `609b693cf5`, `bc561191bb`, `6c8d57d685`, `59c107b737`: the runbook, in order.
+- `1aedd30d61`, `bdae3faedd`: this handover.
