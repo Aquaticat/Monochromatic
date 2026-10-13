@@ -121,21 +121,48 @@ fn assert_nothing_left(fixture: &Fixture, repo: &Path) {
     assert_eq!(kept, Vec::<String>::new(), "no pack keeps the commit's objects alive");
 }
 
+/// How many incompressible files the maintenance control gives the repack to pack.
+const BULK_FILE_COUNT: usize = 32;
+
+/// How many bytes each incompressible file holds.
+const BULK_FILE_BYTES: usize = 256 * 1024;
+
+/// Pseudo-random bytes from a xorshift generator seeded with `seed`, which deflate cannot shrink.
+fn incompressible(seed: u64) -> Vec<u8> {
+    let mut state: u64 = seed.wrapping_mul(0x9E37_79B9_7F4A_7C15) | 1;
+    let mut bytes: Vec<u8> = Vec::with_capacity(BULK_FILE_BYTES);
+    while bytes.len() < BULK_FILE_BYTES {
+        state ^= state << 13;
+        state ^= state >> 7;
+        state ^= state << 17;
+        bytes.extend_from_slice(&state.to_le_bytes());
+    }
+    return bytes;
+}
+
 /// With detaching off, the maintenance a landing starts has finished when the wrapper returns:
-///  the second landing leaves more packs than `gc.autoPackLimit` allows, so Git consolidates them into one pack,
-///  and that consolidation is complete, with no temporary file and no maintenance lock, when the wrapper returns.
+///  the second landing leaves more packs than `gc.autoPackLimit` allows, so Git repacks the loose objects,
+///  and that repack is complete, with no temporary file and no maintenance lock, when the wrapper returns.
 #[test]
 fn a_landing_returns_after_its_automatic_maintenance_finished() {
     let fixture: Fixture = fixture("commit-foreground-maintenance");
     let repo: PathBuf = edited_repository(&fixture, "repo");
     git(&fixture, repo.as_path(), &["config", "gc.autoPackLimit", "1"]);
+    // Maximum compression of incompressible files keeps the repack running well past the wrapper's own last steps.
+    git(&fixture, repo.as_path(), &["config", "pack.compression", "9"]);
+    std::fs::create_dir(repo.join("filler")).expect("filler directory");
+    for number in 0..BULK_FILE_COUNT {
+        std::fs::write(repo.join(format!("filler/{number}.bin")), incompressible(number as u64)).expect("filler file");
+    }
+    git(&fixture, repo.as_path(), &["add", "--", "filler"]);
+    git(&fixture, repo.as_path(), &["commit", "--quiet", "--message=filler"]);
     let first: Observed = run_commit(&fixture, repo.as_path(), &["commit", "--message=second", "a.txt"]);
     assert_eq!(first.code, Some(0), "{}", stderr_of(&first));
     std::fs::write(repo.join("a.txt"), b"one\ntwo\nthree\n").expect("edit a again");
     let second: Observed = run_commit(&fixture, repo.as_path(), &["commit", "--message=third", "a.txt"]);
     assert_eq!(second.code, Some(0), "{}", stderr_of(&second));
     let counts: String = git_text(&fixture, repo.as_path(), &["count-objects", "-v"]);
-    assert!(counts.contains("packs: 1\n"), "the packs were consolidated: {counts}");
+    assert!(counts.contains("count: 0\n"), "the loose objects were packed: {counts}");
     assert!(counts.contains("garbage: 0\n"), "{counts}");
     assert!(!repo.join(".git/objects/maintenance.lock").exists(), "no maintenance still holds its lock");
     assert_nothing_left(&fixture, repo.as_path());
