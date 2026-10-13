@@ -1584,10 +1584,11 @@ that is verification, not a decision for the user.
   `forbidden-strings` dependency during this session, after the gate, a dry-run publish and a real-credential
   commit have passed.
   CPU cap (user, 2026-10-14; the hold of 2026-10-13 was released on 2026-10-14): the host is a 16 core, 32 thread
-  Ryzen 9 7950X with 62 GiB RAM, and Claude tool commands and gates share one 75 percent cap, the `claude-code-bash`
-  cgroup (`cpu.max` 3000000 100000, 30 of 32 threads on 2026-10-14; the user may lower it two threads at a time, so read
-  `cpu.max` in `/sys/fs/cgroup/user.slice/user-1000.slice/user@1000.service/app.slice/claude-code-bash/` for the current
-  value). It is a runtime setting that does not survive a reboot, so set it again after one; nothing else enforces the ceiling.
+  Ryzen 9 7950X with 62 GiB RAM, and Claude tool commands and gates share one 75 percent cap, 30 of 32 threads on
+  2026-10-14, enforced by the user service `claude-cpu-watch.service` from `~/.config/claude-cpu-cap/threads`
+  (persistent across reboots; to lower it, write the new integer to that file, never write `cpu.max` by hand).
+  The service also prints ALERT and CLEAR lines for CPU, memory and IO pressure, scheduler lag and temperature;
+  details and the follow command are in `doc/runbook/claude-cpu-cap.md`.
   Agents need no per-job throttles; heavy gates still run through `~/temp/agent/gate-slot.ts` (six slots) because their
   time limits assume bounded host load.
   Commands started with `systemd-run` leave the shared cap, so do not use it for work that should count.
