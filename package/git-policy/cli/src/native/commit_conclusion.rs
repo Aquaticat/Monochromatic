@@ -71,9 +71,9 @@ pub struct ConclusionInput<'a, F: RepositoryFacts> {
     /// How many passes changed content.
     pub changed_passes: u64,
     /// The paths the corrections wrote.
-    pub changed_paths: Vec<String>,
+    pub changed_paths: Vec<Vec<u8>>,
     /// The paths the private index changes against the base.
-    pub committed_paths: Vec<String>,
+    pub committed_paths: Vec<Vec<u8>>,
     /// The positional pathspec tokens.
     pub pathspecs: &'a [String],
 }
@@ -87,7 +87,7 @@ pub struct ConclusionInput<'a, F: RepositoryFacts> {
 /// ```ts
 /// withChangedFixSummary({ result: pass, trigger: 'pre-forward', passes, changedPaths });
 /// ```
-pub fn events_with_changed_summary(events: Vec<PolicyEvent>, passes: u64, changed_paths: &[String]) -> Vec<PolicyEvent> {
+pub fn events_with_changed_summary(events: Vec<PolicyEvent>, passes: u64, changed_paths: &[Vec<u8>]) -> Vec<PolicyEvent> {
     if passes == 0 {
         return events;
     }
@@ -103,15 +103,15 @@ pub fn events_with_changed_summary(events: Vec<PolicyEvent>, passes: u64, change
 /// ```ts
 /// withFixSummary({ result, trigger: 'pre-forward', passes, changedPaths });
 /// ```
-pub fn events_with_summary(mut events: Vec<PolicyEvent>, passes: u64, changed_paths: &[String]) -> Vec<PolicyEvent> {
-    let mut sorted: Vec<String> = changed_paths.to_vec();
-    sorted.sort_by(|left, right| { return left.as_bytes().cmp(right.as_bytes()); });
+pub fn events_with_summary(mut events: Vec<PolicyEvent>, passes: u64, changed_paths: &[Vec<u8>]) -> Vec<PolicyEvent> {
+    let mut sorted: Vec<Vec<u8>> = changed_paths.to_vec();
+    sorted.sort();
     events.push(PolicyEvent::FixSummary {
         trigger: super::policy_trigger::Trigger::PreForward,
         passes,
         changed_paths: sorted
             .iter()
-            .map(|path| { return super::event_path::EventPath::from_git_bytes(path.as_bytes()); })
+            .map(|path| { return super::event_path::EventPath::from_git_bytes(path.as_slice()); })
             .collect(),
     });
     return events;

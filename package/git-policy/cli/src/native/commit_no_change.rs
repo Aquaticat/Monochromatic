@@ -19,6 +19,7 @@ use super::commit_workspace::CommitWorkspace;
 use super::landing_attempt::{LandingOutcome, LandingPayload, LandingRequest, land_transaction};
 use super::landing_findings::{LANDING_FINDING_EXIT_CODE, landing_finding};
 use super::owner_lock::OwnerLock;
+use super::path_bytes::path_message_text;
 use super::policy_events::PolicyEvent;
 use super::transaction_git::{GitFailure, GitRequest, run_git_checked};
 
@@ -54,7 +55,7 @@ pub struct NoChangeInput<'a> {
     /// The completely settled private tree.
     pub intended_tree: &'a str,
     /// The selection including policy additions.
-    pub committed_paths: &'a [String],
+    pub committed_paths: &'a [Vec<u8>],
     /// Selected corrected files that match their initial bytes.
     pub selected_worktree_paths: &'a [AddedPath],
     /// The settled pass's events.
@@ -62,7 +63,7 @@ pub struct NoChangeInput<'a> {
     /// How many passes changed content.
     pub changed_passes: u64,
     /// The corrected paths, for the summary.
-    pub changed_paths: &'a [String],
+    pub changed_paths: &'a [Vec<u8>],
     /// The backoff budget for a foreign `index.lock`.
     pub index_lock_timeout_ms: u64,
 }
@@ -93,13 +94,15 @@ fn base_tree(input: &NoChangeInput<'_>, base: &str) -> Result<String, GitFailure
 /// ```ts
 /// hasConflicts ? `No commit created: ... ${JSON.stringify(conflicted)}. Compare them with HEAD before retrying.` : '...'
 /// ```
-fn no_change_message(conflicted: &[String]) -> String {
+fn no_change_message(conflicted: &[Vec<u8>]) -> String {
     if conflicted.is_empty() {
         return String::from(
             "No commit created: normalization removed every selected change; matching worktree and index copies were reconciled.",
         );
     }
-    let listed: String = serde_json::to_string(conflicted).unwrap_or_default();
+    // The message shows each name as text; a name that is not UTF-8 shows its replacement characters.
+    let names: Vec<String> = conflicted.iter().map(|path| { return path_message_text(path.as_slice()); }).collect();
+    let listed: String = serde_json::to_string(&names).unwrap_or_default();
     return format!(
         "No commit created: normalization removed every selected change; index copies were reconciled, but worktree copies changed and were kept: {listed}. Compare them with HEAD before retrying."
     );

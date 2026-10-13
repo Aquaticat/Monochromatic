@@ -225,6 +225,9 @@ pub mod policy_events;
 ///  plus base64 `pathBytes` when it is not UTF-8.
 pub mod event_path;
 
+/// Exact repository path bytes as the operating system takes them, and as text for messages.
+pub mod path_bytes;
+
 /// Ordered policy execution for one lifecycle point.
 pub mod policy_engine;
 

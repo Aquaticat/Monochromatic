@@ -25,6 +25,7 @@ use super::policy_convergence::{Convergence, FIX_PASS_LIMIT_MESSAGE, FixPasses, 
 use super::policy_engine::{StageEnd, StageRequest};
 use super::policy_events::PolicyEvent;
 use super::policy_pass::{PassResult, run_policy_pass};
+use super::path_bytes::path_message_text;
 use super::policy_trigger::Trigger;
 use super::private_index_stage::{PrivateStage, stage_correction};
 use super::repository_facts::RepositoryFacts;
@@ -75,7 +76,7 @@ pub struct CommitConvergence {
     /// The pass whose events describe the outcome.
     pub pass: PassResult,
     /// Paths whose private-index entry a correction wrote, in first-write order.
-    pub changed_paths: Vec<String>,
+    pub changed_paths: Vec<Vec<u8>>,
 }
 
 /// What:
@@ -101,7 +102,7 @@ struct CommitPasses<'a, F: RepositoryFacts> {
     /// Exact corrected state after each changed pass, starting from the uncorrected state.
     states: Vec<BTreeMap<Vec<u8>, InstallChange>>,
     /// Paths written so far, in first-write order.
-    changed_paths: Vec<String>,
+    changed_paths: Vec<Vec<u8>>,
 }
 
 impl<'a, F: RepositoryFacts> CommitPasses<'a, F> {
@@ -151,8 +152,7 @@ impl<F: RepositoryFacts> FixPasses for CommitPasses<'_, F> {
         };
         for correction in &proposals {
             if let Err(message) = stage_correction(&self.stage, correction) {
-                let path: String = String::from_utf8_lossy(correction.path.as_slice()).into_owned();
-                self.blocked = Some(patch_conflict_pass(arguments.as_slice(), path.as_str(), message));
+                self.blocked = Some(patch_conflict_pass(arguments.as_slice(), correction.path.as_slice(), message));
                 return false;
             }
             record_path(&mut self.changed_paths, correction);
@@ -176,10 +176,9 @@ impl<F: RepositoryFacts> FixPasses for CommitPasses<'_, F> {
 /// ```ts
 /// changedPaths.add(path);
 /// ```
-fn record_path(changed: &mut Vec<String>, correction: &Correction) {
-    let path: String = String::from_utf8_lossy(correction.path.as_slice()).into_owned();
-    if !changed.contains(&path) {
-        changed.push(path);
+fn record_path(changed: &mut Vec<Vec<u8>>, correction: &Correction) {
+    if !changed.contains(&correction.path) {
+        changed.push(correction.path.clone());
     }
 }
 
@@ -192,15 +191,16 @@ fn record_path(changed: &mut Vec<String>, correction: &Correction) {
 /// ```ts
 /// patchApplicationFailure({ path, message });
 /// ```
-fn patch_conflict_pass(arguments: &[OsString], path: &str, message: String) -> PassResult {
+fn patch_conflict_pass(arguments: &[OsString], path: &[u8], message: String) -> PassResult {
+    let shown: String = path_message_text(path);
     return PassResult {
         arguments: arguments.to_vec(),
         events: vec![PolicyEvent::EngineFailure {
             code: EngineFailureCode::PatchConflict,
-            message: format!("Policy patch for {path} does not apply to the private index: {message}"),
+            message: format!("Policy patch for {shown} does not apply to the private index: {message}"),
             trigger: Some(Trigger::PreForward),
             policy: None,
-            path: Some(super::event_path::EventPath::from_git_bytes(path.as_bytes())),
+            path: Some(super::event_path::EventPath::from_git_bytes(path)),
         }],
         end: StageEnd::Failed,
     };
