@@ -20,8 +20,12 @@ use super::candidate_object::parse_object_id;
 use super::candidate_prediction::CandidateRequest;
 /// The policy configuration the gate runs with.
 use super::config_schema::PolicyConfig;
+/// The reading of the invocation's environment.
+use super::child_environment::environment_value;
 /// The failure code and the event kinds the gate emits.
 use super::diagnostics::EngineFailureCode;
+/// The linter the Markdown policy finds on, and runs with, the invocation's environment.
+use super::markdown_linter::executable_linter;
 use super::policy_checks::shipped_checks;
 use super::policy_content::LifecycleContent;
 use super::policy_engine::{StageEnd, StageRequest, pass_exit_code};
@@ -29,6 +33,8 @@ use super::policy_events::{PolicyEvent, render_policy_events};
 use super::policy_pass::run_policy_pass;
 use super::policy_trigger::Trigger;
 use super::repository_facts::git_facts;
+/// The variable naming the forbidden-strings rules file.
+use super::scanner_selection::RULES_VARIABLE;
 use super::wrapper_controls::Controls;
 /// Owned OS strings for the replayed global options and the child environment.
 use std::ffi::OsString;
@@ -48,7 +54,7 @@ pub const POST_COMMIT_BLOCKED_EXIT_CODE: i32 = 2;
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// type PostCommitInput = { gitPath; cwd; landedOid; arguments; policySeverities; policyOptions };
+/// type PostCommitInput = { gitPath; cwd; landedOid; arguments; environment; policySeverities; policyOptions };
 /// ```
 #[derive(Clone, Debug)]
 pub struct PostCommitRequest<'request> {
@@ -62,6 +68,10 @@ pub struct PostCommitRequest<'request> {
     pub global_prefix: &'request [OsString],
     /// Variables added to every query.
     pub overlay: &'request [(OsString, OsString)],
+    /// The invocation's whole environment:
+    ///  the Markdown linter is found on its `PATH` and runs with it,
+    ///  and the forbidden-strings rules variable is read from it.
+    pub environment: &'request [(OsString, OsString)],
     /// The policy severities and options the gate runs with.
     pub config: PolicyConfig,
     /// Escapes and flags the invocation carries.
@@ -144,6 +154,13 @@ fn run_staged_gate(
         LifecycleContent::Requested(CandidateRequest::Landed(commit)),
         Vec::new(),
     );
+    // The scanner and Markdown options are the configuration's, as the pre-commit stage's checks hold them.
+    checks.scanner_settings.options = request.config.forbidden_strings.clone();
+    checks.markdown.options = request.config.markdown_autofix.clone();
+    // The forbidden-strings rules variable is read from this invocation's environment.
+    checks.scanner_settings.rules_variable = environment_value(request.environment, RULES_VARIABLE);
+    // The Markdown linter is found on, and runs with, this invocation's environment.
+    checks.markdown.linter = Box::new(executable_linter(request.environment));
     let stage: StageRequest = StageRequest {
         trigger: Trigger::PostCommit,
         config: request.config.clone(),

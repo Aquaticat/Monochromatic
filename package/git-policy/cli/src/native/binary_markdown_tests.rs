@@ -25,7 +25,7 @@
 
 /// Import the shared fixtures and bounded process helpers.
 use super::support::{
-    Fixture, Observed, bounded, executable, fixture, git, observe, porcelain, remove, repository,
+    Fixture, Observed, bounded, bounded_for, executable, fixture, git, observe, porcelain, remove, repository,
 };
 use std::ffi::{OsStr, OsString};
 use std::path::{Path, PathBuf};
@@ -342,5 +342,56 @@ fn a_failing_linter_stops_the_command() {
         RELATIVE
     );
     assert_eq!(porcelain(&fixture, repo.as_path()), "?? a.md\n");
+    remove(&fixture);
+}
+
+/// The bound of one commit under host load, in seconds; the shared bound is for single Git commands.
+const COMMIT_BOUND_SECONDS: &str = "120";
+
+/// The commit `main` names, read by real Git.
+fn head(fixture: &Fixture, repo: &Path) -> String {
+    return String::from_utf8_lossy(&git(fixture, repo, &["rev-parse", "HEAD"]).stdout)
+        .trim()
+        .to_owned();
+}
+
+/// A commit of a Markdown file lands, and its post-commit stage finds the linter on the invocation's PATH
+/// and runs it over the landed commit, so the command exits 0 with nothing on standard error.
+/// The fake linter returns its input unchanged and records the commit `main` names each time it runs, so a run
+/// made after the landing is told apart from the pre-commit runs.
+#[test]
+fn the_post_commit_stage_finds_the_linter_on_the_invocations_path() {
+    let fixture: Fixture = fixture("markdown-post-commit");
+    let log: PathBuf = fixture.root.join("linter-runs.log");
+    let program: PathBuf = fixture.root.join("recording-linter");
+    executable(
+        program.as_path(),
+        format!("#!/bin/sh\ncat .git/refs/heads/main >> '{}'\ncat\n", log.display()).as_bytes(),
+    );
+    let path: OsString = path_with_linter(&fixture, program.as_path());
+    let repo: PathBuf = lfs_repository(&fixture, "\"warn\"");
+    let base: String = head(&fixture, repo.as_path());
+    std::fs::write(repo.join("doc.md"), b"# T\n\nplain\n").expect("markdown");
+    git(&fixture, repo.as_path(), &["add", "--", "doc.md"]);
+    let committed: Observed = observe(
+        bounded_for(
+            &fixture,
+            fixture.root.join("bin/git").as_path(),
+            path.as_os_str(),
+            COMMIT_BOUND_SECONDS,
+        )
+        .current_dir(&repo)
+        .args(["commit", "--quiet", "--message=doc", "--", "doc.md"]),
+        b"",
+    );
+    let landed: String = head(&fixture, repo.as_path());
+    let runs: String = std::fs::read_to_string(&log).expect("linter runs");
+    assert_eq!(
+        (committed.code, String::from_utf8_lossy(&committed.stderr).into_owned()),
+        (Some(0), String::new()),
+        "runs: {runs}"
+    );
+    assert_ne!(landed, base);
+    assert_eq!(runs.lines().last(), Some(landed.as_str()), "runs: {runs}");
     remove(&fixture);
 }
