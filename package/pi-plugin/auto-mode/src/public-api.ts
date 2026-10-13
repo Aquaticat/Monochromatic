@@ -104,6 +104,16 @@ export {
 
 //endregion Deterministic migration kernel
 
+//region Native observation mechanisms do not authenticate frames or authorize execution
+
+export {
+  createNativeQueryObservation,
+  type NativeQueryCapture,
+  type NativeQueryObservation,
+} from './native-query-observation.ts';
+
+//endregion Native observation mechanisms
+
 //region Internal verification exports exercise the same bundled policy as Pi
 
 /**
