@@ -6,13 +6,14 @@ description = "Repository-owned Git policy wrapper: forwards Git commands and ch
 license = "LGPL-3.0-or-later"
 readme = "README.md"
 repository = "https://github.com/Aquaticat/Monochromatic.git"
+# `include` patterns are gitignore-style, so an unanchored `README.md` would also package `e2e/README.md`.
 include = [
   "src/native/**/*.rs",
   "src/native/dependent_version_fixtures/*.json",
   "src/native/index_lock_restart_manager.ps1",
-  "Cargo.toml",
-  "Cargo.lock",
-  "README.md",
+  "/Cargo.toml",
+  "/Cargo.lock",
+  "/README.md",
   "LICENSES/*.txt",
 ]
 homepage = "https://github.com/Aquaticat/Monochromatic/tree/main/package/git-policy/cli"
