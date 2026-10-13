@@ -666,9 +666,18 @@ Boolean acceptance,
 original callbacks and failure values,
 borrowed mutability,
 and independent potential-instruction use without a domain hold.
-Final tests,
-lint,
-and native consumer verification are in progress.
+Final source `bf55373ca8` passed build/types `proc_6cd4` and package units plus eight-file lint `proc_fd4c`.
+The lint result had zero diagnostics.
+`proc_e93d` passed exact maintained-export identity and all nine native request scenarios,
+with empty child stderr and no provider requests or protected executions.
+`proc_865d` passed the complete action-policy regression task.
+`proc_cf47` passed the native permission/prohibition/none domain contrasts:
+request-content `none` still retains `request-source-domain`,
+while `potential-instruction` independently retains `request-material-instruction-use` as well.
+The domain consumer,
+remaining capture/compiler/host integration,
+installation,
+and genuine migrated approval remain unfinished.
 
 ## Maintained native hook lifetime
 
