@@ -645,7 +645,7 @@ not completed domain closure,
 a maintained host launch path,
 or installed activation.
 
-## Remaining native metadata-query receipt
+## Native metadata-query receipts
 
 `94f39f5e` / `proc_666b` reached a separate required retention failure.
 The control changes a tool namespace inside a callback,
@@ -658,15 +658,73 @@ the original instruction is absent from governing sources.
 This is a processed live edit,
 not an edit undone before processing.
 
-The callback input and output snapshots do not close this return-value path.
-No query-receipt implementation has been added yet.
-The next change must retain the actual query material through the existing owner,
-without changing native query results,
-borrowed objects,
-error values,
-or the shared limits.
-This remains part of governing-domain completion,
-not a reason to narrow the accepted domain or claim complete coverage.
+The callback input and output snapshots did not close this return-value path.
+`3705ded2` added query-result receipts;
+`proc_cab7` passed the published-output and query-only contrast.
+A failure-path test then demonstrated that query arguments also need an entry receipt:
+`f98aa363` / `proc_6d89` lost an extra instruction argument when the native namespace getter threw.
+`f87569f7` now captures inputs before lookup and outputs after successful lookup.
+Both phases use the existing Session pool and shared limits without deduplication.
+
+The observed capabilities are `getExposure`,
+`getNamespace`,
+and `getPromptGuidelines`.
+Sources use kind `native-tool-loadout-query-input`,
+origin `native-tool-loadout-query`,
+location `toolLoadoutQuery`,
+and view `original-tool-loadout-query-view`.
+Companion metadata distinguishes `queryPhase: input` and `queryPhase: output`.
+Publication belongs to the actual observation frame,
+not the borrowed result,
+argument,
+or query function.
+Receipt creates no authority,
+registration,
+payload capability,
+or permission.
+
+`78cf7af5` / `proc_99eb` passed owner and native controls.
+They preserve query receiver behavior,
+arity,
+returned array identity,
+one/one namespace getter counts,
+and native getter failure reporting.
+Unexpected false and undefined failures remain exact at both observation phases.
+A callback catching the failure cannot restore eligibility or permit later native consumption.
+Independent callback/reporting failures remain represented rather than replacing the observation failure.
+Expected profile refusal preserves the raw native result and invokes no proxy reflection.
+Original arguments remain retained when native lookup fails.
+Owner tests retain source-byte,
+serialized-record,
+shared occurrence,
+and aggregate expanded-container bounds.
+
+`proc_df5e` passed canonical query-only review and the lifecycle controls:
+pre-request receipt,
+pre-binding growth,
+post-binding growth,
+oversize output after a retained input,
+reset,
+and disposal.
+The canonical query value is absent from the native request but present in original source bindings,
+assessment policies,
+and indexed questions.
+It remains unresolved with two local exchanges,
+one authored assessment,
+and no protected execution or provider request.
+The query controls now belong to the input parent;
+its historical 198-case pass predates these additions and is not evidence for them.
+Affected compiler/source regressions remain to be checked.
+
+This repairs a named processing boundary,
+not decision-specific domain closure,
+maintained host delivery,
+or installed activation.
+The initial query staging failure `proc_3495` was an unmapped owned import;
+`b8077a0e` added only its exact URL to the incumbent import map.
+The first native parity attempt `proc_e6cf` expected exposure `default`;
+native exposure was `direct`,
+and the fixture was corrected without changing native behavior.
 
 ## Original loadout callback inputs
 
