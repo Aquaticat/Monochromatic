@@ -17,6 +17,7 @@
 use super::git_metadata::{path_from_git_bytes, strip_git_line};
 use super::transaction_git::{GitContext, GitRequest, run_git};
 use super::worktree_copy_error::{WorktreeCopyError, failure_with_cause, raw_failure};
+use super::worktree_copy_selection::CopySelection;
 use super::worktree_identity::WorktreeIdentity;
 use crate::json_record::quote;
 use std::collections::{BTreeMap, BTreeSet};
@@ -56,6 +57,8 @@ pub struct WorktreeCopyObservation {
     /// Canonical source worktree root;
     ///  absent for a bare repository.
     pub source_root: Option<PathBuf>,
+    /// Which of the source's ignored paths the copy takes.
+    pub selection: CopySelection,
 }
 
 /// What:
@@ -184,7 +187,13 @@ pub fn observe_worktree_repository(
             return Ok(None);
         }
         WorktreeIdentity::BareRepository { common_dir, .. } => {
-            return observation(common_dir.as_path(), None, effective_cwd).map(Some);
+            return observation(
+                common_dir.as_path(),
+                None,
+                effective_cwd,
+                CopySelection::Ignored,
+            )
+            .map(Some);
         }
         WorktreeIdentity::LinkedWorktree {
             common_dir,
@@ -195,9 +204,45 @@ pub fn observe_worktree_repository(
                 common_dir.as_path(),
                 Some(worktree_root.as_path()),
                 effective_cwd,
+                CopySelection::Ignored,
             )
             .map(Some);
         }
+    }
+}
+
+/// What:
+///  The observation that also covers a main checkout, when the caller names repository paths to copy from it.
+/// Why:
+///   A main checkout is not a bypass any more for the named paths (the generated rules file a fresh worktree needs),
+///  but it is never copied as a whole: its ignored trees are the repository's heaviest.
+///  With no named paths the main checkout stays unobserved, so its invocations cost no filesystem reads.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// observeCopySource({ identity, effectiveCwd, mainCheckoutPaths }): Promise<WorktreeCopyObservation | typeof WORKTREE_COPY_NOT_APPLICABLE>;
+/// ```
+pub fn observe_copy_source(
+    identity: &WorktreeIdentity,
+    effective_cwd: &Path,
+    main_checkout_paths: &[String],
+) -> Result<Option<WorktreeCopyObservation>, WorktreeCopyError> {
+    // `match` with a guard: only a main checkout with named paths takes the restricted selection.
+    match identity {
+        WorktreeIdentity::MainWorktree {
+            common_dir,
+            worktree_root,
+            ..
+        } if !main_checkout_paths.is_empty() => {
+            return observation(
+                common_dir.as_path(),
+                Some(worktree_root.as_path()),
+                effective_cwd,
+                CopySelection::Paths(main_checkout_paths.to_vec()),
+            )
+            .map(Some);
+        }
+        _ => return observe_worktree_repository(identity, effective_cwd),
     }
 }
 
@@ -214,6 +259,7 @@ fn observation(
     common_dir: &Path,
     source_root: Option<&Path>,
     effective_cwd: &Path,
+    selection: CopySelection,
 ) -> Result<WorktreeCopyObservation, WorktreeCopyError> {
     let admin_root: PathBuf = common_dir.join("worktrees");
     let before_admin_ids: BTreeSet<String> = read_admin_ids(admin_root.as_path())?;
@@ -223,6 +269,7 @@ fn observation(
         common_dir: common_dir.to_path_buf(),
         effective_cwd: effective_cwd.to_path_buf(),
         source_root: source_root.map(Path::to_path_buf),
+        selection,
     });
 }
 

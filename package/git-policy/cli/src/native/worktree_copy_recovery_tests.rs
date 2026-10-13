@@ -7,6 +7,7 @@ use crate::worktree_copy_journal::{
     Journal, create_journal, ensure_journal_root, read_pending_journals, write_journal,
 };
 use crate::worktree_copy_lock::{SETTLEMENT_LOCK_NAME, acquire_worktree_copy_lock};
+use crate::worktree_copy_selection::CopySelection;
 use crate::worktree_copy_stage::stage_ignored_snapshot;
 
 /// A repository with an ignored `cache` file and a linked worktree at `topic` that the copy would fill.
@@ -37,7 +38,7 @@ fn linked_source(root: &Path) -> (PathBuf, PathBuf) {
 fn staged_journal(source: &Path, destination: &Path) -> PendingJournal {
     let common: PathBuf = std::fs::canonicalize(source.join(".git")).expect("common");
     let snapshot: StagedSnapshot =
-        stage_ignored_snapshot(&git_context(), source, destination, &[]).expect("staged");
+        stage_ignored_snapshot(&git_context(), source, destination, &[], &CopySelection::Ignored).expect("staged");
     return create_journal(common.as_path(), destination, &snapshot).expect("journal");
 }
 

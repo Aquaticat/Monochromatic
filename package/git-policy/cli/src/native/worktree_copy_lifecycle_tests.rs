@@ -143,6 +143,7 @@ fn added_worktree_receives_ignored_state_and_lock_is_released() {
             short_circuit: false,
             inherited_token: None,
             context: git_context(),
+            main_checkout_paths: Vec::new(),
         },
         &mut |_token| return Ok(run_real(source_canonical.as_path(), args.as_slice())),
         &mut || return Ok(identity.clone()),
@@ -194,6 +195,7 @@ fn opted_out_invocation_skips_synchronization() {
             short_circuit: false,
             inherited_token: None,
             context: git_context(),
+            main_checkout_paths: Vec::new(),
         },
         &mut |token| {
             seen.push(token.map(str::to_string));
@@ -240,6 +242,7 @@ fn main_worktree_invocation_is_not_applicable() {
             short_circuit: false,
             inherited_token: None,
             context: git_context(),
+            main_checkout_paths: Vec::new(),
         },
         &mut |token| {
             seen.push(token.map(str::to_string));
@@ -281,6 +284,7 @@ fn non_worktree_command_runs_without_settlement() {
             short_circuit: false,
             inherited_token: None,
             context: git_context(),
+            main_checkout_paths: Vec::new(),
         },
         &mut |token| {
             seen.push(token.map(str::to_string));
@@ -321,6 +325,7 @@ fn inherited_lease_forwards_without_settlement() {
             short_circuit: false,
             inherited_token: Some(token),
             context: git_context(),
+            main_checkout_paths: Vec::new(),
         },
         &mut |lease| {
             seen.push(lease.map(str::to_string));
@@ -333,5 +338,193 @@ fn inherited_lease_forwards_without_settlement() {
     assert_eq!(exit_code(&settlement), 0);
     assert_eq!(seen, vec![None]);
     held.release().expect("released");
+    remove(root.as_path());
+}
+
+/// The path of the configured rules file, as the caller supplies it for a main-checkout source.
+const RULES_PATH: &str = ".cache/forbidden-strings.rules.txt";
+
+/// A main checkout that ignores its generated cache and a second ignored directory,
+/// returned with its canonical root and common directory.
+/// The cache holds the rules file only when `with_rules` is set.
+fn main_with_cache(root: &Path, with_rules: bool) -> (PathBuf, PathBuf) {
+    let main: PathBuf = repository(root, "main");
+    std::fs::write(main.join(".gitignore"), b".cache/\ncache/\n").expect("gitignore");
+    std::fs::create_dir_all(main.join("cache")).expect("cache");
+    std::fs::write(main.join("cache/data"), b"payload").expect("data");
+    std::fs::create_dir_all(main.join(".cache")).expect("generated cache");
+    std::fs::write(main.join(".cache/other.txt"), b"other").expect("other cache file");
+    if with_rules {
+        std::fs::write(main.join(RULES_PATH), b"rules").expect("rules");
+    }
+    let common: PathBuf = std::fs::canonicalize(main.join(".git")).expect("common");
+    return (std::fs::canonicalize(main).expect("canonical main"), common);
+}
+
+/// Runs `git worktree add` for a new `topic` worktree from the main checkout through the lifecycle.
+fn add_from_main(
+    root: &Path,
+    main: &Path,
+    common: &Path,
+    flags: (bool, bool),
+    named: &[&str],
+) -> (Settlement, String, PathBuf) {
+    let topic: PathBuf = root.join("topic");
+    let identity: WorktreeIdentity = main_identity(main, common);
+    let args: Vec<String> = vec![
+        String::from("worktree"),
+        String::from("add"),
+        String::from("--quiet"),
+        String::from("-b"),
+        String::from("topic"),
+        topic.to_string_lossy().into_owned(),
+    ];
+    let mut stderr: Vec<u8> = Vec::new();
+    let settlement: Settlement = run_with_worktree_copy(
+        &Invocation {
+            identity: identity.clone(),
+            effective_cwd: main.to_path_buf(),
+            creates_or_moves: flags.0,
+            opted_out: flags.1,
+            short_circuit: false,
+            inherited_token: None,
+            context: git_context(),
+            main_checkout_paths: named.iter().map(|path| return String::from(*path)).collect(),
+        },
+        &mut |_token| return Ok(run_real(main, args.as_slice())),
+        &mut || return Ok(identity.clone()),
+        &mut stderr,
+    )
+    .expect("settled");
+    return (settlement, String::from_utf8(stderr).expect("utf8"), topic);
+}
+
+/// Nothing of the copy stays behind: no lock, no pending journal and no private stage beside the worktree.
+fn assert_nothing_left(root: &Path, common: &Path) {
+    assert!(
+        !ensure_journal_root(common)
+            .expect("root")
+            .join(SETTLEMENT_LOCK_NAME)
+            .exists()
+    );
+    assert!(read_pending_journals(common).expect("pending").is_empty());
+    let leftovers: Vec<String> = std::fs::read_dir(root)
+        .expect("listing")
+        .map(|entry| return entry.expect("entry").file_name().to_string_lossy().into_owned())
+        .filter(|name| return name.starts_with(crate::worktree_copy_selection::STAGE_PREFIX))
+        .collect();
+    assert!(leftovers.is_empty(), "{leftovers:?}");
+}
+
+/// A worktree added from the main checkout receives the named rules file and nothing else the checkout ignores.
+#[cfg(unix)]
+#[test]
+fn main_checkout_source_copies_only_the_named_rules_file() {
+    let root: PathBuf = fixture("lifecycle-main-rules");
+    let (main, common) = main_with_cache(root.as_path(), true);
+    let (settlement, stderr, topic) = add_from_main(
+        root.as_path(),
+        main.as_path(),
+        common.as_path(),
+        (true, false),
+        &[RULES_PATH],
+    );
+    assert_eq!(exit_code(&settlement), 0);
+    assert_eq!(std::fs::read(topic.join(RULES_PATH)).expect("copied"), b"rules");
+    assert!(!topic.join("cache").exists(), "other ignored roots stay behind");
+    assert!(
+        !topic.join(".cache/other.txt").exists(),
+        "siblings of the rules file stay behind"
+    );
+    assert!(
+        stderr.starts_with("cli-git: copied ")
+            && stderr.contains(quote(main.to_string_lossy().as_ref()).as_str())
+            && stderr.ends_with(" into 1 new worktree.\n"),
+        "{stderr}"
+    );
+    assert_nothing_left(root.as_path(), common.as_path());
+    remove(root.as_path());
+}
+
+/// A main checkout without the rules file copies nothing, creates no rules file, and leaves nothing behind.
+#[cfg(unix)]
+#[test]
+fn main_checkout_source_without_the_rules_file_copies_nothing() {
+    let root: PathBuf = fixture("lifecycle-main-no-rules");
+    let (main, common) = main_with_cache(root.as_path(), false);
+    let (settlement, stderr, topic) = add_from_main(
+        root.as_path(),
+        main.as_path(),
+        common.as_path(),
+        (true, false),
+        &[RULES_PATH],
+    );
+    assert_eq!(exit_code(&settlement), 0);
+    assert!(settlement.copy_failure.is_none());
+    assert!(!topic.join(".cache").exists());
+    assert!(!topic.join("cache").exists());
+    assert!(stderr.contains("copied 0 ignored filesystem entries"), "{stderr}");
+    assert_nothing_left(root.as_path(), common.as_path());
+    remove(root.as_path());
+}
+
+/// A rules file the checkout tracks, or that no ignore rule covers, is the checkout's own content and is not copied.
+#[cfg(unix)]
+#[test]
+fn main_checkout_source_does_not_copy_a_rules_file_git_does_not_ignore() {
+    let root: PathBuf = fixture("lifecycle-main-unignored");
+    let (main, common) = main_with_cache(root.as_path(), true);
+    std::fs::write(main.join("custom-rules.txt"), b"custom").expect("custom");
+    let (settlement, _stderr, topic) = add_from_main(
+        root.as_path(),
+        main.as_path(),
+        common.as_path(),
+        (true, false),
+        &["custom-rules.txt"],
+    );
+    assert_eq!(exit_code(&settlement), 0);
+    assert!(!topic.join("custom-rules.txt").exists());
+    assert!(!topic.join(RULES_PATH).exists());
+    assert_nothing_left(root.as_path(), common.as_path());
+    remove(root.as_path());
+}
+
+/// The opt-out flag leaves the main checkout's rules file behind and prints nothing.
+#[cfg(unix)]
+#[test]
+fn main_checkout_source_honors_the_opt_out() {
+    let root: PathBuf = fixture("lifecycle-main-opt-out");
+    let (main, common) = main_with_cache(root.as_path(), true);
+    let (settlement, stderr, topic) = add_from_main(
+        root.as_path(),
+        main.as_path(),
+        common.as_path(),
+        (true, true),
+        &[RULES_PATH],
+    );
+    assert_eq!(exit_code(&settlement), 0);
+    assert!(stderr.is_empty(), "{stderr}");
+    assert!(topic.exists(), "Git itself still created the worktree");
+    assert!(!topic.join(RULES_PATH).exists());
+    remove(root.as_path());
+}
+
+/// A command the caller reports as creating no worktree is never settled, even from a main checkout with a rules file.
+#[cfg(unix)]
+#[test]
+fn main_checkout_source_ignores_commands_that_create_no_worktree() {
+    let root: PathBuf = fixture("lifecycle-main-not-creating");
+    let (main, common) = main_with_cache(root.as_path(), true);
+    let (settlement, stderr, topic) = add_from_main(
+        root.as_path(),
+        main.as_path(),
+        common.as_path(),
+        (false, false),
+        &[RULES_PATH],
+    );
+    assert_eq!(exit_code(&settlement), 0);
+    assert!(stderr.is_empty(), "{stderr}");
+    assert!(topic.exists(), "the runner still created the worktree");
+    assert!(!topic.join(RULES_PATH).exists());
     remove(root.as_path());
 }

@@ -85,6 +85,69 @@ fn outside_and_main_worktrees_are_not_applicable() {
     remove(root.as_path());
 }
 
+/// A main worktree is observed only for named paths: it has the main root as source and selects just those paths.
+#[test]
+fn main_worktree_is_observed_for_named_paths_only() {
+    let root: PathBuf = fixture("registry-observe-main-paths");
+    let main: PathBuf = repository(root.as_path(), "main");
+    let common: PathBuf = common_dir_of(main.as_path());
+    let main_identity: WorktreeIdentity = WorktreeIdentity::MainWorktree {
+        common_dir: common.clone(),
+        git_dir: common.clone(),
+        worktree_root: main.clone(),
+    };
+    assert_eq!(
+        observe_copy_source(&main_identity, main.as_path(), &[]),
+        Ok(None)
+    );
+    let named: Vec<String> = vec![String::from(".cache/rules.txt")];
+    let observation: WorktreeCopyObservation =
+        observe_copy_source(&main_identity, main.as_path(), named.as_slice())
+            .expect("observation")
+            .expect("applicable");
+    assert_eq!(observation.source_root, Some(main.clone()));
+    assert_eq!(observation.common_dir, common);
+    assert_eq!(observation.selection, CopySelection::Paths(named));
+    remove(root.as_path());
+}
+
+/// Linked and bare repositories keep the standard selection, and the named paths never narrow them.
+#[test]
+fn linked_and_bare_observations_ignore_named_paths() {
+    let root: PathBuf = fixture("registry-observe-paths-ignored");
+    let main: PathBuf = repository(root.as_path(), "main");
+    let common: PathBuf = common_dir_of(main.as_path());
+    let topic: PathBuf = root.join("topic");
+    git(
+        main.as_path(),
+        &["worktree", "add", "--quiet", "-b", "topic", topic.to_str().expect("utf8")],
+    );
+    let topic_root: PathBuf = std::fs::canonicalize(topic.as_path()).expect("canonical topic");
+    let named: Vec<String> = vec![String::from(".cache/rules.txt")];
+    let linked_observation: WorktreeCopyObservation = observe_copy_source(
+        &linked(common.as_path(), topic_root.as_path()),
+        topic_root.as_path(),
+        named.as_slice(),
+    )
+    .expect("observation")
+    .expect("applicable");
+    assert_eq!(linked_observation.selection, CopySelection::Ignored);
+    let bare_root: PathBuf = bare(root.as_path(), "shared.git");
+    let bare_observation: WorktreeCopyObservation = observe_copy_source(
+        &WorktreeIdentity::BareRepository {
+            common_dir: bare_root.clone(),
+            git_dir: bare_root.clone(),
+        },
+        bare_root.as_path(),
+        named.as_slice(),
+    )
+    .expect("observation")
+    .expect("applicable");
+    assert_eq!(bare_observation.selection, CopySelection::Ignored);
+    assert_eq!(bare_observation.source_root, None);
+    remove(root.as_path());
+}
+
 /// A bare repository is observed without a source root, and a linked worktree is observed with one.
 #[test]
 fn bare_and_linked_repositories_are_observed() {
@@ -210,6 +273,7 @@ fn unchanged_administration_creates_nothing() {
         common_dir: common.clone(),
         effective_cwd: main.clone(),
         source_root: Some(main.clone()),
+        selection: CopySelection::Ignored,
     };
     let found: CreatedWorktrees =
         find_created_worktrees(&git_context(), &observation).expect("found");
@@ -235,6 +299,7 @@ fn added_worktree_is_found_with_its_root() {
         common_dir: common.clone(),
         effective_cwd: main.clone(),
         source_root: Some(main.clone()),
+        selection: CopySelection::Ignored,
     };
     let topic: PathBuf = root.join("topic");
     git(
@@ -281,6 +346,7 @@ fn worktree_registered_before_failing_hook_is_found() {
         common_dir: common.clone(),
         effective_cwd: main.clone(),
         source_root: Some(main.clone()),
+        selection: CopySelection::Ignored,
     };
     let hooks: PathBuf = common.join("hooks");
     std::fs::create_dir_all(hooks.as_path()).expect("hooks");
@@ -319,6 +385,7 @@ fn registration_without_root_fails() {
         common_dir: common.clone(),
         effective_cwd: main.clone(),
         source_root: Some(main.clone()),
+        selection: CopySelection::Ignored,
     };
     let topic: PathBuf = root.join("topic");
     git(

@@ -20,6 +20,7 @@ use super::worktree_copy_journal::{
     Journal, PendingJournal, Phase, create_journal, remove_pending_journal, write_journal,
 };
 use super::worktree_copy_manifest::{WorktreeCopyEntry, collect_entry_manifest};
+use super::worktree_copy_selection::CopySelection;
 use super::worktree_copy_stage::{StagedSnapshot, stage_ignored_snapshot};
 use crate::json_record::quote;
 use std::collections::BTreeSet;
@@ -272,9 +273,15 @@ pub fn synchronize_created_worktree(
     source_root: &Path,
     destination_root: &Path,
     registered_roots: &[PathBuf],
+    selection: &CopySelection,
 ) -> Result<usize, WorktreeCopyError> {
-    let snapshot: StagedSnapshot =
-        stage_ignored_snapshot(context, source_root, destination_root, registered_roots)?;
+    let snapshot: StagedSnapshot = stage_ignored_snapshot(
+        context,
+        source_root,
+        destination_root,
+        registered_roots,
+        selection,
+    )?;
     let pending: PendingJournal = match create_journal(common_dir, destination_root, &snapshot) {
         Ok(pending) => pending,
         Err(error) => {
