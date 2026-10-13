@@ -16,8 +16,10 @@ mod server;
 mod support;
 /// Import filesystem, I/O, process, networking, and thread primitives.
 use std::{fs, io::{self, BufReader}, net::TcpListener, process::{Command, Stdio}, thread};
-/// Import structured JSON construction for the actual host protocol.
-use serde_json::{Value, json};
+/// Import owned JSON values for protocol fields, avoiding panic-generating macros.
+use serde_json::Value;
+/// Import the checked parser for fixed protocol templates.
+use rpc::parse;
 
 /// What: `#[test]` registers a nextest case; `#[ignore]` makes host availability opt-in.
 /// `Result<()>` permits setup and transport failures to fail the test with their causes.
@@ -55,10 +57,11 @@ fn installed_host_rewrites_commands() -> io::Result<()> {
     fs::write(home.join("config.toml"), config)?;
     // Shell-quote both filenames at the command boundary; the installed host reads command only.
     let command = format!("'{}' --hook '{}'", env!("CARGO_BIN_EXE_codex-bash-limit").replace('\'', "'\\''"), path.replace('\'', "'\\''"));
-    // json! encodes the resulting shell command at the separate JSON boundary.
-    let hooks = json!({"hooks":{"PreToolUse":[{"matcher":"Bash","hooks":[{
-        "type":"command","command":command
-    }]}]}});
+    // Decode fixed JSON syntax, then assign the command as data rather than JSON source.
+    let mut hooks = parse(r#"{"hooks":{"PreToolUse":[{"matcher":"Bash","hooks":[{
+        "type":"command","command":""
+    }]}]}}"#)?;
+    hooks["hooks"]["PreToolUse"][0]["hooks"][0]["command"] = Value::from(command);
     fs::write(home.join("hooks.json"), hooks.to_string())?;
     let stderr = fs::File::create(parent.join("host-stderr.log"))?;
     // Some gives an environment override; Command owns the launched process until cleanup.
@@ -71,22 +74,32 @@ fn installed_host_rewrites_commands() -> io::Result<()> {
     let stdout = child.stdout.take().ok_or_else(|| { return io::Error::other("host stdout missing"); })?;
     let mut reader = BufReader::new(stdout);
     // Lend exclusive access to both pipes for each sequential RPC request.
-    rpc::call(&mut pipe, &mut reader, 1, "initialize", json!({"clientInfo":{"name":"bash-limit-fixture","version":"1"},"capabilities":{"experimentalApi":true}}))?;
-    rpc::send(&mut pipe, json!({"method":"initialized"}))?;
-    let listed = rpc::call(&mut pipe, &mut reader, 2, "hooks/list", json!({"cwds":[path]}))?;
+    rpc::call(&mut pipe, &mut reader, 1, "initialize", parse(r#"{"clientInfo":{"name":"bash-limit-fixture","version":"1"},"capabilities":{"experimentalApi":true}}"#)?)?;
+    rpc::send(&mut pipe, parse(r#"{"method":"initialized"}"#)?)?;
+    let mut listing = parse(r#"{"cwds":[""]}"#)?;
+    listing["cwds"][0] = Value::from(path);
+    let listed = rpc::call(&mut pipe, &mut reader, 2, "hooks/list", listing)?;
     let hook = &listed["data"][0]["hooks"][0];
     assert!(hook["key"].is_string(), "{listed}");
     let key = hook["key"].as_str().ok_or_else(|| { return io::Error::other("hook key missing"); })?;
     // Map owns a variable set of JSON object keys; clone preserves the discovered hash exactly.
     let mut states = serde_json::Map::new();
-    states.insert(key.to_owned(), json!({"trusted_hash":hook["currentHash"].clone()}));
-    rpc::call(&mut pipe, &mut reader, 3, "config/value/write", json!({"keyPath":"hooks.state","value":Value::Object(states),"mergeStrategy":"upsert"}))?;
-    let started = rpc::call(&mut pipe, &mut reader, 4, "thread/start", json!({"cwd":path,"ephemeral":true,"baseInstructions":"Execute deterministic fixture tool calls."}))?;
+    let mut state = parse(r#"{"trusted_hash":""}"#)?;
+    state["trusted_hash"] = hook["currentHash"].clone();
+    states.insert(key.to_owned(), state);
+    let mut trust = parse(r#"{"keyPath":"hooks.state","value":null,"mergeStrategy":"upsert"}"#)?;
+    trust["value"] = Value::Object(states);
+    rpc::call(&mut pipe, &mut reader, 3, "config/value/write", trust)?;
+    let mut thread_params = parse(r#"{"cwd":"","ephemeral":true,"baseInstructions":"Execute deterministic fixture tool calls."}"#)?;
+    thread_params["cwd"] = Value::from(path);
+    let started = rpc::call(&mut pipe, &mut reader, 4, "thread/start", thread_params)?;
     let thread_id = &started["thread"]["id"];
     assert!(thread_id.is_string(), "{started}");
     // move transfers listener ownership into a worker thread; it serves a bounded local sequence.
     let provider = thread::spawn(move || { return server::serve(listener, 40); });
-    rpc::call(&mut pipe, &mut reader, 5, "turn/start", json!({"threadId":thread_id,"input":[{"type":"text","text":"Run the native hook fixture."}]}))?;
+    let mut turn = parse(r#"{"threadId":"","input":[{"type":"text","text":"Run the native hook fixture."}]}"#)?;
+    turn["threadId"] = thread_id.clone();
+    rpc::call(&mut pipe, &mut reader, 5, "turn/start", turn)?;
     // Vec owns a growing list; a borrowed slice would not permit collecting new durations.
     let mut durations = Vec::new();
     loop {

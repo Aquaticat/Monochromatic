@@ -8,8 +8,10 @@
 /// import { createServer } from 'node:http';
 /// ```
 use std::{io::{self, BufRead, BufReader, Read, Write}, net::TcpListener, time::Duration};
-/// Import checked JSON construction and dynamic values.
-use serde_json::{Value, json};
+/// Import the fixed-fixture parser and dynamic values for field assignment.
+use crate::rpc::parse;
+/// JSON scalars own their data independently of the transmitted text.
+use serde_json::Value;
 
 /// What: `pub fn` exports a function; `usize` counts collection sizes and loop iterations.
 /// Siblings u32/u64 fix integer width; i32/i64 also permit negative values.
@@ -57,23 +59,26 @@ pub fn serve(listener: TcpListener, count: usize) -> io::Result<()> {
             let request = String::from_utf8(body).map_err(io::Error::other)?;
             assert!(request.contains("host-payload-executed"), "{request}");
         }
-        // json! constructs each SSE event with correct JSON escaping.
-        let mut events: Vec<Value> = vec![json!({"type":"response.created","response":{"id":"fixture"}})];
+        // Decode fixed syntax; field assignment supplies dynamic values without source interpolation.
+        let mut events: Vec<Value> = vec![parse(r#"{"type":"response.created","response":{"id":"fixture"}}"#)?];
         if index < count {
             // format! creates the distinct call ID required by the real host tool loop.
             let call_id = format!("fixture-{index}");
-            events.push(json!({"type":"response.output_item.done","item":{
-                "type":"function_call","call_id":call_id,"name":"exec_command",
+            // Raw string literals retain JSON backslashes; Value assignment owns the dynamic call ID.
+            let mut event = parse(r#"{"type":"response.output_item.done","item":{
+                "type":"function_call","call_id":"","name":"exec_command",
                 "arguments":"{\"cmd\":\"printf host-payload-executed\",\"login\":false,\"max_output_tokens\":100}"
-            }}));
+            }}"#)?;
+            event["item"]["call_id"] = Value::from(call_id);
+            events.push(event);
         } else {
-            events.push(json!({"type":"response.output_item.done","item":{
+            events.push(parse(r#"{"type":"response.output_item.done","item":{
                 "type":"message","role":"assistant","id":"done",
                 "content":[{"type":"output_text","text":"fixture completed"}]
-            }}));
+            }}"#)?);
         }
-        events.push(json!({"type":"response.completed","response":{"id":"fixture",
-            "usage":{"input_tokens":0,"output_tokens":0,"total_tokens":0}}}));
+        events.push(parse(r#"{"type":"response.completed","response":{"id":"fixture",
+            "usage":{"input_tokens":0,"output_tokens":0,"total_tokens":0}}}"#)?);
         // Build the SSE body in owned text so Content-Length describes exact transmitted bytes.
         let mut response = String::new();
         for event in events {

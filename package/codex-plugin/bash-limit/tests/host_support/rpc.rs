@@ -8,8 +8,13 @@
 /// import { readLine, writeLine } from './stdio';
 /// ```
 use std::{io::{self, BufRead, BufReader, Write}, process::{ChildStdin, ChildStdout}};
-/// Import a dynamically shaped JSON value and its checked construction macro.
-use serde_json::{Value, json};
+/// Import a dynamically shaped JSON value without panic-generating construction macros.
+use serde_json::Value;
+
+/// Decode a fixed JSON fixture, preserving parse failures as test errors.
+pub fn parse(input: &str) -> io::Result<Value> {
+    return serde_json::from_str(input).map_err(io::Error::other);
+}
 
 /// What: `pub fn` exports a function; `&mut` lends exclusive write access to the pipe.
 /// `Result<()>` carries success without data or an I/O error.
@@ -59,14 +64,13 @@ pub fn receive(reader: &mut BufReader<ChildStdout>) -> io::Result<Value> {
 
 /// Send a request and wait for its matching response, allowing intervening notifications.
 pub fn call(pipe: &mut ChildStdin, reader: &mut BufReader<ChildStdout>, id: u64, method: &str, params: Value) -> io::Result<Value> {
-    // What: `json!` constructs JSON values while escaping interpolated strings.
-    // Why: Avoid manually assembling request syntax or escaping paths and trust keys.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // send(pipe, { id, method, params });
-    // ```
-    send(pipe, json!({"id": id, "method": method, "params": params}))?;
+    // Parse fixed syntax, then assign values without interpolating them into JSON source.
+    let mut request = parse("{\"id\":0,\"method\":\"\",\"params\":null}")?;
+    // Value::from owns each JSON scalar; params already owns its JSON representation.
+    request["id"] = Value::from(id);
+    request["method"] = Value::from(method);
+    request["params"] = params;
+    send(pipe, request)?;
     loop {
         let message = receive(reader)?;
         // Some is a present optional ID; notifications have None and are skipped here.
