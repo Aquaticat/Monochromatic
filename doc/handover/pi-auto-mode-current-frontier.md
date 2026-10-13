@@ -673,11 +673,27 @@ Only the helper's returned method container is frozen.
 The unit portion of `proc_7d13` passed;
 its lint portion failed with 50 warnings and five errors.
 `08cce3b59a` adds native slot failure controls and addresses the diagnosed lint findings.
-Final build,
-unit,
-lint,
-exact-export native integration,
-and disposable disposal-guard omission checks remain pending.
+`393983938a` / `proc_f09e` passed the final build and type check;
+`proc_4407` passed package units and six-file lint with zero diagnostics.
+The hook controls cover installation,
+partial slot writes,
+rollback,
+independent cleanup failures,
+release retry,
+and exact falsy/proxy failure values.
+
+The first native cutover `proc_f31e` exposed an outdated source-offset assertion.
+Pre-cutover comparison `proc_9b32` reproduced the same failure.
+Private `0a69355c` now explicitly checks the original handler-option sources before constructor metadata.
+`proc_6fa5` passed the maintained native cutover and the pre-cutover comparison,
+including original source/judgment ownership,
+installation rollback,
+retryable native cleanup,
+and native start-error preservation.
+`proc_a1b3` passed all 32 compiler scenarios with empty child stderr and the original-source variants.
+Disposable omission `proc_49ef` reached the intended missing-exception assertion:
+`An undisposed native session must retain policy ownership`.
+The original maintained artifact was not modified.
 The hook helper does not close the governing domain,
 move the remaining capture/host graph,
 or activate the installed plugin.

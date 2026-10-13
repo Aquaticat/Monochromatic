@@ -473,8 +473,11 @@ The invalidated observer remains on the stream after detachment.
 Borrowed slots and callbacks are not frozen.
 
 The private native runtime now delegates this bookkeeping through the existing maintained-artifact link.
-Initial build and unit checks passed;
-final lint and native cutover checks remain pending.
+Built-artifact units,
+type checking,
+changed-file lint,
+and the native cutover passed.
+A disposable built-artifact omission confirms that removing the disposal gate allows premature detachment.
 This is not a maintained host launcher or installed judge cutover.
 
 ## Migration input accounting
