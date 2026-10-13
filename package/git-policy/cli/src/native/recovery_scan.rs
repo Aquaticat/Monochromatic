@@ -22,7 +22,7 @@ use super::owner_lock::{
 /// The fail-closed recovery failure.
 use super::recovery_error::{RecoveryError, io_failure};
 /// Landing evidence.
-use super::recovery_evidence::{entered_landing, has_landing_record};
+use super::recovery_evidence::entered_landing;
 /// Owner inspection and order.
 use super::recovery_inspect::{
     InspectedEntry, OwnerEvidence, inspect_registry_entry, oldest_first,
@@ -132,9 +132,15 @@ pub fn recover_inspected_entry(
 }
 
 /// What:
-///  Whether an inspected entry is a dead published transaction holding a landing record.
+///  Whether an inspected entry is a dead published transaction that entered the landing critical section:
+///  it holds a landing record or the record of a real `index.lock` it created.
 /// Why:
-///   `needsLandingLock`.
+///   `needsLandingLock` keyed on the landing record alone, so a transaction killed holding the landing lock and
+///       `index.lock` (an index-lock record, no landing record yet) was recovered without the landing lock.
+///  Another recoverer under the lock could release that `index.lock` and a lander could create a new one at the
+///       same path before this late release deleted it.
+///  `entered_landing` is the predicate the landing pass already uses,
+///  and the landing pass is documented as the only recovery that may release such a lock.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -144,7 +150,7 @@ fn needs_landing_lock(inspected: &InspectedEntry) -> Result<bool, RecoveryError>
     if inspected.entry.kind != EntryKind::Transaction || inspected.dead_owner().is_none() {
         return Ok(false);
     }
-    return has_landing_record(inspected.entry.path.as_path());
+    return entered_landing(inspected.entry.path.as_path());
 }
 
 /// What:

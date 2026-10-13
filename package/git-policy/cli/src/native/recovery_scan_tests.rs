@@ -159,6 +159,47 @@ fn transactions_without_landings_need_no_landing_lock() {
     scene.finish();
 }
 
+/// A dead transaction that recorded only the real `index.lock` it created (killed holding the landing lock and that
+///  lock, before any landing record) is recovered under the landing lock:
+///  recovery waits while a live lander holds it.
+#[test]
+fn a_dead_transaction_holding_only_its_index_lock_waits_for_the_landing_lock() {
+    let scene: Scene = Scene::new("recovery-scan-index-lock-only", false);
+    scene.capture();
+    scene.land(LandingOperation::Commit, Vec::new());
+    for entry in std::fs::read_dir(scene.directory.as_path()).expect("listing") {
+        let name: String = entry.expect("entry").file_name().to_string_lossy().into_owned();
+        if name.starts_with("landing-") {
+            std::fs::remove_file(scene.directory.join(name)).expect("drop the landing record");
+        }
+    }
+    assert!(scene.directory.join("index-lock-1.json").exists());
+    let landing_lock: PathBuf = scene.registry.join(LANDING_LOCK_NAME);
+    let (ready_sender, ready_receiver) = std::sync::mpsc::channel::<()>();
+    // The live lander holds the landing lock for a while and then releases it.
+    let lander = std::thread::spawn(move || {
+        let held: crate::owner_lock::OwnerLock = try_acquire_owner_lock(landing_lock.as_path(), None)
+            .expect("acquire")
+            .expect("free");
+        ready_sender.send(()).expect("ready");
+        std::thread::sleep(std::time::Duration::from_millis(600));
+        held.release().expect("release");
+    });
+    ready_receiver.recv().expect("the lander holds the lock");
+    let started: std::time::Instant = std::time::Instant::now();
+    let outcomes: Vec<RecoveryOutcome> =
+        recover_registered_transactions(&scene.place(), scene.registry.as_path())
+            .expect("recovered");
+    assert!(
+        started.elapsed() >= std::time::Duration::from_millis(400),
+        "recovery of a transaction that holds a real index lock must wait for the landing lock"
+    );
+    lander.join().expect("lander");
+    assert_eq!(outcomes.len(), 1);
+    assert_eq!(outcomes[0].action, RecoveryAction::CommitNotCreated);
+    scene.finish();
+}
+
 /// A failure stops recovery at that transaction and keeps its directory.
 #[test]
 fn failures_keep_their_directory() {
