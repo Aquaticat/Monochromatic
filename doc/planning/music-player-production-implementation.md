@@ -240,7 +240,7 @@ and the decisions D106 to D119 at the end of `package/music-player/design/decisi
   lintDebug, eleven mutations killed, before and after captures on the Fold emulator. Not verified: the Compose
   call-site wiring has no unit test; the template field ring was never seen on the device; dark scheme, cover display,
   the menu popup's keyboard ring, TalkBack and a real keyboard; the Android gallery PNGs predate this change (the
-  first row of a list sits 3 dp higher now) and were not retaken. The emulator ran with `-no-window` on the host GPU.
+  first row of a list sits 3 dp higher now) and were not retaken. That emulator ran with `-no-window` on the host GPU, which the rule below bans.
 - Stale docs: none known. The README gallery and the Android page-control text were rewritten on 2026-10-13, and the
   peak-sweep start path in `android-app/HANDOVER.peak-sweep-optimization.md` and
   `android-app/DECISION.peak-sweep-parallelism.md` was corrected.
@@ -277,6 +277,11 @@ Read these before repeating them. Each one cost the human a correction.
 - A wait loop that used `pgrep --full` matched itself and ran for 14 hours; it was killed by PID. Wait on a unit state
   or a file, never on a pattern that can match the waiting command.
 - A command ran `rg` without a path and read the worktree root. Always pass a path.
+- I wrote in a brief that `-no-window` on the host GPU had worked, and the agent launched a headless emulator, which
+  the human reports breaks frequently, although this handover already said to launch headfully. The ban is now the
+  rules EMW and EMB in `AGENTS.md`, a section in the troubleshooting document, and the brief of every emulator agent:
+  headful on the host GPU as its own systemd unit, never `-no-window`, `xvfb-run` or a container, and on a failed
+  launch report the error instead of falling back.
 
 ## Queue
 
