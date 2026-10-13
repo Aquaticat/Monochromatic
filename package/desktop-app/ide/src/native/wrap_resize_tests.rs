@@ -541,7 +541,7 @@ fn lines_over_the_work_allowance_are_left_to_the_worker() {
     start_counting(&opened);
     change_width(&opened, 500.0, 660.0);
     let step = spent(&opened);
-    assert_eq!(step.deferred, 1, "{step:?}");
+    assert_eq!(step.deferred, 1, "the change of width was not left to the worker: {step:?}");
     assert_eq!(step.rewrapped, 0, "{step:?}");
     assert_eq!(
         step.painted, 0,
@@ -607,7 +607,7 @@ fn tabbed_lines_are_charged_for_their_corrective_passes_and_left_to_the_worker()
     start_counting(&opened);
     change_width(&opened, 500.0, 660.0);
     let step = spent(&opened);
-    assert_eq!(step.deferred, 1, "{step:?}");
+    assert_eq!(step.deferred, 1, "the change of width was not left to the worker: {step:?}");
     assert_eq!(
         step.painted, 0,
         "the window thread painted a tile for a change over the allowance: {step:?}"
@@ -661,7 +661,7 @@ fn a_line_of_two_hundred_thousand_characters_is_left_to_the_worker() {
     start_counting(&opened);
     change_width(&opened, 500.0, 660.0);
     let step = spent(&opened);
-    assert_eq!(step.deferred, 1, "{step:?}");
+    assert_eq!(step.deferred, 1, "the change of width was not left to the worker: {step:?}");
     assert_eq!(step.rewrapped, 0, "{step:?}");
     assert_eq!(
         step.painted, 0,
@@ -729,7 +729,7 @@ fn a_view_with_more_lines_than_the_allowance_is_left_to_the_worker() {
         opened.source.borrow().count,
         window.get_viewport_height()
     );
-    assert_eq!(step.deferred, 1, "{step:?}");
+    assert_eq!(step.deferred, 1, "the change of width was not left to the worker: {step:?}");
     assert_eq!(
         step.painted, 0,
         "the window thread painted a tile for a view over the allowance: {step:?}"
@@ -778,7 +778,7 @@ fn a_tile_with_a_huge_raster_is_left_to_the_worker() {
     change_width(&opened, 700.0, 660.0);
     let step = spent(&opened);
     assert!(opened.source.borrow().count <= REWRAP_LINES);
-    assert_eq!(step.deferred, 1, "{step:?}");
+    assert_eq!(step.deferred, 1, "the change of width was not left to the worker: {step:?}");
     assert_eq!(
         step.painted, 0,
         "the window thread painted a tile whose raster passes the bound: {step:?}"
