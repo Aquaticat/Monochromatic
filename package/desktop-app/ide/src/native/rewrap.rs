@@ -82,12 +82,12 @@ impl Allowance {
 
     /// Lines brought in so far.
     pub(super) fn lines(&self) -> usize {
-        return REWRAP_LINES - self.budget.lines;
+        return REWRAP_LINES.saturating_sub(self.budget.lines);
     }
 
     /// Work spent so far.
     pub(super) fn work(&self) -> usize {
-        return REWRAP_WORK - self.budget.work;
+        return REWRAP_WORK.saturating_sub(self.budget.work);
     }
 
     /// What:

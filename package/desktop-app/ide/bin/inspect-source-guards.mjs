@@ -104,7 +104,7 @@ const cases = [
   { name: 'recenter-on-window-thread', file: 'src/native/viewport.rs', before: '        if current.shown.width == current.width {\n            current.scroll_wanted', after: '        if false {\n            current.scroll_wanted', native: true, test: 'leaving_the_overscan_tile_re_centers_on_the_worker_thread', failure: 'the window thread paints no tile for a scroll re-center' },
   // A new wrap width: the window thread paints the tile for it within a counted allowance; what does not fit goes to the worker.
   { name: 'resize-on-window-thread', file: 'src/native/viewport.rs', before: '            current.rewrap = true;', after: '            current.scroll_wanted = Some(tile::requested(current));', native: true, test: 'the_first_frame_after_a_new_width_is_wrapped_to_it', failure: 'the displayed tile is not for the new width' },
-  { name: 'rewrap-lines-bound', file: 'src/native/rewrap.rs', before: 'if requested.count > REWRAP_LINES {', after: 'if false {', native: true, test: 'a_view_with_more_lines_than_the_allowance_is_left_to_the_worker', failure: 'brought in lines for a view over the allowance' },
+  { name: 'rewrap-lines-bound', file: 'src/native/rewrap.rs', before: 'if requested.count > REWRAP_LINES {', after: 'if false {', also: [{ file: 'src/native/rewrap.rs', before: '                lines: REWRAP_LINES,', after: '                lines: usize::MAX,' }], native: true, test: 'a_view_with_more_lines_than_the_allowance_is_left_to_the_worker', failure: 'rewrapped: 1, deferred: 0' },
   { name: 'rewrap-work-budget', file: 'src/shaped_text/pass.rs', before: '&& !limit.spend(line_work(document, row))', after: '&& !limit.spend(0)', native: true, test: 'lines_over_the_work_allowance_are_left_to_the_worker', failure: 'painted a tile for a change over the allowance' },
   { name: 'rewrap-tab-passes', file: 'src/shaped_text/pass.rs', before: '1 + passes_for(length)', after: '1', native: true, test: 'tabbed_lines_are_charged_for_their_corrective_passes_and_left_to_the_worker', failure: 'painted a tile for a change over the allowance' },
   { name: 'rewrap-raster-bound', file: 'src/native/rewrap.rs', before: 'return columns * rows * 4 <= REWRAP_RASTER_BYTES;', after: 'return true;', native: true, test: 'a_tile_with_a_huge_raster_is_left_to_the_worker', failure: 'raster passes the bound' },
@@ -171,14 +171,16 @@ for (const item of selected) {
     run(item, 'baseline');
     baselined.add(item.test);
   }
-  const path = join(source, item.file);
-  const original = readFileSync(path, 'utf8');
+  // A guard whose rule is enforced at two places names the second place in `also`, and both are removed together.
+  const edits = [item, ...(item.also ?? [])].map(edit => ({ path: join(source, edit.file), original: readFileSync(join(source, edit.file), 'utf8'), edit }));
   try {
-    const changed = replaceOne(original, item.before, item.after, item.occurrence);
-    if (changed === original) throw new Error('Mutation did not change ' + item.file);
-    writeFileSync(path, changed);
+    for (const { path, original, edit } of edits) {
+      const changed = replaceOne(original, edit.before, edit.after, edit.occurrence);
+      if (changed === original) throw new Error('Mutation did not change ' + edit.file);
+      writeFileSync(path, changed);
+    }
     run(item, 'removed');
-  } finally { writeFileSync(path, original); }
+  } finally { for (const { path, original } of edits) writeFileSync(path, original); }
   run(item, 'restored');
 }
 console.log('Source guard controls passed: ' + artifact + ' (' + selected.length + ' of ' + cases.length + ' guards)');
