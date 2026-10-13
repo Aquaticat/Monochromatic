@@ -451,6 +451,32 @@ source capture,
 and native error reporting remain the adapter's responsibilities.
 This does not replace the installed judge or supply a maintained host launcher.
 
+## Migration native hook lifetime
+
+`installNativePolicyHooks` owns slot installation,
+reverse-order removal,
+and rollback for the migration runtime.
+The native integration still authenticates the original Agent,
+Session,
+request,
+judgment,
+and registration capabilities before calling this helper.
+It does not establish source coverage or authorize execution.
+
+An installation failure preserves its original value;
+independent cleanup and restoration failures remain in ordered aggregates.
+Incomplete cleanup keeps the executor slot occupied.
+Successful removers are not repeated,
+and failed removers remain available for retry.
+Detachment requires completed Session disposal and an idle Agent.
+The invalidated observer remains on the stream after detachment.
+Borrowed slots and callbacks are not frozen.
+
+The private native runtime now delegates this bookkeeping through the existing maintained-artifact link.
+Initial build and unit checks passed;
+final lint and native cutover checks remain pending.
+This is not a maintained host launcher or installed judge cutover.
+
 ## Migration input accounting
 
 `assertOriginalInputBudget` validates resource and Session receipt counters,

@@ -645,6 +645,43 @@ not completed domain closure,
 a maintained host launch path,
 or installed activation.
 
+## Maintained native hook lifetime
+
+`f04d34e79d` introduces `package/pi-plugin/auto-mode/src/native-runtime-hooks.ts`.
+Private `990e177c` removes duplicate hook installation,
+rollback,
+and detachment bookkeeping from `contract/integration/native-batch/runtime.mjs`.
+The original native request,
+judgment,
+collector,
+and tool owners remain unchanged.
+Native bootstrap still checks original identity,
+idle state,
+and an unoccupied executor before owner construction.
+The helper is not an authority or completeness certificate.
+
+Removal remains reverse-order and retryable for failed removers.
+Independent installation,
+cleanup,
+and restoration failures retain their original values.
+Incomplete cleanup leaves the executor occupied.
+Detachment still requires actual Session disposal followed by Agent idle,
+and leaves the invalidated original-request observer on the stream.
+Only the helper's returned method container is frozen.
+
+`proc_e830` passed the initial build and type check.
+The unit portion of `proc_7d13` passed;
+its lint portion failed with 50 warnings and five errors.
+`08cce3b59a` adds native slot failure controls and addresses the diagnosed lint findings.
+Final build,
+unit,
+lint,
+exact-export native integration,
+and disposable disposal-guard omission checks remain pending.
+The hook helper does not close the governing domain,
+move the remaining capture/host graph,
+or activate the installed plugin.
+
 ## Decision-domain consumer frontier
 
 `2b0d054c` / `proc_382f` isolates the remaining decision-domain obligation through the native provider serializer.
