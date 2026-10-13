@@ -15,6 +15,9 @@ The user's standing decision is that there is no hybrid and the old TypeScript g
 and the section `User decisions 2026-10-05`).
 
 A read-only scout wrote it on 2026-10-12 against `main` at `e1890fb471`.
+The publish-prep lane (branch `feat/cli-git-native-publish-prep`,
+ from `main` at `beb44949e7`) prepared the
+publication on 2026-10-13 and rewrote `Publishing the native crate` to the state it reached.
 It was updated on 2026-10-13 after the user's answers,
  against `main` at `f7a4d08160`.
 Between the two,
@@ -57,7 +60,7 @@ How to use it:
    `package/linter/monochromatic-lint`).
   The answer is the approval for this crate's first publication.
   The `cargo publish` itself is run by the orchestrator after the verification described in
-  `Publication steps in order`;
+  `Steps that remain`;
    the owner-only parts are the API token and the Trusted Publishing form.
   Carried out in `Publishing the native crate`.
 - Hk cleanup:
@@ -264,12 +267,14 @@ directory,
 
 ### The native executable and how it is built
 
-- The crate is `package/git-policy/cli/Cargo.toml` (`name = "git-policy-cli"`,
-   `publish = false` at `:10`).
-  Its binary is `cli-git-native` (`[[bin]]` at `:19`,
+- The crate is `package/git-policy/cli/Cargo.toml` (`name = "monochromatic-git-policy-cli"`,
+   `version = "0.1.0"`,
+   publishable since `8285d98844` on the publish-prep branch;
+   see `Publishing the native crate`).
+  Its binary is `cli-git-native` (`[[bin]]`,
    path `src/native/main.rs`),
    deliberately not named `git`;
-  the manifest comment at `:17-18` says installation wiring gives it the `git` name at cutover.
+  the manifest comment says the repository's mise tool entry links it as `git` after installing it.
   `Cargo.toml` is managed by file-enforcer (`generateCargoManifests`,
    `file-enforcer.config.ts:1777`),
   so comment edits are followed by `mise run sync:files`.
@@ -526,15 +531,16 @@ The main checkout's `.claude/settings.json` has no hit;
    after `changeset:version` calls `git cli-git fix`,
    the job needs the native executable,
    built from the checkout (see `Decisions`).
-- No workflow builds `cli-git-native`,
-   runs its tests on macOS or Windows,
-  or publishes it (`doc/handover/cli-git-rust-implementation.md`,
+- No workflow runs the native tests on macOS or Windows
+  (`doc/handover/cli-git-rust-implementation.md`,
    `Adopted without a question`,
   item on hosted runners,
    is not implemented).
 - The first native workflow covers Linux only (see `Decisions`).
-  `.github/workflows/cargo-publish.yml` gains the job group for the new crate (`Publication steps in order`,
-   step 4).
+  `.github/workflows/cargo-publish.yml` has the job group `gpc-*` for the new crate on the publish-prep branch
+  (`Publishing the native crate`,
+   `State`);
+   it never ran.
 - Branch protection of `main`:
    `required_status_checks` has empty `contexts` and `checks`,
    required signatures are on,
@@ -618,26 +624,13 @@ The main checkout's `.claude/settings.json` has no hit;
 ### Documentation
 
 - Live and wrong after the cutover:
-   `package/git-policy/cli/README.md` (1,190 lines;
-   its rewrite is a precondition of the first publication,
-   see `Verdicts`) and
-  `package/git-policy/cli/SPEC.md` (4,305 lines).
-  Neither mentions `cli-git.config.jsonc` (measured:
-   zero matches),
-   both describe plugins,
-  executable configuration and trust.
-   README sections to rewrite or delete:
-   `Runtime` (`:6`,
-   Node floor,
-  PATH shadowing),
-   `Policy authoring API` (`:130`),
-   `Shipped optional policies` (`:210`),
-   `Exact MJS trust` (`:573`),
-  `Performance gates` (`:1075`),
-   `How it works` (`:1166`),
-   `Adding rules` (`:1185`).
-  Keep the sections that describe behavior both wrappers share,
-   after checking each against the native source.
+   `package/git-policy/cli/SPEC.md` (4,305 lines).
+  It describes plugins,
+  executable configuration and trust,
+  and mentions `cli-git.config.jsonc` nowhere (measured on 2026-10-12:
+   zero matches).
+  The package README was rewritten for the native wrapper in `4f5bc1d30c` and needs no further change for the
+  cutover.
   SPEC sections that exist for the retired surface,
    by heading and line:
    `Public authoring declarations` (`:77`),
@@ -654,7 +647,7 @@ The main checkout's `.claude/settings.json` has no hit;
   so edit the SPEC in one commit and re-cite the ledger in the next,
    or cite by heading.
   The README must keep existing:
-   `Cargo.toml` `readme`,
+   `Cargo.toml` `readme` and `include`,
    `bin/test-native-container.mjs:62`,
   and `package/git-policy/cli.fuzz/bin/planted-controls.mjs:23` read it.
 - `package/git-policy/cli/e2e/README.md:42-44`:
@@ -963,14 +956,233 @@ revision).
 
 ## Publishing the native crate
 
-This section holds the 2026-10-13 investigation of what stops `cargo publish` for the native crate in
-`package/git-policy/cli`,
- how the `cargo:` mise backend names the installed binary,
- and the exact steps.
-Every command ran in a throwaway copy or with `CARGO_TARGET_DIR` under `${HOME}/temp/agent`;
-nothing was published and `cargo publish` ran only as a dry run.
-Real publication is the orchestrator's act,
- after the checks in `Publication steps in order`.
+This section holds the state of the publication preparation (branch `feat/cli-git-native-publish-prep`,
+ worktree
+`.claude/worktrees/cli-git-lane-publish-prep`,
+ based on `main` at `beb44949e7`,
+ prepared on 2026-10-13),
+the evidence behind it and the exact steps that remain.
+Nothing was published,
+ tagged,
+ dispatched or installed.
+`cargo publish` ran only as a dry run,
+ in a throwaway clone under `${HOME}/temp/agent`.
+
+### State
+
+Everything that does not itself publish is committed on the branch:
+
+- `efdcfb7a72`:
+   `package/cli/forbidden-strings` is `0.5.0`.
+  The `lock:members` task was added to it,
+   to `package/cli/forbidden-strings.fuzz` and to
+  `package/rust-module/forbidden-regex.bench` (`cargo update --offline --workspace`),
+  and run in each,
+   so their lockfiles record only the new version.
+- `8285d98844`:
+   `package/git-policy/cli/Cargo.toml` is `monochromatic-git-policy-cli` `0.1.0`
+  (library name `git_policy_cli` and binary `cli-git-native` unchanged),
+  without `publish = false`,
+  with the `include` list,
+  with `forbidden-strings` `0.5.0` and `monochromatic-jsonc-edit` `0.1.1` (path keys kept),
+  and with the `[package.metadata.binstall]` table copied from `monochromatic-lint` (tgz for every target;
+  only Linux GNU archives exist).
+  The fuzz sidecar's dependency key,
+   the build assertion message in `src/native/scanner_adapter.rs` and both
+  lockfiles (`package/git-policy/cli/Cargo.lock`,
+   `package/git-policy/cli.fuzz/Cargo.lock`) follow the rename.
+  The `lock:members` task of `package/git-policy/cli.fuzz` was added for it:
+  `lock:subject` reseeds from the subject's lock and drifted `cc` from 1.6.0 to 1.8.0.
+- `4f5bc1d30c`:
+   `package/git-policy/cli/README.md` describes the native wrapper.
+  Each claim was checked against the code or against a run of the built executable in a scratch repository,
+  and `monochromatic-lint` and a CommonMark render (`pandoc`) report no finding.
+- `3e67dbe1d8`:
+   `.github/workflows/cargo-publish.yml` has the job group `gpc-*`
+  (`gpc-detect`,
+   `gpc-publish-crate`,
+   `gpc-build-binary`,
+   `gpc-create-release`),
+  a `workflow_dispatch` choice `monochromatic-git-policy-cli` and the push path `package/git-policy/cli/Cargo.toml`.
+  `actionlint` 1.7.12 (`mise exec actionlint@1.7.12 -- actionlint .github/workflows/cargo-publish.yml`) reports
+  nothing;
+   the repository has no task for it.
+  The workflow was not run.
+- `41bc87db00`:
+   the `include` entries `/Cargo.toml`,
+   `/Cargo.lock` and `/README.md` are anchored,
+  because Cargo `include` patterns are gitignore-style and `README.md` also packaged `e2e/README.md`.
+  `monochromatic-lint` has the same unanchored pattern;
+   its package was not inspected.
+
+Differences of the new jobs from the `ml-*` jobs:
+
+- The matrix has `x86_64-unknown-linux-gnu` and `aarch64-unknown-linux-gnu` only.
+- The archive is `monochromatic-git-policy-cli-<version>-<target>.tar.gz` holding
+  `monochromatic-git-policy-cli-<version>-<target>/cli-git-native` and `README.md`;
+  the release tag is `monochromatic-git-policy-cli-v<version>`.
+- `cargo package --locked` and `cargo publish --locked` are used,
+  and the binary is built with `--bin cli-git-native`.
+- A smoke step runs `cli-git-native cli-git --help` from each built target before it is archived.
+- `gpc-publish-crate` first waits (60 attempts,
+   30 seconds apart) until the crates.io index lists the
+  `forbidden-strings` version that `Cargo.toml` requires,
+   so one push may carry both version bumps.
+  The extraction (`sed`) and the index lookup were run against the real index with `forbidden-strings` 0.4.1
+  (found) and 0.5.0 (absent) before this section was written.
+
+Semver check of `forbidden-strings` 0.4.1 to 0.5.0:
+`cargo-semver-checks` 0.51.0 (installed with `cargo binstall --root` into a scratch directory,
+the repository does not pin it) compared the local source against the extracted published 0.4.1 crate
+(`cargo semver-checks --baseline-root`,
+ because the sandbox could not reach the index for `--baseline-version`).
+Result:
+ "202 checks:
+ 202 pass,
+ 58 skip",
+ "no semver update required".
+The tool compares public Rust API only;
+the command-line surface changed additively (the `--name-path` option,
+ pathname findings and a longer help text,
+`src/cli.rs`),
+ and the `fuzzing` feature still exists.
+The minor bump therefore stands for the new Scanner API.
+
+Verification without publishing,
+ on branch head `41bc87db00`:
+
+- Container gate `GIT_POLICY_NATIVE_IMAGE_TAG=publish-prep mise run //package/git-policy/cli:native:test:container`
+  through `gate-slot.ts`:
+   exit 0,
+   image `localhost/git-policy-native-test:publish-prep`
+  id `7808a101642dc688e81c9cefe2dcde303f26241b87a206a56996c17cafb95492`.
+  Test result lines:
+   library 1633 passed,
+   0 failed,
+   6 ignored;
+   `native_binary` 105 passed,
+   0 failed,
+   1 ignored;
+  `native_candidates` 1 passed;
+   the `cli-git-native` unit target 0 tests.
+  The gate's Clippy (`-D warnings`,
+   all targets) finished without a diagnostic.
+- `mise run //package/git-policy/cli:native:clippy` through the slot limiter:
+   exit 0,
+   finished without a diagnostic.
+  Commits after `41bc87db00` change only this document.
+- In a clean `--depth 1` clone of the branch head,
+  `cargo package --locked --list` lists 537 entries before the include fix and 536 files after it,
+  which are `src/native/**/*.rs`,
+   `src/native/dependent_version_fixtures/unit_cases.json`,
+  `src/native/index_lock_restart_manager.ps1`,
+   `Cargo.toml`,
+   `Cargo.toml.orig`,
+   `Cargo.lock`,
+   `README.md`,
+  `.cargo_vcs_info.json` and the two files in `LICENSES/`.
+  No path matches `.local.`,
+   `.env`,
+   `secret`,
+   `token` or `credential`,
+   and `e2e/` is absent.
+- `cargo package --locked --no-verify` in the clone,
+   without a patch,
+   exits 101 with
+  "failed to select a version for the requirement `forbidden-strings = "^0.5.0"` ... candidate versions found which
+  didn't match:
+   0.4.1,
+   0.4.0,
+   0.3.0".
+  That is the expected state until `forbidden-strings` 0.5.0 is on crates.io.
+- With the config patch
+  `--config 'patch.crates-io.forbidden-strings.path="<clone>/package/cli/forbidden-strings"'`
+  (the patch makes `Cargo.lock` change,
+   so `--locked` cannot be combined with it,
+   and `--allow-dirty` is needed):
+  `cargo package` prints "Packaged 536 files,
+   4.9MiB (1.1MiB compressed)",
+   "Verifying
+  monochromatic-git-policy-cli v0.1.0" and finishes the verification build in 1 minute 18 seconds,
+   exit 0;
+  `cargo publish --dry-run --no-verify` prints "Packaged 536 files,
+   4.9MiB (1.1MiB compressed)",
+  "Uploading monochromatic-git-policy-cli v0.1.0" and "warning:
+   aborting upload due to dry run",
+   exit 0.
+  Cargo also prints "patch `forbidden-strings v0.5.0` was not used in the crate graph" for the repository-side
+  resolution,
+   which uses the path dependency;
+   the verification build of the unpacked crate used the patch.
+
+### Steps that remain
+
+The orchestrator and the owner run these in order.
+The order matters because the new jobs also start on the push that lands the manifest:
+`gpc-create-release` needs only `gpc-detect` and `gpc-build-binary`,
+so landing the branch on `main` before the crate is published and its Trusted Publishing form is saved makes
+`gpc-publish-crate` fail at the authentication step while the release is still created.
+
+1.  Release `forbidden-strings` 0.5.0.
+    Push commit `efdcfb7a72` alone to `main` (it touches only `forbidden-strings`,
+     its sidecar and the bench).
+    If `main` moved,
+     cherry-pick it instead.
+    The jobs `fs-*` of `.github/workflows/cargo-publish.yml` detect the bump and publish through Trusted Publishing.
+    Check `curl -sS https://crates.io/api/v1/crates/forbidden-strings/0.5.0` and `gh release view forbidden-strings-v0.5.0`.
+2.  Verify without a patch,
+     in a clean clone of the branch head,
+     bounded:
+    `cargo package --locked` and then `cargo publish --dry-run --locked` in `package/git-policy/cli`.
+    The second must print "aborting upload due to dry run".
+    This is the check that failed on 2026-10-13 and can only pass after step 1.
+3.  Owner:
+    follow `doc/runbook/publish-crate-first-time.md` for the new crate:
+    token name `monochromatic-git-policy-cli-bootstrap`,
+     the `publish-new` and `publish-update` scopes,
+     the shortest
+    expiration,
+     then `cargo login`.
+    Whether the credential stored on this host authorizes publishing was not established
+    (the file was not read;
+     the runbook records a 403 for it on 2026-09-25).
+4.  Orchestrator:
+    run `cargo publish --locked` in `package/git-policy/cli` from the verified branch commit
+    (`--locked` and no `--no-verify`,
+     so the packaged crate compiles against crates.io once more).
+    Check `curl -sS https://crates.io/api/v1/crates/monochromatic-git-policy-cli/0.1.0`.
+5.  Owner:
+    save the Trusted Publishing form at `https://crates.io/crates/monochromatic-git-policy-cli/settings`
+    (owner `Aquaticat`,
+     repository `Monochromatic`,
+     workflow `cargo-publish.yml`,
+     empty environment),
+    then revoke the bootstrap token.
+6.  Land the branch on `main`.
+    The push starts `gpc-detect` (version `0.0.1` before,
+     `0.1.0` after),
+     which authenticates,
+    skips the existing upload,
+     builds both Linux archives and creates the release.
+    Check `gh release view monochromatic-git-policy-cli-v0.1.0` lists two archives,
+    and that the workflow run for the push shows no failed job.
+    The publication commit and the landed commit must have equal `package/git-policy/cli` contents
+    (compare `git diff <published> <landed> -- package/git-policy/cli`).
+7.  Continue with `Ordered steps` in `Installation sequence with rollback`:
+    step 3 verifies the published artifact in isolation,
+    step 4 adds the tool entry (`Install the published tool`) and runs `mise run lock:mise`.
+
+A dry-run dispatch before step 6 was not tried:
+
+```sh
+# Run from the repository top level.
+gh workflow run cargo-publish.yml --ref feat/cli-git-native-publish-prep \
+  -f crate=monochromatic-git-policy-cli -f dry-run=true
+```
+
+GitHub's documentation fetched on 2026-10-13 does not say whether a workflow absent from the default branch can be
+dispatched on another ref,
+so it may be refused.
 
 ### Name
 
@@ -981,7 +1193,7 @@ Real publication is the orchestrator's act,
    `cli-git-wrapper`,
    `monochromatic-git-policy-cli`,
   `monochromatic-cli-git` and `monochromatic-git-policy`.
-  Every candidate is free.
+  Every candidate was free.
 - Repository precedent is mixed.
   Published with the `monochromatic-` prefix:
    `monochromatic-jsonc-edit`,
@@ -994,28 +1206,21 @@ Real publication is the orchestrator's act,
    section `Repository facts`).
   The three prefixed crates are the newer ones.
 - Adopted,
-   open to veto (see `Decisions`):
-   rename the crate to `monochromatic-git-policy-cli`.
+   open to veto (see `Decisions`) and applied in `8285d98844`:
+   the crate is `monochromatic-git-policy-cli`.
   A published name cannot be renamed,
    the bare name is generic,
    and the prefix matches the newest releases.
-  The rename touches `Cargo.toml` (`name`),
-   `Cargo.lock`,
-   `package/git-policy/cli.fuzz/Cargo.toml:23` (the
-  dependency key) and `package/git-policy/cli.fuzz/Cargo.lock`.
-  No Rust source changes,
-   because `[lib] name = "git_policy_cli"` keeps every `git_policy_cli::` path
-  (`package/git-policy/cli.fuzz/src/*.rs`).
-  The text of one message in `src/native/scanner_adapter.rs:67` names the crate and is reworded with it.
-  The mise tool name becomes `cargo:monochromatic-git-policy-cli`.
-- Keeping the bare name is the alternative:
-   skip the rename in `Minimal changes` and substitute the name wherever this document names the crate.
+  The library name `git_policy_cli` keeps every `git_policy_cli::` path in `package/git-policy/cli.fuzz/src/*.rs`.
+  The mise tool name is `cargo:monochromatic-git-policy-cli`.
+- Keeping the bare name would need the rename reverted in `8285d98844` and the name substituted wherever this document
+  names the crate.
 - The binary stays `cli-git-native`.
   Renaming it before first publication would touch 21 files outside `doc/` (counted with `rg --files-with-matches`);
   the word "native" loses its contrast with the incumbent after retirement,
    but the installed `git` link hides it.
 
-### What the packaging commands showed
+### Packaging evidence
 
 Registry state on 2026-10-13:
  `forbidden-strings` 0.4.1 (published 2026-09-17),
@@ -1023,119 +1228,42 @@ Registry state on 2026-10-13:
 `monochromatic-jsonc-edit` 0.1.1 (2026-10-06),
  `monochromatic-lint` 0.1.1.
 
-1.  `cargo package --offline --locked --allow-dirty --no-verify` in the package exits 101:
-    "failed to select a version for the requirement `forbidden-strings = "^0.4.1"` ... candidate versions found
-    which didn't match:
-     0.1.9".
-    This is not a manifest defect.
-    The local registry index cache knows only an old `forbidden-strings`.
-    Without `--offline` the same command exits 0 with "Packaged 1168 files,
-     19.7MiB (3.7MiB compressed)".
-2.  `cargo publish --dry-run --locked --allow-dirty --no-verify` exits non-zero with
-    "`git-policy-cli` cannot be published.
-     `package.publish` must be set to `true` or a non-empty list in Cargo.toml".
-    Blocks publication.
-3.  The 1168 files are the whole package directory:
-    `bin/`,
-     `e2e/`,
-     `perf/`,
-     `doc/`,
-     `SPEC.md` and the incumbent's TypeScript sit next to `src/native`.
-    No `*.local.*` file and no credential-like file appeared in `cargo package --list`
-    (searched for `local`,
-     `.env`,
-     `secret`,
-     `token` and `credential` in the list).
-    Blocks a sensible publication,
-     not the command.
-4.  Verification build (`cargo package --locked --allow-dirty`,
-     which compiles the packaged crate against crates.io)
-    fails with five `E0432` errors:
-     `forbidden_strings::CandidateScan`,
-     `ScanFinding`,
-     `Scanner` and `CacheWarning`
-    do not exist in the published 0.4.1.
-    The commit that introduced them is `0696e56c4c` (2026-10-04),
-     after the 0.4.1 release.
-    The local `package/cli/forbidden-strings` still says `version = "0.4.1"`,
-     so its source differs from the
-    published crate of the same version.
-    Blocks publication:
-     `forbidden-strings` needs a new release first.
-5.  Control that the rest resolves:
-     in a throwaway copy with `monochromatic-jsonc-edit` and `forbidden-regex`
-    taken from crates.io and the local `forbidden-strings` patched in,
-     `cargo check --lib --bins` exits 0
-    (1 minute 10 seconds).
-    So the published `forbidden-regex` 0.1.1 and `monochromatic-jsonc-edit` 0.1.1 are sufficient.
-    A comment-insensitive comparison of their `src` against the local sources found
-    no code difference for `monochromatic-jsonc-edit`,
-     and for `forbidden-regex` only local-binding renames
-    (for example `Node::Repeat { node: body, .. }`) plus a test-only change in `src/gate_tests.rs`.
-    Neither needs a republish.
-6.  With `publish = false` removed,
-     an `include` list added,
-     the crate renamed and `jsonc-edit` raised to 0.1.1,
-     in a
-    throwaway copy,
-     `cargo publish --dry-run --allow-dirty --no-verify` prints
-    "Packaged 535 files,
-     4.9MiB (1.1MiB compressed)" and "aborting upload due to dry run".
-7.  `cargo build --release --locked --offline --bin cli-git-native` in a fresh target directory finished in about 71
-    seconds on this host (one run,
-     `CARGO_BUILD_JOBS=4`,
-     behind the slot limiter,
-     under unrelated load);
-    the binary is 9,028,800 bytes.
-    That bounds the cost of a source install through the `cargo:` backend on this host only:
-     the user's `~/.cargo/config.toml` sets a shared `build-dir` (`doc/decision/cargo-build-dir-host-cache.md`),
-     so a fresh `CARGO_TARGET_DIR` does not guarantee cold intermediates,
-     and the figure is not a clean-machine install time.
-    The build script's slowness is contained by `[profile.release.build-override] opt-level = 3`,
-    which applies because the crate declares its own `[workspace]`.
+- `cargo package --offline` fails when the local registry index cache lacks the required version
+  ("failed to select a version for the requirement `forbidden-strings = "^0.4.1"` ... candidate versions found which
+  didn't match:
+   0.1.9" on 2026-10-13).
+  This is not a manifest defect;
+  do not use `--offline` for the packaging steps.
+- The published `forbidden-regex` 0.1.1 and `monochromatic-jsonc-edit` 0.1.1 are sufficient.
+  A comment-insensitive comparison of their `src` against the local sources found
+  no code difference for `monochromatic-jsonc-edit`,
+   and for `forbidden-regex` only local-binding renames
+  (for example `Node::Repeat { node: body, .. }`) plus a test-only change in `src/gate_tests.rs`.
+  Neither needs a republish.
+- `forbidden-strings` 0.4.1 on crates.io lacks `CandidateScan`,
+   `ScanFinding`,
+   `Scanner` and `CacheWarning`
+  (commit `0696e56c4c`,
+   2026-10-04,
+   is after that release),
+  which is why the wrapper needs 0.5.0.
+- `cargo build --release --locked --offline --bin cli-git-native` in a fresh target directory finished in about 71
+  seconds on this host (one run,
+   `CARGO_BUILD_JOBS=4`,
+   behind the slot limiter,
+   under unrelated load);
+  the binary is 9,028,800 bytes.
+  That bounds the cost of a source install through the `cargo:` backend on this host only:
+   the user's `~/.cargo/config.toml` sets a shared `build-dir` (`doc/decision/cargo-build-dir-host-cache.md`),
+   so a fresh `CARGO_TARGET_DIR` does not guarantee cold intermediates,
+   and the figure is not a clean-machine install time.
+  The build script's slowness is contained by `[profile.release.build-override] opt-level = 3`,
+  which applies because the crate declares its own `[workspace]`.
+- `Cargo.toml` is managed by file-enforcer (`generateCargoManifests`) with present-seeded guards.
+  `mise run sync:files` after the edits left the manifest unchanged,
+   so a deleted `publish = false` stays deleted.
 
-### Verdicts
-
-Blocks `cargo publish` or its verification build:
-
-- `publish = false` (`Cargo.toml:10`) with its comment at `:9`.
-- `forbidden-strings` 0.4.1 on crates.io lacks the scanner API the crate imports.
-
-- First publication of any crate needs an owner API token,
-   because Trusted Publishing cannot configure a crate that
-  does not exist (`doc/runbook/publish-crate-first-time.md`,
-   opening section).
-  Whether the credential stored on this host still authorizes publishing was not established (the file was not read);
-  the runbook records a 403 for it on 2026-09-25.
-
-Does not block `cargo publish`,
- but must change first:
-
-- The `monochromatic-jsonc-edit` requirement is `0.1.0` (`Cargo.toml:35`).
-   It resolves,
-   because 0.1.1 satisfies it,
-   but `monochromatic-lint` raised its requirement to 0.1.1 for the fuzz-found fixes and the same reasoning applies.
-- No `include`:
-   the package carries the incumbent's TypeScript,
-   scripts and 19.7 MiB of files.
-- `README.md` describes the incumbent (trust,
-   the policy authoring API).
-  `readme = "README.md"` is enforced by file-enforcer,
-   so the registry page and every release archive would show
-  stale text,
-   and a published version is immutable.
-  The README rewrite therefore comes before the first publication,
-   not in the retirement commits.
-- No `[package.metadata.binstall]` table:
-   without it `cargo-binstall` finds no archive and mise compiles from source
-  (`doc/troubleshooting/mise-cargo-binstall-falls-back-to-compiling.md`).
-  The tag layout is `<crate>-v<version>`;
-   copy the table from `package/linter/monochromatic-lint/Cargo.toml` and
-  keep only the Linux targets.
-- No release jobs in `.github/workflows/cargo-publish.yml` for this crate (see `Publication steps in order`,
-   step 4).
-
-Does not block:
+### What does not block
 
 - The license (`LGPL-3.0-or-later`) and `LICENSES/LGPL-3.0-or-later.txt`,
    `LICENSES/GPL-3.0-or-later.txt`.
@@ -1150,7 +1278,7 @@ Does not block:
    so the
   `path` plus `version` form stays in the repository.
 - `[[test]]` targets and the compile-time files:
-   the `include` of `Minimal changes` keeps `src/native/**/*.rs`,
+   the `include` list keeps `src/native/**/*.rs`,
    the two non-Rust
   files and the lockfile.
   `src/native/config_repository_tests.rs:36` reads a path outside the crate,
@@ -1162,107 +1290,9 @@ Does not block:
   `rust:1.97-bookworm`).
   Declaring `rust-version = "1.97"` is optional and records the tested toolchain,
    not a measured minimum.
-
-### Minimal changes
-
-In `package/cli/forbidden-strings`:
- raise `version` to `0.5.0` (a minor bump for 0.x API growth;
-removals between 0.4.1 and now were not checked with a semver tool,
- which is why the minor bump is the safe default).
-
-In `package/git-policy/cli/Cargo.toml` (managed by file-enforcer,
- so run `mise run sync:files` after editing):
-
-- Set `name = "monochromatic-git-policy-cli"` and `version = "0.1.0"`.
-- Delete `publish = false` (`Cargo.toml:10`) and its comment (`Cargo.toml:9`).
-  The file-enforcer guard on `package.publish` is present-seeded
-  (`file-enforcer.config.ts`,
-   `CARGO_STATIC_ENFORCEMENTS`;
-   `doc/planning/cargo-toml-file-enforcer.md`,
-   `Owned scope`),
-  so deleting the key stays deleted;
-   setting it to `true` would be reverted.
-- Add
-  `include = ["src/native/**/*.rs", "src/native/dependent_version_fixtures/*.json", "src/native/index_lock_restart_manager.ps1", "Cargo.toml", "Cargo.lock", "README.md", "LICENSES/*.txt"]`.
-  The list took the package from 1168 files (3.7 MiB compressed) to 535 files (1.1 MiB).
-- Raise the `forbidden-strings` requirement to `version = "0.5.0"` and the `monochromatic-jsonc-edit` requirement to
-  `version = "0.1.1"`,
-   keeping the `path` keys.
-- Add the `[package.metadata.binstall]` table (Linux targets only).
-- Reword the comments at `:9-10` and `:17-18`,
-   which describe the pre-cutover state.
-- Regenerate the locks:
-   `mise run //package/git-policy/cli:native:lock:members`,
-   and the same for
-  `package/git-policy/cli.fuzz` and any other lock that lists the changed crates;
-   inspect each diff.
-
-Rewrite `package/git-policy/cli/README.md` for the native wrapper before the first publication.
-
-### Publication steps in order
-
-1.  Release `forbidden-strings` 0.5.0.
-    Raise the version,
-     commit,
-     push to `main`.
-    The jobs `fs-*` of `.github/workflows/cargo-publish.yml` detect the bump,
-     publish through Trusted Publishing
-    (no token) and create the release.
-    Check `curl -sS https://crates.io/api/v1/crates/forbidden-strings/0.5.0` and the GitHub release.
-2.  Land the manifest,
-     lock and README changes of `Minimal changes`,
-     then run
-    `mise run //package/git-policy/cli:native:test:container` through the slot limiter.
-    The gate builds the path dependencies,
-     so it does not prove the registry build;
-     step 3 does.
-3.  Run the verification build on the committed head,
-     in a clean checkout,
-     bounded:
-    `cargo package --locked` in `package/git-policy/cli` (compiles the packaged crate against crates.io;
-     expect about
-    1 to 3 minutes),
-     then `cargo publish --dry-run --locked` (expect "aborting upload due to dry run").
-    The check that failed on 2026-10-13 must pass.
-4.  Add the release jobs for the crate to `.github/workflows/cargo-publish.yml`,
-     mirrored from the `ml-*` jobs
-    (`ml-detect`,
-     `ml-publish-crate`,
-     `ml-build-binary`,
-     `ml-create-release`):
-     a `workflow_dispatch` choice,
-     the
-    `push` path `package/git-policy/cli/Cargo.toml`,
-     a detect job reading the version,
-     an idempotent publish step,
-     a
-    binary matrix restricted to `x86_64-unknown-linux-gnu` and `aarch64-unknown-linux-gnu` (the Windows and macOS code
-    never compiled,
-     and the repository's immutable releases mean one failing target produces no release),
-     the archive
-    layout `<crate>-<version>-<target>/cli-git-native`,
-     and a release tagged `<crate>-v<version>`.
-    Dry-run it with `gh workflow run cargo-publish.yml -f crate=<crate> -f dry-run=true` before the real run.
-5.  First publication,
-     owner action:
-     follow `doc/runbook/publish-crate-first-time.md` with the new crate name,
-     version
-    `0.1.0`,
-     the workflow job prefix of step 4 and the token name `<crate>-bootstrap`.
-    The owner creates the token and runs `cargo login`;
-     the orchestrator then runs `cargo publish` from the verified
-    commit of step 3,
-     and the owner saves the Trusted Publishing form at
-    `https://crates.io/crates/<crate>/settings`.
-6.  Dispatch the workflow with `dry-run=false` on a ref whose package directories equal the published commit.
-    It authenticates,
-     skips the existing upload,
-     builds the archives and creates the release.
-    Check `gh release view <crate>-v0.1.0` lists the archives.
-7.  Continue with `Ordered steps` in `Installation sequence with rollback`:
-     step 3 verifies the published artifact in
-    isolation,
-     step 4 adds the tool entry (`Install the published tool`) and runs `mise run lock:mise`.
+- Without the `[package.metadata.binstall]` table `cargo-binstall` finds no archive and mise compiles from source
+  (`doc/troubleshooting/mise-cargo-binstall-falls-back-to-compiling.md`);
+   the table is present.
 
 ### Install the published tool
 
@@ -1510,7 +1540,8 @@ there).
     do not run `pnpm install` in the main checkout with the cli manifest reduced until the verification has passed and the hazard 4 count of sessions that still start the shim is zero.
 6.  The incumbent without `cli-git.config.ts` runs only core policies:
     optional policies "remain disabled until trusted config registers them"
-    (`package/git-policy/cli/README.md:210-212`),
+    (the former `package/git-policy/cli/README.md:210-212`,
+     replaced in `4f5bc1d30c`),
      so rolling back after deleting the file silently drops
     `security/forbidden-strings`,
      `markdown/autofix`,
@@ -1557,7 +1588,7 @@ commit each step before the next (`GCE`).
      the root dependency,
      the cli manifest and `src/` untouched.
 2.  Publish the crate (`Publishing the native crate`,
-     `Publication steps in order`,
+     `Steps that remain`,
      steps 1 to 6).
     The tool entry is not added to the repository until step 4 here.
 3.  Verify the published artifact in isolation,
@@ -1795,8 +1826,7 @@ Each step is its own commit,
     edit `e2e/` and the Containerfile,
     delete `cli-git-trust.yml`,
     `src/maintenance/` (with `src/`),
-    rewrite the `SPEC.md` sections of `Documentation`
-    (the `README.md` was rewritten before the first publication).
+    rewrite the `SPEC.md` sections of `Documentation`.
 4.  Remove `package.json:36` and regenerate `pnpm-lock.yaml`,
     `package/config/pnpr/config.yaml` and `mise.toml`
     (`pnpm install --lockfile-only` or `mise run prepare:pnpm:install`,
@@ -1831,7 +1861,7 @@ Each step is its own commit,
   the file was not read,
    and `doc/runbook/publish-crate-first-time.md` records a 403 for it on 2026-09-25.
 - Everything that needs a published crate:
-  the release jobs for the new crate in `.github/workflows/cargo-publish.yml` do not exist yet and never ran;
+  the release jobs `gpc-*` in `.github/workflows/cargo-publish.yml` were linted but never ran;
   the prebuilt archive path of `mise install` for this crate (the probes used `monochromatic-lint` 0.1.1 as a stand-in);
   and the glibc and Git versions of hosted runners against the 2.55.0 floor.
   The source-install fallback was measured only as a build:
@@ -1839,13 +1869,10 @@ Each step is its own commit,
    one run,
    9,028,800 bytes,
    on a host with a shared cargo `build-dir`.
-- Whether file-enforcer keeps a deleted `publish = false` deleted:
-  derived from the present-seeded guard in `file-enforcer.config.ts` and `doc/planning/cargo-toml-file-enforcer.md`,
-   not
-  from a run of `mise run sync:files`.
-- Whether removals between `forbidden-strings` 0.4.1 and the local source exist.
-  No semver tool ran,
-   which is why the first release is a minor bump.
+- Whether the unanchored `include` entries of `package/linter/monochromatic-lint/Cargo.toml` package a stray
+  `README.md` from a subdirectory (the new crate's list is anchored;
+   that package was not inspected).
+- Whether `gh workflow run` can dispatch the new choice from a branch whose workflow file is absent from `main`.
 - Whether the worktree setup flow of this repository runs `mise install`.
   The link directory is created only by `mise install` (`postinstall` with `when = "always"`);
   `mise exec`,
