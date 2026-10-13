@@ -68,6 +68,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.focus.focusProperties
+import dev.monochromatic.musicplayer.core.FocusRingPlacement
 import dev.monochromatic.musicplayer.core.HostKeyZone
 import dev.monochromatic.musicplayer.core.KeyActivateRow
 import dev.monochromatic.musicplayer.core.ringAfter
@@ -96,14 +97,15 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
 
-// What:     `private val RAIL_WIDTH: Dp = 48.dp + FOCUS_RING_OUTSET * 2` is the width of the letter rail column.
-// Why:      One 48dp cell fills the column, so the rail is exactly one touch target wide.
+// What:     `private val RAIL_WIDTH: Dp = 48.dp` is the width of the letter rail column.
+// Why:      One 48dp cell fills the column, so the rail is exactly one touch target wide, and the cell's focus ring
+//           lies just inside its edge (D120) because the scrolling column clips anything outside it.
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// const RAIL_WIDTH = 48 + 4 * 2;
+// const RAIL_WIDTH = 48;
 // ```
-/** Width of the letter rail column: one minimum touch target and the room for its focus ring on both sides. */
+/** Width of the letter rail column: one minimum touch target; the focus ring of a cell lies inside the cell. */
 private val RAIL_WIDTH: Dp = 48.dp
 
 // What:     `private val RAIL_CELL_SIZE: Dp = 48.dp` is the side of each rail cell.
@@ -516,7 +518,6 @@ private fun letterRail(
             .width(RAIL_WIDTH)
             .fillMaxHeight()
             .verticalScroll(rememberScrollState())
-            .padding(vertical = FOCUS_RING_OUTSET)
             .selectableGroup()
             .listZone(zone = HostKeyZone.FOLDERS, state = zone) { command ->
                 if (command == KeyActivateRow) {
@@ -584,7 +585,7 @@ private fun railCellTarget(cell: RailCell, selected: Boolean, ringed: Boolean, o
         modifier = Modifier
             .size(RAIL_CELL_SIZE)
             .bringIntoViewRequester(bringIntoView)
-            .keyboardFocusRing(visible = ringed, shape = CircleShape)
+            .keyboardFocusRing(visible = ringed, shape = CircleShape, placement = FocusRingPlacement.INSIDE)
             .focusProperties { canFocus = false }
             .selectable(selected = selected, onClick = onClick, role = Role.RadioButton),
         contentAlignment = Alignment.Center,

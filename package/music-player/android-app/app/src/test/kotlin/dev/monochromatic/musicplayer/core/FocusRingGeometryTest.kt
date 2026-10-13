@@ -1,4 +1,5 @@
-// The focus ring geometry of D117: two solid rings, 2 dp then 1 dp, flush against the element and hugging its shape.
+// The focus ring geometry of D117: two solid rings, 2 dp then 1 dp, flush against the element and hugging its shape,
+// the same pair just inside the edge of an entry flush in a clipped list (D120), and the keyboard-only rule.
 
 // What:     `package ...core` matches the geometry's package.
 // Why:      The tests call the pure functions directly.
@@ -10,6 +11,8 @@
 package dev.monochromatic.musicplayer.core
 
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertTrue
 import org.junit.Test
 
 /** Checks that the ring bounds are the element bounds grown by the widths and that every shape keeps its kind. */
@@ -115,5 +118,115 @@ class FocusRingGeometryTest {
         assertEquals(-4f, bands.middle.left, 0f)
         assertEquals(-5f, bands.outer.left, 0f)
         assertEquals(5f, spec.outset, 0f)
+    }
+
+    /** Inside, the outer edge of the pair is the element's own bounds, so nothing reaches outside it (D120). */
+    @Test
+    fun insideRingsStayWithinTheElementAndTheirOuterEdgeIsItsEdge() {
+        /** Bands of a 300 by 64 row with square corners, drawn inside. */
+        val bands: FocusRingBands = focusRingBandsInside(300f, 64f, RingCorners.uniform(0f), FIREFOX_RING_SPEC)
+        assertEquals(0f, bands.outer.left, 0f)
+        assertEquals(0f, bands.outer.top, 0f)
+        assertEquals(300f, bands.outer.right, 0f)
+        assertEquals(64f, bands.outer.bottom, 0f)
+        for (edge in listOf(bands.inner, bands.middle, bands.outer)) {
+            assertTrue(edge.left >= 0f && edge.top >= 0f && edge.right <= 300f && edge.bottom <= 64f)
+        }
+    }
+
+    /** Inside, the widths are the same 1 dp outer ring and 2 dp near ring, with the outer ring on the edge. */
+    @Test
+    fun insideRingsKeepTheTwoAndOneDpWidths() {
+        /** Bands of a 200 by 56 row, drawn inside. */
+        val bands: FocusRingBands = focusRingBandsInside(200f, 56f, RingCorners.uniform(0f), FIREFOX_RING_SPEC)
+        assertEquals(1f, bands.middle.left - bands.outer.left, 0f)
+        assertEquals(1f, bands.outer.right - bands.middle.right, 0f)
+        assertEquals(1f, bands.middle.top - bands.outer.top, 0f)
+        assertEquals(1f, bands.outer.bottom - bands.middle.bottom, 0f)
+        assertEquals(2f, bands.inner.left - bands.middle.left, 0f)
+        assertEquals(2f, bands.middle.right - bands.inner.right, 0f)
+        assertEquals(2f, bands.inner.top - bands.middle.top, 0f)
+        assertEquals(2f, bands.middle.bottom - bands.inner.bottom, 0f)
+    }
+
+    /** Inside, the pair is the outside pair of the row taken in by 3 dp, so the near ring's inner edge is 3 dp in. */
+    @Test
+    fun insideRingsAreTheOutsideRingsOfTheElementTakenInByTheOutset() {
+        /** Bands of a 120 by 48 row, drawn inside. */
+        val inside: FocusRingBands = focusRingBandsInside(120f, 48f, RingCorners.uniform(0f), FIREFOX_RING_SPEC)
+        /** Bands of the same row taken in by 3 dp, drawn outside, moved back by 3 dp. */
+        val outside: FocusRingBands = focusRingBands(114f, 42f, RingCorners.uniform(0f), FIREFOX_RING_SPEC)
+        assertEquals(3f, inside.inner.left, 0f)
+        assertEquals(3f, inside.inner.top, 0f)
+        assertEquals(117f, inside.inner.right, 0f)
+        assertEquals(45f, inside.inner.bottom, 0f)
+        assertEquals(outside.middle.width, inside.middle.width, 0f)
+        assertEquals(outside.outer.height, inside.outer.height, 0f)
+        assertEquals(outside.outer.corners, inside.outer.corners)
+    }
+
+    /** A square corner keeps the 2 dp near-ring radius and the 3 dp outer-ring radius inside, as outside. */
+    @Test
+    fun insideSquareCornersKeepTheFirefoxRadii() {
+        /** Bands of a plain rectangle, drawn inside. */
+        val bands: FocusRingBands = focusRingBandsInside(300f, 64f, RingCorners.uniform(0f), FIREFOX_RING_SPEC)
+        assertEquals(RingCorners.uniform(0f), bands.inner.corners)
+        assertEquals(RingCorners.uniform(2f), bands.middle.corners)
+        assertEquals(RingCorners.uniform(3f), bands.outer.corners)
+    }
+
+    /** A circle stays a circle inside: the outer edge is the element's own circle and every edge is square. */
+    @Test
+    fun anInsideRingOfACircleStaysACircleOnTheElementsEdge() {
+        /** Bands of a 48 dp circle, drawn inside. */
+        val bands: FocusRingBands = focusRingBandsInside(48f, 48f, RingCorners.uniform(24f), FIREFOX_RING_SPEC)
+        assertEquals(RingCorners.uniform(24f), bands.outer.corners)
+        for (edge in listOf(bands.inner, bands.middle, bands.outer)) {
+            assertEquals(edge.width, edge.height, 0f)
+            assertEquals(edge.width / 2f, edge.corners.topLeft, 0f)
+        }
+        assertEquals(48f, bands.outer.width, 0f)
+        assertEquals(46f, bands.middle.width, 0f)
+        assertEquals(42f, bands.inner.width, 0f)
+    }
+
+    /** A pill stays a pill inside: the outer edge keeps the element's radius, half its height. */
+    @Test
+    fun anInsideRingOfAPillKeepsTheElementsRadius() {
+        /** Bands of a 160 by 40 pill, drawn inside. */
+        val bands: FocusRingBands = focusRingBandsInside(160f, 40f, RingCorners.uniform(20f), FIREFOX_RING_SPEC)
+        assertEquals(RingCorners.uniform(20f), bands.outer.corners)
+        assertEquals(RingCorners.uniform(19f), bands.middle.corners)
+        assertEquals(RingCorners.uniform(17f), bands.inner.corners)
+    }
+
+    /** An element smaller than the rings gets empty inner outlines instead of negative sizes. */
+    @Test
+    fun anElementTooSmallForTheRingsHasNoNegativeInnerSize() {
+        /** Bands of a 4 by 4 element, drawn inside. */
+        val bands: FocusRingBands = focusRingBandsInside(4f, 4f, RingCorners.uniform(0f), FIREFOX_RING_SPEC)
+        assertTrue(bands.inner.width >= 0f && bands.inner.height >= 0f)
+    }
+
+    /** The placement picks the matching bands: outside reaches beyond the element, inside never does. */
+    @Test
+    fun placementPicksTheOutsideOrTheInsideBands() {
+        /** Bands of a 100 by 40 element for each placement. */
+        val square = RingCorners.uniform(0f)
+        val outside = focusRingBandsAt(FocusRingPlacement.OUTSIDE, 100f, 40f, square, FIREFOX_RING_SPEC)
+        val inside = focusRingBandsAt(FocusRingPlacement.INSIDE, 100f, 40f, square, FIREFOX_RING_SPEC)
+        assertEquals(-3f, outside.outer.left, 0f)
+        assertEquals(0f, inside.outer.left, 0f)
+        assertEquals(focusRingBands(100f, 40f, square, FIREFOX_RING_SPEC), outside)
+        assertEquals(focusRingBandsInside(100f, 40f, square, FIREFOX_RING_SPEC), inside)
+    }
+
+    /** The ring shows only when the element has focus and the last input was the keyboard (D117). */
+    @Test
+    fun theRingShowsOnlyForKeyboardInput() {
+        assertTrue(focusRingShows(focused = true, lastInputWasKeyboard = true))
+        assertFalse(focusRingShows(focused = true, lastInputWasKeyboard = false))
+        assertFalse(focusRingShows(focused = false, lastInputWasKeyboard = true))
+        assertFalse(focusRingShows(focused = false, lastInputWasKeyboard = false))
     }
 }

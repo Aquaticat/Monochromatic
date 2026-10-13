@@ -216,14 +216,26 @@ The focus indicator is a ring and nothing else (D117), drawn the way Firefox dra
 element: a 2 dp ring in the `primary` role flush against the element's edge, and a 1 dp ring in the `on-primary` role
 around it, which keeps the ring readable on any surface.
 Both rings follow the element's own shape (a pill stays a pill, a circle a circle, and a square corner gets a 2 dp outer
-radius), reach 3 dp outside the element and move no content.
-A button, icon button or row that takes focus itself shows its rings for keyboard focus only (the last input was a key),
-and an entry of a one-stop list shows them while its list holds focus.
+radius), reach 3 dp outside the element by default and move no content.
+Every ring shows for keyboard focus only (CSS `:focus-visible`): the element or its list has focus and the last input
+was a key, which the app reads from Compose's input mode, the same mechanism for a button, an icon button, a row that
+takes focus itself and an entry of a one-stop list.
+A tap or a touch that follows a key press hides the ring even though the list still holds focus, and the next key press
+shows it again.
+An entry that sits flush inside a list that clips its children (a track row, a rail cell, a Search result, a template
+editor field) draws the same two rings just inside its own edge instead (D120): the 1 dp `on-primary` ring on the edge
+and the 2 dp `primary` ring inside it, with the same corner radii as the outside pair.
+Such a list reserves no padding around its entries, and the text keeps its place by starting 8 dp beyond the inner edge
+of the ring at least.
+The folder names are not flush in a clipping list (the wrapped lines have room around them), so their rings stay outside,
+and the track menu rows keep their reserved room.
 Focus adds no fill, tint, state layer, bold or size change; hover and press keep their own state layers.
 The drawing is [`FocusRing.kt`](app/src/main/kotlin/dev/monochromatic/musicplayer/FocusRing.kt) and the geometry, a spec
 of widths, gap and square-corner radius, is
 [`core/FocusRingGeometry.kt`](app/src/main/kotlin/dev/monochromatic/musicplayer/core/FocusRingGeometry.kt).
-A list that clips its children leaves `FOCUS_RING_OUTSET` of room around the entries that can take the ring.
+The geometry also holds the placement (outside or inside) and the keyboard-only rule, so `FocusRingGeometryTest` states
+both.
+`FOCUS_RING_OUTSET` is the room that a clipping parent leaves for an outside ring, which only the track menu still does.
 `FocusRingContrastTest` checks the `primary` ring at 3 to 1 or better against every surface a focused element sits on,
 and the `on-primary` ring against the `primary` ring, in both appearances and over a sweep of accent roots.
 

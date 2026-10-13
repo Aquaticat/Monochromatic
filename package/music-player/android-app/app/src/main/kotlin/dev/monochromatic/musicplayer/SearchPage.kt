@@ -18,7 +18,6 @@ package dev.monochromatic.musicplayer
 // ```ts
 // import { background } from "compose/foundation";
 // ```
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.foundation.background
@@ -527,6 +526,15 @@ import androidx.compose.ui.text.style.TextAlign
 // ```
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+
+// What:     `import dev.monochromatic.musicplayer.core.FocusRingPlacement` says on which side of an edge a ring sits.
+// Why:      A result row sits flush in the clipped result list, so its focus ring is drawn inside the row (D120).
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// import type { FocusRingPlacement } from "dev.monochromatic.musicplayer/core/FocusRingGeometry";
+// ```
+import dev.monochromatic.musicplayer.core.FocusRingPlacement
 
 // What:     `import dev.monochromatic.musicplayer.core.SearchResult` names one result row.
 // Why:      The page draws each result and passes its identity to the open callback.
@@ -1201,7 +1209,7 @@ private fun searchResultList(
     LaunchedEffect(query) {
         listState.scrollToItem(0)
     }
-    LazyColumn(state = listState, modifier = modifier, contentPadding = PaddingValues(vertical = FOCUS_RING_OUTSET)) {
+    LazyColumn(state = listState, modifier = modifier) {
         items(items = results, key = { result -> searchResultKey(result) }) { result ->
             searchResultRow(
                 result = result,
@@ -1241,9 +1249,8 @@ private fun searchResultRow(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = FOCUS_RING_OUTSET)
             .heightIn(min = SEARCH_ROW_MIN_HEIGHT)
-            .focusRing(RectangleShape)
+            .focusRing(RectangleShape, placement = FocusRingPlacement.INSIDE)
             .clickable(role = Role.Button, onClickLabel = rowSpeech.actionLabel) { onOpenResult(result) }
             .semantics(mergeDescendants = true) {
                 /** Current-track state read from the row's speech, or null when the row is not current. */
@@ -1253,8 +1260,8 @@ private fun searchResultRow(
                 }
             }
             .padding(
-                start = (startInset - FOCUS_RING_OUTSET).coerceAtLeast(0.dp),
-                end = (endInset - FOCUS_RING_OUTSET).coerceAtLeast(0.dp),
+                start = startInset,
+                end = endInset,
             ),
         verticalAlignment = Alignment.CenterVertically,
     ) {
