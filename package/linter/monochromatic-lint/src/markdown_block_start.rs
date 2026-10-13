@@ -1,7 +1,7 @@
 //! What:
 //!  Conservative block-start detection before inserting prose line breaks.
 //! Why:
-//!  An add-only newline can still turn inline text into a heading,
+//!  A newline that replaces a space can still turn inline text into a heading,
 //!  list,
 //!  quote or code block.
 //!

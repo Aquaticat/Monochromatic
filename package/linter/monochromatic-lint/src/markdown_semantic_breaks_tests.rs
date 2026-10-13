@@ -24,11 +24,11 @@ fn check(source: &str) -> Vec<Diagnostic> {
     return semantic_line_breaks(&context, Severity::Error);
 }
 
-/// Require one-pass convergence while keeping every original byte not affected by insertion.
+/// Require one-pass convergence while keeping every original byte except the separating spaces the breaks replace.
 fn fixed(source: &str) -> String {
     let mut fixes: Vec<Fix> = Vec::<Fix>::new();
     for diagnostic in check(source) {
-        fixes.push(diagnostic.fix.expect("add-only fix"));
+        fixes.push(diagnostic.fix.expect("fix"));
     }
     let output: String = apply_fixes(source, fixes.as_slice()).expect("apply").source;
     assert!(check(output.as_str()).is_empty(), "{output}");
@@ -41,11 +41,11 @@ fn fixed(source: &str) -> String {
 fn breaks_preserve_inline_delimiters_and_paragraph_tails() {
     assert_eq!(
         fixed("**First. Second.** Tail text here.\n"),
-        "**First.\n Second.**\n Tail text here.\n"
+        "**First.\nSecond.**\nTail text here.\n"
     );
     assert_eq!(
         fixed("- **_Term._** Explanation continues.\n"),
-        "- **_Term._**\n   Explanation continues.\n"
+        "- **_Term._**\n  Explanation continues.\n"
     );
     for source in [
         "**the end.**\n",
@@ -70,11 +70,11 @@ fn all_delimiter_families_and_nested_prefixes_are_preserved() {
     ] {
         assert_eq!(check(source).len(), 1);
         let output: String = fixed(source);
-        assert!(output.contains("\n More here."));
+        assert!(output.contains("\nMore here."), "{output}");
     }
     assert_eq!(
         fixed("- > first, second here.\n"),
-        "- > first,\n  >  second here.\n"
+        "- > first,\n  > second here.\n"
     );
 }
 
@@ -93,19 +93,19 @@ fn diagnostics_and_line_endings_use_original_source_positions() {
     assert_eq!(record["labels"][0]["span"]["line"], 4);
     assert_eq!(
         fixed("First. Second sentence here.\r\n"),
-        "First.\r\n Second sentence here.\r\n"
+        "First.\r\nSecond sentence here.\r\n"
     );
     assert_eq!(
         fixed("\u{feff}🚀 First. Second here.\n"),
-        "\u{feff}🚀 First.\n Second here.\n"
+        "\u{feff}🚀 First.\nSecond here.\n"
     );
     assert_eq!(
         fixed("> first, second word.\n"),
-        "> first,\n>  second word.\n"
+        "> first,\n> second word.\n"
     );
     assert_eq!(
         fixed("Sentence.  `code` follows here.\n"),
-        "Sentence.\n  `code` follows here.\n"
+        "Sentence.\n `code` follows here.\n"
     );
 }
 
@@ -146,6 +146,77 @@ fn inserted_breaks_cannot_change_block_structure() {
     assert_eq!(check("Intro sentence. #nothashheading here.\n").len(), 1);
     assert_eq!(
         fixed("one, two. three word.\n"),
-        "one,\n two.\n three word.\n"
+        "one,\ntwo.\nthree word.\n"
     );
+}
+
+/// A break replaces the space it breaks at,
+///  so a continuation line is the block's prefix and nothing more.
+#[test]
+fn a_break_replaces_the_space_and_leaves_no_stray_indent() {
+    assert_eq!(fixed("It naps. It wakes."), "It naps.\nIt wakes.");
+    assert_eq!(
+        fixed("> She said the cat naps. It wakes.\n"),
+        "> She said the cat naps.\n> It wakes.\n"
+    );
+    assert_eq!(
+        fixed("- The cat naps. It wakes.\n- Another, with a clause."),
+        "- The cat naps.\n  It wakes.\n- Another,\n  with a clause."
+    );
+    assert_eq!(
+        fixed("1. The cat naps. It wakes.\n"),
+        "1. The cat naps.\n   It wakes.\n"
+    );
+    // A break at the end of a line has no space to replace and nothing else is removed.
+    assert_eq!(
+        fixed("Left,\nright, word here.\n"),
+        "Left,\nright,\nword here.\n"
+    );
+    // Only the one separating space is consumed from a longer run.
+    assert_eq!(
+        fixed("Sentence.   Next here.\n"),
+        "Sentence.\n  Next here.\n"
+    );
+    // A tab is not a space and is kept.
+    assert_eq!(
+        fixed("Sentence.\tNext here.\n"),
+        "Sentence.\n\tNext here.\n"
+    );
+}
+
+/// A continuation settled before breaks consumed their space has no break left to insert,
+///  so a second pass leaves it exactly as it is.
+#[test]
+fn a_continuation_carrying_the_older_stray_space_stays_as_it_is() {
+    for settled in [
+        "> Personalitywise,\n>  she was clingy.\n",
+        "- A list item,\n   with a comma.\n",
+        "Plain prose,\n with a comma.\n",
+    ] {
+        assert!(check(settled).is_empty(), "{settled}");
+        assert_eq!(fixed(settled), settled);
+    }
+    assert_eq!(
+        fixed("Old shape,\n with the stray space. And more."),
+        "Old shape,\n with the stray space.\nAnd more."
+    );
+}
+
+/// A paragraph that is one tag has no prose to break,
+///  whichever grammar failed to claim it as HTML.
+#[test]
+fn a_tag_like_paragraph_stays_unbroken() {
+    for source in [
+        "<PhotoScroll photos={[ '${path}/photos/sill.webp',]} />  \n",
+        "<PhotoScroll photos={[\n    '${path}/photos/sill.webp', '${path}/photos/nap.webp',\n]} />\n",
+        "\u{feff}<Tag a={[ 'x', 'y' ]} />\n",
+    ] {
+        assert!(check(source).is_empty(), "{source}");
+        assert_eq!(fixed(source), source);
+    }
+    // Prose beside a tag is still prose.
+    assert_eq!(check("See <b>this, here</b> now.\n").len(), 1);
+    // A paragraph that only opens or only closes like a tag is prose.
+    assert_eq!(check("<b>bold</b> then, more words here.\n").len(), 1);
+    assert_eq!(check("Words first, then <b>tag</b>\n").len(), 1);
 }

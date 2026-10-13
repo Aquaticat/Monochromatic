@@ -91,10 +91,10 @@ fn parsed_text_nodes_may_begin_with_their_break_point() {
     assert_eq!(findings.len(), 1);
     // Byte 7 follows the six code bytes and the period, in original-source addressing.
     assert_eq!(findings[0].labels[0].span.offset, 7);
-    let fix: Fix = findings[0].fix.clone().expect("add-only fix");
+    let fix: Fix = findings[0].fix.clone().expect("fix");
     assert_eq!(
         apply_fixes(source, &[fix]).expect("apply").source,
-        "`code`.\n Next words here\n"
+        "`code`.\nNext words here\n"
     );
 }
 
