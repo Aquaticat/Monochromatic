@@ -246,12 +246,13 @@ fn rows_above_the_view_changing_height_move_no_visible_pixel() {
     for number in 300..420 {
         text.push_str(&format!("short {number}\n"));
     }
+    // Hold the pass from the start, before the window exists: a worker that is quick enough measures the first chunks
+    //  of lines while the file opens, and the long stretch would no longer be unmeasured when the view moves into it.
+    let (release, gate) = std::sync::mpsc::channel();
+    *PASS_GATE.lock().expect("pass gate") = Some(gate);
     let (_project, opened) = open(&text);
     let window = &opened.window;
     let scale = window.window().scale_factor();
-    // Hold the pass while the view moves into the long stretch, whose lines are not measured yet.
-    let (release, gate) = std::sync::mpsc::channel();
-    *PASS_GATE.lock().expect("pass gate") = Some(gate);
     let start = 320.0 * 24.0;
     window.set_scroll_y(-start);
     until("the tile for the new view did not arrive", || {
