@@ -112,6 +112,14 @@ export {
   type NativeQueryObservation,
 } from './native-query-observation.ts';
 
+export {
+  installNativePolicyHooks,
+  NativePolicyRuntimeError,
+  type NativePolicyAgentSlots,
+  type NativePolicyHookInstallation,
+  type NativePolicyHookRegistration,
+} from './native-runtime-hooks.ts';
+
 //endregion Native observation mechanisms
 
 //region Internal verification exports exercise the same bundled policy as Pi
