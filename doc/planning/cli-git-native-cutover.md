@@ -1,10 +1,11 @@
 # cli-git native cutover runbook
 
-## Purpose and how to respond
+## Purpose and how to use this document
 
-This document is the runbook for the remaining cutover of the Git policy wrapper:
- coordinated native installation,
-consumer migration,
+This document is the runbook for the cutover of the Git policy wrapper:
+publishing the native crate,
+ installing it as a `cargo:` mise tool,
+migrating consumers,
  documentation,
  and retirement of the TypeScript implementation.
 The user's standing decision is that there is no hybrid and the old TypeScript goes
@@ -13,28 +14,93 @@ The user's standing decision is that there is no hybrid and the old TypeScript g
  run as parallel lanes",
 and the section `User decisions 2026-10-05`).
 
-It was written by a read-only scout on 2026-10-12 against `main` at `e1890fb471`.
-Nothing was installed,
- built into the real installation,
- or changed;
- the probes are listed in `Evidence basis`.
+A read-only scout wrote it on 2026-10-12 against `main` at `e1890fb471`.
+It was updated on 2026-10-13 after the user's answers,
+ against `main` at `f7a4d08160`.
+Between the two,
+ `package/git-policy/cli` changed only in tests
+(`0c4d65094e`,
+ `dfcab2b44e`,
+ `5717784913`:
+ `binary_commit_tests.rs` and `commit_convergence_tests.rs`).
+Facts measured on 2026-10-12 carry that date;
+ facts measured on 2026-10-13 say so.
+Nothing in the real installation was installed,
+ replaced,
+ or published by either author;
+the probes are listed in `Evidence basis`.
+
 Terms:
- the incumbent is the TypeScript wrapper (every file of `package/git-policy/cli` outside `src/native/`);
+the incumbent is the TypeScript wrapper (every file of `package/git-policy/cli` outside `src/native/`);
 native is the Rust executable `cli-git-native` built from `package/git-policy/cli/src/native/`.
 Paths starting with `src/`,
  `bin/`,
  `e2e/`,
  `perf/` or `native-interop/` are relative to `package/git-policy/cli/`;
 every other path is repository-relative.
- `file:line` citations were read in this checkout.
+`file:line` citations were read in this checkout.
 
-To respond,
- read `Open questions and unestablished facts`,
- answer each question,
- and name the option you pick.
-The sections before it assume the recommended option of every question and say where a step depends on an answer.
-A reader who only wants the order of work should read `Installation sequence with rollback` and
-`Order of the retirement commits`.
+How to use it:
+`Decisions` lists what is settled and what is open to veto.
+`Publishing the native crate` is the prerequisite of the install.
+`Installation sequence with rollback` and `Order of the retirement commits` give the order of work.
+`Not established` lists the facts no probe settled.
+
+## Decisions
+
+### Decided by the user on 2026-10-13
+
+- Install route:
+  publish the native crate to crates.io and install it as a `cargo:` mise tool,
+   like the published linter
+  `monochromatic-lint` (root `mise.no-env.toml`,
+   `package/linter/monochromatic-lint`).
+  The answer is the approval for this crate's first publication.
+  The `cargo publish` itself is run by the orchestrator after the verification described in
+  `Publication steps in order`;
+   the owner-only parts are the API token and the Trusted Publishing form.
+  Carried out in `Publishing the native crate`.
+- Hk cleanup:
+  retire the task `cleanup:hk-git-config` and `doc/runbook/remove-retired-hk-git-config.md` now.
+  `src/maintenance/hk-config-cleanup*.ts`,
+   its fixture test and the task `test:hk-config-cleanup` go with `src/`.
+  The troubleshooting document that points at the task is rewritten to the manual removal (see `Documentation`).
+- Rollback window:
+  it ends right after the installed wrapper is verified.
+  The incumbent's shim,
+   `dist` and dependency links stay only until that verification passes.
+  Afterwards rollback is versioned (pin the previous published crate version);
+  returning to the incumbent then means a fresh install from the pinned revision (see `Rollback`).
+- First native workflow:
+  Linux only.
+  Hosted macOS and Windows runners wait for the trailing Windows checks.
+
+### Adopted without asking on 2026-10-13, open to veto
+
+- Stale worktrees:
+  switch after the worktrees in active use have merged `main`,
+   run `mise run sync:files` and run `mise install`;
+  stale worktrees fail with the migration message quoted under hazard 3.
+- Verification tools with the incumbent as reference:
+  pin the last incumbent revision (its hash goes in the retirement commit and the behavior ledger);
+  delete the commit,
+   configuration and dependent-version differentials;
+  keep `native:interop` and give it an incumbent-provisioning step from the pinned revision.
+- Release and CI jobs:
+  build the crate from the checkout with `cargo build --release --locked` and put `git` first on `PATH` for the step.
+- The four authoring and policy packages (`package/git-policy/{api,forbidden-strings,markdown-lint,repository}`):
+  delete after their consumers have moved.
+- Performance:
+  keep `perf/*.json`,
+   delete the harness,
+   its tasks and `cli-git-performance.yml` now.
+- Package `build`:
+  becomes the release build of `cli-git-native`.
+- Crate name:
+  `monochromatic-git-policy-cli` (rationale and cost under `Name`).
+- Location of the `git` link:
+  a gitignored per-worktree directory `.cache/cli-git-bin`,
+   first in `PATH` (rationale under `Install the published tool`).
 
 ## Evidence basis
 
@@ -60,6 +126,31 @@ Read-only probes run for this document,
   It produced the exact refusal texts quoted under `Coordination hazards and detection`.
 - Reads of the handover,
    planning and decision documents named in the citations.
+
+Read-only or throwaway probes run on 2026-10-13,
+ after the user's answers:
+
+- `GET https://crates.io/api/v1/crates/<name>` for the candidate names and for the dependency crates.
+- Downloads of `forbidden-strings` 0.4.1,
+   `forbidden-regex` 0.1.1 and `monochromatic-jsonc-edit` 0.1.1 from crates.io
+  into a scratch directory,
+   compared with the local sources.
+- `cargo package`,
+   `cargo package --list`,
+   `cargo publish --dry-run` and `cargo check` in the package and in
+  throwaway copies under `${HOME}/temp/agent`,
+   with `CARGO_TARGET_DIR` outside the repository.
+  No upload happened.
+- `cargo build --release --locked --offline --bin cli-git-native` into a scratch target directory.
+- `mise` 2026.10.0 in a throwaway `MISE_DATA_DIR`,
+   state directory and project,
+   with a real install of
+  `monochromatic-lint` 0.1.1 standing in for the crate (no published crate of this package exists yet).
+  `mise env --json`,
+   `mise install`,
+   `mise exec`,
+   `mise reshim`.
+- `git diff` between the gated commit and the current head for `package/git-policy/cli`.
 
 ## How the wrapper is installed and run today
 
@@ -152,6 +243,11 @@ The `git` that a session in this repository resolves is a pnpm shim,
    then the other package bin directories,
    then the mise tool directories,
   so `_.path` entries precede tool directories and `/usr/bin`.
+Probed on 2026-10-13 in a throwaway project (mise 2026.10.0):
+   `{{env.HOME}}` and `~` in `_.path` both expand to the home
+directory,
+   a relative entry resolves against the config root,
+   and `_.path` entries precede tool `bin` directories.
 - This session's PATH instead names the main checkout's `node_modules/.bin` first,
   because the session was started from the main checkout.
    PATH is fixed when a process starts;
@@ -207,7 +303,7 @@ The `git` that a session in this repository resolves is a pnpm shim,
    `Results`).
   `git diff 0ff1379f7d e1890fb471 -- package/git-policy/cli` is empty,
    so current `main` has the gated crate.
-- There is no release artifact:
+- There is no release artifact yet:
    the crate is unpublished and no workflow builds it.
   A `git`-named symlink to the executable is the form the binary tests use (`src/native/binary_support.rs:74-75`),
   so a symlinked install is a tested shape.
@@ -300,7 +396,8 @@ The main checkout's `.claude/settings.json` has no hit;
    task `cleanup:hk-git-config`,
    runs
   `node package/git-policy/cli/src/maintenance/hk-config-cleanup-command.ts`:
-   migrate or retire (question 6).
+   delete it (the hk cleanup is retired;
+   see `Decisions`).
   `mise.toml:679-685` is the generated copy;
    edit only `mise.no-env.toml`,
    then `mise run sync:files`.
@@ -309,7 +406,8 @@ The main checkout's `.claude/settings.json` has no hit;
    runs
   `mise run //package/git-policy/repository:bump:dependents`:
    migrate to
-  `git cli-git fix --all --policy mono/dependent-version-bump` (question 4;
+  `git cli-git fix --all --policy mono/dependent-version-bump` (release and CI jobs build the crate from the checkout;
+   see `Decisions`;
   `doc/handover/cli-git-native-dependent-version.md`,
    section `Wiring into the native executable`,
   item "The release task").
@@ -388,7 +486,7 @@ The main checkout's `.claude/settings.json` has no hit;
    delete with the mirrors.
 - `file-enforcer.config.ts:680`:
    the static first `_.path` entry.
-  The native install directory is added here (question 1),
+  `.cache/cli-git-bin` is added here as the first entry (see `Install the published tool`),
    never by hand in `mise.toml`.
 - `generateCargoManifests` (`:1777`) and `generatePackageLicenseTexts` (`:534`) keep working:
    the crate stays,
@@ -409,7 +507,9 @@ The main checkout's `.claude/settings.json` has no hit;
   Its `paths` filter `package/git-policy/**` (`:7,17`) also means no native change ever triggered a native job:
   there is none.
 - `.github/workflows/cli-git-performance.yml`:
-   delete or rebuild around the native executable (question 7).
+   delete (the performance harness and workflow go now;
+   `perf/*.json` stays;
+   see `Decisions`).
   It triggers on version changes of `package/git-policy/cli/package.json` (`:5-11`) and runs
   `mise run //package/git-policy/cli:perf:lifecycle-latency`,
    which depends on `pack:npm`.
@@ -418,17 +518,23 @@ The main checkout's `.claude/settings.json` has no hit;
   It installs the incumbent's dependency closure and runs
   `node package/git-policy/cli/src/trust/fixture/final-newline-workflow.ts`,
   which clones the checkout and runs the incumbent's direct check.
-  It needs the native executable in CI and a native replacement of that script (question 4).
+  It needs the native executable in CI (built from the checkout,
+   Linux only;
+   see `Decisions`) and a native replacement of that script.
 - `.github/workflows/npm-release.yml:127` runs `mise run changeset:version` in a job that installs only node and pnpm
   (`:100-118`):
    after `changeset:version` calls `git cli-git fix`,
-   the job needs the native executable (question 4).
+   the job needs the native executable,
+   built from the checkout (see `Decisions`).
 - No workflow builds `cli-git-native`,
    runs its tests on macOS or Windows,
   or publishes it (`doc/handover/cli-git-rust-implementation.md`,
    `Adopted without a question`,
   item on hosted runners,
    is not implemented).
+- The first native workflow covers Linux only (see `Decisions`).
+  `.github/workflows/cargo-publish.yml` gains the job group for the new crate (`Publication steps in order`,
+   step 4).
 - Branch protection of `main`:
    `required_status_checks` has empty `contexts` and `checks`,
    required signatures are on,
@@ -447,15 +553,15 @@ The main checkout's `.claude/settings.json` has no hit;
    and the markers (`:139-171`) match only the incumbent's package name and
   `dist` path.
    So the resolver would select the native `git` as "real Git" for its other consumers:
-  `resolveRealGit` is called by `package/pi-plugin/auto-mode/src/git-worktree-read-allowlist.ts:290` and by the hk
-  cleanup command.
+  `resolveRealGit` is called by `package/pi-plugin/auto-mode/src/git-worktree-read-allowlist.ts:290` and by the hk cleanup command (retired with `src/`;
+   see `Decisions`).
    On this host the common-path rule masks it (`package/git/executable/src/resolve-real-git.ts`
   promotes `/usr/bin/git` when PATH exposes it),
    but not on a host whose Git is elsewhere.
   Reading whole binaries is not an option (`doc/troubleshooting/starship-cli-git-command-timeout.md`).
-  Recommended:
+  Change:
    also treat a candidate whose `realpath` basename is `cli-git-native` as the wrapper,
-  which holds when the install is a `git` symlink to the file `cli-git-native` (question 1).
+  which holds because the installed `git` is a symlink to the file `cli-git-native` (see `Install the published tool`).
   Keep the existing script markers,
    so a stale incumbent shim is still rejected.
   Tests to change:
@@ -470,7 +576,7 @@ The main checkout's `.claude/settings.json` has no hit;
    `package/git-policy/markdown-lint`,
   `package/git-policy/repository` (the four authoring and policy packages):
    delete after the config,
-  the release task and the cli mirrors are gone (question 5).
+  the release task and the cli mirrors are gone (see `Decisions`).
   Their only consumers are `cli-git.config.ts`,
    the cli mirrors,
    `package/git-policy/cli/bin/dependent-version-*.mjs`
@@ -512,7 +618,9 @@ The main checkout's `.claude/settings.json` has no hit;
 ### Documentation
 
 - Live and wrong after the cutover:
-   `package/git-policy/cli/README.md` (1,190 lines) and
+   `package/git-policy/cli/README.md` (1,190 lines;
+   its rewrite is a precondition of the first publication,
+   see `Verdicts`) and
   `package/git-policy/cli/SPEC.md` (4,305 lines).
   Neither mentions `cli-git.config.jsonc` (measured:
    zero matches),
@@ -553,7 +661,10 @@ The main checkout's `.claude/settings.json` has no hit;
    describes `E2E_WRAPPER` defaulting to `incumbent` and the
   ELF-versus-script check.
 - `doc/runbook/remove-retired-hk-git-config.md`:
-   rewrite or delete with the task (question 6).
+   delete it with the task (see `Decisions`).
+`doc/troubleshooting/cli-git-hk-retirement-stale-hook-config.md` points at the runbook and the task:
+rewrite that section to the manual removal (`git config --show-scope --get-regexp '^hook\.hk-'` to list,
+`git config <scope> --unset-all <key>` to remove) and keep its root cause.
 - `doc/philosophy/agents.md:362` cites `DEFAULT_ALLOWED_WORKTREE_DIRS` in
   `package/git-policy/cli/src/allowed-worktree-dirs.ts`:
    repoint to `default_allowed_worktree_dirs` in
@@ -607,13 +718,15 @@ The main checkout's `.claude/settings.json` has no hit;
   `dependent_version_fixtures/unit_cases.json`.
 - `rolldown.node.config.ts`.
 - `perf/*.ts`,
-   the harness that installs a packed tarball (question 7);
+   the harness that installs a packed tarball (deleted now;
+   see `Decisions`);
    `perf/*.json` stays.
 - `dist/` (ignored,
    on disk in the main checkout):
-   remove only when the rollback period ends (question 8).
+   remove after the verification passes,
+   when the rollback window ends (see `Decisions`).
 - `src/maintenance/` goes with `src/`;
-   the hk cleanup survives only if question 6 moves it first.
+   the hk cleanup is retired with it (see `Decisions`).
 - Tasks in `package/git-policy/cli/mise.toml`:
    `run` (`:74`),
    `build`,
@@ -648,8 +761,23 @@ The main checkout's `.claude/settings.json` has no hit;
   `bin/interop-native-container.mjs` and `native-interop/*.mjs` (copy the main checkout's `dist` and `/opt/cli-git`
   into the image,
    `bin/interop-native-container.mjs:55-79,146,211-212`).
-  Whether they are deleted or kept alive from a pinned incumbent revision is question 3;
-   they cannot run unchanged.
+  The three differentials (commit,
+   configuration,
+   dependent-version) are deleted (see `Decisions`).
+No surviving bin,
+   e2e file or native test imports them (searched `bin`,
+   `e2e`,
+   `native-interop`,
+   `mise.toml` and
+`src/native`:
+   only the three tasks `native:config:differential`,
+   `native:differential:commit` and
+`native:differential:dependent-version` run them).
+The interop bin `bin/interop-native-container.mjs` and `native-interop/*.mjs` stay,
+   but copy the main checkout's `dist`
+and `/opt/cli-git` into the image (`bin/interop-native-container.mjs:55-79,146,211-212`),
+   so they cannot run
+unchanged until an incumbent-provisioning step from the pinned revision exists.
 
 ### Keep inside `package/git-policy/cli`
 
@@ -683,7 +811,8 @@ The main checkout's `.claude/settings.json` has no hit;
    `Adopted without a question`),
   and the baselines are the incumbent side of that comparison.
   The `perf/*.ts` harness runs a packed npm tarball (`perf/manual-push-latency-contracts.ts:114`,
-  `perf/lifecycle-latency-contracts.ts:144`) and cannot run unchanged (question 7).
+  `perf/lifecycle-latency-contracts.ts:144`) and cannot run unchanged (deleted now;
+   see `Decisions`).
 - Tasks:
    every `native:*` task,
    `test:git-image`,
@@ -760,10 +889,14 @@ The main checkout's `.claude/settings.json` has no hit;
   there is no `test` task for the crate.
 - `build`:
    root `mise run build` runs every package's task named `build` and throws only when no package has one.
-  Question 9 decides whether `build` becomes the release build of `cli-git-native`
+  `build` becomes the release build of `cli-git-native` by decision
   (`cargo build --release --locked --offline --bin cli-git-native`,
    as the sibling `package/cli/forbidden-strings`
-  does) or the package has no `build` at all.
+  does),
+   so `prepareAndBuild` keeps producing an artifact;
+   every root `mise run build` then compiles the crate (about 71
+seconds on this host in one run,
+   `Publishing the native crate`).
    Do not leave the templates that run `rolldown` in place.
 - `test:e2e:concurrent:image` (`:349`) loses `depends = ["pack:npm"]`,
   the `TARBALL` build argument and the context `dist/pack`;
@@ -801,7 +934,11 @@ The main checkout's `.claude/settings.json` has no hit;
     `native:differential:commit` needs `src/index.ts`;
     `native:differential:dependent-version` needs `package/git-policy/repository`;
     `native:interop` needs the incumbent `dist` and the packed `/opt/cli-git`.
-    All four are verification tools whose reference side is the incumbent (question 3).
+    All four are verification tools whose reference side is the incumbent
+(see `Decisions`:
+     the three differentials are deleted,
+     `native:interop` stays and needs provisioning from the pinned
+revision).
 7.  The trailing gates in `doc/handover/cli-git-rust-implementation.md` (`Gates that trail the cutover`) include the
     old-and-new interop matrix,
      which needs a runnable incumbent after the retirement.
@@ -825,406 +962,6 @@ The main checkout's `.claude/settings.json` has no hit;
     cutover") become false comments;
      reword and run `mise run sync:files`.
 
-## Installation sequence with rollback
-
-### Preconditions
-
-1.  Question 1 (install mechanism and location),
-     question 3 (incumbent pin) and question 8 (rollback horizon) are
-    answered.
-2.  The binary to install is built from a head whose `package/git-policy/cli` equals the gated one
-    (`git diff 0ff1379f7d <head> -- package/git-policy/cli` empty),
-     through the existing container route,
-    with `GIT_POLICY_NATIVE_IMAGE_TAG=cutover` and every container command through
-    `node "${HOME}/temp/agent/gate-slot.ts"`.
-3.  The incumbent identity is recorded:
-     main's `HEAD`,
-     the `dist/final/node/index.mjs` SHA-256,
-    and the id of `localhost/cli-git-concurrent-e2e:latest` (values on 2026-10-12 are in
-    `How the wrapper is installed and run today`).
-     The incumbent is not a single file (hazard 5);
-    the rollback artifact is the pinned revision plus its install state.
-4.  The Git on the host is 2.55.0 or newer (it is 2.55.0;
-     `src/native/git_version.rs:26`).
-5.  Every worktree that will commit during or after the switch has merged `main` and has run `mise run sync:files`
-    (hazards 3 and 4).
-     Decide,
-     with question 2,
-     how stale worktrees are treated.
-
-### Coordination hazards and detection
-
-Detect first,
- in this order,
- all read-only;
- repeat the in-flight check immediately before the switch.
-
-1.  In-flight incumbent transactions and locks.
-    One `find` per class,
-     from the repository's common git directory (here `/var/home/user/Monochromatic/.git`):
-    ```sh
-    # run from the common git directory
-    find . -maxdepth 4 -type d -regextype posix-extended \
-      -regex '\./(worktrees/[^/]+/)?cli-git-transactions/[0-9a-f-]{36}'
-    find . -maxdepth 4 -type d -regextype posix-extended \
-      \( -name landing.lock -o -name reservation.lock -o -name capture.lock -o -name hook.lock \)
-    find . -maxdepth 4 -name 'index.lock'
-    ls cli-git/shadow cli-git-worktree-copy/v1
-    ```
-    A published transaction directory (a UUID,
-     not `*.pending`),
-     any `*.lock` directory,
-    a `shadow/<id>` repository or an `index.lock` means a commit is running or was killed (layout:
-    `package/git-policy/cli/SPEC.md:2085-2135`).
-    Names ending in `.pending` are abandoned staging directories kept for diagnosis.
-    State on 2026-10-12 from this host:
-     one published transaction,
-     a live `capture.lock` in
-    `worktrees/cli-git-lane-rules-cache/cli-git-captures/` that was gone on the next probe,
-    three `cli-git/shadow` entries,
-     two stale `cli-git-transactions/*.pending` (Oct 3 and Oct 4),
-    four stale `cli-git-worktree-copy/v1/settlement.lock.*.pending` (Oct 6),
-    39 `cli-git-add-policy-*` directories (Jul to Oct),
-     and no `cli-git-transaction` legacy directory.
-    The probe is racy by nature:
-     another session can start a commit right after it.
-2.  Running wrapper processes:
-     `pgrep --list-full --full '^node .*git-policy[-/]cli/dist/final/node/index\.mjs'` lists
-    live incumbent Git commands.
-     The character class matters:
-     the main checkout's shim reaches the bundle through
-    `node_modules/@monochromatic-dev/git-policy-cli/dist/...` (hyphen),
-    while a package directory path has `git-policy/cli` (slash).
-    The `^node` anchor keeps the shell that runs `pgrep` from matching itself.
-    Positive control on 2026-10-12:
-     a scratch `node` process started on a `git-policy-cli/dist/final/node/index.mjs`
-    path was listed,
-     and so was a live incumbent `commit` of this session through the main checkout shim.
-    There is no native counterpart:
-     for commands that do not wait on policy,
-    the native wrapper replaces itself with `/usr/bin/git` by `exec`,
-     so native processes look like plain Git.
-    The published `cli-git-transactions` directories and `*.lock` files in the common git directory are the
-    authoritative signal for in-flight native work.
-3.  Stale and active worktrees.
-     `git worktree list --porcelain` shows 89 worktrees (23 under
-    `/var/mnt/encrypted/temp/agent/tr-fan`,
-     18 under `/var/home/user/worktrees`,
-     18 under `/var/home/user/temp/agent`,
-    17 under `/var/home/user/Monochromatic/.claude/worktrees`,
-     and others).
-    A scratch script (not committed) over that list measured,
-     at HEAD of each:
-     72 have `cli-git.config.ts`,
-    5 have `cli-git.config.jsonc`,
-     7 have `.cache/forbidden-strings.rules.txt`.
-    Active means a process whose `/proc/<pid>/cwd` is inside the worktree or a reflog or index modified recently;
-    read those two signals,
-     do not guess.
-     Under native,
-     in a worktree whose HEAD has only the TypeScript config,
-    a config-loading command such as `git add` ends with exit 2 and an `engine-failure` event of code `config-invalid`
-    (observed).
-     Its message starts with "Legacy configuration",
-     then the worktree's `cli-git.config.ts` path,
-    then "is not executed or read by the native cli-git.
-    Translate its settings into",
-     then the worktree's `cli-git.config.jsonc` path
-    (`src/native/config_file.rs:152-170,303-351`);
-     read-only `git status` still works.
-    In a worktree with the JSONC file but no `.cache/forbidden-strings.rules.txt`,
-    `git add` ends with exit 2 and an `engine-failure` event of code `policy-incomplete` (observed).
-    Its message starts "cli-git could not load the forbidden-strings rules,
-     so no file was scanned:
-     read rules",
-    then the worktree's `.cache/forbidden-strings.rules.txt` path,
-     then ":
-    No such file or directory" (`doc/handover/cli-git-native-config.md`,
-     `Rules file in a linked worktree`).
-    Under the incumbent a missing `.cache` file did not stop commits in a worktree because its variable pointed at the
-    main checkout's file;
-     that is new fail-closed behavior.
-    Remedy per worktree:
-     merge `main`,
-     then `mise run sync:files`.
-4.  Sessions with the old PATH.
-     PATH is inherited at start,
-     so after the switch,
-    sessions that started before the switch keep the TypeScript shim until restarted.
-    Read,
-     per process of the same user,
-     only the PATH value from `/proc/<pid>/environ` (never print other variables;
-    one environment contains tokens) and count those whose PATH names `node_modules/.bin` before the native directory.
-    Both wrappers share `.git/cli-git*` state (adopted:
-     locks and journals interoperate both ways),
-    so a mixed fleet is the designed state,
-     but only the incumbent-writes,
-    native-reads direction has a recorded test (`doc/handover/cli-git-native-transactions.md:629-631`,
-     trailing gate).
-5.  The incumbent's runtime closure (see `The installed incumbent`) lives in install state:
-    do not run `pnpm install` in the main checkout with the cli manifest reduced until the rollback horizon has
-    passed.
-6.  The incumbent without `cli-git.config.ts` runs only core policies:
-    optional policies "remain disabled until trusted config registers them"
-    (`package/git-policy/cli/README.md:210-212`),
-     so rolling back after deleting the file silently drops
-    `security/forbidden-strings`,
-     `markdown/autofix`,
-     `mono/forbidden-root-context` and `mono/dependent-version-bump`
-    until the file is restored from Git history and trusted again.
-    The same loss hits every session that still has the old PATH (hazard 4) the moment the file is deleted in the
-    checkout it uses.
-7.  The generated hook entries are symlinks from each transaction's `hooks/` directory to the wrapper executable
-    (`doc/handover/cli-git-native-hooks.md`,
-     `hook_dispatch_entries.rs`),
-    so the installed file must keep a stable path for the length of any transaction;
-     never overwrite it in place.
-
-### Ordered steps
-
-All commits go through the installed wrapper with explicit pathspecs (`CLG`,
- `CPN`);
-commit each step before the next (`GCE`).
-
-1.  Land the migrations that do not need the native wrapper installed and do not affect the incumbent:
-    the `package/git/executable` native recognition and its tests;
-     the hk cleanup move if question 6 chooses it;
-    the CI additions of question 4 (a job that builds the crate and runs the final-newline and dependent-version
-    checks);
-     the docs that are true under both wrappers.
-    Keep `cli-git.config.ts`,
-     the root dependency,
-     the cli manifest and `src/` untouched.
-2.  Build the artifact with `localhost/cli-git-concurrent-e2e:latest` present:
-    ```sh
-    GIT_POLICY_NATIVE_IMAGE_TAG=cutover node "${HOME}/temp/agent/gate-slot.ts" \
-      mise run //package/git-policy/cli:test:e2e:concurrent:native:image
-    ```
-    Then run the end-to-end suite once on the same tag through the same limiter,
-    under a memory-capped unit (`mise run //package/git-policy/cli:test:e2e:concurrent:native --git 2.55.0`;
-    the unit form is in `doc/handover/cli-git-native-integration.md`,
-     `Rerun commands`).
-    Extract `/opt/native/cli-git-native` from the image (`podman create`,
-     `podman cp`,
-    `podman rm`) into a staging directory outside the repository.
-     The scout did not run the extraction.
-3.  Place it without shadowing yet (recommended layout under question 1):
-    `${HOME}/.local/share/cli-git/native/<sha256-prefix>/cli-git-native` (mode 0755,
-    never edited again) and the PATH directory `${HOME}/.local/share/cli-git/bin/` holding `git` as a symlink to that
-    file.
-     Nothing resolves it until PATH names the directory.
-4.  Verify in isolation first,
-     with an explicit PATH in a throwaway shell,
-     before editing any repository file:
-    the disposable-repository check in `User-boundary verification`,
-     using
-    `PATH="${HOME}/.local/share/cli-git/bin:${MAIN}/node_modules/.bin:/usr/bin:/bin"`,
-    where `MAIN` is the main checkout.
-     The install directory comes first so it shadows the shim,
-    and the main checkout's `node_modules/.bin` stays so tools the later doc-only check needs (`monochromatic-lint`,
-    `mise`-managed helpers) still resolve.
-     Check with `command -v git` before running anything.
-5.  Edit the PATH source:
-     add the install directory as the first `_.path` entry in `file-enforcer.config.ts:680` (an
-    absolute entry,
-     ahead of `node_modules/.bin`),
-     run `mise run sync:files`,
-    and check `mise env --json` prints that directory before any `node_modules/.bin`.
-    Whether mise expands `{{env.HOME}}` or `~` in `_.path` was not tested;
-    probe it in a scratch config root before committing.
-    Commit `mise.no-env.toml` (if touched),
-     `file-enforcer.config.ts` and the regenerated `mise.toml` together.
-6.  Roll the new PATH out:
-     new sessions only.
-     Existing sessions keep the shim (hazard 4);
-     the shim and `dist` stay.
-    For the switch moment,
-     repeat hazard 1 detection;
-    the switch itself is atomic per process start,
-     so no quiet period is required by design
-    (`doc/planning/cli-git-rust-open-decisions.md`,
-     `Lock and journal interoperability across versions`,
-     option A),
-    but the reverse direction is not tested,
-     so prefer a moment with no transaction directories.
-7.  Run `User-boundary verification` through the real PATH.
-8.  Delete `cli-git.config.ts` and reword `cli-git.config.jsonc:2` only after step 7 passes,
-    only when the hazard 4 count of sessions on the old PATH is zero,
-     and only if question 8 allows losing the
-    incumbent's optional policies (hazard 6).
-     Commit through the native wrapper.
-9.  Record the installation in `doc/handover/cli-git-rust-implementation.md` and
-    `doc/handover/cli-git-native-integration.md` by replacing the superseded text;
-    that commit is also the doc-only verification commit.
-10. Start the retirement (`Order of the retirement commits`) only after the rollback horizon of question 8.
-
-### User-boundary verification
-
-Both checks use the installed `git` on the resolved PATH,
- not an explicit executable path.
-
-1.  Identity.
-     `command -v git` prints the install directory's `git`;
-    `readlink --canonicalize "$(command -v git)"` ends in `cli-git-native`;
-    `git --version` prints `git version 2.55.0`;
-    `git cli-git status` prints the "is retired" sentence,
-     where the incumbent prints a JSON `trust-status` line.
-2.  A real commit in a throwaway repository (sequence run end to end against a native debug build on 2026-10-12,
-    with these results).
-     Everything runs in a subshell with a disposable `HOME` and no system Git configuration,
-    so no user configuration is read;
-     `/usr/bin/git` is used only for fixture setup,
-    and the wrapper is found through `PATH`:
-
-    ```sh
-    # verify-throwaway.sh (run by hand; the wrapper policies require a linked worktree and explicit paths)
-    BIN="${HOME}/.local/share/cli-git/bin"
-    V=$(mktemp --directory "${HOME}/temp/agent/cutover-verify.XXXXXX")
-    mkdir --parents "$V/home"
-    (
-      export HOME="$V/home" GIT_CONFIG_NOSYSTEM=1
-      export PATH="$BIN:${MAIN}/node_modules/.bin:/usr/bin:/bin"
-      command -v git
-      /usr/bin/git init --initial-branch=main "$V/repo"
-      /usr/bin/git -C "$V/repo" config user.name Verify
-      /usr/bin/git -C "$V/repo" config user.email verify@example.invalid
-      /usr/bin/git -C "$V/repo" config commit.gpgsign false
-      /usr/bin/git -C "$V/repo" commit --allow-empty --message seed
-      /usr/bin/git -C "$V/repo" worktree add -b work "$V/wt"
-      cd -- "$V/wt"
-      echo hello > a.txt
-      git add -- a.txt
-      git commit --message 'verify native wrapper' -- a.txt
-      git log --oneline
-      find "$V/repo/.git" -name 'cli-git-transactions*' -o -name '*.lock'
-    )
-    /usr/bin/git -C "$V/repo" worktree remove --force "$V/wt"
-    rm --recursive --force "$V"
-    ```
-
-    Observed:
-     `git add -- a.txt` exits 0,
-     `git commit ... -- a.txt` exits 0 and `git log --oneline` shows the new
-    commit,
-     `git add .` is refused with `add-explicit/bulk-add-rejected`,
-    and `git commit -a -m x` with `commit-only/all-flag` (both exit 1 with one JSONL finding on standard error;
-    run them inside the subshell before the cleanup to see them).
-    The final `find` must print nothing after the commit:
-     no published transaction directory and no lock (this check
-    was not part of the scout run).
-     The throwaway disables signing on purpose,
-    because a hermetic `HOME` has no signing key;
-     signing is checked by the next item instead.
-
-3.  A doc-only commit in this repository,
-     from a linked worktree that has merged `main` and has run
-    `mise run sync:files` (so `cli-git.config.jsonc`,
-     `.cache/forbidden-strings.rules.txt` and `monochromatic-lint` on
-    PATH all exist):
-     edit one Markdown file under `doc/`,
-     `git add -- <that file>`,
-    `git commit -m '<type>(<scope>): <subject>' -- <that file>`.
-    Expect exit 0 and,
-     if the Markdown autofix policy rewrites the file,
-     the wrapper's `fix` outcome;
-    then confirm `git status --short` is clean,
-     `git log -1` shows the commit,
-    and the common git directory has no new transaction directory or lock.
-    Then check the signature:
-     `git log -1 --format='%h %G? %GK'` must print `G` and the same key id as
-    `git log -1 --format='%GK' main`,
-     because the branch protection on `main` requires signatures and the native
-    wrapper must leave signing to Git,
-     which the throwaway check cannot show.
-    A failure here with `config-invalid` or `policy-incomplete` is hazard 3,
-     not a defect.
-4.  Auto-push:
-     with auto-push enabled (`APG`) the commit pushes the branch;
-    a push failure is a result to read,
-     not noise.
-
-### Rollback
-
-While the incumbent's `dist` and the cli package's `node_modules` links exist:
-
-1.  Make sure no native transaction is in flight (hazard 1 detection returns nothing),
-    because the incumbent reading native-written records is not tested.
-    Let running native commits finish,
-     or run any native read-only Git command in the affected repository,
-    which runs recovery for interrupted transactions before it forwards.
-2.  Remove or rename the symlink `${HOME}/.local/share/cli-git/bin/git`.
-    Every process whose PATH contains that directory then falls through to the next `git`.
-    For a session started from the main checkout that is the main checkout's `node_modules/.bin/git`,
-     the incumbent,
-    immediately and without a restart.
-     A shell activated inside a worktree falls through to that worktree's own shim,
-    which already fails today for lack of a `dist` (see `PATH mechanics on this host`),
-     so it loses nothing it had.
-    Then revert the `_.path` commit and run `mise run sync:files` so new sessions stop adding the directory.
-3.  If `cli-git.config.ts` was deleted:
-     restore it from Git history at the pinned revision,
-    then run `git cli-git trust --yes` for it with the user's approval (precedent:
-    `doc/handover/unified-linter-cutover.md`,
-     `Landing choreography`).
-4.  Verify with `git cli-git status` (JSON `trust-status`,
-     `"trusted":true`) and one commit in a throwaway repository
-    with the incumbent.
-
-After the retirement commits have landed,
- the incumbent is not reachable from the working tree;
-rollback is then to create a worktree at the pinned revision,
- install its dependencies with the package manager,
-build `dist` with `mise run //package/git-policy/cli:build:js:node`,
- and put that worktree's `node_modules/.bin` first
-on PATH.
- That path was not exercised here and its duration was not measured.
-
-### Order of the retirement commits
-
-Start only after the rollback horizon of question 8.
- Each step is its own commit,
- made through the native wrapper:
-
-1.  Record the pinned incumbent revision:
-     the last commit that contains the TypeScript,
-     in the commit body of step 2,
-    in `doc/planning/cli-git-rust-behavior-ledger.md` and in the handover queue.
-2.  Switch `changeset:version` to the native `fix` and prove it on the release workflow's input before deleting the
-    planner (question 4);
-     then delete `package/git-policy/repository` and the other three authoring packages (question
-    5) with `file-enforcer.config.ts:2276-2341`,
-     the file-enforcer test,
-     and `src/optional/`.
-3.  Delete `src/` (except `src/native/`),
-     `rolldown.node.config.ts`,
-     the tasks and bins listed under
-    `Retirement list`,
-     reduce `package.json` and `tsconfig.json`,
-     edit `e2e/` and the Containerfile,
-    delete `cli-git-trust.yml` and `cli-git-performance.yml`,
-     rewrite `README.md` and `SPEC.md`.
-4.  Remove `package.json:36` and regenerate `pnpm-lock.yaml`,
-     `package/config/pnpr/config.yaml` and `mise.toml`
-    (`pnpm install --lockfile-only` or `mise run prepare:pnpm:install`,
-     then `mise run sync:files`),
-    inspecting each diff.
-     Only now does `pnpm install` remove `node_modules/.bin/git` and the incumbent's closure.
-5.  Remove the main checkout's ignored leftovers (`package/git-policy/cli/dist`,
-     `dist/pack`,
-     `dist/perf`):
-    list them first with `git clean --dry-run -d -X` (`GCL`,
-     `GC2`) and check stray git-dir entries with `ls -d` and
-    `git check-ignore --verbose` (`GCR`);
-     this is the user's decision with question 8.
-6.  After the trailing gates are recorded (interop matrix,
-     long fuzz,
-     non-core mutation,
-     `pathBytes`,
-     Windows,
-    release performance) and verified complete,
-     the queue item "retirement of the old TypeScript implementation is
-    verified complete" in `doc/handover/cli-git-rust-implementation.md` can be closed.
-
 ## Publishing the native crate
 
 This section holds the 2026-10-13 investigation of what stops `cargo publish` for the native crate in
@@ -1234,7 +971,7 @@ This section holds the 2026-10-13 investigation of what stops `cargo publish` fo
 Every command ran in a throwaway copy or with `CARGO_TARGET_DIR` under `${HOME}/temp/agent`;
 nothing was published and `cargo publish` ran only as a dry run.
 Real publication is the orchestrator's act,
- after the verification in `User-boundary verification`.
+ after the checks in `Publication steps in order`.
 
 ### Name
 
@@ -1258,7 +995,7 @@ Real publication is the orchestrator's act,
    section `Repository facts`).
   The three prefixed crates are the newer ones.
 - Adopted,
-   open to veto:
+   open to veto (see `Decisions`):
    rename the crate to `monochromatic-git-policy-cli`.
   A published name cannot be renamed,
    the bare name is generic,
@@ -1361,10 +1098,7 @@ Blocks `cargo publish` or its verification build:
 
 - `publish = false` (`Cargo.toml:10`) with its comment at `:9`.
 - `forbidden-strings` 0.4.1 on crates.io lacks the scanner API the crate imports.
-- The `jsonc-edit` requirement is `0.1.0` (`Cargo.toml:35`).
-  It resolves (0.1.1 satisfies it),
-   but `monochromatic-lint` raised its requirement to 0.1.1 for the fuzz-found fixes
-  and the same reasoning applies.
+
 - First publication of any crate needs an owner API token,
    because Trusted Publishing cannot configure a crate that
   does not exist (`doc/runbook/publish-crate-first-time.md`,
@@ -1375,6 +1109,10 @@ Blocks `cargo publish` or its verification build:
 Does not block `cargo publish`,
  but must change first:
 
+- The `monochromatic-jsonc-edit` requirement is `0.1.0` (`Cargo.toml:35`).
+   It resolves,
+   because 0.1.1 satisfies it,
+   but `monochromatic-lint` raised its requirement to 0.1.1 for the fuzz-found fixes and the same reasoning applies.
 - No `include`:
    the package carries the incumbent's TypeScript,
    scripts and 19.7 MiB of files.
@@ -1518,10 +1256,10 @@ Rewrite `package/git-policy/cli/README.md` for the native wrapper before the fir
      skips the existing upload,
      builds the archives and creates the release.
     Check `gh release view <crate>-v0.1.0` lists the archives.
-7.  Add the mise tool entry (`Install the published tool`),
-     run `mise run lock:mise`,
-     and verify through the real
-    installation (`User-boundary verification`).
+7.  Continue with `Ordered steps` in `Installation sequence with rollback`:
+     step 3 verifies the published artifact in
+    isolation,
+     step 4 adds the tool entry (`Install the published tool`) and runs `mise run lock:mise`.
 
 ### Install the published tool
 
@@ -1560,10 +1298,10 @@ Probed in a throwaway project with a real `cargo:monochromatic-lint` install (st
   (`when = "always"` creates the link in a new worktree where the tool was installed earlier).
   It does not run on `mise exec`,
    `mise env` or shell activation.
-- Its `PATH` has the tool's `bin` first but not necessarily `node`;
-   with an inline Node program the first attempt
-  failed with "node is not a valid shim".
-  Use coreutils only.
+- The postinstall's `PATH` is not guaranteed to hold a working `node`:
+   in a throwaway data directory without Node,
+   a first attempt with an inline Node program failed with "node is not a valid shim".
+   Use coreutils only.
 - Atomic relink:
    create the link under a temporary name,
    then `mv --no-target-directory` it over `git`.
@@ -1582,7 +1320,7 @@ The tool entry for `mise.no-env.toml` (the pin needs a comment,
 # Pinned so a release of the wrapper reaches the repository only together with its configuration and policies.
 # The postinstall links the executable as `git` in a gitignored per-worktree directory that `_.path` puts first.
 # It never lives in the tool's own `bin/`, because mise would then create a global `git` shim.
-"cargo:monochromatic-git-policy-cli" = { version = "0.1.0", postinstall = { run = "mkdir --parents \"$MISE_CONFIG_ROOT/.cache/cli-git-bin\" && ln --symbolic \"$MISE_TOOL_INSTALL_PATH/bin/cli-git-native\" \"$MISE_CONFIG_ROOT/.cache/cli-git-bin/.git.$\" && mv --no-target-directory \"$MISE_CONFIG_ROOT/.cache/cli-git-bin/.git.$\" \"$MISE_CONFIG_ROOT/.cache/cli-git-bin/git\"", when = "always" } }
+"cargo:monochromatic-git-policy-cli" = { version = "0.1.0", postinstall = { run = "mkdir --parents \"$MISE_CONFIG_ROOT/.cache/cli-git-bin\" && ln --symbolic \"$MISE_TOOL_INSTALL_PATH/bin/cli-git-native\" \"$MISE_CONFIG_ROOT/.cache/cli-git-bin/.git.$$\" && mv --no-target-directory \"$MISE_CONFIG_ROOT/.cache/cli-git-bin/.git.$$\" \"$MISE_CONFIG_ROOT/.cache/cli-git-bin/git\"", when = "always" } }
 ```
 
 The `_.path` change is in `generateMiseToml` in `file-enforcer.config.ts` (the array that starts with
@@ -1606,380 +1344,488 @@ The installed bytes are what the release workflow built with the runner's toolch
 tested.
 User-boundary verification of the installed artifact is therefore the only proof for the installed file.
 
-## Open questions and unestablished facts
+## Installation sequence with rollback
 
-### Questions for the user
+### Preconditions
 
-Each question names the plain-language situation first.
+1.  The crate is published,
+     its release archives exist,
+     and the published version passed the isolated verification
+    (steps 2 and 3 of `Ordered steps`).
+2.  The published head's `package/git-policy/cli` equals the gated one except for test files:
+    `git diff 0ff1379f7d <head> -- package/git-policy/cli` lists only `*_tests.rs` files
+    (three commits on 2026-10-12 and 2026-10-13 do),
+     and the container gate passes on `<head>` with
+    `GIT_POLICY_NATIVE_IMAGE_TAG=cutover` and every container command through
+    `node "${HOME}/temp/agent/gate-slot.ts"`.
+    The installed bytes come from the release workflow's toolchain,
+     not from that gate,
+     so the user-boundary
+    verification is the only proof for the installed file.
+3.  The incumbent identity is recorded:
+    main's `HEAD`,
+     the `dist/final/node/index.mjs` SHA-256,
+     and the id of `localhost/cli-git-concurrent-e2e:latest`
+    (values on 2026-10-12 are in `How the wrapper is installed and run today`).
+    The incumbent is not a single file (hazard 5);
+    the rollback artifact before verification is the shim plus its install state,
+     and afterwards the pinned revision.
+4.  The Git on the host is 2.55.0 or newer (it is 2.55.0;
+     `src/native/git_version.rs:26`).
+5.  Every worktree that will commit during or after the switch has merged `main`,
+     run `mise run sync:files` and run
+    `mise install` (hazards 3 and 4).
+    Stale worktrees are not waited for (see `Decisions`).
 
-#### Question 1: Where does the native `git` live and how does it get on PATH?
+### Coordination hazards and detection
 
-Today `git` is a shim that the package manager creates;
-native needs an executable named `git` ahead of `/usr/bin/git` only inside this repository's shells,
-and hooks the wrapper creates point at that executable's path.
- No install task exists.
+Detect first,
+ in this order,
+ all read-only;
+ repeat the in-flight check immediately before the switch.
 
-- Option A,
-   recommended:
-   build through the existing container route,
-   copy the binary to a versioned directory
-  `${HOME}/.local/share/cli-git/native/<sha256-prefix>/cli-git-native`,
-  expose it as a symlink named `git` in `${HOME}/.local/share/cli-git/bin/`,
-  and add that directory as the first `_.path` entry via `file-enforcer.config.ts`.
-  Pros:
-   it is exactly the binary the end-to-end suite passed against (built on Debian 12's glibc,
-  older than the host's,
-   so it is expected to run here;
-   step 4 proves it);
-  it lives outside any worktree or `target/`,
-   and shells activated inside a worktree get a working `git` where their
-  own shim fails today;
-   versioned files are never overwritten,
-   so in-flight hooks stay valid;
-  switching or rolling back is one symlink rename;
-  the `cli-git-native` basename gives the TypeScript resolver a cheap identity test.
-  Cons:
-   needs a small new install task and a generator edit;
-   `{{env.HOME}}` in `_.path` is untested;
-  the build uses Rust 1.97 while the host uses nightly.
-- Option B:
-   a host `cargo build --release` plus the same layout.
-   Pros:
-   no container for installation.
-  Cons:
-   no host release task exists;
-   the toolchain is nightly,
-   which the gates never exercised;
-  the scanner's build script is documented as slow (390.8 s unoptimized against 98.5 s at `opt-level = 3`;
-  the `build-override` comment in `package/git-policy/cli/Cargo.toml`),
-   so a host release build is long.
-- Option C:
-   publish the crate to crates.io and install it as a `cargo:` mise tool like `monochromatic-lint`.
-  Pros:
-   same mechanism as the linter,
-   versioned and rollbackable by mise.
-  Cons:
-   needs the first-publication approval for this crate (the session approval of 2026-10-06 named the linter),
-  a release workflow,
-   and a tool whose binary name is `git`,
-   none of which exist.
+1.  In-flight incumbent transactions and locks.
+    One `find` per class,
+     from the repository's common git directory (here `/var/home/user/Monochromatic/.git`):
+    ```sh
+    # run from the common git directory
+    find . -maxdepth 4 -type d -regextype posix-extended \
+      -regex '\./(worktrees/[^/]+/)?cli-git-transactions/[0-9a-f-]{36}'
+    find . -maxdepth 4 -type d -regextype posix-extended \
+      \( -name landing.lock -o -name reservation.lock -o -name capture.lock -o -name hook.lock \)
+    find . -maxdepth 4 -name 'index.lock'
+    ls cli-git/shadow cli-git-worktree-copy/v1
+    ```
+    A published transaction directory (a UUID,
+     not `*.pending`),
+     any `*.lock` directory,
+    a `shadow/<id>` repository or an `index.lock` means a commit is running or was killed (layout:
+    `package/git-policy/cli/SPEC.md:2085-2135`).
+    Names ending in `.pending` are abandoned staging directories kept for diagnosis.
+    State on 2026-10-12 from this host:
+     one published transaction,
+     a live `capture.lock` in
+    `worktrees/cli-git-lane-rules-cache/cli-git-captures/` that was gone on the next probe,
+    three `cli-git/shadow` entries,
+     two stale `cli-git-transactions/*.pending` (Oct 3 and Oct 4),
+    four stale `cli-git-worktree-copy/v1/settlement.lock.*.pending` (Oct 6),
+    39 `cli-git-add-policy-*` directories (Jul to Oct),
+     and no `cli-git-transaction` legacy directory.
+    The probe is racy by nature:
+     another session can start a commit right after it.
+2.  Running wrapper processes:
+     `pgrep --list-full --full '^node .*git-policy[-/]cli/dist/final/node/index\.mjs'` lists
+    live incumbent Git commands.
+     The character class matters:
+     the main checkout's shim reaches the bundle through
+    `node_modules/@monochromatic-dev/git-policy-cli/dist/...` (hyphen),
+    while a package directory path has `git-policy/cli` (slash).
+    The `^node` anchor keeps the shell that runs `pgrep` from matching itself.
+    Positive control on 2026-10-12:
+     a scratch `node` process started on a `git-policy-cli/dist/final/node/index.mjs`
+    path was listed,
+     and so was a live incumbent `commit` of this session through the main checkout shim.
+    There is no native counterpart:
+     for commands that do not wait on policy,
+    the native wrapper replaces itself with `/usr/bin/git` by `exec`,
+     so native processes look like plain Git.
+    The published `cli-git-transactions` directories and `*.lock` files in the common git directory are the
+    authoritative signal for in-flight native work.
+3.  Stale and active worktrees.
+     `git worktree list --porcelain` shows 89 worktrees (23 under
+    `/var/mnt/encrypted/temp/agent/tr-fan`,
+     18 under `/var/home/user/worktrees`,
+     18 under `/var/home/user/temp/agent`,
+    17 under `/var/home/user/Monochromatic/.claude/worktrees`,
+     and others).
+    A scratch script (not committed) over that list measured,
+     at HEAD of each:
+     72 have `cli-git.config.ts`,
+    5 have `cli-git.config.jsonc`,
+     7 have `.cache/forbidden-strings.rules.txt`.
+    Active means a process whose `/proc/<pid>/cwd` is inside the worktree or a reflog or index modified recently;
+    read those two signals,
+     do not guess.
+     Under native,
+     in a worktree whose HEAD has only the TypeScript config,
+    a config-loading command such as `git add` ends with exit 2 and an `engine-failure` event of code `config-invalid`
+    (observed).
+     Its message starts with "Legacy configuration",
+     then the worktree's `cli-git.config.ts` path,
+    then "is not executed or read by the native cli-git.
+    Translate its settings into",
+     then the worktree's `cli-git.config.jsonc` path
+    (`src/native/config_file.rs:152-170,303-351`);
+     read-only `git status` still works.
+    In a worktree with the JSONC file but no `.cache/forbidden-strings.rules.txt`,
+    `git add` ends with exit 2 and an `engine-failure` event of code `policy-incomplete` (observed).
+    Its message starts "cli-git could not load the forbidden-strings rules,
+     so no file was scanned:
+     read rules",
+    then the worktree's `.cache/forbidden-strings.rules.txt` path,
+     then ":
+    No such file or directory" (`doc/handover/cli-git-native-config.md`,
+     `Rules file in a linked worktree`).
+    Under the incumbent a missing `.cache` file did not stop commits in a worktree because its variable pointed at the
+    main checkout's file;
+     that is new fail-closed behavior.
+    Remedy per worktree:
+     merge `main`,
+     then `mise run sync:files`,
+     then `mise install` (the link directory of the native `git` is created
+there).
+4.  Sessions with the old PATH.
+     PATH is inherited at start,
+     so after the switch,
+    sessions that started before the switch keep the TypeScript shim until restarted.
+    Read,
+     per process of the same user,
+     only the PATH value from `/proc/<pid>/environ` (never print other variables;
+    one environment contains tokens) and count those whose PATH names `node_modules/.bin` before the worktree's `.cache/cli-git-bin` directory.
+    Both wrappers share `.git/cli-git*` state (adopted:
+     locks and journals interoperate both ways),
+    so a mixed fleet is the designed state,
+     but only the incumbent-writes,
+    native-reads direction has a recorded test (`doc/handover/cli-git-native-transactions.md:629-631`,
+     trailing gate).
+5.  The incumbent's runtime closure (see `The installed incumbent`) lives in install state:
+    do not run `pnpm install` in the main checkout with the cli manifest reduced until the verification has passed and the hazard 4 count of sessions that still start the shim is zero.
+6.  The incumbent without `cli-git.config.ts` runs only core policies:
+    optional policies "remain disabled until trusted config registers them"
+    (`package/git-policy/cli/README.md:210-212`),
+     so rolling back after deleting the file silently drops
+    `security/forbidden-strings`,
+     `markdown/autofix`,
+     `mono/forbidden-root-context` and `mono/dependent-version-bump`
+    until the file is restored from Git history and trusted again.
+    The same loss hits every session that still has the old PATH (hazard 4) the moment the file is deleted in the
+    checkout it uses.
+7.  The generated hook entries are symlinks from each transaction's `hooks/` directory to the wrapper executable
+    (`doc/handover/cli-git-native-hooks.md`,
+     `hook_dispatch_entries.rs`),
+    so the installed file must keep a stable path for the length of any transaction.
+The executable that hook entries target is the canonical file under the mise `installs` directory,
+     because
+`current_exe` (`src/native/real_git.rs:453`,
+     `src/native/commit_command.rs:167`) resolves the `git` link.
+Relinking `git` during a transaction is harmless;
+     `mise prune`,
+     an uninstall,
+     or reinstalling the same version over
+that file during a transaction is not.
 
-Ranking:
- A > B,
- because A installs the bytes that were gated while B installs bytes nobody ran the suite on;
-B > C,
- because C needs approvals and pipelines that do not exist yet.
+### Ordered steps
 
-#### Question 2: How are worktrees that predate the JSONC file treated?
+All commits go through the installed wrapper with explicit pathspecs (`CLG`,
+ `CPN`);
+commit each step before the next (`GCE`).
 
-Seventy-two of 89 registered worktrees still hold only the TypeScript config,
- and 82 lack the rules file.
-After the switch every config-loading command there stops with the exit 2 events quoted under hazard 3.
+1.  Land the migrations that do not need the native wrapper installed and do not affect the incumbent:
+    the `package/git/executable` native recognition and its tests;
+    the CI additions (a Linux job that builds the crate from the checkout and runs the final-newline and
+    dependent-version checks);
+    the docs that are true under both wrappers;
+    the retirements the user ordered "now" that touch no wrapper behavior:
+    the hk cleanup (`cleanup:hk-git-config` in `mise.no-env.toml`,
+     `test:hk-config-cleanup`,
+    `doc/runbook/remove-retired-hk-git-config.md`,
+     and the rewrite of the section of
+    `doc/troubleshooting/cli-git-hk-retirement-stale-hook-config.md` that names the task),
+    and the performance harness (`perf/*.ts`,
+     the `perf:*` tasks,
+     `.github/workflows/cli-git-performance.yml`).
+    `src/maintenance/` stays until `src/` goes.
+    Keep `cli-git.config.ts`,
+     the root dependency,
+     the cli manifest and `src/` untouched.
+2.  Publish the crate (`Publishing the native crate`,
+     `Publication steps in order`,
+     steps 1 to 6).
+    The tool entry is not added to the repository until step 4 here.
+3.  Verify the published artifact in isolation,
+     with a throwaway data directory and project,
+     before any repository
+    file names the tool.
+    `PROJECT` holds a `mise.toml` with the tool entry of `Install the published tool` (the real pin) and no other tool:
 
-- Option A,
-   recommended:
-   switch only after the worktrees that are in active use have merged `main` and run
-  `mise run sync:files`;
-   leave stale worktrees to fail with the explicit migration message.
-  Pros:
-   nothing hybrid,
-   the failure is loud and names the fix.
-  Cons:
-   a forgotten active worktree interrupts a session once.
-- Option B:
-   wait until all 89 are merged or removed.
-   Pros:
-   no surprise.
-   Cons:
-   may never end;
-   blocks the user's decision.
-- Option C:
-   keep the incumbent reachable per worktree through its own PATH.
-   Pros:
-   none lost.
-  Cons:
-   that is a hybrid,
-   which the user ruled out.
+    ```sh
+    # run by hand in a throwaway project; nothing production is touched
+    V=$(mktemp --directory "${HOME}/temp/agent/cutover-isolated.XXXXXX")
+    mkdir --parents "$V/proj" "$V/state" "$V/cfg"
+    cp "$PROJECT" "$V/proj/mise.toml"
+    cd -- "$V/proj"
+    export MISE_DATA_DIR="$V/data" MISE_STATE_DIR="$V/state" MISE_CONFIG_DIR="$V/cfg" \
+      MISE_GLOBAL_CONFIG_FILE="$V/cfg/none.toml" MISE_CACHE_DIR="$V/cache" MISE_YES=1 MISE_TRUSTED_CONFIG_PATHS="$V"
+    mise trust "$V/proj/mise.toml"
+    mise install
+    ls -la "$V/proj/.cache/cli-git-bin"
+    ```
 
-Ranking:
- A > B,
- because B has no end condition;
- B > C,
- because C contradicts the standing decision.
+    Expected:
+     `mise install` takes the prebuilt archive (a few seconds;
+     a compile of about 70 seconds means the
+    release archives were not found,
+     see `doc/troubleshooting/mise-cargo-binstall-falls-back-to-compiling.md`);
+    `.cache/cli-git-bin/git` is a symlink to `$V/data/installs/cargo-monochromatic-git-policy-cli/<version>/bin/cli-git-native`.
+    Then run items 1 and 2 of `User-boundary verification` with
+    `BIN="$V/proj/.cache/cli-git-bin"` (skip its `ROOT` line) and `MAIN` set to the main checkout,
+     and delete `$V`.
+4.  Land the switch in one commit,
+     made through the incumbent:
+    the tool entry in `mise.no-env.toml`,
+     the `.cache/cli-git-bin` first entry of `_.path` in
+    `file-enforcer.config.ts`,
+     the regenerated `mise.toml` and `mise.lock` (`mise run sync:files`,
+     then
+    `mise run lock:mise`).
+    Check that `mise env --json` prints `<root>/.cache/cli-git-bin` before any `node_modules/.bin`.
+5.  In each active worktree:
+     merge `main`,
+     run `mise run sync:files`,
+     run `mise install`,
+     then check
+    `command -v git` (identity item of `User-boundary verification`).
+    Existing sessions keep the shim until restarted (hazard 4);
+    the shim and `dist` stay until step 8.
+6.  Repeat the hazard 1 detection immediately before the first native commit.
+    The switch is atomic per process start,
+     so no quiet period is required by design
+    (`doc/planning/cli-git-rust-open-decisions.md`,
+     `Lock and journal interoperability across versions`,
+     option A),
+    but the reverse direction is not tested,
+     so prefer a moment with no transaction directories.
+7.  Run `User-boundary verification` through the real `PATH`.
+8.  When it passes,
+     the rollback window is over (see `Decisions`).
+    Delete `cli-git.config.ts` and reword `cli-git.config.jsonc:2`,
+     only when the hazard 4 count of sessions on the
+    old `PATH` is zero (hazard 6 explains what those sessions lose otherwise).
+    Commit through the native wrapper.
+9.  Record the installation in `doc/handover/cli-git-rust-implementation.md` and
+    `doc/handover/cli-git-native-integration.md` by replacing the superseded text;
+    that commit is also the doc-only verification commit.
+10. Start the retirement (`Order of the retirement commits`) at once;
+    no waiting period follows the verification.
 
-#### Question 3: What happens to the verification tools whose reference side is the incumbent?
+### User-boundary verification
 
-The commit differential,
- the configuration differential,
- the dependent-version differential and the interop matrix
-compare native with the TypeScript wrapper.
- After retirement the wrapper only exists in Git history;
-the interop matrix is still a trailing gate.
+Both checks use the installed `git` on the resolved PATH,
+ not an explicit executable path.
 
-- Option A,
-   recommended:
-   pin the last incumbent revision (its hash in the retirement commit and the ledger) and make
-  the bins that must keep running check it out into a throwaway worktree and install it on demand;
-  delete the three differentials (their results are recorded in the handover documents,
-  and `src/native/dependent_version_fixtures/unit_cases.json` keeps the planner's recorded behavior as a fixture the
-  native tests read).
-   Pros:
-   the trailing interop gate stays runnable;
-   no TypeScript in the working tree.
-  Cons:
-   the interop bins need an incumbent-provisioning step that does not exist yet.
-- Option B:
-   delete all of them and cancel the interop matrix.
-   Pros:
-   simplest.
-  Cons:
-   the user decided that gate trails the cutover (`doc/handover/cli-git-rust-implementation.md`),
-  so this cancels a recorded decision.
-- Option C:
-   keep the TypeScript under `package-deprecated/`.
-   Pros:
-   bins unchanged.
-  Cons:
-   the user said the old TypeScript must go.
+1.  Identity.
+     `command -v git` prints `<worktree root>/.cache/cli-git-bin/git`;
+    `readlink --canonicalize "$(command -v git)"` ends in `cli-git-native`;
+    `git --version` prints `git version 2.55.0`;
+    `git cli-git status` prints the "is retired" sentence,
+     where the incumbent prints a JSON `trust-status` line.
+2.  A real commit in a throwaway repository (sequence run end to end against a native debug build on 2026-10-12,
+    with these results).
+     Everything runs in a subshell with a disposable `HOME` and no system Git configuration,
+    so no user configuration is read;
+     `/usr/bin/git` is used only for fixture setup,
+    and the wrapper is found through `PATH`:
 
-Ranking:
- A > B,
- because B silently cancels a recorded trailing gate;
-B > C,
- because C keeps the code the user asked to remove.
+    ```sh
+    # run by hand; MAIN is the main checkout; the wrapper policies require a linked worktree and explicit paths
+    ROOT=$(git rev-parse --show-toplevel)
+    BIN="${ROOT}/.cache/cli-git-bin"
+    V=$(mktemp --directory "${HOME}/temp/agent/cutover-verify.XXXXXX")
+    mkdir --parents "$V/home"
+    (
+      export HOME="$V/home" GIT_CONFIG_NOSYSTEM=1
+      export PATH="$BIN:${MAIN}/node_modules/.bin:/usr/bin:/bin"
+      command -v git
+      /usr/bin/git init --initial-branch=main "$V/repo"
+      /usr/bin/git -C "$V/repo" config user.name Verify
+      /usr/bin/git -C "$V/repo" config user.email verify@example.invalid
+      /usr/bin/git -C "$V/repo" config commit.gpgsign false
+      /usr/bin/git -C "$V/repo" commit --allow-empty --message seed
+      /usr/bin/git -C "$V/repo" worktree add -b work "$V/wt"
+      cd -- "$V/wt"
+      echo hello > a.txt
+      git add -- a.txt
+      git commit --message 'verify native wrapper' -- a.txt
+      git log --oneline
+      find "$V/repo/.git" -name 'cli-git-transactions*' -o -name '*.lock'
+    )
+    /usr/bin/git -C "$V/repo" worktree remove --force "$V/wt"
+    rm --recursive --force "$V"
+    ```
 
-#### Question 4: How do the release and CI jobs get the native executable?
+    Observed:
+     `git add -- a.txt` exits 0,
+     `git commit ... -- a.txt` exits 0 and `git log --oneline` shows the new
+    commit,
+     `git add .` is refused with `add-explicit/bulk-add-rejected`,
+    and `git commit -a -m x` with `commit-only/all-flag` (both exit 1 with one JSONL finding on standard error;
+    run them inside the subshell before the cleanup to see them).
+    The final `find` must print nothing after the commit:
+     no published transaction directory and no lock (this check
+    was not part of the 2026-10-12 run).
+     The throwaway disables signing on purpose,
+    because a hermetic `HOME` has no signing key;
+     signing is checked by the next item instead.
 
-The release job (`npm-release.yml`) and the final-newline check run on GitHub runners that install only Node and pnpm.
-The user decided the dependent-version bump ends with one implementation in the native wrapper
-(`doc/handover/cli-git-rust-implementation.md`,
- `User decisions 2026-10-05`);
- the open part is delivery.
-The release task was never run end to end through the native path (`doc/handover/cli-git-native-dependent-version.md`,
-`Not verified`).
+3.  A doc-only commit in this repository,
+     from a linked worktree that has merged `main` and has run `mise run sync:files` and `mise install` (so `cli-git.config.jsonc`,
+     `.cache/forbidden-strings.rules.txt` and `monochromatic-lint` on
+    PATH all exist):
+     edit one Markdown file under `doc/`,
+     `git add -- <that file>`,
+    `git commit -m '<type>(<scope>): <subject>' -- <that file>`.
+    Expect exit 0 and,
+     if the Markdown autofix policy rewrites the file,
+     the wrapper's `fix` outcome;
+    then confirm `git status --short` is clean,
+     `git log -1` shows the commit,
+    and the common git directory has no new transaction directory or lock.
+    Then check the signature:
+     `git log -1 --format='%h %G? %GK'` must print `G` and the same key id as
+    `git log -1 --format='%GK' main`,
+     because the branch protection on `main` requires signatures and the native
+    wrapper must leave signing to Git,
+     which the throwaway check cannot show.
+    A failure here with `config-invalid` or `policy-incomplete` is hazard 3,
+     not a defect.
+4.  Auto-push:
+     with auto-push enabled (`APG`) the commit pushes the branch;
+    a push failure is a result to read,
+     not noise.
 
-- Option A,
-   recommended:
-   a job step builds the crate from the checkout with the pinned Rust toolchain (the same
-  `cargo build --release --locked` the container uses) and puts `git` in front on PATH for that step only.
-  Pros:
-   no release artifact or publication;
-   the checkout and the executable always match.
-  Cons:
-   adds build minutes per run (the scanner build step is slow) and needs a Rust toolchain and Git 2.55.0 or newer
-  on the runner (runner Git version unverified).
-- Option B:
-   publish a release artifact and download it.
-   Pros:
-   fast jobs.
-  Cons:
-   needs a release pipeline and publication approval.
-- Option C:
-   keep the TypeScript planner for releases.
-   Pros:
-   no CI change.
-  Cons:
-   contradicts the recorded decision and keeps `package/git-policy/repository` alive.
+### Rollback
 
-Ranking:
- A > B,
- because A needs nothing that does not exist;
- B > C,
- because C reverses a user decision.
+Before the verification passes (step 7 of `Ordered steps`),
+ the incumbent is still installed and rollback is a
+change of `PATH`:
 
-#### Question 5: Do the four authoring and policy packages retire with the cli?
+1.  Make sure no native transaction is in flight (hazard 1 detection returns nothing),
+    because the incumbent reading native-written records is not tested.
+    Let running native commits finish,
+    or run any native read-only Git command in the affected repository,
+    which runs recovery for interrupted transactions before it forwards.
+2.  Remove or rename `.cache/cli-git-bin/git` in each affected worktree.
+    Every process whose `PATH` contains that directory then falls through to the next `git`.
+    For a session started from the main checkout that is the main checkout's `node_modules/.bin/git`,
+    the incumbent,
+     immediately and without a restart.
+    A shell activated inside a worktree falls through to that worktree's own shim,
+    which already fails today for lack of a `dist` (see `PATH mechanics on this host`),
+    so it loses nothing it had.
+    Then revert the switch commit and run `mise run sync:files`,
+     so new sessions stop adding the directory and the
+    tool entry is gone.
+3.  Verify with `git cli-git status` (JSON `trust-status`,
+     `"trusted":true`) and one commit in a throwaway
+    repository with the incumbent.
 
-`package/git-policy/api`,
- `forbidden-strings`,
- `markdown-lint` and `repository` are TypeScript sources for the retired
-plugin surface;
- the plan says authoring surfaces go "only after their consumers have moved"
-(`doc/planning/cli-git-rust-implementation.md:297`).
+After the verification passes the window is over,
+ by decision.
+`cli-git.config.ts` is deleted,
+ and the shim and `dist` go in the retirement commits.
+Rollback then has two shapes:
 
-- Option A,
-   recommended:
-   delete all four in the retirement commits,
-   after the config,
-  the release task and the mirrors are gone.
-   Pros:
-   no hybrid,
-   no consumer left.
-  Cons:
-   `package/git-policy/repository` must wait for question 4.
-- Option B:
-   keep them as dormant packages.
-   Pros:
-   nothing to do.
-  Cons:
-   unused code with no consumer and a policy mirror generator that no longer has a target.
+- To an earlier native version:
+  pin the previous published version in `mise.no-env.toml`,
+   run `mise run lock:mise`,
+   and run `mise install` in each
+  worktree (the postinstall relinks `git` atomically).
+  The first published version has no predecessor,
+   so a fix after it is a new version through the same publication
+  steps;
+   the registry's yank operation was not examined.
+- To the incumbent:
+  create a worktree at the pinned incumbent revision,
+   install its dependencies with the package manager,
+  build `dist` with `mise run //package/git-policy/cli:build:js:node`,
+  put that worktree's `node_modules/.bin` first on `PATH`,
+  restore `cli-git.config.ts` from Git history,
+   and run `git cli-git trust --yes` for it with the user's approval
+  (precedent:
+   `doc/handover/unified-linter-cutover.md`,
+   `Landing choreography`).
+  That path was not exercised here and its duration was not measured.
 
-Ranking:
- A > B,
- because B leaves exactly the retired code the user asked to remove.
+### Order of the retirement commits
 
-#### Question 6: Is the hk cleanup task still wanted?
+Start right after the verification of step 7.
+Each step is its own commit,
+ made through the native wrapper:
 
-The task `cleanup:hk-git-config` removes `hook.hk-*` Git configuration left by a retired hook manager.
-On this host `git config --show-scope --get-regexp '^hook\.hk-'` exits 1 with no output (re-measured today).
-Other machines were never inspected.
- The adopted default was to move it to a surviving TypeScript package (open to
-veto).
+1.  Record the pinned incumbent revision:
+    the last commit that contains the TypeScript,
+    in the commit body of step 2,
+    in `doc/planning/cli-git-rust-behavior-ledger.md` and in the handover queue.
+2.  Switch `changeset:version` to the native `fix` and prove it on the release workflow's input before deleting the
+    planner;
+    delete the three differentials (`bin/differential-*.mjs`,
+     the 21 `bin/dependent-version-*.mjs` files and their
+    tasks),
+     because those bins import the planner and the TypeScript source;
+    then delete `package/git-policy/repository` and the other three authoring packages
+    with `file-enforcer.config.ts:2276-2341`,
+    the file-enforcer test,
+    and `src/optional/`.
+3.  Delete `src/` (except `src/native/`),
+    `rolldown.node.config.ts`,
+    the tasks and bins listed under `Retirement list`,
+    reduce `package.json` and `tsconfig.json`,
+    edit `e2e/` and the Containerfile,
+    delete `cli-git-trust.yml`,
+    `src/maintenance/` (with `src/`),
+    rewrite the `SPEC.md` sections of `Documentation`
+    (the `README.md` was rewritten before the first publication).
+4.  Remove `package.json:36` and regenerate `pnpm-lock.yaml`,
+    `package/config/pnpr/config.yaml` and `mise.toml`
+    (`pnpm install --lockfile-only` or `mise run prepare:pnpm:install`,
+     then `mise run sync:files`),
+    inspecting each diff.
+    Only now does `pnpm install` remove `node_modules/.bin/git` and the incumbent's closure.
+5.  Remove the main checkout's ignored leftovers (`package/git-policy/cli/dist`,
+     `dist/pack`,
+     `dist/perf`):
+    list them first with `git clean --dry-run -d -X` (`GCL`,
+     `GC2`) and check stray git-dir entries with `ls -d` and
+    `git check-ignore --verbose` (`GCR`).
+    The rollback-window decision covers deleting them;
+    the hazard 4 count of sessions still on the shim must be zero first.
+6.  After the trailing gates are recorded (interop matrix,
+    long fuzz,
+    non-core mutation,
+    `pathBytes`,
+    Windows,
+    release performance) and verified complete,
+    the queue item "retirement of the old TypeScript implementation is verified complete" in
+    `doc/handover/cli-git-rust-implementation.md` can be closed.
 
-- Option A:
-   retire the task and `doc/runbook/remove-retired-hk-git-config.md` now.
-   Pros:
-   less code.
-  Cons:
-   a machine that still has the keys loses the supported removal.
-- Option B:
-   move `src/maintenance/hk-config-cleanup*.ts` and its fixture test to a surviving package (a new small
-  package under `package/dev-script/`,
-   since `package/git/executable` is a library) and repoint the root task.
-  Pros:
-   no behavior change.
-   Cons:
-   carries a one-time migration tool indefinitely.
+## Not established
 
-Ranking:
- B > A,
- because B removes no supported cleanup path;
-A is better only if you know that no other machine ever ran hk,
- and in that case answer A.
-
-#### Question 7: What happens to `perf/` and the performance workflow?
-
-The accepted bar is "faster than the incumbent per scenario".
-The JSON baselines in `perf/` are the incumbent's numbers;
-the harness runs a packed npm tarball and the workflow triggers on `package.json` version changes.
-
-- Option A,
-   recommended:
-   keep `perf/*.json`,
-   delete the harness,
-   tasks and `cli-git-performance.yml` now,
-  and write the native harness when the release-artifact performance gate runs (it trails the cutover).
-  Pros:
-   baselines survive,
-   no dead tasks.
-   Cons:
-   the harness scenario definitions must be rewritten.
-- Option B:
-   adapt the harness now to install the native executable instead of a tarball.
-   Pros:
-   scenarios reused.
-  Cons:
-   expands the cutover;
-   the gate trails by decision.
-
-Ranking:
- A > B,
- because B does trailing work before the cutover.
-
-#### Question 8: How long is the rollback period, and what ends it?
-
-The plan keeps the previous executable "until native installation and recovery checks pass"
-(`doc/planning/cli-git-rust-implementation.md:446`),
- but nothing says who declares that.
-Ending it deletes the shim,
- the incumbent's `dist`,
- the cli package's dependency links,
-and (separately) `cli-git.config.ts`.
-
-- Option A,
-   recommended:
-   end it when the user says so after one working day of native commits across sessions with no
-  recovery event,
-   then do the retirement commits in order.
-   Pros:
-   the user decides on observed use.
-   Cons:
-   open ended.
-- Option B:
-   end it when the trailing interop matrix passes.
-   Pros:
-   evidence based.
-  Cons:
-   that gate is long and trails by decision.
-- Option C:
-   end it immediately after the verification.
-   Pros:
-   smallest window.
-  Cons:
-   rollback then needs a fresh incumbent install.
-
-Ranking:
- A > B,
- because B couples cutover to a gate the user moved after it;
- B > C,
- because C leaves no cheap rollback.
-
-#### Question 9: What does the package `build` task do after the cutover?
-
-Root `mise run build` and `prepareAndBuild` run every package's task named `build`;
-today the cli package's `build` produces the `dist` the installed `git` runs.
-
-- Option A,
-   recommended:
-   `build` becomes the release build of `cli-git-native`
-  (`cargo build --release --locked --offline --bin cli-git-native`),
-   as the sibling Rust CLI
-  `package/cli/forbidden-strings` does.
-   Pros:
-   `prepareAndBuild` keeps producing the installable artifact.
-  Cons:
-   every root `mise run build` compiles the crate,
-   whose scanner build script is slow.
-- Option B:
-   no `build` task;
-   an explicit install task builds on demand.
-   Pros:
-   root builds stay fast.
-  Cons:
-   `prepareAndBuild` no longer produces the installed artifact.
-
-Ranking:
- A > B,
- because A keeps the one-command setup the repository has today;
-B wins only if build time at the root matters more,
- which you can decide from the measurement this document lacks.
-
-#### Question 10: Which operating systems does the first native workflow cover?
-
-Windows and macOS code was never compiled beyond a Clippy type-check for Windows GNU,
-and the adopted decision of 2026-10-05 says the whole native suite runs on hosted macOS and Windows on every wrapper
-change.
-
-- Option A,
-   recommended:
-   Linux only at the cutover,
-   the other systems when the trailing Windows checks run.
-  Pros:
-   matches what has been verified.
-   Cons:
-   a regression on another system is not caught meanwhile.
-- Option B:
-   the full matrix now.
-   Pros:
-   matches the adopted decision.
-  Cons:
-   the first runs will fail on untested code and need Git 2.55.0 or newer installed on each runner.
-
-Ranking:
- A > B,
- because B turns the cutover into the trailing Windows work.
-
-### Not established
-
-- Whether mise expands `{{env.HOME}}` or `~` in `_.path`,
-   and the final PATH position of a new first entry in a
-  worktree session:
-   only the current ordering was observed (`_.path` before tool directories and `/usr/bin`).
-- The duration and size of a host release build and of the Clippy addition to `lint`;
-  only the debug binary size was seen.
+- Whether the API token stored on this host still authorizes publishing:
+  the file was not read,
+   and `doc/runbook/publish-crate-first-time.md` records a 403 for it on 2026-09-25.
+- Everything that needs a published crate:
+  the release jobs for the new crate in `.github/workflows/cargo-publish.yml` do not exist yet and never ran;
+  the prebuilt archive path of `mise install` for this crate (the probes used `monochromatic-lint` 0.1.1 as a stand-in);
+  and the glibc and Git versions of hosted runners against the 2.55.0 floor.
+  The source-install fallback was measured only as a build:
+   about 71 seconds,
+   one run,
+   9,028,800 bytes.
+- Whether file-enforcer keeps a deleted `publish = false` deleted:
+  derived from the present-seeded guard in `file-enforcer.config.ts` and `doc/planning/cargo-toml-file-enforcer.md`,
+   not
+  from a run of `mise run sync:files`.
+- Whether removals between `forbidden-strings` 0.4.1 and the local source exist.
+  No semver tool ran,
+   which is why the first release is a minor bump.
+- Whether the worktree setup flow of this repository runs `mise install`.
+  The link directory is created only by `mise install` (`postinstall` with `when = "always"`);
+  `mise exec`,
+   `mise env` and shell activation do not run it.
 - Which of the 89 worktrees are active,
-   and which sessions hold the old PATH:
-   the commands are given,
-  not run against processes.
+   and which sessions hold the old `PATH`:
+  the commands are given,
+   not run against processes.
 - Whether `pnpm install` prunes the cli package's links the moment its manifest drops them:
   inferred from the symlink layout,
    not run.
@@ -1987,15 +1833,16 @@ Ranking:
    untested by decision (trailing gate).
 - Whether the native wrapper tolerates the four Oct 6 `settlement.lock.*.pending` directories in
   `.git/cli-git-worktree-copy/v1`;
-   the transaction staging names are ignored by design
-  (`package/git-policy/cli/SPEC.md:2085-2095`).
+  the transaction staging names are ignored by design (`package/git-policy/cli/SPEC.md:2085-2095`).
 - The contents of `*.local.*` files,
    `~/.local/state/cli-git/trust/v1`,
    and whether any of them name the shim or `dist`.
-- Hosted-runner Git versions against the 2.55.0 floor,
-   and Windows or macOS behavior of anything native.
+- Windows and macOS behavior of anything native,
+   which is why the release matrix of the new crate is Linux only.
+- The duration of the Clippy addition to `lint`.
 - Baseline results of `mise run //package/git-policy/cli:lint` and `lint:types` before and after the manifest
   reduction (not run:
    the package is large and the scout was read-only).
 - The exact `package.json` field list after reduction is derived from import counts,
-  not from a type check of the reduced package.
+   not from a type check of the
+  reduced package.
