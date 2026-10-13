@@ -685,7 +685,7 @@ await describe({
             const decided = decideSentence({
               asked: askedOf({ voices: threeAlike({ quotes: SENTENCE_QUOTES, },), findings: ['page-consistency 3/3',], }),
             },);
-            const edit = { placePositions: [1,], sliceIndex: 1, start: 6, end: 21, text: 'the cat naps', };
+            const edit = { kind: 'splice', placePositions: [1,], sliceIndex: 1, start: 6, end: 21, text: 'the cat naps', } as const;
             const carried = carriedOf({ edits: [edit,], findings: ['consistency-candidate-refused (qwen)',], });
             const settled = settleCarried({ decided, carried: [carried,], },);
             expect({
@@ -717,7 +717,7 @@ await describe({
               }),
             },);
             const second: ArtifactConsistencyCarry = { ...CARRY, label: 'OCCURRENCE 4', };
-            const edit = { placePositions: [1, 3,], sliceIndex: 1, start: 0, end: 10, text: 'one paragraph', };
+            const edit = { kind: 'block', placePositions: [1, 3,], sliceIndex: 1, start: 0, end: 10, text: 'one paragraph', } as const;
             const settled = settleCarried({
               decided,
               carried: [{ carries: [second, CARRY,], edits: [edit,], findings: [], },],

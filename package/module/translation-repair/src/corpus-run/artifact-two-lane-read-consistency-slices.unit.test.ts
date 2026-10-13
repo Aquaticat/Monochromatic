@@ -27,6 +27,8 @@ import {
 
  @param placed - slice and outcome of each place, in page order
 
+ @param located - whether each place's rendering is located, unlocated when absent
+
  @returns Group of a repeated sentence
 
  @example
@@ -35,7 +37,13 @@ import {
  ```
  */
 function groupOf(
-  { placed, }: { readonly placed: readonly (readonly [number, string])[]; },
+  {
+    placed,
+    located = false,
+  }: {
+    readonly placed: readonly (readonly [number, string])[];
+    readonly located?: boolean;
+  },
 ): ArtifactConsistencyGroup {
   return {
     repeat: { kind: 'maximal', wording: '窗台上的阳光让小猫睡着了', },
@@ -49,7 +57,9 @@ function groupOf(
         startOffset: 6 + (at * 30),
         endOffset: 18 + (at * 30),
         line: 3,
-        rendering: { kind: 'unlocated', reason: 'not-found', },
+        rendering: located
+          ? { kind: 'located', quote: 'The kitten naps', start: 6 + (at * 30), }
+          : { kind: 'unlocated', reason: 'not-found', },
         outcome,
       };
     },),
@@ -140,7 +150,8 @@ await describe({
           },
         },),
         it({
-          name: 'ACCEPTS AN OVERLAP BESIDE A REPLACED PLACE OR A REFUSED ONE, and refuses one with neither in its slice',
+          name: 'ACCEPTS AN OVERLAP BESIDE A REPLACED PLACE, A REFUSED ONE OR A LOCATED PLACE OF ANOTHER GROUP, and refuses one '
+            + 'with none of them in its slice',
           fn: async () => {
             expect([
               refusalOf({
@@ -152,13 +163,31 @@ await describe({
                 slices: [],
               },),
               refusalOf({
-                groups: [groupOf({ placed: [[0, 'chosen',], [2, 'overlapped',],], },),],
+                groups: [
+                  groupOf({ placed: [[0, 'chosen',], [2, 'overlapped',],], },),
+                  groupOf({ placed: [[2, 'chosen',], [3, 'replaced',],], located: true, },),
+                ],
+                slices: [{ sliceIndex: 3, text: 'a', },],
+              },),
+              refusalOf({
+                groups: [
+                  groupOf({ placed: [[0, 'chosen',], [2, 'overlapped',],], },),
+                  groupOf({ placed: [[2, 'chosen',], [3, 'replaced',],], },),
+                ],
+                slices: [{ sliceIndex: 3, text: 'a', },],
+              },),
+              refusalOf({
+                groups: [groupOf({ placed: [[0, 'chosen',], [2, 'overlapped',],], located: true, },),],
                 slices: [],
               },),
             ],).toEqual([
               'not refused',
               'not refused',
-              'artifact parse failed at cat.consistency.slices: expected a replacement in slice 2 for the overlapped place to overlap.',
+              'not refused',
+              'artifact parse failed at cat.consistency.slices: expected a replacement, or a located place of another group, '
+              + 'in slice 2 for the overlapped place to overlap.',
+              'artifact parse failed at cat.consistency.slices: expected a replacement, or a located place of another group, '
+              + 'in slice 2 for the overlapped place to overlap.',
             ],);
           },
         },),

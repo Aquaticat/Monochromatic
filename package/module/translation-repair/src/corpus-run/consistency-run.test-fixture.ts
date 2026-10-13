@@ -181,4 +181,26 @@ export async function runCatPass(
   };
 }
 
+/**
+ The kinds of the candidates a carry was offered, sorted so the order of the sheet does not matter.
+
+ @param candidates - the candidates the carry recorded
+
+ @returns The kinds, in sorted order
+
+ @example
+ ```ts
+ const kinds = candidateKindsOf({ candidates: [{ kind: 'splice', }, { kind: 'current', },], },); // ['current', 'splice']
+ ```
+ */
+export function candidateKindsOf(
+  { candidates, }: { readonly candidates: readonly { readonly kind: string; }[]; },
+): readonly string[] {
+  return candidates
+    .map(function kindOf({ kind, },): string {
+      return kind;
+    },)
+    .toSorted();
+}
+
 //endregion Consistency run fixture

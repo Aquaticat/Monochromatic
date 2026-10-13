@@ -167,7 +167,7 @@ await describe({
               labels: ['OCCURRENCE 2',],
               kinds: ['current', 'splice', 'writer',],
               decision: 'chosen',
-              edits: [{ placePositions: [1,], sliceIndex: 1, start: 0, end: RECEIVING_ENGLISH.length, text: WRITTEN, },],
+              edits: [{ kind: 'block', placePositions: [1,], sliceIndex: 1, start: 0, end: RECEIVING_ENGLISH.length, text: WRITTEN, },],
               findings: [],
               order: ['writer', 'choice',],
             },);
@@ -183,7 +183,7 @@ await describe({
               scene: carryScene({ behave: writtenAndChosen({ choice: RECEIVING_ENGLISH, }), },),
             },);
             expect({ spliced: spliced.edits, kept: kept.edits, },).toEqual({
-              spliced: [{ placePositions: [1,], sliceIndex: 1, start: 6, end: 21, text: 'the cat naps', },],
+              spliced: [{ kind: 'splice', placePositions: [1,], sliceIndex: 1, start: 6, end: 21, text: 'the cat naps', },],
               kept: [],
             },);
           },
@@ -232,7 +232,7 @@ await describe({
               },),),],
             },).toEqual({
               kinds: ['current', 'splice',],
-              edits: [{ placePositions: [1,], sliceIndex: 1, start: 6, end: 21, text: 'the cat naps', },],
+              edits: [{ kind: 'splice', placePositions: [1,], sliceIndex: 1, start: 6, end: 21, text: 'the cat naps', },],
               findings: [
                 'consistency-writers-not-asked (OCCURRENCE 2): the translators bench was not asked: '
                 + 'translators 0 of 8 reachable, floor 2; no provider has named its return',
@@ -343,7 +343,7 @@ await describe({
                 { label: 'CANDIDATE 2', kind: 'current', writers: [], text: english, },
               ],
               decision: { kind: 'chosen', label: 'CANDIDATE 1', },
-              edits: [{ placePositions: [1,], sliceIndex: 1, start: 6, end: 22, text: 'the cat naps', },],
+              edits: [{ kind: 'splice', placePositions: [1,], sliceIndex: 1, start: 6, end: 22, text: 'the cat naps', },],
               findings: [
                 'consistency-writers-not-asked (OCCURRENCE 2): the words that render the repeated wording lie in no single '
                 + 'block of the English, so no paragraph can be rewritten',

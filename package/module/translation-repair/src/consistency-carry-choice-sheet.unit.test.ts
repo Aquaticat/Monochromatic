@@ -48,11 +48,19 @@ const RECEIVING_VIEW: ConsistencyOccurrenceView = {
 };
 
 /**
+ The receiving place with the words of its English that the carry replaces.
+ */
+const RECEIVING_PLACE = {
+  view: RECEIVING_VIEW,
+  span: 'wanted to accompany more people with her cuteness',
+};
+
+/**
  What the sheet shows for a repeated sentence.
  */
 const SUBJECT: CarryChoiceSubject = {
   repeat: { kind: 'maximal', wording: '以可爱的样子陪伴在更多人的身边', },
-  receiving: [RECEIVING_VIEW,],
+  receiving: [RECEIVING_PLACE,],
   chosen: {
     view: CHOSEN_VIEW,
     span: 'wanted to stay by more people\'s side looking cute',
@@ -182,7 +190,7 @@ await describe({
             + 'nothing of either for a single place',
           fn: async () => {
             const several = userText({
-              subject: { ...SUBJECT, receiving: [RECEIVING_VIEW, RECEIVING_VIEW,], keeping: ['She also wanted',], },
+              subject: { ...SUBJECT, receiving: [RECEIVING_PLACE, RECEIVING_PLACE,], keeping: ['She also wanted',], },
             },);
             const single = userText({ subject: SUBJECT, },);
             expect({
@@ -194,6 +202,53 @@ await describe({
               singleLabel: fenceOpening({ content: single, label: 'THIS PLACE: ORIGINAL', },) !== '',
               singleKeeping: single.includes('WORDS OF OTHER PLACES TO KEEP EXACTLY',),
             },).toEqual({ numbered: [true, true,], keeping: true, singleLabel: true, singleKeeping: false, },);
+          },
+        },),
+        it({
+          name: 'SHOWS THE WORDS EACH RECEIVING PLACE REPLACES, under the label the writers\' sheet gives them, numbered when '
+            + 'a block holds several and bare for a single place, between the words to keep and the candidates',
+          fn: async () => {
+            const single = userText({ subject: { ...SUBJECT, keeping: ['She also wanted',], }, },);
+            const several = userText({
+              subject: {
+                ...SUBJECT,
+                receiving: [RECEIVING_PLACE, { ...RECEIVING_PLACE, span: 'wanted to be cute for more people', },],
+              },
+            },);
+            expect({
+              single: fenceOpening({ content: single, label: 'THE WORDS TO REPLACE', },) !== '',
+              singleWords: single.includes('\nwanted to accompany more people with her cuteness\n',),
+              singleOrder: [
+                single.indexOf('WORDS OF OTHER PLACES TO KEEP EXACTLY',),
+                single.indexOf('THE WORDS TO REPLACE',),
+                single.indexOf('CANDIDATE 1',),
+              ].every(function ascending(at, position, all,): boolean {
+                return (at >= 0) && ((position === 0) || ((all[position - 1] ?? 0) < at));
+              },),
+              numbered: ['THE WORDS TO REPLACE 1', 'THE WORDS TO REPLACE 2',].map(function opens(label,): boolean {
+                return fenceOpening({ content: several, label, },) !== '';
+              },),
+              secondWords: several.includes('\nwanted to be cute for more people\n',),
+              bareWhenSeveral: several.includes(' THE WORDS TO REPLACE =====\n',),
+            },).toEqual({
+              single: true,
+              singleWords: true,
+              singleOrder: true,
+              numbered: [true, true,],
+              secondWords: true,
+              bareWhenSeveral: false,
+            },);
+          },
+        },),
+        it({
+          name: 'EXPLAINS THE WORDS TO REPLACE IN THE RULES, since they are what a candidate replaces',
+          fn: async () => {
+            const [system,] = buildCarryChoiceMessages({ subject: SUBJECT, },);
+            expect(system?.content.includes(
+              'The words of the current paragraph that now render the repeated wording in each receiving place are shown as '
+              + 'THE WORDS TO REPLACE (numbered, one for each receiving place, when there are several); they are what a '
+              + 'candidate replaces.',
+            ),).toBe(true,);
           },
         },),
         it({
@@ -238,7 +293,7 @@ await describe({
               subject: {
                 ...SUBJECT,
                 repeat: { kind: 'refrain', prefix: '所以她是个', suffix: '的女孩吧', },
-                receiving: [{ ...RECEIVING_VIEW, slotSource: '温柔', },],
+                receiving: [{ ...RECEIVING_PLACE, view: { ...RECEIVING_VIEW, slotSource: '温柔', }, },],
               },
             },);
             const run = sheetText({ subject: SUBJECT, },);
@@ -312,7 +367,8 @@ await describe({
               keeping: outgrows({ subject: { ...SUBJECT, keeping: [LONG_FENCE_RUN,], }, },),
               before: outgrows({ subject: { ...SUBJECT, before: LONG_FENCE_RUN, }, },),
               after: outgrows({ subject: { ...SUBJECT, after: LONG_FENCE_RUN, }, },),
-            },).toEqual({ identity: true, paragraph: true, slot: true, keeping: true, before: true, after: true, },);
+              replaced: outgrows({ subject: { ...SUBJECT, receiving: [{ ...RECEIVING_PLACE, span: LONG_FENCE_RUN, },], }, },),
+            },).toEqual({ identity: true, paragraph: true, slot: true, keeping: true, before: true, after: true, replaced: true, },);
           },
         },),
       ],

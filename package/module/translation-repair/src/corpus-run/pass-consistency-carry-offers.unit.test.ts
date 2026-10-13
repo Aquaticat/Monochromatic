@@ -574,7 +574,7 @@ await describe({
               context: scene.context,
               repeat: CARRY_REPEAT,
               chosen: scene.chosen,
-              unit: { ...scene.unit, writable: false, },
+              unit: { ...scene.unit, writable: false, spliceOnlyIn: [], },
               english: RECEIVING_ENGLISH,
             },),).toEqual({
               written: [],
@@ -583,6 +583,46 @@ await describe({
                 + 'block of the English, so no paragraph can be rewritten',
               ],
             },);
+            expect(scene.asked,).toEqual([],);
+          },
+        },),
+        it({
+          name: 'ASKS NO WRITER FOR WORDS IN A TABLE, A CODE BLOCK OR A SETEXT HEADING, reporting which kind of block holds '
+            + 'them and that no paragraph can be rewritten',
+          fn: async () => {
+            const scene = carryScene({ behave: writersAnswer, },);
+            /**
+             The findings of asking for a unit that stands in one kind of block.
+             */
+            async function findingsFor(
+              { kind, }: { readonly kind: 'table' | 'code block' | 'setext heading'; },
+            ): Promise<readonly string[]> {
+              return (await writtenOffers({
+                context: scene.context,
+                repeat: CARRY_REPEAT,
+                chosen: scene.chosen,
+                unit: { ...scene.unit, writable: false, spliceOnlyIn: [kind,], },
+                english: RECEIVING_ENGLISH,
+              },)).findings;
+            }
+            expect([
+              await findingsFor({ kind: 'table', },),
+              await findingsFor({ kind: 'code block', },),
+              await findingsFor({ kind: 'setext heading', },),
+            ],).toEqual([
+              [
+                'consistency-writers-not-asked (OCCURRENCE 2): the words that render the repeated wording stand in a table, '
+                + 'so no paragraph can be rewritten',
+              ],
+              [
+                'consistency-writers-not-asked (OCCURRENCE 2): the words that render the repeated wording stand in a code '
+                + 'block, so no paragraph can be rewritten',
+              ],
+              [
+                'consistency-writers-not-asked (OCCURRENCE 2): the words that render the repeated wording stand in a setext '
+                + 'heading, so no paragraph can be rewritten',
+              ],
+            ],);
             expect(scene.asked,).toEqual([],);
           },
         },),

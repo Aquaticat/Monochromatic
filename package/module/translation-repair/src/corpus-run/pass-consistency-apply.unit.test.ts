@@ -149,6 +149,7 @@ function carriedBySplice({ decided, }: { readonly decided: DecidedGroup; },): re
         ],
         edits: [
           {
+            kind: 'splice',
             placePositions: [receiver.position,],
             sliceIndex: receiver.place.slice.sliceIndex,
             start: receiver.plan.start,
@@ -258,6 +259,28 @@ function outcomesOf({ groups, }: { readonly groups: readonly ArtifactConsistency
 }
 
 /**
+ The text the third slice ships once the replacements are applied, as a list of zero or one.
+
+ @param applied - what applying came to
+
+ @returns The text of the third slice when it changed, none when it did not
+
+ @example
+ ```ts
+ const third = thirdSliceOf({ applied, },);
+ ```
+ */
+function thirdSliceOf({ applied, }: { readonly applied: ReturnType<typeof applyConsistency>; },): readonly string[] {
+  return applied.slices
+    .filter(function isThird({ sliceIndex, },): boolean {
+      return sliceIndex === 2;
+    },)
+    .map(function textOf({ text, },): string {
+      return text;
+    },);
+}
+
+/**
  Applies the replacements of a settled cat page with no declared names.
 
  @param page - the settled groups and slice facts
@@ -355,6 +378,7 @@ await describe({
                       ? settled.edits
                       : [
                         {
+                          kind: 'block',
                           placePositions: [...first.placePositions, ...second.placePositions,],
                           sliceIndex: first.sliceIndex,
                           start: first.start,
@@ -536,6 +560,142 @@ await describe({
             expect(applied.slices.find(function third(slice,): boolean {
               return slice.sliceIndex === 2;
             },),).toEqual({ sliceIndex: 2, text: '## Three\n\nIn the evening, the sunny window put the kitten to sleep.', },);
+          },
+        },),
+        it({
+          name: 'LEAVES OUT A BLOCK REPLACEMENT THAT CHANGES THE WORDS ANOTHER GROUP LOCATED IN IT, whichever order the groups '
+            + 'come in, recording overlapped for the places it carried and keeping a finding that names both groups',
+          fn: async () => {
+            const page = settledCatPage({},);
+            const third = nonNullishOrThrow(page.slices[2],);
+            const english = third.current.kind === 'present' ? third.current.text : '';
+            const blockStart = english.indexOf('In the evening',);
+            /**
+             The page with the sentence group's replacement in the third slice made over the whole paragraph, as a
+             writer's block would be.
+             */
+            function withBlockText({ text, }: { readonly text: string; },): ReturnType<typeof settledCatPage> {
+              return {
+                ...page,
+                settled: page.settled.map(function rewritten(group, at,): SettledGroup {
+                  return (at === 0)
+                    ? {
+                      ...group,
+                      edits: [
+                        {
+                          kind: 'block',
+                          placePositions: [1,],
+                          sliceIndex: 2,
+                          start: blockStart,
+                          end: english.length,
+                          text,
+                        },
+                      ],
+                    }
+                    : group;
+                },),
+              };
+            }
+            const rewritten = withBlockText({
+              text: 'In the evening, the sunny window put the kitten to sleep, and the fish snacks smiled too. '
+                + 'So this cat is a darling.',
+            },);
+            const lines: string[] = [];
+            const forward = applyCat({ page: rewritten, lines, },);
+            const backwardLines: string[] = [];
+            const backward = applyCat({
+              page: { ...rewritten, settled: rewritten.settled.toReversed(), },
+              lines: backwardLines,
+            },);
+            const kept = '## Three\n\nIn the evening, the sunlight on the sill lulled the kitten to sleep, and the fish snacks '
+              + 'smiled too. So this cat must be a sweet little treasure.';
+            expect({
+              forward: outcomesOf({ groups: forward.groups, },),
+              backward: outcomesOf({ groups: backward.groups, },),
+              forwardThird: thirdSliceOf({ applied: forward, },),
+              backwardThird: thirdSliceOf({ applied: backward, },),
+              forwardFindings: forward.findings,
+              backwardFindings: backward.findings,
+              forwardWarned: lines,
+              backwardWarned: backwardLines,
+            },).toEqual({
+              forward: [['chosen', 'overlapped',], ['chosen', 'replaced', 'replaced', 'replaced',],],
+              backward: [['chosen', 'replaced', 'replaced', 'replaced',], ['chosen', 'overlapped',],],
+              forwardThird: [kept,],
+              backwardThird: [kept,],
+              forwardFindings: [
+                'slice 2: the consistency replacement of group 1 OCCURRENCE 2 was left out because it changes the words that '
+                + 'group 2 OCCURRENCE 3 located',
+              ],
+              backwardFindings: [
+                'slice 2: the consistency replacement of group 2 OCCURRENCE 2 was left out because it changes the words that '
+                + 'group 1 OCCURRENCE 3 located',
+              ],
+              forwardWarned: [
+                'warn [applyConsistency] slice 2: the consistency replacement of group 1 OCCURRENCE 2 was left out because it '
+                + 'changes the words that group 2 OCCURRENCE 3 located',
+              ],
+              backwardWarned: [
+                'warn [applyConsistency] slice 2: the consistency replacement of group 2 OCCURRENCE 2 was left out because it '
+                + 'changes the words that group 1 OCCURRENCE 3 located',
+              ],
+            },);
+          },
+        },),
+        it({
+          name: 'MAKES A BLOCK REPLACEMENT THAT STILL HOLDS THE WORDS ANOTHER GROUP LOCATED, the later group\'s replacement '
+            + 'there being left out as overlapping it, and leaves out one that cuts those words in half',
+          fn: async () => {
+            const page = settledCatPage({},);
+            const third = nonNullishOrThrow(page.slices[2],);
+            const english = third.current.kind === 'present' ? third.current.text : '';
+            const blockStart = english.indexOf('In the evening',);
+            /**
+             What applying the page comes to with the sentence group's replacement in the third slice changed.
+             */
+            function appliedWith(
+              { start, text, }: { readonly start: number; readonly text: string; },
+            ): ReturnType<typeof applyConsistency> {
+              return applyCat({
+                page: {
+                  ...page,
+                  settled: page.settled.map(function rewritten(group, at,): SettledGroup {
+                    return (at === 0)
+                      ? {
+                        ...group,
+                        edits: [
+                          { kind: 'block', placePositions: [1,], sliceIndex: 2, start, end: english.length, text, },
+                        ],
+                      }
+                      : group;
+                  },),
+                },
+                lines: [],
+              },);
+            }
+            const holding = appliedWith({
+              start: blockStart,
+              text: 'In the evening, the sunny window put the kitten to sleep, and the fish snacks smiled too. '
+                + 'So this cat has to be a sweet little darling.',
+            },);
+            const cutting = appliedWith({
+              start: english.indexOf('this cat',),
+              text: 'cat is a darling.',
+            },);
+            expect({
+              holding: outcomesOf({ groups: holding.groups, },),
+              holdingFindings: holding.findings,
+              cutting: outcomesOf({ groups: cutting.groups, },),
+              cuttingFindings: cutting.findings,
+            },).toEqual({
+              holding: [['chosen', 'replaced',], ['chosen', 'replaced', 'overlapped', 'replaced',],],
+              holdingFindings: [],
+              cutting: [['chosen', 'overlapped',], ['chosen', 'replaced', 'replaced', 'replaced',],],
+              cuttingFindings: [
+                'slice 2: the consistency replacement of group 1 OCCURRENCE 2 was left out because it changes the words that '
+                + 'group 2 OCCURRENCE 3 located',
+              ],
+            },);
           },
         },),
         it({

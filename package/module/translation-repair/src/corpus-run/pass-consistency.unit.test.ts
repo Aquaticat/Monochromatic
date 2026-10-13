@@ -79,6 +79,7 @@ import {
 } from './consistency-sheet-reading.test-fixture.ts';
 import {
   type CatRun,
+  candidateKindsOf,
   DIGEST,
   runCatPass,
 } from './consistency-run.test-fixture.ts';
@@ -1005,7 +1006,7 @@ await describe({
                 ['OCCURRENCE 1', 'OCCURRENCE 2',],
                 true,
               ],
-              logged: [`info [runPassConsistency] [settleAskedGroup] asking the bench once more: ${reason}`,],
+              logged: [`info [runPassConsistency] [decideAskedGroup] asking the bench once more: ${reason}`,],
               recorded: [`group 2: run-off asked: ${reason}`,],
             },);
             const runOffSheets = run.sheets.filter(function isRunOff(sheet,): boolean {
@@ -1155,10 +1156,16 @@ await describe({
               entryCacheDir: dir.path,
             },);
             // The repeated sentence's gather reached its quorum and was stored; the refrain's did not, so it is asked again.
-            expect(again.asked.length,).toBe(20,);
-            expect(again.sheets.every(function asksFrame(sheet,): boolean {
-              return sheet.includes('FRAME BEGINS WITH',);
-            },),).toBe(true,);
+            // The sentence's writers and judges of the third section are asked again as well: that paragraph holds a
+            // refrain place, whose words the sheets list to keep, and the refrain located none this time.
+            expect(again.asked.length,).toBe(30,);
+            expect(again.sheets.map(function questionOf(sheet,): readonly [string, boolean] {
+              return [sheetKindOf({ sheet, },), sheet.includes('FRAME BEGINS WITH',),];
+            },),).toEqual([
+              ...Array.from({ length: 20, }, (): readonly [string, boolean] => ['ballot', true,],),
+              ...Array.from({ length: 5, }, (): readonly [string, boolean] => ['writer', false,],),
+              ...Array.from({ length: 5, }, (): readonly [string, boolean] => ['choice', false,],),
+            ],);
           },
         },),
         it({
@@ -2416,9 +2423,7 @@ await describe({
               findings: run.consistency.findings,
               kinds: run.consistency.groups.map(function kindsOf(group,): unknown {
                 return group.carries?.map(function carryKinds({ candidates, },): unknown {
-                  return candidates.map(function kindOf({ kind, },): string {
-                    return kind;
-                  },).toSorted();
+                  return candidateKindsOf({ candidates, },);
                 },);
               },),
               outcomes: run.consistency.groups.map(function outcomesOfGroup(group,): unknown {

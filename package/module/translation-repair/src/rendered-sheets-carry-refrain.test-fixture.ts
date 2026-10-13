@@ -138,8 +138,14 @@ export function refrainCarrySheets(): readonly RenderedSheet[] {
           subject: {
             repeat: REFRAIN,
             receiving: [
-              FIRST_RECEIVING_VIEW,
-              SECOND_RECEIVING_VIEW,
+              {
+                view: FIRST_RECEIVING_VIEW,
+                span: 'So this cat is a gentle little treasure',
+              },
+              {
+                view: SECOND_RECEIVING_VIEW,
+                span: 'so this cat is a dependable little treasure',
+              },
             ],
             chosen: CHOSEN_PLACE,
             keeping: ['and so this cat',],

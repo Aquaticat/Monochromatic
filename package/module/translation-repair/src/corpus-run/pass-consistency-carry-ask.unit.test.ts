@@ -91,7 +91,7 @@ const WRITER_SUBJECT: CarryWriterSubject = {
  */
 const CHOICE_SUBJECT: CarryChoiceSubject = {
   repeat: { kind: 'maximal', wording: '小猫打盹', },
-  receiving: [RECEIVING_VIEW,],
+  receiving: [{ view: RECEIVING_VIEW, span: 'The kitten naps', },],
   chosen: { view: CHOSEN_VIEW, span: 'The cat naps', paragraph: 'The cat naps.', },
   keeping: [],
   candidates: [

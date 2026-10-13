@@ -287,10 +287,11 @@ export function firstFinalistOf({ sheet, }: { readonly sheet: string; },): strin
  ```
  */
 export function sheetKindOf({ sheet, }: { readonly sheet: string; },): 'ballot' | 'writer' | 'choice' | 'run-off' {
-  if (sheet.includes('THE WORDS TO REPLACE',))
-    return 'writer';
+  // The choice sheet shows the words to replace as the writer's sheet does, so its own marker is read first.
   if (sheet.includes(' (THE PARAGRAPH AS THE PAGE HAS IT NOW) ',))
     return 'choice';
+  if (sheet.includes('THE WORDS TO REPLACE',))
+    return 'writer';
   if (sheet.includes('WORDS THAT RENDER THE REPEATED WORDING',))
     return 'run-off';
   return 'ballot';

@@ -101,10 +101,66 @@ await describe({
             expect([
               'wasn\'t kind',
               '\'wasn\'t kind\'',
-              'the girls\'',
+              'the cats\' bowl',
             ].map(function leftOf(text,): string {
               return wordsLeftOf({ text, },);
-            },),).toEqual(['wasn\'t kind', 'wasn\'t kind', 'the girls',],);
+            },),).toEqual(['wasn\'t kind', 'wasn\'t kind', 'the cats\' bowl',],);
+          },
+        },),
+        it({
+          name: 'KEEPS AN APOSTROPHE AT A WORD EDGE THAT NO MARK ACROSS THE QUOTE CLOSES OR OPENS, since it is part of the word '
+            + 'it touches: a dropped initial, a dropped final letter and a plural possessive',
+          fn: async () => {
+            expect([
+              '\'Tis the season',
+              'we were goin\'',
+              'the cats\'',
+              'the bowl of the cats\'',
+              '\'90s cats',
+            ].map(function leftOf(text,): string {
+              return wordsLeftOf({ text, },);
+            },),).toEqual([
+              '\'Tis the season',
+              'we were goin\'',
+              'the cats\'',
+              'the bowl of the cats\'',
+              '\'90s cats',
+            ],);
+          },
+        },),
+        it({
+          name: 'TAKES THE PAIR OFF THAT ENCLOSES THE WHOLE QUOTE while an apostrophe inside it stays, and keeps a pair '
+            + 'that closes inside the quote',
+          fn: async () => {
+            expect([
+              '\'cats\' bowl\'',
+              '\'the cats\' bowl is full\'',
+              '\'hi\' there',
+              'she said \'hi\'',
+              '"He said \'hi\' to me"',
+              '[a (b] c)',
+            ].map(function leftOf(text,): string {
+              return wordsLeftOf({ text, },);
+            },),).toEqual([
+              'cats\' bowl',
+              'the cats\' bowl is full',
+              '\'hi\' there',
+              'she said \'hi\'',
+              'He said \'hi\' to me',
+              '[a (b] c)',
+            ],);
+          },
+        },),
+        it({
+          name: 'TAKES A SINGLE QUOTATION MARK OFF AN EDGE THAT TOUCHES NO LETTER AND PAIRS WITH NOTHING, as before',
+          fn: async () => {
+            expect([
+              '\' cat naps',
+              'cat naps \'',
+              '\'\'',
+            ].map(function leftOf(text,): string {
+              return wordsLeftOf({ text, },);
+            },),).toEqual(['cat naps', 'cat naps', '',],);
           },
         },),
         it({

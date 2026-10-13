@@ -217,7 +217,12 @@ export function carrySheets(): readonly RenderedSheet[] {
         messages: buildCarryChoiceMessages({
           subject: {
             repeat: SENTENCE,
-            receiving: [SECOND_VIEW,],
+            receiving: [
+              {
+                view: SECOND_VIEW,
+                span: 'the sunlight on the sill lulled the kitten to sleep',
+              },
+            ],
             chosen: CHOSEN_PLACE,
             keeping: [],
             candidates: [
@@ -244,7 +249,12 @@ export function carrySheets(): readonly RenderedSheet[] {
         messages: buildCarryChoiceMessages({
           subject: {
             repeat: SENTENCE,
-            receiving: [SECOND_VIEW,],
+            receiving: [
+              {
+                view: SECOND_VIEW,
+                span: 'the sunlight on the sill lulled the kitten to sleep',
+              },
+            ],
             chosen: CHOSEN_PLACE,
             keeping: [],
             candidates: [

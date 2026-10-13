@@ -189,12 +189,12 @@ await describe({
               { decided: 'current', edits: [], },
               {
                 decided: 'splice',
-                edits: [{ placePositions: [1,], sliceIndex: 1, start: 6, end: 21, text: 'the cat naps', },],
+                edits: [{ kind: 'splice', placePositions: [1,], sliceIndex: 1, start: 6, end: 21, text: 'the cat naps', },],
               },
               {
                 decided: 'writer',
                 edits: [
-                  { placePositions: [1,], sliceIndex: 1, start: 0, end: RECEIVING_ENGLISH.length, text: WRITTEN, },
+                  { kind: 'block', placePositions: [1,], sliceIndex: 1, start: 0, end: RECEIVING_ENGLISH.length, text: WRITTEN, },
                 ],
               },
             ],);
@@ -244,7 +244,7 @@ await describe({
               asked: scene.asked.length,
             },).toEqual({
               writtenEdits: [
-                { placePositions: [1, 2,], sliceIndex: 1, start: 0, end: RECEIVING_ENGLISH.length, text: WRITTEN, },
+                { kind: 'block', placePositions: [1, 2,], sliceIndex: 1, start: 0, end: RECEIVING_ENGLISH.length, text: WRITTEN, },
               ],
               writtenLabels: ['OCCURRENCE 2', 'OCCURRENCE 3',],
               writtenDecisions: [
@@ -252,8 +252,8 @@ await describe({
                 { kind: 'chosen', label: WRITER_LABEL, },
               ],
               splicedEdits: [
-                { placePositions: [1,], sliceIndex: 1, start: 6, end: 21, text: 'the cat naps', },
-                { placePositions: [2,], sliceIndex: 1, start: 25, end: 32, text: 'the warm sun', },
+                { kind: 'splice', placePositions: [1,], sliceIndex: 1, start: 6, end: 21, text: 'the cat naps', },
+                { kind: 'splice', placePositions: [2,], sliceIndex: 1, start: 25, end: 32, text: 'the warm sun', },
               ],
               asked: 3,
             },);

@@ -25,6 +25,7 @@ import {
   englishOf,
   englishOfUnit,
   type HeldReceiver,
+  isKeptOutcome,
   keptWordsOf,
   settleAsked,
   sliceOfUnit,
@@ -107,18 +108,36 @@ function heldIn(
   {
     receiver,
     block,
+    spliceOnlyIn = [],
   }: {
     readonly receiver: CarryReceiver;
     readonly block: readonly CarryBlock[];
+    readonly spliceOnlyIn?: HeldReceiver['spliceOnlyIn'];
   },
 ): HeldReceiver {
-  return { receiver, block, };
+  return { receiver, block, spliceOnlyIn, };
 }
 
 await describe({
   name: '',
   concurrency: 1,
   children: [
+    describe({
+      name: isKeptOutcome.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'KEEPS THE WORDS OF THE CHOSEN PLACE, A PLACE KEPT FOR ITS CONTEXT AND A PLACE THAT ALREADY AGREES, and no other',
+          fn: async () => {
+            expect(['chosen', 'kept-context', 'consistent', 'replaced', 'kept-current', 'untouched',].map(
+              function keeps(outcome,): boolean {
+                return isKeptOutcome({ outcome, },);
+              },
+            ),).toEqual([true, true, true, false, false, false,],);
+          },
+        },),
+      ],
+    },),
     describe({
       name: keptWordsOf.name,
       concurrency: DEFAULT_CONCURRENCY,
@@ -153,6 +172,74 @@ await describe({
               { sliceIndex: 0, start: 0, core: 'The cat naps', },
               { sliceIndex: 2, start: 9, core: 'The cat naps', },
             ],);
+          },
+        },),
+        it({
+          name: 'LISTS BESIDE THEM THE LOCATED WORDS OF EVERY PLACE OF EVERY OTHER GROUP, whatever became of the place, in page '
+            + 'order, whichever order the other groups come in',
+          fn: async () => {
+            /**
+             A group of two or three places that three judges quote alike and the first place wins.
+             */
+            function groupOf(
+              { englishes, quotes, }: {
+                readonly englishes: readonly (readonly [number, string])[];
+                readonly quotes: readonly { readonly label: string; readonly quote: string; }[];
+              },
+            ): ReturnType<typeof settleAsked> {
+              return settleAsked({
+                repeat: { kind: 'maximal', wording: '小猫打盹', },
+                places: englishes.map(function placeOf([position, english,],) {
+                  return placeIn({ position, english, },);
+                },),
+                unplaced: [],
+                asked: {
+                  quorum: 2,
+                  resumed: false,
+                  findings: [],
+                  voices: ['hyper-cat', 'bedrock-cat', 'synthetic-cat',].map(function ballotOf(seat,) {
+                    return firstPlaceBallot({ seat, quotes, },);
+                  },),
+                },
+              },);
+            }
+            const decided = groupOf({
+              englishes: [
+                [0, 'The cat naps. It is warm.',],
+                [1, 'Later the kitten naps in the sun.',],
+                [2, 'Evening: The cat naps in the dark.',],
+              ],
+              quotes: [
+                { label: 'OCCURRENCE 1', quote: 'The cat naps.', },
+                { label: 'OCCURRENCE 2', quote: 'the kitten naps', },
+                { label: 'OCCURRENCE 3', quote: 'The cat naps', },
+              ],
+            },);
+            const sunny = groupOf({
+              englishes: [[1, 'Later the kitten naps in the sun.',], [3, 'Dusk: the kitten purrs in the sun.',],],
+              quotes: [
+                { label: 'OCCURRENCE 1', quote: 'in the sun', },
+                { label: 'OCCURRENCE 2', quote: 'in the sun', },
+              ],
+            },);
+            const dark = groupOf({
+              englishes: [[2, 'Evening: The cat naps in the dark.',], [4, 'Night: the kitten purrs.',],],
+              quotes: [
+                { label: 'OCCURRENCE 1', quote: 'in the dark', },
+                { label: 'OCCURRENCE 2', quote: 'the kitten sleeps', },
+              ],
+            },);
+            const expected = [
+              { sliceIndex: 0, start: 0, core: 'The cat naps', },
+              { sliceIndex: 1, start: 22, core: 'in the sun', },
+              { sliceIndex: 2, start: 9, core: 'The cat naps', },
+              { sliceIndex: 2, start: 22, core: 'in the dark', },
+              { sliceIndex: 3, start: 23, core: 'in the sun', },
+            ];
+            expect([
+              keptWordsOf({ decided, others: [sunny, dark,], },),
+              keptWordsOf({ decided, others: [dark, sunny,], },),
+            ],).toEqual([expected, expected,],);
           },
         },),
         it({
@@ -203,7 +290,7 @@ await describe({
           fn: async () => {
             const first = receiverIn({ label: 'OCCURRENCE 2', position: 1, sliceIndex: 1, });
             const second = receiverIn({ label: 'OCCURRENCE 3', position: 2, sliceIndex: 1, });
-            const unit = { block: FIRST_BLOCK, writable: true, receivers: [first, second,], keeping: [], };
+            const unit = { block: FIRST_BLOCK, writable: true, spliceOnlyIn: [], receivers: [first, second,], keeping: [], };
             expect({
               slice: sliceOfUnit({ unit, },).sliceIndex,
               english: englishOfUnit({ unit, },),
@@ -220,7 +307,7 @@ await describe({
         it({
           name: 'REFUSES A UNIT WITH NO RECEIVING PLACE, since a unit is made from a group of receivers',
           fn: async () => {
-            const empty = { block: FIRST_BLOCK, writable: true, receivers: [], keeping: [], };
+            const empty = { block: FIRST_BLOCK, writable: true, spliceOnlyIn: [], receivers: [], keeping: [], };
             expect([
               String(caught(function slices(): unknown {
                 return sliceOfUnit({ unit: empty, },);
@@ -258,8 +345,8 @@ await describe({
               kept: [],
             },);
             expect(units,).toEqual([
-              { block: FIRST_BLOCK, writable: true, receivers: [first, second,], keeping: [], },
-              { block: SECOND_BLOCK, writable: true, receivers: [third,], keeping: [], },
+              { block: FIRST_BLOCK, writable: true, spliceOnlyIn: [], receivers: [first, second,], keeping: [], },
+              { block: SECOND_BLOCK, writable: true, spliceOnlyIn: [], receivers: [third,], keeping: [], },
             ],);
           },
         },),
@@ -279,10 +366,44 @@ await describe({
               {
                 block: { start: 0, end: ENGLISH.length, text: ENGLISH, },
                 writable: false,
+                spliceOnlyIn: [],
                 receivers: [first,],
                 keeping: [],
               },
-              { block: FIRST_BLOCK, writable: true, receivers: [second,], keeping: [], },
+              { block: FIRST_BLOCK, writable: true, spliceOnlyIn: [], receivers: [second,], keeping: [], },
+            ],);
+          },
+        },),
+        it({
+          name: 'MAKES A UNIT OF THE WHOLE ENGLISH, NOT WRITABLE, FOR EACH KIND OF BLOCK NO PARAGRAPH REWRITE CAN CARRY, naming '
+            + 'the kind, apart from the places that stand in no block and from a place a paragraph holds',
+          fn: async () => {
+            const first = receiverIn({ label: 'OCCURRENCE 2', position: 1, sliceIndex: 1, });
+            const second = receiverIn({ label: 'OCCURRENCE 3', position: 2, sliceIndex: 1, });
+            const third = receiverIn({ label: 'OCCURRENCE 4', position: 3, sliceIndex: 1, });
+            const fourth = receiverIn({ label: 'OCCURRENCE 5', position: 4, sliceIndex: 1, });
+            const fifth = receiverIn({ label: 'OCCURRENCE 6', position: 5, sliceIndex: 1, });
+            const whole: CarryBlock = { start: 0, end: ENGLISH.length, text: ENGLISH, };
+            expect(unitsOf({
+              held: [
+                heldIn({ receiver: first, block: [], spliceOnlyIn: ['table',], },),
+                heldIn({ receiver: second, block: [], spliceOnlyIn: ['code block',], },),
+                heldIn({ receiver: third, block: [], },),
+                heldIn({ receiver: fourth, block: [], spliceOnlyIn: ['table',], },),
+                heldIn({ receiver: fifth, block: [FIRST_BLOCK,], },),
+              ],
+              kept: [],
+            },),).toEqual([
+              {
+                block: whole,
+                writable: false,
+                spliceOnlyIn: ['table',],
+                receivers: [first, fourth,],
+                keeping: [],
+              },
+              { block: whole, writable: false, spliceOnlyIn: ['code block',], receivers: [second,], keeping: [], },
+              { block: whole, writable: false, spliceOnlyIn: [], receivers: [third,], keeping: [], },
+              { block: FIRST_BLOCK, writable: true, spliceOnlyIn: [], receivers: [fifth,], keeping: [], },
             ],);
           },
         },),

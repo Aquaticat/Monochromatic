@@ -296,6 +296,7 @@ export function carryScene(
         text: RECEIVING_ENGLISH,
       },
       writable: true,
+      spliceOnlyIn: [],
       receivers: [receiver,],
       keeping: [],
     },

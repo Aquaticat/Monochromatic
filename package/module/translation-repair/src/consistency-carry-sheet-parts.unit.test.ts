@@ -24,6 +24,7 @@ import {
   keepingBlockOf,
   originalBlocksOf,
   receivingLabel,
+  replaceBlocksOf,
 } from '../dist/final/node/index.mjs';
 
 /**
@@ -101,6 +102,30 @@ await describe({
             ],).toEqual([
               '===== THIS PLACE: ORIGINAL =====\n⟦小猫打盹⟧。\n',
               '===== THIS PLACE 2: ORIGINAL =====\n⟦小猫打盹⟧。\n===== THIS PLACE 2: SLOT IN THE ORIGINAL =====\n温柔\n',
+            ],);
+          },
+        },),
+      ],
+    },),
+    describe({
+      name: replaceBlocksOf.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'SHOWS THE WORDS EACH RECEIVING PLACE REPLACES, bare for the only place and numbered from one for several, '
+            + 'each block ending in a line break, and nothing when no place receives',
+          fn: async () => {
+            expect([
+              replaceBlocksOf({ receiving: [{ view: VIEW, span: 'The kitten naps', },], fence: FENCE, },),
+              replaceBlocksOf({
+                receiving: [{ view: VIEW, span: 'The kitten naps', }, { view: VIEW, span: 'the kitten purrs', },],
+                fence: FENCE,
+              },),
+              replaceBlocksOf({ receiving: [], fence: FENCE, },),
+            ],).toEqual([
+              '===== THE WORDS TO REPLACE =====\nThe kitten naps\n',
+              '===== THE WORDS TO REPLACE 1 =====\nThe kitten naps\n===== THE WORDS TO REPLACE 2 =====\nthe kitten purrs\n',
+              '',
             ],);
           },
         },),
