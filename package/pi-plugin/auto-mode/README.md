@@ -428,6 +428,29 @@ source,
 judgment,
 and human-approval owners remain required before any result can authorize execution.
 
+## Migration query observation
+
+`createNativeQueryObservation` retains the first unexpected input or output observation failure.
+Native adapters supply synchronous receivers and forward original frames.
+The helper does not authenticate those frames,
+assign source authority,
+or prove complete coverage.
+A callback catching an observer failure cannot restore that observation lifetime.
+Native reporting failures preserve their original value when there was no observer failure;
+otherwise an aggregate retains the observer,
+callback,
+and reporting failures.
+Borrowed frames,
+callbacks,
+and thrown values remain mutable.
+
+The private query adapter delegates failure retention to this maintained export.
+Original argument-frame construction,
+query result identity,
+source capture,
+and native error reporting remain the adapter's responsibilities.
+This does not replace the installed judge or supply a maintained host launcher.
+
 ## Migration input accounting
 
 `assertOriginalInputBudget` validates resource and Session receipt counters,

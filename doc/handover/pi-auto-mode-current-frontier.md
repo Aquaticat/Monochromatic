@@ -714,7 +714,10 @@ one authored assessment,
 and no protected execution or provider request.
 The query controls now belong to the input parent;
 its historical 198-case pass predates these additions and is not evidence for them.
-Affected compiler/source regressions remain to be checked.
+Affected compiler/source regressions passed `proc_a0e6`:
+32 compiler cases with empty child stderr,
+plus the original-source variants and construction/cleanup controls.
+No provider calls or genuine human approvals occurred.
 
 This repairs a named processing boundary,
 not decision-specific domain closure,
@@ -725,6 +728,19 @@ The initial query staging failure `proc_3495` was an unmapped owned import;
 The first native parity attempt `proc_e6cf` expected exposure `default`;
 native exposure was `direct`,
 and the fixture was corrected without changing native behavior.
+
+## Maintained query observation lifetime
+
+`56b562852f` adds `src/native-query-observation.ts` and built-artifact tests to the maintained auto-mode package.
+`proc_b197` passed build and types.
+The private adapter now delegates its failure lifetime to the package export;
+original argument-frame construction and returned-value identity remain local.
+The existing stager and export-identity test include this function.
+Unit/lint verification and the native import-cutover controls are pending.
+This moves failure-lifecycle code out of scratch,
+not source ownership,
+governing-domain closure,
+or host launch.
 
 ## Original loadout callback inputs
 
