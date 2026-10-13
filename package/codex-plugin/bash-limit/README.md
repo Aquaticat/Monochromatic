@@ -24,6 +24,13 @@ mise run //package/codex-plugin/bash-limit:lint:types
 Tests are Rust integration tests run by nextest.
 They invoke the native binary and execute its rewritten shell commands against disposable fixtures.
 
+`mise run //package/codex-plugin/bash-limit:test:host` additionally exercises an installed Codex app-server
+against a local deterministic Responses endpoint.
+It checks exact hook trust,
+successful command rewriting,
+and reported hook duration without calling a model provider.
+The host fixture requires loopback sockets and is excluded from ordinary test runs.
+
 The [implementation record](../../../../doc/decision/codex-shell-worker-limits.md)
 records resource values,
 installation,

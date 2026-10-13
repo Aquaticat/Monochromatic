@@ -1083,6 +1083,11 @@ SBS:
 
 ### Package completeness
 
+RNQ:
+ Rust packages use Rust tests through nextest,
+ never TypeScript tests.
+Use nextest's default build and test concurrency unless the user specifies otherwise.
+
 PKG:
  A package is complete only with `README.md`,
  zero lint errors,
