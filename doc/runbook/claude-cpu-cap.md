@@ -55,7 +55,9 @@ Every 10 seconds the service appends one CSV line to
 `~/.local/share/claude-cpu-cap/samples/<local date>.csv` and keeps 14 days.
 The columns are UTC time, Tctl, Tccd1, Tccd2, package watts, average clock, CPU pressure, one-minute load and the cap,
 then the six Corsair fan RPMs and the Corsair temperature reading.
-The meaning of that last reading is unconfirmed: CoolerControl labels it `temp1`, and the controller is a Commander Core XT.
+That last reading is the Corsair controller's temperature probe,
+which the user attached to the top of the air cooler (CoolerControl labels it `temp1`),
+so it follows the air leaving the heatsink and should rise under sustained load; it is not an ambient reading.
 The fan values come from the local CoolerControl API with an access token kept in
 `~/.config/claude-cpu-cap/cc-token` (owner-only permissions).
 When the token is rejected, for example after the user rotates it, the service prints one `FAN-READ-FAILED` line,
