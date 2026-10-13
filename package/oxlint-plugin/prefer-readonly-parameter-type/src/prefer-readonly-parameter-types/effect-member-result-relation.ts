@@ -389,7 +389,7 @@ export function callResultComesFromObserver({
  `filter` whose predicate is a type guard selects the narrowing overload, so its result holds
  `S` where `S extends T`, and `S` is a different type object from the receiver's `T` while the
  values are the very same objects at runtime. Measured on
- `package/git-policy/cli/src/policy-engine/manual-push-candidates.ts`, whose predicate returns
+ a push-candidate `filter` in the Git policy wrapper's TypeScript, whose predicate returns
  `update is PushUpdate & { readonly localOid: string }`.
  
  Assignability in this direction only. A narrowing of the receiver's element type can only have
