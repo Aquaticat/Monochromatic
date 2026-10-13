@@ -18,9 +18,14 @@ import {
 //region Meaning vocabulary does not authenticate model replies or governing sources
 
 /**
+ Supported meaning labels do not represent final policy verdicts.
+ */
+export type ClauseRelation = 'permission' | 'prohibition' | 'prerequisite' | 'none' | 'unsupported' | 'unknown';
+
+/**
  Supported clause meanings remain separate from final policy verdicts.
  */
-export const CLAUSE_RELATIONS = Object.freeze([
+export const CLAUSE_RELATIONS: readonly ClauseRelation[] = Object.freeze([
   'permission',
   'prohibition',
   'prerequisite',
@@ -56,6 +61,19 @@ export type LoweredClause = {
  Lowering diagnostics exclude original instruction text.
  */
 const l = tagged({ tag: 'auto-mode-clause-lowering', },);
+
+/**
+ Narrow only catalog membership, not semantic truth or admission.
+
+ @param value - label selected by calling code
+
+ @returns whether the label belongs to the implemented meaning vocabulary
+ */
+function isClauseRelation(value: unknown,): value is ClauseRelation {
+  return CLAUSE_RELATIONS.some(function matches(candidate,) {
+    return candidate === value;
+  },);
+}
 
 /**
  Seal freshly owned lowering arrays without freezing submitted facts.
@@ -111,7 +129,7 @@ export function lowerEstablishedClause(input: unknown,): LoweredClause {
    Relation labels require a supported meaning, not a final verdict.
    */
   const { relation, } = value;
-  if (!CLAUSE_RELATIONS.some(function matches(candidate,) { return candidate === relation; },))
+  if (!isClauseRelation(relation,))
     throw new InstructionResolutionInputError('Established clause relationship is outside the supported meaning catalog',);
   /**
    Only absent priority leaves authority unresolved; invalid supplied priorities fail.
@@ -139,45 +157,49 @@ export function lowerEstablishedClause(input: unknown,): LoweredClause {
     rl.debug('clause has no established authority priority',);
     missingPremises.push('instruction-authority-and-scope',);
   }
-  if (relation === 'unknown' || relation === 'unsupported') {
-    rl.debug('clause meaning retains interpretation uncertainty',);
-    missingPremises.push('qualified-rule-interpretation',);
-  }
-  else if (relation === 'permission' || relation === 'prohibition') {
-    if (priority !== undefined) {
-      rl.debug('retaining a directive with code-established priority',);
-      rules.push(Object.freeze({
+  switch (relation) {
+    case 'unknown':
+    case 'unsupported': {
+      rl.debug('clause meaning retains interpretation uncertainty',);
+      missingPremises.push('qualified-rule-interpretation',);
+      return sealLowering({ rules, authorizationRequirements, missingPremises, },);
+    }
+    case 'permission':
+    case 'prohibition': {
+      if (priority !== undefined) {
+        rl.debug('retaining a directive with code-established priority',);
+        rules.push(Object.freeze({
+          id,
+          priority,
+          effect: relation === 'permission' ? 'permit' : 'prohibit',
+          applicability: 'applies',
+        },),);
+      }
+      return sealLowering({ rules, authorizationRequirements, missingPremises, },);
+    }
+    case 'prerequisite': {
+      /**
+       Missing facts remain unresolved; explicit invalid values are not treated as absence.
+       */
+      const facts: Readonly<Record<string, unknown>> = Object.hasOwn(value, 'authorization',)
+        ? readPolicyRecord({ input: value.authorization, fields: ['satisfaction', 'channel',], },)
+        : {};
+      /**
+       Validate prerequisite facts even when source authority remains unavailable.
+       */
+      const requirement = readAuthorizationRequirement({
         id,
-        priority,
-        effect: relation === 'permission' ? 'permit' : 'prohibit',
         applicability: 'applies',
-      },),);
+        satisfaction: Object.hasOwn(facts, 'satisfaction',) ? facts.satisfaction : 'unresolved',
+        channel: Object.hasOwn(facts, 'channel',) ? facts.channel : 'unresolved',
+      },);
+      if (priority !== undefined) {
+        rl.debug('retaining an independent authorization prerequisite',);
+        authorizationRequirements.push(requirement,);
+      }
+      return sealLowering({ rules, authorizationRequirements, missingPremises, },);
     }
   }
-  else if (relation === 'prerequisite') {
-    /**
-     Missing facts remain unresolved; explicit invalid values are not treated as absence.
-     */
-    const facts: Readonly<Record<string, unknown>> = Object.hasOwn(value, 'authorization',)
-      ? readPolicyRecord({ input: value.authorization, fields: ['satisfaction', 'channel',], },)
-      : {};
-    /**
-     Validate prerequisite facts even when source authority remains unavailable.
-     */
-    const requirement = readAuthorizationRequirement({
-      id,
-      applicability: 'applies',
-      satisfaction: Object.hasOwn(facts, 'satisfaction',) ? facts.satisfaction : 'unresolved',
-      channel: Object.hasOwn(facts, 'channel',) ? facts.channel : 'unresolved',
-    },);
-    if (priority !== undefined) {
-      rl.debug('retaining an independent authorization prerequisite',);
-      authorizationRequirements.push(requirement,);
-    }
-  }
-  else
-    throw new InstructionResolutionInputError('Meaning catalog has no implemented clause lowering for this relationship',);
-  return sealLowering({ rules, authorizationRequirements, missingPremises, },);
 }
 
 //endregion Admitted relationships

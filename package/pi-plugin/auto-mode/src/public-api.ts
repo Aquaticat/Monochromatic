@@ -74,6 +74,7 @@ export {
 export { type AuthorizationRequirement, } from './authorization-requirement.ts';
 export {
   CLAUSE_RELATIONS,
+  type ClauseRelation,
   type LoweredClause,
   lowerEstablishedClause,
 } from './clause-lowering.ts';
