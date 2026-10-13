@@ -161,7 +161,8 @@ so the findings come from reading the readable source strings inside the binary 
   `CLAUDE_CODE_TOOL_MEMORY_LIMIT`. If Claude's own cgroup path already contains a `claude-code-bash` segment,
   it logs "nested: already capped" and reuses it. The tool cgroup is not named per session.
 - Every session started from a terminal surface lives in `app.slice/app-ghostty-surface-transient-N.scope`,
-  so its parent is `app.slice` and all of them share `app.slice/claude-code-bash`. That is the whole reason it is shared.
+  so its parent is `app.slice` and all of them share `app.slice/claude-code-bash`.
+  That is the whole reason it is shared.
 - There is no CPU setting in Claude Code. `CLAUDE_CODE_TOOL_MEMORY_CGROUP_EXCLUDE` only picks which helper classes
   (mcp, lsp, hooks, plugin, tmux, helper, agent) stay outside the cgroup.
 - Verified by a real run: `systemd-run --user --scope --slice=claude-probe.slice -- claude --print ...` put the
