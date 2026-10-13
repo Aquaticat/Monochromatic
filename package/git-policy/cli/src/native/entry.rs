@@ -439,9 +439,9 @@ fn forward_action(
         },
     };
     let creates_or_moves: bool = creates_or_moves_worktrees(&command);
-    // Only a main checkout hands over the configured rules file, and only to a worktree it creates.
+    // Only a main checkout hands over the configured rules file; `copy_applies` limits it to a creating command.
     let main_checkout_paths: Vec<String> = match (&location.identity, &loaded) {
-        (WorktreeIdentity::MainWorktree { .. }, Some(found)) if creates_or_moves => found
+        (WorktreeIdentity::MainWorktree { .. }, Some(found)) => found
             .config
             .policies
             .forbidden_strings
