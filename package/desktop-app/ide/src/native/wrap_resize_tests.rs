@@ -958,3 +958,95 @@ fn a_measurement_applied_before_the_tile_of_a_new_width_leaves_no_stale_heights(
     drop(release);
     window.hide().expect("close wrap window");
 }
+
+/// A frame drawn right after the toolkit reports a new size, with no timer or handler run between them, already holds
+///  the tile for the new width: the viewport callback runs inside the draw, before the frame is composed, as it does
+///  under a real windowing backend.
+#[test]
+fn a_frame_drawn_right_after_a_resize_event_is_wrapped_to_the_new_width() {
+    let (_project, opened) = open(&long_text(80));
+    settled(&opened);
+    let window = &opened.window;
+    let release = hold_the_pass();
+    start_counting(&opened);
+    window.window().dispatch_event(WindowEvent::Resized {
+        size: LogicalSize::new(TEXT_LEFT + 420.0, 660.0),
+    });
+    // The first thing that happens after the event is the draw: no `update_timers_and_animations` before it.
+    let frame = window.window().take_snapshot().expect("a drawn frame");
+    // The headless adapter keeps its own buffer size; the layout has the size of the event, and its right edge is
+    //  the column the code area ends at.
+    let drawn = frame.width() as usize;
+    let edge = (TEXT_LEFT + 420.0) as usize;
+    let pixels = frame.as_slice();
+    let mut common = std::collections::HashMap::new();
+    for row in 40..frame.height() as usize {
+        *common
+            .entry(pixels[row * drawn + edge - 1])
+            .or_insert(0_usize) += 1;
+    }
+    let background = common
+        .into_iter()
+        .max_by_key(|(_, count)| return *count)
+        .map(|(pixel, _)| return pixel)
+        .expect("a code area background");
+    let mut at_edge = 0;
+    for row in 40..frame.height() as usize {
+        let ink = |column: usize| return pixels[row * drawn + column] != background;
+        if ink(edge - 1) || ink(edge - 2) {
+            at_edge += 1;
+        }
+    }
+    let step = spent(&opened);
+    assert_eq!(
+        at_edge, 0,
+        "{at_edge} rows of the drawn frame run to its right edge: the text is wrapped for the old width"
+    );
+    {
+        let current = opened.source.borrow();
+        assert_eq!(
+            current.shown.width, current.width,
+            "the frame was drawn with a tile for another width"
+        );
+    }
+    assert_eq!(step.rewrapped, 1, "{step:?}");
+    drop(release);
+    window.hide().expect("close wrap window");
+}
+
+/// A view taller than the tallest tile one raster can hold (`tile_cap`) is left to the worker too: nothing of it is
+///  shaped or painted on the window thread. No raster can hold such a view whole, so the test ends with the step and
+///  does not wait for a tile. The headless renderer cannot draw a window that large, so the size is reported without a
+///  frame.
+#[test]
+fn a_view_taller_than_the_clip_cap_is_left_to_the_worker() {
+    let (_project, opened) = open(&"a short line\n".repeat(5000));
+    settled(&opened);
+    let window = &opened.window;
+    let text_width = 3600.0;
+    let cap = tile_cap(wrap_width(text_width).expect("a width"), 1.0);
+    let height = cap + 400.0;
+    start_counting(&opened);
+    change_width(&opened, text_width, height);
+    let step = spent(&opened);
+    assert!(
+        window.get_viewport_height() > cap,
+        "the view is {} px tall, not past the cap of {cap} px",
+        window.get_viewport_height()
+    );
+    // The width and the height are reported one after the other, so the worker may be asked twice.
+    assert!(
+        step.deferred >= 1 && step.rewrapped == 0,
+        "the change of width was not left to the worker: {step:?}"
+    );
+    assert_eq!(
+        step.painted, 0,
+        "the window thread painted a tile for a view past the cap: {step:?}"
+    );
+    assert_eq!(
+        step.shaped + step.rebroken,
+        0,
+        "the window thread brought in lines for a view past the cap: {step:?}"
+    );
+    window.hide().expect("close wrap window");
+}

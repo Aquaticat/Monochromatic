@@ -1603,10 +1603,12 @@ After one change of width the displayed tile holds the new width and has no row 
 except a row of one token that has no break opportunity,
 and the gutter, selection, find rectangles, caret, and annotation blocks agree with a fresh shaping at that width.
 The step is bounded in lines shaped or broken, in work charged, and in rasters painted for 2,000 lines of 600
-characters, one line of 200,000 characters, a view taller than the clip cap, and a file of 50,000 lines.
+characters, one line of 200,000 characters, a view taller than the clip cap (a window of `tile_cap` plus 400 px
+at a text width of 3,600 px), a window about 3,300 px tall, and a file of 50,000 lines.
 A change over any bound is left to the worker with nothing shaped on the window thread beyond the first refused line.
-The guards `resize-on-window-thread`, `rewrap-lines-bound`, `rewrap-work-budget`, `rewrap-tab-passes`,
-`rewrap-raster-bound`, `pass-again-after-new-width`, and (annotations) `deferred-width-stays-on-worker`
+The guards `resize-on-window-thread`, `drawn-frame-after-resize`, `rewrap-lines-bound`, `rewrap-work-budget`,
+`rewrap-tab-passes`, `rewrap-raster-bound`, `rewrap-view-past-cap`, `pass-again-after-new-width`,
+and (annotations) `deferred-width-stays-on-worker`
 remove each rule in a disposable copy and must make the named test fail.
 
 Measured on 2026-10-13 with the release bundle (sha1 `2d8e01e9`, built from commit `f851815582`; the later commits
@@ -1655,8 +1657,18 @@ In the 16 ms drag, kept frames of one session show the window at the new size wi
 at 1075 pixels the text is wrapped for 1100 and cut by the edge, and on the way back a strip of another shade stands
 at the right edge beside text wrapped for the previous, narrower size.
 These are the detector's `clipped` and `band` frames (38 and 39 in that session, two sweeps of about 20 steps).
-This is a frame arriving one step after the size change, which the window-thread step does not remove;
-whether the delay is in the compositor's configure and commit exchange or in the toolkit's redraw was not determined.
+The strip of another shade stands where no tile of the application is, so those frames were composed at the new size
+from a buffer drawn for the previous one.
+The `clipped` frames could come from either side, so the first draw after a size event was checked in the headless
+backend: `a_frame_drawn_right_after_a_resize_event_is_wrapped_to_the_new_width` reports the new size, takes a snapshot
+at once with no timer or handler run between them (the draw runs the change handlers), and finds no row of ink at the
+right edge; with the window-thread step turned off, 198 rows of that frame run to the edge.
+So in the headless backend the first frame is already wrapped for the new width.
+What a real backend does between the size event and its redraw was not measured, and the compositor's recorded
+frames still show the previous step's content at each new size in the 16 ms drag;
+whether that delay comes from the compositor's configure and commit exchange or from the toolkit's redraw scheduling
+was not determined, and the requirement that no frame shows old-width text is met in the headless draw
+and not shown to be met in the compositor.
 A slower drag (100 ms between steps, one sweep, 3 sessions each, load 15 to 23) separates the two builds:
 frames that do not fit were 14, 29, and 46 of about 260 for the new build against 94, 47, and 97 of about 250 for
 `final`, and the longest stretch was 33 to 50 ms against 200 to 319 ms.
