@@ -451,6 +451,32 @@ source capture,
 and native error reporting remain the adapter's responsibilities.
 This does not replace the installed judge or supply a maintained host launcher.
 
+## Migration original source contributions
+
+`consumeSourceAssociations` accounts for individual original serialized contributions,
+using the existing request receipt,
+source views,
+carriers,
+run publications,
+active ancestors,
+and separately retained message origins.
+Copied references and equal content cannot substitute for original membership.
+Its owned result containers are frozen;
+borrowed sources and publications remain untouched.
+
+The consumer and `PolicyInputBindingError` now have maintained implementations.
+The private native adapter delegates through the existing artifact link.
+Build,
+type,
+unit,
+lint,
+and native cutover verification are in progress.
+These partial links establish neither complete host receipt nor authority,
+scope,
+delegation,
+or permission.
+The governing-domain hold remains.
+
 ## Migration same-source incorporation
 
 `selectUnitAdoptionPairs` preserves the supported structural profile:

@@ -645,6 +645,39 @@ not completed domain closure,
 a maintained host launch path,
 or installed activation.
 
+## Maintained original source-contribution accounting
+
+Main `2ea68db692` ports `consumeSourceAssociations` and `PolicyInputBindingError`.
+Type and helper siblings separate original run publications from message origins.
+Private `701f2585` changes the existing consumer and input-error owner to maintained exports.
+No second source registry,
+request parse,
+or completeness assertion is introduced.
+Native owners still authenticate the source graph and revalidate its lifetime.
+
+The consumer retains base,
+replacement,
+forced,
+mapped,
+generated,
+skill,
+guideline,
+handler,
+expanded-prompt,
+and historical message contribution paths.
+Historical origins do not enter active ancestry.
+Input-only Session origins cannot impersonate run material through absent run identifiers.
+Only owned result containers are frozen.
+
+Initial build `proc_b641` succeeded,
+but its type check reported `TS18048` for the optional request receipt.
+An explicit missing-receipt guard now supplies the required narrowing.
+Built-artifact identity,
+publication,
+and copied-origin controls are written.
+Formatting and final verification remain in progress.
+This increment does not implement decision-domain closure.
+
 ## Maintained bounded unit incorporation
 
 Main `f82323d386` ports `unit-adoption.ts` and the structural pair selector,
