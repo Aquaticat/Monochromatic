@@ -74,8 +74,8 @@ await describe({
             ...f.options,
             pairs: mode === 'count' ? [] : pairs,
             clauses: f.clauses.filter(function retainClause(clause,) {
-              return mode !== 'adopter-clause' && mode !== 'target-clause'
-                || clause.rule !== (mode === 'adopter-clause' ? f.pair.adopter : f.pair.target);
+              return ((mode !== 'adopter-clause') && (mode !== 'target-clause'))
+                || (clause.rule !== (mode === 'adopter-clause' ? f.pair.adopter : f.pair.target));
             },),
           };
           if (mode === 'policy')

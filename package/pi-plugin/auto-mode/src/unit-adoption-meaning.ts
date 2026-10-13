@@ -13,7 +13,10 @@ import {
   type UnitAdoptionPair,
   type UnitRuleProjection,
 } from './unit-adoption-binding.ts';
-import type { UnitAdoptionInputs, UnitClauseInterpretation, } from './unit-adoption-types.ts';
+import type {
+  UnitAdoptionInputs,
+  UnitClauseInterpretation,
+} from './unit-adoption-types.ts';
 
 /**
  Logs describe binding checks without formatting borrowed records.
@@ -34,9 +37,20 @@ const l = tagged({ tag: 'auto-mode-unit-adoption-meaning', },);
  @param inputs - original member and source bindings
 
  @throws UnitAdoptionBindingError when original identity or the supported structural profile differs
+
+ @example
+ ```ts
+ assertUnitAdoptionBinding({ record, pair, adopter, target, inputs });
+ ```
  */
 export function assertUnitAdoptionBinding(
-  { record, pair, adopter, target, inputs, }: {
+  {
+    record,
+    pair,
+    adopter,
+    target,
+    inputs,
+  }: {
     readonly record: UnitAdoptionEvidence;
     readonly pair: UnitAdoptionPair;
     readonly adopter: UnitRuleProjection;
@@ -47,15 +61,39 @@ export function assertUnitAdoptionBinding(
   /**
    Binding checks are separate from semantic admission.
    */
-  const rl = tagged({ tag: assertUnitAdoptionBinding.name, l, },);
+  const rl = tagged({
+    tag: assertUnitAdoptionBinding.name,
+    l,
+  },);
   rl.debug('checking original source, member and quoted-unit references',);
-  if (record.definitionId !== 'unit_adoption' || record.definition.type !== 'choice'
-    || record.binding.claimScope !== 'member-unit-adoption'
-    || record.binding.member !== pair.member || record.binding.memberOrdinal !== 0
-    || record.binding.adopter !== adopter || record.binding.target !== target
-    || inputs.effects.length !== 1 || inputs.effects[0]?.member !== pair.member
-    || adopter.sourceOccurrence !== target.sourceOccurrence || typeof adopter.code !== 'string'
-    || target.kind !== 'unclassified-source-span' || target.nodeType !== 'blockquote') {
+  if ((record.definitionId !== 'unit_adoption') || (record.definition
+    .type
+    !== 'choice')
+    || (record.binding
+      .claimScope
+      !== 'member-unit-adoption')
+    || (record.binding
+      .member
+      !== pair.member)
+    || (record.binding
+      .memberOrdinal
+      !== 0)
+    || (record.binding
+      .adopter
+      !== adopter)
+    || (record.binding
+      .target
+      !== target)
+    || (inputs.effects
+      .length
+      !== 1)
+    || (inputs.effects[0]
+      ?.member
+      !== pair.member)
+    || (adopter.sourceOccurrence !== target.sourceOccurrence)
+    || ((typeof adopter.code) !== 'string')
+    || (target.kind !== 'unclassified-source-span')
+    || (target.nodeType !== 'blockquote')) {
     throw new UnitAdoptionBindingError('Unit adoption differs from its original source, member, adopter or quoted target',);
   }
 }
@@ -68,6 +106,11 @@ export function assertUnitAdoptionBinding(
  @returns original value without reconstruction or freezing
 
  @throws UnitAdoptionBindingError for a selected estimate lacking its decoded value
+
+ @example
+ ```ts
+ const originalValue = unitAdoptionValue(record);
+ ```
  */
 export function unitAdoptionValue(record: UnitAdoptionEvidence,): UnitAdoptionEstimate {
   /**
@@ -93,31 +136,51 @@ export function unitAdoptionValue(record: UnitAdoptionEvidence,): UnitAdoptionEs
  @throws UnitAdoptionBindingError for an unsupported answer status
 
  @throws original callback failure without replacing its value
+
+ @example
+ ```ts
+ const admitted = admitUnitAdoption({ record, policy });
+ ```
  */
 export function admitUnitAdoption(
-  { record, policy, }: {
+  {
+    record,
+    policy,
+  }: {
     readonly record: UnitAdoptionEvidence;
-    readonly policy: { readonly model: string; readonly accepts: SemanticAcceptance; };
+    readonly policy: {
+      readonly model: string;
+      readonly accepts: SemanticAcceptance
+    };
   },
 ): boolean {
   /**
    Semantic use remains independent of structural binding and source scope.
    */
-  const rl = tagged({ tag: admitUnitAdoption.name, l, },);
+  const rl = tagged({
+    tag: admitUnitAdoption.name,
+    l,
+  },);
   rl.debug('checking code admission of original incorporation estimate',);
-  if (record.answer.status === 'estimate' && record.model === policy.model) {
+  if ((record.answer
+    .status
+    === 'estimate') && (record.model === policy.model)) {
     /**
      Callback result cannot substitute for authority, scope or permission.
      */
     const admitted = policy.accepts(unitAdoptionValue(record,),);
-    if (typeof admitted !== 'boolean') {
+    if ((typeof admitted) !== 'boolean') {
       throw new SemanticAdmissionPolicyError(
         'Unit-adoption policy must synchronously admit or abstain, not supply authority, scope or permission',
       );
     }
     return admitted;
   }
-  if (record.answer.status !== 'estimate' && record.answer.status !== 'unresolved')
+  if ((record.answer
+    .status
+    !== 'estimate') && (record.answer
+      .status
+      !== 'unresolved'))
     throw new UnitAdoptionBindingError('Unit adoption has no usable original answer',);
   return false;
 }
@@ -130,13 +193,19 @@ export function admitUnitAdoption(
  @returns selected clause relationship
 
  @throws UnitAdoptionBindingError when admitted clause meaning is unavailable
+
+ @example
+ ```ts
+ const targetMeaning = admittedUnitClauseChoice(targetClause);
+ ```
  */
 export function admittedUnitClauseChoice(clause: UnitClauseInterpretation,): string {
   /**
    Independent target meaning must exist before lowering.
    */
-  const value = clause.evidence.answer.value;
-  if (clause.admission !== 'admitted' || value === undefined)
+  const {value} = clause.evidence
+    .answer;
+  if ((clause.admission !== 'admitted') || (value === undefined))
     throw new UnitAdoptionBindingError('Unit incorporation requires independent admitted clause meaning',);
   return value.choice;
 }

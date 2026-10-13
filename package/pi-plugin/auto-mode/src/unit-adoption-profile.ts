@@ -4,12 +4,21 @@
  @module
  */
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
-import { UnitAdoptionBindingError, type UnitAdoptionPair, type UnitRuleProjection, } from './unit-adoption-binding.ts';
+import {
+  UnitAdoptionBindingError,
+  type UnitAdoptionPair,
+  type UnitRuleProjection,
+} from './unit-adoption-binding.ts';
 
 /**
  Structural selection logs never serialize original source material.
  */
 const l = tagged({ tag: 'auto-mode-unit-adoption-profile', },);
+
+/**
+ Existing source profile permits at most one structural pair for each of its 64 sources.
+ */
+const MAX_UNIT_ADOPTION_PAIRS = 64;
 
 /**
  Select sources containing exactly a tagged adopter and a whole quoted target.
@@ -35,7 +44,11 @@ const l = tagged({ tag: 'auto-mode-unit-adoption-profile', },);
  ```
  */
 export function selectUnitAdoptionPairs(
-  { candidates, readRule, member, }: {
+  {
+    candidates,
+    readRule,
+    member,
+  }: {
     readonly candidates: readonly object[];
     readonly readRule: (handle: object,) => UnitRuleProjection;
     readonly member: object;
@@ -44,12 +57,18 @@ export function selectUnitAdoptionPairs(
   /**
    Group only by original occurrence references, not hashes, paths or text.
    */
-  const rl = tagged({ tag: selectUnitAdoptionPairs.name, l, },);
+  const rl = tagged({
+    tag: selectUnitAdoptionPairs.name,
+    l,
+  },);
   rl.debug('selecting original same-source structural opportunities',);
   /**
    Temporary grouping is local to this decision and does not register new sources.
    */
-  const sources = new Map<object, { readonly candidate: object; readonly projection: UnitRuleProjection; }[]>();
+  const sources = new Map<object, {
+    readonly candidate: object;
+    readonly projection: UnitRuleProjection
+  }[]>();
   for (const candidate of candidates) {
     /**
      Projection stays with its original reader and source occurrence.
@@ -59,8 +78,14 @@ export function selectUnitAdoptionPairs(
      Each source's original candidate multiplicity remains visible.
      */
     const units = sources.get(projection.sourceOccurrence,) ?? [];
-    units.push({ candidate, projection, },);
-    sources.set(projection.sourceOccurrence, units,);
+    units.push({
+      candidate,
+      projection,
+    },);
+    sources.set(
+      projection.sourceOccurrence,
+      units,
+    );
   }
   /**
    Only the supported two-unit profile contributes a structural pair.
@@ -73,19 +98,30 @@ export function selectUnitAdoptionPairs(
      Tagged structure is not a claim that the adopter actually incorporates anything.
      */
     const adopter = units.find(function taggedAdopter(unit,) {
-      return typeof unit.projection.code === 'string' && unit.projection.kind !== 'unclassified-source-span';
+      return ((typeof unit.projection
+        .code) === 'string') && (unit.projection
+          .kind
+          !== 'unclassified-source-span');
     },);
     /**
      Target remains a whole original blockquote, not a selected fragment.
      */
     const target = units.find(function quotedTarget(unit,) {
-      return unit.projection.kind === 'unclassified-source-span' && unit.projection.nodeType === 'blockquote';
+      return (unit.projection
+        .kind
+        === 'unclassified-source-span') && (unit.projection
+          .nodeType
+          === 'blockquote');
     },);
-    if (adopter === undefined || target === undefined)
+    if ((adopter === undefined) || (target === undefined))
       continue;
-    pairs.push(Object.freeze({ adopter: adopter.candidate, target: target.candidate, member, },),);
+    pairs.push(Object.freeze({
+      adopter: adopter.candidate,
+      target: target.candidate,
+      member,
+    },),);
   }
-  if (pairs.length > 64)
+  if (pairs.length > MAX_UNIT_ADOPTION_PAIRS)
     throw new UnitAdoptionBindingError('Unit adoption exceeds the original 64-source profile',);
   return Object.freeze(pairs,);
 }

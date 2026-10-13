@@ -6,7 +6,10 @@
 import type { AuthorizationRequirement, } from './authorization-requirement.ts';
 import type { LoweredClause, } from './clause-lowering.ts';
 import type { InstructionRule, } from './instruction-rule.ts';
-import type { UnitAdoptionEvidence, UnitRuleProjection, } from './unit-adoption-binding.ts';
+import type {
+  UnitAdoptionEvidence,
+  UnitRuleProjection,
+} from './unit-adoption-binding.ts';
 
 /**
  Original registered authority still requires membership and request-scope checks.
@@ -27,7 +30,10 @@ export type UnitRegisteredAuthority = {
   /**
    Original request observation to which registration applies.
    */
-  readonly scope: { readonly kind: string; readonly request: object; };
+  readonly scope: {
+    readonly kind: string;
+    readonly request: object
+  };
 };
 
 /**

@@ -74,7 +74,11 @@ export type UnitAdoptionFixture = {
  ```
  */
 export function createUnitAdoptionFixture(
-  { relation = 'adopts', targetRelation = 'prohibition', adopterRelation = 'unsupported', }: {
+  {
+    relation = 'adopts',
+    targetRelation = 'prohibition',
+    adopterRelation = 'unsupported',
+  }: {
     readonly relation?: string;
     readonly targetRelation?: string;
     readonly adopterRelation?: string;
@@ -83,7 +87,11 @@ export function createUnitAdoptionFixture(
   /**
    Equal empty objects remain independent identity tokens.
    */
-  const pair = { adopter: {}, target: {}, member: {}, };
+  const pair = {
+    adopter: {},
+    target: {},
+    member: {},
+  };
   /**
    Shared occurrence joins only this fixture's two original units.
    */
@@ -95,36 +103,82 @@ export function createUnitAdoptionFixture(
   /**
    Tagged structure alone supplies no incorporation meaning.
    */
-  const adopter: UnitRuleProjection = { sourceOccurrence, code: 'ADP', };
+  const adopter: UnitRuleProjection = {
+    sourceOccurrence,
+    code: 'ADP',
+  };
   /**
    Target remains the original whole blockquote.
    */
-  const target: UnitRuleProjection = { sourceOccurrence, kind: 'unclassified-source-span', nodeType: 'blockquote', };
+  const target: UnitRuleProjection = {
+    sourceOccurrence,
+    kind: 'unclassified-source-span',
+    nodeType: 'blockquote',
+  };
   /**
    Original source view is separately checked against the binding list.
    */
-  const source: UnitSourceView = { sourceOccurrence, request, };
+  const source: UnitSourceView = {
+    sourceOccurrence,
+    request,
+  };
   /**
    Priority is a fixture fact, not obtained from the semantic answer.
    */
   const authority: UnitRegisteredAuthority = {
-    kind: 'registered-instruction-authority', sourceOccurrence, priority: 1,
-    scope: { kind: 'original-request', request, },
+    kind: 'registered-instruction-authority',
+    sourceOccurrence,
+    priority: 1,
+    scope: {
+      kind: 'original-request',
+      request,
+    },
   };
   /**
    Pair and clause evidence are different records with different selected relationships.
    */
   const record: UnitAdoptionEvidence = {
-    definitionId: 'unit_adoption', definition: { type: 'choice', }, model: 'fixture-model',
-    binding: { claimScope: 'member-unit-adoption', member: pair.member, memberOrdinal: 0, adopter, target, },
-    answer: { status: 'estimate', value: { choice: relation, probabilities: { [relation]: 1, }, }, },
+    definitionId: 'unit_adoption',
+    definition: { type: 'choice', },
+    model: 'fixture-model',
+    binding: {
+      claimScope: 'member-unit-adoption',
+      member: pair.member,
+      memberOrdinal: 0,
+      adopter,
+      target,
+    },
+    answer: {
+      status: 'estimate',
+      value: {
+        choice: relation,
+        probabilities: { [relation]: 1, },
+      },
+    },
   };
   /**
    Original target lowering intentionally lacks incorporation priority.
    */
   const clauses: readonly UnitClauseInterpretation[] = [
-    { rule: pair.adopter, admission: 'admitted', evidence: { answer: { value: { choice: adopterRelation, }, }, }, lowered: lowerEstablishedClause({ id: 'clause-0', priority: 1, relation: adopterRelation, },), },
-    { rule: pair.target, admission: 'admitted', evidence: { answer: { value: { choice: targetRelation, }, }, }, lowered: lowerEstablishedClause({ id: 'clause-1', relation: targetRelation, },), },
+    {
+      rule: pair.adopter,
+      admission: 'admitted',
+      evidence: { answer: { value: { choice: adopterRelation, }, }, },
+      lowered: lowerEstablishedClause({
+        id: 'clause-0',
+        priority: 1,
+        relation: adopterRelation,
+      },),
+    },
+    {
+      rule: pair.target,
+      admission: 'admitted',
+      evidence: { answer: { value: { choice: targetRelation, }, }, },
+      lowered: lowerEstablishedClause({
+        id: 'clause-1',
+        relation: targetRelation,
+      },),
+    },
   ];
   /**
    Invocations remain separate from declared policy presence.
@@ -134,11 +188,21 @@ export function createUnitAdoptionFixture(
    Methods keep fixed original identity readers rather than a string registry.
    */
   const options: Parameters<typeof consumeUnitAdoptions>[0] = {
-    records: [record,], pairs: [pair,], clauses,
-    policy: { model: 'fixture-model', accepts() { calls.admissions++; return true; }, },
+    records: [record,],
+    pairs: [pair,],
+    clauses,
+    policy: {
+      model: 'fixture-model',
+      accepts() { calls.admissions++;
+      return true; },
+    },
     inputs: {
-      instructionAuthorities: [authority,], instructionSources: [source,],
-      effects: [{ member: pair.member, programInspection: {}, },],
+      instructionAuthorities: [authority,],
+      instructionSources: [source,],
+      effects: [{
+        member: pair.member,
+        programInspection: {},
+      },],
       readRule(handle) {
         if (handle === pair.adopter)
           return adopter;
@@ -150,5 +214,15 @@ export function createUnitAdoptionFixture(
       authorityFor() { return authority; },
     },
   };
-  return { pair, adopter, target, source, authority, record, clauses, calls, options, };
+  return {
+    pair,
+    adopter,
+    target,
+    source,
+    authority,
+    record,
+    clauses,
+    calls,
+    options,
+  };
 }

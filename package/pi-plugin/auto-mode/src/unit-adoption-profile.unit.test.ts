@@ -18,11 +18,12 @@ await describe({
     it({
       name: 'retains original pair identities without reading meanings or merging equal occurrences',
       fn: async function checkOriginals() {
-        const a = createUnitAdoptionFixture(), b = createUnitAdoptionFixture();
+        const a = createUnitAdoptionFixture();
+        const b = createUnitAdoptionFixture();
         const candidates = [a.pair.adopter, a.pair.target, b.pair.adopter, b.pair.target,];
         const member = {};
         function readRule(handle: object,): UnitRuleProjection {
-          return handle === a.pair.adopter || handle === a.pair.target ? a.options.inputs.readRule(handle,) : b.options.inputs.readRule(handle,);
+          return (handle === a.pair.adopter) || (handle === a.pair.target) ? a.options.inputs.readRule(handle,) : b.options.inputs.readRule(handle,);
         }
         const result = selectUnitAdoptionPairs({ candidates, readRule, member, },);
         expect(result.length,).toBe(2,);
@@ -34,7 +35,7 @@ await describe({
         expect(a.calls.admissions + b.calls.admissions,).toBe(0,);
       },
     },),
-    ...['single', 'duplicate', 'no-adopter', 'no-quote', 'split-source',].map(function missingPair(mode,) {
+    ...['single', 'duplicate', 'no-adopter', 'unclassified-adopter', 'no-quote', 'target-kind', 'split-source',].map(function missingPair(mode,) {
       return it({
         name: `does not select a ${mode} structural profile`,
         fn: async function checkMissing() {
@@ -44,11 +45,15 @@ await describe({
               : [f.pair.adopter, f.pair.target,];
           function readRule(handle: object,): UnitRuleProjection {
             const value = f.options.inputs.readRule(handle,);
-            if (mode === 'no-adopter' && handle === f.pair.adopter)
+            if ((mode === 'no-adopter') && (handle === f.pair.adopter))
               return { sourceOccurrence: value.sourceOccurrence, };
-            if (mode === 'no-quote' && handle === f.pair.target)
+            if ((mode === 'unclassified-adopter') && (handle === f.pair.adopter))
+              return { ...value, kind: 'unclassified-source-span', };
+            if ((mode === 'target-kind') && (handle === f.pair.target))
+              return { ...value, kind: 'other', };
+            if ((mode === 'no-quote') && (handle === f.pair.target))
               return { ...value, nodeType: 'paragraph', };
-            if (mode === 'split-source' && handle === f.pair.target)
+            if ((mode === 'split-source') && (handle === f.pair.target))
               return { ...value, sourceOccurrence: {}, };
             return value;
           }
@@ -59,9 +64,12 @@ await describe({
     it({
       name: 'preserves the original 64-source structural opportunity bound',
       fn: async function checkBound() {
-        const candidates: object[] = [], projections = new Map<object, UnitRuleProjection>();
+        const candidates: object[] = [];
+        const projections = new Map<object, UnitRuleProjection>();
         for (let index = 0; index < 65; index++) {
-          const sourceOccurrence = {}, adopter = {}, target = {};
+          const sourceOccurrence = {};
+          const adopter = {};
+          const target = {};
           candidates.push(adopter, target,);
           projections.set(adopter, { sourceOccurrence, code: 'ADP', },);
           projections.set(target, { sourceOccurrence, kind: 'unclassified-source-span', nodeType: 'blockquote', },);

@@ -97,5 +97,8 @@ export type UnitAdoptionEvidence = {
   /**
    Explicit unresolved answers do not require a value.
    */
-  readonly answer: { readonly status: string; readonly value?: UnitAdoptionEstimate; };
+  readonly answer: {
+    readonly status: string;
+    readonly value?: UnitAdoptionEstimate
+  };
 };

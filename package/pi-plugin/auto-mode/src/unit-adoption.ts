@@ -8,8 +8,17 @@ import type { AuthorizationRequirement, } from './authorization-requirement.ts';
 import { lowerEstablishedClause, } from './clause-lowering.ts';
 import type { InstructionRule, } from './instruction-rule.ts';
 import type { SemanticAcceptance, } from './semantic-admission-types.ts';
-import { UnitAdoptionBindingError, type UnitAdoptionEvidence, type UnitAdoptionPair, } from './unit-adoption-binding.ts';
-import { admitUnitAdoption, admittedUnitClauseChoice, assertUnitAdoptionBinding, unitAdoptionValue, } from './unit-adoption-meaning.ts';
+import {
+  UnitAdoptionBindingError,
+  type UnitAdoptionEvidence,
+  type UnitAdoptionPair,
+} from './unit-adoption-binding.ts';
+import {
+  admitUnitAdoption,
+  admittedUnitClauseChoice,
+  assertUnitAdoptionBinding,
+  unitAdoptionValue,
+} from './unit-adoption-meaning.ts';
 import type {
   UnitAdoptionInputs,
   UnitAdoptionInterpretation,
@@ -53,28 +62,49 @@ const l = tagged({ tag: 'auto-mode-unit-adoption', },);
  ```
  */
 export function consumeUnitAdoptions(
-  { records, pairs, inputs, policy, clauses, }: {
+  {
+    records,
+    pairs,
+    inputs,
+    policy,
+    clauses,
+  }: {
     readonly records: readonly UnitAdoptionEvidence[];
     readonly pairs: readonly UnitAdoptionPair[];
     readonly inputs: UnitAdoptionInputs;
-    readonly policy?: { readonly model: string; readonly accepts: SemanticAcceptance; };
+    readonly policy?: {
+      readonly model: string;
+      readonly accepts: SemanticAcceptance
+    };
     readonly clauses: readonly UnitClauseInterpretation[];
   },
 ): UnitAdoptionResult {
   /**
    This consumer does not establish native owner authenticity or whole-domain completeness.
    */
-  const rl = tagged({ tag: consumeUnitAdoptions.name, l, },);
+  const rl = tagged({
+    tag: consumeUnitAdoptions.name,
+    l,
+  },);
   rl.debug('consuming original same-source incorporation estimates',);
   if (records.length !== pairs.length)
     throw new UnitAdoptionBindingError('Unit-adoption estimates differ from the complete original pair selection',);
-  if (records.length > 0 && policy === undefined)
+  if ((records.length > 0) && (policy === undefined))
     throw new UnitAdoptionBindingError('Selected unit-adoption estimates require their configured code policy',);
   /**
    Original clause handles correlate meaning without using codes or equal text as identity.
    */
-  const indexed = new Map(clauses.map(function indexClause(clause, index,) {
-    return [clause.rule, { clause, index, },] as const;
+  const indexed = new Map(clauses.map(function indexClause(
+    clause,
+    index,
+  ) {
+    return [
+      clause.rule,
+      {
+        clause,
+        index,
+      },
+    ] as const;
   },),);
   /**
    These collections belong only to the current consumption result.
@@ -109,7 +139,7 @@ export function consumeUnitAdoptions(
      Missing pairs cannot create an interpretation with invented handles.
      */
     const pair = pairs[index];
-    if (pair === undefined || policy === undefined)
+    if ((pair === undefined) || (policy === undefined))
       throw new UnitAdoptionBindingError('Unit adoption requires its original selected pair and code policy',);
     /**
      Original readers retain their native receivers and currentness checks.
@@ -119,28 +149,48 @@ export function consumeUnitAdoptions(
      Target projection must be the same one selected by the original batch.
      */
     const target = inputs.readRule(pair.target,);
-    assertUnitAdoptionBinding({ record, pair, adopter, target, inputs, },);
+    assertUnitAdoptionBinding({
+      record,
+      pair,
+      adopter,
+      target,
+      inputs,
+    },);
     /**
      Code admission does not establish source or request scope.
      */
-    const admitted = admitUnitAdoption({ record, policy, },);
+    const admitted = admitUnitAdoption({
+      record,
+      policy,
+    },);
     /**
      No selected relationship is carried when code abstains.
      */
-    const relation = admitted ? unitAdoptionValue(record,).choice : undefined;
+    const relation = admitted ? unitAdoptionValue(record,)
+      .choice : undefined;
     /**
      Owned interpretation base contains only original references and content-use state.
      */
     const base = {
-      adopter: pair.adopter, target: pair.target, member: pair.member, evidence: record,
+      adopter: pair.adopter,
+      target: pair.target,
+      member: pair.member,
+      evidence: record,
       admission: admitted ? 'admitted' as const : 'abstained' as const,
-      ...(relation === undefined ? {} : { relation, }), permission: false as const,
+      ...(relation === undefined ? {} : { relation, }),
+      permission: false as const,
     };
     if (relation !== 'adopts') {
-      interpretations.push(Object.freeze({ ...base, scopeEstablished: false, },),);
+      interpretations.push(Object.freeze({
+        ...base,
+        scopeEstablished: false,
+      },),);
       if (relation !== 'none') {
         issues.push(Object.freeze({
-          premise: 'qualified-rule-interpretation', kind: 'unit-adoption-meaning', rule: pair.adopter, evidence: record,
+          premise: 'qualified-rule-interpretation',
+          kind: 'unit-adoption-meaning',
+          rule: pair.adopter,
+          evidence: record,
           reason: 'The selected incorporation remains unknown, unsupported or unadmitted; no target scope is established.',
         },),);
       }
@@ -154,7 +204,7 @@ export function consumeUnitAdoptions(
      Target ordinal supplies the same deterministic lowering ID as the original compiler.
      */
     const targetEntry = indexed.get(pair.target,);
-    if (adopterEntry === undefined || targetEntry === undefined)
+    if ((adopterEntry === undefined) || (targetEntry === undefined))
       throw new UnitAdoptionBindingError('Unit incorporation requires independent original clause interpretations',);
     /**
      Original adopter meaning may disagree with an adoption-only interpretation.
@@ -167,8 +217,12 @@ export function consumeUnitAdoptions(
     /**
      Primitive meaning and adoption-only control meaning cannot both represent the complete adopter.
      */
-    const primitive = adopterClause.admission === 'admitted'
-      && ['permission', 'prohibition', 'prerequisite',].includes(admittedUnitClauseChoice(adopterClause,),);
+    const primitive = (adopterClause.admission === 'admitted')
+      && [
+        'permission',
+        'prohibition',
+        'prerequisite',
+      ].includes(admittedUnitClauseChoice(adopterClause,),);
     /**
      Original source view remains independent of textual equality.
      */
@@ -180,19 +234,35 @@ export function consumeUnitAdoptions(
     /**
      Source registration alone cannot establish another request's incorporation scope.
      */
-    const scoped = !primitive && inputs.instructionAuthorities.includes(authority,)
-      && inputs.instructionSources.includes(source,) && authority.kind === 'registered-instruction-authority'
-      && authority.sourceOccurrence === adopter.sourceOccurrence && source.sourceOccurrence === adopter.sourceOccurrence
-      && authority.scope.kind === 'original-request' && authority.scope.request === source.request;
+    const scoped = (!primitive)
+      && inputs.instructionAuthorities
+      .includes(authority,)
+      && inputs.instructionSources
+      .includes(source,)
+      && (authority.kind === 'registered-instruction-authority')
+      && (authority.sourceOccurrence === adopter.sourceOccurrence)
+      && (source.sourceOccurrence === adopter.sourceOccurrence)
+      && (authority.scope
+        .kind
+        === 'original-request')
+      && (authority.scope
+        .request
+        === source.request);
     /**
      Scope is derived from original owner references, never a caller completeness flag.
      */
-    const interpretation = Object.freeze({ ...base, scopeEstablished: scoped, ...(scoped ? { authority, } : {}), },);
+    const interpretation = Object.freeze({
+      ...base,
+      scopeEstablished: scoped,
+      ...(scoped ? { authority, } : {}),
+    },);
     interpretations.push(interpretation,);
     if (!scoped) {
       issues.push(Object.freeze({
         premise: primitive ? 'qualified-rule-interpretation' : 'instruction-authority-and-scope',
-        kind: 'unit-adoption-adopter-scope', rule: pair.adopter, evidence: record,
+        kind: 'unit-adoption-adopter-scope',
+        rule: pair.adopter,
+        evidence: record,
         reason: primitive
           ? 'The primitive-clause and adoption-only interpretations disagree about the complete adopter; no incorporation is admitted.'
           : 'The adopter lacks independently established original source authority and request scope.',
@@ -211,31 +281,63 @@ export function consumeUnitAdoptions(
      Independent implementation-fact contracts keep their existing coverage obligations.
      */
     const operationApplication = effect.owner === undefined
-      ? Object.freeze({ kind: 'admitted-unit-adoption-estimate', member: pair.member, programInspection: effect.programInspection, },)
+      ? Object.freeze({
+        kind: 'admitted-unit-adoption-estimate',
+        member: pair.member,
+        programInspection: effect.programInspection,
+      },)
       : undefined;
-    updates.set(pair.adopter, Object.freeze({
-      ...adopterClause, representedByAdoption: interpretation, ...(operationApplication ? { operationApplication, } : {}),
-    },),);
+    updates.set(
+      pair.adopter,
+      Object.freeze({
+        ...adopterClause,
+        representedByAdoption: interpretation,
+        ...(operationApplication ? { operationApplication, } : {}),
+      },),
+    );
     if (targetClause.admission !== 'admitted')
       continue;
     /**
      Only supported independently admitted target relations can be lowered.
      */
     const targetRelation = admittedUnitClauseChoice(targetClause,);
-    if (!['permission', 'prohibition', 'prerequisite', 'none',].includes(targetRelation,))
+    if (![
+      'permission',
+      'prohibition',
+      'prerequisite',
+      'none',
+    ].includes(targetRelation,))
       continue;
-    if (targetClause.lowered?.rules.length || targetClause.lowered?.authorizationRequirements.length)
+    if (targetClause.lowered !== undefined
+      && (targetClause.lowered.rules.length > 0
+        || targetClause.lowered.authorizationRequirements.length > 0))
       throw new UnitAdoptionBindingError('Quoted target was already lowered without its incorporation scope',);
     /**
      Maintained lowering validates priority and keeps prerequisites separate from permission.
      */
-    const lowered = lowerEstablishedClause({ id: `clause-${targetEntry.index}`, priority: authority.priority, relation: targetRelation, },);
+    const lowered = lowerEstablishedClause({
+      id: `clause-${targetEntry.index}`,
+      priority: authority.priority,
+      relation: targetRelation,
+    },);
     rules.push(...lowered.rules,);
     authorizationRequirements.push(...lowered.authorizationRequirements,);
-    updates.set(pair.target, Object.freeze({ ...targetClause, lowered, incorporationScope: interpretation, },),);
+    updates.set(
+      pair.target,
+      Object.freeze({
+        ...targetClause,
+        lowered,
+        incorporationScope: interpretation,
+      },),
+    );
   }
   return Object.freeze({
-    interpretations: Object.freeze(interpretations,), rules: Object.freeze(rules,),
-    authorizationRequirements: Object.freeze(authorizationRequirements,), issues: Object.freeze(issues,), updates, adopters, targets,
+    interpretations: Object.freeze(interpretations,),
+    rules: Object.freeze(rules,),
+    authorizationRequirements: Object.freeze(authorizationRequirements,),
+    issues: Object.freeze(issues,),
+    updates,
+    adopters,
+    targets,
   },);
 }
