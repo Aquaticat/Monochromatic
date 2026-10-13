@@ -13,6 +13,7 @@
 /// <reference types="node" />
 import {
   chmod,
+  mkdir,
   readFile,
   writeFile,
 } from 'node:fs/promises';
@@ -178,12 +179,21 @@ async function fixtureRepository(name) {
   const log = join(fixture.root, 'events.log');
   const hook = join(fixture.root, 'hook.sh');
   await writeHook(hook, log);
+  // Git's config-based hooks name their event with `hook.<name>.event`, per git-hook(1).
   await runOk({
     command: REAL_GIT,
-    args: ['config', 'hook.pre-commit.command', hook],
+    args: ['config', 'hook.interop.command', hook],
     cwd: fixture.repository,
     env: runEnvironment({ home: fixture.home }),
   });
+  await runOk({
+    command: REAL_GIT,
+    args: ['config', 'hook.interop.event', 'pre-commit'],
+    cwd: fixture.repository,
+    env: runEnvironment({ home: fixture.home }),
+  });
+  // The native dispatcher probe runs outside a transaction, which would have created this directory already.
+  await mkdir(join(fixture.repository, '.git', 'cli-git'), { recursive: true });
   await writeFile(join(fixture.repository, 'a.txt'), `changed ${name}\n`, 'utf8');
   return { ...fixture, log };
 }

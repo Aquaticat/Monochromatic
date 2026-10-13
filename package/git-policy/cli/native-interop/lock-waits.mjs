@@ -196,10 +196,13 @@ for (const [holder, waiter] of PAIRINGS) {
       condition: added.status === 0,
       message: `${tag}: the waiter retired the dead holder's locks and added (status ${String(added.status)}; ${added.stderr.trim().slice(0, 400)})`,
     });
-    const left = await leftovers(fixture);
+    const left = await leftovers(
+      fixture,
+      { staleLocks: true },
+    );
     matrix.check({
       condition: left.length === 0,
-      message: `${tag}: nothing is left behind (${left.join(', ') || 'none'})`,
+      message: `${tag}: nothing but a stale lock directory is left (${left.join(', ') || 'none'})`,
     });
   }
 }

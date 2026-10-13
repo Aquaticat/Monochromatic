@@ -158,9 +158,16 @@ for (const phase of PHASES) {
     hook,
     0o700,
   );
+  // Git's config-based hooks name their event with `hook.<name>.event`, per git-hook(1).
   await runOk({
     command: '/usr/bin/git',
-    args: ['config', 'hook.pre-commit.command', hook],
+    args: ['config', 'hook.interop.command', hook],
+    cwd: fixture.repository,
+    env: runEnvironment({ home: fixture.home }),
+  });
+  await runOk({
+    command: '/usr/bin/git',
+    args: ['config', 'hook.interop.event', 'pre-commit'],
     cwd: fixture.repository,
     env: runEnvironment({ home: fixture.home }),
   });
@@ -185,6 +192,13 @@ for (const phase of PHASES) {
   });
   await waitForFile({ path: log });
   await sleep(500);
+  // The dispatcher shim holds the hook lock and releases it when the hook returns, so it dies first.
+  await run({
+    command: 'pkill',
+    args: ['--signal', 'KILL', '--full', 'cli-git-transactions'],
+    cwd: fixture.repository,
+    env: runEnvironment({ home: fixture.home }),
+  });
   await run({
     command: 'pkill',
     args: ['--signal', 'KILL', '--full', '/opt/cli-git'],

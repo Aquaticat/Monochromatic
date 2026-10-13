@@ -1,13 +1,15 @@
 /**
  Mixed concurrency: incumbent and native commits racing on one repository.
 
- Usage: `mixed-concurrency.mjs [seed...]` (seeds 1 to 3 by default). For each seed, the driver assigns the two
- wrappers to workers in a seeded order, staggers their starts with seeded delays, and runs three scenarios:
+ Usage: `mixed-concurrency.mjs [--wrappers=mixed|native|incumbent] [--only=disjoint|hooked|killed] [seed...]` (seeds 1 to 3 by default; `mixed` by
+ default, the other two are single-wrapper controls that show which failures belong to the mixture). For each seed,
+ the driver assigns the two wrappers to workers in a seeded order, staggers their starts with seeded delays, and runs three scenarios:
 
  - `disjoint`: eight workers, each committing its own file twice with an explicit path, while two more workers
    `git add` their own files and run `git status`.
- - `hooked`: six workers commit through a `pre-commit` hook (`hook.pre-commit.command`) that logs its start and end;
-   hook runs must never overlap, whichever wrapper started them, because concurrent commits are off by default.
+ - `hooked`: six workers commit through a `pre-commit` hook (`hook.interop.command`) that logs its start and end;
+   hook runs must never overlap, whichever wrapper started them, because concurrent commits are off by default
+   (a replay after a lost landing race runs the hook again, so the run count is at least one per commit).
  - `killed`: six workers commit while one is killed at a seeded transaction phase; the survivors land, a recovery
    by each wrapper leaves nothing behind, and the dead commit landed whole or not at all.
 
@@ -38,6 +40,14 @@ import {
 } from './support.mjs';
 
 const matrix = createMatrix();
+
+/** Debug diagnostics for the `killed` scenario, printed in full for every worker that did not exit 0 (`--verbose`). */
+const verbose = process.argv.includes('--verbose');
+
+/** Which wrappers the workers use: both, or one for a control run. */
+const wrapperMode = process.argv.find(function isMode(argument) {
+  return argument.startsWith('--wrappers=');
+})?.slice('--wrappers='.length) ?? 'mixed';
 
 /** The six phases a worker can be killed at. */
 const KILL_PHASES = [
@@ -77,6 +87,8 @@ function assignWrappers({
   const wrappers = Array.from(
     { length: count },
     function wrapperAt(_, index) {
+      if (wrapperMode === 'native' || wrapperMode === 'incumbent')
+        return wrapperMode;
       return index % 2 === 0 ? 'incumbent' : 'native';
     },
   );
@@ -91,8 +103,9 @@ function assignWrappers({
  Check the invariants every scenario ends with.
 
  @param {{ tag: string, fixture: Awaited<ReturnType<typeof createRepository>>, base: string, expectedPaths: readonly string[],
-   allowMissing?: boolean }} request - label, repository, `HEAD` before the workers, paths each landed commit may
-   change one of, and whether some of them may be missing (a killed worker)
+   allowMissing?: boolean, staleLocks?: boolean }} request - label, repository, `HEAD` before the workers, paths each
+   landed commit may change one of, whether some of them may be missing (a killed worker), and whether a dead
+   holder's lock directory may remain (no command since took that lock)
  */
 async function assertInvariants({
   tag,
@@ -100,6 +113,7 @@ async function assertInvariants({
   base,
   expectedPaths,
   allowMissing = false,
+  staleLocks = false,
 }) {
   const merges = await realGit(
     fixture,
@@ -143,7 +157,10 @@ async function assertInvariants({
     condition: fsck.status === 0,
     message: `${tag}: git fsck is clean (${fsck.stderr.trim().slice(0, 300)})`,
   });
-  const left = await leftovers(fixture);
+  const left = await leftovers(
+    fixture,
+    { staleLocks },
+  );
   matrix.check({
     condition: left.length === 0,
     message: `${tag}: nothing is left behind (${left.join(', ') || 'none'})`,
@@ -320,15 +337,15 @@ async function hooked({ seed }) {
     hook,
     0o700,
   );
-  await runThrough({
-    wrapper: 'native',
+  // Git's config-based hooks name their event with `hook.<name>.event`, per git-hook(1).
+  await realGit(
     fixture,
-    args: [
-      'config',
-      'hook.pre-commit.command',
-      hook,
-    ],
-  });
+    ['config', 'hook.interop.command', hook],
+  );
+  await realGit(
+    fixture,
+    ['config', 'hook.interop.event', 'pre-commit'],
+  );
   const wrappers = assignWrappers({
     count: 6,
     random,
@@ -370,7 +387,9 @@ async function hooked({ seed }) {
   const lines = (await readFile(
     log,
     'utf8',
-  )).split('\n').filter(Boolean);
+  ).catch(function noLog() {
+    return '';
+  })).split('\n').filter(Boolean);
   let open = 0;
   let overlapped = false;
   for (const line of lines) {
@@ -379,8 +398,8 @@ async function hooked({ seed }) {
       overlapped = true;
   }
   matrix.check({
-    condition: !overlapped && lines.length === 12,
-    message: `${tag}: twelve hook events, never two hooks at once (${String(lines.length)} events, overlap ${String(overlapped)})`,
+    condition: !overlapped && open === 0 && lines.length >= 12,
+    message: `${tag}: ${String(lines.length / 2)} complete hook runs for six commits, never two hooks at once (overlap ${String(overlapped)})`,
   });
   await assertInvariants({
     tag,
@@ -444,9 +463,10 @@ async function killed({ seed }) {
           '--',
           `k${String(index)}.txt`,
         ],
-        extra: index === victim
-          ? { CLI_GIT_TEST_ONLY_PHASE_SIGNAL: `${phase}:kill:${markers}` }
-          : {},
+        extra: {
+          ...(index === victim ? { CLI_GIT_TEST_ONLY_PHASE_SIGNAL: `${phase}:kill:${markers}` } : {}),
+          ...(verbose ? { MONOCHROMATIC_VERBOSE: 'true' } : {}),
+        },
       }),
     };
   }));
@@ -455,6 +475,25 @@ async function killed({ seed }) {
     condition: victimResult?.outcome.signal === 'SIGKILL' || victimResult?.outcome.status === 137,
     message: `${tag}: worker ${String(victim)} (${victimResult?.wrapper}) was killed at ${phase} (status ${String(victimResult?.outcome.status)})`,
   });
+  if (verbose && results.some(function failed(result) {
+    return result.index !== victim && result.outcome.status !== 0;
+  })) {
+    // One merged timeline of every worker's diagnostic lines, oldest first.
+    const timeline = results.flatMap(function linesOf(result) {
+      return result.outcome.stderr.split('\n')
+        .filter(function isDiagnostic(line) {
+          return line.length > 0 && !line.includes('scanCandidateSequence');
+        })
+        .map(function labelled(line) {
+          return `${result.index === victim ? 'VICTIM' : 'worker'} ${String(result.index)} (${result.wrapper}) ${line}`;
+        });
+    }).sort(function byTimestamp(left, right) {
+      const leftStamp = /\[(?<stamp>\d{4}-[^\]]+)\]/u.exec(left)?.groups?.stamp ?? '';
+      const rightStamp = /\[(?<stamp>\d{4}-[^\]]+)\]/u.exec(right)?.groups?.stamp ?? '';
+      return leftStamp.localeCompare(rightStamp);
+    });
+    console.log(`--- timeline of ${fixture.root} (victim ${String(victim)} killed at ${phase}) ---\n${timeline.join('\n')}\n--- end ---`);
+  }
   for (const result of results) {
     if (result.index === victim)
       continue;
@@ -491,10 +530,45 @@ async function killed({ seed }) {
     tag,
     fixture,
     base,
-    expectedPaths: wrappers.map(function pathOf(_, index) {
-      return `k${String(index)}.txt`;
-    }),
+    expectedPaths: [
+      ...wrappers.map(function pathOf(_, index) {
+        return `k${String(index)}.txt`;
+      }),
+      'final-incumbent.txt',
+      'final-native.txt',
+    ],
     allowMissing: true,
+    staleLocks: true,
+  });
+  // A command that takes the locks retires what the dead worker left, whichever wrapper runs it.
+  for (const wrapper of ['incumbent', 'native']) {
+    await writeFile(
+      join(
+        fixture.repository,
+        `final-${wrapper}.txt`,
+      ),
+      'final\n',
+    );
+    const final = await runThrough({
+      wrapper,
+      fixture,
+      args: [
+        'commit',
+        '--quiet',
+        `--message=final ${wrapper}`,
+        '--',
+        `final-${wrapper}.txt`,
+      ],
+    });
+    matrix.check({
+      condition: final.status === 0,
+      message: `${tag}: a final ${wrapper} commit lands (status ${String(final.status)}; ${final.stderr.trim().slice(0, 300)})`,
+    });
+  }
+  const afterFinal = await leftovers(fixture);
+  matrix.check({
+    condition: afterFinal.length === 0,
+    message: `${tag}: after the final commits no stale lock remains (${afterFinal.join(', ') || 'none'})`,
   });
   const present = (await realGit(
     fixture,
@@ -508,11 +582,19 @@ async function killed({ seed }) {
   });
 }
 
-const seeds = process.argv.slice(2).map(Number);
+const seeds = process.argv.slice(2).filter(function isSeed(argument) {
+  return !argument.startsWith('--');
+}).map(Number);
+const only = process.argv.find(function isOnly(argument) {
+  return argument.startsWith('--only=');
+})?.slice('--only='.length);
 for (const seed of seeds.length > 0 ? seeds : [1, 2, 3]) {
-  await disjoint({ seed });
-  await hooked({ seed });
-  await killed({ seed });
+  if (only === undefined || only === 'disjoint')
+    await disjoint({ seed });
+  if (only === undefined || only === 'hooked')
+    await hooked({ seed });
+  if (only === undefined || only === 'killed')
+    await killed({ seed });
 }
 
 matrix.finish();

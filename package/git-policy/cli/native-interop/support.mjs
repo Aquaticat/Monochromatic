@@ -509,10 +509,15 @@ export async function namesIn(directory) {
 /**
  Everything either wrapper may leave behind in a repository after a transaction ends.
 
+ Lock directories whose holder died are retired lazily, by the next command that acquires the lock, so a command
+ that never takes that lock (a `status`, an `add` that needs no landing) leaves them in place by design.
+ `staleLocks` accepts them for such a command.
+
  @param {{ repository: string }} fixture - repository
+ @param {{ staleLocks?: boolean }} [options] - whether lock directories count as leftovers
  @returns {Promise<string[]>} descriptions of each leftover, none when the repository is quiescent
  */
-export async function leftovers(fixture) {
+export async function leftovers(fixture, { staleLocks = false } = {}) {
   const gitDir = join(
     fixture.repository,
     '.git',
@@ -521,8 +526,10 @@ export async function leftovers(fixture) {
   for (const name of await namesIn(join(
     gitDir,
     'cli-git-transactions',
-  )))
-    found.push(`cli-git-transactions/${name}`);
+  ))) {
+    if (!(staleLocks && name.endsWith('.lock')))
+      found.push(`cli-git-transactions/${name}`);
+  }
   for (const name of await namesIn(join(
     gitDir,
     'cli-git',
@@ -541,7 +548,7 @@ export async function leftovers(fixture) {
     if (name.endsWith('.keep'))
       found.push(`objects/pack/${name}`);
   }
-  if (await pathExists(join(
+  if (!staleLocks && await pathExists(join(
     gitDir,
     'cli-git-captures',
     'capture.lock',

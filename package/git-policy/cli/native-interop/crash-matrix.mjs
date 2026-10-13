@@ -128,7 +128,8 @@ async function leaveDeadTransaction({
  Assert the repository is whole after the dead transaction was recovered.
 
  @param {{ fixture: Awaited<ReturnType<typeof createRepository>>, before: string, tag: string, phase: string,
-   landed: boolean }} request - the fixture, its earlier `HEAD`, the label, the phase and whether the commit landed
+   landed: boolean, staleLocks: boolean }} request - the fixture, its earlier `HEAD`, the label, the phase,
+   whether the commit landed, and whether dead holders' lock directories may remain (a recovery that took no lock)
  */
 async function assertRecovered({
   fixture,
@@ -136,6 +137,7 @@ async function assertRecovered({
   tag,
   phase,
   landed,
+  staleLocks,
 }) {
   const subjects = (await realGit(
     fixture,
@@ -185,7 +187,10 @@ async function assertRecovered({
     condition: fsck.status === 0,
     message: `${tag}: git fsck is clean (${fsck.stderr.trim().slice(0, 300)})`,
   });
-  const left = await leftovers(fixture);
+  const left = await leftovers(
+    fixture,
+    { staleLocks },
+  );
   matrix.check({
     condition: left.length === 0,
     message: `${tag}: nothing is left behind (${left.join(', ') || 'none'})`,
@@ -222,8 +227,9 @@ for (const [writer, reader] of PAIRINGS) {
         ...dead,
         phase,
         landed,
+        staleLocks: true,
       });
-      for (const follower of [writer, reader]) {
+      for (const follower of new Set([writer, reader])) {
         await writeFile(
           join(
             dead.fixture.repository,
@@ -253,6 +259,11 @@ for (const [writer, reader] of PAIRINGS) {
           message: `${dead.tag}: the ${follower} wrapper then landed a follow-up commit (status ${String(follow.status)}; ${follow.stderr.trim().slice(0, 400)})`,
         });
       }
+      const afterCommits = await leftovers(dead.fixture);
+      matrix.check({
+        condition: afterCommits.length === 0,
+        message: `${dead.tag}: after the follow-up commits no stale lock remains (${afterCommits.join(', ') || 'none'})`,
+      });
     }
     // Commit route.
     {
@@ -294,6 +305,7 @@ for (const [writer, reader] of PAIRINGS) {
         ...dead,
         phase,
         landed,
+        staleLocks: false,
       });
     }
   }
