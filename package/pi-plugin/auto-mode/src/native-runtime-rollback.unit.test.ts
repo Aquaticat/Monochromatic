@@ -20,7 +20,10 @@ await describe({
             const failures = thrownValues(function install() {
               installNativePolicyHooks({
                 ...f.options,
-                [phase]() { throwNativeValue(original,); throw new Error('Native throw must not return',); },
+                [phase]() {
+                  throwNativeValue(original,);
+                  throw new Error('Native throw must not return',);
+                },
               },);
             },);
             expect(failures.length,).toBe(1,);
@@ -42,7 +45,9 @@ await describe({
           installNativePolicyHooks({
             ...f.options,
             registerJudgmentStart() {
-              return function remove(): void { throw cleanup; };
+              return function remove(): void {
+                throw cleanup;
+              };
             },
             registerExecutionTools() { throw original; },
           },);
@@ -50,7 +55,8 @@ await describe({
         if (!(failure instanceof AggregateError))
           throw new Error('Expected installation and cleanup aggregate',);
         expect(failure.errors[0],).toBe(original,);
-        const removal = failure.errors[1];
+        const [, removal,]: readonly unknown[] = failure.errors;
+        expect(failure.cause,).toBe(original,);
         if (!(removal instanceof AggregateError))
           throw new Error('Expected original cleanup aggregate',);
         expect(removal.errors,).toEqual([cleanup,],);
@@ -97,7 +103,12 @@ await describe({
             },
           },);
           const [failure,] = thrownValues(function install() {
-            installNativePolicyHooks({ ...f.options, registerExecutionTools() { throw original; }, },);
+            installNativePolicyHooks({
+              ...f.options,
+              registerExecutionTools() {
+                throw original;
+              },
+            },);
           },);
           if (!(failure instanceof AggregateError))
             throw new Error('Expected original installation and restoration failures',);

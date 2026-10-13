@@ -11,7 +11,9 @@ import { tagged, } from '@monochromatic-dev/module-logger/ts';
  Native runtime setup or disposal boundary could not be established.
  */
 export class NativePolicyRuntimeError extends Error {
-  /** Stable diagnostic identity does not assert source authority. */
+  /**
+   Stable diagnostic identity does not assert source authority.
+   */
   override readonly name = 'NativePolicyRuntimeError';
 }
 
@@ -19,11 +21,17 @@ export class NativePolicyRuntimeError extends Error {
  Borrowed native slots; this helper neither authenticates nor freezes their owner.
  */
 export type NativePolicyAgentSlots = {
-  /** Native active-run signal, read without interpreting arbitrary truthiness. */
+  /**
+   Native active-run signal, read without interpreting arbitrary truthiness.
+   */
   readonly signal: unknown;
-  /** Original provider stream slot remains opaque to installation bookkeeping. */
+  /**
+   Original provider stream slot remains opaque to installation bookkeeping.
+   */
   streamFunction: unknown;
-  /** Staged native complete-group executor slot. */
+  /**
+   Staged native complete-group executor slot.
+   */
   executeToolBatch: unknown;
 };
 
@@ -36,13 +44,19 @@ export type NativePolicyHookRegistration = () => () => void;
  Successful installation retains cleanup for the same original native lifetime.
  */
 export type NativePolicyHookInstallation = {
-  /** Require actual disposal and idle before releasing the executor slot. */
+  /**
+   Require actual disposal and idle before releasing the executor slot.
+   */
   readonly detach: () => void;
-  /** Read installation state without creating an eligibility capability. */
+  /**
+   Read installation state without creating an eligibility capability.
+   */
   readonly isDetached: () => boolean;
 };
 
-/** Lifecycle logging never serializes borrowed agent slots or failure values. */
+/**
+ Lifecycle logging never serializes borrowed agent slots or failure values.
+ */
 const l = tagged({ tag: 'auto-mode-native-runtime-hooks', },);
 
 /**
@@ -69,6 +83,8 @@ const l = tagged({ tag: 'auto-mode-native-runtime-hooks', },);
  @param isSessionDisposed - fixed native disposal-completion reader
 
  @param onDetached - original runtime trace operation
+
+ @mutates agent - installs or restores original stream and executor slots
 
  @returns cleanup lifetime for this installation only
 
@@ -111,12 +127,21 @@ export function installNativePolicyHooks(
     readonly onDetached: () => void;
   },
 ): NativePolicyHookInstallation {
-  /** Attribute installation diagnostics to this module and function. */
-  const rl = tagged({ tag: installNativePolicyHooks.name, l, },);
+  /**
+   Attribute installation diagnostics to this module and function.
+   */
+  const rl = tagged({
+    tag: installNativePolicyHooks.name,
+    l,
+  },);
   rl.debug('installing original native runtime hooks',);
-  /** Removal identities remain those returned by the original registrations. */
+  /**
+   Removal identities remain those returned by the original registrations.
+   */
   const removals = new Set<() => void>([invalidateObserver,],);
-  /** Detachment is a real lifecycle state, not an absent-value sentinel. */
+  /**
+   Detachment is a real lifecycle state, not an absent-value sentinel.
+   */
   const state = { detached: false, };
 
   /**
@@ -125,12 +150,19 @@ export function installNativePolicyHooks(
    @throws AggregateError containing every original removal failure
    */
   function removeOwners(): void {
-    /** Cleanup logs describe lifecycle only, not borrowed error objects. */
-    const cl = tagged({ tag: removeOwners.name, l: rl, },);
+    /**
+     Cleanup logs describe lifecycle only, not borrowed error objects.
+     */
+    const cl = tagged({
+      tag: removeOwners.name,
+      l: rl,
+    },);
     cl.debug('removing native owners in reverse installation order',);
-    /** Independent failures must not prevent later cleanup operations. */
+    /**
+     Independent failures must not prevent later cleanup operations.
+     */
     const failures: unknown[] = [];
-    for (const remove of [...removals,].reverse()) {
+    for (const remove of [...removals,].toReversed()) {
       try {
         remove();
         removals.delete(remove,);
@@ -140,7 +172,10 @@ export function installNativePolicyHooks(
       }
     }
     if (failures.length > 0)
-      throw new AggregateError(failures, 'Native policy owner cleanup remains pending',);
+      throw new AggregateError(
+        failures,
+        'Native policy owner cleanup remains pending',
+      );
   }
 
   try {
@@ -151,7 +186,9 @@ export function installNativePolicyHooks(
     removals.add(registerExecutionTools(),);
   }
   catch (error) {
-    /** Preserve original installation failure before all independent rollback failures. */
+    /**
+     Preserve original installation failure before all independent rollback failures.
+     */
     const failures: unknown[] = [error,];
     try {
       removeOwners();
@@ -180,6 +217,7 @@ export function installNativePolicyHooks(
       throw new AggregateError(
         failures,
         'Native policy installation and cleanup failed; dispose the original session',
+        { cause: error },
       );
     }
     throw error;
@@ -193,8 +231,13 @@ export function installNativePolicyHooks(
    @throws AggregateError when original removers leave pending cleanup
    */
   function detach(): void {
-    /** Distinguish disposal gating from installation rollback. */
-    const dl = tagged({ tag: detach.name, l: rl, },);
+    /**
+     Distinguish disposal gating from installation rollback.
+     */
+    const dl = tagged({
+      tag: detach.name,
+      l: rl,
+    },);
     dl.debug('checking native runtime detachment boundary',);
     if (state.detached)
       return;
@@ -216,10 +259,15 @@ export function installNativePolicyHooks(
    @returns whether this installation finished its detachment operations
    */
   function isDetached(): boolean {
+    const sl = tagged({ tag: isDetached.name, l: rl, },);
+    sl.debug('reading native runtime detachment state',);
     return state.detached;
   }
 
-  return Object.freeze({ detach, isDetached, },);
+  return Object.freeze({
+    detach,
+    isDetached,
+  },);
 }
 
 //endregion Original native hook lifetime

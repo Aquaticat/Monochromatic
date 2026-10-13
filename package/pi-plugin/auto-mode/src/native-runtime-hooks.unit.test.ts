@@ -30,7 +30,7 @@ await describe({
         expect(installed.isDetached(),).toBe(false,);
         expect(f.events,).toEqual(['register-start', 'register-tools',],);
         expect(installed.detach,).toThrow(NativePolicyRuntimeError,);
-        expect(f.events.at(-1),).toBe('disposed',);
+        expect(f.events,).toEqual(['register-start', 'register-tools', 'disposed',],);
         expect(f.agent.executeToolBatch,).toBe(f.options.executeToolBatch,);
         f.controls.disposed = true;
         f.controls.active = true;
