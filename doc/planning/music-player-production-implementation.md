@@ -136,7 +136,7 @@ Packages 1 and 2 are pure logic with an existing reference; the rest need the sc
 ## Handover: open work queue (2026-10-12)
 
 This section is the canonical state for the next session. Read it, then `git log` on `feat/music-player-production`
-and the decisions D106 to D112 at the end of `package/music-player/design/decisions.md`.
+and the decisions D106 to D119 at the end of `package/music-player/design/decisions.md`.
 
 ### Working agreements set by the human
 
@@ -149,7 +149,7 @@ and the decisions D106 to D112 at the end of `package/music-player/design/decisi
   why and stop work on it.
 - Polish standard: every clickable element has hover, pressed and pointer-cursor feedback; no copy or layout that a user
   would call unfinished; verify by driving the real window in the nested compositor
-  (`package/cli/nested-wayland-session`, 0.3.0 installed: notifications and Plasma job fakes, `--accent-color`,
+  (`package/cli/nested-wayland-session`, 0.4.0 installed: notifications and Plasma job fakes, `--accent-color`,
   `--launcher-log`, `--color-scheme`). A change is done only after it was driven the way a person uses it.
 - Emulator: launch it headfully, as its own systemd user unit, on the host GPU, no container, no `xvfb-run`, no
   `-feature -Vulkan` (`doc/troubleshooting/android-emulator-37-software-renderer-sigsegv.md`, section "Working agent
@@ -175,7 +175,7 @@ and the decisions D106 to D112 at the end of `package/music-player/design/decisi
 - Toolchain: Slint 1.18.1 in three packages; every Rust crate and Android build dependency at the latest release (Turso
   0.8.2, jni 0.22, ringbuf 0.5, Gradle 9.8.1, AGP 9.4.1, Kotlin 2.4.21); the `branches` crate fix for the newest nightly
   (`doc/troubleshooting/floating-nightly-branches-crate-abort.md`); the Android native targets are in the `mise` rust
-  config, so `mise run //package/music-player/android-app:build:native` works (about 7 minutes); nested compositor 0.3.0.
+  config, so `mise run //package/music-player/android-app:build:native` works (about 7 minutes); nested compositor 0.4.0.
 - Desktop: Settings per D109 and D110; playback position equals the audible position and same-format neighbours are
   gapless (`src/playback_clock.rs`, `Queue::peek_next_natural`; cross-format joins add a 43 ms hold and are not
   gapless); Search on the in-memory index with the 1M scale fixes (D111, D112; 1M tests in the normal suite;
@@ -183,7 +183,7 @@ and the decisions D106 to D112 at the end of `package/music-player/design/decisi
   table behind the classifier, badges, tooltips and menu rows), focus ring, hint badges and double Shift; the theme in
   OKLCH from the OS accent; the audio underrun meter and rtkit priority; the taskbar progress state machine.
 - End-to-end runner: `package/music-player/desktop-e2e`, run by `mise run //package/music-player/desktop-app:test:e2e`
-  (74 pass, 0 fail, 5 not injectable: F5, Shift+F10, Menu, Ctrl+Shift+F5, double Shift with repeats). It plays only into
+  (110 pass, 0 fail, 1 not injectable). It plays only into
   its own PipeWire null sink and never signals the user's player.
 - Android: D107 notification with its device pass (three defects fixed: first-launch start, the API 35 time-limit
   `onTimeout(int, int)` crash, the legacy channel on upgrade); Settings per D109 and D110 with crease detection through
@@ -193,49 +193,52 @@ and the decisions D106 to D112 at the end of `package/music-player/design/decisi
   fixture of 52 roots (`android-app/app/src/test/resources/theme-roles-vector.txt`) is checked by a test on each side, and
   the Rust drift test fails if either side changes alone.
 
-### In flight when this was written
-
-Five agents were running at 2026-10-12. Their input is the two review reports,
-`~/temp/agent/agent-polish2/README.md` (desktop: 1 severe, 16 major, 33 minor) and
-`~/temp/agent/agent-polish-android/README.md` (Android: 2 severe, 9 major, 14 minor). Each agent leaves its work
-uncommitted in the worktree `~/temp/agent/music-player-production`; the orchestrator commits with explicit pathspecs
-(scratch `.ts` scripts), and hunks shared between agents go into one combined commit after all of them finish.
-
-- Desktop interaction: Search and toast click-through, track menu position in the two-pane layout, Play/Pause focus ring,
-  accessible roles on rows, transitions, header heights, template editor messages.
-- Desktop playback and library: virtual letter folders and the single-folder name, scanning state, disabled deck in empty
-  states, undecodable and deleted tracks, Undo through a symlinked path, `In order` stopping at the folder end, American
-  spelling, stale README, default music folder.
-- Desktop lists: ellipsis for long names, picker reveal of the selection, scrollbars (D22), scroll smoothness at 10 000
-  rows, the split Hangul glyph.
-- Android logic: shuffle history crash (duplicate playlist id), template parsing and file opens off the main thread, `In
-  order` stop, File details, stale deck states, sweep for new files, launcher icon, copy, template editor.
-- Android layout: crease clearance on the player and everywhere text is drawn, Search under the status bar, the rail as
-  one Tab stop with a visible focus ring, the D106 bindings that make sense on Android, font scale 2.0.
-- Decisions made while they run: loose root tracks live in a virtual folder named by their rail letter (the human,
-  2026-10-12), and Search drops its "Unfiled" folder result in favor of that letter folder on both platforms; `In order`
-  stops at the end of the folder (D2 beats the README and the `PlaybackMode.kt` comment); a library falls back to the home
-  Music folder when `XDG_MUSIC_DIR` is unset (D95); the button reads "Open folder".
+- Since then (D113 to D119): library and analysis follow files automatically (D113: no rescan or re-analyze command;
+  the watcher names changed paths and a planner edits the list in place; at 1M tracks a replaced file costs 0.12 ms on
+  the handler instead of 1.4 s; a replaced playing file is swapped in at the same position; every refresh retries
+  recorded failed decodes and tells each file once); the track menu opens with `Menu` or `Alt+Enter` and every row has
+  an access key (D114); the Firefox focus ring (D117) and the menu on the pure canvas (D119) on both platforms; grays
+  carry the root hue unless the root is completely neutral, with an accent chroma floor, no `seam` role, and the dark
+  deck read from the derived `deck` role (D118; fixture of 59 roots, 2124 role values, tolerance 0 on both sides);
+  Android reloads on foreground return and shows a single top-level folder's own name; the Rust drift test now runs in
+  the `containerCargo` fallback (it mounts `truepeak-core` and the Android fixture); `states/window-title` and
+  `states/natural-order` were harness races and pass 20 of 20; nested compositor 0.4.0 is published and installed, and
+  the runner checks capability by version with no pin; the e2e suite has 110 checks (110 pass, 1 not injectable).
 
 ### Open, not started
 
-- Waiting on the human (D116 settled the Hangul font and the test profile): the D108 retune (primary moved 3.46 delta-E, accepted by the orchestrator), the D112 veto, filing
-  the two Turso bugs from issue 678, and `targetSdk` staying on 36 until a device test.
-- The Rust drift test reads the Android fixture and fails under the `containerCargo` fallback, which mounts only the
-  desktop package (task 66).
-- Review findings the fix agents may leave open: look-alike Latin, Cyrillic and Greek letters in the rail, red accent
-  confusable with error roles, cold restore scroll, the 117 px phantom view on the Android idle deck. Read their reports.
-- Not measured or only partly done: cold-cache startup at 1M on desktop; Search with 1M tracks on an Android device;
-  Android `folderIndex` (about 1.5 s at 1M); long Android search terms (0.6 to 1.9 s off the main thread); shuffle-all
-  queue paths are O(n); no device latency is subtracted from the audible position; the e2e default library still comes
-  from a private scratch generator when present.
-- Android keyboard end-to-end checks beyond `adb input keyevent`; hint badges on Android; pause and resume of the analysis
-  notification on a device after the fixes; Trash Undo restoring a file.
+- Waiting on the human:
+  - the play circle and the first-run primary pill are filled with `primary`, so the 2 px near ring merges with the
+    fill and the disc looks about 2 px larger while focused (the spec is kept as written; the alternatives are a gap
+    or an `on-primary` ring inside);
+  - rows in clipped lists (tracks, folders, Search results, template editor fields) draw the ring just inside their own
+    edge, because an outside ring would be clipped;
+  - deleting the dead page-control chain on Android (`FoldablePageControls.kt`, `LedPageControls.kt`,
+    `PageControlStyle.kt`, the `pageTabs` block in `MainActivity.kt`, `SessionStore.loadPageControlStyle` and
+    `savePageControlStyle`, two test files), the only place the old gray literals remain; an agent's delete was denied
+    by the permission system;
+  - the D108 retune (primary moved 3.46 delta-E), the D112 veto, the accent chroma floor of D118 (orchestrator reading),
+    filing the two Turso bugs from issue 678, and `targetSdk` staying on 36 until a device test.
+- Known defects not fixed: Android can hit an ANR in `PlayerHostModel.rowEntriesFor` (`PlayerHost.kt:534`) when a very
+  large folder (thousands of rows) is selected, because rows rebuild on every analysis step (report in
+  `~/temp/agent/agent-android-final/bugreport1/br1.zip`); `loadTemplate` runs on the main thread once (435 ms).
+- Review findings left open: look-alike letters (rail hairlines address it), red accent against the error roles, cold
+  restore scroll, scroll anchoring when rows above change height, `project()` about 120 ms at 100k rows, the 117 px
+  phantom view on the Android idle deck.
+- Not measured or only partly done: cold-cache startup at 1M on desktop; a load sweep running with a user event on a cold
+  open at 1M; Search with 1M tracks on an Android device (20 000 tracks: median 34 to 46 ms, worst 290 ms); Android
+  `folderIndex` (about 1.5 s at 1M); long Android search terms (0.6 to 1.9 s off the main thread); shuffle-all queue
+  paths are O(n); add and delete at 1M still cost about 0.4 s on the engine thread (building and announcing the list);
+  no device latency is subtracted from the audible position; cross-format joins are not gapless.
+- Not repeated on the device after the last Android changes: loose tracks, `In order` at the end of a folder, Search
+  below the status bar, light and dark with three accents (dark was done).
 - Stale docs: `HANDOVER.peak-sweep-optimization.md` and `DECISION.peak-sweep-parallelism.md` in `android-app` still say
-  the service starts from `MainActivity.onCreate`; the desktop README after the fix agents; the Rust comment blocks the
-  repo's skill asks for.
-- Hygiene: `mise.lock` shows about 400 added lines of platform entries after `mise` runs in the worktree, which must not
-  be committed with feature work; `~/temp/agent/agent-polish2/work/` holds large scratch libraries that can be deleted.
+  the service starts from `MainActivity.onCreate`; the Rust comment blocks the repo's skill asks for; the polish list
+  (task 64: empty Folders pane at 443 px with a persisted session, README taskbar text).
+- Hygiene: `~/temp/agent/agent-polish2/work/` and `~/temp/agent/agent-refresh-cost/lib-1m` (12 GB) hold scratch libraries
+  that can be deleted. A failed decode is retried at every library change, one decode per failed file per change.
+- Rate limit: on 2026-10-12 the Sonnet weekly limit stopped five agents mid-run; a re-login lifted it and they were
+  resumed. Their work is committed; check `git log` before relaunching anything.
 - Never verified: a real Plasma session, macOS, Windows, real Android hardware, Android API 33 to 36 for D107.
 
 ## Queue
