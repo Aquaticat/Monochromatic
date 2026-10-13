@@ -145,7 +145,7 @@ export async function checkLaunchAndFocus(
   },);
   await recorder.check({
     id: 'focus/ring-moves',
-    title: 'the focus ring (2 px primary) moves with Tab: pixels differ between two focus positions',
+    title: 'the focus ring (2 px primary and 1 px on-primary) moves with Tab: pixels differ between two focus positions',
     body: async function ringMovesWithTab(): Promise<string> {
       await tabTo({
         session,

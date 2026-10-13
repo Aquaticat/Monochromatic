@@ -409,6 +409,150 @@ A separately deployed broker must own release events behind a narrow API.
 See
 [`doc/troubleshooting/ydotool-interrupted-key-release.md`](../../../doc/troubleshooting/ydotool-interrupted-key-release.md).
 
+## Migration clause lowering
+
+`lowerEstablishedClause` maps code-admitted clause relationships into directive facts,
+authorization prerequisites,
+and independent missing premises.
+It does not authenticate a model response,
+source authority,
+operation coverage,
+or approval sufficiency.
+Unknown or unsupported meanings remain broader than uncertainty among supported effects.
+A satisfied prerequisite grants no permission;
+an unmet prerequisite cannot override a prohibition.
+
+The private native integration links the maintained exports for these deterministic computations.
+The original request,
+source,
+judgment,
+and human-approval owners remain required before any result can authorize execution.
+
+## Migration query observation
+
+`createNativeQueryObservation` retains the first unexpected input or output observation failure.
+Native adapters supply synchronous receivers and forward original frames.
+The helper does not authenticate those frames,
+assign source authority,
+or prove complete coverage.
+A callback catching an observer failure cannot restore that observation lifetime.
+Native reporting failures preserve their original value when there was no observer failure;
+otherwise an aggregate retains the observer,
+callback,
+and reporting failures.
+Borrowed frames,
+callbacks,
+and thrown values remain mutable.
+
+The private query adapter delegates failure retention to this maintained export.
+Original argument-frame construction,
+query result identity,
+source capture,
+and native error reporting remain the adapter's responsibilities.
+This does not replace the installed judge or supply a maintained host launcher.
+
+## Migration semantic admission configuration
+
+`copySemanticAdmissionPolicy` copies an explicitly configured bootstrap declaration.
+The native adapter handles absent configuration before calling it and fixes each implemented definition ID.
+Only model,
+definition,
+program profile,
+and acceptance callback fields are allowed.
+Facts,
+coverage,
+qualification,
+and verdict fields are rejected.
+Accessors are not invoked;
+proxy configurations reject before reflection.
+Borrowed callbacks remain unfrozen.
+
+`inspectSemanticAdmissionScope` matches every original program inspection to the captured profile
+and requires clause candidates only for clause-selecting consumers.
+The native adapter fixes the expected model from its actual wire contract,
+not an action argument.
+A matching scope selects a consumer;
+it neither invokes the acceptance callback nor establishes semantic truth or permission.
+No production acceptance criterion is installed by these helpers.
+Build,
+types,
+package units,
+changed-file lint,
+all native compiler scenarios,
+and the action-policy regression task passed.
+The native model binding and absent-policy behavior remain unchanged.
+
+## Migration original request interpretation
+
+`consumeRequestMaterial` checks the selected question,
+original request identity,
+source-bound request identity,
+serving-model attribution,
+and synchronous Boolean policy acceptance.
+Native callers still authenticate complete-batch membership and revalidate the original owners after callbacks.
+The interpretation retains the exact request and evidence references without freezing borrowed objects.
+It does not parse or re-encode the request,
+assign authority,
+or lower directives.
+
+`retainRequestMaterialObligations` preserves existing source-domain and unrelated premises.
+Admitted `potential-instruction` adds an independent `request-material-instruction-use` obligation;
+unknown or unadmitted content keeps an interpretation obligation.
+Admitted `none` does not certify source completeness or grant execution permission.
+The private compiler delegates these consumers to exact maintained exports.
+Built-artifact units,
+type checking,
+changed-file lint,
+the native request scenarios,
+and the action-policy regressions passed.
+Native domain contrasts still retain the source-domain hold;
+this port does not establish domain closure or install the migrated host.
+
+## Migration native hook lifetime
+
+`installNativePolicyHooks` owns slot installation,
+reverse-order removal,
+and rollback for the migration runtime.
+The native integration still authenticates the original Agent,
+Session,
+request,
+judgment,
+and registration capabilities before calling this helper.
+It does not establish source coverage or authorize execution.
+
+An installation failure preserves its original value;
+independent cleanup and restoration failures remain in ordered aggregates.
+Incomplete cleanup keeps the executor slot occupied.
+Successful removers are not repeated,
+and failed removers remain available for retry.
+Detachment requires completed Session disposal and an idle Agent.
+The invalidated observer remains on the stream after detachment.
+Borrowed slots and callbacks are not frozen.
+
+The private native runtime now delegates this bookkeeping through the existing maintained-artifact link.
+Built-artifact units,
+type checking,
+changed-file lint,
+and the native cutover passed.
+A disposable built-artifact omission confirms that removing the disposal gate allows premature detachment.
+This is not a maintained host launcher or installed judge cutover.
+
+## Migration input accounting
+
+`assertOriginalInputBudget` validates resource and Session receipt counters,
+then enforces their shared 64-occurrence/four-MiB serialized-record limit.
+It preserves the original counter profile without invoking accessors,
+reflecting on proxies,
+or freezing borrowed records.
+The counters must come from fixed native readers;
+valid shapes and arithmetic establish neither ownership nor governing-domain completeness.
+Resource-local,
+per-source,
+and copier limits remain separate.
+
+This maintained helper is part of the ongoing migration.
+Its export does not activate the private native runtime or replace the installed judge pipeline.
+
 ## Logging
 
 The package uses tagged loggers from `@monochromatic-dev/module-logger`.

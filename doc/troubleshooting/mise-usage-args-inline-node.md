@@ -67,7 +67,10 @@ The shared restricted slice then showed `oom_kill 1`;
 the available kernel-journal query returned no matching entries,
 so that counter does not identify the killed process.
 This is separate from the invalid argument syntax.
-The 2 GiB limit remains unchanged.
+At that checkpoint the 2-GiB limit remained unchanged.
+A later relative journal query identified the actual `tsc` victim;
+the user then authorized the verified 4-GiB correction described in
+[Pi worker memory budget](pi-worker-memory-budget.md).
 
 The auto-mode package's formatter and linter now declare variadic usage arguments
 and decode `usage_args` through the existing `vars.parse_usage_args` helper.

@@ -683,6 +683,30 @@ impl Controller {
     /// installSource(source: Source, path: string): void { ... }
     /// ```
     fn install_source(&mut self, source: Box<dyn Source>, path: &Path) {
+        let duration_secs: f64 = self.install_source_silently(source, path);
+        // What:     `self.emit_now_playing(path, duration_secs);`. Tell the UI which track plays and put the seek bar at zero.
+        // Why:      The same announcement is made when a track that was queued behind the audible one
+        //           becomes audible (`cross_track_boundary`).
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // this.emitNowPlaying(path, durationSecs);
+        // ```
+        self.emit_now_playing(path, duration_secs);
+    }
+
+    /// What:
+    ///      `pub(crate) fn install_source_silently(&mut self, source: Box<dyn Source>, path: &Path) -> f64`.
+    ///  Everything `install_source` does except telling the window which track plays; returns the new file's duration.
+    /// Why:
+    ///       D113: a playing file that was replaced is loaded again where it was. The window already shows that track, so
+    ///  announcing it would move the person's page and flash the seek bar to zero.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// installSourceSilently(source: Source, path: string): number { ...; return spec.durationSecs; }
+    /// ```
+    pub(crate) fn install_source_silently(&mut self, source: Box<dyn Source>, path: &Path) -> f64 {
         // What:     `let spec = source.spec();`. Copy the stream's rate/channels/duration
         //           (`AudioSpec` is `Copy`).
         // Why:      Needed to configure the output and the position math.
@@ -805,16 +829,6 @@ impl Controller {
         self.pending.clear();
         self.pending_pos = 0;
 
-        // What:     `self.emit_now_playing(path, spec.duration_secs);`. Tell the UI which track plays and put the
-        //           seek bar at zero.
-        // Why:      The same announcement is made when a track that was queued behind the audible one
-        //           becomes audible (`cross_track_boundary`).
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // this.emitNowPlaying(path, spec.durationSecs);
-        // ```
-        self.emit_now_playing(path, spec.duration_secs);
         // What:     No wait here. Decoding starts at once with the fallback gain that
         //           `prepare_peak_for_path` set; the engine loop swaps in the exact gain
         //           when the measurement lands.
@@ -825,6 +839,7 @@ impl Controller {
         // ```ts
         // // nothing to wait for: the fallback gain is already in place
         // ```
+        return spec.duration_secs;
     }
 
     /// What:
@@ -1381,7 +1396,7 @@ impl Controller {
     /// ```ts
     /// audibleSecs(): number { return this.clock.audibleSecs(this.ringQueuedFrames(), this.spec?.rate ?? 0); }
     /// ```
-    fn audible_secs(&self) -> f64 {
+    pub(crate) fn audible_secs(&self) -> f64 {
         let rate = self.spec.as_ref().map_or(0, |s| return s.rate);
         return self.clock.audible_secs(self.ring_queued_frames(), rate)
     }

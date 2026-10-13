@@ -35,6 +35,14 @@ pub mod batch;
 ///  with their invariants.
 pub mod content;
 
+/// Generated owner records and `/proc/<pid>/stat` lines, with their parsers' invariants.
+pub mod owners;
+
+/// Generated Git PID file text and stat lines for the index-lock readers, with their invariants.
+pub mod index_lock;
+
+/// Generated journal, capture-order and sequence records, with their parsers' invariants.
+pub mod journal;
 /// Generated manifests and raw text through the dependent-version rewrite and specifier scan.
 pub mod dependent_version;
 /// Linter output, event paths and the one-rule configuration of the Markdown policy, with their invariants.

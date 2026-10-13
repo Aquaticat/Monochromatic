@@ -36,11 +36,34 @@ use crate::policy_trigger::Trigger;
 use crate::repository_location::RepositoryLocation;
 use crate::rule_add_explicit::decide_add_explicit;
 use crate::test_support::{fixture, remove, repository};
-use crate::unported::{Unported, unported_notice};
 use crate::worktree_identity::WorktreeIdentity;
 use crate::wrapper_invocation::{StrippedInvocation, strip_wrapper_controls};
 use std::ffi::OsString;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
+
+/// The transaction ID the registry fixtures use.
+const TRANSACTION_ID: &str = "0b6c2c1e-6f5b-4d0e-9a55-3f5d8e2f6a10";
+
+/// Publish a transaction owned by this test process,
+///  live or dead,
+///  in a repository's registry.
+fn registered(repo: &Path, live: bool) -> PathBuf {
+    let registry: PathBuf = repo.join(".git/cli-git-transactions");
+    std::fs::create_dir_all(repo.join(".git")).expect("Git directory stand-in");
+    crate::transaction_registry::ensure_transaction_root(registry.as_path()).expect("registry");
+    crate::transaction_registry::publish_transaction_directory(
+        registry.as_path(),
+        TRANSACTION_ID,
+        crate::recovery_inspect::tests::owner_bytes(
+            TRANSACTION_ID,
+            "2026-10-06T00:00:00.000Z",
+            live,
+        )
+        .as_slice(),
+    )
+    .expect("published");
+    return registry;
+}
 
 /// Run the lifecycle of one command,
 ///  written as text,
@@ -71,14 +94,6 @@ fn forwards(values: &[&str]) -> WrappedOutcome {
     return WrappedOutcome::Forward {
         arguments: os_arguments(values),
         stderr: String::new(),
-    };
-}
-
-/// The ending "exit 2 with the notice for this unported work".
-fn refuses(what: &Unported, command: &str) -> WrappedOutcome {
-    return WrappedOutcome::Exit {
-        code: 2,
-        stderr: unported_notice(what, command),
     };
 }
 
@@ -118,11 +133,6 @@ fn not_at_root(root: &str, severity: Severity) -> PolicyEvent {
         location: None,
         fix_available: false,
     });
-}
-
-/// The manual-push refusal.
-fn manual_push_refused() -> WrappedOutcome {
-    return refuses(&Unported::Lifecycle(Trigger::ManualPush), "push");
 }
 
 /// The failure of `final-newline` reading candidates the scripted facts cannot prepare.
@@ -186,12 +196,13 @@ fn invocations_without_a_subcommand_are_forwarded_untouched() {
 }
 
 /// A read-only command reads no configuration,
-///  checks no leftover state and ignores leases.
+///  goes on beside a live transaction and ignores
+/// leases.
 #[test]
 fn read_only_commands_skip_configuration_and_refusals() {
-    // The configuration is invalid and a transaction is registered: neither is looked at.
+    // The configuration is invalid and a live transaction is registered: neither stops it.
     let root: PathBuf = configured("wrapped-read-only", "this is not JSONC");
-    std::fs::create_dir_all(root.join(".git/cli-git-transactions/id")).expect("registry entry");
+    let registry: PathBuf = registered(root.as_path(), true);
     let lease: [(&str, &str); 1] = [("CLI_GIT_PREPARATION_LEASE", "token")];
     for (values, forwarded) in [
         (
@@ -211,6 +222,27 @@ fn read_only_commands_skip_configuration_and_refusals() {
             "{values:?}"
         );
     }
+    assert!(registry.join(TRANSACTION_ID).exists());
+    // A registry recovery cannot read stops a read-only command that asked for the location,
+    // as the incumbent's recovery before read-only commands does.
+    std::fs::create_dir(registry.join("stray")).expect("stray entry");
+    let (stopped, stopped_asked) = run(&["log"], at_root(root.as_path()), &[]);
+    assert_eq!(stopped_asked, location_only());
+    match stopped {
+        WrappedOutcome::Exit { code, stderr } => {
+            assert_eq!(code, 2);
+            assert!(
+                stderr.contains("\"code\":\"content-unavailable\""),
+                "{stderr}"
+            );
+            assert!(
+                stderr.contains("Unexpected transaction registry entry"),
+                "{stderr}"
+            );
+        }
+        WrappedOutcome::Forward { .. } => panic!("an unreadable registry never forwards"),
+    }
+    std::fs::remove_dir(registry.join("stray")).expect("remove stray entry");
     // Commands exempt from require-root ask Git nothing at all.
     for values in [vec!["version"], vec!["help", "status"]] {
         assert_eq!(
@@ -260,7 +292,6 @@ fn read_only_commands_skip_configuration_and_refusals() {
 }
 
 /// Preparation order:
-///  lease,
 ///  location,
 ///  leftover state,
 ///  configuration,
@@ -268,18 +299,8 @@ fn read_only_commands_skip_configuration_and_refusals() {
 #[test]
 fn a_guarded_command_is_prepared_in_order() {
     let root: PathBuf = configured("wrapped-order", "this is not JSONC");
-    let registry: PathBuf = root.join(".git/cli-git-transactions");
-    std::fs::create_dir_all(registry.join("id")).expect("registry entry");
-    let lease: [(&str, &str); 1] = [("CLI_GIT_LANDING_LEASE", "")];
-    // 1. A lease stops the command before Git is asked anything.
-    assert_eq!(
-        run(&["commit", "-m", "x"], unanswerable(), &lease),
-        (
-            refuses(&Unported::InheritedLease("CLI_GIT_LANDING_LEASE"), "commit"),
-            Vec::<String>::new()
-        )
-    );
-    // 2. Without the location nothing else can be decided.
+    let registry: PathBuf = registered(root.as_path(), true);
+    // 1. Without the location nothing else can be decided.
     assert_eq!(
         run(&["commit", "-m", "x"], unanswerable(), &[]),
         (
@@ -290,16 +311,25 @@ fn a_guarded_command_is_prepared_in_order() {
             location_only()
         )
     );
-    // 3. Leftover state is reported before the invalid configuration.
-    assert_eq!(
-        run(&["commit", "-m", "x"], at_root(root.as_path()), &[]),
-        (
-            refuses(&Unported::TransactionRecovery(registry.clone()), "commit"),
-            location_only()
-        )
-    );
+    // 2. A live transaction no longer refuses a guarded command, so the configuration is read next.
+    let (outcome, touched): (WrappedOutcome, Vec<String>) =
+        run(&["commit", "-m", "x"], at_root(root.as_path()), &[]);
+    assert_eq!(touched, location_only());
+    match outcome {
+        WrappedOutcome::Exit { code: 2, stderr } => {
+            assert!(stderr.contains("\"code\":\"config-invalid\""), "{stderr}");
+        }
+        other => panic!("expected the configuration to stop the command, got {other:?}"),
+    }
+    // A dead one is recovered and no longer stops the command.
     std::fs::remove_dir_all(&registry).expect("remove registry");
-    // 4. The invalid configuration is reported before the commit refusal.
+    registered(root.as_path(), false);
+    assert!(!matches!(
+        run(&["commit", "-m", "x"], at_root(root.as_path()), &[]).0,
+        WrappedOutcome::Exit { ref stderr, .. } if stderr.contains("commit transactions recorded")
+    ));
+    assert!(!registry.join(TRANSACTION_ID).exists());
+    // 3. The invalid configuration is reported before the commit refusal.
     let (invalid, invalid_asked) = run(&["commit", "-m", "x"], at_root(root.as_path()), &[]);
     assert_eq!(invalid_asked, location_only());
     match invalid {
@@ -314,21 +344,6 @@ fn a_guarded_command_is_prepared_in_order() {
             assert_eq!(stderr.matches('\n').count(), 1, "{stderr}");
         }
         WrappedOutcome::Forward { .. } => panic!("an invalid configuration never forwards"),
-    }
-    // 5. With a valid configuration the commit itself is refused, before any policy runs.
-    std::fs::write(root.join(CONFIG_FILE_NAME), "{}").expect("configuration");
-    let root_text: &str = root.to_str().expect("fixture path is UTF-8");
-    for location in [
-        main_worktree(root_text, ""),
-        main_worktree(root_text, "sub/"),
-    ] {
-        assert_eq!(
-            run(&["commit", "-a", "-m", "x"], located(location), &[]),
-            (
-                refuses(&Unported::CommitTransaction, "commit"),
-                location_only()
-            )
-        );
     }
     remove(root.as_path());
 }
@@ -496,9 +511,11 @@ fn configuration_selects_the_policies_of_a_guarded_command() {
             location_and_candidates()
         )
     );
-    assert_eq!(
-        run(&["push", "origin"], at_root(root.as_path()), &[]),
-        (manual_push_refused(), location_only())
+    // The probe finds no updates in a fixture without a repository, so the push fails closed with exit 2.
+    let (refused, _location) = run(&["push", "origin"], at_root(root.as_path()), &[]);
+    assert!(
+        matches!(refused, WrappedOutcome::Exit { code: 2, .. }),
+        "{refused:?}"
     );
     // A policy set to `warn` lets the command through and reports on standard error first.
     std::fs::write(
@@ -537,18 +554,17 @@ fn configuration_selects_the_policies_of_a_guarded_command() {
 ///  a dry run and an ungated push are forwarded.
 #[test]
 fn a_real_push_must_clear_the_manual_push_gate() {
+    // Scripted facts have no repository, so a real push's scope fails closed with exit 2 and is never forwarded.
+    // Real pushes are exercised against real repositories in the manual-push integration tests.
     for values in [
         vec!["push"],
         vec!["push", "origin", "main"],
-        vec!["push", "--dry-run", "--no-dry-run"],
         vec!["push", "--", "--dry-run"],
-        // A region Git refuses is not known to be a dry run.
-        vec!["push", "--dry-run", "--no-such-option"],
     ] {
-        assert_eq!(
-            run(values.as_slice(), scripted_facts(), &[]),
-            (manual_push_refused(), location_only()),
-            "{values:?}"
+        let (outcome, _location) = run(values.as_slice(), scripted_facts(), &[]);
+        assert!(
+            matches!(outcome, WrappedOutcome::Exit { code: 2, .. }),
+            "{values:?}: {outcome:?}"
         );
     }
     assert_eq!(
@@ -632,47 +648,11 @@ fn worktree_policies_read_the_location() {
     }
 }
 
-/// From a linked worktree,
-///  creating a worktree and running a possible alias are refused.
+/// Worktree creation, aliases and the opt-out are all forwarded from every kind of location:
+///  the linked-worktree copy settles them when Git runs, not here.
 #[test]
-fn worktree_creation_and_aliases_are_refused_where_copies_are_synchronized() {
+fn worktree_creation_and_aliases_are_forwarded_from_every_location() {
     let linked: RepositoryLocation = linked_worktree("/r", "/w");
-    assert_eq!(
-        run(
-            &["worktree", "add", "../topic"],
-            located(linked.clone()),
-            &[]
-        ),
-        (
-            refuses(&Unported::WorktreeCopy, "worktree"),
-            location_only()
-        )
-    );
-    assert_eq!(
-        run(&["st"], located(linked.clone()), &[]),
-        (refuses(&Unported::AliasResolution, "st"), location_only())
-    );
-    assert_eq!(
-        run(
-            &["worktree", "add", "--no-worktree-copy", "../topic"],
-            located(linked.clone()),
-            &[]
-        ),
-        (forwards(&["worktree", "add", "../topic"]), location_only())
-    );
-    assert_eq!(
-        run(&["worktree", "list"], located(linked), &[]),
-        (forwards(&["worktree", "list"]), location_only())
-    );
-    // In the main worktree neither needs the copy.
-    for values in [vec!["worktree", "add", "../topic"], vec!["st"]] {
-        assert_eq!(
-            run(values.as_slice(), scripted_facts(), &[]),
-            (forwards(values.as_slice()), location_only()),
-            "{values:?}"
-        );
-    }
-    // A bare repository synchronizes copies too.
     let bare: RepositoryLocation = RepositoryLocation {
         identity: WorktreeIdentity::BareRepository {
             common_dir: PathBuf::from("/b.git"),
@@ -680,13 +660,35 @@ fn worktree_creation_and_aliases_are_refused_where_copies_are_synchronized() {
         },
         prefix: Vec::<u8>::new(),
     };
-    assert_eq!(
-        run(&["worktree", "add", "../topic"], located(bare), &[]),
-        (
-            refuses(&Unported::WorktreeCopy, "worktree"),
-            location_only()
-        )
-    );
+    for location in [linked, bare] {
+        for values in [
+            vec!["worktree", "add", "../topic"],
+            vec!["st"],
+            vec!["worktree", "list"],
+        ] {
+            assert_eq!(
+                run(values.as_slice(), located(location.clone()), &[]),
+                (forwards(values.as_slice()), location_only()),
+                "{values:?}"
+            );
+        }
+        assert_eq!(
+            run(
+                &["worktree", "add", "--no-worktree-copy", "../topic"],
+                located(location.clone()),
+                &[]
+            ),
+            (forwards(&["worktree", "add", "../topic"]), location_only())
+        );
+    }
+    // In the main worktree the same commands are forwarded.
+    for values in [vec!["worktree", "add", "../topic"], vec!["st"]] {
+        assert_eq!(
+            run(values.as_slice(), scripted_facts(), &[]),
+            (forwards(values.as_slice()), location_only()),
+            "{values:?}"
+        );
+    }
 }
 
 /// Findings of `git add` come from what it would stage:

@@ -34,6 +34,34 @@ class OklchMathTest {
         assertTrue(srgbToOklch(Srgb8(255, 255, 255)).chroma < TOLERANCE)
     }
 
+    /** Confirms every equal-channel color reads exactly zero chroma while a one-step offset does not (D118). */
+    @Test
+    fun anEqualChannelColorReadsAsExactlyAchromatic() {
+        for (level in 0..255) {
+            assertEquals("gray $level", 0.0, srgbToOklch(Srgb8(level, level, level)).chroma, 0.0)
+        }
+        assertTrue(srgbToOklch(Srgb8(129, 128, 128)).chroma > 1.0e-3)
+    }
+
+    /** Confirms zero chroma always encodes to equal channels, even within 1e-12 of an 8-bit rounding boundary. */
+    @Test
+    fun zeroChromaAlwaysEncodesToEqualChannelsEvenOnARoundingBoundary() {
+        for (step in 0..20_000) {
+            val color: Srgb8 = oklchToSrgb8(Oklch(step / 20_000.0, 0.0, 123.0))
+            assertTrue("step $step: $color", color.red == color.green && color.green == color.blue)
+        }
+        for (level in 0 until 255) {
+            val encoded: Double = (level + 0.5) / 255.0
+            val linear: Double =
+                if (encoded <= 0.04045) encoded / 12.92 else Math.pow((encoded + 0.055) / 1.055, 2.4)
+            val boundary: Double = Math.cbrt(linear)
+            for (nudge in listOf(-1.0e-9, -1.0e-12, 0.0, 1.0e-12, 1.0e-9)) {
+                val color: Srgb8 = oklchToSrgb8(Oklch(boundary + nudge, 0.0, 0.0))
+                assertTrue("level $level nudge $nudge: $color", color.red == color.green && color.green == color.blue)
+            }
+        }
+    }
+
     /** Confirms a color outside the gamut keeps its lightness and hue and loses only chroma, and lands inside. */
     @Test
     fun gamutMappingReducesChromaAndKeepsLightnessAndHue() {

@@ -111,4 +111,17 @@ class PlayerThemeTest {
             }
         }
     }
+
+    /** D119: the context menu is filled with the canvas color, pure white in light and pure black in dark. */
+    @Test
+    fun theMenuSitsOnThePureCanvasColor() {
+        /** Palette derived from the baseline root. */
+        val palette = deriveRoles(null)
+        /** Light scheme of that palette. */
+        val light = playerColorScheme(palette, dark = false)
+        /** Dark scheme of that palette. */
+        val dark = playerColorScheme(palette, dark = true)
+        assertEquals(Color.White, trackMenuContainerColor(light))
+        assertEquals(Color.Black, trackMenuContainerColor(dark))
+    }
 }

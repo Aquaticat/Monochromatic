@@ -48,7 +48,7 @@ as the installed wrapper's `markdownLintPolicy` does
 - A candidate whose bytes are not UTF-8 is skipped.
 - Every other candidate goes through the linter.
   A changed source is the finding `markdown-autofix`,
-  "markdown-lint --fix (lfs-image-url) rewrites `<path>`.",
+  "monochromatic-lint --fix (markdown/lfs-image-url) rewrites `<path>`.",
   the installed wrapper's words;
   on `git cli-git fix` only it carries a full-content correction,
   which the existing fix loop applies and installs.
@@ -369,7 +369,7 @@ none was fixed.
   the incumbent passes no `--rule`,
   so its linter runs every rule it has
   and rewrites the heading punctuation and the bare URL as well
-  ("markdown-lint --fix () rewrites ...");
+  ("monochromatic-lint --fix () rewrites ...");
   the native configuration refuses the empty list with `config-invalid`
   ("must name at least one rule; set the policy's severity to "off" to disable it.",
   `src/native/config_policies.rs`),
@@ -646,10 +646,10 @@ with no decision behind it unless one is named.
   the linter's are relative to the nearest `.lfsconfig`.
 - The linter gets the invocation's whole environment.
 - An engine failure about one candidate names it in `path`, and `pathBytes` when needed.
-- The autofix message keeps "markdown-lint --fix",
-  the installed wrapper's words,
-  although `monochromatic-lint` runs;
-  naming the program that runs is one string in `src/native/policy_markdown.rs`.
+- The autofix message reads "monochromatic-lint --fix (markdown/<rule>, ...) rewrites <path>.",
+  the words of the incumbent's source (`src/optional/markdown-lint/rewrite-candidates.ts`);
+  the integration branch changed it from the installed wrapper's older "markdown-lint --fix (<rule>)" after the
+  repository configuration differential showed the difference.
 - `changedPathBytes` lists every changed path once any of them is not UTF-8.
 - `pathBytes` is base64,
   for the reasons under "pathBytes".

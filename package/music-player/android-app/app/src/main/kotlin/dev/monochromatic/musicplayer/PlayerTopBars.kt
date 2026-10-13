@@ -14,6 +14,8 @@ package dev.monochromatic.musicplayer
 // ```ts
 // import { clickable } from "compose/foundation";
 // ```
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -156,6 +158,7 @@ private fun folderTitleTrigger(
     Row(
         modifier = modifier
             .defaultMinSize(minHeight = TOUCH_TARGET)
+            .focusRing(RectangleShape)
             .clickable(role = Role.Button, onClick = onToggleFolderPicker)
             .semantics {
                 contentDescription = folderTriggerContentDescription(folderTitle)
@@ -188,7 +191,10 @@ private fun folderTitleTrigger(
 /** Draws the Open action as a filled tonal button with the folder glyph and its label. */
 @Composable
 private fun openButton(onOpen: () -> Unit) {
-    FilledTonalButton(onClick = onOpen) {
+    FilledTonalButton(
+        onClick = onOpen,
+        modifier = Modifier.defaultMinSize(minHeight = TOUCH_TARGET).focusRing(CircleShape),
+    ) {
         Icon(
             imageVector = FOLDER_OPEN_ICON,
             contentDescription = null,
@@ -209,7 +215,7 @@ private fun openButton(onOpen: () -> Unit) {
 /** Draws the settings icon button with a 48dp target and the spoken label Settings. */
 @Composable
 private fun settingsButton(onSettings: () -> Unit) {
-    IconButton(onClick = onSettings, modifier = Modifier.size(TOUCH_TARGET)) {
+    IconButton(onClick = onSettings, modifier = Modifier.size(TOUCH_TARGET).focusRing(CircleShape)) {
         Icon(imageVector = SETTINGS_ICON, contentDescription = "Settings")
     }
 }
@@ -224,7 +230,7 @@ private fun settingsButton(onSettings: () -> Unit) {
 /** Draws the search icon button with a 48dp target and the spoken label Search music. */
 @Composable
 private fun searchButton(onSearch: () -> Unit) {
-    IconButton(onClick = onSearch, modifier = Modifier.size(TOUCH_TARGET)) {
+    IconButton(onClick = onSearch, modifier = Modifier.size(TOUCH_TARGET).focusRing(CircleShape)) {
         Icon(imageVector = SEARCH_ICON, contentDescription = "Search music")
     }
 }

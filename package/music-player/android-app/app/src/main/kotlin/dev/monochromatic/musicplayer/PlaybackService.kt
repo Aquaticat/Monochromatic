@@ -88,6 +88,7 @@ import android.database.ContentObserver
 import dev.monochromatic.musicplayer.core.RescanPlan
 import android.os.Handler
 import android.os.Looper
+import android.provider.DocumentsContract
 import android.provider.MediaStore
 
 // What:     `import android.util.Log` pulls in `Log`, Android's logger
@@ -351,14 +352,31 @@ class PlaybackService : MediaSessionService() {
         }
     }
 
-    /** Follows the system audio index: any change to it asks for a rescan, so the library follows the disk. */
+    /** Tree URI of the held folder grant, read off the main thread, or null while the library is the system one. */
+    @Volatile
+    private var grantedTree: Uri? = null
+
+    /** URI of the granted folder's children that [treeObserver] watches now, or null when it watches nothing. */
+    private var watchedChildren: Uri? = null
+
+    /**
+     * Follows the system audio index: any change to it asks for a rescan, so the library follows the disk. With a
+     * granted folder the index still moves when a file lands in it, so the same signal asks for a rescan of the grant.
+     */
     private val mediaObserver: ContentObserver = object : ContentObserver(handler) {
         /** A row of the system audio index was added, changed or removed. */
         override fun onChange(selfChange: Boolean) {
-            if (LibraryRoot.heldRoot(this@PlaybackService) == null) {
-                Log.i(LOG_TAG, "system audio index changed; a rescan follows")
-                rescan()
-            }
+            Log.i(LOG_TAG, "system audio index changed; a rescan follows folder=${grantedTree != null}")
+            rescan()
+        }
+    }
+
+    /** Follows the granted folder's own document tree, which a document provider may notify when a file arrives. */
+    private val treeObserver: ContentObserver = object : ContentObserver(handler) {
+        /** The provider reported a change under the granted folder. */
+        override fun onChange(selfChange: Boolean, uri: Uri?) {
+            Log.i(LOG_TAG, "granted folder changed uri=$uri; a rescan follows")
+            rescan()
         }
     }
 
@@ -503,6 +521,9 @@ class PlaybackService : MediaSessionService() {
          */
         fun rescan() = this@PlaybackService.rescan()
 
+        /** Asks for a rescan because the app returned to the front. */
+        fun rescanOnForeground() = this@PlaybackService.rescanOnForeground()
+
         // What:     `fun saveSession() = this@PlaybackService.saveSession()` declares an
         //           expression-body method forwarding to the outer service's `saveSession()`.
         // Why:      The activity calls this in `onStop` (before unbinding) so the live resume
@@ -580,6 +601,7 @@ class PlaybackService : MediaSessionService() {
         // ```
         controller.onTrackLoaded = { uri -> readArtistTag(uri) }
         contentResolver.registerContentObserver(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, true, mediaObserver)
+        watchGrantedTree()
         brainPlayer = BrainPlayer(controller, Looper.getMainLooper())
         // What:     `controller.onPersist = { saveSession() }` wires the controller's persist
         //           callback to this service's `saveSession`. The lambda is invoked at the end
@@ -649,16 +671,22 @@ class PlaybackService : MediaSessionService() {
         //   this.ensureLibraryLoaded();
         // }
         // ```
-        if (LibraryRoot.heldRoot(this) != null || hasAudioPermission(this)) {
-            // What:     `ensureLibraryLoaded()` calls this service's own load method
-            //           (implicit `this`).
-            // Why:      Kick off the headless self-load.
-            //
-            // In TS you'd write (pseudocode):
-            // ```ts
-            // this.ensureLibraryLoaded();
-            // ```
-            ensureLibraryLoaded()
+        // The grant is read on the I/O dispatcher, because its preference file and permission list are disk reads that
+        // StrictMode flagged on the main thread; the load starts as soon as the answer is in.
+        scope.launch {
+            /** Whether a persisted grant or the audio permission lets the service load a library by itself. */
+            val canLoad: Boolean = hasAudioPermission(this@PlaybackService) ||
+                withContext(Dispatchers.IO) { LibraryRoot.heldRoot(this@PlaybackService) != null }
+            if (canLoad) {
+                // What:     `ensureLibraryLoaded()` calls this service's own load method (implicit `this`).
+                // Why:      Kick off the headless self-load.
+                //
+                // In TS you'd write (pseudocode):
+                // ```ts
+                // this.ensureLibraryLoaded();
+                // ```
+                ensureLibraryLoaded()
+            }
         }
     }
 
@@ -948,6 +976,7 @@ class PlaybackService : MediaSessionService() {
         // this.libraryLoaded = true;
         // ```
         libraryLoaded = true
+        watchGrantedTree()
         // What:     `PeakSweepScheduler.enqueue(this)` schedules the background peak sweep
         //           (idempotent).
         // Why:      A new library exists, so re-ensure the sweep is queued.
@@ -1152,6 +1181,39 @@ class PlaybackService : MediaSessionService() {
     // rescan(): void { clearTimeout(this.timer); this.timer = setTimeout(() => { if (plan.signal()) this.rescanNow();
     // }, 1500); }
     // ```
+    /**
+     * Reads the held folder grant off the main thread and moves the folder observer to its children, or removes the
+     * observer when no folder is granted.
+     */
+    fun watchGrantedTree() {
+        scope.launch {
+            /** The held grant, read where disk access is allowed. */
+            val root: Uri? = withContext(Dispatchers.IO) { LibraryRoot.heldRoot(this@PlaybackService) }
+            grantedTree = root
+            /** Children of the granted folder's root document, or null without a grant. */
+            val children: Uri? = root?.let { tree ->
+                DocumentsContract.buildChildDocumentsUriUsingTree(tree, DocumentsContract.getTreeDocumentId(tree))
+            }
+            if (children == watchedChildren) {
+                return@launch
+            }
+            contentResolver.unregisterContentObserver(treeObserver)
+            watchedChildren = children
+            if (children != null) {
+                contentResolver.registerContentObserver(children, true, treeObserver)
+                Log.i(LOG_TAG, "watching the granted folder $children")
+            }
+        }
+    }
+
+    /** Asks for a rescan because the app returned to the front or the activity bound again (D113). */
+    fun rescanOnForeground() {
+        if (rescanPlan.foreground(libraryLoaded = libraryLoaded)) {
+            Log.i(LOG_TAG, "the app is in front; a rescan follows")
+            rescan()
+        }
+    }
+
     /** Schedules one rescan after the signals of the last moment have settled. */
     fun rescan() {
         handler.removeCallbacks(rescanRunnable)
@@ -1280,6 +1342,7 @@ class PlaybackService : MediaSessionService() {
      */
     override fun onDestroy() {
         contentResolver.unregisterContentObserver(mediaObserver)
+        contentResolver.unregisterContentObserver(treeObserver)
         handler.removeCallbacks(rescanRunnable)
         // What:     `saveSession()` persists the final session BEFORE anything is released.
         // Why:      Capture the latest selection/settings/position while the controller and

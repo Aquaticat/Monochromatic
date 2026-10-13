@@ -14,7 +14,11 @@ package dev.monochromatic.musicplayer
 // ```ts
 // import { Column, Row, size } from "compose/foundation/layout";
 // ```
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.ui.draw.shadow
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.defaultMinSize
@@ -33,7 +37,6 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 
@@ -295,12 +298,15 @@ private fun feedbackMessageSurface(
         FeedbackKind.UNDO -> MaterialTheme.colorScheme.onSurface
         FeedbackKind.NOTICE -> MaterialTheme.colorScheme.onSurface
     }
-    Surface(
-        modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite },
-        shape = RoundedCornerShape(FEEDBACK_CORNER_RADIUS),
-        color = container,
-        contentColor = content,
-        shadowElevation = FEEDBACK_SHADOW_ELEVATION,
+    /** Shape of the message container. */
+    val shape = RoundedCornerShape(FEEDBACK_CORNER_RADIUS)
+    // A Surface would clip its children to the shape and cut off the focus ring of its buttons (D117), so the
+    // container is a shadow and a fill; every child draws its own content color.
+    Box(
+        modifier = Modifier
+            .semantics { liveRegion = LiveRegionMode.Polite }
+            .shadow(elevation = FEEDBACK_SHADOW_ELEVATION, shape = shape)
+            .background(color = container, shape = shape),
     ) {
         // What:     `Row` places the optional glyph, text, optional action, and dismiss control in one line.
         // Why:      Controls share the surface's vertical center, and the text takes only the width it needs.
@@ -343,14 +349,14 @@ private fun feedbackMessageSurface(
                     modifier = Modifier.defaultMinSize(
                         minWidth = FEEDBACK_TOUCH_TARGET,
                         minHeight = FEEDBACK_TOUCH_TARGET,
-                    ),
+                    ).focusRing(CircleShape),
                 ) {
                     Text(text = label, fontWeight = FontWeight.Bold)
                 }
             }
             IconButton(
                 onClick = { onDismiss(message.id) },
-                modifier = Modifier.size(FEEDBACK_TOUCH_TARGET),
+                modifier = Modifier.size(FEEDBACK_TOUCH_TARGET).focusRing(CircleShape),
             ) {
                 Icon(
                     imageVector = FEEDBACK_CLOSE_ICON,

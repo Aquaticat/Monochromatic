@@ -362,38 +362,72 @@ unless the user asks otherwise.
 
 `claude-code-plugin/statusline` carried two justified disables that the sweep left standing.
  They were replaced on 2026-10-12 in commit
-`c436b4c48e`,
- and both shapes recur in the paused packages:
+`c436b4c48e`.
+ The anchored-grammar shape below recurs in the paused packages as anchored capture grammars over
+ literal separators,
+ without the optional groups:
+`package-paused/webapp-forge/server/src/worker/render.ts`,
+`package-paused/webapp-forge/server/src/worker/render-phase2.ts`,
+ and
+`package-paused/webapp-forge/server/src/server/routes/me.ts`.
+ No paused site uses a `\b` boundary,
+ though several bound a run between literal delimiters instead,
+ which is a different shape from the scanner below:
+`package-paused/webapp-forge/server/src/storage/adapter-s3.ts`
+ and
+`package-paused/webapp-content/messages-demo/src/client/composer/helpers.ts`.
 
 - Word-boundary scanner for
   `\b[a-z]+-?[a-z]*ing\b`:
   attempt a match only where a word starts with a member of the pattern's first character class,
-  advance one character everywhere else,
-  and at a start take the longest match the greedy optional pieces allow.
-  A leading `\b` in front of a character class means exactly that the previous character is not a
-  word character or the index is zero,
-  and `charAt` returns `''` out of bounds,
-  so both text edges need no bounds check.
+  and advance one character everywhere else.
+  Two properties of this pattern make the attempt deterministic,
+  and each needs checking before the shape is reused elsewhere.
+  A leading `\b` reduces to "the previous character is not a word character,
+  or the index is zero" only because every member of `[a-z]` is itself a word character;
+  for a class of non-word characters,
+  as in `\b-`,
+  the same assertion demands the opposite.
+  Greediness also does not imply a longest overall match in general;
+  it does here because each optional piece either extends the run past a literal hyphen or fails
+  outright,
+  which leaves one reachable end position per start.
+  `charAt` returns `''` out of bounds,
+  which is what both text edges want,
+  so neither needs a bounds check.
   See
   `package/claude-code-plugin/statusline/src/gerund.ts`.
 - Anchored grammar with optional groups such as
   `^(?<family>[A-Za-z]+)(?: (?<version>\d+\.\d+))?(?: \((?<context>\S+) context\))?$`:
-  when every separator is a literal that no piece can contain,
-  at most one optional group can follow any given position,
-  so a single left-to-right pass over character runs replaces the backtracking engine.
+  the optional groups need no backtracking because they begin with disjoint characters after their
+  shared literal separator,
+  a digit for the version and an opening parenthesis for the context,
+  so one character decides which group applies and a single left-to-right pass over character runs
+  replaces the engine.
+  Disjoint first characters are the condition to verify;
+  separators that no piece can contain are not sufficient on their own.
   `\S+` becomes a run up to the first whitespace character,
-  which needs the whole `\s` set written out as a character-list constant to stay exact.
+  where staying exact means covering the whole ECMAScript whitespace and line-terminator set,
+  and a character-list constant is one way to express it.
+  `$` without `m` requires the actual end of input,
+  so a trailing line terminator fails the whole name instead of being tolerated.
   See
   `package/claude-code-plugin/statusline/src/model.ts`.
 - Equivalence evidence for any such replacement:
   record golden outputs from the regex implementation over a generated adversarial corpus,
   replay the same corpus against the replacement,
   and prove the comparison can fail by mutating the replacement.
-  Read the pattern literal out of the source file rather than retyping it.
-  Here 520,985 display names and 140,090 gerund texts replayed identically,
-  while a one-character change to a length threshold diverged on 5,159 of them and the filtered
-  public API hid every one of those divergences,
-  so the raw match list has to be compared as well.
+  Read the pattern literal out of the source file rather than retyping it,
+  and count how much of the corpus the grammar actually accepts,
+  since a corpus of near misses can pass while barely reaching the accepting path.
+  Here 521,210 display names,
+  8,584 of them accepted by the grammar,
+  and 140,156 gerund texts,
+  51,606 of them holding at least one match,
+  replayed identically.
+  A one-character change to a length threshold then diverged on 5,159 gerund texts while the filtered
+  public API reported none of them,
+  so the raw match list has to be compared alongside the exported function.
 
 ### Files where source-of-truth IS regex (kept with disables)
 

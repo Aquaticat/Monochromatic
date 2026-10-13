@@ -280,7 +280,6 @@ export component FolderPickerPane inherits Rectangle {
                             tint: Theme.on-surface;
                             hovered: name-touch.has-hover;
                             pressed: name-touch.pressed;
-                            focused: name-row.ringed && Focus.ring-visible;
                         }
                         name-touch := TouchArea {
                             accessible-role: button;
@@ -336,7 +335,9 @@ export component FolderPickerPane inherits Rectangle {
                         vertical-alignment: center;
                         color: parent.selected ? Theme.primary : Theme.on-surface;
                     }
-                    // Keyboard ring around the 48 px target of the folder under the ring.
+                    // Keyboard ring around the 48 px target of the folder under the ring, flush outside it. The names column
+                    // keeps 8 px of margin around a ringed name when it scrolls it into view, which is more than the 3 px the
+                    // ring reaches, so the list's viewport never cuts it.
                     FocusRing {
                         active: name-row.ringed && Focus.ring-visible;
                     }

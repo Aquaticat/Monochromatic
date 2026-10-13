@@ -66,17 +66,28 @@ private fun isMeaningful(path: String, start: Int, end: Int): Boolean {
 // What:     `internal class CommonPrefix` keeps the longest common run of leading segments of the paths added so far.
 // Why:      The prefix of a scan's first thousand tracks can be longer than the prefix of the whole library, so the
 //           library feed must know the prefix of exactly the tracks it has shown, and it must not keep a list of
-//           segments for each of a million paths to know it.
+//           segments for each of a million paths to know it. With a known library root (D86, D3) the prefix is cut
+//           at the root, so a library whose only content is one top-level folder keeps that folder's name, as the
+//           desktop player does when it is given the opened folder.
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// class CommonPrefix { add(path: string) {} get count(): number { return 0; } }
+// class CommonPrefix { constructor(root?: string[]) {} add(path: string) {} get count(): number { return 0; } }
 // ```
 /**
  * The number of leading segments that every added path shares, capped so the last segment of the shortest path
  * always survives, exactly as `relativeDisplayPaths` strips them.
+ *
+ * When [root] is given and every added path lies strictly under it, only the root's segments are stripped, however
+ * many more the paths share; as soon as one path lies outside it, the shared directory is stripped as without a root.
  */
-internal class CommonPrefix {
+internal class CommonPrefix(
+    /** Segments of the library root that every path is relative to, or null when the root is unknown. */
+    private val root: List<String>? = null,
+) {
+    /** Whether every path added so far lies strictly under [root]; always true while [root] is null. */
+    private var underRoot: Boolean = true
+
     /** Segments of the first path added, which every later path is compared with, or null before any path. */
     private var first: List<String>? = null
 
@@ -88,7 +99,14 @@ internal class CommonPrefix {
 
     /** Number of leading segments to strip from every added path: zero when there is none or a path has no segment. */
     val count: Int
-        get() = if (first == null || shortest == 0) 0 else minOf(shared, shortest - 1)
+        get() {
+            if (first == null || shortest == 0) {
+                return 0
+            }
+            /** Segments that the paths share, never counting the last of the shortest path. */
+            val sharedDirectory: Int = minOf(shared, shortest - 1)
+            return if (root != null && underRoot) minOf(sharedDirectory, root.size) else sharedDirectory
+        }
 
     /** Adds one path and narrows the shared run, reading the path in place after the first. */
     fun add(path: String) {
@@ -100,18 +118,26 @@ internal class CommonPrefix {
             first = segments
             shared = segments.size
             shortest = segments.size
+            underRoot = root == null || isStrictlyUnder(segments, root)
             return
         }
         /** Number of named segments of this path found so far. */
         var named = 0
         /** Whether the named segments so far all equal the first path's. */
         var matching = true
+        /** Whether the named segments so far all equal the root's, when there is a root. */
+        var rootMatching = root != null
         /** Start of the segment being read. */
         var start = 0
         while (start <= path.length) {
             /** Offset of the separator that ends this segment, or the path length for the last one. */
             val stop: Int = path.indexOf(SEPARATOR_CHAR, start).let { found -> if (found < 0) path.length else found }
             if (isMeaningful(path, start, stop)) {
+                if (rootMatching && root != null && named < root.size &&
+                    (root[named].length != stop - start || !path.regionMatches(start, root[named], 0, stop - start))
+                ) {
+                    rootMatching = false
+                }
                 if (matching && (named >= shared || !path.regionMatches(start, head[named], 0, stop - start) ||
                         head[named].length != stop - start)
                 ) {
@@ -124,8 +150,15 @@ internal class CommonPrefix {
         }
         shortest = minOf(shortest, named)
         shared = minOf(shared, named)
+        if (root != null && (!rootMatching || named <= root.size)) {
+            underRoot = false
+        }
     }
 }
+
+/** Reports whether [segments] start with every segment of [root] and have at least one more, the file name. */
+private fun isStrictlyUnder(segments: List<String>, root: List<String>): Boolean =
+    segments.size > root.size && root.indices.all { index -> segments[index] == root[index] }
 
 // What:     `internal fun relativeOf(path: String, strip: Int): String` shows one path without its first segments.
 // Why:      It is the per-path part of `relativeDisplayPaths`, so a feed that appends tracks can compute the display
@@ -185,12 +218,13 @@ internal fun relativeOf(path: String, strip: Int): String {
 /**
  * Returns each path without the leading segments that all the paths share, in the same order.
  *
- * A path with no named segment keeps its full text, and an empty list gives an empty list.
+ * A path with no named segment keeps its full text, and an empty list gives an empty list. With a [root] that every
+ * path lies strictly under, only the root is stripped, so one top-level folder keeps its name (D86).
  */
-fun relativeDisplayPaths(tracks: List<String>): List<String> {
+fun relativeDisplayPaths(tracks: List<String>, root: List<String>? = null): List<String> {
     if (tracks.isEmpty()) return emptyList()
-    /** Shared prefix of all the paths. */
-    val prefix = CommonPrefix()
+    /** Shared prefix of all the paths, cut at the library root when there is one. */
+    val prefix = CommonPrefix(root)
     tracks.forEach { path -> prefix.add(path) }
     /** Number of segments to strip from each path. */
     val strip: Int = prefix.count

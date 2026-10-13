@@ -18,6 +18,8 @@ package dev.monochromatic.musicplayer
 // ```ts
 // import { background } from "compose/foundation";
 // ```
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.foundation.background
 
 // What:     `import androidx.compose.foundation.clickable` makes each result row one activatable target.
@@ -524,6 +526,15 @@ import androidx.compose.ui.text.style.TextAlign
 // ```
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+
+// What:     `import dev.monochromatic.musicplayer.core.FocusRingPlacement` says on which side of an edge a ring sits.
+// Why:      A result row sits flush in the clipped result list, so its focus ring is drawn inside the row (D120).
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// import type { FocusRingPlacement } from "dev.monochromatic.musicplayer/core/FocusRingGeometry";
+// ```
+import dev.monochromatic.musicplayer.core.FocusRingPlacement
 
 // What:     `import dev.monochromatic.musicplayer.core.SearchResult` names one result row.
 // Why:      The page draws each result and passes its identity to the open callback.
@@ -1061,7 +1072,10 @@ private fun searchHeader(
             .padding(start = startInset, end = endInset),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        IconButton(onClick = actions.onBack, modifier = Modifier.size(SEARCH_TOUCH_TARGET)) {
+        IconButton(
+            onClick = actions.onBack,
+            modifier = Modifier.size(SEARCH_TOUCH_TARGET).focusRing(CircleShape),
+        ) {
             Icon(imageVector = SEARCH_BACK_ICON, contentDescription = SEARCH_BACK_LABEL)
         }
         BasicTextField(
@@ -1092,7 +1106,10 @@ private fun searchHeader(
             },
         )
         if (isClearVisible(query)) {
-            IconButton(onClick = actions.onClear, modifier = Modifier.size(SEARCH_TOUCH_TARGET)) {
+            IconButton(
+                onClick = actions.onClear,
+                modifier = Modifier.size(SEARCH_TOUCH_TARGET).focusRing(CircleShape),
+            ) {
                 Icon(imageVector = SEARCH_CLEAR_ICON, contentDescription = SEARCH_CLEAR_LABEL)
             }
         }
@@ -1233,6 +1250,7 @@ private fun searchResultRow(
         modifier = Modifier
             .fillMaxWidth()
             .heightIn(min = SEARCH_ROW_MIN_HEIGHT)
+            .focusRing(RectangleShape, placement = FocusRingPlacement.INSIDE)
             .clickable(role = Role.Button, onClickLabel = rowSpeech.actionLabel) { onOpenResult(result) }
             .semantics(mergeDescendants = true) {
                 /** Current-track state read from the row's speech, or null when the row is not current. */
@@ -1241,7 +1259,10 @@ private fun searchResultRow(
                     stateDescription = state
                 }
             }
-            .padding(start = startInset, end = endInset),
+            .padding(
+                start = startInset,
+                end = endInset,
+            ),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Box(modifier = Modifier.size(SEARCH_TOUCH_TARGET), contentAlignment = Alignment.Center) {

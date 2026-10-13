@@ -17,7 +17,6 @@ fn old_fixed_values() -> Vec<(&'static str, u32, u32)> {
         ("canvas", 0x000000, 0xFFFFFF),
         ("deck", 0x0A0A0D, 0xF4F3FA),
         ("current-row", 0x121318, 0xF4F3FA),
-        ("seam", 0x000000, 0xB0B1BC),
         ("on-surface", 0xE4E5F0, 0x30323B),
         ("on-surface-variant", 0xC5C6D0, 0x5C5E6A),
         ("outline", 0x8E9099, 0x757780),
@@ -40,7 +39,6 @@ fn named_roles(set: &RoleSet) -> Vec<(&'static str, Srgb8)> {
         ("canvas", set.canvas),
         ("deck", set.deck),
         ("current-row", set.current_row),
-        ("seam", set.seam),
         ("surface-high", set.surface_high),
         ("on-surface", set.on_surface),
         ("on-surface-variant", set.on_surface_variant),
@@ -69,8 +67,33 @@ fn lookup(set: &RoleSet, name: &str) -> Srgb8 {
     panic!("no role named {name}");
 }
 
-/// What: `swept_roots()` is every test root: hues every 10 degrees by a spread of chromas, plus grays and the
-/// extremes (saturated red, yellow, green, blue, white, black).
+/// What: `near_gray_roots()` is every root the D118 rule must treat as chromatic although it looks gray: named
+/// one-channel offsets, plus every fifth gray level with each channel raised by one step in turn, and the equal-channel
+/// gray itself (a completely neutral root) at those levels.
+/// Why:  the old rule gave a root with chroma below 0.004 the baseline hue and shrank the gray roles of a weak root;
+///       these roots are the ones where that mattered, so the contrast sweep and the tint tests include them.
+fn near_gray_roots() -> Vec<Srgb8> {
+    let mut roots: Vec<Srgb8> = [0x808088, 0x7F8080, 0x8A8A8B, 0x8A8B8A, 0x808081, 0xFEFFFF, 0x010100, 0x7A7F9A]
+        .into_iter()
+        .map(hex)
+        .collect();
+    for level in (0..=255_u8).step_by(5) {
+        let raised: u8 = level.saturating_add(1);
+        roots.push(Srgb8 { red: level, green: level, blue: level });
+        roots.push(Srgb8 { red: raised, green: level, blue: level });
+        roots.push(Srgb8 { red: level, green: raised, blue: level });
+        roots.push(Srgb8 { red: level, green: level, blue: raised });
+    }
+    return roots;
+}
+
+/// What: `is_completely_neutral(root)` is true when the three 8-bit channels are equal.
+fn is_completely_neutral(root: Srgb8) -> bool {
+    return root.red == root.green && root.green == root.blue;
+}
+
+/// What: `swept_roots()` is every test root: hues every 10 degrees by a spread of chromas, plus grays, the
+/// near-gray roots and the extremes (saturated red, yellow, green, blue, white, black).
 /// Why:  the contrast guarantee must hold for any accent, including ones whose chroma the gamut cuts hard.
 fn swept_roots() -> Vec<Srgb8> {
     let mut roots: Vec<Srgb8> = Vec::new();
@@ -86,6 +109,7 @@ fn swept_roots() -> Vec<Srgb8> {
     for value in [0xFF0000, 0xFFD000, 0xFFFF00, 0x00FF00, 0x0000FF, 0x6060C0, 0x000000, 0xFFFFFF, 0x808080, 0x7F7F80] {
         roots.push(hex(value));
     }
+    roots.extend(near_gray_roots());
     return roots;
 }
 
@@ -361,11 +385,11 @@ fn the_contrast_list_reports_a_lightened_secondary_text_color_on_the_new_baselin
 
 #[test]
 fn fixed_roles_do_not_follow_the_accent() {
+    // Fixed roles are the pure black and pure white of D41, D34 and D45, white on-primary and the error colors. The
+    // dark deck is no longer among them (D118): it is a gray and takes the root's tint.
     for root in swept_roots() {
         let palette: ThemePalette = derive_roles(Some(root));
         assert_eq!(palette.dark.canvas, hex(0x000000), "D41 black canvas under {root:?}");
-        assert_eq!(palette.dark.deck, hex(0x0A0A0D), "D41 deck under {root:?}");
-        assert_eq!(palette.dark.seam, hex(0x000000));
         assert_eq!(palette.light.canvas, hex(0xFFFFFF), "D34 white canvas under {root:?}");
         assert_eq!(palette.light.on_primary, hex(0xFFFFFF), "white on-primary under {root:?}");
         assert_eq!(palette.dark.error, hex(0xFFB4AB));
@@ -432,21 +456,218 @@ fn a_vivid_root_does_not_tint_the_neutral_surfaces_beyond_the_baseline() {
     assert!((vivid_chroma - baseline_chroma).abs() < 0.004, "{vivid_chroma} vs {baseline_chroma}");
 }
 
+/// Smallest chroma, measured in OKLCH from the final 8-bit colors, that every gray role keeps under a weakly chromatic
+/// root. The lowest value measured over roots stepping one degree of hue in both schemes is 0.00455 (the dark deck);
+/// the floor sits just under it, so a gray role that lost its tint (the old shrinking rule gave 0.001 to 0.003) fails.
+const GRAY_CHROMA_FLOOR: f64 = 0.004;
+
+/// What: `gray_specs(scheme)` lists the table rows of every gray role of one scheme with their names.
+/// Why:  D118 names them: the deck, the playing row, surfaces, outlines and text variants, . Both
+///       canvases are pure black or white and are not grays; the error roles are semantic colors.
+fn gray_specs(scheme: Scheme) -> Vec<(&'static str, Role)> {
+    let spec: SchemeSpec = if scheme == Scheme::Dark { DARK_SPEC } else { LIGHT_SPEC };
+    let rows: Vec<(&'static str, Role)> = vec![
+        ("deck", spec.deck),
+        ("current-row", spec.current_row),
+        ("surface-high", spec.surface_high),
+        ("on-surface", spec.on_surface),
+        ("on-surface-variant", spec.on_surface_variant),
+        ("outline", spec.outline),
+        ("outline-variant", spec.outline_variant),
+    ];
+    return rows;
+}
+
+/// What: `gray_colors(set, scheme)` lists the finished color of every gray role of one scheme with its name.
+fn gray_colors(set: &RoleSet, scheme: Scheme) -> Vec<(&'static str, Srgb8)> {
+    return gray_specs(scheme)
+        .into_iter()
+        .map(|(name, _)| {
+            return (name, lookup(set, name));
+        })
+        .collect();
+}
+
+/// What: `channel_spread(color)` is the largest channel minus the smallest, 0 for a true gray.
+fn channel_spread(color: Srgb8) -> u8 {
+    return color.red.max(color.green).max(color.blue) - color.red.min(color.green).min(color.blue);
+}
+
+/// What: `spec_of(role)` is the table row of a `Neutral` or `Accent` role.
+fn spec_of(role: Role) -> RoleSpec {
+    return match role {
+        Role::Neutral(spec) | Role::Accent(spec) => spec,
+        Role::Fixed(_) => panic!("a fixed role has no table row"),
+    };
+}
+
 #[test]
-fn a_gray_root_yields_gray_roles_and_the_baseline_hue_is_the_defined_fallback() {
-    let gray: Srgb8 = hex(0x808080);
-    let terms: RootTerms = root_terms(Some(gray));
-    assert_eq!(terms.hue, srgb_to_oklch(BASELINE_ROOT).hue);
-    assert!(terms.scale < 0.01);
-    let palette: ThemePalette = derive_roles(Some(gray));
-    for set in [&palette.dark, &palette.light] {
-        for (name, color) in named_roles(set) {
-            // The error roles are semantic constants and the dark deck is the fixed D41 neutral #0A0A0D.
-            if name.starts_with("error") || name.ends_with("error-container") || (name == "deck" && set == &palette.dark) {
+fn the_dark_deck_is_a_table_gray_that_reproduces_the_old_literal_at_the_baseline() {
+    let baseline: ThemePalette = derive_roles(None);
+    assert_eq!(baseline.dark.deck, hex(0x0A0A0D), "the baseline deck must stay the captured literal");
+    assert!(matches!(DARK_SPEC.deck, Role::Neutral(_)), "the dark deck is a gray, so it takes the tint (D118)");
+    let old: Oklch = srgb_to_oklch(hex(0x0A0A0D));
+    let deck: RoleSpec = spec_of(DARK_SPEC.deck);
+    println!("dark deck: old literal L {:.5} C {:.5}, table L {} C {}", old.lightness, old.chroma, deck.lightness, deck.chroma);
+    assert!((deck.lightness - old.lightness).abs() < 0.0001, "the table lightness must be the old literal's");
+}
+
+#[test]
+fn completely_neutral_means_three_equal_channels_and_no_weaker_root_counts() {
+    // Every equal-channel root is completely neutral with scale exactly 0.
+    let mut largest_gray_chroma: f64 = 0.0;
+    for level in 0..=255_u8 {
+        let root: Srgb8 = Srgb8 { red: level, green: level, blue: level };
+        let terms: RootTerms = root_terms(Some(root));
+        assert!(terms.completely_neutral, "gray {level} must be completely neutral");
+        assert_eq!(terms.scale, 0.0, "gray {level} must have scale 0");
+        largest_gray_chroma = largest_gray_chroma.max(srgb_to_oklch(root).chroma);
+        // Every root one step off the gray axis, on any channel and in either direction, is NOT neutral.
+        for (red, green, blue) in [(1_i16, 0_i16, 0_i16), (0, 1, 0), (0, 0, 1), (-1, 0, 0), (0, -1, 0), (0, 0, -1)] {
+            let moved: [i16; 3] = [i16::from(level) + red, i16::from(level) + green, i16::from(level) + blue];
+            if moved.iter().any(|channel| {
+                return !(0..=255).contains(channel);
+            }) {
                 continue;
             }
-            let spread: u8 = color.red.max(color.green).max(color.blue) - color.red.min(color.green).min(color.blue);
-            assert!(spread <= 2, "{name} {color:?} is not gray");
+            let off: Srgb8 = Srgb8 { red: moved[0] as u8, green: moved[1] as u8, blue: moved[2] as u8 };
+            let off_terms: RootTerms = root_terms(Some(off));
+            assert!(!off_terms.completely_neutral, "{off:?} has chroma and must not be neutral");
+            assert!(off_terms.scale > 0.0, "{off:?} must keep a positive scale");
+            let off_chroma: f64 = srgb_to_oklch(off).chroma;
+            assert!(off_chroma > 1.0e-3, "{off:?} measures {off_chroma}, so a 1e-3 threshold would still separate them");
+            assert_eq!(off_terms.hue, srgb_to_oklch(off).hue, "{off:?} must keep its own hue");
+        }
+    }
+    println!("largest chroma of an equal-channel root: {largest_gray_chroma:e}; smallest unequal root measured 1.06e-3");
+    assert!(largest_gray_chroma < 1.0e-6, "equal-channel chroma is float noise: {largest_gray_chroma}");
+}
+
+#[test]
+fn a_completely_neutral_root_gives_equal_channels_for_every_gray_role() {
+    // D118: with no root chroma at all every gray is a true gray, in both schemes, for all 256 levels.
+    for level in 0..=255_u8 {
+        let root: Srgb8 = Srgb8 { red: level, green: level, blue: level };
+        let palette: ThemePalette = derive_roles(Some(root));
+        for (scheme, set) in [(Scheme::Dark, &palette.dark), (Scheme::Light, &palette.light)] {
+            for (name, color) in gray_colors(set, scheme) {
+                assert_eq!(channel_spread(color), 0, "{scheme:?} {name} {color:?} is not a true gray under gray {level}");
+            }
+            for (name, color) in named_roles(set) {
+                if name.starts_with("error") || name.ends_with("error-container") {
+                    continue;
+                }
+                assert_eq!(channel_spread(color), 0, "{scheme:?} {name} {color:?} carries a tint under gray {level}");
+            }
+        }
+    }
+}
+
+#[test]
+fn every_gray_role_of_a_weakly_chromatic_root_keeps_a_visible_tint() {
+    // D118: a nearly gray root is not gray. Every gray role keeps chroma above the floor, measured from the final
+    // 8-bit colors, and at least two 8-bit steps between its channels, for every weak root of the sweep.
+    let mut checked: usize = 0;
+    let mut lowest: f64 = f64::MAX;
+    let mut lowest_label: String = String::new();
+    for root in swept_roots() {
+        if is_completely_neutral(root) || srgb_to_oklch(root).chroma >= 0.02 {
+            continue;
+        }
+        let palette: ThemePalette = derive_roles(Some(root));
+        for (scheme, set) in [(Scheme::Dark, &palette.dark), (Scheme::Light, &palette.light)] {
+            for (name, color) in gray_colors(set, scheme) {
+                let chroma: f64 = srgb_to_oklch(color).chroma;
+                if chroma < lowest {
+                    lowest = chroma;
+                    lowest_label = format!("{scheme:?} {name} {color:?} under root {root:?}");
+                }
+                assert!(chroma > GRAY_CHROMA_FLOOR, "{scheme:?} {name} {color:?} has chroma {chroma:.5} under root {root:?}");
+                assert!(channel_spread(color) >= 2, "{scheme:?} {name} {color:?} lost its tint to rounding under {root:?}");
+                checked += 1;
+            }
+        }
+    }
+    println!("lowest gray-role chroma over the weak roots: {lowest:.5} ({lowest_label})");
+    assert!(checked > 1000, "the tint check ran on only {checked} roles");
+}
+
+#[test]
+fn a_weakly_chromatic_root_gives_every_gray_role_the_root_hue_not_the_baseline_hue() {
+    // #7F8080 has chroma 0.0012 and hue 197 degrees, far from the baseline hue (268.6). The old rule used the baseline
+    // hue below chroma 0.004; D118 uses the root's own hue. Roles with chroma of 0.012 or more keep their hue to
+    // within a few degrees through 8-bit rounding, so those are measured.
+    let weak: Srgb8 = hex(0x7F8080);
+    let root_hue: f64 = srgb_to_oklch(weak).hue;
+    let baseline_hue: f64 = srgb_to_oklch(BASELINE_ROOT).hue;
+    assert!((root_hue - baseline_hue).abs() > 60.0, "the control root must be far from the baseline hue");
+    let terms: RootTerms = root_terms(Some(weak));
+    assert_eq!(terms.hue, root_hue);
+    let palette: ThemePalette = derive_roles(Some(weak));
+    let mut measured: usize = 0;
+    for (scheme, set) in [(Scheme::Dark, &palette.dark), (Scheme::Light, &palette.light)] {
+        for (name, role) in gray_specs(scheme) {
+            let spec: RoleSpec = spec_of(role);
+            if spec.chroma < 0.012 {
+                continue;
+            }
+            let color: Oklch = srgb_to_oklch(lookup(set, name));
+            let wanted: f64 = (root_hue + spec.hue_offset).rem_euclid(360.0);
+            let wrong: f64 = (baseline_hue + spec.hue_offset).rem_euclid(360.0);
+            let off: f64 = (color.hue - wanted + 540.0).rem_euclid(360.0) - 180.0;
+            let off_wrong: f64 = (color.hue - wrong + 540.0).rem_euclid(360.0) - 180.0;
+            assert!(off.abs() < 6.0, "{scheme:?} {name} hue {} vs {wanted}", color.hue);
+            assert!(off_wrong.abs() > 30.0, "{scheme:?} {name} hue {} is the baseline hue {wrong}", color.hue);
+            measured += 1;
+        }
+    }
+    assert!(measured >= 8, "only {measured} roles were measured");
+}
+
+#[test]
+fn the_tint_of_a_gray_is_the_roles_own_tint_whatever_the_root_chroma() {
+    // D118: not shrunk by a weak root, not grown by a vivid one. The resolved chroma of every gray role equals its
+    // table value for roots of every chroma, and is 0 only for a completely neutral root.
+    for root in [0x808088, 0x7F8080, 0x808081, 0xFEFFFF, 0x7A7F9A, 0x4E5E8B, 0x6060C0, 0xFF0000, 0x0000FF, 0x00FF00] {
+        let terms: RootTerms = root_terms(Some(hex(root)));
+        for scheme in [Scheme::Dark, Scheme::Light] {
+            for (name, role) in gray_specs(scheme) {
+                let resolved: Oklch = resolve_oklch(role, terms);
+                assert_eq!(resolved.chroma, spec_of(role).chroma, "{scheme:?} {name} under {root:06X}");
+            }
+        }
+    }
+    for level in [0x00, 0x80, 0xFF] {
+        let terms: RootTerms = root_terms(Some(Srgb8 { red: level, green: level, blue: level }));
+        for scheme in [Scheme::Dark, Scheme::Light] {
+            for (name, role) in gray_specs(scheme) {
+                assert_eq!(resolve_oklch(role, terms).chroma, 0.0, "{scheme:?} {name} under gray {level}");
+            }
+        }
+    }
+}
+
+#[test]
+fn accent_roles_still_scale_with_the_root_chroma_while_grays_do_not() {
+    let weak: RootTerms = root_terms(Some(hex(0x808088)));
+    let baseline: RootTerms = root_terms(None);
+    assert!(weak.scale > 0.0 && weak.scale < 0.3, "the weak root keeps a small positive scale: {}", weak.scale);
+    assert_eq!(baseline.scale, 1.0);
+    let weak_primary: f64 = resolve_oklch(DARK_SPEC.primary, weak).chroma;
+    let baseline_primary: f64 = resolve_oklch(DARK_SPEC.primary, baseline).chroma;
+    assert!(weak_primary < baseline_primary * 0.3, "accent chroma must shrink with a weak root");
+    assert_eq!(resolve_oklch(DARK_SPEC.on_surface, weak).chroma, resolve_oklch(DARK_SPEC.on_surface, baseline).chroma);
+}
+
+#[test]
+fn the_shrinking_rule_the_floor_replaces_is_caught_by_the_floor_a_positive_control() {
+    // The old rule shrank a neutral role's chroma by min(1, scale). For #808088 that puts every gray role under the
+    // floor, so the floor test above would fail on it; without this, a floor that nothing can fall under proves nothing.
+    let weak: RootTerms = root_terms(Some(hex(0x808088)));
+    for scheme in [Scheme::Dark, Scheme::Light] {
+        for (name, role) in gray_specs(scheme) {
+            let old_rule_chroma: f64 = spec_of(role).chroma * weak.scale.min(1.0);
+            assert!(old_rule_chroma < GRAY_CHROMA_FLOOR, "{scheme:?} {name}: the old rule gave {old_rule_chroma}");
         }
     }
 }
@@ -524,7 +745,7 @@ fn every_swept_root_keeps_accent_roles_in_gamut_with_the_hue_kept_not_clipped() 
             for role in [
                 spec.current_row, spec.surface_high, spec.on_surface,
                 spec.on_surface_variant, spec.outline, spec.outline_variant, spec.primary, spec.on_primary,
-                spec.secondary_container, spec.on_secondary_container, spec.deck, spec.seam,
+                spec.secondary_container, spec.on_secondary_container, spec.deck,
             ] {
                 let wanted: Oklch = resolve_oklch(role, terms);
                 let mapped: Oklch = crate::oklch::gamut_map(wanted);
@@ -573,6 +794,124 @@ fn the_settings_row_pairs_hold_aa_under_every_swept_root() {
             assert_ratio(&format!("{label} line hovered {root:?}"), set.on_surface_variant, hovered, 4.5);
             for fill in [set.secondary_container, set.secondary_container_hovered, set.secondary_container_pressed] {
                 assert_ratio(&format!("{label} selected row {root:?}"), set.on_secondary_container, fill, 4.5);
+            }
+        }
+    }
+}
+
+/// What: `accent_colors(set, scheme)` lists the finished color of every accent role of one scheme with its name.
+/// Why:  the light on-primary is pure white (lightness 1 cannot carry chroma), so it is not among the light accents.
+fn accent_colors(set: &RoleSet, scheme: Scheme) -> Vec<(&'static str, Srgb8)> {
+    let mut colors: Vec<(&'static str, Srgb8)> = vec![
+        ("primary", set.primary),
+        ("secondary-container", set.secondary_container),
+        ("secondary-container-hovered", set.secondary_container_hovered),
+        ("secondary-container-pressed", set.secondary_container_pressed),
+        ("on-secondary-container", set.on_secondary_container),
+        ("match-fill", set.match_fill),
+    ];
+    if scheme == Scheme::Dark {
+        colors.push(("on-primary", set.on_primary));
+    }
+    return colors;
+}
+
+/// Smallest chroma, measured in OKLCH from the final 8-bit colors, that every accent role keeps under a weakly
+/// chromatic root. The lowest value measured over the weak roots of the sweep is 0.01313 (the dark pressed selected
+/// fill), against a table floor of 0.0153 (dark) or 0.0193 (light) before rounding; the test floor sits just under it.
+const ACCENT_CHROMA_FLOOR: f64 = 0.012;
+
+#[test]
+fn the_accent_floor_is_the_largest_gray_tint_of_each_scheme() {
+    // Pins the two numbers the reading of D118 hangs on, so a changed gray row shows up here and in the fixture.
+    assert!((gray_tint_ceiling(&DARK_SPEC) - 0.0153).abs() < 1e-12, "{}", gray_tint_ceiling(&DARK_SPEC));
+    assert!((gray_tint_ceiling(&LIGHT_SPEC) - 0.0193).abs() < 1e-12, "{}", gray_tint_ceiling(&LIGHT_SPEC));
+    for scheme in [Scheme::Dark, Scheme::Light] {
+        let spec: SchemeSpec = if scheme == Scheme::Dark { DARK_SPEC } else { LIGHT_SPEC };
+        let largest: f64 = gray_specs(scheme)
+            .iter()
+            .map(|(_, role)| {
+                return spec_of(*role).chroma;
+            })
+            .fold(0.0, f64::max);
+        assert_eq!(gray_tint_ceiling(&spec), largest, "{scheme:?}");
+    }
+}
+
+#[test]
+fn the_accent_floor_stays_under_every_baseline_accent_so_the_baseline_does_not_change() {
+    // At the baseline scale is exactly 1, so an accent keeps its table chroma only when that is above the floor. The
+    // one accent row with chroma 0 is the light on-primary, which is pure white (lightness 1) and stays white.
+    for (scheme, spec) in [(Scheme::Dark, DARK_SPEC), (Scheme::Light, LIGHT_SPEC)] {
+        let ceiling: f64 = gray_tint_ceiling(&spec);
+        for (name, role) in [
+            ("primary", spec.primary),
+            ("on-primary", spec.on_primary),
+            ("secondary-container", spec.secondary_container),
+            ("on-secondary-container", spec.on_secondary_container),
+        ] {
+            let chroma: f64 = spec_of(role).chroma;
+            let is_white: bool = spec_of(role).lightness >= 1.0;
+            assert!(chroma >= ceiling || is_white, "{scheme:?} {name} chroma {chroma} is under the floor {ceiling}");
+        }
+    }
+    assert_eq!(root_terms(None).scale, 1.0);
+    assert_eq!(derive_roles(None).light.on_primary, hex(0xFFFFFF));
+}
+
+#[test]
+fn an_accent_role_of_a_weakly_chromatic_root_is_never_grayer_than_the_grays() {
+    // D118 reading: for a root that is not completely neutral every accent role keeps chroma of at least the
+    // strongest gray tint of its scheme (before 8-bit rounding and gamut mapping), and the measured chroma stays
+    // above a floor just under the gray tint.
+    let mut checked: usize = 0;
+    let mut lowest: f64 = f64::MAX;
+    let mut lowest_label: String = String::new();
+    for root in swept_roots() {
+        if is_completely_neutral(root) || srgb_to_oklch(root).chroma >= 0.02 {
+            continue;
+        }
+        let palette: ThemePalette = derive_roles(Some(root));
+        for (scheme, set) in [(Scheme::Dark, &palette.dark), (Scheme::Light, &palette.light)] {
+            for (name, color) in accent_colors(set, scheme) {
+                let chroma: f64 = srgb_to_oklch(color).chroma;
+                if chroma < lowest {
+                    lowest = chroma;
+                    lowest_label = format!("{scheme:?} {name} {color:?} under root {root:?}");
+                }
+                assert!(chroma > ACCENT_CHROMA_FLOOR, "{scheme:?} {name} {color:?} has chroma {chroma:.5} under {root:?}");
+                checked += 1;
+            }
+        }
+    }
+    println!("lowest accent-role chroma over the weak roots: {lowest:.5} ({lowest_label})");
+    assert!(checked > 1000, "the accent check ran on only {checked} roles");
+}
+
+#[test]
+fn a_weak_roots_accent_resolves_to_the_scheme_floor_while_a_vivid_roots_keeps_its_scaled_chroma() {
+    for (scheme, spec) in [(Scheme::Dark, DARK_SPEC), (Scheme::Light, LIGHT_SPEC)] {
+        let ceiling: f64 = gray_tint_ceiling(&spec);
+        let weak: RootTerms =
+            RootTerms { accent_chroma_floor: ceiling, ..root_terms(Some(hex(0x7F8080))) };
+        let vivid: RootTerms =
+            RootTerms { accent_chroma_floor: ceiling, ..root_terms(Some(hex(0xFF0000))) };
+        assert_eq!(resolve_oklch(spec.primary, weak).chroma, ceiling, "{scheme:?} weak primary");
+        assert_eq!(
+            resolve_oklch(spec.primary, vivid).chroma,
+            spec_of(spec.primary).chroma * vivid.scale,
+            "{scheme:?} vivid primary"
+        );
+    }
+}
+
+#[test]
+fn a_completely_neutral_root_keeps_every_accent_role_at_chroma_zero() {
+    for level in [0x00, 0x40, 0x80, 0xC0, 0xFF] {
+        let palette: ThemePalette = derive_roles(Some(Srgb8 { red: level, green: level, blue: level }));
+        for (scheme, set) in [(Scheme::Dark, &palette.dark), (Scheme::Light, &palette.light)] {
+            for (name, color) in accent_colors(set, scheme) {
+                assert_eq!(channel_spread(color), 0, "{scheme:?} {name} {color:?} under gray {level}");
             }
         }
     }

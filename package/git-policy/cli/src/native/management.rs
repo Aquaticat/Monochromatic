@@ -33,7 +33,6 @@ use super::management_arguments::{
 };
 /// The linter the executable gives the Markdown policy.
 use super::markdown_linter::executable_linter;
-use super::pending_state::pending_state;
 /// The shipped checks and their constructor.
 use super::policy_checks::{ShippedChecks, shipped_checks};
 /// What the direct command offers its content policies.
@@ -49,6 +48,10 @@ use super::repository_facts::{GitFacts, RepositoryFacts, git_facts};
 use super::repository_location::RepositoryLocation;
 /// The variable that names the forbidden-strings rules file.
 use super::scanner_selection::RULES_VARIABLE;
+/// Startup recovery as a command step.
+use super::transaction_gate::{Gate, recover_for_command};
+use super::index_writer_coordination::hold_landing_lock;
+use super::owner_lock::OwnerLock;
 use super::unported::{unported_from_unavailable, unported_notice};
 /// The worktree's top level,
 ///  where a fix installs corrected files.
@@ -457,27 +460,44 @@ pub fn plan_management(
         Ok(found) => found,
         Err(message) => return failure(message.as_str()),
     };
-    // `true`: a direct command forwards nothing, so only commit transactions matter here.
-    if let Some(what) = pending_state(&location.identity, true) {
-        return Action::Exit {
-            code: ENGINE_FAILURE_EXIT_CODE,
-            stdout: String::new(),
-            stderr: unported_notice(&what, direct_command(fix).as_str()),
-        };
-    }
-    match load_identity_config(&location.identity) {
-        Ok(loaded) => {
-            return run_direct_command(
-                fix,
-                selected,
-                controls,
-                &loaded,
-                &mut checks,
-                worktree_root(&location.identity),
-            );
+    // A direct command forwards nothing, so only commit transactions matter here: dead ones
+    // are recovered, and a live one still refuses, since a fix would race its landing.
+    match recover_for_command(&checks.facts.transaction_context(), &location.identity) {
+        Gate::Clear | Gate::Live(_) => {}
+        Gate::Stop(stderr) => {
+            return Action::Exit {
+                code: ENGINE_FAILURE_EXIT_CODE,
+                stdout: String::new(),
+                stderr,
+            };
         }
-        Err(error) => return direct_config_failure(&error),
     }
+    // The direct fix runs under the landing lock, so no landing commits beside it.
+    let held: Option<OwnerLock> = match hold_landing_lock(&checks.facts.transaction_context(), &location.identity) {
+        Ok(found) => found,
+        Err(failure) => {
+            return Action::Exit {
+                code: ENGINE_FAILURE_EXIT_CODE,
+                stdout: String::new(),
+                stderr: failure.stderr(),
+            };
+        }
+    };
+    let action: Action = match load_identity_config(&location.identity) {
+        Ok(loaded) => run_direct_command(
+            fix,
+            selected,
+            controls,
+            &loaded,
+            &mut checks,
+            worktree_root(&location.identity),
+        ),
+        Err(error) => direct_config_failure(&error),
+    };
+    if let Some(lock) = held && let Err(reason) = lock.release() {
+        super::diagnostic_log::debug("directFix", format!("landing lock release failed: {reason}").as_str());
+    }
+    return action;
 }
 
 /// Decision controls stay out of the release executable.

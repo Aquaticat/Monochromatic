@@ -1,24 +1,42 @@
 [package]
-name = "git-policy-cli"
-version = "0.0.1"
+name = "monochromatic-git-policy-cli"
+version = "0.1.0"
 edition = "2024"
-description = "Native repository-owned Git policy wrapper implementation."
+description = "Repository-owned Git policy wrapper: forwards Git commands and checks commits against configured policies."
 license = "LGPL-3.0-or-later"
 readme = "README.md"
 repository = "https://github.com/Aquaticat/Monochromatic.git"
-# First crates.io publication requires separate approval; the TypeScript executable remains active meanwhile.
-publish = false
+# `include` patterns are gitignore-style, so an unanchored `README.md` would also package `e2e/README.md`.
+include = [
+  "src/native/**/*.rs",
+  "src/native/dependent_version_fixtures/*.json",
+  "src/native/index_lock_restart_manager.ps1",
+  "/Cargo.toml",
+  "/Cargo.lock",
+  "/README.md",
+  "LICENSES/*.txt",
+]
 homepage = "https://github.com/Aquaticat/Monochromatic/tree/main/package/git-policy/cli"
 
 [lib]
 name = "git_policy_cli"
 path = "src/native/lib.rs"
 
-# The artifact is deliberately not named `git`: a `target/*/git` on PATH would shadow Git by accident.
-# Installation wiring gives the executable its `git` name at cutover.
+# The artifact is deliberately not named `git`: a `target/*/git` or a tool `bin/git` on PATH would shadow Git by accident.
+# The repository's mise tool entry links it as `git` in a per-worktree directory after installing it.
 [[bin]]
 name = "cli-git-native"
 path = "src/native/main.rs"
+
+# cargo-binstall's default URL is {repo}/releases/download/v{version}/{name}-{target}-v{version},
+# but this repository tags each crate's release monochromatic-git-policy-cli-v<version> and names the archive
+# monochromatic-git-policy-cli-<version>-<target>, so without this table mise falls back to compiling from source.
+# Only Linux archives are released, and only for the GNU targets; any other target compiles from source.
+# doc/troubleshooting/mise-cargo-binstall-falls-back-to-compiling.md has the evidence.
+[package.metadata.binstall]
+pkg-url = "{ repo }/releases/download/{ name }-v{ version }/{ name }-{ version }-{ target }{ archive-suffix }"
+bin-dir = "{ name }-{ version }-{ target }/{ bin }{ binary-ext }"
+pkg-fmt = "tgz"
 
 # Consumer-level controls that start the built executable against real Git.
 [[test]]
@@ -32,11 +50,23 @@ path = "src/native/candidate_consumer_tests.rs"
 
 [dependencies]
 # Both native tools use the already adopted comment-preserving JSONC foundation.
-monochromatic-jsonc-edit = { path = "../../rust-module/jsonc-edit", version = "0.1.0" }
+monochromatic-jsonc-edit = { path = "../../rust-module/jsonc-edit", version = "0.1.1" }
 # The repository's own scanner, linked in-process instead of spawned: `src/native/scanner_adapter.rs`
 # loads its rules once per invocation and scans candidate bytes through `Scanner::scan`.
 # Its catch boundaries need this crate's effective profile to unwind; `scanner_adapter.rs` refuses to build otherwise.
-forbidden-strings = { path = "../../cli/forbidden-strings", version = "0.4.1" }
+forbidden-strings = { path = "../../cli/forbidden-strings", version = "0.5.0" }
+# Lock and journal records are JSON that the incumbent writes with `JSON.stringify` and reads with `JSON.parse`;
+# both wrappers read each other's records (doc/handover/cli-git-native-transactions.md, "Dependencies").
+# The scanner already links this exact version, so it adds no package to the lockfile.
+serde_json = "1"
+# Unguessable lock tokens and transaction IDs, the incumbent's `randomUUID`, from the operating system's source.
+# Already in the lockfile through the scanner's `tempfile`.
+getrandom = "0.4"
+
+# `sigaction` with signal details, `kill` and process-group facts, which the standard library does not expose.
+# Already in the lockfile through the scanner's dependencies.
+[target.'cfg(unix)'.dependencies]
+libc = "0.2"
 # The `markdown/autofix` policy's `exclude` patterns are gitignore syntax; the linter it runs and the
 # scanner above match them with this crate's gitignore matcher, already locked through the scanner.
 ignore = "0.4"

@@ -1,5 +1,179 @@
 # Pi 0.87.1 nominal dependency inventory rejects the configured workspace graph
 
+## Pi 1.1.0 retained callback options shift an owned source fixture
+
+### Symptom and cause
+
+Node 26.10.0 emitted `AssertionError [ERR_ASSERTION]: undefined !== 1`
+in private `contract/integration/native-batch/original-judgment.test.mjs:124`
+during the maintained runtime-hook cutover (`proc_f31e`).
+The fixture interpreted a callback-options object as the constructor's tool array.
+Its later missing-review assertion was a consequence of that earlier failed wire check.
+
+Before private `0a69355c`,
+the fixture placed constructor metadata immediately after handler messages:
+
+```javascript
+// Private contract/integration/native-batch/original-judgment.test.mjs:26 before 0a69355c
+const constructorSourceOffset=messageSourceOffset+2;
+```
+
+The original run-input collector already retained callback options after those messages.
+Private `contract/collector/run-prompt-custody-v3/message-inputs.mjs:27` includes this sequence:
+
+```javascript
+// Excerpt of the original active-input array in message-inputs.mjs:27
+...publication.handlerMessageInputs,...(publication.handlerOptionInputs??[])
+```
+
+The hypothesis that extracting hook bookkeeping caused this source mismatch was rejected.
+`proc_9b32` loaded the pre-cutover runtime from `990e177c^` into a disposable module,
+kept current source owners and fixture assertions,
+and reached the same `undefined !== 1` assertion.
+No installed SDK source or maintained runtime artifact was changed by that comparison.
+
+### Correction and verification
+
+Private `0a69355c` derives later offsets from the original callback observation count.
+It also checks every newly represented option source,
+rather than merely changing the constructor index:
+
+```javascript
+// Private contract/integration/native-batch/original-judgment.test.mjs:72 and :129
+assert.equal(run.handlerOptionInputs.length,run.handlerObservations.length);
+assert.equal(policy.content,JSON.stringify(publications[0].run.handlerObservations[ordinal].before.options));
+```
+
+`proc_6fa5` passed both the migrated and pre-cutover runtimes with these corrected assertions.
+The migrated path also passed exact maintained-export identity,
+disposal gating,
+partial installation rollback,
+retryable native cleanup,
+and original native start-error preservation.
+These were local fixture exchanges with zero provider requests and zero protected tool executions.
+
+Owning commands in private `contract/integration/native-batch` are
+`mise --no-env --no-hooks run --skip-tools test:runtime-hooks`
+and `mise --no-env --no-hooks run --skip-tools test:runtime-hooks:baseline`.
+Use the restricted launcher in the current frontier.
+The failing catalog is the old constructor offset with either runtime;
+the passing catalog is original callback-option accounting with either runtime.
+This corrects a fixture contract,
+not source membership,
+authority,
+or native behavior.
+
+### Rejected remedies and upstream filing decision
+
+Reverting hook extraction did not resolve the assertion.
+Dropping the callback inputs or ignoring failed wire checks would discard required evidence,
+not fix the fixture.
+There is nothing to file upstream:
+
+- The fault was an owned fixture's outdated source offset,
+  not Pi or Node behavior.
+- The consumer correction passed without an upstream change.
+- No upstream SDK support boundary was changed.
+- Contribution policy was not investigated because no upstream defect is proposed.
+- Maintainer willingness is not asserted and cannot override the failed fault condition.
+- The verified patch is consumer-side;
+  no upstream patch prototype or issue draft is warranted.
+
+## Pi 1.1.0 extension receipt fixtures and main-only imports
+
+### Symptoms
+
+The first extension receipt fixture failed with Node's
+`TypeError: Cannot read properties of undefined (reading 'description')`
+in `extension-tool-input.test.mjs` (`proc_af3f` and `proc_f39c`).
+It queried `session.getToolDefinition()` while configuring `tools: []`.
+Binding extensions did not resolve the lookup.
+The earlier explanation that binding caused the missing definition was incorrect.
+
+The expanded stager also failed with
+`TypeError: Cannot read properties of undefined (reading '.')`
+at `metadata.exports[subpath]` (`proc_5a5e`).
+That helper assumed every native dependency declared an export map.
+
+### Source findings
+
+In installed Pi 1.1.0,
+`package/pi-plugin/auto-mode/node_modules/@earendil-works/pi-coding-agent/dist/core/sdk.js:153`
+selects an allowlist from the explicit tool option:
+
+```javascript
+// Installed Pi 1.1.0 dist/core/sdk.js:153
+const allowedToolNames = toolModifiers
+    ? options.noTools === "all"
+        ? selectedToolNames
+        : undefined
+    : (options.tools ?? (options.noTools === "all" ? [] : undefined));
+```
+
+`package/pi-plugin/auto-mode/node_modules/@earendil-works/pi-coding-agent/dist/core/agent-session.js:2821`
+filters extension definitions before placing them in the session definition registry:
+
+```text
+// Installed Pi 1.1.0 dist/core/agent-session.js:2821
+.filter((tool) => this._isAllowedTool(tool.definition.name));
+```
+
+The native registration map and the session's allowed definition registry are different evidence surfaces.
+Installed `dist/core/extensions/loader.js:231` receives and validates `registerTool(tool)`,
+then replaces `extension.tools` by name before calling `runtime.refreshTools()`.
+An excluded session definition does not prove registration never received the input.
+
+The installed `@earendil-works/pi-tui` 1.1.0 `package.json` has
+`"type": "module"` and `"main": "dist/index.js"`,
+without `exports`.
+The owned stager's unconditional export-map lookup caused the import failure.
+
+### Correction and verification
+
+The fixture now checks the native extension registration map directly.
+An additional `--allow-hidden` case names the tool in the allowlist
+and verifies the session definition while its hidden exposure still prevents activation.
+This distinguishes received input,
+registration,
+allowed definitions,
+and active declarations without assigning policy authority to any of them.
+
+The stager uses the package's declared `main` only for a root import when `exports` is absent.
+It preserves native package-relative loader resolution
+and stages resource and extension loader observations without changing installed files.
+`proc_1073` passed the original receipt test;
+`proc_6749` passed resource bounds,
+inline excluded/allowed registration,
+and actual file loading with a native Pi AI compatibility import.
+The stager reported SDK 1.1.0 and 13 copied native modules.
+All those fixtures made zero provider requests.
+
+The owning inner command is
+`mise --no-env --no-hooks run --skip-tools test:extension-tool-input`
+in private `contract/integration/native-batch`.
+Use the restricted worker wrapper recorded in the current frontier.
+The default and `--allow-hidden` cases are separate controls;
+changing the allowlist is not required to retain a rejected or excluded original receipt.
+
+### Rejected remedies and upstream filing decision
+
+Do not infer original-input absence from a filtered session registry.
+Do not weaken the source-domain requirement,
+downgrade Pi,
+or guess a package entry filename to avoid these fixture and stager errors.
+
+No upstream filing is warranted:
+
+- Upstream fault is not established;
+  the failures were owned test and staging assumptions.
+- Fixability is demonstrated by the consumer changes and native invocations.
+- Supported SDK allowlisting and package entry metadata remain unchanged.
+- Contribution policy was not investigated because no upstream defect is being proposed.
+- Maintainer willingness is not asserted and does not override the failed fault condition.
+- No upstream patch prototype is needed for these consumer-side corrections.
+
+There is no upstream issue or comment draft to add.
+
 ## Private document verification still imported the deleted Markdown CLI
 
 ### Symptom and owner change

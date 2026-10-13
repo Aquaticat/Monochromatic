@@ -1,12 +1,11 @@
 //! The Source Root file watcher.
 //!  It watches the current Source Root recursively and,
 //! on any debounced filesystem change,
-//!  sends `Command::Rescan` so the queue is
-//! re-derived from disk.
-//!  It deliberately ignores the event details (which file,
-//! what kind):
-//!  the queue is the scan of the root,
-//!  so any change just means "rescan".
+//!  reports a `Change`: the union of the paths the events named,
+//!  or "everything" when events were lost (an overflow or an error) and after a registration.
+//!  The queue is still the scan of the root,
+//!  but D113 refreshes only the named paths,
+//!  so the library is not walked and stat'ed again for every event.
 //! See `doc/decision/music-player-live-update-rescan.md`.
 //!
 //! Registering the watch walks every directory of the root, which took 28 to 45 seconds at one million tracks, so it
@@ -15,6 +14,10 @@
 
 /// Path types for the watched root.
 use std::path::{Path, PathBuf};
+
+/// What: `use crate::change_set::Change;`. What a burst of events means for the library.
+/// Why: The debounce thread merges the events of a burst into one `Change`.
+use crate::change_set::Change;
 
 /// Time spans and clocks for the debounce window.
 use std::time::{Duration, Instant};
@@ -88,7 +91,7 @@ pub(crate) struct SourceWatcher {
 /// ```
 impl SourceWatcher {
     /// What:
-    ///      `pub(crate) fn new<F>(on_change: F) -> Option<SourceWatcher>`.
+    ///      `pub(crate) fn new<F>(on_change: F) -> Option<SourceWatcher>`, where `F: Fn(Change)`.
     ///  Create the watcher, the debounce thread that calls `on_change`, and the registration thread, or `None`
     ///  when the OS watcher cannot start.
     /// Why:
@@ -96,17 +99,17 @@ impl SourceWatcher {
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
-    /// static new(onChange: () => void): SourceWatcher | null { ... }
+    /// static new(onChange: (change: Change) => void): SourceWatcher | null { ... }
     /// ```
     pub(crate) fn new<F>(on_change: F) -> Option<SourceWatcher>
     where
-        F: Fn() + Send + 'static,
+        F: Fn(Change) + Send + 'static,
     {
-        let (changes, quiet_for) = mpsc::channel::<()>();
-        let catch_up: mpsc::Sender<()> = changes.clone();
+        let (changes, quiet_for) = mpsc::channel::<Change>();
+        let catch_up: mpsc::Sender<Change> = changes.clone();
         let watcher: RecommendedWatcher = recommended_watcher(move |result: notify_debouncer_mini::notify::Result<Event>| {
-            if counts_as_change(&result) {
-                let _sent = changes.send(());
+            if let Some(change) = Change::of_event(&result) {
+                let _sent = changes.send(change);
             }
         })
         .ok()?;
@@ -168,26 +171,14 @@ impl Drop for SourceWatcher {
 }
 
 /// What:
-///      `fn counts_as_change(result: &notify::Result<Event>) -> bool`.
-///  Whether a raw event means the library may have changed: any error, and any event that is not an access.
-/// Why:
-///       Reading a directory (the rescan's own walk does it) raises open and close events. Counting them made every
-///  rescan request another one, a loop that kept a core busy at one million tracks.
-fn counts_as_change(result: &notify_debouncer_mini::notify::Result<Event>) -> bool {
-    return match result {
-        Ok(event) => !event.kind.is_access(),
-        Err(_) => true,
-    };
-}
-
-/// What:
 ///      `fn debounce_loop(quiet_for, on_change)`.
 ///  The debounce thread: after a change it waits for `DEBOUNCE_MS` without another (at most `MAX_DEBOUNCE_MS`),
-///  then calls `on_change` once.
+///  then calls `on_change` once with the union of what it saw.
 /// Why:
-///       A burst of events becomes one rescan, and a continuous one still produces a rescan every few seconds.
-fn debounce_loop<F: Fn()>(quiet_for: mpsc::Receiver<()>, on_change: F) {
-    while quiet_for.recv().is_ok() {
+///       A burst of events becomes one refresh, and a continuous one still produces a refresh every few seconds.
+fn debounce_loop<F: Fn(Change)>(quiet_for: mpsc::Receiver<Change>, on_change: F) {
+    while let Ok(first_change) = quiet_for.recv() {
+        let mut gathered: Change = first_change;
         let first: Instant = Instant::now();
         loop {
             let waited: Duration = first.elapsed();
@@ -196,13 +187,13 @@ fn debounce_loop<F: Fn()>(quiet_for: mpsc::Receiver<()>, on_change: F) {
                 break;
             }
             match quiet_for.recv_timeout(patience) {
-                Ok(()) => {}
+                Ok(change) => gathered = gathered.merge(change),
                 Err(mpsc::RecvTimeoutError::Timeout) => break,
                 Err(mpsc::RecvTimeoutError::Disconnected) => return,
             }
         }
-        tracing::debug!(waited_ms = first.elapsed().as_millis(), "source change settled; a rescan is requested");
-        on_change();
+        tracing::debug!(waited_ms = first.elapsed().as_millis(), "source change settled; a refresh is requested");
+        on_change(gathered);
     }
 }
 
@@ -217,7 +208,7 @@ fn watch_loop(
     mut watcher: RecommendedWatcher,
     inbox: mpsc::Receiver<WatchRequest>,
     registered: Arc<(Mutex<u64>, Condvar)>,
-    catch_up: mpsc::Sender<()>,
+    catch_up: mpsc::Sender<Change>,
 ) {
     let mut watched: Option<PathBuf> = None;
     for request in inbox {
@@ -233,7 +224,7 @@ fn watch_loop(
             Ok(()) => {
                 tracing::info!(root = %root.display(), elapsed_ms = started.elapsed().as_millis(), "watch registered; one rescan catches up");
                 watched = Some(root);
-                let _sent = catch_up.send(());
+                let _sent = catch_up.send(Change::Everything);
             }
             Err(error) => tracing::warn!(root = %root.display(), error = %error, "watch failed"),
         }

@@ -9,6 +9,8 @@ import {
   scanGerundMatches,
 } from '../dist/final/node/statusline.mjs';
 
+//region Case tables
+
 /**
  One scanner case: lowercased text in, every gerund it holds out.
  */
@@ -45,7 +47,7 @@ const SCAN_CASES: readonly ScanCase[] = [
     expected: ['lint-missing',],
   },
   {
-    name: 'keeps a compound whose stem is a gerund itself',
+    name: 'reports every hyphenated compound of a sentence holding several',
     text: 're-running the type-checking pass',
     expected: [
       're-running',
@@ -66,6 +68,40 @@ const SCAN_CASES: readonly ScanCase[] = [
     name: 'resumes after a match instead of rescanning the letters inside it',
     text: 'foo-ing-bar',
     expected: ['foo-ing',],
+  },
+  {
+    name: 'keeps a compound whose inner word could have matched on its own',
+    text: 'foo-testing',
+    expected: ['foo-testing',],
+  },
+  {
+    name: 'starts a compound at the word after one that held no gerund',
+    text: 'foo-bar-testing',
+    expected: ['bar-testing',],
+  },
+  {
+    name: 'falls back to the letters before a hyphen, then compounds the next word',
+    text: 'testing-foo-compiling',
+    expected: [
+      'testing',
+      'foo-compiling',
+    ],
+  },
+  {
+    name: 'reports two compounds separated by a word that held no gerund',
+    text: 'foo-ing-bar-testing',
+    expected: [
+      'foo-ing',
+      'bar-testing',
+    ],
+  },
+  {
+    name: 'treats a zero-width space as a word edge, since it is not a word character',
+    text: 'testing\u200Bcompiling',
+    expected: [
+      'testing',
+      'compiling',
+    ],
   },
   {
     name: 'reports the whole word when a gerund ends it',
@@ -234,13 +270,17 @@ const WORD_CASES: readonly WordCase[] = [
  */
 const LONG_TEXT_FILLER_REPEATS = 20_000;
 
+//endregion Case tables
+
+//region Suites
+
 /**
  Filler word holding no gerund, repeated to build the long text.
  */
 const LONG_TEXT_FILLER = 'nonsense word ';
 
 await describe({
-  name: 'gerund',
+  name: '',
   children: [
     describe({
       name: scanGerundMatches.name,
@@ -258,10 +298,15 @@ await describe({
           },);
         },),
         it({
-          name: 'scans a transcript-sized text in one pass without recursing per character',
+          name: 'scans a transcript-sized text without recursing once per character',
           fn: async function testLongText(): Promise<void> {
             /**
              Text whose only gerund sits at the very end, after hundreds of thousands of characters.
+             
+             The case bounds recursion depth, not running time. A scanner that recursed once per
+             character raises `RangeError: Maximum call stack size exceeded` on this input, measured
+             on a recursion of exactly that shape; one that halved its input per step would stay
+             inside the stack and is not caught here.
              */
             const longText = `${LONG_TEXT_FILLER.repeat(LONG_TEXT_FILLER_REPEATS,)}compiling at the end`;
             expect(scanGerundMatches(longText,),).toEqual(['compiling',],);
@@ -286,3 +331,5 @@ await describe({
     },),
   ],
 },);
+
+//endregion Suites

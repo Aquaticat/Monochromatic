@@ -463,15 +463,29 @@ pub enum Command {
     ///  if its file left the root while playing,
     ///  playback stops and the
     ///           selection clears).
-    ///  Sent by the file watcher on a debounced change,
-    ///  and on
-    ///           any "rescan required" signal.
+    ///  Sent by the file watcher when it lost events (an overflow of the kernel queue, an error)
+    ///  and once after each registration of the watch;
+    ///  a change that names its paths arrives as `SourceChanged` instead (D113).
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
     /// { kind: "rescan" }
     /// ```
     Rescan,
+    /// What:
+    ///      `SourceChanged(Change)` the file watcher names what changed under the Source Root.
+    /// Why:
+    ///       D113: a refresh looks only at the named paths (and the folders among them), so one replaced file costs a few
+    ///  lookups at a million tracks. `Rescan` is the case where the watcher lost events.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// { kind: "sourceChanged"; change: Change }
+    /// ```
+    SourceChanged(
+        /// The paths the debounced events named.
+        crate::change_set::Change,
+    ),
     /// What:
     ///      `NoLibrary` a fieldless variant: the launch found no folder to open.
     /// Why:
@@ -943,4 +957,18 @@ pub enum Update {
         /// Names of the new tracks, relative to the opened folder.
         names: Vec<String>,
     },
+    /// What:
+    ///      `Duration(f64)` says the playing track's file was replaced by one of another length.
+    /// Why:
+    ///       D113: a replaced file that plays is loaded again where it was, without announcing the track again (which would
+    ///  move the page and reset the seek bar), so only the seek bar's length changes.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// { kind: "duration"; secs: number }
+    /// ```
+    Duration(
+        /// The new file's length in seconds.
+        f64,
+    ),
 }

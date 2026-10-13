@@ -119,3 +119,7 @@ if (child.exitCode !== 0) throw new Error(`forbidden-strings exited ${String(chi
 # Fuzzing lives in the sibling config root at package/cli/forbidden-strings.fuzz so a
 # scoped nightly toolchain does not force this published crate onto nightly.
 # Run targets via `mise run //package/cli/forbidden-strings.fuzz:build` etc.
+
+[tasks."lock:members"]
+description = "Record a changed version of a path dependency in this lockfile without moving any other locked version"
+run = "cargo update --offline --workspace"

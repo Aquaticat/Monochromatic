@@ -9,18 +9,29 @@ import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 //region Closed data shapes prevent implicit evaluation of caller properties
 
-/** Unsupported internal policy input. */
+/**
+ Unsupported internal policy input.
+ */
 export class InstructionResolutionInputError extends Error {
+  /**
+   Stable diagnostic identity distinguishes input-shape failures from policy uncertainty.
+   */
   override readonly name = 'InstructionResolutionInputError';
 }
 
-/** Shared clause and authorization-requirement bound. */
+/**
+ Shared clause and authorization-requirement bound.
+ */
 export const POLICY_FACT_LIMIT = 256;
 
-/** Independent UTF-8 bound for program-local identities. */
+/**
+ Independent UTF-8 bound for program-local identities.
+ */
 const POLICY_ID_MAX_BYTES = 256;
 
-/** Structural validation logger. */
+/**
+ Structural validation logger.
+ */
 const l = tagged({ tag: 'auto-mode-policy-data', },);
 
 /**
@@ -28,25 +39,61 @@ const l = tagged({ tag: 'auto-mode-policy-data', },);
  Shape validity supplies no authority, coverage or semantic admission.
 
  @param input - internal record to validate
+ 
  @param fields - supported field names fixed by calling code
+ 
  @returns owned field values
+ 
  @throws {@link InstructionResolutionInputError} for unsupported record shapes
+ 
+ @example
+ ```ts
+ readPolicyRecord({ input: { id: 'policy' }, fields: ['id'] });
+ ```
  */
 export function readPolicyRecord(
-  { input, fields, }: { readonly input: unknown; readonly fields: readonly string[]; },
+  {
+    input,
+    fields,
+  }: {
+    readonly input: unknown;
+    readonly fields: readonly string[]
+  },
 ): Readonly<Record<string, unknown>> {
-  const rl = tagged({ tag: readPolicyRecord.name, l, },);
+  /**
+   Trace structural validation without logging candidate values.
+   */
+  const rl = tagged({
+    tag: readPolicyRecord.name,
+    l,
+  },);
   rl.debug('validating internal policy record',);
-  if (input === null || typeof input !== 'object' || isProxy(input,)
-    || Object.getPrototypeOf(input,) !== Object.prototype)
+  if ((input === null) || ((typeof input) !== 'object')
+    || isProxy(input,)
+    || (Object.getPrototypeOf(input,) !== Object.prototype))
     throw new InstructionResolutionInputError('Policy facts require an ordinary non-proxy record',);
+  /**
+   Only supported own data values enter the owned record.
+   */
   const result: Record<string, unknown> = {};
   for (const key of Reflect.ownKeys(input,)) {
-    if (typeof key !== 'string' || !fields.includes(key,))
+    if (((typeof key) !== 'string') || (!fields.includes(key,)))
       throw new InstructionResolutionInputError('Policy record contains an unsupported field',);
-    const field = Object.getOwnPropertyDescriptor(input, key,);
-    if (field?.enumerable !== true || !Object.hasOwn(field, 'value',))
+    /**
+     Inspect property shape without invoking an accessor.
+     */
+    const field = Object.getOwnPropertyDescriptor(
+      input,
+      key,
+    );
+    if ((field?.enumerable !== true) || (!Object.hasOwn(
+      field,
+      'value',
+    )))
       throw new InstructionResolutionInputError('Policy facts must use enumerable data properties',);
+    /**
+     Keep the copied value untrusted until its domain-specific reader narrows it.
+     */
     const value: unknown = field.value;
     result[key] = value;
   }
@@ -57,21 +104,53 @@ export function readPolicyRecord(
  Capture bounded dense array entries without evaluating accessors.
 
  @param input - internal sequence to validate
+ 
  @returns owned entries requiring their separate fact validation
+ 
  @throws {@link InstructionResolutionInputError} for unsupported arrays
+ 
+ @example
+ ```ts
+ readPolicyArray([{ id: 'policy' }]);
+ ```
  */
 export function readPolicyArray(input: unknown,): readonly unknown[] {
-  const rl = tagged({ tag: readPolicyArray.name, l, },);
+  /**
+   Trace array validation without logging contained facts.
+   */
+  const rl = tagged({
+    tag: readPolicyArray.name,
+    l,
+  },);
   rl.debug('validating internal policy array',);
-  if (isProxy(input,) || !Array.isArray(input,)
-    || Object.getPrototypeOf(input,) !== Array.prototype
-    || input.length > POLICY_FACT_LIMIT || Reflect.ownKeys(input,).length !== input.length + 1)
+  if (isProxy(input,) || (!Array.isArray(input,))
+    || (Object.getPrototypeOf(input,) !== Array.prototype)
+    || (input.length > POLICY_FACT_LIMIT)
+    || (Reflect.ownKeys(input,)
+      .length
+      !== (input.length
+      + 1)))
     throw new InstructionResolutionInputError('Policy facts require a bounded dense non-proxy array',);
+  /**
+   Capture each actual occurrence without deduplication or borrowed-array freezing.
+   */
   const entries: unknown[] = [];
   for (let index = 0; index < input.length; index++) {
-    const entry = Object.getOwnPropertyDescriptor(input, String(index,),);
-    if (entry?.enumerable !== true || !Object.hasOwn(entry, 'value',))
+    /**
+     A dense sequence requires an enumerable data property at every index.
+     */
+    const entry = Object.getOwnPropertyDescriptor(
+      input,
+      String(index,),
+    );
+    if ((entry?.enumerable !== true) || (!Object.hasOwn(
+      entry,
+      'value',
+    )))
       throw new InstructionResolutionInputError('Policy array contains a missing or accessor-backed entry',);
+    /**
+     Nested values still require their separate closed-record validation.
+     */
     const value: unknown = entry.value;
     entries.push(value,);
   }
@@ -82,13 +161,46 @@ export function readPolicyArray(input: unknown,): readonly unknown[] {
  Validate bounded rule identity without treating identity as authority.
 
  @param input - program-local identifier
+ 
  @returns identifier within existing UTF-8 bound
+ 
  @throws {@link InstructionResolutionInputError} for missing or oversized identities
+ 
+ @example
+ ```ts
+ readPolicyIdentity('policy');
+ ```
  */
 export function readPolicyIdentity(input: unknown,): string {
-  if (typeof input !== 'string' || input.length === 0 || Buffer.byteLength(input,) > POLICY_ID_MAX_BYTES)
+  if (((typeof input) !== 'string') || (input.length === 0)
+    || (Buffer.byteLength(input,) > POLICY_ID_MAX_BYTES))
     throw new InstructionResolutionInputError('Policy fact identity is missing or exceeds its bound',);
   return input;
+}
+
+/**
+ Flush the package-owned logger instance used by the policy kernel.
+ Synchronous conformance consumers can await sink verification before producing a burst,
+ and drain the same instance before exiting.
+ Waits for bounded verification and queued diagnostic delivery to finish.
+
+ @internal
+
+ @example
+ ```ts
+ await flushPolicyDiagnostics();
+ ```
+ */
+export async function flushPolicyDiagnostics(): Promise<void> {
+  /**
+   Retain the function boundary on the final diagnostic before draining.
+   */
+  const rl = tagged({
+    tag: flushPolicyDiagnostics.name,
+    l,
+  },);
+  rl.debug('flushing policy diagnostics',);
+  await rl.flush();
 }
 
 //endregion Closed data shapes

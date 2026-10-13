@@ -16,6 +16,7 @@ package dev.monochromatic.musicplayer
 // ```ts
 // import { PlaybackMode } from "core/PlaybackMode";
 // ```
+import dev.monochromatic.musicplayer.core.RoleSet
 import dev.monochromatic.musicplayer.core.PlaybackMode
 import dev.monochromatic.musicplayer.core.headingLineBudget
 import dev.monochromatic.musicplayer.core.shuffleFolderTextWidthPx
@@ -28,11 +29,10 @@ import dev.monochromatic.musicplayer.core.titleLineBudget
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// import { isSystemInDarkTheme, verticalScroll } from "compose/foundation";
+// import { verticalScroll } from "compose/foundation";
 // ```
 import androidx.compose.foundation.background
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -55,6 +55,8 @@ import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 
@@ -74,6 +76,7 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedIconButton
 import androidx.compose.material3.SegmentedButtonDefaults
 import androidx.compose.material3.Slider
+import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberSliderState
 import androidx.compose.runtime.Composable
@@ -287,16 +290,6 @@ private const val ICON_VIEWPORT: Float = 24f
 // ```
 /** Number of seconds in one minute for the clock label. */
 private const val SECONDS_PER_MINUTE: Long = 60L
-
-// What:     `private val DECK_FIXED_DARK_CONTAINER: Color = Color(0xFF0A0A0D)` is the fixed dark deck.
-// Why:      The accepted dark deck stays one neutral regardless of wallpaper-generated colors.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// const DECK_FIXED_DARK_CONTAINER = 0xff0a0a0d;
-// ```
-/** Fixed neutral ground of the deck in dark mode. */
-private val DECK_FIXED_DARK_CONTAINER: Color = Color(0xFF0A0A0D)
 
 // What:     `private const val SHUFFLE_PREFIX: String = "Shuffle "` is the fixed label prefix.
 // Why:      The folder name follows a stable prefix so the verb stays visible when the name truncates.
@@ -791,36 +784,21 @@ private val SKIP_PREVIOUS_ICON: ImageVector =
 /** Next-track glyph on the right transport button. */
 private val SKIP_NEXT_ICON: ImageVector = deckIcon(name = "Deck.SkipNext", pathData = SKIP_NEXT_PATH)
 
-// What:     `@Composable private fun deckContainerColor()` picks the deck ground for the appearance.
-// Why:      Dark mode keeps the fixed neutral deck, while light mode uses the Material surface role.
+// What:     `internal fun deckContainerColorOf(roles)` picks the deck ground from the derived roles.
+// Why:      The deck is a gray, and every gray carries the accent's hue unless the root is completely neutral
+//           (D118), so both appearances read the derived `deck` role instead of a fixed literal.
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// function deckContainerColor(): Color {
-//   return isSystemInDarkTheme() ? DECK_FIXED_DARK_CONTAINER : scheme.surfaceContainerLow;
-// }
+// const deckContainerColorOf = (roles: RoleSet): Color => toColor(roles.deck);
 // ```
-/** Resolves the deck background from the system appearance. */
-@Composable
-private fun deckContainerColor(): Color {
-    /** Records whether the system is in dark mode. */
-    val dark: Boolean = isSystemInDarkTheme()
-    if (dark) {
-        return DECK_FIXED_DARK_CONTAINER
-    }
-    return MaterialTheme.colorScheme.surfaceContainerLow
-}
+/** Returns the deck background of the derived [roles]: a gray with the accent's hue, in both appearances (D118). */
+internal fun deckContainerColorOf(roles: RoleSet): Color = roles.deck.toComposeColor()
 
-// What:     `@Composable private fun deckHeading(...)` draws the centered `folder / title` line and the subtitle.
-// Why:      The line names the folder and the playing track, and the subtitle holds the caller's status text.
-//           Each part with a tap action is its own button with a 48dp minimum size, and a part without one is
-//           plain text. The folder takes at most 40 percent of the width, so the title keeps the rest.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// function deckHeading(props: { folder: string; title: string; subtitle: string;
-//   onRevealFolder?: () => void; onRevealPlaying?: () => void }): UIElement;
-// ```
+/** Resolves the deck background from the derived roles of the appearance in use. */
+@Composable
+private fun deckContainerColor(): Color = deckContainerColorOf(LocalThemeRoles.current)
+
 /**
  * Draws the centered folder and title line above the subtitle, with each tappable part as its own button.
  *
@@ -922,6 +900,7 @@ private fun deckHeadingPart(
     } else {
         modifier
             .defaultMinSize(minWidth = MIN_TARGET, minHeight = MIN_TARGET)
+            .focusRing(RectangleShape)
             .clickable(onClickLabel = clickLabel, role = Role.Button, onClick = onClick)
     }
     Box(modifier = partModifier, contentAlignment = alignment) {
@@ -964,6 +943,8 @@ private fun seekRow(positionSec: Double, durationSec: Double, onSeek: (Double) -
         /** Slider state whose thumb is re-pinned to the playback fraction on every recomposition. */
         val sliderState = rememberSliderState()
         sliderState.value = progressFractionFor(positionSec, durationSec)
+        /** Source the slider and its thumb share, so the thumb can show the focus ring (D117). */
+        val sliderSource = remember { MutableInteractionSource() }
         Slider(
             state = sliderState,
             onValueChange = { fraction -> onSeek(fraction.toDouble() * durationSec) },
@@ -972,6 +953,13 @@ private fun seekRow(positionSec: Double, durationSec: Double, onSeek: (Double) -
                 .semantics {
                     contentDescription = "Track position"
                 },
+            interactionSource = sliderSource,
+            thumb = {
+                SliderDefaults.Thumb(
+                    interactionSource = sliderSource,
+                    modifier = Modifier.focusRingOf(sliderSource, CircleShape),
+                )
+            },
         )
         Text(
             text = deckClockLabel(durationSec),
@@ -996,7 +984,7 @@ private fun secondaryTransportButton(
     contentDescription: String,
     onClick: () -> Unit,
 ) {
-    OutlinedIconButton(onClick = onClick) {
+    OutlinedIconButton(onClick = onClick, modifier = Modifier.size(MIN_TARGET).focusRing(CircleShape)) {
         Icon(imageVector = imageVector, contentDescription = contentDescription)
     }
 }
@@ -1037,7 +1025,7 @@ private fun transportControls(
                 contentDescription = "Previous track",
                 onClick = onPrevious,
             )
-            FilledIconButton(onClick = onTogglePlay) {
+            FilledIconButton(onClick = onTogglePlay, modifier = Modifier.size(MIN_TARGET).focusRing(CircleShape)) {
                 Icon(
                     imageVector = if (playing) PAUSE_ICON else PLAY_ICON,
                     contentDescription = if (playing) "Pause" else "Play",
@@ -1170,6 +1158,7 @@ private fun variableWidthModeSegment(
         shape = shape,
         modifier = modifier
             .defaultMinSize(minWidth = MIN_TARGET, minHeight = MIN_TARGET)
+            .focusRing(shape)
             .semantics {
                 contentDescription = modeAccessibleLabelFor(mode, shuffleFolderLabel)
                 role = Role.RadioButton
@@ -1602,7 +1591,7 @@ fun transportDeck(
     actions: TransportDeckActions,
     modifier: Modifier = Modifier,
 ) {
-    /** Deck background resolved for the current system appearance. */
+    /** Deck background resolved from the derived roles of the current appearance. */
     val containerColor: Color = deckContainerColor()
     Column(
         modifier = modifier

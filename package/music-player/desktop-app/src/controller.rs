@@ -158,18 +158,6 @@ use crate::peak_swap::{
 };
 
 /// What:
-///      `use crate::playback::expand_paths;`.
-///  Folder-to-file expansion.
-/// Why:
-///       `OpenPaths` expands folders into their tracks.
-///
-/// In TS you'd write (pseudocode):
-/// ```ts
-/// import { expandPaths } from "./playback";
-/// ```
-use crate::playback::expand_paths;
-
-/// What:
 ///      `use crate::playback_clock::PlaybackClock;`.
 ///  The audible-position counters.
 /// Why:
@@ -450,6 +438,8 @@ pub(crate) struct Controller {
     pub(crate) reported_unplayable: Mutex<HashSet<PathBuf>>,
     /// The file the decoder was opened on and the fingerprint it had then, so a change of that file is noticed (D113).
     pub(crate) loaded_file: Option<(PathBuf, u64)>,
+    /// At most one refresh sweep runs; requests that arrive meanwhile become one follow-up (D113).
+    pub(crate) refresh: crate::refresh_coalescer::RefreshCoalescer,
     /// What:
     ///      `pending: Vec<f32>`.
     ///  Gained samples decoded but not yet fully pushed.
@@ -542,6 +532,7 @@ impl Controller {
             sweep_claims: Arc::new(Mutex::new(HashSet::new())),
             reported_unplayable: Mutex::new(HashSet::new()),
             loaded_file: None,
+            refresh: crate::refresh_coalescer::RefreshCoalescer::default(),
             pending: Vec::new(),
             pending_pos: 0,
         }
@@ -916,7 +907,7 @@ impl Controller {
     /// ```ts
     /// startQueueMeasurement(): void { ... }
     /// ```
-    fn start_queue_measurement(&mut self) {
+    pub(crate) fn start_queue_measurement(&mut self) {
         // What:     `self.analysis_generation = self.analysis_generation.wrapping_add(1);`.
         //           Advance the generation so reports from the sweep this load replaces are dropped.
         // Why:      Sweeps are never cancelled, so the generation is the only way to tell them apart.
@@ -929,6 +920,9 @@ impl Controller {
         // What:     `self.sweep_claims = new set`. A new load starts with no fingerprint taken.
         // Why:      The claims of the replaced queue's sweeps must not make this load's sweep skip a file.
         self.sweep_claims = Arc::new(Mutex::new(HashSet::new()));
+        // What:     `self.refresh.reset();`. The refresh that ran for the replaced queue, and what was asked while it ran, are forgotten.
+        // Why:      The sweep of this load looks at every track, and the paths asked before belong to the old queue.
+        self.refresh.reset();
         // What:     `let current = self.queue.current_path().cloned();`. The track playback is on.
         // Why:      The fan-out skips it, because the current-track worker owns that one.
         //
@@ -953,6 +947,9 @@ impl Controller {
             gate: SweepGate::shared(),
             claims: Arc::clone(&self.sweep_claims),
             quiet: false,
+            listed: false,
+            announce: Vec::new(),
+            refresh_id: None,
         });
     }
 
@@ -1424,149 +1421,22 @@ impl Controller {
                     self.seek(position);
                 }
             }
-            // What:     `Command::Rescan => { ... }`. Re-scan the current Source Root and
-            //           reconcile the queue with disk, preserving the Selected Track by path.
-            // Why:      The single live-update projection (queue = scan of the root), driven by
-            //           the file watcher and any "rescan required" signal.
+            // What:     `Command::Rescan => self.rescan_everything()`. Walk the Source Root again and refresh every track.
+            // Why:      The watcher sends it after lost events and after a registration; see `controller_refresh.rs`.
             //
             // In TS you'd write (pseudocode):
             // ```ts
-            // case "rescan": { /* re-scan root, diff, preserve selection */ break; }
+            // case "rescan": this.rescanEverything(); break;
             // ```
-            Command::Rescan => {
-                // What:     `if let Some(root) = self.source_root.clone() { ... }`. Rescan only
-                //           when a root is set; clone so the scan owns its path while the queue
-                //           is mutated.
-                // Why:      With no root there is nothing to project from.
-                //
-                // In TS you'd write (pseudocode):
-                // ```ts
-                // if (this.sourceRoot) { ... }
-                // ```
-                if let Some(root) = self.source_root.clone() {
-                    // What:     `let fresh = expand_paths(vec![root]);`. Scan the root into its
-                    //           sorted file list WITHOUT replacing the queue yet.
-                    // Why:      Diff it against the current queue first; the projection is "scan
-                    //           DIFFED against the current Queue", and an empty diff must not act.
-                    //
-                    // In TS you'd write (pseudocode):
-                    // ```ts
-                    // const fresh = expandPaths([root]);
-                    // ```
-                    let fresh = expand_paths(vec![root]);
-                    // What:     `if fresh.as_slice() == self.queue.tracks() { return; }`. When the
-                    //           scan equals the current queue the diff is EMPTY, so bail out of
-                    //           `handle_command` doing nothing.
-                    // Why:      The watcher also fires on the app's OWN reads: on Linux, inotify
-                    //           reports access events for the peak-measurement and decoder reads
-                    //           UNDER the watched root. Re-emitting `Update::Queue` (which snaps
-                    //           the UI back to the first page) and re-running
-                    //           `start_queue_measurement` (which re-reads those files and so
-                    //           re-arms the watcher) on an empty diff spins a ~500ms feedback
-                    //           loop. The watcher now ignores access events, so the loop is gone;
-                    //           an unchanged list still starts a quiet refresh sweep (below), which
-                    //           measures any file whose fingerprint changed (D113) and nothing else.
-                    //
-                    // In TS you'd write (pseudocode):
-                    // ```ts
-                    // if (arraysEqual(fresh, this.queue.tracks())) return;
-                    // ```
-                    if fresh.as_slice() == self.queue.tracks() {
-                        // What:     `self.refresh_measurement();`. Measure again any file whose size or modified time changed.
-                        // Why:      D113: a file replaced or edited in place keeps its path, so the queue is the same, but its
-                        //           fingerprint changed and its true peak must follow by itself. The quiet sweep skips every
-                        //           known fingerprint and the watcher ignores the reads it makes, so it cannot loop.
-                        self.reload_current_when_its_file_changed();
-                        self.refresh_measurement();
-                        return;
-                    }
-                    // What:     `let selected_path = self.queue.current_path().cloned();`. The
-                    //           Selected Track's path BEFORE the queue is replaced.
-                    // Why:      Re-select the same track by path after the rescan.
-                    //
-                    // In TS you'd write (pseudocode):
-                    // ```ts
-                    // const selectedPath = this.queue.currentPath();
-                    // ```
-                    let selected_path = self.queue.current_path().cloned();
-                    // What:     `self.queue.set_tracks(fresh);`. Replace the queue with the fresh
-                    //           scan (the diff was non-empty, so something on disk changed).
-                    // Why:      Added files appear, removed files drop, all in sorted order.
-                    //
-                    // In TS you'd write (pseudocode):
-                    // ```ts
-                    // this.queue.setTracks(fresh);
-                    // ```
-                    self.queue.set_tracks(fresh);
-                    // What:     `match selected_path.and_then(|p| ...position(|t| *t == p)) { ... }`.
-                    //           Find the previously-selected path in the fresh scan.
-                    // Why:      Preserve the selection across the rescan, or detect its loss.
-                    //
-                    // In TS you'd write (pseudocode):
-                    // ```ts
-                    // const idx = selectedPath ? tracks.indexOf(selectedPath) : -1;
-                    // ```
-                    match selected_path
-                        .clone()
-                        .and_then(|p| return self.queue.tracks().iter().position(|t| return *t == p))
-                    {
-                        // What:     `Some(idx) => { ... }`. The Selected Track survived: re-anchor
-                        //           the cursor at its new index (audio is decoder-owned, so it is
-                        //           NOT interrupted) and emit ONE `Reconciled` (list + highlight).
-                        // Why:      A live change to other files must not disturb playback NOR the
-                        //           user's selected tab; `Reconciled` keeps the current page,
-                        //           unlike the `Queue` + `NowPlaying` pair which reset/follow it.
-                        //
-                        // In TS you'd write (pseudocode):
-                        // ```ts
-                        // this.queue.playIndex(idx); this.emitReconciled();
-                        // ```
-                        Some(idx) => {
-                            self.queue.restore_index_preserving_page(idx);
-                            self.emit_reconciled();
-                        }
-                        // What:     `None => { ... }`. The Selected Track is gone (or there was
-                        //           none): clear the selection, emit `Reconciled` (keeping the
-                        //           page), reset the seek bar, and STOP if it was playing (its file
-                        //           left the root).
-                        // Why:      The "playing file gone -> stop + clear" rule, still without
-                        //           moving the user's tab. `Reconciled` carries `index: None`, and
-                        //           a separate `Position(0)` resets the seek bar (page-safe).
-                        //
-                        // In TS you'd write (pseudocode):
-                        // ```ts
-                        // this.queue.clearSelection(); this.emitReconciled();
-                        // this.emit({ kind: "position", secs: 0 }); if (this.playing) this.setPlaying(false);
-                        // ```
-                        None => {
-                            let was_playing = self.playing;
-                            self.queue.clear_selection();
-                            self.emit_reconciled();
-                            self.emit(Update::Position(0.0));
-                            if self.playing {
-                                self.set_playing(false);
-                            }
-                            // What:     `if let Some(path) = selected_path { self.emit(Update::FileGone { path, was_playing }); }`.
-                            //           Say which file left, when there was a selected file.
-                            // Why:      The row vanished and playback stopped with no word (PB2, D9, D83); the window
-                            //           explains it in a message.
-                            if let Some(path) = selected_path {
-                                tracing::info!(path = %path.display(), was_playing, "the selected track's file left the folder");
-                                self.emit(Update::FileGone { path, was_playing });
-                            }
-                        }
-                    }
-                    // What:     `self.start_queue_measurement();`. Warm the peak cache for any
-                    //           newly added tracks (cached ones are skipped by fingerprint).
-                    // Why:      New files need true-peak measurement like any queue load.
-                    //
-                    // In TS you'd write (pseudocode):
-                    // ```ts
-                    // this.startQueueMeasurement();
-                    // ```
-                    self.start_queue_measurement();
-                }
-            }
+            Command::Rescan => self.rescan_everything(),
+            // What:     `Command::SourceChanged(change) => self.handle_source_changed(change)`. Refresh what the watcher named.
+            // Why:      D113: the cost of a refresh follows what changed, not the size of the library.
+            //
+            // In TS you'd write (pseudocode):
+            // ```ts
+            // case "sourceChanged": this.handleSourceChanged(command.change); break;
+            // ```
+            Command::SourceChanged(change) => self.handle_source_changed(change),
             // What:     `Command::Quit => {}`. Empty arm: handled in `run`'s drain loop;
             //           this keeps the match exhaustive.
             // Why:      Rust requires every variant to be matched.

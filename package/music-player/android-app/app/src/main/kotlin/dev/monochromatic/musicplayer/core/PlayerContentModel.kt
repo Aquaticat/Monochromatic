@@ -66,6 +66,9 @@ data class PlayerContentModel(
  * Builds the production player screen model from the page list, the selected page, and playback values.
  *
  * @param entries rows the caller already built for the selected page (with its templates), so they are not built twice
+ * @param sections rail the caller already built from the page names, so it is not built on every position tick
+ * @param playingPlace place the caller already built for the playing track, so the playing folder is not indexed
+ *     again on every position tick
  */
 fun buildPlayerContent(
     pageLabels: List<String>,
@@ -80,9 +83,11 @@ fun buildPlayerContent(
     durationSec: Double,
     libraryName: String = libraryDisplayName(null),
     entries: List<TrackListEntry>? = null,
+    sections: List<RailSection>? = null,
+    playingPlace: PlayingPlace? = null,
 ): PlayerContentModel {
-    /** Rail sections built from every page name, so the picker can list each page. */
-    val sections: List<RailSection> = railFor(pageLabels)
+    /** Rail sections for the picker, built from every page name unless the caller already built them. */
+    val railSections: List<RailSection> = sections ?: railFor(pageLabels)
     /** Name of the selected page, or null when the selected index is outside the page list. */
     val currentFolder: String? = pageLabels.getOrNull(selectedPage)
     /** Heading text for the selected page, empty when no page is selected. */
@@ -95,7 +100,7 @@ fun buildPlayerContent(
     /** Label of the playing page, or an empty text when the playing page index is outside the page list. */
     val playingPageLabel: String = playingPageIndex?.let { index -> pageLabels.getOrNull(index) }.orEmpty()
     /** Playing track and its place in its own folder, which may differ from the folder on screen. */
-    val place: PlayingPlace = playingPlaceOf(
+    val place: PlayingPlace = playingPlace ?: playingPlaceOf(
         folderTitle = playingPageLabel,
         playingItems = playingItems,
         currentIndex = currentIndex,
@@ -119,7 +124,7 @@ fun buildPlayerContent(
         folderLabel = folderLabel,
     )
     return PlayerContentModel(
-        sections = sections,
+        sections = railSections,
         currentFolder = currentFolder,
         folderTitle = folderTitle,
         entries = pageEntries,

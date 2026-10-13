@@ -35,15 +35,19 @@
 /// import { runPolicyPass } from './policy_pass.ts';
 /// ```
 use super::action::ENGINE_FAILURE_EXIT_CODE;
+use super::auto_push_single_flight::PushGit;
 /// `git add` asks for what it would stage.
 use super::candidate_prediction::CandidateRequest;
 use super::command_options::OptionError;
 use super::command_push::{PushRegion, parse_push_region};
 use super::config_loading::{ConfigLoading, classify_config_loading};
-use super::config_schema::PolicyConfig;
+use super::command_commit::{CommitRegion, parse_commit_region};
+use super::commit_command::{CommitCommand, run_commit_command};
+use super::config_schema::{CliGitConfig, PolicyConfig};
+use super::diagnostics::EngineFailureCode;
 use super::global_arguments::GlobalOutcome;
 use super::invocation_config::{config_invalid_event, load_identity_config};
-use super::pending_state::pending_state;
+use super::manual_push_lifecycle::manual_push_scope;
 use super::policy_checks::ShippedChecks;
 /// What the command offers its content policies.
 use super::policy_content::LifecycleContent;
@@ -54,9 +58,12 @@ use super::policy_events::{PolicyEvent, render_policy_events};
 use super::policy_pass::{PassResult, policies_of_kind, run_policy_pass};
 use super::policy_registry::PolicyId;
 use super::policy_trigger::Trigger;
-use super::refusal_frontier::{command_frontier, inherited_lease};
 use super::repository_facts::RepositoryFacts;
 use super::repository_location::RepositoryLocation;
+/// Startup recovery as a command step.
+use super::transaction_gate::{Gate, recover_for_command};
+/// A valid preparation lease marks a command started by a hook of a live transaction.
+use super::transaction_lease::has_valid_preparation_lease;
 use super::unported::{Unported, unported_from_unavailable, unported_notice};
 use super::worktree_identity::worktree_root;
 use super::wrapper_invocation::{StrippedInvocation, command_region, command_word};
@@ -74,6 +81,8 @@ use super::wrapper_invocation::{StrippedInvocation, command_region, command_word
 /// // string, but byte-preserving.
 /// ```
 use std::ffi::OsString;
+/// Paths of the probe's working directory.
+use std::path::{Path, PathBuf};
 
 /// What:
 ///  How the lifecycle of one wrapped command ended.
@@ -228,7 +237,7 @@ fn every_policy() -> Vec<PolicyId> {
 
 /// What:
 ///  Prepare a command that loads configuration:
-///  refuse unported work,
+///  recover dead transactions,
 ///  read the
 ///       configuration of the worktree Git reports,
 ///  and say what a content policy may
@@ -239,30 +248,20 @@ fn every_policy() -> Vec<PolicyId> {
 ///  or an ending".
 /// Why:
 ///   The order is the installed wrapper's:
-///  leases and leftover state come before
+///  dead transactions are recovered before
 ///       configuration,
 ///  and a commit is refused only after its configuration was accepted,
 ///       so an invalid file is always reported as such.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// async function prepareGuardedCommand(stripped, environment, checks, command): Promise<PolicyConfig>; // throws the ending
+/// async function prepareGuardedCommand(stripped, environment, checks): Promise<PolicyConfig>; // throws the ending
 /// ```
 fn prepare_guarded_command<F: RepositoryFacts>(
     stripped: &StrippedInvocation,
     environment: &[(OsString, OsString)],
     checks: &mut ShippedChecks<F>,
-    command: &str,
-) -> Result<PolicyConfig, WrappedOutcome> {
-    // `if let Some(variable) = ...` runs only when a lease variable is present.
-    if let Some(variable) = inherited_lease(environment) {
-        // `Err(x)` is the failure case of `Result`; `String::new()` is empty owned text.
-        return Err(refused(
-            String::new(),
-            &Unported::InheritedLease(variable),
-            command,
-        ));
-    }
+) -> Result<CliGitConfig, WrappedOutcome> {
     // `match` unpacks the location answer; a failure to ask Git stops the command.
     let location: RepositoryLocation = match checks.facts.location() {
         Ok(found) => found,
@@ -274,11 +273,23 @@ fn prepare_guarded_command<F: RepositoryFacts>(
             });
         }
     };
-    if let Some(what) = pending_state(&location.identity, stripped.controls.skip_worktree_copy) {
-        return Err(refused(String::new(), &what, command));
+    // Dead transactions are recovered before configuration loads. A live transaction no longer
+    // refuses a guarded command: an index writer waits for its landing lock when it is forwarded,
+    // and a commit still stops at its own frontier below.
+    // A command inside a live transaction's hook inherits its preparation lease; recovery would only find that live owner.
+    if !has_valid_preparation_lease(environment) {
+        match recover_for_command(&checks.facts.transaction_context(), &location.identity) {
+            Gate::Clear | Gate::Live(_) => {}
+            Gate::Stop(stderr) => {
+                return Err(WrappedOutcome::Exit {
+                    code: ENGINE_FAILURE_EXIT_CODE,
+                    stderr,
+                });
+            }
+        }
     }
-    let policies: PolicyConfig = match load_identity_config(&location.identity) {
-        Ok(loaded) => loaded.config.policies,
+    let config: CliGitConfig = match load_identity_config(&location.identity) {
+        Ok(loaded) => loaded.config,
         Err(error) => {
             return Err(WrappedOutcome::Exit {
                 code: ENGINE_FAILURE_EXIT_CODE,
@@ -286,12 +297,9 @@ fn prepare_guarded_command<F: RepositoryFacts>(
             });
         }
     };
-    if let Some(what) = command_frontier(stripped, &location.identity) {
-        return Err(refused(String::new(), &what, command));
-    }
     // `.clone()` copies the scanner and Markdown options the configuration chose.
-    checks.scanner_settings.options = policies.forbidden_strings.clone();
-    checks.markdown.options = policies.markdown_autofix.clone();
+    checks.scanner_settings.options = config.policies.forbidden_strings.clone();
+    checks.markdown.options = config.policies.markdown_autofix.clone();
     // Only `git add` inside a worktree has content for a policy to read before Git runs:
     // what it would stage, predicted when a content policy first reads it.
     if command_word(stripped) == b"add" && worktree_root(&location.identity).is_some() {
@@ -301,7 +309,87 @@ fn prepare_guarded_command<F: RepositoryFacts>(
         ));
     }
     // `Ok(x)` is the success case.
-    return Ok(policies);
+    return Ok(config);
+}
+
+/// What:
+///  Run a real `git commit` through the commit transaction, or nothing when the command is anything else.
+///  `Option<WrappedOutcome>` is "the ending, or nothing to say".
+/// Why:
+///   Every non-dry-run commit goes through the transaction instead of being forwarded, because native `git commit`
+///   keeps `index.lock` on disk through hooks and the editor. A region Git's table refuses is not known to be a
+///   dry run, so it is treated as a real commit and Git itself rejects it.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// const transaction = willShortCircuit ? NOT_APPLICABLE : await runCommitTransactionBoundary({ args, gitPath, policyOptions, concurrency });
+/// ```
+fn run_commit_if_real<F: RepositoryFacts>(
+    stripped: &StrippedInvocation,
+    environment: &[(OsString, OsString)],
+    checks: &mut ShippedChecks<F>,
+    config: &CliGitConfig,
+) -> Option<WrappedOutcome> {
+    if command_word(stripped) != b"commit" {
+        return None;
+    }
+    let region: CommitRegion = match parse_commit_region(command_region(stripped), &[]) {
+        Ok(found) => found,
+        Err(_) => return None,
+    };
+    if region.dry_run {
+        return None;
+    }
+    let context = checks.facts.transaction_context();
+    let ending = run_commit_command(
+        &CommitCommand {
+            context: &context,
+            environment,
+            arguments: stripped.arguments.as_slice(),
+            subcommand_index: stripped.layout.prefix_len,
+            region: &region,
+            config,
+            controls: &stripped.controls,
+        },
+        checks,
+    );
+    return Some(WrappedOutcome::Exit {
+        code: ending.code,
+        stderr: String::new(),
+    });
+}
+
+/// What:
+///  Recover before a read-only command that already asked Git for the repository location;
+///       a live transaction does not stop it,
+///  a legacy directory or a recovery failure does.
+///       `Option<WrappedOutcome>` is "the ending,
+///  or nothing to say".
+/// Why:
+///   The incumbent recovers before read-only commands too,
+///  reusing the identity it already
+///       resolved;
+///  a command that never asked for the location starts no extra work.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// if (configFreeIdentity !== undefined) await recoverCommitTransaction({ args, gitPath, identity: configFreeIdentity });
+/// ```
+fn recover_before_read_only<F: RepositoryFacts>(
+    checks: &ShippedChecks<F>,
+) -> Option<WrappedOutcome> {
+    let Some(Ok(location)) = checks.facts.asked_location() else {
+        return None;
+    };
+    match recover_for_command(&checks.facts.transaction_context(), &location.identity) {
+        Gate::Clear | Gate::Live(_) => return None,
+        Gate::Stop(stderr) => {
+            return Some(WrappedOutcome::Exit {
+                code: ENGINE_FAILURE_EXIT_CODE,
+                stderr,
+            });
+        }
+    }
 }
 
 /// What:
@@ -340,15 +428,25 @@ pub fn run_wrapped_command<F: RepositoryFacts>(
     // are not UTF-8; `.into_owned()` makes it owned text.
     let command: String = String::from_utf8_lossy(command_word(stripped)).into_owned();
     // `.as_slice()` lends an owned list as a borrowed view.
-    let policies: PolicyConfig =
-        if classify_config_loading(stripped.arguments.as_slice()) == ConfigLoading::Skip {
-            PolicyConfig::defaults()
-        } else {
-            match prepare_guarded_command(stripped, environment, checks, command.as_str()) {
-                Ok(loaded) => loaded,
-                Err(ending) => return ending,
-            }
-        };
+    let skips_config: bool =
+        classify_config_loading(stripped.arguments.as_slice()) == ConfigLoading::Skip;
+    let loaded: Option<CliGitConfig> = if skips_config {
+        None
+    } else {
+        match prepare_guarded_command(stripped, environment, checks) {
+            Ok(found) => Some(found),
+            Err(ending) => return ending,
+        }
+    };
+    if let Some(config) = &loaded
+        && let Some(ending) = run_commit_if_real(stripped, environment, checks, config)
+    {
+        return ending;
+    }
+    let policies: PolicyConfig = match loaded {
+        Some(config) => config.policies,
+        None => PolicyConfig::defaults(),
+    };
     let request: StageRequest = StageRequest {
         trigger: Trigger::PreForward,
         config: policies,
@@ -358,6 +456,12 @@ pub fn run_wrapped_command<F: RepositoryFacts>(
     };
     let pass: PassResult = run_policy_pass(&request, checks);
     if let Some(ending) = stage_ending(pass.events.as_slice(), pass.end, command.as_str()) {
+        return ending;
+    }
+    if skips_config
+        && !has_valid_preparation_lease(environment)
+        && let Some(ending) = recover_before_read_only(checks)
+    {
         return ending;
     }
     // `mut` allows the push gate to append its events.
@@ -371,6 +475,20 @@ pub fn run_wrapped_command<F: RepositoryFacts>(
         };
         let gated: Vec<PolicyId> = every_policy();
         if any_policy_applies(&gate_request, gated.as_slice()) {
+            // The push's scope is discovered before any policy reads content; a discovery failure refuses the push.
+            if let Err(failure) = prepare_manual_push(checks, command_region(stripped)) {
+                events.push(PolicyEvent::EngineFailure {
+                    code: EngineFailureCode::ContentUnavailable,
+                    message: failure.message,
+                    trigger: Some(Trigger::ManualPush),
+                    policy: None,
+                    path: None,
+                });
+                return WrappedOutcome::Exit {
+                    code: ENGINE_FAILURE_EXIT_CODE,
+                    stderr: render_policy_events(0, events.as_slice()),
+                };
+            }
             let gate: StageResult = run_policy_stage(&gate_request, gated.as_slice(), checks);
             // `.extend(list)` moves every item of `list` onto the end.
             events.extend(gate.events);
@@ -387,6 +505,43 @@ pub fn run_wrapped_command<F: RepositoryFacts>(
 
 /// Lifecycle order,
 ///  fact use and every ending stay out of the release executable.
+/// What:
+///  Discover the scope of a manual push and hand it to the manual-push stage as its candidates.
+/// Why:
+///   The stage reads only what the push publishes, and the discovery runs against the repository the
+///  command targets, with the invocation's global options and environment.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// const scope = await manualPushScope({ gitPath, cwd, args }); // then the manual-push stage reads it
+/// ```
+fn prepare_manual_push<F: RepositoryFacts>(
+    checks: &mut ShippedChecks<F>,
+    post_subcommand: &[OsString],
+) -> Result<(), super::manual_push_lifecycle::ManualPushFailure> {
+    let worktree: Option<PathBuf> = match checks.facts.location() {
+        Ok(location) => worktree_root(&location.identity).map(Path::to_path_buf),
+        Err(message) => return Err(super::manual_push_lifecycle::ManualPushFailure { message }),
+    };
+    let context = checks.facts.transaction_context();
+    let cwd = match worktree {
+        Some(root) => root,
+        None => std::env::current_dir().map_err(|error| {
+            return super::manual_push_lifecycle::ManualPushFailure {
+                message: format!("the working directory could not be read: {error}"),
+            };
+        })?,
+    };
+    let git = PushGit {
+        real_git: context.real_git,
+        cwd,
+        environment: context.overlay,
+    };
+    let scope = manual_push_scope(&git, context.global_prefix.as_slice(), post_subcommand)?;
+    checks.candidates = LifecycleContent::Requested(CandidateRequest::Pushed(scope));
+    return Ok(());
+}
+
 #[cfg(test)]
 #[path = "wrapped_command_tests.rs"]
 mod tests;

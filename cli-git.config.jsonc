@@ -1,0 +1,21 @@
+// Repository-owned cli-git policy configuration for the native wrapper.
+// Translated from `cli-git.config.ts`; the native wrapper runs the four optional policies only when they are listed.
+// Evidence and the differential check: doc/handover/cli-git-native-config.md
+{
+  "policies": {
+    // Rewrites Markdown image links that point at LFS-tracked files to the LFS server's immutable object URLs
+    // inside the commit transaction, so GitHub renders the image instead of the pointer (issue #476).
+    // The rule list is the policy's default, stated here; `package/ssg/` is excluded because those MDX pages
+    // resolve images through the site build, not GitHub.
+    "markdown/autofix": ["warn", { "rules": ["lfs-image-url"], "exclude": ["package/ssg/"] }],
+    // The incumbent ran this policy at its default severity (`error`) without the root configuration naming it,
+    // because the repository policy plugin registered it. Native policies run only when listed, so it is listed.
+    "mono/dependent-version-bump": "error",
+    "mono/forbidden-root-context": "error",
+    // The scanner is linked into the native wrapper, so the incumbent's `executable` option has no counterpart.
+    // The betterleaks baseline ships inside the scanner and `builtinRules` loads it; `rulesFile` names the file
+    // that file-enforcer generates from the repository appendixes (doc/decision/gitignore-negations.md). It is
+    // the path the root `mise.toml` gives `FORBIDDEN_STRINGS_RULES` today, relative to the repository top level.
+    "security/forbidden-strings": ["error", { "builtinRules": true, "rulesFile": ".cache/forbidden-strings.rules.txt" }]
+  }
+}

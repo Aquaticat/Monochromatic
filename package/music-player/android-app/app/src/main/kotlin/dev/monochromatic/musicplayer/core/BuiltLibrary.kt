@@ -58,8 +58,10 @@ class BuiltLibrary(
 fun buildLibrary(tracks: List<Track>, locate: String? = null): BuiltLibrary {
     /** Raw display path of each track. */
     val rawPaths: List<String> = tracks.map { track -> track.displayPath }
-    /** Relative display path of each track. */
-    val displayPaths: List<String> = relativeDisplayPaths(rawPaths)
+    /** Segments of the library root that the paths are relative to, from the source of the first track. */
+    val root: List<String>? = tracks.firstOrNull()?.let { track -> displayRootOf(track.uri) }
+    /** Relative display path of each track, cut at the library root. */
+    val displayPaths: List<String> = relativeDisplayPaths(rawPaths, root)
     /** Pages built from the relative paths. */
     val pages: List<Page> = paginate(displayPaths)
     /** URI of each track. */

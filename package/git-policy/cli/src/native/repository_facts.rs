@@ -45,6 +45,8 @@ use super::rule_commit_sequencer::{
     SequencerFacts, SequencerState, sequencer_head_paths, sequencer_query_arguments,
     sequencer_state, sequencer_state_when_query_fails,
 };
+/// The transaction Git context.
+use super::transaction_git::GitContext;
 /// What:
 ///  `OsStr`/`OsString` are borrowed/owned operating-system text of raw bytes.
 ///  Sibling
@@ -102,6 +104,14 @@ pub trait RepositoryFacts {
         &mut self,
         request: &CandidateRequest,
     ) -> Result<PreparedCandidates, CandidateError>;
+    /// The location when it was already asked for,
+    ///  without asking.
+    fn asked_location(&self) -> Option<Result<RepositoryLocation, String>>;
+    /// Real Git,
+    ///  the child environment and the invocation's global options,
+    ///  for transaction
+    /// and recovery work.
+    fn transaction_context(&self) -> GitContext;
 }
 
 /// What:
@@ -297,6 +307,18 @@ impl RepositoryFacts for GitFacts {
             self.overlay.as_slice(),
             request,
         );
+    }
+
+    fn asked_location(&self) -> Option<Result<RepositoryLocation, String>> {
+        return self.location.clone();
+    }
+
+    fn transaction_context(&self) -> GitContext {
+        return GitContext {
+            real_git: self.real_git.clone(),
+            overlay: self.overlay.clone(),
+            global_prefix: self.global_prefix.clone(),
+        };
     }
 }
 

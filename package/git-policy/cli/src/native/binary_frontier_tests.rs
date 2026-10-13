@@ -24,12 +24,9 @@
 /// Import the shared fixtures,
 ///  the bounded process helpers and the refusal texts.
 use super::support::{
-    Fixture, Observed, fixture, git, observe, porcelain, remove, repository, run_direct,
-    run_wrapped, silent_success, stderr_of, stopped_with, wrapped,
+    Fixture, Observed, TRANSACTION_ID, fixture, git, observe, porcelain, registered_transaction,
+    remove, repository, run_direct, run_wrapped, silent_success, stderr_of, stopped_with, wrapped,
 };
-use git_policy_cli::policy_trigger::Trigger;
-use git_policy_cli::refusal_frontier::LEASE_VARIABLES;
-use git_policy_cli::unported::{Unported, unported_notice};
 use std::ffi::OsStr;
 use std::path::{Path, PathBuf};
 
@@ -59,45 +56,15 @@ fn repository_with_linked_worktree(fixture: &Fixture) -> (PathBuf, PathBuf) {
     return (repo, linked);
 }
 
-/// Every `git commit` except a dry run is refused;
+/// A dry run is forwarded, with the commit-only insertion, and commits nothing;
 ///  the index and `HEAD` stay as they were.
 #[test]
-fn a_real_commit_is_refused() {
+fn a_dry_run_commit_is_forwarded_and_commits_nothing() {
     let fixture: Fixture = fixture("frontier-commit");
     let repo: PathBuf = repository(&fixture, OsStr::new("repo"));
-    let nested: PathBuf = repo.join("nested");
-    std::fs::create_dir(&nested).expect("nested directory");
     std::fs::write(repo.join("file.txt"), b"content\n").expect("file");
     git(&fixture, repo.as_path(), &["add", "--", "file.txt"]);
     let head_before: String = head(&fixture, repo.as_path());
-    let refused: Observed =
-        stopped_with(unported_notice(&Unported::CommitTransaction, "commit").as_str());
-    for arguments in [
-        vec!["commit", "-m", "refused"],
-        vec!["commit", "-m", "refused", "--", "file.txt"],
-        vec!["commit", "--allow-empty", "--message=refused"],
-        vec!["commit", "-a", "-m", "refused"],
-        vec!["commit", "--amend", "--no-edit"],
-        vec!["commit", "--no-enforce-only", "-m", "refused"],
-        vec!["commit", "--dry-run", "--no-dry-run", "-m", "refused"],
-        vec!["commit", "--no-such-option"],
-        vec!["-c", "user.name=Other", "commit", "-m", "refused"],
-        vec!["--cli-git-keep-going", "commit", "-m", "refused"],
-    ] {
-        assert_eq!(
-            run_wrapped(&fixture, repo.as_path(), arguments.as_slice()),
-            refused,
-            "{arguments:?}"
-        );
-    }
-    // The refusal comes before any policy: below the top level it is still the commit refusal.
-    assert_eq!(
-        run_wrapped(&fixture, nested.as_path(), &["commit", "-m", "refused"]),
-        refused
-    );
-    assert_eq!(head(&fixture, repo.as_path()), head_before);
-    assert_eq!(porcelain(&fixture, repo.as_path()), "A  file.txt\n");
-    // Positive control: a dry run is forwarded, with the commit-only insertion, and commits nothing.
     let native: Observed = run_direct(
         &fixture,
         repo.as_path(),
@@ -219,10 +186,10 @@ fn add_runs_the_content_policies_over_what_it_stages() {
     remove(&fixture);
 }
 
-/// A real push stops at the manual-push gate;
+/// A real push is scanned at the manual-push gate and forwarded when clean;
 ///  a dry run is forwarded with `--atomic`.
 #[test]
-fn a_real_push_is_refused_at_the_manual_push_gate() {
+fn a_real_push_is_scanned_and_forwarded() {
     let fixture: Fixture = fixture("frontier-push");
     let repo: PathBuf = repository(&fixture, OsStr::new("repo"));
     git(
@@ -236,20 +203,13 @@ fn a_real_push_is_refused_at_the_manual_push_gate() {
         repo.as_path(),
         &["remote", "add", "origin", "../remote.git"],
     );
-    let refused: Observed =
-        stopped_with(unported_notice(&Unported::Lifecycle(Trigger::ManualPush), "push").as_str());
-    for arguments in [
-        vec!["push", "origin", "main"],
-        vec!["push", "--quiet", "origin", "main"],
-        vec!["push", "--dry-run", "--no-dry-run", "origin", "main"],
-    ] {
-        assert_eq!(
-            run_wrapped(&fixture, repo.as_path(), arguments.as_slice()),
-            refused,
-            "{arguments:?}"
-        );
-    }
-    assert_eq!(refs(&fixture, remote.as_path()), "");
+    // A clean push is scanned, forwarded and publishes the branch.
+    let pushed: Observed = run_wrapped(&fixture, repo.as_path(), &["push", "origin", "main"]);
+    assert_eq!(pushed.code, Some(0), "{pushed:?}");
+    assert!(
+        !refs(&fixture, remote.as_path()).is_empty(),
+        "the clean push must publish main"
+    );
     // A dry run publishes nothing and is forwarded with the atomic-push insertion.
     let native: Observed = run_direct(
         &fixture,
@@ -265,7 +225,11 @@ fn a_real_push_is_refused_at_the_manual_push_gate() {
         ),
         native
     );
-    assert_eq!(refs(&fixture, remote.as_path()), "");
+    assert_eq!(
+        refs(&fixture, remote.as_path()),
+        "refs/heads/main
+"
+    );
     // Positive control: with the only manual-push policy escaped, the same push publishes.
     assert_eq!(
         run_wrapped(
@@ -285,82 +249,11 @@ fn a_real_push_is_refused_at_the_manual_push_gate() {
     remove(&fixture);
 }
 
-/// From a linked worktree,
-///  creating a worktree and running a possible alias are refused.
+/// Live transactions no longer stop a guarded command and a broken transaction record does;
+/// dead transactions are recovered first.
+/// Worktree-copy leases and journals no longer stop a guarded command: the forwarding settles them.
 #[test]
-fn worktree_creation_and_aliases_are_refused_from_a_linked_worktree() {
-    let fixture: Fixture = fixture("frontier-worktree");
-    let (repo, linked): (PathBuf, PathBuf) = repository_with_linked_worktree(&fixture);
-    assert_eq!(
-        run_wrapped(
-            &fixture,
-            linked.as_path(),
-            &["worktree", "add", "--quiet", "-b", "second", "../second"]
-        ),
-        stopped_with(unported_notice(&Unported::WorktreeCopy, "worktree").as_str())
-    );
-    assert_eq!(
-        run_wrapped(
-            &fixture,
-            linked.as_path(),
-            &[
-                "-c",
-                "alias.wta=worktree add",
-                "wta",
-                "--quiet",
-                "-b",
-                "third",
-                "../third"
-            ]
-        ),
-        stopped_with(unported_notice(&Unported::AliasResolution, "wta").as_str())
-    );
-    assert!(!fixture.root.join("second").exists());
-    assert!(!fixture.root.join("third").exists());
-    assert_eq!(
-        refs(&fixture, repo.as_path()),
-        "refs/heads/main\nrefs/heads/topic\n"
-    );
-    // Positive controls: the opt-out, another worktree subcommand and the main worktree are forwarded.
-    assert_eq!(
-        run_wrapped(
-            &fixture,
-            linked.as_path(),
-            &[
-                "worktree",
-                "add",
-                "--no-worktree-copy",
-                "--quiet",
-                "-b",
-                "second",
-                "../second"
-            ]
-        )
-        .code,
-        Some(0)
-    );
-    assert!(fixture.root.join("second/.git").exists());
-    assert_eq!(
-        run_wrapped(&fixture, linked.as_path(), &["worktree", "prune"]),
-        silent_success()
-    );
-    assert_eq!(
-        run_wrapped(
-            &fixture,
-            repo.as_path(),
-            &["worktree", "add", "--quiet", "-b", "fourth", "../fourth"]
-        )
-        .code,
-        Some(0)
-    );
-    assert!(fixture.root.join("fourth/.git").exists());
-    remove(&fixture);
-}
-
-/// Registered transactions,
-///  an interrupted worktree copy and an inherited lease stop a guarded command.
-#[test]
-fn leftover_state_and_leases_refuse_guarded_commands() {
+fn leftover_transaction_state_refuses_guarded_commands() {
     let fixture: Fixture = fixture("frontier-state");
     let (repo, linked): (PathBuf, PathBuf) = repository_with_linked_worktree(&fixture);
     let guarded: [&str; 3] = ["reset", "--soft", "HEAD"];
@@ -369,20 +262,18 @@ fn leftover_state_and_leases_refuse_guarded_commands() {
         run_wrapped(&fixture, repo.as_path(), &guarded),
         silent_success()
     );
-    let registry: PathBuf = repo.join(".git/cli-git-transactions");
-    std::fs::create_dir_all(registry.join("0123-transaction")).expect("registry entry");
+    let registry: PathBuf = registered_transaction(repo.as_path(), true);
+    // A live transaction no longer refuses a guarded command that writes no index.
     assert_eq!(
         run_wrapped(&fixture, repo.as_path(), &guarded),
-        stopped_with(
-            unported_notice(&Unported::TransactionRecovery(registry.clone()), "reset").as_str()
-        )
+        silent_success()
     );
     // The linked worktree has its own registry, so it is not stopped by the main one.
     assert_eq!(
         run_wrapped(&fixture, linked.as_path(), &guarded),
         silent_success()
     );
-    // A read-only command is forwarded beside the same state.
+    // A read-only command is forwarded beside the same live transaction.
     assert_eq!(
         run_wrapped(
             &fixture,
@@ -392,64 +283,138 @@ fn leftover_state_and_leases_refuse_guarded_commands() {
         .stdout,
         b"true\n"
     );
+    assert!(registry.join(TRANSACTION_ID).exists());
+    // A dead owner's transaction is recovered, and the command runs.
     std::fs::remove_dir_all(&registry).expect("remove registry");
+    registered_transaction(repo.as_path(), false);
+    assert_eq!(
+        run_wrapped(&fixture, repo.as_path(), &guarded),
+        silent_success()
+    );
+    assert!(!registry.join(TRANSACTION_ID).exists());
+    // A published directory without a valid owner record stops the command, names the
+    // directory and keeps its contents.
+    let broken: PathBuf = registry.join(TRANSACTION_ID);
+    std::fs::create_dir(&broken).expect("published directory");
+    std::fs::write(broken.join("owner.json"), b"{}").expect("malformed owner");
+    std::fs::write(broken.join("preparing.json"), b"kept").expect("evidence");
+    let stopped: Observed = run_wrapped(&fixture, repo.as_path(), &guarded);
+    assert_eq!(stopped.code, Some(2));
+    assert_eq!(
+        stderr_of(&stopped),
+        format!(
+            "{{\"schemaVersion\":1,\"sequence\":0,\"type\":\"engine-failure\",\"code\":\"content-unavailable\",\"message\":\"Transaction owner record is malformed: {}\"}}\n",
+            broken.display()
+        )
+    );
+    assert_eq!(
+        std::fs::read(broken.join("owner.json")).expect("kept"),
+        b"{}"
+    );
+    assert_eq!(
+        std::fs::read(broken.join("preparing.json")).expect("kept"),
+        b"kept"
+    );
+    // A read-only command that asked for the location stops the same way.
+    assert_eq!(
+        run_wrapped(&fixture, repo.as_path(), &["log", "--oneline"]).code,
+        Some(2)
+    );
+    std::fs::remove_dir_all(&registry).expect("remove registry");
+    // The legacy directory stops with the instructions to recover it.
     let legacy: PathBuf = repo.join(".git/cli-git-transaction");
     std::fs::create_dir(&legacy).expect("legacy transaction directory");
     assert_eq!(
         run_wrapped(&fixture, repo.as_path(), &guarded),
         stopped_with(
-            unported_notice(&Unported::TransactionRecovery(legacy.clone()), "reset").as_str()
-        )
-    );
-    std::fs::remove_dir(&legacy).expect("remove legacy directory");
-    // An interrupted worktree copy concerns the linked worktree, not the main one.
-    let journals: PathBuf = repo.join(".git/cli-git-worktree-copy/v1");
-    std::fs::create_dir_all(journals.join("settlement.lock")).expect("settlement lock");
-    assert_eq!(
-        run_wrapped(&fixture, linked.as_path(), &guarded),
-        silent_success()
-    );
-    std::fs::write(journals.join("0123.json"), b"{}").expect("journal");
-    assert_eq!(
-        run_wrapped(&fixture, linked.as_path(), &guarded),
-        stopped_with(
-            unported_notice(&Unported::WorktreeCopyRecovery(journals.clone()), "reset").as_str()
-        )
-    );
-    assert_eq!(
-        run_wrapped(&fixture, repo.as_path(), &guarded),
-        silent_success()
-    );
-    std::fs::remove_file(journals.join("0123.json")).expect("remove journal");
-    // Each lease variable stops the guarded command, and none stops a read-only one.
-    for variable in LEASE_VARIABLES {
-        assert_eq!(
-            observe(
-                wrapped(&fixture)
-                    .current_dir(&repo)
-                    .env(variable, "inherited")
-                    .args(guarded),
-                b""
-            ),
-            stopped_with(unported_notice(&Unported::InheritedLease(variable), "reset").as_str()),
-            "{variable}"
-        );
-        assert_eq!(
-            observe(
-                wrapped(&fixture)
-                    .current_dir(&repo)
-                    .env(variable, "inherited")
-                    .args(["rev-parse", "--is-inside-work-tree"]),
-                b""
+            format!(
+                "cli-git: {} holds a commit journal in a format this executable does not recover. \
+                 Nothing was changed. Run any git command once with the previous cli-git executable to \
+                 recover it, then run this command again.\n",
+                legacy.display()
             )
-            .stdout,
-            b"true\n",
-            "{variable}"
-        );
-    }
+            .as_str()
+        )
+    );
+    assert!(legacy.exists());
+    std::fs::remove_dir(&legacy).expect("remove legacy directory");
+    // A worktree-copy journal or lease in the environment no longer stops a guarded command;
+    // the forwarding recovers or honors it.
+    assert_eq!(
+        observe(
+            wrapped(&fixture)
+                .current_dir(&repo)
+                .env("CLI_GIT_WORKTREE_COPY_LEASE", "inherited")
+                .args(guarded),
+            b""
+        ),
+        silent_success()
+    );
+    // The landing lease does not stop a guarded command that writes no index: coordination honours it.
+    assert_eq!(
+        observe(
+            wrapped(&fixture)
+                .current_dir(&repo)
+                .env("CLI_GIT_LANDING_LEASE", "inherited")
+                .args(guarded),
+            b""
+        ),
+        silent_success()
+    );
     assert_eq!(
         stderr_of(&run_wrapped(&fixture, repo.as_path(), &guarded)),
         ""
     );
+    remove(&fixture);
+}
+
+/// A real push whose new commit breaks a manual-push policy is refused with exit 1 and publishes nothing.
+#[test]
+fn a_real_push_of_a_nonconforming_commit_is_refused_and_publishes_nothing() {
+    let fixture: Fixture = fixture("frontier-push-refused");
+    let repo: PathBuf = repository(&fixture, OsStr::new("repo"));
+    git(
+        &fixture,
+        fixture.root.as_path(),
+        &["init", "--quiet", "--bare", "remote.git"],
+    );
+    let remote: PathBuf = fixture.root.join("remote.git");
+    git(
+        &fixture,
+        repo.as_path(),
+        &["remote", "add", "origin", "../remote.git"],
+    );
+    std::fs::write(
+        repo.join("cli-git.config.jsonc"),
+        "{ \"policies\": { \"final-newline\": \"error\" } }\n",
+    )
+    .expect("configuration");
+    git(&fixture, repo.as_path(), &["add", "cli-git.config.jsonc"]);
+    git(
+        &fixture,
+        repo.as_path(),
+        &["commit", "--quiet", "-m", "configure"],
+    );
+    git(
+        &fixture,
+        repo.as_path(),
+        &["push", "--quiet", "origin", "main"],
+    );
+    std::fs::write(repo.join("bad.txt"), "no final newline").expect("nonconforming file");
+    git(&fixture, repo.as_path(), &["add", "bad.txt"]);
+    git(
+        &fixture,
+        repo.as_path(),
+        &["commit", "--quiet", "-m", "nonconforming"],
+    );
+    let before: String = refs(&fixture, remote.as_path());
+    let pushed: Observed = run_wrapped(&fixture, repo.as_path(), &["push", "origin", "main"]);
+    assert_eq!(pushed.code, Some(1), "{pushed:?}");
+    assert!(
+        String::from_utf8_lossy(&pushed.stderr)
+            .contains("final-newline/noncanonical-final-newline"),
+        "{pushed:?}"
+    );
+    assert_eq!(refs(&fixture, remote.as_path()), before);
     remove(&fixture);
 }

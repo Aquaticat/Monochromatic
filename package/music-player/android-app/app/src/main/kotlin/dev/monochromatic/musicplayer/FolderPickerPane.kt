@@ -48,6 +48,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.foundation.verticalScroll
 
 // What:     Imports from `androidx.compose.material3` and `runtime` bring in the theme accessor, text,
@@ -67,6 +68,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.focus.focusProperties
+import dev.monochromatic.musicplayer.core.FocusRingPlacement
 import dev.monochromatic.musicplayer.core.HostKeyZone
 import dev.monochromatic.musicplayer.core.KeyActivateRow
 import dev.monochromatic.musicplayer.core.ringAfter
@@ -96,13 +98,14 @@ import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
 
 // What:     `private val RAIL_WIDTH: Dp = 48.dp` is the width of the letter rail column.
-// Why:      One 48dp cell fills the column, so the rail is exactly one touch target wide.
+// Why:      One 48dp cell fills the column, so the rail is exactly one touch target wide, and the cell's focus ring
+//           lies just inside its edge (D120) because the scrolling column clips anything outside it.
 //
 // In TS you'd write (pseudocode):
 // ```ts
 // const RAIL_WIDTH = 48;
 // ```
-/** Width of the letter rail column, one minimum touch target. */
+/** Width of the letter rail column: one minimum touch target; the focus ring of a cell lies inside the cell. */
 private val RAIL_WIDTH: Dp = 48.dp
 
 // What:     `private val RAIL_CELL_SIZE: Dp = 48.dp` is the side of each rail cell.
@@ -534,6 +537,7 @@ private fun letterRail(
                 }
                 moved != null
             },
+        horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         sections.forEachIndexed { sectionIndex, section ->
             if (sectionIndex > 0) {
@@ -581,7 +585,7 @@ private fun railCellTarget(cell: RailCell, selected: Boolean, ringed: Boolean, o
         modifier = Modifier
             .size(RAIL_CELL_SIZE)
             .bringIntoViewRequester(bringIntoView)
-            .keyboardFocusRing(visible = ringed, cornerRadius = RAIL_CELL_SIZE / 2)
+            .keyboardFocusRing(visible = ringed, shape = CircleShape, placement = FocusRingPlacement.INSIDE)
             .focusProperties { canFocus = false }
             .selectable(selected = selected, onClick = onClick, role = Role.RadioButton),
         contentAlignment = Alignment.Center,
@@ -688,7 +692,7 @@ private fun folderNameTarget(name: String, selected: Boolean, ringed: Boolean, o
     Box(
         modifier = Modifier
             .defaultMinSize(minWidth = NAME_TARGET_MIN, minHeight = NAME_TARGET_MIN)
-            .keyboardFocusRing(visible = ringed)
+            .keyboardFocusRing(visible = ringed, shape = RectangleShape)
             .focusProperties { canFocus = false }
             .selectable(selected = selected, onClick = onClick, role = Role.RadioButton)
             .drawBehind {

@@ -17,6 +17,7 @@ import {
   FIRST_FOLDER_TRACK,
   FOLDER_PLAYS_OUT_MS,
   firstFolderShown,
+  firstFolderShownWide,
   folderListFocused,
   isLibraryReady,
   isReading,
@@ -27,8 +28,54 @@ import {
   SCAN_PAUSE_MS,
   stoppedAndRewound,
 } from './states-conditions.ts';
+import { waitForCleanedTitle, } from './states-title.ts';
 import { SESSION_READY_MS, } from './timing.ts';
-import { NO_INDEX, } from './ui-state.ts';
+import {
+  NO_INDEX,
+  type UiState,
+} from './ui-state.ts';
+
+/**
+ Makes sure the first track of the first folder plays, starting it with Space when nothing plays yet. A track that
+ already plays (the state Play with nothing selected leaves behind) is not touched, because Space would pause it.
+
+ @param session - the session on the main library
+
+ @returns the state in which the first track of the folder plays
+
+ @throws CheckFailureError when the library never shows the first folder in the wide layout, or Space does not start the track
+
+ @example
+ ```ts
+ await ensureFirstTrackPlaying({ session, },);
+ ```
+ */
+async function ensureFirstTrackPlaying(
+  {
+    session,
+  }: {
+    readonly session: Session;
+  },
+): Promise<UiState> {
+  // Run alone, the check starts before the app has written any state line, so it waits for the wide layout first.
+  await session.waitState({
+    predicate: firstFolderShownWide,
+    what: 'the first folder shown in the wide layout',
+    timeoutMs: SESSION_READY_MS,
+  },);
+  /**
+   The latest state before the check acts.
+   */
+  const latest = await session.last();
+  if (playsFirstFolderTrack(latest,))
+    return latest;
+  return await press({
+    session,
+    act: tapKey('space',),
+    until: playsFirstFolderTrack,
+    what: 'the first track of the folder playing',
+  },);
+}
 
 /**
  Records the checks of the main states library: reading, loose files, Play with nothing selected, the window title and
@@ -156,16 +203,15 @@ export async function checkMainLibrary(
     id: 'states/window-title',
     title: 'the window title is the cleaned title the deck shows, without folder, extension or the shared prefix',
     body: async function windowTitleIsCleaned(): Promise<string> {
-      /**
-       The compositor's answer to the title command.
+      /*
+       The check needs the first track of the folder playing. After Play with nothing selected it already plays; run
+       alone, or after that check failed, nothing plays and the check starts the track itself.
        */
-      const title = await session.send('title',);
-      expect({
-        condition: title.includes('One',)
-          && (!title.includes('.wav',))
-          && (!title.includes('Aaa Folder',)),
-        message: `the window title was "${title}"`,
-      },);
+      await ensureFirstTrackPlaying({ session, },);
+      /**
+       The compositor's answer to the title command, once the window shows the cleaned title.
+       */
+      const title = await waitForCleanedTitle({ session, },);
       return `title "${title}"`;
     },
   },);

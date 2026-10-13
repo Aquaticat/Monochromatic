@@ -116,15 +116,20 @@ fn srgb_encode(linear: f64) -> u8 {
 }
 
 /// What:
-///      `pub fn srgb_to_oklch(color: Srgb8) -> Oklch`: reads a stored color as OKLCH.
+///      `pub fn srgb_to_oklch(color: Srgb8) -> Oklch`: reads a stored color as OKLCH. A color whose three channels
+///  are equal has chroma exactly 0 (and hue 0, which carries no meaning without chroma).
 /// Why:
-///       The system accent arrives as sRGB and every derivation starts from its lightness, chroma and hue.
+///       The system accent arrives as sRGB and every derivation starts from its lightness, chroma and hue. The
+///           matrix constants are rounded to ten digits, so an equal-channel color would otherwise read a chroma of
+///           about 4e-8 with an arbitrary hue; D118 treats "all channels equal" as "no chroma at all", and a derived
+///           color built from such a read must stay exactly gray.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// const [r, g, b] = [color.red, color.green, color.blue].map(srgbDecode);
 /// const l = Math.cbrt(0.4122214708 * r + 0.5363325363 * g + 0.0514459929 * b); // and m, s likewise
 /// // then L, a, b from l, m, s, and chroma = hypot(a, b), hue = atan2(b, a) in degrees
+/// // equal channels: chroma = 0, hue = 0
 /// ```
 pub fn srgb_to_oklch(color: Srgb8) -> Oklch {
     let red: f64 = srgb_decode(color.red);
@@ -136,6 +141,9 @@ pub fn srgb_to_oklch(color: Srgb8) -> Oklch {
     let lightness: f64 = 0.210_454_255_3 * cone_l + 0.793_617_785_0 * cone_m - 0.004_072_046_8 * cone_s;
     let axis_a: f64 = 1.977_998_495_1 * cone_l - 2.428_592_205_0 * cone_m + 0.450_593_709_9 * cone_s;
     let axis_b: f64 = 0.025_904_037_1 * cone_l + 0.782_771_766_2 * cone_m - 0.808_675_766_0 * cone_s;
+    if color.red == color.green && color.green == color.blue {
+        return Oklch { lightness, chroma: 0.0, hue: 0.0 };
+    }
     let chroma: f64 = axis_a.hypot(axis_b);
     let hue: f64 = axis_b.atan2(axis_a).to_degrees().rem_euclid(360.0);
     return Oklch { lightness, chroma, hue };
@@ -236,17 +244,27 @@ pub fn gamut_map(color: Oklch) -> Oklch {
 }
 
 /// What:
-///      `pub fn oklch_to_srgb8(color: Oklch) -> Srgb8`: gamut-maps then encodes to 8-bit sRGB.
+///      `pub fn oklch_to_srgb8(color: Oklch) -> Srgb8`: gamut-maps then encodes to 8-bit sRGB. A color with chroma
+///  exactly 0 gets one value on all three channels.
 /// Why:
-///       The single exit from OKLCH to a displayable color for every derived role.
+///       The single exit from OKLCH to a displayable color for every derived role. The conversion matrix rows sum to
+///           1 only to ten digits, so three channels of one gray can sit about 1e-10 apart; a contrast fit lands
+///           within 1e-12 of an 8-bit rounding boundary, where that gap splits a gray into channels one step apart.
+///           For a completely neutral root (D118) every gray must have equal channels, so zero chroma encodes once.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// const [r, g, b] = oklchToLinear(gamutMap(color)).map(srgbEncode);
+/// const m = gamutMap(color);
+/// if (m.chroma === 0) { const v = srgbEncode(m.lightness ** 3); return { red: v, green: v, blue: v }; }
+/// const [r, g, b] = oklchToLinear(m).map(srgbEncode);
 /// return { red: r, green: g, blue: b };
 /// ```
 pub fn oklch_to_srgb8(color: Oklch) -> Srgb8 {
     let mapped: Oklch = gamut_map(color);
+    if mapped.chroma == 0.0 {
+        let level: u8 = srgb_encode(mapped.lightness.powi(3));
+        return Srgb8 { red: level, green: level, blue: level };
+    }
     let channels: [f64; 3] = oklch_to_linear(mapped);
     return Srgb8 { red: srgb_encode(channels[0]), green: srgb_encode(channels[1]), blue: srgb_encode(channels[2]) };
 }

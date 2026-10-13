@@ -186,7 +186,7 @@ fn autofix(path: &[u8], fix_available: bool) -> PolicyFinding {
     return PolicyFinding {
         code: MARKDOWN_AUTOFIX_CODE,
         message: format!(
-            "markdown-lint --fix (lfs-image-url) rewrites {}.",
+            "monochromatic-lint --fix (markdown/lfs-image-url) rewrites {}.",
             event.text()
         ),
         path: Some(event),

@@ -1,8 +1,7 @@
 // The one OKLCH implementation of the app (D108): sRGB and OKLCH conversion, gamut mapping by chroma reduction, WCAG
 // contrast and OKLCH mixing, all in Double and with no Compose or Android import, so it runs on the JVM unit tests.
 // It is a line-for-line port of the desktop's `desktop-app/src/oklch.rs`, so the same root gives the same sRGB roles in
-// Kotlin and Rust (the shared test vector `theme-roles-vector.txt` proves that). The Compose-facing adapters in
-// `OklchComposeColor.kt` call into this file and add no math of their own.
+// Kotlin and Rust (the shared test vector `theme-roles-vector.txt` proves that). `ThemeRoles.kt` is its only caller.
 // Gamut handling: a requested lightness, chroma and hue that sRGB cannot show keeps its lightness and hue, and the
 // chroma is reduced by binary search until it fits. Per-channel clipping is never used, because it shifts the hue.
 
@@ -307,17 +306,29 @@ internal fun srgbUnitToOklch(color: SrgbUnit): Oklch {
     )
 }
 
-// What:     `internal fun srgbToOklch(color)` reads a stored 8-bit color as OKLCH.
+// What:     `internal fun srgbToOklch(color)` reads a stored 8-bit color as OKLCH. A color whose three channels are
+//           equal has chroma exactly 0 (and hue 0, which carries no meaning without chroma).
 // Why:      The system accent arrives as 8-bit sRGB and every derivation starts from its lightness, chroma and hue.
+//           The matrix constants are rounded to ten digits, so an equal-channel color would otherwise read a chroma of
+//           about 4e-8 with an arbitrary hue; D118 treats "all channels equal" as "no chroma at all", and a derived
+//           color built from such a read must stay exactly gray.
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// srgbUnitToOklch({ red: color.red / 255, green: color.green / 255, blue: color.blue / 255 });
+// const lch = srgbUnitToOklch({ red: color.red / 255, green: color.green / 255, blue: color.blue / 255 });
+// return color.red === color.green && color.green === color.blue ? { ...lch, chroma: 0, hue: 0 } : lch;
 // ```
-/** Converts an 8-bit sRGB color to OKLCH. */
-internal fun srgbToOklch(color: Srgb8): Oklch = srgbUnitToOklch(
-    SrgbUnit(color.red / CHANNEL_MAX, color.green / CHANNEL_MAX, color.blue / CHANNEL_MAX),
-)
+/** Converts an 8-bit sRGB color to OKLCH, with exactly zero chroma for equal channels. */
+internal fun srgbToOklch(color: Srgb8): Oklch {
+    /** The plain conversion, whose chroma for a gray is float noise. */
+    val converted: Oklch = srgbUnitToOklch(
+        SrgbUnit(color.red / CHANNEL_MAX, color.green / CHANNEL_MAX, color.blue / CHANNEL_MAX),
+    )
+    if (color.red == color.green && color.green == color.blue) {
+        return Oklch(lightness = converted.lightness, chroma = 0.0, hue = 0.0)
+    }
+    return converted
+}
 
 // What:     `internal fun oklchToLinear(color)` converts to linear-light red, green and blue WITHOUT clamping.
 // Why:      The gamut test and the chroma search read the unclamped channels.
@@ -415,17 +426,30 @@ internal fun gamutMap(color: Oklch): Oklch {
     return wanted.copy(chroma = low)
 }
 
-// What:     `internal fun oklchToSrgbUnit(color)` gamut-maps then encodes to unquantized sRGB.
-// Why:      The Compose adapters keep float precision; the 8-bit exit rounds this value.
+// What:     `internal fun oklchToSrgbUnit(color)` gamut-maps then encodes to unquantized sRGB. A color with chroma
+//           exactly 0 gets one value on all three channels.
+// Why:      The Compose adapters keep float precision; the 8-bit exit rounds this value. The conversion matrix rows
+//           sum to 1 only to ten digits, so three channels of one gray can sit about 1e-10 apart; a contrast fit lands
+//           within 1e-12 of an 8-bit rounding boundary, where that gap splits a gray into channels one step apart.
+//           For a completely neutral root (D118) every gray must have equal channels, so zero chroma encodes once.
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// const [r, g, b] = oklchToLinear(gamutMap(color)); return { red: encode(r), green: encode(g), blue: encode(b) };
+// const m = gamutMap(color);
+// if (m.chroma === 0) { const v = encode(m.lightness ** 3); return { red: v, green: v, blue: v }; }
+// const [r, g, b] = oklchToLinear(m); return { red: encode(r), green: encode(g), blue: encode(b) };
 // ```
 /** Converts OKLCH to sRGB channels in 0 to 1 after chroma-reduction gamut mapping. */
 internal fun oklchToSrgbUnit(color: Oklch): SrgbUnit {
+    /** The color reduced to what sRGB can show. */
+    val mapped: Oklch = gamutMap(color)
+    if (mapped.chroma == 0.0) {
+        /** The one encoded value of an achromatic color. */
+        val level: Double = srgbEncode(cube(mapped.lightness))
+        return SrgbUnit(level, level, level)
+    }
     /** Linear-light channels of the mapped color. */
-    val linear: LinearRgb = oklchToLinear(gamutMap(color))
+    val linear: LinearRgb = oklchToLinear(mapped)
     return SrgbUnit(srgbEncode(linear.red), srgbEncode(linear.green), srgbEncode(linear.blue))
 }
 

@@ -145,7 +145,7 @@ export component TemplateEditor inherits Rectangle {
         width: root.width;
         height: root.header-extent;
 
-        // Circular hover, pressed and focus layer over the 56 px Back target.
+        // Circular hover and pressed layer over the 56 px Back target.
         StateLayer {
             x: 16px;
             y: 4px;
@@ -155,7 +155,6 @@ export component TemplateEditor inherits Rectangle {
             tint: Theme.on-surface;
             hovered: back-touch.has-hover;
             pressed: back-touch.pressed;
-            focused: back-stop.ring;
         }
         Path {
             x: 32px;
@@ -196,7 +195,7 @@ export component TemplateEditor inherits Rectangle {
             y: 4px;
             width: 56px;
             height: 56px;
-            radius: 28px;
+            round: true;
             active: back-stop.ring;
         }
         Text {
@@ -220,7 +219,7 @@ export component TemplateEditor inherits Rectangle {
         y: 8px;
         width: root.reset-width;
         height: 48px;
-        // Pill-shaped hover, pressed and focus layer over the text button, matching its 48 px target.
+        // Pill-shaped hover and pressed layer over the text button, matching its 48 px target.
         StateLayer {
             width: parent.width;
             height: parent.height;
@@ -228,7 +227,6 @@ export component TemplateEditor inherits Rectangle {
             tint: Theme.on-surface;
             hovered: reset-touch.has-hover;
             pressed: reset-touch.pressed;
-            focused: reset-stop.ring;
         }
         Text {
             x: 12px;
@@ -368,17 +366,29 @@ export component TemplateEditor inherits Rectangle {
             Rectangle {
                 height: 8px + field-box.height + (root.supporting-height > 0px ? 4px + root.supporting-height : 0px);
 
-                // Outline of the field, 4 px corners. The mistake state draws the error role at 2 px.
+                // Outline of the field, 4 px corners. The mistake state draws the error role at 2 px. Focus changes nothing
+                // here: the outline keeps its width and color, and the ring below shows the focus (D117).
                 field-box := Rectangle {
                     x: 16px;
                     y: 8px;
                     width: root.width - 32px;
                     height: max(56px, field-input.preferred-height + 16px);
                     border-radius: 4px;
-                    border-width: root.mistake-lines.length > 0 || field-input.has-focus ? 2px : 1px;
-                    border-color: root.mistake-lines.length > 0
-                        ? Theme.error
-                        : (field-input.has-focus ? Theme.primary : Theme.outline);
+                    border-width: root.mistake-lines.length > 0 ? 2px : 1px;
+                    border-color: root.mistake-lines.length > 0 ? Theme.error : Theme.outline;
+                }
+
+                // Focus ring of the text field, flush outside its outline. A text field shows it for any focus, a click
+                // included, as a browser's focus-visible rule does for a text input. It is drawn before the label patch
+                // below, so the patch breaks the ring where the label sits, as it breaks the outline: a ring line across the
+                // label's letters would be unreadable.
+                FocusRing {
+                    x: field-box.x;
+                    y: field-box.y;
+                    width: field-box.width;
+                    height: field-box.height;
+                    radius: 4px;
+                    active: field-input.has-focus;
                 }
 
                 // Canvas-coloured patch that breaks the outline behind the label, as a floating label does.
@@ -395,9 +405,7 @@ export component TemplateEditor inherits Rectangle {
                         text: "Template";
                         font-size: Theme.body-small;
                         vertical-alignment: center;
-                        color: root.mistake-lines.length > 0
-                            ? Theme.error
-                            : (field-input.has-focus ? Theme.primary : Theme.on-surface-variant);
+                        color: root.mistake-lines.length > 0 ? Theme.error : Theme.on-surface-variant;
                     }
                 }
 
@@ -527,14 +535,13 @@ export component TemplateEditor inherits Rectangle {
             // One field row: name and value on the left, the call to insert on the right. A tap inserts the call.
             for field[index] in root.fields : Rectangle {
                 height: 65px;
-                // Rectangular hover, pressed and focus layer over the 64 px insert target, above the divider.
+                // Rectangular hover and pressed layer over the 64 px insert target, above the divider.
                 StateLayer {
                     width: parent.width;
                     height: 64px;
                     tint: Theme.on-surface;
                     hovered: field-touch.has-hover;
                     pressed: field-touch.pressed;
-                    focused: field-stop.ring;
                 }
                 headline := Text {
                     x: 16px;
@@ -594,11 +601,14 @@ export component TemplateEditor inherits Rectangle {
                     height: 64px;
                     activated => { root.insert-field(index); }
                 }
+                // A field row is as wide as the page, which ends at the window's edge, so its ring is drawn on the row's own
+                // edge, inside it (see the track rows). No fill goes with it.
                 FocusRing {
                     x: 0px;
                     y: 0px;
                     width: parent.width;
                     height: 64px;
+                    inside: true;
                     active: field-stop.ring;
                 }
             }

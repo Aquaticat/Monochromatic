@@ -347,8 +347,8 @@ pub mod engine;
 /// What:
 ///      `pub mod watch;` the Source Root file watcher (`src/watch.rs`).
 /// Why:
-///       Watches the current Source Root and sends `Command::Rescan` on a debounced
-///           change,
+///       Watches the current Source Root and reports the paths that changed (`Command::SourceChanged`) after a
+///           debounce, or everything (`Command::Rescan`) when events were lost,
 ///  so the queue live-updates while the app runs.
 ///
 /// In TS you'd write (pseudocode):
@@ -916,6 +916,50 @@ pub mod duration_probe;
 /// What: `pub mod measure_peek;` reads each track's cached decision and header length without decoding.
 /// Why: the sweep reports lengths and cached peaks as soon as a queue loads.
 pub mod measure_peek;
+
+/// What: `pub mod change_set;` what the file watcher saw change: some paths, or everything (D113).
+/// Why: the refresh looks at the named paths instead of walking the library.
+pub mod change_set;
+
+/// What: `pub(crate) mod walk_order;` the folder walk's order as a comparison, for binary search in the queue.
+/// Why: deciding whether a named path is listed must cost a few comparisons at a million tracks.
+pub(crate) mod walk_order;
+
+/// What: `pub(crate) mod disk_view;` the questions the refresh planner asks the disk.
+/// Why: the planner is tested at a million tracks without a million files.
+pub(crate) mod disk_view;
+
+/// What: `pub(crate) mod change_plan;` from named paths to queue edits.
+/// Why: a replaced file must cost lookups for that file only.
+pub(crate) mod change_plan;
+
+/// What: `pub(crate) mod refresh_coalescer;` at most one refresh sweep runs, with one merged follow-up.
+/// Why: overlapping sweeps would stat the same files twice.
+pub(crate) mod refresh_coalescer;
+
+/// What: `pub mod controller_refresh;` the controller side of refreshing the library when the watcher reports changes.
+/// Why: the cost of a refresh follows what changed.
+pub mod controller_refresh;
+
+/// What: `refresh_test_support`, shared helpers of the refresh tests (test builds only).
+/// Why: the planner, coalescer and controller tests share a disposable folder, a random generator and an in-memory disk.
+#[cfg(test)]
+pub(crate) mod refresh_test_support;
+
+/// What: `refresh_scale_support`, the million-track library of the refresh tests (test builds only).
+/// Why: the planner and the controller are measured at normal operation's largest size.
+#[cfg(test)]
+pub(crate) mod refresh_scale_support;
+
+/// What: `refresh_scale_tests`, one refresh event at a million tracks (test builds only).
+/// Why: 1,000,000 tracks is normal operation, so this test belongs to the normal suite.
+#[cfg(test)]
+#[path = "refresh_scale_tests.rs"]
+mod refresh_scale_tests;
+
+/// What: `pub mod controller_reload;` loads the selected track again where it was when its file was replaced.
+/// Why: a replaced file that plays keeps its place, peak and gain current without a toast.
+pub mod controller_reload;
 
 /// What: `pub mod sweep_report;` the reports a background sweep sends to the engine.
 /// Why: the controller needs the generation of each report to drop stale ones.

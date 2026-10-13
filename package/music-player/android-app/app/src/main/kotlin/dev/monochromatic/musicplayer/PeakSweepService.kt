@@ -2,8 +2,8 @@
 // session, in parallel, on the performance cores. The periodic WorkManager sweep
 // (PeakSweepScheduler) is throttled into ~10-minute charging windows and never finished a
 // multi-thousand-track library on a real phone; a user-foreground service escapes that windowing.
-// It runs the bulk index exactly once (guarded by a SharedPreferences flag) and then leaves
-// incremental upkeep of newly added tracks to the low-priority background worker. See
+// `startIfNeeded` starts it after each completed library load or rescan, and only when the sweep ledger
+// (files/sweep-ledger.bin) shows tracks that are new, replaced or previously failed. See
 // DECISION.peak-sweep-parallelism.md for the on-device benchmark that set the worker count and
 // priority.
 //

@@ -32,6 +32,7 @@
 use crate::control_tables::{CONTROL_TOKENS, POSSIBLE_ALIASES, TABLE_COMMANDS, VALUELESS_TOKENS};
 use git_policy_cli::candidate_error::{CandidateError, CandidateFailure};
 use git_policy_cli::candidate_prediction::{CandidateRequest, PreparedCandidates};
+use git_policy_cli::command_commit::parse_commit_region;
 use git_policy_cli::global_arguments::{GlobalOutcome, global_layout};
 use git_policy_cli::policy_checks::{ShippedChecks, shipped_checks};
 use git_policy_cli::policy_content::LifecycleContent;
@@ -40,6 +41,7 @@ use git_policy_cli::repository_facts::RepositoryFacts;
 use git_policy_cli::repository_location::RepositoryLocation;
 use git_policy_cli::rule_commit_index::IndexVsHead;
 use git_policy_cli::rule_commit_sequencer::SequencerState;
+use git_policy_cli::transaction_git::GitContext;
 use git_policy_cli::worktree_identity::WorktreeIdentity;
 use git_policy_cli::wrapped_command::{WrappedOutcome, run_wrapped_command};
 use git_policy_cli::wrapper_controls::{
@@ -472,6 +474,33 @@ impl RepositoryFacts for FixedFacts {
             "the fuzz facts start no Git, so no candidate can be prepared",
         ));
     }
+
+    /// What: The fixed location, as already known.
+    /// Why:  Recovery before a read-only command then probes a location that does not exist,
+    ///       which finds no transaction and starts no Git.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// askedLocation() { return this.location; }
+    /// ```
+    fn asked_location(&self) -> Option<Result<RepositoryLocation, String>> {
+        return Some(Ok(self.location.clone()));
+    }
+
+    /// What: A transaction context naming a Git that does not exist.
+    /// Why:  Any Git the lifecycle tried to start would fail instead of touching a repository.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// transactionContext() { return { gitPath: '/nonexistent/git', overlay: [], globalPrefix: [] }; }
+    /// ```
+    fn transaction_context(&self) -> GitContext {
+        return GitContext {
+            real_git: PathBuf::from("/nonexistent/git"),
+            overlay: Vec::new(),
+            global_prefix: Vec::new(),
+        };
+    }
 }
 
 /// What:
@@ -649,8 +678,12 @@ pub fn check_frontier(arguments: &[OsString], mode: u8) -> FrontierSeen {
     let forwarded: Vec<OsString> = match outcome {
         WrappedOutcome::Exit { code, stderr } => {
             assert!(code == 1 || code == 2, "a stop exits 1 or 2, got {code}");
+            // A real commit writes its own events and diagnostics while it runs, so its ending carries no text.
+            let commit_wrote_itself: bool = stderr.is_empty()
+                && stripped.layout.outcome == GlobalOutcome::Command
+                && stripped.arguments[stripped.layout.prefix_len].as_encoded_bytes() == b"commit";
             assert!(
-                stderr.ends_with('\n'),
+                stderr.ends_with('\n') || commit_wrote_itself,
                 "a stop explains itself: {arguments:?}"
             );
             if code == 1 {
@@ -672,8 +705,10 @@ pub fn check_frontier(arguments: &[OsString], mode: u8) -> FrontierSeen {
     let word: &[u8] = stripped.arguments[stripped.layout.prefix_len].as_encoded_bytes();
     let region: &[OsString] = &stripped.arguments[stripped.layout.prefix_len + 1..];
     if word == b"commit" {
+        // A region that Git's option table refuses is forwarded so that Git reports its own refusal, and commits nothing.
         assert!(
-            may_be_dry_run(region, COMMIT_DRY_RUN_STARTS, COMMIT_DRY_RUN_LETTER),
+            may_be_dry_run(region, COMMIT_DRY_RUN_STARTS, COMMIT_DRY_RUN_LETTER)
+                || parse_commit_region(region, &[]).is_err(),
             "a real commit was forwarded: {arguments:?}"
         );
     }

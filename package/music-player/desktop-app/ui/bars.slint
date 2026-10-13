@@ -55,7 +55,8 @@ component CaretUpGlyph inherits Path {
 }
 
 // One 48 px icon button with a 24 px glyph centered in it. The glyph is drawn by the caller. The button is a focus stop:
-// Enter and Space press it, the 2 px ring and the 12 percent layer show the focus, and a badge names its shortcut.
+// Enter and Space press it, the ring outside the circle shows the focus (and nothing else changes), and a badge names
+// its shortcut.
 component IconTarget inherits Rectangle {
     // Spoken name of the button.
     in property <string> label;
@@ -70,7 +71,7 @@ component IconTarget inherits Rectangle {
 
     width: 48px;
     height: 48px;
-    // Circular hover, pressed and focus layer, 40 px centered in the 48 px target.
+    // Circular hover and pressed layer, 40 px centered in the 48 px target.
     StateLayer {
         x: 4px;
         y: 4px;
@@ -80,7 +81,6 @@ component IconTarget inherits Rectangle {
         tint: Theme.on-surface;
         hovered: touch.has-hover;
         pressed: touch.pressed;
-        focused: stop.ring;
     }
     touch := TouchArea {
         accessible-role: button;
@@ -100,12 +100,13 @@ component IconTarget inherits Rectangle {
             root.clicked();
         }
     }
+    // The ring hugs the 40 px circle and reaches 3 px, so it stays inside the 48 px target.
     FocusRing {
         x: 4px;
         y: 4px;
         width: 40px;
         height: 40px;
-        radius: 20px;
+        round: true;
         active: stop.ring;
     }
     @children
@@ -132,13 +133,12 @@ component OpenPill inherits Rectangle {
         width: parent.width;
         border-radius: 20px;
         background: Theme.secondary-container;
-        // Hover, pressed and focus layer over the tonal pill, in the pill's own content color.
+        // Hover and pressed layer over the tonal pill, in the pill's own content color.
         StateLayer {
             radius: 20px;
             tint: Theme.on-secondary-container;
             hovered: open-touch.has-hover;
             pressed: open-touch.pressed;
-            focused: open-stop.ring;
         }
         FolderOpenGlyph {
             x: 16px;
@@ -154,8 +154,9 @@ component OpenPill inherits Rectangle {
             vertical-alignment: center;
             color: Theme.on-secondary-container;
         }
+        // The ring hugs the pill and reaches 3 px, so it stays inside the 48 px target above and below.
         FocusRing {
-            radius: 20px;
+            round: true;
             active: open-stop.ring;
         }
     }
@@ -209,7 +210,7 @@ export component CoverTopRow inherits Rectangle {
         y: 4px;
         height: 48px;
         width: max(0px, (root.show-search ? open-pill.x - 56px : open-pill.x) - 8px - 16px);
-        // Pill-shaped hover, pressed and focus layer over the whole trigger, 40 px tall in the 48 px target.
+        // Pill-shaped hover and pressed layer over the whole trigger, 40 px tall in the 48 px target.
         StateLayer {
             y: 4px;
             width: parent.width;
@@ -218,7 +219,6 @@ export component CoverTopRow inherits Rectangle {
             tint: Theme.on-surface;
             hovered: trigger-touch.has-hover;
             pressed: trigger-touch.pressed;
-            focused: trigger-stop.ring;
         }
         title := Text {
             x: 0px;
@@ -267,7 +267,7 @@ export component CoverTopRow inherits Rectangle {
         FocusRing {
             y: 4px;
             height: 40px;
-            radius: 20px;
+            round: true;
             active: trigger-stop.ring;
         }
         KeyBadge {

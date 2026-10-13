@@ -11,16 +11,30 @@ use super::*;
 const FIXTURE_PATH: &str = "../android-app/app/src/test/resources/theme-roles-vector.txt";
 
 /// Fewest roots the fixture must hold, each in both schemes.
-const MINIMUM_ROOTS: usize = 40;
+const MINIMUM_ROOTS: usize = 52;
+
+/// Roots the fixture must name (D118): the baseline, nearly gray roots that must still tint every gray (one-channel
+/// offsets and a weak chroma at other hues), and completely neutral roots that must give true grays.
+const REQUIRED_NEAR_GRAY_ROOTS: [(&str, u32); 6] = [
+    ("weak-808088", 0x808088),
+    ("weak-7F8080", 0x7F8080),
+    ("weak-8A8A8B", 0x8A8A8B),
+    ("weak-8A8B8A", 0x8A8B8A),
+    ("weak-808081", 0x808081),
+    ("weak-FEFFFF", 0xFEFFFF),
+];
+
+/// Completely neutral roots the fixture must name (all three channels equal).
+const REQUIRED_NEUTRAL_ROOTS: [(&str, u32); 4] =
+    [("neutral-8A8A8A", 0x8A8A8A), ("gray-mid", 0x808080), ("black", 0x000000), ("white", 0xFFFFFF)];
 
 /// What: `role_fields(set)` lists the fixture's role names (the Kotlin `ThemeRoles` field names) with their colors.
 /// Why:  the fixture writes one `name=RRGGBB` pair per role; this is the single place that maps them to `RoleSet`.
-fn role_fields(set: &RoleSet) -> [(&'static str, Srgb8); 19] {
+fn role_fields(set: &RoleSet) -> [(&'static str, Srgb8); 18] {
     return [
         ("canvas", set.canvas),
         ("deck", set.deck),
         ("currentRow", set.current_row),
-        ("seam", set.seam),
         ("surfaceHigh", set.surface_high),
         ("onSurface", set.on_surface),
         ("onSurfaceVariant", set.on_surface_variant),
@@ -103,7 +117,7 @@ fn compare_fixture(text: &str) -> FixtureReport {
             Some((_, schemes)) => schemes.push(scheme_name.to_string()),
             None => report.roots.push((name.to_string(), vec![scheme_name.to_string()])),
         }
-        let fields: [(&str, Srgb8); 19] = role_fields(&set);
+        let fields: [(&str, Srgb8); 18] = role_fields(&set);
         let pairs: &[&str] = &tokens[3..];
         if pairs.len() != fields.len() {
             report.mismatches.push(format!("{name} {scheme_name}: {} role tokens, expected {}", pairs.len(), fields.len()));
@@ -127,7 +141,9 @@ fn compare_fixture(text: &str) -> FixtureReport {
 
 /// What: `fixture_text()` reads the Android fixture next to the Android unit tests.
 /// Why:  the file lives in the Android package, so the path climbs out of the desktop package; a missing file fails
-///       the test with the path, because skipping would hide exactly the drift this guards against.
+///       the test with the path, because skipping would hide exactly the drift this guards against. The podman
+///       fallback of `mise.toml` (`containerCargo`) mounts the Android test resources read-only at
+///       `/android-app/app/src/test/resources`, so the same relative path from `/work` finds the file there.
 fn fixture_text() -> String {
     let path: std::path::PathBuf = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join(FIXTURE_PATH);
     return std::fs::read_to_string(&path)
@@ -175,6 +191,36 @@ fn the_android_fixture_holds_enough_roots_in_both_schemes_and_the_baseline() {
         return name == "baseline";
     });
     assert!(has_baseline, "the baseline root is missing");
+}
+
+#[test]
+fn the_fixture_names_the_near_gray_and_the_completely_neutral_roots_with_the_expected_values() {
+    let text: String = fixture_text();
+    let mut seen: usize = 0;
+    for (name, value) in REQUIRED_NEAR_GRAY_ROOTS.into_iter().chain(REQUIRED_NEUTRAL_ROOTS) {
+        let root: Srgb8 = Srgb8 { red: ((value >> 16) & 0xFF) as u8, green: ((value >> 8) & 0xFF) as u8, blue: (value & 0xFF) as u8 };
+        for scheme_name in ["dark", "light"] {
+            let prefix: String = format!("{name} {} {scheme_name} ", hex6(root));
+            assert!(text.lines().any(|line| {
+                return line.starts_with(&prefix);
+            }), "the fixture has no line starting {prefix:?}");
+            seen += 1;
+        }
+    }
+    assert_eq!(seen, 2 * (REQUIRED_NEAR_GRAY_ROOTS.len() + REQUIRED_NEUTRAL_ROOTS.len()));
+    // The two groups differ in exactly the way D118 draws the line: a near-gray root has unequal channels, a neutral
+    // root equal channels, and the gray roles of the first carry a tint while the second's are true grays.
+    for (name, value) in REQUIRED_NEAR_GRAY_ROOTS {
+        let root: Srgb8 = Srgb8 { red: ((value >> 16) & 0xFF) as u8, green: ((value >> 8) & 0xFF) as u8, blue: (value & 0xFF) as u8 };
+        assert!(!(root.red == root.green && root.green == root.blue), "{name} must not be completely neutral");
+        let palette: ThemePalette = derive_roles(Some(root));
+        assert!(palette.light.on_surface_variant.red != palette.light.on_surface_variant.green
+            || palette.light.on_surface_variant.green != palette.light.on_surface_variant.blue, "{name} lost its tint");
+    }
+    for (name, value) in REQUIRED_NEUTRAL_ROOTS {
+        let root: Srgb8 = Srgb8 { red: ((value >> 16) & 0xFF) as u8, green: ((value >> 8) & 0xFF) as u8, blue: (value & 0xFF) as u8 };
+        assert!(root.red == root.green && root.green == root.blue, "{name} must be completely neutral");
+    }
 }
 
 #[test]

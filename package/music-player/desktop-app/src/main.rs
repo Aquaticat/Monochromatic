@@ -131,9 +131,33 @@ mod ui_interaction_window_tests;
 #[cfg(test)]
 mod ui_lists_window_tests;
 
+/// Window tests of the folded folder picker: it never opens blank, whatever the library, the saved selection or the size.
+#[cfg(test)]
+mod ui_picker_window_tests;
+
 /// Rendered tests of the list defects: the ellipsis, the playing-row marker and the scrollbar, read from pixels.
 #[cfg(test)]
 mod ui_lists_render_tests;
+
+/// Shared helpers of the rendered window tests: the software-rendered window, its pixels and rounded-box geometry.
+#[cfg(test)]
+mod ui_render_support;
+
+/// Rendered tests of the focus ring on the player page (D117): its band, its shape and what focus leaves unchanged.
+#[cfg(test)]
+mod ui_focus_ring_tests;
+
+/// Rendered tests of the focus ring on the other pages (D117) and of the menu card's color (D119).
+#[cfg(test)]
+mod ui_focus_ring_pages_tests;
+
+/// Rendered tests of the track menu: the ring on a row (D117) and the card's color and outline (D119).
+#[cfg(test)]
+mod ui_focus_ring_menu_tests;
+
+/// Rendered tests of the focus ring component alone: its shapes, and a ring above a clipping parent.
+#[cfg(test)]
+mod ui_focus_ring_fixture_tests;
 
 mod ui_menu;
 

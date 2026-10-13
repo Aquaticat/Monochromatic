@@ -119,16 +119,15 @@ mise run //package/music-player/android-app:clean
 - `clean` removes Gradle build outputs.
   It does not remove the Rust target directory or generated JNI libraries.
 
-## Design records and runbooks
+## Design records
 
-Use durable decisions and runbooks for architecture and maintenance context:
+Use durable decisions for architecture and maintenance context:
 
 - [Android port decision](../../../doc/decision/music-player-android-port.md)
 - [Source Root session decision](../../../doc/decision/music-player-session-source-root.md)
 - [Live-update rescan decision](../../../doc/decision/music-player-live-update-rescan.md)
 - [Just-in-time shuffle decision](../../../doc/decision/music-player-jit-shuffle.md)
 - [Peak-sweep parallelism decision](DECISION.peak-sweep-parallelism.md)
-- [Page-control style runbook](../../../doc/runbook/music-player-page-control-styles.md)
 
 ## Settings icons
 
@@ -137,18 +136,6 @@ embedded as vector path data in [`SettingsIcons.kt`](app/src/main/kotlin/dev/mon
 The icons are Apache License 2.0 material from `google/material-design-icons`,
 and the license text is `LICENSES/Apache-2.0.txt` at the repository root.
 The source files, commit and style are named in the [package README](../README.md#third-party-icons).
-
-## Page-control default
-
-Chromium-like tabs are the first-install page-control style.
-Their labels use `10dp` inline padding on each side,
-half the earlier `20dp` inset.
-Persisted style integers retain their stable mapping,
-and unknown values still fall back to radio controls.
-Each style has one centralized `includedInBuild` toggle on its enum line in `PageControlStyle.kt`.
-Settings lists only included styles,
-and disabled persisted selections resolve safely without renumbering values.
-`../../../doc/runbook/music-player-page-control-styles.md` documents matching Android and desktop changes.
 
 ## Custom control sizing
 
@@ -159,27 +146,6 @@ Transparent hit padding does not satisfy a requested visible minimum.
 Custom interactive Compose controls reserve at least `48dp` by `48dp` inside layout.
 Do not rely on Compose expanding touch targets outside undersized bounds,
 because adjacent expanded targets can overlap.
-
-## Full-width wrapped LED plate
-
-Super fun LED segmented buttons use one connected machined backplate even when controls wrap.
-Compose packs content-width caps into rows,
-but one rounded plate always fills the complete available width and combined row height.
-Unused row width remains plate material rather than becoming control width or a separate row island.
-In light mode,
-the `#f7f8fa` plate remains visibly lighter than the `#eceef1` page ground.
-Cap end-corner ownership still follows each packed row,
-and `placeRelative` preserves cap order in RTL.
-LED legends use `MaterialTheme.typography.bodyLarge`,
-matching ordinary body labels such as Volume while retaining semibold weight.
-Active-cap legend text is always white,
-independent of runtime accent or ambient scene.
-Every application color operation uses OKLCH,
-including Chromium colors and alpha changes outside LED controls.
-The selected fill remains dark enough to contrast clearly with its white legend,
-even when the runtime Material accent is very light.
-Independent OKLCH lightness and chroma mixing retains most available accent chroma,
-keeping the selected background vibrant instead of muddy.
 
 ## Theme and crease
 
@@ -197,11 +163,13 @@ proves that the same root gives the same sRGB roles in Kotlin and Rust.
 Material 3 slot,
 so the platform's `dynamicLightColorScheme` and `dynamicDarkColorScheme` are not used,
 and carries the roles Material has no slot for (the Search match fill) in `LocalThemeRoles`.
-Dark keeps a pure-black canvas and the `#0A0A0D` deck (D41),
-light keeps a white canvas (D34),
+Dark keeps a pure-black canvas under every root (D41) and light keeps a white canvas (D34).
+Every other gray, the dark deck included, carries the root's hue unless the root is completely neutral (D118),
+so the deck is `#0A0A0D` only at the baseline root, and no accent is grayer than the grays of its scheme (D121).
+The track menu card is the canvas color itself, with a 1 dp `outline-variant` outline (D119),
 and every text role is fitted to WCAG AA on the surfaces it is drawn on, for any root.
-Gradients are interpolated in OKLCH through `oklchGradientStops`,
-because Android blends gradient stops in sRGB.
+The app draws no gradient.
+A future one must interpolate in OKLCH (D108), because Android blends gradient stops in sRGB.
 
 The crease comes from Jetpack WindowManager (D110, E2):
 [`CreaseDetection.kt`](app/src/main/kotlin/dev/monochromatic/musicplayer/CreaseDetection.kt) reads the window's
@@ -244,9 +212,32 @@ Left out on Android: the key hint badges, tooltips, `Ctrl+Q` and double `Shift`.
 The folder rail, the folder names and the track list are each one focus stop (`Tab` passes them in one step) with their
 own focus ring, moved by the arrow keys; their entries take no focus of their own,
 so TalkBack still reads every entry through its semantics.
-The focus indicator is a 2 dp ring in the primary role over a ten percent state layer
-([`FocusRing.kt`](app/src/main/kotlin/dev/monochromatic/musicplayer/FocusRing.kt));
-`FocusRingContrastTest` checks the ring at 3 to 1 or better on every surface in both appearances.
+The focus indicator is a ring and nothing else (D117), drawn the way Firefox draws `:focus-visible` but hugging the
+element: a 2 dp ring in the `primary` role flush against the element's edge, and a 1 dp ring in the `on-primary` role
+around it, which keeps the ring readable on any surface.
+Both rings follow the element's own shape (a pill stays a pill, a circle a circle, and a square corner gets a 2 dp outer
+radius), reach 3 dp outside the element by default and move no content.
+Every ring shows for keyboard focus only (CSS `:focus-visible`): the element or its list has focus and the last input
+was a key, which the app reads from Compose's input mode, the same mechanism for a button, an icon button, a row that
+takes focus itself and an entry of a one-stop list.
+A tap or a touch that follows a key press hides the ring even though the list still holds focus, and the next key press
+shows it again.
+An entry that sits flush inside a list that clips its children (a track row, a rail cell, a Search result, a template
+editor field) draws the same two rings just inside its own edge instead (D120): the 1 dp `on-primary` ring on the edge
+and the 2 dp `primary` ring inside it, with the same corner radii as the outside pair.
+Such a list reserves no padding around its entries, and the text keeps its place by starting 8 dp beyond the inner edge
+of the ring at least.
+The folder names are not flush in a clipping list (the wrapped lines have room around them), so their rings stay outside,
+and the track menu rows keep their reserved room.
+Focus adds no fill, tint, state layer, bold or size change; hover and press keep their own state layers.
+The drawing is [`FocusRing.kt`](app/src/main/kotlin/dev/monochromatic/musicplayer/FocusRing.kt) and the geometry, a spec
+of widths, gap and square-corner radius, is
+[`core/FocusRingGeometry.kt`](app/src/main/kotlin/dev/monochromatic/musicplayer/core/FocusRingGeometry.kt).
+The geometry also holds the placement (outside or inside) and the keyboard-only rule, so `FocusRingGeometryTest` states
+both.
+`FOCUS_RING_OUTSET` is the room that a clipping parent leaves for an outside ring, which only the track menu still does.
+`FocusRingContrastTest` checks the `primary` ring at 3 to 1 or better against every surface a focused element sits on,
+and the `on-primary` ring against the `primary` ring, in both appearances and over a sweep of accent roots.
 
 ## Playback modes and the track menu
 

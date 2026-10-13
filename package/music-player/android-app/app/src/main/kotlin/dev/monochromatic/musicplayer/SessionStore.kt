@@ -80,6 +80,7 @@ import dev.monochromatic.musicplayer.core.TemplateTrack
 import dev.monochromatic.musicplayer.core.TrackFields
 import dev.monochromatic.musicplayer.core.evaluateTemplate
 import dev.monochromatic.musicplayer.core.parseTemplate
+import java.util.concurrent.ConcurrentHashMap
 
 // What:     `object` creates one stateless singleton, unlike an instantiable `class`.
 // Why:      Session persistence needs no per-instance state.
@@ -110,9 +111,6 @@ object SessionStore {
 
     /** Former repeat-track key, retained only as migration input. */
     private const val LEGACY_KEY_REPEAT: String = "repeat_track"
-
-    /** Persisted page-control style key. */
-    private const val KEY_PAGE_CONTROL_STYLE: String = "page_control_style"
 
     // What:     `private const val KEY_AUDIO_ACCESS_REQUESTED: String = "audio_access_requested"` names the request
     //           flag.
@@ -237,19 +235,29 @@ object SessionStore {
         }
     }
 
-    /** Loads saved style with Chromium first-install and radio unknown-value fallback. */
-    internal fun loadPageControlStyle(context: Context): PageControlStyle {
-        /** Persisted enum name, or null when no style was saved. */
-        val storedName: String? = prefs(context).getString(KEY_PAGE_CONTROL_STYLE, null)
-        return PageControlStyle.fromStoredName(storedName)
+    // What:     `fun warmUp(context: Context)` reads the session file in full.
+    // Why:      The first-run decision and the restore read it on the main thread; reading it first on a worker thread
+    //           leaves it in memory, so those reads do not touch the disk (StrictMode flagged 529 ms there).
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // function warmUp(): void { storage.readAll(); }
+    // ```
+    /** Reads every saved session value, off the main thread, so a later read on the main thread finds it in memory. */
+    fun warmUp(context: Context) {
+        Log.i(LOG_TAG, "warm-up read ${prefs(context).all.size} saved values")
+        audioAccessRequestedCache = prefs(context).getBoolean(KEY_AUDIO_ACCESS_REQUESTED, false)
+        // The player host reads both templates on its first frame; checking a saved template parses and evaluates it
+        // (StrictMode flagged 435 ms on the main thread), so the check runs here once and the host finds the answer.
+        TemplateKind.entries.forEach { kind -> loadTemplate(context, kind) }
     }
 
-    /** Persists one page-control style selection. */
-    internal fun savePageControlStyle(context: Context, style: PageControlStyle) {
-        prefs(context).edit {
-            putString(KEY_PAGE_CONTROL_STYLE, style.name)
-        }
-    }
+    /** The template text of each kind as last read or written here, so the main thread never checks one again. */
+    private val templateCache: ConcurrentHashMap<TemplateKind, String> = ConcurrentHashMap()
+
+    /** The music-access request flag as last read or written here; the first-run decision asks on every frame. */
+    @Volatile
+    private var audioAccessRequestedCache: Boolean? = null
 
     // What:     `fun loadAudioAccessRequested(context: Context): Boolean` reads the request flag.
     // Why:      The first-run decision reads it on every composition, and a missing flag means no request was made yet.
@@ -259,8 +267,17 @@ object SessionStore {
     // function loadAudioAccessRequested(context: Context): boolean { return storage.getBoolean(KEY, false); }
     // ```
     /** Returns whether this app has already asked Android for music access, or false when nothing was saved. */
-    fun loadAudioAccessRequested(context: Context): Boolean =
-        prefs(context).getBoolean(KEY_AUDIO_ACCESS_REQUESTED, false)
+    fun loadAudioAccessRequested(context: Context): Boolean {
+        /** The flag as it was last read or written in this process, or null before the first of either. */
+        val known: Boolean? = audioAccessRequestedCache
+        if (known != null) {
+            return known
+        }
+        /** The flag read from the preference file. */
+        val stored: Boolean = prefs(context).getBoolean(KEY_AUDIO_ACCESS_REQUESTED, false)
+        audioAccessRequestedCache = stored
+        return stored
+    }
 
     // What:     `fun saveAudioAccessRequested(context: Context, requested: Boolean)` writes the request flag.
     // Why:      The flag is written before the permission prompt opens, so a process death during the prompt still
@@ -273,6 +290,7 @@ object SessionStore {
     // ```
     /** Records whether this app has asked Android for music access. */
     fun saveAudioAccessRequested(context: Context, requested: Boolean) {
+        audioAccessRequestedCache = requested
         prefs(context).edit {
             putBoolean(KEY_AUDIO_ACCESS_REQUESTED, requested)
         }
@@ -314,6 +332,11 @@ object SessionStore {
     // ```
     /** Returns the stored text of one template, or its default when nothing valid is stored. */
     fun loadTemplate(context: Context, kind: TemplateKind): String {
+        /** Text this kind answered before, which a read or a save in this process already settled. */
+        val cached: String? = templateCache[kind]
+        if (cached != null) {
+            return cached
+        }
         /** Text saved under this template's key, or null when nothing is saved. */
         val stored: String? = prefs(context).getString(templateKey(kind), null)
         /** Text the screens use: the stored text when it applies, otherwise the kind's default. */
@@ -321,6 +344,7 @@ object SessionStore {
         if (stored != null && text != stored) {
             Log.w(LOG_TAG, "stored template did not apply, default used kind=${kind.name}")
         }
+        templateCache[kind] = text
         return text
     }
 
@@ -333,6 +357,7 @@ object SessionStore {
     // ```
     /** Persists the text of one template under its own preference key. */
     fun saveTemplate(context: Context, kind: TemplateKind, text: String) {
+        templateCache[kind] = text
         prefs(context).edit {
             putString(templateKey(kind), text)
         }
@@ -408,5 +433,5 @@ object SessionStore {
     // ```
     /** Opens the app-private session preference file. */
     private fun prefs(context: Context): SharedPreferences =
-        context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        context.applicationContext.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
 }

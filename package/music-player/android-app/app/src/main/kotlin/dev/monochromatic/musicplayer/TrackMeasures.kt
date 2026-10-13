@@ -178,12 +178,16 @@ object TrackMeasures {
         val attempted: MutableSet<String> = mutableSetOf()
         while (true) {
             /** Next tracks to read in this pass, in page order. */
-            val batch: List<Track> = measureNextBatch(
-                page = tracks,
-                known = known(),
-                attempted = attempted,
-                batchSize = MEASURE_BATCH_SIZE,
-            )
+            // The choice scans the whole page, so it runs off the main thread: a page of thousands of tracks would
+            // otherwise cost the main thread a full scan per batch.
+            val batch: List<Track> = withContext(Dispatchers.Default) {
+                measureNextBatch(
+                    page = tracks,
+                    known = known(),
+                    attempted = attempted,
+                    batchSize = MEASURE_BATCH_SIZE,
+                )
+            }
             if (batch.isEmpty()) {
                 Log.i(MEASURE_TAG, "page measures are complete attempted=${attempted.size}")
                 return

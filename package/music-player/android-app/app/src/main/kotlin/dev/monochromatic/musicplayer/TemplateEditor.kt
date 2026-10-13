@@ -14,6 +14,9 @@ package dev.monochromatic.musicplayer
 // ```ts
 // import { TemplateEditorState, TemplateEditorEdit, TemplateHelp } from "core/TemplateEditorState";
 // ```
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.ui.graphics.RectangleShape
+import dev.monochromatic.musicplayer.core.FocusRingPlacement
 import dev.monochromatic.musicplayer.core.TemplateEditorEdit
 import dev.monochromatic.musicplayer.core.TemplateEditorFieldEntry
 import dev.monochromatic.musicplayer.core.TemplateEditorState
@@ -395,7 +398,7 @@ fun templateEditor(
                         start = DESTINATION_SIDE_INSET - BUTTON_LABEL_INSET,
                         top = DESTINATION_SMALL_GAP,
                         bottom = DESTINATION_SIDE_INSET,
-                    ).defaultMinSize(minHeight = DESTINATION_TOUCH_TARGET),
+                    ).defaultMinSize(minHeight = DESTINATION_TOUCH_TARGET).focusRing(CircleShape),
                 ) {
                     Text(text = "Reset to default")
                 }
@@ -430,7 +433,7 @@ internal fun destinationHeader(
         verticalAlignment = Alignment.CenterVertically,
     ) {
         if (onBack != null) {
-            IconButton(onClick = onBack, modifier = Modifier.size(DESTINATION_TOUCH_TARGET)) {
+            IconButton(onClick = onBack, modifier = Modifier.size(DESTINATION_TOUCH_TARGET).focusRing(CircleShape)) {
                 Icon(
                     imageVector = DESTINATION_BACK_ICON,
                     contentDescription = backDescription,
@@ -640,12 +643,16 @@ private fun templateEditorHelpLines(help: TemplateHelp) {
 private fun templateEditorFieldRow(entry: TemplateEditorFieldEntry, onInsert: () -> Unit) {
     ListItem(
         modifier = Modifier.fillMaxWidth()
-            .defaultMinSize(minHeight = DESTINATION_TOUCH_TARGET)
-            .clickable(role = Role.Button, onClick = onInsert)
             .padding(
                 start = DESTINATION_SIDE_INSET - DESTINATION_ROW_INSET,
                 end = DESTINATION_SIDE_INSET - DESTINATION_ROW_INSET,
-            ),
+            )
+            .defaultMinSize(minHeight = DESTINATION_TOUCH_TARGET)
+            .focusRing(RectangleShape, placement = FocusRingPlacement.INSIDE)
+            .clickable(role = Role.Button, onClick = onInsert)
+            // The ring lies just inside the row's edge (D120), so the content keeps the room it had when the ring
+            // was reserved outside the row.
+            .padding(horizontal = FOCUS_RING_OUTSET),
         supportingContent = {
             Text(
                 text = templateEditorFieldValueText(entry.value),

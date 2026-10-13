@@ -22,7 +22,8 @@
 # no system opus-devel is needed) and the host's system `make` is its generator.
 # The cargo_dispatch var (node -e) probes pkg-config for those libraries; when any
 # is missing containerCargo runs the same cargo command in podman instead (package
-# dir bind-mounted at /work, cargo registry in a named volume, `label=disable` to
+# dir bind-mounted at /work plus the sibling ../truepeak-core and the Android test
+# resources mounted read-only, cargo registry in a named volume, `label=disable` to
 # skip SELinux relabeling of the host tree). The *:container tasks call
 # containerCargo directly to force the podman path regardless of host libraries;
 # verify:container is the umbrella assertion.
@@ -55,7 +56,8 @@ SLINT_ENABLE_EXPERIMENTAL_FEATURES = "1"
 #   at the versioned host libclang, and BINDGEN_EXTRA_CLANG_ARGS supplies the clang
 #   resource dir (globbed so an LLVM bump needs no edit) since libclang in
 #   /usr/lib64 looks beside itself for stdbool.h under /usr/lib/clang/<v>.
-# - containerCargo(args): build the image when missing, then run cargo in podman.
+# - containerCargo(args): build the image when missing, then run cargo in podman, with ../truepeak-core and the Android
+#   test resources mounted read-only beside /work (a Cargo path dependency and the theme-roles drift fixture).
 # - runCargo(args): native off Linux, else host when hostOk, else container.
 # Its imported bindings (execFileSync, globSync) are reused by inline follow-ups,
 # so those must not reimport them.
@@ -79,7 +81,20 @@ const containerCargo = (cargoArgs) => {
   // ElementHandle / MCP introspection APIs refuse to run without this debug info.
   // Production build tasks never set it, so their container binaries stay lean.
   const debugInfoEnv = process.env.SLINT_EMIT_DEBUG_INFO ? ['-e', 'SLINT_EMIT_DEBUG_INFO=1'] : []
-  execFileSync('podman', ['run', '--rm', '--security-opt', 'label=disable', ...debugInfoEnv, '-v', `${process.cwd()}:/work`, '-v', 'music-player-cargo:/cargo', '-w', '/work', 'localhost/monochromatic/music-player', 'cargo', ...cargoArgs], { stdio: 'inherit' })
+  // The crate reads two paths outside its own directory, and the container mounts only the package directory at
+  // /work, so each is mounted read-only where the same relative path from /work finds it: ../truepeak-core is the
+  // Cargo path dependency, and ../android-app/app/src/test/resources holds the theme-roles-vector.txt fixture that
+  // src/theme_roles_fixture_tests.rs compares with the Rust derivation. A missing source fails here by name, never
+  // as a skipped test or a bare podman statfs error.
+  const { resolve } = process.getBuiltinModule('node:path')
+  const { existsSync } = process.getBuiltinModule('node:fs')
+  const siblingMounts = [['../truepeak-core', '/truepeak-core'], ['../android-app/app/src/test/resources', '/android-app/app/src/test/resources']]
+  const siblingMountArgs = siblingMounts.flatMap(([relative, inside]) => {
+    const host = resolve(process.cwd(), relative)
+    if (!existsSync(host)) { throw new Error(`containerCargo needs ${host} (mounted read-only at ${inside}) but it does not exist; run the task from the checked-out package/music-player/desktop-app directory of a full checkout`) }
+    return ['-v', `${host}:${inside}:ro`]
+  })
+  execFileSync('podman', ['run', '--rm', '--security-opt', 'label=disable', ...debugInfoEnv, '-v', `${process.cwd()}:/work`, ...siblingMountArgs, '-v', 'music-player-cargo:/cargo', '-w', '/work', 'localhost/monochromatic/music-player', 'cargo', ...cargoArgs], { stdio: 'inherit' })
 }
 const runCargo = (cargoArgs) => {
   if (process.platform !== 'linux') { execFileSync('cargo', cargoArgs, { stdio: 'inherit' }) }

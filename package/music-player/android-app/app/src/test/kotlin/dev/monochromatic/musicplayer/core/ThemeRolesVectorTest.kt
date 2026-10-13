@@ -38,7 +38,7 @@ import org.junit.Test
  * test `theme_roles::fixture_tests` requires every line of the same file to equal what `derive_roles` computes.
  */
 class ThemeRolesVectorTest {
-    /** One line of the vector: a root and the 19 role values of one scheme. */
+    /** One line of the vector: a root and the 18 role values of one scheme. */
     private data class VectorLine(
         /** Name of the root, for the failure message. */
         val rootName: String,
@@ -74,7 +74,7 @@ class ThemeRolesVectorTest {
     private fun channelDistance(first: Srgb8, second: Srgb8): Int =
         maxOf(abs(first.red - second.red), abs(first.green - second.green), abs(first.blue - second.blue))
 
-    /** Confirms the vector covers at least 40 roots in both schemes and every named case of the task. */
+    /** Confirms the vector covers at least 52 roots in both schemes and every named case of the task. */
     @Test
     fun theVectorCoversTheRequiredRoots() {
         val lines: List<VectorLine> = readVector()
@@ -86,6 +86,12 @@ class ThemeRolesVectorTest {
             assertTrue("missing root $required", required in names)
         }
         assertTrue("no near-gray root", names.any { name -> name.startsWith("gray") })
+        for (required in NEAR_GRAY_AND_NEUTRAL_ROOTS) {
+            assertTrue("missing root ${required.first}", required.first in names)
+            for (line in lines.filter { line -> line.rootName == required.first }) {
+                assertEquals("root ${required.first}", Srgb8.fromRgbInt(required.second), line.root)
+            }
+        }
         assertEquals(12, names.count { name -> name.startsWith("sweep-mid-") })
         assertEquals(12, names.count { name -> name.startsWith("sweep-deep-") })
         assertTrue(lines.all { line -> line.roles.size == EXPECTED_ROLE_COUNT })
@@ -135,10 +141,20 @@ class ThemeRolesVectorTest {
         const val FIRST_ROLE_PART: Int = 3
 
         /** Number of roles per line. */
-        const val EXPECTED_ROLE_COUNT: Int = 19
+        const val EXPECTED_ROLE_COUNT: Int = 18
 
         /** Fewest roots the vector must hold, each in both schemes. */
-        const val MINIMUM_ROOTS: Int = 40
+        const val MINIMUM_ROOTS: Int = 52
+
+        /**
+         * Roots D118 draws its line with: the first six have unequal channels and must still tint every gray, the
+         * last four have equal channels and must give true grays; each with its color.
+         */
+        val NEAR_GRAY_AND_NEUTRAL_ROOTS: List<Pair<String, Int>> = listOf(
+            "weak-808088" to 0x808088, "weak-7F8080" to 0x7F8080, "weak-8A8A8B" to 0x8A8A8B,
+            "weak-8A8B8A" to 0x8A8B8A, "weak-808081" to 0x808081, "weak-FEFFFF" to 0xFEFFFF,
+            "neutral-8A8A8A" to 0x8A8A8A, "gray-mid" to 0x808080, "black" to 0x000000, "white" to 0xFFFFFF,
+        )
 
         /** Accepted difference per channel, in 8-bit steps. */
         const val TOLERANCE: Int = 0
