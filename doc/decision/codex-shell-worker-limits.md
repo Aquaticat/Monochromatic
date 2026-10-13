@@ -79,4 +79,6 @@ Nextest verification is pending.
 
 The installed nextest help identifies `--jobs` as an alias of `--test-threads`.
 Compilation concurrency uses `--build-jobs`.
-The package task sets each independent limit to 1.
+The user authorized nextest's default build and test concurrency on 2026-10-13.
+The package test task supplies no job or test-thread overrides.
+The aggregate worker cgroup still bounds resource use.
