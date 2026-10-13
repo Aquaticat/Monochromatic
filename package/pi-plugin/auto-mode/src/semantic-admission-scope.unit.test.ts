@@ -90,7 +90,7 @@ await describe({
           const result = inspectSemanticAdmissionScope({
             inputs: selected, policy: policy(), expectedModel: 'fixture-model', requireCandidates: mode !== 'aggregate',
           },);
-          expect(result.state,).toBe(mode === 'retained-present' || mode === 'aggregate' ? 'matching' : 'no-indexed-clauses',);
+          expect(result.state,).toBe((mode === 'retained-present') || (mode === 'aggregate') ? 'matching' : 'no-indexed-clauses',);
         },
       },);
     },),

@@ -40,7 +40,12 @@ const l = tagged({ tag: 'auto-mode-semantic-admission-scope', },);
  ```
  */
 export function inspectSemanticAdmissionScope(
-  { policy, inputs, expectedModel, requireCandidates = true, }: {
+  {
+    policy,
+    inputs,
+    expectedModel,
+    requireCandidates = true,
+  }: {
     readonly policy?: SemanticAdmissionPolicy;
     readonly inputs: SemanticAdmissionInputs;
     readonly expectedModel: string;
@@ -50,25 +55,38 @@ export function inspectSemanticAdmissionScope(
   /**
    No source values or model answers are logged by scope selection.
    */
-  const rl = tagged({ tag: inspectSemanticAdmissionScope.name, l, },);
+  const rl = tagged({
+    tag: inspectSemanticAdmissionScope.name,
+    l,
+  },);
   rl.debug('matching original inspection to configured semantic consumer',);
   if (policy === undefined)
-    return Object.freeze({ state: 'not-configured', reason: 'No semantic estimate admission policy is configured.', },);
+    return Object.freeze({
+      state: 'not-configured',
+      reason: 'No semantic estimate admission policy is configured.',
+    },);
   if (policy.model !== expectedModel) {
     return Object.freeze({
       state: 'out-of-profile',
       reason: 'The configured semantic policy does not match the fixed assessment model.',
     },);
   }
-  if (inputs.effects.length === 0 || inputs.effects.some(function incomplete(effect,) {
-    return effect.programInspection?.declaration.profile !== policy.programProfile;
+  if ((inputs.effects
+    .length
+    === 0)
+    || inputs.effects
+    .some(function incomplete(effect,) {
+    return effect.programInspection
+      ?.declaration
+      .profile
+      !== policy.programProfile;
   },)) {
     return Object.freeze({
       state: 'out-of-profile',
       reason: 'The original operation is not completely represented by the configured inspected program profile.',
     },);
   }
-  if (requireCandidates && (inputs.instructionCandidates ?? inputs.ruleCandidates).length === 0) {
+  if (requireCandidates && ((inputs.instructionCandidates ?? inputs.ruleCandidates).length === 0)) {
     return Object.freeze({
       state: 'no-indexed-clauses',
       reason: 'No retained original instruction candidates are available for this relation definition.',

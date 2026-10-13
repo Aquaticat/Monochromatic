@@ -21,7 +21,7 @@ function declaration() {
       model: 'fixture-model',
       definitionId: 'clause_operation_relation',
       programProfile: 'fixture-profile',
-      accepts(): boolean {
+      accepts(this: void,): boolean {
         calls.count++;
         return true;
       },
@@ -40,8 +40,6 @@ await describe({
           f.input.definitionId = definitionId;
           const original = f.input.accepts;
           const policy = copySemanticAdmissionPolicy({ input: f.input, definitionId, },);
-          if (policy === undefined)
-            throw new Error('Configured policy was not captured',);
           expect(f.calls.count,).toBe(0,);
           f.input.model = 'changed';
           f.input.definitionId = 'changed';
@@ -60,9 +58,11 @@ await describe({
       },);
     },),
     it({
-      name: 'absence keeps the consumer unconfigured rather than enabling default admission',
+      name: 'configured-policy capture requires native bootstrap to handle absence first',
       fn: async function checkAbsence() {
-        expect(copySemanticAdmissionPolicy({ input: undefined, definitionId: 'clause_operation_relation', },),).toBeUndefined();
+        expect(function invoke() {
+          copySemanticAdmissionPolicy({ input: undefined, definitionId: 'clause_operation_relation', },);
+        },).toThrow(SemanticAdmissionPolicyError,);
       },
     },),
     it({
@@ -89,10 +89,16 @@ await describe({
         const f = declaration();
         const reads = { count: 0, };
         const accessor = { ...f.input, };
-        Object.defineProperty(accessor, 'model', { enumerable: true, get(): string { reads.count++; return 'fixture-model'; }, },);
+        Object.defineProperty(accessor, 'model', {
+          enumerable: true,
+          get(): string {
+            reads.count++;
+            return 'fixture-model';
+          },
+        },);
         const hidden = { ...f.input, };
         Object.defineProperty(hidden, 'model', { enumerable: false, value: 'fixture-model', },);
-        const symbol = { ...f.input, [Symbol('model')]: 'fixture-model', };
+        const symbol = { ...f.input, [Symbol('unsupported model configuration key',)]: 'fixture-model', };
         Reflect.deleteProperty(symbol, 'model',);
         for (const input of [accessor, hidden, symbol,]) {
           expect(function invoke() {
@@ -122,7 +128,9 @@ await describe({
           },).toThrow(SemanticAdmissionPolicyError,);
         }
         expect(state.traps,).toBe(0,);
-        expect(function positiveControl() { Object.getPrototypeOf(input,); },).toThrow('Unexpected configuration reflection',);
+        expect(function positiveControl() {
+          Object.getPrototypeOf(input,);
+        },).toThrow('Unexpected configuration reflection',);
         expect(state.traps,).toBe(1,);
       },
     },),

@@ -15,7 +15,12 @@ import type {
 /**
  Closed input fields contain configuration, never facts, source coverage or verdicts.
  */
-const fields = ['model', 'definitionId', 'programProfile', 'accepts',] as const;
+const fields = [
+  'model',
+  'definitionId',
+  'programProfile',
+  'accepts',
+] as const;
 
 /**
  Logs do not serialize borrowed configuration or callbacks.
@@ -30,21 +35,21 @@ const l = tagged({ tag: 'auto-mode-semantic-admission-policy', },);
  @returns whether JavaScript can invoke this candidate as a function
  */
 function isAcceptance(value: unknown,): value is SemanticAcceptance {
-  return typeof value === 'function';
+  return (typeof value) === 'function';
 }
 
 /**
  Copy only an ordinary, explicitly declared bootstrap policy for an implemented consumer.
- Absence means no configured policy, not failed validation or automatic admission.
+ Native bootstrap handles absent configuration before calling this configured-policy boundary.
  Native callers supply the fixed definition ID before judgment construction.
  Proxy configurations are rejected before reflection; accessors are never invoked.
  Owned field storage is frozen, but the original configuration and callback remain borrowed.
 
- @param input - original bootstrap declaration or absent configuration
+ @param input - original configured bootstrap declaration
 
  @param definitionId - implemented consumer selected by native bootstrap
 
- @returns owned configuration, or undefined when no policy was configured
+ @returns owned configured policy without default admission
 
  @throws SemanticAdmissionPolicyError when configuration is outside the declared profile
 
@@ -58,27 +63,35 @@ function isAcceptance(value: unknown,): value is SemanticAcceptance {
  ```
  */
 export function copySemanticAdmissionPolicy(
-  { input, definitionId, }: { readonly input: unknown; readonly definitionId: SemanticAdmissionDefinition; },
-): SemanticAdmissionPolicy | undefined {
+  {
+    input,
+    definitionId,
+  }: {
+    readonly input: unknown;
+    readonly definitionId: SemanticAdmissionDefinition
+  },
+): SemanticAdmissionPolicy {
   /**
    Bootstrap configuration remains separate from runtime estimate consumption.
    */
-  const rl = tagged({ tag: copySemanticAdmissionPolicy.name, l, },);
+  const rl = tagged({
+    tag: copySemanticAdmissionPolicy.name,
+    l,
+  },);
   rl.debug('capturing explicit semantic admission policy',);
-  if (input === undefined) {
-    rl.debug('no semantic admission policy configured',);
-    return undefined;
-  }
-  if (input === null || typeof input !== 'object' || isProxy(input,)
-    || Object.getPrototypeOf(input,) !== Object.prototype) {
+  if ((input === null) || ((typeof input) !== 'object')
+    || isProxy(input,)
+    || (Object.getPrototypeOf(input,) !== Object.prototype)) {
     throw new SemanticAdmissionPolicyError('Semantic admission policy requires an ordinary bootstrap configuration',);
   }
   /**
    Inspect original data descriptors without calling configuration getters.
    */
   const keys = Reflect.ownKeys(input,);
-  if (keys.length !== fields.length || keys.some(function unsupported(key,) {
-    return !fields.some(function matches(field,) { return field === key; },);
+  if ((keys.length !== fields.length) || keys.some(function unsupported(key,) {
+    return !fields.some(function matches(field,) {
+      return field === key;
+    },);
   },)) {
     throw new SemanticAdmissionPolicyError('Semantic admission policy accepts only model, definitionId, programProfile and accepts',);
   }
@@ -90,13 +103,20 @@ export function copySemanticAdmissionPolicy(
     /**
      Value descriptors preserve callback identity without freezing borrowed fields.
      */
-    const descriptor = Object.getOwnPropertyDescriptor(input, key,);
-    if (descriptor?.enumerable !== true || !Object.hasOwn(descriptor, 'value',))
+    const descriptor = Object.getOwnPropertyDescriptor(
+      input,
+      key,
+    );
+    if ((descriptor?.enumerable !== true) || (!Object.hasOwn(
+      descriptor,
+      'value',
+    )))
       throw new SemanticAdmissionPolicyError('Semantic admission policy requires data properties',);
     values[key] = descriptor.value;
   }
-  if (typeof values.model !== 'string' || !values.model
-    || typeof values.programProfile !== 'string' || !values.programProfile) {
+  if (((typeof values.model) !== 'string') || (!values.model)
+    || ((typeof values.programProfile) !== 'string')
+    || (!values.programProfile)) {
     throw new SemanticAdmissionPolicyError('Semantic admission policy must name its model and inspected program profile',);
   }
   if (values.definitionId !== definitionId)
