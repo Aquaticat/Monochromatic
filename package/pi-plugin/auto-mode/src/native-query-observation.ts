@@ -68,8 +68,8 @@ export function createNativeQueryObservation(
   /** Attribute this lifetime without inspecting any caller-owned material. */
   const rl = tagged({ tag: createNativeQueryObservation.name, l, },);
   rl.debug('creating native query observation lifetime',);
-  /** Wrapper distinguishes no failure from throwing undefined or false. */
-  let failure: { readonly error: unknown; } | undefined;
+  /** Owned state acquires a failure field even when the thrown value is undefined. */
+  const state: { failure?: { readonly error: unknown; }; } = {};
 
   /**
    Retain the original input failure before the native query may begin.
@@ -86,7 +86,7 @@ export function createNativeQueryObservation(
       inputReceiver(frame,);
     }
     catch (error) {
-      failure ??= { error, };
+      state.failure ??= { error, };
       throw error;
     }
   }
@@ -106,7 +106,7 @@ export function createNativeQueryObservation(
       outputReceiver(frame,);
     }
     catch (error) {
-      failure ??= { error, };
+      state.failure ??= { error, };
       throw error;
     }
   }
@@ -120,8 +120,8 @@ export function createNativeQueryObservation(
     /** No query values or failure objects are formatted by the logger. */
     const al = tagged({ tag: assertHealthy.name, l: rl, },);
     al.debug('checking native query observation lifetime',);
-    if (failure !== undefined)
-      throw failure.error;
+    if (state.failure !== undefined)
+      throw state.failure.error;
   }
 
   /**
@@ -144,9 +144,9 @@ export function createNativeQueryObservation(
     /** Reporting diagnostics never format untrusted thrown values. */
     const el = tagged({ tag: reportFailed.name, l: rl, },);
     el.debug('retaining native query error-reporting failure',);
-    if (failure !== undefined) {
+    if (state.failure !== undefined) {
       throw new AggregateError(
-        [failure.error, nativeError, reportError,],
+        [state.failure.error, nativeError, reportError,],
         'Original loadout query observation and native error reporting did not complete',
       );
     }
