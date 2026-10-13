@@ -21,6 +21,8 @@ The operating instructions live in `doc/runbook/claude-cpu-cap.md`.
 - Boost and PBO stay off. The user disabled them (`/sys/devices/system/cpu/cpufreq/boost` is 0).
 - Commit eagerly.
 - The user allowed storing the CoolerControl token on disk and will rotate it on 2026-10-14.
+- The user's own fan changes no longer count as an excuse for an alert: they are confident that tinkering will not
+  push the CPU to 95 degrees as before, so every alert is real and no alert is exempt (2026-10-13).
 - The 4-hour stop-working check is pushed back to 4 hours after every weird event (user rule, 2026-10-13).
   Weird means any alert except IO pressure, a cap change, `WATCHER-ERROR`, an unresolved `FAN-READ-FAILED`,
   or a `WATCHER-STOPPED` the session did not cause.
@@ -37,10 +39,13 @@ The operating instructions live in `doc/runbook/claude-cpu-cap.md`.
 - It logs a sample every 10 seconds to `~/.local/share/claude-cpu-cap/samples/<date>.csv` (14 days kept):
   temperatures, package watts, per-chiplet watts, clock, pressure, load, Corsair fan RPMs and probe,
   motherboard readings, and a burst flag (2-second samples for 90 seconds after a 25 watt step).
-- The fan profile "CPU Cooler (Silent)" in CoolerControl was replaced with:
+- The fan profile "CPU Cooler (Silent)" in CoolerControl was replaced by this session with:
   30% at 40 degrees and below, 45% at 50, 60% at 60, 85% at 70, 100% at 75 and above, from Tctl, no smoothing.
   The previous version (which already had the user's own 75-degree to 100% edit) is saved at
   `~/temp/agent/cc-spec/silent-before.json`; restore it with `PUT /profiles`.
+  The user then changed it themselves and will keep adjusting it, because they cannot tolerate much noise while the
+  machine is quiet. At 18:50 EDT it read: 30% at 40, 45% at 50, 60% at 60, 100% at 65 and above.
+  The fan profile belongs to the user now; this session does not edit it unless asked.
 - Session-only items that die with the session: the Monitor (30-minute expiry, re-arm each time) and a one-shot cron
   check (job `f4aeb83b`, 22:05 EDT on 2026-10-13) that ends the watch if nothing weird happened.
   It was first set for 21:19 (job `90c90261`), then pushed back to 4 hours after the CPU pressure alert at 18:02:37,
@@ -97,7 +102,9 @@ The operating instructions live in `doc/runbook/claude-cpu-cap.md`.
 - CPU cooler: a dual-tower Noctua air cooler. The user says "G2" but heavily suspects it is the G1. Unconfirmed.
 - Fans: 7 Noctua and 1 Lian Li, some chained, on a Corsair Commander Core XT (5 of 6 ports used; fan3 is empty).
   CoolerControl labels the controller "(broken)" but applies profiles successfully.
-- The Corsair probe is attached to the top of the air cooler, so it reads exhaust air and should rise with load.
+- The Corsair probe sits on top of the air cooler's heatsink. Its tape cannot be bent, so the tip cannot touch the
+  fins (user, 2026-10-13). It therefore reads the top surface and the air around it, which matches the flat
+  25.5 to 26.2 degree reading; it is not a heatsink-fin reading. It cannot separate contact from airflow problems.
 - The `fan1` reading in `sensors` belongs to the GPU, not a CPU fan. An early claim based on it was wrong.
 - Motherboard: Gigabyte B650 GAMING X AX rev 1.3. The six `gigabyte_wmi` readings are unlabeled and no source maps them.
   Early data: only the third one tracked CPU load.
@@ -115,11 +122,9 @@ The operating instructions live in `doc/runbook/claude-cpu-cap.md`.
 - Which cooler variant is installed, and is it mounted correctly (offset, paste, base shape)?
 - Is 90 degrees a peak or a settled value at a given wattage? The sample log is collecting the answer.
 - What do the six motherboard readings measure, and is there a usable ambient reference?
-- Why does the Corsair probe read near 26 degrees at any load? Is it touching the heatsink exhaust path?
-  Ask the user to check where it sits (the raw `temp1` reading in CoolerControl can confirm the logged value).
-- Is a larger fan floor worth it? The spikes outrun the fans (about 1300 RPM at a spike's start, about 2000
-  RPM 6 to 8 seconds later), but the user cares about heat above 75 degrees, not noise, so a higher floor below
-  60 degrees is a possible proposal, not a decision.
+- The probe cannot touch the fins (answered above), so fin or exhaust temperature stays unmeasured.
+  Contact versus airflow now has to be judged from Tctl against watts and fan speed.
+- A higher fan floor was offered and not taken: the user is balancing noise themselves and edits the curve.
 - Is 40 the right pressure limit? Judge from settled data.
 - `ide7`, `ide8`, and `tr-gate` units run outside the cap (their own cgroups).
 - The hold paragraph in `doc/handover/cli-git-rust-implementation.md` should point to this work.
