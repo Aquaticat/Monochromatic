@@ -556,6 +556,48 @@ const plantedControls = [
     to: 'environment: environment_with_overlay(&environment[..0], context.overlay.as_slice()),',
     failing: 'push_environment::a_manual_push_probes_and_pushes_with_the_invocation_environment',
   },
+  {
+    name: 'an event path keeps the exact bytes of a name that is not UTF-8',
+    file: 'src/native/event_path.rs',
+    from: 'exact: Some(bytes.to_vec()),',
+    to: 'exact: None,',
+    failing: 'event_path::tests::a_name_that_is_not_utf8_keeps_its_bytes',
+  },
+  {
+    name: 'a replay conflict lists the bytes of every path once one is not UTF-8',
+    file: 'src/native/policy_events.rs',
+    from: '        if path.exact().is_some() {',
+    to: '        if false {',
+    failing: 'policy_events::tests::a_replay_conflict_over_a_name_that_is_not_utf8_adds_paths_bytes',
+  },
+  {
+    name: 'a journal list records the bytes of every path once one is not UTF-8',
+    file: 'src/native/transaction_journal_encode.rs',
+    from: 'if event_paths.iter().any(|path| { return path.exact().is_some(); }) {',
+    to: 'if false {',
+    failing: 'transaction_journal_encode::tests::names_that_are_not_utf8_are_written_with_their_exact_bytes',
+  },
+  {
+    name: 'landing guards a name that is not UTF-8 by its exact bytes',
+    file: 'src/native/landing_index.rs',
+    from: '    return os_from_path_bytes(pathspec.as_slice());',
+    to: '    return OsString::from(String::from_utf8_lossy(pathspec.as_slice()).into_owned());',
+    failing: 'landing_index::tests::explicit_path_mode_resets_a_committed_name_that_is_not_utf8',
+  },
+  {
+    name: 'the candidate pathspec of a name that is not UTF-8 keeps its exact bytes',
+    file: 'src/native/commit_transaction.rs',
+    from: '                return os_from_path_bytes(pathspec.as_slice());',
+    to: '                return OsString::from(String::from_utf8_lossy(pathspec.as_slice()).into_owned());',
+    failing: 'event_path_commit::a_commit_of_a_name_that_is_not_utf8_lands_with_its_exact_bytes',
+  },
+  {
+    name: 'a correction of a name that is not UTF-8 is staged under its exact bytes',
+    file: 'src/native/private_index_stage.rs',
+    from: '    request.arguments.push(os_from_path_bytes(path));',
+    to: '    request.arguments.push(std::ffi::OsString::from(String::from_utf8_lossy(path).into_owned()));',
+    failing: 'event_path_commit::a_commit_correction_of_a_name_that_is_not_utf8_reports_the_exact_bytes',
+  },
 ];
 
 /**
