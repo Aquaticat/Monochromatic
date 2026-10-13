@@ -45,7 +45,7 @@ Read them with `journalctl --user --unit=claude-cpu-watch --follow --lines=0 --o
 - `WATCHER-STOPPED` or a systemd stop line: nothing is watching until the unit restarts.
 
 Limits: CPU pressure `some avg10` 40, memory pressure `some avg10` 10,
-CPU temperature 90 degrees Celsius, scheduler lag 250 ms.
+CPU temperature 95 degrees Celsius (raised from 90 by the user on 2026-10-13), scheduler lag 250 ms.
 IO pressure is not watched on purpose: the user's drives are slow, and the user decided on 2026-10-13
 that IO pressure is non-actionable.
 
