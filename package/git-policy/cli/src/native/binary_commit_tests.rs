@@ -469,7 +469,7 @@ fn a_pathspec_file_selects_the_committed_paths() {
     let landed: Observed = run_commit(&fixture, repo.as_path(), &["commit", "--message=listed", "--pathspec-from-file=list.txt"]);
     assert_eq!(landed.code, Some(0), "{}", stderr_of(&landed));
     assert_eq!(git_text(&fixture, repo.as_path(), &["show", "HEAD:a.txt"]), "one\ntwo\n");
-    assert_eq!(git_text(&fixture, repo.as_path(), &["ls-tree", "--name-only", "HEAD"]).contains("b.txt"), false);
+    assert!(!git_text(&fixture, repo.as_path(), &["ls-tree", "--name-only", "HEAD"]).contains("b.txt"));
     std::fs::write(repo.join("a.txt"), b"one\ntwo\nthree\n").expect("edit a again");
     let from_input: Observed = observe(
         &mut wrapped_commit(&fixture, repo.as_path(), &["commit", "--message=piped", "--pathspec-from-file=-"]),
