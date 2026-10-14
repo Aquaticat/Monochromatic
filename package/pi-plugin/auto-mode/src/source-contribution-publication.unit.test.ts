@@ -32,7 +32,8 @@ await describe({
       return it({
         name: `${profile} requires original render and insertion observations`,
         fn: async function renderIdentity() {
-          const f = createContributionFixture(profile,); const render = f.run.renderOccurrence;
+          const f = createContributionFixture(profile,);
+          const render = f.run.renderOccurrence;
           if (render === undefined) throw new Error('Generated contribution fixture requires its original render');
           f.source.renderOccurrence = {};
           expect(consumeSourceAssociations(f.inputs,).uses[0]?.state,).toBe('unresolved',);
@@ -86,7 +87,8 @@ await describe({
       name: 'original error identity retains cause and diagnostic name',
       fn: async function errorIdentity() {
         const { PolicyInputBindingError, } = await import('@monochromatic-dev/pi-plugin-auto-mode');
-        const cause = {}; const error = new PolicyInputBindingError('original binding failed', { cause, },);
+        const cause = {};
+        const error = new PolicyInputBindingError('original binding failed', { cause, },);
         expect(error.name,).toBe('PolicyInputBindingError',);
         expect(error.cause,).toBe(cause,);
       },
