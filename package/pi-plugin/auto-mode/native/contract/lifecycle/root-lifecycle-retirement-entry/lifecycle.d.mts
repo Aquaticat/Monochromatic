@@ -5,7 +5,10 @@
  */
 import type { SessionManager } from '@earendil-works/pi-coding-agent';
 import type { RootSessionLifecycle } from '../../integration/native-batch/session-root-types.ts';
-import type { NativeManagerEpoch, NativeManagerRegistryDefinition } from './registry-types.ts';
+import type {
+  NativeManagerEpoch,
+  NativeManagerRegistryDefinition
+} from './registry-types.ts';
 
 /** Bind original canonical manager state to the existing native lease and transition issuer. */
 export function createLifecyclePath(input: Pick<NativeManagerRegistryDefinition,
