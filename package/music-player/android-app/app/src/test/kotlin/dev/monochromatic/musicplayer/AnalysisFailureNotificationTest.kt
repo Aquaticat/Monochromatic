@@ -56,6 +56,11 @@ class AnalysisFailureNotificationTest {
             "Its file could not be decoded. The app tries again when your library changes.",
             extra(notification, Notification.EXTRA_TEXT),
         )
+        assertEquals(
+            "Its file could not be decoded. The app tries again when your library changes.",
+            extra(notification, Notification.EXTRA_BIG_TEXT),
+        )
+        assertEquals(Notification.CATEGORY_ERROR, notification.category)
         assertEquals(ANALYSIS_FAILURE_CHANNEL_ID, notification.channelId)
         assertEquals(R.drawable.ic_stat_analysis, notification.smallIcon.resId)
         assertTrue(notification.flags and Notification.FLAG_AUTO_CANCEL != 0)
