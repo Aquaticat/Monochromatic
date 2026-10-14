@@ -13,7 +13,7 @@
 package dev.monochromatic.musicplayer.core
 
 // What:     `internal const val SEARCH_ROW_ICON_CIRCLE_DP: Float = 40f` is the diameter of a result's icon circle.
-// Why:      D109 gives a leading icon a 40 dp circle in the secondary container role, and Search rows take the same one.
+// Why:      D109 gives a leading icon a 40 dp circle in the secondary container role, and Search rows take it.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -23,8 +23,8 @@ package dev.monochromatic.musicplayer.core
 internal const val SEARCH_ROW_ICON_CIRCLE_DP: Float = SETTINGS_ICON_CIRCLE_DP
 
 // What:     `internal const val SEARCH_ROW_ICON_SLOT_DP: Float = 48f` is the width of the leading slot of a row.
-// Why:      D58 makes the Back arrow and the result icons share one horizontal center, and Back is a 48 dp target, so the
-//           circle sits centered in a slot of the same 48 dp and the title still starts 48 dp after the row content.
+// Why:      D58 makes the Back arrow and the result icons share one horizontal center, and Back is a 48 dp target,
+//           so the circle sits centered in a slot of the same 48 dp and the title starts 48 dp after the content.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -34,8 +34,8 @@ internal const val SEARCH_ROW_ICON_CIRCLE_DP: Float = SETTINGS_ICON_CIRCLE_DP
 internal const val SEARCH_ROW_ICON_SLOT_DP: Float = 48f
 
 // What:     `internal const val SEARCH_ROW_SHAPE_MARGIN_DP: Float = 8f` is how far a row's rounded shape sits in.
-// Why:      A rounded pressed and focus shape must not touch the screen edge or the crease, while D58 keeps the icon and
-//           the title where they were, so the shape starts 8 dp before the content and the row pads the 8 dp back.
+// Why:      A rounded pressed and focus shape must not touch the screen edge or the crease, while D58 keeps the
+//           icon and the title where they were, so the shape starts 8 dp before the content and the row pads it back.
 //           The circle starts 4 dp inside its slot, so it keeps a 12 dp gap to the shape's edge.
 //
 // In TS you'd write (pseudocode):
@@ -95,10 +95,11 @@ internal data class SearchRowInsets(
     val innerDp: Float,
 )
 
-// What:     `internal fun searchRowInsets(startInsetDp: Float, endInsetDp: Float): SearchRowInsets` places a row's shape.
-// Why:      The content must start at the page's start inset and end at its end inset (D58), and on the unfolded panel
-//           the start inset already holds half the crease, so the shape starts after the crease clear zone. The margin is
-//           the smaller of the standard margin and both insets, so a small inset never pushes the shape off the page.
+// What:     `internal fun searchRowInsets(startInsetDp, endInsetDp): SearchRowInsets` places a row's shape.
+// Why:      The content must start at the page's start inset and end at its end inset (D58), and on the unfolded
+//           panel the start inset already holds half the crease, so the shape starts after the crease clear zone.
+//           The margin is the smaller of the standard margin and both insets, so a small inset never pushes the shape
+//           off the page.
 //
 // In TS you'd write (pseudocode):
 // ```ts

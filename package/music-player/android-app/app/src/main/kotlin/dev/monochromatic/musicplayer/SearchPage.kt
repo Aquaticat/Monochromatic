@@ -770,8 +770,8 @@ private val SEARCH_SEAM: Dp = 1.dp
 private val SEARCH_TRUE_BLACK: Color = Color(0xFF000000)
 
 // What:     `internal const val SEARCH_*_TAG` name the test tags of the page's regions.
-// Why:      The wiring tests find the header, the divider, the status strip, the status block and the circles by tag, so
-//           a restyle cannot move them unnoticed.
+// Why:      The wiring tests find the header, the divider, the status strip, the status block and the circles by
+//           tag, so a restyle cannot move them unnoticed.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -1187,7 +1187,7 @@ private fun searchStatusCircle() {
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// function StatusTitle({ text, align }): UIElement { return <h2 style={{ font: "titleMedium", fontWeight: 500 }}>{text}</h2>; }
+// function StatusTitle({ text }): UIElement { return <h2 style={{ font: "titleMedium", weight: 500 }}>{text}</h2>; }
 // ```
 /** Draws a status headline in the title medium role at the medium weight. */
 @Composable
@@ -1202,12 +1202,14 @@ private fun searchStatusTitle(text: String, modifier: Modifier, textAlign: TextA
 }
 
 // What:     `@Composable private fun searchCoverStatus(...)` draws a status centered under the header on the cover.
-// Why:      The block starts a fixed distance under the header instead of centering in the whole body, so it stays above
-//           the keyboard at any text size, and it pads by the keyboard and navigation insets like the result list does.
+// Why:      The block starts a fixed distance under the header instead of centering in the whole body, so it stays
+//           above the keyboard at any text size, and it pads by the keyboard and navigation insets like the list.
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// function CoverStatus({ line }): UIElement { return <Scroll insets={ime + nav}><Circle/><h2>{title}</h2><p>{detail}</p></Scroll>; }
+// function CoverStatus({ line }): UIElement {
+//   return <Scroll insets={ime + nav}><Circle/><h2>{title}</h2><p>{detail}</p></Scroll>;
+// }
 // ```
 /**
  * Draws a status with a circle, a headline, and an optional support line, lifted clear of the keyboard.
@@ -1248,7 +1250,9 @@ private fun searchCoverStatus(line: SearchStatusLine, modifier: Modifier) {
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// function InnerStatus({ line }): UIElement { return <Scroll><Circle/><h2>{line.title}</h2><p>{line.detail}</p></Scroll>; }
+// function InnerStatus({ line }): UIElement {
+//   return <Scroll><Circle/><h2>{line.title}</h2><p>{line.detail}</p></Scroll>;
+// }
 // ```
 /** Draws a left-aligned circle, headline and optional support line, scrolling when the pane is short. */
 @Composable
@@ -1320,7 +1324,9 @@ private fun searchResultList(
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// function ResultRow({ result }): UIElement { return <button><Circle><Icon/></Circle><div><p>{t}</p><p>{p}</p></div></button>; }
+// function ResultRow({ result }): UIElement {
+//   return <button><Circle><Icon/></Circle><div><p>{t}</p><p>{p}</p></div></button>;
+// }
 // ```
 /**
  * Draws one result row with its glyph in a 40 dp circle, highlighted title, optional parent line, and one merged
