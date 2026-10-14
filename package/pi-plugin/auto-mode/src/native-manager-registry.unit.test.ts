@@ -100,7 +100,9 @@ await describe({ name: '', children: [
     /** Reservation success positively controls the duplicate rejection. */
     const pending = registry.lifecycle.beginConstruction({ manager: first });
     expect(Object.isFrozen(pending)).toBe(true);
-    expect(function duplicate() { return registry.lifecycle.beginConstruction({ manager: first }); })
+    expect(function duplicate() {
+      return registry.lifecycle.beginConstruction({ manager: first });
+    })
       .toThrow('Manager already has a pending construction');
     /** A different manager can be reserved during the first reservation. */
     const separate = registry.lifecycle.beginConstruction({ manager: second });
@@ -108,8 +110,10 @@ await describe({ name: '', children: [
     const other = built.createNativeManagerRegistry(input.definition);
     /** The same manager can be reserved independently by its second registry. */
     const independent = other.lifecycle.beginConstruction({ manager: first });
-    expect(function foreignHandle() { return other.lifecycle.abandonConstruction(pending); })
-      .toThrow('Construction occurrence belongs to another lifecycle');
+    expect(function foreignHandle() {
+      return other.lifecycle.abandonConstruction(pending);
+    })
+      .toThrow('Construction is not issued by this registry');
     registry.lifecycle.abandonConstruction(pending);
     /** Reuse after release must consult and retain the original canonical record. */
     const reused = registry.lifecycle.beginConstruction({ manager: first });
@@ -140,7 +144,9 @@ await describe({ name: '', children: [
         }
         /** Rejected access cannot create or increment canonical-state accounting. */
         const before = { ...input.accounting };
-        try { registry.lifecycle.beginConstruction({ manager }); }
+        try {
+          registry.lifecycle.beginConstruction({ manager });
+        }
         catch (error) { ctx.expect(error).toBe(input.failure); }
         ctx.expect(input.accounting).toEqual(before);
         ctx.expect(input.accesses).toEqual(previouslyOwned ? [manager, manager] : [manager]);
