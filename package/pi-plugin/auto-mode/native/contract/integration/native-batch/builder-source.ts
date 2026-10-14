@@ -28,7 +28,10 @@ function skillFormatterSource(source: string): string {
  /**
   The formatter keeps a separate source transformation diagnostic boundary.
   */
- const rl = tagged({ tag: skillFormatterSource.name, l });
+ const rl = tagged({
+   tag: skillFormatterSource.name,
+   l
+ });
  rl.debug('capturing original native skill formatter');
  /**
   The original exported formatter begins the retained source region.
@@ -37,12 +40,18 @@ function skillFormatterSource(source: string): string {
  /**
   The next documented declaration terminates the qualified formatter and helper region.
   */
- const end = source.indexOf('\n/**', start);
- if (start === -1 || end <= start) throw new NativeBatchBuildError('Native skill formatter and escape helper are unavailable');
+ const end = source.indexOf(
+   '\n/**',
+   start
+ );
+ if ((start === (-1)) || (end <= start)) throw new NativeBatchBuildError('Native skill formatter and escape helper are unavailable');
  /**
   Formatter bytes are retained before the owned callback parameter is added.
   */
- const original = source.slice(start, end);
+ const original = source.slice(
+   start,
+   end
+ );
  /**
   Native callers retain their original default behavior when no observer is supplied.
   */
@@ -88,7 +97,10 @@ export function promptBuilderSource({
  /**
   Every generated builder retains a diagnostic linked to its original source transformation.
   */
- const rl = tagged({ tag: promptBuilderSource.name, l });
+ const rl = tagged({
+   tag: promptBuilderSource.name,
+   l
+ });
  rl.debug('preparing original native prompt fragment observations');
  /**
   The captured original formatter replaces its original static import.

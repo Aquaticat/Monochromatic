@@ -117,6 +117,10 @@ run = "node src/native-parser.unit.test.ts"
 description = "Verify native message assignment guards against original executable syntax"
 run = "node src/native-state-assignments.unit.test.ts"
 
+[tasks."test:native:literal-rules"]
+description = "Verify native literal-rule instrumentation preserves original JavaScript boundaries"
+run = "node src/native-literal-rules.unit.test.ts"
+
 [tasks."test:native:approval"]
 description = "Verify original approval routing and independent prerequisite evidence with fixture presentation"
 run = [
