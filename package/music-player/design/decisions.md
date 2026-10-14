@@ -3558,6 +3558,9 @@ Desktop-specific choices and facts:
 - The crease sentence does not apply on desktop as built: `ui/app_window.slint` never sets `content-start-x` on the
   Search page, so both layouts use the default 16 and the inner panel's page already starts at the pane's left edge (half
   the window width), after the crease.
+- The sentence that the kind label stays on the glyph for assistive technology (D77) has nothing to keep on desktop:
+  the desktop result rows and their glyphs expose no accessible role or label today (the only accessible elements of
+  `ui/search.slint` are Back and Clear), before and after the port. This predates the port and was left open.
 - The status title keeps eliding on one line at a narrow width, as before; Android wraps it. The title weight is the
   500 instance of the variable Inter font (`ui/fonts/InterVariable.ttf`), and `letter-spacing` is a Slint `Text`
   property (checked in the `i-slint-compiler` 1.18.1 `builtin_elements.rs`).
