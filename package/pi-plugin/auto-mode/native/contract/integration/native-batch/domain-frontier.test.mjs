@@ -8,7 +8,7 @@ import {nativeOpenAIStream} from './source-association.mjs';
 import {fixtureResponse} from './fixture-response.mjs';
 import {ruleAssessmentModel} from '../action-policy/wire.mjs';
 import {inspectNativeSourceDomain} from '../policy-source/source-domain.mjs';
-import {createAssessmentSender} from '../maintained-policy.mjs';
+import {createAssessmentSender,createNativeSemanticOperatingPolicies} from '../maintained-policy.mjs';
 
 const relation=process.argv[2]??'prohibition',
   requireResolution=process.argv
@@ -29,6 +29,10 @@ const unobservedContext=process.argv
 const observedContext=process.argv.includes('--observed-context');
 const throwingContext=process.argv.includes('--throwing-context');
 const httpTransport=process.argv.includes('--http-transport');
+const operatingPolicy=process.argv.includes('--operating-policy');
+const lowConfidenceClause=process.argv.includes('--low-confidence-clause');
+const unresolvedClause=process.argv.includes('--unknown-clause')?'unknown':process.argv.includes('--unsupported-clause')?'unsupported':undefined;
+assert.ok(!(lowConfidenceClause||unresolvedClause)||operatingPolicy,'Admission contrasts require the adopted operating policy');
 assert.ok(!throwingContext||observedContext,'Throwing context controls require the observed native context route');
 const sdkStream=process.argv
   .includes('--sdk-stream');
@@ -116,9 +120,11 @@ function controlledSdkStream(
 function authoredWireAnswer({body}){
   assessments++;const wire=JSON.parse(body);assert.equal(wire.state.originalRequestBody,originalBody);
   const answers=Object.fromEntries(Object.entries(wire.questions).map(function answerAuthoredDomainQuestion([slot,question]) {
-   const choice=question.instructions.selectedMaterial==='originalRequestBody'?requestRelation:question.instructions.selectedRule?.id==='RUL'?relation:'none';
+   const selectedClause=question.instructions.selectedRule?.id==='RUL';
+   const choice=question.instructions.selectedMaterial==='originalRequestBody'?requestRelation:selectedClause?(unresolvedClause??relation):'none';
+   const score=operatingPolicy?(selectedClause&&lowConfidenceClause?0.989999:choice==='unknown'||choice==='unsupported'?1:0.99):1;
    assert(Object.hasOwn(question.criteria,choice));
-   return [slot,{type:'choice',choice,probabilities:Object.fromEntries(Object.keys(question.criteria).map(function scoreAuthoredDomainChoice(label) { return ([label,label===choice?1:0]); }))}];
+   return [slot,{type:'choice',choice,probabilities:Object.fromEntries(Object.keys(question.criteria).map(function scoreAuthoredDomainChoice(label) { return ([label,label===choice?score:label==='unknown'?1-score:0]); }))}];
   }));
   return JSON.stringify({model:wire.model,answers,usage:{input_tokens:100,output_tokens:10}});
 }
@@ -147,9 +153,11 @@ const runtime=bindNativePolicyRuntime({
   wrapToolDefinition:env.wrapToolDefinition,
   readSessionDisposalState:env.readSessionDisposalState,
   trace(){},
-  semanticAdmissionPolicy:policy('clause_operation_relation'),
-  requestMaterialAdmissionPolicy:policy('request_instruction_content'),
-  headingContextAdmissionPolicy:policy('heading_instruction_content'),
+  ...(operatingPolicy?createNativeSemanticOperatingPolicies():{
+   semanticAdmissionPolicy:policy('clause_operation_relation'),
+   requestMaterialAdmissionPolicy:policy('request_instruction_content'),
+   headingContextAdmissionPolicy:policy('heading_instruction_content')
+  }),
   effectOwnerFor:function omitDomainAuthorizationOwner() { return (undefined); },
   sendWire:sendAssessment,
   originalStream:sdkStream?controlledSdkStream:nativeOpenAIStream,
@@ -176,7 +184,10 @@ try{
    review.requestMaterialInterpretation.relation,
    requestRelation
  );
- assert.ok(review.clauseInterpretations
+ const clauseAbstention=lowConfidenceClause||unresolvedClause!==undefined;
+ if(clauseAbstention){
+  assert.equal(review.clauseInterpretations.filter(function abstained(clause){return clause.admission==='abstained';}).length,1);
+ }else assert.ok(review.clauseInterpretations
    .every(function isAdmittedClause(clause) { return (clause.admission==='admitted'); }));
  assert.ok(review.headingContextInterpretations
    .every(function isAdmittedNonInstructionHeading(heading) { return (heading.admission==='admitted'&&heading.relation==='none'); }));
@@ -206,7 +217,9 @@ try{
    httpCalls,
    executions,
    providerRequests:0,
-   productionPolicyAdopted:false
+   productionPolicyAdopted:operatingPolicy,
+   empiricalQualificationEstablished:false,
+   clauseAbstention
  };
  assert.equal(httpCalls,httpTransport?assessments:0);
  const domainIssue=review.premiseIssues
@@ -265,6 +278,10 @@ try{
      review.inputs.requestObservation.sourceContributions,
      {depth:3}
    ));
+  }else if(clauseAbstention){
+   assert.equal(review.outcome.state,'unresolved');
+   assert.equal(executions,0);
+   assert.ok(review.premiseIssues.some(function unresolvedMeaning(issue){return issue.premise==='qualified-rule-interpretation';}));
   }else if(requestRelation!=='none'){
    assert.equal(
      review.outcome.state,
