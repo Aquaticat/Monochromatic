@@ -89,9 +89,28 @@ export function judgmentSource({
    from:'        const dependencyHandle=facade.prepare({signal});',
    to:'        if(observer.beginJudgmentSources){const binding=observer.sealJudgmentSources(response);if(binding.request!==receipt)throw new JudgmentConstructionError("Prepared sources lost their original request receipt");judgmentSources=binding.sources;}\n        const dependencyHandle=facade.prepare({signal});'
  });
+ /**
+  Dependency checks retain the same assessed collection rather than taking an independent source snapshot.
+  */
+ const sharedDependencySources=replaceOnce({
+   source:sealedSources,
+   from:'const facade=createDependencyFacade({collector,rootAdapter,',
+   to:`const judgmentCollector=Object.freeze({
+      capture(options){
+        if(options.signal!==signal)throw new JudgmentConstructionError('Dependency sources require original judgment cancellation');
+        collector.assertObservedFresh(judgmentSources);
+        return judgmentSources;
+      },
+      assertObservedFresh(snapshot){
+        if(snapshot!==judgmentSources)throw new JudgmentConstructionError('Dependencies require the original assessed source collection');
+        collector.assertObservedFresh(snapshot);
+      }
+    });
+    const facade=createDependencyFacade({collector:judgmentCollector,rootAdapter,`
+ });
  /** Mandatory policy and source selection use the final prepared collection. */
  const mandatorySource=replaceOnce({
-   source:sealedSources,
+   source:sharedDependencySources,
    from:'const mandatoryPolicy=receipt.sources.mandatoryPolicy;',
    to:'const mandatoryPolicy=judgmentSources.mandatoryPolicy;'
  });

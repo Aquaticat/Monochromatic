@@ -401,6 +401,24 @@ function createPolicyLoader({
      {input,original,nativeConstructedInputs,nativeResourceToolInputs}
    );return snapshot;
   }
+  /** Preserve selected dependencies while later authenticated receipts remain available to the next decision. */
+  function assertApprovedSourcesCurrent({snapshot,saved}){
+   assertCurrent(saved.input);assertInputBudget(session);
+   if(resourceInputs()!==saved.nativeResourceToolInputs)throw new PolicySlotBindingError('Approved operation lost its original extension tool inputs');
+   const current=base.capture();
+   const currentConstructed=constructedInputs(current.nativeRunComposition);
+   const nativeDomain=domainEvents();
+   if(JSON.stringify(nativeDomain?.kinds)!==JSON.stringify(snapshot.nativeDomainEventKinds)
+     ||nativeDomain?.observation?.occurrence!==snapshot.nativeDomainEventObservation?.occurrence
+     ||nativeDomain?.observation?.failed
+     ||(nativeDomain?.observation?.revision??0)<(snapshot.nativeDomainEventObservation?.revision??0))throw new PolicySlotBindingError('Approved operation lost its original native event runner or complete receipt accounting');
+   assertCollectedManagerGrowth({before:saved.original,after:current});
+   assertManagerOriginsAppended({before:saved.nativeConstructedInputs,after:currentConstructed});
+   base.assertObservedFresh(current);
+   if(constructedInputs(current.nativeRunComposition)!==currentConstructed)throw new PolicySlotBindingError('Approved operation inputs changed during dependency validation');
+   assertCurrent(saved.input);assertInputBudget(session);
+   if(resourceInputs()!==saved.nativeResourceToolInputs)throw new PolicySlotBindingError('Approved operation extension tool inputs changed during dependency validation');
+  }
   function assertObservedFresh(snapshot){
    const saved=snapshots.get(snapshot);
    if(!saved)throw new PolicySlotBindingError('Governing snapshot is not owned by this source collector');
@@ -423,24 +441,6 @@ function createPolicyLoader({
     assertCurrent(saved.input);assertInputBudget(session);
     if(resourceInputs()!==saved.nativeResourceToolInputs)throw new PolicySlotBindingError('Original extension tool inputs changed during source finalization');
    }catch(error){saved.failure??={cause:error};throw error;}
-  }
-  /** Preserve selected dependencies while later authenticated receipts remain available to the next decision. */
-  function assertApprovedSourcesCurrent({snapshot,saved}){
-   assertCurrent(saved.input);assertInputBudget(session);
-   if(resourceInputs()!==saved.nativeResourceToolInputs)throw new PolicySlotBindingError('Approved operation lost its original extension tool inputs');
-   const current=base.capture();
-   const currentConstructed=constructedInputs(current.nativeRunComposition);
-   const nativeDomain=domainEvents();
-   if(JSON.stringify(nativeDomain?.kinds)!==JSON.stringify(snapshot.nativeDomainEventKinds)
-     ||nativeDomain?.observation?.occurrence!==snapshot.nativeDomainEventObservation?.occurrence
-     ||nativeDomain?.observation?.failed
-     ||(nativeDomain?.observation?.revision??0)<(snapshot.nativeDomainEventObservation?.revision??0))throw new PolicySlotBindingError('Approved operation lost its original native event runner or complete receipt accounting');
-   assertCollectedManagerGrowth({before:saved.original,after:current});
-   assertManagerOriginsAppended({before:saved.nativeConstructedInputs,after:currentConstructed});
-   base.assertObservedFresh(current);
-   if(constructedInputs(current.nativeRunComposition)!==currentConstructed)throw new PolicySlotBindingError('Approved operation inputs changed during dependency validation');
-   assertCurrent(saved.input);assertInputBudget(session);
-   if(resourceInputs()!==saved.nativeResourceToolInputs)throw new PolicySlotBindingError('Approved operation extension tool inputs changed during dependency validation');
   }
   /** Called only at the original resolved approval handoff; never selects new sources or revives failed ones. */
   function retainApprovedSources(snapshot){
