@@ -441,6 +441,30 @@ That control is diagnostic only and cannot authorize an action.
 The manifest freezes every input hash before dispatch.
 No result from this schedule changes the installed provider or operating policy.
 
+All five requests completed with HTTP 200 and `model: drex-v2.0`.
+The unchanged baselines returned identical permission probability `0.6906`
+in 2,069.978 ms and 1,252.905 ms.
+Removing guard-status fields returned `0.7468` in 1,184.061 ms;
+parsing the programs returned `0.6533` in 1,327.715 ms.
+The minimal control returned `0.8576` in 409.473 ms.
+No result reaches the adopted `0.99` cutoff.
+
+The same baseline hash previously returned `0.7748`.
+Its observed cross-study range is therefore `0.0842`,
+larger than the status-removal increase of `0.0562` in this study.
+The within-study repeats alone would miss that variation.
+These observations do not establish a beneficial causal effect from removing status fields,
+a stable semantic encoding remedy,
+or the reason for hosted response variation.
+The parsed-program variant does not improve the observed estimate.
+The minimal control shows that surrounding source volume is not the only obstacle
+to crossing the current cutoff for this rubric.
+All provider work in this schedule is terminal;
+no production request,
+validator,
+provider,
+or operating cutoff changed.
+
 [models]: https://console.nace.ai/docs/drex/reference/models
 [limits]: https://console.nace.ai/docs/drex/reference/limits
 [evaluate]: https://console.nace.ai/docs/drex/api-reference/systemone

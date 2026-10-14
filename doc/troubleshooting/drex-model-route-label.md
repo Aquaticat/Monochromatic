@@ -475,5 +475,29 @@ Contribution policy and willingness were not investigated because no report or p
 No upstream fix prototype was attempted;
 the retained caller evidence is the reproducible result.
 
+### Representation controls do not establish a semantic workaround
+
+The subsequent [frozen representation diagnostic](../planning/pi-auto-mode-drex-current-contract.md#frozen-representation-diagnostics)
+made five successful requests to the same reported model.
+Its two unchanged isolated-clause controls returned permission probability `0.6906`.
+The same request hash had returned `0.7748` in the previous study.
+Removing pre-assessment status fields returned `0.7468`,
+which does not exceed that observed cross-study baseline range.
+Parsing the program JSON strings returned `0.6533`.
+A deliberately incomplete minimal control returned `0.8576`.
+Every result stays below the adopted `0.99` operating cutoff.
+
+The working catalog is schema-valid response membership and successful serving of these diagnostic subsets.
+The failing catalog is semantic admission under the current rubric and cutoff.
+No production change or verified workaround follows.
+The hosted source of response variation is unknown;
+the public serializer explains precision loss but does not explain these changed distributions.
+The private one-shot runner at `${HOME}/temp/agent/pi-drex-representation-isolation-20261014/probe.mjs`
+retains exact inputs and raw responses.
+Its `mise run check` verifies hashes without inference;
+the completed `mise run probe` refuses to overwrite its start record.
+This additional consumer evidence establishes no upstream implementation defect or actionable upstream patch,
+so the filing decision is unchanged.
+
 [evaluate]: https://drex.nace.ai/docs/api-reference/systemone
 [models]: https://drex.nace.ai/docs/reference/models

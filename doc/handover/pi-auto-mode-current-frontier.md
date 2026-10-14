@@ -157,10 +157,20 @@ It is not a verified remedy.
 A further full-batch repeat returned HTTP 529 `overloaded` after 26,134.675 ms;
 its frozen stop condition prevented the planned two-question control.
 All provider jobs have finished.
-The next local inspection concerns possible model confusion from the wire's pre-assessment
-`permission: false` and `authority: "not-established"` fields.
-This remains a hypothesis,
-and no production semantics or provider choice has changed.
+The subsequent fixed representation study completed five HTTP 200 responses.
+Its unchanged primary-clause baselines returned permission `0.6906`;
+removing pre-assessment guard-status fields returned `0.7468`,
+and parsing the program JSON strings returned `0.6533`.
+A deliberately incomplete minimal control reached `0.8576`.
+None reaches `0.99`.
+The unchanged baseline previously returned `0.7748`,
+so cross-study variation exceeds the observed status-removal gain.
+These are not demonstrated remedies.
+No production semantics or provider choice has changed.
+Provider experiments are terminal;
+the remaining authorized mechanical queue includes native runtime lint/type completion
+and verification of the genuine human approval boundary.
+Successful installed governed execution remains blocked by the provider capacity and semantic evidence gates.
 
 ## Restart checkpoint after installing automatic Codex shell limits
 
