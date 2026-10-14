@@ -131,6 +131,22 @@ run = [
 [tasks."test:native:cli-manager"]
 run = "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-batch/cli-manager.test.mjs"
 
+[tasks."test:native:configured-extensions"]
+description = "Exercise installed extension paths from a read-only manifest in disposable native state"
+usage = 'arg "<manifest>" help="JSON array of enabled native extension resource records"'
+shell = "node --input-type=module-typescript -e"
+run = """
+const { default: spawn } = await import('nano-spawn')
+const manifest = process.env.usage_manifest
+if (typeof manifest !== 'string') throw new Error('An installed extension manifest is required')
+await spawn(process.execPath, [
+  '--max-old-space-size=512', '--import', './dist/native/loader.mjs',
+  './dist/native/contract/integration/native-batch/domain-frontier.test.mjs',
+  'permission', '--require-resolution', '--sdk-stream', '--http-transport', '--operating-policy',
+  `--extension-manifest=${manifest}`
+], { stdio: 'inherit' })
+"""
+
 [tasks."test:native:manager-constructors"]
 description = "Verify original native history, options, and session construction across manager entry points"
 run = "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-batch/manager-constructors.test.mjs"
