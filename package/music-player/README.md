@@ -431,9 +431,12 @@ The query `lan` finds a loose track,
 a folder,
 and a track with its parent folder,
 each with the matching text highlighted.
+The header, the status strip and the results share one tone,
+a thin divider closes the header,
+and each result keeps its glyph in a round tonal disc.
 The on-screen keyboard was closed before the capture so that the results fill the display.
 
-![Search results for a query on the cover display in light appearance](https://monochromatic-lfs.aquaticat.workers.dev/582ac24c13d7449c7219890dbfd8c39fd3b85b9fee8f2dd3186688df8661f909/package/music-player/asset/readme/android-cover-search-light.png)
+![Search results for a query on the cover display in light appearance](https://monochromatic-lfs.aquaticat.workers.dev/b83ee72ae828794c5aa7b8ae7b471d232440f11417517328930db95d2b39a736/package/music-player/asset/readme/android-cover-search-light.png)
 
 The menu was opened on the playing row with the `Menu` key,
 after `Alt+2` had focused the track list.
