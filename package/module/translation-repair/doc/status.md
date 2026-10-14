@@ -71,9 +71,12 @@ TianqiChen66622 on 2026-10-11 and TianqiChen66623 on 2026-10-12
 (the repository's pass log,
 `doc/planning/translation-repair-openrouter-2026-09-03.md`,
 reads each).
-The next waits for the rebuild of how the page-level consistency pass reads agreement and carries the bench's
+The rebuild of how the page-level consistency pass reads agreement and carries the bench's
 choice (ledger B449,
-B450).
+B450) landed on 2026-10-12;
+the next waits for the fixes to its sixth independent review and the apostrophe resolution,
+which were uncommitted on 2026-10-13
+(the handover's checkpoint headed "2026-10-13 after the hardware change").
 The two Bedrock Gemma seats answer with an expired token and are withheld after their first failed calls;
 no launch waits on them.
 
