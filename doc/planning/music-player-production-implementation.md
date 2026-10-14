@@ -205,43 +205,6 @@ and the decisions D106 to D119 at the end of `package/music-player/design/decisi
   `states/natural-order` were harness races and pass 20 of 20; nested compositor 0.4.0 is published and installed, and
   the runner checks capability by version with no pin; the e2e suite has 110 checks (110 pass, 1 not injectable).
 
-### Paused work: Android large folders (resume here)
-
-The human paused the session on 2026-10-13 to change the CPU. Everything else is on `main` and pushed.
-This one item is half done and sits only on the branch `feat/music-player-production` (worktree
-`/home/user/temp/agent/music-player-production`), commit `deb84ee93d` (a wip commit; keep it off `main` until the
-steps below pass). The agent's full notes are `/home/user/temp/agent/lf-state.md` and its scratch is
-`/home/user/temp/agent/lf/` (library generator `genlib.ts`, scenarios `deep.ts`, `scenario.ts`, `track.ts`,
-`perf.ts`, `alt.ts`, `launch.ts`, `shutdown.ts`, APKs `before.apk` and `v3.apk`).
-
-What the commit holds:
-
-- Item 3, the `refreshPage` restart: `core/StepPasses.kt` runs one pass per sweep step and never cancels a running
-  pass; `measureNextBatch` scans from the first visible track and wraps (`startAt`). Headful, 3 interleaved cold
-  pairs on 10 000 invented tracks: the first supporting line on visible deep rows after 66.0, 73.8, 83.2 s before and
-  3.8, 3.8, 3.7 s after (bounded by the 3.5 s sample step). This is the only clear result.
-- Item 2, the playing-track change: `rowEntries` is no longer keyed on `currentIndex`; `LocalPlayingIndex` and
-  `rowWithPlayingFlag` mark the playing row; the playing folder's row order is built once per folder. No headful
-  difference could be claimed (both variants hit real "Input dispatching timed out" ANRs in the stress window).
-- Item 1, `mergeMeasures`: unchanged; its only timing was taken headless and discarded.
-- A fourth cost, from a discarded headless profile and so only a lead: `BrainPlayer.getState` through
-  `SimpleBasePlayer.invalidateState` took about a third of samples while tracks changed fast. Re-profile headful.
-
-Not done, in order:
-
-1. Load the `android-emulator` skill, make a fresh reflink copy of the AVD, launch headful (`lf/launch.ts`). The
-   headful emulator crashed once in `libgfxstream_backend.so` (`TextureResize` from `ColorBufferGl::create`, SEGV,
-   AMD RX 7600) during a long run; stop and report if it does again. Never `-no-window`.
-2. The new tests were never compiled or run: `StepPassesTest`, `RowPlayingFlagTest`, `PlayingPlaceTest`, additions
-   to `TrackMeasureTest` and `ListScrollRulesTest`, edits to `TrackListFolderScrollTest`. Run detekt, unit tests
-   (baseline 1044 plus the new ones, counted from the result XML) and `lintDebug`, then fix findings.
-3. Mutation-check the new logic in a throwaway `git worktree add --detach`: `collectLatest` for the conflated
-   collect, no conflate, `rowWithPlayingFlag` always copying, `currentPositionOf` using the row flag, a wrong wrap in
-   `measureNextBatch`, a wrong header fallback in `libraryIndexNear`.
-4. Re-measure headful on the final tree, several interleaved runs each, at a quieter host load (it was 20 to 25
-   during the measurements, so they are noisy), item 1 included.
-5. Update the "Android large folders" bullet below, merge main into the branch, fast-forward `main`, push.
-
 ### Open, not started
 
 - Nothing waits on the human. D120 and D121 (2026-10-12 and 2026-10-13) answered every question this handover had
@@ -253,11 +216,25 @@ Not done, in order:
   no longer rebuilds the page; on the Fold emulator with 10 000 tracks in one folder frame p99 went from 400, 450, 109 ms
   to 69, 53, 48 ms and main-thread CPU from 31.5, 31.7, 21.7 s to 13.4, 15.9, 16.6 s. No actual ANR was ever
   reproduced, before or after (the original came from one bug report, `~/temp/agent/agent-android-final/bugreport1/`).
-  Still open: `controller.mergeMeasures` copies the library-wide measures map on the main thread per 24-track batch; a
-  playing-track change rebuilds the full row list; the `refreshPage` effect restarts from the top of the page on every
-  sweep step, so rows deep in a huge page get their measures only when the sweep ends; the 435 ms `loadTemplate`
-  violation did not reproduce, so the template cache in `SessionStore.warmUp` is unproven.
-  Items one to three have a half-done change on the branch (see "Paused work" above).
+  Second round (2026-10-13 and 14, headful on the Fold emulator, 10 000 invented tracks, interleaved before and after,
+  host never quiet): the `refreshPage` effect now runs one pass per sweep step without cancelling the running one
+  (`core/StepPasses.kt`) and `measureNextBatch` starts at the first visible track and wraps (`startAt`), so the first
+  supporting line on visible rows near row 9000 came after 17.7 to 26.1 s before and 3.5 to 4.5 s after (an upper bound,
+  the first sample already showed lines); the play window (Next every 400 ms for 40 s) costs 15.4 s of main-thread CPU
+  instead of 18.4 s because the playing-track change no longer rebuilds the rows (`LocalPlayingIndex`,
+  `rowWithPlayingFlag`, `playingRowOrderOf`), a real but modest difference with no frame p99 difference shown; the cold
+  75 s window is noise; `controller.mergeMeasures` costs 0.29 s per cold run (0.37 ms per call, about 2% of main-thread
+  CPU), below the noise, and is left alone. The mutation pass killed every mutant of the new logic after ten more test
+  cases; the unit suite is 1077 tests with no failures, detekt and lintDebug pass.
+  Still open: nine wiring mutants survive (no JVM test reaches `PlayerHost` and `TrackListPane` call sites, among
+  them an effect that cancels per step again); the fourth cost below; the 435 ms `loadTemplate` violation did not
+  reproduce, so the template cache in `SessionStore.warmUp` is unproven; the old ANRs did not reproduce in 23 play
+  windows (cause unknown); the sweep-under-load case was not exercised; release build not measured.
+- Android playing-queue cost (measured 2026-10-14): while tracks change, `BrainPlayer.getState` through
+  `SimpleBasePlayer.invalidateState` is 41 to 43% of main-thread samples, the media-button path 25%, and the GC thread
+  adds 10.8 s per 40 s; it scales with the playing queue size (a 10 000-track queue costs 10 to 12 s per 30 s of Next
+  presses, a 3-track queue 3.5 to 6.0 s). It is not fixed. Two emulator crashes (SEGV in `libgfxstream_backend.so`,
+  `TextureResize`) happened headful, one per few hours of run time; the notes are in `doc/troubleshooting`.
 - Review findings left open: look-alike letters (rail hairlines address it), red accent against the error roles, cold
   restore scroll, scroll anchoring when rows above change height, `project()` about 120 ms at 100k rows, the 117 px
   phantom view on the Android idle deck.
