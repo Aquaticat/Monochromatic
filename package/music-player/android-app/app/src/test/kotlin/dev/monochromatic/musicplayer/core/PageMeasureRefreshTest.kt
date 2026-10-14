@@ -296,6 +296,42 @@ class PageMeasureRefreshTest {
         assertEquals("the read in flight must have been published, not discarded", 0, cancelled.get())
     }
 
+    // What:     `@Test fun everySweepStepAfterAFinishedPassStartsAnotherPass()` checks the steps drive the passes.
+    // Why:      The sweep may fill peaks after a pass ended, so each later step must check the page again.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // test("a step per pass", async () => { /* send 1, wait for its log line, send 2, expect two lines */ });
+    // ```
+    /** Two steps, the second sent after the first pass ended, give two completed passes. */
+    @Test
+    fun everySweepStepAfterAFinishedPassStartsAnotherPass() = runBlocking {
+        /** Steps the refresh collects. */
+        val steps = Channel<Int>(Channel.UNLIMITED)
+        /** Lines the refresh logged, one per finished pass. */
+        val lines: MutableList<String> = CopyOnWriteArrayList()
+        /** The refresh under test. */
+        val refresh: Job = launch {
+            pageMeasurePasses(
+                steps = steps.receiveAsFlow(),
+                tracks = page,
+                known = { page.associate { track -> track.uri to measured } },
+                firstVisibleUri = { null },
+                read = { emptyMap() },
+                publish = {},
+                log = { line -> lines += line },
+                batchSize = 24,
+            )
+        }
+        steps.send(1)
+        awaitCount("the first pass to end") { lines.size == 1 }
+        steps.send(2)
+        awaitCount("the second pass to end") { lines.size == 2 }
+        steps.close()
+        refresh.join()
+        assertEquals(2, lines.size)
+    }
+
     /** Waits until [condition] holds, polling in short sleeps, and fails the case when the limit passes first. */
     private suspend fun awaitCount(what: String, condition: () -> Boolean) {
         try {
