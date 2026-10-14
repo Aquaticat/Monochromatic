@@ -1,5 +1,54 @@
 # Pi 0.87.1 nominal dependency inventory rejects the configured workspace graph
 
+## Pi 1.1.0 dispatcher replaces a fetch override installed before module loading
+
+The disposable offline native-host capture initially produced Pi's `Connection error.`
+and no assessment request.
+The fixture's network namespace had no network access,
+so no provider request escaped.
+Its fetch override was installed before the original HTTP-dispatcher module loaded.
+
+At Pi source tag `v1.1.0`,
+`packages/coding-agent/src/core/http-dispatcher.ts:16`
+captures `const originalGlobalFetch = globalThis.fetch`.
+The same file at line 105 decides whether to install Undici globals:
+
+```ts
+// packages/coding-agent/src/core/http-dispatcher.ts:105
+const shouldInstallGlobals =
+  installedGlobalFetch === undefined
+    ? globalThis.fetch === originalGlobalFetch
+    : globalThis.fetch === installedGlobalFetch;
+if (shouldInstallGlobals) {
+  undici.install?.();
+  installedGlobalFetch = globalThis.fetch;
+}
+```
+
+An override installed before module loading becomes the captured original and is replaced.
+The verified fixture workaround imports this dispatcher first,
+then installs its own fetch function before starting the native CLI.
+This uses the source's explicit preservation of overrides installed after module loading.
+It changes fixture setup order only;
+installed Pi source and the production transport remain unchanged.
+
+The failed catalog is `${HOME}/temp/agent/pi-native-installed-live-qjVj0h`.
+The corrected capture at `${HOME}/temp/agent/pi-native-installed-live-UFBJsm`
+uses synthetic credentials,
+no network access,
+the observed literal read program,
+and the original configured extension graph.
+It captures 84 questions and 73 source occurrences without executing the governed read.
+The owning local fixture is `${HOME}/temp/agent/pi-capacity-offline.test.ts`.
+
+No upstream filing is proposed.
+The behavior follows the inspected dispatcher contract;
+this is a fixture-order correction,
+not an established upstream defect.
+An upstream change is possible but unnecessary for supported post-load overrides.
+Contribution policy and willingness were not investigated,
+and no upstream patch prototype is needed for the verified caller-side correction.
+
 ## Pi 1.1.0 retained callback options shift an owned source fixture
 
 ### Symptom and cause
