@@ -3,19 +3,26 @@
 //! every case there has a test below with the same behavior, and the injected push counts invocations.
 
 use super::*;
+use crate::bounded_push::LOCK_WAIT_VARIABLE;
 use crate::owner_lock::{SilentWait, acquire_owner_lock as acquire_lock};
 use crate::owner_lock_record::{
     OWNER_LOCK_RECORD_FILENAME, OwnerLockRecord, encode_owner_lock_record,
 };
 use crate::test_support::{fixture, git, remove};
 use std::sync::mpsc;
+use std::time::Duration;
 
 /// The branch every case pushes.
 const BRANCH: &str = "refs/heads/main";
 
+/// Seconds a fixture coordinator waits for a lock before it reports the lock as stuck:
+///  a regression that waits behind a lock the test holds fails here instead of hanging the run.
+const FIXTURE_LOCK_WAIT_SECONDS: &str = "20";
+
 /// Environment of the fixture Git, matching the test support fixtures.
 fn fixture_environment() -> Vec<(OsString, OsString)> {
     return [
+        (LOCK_WAIT_VARIABLE, FIXTURE_LOCK_WAIT_SECONDS),
         ("PATH", "/usr/bin:/bin"),
         ("GIT_CONFIG_NOSYSTEM", "1"),
         ("GIT_CONFIG_GLOBAL", "/nonexistent-global-config"),
@@ -563,5 +570,84 @@ fn coordination_files_live_under_the_common_git_directory_shared_by_linked_workt
         common.join("refs%2Fheads%2Fside.last-pushed.json")
     );
     remove(&linked);
+    remove(&root);
+}
+
+/// A lock held by a live process that never lets go ends the wait at the configured limit
+///  with a refusal naming the lock,
+///  without pushing and without touching the holder's lock.
+#[test]
+fn a_lock_held_past_the_wait_limit_is_reported_and_left_in_place() {
+    let root = repository("sf-lock-timeout");
+    let landed = commit(&root, "one");
+    let paths = paths_of(&root);
+    let held =
+        acquire_lock(&paths.lock_directory, DEFAULT_POLL_DELAY, &mut SilentWait).expect("held");
+    let mut git = push_git(&root);
+    git.environment
+        .push((OsString::from(LOCK_WAIT_VARIABLE), OsString::from("1")));
+    let mut pushes = 0;
+    let mut waits = 0;
+    let started = std::time::Instant::now();
+    let failure = run_single_flight_push(
+        &git,
+        BRANCH,
+        &landed,
+        &mut || {
+            pushes += 1;
+            return Ok(success());
+        },
+        &mut || {
+            waits += 1;
+        },
+    )
+    .expect_err("the held lock refuses the coordinator");
+    let elapsed = started.elapsed();
+    assert!(elapsed >= Duration::from_secs(1), "{elapsed:?}");
+    assert!(elapsed < Duration::from_secs(15), "{elapsed:?}");
+    assert_eq!((pushes, waits), (0, 1));
+    match &failure {
+        SingleFlightError::Lock(OwnerLockError::WaitTimedOut {
+            path, holder_pid, ..
+        }) => {
+            assert_eq!(path, &paths.lock_directory);
+            assert_eq!(*holder_pid, Some(i64::from(std::process::id())));
+        }
+        other => panic!("expected a lock timeout, got {other}"),
+    }
+    assert!(
+        failure.to_string().contains("gave up after waiting 1 seconds"),
+        "{failure}"
+    );
+    assert_eq!(held.directory(), paths.lock_directory.as_path());
+    assert!(paths.lock_directory.exists(), "the holder's lock stays");
+    drop(held);
+    remove(&root);
+}
+
+/// A failed Git query names the arguments it ran in its error text.
+#[test]
+fn a_failed_query_names_its_arguments() {
+    let root = repository("sf-query-failure");
+    let failure = git_output(
+        &push_git(&root),
+        &argv(&["rev-parse", "--verify", "no-such-ref^{commit}"]),
+    )
+    .expect_err("an unknown ref fails");
+    match &failure {
+        SingleFlightError::Git {
+            arguments, code, ..
+        } => {
+            assert_eq!(arguments, "rev-parse --verify no-such-ref^{commit}");
+            assert_eq!(*code, Some(128));
+        }
+        other => panic!("expected a Git failure, got {other}"),
+    }
+    assert!(
+        failure
+            .to_string()
+            .starts_with("git rev-parse --verify no-such-ref^{commit} exited with Some(128): "),
+        "{failure}"
+    );
     remove(&root);
 }

@@ -501,3 +501,113 @@ fn failures_are_described() {
         "no source"
     );
 }
+
+/// A live holder that never releases makes a bounded wait give up after its limit,
+///  naming the holder and leaving its lock untouched.
+#[cfg(target_os = "linux")]
+#[test]
+fn a_bounded_wait_gives_up_on_a_live_holder_and_leaves_its_lock() {
+    let root: PathBuf = fixture("owner-lock-timeout");
+    let lock_directory: PathBuf = root.join("push.lock");
+    let mut sleeper: Child = Command::new("sleep").arg("60").spawn().expect("sleeper");
+    let pid: i64 = i64::from(sleeper.id());
+    let identity: String = process_birth_identity(pid).expect("probe").expect("alive");
+    plant(lock_directory.as_path(), pid, identity.as_str(), "foreign");
+    let mut counter: WaitCounter = WaitCounter::default();
+    let started: Instant = Instant::now();
+    let failure: OwnerLockError = acquire_owner_lock_for(
+        lock_directory.as_path(),
+        Duration::from_millis(5),
+        &mut counter,
+        Duration::from_millis(150),
+    )
+    .expect_err("a live holder keeps the lock");
+    let elapsed: Duration = started.elapsed();
+    assert!(
+        elapsed >= Duration::from_millis(150),
+        "waited the whole limit: {elapsed:?}"
+    );
+    assert!(
+        elapsed < Duration::from_secs(20),
+        "gave up promptly: {elapsed:?}"
+    );
+    assert_eq!(counter.count, 1);
+    match failure {
+        OwnerLockError::WaitTimedOut {
+            path,
+            waited,
+            holder_pid,
+        } => {
+            assert_eq!(path, lock_directory);
+            assert!(waited >= Duration::from_millis(150));
+            assert_eq!(holder_pid, Some(pid));
+        }
+        other => panic!("expected a timeout, got {other}"),
+    }
+    assert_eq!(token_of(lock_directory.as_path()), "foreign");
+    sleeper.kill().expect("kill");
+    sleeper.wait().expect("reap");
+    assert_eq!(
+        entries(root.as_path()),
+        ["push.lock"],
+        "no candidate remains"
+    );
+    remove(root.as_path());
+}
+
+/// A bounded wait that finds the lock free, or freed within its limit, takes it
+///  without a timeout.
+#[test]
+fn a_bounded_wait_takes_a_free_lock_and_one_freed_in_time() {
+    let root: PathBuf = fixture("owner-lock-bounded-free");
+    let lock_directory: PathBuf = root.join("push.lock");
+    let mut counter: WaitCounter = WaitCounter::default();
+    let first: OwnerLock = acquire_owner_lock_for(
+        lock_directory.as_path(),
+        DEFAULT_POLL_DELAY,
+        &mut counter,
+        Duration::ZERO,
+    )
+    .expect("a free lock is taken even with no time to wait");
+    assert_eq!(counter.count, 0);
+    first.release().expect("release");
+    let mut holder: Child = start_holder(root.as_path(), lock_directory.as_path(), 300);
+    let second: OwnerLock = acquire_owner_lock_for(
+        lock_directory.as_path(),
+        DEFAULT_POLL_DELAY,
+        &mut counter,
+        Duration::from_secs(60),
+    )
+    .expect("freed within the limit");
+    assert_eq!(counter.count, 1);
+    assert!(holder.wait().expect("helper exit").success());
+    second.release().expect("release");
+    remove(root.as_path());
+}
+
+/// The timeout text names the lock,
+///  the waiting time and the holder when known.
+#[test]
+fn a_timeout_is_described_with_the_lock_and_the_holder() {
+    let path: PathBuf = PathBuf::from("/repo/.git/cli-git/push.lock");
+    assert_eq!(
+        OwnerLockError::WaitTimedOut {
+            path: path.clone(),
+            waited: Duration::from_millis(661_900),
+            holder_pid: Some(80782),
+        }
+        .to_string(),
+        "gave up after waiting 661 seconds for the owner lock /repo/.git/cli-git/push.lock, \
+         which process 80782 still holds; the lock was left in place"
+    );
+    assert_eq!(
+        OwnerLockError::WaitTimedOut {
+            path,
+            waited: Duration::from_secs(3),
+            holder_pid: None,
+        }
+        .to_string(),
+        "gave up after waiting 3 seconds for the owner lock /repo/.git/cli-git/push.lock, \
+         which a process whose record could not be read still holds; the lock was left in place"
+    );
+}

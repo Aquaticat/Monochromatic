@@ -18,12 +18,14 @@ use super::auto_push_single_flight::{
     PushAttempt, PushGit, SingleFlightError, SingleFlightKind, SingleFlightOutcome, git_command,
     run_single_flight_push,
 };
+/// The deadline-bound push runner and the limits it applies.
+use super::bounded_push::{STOP_GRACE, apply_low_speed_defaults, push_deadline, run_bounded_push};
 /// The diagnostic log of the wrapper.
 use super::diagnostic_log::debug;
 /// Owned OS strings for Git arguments.
 use std::ffi::OsString;
-/// `Read` drains a pipe; `Write` is the stderr sink the terminal lines go to.
-use std::io::{Read, Write};
+/// `Write` is the stderr sink the terminal lines go to.
+use std::io::Write;
 /// `Stdio` connects the child's standard input.
 use std::process::Stdio;
 
@@ -155,10 +157,12 @@ fn read_symbolic_head(git: &PushGit) -> Result<Option<String>, SingleFlightError
 }
 
 /// What:
-///  Run one real `git push` and capture its interleaved output, with one trailing line break removed.
+///  Run one real `git push` and capture its interleaved output, with one trailing line break removed,
+///  stopping it when its deadline passes.
 /// Why:
-///   Git's output of stdout and stderr shares one pipe so the lines interleave in the order they were written,
-///  and the trailing line break is removed as the incumbent's captured output is.
+///   Git's output of stdout and stderr shares one file so the lines interleave in the order they were written,
+///  the trailing line break is removed as the incumbent's captured output is,
+///  and a push that stalls must not hold the branch's push lock forever.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -166,39 +170,9 @@ fn read_symbolic_head(git: &PushGit) -> Result<Option<String>, SingleFlightError
 /// ```
 fn run_push_command(git: &PushGit, arguments: &[&str]) -> Result<PushAttempt, SingleFlightError> {
     let argv: Vec<OsString> = arguments.iter().map(OsString::from).collect();
-    let (mut reader, writer) = std::io::pipe().map_err(SingleFlightError::Start)?;
-    let writer_for_stderr = writer.try_clone().map_err(SingleFlightError::Start)?;
     let mut command = git_command(git, &argv);
-    command
-        .stdin(Stdio::null())
-        .stdout(writer)
-        .stderr(writer_for_stderr);
-    let mut child = command.spawn().map_err(SingleFlightError::Start)?;
-    drop(command);
-    let mut bytes: Vec<u8> = Vec::new();
-    reader
-        .read_to_end(&mut bytes)
-        .map_err(SingleFlightError::Start)?;
-    let status = child.wait().map_err(SingleFlightError::Start)?;
-    let text = String::from_utf8_lossy(&bytes);
-    return Ok(PushAttempt {
-        exit_code: i64::from(status.code().unwrap_or(1)),
-        output: strip_one_line_break(&text).to_owned(),
-    });
-}
-
-/// Remove exactly one trailing `\n` or `\r\n`, as the captured output of the incumbent does.
-///
-/// In TS you'd write (pseudocode):
-/// ```ts
-/// output.endsWith('\n') ? output.slice(0, output.endsWith('\r\n') ? -2 : -1) : output
-/// ```
-fn strip_one_line_break(text: &str) -> &str {
-    let without_lf = match text.strip_suffix('\n') {
-        Some(stripped) => stripped,
-        None => return text,
-    };
-    return without_lf.strip_suffix('\r').unwrap_or(without_lf);
+    apply_low_speed_defaults(&mut command, &git.environment);
+    return run_bounded_push(command, push_deadline(&git.environment), STOP_GRACE);
 }
 
 /// What:

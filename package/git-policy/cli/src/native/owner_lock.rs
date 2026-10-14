@@ -35,8 +35,8 @@ use super::process_identity::{ProcessIdentityError, current_birth_identity};
 use super::random_id::{RandomSourceError, random_uuid};
 /// `Path`/`PathBuf` are borrowed/owned filesystem paths.
 use std::path::{Path, PathBuf};
-/// `Duration` is a span of time.
-use std::time::Duration;
+/// `Duration` is a span of time; `Instant` is a point on a clock that never goes backwards.
+use std::time::{Duration, Instant};
 
 /// Delay between acquisition attempts while a live owner holds the lock.
 pub const DEFAULT_POLL_DELAY: Duration = Duration::from_millis(20);
@@ -73,6 +73,16 @@ pub enum OwnerLockError {
     },
     /// The lock named another owner when this holder released it.
     OwnershipChanged(PathBuf),
+    /// A live owner still held the lock when the caller's wait limit ran out.
+    WaitTimedOut {
+        /// The lock that stayed held.
+        path: PathBuf,
+        /// How long the caller waited.
+        waited: Duration,
+        /// The live holder's process ID,
+        ///  when its record could be read.
+        holder_pid: Option<i64>,
+    },
 }
 
 /// What:
@@ -115,6 +125,23 @@ impl std::fmt::Display for OwnerLockError {
                 return write!(
                     formatter,
                     "the owner lock {} changed owner while it was held",
+                    path.display()
+                );
+            }
+            Self::WaitTimedOut {
+                path,
+                waited,
+                holder_pid,
+            } => {
+                let holder: String = match holder_pid {
+                    Some(pid) => format!("process {pid}"),
+                    None => String::from("a process whose record could not be read"),
+                };
+                return write!(
+                    formatter,
+                    "gave up after waiting {} seconds for the owner lock {}, which {holder} still holds; \
+                     the lock was left in place",
+                    waited.as_secs(),
                     path.display()
                 );
             }
@@ -639,26 +666,25 @@ impl WaitNotice for SilentWait {
 
 /// What:
 ///  Acquire a lock,
-///  waiting without bound while a live owner holds it.
-///       `notice` is told once,
-///  when the first attempt finds the lock busy;
-///       `&mut dyn WaitNotice` lends any value implementing that interface.
+///  waiting at most `limit` while a live owner holds it,
+///  or without bound when `limit` is `None`.
 /// Why:
-///   The wait is unbounded by contract while the owner lives;
-///  a dead owner's lock is
-///       retired on the next attempt.
-///  One process record is used for every attempt.
+///   One loop serves both contracts,
+///  so the bounded and the unbounded wait cannot drift apart.
+///  The elapsed time is measured on a clock that never goes backwards.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// async function acquireOwnerLock({ lockDirectory, pollDelayMs = 20, onWait }): Promise<OwnerLock>;
+/// async function acquireWithin({ lockDirectory, pollDelayMs, onWait, limitMs }): Promise<OwnerLock>;
 /// ```
-pub fn acquire_owner_lock(
+fn acquire_within(
     lock_directory: &Path,
     poll_delay: Duration,
     notice: &mut dyn WaitNotice,
+    limit: Option<Duration>,
 ) -> Result<OwnerLock, OwnerLockError> {
     let record: OwnerLockRecord = current_owner_record(None)?;
+    let started: Instant = Instant::now();
     // `mut` lets the loop remember that the wait was announced.
     let mut notified: bool = false;
     loop {
@@ -669,8 +695,68 @@ pub fn acquire_owner_lock(
             notified = true;
             notice.waiting();
         }
+        if let Some(limit) = limit
+            && started.elapsed() >= limit
+        {
+            let holder_pid: Option<i64> = match read_owner(lock_directory) {
+                Ok(PublishedOwner::Owner(published)) => Some(published.owner_pid),
+                Ok(PublishedOwner::Busy) | Err(_) => None,
+            };
+            return Err(OwnerLockError::WaitTimedOut {
+                path: lock_directory.to_path_buf(),
+                waited: started.elapsed(),
+                holder_pid,
+            });
+        }
         std::thread::sleep(poll_delay);
     }
+}
+
+/// What:
+///  Acquire a lock,
+///  waiting without bound while a live owner holds it.
+///       `notice` is told once,
+///  when the first attempt finds the lock busy;
+///       `&mut dyn WaitNotice` lends any value implementing that interface.
+/// Why:
+///   The wait is unbounded by contract while the owner lives;
+///  a dead owner's lock is
+///       retired on the next attempt.
+///  One process record is used for every attempt.
+///  Callers that must never hang use `acquire_owner_lock_for`.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// async function acquireOwnerLock({ lockDirectory, pollDelayMs = 20, onWait }): Promise<OwnerLock>;
+/// ```
+pub fn acquire_owner_lock(
+    lock_directory: &Path,
+    poll_delay: Duration,
+    notice: &mut dyn WaitNotice,
+) -> Result<OwnerLock, OwnerLockError> {
+    return acquire_within(lock_directory, poll_delay, notice, None);
+}
+
+/// What:
+///  Acquire a lock,
+///  giving up with `OwnerLockError::WaitTimedOut` once `limit` has passed while a live owner holds it.
+/// Why:
+///   A holder that is alive but stuck would otherwise stall every waiter forever.
+///  The held lock is never taken over,
+///  because a live owner may still be inside its critical section;
+///  the caller decides what a refusal means.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// async function acquireOwnerLockFor({ lockDirectory, pollDelayMs, onWait, limitMs }): Promise<OwnerLock>; // rejects after limitMs
+/// ```
+pub fn acquire_owner_lock_for(
+    lock_directory: &Path,
+    poll_delay: Duration,
+    notice: &mut dyn WaitNotice,
+    limit: Duration,
+) -> Result<OwnerLock, OwnerLockError> {
+    return acquire_within(lock_directory, poll_delay, notice, Some(limit));
 }
 
 /// Lock contention,

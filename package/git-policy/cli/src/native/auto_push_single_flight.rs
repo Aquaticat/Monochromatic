@@ -19,10 +19,11 @@ use super::auto_push_record::{
     LAST_PUSHED_SUFFIX, LastPushedOutcome, LastPushedRead, LastPushedRecord,
     read_last_pushed_record, write_last_pushed_record,
 };
+use super::bounded_push::lock_wait_limit;
 use super::diagnostic_log::debug;
 use super::js_text::trim_javascript;
 use super::owner_lock::{
-    DEFAULT_POLL_DELAY, OwnerLock, OwnerLockError, WaitNotice, acquire_owner_lock,
+    DEFAULT_POLL_DELAY, OwnerLock, OwnerLockError, WaitNotice, acquire_owner_lock_for,
 };
 /// Owned OS strings for Git arguments and the child environment.
 use std::ffi::OsString;
@@ -423,9 +424,14 @@ pub fn run_single_flight_push(
         return Ok(joined_outcome(record));
     }
     let mut observer = WaitObserver { on_wait };
-    let lock: OwnerLock =
-        acquire_owner_lock(&paths.lock_directory, DEFAULT_POLL_DELAY, &mut observer)
-            .map_err(SingleFlightError::Lock)?;
+    // A live holder that outlives its own push deadline is stuck; waiting forever behind it would stall every commit.
+    let lock: OwnerLock = acquire_owner_lock_for(
+        &paths.lock_directory,
+        DEFAULT_POLL_DELAY,
+        &mut observer,
+        lock_wait_limit(&git.environment),
+    )
+    .map_err(SingleFlightError::Lock)?;
     let after = read_record(&paths.record_path)?;
     let late = match &after {
         LastPushedRead::Record(record)

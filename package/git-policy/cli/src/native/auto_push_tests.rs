@@ -5,6 +5,7 @@ use super::*;
 use crate::test_support::{fixture, git, remove};
 use std::os::unix::fs::PermissionsExt;
 use std::path::{Path, PathBuf};
+use std::time::Duration;
 
 /// Marker the bare remote's post-receive hook prints, which Git relays as `remote: <marker>`.
 const REMOTE_HOOK_MARKER: &str = "marker-from-receive-hook";
@@ -336,5 +337,72 @@ fn surfaces_a_push_coordination_failure_as_a_failed_push_instead_of_erroring() {
     assert!(!result.shown.is_empty());
     assert!(err.contains("could not run"), "{err}");
     assert_eq!(read_log(&log), "");
+    remove(&root);
+}
+
+/// A push that stalls past its deadline is stopped and reported as a failed push,
+///  and the push lock is free for the next commit.
+#[test]
+fn a_stalled_push_is_stopped_and_reported_as_a_failed_push() {
+    let root = fixture("ap-stalled");
+    let (repo, log) = repo_with_remote_and_pre_push(&root, 0);
+    let hooks = root.join("hooks");
+    let hook = hooks.join("pre-push");
+    std::fs::write(&hook, "#!/bin/sh\necho stalling\nexec sleep 60\n").expect("stalling hook");
+    std::fs::set_permissions(&hook, std::fs::Permissions::from_mode(0o755)).expect("mode");
+    let mut git = push_git(&repo);
+    git.environment.push((
+        OsString::from(crate::bounded_push::PUSH_DEADLINE_VARIABLE),
+        OsString::from("1"),
+    ));
+    let mut err: Vec<u8> = Vec::new();
+    let started = std::time::Instant::now();
+    let result = auto_push(&git, &head_oid(&repo), &mut err).expect("auto-push");
+    let elapsed = started.elapsed();
+    let shown = String::from_utf8_lossy(&err).into_owned();
+    assert!(elapsed >= Duration::from_secs(1), "{elapsed:?}");
+    assert!(elapsed < Duration::from_secs(30), "{elapsed:?}");
+    assert_eq!(result.outcome, AutoPushOutcome::Failed);
+    assert_eq!(result.exit_code, crate::bounded_push::STOPPED_EXIT_CODE);
+    assert!(
+        result.shown.contains("did not finish within 1 seconds"),
+        "{}",
+        result.shown
+    );
+    assert!(shown.contains(PUSH_FAILED_NOTE), "{shown}");
+    assert_eq!(read_log(&log), "", "the replaced hook logs nothing");
+    // The failure is recorded and the lock released, so a later commit coordinates normally.
+    let lock_directory = std::fs::read_dir(repo.join(".git").join("cli-git").join("push"))
+        .expect("coordination directory")
+        .map(|entry| return entry.expect("entry").file_name())
+        .collect::<Vec<OsString>>();
+    assert!(
+        !lock_directory
+            .iter()
+            .any(|name| return name.to_string_lossy().ends_with(".lock")),
+        "{lock_directory:?}"
+    );
+    remove(&root);
+}
+
+/// The default environment of an auto-push gives Git's low-speed abort to the push it runs.
+#[test]
+fn a_push_runs_with_git_s_low_speed_abort_unless_the_person_set_one() {
+    let root = fixture("ap-low-speed");
+    let (repo, _log) = repo_with_remote_and_pre_push(&root, 0);
+    let hook = root.join("hooks").join("pre-push");
+    let seen = root.join("seen.txt");
+    std::fs::write(
+        &hook,
+        format!(
+            "#!/bin/sh\necho \"$GIT_HTTP_LOW_SPEED_LIMIT $GIT_HTTP_LOW_SPEED_TIME\" > '{}'\n",
+            seen.display()
+        ),
+    )
+    .expect("hook");
+    std::fs::set_permissions(&hook, std::fs::Permissions::from_mode(0o755)).expect("mode");
+    let (attempted, _err) = run(&repo, &head_oid(&repo));
+    assert_eq!(attempted.expect("auto-push").outcome, AutoPushOutcome::Pushed);
+    assert_eq!(read_log(&seen), "1000 60\n");
     remove(&root);
 }

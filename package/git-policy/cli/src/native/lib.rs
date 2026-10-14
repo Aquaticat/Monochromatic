@@ -801,6 +801,9 @@ pub mod auto_push_branch_key;
 /// The per-branch `last-pushed` record: validation, tolerant reads and atomic publication.
 pub mod auto_push_record;
 
+/// The auto-push's real `git push` with a deadline, its low-speed abort and the lock wait limit derived from it.
+pub mod bounded_push;
+
 /// Single-flight push coordination per branch: owner lock, record joins and the push itself.
 pub mod auto_push_single_flight;
 
