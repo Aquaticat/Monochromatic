@@ -52,6 +52,7 @@ const env=await createEnvironment({
   hostPrompt:'Fixture background.',
   useNativeProvider:sdkStream,
   additionalExtensionPaths:configuredExtensions.map(function configuredExtensionPath(resource){return resource.path;}),
+  expectedBlockedNetworkUrls:configuredExtensions.some(function syntheticCatalog(resource){return resource.metadata?.source==='npm:@benvargas/pi-synthetic-provider';})?['https://api.synthetic.new/openai/v1/models']:[],
   extensionFactories:unobservedContext?[function registerUnobservedContextHandler(pi) {pi.on('turn_start',function countUnobservedContextCall() {contextCalls++;});}]:observedContext?[function registerObservedContextHandlers(pi) {
    pi.on('context',function retainOriginalContextInput(event) {
     contextCalls++;
@@ -376,5 +377,5 @@ try{
    receiptControl
  }));
 
-}finally{session.dispose();await session.agent
+}catch(error){console.error(error);throw error;}finally{session.dispose();await session.agent
   .waitForIdle();runtime.detach();await env.drain();}
