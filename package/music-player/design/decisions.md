@@ -3350,6 +3350,75 @@ either input, neither the always visible draggable bar for the pointer nor the f
 - Tests: two window tests in `desktop-app/src/ui_lists_window_tests.rs` assert that the picker has no scrollbar in the
   wide and the folded layout on both inputs, while the track list keeps its own bar in the wide layout.
 
+### D126. The Search page is restyled on Android within the earlier decisions (2026-10-14)
+
+The human accepted option 1 of `doc/planning/android-search-page-refresh.md` ("Restyle within decisions") after the
+proposal compared the Search page with the stock Search screen of Android Settings, and ruled on its conflicts.
+
+- Direction: restyle our own composables inside the accepted decisions, with no new color role and no new library
+  component. R2 of the proposal is adopted as part of it: the header is the canvas color, not the
+  `surfaceContainerHigh` band, and the divider uses `outlineVariant`, not `outline`. D48 keeps its anatomy (72 dp
+  header, Back, query, Clear, divider); only the fill and the divider role change.
+- No section labels: results stay one list mixed by relevance (D52, D61). The grouped rounded cards and the tinted page
+  of the proposal's option 4 are not adopted (A2, D109, B1).
+- No recents list on the empty page (D66, D70 stand).
+- Desktop parity is wanted. The Slint port is a separate follow-up task; this change touches no desktop file. The
+  specification below is what the port copies.
+- Not diagnosed items of the proposal, read from the code and not changed (D66 covers a new visit, not a posture
+  change): the query survives a fold change because `PlayerHost` keeps it with `rememberSaveable` next to the route,
+  and a second `lan` typed after `Ctrl+F` landed between the two because `Ctrl+F` on an open Search page only refocuses
+  the field (`focusSearch`), and the field's caret restarts at the beginning of the text whenever the page rebuilds the
+  header for the other panel (`BasicTextField(value: String)` keeps its selection in a `remember` that the layout
+  switch drops). Both are consequences of earlier designs, not violations of D66, so they are reported and left open.
+
+What stays: D58 columns (Back center and result glyph center share one x, query start and title start share one x),
+D59 highlight, D63 to D80 focus and keyboard behavior, D66 and D70 copy, D76 (not a focus trap), D50 and D51 layout
+(the deck stays visible and Search is the right half of the unfolded panel), the shared OKLCH roles and the 52-root Rust
+and Kotlin fixture (`ThemeRoles.kt`, `theme_roles.rs` and the fixture are untouched), and true-black dark (B1).
+
+#### Specification for the desktop port
+
+Sizes are dp on Android and logical px on desktop; roles are the shared theme roles (Slint `Theme.<role>` with dashes).
+Copy and the Rust page model do not change.
+
+- Header: 72 high, filled with `canvas` (pure white in light, pure black in dark), so the status strip above it, the
+  header and the results are one tone. Remove the `Theme.surface-high` fill. Back and Clear keep their 48 targets, 40
+  circular state layers and 24 glyphs at the same x as before.
+- Divider: 1 high, full pane width, directly under the header (y = 72), role `outline-variant` (was `outline`).
+- Result row, flat on the canvas at rest, minimum height 72:
+  the row's rounded shape spans from 8 after the pane's start inset origin to 8 before the pane's end inset
+  (x from `content-start-x - 8` to `width - end-inset + 8`), corner radius 21.3 on all four corners, and the row
+  content is padded 8 on each side so every glyph and title keeps its D58 x.
+  On the inner panel `content-start-x` already holds half the crease plus 16, so the shape starts 8 after the crease
+  clear zone and never inside it.
+- Row icon: a 48 wide slot at the content start holding a 40 circle, centered in the slot (4 inside its edge), filled
+  `secondary-container`, with the folder or music glyph at 24, centered, in `on-secondary-container`. The title starts
+  at the content start plus 48 with no extra gap. The kind label stays on the glyph for assistive technology (D77).
+- Row states: the hover and pressed layers (and the Android indication) are clipped to the 21.3 rounded shape. The
+  keyboard highlight is the D117 pair of solid rings, drawn just inside the same rounded shape (D120): the outer ring
+  1 wide in `on-primary` at the shape's edge, the near ring 2 wide in `primary` inside it, following the 21.3 corners,
+  shown for keyboard focus only, with no fill, tint, bold or size change. The ring and the state layers never leave the
+  shape.
+- Empty and no-result states (all five status states share one block): the block starts 72 below the divider's bottom
+  edge on both layouts (no longer centered in the body), and it holds, top to bottom: a 72 circle filled
+  `secondary-container` holding the 32 magnifier glyph in `on-secondary-container`; 24 below it the title in the
+  Material 3 `titleMedium` role (16 on a 24 line, tracking 0.15) at weight 500 (was `titleLarge` at 600); then the
+  support line in `bodyMedium` in `on-surface-variant`, 8 below the title on the cover and 12 on the inner panel.
+  Cover: block centered horizontally, 16 side padding. Inner: block left aligned at the content start, the circle's left
+  edge at `content-start-x`.
+- Keyboard clearance: on Android the cover block is padded by the keyboard and navigation insets, like the result list,
+  and scrolls when the space above the keyboard is shorter than the block (large text, split or floating keyboard).
+  The inner panel was already lifted by its row inset and also scrolls. Desktop has no on-screen keyboard; it keeps
+  the block scrollable when the window is short.
+- Unchanged on desktop and Android: highlight (bold plus the match fill role, square corners), result copy,
+  second line, the 72 minimum row height, scrolling, the key hint rule (the Android app has no key hint badges; on
+  desktop a hint badge slot at the row's end keeps its place inside the rounded shape's end padding).
+
+Verification of the Android side, with the commit's tests: pixel and geometry cases in `SearchPageWiringTest` (header
+and status strip pixels equal the canvas in both schemes, divider pixel is `outlineVariant`, the 40 and 72 circles,
+the keyboard inset, D58 columns on both panels, the ring inside the rounded row) and `SearchLayoutTest`, and a
+headful emulator pass on the Fold (cover, inner panel, light, dark, keyboard open, Tab focus, 200 percent text).
+
 ## Pending after the theme picks (2026-09-04)
 
 - **Order of remaining work** — my recommendation:

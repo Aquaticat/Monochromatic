@@ -118,6 +118,20 @@ They cover the Compose call sites that no pure function can reach:
 - where a page opens, what a reveal and a folder reveal scroll to, and that a track change alone never scrolls,
 - that a track added to the shown folder gets its row and supporting line, and a folder change opens its page,
 - that the next measure pass starts at the first visible track, seen through a recording content provider.
+- the Search page restyle (D126), in `SearchPageWiringTest`, which renders `searchPage` itself with Robolectric native
+  graphics (`@GraphicsMode(NATIVE)`) and reads pixels back with `captureToImage`:
+  the status strip and the header read the canvas color (no band) in light and in true-black dark,
+  the divider pixel is `outlineVariant`, a result glyph sits in a 40 dp `secondaryContainer` circle that is round at its
+  corners, the empty state has a 72 dp circle and stays above an invented 300 dp keyboard (also at 200 percent text),
+  the title and glyph keep the header's columns on the cover and on the inner panel (D58) with the rounded row shape
+  8 dp before them and outside the crease clear zone,
+  the keyboard ring sits just inside the rounded row (outer ring at the edge, near ring inside it, corner bare),
+  and the row clips its indication to the rounded shape.
+  The window insets are dispatched to the composition root with `ViewCompat.dispatchApplyWindowInsets`,
+  and keyboard focus needs `InputModeManager.requestInputMode(InputMode.Keyboard)` first,
+  because a Compose test starts in touch mode, in which buttons and rows cannot take focus.
+  The host cannot draw a press ripple into a capture, so the shape of the indication is checked with Material's focus
+  layer instead; a press on a device is part of the emulator pass.
 
 The waits for a scroll or for a background measure pass use `waitUntil` with a wall-clock limit,
 and every `@Test` has a `timeout`,
@@ -326,6 +340,24 @@ which re-answers in place:
 the query, the caret and the scroll position stay,
 and results are keyed by track so a row the user is about to tap does not move.
 While a scan runs an empty answer reads "Still looking through your library" and the Search button stays enabled.
+
+### Search page style
+
+D126 restyled the page within the earlier decisions; the geometry is in
+[`core/SearchLayout.kt`](app/src/main/kotlin/dev/monochromatic/musicplayer/core/SearchLayout.kt) and the drawing in
+[`SearchPage.kt`](app/src/main/kotlin/dev/monochromatic/musicplayer/SearchPage.kt).
+The status strip, the header and the results are the canvas color (pure white or pure black),
+with a 1 dp `outlineVariant` divider under the 72 dp header.
+A result row is flat on the canvas with a 40 dp `secondaryContainer` circle holding its 24 dp glyph,
+centered in the same 48 dp slot as Back (D58),
+and a rounded 21.3 dp shape that starts 8 dp before the content
+and carries the press indication and the keyboard ring just inside its edge (D117, D120).
+The empty and no-result states put a 32 dp magnifier in a 72 dp `secondaryContainer` circle
+above a `titleMedium` title at weight 500.
+They start 72 dp under the divider on both panels,
+are padded by the keyboard and navigation insets on the cover,
+and scroll when the space above the keyboard is short.
+The exact specification that the desktop page copies is in `package/music-player/design/decisions.md` (D126).
 
 `./gradlew :app:testDebugUnitTest` includes the 1,000,000-track cases, so its test JVM runs with a 3 GiB heap and the
 serial collector (`app/build.gradle.kts`): G1's loop strip mining made short counted loops about twenty times slower on
