@@ -51,9 +51,13 @@ The operating instructions live in `doc/runbook/claude-cpu-cap.md`.
   Current curve: 30% at 40, 45% at 50, 60% at 60, 100% at 61 and above (saved by the user about 18:57 EDT).
   The fan profile belongs to the user now; this session does not edit it unless asked.
 - Session-only items that die with the session: the Monitor (30-minute expiry, re-arm each time) and a one-shot cron
-  check (job `df76cdac`, 23:19 EDT on 2026-10-13) that ends the watch if nothing weird happened.
+  check (job `d7488671`, 00:13 EDT on 2026-10-14) that ends the watch if nothing weird happened.
   It was first set for 21:19 (job `90c90261`), pushed back to 22:05 (job `f4aeb83b`) after the CPU pressure alert at
-  18:02:37, then to 23:19 after the memory pressure alert at 19:16:45 (the latest weird event so far).
+  18:02:37, to 23:19 (job `df76cdac`) after the memory pressure alert at 19:16:45, then to 00:13 after the CPU
+  pressure alert at 20:11:41 (the latest weird event so far).
+- The 20:11:41 CPU pressure alert (46.1, limit 40) came at cap 30 and 130 W. It was the first sustained load in the
+  log: about 55 seconds at 125 to 136 W, load average up to 57 on 32 threads, pressure up to 67.8, and it cleared at
+  17.2 within a minute. Tctl stayed below 95, so the cap was left at 30. Its numbers are in the evidence section.
 - The 19:16:45 memory pressure alert (16.4, limit 10) came at cap 30 and 132 W; it cleared at 3.7 within about a minute.
   Tctl was 77.6 degrees and 41 GiB were available. The `claude-code-bash` cgroup held 2 GB of its 8 GB limit, and the
   host ran a 5 GB `qemu-system-x86` process. The cap was left at 30: one short blip is not a degraded system, and
@@ -108,6 +112,17 @@ The operating instructions live in `doc/runbook/claude-cpu-cap.md`.
     `board6_c` move at most 2 degrees. `acpi_c` is constant at 16.8, so it is not informative.
   - Pressure stayed at or under 11.4 and the one-minute load at or under 20 in the window,
     so the 40 limit was not tested.
+- First sustained load, 20:11:38 to 20:12:28 EDT on 2026-10-13 (24 rows, cap 30; script
+  `~/temp/agent/analyze-episode.ts`): package power median 129.7 W (124 to 136), average clock 4490 MHz,
+  Tctl median 88.8 degrees (86.5 to 92, never 95), Tccd1 86.6 and Tccd2 82.9, first fan at 2009 RPM (its top speed),
+  Corsair probe 26.0 degrees. Tctl rose from 75.6 to 87.3 within 10 seconds of the load starting, then stayed flat
+  at 88 to 91 for about 40 seconds, and fell to 64 within 20 seconds of the load ending.
+  Reading: at 130 W with the fans at their top speed, about 89 degrees is a plateau over a 40 second window, not a
+  short peak. This corrects the earlier verdict that about 90 was only a peak (that window had no sustained load).
+  The 94 to 96 degree episodes happened at 135 to 150 W. A longer load could still creep up as the heatsink warms;
+  one 55 second episode cannot rule that out. The quiet-load slope of 0.29 degrees per watt under-predicts this
+  plateau (it predicted about 76 degrees at 130 W), so the slope is steeper at high power.
+  Chiplet 1 drew 42.9 W against 38.8 W for chiplet 2 and ran 3.7 degrees hotter.
 - Memory pressure, measured at 19:30 EDT (the user asked why tasks stall with so much memory in total):
   - The host is not short of memory: `MemAvailable` 45 GiB of 62 GiB, `user-1000.slice` peaked at 46 GB against a
     `memory.high` of 59.8 GB that it never reached (0 high events).
@@ -185,7 +200,11 @@ so the findings come from reading the readable source strings inside the binary 
 ## Open questions
 
 - Which cooler variant is installed, and is it mounted correctly (offset, paste, base shape)?
-- Is 90 degrees a peak or a settled value at a given wattage? The sample log is collecting the answer.
+- How hard is the cooler-to-die path really? The 20:11 plateau gives 88.8 degrees at 130 W with 26 degree ambient,
+  about 0.48 degrees per watt over ambient. Compare it with the 0.32 degrees per watt implied by the one online
+  NH-D15 G2 report (87 degrees at 200 W, assuming a 23 degree ambient that the report does not state, so it is
+  loose). A reseat or mounting check is the
+  next physical step, and it is the user's call.
 - What do the six motherboard readings measure? (The ambient reference is the Corsair probe; see the hardware facts.)
 - The probe cannot touch the fins (answered above), so fin or exhaust temperature stays unmeasured.
   Contact versus airflow now has to be judged from Tctl against watts and fan speed.
