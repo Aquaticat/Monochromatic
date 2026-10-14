@@ -405,6 +405,55 @@ for VFIO passthrough.
   are shared with the old setup. Validate EXPO with memtest86+ on the new board before concluding. The thermal gap is
   a separate problem; a new board does not change heatsink contact.
 
+## Board recommendation (about 23:10 EDT, nothing bought)
+
+The user asked for the final recommendation after the board research above. It rests on forum and retailer text,
+not on a tested board; the checks in the last subsection come before any purchase.
+
+### Requirements it answers
+
+AM5 for the 7950X; the RX 7600 driving four 4K 60 Hz displays plus an RTX 3080 10G on a riser for VFIO; a two-digit
+code display (four status LEDs were rejected); onboard Wi-Fi 5 or newer; 24/7 operation; a 850 W or larger power
+supply; a Corsair 4000D Airflow case; either x8/x8 or the 3080 on the CPU slot with the RX 7600 on a chipset slot.
+The user confirmed seeing a code display on the X870E Taichi Lite, the ROG Crosshair X870E Hero and the X870E Nova
+WiFi.
+
+### Ranking and reasons
+
+1. ASRock X870E Taichi Lite, only if the case takes E-ATX. It is E-ATX (12.0 by 10.5 inches, TechPowerUp and
+   Vortez), x8/x8, code display, Wi-Fi 7, 5 Gb LAN, about 399.99 US dollars at launch (PCMag). Corsair sells the
+   4000D Airflow as a mid-tower ATX case; no 4000D page read says E-ATX fits, so this is unresolved.
+2. ASUS ROG Crosshair X870E Hero. It is ATX (ASUS), x8/x8, Q-Code, Wi-Fi 7 (Qualcomm or MediaTek by unit), 456.90 CHF
+   to 568.90 EUR in the ASUS shop. It is the only candidate with every requirement checked, including the fit.
+3. ASRock X870E Nova WiFi. It is ATX (12.0 by 9.6 inches), with a Dr. Debug display (retailer spec) and Wi-Fi 7, 5 Gb
+   LAN, MSRP 349 US dollars (Tech4Gamers, Tom's Hardware 349.99). Its only chipset slot of full length, PCIE3, runs
+   at PCIe 3.0 x2 (ASRock page) and is disabled when M2_5 is used, so the RX 7600 would get a Gen3 x2 link.
+4. ROG Crosshair X670E Hero: x8/x8 and Wi-Fi 6E, display not confirmed in text read, price not found, older platform.
+
+Pair reasons: the Lite beats the Hero on price and VFIO evidence only if it fits the case; otherwise the Hero is
+first. The Hero beats the Nova because the Nova gives the RX 7600 only a Gen3 x2 slot. The Nova beats the X670E Hero
+because its display is confirmed and it is current. Out: ProArt B850 Neo, ProArt X870E and MSI Tomahawk (status LEDs
+only), ASRock Steel Legend and Pro RS (status LEDs only, per the FAQ table), MSI Carbon (IVRS report on that board),
+Gigabyte boards (IVRS reports).
+
+### Checks before buying
+
+- Open the Corsair 4000D Airflow specification page and read the supported motherboard sizes. If E-ATX is not
+  listed, drop the Taichi Lite.
+- Read the chosen board's own specification page for the slot table and the code display; the retailer text used
+  above can be wrong.
+- Choose the BIOS from the release notes: AGESA 1.3.0.0a or later; ASRock 4.43 has a Reddit title about broken EXPO
+  profiles and long boots.
+- On the new board, boot a live USB of the OGC kernel and confirm Wi-Fi and Bluetooth appear before committing.
+- Run memtest86+ at EXPO 6000 on the new board; it is the only way to tell a board fault from a CPU or DIMM fault.
+- Check the IOMMU groups with the 3080 installed, and keep in mind the thermal gap is a separate problem.
+
+### Risks left open
+
+Dead-CPU reports exist for ASRock AM5 boards (mostly X3D, a few standard Ryzen), and an ASUS burn-up acknowledgment
+is mentioned in one Reddit comment; neither vendor is clean. Memory training trouble appears on both vendors. No
+IOMMU group list for the user's CPU and kernel was seen. The Taichi Lite's Wi-Fi chip is unconfirmed.
+
 ## Open questions
 
 - The user suspects the motherboard (about 21:05 EDT): the Gigabyte B650 GAMING X AX rev 1.3 freezes in the BIOS
