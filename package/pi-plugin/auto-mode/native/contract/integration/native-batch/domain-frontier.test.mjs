@@ -104,8 +104,9 @@ const env=await createEnvironment({
 if(extensionManifestArgument!==undefined){
  const loaded=env.policyInput.loader.getExtensions();
  assert.deepEqual(loaded.errors,[],'Every configured extension must load before its native policy consumer is tested');
- assert.equal(loaded.extensions.length,configuredExtensions.length,'The fixture must retain every configured extension');
- console.log(JSON.stringify({configuredExtensionsLoaded:loaded.extensions.length,eventKinds:[...new Set(loaded.extensions.flatMap(function registeredKinds(extension){return [...extension.handlers.keys()];}))]}));
+ const fixtureExtensionCount=unobservedContext||observedContext||observedProgress?1:0;
+ assert.equal(loaded.extensions.length,configuredExtensions.length+fixtureExtensionCount,'The fixture must retain every configured and control extension');
+ console.log(JSON.stringify({configuredExtensionsLoaded:configuredExtensions.length,fixtureExtensionsLoaded:fixtureExtensionCount,eventKinds:[...new Set(loaded.extensions.flatMap(function registeredKinds(extension){return [...extension.handlers.keys()];}))]}));
 }
 const leaf={
   ...env.createReadToolDefinition(env.options.cwd),

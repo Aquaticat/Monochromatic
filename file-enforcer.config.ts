@@ -642,7 +642,7 @@ async function importBrowserslist(): Promise<BrowserslistResolver> {
  ```
  */
 function selectBrowserslistQueries(
-  { config, }: { readonly config: Readonly<Record<string, readonly string[]>>; },
+  { config, }: { readonly config: Readonly<Record<string, readonly string[] | undefined>>; },
 ): readonly string[] {
   return config[BROWSERSLIST_CONFIG_ENVIRONMENT]
     ?? config['defaults']
@@ -682,6 +682,8 @@ ${
         // The Git policy wrapper's gitignored link directory, created by the mise tool postinstall,
         // must precede every other bin directory.
         '.cache/cli-git-bin',
+        // The maintained native Pi host must precede dependency-provided legacy Pi shims.
+        'package/pi-plugin/auto-mode/bin',
         'node_modules/.bin',
         ...(await Array.fromAsync(glob('package/*/*/node_modules/.bin',),)).toSorted(),
       ]),

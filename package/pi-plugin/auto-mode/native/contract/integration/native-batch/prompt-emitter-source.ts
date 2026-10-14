@@ -352,7 +352,7 @@ export function promptEmitterSource({
   Original input handling retains the same normalization and native dispatch behavior.
   */
  const input=prepareInputEmitter(source);
- return `import {getCurrentSystemMessage} from ${JSON.stringify(aiUrl)};\nimport {ExtensionRunner} from ${JSON.stringify(runnerUrl)};\nimport {buildSystemPrompt,normalizeBuildSystemPromptOptions} from ${JSON.stringify(promptUrl)};\nconst nativeCreateContext=ExtensionRunner.prototype.createContext,nativeAssertActive=ExtensionRunner.prototype.assertActive,nativeEmitError=ExtensionRunner.prototype.emitError;\n${source.slice(
+ return `import {getCurrentSystemMessage} from ${JSON.stringify(aiUrl)};\nimport {nativeCreateContext,nativeAssertActive,nativeEmitError} from ${JSON.stringify(runnerUrl)};\nimport {buildSystemPrompt,normalizeBuildSystemPromptOptions} from ${JSON.stringify(promptUrl)};\n${source.slice(
    snapshotStart,
    snapshotEnd
  )}\n${source.slice(

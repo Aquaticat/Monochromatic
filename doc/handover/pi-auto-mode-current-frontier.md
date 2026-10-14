@@ -1110,9 +1110,41 @@ All 198 maintained native modules pass parser checking.
 The current host configuration still loads the legacy auto-mode package through the user's global Pi settings;
 installation preparation must replace that legacy activation and route the ordinary `pi` command
 to the maintained host without duplicating guards.
+This historical activation state was superseded on 2026-10-14:
+the maintained launcher is installed at `${HOME}/.local/bin/pi`,
+and `file-enforcer.config.ts` now places the package's `bin` directory before dependency-provided Pi shims.
+The installer removed only the legacy auto-mode package declaration,
+verified every other setting against its original value,
+and retained a private backup at `${HOME}/temp/agent/pi-native-install-4AsZGN/settings.json`.
+The global provider and model defaults remain unchanged.
+Disposable installer controls cover successful activation,
+repeat installation,
+exact preservation of unrelated settings,
+and rejection of a foreign existing command without changing its settings.
+Both configured decisions pass with all 22 installed extensions plus the explicit receipt-control callback.
+The first operation executes three children;
+the second assesses the later input and remains unresolved without more child execution.
+Actual provider-backed governed execution and genuine native approval remain unfinished.
+The installed command reached Qwen in a read-only package sandbox with disposable state,
+but its ordinary single-call read was blocked before assessment.
+The existing program decoder requires an awaited producer followed by a returned parallel successor group.
+The diagnostic repeat's `try` block also failed that profile;
+local tagged diagnostics now expose the retained `ResultProgramProfileError`.
+The [adopted single-call profile](../planning/pi-auto-mode-governing-domain-closure.md#adopted-live-host-single-call-program-profile)
+adds only a returned literal tool call or an immutable binding followed by its return,
+preserving the existing producer/successor profile and every budget.
+The user adopted this extension on 2026-10-14.
+Implement its two stated forms,
+preserving existing guards,
+budgets,
+and the 0.99 admission rule,
+then repeat the installed governed read.
+Live logs are `${HOME}/temp/agent/pi-native-installed-live-20261014.log`
+and `${HOME}/temp/agent/pi-native-installed-live-diagnostic-20261014.log`.
 The current command resolves through generated workspace dependency shims,
 and the root `mise.toml` path list is owned by `file-enforcer.config.ts`.
-No installed settings or command resolution have been changed yet.
+That command-resolution description is historical;
+`mise exec -- which pi` now selects `package/pi-plugin/auto-mode/bin/pi`.
 The next consumer check must exercise the configured extension set in disposable state.
 The generated `readActiveSessionDomainEvents` includes every registered handler kind except `before_agent_start`;
 `inspectNativeSourceDomain` currently accounts only original `context` and `context_with_system` receipts.
@@ -1311,6 +1343,17 @@ cancellation,
 and immutable assessed arguments pass against this build.
 Package types and scoped receipt-accounting lint pass with zero lint diagnostics.
 Continue maintained host activation and remaining package quality checks.
+The complete maintained unit task passes against the approved capacity build.
+The real CLI process check then exposed an owned module initialization cycle:
+`run-emitter.mjs` eagerly read `ExtensionRunner.prototype` before the class initialized.
+Commit `7c210e871b` captures those methods in the defining runner module and imports live bindings.
+The rebuilt real CLI returns the requested Qwen model and idle RPC state,
+then exits with empty stderr and zero provider requests.
+Next-decision receipts,
+package types,
+and scoped generator lint pass after that correction.
+The [initialization incident](../troubleshooting/pi-sdk-staging.md#pi-120-native-cli-fails-during-owned-runner-initialization)
+records the failing and passing process checks.
 The original assessment budget,
 resource-local 64-receipt cap,
 and byte bounds remain unchanged.
