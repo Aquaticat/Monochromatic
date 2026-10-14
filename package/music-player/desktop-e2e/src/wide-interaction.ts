@@ -35,7 +35,10 @@ import {
 } from './conditions.ts';
 import type { RunContext, } from './context.ts';
 import { expect, } from './errors.ts';
-import { WIDE_CLICK_POINTS, } from './layout.ts';
+import {
+  WIDE_CLICK_POINTS,
+  WIDE_POINTS,
+} from './layout.ts';
 import {
   noEffect,
   press,
@@ -65,14 +68,23 @@ const NOTICE_GONE_MS = 5_200;
 const TOAST_FADE_MS = 300;
 
 /**
- Row A of the long folder: the first of the rows under the Search page that the click-through checks use.
+ Distance from the first track row's click point to a point on the second row, in pixels: a row is about 72 px tall with
+ its supporting line, so the second row spans the 70 px to 140 px below the first row's top edge.
  */
-const ROW_A = WIDE_CLICK_POINTS.underSearch[0];
+const SECOND_ROW_OFFSET_PX = 90;
 
 /**
- Row B of the long folder: another row, the last of the rows under the Search page that the checks use.
+ Row A: the first track row of the folder on screen, the point the track menu checks use as well.
  */
-const ROW_B = WIDE_CLICK_POINTS.underSearch[2];
+const ROW_A = WIDE_POINTS.trackRow;
+
+/**
+ Row B: the second track row of the folder on screen.
+ */
+const ROW_B = {
+  x: WIDE_POINTS.trackRow.x,
+  y: WIDE_POINTS.trackRow.y + SECOND_ROW_OFFSET_PX,
+} as const;
 
 /**
  How long a selected row is watched to see that it stays paused, in milliseconds.
@@ -238,6 +250,110 @@ export async function checkClickThrough(
     },);
   await pausePlayback(session,);
 
+  await recorder.check({
+    id: 'click-through/row-select-then-toggle',
+    title: 'a click on an unselected row selects it paused, and clicks on the selected row play it, then pause it (D124)',
+    body: async function rowClicksFollowTheRule(): Promise<string> {
+      // The tracks of the folder on screen are short, so Repeat keeps the track under the clicks from moving on by itself.
+      await press({
+        session,
+        act: chordKeys({
+          mods: ['ctrl', 'shift',],
+          key: '1',
+        },),
+        until: modeIs(0,),
+        what: 'Repeat',
+      },);
+
+      /**
+       The state before the first click on row A.
+       */
+      const beforeA = await session.last();
+
+      // Row A: whatever it was, one or two clicks leave it selected and paused.
+      await press({
+        session,
+        act: clickAt(ROW_A,),
+        until: function rowAAnswered(state: UiState,): boolean {
+          return (state.current_index !== beforeA.current_index) || (state.playing !== beforeA.playing);
+        },
+        what: 'row A answering the click',
+      },);
+      if ((await session.last()).playing)
+        await press({
+          session,
+          act: clickAt(ROW_A,),
+          until: isPaused,
+          what: 'row A paused by a second click',
+        },);
+
+      /**
+       Library index of row A, which is now the selected track and is paused.
+       */
+      const indexA = (await session.last()).current_index;
+      expect({
+        condition: indexA !== NO_INDEX,
+        message: 'a click on row A selected no track',
+      },);
+      const playingA = await press({
+        session,
+        act: clickAt(ROW_A,),
+        until: function rowAPlays(state: UiState,): boolean {
+          return (state.current_index === indexA) && state.playing;
+        },
+        what: 'a click on the selected row A playing it',
+      },);
+
+      // Row B is another row: the click selects it, and the track that played stops.
+      const selectedB = await press({
+        session,
+        act: clickAt(ROW_B,),
+        until: function rowBSelectedPaused(state: UiState,): boolean {
+          return (state.current_index !== indexA) && (state.current_index !== NO_INDEX) && !state.playing;
+        },
+        what: 'a click on row B selecting it and stopping row A',
+      },);
+      await session.shot('row-b-selected',);
+
+      /**
+       Library index of row B.
+       */
+      const indexB = selectedB.current_index;
+      await wait(SELECT_STAYS_PAUSED_MS,);
+      expect({
+        condition: !(await session.last()).playing && ((await session.last()).current_index === indexB),
+        message: 'row B started playing by itself after it was selected',
+      },);
+      const playingB = await press({
+        session,
+        act: clickAt(ROW_B,),
+        until: function rowBPlays(state: UiState,): boolean {
+          return (state.current_index === indexB) && state.playing;
+        },
+        what: 'a click on the selected row B playing it',
+      },);
+      await session.shot('row-b-playing',);
+      const pausedB = await press({
+        session,
+        act: clickAt(ROW_B,),
+        until: function rowBPaused(state: UiState,): boolean {
+          return (state.current_index === indexB) && !state.playing;
+        },
+        what: 'a click on the playing row B pausing it',
+      },);
+      await press({
+        session,
+        act: chordKeys({
+          mods: ['ctrl', 'shift',],
+          key: '2',
+        },),
+        until: modeIs(1,),
+        what: 'in order again',
+      },);
+      return `A (${indexA}) selected, played ${playingA.playing}; B (${indexB}) selected paused ${!selectedB.playing}, played ${
+        playingB.playing}, paused ${!pausedB.playing}`;
+    },
+  },);
   // The click points need a track row under each of them, so the pane shows the folder of thirty tracks.
   /**
    The folder shown before the click.
@@ -361,111 +477,6 @@ export async function checkClickThrough(
         message: 'the page changed',
       },);
       return 'the click on the toast changed nothing; the same click after the toast left reaches the row under it';
-    },
-  },);
-  await recorder.check({
-    id: 'click-through/row-select-then-toggle',
-    title: 'a click on an unselected row selects it paused, and clicks on the selected row play it, then pause it (D124)',
-    body: async function rowClicksFollowTheRule(): Promise<string> {
-      await pausePlayback(session,);
-      // The tracks of the long folder are short, so Repeat keeps the track under the clicks from moving on by itself.
-      await press({
-        session,
-        act: chordKeys({
-          mods: ['ctrl', 'shift',],
-          key: '1',
-        },),
-        until: modeIs(0,),
-        what: 'Repeat',
-      },);
-
-      /**
-       The state before the first click on row A.
-       */
-      const beforeA = await session.last();
-
-      // Row A: whatever it was, one or two clicks leave it selected and paused.
-      await press({
-        session,
-        act: clickAt(ROW_A,),
-        until: function rowAAnswered(state: UiState,): boolean {
-          return (state.current_index !== beforeA.current_index) || (state.playing !== beforeA.playing);
-        },
-        what: 'row A answering the click',
-      },);
-      if ((await session.last()).playing)
-        await press({
-          session,
-          act: clickAt(ROW_A,),
-          until: isPaused,
-          what: 'row A paused by a second click',
-        },);
-
-      /**
-       Library index of row A, which is now the selected track and is paused.
-       */
-      const indexA = (await session.last()).current_index;
-      expect({
-        condition: indexA !== NO_INDEX,
-        message: 'a click on row A selected no track',
-      },);
-      const playingA = await press({
-        session,
-        act: clickAt(ROW_A,),
-        until: function rowAPlays(state: UiState,): boolean {
-          return (state.current_index === indexA) && state.playing;
-        },
-        what: 'a click on the selected row A playing it',
-      },);
-
-      // Row B is another row: the click selects it, and the track that played stops.
-      const selectedB = await press({
-        session,
-        act: clickAt(ROW_B,),
-        until: function rowBSelectedPaused(state: UiState,): boolean {
-          return (state.current_index !== indexA) && (state.current_index !== NO_INDEX) && !state.playing;
-        },
-        what: 'a click on row B selecting it and stopping row A',
-      },);
-      await session.shot('row-b-selected',);
-
-      /**
-       Library index of row B.
-       */
-      const indexB = selectedB.current_index;
-      await wait(SELECT_STAYS_PAUSED_MS,);
-      expect({
-        condition: !(await session.last()).playing && ((await session.last()).current_index === indexB),
-        message: 'row B started playing by itself after it was selected',
-      },);
-      const playingB = await press({
-        session,
-        act: clickAt(ROW_B,),
-        until: function rowBPlays(state: UiState,): boolean {
-          return (state.current_index === indexB) && state.playing;
-        },
-        what: 'a click on the selected row B playing it',
-      },);
-      await session.shot('row-b-playing',);
-      const pausedB = await press({
-        session,
-        act: clickAt(ROW_B,),
-        until: function rowBPaused(state: UiState,): boolean {
-          return (state.current_index === indexB) && !state.playing;
-        },
-        what: 'a click on the playing row B pausing it',
-      },);
-      await press({
-        session,
-        act: chordKeys({
-          mods: ['ctrl', 'shift',],
-          key: '2',
-        },),
-        until: modeIs(1,),
-        what: 'in order again',
-      },);
-      return `A (${indexA}) selected, played ${playingA.playing}; B (${indexB}) selected paused ${!selectedB.playing}, played ${
-        playingB.playing}, paused ${!pausedB.playing}`;
     },
   },);
 }
