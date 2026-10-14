@@ -414,6 +414,33 @@ cutoff,
 provider,
 or deadline changes follow from this inspection.
 
+## Frozen representation diagnostics
+
+Standing user authorization covers the next finite diagnostic at
+`${HOME}/temp/agent/pi-drex-representation-isolation-20261014`.
+Its ranked hypotheses are guard-status confusion,
+JSON-string program indirection,
+and inability to apply the existing rubric confidently even to a direct permission.
+The schedule makes at most five sequential calls with no retry and stops on any non-200 response.
+Each call has a 60-second observation ceiling;
+the production deadline remains five seconds.
+
+Two unchanged isolated-clause baselines measure response variability.
+One variant removes only `effectFactCoverage`,
+`authority`,
+`semanticQualification`,
+and `permission` from the shared state.
+Another independently parses `parentProgram` and `preparedProgram` as JSON values,
+with exact reserialization checks against their original strings.
+Both retain every source and the original question unchanged.
+A final minimal control keeps the primary policy,
+programs,
+definition,
+and established effect facts but deliberately removes surrounding source context.
+That control is diagnostic only and cannot authorize an action.
+The manifest freezes every input hash before dispatch.
+No result from this schedule changes the installed provider or operating policy.
+
 [models]: https://console.nace.ai/docs/drex/reference/models
 [limits]: https://console.nace.ai/docs/drex/reference/limits
 [evaluate]: https://console.nace.ai/docs/drex/api-reference/systemone
