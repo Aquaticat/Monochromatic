@@ -1,4 +1,5 @@
 import { readFileSync, writeFileSync } from 'node:fs';
+import { createRequire } from 'node:module';
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { sdk } from '../current-sdk/paths.mjs';
@@ -30,6 +31,8 @@ export function prepareNativeHost({ output }) {
     const path = join(sdk, 'dist', relative);
     let source = readFileSync(path, 'utf8');
     if (name === 'main') {
+      source = replaceOnce({ source, before: 'import chalk from "chalk";',
+        after: 'import chalk from ' + JSON.stringify(pathToFileURL(createRequire(path).resolve('chalk')).href) + ';' });
       source = replaceOnce({ source,
         before: 'import { assertValidSessionId, SessionManager } from "./core/session-manager.js";',
         after: 'import { assertValidSessionId } from "./core/session-manager.js";\n'
