@@ -109,6 +109,15 @@ Original approval-request routing,
 a targeted guard omission check,
 and maintained integration are next.
 
+The approval trace found a separate concrete gap:
+`compileBoundClauseProgram` lowers prerequisite relations without authorization satisfaction or channel facts.
+The pure resolver therefore preserves uncertainty,
+and the original approval binder has no eligible native request to present.
+Passing presentation-double tests do not fill this gap.
+The next approval increment must connect independent original authorization evidence,
+preserve otherwise-required permission,
+and keep external or unknown authorization channels unresolved.
+
 The first approved native dispatch failed because the inherited test loader derived dependency paths
 from the codemode worker's disposable home.
 Private `f3d40d82` retains the measured repository dependency root in the staging manifest;

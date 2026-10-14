@@ -6102,6 +6102,50 @@ the corrected case exercised the actual native sandbox.
 This is an owned fixture-loader correction,
 not an upstream sandbox defect.
 
+### Help loads the trust store before printing
+
+Pi 1.2.0 `pi --help` failed in the read-only agent sandbox with
+`EROFS: read-only file system` for `$HOME/.pi/agent/trust.json.lock`.
+The same command outside that filesystem restriction printed help and exited zero.
+The native session RPC probe also succeeded outside that restriction.
+
+`packages/coding-agent/src/main.ts:719` constructs `ProjectTrustStore`.
+At line 749,
+runtime setup can read project trust before the help branch at line 877:
+
+```typescript
+// packages/coding-agent/src/main.ts:749, Pi v1.2.0
+(!hasTrustRequiringResources || trustStore.get(cwd) === true)
+```
+
+`packages/coding-agent/src/core/trust-manager.ts:221` reads entries under the trust lock:
+
+```typescript
+// packages/coding-agent/src/core/trust-manager.ts:221, Pi v1.2.0
+getEntry(cwd: string): ProjectTrustStoreEntry | null {
+  return withTrustFileLock(this.trustPath, () => {
+    const data = readTrustFile(this.trustPath);
+    return findNearestTrustEntry(data, cwd);
+  });
+}
+```
+
+The lock implementation at line 147 uses a lock directory beside the trust file:
+
+```typescript
+// packages/coding-agent/src/core/trust-manager.ts:147, Pi v1.2.0
+return lockfile.lockSync(trustDir, { realpath: false, lockfilePath: `${path}.lock` });
+```
+
+The verification command is `pi --help` from this repository.
+The failing case is the existing user trust directory mounted read-only;
+the working case is the same command with its normal writable trust directory.
+The verified workaround changes the command's filesystem access,
+not its trust decision or project configuration.
+Its tradeoff is that Pi performs normal startup work before returning help.
+The help flag alone does not bypass that startup path.
+No upstream fault or universal sandbox failure follows from this local mount restriction.
+
 ### Upstream filing decision
 
 Nothing is filed or drafted upstream.
