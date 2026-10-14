@@ -152,7 +152,7 @@ export function handlerProviderSource({
  const systemMessages=replaceOnce({
    source:messages,
    from:'                params.push({ role: instructionRole, content: sanitizeSurrogates(text) });',
-   to:'                const systemMessage = {role:instructionRole,content:sanitizeSurrogates(text)};\n                nativeSystemPayloads.set(systemMessage,Object.freeze({messages:context.messages,message:msg,text}));\n                params.push(systemMessage);'
+   to:'                const systemMessage = {role:instructionRole,content:sanitizeSurrogates(text)};\n                nativeSystemPayloads.set(systemMessage,Object.freeze({messages:context.messages,message:msg,text,role:instructionRole}));\n                params.push(systemMessage);'
  });
  /**
   Tool serialization retains the exact declaration objects selected by the native transcript resolver.
