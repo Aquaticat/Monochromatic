@@ -7,7 +7,11 @@ import { createRequire } from 'node:module';
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { tagged } from '@monochromatic-dev/module-logger/ts';
-import { readNativeHostSources, writeNativeHostSources, type NativeHostOutput } from './prepare-files.ts';
+import {
+  readNativeHostSources,
+  writeNativeHostSources,
+  type NativeHostOutput
+} from './prepare-files.ts';
 import { rewriteNativeImports } from '../native-batch/build-imports.ts';
 
 /**
@@ -151,7 +155,11 @@ export async function prepareNativeHost({ output }: {readonly output:string}):Pr
    Emission begins only after every original call-site check succeeds.
    */
   const generated: NativeHostOutput[] = [];
-  for (const {name,path,source:originalSource} of inputs) {
+  for (const {
+    name,
+    path,
+    source:originalSource
+  } of inputs) {
     rl.debug(`preparing native host module: ${name}`);
     /**
      Mutable source belongs only to this module's sequential transformations.
@@ -238,10 +246,17 @@ export async function prepareNativeHost({ output }: {readonly output:string}):Pr
     }
     generated.push({
       name,
-      source: rebase({ source, original: pathToFileURL(path).href })
+      source: rebase({
+        source,
+        original: pathToFileURL(path)
+          .href
+      })
     });
   }
-  await writeNativeHostSources({output,sources:generated});
+  await writeNativeHostSources({
+    output,
+    sources:generated
+  });
   rl.debug('prepared original native host modules');
 }
 
