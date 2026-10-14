@@ -14,12 +14,12 @@ await flushPolicyDiagnostics();
 const mode=process.argv[2]??'allow';
 const useNativeContext=process.argv.includes('--native-context');
 const reloadContext=process.argv.includes('--reload-context');
-assert(['allow','deny','stop','missing','unsupported','unresolved','satisfied','bare','prohibited','retired'].includes(mode));
+assert(['allow','deny','stop','cancelled','missing','unsupported','unresolved','satisfied','bare','prohibited','retired'].includes(mode));
 const permission=mode==='bare'?'Use sentence case in the final response.':mode==='prohibited'?'The complete proposed operation is prohibited.':'The complete proposed operation is permitted.';
 const policyText='RUL:\n '+permission+'\n\nCNF:\n Require the original session Allow confirmation for this prepared group.\n';
 let nativePi;
 const env=await createEnvironment({policyText,hostPrompt:'Fixture background.',extensionFactories:[pi=>{nativePi=pi;}]});
-let requests=0,assessments=0,executions=0,originalBody,selections=0,notifications=0,authorizationCaptures=0,abortTask;
+let requests=0,assessments=0,executions=0,originalBody,selections=0,notifications=0,authorizationCaptures=0,approvalCaptures=0,abortTask;
 let activeAuthorization=true;
 const leaf={...env.createReadToolDefinition(env.options.cwd),name:'fixture_value',description:'Returns inert fixture text.',async execute(){executions++;return {content:[{type:'text',text:'fixture child value'}],details:{}};}};
 const {session,root,lifecycle}=await createRootSessionFactory(env).create({options:{...env.options,tools:['codemode','fixture_value'],customTools:[createOwnedCodemodeDefinition(),leaf]}});
@@ -34,6 +34,10 @@ const ctx={hasUI:true,ui:{async select(title,options){
  assert(title.includes('Complete prepared group:'));
  assert(title.includes(JSON.stringify(code)));
  if(mode==='retired')activeAuthorization=false;
+ if(mode==='cancelled'){
+  abortTask=session.abort();
+  return undefined;
+ }
  return mode==='deny'?'Deny':mode==='stop'?'Stop':'Allow';
 }},abort(){abortTask=session.abort();}};
 if(useNativeContext)await session.bindExtensions({uiContext:{...session.extensionRunner.createContext().ui,select:ctx.ui.select}});
@@ -56,7 +60,7 @@ const runtime=bindNativePolicyRuntime({root,lifecycle,policyInput:env.policyInpu
    judgment.assertDependenciesCurrent();
   }});
  },
- approvalHost(){return {pi:nativePi,ctx:useNativeContext?session.extensionRunner.createContext():ctx,askUser,verdictEntryType:VERDICT_ENTRY_TYPE,trace(){},async notificationInvoker(){notifications++;}};},
+ approvalHost(){approvalCaptures++;return {pi:nativePi,ctx:useNativeContext?session.extensionRunner.createContext():ctx,askUser,verdictEntryType:VERDICT_ENTRY_TYPE,trace(){},async notificationInvoker(){notifications++;}};},
  async sendWire({body}){
   assessments++;const wire=JSON.parse(body);assert.equal(wire.state.originalRequestBody,originalBody);
   const answers=Object.fromEntries(Object.entries(wire.questions).map(([slot,question])=>{
@@ -73,20 +77,24 @@ let handlerFailure;
 const handler=session.agent.executeToolBatch;
 session.agent.executeToolBatch=async input=>{try{return await handler(input);}catch(error){handlerFailure=error;throw error;}};
 try{
+ assert.equal(approvalCaptures,0,'Binding a runtime must retain its host source without retaining a stale native context');
  if(reloadContext){
   assert(useNativeContext,'Reload fixture requires the native extension context');
   const originalContext=session.extensionRunner.createContext();
+  const originalPi=nativePi;
   await session.reload();
+  assert.notEqual(nativePi,originalPi,'Native reload must recapture the actual extension API');
   assert.throws(()=>originalContext.ui,/This extension ctx is stale after session replacement or reload/u);
  }
  await session.prompt('Exercise native prerequisite and original approval routing.');
  if(abortTask)await abortTask;
  const {lastReview:review,lastJudgment:judgment}=runtime.inspect();
- const eligible=['allow','deny','stop','retired'].includes(mode);
+ const eligible=['allow','deny','stop','cancelled','retired'].includes(mode);
  assert.equal(selections,eligible?1:0,'Only an otherwise-permitted operation with independent scoped-channel evidence reaches the original selector: '+inspect({authorizationCaptures,handlerFailure,outcome:review?.outcome,issues:review?.premiseIssues},{depth:5}));
  assert.equal(notifications,selections);
  assert.equal(authorizationCaptures,mode==='missing'?0:1);
- if(mode==='retired'||mode==='stop'){
+ assert.equal(approvalCaptures,1,'Each review captures its current native capabilities once');
+ if(mode==='retired'||mode==='stop'||mode==='cancelled'){
   assert.equal(executions,0);
   assert(handlerFailure,inspect({mode,review},{depth:4}));
  }else{
@@ -100,7 +108,7 @@ try{
  }
  const entries=session.sessionManager.getEntries().filter(entry=>entry.type==='custom'&&entry.customType===VERDICT_ENTRY_TYPE);
  assert.equal(entries.length,selections);
- if(entries.length)assert.equal(entries[0].data.verdict,['deny','stop'].includes(mode)?'user-deny':'user-approve');
+ if(entries.length)assert.equal(entries[0].data.verdict,['deny','stop','cancelled'].includes(mode)?'user-deny':'user-approve');
  console.log(JSON.stringify({complete:true,mode,selections,notifications,authorizationCaptures,executions,assessments,originalNativeVerdictEntries:entries.length,canonicalPolicyHandler:true,actualAskUser:true,nativeContext:useNativeContext,reloadedNativeContext:reloadContext,presentationIsFixture:true,authoredIndependentRequirementFacts:true,genuineHumanApprovals:0,providerRequests:0}));
 }finally{
  session.agent.executeToolBatch=handler;
