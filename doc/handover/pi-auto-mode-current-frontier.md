@@ -1113,6 +1113,12 @@ to the maintained host without duplicating guards.
 The current command resolves through generated workspace dependency shims,
 and the root `mise.toml` path list is owned by `file-enforcer.config.ts`.
 No installed settings or command resolution have been changed yet.
+The next consumer check must exercise the configured extension set in disposable state.
+The generated `readActiveSessionDomainEvents` includes every registered handler kind except `before_agent_start`;
+`inspectNativeSourceDomain` currently accounts only original `context` and `context_with_system` receipts.
+Other registered kinds remain explicit gaps even if their callbacks were not invoked in that run.
+The no-extension CLI startup fixture does not establish that the installed extension configuration can decide an action.
+Do not silently disable the user's other extensions or treat their unresolved inputs as absent.
 Independent maintained bootstrap quality work also continues.
 Its scoped lint reports `no-restricted-syntax/no-sync` for `statSync`
 and `no-restricted-syntax/no-regex` for trailing-slash removal,
