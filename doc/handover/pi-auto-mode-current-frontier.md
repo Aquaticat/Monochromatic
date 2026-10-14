@@ -332,7 +332,21 @@ and its constructor error hierarchy remains in `runtime-root-lifecycle/errors.ts
 The active transition implementation remains `root-lifecycle-retirement-entry/lifecycle.mjs`.
 The package build now sequences maintained exports before native preparation;
 the inherited parallel build fanout did not encode that dependency.
-Native constructor consumer checks and the complete sequenced build are being verified.
+The complete sequenced build and native SDK execution check pass.
+The SDK case accounts for five original contributions and executes all three prepared children,
+with zero provider requests.
+The existing CLI manager and host lifecycle assertions also pass after the typed constructor port.
+The host lifecycle run emitted
+`logger internal error: sink verification failed for entry 3: Timed out after 5000ms: sink 3 verify`.
+Its emitting process and delayed operation are not established;
+the assertion result does not establish clean diagnostics or a connection to earlier logger incidents.
+The separate-process CLI check passed with empty child stderr.
+Additional constructor controls now cover persisted history,
+explicit session IDs,
+working-directory overrides,
+recent-session fallback,
+and cross-directory fork inputs;
+their first run is pending.
 The refactored build helpers now pass scoped lint with zero warnings and zero errors across six files.
 The package type check,
 complete native build using its default qualified source checkout,
