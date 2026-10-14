@@ -1243,6 +1243,25 @@ It must retain native callback identity,
 complete received results,
 and the same original closed judgment budget.
 No configured-extension consumer success or installed migration completion is claimed.
+The six native adopted-policy contrasts and the native context receipt controls pass after these changes.
+The expanded event receipt controls also pass:
+chunk rollover retains every phase,
+oversized and excessive sources still reject,
+result accessors are not invoked,
+and completion failures retain their original thrown identity.
+The first approval-context sequence passed Allow and Deny,
+then Stop failed with `DependencyDeadlineError: Original dependency assessment deadline expired`.
+An unchanged-code repeat passed Allow,
+Deny,
+Stop,
+cancellation,
+and reload,
+followed by the native host lifecycle check.
+The deadline failure remains recorded;
+the repeat establishes recovery,
+not a cause or permanent timing fix.
+The semantic and approval runs also emitted the previously recorded logger sink verification timeout.
+Passing assertions do not establish clean stderr or connect that warning to the deadline failure.
 Its unit,
 omission,
 native consumer,
