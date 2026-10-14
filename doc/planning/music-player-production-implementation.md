@@ -250,6 +250,10 @@ and the decisions D106 to D119 at the end of `package/music-player/design/decisi
   The podman runner's Java could not reach Maven Central or Google Maven (names resolve only with
   `/run/systemd/resolve` mounted, and connections from the container's Java then still fail, cause not found), so new
   dependencies were fetched with a host Gradle run into the shared Gradle home and the container runs offline.
+  Possible flake to watch: `SearchServiceTest.typingDuringASlowScanAnswersFromTheKnownTracks` (p95 under 500 ms)
+  failed in 2 of 21 mutant runs during the wiring work while a host Gradle run competed for the CPU, and passed in
+  every control and final run (p95 3.98 ms); whether the Robolectric sandbox sharing its JVM contributes was not
+  measured. The suite on `main` is 1149 tests, 0 failures, from a forced offline run.
   Still open: the fourth cost below; the 435 ms `loadTemplate` violation did not
   reproduce, so the template cache in `SessionStore.warmUp` is unproven; the old ANRs did not reproduce in 23 play
   windows (cause unknown); the sweep-under-load case was not exercised; release build not measured.
