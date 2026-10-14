@@ -273,7 +273,7 @@ fn device_text(device: &EGLDevice) -> String {
 pub fn open_gpu(choice: &GpuChoice) -> Result<OpenedGpu> {
     let attempts = plan(choice, &hardware_nodes());
     info!(choice = %choice.label(), attempts = ?attempts, "headless: choosing the render device");
-    let selected = select(&attempts, |attempt| {
+    let search = select(&attempts, |attempt| {
         let outcome = open_attempt(attempt);
         match &outcome {
             Ok(_) => info!(%attempt, "headless: device attempt succeeded"),
@@ -281,7 +281,7 @@ pub fn open_gpu(choice: &GpuChoice) -> Result<OpenedGpu> {
         }
         return outcome
     });
-    let selected = match selected {
+    let selected = match search {
         Ok(selected) => selected,
         Err(failures) => bail!("{}", failure_message(choice, &failures, &devices_text())),
     };
