@@ -9,16 +9,17 @@ import {inspect} from 'node:util';
 export function createApprovedChangeControl(mode){
  assert.ok([undefined,'policy','cancel','arguments'].includes(mode));
  const state={changed:false,argumentAttempts:0,abortTask:undefined};
- function progress(event){
-  if(mode!=='arguments')return;
-  assert.ok(Object.isFrozen(event.args),'Original prepared arguments must stay frozen during approved execution');
-  const original=event.args.code;
-  assert.throws(function changeOriginalPreparedCode(){event.args.code='return "different operation";';},TypeError);
-  assert.equal(event.args.code,original);
-  state.argumentAttempts++;
- }
- async function beforeChildReturn({session,env,executions}){
+ async function beforeChildReturn({session,env,executions,judgment}){
   if(executions!==1)return;
+  if(mode==='arguments'){
+   const member=judgment.memberFor('program');
+   const {prepared}=judgment.preparedMemberFor(member);
+   assert.ok(Object.isFrozen(prepared.input),'Original assessed arguments must stay frozen during approved execution');
+   const original=prepared.input.code;
+   assert.throws(function changeOriginalPreparedCode(){prepared.input.code='return "different operation";';},TypeError);
+   assert.equal(prepared.input.code,original);
+   state.argumentAttempts++;
+  }
   if(mode==='policy'){
    await writeFile(join(env.options.cwd,'AGENTS.md'),'RUL:\n The complete proposed operation is prohibited.\n');
    state.changed=true;
@@ -49,7 +50,7 @@ export function createApprovedChangeControl(mode){
   console.log(JSON.stringify({approvedChange:mode,executions:observations.executions,assessments:observations.assessments}));
  }
  async function drain(){await state.abortTask;}
- return Object.freeze({progress,beforeChildReturn,verify,drain});
+ return Object.freeze({beforeChildReturn,verify,drain});
 }
 
 //endregion Native execution changes exercise original dependency guards after approval

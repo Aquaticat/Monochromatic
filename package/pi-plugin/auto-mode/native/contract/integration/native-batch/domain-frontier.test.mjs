@@ -93,7 +93,6 @@ const env=await createEnvironment({
   }]:observedProgress?[function registerObservedProgress(pi){
    pi.on('tool_execution_update',function observeOriginalProgress(event){
     observations.progressCalls++;
-    changeControl.progress(event);
     if(nextDecision&&observations.progressCalls===1){
      event.laterInstruction=nextInput;
      return {laterInstruction:nextResult};
@@ -112,7 +111,7 @@ const leaf={
   ...env.createReadToolDefinition(env.options.cwd),
   name:'fixture_value',
   description:'Returns fixture text without accessing files.',
-  async execute(){observations.executions++;await changeControl.beforeChildReturn({session,env,executions:observations.executions});return {content:[{type:'text',text:'fixture child value'}],details:{}};}
+  async execute(){observations.executions++;await changeControl.beforeChildReturn({session,env,executions:observations.executions,judgment:runtime.inspect().lastJudgment});return {content:[{type:'text',text:'fixture child value'}],details:{}};}
 };
 const {
   session,
