@@ -11,6 +11,11 @@ import { NativeSourceBuildError, nativeBuildLog, } from './build-contract.ts';
 //region An explicit work stack traverses directories without recursion
 
 /**
+ Asset traversal diagnostics retain their module boundary.
+ */
+const l = tagged({ tag: 'build-assets', l: nativeBuildLog, },);
+
+/**
  Source and destination directory pair retained during traversal.
  */
 type AssetDirectory = {
@@ -37,7 +42,7 @@ export async function copyAssets({ source, target, }: AssetDirectory,): Promise<
   /**
    Name asset-copy activity independently of upstream compilation.
    */
-  const rl = tagged({ tag: copyAssets.name, l: nativeBuildLog, },);
+  const rl = tagged({ tag: copyAssets.name, l, },);
   /**
    Pending directory work is bounded by the observed source tree.
    */

@@ -8,9 +8,15 @@ import { homedir, } from 'node:os';
 import { join, } from 'node:path';
 import spawn from 'nano-spawn';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
+import { caughtValueText, } from '@monochromatic-dev/module-caught-value/ts';
 import { NativeSourceBuildError, nativeBuildLog, qualifiedRelease, } from './build-contract.ts';
 
 //region Resolve and verify source before emitting native modules
+
+/**
+ Source-input diagnostics retain their module boundary.
+ */
+const l = tagged({ tag: 'build-input', l: nativeBuildLog, },);
 
 /**
  Read package metadata without assuming the parsed JSON shape.
@@ -22,6 +28,11 @@ import { NativeSourceBuildError, nativeBuildLog, qualifiedRelease, } from './bui
  @throws NativeSourceBuildError when the package has no string version
  */
 export async function packageVersion(directory: string,): Promise<string> {
+  /**
+   Version reads remain distinguishable from checkout retrieval.
+   */
+  const rl = tagged({ tag: packageVersion.name, l, },);
+  rl.debug('reading package version for native build qualification',);
   /**
    Untrusted package metadata is narrowed before selecting its version.
    */
@@ -45,7 +56,7 @@ export async function sourceCheckout(packageRoot: string,): Promise<string> {
   /**
    Keep source retrieval and revision checks in the same diagnostic boundary.
    */
-  const rl = tagged({ tag: sourceCheckout.name, l: nativeBuildLog, },);
+  const rl = tagged({ tag: sourceCheckout.name, l, },);
   /**
    Persistent private scratch root keeps source checkouts across host reboots.
    */
@@ -62,6 +73,7 @@ export async function sourceCheckout(packageRoot: string,): Promise<string> {
   catch (error) {
     if ((typeof error !== 'object') || (error === null) || !('code' in error) || (error.code !== 'ENOENT'))
       throw error;
+    rl.debug(caughtValueText(error,),);
     rl.debug('source checkout is absent; retrieving the qualified release',);
     await spawn('gh', ['repo', 'clone', 'earendil-works/pi', sourceRoot, '--', '--depth', '1',
       '--branch', `v${qualifiedRelease.version}`,], { cwd: packageRoot, stdio: 'inherit', },);

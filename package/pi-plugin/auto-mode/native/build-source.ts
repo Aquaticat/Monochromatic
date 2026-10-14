@@ -8,11 +8,17 @@ import { createRequire, } from 'node:module';
 import { basename, dirname, join, } from 'node:path';
 import spawn from 'nano-spawn';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
+import { caughtValueText, } from '@monochromatic-dev/module-caught-value/ts';
 import { copyAssets, } from './build-assets.ts';
 import { NativeSourceBuildError, nativeBuildLog, qualifiedRelease, } from './build-contract.ts';
 import { packageVersion, sourceCheckout, } from './build-input.ts';
 
 //region Qualified upstream source is a build input, never an installed source edit.
+
+/**
+ Source emission diagnostics retain their module boundary.
+ */
+const l = tagged({ tag: 'build-source', l: nativeBuildLog, },);
 
 /**
  Create a dependency link or verify the existing artifact retains the same target.
@@ -24,12 +30,18 @@ import { packageVersion, sourceCheckout, } from './build-input.ts';
  @throws NativeSourceBuildError when an existing dependency link targets another installation
  */
 async function linkDependencies({ target, source, }: { readonly target: string; readonly source: string; },): Promise<void> {
+  /**
+   Dependency-link checks remain distinguishable from compiler emission.
+   */
+  const rl = tagged({ tag: linkDependencies.name, l, },);
+  rl.debug('linking qualified installed dependencies',);
   try {
     await symlink(source, target, 'dir',);
   }
   catch (error) {
     if ((typeof error !== 'object') || (error === null) || !('code' in error) || (error.code !== 'EEXIST'))
       throw error;
+    rl.debug(caughtValueText(error,),);
     if (await realpath(target,) !== await realpath(source,))
       throw new NativeSourceBuildError(`Emitted dependency link targets another installation: ${target}`, { cause: error, },);
   }
@@ -48,7 +60,7 @@ export async function buildPiSource({ packageRoot, output, }: { readonly package
   /**
    Track source emission separately from owned transformations.
    */
-  const rl = tagged({ tag: buildPiSource.name, l: nativeBuildLog, },);
+  const rl = tagged({ tag: buildPiSource.name, l, },);
   /**
    Resolve the actual installed package independently of symlink spelling.
    */
