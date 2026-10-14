@@ -3198,6 +3198,7 @@ the D106 rows `F5` (rescan) and `Ctrl+Shift+F5` (re-analyse).
 - Analysis follows the files by itself: a new, replaced or edited file (its fingerprint changed) is measured again, a file
   that failed to decode is retried when the library next changes or the app next starts, and a failure is reported once
   per file in plain words (D83) instead of offering a retry button.
+  Current state (note added 2026-10-14): on Android the report is a system notification, not a D83 message (D123).
 - The D107 notification stays the only analysis surface.
 
 ### D114. The track menu opens with Menu or Alt+Enter, and every menu row has an access key (2026-10-12)
@@ -3322,6 +3323,41 @@ The human answered four questions that had been open as orchestrator adoptions.
   identity until they ask. D112 (in-memory index) stands.
 - Android `targetSdk` stays on 36 with no extra emulator passes for API 33, 34 and 36; D107 on those levels remains
   unverified.
+
+### D123. On Android the analysis-failure message is a system notification, never an in-app message (2026-10-14)
+
+The human decided that only the report of files whose true-peak analysis failed (D113) leaves the app's own message
+overlay (D83) on Android; the desktop app makes the same move under D122 on its own branch.
+An analysis failure is an event the human did not ask for, and it can appear while they are in another app, so an
+in-app message that waits for a screen (the D113 hand-off) was either missed or arrived long after the sweep.
+
+- The service that ran the sweep posts one system notification when the failed files are first reported, the same moment
+  the in-app message used to appear. Several files in one report give one notification.
+  A file keeps the D113 once-per-file rule (the sweep ledger tells the first failure from a repeat), so a repeat
+  failure posts nothing.
+- The wording is the old message word for word: `Could not analyze <file>.` as the title and
+  `Its file could not be decoded. The app tries again when your library changes.` as the text; several files collapse to
+  `Could not analyze 3 files, including <first>.` with `They could not be decoded.` and the same retry sentence.
+  The text is shown expanded, so the retry sentence is not cut off.
+- It is a separate notification on its own channel (`analysis-failure`, "Analysis problems") with its own id, never the
+  D107 progress notification, which is neither replaced nor removed by it.
+  The channel has low importance, which Android words as "Makes no sound": the event is not urgent, so no sound and
+  no heads-up, and the notification waits in the shade.
+  It has the app's small icon, cancels itself when tapped, has no action buttons, and tapping it opens the app.
+  A later report replaces an earlier one that is still unread, as the in-app message did.
+- What stays in the app: the tap-time message `Could not play <file>` (the track the human just tapped could not be
+  opened) is a reply to their own action and stays an in-app message exactly as in D83.
+- No fallback: when the notification cannot be posted (the notification permission is denied on Android 13 or later,
+  notifications for the app are turned off, the channel is turned off, or the post itself fails), the app does not show
+  the message in the app. It writes one warning line to the log (the reason and the number of files, no file names) and
+  shows nothing.
+  The failure then reaches only the log, and the failed file keeps no mark on its row on Android either.
+  A failure to post never crashes the sweep or blocks it.
+- Consequence: a person who declined the notification permission at the D107 prompt never hears about an undecodable
+  file, as they never see the progress indicator either.
+
+This amends D113's statement that a failure is "reported once per file in plain words (D83)": the report is now this
+notification, still once per file.
 
 ## Pending after the theme picks (2026-09-04)
 
