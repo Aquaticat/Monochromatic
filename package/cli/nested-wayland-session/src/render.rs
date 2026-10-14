@@ -115,10 +115,16 @@ pub fn redraw(state: &mut Compositor) {
         return;
     }
 
-    // What:     `let size = state.backend.window_size();`. The framebuffer size as
+    // What:     `let size = winit.window_size();`. The framebuffer size as
     //           `Size<i32, Physical>`.
     // Why:      The whole framebuffer is treated as damaged each frame (age 0).
-    let size = state.backend.window_size();
+    // What:     `let Some(winit) = state.backend.as_winit_mut() else { return; };`. Only the nested
+    //           window has a framebuffer to present; a headless session never requests a redraw.
+    // Why:      Headless pacing and captures do not go through this live present.
+    let Some(winit) = state.backend.as_winit_mut() else {
+        return;
+    };
+    let size = winit.window_size();
 
     // What:     `let damage = Rectangle::from_size(size);`. A rectangle covering the
     //           whole framebuffer, `Rectangle<i32, Physical>`.
@@ -136,7 +142,7 @@ pub fn redraw(state: &mut Compositor) {
         //           `framebuffer` is the target we draw into (`mut` because
         //           `render_output` borrows it mutably).
         // Why:      Get the drawing surface and renderer for this frame.
-        let (renderer, mut framebuffer) = state.backend.bind().unwrap();
+        let (renderer, mut framebuffer) = winit.bind().unwrap();
 
         // What:     `render_output::<_, WaylandSurfaceRenderElement<GlesRenderer>, _, _>(
         //           &state.output, renderer, &mut framebuffer, 1.0, 0, [&state.space],
@@ -166,12 +172,12 @@ pub fn redraw(state: &mut Compositor) {
         .unwrap();
     }
 
-    // What:     `state.backend.submit(Some(&[damage])).unwrap();`. Presents the frame,
+    // What:     `winit.submit(Some(&[damage])).unwrap();`. Presents the frame,
     //           telling the parent which region changed. `Some(&[damage])` is a
     //           one-element slice of the whole-framebuffer rectangle. `.unwrap()` panics
     //           on swap failure.
     // Why:      Actually show the composited frame in the nested window.
-    state.backend.submit(Some(&[damage])).unwrap();
+    winit.submit(Some(&[damage])).unwrap();
 
     // What:     `Instant::now()` reads the monotonic clock; the pacing record stores it.
     // Why:      Only a frame the parent accepted counts as presentation. While these keep

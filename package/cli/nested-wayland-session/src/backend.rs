@@ -31,21 +31,17 @@
 /// ```
 use smithay::{
     backend::{
-        egl::EGLDevice,
-        renderer::{gles::GlesRenderer, ImportDma, ImportEgl},
+        renderer::{gles::GlesRenderer, ImportEgl},
         winit::{self, WinitEventLoop},
     },
-    output::{Mode, Output, PhysicalProperties, Subpixel},
     reexports::{
         wayland_server::DisplayHandle,
         winit::{dpi::PhysicalSize, window::WindowAttributes},
     },
-    utils::Transform,
-    wayland::dmabuf::{DmabufFeedbackBuilder, DmabufState},
 };
 
 /// What:
-///      `use anyhow::{Context, Result};`.
+///      `use anyhow::Result;`.
 ///  Error helpers.
 /// Why:
 ///       `init_backend` returns `Result` and attaches context to winit failures.
@@ -54,14 +50,14 @@ use smithay::{
 /// ```ts
 /// // throw/rethrow-with-message helpers
 /// ```
-use anyhow::{Context, Result};
+use anyhow::Result;
 
 /// What:
-///      `use tracing::{info, warn};`.
+///      `use tracing::info;`.
 ///  Structured log macros.
 /// Why:
 ///       Report the chosen dmabuf version and hardware-acceleration status.
-use tracing::{info, warn};
+use tracing::info;
 
 /// What:
 ///      `use crate::{cli::Config, state::BackendPieces};`.
@@ -76,7 +72,14 @@ use tracing::{info, warn};
 /// import { Config } from "./cli";
 /// import { BackendPieces } from "./state";
 /// ```
-use crate::{cli::Config, screen_geometry::ScreenGeometry, state::BackendPieces};
+use crate::{
+    backend_parts::{build_dmabuf, build_output},
+    backend_select::{nested_failure_message, ParentEnvironment},
+    cli::Config,
+    render_backend::RenderBackend,
+    screen_geometry::ScreenGeometry,
+    state::BackendPieces,
+};
 
 /// Milli-hertz refresh rate reported for the nested output (60.000 Hz).
 ///
@@ -161,7 +164,9 @@ pub fn init_backend(
     //           (a `&mut` method) below.
     // Why:      This is the nested window and its GPU renderer.
     let (mut backend, winit) = winit::init_from_attributes::<GlesRenderer>(attributes)
-        .map_err(|err| anyhow::anyhow!("winit backend init failed: {err}"))?;
+        .map_err(|err| {
+            return anyhow::anyhow!(nested_failure_message(&err.to_string(), ParentEnvironment::from_process()))
+        })?;
 
     // What:     `backend.window().set_minimized(true);`. Asks the parent compositor to minimize
     //           the new window; winit sends the request for `xdg_toplevel.set_minimized` on
@@ -177,130 +182,16 @@ pub fn init_backend(
     // ```
     backend.window().set_minimized(true);
 
-    // What:     `let mode = Mode { size: (config.width, config.height).into(), refresh:
-    //           OUTPUT_REFRESH_MHZ };`. The output's video mode. `(w, h).into()` builds
-    //           a `Size<i32, Physical>` from the tuple.
-    // Why:      Describe the nested screen's resolution and refresh to clients.
-    let mode = Mode {
-        size: (physical_width, physical_height).into(),
-        refresh: OUTPUT_REFRESH_MHZ,
-    };
+    // What:     `build_output(display_handle, geometry)`. Creates the output, its mode, its
+    //           `wl_output` global, the `Flipped180` transform, and the starting scale.
+    // Why:      Shared with the headless backend so both modes present the same screen.
+    let output = build_output(display_handle, geometry);
 
-    // What:     `let output = Output::new("nested".to_string(), PhysicalProperties { ... });`.
-    //           Creates the output object. `"nested".to_string()` allocates its owned
-    //           name; `PhysicalProperties` describes make/model/physical size (0x0 mm for
-    //           a virtual screen). `.into()` builds each owned string / size.
-    // Why:      The one screen the fixture presents.
-    let output = Output::new(
-        "nested".to_string(),
-        PhysicalProperties {
-            size: (0, 0).into(),
-            subpixel: Subpixel::Unknown,
-            make: "Monochromatic".into(),
-            model: "NestedWaylandSession".into(),
-        },
-    );
-
-    // What:     `let _global = output.create_global::<Compositor>(display_handle);`.
-    //           Registers the `wl_output` global. The returned id is bound to `_global`;
-    //           dropping it does NOT remove the global (the `Output` keeps it), so
-    //           letting it fall out of scope is fine.
-    // Why:      Advertise the screen to clients.
-    let _global = output.create_global::<crate::state::Compositor>(display_handle);
-
-    // What:     `output.change_current_state(Some(mode), Some(Transform::Flipped180),
-    //           Some(geometry.scale.advertised()), Some((0, 0).into()));`. Sets the active
-    //           mode, a Y-flip transform (winit's framebuffer origin is top-left, opposite
-    //           Wayland's), the starting output scale, and position `(0, 0)`.
-    // Why:      Make the mode current, correct the vertical flip so screenshots are upright,
-    //           and advertise `--scale` through `wl_output.scale` from the first bind on.
-    output.change_current_state(
-        Some(mode),
-        Some(Transform::Flipped180),
-        Some(geometry.scale.advertised()),
-        Some((0, 0).into()),
-    );
-
-    // What:     `output.set_preferred(mode);`. Marks this mode as the preferred one.
-    // Why:      Clients pick the preferred mode when choosing a size.
-    output.set_preferred(mode);
-
-    // What:     `let render_node = EGLDevice::device_for_display(backend.renderer()
-    //           .egl_context().display()).and_then(|device| device.try_get_render_node());`.
-    //           Walks renderer -> EGL context -> EGL display -> the DRM render node.
-    //           `device_for_display` returns `Result<EGLDevice>`; `.and_then(closure)`
-    //           runs the next fallible step only on success, yielding
-    //           `Result<Option<DrmNode>>`.
-    // Why:      dmabuf v4 feedback needs the render node's device id so the client
-    //           allocates buffers on the right GPU.
-    let render_node = EGLDevice::device_for_display(backend.renderer().egl_context().display())
-        .and_then(|device| return device.try_get_render_node());
-
-    // What:     `let mut dmabuf_state = DmabufState::new();`. Fresh dmabuf state; `mut`
-    //           because creating the global borrows it mutably.
-    // Why:      Owns the dmabuf protocol bookkeeping.
-    let mut dmabuf_state = DmabufState::new();
-
-    // What:     `let (dmabuf_global, dmabuf_feedback) = match render_node { Ok(Some(node))
-    //           => { ... build v4 ... }, _ => { ... build v3 ... } };`. Pattern-match the
-    //           render-node result: a present node builds v4 default-feedback; any other
-    //           outcome (query error or no node) falls back to plain v3.
-    // Why:      Prefer v4 modifier feedback (what the app negotiates), but never fail if
-    //           the render node cannot be determined.
-    let (dmabuf_global, dmabuf_feedback) = match render_node {
-        Ok(Some(node)) => {
-            // What:     `let formats = backend.renderer().dmabuf_formats();`. The set of
-            //           dmabuf formats/modifiers the renderer can import (from `ImportDma`).
-            // Why:      Feedback advertises exactly these to the client.
-            let formats = backend.renderer().dmabuf_formats();
-
-            // What:     `let feedback = DmabufFeedbackBuilder::new(node.dev_id(), formats)
-            //           .build().context(...)?;`. Builds the default feedback for that
-            //           device id and format set; `.context(msg)?` turns a build error
-            //           into a clean failure.
-            // Why:      Assemble the v4 feedback object.
-            let feedback = DmabufFeedbackBuilder::new(node.dev_id(), formats)
-                .build()
-                .context("building dmabuf v4 default feedback failed")?;
-
-            // What:     `let global = dmabuf_state.create_global_with_default_feedback::
-            //           <Compositor>(display_handle, &feedback);`. Registers the
-            //           `zwp_linux_dmabuf_v1` global at version 4 with this feedback.
-            // Why:      Advertise dmabuf v4 to the client.
-            let global = dmabuf_state
-                .create_global_with_default_feedback::<crate::state::Compositor>(
-                    display_handle,
-                    &feedback,
-                );
-
-            info!("dmabuf: advertising v4 with modifier feedback");
-
-            // What:     `(global, Some(feedback))`. Tuple of the global and the kept
-            //           feedback (tail of this match arm).
-            // Why:      Keep the feedback alive alongside the global.
-            (global, Some(feedback))
-        }
-        _ => {
-            // What:     `warn!(...)`. Log that we could not get a render node.
-            // Why:      Make the v3 fallback visible in logs.
-            warn!("dmabuf: no render node available, falling back to v3");
-
-            // What:     `let formats = backend.renderer().dmabuf_formats();`. Same format
-            //           set for the v3 global.
-            // Why:      v3 advertises the format list without per-device feedback.
-            let formats = backend.renderer().dmabuf_formats();
-
-            // What:     `let global = dmabuf_state.create_global::<Compositor>(
-            //           display_handle, formats);`. Registers the dmabuf global at v3.
-            // Why:      Still let the client import GPU buffers, just without feedback.
-            let global = dmabuf_state
-                .create_global::<crate::state::Compositor>(display_handle, formats);
-
-            // What:     `(global, None)`. No feedback in the v3 path.
-            // Why:      Signal v3 was used.
-            (global, None)
-        }
-    };
+    // What:     `build_dmabuf(display_handle, backend.renderer())?`. Queries the render node of the
+    //           renderer's EGL display and creates the dmabuf v4 (or v3) global.
+    // Why:      dmabuf v4 feedback needs the render node's device id so the client allocates
+    //           buffers on the right GPU.
+    let (dmabuf_state, dmabuf_global, dmabuf_feedback) = build_dmabuf(display_handle, backend.renderer())?;
 
     // What:     `if backend.renderer().bind_wl_display(display_handle).is_ok() { ... }`.
     //           `bind_wl_display` (from `ImportEgl`, enabled by `use_system_lib`) sets up
@@ -318,7 +209,7 @@ pub fn init_backend(
     //           registration.
     return Ok((
         BackendPieces {
-            backend,
+            backend: RenderBackend::Winit(Box::new(backend)),
             output,
             dmabuf_state,
             dmabuf_global,

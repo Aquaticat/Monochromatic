@@ -66,7 +66,7 @@ use tracing::info;
 /// import { sendFrameCallbacks } from "./render";
 /// import { type Compositor } from "./state";
 /// ```
-use crate::{backend::OUTPUT_REFRESH_MHZ, render, state::Compositor};
+use crate::{backend::OUTPUT_REFRESH_MHZ, backend_select::BackendKind, render, state::Compositor};
 
 /// One frame at the nested output's advertised refresh rate.
 ///
@@ -174,6 +174,39 @@ pub fn resize_needs_early_callbacks(recording: bool, geometry_changed: bool) -> 
     return recording && geometry_changed;
 }
 
+/// Decide whether the pacing timer must send frame callbacks on this tick.
+///
+/// What:
+///      `pub fn callbacks_due(backend: BackendKind, recording: bool, since_presented: Duration) -> bool`.
+///  A pure function of plain values.
+///  The nested window defers to `parent_stalled`.
+///  Headless has no parent that presents,
+///  so the timer is the only source and a callback is due on every tick while no recording runs.
+/// Why:
+///       A headless client must get callbacks from the first tick at the output refresh rate,
+///  with no startup gap and no stall threshold;
+///  while recording,
+///  the recorder's own timer is the source in both modes.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function callbacksDue(backend, recording, sincePresentedMs): boolean {
+///   return backend === 'headless' ? !recording : parentStalled(recording, sincePresentedMs);
+/// }
+/// ```
+///
+/// @example
+/// ```ts
+/// callbacksDue('headless', false, 0); // => true
+/// callbacksDue('nested-winit', false, 0); // => false
+/// ```
+pub fn callbacks_due(backend: BackendKind, recording: bool, since_presented: Duration) -> bool {
+    return match backend {
+        BackendKind::Headless => !recording,
+        BackendKind::NestedWinit => parent_stalled(recording, since_presented),
+    }
+}
+
 /// When the parent last presented,
 ///  and whether the fallback is currently pacing the client.
 ///
@@ -191,6 +224,9 @@ pub struct FramePacing {
     last_presented: Instant,
     /// True between the first fallback tick and the parent's next presentation.
     fallback_active: bool,
+    /// Which backend the session runs on;
+    /// decides when the timer sends callbacks.
+    backend: BackendKind,
 }
 
 /// Stall bookkeeping driven by the live redraw path and the fallback timer.
@@ -208,7 +244,19 @@ impl FramePacing {
     /// constructor(now: number) { this.#lastPresented = now; }
     /// ```
     pub fn new(now: Instant) -> Self {
-        return Self { last_presented: now, fallback_active: false };
+        return Self::for_backend(BackendKind::NestedWinit, now);
+    }
+
+    /// Start pacing for `backend`,
+    /// with the parent considered current as of `now`.
+    ///
+    /// What:
+    ///      `pub fn for_backend(backend: BackendKind, now: Instant) -> Self`.
+    /// Why:
+    ///       The headless backend never has a parent presentation,
+    /// so its timer owns the cadence.
+    pub fn for_backend(backend: BackendKind, now: Instant) -> Self {
+        return Self { last_presented: now, fallback_active: false, backend };
     }
 
     /// Record that a frame was just submitted to the parent compositor.
@@ -252,13 +300,19 @@ impl FramePacing {
     /// ```
     pub fn fallback_due(&mut self, recording: bool, now: Instant) -> bool {
         let since_presented = now.saturating_duration_since(self.last_presented);
-        let due = parent_stalled(recording, since_presented);
+        let due = callbacks_due(self.backend, recording, since_presented);
         if due && !self.fallback_active {
             self.fallback_active = true;
-            info!(
-                silent_ms = since_presented.as_millis(),
-                "parent compositor is not presenting this window; pacing the hosted client from a timer",
-            );
+            match self.backend {
+                BackendKind::NestedWinit => info!(
+                    silent_ms = since_presented.as_millis(),
+                    "parent compositor is not presenting this window; pacing the hosted client from a timer",
+                ),
+                BackendKind::Headless => info!(
+                    interval_us = FRAME_INTERVAL.as_micros(),
+                    "headless: no parent compositor; pacing the hosted client from a timer at the output refresh rate",
+                ),
+            }
         }
         return due;
     }
@@ -290,7 +344,7 @@ impl FramePacing {
 /// }
 /// ```
 pub fn register(loop_handle: &LoopHandle<Compositor>, state: &mut Compositor) {
-    state.frame_pacing = FramePacing::new(Instant::now());
+    state.frame_pacing = FramePacing::for_backend(state.backend.kind(), Instant::now());
     loop_handle
         .insert_source(Timer::from_duration(FRAME_INTERVAL), |_, _, timer_state: &mut Compositor| {
             // The recorder owns the cadence while it runs; the end-of-cycle flush delivers these.

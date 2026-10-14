@@ -13,6 +13,13 @@ GUI app a private,
  with no distro package manager
 and no system-wide changes.
 
+By default the tool opens a nested window inside the session you are running in,
+minimized on launch and restorable,
+so you can look at what the hosted app is doing.
+With `--headless` it renders without any display instead,
+so it also runs on a bare CI machine or over SSH.
+Headless is opt-in only (see [Headless mode](#headless-mode)).
+
 The full rationale,
  the on-hardware measurements,
  and the source review of every
@@ -85,6 +92,14 @@ alternative considered are recorded in
   The compositor draws nothing for them.
 - Keeps the hosted app drawing when its own window is hidden or the host session is locked,
   so screenshots show the app's current frame.
+- Renders with no display at all when `--headless` is given,
+  through surfaceless EGL on the GPU render node,
+  with the same control commands,
+  screenshots,
+  recordings,
+  and input.
+  The nested window stays the default;
+  see [Headless mode](#headless-mode).
 - Answers every control command with a plain machine-readable `ok`/`err` line.
 
 ## Requirements
@@ -107,8 +122,11 @@ At run time (present on virtually every Linux desktop):
  `--accent-color`,
  `--notifications`,
  or `--launcher-log` is used,
- and a running parent
-Wayland session (this version is a nested winit client of an existing compositor).
+ and either a running parent session
+(the default is a nested winit client of an existing compositor)
+or, with `--headless`,
+a DRM render node that Mesa's `EGL_MESA_platform_surfaceless` platform can open
+(a readable `/dev/dri/renderD*`).
 
 ## Install
 
@@ -143,7 +161,7 @@ monochromatic-nested-wayland-session [--socket PATH] [--size WIDTHxHEIGHT]
     [--scale SCALE] [--color-scheme dark|light] [--accent-color RRGGBB]
     [--notifications none|freedesktop|kde] [--launcher-log] [--accessibility]
     [--repeat-rate PER_SECOND] [--repeat-delay MS] [--isolate]
-    [--app-cpu-quota PCT] [--app-cpu-weight N] [--] COMMAND [ARG...]
+    [--app-cpu-quota PCT] [--app-cpu-weight N] [--headless] [--] COMMAND [ARG...]
 ```
 
 - `--socket PATH` enables the control API on a Unix socket at `PATH`.
@@ -213,6 +231,11 @@ monochromatic-nested-wayland-session [--socket PATH] [--size WIDTHxHEIGHT]
    Default:
    a low weight,
    so the app yields to the compositor under contention.
+- `--headless` renders with surfaceless EGL on the GPU render node instead of a nested window.
+  No parent display is used or needed,
+  and no window appears anywhere.
+  It is never chosen automatically;
+  see [Headless mode](#headless-mode).
 - `COMMAND [ARG...]` is the single client to host.
    Everything after `--` (or the first
   non-flag token) is the command,
@@ -231,6 +254,75 @@ printf 'resize 500 400\n'             | nc -U /tmp/nws.sock   # => ok
 printf 'screenshot /tmp/after.png\n'  | nc -U /tmp/nws.sock   # => ok
 printf 'quit\n'                       | nc -U /tmp/nws.sock   # => ok
 ```
+
+### Headless mode
+
+`--headless` hosts the app with no parent display.
+The compositor opens `EGL_MESA_platform_surfaceless` on the DRM render node,
+renders into offscreen buffers,
+and imports the client's `zwp_linux_dmabuf_v1` buffers on the GPU exactly as the nested window does.
+It opens no window,
+so nothing ever appears on the desktop of the machine it runs on,
+and it runs from a bare TTY,
+an SSH session,
+or a CI job that has no `WAYLAND_DISPLAY` or `DISPLAY`.
+The control socket,
+`screenshot`,
+`record`,
+seat input,
+the private session bus,
+and the accessibility tree behave as in the nested window.
+Only the display and render backend differ.
+
+```sh
+# No WAYLAND_DISPLAY, no DISPLAY: the app is drawn on the GPU and photographed.
+env --unset=WAYLAND_DISPLAY --unset=DISPLAY \
+  monochromatic-nested-wayland-session --headless --socket /tmp/nws.sock --size 800x600 -- my-app
+```
+
+Headless is opt-in,
+and the nested window stays the default in every case,
+including when the tool is started from a script.
+The nested window is minimized on launch but can be restored,
+which is the way to see what a hosted app is doing while a test or a repro runs.
+A headless session has no window to restore,
+so the only view of it is a `screenshot` or a `record`.
+For that reason the tool never switches to headless by itself:
+with no parent display and no `--headless`,
+the start fails and the message names `--headless` as an option.
+An explicit flag rather than detection is also the only choice that behaves the same for a script run from a desktop
+and the same script run in CI:
+a flag is visible in the command line,
+whereas a choice made from whichever display variables happen to be set would change what a command does
+depending on where it runs.
+A command line without `--headless` behaves exactly as before.
+
+When `--headless` is given and a parent display variable is set anyway,
+the parent is left unused and the log says so.
+The hosted app never sees the parent display either way:
+the compositor strips `WAYLAND_SOCKET`,
+`DISPLAY`,
+and `XAUTHORITY` from the app's environment and points `WAYLAND_DISPLAY` at its own socket.
+
+Which GPU renders is Mesa's default choice of render node for the surfaceless platform,
+and the log line `headless: surfaceless EGL display opened` names the node.
+On a host with several GPUs the default may not be the display GPU.
+When the EGL device is a software rasterizer (such as `llvmpipe`) the log says so,
+and the app is then drawn on the CPU.
+The client allocates its buffers on that same node,
+because the compositor advertises the format and modifier pairs of its own EGL display
+as `zwp_linux_dmabuf_v1` version 4 default feedback.
+
+Use `mise run //package/cli/nested-wayland-session:inspect:headless` to verify the built release binary.
+The task removes every parent display variable from the compositor's environment,
+hosts a Slint client with the `winit-femtovg` renderer,
+and checks the screenshots,
+a click that changes the second screenshot,
+`resize` and `scale`,
+the frame callback rate,
+that a decoy parent socket receives no connection,
+and that a start with no display and no flag fails with a message naming `--headless`.
+It needs `slint-viewer`.
 
 ### Isolated clipboard
 
@@ -1503,11 +1595,17 @@ for paths with whitespace.
 
 ## How it works
 
-The tool is itself a winit client of the parent Wayland session,
+By default the tool is itself a winit client of the parent Wayland session,
  so it inherits the
 parent's GPU device and renders with a GLES2/EGL renderer,
  following Smithay's `anvil`
 winit path.
+With `--headless` there is no parent to inherit from:
+the same GLES renderer runs on a surfaceless EGL display of the DRM render node,
+and the dmabuf global advertises the format and modifier pairs of that display.
+Both modes build the same output (including its transform) and the same dmabuf global,
+and screenshots render the output into an offscreen texture in both,
+so a capture is the same code path in either mode.
  Because the fixture owns the compositor,
  three testing needs become built-in,
 in-process features rather than external tools:
@@ -1541,6 +1639,26 @@ whenever the parent has presented nothing for 50 ms and no recording is running.
 The log records when this fallback starts and when the parent presents again.
 While a recording runs,
 the recorder's own timer sets the pace instead.
+
+### Headless pacing
+
+A headless session has no parent compositor whose presentations could pace the client,
+so a timer is the only source of frame notices.
+It fires at the output's 60 Hz refresh (one tick every 16.666 ms) from the first tick on,
+with no stall threshold and no wait for a parent,
+and sends a frame callback on every tick to every surface that asked for one.
+While a recording runs,
+the recorder's timer sends them at the capture rate instead,
+as in the nested window.
+`screenshot` and `record` render the latest committed client buffer on demand,
+so a screenshot taken after a client commit shows that commit,
+and nothing is drawn or presented between captures.
+`inspect:headless` measures 60 callback ticks per second on the client's side.
+A Slint client counts two `wl_callback.done` events per tick,
+because winit asks for one frame callback of its own beside the one Slint asks for;
+both arrive with the same timestamp.
+
+### Checking the stall fallback
 
 Use `mise run //package/cli/nested-wayland-session:inspect:stalled-parent` to verify the built release binary.
 The task hosts one session inside another and starts a very slow recording in the outer one,
@@ -1652,6 +1770,16 @@ Tasks fall back to the host automatically when the development libraries are pre
   It needs `slint-viewer` and `python3` with GTK 4,
   takes the binary from `NWS_BINARY` (default `./target/release/monochromatic-nested-wayland-session`),
   and runs only the checks whose names match the regular expression in `NWS_CHECKS` when it is set.
+- `mise run //package/cli/nested-wayland-session:inspect:headless` runs a Slint client with `--headless` and no parent
+  display variable in the compositor's environment:
+  two identical screenshots,
+  a click that changes the third,
+  upright and non-blank images,
+  `resize` and `scale`,
+  the frame callback rate,
+  a decoy parent socket that must receive no connection,
+  and the failure message of a start with no display and no flag.
+  It needs `slint-viewer` and takes the binary from `NWS_BINARY` like `inspect:input`.
 - `mise run //package/cli/nested-wayland-session:verify:container` is the reference build
   that builds,
    clippys,
@@ -1659,19 +1787,30 @@ Tasks fall back to the host automatically when the development libraries are pre
 
 ## Scope
 
-This version supports the nested-winit path only:
- it needs a running parent Wayland
-session at run time.
- The headless-surfaceless variant,
- for a bare machine with no screen
-at all (such as a CI server),
- is the concentrated risk and is deferred to issue #273.
+Two render backends share one control API.
+ The default is the nested-winit path,
+ which needs a running parent session at run time.
+ The opt-in `--headless` path (issue #273) uses surfaceless EGL on the DRM render node for a bare machine
+with no display at all,
+ such as a CI server or an SSH session;
+ see [Headless mode](#headless-mode).
+ Headless is never selected for you.
 
 ## Not supported
 
 What a person can do that this tool cannot,
 and why.
 
+- Choosing the GPU in headless mode:
+  the render node is Mesa's default for `EGL_MESA_platform_surfaceless`,
+  and there is no option to name another one.
+  A host without a render node,
+  or without Mesa's surfaceless platform,
+  fails to start with `--headless` and says why.
+- Watching a headless session:
+  it has no window to restore.
+  Use `screenshot` or `record`,
+  or run without `--headless` to get the nested window.
 - An input method's `text-input-v3` commit:
   typing arrives as key events with text,
   which clients read the same way;
@@ -1697,8 +1836,23 @@ and why.
   and change events:
   `a11y` reads the tree only.
 
-## Changes after 0.4.0
+## Changes in the next version
 
+- New `--headless` flag renders with surfaceless EGL on the DRM render node,
+  with no parent display and no window.
+  The control API,
+  screenshots,
+  recordings,
+  input,
+  the private bus,
+  and accessibility are unchanged;
+  see [Headless mode](#headless-mode).
+- Headless is opt-in.
+  Without the flag the nested window is used exactly as before,
+  and a start with no parent display fails with a message that names `--headless`.
+- A headless session sends frame callbacks from a 60 Hz timer from the first tick,
+  see [Headless pacing](#headless-pacing).
+- New `inspect:headless` task.
 - A `resize` or `scale` that changes the screen while a recording runs answers the client's pending frame callbacks
   right after the new configure and scale, so the client draws and commits the new size before the next capture.
   See [Change the output scale](#change-the-output-scale).
