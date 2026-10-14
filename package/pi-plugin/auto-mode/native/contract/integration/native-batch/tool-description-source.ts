@@ -31,7 +31,10 @@ export function sessionToolDescriptionSource(source: string): string {
  /**
   Log source preparation without exposing original tool descriptions.
   */
- const rl = tagged({ tag: sessionToolDescriptionSource.name, l });
+ const rl = tagged({
+   tag: sessionToolDescriptionSource.name,
+   l
+ });
  rl.debug('capturing original Session tool-description boundaries');
  /**
   Constructor input is captured before loadout preparation can mutate it.
