@@ -172,10 +172,7 @@ async function main() {
       `COPY --from=${nodeImage} /usr/local/bin/node /usr/local/bin/node`,
       'USER 1000:1000',
       'WORKDIR /work/package/git-policy/cli',
-      // The release executable, and the library's ignored probes, which a driver runs with
-      // `cargo test --release --lib -- --ignored <name>` to compute a native answer for a fact the incumbent reports.
       'RUN ["cargo", "build", "--offline", "--locked", "--release", "--bin", "cli-git-native"]',
-      'RUN ["cargo", "test", "--offline", "--locked", "--release", "--lib", "--no-run"]',
       'USER 0:0',
       // Copied after the compilation steps so editing a driver never rebuilds the native executable.
       'COPY native-interop /fixture/native-interop',
