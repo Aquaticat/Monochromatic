@@ -1,5 +1,15 @@
-/** Private SDK delta: delegate the complete native group or withhold every member. */
-export const batchBoundary = `async function executeToolCalls(currentContext, assistantMessage, config, signal, emit) {
+/**
+ Retain the complete native tool group's execution and cleanup boundary in generated source.
+
+ @module
+ */
+
+//region Native group delegation preserves original member outcomes and cleanup
+
+/**
+ Delegate the complete native group or withhold every member while retaining native outcome emission.
+ */
+export const batchBoundary: string = `async function executeToolCalls(currentContext, assistantMessage, config, signal, emit) {
     const calls = assistantMessage.content.filter(part => part.type === "toolCall");
     const started = new Set();
     const finished = new Map();
@@ -51,3 +61,5 @@ export const batchBoundary = `async function executeToolCalls(currentContext, as
     return {messages,terminate:terminationRequested || shouldTerminateToolBatch(finalizedCalls)};
 }
 `;
+
+//endregion Native group delegation preserves original member outcomes and cleanup

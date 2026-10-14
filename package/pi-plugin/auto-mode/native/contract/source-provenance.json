@@ -419,6 +419,8 @@
     {
       "original": "integration/native-batch/agent-input-source.mjs",
       "maintained": "integration/native-batch/agent-input-source.mjs",
+      "currentMaintained": "integration/native-batch/agent-input-source.ts",
+      "movedOn": "2026-10-14",
       "sha256": "8bb31544479fc87934ee3b0e96a78eee11feed32abcacff0e0ff055ae9407056",
       "origin": "authored-source",
       "relocatedLiterals": 0
@@ -442,6 +444,8 @@
     {
       "original": "integration/native-batch/boundary.mjs",
       "maintained": "integration/native-batch/boundary.mjs",
+      "currentMaintained": "integration/native-batch/boundary.ts",
+      "movedOn": "2026-10-14",
       "sha256": "a48d1c51ce06d6f5d7563eab5ffcd93ae5f7a127b1ebe0673dcbaebc66e56806",
       "origin": "authored-source",
       "relocatedLiterals": 0
