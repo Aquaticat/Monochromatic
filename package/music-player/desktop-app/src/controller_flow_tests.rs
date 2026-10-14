@@ -46,6 +46,9 @@ impl Library {
                 let text = match &update {
                     Update::Playing(on) => format!("playing {on}"),
                     Update::Unplayable(paths) => format!("unplayable {}", paths.len()),
+                    Update::Measures(measures) => {
+                        format!("peaks {}", measures.iter().filter(|(_, measure)| return measure.peak_dbtp.is_some()).count())
+                    }
                     Update::FileGone { path, was_playing } => format!("gone {} {was_playing}", path.display()),
                     Update::Reading { name } => format!("reading {name}"),
                     Update::SourceRoot(name) => format!("root {name:?}"),
@@ -74,6 +77,23 @@ impl Drop for Library {
     fn drop(&mut self) {
         std::fs::remove_dir_all(&self.root).ok();
     }
+}
+
+/// What: `unplayable_reports` counts the reports of unplayable files the window has received.
+/// Why: D122 and D128 want a file reported once, however many times it is tried.
+fn unplayable_reports(library: &Library) -> usize {
+    return library.updates().iter().filter(|text| return text.starts_with("unplayable ")).count();
+}
+
+/// What: `measured_peaks` counts the files the window has received a measured peak for.
+/// Why: a measured peak is what removes the unplayable mark of a row (D113).
+fn measured_peaks(library: &Library) -> usize {
+    return library
+        .updates()
+        .iter()
+        .filter_map(|text| return text.strip_prefix("peaks "))
+        .filter_map(|count| return count.parse::<usize>().ok())
+        .sum();
 }
 
 /// What: `open` opens the library without selecting anything and without playing.
@@ -191,13 +211,48 @@ fn repeat_never_stops_at_the_end() {
 }
 
 #[test]
-fn a_file_that_cannot_be_opened_is_reported_and_the_next_one_plays() {
-    let library = Library::new("unplayable", &["A/1 Corrupt.wav", "A/2 Fine.flac"]);
+fn next_skips_a_file_that_cannot_be_opened_reports_it_and_keeps_playing() {
+    let library = Library::new("next-skips", &["A/1 Fine.flac", "A/2 Corrupt.wav", "A/3 Fine.flac"]);
     let mut controller = library.controller();
     open(&mut controller, &library);
+    controller.handle_command(Command::SetPlaybackMode(PlaybackMode::InOrder));
     controller.handle_command(Command::SelectIndex(0));
-    assert_eq!(controller.queue.current_index(), Some(1), "the broken file was skipped");
-    assert!(library.updates().contains(&"unplayable 1".to_string()), "and the window is told which file");
+    controller.handle_command(Command::Play);
+    controller.handle_command(Command::Next);
+    assert_eq!(controller.queue.current_index(), Some(2), "Next walks past the broken file");
+    assert!(controller.playing, "and playback goes on with the next playable file");
+    assert!(controller.source.is_some(), "the playable file is loaded");
+    assert_eq!(unplayable_reports(&library), 1, "and the window is told about the file once");
+}
+
+#[test]
+fn previous_does_not_stop_on_a_file_that_cannot_be_opened() {
+    let library = Library::new("prev-skips", &["A/1 Corrupt.wav", "A/2 Fine.flac", "A/3 Fine.flac"]);
+    let mut controller = library.controller();
+    open(&mut controller, &library);
+    controller.handle_command(Command::SetPlaybackMode(PlaybackMode::InOrder));
+    controller.handle_command(Command::SelectIndex(1));
+    controller.handle_command(Command::Play);
+    controller.handle_command(Command::Prev);
+    assert_ne!(controller.queue.current_index(), Some(0), "Previous never rests on the broken file");
+    assert!(controller.playing, "playback goes on");
+    assert!(controller.source.is_some(), "a playable file is loaded");
+    assert_eq!(unplayable_reports(&library), 1, "and the broken file is reported");
+}
+
+#[test]
+fn the_natural_end_of_a_track_skips_a_file_that_cannot_be_opened() {
+    let library = Library::new("end-skips", &["A/1 Fine.flac", "A/2 Corrupt.wav", "A/3 Fine.flac"]);
+    let mut controller = library.controller();
+    open(&mut controller, &library);
+    controller.handle_command(Command::SetPlaybackMode(PlaybackMode::InOrder));
+    controller.handle_command(Command::SelectIndex(0));
+    controller.handle_command(Command::Play);
+    controller.on_track_end();
+    assert_eq!(controller.queue.current_index(), Some(2), "the end of a track walks past the broken file");
+    assert!(controller.playing, "and the next playable file plays");
+    assert!(controller.source.is_some(), "it is loaded");
+    assert_eq!(unplayable_reports(&library), 1, "and the broken file is reported");
 }
 
 #[test]
@@ -291,13 +346,75 @@ fn selecting_a_row_loads_it_paused_and_stops_the_playing_track() {
 }
 
 #[test]
-fn selecting_a_row_that_cannot_be_opened_is_reported_and_the_current_track_is_recorded() {
+fn selecting_a_row_that_cannot_be_opened_keeps_that_row_selected_and_paused() {
     let library = Library::new("select-unreadable", &["A/1.flac", "A/2.wav", "A/3.flac"]);
     let mut controller = library.controller();
     open(&mut controller, &library);
     controller.handle_command(Command::SelectIndex(1));
+    assert_eq!(controller.queue.current_index(), Some(1), "the clicked row stays the current row (D128)");
     assert!(!controller.playing, "nothing plays after the select");
-    assert!(library.updates().iter().any(|text| return text.starts_with("unplayable ")), "the file is named as unplayable: {:?}", library.updates());
-    // What the window shows as current after a select of an unreadable row is the controller's choice, written down here.
-    assert_eq!(controller.queue.current_index(), Some(2), "load_current skips the unreadable file to the next playable one");
+    assert!(controller.source.is_none(), "nothing is loaded for a file that cannot be opened");
+    assert_eq!(unplayable_reports(&library), 1, "the file is named as unplayable once: {:?}", library.updates());
+    assert!(library.updates().contains(&"now Some(1)".to_string()), "and the window is told the row is current");
+}
+
+#[test]
+fn selecting_an_unreadable_row_stops_the_playing_track_and_drops_its_decoder() {
+    let library = Library::new("select-unreadable-stops", &["A/1.flac", "A/2.wav"]);
+    let mut controller = library.controller();
+    open(&mut controller, &library);
+    controller.handle_command(Command::SelectIndex(0));
+    controller.handle_command(Command::Play);
+    assert!(controller.playing);
+    controller.handle_command(Command::SelectIndex(1));
+    assert_eq!(controller.queue.current_index(), Some(1));
+    assert!(!controller.playing, "the playing track stops");
+    assert!(controller.source.is_none(), "the previous track's decoder is gone, so a toggle cannot resume it");
+}
+
+#[test]
+fn a_second_click_on_the_unreadable_current_row_tries_again_and_reports_nothing_more() {
+    let library = Library::new("retry-fails", &["A/1.flac", "A/2.wav"]);
+    let mut controller = library.controller();
+    open(&mut controller, &library);
+    controller.handle_command(Command::SelectIndex(1));
+    // What the second click sends: the window knows the row is current, so `play_row` sends the toggle.
+    controller.handle_command(Command::TogglePlay);
+    assert_eq!(controller.queue.current_index(), Some(1), "the retry stays on the row");
+    assert!(!controller.playing, "and nothing plays when the file still cannot be opened");
+    assert!(controller.source.is_none());
+    assert_eq!(unplayable_reports(&library), 1, "the file was reported once, not again by the retry");
+}
+
+#[test]
+fn a_retry_that_finds_the_file_readable_loads_it_plays_it_and_the_mark_clears() {
+    let library = Library::new("retry-works", &["A/1.flac", "A/2.wav", "A/3.flac"]);
+    let mut controller = library.controller();
+    open(&mut controller, &library);
+    controller.handle_command(Command::SelectIndex(1));
+    assert!(controller.source.is_none());
+    std::fs::copy("fixture/tone.flac", library.root.join("A/2.wav")).expect("the file is replaced by one that decodes");
+    controller.handle_command(Command::TogglePlay);
+    assert_eq!(controller.queue.current_index(), Some(1), "the retry loads the row that was selected");
+    assert!(controller.source.is_some(), "the file decodes now, so it is loaded");
+    assert!(controller.playing, "and the toggle plays it, as on a restored row");
+    // The window drops the row's mark when a measured peak arrives for the path (D113); wait for it, bounded.
+    let deadline = std::time::Instant::now() + std::time::Duration::from_secs(20);
+    while measured_peaks(&library) == 0 && std::time::Instant::now() < deadline {
+        controller.poll_pending_peak();
+        std::thread::sleep(std::time::Duration::from_millis(20));
+    }
+    assert_eq!(measured_peaks(&library), 1, "a peak is measured for the file, which removes its mark: {:?}", library.updates());
+}
+
+#[test]
+fn the_play_button_on_an_unreadable_selected_row_tries_that_row_and_not_the_next_file() {
+    let library = Library::new("play-unreadable-selected", &["A/1.wav", "A/2.flac"]);
+    let mut controller = library.controller();
+    open(&mut controller, &library);
+    controller.handle_command(Command::SelectIndex(0));
+    controller.handle_command(Command::Play);
+    assert_eq!(controller.queue.current_index(), Some(0), "Play does not move the selection to a playable file");
+    assert!(!controller.playing);
+    assert_eq!(unplayable_reports(&library), 1);
 }

@@ -41,18 +41,85 @@ impl Controller {
             self.set_playing(true);
             return;
         }
-        let first: Option<usize> = self.queue.current_index().or_else(|| return self.queue.first_in_scope());
+        let selected: Option<usize> = self.queue.current_index();
+        let first: Option<usize> = selected.or_else(|| return self.queue.first_in_scope());
         let Some(index) = first else {
             tracing::info!("Play was asked with nothing queued; staying paused");
             self.set_playing(false);
             return;
         };
-        tracing::info!(index, "Play was asked with nothing loaded; starting the first track of the page");
-        if self.queue.current_index() != Some(index) {
+        // D128: a selected row that is not loaded (restored, or its open failed) is tried again where it stands; only
+        // a Play with nothing selected walks past unreadable files to the first playable one.
+        let loaded: bool = if selected.is_some() {
+            tracing::info!(index, "Play was asked with a selected row that is not loaded; loading that row");
+            self.load_selected()
+        } else {
+            tracing::info!(index, "Play was asked with nothing loaded; starting the first track of the page");
             self.queue.play_index(index);
-        }
-        let loaded: bool = self.load_current();
+            self.load_current()
+        };
         self.set_playing(loaded);
+    }
+
+    /// What:
+    ///      `pub(crate) fn load_selected(&mut self) -> bool`.
+    ///  Open the selected row's file and nothing else: on success install it paused at its start; on failure keep the
+    ///  row selected with nothing loaded, report the file, and tell the window the row is current with no length.
+    /// Why:
+    ///       D128: a click, Enter or Search activation chooses a row, so an unreadable row stays the current row (as on
+    ///  Android) and the next click retries it. Playback-driven moves (Next, Previous, the end of a track) keep using
+    ///  `load_current`, which walks past unreadable files.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// loadSelected(): boolean {
+    ///   const path = this.queue.currentPath(); if (!path) return false;
+    ///   try { this.installSource(open(path), path); return true; }
+    ///   catch { this.unloadTrack(); this.reportUnplayable([path]); this.emitNowPlaying(path, 0); return false; }
+    /// }
+    /// ```
+    pub(crate) fn load_selected(&mut self) -> bool {
+        let Some(path) = self.queue.current_path().cloned() else {
+            tracing::info!("a row was selected but the queue has no current path");
+            return false;
+        };
+        match crate::decode::open(&path) {
+            Ok(source) => {
+                self.install_source(source, &path);
+                return true;
+            }
+            Err(error) => {
+                tracing::warn!(path = %path.display(), error = %error, "cannot open the selected file; the row stays selected");
+                self.unload_track();
+                self.report_unplayable(vec![path.clone()]);
+                self.emit_now_playing(&path, 0.0);
+                return false;
+            }
+        }
+    }
+
+    /// What:
+    ///      `fn unload_track(&mut self)`.
+    ///  Drop the decoder and everything tied to it: the track queued behind it, the samples waiting to be written, the
+    ///  file fingerprint, the pending peak measurement and the clock.
+    /// Why:
+    ///       D128: after a failed open of the selected row nothing may stay loaded, or the next toggle would resume the
+    ///  previous track under the new row instead of trying to open the new row's file.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// unloadTrack(): void { this.source = null; this.spec = null; this.staged = null; this.pending = []; this.loadedFile = null; }
+    /// ```
+    fn unload_track(&mut self) {
+        self.source = None;
+        self.spec = None;
+        self.staged = None;
+        self.loaded_file = None;
+        self.pending.clear();
+        self.pending_pos = 0;
+        self.pending_peak = None;
+        self.peak_generation = self.peak_generation.wrapping_add(1);
+        self.clock.restart(0);
     }
 
     /// What:
