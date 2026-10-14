@@ -16,7 +16,9 @@ The observed 16-question rejection remains unresolved.
 The public source does not expose its deciding hosted guard.
 The current measured question boundary is 512,
 so the historical 16-question observation no longer excludes batching by count alone.
-The complete native assessment remains unverified on Drex 2.0.
+The later complete native assessment returned all question IDs outside the production deadline,
+but failed the existing distribution validator and supplied no answer at the adopted operating cutoff.
+The complete-input results are retained in the corresponding section.
 
 The completed synthetic probes establish:
 
@@ -322,6 +324,59 @@ No production route,
 threshold,
 deadline,
 or source-retention policy changed.
+
+## Complete native input on 2026-10-14
+
+The user explicitly approved the prepared complete-input check,
+then renewed authorization to send anything needed to Drex and Jev and use credits freely.
+The frozen native fixture preserves 73 source occurrences and 84 original questions.
+Only the model and required text encoding of question instructions differ from the captured Jev request.
+JSON round-trip comparisons recover every original question instruction;
+the complete state is unchanged.
+The request measures 541,947 bytes and has SHA-256
+`3d204aa86fb17dd3de7ad9c320ef2b6db65200badc27dd950b16189750fba410`.
+
+The first call at `${HOME}/temp/agent/pi-native-drex-capacity-20261014`
+ended with `TimeoutError` after 5,005.129 ms.
+It made no retry and produced no usable response.
+A separate observation at `${HOME}/temp/agent/pi-native-drex-observation-20261014`
+retained the exact same request bytes and allowed 60 seconds for diagnosis only.
+That attempt reached HTTP 200 and returned `drex-v2.0` with all 84 answer IDs.
+It failed local answer validation at 48,528.415 ms.
+The response reports `evaluation_time_ms: 46615.903`,
+2,418,163 input tokens,
+and 8,381 output tokens.
+These are provider-reported usage values,
+not independently reconciled billing.
+
+The local error is `QuestionSelectionError: Choice answer is not a complete distribution with a highest-probability selected option`.
+The returned distributions include 38 sums outside the consumer's `0.000001` tolerance;
+the largest observed deviation is `0.0002`.
+The [troubleshooting analysis](../troubleshooting/drex-model-route-label.md#complete-native-choice-distributions-and-latency)
+compares that result with the public four-decimal serializer.
+No production validator was relaxed and no reported probability was normalized.
+
+None of the 84 selected scores reaches the adopted `0.99` cutoff.
+The explicit primary clause,
+`RUL: The complete proposed operation may read proof.txt in this directory.`,
+received `none` with probability `0.3586` and permission probability `0.0153`.
+This is an abstaining or incorrect interpretation result for this representation,
+not a basis for loosening the cutoff or declaring general model quality.
+The result establishes request acceptance,
+not suitability for the installed assessment.
+
+A frozen follow-up at `${HOME}/temp/agent/pi-drex-clause-isolation-20261014`
+keeps the complete state and tests only that primary clause.
+Two unchanged baselines measure variability,
+then a third request places the same original definition and option rubrics directly in the question.
+The baseline request hash is
+`fe5885a059a33e43efb1e641cf17ccbbcb11e6bd624506d2dd51d031c726c321`;
+the inline-definition request hash is
+`ff94876634e47353bed80521f979630477fdfdb5c84335c664f36080f0cacac4`.
+There are at most three calls,
+no retries,
+and no production admission or tool execution.
+This diagnostic subset is not a replacement for complete source interpretation.
 
 [models]: https://console.nace.ai/docs/drex/reference/models
 [limits]: https://console.nace.ai/docs/drex/reference/limits

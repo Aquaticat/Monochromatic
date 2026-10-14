@@ -265,8 +265,40 @@ The governed read remained withheld.
 This establishes a capacity rejection for this rerun,
 without retroactively recovering the discarded body from the previous run.
 No payload reduction or capacity workaround is yet verified for the installed host.
-The next local check measures the complete native assessment and reversible representation changes.
+The local replay and representation checks are recorded in the capacity subsection.
 The upstream filing decision remains unchanged because a documented capacity rejection is not an established bug.
+
+### Complete native state and lossless representation checks
+
+The network-isolated replay at `${HOME}/temp/agent/pi-native-installed-live-UFBJsm`
+captured 73 source occurrences,
+84 questions,
+and a 504,946-byte request.
+The state occupied 251,214 bytes and questions occupied 253,679 bytes.
+There were 51 distinct source texts;
+the repeated source-text array occupied 216,561 bytes versus 174,262 for distinct texts.
+These are serialized byte measurements,
+not token counts.
+Native JSON receipts also repeat values within their original records.
+
+Private local prototypes recovered every original state field and every question instruction by exact deep comparison.
+The explicit-node graph measured 194,593 bytes.
+The shared-content representation measured 165,373 bytes,
+including 125,822 bytes of state and 39,498 bytes of questions.
+A simpler source-record representation measured 305,929 bytes.
+All retained every original source occurrence and question;
+none was installed.
+Exact reconstruction does not establish equivalent model interpretation.
+
+The frozen shared-content Jev request at
+`${HOME}/temp/agent/pi-capacity-shared-check-20261014`
+has SHA-256 `4b0f35e9721c53aba83b905b9332df8d742e06e903b723311f16e123d78aa16b`.
+Its single five-second request returned HTTP 400 with `max_tokens_exceeded` after 1,269.832 ms.
+No retry occurred.
+This tested representation is therefore not a capacity workaround.
+Dropping source occurrences,
+relaxing the adopted cutoff,
+or assuming byte reduction proves token fit remains unjustified.
 
 ## Source identity
 
