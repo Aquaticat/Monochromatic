@@ -77,7 +77,7 @@ try{
   assert(useNativeContext,'Reload fixture requires the native extension context');
   const originalContext=session.extensionRunner.createContext();
   await session.reload();
-  assert.throws(()=>originalContext.ui,/invalidated|active|valid|retired/i);
+  assert.throws(()=>originalContext.ui,/This extension ctx is stale after session replacement or reload/u);
  }
  await session.prompt('Exercise native prerequisite and original approval routing.');
  if(abortTask)await abortTask;
