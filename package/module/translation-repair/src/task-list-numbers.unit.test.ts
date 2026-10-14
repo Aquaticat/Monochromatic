@@ -108,8 +108,8 @@ const GITHUB_ISSUES: ReadonlySet<number> = new Set([
 ],);
 
 /**
- GitHub issue raised against `cli-markdown-lint`'s semantic-line-breaks rule,
- which the OpenRouter pass log cites, checked with `gh issue view` on
+ GitHub issue raised against the semantic-line-breaks rule of the repository's
+ former Markdown linter package, which the OpenRouter pass log cites, checked with `gh issue view` on
  2026-09-29.
  */
 const LINE_BREAK_RULE_ISSUE = 556;

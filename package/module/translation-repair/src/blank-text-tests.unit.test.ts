@@ -877,6 +877,13 @@ const AUDIT_FOCUS = 'the focus one side of an audit finding rests on, returned e
 const WIDTH_ARM = 'the text an editor width arm shipped, which the trial writes empty when the arm shipped none';
 
 /**
+ Why a test of what crosses a program's standard streams stands.
+ */
+const STREAM = 'a passage handed to a program on standard input, and what the program wrote back: an empty one is no '
+  + 'byte crossing the stream, which the wrap returns as it came or refuses, and whether the text shows a reader '
+  + 'anything is not asked there';
+
+/**
  Each blankness test the package makes, as `path#site`, with how many there
  are and why `rendersAsNothing` is not the question there.
  */
@@ -1991,6 +1998,10 @@ const HELD_TESTS: Readonly<Record<string, {
   'sheet-binding.ts#requireSheetSeed': {
     tests: 1,
     why: RECORD,
+  },
+  'semantic-wrap-binary.ts#wrapWithLintBinary': {
+    tests: 2,
+    why: STREAM,
   },
   'sheet-line-text.ts#flattenSpace': {
     tests: 1,
