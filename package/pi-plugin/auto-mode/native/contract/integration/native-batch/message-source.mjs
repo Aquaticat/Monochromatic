@@ -27,5 +27,9 @@ export function handlerMessageSource({source,publicationUrl}){
 export function handlerProviderSource({source,publicationUrl}){
  const before='                params.push({\n                    role: "user",\n                    content,\n                });';
  const after='                const userMessage = {role:"user",content};\n                params.push(userMessage);\n                recordHandlerPayload({before:msg,after:userMessage});';
- return 'import {recordHandlerPayload} from '+JSON.stringify(publicationUrl)+';\n'+once({source,before,after});
+ const messages=once({source,before,after});
+ const observed=once({source:messages,before:'            const nextParams = await options?.onPayload?.(params, model);',after:'            nativeSerializedPayloads.set(params,Object.freeze({model,messages:normalizedContext.messages}));\n            const nextParams = await options?.onPayload?.(params, model);'});
+ return 'import {recordHandlerPayload} from '+JSON.stringify(publicationUrl)+';\n'
+  +'const nativeSerializedPayloads=new WeakMap();\n'
+  +'export function readNativeSerializedPayload(payload){return nativeSerializedPayloads.get(payload);}\n'+observed;
 }

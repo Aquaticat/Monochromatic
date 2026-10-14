@@ -1,6 +1,6 @@
 import {isDeepStrictEqual,types} from 'node:util';
 import {readHandlerPayloadPublication} from '../../collector/run-prompt-custody-v3/handler-publication.mjs';
-import {streamSimple} from "./generated/openai-stream.mjs";
+import {streamSimple,readNativeSerializedPayload} from "./generated/openai-stream.mjs";
 
 export class NativeSourceAssociationError extends Error {}
 
@@ -132,17 +132,21 @@ function originalContributions({sources,model,context,options}){
  * Attach one historical contribution at the observer's existing JSON validation.
  * A source-aware custody copy closes callback alias races without freezing borrowed objects.
  */
-export function prepareNativeSourceAssociation({originalStream,sources,model,context,options}){
- if(originalStream!==nativeOpenAIStream)return undefined;
+export function prepareNativeSourceAssociation({sources,model,context,options}){
  const {origins,reason}=originalContributions({sources,model,context,options});
  const messageEligible=envelopeReason({model,context,options})===undefined;
  const previous=options?.onPayload;
- let owned=[],unresolvedHandlers=[],called=false,sealed=false;
+ const originalMessages=context.messages;
+ let owned=[],unresolvedHandlers=[],called=false,sealed=false,payloadOriginFailure;
  async function onPayload(payload,selectedModel){
   if(called)throw new NativeSourceAssociationError('Native source association cannot reuse a payload occurrence');
   called=true;
+  const origin=readNativeSerializedPayload(payload);
+  const originalPayload=origin!==undefined&&origin.messages===originalMessages&&origin.model===selectedModel
+   &&selectedModel.id===model.id&&selectedModel.provider===model.provider&&selectedModel.api===model.api;
+  if(!originalPayload)payloadOriginFailure='Request payload lacks the original native serializer occurrence for this captured transcript and model';
   const candidates=[];
-  if(dataRecord(payload)&&denseArray(payload.messages)){
+  if(originalPayload&&dataRecord(payload)&&denseArray(payload.messages)){
    const original=payload.messages[0];
    if(origins&&dataRecord(original)&&typeof original.content==='string'&&['system','developer'].includes(original.role)){
     candidates.push({original,content:original.content,role:original.role,associations:origins,system:true});
@@ -199,7 +203,7 @@ export function prepareNativeSourceAssociation({originalStream,sources,model,con
   const system=expected.find(record=>record.system),systemOrdinal=system?.ordinal??0,systemMessage=parsed.messages?.[systemOrdinal];
   if(systemMessage&&['system','developer'].includes(systemMessage.role)&&typeof systemMessage.content==='string'){
    const associated=system!==undefined&&systemMessage.role===system.message.role&&systemMessage.content===system.message.content;
-   append({ordinal:systemOrdinal,associations:associated?system.associations:[undefined],why:associated?undefined:reason??'The payload callback replaced or changed the original native contribution'});
+   append({ordinal:systemOrdinal,associations:associated?system.associations:[undefined],why:associated?undefined:payloadOriginFailure??reason??'The payload callback replaced or changed the original native contribution'});
   }
   for(const record of expected){
    if(record.system)continue;
