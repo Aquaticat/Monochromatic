@@ -132,8 +132,12 @@ export function createNativeReturnConsumer(owner: NativeReturnOwner): NativeRetu
   } {
     if (entry.active) throw new NativeReturnContractError('Native result consumer cannot reenter through synchronous callbacks');
     entry.active = true;
-    // This lexical scope ends before invoke awaits the native operation.
-    using reservation = { [Symbol.dispose]: function releaseEntry(): void { entry.active = false; } };
+    /** This lexical scope ends before invoke awaits the native operation. */
+    using reservation = {
+      [Symbol.dispose]: function releaseEntry(): void {
+        entry.active = false;
+      }
+    };
     assertCurrent();
     /**
      The original owner resolves this slot without manufacturing replacement state.
@@ -148,6 +152,8 @@ export function createNativeReturnConsumer(owner: NativeReturnOwner): NativeRetu
     /**
      Reservation survives both synchronous and asynchronous native failures.
      */
+    const usesStructuredOutput = Boolean(slot.tool.outputSchema);
+    /** Original call and conversion selection remain fixed through native completion. */
     const invocation: NativeReturnInvocation = {
       identity: Object.freeze({}),
       state: 'running',
@@ -158,19 +164,17 @@ export function createNativeReturnConsumer(owner: NativeReturnOwner): NativeRetu
       tool: Object.freeze({
         name: slot.call
           .name,
-        ...(slot.tool
-          .outputSchema ? { outputSchema: true } : {})
+        ...(usesStructuredOutput ? { outputSchema: true } : {})
       }),
       conversionCount: 0,
     };
     slot.native = invocation;
-    try { return {
-      invocation,
-      pending: runNative(
-        call,
-        options
-      )
-    }; }
+    try {
+      return {
+        invocation,
+        pending: runNative(call, options)
+      };
+    }
     catch (error) {
       invocation.state = 'threw';
       invocation.failure = error;
@@ -207,7 +211,9 @@ export function createNativeReturnConsumer(owner: NativeReturnOwner): NativeRetu
      Native completion remains retainable even after the original parent retires.
      */
     const outcome: unknown = await (async function awaitNativeCompletion(): Promise<unknown> {
-      try { return await pending; }
+      try {
+        return await pending;
+      }
       catch (error) {
         invocation.state = 'threw';
         invocation.failure = error;
