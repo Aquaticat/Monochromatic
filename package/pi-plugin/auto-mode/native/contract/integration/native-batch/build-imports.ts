@@ -9,6 +9,7 @@ import {
   type Node,
   parse
 } from 'yuku-parser';
+import { walkNativeSyntax } from './build-syntax.ts';
 
 //region Import locations come from the original parsed module
 
@@ -56,19 +57,6 @@ type NativeImportSpan = NativeImportSelection & {
 const l = tagged({ tag: 'auto-mode-native-build-imports' });
 
 /**
- Inspect only children produced by the parser, whose node discriminants are already qualified.
-
- @param value - field of the original parser result
-
- @returns whether the field contains another parsed node
- */
-function isParsedNode(value: unknown): value is Node {
-  return ((typeof value) === 'object') && (value !== null)
-    && ('type' in value)
-    && ((typeof value.type) === 'string');
-}
-
-/**
  Collect literal import locations with an explicit work stack instead of recursing through source structure.
 
  @param root - original parsed module
@@ -77,18 +65,10 @@ function isParsedNode(value: unknown): value is Node {
  */
 function collectImports(root: Node): ReadonlyMap<number, NativeImportSpan> {
   /**
-   Pending nodes belong exclusively to this build operation.
-   */
-  const pending = [root];
-  /**
    Literal starts are unique even when imports occur inside nested functions.
    */
   const imports = new Map<number, NativeImportSpan>();
-  while (pending.length > 0) {
-    /**
-     Pop is valid because the loop establishes a nonempty work stack.
-     */
-    const node = nonNullishOrThrow(pending.pop());
+  for (const node of walkNativeSyntax(root)) {
     if ((node.type === 'ImportDeclaration') || (node.type === 'ExportNamedDeclaration')
       || (node.type === 'ExportAllDeclaration')) {
       /**
@@ -122,11 +102,6 @@ function collectImports(root: Node): ReadonlyMap<number, NativeImportSpan> {
           kind: 'dynamic'
         }
       );
-    }
-    for (const value of Object.values(node)) {
-      if (Array.isArray(value)) {
-        for (const child of value) if (isParsedNode(child)) pending.push(child);
-      } else if (isParsedNode(value)) pending.push(value);
     }
   }
   return imports;
