@@ -131,6 +131,10 @@ run = [
 [tasks."test:native:cli-manager"]
 run = "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-batch/cli-manager.test.mjs"
 
+[tasks."test:native:event-receipts"]
+description = "Exercise original native event dispatch, complete grouped sources, and observation freshness"
+run = "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-batch/event-receipts.test.mjs"
+
 [tasks."test:native:configured-extensions"]
 description = "Exercise installed extension paths from a read-only manifest in disposable native state"
 usage = 'arg "<manifest>" help="JSON array of enabled native extension resource records"'
