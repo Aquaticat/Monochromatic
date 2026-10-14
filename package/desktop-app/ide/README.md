@@ -291,8 +291,16 @@ A `.gitignore` above the project folder,
 `info/exclude` of a work tree whose `.git` folder is not shown,
 and the global file are not watched:
 the one-second safety sweep of [Change watching](#recovery-and-timers) finds them.
-Measured in the nested compositor on 2026-10-14 against the release bundle,
-see the checks below.
+Measured on 2026-10-14 with the release bundle in the nested compositor,
+from the write of a rule file to the label in the accessibility tree
+(each polled every 20 ms, so about 45 ms of every figure is the tree read itself; six edits each way per source):
+a `.gitignore` of a shown folder took 49 to 120 ms,
+`.git/info/exclude` 48 to 973 ms,
+and the global excludes file 53 to 945 ms,
+the last two being the safety sweep's phase.
+A `.gitignore` edit that changed a row of an open folder inside it took 20 ms more to show in the same pass.
+Twelve expanded folders in a work tree cost the idle IDE 0.05 to 0.06 s of CPU in 30 s,
+against 0.06 to 0.08 s for the build before this change (three runs each; the clock ticks at 0.01 s).
 
 ### Limits
 
