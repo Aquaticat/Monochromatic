@@ -16,14 +16,18 @@ import type {
  */
 const l = tagged({ tag: 'auto-mode-native-tool-source-association' });
 
-/** An absent original manager publication cannot be replaced with matching declaration values. */
+/**
+ An absent original manager publication cannot be replaced with matching declaration values.
+ */
 const NO_CAPTURED_TOOL_ORIGIN: unique symbol = Symbol('native tool has no captured manager input publication');
 
 /**
  A second sealing attempt cannot issue another contribution for the same native request.
  */
 class NativeToolAssociationError extends Error {
-  /** Preserve the public Error diagnostic contract across native sealing failures. */
+  /**
+   Preserve the public Error diagnostic contract across native sealing failures.
+   */
   override name = 'NativeToolAssociationError';
 }
 
@@ -181,7 +185,7 @@ export function prepareNativeToolAssociation({
        Matching the array's declaration position is independent of output value equality.
        */
       const association = dataRecord(emitted) && (emitted.tool === declarations[ordinal]) ? originalToolOrigin(emitted.tool) : NO_CAPTURED_TOOL_ORIGIN;
-      if ((typeof association === 'symbol') || (!dataRecord(emitted))) return {
+      if (((typeof association) === 'symbol') || (!dataRecord(emitted))) return {
         original: tool,
         ordinal,
         reason: 'Serialized tool lacks its original native declaration emission and captured manager input'

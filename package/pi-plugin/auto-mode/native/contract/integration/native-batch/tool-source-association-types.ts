@@ -55,9 +55,15 @@ export type ToolAssociationContribution = {
   readonly permission: false;
 };
 
-/** Original serializer capture and request sealing share one owned custody lifetime. */
+/**
+ Original serializer capture and request sealing share one owned custody lifetime.
+ */
 export type NativeToolAssociation = {
-  readonly capture: (input: { readonly payload: unknown; readonly origin: unknown; readonly eligible: boolean }) => void;
+  readonly capture: (input: {
+    readonly payload: unknown;
+    readonly origin: unknown;
+    readonly eligible: boolean
+  }) => void;
   readonly retain: (selected: unknown) => unknown;
   readonly seal: (parsed: Readonly<Record<string, unknown>>) => readonly ToolAssociationContribution[];
 };
