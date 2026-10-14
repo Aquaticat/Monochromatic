@@ -111,6 +111,30 @@ try{
  assert.equal(empty.observation(),unchanged);
  assert.equal(readNativeSessionInputUsage(empty.manager).count,0);
 
+ // Emissions split into bounded sources while preserving every original callback phase.
+ const chunked=fixture({kind:'turn_start',handlers:Array.from({length:24},function noResult(){return function observe(){};})});
+ await chunked.runner.emit({type:'turn_start',text:'x'.repeat(8192)});
+ const chunks=chunked.records();
+ assert.ok(chunks.length>1);
+ assert.equal(chunks.flat().length,48);
+ assert.ok(chunks.every(function boundedChunk(chunk){return Buffer.byteLength(JSON.stringify(chunk))<=65_536;}));
+ assert.equal(readNativeSessionInputUsage(chunked.manager).count,chunks.length);
+
+ // Existing source byte and count limits still reject oversized original observations.
+ const oversized=fixture({kind:'turn_start',handlers:[function observe(){}]});
+ await oversized.runner.emit({type:'turn_start',text:'x'.repeat(65_536)});
+ assert.throws(function requireCompleteCapture(){assertNativeSessionInputCapture(oversized.manager);},/supported source capture profile/u);
+ const exhausted=fixture({kind:'turn_start',handlers:[function observe(){}]});
+ for(let ordinal=0;ordinal<65;ordinal++)await exhausted.runner.emit({type:'turn_start',ordinal});
+ assert.throws(function requireCountBound(){assertNativeSessionInputCapture(exhausted.manager);},/supported source capture profile/u);
+
+ // Capture never invokes a result accessor to discover its apparent data.
+ let accessorCalls=0;
+ const accessor=fixture({kind:'turn_start',handlers:[function unsupportedResult(){return {get unused(){accessorCalls++;return 'not data';}};}]});
+ await accessor.runner.emit({type:'turn_start'});
+ assert.equal(accessorCalls,0);
+ assert.throws(function requireOrdinaryValues(){assertNativeSessionInputCapture(accessor.manager);},/supported source capture profile/u);
+
  // Native observation failures preserve even nullish thrown values after retirement.
  for(const originalFailure of [undefined,null,'failure',new Error('fixture capture failure')]){
   const observer=createNativeEventObserver(function captureFactory(){return {capture(){throw originalFailure;},complete(){}};});
@@ -125,5 +149,17 @@ try{
   assert.equal(observer.read(['turn_start']).failed,true);
   assert.equal(observer.read(['turn_start']).pending,0);
  }
+ const completionFailure=new Error('fixture completion failure');
+ const completion=createNativeEventObserver(function captureFactory(){return {capture(){},complete(){throw completionFailure;}};});
+ const extension={path:'fixture'};
+ function handler(){}
+ const traversal=completion.begin({kind:'turn_start',snapshot:[{ext:extension,handlers:[handler]}]});
+ traversal.before({extension,handler,event:{type:'turn_start'}});
+ traversal.returned(undefined);
+ let wrapped;
+ try{traversal.end();}catch(error){wrapped=error;}
+ assert.throws(function unwrapCompletion(){traversal.aborted(wrapped);},function original(error){return error===completionFailure;});
+ assert.equal(completion.read(['turn_start']).pending,0);
+ assert.equal(completion.read(['turn_start']).failed,true);
  console.log(JSON.stringify({complete:true,nativeEventMethods:6,groupedCallbackPhases:90,groupedSources:1}));
 }finally{await env.drain();}
