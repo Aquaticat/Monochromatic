@@ -526,7 +526,9 @@
       "maintained": "integration/native-batch/prepare.mjs",
       "sha256": "c395afb8035c70063b6b675e78dc6aaad1a0f61889812c44ac31b69045e42224",
       "origin": "authored-source",
-      "relocatedLiterals": 9
+      "relocatedLiterals": 9,
+      "currentMaintained": "integration/native-batch/prepare.ts",
+      "movedOn": "2026-10-14"
     },
     {
       "original": "integration/native-batch/program-source.mjs",

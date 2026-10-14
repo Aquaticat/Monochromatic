@@ -113,7 +113,7 @@ const loader = join(
  */
 const prepare = join(
   output,
-  'contract/integration/native-batch/prepare.mjs',
+  'contract/integration/native-batch/prepare.ts',
 );
 await spawn(
   process.execPath,
