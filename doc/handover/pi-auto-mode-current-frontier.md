@@ -323,11 +323,19 @@ Approval context capture is the next native host boundary:
 Pi invalidates its extension runner on reload,
 so each original review must capture the current native capabilities.
 Committed required-red `0b98ee3203` rejects the new fixed bootstrap source before the implementation.
-The maintained source is now connected;
-native Allow,
+The maintained source is now connected.
+Native Allow,
 Deny,
 Stop,
-and reload verification is in progress.
+cancellation during selection,
+and approval after reload pass in `test:native:approval-context`.
+These cases retain Pi's actual extension context and original verdict API;
+only the displayed selection response is a fixture.
+Cancellation executes no child,
+and the reloaded Allow case executes the complete prepared group.
+The direct-SDK reload fixture now uses the same original policy reload route as native host services.
+The [source trace](../troubleshooting/pi-sdk-staging.md#pi-110-native-approval-contexts-change-on-resource-reload)
+retains the initialization and fixture corrections.
 The candidate CLI has no adopted semantic admission policy.
 Complete lint,
 installed activation,

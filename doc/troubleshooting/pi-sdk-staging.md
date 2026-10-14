@@ -6349,10 +6349,12 @@ cancellation during selection,
 and reload before selection.
 The selections are fixture responses;
 they are not genuine human approvals.
-Allow,
-Deny,
-and Stop have passed through the native context.
-Cancellation and the corrected reload case are being verified.
+All these cases pass through the native context.
+Cancellation executes no prepared child.
+Approval after reload records the original native verdict and executes all three prepared children.
+The fixture also verifies that reload replaces the actual Pi API,
+the old context rejects access,
+and each review captures its current capabilities once.
 
 ### Rejected remedies and upstream filing decision
 

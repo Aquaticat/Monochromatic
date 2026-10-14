@@ -41,6 +41,15 @@ The separate-process RPC fixture starts `dist/native/cli.mjs`,
 checks the selected Qwen model and idle state,
 and requires shutdown without stderr output.
 The built-in Codemode registration retains the original owned definition.
+Native approval presentation now captures Pi's current extension context and original verdict API
+for each original review.
+`test:native:approval-context` passes Allow,
+Deny,
+Stop,
+cancellation during selection,
+and approval after reload with fixture UI responses.
+The context source supplies presentation capabilities only;
+it grants no permission and supplies no authorization facts.
 The package's TypeScript source set explicitly includes `native/**/*.ts`.
 The owned JavaScript runtime still needs type and lint completion.
 Complete lint verification,
