@@ -142,7 +142,22 @@ and no represented tool execution.
 A failure or invalid response ends the schedule.
 Compare full answer data with the measured baseline and retain independent confidence.
 An increased admission count alone cannot establish correctness or justify adoption.
-Dispatch is pending.
+All three calls completed with the exact model identity,
+84 valid answers,
+and no refusals.
+Durations were 2,332.014,
+2,028.370,
+and 1,435.594 ms.
+Each response reports 178,834 input tokens.
+Answer data is identical across repetitions;
+every distribution differs from the original baseline.
+Eight supported answers reach `0.80`,
+and the primary permission estimate is `0.82` with independent confidence `0.78`.
+The remaining answers still prevent a complete admitted interpretation.
+The candidate therefore stays experimental:
+it changes estimates but supplies no independently labeled accuracy result or complete operating remedy.
+Retain the maintained lossless adapter and stop repeating representation-only trials on this input.
+Next inspect the original source-view boundaries and continue the maintained native quality queue.
 
 [openai-decisions-guide]: https://developers.openai.com/api/docs/guides/decisions
 

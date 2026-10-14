@@ -102,6 +102,18 @@ and 1,182.940 ms.
 Each used 246,783 reported input tokens rather than the baseline's 126,129.
 Batching is not adopted because this experiment supplies no semantic improvement.
 
+The subsequent readable-selection experiment also completed under the user's standing authorization.
+It retains the complete baseline input and question bindings,
+adding each selected passage verbatim beside its escaped JSON representation.
+All three calls returned 84 valid answers within five seconds,
+with identical answer data across repetitions.
+Eight supported answers reach `0.80`;
+the primary permission estimate is `0.82`.
+This changes estimates without establishing accuracy or a complete admitted interpretation.
+The candidate remains experimental.
+Further representation-only trials on this same input are deferred;
+continue the source-boundary investigation and native quality work.
+
 ## Original native RPC approval verification
 
 The disposable harness in `${HOME}/temp/agent/pi-native-rpc-human-20261014/`
@@ -206,7 +218,9 @@ retains the initial success-control newline mistake and its source-backed correc
 Final wrapper lint reports zero warnings and zero errors across four changed files;
 its package type check and all declared process cases pass.
 Pi's real `lint:types` task also passes through the repaired wrapper.
-The broader native quality queue and genuine approval verification remain open.
+The broader native quality queue remains open.
+The genuine human response is now verified in the native RPC fixture described in
+the original native RPC approval verification section.
 
 The next approval preparation uses the existing native RPC dialog boundary.
 The emitted Pi 1.2.0 `rpc-mode.js` creates the original extension selector request
@@ -216,7 +230,8 @@ while allowing a genuine human to answer the actual pending native request.
 This would verify that human response boundary only.
 The production CLI still lacks an independent authorization-requirement owner;
 unknown requirements must remain unresolved and must not be converted into UI requests.
-No genuine human response or production authorization-owner integration is claimed yet.
+The later genuine Allow result completes this human response verification.
+Production authorization-owner integration remains separate work.
 
 The maintained constructor now lives in `native-batch/session-root.ts`,
 with typed native readers,
