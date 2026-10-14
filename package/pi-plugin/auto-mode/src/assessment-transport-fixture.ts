@@ -19,6 +19,11 @@ export const assessmentFixtureKey = 'fixture-gateway-secret';
  Construct an original attempt without sharing mutable state between cases.
 
  @returns isolated original judgment attempt
+
+ @example
+ ```ts
+ const input = assessmentInput();
+ ```
  */
 export function assessmentInput(): AssessmentTransportInput {
   return {
@@ -30,24 +35,49 @@ export function assessmentInput(): AssessmentTransportInput {
 }
 
 /**
+ Deterministic original clock for isolated transport cases.
+
+ @returns unchanged preparation start
+ */
+function initialClock(): number { return 0; }
+
+/**
+ Synthetic credential avoids consulting ambient provider configuration.
+
+ @returns isolated known credential
+ */
+function fixtureCredential(): string { return assessmentFixtureKey; }
+
+/**
  Bind the built sender to test-local HTTP and clock capabilities.
 
  @param fetchImpl - local HTTP boundary
+ 
  @param now - deterministic original monotonic clock
+ 
  @param readCredential - isolated credential reader
 
  @returns built sender with no provider route
+
+ @example
+ ```ts
+ const send = assessmentSender({ fetchImpl: fixtureFetch });
+ ```
  */
 export function assessmentSender({
   fetchImpl,
-  now = function initialClock(): number { return 0; },
-  readCredential = function fixtureCredential(): string { return assessmentFixtureKey; },
+  now = initialClock,
+  readCredential = fixtureCredential,
 }: {
   readonly fetchImpl: typeof fetch;
   readonly now?: () => number;
   readonly readCredential?: () => unknown;
 }): ReturnType<typeof createAssessmentSender> {
-  return createAssessmentSender({ fetchImpl, now, readCredential, },);
+  return createAssessmentSender({
+    fetchImpl,
+    now,
+    readCredential,
+  },);
 }
 
 /**
@@ -58,6 +88,11 @@ export function assessmentSender({
  @returns original caught value
 
  @throws Error when the expected rejection is absent
+
+ @example
+ ```ts
+ const error = await assessmentFailure(async () => { throw new Error('fixture'); });
+ ```
  */
 export async function assessmentFailure(run: () => Promise<unknown>): Promise<unknown> {
   try {

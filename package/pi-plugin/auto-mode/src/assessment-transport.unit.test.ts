@@ -24,7 +24,8 @@ await describe({
         const raw = '{"model":"jev-1.13.0","answers":{}}';
         const send = assessmentSender({
           fetchImpl: async function captureRequest(url, options) {
-            calls.push({ url: String(url), ...(options === undefined ? {} : { options, }), },);
+            if (typeof url !== 'string') throw new Error('Assessment endpoint must be a fixed string',);
+            calls.push({ url, ...(options === undefined ? {} : { options, }), },);
             return new Response(raw,);
           },
         },);
@@ -53,9 +54,12 @@ await describe({
           let calls = 0;
           const send = assessmentSender({
             readCredential: function configuredCredential() { return key; },
-            fetchImpl: async function countDispatch() { calls++; return new Response('{}',); },
+            fetchImpl: async function countDispatch() { calls++;
+            return new Response('{}',); },
           },);
-          const error = await assessmentFailure(async function dispatch() { return await send(assessmentInput(),); },);
+          const error = await assessmentFailure(async function dispatch() {
+            return await send(assessmentInput(),);
+          },);
           expect(error,).toBeInstanceOf(AssessmentTransportError,);
           expect(calls,).toBe(0,);
         },
@@ -73,7 +77,8 @@ await describe({
         fn: async () => {
           let calls = 0;
           const send = assessmentSender({
-            fetchImpl: async function countDispatch() { calls++; return new Response('{}',); },
+            fetchImpl: async function countDispatch() { calls++;
+            return new Response('{}',); },
           },);
           const error = await assessmentFailure(async function dispatch() {
             return await send({ ...assessmentInput(), body, attempt, },);
@@ -87,7 +92,9 @@ await describe({
       name: 'admits the inherited request and response byte boundaries',
       fn: async () => {
         const raw = 'é'.repeat(32_768,);
-        const send = assessmentSender({ fetchImpl: async function boundedResponse() { return new Response(raw,); }, },);
+        const send = assessmentSender({ fetchImpl: async function boundedResponse() {
+          return new Response(raw,);
+        }, },);
         expect(await send({ ...assessmentInput(), body: 'é'.repeat(524_288,), },),).toBe(raw,);
       },
     },),
@@ -108,9 +115,12 @@ await describe({
           let calls = 0;
           const send = assessmentSender({
             now: function originalClock() { return clock; },
-            fetchImpl: async function countDispatch() { calls++; return new Response('{}',); },
+            fetchImpl: async function countDispatch() { calls++;
+            return new Response('{}',); },
           },);
-          const error = await assessmentFailure(async function dispatch() { return await send(assessmentInput(),); },);
+          const error = await assessmentFailure(async function dispatch() {
+            return await send(assessmentInput(),);
+          },);
           expect(error,).toBeInstanceOf(AssessmentTransportError,);
           expect(calls,).toBe(0,);
         },
@@ -123,10 +133,14 @@ await describe({
         let calls = 0;
         const send = assessmentSender({
           now: function originalClock() { return clock; },
-          readCredential: function prepareCredential() { clock = 5_000; return assessmentFixtureKey; },
-          fetchImpl: async function countDispatch() { calls++; return new Response('{}',); },
+          readCredential: function prepareCredential() { clock = 5_000;
+          return assessmentFixtureKey; },
+          fetchImpl: async function countDispatch() { calls++;
+          return new Response('{}',); },
         },);
-        const error = await assessmentFailure(async function dispatch() { return await send(assessmentInput(),); },);
+        const error = await assessmentFailure(async function dispatch() {
+            return await send(assessmentInput(),);
+          },);
         expect(error,).toBeInstanceOf(AssessmentTransportError,);
         expect(calls,).toBe(0,);
       },
@@ -138,7 +152,8 @@ await describe({
         controller.abort(assessmentFixtureKey,);
         let reads = 0;
         const send = assessmentSender({
-          readCredential: function readKey() { reads++; return assessmentFixtureKey; },
+          readCredential: function readKey() { reads++;
+          return assessmentFixtureKey; },
           fetchImpl: async function unexpectedDispatch() { throw new Error('Unexpected HTTP',); },
         },);
         const error = await assessmentFailure(async function dispatch() {
@@ -173,9 +188,12 @@ await describe({
         let clock = 0;
         const send = assessmentSender({
           now: function originalClock() { return clock; },
-          fetchImpl: async function lateResponse() { clock = 5_000; return new Response('{}',); },
+          fetchImpl: async function lateResponse() { clock = 5_000;
+          return new Response('{}',); },
         },);
-        const error = await assessmentFailure(async function dispatch() { return await send(assessmentInput(),); },);
+        const error = await assessmentFailure(async function dispatch() {
+            return await send(assessmentInput(),);
+          },);
         expect(error,).toBeInstanceOf(AssessmentTransportError,);
       },
     },),
@@ -194,14 +212,18 @@ await describe({
       { name: 'HTTP failure', response: function httpFailure() { return new Response('private upstream error', { status: 503, },); }, },
       { name: 'credential echo', response: function credentialEcho() { return new Response(assessmentFixtureKey,); }, },
       { name: 'UTF-8 response overflow', response: function oversizedResponse() { return new Response('é'.repeat(32_769,),); }, },
-      { name: 'invalid UTF-8', response: function invalidEncoding() { return new Response(new Uint8Array([0xff,],),); }, },
-    ].map(function rejectedResponse({ name, response, }) {
+      { name: 'invalid UTF-8', response: function invalidEncoding() { return new Response(new Uint8Array([0xFF,],),); }, },
+    ].map(function rejectedResponse(fixture) {
       return it({
-        name: `rejects ${name} after one HTTP attempt`,
+        name: `rejects ${fixture.name} after one HTTP attempt`,
         fn: async () => {
           let calls = 0;
-          const send = assessmentSender({ fetchImpl: async function responseFixture() { calls++; return response(); }, },);
-          const error = await assessmentFailure(async function dispatch() { return await send(assessmentInput(),); },);
+          const send = assessmentSender({ fetchImpl: async function responseFixture() {
+            calls++;
+          return fixture.response(); }, },);
+          const error = await assessmentFailure(async function dispatch() {
+            return await send(assessmentInput(),);
+          },);
           expect(error,).toBeInstanceOf(AssessmentTransportError,);
           expect(String(error),).not.toContain(assessmentFixtureKey,);
           expect(String(error),).not.toContain('private upstream error',);
@@ -217,8 +239,12 @@ await describe({
           start(controller) { controller.enqueue(new Uint8Array(65_537,),); },
           cancel() { cancelled = true; },
         },);
-        const send = assessmentSender({ fetchImpl: async function streamedResponse() { return new Response(stream,); }, },);
-        const error = await assessmentFailure(async function dispatch() { return await send(assessmentInput(),); },);
+        const send = assessmentSender({ fetchImpl: async function streamedResponse() {
+          return new Response(stream,);
+        }, },);
+        const error = await assessmentFailure(async function dispatch() {
+            return await send(assessmentInput(),);
+          },);
         expect(error,).toBeInstanceOf(AssessmentTransportError,);
         expect(cancelled,).toBe(true,);
       },
@@ -240,7 +266,9 @@ await describe({
               },),);
             },
           },);
-          const error = await assessmentFailure(async function dispatch() { return await send(assessmentInput(),); },);
+          const error = await assessmentFailure(async function dispatch() {
+            return await send(assessmentInput(),);
+          },);
           expect(error,).toBeInstanceOf(AssessmentTransportError,);
           expect(String(error),).not.toContain(assessmentFixtureKey,);
           expect(error,).not.toHaveProperty('cause',);

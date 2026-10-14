@@ -52,7 +52,9 @@ const l = tagged({ tag: 'auto-mode-assessment-transport', },);
  Raw response parsing and model attribution remain with the original wire consumer.
 
  @param fetchImpl - HTTP implementation bound by the native host
+ 
  @param now - original judgment's monotonic clock
+ 
  @param readCredential - lazy reader for the existing named Gateway credential
 
  @returns sender accepting an original judgment attempt
@@ -78,7 +80,10 @@ export function createAssessmentSender({
   /**
    Factory scope carries through each dispatch diagnostic.
    */
-  const rl = tagged({ tag: createAssessmentSender.name, l, },);
+  const rl = tagged({
+    tag: createAssessmentSender.name,
+    l,
+  },);
   rl.debug('binding direct assessment transport',);
 
   /**
@@ -91,14 +96,20 @@ export function createAssessmentSender({
    @throws AssessmentTransportError when cancellation or the original deadline prevents dispatch
    */
   function remaining(input: AssessmentTransportInput): number {
-    tagged({ tag: remaining.name, l: rl, },).debug('checking original assessment lifetime',);
-    if (input.signal.aborted)
+    tagged({
+      tag: remaining.name,
+      l: rl,
+    },)
+      .debug('checking original assessment lifetime',);
+    if (input.signal
+      .aborted)
       throw new AssessmentTransportError('Original assessment was cancelled',);
     /**
      Preparation time has already consumed part of the original five-second budget.
      */
     const left = input.deadlineAt - now();
-    if (!Number.isFinite(left,) || left < 1 || left > limits.durationMs)
+    if ((!Number.isFinite(left,)) || (left < 1)
+      || (left > limits.durationMs))
       throw new AssessmentTransportError('Original assessment deadline is expired or outside its five-second budget',);
     return left;
   }
@@ -107,6 +118,7 @@ export function createAssessmentSender({
    Consume response bytes under the inherited limit before returning any provider content.
 
    @param response - original HTTP response
+   
    @param input - original judgment attempt
 
    @returns complete bounded response text
@@ -120,22 +132,36 @@ export function createAssessmentSender({
     readonly response: Response;
     readonly input: AssessmentTransportInput;
   }): Promise<string> {
-    tagged({ tag: readResponse.name, l: rl, },).debug('consuming bounded assessment response',);
+    tagged({
+      tag: readResponse.name,
+      l: rl,
+    },)
+      .debug('consuming bounded assessment response',);
     if (response.body === null)
       throw new AssessmentTransportError('Assessment HTTP response has no body',);
     /**
      Retained chunks never exceed the inherited 64-KiB response limit.
      */
-    const received: {chunks: Uint8Array[]; length: number} = { chunks: [], length: 0, };
+    const received: {
+      chunks: Uint8Array[];
+      length: number
+    } = {
+      chunks: [],
+      length: 0,
+    };
     for await (const chunk of response.body) {
       remaining(input,);
       received.length += chunk.byteLength;
       if (received.length > limits.responseBytes)
         throw new AssessmentTransportError('Assessment HTTP response exceeds 65536 bytes',);
-      received.chunks.push(chunk,);
+      received.chunks
+        .push(chunk,);
     }
     remaining(input,);
-    return new TextDecoder('utf-8', { fatal: true, },).decode(Buffer.concat(received.chunks,),);
+    return new TextDecoder(
+      'utf-8',
+      { fatal: true, },
+    ).decode(Buffer.concat(received.chunks,),);
   }
 
   /**
@@ -151,11 +177,15 @@ export function createAssessmentSender({
     /**
      No borrowed request, response, credential, or upstream error enters logging.
      */
-    const sl = tagged({ tag: send.name, l: rl, },);
+    const sl = tagged({
+      tag: send.name,
+      l: rl,
+    },);
     sl.debug('preparing original assessment HTTP attempt',);
     try {
       remaining(input,);
-      if (!Number.isInteger(input.attempt,) || input.attempt < 1 || input.attempt > limits.attempts)
+      if ((!Number.isInteger(input.attempt,)) || (input.attempt < 1)
+        || (input.attempt > limits.attempts))
         throw new AssessmentTransportError('Assessment HTTP attempt is outside the original three-attempt budget',);
       if (Buffer.byteLength(input.body,) > limits.requestBytes)
         throw new AssessmentTransportError('Assessment HTTP request exceeds 1048576 bytes',);
@@ -163,23 +193,28 @@ export function createAssessmentSender({
        Credentials are read only for a dispatch that already has an admissible consumer.
        */
       const key = readCredential();
-      if (typeof key !== 'string' || key.length === 0)
+      if (((typeof key) !== 'string') || (key.length === 0))
         throw new AssessmentTransportError('AUTO_MODE_LLMGATEWAY_API_KEY is unavailable for the assessment request',);
-      if (input.body.includes(key,))
+      if (input.body
+        .includes(key,))
         throw new AssessmentTransportError('Assessment request contains its Gateway credential and was withheld',);
       /**
        Both native cancellation and the remaining original deadline govern fetch and body consumption.
        */
       const signal = AbortSignal.any([
         input.signal,
-        AbortSignal.timeout(Math.floor(remaining(input,),),),
+        AbortSignal.timeout(
+          Math.floor(remaining(input,),),
+        ),
       ],);
       sl.debug('dispatching original assessment HTTP attempt',);
       /**
        Redirect refusal retains the fixed private-data route.
        Gateway-internal retries are independent of this single client attempt.
        */
-      const response = await fetchImpl(endpoint, {
+      const response = await fetchImpl(
+        endpoint,
+        {
         method: 'POST',
         redirect: 'error',
         headers: {
@@ -189,11 +224,15 @@ export function createAssessmentSender({
         },
         body: input.body,
         signal,
-      },);
+      },
+      );
       /**
        The stream iterator cancels response consumption when its limit or deadline fails.
        */
-      const raw = await readResponse({ response, input, },);
+      const raw = await readResponse({
+        response,
+        input,
+      },);
       if (raw.includes(key,))
         throw new AssessmentTransportError('Assessment response echoed its Gateway credential and was withheld',);
       if (response.status !== limits.successfulStatus)
