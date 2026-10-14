@@ -58,12 +58,11 @@ The operating instructions live in `doc/runbook/claude-cpu-cap.md`.
   machine is quiet.
   Current curve: 30% at 40, 45% at 50, 60% at 60, 100% at 61 and above (saved by the user about 18:57 EDT).
   The fan profile belongs to the user now; this session does not edit it unless asked.
-- Session-only items that die with the session: the Monitor (30-minute expiry, re-arm each time) and a one-shot cron
-  check that ends the watch if nothing weird happened. Its job id changes at every push, so read it with CronList;
-  this file records the rule, not each id. The first setting was 21:19 EDT; since then it moved after the alerts at
-  18:02:37 (CPU pressure), 19:16:45 (memory pressure), 20:11:41 (CPU pressure), 20:15:27 (temperature) and 20:24:45
-  (throttle), and the throttle alert flapped at 100 MHz. After the CPU pressure alert at 21:14:53 it stands at 01:17 EDT
-  on 2026-10-14 (the latest weird event so far).
+- Monitoring ended by the user at about 21:25 EDT on 2026-10-13 ("enough with the monitor and alert - we already
+  determined our current setup is defective"): the session's Monitor and the 4-hour check were stopped and are not
+  re-armed, and alerts are no longer acted on. Before that the check had been pushed back after each alert (the last
+  at 21:14:53). The service `claude-cpu-watch.service` keeps running by design: it enforces the cap and logs samples,
+  which the paste comparison needs. Its alert lines only go to the journal.
 - The 20:11:41 CPU pressure alert (46.1, limit 40) came at cap 30 and 130 W. It was the first sustained load in the
   log: about 55 seconds at 125 to 136 W, load average up to 57 on 32 threads, pressure up to 67.8, and it cleared at
   17.2 within a minute. Tctl stayed below 95, so the cap was left at 30. Its numbers are in the evidence section.
@@ -382,11 +381,10 @@ for VFIO passthrough.
 
 ## Next actions
 
-1. Re-arm the Monitor on each expiry; react to alerts with the tone-down rule,
-   and push the 4-hour check back to 4 hours after each weird event.
+1. No monitor and no 4-hour check (ended by the user). Read alerts from the journal only when the user asks.
 2. When a session has run sustained load, run `node ~/.local/share/claude-cpu-cap/summarize-samples.ts 1`.
    It still needs a chiplet comparison and a (Tctl minus probe) per watt figure.
-3. At the 4-hour check, end the watch if nothing is open; keep the service running.
+3. The service stays running; stop it only if the user asks.
 4. Record every user decision and measurement in this file as the session continues.
 5. After the user reapplies paste (decided about 20:45 EDT on 2026-10-13: Noctua NT-H2 3.5g AM5 Edition, ordered, not
    yet arrived): compare against the baseline below with the same kind of load of 100 W or more for at least 3 minutes.
