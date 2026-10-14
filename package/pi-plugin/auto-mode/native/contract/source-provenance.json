@@ -543,6 +543,8 @@
     {
       "original": "integration/native-batch/root-source.mjs",
       "maintained": "integration/native-batch/root-source.mjs",
+      "currentMaintained": "integration/native-batch/root-source.ts",
+      "movedOn": "2026-10-14",
       "sha256": "fc862d86841652b321ec85cf4adbee6a5b414d24f95b1d7c8c09c0886f183ca3",
       "origin": "authored-source",
       "relocatedLiterals": 0

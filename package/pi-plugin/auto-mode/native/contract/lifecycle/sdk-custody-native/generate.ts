@@ -5,7 +5,10 @@
  */
 import { tagged } from '@monochromatic-dev/module-logger/ts';
 import { nonNullishOrThrow } from '@monochromatic-dev/module-or-throw/ts';
-import { type ClassDeclaration, parse } from 'yuku-parser';
+import {
+  type ClassDeclaration,
+  parse
+} from 'yuku-parser';
 import { NativeBatchBuildError } from '../../integration/native-batch/build-entries.ts';
 import { privatizeNativeMembers } from '../../integration/native-batch/build-members.ts';
 import { replaceOnce } from '../../integration/native-batch/build-rebase.ts';
@@ -41,15 +44,26 @@ function assertOriginalManagerMethods(source: string): void {
   /**
    The parser establishes executable method membership independently of source comments and strings.
    */
-  const parsed = parse(source, { sourceType: 'module' });
-  if (parsed.diagnostics.length > 0) throw new NativeBatchBuildError('Cannot parse original native manager source');
+  const parsed = parse(
+    source,
+    { sourceType: 'module' }
+  );
+  if (parsed.diagnostics
+    .length
+    > 0) throw new NativeBatchBuildError('Cannot parse original native manager source');
   /**
    The qualified source has one named exported original manager class.
    */
   const managers: ClassDeclaration[] = [];
-  for (const node of parsed.program.body) {
-    if (node.type === 'ExportNamedDeclaration' && node.declaration?.type === 'ClassDeclaration'
-      && node.declaration.id?.name === 'SessionManager') managers.push(node.declaration);
+  for (const node of parsed.program
+    .body) {
+    if ((node.type === 'ExportNamedDeclaration') && (node.declaration
+      ?.type
+      === 'ClassDeclaration')
+      && (node.declaration
+        .id
+        ?.name
+        === 'SessionManager')) managers.push(node.declaration);
   }
   if (managers.length !== 1) throw new NativeBatchBuildError('Original native SessionManager class is unavailable or duplicated');
   /**
@@ -60,11 +74,19 @@ function assertOriginalManagerMethods(source: string): void {
    Every original underscore-prefixed native method must belong to the retained helper set.
    */
   const helpers: string[] = [];
-  for (const member of manager.body.body) {
-    if (member.type === 'MethodDefinition' && !member.computed && member.key.type === 'Identifier'
-      && member.key.name.startsWith('_')) helpers.push(member.key.name);
+  for (const member of manager.body
+    .body) {
+    if ((member.type === 'MethodDefinition')
+      && (!member.computed)
+      && (member.key
+        .type
+        === 'Identifier')
+      && member.key
+      .name
+      .startsWith('_')) helpers.push(member.key
+        .name);
   }
-  if (helpers.length !== internalMethods.length || internalMethods.some(function missingOriginalMethod(name) {
+  if ((helpers.length !== internalMethods.length) || internalMethods.some(function missingOriginalMethod(name) {
     return !helpers.includes(name);
   })) throw new NativeBatchBuildError('Original native manager helper membership differs from the qualified method set');
 }
@@ -82,10 +104,23 @@ function privatizeManagerMethods(source: string): string {
   /**
    The fixed helper set has bounded size; each exact declaration edit preserves all other source bytes.
    */
-  const declarations = internalMethods.reduce(function privateMethod(current, name): string {
-    return replaceOnce({ source: current, from: `    ${name}(`, to: `    #${name}(` });
-  }, source);
-  return privatizeNativeMembers({ source: declarations, members: internalMethods });
+  const declarations = internalMethods.reduce(
+    function privateMethod(
+      current,
+      name
+    ): string {
+    return replaceOnce({
+      source: current,
+      from: `    ${name}(`,
+      to: `    #${name}(`
+    });
+  },
+    source
+  );
+  return privatizeNativeMembers({
+    source: declarations,
+    members: internalMethods
+  });
 }
 
 //endregion Original manager methods are qualified before private ownership is installed
@@ -110,7 +145,10 @@ export function generate(source: string): string {
   /**
    Each custody transformation retains its original source qualification diagnostics.
    */
-  const rl = tagged({ tag: generate.name, l });
+  const rl = tagged({
+    tag: generate.name,
+    l
+  });
   rl.debug('preparing original native manager root ownership');
   if (source.includes('#rootOccurrence')) throw new NativeBatchBuildError('Native manager root ownership is already installed');
   assertOriginalManagerMethods(source);
@@ -190,7 +228,7 @@ export function generate(source: string): string {
     from:'\n        this.#fileEntries = [header, ...pathWithoutLabels, ...labelEntries];',
     to:'\n        this.#changeRootOccurrence();\n        this.#fileEntries = [header, ...pathWithoutLabels, ...labelEntries];'
   });
-  return memoryForkSource + '\n// The prototype is fixed before any owned constructor is exposed. Private fields remain internally mutable.\nObject.freeze(SessionManager.prototype);\nObject.freeze(SessionManager);\nexport function readRootOccurrence(manager) { return SessionManager.rootOccurrenceOf(manager); }\n';
+  return `${memoryForkSource  }\n// The prototype is fixed before any owned constructor is exposed. Private fields remain internally mutable.\nObject.freeze(SessionManager.prototype);\nObject.freeze(SessionManager);\nexport function readRootOccurrence(manager) { return SessionManager.rootOccurrenceOf(manager); }\n`;
 }
 
 //endregion Root mutation sites publish original occurrence transitions before native state changes

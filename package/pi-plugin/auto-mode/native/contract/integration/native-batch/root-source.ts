@@ -1,27 +1,43 @@
-import assert from 'node:assert/strict';
+/**
+ Retain native manager content ownership and Session lifetime in the current qualified SDK source.
+
+ @module
+ */
+import { tagged } from '@monochromatic-dev/module-logger/ts';
+import { nonNullishOrThrow } from '@monochromatic-dev/module-or-throw/ts';
 import {generate as protectManager} from '../../lifecycle/sdk-custody-native/generate.ts';
 import {generateSession} from '../../lifecycle/sdk-session-lifetime/generate.ts';
 import {generateCompletion} from '../../lifecycle/sdk-session-disposal-completion/generate.ts';
+import { replaceOnce } from './build-rebase.ts';
+import { privatizeNativeMembers } from './build-members.ts';
 
-function once({
-  source,
-  before,
-  after
-}){
- assert.equal(
-   source.split(before)
-     .length,
-   2,
-   `Current SDK root-owner edit: ${before}`
- );
- return source.replace(
-   before,
-   after
- );
-}
 
-/** Reuse the incumbent copy, private-field and native-occurrence mechanisms on current source. */
-export function managerSource(source){
+
+//region Original manager content and copy observations remain attached to private native state
+
+/**
+ Root source preparation retains a diagnostic boundary independent of runtime root ownership.
+ */
+const l = tagged({ tag: 'auto-mode-native-root-source' });
+
+/**
+ Connect original input and copy observers before native manager lifetime protection is applied.
+
+ @param source - qualified original native SessionManager module
+
+ @returns original manager source with private fields and retained input and copy occurrences
+
+ @throws NativeBatchBuildError when qualified original content or field boundaries change
+ */
+function prepareManagerSource(source: string): string {
+ /**
+  Content preparation keeps a diagnostic boundary separate from native lifetime protection.
+  */
+ const rl = tagged({ tag: prepareManagerSource.name, l });
+ rl.debug('preparing original native manager content ownership');
+ /**
+  The fixed original copy sites retain their native input and result identities.
+  */
  const changes=[
   [
     '    _appendEntry(entry) {\n        this.fileEntries.push(entry);',
@@ -67,58 +83,64 @@ export function managerSource(source){
     '        return this.fileEntries.filter((e) => e.type !== "session");',
     '        const original = this.fileEntries.filter((e) => e.type !== "session");\n        const copied = structuredClone(original);\n        this.#contextCopyObserver?.({before:original.map(entry=>entry.type==="message"?entry.message:entry),after:copied.map(entry=>entry.type==="message"?entry.message:entry)});\n        return copied;'
   ]
- ];
+ ] as const;
+ /**
+  Ordered exact source transformations retain the original native content construction sequence.
+  */
  let value=source;
- value=once({
+ value=replaceOnce({
    source:value,
-   before:'    appendMessage(message) {',
-   after:'    appendMessage(message) {\n        if(!this.#contextCopyAttached)this.#loadedInputs.captureInitialManagerInput({frame:arguments,method:"appendMessage"});\n        else this.#loadedInputs.captureManagerInput({frame:arguments,method:"appendMessage"});'
+   from:'    appendMessage(message) {',
+   to:'    appendMessage(message) {\n        if(!this.#contextCopyAttached)this.#loadedInputs.captureInitialManagerInput({frame:arguments,method:"appendMessage"});\n        else this.#loadedInputs.captureManagerInput({frame:arguments,method:"appendMessage"});'
  });
- value=once({
+ value=replaceOnce({
    source:value,
-   before:'        this.leafId = entry.id;\n        this._persist(entry);',
-   after:'        this.leafId = entry.id;\n        this.#contextCopyObserver?.({kind:"appended-entry",rootOccurrence:SessionManager.rootOccurrenceOf(this),entry});\n        this._persist(entry);'
+   from:'        this.leafId = entry.id;\n        this._persist(entry);',
+   to:'        this.leafId = entry.id;\n        this.#contextCopyObserver?.({kind:"appended-entry",rootOccurrence:SessionManager.rootOccurrenceOf(this),entry});\n        this._persist(entry);'
  });
- value=once({
+ value=replaceOnce({
    source:value,
-   before:'        return { ...message, content };',
-   after:'        const projected = { ...message, content };\n        recordMessageInputProjection({before:edit,after:projected});\n        return projected;'
+   from:'        return { ...message, content };',
+   to:'        const projected = { ...message, content };\n        recordMessageInputProjection({before:edit,after:projected});\n        return projected;'
  });
- value=once({
+ value=replaceOnce({
    source:value,
-   before:'        return [createBranchSummaryMessage(entry.summary, entry.fromId, entry.timestamp)];',
-   after:'        const summary = createBranchSummaryMessage(entry.summary, entry.fromId, entry.timestamp);\n        recordMessageInputProjection({before:entry,after:summary});\n        return [summary];'
+   from:'        return [createBranchSummaryMessage(entry.summary, entry.fromId, entry.timestamp)];',
+   to:'        const summary = createBranchSummaryMessage(entry.summary, entry.fromId, entry.timestamp);\n        recordMessageInputProjection({before:entry,after:summary});\n        return [summary];'
  });
- value=once({
+ value=replaceOnce({
    source:value,
-   before:'        const summary = createCompactionSummaryMessage(entry.summary, entry.tokensBefore, entry.timestamp);',
-   after:'        const summary = createCompactionSummaryMessage(entry.summary, entry.tokensBefore, entry.timestamp);\n        recordMessageInputProjection({before:entry,after:summary});'
+   from:'        const summary = createCompactionSummaryMessage(entry.summary, entry.tokensBefore, entry.timestamp);',
+   to:'        const summary = createCompactionSummaryMessage(entry.summary, entry.tokensBefore, entry.timestamp);\n        recordMessageInputProjection({before:entry,after:summary});'
  });
- value=once({
+ value=replaceOnce({
    source:value,
-   before:'        this.fileEntries = [header];',
-   after:'        this.#loadedInputs = captureLoadedInputs([]);\n        this.fileEntries = [header];'
+   from:'        this.fileEntries = [header];',
+   to:'        this.#loadedInputs = captureLoadedInputs([]);\n        this.fileEntries = [header];'
  });
- value=once({
+ value=replaceOnce({
    source:value,
-   before:'export function buildSessionProjection(entries, leafId, byId) {\n    const path = buildSessionPath(entries, leafId, byId);',
-   after:'export function buildSessionProjection(entries, leafId, byId, observePath) {\n    const path = buildSessionPath(entries, leafId, byId);\n    observePath?.(path);'
+   from:'export function buildSessionProjection(entries, leafId, byId) {\n    const path = buildSessionPath(entries, leafId, byId);',
+   to:'export function buildSessionProjection(entries, leafId, byId, observePath) {\n    const path = buildSessionPath(entries, leafId, byId);\n    observePath?.(path);'
  });
- value=once({
+ value=replaceOnce({
    source:value,
-   before:'    appendCustomMessageEntry(customType, content, display, details) {',
-   after:'    appendCustomMessageEntry(customType, content, display, details, originalMessage) {'
+   from:'    appendCustomMessageEntry(customType, content, display, details) {',
+   to:'    appendCustomMessageEntry(customType, content, display, details, originalMessage) {'
  });
- value=once({
+ value=replaceOnce({
    source:value,
-   before:'        this._appendEntry(entry);\n        return entry.id;\n    }\n    /** Append a branch-local edit',
-   after:'        if(originalMessage!==undefined)this.#contextCopyObserver?.({kind:"handler-entry",before:[originalMessage],after:[entry]});\n        this._appendEntry(entry);\n        return entry.id;\n    }\n    /** Append a branch-local edit'
+   from:'        this._appendEntry(entry);\n        return entry.id;\n    }\n    /** Append a branch-local edit',
+   to:'        if(originalMessage!==undefined)this.#contextCopyObserver?.({kind:"handler-entry",before:[originalMessage],after:[entry]});\n        this._appendEntry(entry);\n        return entry.id;\n    }\n    /** Append a branch-local edit'
  });
- for(const [before,after] of changes)value=once({
+ for(const [before,after] of changes)value=replaceOnce({
    source:value,
-   before,
-   after
+   from: before,
+   to: after
  });
+ /**
+  Qualified original field declarations retain their exact native initializers.
+  */
  const declarations=[
    'sessionId = ""',
    'sessionFile',
@@ -131,20 +153,26 @@ export function managerSource(source){
    'labelsById = new Map()',
    'labelTimestampsById = new Map()',
    'leafId = null'
- ];
- const before=`export class SessionManager {\n${declarations.map(function emitPublicRootField(item) { return (`    ${item};\n`); })
+ ] as const;
+ /**
+  Original class field spelling must remain one exact qualified source block.
+  */
+ const before=`export class SessionManager {\n${declarations.map(function emitPublicRootField(item): string { return (`    ${item};\n`); })
    .join('')}`;
+ /**
+  Native private fields and observer closures retain their original occurrence and input owners.
+  */
  const after=`export class SessionManager {\n    #loadedInputs;\n    #contextCopyObserver = observeMessageCopies;\n    #contextCopyAttached = false;\n    static {\n      attachContextCopies = (manager,observer) => { if(manager.#contextCopyAttached)throw new Error("Original manager already has a context-copy owner"); manager.#contextCopyAttached=true; manager.#contextCopyObserver=observer; };\n      readSessionInput = ({manager,publication}) => manager.#loadedInputs?.lookup(publication);\n      assertSessionInputs = manager => manager.#loadedInputs?.assertCaptured();\n      readConstructedInputs = manager => manager.#loadedInputs?.readConstructedInputs();\n      readInputUsage = manager => manager.#loadedInputs?.inputUsage();\n      captureQueuedInput = ({manager,...input}) => manager.#loadedInputs.captureQueuedInput(input);\n      captureCustomMessageInput = ({manager,message}) => manager.#loadedInputs.captureCustomMessageInput(message);\n      captureInputEvent = ({manager,event}) => manager.#loadedInputs.captureInputEvent(event);\n      captureUninterceptedInput = ({manager,...input}) => manager.#loadedInputs.captureUninterceptedInput(input);\n      captureTransformedInput = ({manager,...input}) => manager.#loadedInputs.captureTransformedInput(input);\n      captureCommandInput = ({manager,...input}) => manager.#loadedInputs.captureCommandInput(input);\n      captureCallInput = ({manager,...input}) => manager.#loadedInputs.captureCallInput(input);\n      captureAgentInput = ({manager,...input}) => manager.#loadedInputs.captureAgentInput(input);\n      captureCustomToolDescriptions = ({manager,...input}) => manager.#loadedInputs.captureCustomToolDescriptions(input);\n      bindHandlerResultOutput = manager => { const pool=manager.#loadedInputs; return frame=>pool.captureHandlerResultOutput({frame}); };\n      captureToolLoadoutOutput = ({manager,...input}) => manager.#loadedInputs.captureToolLoadoutOutput(input);\n      captureToolLoadoutInput = ({manager,...input}) => manager.#loadedInputs.captureToolLoadoutInput(input);\n      captureToolLoadoutQuery = ({manager,...input}) => manager.#loadedInputs.captureToolLoadoutQuery(input);\n    }\n${declarations.map(function emitPrivateRootField(item) { return (`    #${item};\n`); })
    .join('')}`;
- value=once({
+ value=replaceOnce({
    source:value,
-   before,
-   after
+   from: before,
+   to: after
  });
- value=once({
+ value=replaceOnce({
    source:value,
-   before:'attachContextCopies = (manager,observer) => { if(manager.#contextCopyAttached)throw new Error("Original manager already has a context-copy owner"); manager.#contextCopyAttached=true; manager.#contextCopyObserver=observer; };',
-   after:`attachContextCopies = (manager,observer) => {
+   from:'attachContextCopies = (manager,observer) => { if(manager.#contextCopyAttached)throw new Error("Original manager already has a context-copy owner"); manager.#contextCopyAttached=true; manager.#contextCopyObserver=observer; };',
+   to:`attachContextCopies = (manager,observer) => {
         if(manager.#contextCopyAttached)throw new Error("Original manager already has a context-copy owner");
         manager.#contextCopyAttached=true;
         manager.#contextCopyObserver=observer;
@@ -158,25 +186,56 @@ export function managerSource(source){
         };
       };`
  });
- for(const declaration of declarations){
-  const field=declaration.split(' ')[0];
-  value=value.replaceAll(
-    new RegExp(
-    String.raw`this\.`+field
-      +String.raw`\b`,
-    'g'
-  ),
-    `this.#${field}`
-  );
- }
+ value = privatizeNativeMembers({
+   source: value,
+   members: declarations.map(function originalFieldName(declaration): string {
+     return nonNullishOrThrow(declaration.split(' ')[0]);
+   })
+ });
+ return value;
+}
+
+/**
+ Reuse the original copy, private-field, and native-occurrence mechanisms on qualified source.
+
+ @param source - original native SessionManager module
+
+ @returns generated manager retaining original content, observer, and lifetime ownership
+
+ @throws NativeBatchBuildError when original source qualification or occurrence sites change
+
+ @example
+ ```ts
+ const generated = managerSource(originalManager);
+ ```
+ */
+export function managerSource(source: string): string {
+ /**
+  Final manager source composition retains a separate diagnostic scope.
+  */
+ const rl = tagged({ tag: managerSource.name, l });
+ rl.debug('composing original native manager ownership');
+ /**
+  Input and copy observation is installed before native lifetime protection.
+  */
+ const value = prepareManagerSource(source);
+ /**
+  Original message publication observers retain their maintained source module identity.
+  */
  const publicationUrl=new URL(
    '../../collector/run-prompt-custody-v3/handler-publication.mjs',
    import.meta.url
  ).href;
+ /**
+  The original input pool remains the native manager's bounded source owner.
+  */
  const loadedUrl=new URL(
    '../../collector/run-prompt-custody-v3/loaded-inputs.mjs',
    import.meta.url
  ).href;
+ /**
+  Loadout query observations retain their existing invocation and result owner.
+  */
  const queryUrl=new URL(
    'loadout-query-observer.mjs',
    import.meta.url
@@ -194,5 +253,31 @@ export function managerSource(source){
    +`export function rethrowNativeLoadoutObservation(error) { NativeLoadoutObservationFailure.rethrow(error); }\n${protectManager(value)}`;
 }
 
-/** Private liveness and disposal-completion readers remain separate from root occurrence. */
-export function sessionSource(source){return generateCompletion(generateSession(source));}
+//endregion Original manager content and copy observations remain attached to private native state
+
+//region Native Session lifetime and cleanup completion retain separate original readers
+
+/**
+ Compose private Session liveness and disposal completion independently of manager root occurrence.
+
+ @param source - original native Session source before lifetime ownership is installed
+
+ @returns source retaining both native liveness and completed-cleanup observations
+
+ @throws NativeBatchBuildError when original lifetime or cleanup source sites change
+
+ @example
+ ```ts
+ const generated = sessionSource(originalSession);
+ ```
+ */
+export function sessionSource(source: string): string {
+ /**
+  Session source composition retains a separate diagnostic from manager construction.
+  */
+ const rl = tagged({ tag: sessionSource.name, l });
+ rl.debug('composing original Session lifetime and completion');
+ return generateCompletion(generateSession(source));
+}
+
+//endregion Native Session lifetime and cleanup completion retain separate original readers

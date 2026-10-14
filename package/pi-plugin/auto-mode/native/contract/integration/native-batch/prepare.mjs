@@ -4,7 +4,7 @@ import {dirname,join} from 'node:path';
 import {pathToFileURL} from 'node:url';
 import {sessionStateSource} from './agent-state-source.ts';
 import {sessionToolDescriptionSource} from './tool-description-source.ts';
-import {managerSource,sessionSource} from './root-source.mjs';
+import {managerSource,sessionSource} from './root-source.ts';
 import {promptSessionSource,promptEmitterSource} from './prompt-source.mjs';
 import {promptBuilderSource} from './builder-source.ts';
 import {handlerMessageSource,handlerProviderSource} from './message-source.ts';
