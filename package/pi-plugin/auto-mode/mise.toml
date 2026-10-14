@@ -409,6 +409,10 @@ run = "node src/native-factory-scopes.unit.test.ts"
 description = "Verify original tool input membership through native manager copies"
 run = "node --import ./dist/native/loader.mjs src/native-tool-publication.unit.test.ts"
 
+[tasks."test:source-contribution:tool"]
+description = "Verify built tool association membership without source authority or whole-request coverage"
+run = "node src/source-contribution-tool.unit.test.ts"
+
 [tasks."test:native:serializer-receipts"]
 run = [
   "node --import ./dist/native/loader.mjs src/native-tool-publication.unit.test.ts",
