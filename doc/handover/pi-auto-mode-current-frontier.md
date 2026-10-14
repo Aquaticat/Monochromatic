@@ -1141,6 +1141,20 @@ and the 0.99 admission rule,
 then repeat the installed governed read.
 Live logs are `${HOME}/temp/agent/pi-native-installed-live-20261014.log`
 and `${HOME}/temp/agent/pi-native-installed-live-diagnostic-20261014.log`.
+The adopted single-call implementation is committed in `00f8f1fe67`,
+`9e99064bbc`,
+`8997d1568d`,
+and `66e0f358ce`.
+The decoder and compiled-source reconstruction preserve both single-call forms,
+and the fixed semantic scope includes only those forms and the existing producer/successor profile.
+The unchanged native group owner receives one reached group for a single call.
+Model-visible loadout guidance now states the supported forms and preserves native nested-tool declarations.
+Both maintained and owned native builds pass.
+Native single-call controls,
+package types,
+scoped lint,
+guard omission,
+and the installed provider-backed read remain to be verified.
 The current command resolves through generated workspace dependency shims,
 and the root `mise.toml` path list is owned by `file-enforcer.config.ts`.
 That command-resolution description is historical;
