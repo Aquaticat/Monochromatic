@@ -39,8 +39,17 @@ the corrected readback verifies each actual failure boundary.
 `${HOME}/temp/agent/pi-factory-scope-controls-20261014/verification.json`
 records those controls and the emitted scope file's exact match with maintained source afterward.
 The first type-check attempt emitted Go `newosproc` and is invalid despite its wrapper returning exit zero.
-That masked compiler failure is a separate owned verification defect;
-the next action is to reproduce and repair its exit handling with disposable compiler fixtures.
+That masked compiler failure was reproduced and repaired separately in `dev-script/task-util`.
+The built wrapper now preserves failed process status unless the existing known-diagnostic filter
+fully accounts for the failure.
+Original failing-before cases include a panic,
+silent failure,
+unfamiliar diagnostic,
+and a panic beside suppressed diagnostics.
+The repaired real-process fixture and existing output-filter tests pass.
+The [wrapper incident record](../troubleshooting/typescript.md#task-tsc-002-converted-compiler-process-failures-into-successful-checks)
+retains the initial success-control newline mistake and its source-backed correction.
+Final changed-file quality checks and a real Pi type-check invocation through the repaired wrapper are next.
 The broader native quality queue and genuine approval verification remain open.
 
 The maintained constructor now lives in `native-batch/session-root.ts`,

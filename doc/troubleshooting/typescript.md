@@ -1798,6 +1798,139 @@ Built and verified against a twelve-case disposal fixture: with this change the 
    which tracks the stray emitted `.js` files in this
   workspace
 
+## Task-tsc 0.0.2 converted compiler process failures into successful checks
+
+### Symptom and scope
+
+During the Pi factory-scope migration on 2026-10-14,
+the TypeScript subprocess printed `fatal error: newosproc`,
+but the repository's `task-tsc` wrapper returned exit zero.
+The [native incident record](pi-sdk-staging.md#overlapping-native-verification-and-oxlint-1870-stop-before-completing-checks)
+retains the separate thread-allocation failure.
+This section concerns the owned wrapper's incorrect result,
+not the cause of the Go runtime's failed thread allocation.
+
+The original log is `${HOME}/temp/agent/pi-factory-scopes-types-20261014.log`.
+A zero wrapper status was not accepted as verification once that diagnostic was observed.
+An isolated bounded retry completed successfully,
+but could not repair the wrapper's error handling.
+
+### Owned source cause
+
+Before the repair,
+`package/dev-script/task-util/src/tsc-filter.ts:203`
+only preserved a failed subprocess status when recognized TypeScript diagnostic headers survived filtering:
+
+```ts
+// Historical tsc-filter.ts condition, replaced on 2026-10-14
+if (stdoutResult.hasRemainingErrors || stderrResult.hasRemainingErrors)
+  process.exitCode = subprocessError.exitCode ?? 1;
+```
+
+`package/dev-script/task-util/src/tsc-output-filter.ts:331`
+sets that flag for retained recognized diagnostic headers:
+
+```ts
+// tsc-output-filter.ts:331,339
+if (isDiagnosticLine(line)) {
+  // The retained-diagnostic branch sets this flag.
+  hasRemainingErrors = true;
+}
+```
+
+A Go panic,
+an unfamiliar diagnostic,
+or an empty failed process has no matching `error TS` header.
+The separate signal branch also does not cover ordinary nonzero process exits.
+Consequently the wrapper could print a failure and leave its own default exit status at zero.
+
+### Repair and compatibility boundary
+
+`package/dev-script/task-util/src/tsc-filter.ts:204`
+now preserves failure unless `isFullySuppressedCompilerFailure` accounts for the output.
+`package/dev-script/task-util/src/tsc-suppressed-failure.ts:53`
+requires actual removal of known diagnostics and rejects remaining stderr:
+
+```ts
+// tsc-suppressed-failure.ts:53
+if ((stdout === filteredStdout) && (stderr === filteredStderr)) return false;
+if (filteredStderr.trim().length > 0) return false;
+return filteredStdout.split('\n').every(isEmissionMetadata);
+```
+
+Its stdout metadata recognizer accepts blank lines and `TSFILE: ` records with a nonblank path.
+That preserves the configured compiler's emitted-file reporting:
+`package/config/typescript/tsconfig.options.json:132` sets `"listEmittedFiles": true`.
+Unknown output remains a failure instead of silently expanding the suppression policy.
+This may surface unfamiliar future compiler metadata for explicit review;
+it does not remove any diagnostic from the existing filter.
+
+### Verification and rejected approaches
+
+The fixture executes the built `dist/final/node/tsc-filter.mjs`
+against a disposable Node executable named `tsc`.
+Only the child process receives the modified executable search path.
+No actual thread exhaustion is induced.
+The source is `package/dev-script/task-util/src/tsc-failure-fixture.ts`;
+its per-case directory is removed after the child and output descriptors close.
+
+The original built wrapper failed the expected-status assertions for:
+
+- A Go panic with exit status two.
+- A silent failure with exit status two.
+- A non-TypeScript diagnostic with exit status seven.
+- A panic beside otherwise suppressed dependency diagnostics.
+
+The repaired artifact preserves those statuses while allowing successful output,
+known suppressed diagnostics,
+and emitted-file metadata accompanying known suppression.
+Emission metadata alone cannot explain an unsuccessful process.
+The current fixture also checks literal quotes,
+backslashes,
+newlines,
+and statement delimiters when embedding output into its temporary executable.
+
+```bash
+# From the repository root; each check consumes rebuilt task-util output
+mise run //package/dev-script/task-util:build:js
+mise run //package/dev-script/task-util:test:tsc-failure
+mise run //package/dev-script/task-util:test:unit -- src/tsc-filter.unit.test.ts
+```
+
+The original failure log is `${HOME}/temp/agent/tsc-wrapper-failure-red-20261014.log`.
+The repaired process and existing filter suite log is
+`${HOME}/temp/agent/tsc-wrapper-failure-tests-final-20261014.log`.
+
+The first success-control assertion incorrectly expected a trailing newline.
+The initial report that this control passed is retracted.
+Installed `nano-spawn` 2.1.0 removes the final newline at `node_modules/nano-spawn/source/result.js:73`:
+
+```js
+// nano-spawn/source/result.js:73
+const getOutput = output => output.at(-1) === '\n'
+  ? output.slice(0, output.at(-2) === '\r' ? -2 : -1)
+  : output;
+```
+
+The expected successful wrapper output now matches that incumbent behavior.
+The fixture captures wrapper output through separate disposable file descriptors,
+so its own subprocess library does not normalize the observed bytes again.
+The mistaken newline expectation does not invalidate the separate nonzero-status failures.
+
+### Upstream filing decision
+
+- Responsibility belongs to the repository-owned failure wrapper;
+  no upstream defect is established by this false-success result.
+- The repair is implemented in that owned wrapper.
+- Upstream supported-use boundaries are not needed to change local failure handling.
+- No external contribution or issue filing is proposed,
+  so contribution-policy permission is not asserted.
+- No prediction about an upstream maintainer's disposition is made.
+- The built-wrapper process fixture supplies failing-before and passing-after evidence for the local repair.
+
+There is nothing to file upstream from this wrapper defect.
+The independent Go thread failure remains bounded by its existing incident evidence.
+
 ## Related Documentation
 
 - [VSCode](vscode.md):
