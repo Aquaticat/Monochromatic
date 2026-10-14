@@ -16,3 +16,10 @@ run = "cargo nextest run --locked --release"
 [tasks."test:host"]
 description = "Verify the installed Codex hook boundary using a local deterministic provider"
 run = "cargo nextest run --locked --release --test native_host --run-ignored only --success-output final"
+
+[tasks."docs:render"]
+description = "Render the limiter's package and repository records for inspection"
+run = [
+  "mkdir --parents target/doc-review",
+  "pandoc --from=commonmark --to=html --output=target/doc-review/limiter.html README.md ../../../doc/decision/codex-shell-worker-limits.md ../../../doc/troubleshooting/codex-shell-worker-limits.md ../../../doc/handover/pi-auto-mode-current-frontier.md ../../../AGENTS.md ../../../.agents/skills/testing-practices/SKILL.md",
+]

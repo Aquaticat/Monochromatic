@@ -31,7 +31,7 @@ successful command rewriting,
 and reported hook duration without calling a model provider.
 The host fixture requires loopback sockets and is excluded from ordinary test runs.
 
-The [implementation record](../../../../doc/decision/codex-shell-worker-limits.md)
+The [implementation record](../../../doc/decision/codex-shell-worker-limits.md)
 records resource values,
 installation,
 and measured overhead.
