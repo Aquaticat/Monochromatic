@@ -667,11 +667,29 @@ Scoped lint,
 package types,
 the owned build,
 and those member tests pass.
-Prompt preparation is being split into typed input,
+Prompt preparation is split into typed input,
 owner,
 base,
 run,
 and handler phases so each original source boundary remains independently inspectable.
+These phases pass scoped lint,
+package types,
+and the owned build.
+The generated handler module is byte-identical.
+The generated Session differs only in one original comment:
+the parser-based member rewrite preserves its `_extensionRunner` spelling,
+where the prior regular expression changed it inside the comment.
+The SDK stream,
+all native approval-context cases,
+and the actual Qwen CLI process pass;
+CLI shutdown stderr remains empty.
+Disposable destination syntax and declaration-shape omission controls fail their intended assertions;
+the unchanged copied member transformer passes.
+Typed program preparation captures all source inputs before publishing generated modules.
+It passes scoped lint and package types,
+and its owned rebuild preserves all eight generated program module hashes.
+The main native preparation entry and its build caller have also been moved to TypeScript;
+their verification is in progress.
 
 The first approved native dispatch failed because the inherited test loader derived dependency paths
 from the codemode worker's disposable home.
