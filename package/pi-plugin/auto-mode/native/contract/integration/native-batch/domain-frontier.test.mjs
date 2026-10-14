@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import {readFile} from 'node:fs/promises';
 import {inspect} from 'node:util';
 import {createEnvironment} from './environment.mjs';
 import {createRootSessionFactory} from './session-root.mjs';
@@ -30,6 +31,10 @@ const observedContext=process.argv.includes('--observed-context');
 const throwingContext=process.argv.includes('--throwing-context');
 const httpTransport=process.argv.includes('--http-transport');
 const operatingPolicy=process.argv.includes('--operating-policy');
+const extensionManifestArgument=process.argv.find(function isExtensionManifestArgument(argument){return argument.startsWith('--extension-manifest=');});
+const configuredExtensions=extensionManifestArgument===undefined?[]:JSON.parse(await readFile(extensionManifestArgument.slice('--extension-manifest='.length),'utf8'));
+assert.ok(Array.isArray(configuredExtensions));
+assert.ok(configuredExtensions.every(function originalExtensionPath(resource){return typeof resource.path==='string'&&resource.enabled===true;}));
 const lowConfidenceClause=process.argv.includes('--low-confidence-clause');
 const unresolvedClause=process.argv.includes('--unknown-clause')?'unknown':process.argv.includes('--unsupported-clause')?'unsupported':undefined;
 assert.ok(!(lowConfidenceClause||unresolvedClause)||operatingPolicy,'Admission contrasts require the adopted operating policy');
@@ -46,6 +51,7 @@ const env=await createEnvironment({
   policyText:'RUL:\n '+text+'\n',
   hostPrompt:'Fixture background.',
   useNativeProvider:sdkStream,
+  additionalExtensionPaths:configuredExtensions.map(function configuredExtensionPath(resource){return resource.path;}),
   extensionFactories:unobservedContext?[function registerUnobservedContextHandler(pi) {pi.on('turn_start',function countUnobservedContextCall() {contextCalls++;});}]:observedContext?[function registerObservedContextHandlers(pi) {
    pi.on('context',function retainOriginalContextInput(event) {
     contextCalls++;
@@ -74,6 +80,12 @@ const env=await createEnvironment({
    });
   }]:[]
 });
+if(extensionManifestArgument!==undefined){
+ const loaded=env.policyInput.loader.getExtensions();
+ assert.deepEqual(loaded.errors,[],'Every configured extension must load before its native policy consumer is tested');
+ assert.equal(loaded.extensions.length,configuredExtensions.length,'The fixture must retain every configured extension');
+ console.log(JSON.stringify({configuredExtensionsLoaded:loaded.extensions.length,eventKinds:[...new Set(loaded.extensions.flatMap(function registeredKinds(extension){return [...extension.handlers.keys()];}))]}));
+}
 let assessments=0,executions=0,originalBody,requests=0;
 const leaf={
   ...env.createReadToolDefinition(env.options.cwd),
