@@ -298,6 +298,13 @@ so the findings come from reading the readable source strings inside the binary 
   compare first; if the gap stays, reset the BIOS to defaults (this also clears voltage and load-line settings and the
   user's boost and PBO choices), retest, and treat a board fault as the next suspect, with the freezes as supporting
   evidence. Nothing is decided.
+  - More from the user (about 21:10 EDT): with the previous CPU too they had to disable many board settings for
+    stability, and memory at EXPO 1 produces errors (EXPO is therefore off). The parts common to both CPUs are the
+    board, the memory and the power supply, so instability across two CPUs points away from either CPU; this is a
+    pattern, not proof. AMD's 7950X page rates memory at DDR5-5200 with two DIMMs (one or two ranks) and DDR5-3600
+    with four DIMMs, so EXPO errors can be expected if the kit is above those speeds with that many DIMMs; the DIMM
+    count and the EXPO speed are not known yet. A memory test at default settings (no EXPO) would separate faulty
+    memory, board or power supply from an over-rated kit.
 - The cooler is the NH-D15S (answered). Is it mounted correctly? The numbers in the evidence section say the heat
   path is far weaker than references; the model difference (1 to 3 degrees for one fan instead of two) does not
   explain it, and the paste is not the Noctua NT-H1 the checklist assumes. The user tightened the screws until they
