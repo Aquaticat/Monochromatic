@@ -582,6 +582,8 @@
     {
       "original": "integration/native-batch/session-root.mjs",
       "maintained": "integration/native-batch/session-root.mjs",
+      "currentMaintained": "integration/native-batch/session-root.ts",
+      "movedOn": "2026-10-14",
       "sha256": "f096ec0b421dff2a3798d6976b815f0df0660d58cc1ca6f656ba275230b808f4",
       "origin": "authored-source",
       "relocatedLiterals": 0
