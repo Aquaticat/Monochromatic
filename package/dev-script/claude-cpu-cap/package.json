@@ -10,6 +10,8 @@
   ],
   "devDependencies": {
     "@monochromatic-dev/config-typescript": "workspace:*",
+    "@monochromatic-dev/module-async-time": "workspace:*",
+    "@monochromatic-dev/module-test": "workspace:*",
     "@types/node": "catalog:"
   },
   "version": "0.0.1",
@@ -19,5 +21,8 @@
     "directory": "package/dev-script/claude-cpu-cap"
   },
   "private": true,
-  "sideEffects": true
+  "sideEffects": true,
+  "dependencies": {
+    "@monochromatic-dev/module-logger": "workspace:*"
+  }
 }

@@ -1,48 +1,68 @@
-// Summarizes the watcher's sample log as Tctl per package-power bucket, counting only settled samples:
-// a sample counts when the previous `settledSamples` samples (2 minutes at 10 seconds each) were all in the same bucket.
+// Summarizes the watcher's sample log as Tctl per package-power bucket, counting only settled samples.
 // Usage: node summarize-samples.ts [days-back, default 1]
-import { readdirSync, readFileSync } from 'node:fs';
-import { homedir } from 'node:os';
-import { join } from 'node:path';
+import {
+  readdir,
+  readFile,
+} from 'node:fs/promises';
+import { join, } from 'node:path';
+import { resolvePaths, } from './paths.ts';
+import {
+  BUCKET_WATTS,
+  cutoffFor,
+  parseSampleRows,
+  SETTLED_SAMPLES,
+  summarizeBuckets,
+} from './sample-stats.ts';
 
-const sampleDir = join(homedir(), '.local', 'share', 'claude-cpu-cap', 'samples');
-const bucketWatts = 20;
-const settledSamples = 12;
-const daysBack = Number(process.argv[2] ?? 1);
+/**
+ Directory of the daily sample files.
+ */
+const { sampleDir, } = resolvePaths({
+  env: process.env,
+  uid: process.getuid?.() ?? 0,
+},);
 
-type Row = { time: string; tctl: number; watts: number; mhz: number };
-const rows: Row[] = [];
-const cutoff = Date.now() - daysBack * 86_400_000;
-for (const name of readdirSync(sampleDir).sort()) {
-  if (!name.endsWith('.csv')) continue;
-  for (const line of readFileSync(join(sampleDir, name), 'utf8').split('\n').slice(1)) {
-    const [time, tctl, , , watts, mhz] = line.split(',');
-    if (time === undefined || watts === undefined || tctl === undefined || watts === '' || tctl === '') continue;
-    if (Date.parse(time) < cutoff) continue;
-    rows.push({ time, tctl: Number(tctl), watts: Number(watts), mhz: Number(mhz) });
-  }
-}
+/**
+ Look-back window in days, from the first argument.
+ */
+const daysBack = Number(process.argv[2] ?? 1,);
 
-const bucketOf = ({ watts }: { watts: number }): number => Math.floor(watts / bucketWatts) * bucketWatts;
-const byBucket = new Map<number, number[]>();
-for (let index = settledSamples; index < rows.length; index += 1) {
-  const bucket = bucketOf({ watts: rows[index]!.watts });
-  let settled = true;
-  for (let back = 1; back <= settledSamples; back += 1) {
-    if (bucketOf({ watts: rows[index - back]!.watts }) !== bucket) settled = false;
-  }
-  if (!settled) continue;
-  byBucket.set(bucket, [...(byBucket.get(bucket) ?? []), rows[index]!.tctl]);
-}
+/**
+ Daily file names in date order.
+ */
+const names = (await readdir(sampleDir,)).filter(function isCsv(name,) {
+  return name.endsWith('.csv',);
+},)
+  .toSorted();
 
-const percentile = ({ sorted, fraction }: { sorted: number[]; fraction: number }): number =>
-  sorted[Math.min(sorted.length - 1, Math.floor(sorted.length * fraction))]!;
-console.log(`samples read: ${rows.length}; settled = ${settledSamples} previous samples in the same ${bucketWatts} W bucket`);
-for (const [bucket, temps] of [...byBucket.entries()].sort((a, b) => a[0] - b[0])) {
-  const sorted = [...temps].sort((a, b) => a - b);
+/**
+ Rows of every daily file inside the look-back window.
+ */
+const rows = (await Promise.all(names.map(async function readDay(name,) {
+  return parseSampleRows({
+    csv: await readFile(
+      join(
+        sampleDir,
+        name,
+      ),
+      'utf8',
+    ),
+    cutoff: cutoffFor({
+      now: Date.now(),
+      daysBack,
+    },),
+  },);
+},),)).flat();
+
+console.log(`samples read: ${rows.length}; settled = ${SETTLED_SAMPLES} previous samples in the same ${BUCKET_WATTS} W bucket`,);
+for (const summary of summarizeBuckets(rows,)) {
   console.log(
-    `${bucket}-${bucket + bucketWatts} W: ${sorted.length} settled samples, ` +
-      `Tctl median ${percentile({ sorted, fraction: 0.5 })}, p90 ${percentile({ sorted, fraction: 0.9 })}, max ${sorted.at(-1)}`,
+    `${summary.bucket}-${summary.bucket + BUCKET_WATTS} W: ${summary.count} settled samples, `
+      + `Tctl median ${summary.median}, p90 ${summary.p90}, max ${summary.max}`,
   );
 }
-if (byBucket.size === 0) console.log('no settled samples yet; keep the watcher running through some sustained load');
+if (summarizeBuckets(rows,)
+  .length
+  === 0) {
+  console.log('no settled samples yet; keep the watcher running through some sustained load',);
+}
