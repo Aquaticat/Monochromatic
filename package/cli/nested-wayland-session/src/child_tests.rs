@@ -76,3 +76,26 @@ fn child_environment_without_override_keeps_session_bus_inherited() {
     assert_eq!(environment_change(&command, "DBUS_STARTER_ADDRESS"), None);
     assert_eq!(environment_change(&command, "DBUS_STARTER_BUS_TYPE"), None);
 }
+
+/// Confirms the headless GPU variables are applied to the child:
+/// a value is set,
+/// `None` removes an inherited variable,
+/// and an empty list leaves the environment alone.
+#[test]
+fn child_environment_applies_gpu_variables() {
+    let mut command = Command::new("app");
+    command.env("DRI_PRIME", "1");
+    configure_child_environment(
+        &mut command,
+        OsStr::new("wayland-nested"),
+        None,
+        &[("LIBGL_ALWAYS_SOFTWARE", Some("1")), ("DRI_PRIME", None)],
+    );
+    assert_eq!(environment_change(&command, "LIBGL_ALWAYS_SOFTWARE"), Some(Some(OsString::from("1"))));
+    assert_eq!(environment_change(&command, "DRI_PRIME"), Some(None));
+
+    let mut untouched = Command::new("app");
+    configure_child_environment(&mut untouched, OsStr::new("wayland-nested"), None, &[]);
+    assert_eq!(environment_change(&untouched, "LIBGL_ALWAYS_SOFTWARE"), None);
+    assert_eq!(environment_change(&untouched, "DRI_PRIME"), None);
+}
