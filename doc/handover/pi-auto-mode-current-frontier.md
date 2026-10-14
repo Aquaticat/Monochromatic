@@ -688,8 +688,16 @@ the unchanged copied member transformer passes.
 Typed program preparation captures all source inputs before publishing generated modules.
 It passes scoped lint and package types,
 and its owned rebuild preserves all eight generated program module hashes.
-The main native preparation entry and its build caller have also been moved to TypeScript;
-their verification is in progress.
+The main native preparation entry,
+its build caller,
+and the extracted Session preparation phase pass scoped lint,
+package types,
+and the owned build.
+The native preparation chain now uses maintained TypeScript modules.
+Full package lint and unit verification,
+the native syntax sweep,
+host lifecycle,
+and separate CLI process checks are running against that integration.
 
 The first approved native dispatch failed because the inherited test loader derived dependency paths
 from the codemode worker's disposable home.
