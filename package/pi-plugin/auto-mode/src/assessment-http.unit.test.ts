@@ -43,7 +43,7 @@ await describe({
               response.end('redirect',);
               return;
             }
-            if (mode === 'cancelled' || mode === 'deadline') {
+            if ((mode === 'cancelled') || (mode === 'deadline')) {
               response.writeHead(200, { 'content-type': 'application/json', },);
               response.write('{',);
               return;
@@ -51,11 +51,15 @@ await describe({
             response.end(raw,);
           },);
         },);
+        await using lifetime = new AsyncDisposableStack();
+        lifetime.defer(async function closeHttpServer() {
+          server.closeAllConnections();
+          await server[Symbol.asyncDispose]();
+        },);
         server.listen(0, '127.0.0.1',);
-        try {
           await once(server, 'listening',);
           const address = server.address();
-          if (address === null || typeof address === 'string')
+          if ((address === null) || ((typeof address) === 'string'))
             throw new Error('Loopback server has no TCP address',);
           const localUrl = `http://127.0.0.1:${address.port}/assessment`;
           const send = createAssessmentSender({
@@ -88,11 +92,6 @@ await describe({
             method: 'POST',
           },);
           expect(calls,).toEqual(['/assessment',],);
-        }
-        finally {
-          server.closeAllConnections();
-          await server[Symbol.asyncDispose]();
-        }
       },
     },);
   }),
