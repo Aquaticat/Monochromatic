@@ -328,3 +328,58 @@ fn a_file_that_matches_a_pattern_is_ignored_whether_or_not_git_tracks_it() {
     let mut matcher = plain();
     assert_eq!(ignored(&mut matcher, &workspace, ""), vec!["tracked.log"]);
 }
+
+/// What:
+///  Times the first and a repeated decision for a directory at the entry bound,
+///  three levels below the work tree's top,
+///  with a dozen patterns per rule file;
+///  prints microseconds.
+///  `#[ignore]` keeps the timing out of the default run.
+/// Why:
+///  `MAX_ENTRIES` and the claim that matching is cheap next to a read are measured numbers.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// test.skip('matching cost at the entry bound', () => { time(evaluate(directory, entries)); });
+/// ```
+#[test]
+#[ignore = "timing measurement; run with --ignored --nocapture"]
+fn measure_matching_cost_at_the_entry_bound() {
+    let (directory, workspace) = work_tree();
+    let root = directory.path();
+    let patterns = "*.log\n*.tmp\nbuild/\ndist/\n/target\nnode_modules/\n*.o\n*.swp\n.cache/\ncoverage/\n!keep.log\n*.pyc\n";
+    put(root, ".gitignore", patterns);
+    put(root, "a/.gitignore", patterns);
+    put(root, "a/b/.gitignore", patterns);
+    put(root, "a/b/c/.gitignore", patterns);
+    let folder = workspace.root().join("a/b/c");
+    let mut entries = Vec::new();
+    for index in 0..MAX_ENTRIES {
+        let name = match index % 5 {
+            0 => format!("file{index}.rs"),
+            1 => format!("file{index}.log"),
+            2 => format!("file{index}.o"),
+            3 => format!("dir{index}"),
+            _ => format!("file{index}.md"),
+        };
+        entries.push(DirectoryEntry {
+            path: folder.join(&name),
+            name: name.into(),
+            is_directory: index % 5 == 3,
+        });
+    }
+    let mut matcher = plain();
+    let cold = std::time::Instant::now();
+    let first = matcher.evaluate(&folder, &entries);
+    let cold = cold.elapsed();
+    let warm = std::time::Instant::now();
+    let second = matcher.evaluate(&folder, &entries);
+    let warm = warm.elapsed();
+    println!(
+        "ignore matching at {MAX_ENTRIES} entries, 4 levels of 12 patterns: first call {} us, repeated call {} us, {} ignored",
+        cold.as_micros(),
+        warm.as_micros(),
+        first.names.len()
+    );
+    assert_eq!(first, second);
+}

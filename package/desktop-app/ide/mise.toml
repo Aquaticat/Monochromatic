@@ -296,12 +296,15 @@ runCargo(['test', '--test', 'cli_args', '--test', 'cli_process'])
 """
 
 [tasks."test:ignored"]
-description = "Run the gitignore matching unit tests, the tree tests that carry its answers, and the reader tests"
+description = "Run the gitignore matching unit tests, the tree and reader tests that carry its answers, and the rule file notification test"
 shell = "node --input-type=module-typescript -e"
 run = """
 {{vars.cargo}}
 runCargo(['test', '--no-default-features', '--lib', 'git_ignore::'])
+// The timing measurement behind the entry bound, ignored by default, prints its numbers.
+runCargo(['test', '--no-default-features', '--lib', 'git_ignore::tests::measure', '--', '--ignored', '--nocapture'])
 runCargo(['test', '--no-default-features', '--test', 'file_tree', '--test', 'file_tree_validation', '--test', 'file_tree_requests', '--test', 'file_tree_ignored', '--test', 'directory_worker', '--test', 'directory_worker_ignored'])
+runCargo(['test', '--no-default-features', '--test', 'change_watch', 'an_ignore_rule_file'])
 """
 
 [tasks."test:tree"]
