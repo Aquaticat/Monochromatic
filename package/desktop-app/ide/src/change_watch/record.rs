@@ -212,6 +212,33 @@ fn record_for_servers(guard: &mut Shared, kind: &EventKind, path: &Path) -> bool
     return structure;
 }
 
+/// What:
+///  True for the files whose content decides which entries git ignores:
+///  a `.gitignore`,
+///  or `info/exclude` inside a `.git` folder.
+/// Why:
+///  A folder's listing does not depend on any file's content except these,
+///  because the tree dims the entries they name.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function isIgnoreRuleFile(path: string): boolean;
+/// ```
+fn is_ignore_rule_file(path: &Path) -> bool {
+    let named = |candidate: Option<&Path>, name: &str| -> bool {
+        return candidate
+            .and_then(Path::file_name)
+            .is_some_and(|found| return found == name);
+    };
+    if named(Some(path), ".gitignore") {
+        return true;
+    }
+    let info = path.parent();
+    return named(Some(path), "exclude")
+        && named(info, "info")
+        && named(info.and_then(Path::parent), ".git");
+}
+
 /// Wake the watch thread without blocking;
 ///  a full channel already holds a pending wake.
 pub(super) fn wake(sender: &SyncSender<()>) {
@@ -337,6 +364,16 @@ pub(super) fn record(
             && guard.watched.contains(path)
         {
             guard.pending.directories.insert(path.clone());
+        }
+        // A rule file edited in place leaves every name as it was, yet changes which entries are ignored;
+        // its folder is stale like after a name change, and the reread decides the rows again.
+        if let Reaction::Content(_) = reaction
+            && is_ignore_rule_file(path)
+            && let Some(parent) = path.parent()
+            && guard.watched.contains(parent)
+        {
+            tracing::debug!(path = %path.display(), "an ignore rule file changed; its folder is stale");
+            guard.pending.directories.insert(parent.to_path_buf());
         }
         // What: `as_deref` turns `Option<PathBuf>` into `Option<&Path>` so it compares with the borrowed `path`.
         // Why: Only the displayed file's own events refresh the source; the latest event wins.

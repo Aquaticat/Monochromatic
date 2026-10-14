@@ -2,6 +2,8 @@
 
 /// Parent-private state remains owned by the same tree rather than duplicated in a worker.
 use super::FileTree;
+/// The rule files' answer for the snapshot is installed with it or not at all.
+use crate::git_ignore::IgnoreAnswer;
 /// Preserve native names and dirent kinds from the existing read-only workspace reader.
 use crate::workspace::DirectoryEntry;
 /// Invalid snapshots are errors,
@@ -66,7 +68,23 @@ impl FileTree {
     /// Replace a synchronous snapshot atomically;
     ///  asynchronous readers must use complete_listing's token check.
     /// Removed or reclassified subtrees lose stale caches and pending reads.
+    /// The snapshot has no ignored entries,
+    ///  as before an answer exists.
     pub fn apply_listing(&mut self, directory: &Path, entries: Vec<DirectoryEntry>) -> Result<()> {
+        return self.apply_listing_with(directory, entries, IgnoreAnswer::default());
+    }
+
+    /// Replace a synchronous snapshot together with the answer of the rule files for its entries;
+    ///  both are installed or neither is.
+    /// A directory whose own `.gitignore`,
+    ///  or whose work tree's shared rules,
+    ///  differ from the previous snapshot's marks the tree for a reread of everything shown.
+    pub fn apply_listing_with(
+        &mut self,
+        directory: &Path,
+        entries: Vec<DirectoryEntry>,
+        answer: IgnoreAnswer,
+    ) -> Result<()> {
         if directory != self.root {
             // What: if-let extracts a borrowed entry when its parent snapshot still contains it.
             // Why: Replies for removed directories must not resurrect detached tree state.
@@ -145,7 +163,20 @@ impl FileTree {
         });
         // A synchronous snapshot also supersedes any older in-flight read of this directory.
         self.pending.remove(directory);
-        tracing::debug!(path = %directory.display(), entries = entries.len(), "applied tree directory snapshot");
+        self.ignores.retain(|path, _answer| {
+            return !path
+                .ancestors()
+                .any(|parent| return removed.contains(parent));
+        });
+        // A first listing has no earlier rules to differ from; later ones compare stamps, not names.
+        if let Some(previous) = self.ignores.get(directory)
+            && previous.stamps != answer.stamps
+        {
+            tracing::debug!(path = %directory.display(), "the ignore rules of a directory changed; every shown directory will be listed again");
+            self.ignore_sources_changed = true;
+        }
+        tracing::debug!(path = %directory.display(), entries = entries.len(), ignored = answer.names.len(), "applied tree directory snapshot");
+        self.ignores.insert(directory.to_path_buf(), answer);
         // Copy only the directory key; move the already ordered entries into the cache.
         self.directories.insert(directory.to_path_buf(), entries);
         // Successful application does not return another snapshot copy.
