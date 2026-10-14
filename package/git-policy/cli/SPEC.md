@@ -553,6 +553,35 @@ and distinct on case-insensitive filesystems.
   and the child's later update of an older tip left the remote at the takeover tip.
   A takeover push that races the child on the remote ref can fail,
   and it is then surfaced like any other failed push.
+- No step of auto-push waits without a bound.
+  The push runs under a deadline,
+  `CLI_GIT_PUSH_DEADLINE_SECONDS` whole seconds,
+  600 by default;
+  a zero,
+  negative,
+  fractional or non-numeric value is ignored.
+  Past the deadline the push is asked to end,
+  killed after a five second grace,
+  and recorded as a failed attempt with exit code 124 whose output ends with a line naming the deadline.
+  The commit stays saved and the exit contract below holds.
+  Git's low-speed abort is added to the push's environment
+  (`GIT_HTTP_LOW_SPEED_LIMIT=1000`, `GIT_HTTP_LOW_SPEED_TIME=60`)
+  for each variable the invocation's environment does not set,
+  which also overrides `http.lowSpeedLimit` and `http.lowSpeedTime` from Git configuration.
+  Each read-only Git query before the push
+  (`rev-parse`,
+  `remote get-url`,
+  `symbolic-ref`,
+  `merge-base`)
+  stops at the push deadline or 120 seconds,
+  whichever is shorter,
+  and a stopped query is a coordination failure that names it.
+- A waiter gives up on the lock after the push deadline plus the grace plus 60 seconds,
+  or after `CLI_GIT_PUSH_LOCK_WAIT_SECONDS` when that is set.
+  It never takes a live holder's lock.
+  The commit is reported with the push-failed note and a message naming the lock and the holder's PID.
+  A waiter prints one line naming the pushing process,
+  the branch and the limit as soon as it starts waiting.
 - A joined commit's own `pre-push` hook does not run separately;
   the joined push ran it once for its tip.
 - The existing exit contract holds:
