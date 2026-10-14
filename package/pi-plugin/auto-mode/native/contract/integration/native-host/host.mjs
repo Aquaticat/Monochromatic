@@ -79,10 +79,13 @@ export function createNativeCliHost({
     findById: SessionManager.findById
       .bind(SessionManager),
   });
-  function createResourceLoader(options) {
+  async function createResourceLoader(options) {
+    // Preserve original outer options while policy designation performs asynchronous file inspection.
+    const capturedOptions = {...options};
+    const designation = await designatePolicy(capturedOptions);
     const resource = createHostResource({
-      options,
-      designation: designatePolicy(options)
+      options: capturedOptions,
+      designation
     });
     resources.add(resource.loader);
     return resource.loader;

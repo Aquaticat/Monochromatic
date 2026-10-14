@@ -1031,6 +1031,14 @@ The user was asked for the intended production semantic acceptance rule,
 or whether to prepare a concrete proposal from retained evidence.
 No answer or policy adoption is inferred from elapsed time.
 Independent maintained bootstrap quality work continues.
+Its scoped lint reports `no-restricted-syntax/no-sync` for `statSync`
+and `no-restricted-syntax/no-regex` for trailing-slash removal,
+alongside untyped native-boundary warnings.
+The policy designation now reads file metadata asynchronously;
+the host captures outer resource options before awaiting it,
+and the generated native services await the resulting loader.
+Trailing-slash handling now uses string operations with the same single-slash behavior.
+Native lifecycle and CLI checks must be repeated for this bootstrap change.
 
 The first approved native dispatch failed because the inherited test loader derived dependency paths
 from the codemode worker's disposable home.

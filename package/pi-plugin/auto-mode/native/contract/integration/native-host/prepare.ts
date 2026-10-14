@@ -236,7 +236,7 @@ export async function prepareNativeHost({ output }: {readonly output:string}):Pr
       source = replaceOnce({
         source,
         before: 'new DefaultResourceLoader({',
-        after: 'createHostResourceLoader({'
+        after: 'await createHostResourceLoader({'
       });
       source = replaceOnce({
         source,

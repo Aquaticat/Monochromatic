@@ -1,4 +1,4 @@
-import { statSync } from 'node:fs';
+import { stat } from 'node:fs/promises';
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import {
@@ -29,6 +29,7 @@ const { wrapToolDefinition } = await import(pathToFileURL(join(
 ))
   .href);
 const log = tagged({ tag: 'auto-mode-native-host' });
+const permissionBits = 0o777;
 
 function trace(event) {
   const l = tagged({
@@ -38,17 +39,16 @@ function trace(event) {
   l.debug(event);
 }
 
-function designatePolicy(options) {
+async function designatePolicy({cwd}) {
   const relativePath = 'AGENTS.md';
-  const requiredMode = statSync(join(
-    options.cwd,
+  const info = await stat(join(
+    cwd,
     relativePath
-  ))
-    .mode
-    & 0o777;
+  ));
+  const requiredMode = info.mode & permissionBits;
   return {
     policy: {
-      root: options.cwd,
+      root: cwd,
       relativePath,
       requiredMode
     },
@@ -68,7 +68,8 @@ function assessmentClock() {
 }
 
 function readAssessmentCredential() {
-  return process.env.AUTO_MODE_LLMGATEWAY_API_KEY;
+  return process.env
+    .AUTO_MODE_LLMGATEWAY_API_KEY;
 }
 
 function bindSession({
@@ -81,10 +82,8 @@ function bindSession({
     .model
     ?.baseUrl
     ?? 'https://token-plan.ap-southeast-1.maas.aliyuncs.com/compatible-mode/v1';
-  const endpoint = new URL(`${baseUrl.replace(
-    /\/$/u,
-    ''
-  )  }/chat/completions`).href;
+  const endpointBase = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl;
+  const endpoint = new URL(`${endpointBase}/chat/completions`).href;
   return bindNativePolicyRuntime({
     root,
     lifecycle,
