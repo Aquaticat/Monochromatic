@@ -128,7 +128,7 @@ pub fn assert_reads_as(path: &str, source: &str, language: &str, role: &str, fra
     let classified = painted(path, source);
     let found = classified
         .iter()
-        .any(|(name, text)| return ROLES[index] == *name && text == fragment);
+        .any(|(name, shown)| return ROLES[index] == *name && shown == fragment);
     assert!(
         found,
         "expected {role} on {fragment:?} in {path}; painted fragments: {classified:?}"
