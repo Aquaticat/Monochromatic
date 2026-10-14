@@ -62,7 +62,7 @@ The operating instructions live in `doc/runbook/claude-cpu-cap.md`.
   check that ends the watch if nothing weird happened. Its job id changes at every push, so read it with CronList;
   this file records the rule, not each id. The first setting was 21:19 EDT; since then it moved after the alerts at
   18:02:37 (CPU pressure), 19:16:45 (memory pressure), 20:11:41 (CPU pressure), 20:15:27 (temperature) and 20:24:45
-  (throttle), and the throttle alert flapped at 100 MHz. After the CPU pressure alert at 21:05:27 it stands at 01:08 EDT
+  (throttle), and the throttle alert flapped at 100 MHz. After the CPU pressure alert at 21:14:53 it stands at 01:17 EDT
   on 2026-10-14 (the latest weird event so far).
 - The 20:11:41 CPU pressure alert (46.1, limit 40) came at cap 30 and 130 W. It was the first sustained load in the
   log: about 55 seconds at 125 to 136 W, load average up to 57 on 32 threads, pressure up to 67.8, and it cleared at
@@ -286,6 +286,32 @@ so the findings come from reading the readable source strings inside the binary 
   restarted, because Claude reads its own cgroup path once at startup.
 - The CPU watcher writes `cpu.max` only into `app.slice/claude-code-bash`. Per-session slices would carry their
   limits in systemd properties, and the watcher would need a decision about how to tone those down.
+
+## Replacement board research (2026-10-13, about 21:20 EDT, nothing bought or decided)
+
+The user's warranty on the B650 GAMING X AX has expired, they see no reason to suspect the power supply yet and do not
+want to buy a spare one now, and are open to buying a new board "correctly" for the current setup plus an RTX 3080 10G
+for VFIO passthrough.
+
+- Machine facts read from sysfs and `lspci`: host discrete GPU is a Radeon RX 7600 class card (Navi 33, an x8 card,
+  power cap 162 W); the 7950X has integrated graphics (Raphael 610M) that can drive the host display; one NVMe drive
+  with a Realtek RTS5772DL DRAM-less controller; Wi-Fi is a Realtek RTL8852CE and the wired LAN is switched off in the
+  BIOS; 34 IOMMU groups with no IOMMU kernel arguments set; 2 DIMMs; NH-D15S cooler (AM5, offset bars).
+- This board looks exposed to a reported VFIO problem: an AMD IOMMU patch thread (LKML, 2026-03-29 and 30, patch
+  author Christos Longros, reply by Vasant Hegde of AMD) says some boards, naming Gigabyte B650 Gaming X AX V2 and
+  X870E, ship IVRS tables whose unity-map ranges apply to nearly every IOMMU group, so VFIO is refused with "Firmware
+  has requested this device have a 1:1 IOMMU mapping". AMD asked for an ACPI dump and had not reproduced it. On this
+  board 28 of 34 groups carry a 'direct' reserved region (two ranges: 0x0 to 0xfff and 0x8af74000 to 0x8af75fff),
+  the condition the thread describes. Whether passthrough actually fails here was not tested.
+- Candidate boards, with what was verified: ASUS ProArt X870E-CREATOR WIFI (ASUS page): two PCIe 5.0 x16 SafeSlots
+  (x16 single or x8/x8 dual), one PCIe 4.0 x16 slot (max x4), four M.2, dual USB4, 10 Gb and 2.5 Gb LAN, Wi-Fi 7,
+  HDMI 2.1 and 16+2+2 power stages; a SHI listing shows MSRP 549.99 US dollars and 618 dollars at the time.
+  ASRock X870E Taichi (manual snippet): two PCIe 5.0 x16 slots, x16 or x8/x8, with lane modes depending on the CPU;
+  no price or VFIO report found. ASUS ProArt X670E-Creator: one PCPartPicker build reported easy IOMMU and VFIO setup;
+  no price found. MSI MEG X870E ACE MAX: x16, x8 and x4 slots (not x8/x8). Gigabyte X870E Aorus Master: second slot
+  shares lanes with M.2 (forum table, unverified). Gigabyte boards carry the IVRS risk above.
+- Not verified: IOMMU group layouts of any candidate, BIOS stability reports for 2026 firmware, the physical slot
+  spacing against a 3080 and the D15S, and the power supply wattage and case (unknown).
 
 ## Open questions
 
