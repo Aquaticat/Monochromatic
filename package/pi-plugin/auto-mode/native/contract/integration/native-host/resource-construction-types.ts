@@ -3,8 +3,16 @@
 
  @module
  */
-import type { DefaultResourceLoader, ExtensionAPI, ResourceLoader } from '@earendil-works/pi-coding-agent';
-import type { NativeHostResource, NativeHostPolicyInput, NativeReloadable } from './resource-types.ts';
+import type {
+  DefaultResourceLoader,
+  ExtensionAPI,
+  ResourceLoader
+} from '@earendil-works/pi-coding-agent';
+import type {
+  NativeHostResource,
+  NativeHostPolicyInput,
+  NativeReloadable
+} from './resource-types.ts';
 
 /**
  The original constructor owner remains opaque except for host cleanup.

@@ -6,7 +6,11 @@
 import type { ExtensionAPI } from '@earendil-works/pi-coding-agent';
 import { tagged } from '@monochromatic-dev/module-logger/ts';
 import type { NativePolicyDesignation } from './bootstrap-types.ts';
-import type { NativeCliResource, NativeResourceApi, NativeResourceOptions } from './resource-construction-types.ts';
+import type {
+  NativeCliResource,
+  NativeResourceApi,
+  NativeResourceOptions
+} from './resource-construction-types.ts';
 import {
   createResourceInputOwner,
   createGoverningPolicyLoader,
@@ -50,11 +54,17 @@ const l=tagged({tag:'auto-mode-native-host-resources'});
 export function createHostResource({
   options,
   designation
-}: {readonly options:NativeResourceOptions;readonly designation:NativePolicyDesignation}): NativeCliResource {
+}: {
+  readonly options:NativeResourceOptions;
+  readonly designation:NativePolicyDesignation
+}): NativeCliResource {
   /**
    Construction diagnostics never serialize original input values or native capabilities.
    */
-  const rl=tagged({tag:createHostResource.name,l});
+  const rl=tagged({
+    tag:createHostResource.name,
+    l
+  });
   rl.debug('constructing original native host resources');
   /**
    The incumbent constructor owner retains private loader and source membership.
@@ -79,7 +89,10 @@ export function createHostResource({
     /**
      API publication retains its own function tag without logging the capability.
      */
-    const al=tagged({tag:captureApi.name,l:rl});
+    const al=tagged({
+      tag:captureApi.name,
+      l:rl
+    });
     al.debug('capturing original native resource API');
     nativeApi.current = pi;
   }
