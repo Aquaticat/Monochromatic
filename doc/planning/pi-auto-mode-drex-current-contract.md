@@ -142,6 +142,134 @@ original assessment deadline,
 and semantic decision remain the next compatibility boundary.
 No production route changed.
 
+## Authorized request-limit exploration
+
+The user requested more Drex requests to establish actual limits on 2026-10-14.
+The next phase uses synthetic data only and makes sequential requests to the same pinned model and route.
+It tests independent question-count,
+state-length,
+longest-question,
+and serialized-body boundaries.
+It does not test account concurrency or rate limits by saturating the service.
+
+Question probes begin at 32,
+128,
+244,
+512,
+and 513 questions sharing the same short public state.
+State probes repeat `x ` with one unchanged short question.
+Longest-question probes keep the state short and vary only repeated `x ` in question instructions.
+Body probes use exactly 4,194,304 and 4,194,305 serialized `state` plus `questions` bytes,
+with whitespace padding to distinguish byte validation from ordinary text length.
+Any earlier token rejection remains a separate boundary;
+whitespace padding is not evidence of ordinary-text capacity.
+
+The runner retains every attempted payload hash,
+byte count,
+status,
+raw response,
+returned model,
+answer coverage,
+reported token usage,
+and elapsed time.
+An observed transport timeout is not interpreted as a server size limit.
+Large-input requests have a 60-second observation ceiling to reach the documented 55-second server timeout;
+each result separately records whether it met the unchanged five-second production budget.
+No production timeout or resource limit changes.
+The finite exploration ceiling is 32 requests,
+one in flight,
+with no automatic retry and a stop on authentication,
+credit,
+rate,
+or service-capacity failure.
+The existing worker bounds are 4 GiB memory and two CPUs;
+the Node heap is additionally limited to 128 MiB.
+
+### Measured question-count boundary
+
+`mise run probe questions` in `${HOME}/temp/agent/drex-request-limits-20261014`
+completed every frozen question-count case without retries.
+Counts 32,
+128,
+244,
+and 512 returned HTTP 200,
+`model: drex-v2.0`,
+and exactly the original typed answer sets.
+The 513-question request returned HTTP 422 with
+`questions: at most 512 questions allowed`.
+The 512-question request took 1,596.205 ms for the synthetic short state;
+this is not a measurement of a complete native request with 512 questions.
+
+The accepted 512 and rejected 513 establish the hosted question-count boundary for the observed route and time.
+The historical 16-question failure no longer excludes this route on question count alone.
+The deciding historical hosted implementation remains unavailable,
+so this result does not identify when or why that behavior changed.
+
+### Measured serialized-body boundary
+
+`mise run probe bytes` accepted exactly 4,194,304 serialized `state` plus `questions` bytes
+with HTTP 200 and `model: drex-v2.0`.
+Adding one byte returned HTTP 422 with `request body must be at most 4194304 bytes`.
+The complete HTTP body also contains the model field,
+so its corresponding accepted size was 4,194,324 bytes.
+This matches the documented counted-field scope,
+not a limit on the entire HTTP body.
+
+The successful control used whitespace padding and reported 32,795 input tokens.
+It establishes the byte boundary without pretending that ordinary text has the same token density.
+Its 8,632.385 ms elapsed time exceeded the unchanged five-second production budget.
+The rejected control returned in 3,342.758 ms.
+Single-run durations do not establish reliable latency or comparative performance.
+
+### Measured state-length boundary
+
+`mise run probe state` kept one short question fixed and varied only `state = 'x '.repeat(n)`.
+Repetition counts 8,192,
+65,536,
+and 131,070 returned HTTP 200 with `model: drex-v2.0` and the original answer.
+Counts 131,071,
+131,072,
+and 131,073 returned HTTP 422 naming `exceeds the 131,072-token state limit`.
+The accepted 131,070 repetitions and rejected 131,071 repetitions establish adjacent bounds for this exact input family.
+They are not independently measured tokenizer counts.
+
+The largest accepted state contained 262,140 unquoted UTF-8 bytes;
+its complete request occupied 262,320 bytes.
+It returned in 2,729.279 ms and reported 133,978 input tokens.
+That reported usage is not the state-only limit counter:
+it exceeds the named state limit even though this request was accepted.
+Do not substitute billing usage or a repetition count for the server's state-token accounting.
+Every request in this phase completed within five seconds in its individual observation.
+
+### Measured state-plus-longest-question boundary
+
+The hosted backend contradicts the published 262,144-token row limit.
+With the fixed short state and 262,100 repetitions of `x ` in one question's instructions,
+HTTP 422 reported
+`question requires 262122 branch tokens; backend row limit is 139264 including state`.
+Larger probes reached the separately worded 262,144-token validation error.
+These distinct responses establish different observed validation boundaries;
+they do not establish the hosted deployment's source-level cause.
+
+Targeted adjacent probes kept every other byte fixed:
+139,236 repetitions returned HTTP 200,
+`model: drex-v2.0`,
+one original answer,
+and 139,264 reported input tokens.
+The request took 4,419.861 ms.
+139,237 repetitions returned HTTP 422 with `Request schema or context limit is invalid`.
+The observed adjacent boundary agrees with the backend's named 139,264-token row limit.
+The generic adjacent error alone would not establish that number;
+the larger request's explicit backend diagnostic supplies it.
+
+The initial schedule and adjacent controls consumed 20 requests.
+The remaining bounded investigation adds three combined cases:
+244 questions with state repetition counts 8,192,
+65,536,
+and 131,070.
+These retain synthetic inputs and measure whether independent accepted boundaries combine.
+They make no claim about current native input fidelity or semantic quality.
+
 [models]: https://console.nace.ai/docs/drex/reference/models
 [limits]: https://console.nace.ai/docs/drex/reference/limits
 [evaluate]: https://console.nace.ai/docs/drex/api-reference/systemone
