@@ -7,6 +7,15 @@ This current summary complements the
 [historical evidence ledger](pi-auto-mode-axiom-evaluation.md).
 Updated 2026-10-14.
 
+## Newly enabled Gateway decision models
+
+The user enabled `microsoft-decision-1` and `gpt-6-luna-decisions` on the existing Gateway key.
+The [frozen compatibility plan](../planning/pi-auto-mode-gateway-decisions-current-contract.md)
+uses the documented `/v1/decisions` route and an exactly invertible wire conversion.
+Exercise these supplied resources first,
+then resume the pending Liquid shared-content probe and Jev row-envelope correction.
+No provider replacement or admission-policy change is adopted.
+
 ## SubQ authorization and compatibility check
 
 The user authorized sending anything needed to `subq.ai`
