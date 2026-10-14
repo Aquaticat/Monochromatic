@@ -5,24 +5,51 @@
  */
 import { describe, expect, it } from '@monochromatic-dev/module-test/ts';
 import { parse } from 'yuku-parser';
-import type {
-  NativeImportBuildError as SourceImportBuildError,
-  rewriteNativeImports as sourceRewriteNativeImports,
-} from '../native/contract/integration/native-batch/build-imports.ts';
 
 /**
- Runtime uses the built artifact while the maintained source provides its TypeScript contract.
+ Consumer contract used by these built-artifact assertions.
  */
-const built: {
+type NativeBuildImports = {
   /**
-   Built error class must retain the maintained constructor contract.
+   Build failures remain distinguishable from policy outcomes.
    */
-  readonly NativeImportBuildError: typeof SourceImportBuildError;
+  readonly NativeImportBuildError: new(message: string) => Error;
   /**
-   Built transformation must retain the maintained resolver contract.
+   Transformation receives original source, its diagnostic path, and module selection.
    */
-  readonly rewriteNativeImports: typeof sourceRewriteNativeImports;
-} = await import(new URL('../dist/native/contract/integration/native-batch/build-imports.ts', import.meta.url).href);
+  readonly rewriteNativeImports: (input: {
+    /** Original module text. */
+    readonly source: string;
+    /** Diagnostic identity. */
+    readonly path: string;
+    /** Resolver observes decoded module values and their executable role. */
+    readonly select: (input: {
+      /** Decoded original module value. */
+      readonly specifier: string;
+      /** Original static or dynamic operation. */
+      readonly kind: 'static' | 'dynamic';
+    }) => string;
+  }) => string;
+};
+
+/**
+ Assert the callable exports before testing their consumer contract.
+
+ @param value - built module namespace loaded through its file URL
+
+ @throws Error when a required built export is missing
+ */
+function assertNativeBuildImports(value: unknown): asserts value is NativeBuildImports {
+  if (typeof value !== 'object' || value === null || !('NativeImportBuildError' in value)
+    || typeof value.NativeImportBuildError !== 'function' || !('rewriteNativeImports' in value)
+    || typeof value.rewriteNativeImports !== 'function') throw new Error('Built native import module lacks its required callable exports');
+}
+
+/**
+ Only the copied build artifact is loaded at runtime.
+ */
+const built: unknown = await import(new URL('../dist/native/contract/integration/native-batch/build-imports.ts', import.meta.url).href);
+assertNativeBuildImports(built);
 /**
  Native build exports are exercised from the copied artifact, not the source module.
  */
