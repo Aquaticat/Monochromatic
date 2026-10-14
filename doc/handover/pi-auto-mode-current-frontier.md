@@ -432,9 +432,37 @@ Node parses all 158 native modules.
 The four changed modules still report 592 warnings and eight lint errors;
 none is a synchronous filesystem finding.
 The typed manifest helper separately passes its type and scoped lint checks.
-The next native preparation fixes address mutable transformation state,
-regular-expression rewriting,
-and source-module size without changing eligibility.
+Commits `dd0158bd40` and `3cd3d11f22` split resource,
+agent,
+and program preparation into sibling modules and replace mutable source stages with named constants.
+Static imports and native host relative imports now use the existing parser's original literal locations.
+Comments,
+unrelated strings,
+and dynamic expressions retain their original bytes.
+The rewriter visits parsed structure with a work stack,
+orders replacements by original tokens,
+and joins disjoint source fragments without rebuilding an accumulating string.
+Built-artifact tests cover static,
+side-effect,
+multiline,
+re-export,
+and nested dynamic imports;
+they also cover escaped source names and adversarial replacement values.
+The initial static test import reported TypeScript `TS6307` because generated `.ts` was outside the composite source set.
+The final test loads the built module by URL and checks its expected callable consumer contract.
+No source import,
+type-check suppression,
+or additional generated-source include was introduced.
+The owned build,
+import boundary tests,
+package type check,
+and canonical permission,
+prohibition,
+and unspecified fixtures pass after connection.
+Scoped lint for the import test and typed rewrite/mapping helpers reports zero warnings and zero errors.
+Native SDK stream,
+approval-context,
+and host-lifecycle regressions are running against this artifact.
 
 The first approved native dispatch failed because the inherited test loader derived dependency paths
 from the codemode worker's disposable home.
