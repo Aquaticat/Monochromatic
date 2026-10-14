@@ -923,6 +923,8 @@
     {
       "original": "lifecycle/sdk-custody-native/generate.mjs",
       "maintained": "lifecycle/sdk-custody-native/generate.mjs",
+      "currentMaintained": "lifecycle/sdk-custody-native/generate.ts",
+      "movedOn": "2026-10-14",
       "sha256": "d5e63831afceb0c2e6118e4b303c0077db5ba32b1318ba3878304ac8c2fce14d",
       "origin": "authored-source",
       "relocatedLiterals": 0

@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import {generate as protectManager} from '../../lifecycle/sdk-custody-native/generate.mjs';
+import {generate as protectManager} from '../../lifecycle/sdk-custody-native/generate.ts';
 import {generateSession} from '../../lifecycle/sdk-session-lifetime/generate.ts';
 import {generateCompletion} from '../../lifecycle/sdk-session-disposal-completion/generate.ts';
 
