@@ -57,6 +57,52 @@ function isNativeReturn(value: unknown): value is NativeReturnOutcome {
 
 //endregion Return validation precedes original native conversion
 
+//region Native completion captures conversion without introducing another asynchronous boundary
+
+/**
+ Retain and convert the original native return in the settlement continuation.
+
+ @param invocation - original slot-owned execution record
+
+ @param outcome - original native result before any later queued mutation
+
+ @returns original validated native outcome
+
+ @mutates invocation - records original outcome, terminal state, conversion count, and captured conversion
+
+ @throws NativeReturnContractError when the native return shape or call association is invalid
+ */
+function retainNativeReturn({ invocation, outcome }: {
+  readonly invocation: NativeReturnInvocation;
+  readonly outcome: unknown;
+}): NativeReturnOutcome {
+  /** Captured state transitions have their own diagnostic boundary. */
+  const rl = tagged({ tag: retainNativeReturn.name, l });
+  if (!isNativeReturn(outcome) || (outcome.toolCall.id !== invocation.call.id) || (outcome.toolCall.name !== invocation.call.name)) {
+    /** Invalid returns remain inspectable without claiming native conversion succeeded. */
+    const error = new NativeReturnContractError('Native pipeline returned an outcome for a different call or shape');
+    invocation.state = 'invalid-return';
+    invocation.failure = error;
+    throw error;
+  }
+  invocation.outcome = outcome;
+  invocation.state = 'returned';
+  invocation.conversionCount++;
+  try {
+    /** Original native conversion runs synchronously before another microtask can alter the result. */
+    const value: unknown = toScriptValue(invocation.tool, outcome);
+    invocation.conversion = typeof value === 'string'
+      ? Object.freeze({ status: 'string', value, bytes: Buffer.byteLength(value) })
+      : Object.freeze({ status: 'unsupported', kind: value === null ? 'null' : typeof value });
+  } catch (error) {
+    invocation.conversion = Object.freeze({ status: 'threw', error, messageAtCapture: caughtValueText(error) });
+  }
+  rl.debug(`retained native return with conversion ${invocation.conversion.status}`);
+  return outcome;
+}
+
+//endregion Native completion captures conversion without introducing another asynchronous boundary
+
 //region Original slots retain invocation state independently of live script access
 
 /**
@@ -215,66 +261,17 @@ export function createNativeReturnConsumer(owner: NativeReturnOwner): NativeRetu
       pending
     } = reserve(input);
     il.debug('reserved original native invocation');
-    /**
-     Native completion remains retainable even after the original parent retires.
-     */
-    const outcome: unknown = await (async function awaitNativeCompletion(): Promise<unknown> {
-      try {
-        return await pending;
-      }
-      catch (error) {
+    try {
+      /** Retain completion directly after the original native await, even if the parent retired. */
+      const outcome: unknown = await pending;
+      return retainNativeReturn({ invocation, outcome });
+    } catch (error) {
+      if (invocation.state === 'running') {
         invocation.state = 'threw';
         invocation.failure = error;
-        throw error;
       }
-    })();
-    if ((!isNativeReturn(outcome)) || (outcome.toolCall
-      .id
-      !== invocation.call
-      .id)
-      || (outcome.toolCall
-        .name
-        !== invocation.call
-        .name)) {
-      /**
-       Invalid return diagnostics remain inspectable beside the reserved occurrence.
-       */
-      const error = new NativeReturnContractError('Native pipeline returned an outcome for a different call or shape');
-      invocation.state = 'invalid-return';
-      invocation.failure = error;
       throw error;
     }
-    invocation.outcome = outcome;
-    invocation.state = 'returned';
-    invocation.conversionCount++;
-    try {
-      /**
-       Native conversion determines the original value or ordinary tool failure.
-       */
-      const value: unknown = toScriptValue(
-        invocation.tool,
-        outcome
-      );
-      invocation.conversion = (typeof value) === 'string'
-        ? Object.freeze({
-          status: 'string',
-          value,
-          bytes: Buffer.byteLength(value)
-        })
-        : Object.freeze({
-          status: 'unsupported',
-          kind: value === null ? 'null' : typeof value
-        });
-    } catch (error) {
-      invocation.conversion = Object.freeze({
-        status: 'threw',
-        error,
-        messageAtCapture: caughtValueText(error)
-      });
-    }
-    il.debug(`retained native return with conversion ${invocation.conversion
-      .status}`);
-    return outcome;
   }
 
   /**

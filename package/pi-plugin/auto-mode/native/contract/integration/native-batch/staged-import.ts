@@ -167,7 +167,7 @@ export async function replaceStagedImport({
         === binding)) declarations.push(node);
   }
   /**
-   Capture the sole candidate before narrowing it for JSON decoding.
+   Capture the sole original declaration before checking its decoded file URL.
    */
   const [declaration] = declarations;
   if ((declarations.length !== 1) || (declaration?.type !== 'ImportDeclaration')) throw new StagedImportError(`Expected one generated import for ${binding}`);
