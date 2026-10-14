@@ -5,6 +5,11 @@
  */
 import { tagged } from '@monochromatic-dev/module-logger/ts';
 import { NativeBatchBuildError } from './build-entries.ts';
+import { preparePromptInputs } from './prompt-input-source.ts';
+import { preparePromptOwners } from './prompt-owner-source.ts';
+import { preparePromptBase } from './prompt-base-source.ts';
+import { preparePromptRun } from './prompt-run-source.ts';
+export { promptEmitterSource } from './prompt-emitter-source.ts';
 
 //region Qualified native source transformations retain original prompt and input owners
 
@@ -13,11 +18,7 @@ import { NativeBatchBuildError } from './build-entries.ts';
  */
 const l = tagged({ tag: 'auto-mode-native-prompt-source' });
 
-import { preparePromptInputs } from './prompt-input-source.ts';
-import { preparePromptOwners } from './prompt-owner-source.ts';
-import { preparePromptBase } from './prompt-base-source.ts';
-import { preparePromptRun } from './prompt-run-source.ts';
-export { promptEmitterSource } from './prompt-emitter-source.ts';
+
 
 /**
  Compose original input, resource, base, and run prompt ownership before native getter publication.
@@ -37,7 +38,10 @@ export function promptSessionSource(source: string): string {
  /**
   This transformation keeps its own source preparation diagnostic boundary.
   */
- const rl = tagged({ tag: promptSessionSource.name, l });
+ const rl = tagged({
+   tag: promptSessionSource.name,
+   l
+ });
  rl.debug('preparing original native prompt source');
  /**
   Input capture and private fields precede native prompt owner binding.

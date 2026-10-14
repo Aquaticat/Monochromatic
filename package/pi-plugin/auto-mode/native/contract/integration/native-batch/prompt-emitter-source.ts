@@ -27,7 +27,10 @@ function prepareBeforeAgentStartEmitter(source: string): string {
  /**
   This transformation keeps its own source preparation diagnostic boundary.
   */
- const rl = tagged({ tag: prepareBeforeAgentStartEmitter.name, l });
+ const rl = tagged({
+   tag: prepareBeforeAgentStartEmitter.name,
+   l
+ });
  rl.debug('preparing original native prompt source');
  /**
   The original before-agent-start method begins native run preparation.
@@ -36,8 +39,11 @@ function prepareBeforeAgentStartEmitter(source: string): string {
  /**
   The following native event method ends the before-agent-start source block.
   */
- const methodEnd=source.indexOf('    async emitResourcesDiscover(',methodStart);
- if (methodStart === -1 || methodEnd <= methodStart) throw new NativeBatchBuildError('Original native before-agent-start boundary is unavailable');
+ const methodEnd=source.indexOf(
+   '    async emitResourcesDiscover(',
+   methodStart
+ );
+ if ((methodStart === (-1)) || (methodEnd <= methodStart)) throw new NativeBatchBuildError('Original native before-agent-start boundary is unavailable');
  /**
   Original handler traversal remains ordered while its capture boundaries are installed.
   */
@@ -115,7 +121,10 @@ function prepareInputEmitter(source: string): string {
  /**
   This transformation keeps its own source preparation diagnostic boundary.
   */
- const rl = tagged({ tag: prepareInputEmitter.name, l });
+ const rl = tagged({
+   tag: prepareInputEmitter.name,
+   l
+ });
  rl.debug('preparing original native prompt source');
  /**
   The original input method begins retained native input handling.
@@ -128,7 +137,7 @@ function prepareInputEmitter(source: string): string {
    '\n}\n',
    inputStart
  );
- if (inputStart === -1 || inputEnd <= inputStart) throw new NativeBatchBuildError('Original native input handler boundary is unavailable');
+ if ((inputStart === (-1)) || (inputEnd <= inputStart)) throw new NativeBatchBuildError('Original native input handler boundary is unavailable');
  /**
   Original input handling retains the same normalization and native dispatch behavior.
   */
@@ -178,7 +187,10 @@ function prepareContextEmitter(source: string): string {
  /**
   This transformation keeps its own source preparation diagnostic boundary.
   */
- const rl = tagged({ tag: prepareContextEmitter.name, l });
+ const rl = tagged({
+   tag: prepareContextEmitter.name,
+   l
+ });
  rl.debug('preparing original native prompt source');
  /**
   The original context method begins native message transformation.
@@ -191,7 +203,7 @@ function prepareContextEmitter(source: string): string {
    '    async emitBeforeProviderRequest(',
    contextStart
  );
- if (contextStart === -1 || contextEnd <= contextStart) throw new NativeBatchBuildError('Original native context handler boundary is unavailable');
+ if ((contextStart === (-1)) || (contextEnd <= contextStart)) throw new NativeBatchBuildError('Original native context handler boundary is unavailable');
  /**
   Original context transformations retain input, copy, and completion observations.
   */
@@ -248,11 +260,24 @@ function prepareContextEmitter(source: string): string {
  const generated = promptEmitterSource({ source, runnerUrl, promptUrl, aiUrl });
  ```
  */
-export function promptEmitterSource({source,runnerUrl,promptUrl,aiUrl}: { readonly source: string; readonly runnerUrl: string; readonly promptUrl: string; readonly aiUrl: string }): string {
+export function promptEmitterSource({
+  source,
+  runnerUrl,
+  promptUrl,
+  aiUrl
+}: {
+  readonly source: string;
+  readonly runnerUrl: string;
+  readonly promptUrl: string;
+  readonly aiUrl: string
+}): string {
  /**
   Handler module composition retains a distinct diagnostic boundary.
   */
- const rl=tagged({tag:promptEmitterSource.name,l});
+ const rl=tagged({
+   tag:promptEmitterSource.name,
+   l
+ });
  rl.debug('composing original native prompt handlers');
  /**
   The original snapshot helper begins retained native handler traversal.
@@ -261,7 +286,10 @@ export function promptEmitterSource({source,runnerUrl,promptUrl,aiUrl}: { readon
  /**
   The next original function ends the handler snapshot helper.
   */
- const snapshotEnd=source.indexOf('\nfunction ',snapshotStart+1);
+ const snapshotEnd=source.indexOf(
+   '\nfunction ',
+   snapshotStart+1
+ );
  /**
   Original message comparison helpers support the retained context traversal.
   */
@@ -269,8 +297,13 @@ export function promptEmitterSource({source,runnerUrl,promptUrl,aiUrl}: { readon
  /**
   The original project-trust export ends the retained context helper block.
   */
- const helpersEnd=source.indexOf('export async function emitProjectTrustEvent(',helpersStart);
- if (snapshotStart === -1 || snapshotEnd <= snapshotStart || helpersStart === -1 || helpersEnd <= helpersStart) throw new NativeBatchBuildError('Original native handler helper boundaries are unavailable');
+ const helpersEnd=source.indexOf(
+   'export async function emitProjectTrustEvent(',
+   helpersStart
+ );
+ if ((snapshotStart === (-1)) || (snapshotEnd <= snapshotStart)
+   || (helpersStart === (-1))
+   || (helpersEnd <= helpersStart)) throw new NativeBatchBuildError('Original native handler helper boundaries are unavailable');
  /**
   Original context transformations retain input, copy, and completion observations.
   */
@@ -283,7 +316,7 @@ export function promptEmitterSource({source,runnerUrl,promptUrl,aiUrl}: { readon
   Original input handling retains the same normalization and native dispatch behavior.
   */
  const input=prepareInputEmitter(source);
- return `import {getCurrentSystemMessage} from ${JSON.stringify(aiUrl)};\n`+`import {ExtensionRunner} from ${JSON.stringify(runnerUrl)};\nimport {buildSystemPrompt,normalizeBuildSystemPromptOptions} from ${JSON.stringify(promptUrl)};\nconst nativeCreateContext=ExtensionRunner.prototype.createContext,nativeAssertActive=ExtensionRunner.prototype.assertActive,nativeEmitError=ExtensionRunner.prototype.emitError;\n${source.slice(
+ return `import {getCurrentSystemMessage} from ${JSON.stringify(aiUrl)};\nimport {ExtensionRunner} from ${JSON.stringify(runnerUrl)};\nimport {buildSystemPrompt,normalizeBuildSystemPromptOptions} from ${JSON.stringify(promptUrl)};\nconst nativeCreateContext=ExtensionRunner.prototype.createContext,nativeAssertActive=ExtensionRunner.prototype.assertActive,nativeEmitError=ExtensionRunner.prototype.emitError;\n${source.slice(
    snapshotStart,
    snapshotEnd
  )}\n${source.slice(

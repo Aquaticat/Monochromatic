@@ -32,7 +32,10 @@ export function preparePromptOwners(source: string): string {
  /**
   This transformation keeps its own source preparation diagnostic boundary.
   */
- const rl = tagged({ tag: preparePromptOwners.name, l });
+ const rl = tagged({
+   tag: preparePromptOwners.name,
+   l
+ });
  rl.debug('preparing original native prompt source');
  /**
   Ordered transformations preserve the original native construction and handler sequence.

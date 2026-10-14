@@ -33,7 +33,10 @@ export function preparePromptRun(source: string): string {
  /**
   This transformation keeps its own source preparation diagnostic boundary.
   */
- const rl = tagged({ tag: preparePromptRun.name, l });
+ const rl = tagged({
+   tag: preparePromptRun.name,
+   l
+ });
  rl.debug('preparing original native prompt source');
  /**
   Ordered transformations preserve the original native construction and handler sequence.
@@ -112,25 +115,25 @@ export function preparePromptRun(source: string): string {
    from:'this.#sessionManager.appendCustomMessageEntry(event.message.customType, event.message.content, event.message.display, event.message.details);',
    to:'this.#sessionManager.appendCustomMessageEntry(event.message.customType, event.message.content, event.message.display, event.message.details,event.message);'
  });
- if (hasRunTrigger) {
+ /**
+  Native trigger variants retain their original run completion statement.
+  */
+ const completionStatement=hasRunTrigger?'return messages;':'preflightResult?.("started");';
  value=replaceOnce({
    source:value,
-   from:'        if (updateMessage)\n            messages.unshift(updateMessage);\n        return messages;',
-   to:'        if (updateMessage)\n            messages.unshift(updateMessage);\n        } catch(error) { const failure = this.#runPromptOwner.fail({scope:run.handle,error}); outputObserver.rethrow(error); throw failure; }\n        return messages;'
+   from:`        if (updateMessage)\n            messages.unshift(updateMessage);\n        ${completionStatement}`,
+   to:`        if (updateMessage)\n            messages.unshift(updateMessage);\n        } catch(error) { const failure = this.#runPromptOwner.fail({scope:run.handle,error}); outputObserver.rethrow(error); throw failure; }\n        ${completionStatement}`
  });
- } else {
- value=replaceOnce({
-   source:value,
-   from:'        if (updateMessage)\n            messages.unshift(updateMessage);\n        preflightResult?.("started");',
-   to:'        if (updateMessage)\n            messages.unshift(updateMessage);\n        } catch(error) { const failure = this.#runPromptOwner.fail({scope:run.handle,error}); outputObserver.rethrow(error); throw failure; }\n        preflightResult?.("started");'
- });
- }
  value=replaceOnce({
    source:value,
    from:'    _preparePromptAndToolLoadout(options, messages = this.agent.state.messages) {',
    to:'    #preparePromptAndToolLoadout(options, messages = this.agent.state.messages) {'
  });
- value=privatizeNativeMembers({source:value,members:['_preparePromptAndToolLoadout'],renames:{_preparePromptAndToolLoadout:'preparePromptAndToolLoadout'}});
+ value=privatizeNativeMembers({
+   source:value,
+   members:['_preparePromptAndToolLoadout'],
+   renames:{_preparePromptAndToolLoadout:'preparePromptAndToolLoadout'}
+ });
  value=replaceOnce({
    source:value,
    from:'            return [head, ...transformed.filter((message) => message.role !== "system")];',

@@ -33,7 +33,10 @@ export function preparePromptInputs(source: string): string {
  /**
   This transformation keeps its own source preparation diagnostic boundary.
   */
- const rl = tagged({ tag: preparePromptInputs.name, l });
+ const rl = tagged({
+   tag: preparePromptInputs.name,
+   l
+ });
  rl.debug('preparing original native prompt source');
 
  /**
@@ -98,7 +101,21 @@ export function preparePromptInputs(source: string): string {
     to:`    #${field};`
   });
  }
- value=privatizeNativeMembers({source:value,members:['_resourceLoader','_baseSystemPromptOptions','_runSystemPromptOptions','_extensionRunner'],renames:{_resourceLoader:'resourceLoader',_baseSystemPromptOptions:'baseSystemPromptOptions',_runSystemPromptOptions:'runSystemPromptOptions',_extensionRunner:'extensionRunner'}});
+ value=privatizeNativeMembers({
+   source:value,
+   members:[
+     '_resourceLoader',
+     '_baseSystemPromptOptions',
+     '_runSystemPromptOptions',
+     '_extensionRunner'
+   ],
+   renames:{
+     _resourceLoader:'resourceLoader',
+     _baseSystemPromptOptions:'baseSystemPromptOptions',
+     _runSystemPromptOptions:'runSystemPromptOptions',
+     _extensionRunner:'extensionRunner'
+   }
+ });
  return value;
 }
 

@@ -33,7 +33,10 @@ export function preparePromptBase(source: string): string {
  /**
   This transformation keeps its own source preparation diagnostic boundary.
   */
- const rl = tagged({ tag: preparePromptBase.name, l });
+ const rl = tagged({
+   tag: preparePromptBase.name,
+   l
+ });
  rl.debug('preparing original native prompt source');
  /**
   Ordered transformations preserve the original native construction and handler sequence.
@@ -54,7 +57,7 @@ export function preparePromptBase(source: string): string {
    '\n    /**',
    start
  );
- if (start === -1 || end <= start) throw new NativeBatchBuildError('Original native base prompt rebuild boundary is unavailable');
+ if ((start === (-1)) || (end <= start)) throw new NativeBatchBuildError('Original native base prompt rebuild boundary is unavailable');
  /**
   The original rebuild body retains resource reads and option normalization.
   */
@@ -108,7 +111,11 @@ ${
         });
     }${
    value.slice(end)}`;
- value=privatizeNativeMembers({source:value,members:['_rebuildSystemPrompt'],renames:{_rebuildSystemPrompt:'rebuildSystemPrompt'}});
+ value=privatizeNativeMembers({
+   source:value,
+   members:['_rebuildSystemPrompt'],
+   renames:{_rebuildSystemPrompt:'rebuildSystemPrompt'}
+ });
  value=replaceOnce({
    source:value,
    from:'getSystemPromptOptions: () => this.#baseSystemPromptOptions,',
@@ -130,7 +137,7 @@ ${
    '            return {',
    refreshStart
  );
- if (refreshStart === -1 || refreshEnd <= refreshStart) throw new NativeBatchBuildError('Original native run prompt refresh boundary is unavailable');
+ if ((refreshStart === (-1)) || (refreshEnd <= refreshStart)) throw new NativeBatchBuildError('Original native run prompt refresh boundary is unavailable');
  /**
   Original refresh statements retain native tool metadata and update construction.
   */
