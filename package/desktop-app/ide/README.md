@@ -68,7 +68,7 @@ Ctrl+0 through Ctrl+9 use session-local promotion and ancestor reveal.
 
 Drag the divider between the tree and the source to resize the tree.
 The width starts at 256 px,
-stays between 160 px and the window width minus the divider's 1 px line and a 240 px source column,
+stays between 160 px and the window width minus the divider's 1 px line and a 288 px source column (the 240 px it had, plus the 48 px the minimap takes at that size),
 and lasts for the session only.
 A window too narrow for the chosen width shows the tree narrower,
 down to 160 px,
@@ -194,7 +194,7 @@ and its client has no double-click handling for the tree width.
 This package keeps the default and the session-only width,
 replaces the browser grip with a full-height divider,
 and adds the 160 px minimum,
-the 240 px source minimum,
+the 288 px source minimum (240 px of text beside the minimap),
 and keyboard adjustment.
 
 ### Sidebar checks
@@ -1414,7 +1414,8 @@ Every open detail follows IntelliJ IDEA Community
 - The wrap width is the text area's width, which is the view minus the gutter,
   minus 2 px of caret room (`CARET_ROOM` in `src/native/viewport.rs`),
   so a caret after the last glyph of a full row stays inside the view.
-  The source view draws no scrollbar, so that term is zero.
+  The minimap at the right edge of the view (see Minimap) is taken from the width as well,
+  and the source view draws no scroll bar, so that is the only term for a scroll control.
   There is no minimum.
   A width of zero or less means the view has no layout yet:
   wrapping waits and the last width is kept.
@@ -1827,8 +1828,8 @@ so the rules for what may move are part of the placement.
   hints and diagnostics each move lines once when they arrive.
 - The vertical scroll range is the sum of the visual rows and the blocks known so far.
   It grows as hints arrive for lines further on and as the background measurement reaches wrapped lines.
-  The source view has no scroll bar,
-  so nothing shows that growth.
+  The source view has no scroll bar;
+  the minimap is its scroll control, and its box shrinks as the range grows.
 - A caret line before the view is revealed together with its block.
   A search result or jump target is revealed from the top of its block.
 
@@ -2088,6 +2089,152 @@ and the measurements of inline placement kept in `tests/annotation_placement.rs`
 `test:annotations-native` drives injected snapshots through real key and pointer events in both schemes,
 and `test:native` includes it.
 `inspect:annotation-guards` removes each guard in a disposable copy and checks that its named test fails.
+
+## Minimap
+
+The source view has no scroll bar.
+The minimap at the right edge of the view is its scroll control:
+it shows the whole file as a picture and a box over it that marks what the view shows.
+Pressing, dragging, and turning the wheel on it scroll the view, and the keys that scroll the view work as before.
+Every open detail follows CodeGlance Pro and, where that is silent, IntelliJ IDEA Community.
+The sources read for this work are the `Nasller/CodeGlancePro` repository (the project that continues `Vektah/CodeGlance`;
+a repository named `Vektah/CodeGlancePro` does not exist) and the original `vektah/CodeGlance`.
+Its defaults are in `core/.../CodeGlanceConfig.kt`; the behavior is in `render/ScrollState.kt`, `panel/scroll/ScrollBar.kt`,
+`panel/GlancePanel.kt`, `render/BaseMinimap.kt`, and `render/MainMinimap.kt`.
+
+### What it shows
+
+- The picture shows every line in visual rows, so soft wrap is respected:
+  a line that wraps to three rows is three rows of the picture, and the blocks of virtual rows above annotated lines
+  are blank stretches.
+  The rows come from the one vertical mapping (`RowMap`), never from a second estimate of the height.
+- One pixel stands for one source column, a tab for four columns, and a row of text for four pixel rows,
+  of which the first stays empty so rows can be told apart (CodeGlance Pro's "clean" renderer:
+  `BaseMinimap.renderClean`, weights 0.8 for printable ASCII and 0.4 for other glyphs, 0.6 for each pixel row of the glyph).
+  Columns past the minimap's width are not drawn, as in CodeGlance Pro.
+  The whole picture is drawn at 0.8 opacity (`srcOver0_8` in `GlancePanel.paintComponent`).
+- A text that fits the view at four pixels a row is drawn at that size and ends above the bottom of the view.
+  A longer text is scaled so the whole file fits the height of the view, and each pixel row shows the row of the text
+  at its center.
+  This is CodeGlance Pro's "Fit" mode (`curDocumentHeight > visibleArea.height`); its default "Proportional" mode
+  slides a picture of the file with the scroll and cannot show a whole file of fifty thousand lines.
+- The glyphs take the syntax classes and the palette of the source text in the dark and the light scheme
+  (`CodeColors`, the same inks the tile uses).
+  A change of scheme builds the picture again.
+- The viewport box is the share of the text the view shows, never shorter than 20 px (CodeGlance Pro's
+  `MIN_VIEWPORT_HEIGHT`), so a very long file keeps a box that can be grabbed.
+  Its fill is the foreground ink at 0.15 opacity at rest, 0.25 under the pointer, and 0.35 while it is dragged, as in
+  CodeGlance Pro, and its border is 1 px at rest and 2 px under the pointer and while dragged.
+  CodeGlance Pro's border thickness is zero; the border is added so that no state is told by one channel only.
+  The pointer cursor is the third channel: a hand over the picture outside the box, where a press jumps, and the arrow
+  over the box, while it is dragged, and below the end of a picture shorter than the view (CodeGlance Pro shows the hand
+  only where `y` is above the end of the drawn picture).
+  The fill and the border change only while the pointer is on the box (`isInRect` in `ScrollBar.updateAlpha`).
+- The minimap is 110 px wide, or a sixth of the source column in a narrow window, down to 15 px
+  (CodeGlance Pro uses a twelfth of the editor in a splitter, with the same minimum of 15 px).
+  The text area, and so the wrap width, is the source column minus the gutter, the minimap, and the caret room.
+  The source column's minimum is 288 px (the 240 px it had, plus the 48 px the minimap takes at that size), so the minimap
+  never narrows the text below its old minimum.
+
+### How it scrolls
+
+- A press outside the box moves the caret to the row under the pointer and, in the same row, to the column under it
+  (one column for each pixel), and scrolls that row to the middle of the view, also near the ends of the file
+  where the scroll range stops the view short of the middle.
+  This is CodeGlance Pro's default (`jumpOnMouseDown = MOUSE_DOWN`, `clickType = CODE_POSITION`, `moveOnly = false`,
+  `ScrollType.CENTER`).
+  A press with Shift held keeps the anchor of the selection and extends it to that place.
+  On a line too long to shape within a click's allowance the caret goes to the start of the line.
+  A press in the virtual rows above a line jumps to that line's first row.
+- A press on the box starts a drag without a jump.
+  A press outside the box jumps and then continues as a drag of the box from where the jump left it
+  (`ScrollBar.mousePressed`: `dragStart`, `dragStartDelta`).
+  A drag moves the view by the pointer's distance over the room the box has, times the scroll range
+  (`ScrollBar.mouseDragged`: `maxViewportStart / movableHeight`), so the box follows the pointer one to one;
+  above and below the track the view stops at its ends.
+  A drag never moves the caret.
+- A wheel turn over the minimap scrolls the view exactly as over the text: the minimap is a child of the scrolling
+  view, counter-translated so it stands still, and its touch area has no scroll handler, so the toolkit's own wheel
+  physics get the event.
+  CodeGlance Pro also hands the wheel to the editor (`MouseEventAdapter.redispatch`).
+- The box follows the scroll live, from the scroll offset and the height of the text alone, in markup bindings.
+  Native code does nothing for a scroll step beyond what it did before the minimap.
+- The keys keep working: PageUp, PageDown, the arrows, Home, and End are unchanged, and a press on the minimap leaves the
+  keyboard focus on the source view.
+- A drag, a press, and a page step set the offset and paint the tile of the new place before the next frame, the way a caret
+  key does, because a tile built by the worker for a place the drag has already left would arrive out of date and leave
+  the text blank while the pointer moves over a long file.
+- The minimap is a slider for assistive tools, labelled "Source minimap", with the offset as its value, the scroll range as
+  its maximum, and a page up or down as its increment and decrement.
+- The editor's own scroll bar: CodeGlance Pro keeps it by default (`hideOriginalScrollBar = false`).
+  This view never had one, so the minimap is the only scroll control and nothing is hidden.
+
+### Decisions where CodeGlance Pro is silent or differs
+
+- CodeGlance Pro draws an empty picture for a file over 20,000 lines (`maxLinesCount` with `outLineEmpty`).
+  The picture here has no such limit, because its cost follows the height of the track and not the length of the text.
+- Its preview of the code under the pointer after 400 ms (`showEditorToolTip`) and its 7 px gutter for resizing the
+  minimap are not implemented (see Limits and follow-ups).
+- A press below the end of a short picture jumps to the last line (`fitLineToEditor` clamps), and only the left button
+  presses.
+- The box's rounded corners (radius 5) are kept for boxes taller than 20 px and square below, as in CodeGlance Pro.
+
+### Performance bounds
+
+- The picture is built on its own thread (`ide-minimap`, `src/native/minimap_build.rs`), never on the window thread.
+  The window thread takes a finished picture with one comparison and one image setter (`src/native/minimap.rs`).
+- The picture depends on the text, its syntax classes, the vertical mapping, the wrap width, the palette, the display
+  scale, and the size of the minimap, and on nothing else; in particular not on the scroll offset
+  (`Key` in `src/native/minimap_build.rs`).
+  A render that changes none of these costs a comparison of a few words.
+- A request is posted at once for the first picture of a file, a new palette, and a new scale; at most every 250 ms while
+  only the vertical mapping changes, which is how a long file's measurement shows in the picture while it runs;
+  and 120 ms after the last change for everything else, such as the size steps of a resize drag.
+  The newest request wins: the build of an older one stops at its next look at the flag, every 16 pixel rows,
+  and an older request that was never started is dropped.
+- A finished picture is shown only when its text stamp is the displayed text's and its request is not older than the
+  picture on screen.
+- The work is bounded by the track, not by the text: at most one source line is read for each pixel row of the track
+  (a text with more rows than the track has pixel rows is sampled), and each row reads at most the minimap's width in
+  columns, so one line of two hundred thousand characters costs no more than any other.
+  Wrapped lines need their break positions: lines that cost more to shape than the budget allows are cut into rows of equal
+  width instead of shaped, 250,000 units for the first (quick) picture and 5,000,000 for the full one, which follows only
+  when the quick one left a rough line.
+- The picture is `4 * width * track` bytes at the display scale squared, and the worker's job holds a rope snapshot, the row
+  map, and the shared syntax classes, not copies of the text.
+
+@@MEASURED@@
+
+### Limits and follow-ups
+
+- Marks are not drawn.
+  CodeGlance Pro paints the caret line, the selection, the highlighters of the error stripe (find matches and diagnostics),
+  and version control marks into the picture, and IntelliJ's error stripe shows find matches and problems on its scroll
+  bar.
+  A follow-up can draw them as one-pixel rows of the severity's color at `Geometry::y_of_row`, kept cheap by building them
+  with the picture (a diagnostic and a find match each name a source position, so no shaping is needed), and they would
+  need a key part for the find and diagnostic snapshots.
+- The code preview after 400 ms, the resizable width, and a drag with the middle button are not implemented.
+- A picture of a text with many long wrapped lines may be rough for a moment after a new wrap width, because the quick
+  picture cuts what it cannot afford into rows of equal width; the full picture follows within a second.
+- A picture is drawn at the size of the minimap, so a very wide display scale makes a larger picture
+  (`4 * width * track` bytes at that scale squared).
+- The minimap shows the first 110 columns of each row, like CodeGlance Pro; text farther right is not drawn.
+
+### Minimap checks
+
+`mise run //package/desktop-app/ide:test:minimap` runs the integration tests of the geometry and the picture
+(`tests/minimap.rs`), and `test:native` runs the window tests (`src/native/minimap_tests.rs`):
+the box against the geometry at every offset, a short text, a press that jumps and the keys afterwards, a drag with both
+clamps and the release, hover with two channels, the wheel over the minimap against the wheel over the text,
+a picture built on the worker within its bounds, no request or picture for a scroll, a worker held at its gate
+that never blocks the view, a new wrap width, the accept rule for stale pictures, the palette inks in both schemes
+and the new highlights, fifty thousand lines, and the pace of requests for each kind of change.
+`inspect:source-guards` removes each rule in a disposable copy and checks that its named test fails:
+`minimap-box-share`, `minimap-drag-ratio`, `minimap-position-clamp`, `minimap-work-budget`, `minimap-press-centers`,
+`minimap-press-caret`, `minimap-shift-anchor`, `minimap-drag-scrolls`, `minimap-release-ends-drag`,
+`minimap-wheel-reaches-view`, `minimap-key-has-no-scroll`, `minimap-built-on-worker`, `minimap-stale-text`,
+`minimap-older-request`, `minimap-follows-measurement`, `minimap-resize-keeps-wait`, and `minimap-throttle-period`.
 
 ## Fonts and appearance
 
