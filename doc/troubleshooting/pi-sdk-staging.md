@@ -6632,7 +6632,11 @@ That rule explicitly checks type-only imports in
 
 ```ts
 // package/oxlint-plugin/test-import/src/require-eventual-artifact.ts:225
-// Checks every static import declaration, including import type.
+/*
+ Checks every static `import` declaration, including `import type`. A relative
+ specifier is allowed when it lands inside a directory the package ships, or
+ when it names a test-only fixture or helper.
+ */
 ```
 
 The verified correction declares the tested consumer interface in
@@ -6662,7 +6666,7 @@ Importing maintained source types failed the artifact-import rule;
 importing copied implementation types failed the composite project boundary.
 Neither failure justifies disabling a rule or adding generated implementation files to the source project.
 The fixture-only type filename must also match the existing fixture convention:
-`**/*-fixture*.ts` in `package/oxlint-plugin/test-import/src/checked-file.ts:49`.
+`**/*-fixture*.ts` in `package/oxlint-plugin/test-import/src/checked-file.ts:48`.
 No linter or compiler setting changed.
 
 The upstream-filing checks yield no filing:
