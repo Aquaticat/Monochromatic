@@ -84,12 +84,11 @@ export function createNativeEventObserver(createCapture: () => NativeEventCaptur
    */
   const state: {
     revision:number;
-    lastKind:string|undefined;
+    lastKind?:string;
     failed:boolean;
     view?:NativeEventObservation
   }={
     revision:0,
-    lastKind:undefined,
     failed:false
   };
   /**
@@ -256,7 +255,7 @@ export function createNativeEventObserver(createCapture: () => NativeEventCaptur
     const view=Object.freeze({
       occurrence,
       revision:state.revision,
-      lastKind:state.lastKind,
+      ...(state.lastKind===undefined?{}:{lastKind:state.lastKind}),
       pending:pending.size,
       failed:state.failed,
       registeredKinds:Object.freeze([...registeredKinds])

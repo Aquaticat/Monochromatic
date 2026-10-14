@@ -69,7 +69,7 @@ export type NativeEventTraversal = {
 export type NativeEventObservation = {
   readonly occurrence: object;
   readonly revision: number;
-  readonly lastKind: string | undefined;
+  readonly lastKind?: string;
   readonly pending: number;
   readonly failed: boolean;
   readonly registeredKinds: readonly string[];
