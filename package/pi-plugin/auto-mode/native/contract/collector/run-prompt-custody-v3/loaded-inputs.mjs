@@ -748,7 +748,7 @@ function createInputPool({
      closed=true;
      if(records.length===0)return;
      pendingEventBytes-=retainedBytes;
-     retainConstructedInput({carrier:records,value:records,metadata:{method:records[0].kind},inputField:'eventHandler',inputOrigin:'native-event-handler'});
+     retainConstructedInput({carrier:Object.freeze({records}),value:records,metadata:{method:records[0].kind},inputField:'eventHandler',inputOrigin:'native-event-handler'});
      if(bytes+pendingEventBytes>maximumSnapshotBytes)throw new SourceCollectionError('Native event observations exceed the original snapshot byte bound');
     }catch(error){
      failure=new InputCaptureError(error);
