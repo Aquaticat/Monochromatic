@@ -1,3 +1,6 @@
+# Each inspect task runs ./target/release (inspect:cli: ./target/debug), so it depends on the build that makes that
+# binary: without the dependency a task passes against a binary built from older sources, as inspect:resize-callbacks
+# did with its fix removed.
 # Cargo work runs on the HOST when the native dev libraries are present, and falls
 # back to the Fedora build container otherwise (see Containerfile and
 # doc/decision/desktop-app-podman-build.md). Unlike the desktop apps this package
@@ -308,6 +311,7 @@ runCargo(['package'])
 """
 
 [tasks."inspect:clipboard"]
+depends = ["build"]
 description = "Verify nested clipboard text, binary data, replacement, and clearing without host clipboard access"
 shell = "node --input-type=module-typescript -e"
 run = """
@@ -383,6 +387,7 @@ execFileSync('./target/release/monochromatic-nested-wayland-session', [
 """
 
 [tasks."inspect:color-scheme"]
+depends = ["build"]
 description = "Verify the runtime color-scheme switch on the private bus with a bus monitor, a Slint client, screenshots, and a decoy session bus"
 shell = "node --input-type=module-typescript -e"
 run = '''
@@ -542,6 +547,7 @@ console.log('Nested runtime color-scheme switch verified')
 '''
 
 [tasks."inspect:stalled-parent"]
+depends = ["build"]
 description = "Verify screenshots stay current while a parent compositor withholds frame callbacks, by hosting one session inside another"
 shell = "node --input-type=module-typescript -e"
 run = '''
@@ -614,6 +620,7 @@ console.log('Hosted client stays current while the parent compositor withholds f
 '''
 
 [tasks."inspect:scale"]
+depends = ["build"]
 description = "Verify --scale and the runtime scale command with a Slint client: reported scale, protocol events, screenshot size, rendered geometry, and click coordinates"
 shell = "node --input-type=module-typescript -e"
 run = '''
@@ -839,6 +846,7 @@ console.log('Nested output scale verified at startup and at runtime')
 '''
 
 [tasks."inspect:resize-callbacks"]
+depends = ["build"]
 description = "Verify a resize made while recording reaches an animating Slint client within the same recorder tick: its frame callback follows the configure at once, once, and the first frame recorded after the command shows the new size"
 shell = "node --input-type=module-typescript -e"
 run = '''
@@ -1006,6 +1014,7 @@ description = "Run the already-built release compositor without rebuilding"
 run = "./target/release/monochromatic-nested-wayland-session"
 
 [tasks."inspect:cli"]
+depends = ["build:debug"]
 description = "Run the already-built debug CLI for help and argument-boundary verification"
 run = "./target/debug/monochromatic-nested-wayland-session"
 
@@ -1074,6 +1083,7 @@ execFileSync('./target/release/monochromatic-nested-wayland-session', args, { st
 """
 
 [tasks."inspect:pointer-title"]
+depends = ["build"]
 description = "Verify move, held button down and up with a long press, and live title and app-id answers against a Slint client's Wayland protocol log"
 shell = "node --input-type=module-typescript -e"
 run = '''
@@ -1187,6 +1197,7 @@ console.log('Pointer and title behaviour verified')
 '''
 
 [tasks."inspect:launcher"]
+depends = ["build"]
 description = "Verify taskbar progress updates emitted on the private bus: merged state, ordered launcher-log records, percent-encoded URIs, and launcher-clear"
 shell = "node --input-type=module-typescript -e"
 run = '''
@@ -1269,6 +1280,7 @@ console.log('Taskbar progress observation verified')
 '''
 
 [tasks."inspect:notifications"]
+depends = ["build"]
 description = "Verify the recording org.freedesktop.Notifications service: Notify, replacement, close reasons, actions, notification-log, and clear, with a bus client, a signal monitor, and a decoy session bus"
 shell = "node --input-type=module-typescript -e"
 run = '''
@@ -1337,6 +1349,7 @@ console.log('Nested notification recording verified')
 '''
 
 [tasks."inspect:plasma-jobs"]
+depends = ["build"]
 description = "Verify the recording Plasma job view server like a KJob client: requestView, no-reply updates, suspended flag, terminate, and the V3 signals, with a decoy session bus"
 shell = "node --input-type=module-typescript -e"
 run = '''
@@ -1397,6 +1410,7 @@ console.log('Nested Plasma job view recording verified')
 '''
 
 [tasks."inspect:accent-color"]
+depends = ["build"]
 description = "Verify the private accent-color setting with a bus monitor, a Slint client that reports its accent hue, and a decoy session bus"
 shell = "node --input-type=module-typescript -e"
 run = '''
@@ -1469,6 +1483,7 @@ console.log('Nested accent color verified')
 '''
 
 [tasks."inspect:plasma-host-contract"]
+depends = ["build"]
 description = "Compare the fake services' introspected members with the live host's Plasma services, read-only: introspection only, no job or notification is created on the host"
 shell = "node --input-type=module-typescript -e"
 run = '''
@@ -1526,6 +1541,7 @@ console.log('Host contract comparison done')
 '''
 
 [tasks."inspect:input"]
+depends = ["build"]
 description = "Verify key names, chords, holds with client key repeat, Unicode typing, exact resize, pointer options, cursor shape, window focus return, and quoted multi-file drops through the control socket and real clients"
 # The binary under test is ./target/release/monochromatic-nested-wayland-session unless NWS_BINARY names another.
 # Needs slint-viewer, and python3 with GTK 4 for the drop target. Every check runs and is reported; any failure exits 1.
@@ -2004,6 +2020,7 @@ if (failed.length > 0) {
 '''
 
 [tasks."inspect:headless"]
+depends = ["build"]
 description = "Verify --headless with a Slint client and no parent display: GPU dmabuf, screenshots, input, frame pacing, and that no window reaches a parent"
 # The binary under test is ./target/release/monochromatic-nested-wayland-session unless NWS_BINARY names another.
 # Needs slint-viewer. The task removes WAYLAND_DISPLAY, WAYLAND_SOCKET, DISPLAY, and XAUTHORITY from the environment of the
