@@ -133,7 +133,7 @@ if (code !== 0) throw new Error(`commit-shape trace generator exited with ${Stri
 '''
 
 [tasks.'test:e2e:concurrent:image']
-description = "Build the base image of the concurrent-commit e2e suite: Git 2.39.5, 2.40.0 and 2.55.0 from source, Node 24.11.0 and ssh-keygen (needs a network; GIT_POLICY_E2E_BASE_TAG names another tag than latest)"
+description = "Build the base image of the concurrent-commit e2e suite: Git 2.55.0 from source, Node 24.11.0 and ssh-keygen (needs a network; GIT_POLICY_E2E_BASE_TAG names another tag than latest)"
 # Layer-cached: the Git builds keep their layers. The build fetches Git sources (checksum-pinned); the suite itself runs with --network=none.
 run = "node bin/e2e-native-container.mjs base"
 
@@ -143,12 +143,12 @@ description = "Build the native end-to-end image: the release native executable 
 run = "node bin/e2e-native-container.mjs image"
 
 [tasks.'test:e2e:concurrent:native']
-description = "Replay concurrent-commit workloads through the native executable on Git 2.39.5, 2.40.0, and 2.55.0 in a bounded, network-isolated container; the scenarios and invariants are the retired incumbent suite's, unchanged"
+description = "Replay concurrent-commit workloads through the native executable on Git 2.55.0 in a bounded, network-isolated container; the scenarios and invariants are the retired incumbent suite's, unchanged"
 depends = ["test:e2e:concurrent:native:image"]
 usage = '''
 flag "--seed <seed>" help="Replay this decimal seed (printed by every run)"
 flag "--scenario <names>" help="Comma-separated scenario names to run"
-flag "--git <versions>" help="Comma-separated Git versions to run (2.39.5, 2.40.0, 2.55.0)"
+flag "--git <versions>" help="Comma-separated Git versions to run (2.55.0)"
 '''
 run = "node bin/e2e-native-container.mjs run"
 
