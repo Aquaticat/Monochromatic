@@ -26,8 +26,15 @@ Both provider keys are present in the ignored local configuration.
 The first controls mistakenly sent SOPS ciphertext:
 Liquid returned 401 and SubQ returned 403.
 Those are not evidence against the actual keys or models.
-Mise now resolves both decrypted keys in memory;
-fresh real-key controls are the immediate next action.
+Mise now resolves both decrypted keys in memory.
+Fresh controls succeeded for both providers:
+Liquid returned one valid answer in 591.486 ms;
+SubQ returned 16 valid answers in 845.179 ms.
+SubQ then rejected 17 questions with HTTP 422 `validation_error`:
+`questions: must NOT have more than 16 properties`.
+That measured cap cannot carry 84 questions within three calls.
+Liquid's complete-input probe is next,
+with every original state field and question preserved and only its model name changed.
 
 ## Drex 2.0 release check
 

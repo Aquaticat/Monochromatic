@@ -76,7 +76,23 @@ After the user questioned the result,
 `mise.toml`'s SOPS configuration and `mise env --help` established the correct loading boundary.
 An in-memory `mise env --json` capture resolves a nonempty decrypted Liquid key
 with the documented prefix and a nonempty decrypted SubQ key.
-The real-key control remains required;
-it will run in a separate directory with a guard rejecting encrypted values before dispatch.
+The real-key control ran in a separate directory with a guard rejecting encrypted values before dispatch.
+
+## Resolved-key result
+
+`${HOME}/temp/agent/pi-liquid-access-resolved-20261014` retains the frozen request and result.
+The synthetic encrypted credential was rejected before any dispatch or started marker.
+With the Mise-resolved key,
+the identical 118-byte request returned HTTP 200 with model `d1`,
+the expected answer,
+and probability 0.9964063980321786 in 591.486 ms.
+Usage was 32 input tokens and zero output tokens.
+This verifies serving access only.
+The next frozen probe will change only the model in the complete captured native assessment to `d1`,
+preserving every state field and all 84 typed questions.
+It has one attempt,
+a five-second deadline,
+and no represented execution.
+Complete answers and original Choice criteria must validate before interpreting probabilities.
 
 [d1]: https://docs.liquid.ai/lfm/models/d1
