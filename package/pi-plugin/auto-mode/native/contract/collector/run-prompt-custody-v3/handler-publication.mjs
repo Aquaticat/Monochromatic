@@ -4,6 +4,7 @@ import {
 } from 'node:util';
 import {SourceCollectionError} from '../collector.mjs';
 import {publishSystemToolInput} from './system-tool-publication.ts';
+import {copyMessageData} from '../run-prompt-custody/messages.mjs';
 
 // This index holds aliases of existing source capabilities, never another source/content inventory.
 const aliases=new WeakMap();
@@ -407,7 +408,9 @@ export function createInputOnlyPublication(source, systemTools){
       aliases,
       publication:publication.view,
       message:systemTools.message,
-      expected:systemTools.expected
+      expected:systemTools.expected,
+      copyInput:copyMessageData,
+      InputError:SourceCollectionError
     });
    }
  });

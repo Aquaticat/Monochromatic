@@ -1,9 +1,18 @@
-/** Shared message-alias entries retain source publications without another source inventory. @module */
+/**
+ Shared message-alias entries retain source publications without another source inventory. @module
+ */
 
-/** Native copy boundary supplies its actual input and output. */
-export type SystemToolCopy = { readonly before: object; readonly after: object };
+/**
+ Native copy boundary supplies its actual input and output.
+ */
+export type SystemToolCopy = {
+  readonly before: object;
+  readonly after: object
+};
 
-/** Existing alias readers dispatch to the original publication owner. */
+/**
+ Existing alias readers dispatch to the original publication owner.
+ */
 export type SystemToolOwner = {
   readonly view: object;
   readonly current: (value: object) => boolean;
@@ -13,7 +22,9 @@ export type SystemToolOwner = {
   readonly convert: (input: SystemToolCopy) => void;
 };
 
-/** Aliases keep borrowed identities, while captured source data remains with its existing owner. */
+/**
+ Aliases keep borrowed identities, while captured source data remains with its existing owner.
+ */
 export type SystemToolAlias = {
   readonly owner: SystemToolOwner;
   readonly kind: string;
