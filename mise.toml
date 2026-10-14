@@ -118,7 +118,7 @@ cargo-binstall = "latest"
 # new version can add or change rules, which must land together with the repository's
 # monochromatic-lint.config.jsonc. The cargo backend resolves through cargo-binstall
 # to the prebuilt release archive when one exists for the platform.
-"cargo:monochromatic-lint" = "0.1.1"
+"cargo:monochromatic-lint" = "0.1.2"
 
 # The Git policy wrapper (package/git-policy/cli), installed from the published crate. Pinned so a release of the
 # wrapper reaches the repository only together with its configuration and policies. The crate's binary is

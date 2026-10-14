@@ -213,6 +213,8 @@ fn help_version_and_usage_errors_use_the_documented_statuses() {
         assert!(help.stdout.contains(flag), "{flag}");
     }
     assert_eq!(help.stderr, "");
+    // Read the version from the manifest so a release bump cannot leave this assertion stale.
+    let expected_version: String = format!("monochromatic-lint {}\n", env!("CARGO_PKG_VERSION"));
     let version: Run = run(&fixture.path, &["--version"], b"");
     assert_eq!(
         (
@@ -220,7 +222,7 @@ fn help_version_and_usage_errors_use_the_documented_statuses() {
             version.stdout.as_str(),
             version.stderr.as_str()
         ),
-        (0, "monochromatic-lint 0.1.0\n", "")
+        (0, expected_version.as_str(), "")
     );
     for arguments in [
         vec!["--bogus"],

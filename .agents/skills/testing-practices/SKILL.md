@@ -1,14 +1,14 @@
 ---
 name: testing-practices
-description: Use when writing or reviewing tests in this monorepo using the module-test harness.
+description: Use when writing or reviewing TypeScript tests in this monorepo using the module-test harness.
 ---
 
 # Testing practices
 
-Fires when writing or modifying tests,
+Fires when writing or modifying TypeScript tests,
  picking a test pattern,
  or reviewing
-test code in this monorepo.
+TypeScript test code in this monorepo.
 
 The skill covers the module-test harness,
  the describe/it API,
@@ -22,7 +22,7 @@ integration.
 
 ## Test framework
 
-- Unit tests use `@monochromatic-dev/module-test/ts`,
+- TypeScript unit tests use `@monochromatic-dev/module-test/ts`,
    a custom harness built on chai,
    sinon,
    and expect-type
