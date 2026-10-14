@@ -1183,9 +1183,48 @@ Empty dispatch now preserves the observation identity because it invokes no call
 The native permission,
 prohibition,
 and unspecified-policy cases pass again.
-The configured-extension fixture still stops during request observation;
-tagged cause diagnostics are being used to identify the exact freshness failure.
-No configured-extension consumer success is claimed.
+The configured-extension trace first exhausted the original 64-source allowance in `emitMessageEnd`.
+Capturing each callback phase as a separate source caused that failure.
+The manager now copies each phase immediately and groups one emission into bounded source chunks.
+It retains every input,
+complete result,
+and settled input mutation.
+Each chunk remains within 65,536 bytes;
+the original source count and total byte bounds remain unchanged.
+Pending emission bytes are charged before final publication.
+
+`test:native:event-receipts` passes against the generated original runner.
+It exercises all six instrumented dispatch methods,
+90 callback phase observations in one source,
+queued result mutation,
+native cancellation and blocking,
+native error identity,
+overlapping emissions,
+empty dispatch,
+and nullish capture failures.
+The new TypeScript modules initially had three lint errors and 238 warnings.
+Immutable transformation steps and direct parsed-node traversal remove the errors;
+the formatter left ten warnings,
+whose explicit fixes are awaiting the next scoped lint check.
+
+Native preparation events append original source receipts after initial judgment construction.
+The existing source handoff now admits authenticated manager and event growth during preparation,
+without changing its policy,
+resource,
+runner,
+request,
+or judgment identity.
+The original `prepare` operation seals the final collection before question selection.
+The ordinary `readSourceSnapshot` method preserves the judgment facade's data-property requirement.
+The assessment representation now retains the `eventHandler` input location.
+The configured fixture reaches one successful authored assessment,
+then stops because another event changes the frozen snapshot before nested program execution.
+Its original judgment and inference budget remain closed;
+the freshness guard has not been bypassed.
+Precise event kind,
+revision,
+and pending-count diagnostics are being collected.
+No configured-extension consumer success or installed migration completion is claimed.
 Its unit,
 omission,
 native consumer,
