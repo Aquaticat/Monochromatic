@@ -289,6 +289,15 @@ so the findings come from reading the readable source strings inside the binary 
 
 ## Open questions
 
+- The user suspects the motherboard (about 21:05 EDT): the Gigabyte B650 GAMING X AX rev 1.3 freezes in the BIOS
+  settings screen from time to time, and its BIOS was updated in July. No search result described this exact symptom
+  on this board (the closest were POST hangs and no-boot reports on other Gigabyte B650 boards). The kernel log of this
+  boot shows no machine check, hardware error or PCIe error line; it has one `clocksource: Watchdog remote CPU 12 read
+  timed out` at 17:01:32, which is not a board fault by itself. A firmware bug, the USB keyboard or mouse, or a hardware
+  fault all fit a freezing setup screen, and none is tied to the heat gap yet. Proposed order: reseat with NT-H2 and
+  compare first; if the gap stays, reset the BIOS to defaults (this also clears voltage and load-line settings and the
+  user's boost and PBO choices), retest, and treat a board fault as the next suspect, with the freezes as supporting
+  evidence. Nothing is decided.
 - The cooler is the NH-D15S (answered). Is it mounted correctly? The numbers in the evidence section say the heat
   path is far weaker than references; the model difference (1 to 3 degrees for one fan instead of two) does not
   explain it, and the paste is not the Noctua NT-H1 the checklist assumes. The user tightened the screws until they
