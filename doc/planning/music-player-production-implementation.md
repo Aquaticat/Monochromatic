@@ -230,11 +230,25 @@ and the decisions D106 to D119 at the end of `package/music-player/design/decisi
   them an effect that cancels per step again); the fourth cost below; the 435 ms `loadTemplate` violation did not
   reproduce, so the template cache in `SessionStore.warmUp` is unproven; the old ANRs did not reproduce in 23 play
   windows (cause unknown); the sweep-under-load case was not exercised; release build not measured.
-- Android playing-queue cost (measured 2026-10-14): while tracks change, `BrainPlayer.getState` through
-  `SimpleBasePlayer.invalidateState` is 41 to 43% of main-thread samples, the media-button path 25%, and the GC thread
-  adds 10.8 s per 40 s; it scales with the playing queue size (a 10 000-track queue costs 10 to 12 s per 30 s of Next
-  presses, a 3-track queue 3.5 to 6.0 s). It is not fixed. Two emulator crashes (SEGV in `libgfxstream_backend.so`,
-  `TextureResize`) happened headful, one per few hours of run time; the notes are in `doc/troubleshooting`.
+- Android playing-queue cost (measured 2026-10-14, partly fixed on `feat/android-queue-cost`): while tracks changed,
+  `BrainPlayer.getState` rebuilt one `SnapshotItem` (title, ids, artist) and one `MediaItemData` per queue position on
+  every pull, and every brain change posted its own pull, so a 10 000-track queue cost 135 ms of main-thread CPU per
+  track change (3 tracks: 21 ms) and the GC thread 10.8 s per 40 s. The fix keeps the rows between pulls
+  (`SnapshotItemCache`, `reuseRows`), reuses the base state and its timeline, and posts one refresh per burst
+  (`CoalescedTrigger`). Measured on the headful Fold emulator with the invented 10 000-track library, Next every 400 ms
+  for 40 s, interleaved ABBA from a clean reinstall: main-thread CPU per track change 135 ms (131 to 140, 9 runs
+  on a quiet host) to 68 ms (66 to 74 in 8 of 10 runs, 96 and 101 in the others); track changes that fit in the
+  window 111 to 119 to 154 to 165; GC thread 10.4 to 11.6 s to 1.7 to 2.1 s; frame p99 200 to 250 ms to 101 to 117 ms;
+  `getState` 42% to 5% of main-thread samples. A 3-track queue is unchanged (21 ms per change), the control that the
+  probe sees no difference where none is expected. Not fixed: an estimated 22 ms per change (32% of 68 ms) remains
+  that grows with the queue, inside media3 1.11.1
+  (`MediaSessionLegacyStub.ControllerLegacyCbForBroadcast.updateQueue`, 32% of main-thread samples, converts the whole
+  timeline to `QueueItem`s and calls `MediaSession.setQueue` on every timeline change, and the current row's duration
+  makes the timeline change about 1.5 times per track change in the logs). Removing it needs a different published
+  queue (a window around the playing track, or no legacy queue), which changes what the session shows; it was not done.
+  Three emulator crashes (SEGV in `libgfxstream_backend.so`, `TextureResize`) happened headful, the latest 25 minutes
+  after a launch; the notes are in `doc/troubleshooting`. Verified only on the debug build and the emulator; the
+  artist-tag patch of the rows has JVM tests but no device run (no artist tag arrived in the measured runs).
 - Review findings left open: look-alike letters (rail hairlines address it), red accent against the error roles, cold
   restore scroll, scroll anchoring when rows above change height, `project()` about 120 ms at 100k rows, the 117 px
   phantom view on the Android idle deck.

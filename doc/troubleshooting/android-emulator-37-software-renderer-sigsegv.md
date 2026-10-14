@@ -416,6 +416,11 @@ called from `ColorBufferGl::create` (first crash) and `EmulationGl::createColorB
 frame was `__strlen_evex`.
 Earlier on 2026-10-13 an Android gallery run saw one similar crash after its captures (a null-context SIGSEGV in the
 same backend).
+A fourth came on 2026-10-14 at 21:40:18 (local), 24 minutes 39 seconds after the launch, on the same 10 000-track
+library, during the cold start of the second trial of a play-window run; the stack was the same
+(`__strlen_evex` under `TextureResize::TextureResize` under `EmulationGl::createColorBuffer`), the core 1.2 GB, and the
+trial that was running was lost (its child hit the 20 minute timeout).
+The two later launches from fresh copies ran 70 and 28 minutes without a crash.
 
 Recovery that worked: discard that AVD copy, make a fresh reflink copy of the owned AVD, relaunch headful, reinstall and
 re-push the invented library.
