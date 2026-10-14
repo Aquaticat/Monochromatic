@@ -1027,10 +1027,23 @@ the explicit `build:js:node` task succeeds.
 This failure has not been equated with the historical `ENOBUFS` incident.
 The [staging troubleshooting record](../troubleshooting/pi-sdk-staging.md#node-26111-package-build-fanout-reports-spawnsync-mise-eperm)
 retains the observed reporting path and verified explicit-task workaround.
-The user was asked for the intended production semantic acceptance rule,
-or whether to prepare a concrete proposal from retained evidence.
-No answer or policy adoption is inferred from elapsed time.
-Independent maintained bootstrap quality work continues.
+On 2026-10-14,
+the user answered the production acceptance question:
+"You do it and adopt it yourself."
+The adopted operating rule requires a supported selected label to be the unique highest-scoring choice
+at `0.99` or greater.
+Unknown,
+unsupported,
+tied,
+or lower-scoring answers remain unresolved.
+This is an operating cutoff and carries no measured accuracy claim.
+The [admission decision](../decision/pi-auto-mode-semantic-admission.md)
+records its fixed model,
+program profile,
+per-definition meanings,
+and independent authority and coverage obligations.
+Production binding and built-consumer verification are next.
+Independent maintained bootstrap quality work also continues.
 Its scoped lint reports `no-restricted-syntax/no-sync` for `statSync`
 and `no-restricted-syntax/no-regex` for trailing-slash removal,
 alongside untyped native-boundary warnings.
@@ -1123,8 +1136,11 @@ The full CLI resource record has explicit policy-input,
 cleanup,
 and API-publication interfaces;
 reload-only registrations still use the narrower shared contract.
-Construction verification is next,
-followed by the remaining host session/disposal owner.
+Construction package types,
+the owned native rebuild,
+and original host lifecycle verification pass after formatting commit `fe068dd927`.
+The remaining host session/disposal owner is still untyped;
+adopted semantic policy binding now takes precedence over that independent quality work.
 
 The first approved native dispatch failed because the inherited test loader derived dependency paths
 from the codemode worker's disposable home.
