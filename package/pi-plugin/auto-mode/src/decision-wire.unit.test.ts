@@ -59,7 +59,7 @@ await describe({
     },),
     it({ name: 'accepts 200 questions and rejects 201 without truncation', fn: async () => {
       const original = decisionFixtureRequest();
-      const entries = Array.from({ length: 201, }, (_, index,) => [`head_${String(index,)}`, original.questions.head_0,],);
+      const entries = Array.from({ length: 201, }, (_, index,) => [`head_${String(index,)}`, original.questions.head_0,] as const,);
       const accepted = encodeDecisionRequest(JSON.stringify({ ...original, questions: Object.fromEntries(entries.slice(0, 200,),), },),);
       expect(accepted.questions,).toHaveLength(200,);
       expect(function overflow() {
@@ -135,7 +135,9 @@ await describe({
         fetchImpl: async function localDecision(url, options,) {
           expect(url).toBe('https://api.llmgateway.io/v1/decisions');
           calls.push('request');
-          expect(options?.body).toBe(encodeDecisionRequest(JSON.stringify(decisionFixtureRequest())).body);
+          expect(options?.body).toBe(encodeDecisionRequest(
+            JSON.stringify(decisionFixtureRequest()),
+          ).body);
           return Response.json(decisionFixtureResponse());
         }, },);
       const result: unknown = JSON.parse(await send({ ...assessmentInput(), body: JSON.stringify(decisionFixtureRequest(),), },),);

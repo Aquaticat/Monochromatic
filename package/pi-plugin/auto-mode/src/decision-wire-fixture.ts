@@ -7,7 +7,7 @@
 /**
  Literal data contains quotes, escapes, separators, and apparent source syntax.
  */
-export const decisionFixtureText = 'read "../proof.txt"\n$' + '{value}; `code` \\ </data> /* literal */';
+export const decisionFixtureText = `read "../proof.txt"\n\${value}; \`code\` \\ </data> /* literal */`;
 
 /**
  Original native input authored independently of the adapter.

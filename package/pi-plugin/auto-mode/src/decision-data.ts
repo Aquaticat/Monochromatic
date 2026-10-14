@@ -63,8 +63,9 @@ export function parseDecisionJson(text: string,): unknown {
  @returns whether record fields can be inspected as unknown data
  */
 function isDecisionRecord(value: unknown): value is Readonly<Record<string, unknown>> {
-  return (value !== null) && (typeof value === 'object') && !Array.isArray(value)
-    && Object.getPrototypeOf(value) === Object.prototype;
+  return (value !== null) && ((typeof value) === 'object')
+    && (!Array.isArray(value))
+    && (Object.getPrototypeOf(value) === Object.prototype);
 }
 
 /**
