@@ -82,7 +82,32 @@ permission approves and executes all three child calls,
 prohibition denies with zero child calls,
 and no applicable instruction stays unspecified with zero child calls.
 No external provider call or production semantic policy adoption follows.
-Missing-evidence controls and original approval-request routing are next.
+The missing-evidence controls now pass:
+removing source membership,
+request-bound views,
+source indexing,
+resource receipts,
+or native event inspection leaves a gap.
+An actual unaccounted `context` callback keeps execution unresolved.
+Potential request instructions retain their independent interpretation obligation after structural domain accounting.
+
+Required-red `cab88eb3` found that a prior run's mapped prompt source lost its original occurrence
+when a later run omitted that field.
+Private `c0a3910b` and syntax correction `22e1e4f4` retain original prompt sources
+through the existing run owner's history,
+scoped to the same native root.
+The native history control passes,
+and the permission,
+prohibition,
+unspecified,
+unobserved-callback,
+and potential-request-instruction contrasts still pass.
+Private `b8a8d705` also charges resource receipt records to the shared input count and byte budget.
+Historical comparison controls read retained immutable evidence;
+they do not reopen live eligibility after the provider request advances.
+Original approval-request routing,
+a targeted guard omission check,
+and maintained integration are next.
 
 The first approved native dispatch failed because the inherited test loader derived dependency paths
 from the codemode worker's disposable home.
