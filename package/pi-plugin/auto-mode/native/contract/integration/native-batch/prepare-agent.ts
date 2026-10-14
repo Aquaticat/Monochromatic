@@ -3,11 +3,17 @@
 
  @module
  */
-import {readFile,writeFile} from 'node:fs/promises';
+import {
+  readFile,
+  writeFile
+} from 'node:fs/promises';
 import {join} from 'node:path';
 import {pathToFileURL} from 'node:url';
 import { tagged } from '@monochromatic-dev/module-logger/ts';
-import {sdk,core} from '../current-sdk/paths.ts';
+import {
+  sdk,
+  core
+} from '../current-sdk/paths.ts';
 import {batchBoundary} from './boundary.ts';
 import {agentInputSource} from './agent-input-source.ts';
 import {agentStateSource} from './agent-state-source.ts';
@@ -38,11 +44,18 @@ const l = tagged({ tag: 'auto-mode-native-prepare-agent' });
  await prepareAgent({ output, entry, imports });
  ```
  */
-export async function prepareAgent({output,entry,imports}: NativePreparationInput): Promise<void> {
+export async function prepareAgent({
+  output,
+  entry,
+  imports
+}: NativePreparationInput): Promise<void> {
   /**
    Each asynchronous source preparation retains the original phase diagnostics.
    */
-  const rl = tagged({ tag: prepareAgent.name, l });
+  const rl = tagged({
+    tag: prepareAgent.name,
+    l
+  });
   rl.debug('reading original native Agent and SDK modules');
   /**
    The original loop module supplies complete-group execution boundaries.
@@ -69,9 +82,18 @@ export async function prepareAgent({output,entry,imports}: NativePreparationInpu
    All finite source inputs are captured before transformation or generated writes.
    */
   const [originalLoop, originalAgentSource, originalFactory] = await Promise.all([
-    readFile(loopPath, 'utf8'),
-    readFile(agentPath, 'utf8'),
-    readFile(sdkPath, 'utf8')
+    readFile(
+      loopPath,
+      'utf8'
+    ),
+    readFile(
+      agentPath,
+      'utf8'
+    ),
+    readFile(
+      sdkPath,
+      'utf8'
+    )
   ]);
   /**
    The qualified group entry begins the native complete-batch replacement.
@@ -84,11 +106,14 @@ export async function prepareAgent({output,entry,imports}: NativePreparationInpu
     'async function executeToolCallsSequential(',
     start
   );
-  if((start<0)||(end<=start))throw new NativeBatchBuildError('Native complete-tool-group boundary is unavailable');
+  if((start===(-1))||(end<=start))throw new NativeBatchBuildError('Native complete-tool-group boundary is unavailable');
   /**
    Only the original complete-group entry is replaced; native per-call execution remains intact.
    */
-  const interceptedLoop=originalLoop.slice(0,start)+batchBoundary
+  const interceptedLoop=originalLoop.slice(
+    0,
+    start
+  )+batchBoundary
     +originalLoop.slice(end);
   /**
    Original loop dependency imports retain the native module base.
@@ -125,7 +150,11 @@ export async function prepareAgent({output,entry,imports}: NativePreparationInpu
   const agent=imports({
     source:forwardedAgent,
     path:agentPath,
-    overrides:{'./agent-loop.js':pathToFileURL(join(output,'agent-loop.mjs')).href}
+    overrides:{'./agent-loop.js':pathToFileURL(join(
+      output,
+      'agent-loop.mjs'
+    ))
+      .href}
   });
   /**
    Original context emission retains the active native Session binding.
@@ -153,7 +182,7 @@ export async function prepareAgent({output,entry,imports}: NativePreparationInpu
   const agentFactory=replaceOnce({
     source:observedFactory,
     from:'import { Agent, setDefaultStreamFn } from "@earendil-works/pi-agent-core";',
-    to:'import { Agent, attachNativeAgentInputObserver } from "./agent.mjs";\nimport { setDefaultStreamFn } from '+JSON.stringify(entry({root:core}))+';'
+    to:`import { Agent, attachNativeAgentInputObserver } from "./agent.mjs";\nimport { setDefaultStreamFn } from ${JSON.stringify(entry({root:core}))};`
   });
   /**
    The exact original Session constructor receives its native state assignment capability.
@@ -185,13 +214,61 @@ export async function prepareAgent({output,entry,imports}: NativePreparationInpu
   const factory=imports({
     source:scopedFactory,
     path:sdkPath,
-    overrides:{'./agent.mjs':pathToFileURL(join(output,'agent.mjs')).href,'./agent-session.js':pathToFileURL(join(output,'agent-session.mjs')).href,'./resource-loader.js':pathToFileURL(join(output,'resource-loader.mjs')).href,'./session-manager.js':pathToFileURL(join(output,'session-manager.mjs')).href,'./messages.js':pathToFileURL(join(output,'messages.mjs')).href,[entry({root:core})]:entry({root:core})}
+    overrides:{
+      './agent.mjs':pathToFileURL(join(
+        output,
+        'agent.mjs'
+      ))
+        .href,
+      './agent-session.js':pathToFileURL(join(
+        output,
+        'agent-session.mjs'
+      ))
+        .href,
+      './resource-loader.js':pathToFileURL(join(
+        output,
+        'resource-loader.mjs'
+      ))
+        .href,
+      './session-manager.js':pathToFileURL(join(
+        output,
+        'session-manager.mjs'
+      ))
+        .href,
+      './messages.js':pathToFileURL(join(
+        output,
+        'messages.mjs'
+      ))
+        .href,
+      [entry({root:core})]:entry({root:core})
+    }
   });
   rl.debug('writing original Agent, loop, and SDK transformations');
   await Promise.all([
-    writeFile(join(output,'agent-loop.mjs'), loop, {mode:0o600}),
-    writeFile(join(output,'agent.mjs'), agent, {mode:0o600}),
-    writeFile(join(output,'sdk.mjs'), factory, {mode:0o600})
+    writeFile(
+      join(
+        output,
+        'agent-loop.mjs'
+      ),
+      loop,
+      {mode:0o600}
+    ),
+    writeFile(
+      join(
+        output,
+        'agent.mjs'
+      ),
+      agent,
+      {mode:0o600}
+    ),
+    writeFile(
+      join(
+        output,
+        'sdk.mjs'
+      ),
+      factory,
+      {mode:0o600}
+    )
   ]);
 }
 

@@ -12,11 +12,17 @@ import type { createNativeImportRewriter } from './build-rebase.ts';
  Source phases use the same captured manifests and original static import mapping.
  */
 export type NativePreparationInput = {
-  /** Directory receiving generated native modules from this build occurrence. */
+  /**
+   Directory receiving generated native modules from this build occurrence.
+   */
   readonly output: string;
-  /** Pure selector over manifests captured before source transformation. */
+  /**
+   Pure selector over manifests captured before source transformation.
+   */
   readonly entry: ImportEntryReader;
-  /** Qualified static import rewriter retaining original source-relative resolution. */
+  /**
+   Qualified static import rewriter retaining original source-relative resolution.
+   */
   readonly imports: ReturnType<typeof createNativeImportRewriter>;
 };
 

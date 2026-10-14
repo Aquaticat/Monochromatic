@@ -24,7 +24,10 @@ const l = tagged({ tag: 'auto-mode-native-agent-input-source' });
 
  @throws NativeBatchBuildError when the original method entry is absent or duplicated
  */
-function observeMessageMethod({ source, method }: {
+function observeMessageMethod({
+  source,
+  method
+}: {
  readonly source: string;
  readonly method: 'steer' | 'followUp';
 }): string {
@@ -57,7 +60,10 @@ export function agentInputSource(source: string): string {
  /**
   Observer attachment has a separate source transformation diagnostic boundary.
   */
- const rl = tagged({ tag: agentInputSource.name, l });
+ const rl = tagged({
+   tag: agentInputSource.name,
+   l
+ });
  rl.debug('preparing original Agent input frame observations');
  /**
   The original Agent retains attachment state and validates its private assignment capability.
@@ -88,11 +94,17 @@ export class Agent {
  /**
   Steering captures its original call frame before queueing or conversion.
   */
- const steeringSource = observeMessageMethod({ source: attachmentSource, method: 'steer' });
+ const steeringSource = observeMessageMethod({
+   source: attachmentSource,
+   method: 'steer'
+ });
  /**
   Follow-up inputs retain their separate original method identity.
   */
- const followUpSource = observeMessageMethod({ source: steeringSource, method: 'followUp' });
+ const followUpSource = observeMessageMethod({
+   source: steeringSource,
+   method: 'followUp'
+ });
  return replaceOnce({
    source: followUpSource,
    from:'    async prompt(input, images) {\n',
