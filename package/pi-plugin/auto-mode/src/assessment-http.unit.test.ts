@@ -13,7 +13,7 @@ import { assessmentFailure, assessmentFixtureKey, } from './assessment-transport
 
 await describe({
   name: 'assessment loopback HTTP',
-  children: ['success', 'redirect', 'cancelled',].map(function httpCase(mode) {
+  children: ['success', 'redirect', 'cancelled', 'deadline',].map(function httpCase(mode) {
     return it({
       name: mode,
       fn: async () => {
@@ -43,7 +43,7 @@ await describe({
               response.end('redirect',);
               return;
             }
-            if (mode === 'cancelled') {
+            if (mode === 'cancelled' || mode === 'deadline') {
               response.writeHead(200, { 'content-type': 'application/json', },);
               response.write('{',);
               return;
@@ -71,7 +71,7 @@ await describe({
           const input = {
             body: '{"state":"original \\u003c payload"}',
             signal: controller.signal,
-            deadlineAt: performance.now() + 5_000,
+            deadlineAt: performance.now() + (mode === 'deadline' ? 1_000 : 5_000),
             attempt: 1,
           };
           if (mode === 'success') expect(await send(input,),).toBe(raw,);
