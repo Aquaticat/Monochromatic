@@ -140,6 +140,10 @@ run = [
 description = "Verify built native result guard identity, caught values, diagnostics, and aggregate ownership"
 run = "node src/native-script-guard.unit.test.ts"
 
+[tasks."test:native:return"]
+description = "Verify generated native return ownership, retention, conversion, and live-use guards"
+run = "node src/native-return.unit.test.ts"
+
 [tasks."test:native:approval"]
 description = "Verify original approval routing and independent prerequisite evidence with fixture presentation"
 run = [

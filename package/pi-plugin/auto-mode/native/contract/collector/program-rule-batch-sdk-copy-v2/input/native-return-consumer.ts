@@ -17,11 +17,16 @@ import type {
   NativeReturnOwner,
 } from './native-return-types.ts';
 
-export { NativeReturnContractError, UnsupportedScriptBindingError } from './native-return-errors.ts';
+export {
+  NativeReturnContractError,
+  UnsupportedScriptBindingError
+} from './native-return-errors.ts';
 
 //region Return validation precedes original native conversion
 
-/** Diagnostics identify transitions without serializing borrowed arguments or results. */
+/**
+ Diagnostics identify transitions without serializing borrowed arguments or results.
+ */
 const l = tagged({ tag: 'auto-mode-native-return-consumer' });
 
 /**
@@ -32,12 +37,21 @@ const l = tagged({ tag: 'auto-mode-native-return-consumer' });
  @returns whether the runner returned the supported native call and result shape
  */
 function isNativeReturn(value: unknown): value is NativeReturnOutcome {
-  if ((value === null) || ((typeof value) !== 'object') || !('toolCall' in value)
-    || (value.toolCall === null) || ((typeof value.toolCall) !== 'object')
-    || !('id' in value.toolCall) || !('name' in value.toolCall)
-    || ((typeof value.toolCall.id) !== 'string') || ((typeof value.toolCall.name) !== 'string')
-    || !('isError' in value) || ((typeof value.isError) !== 'boolean')
-    || !('result' in value) || (value.result === null) || ((typeof value.result) !== 'object')) return false;
+  if ((value === null) || ((typeof value) !== 'object')
+    || (!('toolCall' in value))
+    || (value.toolCall === null)
+    || ((typeof value.toolCall) !== 'object')
+    || (!('id' in value.toolCall))
+    || (!('name' in value.toolCall))
+    || ((typeof value.toolCall
+      .id) !== 'string')
+    || ((typeof value.toolCall
+      .name) !== 'string')
+    || (!('isError' in value))
+    || ((typeof value.isError) !== 'boolean')
+    || (!('result' in value))
+    || (value.result === null)
+    || ((typeof value.result) !== 'object')) return false;
   return true;
 }
 
@@ -60,14 +74,40 @@ function isNativeReturn(value: unknown): value is NativeReturnOutcome {
  ```
  */
 export function createNativeReturnConsumer(owner: NativeReturnOwner): NativeReturnConsumer {
-  /** Group diagnostics retain the original binding boundary. */
-  const rl = tagged({ tag: createNativeReturnConsumer.name, l });
-  /** Captured callable identities cannot be replaced through later owner mutation. */
-  const { runNative, getSlot, assertCurrent, assertReturnedMember } = owner;
-  if ([runNative, getSlot, assertCurrent, assertReturnedMember].some(function isAbsent(value) { return (typeof value) !== 'function'; })) throw new NativeReturnContractError('Fixed native pipeline and original slot/currentness readers are required');
-  /** Guard readers use the same fixed callable identities. */
-  const fixedOwner = Object.freeze({ runNative, getSlot, assertCurrent, assertReturnedMember });
-  /** Reentrancy state belongs to this consumer, never its caller. */
+  /**
+   Group diagnostics retain the original binding boundary.
+   */
+  const rl = tagged({
+    tag: createNativeReturnConsumer.name,
+    l
+  });
+  /**
+   Captured callable identities cannot be replaced through later owner mutation.
+   */
+  const {
+    runNative,
+    getSlot,
+    assertCurrent,
+    assertReturnedMember
+  } = owner;
+  if ([
+    runNative,
+    getSlot,
+    assertCurrent,
+    assertReturnedMember
+  ].some(function isAbsent(value) { return (typeof value) !== 'function'; })) throw new NativeReturnContractError('Fixed native pipeline and original slot/currentness readers are required');
+  /**
+   Guard readers use the same fixed callable identities.
+   */
+  const fixedOwner = Object.freeze({
+    runNative,
+    getSlot,
+    assertCurrent,
+    assertReturnedMember
+  });
+  /**
+   Reentrancy state belongs to this consumer, never its caller.
+   */
   const entry = { active: false };
   rl.debug('binding original native return owner');
 
@@ -82,26 +122,55 @@ export function createNativeReturnConsumer(owner: NativeReturnOwner): NativeRetu
 
    @returns reserved invocation and initiated native work
    */
-  function reserve({ slot: handle, call, options }: NativeReturnInput): { readonly invocation: NativeReturnInvocation; readonly pending: unknown } {
+  function reserve({
+    slot: handle,
+    call,
+    options
+  }: NativeReturnInput): {
+    readonly invocation: NativeReturnInvocation;
+    readonly pending: unknown
+  } {
     if (entry.active) throw new NativeReturnContractError('Native result consumer cannot reenter through synchronous callbacks');
     entry.active = true;
     // This lexical scope ends before invoke awaits the native operation.
     using reservation = { [Symbol.dispose]: function releaseEntry(): void { entry.active = false; } };
     assertCurrent();
-    /** The original owner resolves this slot without manufacturing replacement state. */
+    /**
+     The original owner resolves this slot without manufacturing replacement state.
+     */
     const slot = getSlot(handle);
     if (slot.native !== undefined) throw new NativeReturnContractError('Native slot already reserved its invocation');
-    if ((call.id !== slot.call.id) || (call.name !== slot.call.name)) throw new NativeReturnContractError('Native call differs from its owned group slot');
-    /** Reservation survives both synchronous and asynchronous native failures. */
+    if ((call.id
+      !== slot.call
+      .id) || (call.name
+        !== slot.call
+        .name)) throw new NativeReturnContractError('Native call differs from its owned group slot');
+    /**
+     Reservation survives both synchronous and asynchronous native failures.
+     */
     const invocation: NativeReturnInvocation = {
       identity: Object.freeze({}),
       state: 'running',
-      call: Object.freeze({ id: call.id, name: call.name }),
-      tool: Object.freeze({ name: slot.call.name, ...(Boolean(slot.tool.outputSchema) ? { outputSchema: true } : {}) }),
+      call: Object.freeze({
+        id: call.id,
+        name: call.name
+      }),
+      tool: Object.freeze({
+        name: slot.call
+          .name,
+        ...(slot.tool
+          .outputSchema ? { outputSchema: true } : {})
+      }),
       conversionCount: 0,
     };
     slot.native = invocation;
-    try { return { invocation, pending: runNative(call, options) }; }
+    try { return {
+      invocation,
+      pending: runNative(
+        call,
+        options
+      )
+    }; }
     catch (error) {
       invocation.state = 'threw';
       invocation.failure = error;
@@ -119,12 +188,24 @@ export function createNativeReturnConsumer(owner: NativeReturnOwner): NativeRetu
    @throws NativeReturnContractError when reservation, identity, or return shape is invalid
    */
   async function invoke(input: NativeReturnInput): Promise<NativeReturnOutcome> {
-    /** Native lifecycle logs omit captured result values. */
-    const il = tagged({ tag: invoke.name, l: rl });
-    /** The synchronous reservation ends before awaiting native work. */
-    const { invocation, pending } = reserve(input);
+    /**
+     Native lifecycle logs omit captured result values.
+     */
+    const il = tagged({
+      tag: invoke.name,
+      l: rl
+    });
+    /**
+     The synchronous reservation ends before awaiting native work.
+     */
+    const {
+      invocation,
+      pending
+    } = reserve(input);
     il.debug('reserved original native invocation');
-    /** Native completion remains retainable even after the original parent retires. */
+    /**
+     Native completion remains retainable even after the original parent retires.
+     */
     const outcome: unknown = await (async function awaitNativeCompletion(): Promise<unknown> {
       try { return await pending; }
       catch (error) {
@@ -133,8 +214,17 @@ export function createNativeReturnConsumer(owner: NativeReturnOwner): NativeRetu
         throw error;
       }
     })();
-    if (!isNativeReturn(outcome) || (outcome.toolCall.id !== invocation.call.id) || (outcome.toolCall.name !== invocation.call.name)) {
-      /** Invalid return diagnostics remain inspectable beside the reserved occurrence. */
+    if ((!isNativeReturn(outcome)) || (outcome.toolCall
+      .id
+      !== invocation.call
+      .id)
+      || (outcome.toolCall
+        .name
+        !== invocation.call
+        .name)) {
+      /**
+       Invalid return diagnostics remain inspectable beside the reserved occurrence.
+       */
       const error = new NativeReturnContractError('Native pipeline returned an outcome for a different call or shape');
       invocation.state = 'invalid-return';
       invocation.failure = error;
@@ -144,15 +234,32 @@ export function createNativeReturnConsumer(owner: NativeReturnOwner): NativeRetu
     invocation.state = 'returned';
     invocation.conversionCount++;
     try {
-      /** Native conversion determines the original value or ordinary tool failure. */
-      const value: unknown = toScriptValue(invocation.tool, outcome);
-      invocation.conversion = typeof value === 'string'
-        ? Object.freeze({ status: 'string', value, bytes: Buffer.byteLength(value) })
-        : Object.freeze({ status: 'unsupported', kind: value === null ? 'null' : typeof value });
+      /**
+       Native conversion determines the original value or ordinary tool failure.
+       */
+      const value: unknown = toScriptValue(
+        invocation.tool,
+        outcome
+      );
+      invocation.conversion = (typeof value) === 'string'
+        ? Object.freeze({
+          status: 'string',
+          value,
+          bytes: Buffer.byteLength(value)
+        })
+        : Object.freeze({
+          status: 'unsupported',
+          kind: value === null ? 'null' : typeof value
+        });
     } catch (error) {
-      invocation.conversion = Object.freeze({ status: 'threw', error, messageAtCapture: caughtValueText(error) });
+      invocation.conversion = Object.freeze({
+        status: 'threw',
+        error,
+        messageAtCapture: caughtValueText(error)
+      });
     }
-    il.debug(`retained native return with conversion ${invocation.conversion.status}`);
+    il.debug(`retained native return with conversion ${invocation.conversion
+      .status}`);
     return outcome;
   }
 
@@ -167,9 +274,21 @@ export function createNativeReturnConsumer(owner: NativeReturnOwner): NativeRetu
 
    @throws NativeScriptValueGuardError when live use or supported binding checks fail
    */
-  function valueFor({ slot: handle, outcome }: { readonly slot: object; readonly outcome: unknown }): string {
-    /** Ordinary native failures remain outside the code-owned guard boundary. */
-    const conversion = currentReturnConversion({ owner: fixedOwner, handle, outcome });
+  function valueFor({
+    slot: handle,
+    outcome
+  }: {
+    readonly slot: object;
+    readonly outcome: unknown
+  }): string {
+    /**
+     Ordinary native failures remain outside the code-owned guard boundary.
+     */
+    const conversion = currentReturnConversion({
+      owner: fixedOwner,
+      handle,
+      outcome
+    });
     if (conversion.status === 'threw') throw conversion.error;
     return conversion.value;
   }
@@ -182,11 +301,25 @@ export function createNativeReturnConsumer(owner: NativeReturnOwner): NativeRetu
    @returns immutable view of retained state, never current-use authority
    */
   function inspect(handle: object): NativeReturnInspection {
-    /** Original state remains inspectable after parent retirement. */
-    const invocation = getSlot(handle).native;
-    return Object.freeze({ retainedOnly: true, state: invocation?.state ?? 'uninvoked', identity: invocation?.identity, conversionCount: invocation?.conversionCount ?? 0, conversion: invocation?.conversion, failure: invocation?.failure });
+    /**
+     Original state remains inspectable after parent retirement.
+     */
+    const invocation = getSlot(handle)
+      .native;
+    return Object.freeze({
+      retainedOnly: true,
+      state: invocation?.state ?? 'uninvoked',
+      identity: invocation?.identity,
+      conversionCount: invocation?.conversionCount ?? 0,
+      conversion: invocation?.conversion,
+      failure: invocation?.failure
+    });
   }
-  return Object.freeze({ invoke, valueFor, inspect });
+  return Object.freeze({
+    invoke,
+    valueFor,
+    inspect
+  });
 }
 
 //endregion Original slots retain invocation state independently of live script access

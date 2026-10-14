@@ -10,7 +10,10 @@ import {
 import { fileURLToPath } from 'node:url';
 import { stripTypeScriptTypes } from 'node:module';
 import { tagged } from '@monochromatic-dev/module-logger/ts';
-import { type ImportDeclaration, parse } from 'yuku-parser';
+import {
+  type ImportDeclaration,
+  parse
+} from 'yuku-parser';
 import {
   NativeImportBuildError,
   rewriteNativeImports
@@ -144,8 +147,11 @@ export async function replaceStagedImport({
    Ambiguous imports cannot be selected by position or first match.
    */
   const declarations: ImportDeclaration[] = [];
-  for (const node of parsed.program.body) {
-    if ((node.type !== 'ImportDeclaration') || (node.specifiers.length !== 1)) continue;
+  for (const node of parsed.program
+    .body) {
+    if ((node.type !== 'ImportDeclaration') || (node.specifiers
+      .length
+      !== 1)) continue;
     /**
      Only the original named binding can select this generated dependency.
      */

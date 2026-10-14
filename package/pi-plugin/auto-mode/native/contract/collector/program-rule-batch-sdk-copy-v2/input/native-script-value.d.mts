@@ -3,7 +3,10 @@
 
  @module
  */
-import type { NativeReturnOutcome, NativeReturnTool } from './native-return-types.ts';
+import type {
+  NativeReturnOutcome,
+  NativeReturnTool
+} from './native-return-types.ts';
 
 /**
  Convert the original native result using its declared output modality.
@@ -16,4 +19,7 @@ import type { NativeReturnOutcome, NativeReturnTool } from './native-return-type
 
  @throws Error when the native tool reports an ordinary text failure
  */
-export function toScriptValue(tool: NativeReturnTool, outcome: NativeReturnOutcome): unknown;
+export function toScriptValue(
+  tool: NativeReturnTool,
+  outcome: NativeReturnOutcome
+): unknown;

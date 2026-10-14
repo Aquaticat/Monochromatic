@@ -181,39 +181,72 @@ export type NativeReturnOwner = {
 
 //region Consumer operations expose retained evidence and guarded value access
 
-/** One native invocation keeps the original call and options objects. */
+/**
+ One native invocation keeps the original call and options objects.
+ */
 export type NativeReturnInput = {
-  /** Original owner-issued slot handle. */
+  /**
+   Original owner-issued slot handle.
+   */
   readonly slot: object;
-  /** Original native call object is passed unchanged to the runner. */
+  /**
+   Original native call object is passed unchanged to the runner.
+   */
   readonly call: NativeReturnCall;
-  /** Original native options are passed unchanged to the runner. */
+  /**
+   Original native options are passed unchanged to the runner.
+   */
   readonly options?: unknown;
 };
 
-/** Retained inspection never asserts present-day eligibility. */
+/**
+ Retained inspection never asserts present-day eligibility.
+ */
 export type NativeReturnInspection = {
-  /** Explicitly limits this view to historical evidence. */
+  /**
+   Explicitly limits this view to historical evidence.
+   */
   readonly retainedOnly: true;
-  /** Uninvoked slots have no native terminal state. */
+  /**
+   Uninvoked slots have no native terminal state.
+   */
   readonly state: NativeReturnInvocation['state'] | 'uninvoked';
-  /** Absent invocations retain the original undefined-valued diagnostic field. */
+  /**
+   Absent invocations retain the original undefined-valued diagnostic field.
+   */
   readonly identity: unknown;
-  /** Conversion count remains available before and after invocation. */
+  /**
+   Conversion count remains available before and after invocation.
+   */
   readonly conversionCount: number;
-  /** Captured conversion remains inspectable without granting live access. */
+  /**
+   Captured conversion remains inspectable without granting live access.
+   */
   readonly conversion: unknown;
-  /** Original caught value remains inspectable without normalization. */
+  /**
+   Original caught value remains inspectable without normalization.
+   */
   readonly failure: unknown;
 };
 
-/** Original reached-group consumer separates execution, live access, and inspection. */
+/**
+ Original reached-group consumer separates execution, live access, and inspection.
+ */
 export type NativeReturnConsumer = {
-  /** Retain the original native return and conversion. */
+  /**
+   Retain the original native return and conversion.
+   */
   readonly invoke: (input: NativeReturnInput) => Promise<NativeReturnOutcome>;
-  /** Read supported text only through current original ownership. */
-  readonly valueFor: (input: { readonly slot: object; readonly outcome: unknown }) => string;
-  /** Read historical invocation state without testing live eligibility. */
+  /**
+   Read supported text only through current original ownership.
+   */
+  readonly valueFor: (input: {
+    readonly slot: object;
+    readonly outcome: unknown
+  }) => string;
+  /**
+   Read historical invocation state without testing live eligibility.
+   */
   readonly inspect: (handle: object) => NativeReturnInspection;
 };
 
