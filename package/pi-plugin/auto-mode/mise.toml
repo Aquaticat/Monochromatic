@@ -125,6 +125,10 @@ run = "node src/native-literal-rules.unit.test.ts"
 description = "Verify native private-member rewrites preserve original executable syntax boundaries"
 run = "node src/native-members.unit.test.ts"
 
+[tasks."test:native:program-value"]
+description = "Verify original result conversion extraction and source qualification guards"
+run = "node src/native-program-value.unit.test.ts"
+
 [tasks."test:native:approval"]
 description = "Verify original approval routing and independent prerequisite evidence with fixture presentation"
 run = [
