@@ -86,6 +86,12 @@ and disposal retry without external provider requests.
 The separate-process RPC fixture starts `dist/native/cli.mjs`,
 checks the selected Qwen model and idle state,
 and requires shutdown without stderr output.
+Its fixture fetch blocker loads Pi's HTTP dispatcher before overriding fetch,
+so native initialization preserves the deliberate override.
+`test:native:process-network` checks initial setup,
+reconfiguration,
+fetch rejection,
+and refusal outside the fixture child.
 `test:native:manager-constructors` exercises every native constructor entry point.
 It checks persisted conversation retention,
 explicit session IDs,

@@ -180,7 +180,12 @@ reconfiguration,
 data-URL rejection,
 and use outside the fixture are covered.
 The real CLI process check retains the expected Qwen model and clean shutdown.
-Changed-file lint and package types remain pending for this correction.
+Both changed TypeScript files pass scoped lint with zero warnings and zero errors;
+package types pass.
+The final owned rebuild,
+network-guard regressions,
+and real CLI process check pass.
+The rendered troubleshooting record retains the failing and passing evidence.
 
 ## Restart checkpoint after installing automatic Codex shell limits
 
