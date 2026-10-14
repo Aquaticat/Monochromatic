@@ -12,8 +12,8 @@ import {programSessionSource} from './program-source.mjs';
 import {prepareNativeHost} from '../native-host/prepare.ts';
 import {createImportEntryReader} from './build-entries.ts';
 import {createNativeImportRewriter,helperUrl,replaceOnce} from './build-rebase.ts';
-import {prepareResources} from './prepare-resources.mjs';
-import {prepareAgent} from './prepare-agent.mjs';
+import {prepareResources} from './prepare-resources.ts';
+import {prepareAgent} from './prepare-agent.ts';
 import {prepareProgram} from './prepare-program.mjs';
 import {sdk,core,ai,codemode,tui,maintainedRoot} from '../current-sdk/paths.ts';
 
