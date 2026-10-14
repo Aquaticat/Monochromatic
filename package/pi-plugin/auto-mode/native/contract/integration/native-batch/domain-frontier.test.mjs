@@ -50,22 +50,20 @@ const receiptControl=process.argv
   .includes('--copied-payload')?'copied-payload':process.argv
   .includes('--copied-transcript')?'copied-transcript':undefined;
 assert.ok((!receiptControl)||sdkStream,'Serializer receipt controls exercise the normal SDK stream');
-let contextCalls=0;
-let lateContextMutations=0;
-let progressCalls=0;
+const observations={contextCalls:0,lateContextMutations:0,progressCalls:0,assessments:0,executions:0,requests:0,httpCalls:0,originalBody:undefined};
 const env=await createEnvironment({
   policyText:'RUL:\n '+text+'\n',
   hostPrompt:'Fixture background.',
   useNativeProvider:sdkStream,
   additionalExtensionPaths:configuredExtensions.map(function configuredExtensionPath(resource){return resource.path;}),
   expectedBlockedNetworkUrls:configuredExtensions.some(function syntheticCatalog(resource){return resource.metadata?.source==='npm:@benvargas/pi-synthetic-provider';})?['https://api.synthetic.new/openai/v1/models']:[],
-  extensionFactories:unobservedContext?[function registerUnobservedContextHandler(pi) {pi.on('input',function countUnobservedContextCall() {contextCalls++;});}]:observedContext?[function registerObservedContextHandlers(pi) {
+  extensionFactories:unobservedContext?[function registerUnobservedContextHandler(pi) {pi.on('input',function countUnobservedContextCall() {observations.contextCalls++;});}]:observedContext?[function registerObservedContextHandlers(pi) {
    pi.on('context',function retainOriginalContextInput(event) {
-    contextCalls++;
+    observations.contextCalls++;
     event.receiptFixture='Original in-place context input';
    });
    pi.on('context',function retainOriginalContextResult(event) {
-    contextCalls++;
+    observations.contextCalls++;
     if(throwingContext){
      event.receiptFixture='Original input mutation before context failure';
      throw new Error('Expected original context callback failure');
@@ -76,17 +74,17 @@ const env=await createEnvironment({
      deferred.resolve(result);
      queueMicrotask(function mutateAfterOriginalContextSettlement(){
       result.unusedInstruction='Later queued context result mutation';
-      lateContextMutations++;
+     observations.lateContextMutations++;
      });
     });
     return deferred.promise;
    });
    pi.on('context_with_system',function retainOriginalSystemContextResult(event) {
-    contextCalls++;
+    observations.contextCalls++;
     return {messages:event.messages,unusedInstruction:'Original unselected system context result'};
    });
   }]:observedProgress?[function registerObservedProgress(pi){
-   pi.on('tool_execution_update',function observeOriginalProgress(){progressCalls++;});
+   pi.on('tool_execution_update',function observeOriginalProgress(){observations.progressCalls++;});
   }]:[]
 });
 if(extensionManifestArgument!==undefined){
@@ -95,12 +93,11 @@ if(extensionManifestArgument!==undefined){
  assert.equal(loaded.extensions.length,configuredExtensions.length,'The fixture must retain every configured extension');
  console.log(JSON.stringify({configuredExtensionsLoaded:loaded.extensions.length,eventKinds:[...new Set(loaded.extensions.flatMap(function registeredKinds(extension){return [...extension.handlers.keys()];}))]}));
 }
-let assessments=0,executions=0,originalBody,requests=0;
 const leaf={
   ...env.createReadToolDefinition(env.options.cwd),
   name:'fixture_value',
   description:'Returns fixture text without accessing files.',
-  async execute(){executions++;return {content:[{type:'text',text:'fixture child value'}],details:{}};}
+  async execute(){observations.executions++;return {content:[{type:'text',text:'fixture child value'}],details:{}};}
 };
 const {
   session,
@@ -115,11 +112,11 @@ const code='const value = await tools.fixture_value({path:"seed"});\nreturn awai
 function policy(definitionId) { return {model:ruleAssessmentModel,definitionId,programProfile,accepts:function acceptAuthoredDomainRelation() { return (true); }}; }
 const originalSdkStream=session.agent
   .streamFunction;
-const controlledSdkStream=function controlledSdkStream(
+function controlledSdkStream({
   model,
   context,
   options
-){
+}){
  if(receiptControl==='copied-transcript')return originalSdkStream(
    model,
    {...context,messages:[...context.messages]},
@@ -137,9 +134,9 @@ const controlledSdkStream=function controlledSdkStream(
    context,
    options
  );
-};
+}
 function authoredWireAnswer({body}){
-  assessments++;const wire=JSON.parse(body);assert.equal(wire.state.originalRequestBody,originalBody);
+  observations.assessments++;const wire=JSON.parse(body);assert.equal(wire.state.originalRequestBody,observations.originalBody);
   const answers=Object.fromEntries(Object.entries(wire.questions).map(function answerAuthoredDomainQuestion([slot,question]) {
    const selectedClause=question.instructions.selectedRule?.id==='RUL';
    const choice=question.instructions.selectedMaterial==='originalRequestBody'?requestRelation:selectedClause?(unresolvedClause??relation):'none';
@@ -149,12 +146,11 @@ function authoredWireAnswer({body}){
   }));
   return JSON.stringify({model:wire.model,answers,usage:{input_tokens:100,output_tokens:10}});
 }
-let httpCalls=0;
 const sendAssessment=httpTransport?createAssessmentSender({
  now:function originalAssessmentClock(){return performance.now();},
  readCredential:function fixtureAssessmentCredential(){return 'native-http-fixture-key';},
  async fetchImpl(url,options){
-  httpCalls++;
+  observations.httpCalls++;
   assert.equal(url,'https://api.llmgateway.io/v1/systemone');
   assert.equal(options.method,'POST');
   assert.equal(options.redirect,'error');
@@ -181,8 +177,8 @@ const runtime=bindNativePolicyRuntime({
   }),
   effectOwnerFor:function omitDomainAuthorizationOwner() { return (undefined); },
   sendWire:sendAssessment,
-  originalStream:sdkStream?controlledSdkStream:nativeOpenAIStream,
-  async terminalFetch(input,init){requests++;if(requests===1)originalBody=init.body;return fixtureResponse({proposal:requests===1,code});}
+  originalStream:sdkStream?function stream(model,context,options){return controlledSdkStream({model,context,options});}:nativeOpenAIStream,
+  async terminalFetch(input,init){observations.requests++;if(observations.requests===1)observations.originalBody=init.body;return fixtureResponse({proposal:observations.requests===1,code});}
 });
 await using cleanup={async [Symbol.asyncDispose](){session.dispose();await session.agent.waitForIdle();runtime.detach();await env.drain();}};
 try{
@@ -191,7 +187,7 @@ try{
    lastReview:review,
    lastJudgment:judgment
  }=runtime.inspect();
- assertDomainReview({env,review,judgment,session,originalBody,settings:{relation,requireResolution,requestRelation,unobservedContext,observedContext,observedProgress,throwingContext,httpTransport,operatingPolicy,lowConfidenceClause,unresolvedClause,sdkStream,receiptControl},measures:{assessments,executions,requests,httpCalls,contextCalls,lateContextMutations,progressCalls}});
+ assertDomainReview({env,review,judgment,session,originalBody:observations.originalBody,settings:{relation,requireResolution,requestRelation,unobservedContext,observedContext,observedProgress,throwingContext,httpTransport,operatingPolicy,lowConfidenceClause,unresolvedClause,sdkStream,receiptControl},measures:observations});
 }catch(error){console.error(error);throw error;}
 }
 
