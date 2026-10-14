@@ -12,7 +12,7 @@ import {
   captureHeadingContextAdmissionPolicy,
   captureUnitAdoptionAdmissionPolicy,
   semanticAdmissionScope
-} from './semantic-policy.mjs';
+} from './semantic-policy.ts';
 
 /** Evaluate one prepared original judgment without asking a model for a verdict. */
 export async function evaluatePolicy({

@@ -1,7 +1,7 @@
 import {MISSING_AUTHORIZATION_EVIDENCE} from './authorization-inputs.mjs';
 import {lowerEstablishedClause} from './clause-lowering.mjs';
 import {inspectPolicyPremises} from './premises.mjs';
-import {SemanticAdmissionPolicyError} from './semantic-policy.mjs';
+import {SemanticAdmissionPolicyError} from './semantic-policy.ts';
 import {
   consumeRequestMaterial,
   retainRequestMaterialObligations
