@@ -61,6 +61,12 @@ and only a message shown to a person is text.
 - The journals (`transaction_journal*`): `selectedPathspecBytes`, `committedPathBytes`, and `pathBytes` in each
   added-path object, written only when some path is not UTF-8 and checked on reading
   (the text must equal the readable text of the bytes, or the record is malformed).
+- `candidate_store.rs`: the pushed-tree listing of a manual push (`added_raw_from_ls_tree`)
+  read each path as lossy text,
+  so a name that is not UTF-8 reached the content policies with replacement characters and no `pathBytes`;
+  it now keeps the exact bytes.
+  This gap was found by a sweep of every `from_utf8` and `from_utf8_lossy` call in `src/native` for file paths,
+  and the other call sites handle object names, refs or messages.
 - `policy_events.rs`: the replay conflict event carries `pathsBytes`, entry for entry with `paths`,
   when any conflicting name is not UTF-8.
 - `SPEC.md`: the reader contract, the one exception, `pathsBytes`, and the journal fields.
@@ -100,17 +106,19 @@ Today every one passes.
 
 The red controls of commit `e613bda1cd` were run on the base code in a throwaway worktree:
 4 of 7 failed with the messages above and 3 passed, as listed in "What existed before".
+The new control `a_pushed_tree_lists_a_name_that_is_not_utf8_exactly` fails on the code before the listing fix
+(it listed `bad\u{fffd}.txt`) and passes after.
 The 6 planted guard removals added to `bin/native-planted-controls.mjs` were each planted on the host and each
 failed its named test.
 The planted phase of the campaign was not run in a container (see "Trailing gates").
 
 ## Gate results
 
-The gated source is commit `8d3b29aff7` (the later commits of this branch change documents only).
+The gated source is commit `f23cb2f247` (the later commits of this branch change documents only).
 
 - Container gate (`GIT_POLICY_NATIVE_IMAGE_TAG=pathbytes`), judged by the test result lines:
-  1687 unit passed, 0 failed, 5 ignored; 135 binary passed, 0 failed, 1 ignored; 1 consumer passed.
-  Image `sha256:84ac61c07e79396f9101132cc9d7603b8b2aff6fef914a7508d50a980c454f34`.
+  1688 unit passed, 0 failed, 5 ignored; 135 binary passed, 0 failed, 1 ignored; 1 consumer passed.
+  Image `sha256:37b69d10e5e7660ae2f3a345dddcd6c641af12a8c360ac4ecc466d30252faace`.
 - `native:clippy` with `-D warnings`: finished clean on the same head.
   An earlier run found one shadowed binding in `landing_index.rs`, fixed in `7f6b8801d0`.
 - Git is 2.56.0 on the host and in the image; the brief named 2.55.0.
@@ -129,9 +137,12 @@ run with `NATIVE_MUTATION_SKIP_PLANTED=1`
 - Killing tests were added in `8d3b29aff7` for 13 of the 25 survivors
   (identity times, socket and symbolic link inspection, non-conflict error, oldest winning commit, stage-zero entry),
   and each was shown to fail on its mutant.
-- Pass 2 (image `sha256:84ac61c07e79396f9101132cc9d7603b8b2aff6fef914a7508d50a980c454f34`)
+- Pass 2 (image `sha256:84ac61c07e79396f9101132cc9d7603b8b2aff6fef914a7508d50a980c454f34`, source `8d3b29aff7`)
   over the lines of the survivors and the timeouts: 73 mutants, 39 caught, 12 missed, 22 timeouts.
 - Pass 3, the timeouts again at `--timeout 900`: 28 mutants, 26 caught, 2 timeouts.
+- Pass 4, `candidate_store.rs` after the listing fix, only the mutants of `added_raw_from_ls_tree`
+  (image `sha256:37b69d10e5e7660ae2f3a345dddcd6c641af12a8c360ac4ecc466d30252faace`): 7 mutants, 7 caught.
+  The source of pass 1 differs from the final source only by tests, the listing fix and its test.
 
 The 12 survivors left:
 
@@ -141,22 +152,28 @@ The 12 survivors left:
 - `worktree_completion.rs:243:47`, `|` to `^` in `open_nonblocking`: `O_NOFOLLOW` and `O_NONBLOCK` are distinct single
   bits, so `|` and `^` are equal.
   Equivalent.
-- `landing_attempt.rs:584:48`, `==` to `!=` in `advance_target`: the flag only adds `--no-deref` to `git update-ref`,
-  which changes nothing unless the ref is itself a symbolic ref
-  (a branch that is a symbolic ref was not tried).
-  Code this lane did not change; not proven by repository code, only by how `update-ref` treats a regular ref.
+- `landing_attempt.rs:584:48`, `==` to `!=` in `advance_target`: the flag only adds `--no-deref` to `git update-ref`
+  (`landing_support.rs`, `compare_and_swap_target`).
+  The ref it moves is `target_ref`, which `capture_invocation.rs` takes from `git symbolic-ref --quiet HEAD`
+  (recursive by default; on a throwaway repository with `HEAD` to `refs/heads/alias` to `refs/heads/main` it printed
+  `refs/heads/main`, and `--no-recurse` printed `refs/heads/alias`) or sets to `HEAD` when that command exits 1.
+  So the ref is never symbolic, and `--no-deref` changes nothing either way.
+  Equivalent.
+  Code this lane did not change.
 - `worktree_completion.rs:302`, `303`, `304`, `316`, `317`, `318`, `319` and `320`, `||` to `&&` in `inspect_or_fail`:
   the checks compare the file as opened with the file as listed, and the file after the read with the file before.
-  Without a concurrent writer between those system calls every operand is false, so `||` and `&&` agree;
-  the guards exist for that race, and a test would need a hook between the calls.
-  Not killed.
+  each operand compares two system calls on one path, and with no writer between them every operand is false,
+  so `||` and `&&` give the same answer.
+  The guards exist for that race; no test can reach a differing operand without a hook between the calls,
+  so these are justified as impossible to catch deterministically, not killed.
   Code this lane did not change.
 
 The 2 timeouts left, `landing_attempt.rs:419:8` and `592:8` (`delete !` in `land_locked` and `advance_target`):
 each makes a normal landing report a lost race with a replayable head, and the loop at
 `commit_landing_loop.rs` (`loop {`, no attempt bound) replays and lands again without end.
-The first run's log shows 5 and 4 binary controls failing for them
-(`a_commit_of_all_tracked_changes_lands_them` among them), and the unit run never finishes.
+The first run's logs show 5 and 4 binary controls failing for them
+(`a_commit_of_all_tracked_changes_lands_them` among them) while the library suite passes,
+and the binary target then never finishes.
 Caught by failure and by non-termination; the harness reports it as a timeout.
 
 The other 20 timeouts of pass 2 were caught at `--timeout 900`.
