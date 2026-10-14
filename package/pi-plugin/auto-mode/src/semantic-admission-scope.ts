@@ -23,14 +23,26 @@ const l = tagged({ tag: 'auto-mode-semantic-admission-scope', },);
  @param inspected - original decoder profile identifier
  
  @returns whether the original profile belongs to the configured scope
+
+ @example
+ ```ts
+ const matching = matchesSemanticProgramProfile({
+   configured: 'native-inspected-programs-v2', inspected: declaration.profile,
+ });
+ ```
  */
 export function matchesSemanticProgramProfile({
   configured,
   inspected,
 }: {
   readonly configured: string;
-  readonly inspected: string | undefined;
+  readonly inspected: unknown;
 },): boolean {
+  /**
+   Profile matching logs no original program content.
+   */
+  const rl = tagged({ tag: matchesSemanticProgramProfile.name, l, },);
+  rl.debug('matching inspected program identifier to fixed semantic scope',);
   if (configured === 'native-inspected-programs-v2') {
     return (inspected === 'awaited-literal-single-call')
       || (inspected === 'awaited-string-result-then-literal-parallel');
