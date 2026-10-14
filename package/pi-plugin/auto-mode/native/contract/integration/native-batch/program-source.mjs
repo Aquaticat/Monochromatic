@@ -95,6 +95,6 @@ export function nativeScriptValueSource({source,parse}){
 export function programDefinitionSource({nativeToolUrl,executorUrl}){
  return 'import {createCodemodeToolDefinition} from '+JSON.stringify(nativeToolUrl)+';\n'
   +'const definitions=new WeakSet();\n'
-  +'export function createOwnedCodemodeDefinition(options={}){const fixedOptions=Object.freeze({...options});const original=createCodemodeToolDefinition(fixedOptions);const definition=Object.freeze({...original,execute:async(...args)=>(await import('+JSON.stringify(executorUrl)+')).executeCodemode(...args,fixedOptions)});definitions.add(definition);return definition;}\n'
+  +'export function createOwnedCodemodeDefinition(options={}){const fixedOptions=Object.freeze({...options});const original=createCodemodeToolDefinition(fixedOptions);const definition=Object.freeze({...original,defaultActive:false,execute:async(...args)=>(await import('+JSON.stringify(executorUrl)+')).executeCodemode(...args,fixedOptions)});definitions.add(definition);return definition;}\n'
   +'export function isOwnedProgramDefinition(definition){return definitions.has(definition);}\n';
 }

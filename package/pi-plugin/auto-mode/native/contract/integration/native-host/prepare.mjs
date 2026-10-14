@@ -26,6 +26,7 @@ export function prepareNativeHost({ output }) {
   const paths = {
     main: 'main.js', services: 'core/agent-session-services.js',
     runtime: 'core/agent-session-runtime.js',
+    codemode: 'extensions/codemode/index.js',
   };
   for (const [name, relative] of Object.entries(paths)) {
     const path = join(sdk, 'dist', relative);
@@ -44,6 +45,16 @@ export function prepareNativeHost({ output }) {
       if (source.split(disposal).length !== 3)
         throw new NativeHostBuildError('Native runtime must retain both replacement and terminal disposal calls');
       source = source.replaceAll(disposal, '        await disposeHostSession(this.session);');
+    } else if (name === 'codemode') {
+      const definition = JSON.stringify(pathToFileURL(join(output, 'program-definition.mjs')).href);
+      source = replaceOnce({ source, before: 'import { createCodemodeToolDefinition } from "./tool.js";',
+        after: 'import { createOwnedCodemodeDefinition as createCodemodeToolDefinition } from ' + definition + ';' });
+      source = replaceOnce({ source,
+        before: '        pi.registerTool({\n            ...createCodemodeToolDefinition({',
+        after: '        pi.registerTool(createCodemodeToolDefinition({' });
+      source = replaceOnce({ source,
+        before: '            }),\n            defaultActive: false,\n        });',
+        after: '            }));' });
     } else {
       source = replaceOnce({ source, before: 'import { DefaultResourceLoader, } from "./resource-loader.js";',
         after: 'import { createHostResourceLoader, createHostSession as createAgentSession } from ' + bootstrap + ';\n'
