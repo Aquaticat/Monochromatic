@@ -507,6 +507,8 @@
     {
       "original": "integration/native-batch/message-source.mjs",
       "maintained": "integration/native-batch/message-source.mjs",
+      "currentMaintained": "integration/native-batch/message-source.ts",
+      "movedOn": "2026-10-14",
       "sha256": "5574483a39083c19ce17d08d5b19b9998659229701c07e63f60921825288c86a",
       "origin": "authored-source",
       "relocatedLiterals": 0

@@ -7,7 +7,7 @@ import {sessionToolDescriptionSource} from './tool-description-source.ts';
 import {managerSource,sessionSource} from './root-source.mjs';
 import {promptSessionSource,promptEmitterSource} from './prompt-source.mjs';
 import {promptBuilderSource} from './builder-source.ts';
-import {handlerMessageSource,handlerProviderSource} from './message-source.mjs';
+import {handlerMessageSource,handlerProviderSource} from './message-source.ts';
 import {programSessionSource} from './program-source.mjs';
 import {prepareNativeHost} from '../native-host/prepare.ts';
 import {createImportEntryReader} from './build-entries.ts';
