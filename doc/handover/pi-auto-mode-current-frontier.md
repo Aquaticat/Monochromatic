@@ -694,10 +694,23 @@ and the extracted Session preparation phase pass scoped lint,
 package types,
 and the owned build.
 The native preparation chain now uses maintained TypeScript modules.
-Full package lint and unit verification,
-the native syntax sweep,
-host lifecycle,
-and separate CLI process checks are running against that integration.
+Full package unit verification passes.
+The syntax sweep parses all 179 native modules,
+and host lifecycle and the separate Qwen CLI process pass with clean shutdown.
+The full package lint invocation did not return diagnostics and was terminated deliberately;
+it is incomplete verification.
+The wrapper buffers diagnostics until its child exits.
+Its two TypeScript workers held 38 and 102 threads during a process snapshot.
+A concurrent documentation commit was saved,
+but automatic push reported `failed to create new OS thread`
+and `fatal error: newosproc`.
+The enclosing worker slice retains its 256-task limit and reports `pids.events: max 60`;
+those cumulative events do not establish the exact failing thread's allocation path.
+After the lint process stopped,
+the slice reported 23 tasks.
+The saved commit's push is being retried separately.
+Continue lint verification through an explicit complete source manifest in sequential groups,
+preserving the rules and worker limits.
 
 The first approved native dispatch failed because the inherited test loader derived dependency paths
 from the codemode worker's disposable home.
