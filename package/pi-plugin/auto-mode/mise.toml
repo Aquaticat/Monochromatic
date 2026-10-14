@@ -80,6 +80,21 @@ run = [
 [tasks."test:native:cli-manager"]
 run = "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-batch/cli-manager.test.mjs"
 
+[tasks."test:native:approval"]
+description = "Verify original approval routing and independent prerequisite evidence with fixture presentation"
+run = [
+  "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-batch/approval-domain.test.mjs allow",
+  "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-batch/approval-domain.test.mjs deny",
+  "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-batch/approval-domain.test.mjs stop",
+  "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-batch/approval-domain.test.mjs missing",
+  "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-batch/approval-domain.test.mjs unsupported",
+  "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-batch/approval-domain.test.mjs unresolved",
+  "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-batch/approval-domain.test.mjs satisfied",
+  "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-batch/approval-domain.test.mjs bare",
+  "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-batch/approval-domain.test.mjs prohibited",
+  "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-batch/approval-domain.test.mjs retired",
+]
+
 [tasks."test:native:sdk-stream"]
 run = "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-batch/domain-frontier.test.mjs permission --require-resolution --sdk-stream"
 
