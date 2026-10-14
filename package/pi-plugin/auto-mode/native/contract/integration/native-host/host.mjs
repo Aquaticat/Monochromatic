@@ -8,7 +8,7 @@ import {
   readActiveSessionManager,
   readSessionDisposalState
 } from '../native-batch/generated/agent-session.mjs';
-import { createHostResource } from './resources.mjs';
+import { createHostResource } from './resources.ts';
 import {
   readHostResource,
   reloadHostResource
