@@ -51,8 +51,14 @@ if (arguments_[0] !== '--owned') await buildPiSource({
 },);
 // Replace only this build's copied contract tree so retired modules cannot remain importable.
 await rm(
-  join(output, 'contract'),
-  { recursive: true, force: true },
+  join(
+    output,
+    'contract'
+  ),
+  {
+    recursive: true,
+    force: true
+  },
 );
 await cp(
   join(

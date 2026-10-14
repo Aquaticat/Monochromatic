@@ -517,6 +517,20 @@ The separate CLI process passes with empty shutdown stderr,
 and every approval-context case passes against this artifact,
 including cancellation and approval after reload.
 Remaining preparation generators and the JavaScript runtime still need lint and type completion.
+The tool-description generator is now typed in `ccccf6820c` and `b3956dae21`.
+Its scoped lint,
+package types,
+owned rebuild,
+and native decision contrasts pass.
+A direct comparison against its prior generator confirms identical generated Session bytes.
+The rebuild inspection also found retired `.mjs` files beside their typed replacements.
+Commit `ba238bce51` replaces the copied contract tree before rebuilding it.
+The disposable rebuild retains the original emitted Pi inputs,
+removes an intentionally stale nested module,
+and passes the actual CLI process check with clean shutdown.
+The first disposable attempt omitted the root-resolved `nano-spawn` dependency and failed with Node's
+`ERR_MODULE_NOT_FOUND` before the build ran.
+The corrected fixture reproduces that original dependency resolution without changing installed packages.
 
 The first approved native dispatch failed because the inherited test loader derived dependency paths
 from the codemode worker's disposable home.

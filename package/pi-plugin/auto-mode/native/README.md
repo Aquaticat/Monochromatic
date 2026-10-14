@@ -19,6 +19,7 @@ The maintained build emits the qualified Pi 1.1.0 source and owned transformatio
 The package `build` task builds maintained exports before building this native artifact.
 `mise run //package/pi-plugin/auto-mode:build:native` builds that artifact;
 `build:native:owned` rebuilds the owned transformations against an existing source emission.
+Rebuilds replace the copied `dist/native/contract` tree so retired source modules cannot survive beside replacements.
 The candidate CLI entry is `dist/native/cli.mjs`.
 It routes native manager selection,
 services,
