@@ -263,13 +263,7 @@ run = [
 
 [tasks."native:cli"]
 description = "Run the candidate owned native host with the adopted semantic operating policy"
-usage = 'arg "[args]" var=#true help="Arguments forwarded unchanged to the maintained Pi host"'
-shell = "node --input-type=module-typescript -e"
-run = """
-{{vars.parse_usage_args}}
-const { default: spawn } = await import('nano-spawn')
-await spawn(process.execPath, ['dist/native/cli.mjs', ...parseUsageArgs(process.env.usage_args ?? '')], { stdio: 'inherit' })
-"""
+run = "node dist/native/cli.mjs"
 
 [tasks."test:native:host-lifecycle"]
 run = "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-host/lifecycle.test.mjs"
