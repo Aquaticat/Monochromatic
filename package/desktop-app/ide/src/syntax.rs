@@ -57,9 +57,23 @@ use tree_house::{Syntax, highlighter::Highlighter};
 /// ```
 const PARSE_TIMEOUT: Duration = Duration::from_millis(500);
 
-/// Ordered palette roles;
+/// What:
+///  Ordered palette roles;
 ///  role zero stays ordinary source and 64 stays selection ink.
-const SCOPES: &[&str] = &[
+///  A capture takes the entry sharing the most leading dot-separated parts,
+///  so `markup.heading.marker` takes `markup.heading` and `markup.link.text` takes `markup.link`.
+/// Why:
+///  The Markdown entries follow the original thirteen so that those keep their numbers.
+///  `markup.raw.block` has no entry:
+///  a fenced block's own language paints its content,
+///  and a block color would show through every token that language leaves unpainted.
+///  `label` has no entry because Rust and JavaScript use it for loop labels too.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// export const SCOPES = ['keyword', 'string', /* ... */ 'markup.quote'] as const;
+/// ```
+pub const SCOPES: &[&str] = &[
     "keyword",
     "string",
     "comment",
@@ -73,6 +87,15 @@ const SCOPES: &[&str] = &[
     "attribute",
     "namespace",
     "special",
+    "markup.heading",
+    "markup.bold",
+    "markup.italic",
+    "markup.strikethrough",
+    "markup.raw.inline",
+    "markup.link",
+    "markup.link.url",
+    "markup.list",
+    "markup.quote",
 ];
 
 /// What:

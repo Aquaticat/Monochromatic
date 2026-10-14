@@ -9,6 +9,11 @@ use crate::glyph_cache::{GlyphCache, GlyphKey};
 use crate::selection_paint;
 /// Source layout and geometry are independent of the native widget tree.
 use crate::shaped_text::ShapedView;
+/// Markdown roles share the tuned syntax hues.
+use crate::source_style::{
+    BOLD_ROLE, HEADING_ROLE, ITALIC_ROLE, LINK_ROLE, LINK_URL_ROLE, LIST_ROLE, QUOTE_ROLE,
+    RAW_INLINE_ROLE, STRIKETHROUGH_ROLE,
+};
 /// Propagate malformed font or oversized viewport diagnostics to the native shell.
 use anyhow::{Context, Result, bail};
 /// Positioned glyph runs come from the same layouts used for caret and hit testing.
@@ -78,37 +83,38 @@ fn ink(role: u32, colors: CodeColors) -> [u8; 4] {
     if role == 64 {
         return colors.selected;
     }
-    if role == 1 || role == 8 || role == 10 {
+    // The Markdown roles reuse the six tuned hues; their weight or italic face is the second channel.
+    if role == 1 || role == 8 || role == 10 || role == ITALIC_ROLE {
         if colors.dark {
             return [199, 146, 234, 255];
         }
         return [118, 54, 164, 255];
     }
-    if role == 2 {
+    if role == 2 || role == RAW_INLINE_ROLE {
         if colors.dark {
             return [168, 204, 140, 255];
         }
         return [50, 101, 32, 255];
     }
-    if role == 3 {
+    if role == 3 || role == STRIKETHROUGH_ROLE || role == QUOTE_ROLE {
         if colors.dark {
             return [160, 168, 176, 255];
         }
         return [85, 92, 101, 255];
     }
-    if role == 4 || role == 13 {
+    if role == 4 || role == 13 || role == LINK_URL_ROLE || role == LIST_ROLE {
         if colors.dark {
             return [240, 188, 122, 255];
         }
         return [139, 77, 4, 255];
     }
-    if role == 5 || role == 12 {
+    if role == 5 || role == 12 || role == HEADING_ROLE || role == LINK_ROLE {
         if colors.dark {
             return [130, 190, 235, 255];
         }
         return [20, 86, 127, 255];
     }
-    if role == 6 || role == 11 {
+    if role == 6 || role == 11 || role == BOLD_ROLE {
         if colors.dark {
             return [225, 212, 157, 255];
         }
