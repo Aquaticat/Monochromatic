@@ -7236,8 +7236,11 @@ The prepared 128-receipt capacity patch retains the four-MiB combined byte limit
 the resource-local count and byte limits,
 and the original assessment budget.
 Automatic approval review rejected the commit pending explicit user authorization for the limit change.
-The implementation and boundary tests remain uncommitted while that permission question is pending.
-The proposed cap permits more source records to be processed within the same byte bounds.
+The user approved that increase on 2026-10-14.
+Commit `b45783436f` implements it while preserving the resource-local 64-receipt limit.
+The rebuilt artifact passes the original isolated configured-extension runner without a diagnostic hook.
+The 128/129 native receipt boundary and combined count/byte unit controls also pass.
+The approved cap permits more source records to be processed within the same byte bounds.
 It does not provide unlimited session history or establish permission for later instructions.
 
 ### Upstream filing decision
@@ -7256,3 +7259,86 @@ It does not provide unlimited session history or establish permission for later 
   and does not modify upstream source or installed artifacts.
 
 There is nothing to file upstream from this capacity measurement.
+
+## Pi 1.2.0 native CLI fails during owned runner initialization
+
+### Symptom
+
+The real CLI process fixture failed before returning RPC state on 2026-10-14.
+Node 26.11.1 reported `ReferenceError: Cannot access 'ExtensionRunner' before initialization`
+from the generated `run-emitter.mjs`.
+The configured SDK-session fixture passed because it entered the module graph through another path.
+Its success did not establish CLI startup.
+
+### Root cause
+
+The owned prompt-emitter generator read the runner prototype during module evaluation.
+Before commit `7c210e871b`,
+`package/pi-plugin/auto-mode/native/contract/integration/native-batch/prompt-emitter-source.ts:355`
+emitted this eager access:
+
+```js
+// Generated run-emitter.mjs, before the correction
+const nativeCreateContext = ExtensionRunner.prototype.createContext;
+```
+
+The event runner now participates in the manager/session import graph.
+The generated session imports the prompt emitter in
+`package/pi-plugin/auto-mode/native/contract/integration/native-batch/prepare-session.ts:211`:
+
+```js
+// Generated session import emitted by prepare-session.ts
+import { emitOwnedBeforeAgentStart, emitOwnedContext, emitOwnedInput } from './run-emitter.mjs';
+```
+
+The CLI entry reaches the prompt emitter before the runner class finishes initialization.
+Moving prototype capture to the defining runner module avoids that cross-module eager read.
+`package/pi-plugin/auto-mode/native/contract/integration/native-batch/event-runner-source.ts:334`
+now emits the captures after the class:
+
+```js
+// Generated event-runner.mjs, after the class declaration
+export const nativeCreateContext = ExtensionRunner.prototype.createContext;
+export const nativeAssertActive = ExtensionRunner.prototype.assertActive;
+export const nativeEmitError = ExtensionRunner.prototype.emitError;
+```
+
+The prompt emitter imports those live bindings and uses them only when invoked.
+Original methods remain captured before callbacks run;
+the correction does not introduce late prototype lookup during callback dispatch.
+
+### Verification and rejected approaches
+
+The existing process fixture is the regression control:
+
+```bash
+# Run from repository root after rebuilding the owned native artifact.
+mise run //package/pi-plugin/auto-mode:test:native:cli-process
+```
+
+It failed with the initialization error before the correction.
+After the correction it returned the requested Qwen model and idle RPC state,
+then exited successfully with empty stderr and zero provider requests.
+Next-decision receipt verification,
+package types,
+and scoped generator lint also pass.
+All maintained unit tests passed before this generator-only correction.
+Logs are `${HOME}/temp/agent/pi-approved-capacity-cli-20261014.log`
+and `${HOME}/temp/agent/pi-native-live-runner-cli-20261014.log`.
+
+The passing configured-session fixture alone is rejected as proof of CLI startup.
+No import identity bypass,
+SDK version change,
+or late mutable prototype lookup was needed.
+The tradeoff is an explicit generated-module dependency on the runner's captured exports.
+
+### Upstream filing decision
+
+- The eager prototype access belongs to the owned generator.
+- The consumer can correct its module initialization order without upstream changes.
+- No upstream support promise for this transformed graph is asserted.
+- No external contribution is proposed or contribution policy claimed.
+- No maintainer disposition is inferred.
+- The maintained generator correction and actual CLI regression provide local verification.
+
+There is nothing to file upstream from this consumer initialization failure.

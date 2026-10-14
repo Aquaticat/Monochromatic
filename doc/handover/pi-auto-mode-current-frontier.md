@@ -1311,6 +1311,17 @@ cancellation,
 and immutable assessed arguments pass against this build.
 Package types and scoped receipt-accounting lint pass with zero lint diagnostics.
 Continue maintained host activation and remaining package quality checks.
+The complete maintained unit task passes against the approved capacity build.
+The real CLI process check then exposed an owned module initialization cycle:
+`run-emitter.mjs` eagerly read `ExtensionRunner.prototype` before the class initialized.
+Commit `7c210e871b` captures those methods in the defining runner module and imports live bindings.
+The rebuilt real CLI returns the requested Qwen model and idle RPC state,
+then exits with empty stderr and zero provider requests.
+Next-decision receipts,
+package types,
+and scoped generator lint pass after that correction.
+The [initialization incident](../troubleshooting/pi-sdk-staging.md#pi-120-native-cli-fails-during-owned-runner-initialization)
+records the failing and passing process checks.
 The original assessment budget,
 resource-local 64-receipt cap,
 and byte bounds remain unchanged.
