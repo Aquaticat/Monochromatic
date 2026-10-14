@@ -38,7 +38,7 @@ fn the_search_back_and_clear_rings_are_circles_flush_outside_the_40_px_circle() 
 }
 
 #[test]
-fn the_search_result_ring_is_on_the_edge_of_a_row_as_wide_as_the_page() {
+fn the_search_result_ring_is_just_inside_the_rounded_shape_of_the_row() {
     let rendered = Rendered::new(850, 900);
     let segment = |text: &str| return crate::SearchSegment { text: text.into(), emphasized: false };
     let rows: Vec<crate::SearchRow> = (0..4)
@@ -60,9 +60,11 @@ fn the_search_result_ring_is_on_the_edge_of_a_row_as_wide_as_the_page() {
         rendered.app.set_search_ring(ring);
         rendered.wait(50);
         // The query field keeps the typing focus, and its caret blinks, so the header is not judged.
-        // The scrollbar column (12 px at the right edge) is drawn above the rows and covers the edge of the ring there.
-        let skip = vec![(0.0, 0.0, 850.0, 73.0), (838.0, 0.0, 850.0, 900.0)];
-        let row = Case { inside: true, skip, nth: Some(usize::try_from(ring).unwrap_or(0)), ..case("search-result", "SearchPage::result-row", (0.0, 0.0), 0.0) };
+        // The scrollbar's 12 px column at the right edge is drawn above the rows, but its 4 px track starts where the row's shape
+        // ends (8 px from the edge), so the shape's right edge is judged and only the pixels past it are skipped.
+        let skip = vec![(0.0, 0.0, 850.0, 73.0), (842.0, 0.0, 850.0, 900.0)];
+        // The shape is the row's rounded box (D126): its 21.3 px corners are the ring's corners.
+        let row = Case { inside: true, skip, nth: Some(usize::try_from(ring).unwrap_or(0)), radii: [21.3; 4], ..case("search-result", "SearchPage::result-shape", (0.0, 0.0), 0.0) };
         check_focused(&rendered, &row);
     }
 }
