@@ -1205,7 +1205,12 @@ and nullish capture failures.
 The new TypeScript modules initially had three lint errors and 238 warnings.
 Immutable transformation steps and direct parsed-node traversal remove the errors;
 the formatter left ten warnings,
-whose explicit fixes are awaiting the next scoped lint check.
+which were then corrected.
+The scoped six-file lint reports zero warnings and zero errors.
+Package type checking passes with `GOMAXPROCS=2` after an uncapped TypeScript worker reported
+`failed to create new OS thread (have 156 already; errno=11)`.
+This is a completed bounded invocation,
+not evidence of a permanent thread-allocation fix.
 
 Native preparation events append original source receipts after initial judgment construction.
 The existing source handoff now admits authenticated manager and event growth during preparation,
@@ -1221,9 +1226,22 @@ The configured fixture reaches one successful authored assessment,
 then stops because another event changes the frozen snapshot before nested program execution.
 Its original judgment and inference budget remain closed;
 the freshness guard has not been bypassed.
-Precise event kind,
-revision,
-and pending-count diagnostics are being collected.
+The exact transition is revision 28,
+`tool_call`,
+pending zero,
+to revision 29,
+`tool_execution_update`,
+pending one.
+Pi's original Codemode executor calls its `publish` callback before `ctx.createDeclaredProgram`.
+Its `publish` function returns `onUpdate`'s result,
+but that call does not await the result.
+The generated agent-loop update callback returns the native asynchronous event emission.
+The native callback is therefore still pending when the enclosing program checks its original judgment.
+The next implementation boundary must distinguish incomplete asynchronous event delivery
+from completed callback contributions that change the selected instruction sources.
+It must retain native callback identity,
+complete received results,
+and the same original closed judgment budget.
 No configured-extension consumer success or installed migration completion is claimed.
 Its unit,
 omission,
