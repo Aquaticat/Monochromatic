@@ -2,12 +2,14 @@ import {
   isDeepStrictEqual,
   types
 } from 'node:util';
-import {readHandlerPayloadPublication} from '../../collector/run-prompt-custody-v3/handler-publication.mjs';
-import {prepareNativeToolAssociation} from './tool-source-association.mjs';
+import {readHandlerPayloadPublication,readOriginalToolPublication} from '../../collector/run-prompt-custody-v3/handler-publication.mjs';
+import {copyMessageData} from '../../collector/run-prompt-custody/messages.mjs';
+import {prepareNativeToolAssociation} from './tool-source-association.ts';
 import {
   streamSimple,
   readNativeSerializedPayload,
-  readNativeSystemPayload
+  readNativeSystemPayload,
+  readNativeToolPayload
 } from "./generated/openai-stream.mjs";
 
 export class NativeSourceAssociationError extends Error {}
@@ -378,7 +380,8 @@ export function prepareNativeSourceAssociation({
  })===undefined;
  const previous=options?.onPayload;
  const originalMessages=context.messages;
- const toolAssociation=prepareNativeToolAssociation({sources,dataRecord,denseArray});
+ const toolAssociation=prepareNativeToolAssociation({sources,dataRecord,denseArray,copyToolData:copyMessageData,
+  readToolPublication:readOriginalToolPublication,readToolEmission:readNativeToolPayload});
  let owned=[];
    let unresolvedHandlers=[];
    let called=false;

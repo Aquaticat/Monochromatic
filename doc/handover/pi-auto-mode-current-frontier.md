@@ -168,7 +168,16 @@ The test enters through the maintained policy consumer:
 direct generated-manager and generated-SDK imports exposed an existing owned bootstrap cycle,
 documented in `doc/troubleshooting/pi-sdk-staging.md`.
 Removing that coupling remains native-quality work.
-Serialized tool contribution consumption is still pending.
+The serialized tool consumer now passes the normal SDK fixture with seven accounted partial contributions,
+including both original tool declarations,
+and three executed fixture children.
+Copied-tool,
+copied-tool-array,
+and changed-description controls leave the affected contributions unresolved and execute no children.
+All existing system/payload/transcript substitution controls still pass,
+with zero provider requests.
+The built membership consumer also passes each original-source/publication/input-occurrence contrast.
+The new native tool association module is now being type-checked against these producer boundaries.
 Complete system and tool governing-use accounting is still required before removing the independent obligation.
 
 ## Original native RPC approval verification
