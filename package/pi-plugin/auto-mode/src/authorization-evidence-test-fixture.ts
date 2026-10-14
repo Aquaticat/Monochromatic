@@ -7,14 +7,53 @@ import {
   AuthorizationEvidenceError,
   captureAuthorizationInputs,
 } from '../dist/final/node/index.mjs';
-import type { AuthorizationInputSources, } from './authorization-evidence-types.ts';
+import type {
+  AuthorizationInputSources,
+  AuthorizationSourceView,
+} from './authorization-evidence-types.ts';
+
+/** Mutable fixture condition vocabulary intentionally permits invalid test values. */
+type FixtureAuthorization = { satisfaction: string; channel: string };
+
+/** Original fixture record remains mutable for reference-substitution controls. */
+type FixtureEvidence = {
+  judgment: object;
+  rule: object;
+  source: AuthorizationSourceView;
+  request: object;
+  authorization: FixtureAuthorization;
+};
+
+/** Borrowed methods retain mutable identities for lifecycle tests. */
+type FixtureOwner = {
+  capture: () => Promise<unknown>;
+  assertCurrent: (value: unknown) => void;
+};
+
+/** Explicit fixture boundary supports the repository's isolated declaration emitter. */
+type AuthorizationEvidenceFixture = {
+  readonly rule: object;
+  readonly request: object;
+  readonly judgment: object;
+  readonly source: AuthorizationSourceView;
+  readonly controls: { current: boolean; ownerCurrent: boolean; captures: number };
+  readonly authorization: FixtureAuthorization;
+  readonly evidence: FixtureEvidence;
+  readonly inputs: AuthorizationInputSources;
+  readonly owner: FixtureOwner;
+  readonly options: {
+    readonly judgment: object;
+    readonly inputs: AuthorizationInputSources;
+    readonly ownerFor: () => FixtureOwner;
+  };
+};
 
 /**
  Construct original reference identities and independently mutable owner controls.
 
  @returns fresh fixture without shared session or policy state
  */
-export function createAuthorizationEvidenceFixture() {
+export function createAuthorizationEvidenceFixture(): AuthorizationEvidenceFixture {
   /** Each candidate and judgment has its own opaque identity. */
   const rule = {}, request = {}, judgment = {};
   /** This source view belongs to this request only. */
