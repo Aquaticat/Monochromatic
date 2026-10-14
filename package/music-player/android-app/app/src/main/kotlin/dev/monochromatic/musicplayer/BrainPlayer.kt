@@ -385,8 +385,8 @@ class BrainPlayer(
          * its source and use.
          */
         val snapshot: PlaybackSnapshot = controller.snapshot()
-        // What:     `val playlist: List<MediaItemData> = playlistFor(snapshot)` returns the timeline rows, built again only
-        //           for the positions that changed since the previous call.
+        // What:     `val playlist: List<MediaItemData> = playlistFor(snapshot)` returns the timeline rows, built
+        //           again only for the positions that changed since the previous call.
         // Why:      Building a row per queue position on every pull made a track change cost time proportional to the
         //           queue size; only the row that stopped being current and the row that became current differ.
         //
@@ -582,6 +582,7 @@ class BrainPlayer(
             current = snapshot.currentIndex,
             durationMs = snapshot.durationMs,
         )
+        /** Rows for the new snapshot, sharing every row that did not change. */
         val next: List<MediaItemData> = reuseRows(
             previousItems = rowItems,
             previousRows = rows,

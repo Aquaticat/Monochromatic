@@ -1462,7 +1462,8 @@ class PlayerController(private val engine: AudioEngine) {
          * source and use.
          */
         val display: List<String> = queue.displayPaths()
-        // What:     `snapshotItems.itemsFor(...)` returns the timeline rows from a cache that rebuilds only what changed.
+        // What:     `snapshotItems.itemsFor(...)` returns the timeline rows from a cache that rebuilds only what
+        //           changed.
         // Why:      Building a row per queue position on every media session refresh made a track change cost time
         //           proportional to the queue size; the order, display and URI lists are replaced when they change,
         //           so identical instances mean identical rows, and an artist tag patches only its own rows.

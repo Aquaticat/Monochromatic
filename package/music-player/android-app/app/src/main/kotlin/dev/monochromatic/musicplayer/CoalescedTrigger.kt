@@ -7,8 +7,9 @@
 // ```
 package dev.monochromatic.musicplayer
 
-// What:     `class CoalescedTrigger(schedule, action)` runs `action` once for any number of `request()` calls made before
-//           the scheduled task runs. `schedule` is a function that takes a task and queues it for later (a looper post).
+// What:     `class CoalescedTrigger(schedule, action)` runs `action` once for any number of `request()` calls
+//           made before the scheduled task runs. `schedule` is a function that takes a task and queues it for
+//           later (a looper post).
 // Why:      The brain announces a change several times per track change (load, artist tag, position), and each
 //           announcement used to queue its own full media session refresh. The refresh reads the brain when it runs, so
 //           one refresh after a burst shows the same final state.

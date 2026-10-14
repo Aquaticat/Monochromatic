@@ -100,7 +100,7 @@ class SnapshotItemCache {
         }
     }
 
-    /** Returns [items] with the artist of every row whose URI is in [changed] set from [artists]; other rows are shared. */
+    /** Returns [items] with the artist of each row whose URI is in [changed] set from [artists]; others are shared. */
     private fun patched(
         items: List<SnapshotItem>,
         changed: Set<String>,
@@ -111,16 +111,12 @@ class SnapshotItemCache {
         for (position in items.indices) {
             /** Row at this position. */
             val item: SnapshotItem = items[position]
-            if (item.uri !in changed) {
-                continue
+            if (item.uri in changed && artists[item.uri] != item.artist) {
+                /** Rows being patched: the copy made for an earlier row, or a new copy for this first one. */
+                val target: MutableList<SnapshotItem> = copy ?: ArrayList(items)
+                target[position] = item.copy(artist = artists[item.uri])
+                copy = target
             }
-            /** Tag now on record for the row's track, or null when it was evicted. */
-            val artist: String? = artists[item.uri]
-            if (artist == item.artist) {
-                continue
-            }
-            val target: MutableList<SnapshotItem> = copy ?: ArrayList(items).also { made -> copy = made }
-            target[position] = item.copy(artist = artist)
         }
         return copy ?: items
     }
