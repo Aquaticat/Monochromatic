@@ -386,6 +386,19 @@ for VFIO passthrough.
   1A after BIOS 2102, code 62 after BIOS 1715, the MediaTek Wi-Fi adapter disappearing after sleep (July 2026), and a
   Reddit comment that ASUS acknowledged a CPU and board burn-up problem in January 2026 (not verified). Both vendors
   show memory training trouble, which matches the user's own EXPO errors.
+- The user confirmed (about 22:50 EDT) that the ROG Crosshair X870E Hero shows a code display.
+- Wi-Fi chips and Linux (searched about 22:55 EDT). X870E Taichi: MediaTek MT7925 (TechPowerUp; a Spanish review calls
+  it RZ717, the module name); the Taichi Lite chip was not stated by any source found, probably the same module but
+  unverified; the Lite wired LAN is a Realtek RTL8126, and a Reddit title reports a Lite user without working wired
+  networking on Pop!_OS (cause not read). Hero: Qualcomm QCNCM865 or MediaTek MT7927 by unit (ASUS). Kernel
+  database (cateee.net lkddb, CONFIG_MT7925E): `mt7925e` lists MT7925 (14c3:7925, RZ717 14c3:0717) from 6.7 and
+  adds MT7927 (14c3:7927) and 14c3:6639 in 7.2; before that the MT7927 needed an out-of-tree DKMS package (an
+  Ubuntu gist on a Hero), and the mainline patch series was posted in March 2026. Presence of an ID is not proof it
+  works on `7.2.9-ogc3.1`. Qualcomm QCNCM865 (WCN7850) uses `ath12k`, in the kernel since 6.3, with Framework and
+  Ubuntu reports of it working and one Ubuntu 24.04 report of it failing for lack of current firmware. A Linux review
+  of a Gigabyte board with an MT7925 module found its Bluetooth not detected. Realtek RTL8922AE boards carry the OGC
+  kernel regression report from the earlier note. Result: Wi-Fi does not separate the Taichi Lite from the Hero on
+  paper; both need a test on the real kernel.
 - Not verified: IOMMU group layouts of any candidate on the user's CPU and kernel, BIOS stability reports for 2026
   firmware, the 4000D's expansion slot count and cooler height limit against the NH-D15S, and the power supply.
 - A new board does not prove the memory errors at EXPO 6000 are the board's: the CPU memory controller and the DIMMs
