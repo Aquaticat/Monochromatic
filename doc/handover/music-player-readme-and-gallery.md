@@ -65,8 +65,26 @@ It is the only Android image that shows the Search page (checked with `rg` over 
 seven: they show the library, player, track menu and Settings pages, where Search is only a header button).
 The other seven were not retaken, because none of them draws a surface that D126 changed.
 The README oid of the new file equals its sha256 (`b83ee72ae828`), and all twenty embedded oids were checked again.
-The desktop Search images (`desktop-search-light.png` and `desktop-search-dark.png`) show the old page until the
-Slint port of D126 lands, and must be retaken then.
+The desktop Search images (`desktop-search-light.png` and `desktop-search-dark.png`) showed the old page until the
+Slint port of D126 landed.
+
+On 2026-10-14 both were retaken from the release build of branch `feat/desktop-search-restyle` (the D126 desktop port,
+on top of `a228fca025`), in the nested compositor, with the invented 35-track library and accent `4E5E8B`.
+The sequence was the one in "Sequence": `Alt+2`, five `Down` taps and `Enter` on `03 Paper Lanterns`, which since D124
+only selects the row, so a second `Enter` on the current row started playback (a transport Play click would do the
+same; no row click), then a click on the seek bar (to 1:21 and 1:23), a click on the folder row to clear the focus ring,
+the track menu (`Menu`, `Escape`), the hint badges (dark only), `Ctrl+F` and `lan`.
+The routing proof showed one output stream with one link, to the private null sink.
+The new frames differ from the committed ones only in the Search page (the right half) and in a 156 by 44 pixel
+box of the deck (the elapsed time and the seek knob), at a 3 percent color tolerance.
+Two details of the method changed since the first retake: the ui_state log line does not follow typing, so wait with a
+sleep after `type` and read the screenshot instead of `search_query`; and the compositor's process lookup is
+`pgrep --exact music-player`, so a release binary copied under another name starts but is never found, and the routing
+proof then reports zero streams (keep the binary named `music-player`, in its own directory).
+The new files are `31bce84b95e2` (light, 58 502 bytes) and `3a69f0b9b347` (dark, 59 450 bytes) by their sha256, the
+README oids were changed to match (`git cli-git fix --policy markdown/autofix` did not rewrite anything), and all
+twenty embedded oids were checked against the files again (zero mismatches).
+The R2 check task has not run, since the objects reach R2 on push.
 
 Last updated: 2026-10-14.
 
@@ -109,8 +127,9 @@ Check the routing once after starting a track.
 
 Wide window, 1000 by 800 pixels:
 wait for the player state, wait about four seconds for the analysis to settle, play `03 Paper Lanterns` (the first
-gallery clicked its row; the 2026-10-14 retake used `Alt+2`, five `Down` taps and `Enter`, because a click on an
-unselected row is changing to select without playing), click the seek bar at (190, 648) for about 1:20, click the
+gallery clicked its row; the 2026-10-14 retakes used `Alt+2`, five `Down` taps and `Enter`, because a click on an
+unselected row only selects it, then, since D124 made Enter on an unselected row select as well, a second `Enter` on the
+current row to play), click the seek bar at (190, 648) for about 1:20, click the
 folder row at (100, 118) to clear the focus ring, and take the two-pane shot.
 Wait for the intended `ui_state` (`waitState`, or a poll of `last` for the latest line, since `waitState` without
 `after` also matches older lines) before every shot.
