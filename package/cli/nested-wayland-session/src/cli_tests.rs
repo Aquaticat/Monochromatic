@@ -196,7 +196,8 @@ fn invalid_option_values_are_rejected() {
     }
 }
 
-/// The launcher log flag is off by default and turns on alone, without a color scheme.
+/// The launcher log flag is off by default and turns on alone,
+/// without a color scheme.
 #[test]
 fn launcher_log_flag_is_off_by_default_and_parses_alone() {
     assert!(!parse_args(&args(&["app"])).unwrap().launcher_log);
@@ -240,7 +241,8 @@ fn accent_color_option_takes_six_hex_digits() {
     }
 }
 
-/// Headless is off by default and turns on only with the flag, before the child command.
+/// Headless is off by default and turns on only with the flag,
+/// before the child command.
 #[test]
 fn headless_flag_is_off_by_default_and_opt_in() {
     assert!(!parse_args(&args(&["app"])).unwrap().headless);
@@ -250,7 +252,8 @@ fn headless_flag_is_off_by_default_and_opt_in() {
     assert_eq!(config.child_command, ["app"]);
 }
 
-/// The flag belongs to the parent only until the child command begins, with or without the separator.
+/// The flag belongs to the parent only until the child command begins,
+/// with or without the separator.
 #[test]
 fn headless_after_the_child_command_is_forwarded_to_the_child() {
     let config = parse_args(&args(&["app", "--headless"])).unwrap();
@@ -264,7 +267,8 @@ fn headless_after_the_child_command_is_forwarded_to_the_child() {
     assert_eq!(both.child_command, ["app", "--headless"]);
 }
 
-/// The new options leave the child command alone, like every other parent option.
+/// The new options leave the child command alone,
+/// like every other parent option.
 #[test]
 fn new_options_stop_at_the_child_command() {
     let config = parse_args(&args(&["--notifications", "kde", "app", "--notifications", "none"])).unwrap();

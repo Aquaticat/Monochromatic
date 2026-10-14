@@ -209,7 +209,7 @@ pub fn init_backend(
     //           registration.
     return Ok((
         BackendPieces {
-            backend: RenderBackend::Winit(backend),
+            backend: RenderBackend::Winit(Box::new(backend)),
             output,
             dmabuf_state,
             dmabuf_global,

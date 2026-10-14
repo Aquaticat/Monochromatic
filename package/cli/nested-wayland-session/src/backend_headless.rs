@@ -5,7 +5,8 @@
 //!  and the dmabuf protocol state.
 //!
 //! Nothing here connects to a parent display,
-//!  so the session runs on a machine with no Wayland or X11 session (CI, SSH)
+//!  so the session runs on a machine with no Wayland or X11 session (CI,
+//! SSH)
 //!  and never opens a window on a desktop.
 //! The nested window path inherits the parent compositor's EGL device;
 //!  this path has no parent to inherit from,
@@ -14,7 +15,14 @@
 //!  and advertises exactly the format and modifier pairs that display can import.
 //!  A client therefore allocates its dmabufs on the GPU that imports them.
 
+/// Error context for the EGL setup steps,
+/// and the result type of `init_headless_backend`.
 use anyhow::{Context, Result};
+/// The surfaceless EGL display,
+/// device,
+/// and context,
+/// the GLES renderer,
+/// and the display handle.
 use smithay::{
     backend::{
         egl::{native::EGLSurfacelessDisplay, EGLContext, EGLDevice, EGLDisplay},
@@ -22,8 +30,14 @@ use smithay::{
     },
     reexports::wayland_server::DisplayHandle,
 };
+/// Log which device the surfaceless display opened on,
+/// and warn about a software rasterizer.
 use tracing::{info, warn};
 
+/// The shared output and dmabuf builders,
+/// the config,
+/// the headless backend types,
+/// and the state carrier.
 use crate::{
     backend_parts::{build_dmabuf, build_output},
     cli::Config,
@@ -95,7 +109,10 @@ pub fn init_headless_backend(display_handle: &DisplayHandle, config: &Config) ->
     }
 
     return Ok(BackendPieces {
-        backend: RenderBackend::Headless(HeadlessBackend::new(renderer, (physical_width, physical_height).into())),
+        backend: RenderBackend::Headless(Box::new(HeadlessBackend::new(
+            renderer,
+            (physical_width, physical_height).into(),
+        ))),
         output,
         dmabuf_state,
         dmabuf_global,

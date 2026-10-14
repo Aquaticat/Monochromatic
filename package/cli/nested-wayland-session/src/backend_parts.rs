@@ -7,9 +7,16 @@
 //!  so screenshots and recordings (which render the output off screen and flip the rows on encode)
 //!  are identical in both.
 //! The dmabuf global advertises the formats and modifiers of the renderer's own EGL display
-//!  and, when the display names a DRM render node, the v4 default feedback for that node.
+//!  and,
+//! when the display names a DRM render node,
+//! the v4 default feedback for that node.
 
+/// Error context for the v4 feedback build,
+/// and the result type of `build_dmabuf`.
 use anyhow::{Context, Result};
+/// The output and dmabuf types,
+/// the EGL device query,
+/// and the renderer traits both builders use.
 use smithay::{
     backend::{
         egl::EGLDevice,
@@ -20,8 +27,10 @@ use smithay::{
     utils::Transform,
     wayland::dmabuf::{DmabufFeedback, DmabufFeedbackBuilder, DmabufGlobal, DmabufState},
 };
+/// Report the dmabuf version advertised and the fallback to version 3.
 use tracing::{info, warn};
 
+/// The nominal refresh rate and the geometry the output is built from.
 use crate::{backend::OUTPUT_REFRESH_MHZ, screen_geometry::ScreenGeometry};
 
 /// Build the nested output for `geometry` and register its `wl_output` global.

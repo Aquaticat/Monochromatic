@@ -1,16 +1,28 @@
 //! The two render backends behind one handle:
 //!  the nested winit window and the surfaceless headless renderer.
 //!
-//! Everything that is not the display itself (dmabuf import, screenshot readback,
-//!  recording, input, the control socket) reaches the GPU through `renderer()`
+//! Everything that is not the display itself (dmabuf import,
+//! screenshot readback,
+//!  recording,
+//! input,
+//! the control socket) reaches the GPU through `renderer()`
 //!  and is the same in both modes.
 //!  Only the parts that talk to a parent window differ:
-//!  the window's scale, its size request, and its redraw request.
+//!  the window's scale,
+//! its size request,
+//! and its redraw request.
 //!  `window()` answers those for both modes,
-//!  so a headless session has no parent scale (1.0), takes any size at once, and ignores redraw requests.
+//!  so a headless session has no parent scale (1.0),
+//! takes any size at once,
+//! and ignores redraw requests.
 
+/// The headless framebuffer size is changed through a shared borrow,
+/// like winit sizes its window.
 use std::cell::Cell;
 
+/// The renderer and winit backend types,
+/// winit sizes,
+/// and the Smithay size types.
 use smithay::{
     backend::{renderer::gles::GlesRenderer, winit::WinitGraphicsBackend},
     reexports::winit::{
@@ -19,32 +31,40 @@ use smithay::{
     },
     utils::{Physical, Size},
 };
+/// Log each headless size change.
 use tracing::debug;
 
+/// The mode tag `kind()` returns.
 use crate::backend_select::BackendKind;
 
 /// The surfaceless renderer and the framebuffer size the screen currently has.
 ///
 /// What:
 ///      `pub struct HeadlessBackend { ... }`.
-///  `size` sits in a `Cell` so `window().request_inner_size(..)`, which borrows the backend read-only
-///  as the winit window does, can store the new size.
+///  `size` sits in a `Cell` so `window().request_inner_size(..)`,
+/// which borrows the backend read-only
+///  as the winit window does,
+/// can store the new size.
 /// Why:
-///       With no window, the framebuffer size is only a number the output mode must agree with.
+///       With no window,
+/// the framebuffer size is only a number the output mode must agree with.
 pub struct HeadlessBackend {
     /// GLES renderer on the surfaceless EGL display of the DRM render node.
     renderer: GlesRenderer,
-    /// Physical framebuffer size, the logical screen size times the output scale.
+    /// Physical framebuffer size,
+    /// the logical screen size times the output scale.
     size: Cell<Size<i32, Physical>>,
 }
 
+/// Construction of the headless backend.
 impl HeadlessBackend {
     /// Wrap a renderer with its starting framebuffer size.
     ///
     /// What:
     ///      `pub fn new(renderer: GlesRenderer, size: Size<i32, Physical>) -> Self`.
     /// Why:
-    ///       The caller builds the EGL display and renderer; this only owns them.
+    ///       The caller builds the EGL display and renderer;
+    /// this only owns them.
     pub fn new(renderer: GlesRenderer, size: Size<i32, Physical>) -> Self {
         return Self { renderer, size: Cell::new(size) }
     }
@@ -55,37 +75,61 @@ impl HeadlessBackend {
 /// What:
 ///      `pub enum RenderBackend { Winit(..), Headless(..) }`.
 /// Why:
-///       `Compositor::backend` has this type, so the rest of the crate needs no knowledge of the mode.
+///       `Compositor::backend` has this type,
+/// so the rest of the crate needs no knowledge of the mode.
 pub enum RenderBackend {
-    /// A winit window inside a parent session, with its GLES renderer.
-    Winit(WinitGraphicsBackend<GlesRenderer>),
-    /// Surfaceless EGL; nothing is ever presented.
-    Headless(HeadlessBackend),
+    /// A winit window inside a parent session,
+    /// with its GLES renderer.
+    /// Boxed so the enum stays small next to the large renderer state.
+    Winit(
+        /// The window and renderer.
+        Box<WinitGraphicsBackend<GlesRenderer>>,
+    ),
+    /// Surfaceless EGL;
+    /// nothing is ever presented.
+    /// Boxed for the same reason.
+    Headless(
+        /// The surfaceless renderer and the framebuffer size.
+        Box<HeadlessBackend>,
+    ),
 }
 
 /// The parent window as far as the screen code needs it.
 ///
 /// What:
 ///      `pub enum HostWindow<'a> { Winit(&'a Window), Headless(&'a Cell<Size<i32, Physical>>) }`.
-///  A borrowed view; copying it is free.
+///  A borrowed view;
+/// copying it is free.
 /// Why:
-///       `screen::apply` asks the parent for a size, reads the scale, and requests a redraw;
+///       `screen::apply` asks the parent for a size,
+/// reads the scale,
+/// and requests a redraw;
 ///  the headless answers are fixed and local.
 #[derive(Clone, Copy)]
 pub enum HostWindow<'a> {
     /// The nested winit window.
-    Winit(&'a Window),
+    Winit(
+        /// The winit window.
+        &'a Window,
+    ),
     /// The headless framebuffer size cell.
-    Headless(&'a Cell<Size<i32, Physical>>),
+    Headless(
+        /// The cell holding the current framebuffer size.
+        &'a Cell<Size<i32, Physical>>,
+    ),
 }
 
+/// The window operations the screen code performs,
+/// answered per mode.
 impl HostWindow<'_> {
-    /// The parent output's scale factor, always 1.0 without a parent.
+    /// The parent output's scale factor,
+    /// always 1.0 without a parent.
     ///
     /// What:
     ///      `pub fn scale_factor(&self) -> f64`.
     /// Why:
-    ///       Headless sizes are in physical pixels already, so the logical request equals the physical size.
+    ///       Headless sizes are in physical pixels already,
+    /// so the logical request equals the physical size.
     pub fn scale_factor(&self) -> f64 {
         return match self {
             Self::Winit(window) => window.scale_factor(),
@@ -97,9 +141,12 @@ impl HostWindow<'_> {
     ///
     /// What:
     ///      `pub fn request_inner_size(&self, size: LogicalSize<u32>) -> Option<PhysicalSize<u32>>`.
-    ///  Headless applies it at once, never below one pixel, and returns it.
+    ///  Headless applies it at once,
+    /// never below one pixel,
+    /// and returns it.
     /// Why:
-    ///       Same contract as winit's call, so `screen::apply` reads the result back through `window_size()`.
+    ///       Same contract as winit's call,
+    /// so `screen::apply` reads the result back through `window_size()`.
     pub fn request_inner_size(&self, size: LogicalSize<u32>) -> Option<PhysicalSize<u32>> {
         return match self {
             Self::Winit(window) => window.request_inner_size(size),
@@ -119,7 +166,8 @@ impl HostWindow<'_> {
     ///      `pub fn request_redraw(&self)`.
     ///  A no-op without a window.
     /// Why:
-    ///       The headless frame timer sends frame callbacks on its own, and screenshots render on demand.
+    ///       The headless frame timer sends frame callbacks on its own,
+    /// and screenshots render on demand.
     pub fn request_redraw(&self) {
         if let Self::Winit(window) = self {
             window.request_redraw();
@@ -127,6 +175,8 @@ impl HostWindow<'_> {
     }
 }
 
+/// Access to the renderer and the window facade,
+/// whichever mode is running.
 impl RenderBackend {
     /// Which mode this backend is.
     ///
@@ -141,7 +191,10 @@ impl RenderBackend {
         }
     }
 
-    /// The GLES renderer, for dmabuf import, screenshots, and recordings.
+    /// The GLES renderer,
+    /// for dmabuf import,
+    /// screenshots,
+    /// and recordings.
     ///
     /// What:
     ///      `pub fn renderer(&mut self) -> &mut GlesRenderer`.
@@ -180,15 +233,17 @@ impl RenderBackend {
         }
     }
 
-    /// The winit backend, when this session has one.
+    /// The winit backend,
+    /// when this session has one.
     ///
     /// What:
     ///      `pub fn as_winit_mut(&mut self) -> Option<&mut WinitGraphicsBackend<GlesRenderer>>`.
     /// Why:
-    ///       Only the live redraw binds and submits a window framebuffer; headless presents nothing.
+    ///       Only the live redraw binds and submits a window framebuffer;
+    /// headless presents nothing.
     pub fn as_winit_mut(&mut self) -> Option<&mut WinitGraphicsBackend<GlesRenderer>> {
         return match self {
-            Self::Winit(winit) => Some(winit),
+            Self::Winit(winit) => Some(&mut **winit),
             Self::Headless(_) => None,
         }
     }

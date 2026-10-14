@@ -4,7 +4,8 @@ use std::ffi::OsStr;
 
 use super::*;
 
-/// Every combination of the three parent display variables, present or absent.
+/// Every combination of the three parent display variables,
+/// present or absent.
 fn every_parent_combination() -> Vec<ParentEnvironment> {
     let mut combinations = Vec::new();
     for bits in 0..8u8 {
@@ -37,7 +38,8 @@ fn absent_parent_display_does_not_select_headless() {
     assert_eq!(select_backend(false, absent).kind, BackendKind::NestedWinit);
 }
 
-/// The flag selects headless with or without a parent display, and reports an ignored parent.
+/// The flag selects headless with or without a parent display,
+/// and reports an ignored parent.
 #[test]
 fn headless_flag_selects_headless_for_every_parent_combination() {
     for parent in every_parent_combination() {
@@ -47,7 +49,8 @@ fn headless_flag_selects_headless_for_every_parent_combination() {
     }
 }
 
-/// Empty values count as absent, like libwayland and Xlib treat them.
+/// Empty values count as absent,
+/// like libwayland and Xlib treat them.
 #[test]
 fn empty_values_count_as_absent() {
     let parent = ParentEnvironment::from_values(Some(OsStr::new("")), None, Some(OsStr::new("")));

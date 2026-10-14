@@ -165,9 +165,9 @@ pub fn run(config: Config) -> Result<i32> {
     //           metadata (`_`), and `&mut Compositor`. `.map_err(...)?` converts a
     //           registration error into `anyhow`.
     // Why:      Route resize / redraw / close events into the compositor.
-    if let Some(winit) = winit {
+    if let Some(winit_source) = winit {
         loop_handle
-            .insert_source(winit, |event, _, event_state: &mut Compositor| {
+            .insert_source(winit_source, |event, _, event_state: &mut Compositor| {
                 handle_winit_event(event, event_state);
             })
             .map_err(|err| anyhow::anyhow!("registering the winit source failed: {err}"))?;

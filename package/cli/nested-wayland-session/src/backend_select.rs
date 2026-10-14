@@ -8,15 +8,19 @@
 //!  including scripts and machines with no display,
 //!  because a person can restore that window and inspect what the hosted app is doing.
 
+/// Environment values are raw OS strings,
+/// not necessarily UTF-8.
 use std::ffi::OsStr;
 
+/// Record the selected backend in the log.
 use tracing::info;
 
 /// Which backend renders and paces the nested screen.
 ///
 /// What:
 ///      `pub enum BackendKind { NestedWinit, Headless }`.
-///  A plain two-variant tag, `Copy` so it passes by value.
+///  A plain two-variant tag,
+/// `Copy` so it passes by value.
 /// Why:
 ///       `run` matches on it once to build the winit window or the surfaceless renderer.
 ///
@@ -26,9 +30,12 @@ use tracing::info;
 /// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum BackendKind {
-    /// A winit window inside the parent Wayland session (or X11 session), minimized on launch.
+    /// A winit window inside the parent Wayland session (or X11 session),
+    /// minimized on launch.
     NestedWinit,
-    /// Surfaceless EGL on the DRM render node; no window, no parent display.
+    /// Surfaceless EGL on the DRM render node;
+    /// no window,
+    /// no parent display.
     Headless,
 }
 
@@ -36,7 +43,8 @@ pub enum BackendKind {
 ///
 /// What:
 ///      `pub struct ParentEnvironment { ... }`.
-///  Three booleans, true only for a variable that is set and not empty.
+///  Three booleans,
+/// true only for a variable that is set and not empty.
 /// Why:
 ///       Selection and the failure message take it as input,
 ///  so tests cover "parent present" and "parent absent" without touching the real environment.
@@ -46,10 +54,12 @@ pub struct ParentEnvironment {
     pub wayland_display: bool,
     /// `WAYLAND_SOCKET` hands over an already connected parent socket.
     pub wayland_socket: bool,
-    /// `DISPLAY` names a parent X11 server, which winit falls back to when it is compiled in.
+    /// `DISPLAY` names a parent X11 server,
+    /// which winit falls back to when it is compiled in.
     pub x11_display: bool,
 }
 
+/// Reading and querying the parent display variables.
 impl ParentEnvironment {
     /// Read the three variables from this process's environment.
     ///
@@ -57,7 +67,8 @@ impl ParentEnvironment {
     ///      `pub fn from_process() -> Self`.
     ///  `var_os` returns the raw value without requiring UTF-8.
     /// Why:
-    ///       The only place that touches the real environment, so everything else stays testable.
+    ///       The only place that touches the real environment,
+    /// so everything else stays testable.
     pub fn from_process() -> Self {
         return Self::from_values(
             std::env::var_os("WAYLAND_DISPLAY").as_deref(),
@@ -70,7 +81,8 @@ impl ParentEnvironment {
     ///
     /// What:
     ///      `pub fn from_values(wayland_display: Option<&OsStr>, ...) -> Self`.
-    ///  An empty value counts as absent, as it does for libwayland and Xlib.
+    ///  An empty value counts as absent,
+    /// as it does for libwayland and Xlib.
     /// Why:
     ///       Lets tests pass literals instead of mutating the process environment.
     pub fn from_values(
@@ -91,7 +103,8 @@ impl ParentEnvironment {
     /// What:
     ///      `pub fn any_display(&self) -> bool`.
     /// Why:
-    ///       The nested window needs one of them; the failure message names `--headless` only without any.
+    ///       The nested window needs one of them;
+    /// the failure message names `--headless` only without any.
     pub fn any_display(&self) -> bool {
         return self.wayland_display || self.wayland_socket || self.x11_display
     }
@@ -112,7 +125,8 @@ pub struct BackendChoice {
     pub ignored_parent_display: bool,
 }
 
-/// Choose the backend: the nested window unless `--headless` was given.
+/// Choose the backend:
+/// the nested window unless `--headless` was given.
 ///
 /// What:
 ///      `pub fn select_backend(headless: bool, parent: ParentEnvironment) -> BackendChoice`.
@@ -150,7 +164,8 @@ pub fn select_backend(headless: bool, parent: ParentEnvironment) -> BackendChoic
 ///  Returns the original cause alone when a parent display variable is present,
 ///  and the cause plus the `--headless` option when none is.
 /// Why:
-///       A machine with no display (CI, SSH) otherwise sees only a winit connection error and no way forward.
+///       A machine with no display (CI,
+/// SSH) otherwise sees only a winit connection error and no way forward.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

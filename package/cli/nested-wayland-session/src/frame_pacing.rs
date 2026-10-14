@@ -188,7 +188,8 @@ pub struct FramePacing {
     last_presented: Instant,
     /// True between the first fallback tick and the parent's next presentation.
     fallback_active: bool,
-    /// Which backend the session runs on; decides when the timer sends callbacks.
+    /// Which backend the session runs on;
+    /// decides when the timer sends callbacks.
     backend: BackendKind,
 }
 
@@ -210,12 +211,14 @@ impl FramePacing {
         return Self::for_backend(BackendKind::NestedWinit, now);
     }
 
-    /// Start pacing for `backend`, with the parent considered current as of `now`.
+    /// Start pacing for `backend`,
+    /// with the parent considered current as of `now`.
     ///
     /// What:
     ///      `pub fn for_backend(backend: BackendKind, now: Instant) -> Self`.
     /// Why:
-    ///       The headless backend never has a parent presentation, so its timer owns the cadence.
+    ///       The headless backend never has a parent presentation,
+    /// so its timer owns the cadence.
     pub fn for_backend(backend: BackendKind, now: Instant) -> Self {
         return Self { last_presented: now, fallback_active: false, backend };
     }

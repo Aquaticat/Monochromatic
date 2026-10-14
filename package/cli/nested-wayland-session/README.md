@@ -122,7 +122,8 @@ At run time (present on virtually every Linux desktop):
  `--accent-color`,
  `--notifications`,
  or `--launcher-log` is used,
- and either a running parent session (the default is a nested winit client of an existing compositor)
+ and either a running parent session
+(the default is a nested winit client of an existing compositor)
 or, with `--headless`,
 a DRM render node that Mesa's `EGL_MESA_platform_surfaceless` platform can open
 (a readable `/dev/dri/renderD*`).
