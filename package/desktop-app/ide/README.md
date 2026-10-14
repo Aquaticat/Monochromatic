@@ -1375,11 +1375,15 @@ so reload anchoring and navigation see the line the reader is looking at.
 
 Shaped rows are cached by line (`src/shaped_row_cache.rs`) for one text revision and display scale.
 A re-centered tile shapes only the lines it did not hold,
-and the cache keeps at most `ROW_CACHE_LINES` (256) lines, evicting those farthest from the view.
+and the cache keeps at most `ROW_CACHE_LINES` (512) lines, evicting those farthest from the view;
+the bound is above the lines one window-thread step for a new width may bring in (`REWRAP_LINES`),
+so a step never evicts its own lines.
 A change of syntax styles clears the cache (`TextShaper::forget_rows`).
 
-A re-center caused by the reader's own scrolling, or by a new wrap width, is built on a worker thread
-(`src/native/tile_build.rs`).
+A re-center caused by the reader's own scrolling is built on a worker thread
+(`src/native/tile_build.rs`);
+so is the tile for a new wrap width when the window thread's allowance does not cover it
+(see [A new width on the window thread](#a-new-width-on-the-window-thread)).
 The window thread queues an owned job with a document snapshot, the styles, the row map, and the paint inputs.
 The worker keeps its own `TextShaper` and `TextRaster`, and it builds only the newest queued job.
 A `slint::Timer` polls the worker every 20 ms (`src/native/tile.rs`).
@@ -1389,7 +1393,7 @@ and the image, its offset, the line numbers, and the rectangles arrive in one st
 A result that no longer matches is discarded, and the next scroll queues a new job.
 Every other tile change builds on the window thread as before:
 edits, reloads, selections, find, theme, scale, annotation changes, keyboard and pointer moves,
-and reveal or follow.
+reveal or follow, and a new wrap width within the allowance.
 
 `overscan_tile_tests` counts renders, painted tiles, shaped rows, and images on the window thread.
 All four stay at zero while the view moves inside the tile and during a scroll re-center,
@@ -1480,7 +1484,8 @@ A new wrap width, from a window or sidebar resize, makes the worker break its ke
 instead of shaping them.
 A line whose tabs are not all on its first visual row is shaped again, because a tab widened to its stop
 depends on where the row broke.
-The displayed tile stays on screen until the tile for the new width arrives.
+The worker does this for the whole file after the window thread has taken the lines near the view
+(see [A new width on the window thread](#a-new-width-on-the-window-thread)).
 Measured on 2026-10-11, breaking 50,000 kept layouts again took 40 to 80 ms.
 
 Tab correction on a wrapped line repeats shaping until the corrections agree (`layout_wrapped_with_tabs`).
@@ -1557,6 +1562,137 @@ the projection of 100,000 characters took 0.5 s in the same build, and in the re
 Shaping and breaking a line of 100,000 characters without tabs takes 50 to 70 ms in the release profile,
 about 1.2 s in a debug build, and the window thread does it once, when the tile that holds the line is first built.
 
+#### A new width on the window thread
+
+A resize must not show one frame of text wrapped for the old width.
+Slint runs the change handlers inside the draw of a frame,
+so the viewport-changed callback of a new window or sidebar size runs before the frame at that size is drawn,
+and the window thread breaks the lines near the view again and paints the tile for the new width in that same draw
+(`src/native/rewrap.rs`, `render::render`).
+
+- `place_scrolled` marks `State::rewrap` when the wrap width differs from the width of the displayed tile.
+  The next render asks `rewrap::begin` for an `Allowance`, which holds at most `REWRAP_LINES` (384) lines
+  and `REWRAP_WORK` (24,000) units of work.
+- A unit of work is a character shaped or broken, as `ide_app::shaped_text::line_work` counts it:
+  `LINE_WORK` (32) for each line, plus its length for each shaping.
+  A line with a tab counts one shaping and one more for each corrective pass of its tabs (`passes_for`),
+  and a line over `WORK_SCAN_LIMIT` (65,536) characters counts as more than any allowance.
+  A line the row cache already holds at the new width costs nothing.
+  Every other line is charged before it is shaped or broken again (`TextShaper::measure_lines_within` and `Budget`),
+  so a line that does not fit stops the step before any work is done on it.
+- Within the allowance the window thread measures the lines of the requested tile at the new width:
+  kept rows are broken again without shaping (`TextShaper::rebreak`), and the others are shaped.
+  Their heights go into the table, `rows::settle` brings the map up to date with the view kept still,
+  and the tile is painted and shown in the same render.
+  Selection, find rectangles, the caret, the gutter rows, and the annotation blocks come from the same render,
+  so they agree with the new width in the first frame.
+- Where the bound would be exceeded, the change goes to the tile worker as before and the displayed tile stays on
+  screen until the worker's tile arrives (`rewrap::defer`, which logs `left a new width to the tile worker`).
+  That happens when the requested tile holds more than `REWRAP_LINES` lines
+  (a window about 3,300 px tall over lines of one row each),
+  when its lines need more than `REWRAP_WORK` units (two lines of 12,000 characters, one line of 200,000 characters,
+  or wrapped lines with tabs), and when its raster would pass `REWRAP_RASTER_BYTES` (32 MiB, half of the limit of a
+  tile the worker builds).
+- The worker's whole-file measurement for the new width runs after the step as it did before,
+  and ends at the heights of a fresh shaping.
+  It never touches the lines of the displayed tile, so a tile that arrives later from the worker asks for the
+  measurement again (`pass_posted` is cleared in `tile::apply`) and the lines only the old tile held are measured then.
+
+`wrap_resize_tests` (debug counters, no wall time) asserts the structure.
+After one change of width the displayed tile holds the new width and has no row wider than the text area
+except a row of one token that has no break opportunity,
+and the gutter, selection, find rectangles, caret, and annotation blocks agree with a fresh shaping at that width.
+The step is bounded in lines shaped or broken, in work charged, and in rasters painted for 2,000 lines of 600
+characters, one line of 200,000 characters, a view taller than the clip cap (a window of `tile_cap` plus 400 px
+at a text width of 3,600 px), a window about 3,300 px tall, and a file of 50,000 lines.
+A change over any bound is left to the worker with nothing shaped on the window thread beyond the first refused line.
+The guards `resize-on-window-thread`, `drawn-frame-after-resize`, `rewrap-lines-bound`, `rewrap-work-budget`,
+`rewrap-tab-passes`, `rewrap-raster-bound`, `rewrap-view-past-cap`, `pass-again-after-new-width`,
+and (annotations) `deferred-width-stays-on-worker` and `discarded-tile-asked-again`
+remove each rule in a disposable copy and must make the named test fail.
+
+Measured on 2026-10-13 with the release bundle (sha1 `2d8e01e9`, built from commit `f851815582`; the later commits
+change only tests, the guard script, and a subtraction in `Allowance::lines` and `Allowance::work` that differs
+only on overflow) in the nested compositor 0.4.0,
+at 1100 by 660 pixels, the frame recorder at 60 frames a second and synthetic input through the control socket.
+The drag goes from 1100 to 600 pixels and back in steps of 25 pixels, 16 ms apart, in two sweeps.
+Six sessions of each of the two files, none discarded (the recorder dropped nothing), at a host load of 12 to 20.3
+(one-minute average at the start of each session); the 20 to 100 band was reached by 2 of 12 sessions, at 20.3.
+Run-to-run spread comes first, because it is as large as most differences:
+the longest gap between painted frames of one build and file varied from 17 to 83 ms (code50k, median 33.3)
+and from 17 to 43 ms (long2000, median 25.7).
+The earlier build (`final`, the worker-only tile) varied from 17.7 to 50 ms and from 17.3 to 60 ms in the same protocol.
+By load band:
+
+- Below 20: `final` had 3 sessions per file, longest gap median 33.3 ms (17.7 to 33.3) on code50k and 17.3 ms
+  (17.3 to 43.7) on long2000;
+  the new build had 5 sessions per file, median 33.3 ms (17 to 83) and 33.3 ms (17.7 to 42.7).
+- 20 to 100: `final` had 2 sessions per file (37.3 and 50 ms; 33.3 and 59.7 ms); the new build had 1 session per file
+  (35.7 ms and 17 ms).
+  Too few sessions to compare in this band.
+- No frame was blank or flat in any session, the last frame fit the width in every one,
+  and the longest gap is no worse than that of the worker-only tile within the spread.
+  No claim is made here that either build is smoother.
+- Frames whose text does not fit the width (the detector of the earlier report: ink in the last two columns, ink
+  stopping 120 px short of the edge, or a flat or empty frame): 64 to 79 of about 100 frames per session on code50k and
+  72 to 78 on long2000, against 72 to 81 and 73 to 79 for `final`.
+  The longest stretch of such frames was 635 to 1,319 ms (new) against 384 to 1,371 ms (`final`).
+  This measure did not change.
+- The step itself, from the allowance to the last setter of the frame (log line
+  `window thread re-wrapped for a new width`; 42 to 79 steps per session, none left to the worker,
+  no worker tile applied), in the five sessions of each file other than round 5:
+  on code50k the median was 3.2 to 4.9 ms, the 95th percentile 8.0 to 20.5 ms,
+  and the largest 16.9 to 60.0 ms; on long2000 the median was 6.0 to 6.9 ms, the 95th percentile 10.7 to 12.7 ms,
+  and the largest 18.3 to 29.0 ms.
+  The first step of a session took 8.1 to 21.2 ms (code50k) and 13.1 to 17.4 ms (long2000).
+  The most one step charged was 70 lines and 5,702 units (code50k) and 13 lines and 8,229 units (long2000).
+  One session of each file (round 5) ran with a slower window thread, 45 and 42 steps, median 9.2 and 15.4 ms,
+  largest 64 and 91 ms, recorder at 52.5 and 57.3 frames a second, while the load average read 14 to 16;
+  the cause was not found.
+  A step takes a few milliseconds typically and up to a few frame periods at the largest,
+  so it can still make one frame late.
+
+A second series on 2026-10-13 ran after the host's CPU was replaced (`nproc` reports 30; one-minute load 5.7 to 10.8
+at the start of every session, so every session is in the band below 20) with the bundle of the final tree
+(sha1 `9c60b963`, from tree `1a7214f4f9`) and, in the same series and order, the earlier `final` bundle:
+six sessions of each build and file in the 16 ms drag, none excluded (the recorder dropped nothing).
+Run-to-run spread is small here: the longest gap was 17.1 to 17.7 ms in 11 of 12 `final` sessions (33.3 ms once)
+and 17.0 to 18.0 ms in all 12 sessions of the new build.
+Frames that do not fit were 76 to 82 per session for `final` and 74 to 77 for the new build;
+the longest stretch of them was 650 to 767 ms for `final` on code50k and 650 to 1,302 ms on long2000, and 633 to 650 ms
+for the new build on both files;
+the picture settled after the last resize step in 24.0 to 26.7 ms for the new build
+against 23.2 to 109.1 ms for `final`.
+No frame was blank or flat, and the last frame fitted in every session.
+The window-thread step took a median of 3.0 to 3.3 ms on code50k (largest 5.7 to 10.7 ms, first step 5.5 to 10.7 ms)
+and 5.9 to 6.8 ms on long2000 (largest 13.5 to 15.3 ms); every step of every session was taken at once and none
+was left to the worker.
+In the 100 ms drag of this series (3 sessions each) frames that do not fit were 44, 42, and 50 of about 265 for `final`
+and 0, 8, and 19 for the new build, and the longest stretch of such frames was 33 to 50 ms against 0 to 17 ms.
+
+The unchanged count of frames that do not fit has a cause that was looked at in the frames themselves.
+In the 16 ms drag, kept frames of one session show the window at the new size with the previous step's content:
+at 1075 pixels the text is wrapped for 1100 and cut by the edge, and on the way back a strip of another shade stands
+at the right edge beside text wrapped for the previous, narrower size.
+These are the detector's `clipped` and `band` frames (38 and 39 in that session, two sweeps of about 20 steps).
+The strip of another shade stands where no tile of the application is, so those frames were composed at the new size
+from a buffer drawn for the previous one.
+The `clipped` frames could come from either side, so the first draw after a size event was checked in the headless
+backend: `a_frame_drawn_right_after_a_resize_event_is_wrapped_to_the_new_width` reports the new size, takes a snapshot
+at once with no timer or handler run between them (the draw runs the change handlers), and finds no row of ink at the
+right edge; with the window-thread step turned off, 198 rows of that frame run to the edge.
+So in the headless backend the first frame is already wrapped for the new width.
+What a real backend does between the size event and its redraw was not measured, and the compositor's recorded
+frames still show the previous step's content at each new size in the 16 ms drag;
+whether that delay comes from the compositor's configure and commit exchange or from the toolkit's redraw scheduling
+was not determined, and the requirement that no frame shows old-width text is met in the headless draw
+and not shown to be met in the compositor.
+A slower drag (100 ms between steps, one sweep, 3 sessions each, load 15 to 23) separates the two builds:
+frames that do not fit were 14, 29, and 46 of about 260 for the new build against 94, 47, and 97 of about 250 for
+`final`, and the longest stretch was 33 to 50 ms against 200 to 319 ms.
+The new build therefore leaves at most about three recorded frames of old-width content after a step and `final`
+several more, and the remaining ones are not shown to come from the app.
+
 #### What the window thread pays
 
 Measured on 2026-10-12 with the release bundle (`dist/monochromatic-ide`, sha1 `13505a6f`, built from commit
@@ -1599,14 +1735,15 @@ Structural tests, independent of host load, count what the window thread does.
 `wrap_tests` opens 50,000 lines and asserts that the window thread shaped almost nothing
 and that one poll applied at most `TAKE_LIMIT` lines.
 A re-center during the pass is built on the worker with no row shaped on the window thread, and it is not discarded.
-A resize shapes nothing again.
+A resize that the window thread takes shapes nothing again and re-breaks only the lines of its allowance.
 A mixed file proves that no visible pixel moves when rows above the view change height.
 `wrap_clip_tests` scrolls inside a built tile of a wrapped file and inside the clip of one tall line:
 no render, no shaped row, no painted tile, and no image on the window thread (guard `wrapped-tile-holds`);
 it walks the view through a 100,000 character line and asserts the raster stays within the limit and holds the view,
 that the gutter lists only the rows of the clip, and that opening the file shapes each of its lines once.
-`wrap_annotation_tests` shows that a resize with hints and messages on a wrapped line builds no tile on the window
-thread and packs only the hinted lines near the view.
+`wrap_annotation_tests` shows that a resize with hints and messages on a wrapped line paints one tile on the window
+thread within the allowance and packs only the hinted lines near the view,
+and that a width the allowance does not cover paints none there.
 `text_projection_tests` and `tab_layout_tests` count the work of the caret stops and of the tab passes.
 
 #### Known differences from IntelliJ

@@ -63,7 +63,7 @@ fn fixed(source: &str) -> String {
     // Own the fixes so they outlive the diagnostics they were moved out of.
     let mut fixes: Vec<Fix> = Vec::<Fix>::new();
     for diagnostic in semantic_line_breaks(&context, Severity::Error) {
-        fixes.push(diagnostic.fix.expect("add-only fix"));
+        fixes.push(diagnostic.fix.expect("fix"));
     }
     return apply_fixes(source, fixes.as_slice()).expect("apply").source;
 }
@@ -87,7 +87,7 @@ fn later_line_paragraphs_copy_only_their_own_line_prefix() {
         let inserted: &str = if newline == "\r\n" { "\r\n" } else { "\n" };
         assert_eq!(
             fixed(source.as_str()),
-            format!("intro words{newline}{newline}> first,{inserted}>  second word.{newline}"),
+            format!("intro words{newline}{newline}> first,{inserted}> second word.{newline}"),
             "{source:?}"
         );
     }
@@ -111,7 +111,7 @@ fn nested_later_line_containers_keep_markers_and_blank_list_bullets() {
     );
     assert_eq!(
         fixed(source),
-        "intro words\n\n- > first,\n  >  second here.\n"
+        "intro words\n\n- > first,\n  > second here.\n"
     );
 }
 
@@ -126,7 +126,7 @@ fn tab_indentation_survives_in_the_continuation_prefix() {
     );
     assert_eq!(
         fixed("-\tfirst, second here.\n"),
-        "-\tfirst,\n \t second here.\n"
+        "-\tfirst,\n \tsecond here.\n"
     );
     let quote: MarkdownSource = parse(">\tfirst, second word.\n", false);
     assert_eq!(

@@ -5950,3 +5950,216 @@ Nothing is filed or drafted upstream.
 - Prototype:
   retained-artifact reconciliation tests the local remedy;
   no upstream patch is justified by this incident.
+
+## Pi 1.2.0 preparation and retired fixture dependency paths
+
+### Symptom
+
+The resumed native acceptance on 2026-10-13 stopped before policy review.
+Node emitted `ERR_MODULE_NOT_FOUND` for the historical `yuku-parser@0.17.0` path.
+The installed parser was 0.19.0 and Pi was 1.2.0.
+The previous unbundled coding-agent JavaScript paths were also absent from the installed package.
+
+After separate source emission,
+the owned prompt transform emitted Node `AssertionError [ERR_ASSERTION]`
+for its obsolete `emitBeforeAgentStart(expandedText, currentImages, ...)` anchor.
+Subsequent fixture failures identified a missing wildcard export,
+missing generated `amazon-bedrock.json`,
+and `MODULE_NOT_FOUND` for `satteri` through the retired `package/cli/markdown-lint` owner.
+These were distinct preparation failures,
+not evidence that the policy consumer had run.
+
+### Source trace
+
+The read-only Pi checkout is tag `v1.2.0`,
+commit `06a466935536f8c9bcacb2d5efc0fc021be1bdff`.
+Its `packages/coding-agent/src/core/agent-session.ts:1885` prepares a run from a trigger,
+and line 1894 passes that trigger to the extension runner:
+
+```typescript
+// packages/coding-agent/src/core/agent-session.ts, Pi v1.2.0
+private async _prepareRun(trigger: BeforeAgentStartTrigger): Promise<AgentMessage[]> {
+// Selected call within this method:
+const result = await this._extensionRunner.emitBeforeAgentStart(trigger, this._baseSystemPromptOptions);
+```
+
+The private transform now retains that trigger,
+including its custom-message branch,
+and closes its failure handling at `_prepareRun`'s return.
+The existing run owner still observes the original handler traversal and message construction.
+
+Pi's `packages/ai/package.json` declares wildcard exports such as `./utils/*`
+and separately copies generated model catalogs during its build:
+
+```json
+// packages/ai/package.json, selected fields from Pi v1.2.0
+"./utils/*": { "types": "./dist/utils/*.d.ts", "import": "./dist/utils/*.js" }
+```
+
+The owned source emitter copies the matching installed release's `dist/providers/data` assets.
+The loader delegates export selection to Node from each staged package's own package boundary.
+It does not interpret only the exact export keys.
+
+Repository commit `5bc05682ec` removed `package/cli/markdown-lint`.
+The private `contract/native-index/native-parser.mjs:19` previously resolved from that retired owner:
+
+```javascript
+// Historical private contract/native-index/native-parser.mjs
+const ownerRequire = createRequire(join(repositoryRoot, 'package/cli/markdown-lint/package.json'));
+const entry = ownerRequire.resolve('satteri');
+```
+
+Private `f411f9da` now resolves the declared fixture dependency from `import.meta.url`.
+The qualified version remains 0.10.5;
+the version and astral-coordinate checks remain in force.
+Private `ba4ecadd` records the generated lockfile.
+
+### Verification and workaround
+
+From private `contract/integration/current-sdk`,
+`mise run stage` emits the current Agent,
+AI,
+and coding-agent sources without editing installed packages or the upstream checkout.
+`mise run native:prepare` passes and reports 13 instrumented modules.
+`mise run lint:types` passes for the staging helper.
+
+The private root's `mise run dependencies:install` restored `satteri@0.10.5`
+with `pnpm install --ignore-scripts`.
+It changed only that fixture workspace's manifest,
+catalog,
+lockfile,
+and installed dependency tree.
+The native acceptance subsequently passed the parser's original version and coordinate checks
+and reached the actual policy reviewer.
+It retained the unresolved domain hold;
+preparation success is not domain closure or production qualification.
+
+Working cases are current native preparation,
+wildcard package imports,
+generated model-catalog loading,
+and the restored parser's original coordinate self-check.
+Rejected cases are the historical absolute dependency paths,
+the exact-key-only export mapper,
+source emission without generated catalogs,
+and resolution through a removed linter package.
+The workaround remains a private current-version test build,
+with maintained host delivery still required.
+
+### Current tool reachability metadata
+
+The first reviewer result also reported `tool-metadata-observation-gap`
+for field `reachesTools`.
+Pi's `packages/coding-agent/src/core/extensions/types.ts:621` declares it as an executable capability:
+
+```typescript
+// packages/coding-agent/src/core/extensions/types.ts:621, Pi v1.2.0
+reachesTools?: (input: Record<string, unknown>) => "all" | readonly string[];
+```
+
+Private `2fe40907` added a control whose callback throws if receipt capture invokes it.
+The control first failed because the collector reported unsupported metadata gaps.
+Private `27d713a7` classifies this declared callback alongside the existing executable hooks.
+`mise run test:tool-metadata` then passed,
+preserving data-field capture,
+unread accessor gaps,
+cycle rejection,
+and shared-value accounting.
+This recognizes a callback field;
+it does not account for material returned by invoking callbacks or close the host domain.
+
+### Isolated codemode worker dependency root
+
+After the owned domain consumer first returned approval,
+Pi's codemode result reported `Script sandbox failed` with `ENOENT` for
+`fixture-private-.../home/Monochromatic`.
+The native result also reported `No tool calls were made.`
+The fixture deliberately changes `HOME` to a disposable directory.
+The inherited test loader then derived its dependency root from that changed home in the worker.
+
+Pi `packages/codemode/src/runtime/host.ts:34` creates the worker:
+
+```typescript
+// packages/codemode/src/runtime/host.ts:34, Pi v1.2.0
+worker = new Worker(workerUrl, { workerData });
+```
+
+The owned `contract/integration/current-sdk/paths.mjs` had recomputed the dependency root:
+
+```javascript
+// Historical private contract/integration/current-sdk/paths.mjs
+const repoRoot = join(homedir(), 'Monochromatic');
+```
+
+Private `f3d40d82` records the original measured dependency root in the staging manifest
+and reads it when the loader runs in a worker.
+It preserves the disposable home and native worker execution.
+After rebuilding through `mise run stage`,
+`mise run test:domain-resolution` passed permission with three native child calls,
+prohibition with zero calls,
+and unspecified policy with zero calls.
+The failing case had reached approval but never entered a child call;
+the corrected case exercised the actual native sandbox.
+This is an owned fixture-loader correction,
+not an upstream sandbox defect.
+
+### Help loads the trust store before printing
+
+Pi 1.2.0 `pi --help` failed in the read-only agent sandbox with
+`EROFS: read-only file system` for `$HOME/.pi/agent/trust.json.lock`.
+The same command outside that filesystem restriction printed help and exited zero.
+The native session RPC probe also succeeded outside that restriction.
+
+`packages/coding-agent/src/main.ts:719` constructs `ProjectTrustStore`.
+At line 749,
+runtime setup can read project trust before the help branch at line 877:
+
+```typescript
+// packages/coding-agent/src/main.ts:749, Pi v1.2.0
+(!hasTrustRequiringResources || trustStore.get(cwd) === true)
+```
+
+`packages/coding-agent/src/core/trust-manager.ts:221` reads entries under the trust lock:
+
+```typescript
+// packages/coding-agent/src/core/trust-manager.ts:221, Pi v1.2.0
+getEntry(cwd: string): ProjectTrustStoreEntry | null {
+  return withTrustFileLock(this.trustPath, () => {
+    const data = readTrustFile(this.trustPath);
+    return findNearestTrustEntry(data, cwd);
+  });
+}
+```
+
+The lock implementation at line 147 uses a lock directory beside the trust file:
+
+```typescript
+// packages/coding-agent/src/core/trust-manager.ts:147, Pi v1.2.0
+return lockfile.lockSync(trustDir, { realpath: false, lockfilePath: `${path}.lock` });
+```
+
+The verification command is `pi --help` from this repository.
+The failing case is the existing user trust directory mounted read-only;
+the working case is the same command with its normal writable trust directory.
+The verified workaround changes the command's filesystem access,
+not its trust decision or project configuration.
+Its tradeoff is that Pi performs normal startup work before returning help.
+The help flag alone does not bypass that startup path.
+No upstream fault or universal sandbox failure follows from this local mount restriction.
+
+### Upstream filing decision
+
+Nothing is filed or drafted upstream.
+
+- Fault:
+  the failures are stale owned integration assumptions and a retired local dependency owner.
+- Fixability:
+  the current source and private dependency boundary support the local adaptation.
+- Supported use:
+  these private source transforms are not established upstream integration contracts.
+- Contribution policy:
+  no upstream contribution is proposed.
+- Maintainer disposition:
+  no upstream intent is inferred.
+- Prototype:
+  the owned staging and receipt controls exercise the local corrections;
+  they do not justify an upstream patch.

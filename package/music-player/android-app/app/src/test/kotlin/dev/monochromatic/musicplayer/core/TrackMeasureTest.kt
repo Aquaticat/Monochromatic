@@ -286,6 +286,66 @@ class TrackMeasureTest {
         assertEquals(mapOf(0 to measure), mapped)
     }
 
+    // What:     `@Test fun batchStartsAtTheGivenPositionAndWrapsToThePageStart()` checks the start position.
+    // Why:      The tracks on screen are read first, so a batch from the middle of a page must begin there and then
+    //           continue from the page's start once the end is reached.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // test("start position", () => expect(nextBatch([a,b,c,d,e], {}, new Set(), 3, 3).map(uri)).toEqual(["d","e","a"]));
+    // ```
+    /** A batch begins at the start position, runs to the end of the page, and wraps to the first tracks. */
+    @Test
+    fun batchStartsAtTheGivenPositionAndWrapsToThePageStart() {
+        val page: List<Track> = listOf(track("a"), track("b"), track("c"), track("d"), track("e"))
+        val batch: List<Track> = measureNextBatch(page, emptyMap(), emptySet(), batchSize = 3, startAt = 3)
+        assertEquals(listOf("d", "e", "a"), batch.map { track -> track.uri })
+    }
+
+    // What:     `@Test fun batchSkipsKnownAndAttemptedTracksFromTheStartPosition()` checks the skips from a start.
+    // Why:      A measured or already attempted track must be passed over wherever the scan begins.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // test("skips from start", () => expect(nextBatch(page, {c: full}, new Set(["d"]), 2, 2).map(uri)).toEqual(["e","a"]));
+    // ```
+    /** Known measures and attempted tracks are skipped by a scan that begins in the middle of the page. */
+    @Test
+    fun batchSkipsKnownAndAttemptedTracksFromTheStartPosition() {
+        val page: List<Track> = listOf(track("a"), track("b"), track("c"), track("d"), track("e"))
+        val known: Map<String, TrackMeasure> = mapOf("c" to TrackMeasure(durationSec = 1.0, peakDbtp = -1.0, peakExact = true))
+        val batch: List<Track> = measureNextBatch(page, known, attempted = setOf("d"), batchSize = 2, startAt = 2)
+        assertEquals(listOf("e", "a"), batch.map { track -> track.uri })
+    }
+
+    // What:     `@Test fun startOutsideThePageBeginsAtItsStart()` checks a start that points nowhere.
+    // Why:      The list has not reported a visible track yet (a negative start), or the page shrank under the start.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // test("bad start", () => { expect(nextBatch(page, {}, new Set(), 2, -1)).toEqual(first2); expect(.. 9).toEqual(first2); });
+    // ```
+    /** A negative start, or one past the end, begins at the first track of the page. */
+    @Test
+    fun startOutsideThePageBeginsAtItsStart() {
+        val page: List<Track> = listOf(track("a"), track("b"), track("c"))
+        assertEquals(listOf("a", "b"), measureNextBatch(page, emptyMap(), emptySet(), batchSize = 2, startAt = -1).map { it.uri })
+        assertEquals(listOf("a", "b"), measureNextBatch(page, emptyMap(), emptySet(), batchSize = 2, startAt = 9).map { it.uri })
+    }
+
+    // What:     `@Test fun emptyPageGivesNoBatchFromAnyStart()` checks an empty page.
+    // Why:      The wrap-around arithmetic must never divide by the size of an empty page.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // test("empty page", () => expect(nextBatch([], {}, new Set(), 2, 0)).toEqual([]));
+    // ```
+    /** An empty page gives an empty batch. */
+    @Test
+    fun emptyPageGivesNoBatchFromAnyStart() {
+        assertTrue(measureNextBatch(emptyList(), emptyMap(), emptySet(), batchSize = 2, startAt = 0).isEmpty())
+    }
+
     /** Builds a track whose display path is its URI, which is enough for the batch choice. */
     private fun track(uri: String): Track = Track(uri = uri, displayPath = uri)
 }

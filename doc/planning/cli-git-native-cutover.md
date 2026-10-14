@@ -1290,6 +1290,11 @@ Results for 0.1.1,
 
 ### Why the pin is 0.1.1
 
+Update 2026-10-14: the user decided that nothing this repository publishes needs a pin
+("You don't need to pin anything we control"), so `mise.no-env.toml` now says `latest` for the wrapper and the
+linter and `mise.lock` records the resolved version (0.1.2).
+The section below stays as the record of why 0.1.0 must never be installed.
+
 Version 0.1.0 landed a Markdown commit and then exited 2:
  in the throwaway repository with the repository's configuration (which lists `markdown/autofix`),
  `git commit --message 'docs: x' -- doc/x.md` printed an `engine-failure` event

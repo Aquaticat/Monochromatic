@@ -689,7 +689,9 @@ SCR:
  put task logic inline via `shell = "node --input-type=module-typescript -e"` or in a package bin.
 
 PIN:
- Pin tool versions only with a comment explaining why.
+ Pin tool versions only with a comment explaining why;
+ never pin tools this repository publishes,
+ since `mise.lock` records them.
 
 SPG:
  Automation that spawns agent sessions needs explicit recursion guards (env var flag,
@@ -1082,6 +1084,11 @@ SBS:
 ## Before declaring work complete
 
 ### Package completeness
+
+RNQ:
+ Rust packages use Rust tests through nextest,
+ never TypeScript tests.
+Use nextest's default build and test concurrency unless the user specifies otherwise.
 
 PKG:
  A package is complete only with `README.md`,

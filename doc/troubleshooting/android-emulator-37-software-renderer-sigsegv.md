@@ -400,6 +400,34 @@ The next visit lost no view to a crash but ended when one guest command exceeded
 and the third completed the cohort and shut down cleanly.
 A fresh boot of the host therefore did not stop the crash.
 
+## Separate incident: headful host-GPU SEGV in gfxstream TextureResize (2026-10-13)
+
+This is not the SwiftShader boot crash above: the launch was the recommended one in "Working agent launch: headful,
+host GPU, no container" (`-gpu host`, own systemd unit, AMD Radeon RX 7600 through RADV), and the guest had booted.
+
+Two agent runs on the same invented 10 000-track library each lost the emulator to `SIGSEGV` in
+`qemu-system-x86_64` during long runs.
+The first came at 13:46:59 during the third play-window run (`lf-emulator.service` exited with
+`code=dumped, status=11/SEGV`); the second at 17:50:44, on the first cold start after a clean reinstall, about 53
+minutes after the launch (core of 1.3 GB; its `coredumpctl info` is in the agent scratch
+`lf/logs/crash2-coredumpctl-info.txt`).
+The crashing thread in both was in `libgfxstream_backend.so`: `gfxstream::host::gl::TextureResize::TextureResize`
+called from `ColorBufferGl::create` (first crash) and `EmulationGl::createColorBuffer` (second); in the first the top
+frame was `__strlen_evex`.
+Earlier on 2026-10-13 an Android gallery run saw one similar crash after its captures (a null-context SIGSEGV in the
+same backend).
+
+Recovery that worked: discard that AVD copy, make a fresh reflink copy of the owned AVD, relaunch headful, reinstall and
+re-push the invented library.
+The guest is already dead when the crash is seen, so `sync`, `adb emu kill` and the settings restore have nothing to
+act on; compare settings only on the next boot.
+Measurements in flight are lost, so run each scenario trial from a clean reinstall and redo the trial that was running.
+
+Not established: what triggers it (the common point is a color buffer allocation in the backend),
+whether another emulator build or `-gpu` mode avoids it, and whether it is related to the host load (20 to 36 during
+those runs).
+Do not fall back to a headless launch: it is banned (see "Rule for agents").
+
 ## Verified workarounds
 
 Use `-gpu host` for this Linux host.

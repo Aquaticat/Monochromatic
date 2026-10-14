@@ -47,6 +47,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.MutableIntState
 import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.staticCompositionLocalOf
@@ -102,8 +103,10 @@ import dev.monochromatic.musicplayer.core.TrackRowModel
 import dev.monochromatic.musicplayer.core.currentPositionOf
 import dev.monochromatic.musicplayer.core.entryKeyOf
 import dev.monochromatic.musicplayer.core.isSamePageUpdate
+import dev.monochromatic.musicplayer.core.libraryIndexNear
 import dev.monochromatic.musicplayer.core.pageEntryScrollTarget
 import dev.monochromatic.musicplayer.core.pageIdentityOf
+import dev.monochromatic.musicplayer.core.rowWithPlayingFlag
 
 // What:     `private val ROW_MIN_HEIGHT: Dp = 48.dp` is the smallest height of a track row and a header.
 // Why:      The row meets the 48dp touch target, and a row with a supporting line grows past it.
@@ -202,6 +205,38 @@ internal val LocalTrackRowMenuOpener: ProvidableCompositionLocal<((Int, MenuAnch
 internal val LocalTrackRowLines: ProvidableCompositionLocal<TrackRowLineSource?> =
     staticCompositionLocalOf { null }
 
+// What:     `internal val LocalPlayingIndex` carries the library index of the playing track from the host to the list.
+// Why:      The host builds the rows of a page once, so a track change must not rebuild thousands of rows. The list and
+//           each visible row read the playing index from here instead, and a change recomposes only what shows it.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// const LocalPlayingIndex = createContext<number | null>(null);
+// ```
+/** Composition local holding the playing track's library index, or null when no track is loaded. */
+internal val LocalPlayingIndex: ProvidableCompositionLocal<Int?> = compositionLocalOf { null }
+
+// What:     `internal val LocalFirstVisibleTrack` carries the cell where the list reports its first visible track.
+// Why:      The measure refresh reads the tracks on screen first, so it needs to know which ones they are. The list
+//           writes the library index of its first visible track here, and the host reads it between batches.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// const LocalFirstVisibleTrack = createContext<{ value: number } | null>(null);
+// ```
+/** Composition local holding the cell the list writes its first visible track's library index to, or null. */
+internal val LocalFirstVisibleTrack: ProvidableCompositionLocal<MutableIntState?> = staticCompositionLocalOf { null }
+
+// What:     `internal const val NO_VISIBLE_TRACK: Int = -1` is the value of the cell while no track is on screen.
+// Why:      A library index is never negative, so -1 cannot be mistaken for a track.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// const NO_VISIBLE_TRACK = -1;
+// ```
+/** Value of the first visible track cell before the list has reported, or when the list shows no track. */
+internal const val NO_VISIBLE_TRACK: Int = -1
+
 // What:     `val HostKeyLocalRevealFolder: ProvidableCompositionLocal<Int>` carries the folder reveal count.
 // Why:      The host bumps the count when the deck's folder part is tapped, and the track list scrolls to the playing
 //           track's subfolder header. It sits here, not beside HostKeyLocalReveal, because the list is its only reader.
@@ -238,8 +273,12 @@ fun trackListPane(
     val listState = rememberLazyListState()
     /** Source of each row's supporting line, or null when the entries already carry theirs. */
     val rowLines: TrackRowLineSource? = LocalTrackRowLines.current
+    /** Library index of the playing track, which the entries do not carry so that a track change keeps them. */
+    val playingIndex: Int? = LocalPlayingIndex.current
     /** Position of the playing row among the entries, or null when no row in this list is playing. */
-    val currentPosition: Int? = currentPositionOf(entries)
+    val currentPosition: Int? = currentPositionOf(entries, playingIndex)
+    /** Cell the host reads the first visible track from, or null when no host asks for it. */
+    val firstVisibleSink: MutableIntState? = LocalFirstVisibleTrack.current
     /** Page identity the page effect last handled, or null before its first run. */
     var shownPage: List<String>? by remember { mutableStateOf<List<String>?>(null) }
     /** Identity of the shown page, which follows the folder's tracks and not the playing row, measures, or indexes. */
@@ -251,7 +290,7 @@ fun trackListPane(
         val sameAsHandled: Boolean = isSamePageUpdate(previous = shownPage, next = pageIdentity)
         shownPage = pageIdentity
         if (!sameAsHandled) {
-            listState.scrollToItem(pageEntryScrollTarget(entries))
+            listState.scrollToItem(pageEntryScrollTarget(entries, playingIndex))
         }
     }
     /** Focus state of the list as one keyboard stop, whose focus ring marks one row. */
@@ -276,6 +315,13 @@ fun trackListPane(
             listState.scrollToItem(at)
         }
     }
+    LaunchedEffect(listState, entries, firstVisibleSink) {
+        if (firstVisibleSink != null) {
+            snapshotFlow { listState.firstVisibleItemIndex }.collect { position ->
+                firstVisibleSink.intValue = libraryIndexNear(entries, position) ?: NO_VISIBLE_TRACK
+            }
+        }
+    }
     /** Count of reveal requests from the host, each of which scrolls to and focuses the playing row. */
     val revealToken: Int = HostKeyLocalReveal.current
     /** Reveal count when this list entered composition, so that entering the list never reveals by itself. */
@@ -294,7 +340,7 @@ fun trackListPane(
     /** Folder reveal count when this list entered composition, so that entering the list never scrolls by itself. */
     val folderRevealAtEntry: Int = remember { folderRevealToken }
     /** Item a folder reveal scrolls to: the playing track's subfolder header, or the first item for a root track. */
-    val folderTargetIndex: Int = folderScrollIndexFor(entries)
+    val folderTargetIndex: Int = folderScrollIndexFor(entries, playingIndex)
     LaunchedEffect(folderRevealToken) {
         if (folderRevealToken != folderRevealAtEntry && currentPosition != null) {
             listState.scrollToItem(folderTargetIndex)
@@ -342,7 +388,10 @@ fun trackListPane(
         itemsIndexed(items = entries, key = { _, entry -> entryKeyOf(entry) }) { position, entry ->
             when (entry) {
                 is TrackListEntry.RowEntry -> trackRow(
-                    row = rowWithLine(row = entry.row, lines = rowLines),
+                    row = rowWithLine(
+                        row = rowWithPlayingFlag(row = entry.row, playingIndex = playingIndex),
+                        lines = rowLines,
+                    ),
                     onPlay = onPlay,
                     onOpenMenu = onOpenMenu,
                     ringed = zone.focused && ringPosition == position,
@@ -353,16 +402,16 @@ fun trackListPane(
     }
 }
 
-// What:     `internal fun folderScrollIndexFor(entries: List<TrackListEntry>): Int` finds the item the folder reveal
-//           scrolls to.
+// What:     `internal fun folderScrollIndexFor(entries: List<TrackListEntry>, playingIndex: Int?): Int` finds the item
+//           the folder reveal scrolls to.
 // Why:      The folder's own tracks come before its subfolder headers, and each subfolder's tracks follow its header.
 //           So the nearest header above the playing row is the subfolder that holds it. A playing row with no header
 //           above it sits in the folder itself, and the first item is the target.
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// const folderScrollIndexFor = (entries: TrackListEntry[]): number => {
-//   const current = currentPositionOf(entries);
+// const folderScrollIndexFor = (entries: TrackListEntry[], playingIndex: number | null): number => {
+//   const current = currentPositionOf(entries, playingIndex);
 //   if (current === null) return 0;
 //   for (let i = current; i >= 0; i--) if (entries[i].kind === "header") return i;
 //   return 0;
@@ -432,9 +481,9 @@ private fun trackListCommand(
 }
 
 /** Index of the subfolder header that holds the playing row, or 0 when no header holds it or no row is playing. */
-internal fun folderScrollIndexFor(entries: List<TrackListEntry>): Int {
+internal fun folderScrollIndexFor(entries: List<TrackListEntry>, playingIndex: Int?): Int {
     /** Position of the playing row among the entries, or null when no row in this list is playing. */
-    val current: Int? = currentPositionOf(entries)
+    val current: Int? = currentPositionOf(entries, playingIndex)
     if (current == null) {
         return 0
     }

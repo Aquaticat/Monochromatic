@@ -44,6 +44,8 @@ pub struct RustRuleSettings {
     /// Full semantic annotation policy,
     ///  which requires a workspace context.
     pub explicit_types: Option<Severity>,
+    /// Require unit tests to live in sidecar files.
+    pub tests_in_sidecars: Option<Severity>,
 }
 
 /// Read a selected severity and line limit after ordinary schema validation.
@@ -102,6 +104,7 @@ pub fn rust_rule_settings(rules: &JsoncValue) -> Result<RustRuleSettings, Config
             "rust/require-rustdoc" => result.rustdoc = severity,
             "rust/no-anonymous-functions" => result.no_anonymous_functions = severity,
             "rust/require-explicit-types" => result.explicit_types = severity,
+            "rust/tests-in-sidecars" => result.tests_in_sidecars = severity,
             _ => {
                 return Err(ConfigError::new(
                     format!("Rust rule {id} has no execution adapter.").as_str(),
