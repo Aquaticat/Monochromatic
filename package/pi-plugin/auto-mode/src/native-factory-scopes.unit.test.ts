@@ -37,8 +37,8 @@ await describe({ name: '', children: [
     /** Publication requires the exact newly prepared result, not an equal copy. */
     const prepared = scope.accept({ session });
     expect(function copiedPublication() {
-      scope.publish({ ...prepared
-    }); }).toThrow('exact prepared result');
+      scope.publish({ ...prepared });
+    }).toThrow('exact prepared result');
     scope.publish(prepared);
     expect(fixture.events).toEqual(['begin', 'bind', 'publish']);
     expect(function publishedAbort() {
@@ -58,25 +58,25 @@ await describe({ name: '', children: [
     /** The original result session remains mutable to simulate native manager replacement. */
     const session = { manager: fixture.manager };
     expect(function unregisteredResult() {
-      scope.accept({ session
-    }); }).toThrow('exact session registered');
+      scope.accept({ session });
+    }).toThrow('exact session registered');
     scope.registerSession(session);
     expect(function duplicateRegistration() {
       scope.registerSession(session);
     }).toThrow('already registered');
     expect(function foreignResult() {
-      scope.accept({ session: { manager: fixture.manager
-    } }); }).toThrow('exact session registered');
+      scope.accept({ session: { manager: fixture.manager } });
+    }).toThrow('exact session registered');
     session.manager = {};
     expect(function foreignManager() {
-      scope.accept({ session
-    }); }).toThrow('another manager');
+      scope.accept({ session });
+    }).toThrow('another manager');
     session.manager = fixture.manager;
     /** Acceptance stores an exact result for the subsequent manager-change check. */
     const prepared = scope.accept({ session });
     expect(function duplicateAcceptance() {
-      scope.accept({ session
-    }); }).toThrow('already accepted');
+      scope.accept({ session });
+    }).toThrow('already accepted');
     session.manager = {};
     expect(function changedManager() {
       scope.publish(prepared);
@@ -104,8 +104,8 @@ await describe({ name: '', children: [
     }).toThrow('Fixture native disposal failed');
     expect(scopes.diagnostics().pendingCleanup).toBe(1);
     expect(function blockedConstruction() {
-      scopes.begin({ manager: fixture.manager
-    }); }).toThrow('cleanup is pending');
+      scopes.begin({ manager: fixture.manager });
+    }).toThrow('cleanup is pending');
     expect(function failedRetry() {
       scopes.retryCleanup();
     }).toThrow(AggregateError);
@@ -131,11 +131,11 @@ await describe({ name: '', children: [
     const scope = scopes.begin({ manager: fixture.manager });
     scope.registerSession(session);
     fixture.control.beforeRead = function reenterFactory() {
-      scopes.begin({ manager: fixture.manager
-    }); };
+      scopes.begin({ manager: fixture.manager });
+    };
     expect(function reentrantAcceptance() {
-      scope.accept({ session
-    }); }).toThrow('cannot reenter');
+      scope.accept({ session });
+    }).toThrow('cannot reenter');
     delete fixture.control.beforeRead;
     scope.publish(scope.accept({ session }));
     expect(fixture.events).toEqual(['begin', 'bind', 'publish']);
