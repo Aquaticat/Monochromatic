@@ -71,6 +71,20 @@ The same Rust file in a disposable copy of `package/rust-module/jsonc-edit`, thr
 - Install the component for the toolchain in use (`rustup component add rust-analyzer --toolchain <name>`).
   Not run here: it writes to the user's toolchains.
 
+## Effect on the IDE's real-server inspections
+
+Inside `mise run`, mise sets `RUSTUP_TOOLCHAIN` to the floating nightly named in the root `mise.toml`
+(`nightly-2026-10-13` when measured), which has no `rust-analyzer`.
+The Rust cases of `inspect:language`, `inspect:language-lifecycle`, and `inspect:language-confinement`
+therefore fail on this host with the same `FailedToStart`,
+and setting `RUSTUP_TOOLCHAIN` around `mise run` has no effect because mise overrides it.
+Measured workaround: `MISE_RUST_VERSION=nightly-2026-09-22` makes mise select a toolchain that has the component;
+with it `inspect:language` and `inspect:language-lifecycle` passed.
+`inspect:language-confinement` still fails its `scripted-pwd-alias` case on this host,
+with `WrongWorkingDirectory("/tmp")`, while an empty `/tmp/.git` directory (created 2026-10-13) exists, which Helix treats as a workspace marker.
+Removing that directory was not tried, so it is not determined to be the cause;
+an older build from the main checkout fails the same three checks, so the failure does not come from this work.
+
 ## What does not work
 
 - Removing the project's `mise.toml` from the disposable copy: the failure is the same.
