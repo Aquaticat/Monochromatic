@@ -28,7 +28,7 @@ export type ContextObserver = {
   readonly complete: () => {readonly kinds: readonly ContextKind[]; readonly handlers: number};
 };
 /** Constructor exported by the copied native artifact. */
-type ContextModule = {readonly NativeContextObserver: new(capture: (input: ContextInput) => void) => ContextObserver};
+type ContextModule = {readonly createNativeContextObserver: (capture: (input: ContextInput) => void) => ContextObserver};
 /**
  Check callable exports before exercising the declared consumer interface.
 
@@ -37,7 +37,7 @@ type ContextModule = {readonly NativeContextObserver: new(capture: (input: Conte
  @throws Error when the built observer export is absent
  */
 function assertContextModule(value: unknown): asserts value is ContextModule {
-  if(value===null||typeof value!=='object'||!('NativeContextObserver' in value)||typeof value.NativeContextObserver!=='function')
+  if(value===null||typeof value!=='object'||!('createNativeContextObserver' in value)||typeof value.createNativeContextObserver!=='function')
     throw new Error('Built native context observer is unavailable');
 }
 /** Copied runtime selected by generated native SessionManager modules. */
@@ -78,10 +78,12 @@ export function contextFixture(capture?: (input: ContextInput) => void) {
   /** Only identity is consumed by the observer; native dispatch owns invocation. */
   function handler(): void {}
   /** Exact event remains mutable through native callback settlement. */
-  const event = {type:'context',messages:[{role:'user',content:'original text'}]};
+  const message={role:'user',content:'original text'};
+  /** Native event owns the message array consumed by this fixture. */
+  const event = {type:'context',messages:[message]};
   /** Copies are made at capture time, as the existing manager source pool does. */
-  const observer = new nativeContext.NativeContextObserver(capture??function retain(input) { records.push(structuredClone(input)); });
-  return {observer,records,extension,handler,event,snapshot:[{ext:extension,handlers:[handler]}],position:{extension,handler,event}};
+  const observer = nativeContext.createNativeContextObserver(capture??function retain(input) { records.push(structuredClone(input)); });
+  return {observer,records,extension,handler,event,message,snapshot:[{ext:extension,handlers:[handler]}],position:{extension,handler,event}};
 }
 /**
  Complete the empty second native stage after a fixture closes its first stage.

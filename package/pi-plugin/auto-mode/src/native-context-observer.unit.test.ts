@@ -13,11 +13,11 @@ await describe({name:'',children:[
   const fixture=contextFixture();
   fixture.observer.begin({kind:'context',snapshot:fixture.snapshot});
   fixture.observer.before(fixture.position);
-  fixture.event.messages[0].content='mutated text';
+  fixture.message.content='mutated text';
   const result={messages:fixture.event.messages,ignored:'unselected original result'};
   fixture.observer.returned(result);
   result.ignored='later mutation';
-  fixture.event.messages[0].content='later input mutation';
+  fixture.message.content='later input mutation';
   fixture.observer.end('context');
   const completed=completeContext(fixture.observer);
   expect(fixture.records.map(function phase(record){return record.phase;})).toEqual(['input','output','after']);
@@ -32,7 +32,7 @@ await describe({name:'',children:[
   const fixture=contextFixture();
   fixture.observer.begin({kind:'context',snapshot:fixture.snapshot});
   fixture.observer.before(fixture.position);
-  fixture.event.messages[0].content='settled text';
+  fixture.message.content='settled text';
   if(mode==='undefined')fixture.observer.returned(undefined);
   else fixture.observer.failed(new Error('original handler failure'));
   fixture.observer.failed(new Error('original result processing failure'));

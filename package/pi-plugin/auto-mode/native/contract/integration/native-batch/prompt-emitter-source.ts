@@ -244,11 +244,13 @@ function prepareContextEmitter(source: string): string {
   Each original stage has its own native extension-error reporting catch.
   */
  const catchSite='                catch (err) {';
+ /** Two exact callback sites divide source text into three fragments. */
+ const expectedFragments=3;
  if((context.split(resultSite)
    .length
-   !==3)||(context.split(catchSite)
+   !==expectedFragments)||(context.split(catchSite)
      .length
-     !==3))
+     !==expectedFragments))
    throw new NativeBatchBuildError('Original context callback and error-reporting sites changed');
  context=context.replaceAll(
    resultSite,

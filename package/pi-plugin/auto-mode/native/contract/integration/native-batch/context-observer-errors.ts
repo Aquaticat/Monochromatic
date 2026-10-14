@@ -10,14 +10,17 @@
  Traversal no longer matches the original native callback positions.
  */
 export class NativeContextContractError extends Error {
+  /** Stable category identifies the original context capture boundary. */
   override readonly name = 'NativeContextContractError';
 }
 
 /**
  Private propagation wrapper retains even primitive and nullish thrown values.
  */
-export class NativeContextCaptureFailure extends Error {
-  override readonly name = 'NativeContextCaptureFailure';
+export class NativeContextCaptureError extends Error {
+  /** Stable category identifies the original context capture boundary. */
+  override readonly name = 'NativeContextCaptureError';
+  /** Exact caught value remains private until native propagation unwraps it. */
   readonly #original: unknown;
 
   /**
