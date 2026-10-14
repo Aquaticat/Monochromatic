@@ -89,14 +89,18 @@ with all 17 configured packages and 37 read-only workspace package mounts.
 `${HOME}/temp/agent/pi-luna-guard-controls-20261014/installed-equivalence.json`
 retains the complete comparison result.
 No new provider request was needed for this check.
-The [next frozen compensation experiment](../planning/pi-auto-mode-gateway-decisions-current-contract.md#question-batch-compensation-experiment)
-partitions the same questions under a shared deadline while preserving complete input.
-Automatic approval review rejected the new nine-call schedule before dispatch;
-the earlier six-call authorization does not cover it according to that review.
-The specific approval question is pending,
-and no new experiment call has run.
-The original native dialog is also pending a genuine human response;
-no automatic answer is permitted.
+The [question-batch experiment](../planning/pi-auto-mode-gateway-decisions-current-contract.md#question-batch-compensation-experiment)
+is complete after explicit authorization resolved the automatic review rejection.
+The user also authorized further Luna calls needed for this task without a total call cap.
+Retain finite experiments and the original production judgment bounds.
+All nine calls succeeded;
+every complete repetition returned the same 84 estimates as the original baseline,
+with four admitted at `0.80`.
+The shared judgments took 1,993.272,
+1,433.419,
+and 1,182.940 ms.
+Each used 246,783 reported input tokens rather than the baseline's 126,129.
+Batching is not adopted because this experiment supplies no semantic improvement.
 
 ## Original native RPC approval verification
 
@@ -141,8 +145,21 @@ Every completed control uses one assessment,
 zero provider requests,
 and exit zero.
 Only Allow executes the inert tool.
-No genuine human response has been supplied yet.
-That human boundary remains queued while the user's Luna migration takes priority.
+The user supplied a genuine Allow response.
+The original pending controller had disappeared without a completion report,
+so recovery recreated the disposable native dialog.
+The complete displayed operation and choices matched exactly;
+only the pending request identifier changed.
+The user's Allow response was forwarded to that recreated request.
+The fixture completed with one execution,
+one assessment,
+one original `user-approve` verdict,
+zero provider requests,
+exit zero,
+and empty execution and disposal stderr.
+`human-recreated-dialog.json` and `human-verified.json` retain the comparison and result.
+This verifies the genuine human response through the native dialog boundary;
+the production authorization-owner integration remains separate work.
 
 ## Typed native session construction
 

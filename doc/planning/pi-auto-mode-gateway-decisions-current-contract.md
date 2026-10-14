@@ -91,8 +91,25 @@ Higher admission counts alone cannot establish greater accuracy.
 Automatic approval review rejected dispatch before execution
 because the prior approval covered the six-call comparison,
 not this new nine-call schedule for the assessment data.
-Explicit approval for this prepared schedule is now pending.
-No request from this experiment has run.
+The user then explicitly authorized the nine calls
+and gave standing authorization for further Luna calls needed by this task without a total call cap.
+Individual experiments still retain finite schedules,
+explicit stopping conditions,
+and the original production judgment bounds.
+
+All nine calls completed with valid answers and no refusals.
+The complete parallel judgments took 1,993.272,
+1,433.419,
+and 1,182.940 ms.
+Every repetition returned exactly the original baseline's 84 categorical estimates,
+including independent confidence values;
+four estimates met the `0.80` admission cutoff.
+Each repetition used 246,783 reported input tokens,
+compared with the baseline's 126,129.
+The retained explicit-rubric responses provide a positive control for detecting answer changes.
+`baseline-comparison.json` retains the complete comparison receipt.
+Question batching is rejected as a compensation for the uncertainty observed in this input.
+The maintained single-call sender remains appropriate for these measured results.
 
 ## Historical initial scope and authorization
 
