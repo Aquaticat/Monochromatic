@@ -309,7 +309,11 @@ The server did not identify a tokenizer count or which limit fired.
 The next local candidate moves all original question instructions back to their respective question entries;
 exact reconstruction passes for the original state and every original question.
 Its state is 105,339 bytes and the complete request is 140,618 bytes.
-Provider acceptance and semantic behavior remain unverified for this candidate.
+The complete placement candidate returned HTTP 400 `max_tokens_exceeded` in 1,049.183 ms.
+Its single-question control retained the entire candidate state and failed with the same code in 518.147 ms.
+Both calls are terminal;
+neither returned answers or established semantic behavior.
+Moving instructions alone is therefore not a capacity workaround.
 
 ## Source identity
 
