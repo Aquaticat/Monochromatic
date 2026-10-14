@@ -58,6 +58,10 @@ const built: unknown = await import(new URL(
   import.meta.url
 ).href);
 assertNativeGuardModule(built);
+/**
+ Captured callables retain the checked contract inside deferred consumer tests.
+ */
+const { NativeScriptValueGuardError, scriptValueGuard } = built;
 
 //endregion Consumer assertions establish the copied native guard interface
 
@@ -74,7 +78,7 @@ await describe({
         /** Primitive and object throws keep their original occurrence order. */
         const errors = [undefined, null, false, 0, 'original', original, new Error('caught')];
         /** The consumer constructor delegates copying and descriptors to AggregateError. */
-        const guard = new built.NativeScriptValueGuardError({ errors });
+        const guard = new NativeScriptValueGuardError({ errors });
         expect(guard).toBeInstanceOf(AggregateError);
         expect(guard.name).toBe('NativeScriptValueGuardError');
         expect(guard.errors).not.toBe(errors);
@@ -96,19 +100,19 @@ await describe({
         /** Quotes, newlines, and source-like text remain literal diagnostic metadata. */
         const call = { name: 'tool"\n${literal}', id: 'call\\"\n' };
         /** Native call metadata does not replace the retained failure value. */
-        const callGuard = built.scriptValueGuard({ error: false, call });
+        const callGuard = scriptValueGuard({ error: false, call });
         expect(callGuard.message).toBe(`Native result binding for tool ${JSON.stringify(call.name)} call ${JSON.stringify(call.id)} was rejected. Resolve the original source, lifetime, ownership or supported-value failure; do not replace its judgment with a fresh budget.`);
-        expect(built.scriptValueGuard({ error: undefined }).message).toBe('Native result binding for original program result was rejected. Resolve the original source, lifetime, ownership or supported-value failure; do not replace its judgment with a fresh budget.');
+        expect(scriptValueGuard({ error: undefined }).message).toBe('Native result binding for original program result was rejected. Resolve the original source, lifetime, ownership or supported-value failure; do not replace its judgment with a fresh budget.');
       },
     }),
     it({
       name: 'propagates existing guards and derived guards without wrapping or relabeling them',
       fn: async function originalGuardIdentity() {
         /** Subclasses retain the original constructor-based diagnostic category. */
-        class DerivedGuard extends built.NativeScriptValueGuardError {}
+        class DerivedGuard extends NativeScriptValueGuardError {}
         /** Distinct original guard occurrences remain distinguishable. */
-        const guards = [new built.NativeScriptValueGuardError({ errors: [false] }), new DerivedGuard({ errors: [undefined] })];
-        for (const error of guards) expect(built.scriptValueGuard({ error, call: { name: 'later', id: 'later' } })).toBe(error);
+        const guards = [new NativeScriptValueGuardError({ errors: [false] }), new DerivedGuard({ errors: [undefined] })];
+        for (const error of guards) expect(scriptValueGuard({ error, call: { name: 'later', id: 'later' } })).toBe(error);
         expect(guards[1]?.name).toBe('DerivedGuard');
       },
     }),
@@ -117,8 +121,8 @@ await describe({
         name: `retains exact caught value ${index} in a new native guard`,
         fn: async function originalCaughtValue() {
           /** New guard ownership does not clone or normalize the thrown value. */
-          const guard = built.scriptValueGuard({ error });
-          expect(guard).toBeInstanceOf(built.NativeScriptValueGuardError);
+          const guard = scriptValueGuard({ error });
+          expect(guard).toBeInstanceOf(NativeScriptValueGuardError);
           expect(guard.errors.length).toBe(1);
           expect(guard.errors[0]).toBe(error);
         },
