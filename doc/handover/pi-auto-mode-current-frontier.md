@@ -29,11 +29,20 @@ zero external provider requests,
 exit zero,
 and empty child stderr.
 The controller preserves the complete pending native dialog and response transcript.
-Deny,
-Stop,
-cancellation,
+Deny also passed with no tool execution and empty stderr.
+Stop retained its original `user-deny` entry,
+executed no tool,
+and exited zero,
+but failed the controller's unconditional empty-stderr assertion.
+The source trace identifies deliberate request cancellation during assessment,
+which the existing approval-domain test already expects as a handler failure.
+This is not evidence of a disposal failure.
+The controller is being corrected to capture execution and disposal stderr separately,
+retain both without filtering,
+and require empty disposal output.
+Cancellation,
 delayed Allow,
-and an unrelated response identifier are being checked before presenting a genuine human request.
+and an unrelated response identifier remain pending.
 No genuine human response has been supplied yet.
 
 ## Typed native session construction
