@@ -426,6 +426,8 @@
     {
       "original": "integration/native-batch/agent-state-source.mjs",
       "maintained": "integration/native-batch/agent-state-source.mjs",
+      "currentMaintained": "integration/native-batch/agent-state-source.ts",
+      "movedOn": "2026-10-14",
       "sha256": "976d14a5eb2eb0b20f95c0bb9561fd355c131ac49087033a8b06f8468da1f788",
       "origin": "authored-source",
       "relocatedLiterals": 0

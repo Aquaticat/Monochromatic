@@ -2,7 +2,7 @@ import {copyFile,mkdir,readFile,writeFile} from 'node:fs/promises';
 import {createRequire} from 'node:module';
 import {dirname,join} from 'node:path';
 import {pathToFileURL} from 'node:url';
-import {sessionStateSource} from './agent-state-source.mjs';
+import {sessionStateSource} from './agent-state-source.ts';
 import {sessionToolDescriptionSource} from './tool-description-source.ts';
 import {managerSource,sessionSource} from './root-source.mjs';
 import {promptSessionSource,promptEmitterSource} from './prompt-source.mjs';

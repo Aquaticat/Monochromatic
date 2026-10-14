@@ -4,7 +4,7 @@ import {pathToFileURL} from 'node:url';
 import {sdk,core} from '../current-sdk/paths.ts';
 import {batchBoundary} from './boundary.mjs';
 import {agentInputSource} from './agent-input-source.mjs';
-import {agentStateSource} from './agent-state-source.mjs';
+import {agentStateSource} from './agent-state-source.ts';
 import {NativeBatchBuildError} from './build-entries.ts';
 import {replaceOnce} from './build-rebase.ts';
 
