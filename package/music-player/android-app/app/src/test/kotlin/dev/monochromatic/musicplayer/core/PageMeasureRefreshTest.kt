@@ -175,6 +175,27 @@ class PageMeasureRefreshTest {
         assertEquals(listOf(listOf("c", "d"), listOf("a", "b"), listOf("e")), recorder.reads.toList())
     }
 
+    // What:     `@Test fun aMeasureThatArrivesDuringAReadIsNotReadAgain()` checks the known measures are read per batch.
+    // Why:      The sweep publishes measures while a pass reads, and a track it already measured must not be read again
+    //           by the batches that follow.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // test("skips what arrived", () => { /* c measured by the sweep during [a,b]: next batch is [d,e] */ });
+    // ```
+    /** A measure for "c" that appears during the first read makes the second batch skip "c". */
+    @Test
+    fun aMeasureThatArrivesDuringAReadIsNotReadAgain() {
+        /** Recorder that starts at the top of the page. */
+        val recorder: Recorder = recorder(startUri = null)
+        runOnePass(recorder, batchSize = 2) { uris ->
+            if (uris == listOf("a", "b")) {
+                recorder.known.updateAndGet { current -> current + ("c" to measured) }
+            }
+        }
+        assertEquals(listOf(listOf("a", "b"), listOf("d", "e")), recorder.reads.toList())
+    }
+
     // What:     `@Test fun aTrackWithoutAPeakIsReadOncePerPass()` checks the attempt memory.
     // Why:      A track that never gets a peak stays unmeasured, and without the memory the pass would read it forever.
     //
