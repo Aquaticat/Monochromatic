@@ -353,6 +353,23 @@ for VFIO passthrough.
   Radeon RX 7900 XTX through on a Taichi Lite with a 7950X under Fedora 41. Prices conflict: 479.99 US dollars
   (CGMagazine review) against about 329 (a Funky Kit article for the 10th Anniversary edition). Possible other leads
   with a code display, not researched: ASUS ROG Crosshair X670E Hero (Q-Code, from memory).
+- The user confirmed (about 22:10 EDT) that the X870E Taichi Lite page shows a code display, and asked for boards
+  outside the Taichi line. Findings:
+  ASUS ROG Crosshair X870E Hero (ASUS pages): spec lists Q-Code and Q-LED, two CPU PCIe 5.0 x16 slots as x16 or
+  x8/x8 (x8/x4/x4 with M.2_3), Wi-Fi 7 that is Qualcomm QCNCM865 or MediaTek MT7927 by unit, Intel 2.5 Gb plus
+  Realtek 5 Gb LAN; 456.90 CHF, 568.90 EUR (list 762 EUR) in the ASUS shop. The Dark Hero also lists Q-Code and x8/x8
+  but ships MediaTek MT7927 and 10 Gb LAN. ROG Crosshair X670E Hero: x16 or x8/x8, Wi-Fi 6E, Intel 2.5 Gb; Q-Code
+  not seen in the fetched text; price not found.
+  ASRock FAQ page names a Dr. Debug display for the X870E Nova WiFi, X870 Pro RS and X870 Steel Legend WiFi. X870
+  Steel Legend WiFi (ASRock page): PCIE1 PCIe 5.0 x16 from the CPU, PCIE2 PCIe 4.0 x16 at x4 from the chipset, Key E
+  Wi-Fi socket; no x8/x8. X870E Nova WiFi: one PCIe 5.0 x16, one PCIe 3.0 x16, one x1; no x8/x8. A Reddit VFIO post
+  reports passthrough success with good IOMMU groups on a Steel Legend. ASRock forum thread titles (not read) report
+  POST freezes (A6, 0xd6, error 21) on Nova WiFi and idle or sleep freezing and POST trouble on Steel Legend.
+  MSI MPG X870E Carbon WiFi: an Unraid thread (January 2026) reports the IVRS "1:1 IOMMU mapping" refusal on this
+  exact board; its slot layout was not confirmed. Gigabyte X870E Aorus Master X3D: a CPU x16 plus a CPU x8 slot
+  (x8/x8 once the second is used) and a chipset x4 slot, but Gigabyte boards have IVRS reports and its display was
+  not confirmed. ASUS X870E reports found: a ProArt Reddit post says CPU slots sit in separate IOMMU groups, and a
+  Proxmox post says an RTX 5090 link dropped to x8 after a function-level reset until cold boot (5090 only).
 - Not verified: IOMMU group layouts of any candidate on the user's CPU and kernel, BIOS stability reports for 2026
   firmware, the 4000D's expansion slot count and cooler height limit against the NH-D15S, and the power supply.
 - A new board does not prove the memory errors at EXPO 6000 are the board's: the CPU memory controller and the DIMMs
