@@ -119,6 +119,23 @@ duplicate declarations,
 separate URL identities,
 and foreign files.
 Disposable omissions establish the sensitivity of both sets of guard assertions.
+Native `context` and `context_with_system` callbacks now retain original inputs,
+settled input mutations,
+and complete defined return values through the existing manager source pool.
+The synchronous observer preserves Pi's original await sites and handler-error reporting.
+Its terminal receipt must belong to the original published run before source-domain accounting accepts these callbacks.
+`test:native:context-receipts` exercises actual SDK permission,
+prohibition,
+unspecified,
+potential request instruction,
+throwing callback,
+and unobserved-event cases.
+Later queued return mutation cannot replace the value captured at native settlement.
+The observer's traversal,
+capture,
+error-propagation,
+and inherited bound checks have passing original controls and failing disposable omissions.
+Other unobserved native events remain explicit source-domain gaps.
 Complete lint verification,
 installed host activation,
 production semantic qualification,

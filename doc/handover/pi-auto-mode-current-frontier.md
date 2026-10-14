@@ -916,9 +916,51 @@ Implementation `301ab621de` adds a synchronous traversal observer;
 the follow-on integration routes its captures into the existing native manager input pool.
 The original awaits and native error reporting remain at their existing sites.
 Completion must be linked to the original published run before these event types can be accounted.
-This work is under verification and does not adopt a semantic policy,
-raise budgets,
-or activate the installed plugin.
+Native integration now passes after the source-location correction in `625ade8649`.
+The first wired run stopped at `SourceInputLocationError: Source input location names an unsupported native field`;
+the correction admits the new `contextHandler` representation through the existing location copier.
+It does not confer authority on those source records.
+The observer is now a frozen factory interface with private closure state,
+and `06262e6364` checks the combined handler bound before allocating positions.
+It retains the existing 64-source and 256-handler traversal limits.
+
+`test:native:context-receipts` passes its observer unit cases and actual SDK contrasts.
+Permission executes three prepared children;
+prohibition,
+no applicable instruction,
+and potential request instructions execute none.
+The ordinary callback fixture retains eight context receipts among 41 original sources,
+and preserves the original result before both later queued mutations.
+The throwing callback fixture retains its mutated input,
+records no invented return value,
+and has seven context receipts among 40 original sources.
+Missing completion or a completion associated with another run leaves a source-domain gap.
+The actual unobserved `turn_start` callback also leaves that gap and executes no child.
+All these cases use authored semantic answers and zero provider requests.
+The final contrast log is `${HOME}/temp/agent/pi-native-context-receipts-final-20261014.log`.
+
+The package type check,
+owned native build,
+and scoped lint of nine changed TypeScript files pass.
+The disposable omission campaign at `${HOME}/temp/agent/pi-native-context-omissions-gf45Nz`
+passes its original baseline and fails the intended assertions for all eleven omissions:
+stage order,
+callback identity,
+traversal completion,
+emission completion,
+extension bound,
+handler bound,
+data-path inspection,
+original capture-error propagation,
+input capture,
+complete result capture,
+and settled input capture.
+Every retained failure log was inspected;
+the production artifact was not modified.
+Affected host and complete package-unit regressions are the next verification step.
+This work adopts no production semantic policy,
+raises no budget,
+and does not activate the installed plugin.
 The unobserved-event regression now uses a native `turn_start` callback;
 historical `--unobserved-context` commands retain their original meaning and are superseded by `--unobserved-event`.
 

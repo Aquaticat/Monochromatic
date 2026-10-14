@@ -86,6 +86,7 @@ export function createNativeContextObserver(capture: (input: NativeContextInput)
     readonly phase: NativeContextInput['phase'];
     readonly value: unknown;
   }): void {
+    tagged({tag:record.name,l:rl}).debug('retaining original context source value');
     /**
      Only the original active event can settle or receive source capture.
      */
@@ -112,6 +113,7 @@ export function createNativeContextObserver(capture: (input: NativeContextInput)
    @throws NativeContextContractError when settlement loses its original input
    */
   function settle(stage: NativeContextStage): void {
+    tagged({tag:settle.name,l:rl}).debug('retaining settled original callback input');
     /**
      Only the original active event can settle or receive source capture.
      */
@@ -145,7 +147,7 @@ export function createNativeContextObserver(capture: (input: NativeContextInput)
   }): void {
     tagged({
       tag:begin.name,
-      l
+      l:rl
     })
       .debug('capturing original context traversal');
     if (state.completed || state.stage
@@ -219,7 +221,7 @@ export function createNativeContextObserver(capture: (input: NativeContextInput)
   }): void {
     tagged({
       tag:before.name,
-      l
+      l:rl
     })
       .debug('capturing original context callback input');
     /**
@@ -256,7 +258,7 @@ export function createNativeContextObserver(capture: (input: NativeContextInput)
   function returned(result: unknown): void {
     tagged({
       tag:returned.name,
-      l
+      l:rl
     })
       .debug('capturing original context callback result');
     /**
@@ -283,7 +285,7 @@ export function createNativeContextObserver(capture: (input: NativeContextInput)
     NativeContextCaptureError.rethrow(error);
     tagged({
       tag:failed.name,
-      l
+      l:rl
     })
       .debug('native context callback or result processing threw; original native reporting retains its caught value');
     /**
@@ -308,7 +310,7 @@ export function createNativeContextObserver(capture: (input: NativeContextInput)
   function end(kind: NativeContextKind): void {
     tagged({
       tag:end.name,
-      l
+      l:rl
     })
       .debug('closing original context traversal');
     /**
@@ -337,7 +339,7 @@ export function createNativeContextObserver(capture: (input: NativeContextInput)
   function complete(): NativeContextCompletion {
     tagged({
       tag:complete.name,
-      l
+      l:rl
     })
       .debug('publishing original context completion');
     if (state.completed || state.stage
