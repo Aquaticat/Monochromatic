@@ -3,9 +3,8 @@
 
  @module
  */
-import type { SessionManager } from '@earendil-works/pi-coding-agent';
+import type { SessionManager, AgentSession } from '@earendil-works/pi-coding-agent';
 import type { RootSessionSdkFactory } from '../native-batch/session-root-types.ts';
-import type { AgentSession } from '@earendil-works/pi-coding-agent';
 
 export { SessionManager } from '@earendil-works/pi-coding-agent';
 

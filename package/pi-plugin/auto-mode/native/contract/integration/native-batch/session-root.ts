@@ -34,6 +34,12 @@ const l = tagged({ tag: 'auto-mode-native-session-root' });
  @param definition - fixed native readers, SDK constructor, and optional registration observer
  @returns original manager facade and construction lifecycle
  @throws NativeSessionRootError when SDK ownership, result shape, or cleanup requirements fail
+
+ @example
+ ```ts
+ const factory = createRootSessionFactory(nativeDefinition);
+ const result = await factory.create({ options });
+ ```
  */
 export function createRootSessionFactory<const Options extends RootSessionOptions>({
   createAgentSession,
@@ -47,8 +53,11 @@ export function createRootSessionFactory<const Options extends RootSessionOption
   const fl = tagged({ tag: createRootSessionFactory.name, l });
   if (onSessionRegistered !== undefined && typeof onSessionRegistered !== 'function')
     throw new NativeSessionRootError('Session registration observer must be fixed by the original bootstrap');
+  /** Manager membership remains with the incumbent original-constructor owner. */
   const owner = createManagerConstructorOwner(nativeManager);
+  /** Only the original SDK callback can register a session-manager pairing. */
   const sessions = new WeakMap<AgentSession, SessionManager>();
+  /** Registry accounting tracks original construction ownership independently of policy. */
   const accounting = {
     registryRequests: 0,
     returnedRegistries: 0,
@@ -56,6 +65,7 @@ export function createRootSessionFactory<const Options extends RootSessionOption
     reusedCanonicalStateBinds: 0,
   };
   fl.debug('binding original manager registry and construction scopes');
+  /** Registry publication retains its existing lifecycle token issuer. */
   const { lifecycle } = createNativeManagerRegistry({
     owner,
     sessionOwner: {
@@ -67,12 +77,14 @@ export function createRootSessionFactory<const Options extends RootSessionOption
     },
     readRootOccurrence: createSessionRootReader({ readActiveSessionManager, readManagerOccurrence: readRootOccurrence }),
     /** Incumbent lifecycle events are diagnostic and never create authority. */
-    trace(event): void {
-      const tl = tagged({ tag: 'trace', l: fl });
+    trace: function trace(event): void {
+      /** Trace output carries the original factory's context without native object values. */
+      const tl = tagged({ tag: trace.name, l: fl });
       tl.debug(event);
     },
     accounting,
   });
+  /** Construction scopes own exact-result publication and abandoned-session cleanup. */
   const scopes = createRuntimeFactoryScopes({
     lifecycle,
     readManager: readActiveSessionManager,
@@ -82,11 +94,14 @@ export function createRootSessionFactory<const Options extends RootSessionOption
       readActiveSessionManager(result.session);
     },
     /** Failed construction requires actual native cleanup completion before reuse. */
-    disposeSession(session): void {
-      const dl = tagged({ tag: 'disposeSession', l: fl });
+    disposeSession: function disposeSession(session): void {
+      /** Abandoned cleanup retains a distinct diagnostic boundary. */
+      const dl = tagged({ tag: disposeSession.name, l: fl });
       dl.debug('disposing abandoned original SDK session');
       session.dispose();
-      if (readSessionDisposalState(session).completed !== true)
+      /** Untyped runtime callers must report literal completion, not merely a truthy value. */
+      const completed: unknown = readSessionDisposalState(session).completed;
+      if (completed !== true)
         throw new NativeSessionRootError('Original SDK disposal did not complete; retry owned construction cleanup');
     },
   });
@@ -111,18 +126,21 @@ export function createRootSessionFactory<const Options extends RootSessionOption
     if (Reflect.get(options, 'sessionManager') !== undefined || Reflect.get(options, 'ownerFactoryScope') !== undefined)
       throw new NativeSessionRootError('Session and construction ownership are selected through this factory, not SDK option overrides');
     owner.assertOwned(manager);
+    /** Reservation must exist before the SDK can emit its original session callback. */
     const scope = scopes.begin({ manager });
     /** This occurrence tracks registration progress without duplicating identity ownership. */
     const progress = { registered: false };
     cl.debug('starting original SDK construction');
     try {
+      /** The original SDK receives only the owned manager and registration capability. */
       const result = await createAgentSession({
         ...options,
         sessionManager: manager,
         ownerFactoryScope: {
           /** Register the original session before any observer or returned result can publish it. */
-          registerSession(session): void {
-            const rl = tagged({ tag: 'registerSession', l: cl });
+          registerSession: function registerSession(session): void {
+            /** Registration diagnostics identify the original constructor occurrence. */
+            const rl = tagged({ tag: registerSession.name, l: cl });
             if (progress.registered)
               throw new NativeSessionRootError('SDK construction emitted more than one original session');
             if (sessions.has(session))
@@ -135,19 +153,23 @@ export function createRootSessionFactory<const Options extends RootSessionOption
           },
         },
       });
+      /** Scope acceptance authenticates the exact registered original session. */
       const prepared = scope.accept(result);
+      /** The root pairs original objects without copying their capabilities. */
       const root = Object.freeze({ session: prepared.session, manager });
+      /** Allocate the complete return object before the non-fallible publication tail. */
       const published = Object.freeze({ ...prepared, root, lifecycle });
       cl.debug('publishing prepared original SDK result');
       scope.publish(prepared);
       return published;
     } catch (error) {
-      cl.error(error);
+      cl.debug('original construction failed; retaining its thrown value through cleanup');
+      /** Keep exact thrown values, including undefined, for rethrow or aggregate reporting. */
       const failures = [error];
       try {
         scope.abort();
       } catch (cleanupError) {
-        cl.error(cleanupError);
+        cl.debug('abandoned construction cleanup failed; retaining both original failures');
         failures.push(cleanupError);
       }
       if (failures.length > 1)
@@ -165,8 +187,10 @@ export function createRootSessionFactory<const Options extends RootSessionOption
    @throws NativeSessionRootError when original construction ownership or cleanup fails
    */
   async function create({ options, createManager }: Parameters<RootSessionFactory<Options>['create']>[0]): Promise<RootSessionResult> {
+    /** Manager selection shares the factory boundary while retaining its own function tag. */
     const cl = tagged({ tag: create.name, l: fl });
     cl.debug('selecting original manager for SDK construction');
+    /** A supplied constructor selector remains responsible for its original manager result. */
     const manager = createManager === undefined ? owner.managers.inMemory(options.cwd) : createManager(owner.managers);
     return await createFromManager({ options, manager });
   }
