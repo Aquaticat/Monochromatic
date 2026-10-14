@@ -249,7 +249,8 @@ and the decisions D106 to D119 at the end of `package/music-player/design/decisi
   117 ms after; `getState` 42% of main-thread samples before and 5% after. A 3-track queue is unchanged (21 to 22 ms
   per change), the control that the probe sees no difference where none is expected.
   Residual media3 cost, removed, on `main` since `29dfe1b934` (the user chose to remove the system queue, not window
-  it; Android Auto, Wear and any app reading `getQueue` lose the queue list, derived from the source and untested): `MediaSessionLegacyStub.ControllerLegacyCbForBroadcast.updateQueue` converted the whole timeline to `QueueItem`s
+  it; Android Auto, Wear and any app reading `getQueue` lose the queue list, derived from the source and untested):
+  `MediaSessionLegacyStub.ControllerLegacyCbForBroadcast.updateQueue` converted the whole timeline to `QueueItem`s
   and called `MediaSession.setQueue` on every timeline change (32 to 35% of main-thread samples, `setQueue` 22 to 24%).
   It returns early with `setQueue(null)` when `isQueueEnabled()` is false, and that is false when the platform
   session's commands lack `COMMAND_GET_TIMELINE`
