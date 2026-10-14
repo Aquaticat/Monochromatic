@@ -5,7 +5,15 @@
  */
 import { describe, expect, it } from '@monochromatic-dev/module-test/ts';
 import { parse } from 'yuku-parser';
-import { NativeImportBuildError, rewriteNativeImports } from '../dist/native/contract/integration/native-batch/build-imports.ts';
+
+/**
+ Runtime uses the built artifact while the maintained source provides its TypeScript contract.
+ */
+const built: typeof import('../native/contract/integration/native-batch/build-imports.ts') = await import(new URL('../dist/native/contract/integration/native-batch/build-imports.ts', import.meta.url).href);
+/**
+ Native build exports are exercised from the copied artifact, not the source module.
+ */
+const { NativeImportBuildError, rewriteNativeImports } = built;
 
 //region Source roles and original bytes remain observable at the built boundary
 
@@ -54,12 +62,20 @@ await describe({
           'static:./all.mjs',
           'dynamic:./dynamic.mjs',
         ]);
-        expect(rewritten).toBe(source
-          .replace('"./static.mjs"', '"file:///qualified/static.mjs"')
-          .replace('"./side-effect.mjs"', '"file:///qualified/side-effect.mjs"')
-          .replace('"./named.mjs"', '"file:///qualified/named.mjs"')
-          .replace('"./all.mjs"', '"file:///qualified/all.mjs"')
-          .replace('"./dynamic.mjs"', '"file:///qualified/dynamic.mjs"'));
+        expect(rewritten).toBe([
+          '// import decoy from "./comment.mjs";',
+          'const text = "import(\\\"./string.mjs\\\")";',
+          'import {',
+          '  value,',
+          '} from "file:///qualified/static.mjs";',
+          'import "file:///qualified/side-effect.mjs";',
+          'export { value } from "file:///qualified/named.mjs";',
+          'export * from "file:///qualified/all.mjs";',
+          'export const local = 1;',
+          'export async function load(path) {',
+          '  return [import("file:///qualified/dynamic.mjs"), import(path), 2, null];',
+          '}',
+        ].join('\n'));
         expect(parse(rewritten, { sourceType: 'module' }).diagnostics).toEqual([]);
       },
     }),
