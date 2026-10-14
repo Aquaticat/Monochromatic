@@ -70,6 +70,10 @@ await cp(
   ),
 );
 await cp(
+  join(import.meta.dirname, 'loader.ts'),
+  join(output, 'loader.ts'),
+);
+await cp(
   join(
     import.meta.dirname,
     'cli.mjs',

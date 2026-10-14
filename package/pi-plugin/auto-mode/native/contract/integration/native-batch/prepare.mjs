@@ -18,7 +18,7 @@ import {parse} from "../../collector/program-rule-batch-sdk-copy-v2/input/parser
 import {prepareNativeHost} from '../native-host/prepare.mjs';
 
 class NativeBatchBuildError extends Error {}
-import {sdk,core,ai,codemode,tui,maintainedRoot} from '../current-sdk/paths.mjs';
+import {sdk,core,ai,codemode,tui,maintainedRoot} from '../current-sdk/paths.ts';
 const output=join(import.meta.dirname,'generated');
 mkdirSync(output,{recursive:true,mode:0o700});
 function entry({root,subpath='.'}){

@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import {sdk as currentSdk,maintainedRoot} from '../current-sdk/paths.mjs';
+import {sdk as currentSdk,maintainedRoot} from '../current-sdk/paths.ts';
 import {mkdtempSync,mkdirSync,realpathSync,writeFileSync} from 'node:fs';
 import {homedir} from 'node:os';
 import {join} from 'node:path';

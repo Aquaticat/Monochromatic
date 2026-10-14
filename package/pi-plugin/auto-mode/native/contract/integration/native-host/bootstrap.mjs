@@ -1,7 +1,7 @@
 import { statSync } from 'node:fs';
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
-import { sdk, maintainedRoot } from '../current-sdk/paths.mjs';
+import { sdk, maintainedRoot } from '../current-sdk/paths.ts';
 import { createNativeMarkdownParser } from '../../native-index/native-parser.mjs';
 import { bindNativePolicyRuntime } from '../native-batch/runtime.mjs';
 import { readSessionDisposalState } from '../native-batch/generated/agent-session.mjs';

@@ -403,6 +403,8 @@
     {
       "original": "integration/current-sdk/paths.mjs",
       "maintained": "integration/current-sdk/paths.mjs",
+      "currentMaintained": "integration/current-sdk/paths.ts",
+      "movedOn": "2026-10-14",
       "sha256": "28650a0b8987c0b09a84eed37a831897aa6eabef28133ca5302b15a6632abb6c",
       "origin": "authored-source",
       "relocatedLiterals": 0

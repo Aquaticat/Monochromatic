@@ -2,7 +2,7 @@ import { readFileSync, writeFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
-import { sdk } from '../current-sdk/paths.mjs';
+import { sdk } from '../current-sdk/paths.ts';
 
 export class NativeHostBuildError extends Error {}
 
