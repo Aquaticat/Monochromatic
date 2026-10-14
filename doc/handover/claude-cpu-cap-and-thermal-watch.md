@@ -534,6 +534,25 @@ RX 7600. Prices are launch or historical figures; current stock and street price
   used stock exists. Against the earlier list, both Strix boards give the RX 7600 a better slot than the Nova (CPU or
   chipset Gen4 x4 instead of Gen3 x2) at a similar launch price, but have less VFIO evidence.
 
+#### VFIO and stability for the Strix boards (searched about 00:40 EDT, snippets only, no thread read in full)
+
+- X670E-E, VFIO: an r/VFIO post with a 7950X on this board says the IOMMU groups "generally look pretty good", with
+  the network, audio and USB controllers sharing one group, and that the poster returned the gear because DDR5 caused
+  problems. The iommu.info database lists 47 groups with each USB controller separate; a Level1Techs member doubted it
+  and no owner confirmed it. A commenter says ASUS ROG boards usually expose a PCIe ACS setting, other ASUS lines do
+  not. No report of the 1:1 IOMMU mapping refusal was found for any ASUS Strix board.
+- B650E-E, VFIO: one r/VFIO thread from January 2023 ("Considering returning my Rog Strix B650E-E") says the IOMMU
+  groups looked good but lists several other issues (text not read); no group list was found.
+- X670E-E, BIOS stability in 2026: an r/ASUSROG post is titled "Updating to BIOS 3804 on ASUS ROG STRIX X670E-E bricked
+  my system with my 7950X (Code 00)", and a commenter's 7950X3D worked, so it may be specific to the plain 7950X (the
+  user's CPU); an ROG forum post says EXPO broke after BIOS 3702 with BSODs and restarts; other ROG forum posts report
+  hard freezes or Code 00 on Crosshair X670E boards with BIOS 3702 (AGESA 1.3.0.1). Older reports (2023) include random
+  shutdowns on this board. ASUS X670E-F with BIOS 4003 freezes in Windows with fTPM on, Linux boots (a different board).
+- These are anecdotes, not rates. They argue for choosing a BIOS from release notes and keeping the board's previous
+  BIOS file for rollback, and for not updating to 3804 on a 7950X until a thread confirms it is safe.
+- Neither board would fix a memory fault that comes from the CPU's memory controller or the DIMMs; the memtest86+ run
+  at EXPO 6000 on the new board is still the discriminating test.
+
 ## Open questions
 
 - The user suspects the motherboard (about 21:05 EDT): the Gigabyte B650 GAMING X AX rev 1.3 freezes in the BIOS
