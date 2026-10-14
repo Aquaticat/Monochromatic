@@ -765,10 +765,23 @@ option-key,
 and input-kind guards each fail their intended consumer assertion;
 the unchanged copied implementation passes.
 The production artifact is not modified by those omission controls.
+The built resource consumer and real logger sink also retain all 303 attempted snapshots
+in two diagnostic records across a microtask boundary,
+including both unsupported-kind attempts.
 No heap limit,
 source bound,
 freshness check,
 or semantic admission policy changed.
+
+Contribution contracts now express absent fields through optional properties;
+their fixtures omit absent values and retain explicit malformed-JavaScript rejection controls.
+Commits `07ce8e0a95`,
+`757ef72c92`,
+`104e7e7f44`,
+and `af00dfcf6f` retain that work and its statement-layout corrections.
+The rebuilt declaration artifact and package type check pass.
+The fixture's full semantic formatter is still running with the original package resource limits;
+final scoped lint and affected consumer verification remain pending.
 
 The first approved native dispatch failed because the inherited test loader derived dependency paths
 from the codemode worker's disposable home.

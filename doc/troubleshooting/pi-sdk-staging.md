@@ -6535,6 +6535,18 @@ Permission executes three prepared child calls;
 prohibition and unspecified policy execute none.
 These fixtures make no provider requests and adopt no production semantic policy.
 
+The disposable `pi-resource-diagnostic-counts-PaxlX6` consumer exercises the built snapshot function
+and real file sink with a 128 MiB child heap.
+Its `consumer.ts` sends 100 context,
+100 system,
+100 append,
+and two unsupported-kind attempts in one synchronous batch,
+then one system attempt after yielding and flushing.
+The retained sink records contain exactly those category counts in two diagnostic writes.
+The initial record reader incorrectly assumed that the sink-verification record had a message;
+reading the actual JSONL identified its separate `test: true` shape.
+The corrected reader validates the original captured records without rerunning the consumer.
+
 ### Rejected approaches and limits
 
 Passing isolated copy tests did not exercise the repeated native freshness checks.
