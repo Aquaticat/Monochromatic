@@ -248,6 +248,28 @@ Moving the instructions is insufficient even for one question with the complete 
 The private directory retains both original responses and result records.
 No further request is scheduled by this experiment.
 
+### Structural encoding hypotheses
+
+The next offline comparison ranks these independently testable explanations:
+
+1.  Repeated record keys add representational overhead.
+    A shared ordered field list with explicit row values should reduce serialized bytes
+    while reconstructing every object key and value exactly.
+2.  Nested deduplication can leave shared entries referenced only once after their parents are shared.
+    Inlining those entries should remove reference and dictionary overhead without changing the decoded value.
+3.  JSON strings outside native source records retain escaping and repeated nested structure.
+    Parsing only strings that reproduce exactly with `JSON.stringify` should permit further sharing.
+
+The measured placement-state object-key syntax occupies 28,757 bytes;
+this is not a tokenizer measurement.
+Each candidate must reconstruct the complete original state and every original question.
+No candidate is installed or sent merely because its byte count decreases.
+The provider's documented indirection weakness remains a separate semantic risk.
+
+Automatic approval review again rejected the documentation commit's existing cgroup attachment.
+The user renewed authorization for that attachment with unchanged limits;
+commit `07987fab66` then completed.
+
 [models]: https://docs.typesafe.ai/models
 [api]: https://docs.typesafe.ai/api
 [limitations]: https://docs.typesafe.ai/model-jaggedness/jev-1.13
