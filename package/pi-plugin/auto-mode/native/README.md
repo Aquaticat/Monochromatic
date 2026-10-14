@@ -37,6 +37,12 @@ new session,
 in-memory fork,
 persisted resume,
 and disposal retry without external provider requests.
+The separate-process RPC fixture starts `dist/native/cli.mjs`,
+checks the selected Qwen model and idle state,
+and requires shutdown without stderr output.
+The built-in Codemode registration retains the original owned definition.
+The package's TypeScript source set explicitly includes `native/**/*.ts`.
+The owned JavaScript runtime still needs type and lint completion.
 Complete lint verification,
 installed host activation,
 production semantic qualification,

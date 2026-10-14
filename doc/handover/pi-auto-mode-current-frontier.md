@@ -280,12 +280,39 @@ persisted resume,
 and disposal retry.
 The verified case constructed four sessions and invoked the original trust callback four times,
 with no external provider request.
-The extended incomplete-cleanup admission control is being verified separately.
+Required-red `fde85bf48d` demonstrated that a new session could be constructed after incomplete disposal.
+Fix `dc56e44191` withholds further construction until the original cleanup succeeds.
+The extended native lifecycle case passes,
+including retry and repeated completed disposal.
 The normal SDK permission case still passes with five accounted contributions and all prepared children executed.
-Copied-payload and copied-transcript controls are being added to the native serializer receipt regression.
+Copied-payload and copied-transcript controls now stay unresolved and execute no prepared child.
+Removing only the native payload-occurrence guard in a disposable worktree made the copied-payload test fail:
+it incorrectly reported the copied contribution as accounted.
+Restoring the guard and rebuilding made both rejection cases pass.
+
+The candidate CLI also passes a separate-process RPC check using disposable state and synthetic credentials.
+It returns `qwen-token-plan-individual/qwen3.8-flash`,
+has no active stream or pending messages,
+and exits with no stderr output.
+The check disables external fetch and sends no model prompt.
+The built-in Codemode extension initially copied away the original owned definition.
+Required-red `0a5f3080ca` and fix `1adc116d99` preserve that definition through native registration;
+the host lifecycle and normal SDK execution cases pass afterward.
+
+The package type-check scope needed a correction.
+The inherited configuration excluded `native/`,
+so its earlier success did not validate the native build helpers.
+Commit `d99d0db3a5` adds those TypeScript files to the configured source set.
+A disposable `native/type-scope-probe.ts` produced the required TypeScript `TS2322` failure,
+and the same check passed after removing the intentional error.
+The build-info file now lists the original native helpers.
+The owned JavaScript graph still needs type and lint work.
+The measured scoped lint run over the new host files and initial helpers reported 975 warnings and 97 errors.
+The build helpers are being refactored to asynchronous file and process operations,
+with tagged diagnostics and explicit types;
+full lint success remains unestablished.
 The candidate CLI has no adopted semantic admission policy.
-Direct CLI process verification,
-complete lint,
+Complete lint,
 installed activation,
 and genuine human approval remain outstanding.
 
