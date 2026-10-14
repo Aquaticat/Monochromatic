@@ -6,6 +6,7 @@
 import type { ResourceLoader } from '@earendil-works/pi-coding-agent';
 import { tagged } from '@monochromatic-dev/module-logger/ts';
 import { SourceCollectionError } from '../errors.ts';
+import { recordResourceInputCopy } from './diagnostics.ts';
 import {
   readInputData,
   requireInputFields,
@@ -174,13 +175,9 @@ export function snapshotInput({
   readonly value: unknown;
 }): ResourceInputSnapshot {
   /**
-   Entry diagnostics identify the original source boundary without logging its text.
+   Count every attempted copy without retaining a sink write for each synchronous freshness check.
    */
-  const rl = tagged({
-    tag: snapshotInput.name,
-    l
-  });
-  rl.debug(`copying native resource input: ${kind}`);
+  recordResourceInputCopy(kind);
   /**
    The entire copied source enters the original aggregate budget.
    */
