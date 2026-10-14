@@ -61,7 +61,17 @@ The package's TypeScript source set explicitly includes `native/**/*.ts`.
 The build helpers,
 module resolver,
 dependency paths,
-and native manager constructor owner now pass their scoped type and lint checks.
+native manager constructor owner,
+import rewriter,
+staged import identity checks,
+and Markdown adapter now pass their scoped type and lint checks.
+`test:native:build-imports` exercises the built rewriter with escaped and adversarial module names.
+`test:native:parser` checks the installed parser and disposable package variants;
+it retains version,
+module-resolution,
+root-shape,
+and original-coordinate rejection controls.
+Separate disposable omission checks demonstrate that the corresponding guard assertions fail when each guard is removed.
 The owned JavaScript runtime still needs type and lint completion.
 Complete lint verification,
 installed host activation,

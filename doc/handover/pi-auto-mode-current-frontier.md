@@ -413,7 +413,8 @@ The Node parser and owned rebuild pass on that change.
 Native SDK execution,
 all current approval-context cases,
 and host lifecycle replacement and cleanup also pass.
-The complete native lint run now reports 14,790 warnings and 538 errors across 157 modules.
+At `ff0a34feaf`,
+the complete native lint run reported 14,790 warnings and 538 errors across 157 modules.
 The original generated input snapshots remain included in that check.
 No lint rule or admission condition was changed.
 Commit `fbcd866f88` connects asynchronous package manifest capture to native preparation.
@@ -470,7 +471,37 @@ Node parses all 163 modules after the split.
 The seven connected JavaScript preparation files report 565 warnings and zero errors.
 Warnings still fail the shared `denyWarnings` lint policy;
 this is not a passing package lint result.
-The staged-import helper is now being ported to TypeScript with its original file-identity checks retained.
+The staged-import TypeScript port in `3ebdfb4d19` and `8dede28e63` retains its original file-identity checks.
+Its scoped lint,
+package types,
+owned rebuild,
+and canonical decision fixtures pass.
+The native Markdown adapter is now typed in `native/contract/native-index/native-parser.ts`
+with a separate consumer contract.
+It retains the measured `satteri@0.10.5` profile and original UTF-16 coordinate control,
+and verifies that CommonJS and ESM resolve the same measured parser entry.
+The old unused repository-root input was removed from both maintained callers.
+Manifest identity and its hash now describe the same captured bytes.
+The rebuilt native decision fixtures,
+package type check,
+installed parser test,
+and disposable dependency variants pass.
+The parser implementation and fixture files report zero lint diagnostics.
+The first nested-array assertion was corrected after reading the Chai-backed matcher implementation;
+it now checks original tree fields and retained source positions directly.
+The fixture loader's missing explicit URL input type was corrected after TypeScript `TS9011`.
+Disposable copies also verify each parser guard's sensitivity:
+manifest identity,
+fixed source epoch,
+ESM entry identity,
+MDX rejection,
+root shape,
+and source coordinates.
+Every omission fails its intended consumer assertion,
+while the original copied module passes;
+neither the production artifact nor installed dependencies were changed by those controls.
+The native host source-preparation module is now being typed;
+its real CLI and lifecycle consumers are the next verification step.
 
 The first approved native dispatch failed because the inherited test loader derived dependency paths
 from the codemode worker's disposable home.
