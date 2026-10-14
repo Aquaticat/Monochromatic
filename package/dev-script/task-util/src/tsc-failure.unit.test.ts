@@ -21,7 +21,7 @@ const emission = 'TSFILE: /fixture/build-info.tsbuildinfo\n';
 /** Each case selects process output independently of the wrapper implementation. */
 const cases: readonly CompilerFailureCase[] = [
   { name: 'forwards successful compiler output', stdout: success, stderr: '', exitCode: 0,
-    expectedCode: 0, expectedStdout: success, expectedStderr: '' },
+    expectedCode: 0, expectedStdout: 'fixture compiler version 1', expectedStderr: '' },
   { name: 'permits only known suppressed dependency errors', stdout: suppressed, stderr: '', exitCode: 2,
     expectedCode: 0, expectedStdout: '', expectedStderr: '' },
   { name: 'preserves a Go panic failure', stdout: '', stderr: panic, exitCode: 2,
