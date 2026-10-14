@@ -38,6 +38,7 @@ import { checkPlayback, } from './wide-playback.ts';
 import { checkMenuAndDelete, } from './wide-row-menu.ts';
 import { checkRowChords, } from './wide-rows.ts';
 import { checkSearchAndTooltip, } from './wide-search.ts';
+import { checkSelectOnly, } from './wide-select.ts';
 import { checkSeeking, } from './wide-seek.ts';
 import { checkSettings, } from './wide-settings.ts';
 import { checkTrackList, } from './wide-track-list.ts';
@@ -165,6 +166,10 @@ export async function runWideSession(context: RunContext,): Promise<void> {
     session,
   },);
   await checkClickThrough({
+    context,
+    session,
+  },);
+  await checkSelectOnly({
     context,
     session,
   },);
