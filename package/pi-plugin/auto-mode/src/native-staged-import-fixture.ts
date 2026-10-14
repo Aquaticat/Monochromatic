@@ -75,7 +75,9 @@ export const stagedImport: StagedImportModule = built;
 
 //region Each original input lives in a private disposable directory
 
-/** Private scratch parents permit access only by the current user. */
+/**
+ Private scratch parents permit access only by the current user.
+ */
 const PRIVATE_SCRATCH_MODE = 0o700;
 
 /**

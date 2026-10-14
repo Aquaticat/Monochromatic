@@ -72,7 +72,7 @@ await describe({
         },
       });
     }),
-    ...['foreign-file', 'query', 'fragment', 'alias-binding', 'different-import', 'side-effect', 'multiple-bindings', 'duplicate', 'invalid'].map(function rejectedImport(kind) {
+    ...['foreign-file', 'query', 'fragment', 'alias-binding', 'different-import', 'side-effect', 'multiple-bindings', 'duplicate', 'invalid', 'invalid-after-import'].map(function rejectedImport(kind) {
       return it({
         name: `rejects ${kind} before selecting a generated dependency`,
         fn: async function unownedImport() {
@@ -89,6 +89,7 @@ await describe({
             'multiple-bindings': `import {run, other} from ${JSON.stringify(fixture.dependencyUrl.href)};`,
             duplicate: `import {run} from ${JSON.stringify(fixture.dependencyUrl.href)};\nimport {run} from ${JSON.stringify(fixture.dependencyUrl.href)};`,
             invalid: 'import {',
+            'invalid-after-import': `import {run} from ${JSON.stringify(fixture.dependencyUrl.href)};\nconst broken = ;`,
           };
           /** A missing fixture key must not masquerade as the intended rejection. */
           const source = sources[kind];
