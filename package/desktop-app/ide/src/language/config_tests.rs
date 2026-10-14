@@ -212,7 +212,8 @@ fn the_nearest_typescript_install_decides_and_an_older_one_is_not_skipped() {
     assert!(
         languages
             .refresh("typescript", Some(&document))
-            .expect("refresh")
+            .expect("refresh"),
+        "the package's TypeScript 5 was skipped for the root's TypeScript 7"
     );
     let Some(Unavailable::Missing(reason)) = languages.unavailable(typescript::SERVER) else {
         panic!("the package's TypeScript 5 was skipped for the root's TypeScript 7");
@@ -229,6 +230,29 @@ fn the_nearest_typescript_install_decides_and_an_older_one_is_not_skipped() {
             .expect("refresh")
     );
     assert_eq!(languages.unavailable(typescript::SERVER), None);
+}
+
+#[test]
+fn the_registry_follows_the_launcher_to_another_install_of_version_seven() {
+    // Both installs are usable, so availability never changes; only the launcher's location does.
+    let (_directory, root) = project();
+    install_typescript(&root, "7.0.2");
+    install_typescript(&root.join("package/app"), "7.1.0");
+    let document = nested_document(&root);
+    let mut languages = Languages::new(&root, LanguageSetup::unconfined()).expect("registry");
+    assert!(
+        languages
+            .refresh("typescript", Some(&document))
+            .expect("refresh"),
+        "the registry kept the launcher of the other install"
+    );
+    let launch = languages.launch(typescript::SERVER).expect("launch");
+    assert_eq!(
+        launch.command,
+        root.join("package/app/node_modules/typescript/bin/tsc")
+            .to_str()
+            .expect("Unicode path")
+    );
 }
 
 #[test]

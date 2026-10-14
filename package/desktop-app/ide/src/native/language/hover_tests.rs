@@ -200,7 +200,7 @@ fn resting_pointer_explains_a_missing_server_once_for_each_file() {
     // The same file is not explained again.
     move_to(&reader.window, point(&reader, 4, x));
     idle(800);
-    assert_eq!(popup(&reader), "");
+    assert_eq!(popup(&reader), "", "the same file was explained twice");
 }
 
 /// Ctrl+Q where the server has nothing explains that;

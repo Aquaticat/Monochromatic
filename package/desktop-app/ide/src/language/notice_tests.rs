@@ -151,7 +151,10 @@ fn a_server_that_is_still_starting_gives_no_entry() {
         &status(vec![row("typescript-native", ServerState::Starting, None)]),
         &[],
     );
-    assert!(shown.is_empty(), "{shown:?}");
+    assert!(
+        shown.is_empty(),
+        "an entry was shown while the server was still starting: {shown:?}"
+    );
 }
 
 #[test]
