@@ -147,6 +147,10 @@ run = [
   "node src/native-return-rejection.unit.test.ts",
 ]
 
+[tasks."test:native:staged-import"]
+description = "Verify native TypeScript staging, parsed import selection, and original file identity"
+run = "node src/native-staged-import.unit.test.ts"
+
 [tasks."test:native:approval"]
 description = "Verify original approval routing and independent prerequisite evidence with fixture presentation"
 run = [
