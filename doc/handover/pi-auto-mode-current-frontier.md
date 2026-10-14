@@ -7,6 +7,48 @@ This current summary complements the
 [historical evidence ledger](pi-auto-mode-axiom-evaluation.md).
 Updated 2026-10-14.
 
+## Typed native session construction
+
+The maintained constructor now lives in `native-batch/session-root.ts`,
+with typed native readers,
+SDK result fields,
+registration,
+and publication.
+Its static bridge keeps the incumbent lifecycle and factory-scope owners.
+The old `session-root.mjs` consumer imports were updated together;
+provenance retains the historical path and records the move date.
+The original scoped measurement was 56 warnings and two errors in that module.
+The seven typed implementation and bridge files now pass scoped lint with zero diagnostics,
+and package type checking passes with the new tests included.
+
+`test:native:session-result` exercises the built descriptor-copy helper.
+Its original artifact passes;
+a process-local omission of only the own-data-descriptor guard makes the accessor cases fail.
+The omission marker and failure are retained in
+`${HOME}/temp/agent/pi-session-result-guard-omission-20261014.log`.
+The real artifact is byte-for-byte unchanged by that control.
+Native manager construction and host lifecycle tests pass,
+including foreign managers,
+retirement,
+failed disposal,
+and cleanup retry.
+The actual Qwen CLI process fixture also passes with clean shutdown and no external requests.
+
+The first approval-context run hit `JudgmentDeadlineError` while other verification was running.
+An unchanged isolated repeat passed Allow,
+Deny,
+Stop,
+cancellation,
+and Allow after resource reload.
+`${HOME}/temp/agent/pi-session-root-approval-isolated-20261014.log`
+retains every completed mode with zero provider requests and zero genuine human approvals.
+The repeat establishes recovery,
+not the deadline failure's cause or a permanent timing fix.
+Full native lint completion and genuine approval-boundary verification remain outstanding.
+
+The [decision-model trial priorities](../planning/pi-auto-mode-decision-model-trial-order.md)
+retain the user's requested candidate recommendation and separate trial order from adoption.
+
 ## Newly enabled Gateway decision models
 
 The user enabled `microsoft-decision-1` and `gpt-6-luna-decisions` on the existing Gateway key.

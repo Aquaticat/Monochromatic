@@ -6517,6 +6517,26 @@ There is nothing to file upstream from this observation.
 
 ## Overlapping native verification and Oxlint 1.87.0 stop before completing checks
 
+### Session-construction port verification on 2026-10-14
+
+After the typed session-construction port,
+the approval-context `allow` case failed with
+`JudgmentDeadlineError: Judgment preparation and assessment deadline expired`.
+The final assertion was `ERR_ASSERTION: 0 !== 1` for original selector reach.
+The CLI process check and result-test formatter were also running.
+That overlap is an observed condition,
+not an established cause.
+
+The unchanged isolated approval sequence then passed Allow,
+Deny,
+Stop,
+cancellation,
+and Allow after reload.
+Its complete log is `${HOME}/temp/agent/pi-session-root-approval-isolated-20261014.log`.
+Every completed mode reports zero provider calls and zero genuine human approvals.
+The isolated repeat did not change the five-second deadline or prove a permanent timing remedy.
+This is distinct from the earlier SIGABRT and Go thread-creation failures in this incident record.
+
 ### Symptoms and separate incident boundaries
 
 On 2026-10-14,
