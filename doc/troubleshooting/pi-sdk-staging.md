@@ -6590,14 +6590,25 @@ while its shared composite configuration excludes generated `dist` input.
 The relevant owned configuration is `package/pi-plugin/auto-mode/tsconfig.json:3`
 and `package/config/typescript/tsconfig.options.json:144`:
 
-```json
+```jsonc
 // package/pi-plugin/auto-mode/tsconfig.json, relevant source selection
-"include": ["src/**/*.ts", "src/**/*.astro", "src/**/*.mdx", "*.config.ts", ".astro/types.d.ts", "native/**/*.ts"]
+{
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.astro",
+    "src/**/*.mdx",
+    "*.config.ts",
+    ".astro/types.d.ts",
+    "native/**/*.ts"
+  ]
+}
 ```
 
-```json
+```jsonc
 // package/config/typescript/tsconfig.options.json, relevant inherited option
-"composite": true
+{
+  "composite": true
+}
 ```
 
 The read-only TypeScript `v7.0.2` source checkout is commit
