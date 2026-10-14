@@ -45,7 +45,7 @@ function observedMethod({name,body}: {readonly name:NativeObservedMethod;readonl
   /** Tool-call traversal originally omits the extension binding although its snapshot retains it. */
   const originalBindings=name==='emitToolCall'?'handlers':'ext, handlers';
   /** Snapshot creation remains at its original native position. */
-  let value=replaceOnce({source:body,
+  const snapshotBody=replaceOnce({source:body,
     from:`        for (const { ${originalBindings} } of snapshotEventHandlers(this.extensions, ${kind})) {`,
     to:`        const nativeEventSnapshot = snapshotEventHandlers(this.extensions, ${kind});
         const nativeEventObservation = this.#nativeEventObserver.begin({kind:${kind},snapshot:nativeEventSnapshot});
@@ -60,25 +60,28 @@ function observedMethod({name,body}: {readonly name:NativeObservedMethod;readonl
     :`                    const handlerResult = (await handler(${input}, ctx));`;
   /** Tool-call's unhandled native await has one less indentation level. */
   const originalCall=name==='emitToolCall'?call.slice(4):call;
-  value=replaceOnce({source:value,from:originalCall,to:`                    nativeEventObservation.before({extension:ext,handler,event:${input}});
+  /** Captures surround the original callback without changing its await. */
+  const calledBody=replaceOnce({source:snapshotBody,from:originalCall,to:`                    nativeEventObservation.before({extension:ext,handler,event:${input}});
 ${originalCall}
                     nativeEventObservation.returned(handlerResult);`});
   /** Original catch count rejects a changed native method shape before editing. */
   const catches=name==='emitBoundary'?2:name==='emitToolCall'?0:1;
   /** Native caught values retain their original emitter and error reporting. */
   const catchSite='                catch (err) {';
-  if(value.split(catchSite).length!==catches+1)
+  if(calledBody.split(catchSite).length!==catches+1)
     throw new NativeBatchBuildError(`Original native event catches changed: ${name}`);
-  value=value.replaceAll(catchSite,`${catchSite}\n                    nativeEventObservation.failed(err);`);
-  if(name==='emit'||name==='emitToolCall') {
-    /** Only the original cancel/block branch can stop before the remaining callbacks. */
-    const earlyReturn=name==='emit'?'                            return result;':'                        return result;';
-    value=replaceOnce({source:value,from:earlyReturn,to:`                        nativeEventObservation.stopped();\n${earlyReturn}`});
-  }
-  if(name==='emitUserBash')value=replaceOnce({source:value,
+  /** Observation failure escapes Pi's ordinary handler error reporting. */
+  const caughtBody=calledBody.replaceAll(catchSite,`${catchSite}\n                    nativeEventObservation.failed(err);`);
+  /** Only the original cancel/block branch can stop before the remaining callbacks. */
+  const earlyReturn=name==='emit'?'                            return result;':'                        return result;';
+  /** Methods without a native cancellation return preserve their original body. */
+  const stoppedBody=name==='emit'||name==='emitToolCall'
+    ?replaceOnce({source:caughtBody,from:earlyReturn,to:`                        nativeEventObservation.stopped();\n${earlyReturn}`}):caughtBody;
+  /** User Bash has its own handled-result return. */
+  const handledBody=name==='emitUserBash'?replaceOnce({source:stoppedBody,
     from:'                    return handlerResult;',
     to:'                    nativeEventObservation.stopped();\n                    return handlerResult;'
-  });
+  }):stoppedBody;
   /** Completion precedes the original tail, including both tool-result return branches. */
   const tail={
     emitBoundary:'        return valid',
@@ -88,8 +91,9 @@ ${originalCall}
     emitToolCall:'        return result;',
     emitUserBash:'        return undefined;'
   }[name];
-  value=replaceOnce({source:value,from:`\n${tail}`,to:`\n        nativeEventObservation.end();\n${tail}`});
-  return `${value}\n        } catch (nativeEventError) {
+  /** Original terminal return follows complete observed traversal. */
+  const completedBody=replaceOnce({source:handledBody,from:`\n${tail}`,to:`\n        nativeEventObservation.end();\n${tail}`});
+  return `${completedBody}\n        } catch (nativeEventError) {
             nativeEventObservation.aborted(nativeEventError);
             throw nativeEventError;
         }\n`;
@@ -114,7 +118,10 @@ export function eventRunnerSource(source: string): string {
   const parsed=parse(source,{sourceType:'module'});
   if(parsed.diagnostics.length>0)throw new NativeBatchBuildError('Cannot parse original native event runner');
   /** The exact original exported class supplies method source coordinates. */
-  const candidates=parsed.program.body.filter(function originalClass(node){return node.type==='ExportNamedDeclaration'&&node.declaration?.type==='ClassDeclaration'&&node.declaration.id?.name==='ExtensionRunner';});
+  const candidates=[];
+  for(const node of parsed.program.body){
+    if(node.type==='ExportNamedDeclaration'&&node.declaration?.type==='ClassDeclaration'&&node.declaration.id?.name==='ExtensionRunner')candidates.push(node);
+  }
   /** Narrow the original declaration without widening its parser node type. */
   const [exported]=candidates;
   if(candidates.length!==1||exported?.type!=='ExportNamedDeclaration'||exported.declaration?.type!=='ClassDeclaration')
@@ -134,13 +141,15 @@ export function eventRunnerSource(source: string): string {
   }
   if(seen.size!==methods.length)throw new NativeBatchBuildError('Original native event method membership changed');
   /** Original constructor and reader identities remain in the same generated class. */
-  let value=applyNativeSourceEdits({source,edits});
-  value=replaceOnce({source:value,from:'export class ExtensionRunner {',to:`let readNativeEventDomain;
+  const editedSource=applyNativeSourceEdits({source,edits});
+  /** The original runner owns the reader's private field access. */
+  const readableSource=replaceOnce({source:editedSource,from:'export class ExtensionRunner {',to:`let readNativeEventDomain;
 export function readNativeRunnerDomainEvents({runner,kinds}) { return readNativeEventDomain(runner,kinds); }
 export class ExtensionRunner {
     #nativeEventObserver;
     static { readNativeEventDomain=(runner,kinds)=>runner.#nativeEventObserver.read(kinds); }`});
-  value=replaceOnce({source:value,from:'        this.sessionManager = sessionManager;',to:'        this.sessionManager = sessionManager;\n        this.#nativeEventObserver = createNativeEventObserver(sessionManager);'});
+  /** Original construction fixes the event observer to its native manager. */
+  const value=replaceOnce({source:readableSource,from:'        this.sessionManager = sessionManager;',to:'        this.sessionManager = sessionManager;\n        this.#nativeEventObserver = createNativeEventObserver(sessionManager);'});
   return `import {createNativeEventObserver} from "./session-manager.mjs";\n${value}`;
 }
 
