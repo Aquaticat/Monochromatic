@@ -558,6 +558,25 @@ built to cost the size of what is shown or typed, not the size of the library.
 This section describes the pieces; the decisions behind them are D47 to D74 (Search behavior), D103, D111 (Search while
 the scan runs) and D112 (the in-memory index).
 
+### The Search page
+
+`ui/search.slint` draws the page (D126 restyled it to match the Android Search page; the specification is in
+`design/decisions.md`).
+The header is the canvas color, 72 px high, with a 1 px `outline-variant` divider under it.
+A result row is flat on the canvas and 72 px high.
+Its rounded shape (radius 21.3 px) starts 8 px before the content and ends 8 px after the end inset, and bounds the
+hover and pressed layer, the keyboard ring pair and the pointer target.
+The glyph sits in a 40 px `secondary-container` circle in the 48 px slot, so the circle, the Back arrow and the title
+keep their D58 columns.
+The match highlight keeps square corners (D59).
+The five empty and no-result states (empty query, no match, still scanning, unavailable, empty inventory) share one
+block that starts 72 px below the divider: a 72 px `secondary-container` circle with a 32 px magnifier, the title in
+`title-medium` at weight 500, and the support line.
+The cover centers the block and the inner panel aligns it to the content start; a window shorter than the block scrolls
+it with the wheel.
+`src/ui_search_restyle_tests.rs` pins these numbers on the real window in both schemes.
+The result list's scrollbar track starts where the rounded shape ends.
+
 ### The Search index
 
 `search_index.rs` holds one entry per track: the display path and the normalized title, each in one shared text buffer
@@ -703,9 +722,10 @@ parameters in `FocusRingStyle`), placed where the element is and given its radiu
 never moves content, and sits above any sibling that could paint over it. Focus adds no fill, tint, state layer, bold or
 size change: hover and pressed keep their own state layers (`ui/state_layer.slint` has no focus state).
 
-One exception: a row as wide as its pane (a track row, a Search result, a template field row) has no room outside it,
+One exception: a row as wide as its pane (a track row, a template field row) has no room outside it,
 because its pane ends at the window's edge, so its two rings are drawn on the row's own edge, inside it (`inside` on
-the component). The track menu's rows are as wide as the card, so their ring reaches 3 px past the card's edge; the card
+the component). A Search result's ring is the same pair drawn inside the row's rounded shape, following its 21.3 px
+corners (D126). The track menu's rows are as wide as the card, so their ring reaches 3 px past the card's edge; the card
 is not clipped. A card pulled back against the window's edge has its ring cut by the window itself there.
 
 The track menu card is the canvas color itself, pure white in the light scheme and pure black in the dark scheme with no

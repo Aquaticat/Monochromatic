@@ -327,9 +327,9 @@ and a track with its parent folder,
 each with the matching text highlighted.
 The ring on the first result shows keyboard focus.
 
-![Search results for a query in light appearance](https://monochromatic-lfs.aquaticat.workers.dev/0f517d845ba2c9d7b77d66324e6cfc7d8ab1ebbd55ed3c0d6f4409a48b51e3cb/package/music-player/asset/readme/desktop-search-light.png)
+![Search results for a query in light appearance](https://monochromatic-lfs.aquaticat.workers.dev/31bce84b95e2d27efc5a081447eab47f75d585fef0634faff8ac5b435afa6399/package/music-player/asset/readme/desktop-search-light.png)
 
-![Search results for a query in dark appearance](https://monochromatic-lfs.aquaticat.workers.dev/31a8b914f5bd730e664bb57334050aaa7c4e98e8f38583b186e5c151e49bf7ef/package/music-player/asset/readme/desktop-search-dark.png)
+![Search results for a query in dark appearance](https://monochromatic-lfs.aquaticat.workers.dev/3a69f0b9b347366cb600654e5210f891585f5e3eee92b640f90e911be4f85da5/package/music-player/asset/readme/desktop-search-dark.png)
 
 #### Settings
 

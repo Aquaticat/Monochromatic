@@ -1,8 +1,7 @@
-// A file that cannot be decoded is reported once, in plain words, and the report must reach the screen even though the
-// analysis runs in a service (D113 and D83).
+// A file that cannot be decoded is reported once, in plain words, as a system notification (D113 and D123).
 
-// What:     `package dev.monochromatic.musicplayer` places the hand-off beside the analysis service that fills it.
-// Why:      The service and the player host live in one process, so a plain observable list carries the report.
+// What:     `package dev.monochromatic.musicplayer` places the report beside the analysis service that makes it.
+// Why:      The service and the notification poster live in one process, so the report is one function call.
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -10,42 +9,34 @@
 // ```
 package dev.monochromatic.musicplayer
 
+import android.content.Context
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 
-// What:     `object AnalysisFailures` is the in-process list of files whose analysis just failed for the first time.
-// Why:      The player host shows one message for the list and then empties it, so each file is reported once. A report
-//           made while no screen is open waits in the list until a screen appears.
+// What:     `object AnalysisFailures` is the entry point for files whose analysis just failed for the first time.
+// Why:      D123: the report is a system notification and never an in-app message, so the object keeps no list for
+//           a screen to read. "First time" is decided before the call, by the sweep ledger (`core/SweepLedger.kt`),
+//           which is why each file is reported once. An empty report posts nothing, and a refused post only logs.
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// export const AnalysisFailures = { pending: observable<string[]>([]), report(names) {}, take() {} };
+// export const AnalysisFailures = { report(context, names) { postNotification(context, names); } };
 // ```
-/** Names of files that failed to decode in the analysis and have not been shown to the user yet. */
+/** Reports files that failed to decode in the analysis, once per file, as one system notification. */
 object AnalysisFailures {
-    /** The unreported file names, observed by the player host. */
-    var pending: List<String> by mutableStateOf(emptyList())
-        private set
-
     /**
-     * Adds files whose analysis failed for the first time.
+     * Posts one notification for the files whose analysis failed for the first time, or logs one warning when the
+     * notification cannot be posted. Nothing is shown in the app in either case.
      *
-     * @param fileNames bare file names, without their folders
+     * @param context any context of this app
+     * @param fileNames bare file names, without their folders; an empty list changes nothing
      */
-    fun report(fileNames: List<String>) {
+    fun report(context: Context, fileNames: List<String>) {
         if (fileNames.isEmpty()) {
             return
         }
-        pending = pending + fileNames
-    }
-
-    /** Hands the pending names to the caller and empties the list, so they are shown once. */
-    fun take(): List<String> {
-        /** The names waiting to be shown. */
-        val names: List<String> = pending
-        pending = emptyList()
-        return names
+        postAnalysisFailureNotification(context = context, fileNames = fileNames)
     }
 }
 

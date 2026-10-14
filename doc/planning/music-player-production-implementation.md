@@ -209,6 +209,15 @@ and the decisions D106 to D119 at the end of `package/music-player/design/decisi
   the `containerCargo` fallback (it mounts `truepeak-core` and the Android fixture); `states/window-title` and
   `states/natural-order` were harness races and pass 20 of 20; nested compositor 0.4.0 is published and installed, and
   the runner checks capability by version with no pin; the e2e suite has 110 checks (110 pass, 1 not injectable).
+- Android analysis failures (D123, 2026-10-14, branch `feat/android-analysis-failure-notification`, not merged): the
+  message "Could not analyze <file>" is no longer an in-app message. The analysis service posts one system notification
+  on its own low-importance channel `analysis-failure` (id 4202, apart from the D107 progress notification) when files
+  first fail, with the old wording, the app's small icon, auto-cancel, no action button, tap opens the app.
+  When it cannot be posted (permission denied, notifications or the channel off, any post failure) the app shows
+  nothing, writes one warning without file names to the log, and the file keeps no row mark. The tap-time
+  "Could not play <file>" message stays in the app. Wording and decisions are in `core/AnalysisFailureNotice.kt`, the
+  Android side in `AnalysisFailureNotification.kt`, and `PlayerHostWiringTest`-style coverage in
+  `wiring/AnalysisFailureWiringTest.kt`. The desktop app makes the same move as D122 on its own branch.
 
 ### On a branch, awaiting merge
 
@@ -404,11 +413,19 @@ and the decisions D106 to D119 at the end of `package/music-player/design/decisi
   that can be deleted. A failed decode is retried at every library change, one decode per failed file per change.
 - Rate limit: on 2026-10-12 the Sonnet weekly limit stopped five agents mid-run; a re-login lifted it and they were
   resumed. Their work is committed; check `git log` before relaunching anything.
-- Never verified: a real Plasma session, macOS, Windows, real Android hardware, Android API 33 to 36 for D107.
+- Never verified: a real Plasma session, macOS, Windows, real Android hardware, Android API 33 to 36 for D107 and for
+  the D123 failure notification (its device pass ran on the API 37 emulator only).
 
 ### Mistakes made in this effort, and what corrected them
 
 Read these before repeating them. Each one cost the human a correction.
+
+- The orchestrator merged the unplayable-file notification (D122) with a racy test helper:
+  `unplayable_notification_bus_support.rs` made its message iterator inside the service thread, so a `Notify` call that
+  came first on a loaded host was never delivered and `a_successful_post_leaves_the_warned_flag_clear` timed out after
+  3 s (it failed in 3 of about 8 runs; the agent had reported a 40 of 40 stress pass and one failure it called load).
+  A failure that shows up in more than one run is a defect to fix before merging, not load to note. Fixed on
+  2026-10-14 by making the iterator before the thread starts; three clean full runs followed.
 
 - The unplayable-notification run (2026-10-14) shipped a test that started a fake notification service after posting
   the first report, so it raced the notifier thread; it passed in the suite and failed only as the baseline of the
@@ -463,8 +480,10 @@ Read these before repeating them. Each one cost the human a correction.
 - [x] Packages 3 to 12 landed on `main`; device-only and live-desktop behaviours remain unexercised (see the handoff).
 - [x] Search page restyle on Android (D126, 2026-10-14, branch `feat/android-search-restyle`): canvas-tone header,
   `outlineVariant` divider, 40 dp circle result glyphs with a rounded press and ring shape, the empty and no-result
-  states in a 72 dp circle lifted clear of the keyboard. The Slint port and the desktop gallery retake are left
-  (`doc/planning/android-search-page-refresh.md`).
+  states in a 72 dp circle lifted clear of the keyboard (`doc/planning/android-search-page-refresh.md`).
+- [x] Search page restyle on desktop (D126 addendum, 2026-10-14, branch `feat/desktop-search-restyle`): the same header,
+  divider, rounded rows with tonal circle glyphs and status block in Slint, thirteen window tests, and the two desktop
+  Search gallery images retaken.
 - [x] Search select only, unreadable rows and the Search caret (D127, D128 and a D126 note, 2026-10-14, branch
   `feat/search-select-only`): a Search result for a track that is not current only selects it (both platforms), the
   result of the current track toggles; desktop keeps an unreadable row selected like Android and a click retries it

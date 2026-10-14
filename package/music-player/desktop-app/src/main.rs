@@ -151,6 +151,10 @@ mod ui_focus_ring_tests;
 #[cfg(test)]
 mod ui_focus_ring_pages_tests;
 
+/// Rendered tests of the Search page restyle (D126): the canvas header, the divider, the rounded rows and the status block.
+#[cfg(test)]
+mod ui_search_restyle_tests;
+
 /// Rendered tests of the track menu: the ring on a row (D117) and the card's color and outline (D119).
 #[cfg(test)]
 mod ui_focus_ring_menu_tests;

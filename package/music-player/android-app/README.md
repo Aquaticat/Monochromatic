@@ -118,6 +118,9 @@ They cover the Compose call sites that no pure function can reach:
 - where a page opens, what a reveal and a folder reveal scroll to, and that a track change alone never scrolls,
 - that a track added to the shown folder gets its row and supporting line, and a folder change opens its page,
 - that the next measure pass starts at the first visible track, seen through a recording content provider.
+- that a reported analysis failure is a system notification and never an in-app message, that nothing at all appears
+  with notifications off, and that the tap-time play failure still shows in the app (`AnalysisFailureWiringTest`, which
+  reads the feedback queue and the notifications that the Robolectric shadow records).
 - the Search page restyle (D126), in `SearchPageWiringTest`, which renders `searchPage` itself with Robolectric native
   graphics (`@GraphicsMode(NATIVE)`) and reads pixels back with `captureToImage`:
   the status strip and the header read the canvas color (no band) in light and in true-black dark,
@@ -331,8 +334,15 @@ A file is new work when its address is unknown or when its size or modification 
 (`core/TrackSignatures.kt`, read with the rows of the scan),
 so a replaced or edited file is measured again.
 A file that could not be decoded is tried again at the next start and whenever the library gains new work,
-and it is reported once, in plain words, with no retry button
-(`AnalysisFailures.kt`, shown by `PlayerHost.kt`).
+and it is reported once, in plain words, with no retry button.
+The report is a system notification (D123), posted by the analysis service when the files first fail
+(`AnalysisFailures.kt`, `AnalysisFailureNotification.kt`; wording in `core/AnalysisFailureNotice.kt`),
+never an in-app message.
+It is separate from the progress notification, on its own low-importance channel `analysis-failure`,
+and tapping it opens the app.
+When it cannot be posted (the notification permission is denied, notifications or the channel are off, or the post
+fails) nothing is shown in the app: one warning without file names goes to the log, and the file keeps no row mark.
+The tap-time message `Could not play <file>` stays in the app.
 The measures that the open page shows are read again when the analysis measured their tracks (`MeasureInvalidation`).
 
 ## Search and a library of a million tracks

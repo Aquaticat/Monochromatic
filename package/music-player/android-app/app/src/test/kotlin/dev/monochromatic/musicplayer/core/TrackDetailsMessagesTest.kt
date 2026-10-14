@@ -46,20 +46,4 @@ class TrackDetailsMessagesTest {
         assertEquals(FeedbackKind.ERROR, stalled.kind)
         assertEquals(TRACK_LOAD_ERROR_ID, stalled.id)
     }
-
-    @Test
-    fun aFailedFileIsReportedInPlainWordsWithNoRetryButton() {
-        val one = analysisFailureMessage(listOf("broken.mp3"))
-        assertEquals(FeedbackKind.ERROR, one.kind)
-        assertEquals(ANALYSIS_FAILED_ID, one.id)
-        assertEquals(null, one.actionLabel)
-        assertTrue(one.text.startsWith("Could not analyze broken.mp3."))
-        assertTrue(one.text.contains("tries again when your library changes"))
-    }
-
-    @Test
-    fun severalFailedFilesAreOneMessageWithTheCount() {
-        val many = analysisFailureMessage(listOf("a.mp3", "b.mp3", "c.mp3"))
-        assertTrue(many.text.startsWith("Could not analyze 3 files, including a.mp3."))
-    }
 }

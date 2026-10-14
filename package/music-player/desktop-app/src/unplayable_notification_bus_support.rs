@@ -55,9 +55,9 @@ pub(crate) struct Behavior {
 
 /// Answers `Notify` calls on `connection` until the bus goes away, recording each and replying with the call count
 /// after the delay of `behavior`; the first `refuse_first` calls get an error reply instead.
-fn answer_notify_calls(connection: &Connection, calls: &Calls, behavior: Behavior) {
+fn answer_notify_calls(connection: &Connection, incoming: MessageIterator, calls: &Calls, behavior: Behavior) {
     let mut refused = 0;
-    for received in MessageIterator::from(connection) {
+    for received in incoming {
         let Ok(message) = received else {
             return;
         };
@@ -146,8 +146,11 @@ impl PrivateBus {
             .and_then(|builder| return builder.build())
             .expect("the recording notification service starts");
         let serving = connection.clone();
+        // The iterator is made here, before the thread starts: a call that arrives before an iterator exists is never
+        // delivered to it, and a loaded host delayed the thread past the first call, which then timed out.
+        let incoming = MessageIterator::from(&connection);
         let recorded = Arc::clone(&calls);
-        std::thread::spawn(move || answer_notify_calls(&serving, &recorded, behavior));
+        std::thread::spawn(move || answer_notify_calls(&serving, incoming, &recorded, behavior));
         return (connection, calls);
     }
 }

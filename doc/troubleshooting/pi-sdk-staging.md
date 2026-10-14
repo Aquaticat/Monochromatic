@@ -1,5 +1,263 @@
 # Pi 0.87.1 nominal dependency inventory rejects the configured workspace graph
 
+## Pi 1.2.0 direct generated manager import reaches an uninitialized owned bootstrap constructor
+
+### Symptom
+
+On Node 26.11.1,
+the first `native-tool-publication.unit.test.ts` entry imported the generated manager before the maintained policy entry.
+Node reported `ReferenceError: Cannot access 'SessionManager' before initialization`
+at the owned `native-host/host.ts:160`,
+called from `native-host/bootstrap.ts:236`.
+Importing the generated SDK first produced the same error.
+Neither run reached the publication assertions.
+This is distinct from the earlier `ExtensionRunner` initialization failure.
+
+### Root cause
+
+The owned generator adds a dependency from the manager to the maintained policy entry.
+`package/pi-plugin/auto-mode/native/contract/integration/native-batch/root-source.ts:263`
+emits the query-observer import:
+
+```ts
+// package/pi-plugin/auto-mode/native/contract/integration/native-batch/root-source.ts:263
++`import {createLoadoutQueryObserver} from ${JSON.stringify(queryUrl)};\n`
+```
+
+`package/pi-plugin/auto-mode/native/contract/integration/native-batch/loadout-query-observer.mjs:1`
+then imports the maintained implementation:
+
+```js
+// package/pi-plugin/auto-mode/native/contract/integration/native-batch/loadout-query-observer.mjs:1
+import {createNativeQueryObservation} from '../maintained-policy.mjs';
+```
+
+The generated maintained-policy module re-exports the package's built entry.
+That entry includes the upstream SDK import from
+`package/pi-plugin/auto-mode/src/visible-context.ts:19`:
+
+```ts
+// package/pi-plugin/auto-mode/src/visible-context.ts:19
+import {
+  sessionEntryToContextMessages,
+  type SessionEntry,
+} from '@earendil-works/pi-coding-agent';
+```
+
+The resolver observations in `${HOME}/temp/agent/pi-tool-publication-controls-20261014/import-edges.json`
+retain the generated host-runtime import of the owned bootstrap during this dependency traversal.
+The bootstrap eagerly constructs the host in
+`package/pi-plugin/auto-mode/native/contract/integration/native-host/bootstrap.ts:236`:
+
+```ts
+// package/pi-plugin/auto-mode/native/contract/integration/native-host/bootstrap.ts:236
+export const nativeHost: NativeCliHost = createNativeCliHost({
+  designatePolicy,
+  bindSession
+});
+```
+
+That constructor reads the still-initializing manager binding in
+`package/pi-plugin/auto-mode/native/contract/integration/native-host/host.ts:158`:
+
+```ts
+// package/pi-plugin/auto-mode/native/contract/integration/native-host/host.ts:158
+const factory = createRootSessionFactory({
+  createAgentSession,
+  SessionManager,
+```
+
+The read-only upstream checkout remains tag `v1.2.0`,
+commit `06a466935536f8c9bcacb2d5efc0fc021be1bdff`.
+Its `packages/coding-agent/src/core/session-manager.ts` has no owned query observer or CLI bootstrap import.
+The demonstrated cycle crosses this repository's generated instrumentation and maintained entry.
+No change to the new tool publication's identity checks remedies that import order.
+
+### Verification and supported entry
+
+The direct-manager failure is reproducible with the scratch `import-trace` task:
+
+```sh
+# Run from ${HOME}/temp/agent/pi-tool-publication-controls-20261014
+mise run import-trace
+```
+
+The maintained consumer initializes its policy entry before inspecting manager exports:
+
+```ts
+// package/pi-plugin/auto-mode/src/native-tool-publication.unit.test.ts
+await import(new URL('../dist/native/contract/integration/maintained-policy.mjs', import.meta.url).href);
+```
+
+With that entry order,
+`mise run //package/pi-plugin/auto-mode:test:native:serializer-receipts` passes the new manager publication tests,
+the original serializer emission tests,
+and all copied-system/payload/transcript controls.
+The separate normal SDK fixture still accounts for five contributions and executes three fixture children,
+with zero provider requests.
+The successful entry order verifies the intended consumer;
+it does not fix direct generated-manager or generated-SDK imports.
+Removing this import-order coupling remains native-quality work.
+
+The manager publication tests cover original append and context copies,
+separate equal-content owners,
+cross-owner reuse,
+array replacement,
+tool replacement,
+schema mutation,
+and accessor rejection without invocation.
+The process-local array identity omission makes the array-replacement assertion fail.
+`verification.json` in the same scratch directory retains the unchanged built-artifact hash.
+
+### What does not work
+
+- Importing the manager directly fails before the test body.
+- Importing the generated SDK before the manager produces the same constructor initialization failure.
+- Passing the native SDK scenario does not establish arbitrary submodule import order.
+
+### Upstream filing decision
+
+- Fault: the demonstrated cycle includes owned instrumentation and eager bootstrap construction.
+  An upstream defect has not been established.
+- Fixability: the owned graph can remove its eager dependency;
+  no upstream architectural limitation was found.
+- Supported use: upstream supports native SDK construction,
+  but the failing generated graph is repository-owned.
+- Contribution policy: the checked `CONTRIBUTING.md:43` requires the author's own issue voice;
+  an autonomous generated issue would not meet that requirement.
+- Maintainer direction: searches for `"SessionManager" "initialization"` returned no issues and
+  [PR 10789](https://github.com/earendil-works/pi/pull/10789).
+  Its complete body and comments concern JSONL write coalescing,
+  not this import cycle.
+- Prototype: the verified consumer-entry change is local.
+  No upstream patch is justified by this evidence.
+
+The `.out-of-scope/` catalog was checked;
+`pi-gpt55-long-context.md` concerns a different boundary.
+Nothing to file or add upstream.
+
+## Pi 1.2.0 transcript normalization invalidates a direct serializer identity comparison
+
+### Symptom
+
+The migration's new original-system emission check initially made
+`test:native:sdk-stream` fail with `AssertionError [ERR_ASSERTION]`
+at `domain-frontier-assertions.mjs:47`.
+Its native request retained an unresolved system contribution although the original producer ran.
+The consumer compared the system renderer's input array with the stream caller's input array.
+
+### Root cause
+
+Read-only checkout `${HOME}/temp/agent/auto-mode-pi-source-1.2.0`
+is `earendil-works/pi` tag `v1.2.0`,
+commit `06a466935536f8c9bcacb2d5efc0fc021be1bdff`.
+The source disproves the assumption that the same transcript array crosses both boundaries.
+`packages/ai/src/utils/transcript.ts:108` creates a new array when collapsing system messages:
+
+```ts
+// packages/ai/src/utils/transcript.ts:108
+export function collapseSystemMessages(context: TranscriptContext): TranscriptContext {
+  const head = getCurrentSystemMessage(context.messages);
+  const messages = context.messages.filter((message) => message.role !== "system");
+  return { messages: head ? [head, ...messages] : messages } as TranscriptContext;
+}
+```
+
+`packages/ai/src/api/openai-completions.ts:310` selects that normalized context:
+
+```ts
+// packages/ai/src/api/openai-completions.ts:310
+const normalizedContext = resolveTranscript(context, getCompat(model).supportsMidConvoSystemMessages);
+```
+
+The original call at `packages/ai/src/api/openai-completions.ts:358` passes it to `buildParams`:
+
+```ts
+// packages/ai/src/api/openai-completions.ts:358
+let params = buildParams(
+  model,
+  normalizedContext,
+  options,
+  compat,
+  cacheRetention,
+  grammarToolInputProperties,
+);
+```
+
+This is a consumer identity error,
+not evidence of an upstream serialization defect.
+The corrected owned transformation retains both original arrays in the existing producer receipt:
+
+```js
+// Generated by package/pi-plugin/auto-mode/native/contract/integration/native-batch/message-source.ts
+nativeSerializedPayloads.set(params, Object.freeze({
+  model,
+  messages: context.messages,
+  normalizedMessages: normalizedContext.messages,
+}));
+```
+
+The system emission's `messages` reference is compared with `normalizedMessages`;
+the request receipt still compares its original `messages` reference with the captured caller transcript.
+No original request is parsed again or re-encoded to create that link.
+
+### Verification and rejected approaches
+
+The initial failing log is `${HOME}/temp/agent/pi-serialization-native-20261014.log`.
+After commit `2510bc1e1d`,
+`pi-serialization-native-final-20261014.log` records five accounted contributions,
+three executed children,
+one authored assessment,
+and zero provider requests.
+The built emission tests exercise updated system sections,
+escaped text,
+original tool-object identity,
+absent tools,
+and rejection of equal copied containers.
+The copied-payload and copied-transcript native controls remain unresolved with zero executions.
+
+```sh
+# Repository root
+mise run //package/pi-plugin/auto-mode:build:native:owned
+mise run //package/pi-plugin/auto-mode:test:native:sdk-stream
+mise run //package/pi-plugin/auto-mode:test:native:serializer-receipts
+```
+
+Do not replace the failed identity comparison with content equality or remove provenance validation.
+The verified consumer correction follows the native normalization edge.
+Its tradeoff is an additional original reference retained for the request lifetime;
+it does not prove complete governing use of system text or tool declarations.
+The copied-system control also passes:
+an equal replacement system message leaves its contribution unresolved,
+preserves the independent user contribution,
+and executes no child.
+Process-local omission of `&&originalSystem` makes that copied message incorrectly accounted
+and fails the native contribution assertion.
+`${HOME}/temp/agent/pi-serialization-controls-20261014/verification.json`
+records the expected failure and unchanged artifact hash.
+
+### Upstream filing decision
+
+The `.out-of-scope/` inventory was checked.
+`pi-gpt55-long-context.md` concerns model context limits and does not apply here.
+Read-only `gh search issues` for `resolveTranscript identity`
+and `gh search prs` for `collapseSystemMessages identity`
+in `earendil-works/pi` both returned empty results on 2026-10-14.
+
+- Upstream fault: no;
+  the migration compared different original call boundaries.
+- Fixability: the consumer owns and corrects this comparison without an upstream change.
+- Supported use: the source explicitly implements collapsed system-message replay;
+  it does not promise unchanged array identity.
+- Contribution policy: `CONTRIBUTING.md:43` requires the reporter's own voice and restricts generated issue text;
+  the README and bug template point to that policy.
+  No filing is proposed.
+- Maintainer disposition: the empty searches establish no position about this consumer integration.
+- Prototype: the native consumer correction and built emission controls pass;
+  no upstream patch is needed.
+
+There is nothing to file upstream from this owned identity error.
+
 ## Pi 1.2.0 native RPC Stop exposes an overbroad fixture stderr assertion
 
 ### Symptom and corrected interpretation

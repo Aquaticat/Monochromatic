@@ -393,12 +393,27 @@ run = "node src/native-process-network.unit.test.ts"
 description = "Verify built native SDK result identity, descriptor reads, optional presence, and accessor rejection"
 run = "node src/native-session-result.unit.test.ts"
 
+[tasks."test:native:root-reader"]
+description = "Verify original native session-manager identity before root occurrence access"
+run = "node src/native-root-reader.unit.test.ts"
+
+[tasks."test:native:manager-registry"]
+description = "Verify built native registry ownership, canonical reuse, and independent manager reservations"
+run = "node src/native-manager-registry.unit.test.ts"
+
 [tasks."test:native:factory-scopes"]
 description = "Verify original factory captures, exact publication, failed cleanup retry, and reentrancy recovery"
 run = "node src/native-factory-scopes.unit.test.ts"
 
+[tasks."test:native:tool-publication"]
+description = "Verify original tool input membership through native manager copies"
+run = "node --import ./dist/native/loader.mjs src/native-tool-publication.unit.test.ts"
+
 [tasks."test:native:serializer-receipts"]
 run = [
+  "node --import ./dist/native/loader.mjs src/native-tool-publication.unit.test.ts",
+  "node --import ./dist/native/loader.mjs src/native-serializer-emission.unit.test.ts",
+  "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-batch/domain-frontier.test.mjs permission --require-resolution --sdk-stream --copied-system",
   "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-batch/domain-frontier.test.mjs permission --require-resolution --sdk-stream --copied-payload",
   "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-batch/domain-frontier.test.mjs permission --require-resolution --sdk-stream --copied-transcript",
 ]

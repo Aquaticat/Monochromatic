@@ -3,6 +3,8 @@ import {
   types
 } from 'node:util';
 import {SourceCollectionError} from '../collector.mjs';
+import {publishSystemToolInput} from './system-tool-publication.ts';
+import {copyMessageData} from '../run-prompt-custody/messages.mjs';
 
 // This index holds aliases of existing source capabilities, never another source/content inventory.
 const aliases=new WeakMap();
@@ -392,7 +394,7 @@ function createMessagePublication({
 }
 
 /** Original loaded values retain input identity only; no text-part or payload capability is issued. */
-export function createInputOnlyPublication(source){
+export function createInputOnlyPublication(source, systemTools){
  const publication=createMessagePublication({
    source,
    input:{},
@@ -400,7 +402,17 @@ export function createInputOnlyPublication(source){
  });
  return Object.freeze({
    view:publication.view,
-   capture:publication.captureInput
+   capture(value){
+    publication.captureInput(value);
+    if(systemTools)publishSystemToolInput({
+      aliases,
+      publication:publication.view,
+      message:systemTools.message,
+      expected:systemTools.expected,
+      copyInput:copyMessageData,
+      InputError:SourceCollectionError
+    });
+   }
  });
 }
 
@@ -575,4 +587,10 @@ export function readHandlerPayloadPublication(value){
    &&known.owner
    .current(value)?known.owner
      .view:undefined;
+}
+
+/** Original tool declarations retain existing source membership only while their native input remains current. */
+export function readOriginalToolPublication(value){
+ const known=aliases.get(value);
+ return (known?.kind==='tool-declaration')&&known.owner.current(value)?known.owner.view:undefined;
 }

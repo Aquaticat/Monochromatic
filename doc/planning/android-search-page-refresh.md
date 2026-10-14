@@ -27,11 +27,21 @@ Implemented on branch `feat/android-search-restyle` (Android only):
   rebuilt field restarts at the start of its text, so a second `lan` typed after a fold landed inside the first (the
   device run gave `lanlan` and then `lanxlan` for an extra `x`). D66 covers a new visit, not a posture change.
 
+Desktop port done on branch `feat/desktop-search-restyle` (2026-10-14), parity being the human's ruling (R5):
+
+- `ui/search.slint` now has the canvas header, the `outline-variant` divider, flat rows with the rounded 21.3 px shape
+  (hover layer, D117 and D120 ring pair and pointer target inside it), the 40 px `secondary-container` circle in the 48
+  px slot, and the one scrollable status block for the five states.
+  The desktop choices (pointer target, scrollbar track against the shape's end, no hint badge to keep, no crease inset
+  in the app as built) are the addendum in D126.
+- Tests: `src/ui_search_restyle_tests.rs` (thirteen window tests on the software renderer) and the updated row case in
+  `src/ui_focus_ring_pages_tests.rs`.
+- `desktop-search-light.png` and `desktop-search-dark.png` were retaken from the release build of the branch
+  (`doc/handover/music-player-readme-and-gallery.md`).
+- Unverified: macOS, Windows, a real Plasma session and touch input.
+
 Left:
 
-- The Slint port in `package/music-player/desktop-app/ui/search.slint` (header fill at the `Theme.surface-high` line,
-  divider at the `Theme.outline` line, rows, status block), from the D126 specification.
-- Retaking `desktop-search-light.png` and `desktop-search-dark.png` after the port.
 - A decision on whether the caret should survive the rebuild of the header on a fold change, if the human wants it.
 
 ### Final specification for the desktop port

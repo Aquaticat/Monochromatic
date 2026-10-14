@@ -3,9 +3,11 @@ import {
   types
 } from 'node:util';
 import {readHandlerPayloadPublication} from '../../collector/run-prompt-custody-v3/handler-publication.mjs';
+import {prepareNativeToolAssociation} from './tool-source-association.mjs';
 import {
   streamSimple,
-  readNativeSerializedPayload
+  readNativeSerializedPayload,
+  readNativeSystemPayload
 } from "./generated/openai-stream.mjs";
 
 export class NativeSourceAssociationError extends Error {}
@@ -376,6 +378,7 @@ export function prepareNativeSourceAssociation({
  })===undefined;
  const previous=options?.onPayload;
  const originalMessages=context.messages;
+ const toolAssociation=prepareNativeToolAssociation({sources,dataRecord,denseArray});
  let owned=[];
    let unresolvedHandlers=[];
    let called=false;
@@ -394,11 +397,18 @@ export function prepareNativeSourceAssociation({
     &&(selectedModel.provider===model.provider)
     &&(selectedModel.api===model.api);
   if(!originalPayload)payloadOriginFailure='Request payload lacks the original native serializer occurrence for this captured transcript and model';
+  toolAssociation.capture({payload,origin,eligible:originalPayload&&messageEligible});
   const candidates=[];
   if(originalPayload&&dataRecord(payload)
     &&denseArray(payload.messages)){
    const original=payload.messages[0];
+   const systemSerialization=readNativeSystemPayload(original);
+   const originalSystem=(systemSerialization!==undefined)
+     &&(systemSerialization.messages===origin.normalizedMessages)
+     &&(systemSerialization.text===original?.content);
+   if(origins&&!originalSystem)payloadOriginFailure??='System content lacks its original native rendering and message emission';
    if(origins&&dataRecord(original)
+     &&originalSystem
      &&((typeof original.content)==='string')
      &&[
        'system',
@@ -409,6 +419,7 @@ export function prepareNativeSourceAssociation({
       content:original.content,
       role:original.role,
       associations:origins,
+      serialization:systemSerialization,
       system:true
     });
    }
@@ -441,7 +452,7 @@ export function prepareNativeSourceAssociation({
       selectedModel
     ]
   ):undefined;
-  const selected=replacement===undefined?payload:replacement;
+  const selected=toolAssociation.retain(replacement===undefined?payload:replacement);
   const ordinary=dataRecord(selected)&&denseArray(selected.messages);
     const retained=[];
   for(const candidate of candidates){
@@ -481,11 +492,12 @@ export function prepareNativeSourceAssociation({
        content:candidate.content
      }),
      associations:candidate.associations,
+     serialization:candidate.serialization,
      system:candidate.system
    });
   }
   owned=retained;
-  if(retained.length === 0)return replacement;
+  if(retained.length === 0)return selected===payload?replacement:selected;
   const replacements=new Map(retained.map(function indexMessageReplacement(record) { return ([
     record.ordinal,
     record.message
@@ -510,7 +522,8 @@ export function prepareNativeSourceAssociation({
   function append({
     ordinal,
     associations,
-    why
+    why,
+    serialization
   }){
    const location=Object.freeze({
      field:'messages',
@@ -521,6 +534,7 @@ export function prepareNativeSourceAssociation({
      contribution:Object.freeze({}),
      location,
      association,
+     ...(serialization?{serialization}:{}),
      reason:why,
      coverage:'partial-original-prompt-input-contribution',
      permission:false
@@ -543,6 +557,7 @@ export function prepareNativeSourceAssociation({
    append({
      ordinal:systemOrdinal,
      associations:associated?system.associations:[undefined],
+     serialization:associated?system.serialization:undefined,
      why:associated?undefined:payloadOriginFailure??reason
        ??'The payload callback replaced or changed the original native contribution'
    });
@@ -571,7 +586,7 @@ export function prepareNativeSourceAssociation({
     coverage:'partial-original-prompt-input-contribution',
     permission:false
   }));
-  return Object.freeze(result);
+  return Object.freeze([...result,...toolAssociation.seal(parsed)]);
  }
  return Object.freeze({
    onPayload,

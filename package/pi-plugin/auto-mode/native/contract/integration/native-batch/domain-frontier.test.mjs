@@ -60,7 +60,8 @@ const sdkStream=process.argv
   .includes('--sdk-stream');
 const receiptControl=process.argv
   .includes('--copied-payload')?'copied-payload':process.argv
-  .includes('--copied-transcript')?'copied-transcript':undefined;
+  .includes('--copied-transcript')?'copied-transcript':process.argv
+  .includes('--copied-system')?'copied-system':undefined;
 assert.ok((!receiptControl)||sdkStream,'Serializer receipt controls exercise the normal SDK stream');
 const observations={contextCalls:0,lateContextMutations:0,progressCalls:0,assessments:0,executions:0,requests:0,httpCalls:0,originalBody:undefined,firstDecision:undefined,nextInputQuestions:0};
 const env=await createEnvironment({
@@ -137,6 +138,14 @@ function controlledSdkStream({
   context,
   options
 }){
+ if(receiptControl==='copied-system')return originalSdkStream(
+   model,
+   context,
+   {...options,onPayload(payload,selectedModel){
+    payload.messages[0]={...payload.messages[0]};
+    return options.onPayload(payload,selectedModel);
+   }}
+ );
  if(receiptControl==='copied-transcript')return originalSdkStream(
    model,
    {...context,messages:[...context.messages]},
