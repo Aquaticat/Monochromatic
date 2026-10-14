@@ -76,17 +76,26 @@ and failure identity against the copied native artifact.
 The current CLI bootstrap designates the working directory's `AGENTS.md` with user authority.
 Its semantic admission uses the
 [adopted operating policy](../../../../doc/decision/pi-auto-mode-semantic-admission.md):
-supported selected meanings require a score of at least `0.99` and a unique lead.
+supported selected meanings require a score of at least `0.80` and a unique lead.
 Unknown and unsupported meanings remain unresolved even at `1`.
 This operating cutoff carries no measured accuracy claim.
 Original authority,
 complete coverage,
 and authorization checks remain independent.
-The bootstrap binds the maintained direct HTTP sender for the incumbent Gateway route.
+The bootstrap binds the maintained Luna adapter and direct HTTP sender
+for `openai/gpt-6-luna-decisions` through the Gateway `/v1/decisions` route.
 It reads `AUTO_MODE_LLMGATEWAY_API_KEY` only when an original configured assessment is dispatched,
-retains the original encoded body and deadline,
+preserves every original state value and named question in the Decisions wire format,
+retains the original deadline,
 and performs one HTTP request per client attempt.
 Gateway-internal retries remain separate from client attempt accounting.
+Categorical probabilities and independent confidence metadata remain unchanged.
+Refusals,
+missing or reordered answers,
+wrong serving identities,
+invalid distributions,
+and requests exceeding 200 questions fail without admitting partial estimates.
+`test:decision-wire` checks conversion and the composed sender against authored fixtures.
 `test:assessment-transport` covers isolated and loopback HTTP behavior;
 `test:native:assessment-transport` connects it to original native policy review with authored responses.
 `test:semantic-operating-policy` checks the built policy's fixed scope and admission boundaries.
@@ -256,7 +265,7 @@ The decoder accepts `return await tools.name({...})`
 and `const result = await tools.name({...}); return result;`.
 The existing awaited producer followed by `Promise.all` or `Promise.allSettled` remains supported.
 The fixed semantic scope `native-inspected-programs-v2` includes exactly the single-call and producer/successor profiles.
-Its supported-meaning cutoff remains `0.99` with a unique leading score.
+Its supported-meaning cutoff is `0.80` with a unique leading score under the adopted Luna policy.
 
 `test:native:single-call` verifies complete original source,
 escaped identifiers and literal data,

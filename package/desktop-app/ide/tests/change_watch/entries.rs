@@ -260,3 +260,43 @@ fn collapsing_a_folder_removes_its_kernel_watch() {
         "re-expanding the folder did not watch it again"
     );
 }
+
+/// A rule file edited in place reports its folder,
+///  although no name changed;
+///  an in-place edit of any other file does not.
+#[test]
+fn an_ignore_rule_file_edited_in_place_reports_its_folder_and_other_files_do_not() {
+    let fixture = tempfile::tempdir().expect("disposable project");
+    let (mut watcher, workspace) = start(fixture.path());
+    let root = workspace.root().to_path_buf();
+    let info = root.join(".git").join("info");
+    fs::create_dir_all(&info).expect("git info folder");
+    fs::write(root.join(".gitignore"), "*.log\n").expect("rule file");
+    fs::write(root.join("other.txt"), "other\n").expect("other file");
+    fs::write(info.join("exclude"), "# none\n").expect("exclude file");
+    watcher.watch_only(&set(&[&root, &info]), None);
+    settle(&mut watcher, &[&root, &info]);
+    // An in-place edit of an ordinary file leaves its folder's listing alone.
+    fs::write(root.join("other.txt"), "other, edited\n").expect("edit other file");
+    let silent = quiet(&mut watcher);
+    assert!(
+        silent.directories.is_empty() && !silent.everything,
+        "a content edit of an ordinary file reported its folder: {silent:?}"
+    );
+    expect_report(
+        &mut watcher,
+        &root,
+        "an in-place edit of .gitignore",
+        || {
+            fs::write(root.join(".gitignore"), "*.log\n*.tmp\n").expect("edit rule file");
+        },
+    );
+    expect_report(
+        &mut watcher,
+        &info,
+        "an in-place edit of info/exclude",
+        || {
+            fs::write(info.join("exclude"), "# edited\n").expect("edit exclude file");
+        },
+    );
+}

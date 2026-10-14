@@ -1,6 +1,100 @@
 # LLM Gateway Decisions candidate checks
 
-## Scope and authorization
+## Luna adoption and first compensation experiment
+
+The user subsequently selected Luna and accepted an inclusive `0.80` operating cutoff.
+Perplexity is excluded from further trials.
+The historical `0.99` gate retained in the initial probe record is no longer the Luna operating requirement.
+
+The first frozen comparison uses
+`${HOME}/temp/agent/pi-luna-explicit-rubrics-20261014/`.
+It makes three unchanged baseline observations,
+then three observations with existing definition instructions placed directly in each question
+and existing criterion text supplied through each choice's `description`.
+This follows the documented
+[OpenAI choice schema](https://developers.openai.com/api/reference/resources/decisions/methods/create).
+The exact shared input,
+original question binding JSON,
+question order,
+choice labels,
+and all original rubric text remain present.
+No normative definition is rewritten and no source is removed.
+
+The baseline body is 584,007 bytes with SHA-256
+`59611db7d2fc22abc491db6bb41fe69bac90769f78c23d1f1409799fa78d4350`.
+The explicit-rubric body is 910,146 bytes with SHA-256
+`bd4f709f705d7ad1a4f035bd796229897a655ceadf68c252afd84245b626e15e`.
+Each independent observation makes one request with a five-second deadline.
+Transport failure,
+refusal,
+malformed answer,
+or late completion ends the remaining schedule without retry.
+The schedule measures unchanged-input spread before comparing formats;
+it does not stop early when a score crosses the cutoff.
+Higher admission counts alone do not establish correctness.
+No represented tool operation executes during this study.
+
+Automatic approval review initially rejected the changed-payload export before execution.
+The user then explicitly authorized the prepared comparison.
+All six frozen requests completed with HTTP 200,
+exact model identity,
+all 84 answers,
+and no refusals.
+Baseline durations were 2,101.300,
+1,263.857,
+and 1,323.376 ms;
+explicit-rubric durations were 1,418.420,
+1,934.000,
+and 1,559.026 ms.
+The overlapping observed ranges do not establish a latency improvement.
+Each format returned byte-equivalent answer data across its three runs.
+The baseline admitted four answers at `0.80` each time;
+the explicit format admitted six.
+Four absence answers newly crossed the cutoff and two previously admitted answers fell below it.
+The primary permission answer remained `0.83`.
+The private `comparison.json` retains every changed answer.
+This formatting change alone does not resolve the complete assessment.
+It is not yet adopted in the maintained adapter,
+which currently implements the original lossless conversion.
+
+## Question-batch compensation experiment
+
+The next frozen diagnostic tests whether grouping the same questions changes Luna's uncertainty.
+It preserves the exact baseline input in every request
+and partitions the original ordered 84 questions into consecutive groups of 28.
+Concatenating the groups reconstructs every original question exactly.
+No instruction,
+criterion,
+source,
+or complete operation text is removed from the original assessment.
+The three request bodies measure 331,684,
+439,618,
+and 393,323 bytes.
+Their hashes and offline reconstruction receipt live in
+`${HOME}/temp/agent/pi-luna-question-batches-20261014/manifest.json`.
+
+The schedule contains three repetitions of one complete assessment.
+Each repetition sends its three groups concurrently under one shared five-second deadline,
+with no retries and at most nine calls across the schedule.
+Any refusal,
+transport failure,
+invalid answer,
+or expired deadline cancels sibling calls and ends the remaining schedule.
+The built adapter validates every named answer before the groups are combined.
+The offline preflight already decodes the matching slices of retained real Luna responses.
+No represented operation executes.
+This is a diagnostic;
+the production judgment still owns its original attempt accounting,
+and no hidden subrequests have been added to the maintained sender.
+Higher admission counts alone cannot establish greater accuracy.
+
+Automatic approval review rejected dispatch before execution
+because the prior approval covered the six-call comparison,
+not this new nine-call schedule for the assessment data.
+Explicit approval for this prepared schedule is now pending.
+No request from this experiment has run.
+
+## Historical initial scope and authorization
 
 On October 14,
 2026,
@@ -8,9 +102,9 @@ the user enabled `microsoft-decision-1` and `gpt-6-luna-decisions` on the existi
 Exercise that supplied access before resuming other work.
 These are compatibility probes for the existing migration,
 not production provider adoption.
-The five-second deadline,
+The initial probe retained its five-second deadline,
 three-call ceiling,
-and 0.99 unique-maximum admission threshold remain unchanged.
+and historical 0.99 unique-maximum admission threshold.
 
 ## Current contract
 

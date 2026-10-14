@@ -130,11 +130,15 @@ The transport deck shows the playing track with its folder,
 the seek bar,
 and the playback mode.
 
-On desktop,
-clicking a row other than the playing one plays it at once,
-and clicking the playing row toggles play and pause.
-On Android,
-tapping a row plays it.
+On both platforms,
+clicking or tapping a track row that is not the current track selects it and leaves it paused,
+and any track that was playing stops (D124).
+Clicking or tapping the current row toggles play and pause,
+which also starts a track restored from the last session.
+On Android a track that failed to open stays selected and the next tap tries it again;
+on desktop selecting an unreadable file reports it and moves the selection to the next playable file.
+`Enter` on the focused row does the same.
+The Play item of the track menu and a Search result start a track at once.
 
 One playback mode of four applies on both platforms,
 and the app saves it:

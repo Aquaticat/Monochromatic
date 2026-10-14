@@ -273,7 +273,37 @@ fn every_track_row_is_a_named_button_with_its_state_and_action() {
         .expect("the first track's row");
     waterloo.invoke_accessible_default_action();
     settle();
-    assert_eq!(host.sent_texts(), ["select 0", "play"], "the row's default action selects and plays it");
+    assert_eq!(host.sent_texts(), ["select 0"], "the row's default action only selects it; it stays paused (D124)");
+}
+
+#[test]
+fn a_left_click_on_the_selected_row_toggles_play_and_pause_and_never_reloads_it() {
+    let (app, host) = library_window(1200.0, 800.0);
+    let current: ElementHandle = elements(&app, "TrackListPane::row-touch")
+        .into_iter()
+        .filter(|row| return box_of(row).0 >= 600.0)
+        .find(|row| return row.accessible_checked() == Some(true))
+        .expect("the selected track's row");
+    let (x, y, width, height) = box_of(&current);
+    host.clear();
+    left_click(&app, x + width / 2.0, y + height / 2.0);
+    assert_eq!(host.sent_texts(), ["toggle"], "a click on the selected row only toggles play and pause");
+}
+
+#[test]
+fn a_left_click_on_an_unselected_row_only_selects_it() {
+    let (app, host) = library_window(1200.0, 800.0);
+    let unselected: ElementHandle = elements(&app, "TrackListPane::row-touch")
+        .into_iter()
+        .filter(|row| return box_of(row).0 >= 600.0)
+        .find(|row| return row.accessible_checked() == Some(false))
+        .expect("a row that is not the selected track");
+    let (x, y, width, height) = box_of(&unselected);
+    host.clear();
+    left_click(&app, x + width / 2.0, y + height / 2.0);
+    let sent = host.sent_texts();
+    assert_eq!(sent.len(), 1, "one command, and no play after it: {sent:?}");
+    assert!(sent[0].starts_with("select "), "the click selects the row: {sent:?}");
 }
 
 #[test]
@@ -586,6 +616,12 @@ fn run_menu_action(fail: bool, action: music_player::track_menu::TrackMenuAction
     crate::ui_menu::run_action_with(&app, host.as_ref(), &effects, action);
     settle();
     return (app, host, effects);
+}
+
+#[test]
+fn the_menu_play_item_selects_and_starts_the_row_at_once() {
+    let (_app, host, _effects) = run_menu_action(false, music_player::track_menu::TrackMenuAction::Play);
+    assert_eq!(host.sent_texts(), ["select 0", "play"], "the explicit Play item keeps starting the row (D124)");
 }
 
 #[test]

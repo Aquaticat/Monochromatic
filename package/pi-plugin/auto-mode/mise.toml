@@ -87,6 +87,10 @@ run = [
   "node src/assessment-http-failure.unit.test.ts",
 ]
 
+[tasks."test:decision-wire"]
+description = "Verify lossless Luna request conversion, exact response attribution, and original lifetime"
+run = "node src/decision-wire.unit.test.ts"
+
 [tasks."test:native:assessment-transport"]
 description = "Exercise the maintained HTTP sender through original native policy review with authored responses"
 run = [

@@ -1,5 +1,5 @@
 /**
- Checks of the wide session about playing: Enter on a row, the private-sink proof, Space, the four modes, and the
+ Checks of the wide session about playing: Enter on a row twice, the private-sink proof, Space, the four modes, and the
  next and previous track chords.
  
  @example
@@ -128,7 +128,7 @@ export async function checkPlayback(
   recorder.setGroup('playback',);
   await recorder.check({
     id: 'play/enter-plays-row',
-    title: 'Alt+2 then Enter plays the row under the ring',
+    title: 'Alt+2 then Enter selects the row under the ring, and Enter again plays it (D124)',
     body: async function enterPlaysRow(): Promise<string> {
       await press({
         session,
@@ -146,14 +146,33 @@ export async function checkPlayback(
       const ring = (await session.last()).ring_track_title;
 
       /**
-       The state once the row plays.
+       Index of the row under the ring.
        */
-      const state = await press({
-        session,
-        act: tapKey('enter',),
-        until: isTrackPlaying,
-        what: 'a playing track',
-      },);
+      const ringIndex = (await session.last()).ring_track;
+
+      // A row that is not the selected track is only selected by the first Enter, and paused; the second Enter plays it.
+      if ((await session.last()).current_index !== ringIndex) {
+        await press({
+          session,
+          act: tapKey('enter',),
+          until: function rowIsSelectedAndPaused(state: UiState,): boolean {
+            return (state.current_index === ringIndex) && !state.playing;
+          },
+          what: 'the row selected and paused',
+        },);
+      }
+
+      /**
+       The state once the selected row plays.
+       */
+      const state = (await session.last()).playing
+        ? await session.last()
+        : await press({
+          session,
+          act: tapKey('enter',),
+          until: isTrackPlaying,
+          what: 'a playing track',
+        },);
       return `ring on "${ring}", now playing index ${state.current_index}, duration ${state.duration
         .toFixed(0,)} s`;
     },

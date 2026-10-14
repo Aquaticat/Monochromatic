@@ -5,6 +5,7 @@
 ///  only requests and owned snapshots cross the channel.
 use crate::{
     file_tree::{DirectoryRequest, FileTree},
+    git_ignore::{GlobalSource, IgnoreAnswer, IgnoreMatcher},
     workspace::{DirectoryEntry, Workspace},
 };
 /// Thread startup and unexpected disconnects remain actionable errors.
@@ -33,6 +34,10 @@ struct Reply {
     request: DirectoryRequest,
     /// Ordered dirents or the original read diagnostic.
     result: Result<Vec<DirectoryEntry>>,
+    /// Which of those dirents git ignores,
+    ///  decided on the reader thread beside the read,
+    ///  so the answer is as current as the listing it describes.
+    ignores: IgnoreAnswer,
 }
 
 /// UI-owned background reader,
@@ -50,7 +55,12 @@ pub struct DirectoryWorker {
 }
 
 /// Perform only read-only workspace operations on the background thread.
-fn run(workspace: Workspace, requests: Receiver<DirectoryRequest>, replies: SyncSender<Reply>) {
+fn run(
+    workspace: Workspace,
+    mut matcher: IgnoreMatcher,
+    requests: Receiver<DirectoryRequest>,
+    replies: SyncSender<Reply>,
+) {
     loop {
         // What: match extracts a received request or the expected shutdown-channel error.
         // Why: Closing the owning reader ends this loop without a bare shutdown error.
@@ -68,6 +78,14 @@ fn run(workspace: Workspace, requests: Receiver<DirectoryRequest>, replies: Sync
         };
         tracing::debug!(path = %request.path().display(), "reading requested directory");
         let result = workspace.list(request.path());
+        // A failed read has no entries to judge; the tree keeps its last snapshot and answer.
+        let ignores = match &result {
+            Ok(entries) => matcher.evaluate(request.path(), entries),
+            Err(error) => {
+                tracing::debug!(path = %request.path().display(), %error, "no ignore answer for a directory that could not be read");
+                IgnoreAnswer::default()
+            }
+        };
         // What: if-let extracts a send failure when the caller no longer owns the reply receiver.
         // Why: A closed consumer ends work rather than retrying an abandoned request.
         //
@@ -75,7 +93,11 @@ fn run(workspace: Workspace, requests: Receiver<DirectoryRequest>, replies: Sync
         // ```ts
         // try { send({ request, result }); } catch (error) { log(error); return; }
         // ```
-        if let Err(error) = replies.send(Reply { request, result }) {
+        if let Err(error) = replies.send(Reply {
+            request,
+            result,
+            ignores,
+        }) {
             tracing::debug!(%error, "directory reader reply receiver closed");
             return;
         }
@@ -86,6 +108,12 @@ fn run(workspace: Workspace, requests: Receiver<DirectoryRequest>, replies: Sync
 impl DirectoryWorker {
     /// Start a named worker bound to one canonical read-only workspace.
     pub fn new(workspace: Workspace) -> Result<Self> {
+        return Self::with_global_ignores(workspace, GlobalSource::GitConfig);
+    }
+
+    /// Start a reader whose ignored entries come from the project's rule files and the given global excludes file;
+    ///  tests name a file so they never read the real home folder.
+    pub fn with_global_ignores(workspace: Workspace, global: GlobalSource) -> Result<Self> {
         // What: sync_channel(1) creates sender/receiver endpoints with one message slot.
         // Why: A caller cannot accumulate unbounded directory snapshots while the UI is occupied.
         //
@@ -105,7 +133,12 @@ impl DirectoryWorker {
         let worker = thread::Builder::new()
             .name("ide-directory-reader".to_string())
             .spawn(move || {
-                run(workspace, request_receiver, reply_sender);
+                run(
+                    workspace,
+                    IgnoreMatcher::new(global),
+                    request_receiver,
+                    reply_sender,
+                );
             })
             .context("Cannot start the directory reader")?;
         // What: Some stores owned endpoints; Ok returns the successfully started reader.
@@ -163,7 +196,7 @@ impl DirectoryWorker {
         match self.replies.try_recv() {
             Ok(reply) => {
                 self.busy = false;
-                return tree.complete_listing(&reply.request, reply.result);
+                return tree.complete_listing_with(&reply.request, reply.result, reply.ignores);
             }
             Err(TryRecvError::Empty) => {
                 return Ok(false);

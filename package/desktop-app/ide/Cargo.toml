@@ -47,6 +47,11 @@ i-slint-backend-winit = "1.18.1"
 # Protocol file-watcher globs (`src/language/watched_files.rs`): helix-lsp already resolves globset 0.4,
 # so this line adds a direct edge only; helix-lsp's own handler drops relative patterns and kinds.
 globset = "0.4"
+# Gitignore matching that dims ignored tree entries (`src/git_ignore.rs`; user-approved 2026-10-14). ripgrep's own
+# crate: only its `gitignore` module is used (`Gitignore`, `GitignoreBuilder`), never its directory walk. The crate
+# has one feature, `simd-accel`, which is not needed. Its dependencies (globset, regex-automata, walkdir, same-file,
+# crossbeam-deque, log, memchr) already resolve in Cargo.lock, so this line adds one package.
+ignore = "0.4"
 # OS file-change notifications for shown directories and the displayed file (user-approved 2026-10-05).
 # The code names `INotifyWatcher` directly; `default-features = false` drops the macOS FSEvents
 # backend, and no polling backend is used, so a non-Linux build fails instead of silently polling.
