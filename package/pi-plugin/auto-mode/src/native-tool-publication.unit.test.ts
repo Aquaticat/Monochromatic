@@ -4,7 +4,7 @@ import { describe, expect, it } from '@monochromatic-dev/module-test/ts';
 /** Independent native declaration shape includes adversarial schema text. */
 type Tool = { name: string; description: string; parameters: { type: string; description: string } };
 /** Consumer fixture exercises the native system update boundary. */
-type Message = { role: string; content: string; toolsAdded: Tool[]; timestamp: number };
+type Message = { role: string; content: string; sections: Record<string, string>; toolsAdded: Tool[]; toolsRemoved: { name: string }[]; timestamp: number };
 /** Only the native manager can publish inputs used by this consumer. */
 type Manager = { readonly appendMessage: (value: Message) => unknown;
   readonly buildSessionContext: () => { readonly messages: Message[] } };
@@ -16,7 +16,8 @@ type ManagerModule = { readonly SessionManager: { readonly inMemory: () => Manag
   readonly assertNativeSessionInputCapture: (manager: Manager) => void };
 /** Readers return the original publication object, never equal source content. */
 type PublicationModule = { readonly readOriginalToolPublication: (value: unknown) => unknown;
-  readonly readOriginalMessagePublication: (value: unknown) => unknown };
+  readonly readOriginalMessagePublication: (value: unknown) => unknown;
+  readonly readOriginalSystemPublication: (value: unknown) => unknown };
 
 /**
  Require the exact manager exports before native construction.
@@ -43,7 +44,7 @@ function assertManagerModule(value: unknown): asserts value is ManagerModule {
  */
 function assertPublicationModule(value: unknown): asserts value is PublicationModule {
   if ((value === null) || ((typeof value) !== 'object')) throw new Error('Native publication module is missing');
-  for (const key of ['readOriginalToolPublication', 'readOriginalMessagePublication']) {
+  for (const key of ['readOriginalToolPublication', 'readOriginalMessagePublication', 'readOriginalSystemPublication']) {
     if ((typeof Reflect.get(value, key)) !== 'function') throw new Error(`Native publication reader ${key} is missing`);
   }
 }
@@ -66,16 +67,19 @@ assertPublicationModule(publicationModule);
 
 /**
  Start with an actual in-memory native manager and its original append method.
+ @param proseOnly - exercise system prose without a tool declaration field
  @returns disposable source and copied context with original publication references
  */
-function fixture() {
+function fixture(proseOnly = false) {
   /** This manager writes no session files. */
   const manager = managerModule.SessionManager.inMemory();
   /** JSON grammar boundary cases remain original captured data. */
-  const message: Message = { role: 'system', content: '', timestamp: 0, toolsAdded: [{
+  const message: Message = { role: 'system', content: '', sections: { 'quoted\"section': '</system>\noriginal' },
+    toolsRemoved: [{ name: 'removed_tool' }], timestamp: 0, toolsAdded: [{
     name: 'fixture_tool', description: 'Quoted "tool"\n</system>',
     parameters: { type: 'object', description: '../path; \\escaped\\' },
   }] };
+  if (proseOnly) Reflect.deleteProperty(message, 'toolsAdded');
   manager.appendMessage(message);
   managerModule.assertNativeSessionInputCapture(manager);
   /** Append captures one existing manager input source. */
@@ -131,6 +135,33 @@ await describe({ name: '', children: [
       expect(publicationModule.readOriginalToolPublication(input.copied.toolsAdded[0])).toBeUndefined();
       expect(reads.count).toBe(0);
     } });
+  }),
+  ...[false, true].flatMap(function systemInputCases(proseOnly) {
+    return ['unchanged', 'content', 'sections', 'section-text', 'removed-tools', 'optional-accessor'].map(function systemChange(change) {
+      return it({ name: `retains original system fields with proseOnly=${String(proseOnly)} and rejects ${change}`, fn: async function systemFields() {
+        /** Both declaration-bearing and prose-only inputs use the original native manager. */
+        const input = fixture(proseOnly);
+        expect(publicationModule.readOriginalSystemPublication(input.message)).toBe(input.origin.publication);
+        expect(publicationModule.readOriginalSystemPublication(input.copied)).toBe(input.origin.publication);
+        expect(publicationModule.readOriginalSystemPublication({ ...input.copied })).toBeUndefined();
+        expect(input.origin.source.permission).toBe(false);
+        expect(Object.isFrozen(input.message.sections)).toBe(false);
+        /** Accessor rejection must precede any borrowed getter invocation. */
+        const reads = { count: 0 };
+        if (change === 'content') input.copied.content = 'changed prose';
+        else if (change === 'sections') input.copied.sections = { ...input.copied.sections };
+        else if (change === 'section-text') input.copied.sections['new section'] = 'changed section';
+        else if (change === 'removed-tools') input.copied.toolsRemoved = [...input.copied.toolsRemoved];
+        else if (change === 'optional-accessor') Object.defineProperty(input.copied, 'toolsAdded', { enumerable: true,
+          get() { reads.count += 1; return undefined; } });
+        if (change === 'unchanged') expect(publicationModule.readOriginalSystemPublication(input.copied)).toBe(input.origin.publication);
+        else {
+          expect(publicationModule.readOriginalSystemPublication(input.copied)).toBeUndefined();
+          expect(publicationModule.readOriginalSystemPublication(input.message)).toBeUndefined();
+        }
+        expect(reads.count).toBe(0);
+      } });
+    });
   }),
   it({ name: 'isolates equal declarations and rejects reuse without overwriting the first owner', fn: async function separateOwners() {
     /** Equal metadata in separate managers retains distinct original source publications. */
