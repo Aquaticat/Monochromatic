@@ -71,6 +71,11 @@ export {
 
 //region Deterministic migration kernel remains separate from native evidence admission
 
+export {
+  AssessmentTransportError,
+  createAssessmentSender,
+  type AssessmentTransportInput,
+} from './assessment-transport.ts';
 export { type AuthorizationRequirement, } from './authorization-requirement.ts';
 export { AuthorizationEvidenceError, } from './authorization-evidence-data.ts';
 export { MISSING_AUTHORIZATION_EVIDENCE, } from './authorization-evidence-types.ts';
