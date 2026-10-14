@@ -18,8 +18,8 @@ type ResultModule = {
  @throws Error when the built result-copy export is absent
  */
 function assertResultModule(value: unknown): asserts value is ResultModule {
-  if (value === null || typeof value !== 'object' || !('prepareSdkResult' in value)
-    || typeof value.prepareSdkResult !== 'function')
+  if ((value === null) || ((typeof value) !== 'object') || (!('prepareSdkResult' in value))
+    || ((typeof value.prepareSdkResult) !== 'function'))
     throw new Error('Built native SDK result-copy function is unavailable');
 }
 
@@ -34,7 +34,7 @@ assertResultModule(built);
 
 await describe({ name: '', children: [
   ...['absent', 'message', 'undefined'].map(function fallbackCase(fallback) {
-    return it({ name: `retains original data identities and ${fallback} fallback presence`, fn: function originalData() {
+    return it({ name: `retains original data identities and ${fallback} fallback presence`, fn: async function originalData() {
       /** Borrowed native capabilities must remain mutable and retain their identities. */
       const session = { original: 'session' };
       /** Extension results remain the same original object after the outer result is frozen. */
@@ -57,7 +57,7 @@ await describe({ name: '', children: [
       expect(Object.isFrozen(extensionsResult)).toBe(false);
     } });
   }),
-  it({ name: 'observes each original own descriptor once without reading property values', fn: function descriptorObservations() {
+  it({ name: 'observes each original own descriptor once without reading property values', fn: async function descriptorObservations() {
     /** Trap records distinguish descriptor copying from getter or spread-based copying. */
     const descriptors: PropertyKey[] = [];
     /** Proxy fixtures remain local to this test and never wrap shared state. */
@@ -77,25 +77,34 @@ await describe({ name: '', children: [
   //region Reject malformed result records without invoking their accessors
 
   ...[null, undefined, [], Object.create(null), 'invalid'].map(function nonordinaryCase(value, index) {
-    return it({ name: `rejects nonordinary SDK result ${index}`, fn: function nonordinaryResult() {
-      expect(function copyInvalid() { return built.prepareSdkResult(value); }).toThrow('SDK construction requires its ordinary original result');
+    return it({ name: `rejects nonordinary SDK result ${index}`, fn: async function nonordinaryResult() {
+      expect(function copyInvalid() {
+        return built.prepareSdkResult(value);
+      }).toThrow('SDK construction requires its ordinary original result');
     } });
   }),
   ...['session', 'extensionsResult'].map(function missingFieldCase(field) {
-    return it({ name: `rejects missing original ${field} data`, fn: function missingRequiredField() {
+    return it({ name: `rejects missing original ${field} data`, fn: async function missingRequiredField() {
       /** The other required field remains present so this failure isolates the selected omission. */
       const original = field === 'session' ? { extensionsResult: {} } : { session: {} };
-      expect(function copyMissing() { return built.prepareSdkResult(original); }).toThrow(`SDK result lacks original data field ${field}`);
+      expect(function copyMissing() {
+        return built.prepareSdkResult(original);
+      }).toThrow(`SDK result lacks original data field ${field}`);
     } });
   }),
   ...['session', 'extensionsResult', 'modelFallbackMessage'].map(function accessorCase(field) {
-    return it({ name: `rejects accessor-backed ${field} without invoking it`, fn: function accessorField() {
+    return it({ name: `rejects accessor-backed ${field} without invoking it`, fn: async function accessorField() {
       /** No accessor call is permitted during construction result preparation. */
       const calls: string[] = [];
       /** Required fields start valid before one selected field becomes an accessor. */
       const original = { session: {}, extensionsResult: {} };
-      Object.defineProperty(original, field, { get() { calls.push(field); return {}; } });
-      expect(function copyAccessor() { return built.prepareSdkResult(original); }).toThrow(`SDK result lacks original data field ${field}`);
+      Object.defineProperty(original, field, { get() {
+        calls.push(field);
+        return {};
+      } });
+      expect(function copyAccessor() {
+        return built.prepareSdkResult(original);
+      }).toThrow(`SDK result lacks original data field ${field}`);
       expect(calls).toHaveLength(0);
     } });
   }),
