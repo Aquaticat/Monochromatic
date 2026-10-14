@@ -12,15 +12,6 @@ import type {
   RootSessionLifecycle,
 } from './session-root-types.ts';
 
-/** Native private-state readers authenticate the exact session and manager pairing. */
-export function createSessionRootReader(input: {
-  readonly readActiveSessionManager: (session: AgentSession) => SessionManager;
-  readonly readManagerOccurrence: (manager: SessionManager) => object;
-}): (input: {
-  readonly session: AgentSession;
-  readonly manager: SessionManager
-}) => object;
-
 /** Lifecycle construction uses existing constructor ownership and original root occurrences. */
 export function createNativeManagerRegistry(input: {
   readonly owner: ManagerConstructorOwner;

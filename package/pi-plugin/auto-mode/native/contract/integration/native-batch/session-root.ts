@@ -11,8 +11,8 @@ import { tagged } from '@monochromatic-dev/module-logger/ts';
 import { createManagerConstructorOwner } from '../../lifecycle/runtime-custody/manager-owner.ts';
 import {
   createNativeManagerRegistry,
-  createSessionRootReader,
 } from './session-root-dependencies.mjs';
+import { createSessionRootReader } from '../../lifecycle/root-lifecycle-retirement-entry/root-reader.ts';
 import { createRuntimeFactoryScopes } from '../../lifecycle/runtime-factory-scopes/scopes.ts';
 import type {
   RootSessionDefinition,

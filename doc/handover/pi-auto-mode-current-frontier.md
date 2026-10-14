@@ -175,6 +175,18 @@ the production authorization-owner integration remains separate work.
 
 ## Typed native session construction
 
+The next maintained dependency is the native session-manager identity reader.
+`root-lifecycle-retirement-entry/root-reader.mjs` moved to `root-reader.ts` on 2026-10-14;
+the original provenance remains recorded.
+The SDK constructor now imports that typed interface directly.
+The reader retains the original callbacks and exact returned occurrence,
+and rejects a manager mismatch before invoking the occurrence reader.
+The incumbent lifecycle still owns its original error constructors.
+Built-artifact branch checks,
+native host regression checks,
+lint,
+and type verification are pending for this port.
+
 The next owned dependency is now ported from `runtime-factory-scopes/scopes.mjs`
 to `scopes.ts` and `construction.ts`.
 The maintained SDK caller now imports its real typed interface directly.
