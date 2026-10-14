@@ -71,7 +71,8 @@ export function rewriteNativeLiteralRules(source: string): string {
     const call = node.expression;
     if (call.optional || (call.callee
       .type
-      !== 'Identifier') || (call.callee
+      !== 'Identifier')
+      || (call.callee
         .name
         !== 'addRule')
       || (call.arguments

@@ -555,6 +555,14 @@ The maintained source and production artifact remain unchanged by those omission
 The native SDK stream,
 all approval-context cases,
 and host lifecycle replacement and cleanup pass against the rebuilt artifact.
+Typed message conversion,
+provider serialization,
+extension loading,
+and resource receipt generators also pass scoped lint,
+package types,
+and the owned rebuild.
+Comparisons against their prior implementations retain identical generated module bytes,
+with the same module base URL supplied to the resource generator comparison.
 
 The first approved native dispatch failed because the inherited test loader derived dependency paths
 from the codemode worker's disposable home.

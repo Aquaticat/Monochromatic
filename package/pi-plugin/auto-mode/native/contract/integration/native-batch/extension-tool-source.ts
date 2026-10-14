@@ -31,7 +31,10 @@ export function extensionToolSource(source: string): string {
  /**
   Loader transformations retain their own diagnostic boundary.
   */
- const rl = tagged({ tag: extensionToolSource.name, l });
+ const rl = tagged({
+   tag: extensionToolSource.name,
+   l
+ });
  rl.debug('preparing original extension registration observations');
  /**
   The native API factory receives the original resource owner's observer.
@@ -150,7 +153,10 @@ export function resourceToolSource(source: string): string {
  /**
   Resource transformations retain their own diagnostic boundary.
   */
- const rl = tagged({ tag: resourceToolSource.name, l });
+ const rl = tagged({
+   tag: resourceToolSource.name,
+   l
+ });
  rl.debug('preparing original resource-owned tool receipts');
  /**
   Resource instances expose bounded receipt readers without publishing their mutable owner.

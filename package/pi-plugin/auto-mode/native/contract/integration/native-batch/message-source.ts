@@ -39,7 +39,10 @@ export function handlerMessageSource({
  /**
   Each conversion source retains its own diagnostic boundary.
   */
- const rl = tagged({ tag: handlerMessageSource.name, l });
+ const rl = tagged({
+   tag: handlerMessageSource.name,
+   l
+ });
  rl.debug('preparing original native message conversion observations');
  /**
   The original custom-message conversion spelling must appear exactly once.
@@ -122,7 +125,10 @@ export function handlerProviderSource({
  /**
   Provider transformations retain a separate diagnostic boundary from message conversion.
   */
- const rl = tagged({ tag: handlerProviderSource.name, l });
+ const rl = tagged({
+   tag: handlerProviderSource.name,
+   l
+ });
  rl.debug('preparing original provider payload observations');
  /**
   This original user-message construction must remain unique in the qualified provider.
