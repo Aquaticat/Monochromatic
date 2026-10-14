@@ -310,13 +310,16 @@ so the findings come from reading the readable source strings inside the binary 
     a higher EXPO speed mean the kit is above the processor's rated speed on this board, not that the memory is bad;
     the EXPO speed was not asked. This does not yet separate a board fault from a kit or memory controller limit.
   - Further answers (about 21:20 EDT): the EXPO speed is 6000, above AMD's DDR5-5200 rating for two DIMMs. BIOS
-    settings the user disabled for stability: spread spectrum control, global C-state control, ASPM, PCIe Gen4, PCIe Gen5,
+    settings the user disabled for stability: spread spectrum control, global C-state control, ASPM, PCIe Gen4,
+    PCIe Gen5,
     LAN, wake, and probably more. An SSD that works in the user's ThinkPad X13 Gen 4 does not work in this board.
     Checked in sysfs: the NVMe link is 8 GT/s x4 (Gen3) with a 16 GT/s maximum, so that slot's link is held at Gen3; the
     discrete GPU link is 16 GT/s x8 (its maximum); no PCIe error counters are set on any of them; the cpuidle driver is
-    `none`, so deep CPU idle states are not in use, which fits the high idle power seen earlier (about 60 W and 54 degrees
+    `none`, so deep CPU idle states are not in use, which fits the high idle power seen earlier (about 60 W and
+    54 degrees
     at idle) but does not explain the load temperature gap. The pattern across two CPUs (BIOS freezes, memory errors
-    above the rated speed, PCIe and idle-state workarounds, an SSD that is not accepted) points at the board or the power
+    above the rated speed, PCIe and idle-state workarounds, an SSD that is not accepted) points at the board or the
+    power
     supply; the thermal gap stays a separate problem until a link to it is shown.
 - The cooler is the NH-D15S (answered). Is it mounted correctly? The numbers in the evidence section say the heat
   path is far weaker than references; the model difference (1 to 3 degrees for one fan instead of two) does not
