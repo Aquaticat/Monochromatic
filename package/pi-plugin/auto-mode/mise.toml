@@ -169,6 +169,13 @@ run = [
 [tasks."test:native:sdk-stream"]
 run = "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-batch/domain-frontier.test.mjs permission --require-resolution --sdk-stream"
 
+[tasks."test:native:context-receipts"]
+description = "Verify original native context callback inputs and complete results reach governing-source accounting"
+run = [
+  "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-batch/domain-frontier.test.mjs permission --require-resolution --sdk-stream --observed-context",
+  "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-batch/domain-frontier.test.mjs permission --require-resolution --unobserved-event",
+]
+
 [tasks."test:native:approval-context"]
 description = "Exercise Pi's native extension context before and after reload with fixture UI responses"
 run = [

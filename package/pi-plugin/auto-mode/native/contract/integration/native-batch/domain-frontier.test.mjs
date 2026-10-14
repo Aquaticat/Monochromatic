@@ -24,7 +24,8 @@ const text={
   none:'Use sentence case in the final response.'
 }[relation];
 const unobservedContext=process.argv
-  .includes('--unobserved-context');
+  .includes('--unobserved-event');
+const observedContext=process.argv.includes('--observed-context');
 const sdkStream=process.argv
   .includes('--sdk-stream');
 const receiptControl=process.argv
@@ -36,7 +37,20 @@ const env=await createEnvironment({
   policyText:'RUL:\n '+text+'\n',
   hostPrompt:'Fixture background.',
   useNativeProvider:sdkStream,
-  extensionFactories:unobservedContext?[function registerUnobservedContextHandler(pi) {pi.on('context',function countUnobservedContextCall() {contextCalls++;});}]:[]
+  extensionFactories:unobservedContext?[function registerUnobservedContextHandler(pi) {pi.on('turn_start',function countUnobservedContextCall() {contextCalls++;});}]:observedContext?[function registerObservedContextHandlers(pi) {
+   pi.on('context',function retainOriginalContextInput(event) {
+    contextCalls++;
+    event.receiptFixture='Original in-place context input';
+   });
+   pi.on('context',function retainOriginalContextResult(event) {
+    contextCalls++;
+    return {messages:event.messages,unusedInstruction:'Original unselected context result'};
+   });
+   pi.on('context_with_system',function retainOriginalSystemContextResult(event) {
+    contextCalls++;
+    return {messages:event.messages,unusedInstruction:'Original unselected system context result'};
+   });
+  }]:[]
 });
 let assessments=0,executions=0,originalBody,requests=0;
 const leaf={
@@ -166,7 +180,7 @@ try{
   assert.ok(contextCalls>0,'The native context callback must actually run');
   assert.ok(domainIssue?.sourceDomain
     .gaps
-    .some(function namesUnobservedContext(gap) { return (gap.reason.includes('"context"')); }));
+    .some(function namesUnobservedContext(gap) { return (gap.reason.includes('"turn_start"')); }));
   assert.equal(
     review.outcome.state,
     'unresolved'
@@ -181,6 +195,16 @@ try{
     undefined,
     'The original host domain needs code-owned decision-specific accounting, not an unconditional domain hold'
   );
+  if(observedContext){
+   assert.ok(contextCalls>=3,'Original native context and context_with_system callbacks must run');
+   const receipts=review.inputs.instructionSources.map(function readContextSource(view) { return view.source; })
+    .filter(function isContextReceipt(source) { return source.inputOrigin==='native-context-handler'; });
+   assert.equal(receipts.length,8,'Every original callback input, mutated input, and defined result needs its own retained source');
+   assert.ok(receipts.some(function retainsInPlaceInput(source) { return source.content.includes('Original in-place context input'); }));
+   assert.ok(receipts.some(function retainsUnusedResult(source) { return source.content.includes('Original unselected context result'); }));
+   assert.ok(receipts.some(function retainsUnusedSystemResult(source) { return source.content.includes('Original unselected system context result'); }));
+   assert.ok(receipts.every(function leavesContextAuthorityUnestablished(source) { return source.permission===false&&source.registration===undefined; }));
+  }
   if(receiptControl){
    assert.equal(
      review.outcome.state,
@@ -258,7 +282,7 @@ try{
     },
     {
       ...input,
-      snapshot:{...input.snapshot,nativeDomainEventKinds:['context']}
+      snapshot:{...input.snapshot,nativeDomainEventKinds:['turn_start']}
     }
    ];
    for(const incomplete of altered)assert.ok(inspectNativeSourceDomain(incomplete)
@@ -270,6 +294,7 @@ try{
  console.log(JSON.stringify({
    ...result,
    unobservedContext,
+   observedContext,
    contextCalls,
    sdkStream,
    receiptControl
