@@ -81,6 +81,7 @@ import com.google.common.util.concurrent.ListenableFuture
 // ```ts
 // const TAG = "PlatformSessionCallback";
 // ```
+/** Log tag of this file. */
 private const val TAG: String = "PlatformSessionCallback"
 
 // What:     `class PlatformSessionCallback : MediaSession.Callback { ... }` declares a class that implements the
@@ -116,50 +117,50 @@ class PlatformSessionCallback : MediaSession.Callback {
         // ```ts
         // const isNotification = session.isMediaNotificationController(controller);
         // ```
+        /** Whether the connecting controller is the one that feeds the platform session. */
         val isNotification: Boolean = session.isMediaNotificationController(controller)
-        // What:     `AcceptedResultBuilder(session, controller)` starts from media3's defaults for this controller
-        //           (every command for a trusted one, read-only for an untrusted one).
-        // Why:      Keeps today's behaviour for every command except the one removed below.
+        // What:     `AcceptedResultBuilder(session, controller).build()` makes media3's default answer for this
+        //           controller (every command for a trusted one, read-only for an untrusted one).
+        // Why:      Keeps today's behaviour for every command except the one the rule removes.
         //
         // In TS you'd write (pseudocode):
         // ```ts
-        // const builder = new AcceptedResultBuilder(session, controller);
+        // const defaults = new AcceptedResultBuilder(session, controller).build();
         // ```
-        val builder = MediaSession.ConnectionResult.AcceptedResultBuilder(session, controller)
-        // What:     `builder.build()` makes the default result so its `availablePlayerCommands` can be read.
-        // Why:      The offered codes are the input of the rule.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // const defaults = builder.build();
-        // ```
-        val defaults: MediaSession.ConnectionResult = builder.build()
-        // What:     `defaults.availablePlayerCommands` is a media3 `Player.Commands` set; `size()` and `get(i)` read
-        //           it by position. `(0 until n).map { ... }` builds a `List<Int>` of the codes.
-        // Why:      The rule works on plain integers.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // const offered = Array.from({ length: commands.size() }, (_, i) => commands.get(i));
-        // ```
-        val offeredCommands: Player.Commands = defaults.availablePlayerCommands
-        val offered: List<Int> = (0 until offeredCommands.size()).map { index -> offeredCommands.get(index) }
-        val kept: List<Int> = platformCommandCodes(isMediaNotificationController = isNotification, offered = offered)
-        Log.i(TAG, "onConnectAsync notification=$isNotification offered=${offered.size} kept=${kept.size}")
-        if (kept.size == offered.size) {
+        /** The answer media3 gives when no rule applies. */
+        val defaults: MediaSession.ConnectionResult =
+            MediaSession.ConnectionResult.AcceptedResultBuilder(session, controller).build()
+        if (!isNotification) {
+            Log.i(TAG, "onConnectAsync notification=false: default commands")
             return Futures.immediateFuture(defaults)
         }
-        // What:     `Player.Commands.Builder().addAll(*codes)` builds a command set from integer codes. The `*` before
-        //           an array spreads it into separate arguments. `kept.toIntArray()` converts `List<Int>` to the
-        //           primitive `IntArray` that `addAll(int...)` takes.
+        // What:     `Player.Commands.Builder()` collects command codes; `add(code)` adds one. The loop copies every
+        //           default command except the ones the rule drops. `commands.get(index)` reads the code at a
+        //           position and `size()` is the count.
         // Why:      Hand media3 the reduced command set for the notification controller.
         //
         // In TS you'd write (pseudocode):
         // ```ts
-        // const commands = new Commands.Builder().addAll(...kept).build();
+        // const builder = new Commands.Builder();
+        // for (let i = 0; i < offered.size(); i++) {
+        //   if (keepsPlatformCommand(true, offered.get(i))) builder.add(offered.get(i));
+        // }
         // ```
-        val commands: Player.Commands = Player.Commands.Builder().addAll(*kept.toIntArray()).build()
-        val reduced: MediaSession.ConnectionResult = builder.setAvailablePlayerCommands(commands).build()
+        /** The default commands of the notification controller. */
+        val offered: Player.Commands = defaults.availablePlayerCommands
+        /** Collects the commands that stay. */
+        val kept: Player.Commands.Builder = Player.Commands.Builder()
+        for (index in 0 until offered.size()) {
+            if (keepsPlatformCommand(isMediaNotificationController = true, code = offered.get(index))) {
+                kept.add(offered.get(index))
+            }
+        }
+        Log.i(TAG, "onConnectAsync notification=true: offered=${offered.size()}")
+        /** The answer for the notification controller: defaults with the reduced player commands. */
+        val reduced: MediaSession.ConnectionResult =
+            MediaSession.ConnectionResult.AcceptedResultBuilder(session, controller)
+                .setAvailablePlayerCommands(kept.build())
+                .build()
         return Futures.immediateFuture(reduced)
     }
 }

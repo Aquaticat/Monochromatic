@@ -19,11 +19,10 @@ package dev.monochromatic.musicplayer
 // ```
 import androidx.media3.common.Player
 
-// What:     `fun platformCommandCodes(...)` returns the player command codes that one connecting controller may
-//           use. `isMediaNotificationController` says whether the controller is the one media3 itself creates for the
-//           system notification. `offered` is the list of command codes the controller would get by default.
-//           `List<Int>` is a read-only list of 32-bit integers (sibling: `MutableList<Int>`, which can be changed in
-//           place).
+// What:     `fun keepsPlatformCommand(...)` says whether one player command code stays in the set a connecting
+//           controller gets. `isMediaNotificationController` says whether the controller is the one media3 itself
+//           creates for the system notification and the platform session. `code` is one command code from the set
+//           the controller would get by default. The result is a `Boolean`.
 // Why:      media3 publishes the whole playing queue to the platform session whenever the notification
 //           controller may read the timeline (`COMMAND_GET_TIMELINE`), and that copy of a 10 000-track queue runs on
 //           every track change. Taking only that command away from the notification controller makes media3 publish
@@ -35,15 +34,15 @@ import androidx.media3.common.Player
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// function platformCommandCodes(isMediaNotificationController: boolean, offered: number[]): number[] {
-//   if (!isMediaNotificationController) return offered;
-//   return offered.filter((code) => code !== Player.COMMAND_GET_TIMELINE);
+// function keepsPlatformCommand(isMediaNotificationController: boolean, code: number): boolean {
+//   if (!isMediaNotificationController) return true;
+//   return code !== Player.COMMAND_GET_TIMELINE;
 // }
 // ```
-/** Returns the command codes [offered] to a controller, minus the timeline read for the notification controller. */
-fun platformCommandCodes(isMediaNotificationController: Boolean, offered: List<Int>): List<Int> {
+/** True when command [code] stays in a controller's set; the notification controller loses the timeline read. */
+fun keepsPlatformCommand(isMediaNotificationController: Boolean, code: Int): Boolean {
     if (!isMediaNotificationController) {
-        return offered
+        return true
     }
-    return offered.filter { code -> code != Player.COMMAND_GET_TIMELINE }
+    return code != Player.COMMAND_GET_TIMELINE
 }

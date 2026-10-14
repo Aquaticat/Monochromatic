@@ -1,16 +1,14 @@
 package dev.monochromatic.musicplayer
 
 import androidx.media3.common.Player
-import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
-import org.junit.Assert.assertSame
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
 /** The notification controller loses only the timeline read, so media3 publishes no platform queue. */
 class PlatformCommandPolicyTest {
     /** Commands the app advertises that the platform session needs for transport, position and metadata. */
-    private val kept: List<Int> = listOf(
+    private val others: List<Int> = listOf(
         Player.COMMAND_PLAY_PAUSE,
         Player.COMMAND_PREPARE,
         Player.COMMAND_STOP,
@@ -26,58 +24,51 @@ class PlatformCommandPolicyTest {
         Player.COMMAND_SET_SHUFFLE_MODE,
     )
 
-    /** Everything media3 offers a trusted controller by default, here the kept commands plus the timeline read. */
-    private val offered: List<Int> = kept + Player.COMMAND_GET_TIMELINE
-
     @Test
     fun theNotificationControllerLosesTheTimelineRead() {
-        val result = platformCommandCodes(isMediaNotificationController = true, offered = offered)
-        assertFalse(result.contains(Player.COMMAND_GET_TIMELINE))
+        assertFalse(keepsPlatformCommand(isMediaNotificationController = true, code = Player.COMMAND_GET_TIMELINE))
     }
 
     @Test
-    fun theNotificationControllerKeepsEveryOtherCommandInOrder() {
-        val result = platformCommandCodes(isMediaNotificationController = true, offered = offered)
-        assertEquals(kept, result)
+    fun theNotificationControllerKeepsEveryOtherCommand() {
+        for (code in others) {
+            assertTrue("command $code", keepsPlatformCommand(isMediaNotificationController = true, code = code))
+        }
     }
 
     @Test
     fun theNotificationControllerKeepsTheCurrentItemReadAndTheSeekCommands() {
-        val result = platformCommandCodes(isMediaNotificationController = true, offered = offered)
-        assertTrue(result.contains(Player.COMMAND_GET_CURRENT_MEDIA_ITEM))
-        assertTrue(result.contains(Player.COMMAND_SEEK_TO_NEXT))
-        assertTrue(result.contains(Player.COMMAND_SEEK_TO_PREVIOUS))
-        assertTrue(result.contains(Player.COMMAND_SEEK_TO_MEDIA_ITEM))
+        assertTrue(keepsPlatformCommand(true, Player.COMMAND_GET_CURRENT_MEDIA_ITEM))
+        assertTrue(keepsPlatformCommand(true, Player.COMMAND_SEEK_TO_NEXT))
+        assertTrue(keepsPlatformCommand(true, Player.COMMAND_SEEK_TO_PREVIOUS))
+        assertTrue(keepsPlatformCommand(true, Player.COMMAND_SEEK_TO_MEDIA_ITEM))
     }
 
     @Test
     fun anotherControllerKeepsTheTimelineRead() {
-        val result = platformCommandCodes(isMediaNotificationController = false, offered = offered)
-        assertEquals(offered, result)
+        assertTrue(keepsPlatformCommand(isMediaNotificationController = false, code = Player.COMMAND_GET_TIMELINE))
     }
 
     @Test
-    fun anotherControllerGetsTheSameListBack() {
-        val result = platformCommandCodes(isMediaNotificationController = false, offered = offered)
-        assertSame(offered, result)
+    fun anotherControllerKeepsEveryOtherCommand() {
+        for (code in others) {
+            assertTrue("command $code", keepsPlatformCommand(isMediaNotificationController = false, code = code))
+        }
     }
 
     @Test
-    fun anOfferWithoutTheTimelineReadIsUnchangedForTheNotificationController() {
-        val result = platformCommandCodes(isMediaNotificationController = true, offered = kept)
-        assertEquals(kept, result)
+    fun everyDefinedCommandCodeButTheTimelineReadIsKeptForTheNotificationController() {
+        val dropped = (0..40).filter { code ->
+            !keepsPlatformCommand(isMediaNotificationController = true, code = code)
+        }
+        assertTrue("dropped $dropped", dropped == listOf(Player.COMMAND_GET_TIMELINE))
     }
 
     @Test
-    fun anEmptyOfferStaysEmpty() {
-        assertEquals(emptyList<Int>(), platformCommandCodes(isMediaNotificationController = true, offered = emptyList()))
-        assertEquals(emptyList<Int>(), platformCommandCodes(isMediaNotificationController = false, offered = emptyList()))
-    }
-
-    @Test
-    fun aRepeatedTimelineReadIsRemovedEverywhere() {
-        val twice = listOf(Player.COMMAND_GET_TIMELINE, Player.COMMAND_PLAY_PAUSE, Player.COMMAND_GET_TIMELINE)
-        val result = platformCommandCodes(isMediaNotificationController = true, offered = twice)
-        assertEquals(listOf(Player.COMMAND_PLAY_PAUSE), result)
+    fun noCommandCodeIsDroppedForAnotherController() {
+        val dropped = (0..40).filter { code ->
+            !keepsPlatformCommand(isMediaNotificationController = false, code = code)
+        }
+        assertTrue("dropped $dropped", dropped.isEmpty())
     }
 }
