@@ -4,6 +4,7 @@
  @module
  */
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
+import { NATIVE_ASSESSMENT_MODEL, } from './decision-model.ts';
 import { CLAUSE_RELATIONS, } from './clause-lowering.ts';
 import type {
   SemanticAdmissionDefinition,
@@ -75,7 +76,7 @@ function operatingPolicy(definitionId: SemanticAdmissionDefinition,): SemanticAd
    */
   const labels = labelsByDefinition[definitionId];
   return Object.freeze({
-    model: 'typesafe/jev-1.13.0',
+    model: NATIVE_ASSESSMENT_MODEL,
     definitionId,
     programProfile: 'native-inspected-programs-v2',
     /**
@@ -100,7 +101,7 @@ function operatingPolicy(definitionId: SemanticAdmissionDefinition,): SemanticAd
 
 /**
  Construct the adopted native policies without reading credentials or requesting assessments.
- Scores at least 0.99 admit only supported uniquely leading meanings.
+ Scores at least 0.80 admit only supported uniquely leading meanings.
  This is an operating cutoff, not empirical model qualification.
  Native consumers preserve original identity, currentness, authority, coverage, and authorization checks.
 

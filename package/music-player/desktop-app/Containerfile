@@ -32,6 +32,8 @@ FROM registry.fedoraproject.org/fedora:41
 #                          to a system font. Without a CJK font installed,
 #                          Japanese/Chinese/Korean filenames render as blanks.
 #   xdg-desktop-portal     rfd file picker over the portal (when D-Bus passed)
+#   dbus-daemon            the notification tests (D122, D107) start a private
+#                          session bus of their own; they never use a host bus
 RUN dnf install -y \
       gcc \
       cmake ninja-build \
@@ -42,6 +44,7 @@ RUN dnf install -y \
       libwayland-client libwayland-cursor libwayland-egl libxkbcommon \
       fontconfig fontconfig-devel freetype freetype-devel \
       google-noto-sans-cjk-fonts \
+      dbus-daemon \
     && dnf clean all
 
 # Rust toolchain via rustup, not Fedora's `rust` package (1.91.1), because

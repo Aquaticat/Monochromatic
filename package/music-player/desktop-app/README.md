@@ -266,6 +266,13 @@ The crate is a library plus a thin binary so the pure logic is unit-testable wit
    the wire file holds the D-Bus messages (Linux only),
    and the handle runs them on its own thread so the window and the sweep workers never wait on the bus.
    Protocol facts and pitfalls: `doc/troubleshooting/plasma-job-view-progress-protocol.md`.
+- `src/unplayable_notification_logic.rs`, `src/unplayable_notification_wire.rs`, `src/unplayable_notification.rs`:
+   the "cannot be played" report as one freedesktop notification (D122), which replaced the in-window message.
+   The logic file holds the wording and a ledger that tells each file once per run,
+   the wire file holds the one `Notify` call (normal urgency, the server's default expiry, no action buttons,
+   a `desktop-entry` hint), and the handle runs it on its own thread and connection, separate from the analysis
+   indicator's, so a failure of one never disables the other.
+   Its tests run against a private `dbus-daemon` (`src/unplayable_notification_bus_support.rs`), never the session bus.
 - `src/peak_swap.rs`:
    current-track peak swap orchestration.
    Cache hits return the measured gain immediately;
@@ -387,10 +394,13 @@ The crate is a library plus a thin binary so the pure logic is unit-testable wit
    because the
   breakpointless wrapping `FlexboxLayout` root created a Slint `Flickable` layout-info loop on Slint 1.17;
    see `../../../doc/troubleshooting/slint-flickable-flexbox-layout-loop.md`.
-   Each scroll region is driven by a prominent custom
+   Each scroll region except the folder picker is driven by a prominent custom
   scrollbar in a right-hand gutter,
    since the default
   std-widgets scrollbar is a near-invisible hairline.
+   The folder picker has no scrollbar on either input (D125):
+   the selected folder, the highlighted letter of the rail and the order of the list already say where the user is,
+   and the wheel, a touch drag and the keys still scroll it.
    Scrolling is animated by the
   Flickable itself:
    touchpad and touchscreen gestures fling with momentum,
@@ -804,8 +814,9 @@ The refresh sweep shows no progress and decodes no file twice, because the sweep
 the fingerprints they have taken.
 A file that failed to decode has no stored result, so it is tried again at the next library change, whichever file
 changed (every refresh sweep also takes the small set of files recorded as failed), and in every full refresh.
-The person is told once per file (and once more if the file changes and still fails), and the row keeps its mark until
-a peak is measured for it.
+The engine reports each file once until a peak is measured for it (a folder opened again reports it again, which marks
+its row again), and the row keeps its mark until a peak is measured for it.
+The desktop notification is stricter: one per file for a run of the app (D122).
 
 The selected track follows its file (`controller_reload.rs`): when the file that is playing is replaced, the new file is
 opened first and swapped in at the same position (clamped to the new length), the player keeps playing, the peak and the
@@ -813,9 +824,15 @@ gain are worked out again, the seek bar takes the new length, and no message is 
 changes nothing until the next event. A paused selected track keeps its position when the new file has it and starts again
 from zero when it does not.
 
-A file that cannot be decoded is skipped, named in a message ("`name` can't be played."; several files collapse to a
-count),
-and its row shows "Can't be played".
+A file that cannot be decoded is skipped, and its row shows "Can't be played".
+The window draws no message for it.
+On Linux the same report is one desktop notification titled "Cannot play a file", whose text is "`name` can't be
+played." (several files collapse to a count that names the first) (D122).
+It is posted once per file for a run of the app, even if the engine reports the file again, and it names no folder.
+If no notification service answers, one warning goes to the log and nothing else is shown;
+the row mark is the only sign.
+macOS and Windows have no notification code yet (the analysis indicator has none either), so there the row mark is the
+only sign of an unplayable file, and no message is shown.
 When the selected file leaves the folder, the row disappears, playback stops, the elapsed time resets, a message names
 the file,
 and the view moves to the neighboring folder if the folder on screen is gone.

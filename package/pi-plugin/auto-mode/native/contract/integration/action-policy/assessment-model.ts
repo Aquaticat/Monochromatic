@@ -7,4 +7,4 @@
 /**
  Fixed serving identity checked by the response parser, without empirical qualification.
  */
-export const ruleAssessmentModel = 'typesafe/jev-1.13.0';
+export const ruleAssessmentModel = 'openai/gpt-6-luna-decisions';

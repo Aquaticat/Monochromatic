@@ -73,9 +73,13 @@ export {
 
 export {
   AssessmentTransportError,
-  createAssessmentSender,
+  createAssessmentHttpSender,
   type AssessmentTransportInput,
 } from './assessment-transport.ts';
+export { createAssessmentSender, } from './assessment-sender.ts';
+export { DecisionWireError, } from './decision-data.ts';
+export { encodeDecisionRequest, } from './decision-request.ts';
+export { decodeDecisionResponse, } from './decision-response.ts';
 export {
   createNativeSemanticOperatingPolicies,
   type NativeSemanticOperatingPolicies,

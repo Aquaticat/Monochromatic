@@ -63,14 +63,14 @@ await describe({
       name: definition,
       children: [
         it({ name: 'fixes the original model, definition, and complete-program profile', fn: async function fixedScope() {
-          expect(policy.model,).toBe('typesafe/jev-1.13.0',);
+          expect(policy.model,).toBe('openai/gpt-6-luna-decisions',);
           expect(policy.definitionId,).toBe(definition,);
           expect(policy.programProfile,).toBe('native-inspected-programs-v2',);
           expect(Object.isFrozen(policies,),).toBe(true,);
           expect(Object.isFrozen(policy,),).toBe(true,);
         }, },),
         ...supported.flatMap(function acceptedBoundaries(choice,) {
-          return [0.99, 1,].map(function atBoundary(score,) {
+          return [0.8, 0.83, 0.99, 1,].map(function atBoundary(score,) {
             return it({ name: `admits ${choice} at ${score}`, fn: async function admittedSupportedMeaning() {
               /**
                Admission must neither rewrite nor freeze a borrowed estimate.
@@ -84,9 +84,9 @@ await describe({
           },);
         },),
         ...supported.map(function belowBoundary(choice,) {
-          return it({ name: `abstains from ${choice} below 0.99`, fn: async function lowerScore() {
+          return it({ name: `abstains from ${choice} below 0.80`, fn: async function lowerScore() {
             expect(
-              policy.accepts(estimate({ labels, choice, score: 0.989999, },),),
+              policy.accepts(estimate({ labels, choice, score: 0.799999, },),),
             ).toBe(false,);
           }, },);
         },),
