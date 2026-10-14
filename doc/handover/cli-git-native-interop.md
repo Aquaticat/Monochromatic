@@ -32,6 +32,32 @@ starts the incumbent (`smoke`, `owner-locks`, `phase-recovery`, `hook-dispatch`,
 All of them exist at commit `5d61d7b442`, the last commit before the deletions (the final native fixes are in it).
 Rerunning anything below starts from that commit (see `Rerun commands`).
 
+The deletions, one commit each, in order:
+
+- `b003b8b224`: `bin/provision-incumbent.mjs`, the incumbent steps of `bin/interop-native-container.mjs` and the
+  `native:interop:provision` task.
+- `c603e53eb9`: the nine drivers that start the incumbent.
+- `3a5b620529`: the incumbent and probe helpers of `native-interop/support.mjs`, leaving the native-only ones.
+- `788450edac`: the two ignored `interop_probe` library tests and the image step that compiled them.
+- `b3f8ec89b1`: the 30 JavaScript files of the retired wrapper's hook dispatcher (`dispatch.mjs`, its `package.json`
+  and three hook shims in each of six transaction fixtures), which a fixture would have run if executed.
+  The native reader needs only `plan.json` there, and the fixture reader passed without them.
+
+Outside the repository: the runnable incumbent copy under `target/verification/` was removed,
+the reduced image was rebuilt (below), and 54 untagged container images that held `/opt/cli-git` were removed.
+One untagged image that holds it (`b9fb34691f4f`) is a parent layer of a tagged image and was kept.
+Three tagged images from other lanes still hold the incumbent:
+`localhost/cli-git-concurrent-e2e:latest`, `localhost/git-policy-native-interop:development` and `:transactions`.
+They belong to other lanes' evidence and were not deleted.
+Besides git history, no file in the repository can build or run the incumbent;
+`rg` for `opt/cli-git`, `INCUMBENT_BIN`, `provision-incumbent` and `interop:provision` over `package/git-policy/cli`
+and `doc` finds only the historical records of these documents.
+
+The reduced image (`localhost/git-policy-native-interop:interop`, id `924148b30506`, no `/opt/cli-git`) ran
+`old-format-fixtures` after the last deletion: 41 checks passed, 0 failed.
+The container gate on the tree after the probe deletion passed (1666 unit tests with 3 ignored, 118 binary-level
+tests with 1 ignored, Clippy inside the gate).
+
 ## Incumbent provisioning
 
 `bin/provision-incumbent.mjs` rebuilt the incumbent on demand, the way it was built before the retirement:
@@ -230,6 +256,8 @@ every `.git` directory is stored as `dot-git`, because a repository cannot track
 symbolic links of the incumbent's shadow repositories are listed in `links.tsv` of the fixture and recreated on restore;
 directories that hold nothing are recreated on restore.
 Each fixture restores to the absolute path it was captured at, since its records name absolute paths.
+The only executable file left in the fixtures is `hook-lock-dead/hook.sh`, the three-line test hook the capture
+ran (it appends `start` and `end` to a log); it holds no wrapper code.
 The commit hook's final-newline fixer changed seven files of the captured set (six driver marker files and
 `objects/info/packs` of Git itself); no record written by the incumbent differs from its capture.
 

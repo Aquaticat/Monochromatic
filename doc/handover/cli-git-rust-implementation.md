@@ -1617,8 +1617,9 @@ that is verification, not a decision for the user.
   and the `pathBytes` field for non-UTF-8 paths in events.
   Done: the old-and-new wrapper interop matrix and the old-format fixtures (user decision 2026-10-10, run once on
   2026-10-13): crash recovery, lock waits, hook dispatch and the old-format fixtures pass in both directions;
-  the mixed-concurrency scenario with a killed worker still fails sometimes when incumbent and native survivors
-  race to recover it, which is recorded as an open finding, and two native defects found on the way are fixed.
+  the mixed-concurrency scenario with a killed worker still fails sometimes, because the incumbent's startup
+  recovery releases a native lander's `index.lock` without the landing lock (recorded as an open finding, the
+  incumbent is not fixed), and five native recovery races found on the way are fixed.
   By the user's decision the incumbent tooling and the drivers that need it were then deleted; the plain-file
   fixtures and their native-only reader stay (`doc/handover/cli-git-native-interop.md`).
   Locks, journal, capture, shadow repository, preparation, policies, landing, replay, recovery and the worktree copy
