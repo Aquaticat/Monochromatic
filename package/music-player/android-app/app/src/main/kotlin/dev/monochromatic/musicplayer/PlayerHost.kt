@@ -122,7 +122,6 @@ import dev.monochromatic.musicplayer.core.TrashRoute
 import dev.monochromatic.musicplayer.core.trackFileNameOf
 import dev.monochromatic.musicplayer.core.mimeTypeFor
 import dev.monochromatic.musicplayer.core.trackActionFailureMessage
-import dev.monochromatic.musicplayer.core.analysisFailureMessage
 import dev.monochromatic.musicplayer.core.trackDetailsMessage
 import dev.monochromatic.musicplayer.core.trackLoadFailureMessage
 import dev.monochromatic.musicplayer.core.trackMenuActionsFor
@@ -1316,13 +1315,6 @@ fun playerHost(
     // ```
     /** The newest failure to open a track file, or null when the last load worked. */
     val loadFailure: LoadFailureNotice? = controller.loadFailure
-    /** Names of files whose analysis failed for the first time and that the user has not been told about yet (D113). */
-    val analysisFailures: List<String> = AnalysisFailures.pending
-    LaunchedEffect(analysisFailures) {
-        if (analysisFailures.isNotEmpty()) {
-            feedback.showFeedback(analysisFailureMessage(AnalysisFailures.take()))
-        }
-    }
     LaunchedEffect(loadFailure) {
         if (loadFailure != null) {
             /** Display path of the track that failed, or its URI when the library no longer lists it. */

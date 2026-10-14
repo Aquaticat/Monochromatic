@@ -89,14 +89,48 @@ with all 17 configured packages and 37 read-only workspace package mounts.
 `${HOME}/temp/agent/pi-luna-guard-controls-20261014/installed-equivalence.json`
 retains the complete comparison result.
 No new provider request was needed for this check.
-The [next frozen compensation experiment](../planning/pi-auto-mode-gateway-decisions-current-contract.md#question-batch-compensation-experiment)
-partitions the same questions under a shared deadline while preserving complete input.
-Automatic approval review rejected the new nine-call schedule before dispatch;
-the earlier six-call authorization does not cover it according to that review.
-The specific approval question is pending,
-and no new experiment call has run.
-The original native dialog is also pending a genuine human response;
-no automatic answer is permitted.
+The [question-batch experiment](../planning/pi-auto-mode-gateway-decisions-current-contract.md#question-batch-compensation-experiment)
+is complete after explicit authorization resolved the automatic review rejection.
+The user also authorized further Luna calls needed for this task without a total call cap.
+Retain finite experiments and the original production judgment bounds.
+All nine calls succeeded;
+every complete repetition returned the same 84 estimates as the original baseline,
+with four admitted at `0.80`.
+The shared judgments took 1,993.272,
+1,433.419,
+and 1,182.940 ms.
+Each used 246,783 reported input tokens rather than the baseline's 126,129.
+Batching is not adopted because this experiment supplies no semantic improvement.
+
+The subsequent readable-selection experiment also completed under the user's standing authorization.
+It retains the complete baseline input and question bindings,
+adding each selected passage verbatim beside its escaped JSON representation.
+All three calls returned 84 valid answers within five seconds,
+with identical answer data across repetitions.
+Eight supported answers reach `0.80`;
+the primary permission estimate is `0.82`.
+This changes estimates without establishing accuracy or a complete admitted interpretation.
+The candidate remains experimental.
+Further representation-only trials on this same input are deferred;
+continue the source-boundary investigation and native quality work.
+
+The whole-request interpretation has a separate missing consumer,
+independent of the low-scoring clause answers.
+The retained baseline's `head_83` selects `potential-instruction` at `0.96`;
+the readable-selection variant selects it at `0.97`.
+A fresh built native contrast changes only the authored whole-request relation:
+with every clause admitted,
+`none` executes three prepared children,
+whereas `potential-instruction` executes zero and retains `request-material-instruction-use`.
+Both runs have 33 original sources,
+five accounted partial source contributions,
+one local HTTP assessment,
+and zero provider requests.
+The log is `${HOME}/temp/agent/pi-luna-request-use-control-20261014.log`.
+This is an implementation boundary,
+not evidence that Luna should report absence when the request contains instructions.
+Continue original request-to-source governing-use accounting through the existing serializer and source owners.
+Partial contribution associations alone must not be promoted to complete governing-use evidence.
 
 ## Original native RPC approval verification
 
@@ -141,10 +175,86 @@ Every completed control uses one assessment,
 zero provider requests,
 and exit zero.
 Only Allow executes the inert tool.
-No genuine human response has been supplied yet.
-That human boundary remains queued while the user's Luna migration takes priority.
+The user supplied a genuine Allow response.
+The original pending controller had disappeared without a completion report,
+so recovery recreated the disposable native dialog.
+The complete displayed operation and choices matched exactly;
+only the pending request identifier changed.
+The user's Allow response was forwarded to that recreated request.
+The fixture completed with one execution,
+one assessment,
+one original `user-approve` verdict,
+zero provider requests,
+exit zero,
+and empty execution and disposal stderr.
+`human-recreated-dialog.json` and `human-verified.json` retain the comparison and result.
+This verifies the genuine human response through the native dialog boundary;
+the production authorization-owner integration remains separate work.
 
 ## Typed native session construction
+
+The manager registry port and its verification are complete.
+`root-lifecycle-retirement-entry/registry.mjs` moved to `registry.ts` on 2026-10-14,
+with its input and canonical epoch types in `registry-types.ts`.
+A complete tracked-source search for `createNativeManagerRegistry` found only the maintained SDK factory
+and its static bridge as consumers.
+The factory consumes only `lifecycle`.
+The unused `bind` snapshot adapter was removed:
+its historical profile checked a planned session ID,
+persistent file path,
+leaf,
+and a branch of at most two entries under qualification clocks.
+Those were qualification-fixture restrictions,
+not requirements of the maintained native lifecycle.
+Canonical manager state,
+constructor ownership checks,
+registry-local epochs,
+and the incumbent lifecycle remain.
+The `session-root-dependencies.mjs` bridge and its declaration were removed on the same date;
+the factory imports both the typed registry and typed native reader directly.
+Registry branch controls pass against the rebuilt native artifact:
+one manager shares reservations,
+distinct managers and registries remain independent,
+released reservations reuse canonical state,
+and foreign or revoked ownership fails before canonical accounting changes.
+The returned interface remains frozen without freezing borrowed managers.
+The package type check and scoped lint pass with zero lint warnings and errors.
+The owned rebuild,
+native manager constructors,
+host lifecycle,
+and actual isolated Qwen CLI pass with zero provider requests and clean CLI shutdown.
+Process-local omission of `owner.assertOwned(manager)` makes both foreign and revoked ownership assertions fail.
+`${HOME}/temp/agent/pi-registry-controls-20261014/verification.json`
+records the unchanged built-artifact hash and expected failures.
+Commits `6d5a8642d1`,
+`6260d5d19a`,
+`2ed70ed78a`,
+and `988d7cb453` retain the port and its branch controls.
+The full native lint backlog and original request governing-use consumer remain separate work.
+
+The next maintained dependency is the native session-manager identity reader.
+`root-lifecycle-retirement-entry/root-reader.mjs` moved to `root-reader.ts` on 2026-10-14;
+the original provenance remains recorded.
+The SDK constructor now imports that typed interface directly.
+The reader retains the original callbacks and exact returned occurrence,
+and rejects a manager mismatch before invoking the occurrence reader.
+The incumbent lifecycle still owns its original error constructors.
+The owned native build and package type check pass.
+The five changed TypeScript files pass scoped lint with zero warnings and errors.
+Built-artifact checks pass for exact arguments,
+original callback capture,
+live manager changes,
+missing callbacks,
+and unchanged thrown values.
+Native manager constructors,
+host lifecycle,
+and the actual isolated Qwen CLI process pass with zero provider requests.
+Process-local removal of either callback validation or the manager-identity guard
+makes the corresponding behavior assertion fail.
+`${HOME}/temp/agent/pi-root-reader-controls-20261014/verification.json`
+retains those controls and the unchanged built-artifact hash.
+The first formatter run identified a test-local root `let` and incomplete ambient constructor declarations;
+both were corrected without suppressions.
 
 The next owned dependency is now ported from `runtime-factory-scopes/scopes.mjs`
 to `scopes.ts` and `construction.ts`.
@@ -189,7 +299,9 @@ retains the initial success-control newline mistake and its source-backed correc
 Final wrapper lint reports zero warnings and zero errors across four changed files;
 its package type check and all declared process cases pass.
 Pi's real `lint:types` task also passes through the repaired wrapper.
-The broader native quality queue and genuine approval verification remain open.
+The broader native quality queue remains open.
+The genuine human response is now verified in the native RPC fixture described in
+the original native RPC approval verification section.
 
 The next approval preparation uses the existing native RPC dialog boundary.
 The emitted Pi 1.2.0 `rpc-mode.js` creates the original extension selector request
@@ -199,7 +311,8 @@ while allowing a genuine human to answer the actual pending native request.
 This would verify that human response boundary only.
 The production CLI still lacks an independent authorization-requirement owner;
 unknown requirements must remain unresolved and must not be converted into UI requests.
-No genuine human response or production authorization-owner integration is claimed yet.
+The later genuine Allow result completes this human response verification.
+Production authorization-owner integration remains separate work.
 
 The maintained constructor now lives in `native-batch/session-root.ts`,
 with typed native readers,

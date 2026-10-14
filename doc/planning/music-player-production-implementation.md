@@ -209,6 +209,15 @@ and the decisions D106 to D119 at the end of `package/music-player/design/decisi
   the `containerCargo` fallback (it mounts `truepeak-core` and the Android fixture); `states/window-title` and
   `states/natural-order` were harness races and pass 20 of 20; nested compositor 0.4.0 is published and installed, and
   the runner checks capability by version with no pin; the e2e suite has 110 checks (110 pass, 1 not injectable).
+- Android analysis failures (D123, 2026-10-14, branch `feat/android-analysis-failure-notification`, not merged): the
+  message "Could not analyze <file>" is no longer an in-app message. The analysis service posts one system notification
+  on its own low-importance channel `analysis-failure` (id 4202, apart from the D107 progress notification) when files
+  first fail, with the old wording, the app's small icon, auto-cancel, no action button, tap opens the app.
+  When it cannot be posted (permission denied, notifications or the channel off, any post failure) the app shows
+  nothing, writes one warning without file names to the log, and the file keeps no row mark. The tap-time
+  "Could not play <file>" message stays in the app. Wording and decisions are in `core/AnalysisFailureNotice.kt`, the
+  Android side in `AnalysisFailureNotification.kt`, and `PlayerHostWiringTest`-style coverage in
+  `wiring/AnalysisFailureWiringTest.kt`. The desktop app makes the same move as D122 on its own branch.
 
 ### On a branch, awaiting merge
 
@@ -404,7 +413,8 @@ and the decisions D106 to D119 at the end of `package/music-player/design/decisi
   that can be deleted. A failed decode is retried at every library change, one decode per failed file per change.
 - Rate limit: on 2026-10-12 the Sonnet weekly limit stopped five agents mid-run; a re-login lifted it and they were
   resumed. Their work is committed; check `git log` before relaunching anything.
-- Never verified: a real Plasma session, macOS, Windows, real Android hardware, Android API 33 to 36 for D107.
+- Never verified: a real Plasma session, macOS, Windows, real Android hardware, Android API 33 to 36 for D107 and for
+  the D123 failure notification (its device pass ran on the API 37 emulator only).
 
 ### Mistakes made in this effort, and what corrected them
 
