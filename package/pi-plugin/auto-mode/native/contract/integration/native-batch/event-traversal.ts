@@ -35,6 +35,11 @@ import type {
  @param l - tagged owner diagnostics
  
  @returns synchronous boundaries surrounding Pi's unchanged awaits
+
+ @example
+ ```ts
+ const traversal=createNativeEventTraversal({kind,slots,capture,retire,invalidate,l});
+ ```
  */
 export function createNativeEventTraversal({
   kind,

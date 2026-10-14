@@ -42,7 +42,9 @@ type NativeObservedMethod=typeof methods[number];
  @returns whether the source profile contains this original method
  */
 function isObservedMethod(name: string): name is NativeObservedMethod {
-  return methods.some(function matchesMethod(method){return method===name;});
+  return methods.some(function matchesMethod(method){
+    return method===name;
+  });
 }
 
 /**
@@ -109,7 +111,7 @@ function observedMethod({
   /**
    Tool-call's unhandled native await has one less indentation level.
    */
-  const originalCall=name==='emitToolCall'?call.slice(4):call;
+  const originalCall=name==='emitToolCall'?call.slice('    '.length):call;
   /**
    Captures surround the original callback without changing its await.
    */

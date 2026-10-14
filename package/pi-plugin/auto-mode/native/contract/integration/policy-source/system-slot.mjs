@@ -415,7 +415,7 @@ function createPolicyLoader({
       .nativeRunComposition)!==saved.nativeConstructedInputs)throw new PolicySlotBindingError('Original constructed inputs changed after source capture');
     const nativeDomain=domainEvents();
     if(JSON.stringify(nativeDomain?.kinds)!==JSON.stringify(snapshot.nativeDomainEventKinds))throw new PolicySlotBindingError("Native extension event membership changed after source capture");
-    if(nativeDomain?.observation!==snapshot.nativeDomainEventObservation)throw new PolicySlotBindingError("Native extension event callbacks changed after source capture");
+    if(nativeDomain?.observation!==snapshot.nativeDomainEventObservation)throw new PolicySlotBindingError(`Native extension event callbacks changed after source capture: ${JSON.stringify({before:snapshot.nativeDomainEventObservation,after:nativeDomain?.observation})}`);
     base.assertObservedFresh(saved.original);
     if(constructedInputs(saved.original
       .nativeRunComposition)!==saved.nativeConstructedInputs)throw new PolicySlotBindingError('Original constructed inputs changed during source finalization');

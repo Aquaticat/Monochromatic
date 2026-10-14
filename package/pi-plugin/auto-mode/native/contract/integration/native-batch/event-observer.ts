@@ -42,6 +42,11 @@ const MAX_EVENT_HANDLERS=256;
  @param value - observation selected from an authenticated original source snapshot
  
  @returns whether the original native event owner published this exact object
+
+ @example
+ ```ts
+ if(isNativeEventObservation(snapshot.nativeDomainEventObservation))read(snapshot.nativeDomainEventObservation);
+ ```
  */
 export function isNativeEventObservation(value: unknown): value is NativeEventObservation {
   tagged({
@@ -59,6 +64,11 @@ export function isNativeEventObservation(value: unknown): value is NativeEventOb
  @param createCapture - manager-owned bounded emission capture fixed at runner construction
  
  @returns original traversal and immutable observation publication boundaries
+
+ @example
+ ```ts
+ const observer=createNativeEventObserver(createManagerEmissionCapture);
+ ```
  */
 export function createNativeEventObserver(createCapture: () => NativeEventCapture): NativeEventObserver {
   /**
@@ -74,10 +84,12 @@ export function createNativeEventObserver(createCapture: () => NativeEventCaptur
    */
   const state: {
     revision:number;
+    lastKind:string|undefined;
     failed:boolean;
     view?:NativeEventObservation
   }={
     revision:0,
+    lastKind:undefined,
     failed:false
   };
   /**
@@ -178,7 +190,11 @@ export function createNativeEventObserver(createCapture: () => NativeEventCaptur
       complete
     }=createCapture();
     // Empty native dispatch visits no callback and adds no governing source material.
-    if(slots.length>0){pending.add(emission);changed();}
+    if(slots.length>0){
+      pending.add(emission);
+      state.lastKind=kind;
+      changed();
+    }
     /**
      Remove only the emission owned by this original traversal.
      */
@@ -190,7 +206,13 @@ export function createNativeEventObserver(createCapture: () => NativeEventCaptur
         .debug('closing original native event occurrence');
       if(slots.length>0){
         if(!pending.delete(emission))throw new NativeEventContractError('Native event occurrence was already retired');
-        try{complete();}catch(error){invalidate();throw new NativeEventCaptureError(error);}
+        try{
+          complete();
+        }catch(error){
+          invalidate();
+          throw new NativeEventCaptureError(error);
+        }
+        state.lastKind=kind;
         changed();
       }
     }
@@ -234,6 +256,7 @@ export function createNativeEventObserver(createCapture: () => NativeEventCaptur
     const view=Object.freeze({
       occurrence,
       revision:state.revision,
+      lastKind:state.lastKind,
       pending:pending.size,
       failed:state.failed,
       registeredKinds:Object.freeze([...registeredKinds])
