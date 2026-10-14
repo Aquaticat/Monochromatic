@@ -24,7 +24,8 @@ if (process.env
 /**
  User arguments exclude the runtime executable and script location.
  */
-const arguments_ = process.argv.slice(2);
+const arguments_ = process.argv
+  .slice(2);
 if ((arguments_.length > 1) || ((arguments_.length === 1) && (arguments_[0] !== '--owned')))
   throw new NativeSourceBuildError('Native build accepts only the optional --owned flag',);
 

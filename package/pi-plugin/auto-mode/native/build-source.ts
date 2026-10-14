@@ -97,11 +97,35 @@ export async function buildPiSource({
   /**
    Compiler processes run sequentially within the aggregate worker memory limit.
    */
-  const inputs = { packageRoot, output, installedSdk, sourceRoot, compiler };
+  const inputs = {
+    packageRoot,
+    output,
+    installedSdk,
+    sourceRoot,
+    compiler
+  };
   rl.debug('emitting the qualified native source graph');
-  await emitPackage({ ...inputs, specification: { folder: 'agent', name: '@earendil-works/pi-agent-core' } });
-  await emitPackage({ ...inputs, specification: { folder: 'ai', name: '@earendil-works/pi-ai' } });
-  await emitPackage({ ...inputs, specification: { folder: 'coding-agent', name: '@earendil-works/pi-coding-agent' } });
+  await emitPackage({
+    ...inputs,
+    specification: {
+      folder: 'agent',
+      name: '@earendil-works/pi-agent-core'
+    }
+  });
+  await emitPackage({
+    ...inputs,
+    specification: {
+      folder: 'ai',
+      name: '@earendil-works/pi-ai'
+    }
+  });
+  await emitPackage({
+    ...inputs,
+    specification: {
+      folder: 'coding-agent',
+      name: '@earendil-works/pi-coding-agent'
+    }
+  });
   await cp(
     join(
       sourceRoot,

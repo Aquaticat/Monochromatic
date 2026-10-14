@@ -106,18 +106,31 @@ async function linkDependencies({
    specification: { folder: 'agent', name: '@earendil-works/pi-agent-core' } });
  ```
  */
-export async function emitPackage({ packageRoot, output, installedSdk, sourceRoot, compiler, specification }: {
+export async function emitPackage({
+  packageRoot,
+  output,
+  installedSdk,
+  sourceRoot,
+  compiler,
+  specification
+}: {
   readonly packageRoot: string;
   readonly output: string;
   readonly installedSdk: string;
   readonly sourceRoot: string;
   readonly compiler: string;
-  readonly specification: { readonly folder: string; readonly name: string };
+  readonly specification: {
+    readonly folder: string;
+    readonly name: string
+  };
 }): Promise<void> {
   /**
    Each package emission retains its operation boundary in diagnostics.
    */
-  const rl = tagged({ tag: emitPackage.name, l });
+  const rl = tagged({
+    tag: emitPackage.name,
+    l
+  });
   rl.debug(`emitting upstream package: ${specification.name}`);
     /**
      Match each source package to its installed dependency tree.
