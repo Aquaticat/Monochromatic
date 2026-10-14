@@ -369,12 +369,12 @@ fn measure_matching_cost_at_the_entry_bound() {
         });
     }
     let mut matcher = plain();
-    let cold = std::time::Instant::now();
+    let cold_start = std::time::Instant::now();
     let first = matcher.evaluate(&folder, &entries);
-    let cold = cold.elapsed();
-    let warm = std::time::Instant::now();
+    let cold = cold_start.elapsed();
+    let warm_start = std::time::Instant::now();
     let second = matcher.evaluate(&folder, &entries);
-    let warm = warm.elapsed();
+    let warm = warm_start.elapsed();
     println!(
         "ignore matching at {MAX_ENTRIES} entries, 4 levels of 12 patterns: first call {} us, repeated call {} us, {} ignored",
         cold.as_micros(),

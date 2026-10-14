@@ -353,8 +353,8 @@ impl IgnoreMatcher {
         // or when the rules above it say so;
         // git never re-includes a file below an ignored directory.
         let mut inside_ignored = false;
-        for depth in 1..levels.len() {
-            if decide(rules_for(depth).into_iter(), levels[depth], true) {
+        for (depth, level) in levels.iter().enumerate().skip(1) {
+            if decide(rules_for(depth).into_iter(), level, true) {
                 inside_ignored = true;
                 break;
             }
