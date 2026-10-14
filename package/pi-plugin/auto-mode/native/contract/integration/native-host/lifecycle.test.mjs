@@ -88,13 +88,16 @@ try {
   closing._disconnectFromAgent = () => { throw failure; };
   await assert.rejects(() => nativeHost.disposeSession(closing), error => error === failure);
   assert.equal(env.readSessionDisposalState(closing).completed, false);
-  await assert.rejects(async () => {
-    const unexpected = await nativeHost.createSession({ ...env.options,
-      resourceLoader: runtime.services.resourceLoader,
-      sessionManager: nativeHost.managers.inMemory(env.options.cwd), noTools: true });
-    await nativeHost.disposeSession(unexpected.session);
-  }, /cleanup is incomplete/u);
-  closing._disconnectFromAgent = disconnect;
+  try {
+    await assert.rejects(async () => {
+      const unexpected = await nativeHost.createSession({ ...env.options,
+        resourceLoader: runtime.services.resourceLoader,
+        sessionManager: nativeHost.managers.inMemory(env.options.cwd), noTools: true });
+      await nativeHost.disposeSession(unexpected.session);
+    }, /cleanup is incomplete/u);
+  } finally {
+    closing._disconnectFromAgent = disconnect;
+  }
   await nativeHost.disposeSession(closing);
   assert.equal(env.readSessionDisposalState(closing).completed, true);
   await nativeHost.disposeSession(closing);
