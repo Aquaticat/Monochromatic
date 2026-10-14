@@ -449,6 +449,8 @@
     {
       "original": "integration/native-batch/builder-source.mjs",
       "maintained": "integration/native-batch/builder-source.mjs",
+      "currentMaintained": "integration/native-batch/builder-source.ts",
+      "movedOn": "2026-10-14",
       "sha256": "2fb852826bbec3d444d49545dfc4cf573cf4d7ffe743cba9ffec780d6aa647f5",
       "origin": "authored-source",
       "relocatedLiterals": 0

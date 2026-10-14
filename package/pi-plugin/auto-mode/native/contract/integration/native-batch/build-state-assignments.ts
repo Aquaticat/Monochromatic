@@ -79,8 +79,16 @@ function hasNativeMember({
   readonly name: string;
 }): boolean {
   if (node.type !== 'MemberExpression') return false;
-  if (node.computed === true) return node.property?.type === 'Literal' && node.property.value === name;
-  return node.property?.type === 'Identifier' && node.property.name === name;
+  if (node.computed === true) return (node.property
+    ?.type
+    === 'Literal') && (node.property
+      .value
+      === name);
+  return (node.property
+    ?.type
+    === 'Identifier') && (node.property
+      .name
+      === name);
 }
 
 /**
@@ -92,22 +100,41 @@ function hasNativeMember({
 
  @returns whether the original access terminates at that native instance
  */
-function isNativeMessageTarget({ node, owner }: {
+function isNativeMessageTarget({
+  node,
+  owner
+}: {
   readonly node: NativeTarget;
   readonly owner: 'Agent' | 'Session';
 }): boolean {
-  if (!hasNativeMember({ node, name: 'messages' }) || node.object === undefined) return false;
+  if ((!hasNativeMember({
+    node,
+    name: 'messages'
+  })) || (node.object === undefined)) return false;
   /**
    The original message receiver is checked without following unrelated parser fields.
    */
   const state = node.object;
-  if (owner === 'Agent') return hasNativeMember({ node: state, name: '_state' }) && state.object?.type === 'ThisExpression';
-  if (!hasNativeMember({ node: state, name: 'state' }) || state.object === undefined) return false;
+  if (owner === 'Agent') return hasNativeMember({
+    node: state,
+    name: '_state'
+  }) && (state.object
+    ?.type
+    === 'ThisExpression');
+  if ((!hasNativeMember({
+    node: state,
+    name: 'state'
+  })) || (state.object === undefined)) return false;
   /**
    Sessions reach their state through the original Agent instance field.
    */
   const agent = state.object;
-  return hasNativeMember({ node: agent, name: 'agent' }) && agent.object?.type === 'ThisExpression';
+  return hasNativeMember({
+    node: agent,
+    name: 'agent'
+  }) && (agent.object
+    ?.type
+    === 'ThisExpression');
 }
 
 /**

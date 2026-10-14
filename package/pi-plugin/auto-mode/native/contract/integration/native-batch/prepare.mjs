@@ -6,7 +6,7 @@ import {sessionStateSource} from './agent-state-source.ts';
 import {sessionToolDescriptionSource} from './tool-description-source.ts';
 import {managerSource,sessionSource} from './root-source.mjs';
 import {promptSessionSource,promptEmitterSource} from './prompt-source.mjs';
-import {promptBuilderSource} from './builder-source.mjs';
+import {promptBuilderSource} from './builder-source.ts';
 import {handlerMessageSource,handlerProviderSource} from './message-source.mjs';
 import {programSessionSource} from './program-source.mjs';
 import {prepareNativeHost} from '../native-host/prepare.ts';
