@@ -26,6 +26,8 @@ const text={
 const unobservedContext=process.argv
   .includes('--unobserved-event');
 const observedContext=process.argv.includes('--observed-context');
+const throwingContext=process.argv.includes('--throwing-context');
+assert.ok(!throwingContext||observedContext,'Throwing context controls require the observed native context route');
 const sdkStream=process.argv
   .includes('--sdk-stream');
 const receiptControl=process.argv
@@ -33,6 +35,7 @@ const receiptControl=process.argv
   .includes('--copied-transcript')?'copied-transcript':undefined;
 assert.ok((!receiptControl)||sdkStream,'Serializer receipt controls exercise the normal SDK stream');
 let contextCalls=0;
+let lateContextMutations=0;
 const env=await createEnvironment({
   policyText:'RUL:\n '+text+'\n',
   hostPrompt:'Fixture background.',
@@ -44,7 +47,20 @@ const env=await createEnvironment({
    });
    pi.on('context',function retainOriginalContextResult(event) {
     contextCalls++;
-    return {messages:event.messages,unusedInstruction:'Original unselected context result'};
+    if(throwingContext){
+     event.receiptFixture='Original input mutation before context failure';
+     throw new Error('Expected original context callback failure');
+    }
+    const result={messages:event.messages,unusedInstruction:'Original unselected context result'};
+    const deferred=Promise.withResolvers();
+    queueMicrotask(function settleOriginalContextResult(){
+     deferred.resolve(result);
+     queueMicrotask(function mutateAfterOriginalContextSettlement(){
+      result.unusedInstruction='Later queued context result mutation';
+      lateContextMutations++;
+     });
+    });
+    return deferred.promise;
    });
    pi.on('context_with_system',function retainOriginalSystemContextResult(event) {
     contextCalls++;
@@ -199,9 +215,13 @@ try{
    assert.ok(contextCalls>=3,'Original native context and context_with_system callbacks must run');
    const receipts=review.inputs.instructionSources.map(function readContextSource(view) { return view.source; })
     .filter(function isContextReceipt(source) { return source.inputOrigin==='native-context-handler'; });
-   assert.equal(receipts.length,8,'Every original callback input, mutated input, and defined result needs its own retained source');
+   assert.equal(receipts.length,throwingContext?7:8,'Every original callback input, mutated input, and defined result needs its own retained source');
    assert.ok(receipts.some(function retainsInPlaceInput(source) { return source.content.includes('Original in-place context input'); }));
-   assert.ok(receipts.some(function retainsUnusedResult(source) { return source.content.includes('Original unselected context result'); }));
+   if(throwingContext)assert.ok(receipts.some(function retainsInputBeforeFailure(source){return source.content.includes('Original input mutation before context failure');}));
+   else{
+    assert.ok(lateContextMutations>0,'The later queued native result mutation must actually run');
+    assert.ok(receipts.some(function retainsUnusedResult(source) { return source.content.includes('Original unselected context result'); }));
+   }
    assert.ok(receipts.some(function retainsUnusedSystemResult(source) { return source.content.includes('Original unselected system context result'); }));
    assert.ok(receipts.every(function leavesContextAuthorityUnestablished(source) { return source.permission===false&&source.registration===undefined; }));
    const snapshot=review.inputs.instructionSources[0].sources;
@@ -301,6 +321,8 @@ try{
    ...result,
    unobservedContext,
    observedContext,
+   throwingContext,
+   lateContextMutations,
    contextCalls,
    sdkStream,
    receiptControl

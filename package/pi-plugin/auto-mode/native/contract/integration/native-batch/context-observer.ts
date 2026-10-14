@@ -160,7 +160,10 @@ export function createNativeContextObserver(capture: (input: NativeContextInput)
      Captured positions retain extension and handler identity in native order.
      */
     const slots: NativeContextSlot[] = [];
-    for (const {ext,handlers} of snapshot) {
+    for (const {
+      ext,
+      handlers
+    } of snapshot) {
       if ((slots.length + handlers.length) > MAX_CONTEXT_HANDLERS) throw new NativeContextContractError('Native context handlers exceed the original 256-position profile');
       /**
        Read original extension metadata without invoking an accessor.
