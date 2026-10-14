@@ -41,7 +41,7 @@ class SystemPolicyInput {
  }
  get loader(){return this.#state.loader;}
  get nativeBinding(){return this.#state.nativeBinding;}
- async reload(){return await this.#state.reload();}
+ async reload(options){return await this.#state.reload(options);}
  readCurrent(){return this.#state.readCurrent();}
  assertCurrent(binding){this.#state.assertCurrent(binding);}
 }
@@ -108,10 +108,10 @@ function createPolicyLoader({owner,options:inputOptions,policy,authority,customP
    }
   }catch(error){failure={cause:error};throw error;}
  }
- async function reload(){
+ async function reload(options){
   binding=undefined;emission=undefined;failure=undefined;contextPublication=undefined;
   contextEmitter?.reset();
-  await loader.reload();
+  await loader.reload(options);
   const frame=readBoundResourceFrame({binding:nativeBinding,loader});
   if(systemSlot){
    if(!emission||owner.captureGoverningPolicy(loader)!==emission.source)throw new PolicySlotBindingError('System input did not retain its selected policy capture');
