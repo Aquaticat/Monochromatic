@@ -3,7 +3,11 @@
 
  @module
  */
-import type { NativeReturnConsumer, NativeReturnOwner, NativeReturnSlot } from './native-return-test-types.ts';
+import type {
+  NativeReturnConsumer,
+  NativeReturnOwner,
+  NativeReturnSlot
+} from './native-return-fixture-types.ts';
 
 //region The built runtime supplies every behavior under test
 
@@ -11,11 +15,17 @@ import type { NativeReturnConsumer, NativeReturnOwner, NativeReturnSlot } from '
  Tests declare only the generated consumer interface they exercise.
  */
 type NativeReturnModule = {
-  /** Generated consumer retains the copied source contract. */
+  /**
+   Generated consumer retains the copied source contract.
+   */
   readonly createNativeReturnConsumer: (owner: NativeReturnOwner) => NativeReturnConsumer;
-  /** Original native custody error identity. */
+  /**
+   Original native custody error identity.
+   */
   readonly NativeReturnContractError: new(message: string) => Error;
-  /** Original unsupported-binding error identity. */
+  /**
+   Original unsupported-binding error identity.
+   */
   readonly UnsupportedScriptBindingError: new(kind: string) => Error;
 };
 
