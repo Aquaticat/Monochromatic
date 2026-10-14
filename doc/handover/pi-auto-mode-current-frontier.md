@@ -836,6 +836,24 @@ The complete package unit task also passes after the contribution fixture and na
 Its full output is retained at `${HOME}/temp/agent/pi-auto-mode-unit-after-contribution-20261014.log`.
 No provider request or production semantic policy adoption is involved.
 
+The next maintained boundary is the original native return consumer.
+Commits `62a6ad4efe`,
+`1eeda119fb`,
+and `ac4a768272` port its custody contracts and distinguish retained completion from live script-value access.
+Native staging erases TypeScript annotations before generating its JavaScript consumer;
+import replacement selects the parsed original named binding and still verifies its filesystem identity.
+The owned native build passes.
+The initial generated-consumer tests and package type check pass after removing copied TypeScript imports
+from the test compilation graph.
+Those assertions cover conversion-once behavior,
+original return identity,
+parent retirement,
+copied outcomes,
+prepared-member completion,
+and synchronous or asynchronous native failures.
+Additional rejection and staging controls remain in progress.
+This checkpoint is not full-package lint success or production activation.
+
 The first approved native dispatch failed because the inherited test loader derived dependency paths
 from the codemode worker's disposable home.
 Private `f3d40d82` retains the measured repository dependency root in the staging manifest;

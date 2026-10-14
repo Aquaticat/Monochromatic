@@ -116,7 +116,7 @@ await describe({
 
     //region Supported text counts bytes and ordinary captured failures retain their identity
 
-    ...[null, 0, false, {}, [], Symbol('native result')].map(function unsupportedValue(value, index) {
+    ...[null, 0, false, {}, [], Symbol('unsupported native structured result')].map(function unsupportedValue(value, index) {
       return it({
         name: `retains unsupported structured result ${index} without releasing it as text`,
         fn: async function unsupportedModality() {

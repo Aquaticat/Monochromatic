@@ -6567,6 +6567,115 @@ This change does not reduce the number of freshness checks or establish general 
 
 There is nothing to file upstream from this consumer regression.
 
+## TypeScript 7.0.2 rejects copied native source imports from consumer tests
+
+### Symptom and source trace
+
+During the native return consumer migration,
+`mise run //package/pi-plugin/auto-mode:lint:types` reported `TS6307`:
+
+```text
+File '.../dist/native/contract/collector/program-rule-batch-sdk-copy-v2/input/native-return-types.ts'
+is not listed within the file list of project '.../package/pi-plugin/auto-mode/tsconfig.json'.
+Projects must list all files or use an 'include' pattern.
+```
+
+The same diagnostic named copied return,
+access,
+error,
+and script-guard modules.
+Type-only imports still brought those implementation files into the project.
+The package source configuration intentionally includes maintained `native/**/*.ts`,
+while its shared composite configuration excludes generated `dist` input.
+The relevant owned configuration is `package/pi-plugin/auto-mode/tsconfig.json:3`
+and `package/config/typescript/tsconfig.options.json:144`:
+
+```json
+// package/pi-plugin/auto-mode/tsconfig.json, relevant source selection
+"include": ["src/**/*.ts", "src/**/*.astro", "src/**/*.mdx", "*.config.ts", ".astro/types.d.ts", "native/**/*.ts"]
+```
+
+```json
+// package/config/typescript/tsconfig.options.json, relevant inherited option
+"composite": true
+```
+
+The read-only TypeScript `v7.0.2` source checkout is commit
+`1e4744d68260a7cb91b62b12edc3f6a2187faaf1`.
+Its `src/compiler/program.ts:4124` checks composite project membership:
+
+```ts
+// microsoft/TypeScript, src/compiler/program.ts:4124
+if (options.composite) {
+    const rootPaths = new Set(rootNames.map(toPath));
+    for (const file of files) {
+        if (sourceFileMayBeEmitted(file, program) && !rootPaths.has(file.path)) {
+            programDiagnostics.addLazyConfigDiagnostic(
+                file,
+                Diagnostics.File_0_is_not_listed_within_the_file_list_of_project_1_Projects_must_list_all_files_or_use_an_include_pattern,
+                file.fileName,
+                options.configFilePath || "",
+            );
+        }
+    }
+}
+```
+
+### Verification and correction
+
+The installed compiler reports `7.0.2`.
+The failing copied imports are retained in commit `c5bf44db19`;
+the correction is in `d6a2d41555` and `9e666dcdcf`.
+The initial source-type import also failed the owned `test-import/require-eventual-artifact` rule.
+That rule explicitly checks type-only imports in
+`package/oxlint-plugin/test-import/src/require-eventual-artifact.ts:225`:
+
+```ts
+// package/oxlint-plugin/test-import/src/require-eventual-artifact.ts:225
+// Checks every static import declaration, including import type.
+```
+
+The verified correction declares the tested consumer interface in
+`package/pi-plugin/auto-mode/src/native-return-fixture-types.ts`.
+The fixture dynamically loads the actual generated `native-return-consumer.mjs` as `unknown`
+and checks its callable exports before executing its operations.
+It imports no source implementation or copied implementation declaration.
+The tradeoff is a separately maintained consumer interface;
+runtime behavior assertions must verify that interface against the artifact.
+
+The corrected source type check and initial generated native return suite pass:
+
+```sh
+# Repository root, after rebuilding the owned native artifact
+mise run //package/pi-plugin/auto-mode:lint:types
+mise run //package/pi-plugin/auto-mode:test:native:return
+```
+
+The owned build also passes with Node `26.11.1`.
+Node prints `ExperimentalWarning: stripTypeScriptTypes is an experimental feature and might change at any time`
+when the native preparation stage first erases TypeScript annotations.
+That warning is separate from `TS6307` and did not prevent generation.
+
+### Rejected approaches and upstream filing decision
+
+Importing maintained source types failed the artifact-import rule;
+importing copied implementation types failed the composite project boundary.
+Neither failure justifies disabling a rule or adding generated implementation files to the source project.
+The fixture-only type filename must also match the existing fixture convention:
+`**/*-fixture*.ts` in `package/oxlint-plugin/test-import/src/checked-file.ts:49`.
+No linter or compiler setting changed.
+
+The upstream-filing checks yield no filing:
+
+- Fault belongs to the owned test import choice; no TypeScript defect is established.
+- An upstream change is unnecessary for the corrected consumer.
+- The compiler source explicitly implements composite source membership.
+- Contribution policy was not investigated because no upstream change is proposed.
+- Maintainer willingness is untested and irrelevant to this owned correction.
+- No upstream prototype is needed; the local consumer correction passed its type and runtime checks.
+
+There is nothing to add upstream from this incident.
+
 ## Native source autofixes emit invalid JavaScript
 
 The 2026-10-14 maintained-source `format:oxlint` pass produced these parser diagnostics:
