@@ -413,6 +413,15 @@ run = "node --import ./dist/native/loader.mjs src/native-tool-publication.unit.t
 description = "Verify built tool association membership without source authority or whole-request coverage"
 run = "node src/source-contribution-tool.unit.test.ts"
 
+[tasks."test:source-contribution"]
+description = "Verify every built source contribution route and original membership requirement"
+run = [
+  "node src/source-contribution.unit.test.ts",
+  "node src/source-contribution-link.unit.test.ts",
+  "node src/source-contribution-publication.unit.test.ts",
+  "node src/source-contribution-tool.unit.test.ts",
+]
+
 [tasks."test:native:serializer-receipts"]
 run = [
   "node --import ./dist/native/loader.mjs src/native-tool-publication.unit.test.ts",

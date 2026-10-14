@@ -177,7 +177,18 @@ and changed-description controls leave the affected contributions unresolved and
 All existing system/payload/transcript substitution controls still pass,
 with zero provider requests.
 The built membership consumer also passes each original-source/publication/input-occurrence contrast.
-The new native tool association module is now being type-checked against these producer boundaries.
+The typed native tool association module passes scoped lint,
+package types,
+the rebuilt SDK control,
+all serializer substitution controls,
+and the actual isolated Qwen CLI with clean shutdown and zero provider requests.
+The original map callback retains each converted value before payload callbacks;
+removing that owned snapshot makes the changed-description control fail.
+`${HOME}/temp/agent/pi-tool-publication-controls-20261014/emission-verification.json`
+retains the unchanged artifact hash.
+The next boundary is complete system-message derivation and original request governing-use consumption.
+The current tool records remain partial contributions;
+they do not remove `request-material-instruction-use`.
 Complete system and tool governing-use accounting is still required before removing the independent obligation.
 
 ## Original native RPC approval verification
