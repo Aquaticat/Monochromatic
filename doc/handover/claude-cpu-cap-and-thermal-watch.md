@@ -56,11 +56,11 @@ The operating instructions live in `doc/runbook/claude-cpu-cap.md`.
   Current curve: 30% at 40, 45% at 50, 60% at 60, 100% at 61 and above (saved by the user about 18:57 EDT).
   The fan profile belongs to the user now; this session does not edit it unless asked.
 - Session-only items that die with the session: the Monitor (30-minute expiry, re-arm each time) and a one-shot cron
-  check (job `5501405f`, 00:27 EDT on 2026-10-14) that ends the watch if nothing weird happened.
-  It was first set for 21:19 (job `90c90261`), pushed back to 22:05 (job `f4aeb83b`) after the CPU pressure alert at
-  18:02:37, to 23:19 (job `df76cdac`) after the memory pressure alert at 19:16:45, then to 00:13 after the CPU
-  pressure alert at 20:11:41, to 00:17 (job `02d6c55f`) after the temperature alert at 20:15:27, then to 00:27 after
-  the throttle alert at 20:24:45 (the latest weird event so far).
+  check that ends the watch if nothing weird happened. Its job id changes at every push, so read it with CronList;
+  this file records the rule, not each id. The first setting was 21:19 EDT; since then it moved after the alerts at
+  18:02:37 (CPU pressure), 19:16:45 (memory pressure), 20:11:41 (CPU pressure), 20:15:27 (temperature) and 20:24:45
+  (throttle), and the throttle alert flaps, so more pushes follow. After the alert at 20:28:24 it stands at 00:31 EDT
+  on 2026-10-14 (the latest weird event so far).
 - The 20:11:41 CPU pressure alert (46.1, limit 40) came at cap 30 and 130 W. It was the first sustained load in the
   log: about 55 seconds at 125 to 136 W, load average up to 57 on 32 threads, pressure up to 67.8, and it cleared at
   17.2 within a minute. Tctl stayed below 95, so the cap was left at 30. Its numbers are in the evidence section.
