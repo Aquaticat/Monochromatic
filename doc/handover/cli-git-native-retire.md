@@ -193,15 +193,11 @@ All through `node "${HOME}/temp/agent/gate-slot.ts"` with `GIT_POLICY_NATIVE_IMA
 
 ## Leftovers
 
-- `native:interop` (`bin/interop-native-container.mjs`,
-   `native-interop/*.mjs`) stays,
-   as planned,
-   and cannot run:
-   it
-  copies the main checkout's `package/git-policy/cli/dist` and `/opt/cli-git` into its image.
-  It needs an incumbent provisioning step that builds `dist` from the pinned revision;
-   none exists.
-  This is the trailing gate "old-and-new wrapper interop matrix".
+- `native:interop` could not run after the retirement because it copied the main checkout's
+  `package/git-policy/cli/dist` and `/opt/cli-git` into its image.
+  The matrix then ran against an incumbent rebuilt from the pinned revision,
+  and the user decided to delete the incumbent builder and every driver that needs a live incumbent afterwards
+  (`doc/handover/cli-git-native-interop.md`).
 - `slopo.ignore.txt` lines 45,
    50,
    69,
@@ -282,7 +278,6 @@ Listed read-only on 2026-10-14 with `ls -d` and `git check-ignore --verbose`;
 
 - The queue item "retirement of the old TypeScript implementation is verified complete" in
   `doc/handover/cli-git-rust-implementation.md` stays open until the trailing gates are recorded.
-- The incumbent provisioning step for `native:interop`.
 
 ## Rerun commands
 

@@ -11,8 +11,9 @@ use crate::document::Document;
 use crate::shaped_row::ShapedRow;
 /// Syntax classifications the rows are shaped with.
 use crate::source_style::StyleSpan;
-/// Tabs that stay on the first visual row keep their corrections when the row is broken again.
-use crate::tab_layout::tabs_on_first_row;
+/// Tabs that stay on the first visual row keep their corrections when the row is broken again,
+///  and a tabbed line is shaped again for each corrective pass.
+use crate::tab_layout::{passes_for, tabs_on_first_row};
 /// Breaking a kept layout exactly as a fresh one is broken.
 use crate::wrap::{break_wrapped, has_wrap_width};
 /// Lines handled by one chunk.
@@ -59,6 +60,90 @@ pub struct Measured {
     pub shaped: u64,
     /// Kept rows broken again at the new width.
     pub rebroken: u64,
+}
+
+/// What:
+///  Work charged for each line a budgeted measurement brings in, besides the characters it shapes.
+/// Why:
+///  A short line still costs a layout, a break, and a cache entry;
+///  charging it as if it were this many more characters keeps a count of tiny lines honest.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// export const LINE_WORK = 32;
+/// ```
+pub const LINE_WORK: usize = 32;
+
+/// What:
+///  Longest line, in characters, that `line_work` reads to look for tabs.
+/// Why:
+///  A longer line costs more than any budget the window thread spends, so reading it all would only add to the cost.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// export const WORK_SCAN_LIMIT = 65_536;
+/// ```
+pub const WORK_SCAN_LIMIT: usize = 65_536;
+
+/// What:
+///  The most work, in characters shaped or broken, that bringing `line` into the cache at one wrap width can cost:
+///  [`LINE_WORK`] plus its length, times the corrective passes of its tabs when it has any.
+///  A line past [`WORK_SCAN_LIMIT`] costs `usize::MAX`, and a line the text does not have costs nothing.
+/// Why:
+///  A tabbed line that cannot be broken again is shaped once and then once more for each corrective pass,
+///  so its length alone would understate the cost.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function lineWork(document: Document, line: number): number;
+/// ```
+pub fn line_work(document: &Document, line: usize) -> usize {
+    let text = document.text();
+    if line >= text.len_lines() {
+        return 0;
+    }
+    let slice = text.line(line);
+    let length = slice.len_chars();
+    if length > WORK_SCAN_LIMIT {
+        return usize::MAX;
+    }
+    let shapings = if slice.chars().any(|character| return character == '\t') {
+        1 + passes_for(length)
+    } else {
+        1
+    };
+    return LINE_WORK + length * shapings;
+}
+
+/// What:
+///  What a budgeted measurement may still spend: lines brought in, and work in the units of [`line_work`].
+/// Why:
+///  The window thread measures the lines near the view when the width changes;
+///  the budget is what keeps that step bounded, whatever the lines are.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// type Budget = { lines: number; work: number };
+/// ```
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct Budget {
+    /// Lines that may still be brought in.
+    pub lines: usize,
+    /// Work that may still be spent.
+    pub work: usize,
+}
+
+/// Spending.
+impl Budget {
+    /// Take one line of `work` from the budget, or answer `false` and take nothing when it does not fit.
+    pub fn spend(&mut self, work: usize) -> bool {
+        if self.lines == 0 || work > self.work {
+            return false;
+        }
+        self.lines -= 1;
+        self.work -= work;
+        return true;
+    }
 }
 
 /// Passes over the cache.
@@ -182,11 +267,58 @@ impl TextShaper {
         wrap: Option<f32>,
         styles: &[StyleSpan],
     ) -> Measured {
+        return self
+            .measure_within(document, lines, scale, wrap, styles, None)
+            .unwrap_or_default();
+    }
+
+    /// What:
+    ///  `measure_lines` for a caller that must not spend more than `budget`:
+    ///  every line not already held at `wrap` is charged its [`line_work`] before it is shaped,
+    ///  and the answer is nothing when a line does not fit what is left.
+    /// Why:
+    ///  The window thread uses it when the width changes.
+    ///  Lines brought in before the budget ran out stay in the cache, each tagged with its width, so they are not lost.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// measureLinesWithin(document: Document, lines: Range<number>, scale: number, wrap: number | undefined,
+    ///   styles: StyleSpan[], budget: Budget): Measured | undefined;
+    /// ```
+    pub fn measure_lines_within(
+        &mut self,
+        document: &Document,
+        lines: Range<usize>,
+        scale: f32,
+        wrap: Option<f32>,
+        styles: &[StyleSpan],
+        budget: &mut Budget,
+    ) -> Option<Measured> {
+        return self.measure_within(document, lines, scale, wrap, styles, Some(budget));
+    }
+
+    /// The loop of both measurements; a budget, when given, is charged for each line the cache does not hold yet.
+    fn measure_within(
+        &mut self,
+        document: &Document,
+        lines: Range<usize>,
+        scale: f32,
+        wrap: Option<f32>,
+        styles: &[StyleSpan],
+        mut budget: Option<&mut Budget>,
+    ) -> Option<Measured> {
         self.rows.sync(document.revision(), scale);
         let baseline = self.baseline(scale);
         let end = lines.end.min(document.text().len_lines());
         let mut result = Measured::default();
         for row in lines.start..end {
+            if let Some(limit) = budget.as_deref_mut()
+                && self.rows.get(row, wrap).is_none()
+                && !limit.spend(line_work(document, row))
+            {
+                tracing::debug!(row, "a measurement ran out of its budget");
+                return None;
+            }
             let request = RowRequest {
                 row,
                 scale,
@@ -202,6 +334,6 @@ impl TextShaper {
                 result.lines.push((row, kept.visual_rows()));
             }
         }
-        return result;
+        return Some(result);
     }
 }

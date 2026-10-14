@@ -230,9 +230,25 @@ fn removal_retires_registry_directories() {
     std::fs::write(legacy.join("journal.json"), b"{}").expect("journal");
     remove_transaction_directory(legacy.as_path()).expect("legacy removal");
     assert!(!legacy.exists());
+    remove(git_dir.as_path());
+}
+
+/// Two recoverers retire one dead transaction:
+///  the one that loses the rename finds the directory gone and has nothing left to do.
+#[test]
+fn removing_a_directory_a_peer_already_retired_succeeds() {
+    let git_dir: PathBuf = fixture("registry-remove-peer");
+    let root: PathBuf = git_dir.join(TRANSACTION_ROOT_NAME);
+    ensure_transaction_root(root.as_path()).expect("create");
+    assert!(remove_transaction_directory(root.join(ID).as_path()).is_ok());
+    let directory: PathBuf =
+        publish_transaction_directory(root.as_path(), ID, b"{}\n").expect("publish");
+    remove_transaction_directory(directory.as_path()).expect("first removal");
+    assert!(remove_transaction_directory(directory.as_path()).is_ok());
     assert!(
-        remove_transaction_directory(root.join(ID).as_path()).is_err(),
-        "a missing registry directory cannot be retired"
+        list_transaction_entries(root.as_path())
+            .expect("listing")
+            .is_empty()
     );
     remove(git_dir.as_path());
 }

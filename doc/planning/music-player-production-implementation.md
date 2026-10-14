@@ -226,8 +226,14 @@ and the decisions D106 to D119 at the end of `package/music-player/design/decisi
   75 s window is noise; `controller.mergeMeasures` costs 0.29 s per cold run (0.37 ms per call, about 2% of main-thread
   CPU), below the noise, and is left alone. The mutation pass killed every mutant of the new logic after ten more test
   cases; the unit suite is 1077 tests with no failures, detekt and lintDebug pass.
-  Still open: nine wiring mutants survive (no JVM test reaches `PlayerHost` and `TrackListPane` call sites, among
-  them an effect that cancels per step again); the fourth cost below; the 435 ms `loadTemplate` violation did not
+  Wiring tests (2026-10-14): the page measure refresh effect and the first visible report moved into
+  `core/PageMeasureRefresh.kt` and `core/FirstVisibleTrack.kt`, so JVM tests now kill the mutants for the per-step
+  cancel (`collectLatest`), the start position and the sink index (13 new tests, 1090 in all, no failures; detekt and
+  lintDebug pass). Five mutants still survive because they sit at Compose boundaries: the `LocalPlayingIndex provides`
+  value, the `rowWithPlayingFlag` call in the `LazyColumn` item, and the `currentPositionOf`,
+  `pageEntryScrollTarget` and `remember` key arguments. Killing them needs Robolectric with compose ui-test or an
+  instrumented test, a dependency decision not yet made. No emulator test ran for this change.
+  Still open: the five Compose-boundary mutants; the fourth cost below; the 435 ms `loadTemplate` violation did not
   reproduce, so the template cache in `SessionStore.warmUp` is unproven; the old ANRs did not reproduce in 23 play
   windows (cause unknown); the sweep-under-load case was not exercised; release build not measured.
 - Android playing-queue cost (measured 2026-10-14, partly fixed on `feat/android-queue-cost`): while tracks changed,
@@ -285,6 +291,11 @@ and the decisions D106 to D119 at the end of `package/music-player/design/decisi
 ### Mistakes made in this effort, and what corrected them
 
 Read these before repeating them. Each one cost the human a correction.
+
+- The wiring-test agent (2026-10-14) committed `55f465c0b3` with no blank line after the subject, so the whole body is
+  one long subject line, and an early step test looped forever under a mutant and blocked a mutation run for about 40
+  minutes. Commits are never amended, so the message stays; the tests now fail fast with a read limit. Briefs for test
+  agents should say that every test over a coroutine loop needs a bound, and that a commit body follows a blank line.
 
 - Loose tracks were misread twice (first as an "Unfiled" folder, then as flat entries). The human decided that a loose
   root track lives in a virtual folder named by its rail letter (D28 for non-Latin initials, "#" for the rest). Reviewer

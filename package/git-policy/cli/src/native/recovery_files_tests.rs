@@ -250,6 +250,64 @@ fn release_removes_only_owned_locks() {
     remove(root.as_path());
 }
 
+/// Probe that removes the lock it is asked about and answers nothing,
+///  as a second recoverer releasing the lock between the two inspections does.
+fn identity_after_a_peer_removed_the_lock(path: &Path) -> Option<String> {
+    std::fs::remove_file(path).expect("the peer removes the lock");
+    return None;
+}
+
+/// Probe that removes the lock but still answers the real identity,
+///  as a peer releasing the lock between the ownership proof and the removal does.
+fn identity_before_a_peer_removed_the_lock(path: &Path) -> Option<String> {
+    let identity: Option<String> = filesystem_identity(path);
+    std::fs::remove_file(path).expect("the peer removes the lock");
+    return identity;
+}
+
+/// Two recoverers release one dead transaction's lock at once:
+///  the one that loses the race finds the lock gone and reports it absent instead of failing.
+#[test]
+fn a_lock_released_by_a_peer_mid_release_is_absent() {
+    let root: PathBuf = fixture("recovery-files-peer-release");
+    let lock: PathBuf = root.join("index.lock");
+    std::fs::write(&lock, b"").expect("lock");
+    let journal: LockIdentity = lock_identity_of(lock.as_path());
+    assert_eq!(
+        release_owned_lock_with(&journal, lock.as_path(), identity_after_a_peer_removed_the_lock)
+            .expect("the vanished lock is absent"),
+        LockRelease::Absent
+    );
+    std::fs::write(&lock, b"").expect("lock again");
+    let second_journal: LockIdentity = lock_identity_of(lock.as_path());
+    assert_eq!(
+        release_owned_lock_with(&second_journal, lock.as_path(), identity_before_a_peer_removed_the_lock)
+            .expect("the removed lock is absent"),
+        LockRelease::Absent
+    );
+    remove(root.as_path());
+}
+
+/// Probe for a mechanism that answers nothing.
+fn no_identity(_path: &Path) -> Option<String> {
+    return None;
+}
+
+/// A lock that still exists but cannot be identified stays an error:
+///  nothing proves it is the transaction's own.
+#[test]
+fn an_unidentifiable_lock_is_still_an_error() {
+    let root: PathBuf = fixture("recovery-files-unidentified");
+    let lock: PathBuf = root.join("index.lock");
+    std::fs::write(&lock, b"").expect("lock");
+    let journal: LockIdentity = lock_identity_of(lock.as_path());
+    let error: RecoveryError = release_owned_lock_with(&journal, lock.as_path(), no_identity)
+        .expect_err("unidentified");
+    assert!(error.0.starts_with("unable to resolve the filesystem identity for "));
+    assert!(lock.exists());
+    remove(root.as_path());
+}
+
 /// A recovered index is installed through the owned lock with the post-index times.
 #[test]
 fn recovered_indexes_install_through_the_owned_lock() {

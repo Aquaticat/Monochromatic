@@ -1,0 +1,33 @@
+import {SourceCollectionError} from '../../collector/collector.mjs';
+
+/**
+ * Resolve original run republications by original base frame and native field position.
+ * Call only inside the incumbent collector after original snapshot authentication.
+ * Source occurrences link canonical sources without duplicating their text in every carrier.
+ */
+export function linkRunInputCarriers({run,input,hostPrompt}){
+ if(!run)return Object.freeze([]);
+ const base=run.inputBase;
+ if(base.resourceFrame!==input.frame)throw new SourceCollectionError('Run base carriers require this original resource frame');
+ return Object.freeze(run.baseInputCarriers.map(carrier=>{
+  if(carrier.runOccurrence!==run.occurrence||carrier.baseOccurrence!==base.occurrence)throw new SourceCollectionError('Run carrier differs from its original run or base occurrence');
+  const {field,ordinal,path}=carrier.inputLocation;
+  let sources;
+  if(field==='customPrompt'){
+   const source=input.slot==='customPrompt'?input.source:hostPrompt??input.resourceSystemInput;
+   if(!source||base.options.customPrompt!==source.content||run.options.customPrompt!==source.content)throw new SourceCollectionError('Run system carrier has no original system-stage source');
+   sources=[source];
+  }else if(field==='appendSystemPrompt'){
+   sources=input.appendInputs;
+   const joined=sources.map(source=>source.content).join('\n\n');
+   if(base.options.appendSystemPrompt!==joined||run.options.appendSystemPrompt!==joined)throw new SourceCollectionError('Run appendix carrier differs from the complete original append sequence');
+  }else if(field==='contextFiles'){
+   const source=input.contextInputs[ordinal],entry=base.options.contextFiles[ordinal],published=run.options.contextFiles[ordinal];
+   if(!source||!entry||!published||source.path!==path||entry.path!==path||published.path!==path||source.content!==entry.content||published.content!==entry.content)throw new SourceCollectionError('Run context carrier differs from its original context position');
+   sources=[source.carrier?.source??source];
+  }else throw new SourceCollectionError('Run base carrier has an unsupported native field');
+  return Object.freeze({kind:'governing-run-input-carrier',carrier,occurrence:carrier.occurrence,
+   sourceOccurrences:Object.freeze(sources.map(source=>source.occurrence)),
+   authenticatesDisplacedInput:false,permission:false});
+ }));
+}

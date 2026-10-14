@@ -893,9 +893,9 @@ fn rules_init_print_config_and_debug_modes() {
     let rules: Run = run(&fixture.path, &["--rules"], b"");
     assert_eq!((rules.status, rules.stderr.as_str()), (0, ""));
     let listed: Vec<serde_json::Value> = records(rules.stdout.as_str());
-    assert_eq!(listed.len(), 17);
+    assert_eq!(listed.len(), 18);
     assert_eq!(listed[0]["id"], "rust/max-lines");
-    assert_eq!(listed[16]["id"], "markdown/lfs-image-url");
+    assert_eq!(listed[17]["id"], "markdown/lfs-image-url");
     let init: Run = run(&fixture.path, &["--init"], b"");
     assert_eq!((init.status, init.stderr.as_str()), (0, ""));
     assert_eq!(

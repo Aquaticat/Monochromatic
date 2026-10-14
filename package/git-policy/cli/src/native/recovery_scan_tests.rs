@@ -159,6 +159,85 @@ fn transactions_without_landings_need_no_landing_lock() {
     scene.finish();
 }
 
+/// A dead transaction that recorded only the real `index.lock` it created (killed holding the landing lock and that
+///  lock, before any landing record) is recovered under the landing lock:
+///  recovery waits while a live lander holds it.
+#[test]
+fn a_dead_transaction_holding_only_its_index_lock_waits_for_the_landing_lock() {
+    let scene: Scene = Scene::new("recovery-scan-index-lock-only", false);
+    scene.capture();
+    scene.land(LandingOperation::Commit, Vec::new());
+    for entry in std::fs::read_dir(scene.directory.as_path()).expect("listing") {
+        let name: String = entry.expect("entry").file_name().to_string_lossy().into_owned();
+        if name.starts_with("landing-") {
+            std::fs::remove_file(scene.directory.join(name)).expect("drop the landing record");
+        }
+    }
+    assert!(scene.directory.join("index-lock-1.json").exists());
+    let landing_lock: PathBuf = scene.registry.join(LANDING_LOCK_NAME);
+    let (ready_sender, ready_receiver) = std::sync::mpsc::channel::<()>();
+    // The live lander holds the landing lock for a while and then releases it.
+    let lander = std::thread::spawn(move || {
+        let held: crate::owner_lock::OwnerLock = try_acquire_owner_lock(landing_lock.as_path(), None)
+            .expect("acquire")
+            .expect("free");
+        ready_sender.send(()).expect("ready");
+        std::thread::sleep(std::time::Duration::from_millis(600));
+        held.release().expect("release");
+    });
+    ready_receiver.recv().expect("the lander holds the lock");
+    let started: std::time::Instant = std::time::Instant::now();
+    let outcomes: Vec<RecoveryOutcome> =
+        recover_registered_transactions(&scene.place(), scene.registry.as_path())
+            .expect("recovered");
+    assert!(
+        started.elapsed() >= std::time::Duration::from_millis(400),
+        "recovery of a transaction that holds a real index lock must wait for the landing lock"
+    );
+    lander.join().expect("lander");
+    assert_eq!(outcomes.len(), 1);
+    assert_eq!(outcomes[0].action, RecoveryAction::CommitNotCreated);
+    scene.finish();
+}
+
+/// A transaction that another recoverer finished after this one inspected the registry has nothing left to recover:
+///  it needs no landing lock and its landing entry check reports nothing instead of failing on the missing directory.
+#[test]
+fn a_transaction_a_peer_removed_after_inspection_needs_no_landing_lock() {
+    let scene: Scene = Scene::new("recovery-scan-vanished", false);
+    scene.capture();
+    scene.land(LandingOperation::Commit, Vec::new());
+    let entries: Vec<RegistryEntry> = list_transaction_entries(scene.registry.as_path()).expect("listing");
+    let inspected: InspectedEntry = inspect_registry_entry(&entries[0]).expect("inspected");
+    assert!(needs_landing_lock(&inspected).expect("present"));
+    std::fs::remove_dir_all(scene.directory.as_path()).expect("the peer removes the transaction");
+    assert!(!needs_landing_lock(&inspected).expect("a vanished transaction needs no lock"));
+    assert!(!entered_landing_unless_vanished(scene.directory.as_path()).expect("vanished"));
+    // A path that exists but cannot be listed is still a failure.
+    let file: PathBuf = scene.root.join("not-a-directory");
+    std::fs::write(file.as_path(), b"x").expect("file");
+    assert!(entered_landing_unless_vanished(file.as_path()).is_err());
+    scene.finish();
+}
+
+/// A dead transaction that another recoverer finished after this one inspected it is reported as vanished,
+///  not as a failed listing of its removed directory;
+///  a failure with the directory still present stays a failure.
+#[test]
+fn a_dead_transaction_a_peer_finished_after_inspection_is_vanished() {
+    let scene: Scene = Scene::new("recovery-scan-finished-by-peer", false);
+    scene.capture();
+    let entries: Vec<RegistryEntry> = list_transaction_entries(scene.registry.as_path()).expect("listing");
+    let inspected: InspectedEntry = inspect_registry_entry(&entries[0]).expect("inspected");
+    assert!(inspected.dead_owner().is_some());
+    std::fs::remove_dir_all(scene.directory.as_path()).expect("the peer finishes the transaction");
+    assert_eq!(
+        recover_inspected_entry(&scene.place(), &inspected).expect("a finished transaction is not a failure"),
+        RecoveryAction::Vanished
+    );
+    scene.finish();
+}
+
 /// A failure stops recovery at that transaction and keeps its directory.
 #[test]
 fn failures_keep_their_directory() {

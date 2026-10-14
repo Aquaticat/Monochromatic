@@ -2524,14 +2524,16 @@ Management help returns before recovery.
 - An owner that is alive with a matching birth identity is skipped at debug log level;
   its transaction is not an error.
   PID reuse counts as a dead owner.
-- A dead owner without a landing record:
+- A dead owner without a landing record and without the record of a real `index.lock` it created:
   remove every `.keep` in the real `objects/pack` whose message is `cli-git <transaction-id>`,
   retire any reservation or reservation request it owns,
   remove the shadow repository,
   and then remove the transaction directory.
   The real index and real refs were never touched.
-- A dead owner with a landing record is recovered only while holding the landing lock,
-  so recovery never races a live lander.
+- A dead owner with a landing record, or with the record of a real `index.lock` it created
+  (it was killed holding the landing lock and that lock, before any landing record),
+  is recovered only while holding the landing lock,
+  so recovery never races a live lander and never releases an `index.lock` that a later lander created.
   Recovery removes the transaction's `.keep` files as for an owner without a landing record,
   then either discards an unlanded attempt,
   installs the recorded post-index for a landed commit whose index install was interrupted,

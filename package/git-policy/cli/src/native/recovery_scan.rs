@@ -22,7 +22,7 @@ use super::owner_lock::{
 /// The fail-closed recovery failure.
 use super::recovery_error::{RecoveryError, io_failure};
 /// Landing evidence.
-use super::recovery_evidence::{entered_landing, has_landing_record};
+use super::recovery_evidence::entered_landing;
 /// Owner inspection and order.
 use super::recovery_inspect::{
     InspectedEntry, OwnerEvidence, inspect_registry_entry, oldest_first,
@@ -121,7 +121,7 @@ pub fn recover_inspected_entry(
                 );
                 return Ok(RecoveryAction::StagingRetained);
             }
-            return recover_dead_transaction(
+            return recover_dead_transaction_unless_vanished(
                 place,
                 path,
                 inspected.entry.transaction_id.as_str(),
@@ -132,9 +132,47 @@ pub fn recover_inspected_entry(
 }
 
 /// What:
-///  Whether an inspected entry is a dead published transaction holding a landing record.
+///  `recover_dead_transaction`, answering "vanished" when the failure came from a transaction directory that is gone.
 /// Why:
-///   `needsLandingLock`.
+///   Another recoverer of the same dead transaction may finish and remove it after this recoverer inspected it;
+///  the incumbent treats a directory that disappeared between listing and reading as finished,
+///  whereas a failure with the directory still present is real.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// try { return await recoverDeadTransaction(request); } catch (e) { if (!(await pathExists(directory))) return 'vanished'; throw e; }
+/// ```
+fn recover_dead_transaction_unless_vanished(
+    place: &RecoveryPlace,
+    directory: &Path,
+    transaction_id: &str,
+    owner_pid: i64,
+) -> Result<RecoveryAction, RecoveryError> {
+    match recover_dead_transaction(place, directory, transaction_id, owner_pid) {
+        Ok(action) => return Ok(action),
+        Err(error) => {
+            if directory.exists() {
+                return Err(error);
+            }
+            debug(
+                "recoverInspectedEntry",
+                format!("transaction finished while recovery recovered it: {}", directory.display()).as_str(),
+            );
+            return Ok(RecoveryAction::Vanished);
+        }
+    }
+}
+
+/// What:
+///  Whether an inspected entry is a dead published transaction that entered the landing critical section:
+///  it holds a landing record or the record of a real `index.lock` it created.
+/// Why:
+///   `needsLandingLock` keyed on the landing record alone, so a transaction killed holding the landing lock and
+///       `index.lock` (an index-lock record, no landing record yet) was recovered without the landing lock.
+///  Another recoverer under the lock could release that `index.lock` and a lander could create a new one at the
+///       same path before this late release deleted it.
+///  `entered_landing` is the predicate the landing pass already uses,
+///  and the landing pass is documented as the only recovery that may release such a lock.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -144,7 +182,34 @@ fn needs_landing_lock(inspected: &InspectedEntry) -> Result<bool, RecoveryError>
     if inspected.entry.kind != EntryKind::Transaction || inspected.dead_owner().is_none() {
         return Ok(false);
     }
-    return has_landing_record(inspected.entry.path.as_path());
+    return entered_landing_unless_vanished(inspected.entry.path.as_path());
+}
+
+/// What:
+///  `entered_landing`, answering "no" for a transaction directory that is gone.
+/// Why:
+///   Another recoverer of the same dead transaction may finish and remove it between this recoverer's registry listing
+///       and this check; a transaction that no longer exists has nothing to recover,
+///  whereas a directory that exists but cannot be listed stays an error.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// try { return await enteredLanding(directory); } catch (e) { if (e.code === 'ENOENT') return false; throw e; }
+/// ```
+fn entered_landing_unless_vanished(directory: &Path) -> Result<bool, RecoveryError> {
+    match entered_landing(directory) {
+        Ok(entered) => return Ok(entered),
+        Err(error) => {
+            if directory.exists() {
+                return Err(error);
+            }
+            debug(
+                "recoverRegisteredTransactions",
+                format!("transaction finished while recovery listed it: {}", directory.display()).as_str(),
+            );
+            return Ok(false);
+        }
+    }
 }
 
 /// What:
@@ -177,14 +242,14 @@ pub fn recover_dead_landings(
         let Some(record) = item.dead_owner() else {
             continue;
         };
-        if !entered_landing(item.entry.path.as_path())? {
+        if !entered_landing_unless_vanished(item.entry.path.as_path())? {
             continue;
         }
         debug(
             "recoverDeadLandings",
             format!("recovering dead landing {}", item.entry.path.display()).as_str(),
         );
-        let action: RecoveryAction = recover_dead_transaction(
+        let action: RecoveryAction = recover_dead_transaction_unless_vanished(
             place,
             item.entry.path.as_path(),
             item.entry.transaction_id.as_str(),

@@ -306,6 +306,9 @@ No trailing gate is skipped for lack of time; the following were not applicable 
   The 2.56.0 image ran the configuration tests, which do not use Git, and the existing suite.
   A run of the differential inside the interop image (`mise run //package/git-policy/cli:native:interop`)
   would cover 2.56.0 and was not done.
+  Note (2026-10-13): deleted at the user's request and readable at commit `5d61d7b442`:
+  The incumbent that such a run needs.
+  The results are in `doc/handover/cli-git-native-interop.md`.
 - Windows, fuzz targets, planted controls and release-artifact gates: this branch adds no code to them.
   The new Rust test reads a file through `std::fs` and a relative path only.
 

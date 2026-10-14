@@ -57,3 +57,50 @@ runWorkspaceNode('package/dev-script/task-util', 'oxlint-wrapper', ['--fix', ...
 
 [tasks."test:unit"]
 extends = "test:unit"
+
+[tasks."dependencies:install"]
+description = "Install declared native parsers and regenerate the workspace lock without lifecycle scripts"
+run = "pnpm install --ignore-scripts"
+
+[tasks."build:native"]
+description = "Build the qualified native Pi source and owned runtime without private integration imports"
+run = "node native/build.ts"
+
+[tasks."build:native:owned"]
+description = "Rebuild owned native transformations against the already emitted qualified Pi source"
+run = "node native/build.ts --owned"
+
+[tasks."test:native:domain"]
+run = [
+  "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-batch/domain-frontier.test.mjs permission --require-resolution",
+  "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-batch/domain-frontier.test.mjs prohibition --require-resolution",
+  "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-batch/domain-frontier.test.mjs none --require-resolution",
+]
+
+[tasks."test:native:cli-manager"]
+run = "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-batch/cli-manager.test.mjs"
+
+[tasks."test:native:sdk-stream"]
+run = "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-batch/domain-frontier.test.mjs permission --require-resolution --sdk-stream"
+
+[tasks."native:cli"]
+description = "Run the candidate owned native host; semantic admission remains unconfigured"
+run = "node dist/native/cli.mjs"
+
+[tasks."test:native:host-lifecycle"]
+run = "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-host/lifecycle.test.mjs"
+
+[tasks."test:native:cli-process"]
+run = "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-host/process.test.mjs"
+
+[tasks."test:native:serializer-receipts"]
+run = [
+  "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-batch/domain-frontier.test.mjs permission --require-resolution --sdk-stream --copied-payload",
+  "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-batch/domain-frontier.test.mjs permission --require-resolution --sdk-stream --copied-transcript",
+]
+
+[tasks."docs:render:native"]
+run = [
+  "mkdir --parents .cache/native-docs",
+  "pandoc --from=commonmark --to=html --output=.cache/native-docs/integration.html README.md native/README.md ../../../doc/handover/pi-auto-mode-current-frontier.md ../../../doc/troubleshooting/pi-sdk-staging.md",
+]

@@ -279,7 +279,8 @@ fn selection_base_is_the_recorded_base() {
 }
 
 
-/// The incumbent's committed tree when one file is selected, recorded by `native-interop/capture-differential.mjs`.
+/// The incumbent's committed tree when one file is selected, recorded by the incumbent driver
+/// `native-interop/capture-differential.mjs` (deleted; readable at commit `5d61d7b442`).
 const INCUMBENT_ONE_FILE_TREE: &str = "4f40a1ec2c64780454051d9d363c6870a6ef2f6e";
 /// The incumbent's committed tree when both changed files are selected.
 const INCUMBENT_TWO_FILE_TREE: &str = "efe77971c159b0a29a5d97e7169b8c35fa33a1f1";

@@ -1593,14 +1593,12 @@ that is verification, not a decision for the user.
   directories; the lane worktrees `cli-git-lane-interop` and `-pathbytes` had none), the tracked old copies at older
   branch heads stay history, and the zero-byte `node_modules/.bin/git` in `Monochromatic-but-every-file-0-bytes`
   (not a repository) cannot run.
-  Interop decision (user): the interop matrix runs once against an incumbent built in a throwaway container from the
-  pinned revision, the results are recorded, and then everything that can build or run the old wrapper
-  (`provision-incumbent.mjs`, the incumbent image steps in `bin/interop-native-container.mjs`, the live-incumbent
-  scripts under `native-interop/`) is deleted, leaving static captured fixtures.
-  Still open from the retirement: the interop run and that deletion (lane `interop`),
-  the `slopo.ignore.txt` entries for deleted files (lines 45, 50, 69, 200, 309, 324, 373)
-  wait for a fresh `slopo analyze` report, and the SPEC sections the plan did not name were not re-verified line by
-  line.
+  Interop decision (user): the interop matrix ran once against an incumbent rebuilt in a throwaway container from the
+  pinned revision, the results are recorded, and everything that can build or run the old wrapper was then deleted
+  (`doc/handover/cli-git-native-interop.md`), leaving static captured fixtures.
+  Still open from the retirement: the `slopo.ignore.txt` entries for deleted files (lines 45, 50, 69, 200, 309, 324,
+  373) wait for a fresh `slopo analyze` report, and the SPEC sections the plan did not name were not re-verified line
+  by line.
   Both wrappers shared `.git/cli-git*` state while sessions were mixed; the incumbent is no longer on any `PATH`.
   User decisions of 2026-10-13: install by publishing the crate (the `cargo:` mise tool route); the hk cleanup task is
   retired; the rollback window ends right after the installed wrapper is verified; the first native CI workflow covers
@@ -1635,13 +1633,19 @@ that is verification, not a decision for the user.
   The push-fix scoped mutation run failed its first baseline under host load (three `dependent_version` tests hit
   their 5 second bound) and was restarted; log `~/temp/agent/push-env-mutation-full2.log`.
   Open: the `replay-core` branch holds unmerged mutation work, `monochromatic-lint` shim lookup fails outside the
-  repository (the linter must be on `PATH` as a real binary), and the trailing gates below are untouched.
+  repository (the linter must be on `PATH` as a real binary), and the trailing gates below, except the interop matrix, are untouched.
 - [ ] Gates that trail the cutover (user decision 2026-10-10: the code ships first, the gate runs afterward):
   the Windows checks and the release-artifact performance gates;
-  the old-and-new wrapper interop matrix (one-direction fixtures where the incumbent writes and native reads stay);
   the long fuzz campaigns (fuzz targets, planted-defect controls and a short smoke run stay in the gate);
   mutation campaigns on non-core modules (hooks plumbing, auto-push, automatic maintenance, signals);
   and the `pathBytes` field for non-UTF-8 paths in events.
+  Done: the old-and-new wrapper interop matrix and the old-format fixtures (user decision 2026-10-10, run once on
+  2026-10-13): crash recovery, lock waits, hook dispatch and the old-format fixtures pass in both directions;
+  the mixed-concurrency scenario with a killed worker still fails sometimes, because the incumbent's startup
+  recovery releases a native lander's `index.lock` without the landing lock (recorded as an open finding, the
+  incumbent is not fixed), and five native recovery races found on the way are fixed.
+  By the user's decision the incumbent tooling and the drivers that need it were then deleted; the plain-file
+  fixtures and their native-only reader stay (`doc/handover/cli-git-native-interop.md`).
   Locks, journal, capture, shadow repository, preparation, policies, landing, replay, recovery and the worktree copy
   keep full mutation gating.
   Features do not trail: signals, automatic maintenance and the linked-worktree copy are part of the cutover.
@@ -1652,8 +1656,8 @@ that is verification, not a decision for the user.
   Each lane records what it skipped under a `Trailing gates` heading in its evidence file.
   Trailing is not stopping (user, 2026-10-10): the cutover does not end the work.
   Right after it, without a pause, the queue continues with these gates in the order listed
-  (the interop matrix and the old-format fixtures first, then fuzz campaigns, non-core mutation,
-  the `pathBytes` field, the Windows checks and the release-artifact performance gates),
+  (fuzz campaigns, non-core mutation, the `pathBytes` field, the Windows checks and the release-artifact performance
+  gates),
   each recorded and closed like any other gate,
   and then the retirement of the old TypeScript implementation is verified complete.
 - [x] Rust cli-git configuration, Git resolution/argv, static policies, and management commands

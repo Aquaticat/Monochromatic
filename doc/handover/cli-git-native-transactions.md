@@ -385,6 +385,10 @@ Drivers are `.mjs` files under `native-interop/`,
 run as `mise run //package/git-policy/cli:native:interop -- <driver>`,
 under `--rm --init --network=none --memory=2g --cpus=2`.
 
+Note (2026-10-13): deleted at the user's request and readable at commit `5d61d7b442`:
+The incumbent image step, `/opt/cli-git` and every driver named in this document.
+The results are in `doc/handover/cli-git-native-interop.md`.
+
 The smoke driver passed:
 real Git is 2.56.0,
 Node is 24.21.0,

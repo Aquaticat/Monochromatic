@@ -19,6 +19,8 @@ use crate::rust_rule_settings::{LineBudget, RustRuleSettings};
 use crate::rust_rules::{check_max_lines, check_rustdoc};
 /// Borrow the already parsed source rather than reparsing per rule.
 use crate::rust_source::RustSource;
+/// Import the check that requires unit tests to live in sidecar files.
+use crate::rust_tests_in_sidecars::check_tests_in_sidecars;
 
 /// Preserve fixed shipped-rule ordering while leaving absent/off rules unexecuted.
 pub fn check_syntax_rules(source: &RustSource, settings: &RustRuleSettings) -> Vec<Diagnostic> {
@@ -32,6 +34,9 @@ pub fn check_syntax_rules(source: &RustSource, settings: &RustRuleSettings) -> V
     }
     if let Some(severity) = settings.no_anonymous_functions {
         findings.extend(check_no_anonymous_functions(source, severity));
+    }
+    if let Some(severity) = settings.tests_in_sidecars {
+        findings.extend(check_tests_in_sidecars(source, severity));
     }
     return findings;
 }

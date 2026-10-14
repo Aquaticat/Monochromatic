@@ -55,4 +55,7 @@ the `Flickable` moves the existing image on its own.
 3. Soft wrap (`doc/planning/slint-ide-soft-wrap.md`) lands on this pipeline, not before it:
    wrapping needs the row cache, per-line heights, and the tile build that stage 2 moves off the UI thread.
    Built on 2026-10-11 on `feat/ide-soft-wrap`: the row cache is keyed by wrap width,
-   a new wrap width is a worker re-center, and the same worker measures the whole text between tile jobs.
+   a new wrap width was first a worker re-center, and the same worker measures the whole text between tile jobs.
+   Since 2026-10-13 a new wrap width is taken by the window thread within a counted allowance
+   (384 lines, 24,000 units of work, 32 MiB of raster, `src/native/rewrap.rs`) so that no frame shows the old
+   wrapping, and only a change over the allowance is a worker re-center; scroll re-centers stay on the worker.

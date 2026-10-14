@@ -6067,6 +6067,85 @@ and shared-value accounting.
 This recognizes a callback field;
 it does not account for material returned by invoking callbacks or close the host domain.
 
+### Isolated codemode worker dependency root
+
+After the owned domain consumer first returned approval,
+Pi's codemode result reported `Script sandbox failed` with `ENOENT` for
+`fixture-private-.../home/Monochromatic`.
+The native result also reported `No tool calls were made.`
+The fixture deliberately changes `HOME` to a disposable directory.
+The inherited test loader then derived its dependency root from that changed home in the worker.
+
+Pi `packages/codemode/src/runtime/host.ts:34` creates the worker:
+
+```typescript
+// packages/codemode/src/runtime/host.ts:34, Pi v1.2.0
+worker = new Worker(workerUrl, { workerData });
+```
+
+The owned `contract/integration/current-sdk/paths.mjs` had recomputed the dependency root:
+
+```javascript
+// Historical private contract/integration/current-sdk/paths.mjs
+const repoRoot = join(homedir(), 'Monochromatic');
+```
+
+Private `f3d40d82` records the original measured dependency root in the staging manifest
+and reads it when the loader runs in a worker.
+It preserves the disposable home and native worker execution.
+After rebuilding through `mise run stage`,
+`mise run test:domain-resolution` passed permission with three native child calls,
+prohibition with zero calls,
+and unspecified policy with zero calls.
+The failing case had reached approval but never entered a child call;
+the corrected case exercised the actual native sandbox.
+This is an owned fixture-loader correction,
+not an upstream sandbox defect.
+
+### Help loads the trust store before printing
+
+Pi 1.2.0 `pi --help` failed in the read-only agent sandbox with
+`EROFS: read-only file system` for `$HOME/.pi/agent/trust.json.lock`.
+The same command outside that filesystem restriction printed help and exited zero.
+The native session RPC probe also succeeded outside that restriction.
+
+`packages/coding-agent/src/main.ts:719` constructs `ProjectTrustStore`.
+At line 749,
+runtime setup can read project trust before the help branch at line 877:
+
+```typescript
+// packages/coding-agent/src/main.ts:749, Pi v1.2.0
+(!hasTrustRequiringResources || trustStore.get(cwd) === true)
+```
+
+`packages/coding-agent/src/core/trust-manager.ts:221` reads entries under the trust lock:
+
+```typescript
+// packages/coding-agent/src/core/trust-manager.ts:221, Pi v1.2.0
+getEntry(cwd: string): ProjectTrustStoreEntry | null {
+  return withTrustFileLock(this.trustPath, () => {
+    const data = readTrustFile(this.trustPath);
+    return findNearestTrustEntry(data, cwd);
+  });
+}
+```
+
+The lock implementation at line 147 uses a lock directory beside the trust file:
+
+```typescript
+// packages/coding-agent/src/core/trust-manager.ts:147, Pi v1.2.0
+return lockfile.lockSync(trustDir, { realpath: false, lockfilePath: `${path}.lock` });
+```
+
+The verification command is `pi --help` from this repository.
+The failing case is the existing user trust directory mounted read-only;
+the working case is the same command with its normal writable trust directory.
+The verified workaround changes the command's filesystem access,
+not its trust decision or project configuration.
+Its tradeoff is that Pi performs normal startup work before returning help.
+The help flag alone does not bypass that startup path.
+No upstream fault or universal sandbox failure follows from this local mount restriction.
+
 ### Upstream filing decision
 
 Nothing is filed or drafted upstream.
@@ -6084,3 +6163,88 @@ Nothing is filed or drafted upstream.
 - Prototype:
   the owned staging and receipt controls exercise the local corrections;
   they do not justify an upstream patch.
+
+## Maintained native build after the installed release changes
+
+### Failure and scope
+
+The installed Pi command later reported `1.1.0`,
+while the integration's compiled source and dependency links still targeted `1.2.0`.
+Node also reported `ERR_MODULE_NOT_FOUND` for an earlier parser dependency path.
+These failures concern owned staging paths;
+the earlier Pi 1.2.0 results retain their original version boundary.
+
+The maintained build is `package/pi-plugin/auto-mode/native/build.ts`.
+Its source emitter in `native/build-source.ts` verifies Pi 1.1.0 and source commit
+`abe508e1b89912adde45528136c3221eb69acdd7`
+before compiling the upstream Agent,
+AI,
+and coding-agent module trees.
+It copies generated model catalogs from the matching installed AI package.
+Installed Pi sources are never patched.
+
+### Verified correction
+
+`mise run //package/pi-plugin/auto-mode:build:native` emits the upstream modules,
+copies maintained owned inputs,
+and applies the native transformations inside the package's `dist/native` directory.
+The optional `PI_AUTO_MODE_SOURCE` points at a source checkout only during this build;
+the emitted host does not read that checkout.
+The build rejects a mismatched source revision or installed Pi release.
+`build:native:owned` rebuilds owned transformations against the existing emitted upstream source.
+
+The first maintained build,
+package type check,
+and permission/prohibition/unspecified fixtures passed.
+The disposable fixture was then moved outside the repository after its original location inherited
+the repository's ancestor `AGENTS.md`.
+The normal SDK provider case now passes with 33 captured sources and five accounted contribution uses.
+It invokes Pi's SDK and model runtime,
+while a local fixture supplies the transport response and no external provider is called.
+
+### Source normalization and lifecycle boundaries
+
+Pi's `resolveTranscript` creates another message array through `collapseSystemMessages`.
+Comparing that array with the original request input failed the SDK contribution check.
+The maintained serializer now retains the input occurrence before normalization,
+with a private payload receipt tying it to the actual native serializer call.
+This preserves normal SDK authentication and provider dispatch.
+
+The CLI also reuses an in-memory manager when replacing a forked session.
+The original observer attachment outlived its disposed session,
+producing `Original manager already has a context-copy owner`.
+The maintained source transformation releases that attachment only after disposal completes.
+Native tests cover reuse,
+foreign-manager rejection,
+retired leases,
+incomplete disposal,
+and repeated completed disposal.
+These are owned integration corrections,
+not evidence of upstream Pi defects.
+
+The candidate CLI bootstrap now exists in the maintained native graph.
+Its first relocated import emitted Node's `ERR_MODULE_NOT_FOUND` for `chalk`.
+The original `main.js` imports `chalk` from its package dependency root;
+the relocated `host-main.mjs` had no corresponding dependency location.
+The host source transformation now resolves that import from the original emitted Pi package.
+The next import exposed a separate owned staging omission:
+Node reported that `./core/sdk.js` did not export `AgentSessionRuntime`.
+The earlier isolated SDK transform had removed its runtime re-export.
+The complete host graph retains that native export and routes it through the owned runtime module.
+Neither failure changes installed Pi source or demonstrates an upstream defect.
+
+`mise run //package/pi-plugin/auto-mode:test:native:host-lifecycle` passed actual CLI manager selection,
+service creation,
+resource reload,
+cancelled replacement,
+new session,
+in-memory fork,
+persisted resume,
+and completed cleanup retry.
+Its initial resource reload calls the original trust resolver through the policy owner.
+The fixture makes no external provider request.
+Direct CLI process verification,
+complete package lint,
+production semantic admission,
+and genuine human approval remain separate delivery checks.
+No upstream issue or patch is warranted by the verified local staging corrections.

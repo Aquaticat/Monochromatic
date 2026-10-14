@@ -1,0 +1,971 @@
+{
+  "sourceRepositoryCommit": "a3f02da7c7088717e8551d2d0e9440665961130d",
+  "files": [
+    {
+      "original": "collector/base-prompt-custody-v2/copy.mjs",
+      "maintained": "collector/base-prompt-custody-v2/copy.mjs",
+      "sha256": "465c61492dd974edcdf51e99cc08ff74f3b49ca4ee3f303ccdd1aa14f6ffb0b9",
+      "origin": "authored-source",
+      "relocatedLiterals": 0
+    },
+    {
+      "original": "collector/collector.mjs",
+      "maintained": "collector/collector.mjs",
+      "sha256": "64a9205890772f61796f333dab183826fb7a6e6fc84eff545f1f1c291e74e2ae",
+      "origin": "authored-source",
+      "relocatedLiterals": 0
+    },
+    {
+      "original": "collector/host-governing-policy/selection.mjs",
+      "maintained": "collector/host-governing-policy/selection.mjs",
+      "sha256": "0b0d1bea4b88a96cf08222b4296a1fb116a650e67f09736fd806921018ea9b0f",
+      "origin": "authored-source",
+      "relocatedLiterals": 0
+    },
+    {
+      "original": "collector/program-rule-batch-sdk-copy-v2/stage-private/child-constructor.mjs",
+      "maintained": "collector/program-rule-batch-sdk-copy-v2/input/child-constructor.mjs",
+      "sha256": "5438205aefcbd5776b073610fcab9471856749b18fab89a8dc7d40de6d30ba8a",
+      "origin": "previous-generated-input",
+      "relocatedLiterals": 9
+    },
+    {
+      "original": "collector/program-rule-batch-sdk-copy-v2/stage-private/native-return-consumer.mjs",
+      "maintained": "collector/program-rule-batch-sdk-copy-v2/input/native-return-consumer.mjs",
+      "sha256": "221a9c3204f36a51df26b42317ffef5940c34a5b0f774e985c60d009e99f14a7",
+      "origin": "previous-generated-input",
+      "relocatedLiterals": 2
+    },
+    {
+      "original": "collector/program-rule-batch-sdk-copy-v2/stage-private/native-script-value.mjs",
+      "maintained": "collector/program-rule-batch-sdk-copy-v2/input/native-script-value.mjs",
+      "sha256": "e781b6357cb23419341f13eb59cebdae16161ec82e3e2658e2adb40012975956",
+      "origin": "previous-generated-input",
+      "relocatedLiterals": 0
+    },
+    {
+      "original": "collector/program-rule-batch-sdk-copy-v2/stage-private/parser.mjs",
+      "maintained": "collector/program-rule-batch-sdk-copy-v2/input/parser.mjs",
+      "sha256": "9b914487b28f32bf819069138d0e7c4f20299c92cc722a5b470fb2d19cc7ba2e",
+      "origin": "previous-generated-input",
+      "relocatedLiterals": 1
+    },
+    {
+      "original": "collector/program-rule-batch-sdk-copy-v2/stage-private/prepared-dispatch.mjs",
+      "maintained": "collector/program-rule-batch-sdk-copy-v2/input/prepared-dispatch.mjs",
+      "sha256": "3a35440981f3bc8e1a02156b099294d29c198591f4d954d3a6f56e5e8e6671c7",
+      "origin": "previous-generated-input",
+      "relocatedLiterals": 1
+    },
+    {
+      "original": "collector/program-rule-batch-sdk-copy-v2/stage-private/program-collector.mjs",
+      "maintained": "collector/program-rule-batch-sdk-copy-v2/input/program-collector.mjs",
+      "sha256": "ff887de856d549e069ab3a5cd56375c7bf9d67430e318a37a8b7def4e5e59c72",
+      "origin": "previous-generated-input",
+      "relocatedLiterals": 0
+    },
+    {
+      "original": "collector/program-rule-batch-sdk-copy-v2/stage-private/program-profile-reviewed.mjs",
+      "maintained": "collector/program-rule-batch-sdk-copy-v2/input/program-profile-reviewed.mjs",
+      "sha256": "b0a1642c48eb8f5ffbfb2a6bd862223e90e2ef589884c917f9cff8995fa8f9df",
+      "origin": "previous-generated-input",
+      "relocatedLiterals": 3
+    },
+    {
+      "original": "collector/program-rule-batch-sdk-copy-v2/stage-private/program-profile.mjs",
+      "maintained": "collector/program-rule-batch-sdk-copy-v2/input/program-profile.mjs",
+      "sha256": "bf12aaaad61aed6e29b05a70c339e8c93679411bdfcc96714199a8140f50f42b",
+      "origin": "previous-generated-input",
+      "relocatedLiterals": 3
+    },
+    {
+      "original": "collector/program-rule-batch-sdk-copy-v2/stage-private/program-runner.mjs",
+      "maintained": "collector/program-rule-batch-sdk-copy-v2/input/program-runner.mjs",
+      "sha256": "9e1b2378dfa9823b8bf46449cafa03fec0e17a03152dad4bd863eba172e533cb",
+      "origin": "previous-generated-input",
+      "relocatedLiterals": 2
+    },
+    {
+      "original": "collector/program-rule-batch-sdk-copy-v2/stage-private/program-runtime.mjs",
+      "maintained": "collector/program-rule-batch-sdk-copy-v2/input/program-runtime.mjs",
+      "sha256": "bfbf212fec7b8e38e8a97c2b57bf77a0753230d9e728f646799d9fc82ca94126",
+      "origin": "previous-generated-input",
+      "relocatedLiterals": 2
+    },
+    {
+      "original": "collector/program-rule-batch-sdk-copy-v2/stage-private/result-pattern.mjs",
+      "maintained": "collector/program-rule-batch-sdk-copy-v2/input/result-pattern.mjs",
+      "sha256": "26a9bfbafd6ce9ab588d6885ff8eb19b6d5679c5824d7b73b93ee2580baee8c2",
+      "origin": "previous-generated-input",
+      "relocatedLiterals": 0
+    },
+    {
+      "original": "collector/program-rule-batch-sdk-copy-v2/stage-private/script-value-guard.mjs",
+      "maintained": "collector/program-rule-batch-sdk-copy-v2/input/script-value-guard.mjs",
+      "sha256": "8756925bf068f4605c3cbc06d33d3b7a9f79c38a161e4a8023d0548f7e93c72e",
+      "origin": "previous-generated-input",
+      "relocatedLiterals": 0
+    },
+    {
+      "original": "collector/request-producer-group-consumer/request.mjs",
+      "maintained": "collector/request-producer-group-consumer/request.mjs",
+      "sha256": "ecd626596bc2aed2d02226effd5516bab0b71f4f5147e3b84b7ca7598c0af85f",
+      "origin": "authored-source",
+      "relocatedLiterals": 0
+    },
+    {
+      "original": "collector/request-producer-judgment-consumers/owner.mjs",
+      "maintained": "collector/request-producer-judgment-consumers/owner.mjs",
+      "sha256": "a4bb1b0d2d4f547f6c50329177d4c3c824c370009363fa311f0560891dac743d",
+      "origin": "authored-source",
+      "relocatedLiterals": 0
+    },
+    {
+      "original": "collector/resource-input-custody/values.mjs",
+      "maintained": "collector/resource-input-custody/values.mjs",
+      "sha256": "6605564173f164a80da2a2bb38aefbb15836861c6277ed2d56fc1437d257728e",
+      "origin": "authored-source",
+      "relocatedLiterals": 0
+    },
+    {
+      "original": "collector/result-program-sdk-copy-guarded/stage-private/child-prepared-dispatch.mjs",
+      "maintained": "collector/result-program-sdk-copy-guarded/input/child-prepared-dispatch.mjs",
+      "sha256": "4e8f79a98e83d71707ec76e1dcc1b118065ed6bbfc189290ec8687e85e4c677c",
+      "origin": "previous-generated-input",
+      "relocatedLiterals": 2
+    },
+    {
+      "original": "collector/rule-relevance-sdk-copy/stage-private/base-owner.mjs",
+      "maintained": "collector/rule-relevance-sdk-copy/input/base-owner.mjs",
+      "sha256": "93a0d41a3c0093c480ec8ea8d08f90ab16d2dcecb6f1d865234ac02c21614e87",
+      "origin": "previous-generated-input",
+      "relocatedLiterals": 3
+    },
+    {
+      "original": "collector/rule-relevance-sdk-copy/stage-private/resource-owner.mjs",
+      "maintained": "collector/rule-relevance-sdk-copy/input/resource-owner.mjs",
+      "sha256": "a44314f688db13d107abd4735531b5f9221a841b45d53ced5d62f9b3c12ba94f",
+      "origin": "previous-generated-input",
+      "relocatedLiterals": 3
+    },
+    {
+      "original": "collector/run-prompt-custody-v3/base-inputs.mjs",
+      "maintained": "collector/run-prompt-custody-v3/base-inputs.mjs",
+      "sha256": "ccf872ac5d2e0c95cb2f071b5fb2a054b571d078f1ed6971cdf1922efe4d7498",
+      "origin": "authored-source",
+      "relocatedLiterals": 0
+    },
+    {
+      "original": "collector/run-prompt-custody-v3/forced-publication.mjs",
+      "maintained": "collector/run-prompt-custody-v3/forced-publication.mjs",
+      "sha256": "1d154a9055bcf6bc0bc0c13be765defbe00aec41fa209c10ab65c3ab0e4f678f",
+      "origin": "authored-source",
+      "relocatedLiterals": 0
+    },
+    {
+      "original": "collector/run-prompt-custody-v3/guideline-inputs.mjs",
+      "maintained": "collector/run-prompt-custody-v3/guideline-inputs.mjs",
+      "sha256": "ee74f111e5306666693f0f89a8daf4a5273a1bc0ad0597007d983e95b1b670b9",
+      "origin": "authored-source",
+      "relocatedLiterals": 0
+    },
+    {
+      "original": "collector/run-prompt-custody-v3/handler-option-inputs.mjs",
+      "maintained": "collector/run-prompt-custody-v3/handler-option-inputs.mjs",
+      "sha256": "29436acbdc81ae5b6cac40984f83d4d77cbeda5ca4c9717e16082ef96fd6ad95",
+      "origin": "authored-source",
+      "relocatedLiterals": 0
+    },
+    {
+      "original": "collector/run-prompt-custody-v3/handler-publication.mjs",
+      "maintained": "collector/run-prompt-custody-v3/handler-publication.mjs",
+      "sha256": "fbb8fd7fb24e64c57efbf341cb12a828ef8c94c94fd23f80be475eaf1ec8b57b",
+      "origin": "authored-source",
+      "relocatedLiterals": 0
+    },
+    {
+      "original": "collector/run-prompt-custody-v3/loaded-inputs.mjs",
+      "maintained": "collector/run-prompt-custody-v3/loaded-inputs.mjs",
+      "sha256": "1030fc69dac6d63a8c844d526870cebf1c044af8da72be3846441a25270832a4",
+      "origin": "authored-source",
+      "relocatedLiterals": 0
+    },
+    {
+      "original": "collector/run-prompt-custody-v3/manager-message-content.mjs",
+      "maintained": "collector/run-prompt-custody-v3/manager-message-content.mjs",
+      "sha256": "5e828b28071f3e0d518e777d4dfeb18bd7c2264a3eff84544b2614d4fa3afe83",
+      "origin": "authored-source",
+      "relocatedLiterals": 0
+    },
+    {
+      "original": "collector/run-prompt-custody-v3/message-inputs.mjs",
+      "maintained": "collector/run-prompt-custody-v3/message-inputs.mjs",
+      "sha256": "ce0b7483dd54008fd35ef568176429f19a2c283418d064ca0d4abdf4393a8ba9",
+      "origin": "authored-source",
+      "relocatedLiterals": 0
+    },
+    {
+      "original": "collector/run-prompt-custody-v3/owner.mjs",
+      "maintained": "collector/run-prompt-custody-v3/owner.mjs",
+      "sha256": "f3c6d34570e5ac6be5700474726769eaa7d74f019b9451a5d41e0d8ef5964e17",
+      "origin": "authored-source",
+      "relocatedLiterals": 0
+    },
+    {
+      "original": "collector/run-prompt-custody-v3/render-inputs.mjs",
+      "maintained": "collector/run-prompt-custody-v3/render-inputs.mjs",
+      "sha256": "9307140920c17d705c6977e07a8099281dd36d3798fac777dd5d6c4c1fde25c9",
+      "origin": "authored-source",
+      "relocatedLiterals": 0
+    },
+    {
+      "original": "collector/run-prompt-custody-v3/tool-loadout-input.mjs",
+      "maintained": "collector/run-prompt-custody-v3/tool-loadout-input.mjs",
+      "sha256": "0cb9de6edd6e38e4e72fdedbd94fe036e3bd264f95098784746b141278db2c08",
+      "origin": "authored-source",
+      "relocatedLiterals": 0
+    },
+    {
+      "original": "collector/run-prompt-custody-v3/tool-metadata.mjs",
+      "maintained": "collector/run-prompt-custody-v3/tool-metadata.mjs",
+      "sha256": "dfc64dfa92efaaa945be81d523de6be19bae7f597325c19e3e44b90678f3df03",
+      "origin": "authored-source",
+      "relocatedLiterals": 0
+    },
+    {
+      "original": "collector/run-prompt-custody/messages.mjs",
+      "maintained": "collector/run-prompt-custody/messages.mjs",
+      "sha256": "9afc734cc57eeb1cd32343161b33c1f5f0f32298531264ab9248bc4f4c6d52a4",
+      "origin": "authored-source",
+      "relocatedLiterals": 0
+    },
+    {
+      "original": "integration/action-policy/approval.mjs",
+      "maintained": "integration/action-policy/approval.mjs",
+      "sha256": "250eef43598ff67dc9dc772d3a47f303f32d7bcf1606a26399819fa67c2ec600",
+      "origin": "authored-source",
+      "relocatedLiterals": 0
+    },
+    {
+      "original": "integration/action-policy/authorization-inputs.mjs",
+      "maintained": "integration/action-policy/authorization-inputs.mjs",
+      "sha256": "085c2ed11fcc75d70183789b4724b6b089c2d0c887d0dbeb49d41312910c21e6",
+      "origin": "authored-source",
+      "relocatedLiterals": 0
+    },
+    {
+      "original": "integration/action-policy/authorization-inputs.test.mjs",
+      "maintained": "integration/action-policy/authorization-inputs.test.mjs",
+      "sha256": "9c6762749998c222458691bc2df1a130865ba200ad2ef44432a4f0b744ca12bf",
+      "origin": "authored-source",
+      "relocatedLiterals": 0
+    },
+    {
+      "original": "integration/action-policy/clause-lowering.mjs",
+      "maintained": "integration/action-policy/clause-lowering.mjs",
+      "sha256": "216dd9a52e88fae0c61d36c262f48cca958c9ad46f7568a5bc88f4609b26c55e",
+      "origin": "authored-source",
+      "relocatedLiterals": 0
+    },
+    {
+      "original": "integration/action-policy/clause-relation.mjs",
+      "maintained": "integration/action-policy/clause-relation.mjs",
+      "sha256": "e2ead1165cab711f10d43e2fd58dadf114a2c18c3fc49f8d3804c792bddf37b4",
+      "origin": "authored-source",
+      "relocatedLiterals": 0
+    },
+    {
+      "original": "integration/action-policy/compiler.mjs",
+      "maintained": "integration/action-policy/compiler.mjs",
+      "sha256": "b1e39c12423ce96ab0b52281a1160ed9767951fa6d91431656deb8c6cd0c4f82",
+      "origin": "authored-source",
+      "relocatedLiterals": 0
+    },
+    {
+      "original": "integration/action-policy/evaluate.mjs",
+      "maintained": "integration/action-policy/evaluate.mjs",
+      "sha256": "6753cdc51ab25fcedb7ac378994c6a93a6a0694ec82b338e17ae61edcda0a1f7",
+      "origin": "authored-source",
+      "relocatedLiterals": 0
+    },
+    {
+      "original": "integration/action-policy/heading-context.mjs",
+      "maintained": "integration/action-policy/heading-context.mjs",
+      "sha256": "592639e0a4cedb657833bdab0f081f13b4bf9dcf76b82567a0d0d4a2b2265525",
+      "origin": "authored-source",
+      "relocatedLiterals": 0
+    },
+    {
+      "original": "integration/action-policy/heading-relation.mjs",
+      "maintained": "integration/action-policy/heading-relation.mjs",
+      "sha256": "93144d6e3149799f68a568a718edf52600674054cd1a9773546542fb63734a74",
+      "origin": "authored-source",
+      "relocatedLiterals": 0
+    },
+    {
+      "original": "integration/action-policy/index.mjs",
+      "maintained": "integration/action-policy/index.mjs",
+      "sha256": "ec4009fe6e2e6a32e40a54b85226a2fd1e89cf0b567af4e3136d2ec828b6a5ea",
+      "origin": "authored-source",
+      "relocatedLiterals": 0
+    },
+    {
+      "original": "integration/action-policy/inputs.mjs",
+      "maintained": "integration/action-policy/inputs.mjs",
+      "sha256": "ddd89e06eaa42e9a164660bf36a952279397fbf2a7231bf3850bd7c7dead74f2",
+      "origin": "authored-source",
+      "relocatedLiterals": 0
+    },
+    {
+      "original": "integration/action-policy/judgment-start.mjs",
+      "maintained": "integration/action-policy/judgment-start.mjs",
+      "sha256": "2197650408c9fa52bbfa4bb3ba4538db310e6de5b6bcbc636a4ae6b221da78e1",
+      "origin": "authored-source",
+      "relocatedLiterals": 0
+    },
+    {
+      "original": "integration/action-policy/premises.mjs",
+      "maintained": "integration/action-policy/premises.mjs",
+      "sha256": "5de5ae3292270c740caa8edde0491f31b755077196a467f27749f7b64b96032d",
+      "origin": "authored-source",
+      "relocatedLiterals": 0
+    },
+    {
+      "original": "integration/action-policy/request-material.mjs",
+      "maintained": "integration/action-policy/request-material.mjs",
+      "sha256": "136a69f31e6d9c5a4ea9b21f7fc94ddc5da751e1a2912a8363f54f0130e8b9f6",
+      "origin": "authored-source",
+      "relocatedLiterals": 0
+    },
+    {
+      "original": "integration/action-policy/request-relation.mjs",
+      "maintained": "integration/action-policy/request-relation.mjs",
+      "sha256": "5f2e77c51e455995b3cf3cb9b61acc94df77ffcf46218caffa15dc86f98d8feb",
+      "origin": "authored-source",
+      "relocatedLiterals": 0
+    },
+    {
+      "original": "integration/action-policy/reviewer.mjs",
+      "maintained": "integration/action-policy/reviewer.mjs",
+      "sha256": "38eb4d0ff271d7242a536a1853525e57e40ca9e97d0c6e5229f5a00055784856",
+      "origin": "authored-source",
+      "relocatedLiterals": 0
+    },
+    {
+      "original": "integration/action-policy/semantic-policy.mjs",
+      "maintained": "integration/action-policy/semantic-policy.mjs",
+      "sha256": "d327da02deef47a55ca334eb5e65077ab6f0c1ea04c939774e5024d1f2efc264",
+      "origin": "authored-source",
+      "relocatedLiterals": 0
+    },
+    {
+      "original": "integration/action-policy/source-association.mjs",
+      "maintained": "integration/action-policy/source-association.mjs",
+      "sha256": "8504091791830071f47268f5d3a703c453d9a1addcaa1e2f2ca169264761ea04",
+      "origin": "authored-source",
+      "relocatedLiterals": 0
+    },
+    {
+      "original": "integration/action-policy/tool-metadata-premises.mjs",
+      "maintained": "integration/action-policy/tool-metadata-premises.mjs",
+      "sha256": "d5e6b21c2edaed37475e2c52153a68d5cffee439a388781de4465f8861fbac4c",
+      "origin": "authored-source",
+      "relocatedLiterals": 0
+    },
+    {
+      "original": "integration/action-policy/unit-adoption-profile.mjs",
+      "maintained": "integration/action-policy/unit-adoption-profile.mjs",
+      "sha256": "eedc04c95e678c8271323effb70ffdeb3d0fa55489ea654acfd50a1dc7f9edf9",
+      "origin": "authored-source",
+      "relocatedLiterals": 0
+    },
+    {
+      "original": "integration/action-policy/unit-adoption-relation.mjs",
+      "maintained": "integration/action-policy/unit-adoption-relation.mjs",
+      "sha256": "de2b25e3cd30afa3ca23cd316355a4683fab89a17c1ffc48ef4ff13f84a39b95",
+      "origin": "authored-source",
+      "relocatedLiterals": 0
+    },
+    {
+      "original": "integration/action-policy/unit-adoption.mjs",
+      "maintained": "integration/action-policy/unit-adoption.mjs",
+      "sha256": "9109ecde36c5d8a8353ff57a101f2ce6b1001aa71b6a760df5b12953fe520814",
+      "origin": "authored-source",
+      "relocatedLiterals": 0
+    },
+    {
+      "original": "integration/action-policy/wire.mjs",
+      "maintained": "integration/action-policy/wire.mjs",
+      "sha256": "da4da7c9cd24c5e487e76217f65aabc9662210e39fe51ff4a079198e68c9ebd6",
+      "origin": "authored-source",
+      "relocatedLiterals": 0
+    },
+    {
+      "original": "integration/current-sdk/paths.mjs",
+      "maintained": "integration/current-sdk/paths.mjs",
+      "sha256": "28650a0b8987c0b09a84eed37a831897aa6eabef28133ca5302b15a6632abb6c",
+      "origin": "authored-source",
+      "relocatedLiterals": 0
+    },
+    {
+      "original": "integration/maintained-policy.mjs",
+      "maintained": "integration/maintained-policy.mjs",
+      "sha256": "99e762374c35aa364a1be42e6881d6c7c769145e2695bfe586ad8dbfaffe4542",
+      "origin": "authored-source",
+      "relocatedLiterals": 1
+    },
+    {
+      "original": "integration/native-batch/agent-input-source.mjs",
+      "maintained": "integration/native-batch/agent-input-source.mjs",
+      "sha256": "8bb31544479fc87934ee3b0e96a78eee11feed32abcacff0e0ff055ae9407056",
+      "origin": "authored-source",
+      "relocatedLiterals": 0
+    },
+    {
+      "original": "integration/native-batch/agent-state-source.mjs",
+      "maintained": "integration/native-batch/agent-state-source.mjs",
+      "sha256": "976d14a5eb2eb0b20f95c0bb9561fd355c131ac49087033a8b06f8468da1f788",
+      "origin": "authored-source",
+      "relocatedLiterals": 0
+    },
+    {
+      "original": "integration/native-batch/approval-domain.test.mjs",
+      "maintained": "integration/native-batch/approval-domain.test.mjs",
+      "sha256": "8922d3c17d75655f43560796066a42a361736044ac4ddf25596438849cfd0ac1",
+      "origin": "authored-source",
+      "relocatedLiterals": 1
+    },
+    {
+      "original": "integration/native-batch/boundary.mjs",
+      "maintained": "integration/native-batch/boundary.mjs",
+      "sha256": "a48d1c51ce06d6f5d7563eab5ffcd93ae5f7a127b1ebe0673dcbaebc66e56806",
+      "origin": "authored-source",
+      "relocatedLiterals": 0
+    },
+    {
+      "original": "integration/native-batch/builder-source.mjs",
+      "maintained": "integration/native-batch/builder-source.mjs",
+      "sha256": "2fb852826bbec3d444d49545dfc4cf573cf4d7ffe743cba9ffec780d6aa647f5",
+      "origin": "authored-source",
+      "relocatedLiterals": 0
+    },
+    {
+      "original": "integration/native-batch/domain-frontier.test.mjs",
+      "maintained": "integration/native-batch/domain-frontier.test.mjs",
+      "sha256": "a5515feb67d87ec6d3f1ebd711e5ce5a4350a7e005c71bb4dba887151a778e08",
+      "origin": "authored-source",
+      "relocatedLiterals": 1
+    },
+    {
+      "original": "integration/native-batch/environment.mjs",
+      "maintained": "integration/native-batch/environment.mjs",
+      "sha256": "c4d3d1d97293fb16139efc17afda4d8dfc41a3ddd9b123467f7729db286f6093",
+      "origin": "authored-source",
+      "relocatedLiterals": 5
+    },
+    {
+      "original": "integration/native-batch/extension-tool-source.mjs",
+      "maintained": "integration/native-batch/extension-tool-source.mjs",
+      "sha256": "36648f29a8b13630490fffffdba787f72ffa65ae8cc055e242464e43694c6521",
+      "origin": "authored-source",
+      "relocatedLiterals": 0
+    },
+    {
+      "original": "integration/native-batch/fixture-response.mjs",
+      "maintained": "integration/native-batch/fixture-response.mjs",
+      "sha256": "fbfc17f63a4a504235d750fe22d0427d2b05fc300f19c5ff4b71aab442b0bcea",
+      "origin": "authored-source",
+      "relocatedLiterals": 0
+    },
+    {
+      "original": "integration/native-batch/handler.mjs",
+      "maintained": "integration/native-batch/handler.mjs",
+      "sha256": "9f0b6aeb343f6bfa7fd8ffb7f6bca6f98c7249b30d62889ca688a5872df0ba2a",
+      "origin": "authored-source",
+      "relocatedLiterals": 1
+    },
+    {
+      "original": "integration/native-batch/judgment-source.mjs",
+      "maintained": "integration/native-batch/judgment-source.mjs",
+      "sha256": "de4942ff9e88cee56f9322083f3a17a9e1d4f8825f5575fa0804265ec399a78d",
+      "origin": "authored-source",
+      "relocatedLiterals": 0
+    },
+    {
+      "original": "integration/native-batch/loadout-query-observer.mjs",
+      "maintained": "integration/native-batch/loadout-query-observer.mjs",
+      "sha256": "ea0adadbf00290461e4aeafec51a5c44f6b106bf7fa72f9d350b30042c529992",
+      "origin": "authored-source",
+      "relocatedLiterals": 0
+    },
+    {
+      "original": "integration/native-batch/message-source.mjs",
+      "maintained": "integration/native-batch/message-source.mjs",
+      "sha256": "5574483a39083c19ce17d08d5b19b9998659229701c07e63f60921825288c86a",
+      "origin": "authored-source",
+      "relocatedLiterals": 0
+    },
+    {
+      "original": "integration/native-batch/prepare.mjs",
+      "maintained": "integration/native-batch/prepare.mjs",
+      "sha256": "c395afb8035c70063b6b675e78dc6aaad1a0f61889812c44ac31b69045e42224",
+      "origin": "authored-source",
+      "relocatedLiterals": 9
+    },
+    {
+      "original": "integration/native-batch/program-source.mjs",
+      "maintained": "integration/native-batch/program-source.mjs",
+      "sha256": "175e3230d5c8140800b5fe45b5b6fbe20321ddd6006c6a8c236a9787b940c11f",
+      "origin": "authored-source",
+      "relocatedLiterals": 1
+    },
+    {
+      "original": "integration/native-batch/prompt-source.mjs",
+      "maintained": "integration/native-batch/prompt-source.mjs",
+      "sha256": "85336470177207853dcb6a63adf433171763e9260496b68eacec5ed00f62ed9a",
+      "origin": "authored-source",
+      "relocatedLiterals": 0
+    },
+    {
+      "original": "integration/native-batch/root-source.mjs",
+      "maintained": "integration/native-batch/root-source.mjs",
+      "sha256": "fc862d86841652b321ec85cf4adbee6a5b414d24f95b1d7c8c09c0886f183ca3",
+      "origin": "authored-source",
+      "relocatedLiterals": 0
+    },
+    {
+      "original": "integration/native-batch/run-history-domain.test.mjs",
+      "maintained": "integration/native-batch/run-history-domain.test.mjs",
+      "sha256": "be0eeb713f2a6341beb0a9c220d1484d7e9901bb462e424afe8037430d77746f",
+      "origin": "authored-source",
+      "relocatedLiterals": 0
+    },
+    {
+      "original": "integration/native-batch/runtime.mjs",
+      "maintained": "integration/native-batch/runtime.mjs",
+      "sha256": "eaa4a69806fcdb8c55ae045b93826904f128e0aeeb65d25280fcf972323b014a",
+      "origin": "authored-source",
+      "relocatedLiterals": 1
+    },
+    {
+      "original": "integration/native-batch/session-root.mjs",
+      "maintained": "integration/native-batch/session-root.mjs",
+      "sha256": "f096ec0b421dff2a3798d6976b815f0df0660d58cc1ca6f656ba275230b808f4",
+      "origin": "authored-source",
+      "relocatedLiterals": 0
+    },
+    {
+      "original": "integration/native-batch/source-association.mjs",
+      "maintained": "integration/native-batch/source-association.mjs",
+      "sha256": "4a68b5d9a03e3a7009b8eaae1ef1634715fed0eccf7ef28196bdbf9185c19f0e",
+      "origin": "authored-source",
+      "relocatedLiterals": 1
+    },
+    {
+      "original": "integration/native-batch/staged-import.mjs",
+      "maintained": "integration/native-batch/staged-import.mjs",
+      "sha256": "a24135e9f2b77f650bc9ce59e8054d886d415d3f33d11e032ccb7209543f8d62",
+      "origin": "authored-source",
+      "relocatedLiterals": 0
+    },
+    {
+      "original": "integration/native-batch/tool-description-source.mjs",
+      "maintained": "integration/native-batch/tool-description-source.mjs",
+      "sha256": "90360777ca8127cd804c3b393544364760846bc5411b3192c1431daba82ea173",
+      "origin": "authored-source",
+      "relocatedLiterals": 0
+    },
+    {
+      "original": "integration/native-batch/tools.mjs",
+      "maintained": "integration/native-batch/tools.mjs",
+      "sha256": "5d5bd6f6efa42c13f1908e139edf3bc12db9a1f7cbbc0ba56dbfe3b5a8fcbe2c",
+      "origin": "authored-source",
+      "relocatedLiterals": 3
+    },
+    {
+      "original": "integration/policy-source/context-emission.mjs",
+      "maintained": "integration/policy-source/context-emission.mjs",
+      "sha256": "ab24670cc9daa8657ea9e76f93e20f03bcdbfff3ff36b08386796fd4b22adc7e",
+      "origin": "authored-source",
+      "relocatedLiterals": 1
+    },
+    {
+      "original": "integration/policy-source/governing-source.mjs",
+      "maintained": "integration/policy-source/governing-source.mjs",
+      "sha256": "01e0af94ba3ea9f6dd0646f81a41f3fdfda05a594315f5e0bec0e4a444086cba",
+      "origin": "authored-source",
+      "relocatedLiterals": 0
+    },
+    {
+      "original": "integration/policy-source/input-budget.mjs",
+      "maintained": "integration/policy-source/input-budget.mjs",
+      "sha256": "4c2681663cbfa018638d031ffd3034d9ac16dfe85cceb45dabbbfa414e26b89a",
+      "origin": "authored-source",
+      "relocatedLiterals": 0
+    },
+    {
+      "original": "integration/policy-source/manager-source-growth.mjs",
+      "maintained": "integration/policy-source/manager-source-growth.mjs",
+      "sha256": "7e7a79136808b70f945309d2c350abafb67e844f2d99973eaf55db512ae5ca7b",
+      "origin": "authored-source",
+      "relocatedLiterals": 0
+    },
+    {
+      "original": "integration/policy-source/registered-authority.mjs",
+      "maintained": "integration/policy-source/registered-authority.mjs",
+      "sha256": "2f7b173d08eef1d0eef98a6f7bfd4d8323971a95cc516663d41b8360878837c8",
+      "origin": "authored-source",
+      "relocatedLiterals": 0
+    },
+    {
+      "original": "integration/policy-source/registration.mjs",
+      "maintained": "integration/policy-source/registration.mjs",
+      "sha256": "e6f9dfd1d2e911d5116c93e21d54ec20593c5af99c299e56b318530eff9cab00",
+      "origin": "authored-source",
+      "relocatedLiterals": 0
+    },
+    {
+      "original": "integration/policy-source/resource-receipt-bindings.mjs",
+      "maintained": "integration/policy-source/resource-receipt-bindings.mjs",
+      "sha256": "601c4ee8bbeca1f810f5e1d1896371d29d1e6b692549bbd9740b4b2bc4644748",
+      "origin": "authored-source",
+      "relocatedLiterals": 0
+    },
+    {
+      "original": "integration/policy-source/resource-receipts.mjs",
+      "maintained": "integration/policy-source/resource-receipts.mjs",
+      "sha256": "14e23b2bb78bf57de183b0b83c73e481efee174c9647eb101040ca6bb33a94c3",
+      "origin": "authored-source",
+      "relocatedLiterals": 0
+    },
+    {
+      "original": "integration/policy-source/run-carriers.mjs",
+      "maintained": "integration/policy-source/run-carriers.mjs",
+      "sha256": "188c6a02224eef1d5c151c77c5458d6a1541c1421478dd871459ec55f166872c",
+      "origin": "authored-source",
+      "relocatedLiterals": 0
+    },
+    {
+      "original": "integration/policy-source/run-history.mjs",
+      "maintained": "integration/policy-source/run-history.mjs",
+      "sha256": "6e94e2df225727817fe2d2db82b5887f890c03148506989d9ed32ea32e8d7905",
+      "origin": "authored-source",
+      "relocatedLiterals": 0
+    },
+    {
+      "original": "integration/policy-source/run-messages.mjs",
+      "maintained": "integration/policy-source/run-messages.mjs",
+      "sha256": "c93a9a8f18f8c445ba8dd465819728d789ded94aa208b53425d5e0b182e06bd2",
+      "origin": "authored-source",
+      "relocatedLiterals": 0
+    },
+    {
+      "original": "integration/policy-source/source-domain.mjs",
+      "maintained": "integration/policy-source/source-domain.mjs",
+      "sha256": "ee6c66e960328092d366b5708c46b0e8eead469679f79fec471896a58ca5f257",
+      "origin": "authored-source",
+      "relocatedLiterals": 0
+    },
+    {
+      "original": "integration/policy-source/system-slot.mjs",
+      "maintained": "integration/policy-source/system-slot.mjs",
+      "sha256": "e9109a79abb5d33cf64cb85449378cc8d81cb78aa8e9a8c8fc5bde0b3203f26f",
+      "origin": "authored-source",
+      "relocatedLiterals": 1
+    },
+    {
+      "original": "lifecycle/claim-evidence-batch-selection/selection.mjs",
+      "maintained": "lifecycle/claim-evidence-batch-selection/selection.mjs",
+      "sha256": "17833b777d3c9c3d63b9532a6b5e3a74bb51cd68730743d786ea6e70acbd3b72",
+      "origin": "authored-source",
+      "relocatedLiterals": 0
+    },
+    {
+      "original": "lifecycle/execution-context-carrier/execute.mjs",
+      "maintained": "lifecycle/execution-context-carrier/execute.mjs",
+      "sha256": "4d42d150115766139e13b5ffb638c190301de3b18ae50e3c503a46290f9d00a3",
+      "origin": "authored-source",
+      "relocatedLiterals": 0
+    },
+    {
+      "original": "lifecycle/execution-context-carrier/wrapper.mjs",
+      "maintained": "lifecycle/execution-context-carrier/wrapper.mjs",
+      "sha256": "00d0a8fdc4771ecaf406045ec2fcd745cfc61e48a27bae764cdfdb0ebadb14b4",
+      "origin": "authored-source",
+      "relocatedLiterals": 0
+    },
+    {
+      "original": "lifecycle/external-dependency-controls/errors.mjs",
+      "maintained": "lifecycle/external-dependency-controls/errors.mjs",
+      "sha256": "294160e62ef33fce25cb140a41fa9baa36e15ebee03b1f940418724ead90a848",
+      "origin": "authored-source",
+      "relocatedLiterals": 0
+    },
+    {
+      "original": "lifecycle/external-dependency-controls/file-observer.mjs",
+      "maintained": "lifecycle/external-dependency-controls/file-observer.mjs",
+      "sha256": "ff75fe2843cebb54d3d9b1ff72f25dc2a1df062c3c6b4ae7f5298165d2fba4a1",
+      "origin": "authored-source",
+      "relocatedLiterals": 0
+    },
+    {
+      "original": "lifecycle/governing-rule-candidates/bindings.mjs",
+      "maintained": "lifecycle/governing-rule-candidates/bindings.mjs",
+      "sha256": "39297ce9b62dc8fd41caa93a430551ec39e61265fc1163a869e094f9681e2956",
+      "origin": "authored-source",
+      "relocatedLiterals": 0
+    },
+    {
+      "original": "lifecycle/governing-rule-candidates/input-location.mjs",
+      "maintained": "lifecycle/governing-rule-candidates/input-location.mjs",
+      "sha256": "a3919ae3aea0f5b6013605318cc3d188a98bd87f5f65f00cfec5b3b3f3e91ba1",
+      "origin": "authored-source",
+      "relocatedLiterals": 0
+    },
+    {
+      "original": "lifecycle/governing-rule-candidates/set.mjs",
+      "maintained": "lifecycle/governing-rule-candidates/set.mjs",
+      "sha256": "0f60d0d6cbf6b28ea05e5d4602ab07b0088a48e11c6b381423eb4e0f5a589391",
+      "origin": "authored-source",
+      "relocatedLiterals": 0
+    },
+    {
+      "original": "lifecycle/incumbent-tui-group/approval.mjs",
+      "maintained": "lifecycle/incumbent-tui-group/approval.mjs",
+      "sha256": "d4d73caf9ffb720e654a0ec3cb8e934cb708c364de2b265e9f8c09f9e5d76d96",
+      "origin": "authored-source",
+      "relocatedLiterals": 0
+    },
+    {
+      "original": "lifecycle/instruction-policy-consumer-v3/outcome.mjs",
+      "maintained": "lifecycle/instruction-policy-consumer-v3/outcome.mjs",
+      "sha256": "f0f905dfe9dd775a253da3d72dfe724eaaf8927f789eb7bfc3780e4cca401814",
+      "origin": "authored-source",
+      "relocatedLiterals": 0
+    },
+    {
+      "original": "lifecycle/instruction-policy-consumer-v3/resolve.mjs",
+      "maintained": "lifecycle/instruction-policy-consumer-v3/resolve.mjs",
+      "sha256": "a515b373871d872453ed86b0d635a7d1669b8f8b91ae406cccb9b7dbc312c5bf",
+      "origin": "authored-source",
+      "relocatedLiterals": 0
+    },
+    {
+      "original": "lifecycle/judgment-budget-error-occurrences/controls-private/candidate.mjs",
+      "maintained": "lifecycle/judgment-budget-error-occurrences/controls-private/candidate.mjs",
+      "sha256": "058ddda6855d4d54053e6986f29d159d1fd97f1e0d708e536ff1ff3d0c493fb8",
+      "origin": "authored-source",
+      "relocatedLiterals": 0
+    },
+    {
+      "original": "lifecycle/native-manager-dependency-controls/branch-values.mjs",
+      "maintained": "lifecycle/native-manager-dependency-controls/branch-values.mjs",
+      "sha256": "e021589f6820e17e52fda72f7e1f5151a392101210ae4829a7cfa9595b30409f",
+      "origin": "authored-source",
+      "relocatedLiterals": 0
+    },
+    {
+      "original": "lifecycle/native-manager-dependency-controls/errors.mjs",
+      "maintained": "lifecycle/native-manager-dependency-controls/errors.mjs",
+      "sha256": "fb8c83b78339d00b946ac414a8de2d9c283e0755f94370c5412280e8bc7ecc56",
+      "origin": "authored-source",
+      "relocatedLiterals": 0
+    },
+    {
+      "original": "lifecycle/native-manager-dependency-controls/native-read.mjs",
+      "maintained": "lifecycle/native-manager-dependency-controls/native-read.mjs",
+      "sha256": "ebd54b983bf7c781b17d377478b530d74ffdff98b23677e260adbd9abad16049",
+      "origin": "authored-source",
+      "relocatedLiterals": 0
+    },
+    {
+      "original": "lifecycle/native-program-groups/execute-child.mjs",
+      "maintained": "lifecycle/native-program-groups/execute-child.mjs",
+      "sha256": "34f0465297afc878ce3c5ee5f0952fd4ade1d522dbd148e082a08952f3bc9146",
+      "origin": "authored-source",
+      "relocatedLiterals": 0
+    },
+    {
+      "original": "lifecycle/native-program-groups/wrapper-program-lifetime.mjs",
+      "maintained": "lifecycle/native-program-groups/wrapper-program-lifetime.mjs",
+      "sha256": "489fca5035ff0c5c21aaae62335c8a20137b68b1f28a8d4228c551ec8f578172",
+      "origin": "authored-source",
+      "relocatedLiterals": 0
+    },
+    {
+      "original": "lifecycle/native-text-read-contract/dependencies.mjs",
+      "maintained": "lifecycle/native-text-read-contract/dependencies.mjs",
+      "sha256": "e9aca40147db9575a058d77333959c69e19873a75d66636da4b4852d4458712b",
+      "origin": "authored-source",
+      "relocatedLiterals": 0
+    },
+    {
+      "original": "lifecycle/nested-context-cancellation/wrapper.mjs",
+      "maintained": "lifecycle/nested-context-cancellation/wrapper.mjs",
+      "sha256": "e297e9e9295f5e1d2099b8c7bb3291b0d9c8d1105df0b047eb02dae8028b8d29",
+      "origin": "authored-source",
+      "relocatedLiterals": 0
+    },
+    {
+      "original": "lifecycle/program-rule-wire/catalog.json",
+      "maintained": "lifecycle/program-rule-wire/catalog.json",
+      "sha256": "8f4c939bdf805a598261597d14288676ef83371e4f12fd1cd767d560c1e70dc1",
+      "origin": "authored-asset",
+      "relocatedLiterals": 0
+    },
+    {
+      "original": "lifecycle/root-lifecycle-retirement-entry/lifecycle.mjs",
+      "maintained": "lifecycle/root-lifecycle-retirement-entry/lifecycle.mjs",
+      "sha256": "d2571950e93ed4acaa9669e069549700ab146a92875313b854b6ce1ef5d383ee",
+      "origin": "authored-source",
+      "relocatedLiterals": 0
+    },
+    {
+      "original": "lifecycle/root-lifecycle-retirement-entry/observer.mjs",
+      "maintained": "lifecycle/root-lifecycle-retirement-entry/observer.mjs",
+      "sha256": "9a81cda3f4417355ce2c94ccac6fa02a4edce90abd567f8aa63214a59c46b250",
+      "origin": "authored-source",
+      "relocatedLiterals": 0
+    },
+    {
+      "original": "lifecycle/root-lifecycle-retirement-entry/registry.mjs",
+      "maintained": "lifecycle/root-lifecycle-retirement-entry/registry.mjs",
+      "sha256": "21d948767d0eb52bdd7072eb5f77e14a9a5d6f087a8987009fc0a4ca828c8806",
+      "origin": "authored-source",
+      "relocatedLiterals": 0
+    },
+    {
+      "original": "lifecycle/root-lifecycle-retirement-entry/root-reader.mjs",
+      "maintained": "lifecycle/root-lifecycle-retirement-entry/root-reader.mjs",
+      "sha256": "6c61bf24b23388f9e301c0dae77b8016b4fb10d3abaf3d27d7a4e85c660cbbf2",
+      "origin": "authored-source",
+      "relocatedLiterals": 0
+    },
+    {
+      "original": "lifecycle/rule-relevance-cache/cache.mjs",
+      "maintained": "lifecycle/rule-relevance-cache/cache.mjs",
+      "sha256": "7d8b8333e71e9f78371cd64b29509f21492fa00bcda74c59d612f2d730228d2a",
+      "origin": "authored-source",
+      "relocatedLiterals": 0
+    },
+    {
+      "original": "lifecycle/rule-relevance-cache/definition.mjs",
+      "maintained": "lifecycle/rule-relevance-cache/definition.mjs",
+      "sha256": "40176cd9ef3e106dae4e0bd881106f34b8897bde3faad6ecee44461907bbc700",
+      "origin": "authored-source",
+      "relocatedLiterals": 0
+    },
+    {
+      "original": "lifecycle/rule-relevance-cache/selection.mjs",
+      "maintained": "lifecycle/rule-relevance-cache/selection.mjs",
+      "sha256": "1d937619b29077d57b22a0ba863a99e8b5ca7086d06aabfdb5483216db2e244b",
+      "origin": "authored-source",
+      "relocatedLiterals": 0
+    },
+    {
+      "original": "lifecycle/rule-relevance-cache/store.mjs",
+      "maintained": "lifecycle/rule-relevance-cache/store.mjs",
+      "sha256": "a63f2c8d32d3686bced48f96de90a62073e0c7ddabbd6e9b33f6a148a5d057bc",
+      "origin": "authored-source",
+      "relocatedLiterals": 0
+    },
+    {
+      "original": "lifecycle/runtime-custody/manager-owner.mjs",
+      "maintained": "lifecycle/runtime-custody/manager-owner.mjs",
+      "sha256": "6f61cc2be10c287ca293a62febcf091a66d236a5513fc28647d192ea4c9b1580",
+      "origin": "authored-source",
+      "relocatedLiterals": 0
+    },
+    {
+      "original": "lifecycle/runtime-factory-scopes/scopes.mjs",
+      "maintained": "lifecycle/runtime-factory-scopes/scopes.mjs",
+      "sha256": "da525f1538d2fe2d005fc623652634d573563df74ec74c178e0bfd4b66d180cf",
+      "origin": "authored-source",
+      "relocatedLiterals": 0
+    },
+    {
+      "original": "lifecycle/runtime-initial-admission-v2/operations.mjs",
+      "maintained": "lifecycle/runtime-initial-admission-v2/operations.mjs",
+      "sha256": "e03f003d71f212193700260830dceda23cb6690c4303d5e68a6ad9a943cb10c8",
+      "origin": "authored-source",
+      "relocatedLiterals": 0
+    },
+    {
+      "original": "lifecycle/runtime-root-lifecycle/lifecycle.mjs",
+      "maintained": "lifecycle/runtime-root-lifecycle/lifecycle.mjs",
+      "sha256": "842bd2ca16da2fd5353ef7f00d675128af61c6ec086e21db5b0dfa457526bfa7",
+      "origin": "authored-source",
+      "relocatedLiterals": 0
+    },
+    {
+      "original": "lifecycle/sdk-custody-native/generate.mjs",
+      "maintained": "lifecycle/sdk-custody-native/generate.mjs",
+      "sha256": "d5e63831afceb0c2e6118e4b303c0077db5ba32b1318ba3878304ac8c2fce14d",
+      "origin": "authored-source",
+      "relocatedLiterals": 0
+    },
+    {
+      "original": "lifecycle/sdk-session-disposal-completion/generate.mjs",
+      "maintained": "lifecycle/sdk-session-disposal-completion/generate.mjs",
+      "sha256": "6696a8c0732aa8103b520078856f5a493a78a4b9062428dd8d185aa6333d1a96",
+      "origin": "authored-source",
+      "relocatedLiterals": 0
+    },
+    {
+      "original": "lifecycle/sdk-session-lifetime/generate.mjs",
+      "maintained": "lifecycle/sdk-session-lifetime/generate.mjs",
+      "sha256": "ee6ef7225bf400dc0e71718b6bd321f545692c2d023e1df75e2fc1168917b198",
+      "origin": "authored-source",
+      "relocatedLiterals": 0
+    },
+    {
+      "original": "native-index/native-parser.mjs",
+      "maintained": "native-index/native-parser.mjs",
+      "sha256": "9f2921cda36dfdbcdf08299e217d41590cee9b1abfd6a704fb0e4cbb37ef55fa",
+      "origin": "authored-source",
+      "relocatedLiterals": 0
+    },
+    {
+      "original": "policy-index.mjs",
+      "maintained": "policy-index.mjs",
+      "sha256": "673c676492e3e6e9cfc24253ea0fa605b665c35eda734139f4ea20e8f5663072",
+      "origin": "authored-source",
+      "relocatedLiterals": 0
+    },
+    {
+      "original": "research/composed-literal-facts/coverage.mjs",
+      "maintained": "research/composed-literal-facts/coverage.mjs",
+      "sha256": "558eac6446369c7dd1fd4582229f0e51ec44e0ec4dc6bcdf78715c039305e99e",
+      "origin": "authored-source",
+      "relocatedLiterals": 0
+    },
+    {
+      "original": "research/drex-1.5-recheck/batch-cost-protocol.mjs",
+      "maintained": "research/drex-1.5-recheck/batch-cost-protocol.mjs",
+      "sha256": "c16d4f54577b2ecc570d4c8052007ac0ea83cc82a30840c195e4e329598c5826",
+      "origin": "authored-source",
+      "relocatedLiterals": 0
+    },
+    {
+      "original": "research/drex-composed-bound/protocol.mjs",
+      "maintained": "research/drex-composed-bound/protocol.mjs",
+      "sha256": "f6b7beb947546f8c4462e8a5c92df6f85347a738589a8885b602ef7b09210bba",
+      "origin": "authored-source",
+      "relocatedLiterals": 0
+    },
+    {
+      "original": "research/instruction-prerequisite-relation/cases.mjs",
+      "maintained": "research/instruction-prerequisite-relation/cases.mjs",
+      "sha256": "fa6cda6671c53c8e2fcc13f8ba10c1caf8629d37d85f359bfef6eca911d2dee0",
+      "origin": "authored-source",
+      "relocatedLiterals": 0
+    },
+    {
+      "original": "research/instruction-prerequisite-relation/protocol.mjs",
+      "maintained": "research/instruction-prerequisite-relation/protocol.mjs",
+      "sha256": "598e560089d60d28157306811d736d57ee25ad31ac4a912aadf4f3517ee208d4",
+      "origin": "authored-source",
+      "relocatedLiterals": 0
+    }
+  ]
+}

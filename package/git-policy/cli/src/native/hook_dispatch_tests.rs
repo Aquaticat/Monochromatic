@@ -6,9 +6,6 @@ use crate::test_support::{fixture, remove};
 use crate::hook_dispatch_entries::write_hook_dispatch;
 use crate::hook_dispatch_plan::{ConfigParameters, HookDispatchPlan, encode_hook_dispatch_plan};
 use crate::transaction_registry::TRANSACTION_ROOT_NAME;
-use crate::transaction_git::GitContext;
-use crate::hook_dispatch_plan::{HookPlanInputs, compute_hook_dispatch_plan, new_preparation_lease};
-use crate::test_support::REAL_GIT as REAL_GIT_PATH;
 
 /// A transaction identifier in the registry's spelling.
 const TRANSACTION: &str = "0b6c2c1e-6f5b-4d0e-9a55-3f5d8e2f6a10";
@@ -218,65 +215,4 @@ fn written_entries_are_recognized_by_the_dispatcher() {
         dispatch_target_for_start_name(hooks.join("commit-msg").as_path());
     assert_eq!(target.map(|found| { return found.event; }), Some("commit-msg"));
     remove(root.as_path());
-}
-
-/// Interoperability probe run by `native-interop/hook-dispatch.mjs`, never by the ordinary suite.
-///
-/// `lease` prints whether the inherited preparation lease is valid for this process environment.
-/// `dispatch-live` publishes a transaction owned by this process, writes its plan and entries
-/// for the repository in `INTEROP_REPOSITORY`, and runs the dispatcher for `pre-commit`,
-/// so the lease stays valid for the whole hook.
-#[test]
-#[ignore = "interoperability probe run by native-interop/hook-dispatch.mjs"]
-fn interop_probe() {
-    let action: String = std::env::var("INTEROP_ACTION").expect("INTEROP_ACTION");
-    let environment: Vec<(OsString, OsString)> = std::env::vars_os().collect();
-    if action == "lease" {
-        let valid: bool = crate::transaction_lease::has_valid_preparation_lease(environment.as_slice());
-        println!("lease-valid={valid}");
-        return;
-    }
-    assert_eq!(action, "dispatch-live", "unknown probe action");
-    let repository: PathBuf = PathBuf::from(std::env::var_os("INTEROP_REPOSITORY").expect("repository"));
-    let executable: PathBuf = PathBuf::from(std::env::var_os("INTEROP_EXECUTABLE").expect("executable"));
-    let common: PathBuf = repository.join(".git");
-    let registry: PathBuf = common.join("cli-git-transactions");
-    crate::transaction_registry::ensure_transaction_root(registry.as_path()).expect("registry");
-    let owner = crate::transaction_owner::current_transaction_owner(
-        TRANSACTION,
-        "2026-10-10T00:00:00.000Z",
-    )
-    .expect("owner");
-    let directory: PathBuf = crate::transaction_registry::publish_transaction_directory(
-        registry.as_path(),
-        TRANSACTION,
-        crate::transaction_owner::encode_transaction_owner(&owner).as_bytes(),
-    )
-    .expect("publish");
-    let lease: String = new_preparation_lease(directory.as_path()).expect("lease");
-    let context: GitContext = GitContext {
-        real_git: PathBuf::from(REAL_GIT_PATH),
-        overlay: Vec::new(),
-        global_prefix: Vec::new(),
-    };
-    let plan: HookDispatchPlan = compute_hook_dispatch_plan(&HookPlanInputs {
-        context: &context,
-        cwd: repository.as_path(),
-        global_arguments: &[],
-        common_directory: common.as_path(),
-        worktree_root: repository.as_path(),
-        lease: lease.as_str(),
-        concurrent_commits: false,
-        inherited_lease_valid: false,
-        environment: environment.as_slice(),
-    })
-    .expect("plan");
-    let hooks: PathBuf = directory.join("hooks");
-    write_hook_dispatch(hooks.as_path(), &plan, executable.as_path()).expect("entries");
-    let target: DispatchTarget = DispatchTarget {
-        event: "pre-commit",
-        hooks_directory: hooks,
-    };
-    let status: i32 = run_hook_dispatch(&target, &[], environment.as_slice());
-    std::process::exit(status);
 }
