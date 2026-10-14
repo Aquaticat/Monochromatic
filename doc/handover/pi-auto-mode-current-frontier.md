@@ -531,6 +531,27 @@ and passes the actual CLI process check with clean shutdown.
 The first disposable attempt omitted the root-resolved `nano-spawn` dependency and failed with Node's
 `ERR_MODULE_NOT_FOUND` before the build ran.
 The corrected fixture reproduces that original dependency resolution without changing installed packages.
+Native Agent,
+Session-state,
+and prompt-builder generators are now typed with named source stages.
+The assignment and literal-rule guards inspect the qualified parser's executable nodes;
+comments,
+strings,
+and unrelated calls cannot change their counts.
+The import rewriter shares their iterative structural walk.
+Scoped lint,
+package types,
+owned rebuild,
+and built-artifact import,
+assignment,
+and literal-rule tests pass.
+Direct comparisons against the prior generators retain identical generated Agent,
+Session,
+and prompt-builder bytes.
+Disposable omission controls remove only the corresponding parse or membership guard.
+Every omitted guard fails its intended consumer assertion,
+while both unchanged copied modules pass.
+The maintained source and production artifact remain unchanged by those omission controls.
 
 The first approved native dispatch failed because the inherited test loader derived dependency paths
 from the codemode worker's disposable home.
