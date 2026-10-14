@@ -9,6 +9,19 @@ Updated 2026-10-13.
 
 ## Restart checkpoint after installing automatic Codex shell limits
 
+The user restarted the session and resumed work on 2026-10-13.
+The first default sandboxed `cat /proc/self/cgroup` returned
+`0::/user.slice/user-1000.slice/user@1000.service/piwork3285273.slice/codex`.
+The parent controls returned `memory.max=4294967296`,
+`memory.swap.max=0`,
+`cpu.max=200000 100000`,
+and `pids.max=256`.
+Automatic attachment is now verified in the ordinary sandbox.
+The agent supplies ordinary commands;
+the installed native hook supplies the attachment prefix.
+Historical manual worker wrappers in this document are superseded for Codex Bash calls.
+The Pi host remains outside the worker slice.
+
 The user resumed this handover on 2026-10-13,
 then prioritized automatic Codex Bash resource limits before further Pi implementation.
 The native Rust implementation is now in `package/codex-plugin/bash-limit`.
