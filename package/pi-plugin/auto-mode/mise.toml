@@ -397,6 +397,10 @@ run = "node src/native-session-result.unit.test.ts"
 description = "Verify original native session-manager identity before root occurrence access"
 run = "node src/native-root-reader.unit.test.ts"
 
+[tasks."test:native:manager-registry"]
+description = "Verify built native registry ownership, canonical reuse, and independent manager reservations"
+run = "node src/native-manager-registry.unit.test.ts"
+
 [tasks."test:native:factory-scopes"]
 description = "Verify original factory captures, exact publication, failed cleanup retry, and reentrancy recovery"
 run = "node src/native-factory-scopes.unit.test.ts"
