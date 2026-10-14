@@ -754,7 +754,17 @@ the owned rebuild,
 and native permission,
 prohibition,
 and unspecified-policy cases now pass at the original heap limit.
-The input guard omissions and host lifecycle are next.
+The rebuilt input tests and native host lifecycle also pass.
+Disposable omissions of record,
+descriptor,
+field,
+text,
+array,
+aggregate-budget,
+option-key,
+and input-kind guards each fail their intended consumer assertion;
+the unchanged copied implementation passes.
+The production artifact is not modified by those omission controls.
 No heap limit,
 source bound,
 freshness check,
