@@ -1,0 +1,101 @@
+/**
+ Original native invocation state stays on the slot owned by its enclosing judgment.
+
+ @module
+ */
+
+//region Native results retain original calls and conversion outcomes
+
+/** Original native call metadata identifies one invocation within its complete group. */
+export type NativeReturnCall = {
+  /** Original call identifier distinguishes repeated tools. */
+  readonly id: string;
+  /** Native tool name must match the owned slot. */
+  readonly name: string;
+};
+
+/** Tool conversion needs only the original name and structured-output declaration. */
+export type NativeReturnTool = {
+  /** Original tool name supplies native failure diagnostics. */
+  readonly name: string;
+  /** Presence selects the original native structured-result conversion branch. */
+  readonly outputSchema?: unknown;
+};
+
+/** Captured conversion distinguishes unsupported values from ordinary tool failures. */
+export type NativeReturnConversion = {
+  /** Strings are the supported result-binding profile. */
+  readonly status: 'string';
+  /** Original converted text is retained once. */
+  readonly value: string;
+  /** UTF-8 size controls the existing result bound. */
+  readonly bytes: number;
+} | {
+  /** Other native output modalities remain inspectable but cannot bind this profile. */
+  readonly status: 'unsupported';
+  /** Native value category names the unsupported modality. */
+  readonly kind: string;
+} | {
+  /** Native conversion failures remain ordinary tool errors. */
+  readonly status: 'threw';
+  /** Original caught value survives unchanged. */
+  readonly error: unknown;
+  /** Capture-time text does not replace the caught value. */
+  readonly messageAtCapture: string;
+};
+
+/** Original native outcome is validated before any result conversion. */
+export type NativeReturnOutcome = {
+  /** Native runner must return the exact requested call identity values. */
+  readonly toolCall: NativeReturnCall;
+  /** Native conversion decides how ordinary tool failures are exposed. */
+  readonly isError: boolean;
+  /** Result body remains owned by the native runner. */
+  readonly result: object;
+};
+
+/** Mutable execution record belongs exclusively to the original slot. */
+export type NativeReturnInvocation = {
+  /** Each reservation receives a distinct original identity. */
+  readonly identity: object;
+  /** Terminal state remains readable after parent retirement. */
+  state: 'running' | 'threw' | 'invalid-return' | 'returned';
+  /** Snapshot prevents later caller edits from rebinding native return identity. */
+  readonly call: NativeReturnCall;
+  /** Snapshot preserves native conversion selection. */
+  readonly tool: NativeReturnTool;
+  /** Converted value or captured native conversion failure is stored once. */
+  conversion?: NativeReturnConversion;
+  /** Count exposes duplicate conversion attempts to retained inspection. */
+  conversionCount: number;
+  /** Exact native outcome is retained without cloning. */
+  outcome?: NativeReturnOutcome;
+  /** Thrown values remain unchanged, including nullish values. */
+  failure?: unknown;
+};
+
+/** Judgment-owned slot supplies call, tool, and prepared-member associations. */
+export type NativeReturnSlot = {
+  /** Original group call cannot be substituted at invocation. */
+  readonly call: NativeReturnCall;
+  /** Original tool controls native conversion behavior. */
+  readonly tool: NativeReturnTool;
+  /** Owner validates this association when the script requests a supported value. */
+  readonly member?: unknown;
+  /** Reservation prevents a second native invocation through the same slot. */
+  native?: NativeReturnInvocation;
+};
+
+/** Fixed owner callbacks keep retained inspection separate from live value use. */
+export type NativeReturnOwner = {
+  /** External native runner dictates its positional call signature. */
+  readonly runNative: (call: NativeReturnCall, options: unknown) => unknown;
+  /** Original slot reader remains available after native completion and retirement. */
+  readonly getSlot: (handle: object) => NativeReturnSlot;
+  /** Live use requires the original parent and dependencies to remain current. */
+  readonly assertCurrent: () => void;
+  /** Prepared-member owner independently verifies native execution completion. */
+  readonly assertReturnedMember: (member: unknown) => void;
+};
+
+//endregion Native results retain original calls and conversion outcomes
