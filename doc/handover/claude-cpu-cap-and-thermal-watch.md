@@ -569,6 +569,14 @@ The user's country is not recorded, so prices are listed by source and currency;
   (4.07 beta, then 4.10 stable on 2026-02-25), and an ASRock forum user mentions 4.41 and 4.43 as current. A Level1Techs
   test (via a news summary) says 1.3.0.0a fixed Ryzen instability on an X870E Taichi. A Reddit owner runs 3.25 with a
   9800X3D without problems; another post reports a new Taichi Lite stuck at code 00 after BIOS Flashback.
+- Canada (the user said they are in Canada at about 01:30 EDT; Canadian dollars; Newegg.ca and Canada Computers
+  snippets without dates, so each needs a live check):
+  - Hero: Canada Computers page read live, 839.99, free shipping, available online (2) and in a few stores.
+  - Taichi Lite: Newegg.ca listings at 429.99 (marked down from 579.99), 449.99, 459.99 and 569.99 to 579.99; a Canada
+    Computers clearance listing at 349.88 whose product page now says "no longer available".
+  - Nova: Newegg.ca listings at 339 and 369 (list price 499); a Canada Computers open-box listing at 284.89 (new
+    299.88) whose page now says "no longer available".
+  - Taichi Lite and Nova stock at Canada Computers looks gone; Newegg.ca marketplace sellers may be third parties.
 - Decision: the Taichi Lite and the Hero are both in stock somewhere, so the cheaper Strix path saves little against the
   Lite in the UK (354.99 pounds for the Lite against 291.99 for the Nova) and has a worse BIOS record for the 7950X.
 
