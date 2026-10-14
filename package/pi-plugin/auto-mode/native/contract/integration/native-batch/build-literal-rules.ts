@@ -8,7 +8,10 @@ import { nonNullishOrThrow } from '@monochromatic-dev/module-or-throw/ts';
 import { parse } from 'yuku-parser';
 import { NativeBatchBuildError } from './build-entries.ts';
 import { walkNativeSyntax } from './build-syntax.ts';
-import { applyNativeSourceEdits, type NativeSourceEdit } from './build-spans.ts';
+import {
+  applyNativeSourceEdits,
+  type NativeSourceEdit
+} from './build-spans.ts';
 
 //region Original call expressions select exact source spans for instrumentation
 
@@ -116,7 +119,10 @@ export function rewriteNativeLiteralRules(source: string): string {
     });
   }
   rl.debug(`instrumented ${edits.length} original literal rule calls`);
-  return applyNativeSourceEdits({ source, edits });
+  return applyNativeSourceEdits({
+    source,
+    edits
+  });
 }
 
 //endregion Original call expressions select exact source spans for instrumentation

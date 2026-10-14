@@ -191,7 +191,10 @@ export function rewriteNativeImports({
     });
   }
   rl.debug(`rewrote ${edits.length} native import literals: ${path}`);
-  return applyNativeSourceEdits({ source, edits });
+  return applyNativeSourceEdits({
+    source,
+    edits
+  });
 }
 
 //endregion Token order produces non-overlapping source fragments in one linear pass

@@ -29,8 +29,8 @@ type NativeMembers = {
  @throws Error when the required built export is missing
  */
 function assertNativeMembers(value: unknown): asserts value is NativeMembers {
-  if (typeof value !== 'object' || value === null || !('privatizeNativeMembers' in value)
-    || typeof value.privatizeNativeMembers !== 'function') throw new Error('Built native member module lacks its callable export');
+  if (((typeof value) !== 'object') || (value === null) || (!('privatizeNativeMembers' in value))
+    || ((typeof value.privatizeNativeMembers) !== 'function')) throw new Error('Built native member module lacks its callable export');
 }
 
 /**
@@ -84,7 +84,7 @@ await describe({
          */
         const source = 'class State { read() { return this.state; } }';
         expect(privatizeNativeMembers({ source, members: [] })).toBe(source);
-        expect(privatizeNativeMembers({ source, members: ['state; globalThis.injected=true;', '\"}\n/*', '../state'] })).toBe(source);
+        expect(privatizeNativeMembers({ source, members: ['state; globalThis.injected=true;', '"}\n/*', '../state'] })).toBe(source);
       },
     }),
     it({
