@@ -1038,7 +1038,13 @@ The policy designation now reads file metadata asynchronously;
 the host captures outer resource options before awaiting it,
 and the generated native services await the resulting loader.
 Trailing-slash handling now uses string operations with the same single-slash behavior.
-Native lifecycle and CLI checks must be repeated for this bootstrap change.
+The package type check,
+owned native build,
+actual host lifecycle,
+CLI RPC startup and clean shutdown,
+and 188-module syntax check pass after this bootstrap change.
+The actual CLI selects `qwen-token-plan-individual/qwen3.8-flash` and makes no provider request.
+Maintained native interface typing and full lint completion remain unfinished.
 
 The first approved native dispatch failed because the inherited test loader derived dependency paths
 from the codemode worker's disposable home.
