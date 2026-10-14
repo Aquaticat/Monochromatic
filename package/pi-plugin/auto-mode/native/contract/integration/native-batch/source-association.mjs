@@ -416,7 +416,8 @@ export function prepareNativeSourceAssociation({
      &&(systemSerialization.role===original?.role)
      &&(systemSerialization.text===original?.content);
    if((origins||systemDerivation)&&!originalSystem)payloadOriginFailure??='System content lacks its original native rendering and message emission';
-   if((origins||systemDerivation)&&dataRecord(original)
+   const originalSystemInputs=systemDerivation?.matches()===true;
+   if((origins||originalSystemInputs)&&dataRecord(original)
      &&originalSystem
      &&((typeof original.content)==='string')
      &&[
@@ -427,8 +428,8 @@ export function prepareNativeSourceAssociation({
       original,
       content:original.content,
       role:original.role,
-      associations:systemDerivation?.matches()?Object.freeze([...(origins??[]),...systemDerivation.associations]):origins,
-      derivation:systemDerivation?.matches()?systemDerivation:undefined,
+      associations:originalSystemInputs?Object.freeze([...(origins??[]),...systemDerivation.associations]):origins,
+      derivation:originalSystemInputs?systemDerivation:undefined,
       serialization:systemSerialization,
       system:true
     });
