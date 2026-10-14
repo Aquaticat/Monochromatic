@@ -733,7 +733,7 @@ fn fifty_thousand_lines_give_a_bounded_picture_without_blocking_the_window() {
 fn the_picture_follows_the_measurement_at_a_steady_pace() {
     let (release, gate) = std::sync::mpsc::channel();
     *PASS_GATE.lock().expect("pass gate") = Some(gate);
-    let (_project, opened) = open(&long_text(6000));
+    let (_project, opened) = open(&long_text(12_000));
     let window = &opened.window;
     picture_shown(&opened);
     let before = opened.source.borrow().minimap.posts;
@@ -742,14 +742,15 @@ fn the_picture_follows_the_measurement_at_a_steady_pace() {
     while started.elapsed() < Duration::from_millis(1600) {
         let _ = release.send(());
         chunks += 1;
-        for _ in 0..12 {
+        // A chunk every 20 ms, well inside the quiet time that would end a wait.
+        for _ in 0..4 {
             update_timers_and_animations();
             std::thread::sleep(Duration::from_millis(5));
         }
     }
     let posts = opened.source.borrow().minimap.posts - before;
     assert!(
-        chunks >= 20,
+        chunks >= 50,
         "the measurement was released in {chunks} chunks"
     );
     assert!(
