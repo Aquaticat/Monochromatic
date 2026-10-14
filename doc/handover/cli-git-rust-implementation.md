@@ -1563,7 +1563,10 @@ that is verification, not a decision for the user.
   The repository installs the crate as a `cargo:` mise tool whose postinstall links `.cache/cli-git-bin/git`,
   placed first in `_.path`; the hk cleanup task, the performance harness and the CI jobs that needed the wrapper are
   retired or migrated (record: `doc/planning/cli-git-native-cutover.md`).
-  The switch is live: the pin is 0.1.2, the link in the main checkout is installed, and the installed wrapper was
+  The switch is live: `mise.lock` holds 0.1.2 and the tool entry is unpinned (user, 2026-10-14: "You don't need to
+  pin anything we control"; `monochromatic-lint` is unpinned the same way, and mise's 24 hour minimum release age
+  delays a new release until the lock is refreshed), the link in the main checkout is installed, and the installed
+  wrapper was
   verified at the user boundary (a signed commit auto-pushed with real credentials, a manual push and a Markdown
   commit); every process of the user is on the native `PATH` (the count of sessions on the old `PATH` is zero).
   The user's decisions are no hybrid, the old TypeScript goes, and the rollback window ended with that verification.
@@ -1608,8 +1611,10 @@ that is verification, not a decision for the user.
   commit have passed.
   CPU cap (user, 2026-10-14; the hold of 2026-10-13 was released on 2026-10-14): the host is a 16 core, 32 thread
   Ryzen 9 7950X with 62 GiB RAM, and Claude tool commands and gates share one cap.
-  The cap started at 75 percent (30 of 32 threads) and was lowered to 28 on 2026-10-14 after temperature and
-  CPU-pressure alerts; the user service `claude-cpu-watch.service` enforces the value in
+  The cap started at 75 percent (30 of 32 threads), was lowered to 28 on 2026-10-14 after temperature and
+  CPU-pressure alerts, and was back at 30 later that day; the shared `claude-code-bash` memory limit was raised
+  from 8 GB to 32 GB (verified: `memory.max` 32000000000 and `CLAUDE_CODE_TOOL_MEMORY_LIMIT` in
+  `~/.claude/settings.json`); the user service `claude-cpu-watch.service` enforces the value in
   `~/.config/claude-cpu-cap/threads` (the file holds the current value and persists across reboots;
   to lower it, write the new integer to that file, never write `cpu.max` by hand).
   The service also prints ALERT and CLEAR lines for CPU, memory and IO pressure, scheduler lag and temperature;
@@ -1619,6 +1624,16 @@ that is verification, not a decision for the user.
   time limits assume bounded host load, and memory (62 GiB, not bounded by the cap) is the resource to watch.
   Commands started with `systemd-run` leave the shared cap, so do not use it for work that should count.
   `nproc` reports 16 inside shells with a restricted affinity; use `nproc --all` or `lscpu` for the real count.
+  Linter 0.1.2 (released 2026-10-14 at the request of the translation-repair session, confirmed by the user):
+  `markdown/semantic-line-breaks` now replaces the one separating space with the break and leaves a paragraph that
+  starts with `<` and ends with `>` unbroken, as the two fixes on the `translation-repair-rebased` branch did
+  (`9a46438774`, `66345a0925`); the old shape with a stray space is left as it is.
+  Gate: 392 library and 13 binary tests, Clippy, and the Markdown-scope mutation run (752 mutants, 708 caught,
+  44 unviable, none missed); release run 38486199846 published the crate and eight archives.
+  Not measured here: byte parity with the branch's TypeScript rule over its full unit-test inputs (the
+  translation-repair session measures that before switching its wrap to `--stdin --fix`).
+  The push-fix scoped mutation run failed its first baseline under host load (three `dependent_version` tests hit
+  their 5 second bound) and was restarted; log `~/temp/agent/push-env-mutation-full2.log`.
   Open: the `replay-core` branch holds unmerged mutation work, `monochromatic-lint` shim lookup fails outside the
   repository (the linter must be on `PATH` as a real binary), and the trailing gates below are untouched.
 - [ ] Gates that trail the cutover (user decision 2026-10-10: the code ships first, the gate runs afterward):
