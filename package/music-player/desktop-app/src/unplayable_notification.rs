@@ -64,23 +64,12 @@ enum Input {
 }
 
 /// What: `Shared` is the part of the handle every clone points at.
-/// Why: the last clone to go away stops the thread; `Drop` cannot run per clone.
+/// Why: the last clone to go away drops the only sender, which ends the thread after it has handled the reports
+/// already posted; `Drop` cannot run per clone, and a destructor must not block on the bus.
 #[cfg(target_os = "linux")]
 struct Shared {
     sender: Sender<Input>,
     thread: Mutex<Option<JoinHandle<()>>>,
-}
-
-/// Methods of `Shared`.
-#[cfg(target_os = "linux")]
-impl Drop for Shared {
-    /// What: `drop` asks the thread to stop, without waiting for it.
-    /// Why: an app that forgets `shutdown` still ends the thread, and a destructor must not block on the bus.
-    fn drop(&mut self) {
-        if self.sender.send(Input::Stop).is_err() {
-            tracing::debug!("unplayable notifier thread already stopped at drop");
-        }
-    }
 }
 
 /// What: `UnplayableNotifier` is the cloneable handle to the notification.

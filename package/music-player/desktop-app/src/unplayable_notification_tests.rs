@@ -144,3 +144,45 @@ fn reporting_after_shutdown_is_harmless() {
     notifier.report(&files(&["a.wav"]));
     notifier.shutdown();
 }
+
+#[test]
+fn dropping_every_handle_without_shutdown_still_delivers_what_was_posted_and_ends_the_thread() {
+    let bus = PrivateBus::start("thread_drop");
+    let (_service, calls) = bus.serve_notifications(Duration::ZERO);
+    let notifier = UnplayableNotifier::spawn(config_for(&bus, Duration::from_secs(3)));
+    notifier.report(&files(&["a.wav"]));
+    drop(notifier);
+    let end = Instant::now() + Duration::from_secs(5);
+    while calls.lock().expect("not poisoned").is_empty() && Instant::now() < end {
+        std::thread::sleep(Duration::from_millis(20));
+    }
+    assert_eq!(calls.lock().expect("not poisoned").len(), 1, "the report posted before the drop is still delivered");
+}
+
+fn worker_with(connect: Box<dyn Fn() -> zbus::Result<Connection> + Send + 'static>) -> Worker {
+    return Worker { identity: identity(), connect, connection: None, ledger: Ledger::new(), warned: false };
+}
+
+#[test]
+fn the_first_failed_post_sets_the_warned_flag_and_a_report_with_nothing_new_does_not() {
+    let mut worker = worker_with(Box::new(|| return Err(zbus::Error::Failure("no bus in this test".to_string()))));
+    worker.handle(&[]);
+    assert!(!worker.warned, "an empty report posts nothing, so nothing fails");
+    worker.handle(&files(&["a.wav"]));
+    assert!(worker.warned, "the first failure is logged as the one warning");
+    worker.handle(&files(&["a.wav"]));
+    assert!(worker.warned, "the flag stays set");
+}
+
+#[test]
+fn a_successful_post_leaves_the_warned_flag_clear() {
+    let bus = PrivateBus::start("thread_flag");
+    let (_service, _calls) = bus.serve_notifications(Duration::ZERO);
+    let address = bus.address.clone();
+    let mut worker = worker_with(Box::new(move || {
+        return zbus::blocking::connection::Builder::address(address.as_str())?.method_timeout(Duration::from_secs(3)).build();
+    }));
+    worker.handle(&files(&["a.wav"]));
+    assert!(!worker.warned);
+    assert!(worker.connection.is_some(), "the connection is kept for the next report");
+}
