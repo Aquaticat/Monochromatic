@@ -15,6 +15,9 @@
 //!  The schedule is
 //! absolute (start + n*period) with resync,
 //!  so it does not drift.
+//!  The one other sender of frame callbacks while a recording runs is `screen::apply`,
+//!  which answers the pending requests right after a new size or scale,
+//!  so a client can draw the new size before the next capture.
 
 /// What:
 ///      Grouped `use` of paths,

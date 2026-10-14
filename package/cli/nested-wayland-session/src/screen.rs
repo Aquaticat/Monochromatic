@@ -49,6 +49,9 @@ use smithay::{
 /// What:
 ///      Grouped `use` of this crate's refresh constant,
 ///  the fullscreen reconfigure,
+///  the early
+///           frame-callback decision,
+///  the frame-callback sender,
 ///  the
 ///           wire response,
 ///  the geometry types,
@@ -56,7 +59,8 @@ use smithay::{
 /// Why:
 ///       `apply` rebuilds the mode,
 ///  reconfigures the toplevel,
-///  and answers control verbs.
+///  wakes the client while recording,
+///           and answers control verbs.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -64,8 +68,10 @@ use smithay::{
 /// ```
 use crate::{
     backend::OUTPUT_REFRESH_MHZ,
+    frame_pacing::resize_needs_early_callbacks,
     handler::xdg_shell::reconfigure_fullscreen,
     protocol::Response,
+    render::send_frame_callbacks,
     screen_geometry::{OutputScale, ScreenGeometry},
     state::Compositor,
 };
@@ -212,6 +218,36 @@ pub fn apply(state: &mut Compositor, target: ScreenGeometry) -> Result<(), Strin
         reconfigure_fullscreen(state);
     }
     tell_surfaces_scale(state);
+
+    // What:     `resize_needs_early_callbacks(recording, changed)` is true while a recording runs
+    //           and the size or scale differs from `previous`. Then `send_frame_callbacks`
+    //           answers every frame request a client has pending, and `flush_clients` writes
+    //           the queued configure, the scale and the callbacks to the sockets in that order.
+    // Why:      While recording, the recorder tick is the only sender of frame callbacks, and
+    //           winit holds a client's redraw until the callback of its previous frame arrives.
+    //           Without this, a size event between two ticks is drawn after the next capture
+    //           and first captured a tick later. The callbacks come after the configure and the
+    //           scale, so the client learns the new size before its redraw gate opens; sent
+    //           before them it could draw at the old size. A scale change needs the same: the
+    //           toolkit redraws at the new scale through the same gate, and the output mode
+    //           has already changed. Smithay drains a surface's callbacks when it sends them, so
+    //           the next tick finds none until the client asks again: one answer per request.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // if (recording && geometryChanged) { sendFrameCallbacks(state); flushClients(state); }
+    // ```
+    let recording = state.recorder.is_some();
+    if resize_needs_early_callbacks(recording, target != previous) {
+        send_frame_callbacks(state);
+        let _ = state.display_handle.flush_clients();
+        tracing::info!(
+            logical_width = target.logical_width,
+            logical_height = target.logical_height,
+            scale = target.scale.factor(),
+            "sent frame callbacks right after the new screen geometry while recording",
+        );
+    }
     state.backend.window().request_redraw();
     tracing::info!(
         logical_width = target.logical_width,
