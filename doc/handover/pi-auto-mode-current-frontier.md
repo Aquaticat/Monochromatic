@@ -650,6 +650,28 @@ omitting each parse,
 membership,
 or spelling guard fails its intended consumer assertion.
 The omission fixtures do not modify maintained source or the production artifact.
+Typed original judgment preparation also passes scoped lint,
+package types,
+and the owned build with identical generated module bytes.
+The canonical permission,
+prohibition,
+and unspecified fixtures pass after the port.
+The shared member transformer now supports explicit private destination names for native prompt fields.
+It validates each destination with the consuming JavaScript grammar before assembling edits.
+Built tests preserve source escapes,
+comments,
+strings,
+computed accesses,
+and unrelated receivers while rejecting reserved names and injected declaration syntax.
+Scoped lint,
+package types,
+the owned build,
+and those member tests pass.
+Prompt preparation is being split into typed input,
+owner,
+base,
+run,
+and handler phases so each original source boundary remains independently inspectable.
 
 The first approved native dispatch failed because the inherited test loader derived dependency paths
 from the codemode worker's disposable home.
