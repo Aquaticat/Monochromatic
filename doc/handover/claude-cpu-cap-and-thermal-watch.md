@@ -580,6 +580,30 @@ The user's country is not recorded, so prices are listed by source and currency;
 - Decision: the Taichi Lite and the Hero are both in stock somewhere, so the cheaper Strix path saves little against the
   Lite in the UK (354.99 pounds for the Lite against 291.99 for the Nova) and has a worse BIOS record for the 7950X.
 
+### Is there a de-facto VFIO board (asked about 02:00 EDT)
+
+No board is the de-facto choice.
+The nearest thing to a consensus is the Level1Techs thread "AM5 IOMMU VFIO - Best Motherboard" (started 2022-10-07,
+posts mostly from 2023, so BIOS-dated), which read as follows in the first pages fetched and in search snippets:
+
+- Its most-cited recommendation is the ASRock X670E Taichi (one poster, "IMHO", after comparing the group dumps seen).
+  A later poster summed the thread up as the ASUS ProArt B650-Creator and the ASRock B650E Taichi (non-lite) having
+  the best groups.
+- ASUS ProArt X670E-Creator and ROG Crosshair X670E Extreme: networking, Thunderbolt and some SATA/USB controllers sit in
+  one group; a Proxmox poster found dual-GPU passthrough impossible on the ProArt X670E and then bought the ProArt X870E.
+- ASRock B650E PG Riptide: the GPU and the chipset devices sit in separate groups in the posted dump.
+- Gigabyte: the Aorus Master appears in the group comparison, but the X870E and B650 Gaming X AX V2 reports are the
+  "1:1 IOMMU mapping" refusals recorded in "VFIO and 24/7 evidence".
+- X870E: a Reddit poster says a Level1Techs review found ASRock groups fine; the same Reddit poster would pick ASRock
+  next time. No thread read here covers the X870E Taichi Lite or the Nova in detail.
+- A "best motherboards for GPU passthrough" web page ranks the ROG Strix X870E-E first; it cites no group dumps
+  and is not treated as evidence.
+
+What this means for the plan: the 3080 sits in a CPU slot, whose root port is its own group on the posted dumps, so
+the ranking does not hinge on a "best groups" board; the groups matter for chipset devices (USB, NIC) the user has not
+said they need to pass through. This last point is inference from the dumps, not a measurement on the user's CPU.
+The day-one checks under "Checks before buying" still decide it.
+
 ## Open questions
 
 - The user suspects the motherboard (about 21:05 EDT): the Gigabyte B650 GAMING X AX rev 1.3 freezes in the BIOS
