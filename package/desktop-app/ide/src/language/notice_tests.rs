@@ -96,9 +96,8 @@ fn a_failed_start_and_a_refused_launch_each_give_their_cause() {
         &[],
     );
     assert!(
-        failed
-            .iter()
-            .any(|line| line.starts_with("rust-analyzer failed to start: the server process ended")),
+        failed.iter().any(|line| return line
+            .starts_with("rust-analyzer failed to start: the server process ended")),
         "{failed:?}"
     );
     let refused = lines(
@@ -121,7 +120,7 @@ fn a_failed_start_and_a_refused_launch_each_give_their_cause() {
     assert!(
         !refused
             .iter()
-            .any(|line| line.contains("open the file again")),
+            .any(|line| return line.contains("open the file again")),
         "{refused:?}"
     );
 }
@@ -263,8 +262,10 @@ fn a_server_rooted_outside_the_project_names_that_directory() {
         &[],
     );
     assert!(
-        shown.iter().any(|line| line.contains("/srv/enclosing")
-            && line.contains("Open the IDE on that directory")),
+        shown
+            .iter()
+            .any(|line| return line.contains("/srv/enclosing")
+                && line.contains("Open the IDE on that directory")),
         "{shown:?}"
     );
 }

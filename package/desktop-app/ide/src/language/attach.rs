@@ -300,9 +300,9 @@ pub(super) fn start_deadline(worker: &mut Worker, server: LanguageServerId) {
     let name = worker.session.servers[index].identity.name.clone();
     let seconds = worker.languages.start_timeout(&name);
     tracing::error!(server = %name, seconds, "language server did not answer initialize in time and is stopped");
-    let reason = format!("{name} did not answer initialize within {seconds} seconds");
+    let summary = format!("{name} did not answer initialize within {seconds} seconds");
     let lines = report::stopped_during_start(&name);
-    let reason = with_lines(reason, &lines);
+    let reason = with_lines(summary, &lines);
     retire(worker, index, ServerState::FailedToStart { reason }, true);
     if !worker.session.servers[index].attached {
         worker.session.servers.remove(index);
