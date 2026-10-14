@@ -12,7 +12,32 @@ export const decisionFixtureText = `read "../proof.txt"\n\${value}; \`code\` \\ 
 /**
  Original native input authored independently of the adapter.
  */
-const originalRequest = {
+const originalRequest: {
+  readonly model: 'openai/gpt-6-luna-decisions';
+  readonly state: {
+    readonly fullPolicy: string;
+    readonly originalRequestBody: string;
+  };
+  readonly questions: {
+    readonly head_0: {
+      readonly type: 'choice';
+      readonly instructions: {
+        readonly predicate: string;
+        readonly selectedRule: { readonly text: string };
+      };
+      readonly criteria: {
+        readonly permission: string;
+        readonly none: null;
+        readonly unknown: string;
+      };
+    };
+    readonly head_1: {
+      readonly type: 'noul';
+      readonly instructions: { readonly predicate: string };
+      readonly criteria: { readonly true: string; readonly false: string };
+    };
+  };
+} = {
     model: 'openai/gpt-6-luna-decisions',
     state: {
       fullPolicy: decisionFixtureText,
