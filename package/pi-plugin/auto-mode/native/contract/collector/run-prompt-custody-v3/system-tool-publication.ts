@@ -36,7 +36,9 @@ function data({
   readonly key: string
 }): unknown {
   if (types.isProxy(value) || (Object.getPrototypeOf(value) !== Object.prototype)) return undefined;
-  /** Selected data descriptor excludes accessor execution. */
+  /**
+   Selected data descriptor excludes accessor execution.
+   */
   const descriptor = Object.getOwnPropertyDescriptor(
     value,
     key
@@ -85,12 +87,16 @@ export function publishSystemToolInput({
   readonly copyInput: (value: unknown) => unknown;
   readonly InputError: new (message: string) => Error;
 }): void {
-  /** Construction diagnostics remain scoped to this original publication. */
+  /**
+   Construction diagnostics remain scoped to this original publication.
+   */
   const fl = tagged({
     tag: publishSystemToolInput.name,
     l
   });
-  /** Retirement is irreversible and retains its original diagnostic. */
+  /**
+   Retirement is irreversible and retains its original diagnostic.
+   */
   const state: { failure?: Error } = {};
   fl.debug('binding original system tool declarations to the existing source publication');
 
@@ -102,7 +108,9 @@ export function publishSystemToolInput({
    @returns false so callers cannot retain a changed declaration
    */
   function retire(reason: string): false {
-    /** Retirement logs contain no borrowed declaration data. */
+    /**
+     Retirement logs contain no borrowed declaration data.
+     */
     const rl = tagged({
       tag: retire.name,
       l: fl
@@ -122,12 +130,16 @@ export function publishSystemToolInput({
    @throws SourceCollectionError when declarations differ from the captured original input
    */
   function toolsFor(value: object): readonly object[] {
-    /** Data-profile checks have a distinct diagnostic boundary. */
+    /**
+     Data-profile checks have a distinct diagnostic boundary.
+     */
     const tl = tagged({
       tag: toolsFor.name,
       l: fl
     });
-    /** The copier validates descriptors before any array elements are consumed. */
+    /**
+     The copier validates descriptors before any array elements are consumed.
+     */
     const tools: unknown = data({
       value,
       key: 'toolsAdded'
@@ -143,7 +155,9 @@ export function publishSystemToolInput({
       tl.debug('system declaration data differs from its captured input');
       throw new InputError('Native system tool declarations differ from their captured manager input');
     }
-    /** Explicit narrowing preserves the borrowed array identity without an unsafe element type. */
+    /**
+     Explicit narrowing preserves the borrowed array identity without an unsafe element type.
+     */
     const declarations: readonly unknown[] = tools;
     if (!declarations.every(function isDeclaration(item): item is object {
       return (item !== null) && ((typeof item) === 'object');
@@ -159,26 +173,38 @@ export function publishSystemToolInput({
    @returns whether the original membership and owned data still hold
    */
   function current(value: object): boolean {
-    /** Currentness reads never log the captured source itself. */
+    /**
+     Currentness reads never log the captured source itself.
+     */
     const cl = tagged({
       tag: current.name,
       l: fl
     });
-    /** Membership is authenticated before inspecting borrowed values. */
+    /**
+     Membership is authenticated before inspecting borrowed values.
+     */
     const known = aliases.get(value);
     if ((state.failure !== undefined) || (known?.owner !== owner)) return false;
-    /** A declaration remains tied to its own original containing message. */
+    /**
+     A declaration remains tied to its own original containing message.
+     */
     const root = known.kind === 'tool-declaration' ? known.message : value;
     if (root === undefined) return retire('Native tool alias has no original system input');
-    /** The root and declaration must share the same publication owner. */
+    /**
+     The root and declaration must share the same publication owner.
+     */
     const messageAlias = aliases.get(root);
     if ((messageAlias?.owner !== owner) || (messageAlias.kind !== 'input-only')) return false;
     try {
-      /** Captured data equality checks integrity only after identity membership. */
+      /**
+       Captured data equality checks integrity only after identity membership.
+       */
       const tools = toolsFor(root);
       if (tools !== messageAlias.tools) return retire('Original system tool declaration array was replaced');
       for (const [ordinal, tool] of tools.entries()) {
-        /** Position and container identities reject equal replacement objects. */
+        /**
+         Position and container identities reject equal replacement objects.
+         */
         const alias = aliases.get(tool);
         if ((alias?.owner !== owner) || (alias.kind !== 'tool-declaration')
           || (alias.message !== root)
@@ -189,7 +215,7 @@ export function publishSystemToolInput({
         || ((known.kind === 'tool-declaration') && (known.ordinal !== undefined)
           && (tools[known.ordinal] === value));
     } catch (error) {
-      cl.debug(error);
+      cl.debug(String(error));
       return retire('Original system tool input no longer has its captured data profile');
     }
   }
@@ -202,7 +228,9 @@ export function publishSystemToolInput({
    @returns whether all alias slots retained their original source ownership
    */
   function register(value: object): boolean {
-    /** Registration diagnostics distinguish native copy propagation from semantic permission. */
+    /**
+     Registration diagnostics distinguish native copy propagation from semantic permission.
+     */
     const rl = tagged({
       tag: register.name,
       l: fl
@@ -211,7 +239,9 @@ export function publishSystemToolInput({
     if (aliases.has(value)) return (aliases.get(value)
       ?.owner
       === owner) && current(value);
-    /** Validate the entire native copy before occupying any alias slot. */
+    /**
+     Validate the entire native copy before occupying any alias slot.
+     */
     const tools = toolsFor(value);
     if ((new Set(tools).size !== tools.length) || tools.some(function alreadyPublished(tool) {
       return aliases.has(tool);
@@ -250,7 +280,9 @@ export function publishSystemToolInput({
     before,
     after
   }: SystemToolCopy): void {
-    /** Copy failures retain the original caught value in diagnostics. */
+    /**
+     Copy failures retain the original caught value in diagnostics.
+     */
     const cl = tagged({
       tag: copy.name,
       l: fl
@@ -260,7 +292,7 @@ export function publishSystemToolInput({
       register(after);
     }
     catch (error) {
-      cl.debug(error);
+      cl.debug(String(error));
       retire('Native system tool copy differs from its original captured input');
     }
   }
