@@ -130,8 +130,13 @@ await describe({
  },).toThrow('normalized distribution',);
         }, },),
         it({ name: 'rejects a choice outside this definition', fn: async function unexpectedChoice() {
+          /**
+           Keep the distribution valid so this control isolates selected-label validation.
+           */
+          const value = estimate({ labels, choice: supported[0], },);
+          value.choice = 'unconfigured';
           expect(function invokeUnexpectedChoice() {
-            policy.accepts(estimate({ labels, choice: 'unconfigured', },),);
+            policy.accepts(value,);
           },).toThrow('configured question vocabulary',);
         }, },),
         it({ name: 'rejects a non-string choice', fn: async function nonstringChoice() {
