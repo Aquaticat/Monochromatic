@@ -1,8 +1,5 @@
-import {
-  fixSource,
-  type Rule,
-  rulesById,
-} from '@monochromatic-dev/cli-markdown-lint/ts';
+import { LINT_BINARY_NAME, } from './semantic-wrap-binary-constants.ts';
+import { wrapWithLintBinary, } from './semantic-wrap-binary.ts';
 
 //region Semantic wrap
 // PUTS THE LINE BREAKS BACK that a model does not emit.
@@ -22,6 +19,16 @@ import {
 // it cannot destroy a break a model got right, which is what makes running it
 // over every shipped passage safe without inspecting them first.
 //
+// IT RUNS IN THE RUST LINTER, `monochromatic-lint`, started once per passage by
+// `semantic-wrap-binary.ts` (how it is found, its pinned version and its
+// failures are stated there). It was a TypeScript rule of the repository's
+// former Markdown linter package, and the two agreed byte for byte on every
+// test input and on all but one class of passage: one with a character outside
+// the Basic Multilingual Plane (an emoji, say) ahead of a comma that follows
+// an emphasis or link span, or ahead of a quotation, made the TypeScript rule
+// skip the break or write the quotation's continuation with two spaces for
+// `> `. The Rust output is the one the rule's own tests describe.
+//
 // THE SPACE WAS ONCE LEFT IN PLACE, which opened every inserted continuation
 // with a stray one: `>  text` inside a blockquote, and a three-space indent
 // under a `- ` marker. Passages settled before 2026-08-20 carry that shape, and
@@ -40,29 +47,6 @@ import {
 // change, and a slice that was already wrapped is left exactly as it was.
 
 /**
- Rule this applies, named by the id its own registry keys it under.
- */
-const RULE_ID = 'semantic-line-breaks';
-
-/**
- The one rule, resolved once at module load.
- */
-const RULE = rulesById.get(RULE_ID,);
-
-// AT LOAD RATHER THAN PER CALL, so a rename in the linter package fails the
-// first import with a message naming the rule, instead of failing a slice
-// halfway through a run that has already been paid for.
-if (RULE === undefined)
-  throw new Error(
-    `unreachable: markdown-lint no longer carries \`${RULE_ID}\`, so shipped text cannot be wrapped at its semantic boundaries`,
-  );
-
-/**
- That rule as the fixer takes its roster.
- */
-const WRAP_RULES: readonly Rule[] = [RULE,];
-
-/**
  Wraps one passage at its semantic boundaries.
 
  NEVER APPLIED TO TEXT A LANE DECIDED TO KEEP. Wrapping a retained passage
@@ -77,18 +61,21 @@ const WRAP_RULES: readonly Rule[] = [RULE,];
 
  @returns Same passage with semantic line breaks inserted
 
+ @throws {@link LintBinaryMissingError} when the pinned linter is not on the
+ PATH, {@link LintBinaryVersionError} when the one found is another version,
+ {@link LintBinaryRunError} when it fails, and {@link LintBinaryTextError} when
+ the passage holds an unpaired surrogate, which standard input cannot carry
+
  @example
  ```ts
  const wrapped = wrapReplacementText({ text: 'It naps. It wakes.', },);
  ```
  */
 export function wrapReplacementText({ text, }: { readonly text: string; },): string {
-  return fixSource({
-    rules: WRAP_RULES,
-    source: text,
-    mdx: false,
-  },)
-    .source;
+  return wrapWithLintBinary({
+    binary: LINT_BINARY_NAME,
+    text,
+  },);
 }
 
 //endregion Semantic wrap

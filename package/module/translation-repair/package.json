@@ -15,7 +15,6 @@
     "./ts/*": "./src/*"
   },
   "dependencies": {
-    "@monochromatic-dev/cli-markdown-lint": "workspace:*",
     "@monochromatic-dev/git-executable": "workspace:*",
     "@monochromatic-dev/module-async-time": "workspace:*",
     "@monochromatic-dev/module-caught-value": "workspace:*",
@@ -30,7 +29,6 @@
     "remark-math": "catalog:",
     "remark-mdx": "catalog:",
     "remark-parse": "catalog:",
-    "satteri": "catalog:",
     "unified": "catalog:",
     "yaml": "catalog:"
   },

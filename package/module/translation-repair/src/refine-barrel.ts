@@ -64,6 +64,27 @@ export { repairReplacements, } from './repair-replacements.ts';
 export { wrapRepairOutcomes, } from './repair-wrap.ts';
 export { wrapReplacementText, } from './semantic-wrap.ts';
 export {
+  refuseFailedRun,
+  startProgram,
+} from './lint-program.ts';
+export { loneSurrogateIndex, } from './lone-surrogate.ts';
+export {
+  LINT_BINARY_NAME,
+  PINNED_LINT_BINARY_VERSION,
+} from './semantic-wrap-binary-constants.ts';
+export {
+  LintBinaryMissingError,
+  LintBinaryVersionError,
+  UNREADABLE_ANSWER,
+  versionClause,
+} from './semantic-wrap-binary-error.ts';
+export { wrapWithLintBinary, } from './semantic-wrap-binary.ts';
+export {
+  countedCharacters,
+  LintBinaryRunError,
+  LintBinaryTextError,
+} from './semantic-wrap-run-error.ts';
+export {
   type SliceReplacement,
   SliceSpliceError,
   spliceSlices,

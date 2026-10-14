@@ -276,6 +276,12 @@ the launch,
 what to watch while it runs,
 and how to read the output back once it has exited.
 
+The semantic wrap of shipped text runs in the repository's pinned Rust linter,
+`monochromatic-lint`, which `mise.toml` installs as a cargo tool.
+A pass started under `mise run` or `mise exec --` finds it on the PATH;
+without it, or with another version, the first wrap stops the run with a message naming the install commands
+(`src/semantic-wrap-binary.ts`).
+
 Read-back tools,
 none of which spends quota or calls a model:
 

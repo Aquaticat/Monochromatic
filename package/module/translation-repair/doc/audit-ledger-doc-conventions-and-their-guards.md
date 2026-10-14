@@ -210,6 +210,7 @@ Status:
 fixed 2026-09-28,
 found while recording M53.
 The repository lints Markdown with `@monochromatic-dev/cli-markdown-lint` (`mise run lint:markdown`).
+That package was replaced by `monochromatic-lint` (task `lint:monochromatic-lint`) and removed on 2026-10-13.
 Over the package's 11 Markdown files it reported 3,344 findings:
 3,343 `semantic-line-breaks`
 (a line break belongs after a prose break point,

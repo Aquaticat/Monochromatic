@@ -156,7 +156,7 @@ THE RETAINED TEXT IS DELIBERATELY LEFT ALONE.
 A retention is not an edit,
 and wrapping one would manufacture a change out of a decision to change nothing,
 which both the delivery coherence check and the assembly assertion refuse by design.
-Bringing the archive itself up to the rule is a one-time `markdown-lint --fix` run over the corpus,
+Bringing the archive itself up to the rule is a one-time `monochromatic-lint --fix` run over the corpus,
 not a job for a translation pass.
 
 ## Re-measured on output settled after the wrapper landed
@@ -193,7 +193,7 @@ the text ships already wrapped, so there is nothing left for a fix to do.
 
 THE INCUMBENTS ARE UNTOUCHED, deliberately: 5 of these 9 violate MD1 in the archive and still do.
 A retention keeps the archive's bytes, and wrapping one would report a change nobody decided on.
-That remains a one-time `markdown-lint --fix` over the corpus rather than a job for a translation pass.
+That remains a one-time `monochromatic-lint --fix` over the corpus rather than a job for a translation pass.
 
 READ THE SIZE OF THIS HONESTLY. Nine rows from one entry is a small pool,
 and it confirms a direction rather than establishing a rate.
