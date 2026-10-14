@@ -1125,6 +1125,17 @@ Both configured decisions pass with all 22 installed extensions plus the explici
 The first operation executes three children;
 the second assesses the later input and remains unresolved without more child execution.
 Actual provider-backed governed execution and genuine native approval remain unfinished.
+The installed command reached Qwen in a read-only package sandbox with disposable state,
+but its ordinary single-call read was blocked before assessment.
+The existing program decoder requires an awaited producer followed by a returned parallel successor group.
+The diagnostic repeat's `try` block also failed that profile;
+local tagged diagnostics now expose the retained `ResultProgramProfileError`.
+The [single-call proposal](../planning/pi-auto-mode-governing-domain-closure.md#live-host-program-profile-extension-proposal)
+adds only a returned literal tool call or an immutable binding followed by its return,
+preserving the existing producer/successor profile and every budget.
+User adoption is pending because this changes the explicitly named program-inspection and semantic-admission profile.
+Live logs are `${HOME}/temp/agent/pi-native-installed-live-20261014.log`
+and `${HOME}/temp/agent/pi-native-installed-live-diagnostic-20261014.log`.
 The current command resolves through generated workspace dependency shims,
 and the root `mise.toml` path list is owned by `file-enforcer.config.ts`.
 That command-resolution description is historical;
