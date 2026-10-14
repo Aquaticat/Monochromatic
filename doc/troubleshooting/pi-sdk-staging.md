@@ -6271,3 +6271,107 @@ Complete package lint,
 production semantic admission,
 and genuine human approval remain separate delivery checks.
 No upstream issue or patch is warranted by the verified local staging corrections.
+
+## Pi 1.1.0 native approval contexts change on resource reload
+
+### Symptoms and source findings
+
+The native context fixture first stopped with owned `PolicyApprovalError`:
+`Native approval host requires an ordinary bootstrap configuration`.
+The original evaluator captured a presentation object once during runtime construction.
+The candidate host needs a fixed bootstrap function that captures current native presentation capabilities
+for each original review.
+That function receives no judgment,
+request,
+authority,
+or semantic evidence.
+
+Pi v1.1.0,
+commit `abe508e1b89912adde45528136c3221eb69acdd7`,
+creates extension contexts in `packages/coding-agent/src/core/extensions/runner.ts:877`.
+Their UI getter retains the original runner and checks it before returning its UI:
+
+```typescript
+// packages/coding-agent/src/core/extensions/runner.ts:878, Pi v1.1.0
+const runner = this;
+// The returned context contains this getter.
+get ui() {
+  runner.assertActive();
+  return runner.uiContext;
+}
+```
+
+Native reload at `packages/coding-agent/src/core/agent-session.ts:3661` invalidates that runner:
+
+```typescript
+// packages/coding-agent/src/core/agent-session.ts:3662, Pi v1.1.0
+const oldRunner = this._extensionRunner;
+const previousFlagValues = oldRunner.getFlagValues();
+await emitSessionShutdownEvent(oldRunner, { type: "session_shutdown", reason: "reload" });
+oldRunner.invalidate();
+```
+
+The replacement comes from the `new ExtensionRunner(...)` assignment in the same file at line 3637.
+Its native stale-context diagnostic begins
+`This extension ctx is stale after session replacement or reload.`
+The first test assertion expected different wording and was corrected to match this actual diagnostic.
+
+A separate direct-SDK fixture omission then prevented all provider and assessment calls.
+The original assistant error was `Original resource input frame changed`.
+The maintained guard in
+`package/pi-plugin/auto-mode/native/contract/integration/policy-source/system-slot.mjs:102`
+compares the currently owned resource frame with the retained policy binding:
+
+```javascript
+// package/pi-plugin/auto-mode/native/contract/integration/policy-source/system-slot.mjs:102
+if(readBoundResourceFrame({binding:nativeBinding,loader})!==binding.frame)
+  throw new PolicySlotBindingError('Original resource input frame changed');
+```
+
+The direct-SDK fixture had not registered its original policy input with the maintained host reload route.
+It now registers that original pair before native reload.
+The CLI host's private resource membership and session-construction ownership remain independent.
+
+### Correction and verification
+
+The maintained evaluator captures the bootstrap capability source once,
+then captures its current Pi API and extension context once per original review.
+The existing approval binder still retains the actual selected capabilities and rejects stale evidence.
+The candidate host supplies Pi's current extension context and its original resource-loader API.
+This adds presentation routing,
+not semantic admission or authorization facts.
+
+`mise run //package/pi-plugin/auto-mode:test:native:approval-context`
+checks native Allow,
+Deny,
+Stop,
+cancellation during selection,
+and reload before selection.
+The selections are fixture responses;
+they are not genuine human approvals.
+Allow,
+Deny,
+and Stop have passed through the native context.
+Cancellation and the corrected reload case are being verified.
+
+### Rejected remedies and upstream filing decision
+
+Retaining the old native context after reload is rejected by Pi's own active-runner check.
+Bypassing the original resource-frame comparison would discard required policy-currentness evidence.
+The remedy connects the fixture to the existing host reload route.
+
+An eager bootstrap read of `maintainedPolicyEntry` also failed with Node's
+`ReferenceError: Cannot access 'maintainedPolicyEntry' before initialization`.
+The maintained artifact and the SDK host participate in an import cycle.
+Live named re-exports defer use of `askUser` and `VERDICT_ENTRY_TYPE` until the session is bound.
+The normal native approval cases pass after this correction.
+
+There is nothing to file upstream:
+
+- Fault belongs to owned bootstrap and fixture assumptions.
+- The consumer can capture the current native context through Pi's existing API.
+- No upstream support change is needed for these controls.
+- No upstream contribution is proposed or contribution policy claimed.
+- No maintainer disposition is inferred.
+- The maintained bridge and native fixture form the local correction;
+  an upstream patch prototype is unnecessary.
