@@ -189,6 +189,14 @@ export function createRequestObservationOwner({
    scope.sourcePreparationClosed=true;
    return scope.judgmentBinding;
   }
+  /** Bind approved execution to the assessed collection while retaining later inputs for subsequent decisions. */
+  function retainApprovedSources(response){
+   const scope=object(response)?responses.get(response):undefined;
+   if(!scope?.sourcePreparationClosed||scope.preparingSources)throw new RequestObservationProfileError('Approved execution requires sealed original judgment sources');
+   validate(scope);
+   collector.retainApprovedSources(scope.judgmentBinding.sources);
+   validate(scope);
+  }
   async function streamFunction(
     model,
     context,
@@ -330,6 +338,7 @@ export function createRequestObservationOwner({
     bindJudgmentSources,
     beginJudgmentSources,
     sealJudgmentSources,
+    retainApprovedSources,
     invalidate
   });
 }

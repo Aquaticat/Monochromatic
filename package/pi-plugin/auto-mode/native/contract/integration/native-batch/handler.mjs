@@ -134,7 +134,11 @@ export function createNativeBatchHandler({
       .state
       ==='resolved')&&(reviewed.outcome
         .verdict
-        ==='approve'))return {block:false};
+        ==='approve')){
+     observer.retainApprovedSources(assistantMessage);
+     reviewed.assertCurrent();
+     return {block:false};
+    }
     return {
       block:true,
       reason:reviewed.outcome
