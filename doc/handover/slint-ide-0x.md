@@ -332,7 +332,9 @@ the items after it are the record of 2026-10-05 and older.
     buffer had the output's width failed to fit. Controls: stopping the application 40 and 80 ms moved the logged size
     event by that time, and sending the callbacks at the command cut the stale captures from 94 to 56 to 61 percent.
     No application change was made; the debug lines at the `monochromatic_ide::native::frame` target were added.
-    Open: the live path (no recording) and the load band 20 to 100 were not measured.
+    Closed by the user on 2026-10-14 ("Smoothness both under normal conditions and under heavy load: We can
+    consider it solved. Smooth for me."): the live path (no recording) and the load band 20 to 100 were not
+    measured, and no further smoothness measurement is planned. Reopen only on a new report from the user.
     Other pending small items: remove the worktrees `ide-wrap` and `ide-land2` after landing; delete the large
     scratch caches `~/temp/agent/ide-wrap-s4/guard-cache`, `ide-wrap-s6/guard-cache`, `ide-wrap-s5/bundles` when done.
     Open: the installed single file at `~/.local/bin/monochromatic-ide` predates stages 1, 2, soft wrap and this
