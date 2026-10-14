@@ -1974,7 +1974,7 @@ and why.
   and change events:
   `a11y` reads the tree only.
 
-## Changes in the next version
+## Changes in 0.6.0
 
 - New `--gpu auto|software|NODE` option picks the device of a headless session;
   it is valid only together with `--headless`.

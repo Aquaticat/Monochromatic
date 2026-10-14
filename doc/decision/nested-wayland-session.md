@@ -223,7 +223,7 @@ Delivered in 0.5.0 (issue #273, closed) as `--headless`, with these decisions:
   which removes the risk named below for this host.
   A Slint client using femtovg and one using skia both had their dmabuf buffers imported.
 - **GPU choice.**
-  A later addition (the next version after 0.5.0) gives headless a `--gpu auto|software|NODE` option and
+  A later addition (0.6.0) gives headless a `--gpu auto|software|NODE` option and
   `--list-gpus`.
   Smithay's `EGLDevice::enumerate` lists the EGL devices,
   `EGLDisplay::new` on a device (`EGL_EXT_platform_device`) opens a chosen render node,
