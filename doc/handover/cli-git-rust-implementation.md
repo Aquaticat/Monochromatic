@@ -1630,8 +1630,57 @@ that is verification, not a decision for the user.
   44 unviable, none missed); release run 38486199846 published the crate and eight archives.
   Not measured here: byte parity with the branch's TypeScript rule over its full unit-test inputs (the
   translation-repair session measures that before switching its wrap to `--stdin --fix`).
-  The push-fix scoped mutation run failed its first baseline under host load (three `dependent_version` tests hit
-  their 5 second bound) and was restarted; log `~/temp/agent/push-env-mutation-full2.log`.
+  Linter 0.1.3 (released 2026-10-14): the `rust/tests-in-sidecars` rule, enabled at `error` in the root config with
+  exemptions for the fuzz crates and `doc/troubleshooting`; the four inline test modules were moved to sidecars.
+  Record: `doc/planning/rust-test-sidecar-enforcement.md`.
+  Parity of the Rust semantic-line-break rule with the TypeScript one, measured by the translation-repair session:
+  591 of 598 inputs byte-identical, the 7 differences are breaks after non-BMP characters where the Rust rule is right.
+  The interop lane landed on `main` as `78d23d18a4` (container gate rerun: 1666 unit and 118 binary tests, Clippy clean).
+  mise holds new releases back for 24 hours; the repository exempts its own crates by exact name
+  (`minimum_release_age_excludes` in `mise.no-env.toml`, commit `4059fc9925`).
+  The pathBytes lane finished on `feat/cli-git-native-pathbytes` (head `e629ab99ff8e`, evidence in
+  `doc/handover/cli-git-native-pathbytes.md`) and is not merged; it merges after the hardening branch, and its gated
+  source must be rerun on the merge because both branches change `package/git-policy/cli`.
+  Hardening (user, 2026-10-14: "You own the cli git series of crates ... If cli git is robust, it shouldn't ever get
+  stuck."), branch `fix/cli-git-hardening`.
+  Trigger: another session's `git push` stalled for minutes holding the wrapper's single-flight push lock, and every
+  commit on that branch waited behind it without any output.
+  Rule now in force: nothing waits for another process without a bound, a notice and a named holder.
+  - The auto-push's `git push` runs under `CLI_GIT_PUSH_DEADLINE_SECONDS` (600 by default): asked to end, killed after
+    a 5 second grace, recorded as a failed attempt with exit code 124, commit kept (`src/native/bounded_push.rs`).
+    Git's low-speed abort is added to its environment unless the invocation sets it (it also overrides the
+    `http.lowSpeed*` configuration).
+    The read-only queries before the push stop at the same deadline or 120 seconds (`bounded_query.rs`).
+  - Waiting for the push lock gives up after the deadline plus 65 seconds, or `CLI_GIT_PUSH_LOCK_WAIT_SECONDS`, and
+    prints one line naming the pushing process.
+  - Every wait on a live holder (capture, landing, hook and registry locks, the landing reservation, the worktree-copy
+    settlement, a proven-alive `index.lock` holder) is bounded by `CLI_GIT_LOCK_WAIT_SECONDS` (1800 by default),
+    prints a line after 5 seconds, fails closed and never takes the holder's lock (`live_lock.rs`,
+    `owner_lock::acquire_owner_lock_for`, `replay_reservation.rs`, `worktree_copy_lock.rs`, `index_lock_wait.rs`).
+  - Not bounded on purpose: passthrough Git commands, the user's own hooks and the wrapped real Git (the user's
+    children; Ctrl-C reaches them).
+    Not waits: the chunked file comparison in `recovery_files.rs`, the capped reads, and `await_release` in
+    `transaction_phase.rs`, which runs only when the test marker variable is armed.
+    Bounded by their own counters: `retry_while_active` and the budgeted `wait_for_lock`.
+    The landing loop `run_loop` has no attempt cap: each lost race means another landing advanced the target and the
+    reservation gives the next slot to the oldest requester, so it terminates; only a bug that reports a lost race for
+    every landing makes it replay forever (seen under the pathBytes mutants `landing_attempt.rs:419` and `:592`).
+  Documented in `package/git-policy/cli/README.md` ("Waiting and time limits") and `SPEC.md` ("Auto-push").
+  Verification so far: host Clippy clean; container gate 1713 unit, 119 binary and 1 consumer test passed;
+  the concurrent e2e passed 36 scenario runs on Git 2.55.0 with 2 skipped (the gate task now builds Git 2.55.0 only,
+  because the wrapper refuses older Git and the 2.39.5 and 2.40.0 rows failed by design).
+  Tests that hold a lock now end a stuck coordinator after a ceiling and fail instead of hanging the run, which turned
+  the four push-fix timeout mutants into failures (they are rerun in the scoped mutation below).
+  Scoped mutation of the new and changed modules and of `recovery_files.rs`, `transaction_registry.rs`,
+  `recovery_scan.rs` runs in two batches (logs `~/temp/agent/hardening-mutation-A.log` and `-B.log`); the first
+  attempt stopped at a planted control whose test I had renamed, fixed in `020d28b095` and shown to be noticed on the
+  host; the rerun skips the planted phase (`NATIVE_MUTATION_SKIP_PLANTED=1`).
+  Next: read the mutation results and kill or justify every survivor, land with the landing pattern, bump the wrapper
+  to 0.1.3, push to trigger the `gpc-*` release jobs, then verify with a real-credential commit and push.
+  Not verified: Windows (the target is not installed here; `tempfile` and `libc` are unix-only dependencies that
+  `bounded_child.rs` already relied on).
+  A podman cleanup by the user (`podman image prune --all`) removed `rust:1.97-bookworm`; pull it back, and pin it with
+  a sleeping container while a prune may still be running.
   Open: the `replay-core` branch holds unmerged mutation work, `monochromatic-lint` shim lookup fails outside the
   repository (the linter must be on `PATH` as a real binary), and the trailing gates below, except the interop matrix, are untouched.
 - [ ] Gates that trail the cutover (user decision 2026-10-10: the code ships first, the gate runs afterward):
