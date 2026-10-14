@@ -165,8 +165,24 @@ export function handlerProviderSource({
  /**
   The serializer binds its payload to the original model and transcript before user callbacks.
   */
- const observed=replaceOnce({
+ const toolOutputStart=replaceOnce({
    source:toolDeclarations,
+   from:'function convertTools(tools, compat) {\n    return tools.map((tool) => {',
+   to:'function convertTools(tools, compat) {\n    return tools.map((tool) => {\n        const converted = (() => {'
+ });
+ /**
+  Each original map callback binds its declaration directly to the value it actually returns.
+  */
+ const toolOutputs=replaceOnce({
+   source:toolOutputStart,
+   from:'                ...(compat.supportsStrictMode !== false && { strict: strict ?? false }),\n            },\n        };\n    });\n}',
+   to:'                ...(compat.supportsStrictMode !== false && { strict: strict ?? false }),\n            },\n        };\n        })();\n        nativeToolPayloads.set(converted,Object.freeze({tool}));\n        return converted;\n    });\n}'
+ });
+ /**
+  The complete payload observation follows all original member emissions.
+  */
+ const observed=replaceOnce({
+   source:toolOutputs,
    from:'            const nextParams = await options?.onPayload?.(params, model);',
    to:'            nativeSerializedPayloads.set(params,Object.freeze({model,messages:context.messages,normalizedMessages:normalizedContext.messages}));\n            const nextParams = await options?.onPayload?.(params, model);'
  });

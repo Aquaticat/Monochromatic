@@ -3,6 +3,7 @@ import {
   types
 } from 'node:util';
 import {readHandlerPayloadPublication} from '../../collector/run-prompt-custody-v3/handler-publication.mjs';
+import {prepareNativeToolAssociation} from './tool-source-association.mjs';
 import {
   streamSimple,
   readNativeSerializedPayload,
@@ -377,6 +378,7 @@ export function prepareNativeSourceAssociation({
  })===undefined;
  const previous=options?.onPayload;
  const originalMessages=context.messages;
+ const toolAssociation=prepareNativeToolAssociation({sources,dataRecord,denseArray});
  let owned=[];
    let unresolvedHandlers=[];
    let called=false;
@@ -395,6 +397,7 @@ export function prepareNativeSourceAssociation({
     &&(selectedModel.provider===model.provider)
     &&(selectedModel.api===model.api);
   if(!originalPayload)payloadOriginFailure='Request payload lacks the original native serializer occurrence for this captured transcript and model';
+  toolAssociation.capture({payload,origin,eligible:originalPayload&&messageEligible});
   const candidates=[];
   if(originalPayload&&dataRecord(payload)
     &&denseArray(payload.messages)){
@@ -449,7 +452,7 @@ export function prepareNativeSourceAssociation({
       selectedModel
     ]
   ):undefined;
-  const selected=replacement===undefined?payload:replacement;
+  const selected=toolAssociation.retain(replacement===undefined?payload:replacement);
   const ordinary=dataRecord(selected)&&denseArray(selected.messages);
     const retained=[];
   for(const candidate of candidates){
@@ -494,7 +497,7 @@ export function prepareNativeSourceAssociation({
    });
   }
   owned=retained;
-  if(retained.length === 0)return replacement;
+  if(retained.length === 0)return selected===payload?replacement:selected;
   const replacements=new Map(retained.map(function indexMessageReplacement(record) { return ([
     record.ordinal,
     record.message
@@ -583,7 +586,7 @@ export function prepareNativeSourceAssociation({
     coverage:'partial-original-prompt-input-contribution',
     permission:false
   }));
-  return Object.freeze(result);
+  return Object.freeze([...result,...toolAssociation.seal(parsed)]);
  }
  return Object.freeze({
    onPayload,
