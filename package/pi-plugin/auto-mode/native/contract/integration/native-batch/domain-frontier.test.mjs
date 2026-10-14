@@ -10,7 +10,7 @@ import {ruleAssessmentModel} from '../action-policy/wire.mjs';
 import {createAssessmentSender,createNativeSemanticOperatingPolicies} from '../maintained-policy.mjs';
 
 import {assertDomainReview} from './domain-frontier-assertions.mjs';
-import {createApprovedChangeControl} from './approved-change-controls.mjs';
+import {createApprovedChangeControl} from './approved-change-controls.ts';
 
 //region Native fixture lifetime owns its counters and disposable session
 

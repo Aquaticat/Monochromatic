@@ -108,7 +108,9 @@ export function judgmentSource({
     });
     const facade=createDependencyFacade({collector:judgmentCollector,rootAdapter,`
  });
- /** Mandatory policy and source selection use the final prepared collection. */
+ /**
+  Mandatory policy and source selection use the final prepared collection.
+  */
  const mandatorySource=replaceOnce({
    source:sharedDependencySources,
    from:'const mandatoryPolicy=receipt.sources.mandatoryPolicy;',

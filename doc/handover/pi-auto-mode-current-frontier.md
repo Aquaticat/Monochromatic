@@ -1261,8 +1261,7 @@ Changes to existing policy or resource dependencies,
 prepared arguments,
 cancellation,
 and execution or result identity must still invalidate execution.
-The next implementation step is to distinguish authenticated appended receipts from changed selected dependencies,
-then exercise both outcomes through native consumers.
+The implementation now distinguishes authenticated appended receipts from changed selected dependencies.
 The initial approved-source implementation in `05f6276bff` exposed a second snapshot in the dependency facade.
 The retained diagnostic confirmed that this independently captured snapshot still rejected the progress receipt.
 Commit `1149f50605` makes the dependency facade retain the same assessed collection.
@@ -1270,9 +1269,34 @@ The unchanged progress consumer now passes with three child calls,
 seven progress callbacks,
 and one authored assessment;
 the package type check passes.
-The following-decision receipt control in `80f877e998` completes the first operation,
-but reaches only one assessment instead of the expected two.
-Its next diagnostic must identify the second decision's stopping boundary before claiming receipt delivery works.
+The following-decision receipt control in `80f877e998` initially reached only one assessment.
+The original diagnostic was `RuleAssessmentWireError: Primary source differs from mandatory policy`.
+Retained prior-run inputs preceded the selected policy in the source collection.
+Commit `696400dba7` preserves the primary-policy position while retaining those inputs.
+The consumer now completes the first operation,
+retains both the later callback input and result,
+and blocks the next operation after its own assessment.
+Each decision has one assessment;
+the completed operation's judgment is not reopened.
+The approved dependency controls pass:
+rewriting the selected policy or cancelling after the first child prevents the remaining child calls,
+and mutation of the assessed argument object throws while the unchanged approved operation completes.
+The first argument-control attempt inspected a copied event payload rather than the assessed input;
+`c365ce2b7a` corrects the control to use the original judgment's prepared member.
+All 22 configured extensions now reach three child executions,
+but the 64-receipt limit prevents cleanup from completing.
+A disposable in-memory 128-receipt experiment passes the complete configured consumer,
+measuring 81 retained receipts and 347,913 serialized bytes at the last observed check.
+All byte bounds and the original assessment budget remain unchanged in that experiment.
+The initial diagnostic hook accidentally matched other packages' built entries;
+its failed extension import is not evidence about capacity.
+The corrected hook matches only this package's artifact and its named native source modules.
+The prepared capacity patch increases combined and session receipt counts to 128,
+preserving the resource-local 64-receipt cap and every byte bound.
+Automatic approval review rejected its commit because this resource and policy-boundary change requires
+explicit user authorization.
+The user has been asked to approve 128 receipts or retain 64;
+the patch remains uncommitted and dependent verification is pending that answer.
 The malformed traversal controls pass,
 including omitted positions and forged observation identity.
 Removing either of those guards in a disposable in-memory module causes its control to fail.
@@ -1283,6 +1307,8 @@ adopted-policy contrasts,
 and context receipt controls pass.
 The scoped fixture lint has zero errors and 988 warnings;
 the lint task still fails because of those warnings.
+The new generator and approved-change fixture lint also remains unfinished:
+its initial check reports 99 warnings and one error.
 The user explicitly authorized continued attachment to the existing Codex worker cgroup on 2026-10-14
 after automatic approval review rejected the wrapper's attachment step.
 No resource limit changed.

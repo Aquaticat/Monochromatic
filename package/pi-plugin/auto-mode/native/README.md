@@ -186,10 +186,15 @@ overlapping callbacks,
 empty dispatch,
 capture failure,
 and the existing source bounds are covered.
-`test:native:progress-events` currently reproduces a delivery blocker:
-an unchanged progress callback invalidates the approved program's source snapshot before any child executes.
-Awaiting its completion alone does not fix that failure.
-The receipt-timing proposal and measured contrasts are recorded in
+`test:native:progress-events` passes through native progress callbacks with one assessment and three child calls.
+The approved operation retains its assessed source collection;
+later inputs are captured for the next decision.
+`test:native:next-decision-receipts` retains a later callback input and result,
+then blocks the next operation after assessing those new sources.
+`test:native:approved-dependencies` checks selected policy changes,
+cancellation,
+and immutable assessed arguments during approved execution.
+The adopted receipt timing and measured contrasts are recorded in
 `doc/planning/pi-auto-mode-governing-domain-closure.md` and `doc/troubleshooting/pi-sdk-staging.md`.
 Complete lint verification,
 installed host activation,
