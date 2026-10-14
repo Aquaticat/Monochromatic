@@ -29,7 +29,7 @@ What is deleted and where it can be read:
 the incumbent builder `bin/provision-incumbent.mjs`, the incumbent steps of the image runner, and every driver that
 starts the incumbent (`smoke`, `owner-locks`, `phase-recovery`, `hook-dispatch`, `capture-differential`,
 `crash-matrix`, `lock-waits`, `mixed-concurrency`, `capture-fixtures`).
-All of them exist at commit `89f7e54313`, the last commit before this document.
+All of them exist at commit `5d61d7b442`, the last commit before the deletions (the final native fixes are in it).
 Rerunning anything below starts from that commit (see `Rerun commands`).
 
 ## Incumbent provisioning
@@ -56,8 +56,11 @@ Image `localhost/git-policy-native-interop:interop`: the gate's Git 2.56.0 base,
 `/opt/cli-git/node_modules/.bin/git` (the incumbent), `/opt/native/bin/git` (the release native wrapper),
 run as user 1000 with `--rm --init --network=none --memory=2g --cpus=2`.
 Each driver started both wrappers through `PATH` order inside disposable repositories under `/work/scratch`.
-The container gate of the native changes (image `fb852ab7c300`) passed:
-1663 unit tests (5 ignored), 118 binary-level tests (1 ignored), the candidate consumer, and Clippy.
+The container gate of the final native code (image `e69138b9973c`) passed:
+1666 unit tests (5 ignored), 118 binary-level tests (1 ignored), the candidate consumer, and Clippy inside the gate;
+`mise run //package/git-policy/cli:native:clippy` is clean too.
+Mutation testing of `recovery_files.rs`, `transaction_registry.rs` and `recovery_scan.rs` was not run.
+The matrix drivers ran on the final native code (commit `5d61d7b442`) with the results below.
 
 ## Results per combination
 
@@ -103,13 +106,16 @@ three scenarios per seed, with the wrappers assigned to workers in a seeded orde
   passed for every seed and every wrapper assignment.
 - `hooked` (six workers through a shared `pre-commit` hook): hook runs never overlapped, in any seed.
   Replays after a lost landing race run the hook again, so there are more hook runs than commits.
-- `killed` (six workers, one killed at a seeded phase): fails in the mixed assignment, see the first open finding.
+- `killed` (six workers, one killed at a seeded phase): passes once per seed, but fails on repetition in the mixed
+  assignment, see `Open findings`.
 
-Totals with the same seeds:
-mixed 187 passed and 2 failed in the last run (the failures vary from run to run),
-native only 189 passed and 0 failed, incumbent only 189 passed and 0 failed.
+Totals with seeds 1 to 3 on the final native code:
+mixed 189 passed and 0 failed, native only 189 passed and 0 failed, incumbent only 189 passed and 0 failed.
+Earlier runs of the same seeds failed in the mixed set (187 passed and 2 failed, then 186 and 3), before the last three
+native fixes below; the failures vary from run to run.
 
-Repeated `killed` runs with the victim killed at `landing-locked` (seed 2, 60 repetitions each):
+Repeated `killed` runs with the victim killed at `landing-locked` (seed 2) before the last three native fixes,
+60 repetitions each:
 native only 1037 passed and 0 failed;
 incumbent only 1037 passed and 0 failed;
 mixed 998 passed and 39 failed, with a survivor failing in 19 of the 60 repetitions
@@ -125,8 +131,9 @@ and any run longer than the repetitions above.
 
 ## Defects in the native wrapper, fixed
 
-Both were found by the `killed` scenario of `mixed-concurrency.mjs` (seed 2) and fixed with controls written first.
-Each control failed before its fix and passes after it.
+All five were found by the `killed` scenario of `mixed-concurrency.mjs`, each fixed with a control written first
+(each control was run against the unfixed code and failed with the message the scenario showed).
+They are races between recoverers of one dead transaction.
 
 - Retiring a transaction directory failed when another recoverer had already retired it:
   a native survivor exited 2 with `retiring the transaction directory ... No such file or directory`.
@@ -135,44 +142,73 @@ Each control failed before its fix and passes after it.
   The earlier assertion that a missing registry directory cannot be retired was removed because it encoded the defect.
   Commit `fa671c2bd3`.
 - Releasing an index lock failed when another recoverer released it between the existence probe and the identity lookup:
-  a native survivor exited 2 with `the landing reservation failed: ... unable to resolve the filesystem identity for
-  .../index.lock`.
+  exit 2 with `the landing reservation failed: ... unable to resolve the filesystem identity for .../index.lock`.
   `release_owned_lock` in `src/native/recovery_files.rs` now reports a lock that is gone as absent,
-  and also when the removal itself finds it gone; a lock that still exists but cannot be identified stays an error.
+  also when the removal itself finds it gone; a lock that still exists but cannot be identified stays an error.
   Controls: `a_lock_released_by_a_peer_mid_release_is_absent` (two races, through a replaceable identity mechanism)
   and `an_unidentifiable_lock_is_still_an_error`.
   Commits `e2606bca07` and `89f7e54313` (Clippy findings in the controls).
+- Startup recovery took the landing lock only for a dead transaction with a landing record.
+  A transaction killed at `landing-locked` or `objects-migrated` holds the real `index.lock` and has only an
+  `index-lock-<n>.json` record, so it was recovered without the landing lock: a slow recoverer could then release, by
+  device and inode, an `index.lock` that a lander had created after another recoverer released the dead one.
+  `needs_landing_lock` in `src/native/recovery_scan.rs` now uses `entered_landing` (an index-lock record or a landing
+  record), the predicate the landing pass already used and documented as the only recovery that may release such a lock.
+  `SPEC.md` section `Recovery` states the same.
+  Control: `a_dead_transaction_holding_only_its_index_lock_waits_for_the_landing_lock`
+  (recovery waits while a live lander holds the lock).
+  Commit `9e101f702b`.
+- A transaction that another recoverer removed after this one listed the registry made the landing-lock check fail with
+  `listing <transaction> failed: No such file or directory` (exit 2).
+  `entered_landing_unless_vanished` in `src/native/recovery_scan.rs` answers that such a transaction needs no lock.
+  Control: `a_transaction_a_peer_removed_after_inspection_needs_no_landing_lock`.
+  Commit `4d5292bbad`.
+- The same removal after the owner check made `recover_dead_transaction` fail on its own listing
+  (`code content-unavailable`, seen in a native-only run).
+  `recover_dead_transaction_unless_vanished` reports such a transaction as vanished, as the incumbent does for an
+  owner record that disappeared; a failure with the directory still present stays a failure.
+  Control: `a_dead_transaction_a_peer_finished_after_inspection_is_vanished`.
+  Commit `5d61d7b442`.
+
+After these fixes the native-only `killed` scenario (seed 2, victim at `landing-locked`) passed 200 of 200 repetitions
+(3417 checks, 0 failed).
+Before them the same set failed 2 checks in one of 100 repetitions (the last defect above).
 
 ## Open findings
 
-Cross-wrapper recovery without mutual exclusion, not fixed.
-Scenario: a native worker is killed at `landing-locked`, holding the landing lock and the real `index.lock`;
-five survivors, a mix of both wrappers, recover its dead transaction while they commit.
-The merged timeline of a failing run (the driver prints it with `--verbose`) showed this order:
+The mixed `killed` scenario still fails after the native fixes, and the cause is on the incumbent's side.
+The incumbent's startup recovery keys its landing-lock requirement on a landing record alone
+(`needsLandingLock` and `hasLandingRecord` in the pinned `commit-transaction-recovery-scan.ts` and
+`commit-transaction-recovery-evidence.ts`), although its own `enteredLanding` predicate and the doc comment of
+`recoverDeadLandings` say that an owner killed holding the landing lock and `index.lock` has no landing record yet.
+So an incumbent survivor recovers a native worker killed at `landing-locked` without the landing lock, and releases the
+recorded `index.lock` by identity.
+The merged timelines of the failing runs (the driver prints them with `--verbose`) show the order:
 
-1. A native survivor recovered the dead landing, released the dead worker's `index.lock`, and started landing its own
-   commit, which created a new `index.lock`.
+1. A native survivor recovered the dead landing under the lock, released the dead worker's `index.lock`, and started
+   landing its own commit, which created a new `index.lock`.
 2. An incumbent survivor that had classified the same owner as dead earlier then logged `released owned lock
-   .../index.lock` and removed the shadow repository of the same dead transaction, three milliseconds later.
-3. The native survivor's landing failed with `opening the index lock ... failed: No such file or directory`
+   .../index.lock` and removed the shadow repository of the same dead transaction, a few milliseconds later.
+3. The native survivor's landing failed with `opening the index lock ... No such file or directory`
    (or `protecting .../index.lock failed`), exit status 2, and left its own transaction behind.
 4. Every later command of either wrapper in that repository failed with the same error, because the left transaction
    has a landed commit and an index install that needs a lock that no longer exists.
    The repository was whole (`git fsck` clean) but wedged until the state is removed by hand.
 
-What is established:
-the sequence above in the logs of three runs;
-that native-only and incumbent-only sets of the same seed pass 60 of 60 times while the mixed set had a survivor fail in
-19 of 60 and 22 of 40 repetitions (most of those failures are incumbent exits; the native exit status 2 was seen in 4
-repetitions of 100).
-What is not established: why the incumbent was not excluded by the landing lock while the native survivor held it,
-and whether the incumbent's release matched the new lock by an inode number that the filesystem reused.
-Both wrappers use the same read-then-rename retirement of a dead owner's lock directory
-(`retireDeadLock` in the incumbent, `retire_dead_lock` in `src/native/owner_lock.rs`),
-whose restore after a displaced live lock can fail when a third party publishes in between;
-that window is the leading hypothesis and no control exercises it.
-The incumbent has been removed from every `PATH`, so a mixed fleet no longer exists.
-A native-only reproduction was not found in 60 repetitions with the victim at `landing-locked` and 17 further seeds.
+Rates on the final native code, seed 2 repeated 100 times:
+mixed 1543 checks passed and 174 failed, with a survivor failing in 56 repetitions
+(21 native survivor exits, all of the `index.lock` kind above, and 67 incumbent survivor failures);
+native only 200 of 200 repetitions clean;
+incumbent only 100 of 100 clean in an earlier batch.
+The failure rate of the mixed set varies with host load (19 of 60 repetitions in an earlier batch).
+Established: the incumbent's predicate (source above), the order of events in the logs, and that homogeneous sets pass.
+Not established: whether the incumbent's release matched the new lock by an inode number that the filesystem reused,
+or because the release deletes by path after the identity check;
+either way the incumbent acts on a lock it does not own.
+Not fixed: it is the incumbent's code, and the incumbent has been removed from every `PATH`, so no mixed fleet remains.
+The wedge in step 4 can arise natively only when a foreign process removes a lock a native lander owns;
+recovery of a landed transaction fails closed when its lock is absent, as the specification requires,
+and no change was made.
 
 Incumbent-only findings (the incumbent is retired and not fixed):
 concurrent recovery of one dead transaction made an incumbent survivor exit 1 with
@@ -220,7 +256,7 @@ The incumbent exists only in history, so a rerun starts from the last commit tha
 
 ```sh
 # Throwaway worktree of the last commit that holds the provisioning step and every driver.
-git worktree add --detach "${HOME}/temp/agent/interop-rerun" 89f7e54313
+git worktree add --detach "${HOME}/temp/agent/interop-rerun" 5d61d7b442
 # Build the incumbent from the pinned revision, then run a driver (about 10 minutes for the first image build).
 cd -- "${HOME}/temp/agent/interop-rerun/package/git-policy/cli"
 GIT_POLICY_NATIVE_IMAGE_TAG=interop node "${HOME}/temp/agent/gate-slot.ts" \
