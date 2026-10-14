@@ -3,6 +3,7 @@
 
  @module
  */
+import { fail } from 'node:assert/strict';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from '@monochromatic-dev/module-test/ts';
 import spawn, { SubprocessError } from 'nano-spawn';
@@ -62,7 +63,6 @@ await describe({
     it({
       name: 'refuses to install the fixture blocker outside its isolated child',
       fn: async function rejectsNonFixtureChild() {
-        let failure: unknown;
         try {
           await spawn(process.execPath, [
             '--import', guard.href, '--input-type=module', '--eval', 'throw new Error("Unexpected fixture entry");',
@@ -73,12 +73,13 @@ await describe({
           });
         }
         catch (error) {
-          failure = error;
+          expect(error).toBeInstanceOf(SubprocessError);
+          if (!(error instanceof SubprocessError)) throw error;
+          expect(error.stderr).toContain('Native CLI fixture network guard requires its isolated child process');
+          expect(error.stderr).not.toContain('Unexpected fixture entry');
+          return;
         }
-        expect(failure).toBeInstanceOf(SubprocessError);
-        if (!(failure instanceof SubprocessError)) throw failure;
-        expect(failure.stderr).toContain('Native CLI fixture network guard requires its isolated child process');
-        expect(failure.stderr).not.toContain('Unexpected fixture entry');
+        fail('The native CLI fixture guard accepted an unmarked process');
       },
     }),
   ],
