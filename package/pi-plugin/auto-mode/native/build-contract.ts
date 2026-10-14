@@ -3,7 +3,10 @@
 
  @module
  */
-import { tagged, type Logger, } from '@monochromatic-dev/module-logger/ts';
+import {
+  tagged,
+  type Logger,
+} from '@monochromatic-dev/module-logger/ts';
 
 //region Native transformations require their measured upstream release
 
