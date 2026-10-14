@@ -156,17 +156,20 @@ The operating instructions live in `doc/runbook/claude-cpu-cap.md`.
     A gap this size is still more than the G1 versus G2 difference, so the contact or airflow path is the suspect.
 - The same load continued: 20:16:30 to 20:25:00 EDT (59 rows, cap 28), Tctl median 95.4 (95.3 to 95.6), package power
   median 132.9 W (123 to 137), average clock median 4407 MHz (low 4289), fans at their top speeds. So the setup settles
-  at about 95.4 degrees, 133 W and 4.3 to 4.4 GHz with boost off; this answers the earlier question about a settled value.
+  at about 95.4 degrees, 133 W and 4.3 to 4.4 GHz with boost off;
+  this answers the earlier question about a settled value.
   The new throttle alert fired at 20:24:23 (158 MHz shortfall), cleared at 20:24:39, and fired again at 20:24:45
   (197 MHz); it flaps because the average clock jitters around the 100 MHz limit. The cap stayed at 28 (the load average
   was 21 to 45, mostly under 32 threads, and the chip regulates itself at 95 degrees).
 - User's mounting answer (about 20:20 EDT): they believe all the checklist steps were done right and are considering
   buying the NH-D15 G2 in its AM5-suited version.
   Noctua sells no AM5-only SKU. The regular G2 includes the AM5 offset bars and, with the offset, matches or beats the
-  LBC variant on AM5; LBC suits AM5 without the offset or for the lowest CCD and IOD temperatures; HBC is not recommended
+  LBC variant on AM5; LBC suits AM5 without the offset or for the lowest CCD and IOD temperatures;
+  HBC is not recommended
   for AM5 (Noctua's G2 version FAQ and contact quality article, fetched 2026-10-13). The G2 gain over the G1 is
   2 to 3 degrees by Noctua and about 1 degree by GamersNexus, small next to the measured gap.
-  The zero-cost next step is to lift the cooler and inspect the paste imprint and the base; no purchase decision is made.
+  The zero-cost next step is to lift the cooler and inspect the paste imprint and the base;
+  no purchase decision is made.
 - Memory pressure, measured at 19:30 EDT (the user asked why tasks stall with so much memory in total):
   - The host is not short of memory: `MemAvailable` 45 GiB of 62 GiB, `user-1000.slice` peaked at 46 GB against a
     `memory.high` of 59.8 GB that it never reached (0 high events).
