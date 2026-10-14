@@ -930,6 +930,8 @@
     {
       "original": "lifecycle/sdk-session-disposal-completion/generate.mjs",
       "maintained": "lifecycle/sdk-session-disposal-completion/generate.mjs",
+      "currentMaintained": "lifecycle/sdk-session-disposal-completion/generate.ts",
+      "movedOn": "2026-10-14",
       "sha256": "6696a8c0732aa8103b520078856f5a493a78a4b9062428dd8d185aa6333d1a96",
       "origin": "authored-source",
       "relocatedLiterals": 0
@@ -937,6 +939,8 @@
     {
       "original": "lifecycle/sdk-session-lifetime/generate.mjs",
       "maintained": "lifecycle/sdk-session-lifetime/generate.mjs",
+      "currentMaintained": "lifecycle/sdk-session-lifetime/generate.ts",
+      "movedOn": "2026-10-14",
       "sha256": "ee6ef7225bf400dc0e71718b6bd321f545692c2d023e1df75e2fc1168917b198",
       "origin": "authored-source",
       "relocatedLiterals": 0

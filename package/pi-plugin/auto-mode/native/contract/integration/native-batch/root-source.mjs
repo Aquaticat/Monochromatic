@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import {generate as protectManager} from '../../lifecycle/sdk-custody-native/generate.mjs';
-import {generateSession} from '../../lifecycle/sdk-session-lifetime/generate.mjs';
-import {generateCompletion} from '../../lifecycle/sdk-session-disposal-completion/generate.mjs';
+import {generateSession} from '../../lifecycle/sdk-session-lifetime/generate.ts';
+import {generateCompletion} from '../../lifecycle/sdk-session-disposal-completion/generate.ts';
 
 function once({
   source,
