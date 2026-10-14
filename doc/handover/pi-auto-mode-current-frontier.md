@@ -311,6 +311,13 @@ The measured scoped lint run over the new host files and initial helpers reporte
 The build helpers are being refactored to asynchronous file and process operations,
 with tagged diagnostics and explicit types;
 full lint success remains unestablished.
+The subsequent complete native-source lint at `95bf856283` measured
+23,389 warnings and 943 errors across 154 files.
+This includes the relocated JavaScript runtime and earlier generated owned inputs.
+The result is a remaining implementation requirement,
+not a passed package check.
+The resolver and dependency paths are now being moved into type-checked source;
+input snapshots and policy checks retain their existing requirements.
 The refactored build helpers now pass scoped lint with zero warnings and zero errors across six files.
 The package type check,
 complete native build using its default qualified source checkout,
@@ -558,13 +565,16 @@ Use this finite delivery queue:
   lifecycle and description consumers `proc_a37a`,
   and action/source parents `proc_50d1` passed.
   Reuse the established required reds rather than opening a duplicate omission campaign.
-- [ ] Complete the code-owned decision consumer.
+- [x] Complete the code-owned decision consumer.
   Demonstrate justified approval,
   denial,
   eligible original approval requests,
   unresolved premises,
   and unspecified policy through the canonical native handler without injected final decisions.
   Replace unconditional missing-premise placeholders with decision-specific evidence from existing owners.
+  The maintained domain and approval fixtures demonstrate these cases with authored semantic relations
+  and independent prerequisite facts.
+  Production semantic admission and broader unobserved native callbacks remain explicit unfinished boundaries.
 - [ ] Integrate the implementation into the maintained package and necessary host path.
   The product must not depend on private scratch files.
   Run package checks against that integration.
