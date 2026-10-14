@@ -48,7 +48,9 @@ await describe({
             const captured = await captureAuthorizationInputs(f.options,);
             expect(f.controls.captures,).toBe(1,);
             expect(captured.forClause(f.rule,),).toEqual(f.authorization,);
-            expect(Object.isFrozen(captured.forClause(f.rule,),),).toBe(true,);
+            expect(
+              Object.isFrozen(captured.forClause(f.rule,),),
+            ).toBe(true,);
             expect(Object.isFrozen(captured.records,),).toBe(true,);
             expect(captured.records[0]?.evidence,).toBe(f.evidence,);
             expect(captured.records[0]?.rule,).toBe(f.rule,);

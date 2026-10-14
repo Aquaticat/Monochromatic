@@ -109,7 +109,8 @@ await describe({
           const field = mode === 'owner' ? 'capture' : 'authorization';
           Object.defineProperty(target, field, {
             enumerable: true,
-            get() { counts.reads++; return f.authorization; },
+            get() { counts.reads++;
+            return f.authorization; },
           },);
           const before = counts.reads;
           const failures = await authorizationCaptureFailures(f.options,);
@@ -127,7 +128,8 @@ await describe({
         const f = createAuthorizationEvidenceFixture();
         const state = { traps: 0, };
         const owner = new Proxy(f.owner, {
-          getPrototypeOf() { state.traps++; return Object.prototype; },
+          getPrototypeOf() { state.traps++;
+          return Object.prototype; },
         },);
         const failures = await authorizationCaptureFailures({ ...f.options, ownerFor() { return owner; }, },);
         expect(failures,).toHaveLength(1,);

@@ -12,7 +12,9 @@ import { readPolicyRecord, } from './policy-data.ts';
  Original prerequisite evidence is unavailable, malformed, mismatched or stale.
  */
 export class AuthorizationEvidenceError extends Error {
-  /** Stable diagnostic identity does not assert policy permission. */
+  /**
+   Stable diagnostic identity does not assert policy permission.
+   */
   override readonly name = 'AuthorizationEvidenceError';
 }
 
@@ -30,20 +32,42 @@ const l = tagged({ tag: 'auto-mode-authorization-evidence-data', },);
  Copy exactly the expected own data fields, retaining nested values as untrusted.
 
  @param input - original record whose getters must not be evaluated
+ 
  @param fields - complete expected field membership
+ 
  @returns copied values requiring domain-specific validation
+ 
  @throws AuthorizationEvidenceError for missing, extra or non-data fields
  */
 export function readAuthorizationRecord(
-  { input, fields, }: { readonly input: unknown; readonly fields: readonly string[] },
+  {
+    input,
+    fields,
+  }: {
+    readonly input: unknown;
+    readonly fields: readonly string[]
+  },
 ): Readonly<Record<string, unknown>> {
-  /** Trace record shape checks without publishing its values. */
-  const rl = tagged({ tag: readAuthorizationRecord.name, l, },);
+  /**
+   Trace record shape checks without publishing its values.
+   */
+  const rl = tagged({
+    tag: readAuthorizationRecord.name,
+    l,
+  },);
   rl.debug('checking original authorization record shape',);
   try {
-    /** The incumbent data reader rejects proxy, prototype and accessor traps. */
-    const record = readPolicyRecord({ input, fields, },);
-    if (fields.some(function absent(field,) { return !Object.hasOwn(record, field,); },))
+    /**
+     The incumbent data reader rejects proxy, prototype and accessor traps.
+     */
+    const record = readPolicyRecord({
+      input,
+      fields,
+    },);
+    if (fields.some(function absent(field,) { return !Object.hasOwn(
+      record,
+      field,
+    ); },))
       throw new AuthorizationEvidenceError('Authorization evidence has missing fields',);
     return record;
   }
@@ -59,31 +83,50 @@ export function readAuthorizationRecord(
  Narrow callable shape without invoking the borrowed method.
 
  @param input - borrowed capability candidate
+ 
  @returns whether invocation is structurally supported
  */
 function isEvidenceMethod(input: unknown,): input is EvidenceMethod {
-  return typeof input === 'function';
+  return (typeof input) === 'function';
 }
 
 /**
  Capture original owner method identities without freezing their borrowed container.
 
  @param input - bootstrap-selected owner, never model metadata
+ 
  @returns original capture and freshness methods
+ 
  @throws AuthorizationEvidenceError for unsupported owner methods
  */
 export function readAuthorizationOwner(input: unknown,): {
   readonly capture: EvidenceMethod;
   readonly assertCurrent: EvidenceMethod;
 } {
-  /** Owner checks remain distinct from original-evidence checks. */
-  const rl = tagged({ tag: readAuthorizationOwner.name, l, },);
+  /**
+   Owner checks remain distinct from original-evidence checks.
+   */
+  const rl = tagged({
+    tag: readAuthorizationOwner.name,
+    l,
+  },);
   rl.debug('checking original authorization owner methods',);
-  /** Fields are copied before callable narrowing. */
-  const methods = readAuthorizationRecord({ input, fields: ['capture', 'assertCurrent',], },);
-  if (!isEvidenceMethod(methods.capture,) || !isEvidenceMethod(methods.assertCurrent,))
+  /**
+   Fields are copied before callable narrowing.
+   */
+  const methods = readAuthorizationRecord({
+    input,
+    fields: [
+      'capture',
+      'assertCurrent',
+    ],
+  },);
+  if ((!isEvidenceMethod(methods.capture,)) || (!isEvidenceMethod(methods.assertCurrent,)))
     throw new AuthorizationEvidenceError('Authorization owner needs capture and freshness capabilities',);
-  return Object.freeze({ capture: methods.capture, assertCurrent: methods.assertCurrent, },);
+  return Object.freeze({
+    capture: methods.capture,
+    assertCurrent: methods.assertCurrent,
+  },);
 }
 
 //endregion Closed data readers
