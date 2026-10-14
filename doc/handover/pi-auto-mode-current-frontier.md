@@ -30,14 +30,43 @@ with identical answer data within each format's repeated runs.
 The primary permission estimate remains `0.83`.
 The [comparison record](../planning/pi-auto-mode-gateway-decisions-current-contract.md)
 retains the overlap in latency ranges and the mixed admission changes.
-The local implementation now selects Luna and `0.80`
-and contains the lossless Decisions adapter,
-but its build,
-type,
-lint,
-and consumer verification remain in progress.
-The first scoped formatter run includes stale built-export diagnostics and genuine new-code findings;
-it is not a passing check.
+The maintained implementation now selects Luna and `0.80`
+and contains the lossless Decisions adapter.
+The package and owned native builds pass.
+Package type checking passes;
+the 16-file changed TypeScript lint scope reports zero warnings and zero errors,
+with subsequent fixture-only changes checked separately.
+The initial formatter diagnostics and fixture declaration-generation failure were corrected,
+not ignored.
+Built wire,
+transport,
+and admission tests pass.
+Native authored HTTP cases verify permission at `0.80`,
+prohibition,
+unspecified policy,
+lower scores,
+unknown meanings,
+and unsupported meanings.
+Every native case makes one local HTTP call and zero provider requests.
+The native lifecycle and actual isolated Qwen CLI also pass with clean shutdown.
+
+Local replay of all six retained provider responses preserves all 504 answer distributions
+and their independent confidence values exactly.
+Re-encoding the retained baseline request preserves its complete parsed JSON value.
+Process-local omission of the model,
+answer identity,
+duplicate-label,
+normalization,
+or question-count guard makes the corresponding behavior assertion fail.
+The first identity omission survived because mixed-kind reordering failed another guard;
+an otherwise valid answer with a changed name now isolates original name attribution.
+The final controls leave the built artifact unchanged.
+Receipts live in `${HOME}/temp/agent/pi-luna-guard-controls-20261014/`
+and the comparison directory's `built-adapter-replay.json`.
+The explicit-rubric variant remains an experiment;
+its mixed results do not establish greater accuracy.
+The production adapter currently uses the verified lossless baseline encoding.
+Current-request capture and genuine human approval are the next consumer checks.
 
 ## Original native RPC approval verification
 
