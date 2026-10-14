@@ -40,11 +40,16 @@ use std::{cell::RefCell, rc::Rc};
 
 /// What:
 ///  Show a note for an explicit action,
-///  or only log the reason for a resting pointer.
+///  and for a resting pointer only when the file's language support itself is missing or failing,
+///  once for each displayed file;
+///  otherwise only log the reason for a resting pointer.
 /// Why:
 ///  Hovering is passive;
 ///  editord shows nothing when hover fails,
-///  and neither does this view.
+///  and a failure at one position is not worth interrupting the pointer for.
+///  A file without working language support fails at every position,
+///  and nothing else on the way to the pointer says why,
+///  so the first rest on it names the cause.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -58,6 +63,23 @@ pub(super) fn note(
     sentence: &str,
 ) {
     if !pending.action.explicit() {
+        // What: Compare the displayed file's generation with the one already explained, then ask whether
+        //       the answers are about the language support itself.
+        // Why: The explanation is once per file; an empty answer or a server still starting is not one.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // const due = language.explained !== pending.stamp.file && statesSupportProblem(pending.outcomes, language.status);
+        // ```
+        let due = language.explained != Some(pending.stamp.file)
+            && message::states_support_problem(&pending.outcomes, &language.status);
+        if due {
+            tracing::info!(sentence, "a resting pointer explains why hover is unavailable");
+            language.explained = Some(pending.stamp.file);
+            // The popup follows the pointer like hover content and ends like it, but is drawn as a note.
+            language.shown = surface::popup(window, source, pending.position, sentence, (true, true));
+            return;
+        }
         tracing::debug!(sentence, "pointer hover produced nothing to show");
         // A pointer popup describing another character must not stay after an empty answer.
         if matches!(language.shown, surface::Shown::Popup { pointer: true, .. }) {

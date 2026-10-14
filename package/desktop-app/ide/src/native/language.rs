@@ -257,6 +257,9 @@ pub(super) struct Language {
     shown: surface::Shown,
     /// The resting pointer.
     rest: pointer::Rest,
+    /// The file generation for which a resting pointer already explained why hover is unavailable;
+    ///  the explanation is shown once for each displayed file.
+    explained: Option<u64>,
     /// The visible lines reported for inlay hints.
     hints: sync::HintLines,
 }
@@ -339,6 +342,7 @@ pub(super) fn bind(
         hover: None,
         shown: surface::Shown::Nothing,
         rest: pointer::Rest::default(),
+        explained: None,
         hints: sync::HintLines::default(),
     }));
     actions::bind(window, source, navigation, &language);
