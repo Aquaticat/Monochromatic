@@ -1836,7 +1836,7 @@ and why.
   and change events:
   `a11y` reads the tree only.
 
-## Changes in the next version
+## Changes in 0.5.0
 
 - New `--headless` flag renders with surfaceless EGL on the DRM render node,
   with no parent display and no window.
