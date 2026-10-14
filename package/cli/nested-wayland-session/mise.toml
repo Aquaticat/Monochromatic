@@ -1839,3 +1839,302 @@ if (failed.length > 0) {
   process.exit(1)
 }
 '''
+
+[tasks."inspect:headless"]
+description = "Verify --headless with a Slint client and no parent display: GPU dmabuf, screenshots, input, frame pacing, and that no window reaches a parent"
+# The binary under test is ./target/release/monochromatic-nested-wayland-session unless NWS_BINARY names another.
+# Needs slint-viewer. The task removes WAYLAND_DISPLAY, WAYLAND_SOCKET, DISPLAY, and XAUTHORITY from the environment of the
+# compositor it starts (so it passes from a bare TTY or SSH), and forces the Slint winit-femtovg renderer so the client
+# draws on the GPU through EGL and dmabuf. Every check runs and is reported; any failure exits 1.
+shell = "node --input-type=module-typescript -e"
+run = '''
+const { spawn } = await import('node:child_process')
+const { once } = await import('node:events')
+const { createServer, createConnection } = await import('node:net')
+const { mkdtempSync, mkdirSync, readFileSync, writeFileSync } = await import('node:fs')
+const { tmpdir } = await import('node:os')
+const { join } = await import('node:path')
+const { inflateSync } = await import('node:zlib')
+const { setTimeout: wait } = await import('node:timers/promises')
+const { default: assert } = await import('node:assert/strict')
+const binary = process.env.NWS_BINARY ?? './target/release/monochromatic-nested-wayland-session'
+const evidence = mkdtempSync(join(tmpdir(), 'nested-headless-'))
+const parentVariables = ['WAYLAND_DISPLAY', 'WAYLAND_SOCKET', 'DISPLAY', 'XAUTHORITY']
+const withoutParent = base => {
+  const copy = { ...base }
+  for (const name of parentVariables) delete copy[name]
+  return copy
+}
+const until = async (label, probe, limit = 15000) => {
+  const started = performance.now()
+  while (performance.now() - started < limit) {
+    const value = await probe()
+    if (value) return value
+    await wait(25)
+  }
+  assert.fail('timed out waiting for ' + label)
+}
+const control = (socketPath, line) => new Promise((resolve, reject) => {
+  const socket = createConnection(socketPath)
+  let reply = ''
+  socket.on('error', reject)
+  socket.on('data', chunk => {
+    reply += chunk
+    if (reply.includes('\n')) { socket.end(); resolve(reply.trim()) }
+  })
+  socket.write(line + '\n')
+})
+// PNG decoding with zlib only: 8-bit RGB or RGBA, all five scanline filters.
+const decodePng = path => {
+  const bytes = readFileSync(path)
+  assert.equal(bytes.subarray(0, 8).toString('hex'), '89504e470d0a1a0a', path + ' is not a PNG')
+  let offset = 8
+  let header
+  const parts = []
+  while (offset < bytes.length) {
+    const length = bytes.readUInt32BE(offset)
+    const type = bytes.subarray(offset + 4, offset + 8).toString('latin1')
+    const body = bytes.subarray(offset + 8, offset + 8 + length)
+    if (type === 'IHDR') header = { width: body.readUInt32BE(0), height: body.readUInt32BE(4), depth: body[8], color: body[9] }
+    if (type === 'IDAT') parts.push(body)
+    offset += 12 + length
+  }
+  assert.equal(header.depth, 8, 'PNG bit depth')
+  const channels = header.color === 6 ? 4 : header.color === 2 ? 3 : 0
+  assert(channels > 0, 'PNG color type ' + header.color)
+  const raw = inflateSync(Buffer.concat(parts))
+  const stride = header.width * channels
+  const data = Buffer.alloc(stride * header.height)
+  for (let row = 0; row < header.height; row++) {
+    const filter = raw[row * (stride + 1)]
+    for (let index = 0; index < stride; index++) {
+      const value = raw[row * (stride + 1) + 1 + index]
+      const left = index >= channels ? data[row * stride + index - channels] : 0
+      const up = row > 0 ? data[(row - 1) * stride + index] : 0
+      const upLeft = row > 0 && index >= channels ? data[(row - 1) * stride + index - channels] : 0
+      let predicted = 0
+      if (filter === 1) predicted = left
+      else if (filter === 2) predicted = up
+      else if (filter === 3) predicted = (left + up) >> 1
+      else if (filter === 4) {
+        const estimate = left + up - upLeft
+        const distances = [Math.abs(estimate - left), Math.abs(estimate - up), Math.abs(estimate - upLeft)]
+        predicted = [left, up, upLeft][distances.indexOf(Math.min(...distances))]
+      }
+      data[row * stride + index] = (value + predicted) & 255
+    }
+  }
+  const pixel = (x, y) => [...data.subarray(y * stride + x * channels, y * stride + x * channels + 3)]
+  const colors = new Set()
+  for (let index = 0; index < data.length; index += channels) colors.add(data[index] << 16 | data[index + 1] << 8 | data[index + 2])
+  return { width: header.width, height: header.height, pixel, distinctColors: colors.size, data }
+}
+const near = (actual, expected, tolerance = 12) => actual.every((value, index) => Math.abs(value - expected[index]) <= tolerance)
+const YELLOW = [0xe0, 0xc0, 0x40]
+const BLUE = [0x20, 0x40, 0x60]
+const GREEN = [0x40, 0xc0, 0x60]
+// A static scene: yellow top-left quadrant on blue; a click turns the bottom-right quadrant green and is reported on stdout.
+const staticScene = [
+  'export component Scene inherits Window {',
+  '    callback clicked-at(float, float);',
+  '    property <bool> pressed: false;',
+  '    background: #204060;',
+  '    Rectangle { x: 0px; y: 0px; width: root.width / 2; height: root.height / 2; background: #e0c040; }',
+  '    Rectangle { x: root.width / 2; y: root.height / 2; width: root.width / 2; height: root.height / 2; background: root.pressed ? #40c060 : #204060; }',
+  '    TouchArea { clicked => { root.pressed = true; root.clicked-at(self.mouse-x / 1px, self.mouse-y / 1px); } }',
+  '}',
+  '',
+].join('\n')
+// An endlessly animating scene: animation-tick() makes Slint draw a frame, and so ask for a frame callback, every refresh.
+const animatedScene = [
+  'export component Scene inherits Window {',
+  '    background: #204060;',
+  '    Rectangle { x: mod(animation-tick() / 10ms, 300) * 1px; y: 100px; width: 80px; height: 80px; background: #e0c040; }',
+  '}',
+  '',
+].join('\n')
+// Starts the compositor with slint-viewer as the hosted client. `lines` collects the client's stdout, `log` the compositor's stderr
+// (which also carries the client's WAYLAND_DEBUG=client protocol log, inherited through the compositor).
+const start = ({ name, flags, size, scene, env }) => {
+  const directory = join(evidence, name)
+  mkdirSync(directory)
+  const socketPath = join(directory, 'control.sock')
+  const scenePath = join(directory, 'scene.slint')
+  writeFileSync(scenePath, scene)
+  const session = spawn(binary, [...flags, '--size', size, '--socket', socketPath, '--',
+    'slint-viewer', '--on', 'clicked-at', 'echo clicked-at $1 $2', scenePath,
+  ], { env, stdio: ['ignore', 'pipe', 'pipe'] })
+  const log = []
+  const lines = []
+  session.stderr.on('data', chunk => log.push(chunk))
+  session.stdout.on('data', chunk => lines.push(chunk))
+  const exited = once(session, 'exit').then(([code]) => code)
+  return {
+    directory, socketPath, session, exited,
+    stderr: () => Buffer.concat(log).toString().replace(/\x1b\[[0-9;]*m/g, ''),
+    stdout: () => Buffer.concat(lines).toString(),
+    shot: async label => {
+      const path = join(directory, label + '.png')
+      assert.equal(await control(socketPath, 'screenshot ' + path), 'ok')
+      return decodePng(path)
+    },
+  }
+}
+const finish = async host => {
+  assert.equal(await control(host.socketPath, 'quit'), 'ok')
+  const code = await Promise.race([host.exited, wait(10000).then(() => 'timeout')])
+  assert.equal(code, 0, 'the compositor exits 0 after quit (got ' + code + ')')
+}
+const environment = pid => readFileSync('/proc/' + pid + '/environ', 'latin1').split('\0').map(entry => entry.split('=')[0])
+const baseEnvironment = { ...process.env, SLINT_BACKEND: 'winit-femtovg', WAYLAND_DEBUG: 'client' }
+const results = []
+const check = async (name, body) => {
+  try {
+    const detail = await body()
+    results.push({ name, ok: true })
+    console.log('PASS ' + name + (detail ? ': ' + detail : ''))
+  } catch (error) {
+    results.push({ name, ok: false, message: String(error.message ?? error) })
+    console.log('FAIL ' + name + ': ' + String(error.message ?? error))
+  }
+}
+
+await check('static session: GPU dmabuf, two screenshots, input, a changed screenshot, resize and scale', async () => {
+  const env = withoutParent(baseEnvironment)
+  const host = start({ name: 'static', flags: ['--headless'], size: '400x300', scene: staticScene, env })
+  try {
+    // The compositor itself runs without any parent display variable.
+    const present = environment(host.session.pid)
+    assert(parentVariables.every(variable => !present.includes(variable)), 'parent display variables in the environment: ' + present.filter(variable => parentVariables.includes(variable)))
+    await until('the control socket', async () => (await control(host.socketPath, 'ping').catch(() => '')) === 'ok')
+    const empty = await host.shot('empty')
+    assert(near(empty.pixel(200, 150), [0x1a, 0x1a, 0x1a], 2), 'before the client commits, the screen is the clear color: ' + empty.pixel(200, 150))
+    // The client has committed once the yellow quadrant shows.
+    await until('the first client frame', async () => near((await host.shot('first')).pixel(100, 75), YELLOW))
+    await wait(400)
+    const first = await host.shot('baseline-a')
+    const second = await host.shot('baseline-b')
+    assert.equal([first.width, first.height].join('x'), '400x300')
+    assert(first.distinctColors >= 2, 'screenshot looks blank: ' + first.distinctColors + ' colors')
+    assert(near(first.pixel(100, 75), YELLOW), 'top-left is yellow (upright image): ' + first.pixel(100, 75))
+    assert(near(first.pixel(300, 75), BLUE) && near(first.pixel(100, 225), BLUE), 'top-right and bottom-left are blue')
+    assert(near(first.pixel(300, 225), BLUE), 'bottom-right is blue before the click: ' + first.pixel(300, 225))
+    assert(first.data.equals(second.data), 'two screenshots of an idle client are identical')
+    // Input: the click reaches the client through the compositor's seat; the second screenshot differs from the baseline.
+    const clickedAt = performance.now()
+    assert.equal(await control(host.socketPath, 'click 300 225'), 'ok')
+    let changed
+    await until('the screenshot to show the click', async () => {
+      changed = await host.shot('after-click')
+      return near(changed.pixel(300, 225), GREEN)
+    })
+    const latency = Math.round(performance.now() - clickedAt)
+    assert(!changed.data.equals(first.data), 'the screenshot after the click differs from the baseline')
+    assert(near(changed.pixel(100, 75), YELLOW), 'the yellow quadrant stays where it was')
+    await until('the client to report the click', () => /clicked-at 300(\.0+)? 225(\.0+)?/.test(host.stdout()))
+    // Resize and scale reach the surfaceless output the same way as the nested one.
+    assert.equal(await control(host.socketPath, 'resize 320 240'), 'ok')
+    await until('the 320x240 capture', async () => { const image = await host.shot('resized'); return image.width === 320 && image.height === 240 && near(image.pixel(80, 60), YELLOW) && near(image.pixel(240, 180), GREEN) })
+    assert.equal(await control(host.socketPath, 'scale 2'), 'ok changed')
+    await until('the 640x480 capture at scale 2', async () => {
+      const image = await host.shot('scale-2')
+      return image.width === 640 && image.height === 480 && near(image.pixel(310, 230), YELLOW) && near(image.pixel(330, 250), GREEN)
+    })
+    // The log proves the path: the surfaceless EGL display, v4 feedback, and a client that really allocated dmabufs.
+    const log = host.stderr()
+    assert(/surfaceless EGL display opened/.test(log), 'no surfaceless EGL line in the log')
+    assert(/dmabuf: advertising v4 with modifier feedback/.test(log), 'no dmabuf v4 line in the log')
+    const dmabufBuffers = (log.match(/zwp_linux_buffer_params_v1[@#]\d+\.(create_immed|create)\(/g) ?? []).length
+    assert(dmabufBuffers > 0, 'the client created no dmabuf buffers')
+    assert(!/winit backend init/.test(log), 'the nested window path ran')
+    writeFileSync(join(host.directory, 'compositor.log'), log)
+    const node = /render_node=Some\("([^"]+)"\)/.exec(log)?.[1] ?? 'unknown'
+    return 'render node ' + node + ', ' + dmabufBuffers + ' client dmabuf buffers, click to changed screenshot in ' + latency + ' ms'
+  } finally {
+    await finish(host).catch(() => host.session.kill())
+  }
+})
+
+await check('frame pacing: the client gets frame callbacks at the output refresh rate and the screenshot is current', async () => {
+  const host = start({ name: 'pacing', flags: ['--headless'], size: '400x300', scene: animatedScene, env: withoutParent(baseEnvironment) })
+  try {
+    await until('the control socket', async () => (await control(host.socketPath, 'ping').catch(() => '')) === 'ok')
+    await until('the animated client', async () => near((await host.shot('first')).pixel(10, 10), BLUE) && /wl_callback[@#]\d+\.done\(/.test(host.stderr()))
+    await wait(1000)
+    // Frame callbacks the client received, counted from its own protocol log over a timed window. winit asks for one callback
+    // per frame for its own redraw throttling beside the one Slint asks for, and the compositor answers both with the same
+    // timestamp, so ticks are the distinct timestamps.
+    const doneTimestamps = () => [...host.stderr().matchAll(/wl_callback[@#]\d+\.done\((\d+)\)/g)].map(match => Number(match[1]))
+    const startedAt = performance.now()
+    const before = doneTimestamps().length
+    const beforeTicks = new Set(doneTimestamps()).size
+    // Screenshots inside the window: the moving square must be where the client last drew it.
+    const positions = []
+    for (let index = 0; index < 6; index++) {
+      const image = await host.shot('moving-' + index)
+      let column = -1
+      for (let x = 0; x < image.width; x++) if (near(image.pixel(x, 140), YELLOW)) { column = x; break }
+      positions.push(column)
+      await wait(300)
+    }
+    await wait(Math.max(0, 4000 - (performance.now() - startedAt)))
+    const seconds = (performance.now() - startedAt) / 1000
+    const timestamps = doneTimestamps()
+    const rate = (new Set(timestamps).size - beforeTicks) / seconds
+    const events = (timestamps.length - before) / seconds
+    assert(positions.every(column => column >= 0), 'the moving square was not found in every screenshot: ' + positions)
+    assert(new Set(positions).size >= 4, 'screenshots do not follow the client: square columns ' + positions)
+    assert(rate >= 55 && rate <= 62, 'frame callback rate ' + rate.toFixed(1) + ' per second; expected about 60')
+    return rate.toFixed(1) + ' frame ticks per second (' + events.toFixed(1) + ' wl_callback.done events per second) over ' + seconds.toFixed(1)
+      + ' s, square columns ' + positions.join(',')
+  } finally {
+    await finish(host).catch(() => host.session.kill())
+  }
+})
+
+await check('no window reaches a parent: a decoy parent socket gets no connection', async () => {
+  const directory = join(evidence, 'decoy')
+  mkdirSync(directory)
+  const decoyPath = join(directory, 'wayland-decoy')
+  let connections = 0
+  const decoy = createServer(socket => { connections++; socket.destroy() })
+  await new Promise(resolve => decoy.listen(decoyPath, resolve))
+  const host = start({ name: 'decoy-session', flags: ['--headless'], size: '400x300', scene: staticScene, env: { ...baseEnvironment, WAYLAND_DISPLAY: decoyPath, DISPLAY: ':99' } })
+  try {
+    await until('the control socket', async () => (await control(host.socketPath, 'ping').catch(() => '')) === 'ok')
+    await until('the first client frame', async () => near((await host.shot('first')).pixel(100, 75), YELLOW))
+    await wait(500)
+    assert.equal(connections, 0, 'a client connected to the decoy parent socket')
+    assert(/stays unused/.test(host.stderr()), 'the log does not say the parent display stays unused')
+    return 'decoy parent accepted ' + connections + ' connections while the client drew'
+  } finally {
+    await finish(host).catch(() => host.session.kill())
+    decoy.close()
+  }
+})
+
+await check('without the flag and without a display the start fails and names --headless', async () => {
+  const directory = join(evidence, 'no-flag')
+  mkdirSync(directory)
+  const session = spawn(binary, ['--size', '400x300', '--socket', join(directory, 'control.sock'), '--', 'slint-viewer', join(evidence, 'static', 'scene.slint')],
+    { env: withoutParent(baseEnvironment), stdio: ['ignore', 'pipe', 'pipe'] })
+  const errors = []
+  session.stderr.on('data', chunk => errors.push(chunk))
+  const code = await Promise.race([once(session, 'exit').then(([exitCode]) => exitCode), wait(15000).then(() => 'timeout')])
+  if (code === 'timeout') session.kill()
+  const text = Buffer.concat(errors).toString().replace(/\x1b\[[0-9;]*m/g, '')
+  writeFileSync(join(directory, 'compositor.log'), text)
+  assert.notEqual(code, 'timeout', 'the compositor kept running without a display')
+  assert.notEqual(code, 0, 'the compositor reported success without a display')
+  assert(text.includes('--headless'), 'the message does not name --headless: ' + text.slice(-400))
+  return 'exit ' + code + ', message names --headless'
+})
+
+const failed = results.filter(result => !result.ok)
+console.log('Evidence: ' + evidence)
+if (failed.length > 0) {
+  for (const result of failed) console.log('FAILED ' + result.name + ': ' + result.message)
+  process.exit(1)
+}
+console.log('Headless mode verified: ' + results.length + ' checks passed')
+'''
