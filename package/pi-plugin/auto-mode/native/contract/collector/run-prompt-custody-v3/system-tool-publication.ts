@@ -100,7 +100,10 @@ export function publishSystemToolInput({
    
    @throws SourceCollectionError when declarations differ from the captured original input
    */
-  function toolsFor(value: object): { readonly fields: SystemInputFields; readonly tools?: readonly object[] } {
+  function toolsFor(value: object): {
+    readonly fields: SystemInputFields;
+    readonly tools?: readonly object[]
+  } {
     /**
      Data-profile checks have a distinct diagnostic boundary.
      */
@@ -135,7 +138,10 @@ export function publishSystemToolInput({
     if (!declarations.every(function isDeclaration(item): item is object {
       return (item !== null) && ((typeof item) === 'object');
     })) throw new InputError('Native system tool declarations require original records');
-    return { fields: selected, tools: declarations };
+    return {
+      fields: selected,
+      tools: declarations
+    };
   }
 
   /**
@@ -172,7 +178,10 @@ export function publishSystemToolInput({
       /**
        Captured data equality checks integrity only after identity membership.
        */
-      const { fields: selected, tools } = toolsFor(root);
+      const {
+        fields: selected,
+        tools
+      } = toolsFor(root);
       if (tools !== messageAlias.tools) return retire('Original system tool declaration array was replaced');
       if ((selected.content !== messageAlias.content) || (selected.sections !== messageAlias.sections)
         || (selected.toolsRemoved !== messageAlias.toolsRemoved))
@@ -218,7 +227,10 @@ export function publishSystemToolInput({
     /**
      Validate the entire native copy before occupying any alias slot.
      */
-    const { fields: selected, tools } = toolsFor(value);
+    const {
+      fields: selected,
+      tools
+    } = toolsFor(value);
     if ((new Set(tools).size !== (tools?.length ?? 0)) || (tools?.some(function alreadyPublished(tool) {
       return aliases.has(tool);
     }) === true))
