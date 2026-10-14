@@ -143,7 +143,7 @@ pub(crate) fn run_action_with(window: &AppWindow, host: &dyn Host, effects: &dyn
         return;
     };
     match action {
-        TrackMenuAction::Play => crate::ui_wire::play_row(host, index),
+        TrackMenuAction::Play => crate::ui_wire::play_row_now(host, index),
         TrackMenuAction::ShuffleFromHere => shuffle_from_here(host, index),
         TrackMenuAction::Details => show_details(window, &name, &path),
         TrackMenuAction::ShowInFileManager => match effects.show_in_file_manager(&path) {

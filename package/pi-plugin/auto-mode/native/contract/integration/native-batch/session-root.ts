@@ -12,8 +12,8 @@ import { createManagerConstructorOwner } from '../../lifecycle/runtime-custody/m
 import {
   createNativeManagerRegistry,
   createSessionRootReader,
-  createRuntimeFactoryScopes,
 } from './session-root-dependencies.mjs';
+import { createRuntimeFactoryScopes } from '../../lifecycle/runtime-factory-scopes/scopes.ts';
 import type {
   RootSessionDefinition,
   RootSessionFactory,

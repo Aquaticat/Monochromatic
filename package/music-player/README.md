@@ -130,11 +130,15 @@ The transport deck shows the playing track with its folder,
 the seek bar,
 and the playback mode.
 
-On desktop,
-clicking a row other than the playing one plays it at once,
-and clicking the playing row toggles play and pause.
-On Android,
-tapping a row plays it.
+On both platforms,
+clicking or tapping a track row that is not the current track selects it and leaves it paused,
+and any track that was playing stops (D124).
+Clicking or tapping the current row toggles play and pause,
+which also starts a track restored from the last session.
+On Android a track that failed to open stays selected and the next tap tries it again;
+on desktop selecting an unreadable file reports it and moves the selection to the next playable file.
+`Enter` on the focused row does the same.
+The Play item of the track menu and a Search result start a track at once.
 
 One playback mode of four applies on both platforms,
 and the app saves it:
@@ -308,9 +312,9 @@ In order,
 Shuffle the folder,
 and Shuffle all.
 
-![Two-pane window in light appearance with a playing track](https://monochromatic-lfs.aquaticat.workers.dev/11389787a678c3204a331e24f41086c6b86667e938d0945831b2fb7d487140e8/package/music-player/asset/readme/desktop-two-pane-light.png)
+![Two-pane window in light appearance with a playing track](https://monochromatic-lfs.aquaticat.workers.dev/b5403787cf65072d0d2c9cfe18009016e35fb4632d8008642481377af9d4af10/package/music-player/asset/readme/desktop-two-pane-light.png)
 
-![Two-pane window in dark appearance with a playing track](https://monochromatic-lfs.aquaticat.workers.dev/ddba79bac4be96b743db6691afa2b1dcc40ef73841fe8d5a512b9fd15f4ee2a0/package/music-player/asset/readme/desktop-two-pane-dark.png)
+![Two-pane window in dark appearance with a playing track](https://monochromatic-lfs.aquaticat.workers.dev/531d61ba09fe7eb7d514a3b49c813884b31df36890fec730a195fa29d1fb0be4/package/music-player/asset/readme/desktop-two-pane-dark.png)
 
 #### Search
 
@@ -321,9 +325,9 @@ and a track with its parent folder,
 each with the matching text highlighted.
 The ring on the first result shows keyboard focus.
 
-![Search results for a query in light appearance](https://monochromatic-lfs.aquaticat.workers.dev/63ba17ebabc151776d4507e814ec839369a8e355a76eeff7beda8de470d80a41/package/music-player/asset/readme/desktop-search-light.png)
+![Search results for a query in light appearance](https://monochromatic-lfs.aquaticat.workers.dev/0f517d845ba2c9d7b77d66324e6cfc7d8ab1ebbd55ed3c0d6f4409a48b51e3cb/package/music-player/asset/readme/desktop-search-light.png)
 
-![Search results for a query in dark appearance](https://monochromatic-lfs.aquaticat.workers.dev/babc2d7c1b94a2a85e1b60117d9a775e9bab3bf9b36487c58f8c5e17b534555b/package/music-player/asset/readme/desktop-search-dark.png)
+![Search results for a query in dark appearance](https://monochromatic-lfs.aquaticat.workers.dev/31a8b914f5bd730e664bb57334050aaa7c4e98e8f38583b186e5c151e49bf7ef/package/music-player/asset/readme/desktop-search-dark.png)
 
 #### Settings
 
@@ -342,9 +346,9 @@ The menu was opened on the playing row with the `Menu` key.
 Each row has an underlined access letter,
 and the rows that have a shortcut show it.
 
-![Track menu opened with the keyboard in light appearance](https://monochromatic-lfs.aquaticat.workers.dev/637bda0a02bc474baaed39d100e6fd57ca54b2d82c0fb83d1b3a623f327fc879/package/music-player/asset/readme/desktop-menu-light.png)
+![Track menu opened with the keyboard in light appearance](https://monochromatic-lfs.aquaticat.workers.dev/d0225b90acf06c3f0e925cd568bee8c15e30ac616828fe9e6dc49d24cf426e06/package/music-player/asset/readme/desktop-menu-light.png)
 
-![Track menu opened with the keyboard in dark appearance](https://monochromatic-lfs.aquaticat.workers.dev/9b6327d950aff7890a868cb3eeb09ca38c0a2ad74fc54bd3e8c232bbe28bf418/package/music-player/asset/readme/desktop-menu-dark.png)
+![Track menu opened with the keyboard in dark appearance](https://monochromatic-lfs.aquaticat.workers.dev/f3e68dda2676018e3a6412c5e8490ebe6c77ddc537edf77cb81dfa70a8aa91bb/package/music-player/asset/readme/desktop-menu-dark.png)
 
 Holding `Ctrl` shows a badge on each control that a `Ctrl` chord triggers:
 `F` on Search,
@@ -353,7 +357,7 @@ Holding `Ctrl` shows a badge on each control that a `Ctrl` chord triggers:
 and `Left` and `Right` on previous and next.
 The ring on the track row shows keyboard focus.
 
-![Key hint badges while Ctrl is held](https://monochromatic-lfs.aquaticat.workers.dev/85b1c6e6648f84384e835cef9127d0a81e73b6185605f852af004cb9a5c00fec/package/music-player/asset/readme/desktop-hints-dark.png)
+![Key hint badges while Ctrl is held](https://monochromatic-lfs.aquaticat.workers.dev/7a2a9c6a23db12b2a8cdea1deaae9f6f29643c7f1e7aafff72d13ede839cc26e/package/music-player/asset/readme/desktop-hints-dark.png)
 
 #### Narrow window
 
@@ -368,7 +372,7 @@ and Settings.
 The folder button opens the folder list in place of the track list,
 and the deck stays in view.
 
-![Narrow window with the folder list open in light appearance](https://monochromatic-lfs.aquaticat.workers.dev/bb95684ccd34f954143784071729b4cea92b71ed38e447547b158ccdf39bcff2/package/music-player/asset/readme/desktop-narrow-folders-light.png)
+![Narrow window with the folder list open in light appearance](https://monochromatic-lfs.aquaticat.workers.dev/bda22d27984c754117e63e8a0be1fb0f8283512b39fef7691ccb8ed832f64fe4/package/music-player/asset/readme/desktop-narrow-folders-light.png)
 
 #### Empty library
 
@@ -431,9 +435,12 @@ The query `lan` finds a loose track,
 a folder,
 and a track with its parent folder,
 each with the matching text highlighted.
+The header, the status strip and the results share one tone,
+a thin divider closes the header,
+and each result keeps its glyph in a round tonal disc.
 The on-screen keyboard was closed before the capture so that the results fill the display.
 
-![Search results for a query on the cover display in light appearance](https://monochromatic-lfs.aquaticat.workers.dev/582ac24c13d7449c7219890dbfd8c39fd3b85b9fee8f2dd3186688df8661f909/package/music-player/asset/readme/android-cover-search-light.png)
+![Search results for a query on the cover display in light appearance](https://monochromatic-lfs.aquaticat.workers.dev/b83ee72ae828794c5aa7b8ae7b471d232440f11417517328930db95d2b39a736/package/music-player/asset/readme/android-cover-search-light.png)
 
 The menu was opened on the playing row with the `Menu` key,
 after `Alt+2` had focused the track list.

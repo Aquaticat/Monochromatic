@@ -913,7 +913,7 @@ pub enum Update {
     ///      `Unplayable(Vec<PathBuf>)` lists files that were skipped because they could not be opened for playback.
     /// Why:
     ///       A track that cannot be decoded used to be skipped silently (the polish review finding PB1, D83). The window
-    ///  names the file in a message and marks its row.
+    ///  marks its row, and on Linux the desktop gets a notification that names the file (D122).
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts

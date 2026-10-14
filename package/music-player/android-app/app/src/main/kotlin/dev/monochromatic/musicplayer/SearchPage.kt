@@ -18,9 +18,13 @@ package dev.monochromatic.musicplayer
 // ```ts
 // import { background } from "compose/foundation";
 // ```
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.foundation.background
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.testTag
 
 // What:     `import androidx.compose.foundation.clickable` makes each result row one activatable target.
 // Why:      The row is the single action target, so the click handler and its label live on one modifier (D77).
@@ -39,15 +43,6 @@ import androidx.compose.foundation.clickable
 // import { isSystemInDarkTheme } from "compose/foundation";
 // ```
 import androidx.compose.foundation.isSystemInDarkTheme
-
-// What:     `import androidx.compose.foundation.layout.Arrangement` centers the cover status vertically.
-// Why:      The cover status sits in the middle of the remaining height, as in the reviewed capture.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// import { Arrangement } from "compose/foundation/layout";
-// ```
-import androidx.compose.foundation.layout.Arrangement
 
 // What:     `import androidx.compose.foundation.layout.Box` stacks a status or list over its region.
 // Why:      Each region of the page is a box whose content is chosen by the search state.
@@ -275,7 +270,7 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 
 // What:     `import androidx.compose.material3.HorizontalDivider` draws the header boundary.
-// Why:      The 1dp outline divider separates the header from the status or results.
+// Why:      The 1dp outline-variant divider separates the header from the status or results (D126).
 //
 // In TS you'd write (pseudocode):
 // ```ts
@@ -647,6 +642,12 @@ import dev.monochromatic.musicplayer.core.leftPaneClearance
 import dev.monochromatic.musicplayer.core.SEARCH_BACK_LABEL
 import dev.monochromatic.musicplayer.core.SEARCH_CLEAR_LABEL
 import dev.monochromatic.musicplayer.core.SEARCH_FIELD_LABEL
+import dev.monochromatic.musicplayer.core.SEARCH_ROW_ICON_CIRCLE_DP
+import dev.monochromatic.musicplayer.core.SEARCH_ROW_ICON_SLOT_DP
+import dev.monochromatic.musicplayer.core.SEARCH_ROW_RADIUS_DP
+import dev.monochromatic.musicplayer.core.SEARCH_STATUS_CIRCLE_DP
+import dev.monochromatic.musicplayer.core.SEARCH_STATUS_GLYPH_DP
+import dev.monochromatic.musicplayer.core.searchRowInsets
 
 // What:     `private val SEARCH_EDGE_INSET: Dp = 16.dp` is the page's standard edge inset.
 // Why:      Header and row content start at the same 16dp inset on the cover and beside the crease.
@@ -708,14 +709,14 @@ private val SEARCH_HEADER_HEIGHT: Dp = 72.dp
 /** Minimum height of one result row. */
 private val SEARCH_ROW_MIN_HEIGHT: Dp = 72.dp
 
-// What:     `private val SEARCH_STATUS_TOP: Dp = 72.dp` offsets the inner status headline from the top.
-// Why:      The inner status starts below the header, as in the reviewed inner capture.
+// What:     `private val SEARCH_STATUS_TOP: Dp = 72.dp` offsets the status circle from the divider.
+// Why:      Both panels start the status circle the same distance under the divider, above the keyboard (D126).
 //
 // In TS you'd write (pseudocode):
 // ```ts
 // const SEARCH_STATUS_TOP = 72;
 // ```
-/** Distance from the top of the inner Search pane to its status headline. */
+/** Distance from the divider to the top of the status circle, on the cover and on the inner panel. */
 private val SEARCH_STATUS_TOP: Dp = 72.dp
 
 // What:     `private val SEARCH_STATUS_DETAIL_TOP: Dp = 12.dp` separates a status headline from its detail.
@@ -728,14 +729,14 @@ private val SEARCH_STATUS_TOP: Dp = 72.dp
 /** Gap between a status headline and its support line. */
 private val SEARCH_STATUS_DETAIL_TOP: Dp = 12.dp
 
-// What:     `private val SEARCH_COVER_TITLE_TOP: Dp = 24.dp` separates the cover glyph from the headline.
-// Why:      The cover status stacks its glyph, headline and detail, with the headline 24dp below the glyph.
+// What:     `private val SEARCH_COVER_TITLE_TOP: Dp = 24.dp` separates the status circle from the headline.
+// Why:      The status stacks its circle, headline and detail, with the headline 24dp below the circle.
 //
 // In TS you'd write (pseudocode):
 // ```ts
 // const SEARCH_COVER_TITLE_TOP = 24;
 // ```
-/** Gap between the cover status glyph and its headline. */
+/** Gap between the status circle and its headline. */
 private val SEARCH_COVER_TITLE_TOP: Dp = 24.dp
 
 // What:     `private val SEARCH_COVER_DETAIL_TOP: Dp = 8.dp` separates the cover headline from its detail.
@@ -767,6 +768,32 @@ private val SEARCH_SEAM: Dp = 1.dp
 // ```
 /** True black canvas used behind the page in dark mode. */
 private val SEARCH_TRUE_BLACK: Color = Color(0xFF000000)
+
+// What:     `internal const val SEARCH_*_TAG` name the test tags of the page's regions.
+// Why:      The wiring tests find the header, the divider, the status strip, the status block and the circles by
+//           tag, so a restyle cannot move them unnoticed.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// const SEARCH_HEADER_TAG = "searchHeader"; // data-testid
+// ```
+/** Test tag of the 72 dp header row. */
+internal const val SEARCH_HEADER_TAG: String = "searchHeader"
+
+/** Test tag of the divider under the header. */
+internal const val SEARCH_DIVIDER_TAG: String = "searchDivider"
+
+/** Test tag of the strip that reserves the status bar above the header. */
+internal const val SEARCH_STATUS_STRIP_TAG: String = "searchStatusStrip"
+
+/** Test tag of the scrolling status block of the empty and no-result states. */
+internal const val SEARCH_STATUS_TAG: String = "searchStatus"
+
+/** Test tag of the 72 dp circle of the status block. */
+internal const val SEARCH_STATUS_CIRCLE_TAG: String = "searchStatusCircle"
+
+/** Test tag of the 40 dp circle of a result row. */
+internal const val SEARCH_ROW_CIRCLE_TAG: String = "searchRowCircle"
 
 // What:     `class SearchLayoutException` signals a layout input that cannot be measured.
 // Why:      A non-positive density has no physical meaning, so the page throws instead of guessing a crease.
@@ -941,9 +968,16 @@ private fun searchCoverPage(
     complete: Boolean,
 ) {
     Column(modifier = Modifier.fillMaxSize().background(canvas)) {
-        Box(modifier = Modifier.fillMaxWidth().windowInsetsTopHeight(WindowInsets.statusBars))
+        Box(
+            modifier = Modifier.fillMaxWidth().windowInsetsTopHeight(WindowInsets.statusBars)
+                .testTag(SEARCH_STATUS_STRIP_TAG),
+        )
         searchHeader(query = query, actions = actions, startInset = SEARCH_EDGE_INSET, endInset = SEARCH_EDGE_INSET)
-        HorizontalDivider(thickness = SEARCH_SEAM, color = MaterialTheme.colorScheme.outline)
+        HorizontalDivider(
+            modifier = Modifier.testTag(SEARCH_DIVIDER_TAG),
+            thickness = SEARCH_SEAM,
+            color = MaterialTheme.colorScheme.outlineVariant,
+        )
         /** Status line for this state, or null when the state draws a result list. */
         val line: SearchStatusLine? = searchStatusLine(state, complete)
         if (line != null) {
@@ -1006,14 +1040,21 @@ private fun searchInnerPage(
             }
         }
         Column(modifier = Modifier.weight(1f).fillMaxHeight()) {
-            Box(modifier = Modifier.fillMaxWidth().windowInsetsTopHeight(WindowInsets.statusBars))
+            Box(
+                modifier = Modifier.fillMaxWidth().windowInsetsTopHeight(WindowInsets.statusBars)
+                    .testTag(SEARCH_STATUS_STRIP_TAG),
+            )
             searchHeader(
                 query = query,
                 actions = actions,
                 startInset = halfCrease + SEARCH_EDGE_INSET,
                 endInset = SEARCH_EDGE_INSET,
             )
-            HorizontalDivider(thickness = SEARCH_SEAM, color = MaterialTheme.colorScheme.outline)
+            HorizontalDivider(
+                modifier = Modifier.testTag(SEARCH_DIVIDER_TAG),
+                thickness = SEARCH_SEAM,
+                color = MaterialTheme.colorScheme.outlineVariant,
+            )
             if (line != null) {
                 searchInnerStatus(
                     line = line,
@@ -1068,7 +1109,7 @@ private fun searchHeader(
         modifier = Modifier
             .fillMaxWidth()
             .height(SEARCH_HEADER_HEIGHT)
-            .background(MaterialTheme.colorScheme.surfaceContainerHigh)
+            .testTag(SEARCH_HEADER_TAG)
             .padding(start = startInset, end = endInset),
         verticalAlignment = Alignment.CenterVertically,
     ) {
@@ -1116,32 +1157,79 @@ private fun searchHeader(
     }
 }
 
-// What:     `@Composable private fun searchCoverStatus(...)` draws a centered status on the cover.
-// Why:      The cover status stacks a glyph, headline and detail in the middle of the screen, as in the review.
+// What:     `@Composable private fun searchStatusCircle()` draws the glyph circle of the empty and no-result states.
+// Why:      D126 puts the glyph in a plain 72 dp circle of the secondary container role, so the state has one tonal
+//           anchor above its title instead of a bare small glyph.
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// function CoverStatus({ line }): UIElement { return <Center><Icon/><h2>{title}</h2><p>{detail}</p></Center>; }
+// function StatusCircle(): UIElement { return <div class="circle72"><Icon name="search" size={32} /></div>; }
 // ```
-/** Draws a centered status with a glyph, a headline, and an optional support line. */
+/** Draws the 72 dp secondary-container circle with the 32 dp magnifier glyph in on-secondary-container. */
 @Composable
-private fun searchCoverStatus(line: SearchStatusLine, modifier: Modifier) {
-    Column(
-        modifier = modifier.padding(horizontal = SEARCH_EDGE_INSET),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally,
+private fun searchStatusCircle() {
+    Box(
+        modifier = Modifier.size(SEARCH_STATUS_CIRCLE_DP.dp).clip(CircleShape)
+            .background(MaterialTheme.colorScheme.secondaryContainer).testTag(SEARCH_STATUS_CIRCLE_TAG),
+        contentAlignment = Alignment.Center,
     ) {
         Icon(
             imageVector = SEARCH_ICON,
             contentDescription = null,
-            modifier = Modifier.size(SEARCH_ICON_DP),
-            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.size(SEARCH_STATUS_GLYPH_DP.dp),
+            tint = MaterialTheme.colorScheme.onSecondaryContainer,
         )
-        Text(
+    }
+}
+
+// What:     `@Composable private fun searchStatusTitle(...)` draws the headline of a status.
+// Why:      D126 lightens the headline from semibold title large to medium title medium, so the state reads quietly.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// function StatusTitle({ text }): UIElement { return <h2 style={{ font: "titleMedium", weight: 500 }}>{text}</h2>; }
+// ```
+/** Draws a status headline in the title medium role at the medium weight. */
+@Composable
+private fun searchStatusTitle(text: String, modifier: Modifier, textAlign: TextAlign) {
+    Text(
+        text = text,
+        modifier = modifier,
+        style = MaterialTheme.typography.titleMedium,
+        fontWeight = FontWeight.Medium,
+        textAlign = textAlign,
+    )
+}
+
+// What:     `@Composable private fun searchCoverStatus(...)` draws a status centered under the header on the cover.
+// Why:      The block starts a fixed distance under the header instead of centering in the whole body, so it stays
+//           above the keyboard at any text size, and it pads by the keyboard and navigation insets like the list.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// function CoverStatus({ line }): UIElement {
+//   return <Scroll insets={ime + nav}><Circle/><h2>{title}</h2><p>{detail}</p></Scroll>;
+// }
+// ```
+/**
+ * Draws a status with a circle, a headline, and an optional support line, lifted clear of the keyboard.
+ *
+ * The block scrolls when the space above the keyboard is shorter than the block, so no line is cut off at large text.
+ */
+@Composable
+private fun searchCoverStatus(line: SearchStatusLine, modifier: Modifier) {
+    Column(
+        modifier = modifier
+            .windowInsetsPadding(WindowInsets.ime.union(WindowInsets.navigationBars))
+            .testTag(SEARCH_STATUS_TAG)
+            .verticalScroll(rememberScrollState())
+            .padding(start = SEARCH_EDGE_INSET, end = SEARCH_EDGE_INSET, top = SEARCH_STATUS_TOP),
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        searchStatusCircle()
+        searchStatusTitle(
             text = line.title,
             modifier = Modifier.padding(top = SEARCH_COVER_TITLE_TOP),
-            style = MaterialTheme.typography.titleLarge,
-            fontWeight = FontWeight.SemiBold,
             textAlign = TextAlign.Center,
         )
         line.detail?.let { detail ->
@@ -1157,22 +1245,29 @@ private fun searchCoverStatus(line: SearchStatusLine, modifier: Modifier) {
 }
 
 // What:     `@Composable private fun searchInnerStatus(...)` draws a left-aligned status in the inner pane.
-// Why:      The inner status starts at the header's start inset, below the header, as in the reviewed capture.
+// Why:      The inner status starts at the header's start inset, below the header, with the same circle and headline as
+//           the cover; the inner row already lifts above the keyboard, so only the scroll is added here.
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// function InnerStatus({ line }): UIElement { return <div><h2>{line.title}</h2><p>{line.detail}</p></div>; }
+// function InnerStatus({ line }): UIElement {
+//   return <Scroll><Circle/><h2>{line.title}</h2><p>{line.detail}</p></Scroll>;
+// }
 // ```
-/** Draws a left-aligned status headline with an optional support line below it. */
+/** Draws a left-aligned circle, headline and optional support line, scrolling when the pane is short. */
 @Composable
 private fun searchInnerStatus(line: SearchStatusLine, startInset: Dp, endInset: Dp, modifier: Modifier) {
     Column(
-        modifier = modifier.padding(start = startInset, end = endInset, top = SEARCH_STATUS_TOP),
+        modifier = modifier
+            .testTag(SEARCH_STATUS_TAG)
+            .verticalScroll(rememberScrollState())
+            .padding(start = startInset, end = endInset, top = SEARCH_STATUS_TOP),
     ) {
-        Text(
+        searchStatusCircle()
+        searchStatusTitle(
             text = line.title,
-            style = MaterialTheme.typography.titleLarge,
-            fontWeight = FontWeight.SemiBold,
+            modifier = Modifier.padding(top = SEARCH_COVER_TITLE_TOP),
+            textAlign = TextAlign.Start,
         )
         line.detail?.let { detail ->
             Text(
@@ -1224,13 +1319,22 @@ private fun searchResultList(
 }
 
 // What:     `@Composable private fun searchResultRow(...)` draws one result as one merged action row.
-// Why:      The row shares the header's start inset so its icon and title line up with Back and the query (D58).
+// Why:      The row shares the header's start inset so its icon and title line up with Back and the query (D58); its
+//           rounded shape starts a margin before the content, and bounds the press indication and the focus ring.
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// function ResultRow({ result }): UIElement { return <button><Icon/><div><p>{t}</p><p>{p}</p></div></button>; }
+// function ResultRow({ result }): UIElement {
+//   return <button><Circle><Icon/></Circle><div><p>{t}</p><p>{p}</p></div></button>;
+// }
 // ```
-/** Draws one result row with its glyph, highlighted title, optional parent line, and one merged accessible action. */
+/**
+ * Draws one result row with its glyph in a 40 dp circle, highlighted title, optional parent line, and one merged
+ * accessible action.
+ *
+ * The row is flat on the canvas. Its rounded 21.3 dp shape bounds the press indication and the keyboard ring just
+ * inside its edge (D120), and starts 8 dp before the content, so the glyph and the title keep the header's columns.
+ */
 @Composable
 private fun searchResultRow(
     result: SearchResult,
@@ -1246,11 +1350,17 @@ private fun searchResultRow(
     val fill: Color = LocalThemeRoles.current.matchFill.toComposeColor()
     /** Ink color for the emphasized and plain text of this row. */
     val ink: Color = MaterialTheme.colorScheme.onSurface
+    /** Margins of the rounded shape and the padding that returns the content to the page insets. */
+    val insets = searchRowInsets(startInsetDp = startInset.value, endInsetDp = endInset.value)
+    /** Rounded shape of the press indication and the keyboard ring. */
+    val shape = RoundedCornerShape(SEARCH_ROW_RADIUS_DP.dp)
     Row(
         modifier = Modifier
             .fillMaxWidth()
+            .padding(start = insets.outerStartDp.dp, end = insets.outerEndDp.dp)
             .heightIn(min = SEARCH_ROW_MIN_HEIGHT)
-            .focusRing(RectangleShape, placement = FocusRingPlacement.INSIDE)
+            .focusRing(shape, placement = FocusRingPlacement.INSIDE)
+            .clip(shape)
             .clickable(role = Role.Button, onClickLabel = rowSpeech.actionLabel) { onOpenResult(result) }
             .semantics(mergeDescendants = true) {
                 /** Current-track state read from the row's speech, or null when the row is not current. */
@@ -1259,19 +1369,22 @@ private fun searchResultRow(
                     stateDescription = state
                 }
             }
-            .padding(
-                start = startInset,
-                end = endInset,
-            ),
+            .padding(horizontal = insets.innerDp.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Box(modifier = Modifier.size(SEARCH_TOUCH_TARGET), contentAlignment = Alignment.Center) {
-            Icon(
-                imageVector = if (result.kind == SearchResultKind.FOLDER) FOLDER_OPEN_ICON else SEARCH_TRACK_ICON,
-                contentDescription = rowSpeech.kindLabel,
-                modifier = Modifier.size(SEARCH_ICON_DP),
-                tint = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
+        Box(modifier = Modifier.size(SEARCH_ROW_ICON_SLOT_DP.dp), contentAlignment = Alignment.Center) {
+            Box(
+                modifier = Modifier.size(SEARCH_ROW_ICON_CIRCLE_DP.dp).clip(CircleShape)
+                    .background(MaterialTheme.colorScheme.secondaryContainer).testTag(SEARCH_ROW_CIRCLE_TAG),
+                contentAlignment = Alignment.Center,
+            ) {
+                Icon(
+                    imageVector = if (result.kind == SearchResultKind.FOLDER) FOLDER_OPEN_ICON else SEARCH_TRACK_ICON,
+                    contentDescription = rowSpeech.kindLabel,
+                    modifier = Modifier.size(SEARCH_ICON_DP),
+                    tint = MaterialTheme.colorScheme.onSecondaryContainer,
+                )
+            }
         }
         Column(modifier = Modifier.weight(1f)) {
             Text(

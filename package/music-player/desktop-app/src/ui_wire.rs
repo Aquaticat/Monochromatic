@@ -220,15 +220,36 @@ pub(crate) fn open_folder_dialog(sender: music_player::engine::CommandSender) {
     });
 }
 
-/// What: `play_row` plays a track row: the playing row toggles play and pause, another row loads and plays.
-/// Why: a click on an unselected row starts it, matching the Android track list; `SelectIndex` loads paused,
-/// so `Play` follows it.
+/// What: `play_row` handles a click, a tap or Enter on a track row: the selected row toggles play and pause, any other
+/// row becomes the selected row and stays paused.
+/// Why: the user's rule (D124) is that selecting and playing are separate intents; `SelectIndex` loads paused and
+/// pauses whatever was playing, and only a second click on the now-selected row starts it, so no double-click detection
+/// is needed. A selected row that was restored and never loaded, or whose load failed, starts or retries through the
+/// same toggle as the Play button.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// const playRow = (index: number) => current === index ? toggle() : (select(index), play());
+/// const playRow = (index: number) => current === index ? toggle() : select(index);
 /// ```
 pub(crate) fn play_row(engine: &dyn Host, index: usize) {
+    let current = read_state(|state| return state.current_index);
+    if current == Some(index) {
+        engine.send(Command::TogglePlay);
+        return;
+    }
+    engine.send(Command::SelectIndex(index));
+}
+
+/// What: `play_row_now` is the explicit Play of the track menu and of a Search result: the selected row toggles play and
+/// pause, any other row is selected and starts at once.
+/// Why: a menu item named Play and a Search result that names a track ask to hear that track (D73), unlike a click on a
+/// row, which only selects it (D124); `SelectIndex` loads paused, so `Play` follows it.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// const playRowNow = (index: number) => current === index ? toggle() : (select(index), play());
+/// ```
+pub(crate) fn play_row_now(engine: &dyn Host, index: usize) {
     let current = read_state(|state| return state.current_index);
     if current == Some(index) {
         engine.send(Command::TogglePlay);

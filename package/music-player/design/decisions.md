@@ -873,6 +873,9 @@ scrollbar at all** on either input,
  Closes
 the two open sub-points on the scroll-a spec.
 
+Amended by D125 (2026-10-14): the desktop folder names list shows no scrollbar on either input either.
+The track list, Search, Settings and the template editor keep the bars described here.
+
 ### D23. The picker shows no folder counts
 No library total ("1,043 folders") and no per-letter count.
  The picker is a filter
@@ -3324,6 +3327,40 @@ The human answered four questions that had been open as orchestrator adoptions.
 - Android `targetSdk` stays on 36 with no extra emulator passes for API 33, 34 and 36; D107 on those levels remains
   unverified.
 
+### D122. The report of a file that cannot be played is a system notification, not an overlay (2026-10-14)
+
+The human asked for it: the in-window message "`name` can't be played." appeared at launch for a library file that could
+not be decoded, and it was misplaced on screen.
+The request for the system notification is an owner decision; the bullet marked as the implementer's reading is the
+only part left open to a veto.
+
+- D83's overlay no longer carries the unplayable-file message.
+  The window draws nothing for the report; the row keeps its "Can't be played" mark, which stays as the only in-window
+  sign (D113's mark and its removal when a peak is measured are unchanged).
+- Why: the report happens at launch and during sweeps, not in answer to anything the person just did, so it belongs in
+  the desktop's notification area (D107's reasoning for the analysis indicator) and not on top of the player.
+  D113's rule of one report per file in plain words stands; only the surface changes.
+- Linux sends one `org.freedesktop.Notifications.Notify` call per report: the app's name, icon and desktop entry, the
+  fixed title `Cannot play a file` (it names no file and no folder), the old wording as the text (one file named;
+  several collapse to a count that names the first, D9), normal urgency, the server's default expiry and no action
+  buttons.
+  Files in one engine report give one notification.
+- The implementer's reading, open to the human's veto: each file is announced once for a run of the app, so a repeated
+  report, a folder opened again or a file that decodes and then breaks again posts nothing more, while its row is marked
+  each time. The human asked only that a repeated report not repeat the notification and that the engine's once-per-file
+  rule stay; the engine itself still reports again after a folder is opened again (which re-marks the rows) and after a
+  file decoded once. Without this reading those cases would post the notification again.
+- The call runs on its own thread with its own session bus connection and a bounded wait, so the engine and the window
+  never wait on the bus, and a failure here never disables the analysis indicator (D107) or the other way round.
+- When the notification cannot be posted (no bus, no notification service, any failure) nothing is shown in the window:
+  one warning is logged and the row mark is the only sign.
+  There is no in-window fallback in any case.
+- Platform limit: macOS and Windows have no notification code yet (the analysis indicator has none either, D107 leaves
+  it to a later step), so there the row mark is the only sign and the unplayable-file message is not shown at all.
+  This was not run on either system.
+- What stays an overlay: every other D83 message, including the removed-file message (`file_gone_message`) and the
+  file-action errors.
+- Android is handled in D123.
 ### D123. On Android the analysis-failure message is a system notification, never an in-app message (2026-10-14)
 
 The human decided that only the report of files whose true-peak analysis failed (D113) leaves the app's own message
@@ -3358,6 +3395,126 @@ in-app message that waits for a screen (the D113 hand-off) was either missed or 
 
 This amends D113's statement that a failure is "reported once per file in plain words (D83)": the report is now this
 notification, still once per file.
+### D124. A row click or tap selects, the selected row toggles play (2026-10-14)
+
+The human decided this on 2026-10-14, after asking that clicking a track always select it when it is still unselected,
+and that clicking a selected track toggle play and pause.
+It reverses the earlier README text that said a click on a row other than the playing one, and a tap on any row on
+Android, played it at once.
+
+- A click, a tap or Enter on the focused row of a track that is not the current track only selects it.
+  The row becomes current, the deck shows it, the track is loaded paused at its start, and any playing track stops.
+  The desktop `Command::SelectIndex` always did this; its UI wiring `play_row` followed it with `Play`, and that
+  follow-up is removed.
+  Android gets `PlayerController.selectIndex` (queue cursor, engine pause, paused load).
+- A click, a tap or Enter on the current track toggles play and pause, whether it is playing or paused.
+  Android calls the deck's `togglePlay`, so a current track that was restored from the saved session and never started
+  starts, and a current track whose load failed is loaded again on the next tap.
+  Desktop differs on a failed load: its `load_current` skips an unreadable file and reports it, so selecting such a row
+  moves the selection to the next playable file (pinned by a controller test); whether desktop should keep the
+  unreadable row selected like Android is an open question.
+  Android's `PlayerController.activateRow` holds the whole rule, and the host only forwards the tap.
+- The Play item of the track menu keeps starting a track at once (desktop `play_row_now`, Android `playIndex`);
+  it is an explicit Play, not a row click.
+  Search results keep their D73 behavior (a track that is not current starts at once; the current track toggles); the
+  human has not been asked about Search under this rule, so that stays open.
+- The folder and letter rails, long press and the right click are not track-row selects and are unchanged.
+- A tap during the first library load keeps its choice as before, because `selectIndex` loads the track, and the
+  loaded track is what `finishLoad` keeps.
+### D125. The folder names list shows no scrollbar (2026-10-14)
+
+The human asked that the scrollbar on the folders panel go, because the panel has several other ways to say where the
+user is. This amends D22: the desktop folder names list, the column right of the letter rail, draws no scrollbar on
+either input, neither the always visible draggable bar for the pointer nor the fading bar for touch.
+
+- The panel already shows position without a bar. The selected folder is primary, heavier and carries a 2 px bar on its
+  bottom edge (D31). The letter rail (D17) circles the letter of the current folder's cell, and the names run in rail
+  order under a heading for each cell (D28), so the heading in view says where in the alphabet the list is. The list
+  order is the alphabet itself, and a scrollbar would add a length that D17 and D23 say the user is not meant to care
+  about.
+- What stays for moving the list: the wheel, a touch drag, the keyboard (Up, Down, the page keys, Home and End scroll
+  the ringed folder into view), a rail tap that scrolls to its cell, and the reveal of the selected folder after Search,
+  a shuffle or a folder key chord (D79). None of them changed.
+- The names keep the 16 px right inset of the Android list (`NAMES_END`), so names wrap and end where they did before.
+  Only the 12 px grab zone constant and its comment went.
+- Other lists keep D22: the track list, Search results, Settings and the template editor still draw the always visible
+  12 px bar for the pointer and the fading 4 px bar for touch. The rail already had none.
+- The folder names still record whether the last pointer event was a touch, because the bars of those other lists
+  follow the last input the app saw.
+- Android needed no change: `FolderPickerPane.kt` draws no scrollbar and no scroll indicator on the names.
+- Tests: two window tests in `desktop-app/src/ui_lists_window_tests.rs` assert that the picker has no scrollbar in the
+  wide and the folded layout on both inputs, while the track list keeps its own bar in the wide layout.
+
+### D126. The Search page is restyled on Android within the earlier decisions (2026-10-14)
+
+The human accepted option 1 of `doc/planning/android-search-page-refresh.md` ("Restyle within decisions") after the
+proposal compared the Search page with the stock Search screen of Android Settings, and ruled on its conflicts.
+
+- Direction: restyle our own composables inside the accepted decisions, with no new color role and no new library
+  component. R2 of the proposal is adopted as part of it: the header is the canvas color, not the
+  `surfaceContainerHigh` band, and the divider uses `outlineVariant`, not `outline`. D48 keeps its anatomy (72 dp
+  header, Back, query, Clear, divider); only the fill and the divider role change.
+- No section labels: results stay one list mixed by relevance (D52, D61). The grouped rounded cards and the tinted page
+  of the proposal's option 4 are not adopted (A2, D109, B1).
+- No recents list on the empty page (D66, D70 stand).
+- Desktop parity is wanted. The Slint port is a separate follow-up task; this change touches no desktop file. The
+  specification below is what the port copies.
+- Not diagnosed items of the proposal, read from the code and not changed (D66 covers a new visit, not a posture
+  change): the query survives a fold change because `PlayerHost` keeps it with `rememberSaveable` next to the route,
+  and a second `lan` typed after `Ctrl+F` landed between the two because `Ctrl+F` on an open Search page only refocuses
+  the field (`focusSearch`), and the field's caret restarts at the beginning of the text whenever the page rebuilds the
+  header for the other panel (`BasicTextField(value: String)` keeps its selection in a `remember` that the layout
+  switch drops). The emulator reproduced both: `lan` survived a fold, and `lan` typed again after `Ctrl+F` gave
+  `lanlan`, then `x` gave `lanxlan`, which places the caret at index 0. Both are consequences of earlier designs, not
+  violations of D66, so they are reported and left open.
+
+What stays: D58 columns (Back center and result glyph center share one x, query start and title start share one x),
+D59 highlight, D63 to D80 focus and keyboard behavior, D66 and D70 copy, D76 (not a focus trap), D50 and D51 layout
+(the deck stays visible and Search is the right half of the unfolded panel), the shared OKLCH roles and the 52-root Rust
+and Kotlin fixture (`ThemeRoles.kt`, `theme_roles.rs` and the fixture are untouched), and true-black dark (B1).
+
+#### Specification for the desktop port
+
+Sizes are dp on Android and logical px on desktop; roles are the shared theme roles (Slint `Theme.<role>` with dashes).
+Copy and the Rust page model do not change.
+
+- Header: 72 high, filled with `canvas` (pure white in light, pure black in dark), so the status strip above it, the
+  header and the results are one tone. Remove the `Theme.surface-high` fill. Back and Clear keep their 48 targets, 40
+  circular state layers and 24 glyphs at the same x as before.
+- Divider: 1 high, full pane width, directly under the header (y = 72), role `outline-variant` (was `outline`).
+- Result row, flat on the canvas at rest, minimum height 72:
+  the row's rounded shape spans x from `content-start-x - 8` to `width - end-inset + 8` (8 before the content on
+  each side), corner radius 21.3 on all four corners, and the row content is padded 8 on each side so every glyph
+  and title keeps its D58 x.
+  On the inner panel `content-start-x` already holds half the crease plus 16, so the shape starts 8 after the crease
+  clear zone and never inside it.
+- Row icon: a 48 wide slot at the content start holding a 40 circle, centered in the slot (4 inside its edge), filled
+  `secondary-container`, with the folder or music glyph at 24, centered, in `on-secondary-container`. The title starts
+  at the content start plus 48 with no extra gap. The kind label stays on the glyph for assistive technology (D77).
+- Row states: the hover and pressed layers (and the Android indication) are clipped to the 21.3 rounded shape. The
+  keyboard highlight is the D117 pair of solid rings, drawn just inside the same rounded shape (D120): the outer ring
+  1 wide in `on-primary` at the shape's edge, the near ring 2 wide in `primary` inside it, following the 21.3 corners,
+  shown for keyboard focus only, with no fill, tint, bold or size change. The ring and the state layers never leave the
+  shape.
+- Empty and no-result states (all five status states share one block): the block starts 72 below the divider's bottom
+  edge on both layouts (no longer centered in the body), and it holds, top to bottom: a 72 circle filled
+  `secondary-container` holding the 32 magnifier glyph in `on-secondary-container`; 24 below it the title in the
+  Material 3 `titleMedium` role (16 on a 24 line, tracking 0.15) at weight 500 (was `titleLarge` at 600); then the
+  support line in `bodyMedium` in `on-surface-variant`, 8 below the title on the cover and 12 on the inner panel.
+  Cover: block centered horizontally, 16 side padding. Inner: block left aligned at the content start, the circle's left
+  edge at `content-start-x`.
+- Keyboard clearance: on Android the cover block is padded by the keyboard and navigation insets, like the result list,
+  and scrolls when the space above the keyboard is shorter than the block (large text, split or floating keyboard).
+  The inner panel was already lifted by its row inset and also scrolls. Desktop has no on-screen keyboard; it keeps
+  the block scrollable when the window is short.
+- Unchanged on desktop and Android: highlight (bold plus the match fill role, square corners), result copy,
+  second line, the 72 minimum row height, scrolling, the key hint rule (the Android app has no key hint badges; on
+  desktop a hint badge slot at the row's end keeps its place inside the rounded shape's end padding).
+
+Verification of the Android side, with the commit's tests: pixel and geometry cases in `SearchPageWiringTest` (header
+and status strip pixels equal the canvas in both schemes, divider pixel is `outlineVariant`, the 40 and 72 circles,
+the keyboard inset, D58 columns on both panels, the ring inside the rounded row) and `SearchLayoutTest`, and a
+headful emulator pass on the Fold (cover, inner panel, light, dark, keyboard open, Tab focus, 200 percent text).
 
 ## Pending after the theme picks (2026-09-04)
 

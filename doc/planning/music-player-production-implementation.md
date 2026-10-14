@@ -193,6 +193,11 @@ and the decisions D106 to D119 at the end of `package/music-player/design/decisi
   fixture of 52 roots (`android-app/app/src/test/resources/theme-roles-vector.txt`) is checked by a test on each side, and
   the Rust drift test fails if either side changes alone.
 
+- A click or tap on a track row selects it paused and, on the selected row, toggles play and pause on both platforms
+  (D124, decided by the human on 2026-10-14; Enter on the focused row follows it; the track menu's Play and Search
+  results still start a track at once). `PlayerController.activateRow` (Android) and `play_row` (desktop) hold the rule;
+  the e2e suite declares one more check for it (111 declared).
+
 - Since then (D113 to D119): library and analysis follow files automatically (D113: no rescan or re-analyze command;
   the watcher names changed paths and a planner edits the list in place; at 1M tracks a replaced file costs 0.12 ms on
   the handler instead of 1.4 s; a replaced playing file is swapped in at the same position; every refresh retries
@@ -213,6 +218,19 @@ and the decisions D106 to D119 at the end of `package/music-player/design/decisi
   "Could not play <file>" message stays in the app. Wording and decisions are in `core/AnalysisFailureNotice.kt`, the
   Android side in `AnalysisFailureNotification.kt`, and `PlayerHostWiringTest`-style coverage in
   `wiring/AnalysisFailureWiringTest.kt`. The desktop app makes the same move as D122 on its own branch.
+
+### On a branch, awaiting merge
+
+- Desktop unplayable-file notification (2026-10-14, branch `feat/desktop-unplayable-notification`, not merged; D122): the
+  in-window "`name` can't be played." message is gone and the report is one freedesktop notification on Linux
+  (`src/unplayable_notification*.rs`, own thread and connection, title `Cannot play a file`, normal urgency, default
+  expiry, no buttons, each file told once per run, which is the implementer's reading open to the human's veto); the
+  row mark stays. A failed post logs one warning and shows nothing in the window. macOS and Windows show only the row
+  mark (no notification code there yet). The bus tests start a private `dbus-daemon`, so `:image` must be rebuilt
+  before `:test:container` can run them (the Containerfile now installs it). Open item, not fixed: the e2e suite runs
+  its app in a systemd user unit that inherits the real session bus (`DBUS_SESSION_BUS_ADDRESS` is
+  `unix:path=/run/user/1000/bus`), so `states/refresh-broken-file-once` now posts "d.wav can't be played." on the real
+  desktop on every run, as the analysis indicator already did.
 
 ### Open, not started
 
@@ -377,9 +395,20 @@ and the decisions D106 to D119 at the end of `package/music-player/design/decisi
   2026-10-14 from `e02e74edec` (only the track menu image changed visibly and was replaced; the other seven differ by
   4 to 7 px row offsets and were kept; see `doc/handover/music-player-readme-and-gallery.md`). The ring capture
   emulator ran with `-no-window` on the host GPU, which the rule below bans.
-- Stale docs: none known. The README gallery and the Android page-control text were rewritten on 2026-10-13, and the
-  peak-sweep start path in `android-app/HANDOVER.peak-sweep-optimization.md` and
-  `android-app/DECISION.peak-sweep-parallelism.md` was corrected.
+- Desktop folder names scrollbar removed (2026-10-14, D125, amends D22): the names list of the folder picker draws no
+  bar on either input; the track list, Search, Settings and the template editor keep theirs. Verified: two window tests
+  (both fail with the bar restored in a throwaway worktree), the whole nextest suite, clippy, `slint-viewer --check`,
+  and release builds of the old and the new commit in the nested compositor on an invented library of 61 folders in a
+  1000 by 800 and a 443 by 900 window (names unchanged in place, wheel offsets identical, track list bar kept). Not
+  verified: macOS, Windows, a real Plasma session, touch input on a real screen (only the window test sets it). Eight
+  committed desktop gallery images still show the old bar and are due a retake: `desktop-two-pane-light.png`,
+  `desktop-two-pane-dark.png`, `desktop-menu-light.png`, `desktop-menu-dark.png`, `desktop-hints-dark.png`,
+  `desktop-search-light.png`, `desktop-search-dark.png` and `desktop-narrow-folders-light.png` in
+  `package/music-player/asset/readme/`. The `desktop-settings-*` images, `desktop-narrow-player-dark.png` and
+  `desktop-empty-light.png` do not show it.
+- Stale docs: the gallery images in the bullet above; otherwise none known. The README gallery and the Android
+  page-control text were rewritten on 2026-10-13, and the peak-sweep start path in
+  `android-app/HANDOVER.peak-sweep-optimization.md` and `android-app/DECISION.peak-sweep-parallelism.md` was corrected.
 - Hygiene: `~/temp/agent/agent-polish2/work/` and `~/temp/agent/agent-refresh-cost/lib-1m` (12 GB) hold scratch libraries
   that can be deleted. A failed decode is retried at every library change, one decode per failed file per change.
 - Rate limit: on 2026-10-12 the Sonnet weekly limit stopped five agents mid-run; a re-login lifted it and they were
@@ -390,6 +419,18 @@ and the decisions D106 to D119 at the end of `package/music-player/design/decisi
 ### Mistakes made in this effort, and what corrected them
 
 Read these before repeating them. Each one cost the human a correction.
+
+- The unplayable-notification run (2026-10-14) shipped a test that started a fake notification service after posting
+  the first report, so it raced the notifier thread; it passed in the suite and failed only as the baseline of the
+  mutation run (fixed in `95d573b836`: the fake service now refuses its first call on purpose). The docs commit
+  `2007ce0cb4` says its Containerfile note follows, but that change landed in `b21530ceae`; a corrective commit comment
+  was posted. Tests that wait for "something happens after X" need a deterministic signal, not an order of two threads.
+- The orchestrator told the human the desktop click rule already matched ("an unselected row is selected, the selected
+  row toggles") after reading only `play_row` and the README, which say a click plays at once. The human pointed out the
+  mismatch: `Command::SelectIndex` selects and pauses ("selecting never auto-plays") and `play_row` then sends Play, so
+  a click replaced the playing track and started the new one. The ruling (2026-10-14) is select only, then toggle, on
+  both platforms (D124). Before saying behavior matches a spec, read the engine command the UI sends and the
+  user's words, and run the real binary (QAB, QJ1).
 
 - The wiring-test agent (2026-10-14) committed `55f465c0b3` with no blank line after the subject, so the whole body is
   one long subject line, and an early step test looped forever under a mutant and blocked a mutation run for about 40
@@ -430,4 +471,8 @@ Read these before repeating them. Each one cost the human a correction.
 - [x] Package 1.
 - [x] Package 2.
 - [x] Packages 3 to 12 landed on `main`; device-only and live-desktop behaviours remain unexercised (see the handoff).
+- [x] Search page restyle on Android (D126, 2026-10-14, branch `feat/android-search-restyle`): canvas-tone header,
+  `outlineVariant` divider, 40 dp circle result glyphs with a rounded press and ring shape, the empty and no-result
+  states in a 72 dp circle lifted clear of the keyboard. The Slint port and the desktop gallery retake are left
+  (`doc/planning/android-search-page-refresh.md`).
 - [ ] Release builds, signing and distribution are outside this plan and were not touched.
