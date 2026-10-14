@@ -62,10 +62,32 @@ The current acceptance reaches the native policy reviewer with zero provider cal
 Pi 1.2.0's `reachesTools` callback initially produced an unsupported tool-metadata gap.
 Required-red `2fe40907` and correction `27d713a7` establish its executable-field handling;
 the metadata owner controls pass.
-The permission domain-resolution case now reports only `request-source-domain`
-and fails its required closure assertion.
-It inspected 26 original sources and retained zero native executions.
-The next change must make domain accounting decision-specific through the existing owners.
+That intermediate permission case reported only `request-source-domain`
+and failed its required closure assertion with 26 original sources.
+Required-red `dab689bd` then demonstrated that an original resource input,
+already retained before a suppressing callback,
+was absent from governing-source collection.
+Private `9ebc722c` and `0cbee730` connect those original receipts and their native source locations.
+The suppressed-input control passes.
+
+Private `5d69e8cb` adds structural domain accounting through the original native publications.
+Unaccounted native event types remain named gaps;
+the current supported callback path is `before_agent_start`.
+Source membership,
+source indexing,
+resource receipts,
+and resource/base/run links are checked independently of semantic answers.
+The current authored native contrasts pass with 33 original sources:
+permission approves and executes all three child calls,
+prohibition denies with zero child calls,
+and no applicable instruction stays unspecified with zero child calls.
+No external provider call or production semantic policy adoption follows.
+Missing-evidence controls and original approval-request routing are next.
+
+The first approved native dispatch failed because the inherited test loader derived dependency paths
+from the codemode worker's disposable home.
+Private `f3d40d82` retains the measured repository dependency root in the staging manifest;
+the repeated native execution passed.
 The strict TypeScript check for the source staging helper also passes.
 Domain closure,
 maintained delivery,

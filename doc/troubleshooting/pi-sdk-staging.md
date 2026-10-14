@@ -6067,6 +6067,41 @@ and shared-value accounting.
 This recognizes a callback field;
 it does not account for material returned by invoking callbacks or close the host domain.
 
+### Isolated codemode worker dependency root
+
+After the owned domain consumer first returned approval,
+Pi's codemode result reported `Script sandbox failed` with `ENOENT` for
+`fixture-private-.../home/Monochromatic`.
+The native result also reported `No tool calls were made.`
+The fixture deliberately changes `HOME` to a disposable directory.
+The inherited test loader then derived its dependency root from that changed home in the worker.
+
+Pi `packages/codemode/src/runtime/host.ts:34` creates the worker:
+
+```typescript
+// packages/codemode/src/runtime/host.ts:34, Pi v1.2.0
+worker = new Worker(workerUrl, { workerData });
+```
+
+The owned `contract/integration/current-sdk/paths.mjs` had recomputed the dependency root:
+
+```javascript
+// Historical private contract/integration/current-sdk/paths.mjs
+const repoRoot = join(homedir(), 'Monochromatic');
+```
+
+Private `f3d40d82` records the original measured dependency root in the staging manifest
+and reads it when the loader runs in a worker.
+It preserves the disposable home and native worker execution.
+After rebuilding through `mise run stage`,
+`mise run test:domain-resolution` passed permission with three native child calls,
+prohibition with zero calls,
+and unspecified policy with zero calls.
+The failing case had reached approval but never entered a child call;
+the corrected case exercised the actual native sandbox.
+This is an owned fixture-loader correction,
+not an upstream sandbox defect.
+
 ### Upstream filing decision
 
 Nothing is filed or drafted upstream.
