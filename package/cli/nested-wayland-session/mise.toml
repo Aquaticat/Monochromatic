@@ -2546,15 +2546,15 @@ const exerciseSession = async ({ name, flags, env, wrap, expectDevice, expectCho
     assert(!changed.data.equals(first.data), 'the click changed the screenshot')
     const answer = GPU_ANSWER.exec(await control(host.socketPath, 'gpu'))
     assert(answer, 'the gpu answer has the documented shape')
-    assert.equal(answer[1], expectDevice, 'gpu answer device')
-    assert.equal(answer[2], expectChoice, 'gpu answer choice')
-    assert.equal(answer[3], expectFallback, 'gpu answer fallback')
-    if (expectRenderer) assert.equal(answer[4], expectRenderer, 'gpu answer renderer equals the --list-gpus renderer')
+    assert.equal(answer[1], expectDevice, 'gpu answer device is ' + answer[1] + ', expected ' + expectDevice)
+    assert.equal(answer[2], expectChoice, 'gpu answer choice is ' + answer[2] + ', expected ' + expectChoice)
+    assert.equal(answer[3], expectFallback, 'gpu answer fallback is ' + answer[3] + ', expected ' + expectFallback)
+    if (expectRenderer) assert.equal(answer[4], expectRenderer, 'gpu answer renderer is "' + answer[4] + '", --list-gpus said "' + expectRenderer + '"')
     const pid = await until('the hosted client process', () => viewerPid(host.session.pid))
     const nodes = [...new Set(driNodes(pid))]
     if (expectDevice === 'software') {
       assert.deepEqual(nodes, [], 'the client opened no DRM node while rendering in software')
-      assert.equal(clientVariable(pid, 'LIBGL_ALWAYS_SOFTWARE'), '1', 'the client environment forces software rendering')
+      assert.equal(clientVariable(pid, 'LIBGL_ALWAYS_SOFTWARE'), '1', 'the client environment has LIBGL_ALWAYS_SOFTWARE=' + clientVariable(pid, 'LIBGL_ALWAYS_SOFTWARE') + ', expected 1')
     } else {
       assert(nodes.length > 0, 'the client opened a DRM node')
       assert.deepEqual(nodes.filter(node => node !== expectDevice), [], 'the client opened a node other than ' + expectDevice + ': ' + nodes)
