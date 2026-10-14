@@ -127,8 +127,9 @@ At run time (present on virtually every Linux desktop):
 or, with `--headless`,
 a DRM render node that Mesa's EGL can open
 (a readable `/dev/dri/renderD*`)
-or Mesa's software rasterizer (`llvmpipe`, the `EGL_MESA_device_software` device),
-which is part of the standard Mesa packages.
+or Mesa's software rasterizer,
+which is `llvmpipe` (the `EGL_MESA_device_software` device)
+and part of the standard Mesa packages.
 With `--headless --gpu software`,
 and with `--gpu auto` on a machine where no GPU can be opened,
 the software rasterizer is the only requirement;
