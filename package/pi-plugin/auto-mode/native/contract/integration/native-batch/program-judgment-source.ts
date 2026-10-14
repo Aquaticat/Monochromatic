@@ -32,7 +32,10 @@ export function programJudgmentSource(source: string): string {
  /**
   Each original program transformation retains its own diagnostic boundary.
   */
- const rl = tagged({ tag: programJudgmentSource.name, l });
+ const rl = tagged({
+   tag: programJudgmentSource.name,
+   l
+ });
  rl.debug('preparing original native program source');
  /**
   The original decoder import must be replaced without changing its declaration owner.

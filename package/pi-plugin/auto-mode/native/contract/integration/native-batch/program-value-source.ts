@@ -31,34 +31,55 @@ const l = tagged({ tag: 'auto-mode-native-program-value-source' });
  const generated = nativeScriptValueSource({ source, parse });
  ```
  */
-export function nativeScriptValueSource({ source, parse }: {
+export function nativeScriptValueSource({
+  source,
+  parse
+}: {
   readonly source: string;
   readonly parse: typeof parseNative;
 }): string {
   /**
    Each native result source extraction retains its own diagnostic boundary.
    */
-  const rl = tagged({ tag: nativeScriptValueSource.name, l });
+  const rl = tagged({
+    tag: nativeScriptValueSource.name,
+    l
+  });
   rl.debug('locating original native result conversion functions');
   /**
    Original semantic diagnostics reject ambiguous function declarations before extraction.
    */
-  const parsed = parse(source, {
+  const parsed = parse(
+    source,
+    {
     sourceType: 'module',
     lang: 'js',
     preserveParens: true,
     semanticErrors: true,
-  });
-  if (parsed.diagnostics.length > 0) throw new NativeBatchBuildError('Cannot parse original native result conversion source');
+  }
+  );
+  if (parsed.diagnostics
+    .length
+    > 0) throw new NativeBatchBuildError('Cannot parse original native result conversion source');
   /**
    The original helper precedes the exported converter without importing unrelated executor code.
    */
-  const functions = ['textOf', 'toScriptValue'].map(function nativeResultFunction(name): string {
+  const functions = [
+    'textOf',
+    'toScriptValue'
+  ].map(function nativeResultFunction(name): string {
     /**
      Only an original top-level function with the exact decoded name can supply the converter.
      */
-    const nodes = parsed.program.body.filter(function namedFunction(node): boolean {
-      return node.type === 'FunctionDeclaration' && node.id?.name === name;
+    const nodes = parsed.program
+      .body
+      .filter(function namedFunction(node: {
+        readonly type: string;
+        readonly id?: { readonly name: string } | null;
+      }): boolean {
+      return (node.type === 'FunctionDeclaration') && (node.id
+        ?.name
+        === name);
     });
     if (nodes.length !== 1) throw new NativeBatchBuildError(`Original native result conversion function is unavailable or repeated: ${name}`);
     /**
@@ -68,7 +89,10 @@ export function nativeScriptValueSource({ source, parse }: {
     /**
      The original function declaration spelling is part of the qualified source profile.
      */
-    const body = source.slice(node.start, node.end);
+    const body = source.slice(
+      node.start,
+      node.end
+    );
     if (!body.startsWith(`function ${name}(`)) throw new NativeBatchBuildError(`Original native result conversion declaration changed: ${name}`);
     return (name === 'toScriptValue' ? 'export ' : '') + body;
   });

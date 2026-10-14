@@ -6,6 +6,7 @@
 import { tagged } from '@monochromatic-dev/module-logger/ts';
 import { replaceOnce } from './build-rebase.ts';
 import { privatizeNativeMembers } from './build-members.ts';
+
 export { programJudgmentSource } from './program-judgment-source.ts';
 export { nativeScriptValueSource } from './program-value-source.ts';
 
@@ -35,11 +36,17 @@ const l = tagged({ tag: 'auto-mode-native-program-source' });
 export function preparedDispatcherSource({
   source,
   originalUrl
-}: { readonly source: string; readonly originalUrl: string }): string {
+}: {
+  readonly source: string;
+  readonly originalUrl: string
+}): string {
  /**
   Each original program transformation retains its own diagnostic boundary.
   */
- const rl = tagged({ tag: preparedDispatcherSource.name, l });
+ const rl = tagged({
+   tag: preparedDispatcherSource.name,
+   l
+ });
  rl.debug('preparing original native program source');
  /**
   Error identities stay attached to the original dispatcher module.
@@ -83,7 +90,10 @@ export function programSessionSource(source: string): string {
  /**
   Each original program transformation retains its own diagnostic boundary.
   */
- const rl = tagged({ tag: programSessionSource.name, l });
+ const rl = tagged({
+   tag: programSessionSource.name,
+   l
+ });
  rl.debug('preparing original native program source');
  /**
   opened session retains its original source occurrence before the next transformation.
@@ -104,7 +114,10 @@ export function programSessionSource(source: string): string {
  /**
   private runner retains its original source occurrence before the next transformation.
   */
- const privateRunner=privatizeNativeMembers({ source: declaredRunner, members: ['_nestedToolCalls'] });
+ const privateRunner=privatizeNativeMembers({
+   source: declaredRunner,
+   members: ['_nestedToolCalls']
+ });
  /**
   runner access retains its original source occurrence before the next transformation.
   */
@@ -159,7 +172,10 @@ export function programRunnerSource(source: string): string {
  /**
   Each original program transformation retains its own diagnostic boundary.
   */
- const rl = tagged({ tag: programRunnerSource.name, l });
+ const rl = tagged({
+   tag: programRunnerSource.name,
+   l
+ });
  rl.debug('preparing original native program source');
  /**
   tool snapshot retains its original source occurrence before the next transformation.
@@ -219,7 +235,10 @@ export function programExecutorSource(source: string): string {
  /**
   Each original program transformation retains its own diagnostic boundary.
   */
- const rl = tagged({ tag: programExecutorSource.name, l });
+ const rl = tagged({
+   tag: programExecutorSource.name,
+   l
+ });
  rl.debug('preparing original native program source');
  /**
   program tools retains its original source occurrence before the next transformation.
@@ -288,11 +307,17 @@ export function programExecutorSource(source: string): string {
 export function programDefinitionSource({
   nativeToolUrl,
   executorUrl
-}: { readonly nativeToolUrl: string; readonly executorUrl: string }): string {
+}: {
+  readonly nativeToolUrl: string;
+  readonly executorUrl: string
+}): string {
  /**
   Each original program transformation retains its own diagnostic boundary.
   */
- const rl = tagged({ tag: programDefinitionSource.name, l });
+ const rl = tagged({
+   tag: programDefinitionSource.name,
+   l
+ });
  rl.debug('preparing original native program source');
  return `import {createCodemodeToolDefinition} from ${JSON.stringify(nativeToolUrl)};\n`
   +`const definitions=new WeakSet();\n`
