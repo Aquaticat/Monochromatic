@@ -21,7 +21,16 @@ export type ManagerConstructors = Pick<typeof SessionManager, ManagerConstructor
  Optional resume and fork capabilities are checked when their native entry points are invoked.
  */
 export type ManagerConstructorInput = Pick<ManagerConstructors, 'create' | 'open' | 'inMemory'>
-  & Partial<Pick<ManagerConstructors, 'continueRecent' | 'forkFrom'>>;
+  & {
+    /**
+     Earlier native bootstrap profiles may omit recent-session lookup.
+     */
+    readonly continueRecent?: ManagerConstructors['continueRecent'];
+    /**
+     Earlier native bootstrap profiles may omit cross-directory fork construction.
+     */
+    readonly forkFrom?: ManagerConstructors['forkFrom'];
+  };
 
 /**
  Ownership is private membership of original constructor results, never a matching class shape.

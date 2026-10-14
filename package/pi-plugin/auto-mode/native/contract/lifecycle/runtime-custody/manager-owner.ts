@@ -3,11 +3,20 @@
 
  @module
  */
-import type { SessionManager, NewSessionOptions, FileEntry } from '@earendil-works/pi-coding-agent';
+import type {
+  SessionManager,
+  NewSessionOptions,
+  FileEntry
+} from '@earendil-works/pi-coding-agent';
 import type { ForeignBorrowed } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 import { tagged } from '@monochromatic-dev/module-logger/ts';
 import { RootLeaseOwnershipError } from '../runtime-root-lifecycle/errors.ts';
-import type { ManagerConstructorInput, ManagerConstructorName, ManagerConstructorOwner, ManagerConstructors } from './manager-types.ts';
+import type {
+  ManagerConstructorInput,
+  ManagerConstructorName,
+  ManagerConstructorOwner,
+  ManagerConstructors
+} from './manager-types.ts';
 
 //region Native constructor results establish ownership independently of metadata
 
@@ -36,7 +45,10 @@ export function createManagerConstructorOwner(nativeManager: ForeignBorrowed<Man
   /**
    The constructor factory keeps diagnostics separate from runtime root transitions.
    */
-  const rl = tagged({ tag: createManagerConstructorOwner.name, l });
+  const rl = tagged({
+    tag: createManagerConstructorOwner.name,
+    l
+  });
   /**
    Membership contains only actual results returned by the captured native constructors.
    */
@@ -44,12 +56,25 @@ export function createManagerConstructorOwner(nativeManager: ForeignBorrowed<Man
   /**
    Counts describe constructor use without retaining the managers themselves.
    */
-  const counts: Record<ManagerConstructorName, number> = { create: 0, open: 0, inMemory: 0, continueRecent: 0, forkFrom: 0 };
+  const counts: Record<ManagerConstructorName, number> = {
+    create: 0,
+    open: 0,
+    inMemory: 0,
+    continueRecent: 0,
+    forkFrom: 0
+  };
   /**
    Capabilities retain their original identity and receiver even if a caller later replaces class properties.
    */
-  const { create, open, inMemory, continueRecent, forkFrom } = nativeManager;
-  if (typeof create !== 'function' || typeof open !== 'function' || typeof inMemory !== 'function')
+  const {
+    create,
+    open,
+    inMemory,
+    continueRecent,
+    forkFrom
+  } = nativeManager;
+  if (((typeof create) !== 'function') || ((typeof open) !== 'function')
+    || ((typeof inMemory) !== 'function'))
     throw new RootLeaseOwnershipError('Native manager constructors are unavailable');
   rl.debug('captured native manager constructors');
 
@@ -64,17 +89,30 @@ export function createManagerConstructorOwner(nativeManager: ForeignBorrowed<Man
 
    @throws RootLeaseOwnershipError when a runtime caller violates the native object-result contract
    */
-  function register({ value, kind }: { readonly value: SessionManager; readonly kind: ManagerConstructorName }): SessionManager {
+  function register({
+    value,
+    kind
+  }: {
+    readonly value: SessionManager;
+    readonly kind: ManagerConstructorName
+  }): SessionManager {
     /**
      Runtime JavaScript callers still receive the original diagnostic for invalid constructor results.
      */
     const candidate: unknown = value;
-    if (candidate === null || typeof candidate !== 'object')
+    if ((candidate === null) || ((typeof candidate) !== 'object'))
       throw new RootLeaseOwnershipError('Native constructor did not return a manager object');
     /**
      Registration retains both the native method and the registration function tags.
      */
-    const registerLog = tagged({ tag: register.name, l: tagged({ tag: managers[kind].name, l: rl }) });
+    const registerLog = tagged({
+      tag: register.name,
+      l: tagged({
+        tag: managers[kind]
+          .name,
+        l: rl
+      })
+    });
     owned.add(candidate);
     counts[kind] += 1;
     registerLog.debug('registered original native manager result');
@@ -85,27 +123,112 @@ export function createManagerConstructorOwner(nativeManager: ForeignBorrowed<Man
    Positional wrappers mirror Pi's constructor API and preserve its original receiver.
    */
   const managers: ManagerConstructors = Object.freeze({
-    /** {@inheritDoc SessionManager.create} */
-    create(cwd: string, sessionDir?: string, options?: ForeignBorrowed<NewSessionOptions>): SessionManager {
-      return register({ value: Reflect.apply(create, nativeManager, [cwd, sessionDir, options]), kind: 'create' });
+    /**
+     {@inheritDoc SessionManager.create}
+     */
+    create(
+      cwd: string,
+      sessionDir?: string,
+      options?: ForeignBorrowed<NewSessionOptions>
+    ): SessionManager {
+      return register({
+        value: Reflect.apply(
+          create,
+          nativeManager,
+          [
+            cwd,
+            sessionDir,
+            options
+          ]
+        ),
+        kind: 'create'
+      });
     },
-    /** {@inheritDoc SessionManager.open} */
-    open(path: string, sessionDir?: string, cwdOverride?: string): SessionManager {
-      return register({ value: Reflect.apply(open, nativeManager, [path, sessionDir, cwdOverride]), kind: 'open' });
+    /**
+     {@inheritDoc SessionManager.open}
+     */
+    open(
+      path: string,
+      sessionDir?: string,
+      cwdOverride?: string
+    ): SessionManager {
+      return register({
+        value: Reflect.apply(
+          open,
+          nativeManager,
+          [
+            path,
+            sessionDir,
+            cwdOverride
+          ]
+        ),
+        kind: 'open'
+      });
     },
-    /** {@inheritDoc SessionManager.inMemory} */
-    inMemory(cwd?: string, options?: ForeignBorrowed<NewSessionOptions>, entries?: ForeignBorrowed<FileEntry[]>): SessionManager {
-      return register({ value: Reflect.apply(inMemory, nativeManager, [cwd, options, entries]), kind: 'inMemory' });
+    /**
+     {@inheritDoc SessionManager.inMemory}
+     */
+    inMemory(
+      cwd?: string,
+      options?: ForeignBorrowed<NewSessionOptions>,
+      entries?: ForeignBorrowed<FileEntry[]>
+    ): SessionManager {
+      return register({
+        value: Reflect.apply(
+          inMemory,
+          nativeManager,
+          [
+            cwd,
+            options,
+            entries
+          ]
+        ),
+        kind: 'inMemory'
+      });
     },
-    /** {@inheritDoc SessionManager.continueRecent} */
-    continueRecent(cwd: string, sessionDir?: string): SessionManager {
-      if (typeof continueRecent !== 'function') throw new RootLeaseOwnershipError('Native continueRecent constructor is unavailable');
-      return register({ value: Reflect.apply(continueRecent, nativeManager, [cwd, sessionDir]), kind: 'continueRecent' });
+    /**
+     {@inheritDoc SessionManager.continueRecent}
+     */
+    continueRecent(
+      cwd: string,
+      sessionDir?: string
+    ): SessionManager {
+      if ((typeof continueRecent) !== 'function') throw new RootLeaseOwnershipError('Native continueRecent constructor is unavailable');
+      return register({
+        value: Reflect.apply(
+          continueRecent,
+          nativeManager,
+          [
+            cwd,
+            sessionDir
+          ]
+        ),
+        kind: 'continueRecent'
+      });
     },
-    /** {@inheritDoc SessionManager.forkFrom} */
-    forkFrom(sourcePath: string, targetCwd: string, sessionDir?: string, options?: ForeignBorrowed<NewSessionOptions>): SessionManager {
-      if (typeof forkFrom !== 'function') throw new RootLeaseOwnershipError('Native forkFrom constructor is unavailable');
-      return register({ value: Reflect.apply(forkFrom, nativeManager, [sourcePath, targetCwd, sessionDir, options]), kind: 'forkFrom' });
+    /**
+     {@inheritDoc SessionManager.forkFrom}
+     */
+    forkFrom(
+      sourcePath: string,
+      targetCwd: string,
+      sessionDir?: string,
+      options?: ForeignBorrowed<NewSessionOptions>
+    ): SessionManager {
+      if ((typeof forkFrom) !== 'function') throw new RootLeaseOwnershipError('Native forkFrom constructor is unavailable');
+      return register({
+        value: Reflect.apply(
+          forkFrom,
+          nativeManager,
+          [
+            sourcePath,
+            targetCwd,
+            sessionDir,
+            options
+          ]
+        ),
+        kind: 'forkFrom'
+      });
     },
   });
 
@@ -120,8 +243,12 @@ export function createManagerConstructorOwner(nativeManager: ForeignBorrowed<Man
     /**
      Membership failures remain attributable to the original constructor owner.
      */
-    const checkLog = tagged({ tag: assertOwned.name, l: rl });
-    if (manager === null || typeof manager !== 'object' || !owned.has(manager))
+    const checkLog = tagged({
+      tag: assertOwned.name,
+      l: rl
+    });
+    if ((manager === null) || ((typeof manager) !== 'object')
+      || (!owned.has(manager)))
       throw new RootLeaseOwnershipError('Manager was not returned by this declared constructor owner');
     checkLog.debug('original native manager membership verified');
   }
@@ -135,11 +262,18 @@ export function createManagerConstructorOwner(nativeManager: ForeignBorrowed<Man
     /**
      Diagnostic reads retain their own function boundary.
      */
-    const diagnosticLog = tagged({ tag: diagnostics.name, l: rl });
+    const diagnosticLog = tagged({
+      tag: diagnostics.name,
+      l: rl
+    });
     diagnosticLog.debug('reading native constructor counts');
     return Object.freeze({ ...counts });
   }
-  return Object.freeze({ managers, assertOwned, diagnostics });
+  return Object.freeze({
+    managers,
+    assertOwned,
+    diagnostics
+  });
 }
 
 //endregion Native constructor results establish ownership independently of metadata
