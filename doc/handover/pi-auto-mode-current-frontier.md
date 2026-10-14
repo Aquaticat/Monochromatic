@@ -228,6 +228,34 @@ The full package lint was stopped after 528 seconds without output;
 the changed authorization files pass their scoped lint.
 No full-package lint success or installed-host completion is claimed.
 
+The maintained native graph is now committed in `package/pi-plugin/auto-mode/native`.
+Commit `1019171c30` retains 138 modules and assets with original source hashes;
+15 entries are explicitly recorded as earlier generated inputs.
+The build introduced by `9e25198b39` emits the exact Pi 1.1.0 upstream revision,
+then applies maintained transformations inside the package's `dist/native` directory.
+The build and package type check pass.
+Its first relocated native permission,
+prohibition,
+and unspecified cases pass.
+That fixture location also exposed an inherited repository `AGENTS.md` input;
+`2202547b51` moves disposable fixture workspaces outside the repository.
+
+The original CLI manager boundary is now explicit:
+`createFromManager` accepts only managers returned by the same constructor owner,
+including `continueRecent` and `forkFrom`.
+Required-red `5416067c04` reached the native failure
+`Original manager already has a context-copy owner` when constructing a replacement session.
+Fix `30dbd25246` releases the old observer only after completed native disposal.
+The original manager then supports a replacement session,
+while foreign managers and the retired lease remain rejected.
+Additional committed controls retain observation custody after incomplete disposal
+and demonstrate that repeated completed disposal entered old cleanup.
+The completed-disposal guard is being verified before continuing the CLI integration.
+Normal SDK provider dispatch,
+the actual host entry,
+lint completion,
+and installed human approval remain outstanding.
+
 The first approved native dispatch failed because the inherited test loader derived dependency paths
 from the codemode worker's disposable home.
 Private `f3d40d82` retains the measured repository dependency root in the staging manifest;

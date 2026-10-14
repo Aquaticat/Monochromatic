@@ -18,7 +18,8 @@ export function readSessionDisposalState(session) { return readDisposalState(ses
         };`});
  const marker='    #disposeNative() {\n',start=value.indexOf(marker),end=value.indexOf('\n    }\n',start);assert(start>=0&&end>start);const body=value.slice(start+marker.length,end);
  assert(body.startsWith('        this.#custodyDisposed = true;'));assert(body.includes('cleanupSessionResources(this.sessionId);'));
- const replacement=marker+`        this.#custodyDisposalDepth += 1;
+ const replacement=marker+`        if(this.#custodyDisposalCompleted)return;
+        this.#custodyDisposalDepth += 1;
         this.#custodyDisposalCompleted = false;
         let completed = false;
         try {
