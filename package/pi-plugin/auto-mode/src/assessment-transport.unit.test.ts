@@ -168,10 +168,11 @@ await describe({
       name: 'aborts the HTTP signal when original cancellation occurs during dispatch',
       fn: async () => {
         const controller = new AbortController();
+        const observed: boolean[] = [];
         const send = assessmentSender({
           fetchImpl: async function cancelledResponse(_url, options) {
             controller.abort(assessmentFixtureKey,);
-            expect(options?.signal?.aborted,).toBe(true,);
+            observed.push(options?.signal?.aborted === true,);
             return new Response('{}',);
           },
         },);
@@ -180,6 +181,7 @@ await describe({
         },);
         expect(error,).toBeInstanceOf(AssessmentTransportError,);
         expect(String(error),).not.toContain(assessmentFixtureKey,);
+        expect(observed,).toEqual([true,],);
       },
     },),
     it({
