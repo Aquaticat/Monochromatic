@@ -95,4 +95,27 @@ a five-second deadline,
 and no represented execution.
 Complete answers and original Choice criteria must validate before interpreting probabilities.
 
+## Complete-input boundary
+
+The model-only adaptation was 504,929 bytes with SHA-256
+`ed2639100ae7f5d8a14487b0bc23c5aa08abac1bc4c27397b838d10f898dad6c`.
+Its state and all 84 questions exactly matched the captured native request.
+Liquid returned HTTP 422 in 1,098.969 ms:
+`The prompt for question `
+`head_0`
+` is over the model's input limit of 65536 tokens, images included, or 250000 bytes of text.`
+The raw response preserves the provider's backticks around the question name.
+No model answers were returned and no retry occurred.
+This establishes a rejection of this input,
+not which of the two named size measures independently triggered it.
+Artifacts are in `${HOME}/temp/agent/pi-liquid-complete-native-20261014`.
+
+The next hypothesis is shared-content encoding:
+the already decoded and exactly reconstructed Jev question-placement candidate preserves every source occurrence,
+every original instruction,
+and every question envelope while sharing repeated values.
+Send it once to Liquid with only the model name changed to `d1`,
+with the same five-second limit and no retry.
+This does not adopt the representation or establish equivalent model interpretation.
+
 [d1]: https://docs.liquid.ai/lfm/models/d1

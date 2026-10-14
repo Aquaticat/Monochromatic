@@ -33,8 +33,11 @@ SubQ returned 16 valid answers in 845.179 ms.
 SubQ then rejected 17 questions with HTTP 422 `validation_error`:
 `questions: must NOT have more than 16 properties`.
 That measured cap cannot carry 84 questions within three calls.
-Liquid's complete-input probe is next,
-with every original state field and question preserved and only its model name changed.
+Liquid's complete-input probe preserved every original state field and question,
+changing only its model name.
+The 504,929-byte request returned HTTP 422 in 1,098.969 ms,
+naming a 65,536-token or 250,000-text-byte limit for `head_0`.
+The existing exactly reconstructable shared-content candidate is the next frozen Liquid probe.
 
 ## Drex 2.0 release check
 
