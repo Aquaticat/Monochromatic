@@ -6428,3 +6428,82 @@ or attributing the delay to load without an emitting-process trace would not res
   not a candidate fix.
 
 There is nothing to file upstream from this observation.
+
+## Native source autofixes emit invalid JavaScript
+
+The 2026-10-14 maintained-source `format:oxlint` pass produced these parser diagnostics:
+
+```text
+Expected `(` but found `=>`
+TS(8009): The 'readonly' modifier can only be used in TypeScript files.
+```
+
+### Owned arrow rule source trace
+
+`package/oxlint-plugin/no-restricted-syntax/src/rule/arrow-function-params.ts:77`
+implements `extractParamsText` by scanning for balanced parentheses.
+It does not supply parentheses for a lone identifier parameter.
+`package/oxlint-plugin/no-restricted-syntax/src/rule/no-arrow-function.ts:173`
+then concatenates the function name and extracted text:
+
+```typescript
+// package/oxlint-plugin/no-restricted-syntax/src/rule/no-arrow-function.ts
+const replacement =
+  `${exportPrefix}${asyncPrefix}function ${name}${typeParamsText}${returnTypeText} ${bodyText}`;
+```
+
+The native input `const sha=value=>createHash('sha256').update(value).digest('hex');`
+therefore became an invalid declaration beginning `function shavalue=>createHash('sha256')`.
+The same failure affected `digest`,
+`source`,
+`helperUrl`,
+`project`,
+and the separate `policy` helpers in the native approval and domain fixtures.
+This is a repository-owned autofix defect.
+
+The separate `typescript/prefer-readonly` warning originally targeted `SystemPolicyInput.#state`.
+The formatter inserted `readonly #state;` into `system-slot.mjs`,
+which Node cannot parse as JavaScript.
+The generated diff establishes the invalid output;
+this investigation does not establish that external rule's deciding implementation.
+
+### Verified correction and limits
+
+Commit `e6acf4ff53` retains the formatter output,
+including the broken declarations.
+Commit `26aaecf2dd` supplies the intended named functions with explicit parameter parentheses
+and removes the TypeScript-only field modifier.
+No rule was disabled or weakened.
+
+Run the consumer parser and native domain cases after rebuilding:
+
+```sh
+# package/pi-plugin/auto-mode
+mise run //package/pi-plugin/auto-mode:lint:native:syntax
+mise run //package/pi-plugin/auto-mode:build:native:owned
+mise run //package/pi-plugin/auto-mode:test:native:domain
+```
+
+Node parsed all 157 maintained native modules after correction.
+The rebuild passed,
+and the permission,
+prohibition,
+and unspecified-policy cases retained their respective execution behavior.
+The workaround changes only the declaration syntax;
+it does not fix either formatter.
+Reapplying the complete fixer to the JavaScript class can reintroduce the `readonly` error.
+The failed formatter's remaining diagnostic count cannot establish full lint coverage
+because syntax errors prevented complete analysis.
+
+### Upstream filing decision
+
+- The arrow extraction fault belongs to this repository;
+  external responsibility for the separate JavaScript modifier case is not traced.
+- The explicit declaration correction is available at the consumer boundary.
+- No Pi support limitation follows from these parser errors.
+- No external contribution or contribution-policy claim is proposed.
+- No maintainer disposition is inferred.
+- The consumer correction passes the actual parser and native domain checks;
+  an upstream formatter patch has not been proposed.
+
+There is nothing to file upstream from this bounded consumer repair.

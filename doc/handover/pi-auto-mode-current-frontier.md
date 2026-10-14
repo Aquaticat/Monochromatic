@@ -385,6 +385,19 @@ Complete lint,
 installed activation,
 and genuine human approval remain outstanding.
 
+The first maintained-source formatter pass applied existing fixes to 141 modules,
+excluding historical generated snapshots.
+It changed 122 files in `e6acf4ff53`.
+The repository's arrow autofix emitted invalid declarations for unparenthesized parameters,
+and `typescript/prefer-readonly` inserted TypeScript syntax into a JavaScript class.
+Correction `26aaecf2dd` writes the intended named declarations and preserves the JavaScript field.
+`lint:native:syntax` now passes all 157 native modules using Node's actual parser.
+The owned rebuild and permission,
+prohibition,
+and unspecified-policy cases pass after correction.
+The formatter's 573-error result included parse failures and is not a complete remaining lint count.
+Native approval and CLI regressions are running before further source changes.
+
 The first approved native dispatch failed because the inherited test loader derived dependency paths
 from the codemode worker's disposable home.
 Private `f3d40d82` retains the measured repository dependency root in the staging manifest;
