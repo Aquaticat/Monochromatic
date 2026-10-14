@@ -307,7 +307,7 @@ decision-scoped membership before continuously expanding membership,
 because the former gives the already accepted complete-operation decision a defined lifetime
 and preserves all receipts for subsequent decisions.
 The user accepted this ranking and authorized the decision-scoped implementation.
-## Live host program-profile extension proposal
+## Adopted live host single-call program profile
 
 The installed native host reached Qwen on 2026-10-14,
 but its ordinary file-read program was rejected before semantic assessment.
@@ -336,7 +336,7 @@ and the adopted semantic operating policy names that exact profile.
 The configured SDK fixtures use this existing shape;
 their success did not establish ordinary single-call Codemode use.
 
-### Proposed scope
+### Adopted scope
 
 Add a separate inspected single-call profile for these exact forms:
 
@@ -390,5 +390,6 @@ Ranking: add the single-call profile before retaining the existing profile alone
 because the installed host currently rejects the ordinary read required by its delivery check.
 General JavaScript execution is not an alternative established by this evidence:
 allowing uninspected control flow would discard complete operation coverage.
-This proposal is pending user adoption;
-no program-profile boundary has been expanded.
+The user adopted the inspected single-call extension on 2026-10-14.
+Implement the two stated forms alongside the existing producer-and-successor profile,
+then verify the installed-host read and the retained rejection controls.

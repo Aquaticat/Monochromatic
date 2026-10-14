@@ -1130,10 +1130,15 @@ but its ordinary single-call read was blocked before assessment.
 The existing program decoder requires an awaited producer followed by a returned parallel successor group.
 The diagnostic repeat's `try` block also failed that profile;
 local tagged diagnostics now expose the retained `ResultProgramProfileError`.
-The [single-call proposal](../planning/pi-auto-mode-governing-domain-closure.md#live-host-program-profile-extension-proposal)
+The [adopted single-call profile](../planning/pi-auto-mode-governing-domain-closure.md#adopted-live-host-single-call-program-profile)
 adds only a returned literal tool call or an immutable binding followed by its return,
 preserving the existing producer/successor profile and every budget.
-User adoption is pending because this changes the explicitly named program-inspection and semantic-admission profile.
+The user adopted this extension on 2026-10-14.
+Implement its two stated forms,
+preserving existing guards,
+budgets,
+and the 0.99 admission rule,
+then repeat the installed governed read.
 Live logs are `${HOME}/temp/agent/pi-native-installed-live-20261014.log`
 and `${HOME}/temp/agent/pi-native-installed-live-diagnostic-20261014.log`.
 The current command resolves through generated workspace dependency shims,
