@@ -1074,7 +1074,60 @@ All 196 maintained native modules pass parser checking.
 The native README,
 current handover,
 and admission decision were checked in rendered output.
-The remaining maintained host session/disposal interface work resumes next.
+The admission decision's initial sentence incorrectly described unresolved evidence as an automatic approval request.
+It is corrected against the original approval router and guard-outcome implementation:
+unknown or unspecified policy blocks execution;
+only otherwise established permission with an eligible authorization requirement reaches native approval.
+No runtime fallback was changed.
+The native construction and disposal owner now lives in `host.ts`,
+renamed from `host.mjs` on 2026-10-14.
+Its original static generated dependencies,
+SDK result fields,
+retirement tokens,
+and cleanup-retry state remain intact.
+The host's membership registry now retains the already-created original resource record beside its loader key;
+no replacement policy owner or source registry is introduced.
+Package types,
+the owned native build,
+original host lifecycle checks,
+and scoped lint of all six changed TypeScript interfaces pass.
+Native approval,
+native-context Allow,
+Deny,
+Stop,
+cancellation,
+reload,
+and separate-process Qwen CLI checks pass after the host port.
+An overlapping verification run first stopped at a native `SIGABRT`
+and a separate Go `newosproc` diagnostic from full lint.
+The [staging troubleshooting record](../troubleshooting/pi-sdk-staging.md#overlapping-native-verification-and-oxlint-1870-stop-before-completing-checks)
+retains their separate boundaries and the successful sequential checks.
+The unchanged full lint sweep now completes on its own and reports 13,432 warnings and 454 errors
+across 368 files.
+Its log is `${HOME}/temp/agent/pi-auto-mode-full-lint-sequential-20261014.log`.
+Package-wide lint completion remains unfinished despite the clean changed interfaces.
+All 198 maintained native modules pass parser checking.
+The current host configuration still loads the legacy auto-mode package through the user's global Pi settings;
+installation preparation must replace that legacy activation and route the ordinary `pi` command
+to the maintained host without duplicating guards.
+The current command resolves through generated workspace dependency shims,
+and the root `mise.toml` path list is owned by `file-enforcer.config.ts`.
+No installed settings or command resolution have been changed yet.
+The next consumer check must exercise the configured extension set in disposable state.
+The generated `readActiveSessionDomainEvents` includes every registered handler kind except `before_agent_start`;
+`inspectNativeSourceDomain` currently accounts only original `context` and `context_with_system` receipts.
+Other registered kinds remain explicit gaps even if their callbacks were not invoked in that run.
+The no-extension CLI startup fixture does not establish that the installed extension configuration can decide an action.
+Do not silently disable the user's other extensions or treat their unresolved inputs as absent.
+The concurrent dependency refresh in `755685da03` moved installed Pi from `1.1.0` to `1.2.0`.
+The first installed-extension probe stopped before resource loading:
+Node emitted `ERR_MODULE_NOT_FOUND` for `partial-json` because the existing emitted graph's
+dependency links still targeted the removed `1.1.0` package directories.
+The native source input is being updated to upstream tag `v1.2.0`,
+commit `06a466935536f8c9bcacb2d5efc0fc021be1bdff`.
+Emission now replaces each owned generated package tree before compiling,
+so obsolete dependency links and source files cannot survive a release change.
+The original migration qualification must pass on that graph before resuming the extension check.
 Independent maintained bootstrap quality work also continues.
 Its scoped lint reports `no-restricted-syntax/no-sync` for `statSync`
 and `no-restricted-syntax/no-regex` for trailing-slash removal,

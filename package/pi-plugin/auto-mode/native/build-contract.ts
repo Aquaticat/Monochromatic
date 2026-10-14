@@ -14,8 +14,8 @@ import {
  Exact source revision used by the maintained transformation acceptance tests.
  */
 export const qualifiedRelease = {
-  version: '1.1.0',
-  commit: 'abe508e1b89912adde45528136c3221eb69acdd7',
+  version: '1.2.0',
+  commit: '06a466935536f8c9bcacb2d5efc0fc021be1bdff',
 } as const;
 
 /**

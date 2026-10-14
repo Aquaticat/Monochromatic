@@ -6429,6 +6429,114 @@ or attributing the delay to load without an emitting-process trace would not res
 
 There is nothing to file upstream from this observation.
 
+## Overlapping native verification and Oxlint 1.87.0 stop before completing checks
+
+### Symptoms and separate incident boundaries
+
+On 2026-10-14,
+the native approval task passed through `bare`,
+then Mise reported its Node 26.11.1 `prohibited` child as `killed by SIGABRT`.
+No fatal Node diagnostic was retained for this occurrence.
+The subsequent approval-context and CLI tasks were not reached in that command.
+This is not established as the resource-copy heap incident documented separately in this file.
+
+An overlapping full-package Oxlint 1.87.0 run used `oxlint-tsgolint` 7.0.2003
+and stopped with:
+
+```text
+Error running tsgolint: "exit status: exit status: 2"
+runtime: failed to create new OS thread (have 13 already; errno=11)
+runtime: may need to increase max user processes (ulimit -u)
+fatal error: newosproc
+```
+
+Its full log is `${HOME}/temp/agent/pi-auto-mode-full-lint-after-host-20261014.log`.
+The retained stack places the failure at Go `runtime/os_linux.go:199`,
+through `runtime.newosproc`,
+`runtime.newm1`,
+and `runtime.newm`.
+The installed Go 1.27.2 source at
+`${HOME}/.local/share/mise/installs/go/1.27.2/src/runtime/os_linux.go:194`
+contains the matching diagnostic path:
+
+```go
+// runtime/os_linux.go
+if ret != 0 {
+    print("runtime: failed to create new OS thread (have ", mcount(), " already; errno=", ret, ")\n")
+    if ret == _EAGAIN {
+        println("runtime: may need to increase max user processes (ulimit -u)")
+    }
+    throw("newosproc")
+}
+```
+
+This installed source explains the message;
+its compiler version has not been equated with the linter binary's build version.
+The observed worker parent retained its existing 4 GiB memory,
+zero swap,
+200% CPU,
+and 256-task limits.
+After the failures,
+`pids.events` reported `max 89`,
+while memory OOM and OOM-kill counters remained zero.
+There was no immediately preceding task-counter sample,
+so that cumulative count cannot attribute either process's failure to this particular overlap.
+No causal connection between the native abort and the Go thread failure is established.
+
+### Verification and bounded recovery
+
+Process inspection found neither affected verification process still running before retry.
+Running the native tasks separately from full lint passed every original approval mode,
+the native-context Allow,
+Deny,
+Stop,
+cancellation,
+reload controls,
+and the separate Qwen CLI's RPC state and empty-stderr shutdown:
+
+```bash
+# package/pi-plugin/auto-mode/mise.toml tasks
+mise run //package/pi-plugin/auto-mode:test:native:approval
+mise run //package/pi-plugin/auto-mode:test:native:approval-context
+mise run //package/pi-plugin/auto-mode:test:native:cli-process
+```
+
+Then the unchanged full lint task completed its diagnostic sweep on its own:
+
+```bash
+# package/pi-plugin/auto-mode/mise.toml task
+mise run //package/pi-plugin/auto-mode:lint:oxlint
+```
+
+It reported 13,432 warnings and 454 errors across 368 files.
+Those are outstanding source findings,
+not a passing lint result.
+The complete sequential log is `${HOME}/temp/agent/pi-auto-mode-full-lint-sequential-20261014.log`.
+The parent task-denial count remained `89` after that sweep.
+No memory limit,
+task limit,
+heap bound,
+lint rule,
+or linter configuration changed.
+Separating these verification batches preserves their assertions and removes their execution overlap;
+it does not diagnose the original native abort or prove the overlap caused it.
+
+### Rejected conclusions and upstream filing decision
+
+- The missing native fatal diagnostic prevents attributing `SIGABRT` to the historical heap incident.
+- The Go runtime diagnostic establishes failed OS-thread creation,
+  not an upstream defect or the responsible resource owner.
+- Current evidence does not identify an upstream fix to prototype.
+- Supported-use and contribution-policy claims were not made;
+  no external filing is proposed.
+- No maintainer disposition is inferred from these local failures.
+- The successful sequential checks establish a usable verification arrangement,
+  not a prototype of an upstream correction.
+
+The checked `.out-of-scope/codex-harness.md` applies to harness integration work;
+it is not evidence that either failure originated in the harness.
+There is nothing to file upstream from these observations.
+
 ## Pi 1.1.0 resource-copy diagnostics exhaust the Node 26.11.1 heap
 
 ### Symptom
@@ -6851,3 +6959,86 @@ or sandbox rule was changed.
 `.out-of-scope/codex-harness.md` excludes Codex-specific harness investigation and filing.
 This record does not assign the failure to that harness.
 There is nothing to file upstream from the observed boundary and working task alternative.
+
+## Pi 1.2.0 dependency refresh invalidates an emitted 1.1.0 host
+
+### Symptom and cause
+
+After workspace commit `755685da03` refreshed installed Pi packages,
+the installed-extension resolver failed before loading extensions.
+Node `26.11.1` reported:
+
+```text
+Error [ERR_MODULE_NOT_FOUND]: Cannot find package 'partial-json' imported from
+package/pi-plugin/auto-mode/dist/native/pi/ai/dist/utils/json-parse.js
+```
+
+The generated AI package's `node_modules` link still named the removed
+`@earendil-works+pi-ai@1.1.0_undici@8.11.2/node_modules` directory.
+The workspace now contained the corresponding `1.2.0` directory.
+This is stale owned build output after a dependency refresh,
+not evidence of a missing dependency in the upstream release.
+
+`package/pi-plugin/auto-mode/native/build-contract.ts:16` now selects the exact installed release:
+
+```ts
+// package/pi-plugin/auto-mode/native/build-contract.ts
+export const qualifiedRelease = {
+  version: '1.2.0',
+  commit: '06a466935536f8c9bcacb2d5efc0fc021be1bdff',
+} as const;
+```
+
+`package/pi-plugin/auto-mode/native/build-emission.ts:156` replaces the owned generated package tree:
+
+```ts
+// package/pi-plugin/auto-mode/native/build-emission.ts
+const target = join(output, 'pi', specification.folder);
+await rm(target, { recursive: true, force: true });
+```
+
+The normal emission then copies the qualified source and creates its matching dependency link.
+Replacing the tree also prevents removed upstream source files from surviving a release change.
+
+### Verification and recovery
+
+The unchanged read-only resolver failed against the stale output.
+After the source update and full build,
+that resolver completed with 18 configured package entries and 22 enabled extension entries
+after excluding the legacy auto-mode entry that the native host replaces.
+
+```sh
+# Repository root
+mise run //package/pi-plugin/auto-mode:build:native
+mise run //package/pi-plugin/auto-mode:lint:types
+mise run //package/pi-plugin/auto-mode:test:native:host-lifecycle
+mise run //package/pi-plugin/auto-mode:test:native:cli-process
+```
+
+These commands passed against source tag `v1.2.0` and its recorded commit.
+The lifecycle check retained original construction,
+reload,
+cancelled replacement,
+fork,
+resume,
+and disposal-retry behavior.
+The actual CLI returned the selected Qwen model through RPC and shut down with empty stderr.
+These fixtures made no external provider requests.
+
+The recovery rebuilds generated output and requires the native acceptance checks on the new release.
+It does not edit installed dependencies or qualify the configured extensions merely by resolving their paths.
+The owned-only rebuild cannot repair stale upstream dependency links because it preserves upstream emission.
+The source checkout remains a build input only.
+
+### Upstream filing decision
+
+- The stale dependency link belongs to this repository's generated output.
+- The consumer build can recreate its own source and dependency boundary.
+- No unsupported upstream use case is established by this failure.
+- No external contribution is proposed,
+  so contribution-policy research is unnecessary.
+- No maintainer disposition is inferred.
+- The consumer rebuild and original host checks pass;
+  an upstream patch is neither needed nor proposed.
+
+There is nothing to file upstream from this owned build recovery.

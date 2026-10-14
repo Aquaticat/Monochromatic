@@ -60,7 +60,11 @@ currentness,
 source authority,
 complete operation and instruction coverage,
 and authorization satisfaction remain independent code-owned requirements.
-The established unresolved path continues to request a human decision when those requirements are missing.
+Unresolved or unspecified policy blocks execution and does not implicitly request approval.
+The existing approval path requires independently established permission and an eligible authorization requirement.
+This direction is enforced by
+`package/pi-plugin/auto-mode/native/contract/integration/action-policy/approval.mjs`
+and `package/pi-plugin/auto-mode/src/guard-outcome.ts`.
 
 Implementation and verification are tracked in
 [the migration handover](../handover/pi-auto-mode-current-frontier.md).
