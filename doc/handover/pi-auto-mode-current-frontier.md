@@ -170,6 +170,32 @@ Affected consumer regressions,
 a targeted authorization-binding omission,
 and maintained integration are next.
 
+The prerequisite evidence collector is now maintained in
+`package/pi-plugin/auto-mode/src/authorization-evidence.ts`
+and its sibling contract,
+capture,
+record,
+and binding modules.
+Private `dfb0082f` replaces the native collector copy with maintained exports.
+Missing facts have an explicit `MISSING_AUTHORIZATION_EVIDENCE` result;
+the compiler preserves the unresolved prerequisite.
+The first package build,
+type check,
+and unit suite passed.
+Lint corrections and final native verification remain in progress.
+
+Native preparation then found missing external dependency paths.
+The fixture now owns the same `yuku-parser@0.19.0` release directly,
+recorded in private `f0627729` and generated lockfile `f18a93f9`.
+The current `pi --version` returns 1.1.0,
+matching the repository lock;
+the previous staged build and dependency symlinks targeted 1.2.0.
+Private `402e47ac` emits separate version-specific staging trees.
+The current read-only source tag is `v1.1.0`,
+commit `abe508e1b89912adde45528136c3221eb69acdd7`.
+Earlier 1.2.0 test results retain that version boundary.
+Current native acceptance must complete before claiming the rebuilt maintained path is verified.
+
 The first approved native dispatch failed because the inherited test loader derived dependency paths
 from the codemode worker's disposable home.
 Private `f3d40d82` retains the measured repository dependency root in the staging manifest;
