@@ -9,7 +9,7 @@ import {createGoverningPolicyLoader} from '../policy-source/system-slot.mjs';
 import {createNativeMarkdownParser} from '../../native-index/native-parser.mjs';
 
 /** One isolated fixture process; the provider and global network paths never dispatch. */
-export async function createEnvironment({agentsFilesOverride,appendSystemPromptOverride,promptTemplateText,extensionModuleText,extensionFactories=[],customPromptAuthority,discoveredSystemText,omitHostPrompt=false,hostPrompt='Native batch fixture host',appendPrompts=['Keep host context'],policyText='# Policy\n\nLN7:\n Never loosen lint rules without prior approval.\n'}={}){
+export async function createEnvironment({agentsFilesOverride,appendSystemPromptOverride,promptTemplateText,extensionModuleText,extensionFactories=[],customPromptAuthority,discoveredSystemText,omitHostPrompt=false,hostPrompt='Native batch fixture host',appendPrompts=['Keep host context'],useNativeProvider=false,policyText='# Policy\n\nLN7:\n Never loosen lint rules without prior approval.\n'}={}){
  if(process.env.PI_NATIVE_BATCH_FIXTURE==='1')throw new Error('Nested native-batch fixture is forbidden');
  process.umask(0o077);
  const repositoryRoot=maintainedRoot;
@@ -34,7 +34,7 @@ export async function createEnvironment({agentsFilesOverride,appendSystemPromptO
  const settings=SettingsManager.inMemory({compaction:{enabled:false},retry:{enabled:false}});
  const modelRuntime=await ModelRuntime.create({authPath:join(agentDir,'auth.json'),modelsPath:null,modelsStorePath:join(agentDir,'models-cache.json'),refreshOnCreate:false,allowModelNetwork:false});
  modelRuntime.registerProvider('batch-fixture',{baseUrl:'https://fixture.invalid/v1',api:'openai-completions',
-  streamSimple(){providerCalls++;throw new Error('Only the owned local stream is allowed');},
+  ...(useNativeProvider?{}:{streamSimple(){providerCalls++;throw new Error('Only the owned local stream is allowed');}}),
   models:[{id:'fixture',name:'Fixture',reasoning:false,input:['text'],cost:{input:0,output:0,cacheRead:0,cacheWrite:0},contextWindow:64000,maxTokens:64}]
  });
  await modelRuntime.setRuntimeApiKey('batch-fixture',process.env.FIXTURE_API_KEY);

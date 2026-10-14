@@ -13,8 +13,9 @@ const relation=process.argv[2]??'prohibition',requireResolution=process.argv.inc
 assert(['permission','prohibition','none'].includes(relation));
 const text={permission:'The complete proposed operation is permitted.',prohibition:'The complete proposed operation is prohibited.',none:'Use sentence case in the final response.'}[relation];
 const unobservedContext=process.argv.includes('--unobserved-context');
+const sdkStream=process.argv.includes('--sdk-stream');
 let contextCalls=0;
-const env=await createEnvironment({policyText:'RUL:\n '+text+'\n',hostPrompt:'Fixture background.',extensionFactories:unobservedContext?[pi=>{pi.on('context',()=>{contextCalls++;});}]:[]});
+const env=await createEnvironment({policyText:'RUL:\n '+text+'\n',hostPrompt:'Fixture background.',useNativeProvider:sdkStream,extensionFactories:unobservedContext?[pi=>{pi.on('context',()=>{contextCalls++;});}]:[]});
 let requests=0,assessments=0,executions=0,originalBody;
 const leaf={...env.createReadToolDefinition(env.options.cwd),name:'fixture_value',description:'Returns fixture text without accessing files.',async execute(){executions++;return {content:[{type:'text',text:'fixture child value'}],details:{}};}};
 const {session,root,lifecycle}=await createRootSessionFactory(env).create({options:{...env.options,tools:['codemode','fixture_value'],customTools:[createOwnedCodemodeDefinition(),leaf]}});
@@ -31,7 +32,7 @@ const runtime=bindNativePolicyRuntime({root,lifecycle,policyInput:env.policyInpu
    return [slot,{type:'choice',choice,probabilities:Object.fromEntries(Object.keys(question.criteria).map(label=>[label,label===choice?1:0]))}];
   }));
   return JSON.stringify({model:wire.model,answers,usage:{input_tokens:100,output_tokens:10}});
- },originalStream:nativeOpenAIStream,
+ },originalStream:sdkStream?session.agent.streamFunction:nativeOpenAIStream,
  async terminalFetch(input,init){requests++;if(requests===1)originalBody=init.body;return fixtureResponse({proposal:requests===1,code});}
 });
 try{
@@ -76,6 +77,6 @@ try{
    for(const incomplete of altered)assert(inspectNativeSourceDomain(incomplete).gaps.length>0,'Removing original receipt or membership evidence must keep the domain unresolved');
   }
  }
- console.log(JSON.stringify({...result,unobservedContext,contextCalls}));
+ console.log(JSON.stringify({...result,unobservedContext,contextCalls,sdkStream}));
 
 }finally{session.dispose();await session.agent.waitForIdle();runtime.detach();await env.drain();}
