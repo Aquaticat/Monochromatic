@@ -738,7 +738,8 @@ SCR:
  put task logic inline via `shell = "node --input-type=module-typescript -e"` or in a package bin.
 
 PIN:
- Pin tool versions only with a comment explaining why.
+ Pin tool versions only with a comment explaining why;
+ never pin tools this repository publishes, since `mise.lock` records them.
 
 SPG:
  Automation that spawns agent sessions needs explicit recursion guards (env var flag,
