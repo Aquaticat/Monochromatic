@@ -122,15 +122,24 @@ export function consumeSourceAssociations(inputs: SourceContributionInputs,): So
         source,
         run,
       },);
-    /** Original manager tool inputs have their own input-only publication membership. */
+    /**
+     Original manager tool inputs have their own input-only publication membership.
+     */
     const toolLinked = (source !== undefined) && (run !== undefined)
       && (association !== undefined)
-      && inspectToolContribution({ association, source, run });
-    /** Exact source identity is required independently of any supporting link. */
+      && inspectToolContribution({
+        association,
+        source,
+        run
+      });
+    /**
+     Exact source identity is required independently of any supporting link.
+     */
     const accounted = (source !== undefined) && (association !== undefined)
       && (association.source === source.source)
       && (base || runLinked
-        || messageLinked || toolLinked);
+        || messageLinked
+        || toolLinked);
     uses.push(Object.freeze({
       contribution: contribution.contribution,
       request: contribution.request,
