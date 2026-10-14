@@ -553,6 +553,25 @@ RX 7600. Prices are launch or historical figures; current stock and street price
 - Neither board would fix a memory fault that comes from the CPU's memory controller or the DIMMs; the memtest86+ run
   at EXPO 6000 on the new board is still the discriminating test.
 
+### Prices, stock and BIOS (searched about 01:10 EDT, aggregator and retailer snippets, region unknown)
+
+The user's country is not recorded, so prices are listed by source and currency; none was confirmed at checkout.
+
+- X870E Taichi Lite: Tech-America lists 356 US dollars; maxmybuild shows from 399.99 at one retailer; Pangoly best
+  price 383.99; Box.co.uk lists 354.99 pounds (updated 2026-09-02, all-time low 309.99 pounds); two UK shops show it in
+  stock; a Beach Audio US listing is out of stock; one Canadian private seller asks 480 Canadian dollars new.
+- Crosshair X870E Hero: Best Buy 558 US dollars; Pangoly current 549 with a low of 512.99 on 2026-06-15; UK shops list
+  479.99 to 546.99 pounds in stock; one US reseller lists 666.49.
+- X870E Nova WiFi: UK shops 291.99 to 308.81 pounds in stock; Tech-America 282 US dollars; AVADirect 396.15 (ships in
+  1 to 3 weeks); Pangoly low 259.99 in November 2025.
+- ROG Strix X670E-E: no current new price found; a used unit was listed at 250 euro on 2026-10-05.
+- Taichi Lite BIOS: the 3.x series ran from AGESA 1.2.0.0a to 1.2.0.3g (3.50); the 4.x series carries AGESA 1.3.0.0a
+  (4.07 beta, then 4.10 stable on 2026-02-25), and an ASRock forum user mentions 4.41 and 4.43 as current. A Level1Techs
+  test (via a news summary) says 1.3.0.0a fixed Ryzen instability on an X870E Taichi. A Reddit owner runs 3.25 with a
+  9800X3D without problems; another post reports a new Taichi Lite stuck at code 00 after BIOS Flashback.
+- Decision: the Taichi Lite and the Hero are both in stock somewhere, so the cheaper Strix path saves little against the
+  Lite in the UK (354.99 pounds for the Lite against 291.99 for the Nova) and has a worse BIOS record for the 7950X.
+
 ## Open questions
 
 - The user suspects the motherboard (about 21:05 EDT): the Gigabyte B650 GAMING X AX rev 1.3 freezes in the BIOS
