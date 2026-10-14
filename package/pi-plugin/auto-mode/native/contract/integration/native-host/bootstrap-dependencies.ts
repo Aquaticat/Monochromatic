@@ -7,7 +7,7 @@ import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { tagged } from '@monochromatic-dev/module-logger/ts';
 import { sdk } from '../current-sdk/paths.ts';
-import { NativeCliHostError } from './host.mjs';
+import { NativeCliHostError } from './host-error.ts';
 import type { NativeForwardedFunction } from '../native-batch/runtime-types.ts';
 
 //region The bootstrap forwards original functions without claiming their opaque result shapes

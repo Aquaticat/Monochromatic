@@ -54,6 +54,7 @@ for (const [original, generated] of Object.entries({
   'core/agent-session-runtime.js': 'host-runtime.mjs',
   'core/agent-session.js': 'agent-session.mjs',
   'core/session-manager.js': 'session-manager.mjs',
+  'core/extensions/runner.js': 'event-runner.mjs',
   'core/resource-loader.js': 'resource-loader.mjs',
   'core/sdk.js': 'sdk.mjs',
   'extensions/codemode/index.js': 'host-codemode.mjs',

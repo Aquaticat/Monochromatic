@@ -226,6 +226,7 @@ function createInputPool({
  const occurrence=Object.freeze({});
  const origins=new WeakMap();
  let bytes=0;
+ let pendingEventBytes=0;
    let count=0;
    let failure;
    let constructedInputs=Object.freeze([]);
@@ -268,7 +269,7 @@ function createInputPool({
     permission:false
   });
   bytes+=Buffer.byteLength(JSON.stringify(source));
-  if(bytes>maximumSnapshotBytes)throw new SourceCollectionError('Loaded session source observations exceed the original snapshot byte bound');
+  if(bytes+pendingEventBytes>maximumSnapshotBytes)throw new SourceCollectionError('Loaded session source observations exceed the original snapshot byte bound');
   const publisher=createInputOnlyPublication(source);publisher.capture(carrier);
   const origin=Object.freeze({
     source,
@@ -718,6 +719,50 @@ function createInputPool({
     if(types.isProxy(error)||(!(error instanceof SourceCollectionError)))throw error;
    }
   },
+  /** Group one native emission while copying each callback phase before its borrowed value can change. */
+  createEventHandlerCapture(){
+   let records=[];
+   let retainedBytes=0;
+   let part=0;
+   let closed=false;
+   function publish(){
+    if(records.length===0)return;
+    pendingEventBytes-=retainedBytes;
+    retainConstructedInput({carrier:Object.freeze({records}),value:records,metadata:{method:records[0].kind,part},inputField:'eventHandler',inputOrigin:'native-event-handler'});
+    if(bytes+pendingEventBytes>maximumSnapshotBytes)throw new SourceCollectionError('Native event observations exceed the original snapshot byte bound');
+    records=[];retainedBytes=0;part++;
+   }
+   function capture(input){
+    if(failure)return;
+    try{
+     if(closed)throw new SourceCollectionError('Native event source was already completed');
+     const record=Object.freeze({kind:input.kind,phase:input.phase,ordinal:input.ordinal,path:input.path,value:copyToolMetadata({value:input.value})});
+     const recordBytes=Buffer.byteLength(JSON.stringify(record));
+     if(recordBytes+2>65_536)throw new SourceCollectionError('Native event callback value exceeds the original source byte bound');
+     if(retainedBytes+recordBytes+1>65_536)publish();
+     if(records.length===0)reserve();
+     // Array delimiters and commas are charged before any complete emission publication.
+     const addedBytes=recordBytes+(records.length===0?2:1);
+     if(bytes+pendingEventBytes+addedBytes>maximumSnapshotBytes)throw new SourceCollectionError('Native event observations exceed the original snapshot byte bound');
+     records.push(record);retainedBytes+=addedBytes;pendingEventBytes+=addedBytes;
+    }catch(error){
+     failure=new InputCaptureError(error);
+     if(types.isProxy(error)||(!(error instanceof SourceCollectionError)))throw error;
+    }
+   }
+   function complete(){
+    if(failure)return;
+    try{
+     if(closed)throw new SourceCollectionError('Native event source cannot complete twice');
+     closed=true;
+     publish();
+    }catch(error){
+     failure=new InputCaptureError(error);
+     if(types.isProxy(error)||(!(error instanceof SourceCollectionError)))throw error;
+    }
+   }
+   return Object.freeze({capture,complete});
+  },
   /** Retain original context inputs and complete results under the existing manager budget. */
   captureContextHandler(input){
    if(failure)return;
@@ -1115,7 +1160,7 @@ function createInputPool({
   readConstructedInputs(){return constructedInputs;},
   inputUsage(){if(failure)throw failure;return Object.freeze({
     count,
-    bytes
+    bytes:bytes+pendingEventBytes
   });},
   captureCreatedInput({
     entry,

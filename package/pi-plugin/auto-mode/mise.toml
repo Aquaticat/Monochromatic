@@ -94,6 +94,21 @@ run = [
   "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-batch/domain-frontier.test.mjs none --require-resolution --sdk-stream --http-transport",
 ]
 
+[tasks."test:semantic-operating-policy"]
+description = "Verify adopted native categorical admission through the built package"
+run = "node src/semantic-operating-policy.unit.test.ts"
+
+[tasks."test:native:semantic-operating-policy"]
+description = "Exercise the adopted policy through original SDK requests and maintained HTTP transport"
+run = [
+  "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-batch/domain-frontier.test.mjs permission --require-resolution --sdk-stream --http-transport --operating-policy",
+  "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-batch/domain-frontier.test.mjs prohibition --require-resolution --sdk-stream --http-transport --operating-policy",
+  "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-batch/domain-frontier.test.mjs none --require-resolution --sdk-stream --http-transport --operating-policy",
+  "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-batch/domain-frontier.test.mjs permission --require-resolution --sdk-stream --http-transport --operating-policy --low-confidence-clause",
+  "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-batch/domain-frontier.test.mjs permission --require-resolution --sdk-stream --http-transport --operating-policy --unknown-clause",
+  "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-batch/domain-frontier.test.mjs permission --require-resolution --sdk-stream --http-transport --operating-policy --unsupported-clause",
+]
+
 [tasks."dependencies:install"]
 description = "Install declared native parsers and regenerate the workspace lock without lifecycle scripts"
 run = "pnpm install --ignore-scripts"
@@ -115,6 +130,30 @@ run = [
 
 [tasks."test:native:cli-manager"]
 run = "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-batch/cli-manager.test.mjs"
+
+[tasks."test:native:event-receipts"]
+description = "Exercise original native event dispatch, complete grouped sources, and observation freshness"
+run = "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-batch/event-receipts.test.mjs"
+
+[tasks."test:native:progress-events"]
+description = "Exercise unchanged native progress callbacks through the original prepared program"
+run = "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-batch/domain-frontier.test.mjs permission --require-resolution --sdk-stream --http-transport --operating-policy --observed-progress"
+
+[tasks."test:native:configured-extensions"]
+description = "Exercise installed extension paths from a read-only manifest in disposable native state"
+usage = 'arg "<manifest>" help="JSON array of enabled native extension resource records"'
+shell = "node --input-type=module-typescript -e"
+run = """
+const { default: spawn } = await import('nano-spawn')
+const manifest = process.env.usage_manifest
+if (typeof manifest !== 'string') throw new Error('An installed extension manifest is required')
+await spawn(process.execPath, [
+  '--max-old-space-size=512', '--import', './dist/native/loader.mjs',
+  './dist/native/contract/integration/native-batch/domain-frontier.test.mjs',
+  'permission', '--require-resolution', '--sdk-stream', '--http-transport', '--operating-policy',
+  `--extension-manifest=${manifest}`
+], { stdio: 'inherit' })
+"""
 
 [tasks."test:native:manager-constructors"]
 description = "Verify original native history, options, and session construction across manager entry points"
@@ -211,7 +250,7 @@ run = [
 ]
 
 [tasks."native:cli"]
-description = "Run the candidate owned native host; semantic admission remains unconfigured"
+description = "Run the candidate owned native host with the adopted semantic operating policy"
 run = "node dist/native/cli.mjs"
 
 [tasks."test:native:host-lifecycle"]
@@ -229,5 +268,5 @@ run = [
 [tasks."docs:render:native"]
 run = [
   "mkdir --parents .cache/native-docs",
-  "pandoc --from=commonmark --to=html --output=.cache/native-docs/integration.html README.md native/README.md ../../../doc/handover/pi-auto-mode-current-frontier.md ../../../doc/troubleshooting/pi-sdk-staging.md",
+  "pandoc --from=commonmark --to=html --output=.cache/native-docs/integration.html README.md native/README.md ../../../doc/handover/pi-auto-mode-current-frontier.md ../../../doc/troubleshooting/pi-sdk-staging.md ../../../doc/decision/pi-auto-mode-semantic-admission.md ../../../doc/planning/pi-auto-mode-governing-domain-closure.md",
 ]

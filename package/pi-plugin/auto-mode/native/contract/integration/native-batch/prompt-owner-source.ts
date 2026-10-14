@@ -105,7 +105,8 @@ export function emitActiveSessionContext(input) { return emitContext(input); }`
                     if(handlers.length && kind!=="before_agent_start")kinds.add(kind);
                 }
             }
-            return Object.freeze([...kinds].toSorted());
+            const registeredKinds=Object.freeze([...kinds].toSorted());
+            return Object.freeze({kinds:registeredKinds,observation:readNativeRunnerDomainEvents({runner:session.#extensionRunner,kinds:registeredKinds})});
         };
         readInputUsage = session => {
             if(session.#custodyDisposed)throw new NativeSessionDisposedError();

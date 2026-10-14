@@ -15,13 +15,17 @@ their original generators and historical results are not retroactively changed.
 The `input` directories preserve those snapshots separately from newly generated Pi modules.
 Imports were relocated to this package graph without changing policy decisions.
 
-The maintained build emits the qualified Pi 1.1.0 source and owned transformations to `dist/native`.
+The maintained build emits the qualified Pi 1.2.0 source and owned transformations to `dist/native`.
 The package `build` task builds maintained exports before building this native artifact.
 `mise run //package/pi-plugin/auto-mode:build:native` builds that artifact;
 `build:native:owned` rebuilds the owned transformations against an existing source emission.
 Rebuilds replace the copied `dist/native/contract` tree so retired source modules cannot survive beside replacements.
 The candidate CLI entry is `dist/native/cli.mjs`.
 Its TypeScript bootstrap retains the original SDK session interfaces and forwards native owners unchanged.
+The TypeScript host owner retains original session construction,
+resource membership,
+and disposal retry state.
+Its static bridges preserve original generated constructor and reader identities.
 The generated session dependency stays static through `native-host/session-disposal.mjs`;
 awaiting its dynamic import during bootstrap prevented the native lifecycle module graph from settling.
 Declaration companions describe the retained JavaScript owner interfaces without replacing their runtime checks.
@@ -42,8 +46,14 @@ registration,
 and failure identity against the copied native artifact.
 
 The current CLI bootstrap designates the working directory's `AGENTS.md` with user authority.
-Its semantic admission remains unconfigured,
-so this candidate is not the completed production replacement.
+Its semantic admission uses the
+[adopted operating policy](../../../../doc/decision/pi-auto-mode-semantic-admission.md):
+supported selected meanings require a score of at least `0.99` and a unique lead.
+Unknown and unsupported meanings remain unresolved even at `1`.
+This operating cutoff carries no measured accuracy claim.
+Original authority,
+complete coverage,
+and authorization checks remain independent.
 The bootstrap binds the maintained direct HTTP sender for the incumbent Gateway route.
 It reads `AUTO_MODE_LLMGATEWAY_API_KEY` only when an original configured assessment is dispatched,
 retains the original encoded body and deadline,
@@ -51,7 +61,12 @@ and performs one HTTP request per client attempt.
 Gateway-internal retries remain separate from client attempt accounting.
 `test:assessment-transport` covers isolated and loopback HTTP behavior;
 `test:native:assessment-transport` connects it to original native policy review with authored responses.
-Binding this transport does not configure semantic admission or enable provider calls at startup.
+`test:semantic-operating-policy` checks the built policy's fixed scope and admission boundaries.
+`test:native:semantic-operating-policy` exercises permission,
+prohibition,
+unspecified policy,
+and abstention through original SDK requests and maintained HTTP transport using authored replies.
+Bootstrap construction makes no provider calls.
 The native lifecycle fixtures exercise actual CLI manager selection,
 services,
 reload,
@@ -157,10 +172,30 @@ capture,
 error-propagation,
 and inherited bound checks have passing original controls and failing disposable omissions.
 Other unobserved native events remain explicit source-domain gaps.
+`test:native:event-receipts` exercises the original generic,
+boundary,
+message,
+tool result,
+tool call,
+and user Bash dispatch methods.
+It retains complete callback inputs,
+defined results,
+and settled mutations in bounded source chunks.
+Native error identity,
+overlapping callbacks,
+empty dispatch,
+capture failure,
+and the existing source bounds are covered.
+`test:native:progress-events` currently reproduces a delivery blocker:
+an unchanged progress callback invalidates the approved program's source snapshot before any child executes.
+Awaiting its completion alone does not fix that failure.
+The receipt-timing proposal and measured contrasts are recorded in
+`doc/planning/pi-auto-mode-governing-domain-closure.md` and `doc/troubleshooting/pi-sdk-staging.md`.
 Complete lint verification,
 installed host activation,
-production semantic qualification,
 and genuine human approval remain outstanding.
+Empirical semantic qualification is not established;
+the adopted operating policy does not require another paid trial.
 
 The dedicated `auto-mode-native` dependency catalog preserves the parser releases used by those fixtures.
 It leaves the repository's other parser consumers on their existing catalog.

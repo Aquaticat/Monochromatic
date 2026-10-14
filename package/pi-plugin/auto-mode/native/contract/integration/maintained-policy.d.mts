@@ -6,6 +6,7 @@
 export {
   askUser,
   createAssessmentSender,
+  createNativeSemanticOperatingPolicies,
   VERDICT_ENTRY_TYPE,
   AuthorizationEvidenceError,
   captureAuthorizationInputs,

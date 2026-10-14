@@ -1,5 +1,9 @@
 import { RootLeaseSuspendedError } from './lifecycle.mjs';
 import { createHash } from 'node:crypto';
+import {inspect} from 'node:util';
+import {tagged} from '@monochromatic-dev/module-logger/ts';
+
+const l=tagged({tag:'auto-mode-request-observation'});
 
 //region Consumer-owned observations are data receipts, not instruction authority or permission.
 export class RequestObservationError extends Error {
@@ -91,12 +95,16 @@ export function createRequestObservationOwner({
     );
     try {
       assertScopeLifetime(scope);
+      if(!verifySources&&scope.preparingSources){
+       const sources=collector.captureJudgmentSources({original:scope.sources,signal:scope.signal,extend:true});
+       scope.judgmentBinding=Object.freeze({request:scope.receipt,sources});
+      }
       if(verifySources)verifySources();
       else collector.assertObservedFresh(scope.judgmentBinding
         ?.sources
         ??scope.sources);
       assertScopeLifetime(scope);
-    } catch(error){if(error instanceof RootLeaseSuspendedError)throw error;if(!scope.invalidated){scope.invalidated=true;scope.invalidationCause=error;}throw new RequestObservationStaleError(
+    } catch(error){if(error instanceof RootLeaseSuspendedError)throw error;tagged({tag:assertScope.name,l}).error(inspect(error,{depth:6,maxStringLength:2048}));if(!scope.invalidated){scope.invalidated=true;scope.invalidationCause=error;}throw new RequestObservationStaleError(
       'Observed request is no longer current',
       {cause:error}
     );}
@@ -162,6 +170,24 @@ export function createRequestObservationOwner({
       });
       return scope.judgmentBinding;
     }finally{scope.bindingJudgment=false;}
+  }
+  /** Native preparation may append observed event sources before assessment starts. */
+  function beginJudgmentSources(response){
+   const binding=bindJudgmentSources(response);
+   const scope=responses.get(response);
+   if(scope.sourcePreparationClosed)throw new RequestObservationProfileError('Original judgment source preparation was already sealed');
+   if(typeof collector.captureJudgmentSources!=='function')throw new RequestObservationProfileError('Native preparation requires its original source handoff');
+   scope.preparingSources=true;
+   return binding;
+  }
+  /** Seal the complete prepared source collection once without creating another request or judgment. */
+  function sealJudgmentSources(response){
+   const scope=object(response)?responses.get(response):undefined;
+   if(!scope?.preparingSources||scope.sourcePreparationClosed)throw new RequestObservationProfileError('No original native source preparation remains open');
+   validate(scope);
+   scope.preparingSources=false;
+   scope.sourcePreparationClosed=true;
+   return scope.judgmentBinding;
   }
   async function streamFunction(
     model,
@@ -302,6 +328,8 @@ export function createRequestObservationOwner({
     observationFor,
     assertFresh,
     bindJudgmentSources,
+    beginJudgmentSources,
+    sealJudgmentSources,
     invalidate
   });
 }

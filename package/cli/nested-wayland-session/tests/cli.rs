@@ -41,6 +41,7 @@ fn help_exits_successfully_without_startup() {
         assert!(text.contains("Usage:"));
         assert!(text.contains("--socket"));
         assert!(text.contains("--color-scheme"));
+        assert!(text.contains("--headless"));
         assert!(text.contains("COMMAND"));
         assert!(output.stderr.is_empty());
     }
@@ -77,4 +78,17 @@ fn usage_errors_are_reported_before_startup() {
         assert!(!text.contains("WAYLAND_DISPLAY"));
         assert!(!text.contains("XDG_RUNTIME_DIR"));
     }
+}
+
+/// With no display and no `--headless`,
+///  the nested window fails to start,
+///  exits with a runtime failure,
+///  and the message names the flag as an option.
+#[test]
+fn start_without_a_display_and_without_the_flag_names_the_headless_option() {
+    let output = execute(&["--size", "400x300", "--", "true"]);
+    assert_eq!(output.status.code(), Some(1), "{:?}", output);
+    let text = String::from_utf8(output.stderr).expect("UTF-8 error");
+    assert!(text.contains("--headless"), "{text}");
+    assert!(text.contains("winit backend init failed"), "{text}");
 }

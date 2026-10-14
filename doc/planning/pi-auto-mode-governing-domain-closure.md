@@ -236,3 +236,72 @@ neither switches to registered-roots-only domain B.
 Unknown domain membership does not become automatic approval,
 denial,
 or a new approval request.
+
+## Proposed receipt timing during an approved operation
+
+This timing choice is proposed on 2026-10-14 and is not adopted.
+The accepted all-host-input domain and processing-boundary capture remain unchanged.
+The open question is which decision a newly received input can govern after execution starts.
+
+The maintained `test:native:progress-events` fixture has one `tool_execution_update` callback.
+It increments a fixture counter,
+returns no value,
+and does not mutate its event.
+The original SDK request receives one successful authored assessment permitting the complete Codemode operation.
+The first progress notification then invalidates the source snapshot before any child executes.
+The measured result is one callback,
+one assessment,
+and zero child executions instead of the required three.
+
+A disposable Node load hook changed only the initial Codemode `publish()` call to `await publish()` in memory.
+The positive application marker confirmed that the hook changed the intended callsite.
+The same consumer still failed with zero child executions:
+its native observation moved from revision zero to revision two with no pending callback.
+The original run retained the complete event input and settled input as new source receipts.
+No installed or generated artifact file was changed by that diagnostic.
+Waiting for settlement therefore resolves the pending-callback distinction but not source membership.
+
+### Decision-scoped membership
+
+Seal source membership for the complete approved operation when its prepared members are assessed.
+Continue capturing every later received input,
+including event results and mutations,
+for the next decision.
+Existing selected policy and resource changes,
+changed prepared arguments,
+cancelled signals,
+and invalid execution or result identities still invalidate their original dependencies.
+New input receipt alone does not reopen or replace the closed judgment or its inference budget.
+
+Benefit:
+ordinary progress delivery can coexist with one decision authorizing the complete operation.
+Cost:
+an instruction received after approval does not automatically revise remaining steps of that operation;
+the user must cancel the running operation when immediate interruption is required.
+The implementation must distinguish appended receipts from mutation of already selected dependencies,
+retain both kinds,
+and prove those separate outcomes in native consumers.
+
+### Continuously expanding membership
+
+Every newly received input becomes part of the governing domain for remaining execution steps immediately.
+If its significance cannot be established within the original decision budget,
+stop remaining execution.
+Keep all original receipt,
+identity,
+cancellation,
+and argument guards.
+
+Benefit:
+new instructions cannot be deferred past a remaining effect of the running operation.
+Cost:
+the measured unchanged progress callback already stops an otherwise permitted program.
+Proving a notification derives entirely from previously selected sources could avoid individual stops,
+but callback completion or equal text alone is not that proof.
+A new judgment or reset budget is not implicitly authorized by this option.
+
+Ranking:
+decision-scoped membership before continuously expanding membership,
+because the former gives the already accepted complete-operation decision a defined lifetime
+and preserves all receipts for subsequent decisions.
+The timing tradeoff requires user acceptance before implementation.

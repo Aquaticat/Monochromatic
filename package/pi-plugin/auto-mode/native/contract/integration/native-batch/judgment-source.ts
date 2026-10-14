@@ -79,13 +79,19 @@ export function judgmentSource({
  const boundSources=replaceOnce({
    source:assessmentResponse,
    from:'const input={producerOwner,observer,stream,response},receipt=readMainAgentRequest(input);',
-   to:'const input={producerOwner,observer,stream,response};\n    const sourceBinding=observer.bindJudgmentSources?.(response);\n    const receipt=readMainAgentRequest(input),judgmentSources=sourceBinding?.sources??receipt.sources;\n    if(sourceBinding&&sourceBinding.request!==receipt)throw new JudgmentConstructionError("Judgment sources do not belong to the original request receipt");'
+   to:'const input={producerOwner,observer,stream,response};\n    const sourceBinding=observer.beginJudgmentSources?observer.beginJudgmentSources(response):observer.bindJudgmentSources?.(response);\n    const receipt=readMainAgentRequest(input);\n    let judgmentSources=sourceBinding?.sources??receipt.sources;\n    if(sourceBinding&&sourceBinding.request!==receipt)throw new JudgmentConstructionError("Judgment sources do not belong to the original request receipt");'
  });
  /**
   Mandatory policy reads use the retained governing source snapshot.
   */
- const mandatorySource=replaceOnce({
+ const sealedSources=replaceOnce({
    source:boundSources,
+   from:'        const dependencyHandle=facade.prepare({signal});',
+   to:'        if(observer.beginJudgmentSources){const binding=observer.sealJudgmentSources(response);if(binding.request!==receipt)throw new JudgmentConstructionError("Prepared sources lost their original request receipt");judgmentSources=binding.sources;}\n        const dependencyHandle=facade.prepare({signal});'
+ });
+ /** Mandatory policy and source selection use the final prepared collection. */
+ const mandatorySource=replaceOnce({
+   source:sealedSources,
    from:'const mandatoryPolicy=receipt.sources.mandatoryPolicy;',
    to:'const mandatoryPolicy=judgmentSources.mandatoryPolicy;'
  });
@@ -277,7 +283,7 @@ export function judgmentSource({
  const sourceViews=replaceOnce({
    source:assessmentBatch,
    from:"indexedRuleCandidates:()=>operation(indexedRuleCandidates),",
-   to:"sourceSnapshot:judgmentSources,indexedUnitAdoptionPairs:()=>operation(indexedUnitAdoptionPairs),claimUnitAdoption:input=>operation(()=>claimUnitAdoption(input)),requestMaterialFor:()=>operation(requestMaterialFor),claimRequestMaterial:()=>operation(claimRequestMaterial),claimHeadingContext:input=>operation(()=>claimHeadingContext(input)),issueBoundPolicyBatch:input=>operation(()=>issueBoundPolicyBatch(input)),indexedRuleCandidates:()=>operation(indexedRuleCandidates),indexedInstructionCandidates:()=>operation(indexedInstructionCandidates),indexedHeadingContextCandidates:()=>operation(indexedHeadingContextCandidates),inspectRuleSources:()=>operation(inspectRuleSources),issueRuleAssessmentBatch:()=>operation(issueRuleAssessmentBatch),"
+   to:"readSourceSnapshot:()=>judgmentSources,indexedUnitAdoptionPairs:()=>operation(indexedUnitAdoptionPairs),claimUnitAdoption:input=>operation(()=>claimUnitAdoption(input)),requestMaterialFor:()=>operation(requestMaterialFor),claimRequestMaterial:()=>operation(claimRequestMaterial),claimHeadingContext:input=>operation(()=>claimHeadingContext(input)),issueBoundPolicyBatch:input=>operation(()=>issueBoundPolicyBatch(input)),indexedRuleCandidates:()=>operation(indexedRuleCandidates),indexedInstructionCandidates:()=>operation(indexedInstructionCandidates),indexedHeadingContextCandidates:()=>operation(indexedHeadingContextCandidates),inspectRuleSources:()=>operation(inspectRuleSources),issueRuleAssessmentBatch:()=>operation(issueRuleAssessmentBatch),"
  });
  /**
   Whole-program candidate selection retains its original contextual-heading rejection.

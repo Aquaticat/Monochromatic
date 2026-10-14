@@ -21,6 +21,8 @@ export async function createEnvironment({
   appendSystemPromptOverride,
   promptTemplateText,
   extensionModuleText,
+  additionalExtensionPaths=[],
+  expectedBlockedNetworkUrls=[],
   extensionFactories=[],
   customPromptAuthority,
   discoveredSystemText,
@@ -78,9 +80,9 @@ export async function createEnvironment({
        .PI_NATIVE_BATCH_FIXTURE='1';
  process.env
    .FIXTURE_API_KEY='synthetic-local-fixture-only';
- let networkAttempts=0;
+ const blockedNetworkUrls=[];
    let providerCalls=0;
- globalThis.fetch=async function rejectFixtureNetwork() {networkAttempts++;throw new Error('Network is disabled in the native-batch fixture');};
+ globalThis.fetch=async function rejectFixtureNetwork(input) {blockedNetworkUrls.push(String(input));throw new Error('Network is disabled in the native-batch fixture');};
  const {createAgentSession}=await import("./generated/sdk.mjs");
  const {
    DefaultResourceLoader,
@@ -237,7 +239,7 @@ export async function createEnvironment({
      agentsFilesOverride,
      appendSystemPromptOverride,
      additionalPromptTemplatePaths:promptTemplateText===undefined?[]:[promptTemplatePath],
-     additionalExtensionPaths:extensionModuleText===undefined?[]:[extensionModulePath],
+     additionalExtensionPaths:[...additionalExtensionPaths,...(extensionModuleText===undefined?[]:[extensionModulePath])],
      extensionFactories,
      noExtensions:true,
      noSkills:true,
@@ -276,9 +278,9 @@ export async function createEnvironment({
      resourceLoader:policyInput.loader,
      resourceInputBinding:policyInput.nativeBinding
    },
-   async drain(){await owner.drain(policyInput.loader);assert.equal(
-     networkAttempts,
-     0
+   async drain(){await owner.drain(policyInput.loader);assert.deepEqual(
+     blockedNetworkUrls,
+     expectedBlockedNetworkUrls
    );assert.equal(
      providerCalls,
      0

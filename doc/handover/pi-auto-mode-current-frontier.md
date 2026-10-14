@@ -1042,7 +1042,250 @@ records its fixed model,
 program profile,
 per-definition meanings,
 and independent authority and coverage obligations.
-Production binding and built-consumer verification are next.
+The maintained factory `createNativeSemanticOperatingPolicies` now supplies all categorical policies
+to the original native bootstrap.
+Its built-package boundary cases pass for every definition and supported meaning.
+The native SDK controls pass through the maintained HTTP sender:
+permission at `0.99` executes its three child calls,
+prohibition denies,
+no instruction stays unspecified,
+and lower-scoring,
+unknown,
+or unsupported clause answers remain unresolved with no child execution.
+Every case retains its original source accounting and makes zero provider requests.
+Package types and scoped lint of all six changed TypeScript implementation and test files pass.
+The full package unit task passes against the rebuilt adopted policy;
+its log is `${HOME}/temp/agent/pi-auto-mode-unit-after-semantic-policy-20261014.log`.
+The disposable source-build campaign at `${HOME}/temp/agent/pi-semantic-operating-omissions-4cV6Sz`
+passes its original baseline and fails all seven intended guard mutations.
+These cover the cutoff,
+unknown and unsupported meanings,
+normalization,
+score bounds,
+selected vocabulary,
+and inclusion of the exact `0.99` boundary.
+The vocabulary control retains a valid distribution to isolate its selected-label check.
+Every failing log was inspected;
+the production artifact was not changed.
+Original host construction and disposal checks pass.
+The separate actual Qwen CLI process passes RPC state and empty-stderr shutdown checks,
+with zero provider requests and no genuine human approval in these fixtures.
+All 196 maintained native modules pass parser checking.
+The native README,
+current handover,
+and admission decision were checked in rendered output.
+The admission decision's initial sentence incorrectly described unresolved evidence as an automatic approval request.
+It is corrected against the original approval router and guard-outcome implementation:
+unknown or unspecified policy blocks execution;
+only otherwise established permission with an eligible authorization requirement reaches native approval.
+No runtime fallback was changed.
+The native construction and disposal owner now lives in `host.ts`,
+renamed from `host.mjs` on 2026-10-14.
+Its original static generated dependencies,
+SDK result fields,
+retirement tokens,
+and cleanup-retry state remain intact.
+The host's membership registry now retains the already-created original resource record beside its loader key;
+no replacement policy owner or source registry is introduced.
+Package types,
+the owned native build,
+original host lifecycle checks,
+and scoped lint of all six changed TypeScript interfaces pass.
+Native approval,
+native-context Allow,
+Deny,
+Stop,
+cancellation,
+reload,
+and separate-process Qwen CLI checks pass after the host port.
+An overlapping verification run first stopped at a native `SIGABRT`
+and a separate Go `newosproc` diagnostic from full lint.
+The [staging troubleshooting record](../troubleshooting/pi-sdk-staging.md#overlapping-native-verification-and-oxlint-1870-stop-before-completing-checks)
+retains their separate boundaries and the successful sequential checks.
+The unchanged full lint sweep now completes on its own and reports 13,432 warnings and 454 errors
+across 368 files.
+Its log is `${HOME}/temp/agent/pi-auto-mode-full-lint-sequential-20261014.log`.
+Package-wide lint completion remains unfinished despite the clean changed interfaces.
+All 198 maintained native modules pass parser checking.
+The current host configuration still loads the legacy auto-mode package through the user's global Pi settings;
+installation preparation must replace that legacy activation and route the ordinary `pi` command
+to the maintained host without duplicating guards.
+The current command resolves through generated workspace dependency shims,
+and the root `mise.toml` path list is owned by `file-enforcer.config.ts`.
+No installed settings or command resolution have been changed yet.
+The next consumer check must exercise the configured extension set in disposable state.
+The generated `readActiveSessionDomainEvents` includes every registered handler kind except `before_agent_start`;
+`inspectNativeSourceDomain` currently accounts only original `context` and `context_with_system` receipts.
+Other registered kinds remain explicit gaps even if their callbacks were not invoked in that run.
+The no-extension CLI startup fixture does not establish that the installed extension configuration can decide an action.
+Do not silently disable the user's other extensions or treat their unresolved inputs as absent.
+The concurrent dependency refresh in `755685da03` moved installed Pi from `1.1.0` to `1.2.0`.
+The first installed-extension probe stopped before resource loading:
+Node emitted `ERR_MODULE_NOT_FOUND` for `partial-json` because the existing emitted graph's
+dependency links still targeted the removed `1.1.0` package directories.
+The native source input is being updated to upstream tag `v1.2.0`,
+commit `06a466935536f8c9bcacb2d5efc0fc021be1bdff`.
+Emission now replaces each owned generated package tree before compiling,
+so obsolete dependency links and source files cannot survive a release change.
+The original migration qualification must pass on that graph before resuming the extension check.
+The full `1.2.0` build,
+package types,
+original host lifecycle,
+actual Qwen CLI,
+semantic operating-policy,
+context-receipt,
+and native approval-context checks now pass.
+Scoped lint of the changed release and emission files reports no diagnostics.
+Read-only resolution found 18 configured packages and 22 enabled extension entries after legacy auto-mode exclusion.
+Automatic approval review rejected an ordinary subprocess test of those extensions because their side effects
+were not contained by a disposable home and rejecting `fetch` alone.
+The replacement fixture uses Bubblewrap `0.12.0` with isolated user,
+network,
+PID,
+IPC,
+UTS,
+and cgroup namespaces;
+read-only code and dependency mounts;
+no host credentials or Git metadata;
+and a writable disposable tmpfs home.
+Its preflight proves host code writes fail and only loopback is visible.
+Automatic review accepted that isolated execution.
+The isolated fixture loads all 22 extension entries and observes their registered event kinds.
+Synthetic's public model-catalog lookup is blocked and retained as an expected exact URL;
+no provider inference is dispatched.
+The consumer test fails at its original source-domain assertion:
+all 22 registered event kinds other than the separately captured `before_agent_start` lack complete receipts.
+The actual native review retains its unresolved source-domain issue.
+Complete capture at the original event invocation and settlement boundaries is the next implementation step;
+the existing guard remains in force.
+The maintained native event observer and source generator are now connected to the generated host.
+The generator selects original parsed `ExtensionRunner` methods:
+`emit`,
+`emitBoundary`,
+`emitMessageEnd`,
+`emitToolResult`,
+`emitToolCall`,
+and `emitUserBash`.
+It retains the native awaits and catches while adding synchronous input,
+complete result,
+settled mutation,
+and traversal-completion observations.
+The observer distinguishes native early returns from missing callbacks,
+tracks overlapping emissions independently,
+and publishes original observation identities with pending and failed state.
+Commit `a0c220d54f` connects its capture callback to the existing manager input pool,
+selects the generated runner through the existing loader,
+and binds original observation freshness into the source snapshot.
+The first generated build rejected an ambiguous final-return marker;
+anchoring it to the original line resolved that build failure.
+The first native-domain regression then rejected requests after empty event dispatch.
+Empty dispatch now preserves the observation identity because it invokes no callback and adds no source.
+The native permission,
+prohibition,
+and unspecified-policy cases pass again.
+The configured-extension trace first exhausted the original 64-source allowance in `emitMessageEnd`.
+Capturing each callback phase as a separate source caused that failure.
+The manager now copies each phase immediately and groups one emission into bounded source chunks.
+It retains every input,
+complete result,
+and settled input mutation.
+Each chunk remains within 65,536 bytes;
+the original source count and total byte bounds remain unchanged.
+Pending emission bytes are charged before final publication.
+
+`test:native:event-receipts` passes against the generated original runner.
+It exercises all six instrumented dispatch methods,
+90 callback phase observations in one source,
+queued result mutation,
+native cancellation and blocking,
+native error identity,
+overlapping emissions,
+empty dispatch,
+and nullish capture failures.
+The new TypeScript modules initially had three lint errors and 238 warnings.
+Immutable transformation steps and direct parsed-node traversal remove the errors;
+the formatter left ten warnings,
+which were then corrected.
+The scoped six-file lint reports zero warnings and zero errors.
+Package type checking passes with `GOMAXPROCS=2` after an uncapped TypeScript worker reported
+`failed to create new OS thread (have 156 already; errno=11)`.
+This is a completed bounded invocation,
+not evidence of a permanent thread-allocation fix.
+
+Native preparation events append original source receipts after initial judgment construction.
+The existing source handoff now admits authenticated manager and event growth during preparation,
+without changing its policy,
+resource,
+runner,
+request,
+or judgment identity.
+The original `prepare` operation seals the final collection before question selection.
+The ordinary `readSourceSnapshot` method preserves the judgment facade's data-property requirement.
+The assessment representation now retains the `eventHandler` input location.
+The configured fixture reaches one successful authored assessment,
+then stops because another event changes the frozen snapshot before nested program execution.
+Its original judgment and inference budget remain closed;
+the freshness guard has not been bypassed.
+The exact transition is revision 28,
+`tool_call`,
+pending zero,
+to revision 29,
+`tool_execution_update`,
+pending one.
+Pi's original Codemode executor calls its `publish` callback before `ctx.createDeclaredProgram`.
+Its `publish` function returns `onUpdate`'s result,
+but that call does not await the result.
+The generated agent-loop update callback returns the native asynchronous event emission.
+The native callback is therefore still pending when the enclosing program checks its original judgment.
+The next implementation boundary must distinguish incomplete asynchronous event delivery
+from completed callback contributions that change the selected instruction sources.
+It must retain native callback identity,
+complete received results,
+and the same original closed judgment budget.
+No configured-extension consumer success or installed migration completion is claimed.
+The maintained single-callback regression in commit `e8294dd52e` reproduces the same failure
+without loading configured extensions:
+`test:native:progress-events` records one successful authored assessment,
+one unchanged callback,
+and zero child executions.
+A disposable in-memory change that awaits the initial Codemode progress publication still fails:
+the event observation reaches revision two with pending zero,
+but differs from the original revision-zero source snapshot.
+Waiting alone is therefore not the complete remedy.
+The proposed decision-scoped versus continuously expanding receipt timing is recorded in
+`doc/planning/pi-auto-mode-governing-domain-closure.md`.
+The question is being presented to the user;
+neither temporal policy has been adopted by this proposal.
+The existing freshness guards remain unchanged while independent verification continues.
+The user explicitly authorized continued attachment to the existing Codex worker cgroup on 2026-10-14
+after automatic approval review rejected the wrapper's attachment step.
+No resource limit changed.
+The six native adopted-policy contrasts and the native context receipt controls pass after these changes.
+The expanded event receipt controls also pass:
+chunk rollover retains every phase,
+oversized and excessive sources still reject,
+result accessors are not invoked,
+and completion failures retain their original thrown identity.
+The first approval-context sequence passed Allow and Deny,
+then Stop failed with `DependencyDeadlineError: Original dependency assessment deadline expired`.
+An unchanged-code repeat passed Allow,
+Deny,
+Stop,
+cancellation,
+and reload,
+followed by the native host lifecycle check.
+The deadline failure remains recorded;
+the repeat establishes recovery,
+not a cause or permanent timing fix.
+The semantic and approval runs also emitted the previously recorded logger sink verification timeout.
+Passing assertions do not establish clean stderr or connect that warning to the deadline failure.
+Its unit,
+omission,
+native consumer,
+and package-quality checks remain unfinished.
+The existing source-count and byte bounds have not been raised.
+The fixture and logs are `${HOME}/temp/agent/pi-extension-isolation-20261014.test.ts`
+and `${HOME}/temp/agent/pi-configured-extensions-isolated-20261014.log`.
 Independent maintained bootstrap quality work also continues.
 Its scoped lint reports `no-restricted-syntax/no-sync` for `statSync`
 and `no-restricted-syntax/no-regex` for trailing-slash removal,

@@ -154,6 +154,14 @@ pub(super) fn command() -> Command {
     );
     command = command.arg(repeat_delay);
 
+    let mut headless = Arg::new("headless");
+    headless = headless.long("headless").action(ArgAction::SetTrue);
+    headless = headless.help(
+        "Render with surfaceless EGL on the GPU render node instead of a nested window: \
+         no parent display is used or needed and no window appears; the default is the nested window"
+    );
+    command = command.arg(headless);
+
     let mut child = Arg::new("command");
     child = child.value_name("COMMAND").required(true);
     // What: 1.. accepts at least one positional value; trailing_var_arg hands
