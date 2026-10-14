@@ -79,6 +79,10 @@ runWorkspaceNode('package/dev-script/task-util', 'oxlint-wrapper', ['--fix', ...
 [tasks."test:unit"]
 extends = "test:unit"
 
+[tasks."test:assessment-transport"]
+description = "Verify the built direct HTTP sender without provider requests"
+run = "node src/assessment-transport.unit.test.ts"
+
 [tasks."dependencies:install"]
 description = "Install declared native parsers and regenerate the workspace lock without lifecycle scripts"
 run = "pnpm install --ignore-scripts"
