@@ -36,7 +36,8 @@ The operating instructions live in `doc/runbook/claude-cpu-cap.md`.
   (replacing the drop-in from 2026-02-22 that held `0-15` and left threads 16 to 31 idle).
 - `claude-cpu-watch.service` (user unit, enabled, linger on) re-applies the quota to the `claude-code-bash` cgroup.
   Claude Code creates that cgroup anew in every boot and has no CPU limit setting, so a service has to do it.
-  The thread count is read from `~/.config/claude-cpu-cap/threads` (30 now) every 2 seconds.
+  The thread count is read from `~/.config/claude-cpu-cap/threads` every 2 seconds
+  (28 now, lowered from 30 at 20:15:53 after the 95.3 degree alert).
 - The watcher alerts on CPU pressure 40, memory pressure 10, scheduler lag 250 ms and temperature 95.
   The pressure limit of 40 was a first guess and is uncalibrated.
 - It logs a sample every 10 seconds to `~/.local/share/claude-cpu-cap/samples/<date>.csv` (14 days kept):
@@ -51,10 +52,10 @@ The operating instructions live in `doc/runbook/claude-cpu-cap.md`.
   Current curve: 30% at 40, 45% at 50, 60% at 60, 100% at 61 and above (saved by the user about 18:57 EDT).
   The fan profile belongs to the user now; this session does not edit it unless asked.
 - Session-only items that die with the session: the Monitor (30-minute expiry, re-arm each time) and a one-shot cron
-  check (job `d7488671`, 00:13 EDT on 2026-10-14) that ends the watch if nothing weird happened.
+  check (job `02d6c55f`, 00:17 EDT on 2026-10-14) that ends the watch if nothing weird happened.
   It was first set for 21:19 (job `90c90261`), pushed back to 22:05 (job `f4aeb83b`) after the CPU pressure alert at
   18:02:37, to 23:19 (job `df76cdac`) after the memory pressure alert at 19:16:45, then to 00:13 after the CPU
-  pressure alert at 20:11:41 (the latest weird event so far).
+  pressure alert at 20:11:41, then to 00:17 after the temperature alert at 20:15:27 (the latest weird event so far).
 - The 20:11:41 CPU pressure alert (46.1, limit 40) came at cap 30 and 130 W. It was the first sustained load in the
   log: about 55 seconds at 125 to 136 W, load average up to 57 on 32 threads, pressure up to 67.8, and it cleared at
   17.2 within a minute. Tctl stayed below 95, so the cap was left at 30. Its numbers are in the evidence section.
@@ -123,6 +124,31 @@ The operating instructions live in `doc/runbook/claude-cpu-cap.md`.
   one 55 second episode cannot rule that out. The quiet-load slope of 0.29 degrees per watt under-predicts this
   plateau (it predicted about 76 degrees at 130 W), so the slope is steeper at high power.
   Chiplet 1 drew 42.9 W against 38.8 W for chiplet 2 and ran 3.7 degrees hotter.
+- Second sustained load, 20:15:21 EDT onward on 2026-10-13 (cap 30, then 28 from 20:15:53): Tctl pinned at
+  95.3 to 95.4 degrees for more than a minute (flat to 0.1 degree), package power 134 to 140 W (down from 146 W at the
+  start), average clock down from 4489 to about 4350 to 4430 MHz, first fan at 2009 to 2036 RPM,
+  CPU pressure only 2 to 3,
+  one-minute load 17 to 23. The chip was regulating itself to the 95 degree target.
+  - TechPowerUp (Ryzen 9 7950X cooling requirements, fetched 2026-10-13) states that Zen 4 is designed to sit at
+    95 degrees under load: it boosts clocks and voltage until 95, then regulates to stay at 95 by lowering clocks,
+    and weaker cooling shows up as lower clocks, not higher temperature. AMD is quoted as saying the processor is
+    designed to run at that temperature 24/7 without risk of damage.
+    So a 95 degree reading under sustained load is expected behavior, and the 95 degree alert fires on it by design.
+  - The cap was binding in the 20:11 episode (load average up to 57 on 32 threads) but not in this one
+    (load 17 to 23, below the cap), so lowering the cap from 30 to 28 at 20:15 cannot have reduced this heat.
+  - Reference numbers with their limits. GamersNexus (NH-D15 G2 review): the 2023 NH-D15 (the G1 design) ran
+    53.3 degrees over ambient at about 198 W with 100% fans, on a Ryzen 9 3950X overclock (not Zen 4; ambient not
+    stated). That is about 0.27 degrees per watt. Here: 95.4 minus the probe's 26.0 is 69.4 degrees over ambient at
+    137 W, about 0.51 degrees per watt, roughly 1.9 times the reference. At the reference ratio, 137 W would sit near
+    63 degrees. Noctua states the G2 is 2 to 3 degrees better than the original at 180 to 250 W, and GamersNexus
+    measured about 1 degree, so the G1 versus G2 difference is small next to this gap.
+  - TechPowerUp ran a single tower Noctua NH-U14S (rated 165 W) on the same chip: at full fan it held frequencies well
+    above 5 GHz on all threads at 95 degrees, with a power chart that spans 100 to 225 W. This setup, with a bigger
+    dual tower cooler, reaches 95 degrees at about 137 W and 4.4 GHz with boost off.
+    Different platform, case, ambient and fan setup, so this is a rough comparison, not a controlled one.
+  - Caveats on the 0.51 figure: a Zen 4 chip may be harder to cool than the 3950X for reasons not checked here
+    (heat spreader thickness, die layout), and the probe is a loose ambient reference (see hardware facts).
+    A gap this size is still more than the G1 versus G2 difference, so the contact or airflow path is the suspect.
 - Memory pressure, measured at 19:30 EDT (the user asked why tasks stall with so much memory in total):
   - The host is not short of memory: `MemAvailable` 45 GiB of 62 GiB, `user-1000.slice` peaked at 46 GB against a
     `memory.high` of 59.8 GB that it never reached (0 high events).
@@ -144,7 +170,8 @@ The operating instructions live in `doc/runbook/claude-cpu-cap.md`.
 
 ## Hardware facts
 
-- CPU cooler: a dual-tower Noctua air cooler. The user says "G2" but heavily suspects it is the G1. Unconfirmed.
+- CPU cooler: a dual-tower Noctua NH-D15 G1 (the original). The user first said G2, then confirmed at about 20:17 EDT
+  on 2026-10-13 that it is the G1.
 - Fans: 7 Noctua and 1 Lian Li, some chained, on a Corsair Commander Core XT (5 of 6 ports used; fan3 is empty).
   CoolerControl labels the controller "(broken)" but applies profiles successfully.
 - The Corsair probe sits on top of the air cooler's heatsink. Its tape cannot be bent, so the tip cannot touch the
@@ -199,7 +226,8 @@ so the findings come from reading the readable source strings inside the binary 
 
 ## Open questions
 
-- Which cooler variant is installed, and is it mounted correctly (offset, paste, base shape)?
+- The cooler is the NH-D15 G1 (answered). Is it mounted correctly (pressure, paste, AM5 bracket)? The numbers in the
+  evidence section say the heat path is far weaker than references; the G1 itself does not explain it.
 - How hard is the cooler-to-die path really? The 20:11 plateau gives 88.8 degrees at 130 W with 26 degree ambient,
   about 0.48 degrees per watt over ambient. Compare it with the 0.32 degrees per watt implied by the one online
   NH-D15 G2 report (87 degrees at 200 W, assuming a 23 degree ambient that the report does not state, so it is
