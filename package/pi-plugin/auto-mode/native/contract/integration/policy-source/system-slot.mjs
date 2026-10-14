@@ -6,7 +6,7 @@ import {
 } from './resource-receipts.mjs';
 import {copyAuthorityRegistration} from './registration.mjs';
 import {assertOriginalInputBudget} from './input-budget.mjs';
-import {copyOptions} from '../../collector/resource-input-custody/values.mjs';
+import {copyOptions} from '../../collector/resource-input-custody/values.ts';
 import {createGoverningContextEmitter} from './context-emission.mjs';
 import {linkRunInputCarriers} from './run-carriers.mjs';
 import {collectNativeMessageInputs} from '../../collector/run-prompt-custody-v3/message-inputs.mjs';

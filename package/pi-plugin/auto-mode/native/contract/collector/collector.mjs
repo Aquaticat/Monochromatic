@@ -1,10 +1,7 @@
 import { createHash } from 'node:crypto';
 
-/** Collection errors describe admission evidence, not instruction meaning. */
-export class SourceCollectionError extends Error {
-  constructor(message) { super(message);
-  this.name = 'SourceCollectionError'; }
-}
+import { SourceCollectionError } from './errors.ts';
+export { SourceCollectionError } from './errors.ts';
 /** Bindings can be made by bootstrap code, never by serialized action metadata. */
 const bindings = new WeakMap();
 /** Bound the private fixture profile without truncating source content. */

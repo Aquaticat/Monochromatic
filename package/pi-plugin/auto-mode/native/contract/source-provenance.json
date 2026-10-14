@@ -125,7 +125,9 @@
       "maintained": "collector/resource-input-custody/values.mjs",
       "sha256": "6605564173f164a80da2a2bb38aefbb15836861c6277ed2d56fc1437d257728e",
       "origin": "authored-source",
-      "relocatedLiterals": 0
+      "relocatedLiterals": 0,
+      "currentMaintained": "collector/resource-input-custody/values.ts",
+      "movedOn": "2026-10-14"
     },
     {
       "original": "collector/result-program-sdk-copy-guarded/stage-private/child-prepared-dispatch.mjs",

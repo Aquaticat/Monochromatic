@@ -1,4 +1,4 @@
-import {snapshotInput} from '../../collector/resource-input-custody/values.mjs';
+import {snapshotInput} from '../../collector/resource-input-custody/values.ts';
 import {assertBoundResourceInputs} from "../../collector/rule-relevance-sdk-copy/input/resource-owner.mjs";
 
 export class GoverningContextEmissionError extends Error {

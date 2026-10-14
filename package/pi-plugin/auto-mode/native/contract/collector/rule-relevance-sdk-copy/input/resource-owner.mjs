@@ -1,6 +1,6 @@
 import {createBootstrapPolicySelection} from "../../../lifecycle/rule-relevance-cache/selection.mjs";
 import {bindConstructionOwner,createCollector,SourceCollectionError} from "../../collector.mjs";
-import {copyOptions,snapshotInput} from "../../resource-input-custody/values.mjs";
+import {copyOptions,snapshotInput} from "../../resource-input-custody/values.ts";
 
 /** Public failure preserves caught values, including undefined, as separate occurrence records. */
 export class ResourceInputCustodyError extends AggregateError{
