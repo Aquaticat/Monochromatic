@@ -7,7 +7,7 @@ import {
   DependencyConfigurationError,
   DependencyDeadlineError,
   DependencyHandleOwnershipError,
-} from '../external-dependency-controls/errors.mjs';
+} from '../external-dependency-controls/errors.ts';
 import {
   assertRetainedFile,
   observeDeclaredFile

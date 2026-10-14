@@ -19,7 +19,7 @@ import {
   ObservedFileStaleError,
   ObservedFileTypeError,
   ObservedFileUnstableReadError,
-} from './errors.mjs';
+} from './errors.ts';
 
 //region Descriptor-bound selected fixture observations.
 /** Native bigint values retain filesystem precision without read-induced atime changes. */

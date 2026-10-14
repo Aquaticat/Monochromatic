@@ -731,6 +731,8 @@
     {
       "original": "lifecycle/external-dependency-controls/errors.mjs",
       "maintained": "lifecycle/external-dependency-controls/errors.mjs",
+      "currentMaintained": "lifecycle/external-dependency-controls/errors.ts",
+      "movedOn": "2026-10-14",
       "sha256": "294160e62ef33fce25cb140a41fa9baa36e15ebee03b1f940418724ead90a848",
       "origin": "authored-source",
       "relocatedLiterals": 0
@@ -801,6 +803,8 @@
     {
       "original": "lifecycle/native-manager-dependency-controls/errors.mjs",
       "maintained": "lifecycle/native-manager-dependency-controls/errors.mjs",
+      "currentMaintained": "lifecycle/native-manager-dependency-controls/errors.ts",
+      "movedOn": "2026-10-14",
       "sha256": "fb8c83b78339d00b946ac414a8de2d9c283e0755f94370c5412280e8bc7ecc56",
       "origin": "authored-source",
       "relocatedLiterals": 0

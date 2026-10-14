@@ -1,7 +1,7 @@
 import {
   NativeManagerQualificationCancellationError,
   NativeManagerQualificationDeadlineError
-} from './errors.mjs';
+} from './errors.ts';
 
 //region Capture actual native getter boundaries; constructor-owner reads stay source-derived.
 /** Original case and worker clocks remain independent of the parent's clock origin. */

@@ -6,7 +6,7 @@ import {
 } from 'node:fs';
 import {join} from 'node:path';
 import {observeDeclaredFile} from '../external-dependency-controls/file-observer.mjs';
-import {ObservedFileMissingError} from '../external-dependency-controls/errors.mjs';
+import {ObservedFileMissingError} from '../external-dependency-controls/errors.ts';
 import {RuleRelevanceCacheError} from './definition.mjs';
 
 export function digest(value) { return createHash('sha256').update(value).digest('hex'); }

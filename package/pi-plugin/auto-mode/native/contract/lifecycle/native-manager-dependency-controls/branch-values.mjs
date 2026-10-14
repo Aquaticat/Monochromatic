@@ -1,4 +1,4 @@
-import { NativeManagerObservationShapeError } from './errors.mjs';
+import { NativeManagerObservationShapeError } from './errors.ts';
 
 //region Preserve native entry values without retaining borrowed SDK objects.
 const expectedKeys = [

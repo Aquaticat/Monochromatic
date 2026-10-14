@@ -5,7 +5,7 @@ import {
   NativeManagerSnapshotOwnershipError,
   NativeManagerSnapshotStaleError,
   NativeManagerObservationShapeError
-} from '../native-manager-dependency-controls/errors.mjs';
+} from '../native-manager-dependency-controls/errors.ts';
 import { readNativeGetter } from '../native-manager-dependency-controls/native-read.mjs';
 
 //region Exact returned manager identity owns canonical local epochs, not authority.
