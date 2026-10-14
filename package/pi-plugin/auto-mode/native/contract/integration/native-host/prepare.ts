@@ -137,7 +137,7 @@ export async function prepareNativeHost({ output }: {readonly output:string}):Pr
    Host bootstrap supplies the maintained constructor and session owners.
    */
   const bootstrap = JSON.stringify(new URL(
-    'bootstrap.mjs',
+    'bootstrap.ts',
     import.meta.url
   ).href);
   /**

@@ -1,12 +1,17 @@
+/**
+ Bind the original native CLI without inventing semantic admission.
+
+ @module
+ */
 import { stat } from 'node:fs/promises';
 import { join } from 'node:path';
-import { pathToFileURL } from 'node:url';
 import {
-  sdk
-} from '../current-sdk/paths.ts';
+  readSessionDisposalState,
+  wrapToolDefinition
+} from './bootstrap-dependencies.ts';
+import type { NativeHostSessionInput } from './bootstrap-types.ts';
 import { createNativeMarkdownParser } from '../../native-index/native-parser.ts';
 import { bindNativePolicyRuntime } from '../native-batch/runtime.mjs';
-import { readSessionDisposalState } from '../native-batch/generated/agent-session.mjs';
 import {
   createNativeCliHost,
   NativeCliHostError
@@ -23,15 +28,10 @@ import { tagged } from '@monochromatic-dev/module-logger/ts';
 const parser = await createNativeMarkdownParser({
   expectedVersion: '0.10.5'
 });
-const { wrapToolDefinition } = await import(pathToFileURL(join(
-  sdk,
-  'dist/core/tools/tool-definition-wrapper.js'
-))
-  .href);
 const log = tagged({ tag: 'auto-mode-native-host' });
 const permissionBits = 0o777;
 
-function trace(event) {
+function trace(event: string): void {
   const l = tagged({
     tag: trace.name,
     l: log
@@ -39,7 +39,7 @@ function trace(event) {
   l.debug(event);
 }
 
-async function designatePolicy({cwd}) {
+async function designatePolicy({cwd}: {readonly cwd:string}) {
   const relativePath = 'AGENTS.md';
   const info = await stat(join(
     cwd,
@@ -53,21 +53,21 @@ async function designatePolicy({cwd}) {
       requiredMode
     },
     authority: {
-      tier: 'user',
-      scope: 'original-request'
+      tier: 'user' as const,
+      scope: 'original-request' as const
     }
   };
 }
 
-function sendUnconfiguredAssessment() {
+function sendUnconfiguredAssessment(): never {
   throw new NativeCliHostError('Native CLI semantic assessment has no adopted admission policy');
 }
 
-function assessmentClock() {
+function assessmentClock(): number {
   return performance.now();
 }
 
-function readAssessmentCredential() {
+function readAssessmentCredential(): string | undefined {
   return process.env
     .AUTO_MODE_LLMGATEWAY_API_KEY;
 }
@@ -77,7 +77,7 @@ function bindSession({
   lifecycle,
   resource,
   options
-}) {
+}: NativeHostSessionInput) {
   const baseUrl = root.session
     .model
     ?.baseUrl
@@ -105,7 +105,7 @@ function bindSession({
     approvalHost() {
       const pi = resource.nativeApi
         .current;
-      if (!pi) throw new NativeCliHostError('Native approval API was not captured by this session resource loader');
+      if (pi === undefined) throw new NativeCliHostError('Native approval API was not captured by this session resource loader');
       return {
         pi,
         ctx: root.session

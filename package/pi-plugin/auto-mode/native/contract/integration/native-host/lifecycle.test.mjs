@@ -13,7 +13,7 @@ const {
   createAgentSessionFromServices
 } = await import(source('core/agent-session-services.js'));
 const { createAgentSessionRuntime } = await import(source('core/agent-session-runtime.js'));
-const { nativeHost } = await import('./bootstrap.mjs');
+const { nativeHost } = await import('./bootstrap.ts');
 const { createCodemodeExtension } = await import(source('extensions/codemode/index.js'));
 
 let trustCalls = 0;

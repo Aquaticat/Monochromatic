@@ -1045,6 +1045,17 @@ CLI RPC startup and clean shutdown,
 and 188-module syntax check pass after this bootstrap change.
 The actual CLI selects `qwen-token-plan-individual/qwen3.8-flash` and makes no provider request.
 Maintained native interface typing and full lint completion remain unfinished.
+The bootstrap now has explicit TypeScript contracts for its original SDK session and resource inputs.
+Lifecycle and policy ownership records remain opaque at this forwarding boundary;
+their existing native consumers retain authentication.
+Generated callbacks retain their original identities through a callable-export bridge,
+and a declaration companion describes the existing maintained-package re-export module.
+The host generator and lifecycle fixture select `bootstrap.ts`.
+This interface change is committed before its type,
+lint,
+build,
+and native consumer checks;
+those checks remain next.
 
 The first approved native dispatch failed because the inherited test loader derived dependency paths
 from the codemode worker's disposable home.
