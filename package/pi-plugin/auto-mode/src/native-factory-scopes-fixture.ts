@@ -41,15 +41,24 @@ export type FixtureScopes = {
  */
 export type ScopeModule = { readonly createRuntimeFactoryScopes: (definition: unknown) => FixtureScopes };
 
-/** Disposable callbacks remain mutable so tests can replace caller-owned option properties. */
+/**
+ Disposable callbacks remain mutable so tests can replace caller-owned option properties.
+ */
 type ScopeFixture = {
   readonly manager: object;
-  readonly control: { failDisposal: boolean; disposeCalls: number; beforeRead?: () => void };
+  readonly control: {
+    failDisposal: boolean;
+    disposeCalls: number;
+    beforeRead?: () => void
+  };
   readonly events: string[];
   readonly definition: {
     lifecycle: {
       beginConstruction: () => object;
-      bindConstruction: (input: { readonly construction: object; readonly session: FixtureSession }) => void;
+      bindConstruction: (input: {
+        readonly construction: object;
+        readonly session: FixtureSession
+      }) => void;
       publishConstruction: (construction: object) => object;
       abandonConstruction: (construction: object) => { readonly session?: FixtureSession };
     };
@@ -139,7 +148,9 @@ export function createScopeFixture(): ScopeFixture {
       },
       abandonConstruction(construction: object) {
         events.push('abandon');
-        /** Unregistered occurrences have no disposal obligation. */
+        /**
+         Unregistered occurrences have no disposal obligation.
+         */
         const session = sessions.get(construction);
         return session === undefined ? {} : { session };
       },
