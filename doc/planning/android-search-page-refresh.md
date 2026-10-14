@@ -36,7 +36,7 @@ What makes the stock screen look newer (grouped rounded cards, a tinted page, a 
 section labels, a tinted dark surface) is mostly ruled out or already vetoed by accepted decisions:
 A2, B1, D52, D61 and D109.
 The recommended option therefore changes only what those decisions leave open,
-and asks for six rulings before anything that touches them.
+and asks for five rulings before anything that touches them.
 
 Recommended: restyle our own composables inside the accepted decisions (option 1 in the ranking),
 with no new color role and no new library component.
@@ -47,8 +47,10 @@ with no new color role and no new library component.
 
 - Debug APK built from this branch, which is `main` at `d972299a30`, with the repo's podman Gradle runner pattern
   (`assembleDebug`, 21 s, mostly cached).
-  The native libraries were copied from another worktree whose `src/main` and `truepeak-core` are identical to
-  `main` (checked with `git diff --stat`, empty).
+  The native libraries (`.so` files) were copied from another worktree's earlier build.
+  That worktree's commit `29dfe1b934` differs from `main` in `package/music-player/android-app` (including its
+  `rust` crate) and `package/music-player/truepeak-core` only by six added test files (`git diff --stat`),
+  and Search is Kotlin only, so the libraries cannot affect this comparison.
   `SearchPage.kt` last changed in `6afe69c81a` (2026-10-13), so the page is current.
 - Library: the invented 35-track gallery library (`Aster Vale`, `Dune Lantern`, `Lantern Season` and others),
   pushed to `/sdcard/Music` of a private reflink copy of the owned AVD;
@@ -65,7 +67,7 @@ with no new color role and no new library component.
   inner `2076x1964+0+110`) with metadata stripped.
   Raws and unreviewed frames were deleted.
   Nothing was committed or uploaded;
-  the captures are in the agent scratch directory.
+  the captures are in `/home/user/temp/agent/sp/kept`, and each difference below names its pair by file name.
 
 ### The stock reference
 
@@ -180,9 +182,10 @@ the stock dark capture on the inner panel, ours dark on the cover (the two dark 
   keeping the 72 dp toolbar and the divider (D48 anatomy intact).
   The band's only job (separating header from results) is done by the divider.
   Alternative if the human wants the band kept: extend the band color behind the status bar so the strip disappears.
-- Token:
-  `colorScheme.background` or the existing canvas role;
+- Token: the `canvas` value that `SearchPage.kt:905` already sets (`surfaceContainerLowest` in light,
+  `SEARCH_TRUE_BLACK` in dark);
   no new role.
+- Captures: stock `c4-lan-light.png` against ours `a3-lan-light.png` (cover, light).
 - Cost: a few lines in `searchHeader` and the two page composables, plus the same two properties in `search.slint`
   (`Theme.surface-high` at line 68).
   Risk: low;
@@ -205,6 +208,8 @@ the stock dark capture on the inner panel, ours dark on the cover (the two dark 
   Risk: very low.
 - Needs ruling:
   R2 (same ruling as the header surface).
+- Captures: stock `c4-lan-light.png` against ours `a3-lan-light.png`;
+  the line weights are measured in these two.
 
 ### Result rows
 
@@ -235,6 +240,8 @@ the stock dark capture on the inner panel, ours dark on the cover (the two dark 
   Risk: the circle must not move the title start (D58);
   verify at 200 percent text.
 - Needs ruling: only if grouped cards are wanted (R1).
+- Captures: stock `c4-lan-light.png`, `s3-wifi-light.png` and `s5-dark-q-light.png` against ours `a3-lan-light.png`
+  and `i4-ours-inner-lan-light.png`.
 
 ### Match highlight
 
@@ -252,8 +259,8 @@ the stock dark capture on the inner panel, ours dark on the cover (the two dark 
 
 ### Empty state with no query
 
-- Stock: a scalloped (Expressive) tonal shape of about 128 dp holding a primary search glyph,
-  and the line "No recent search results";
+- Stock: a scalloped (Expressive) tonal shape of about 139 dp (339 px in `s2`,
+  measured) holding a primary search glyph, and the line "No recent search results";
   with a recent result it shows a letter-spaced "Recent search results" label, a "Clear" text button and the recent
   row.
 - Ours: a 24 dp glyph, a SemiBold `titleLarge` "Search your music" and a body line (`SearchPage.kt:1128` to
@@ -268,10 +275,12 @@ the stock dark capture on the inner panel, ours dark on the cover (the two dark 
   put the glyph in a 72 dp circle of the secondary container role (a plain circle,
   not the Expressive scalloped shape);
   lighten the title to `titleMedium` at weight 500.
-  Do not add recents without a ruling (R5).
+  Do not add recents without a ruling (R4).
 - Cost: a few lines per panel plus Slint.
   Risk: low;
   the D70 copy is unchanged.
+- Captures: stock `c2-empty-kbd-light.png`, `s2-empty-light.png` and `s6-recents-light.png` against ours
+  `a1-empty-kbd-light.png`.
 
 ### No-result state
 
@@ -285,6 +294,7 @@ the stock dark capture on the inner panel, ours dark on the cover (the two dark 
   The stock "Tips & Support" link promises a recovery path that this app has no owner for, so it is not proposed.
 - Proposal: same container treatment as the empty state;
   keep the copy.
+- Captures: stock `s4-noresult-light.png` against ours `a4-nomatch-light.png`.
 
 ### Field and focus
 
@@ -304,7 +314,8 @@ the stock dark capture on the inner panel, ours dark on the cover (the two dark 
 - Ours (captured):
   Tab moves a rectangular two-ring box inside the row edges, full row width, square corners (`f1-ours-focus.png`),
   as D120 specifies for clipped rows.
-- Stock: not captured (see the unverified list).
+- Stock: not captured (see the unverified list);
+  this item has no capture pair, only `f1-ours-focus.png`.
 - Proposal: if rows get a rounded interaction shape, the ring follows it (D117: the ring hugs the element).
   That is a shape argument, not a new ring.
 
@@ -315,8 +326,9 @@ the stock dark capture on the inner panel, ours dark on the cover (the two dark 
 - Ours dark: true black canvas, `#1E1F25` header band, divider `#8E9099`, highlight a dark blue chip.
 - Touches:
   B1, a standing rule: a tinted dark page is not proposed.
-  What changes is only what options 1 and 2 allow: header equals canvas (the header surface item) and a softer
-  divider.
+  What changes is only what option 1 allows: header equals canvas (the header surface item) and a softer divider.
+- Captures: stock `d2-wifi-dark.png` (inner panel) against ours `a5-lan-dark.png` (cover);
+  different panels.
 
 ### Motion
 
@@ -331,6 +343,9 @@ the stock dark capture on the inner panel, ours dark on the cover (the two dark 
 - Ours:
   D47 chose a Search icon button on the player, and A2 retains the baseline style.
   Not proposed.
+- Captures: stock `c1-home-light.png`, `s1-home-light.png` and `d3-recents-dark.png` show only the stock pill (the
+  last is the Settings home page in dark, not a recents state despite its name);
+  ours has no pill to capture.
 
 ## Options and ranking
 
@@ -368,7 +383,7 @@ Option 4: rebuild toward the stock Settings look (grouped rounded cards, tinted 
 section labels).
 
 - Pros: the largest visual match to the reference.
-- Cons: needs four rulings against accepted decisions (A2, D109, D52 with D61, and B1 for the dark page);
+- Cons: needs rulings against A2, D109, D52 and D61 (it keeps true black, with cards on black in dark);
   needs new surface roles in both `ThemeRoles.kt` and `theme_roles.rs` and a regenerated 52-root vector;
   the two panes and the crease logic of D51 would have to carry cards.
 
@@ -386,12 +401,12 @@ Ranking: 1 > 2 > 3 > 4 > 5, because:
   the cues the captures show most;
   2 is a strict subset of 1.
 - 2 over 3: 2 is smaller and risks nothing in D58, while 3 adds a component that changes no visible detail.
-- 3 over 4: 3 touches no accepted visual decision and adds no role, while 4 contradicts four accepted decisions and
-  adds roles to both platforms.
+- 3 over 4: 3 risks two decisions it might still satisfy (D58 alignment and D77 sizes) and adds no role,
+  while 4 needs rulings against A2, D109, D52 and D61 and adds roles to both platforms.
 - 4 over 5: 4 can be built inside the existing composables and the D51 layout, while 5 breaks the deck rule on the
   inner panel.
 
-If the human rules yes on R1, R3 and R4 in the rulings section, option 4 becomes the top option and option 1 is its
+If the human rules yes on R1 and R3 in the rulings section, option 4 becomes the top option and option 1 is its
 first step, because every item of option 1 is also part of option 4.
 
 ## Rulings requested
@@ -403,12 +418,10 @@ Each is a conflict with an accepted decision, put as a question and not adopted.
     does that extend to Search?
 2.  R2: May the Search header drop the `surfaceContainerHigh` band for the canvas color and the divider move to
     `outlineVariant` (D48 gives the anatomy and the divider but names the baseline token)?
-3.  R3: May the dark page carry a tint as stock does (B1 says never re-ask;
-    this is listed only so the answer is on record, with the expected answer no).
-4.  R4: Section labels grouping results by parent, as stock does (D52 and D61).
-5.  R5: A recent results list on the empty page (a new feature next to D66 and D70).
+3.  R3: Section labels grouping results by parent, as stock does (D52 and D61).
+4.  R4: A recent results list on the empty page (a new feature next to D66 and D70).
     It needs storage design and a privacy decision, so it is not part of any option.
-6.  R6: Parity on desktop (A3, A4, D49): the same changes in `ui/search.slint`, or Android first.
+5.  R5: Parity on desktop (A3, A4, D49): the same changes in `ui/search.slint`, or Android first.
 
 ## Cost and parity
 
