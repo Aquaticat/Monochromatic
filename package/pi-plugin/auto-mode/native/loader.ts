@@ -73,6 +73,10 @@ for (const [original, generated] of Object.entries({
 }
 
 /**
+ Native hooks own the callback shape dictated by Node's synchronous module interface.
+ */
+const hooks = {
+/**
  Resolve each original Pi package through the matching emitted upstream package exports.
 
  @param specifier - original import whose module identity must remain consistent
@@ -81,7 +85,7 @@ for (const [original, generated] of Object.entries({
 
  @param nextResolve - original host resolver preserving package export semantics
  */
-function resolve(
+resolve(
   specifier: string,
   context: ForeignBorrowed<ResolveHookContext>,
   nextResolve: Parameters<ResolveHookSync>[2],
@@ -90,7 +94,7 @@ function resolve(
    Resolver diagnostics retain their function boundary.
    */
   const rl = tagged({
-    tag: resolve.name,
+    tag: hooks.resolve.name,
     l
   });
   if (specifier.startsWith('@earendil-works/')) {
@@ -145,9 +149,11 @@ function resolve(
   return resolved;
 }
 
+};
+
 /**
  Registered synchronous hooks preserve native loading before the CLI or SDK starts.
  */
-export const nativeLoaderHooks: ModuleHooks = registerHooks({ resolve });
+export const nativeLoaderHooks: ModuleHooks = registerHooks(hooks);
 
 //endregion Native source URLs select their original instrumented counterparts
