@@ -277,6 +277,16 @@ disable_backends = [
 
 status.missing_tools = "always"
 
+# The crates this repository publishes are not held back by mise's minimum release age, so a release
+# is usable at once and needs no pin (user decision 2026-10-14). The age rule stays on for every other tool.
+# Only exact tool names match: a prefix glob such as "cargo:monochromatic-*" was tried and matched nothing,
+# so a newly published crate must be added to this list.
+minimum_release_age_excludes = [
+  "cargo:monochromatic-lint",
+  "cargo:monochromatic-git-policy-cli",
+  "cargo:monochromatic-nested-wayland-session",
+]
+
 # Matches the package/*/* directory depth (e.g. package/module/logger = 3 segments).
 task.monorepo_depth = 3
 
