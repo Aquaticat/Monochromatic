@@ -434,9 +434,9 @@ WiFi.
 
 Pair reasons: the Lite beats the Hero on price and VFIO evidence now that the case lists E-ATX; if its fit fails in
 practice, the Hero is first. The Hero beats the Nova because the Nova gives the RX 7600 only a Gen3 x2 slot. The
-Nova beats the X670E Hero because its display is confirmed and it is current. Out: ProArt B850 Neo, ProArt X870E and MSI Tomahawk (status LEDs
-only), ASRock Steel Legend and Pro RS (status LEDs only, per the FAQ table), MSI Carbon (IVRS report on that board),
-Gigabyte boards (IVRS reports).
+Nova beats the X670E Hero because its display is confirmed and it is current. Out: ProArt B850 Neo, ProArt X870E and
+MSI Tomahawk (status LEDs only), ASRock Steel Legend and Pro RS (status LEDs only, per the FAQ table), MSI Carbon (IVRS
+report on that board), Gigabyte boards (IVRS reports).
 
 ### VFIO and 24/7 evidence (searched about 23:30 EDT, forum and guide text only)
 
@@ -506,6 +506,33 @@ The user said buying a Wi-Fi card is acceptable, so onboard Wi-Fi is no longer a
     slot; display not checked.
 - Both server boards fail the confirmed code display requirement as far as the pages read show, so none enters the
   ranking.
+
+### Cheaper boards with a code display (searched about 00:10 EDT, user asked for lower budgets)
+
+All three below pair a CPU x16 slot with a chipset or CPU x4 slot, which the user accepted for the 3080 and the
+RX 7600. Prices are launch or historical figures; current stock and street price were not checked.
+
+- ASUS ROG Strix X670E-E Gaming WiFi (ASUS spec page): ATX, "Q-Code" listed, two PCIe 5.0 x16 slots (x16 or x8/x4)
+  plus a chipset PCIe 4.0 slot at x4, Wi-Fi 6E, one 2.5 Gb LAN, ECC UDIMM listed. MSRP 499.99 US dollars; one price
+  tracker shows a low of 349.99 in February 2025; a used unit was listed at 250 euro on 2026-10-05; a refurbished unit
+  at 726.84 US dollars on Newegg. The only cheaper board here whose own spec page names the code display.
+- ASUS ROG Strix B650E-E Gaming WiFi (ASUS spec page): same slot layout and ATX size, Wi-Fi 6E, launch price about
+  349.99 US dollars (Tom's Hardware). The spec page lists Q-LED but not Q-Code, while owner threads on Reddit and the
+  ROG forum report Q-Code values (15, b8, C5), so the display is probably present and unconfirmed on the page. Those
+  threads include a board and Ryzen 7900 that both failed, a single anecdote.
+- ASRock B650E Taichi Lite and B650E Taichi: Dr. Debug 2-digit display (OCinside, a spec table), E-ATX 30.5 by 26.7 cm
+  (Guru3D, fits the 4000D's listed 305 by 277 mm), PCIe 5.0 x16 plus a chipset PCIe 4.0 x16 at x4, Wi-Fi 6E, price
+  279.99 to 299.99 US dollars at launch. ASRock's own page says both reached end of life and were discontinued in
+  October 2024, so only used or leftover stock exists; one Reddit owner of an open-box Lite reported SATA and NIC
+  faults.
+- Not usable: MSI MPG X670E Carbon WiFi has a 2-digit debug LED but the earlier IVRS report on that board excludes it;
+  MSI MEG X670E ACE has a post code display but is a flagship price; budget ASRock boards (Steel Legend, Pro RS) have
+  status LEDs only.
+- No IVRS or VFIO report for the two ASUS Strix boards was searched; the ASUS evidence so far is the ProArt line only.
+- Ranking inside this tier: X670E-E, then B650E-E, then the B650E Taichi Lite. The X670E-E beats the B650E-E because
+  its own spec page names the display. The B650E-E beats the Taichi Lite because the Lite is discontinued, so only
+  used stock exists. Against the earlier list, both Strix boards give the RX 7600 a better slot than the Nova (CPU or
+  chipset Gen4 x4 instead of Gen3 x2) at a similar launch price, but have less VFIO evidence.
 
 ## Open questions
 
