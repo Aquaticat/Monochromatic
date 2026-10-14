@@ -90,7 +90,7 @@ export function emitActiveSessionContext(input) { return emitContext(input); }`
         emitContext = ({session,runner,messages}) => {
             if(session.#custodyDisposed)throw new NativeSessionDisposedError();
             if(runner!==session.#extensionRunner)throw new Error('Context emitter is not this original native runner');
-            return emitOwnedContext({runner,messages,onClone:value=>session.#runPromptOwner.captureContextClone(value)});
+            return emitOwnedContext({runner,messages,observer:createNativeContextObserver(session.#sessionManager),onClone:value=>session.#runPromptOwner.captureContextClone(value)});
         };
         readConstructed = session => {
             if(session.#custodyDisposed)throw new NativeSessionDisposedError();

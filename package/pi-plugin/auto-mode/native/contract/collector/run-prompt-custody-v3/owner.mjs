@@ -843,7 +843,18 @@ export function createRunPromptOwner({
     if(value.kind==='completed-context'){
       assertLive();
       if(value.contextRun!==current?.handle)throw new SourceCollectionError('Native context completion requires its original published run');
-      if(current)retainContextInputs(value.messages);return;
+      if(current){
+        const completion=value.contextObservation;
+        if(!completion||!Object.isFrozen(completion)||!Object.isFrozen(completion.kinds)
+          ||completion.kinds.length!==2||completion.kinds[0]!=='context'||completion.kinds[1]!=='context_with_system')
+          throw new SourceCollectionError('Native context completion requires both original observed handler traversals');
+        retainContextInputs(value.messages);
+        current.view=Object.freeze({...current.view,contextHandlerReceipt:Object.freeze({
+          runOccurrence:current.handle,
+          observation:completion
+        })});
+      }
+      return;
     }
     observeMessageCopies(value);
     if((value.kind==='handler-entry')||(value.kind==='projection'))return;

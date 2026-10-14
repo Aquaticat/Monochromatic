@@ -26,7 +26,13 @@ export function inspectNativeSourceDomain({
    ||(run.publishedBase!==base)
    ||(!run.renderOccurrence))missing('The original native resource, base, run and prompt-construction publications are not all linked.');
  if(!Array.isArray(snapshot?.nativeDomainEventKinds))missing('The native session has no original extension-event inspection.');
- else for(const kind of snapshot.nativeDomainEventKinds)missing(`Native extension event ${JSON.stringify(kind)} has no complete original input and result receipt accounting in this host integration.`);
+ else for(const kind of snapshot.nativeDomainEventKinds){
+  const receipt=run?.contextHandlerReceipt;
+  const observedContext=(kind==='context'||kind==='context_with_system')
+    &&receipt?.runOccurrence===run?.occurrence
+    &&receipt?.observation.kinds.includes(kind);
+  if(!observedContext)missing(`Native extension event ${JSON.stringify(kind)} has no complete original input and result receipt accounting in this host integration.`);
+ }
  const arrays=[
    'retainedRunInputs',
    'resourceReceiptInputs',

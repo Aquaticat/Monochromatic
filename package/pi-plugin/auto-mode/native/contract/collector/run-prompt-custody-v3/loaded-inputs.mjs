@@ -718,6 +718,24 @@ function createInputPool({
     if(types.isProxy(error)||(!(error instanceof SourceCollectionError)))throw error;
    }
   },
+  /** Retain original context inputs and complete results under the existing manager budget. */
+  captureContextHandler(input){
+   if(failure)return;
+   try{
+    reserve();
+    const value=copyToolMetadata({value:input.value});
+    retainConstructedInput({
+      carrier:input,
+      value,
+      metadata:{method:input.kind,phase:input.phase,ordinal:input.ordinal,path:input.path},
+      inputField:'contextHandler',
+      inputOrigin:'native-context-handler'
+    });
+   }catch(error){
+    failure=new InputCaptureError(error);
+    if(types.isProxy(error)||(!(error instanceof SourceCollectionError)))throw error;
+   }
+  },
   /** Preserve the complete received result before native callback field selection. */
   captureHandlerResultOutput({frame}){
    if(failure)return;

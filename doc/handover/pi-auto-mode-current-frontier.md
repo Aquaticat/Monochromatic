@@ -906,6 +906,22 @@ Actual native manager constructor and host lifecycle tests pass after this port,
 with zero provider requests.
 Maintained native runtime lint/type work and production delivery remain in progress.
 
+The next production-path gap is original context callback receipt accounting.
+Required-red commit `485efc02e9` adds actual `context` and `context_with_system` callbacks
+to the normal SDK serializer fixture.
+The rebuilt fixture failed with `AssertionError [ERR_ASSERTION]` at the required source-domain closure assertion:
+both native event types remained unaccounted.
+The callbacks include in-place input mutation and unselected fields in complete return values.
+Implementation `301ab621de` adds a synchronous traversal observer;
+the follow-on integration routes its captures into the existing native manager input pool.
+The original awaits and native error reporting remain at their existing sites.
+Completion must be linked to the original published run before these event types can be accounted.
+This work is under verification and does not adopt a semantic policy,
+raise budgets,
+or activate the installed plugin.
+The unobserved-event regression now uses a native `turn_start` callback;
+historical `--unobserved-context` commands retain their original meaning and are superseded by `--unobserved-event`.
+
 The first approved native dispatch failed because the inherited test loader derived dependency paths
 from the codemode worker's disposable home.
 Private `f3d40d82` retains the measured repository dependency root in the staging manifest;
