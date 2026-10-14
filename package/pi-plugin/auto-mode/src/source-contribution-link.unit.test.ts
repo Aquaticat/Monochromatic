@@ -127,6 +127,15 @@ await describe({
         },
       },);
     },),
+    it({
+      name: 'absent association retains the original unresolved contribution',
+      fn: async function absentAssociation() {
+        /** The declared optional field is omitted from the original fixture object. */
+        const f = createContributionFixture('base');
+        delete f.contribution.association;
+        expectUnresolved(f);
+      },
+    }),
     ...[null, undefined,].map(function noAssociation(association, index,) {
       return it({
         name: `missing association ${index} retains the original unresolved contribution`,
