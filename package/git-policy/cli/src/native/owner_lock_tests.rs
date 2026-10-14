@@ -624,3 +624,69 @@ fn a_timeout_is_described_with_the_lock_and_the_holder() {
          which a process whose record could not be read still holds; the lock was left in place"
     );
 }
+
+/// Counts both notices a wait can send.
+#[derive(Default)]
+struct SlowCounter {
+    /// First-moment notices.
+    waiting: u32,
+    /// Slow-wait notices with the time each reported.
+    slow: Vec<Duration>,
+}
+
+/// The counter records each call.
+impl WaitNotice for SlowCounter {
+    /// Record the first moment.
+    fn waiting(&mut self) {
+        self.waiting += 1;
+    }
+
+    /// Record a slow-wait notice.
+    fn slow(&mut self, waited: Duration) {
+        self.slow.push(waited);
+    }
+}
+
+/// A wait that outlasts the slow threshold sends exactly one slow notice,
+///  after the first-moment notice,
+///  and a wait that ends sooner sends none.
+#[cfg(target_os = "linux")]
+#[test]
+fn a_slow_wait_sends_one_slow_notice() {
+    let root: PathBuf = fixture("owner-lock-slow");
+    let lock_directory: PathBuf = root.join("push.lock");
+    let mut sleeper: Child = Command::new("sleep").arg("60").spawn().expect("sleeper");
+    let pid: i64 = i64::from(sleeper.id());
+    let identity: String = process_birth_identity(pid).expect("probe").expect("alive");
+    plant(lock_directory.as_path(), pid, identity.as_str(), "foreign");
+    let mut counter: SlowCounter = SlowCounter::default();
+    let outcome: Result<OwnerLock, OwnerLockError> = acquire_within(
+        lock_directory.as_path(),
+        Duration::from_millis(5),
+        &mut counter,
+        Some(Duration::from_millis(400)),
+        Duration::from_millis(100),
+    );
+    sleeper.kill().expect("kill");
+    sleeper.wait().expect("reap");
+    assert!(matches!(
+        outcome,
+        Err(OwnerLockError::WaitTimedOut { .. })
+    ));
+    assert_eq!(counter.waiting, 1);
+    assert_eq!(counter.slow.len(), 1, "{:?}", counter.slow);
+    assert!(counter.slow[0] >= Duration::from_millis(100), "{:?}", counter.slow);
+    assert!(counter.slow[0] < Duration::from_millis(390), "{:?}", counter.slow);
+    let mut quick: SlowCounter = SlowCounter::default();
+    let free: OwnerLock = acquire_within(
+        root.join("free.lock").as_path(),
+        Duration::from_millis(5),
+        &mut quick,
+        Some(Duration::from_secs(5)),
+        Duration::from_millis(100),
+    )
+    .expect("free");
+    free.release().expect("release");
+    assert_eq!((quick.waiting, quick.slow.len()), (0, 0));
+    remove(&root);
+}

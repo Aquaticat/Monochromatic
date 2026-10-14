@@ -12,7 +12,8 @@
 
 use super::capture_invocation::InvocationLayout;
 use super::diagnostic_log::debug;
-use super::owner_lock::{DEFAULT_POLL_DELAY, OwnerLock, SilentWait, acquire_owner_lock};
+use super::live_lock::acquire_live_owner_lock;
+use super::owner_lock::OwnerLock;
 use super::recovery_error::RecoveryError;
 use super::recovery_landing::RecoveryPlace;
 use super::recovery_scan::recover_dead_landings;
@@ -73,8 +74,7 @@ pub fn acquire_landing_lock(
         debug(TAG, format!("leaving {} to the ancestor that holds it", directory.display()).as_str());
         OwnerLock::inherited(directory.as_path(), token.as_str())
     } else {
-        let mut silent: SilentWait = SilentWait;
-        acquire_owner_lock(directory.as_path(), DEFAULT_POLL_DELAY, &mut silent)
+        acquire_live_owner_lock(directory.as_path(), "the landing lock")
             .map_err(|error| { return RecoveryError(error.to_string()); })?
     };
     let place: RecoveryPlace = RecoveryPlace {

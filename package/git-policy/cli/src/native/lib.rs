@@ -801,6 +801,9 @@ pub mod auto_push_branch_key;
 /// The per-branch `last-pushed` record: validation, tolerant reads and atomic publication.
 pub mod auto_push_record;
 
+/// Waiting for a lock a live process holds: a slow-wait notice naming the holder and a configurable backstop.
+pub mod live_lock;
+
 /// The auto-push's real `git push` with a deadline, its low-speed abort and the lock wait limit derived from it.
 pub mod bounded_push;
 

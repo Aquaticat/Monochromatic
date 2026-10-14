@@ -16,9 +16,8 @@
 /// Debug diagnostics.
 use super::diagnostic_log::debug;
 /// Owner locks.
-use super::owner_lock::{
-    DEFAULT_POLL_DELAY, OwnerLock, SilentWait, acquire_owner_lock, retire_lock_of_dead_owner,
-};
+use super::live_lock::acquire_live_owner_lock;
+use super::owner_lock::{OwnerLock, retire_lock_of_dead_owner};
 /// The fail-closed recovery failure.
 use super::recovery_error::{RecoveryError, io_failure};
 /// Landing evidence.
@@ -275,9 +274,7 @@ pub fn recover_dead_landings(
 /// ```
 pub fn acquire_registry_lock(root: &Path, name: &str) -> Result<OwnerLock, RecoveryError> {
     let directory: PathBuf = root.join(name);
-    // `mut` is required by the notice interface; this wait is silent, as the incumbent's.
-    let mut silent: SilentWait = SilentWait;
-    match acquire_owner_lock(directory.as_path(), DEFAULT_POLL_DELAY, &mut silent) {
+    match acquire_live_owner_lock(directory.as_path(), "a transaction registry lock") {
         Ok(lock) => return Ok(lock),
         Err(error) => return Err(RecoveryError(error.to_string())),
     }

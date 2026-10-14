@@ -41,6 +41,10 @@ use std::time::{Duration, Instant};
 /// Delay between acquisition attempts while a live owner holds the lock.
 pub const DEFAULT_POLL_DELAY: Duration = Duration::from_millis(20);
 
+/// How long a wait lasts before `WaitNotice::slow` runs:
+///  long enough that ordinary contention stays silent.
+pub const SLOW_WAIT: Duration = Duration::from_secs(5);
+
 /// What:
 ///  Why an owner-lock operation failed.
 /// Why:
@@ -643,6 +647,13 @@ pub trait WaitNotice {
     /// Called once,
     ///  when the first attempt finds the lock held.
     fn waiting(&mut self);
+
+    /// Called once,
+    ///  when the wait has lasted `SLOW_WAIT`,
+    ///  with how long it has lasted.
+    ///  Brief contention never reaches it;
+    ///  a notice that only needs the first moment ignores it.
+    fn slow(&mut self, _waited: Duration) {}
 }
 
 /// What:
@@ -667,26 +678,30 @@ impl WaitNotice for SilentWait {
 /// What:
 ///  Acquire a lock,
 ///  waiting at most `limit` while a live owner holds it,
-///  or without bound when `limit` is `None`.
+///  or without bound when `limit` is `None`,
+///  and telling `notice.slow` once the wait has lasted `slow_after`.
 /// Why:
-///   One loop serves both contracts,
+///   One loop serves every contract,
 ///  so the bounded and the unbounded wait cannot drift apart.
-///  The elapsed time is measured on a clock that never goes backwards.
+///  The elapsed time is measured on a clock that never goes backwards,
+///  and tests choose a short `slow_after` instead of waiting out `SLOW_WAIT`.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// async function acquireWithin({ lockDirectory, pollDelayMs, onWait, limitMs }): Promise<OwnerLock>;
 /// ```
-fn acquire_within(
+pub fn acquire_within(
     lock_directory: &Path,
     poll_delay: Duration,
     notice: &mut dyn WaitNotice,
     limit: Option<Duration>,
+    slow_after: Duration,
 ) -> Result<OwnerLock, OwnerLockError> {
     let record: OwnerLockRecord = current_owner_record(None)?;
     let started: Instant = Instant::now();
     // `mut` lets the loop remember that the wait was announced.
     let mut notified: bool = false;
+    let mut slow_noticed: bool = false;
     loop {
         if let Some(lock) = attempt_acquire(lock_directory, &record)? {
             return Ok(lock);
@@ -694,6 +709,10 @@ fn acquire_within(
         if !notified {
             notified = true;
             notice.waiting();
+        }
+        if !slow_noticed && started.elapsed() >= slow_after {
+            slow_noticed = true;
+            notice.slow(started.elapsed());
         }
         if let Some(allowed) = limit
             && started.elapsed() >= allowed
@@ -734,7 +753,7 @@ pub fn acquire_owner_lock(
     poll_delay: Duration,
     notice: &mut dyn WaitNotice,
 ) -> Result<OwnerLock, OwnerLockError> {
-    return acquire_within(lock_directory, poll_delay, notice, None);
+    return acquire_within(lock_directory, poll_delay, notice, None, SLOW_WAIT);
 }
 
 /// What:
@@ -756,7 +775,7 @@ pub fn acquire_owner_lock_for(
     notice: &mut dyn WaitNotice,
     limit: Duration,
 ) -> Result<OwnerLock, OwnerLockError> {
-    return acquire_within(lock_directory, poll_delay, notice, Some(limit));
+    return acquire_within(lock_directory, poll_delay, notice, Some(limit), SLOW_WAIT);
 }
 
 /// Lock contention,

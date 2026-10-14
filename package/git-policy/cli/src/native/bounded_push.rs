@@ -18,7 +18,7 @@ use super::auto_push_single_flight::{PushAttempt, SingleFlightError};
 /// The diagnostic log of the wrapper.
 use super::diagnostic_log::debug;
 /// Owned OS strings of the child environment.
-use std::ffi::OsString;
+use std::ffi::{OsStr, OsString};
 /// `File` is the shared anonymous output file; `Read`, `Seek` and `SeekFrom` read it back from its start.
 use std::fs::File;
 use std::io::{Read, Seek, SeekFrom};
@@ -64,31 +64,22 @@ pub const LOW_SPEED_TIME: &str = "60";
 const POLL_PAUSE: Duration = Duration::from_millis(10);
 
 /// What:
-///  Read a positive whole number of seconds from the child environment.
+///  Read a positive whole number of seconds from one environment value.
 /// Why:
-///   A missing, zero or malformed value is no setting at all,
+///   A zero, negative, fractional, empty or non-text value is no setting at all,
 ///  never "no limit",
 ///  so a typo cannot remove a bound.
-///  The last of repeated entries wins,
-///  as in an environment block.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// const seconds = Number(env[name]); return seconds > 0 ? seconds * 1000 : undefined;
+/// const seconds = Number(value); return Number.isInteger(seconds) && seconds > 0 ? seconds * 1000 : undefined;
 /// ```
-fn seconds_variable(environment: &[(OsString, OsString)], name: &str) -> Option<Duration> {
-    let mut found: Option<&OsString> = None;
-    for (key, value) in environment {
-        if key.to_str() == Some(name) {
-            found = Some(value);
-        }
-    }
-    let value: &OsString = found?;
-    let seconds: Option<u64> = match value.to_str() {
+pub fn positive_seconds(name: &str, value: &OsStr) -> Option<Duration> {
+    let parsed: Option<u64> = match value.to_str() {
         Some(text) => text.trim().parse::<u64>().ok(),
         None => None,
     };
-    return match seconds {
+    return match parsed {
         Some(count) if count > 0 => Some(Duration::from_secs(count)),
         Some(_) | None => {
             debug(
@@ -98,6 +89,27 @@ fn seconds_variable(environment: &[(OsString, OsString)], name: &str) -> Option<
             None
         }
     };
+}
+
+/// What:
+///  Read a positive whole number of seconds from the child environment.
+/// Why:
+///   The last of repeated entries wins,
+///  as in an environment block.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// positiveSeconds(env[name])
+/// ```
+fn seconds_variable(environment: &[(OsString, OsString)], name: &str) -> Option<Duration> {
+    let mut found: Option<&OsString> = None;
+    for (key, value) in environment {
+        if key.to_str() == Some(name) {
+            found = Some(value);
+        }
+    }
+    let value: &OsString = found?;
+    return positive_seconds(name, value.as_os_str());
 }
 
 /// What:
