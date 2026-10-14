@@ -24,8 +24,8 @@ type NativeLiteralRules = {
  @throws Error when the required built callable is missing
  */
 function assertNativeLiteralRules(value: unknown): asserts value is NativeLiteralRules {
-  if (typeof value !== 'object' || value === null || !('rewriteNativeLiteralRules' in value)
-    || typeof value.rewriteNativeLiteralRules !== 'function') throw new Error('Built native literal-rule module lacks its callable export');
+  if (((typeof value) !== 'object') || (value === null) || (!('rewriteNativeLiteralRules' in value))
+    || ((typeof value.rewriteNativeLiteralRules) !== 'function')) throw new Error('Built native literal-rule module lacks its callable export');
 }
 
 /**
@@ -84,17 +84,21 @@ await describe({
           'quote\'"; globalThis.injected=true; //',
           'line\nreturn\rseparator\u2028paragraph\u2029',
           '/* addRule("decoy"); */',
-          '\\path/../` ${globalThis.injected=true}',
+          `\\path/../\` \${globalThis.injected=true}`,
           'nul\u0000 rocket 🚀',
         ];
         /**
          Each original value is encoded at the fixture's JavaScript interpolation boundary.
          */
-        const source = values.map(function originalRule(value) { return `addRule(${JSON.stringify(value)});`; }).join('\n');
+        const source = values.map(function originalRule(value) {
+          return `addRule(${JSON.stringify(value)});`;
+        }).join('\n');
         /**
          Expected source changes only the insertion callable for each original statement.
          */
-        const expected = values.map(function observedRule(value) { return `addBuiltInRule(${JSON.stringify(value)});`; }).join('\n');
+        const expected = values.map(function observedRule(value) {
+          return `addBuiltInRule(${JSON.stringify(value)});`;
+        }).join('\n');
         /**
          The consuming parser detects any additional executable structure after rewriting.
          */
