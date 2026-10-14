@@ -1094,10 +1094,28 @@ duplicate rejection,
 and unchanged thrown values.
 The first format check exposed a missing documentation terminator in this edit;
 it is corrected.
-Final formatting,
-types,
-native rebuild,
-and consumer verification remain next.
+Formatting,
+package types,
+the owned native rebuild,
+and all eleven built-consumer cases pass.
+The source-built disposable campaign at `${HOME}/temp/agent/pi-resource-reload-omissions-RwMiiF`
+passes its original baseline and fails each intended assertion after omitting duplicate-loader rejection,
+original-loader rejection,
+outer-record freezing,
+or policy reload routing.
+Every failing log was inspected;
+the production artifact was not changed.
+Native host lifecycle,
+Allow,
+Deny,
+Stop,
+cancellation,
+Allow after resource reload,
+and the separate Qwen CLI process also pass.
+These use fixture responses with zero provider requests and zero genuine human approvals.
+Remaining final checks are the changed TypeScript integration files,
+native syntax,
+and rendered documentation.
 
 The first approved native dispatch failed because the inherited test loader derived dependency paths
 from the codemode worker's disposable home.

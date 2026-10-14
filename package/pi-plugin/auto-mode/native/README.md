@@ -31,6 +31,15 @@ session construction,
 replacement,
 and disposal through the original owners.
 Resource reload retains its original project-trust resolver and refreshes the policy capture.
+The maintained resource registration and reload boundary is `native-host/resource-reload.ts`.
+Both generated services and session reload use its named loader/options input.
+Registered resources retain the original policy reload;
+standalone SDK loaders retain their own reload method.
+`test:native:resource-reload` checks original receiver,
+argument,
+result,
+registration,
+and failure identity against the copied native artifact.
 
 The current CLI bootstrap designates the working directory's `AGENTS.md` with user authority.
 Its semantic admission remains unconfigured,
