@@ -1,5 +1,5 @@
 /**
- Bind the original native CLI without inventing semantic admission.
+ Bind the original native CLI to its adopted semantic operating policy.
 
  @module
  */
@@ -25,11 +25,12 @@ import {
 import {
   askUser,
   createAssessmentSender,
+  createNativeSemanticOperatingPolicies,
   VERDICT_ENTRY_TYPE
 } from '../maintained-policy.mjs';
 import { tagged } from '@monochromatic-dev/module-logger/ts';
 
-//region The candidate CLI binds custody without adopting an unqualified semantic policy.
+//region Original custody and the adopted operating policy remain independent.
 
 /**
  Policy text uses the qualified original Markdown parser.
@@ -109,12 +110,12 @@ async function designatePolicy({cwd}: {readonly cwd:string}): Promise<NativePoli
 }
 
 /**
- Missing semantic admission remains an explicit native configuration failure.
+ Unattributed assessment must never bypass the configured raw-wire path.
 
- @throws NativeCliHostError whenever an unconfigured assessment is requested
+ @throws NativeCliHostError whenever the normalized-only assessment path is requested
  */
-function sendUnconfiguredAssessment(): never {
-  throw new NativeCliHostError('Native CLI semantic assessment has no adopted admission policy');
+function rejectUnattributedAssessment(): never {
+  throw new NativeCliHostError('Native CLI semantic assessment requires its attributed raw-wire transport');
 }
 
 /**
@@ -137,7 +138,7 @@ function readAssessmentCredential(): unknown {
 }
 
 /**
- Bind the original constructor-owned session without adopting an interpretation policy.
+ Bind the original constructor-owned session to the adopted interpretation policy.
 
  @param root - original SDK session and manager
 
@@ -191,7 +192,8 @@ function bindSession({
     rootDirectory: options.cwd,
     parsePolicy: parser.parse,
     files: [],
-    send: sendUnconfiguredAssessment,
+    ...createNativeSemanticOperatingPolicies(),
+    send: rejectUnattributedAssessment,
     sendWire: createAssessmentSender({
       fetchImpl: globalThis.fetch,
       now: assessmentClock,

@@ -76,6 +76,10 @@ export {
   createAssessmentSender,
   type AssessmentTransportInput,
 } from './assessment-transport.ts';
+export {
+  createNativeSemanticOperatingPolicies,
+  type NativeSemanticOperatingPolicies,
+} from './semantic-operating-policy.ts';
 export { type AuthorizationRequirement, } from './authorization-requirement.ts';
 export { AuthorizationEvidenceError, } from './authorization-evidence-data.ts';
 export { MISSING_AUTHORIZATION_EVIDENCE, } from './authorization-evidence-types.ts';
