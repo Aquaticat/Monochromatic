@@ -832,6 +832,8 @@ the unchanged copied artifact passes.
 The guard tests retain ordinary caught primitives and objects without changing their values,
 and confirm the native non-enumerable aggregate descriptor.
 The native syntax sweep parses all 182 maintained modules.
+The complete package unit task also passes after the contribution fixture and native guard changes.
+Its full output is retained at `${HOME}/temp/agent/pi-auto-mode-unit-after-contribution-20261014.log`.
 No provider request or production semantic policy adoption is involved.
 
 The first approved native dispatch failed because the inherited test loader derived dependency paths
