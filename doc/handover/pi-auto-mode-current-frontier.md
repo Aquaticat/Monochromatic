@@ -27,6 +27,42 @@ not a semantic quality comparison.
 The [troubleshooting record](../troubleshooting/drex-model-route-label.md)
 separates the owned schema mismatch from the unexplained hosted question limit.
 
+### Reopened contract check on 2026-10-14
+
+The user reiterated that Drex looks more promising.
+The [current contract recheck](../planning/pi-auto-mode-drex-current-contract.md)
+finds changed published context limits and an explicit no-fallback statement for Drex 2.0.
+The observed 16-question rejection remains unexplained despite the published 512-question allowance.
+The old context and fallback description is historical;
+the current published limits are 131,072 state tokens and 262,144 state-plus-longest-question tokens.
+No model replacement or new semantic qualification is adopted.
+
+A prepared private fixture at `${HOME}/temp/agent/drex-question-boundary-20261014/probe.ts`
+uses only the public synthetic state `The card is green.`
+and repeated text-only `Is the card green?` questions.
+Its `mise run check` passed with zero provider calls:
+the 16-question request is 2,246 bytes and the 17-question request is 2,383 bytes.
+The frozen request hashes are
+`9f57a20c7564b0ac0868a834f2ed56d4d809d78e4e530dd4388e5857b29247b5`
+and `6b46f9af796187cae0e937b7df5f38c01bbea0a844e229c433d832f845194711`.
+The live schedule pins `drex-v2.0`,
+caps each request at five seconds,
+performs no retries,
+and refuses to overwrite a started experiment.
+Explicit permission for these new billed calls is pending.
+No policy or session content enters either request.
+
+The latest approved installed Qwen/Jev verification is separately incomplete:
+`${HOME}/temp/agent/pi-native-installed-live-NB6KVz/host-stderr.txt`
+retains `AssessmentTransportError: Assessment request returned HTTP 400`.
+The transport discards upstream error detail,
+so the cause is not established and must not be inferred from historical token-limit failures.
+The installed command emitted the supported literal single-call program,
+but no successful governed file read was observed.
+Package types and scoped lint of the five changed semantic interfaces pass;
+`${HOME}/temp/agent/pi-single-call-clean-scope-lint-20261014.log`
+reports zero warnings and zero errors.
+
 ## Restart checkpoint after installing automatic Codex shell limits
 
 The user restarted the session and resumed work on 2026-10-13.
