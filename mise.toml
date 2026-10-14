@@ -1293,6 +1293,7 @@ _.file = [{ path = ".env.local.json", redact = true }]
 # instead, which would make it stable across environments.
 _.path = [
   ".cache/cli-git-bin",
+  "package/pi-plugin/auto-mode/bin",
   "node_modules/.bin",
   "package/agent-harness-shared/search-fetch/node_modules/.bin",
   "package/agent-harness-shared/truncate/node_modules/.bin",
