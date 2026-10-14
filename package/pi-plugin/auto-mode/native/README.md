@@ -31,6 +31,14 @@ Resource reload retains its original project-trust resolver and refreshes the po
 The current CLI bootstrap designates the working directory's `AGENTS.md` with user authority.
 Its semantic admission remains unconfigured,
 so this candidate is not the completed production replacement.
+The bootstrap binds the maintained direct HTTP sender for the incumbent Gateway route.
+It reads `AUTO_MODE_LLMGATEWAY_API_KEY` only when an original configured assessment is dispatched,
+retains the original encoded body and deadline,
+and performs one HTTP request per client attempt.
+Gateway-internal retries remain separate from client attempt accounting.
+`test:assessment-transport` covers isolated and loopback HTTP behavior;
+`test:native:assessment-transport` connects it to original native policy review with authored responses.
+Binding this transport does not configure semantic admission or enable provider calls at startup.
 The native lifecycle fixtures exercise actual CLI manager selection,
 services,
 reload,

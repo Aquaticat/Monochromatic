@@ -990,12 +990,24 @@ client-attempt accounting,
 and inherited byte limits from the private transport.
 Credentials are read lazily from `AUTO_MODE_LLMGATEWAY_API_KEY`.
 The sender performs one HTTP request per original attempt and does not adopt semantic admission.
-The first 28 isolated transport cases pass;
-native-review and actual loopback HTTP verification are in progress.
+The 28 isolated transport cases and four actual loopback HTTP cases pass.
+The loopback cases cover successful POSTs,
+redirect refusal,
+cancellation after response headers,
+and a stalled response reaching its original deadline.
+Canonical native permission,
+prohibition,
+and unspecified-policy contrasts pass through the maintained HTTP sender.
+Each makes one authored HTTP response;
+only permission executes its three prepared child calls.
+Package types and scoped lint of six changed TypeScript files pass.
+Disposable guard sensitivity and native CLI regression are in progress.
 No external provider request was made.
 The package JavaScript fanout task stopped at `spawnSync mise EPERM` while listing tasks;
 the explicit `build:js:node` task succeeds.
 This failure has not been equated with the historical `ENOBUFS` incident.
+The [staging troubleshooting record](../troubleshooting/pi-sdk-staging.md#node-26111-package-build-fanout-reports-spawnsync-mise-eperm)
+retains the observed reporting path and verified explicit-task workaround.
 
 The first approved native dispatch failed because the inherited test loader derived dependency paths
 from the codemode worker's disposable home.

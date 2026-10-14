@@ -6769,3 +6769,85 @@ because syntax errors prevented complete analysis.
   an upstream formatter patch has not been proposed.
 
 There is nothing to file upstream from this bounded consumer repair.
+
+## Node 26.11.1 package build fanout reports `spawnSync mise EPERM`
+
+### Symptom and observed boundary
+
+On 2026-10-14,
+`mise run //package/pi-plugin/auto-mode:build:js`
+stopped before Rolldown with this Node diagnostic:
+
+```text
+Error: spawnSync mise EPERM
+spawnargs: [ 'tasks', '--all', '--hidden', '--json' ]
+status: 0
+signal: null
+```
+
+The exception also retained task-list stdout and mise cache-write warnings.
+It therefore does not establish that the subprocess never ran.
+The command was inside the existing sandbox and worker cgroup.
+No inference request or native host activation occurred.
+
+### Source trace and unresolved cause
+
+`mise.toml:335` reads the complete task catalog before selecting package children:
+
+```javascript
+// mise.toml, fanout template
+const MISE_TASKS_JSON_MAX_BUFFER = 16 * 1024 * 1024
+const tasks = JSON.parse(execFileSync('mise', ['tasks', '--all', '--hidden', '--json'], {
+  encoding: 'utf8',
+  maxBuffer: MISE_TASKS_JSON_MAX_BUFFER
+}))
+```
+
+The installed Node 26.11.1 `node:child_process` source at lines 1017 and 1024 to 1027
+passes the synchronous spawn result through `checkExecSyncError` and throws that error.
+The source was read from the running executable's built-in module text.
+This identifies the reporting path,
+not the cause of `EPERM`.
+No deciding kernel or sandbox failure was established.
+The [historical task-buffer incident](mise-task-fanout-buffer.md) reported `ENOBUFS`;
+that diagnosis does not explain this different diagnostic.
+
+### Verified workaround
+
+The explicit child task bypasses the task-catalog subprocess and builds the same configured Node artifact:
+
+```sh
+# package/pi-plugin/auto-mode
+mise run //package/pi-plugin/auto-mode:build:js:node
+mise run //package/pi-plugin/auto-mode:build:native:owned
+```
+
+`mise.toml:561` defines the child as
+`rolldown --configLoader native --config rolldown.node.config.ts`.
+That task passed with Rolldown 1.2.13,
+and the subsequent owned native build passed.
+The built sender passed isolated,
+loopback HTTP,
+and canonical native policy-review checks.
+This workaround selects the existing Node child explicitly;
+it will not discover future sibling build targets automatically.
+
+Repeating the failed fanout command was unnecessary for delivery.
+No buffer setting,
+task template,
+tool version,
+or sandbox rule was changed.
+
+### Upstream filing decision
+
+- Upstream fault is not established by the returned error.
+- No upstream fix target is established.
+- The repository already defines the successful explicit child task.
+- Contribution policy was not investigated because no external change is proposed.
+- Maintainer disposition is unknown and is not inferred from this local failure.
+- The consumer workaround passes;
+  no upstream prototype is justified by the available cause evidence.
+
+`.out-of-scope/codex-harness.md` excludes Codex-specific harness investigation and filing.
+This record does not assign the failure to that harness.
+There is nothing to file upstream from the observed boundary and working task alternative.
