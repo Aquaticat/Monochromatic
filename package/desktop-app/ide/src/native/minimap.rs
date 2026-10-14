@@ -45,7 +45,7 @@ use std::{
 /// ```ts
 /// const DEBOUNCE_MS = 120;
 /// ```
-const DEBOUNCE: Duration = Duration::from_millis(120);
+pub(super) const DEBOUNCE: Duration = Duration::from_millis(120);
 
 /// What:
 ///  Longest time the picture may fall behind while only the vertical mapping changes.
@@ -58,7 +58,7 @@ const DEBOUNCE: Duration = Duration::from_millis(120);
 /// ```ts
 /// const THROTTLE_MS = 250;
 /// ```
-const THROTTLE: Duration = Duration::from_millis(250);
+pub(super) const THROTTLE: Duration = Duration::from_millis(250);
 
 /// Poll period of the worker's replies, the same as the other background pollers.
 const POLL: Duration = Duration::from_millis(20);
@@ -267,6 +267,73 @@ fn flush(window: &AppWindow, state: &Rc<RefCell<State>>) {
 }
 
 /// What:
+///  What the window does about a key that is not the one last posted.
+/// Why:
+///  The decision is a pure function of the two keys and the clock, so a test can hold it against every kind of change.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// type Plan = { kind: 'post' } | { kind: 'wait'; ms: number } | { kind: 'keep' };
+/// ```
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub(super) enum Plan {
+    /// Post a request now.
+    Post,
+    /// Post after this long, unless a later change moves the time.
+    Wait(Duration),
+    /// A wait that is due soon enough is already running: do nothing.
+    Keep,
+}
+
+/// What:
+///  Decide when the picture for `key` is requested, from what the newest request was for, how long ago it was posted,
+///  and whether a wait is already running.
+///  Nothing posted yet, another file, a new palette, or a new scale: now.
+///  Only the vertical mapping changed: at the throttle's pace.
+///  Anything else, such as a new size, a new wrap width, new text, or new syntax classes: after the quiet time.
+/// Why:
+///  The first picture and a picture of the wrong file or colors must not wait; the measurement of a long text changes
+///  the mapping for a second or two and the picture follows it steadily; a resize drag changes the size at every step,
+///  and one request after it ends is all the picture needs.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function plan(posted: Key | undefined, key: Key, sincePost: number | undefined, waiting: boolean): Plan;
+/// ```
+pub(super) fn plan(
+    posted: Option<Key>,
+    key: Key,
+    since_post: Option<Duration>,
+    waiting: bool,
+) -> Plan {
+    let Some(previous) = posted else {
+        return Plan::Post;
+    };
+    if previous.stamp.file != key.stamp.file
+        || previous.colors != key.colors
+        || previous.scale != key.scale
+    {
+        return Plan::Post;
+    }
+    // Only the vertical mapping differs: the measurement of the text is arriving.
+    if (Key {
+        rows: key.rows,
+        ..previous
+    }) != key
+    {
+        return Plan::Wait(DEBOUNCE);
+    }
+    let since = since_post.unwrap_or(THROTTLE);
+    if since >= THROTTLE {
+        return Plan::Post;
+    }
+    if waiting {
+        return Plan::Keep;
+    }
+    return Plan::Wait(THROTTLE - since);
+}
+
+/// What:
 ///  Called after every render and when the minimap is resized:
 ///  post a request at once for the first picture of a file and for a new palette or scale,
 ///  at a steady pace while only the vertical mapping changes,
@@ -288,17 +355,12 @@ pub(super) fn note(window: &AppWindow, state: &Rc<RefCell<State>>) {
     if current.minimap.posted == Some(key) {
         return;
     }
-    // Another file, a new palette, or a new scale: the picture on screen is wrong, not just old.
-    let at_once = current.minimap.posted.is_none_or(|previous| {
-        return previous.stamp.file != key.stamp.file
-            || previous.colors != key.colors
-            || previous.scale != key.scale;
-    });
     if current
         .minimap
         .shown
         .is_some_and(|shown| return shown.stamp.file != key.stamp.file)
     {
+        // Another file: the picture on screen is wrong, not just old.
         current.minimap.shown = None;
         drop(current);
         window.set_minimap_image(Image::default());
@@ -307,35 +369,20 @@ pub(super) fn note(window: &AppWindow, state: &Rc<RefCell<State>>) {
         post(window, state, &mut again, key);
         return;
     }
-    if at_once {
-        current.minimap.debounce.stop();
-        post(window, state, &mut current, key);
-        return;
-    }
-    // Only the vertical mapping changed: the measurement of the text is arriving, and the picture follows it at a steady
-    // pace instead of waiting for it to end.
-    let rows_only = current.minimap.posted.is_some_and(|previous| {
-        return Key {
-            rows: key.rows,
-            ..previous
-        } == key;
-    });
-    let wait = if rows_only {
-        let since = current
-            .minimap
-            .last_post
-            .map_or(THROTTLE, |at| return at.elapsed());
-        if since >= THROTTLE {
+    let since = current.minimap.last_post.map(|at| return at.elapsed());
+    let wait = match plan(
+        current.minimap.posted,
+        key,
+        since,
+        current.minimap.debounce.running(),
+    ) {
+        Plan::Post => {
             current.minimap.debounce.stop();
             post(window, state, &mut current, key);
             return;
         }
-        if current.minimap.debounce.running() {
-            return;
-        }
-        THROTTLE - since
-    } else {
-        DEBOUNCE
+        Plan::Keep => return,
+        Plan::Wait(wait) => wait,
     };
     let weak_window = window.as_weak();
     let weak_state = Rc::downgrade(state);

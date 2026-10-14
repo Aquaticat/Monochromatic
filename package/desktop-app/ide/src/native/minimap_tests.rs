@@ -11,11 +11,10 @@ use super::sidebar_tests::{HEADER, TEXT_LEFT};
 use super::wrap_tests::{long_text, open, settled, until};
 /// The worker's counters, its gate, its reply type, and the accept rule.
 use super::{
-    minimap::apply,
-    minimap_build::{MINIMAP_GATE, OFF_WORKER_BUILDS, Reply},
+    minimap::{DEBOUNCE, Plan, THROTTLE, apply, plan},
+    minimap_build::{Key as PictureKey, MINIMAP_GATE, OFF_WORKER_BUILDS, Reply},
     overscan_tile_tests::{scroll_to, settle_tile},
     theme_tests::switch,
-    tile_build::PASS_GATE,
 };
 /// Library types that give the expected values.
 use ide_app::minimap::{FULL_WORK, Geometry};
@@ -727,41 +726,81 @@ fn fifty_thousand_lines_give_a_bounded_picture_without_blocking_the_window() {
     window.hide().expect("close minimap window");
 }
 
-/// While the measurement of a long text changes the vertical mapping, the picture follows it at a steady pace: a request
-///  for about each quarter second, never one for each chunk of the measurement, and none on the window thread.
+/// What the window plans for each kind of change of what the picture is valid for.
 #[test]
-fn the_picture_follows_the_measurement_at_a_steady_pace() {
-    let (release, gate) = std::sync::mpsc::channel();
-    *PASS_GATE.lock().expect("pass gate") = Some(gate);
-    let (_project, opened) = open(&long_text(12_000));
-    let window = &opened.window;
+fn each_kind_of_change_has_its_own_pace() {
+    let (_project, opened) = open(&long_text(400));
+    settled(&opened);
     picture_shown(&opened);
-    let before = opened.source.borrow().minimap.posts;
-    let started = Instant::now();
-    let mut chunks = 0;
-    while started.elapsed() < Duration::from_millis(1600) {
-        let _ = release.send(());
-        chunks += 1;
-        // A chunk every 20 ms, well inside the quiet time that would end a wait.
-        for _ in 0..4 {
-            update_timers_and_animations();
-            std::thread::sleep(Duration::from_millis(5));
-        }
-    }
-    let posts = opened.source.borrow().minimap.posts - before;
-    assert!(
-        chunks >= 50,
-        "the measurement was released in {chunks} chunks"
+    let base = opened.source.borrow().minimap.shown.expect("a picture key");
+    let long_ago = Some(Duration::from_secs(5));
+    let just_now = Some(Duration::from_millis(40));
+    let another_row = |key: PictureKey| {
+        let mut moved = key;
+        moved.rows = moved.rows.map(|mut rows| {
+            rows.3 += 1;
+            return rows;
+        });
+        return moved;
+    };
+    assert_eq!(
+        plan(None, base, None, false),
+        Plan::Post,
+        "the first picture is not delayed"
     );
-    assert!(
-        posts >= 3,
-        "{posts} requests in a second and a half of changing rows: the picture waited for the measurement to end"
+    let mut other_file = base;
+    other_file.stamp.file += 1;
+    assert_eq!(
+        plan(Some(base), other_file, just_now, true),
+        Plan::Post,
+        "another file"
     );
-    assert!(
-        posts <= 10,
-        "{posts} requests for {chunks} chunks: the pace is not bounded"
+    let mut other_scale = base;
+    other_scale.scale ^= 1;
+    assert_eq!(
+        plan(Some(base), other_scale, just_now, true),
+        Plan::Post,
+        "another scale"
     );
-    assert_eq!(OFF_WORKER_BUILDS.load(Ordering::SeqCst), 0);
-    drop(release);
-    window.hide().expect("close minimap window");
+    let mut other_size = base;
+    other_size.size.1 ^= 1;
+    assert_eq!(
+        plan(Some(base), other_size, long_ago, false),
+        Plan::Wait(DEBOUNCE),
+        "a new size waits for the changes to stop"
+    );
+    let mut other_wrap = base;
+    other_wrap.wrap ^= 1;
+    assert_eq!(
+        plan(Some(base), other_wrap, long_ago, false),
+        Plan::Wait(DEBOUNCE)
+    );
+    let mut new_text = base;
+    new_text.stamp.revision += 1;
+    assert_eq!(
+        plan(Some(base), new_text, long_ago, false),
+        Plan::Wait(DEBOUNCE)
+    );
+    let mut new_styles = base;
+    new_styles.styles ^= 1;
+    assert_eq!(
+        plan(Some(base), new_styles, long_ago, false),
+        Plan::Wait(DEBOUNCE)
+    );
+    assert_eq!(
+        plan(Some(base), another_row(base), long_ago, false),
+        Plan::Post,
+        "a mapping change after the throttle's period is posted at once"
+    );
+    assert_eq!(
+        plan(Some(base), another_row(base), just_now, false),
+        Plan::Wait(THROTTLE - Duration::from_millis(40)),
+        "a mapping change inside the period waits for the rest of it, not for quiet"
+    );
+    assert_eq!(
+        plan(Some(base), another_row(base), just_now, true),
+        Plan::Keep,
+        "a wait that is already running is kept"
+    );
+    opened.window.hide().expect("close minimap window");
 }
