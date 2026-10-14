@@ -8,6 +8,7 @@ import {nativeOpenAIStream} from './source-association.mjs';
 import {fixtureResponse} from './fixture-response.mjs';
 import {ruleAssessmentModel} from '../action-policy/wire.mjs';
 import {inspectNativeSourceDomain} from '../policy-source/source-domain.mjs';
+import {createAssessmentSender} from '../maintained-policy.mjs';
 
 const relation=process.argv[2]??'prohibition',
   requireResolution=process.argv
@@ -27,6 +28,7 @@ const unobservedContext=process.argv
   .includes('--unobserved-event');
 const observedContext=process.argv.includes('--observed-context');
 const throwingContext=process.argv.includes('--throwing-context');
+const httpTransport=process.argv.includes('--http-transport');
 assert.ok(!throwingContext||observedContext,'Throwing context controls require the observed native context route');
 const sdkStream=process.argv
   .includes('--sdk-stream');
@@ -111,6 +113,29 @@ function controlledSdkStream(
    options
  );
 }
+function authoredWireAnswer({body}){
+  assessments++;const wire=JSON.parse(body);assert.equal(wire.state.originalRequestBody,originalBody);
+  const answers=Object.fromEntries(Object.entries(wire.questions).map(function answerAuthoredDomainQuestion([slot,question]) {
+   const choice=question.instructions.selectedMaterial==='originalRequestBody'?requestRelation:question.instructions.selectedRule?.id==='RUL'?relation:'none';
+   assert(Object.hasOwn(question.criteria,choice));
+   return [slot,{type:'choice',choice,probabilities:Object.fromEntries(Object.keys(question.criteria).map(function scoreAuthoredDomainChoice(label) { return ([label,label===choice?1:0]); }))}];
+  }));
+  return JSON.stringify({model:wire.model,answers,usage:{input_tokens:100,output_tokens:10}});
+}
+let httpCalls=0;
+const sendAssessment=httpTransport?createAssessmentSender({
+ now:function originalAssessmentClock(){return performance.now();},
+ readCredential:function fixtureAssessmentCredential(){return 'native-http-fixture-key';},
+ async fetchImpl(url,options){
+  httpCalls++;
+  assert.equal(url,'https://api.llmgateway.io/v1/systemone');
+  assert.equal(options.method,'POST');
+  assert.equal(options.redirect,'error');
+  assert.equal(options.headers.authorization,'Bearer native-http-fixture-key');
+  assert.equal(options.signal.aborted,false);
+  return new Response(authoredWireAnswer({body:options.body}));
+ }
+}):authoredWireAnswer;
 const runtime=bindNativePolicyRuntime({
   root,
   lifecycle,
@@ -126,15 +151,7 @@ const runtime=bindNativePolicyRuntime({
   requestMaterialAdmissionPolicy:policy('request_instruction_content'),
   headingContextAdmissionPolicy:policy('heading_instruction_content'),
   effectOwnerFor:function omitDomainAuthorizationOwner() { return (undefined); },
-  async sendWire({body}){
-  assessments++;const wire=JSON.parse(body);assert.equal(wire.state.originalRequestBody,originalBody);
-  const answers=Object.fromEntries(Object.entries(wire.questions).map(function answerAuthoredDomainQuestion([slot,question]) {
-   const choice=question.instructions.selectedMaterial==='originalRequestBody'?requestRelation:question.instructions.selectedRule?.id==='RUL'?relation:'none';
-   assert(Object.hasOwn(question.criteria,choice));
-   return [slot,{type:'choice',choice,probabilities:Object.fromEntries(Object.keys(question.criteria).map(function scoreAuthoredDomainChoice(label) { return ([label,label===choice?1:0]); }))}];
-  }));
-  return JSON.stringify({model:wire.model,answers,usage:{input_tokens:100,output_tokens:10}});
- },
+  sendWire:sendAssessment,
   originalStream:sdkStream?controlledSdkStream:nativeOpenAIStream,
   async terminalFetch(input,init){requests++;if(requests===1)originalBody=init.body;return fixtureResponse({proposal:requests===1,code});}
 });
@@ -186,10 +203,12 @@ try{
    requestUses:review.requestSourceAssociationUses.map(function readContributionState(use) { return (use.state); }),
    requests,
    assessments,
+   httpCalls,
    executions,
    providerRequests:0,
    productionPolicyAdopted:false
  };
+ assert.equal(httpCalls,httpTransport?assessments:0);
  const domainIssue=review.premiseIssues
    .find(function isNativeDomainIssue(issue) { return (issue.kind==='request-source-domain'); });
  if(unobservedContext){

@@ -13,6 +13,7 @@ import {
 } from './host.mjs';
 import {
   askUser,
+  createAssessmentSender,
   VERDICT_ENTRY_TYPE
 } from '../maintained-policy.mjs';
 import { tagged } from '@monochromatic-dev/module-logger/ts';
@@ -62,6 +63,14 @@ function sendUnconfiguredAssessment() {
   throw new NativeCliHostError('Native CLI semantic assessment has no adopted admission policy');
 }
 
+function assessmentClock() {
+  return performance.now();
+}
+
+function readAssessmentCredential() {
+  return process.env.AUTO_MODE_LLMGATEWAY_API_KEY;
+}
+
 function bindSession({
   root,
   lifecycle,
@@ -85,6 +94,12 @@ function bindSession({
     parsePolicy: parser.parse,
     files: [],
     send: sendUnconfiguredAssessment,
+    sendWire: createAssessmentSender({
+      fetchImpl: globalThis.fetch,
+      now: assessmentClock,
+      readCredential: readAssessmentCredential
+    }),
+    now: assessmentClock,
     wrapToolDefinition,
     readSessionDisposalState,
     trace,

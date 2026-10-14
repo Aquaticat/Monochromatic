@@ -1,6 +1,7 @@
 /** The existing SDK stager resolves the maintained artifact before fixture HOME changes. */
 export {
   askUser,
+  createAssessmentSender,
   VERDICT_ENTRY_TYPE,
   AuthorizationEvidenceError,
   captureAuthorizationInputs,
