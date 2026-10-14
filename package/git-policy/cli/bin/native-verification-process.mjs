@@ -72,11 +72,9 @@ async function readCapturedStream({
 /**
  Run one complete argument array with no shell interpretation.
 
- @param {{ command: string, args: readonly string[], capture?: boolean, allowFailure?: boolean, cwd?: string,
-   env?: NodeJS.ProcessEnv }} request -
+ @param {{ command: string, args: readonly string[], capture?: boolean, allowFailure?: boolean }} request -
    executable, its arguments, whether to capture output instead of streaming it to the terminal,
-   whether a nonzero exit is evidence the caller inspects rather than a failed step,
-   the working directory (this process's own by default) and the complete environment (this process's own by default)
+   and whether a nonzero exit is evidence the caller inspects rather than a failed step
  @returns {Promise<CommandOutcome>} exit state and captured output for steps that read either
  */
 export async function runCommand({
@@ -84,8 +82,6 @@ export async function runCommand({
   args,
   capture = false,
   allowFailure = false,
-  cwd = process.cwd(),
-  env = process.env,
 }) {
   const step = args[0] === undefined
     ? command
@@ -94,8 +90,7 @@ export async function runCommand({
     command,
     [...args],
     {
-      cwd,
-      env,
+      cwd: process.cwd(),
       stdio: capture
         ? [
           'ignore',

@@ -1,15 +1,14 @@
 #!/usr/bin/env node
 /**
- Run one native-interoperability driver in a bounded container that holds both wrappers.
+ Run one native-interoperability driver in a bounded container.
 
  The native gate image has Git 2.56.0 and no Node; the host has Node and an older Git.
- Every proof that compares the native wrapper with the incumbent TypeScript wrapper,
- or runs both against one repository, therefore runs here:
+ A driver that needs both runs here:
  the gate's Git 2.56.0 base,
  the Node executable of the same Debian release,
- the incumbent provisioned from its pinned last revision by `bin/provision-incumbent.mjs` (the packed
- TypeScript wrapper with its installed dependency closure, installed as `/opt/cli-git`),
  and the native executable built in release mode from this snapshot.
+ The retired TypeScript wrapper is not part of the image; the drivers that ran against it, and the step that rebuilt
+ it from its pinned revision, are recorded in `doc/handover/cli-git-native-interop.md`.
 
  Usage: `node bin/interop-native-container.mjs <driver> [arguments...]`,
  where `<driver>` names a file under `native-interop/` without its `.mjs` suffix.
@@ -40,7 +39,6 @@ import {
   NativeVerificationError,
   runCommand,
 } from './native-verification-process.mjs';
-import { provisionIncumbent } from './provision-incumbent.mjs';
 
 /** Concurrent worktrees set GIT_POLICY_NATIVE_IMAGE_TAG so one snapshot never runs another's image. */
 const imageTag = process.env
@@ -54,17 +52,12 @@ const gitBase = '6ec87f6d290a2f59bda5b3ffd4197058fe0749d02b4978c877e8edf6dc38802
 const nodeImage = 'docker.io/library/node:24-trixie-slim';
 
 /**
- Copy the native crate, its path dependencies, the interoperability drivers and the provisioned incumbent into the
- build context.
+ Copy the native crate, its path dependencies and the interoperability drivers into the build context.
  Copies run concurrently, and every copy settles before this returns or throws.
 
- @param {{ context: string, incumbentStaging: string }} request - build context directory receiving the
-   repository-shaped snapshot, and the provisioned incumbent's `/opt/cli-git` directory
+ @param {{ context: string }} request - build context directory receiving the repository-shaped snapshot
  */
-async function copySnapshot({
-  context,
-  incumbentStaging,
-}) {
+async function copySnapshot({ context }) {
   const subject = join(
     context,
     'package/git-policy/cli',
@@ -120,23 +113,12 @@ async function copySnapshot({
         'native-interop',
       ),
     },
-    {
-      from: incumbentStaging,
-      to: join(
-        context,
-        'opt-cli-git',
-      ),
-    },
   ];
   const copies = await Promise.allSettled(entries.map(function copyEntry(entry) {
-    // The staged `node_modules/.bin/git` is a relative link into the package; it must reach the image as written.
     return cp(
       entry.from,
       entry.to,
-      {
-        recursive: true,
-        verbatimSymlinks: true,
-      },
+      { recursive: true },
     );
   }));
   const failures = copies.filter(function isRejected(copy) {
@@ -167,11 +149,7 @@ async function main() {
     evidenceRoot,
     'interop-',
   ));
-  const incumbent = await provisionIncumbent();
-  await copySnapshot({
-    context: context.path,
-    incumbentStaging: incumbent.staging,
-  });
+  await copySnapshot({ context: context.path });
   await vendorLockedDependencies({ context: context.path });
   const nativeCrateVersion = /^version = "(?<version>[^"]+)"$/mu.exec(await readFile(
     resolve('Cargo.toml'),
@@ -192,7 +170,6 @@ async function main() {
       'RUN ["chown", "--recursive", "1000:1000", "/work/package", "/work/scratch", "/home/tester"]',
       'ENV HOME=/home/tester CARGO_HOME=/home/tester/.cargo CARGO_NET_OFFLINE=true CARGO_BUILD_JOBS=2 CARGO_INCREMENTAL=0',
       `COPY --from=${nodeImage} /usr/local/bin/node /usr/local/bin/node`,
-      'COPY opt-cli-git /opt/cli-git',
       'USER 1000:1000',
       'WORKDIR /work/package/git-policy/cli',
       // The release executable, and the library's ignored probes, which a driver runs with
@@ -254,7 +231,6 @@ async function main() {
       {
         gitBase,
         nodeImage,
-        incumbent: incumbent.manifest,
         nativeCrateVersion,
         image,
         limits,

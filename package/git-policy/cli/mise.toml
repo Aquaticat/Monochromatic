@@ -2,12 +2,8 @@
 description = "Run native wrapper tests and Clippy in bounded Git 2.56.0 containers"
 run = "node bin/test-native-container.mjs"
 
-[tasks."native:interop:provision"]
-description = "Build the retired TypeScript wrapper from its pinned last revision f4fc1fa213ece65672e4314983a75266837892f9 in a throwaway worktree and stage it as the interop image's /opt/cli-git under target/verification; `-- --refresh` rebuilds a cached result"
-run = "node bin/provision-incumbent.mjs"
-
 [tasks."native:interop"]
-description = "Provision the incumbent (native:interop:provision, cached), build the image holding Git 2.56.0, Node, the incumbent and the release native wrapper, then run `-- <driver> [arguments]` from native-interop/ in it"
+description = "Build the image holding Git 2.56.0, Node and the release native wrapper, then run `-- <driver> [arguments]` from native-interop/ in it (the driver is old-format-fixtures)"
 run = "node bin/interop-native-container.mjs"
 
 [tasks."native:mutation"]
