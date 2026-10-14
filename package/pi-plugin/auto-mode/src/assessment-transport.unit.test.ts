@@ -239,8 +239,9 @@ await describe({
         let cancelled = false;
         const stream = new ReadableStream<Uint8Array>({
           start(controller) { controller.enqueue(new Uint8Array(65_537,),); },
+          pull(controller) { controller.close(); },
           cancel() { cancelled = true; },
-        },);
+        }, { highWaterMark: 0, },);
         const send = assessmentSender({ fetchImpl: async function streamedResponse() {
           return new Response(stream,);
         }, },);
