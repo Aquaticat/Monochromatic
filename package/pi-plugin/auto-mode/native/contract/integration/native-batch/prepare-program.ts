@@ -79,7 +79,7 @@ export async function prepareProgram({
    Native result consumption retains its original conversion dependency occurrence.
    */
   const returnConsumerUrl = new URL(
-    '../../collector/program-rule-batch-sdk-copy-v2/input/native-return-consumer.mjs',
+    '../../collector/program-rule-batch-sdk-copy-v2/input/native-return-consumer.ts',
     import.meta.url
   );
   /**

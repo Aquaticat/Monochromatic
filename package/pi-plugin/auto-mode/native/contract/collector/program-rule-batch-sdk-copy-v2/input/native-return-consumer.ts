@@ -28,15 +28,13 @@ const l = tagged({ tag: 'auto-mode-native-return-consumer' });
 
  @param value - untrusted return from the fixed native runner
 
- @param call - originally reserved call snapshot
-
- @returns whether the runner returned the reserved native call's supported shape
+ @returns whether the runner returned the supported native call and result shape
  */
-function isNativeReturn({ value, call }: { readonly value: unknown; readonly call: NativeReturnCall }): value is NativeReturnOutcome {
+function isNativeReturn(value: unknown): value is NativeReturnOutcome {
   if ((value === null) || ((typeof value) !== 'object') || !('toolCall' in value)
     || (value.toolCall === null) || ((typeof value.toolCall) !== 'object')
     || !('id' in value.toolCall) || !('name' in value.toolCall)
-    || (value.toolCall.id !== call.id) || (value.toolCall.name !== call.name)
+    || ((typeof value.toolCall.id) !== 'string') || ((typeof value.toolCall.name) !== 'string')
     || !('isError' in value) || ((typeof value.isError) !== 'boolean')
     || !('result' in value) || (value.result === null) || ((typeof value.result) !== 'object')) return false;
   return true;
@@ -123,7 +121,7 @@ export function createNativeReturnConsumer({ runNative, getSlot, assertCurrent, 
       invocation.failure = error;
       throw error;
     }
-    if (!isNativeReturn({ value: outcome, call: invocation.call })) {
+    if (!isNativeReturn(outcome) || (outcome.toolCall.id !== invocation.call.id) || (outcome.toolCall.name !== invocation.call.name)) {
       /** Invalid return diagnostics remain inspectable beside the reserved occurrence. */
       const error = new NativeReturnContractError('Native pipeline returned an outcome for a different call or shape');
       invocation.state = 'invalid-return';

@@ -32,6 +32,8 @@
     {
       "original": "collector/program-rule-batch-sdk-copy-v2/stage-private/native-return-consumer.mjs",
       "maintained": "collector/program-rule-batch-sdk-copy-v2/input/native-return-consumer.mjs",
+      "currentMaintained": "collector/program-rule-batch-sdk-copy-v2/input/native-return-consumer.ts",
+      "movedOn": "2026-10-14",
       "sha256": "221a9c3204f36a51df26b42317ffef5940c34a5b0f774e985c60d009e99f14a7",
       "origin": "previous-generated-input",
       "relocatedLiterals": 2
