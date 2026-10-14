@@ -129,6 +129,13 @@ run = "node src/native-members.unit.test.ts"
 description = "Verify original result conversion extraction and source qualification guards"
 run = "node src/native-program-value.unit.test.ts"
 
+[tasks."test:native:resource-input"]
+description = "Verify built native resource copies preserve values, ownership, descriptors, and byte limits"
+run = [
+  "node src/native-resource-input.unit.test.ts",
+  "node src/native-resource-input-rejection.unit.test.ts",
+]
+
 [tasks."test:native:approval"]
 description = "Verify original approval routing and independent prerequisite evidence with fixture presentation"
 run = [
