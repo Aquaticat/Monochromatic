@@ -21,9 +21,13 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusManager
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.semantics.getOrNull
+import androidx.compose.ui.test.assertIsFocused
+import androidx.compose.ui.test.assertIsNotFocused
 import androidx.compose.ui.test.junit4.StateRestorationTester
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
@@ -40,6 +44,7 @@ import dev.monochromatic.musicplayer.core.SEARCH_FIELD_LABEL
 import dev.monochromatic.musicplayer.core.SearchState
 import dev.monochromatic.musicplayer.searchPage
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNull
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -79,13 +84,20 @@ class SearchFieldCaretWiringTest {
     /** Port that the host presses on a Search shortcut, which the open page registers its field with. */
     private val shortcutPort: SearchFocusPort = SearchFocusPort()
 
+    /** Whether the Search page is composed; clearing it closes the page, as Back does. */
+    private var pageOpen: Boolean by mutableStateOf(true)
+
+    /** Focus manager of the composition, captured so a case can take focus away from the field. */
+    private var focusManager: FocusManager? = null
+
     /** Draws the page over the kept query, with a header that a width change rebuilds. */
     @Composable
     private fun page(keptQuery: String, onQuery: (String) -> Unit) {
+        focusManager = LocalFocusManager.current
         MaterialTheme {
             CompositionLocalProvider(HostKeyLocalSearchFocus provides shortcutPort) {
                 Box(modifier = if (onCover) Modifier.width(COVER_WIDTH_DP.dp) else Modifier) {
-                    searchPage(
+                    if (pageOpen) searchPage(
                         creaseWidthPx = null,
                         state = SearchState.EmptyQuery,
                         query = keptQuery,
@@ -157,7 +169,7 @@ class SearchFieldCaretWiringTest {
     //   expect(query).toBe("lanx");
     // });
     // ```
-    /** After a caret at the start and a Search shortcut, the next typed character lands after "lan" and replaces none. */
+    /** With the caret at the start, a Search shortcut makes the next typed character land after "lan". */
     @Test(timeout = CASE_LIMIT_MS)
     fun theSearchShortcutOnAnOpenPagePutsTheCaretAtTheEndAndSelectsNothing() {
         show()
@@ -227,6 +239,43 @@ class SearchFieldCaretWiringTest {
         composeTestRule.mainClock.autoAdvance = true
         composeTestRule.waitForIdle()
         assertEquals("lany", query)
+    }
+
+    // What:     `@Test fun theSearchShortcutRefocusesTheFieldThatLostFocus()` checks the refocus half of the shortcut.
+    // Why:      The shortcut exists to bring the person back to the field; moving the caret alone would leave a
+    //           field without focus that typing does not reach.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // test("ctrl+f refocuses", () => { blur(); pressSearchShortcut(); expect(field).toBeFocused(); });
+    // ```
+    /** After focus leaves the field, the shortcut puts it back on the field. */
+    @Test(timeout = CASE_LIMIT_MS)
+    fun theSearchShortcutRefocusesTheFieldThatLostFocus() {
+        show()
+        composeTestRule.onNodeWithContentDescription(SEARCH_FIELD_LABEL).assertIsFocused()
+        composeTestRule.runOnIdle { checkNotNull(focusManager).clearFocus() }
+        composeTestRule.onNodeWithContentDescription(SEARCH_FIELD_LABEL).assertIsNotFocused()
+        composeTestRule.runOnIdle { shortcutPort.press() }
+        composeTestRule.waitForIdle()
+        composeTestRule.onNodeWithContentDescription(SEARCH_FIELD_LABEL).assertIsFocused()
+    }
+
+    // What:     `@Test fun theSearchShortcutDoesNothingOnceThePageIsClosed()` checks the end of the registration.
+    // Why:      A closed page must leave no field behind, or the next shortcut would act on a field that is gone.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // test("port empties on close", () => { close(); expect(port.onShortcut).toBeNull(); port.press(); });
+    // ```
+    /** After the page leaves composition the port holds no action, and pressing it does not fail. */
+    @Test(timeout = CASE_LIMIT_MS)
+    fun theSearchShortcutDoesNothingOnceThePageIsClosed() {
+        show()
+        composeTestRule.runOnIdle { pageOpen = false }
+        composeTestRule.waitForIdle()
+        assertNull("the closed page unregistered its field", shortcutPort.onShortcut)
+        composeTestRule.runOnIdle { shortcutPort.press() }
     }
 
     // What:     `@Test fun aCaretTheUserPlacedInTheMiddleIsKeptWhileTheQueryIsNotRebuilt()` is the control.
