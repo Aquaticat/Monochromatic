@@ -185,8 +185,59 @@ Private evidence is `contract/research/drex-2.0-recheck` in the existing local q
 It has no configured Git remote or push destination,
 verified with `git remote --verbose` and `git config --local --list`.
 
+## Explicit execution confirmation
+
+Automatic approval review initially rejected the provider phase,
+first for unconfirmed payload consent,
+then because it did not accept repository records of prior consent.
+Both rejections occurred before inference dispatch.
+The user then explicitly approved the complete current policy and captured disposable native fixture
+being sent to `console.nace.ai` for the frozen three-call test.
+No real session history is included.
+The unchanged phase started after that confirmation.
+
 ## Results and disposition
 
-Pending the frozen probes.
-Scores and sensitivity are not applicable before the serving-model hard gate.
+The frozen three-call phase completed with no retry:
+
+- The API control returned 200 and `model: drex-v2.0`.
+  It reported 22 input tokens and a 1,031.995 ms local assessment interval.
+- The complete-policy-once probe returned 200 and `model: drex-v2.0`.
+  It reported 8,731 billed input tokens and a 915.553 ms local assessment interval.
+  Billed input tokens include the question;
+  they are not a measured state-only token count.
+- The native batch returned 422 before model evaluation:
+  `questions.head_0.instructions: must be a string`.
+  Its error list reports that same field-type failure for all 244 questions.
+  No serving model was reported;
+  this is not evidence that the request reached either model.
+
+These are individual intervals,
+not a latency comparison or run-to-run spread measurement.
+The two successful probes imply US$0.00052518 at the published returned-token rate.
+Nace documents 422 responses as unbilled;
+account invoices were not inspected.
+The runner conservatively retained the missing usage rather than inventing a zero-token response.
+
+### Schema-corrected follow-up
+
+The official [question schema](https://console.nace.ai/docs/drex/guides/questions)
+requires text instructions and explicitly rejects JSON objects.
+The existing Jev wire uses structured instruction objects.
+This is an owned adapter incompatibility,
+not a demonstrated model or upstream-service failure.
+
+Private `101929c7` freezes one separate corrected request.
+Every original instruction object is encoded with `JSON.stringify`.
+Local round-trip assertions recover each original object,
+and verify unchanged state,
+criteria,
+question membership,
+and original provider-request text.
+The corrected request is 692,952 bytes with the same 244 questions.
+It retains the same five-second deadline and no-retry policy.
+The completed three-call phase is neither overwritten nor relabeled.
+
+The corrected serving result is pending.
+Scores and sensitivity remain inapplicable before the serving-model hard gate.
 No release recommendation is made yet.
