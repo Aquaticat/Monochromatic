@@ -1833,8 +1833,13 @@ sets that flag for retained recognized diagnostic headers:
 ```ts
 // tsc-output-filter.ts:331,339
 if (isDiagnosticLine(line)) {
-  // The retained-diagnostic branch sets this flag.
-  hasRemainingErrors = true;
+  if (isSuppressedDiagnostic(line)) {
+    droppingContinuation = true;
+  } else {
+    droppingContinuation = false;
+    hasRemainingErrors = true;
+    kept.push(line);
+  }
 }
 ```
 
@@ -1900,6 +1905,9 @@ mise run //package/dev-script/task-util:test:unit -- src/tsc-filter.unit.test.ts
 The original failure log is `${HOME}/temp/agent/tsc-wrapper-failure-red-20261014.log`.
 The repaired process and existing filter suite log is
 `${HOME}/temp/agent/tsc-wrapper-failure-tests-final-20261014.log`.
+The completed changed-file lint reports zero warnings and zero errors across four files;
+the task-util and real Pi package type checks also pass.
+The final process catalog is retained in `tsc-failure.unit.test.ts` and passes through `test:tsc-failure`.
 
 The first success-control assertion incorrectly expected a trailing newline.
 The initial report that this control passed is retracted.

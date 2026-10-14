@@ -49,8 +49,20 @@ and a panic beside suppressed diagnostics.
 The repaired real-process fixture and existing output-filter tests pass.
 The [wrapper incident record](../troubleshooting/typescript.md#task-tsc-002-converted-compiler-process-failures-into-successful-checks)
 retains the initial success-control newline mistake and its source-backed correction.
-Final changed-file quality checks and a real Pi type-check invocation through the repaired wrapper are next.
+Final wrapper lint reports zero warnings and zero errors across four changed files;
+its package type check and all declared process cases pass.
+Pi's real `lint:types` task also passes through the repaired wrapper.
 The broader native quality queue and genuine approval verification remain open.
+
+The next approval preparation uses the existing native RPC dialog boundary.
+The emitted Pi 1.2.0 `rpc-mode.js` creates the original extension selector request
+and resolves only its pending response identifier.
+A direct SDK fixture can retain authored prerequisite premises and local model responses
+while allowing a genuine human to answer the actual pending native request.
+This would verify that human response boundary only.
+The production CLI still lacks an independent authorization-requirement owner;
+unknown requirements must remain unresolved and must not be converted into UI requests.
+No genuine human response or production authorization-owner integration is claimed yet.
 
 The maintained constructor now lives in `native-batch/session-root.ts`,
 with typed native readers,

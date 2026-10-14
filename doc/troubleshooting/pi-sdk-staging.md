@@ -6558,8 +6558,10 @@ if (stdoutResult.hasRemainingErrors || stderrResult.hasRemainingErrors)
 
 The Go panic is retained as ordinary output without a recognized TypeScript error header.
 The independent signal branch does not cover a compiler that exits with code two.
-This wrapper behavior must be repaired and verified separately;
-the successful serial run does not fix it.
+This wrapper behavior was subsequently repaired and verified separately.
+The [owned wrapper incident](typescript.md#task-tsc-002-converted-compiler-process-failures-into-successful-checks)
+retains failing-before process fixtures and passing-after evidence.
+The successful serial type-check retry alone did not fix it.
 
 After the typed session-construction port,
 the approval-context `allow` case failed with
