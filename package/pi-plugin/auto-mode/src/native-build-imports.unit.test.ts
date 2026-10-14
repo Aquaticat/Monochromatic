@@ -40,9 +40,9 @@ type NativeBuildImports = {
  @throws Error when a required built export is missing
  */
 function assertNativeBuildImports(value: unknown): asserts value is NativeBuildImports {
-  if (typeof value !== 'object' || value === null || !('NativeImportBuildError' in value)
-    || typeof value.NativeImportBuildError !== 'function' || !('rewriteNativeImports' in value)
-    || typeof value.rewriteNativeImports !== 'function') throw new Error('Built native import module lacks its required callable exports');
+  if (((typeof value) !== 'object') || (value === null) || (!('NativeImportBuildError' in value))
+    || ((typeof value.NativeImportBuildError) !== 'function') || (!('rewriteNativeImports' in value))
+    || ((typeof value.rewriteNativeImports) !== 'function')) throw new Error('Built native import module lacks its required callable exports');
 }
 
 /**

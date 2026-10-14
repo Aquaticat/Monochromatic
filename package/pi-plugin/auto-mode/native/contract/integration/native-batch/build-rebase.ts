@@ -5,8 +5,15 @@
  */
 import { pathToFileURL } from 'node:url';
 import { tagged } from '@monochromatic-dev/module-logger/ts';
-import { ai, codemode, core } from '../current-sdk/paths.ts';
-import { type ImportEntryReader, NativeBatchBuildError } from './build-entries.ts';
+import {
+  ai,
+  codemode,
+  core
+} from '../current-sdk/paths.ts';
+import {
+  type ImportEntryReader,
+  NativeBatchBuildError
+} from './build-entries.ts';
 import { rewriteNativeImports } from './build-imports.ts';
 
 //region Original source edits retain explicit occurrence checks
@@ -29,7 +36,11 @@ const l = tagged({ tag: 'auto-mode-native-build-rebase' });
 
  @throws NativeBatchBuildError when the original site is absent or duplicated
  */
-export function replaceOnce({ source, from, to }: {
+export function replaceOnce({
+  source,
+  from,
+  to
+}: {
   readonly source: string;
   readonly from: string;
   readonly to: string;
@@ -37,14 +48,24 @@ export function replaceOnce({ source, from, to }: {
   /**
    Source matching has a separate build diagnostic boundary.
    */
-  const rl = tagged({ tag: replaceOnce.name, l });
+  const rl = tagged({
+    tag: replaceOnce.name,
+    l
+  });
   /**
    Exact spelling continues to guard every owned native patch.
    */
   const at = source.indexOf(from);
-  if (at === -1 || source.includes(from, at + from.length)) throw new NativeBatchBuildError(`Native SDK edit does not have one matching location: ${from}`);
+  if ((at === (-1)) || source.includes(
+    from,
+    at + from.length
+  )) throw new NativeBatchBuildError(`Native SDK edit does not have one matching location: ${from}`);
   rl.debug('matched one original native source location');
-  return source.slice(0, at) + to + source.slice(at + from.length);
+  return source.slice(
+    0,
+    at
+  ) + to
+    + source.slice(at + from.length);
 }
 
 /**
@@ -55,7 +76,10 @@ export function replaceOnce({ source, from, to }: {
  @returns quoted module URL for generated source
  */
 export function helperUrl(relative: string): string {
-  return JSON.stringify(new URL(relative, import.meta.url).href);
+  return JSON.stringify(new URL(
+    relative,
+    import.meta.url
+  ).href);
 }
 
 //endregion Original source edits retain explicit occurrence checks
@@ -93,7 +117,10 @@ export function createNativeImportRewriter({ entry }: {
   /**
    Each source transformation retains the factory diagnostic boundary.
    */
-  const rl = tagged({ tag: createNativeImportRewriter.name, l });
+  const rl = tagged({
+    tag: createNativeImportRewriter.name,
+    l
+  });
   /**
    Rebase original static imports without changing dynamic import selection.
 
@@ -107,24 +134,48 @@ export function createNativeImportRewriter({ entry }: {
 
    @throws NativeBatchBuildError when a dependency lacks an explicit mapping
    */
-  function imports({ source, path, overrides = {} }: NativeRebaseInput): string {
+  function imports({
+    source,
+    path,
+    overrides = {}
+  }: NativeRebaseInput): string {
     /**
      The active source path remains visible in build diagnostics.
      */
-    const importLog = tagged({ tag: imports.name, l: rl });
+    const importLog = tagged({
+      tag: imports.name,
+      l: rl
+    });
     importLog.debug(`rebasing original native module: ${path}`);
     return rewriteNativeImports({
       source,
       path,
-      select: function rebaseNativeImport({ specifier, kind }): string {
-        if (kind === 'dynamic' || specifier.startsWith('node:') || ['crypto', 'fs', 'fs/promises', 'path', 'readline', 'string_decoder'].includes(specifier)) return specifier;
+      select: function rebaseNativeImport({
+        specifier,
+        kind
+      }): string {
+        if ((kind === 'dynamic') || specifier.startsWith('node:')
+          || [
+          'crypto',
+          'fs',
+          'fs/promises',
+          'path',
+          'readline',
+          'string_decoder'
+        ].includes(specifier)) return specifier;
         /**
          Only the original qualified packages and explicit overrides can enter this build.
          */
-        const target = overrides[specifier] ?? (specifier.startsWith('.') ? new URL(specifier, pathToFileURL(path)).href
+        const target = overrides[specifier] ?? (specifier.startsWith('.') ? new URL(
+          specifier,
+          pathToFileURL(path)
+        ).href
           : specifier === '@earendil-works/pi-agent-core' ? entry({ root: core })
           : specifier === '@earendil-works/pi-ai' ? entry({ root: ai })
-          : specifier === '@earendil-works/pi-ai/compat' ? entry({ root: ai, subpath: './compat' })
+          : specifier === '@earendil-works/pi-ai/compat' ? entry({
+            root: ai,
+            subpath: './compat'
+          })
           : specifier === '@earendil-works/pi-codemode' ? entry({ root: codemode }) : undefined);
         if (target === undefined) throw new NativeBatchBuildError(`Unmapped native import: ${specifier}`);
         return target;
