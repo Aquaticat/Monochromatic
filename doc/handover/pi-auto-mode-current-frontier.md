@@ -47,7 +47,18 @@ Commits `2699da6e`,
 and `52cced2f` retain the staging source and fixture connection.
 The first native patch check reached the changed `emitBeforeAgentStart` call:
 Pi 1.2.0 takes a run trigger and prepares user or custom runs in `_prepareRun`.
-Adapting that native boundary is current work.
+Private commits `dfdbb616` and `1e7824bb` adapt that native boundary.
+`mise run native:prepare` now passes against Pi 1.2.0 and copies 13 instrumented modules.
+The staging loader uses native package export resolution,
+including wildcard subpaths,
+and the source build retains generated model catalogs from the exact installed release.
+The domain acceptance then found that its historical Markdown parser owner,
+`package/cli/markdown-lint`,
+was removed by the repository's Rust linter migration.
+Private `f411f9da` declares the previously qualified `satteri@0.10.5` directly in the fixture workspace.
+Its installation uses `pnpm install --ignore-scripts`.
+The current acceptance result is still pending;
+source preparation alone does not establish decision behavior.
 Domain closure,
 maintained delivery,
 and installed approval verification remain unfinished.
