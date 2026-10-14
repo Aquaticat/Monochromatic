@@ -29,7 +29,9 @@ await describe({
             const f = createAuthorizationEvidenceFixture();
             expect(captureAuthorizationOwnerFactory(f.options.ownerFor,),).toBe(f.options.ownerFor,);
             for (const input of [undefined, null, {}, true, 1, 'owner',]) {
-              expect(function invoke() { captureAuthorizationOwnerFactory(input,); },)
+              expect(function invoke() {
+                captureAuthorizationOwnerFactory(input,);
+              },)
                 .toThrow(AuthorizationEvidenceError,);
             }
             expect(f.controls.captures,).toBe(0,);
@@ -59,7 +61,9 @@ await describe({
             expect(Object.isFrozen(f.evidence,),).toBe(false,);
             expect(Object.isFrozen(f.owner,),).toBe(false,);
             captured.assertCurrent();
-            expect(function foreignClause() { captured.forClause({},); },).toThrow(AuthorizationEvidenceError,);
+            expect(function foreignClause() {
+              captured.forClause({},);
+            },).toThrow(AuthorizationEvidenceError,);
           },
         },),
         ...(['absent-factory', 'absent-owner', 'legacy-candidates',] as const).map(function absenceCase(mode,) {

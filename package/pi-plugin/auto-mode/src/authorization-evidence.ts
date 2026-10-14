@@ -6,14 +6,14 @@
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import { captureOriginalAuthorizationBindings, } from './authorization-evidence-capture.ts';
 import { AuthorizationEvidenceError, } from './authorization-evidence-data.ts';
-import { MISSING_AUTHORIZATION_EVIDENCE, } from './authorization-evidence-types.ts';
-import type {
-  AuthorizationEvidenceBinding,
-  AuthorizationEvidenceInputs,
-  AuthorizationEvidenceRecord,
-  AuthorizationFacts,
-  AuthorizationInputSources,
-  AuthorizationOwnerFactory,
+import {
+  MISSING_AUTHORIZATION_EVIDENCE,
+  type AuthorizationEvidenceBinding,
+  type AuthorizationEvidenceInputs,
+  type AuthorizationEvidenceRecord,
+  type AuthorizationFacts,
+  type AuthorizationInputSources,
+  type AuthorizationOwnerFactory,
 } from './authorization-evidence-types.ts';
 
 /**

@@ -34,7 +34,9 @@ await describe({
       name: 'rejects copied evidence even when its original fields match',
       fn: async function checkOwnerIdentity() {
         const f = createAuthorizationEvidenceFixture();
-        f.owner.capture = async function copyEvidence() { return { ...f.evidence, }; };
+        f.owner.capture = async function copyEvidence() {
+          return { ...f.evidence, };
+        };
         const failures = await authorizationCaptureFailures(f.options,);
         expect(failures,).toHaveLength(1,);
         expect(failures[0],).toBeInstanceOf(AuthorizationEvidenceError,);
@@ -132,7 +134,12 @@ await describe({
           getPrototypeOf() { state.traps++;
           return Object.prototype; },
         },);
-        const failures = await authorizationCaptureFailures({ ...f.options, ownerFor() { return owner; }, },);
+        const failures = await authorizationCaptureFailures({
+          ...f.options,
+          ownerFor() {
+            return owner;
+          },
+        },);
         expect(failures,).toHaveLength(1,);
         expect(failures[0],).toBeInstanceOf(AuthorizationEvidenceError,);
         expect(state.traps,).toBe(0,);
