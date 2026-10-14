@@ -1,7 +1,7 @@
 import {
-  readFileSync,
-  writeFileSync
-} from 'node:fs';
+  readFile,
+  writeFile
+} from 'node:fs/promises';
 import { createRequire } from 'node:module';
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
@@ -47,7 +47,7 @@ function rebase({
   );
 }
 
-export function prepareNativeHost({ output }) {
+export async function prepareNativeHost({ output }) {
   const bootstrap = JSON.stringify(new URL(
     'bootstrap.mjs',
     import.meta.url
@@ -68,7 +68,7 @@ export function prepareNativeHost({ output }) {
       'dist',
       relative
     );
-    let source = readFileSync(
+    let source = await readFile(
       path,
       'utf8'
     );
@@ -145,7 +145,7 @@ export function prepareNativeHost({ output }) {
         after: 'await reloadHostResource(resourceLoader, options.resourceLoaderReloadOptions);'
       });
     }
-    writeFileSync(
+    await writeFile(
       join(
         output,
         `host-${  name  }.mjs`

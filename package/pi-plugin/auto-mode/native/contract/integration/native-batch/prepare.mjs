@@ -1,10 +1,9 @@
 import {
-  copyFileSync,
-  mkdirSync,
-  readFileSync,
-  realpathSync,
-  writeFileSync
-} from 'node:fs';
+  copyFile,
+  mkdir,
+  readFile,
+  writeFile
+} from 'node:fs/promises';
 import {createRequire} from 'node:module';
 import {
   dirname,
@@ -52,7 +51,7 @@ import {
 import {parse} from "../../collector/program-rule-batch-sdk-copy-v2/input/parser.mjs";
 import {prepareNativeHost} from '../native-host/prepare.mjs';
 
-class NativeBatchBuildError extends Error {}
+import {createImportEntryReader, NativeBatchBuildError} from './build-entries.ts';
 import {
   sdk,
   core,
@@ -62,30 +61,22 @@ import {
   maintainedRoot
 } from '../current-sdk/paths.ts';
 
+const providerPath=join(
+  ai,
+  'dist/api/openai-completions.js'
+);
+const openaiRoot=dirname(createRequire(pathToFileURL(providerPath))
+  .resolve('openai'));
+const entry=await createImportEntryReader({roots:[core,ai,codemode,tui,maintainedRoot,openaiRoot]});
+
 const output=join(
   import.meta.dirname,
   'generated'
 );
-mkdirSync(
+await mkdir(
   output,
   {recursive:true,mode:0o700}
 );
-function entry({
-  root,
-  subpath='.'
-}){
- const metadata=JSON.parse(readFileSync(
-   join(root,'package.json'),
-   'utf8'
- ));
- let value=metadata.exports?.[subpath];
- if((subpath==='.')&&(metadata.exports===undefined))value=metadata.main;
- else if((subpath==='.')&&(typeof metadata.exports)==='string')value=metadata.exports;
- const selected=(typeof value)==='string'?value:(typeof value?.import)==='string'?value.import:value?.default;
- if((typeof selected)!=='string')throw new NativeBatchBuildError(`Installed import entry is unavailable: ${subpath}`);
- return pathToFileURL(join(root,selected))
-   .href;
-}
 function replaceOnce({
   source,
   from,
@@ -127,7 +118,7 @@ function imports({
 }
 const maintainedEntry=entry({root:maintainedRoot});
 // The incumbent stager owns import aliases. Native fixtures may change HOME after this link is prepared.
-writeFileSync(
+await writeFile(
   join(output,'maintained-policy.mjs'),
   'import {flushPolicyDiagnostics} from '+JSON.stringify(maintainedEntry)+';\nawait flushPolicyDiagnostics();\n'
  +'export {askUser,VERDICT_ENTRY_TYPE,AuthorizationEvidenceError,captureAuthorizationInputs,captureAuthorizationOwnerFactory,MISSING_AUTHORIZATION_EVIDENCE,assertOriginalInputBudget,InputReceiptBudgetError,resolveInstructionEffects,InstructionResolutionInputError,inspectAuthorizationRequirements,resolveGuardOutcome,lowerEstablishedClause,CLAUSE_RELATIONS,createNativeQueryObservation,installNativePolicyHooks,NativePolicyRuntimeError,consumeRequestMaterial,retainRequestMaterialObligations,SemanticAdmissionPolicyError,copySemanticAdmissionPolicy,inspectSemanticAdmissionScope,consumeHeadingContexts,consumeUnitAdoptions,selectUnitAdoptionPairs,UnitAdoptionBindingError,consumeSourceAssociations,PolicyInputBindingError,flushPolicyDiagnostics} from '+JSON.stringify(maintainedEntry)+';\n'
@@ -155,7 +146,7 @@ const nativeAliases={
  '@earendil-works/pi-ai/providers/all':entry({root:ai,subpath:'./providers/*'})
    .replace('*','all')
 };
-let extensionLoader=extensionToolSource(readFileSync(
+let extensionLoader=extensionToolSource(await readFile(
   extensionLoaderPath,
   'utf8'
 ));
@@ -172,7 +163,7 @@ extensionLoader=extensionLoader.replaceAll(/import\("(\.[^"]+)"\)/g,function reb
   _match,
   specifier
 ) { return (`import(${JSON.stringify(new URL(specifier,pathToFileURL(extensionLoaderPath)).href)})`); });
-writeFileSync(
+await writeFile(
   join(output,'extension-loader.mjs'),
   imports({source:extensionLoader,path:extensionLoaderPath}),
   {mode:0o600}
@@ -182,7 +173,7 @@ const poolUrl=new URL(
   import.meta.url
 ).href;
 const resourceLoader=imports({
-  source:resourceToolSource(readFileSync(resourceLoaderPath,'utf8')),
+  source:resourceToolSource(await readFile(resourceLoaderPath,'utf8')),
   path:resourceLoaderPath,
   overrides:{
  './extensions/loader.js':pathToFileURL(join(output,'extension-loader.mjs')).href,
@@ -191,7 +182,7 @@ const resourceLoader=imports({
  [poolUrl]:poolUrl
 }
 });
-writeFileSync(
+await writeFile(
   join(output,'resource-loader.mjs'),
   resourceLoader,
   {mode:0o600}
@@ -206,7 +197,7 @@ const loopPath=join(
   sdk,
   'dist/core/sdk.js'
 );
-let loop=readFileSync(
+let loop=await readFile(
   loopPath,
   'utf8'
 );
@@ -222,7 +213,7 @@ loop=imports({
   path:loopPath
 });
 let agent=agentInputSource(
-  agentStateSource(readFileSync(agentPath,'utf8')),
+  agentStateSource(await readFile(agentPath,'utf8')),
 );
 agent=replaceOnce({
   source:agent,
@@ -259,11 +250,11 @@ const queryObserverUrl=new URL(
   import.meta.url
 ).href;
 const manager=imports({
-  source:managerSource(readFileSync(managerPath,'utf8')),
+  source:managerSource(await readFile(managerPath,'utf8')),
   path:managerPath,
   overrides:{[publicationUrl]:publicationUrl,[loadedInputsUrl]:loadedInputsUrl,[queryObserverUrl]:queryObserverUrl}
 });
-const toolObservedSession=sessionToolDescriptionSource(readFileSync(
+const toolObservedSession=sessionToolDescriptionSource(await readFile(
   sessionPath,
   'utf8'
 ));
@@ -295,12 +286,12 @@ const runnerPath=join(
   'dist/core/extensions/runner.js'
 );
 const emitter=promptEmitterSource({
-  source:readFileSync(runnerPath,'utf8'),
+  source:await readFile(runnerPath,'utf8'),
   runnerUrl:pathToFileURL(runnerPath).href,
   promptUrl:pathToFileURL(join(sdk,'dist/core/system-prompt.js')).href,
   aiUrl:entry({root:ai})
 });
-let factory=readFileSync(
+let factory=await readFile(
   sdkPath,
   'utf8'
 );
@@ -348,10 +339,10 @@ const promptPath=join(
   'dist/core/skills.js'
 );
 const builder=imports({
-  source:promptBuilderSource({source:readFileSync(promptPath,'utf8'),skillsSource:readFileSync(skillsPath,'utf8')}),
+  source:promptBuilderSource({source:await readFile(promptPath,'utf8'),skillsSource:await readFile(skillsPath,'utf8')}),
   path:promptPath
 });
-writeFileSync(
+await writeFile(
   join(output,'prompt-builder.mjs'),
   builder,
   {mode:0o600}
@@ -359,7 +350,7 @@ writeFileSync(
 const executorPath=join(
   sdk,
   'dist/extensions/codemode/execute.js'
-),executorSource=readFileSync(
+),executorSource=await readFile(
   executorPath,
   'utf8'
 );
@@ -367,25 +358,25 @@ const executor=imports({
   source:programExecutorSource(executorSource),
   path:executorPath
 });
-writeFileSync(
+await writeFile(
   join(output,'program-executor.mjs'),
   executor,
   {mode:0o600}
 );
-writeFileSync(
+await writeFile(
   join(output,'native-script-value.mjs'),
   nativeScriptValueSource({source:executorSource,parse}),
   {mode:0o600}
 );
-writeFileSync(
+await writeFile(
   join(output,'program-definition.mjs'),
   programDefinitionSource({nativeToolUrl:pathToFileURL(join(sdk,'dist/extensions/codemode/tool.js')).href,executorUrl:pathToFileURL(join(output,'program-executor.mjs')).href}),
   {mode:0o600}
 );
 const programRunner=programRunnerSource(
-  readStagedInput(new URL("../../collector/program-rule-batch-sdk-copy-v2/input/program-runner.mjs",import.meta.url)),
+  await readStagedInput(new URL("../../collector/program-rule-batch-sdk-copy-v2/input/program-runner.mjs",import.meta.url)),
 );
-writeFileSync(
+await writeFile(
   join(output,'program-runner.mjs'),
   programRunner,
   {mode:0o600}
@@ -397,18 +388,18 @@ const runnerShim='import {NestedToolCallRunner as NativeRunner,NestedCallRecorde
   +helperUrl("../../collector/result-program-sdk-copy-guarded/input/child-prepared-dispatch.mjs")
   +';\n'
   +'export const NestedToolCallRunner=createReachedRunnerClass({NestedToolCallRunner:NativeRunner,NestedCallRecorder,dispatchPreparedBatch});\n';
-writeFileSync(
+await writeFile(
   join(output,'program-native-runner.mjs'),
   runnerShim,
   {mode:0o600}
 );
-const returnConsumer=replaceStagedImport({
-  source:readStagedInput(new URL("../../collector/program-rule-batch-sdk-copy-v2/input/native-return-consumer.mjs",import.meta.url)),
+const returnConsumer=await replaceStagedImport({
+  source:await readStagedInput(new URL("../../collector/program-rule-batch-sdk-copy-v2/input/native-return-consumer.mjs",import.meta.url)),
   binding:'toScriptValue',
   expected:new URL("../../collector/program-rule-batch-sdk-copy-v2/input/native-script-value.mjs",import.meta.url),
   replacement:pathToFileURL(join(output,'native-script-value.mjs')).href
 });
-writeFileSync(
+await writeFile(
   join(output,'native-return-consumer.mjs'),
   returnConsumer,
   {mode:0o600}
@@ -417,13 +408,13 @@ const dispatcherUrl=new URL(
   "../../collector/program-rule-batch-sdk-copy-v2/input/prepared-dispatch.mjs",
   import.meta.url
 );
-writeFileSync(
+await writeFile(
   join(output,'prepared-dispatch.mjs'),
-  preparedDispatcherSource({source:readStagedInput(dispatcherUrl),originalUrl:dispatcherUrl.href}),
+  preparedDispatcherSource({source:await readStagedInput(dispatcherUrl),originalUrl:dispatcherUrl.href}),
   {mode:0o600}
 );
-const originalJudgment=replaceStagedImport({
-  source:readStagedInput(new URL("../../collector/program-rule-batch-sdk-copy-v2/input/child-constructor.mjs",import.meta.url)),
+const originalJudgment=await replaceStagedImport({
+  source:await readStagedInput(new URL("../../collector/program-rule-batch-sdk-copy-v2/input/child-constructor.mjs",import.meta.url)),
   binding:'createNativeReturnConsumer',
   expected:new URL("../../collector/program-rule-batch-sdk-copy-v2/input/native-return-consumer.mjs",import.meta.url),
   replacement:pathToFileURL(join(output,'native-return-consumer.mjs')).href
@@ -432,37 +423,37 @@ const judgment=programJudgmentSource(judgmentSource({
   source:originalJudgment,
   indexUrl:new URL('../../lifecycle/governing-rule-candidates/set.mjs',import.meta.url).href
 }));
-writeFileSync(
+await writeFile(
   join(output,'judgment.mjs'),
   judgment,
   {mode:0o600}
 );
-writeFileSync(
+await writeFile(
   join(output,'agent-loop.mjs'),
   loop,
   {mode:0o600}
 );
-writeFileSync(
+await writeFile(
   join(output,'agent.mjs'),
   agent,
   {mode:0o600}
 );
-writeFileSync(
+await writeFile(
   join(output,'sdk.mjs'),
   factory,
   {mode:0o600}
 );
-writeFileSync(
+await writeFile(
   join(output,'session-manager.mjs'),
   manager,
   {mode:0o600}
 );
-writeFileSync(
+await writeFile(
   join(output,'agent-session.mjs'),
   session,
   {mode:0o600}
 );
-writeFileSync(
+await writeFile(
   join(output,'run-emitter.mjs'),
   emitter,
   {mode:0o600}
@@ -471,35 +462,29 @@ const messagesPath=join(
   sdk,
   'dist/core/messages.js'
 );
-writeFileSync(
+await writeFile(
   join(output,'messages.mjs'),
-  handlerMessageSource({source:readFileSync(messagesPath,'utf8'),publicationUrl}),
+  handlerMessageSource({source:await readFile(messagesPath,'utf8'),publicationUrl}),
   {mode:0o600}
 );
-const providerPath=join(
-  ai,
-  'dist/api/openai-completions.js'
-);
-const openaiRoot=dirname(createRequire(pathToFileURL(providerPath))
-  .resolve('openai'));
 const provider=imports({
-  source:handlerProviderSource({source:readFileSync(providerPath,'utf8'),publicationUrl}),
+  source:handlerProviderSource({source:await readFile(providerPath,'utf8'),publicationUrl}),
   path:providerPath,
   overrides:{openai:entry({root:openaiRoot}),[publicationUrl]:publicationUrl}
 });
-writeFileSync(
+await writeFile(
   join(output,'openai-stream.mjs'),
   provider,
   {mode:0o600}
 );
-copyFileSync(
+await copyFile(
   join(import.meta.dirname,'PI-LICENSE.txt'),
   join(output,'LICENSE')
 );
-prepareNativeHost({output});
+await prepareNativeHost({output});
 console.log(JSON.stringify({
   complete:true,
-  SDKVersion:JSON.parse(readFileSync(join(sdk,'package.json'),'utf8')).version,
+  SDKVersion:JSON.parse(await readFile(join(sdk,'package.json'),'utf8')).version,
   copiedModules:13,
   installedSourcesModified:false
 }));

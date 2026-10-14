@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
-import { readFileSync } from 'node:fs';
+import { readFile } from 'node:fs/promises';
 import { createRequire } from 'node:module';
 import {
   dirname,
@@ -29,7 +29,7 @@ export async function createNativeMarkdownParser({
     dirname(entry),
     '../package.json'
   );
-  const packageMetadata = JSON.parse(readFileSync(
+  const packageMetadata = JSON.parse(await readFile(
     packagePath,
     'utf8'
   ));
@@ -106,10 +106,10 @@ export async function createNativeMarkdownParser({
       package: `${packageMetadata.name}@${packageMetadata.version}`,
       entry,
       entrySha256: createHash('sha256')
-        .update(readFileSync(entry))
+        .update(await readFile(entry))
         .digest('hex'),
       packageSha256: createHash('sha256')
-        .update(readFileSync(packagePath))
+        .update(await readFile(packagePath))
         .digest('hex'),
       features,
       observedCoordinateUnit: 'UTF16-code-units',

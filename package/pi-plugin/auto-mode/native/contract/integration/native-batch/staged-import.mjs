@@ -1,15 +1,15 @@
 import {
-  readFileSync,
-  realpathSync
-} from 'node:fs';
+  readFile,
+  realpath
+} from 'node:fs/promises';
 import {fileURLToPath} from 'node:url';
 import {parse} from 'yuku-parser';
 
 export class StagedImportError extends Error {}
 
 /** Preserve each input module's import targets when its transformed source moves into the generated directory. */
-export function readStagedInput(sourceUrl){
- const source=readFileSync(
+export async function readStagedInput(sourceUrl){
+ const source=await readFile(
    sourceUrl,
    'utf8'
  ); const parsed=parse(
@@ -50,7 +50,7 @@ export function readStagedInput(sourceUrl){
 }
 
 /** Rewrite one generated JSON-string import only when its file still resolves to the expected local build input. */
-export function replaceStagedImport({
+export async function replaceStagedImport({
   source,
   binding,
   expected,
@@ -71,7 +71,7 @@ export function replaceStagedImport({
   if((typeof specifier)!=='string')throw new StagedImportError('Generated import must name a file URL');
   const observed=new URL(specifier);
   if(observed.search||observed.hash)throw new StagedImportError('Generated import must not select a separate module URL');
-  if(realpathSync(fileURLToPath(observed))!==realpathSync(fileURLToPath(expected)))throw new StagedImportError('Generated import differs from its expected local build input');
+  if((await realpath(fileURLToPath(observed)))!==(await realpath(fileURLToPath(expected))))throw new StagedImportError('Generated import differs from its expected local build input');
  }catch(error){
   throw new StagedImportError(
     `Cannot verify generated import for ${binding}`,
