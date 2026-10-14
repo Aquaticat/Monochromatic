@@ -22,6 +22,36 @@ the installed native hook supplies the attachment prefix.
 Historical manual worker wrappers in this document are superseded for Codex Bash calls.
 The Pi host remains outside the worker slice.
 
+Native RPC reopened session `01a0dc52-0955-77f6-ae77-68a6e15bb12b`
+with `qwen-token-plan-individual/qwen3.8-flash`.
+`get_state` returned the expected session identity,
+no streaming or compaction,
+and no pending messages.
+Closing stdin completed shutdown with exit zero.
+No model prompt was sent.
+
+The next domain-resolution acceptance stopped during preparation:
+Node reported `ERR_MODULE_NOT_FOUND` for the retired `yuku-parser@0.17.0` path.
+The installed parser is now 0.19.0 and Pi is 1.2.0.
+Pi's installed coding-agent package no longer has the expected unbundled JavaScript files.
+The current native integration therefore needs adaptation before its prior results describe the current host.
+The read-only upstream source checkout is Pi tag `v1.2.0`,
+commit `06a466935536f8c9bcacb2d5efc0fc021be1bdff`.
+
+Private `contract/integration/current-sdk` now emits separate Agent,
+AI,
+and coding-agent JavaScript using the existing TypeScript 7.0.2 compiler.
+Staging passed without changing installed sources or installing dependencies.
+Commits `2699da6e`,
+`2edd3014`,
+and `52cced2f` retain the staging source and fixture connection.
+The first native patch check reached the changed `emitBeforeAgentStart` call:
+Pi 1.2.0 takes a run trigger and prepares user or custom runs in `_prepareRun`.
+Adapting that native boundary is current work.
+Domain closure,
+maintained delivery,
+and installed approval verification remain unfinished.
+
 The user resumed this handover on 2026-10-13,
 then prioritized automatic Codex Bash resource limits before further Pi implementation.
 The native Rust implementation is now in `package/codex-plugin/bash-limit`.
