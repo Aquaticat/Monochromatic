@@ -236,7 +236,7 @@ and the decisions D106 to D119 at the end of `package/music-player/design/decisi
   Still open: the five Compose-boundary mutants; the fourth cost below; the 435 ms `loadTemplate` violation did not
   reproduce, so the template cache in `SessionStore.warmUp` is unproven; the old ANRs did not reproduce in 23 play
   windows (cause unknown); the sweep-under-load case was not exercised; release build not measured.
-- Android playing-queue cost (measured 2026-10-14, partly fixed on `feat/android-queue-cost`): while tracks changed,
+- Android playing-queue cost (measured 2026-10-14, partly fixed, on `main` since `90f121edf5`): while tracks changed,
   `BrainPlayer.getState` rebuilt one `SnapshotItem` (title, ids, artist) and one `MediaItemData` per queue position on
   every pull, and every brain change posted its own pull, so a 10 000-track queue cost 135 ms of main-thread CPU per
   track change (3 tracks: 21 ms) and the GC thread 10.8 s per 40 s. The fix keeps the rows between pulls
@@ -258,6 +258,14 @@ and the decisions D106 to D119 at the end of `package/music-player/design/decisi
   Three emulator crashes (SEGV in `libgfxstream_backend.so`, `TextureResize`) happened headful, the latest 25 minutes
   after a launch; the notes are in `doc/troubleshooting`. Verified only on the debug build and the emulator; the
   artist-tag patch of the rows has JVM tests but no device run (no artist tag arrived in the measured runs).
+  Mutation check of the new code: 36 of 40 mutants killed, the four survivors are output-equivalent (a redundant guard
+  or an extra pass). No JVM test reaches the `BrainPlayer` wiring (`playlistFor`, `stateWith`, `rowOf`, base-state
+  reuse); shuffle and repeat were not driven on a device; the platform session's queue content was not compared
+  between variants. The unit suite on the merged tree is 1122 tests, 0 failures; detekt and lintDebug pass.
+  Open choice for the residual media3 cost, ranked by the agent: window the published queue around the playing track
+  (partial session queue, Next and Previous mapped by `seekCommand`, needs device tests), then remove the legacy queue
+  by taking `COMMAND_GET_TIMELINE` from the platform session's controller (Android Auto and Wear lose the queue),
+  then debounce (saves about a third, still O(queue)). Nothing chosen yet.
 - Review findings left open: look-alike letters (rail hairlines address it), red accent against the error roles, cold
   restore scroll, scroll anchoring when rows above change height, `project()` about 120 ms at 100k rows, the 117 px
   phantom view on the Android idle deck.
