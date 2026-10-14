@@ -15,6 +15,8 @@ const suppressed = 'node_modules/example/index.ts(1,1): error TS2322: dependency
 const panic = 'runtime: failed to create new OS thread (have 140 already; errno=11)\nfatal error: newosproc\n';
 /** Non-TypeScript stderr also must preserve its failing process status. */
 const unknownFailure = 'fixture compiler cannot read its configuration\n';
+/** The configured compiler reports emitted build-info files even when diagnostics were suppressed. */
+const emission = 'TSFILE: /fixture/build-info.tsbuildinfo\n';
 
 /** Each case selects process output independently of the wrapper implementation. */
 const cases: readonly CompilerFailureCase[] = [
@@ -30,6 +32,12 @@ const cases: readonly CompilerFailureCase[] = [
     expectedCode: 7, expectedStdout: '', expectedStderr: unknownFailure },
   { name: 'does not hide a panic beside suppressed diagnostics', stdout: suppressed, stderr: panic, exitCode: 2,
     expectedCode: 2, expectedStdout: '', expectedStderr: panic },
+  { name: 'retains emission metadata alongside fully suppressed errors', stdout: suppressed + emission, stderr: '', exitCode: 2,
+    expectedCode: 0, expectedStdout: emission, expectedStderr: '' },
+  { name: 'requires actual suppressed diagnostics before permitting emission-only failure', stdout: emission, stderr: '', exitCode: 2,
+    expectedCode: 2, expectedStdout: emission, expectedStderr: '' },
+  { name: 'preserves unexplained stdout beside suppressed errors', stdout: suppressed + unknownFailure, stderr: '', exitCode: 2,
+    expectedCode: 2, expectedStdout: unknownFailure, expectedStderr: '' },
 ];
 
 //region The emitted CLI preserves unsuccessful processes unless every diagnostic was knowingly suppressed
