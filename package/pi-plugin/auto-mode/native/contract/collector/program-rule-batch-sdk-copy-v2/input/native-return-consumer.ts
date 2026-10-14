@@ -132,7 +132,9 @@ export function createNativeReturnConsumer(owner: NativeReturnOwner): NativeRetu
   } {
     if (entry.active) throw new NativeReturnContractError('Native result consumer cannot reenter through synchronous callbacks');
     entry.active = true;
-    /** This lexical scope ends before invoke awaits the native operation. */
+    /**
+     This lexical scope ends before invoke awaits the native operation.
+     */
     using reservation = {
       [Symbol.dispose]: function releaseEntry(): void {
         entry.active = false;
@@ -152,8 +154,11 @@ export function createNativeReturnConsumer(owner: NativeReturnOwner): NativeRetu
     /**
      Reservation survives both synchronous and asynchronous native failures.
      */
-    const usesStructuredOutput = Boolean(slot.tool.outputSchema);
-    /** Original call and conversion selection remain fixed through native completion. */
+    const usesStructuredOutput = Boolean(slot.tool
+      .outputSchema);
+    /**
+     Original call and conversion selection remain fixed through native completion.
+     */
     const invocation: NativeReturnInvocation = {
       identity: Object.freeze({}),
       state: 'running',
@@ -172,7 +177,10 @@ export function createNativeReturnConsumer(owner: NativeReturnOwner): NativeRetu
     try {
       return {
         invocation,
-        pending: runNative(call, options)
+        pending: runNative(
+          call,
+          options
+        )
       };
     }
     catch (error) {
