@@ -47,7 +47,9 @@ class FirstVisibleTrackTest {
     //
     // In TS you'd write (pseudocode):
     // ```ts
-    // test("library index", () => expect(reported([header, row(7), row(9), header, row(12)], 1, 2, 3)).toEqual([7, 9, 12]));
+    // test("library index", () => {
+    //   expect(reported([header, row(7), row(9), header, row(12)], 1, 2, 3)).toEqual([7, 9, 12]);
+    // });
     // ```
     /** Positions one and two report library indexes seven and nine, and a header position reports the next row. */
     @Test

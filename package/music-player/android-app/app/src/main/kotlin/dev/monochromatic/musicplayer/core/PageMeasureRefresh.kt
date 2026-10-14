@@ -1,6 +1,6 @@
-// The page measure refresh as plain coroutine code: which sweep steps start a pass, where a pass starts reading, and how
-// a pass walks the page in batches. The host only supplies the sweep steps, the visible track, and the reads, so JVM
-// tests cover the whole decision chain without a device or a Compose runtime.
+// The page measure refresh as plain coroutine code: which sweep steps start a pass, where a pass starts reading, and
+// how a pass walks the page in batches. The host only supplies the sweep steps, the visible track, and the reads, so
+// JVM tests cover the whole decision chain without a device or a Compose runtime.
 
 // What:     `package ...core` places the refresh beside the batch choice and the pass scheduler it composes.
 // Why:      The refresh uses `measureNextBatch` and `runPassPerStep` without an import, and has no Android types.

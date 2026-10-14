@@ -113,7 +113,10 @@ class PageMeasureRefreshTest {
     //
     // In TS you'd write (pseudocode):
     // ```ts
-    // test("no position", () => { expect(startPositionFor(page, "z")).toBe(-1); expect(startPositionFor(page, null)).toBe(-1); });
+    // test("no position", () => {
+    //   expect(startPositionFor(page, "z")).toBe(-1);
+    //   expect(startPositionFor(page, null)).toBe(-1);
+    // });
     // ```
     /** A URI outside the page and a null URI both give the negative value. */
     @Test
@@ -127,7 +130,9 @@ class PageMeasureRefreshTest {
     //
     // In TS you'd write (pseudocode):
     // ```ts
-    // test("starts at the visible track", () => expect(firstBatch({ visible: "c", batchSize: 2 })).toEqual(["c", "d"]));
+    // test("starts at the visible track", () => {
+    //   expect(firstBatch({ visible: "c", batchSize: 2 })).toEqual(["c", "d"]);
+    // });
     // ```
     /** With "c" on screen and two tracks per batch, the first read holds "c" and "d", and the pass then wraps. */
     @Test
@@ -166,7 +171,7 @@ class PageMeasureRefreshTest {
     // ```ts
     // test("re-reads per batch", () => { /* visible c then a: [c,d], [a,b], [e] */ });
     // ```
-    /** Scrolling to "a" during the first read makes the second batch start at "a" and skip the published "c" and "d". */
+    /** Scrolling to "a" during the first read makes the second batch start at "a" and skip the published tracks. */
     @Test
     fun everyBatchRereadsTheVisibleTrackAndTheKnownMeasures() {
         /** Recorder that starts at "c". */
@@ -179,7 +184,8 @@ class PageMeasureRefreshTest {
         assertEquals(listOf(listOf("c", "d"), listOf("a", "b"), listOf("e")), recorder.reads.toList())
     }
 
-    // What:     `@Test fun aMeasureThatArrivesDuringAReadIsNotReadAgain()` checks the known measures are read per batch.
+    // What:     `@Test fun aMeasureThatArrivesDuringAReadIsNotReadAgain()` checks the known measures are read anew
+    //           for each batch.
     // Why:      The sweep publishes measures while a pass reads, and a track it already measured must not be read again
     //           by the batches that follow.
     //
@@ -263,7 +269,7 @@ class PageMeasureRefreshTest {
                 known = { emptyMap() },
                 firstVisibleUri = { null },
                 read = { batch ->
-                    started.incrementAndGet()
+                    check(started.incrementAndGet() <= readLimit) { "The refresh read $readLimit batches, endlessly." }
                     try {
                         release.await()
                     } catch (cancellation: CancellationException) {
