@@ -1051,11 +1051,23 @@ their existing native consumers retain authentication.
 Generated callbacks retain their original identities through a callable-export bridge,
 and a declaration companion describes the existing maintained-package re-export module.
 The host generator and lifecycle fixture select `bootstrap.ts`.
-This interface change is committed before its type,
-lint,
-build,
-and native consumer checks;
-those checks remain next.
+The initial dynamic import of the generated session introduced a startup regression:
+the native lifecycle task exited `13` with Node's `Detected unsettled top-level await`
+at `bootstrap-dependencies.ts`.
+Restoring the original static generated-session dependency through `session-disposal.mjs`
+made that same lifecycle task pass.
+The declaration companion retains an opaque function type and does not change callback identity.
+The native host error constructor now identifies itself as `NativeCliHostError`.
+Final package types,
+the owned rebuild,
+and scoped lint pass.
+The actual lifecycle check passes all original construction,
+reload,
+replacement cancellation,
+fork,
+resume,
+and incomplete-disposal retry cases.
+The separate-process CLI and final syntax checks remain next.
 
 The first approved native dispatch failed because the inherited test loader derived dependency paths
 from the codemode worker's disposable home.
