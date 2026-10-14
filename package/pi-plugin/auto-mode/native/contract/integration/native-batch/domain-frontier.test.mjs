@@ -10,6 +10,7 @@ import {ruleAssessmentModel} from '../action-policy/wire.mjs';
 import {createAssessmentSender,createNativeSemanticOperatingPolicies} from '../maintained-policy.mjs';
 
 import {assertDomainReview} from './domain-frontier-assertions.mjs';
+import {createApprovedChangeControl} from './approved-change-controls.mjs';
 
 //region Native fixture lifetime owns its counters and disposable session
 
@@ -34,6 +35,8 @@ const unobservedContext=process.argv
 const observedContext=process.argv.includes('--observed-context');
 const observedProgress=process.argv.includes('--observed-progress');
 const nextDecision=process.argv.includes('--next-decision');
+const approvedChange=process.argv.find(function changeArgument(argument){return argument.startsWith('--approved-change=');})?.slice('--approved-change='.length);
+const changeControl=createApprovedChangeControl(approvedChange);
 const nextInput='The later received input prohibits the complete proposed operation.';
 const nextResult='The later received result prohibits the complete proposed operation.';
 assert.ok(!nextDecision||observedProgress,'Next-decision receipt controls require original progress delivery');
@@ -90,6 +93,7 @@ const env=await createEnvironment({
   }]:observedProgress?[function registerObservedProgress(pi){
    pi.on('tool_execution_update',function observeOriginalProgress(event){
     observations.progressCalls++;
+    changeControl.progress(event);
     if(nextDecision&&observations.progressCalls===1){
      event.laterInstruction=nextInput;
      return {laterInstruction:nextResult};
@@ -108,7 +112,7 @@ const leaf={
   ...env.createReadToolDefinition(env.options.cwd),
   name:'fixture_value',
   description:'Returns fixture text without accessing files.',
-  async execute(){observations.executions++;return {content:[{type:'text',text:'fixture child value'}],details:{}};}
+  async execute(){observations.executions++;await changeControl.beforeChildReturn({session,env,executions:observations.executions});return {content:[{type:'text',text:'fixture child value'}],details:{}};}
 };
 const {
   session,
@@ -199,10 +203,14 @@ const runtime=bindNativePolicyRuntime({
    return fixtureResponse({proposal,code});
   }
 });
-await using cleanup={async [Symbol.asyncDispose](){session.dispose();await session.agent.waitForIdle();runtime.detach();await env.drain();}};
+await using cleanup={async [Symbol.asyncDispose](){await changeControl.drain();session.dispose();await session.agent.waitForIdle();runtime.detach();await env.drain();}};
 try{
  await session.prompt('Exercise the original request-specific policy domain.');
  const current=runtime.inspect();
+ if(approvedChange==='policy'||approvedChange==='cancel'){
+  changeControl.verify({judgment:current.lastJudgment,observations});
+  return;
+ }
  const first=nextDecision?observations.firstDecision:undefined;
  if(nextDecision)assert.ok(first,'The next request must follow a completed original operation');
  const {
@@ -211,6 +219,7 @@ try{
  }=first??current;
  const measures=first?.measures??observations;
  assertDomainReview({env,review,judgment,session,originalBody:measures.originalBody,settings:{relation,requireResolution,requestRelation,unobservedContext,observedContext,observedProgress,throwingContext,httpTransport,operatingPolicy,lowConfidenceClause,unresolvedClause,sdkStream,receiptControl},measures});
+ if(approvedChange==='arguments')changeControl.verify({judgment,observations});
  if(nextDecision){
   if(observations.assessments!==2){
    for(const record of current.lastJudgment?.inspect().accounting.records??[])if(record.error)console.error(record.error);
