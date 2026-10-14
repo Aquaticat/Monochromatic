@@ -158,9 +158,9 @@ export async function checkTrackList(
     },
   },);
   await recorder.check({
-    id: 'track-list/enter-plays',
-    title: 'Enter on a row plays it, and on the playing row pauses it',
-    body: async function enterPlaysThenPauses(): Promise<string> {
+    id: 'track-list/enter-selects-then-toggles',
+    title: 'Enter on a row selects it paused, Enter on the selected row plays it, and the next Enter pauses it (D124)',
+    body: async function enterSelectsThenToggles(): Promise<string> {
       await press({
         session,
         act: tapKey('home',),
@@ -174,7 +174,19 @@ export async function checkTrackList(
       const ring = (await session.last()).ring_track;
 
       /**
-       The state with the row playing.
+       The state with the row selected, which is not playing yet.
+       */
+      const selected = await press({
+        session,
+        act: tapKey('enter',),
+        until: function rowIsSelected(state: UiState,): boolean {
+          return (state.current_index === ring) && !state.playing;
+        },
+        what: 'the row selected and paused',
+      },);
+
+      /**
+       The state after the second Enter.
        */
       const playing = await press({
         session,
@@ -186,7 +198,7 @@ export async function checkTrackList(
       },);
 
       /**
-       The state after the second Enter.
+       The state after the third Enter.
        */
       const paused = await press({
         session,
@@ -194,7 +206,8 @@ export async function checkTrackList(
         until: isPaused,
         what: 'a pause',
       },);
-      return `index ${playing.current_index} played, then ${paused.playing ? 'playing' : 'paused'}`;
+      return `index ${selected.current_index} selected paused, then ${playing.playing ? 'playing' : 'paused'}, then ${paused
+        .playing ? 'playing' : 'paused'}`;
     },
   },);
 }
