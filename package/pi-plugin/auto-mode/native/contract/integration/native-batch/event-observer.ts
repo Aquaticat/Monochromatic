@@ -92,13 +92,15 @@ export function createNativeEventObserver(capture: (input: NativeEventInput) => 
     }
     /** Original emission token cannot be supplied by callback code. */
     const emission=Object.freeze({});
-    pending.add(emission);
-    changed();
+    // Empty native dispatch visits no callback and adds no governing source material.
+    if(slots.length>0){pending.add(emission);changed();}
     /** Remove only the emission owned by this original traversal. */
     function retire(): void {
       tagged({tag:retire.name,l:rl}).debug('closing original native event occurrence');
-      if(!pending.delete(emission))throw new NativeEventContractError('Native event occurrence was already retired');
-      changed();
+      if(slots.length>0){
+        if(!pending.delete(emission))throw new NativeEventContractError('Native event occurrence was already retired');
+        changed();
+      }
     }
     return createNativeEventTraversal({kind,slots:Object.freeze(slots),capture,retire,invalidate,l:rl});
   }
