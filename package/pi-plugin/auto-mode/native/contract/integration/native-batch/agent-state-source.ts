@@ -34,9 +34,15 @@ export function agentStateSource(source: string): string {
  /**
   Entry diagnostics identify the native state generator.
   */
- const rl = tagged({ tag: agentStateSource.name, l });
+ const rl = tagged({
+   tag: agentStateSource.name,
+   l
+ });
  rl.debug('preparing original Agent state observations');
- assertNativeMessageAssignment({ source, owner: 'Agent' });
+ assertNativeMessageAssignment({
+   source,
+   owner: 'Agent'
+ });
  /**
   One private occurrence token distinguishes the native setter call.
   */
@@ -137,9 +143,15 @@ export function sessionStateSource(source: string): string {
  /**
   Session construction retains a distinct transformation diagnostic.
   */
- const rl = tagged({ tag: sessionStateSource.name, l });
+ const rl = tagged({
+   tag: sessionStateSource.name,
+   l
+ });
  rl.debug('preparing original Session state assignment');
- assertNativeMessageAssignment({ source, owner: 'Session' });
+ assertNativeMessageAssignment({
+   source,
+   owner: 'Session'
+ });
  /**
   The optional native assignment capability remains private to this Session.
   */

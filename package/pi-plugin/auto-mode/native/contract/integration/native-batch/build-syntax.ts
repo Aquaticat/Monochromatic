@@ -23,7 +23,8 @@ const l = tagged({ tag: 'auto-mode-native-build-syntax' });
  */
 function isParsedNode(value: unknown): value is Node {
   return ((typeof value) === 'object') && (value !== null)
-    && ('type' in value) && ((typeof value.type) === 'string');
+    && ('type' in value)
+    && ((typeof value.type) === 'string');
 }
 
 /**
@@ -46,7 +47,10 @@ export function* walkNativeSyntax(root: Node): Generator<Node> {
   /**
    Traversal entry is logged independently of callers selecting source edits.
    */
-  const rl = tagged({ tag: walkNativeSyntax.name, l });
+  const rl = tagged({
+    tag: walkNativeSyntax.name,
+    l
+  });
   rl.debug('walking original native source nodes');
   while (pending.length > 0) {
     /**
