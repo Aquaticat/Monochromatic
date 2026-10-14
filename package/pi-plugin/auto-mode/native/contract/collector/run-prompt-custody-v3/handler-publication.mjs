@@ -5,6 +5,7 @@ import {
 import {SourceCollectionError} from '../collector.mjs';
 import {publishSystemToolInput} from './system-tool-publication.ts';
 import {copyMessageData} from '../run-prompt-custody/messages.mjs';
+import {tagged} from '@monochromatic-dev/module-logger/ts';
 
 // This index holds aliases of existing source capabilities, never another source/content inventory.
 const aliases=new WeakMap();
@@ -593,4 +594,16 @@ export function readHandlerPayloadPublication(value){
 export function readOriginalToolPublication(value){
  const known=aliases.get(value);
  return (known?.kind==='tool-declaration')&&known.owner.current(value)?known.owner.view:undefined;
+}
+
+/** Original serializer values are captured before callbacks; unsupported native data retains its failure. */
+export function snapshotOriginalToolEmission({tool,converted}){
+ const l=tagged({tag:'auto-mode-handler-publication'});
+ const fl=tagged({tag:snapshotOriginalToolEmission.name,l});
+ fl.debug('capturing original converted tool data before payload callbacks');
+ try{return Object.freeze({tool,value:copyMessageData(converted)});}
+ catch(error){
+  fl.debug(String(error));
+  return Object.freeze({tool,error});
+ }
 }

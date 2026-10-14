@@ -3,6 +3,14 @@ import {inspect} from 'node:util';
 import {inspectNativeSourceDomain} from '../policy-source/source-domain.mjs';
 import {assertNativeSessionInputCapture} from './generated/session-manager.mjs';
 
+/** Each receipt contrast invalidates only its actual transport field and position. */
+function alteredContribution({control,location}){
+ if(control==='copied-system')return location.field==='messages'&&location.ordinal===0;
+ if(control==='copied-tools')return location.field==='tools';
+ if(control==='copied-tool'||control==='changed-tool')return location.field==='tools'&&location.ordinal===0;
+ return Boolean(control);
+}
+
 //region Native review assertions retain every authored contrast and original domain control
 
 /** Verify the observed decision and execution against this fixture's original selected contrasts. */
@@ -45,7 +53,7 @@ export function assertDomainReview({env,review,judgment,session,originalBody,set
     .length
     >0,'The normal SDK route must retain original native serializer contributions');
   assert.ok(review.requestSourceAssociationUses
-    .every(function matchesExpectedContributionState(use) { return (use.state===((receiptControl==='copied-system'?use.location.ordinal===0:receiptControl)?'unresolved':'accounted')); }),inspect(
+    .every(function matchesExpectedContributionState(use) { return (use.state===(alteredContribution({control:receiptControl,location:use.location})?'unresolved':'accounted')); }),inspect(
     review.requestSourceAssociationUses,
     {depth:3}
   ));
@@ -123,9 +131,9 @@ export function assertDomainReview({env,review,judgment,session,originalBody,set
    const failedContributions=review.inputs
      .requestObservation
      .sourceContributions
-     .filter(function selectedContribution(value){return receiptControl!=='copied-system'||value.location.ordinal===0;});
+     .filter(function selectedContribution(value){return alteredContribution({control:receiptControl,location:value.location});});
    assert.ok(failedContributions.length>0);
-   assert.ok(failedContributions.every(function namesMissingSerializerOccurrence(value) { return (value.reason?.includes(receiptControl==='copied-system'?'original native rendering and message emission':'original native serializer occurrence')); }),inspect(
+   assert.ok(failedContributions.every(function namesMissingSerializerOccurrence(value) { return (value.reason?.includes(value.location.field==='tools'?'original native declaration emission':receiptControl==='copied-system'?'original native rendering and message emission':'original native serializer occurrence')); }),inspect(
      review.inputs.requestObservation.sourceContributions,
      {depth:3}
    ));

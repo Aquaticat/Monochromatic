@@ -5,6 +5,7 @@ import {readOriginalToolPublication} from '../../collector/run-prompt-custody-v3
 import {readNativeToolPayload} from './generated/openai-stream.mjs';
 
 const l=tagged({tag:'auto-mode-native-tool-source-association'});
+class NativeToolAssociationError extends Error {}
 
 /** Resolve the exact original publication in the captured run's existing input memberships. */
 function originalToolOrigin({sources,tool}){
@@ -36,7 +37,9 @@ export function prepareNativeToolAssociation({sources,dataRecord,denseArray}){
    const association=emitted&&emitted.tool===serialization.tools[ordinal]?originalToolOrigin({sources,tool:emitted.tool}):undefined;
    if(!association)return {original:tool,ordinal,reason:'Serialized tool lacks its original native declaration emission and captured manager input'};
    try{
-    return {original:tool,ordinal,association,serialization:emitted,value:copyMessageData(tool)};
+    if(emitted.value===undefined||!isDeepStrictEqual(copyMessageData(tool),emitted.value))
+      return {original:tool,ordinal,reason:'Serialized tool data differs from its original native declaration emission'};
+    return {original:tool,ordinal,association,serialization:emitted,value:emitted.value};
    }catch(error){
     fl.debug(String(error));
     return {original:tool,ordinal,reason:'Serialized tool data exceeds the supported original contribution profile'};
@@ -63,7 +66,7 @@ export function prepareNativeToolAssociation({sources,dataRecord,denseArray}){
  }
  /** Read the observer's existing parsed request without introducing another serialization or parse. */
  function seal(parsed){
-  if(consumed)throw new Error('Native tool contribution was already sealed');
+  if(consumed)throw new NativeToolAssociationError('Native tool contribution was already sealed');
   consumed=true;
   const expected=retained;
   emissions=[];retained=[];capturedArray=undefined;

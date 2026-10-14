@@ -163,7 +163,7 @@ export function handlerProviderSource({
    to:'        params.tools = convertTools(transcriptTools.requestTools, compat);\n        nativeToolPayloads.set(params.tools,Object.freeze({messages:context.messages,tools:transcriptTools.requestTools}));'
  });
  /**
-  The serializer binds its payload to the original model and transcript before user callbacks.
+  The original tool map retains each callback's exact input and emitted output.
   */
  const toolOutputStart=replaceOnce({
    source:toolDeclarations,
@@ -176,7 +176,7 @@ export function handlerProviderSource({
  const toolOutputs=replaceOnce({
    source:toolOutputStart,
    from:'                ...(compat.supportsStrictMode !== false && { strict: strict ?? false }),\n            },\n        };\n    });\n}',
-   to:'                ...(compat.supportsStrictMode !== false && { strict: strict ?? false }),\n            },\n        };\n        })();\n        nativeToolPayloads.set(converted,Object.freeze({tool}));\n        return converted;\n    });\n}'
+   to:'                ...(compat.supportsStrictMode !== false && { strict: strict ?? false }),\n            },\n        };\n        })();\n        nativeToolPayloads.set(converted,snapshotOriginalToolEmission({tool,converted}));\n        return converted;\n    });\n}'
  });
  /**
   The complete payload observation follows all original member emissions.
@@ -186,7 +186,7 @@ export function handlerProviderSource({
    from:'            const nextParams = await options?.onPayload?.(params, model);',
    to:'            nativeSerializedPayloads.set(params,Object.freeze({model,messages:context.messages,normalizedMessages:normalizedContext.messages}));\n            const nextParams = await options?.onPayload?.(params, model);'
  });
- return `import {recordHandlerPayload} from ${JSON.stringify(publicationUrl)};\n`
+ return `import {recordHandlerPayload,snapshotOriginalToolEmission} from ${JSON.stringify(publicationUrl)};\n`
   +`const nativeSerializedPayloads=new WeakMap(),nativeSystemPayloads=new WeakMap(),nativeToolPayloads=new WeakMap();\n`
    +`export function readNativeSerializedPayload(payload){return nativeSerializedPayloads.get(payload);}\n`
    +`export function readNativeSystemPayload(payload){return nativeSystemPayloads.get(payload);}\n`

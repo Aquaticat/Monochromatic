@@ -115,6 +115,16 @@ await describe({ name: '', children: [false, true].map(function toolCase(withToo
               expect(tools.tools[0]).toBe(tool);
               expect(Object.isFrozen(tools)).toBe(true);
               expect(built.readNativeToolPayload([...(payload.tools ?? [])])).toBeUndefined();
+              /** Each native map result also retains its exact declaration and owned pre-callback value. */
+              const converted = payload.tools?.[0];
+              /** Original output membership does not follow an equal object copy. */
+              const emitted = built.readNativeToolPayload(converted);
+              assertEmission(emitted);
+              expect(emitted.tool).toBe(tool);
+              expect(emitted.value).toEqual(converted);
+              expect(emitted.value).not.toBe(converted);
+              expect(Object.isFrozen(emitted.value)).toBe(true);
+              expect(built.readNativeToolPayload({ ...converted })).toBeUndefined();
             }
             else expect(tools).toBeUndefined();
           },
