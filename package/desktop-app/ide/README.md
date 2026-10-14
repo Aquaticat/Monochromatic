@@ -1682,16 +1682,29 @@ backend: `a_frame_drawn_right_after_a_resize_event_is_wrapped_to_the_new_width` 
 at once with no timer or handler run between them (the draw runs the change handlers), and finds no row of ink at the
 right edge; with the window-thread step turned off, 198 rows of that frame run to the edge.
 So in the headless backend the first frame is already wrapped for the new width.
-What a real backend does between the size event and its redraw was not measured, and the compositor's recorded
-frames still show the previous step's content at each new size in the 16 ms drag;
-whether that delay comes from the compositor's configure and commit exchange or from the toolkit's redraw scheduling
-was not determined, and the requirement that no frame shows old-width text is met in the headless draw
-and not shown to be met in the compositor.
+The compositor's recorded frames still show the previous step's content at each new size in the 16 ms drag,
+and that delay was measured on 2026-10-13 (`doc/troubleshooting/nested-wayland-recording-previous-resize-step.md`):
+it is the recorder's capture model and winit's redraw gate, not the application.
+The compositor changes the output mode, which is the recorded frame size, when the `resize` command arrives,
+captures before it sends the frame callbacks, and sends them only from the recorder tick,
+and winit withholds the redraw of a Wayland window until the callback of its last swap arrives.
+A size that reaches the application between two ticks is therefore drawn right after the next capture
+and first captured one tick later, on a canvas that already has the newest size.
+In three 16 ms sessions 76 to 77 of 81 to 82 captures held a buffer of another width than the output mode,
+all 77 recorded frames that did not fit in the first session were among them, and no frame whose buffer had the
+output's width failed to fit (7 of 7 in that session, 459 of 459 in two 100 ms sessions).
+The debug lines at the target `monochromatic_ide::native::frame` (`src/native/frame_trace.rs`) place the winit size
+event, the redraw request, the view report, and the start and end of each draw on the log's clock.
+Opening the gate at the command in a copy of the compositor cut the stale captures from 94 to 56 to 61 percent
+and the commit from 13 to 8 ms after the command; the rest is the re-wrap (4 ms) and the draw (3.5 ms) against a
+16.7 ms tick.
+So the requirement that no frame shows old-width text is met in the headless draw, and in the compositor every frame
+whose buffer has the output's width is wrapped for it.
 A slower drag (100 ms between steps, one sweep, 3 sessions each, load 15 to 23) separates the two builds:
 frames that do not fit were 14, 29, and 46 of about 260 for the new build against 94, 47, and 97 of about 250 for
 `final`, and the longest stretch was 33 to 50 ms against 200 to 319 ms.
 The new build therefore leaves at most about three recorded frames of old-width content after a step and `final`
-several more, and the remaining ones are not shown to come from the app.
+several more, and the remaining ones are the capture delay above, not wrapping by the application.
 
 #### What the window thread pays
 
