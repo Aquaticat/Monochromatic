@@ -3,7 +3,7 @@ import {createRequire} from 'node:module';
 import {join} from 'node:path';
 import {pathToFileURL} from 'node:url';
 import {sdk,core,ai,tui} from '../current-sdk/paths.ts';
-import {extensionToolSource,resourceToolSource} from './extension-tool-source.mjs';
+import {extensionToolSource,resourceToolSource} from './extension-tool-source.ts';
 import {replaceOnce} from './build-rebase.ts';
 import {rewriteNativeImports} from './build-imports.ts';
 

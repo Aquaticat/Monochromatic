@@ -472,6 +472,8 @@
     {
       "original": "integration/native-batch/extension-tool-source.mjs",
       "maintained": "integration/native-batch/extension-tool-source.mjs",
+      "currentMaintained": "integration/native-batch/extension-tool-source.ts",
+      "movedOn": "2026-10-14",
       "sha256": "36648f29a8b13630490fffffdba787f72ffa65ae8cc055e242464e43694c6521",
       "origin": "authored-source",
       "relocatedLiterals": 0
