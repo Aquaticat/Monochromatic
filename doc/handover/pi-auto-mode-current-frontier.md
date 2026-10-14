@@ -729,6 +729,37 @@ retains the separation between incomplete runs,
 the completed source manifest,
 and the earlier push failure.
 
+Resource input copying now uses typed `values.ts`,
+`input-shape.ts`,
+and the shared collector error constructor.
+Its built consumer tests cover detached snapshots,
+opaque dependency identity,
+own data descriptors,
+adversarial text,
+and the original input limits.
+Scoped lint,
+package types,
+the owned build,
+and those consumer assertions pass.
+The subsequent native permission case twice exhausted its unchanged 512 MiB Node heap.
+Disposable artifact comparisons isolate the new per-snapshot logging:
+the prior implementation passes,
+the typed copy with only its new log emissions omitted passes,
+and the complete typed copy aborts with `heap out of memory`.
+Retaining logger imports while counting calls measured 169,893 snapshots and two option copies
+in the passing permission case.
+Commits `838f5aa849` and `c1d4fe7ecd` replace per-snapshot emissions with bounded microtask attempt counts.
+Package types,
+the owned rebuild,
+and native permission,
+prohibition,
+and unspecified-policy cases now pass at the original heap limit.
+The input guard omissions and host lifecycle are next.
+No heap limit,
+source bound,
+freshness check,
+or semantic admission policy changed.
+
 The first approved native dispatch failed because the inherited test loader derived dependency paths
 from the codemode worker's disposable home.
 Private `f3d40d82` retains the measured repository dependency root in the staging manifest;

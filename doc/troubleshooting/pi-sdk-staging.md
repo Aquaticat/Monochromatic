@@ -6429,6 +6429,132 @@ or attributing the delay to load without an emitting-process trace would not res
 
 There is nothing to file upstream from this observation.
 
+## Pi 1.1.0 resource-copy diagnostics exhaust the Node 26.11.1 heap
+
+### Symptom
+
+The typed resource-input port's unit assertions passed,
+but the native permission consumer twice aborted at its existing 512 MiB heap limit:
+
+```text
+FATAL ERROR: Ineffective mark-compacts near heap limit Allocation failed - JavaScript heap out of memory
+```
+
+Node emitted the fatal diagnostic;
+Mise reported that the child was killed by `SIGABRT`.
+This is separate from the native lifecycle sink-verification timeout.
+
+### Owned source trace
+
+`package/pi-plugin/auto-mode/native/contract/collector/rule-relevance-sdk-copy/input/resource-owner.mjs:85`
+rechecks current resource outputs whenever the retained native observation is used:
+
+```javascript
+// package/pi-plugin/auto-mode/native/contract/collector/rule-relevance-sdk-copy/input/resource-owner.mjs
+try{compareOutputs({scope,outputs:readOutputs(record)});}
+```
+
+Its `readOutputs` at line 71 calls `snapshotInput` separately for context,
+system,
+and appended text.
+The resource-copy port added a synchronous logger emission to every `snapshotInput` entry.
+The counted permission consumer makes 169,893 snapshot calls and two constructor-option copies.
+
+`package/module/logger/src/create-logger.ts:285`
+retains each available sink write until its asynchronous completion:
+
+```typescript
+// package/module/logger/src/create-logger.ts
+const trackedWrite = trackWrite({
+  writePromise: entry.sink
+    .write(record,),
+},);
+pendingWrites.add(trackedWrite,);
+void removePendingWriteWhenSettled({ trackedWrite, },);
+```
+
+The new emission rate therefore creates asynchronous sink work inside the synchronous freshness checks.
+The disposable comparisons isolate those emissions as the trigger.
+They do not identify every retained heap object or demonstrate an external runtime defect.
+The alternative explanation that merely importing the logger caused the failure was rejected:
+the instrumented passing copy retains both the imports and tagged logger construction.
+
+### Verification and correction
+
+The disposable comparison lives at
+`${HOME}/temp/agent/pi-resource-input-native-diff-KBHKYZ/run.ts`.
+It copies the built owned artifact,
+rebases its native absolute imports,
+and runs the same permission consumer with the original heap limit.
+Its retained logs show:
+
+- The resource-copy implementation preceding `7e337381aa` passes.
+- The typed implementation with only its added logging removed passes.
+- The complete typed implementation aborts with the fatal heap diagnostic.
+- A counted variant retaining logger imports and tagged wrappers passes with 169,893 snapshots.
+
+The comparison JSON records the abort signal separately;
+its fallback numeric `exitCode: 0` for signal termination is not a successful result.
+Read `signal: SIGABRT` and the retained fatal diagnostic.
+
+Commits `838f5aa849` and `c1d4fe7ecd` retain attempt counts in fixed categories
+and emit one diagnostic per microtask batch.
+`package/pi-plugin/auto-mode/native/contract/collector/resource-input-custody/diagnostics.ts:63`
+uses this bounded scheduling path:
+
+```typescript
+// package/pi-plugin/auto-mode/native/contract/collector/resource-input-custody/diagnostics.ts
+counts[category]++;
+if (state.pending) return;
+state.pending = true;
+queueMicrotask(flushResourceInputDiagnostics);
+```
+
+The diagnostic reports attempted snapshots,
+including unsupported kinds,
+without retaining input text.
+It moves emission to the next microtask and loses individual per-copy timestamps;
+complete category counts remain available.
+Resource validation,
+copy ownership,
+freshness checks,
+and source budgets stay unchanged.
+
+```sh
+# package/pi-plugin/auto-mode
+mise run //package/pi-plugin/auto-mode:lint:types
+mise run //package/pi-plugin/auto-mode:build:native:owned
+mise run //package/pi-plugin/auto-mode:test:native:domain
+```
+
+The corrected source passes scoped lint and package types.
+The rebuilt native permission,
+prohibition,
+and unspecified-policy cases pass at the original 512 MiB limit.
+Permission executes three prepared child calls;
+prohibition and unspecified policy execute none.
+These fixtures make no provider requests and adopt no production semantic policy.
+
+### Rejected approaches and limits
+
+Passing isolated copy tests did not exercise the repeated native freshness checks.
+Increasing the heap limit was neither attempted nor needed.
+Omitting all new logging was used only as a disposable causal probe;
+the committed correction retains counted diagnostics.
+This change does not reduce the number of freshness checks or establish general performance bounds.
+
+### Upstream filing decision
+
+- The triggering emissions and corrected consumer belong to this repository.
+- The owned consumer correction passes the original failing command.
+- No unsupported Pi API or Node behavior is established.
+- No external contribution or contribution-policy claim is proposed.
+- No upstream maintainer disposition is inferred.
+- The owned correction is verified;
+  no external runtime patch is proposed.
+
+There is nothing to file upstream from this consumer regression.
+
 ## Native source autofixes emit invalid JavaScript
 
 The 2026-10-14 maintained-source `format:oxlint` pass produced these parser diagnostics:
