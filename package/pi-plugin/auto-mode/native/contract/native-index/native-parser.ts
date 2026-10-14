@@ -6,10 +6,16 @@
 import { createHash } from 'node:crypto';
 import { readFile } from 'node:fs/promises';
 import { createRequire } from 'node:module';
-import { dirname, join } from 'node:path';
+import {
+  dirname,
+  join
+} from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { tagged } from '@monochromatic-dev/module-logger/ts';
-import type { NativeMarkdownParser, NativeMarkdownTree } from './native-parser-types.ts';
+import type {
+  NativeMarkdownParser,
+  NativeMarkdownTree
+} from './native-parser-types.ts';
 
 //region Installed source checks precede parser use
 
@@ -39,7 +45,10 @@ function sourceHash(bytes: Uint8Array): string {
   /**
    Source fingerprinting has its own diagnostic boundary.
    */
-  const rl = tagged({ tag: sourceHash.name, l });
+  const rl = tagged({
+    tag: sourceHash.name,
+    l
+  });
   rl.debug('hashing original parser source bytes');
   /**
    This build owns the hash state through its terminal digest.
@@ -70,7 +79,10 @@ export async function createNativeMarkdownParser({ expectedVersion }: {
   /**
    Qualification and later parse calls share this captured diagnostic context.
    */
-  const rl = tagged({ tag: createNativeMarkdownParser.name, l });
+  const rl = tagged({
+    tag: createNativeMarkdownParser.name,
+    l
+  });
   rl.debug(`qualifying installed Markdown parser: ${expectedVersion}`);
   /**
    Resolve the already declared dependency before loading its executable entry.
@@ -83,7 +95,10 @@ export async function createNativeMarkdownParser({ expectedVersion }: {
   /**
    The installed manifest remains adjacent to the qualified dist directory.
    */
-  const packagePath = join(dirname(entry), '../package.json');
+  const packagePath = join(
+    dirname(entry),
+    '../package.json'
+  );
   /**
    Manifest identity and hash describe the same captured bytes.
    */
@@ -92,11 +107,15 @@ export async function createNativeMarkdownParser({ expectedVersion }: {
    JSON metadata remains unknown until its required identity fields are checked.
    */
   const packageMetadata: unknown = JSON.parse(packageBytes.toString('utf8'));
-  if (typeof packageMetadata !== 'object' || packageMetadata === null || !('name' in packageMetadata)
-    || packageMetadata.name !== 'satteri' || !('version' in packageMetadata)
-    || packageMetadata.version !== expectedVersion) throw new NativePolicyParserError(`Installed parser manifest must identify satteri ${expectedVersion}: ${packagePath}`);
+  if (((typeof packageMetadata) !== 'object') || (packageMetadata === null)
+    || (!('name' in packageMetadata))
+    || (packageMetadata.name !== 'satteri')
+    || (!('version' in packageMetadata))
+    || (packageMetadata.version !== expectedVersion)) throw new NativePolicyParserError(`Installed parser manifest must identify satteri ${expectedVersion}: ${packagePath}`);
   if (expectedVersion !== '0.10.5') throw new NativePolicyParserError(`This native adapter is qualified only for satteri 0.10.5; requested ${expectedVersion}`);
-  if (import.meta.resolve('satteri') !== pathToFileURL(entry).href) throw new NativePolicyParserError(`ESM parser resolution differs from the measured entry: ${entry}`);
+  if (import.meta.resolve('satteri')
+    !== pathToFileURL(entry)
+    .href) throw new NativePolicyParserError(`ESM parser resolution differs from the measured entry: ${entry}`);
   /**
    The installed export map selects the verified file while preserving declared return types.
    */
@@ -104,7 +123,10 @@ export async function createNativeMarkdownParser({ expectedVersion }: {
   /**
    Flags retain the measured Markdown extension profile.
    */
-  const features = Object.freeze({ gfm: true, frontmatter: true });
+  const features = Object.freeze({
+    gfm: true,
+    frontmatter: true
+  });
   /**
    Parse only Markdown and keep original source offsets.
 
@@ -116,20 +138,29 @@ export async function createNativeMarkdownParser({ expectedVersion }: {
 
    @throws NativePolicyParserError when MDX is requested or the parser returns another node kind
    */
-  function parse({ source, mdx }: {
+  function parse({
+    source,
+    mdx
+  }: {
     readonly source: string;
     readonly mdx: boolean;
   }): NativeMarkdownTree {
     /**
      Parse diagnostics identify the operation without logging policy content.
      */
-    const parseLog = tagged({ tag: parse.name, l: rl });
-    if (mdx !== false) throw new NativePolicyParserError('MDX is outside this native parser qualification');
+    const parseLog = tagged({
+      tag: parse.name,
+      l: rl
+    });
+    if (mdx) throw new NativePolicyParserError('MDX is outside this native parser qualification');
     parseLog.debug('parsing original Markdown policy text');
     /**
      The installed parser declares all Markdown node kinds, so root admission is checked.
      */
-    const tree = markdownToMdast(source, { features });
+    const tree = markdownToMdast(
+      source,
+      { features }
+    );
     if (tree.type !== 'root') throw new NativePolicyParserError('Native parser did not return a root');
     return tree;
   }
@@ -140,17 +171,46 @@ export async function createNativeMarkdownParser({ expectedVersion }: {
   /**
    Exercise the same callback returned to the native policy index.
    */
-  const tree = parse({ source, mdx: false });
+  const tree = parse({
+    source,
+    mdx: false
+  });
   /**
    The later paragraph is the coordinate control target.
    */
-  const target = tree.children.find(function isParserControlParagraph(node): boolean {
-    return node.type === 'paragraph' && node.children.some(function isParserControlText(child): boolean {
-      return child.type === 'text' && child.value === 'x';
-    });
+  const target = tree.children
+    .find(function isParserControlParagraph(node: {
+      /** Only the node kind participates in coordinate target selection. */
+      readonly type: string;
+      /** Coordinate selection borrows text fields without retaining mutable parser nodes. */
+      readonly children?: readonly {
+        /** Text nodes alone can match the control value. */
+        readonly type: string;
+        /** Other node content is irrelevant to this control. */
+        readonly value?: unknown;
+      }[];
+    }): boolean {
+    return (node.type === 'paragraph')
+      && (node.children
+      ?.some(function isParserControlText(child): boolean {
+      return (child.type === 'text') && (child.value === 'x');
+    }) ?? false);
   });
-  if (target?.position?.start.offset !== source.indexOf('x') || target.position.end.offset === undefined
-    || source.slice(target.position.start.offset, target.position.end.offset) !== 'x') throw new NativePolicyParserError('Installed parser failed its UTF-16 coordinate control');
+  if ((target?.position
+    ?.start
+    .offset
+    !== source.indexOf('x')) || (target.position
+      .end
+      .offset
+      === undefined)
+    || (source.slice(
+      target.position
+        .start
+        .offset,
+      target.position
+        .end
+        .offset
+    ) !== 'x')) throw new NativePolicyParserError('Installed parser failed its UTF-16 coordinate control');
   rl.debug('verified installed Markdown parser identity and original coordinates');
   return {
     parse,

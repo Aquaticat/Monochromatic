@@ -20,35 +20,59 @@ export type NativeMarkdownParser = {
    Source parsing requires an explicit Markdown-only selection.
    */
   readonly parse: (input: {
-    /** Original policy text. */
+    /**
+     Original policy text.
+     */
     readonly source: string;
-    /** MDX remains outside the measured parser profile. */
+    /**
+     MDX remains outside the measured parser profile.
+     */
     readonly mdx: boolean;
   }) => NativeMarkdownTree;
   /**
    Metadata identifies the measured JavaScript entry and exact parser options.
    */
   readonly metadata: {
-    /** Qualified installed package and version. */
+    /**
+     Qualified installed package and version.
+     */
     readonly package: string;
-    /** Original resolved JavaScript entry. */
+    /**
+     Original resolved JavaScript entry.
+     */
     readonly entry: string;
-    /** SHA-256 of original JavaScript entry bytes. */
+    /**
+     SHA-256 of original JavaScript entry bytes.
+     */
     readonly entrySha256: string;
-    /** SHA-256 of original package manifest bytes. */
+    /**
+     SHA-256 of original package manifest bytes.
+     */
     readonly packageSha256: string;
-    /** Only the measured Markdown extensions are selected. */
+    /**
+     Only the measured Markdown extensions are selected.
+     */
     readonly features: {
-      /** Preserve the qualified GitHub-flavored Markdown behavior. */
+      /**
+       Preserve the qualified GitHub-flavored Markdown behavior.
+       */
       readonly gfm: true;
-      /** Preserve the qualified frontmatter handling. */
+      /**
+       Preserve the qualified frontmatter handling.
+       */
       readonly frontmatter: true;
     };
-    /** Coordinates are verified against original JavaScript string offsets. */
+    /**
+     Coordinates are verified against original JavaScript string offsets.
+     */
     readonly observedCoordinateUnit: 'UTF16-code-units';
-    /** No historical code-point conversion is applied. */
+    /**
+     No historical code-point conversion is applied.
+     */
     readonly extraCorrectionApplied: false;
-    /** Explicit limits remain attached to the measured adapter. */
+    /**
+     Explicit limits remain attached to the measured adapter.
+     */
     readonly scope: string;
   };
 };
