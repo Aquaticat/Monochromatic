@@ -313,7 +313,8 @@ fn dragging_the_box_scrolls_continuously_and_release_ends_it() {
     window.hide().expect("close minimap window");
 }
 
-/// The box shows two changes besides the cursor when the pointer is over it: its fill and its border.
+/// The box shows two changes besides the cursor when the pointer is on it, and none while the pointer is beside it:
+///  its fill and its border.
 #[test]
 fn the_box_changes_fill_and_border_under_the_pointer() {
     let (release, gate) = std::sync::mpsc::channel();
@@ -355,13 +356,28 @@ fn the_box_changes_fill_and_border_under_the_pointer() {
         at(&rest, 40.0, 4.0),
         "the border at rest is one pixel wide"
     );
-    // A pointer over the minimap, outside the box, already marks the box: the whole minimap is the scroll control.
+    // A pointer over the minimap but outside the box leaves the box as it is at rest: CodeGlance Pro marks the box only
+    // while the pointer is on it.
     travel(&opened, over(window, 40.0, below));
     update_timers_and_animations();
     assert!(
         window.get_minimap_hovered(),
         "the pointer is over the minimap"
     );
+    assert!(!window.get_minimap_over_box(), "but not over the box");
+    let beside = window.window().take_snapshot().expect("a frame");
+    assert_eq!(at(&beside, 40.0, below), plain);
+    assert_eq!(
+        at(&beside, 40.0, height / 2.0),
+        fill_rest,
+        "the fill does not change while the pointer is beside the box"
+    );
+    assert_eq!(at(&beside, 40.0, 0.0), at(&rest, 40.0, 0.0));
+    assert_eq!(at(&beside, 40.0, 1.0), at(&rest, 40.0, 1.0));
+    // On the box, the fill changes and the border widens.
+    travel(&opened, over(window, 40.0, height / 2.0));
+    update_timers_and_animations();
+    assert!(window.get_minimap_over_box(), "the pointer is over the box");
     let hovered = window.window().take_snapshot().expect("a frame");
     assert_eq!(
         at(&hovered, 40.0, below),
@@ -744,63 +760,87 @@ fn each_kind_of_change_has_its_own_pace() {
         return moved;
     };
     assert_eq!(
-        plan(None, base, None, false),
+        plan(None, None, base, None, false),
         Plan::Post,
         "the first picture is not delayed"
     );
     let mut other_file = base;
     other_file.stamp.file += 1;
     assert_eq!(
-        plan(Some(base), other_file, just_now, true),
+        plan(Some(base), Some(base), other_file, just_now, true),
         Plan::Post,
         "another file"
     );
     let mut other_scale = base;
     other_scale.scale ^= 1;
     assert_eq!(
-        plan(Some(base), other_scale, just_now, true),
+        plan(Some(base), Some(base), other_scale, just_now, true),
         Plan::Post,
         "another scale"
     );
     let mut other_size = base;
     other_size.size.1 ^= 1;
     assert_eq!(
-        plan(Some(base), other_size, long_ago, false),
+        plan(Some(base), Some(base), other_size, long_ago, false),
         Plan::Wait(DEBOUNCE),
         "a new size waits for the changes to stop"
     );
     let mut other_wrap = base;
     other_wrap.wrap ^= 1;
     assert_eq!(
-        plan(Some(base), other_wrap, long_ago, false),
+        plan(Some(base), Some(base), other_wrap, long_ago, false),
         Plan::Wait(DEBOUNCE)
     );
     let mut new_text = base;
     new_text.stamp.revision += 1;
     assert_eq!(
-        plan(Some(base), new_text, long_ago, false),
+        plan(Some(base), Some(base), new_text, long_ago, false),
         Plan::Wait(DEBOUNCE)
     );
     let mut new_styles = base;
     new_styles.styles ^= 1;
     assert_eq!(
-        plan(Some(base), new_styles, long_ago, false),
+        plan(Some(base), Some(base), new_styles, long_ago, false),
         Plan::Wait(DEBOUNCE)
     );
     assert_eq!(
-        plan(Some(base), another_row(base), long_ago, false),
+        plan(Some(base), Some(base), another_row(base), long_ago, false),
         Plan::Post,
         "a mapping change after the throttle's period is posted at once"
     );
     assert_eq!(
-        plan(Some(base), another_row(base), just_now, false),
+        plan(Some(base), Some(base), another_row(base), just_now, false),
         Plan::Wait(THROTTLE - Duration::from_millis(40)),
         "a mapping change inside the period waits for the rest of it, not for quiet"
     );
     assert_eq!(
-        plan(Some(base), another_row(base), just_now, true),
+        plan(Some(base), Some(base), another_row(base), just_now, true),
         Plan::Keep,
         "a wait that is already running is kept"
+    );
+    // A resize drag changes the size and, with it, the mapping: the wait the size started is kept.
+    assert_eq!(
+        plan(
+            Some(base),
+            Some(other_size),
+            another_row(other_size),
+            long_ago,
+            true
+        ),
+        Plan::Keep,
+        "the mapping change that follows a size change does not end the wait"
+    );
+    // The measurement of a long text after a size change that was already posted: the picture follows at the pace.
+    assert_eq!(
+        plan(
+            Some(base),
+            Some(other_size),
+            another_row(other_size),
+            long_ago,
+            false
+        ),
+        Plan::Post,
+        "a mapping change that follows a size change is not held back once no wait is running"
     );
     opened.window.hide().expect("close minimap window");
 }

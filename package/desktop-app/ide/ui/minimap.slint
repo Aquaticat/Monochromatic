@@ -17,6 +17,9 @@ export component Minimap inherits Rectangle {
     in property <float> range;
     out property <bool> pressed: touch.pressed;
     out property <bool> hovered: touch.has-hover;
+    // The pointer is over the box itself: CodeGlance Pro marks the box (`ScrollBar.updateAlpha`: `isInRect`) only then.
+    out property <bool> over-box: touch.has-hover && touch.mouse-y >= root.box-top
+        && touch.mouse-y <= root.box-top + root.box-height;
     // A press: its distance from the top and from the left edge, whether Shift is held, and whether it is on the box.
     callback press(length, length, bool, bool);
     // The pointer moved with the left button down.
@@ -57,17 +60,18 @@ export component Minimap inherits Rectangle {
         y: root.box-top;
         width: parent.width;
         height: root.box-height;
-        background: Palette.foreground.with-alpha(touch.pressed ? 0.35 : touch.has-hover ? 0.25 : 0.15);
-        border-width: touch.pressed || touch.has-hover ? 2px : 1px;
-        border-color: Palette.foreground.with-alpha(touch.pressed ? 0.9 : touch.has-hover ? 0.75 : 0.5);
+        background: Palette.foreground.with-alpha(touch.pressed ? 0.35 : root.over-box ? 0.25 : 0.15);
+        border-width: touch.pressed || root.over-box ? 2px : 1px;
+        border-color: Palette.foreground.with-alpha(touch.pressed ? 0.9 : root.over-box ? 0.75 : 0.5);
         border-radius: self.height > 20px ? 5px : 0px;
     }
 
     touch := TouchArea {
         width: parent.width;
         height: parent.height;
-        // A hand over the picture where a press jumps, the plain arrow over the box and while it is dragged.
-        mouse-cursor: self.pressed || (self.mouse-y >= root.box-top && self.mouse-y <= root.box-top + root.box-height)
+        // A hand over the picture where a press jumps, the plain arrow over the box, while it is dragged, and below the
+        // end of the picture (CodeGlance Pro's `ScrollBar.updateAlpha`: `y < drawHeight`).
+        mouse-cursor: self.pressed || root.over-box || self.mouse-y >= root.track
             ? MouseCursor.default : MouseCursor.pointer;
         pointer-event(event) => {
             if event.kind == PointerEventKind.down && event.button == PointerEventButton.left {

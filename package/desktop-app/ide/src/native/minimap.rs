@@ -103,6 +103,8 @@ pub(super) struct MinimapState {
     pub(super) posted: Option<Key>,
     /// When the newest request was posted.
     last_post: Option<Instant>,
+    /// What the previous look at the window, in `note`, was for.
+    noted: Option<Key>,
     /// What the picture on screen is valid for.
     pub(super) shown: Option<Key>,
     /// Number of the last request posted.
@@ -138,6 +140,7 @@ impl MinimapState {
             debounce: Timer::default(),
             posted: None,
             last_post: None,
+            noted: None,
             shown: None,
             next_id: 0,
             shown_id: 0,
@@ -286,22 +289,24 @@ pub(super) enum Plan {
 }
 
 /// What:
-///  Decide when the picture for `key` is requested, from what the newest request was for, how long ago it was posted,
-///  and whether a wait is already running.
+///  Decide when the picture for `key` is requested, from what the newest request was for, what the previous look at the
+///  window was for, how long ago the newest request was posted, and whether a wait is already running.
 ///  Nothing posted yet, another file, a new palette, or a new scale: now.
-///  Only the vertical mapping changed: at the throttle's pace.
+///  Since the previous look only the vertical mapping changed: at the throttle's pace, and never while a wait is running.
 ///  Anything else, such as a new size, a new wrap width, new text, or new syntax classes: after the quiet time.
 /// Why:
 ///  The first picture and a picture of the wrong file or colors must not wait; the measurement of a long text changes
-///  the mapping for a second or two and the picture follows it steadily; a resize drag changes the size at every step,
-///  and one request after it ends is all the picture needs.
+///  the mapping for a second or two and the picture follows it steadily; a resize drag changes the size at every step
+///  and the mapping with it, so the wait it starts is kept and one request after the drag ends is all the picture needs.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function plan(posted: Key | undefined, key: Key, sincePost: number | undefined, waiting: boolean): Plan;
+/// function plan(posted: Key | undefined, noted: Key | undefined, key: Key, sincePost: number | undefined,
+///   waiting: boolean): Plan;
 /// ```
 pub(super) fn plan(
     posted: Option<Key>,
+    noted: Option<Key>,
     key: Key,
     since_post: Option<Duration>,
     waiting: bool,
@@ -315,20 +320,22 @@ pub(super) fn plan(
     {
         return Plan::Post;
     }
-    // Only the vertical mapping differs: the measurement of the text is arriving.
-    if (Key {
-        rows: key.rows,
-        ..previous
-    }) != key
-    {
+    // Only the vertical mapping differs from the previous look: the measurement of the text is arriving.
+    let rows_only = noted.is_some_and(|before| {
+        return (Key {
+            rows: key.rows,
+            ..before
+        }) == key;
+    });
+    if !rows_only {
         return Plan::Wait(DEBOUNCE);
+    }
+    if waiting {
+        return Plan::Keep;
     }
     let since = since_post.unwrap_or(THROTTLE);
     if since >= THROTTLE {
         return Plan::Post;
-    }
-    if waiting {
-        return Plan::Keep;
     }
     return Plan::Wait(THROTTLE - since);
 }
@@ -352,6 +359,8 @@ pub(super) fn note(window: &AppWindow, state: &Rc<RefCell<State>>) {
     let Some(key) = key_of(window, &current) else {
         return;
     };
+    // What this look is for, kept for the next one to tell what changed in between.
+    let before = current.minimap.noted.replace(key);
     if current.minimap.posted == Some(key) {
         return;
     }
@@ -372,6 +381,7 @@ pub(super) fn note(window: &AppWindow, state: &Rc<RefCell<State>>) {
     let since = current.minimap.last_post.map(|at| return at.elapsed());
     let wait = match plan(
         current.minimap.posted,
+        before,
         key,
         since,
         current.minimap.debounce.running(),

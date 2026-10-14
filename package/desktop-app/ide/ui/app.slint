@@ -218,6 +218,7 @@ export component AppWindow inherits Window {
     in property <image> minimap-image;
     // Whether the pointer is over the minimap, and whether its left button is down on it.
     out property <bool> minimap-hovered: minimap.hovered;
+    out property <bool> minimap-over-box: minimap.over-box;
     out property <bool> minimap-pressed: minimap.pressed;
     private property <length> minimap-content: max(root.content-extent * 1px, 1px);
     private property <float> minimap-scale: min(4.0 / 24.0, scroll.height / root.minimap-content);
