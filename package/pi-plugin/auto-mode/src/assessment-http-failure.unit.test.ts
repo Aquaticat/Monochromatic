@@ -12,7 +12,6 @@ import { assessmentFailure, assessmentInput, assessmentSender, } from './assessm
 await describe({
   name: 'assessment HTTP failure diagnostics',
   children: [
-    ...[
       {
         name: 'recognized token capacity code',
         raw: '{"detail":{"error_type":"max_tokens_exceeded","message":"private upstream text"}}',
@@ -77,7 +76,6 @@ await describe({
         },
       },);
     }),
-  ],
 },);
 
 //endregion Fixed diagnostics distinguish known capacity failures from unknown provider content

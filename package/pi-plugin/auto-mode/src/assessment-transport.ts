@@ -237,7 +237,10 @@ export function createAssessmentSender({
       if (raw.includes(key,))
         throw new AssessmentTransportError('Assessment response echoed its Gateway credential and was withheld',);
       if (response.status !== limits.successfulStatus)
-        throw new AssessmentTransportError(assessmentHttpFailure({ raw, status: response.status, },),);
+        throw new AssessmentTransportError(assessmentHttpFailure({
+          raw,
+          status: response.status,
+        },),);
       signal.throwIfAborted();
       sl.debug('original assessment HTTP response completed',);
       return raw;
