@@ -79,7 +79,22 @@ Both reported 2 to 4 ms hook duration,
 with a 3 ms median and 3 ms at the 95th percentile.
 These are host-reported observations,
 not a guarantee against operating-system scheduling delays.
-Persistent hook installation is pending.
+The native binary is installed at `$HOME/.local/libexec/codex-bash-limit`.
+`$HOME/.codex/hooks.json` contains trusted,
+enabled `SessionStart` and Bash `PreToolUse` hooks.
+The original user configuration is backed up under
+`$HOME/temp/agent/codex-bash-limit-install-20261013/`.
+The persistent user slice definition is `$HOME/.config/systemd/user/piwork3285273.slice`.
+
+The running daemon accepted a configuration reload through its Unix WebSocket control socket.
+A command without a manual systemd wrapper reported membership in `piwork3285273.slice/codex`
+and the expected parent limits.
+The existing turn retained its old sandbox snapshot:
+a default sandboxed probe stopped with status 70 and `Read-only file system` before running its payload.
+The updated thread settings preserve workspace-write restrictions and add only the child cgroup directory.
+The native API documents these settings as applying to subsequent turns.
+The user offered to restart this session;
+the restart checkpoint requires a default sandboxed membership probe before further builds.
 
 ## Package and test ownership
 

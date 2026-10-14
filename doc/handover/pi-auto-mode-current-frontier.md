@@ -7,15 +7,67 @@ This current summary complements the
 [historical evidence ledger](pi-auto-mode-axiom-evaluation.md).
 Updated 2026-10-13.
 
-## Paused for CPU replacement
+## Restart checkpoint after installing automatic Codex shell limits
+
+The user resumed this handover on 2026-10-13,
+then prioritized automatic Codex Bash resource limits before further Pi implementation.
+The native Rust implementation is now in `package/codex-plugin/bash-limit`.
+The user approved Rust tests through nextest with default build and test concurrency,
+and the corresponding clarification in `AGENTS.md` and the TypeScript testing skill.
+
+The installed binary is `$HOME/.local/libexec/codex-bash-limit`.
+Trusted user hooks in `$HOME/.codex/hooks.json` initialize the worker child at session start
+and prepend the cgroup attachment before each Bash command.
+The persistent user unit is `$HOME/.config/systemd/user/piwork3285273.slice`.
+The parent limits remain 4 GiB memory,
+zero swap,
+200% CPU,
+and 256 tasks.
+The user authorized raising only the CPU quota if needed;
+that further increase has not been made.
+
+The native fixture suite passes through nextest,
+Clippy passes with warnings denied,
+and two native Codex host runs reported 2 to 4 ms hook duration across 40 commands each.
+The guard test failed as required when its attachment-failure exit was removed in a disposable worktree.
+The [implementation record](../decision/codex-shell-worker-limits.md)
+and [troubleshooting record](../troubleshooting/codex-shell-worker-limits.md)
+contain the installation and native-host evidence.
+
+The daemon accepted the live hook reload.
+Escalated commands now enter the worker cgroup automatically without a manual launcher.
+This already-running turn retained its old sandbox snapshot and blocked default sandboxed commands
+with status 70 before their payloads ran.
+The updated thread policy adds the child cgroup directory while preserving the other workspace-write restrictions.
+The API applies that policy to subsequent turns.
+The user offered to restart the session,
+and the agent requested restart after this checkpoint was saved.
+
+After restart,
+first run a default sandboxed `cat /proc/self/cgroup`.
+Expect a path ending in `/piwork3285273.slice/codex`.
+Read the parent's memory,
+swap,
+CPU,
+and task controls before any build or test.
+If attachment is not active,
+diagnose the exact hook or sandbox failure before doing unrestricted worker work.
+Once verified,
+the manual systemd prefix is unnecessary for Codex Bash calls.
+Keep the Pi host outside the worker slice.
+
+Then resume the finite Pi delivery queue in this handover.
+The user supplied `pi --session 01a0dc52-0955-77f6-ae77-68a6e15bb12b`
+and reported that OpenAI models currently do not work in Pi.
+Use provider `qwen-token-plan-individual` and model `qwen3.8-flash` for Pi testing.
+No Pi implementation or provider inference call was performed while completing the limiter priority.
+No subagents or Advisor calls were introduced.
+
+## Historical CPU-replacement pause
 
 The user requested a safe pause for a CPU change on 2026-10-13.
-Implementation is paused.
-Finish only this handover,
-its document verification,
-and scoped commits.
-Do not resume implementation from process-completion notifications.
-Wait for an explicit user request to resume.
+That pause ended with the explicit resumption recorded in the restart checkpoint.
+The retained evidence describes the state at the original pause.
 
 At pause intake,
 the process manager reported no running jobs.

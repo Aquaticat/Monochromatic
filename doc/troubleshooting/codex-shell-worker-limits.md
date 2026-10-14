@@ -107,6 +107,33 @@ Compilation concurrency has a separate `--build-jobs` flag.
 The accepted package task supplies neither override and uses nextest defaults.
 The worker cgroup independently bounds aggregate resource use.
 
+## Reloading an already-running session
+
+The daemon's Unix control socket uses WebSocket framing.
+`codex app-server proxy` forwards raw bytes;
+sending newline-delimited JSON directly through it does not perform a WebSocket handshake.
+Source inspected:
+`codex-rs/app-server-transport/src/transport/unix_socket.rs`
+and `codex-rs/stdio-to-uds/src/lib.rs`.
+A local TCP-to-Unix relay with Node's built-in WebSocket client successfully reached the daemon.
+
+`config/batchWrite` with `reloadUserConfig: true` activated the trusted hooks in the loaded session.
+The current turn nevertheless retained its existing sandbox snapshot and emitted:
+
+```text
+# Bash stderr after the native hook's membership prefix
+/bin/bash: line 1: .../codex/cgroup.procs: Read-only file system
+```
+
+The payload did not execute;
+the prefix returned status 70.
+The native `thread/settings/update` API accepted the additional writable child directory,
+but its sandbox-policy contract applies to subsequent turns.
+Rejoining with `thread/resume` showed the updated policy while the ongoing turn still used its old snapshot.
+Restarting the session provides the new turn boundary.
+The first post-restart check must use a default sandboxed command and read `/proc/self/cgroup`.
+Do not treat an escalated command's successful attachment as proof that the old sandbox snapshot refreshed.
+
 ## Reproduction and verification
 
 ```sh

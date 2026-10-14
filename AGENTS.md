@@ -690,7 +690,8 @@ SCR:
 
 PIN:
  Pin tool versions only with a comment explaining why;
- never pin tools this repository publishes, since `mise.lock` records them.
+ never pin tools this repository publishes,
+ since `mise.lock` records them.
 
 SPG:
  Automation that spawns agent sessions needs explicit recursion guards (env var flag,
