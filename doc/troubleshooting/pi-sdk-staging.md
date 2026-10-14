@@ -91,7 +91,14 @@ Do not replace the failed identity comparison with content equality or remove pr
 The verified consumer correction follows the native normalization edge.
 Its tradeoff is an additional original reference retained for the request lifetime;
 it does not prove complete governing use of system text or tool declarations.
-The new copied-system control and guard-omission verification are pending at this checkpoint.
+The copied-system control also passes:
+an equal replacement system message leaves its contribution unresolved,
+preserves the independent user contribution,
+and executes no child.
+Process-local omission of `&&originalSystem` makes that copied message incorrectly accounted
+and fails the native contribution assertion.
+`${HOME}/temp/agent/pi-serialization-controls-20261014/verification.json`
+records the expected failure and unchanged artifact hash.
 
 ### Upstream filing decision
 

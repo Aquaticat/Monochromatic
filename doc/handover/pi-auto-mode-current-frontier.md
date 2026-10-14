@@ -141,7 +141,16 @@ This corrected an initial comparison against the wrong transcript boundary:
 Pi's normalizer creates a new array when collapsing system messages.
 The rebuilt native SDK control passes with five accounted contributions and three executed children.
 Built emission tests and copied-payload/transcript controls pass without provider requests.
-The new copied-system control and omission verification remain pending.
+The copied-system control now retains an unresolved system contribution and the unaffected accounted user contribution,
+executing no child.
+Process-local omission of the system-emission guard makes the copied system incorrectly accounted
+and fails the native assertion;
+`${HOME}/temp/agent/pi-serialization-controls-20261014/verification.json`
+records the unchanged artifact hash.
+Scoped TypeScript lint and package types pass.
+The next original-owner link is from serialized tools to their host input receipts:
+the new serializer receipt identifies actual declaration objects,
+but those objects do not yet carry their original source occurrences through native declaration copying.
 Complete system and tool governing-use accounting is still required before removing the independent obligation.
 
 ## Original native RPC approval verification
