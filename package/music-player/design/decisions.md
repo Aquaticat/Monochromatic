@@ -3323,6 +3323,37 @@ The human answered four questions that had been open as orchestrator adoptions.
 - Android `targetSdk` stays on 36 with no extra emulator passes for API 33, 34 and 36; D107 on those levels remains
   unverified.
 
+### D122. The report of a file that cannot be played is a system notification, not an overlay (2026-10-14)
+
+The human asked for it: the in-window message "`name` can't be played." appeared at launch for a library file that could
+not be decoded, and it was misplaced on screen.
+Owner decision, so there is no veto window.
+
+- D83's overlay no longer carries the unplayable-file message.
+  The window draws nothing for the report; the row keeps its "Can't be played" mark, which stays as the only in-window
+  sign (D113's mark and its removal when a peak is measured are unchanged).
+- Why: the report happens at launch and during sweeps, not in answer to anything the person just did, so it belongs in
+  the desktop's notification area (D107's reasoning for the analysis indicator) and not on top of the player.
+  D113's rule of one report per file in plain words stands; only the surface changes.
+- Linux sends one `org.freedesktop.Notifications.Notify` call per report: the app's name, icon and desktop entry, the
+  fixed title `Cannot play a file` (it names no file and no folder), the old wording as the text (one file named;
+  several collapse to a count that names the first, D9), normal urgency, the server's default expiry and no action
+  buttons.
+  Files in one engine report give one notification.
+  Each file is announced once for a run of the app, so a repeated report, a folder opened again or a file that decodes
+  and then breaks again posts nothing more; its row is marked each time.
+- The call runs on its own thread with its own session bus connection and a bounded wait, so the engine and the window
+  never wait on the bus, and a failure here never disables the analysis indicator (D107) or the other way round.
+- When the notification cannot be posted (no bus, no notification service, any failure) nothing is shown in the window:
+  one warning is logged and the row mark is the only sign.
+  There is no in-window fallback in any case.
+- Platform limit: macOS and Windows have no notification code yet (the analysis indicator has none either, D107 leaves
+  it to a later step), so there the row mark is the only sign and the unplayable-file message is not shown at all.
+  This was not run on either system.
+- What stays an overlay: every other D83 message, including the removed-file message (`file_gone_message`) and the
+  file-action errors.
+- Android is handled in D123.
+
 ## Pending after the theme picks (2026-09-04)
 
 - **Order of remaining work** — my recommendation:

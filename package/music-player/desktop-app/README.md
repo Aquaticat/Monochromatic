@@ -266,6 +266,13 @@ The crate is a library plus a thin binary so the pure logic is unit-testable wit
    the wire file holds the D-Bus messages (Linux only),
    and the handle runs them on its own thread so the window and the sweep workers never wait on the bus.
    Protocol facts and pitfalls: `doc/troubleshooting/plasma-job-view-progress-protocol.md`.
+- `src/unplayable_notification_logic.rs`, `src/unplayable_notification_wire.rs`, `src/unplayable_notification.rs`:
+   the "cannot be played" report as one freedesktop notification (D122), which replaced the in-window message.
+   The logic file holds the wording and a ledger that tells each file once per run,
+   the wire file holds the one `Notify` call (normal urgency, the server's default expiry, no action buttons,
+   a `desktop-entry` hint), and the handle runs it on its own thread and connection, separate from the analysis
+   indicator's, so a failure of one never disables the other.
+   Its tests run against a private `dbus-daemon` (`src/unplayable_notification_bus_support.rs`), never the session bus.
 - `src/peak_swap.rs`:
    current-track peak swap orchestration.
    Cache hits return the measured gain immediately;
@@ -813,9 +820,15 @@ gain are worked out again, the seek bar takes the new length, and no message is 
 changes nothing until the next event. A paused selected track keeps its position when the new file has it and starts again
 from zero when it does not.
 
-A file that cannot be decoded is skipped, named in a message ("`name` can't be played."; several files collapse to a
-count),
-and its row shows "Can't be played".
+A file that cannot be decoded is skipped, and its row shows "Can't be played".
+The window draws no message for it.
+On Linux the same report is one desktop notification titled "Cannot play a file", whose text is "`name` can't be
+played." (several files collapse to a count that names the first) (D122).
+It is posted once per file for a run of the app, even if the engine reports the file again, and it names no folder.
+If no notification service answers, one warning goes to the log and nothing else is shown;
+the row mark is the only sign.
+macOS and Windows have no notification code yet (the analysis indicator has none either), so there the row mark is the
+only sign of an unplayable file, and no message is shown.
 When the selected file leaves the folder, the row disappears, playback stops, the elapsed time resets, a message names
 the file,
 and the view moves to the neighboring folder if the folder on screen is gone.

@@ -204,6 +204,13 @@ and the decisions D106 to D119 at the end of `package/music-player/design/decisi
   the `containerCargo` fallback (it mounts `truepeak-core` and the Android fixture); `states/window-title` and
   `states/natural-order` were harness races and pass 20 of 20; nested compositor 0.4.0 is published and installed, and
   the runner checks capability by version with no pin; the e2e suite has 110 checks (110 pass, 1 not injectable).
+- Desktop unplayable-file notification (2026-10-14, branch `feat/desktop-unplayable-notification`, not merged; D122): the
+  in-window "`name` can't be played." message is gone and the report is one freedesktop notification on Linux
+  (`src/unplayable_notification*.rs`, own thread and connection, title `Cannot play a file`, normal urgency, default
+  expiry, no buttons, each file told once per run); the row mark stays. A failed post logs one warning and shows
+  nothing in the window. macOS and Windows show only the row mark (no notification code there yet). The bus tests
+  start a private `dbus-daemon`, so the container image now installs it. The e2e suite posts these notifications and
+  the analysis indicator to whatever session bus it inherits.
 
 ### Open, not started
 
