@@ -617,21 +617,26 @@ class PlaybackService : MediaSessionService() {
         controller.onPersist = { saveSession() }
         controller.searchHost = searchHost
         scanner = LibraryScanner(controller, searchHost)
-        // What:     `val built: MediaSession = MediaSession.Builder(this, brainPlayer).build()`
+        // What:     `val built: MediaSession = MediaSession.Builder(this, brainPlayer).setCallback(...).build()`
         //           declares a read-only `MediaSession` local `built`. `MediaSession.Builder(this, brainPlayer)`
         //           constructs a builder seeded with the service context and the projected
-        //           player; `.build()` finalises it into the immutable `MediaSession`.
-        // Why:      Create the session that exposes the brain to the system.
+        //           player; `.setCallback(PlatformSessionCallback())` installs the connection policy;
+        //           `.build()` finalises it into the immutable `MediaSession`.
+        // Why:      Create the session that exposes the brain to the system. The callback keeps the playing queue
+        //           out of the platform session, so a track change does not copy a 10 000-track queue.
         //
         // In TS you'd write (pseudocode):
         // ```ts
-        // const built: MediaSession = new MediaSession.Builder(this, this.brainPlayer).build();
+        // const built: MediaSession = new MediaSession.Builder(this, this.brainPlayer)
+        //   .setCallback(new PlatformSessionCallback()).build();
         // ```
         /**
          * Defines built value for this music-player component; the TypeScript-oriented notes above explain its
          * source and use.
          */
-        val built: MediaSession = MediaSession.Builder(this, brainPlayer).build()
+        val built: MediaSession = MediaSession.Builder(this, brainPlayer)
+            .setCallback(PlatformSessionCallback())
+            .build()
         // What:     `session = built` stores the freshly built session into the nullable
         //           `session` field.
         // Why:      Keep the session so `onGetSession`/`onDestroy` can use it.
