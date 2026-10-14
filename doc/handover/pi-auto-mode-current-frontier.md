@@ -250,9 +250,18 @@ The original manager then supports a replacement session,
 while foreign managers and the retired lease remain rejected.
 Additional committed controls retain observation custody after incomplete disposal
 and demonstrate that repeated completed disposal entered old cleanup.
-The completed-disposal guard is being verified before continuing the CLI integration.
-Normal SDK provider dispatch,
-the actual host entry,
+The completed-disposal guard passes the native handoff,
+incomplete-cleanup,
+and repeated-disposal controls.
+The normal SDK stream now passes the same permission case with original serializer contributions:
+five contribution uses are accounted,
+all prepared children execute,
+and the fixture makes no external provider request.
+Required-red `90cd721a44` proved that the earlier direct-stream identity check omitted those contributions.
+Commits `ed7c9688c5` and `a603ce5343` bind the payload at its native serializer occurrence,
+retaining the original serializer input before Pi creates a normalized message array.
+The package type check also passes.
+The actual host entry,
 lint completion,
 and installed human approval remain outstanding.
 

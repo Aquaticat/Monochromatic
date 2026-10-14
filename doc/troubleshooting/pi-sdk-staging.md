@@ -6163,3 +6163,66 @@ Nothing is filed or drafted upstream.
 - Prototype:
   the owned staging and receipt controls exercise the local corrections;
   they do not justify an upstream patch.
+
+## Maintained native build after the installed release changes
+
+### Failure and scope
+
+The installed Pi command later reported `1.1.0`,
+while the integration's compiled source and dependency links still targeted `1.2.0`.
+Node also reported `ERR_MODULE_NOT_FOUND` for an earlier parser dependency path.
+These failures concern owned staging paths;
+the earlier Pi 1.2.0 results retain their original version boundary.
+
+The maintained build is `package/pi-plugin/auto-mode/native/build.ts`.
+Its source emitter in `native/build-source.ts` verifies Pi 1.1.0 and source commit
+`abe508e1b89912adde45528136c3221eb69acdd7`
+before compiling the upstream Agent,
+AI,
+and coding-agent module trees.
+It copies generated model catalogs from the matching installed AI package.
+Installed Pi sources are never patched.
+
+### Verified correction
+
+`mise run //package/pi-plugin/auto-mode:build:native` emits the upstream modules,
+copies maintained owned inputs,
+and applies the native transformations inside the package's `dist/native` directory.
+The optional `PI_AUTO_MODE_SOURCE` points at a source checkout only during this build;
+the emitted host does not read that checkout.
+The build rejects a mismatched source revision or installed Pi release.
+`build:native:owned` rebuilds owned transformations against the existing emitted upstream source.
+
+The first maintained build,
+package type check,
+and permission/prohibition/unspecified fixtures passed.
+The disposable fixture was then moved outside the repository after its original location inherited
+the repository's ancestor `AGENTS.md`.
+The normal SDK provider case now passes with 33 captured sources and five accounted contribution uses.
+It invokes Pi's SDK and model runtime,
+while a local fixture supplies the transport response and no external provider is called.
+
+### Source normalization and lifecycle boundaries
+
+Pi's `resolveTranscript` creates another message array through `collapseSystemMessages`.
+Comparing that array with the original request input failed the SDK contribution check.
+The maintained serializer now retains the input occurrence before normalization,
+with a private payload receipt tying it to the actual native serializer call.
+This preserves normal SDK authentication and provider dispatch.
+
+The CLI also reuses an in-memory manager when replacing a forked session.
+The original observer attachment outlived its disposed session,
+producing `Original manager already has a context-copy owner`.
+The maintained source transformation releases that attachment only after disposal completes.
+Native tests cover reuse,
+foreign-manager rejection,
+retired leases,
+incomplete disposal,
+and repeated completed disposal.
+These are owned integration corrections,
+not evidence of upstream Pi defects.
+
+The actual CLI bootstrap,
+complete package lint,
+and genuine human approval remain separate delivery checks.
+No upstream issue or patch is warranted by the verified local staging corrections.

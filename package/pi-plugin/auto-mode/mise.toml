@@ -82,3 +82,9 @@ run = "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/na
 
 [tasks."test:native:sdk-stream"]
 run = "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-batch/domain-frontier.test.mjs permission --require-resolution --sdk-stream"
+
+[tasks."docs:render:native"]
+run = [
+  "mkdir --parents .cache/native-docs",
+  "pandoc --from=commonmark --to=html --output=.cache/native-docs/integration.html README.md native/README.md ../../../doc/handover/pi-auto-mode-current-frontier.md ../../../doc/troubleshooting/pi-sdk-staging.md",
+]
