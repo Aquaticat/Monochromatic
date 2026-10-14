@@ -31,6 +31,7 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.robolectric.Robolectric
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 
@@ -192,6 +193,33 @@ class PlayerHostWiringTest {
             composeTestRule.onAllNodes(hasText(titleOf(40)) and isSelected()).fetchSemanticsNodes().size == 1
         }
         assertEquals(0, countNodesWithText(titleOf(0)))
+    }
+
+    // What:     `@Test fun theMeasureRefreshStartsAtTheFirstVisibleTrack()` checks the list reports its top row to the host.
+    // Why:      The host provides a cell through `LocalFirstVisibleTrack`, the list writes the library index of its first
+    //           visible track into it, and each batch of the measure refresh starts there; with no cell or a wrong
+    //           value a pass starts at the top of a page of thousands of tracks and the rows on screen wait.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // test("refresh starts on screen", () => { render(host, { rows: 60, playing: 40 }); sweepStep(); expect(firstRead()).toBe("alpha/40"); });
+    // ```
+    /** After the list opens on track 40, the next pass reads that track first and not the top of the page. */
+    @Test(timeout = CASE_LIMIT_MS)
+    fun theMeasureRefreshStartsAtTheFirstVisibleTrack() {
+        /** Provider that records the order in which the refresh asks about the tracks' files. */
+        val provider: RecordingProvider = Robolectric.setupContentProvider(RecordingProvider::class.java, "invented")
+        controller.openLibrary(alpha(count = 60))
+        controller.playIndex(40)
+        showHost()
+        composeTestRule.waitUntil(timeoutMillis = WAIT_LIMIT_MS) {
+            composeTestRule.onAllNodes(hasText(titleOf(40)) and isSelected()).fetchSemanticsNodes().size == 1
+        }
+        composeTestRule.waitUntil(timeoutMillis = WAIT_LIMIT_MS) { provider.queried.size >= 60 }
+        provider.queried.clear()
+        change { SweepProgress.report(done = 1, total = 60) }
+        composeTestRule.waitUntil(timeoutMillis = WAIT_LIMIT_MS) { provider.queried.isNotEmpty() }
+        assertEquals("content://invented/alpha/40", provider.queried.first())
     }
 
     // What:     `@Test fun aTrackAddedToTheShownFolderAppearsAsARow()` checks the rows are rebuilt when the page changes.

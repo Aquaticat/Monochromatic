@@ -10,9 +10,14 @@
 // ```
 package dev.monochromatic.musicplayer.wiring
 
+import android.content.ContentProvider
+import android.content.ContentValues
+import android.database.Cursor
+import android.net.Uri
 import dev.monochromatic.musicplayer.core.PageEntry
 import dev.monochromatic.musicplayer.core.TrackListEntry
 import dev.monochromatic.musicplayer.core.TrackRowModel
+import java.util.concurrent.CopyOnWriteArrayList
 
 // What:     `internal const val WAIT_LIMIT_MS: Long = 10_000` is the longest wall-clock wait of one condition.
 // Why:      A mutant that stops a scroll or a marker from ever happening must fail the wait, not hang the Gradle run.
@@ -121,4 +126,45 @@ internal fun foldedPage(): List<TrackListEntry> =
 /** Page entries of [count] invented tracks in [folder], whose display paths are `folder/Track NN.mp3`. */
 internal fun pageItemsOf(count: Int, folder: String): List<PageEntry> = (0 until count).map { track ->
     PageEntry(index = libraryIndexOf(track), name = "$folder/${titleOf(track)}.mp3")
+}
+
+// What:     `internal class RecordingProvider : ContentProvider()` is a content provider that only records its queries.
+// Why:      The measure refresh asks the content resolver about each track's file first; the order of those questions
+//           is the order the refresh read the tracks in, which is how a case sees where a pass started.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// class RecordingProvider { queried: string[] = []; query(uri: string) { this.queried.push(uri); return null; } }
+// ```
+/** Answers every query with no rows and keeps the URIs asked about, in order, for a case to read. */
+internal class RecordingProvider : ContentProvider() {
+    /** URIs queried so far, appended from the reader threads of the refresh and read from the test thread. */
+    val queried: MutableList<String> = CopyOnWriteArrayList()
+
+    /** Reports the provider as ready; it holds nothing to set up. */
+    override fun onCreate(): Boolean = true
+
+    /** Records [uri] and answers with no cursor, which the refresh reads as an unknown file. */
+    override fun query(
+        uri: Uri,
+        projection: Array<out String>?,
+        selection: String?,
+        selectionArgs: Array<out String>?,
+        sortOrder: String?,
+    ): Cursor? {
+        queried += uri.toString()
+        return null
+    }
+
+    /** Has no type for any URI. */
+    override fun getType(uri: Uri): String? = null
+
+    /** Refuses inserts, which the refresh never makes. */
+    override fun insert(uri: Uri, values: ContentValues?): Uri? = null
+
+    /** Refuses deletes, which the refresh never makes. */
+    override fun delete(uri: Uri, selection: String?, selectionArgs: Array<out String>?): Int = 0
+
+    /** Refuses updates, which the refresh never makes. */
+    override fun update(uri: Uri, values: ContentValues?, selection: String?, selectionArgs: Array<out String>?): Int = 0
 }
