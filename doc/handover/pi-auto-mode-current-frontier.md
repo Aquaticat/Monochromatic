@@ -1153,7 +1153,11 @@ Automatic review accepted that isolated execution.
 The isolated fixture loads all 22 extension entries and observes their registered event kinds.
 Synthetic's public model-catalog lookup is blocked and retained as an expected exact URL;
 no provider inference is dispatched.
-The consumer assertion remains under investigation.
+The consumer test fails at its original source-domain assertion:
+all 22 registered event kinds other than the separately captured `before_agent_start` lack complete receipts.
+The actual native review retains its unresolved source-domain issue.
+Complete capture at the original event invocation and settlement boundaries is the next implementation step;
+the existing guard remains in force.
 The fixture and logs are `${HOME}/temp/agent/pi-extension-isolation-20261014.test.ts`
 and `${HOME}/temp/agent/pi-configured-extensions-isolated-20261014.log`.
 Independent maintained bootstrap quality work also continues.

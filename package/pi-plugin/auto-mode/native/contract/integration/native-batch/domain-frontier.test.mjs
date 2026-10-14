@@ -251,10 +251,9 @@ try{
     0
   );
  }else{
-  assert.equal(
-    domainIssue,
-    undefined,
-    'The original host domain needs code-owned decision-specific accounting, not an unconditional domain hold'
+  assert.ok(
+    domainIssue===undefined,
+    `Original native event accounting is incomplete: ${JSON.stringify(domainIssue?.sourceDomain?.gaps)}`
   );
   if(observedContext){
    assert.ok(contextCalls>=3,'Original native context and context_with_system callbacks must run');
