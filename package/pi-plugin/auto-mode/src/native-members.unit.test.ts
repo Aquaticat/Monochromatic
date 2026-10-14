@@ -95,7 +95,7 @@ await describe({
         /**
          Original escaped names select the same decoded member without exposing comments or strings to replacement.
          */
-        const source = 'class State { #state; #π; read(other) { /* this._state */ const text = "this._state"; other._state; this["_state"]; this._st\\u0061te; this._state; this._pi; } }';
+        const source = String.raw`class State { #state; #π; read(other) { /* this._state */ const text = "this._state"; other._state; this["_state"]; this._st\u0061te; this._state; this._pi; } }`;
         /**
          Renamed source contains only grammar-checked private destination identifiers.
          */
@@ -104,7 +104,7 @@ await describe({
         expect(parse(output, { sourceType: 'module', semanticErrors: true }).diagnostics).toEqual([]);
       },
     }),
-    ...['constructor', '1state', 'state; #other', 'state = 1', 'state() {}', 'st\\u0061te', 'state; } globalThis.injected = true; class Other { #state'].map(function invalidDestination(destination) {
+    ...['constructor', '1state', 'state; #other', 'state = 1', 'state() {}', String.raw`st\u0061te`, 'state; } globalThis.injected = true; class Other { #state'].map(function invalidDestination(destination) {
       return it({
         name: `rejects private destination syntax ${destination}`,
         fn: async function requireOnePrivateIdentifier() {

@@ -33,25 +33,48 @@ function privateMemberName(name: string): string {
   /**
    Destination grammar validation remains distinct from parsing the original module.
    */
-  const rl = tagged({ tag: privateMemberName.name, l });
+  const rl = tagged({
+    tag: privateMemberName.name,
+    l
+  });
   rl.debug('validating renamed native private identifier');
   /**
    The parser checks destination syntax without executing interpolated text.
    */
-  const parsed = parse(`class NativePrivateName { #${name}; }`, { sourceType: 'module', semanticErrors: true });
+  const parsed = parse(
+    `class NativePrivateName { #${name}; }`,
+    {
+      sourceType: 'module',
+      semanticErrors: true
+    }
+  );
   /**
    Additional declarations or fields cannot be accepted as identifier text.
    */
-  const declaration = parsed.program.body[0];
-  if (parsed.diagnostics.length > 0 || parsed.program.body.length !== 1
-    || declaration?.type !== 'ClassDeclaration' || declaration.body.body.length !== 1)
+  const [declaration] = parsed.program.body;
+  if ((parsed.diagnostics
+    .length
+    > 0) || (parsed.program
+      .body
+      .length
+      !== 1)
+    || (declaration?.type !== 'ClassDeclaration')
+    || (declaration.body
+      .body
+      .length
+      !== 1))
     throw new NativeBatchBuildError(`Native private destination is not one identifier: ${name}`);
   /**
    The exact decoded name rejects initializers, methods, and source-escaped alternate spellings.
    */
-  const field = declaration.body.body[0];
-  if (field?.type !== 'PropertyDefinition' || field.key.type !== 'PrivateIdentifier'
-    || field.key.name !== name || field.value !== null)
+  const [field] = declaration.body.body;
+  if ((field?.type !== 'PropertyDefinition') || (field.key
+    .type
+    !== 'PrivateIdentifier')
+    || (field.key
+      .name
+      !== name)
+    || (field.value !== null))
     throw new NativeBatchBuildError(`Native private destination is not one identifier: ${name}`);
   return `#${name}`;
 }
@@ -115,7 +138,10 @@ export function privatizeNativeMembers({
   const destinations = new Map<string, string>();
   if (renames !== undefined) {
     for (const [original, destination] of Object.entries(renames))
-      destinations.set(original, privateMemberName(destination));
+      destinations.set(
+        original,
+        privateMemberName(destination)
+      );
   }
   /**
    Each original member identifier supplies its own unique source interval.
@@ -139,7 +165,8 @@ export function privatizeNativeMembers({
         .start,
       end: node.property
         .end,
-      text: destinations.get(node.property.name) ?? `#${source.slice(
+      text: destinations.get(node.property
+        .name) ?? `#${source.slice(
         node.property
           .start,
         node.property
