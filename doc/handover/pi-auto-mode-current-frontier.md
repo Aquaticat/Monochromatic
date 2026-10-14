@@ -1079,6 +1079,25 @@ and `resource-reload.mjs` report 111 warnings and one error.
 The error is the positional `reloadHostResource` interface;
 most warnings concern their untyped ownership and generated dependency boundaries.
 Their maintained interfaces remain the next independent package-quality work.
+The resource registration and reload boundary now lives in `resource-reload.ts`.
+It retains the same WeakMap,
+original record freezing,
+and policy-versus-standalone routing,
+with a destructured reload input at both generated native call sites.
+Direct SDK fixtures can still register only their policy reload;
+CLI ownership capabilities remain optional in the shared record contract.
+New built-artifact controls cover original receiver,
+options,
+result,
+registration identity,
+duplicate rejection,
+and unchanged thrown values.
+The first format check exposed a missing documentation terminator in this edit;
+it is corrected.
+Final formatting,
+types,
+native rebuild,
+and consumer verification remain next.
 
 The first approved native dispatch failed because the inherited test loader derived dependency paths
 from the codemode worker's disposable home.
