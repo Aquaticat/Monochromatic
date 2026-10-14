@@ -76,8 +76,19 @@ Positive controls, to show the probe sees a delay that is introduced on purpose:
 
 ## What the application contributes
 
-The re-wrap finishes about 5 ms before the gated draw can begin, so with the gate closed it adds nothing to the
-latency, and with the gate open it is about half of a latency that still leaves more than half of the captures behind.
+The width reaches the Rust code at once.
+`ui/app.slint:408` (`changed width`) reports the layout width of the source `Flickable`, which Slint updates when it
+handles the size event, so `bind_viewport` and `place_scrolled` have it a median 0.4 ms after the command.
+At every one of 715 draws in five sessions (three 16 ms and two 100 ms), the width the view had last reported was the
+toolkit's window width minus 333 px, and the buffer committed after the draw had that window width.
+The wrap width of a draw was therefore never one step behind its own size event.
+
+The re-wrap (or the tile build that takes its place in some steps) usually ends about 5 ms before the gated draw can
+begin, so it adds nothing to the latency then.
+It does add some: in 9 to 12 of the 79 to 80 draws of each 16 ms session the draw began more than 1.5 ms after the
+callbacks (up to 8 ms), and 13 to 18 of the 84 callbacks arrived while such a step was still running.
+Three captures per session were two steps behind rather than one.
+With the gate open the step is about half of a latency that still leaves more than half of the captures behind.
 Nothing the application can set removes the delay: the gate is inside winit, and the mismatch between canvas and buffer
 is created by the compositor's `set_mode` at command time.
 

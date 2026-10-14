@@ -1565,10 +1565,18 @@ about 1.2 s in a debug build, and the window thread does it once, when the tile 
 #### A new width on the window thread
 
 A resize must not show one frame of text wrapped for the old width.
-Slint runs the change handlers inside the draw of a frame,
-so the viewport-changed callback of a new window or sidebar size runs before the frame at that size is drawn,
-and the window thread breaks the lines near the view again and paints the tile for the new width in that same draw
+Slint runs the change handlers before the frame at the new size is drawn:
+inside the draw when the windowing system lets the redraw run at once,
+and in the event loop pass that follows the size event when it holds the redraw back
+(in the nested compositor's 16 ms drag the view reported its new width 0.4 ms after the command,
+about 9 ms before the redraw request).
+So the viewport-changed callback of a new window or sidebar size runs before the frame at that size is drawn,
+and the window thread breaks the lines near the view again and paints the tile for the new width before that frame
 (`src/native/rewrap.rs`, `render::render`).
+The width is the layout width of the `Flickable` that `ui/app.slint` reports through `changed width`
+(`viewport-changed`, `bind_viewport`, `place_scrolled`),
+and at every one of 715 recorded draws of five sessions the width the view had last reported was the window width
+the toolkit drew minus 333 px (sidebar and gutter), so the wrap width never arrived a frame late.
 
 - `place_scrolled` marks `State::rewrap` when the wrap width differs from the width of the displayed tile.
   The next render asks `rewrap::begin` for an `Allowance`, which holds at most `REWRAP_LINES` (384) lines
