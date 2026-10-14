@@ -38,7 +38,7 @@ export class NativeScriptValueGuardError extends AggregateError {
   /**
    Owned frozen list retains every original caught value, including nullish and primitive throws.
    */
-  override readonly errors: unknown[];
+  declare readonly errors: unknown[];
 
   /**
    Retain caught failures while naming the original call or enclosing program result.
@@ -55,13 +55,9 @@ export class NativeScriptValueGuardError extends AggregateError {
      Only original call metadata enters the diagnostic; captured result content stays separate.
      */
     const input = call ? `tool ${JSON.stringify(call.name)} call ${JSON.stringify(call.id)}` : 'original program result';
-    /**
-     The list is owned here so freezing it never freezes a caller's collection or caught values.
-     */
-    const failures = [...errors];
-    super(failures, `Native result binding for ${input} was rejected. Resolve the original source, lifetime, ownership or supported-value failure; do not replace its judgment with a fresh budget.`);
-    this.errors = failures;
-    Object.freeze(failures);
+    super(errors, `Native result binding for ${input} was rejected. Resolve the original source, lifetime, ownership or supported-value failure; do not replace its judgment with a fresh budget.`);
+    // AggregateError owns this copied array and its original non-enumerable property descriptor.
+    Object.freeze(this.errors);
   }
 }
 
