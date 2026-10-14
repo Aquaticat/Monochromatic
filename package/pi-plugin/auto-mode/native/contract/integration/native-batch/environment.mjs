@@ -14,7 +14,9 @@ export async function createEnvironment({agentsFilesOverride,appendSystemPromptO
  process.umask(0o077);
  const repositoryRoot=maintainedRoot;
  const pkg=currentSdk;
- const root=mkdtempSync(join(import.meta.dirname,'fixture-private-')),cwd=join(root,'workspace'),home=join(root,'home'),agentDir=join(root,'agent');
+ const fixtureParent=join(homedir(),'temp/agent');
+ mkdirSync(fixtureParent,{recursive:true,mode:0o700});
+ const root=mkdtempSync(join(fixtureParent,'pi-native-fixture-')),cwd=join(root,'workspace'),home=join(root,'home'),agentDir=join(root,'agent');
  for(const path of [cwd,home,agentDir])mkdirSync(path,{mode:0o700});
  for(const name of Object.keys(process.env))if(!['PATH','LANG'].includes(name))delete process.env[name];
  process.env.HOME=home;process.env.PI_CODING_AGENT_DIR=agentDir;process.env.PI_NATIVE_BATCH_FIXTURE='1';

@@ -24,7 +24,8 @@ function prepareSdkResult(result){
  * Bind actual SDK construction to incumbent constructor, root and cleanup owners.
  * Bootstrap selects native readers once. Publication has no fallible work after it.
  */
-export function createRootSessionFactory({createAgentSession,SessionManager,readActiveSessionManager,readRootOccurrence,readSessionDisposalState}){
+export function createRootSessionFactory({createAgentSession,SessionManager,readActiveSessionManager,readRootOccurrence,readSessionDisposalState,onSessionRegistered}){
+ if(onSessionRegistered!==undefined&&typeof onSessionRegistered!=='function')throw new NativeSessionRootError('Session registration observer must be fixed by the original bootstrap');
  const owner=createManagerConstructorOwner(SessionManager),sessions=new WeakMap();
  const accounting={registryRequests:0,returnedRegistries:0,canonicalManagerStatesCreated:0,reusedCanonicalStateBinds:0};
  const lifecycle=createNativeManagerRegistry({
@@ -42,10 +43,9 @@ export function createRootSessionFactory({createAgentSession,SessionManager,read
    if(readSessionDisposalState(session).completed!==true)throw new NativeSessionRootError('Original SDK disposal did not complete; retry owned construction cleanup');
   }
  });
- async function create({options,createManager=constructors=>constructors.inMemory(options.cwd)}){
+ async function createFromManager({options,manager}){
   if(scopes.diagnostics().pendingCleanup)throw new NativeSessionRootError('Native construction cleanup is pending; retry it before creating another session');
   if(options.sessionManager!==undefined||options.ownerFactoryScope!==undefined)throw new NativeSessionRootError('Session and construction ownership are selected through this factory, not SDK option overrides');
-  const manager=createManager(owner.managers);
   owner.assertOwned(manager);
   const scope=scopes.begin({manager});
   let registered;
@@ -55,6 +55,7 @@ export function createRootSessionFactory({createAgentSession,SessionManager,read
      if(registered)throw new NativeSessionRootError('SDK construction emitted more than one original session');
      if(sessions.has(session))throw new NativeSessionRootError('SDK construction cannot reuse a session already owned by this factory');
      sessions.set(session,manager);scope.registerSession(session);registered=session;
+     onSessionRegistered?.({session,manager,lifecycle,options});
     }}
    });
    const prepared=scope.accept(result),root=Object.freeze({session:prepared.session,manager});
@@ -68,5 +69,8 @@ export function createRootSessionFactory({createAgentSession,SessionManager,read
    throw error;
   }
  }
- return Object.freeze({create,lifecycle,retryCleanup:scopes.retryCleanup,diagnostics:scopes.diagnostics});
+ async function create({options,createManager=constructors=>constructors.inMemory(options.cwd)}){
+  return await createFromManager({options,manager:createManager(owner.managers)});
+ }
+ return Object.freeze({create,createFromManager,managers:owner.managers,lifecycle,retryCleanup:scopes.retryCleanup,diagnostics:scopes.diagnostics});
 }
