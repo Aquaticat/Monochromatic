@@ -61,7 +61,7 @@ The operating instructions live in `doc/runbook/claude-cpu-cap.md`.
   check that ends the watch if nothing weird happened. Its job id changes at every push, so read it with CronList;
   this file records the rule, not each id. The first setting was 21:19 EDT; since then it moved after the alerts at
   18:02:37 (CPU pressure), 19:16:45 (memory pressure), 20:11:41 (CPU pressure), 20:15:27 (temperature) and 20:24:45
-  (throttle), and the throttle alert flapped at 100 MHz. After the alert at 20:30:18 it stands at 00:34 EDT
+  (throttle), and the throttle alert flapped at 100 MHz. After the CPU pressure alert at 20:38:31 it stands at 00:41 EDT
   on 2026-10-14 (the latest weird event so far).
 - The 20:11:41 CPU pressure alert (46.1, limit 40) came at cap 30 and 130 W. It was the first sustained load in the
   log: about 55 seconds at 125 to 136 W, load average up to 57 on 32 threads, pressure up to 67.8, and it cleared at
