@@ -103,10 +103,6 @@ mod syntax_loader;
 /// User-facing parser diagnostics distinguish limits from missing assets.
 mod syntax_error;
 
-/// Temporary Markdown layer measurement.
-#[cfg(test)]
-mod syntax_probe;
-
 /// Language-server feature paths run on one worker thread and are polled;
 ///  server edits are refused.
 pub mod language;
