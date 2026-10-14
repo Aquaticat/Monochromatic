@@ -49,6 +49,36 @@ An upstream change is possible but unnecessary for supported post-load overrides
 Contribution policy and willingness were not investigated,
 and no upstream patch prototype is needed for the verified caller-side correction.
 
+### Maintained Pi 1.2.0 process fixture
+
+The maintained CLI fixture had the same ordering defect independently of the offline capture.
+After rebuilding the owned artifact,
+`mise run //package/pi-plugin/auto-mode:test:native:process-network`
+failed with Node's `AssertionError [ERR_ASSERTION]: Pi replaced the CLI fixture network blocker`.
+The received function was Undici's `fetch`;
+the expected function was the fixture's `rejectFixtureNetwork`.
+The assertion runs before its data-URL probe,
+so this regression makes no external request even in the failing state.
+
+The emitted Pi 1.2.0 dispatcher at
+`package/pi-plugin/auto-mode/dist/native/pi/coding-agent/dist/core/http-dispatcher.js:94`
+uses the same original-function comparison:
+
+```javascript
+// Emitted Pi 1.2.0 core/http-dispatcher.js:94
+const shouldInstallGlobals = installedGlobalFetch === undefined
+    ? globalThis.fetch === originalGlobalFetch
+    : globalThis.fetch === installedGlobalFetch;
+```
+
+The owned guard now loads that original module before installing the blocker.
+Its source is `package/pi-plugin/auto-mode/native/contract/integration/native-host/process-network-guard.ts`.
+The regression covers initial setup,
+reconfiguration,
+actual fetch rejection,
+and rejection of use outside the explicitly marked fixture child.
+Post-fix verification is pending.
+
 ## Pi 1.1.0 retained callback options shift an owned source fixture
 
 ### Symptom and cause

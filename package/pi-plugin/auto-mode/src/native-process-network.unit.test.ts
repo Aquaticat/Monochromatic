@@ -13,7 +13,7 @@ import spawn, { SubprocessError } from 'nano-spawn';
 const CHILD_DEADLINE_MS = 10_000;
 
 /** Resolve the maintained native fixture from the package's built artifact. */
-const guard = new URL('../dist/native/contract/integration/native-host/process-network-guard.mjs', import.meta.url);
+const guard = new URL('../dist/native/contract/integration/native-host/process-network-guard.ts', import.meta.url);
 
 /** Exercise the exact dispatcher imported by the built CLI. */
 const dispatcher = new URL('../dist/native/pi/coding-agent/dist/core/http-dispatcher.js', import.meta.url);
