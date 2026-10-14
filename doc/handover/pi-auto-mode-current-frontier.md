@@ -126,6 +126,21 @@ policy,
 source membership,
 and admission cutoff remain unchanged.
 
+Local replay captured 73 source occurrences and 84 questions in 504,946 bytes.
+Exact reconstruction checks preserved the complete state and every question in experimental encodings.
+The shared-content candidate measured 165,373 bytes,
+but its one frozen Jev request still returned `max_tokens_exceeded` in 1,269.832 ms.
+It is not installed or a verified workaround.
+The complete original request was then prepared for Drex with text-encoded question instructions,
+round-tripped exactly,
+and measured 541,947 bytes.
+The user explicitly approved this request after automatic approval review rejected recorded historical consent.
+The approved five-second call ended with `TimeoutError` after 5,005.129 ms and no usable response.
+No retry or production route change occurred.
+The user then renewed standing authorization to send anything needed to Drex and Jev and use credits freely.
+The next diagnostic observes complete-request completion beyond the production deadline;
+late results cannot authorize an action.
+
 ## Restart checkpoint after installing automatic Codex shell limits
 
 The user restarted the session and resumed work on 2026-10-13.
