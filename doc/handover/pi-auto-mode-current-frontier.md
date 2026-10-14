@@ -22,7 +22,22 @@ The migration therefore includes the serving adapter,
 fixed model binding,
 cutoff tests,
 and bounded question-format experiments retaining all input.
-No new provider trial has run since this choice.
+The explicitly authorized Luna format comparison is complete:
+three baseline requests admit four answers each at `0.80`,
+and three requests with existing rubrics repeated beside their questions admit six each.
+Every request returns all 84 answers inside five seconds,
+with identical answer data within each format's repeated runs.
+The primary permission estimate remains `0.83`.
+The [comparison record](../planning/pi-auto-mode-gateway-decisions-current-contract.md)
+retains the overlap in latency ranges and the mixed admission changes.
+The local implementation now selects Luna and `0.80`
+and contains the lossless Decisions adapter,
+but its build,
+type,
+lint,
+and consumer verification remain in progress.
+The first scoped formatter run includes stale built-export diagnostics and genuine new-code findings;
+it is not a passing check.
 
 ## Original native RPC approval verification
 

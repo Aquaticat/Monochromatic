@@ -34,6 +34,29 @@ it does not stop early when a score crosses the cutoff.
 Higher admission counts alone do not establish correctness.
 No represented tool operation executes during this study.
 
+Automatic approval review initially rejected the changed-payload export before execution.
+The user then explicitly authorized the prepared comparison.
+All six frozen requests completed with HTTP 200,
+exact model identity,
+all 84 answers,
+and no refusals.
+Baseline durations were 2,101.300,
+1,263.857,
+and 1,323.376 ms;
+explicit-rubric durations were 1,418.420,
+1,934.000,
+and 1,559.026 ms.
+The overlapping observed ranges do not establish a latency improvement.
+Each format returned byte-equivalent answer data across its three runs.
+The baseline admitted four answers at `0.80` each time;
+the explicit format admitted six.
+Four absence answers newly crossed the cutoff and two previously admitted answers fell below it.
+The primary permission answer remained `0.83`.
+The private `comparison.json` retains every changed answer.
+This formatting change alone does not resolve the complete assessment.
+It is not yet adopted in the maintained adapter,
+which currently implements the original lossless conversion.
+
 ## Scope and authorization
 
 On October 14,
