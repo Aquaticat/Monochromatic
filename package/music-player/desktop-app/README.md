@@ -403,12 +403,12 @@ The crate is a library plus a thin binary so the pure logic is unit-testable wit
    a track row has a cleaned title and a supporting line,
    and a subfolder header labels the tracks under it (D86),
    so deeper nesting stays visible.
-   The highlighted row is the currently selected and playing track,
+   The highlighted row is the currently selected track, playing or paused,
    and the transport deck names it (folder and title).
-   A single click on a row other than the highlighted one loads it and plays it at once,
-   replacing whatever was playing;
-   a click on the already-highlighted row toggles
-  play/pause.
+   A single click on a row other than the highlighted one selects it and loads it paused (D124),
+   stopping whatever was playing;
+   a click on the already-highlighted row toggles play and pause.
+   The Play item of the track menu and a Search result still start a row at once.
    No double-click handling exists or is needed.
    The window title shows the playing track's title (the one the deck shows, without folder, extension or the prefix
   its folder's files share, D86) while audio plays,
@@ -652,8 +652,8 @@ Browsing:
 
 In a focused list:
 
-- Up, Down, Home, End, PageUp and PageDown move the ring; Enter plays the row (on the playing row it pauses) or shows
-  the folder.
+- Up, Down, Home, End, PageUp and PageDown move the ring; Enter selects the row, and on the selected row it plays or
+  pauses it (D124), or shows the folder.
 - In the folder list a letter jumps to the first folder starting with it, and Left and Right move like Up and Down.
 - On a track row: Menu or Alt+Enter opens the row menu (Shift+F10 is not used, it is Run in JetBrains), Delete moves the
   file to the trash, Ctrl+Shift+C copies the file name, Ctrl+Shift+E shows the file in the file manager. File details

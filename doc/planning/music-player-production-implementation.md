@@ -193,6 +193,11 @@ and the decisions D106 to D119 at the end of `package/music-player/design/decisi
   fixture of 52 roots (`android-app/app/src/test/resources/theme-roles-vector.txt`) is checked by a test on each side, and
   the Rust drift test fails if either side changes alone.
 
+- A click or tap on a track row selects it paused and, on the selected row, toggles play and pause on both platforms
+  (D124, decided by the human on 2026-10-14; Enter on the focused row follows it; the track menu's Play and Search
+  results still start a track at once). `PlayerController.activateRow` (Android) and `play_row` (desktop) hold the rule;
+  the e2e suite declares one more check for it (111 declared).
+
 - Since then (D113 to D119): library and analysis follow files automatically (D113: no rescan or re-analyze command;
   the watcher names changed paths and a planner edits the list in place; at 1M tracks a replaced file costs 0.12 ms on
   the handler instead of 1.4 s; a replaced playing file is swapped in at the same position; every refresh retries

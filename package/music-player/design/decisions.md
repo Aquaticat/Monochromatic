@@ -3323,6 +3323,30 @@ The human answered four questions that had been open as orchestrator adoptions.
 - Android `targetSdk` stays on 36 with no extra emulator passes for API 33, 34 and 36; D107 on those levels remains
   unverified.
 
+### D124. A row click or tap selects, the selected row toggles play (2026-10-14)
+
+The human decided this on 2026-10-14, after asking that clicking a track always select it when it is still unselected,
+and that clicking a selected track toggle play and pause.
+It reverses the earlier README text that said a click on a row other than the playing one, and a tap on any row on
+Android, played it at once.
+
+- A click, a tap or Enter on the focused row of a track that is not the current track only selects it.
+  The row becomes current, the deck shows it, the track is loaded paused at its start, and any playing track stops.
+  The desktop `Command::SelectIndex` always did this; its UI wiring `play_row` followed it with `Play`, and that
+  follow-up is removed.
+  Android gets `PlayerController.selectIndex` (queue cursor, engine pause, paused load).
+- A click, a tap or Enter on the current track toggles play and pause, whether it is playing or paused.
+  Android calls the deck's `togglePlay`, so a current track that was restored from the saved session and never started
+  starts, and a current track whose load failed is loaded again on the next tap.
+  Android's `PlayerController.activateRow` holds the whole rule, and the host only forwards the tap.
+- The Play item of the track menu keeps starting a track at once (desktop `play_row_now`, Android `playIndex`);
+  it is an explicit Play, not a row click.
+  Search results keep their D73 behavior (a track that is not current starts at once; the current track toggles); the
+  human has not been asked about Search under this rule, so that stays open.
+- The folder and letter rails, long press and the right click are not track-row selects and are unchanged.
+- A tap during the first library load keeps its choice as before, because `selectIndex` loads the track, and the
+  loaded track is what `finishLoad` keeps.
+
 ## Pending after the theme picks (2026-09-04)
 
 - **Order of remaining work** — my recommendation:
