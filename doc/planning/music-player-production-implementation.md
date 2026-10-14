@@ -438,4 +438,8 @@ Read these before repeating them. Each one cost the human a correction.
 - [x] Package 1.
 - [x] Package 2.
 - [x] Packages 3 to 12 landed on `main`; device-only and live-desktop behaviours remain unexercised (see the handoff).
+- [x] Search page restyle on Android (D126, 2026-10-14, branch `feat/android-search-restyle`): canvas-tone header,
+  `outlineVariant` divider, 40 dp circle result glyphs with a rounded press and ring shape, the empty and no-result
+  states in a 72 dp circle lifted clear of the keyboard. The Slint port and the desktop gallery retake are left
+  (`doc/planning/android-search-page-refresh.md`).
 - [ ] Release builds, signing and distribution are outside this plan and were not touched.

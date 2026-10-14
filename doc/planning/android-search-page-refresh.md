@@ -1,7 +1,42 @@
 # Android Search page refresh proposal
 
-This is a proposal, not a decision, and nothing in it is implemented.
-Per the planning rules it unlocks no work until the human accepts an option and rules on the conflicts it names.
+## Status
+
+Accepted on 2026-10-14: option 1, "Restyle within decisions", recorded as D126 in
+`package/music-player/design/decisions.md`, which also holds the exact specification the desktop port copies.
+
+Rulings:
+
+- Direction: option 1, with R2 adopted (the header is the canvas color and the divider uses `outlineVariant`).
+- R3: no section labels; results stay one list mixed by relevance (D52, D61).
+- R4: no recents list.
+- R1 (grouped cards, tinted page) was not adopted, and option 4 stays rejected.
+- R5: parity on desktop is wanted, as a separate follow-up task.
+
+Implemented on branch `feat/android-search-restyle` (Android only):
+
+- Header and status strip in the canvas tone, `outlineVariant` divider.
+- Result rows with a 40 dp `secondaryContainer` circle in the 48 dp slot, a rounded 21.3 dp press and ring shape that
+  starts 8 dp before the content and keeps the D117 and D120 ring just inside its edge.
+- The empty and no-result states in a 72 dp circle, `titleMedium` at weight 500, starting 72 dp under the divider on
+  both panels, padded by the keyboard inset on the cover and scrollable.
+- Tests: `SearchLayoutTest` and `SearchPageWiringTest` (pixel and geometry cases under Robolectric native graphics).
+- The Android README gallery image `android-cover-search-light.png` was retaken.
+- The two items of the unverified list were read from the code and left open: the query survives a fold change because
+  the host keeps it with the route, and `Ctrl+F` on an open page only refocuses the field while the caret of the
+  rebuilt field restarts at the start of its text, so a second `lan` typed after a fold landed inside the first (the
+  device run gave `lanlan` and then `lanxlan` for an extra `x`). D66 covers a new visit, not a posture change.
+
+Left:
+
+- The Slint port in `package/music-player/desktop-app/ui/search.slint` (header fill at the `Theme.surface-high` line,
+  divider at the `Theme.outline` line, rows, status block), from the D126 specification.
+- Retaking `desktop-search-light.png` and `desktop-search-dark.png` after the port.
+- A decision on whether the caret should survive the rebuild of the header on a fold change, if the human wants it.
+
+The rest of this document is the proposal as written, with the file and line numbers it cited on 2026-10-14 before the
+change.
+
 
 ## Reading of the request
 

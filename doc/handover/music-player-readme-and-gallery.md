@@ -57,6 +57,17 @@ No ring shows on the Search result or on any touch capture, as D117 intends.
 All twenty oids in the README were checked against the sha256 of their files after the retake and agree.
 The R2 URL check task has not run, since the objects reach R2 on push.
 
+Later on 2026-10-14 `android-cover-search-light.png` was retaken from the debug build of branch
+`feat/android-search-restyle` (the D126 restyle of the Search page: header and status strip in the canvas tone,
+a thin `outlineVariant` divider, results with a round tonal glyph disc),
+with the same library, the key sequence `Ctrl+F`, `lan` and `Back`, and the cover crop `1080x2240+0+125`.
+It is the only Android image that shows the Search page (checked with `rg` over the README and by viewing the other
+seven: they show the library, player, track menu and Settings pages, where Search is only a header button).
+The other seven were not retaken, because none of them draws a surface that D126 changed.
+The README oid of the new file equals its sha256 (`b83ee72ae828`), and all twenty embedded oids were checked again.
+The desktop Search images (`desktop-search-light.png` and `desktop-search-dark.png`) show the old page until the
+Slint port of D126 lands, and must be retaken then.
+
 Last updated: 2026-10-14.
 
 ## Goal
