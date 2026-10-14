@@ -185,10 +185,13 @@ fn resting_pointer_explains_a_missing_server_once_for_each_file() {
     let reader = reader(&fixture, "main.scripted", languages);
     let x = caret_x(&reader, start(4) + 8) + 2.0;
     move_to(&reader.window, point(&reader, 4, x));
-    eventually("the resting pointer did not explain the missing server", || {
-        return popup(&reader)
-            .starts_with("Hover information needs scripted-ls, which is not available:");
-    });
+    eventually(
+        "the resting pointer did not explain the missing server",
+        || {
+            return popup(&reader)
+                .starts_with("Hover information needs scripted-ls, which is not available:");
+        },
+    );
     assert!(reader.window.get_language_popup_note());
     move_to(&reader.window, LogicalPosition::new(100.0, 300.0));
     eventually("leaving the source did not end the explanation", || {

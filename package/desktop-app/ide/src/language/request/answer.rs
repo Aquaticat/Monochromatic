@@ -252,8 +252,7 @@ fn unanswered(
 ) {
     let Some(delay) = wait else {
         tracing::debug!(server = %ticket.server.name, ask = ?ticket.ask, %error, "request failed; asking again would not change that");
-        if let (Ask::Hints { .. }, Failure::Failed(failure)) = (ticket.ask, classify_error(error))
-        {
+        if let (Ask::Hints { .. }, Failure::Failed(failure)) = (ticket.ask, classify_error(error)) {
             keep_trouble(worker, &ticket, Channel::Hints, Some(failure));
         }
         return;

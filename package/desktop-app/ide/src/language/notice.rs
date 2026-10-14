@@ -13,9 +13,7 @@
 //!  or when every feature works.
 
 /// The entry is a diagnostic of the displayed text.
-use super::diagnostics::{
-    Diagnostic, DiagnosticsSnapshot, Freshness, Severity, SourceGroup,
-};
+use super::diagnostics::{Diagnostic, DiagnosticsSnapshot, Freshness, Severity, SourceGroup};
 /// The entry names the file generation and revision it describes.
 use super::identity::{DocumentStamp, ServerIdentity};
 /// A failed request is described in the words the interface uses for it.
@@ -142,7 +140,9 @@ fn problem(row: &ServerStatus) -> Option<String> {
 fn retried_on_display(state: &ServerState) -> bool {
     return matches!(
         state,
-        ServerState::MissingExecutable { .. } | ServerState::FailedToStart { .. } | ServerState::Exited
+        ServerState::MissingExecutable { .. }
+            | ServerState::FailedToStart { .. }
+            | ServerState::Exited
     );
 }
 
@@ -158,7 +158,10 @@ fn retried_on_display(state: &ServerState) -> bool {
 /// ```ts
 /// function lines(status: LanguageStatus, troubles: [ServerIdentity, Trouble][]): string[]
 /// ```
-pub(super) fn lines(status: &LanguageStatus, troubles: &[(ServerIdentity, Trouble)]) -> Vec<String> {
+pub(super) fn lines(
+    status: &LanguageStatus,
+    troubles: &[(ServerIdentity, Trouble)],
+) -> Vec<String> {
     if status.document != DocumentState::Attached || status.servers.is_empty() {
         return Vec::new();
     }
@@ -178,13 +181,16 @@ pub(super) fn lines(status: &LanguageStatus, troubles: &[(ServerIdentity, Troubl
             return lines;
         }
         lines.push(
-            "Hover, inlay hints, and go to definition are not available for this file."
-                .to_string(),
+            "Hover, inlay hints, and go to definition are not available for this file.".to_string(),
         );
         for row in &status.servers {
             lines.extend(problem(row));
         }
-        if status.servers.iter().any(|row| return retried_on_display(&row.state)) {
+        if status
+            .servers
+            .iter()
+            .any(|row| return retried_on_display(&row.state))
+        {
             lines.push(
                 "Servers are looked up again when a file is displayed, so open the file again after fixing this."
                     .to_string(),
@@ -198,9 +204,7 @@ pub(super) fn lines(status: &LanguageStatus, troubles: &[(ServerIdentity, Troubl
     };
     let hover = |row: &ServerStatus| return row.features.is_some_and(|found| return found.hover);
     let hints = |row: &ServerStatus| {
-        return row
-            .features
-            .is_some_and(|found| return found.inlay_hints);
+        return row.features.is_some_and(|found| return found.inlay_hints);
     };
     let names = ready
         .iter()
@@ -208,7 +212,9 @@ pub(super) fn lines(status: &LanguageStatus, troubles: &[(ServerIdentity, Troubl
         .collect::<Vec<&str>>()
         .join(", ");
     if !offering(hover) {
-        lines.push(format!("Hover is not offered by {names}, so none is shown."));
+        lines.push(format!(
+            "Hover is not offered by {names}, so none is shown."
+        ));
     }
     if !offering(hints) {
         lines.push(format!(
@@ -216,7 +222,9 @@ pub(super) fn lines(status: &LanguageStatus, troubles: &[(ServerIdentity, Troubl
         ));
     }
     for row in &ready {
-        let Some((_, trouble)) = troubles.iter().find(|(known, _)| return known == &row.server)
+        let Some((_, trouble)) = troubles
+            .iter()
+            .find(|(known, _)| return known == &row.server)
         else {
             continue;
         };
@@ -274,18 +282,15 @@ pub(super) fn with_notice(
         stamp,
         groups: Vec::new(),
     });
-    let server = status
-        .servers
-        .first()
-        .map_or_else(
-            || {
-                return ServerIdentity {
-                    name: SOURCE.to_string(),
-                    instance: 0,
-                };
-            },
-            |row| return row.server.clone(),
-        );
+    let server = status.servers.first().map_or_else(
+        || {
+            return ServerIdentity {
+                name: SOURCE.to_string(),
+                instance: 0,
+            };
+        },
+        |row| return row.server.clone(),
+    );
     result.groups.push(SourceGroup {
         source: SOURCE.to_string(),
         items: vec![Diagnostic {

@@ -11,9 +11,9 @@ use crate::language::config::Unavailable;
 use crate::language::identity::ServerIdentity;
 /// Private directories a launch needs are prepared before the process exists.
 use crate::language::launch::prepare;
-use crate::language::notice::Trouble;
 /// `didOpen` follows readiness.
 use crate::language::lifecycle::send_did_open;
+use crate::language::notice::Trouble;
 /// A new process owes no answers yet.
 use crate::language::owed::Owed;
 /// Root checks made before and after a start.

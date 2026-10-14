@@ -74,7 +74,9 @@ fn a_failed_start_gives_the_entry_and_a_server_still_starting_gives_none() {
     });
     let entry = probe.notice().expect("entry");
     assert!(
-        entry.contains("scripted-ls failed to start: the server process ended before it finished starting."),
+        entry.contains(
+            "scripted-ls failed to start: the server process ended before it finished starting."
+        ),
         "{entry}"
     );
     support::children_until_none();
@@ -214,16 +216,10 @@ fn a_failed_hint_request_is_named_and_a_later_answer_clears_it() {
 #[test]
 fn a_hover_that_times_out_is_named() {
     let Some(root) = support::child_root() else {
-        support::run_child(
-            "notice::a_hover_that_times_out_is_named",
-            support::standard,
-        );
+        support::run_child("notice::a_hover_that_times_out_is_named", support::standard);
         return;
     };
-    let mut probe = Probe::new(
-        &root,
-        support::scripted(&root, &[("HOVER", "silent")], 1),
-    );
+    let mut probe = Probe::new(&root, support::scripted(&root, &[("HOVER", "silent")], 1));
     probe.open(&root.join("file.scripted"), "alpha\nbeta\n");
     probe.until_ready();
     let number = probe.request(RequestKind::Hover, 1);

@@ -247,11 +247,22 @@ fn a_typescript_install_above_the_project_is_named_but_never_used() {
         panic!("an install outside the project was used");
     };
     assert!(
-        reason.contains(&outer.join("node_modules/typescript/bin/tsc").display().to_string()),
+        reason.contains(
+            &outer
+                .join("node_modules/typescript/bin/tsc")
+                .display()
+                .to_string()
+        ),
         "{reason}"
     );
-    assert!(reason.contains("open the folder that holds it as the project"), "{reason}");
-    assert!(reason.contains("TypeScript 7 or later is required"), "{reason}");
+    assert!(
+        reason.contains("open the folder that holds it as the project"),
+        "{reason}"
+    );
+    assert!(
+        reason.contains("TypeScript 7 or later is required"),
+        "{reason}"
+    );
     assert!(languages.launch(typescript::SERVER).is_none());
 }
 

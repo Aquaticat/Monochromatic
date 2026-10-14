@@ -74,10 +74,14 @@ pub(super) fn note(
         let due = language.explained != Some(pending.stamp.file)
             && message::states_support_problem(&pending.outcomes, &language.status);
         if due {
-            tracing::info!(sentence, "a resting pointer explains why hover is unavailable");
+            tracing::info!(
+                sentence,
+                "a resting pointer explains why hover is unavailable"
+            );
             language.explained = Some(pending.stamp.file);
             // The popup follows the pointer like hover content and ends like it, but is drawn as a note.
-            language.shown = surface::popup(window, source, pending.position, sentence, (true, true));
+            language.shown =
+                surface::popup(window, source, pending.position, sentence, (true, true));
             return;
         }
         tracing::debug!(sentence, "pointer hover produced nothing to show");

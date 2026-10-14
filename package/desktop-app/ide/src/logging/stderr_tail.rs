@@ -238,7 +238,9 @@ pub fn lines(server: &str) -> Vec<String> {
     return tails()
         .get(server)
         .filter(|tail| return !tail.retired)
-        .map_or(Vec::new(), |tail| return tail.lines.iter().cloned().collect());
+        .map_or(Vec::new(), |tail| {
+            return tail.lines.iter().cloned().collect();
+        });
 }
 
 /// What:

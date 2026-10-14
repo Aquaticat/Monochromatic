@@ -112,12 +112,16 @@ fn a_failed_start_and_a_refused_launch_each_give_their_cause() {
         &[],
     );
     assert!(
-        refused.contains(&"typescript-native was not started: bubblewrap is not installed.".to_string()),
+        refused.contains(
+            &"typescript-native was not started: bubblewrap is not installed.".to_string()
+        ),
         "{refused:?}"
     );
     // A refused launch is not retried by displaying the file again, so no such advice is given.
     assert!(
-        !refused.iter().any(|line| line.contains("open the file again")),
+        !refused
+            .iter()
+            .any(|line| line.contains("open the file again")),
         "{refused:?}"
     );
 }
@@ -256,9 +260,8 @@ fn a_server_rooted_outside_the_project_names_that_directory() {
         &[],
     );
     assert!(
-        shown
-            .iter()
-            .any(|line| line.contains("/srv/enclosing") && line.contains("Open the IDE on that directory")),
+        shown.iter().any(|line| line.contains("/srv/enclosing")
+            && line.contains("Open the IDE on that directory")),
         "{shown:?}"
     );
 }

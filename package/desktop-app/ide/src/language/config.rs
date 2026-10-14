@@ -313,7 +313,11 @@ fn build(root: &Path, setup: &LanguageSetup, document: Option<&Path>) -> Result<
         .context("Cannot decode the language definitions")?;
     // The TypeScript launcher is found once for this document and used by the definition and the check.
     let typescript_launcher = typescript::locate(root, document);
-    typescript::apply(&mut configuration, root, typescript_launcher.as_deref().ok());
+    typescript::apply(
+        &mut configuration,
+        root,
+        typescript_launcher.as_deref().ok(),
+    );
     rust_analyzer::watch_through_client(&mut configuration);
     // What: Helix's spelling of the root, when it differs from the canonical one; `ok()` drops
     //       the refusal, which the start reports on its own.
