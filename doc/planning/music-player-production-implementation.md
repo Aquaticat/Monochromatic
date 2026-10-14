@@ -420,6 +420,13 @@ and the decisions D106 to D119 at the end of `package/music-player/design/decisi
 
 Read these before repeating them. Each one cost the human a correction.
 
+- The orchestrator merged the unplayable-file notification (D122) with a racy test helper:
+  `unplayable_notification_bus_support.rs` made its message iterator inside the service thread, so a `Notify` call that
+  came first on a loaded host was never delivered and `a_successful_post_leaves_the_warned_flag_clear` timed out after
+  3 s (it failed in 3 of about 8 runs; the agent had reported a 40 of 40 stress pass and one failure it called load).
+  A failure that shows up in more than one run is a defect to fix before merging, not load to note. Fixed on
+  2026-10-14 by making the iterator before the thread starts; three clean full runs followed.
+
 - The unplayable-notification run (2026-10-14) shipped a test that started a fake notification service after posting
   the first report, so it raced the notifier thread; it passed in the suite and failed only as the baseline of the
   mutation run (fixed in `95d573b836`: the fake service now refuses its first call on purpose). The docs commit
