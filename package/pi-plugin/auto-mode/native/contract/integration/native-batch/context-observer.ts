@@ -52,14 +52,18 @@ export class NativeContextObserver {
     tagged({tag:this.begin.name,l}).debug('capturing original context traversal');
     if (this.#completed || this.#stage || kind !== ['context','context_with_system'][this.#kinds.length])
       throw new NativeContextContractError('Native context stages must enter once in their original order');
+    if (snapshot.length > 64) throw new NativeContextContractError('Native context extensions exceed the original 64-source profile');
     const slots = snapshot.flatMap(function captureOriginalSlots({ext,handlers}) {
+      if (handlers.length > 256) throw new NativeContextContractError('Native context handlers exceed the original 256-position profile');
       const path = Object.getOwnPropertyDescriptor(ext,'path');
       if (!path || !Object.hasOwn(path,'value') || typeof path.value !== 'string')
         throw new NativeContextContractError('Native context extension requires its original data path');
+      const capturedPath: string = path.value;
       return handlers.map(function captureOriginalHandler(handler) {
-        return Object.freeze({extension:ext,handler,path:path.value as string});
+        return Object.freeze({extension:ext,handler,path:capturedPath});
       });
     });
+    if (slots.length > 256) throw new NativeContextContractError('Combined context handlers exceed the original 256-position profile');
     this.#stage = {kind,slots:Object.freeze(slots),next:0,active:undefined};
   }
 
@@ -112,9 +116,14 @@ export class NativeContextObserver {
    */
   failed(error: unknown): void {
     NativeContextCaptureFailure.rethrow(error);
-    tagged({tag:this.failed.name,l}).debug('native context callback or result processing threw',error);
+    tagged({tag:this.failed.name,l}).debug('native context callback or result processing threw; original native reporting retains its caught value');
     const stage = this.#stage;
-    if (stage?.active) this.#settle(stage);
+    try {
+      if (stage?.active) this.#settle(stage);
+    } catch (captureError) {
+      NativeContextCaptureFailure.rethrow(captureError);
+      throw captureError;
+    }
   }
 
   /**
