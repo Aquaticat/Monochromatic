@@ -318,6 +318,21 @@ The result is a remaining implementation requirement,
 not a passed package check.
 The resolver and dependency paths are now being moved into type-checked source;
 input snapshots and policy checks retain their existing requirements.
+The typed resolver and asynchronous dependency paths now pass their scoped lint check
+with zero diagnostics and the package type check.
+Their original `loader.mjs` entry is retained as a re-export of `loader.ts`.
+Native manager constructor ownership is also ported to TypeScript,
+with the actual Pi 1.1.0 constructor signatures and original-result membership preserved.
+That port passes its scoped lint and package type check.
+The reference search found that the earlier `runtime-root-lifecycle/lifecycle.mjs` implementation
+had no constructor consumer;
+its only imported value was an ownership error.
+The unused earlier transition implementation was removed,
+and its constructor error hierarchy remains in `runtime-root-lifecycle/errors.ts`.
+The active transition implementation remains `root-lifecycle-retirement-entry/lifecycle.mjs`.
+The package build now sequences maintained exports before native preparation;
+the inherited parallel build fanout did not encode that dependency.
+Native constructor consumer checks and the complete sequenced build are being verified.
 The refactored build helpers now pass scoped lint with zero warnings and zero errors across six files.
 The package type check,
 complete native build using its default qualified source checkout,

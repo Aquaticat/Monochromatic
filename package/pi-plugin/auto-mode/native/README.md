@@ -16,6 +16,7 @@ The `input` directories preserve those snapshots separately from newly generated
 Imports were relocated to this package graph without changing policy decisions.
 
 The maintained build emits the qualified Pi 1.1.0 source and owned transformations to `dist/native`.
+The package `build` task builds maintained exports before building this native artifact.
 `mise run //package/pi-plugin/auto-mode:build:native` builds that artifact;
 `build:native:owned` rebuilds the owned transformations against an existing source emission.
 The candidate CLI entry is `dist/native/cli.mjs`.
@@ -51,6 +52,10 @@ and approval after reload with fixture UI responses.
 The context source supplies presentation capabilities only;
 it grants no permission and supplies no authorization facts.
 The package's TypeScript source set explicitly includes `native/**/*.ts`.
+The build helpers,
+module resolver,
+dependency paths,
+and native manager constructor owner now pass their scoped type and lint checks.
 The owned JavaScript runtime still needs type and lint completion.
 Complete lint verification,
 installed host activation,
