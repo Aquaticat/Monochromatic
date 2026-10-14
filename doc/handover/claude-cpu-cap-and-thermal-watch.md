@@ -305,6 +305,16 @@ so the findings come from reading the readable source strings inside the binary 
    It still needs a chiplet comparison and a (Tctl minus probe) per watt figure.
 3. At the 4-hour check, end the watch if nothing is open; keep the service running.
 4. Record every user decision and measurement in this file as the session continues.
+5. After the user reapplies paste (decided about 20:45 EDT on 2026-10-13: Noctua NT-H2 3.5g AM5 Edition, ordered, not
+   yet arrived): compare against the baseline below with the same kind of load of 100 W or more for at least 3 minutes.
+   Baseline before the reapply (MX-4 cross, 2 fans, cap 28, 20:16 to 20:25 EDT): Tctl 95.4, average of the two CCD
+   temperatures about 91.7, package power 133 W, clock 4407 MHz median, probe 26 degrees, so about 0.49 degrees per
+   watt over ambient; Noctua's lab figure for the same heatsink and chip is about 0.26. Compare degrees per watt, not
+   raw temperature, because the load will differ. `~/temp/agent/analyze-episode.ts <from> <to>` prints the medians.
+   The NT-H2 AM5 Edition includes the NA-TPG1 paste guard and 3 cleaning wipes; Noctua's AM5 pattern is five small
+   dots (four of about 2 mm near the corners, one of 3 to 4 mm in the centre) with no manual spreading, and the paste
+   needs no cure time (NT-H2 AM5 Edition manual and product page, fetched 2026-10-13). The reseat also resets the
+   other checks: base film removed, -7 mm offset, bars NORTH and SOUTH, screws alternately to the stop.
 
 ## Commits so far
 
