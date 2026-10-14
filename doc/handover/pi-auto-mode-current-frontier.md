@@ -46,6 +46,16 @@ The repeat establishes recovery,
 not the deadline failure's cause or a permanent timing fix.
 Full native lint completion and genuine approval-boundary verification remain outstanding.
 
+The subsequent full package lint measured 14,368 warnings and 458 errors across 389 files.
+Its log is `${HOME}/temp/agent/pi-native-full-lint-after-session-root-20261014.log`.
+This broader file set differs from the earlier 368-file baseline;
+the totals are not a controlled before/after comparison.
+The verified construction port's scoped files remain clean.
+Remaining findings include historical build inputs and maintained runtime owners;
+do not silently exclude the former or rewrite their provenance to obtain a passing count.
+The next directly used construction dependency is `lifecycle/runtime-factory-scopes/scopes.mjs`,
+which this full run reports with seven errors.
+
 The [decision-model trial priorities](../planning/pi-auto-mode-decision-model-trial-order.md)
 retain the user's requested candidate recommendation and separate trial order from adoption.
 
