@@ -27,8 +27,8 @@ type NativeProgramValue = {
  @throws Error when the required built callable is missing
  */
 function assertNativeProgramValue(value: unknown): asserts value is NativeProgramValue {
-  if (typeof value !== 'object' || value === null || !('nativeScriptValueSource' in value)
-    || typeof value.nativeScriptValueSource !== 'function') throw new Error('Built native result conversion module lacks its callable export');
+  if (((typeof value) !== 'object') || (value === null) || (!('nativeScriptValueSource' in value))
+    || ((typeof value.nativeScriptValueSource) !== 'function')) throw new Error('Built native result conversion module lacks its callable export');
 }
 
 /**
@@ -54,7 +54,7 @@ await describe({
         /**
          The literal crosses quote, newline, comment, path, and interpolation boundaries.
          */
-        const literal = JSON.stringify('quote\'"; /* function textOf() {} */\n\\path/../` ${globalThis.injected=true}\u0000🚀');
+        const literal = JSON.stringify(`quote'"; /* function textOf() {} */\n\\path/../\` \${globalThis.injected=true}\u0000🚀`);
         /**
          These complete original declarations must survive byte-for-byte.
          */
@@ -98,7 +98,7 @@ await describe({
     ...[
       'function textOf /* changed */() {}',
       'async function textOf() {}',
-      'function t\\u0065xtOf() {}',
+      String.raw`function t\u0065xtOf() {}`,
     ].map(function changedDeclaration(helper) {
       return it({
         name: `rejects changed original declaration ${helper}`,
