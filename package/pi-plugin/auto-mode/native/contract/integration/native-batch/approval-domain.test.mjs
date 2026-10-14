@@ -8,6 +8,7 @@ import {nativeOpenAIStream} from './source-association.mjs';
 import {fixtureResponse} from './fixture-response.mjs';
 import {ruleAssessmentModel} from '../action-policy/wire.mjs';
 import {maintainedPolicyEntry} from '../maintained-policy.mjs';
+import {registerHostResource} from '../native-host/resource-reload.mjs';
 
 const {askUser,VERDICT_ENTRY_TYPE,flushPolicyDiagnostics}=await import(maintainedPolicyEntry);
 await flushPolicyDiagnostics();
@@ -19,6 +20,9 @@ const permission=mode==='bare'?'Use sentence case in the final response.':mode==
 const policyText='RUL:\n '+permission+'\n\nCNF:\n Require the original session Allow confirmation for this prepared group.\n';
 let nativePi;
 const env=await createEnvironment({policyText,hostPrompt:'Fixture background.',extensionFactories:[pi=>{nativePi=pi;}]});
+// This direct-SDK fixture registers the original policy reload boundary used by native host services.
+// It does not acquire the CLI host's private resource membership or session-construction ownership.
+if(reloadContext)registerHostResource({loader:env.policyInput.loader,policyInput:env.policyInput});
 let requests=0,assessments=0,executions=0,originalBody,selections=0,notifications=0,authorizationCaptures=0,approvalCaptures=0,abortTask;
 let activeAuthorization=true;
 const leaf={...env.createReadToolDefinition(env.options.cwd),name:'fixture_value',description:'Returns inert fixture text.',async execute(){executions++;return {content:[{type:'text',text:'fixture child value'}],details:{}};}};
