@@ -6959,3 +6959,86 @@ or sandbox rule was changed.
 `.out-of-scope/codex-harness.md` excludes Codex-specific harness investigation and filing.
 This record does not assign the failure to that harness.
 There is nothing to file upstream from the observed boundary and working task alternative.
+
+## Pi 1.2.0 dependency refresh invalidates an emitted 1.1.0 host
+
+### Symptom and cause
+
+After workspace commit `755685da03` refreshed installed Pi packages,
+the installed-extension resolver failed before loading extensions.
+Node `26.11.1` reported:
+
+```text
+Error [ERR_MODULE_NOT_FOUND]: Cannot find package 'partial-json' imported from
+package/pi-plugin/auto-mode/dist/native/pi/ai/dist/utils/json-parse.js
+```
+
+The generated AI package's `node_modules` link still named the removed
+`@earendil-works+pi-ai@1.1.0_undici@8.11.2/node_modules` directory.
+The workspace now contained the corresponding `1.2.0` directory.
+This is stale owned build output after a dependency refresh,
+not evidence of a missing dependency in the upstream release.
+
+`package/pi-plugin/auto-mode/native/build-contract.ts:16` now selects the exact installed release:
+
+```ts
+// package/pi-plugin/auto-mode/native/build-contract.ts
+export const qualifiedRelease = {
+  version: '1.2.0',
+  commit: '06a466935536f8c9bcacb2d5efc0fc021be1bdff',
+} as const;
+```
+
+`package/pi-plugin/auto-mode/native/build-emission.ts:156` replaces the owned generated package tree:
+
+```ts
+// package/pi-plugin/auto-mode/native/build-emission.ts
+const target = join(output, 'pi', specification.folder);
+await rm(target, { recursive: true, force: true });
+```
+
+The normal emission then copies the qualified source and creates its matching dependency link.
+Replacing the tree also prevents removed upstream source files from surviving a release change.
+
+### Verification and recovery
+
+The unchanged read-only resolver failed against the stale output.
+After the source update and full build,
+that resolver completed with 18 configured package entries and 22 enabled extension entries
+after excluding the legacy auto-mode entry that the native host replaces.
+
+```sh
+# Repository root
+mise run //package/pi-plugin/auto-mode:build:native
+mise run //package/pi-plugin/auto-mode:lint:types
+mise run //package/pi-plugin/auto-mode:test:native:host-lifecycle
+mise run //package/pi-plugin/auto-mode:test:native:cli-process
+```
+
+These commands passed against source tag `v1.2.0` and its recorded commit.
+The lifecycle check retained original construction,
+reload,
+cancelled replacement,
+fork,
+resume,
+and disposal-retry behavior.
+The actual CLI returned the selected Qwen model through RPC and shut down with empty stderr.
+These fixtures made no external provider requests.
+
+The recovery rebuilds generated output and requires the native acceptance checks on the new release.
+It does not edit installed dependencies or qualify the configured extensions merely by resolving their paths.
+The owned-only rebuild cannot repair stale upstream dependency links because it preserves upstream emission.
+The source checkout remains a build input only.
+
+### Upstream filing decision
+
+- The stale dependency link belongs to this repository's generated output.
+- The consumer build can recreate its own source and dependency boundary.
+- No unsupported upstream use case is established by this failure.
+- No external contribution is proposed,
+  so contribution-policy research is unnecessary.
+- No maintainer disposition is inferred.
+- The consumer rebuild and original host checks pass;
+  an upstream patch is neither needed nor proposed.
+
+There is nothing to file upstream from this owned build recovery.
