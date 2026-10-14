@@ -41,6 +41,9 @@ class PageMeasureRefreshTest {
     /** Longest wait for a case, so a refresh that never ends fails the case instead of hanging it. */
     private val waitLimitMs: Long = 5_000
 
+    /** Most batches one pass over the five tracks may read, so a pass that never ends fails the case at once. */
+    private val readLimit: Int = 20
+
     /** Five tracks of one page, in page order. */
     private val page: List<Track> = listOf("a", "b", "c", "d", "e").map { uri -> Track(uri = uri, displayPath = uri) }
 
@@ -78,6 +81,7 @@ class PageMeasureRefreshTest {
                     /** URIs of the batch being read. */
                     val uris: List<String> = batch.map { track -> track.uri }
                     recorder.reads += uris
+                    check(recorder.reads.size <= readLimit) { "The pass read $readLimit batches without ending." }
                     afterRead(uris)
                     batch.associate { track -> track.uri to if (recorder.peak) measured else unmeasured }
                 },
