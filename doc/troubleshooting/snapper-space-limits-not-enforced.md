@@ -464,6 +464,17 @@ Raising `FREE_LIMIT` alone does not help while cleanup stays daily,
 because the value is only
 read at cleanup time.
 
+Editing `/etc/snapper/configs/root` has no effect while `snapperd.service` is running.
+The daemon serves the config it loaded at startup,
+so the file and the effective value diverge silently.
+Setting `FREE_LIMIT="250GiB"` in the file left `snapper --config root get-config`
+reporting `100GiB`,
+and it reported `250GiB` only after `systemctl restart snapperd.service`.
+The file held exactly one `FREE_LIMIT` line throughout,
+so this was caching and not a duplicate key.
+Confirm any config change with `snapper --config root get-config` rather than by reading the
+file.
+
 Trusting `snapper list` `Used Space` to decide whether snapshots are worth deleting is
 unsound while the qgroup is inconsistent.
 Every snapshot reads 0 B regardless of what it pins.
