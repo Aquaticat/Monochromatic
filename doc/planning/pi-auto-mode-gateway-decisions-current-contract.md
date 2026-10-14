@@ -57,5 +57,25 @@ The Luna control is 362 bytes with SHA-256
 its complete request is 584,007 bytes with SHA-256
 `59611db7d2fc22abc491db6bb41fe69bac90769f78c23d1f1409799fa78d4350`.
 
+## Verified access and pending complete-input permission
+
+Automatic approval review rejected the original combined launch before execution:
+it treated model enablement as permission to test access,
+without permission to export the complete private assessment to the new model destinations.
+A concrete permission question for both prepared complete inputs is pending.
+No complete native input was sent.
+
+Separate synthetic-only directories append `-access` before the date.
+Their preflight asserts the literal fixture and single question before dispatch.
+Both returned HTTP 200 with the exact provider-prefixed model and complete valid Choice answer.
+Microsoft returned `permission` at 0.9989888137654562 in 1,805.284 ms,
+with confidence 0.9987865765185475 and usage 65 input tokens plus one reported output token.
+Luna returned `permission` at 0.99 in 991.616 ms,
+with confidence 0.99 and usage 136 input tokens plus zero output tokens.
+Both satisfy the numeric cutoff on this literal control.
+Neither result establishes policy interpretation,
+complete-input capacity,
+or repeated-run latency.
+
 [guide]: https://docs.llmgateway.io/features/decisions
 [reference]: https://docs.llmgateway.io/v1_decisions

@@ -12,8 +12,12 @@ Updated 2026-10-14.
 The user enabled `microsoft-decision-1` and `gpt-6-luna-decisions` on the existing Gateway key.
 The [frozen compatibility plan](../planning/pi-auto-mode-gateway-decisions-current-contract.md)
 uses the documented `/v1/decisions` route and an exactly invertible wire conversion.
-Exercise these supplied resources first,
-then resume the pending Liquid shared-content probe and Jev row-envelope correction.
+Both supplied resources passed synthetic access checks with exact returned model names.
+Microsoft returned the expected label at 0.998989 in 1,805.284 ms;
+Luna returned it at 0.99 in 991.616 ms.
+Automatic approval review blocked the complete private assessment requests before execution,
+and the explicit permission question is pending.
+The already authorized Liquid shared-content probe and Jev row-envelope correction continue independently.
 No provider replacement or admission-policy change is adopted.
 
 ## SubQ authorization and compatibility check
