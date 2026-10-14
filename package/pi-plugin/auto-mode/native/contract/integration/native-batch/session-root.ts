@@ -9,9 +9,7 @@ import type {
 } from '@earendil-works/pi-coding-agent';
 import { tagged } from '@monochromatic-dev/module-logger/ts';
 import { createManagerConstructorOwner } from '../../lifecycle/runtime-custody/manager-owner.ts';
-import {
-  createNativeManagerRegistry,
-} from './session-root-dependencies.mjs';
+import { createNativeManagerRegistry } from '../../lifecycle/root-lifecycle-retirement-entry/registry.ts';
 import { createSessionRootReader } from '../../lifecycle/root-lifecycle-retirement-entry/root-reader.ts';
 import { createRuntimeFactoryScopes } from '../../lifecycle/runtime-factory-scopes/scopes.ts';
 import type {

@@ -193,6 +193,31 @@ the production authorization-owner integration remains separate work.
 
 ## Typed native session construction
 
+The manager registry port is now pending verification.
+`root-lifecycle-retirement-entry/registry.mjs` moved to `registry.ts` on 2026-10-14,
+with its input and canonical epoch types in `registry-types.ts`.
+A complete tracked-source search for `createNativeManagerRegistry` found only the maintained SDK factory
+and its static bridge as consumers.
+The factory consumes only `lifecycle`.
+The unused `bind` snapshot adapter was removed:
+its historical profile checked a planned session ID,
+persistent file path,
+leaf,
+and a branch of at most two entries under qualification clocks.
+Those were qualification-fixture restrictions,
+not requirements of the maintained native lifecycle.
+Canonical manager state,
+constructor ownership checks,
+registry-local epochs,
+and the incumbent lifecycle remain.
+The `session-root-dependencies.mjs` bridge and its declaration were removed on the same date;
+the factory imports both the typed registry and typed native reader directly.
+Registry branch controls,
+lint,
+types,
+owned rebuild,
+and native host regression checks remain to run for this port.
+
 The next maintained dependency is the native session-manager identity reader.
 `root-lifecycle-retirement-entry/root-reader.mjs` moved to `root-reader.ts` on 2026-10-14;
 the original provenance remains recorded.

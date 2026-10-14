@@ -871,7 +871,8 @@
     },
     {
       "original": "lifecycle/root-lifecycle-retirement-entry/registry.mjs",
-      "maintained": "lifecycle/root-lifecycle-retirement-entry/registry.mjs",
+      "maintained": "lifecycle/root-lifecycle-retirement-entry/registry.ts",
+      "movedOn": "2026-10-14",
       "sha256": "21d948767d0eb52bdd7072eb5f77e14a9a5d6f087a8987009fc0a4ca828c8806",
       "origin": "authored-source",
       "relocatedLiterals": 0
