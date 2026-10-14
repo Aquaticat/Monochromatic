@@ -265,6 +265,60 @@ run = [
 description = "Run the candidate owned native host with the adopted semantic operating policy"
 run = "node dist/native/cli.mjs"
 
+[tasks."install:native"]
+description = "Activate the maintained Pi command and remove only its legacy extension declaration"
+shell = "node --input-type=module-typescript -e"
+run = """
+const { access, chmod, mkdir, mkdtemp, readFile, readlink, symlink, writeFile } = await import('node:fs/promises')
+const { constants } = await import('node:fs')
+const { homedir } = await import('node:os')
+const { dirname, join, resolve } = await import('node:path')
+const { isDeepStrictEqual } = await import('node:util')
+const { default: spawn } = await import('nano-spawn')
+class NativeInstallationError extends Error { name = 'NativeInstallationError' }
+const packageRoot = process.cwd()
+const home = homedir()
+const agentDir = process.env.PI_CODING_AGENT_DIR ?? join(home, '.pi/agent')
+const settingsPath = join(agentDir, 'settings.json')
+const original = await readFile(settingsPath, 'utf8')
+const settings = JSON.parse(original)
+if (!Array.isArray(settings.packages)) throw new NativeInstallationError('Pi settings must contain the original package list')
+const launcher = join(packageRoot, 'native/command.ts')
+await access(launcher, constants.X_OK)
+await access(join(packageRoot, 'dist/native/cli.mjs'))
+const bin = join(home, '.local/bin')
+const command = join(bin, 'pi')
+let existing
+try { existing = await readlink(command) }
+catch (error) { if (error.code !== 'ENOENT') throw error }
+if (existing !== undefined && resolve(bin, existing) !== launcher) {
+  throw new NativeInstallationError('The user-local pi command belongs to another installation; preserve it before replacing command routing')
+}
+function isLegacy(value) {
+  const source = typeof value === 'string' ? value : value?.source
+  return typeof source === 'string' && (source === packageRoot || (source.startsWith('.') && resolve(agentDir, source) === packageRoot))
+}
+const legacy = settings.packages.filter(isLegacy)
+const scratch = join(home, 'temp/agent')
+await mkdir(scratch, { recursive: true, mode: 0o700 })
+await chmod(scratch, 0o700)
+const backup = await mkdtemp(join(scratch, 'pi-native-install-'))
+await writeFile(join(backup, 'settings.json'), original, { mode: 0o600, flag: 'wx' })
+await mkdir(bin, { recursive: true })
+if (existing === undefined) await symlink(launcher, command)
+for (const declaration of legacy) {
+  const source = typeof declaration === 'string' ? declaration : declaration.source
+  await spawn(process.execPath, [join(packageRoot, 'dist/native/cli.mjs'), 'remove', source, '--no-approve'], {
+    stdio: 'inherit', env: { ...process.env, PI_CODING_AGENT_DIR: agentDir }
+  })
+}
+const actual = JSON.parse(await readFile(settingsPath, 'utf8'))
+const expected = { ...settings, packages: settings.packages.filter(value => !isLegacy(value)) }
+if (!isDeepStrictEqual(actual, expected)) throw new NativeInstallationError('Pi removal changed settings outside the legacy auto-mode declaration; inspect the preserved backup before continuing')
+if (await readlink(command) !== launcher) throw new NativeInstallationError('The installed Pi command no longer names its maintained launcher')
+console.log(JSON.stringify({ complete: true, command, legacyDeclarationsRemoved: legacy.length, unrelatedSettingsPreserved: true, backup }))
+"""
+
 [tasks."test:native:host-lifecycle"]
 run = "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-host/lifecycle.test.mjs"
 
