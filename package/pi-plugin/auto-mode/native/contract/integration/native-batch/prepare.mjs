@@ -9,7 +9,7 @@ import {promptSessionSource,promptEmitterSource} from './prompt-source.mjs';
 import {promptBuilderSource} from './builder-source.mjs';
 import {handlerMessageSource,handlerProviderSource} from './message-source.mjs';
 import {programSessionSource} from './program-source.mjs';
-import {prepareNativeHost} from '../native-host/prepare.mjs';
+import {prepareNativeHost} from '../native-host/prepare.ts';
 import {createImportEntryReader} from './build-entries.ts';
 import {createNativeImportRewriter,helperUrl,replaceOnce} from './build-rebase.ts';
 import {prepareResources} from './prepare-resources.mjs';
