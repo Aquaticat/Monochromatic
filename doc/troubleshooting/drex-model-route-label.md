@@ -2,6 +2,22 @@
 
 ## Drex 2.0 rejects the complete native question batch
 
+### Current contract recheck on 2026-10-14
+
+The [current factual recheck](../planning/pi-auto-mode-drex-current-contract.md)
+finds changed published Drex 2.0 context limits and an explicit no-fallback statement.
+The hosted 512-question documentation still conflicts with the retained 16-question rejection.
+Public source remains at `be8ba7c8157241b9393862e9fcec104d0dc5caff`
+and does not contain the deciding hosted guard.
+Its local `requests` batch envelope does not establish support on the hosted route.
+The user separately approved the prepared 16/17-question synthetic controls.
+Both returned HTTP 200 with `model: drex-v2.0` and every expected answer.
+The [result record](../planning/pi-auto-mode-drex-current-contract.md#approved-synthetic-boundary-results)
+disproves a universal 16-question limit at the observed time;
+it does not explain the historical rejection or verify the complete native request.
+No workaround or production model replacement is established.
+The existing upstream filing decision remains unchanged.
+
 ### Symptom
 
 On 2026-10-13,

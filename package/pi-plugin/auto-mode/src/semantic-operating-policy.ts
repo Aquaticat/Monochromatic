@@ -77,7 +77,7 @@ function operatingPolicy(definitionId: SemanticAdmissionDefinition,): SemanticAd
   return Object.freeze({
     model: 'typesafe/jev-1.13.0',
     definitionId,
-    programProfile: 'awaited-string-result-then-literal-parallel',
+    programProfile: 'native-inspected-programs-v2',
     /**
      Apply the adopted rule without replacing original estimate identity.
 

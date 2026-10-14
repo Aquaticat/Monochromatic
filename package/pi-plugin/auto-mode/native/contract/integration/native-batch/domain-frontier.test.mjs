@@ -43,6 +43,9 @@ assert.ok(!nextDecision||observedProgress,'Next-decision receipt controls requir
 const throwingContext=process.argv.includes('--throwing-context');
 const httpTransport=process.argv.includes('--http-transport');
 const operatingPolicy=process.argv.includes('--operating-policy');
+const singleCall=process.argv.find(argument=>argument.startsWith('--single-call='))?.slice('--single-call='.length);
+assert.ok(singleCall===undefined||['direct','binding'].includes(singleCall));
+const expectedExecutions=singleCall===undefined?3:1;
 const extensionManifestArgument=process.argv.find(function isExtensionManifestArgument(argument){return argument.startsWith('--extension-manifest=');});
 const configuredExtensions=extensionManifestArgument===undefined?[]:JSON.parse(await readFile(extensionManifestArgument.slice('--extension-manifest='.length),'utf8'));
 assert.ok(Array.isArray(configuredExtensions));
@@ -123,7 +126,7 @@ const {
 session.agent
   .getApiKey=function readDomainFixtureApiKey() { return (process.env
   .FIXTURE_API_KEY); };
-const code='const value = await tools.fixture_value({path:"seed"});\nreturn await Promise.allSettled([tools.fixture_value({path:value}),tools.fixture_value({path:"second"})]);',programProfile='awaited-string-result-then-literal-parallel';
+const code=singleCall==='direct'?'return await tools.fixture_value({path:"seed"});':singleCall==='binding'?'const value = await tools.fixture_value({path:"seed"}); return value;':'const value = await tools.fixture_value({path:"seed"});\nreturn await Promise.allSettled([tools.fixture_value({path:value}),tools.fixture_value({path:"second"})]);',programProfile=singleCall===undefined?'awaited-string-result-then-literal-parallel':'awaited-literal-single-call';
 function policy(definitionId) { return {model:ruleAssessmentModel,definitionId,programProfile,accepts:function acceptAuthoredDomainRelation() { return (true); }}; }
 const originalSdkStream=session.agent
   .streamFunction;
@@ -192,7 +195,6 @@ const runtime=bindNativePolicyRuntime({
    requestMaterialAdmissionPolicy:policy('request_instruction_content'),
    headingContextAdmissionPolicy:policy('heading_instruction_content')
   }),
-  effectOwnerFor:function omitDomainAuthorizationOwner() { return (undefined); },
   sendWire:sendAssessment,
   originalStream:sdkStream?function stream(model,context,options){return controlledSdkStream({model,context,options});}:nativeOpenAIStream,
   async terminalFetch(input,init){
@@ -218,7 +220,14 @@ try{
    lastJudgment:judgment
  }=first??current;
  const measures=first?.measures??observations;
- assertDomainReview({env,review,judgment,session,originalBody:measures.originalBody,settings:{relation,requireResolution,requestRelation,unobservedContext,observedContext,observedProgress,throwingContext,httpTransport,operatingPolicy,lowConfidenceClause,unresolvedClause,sdkStream,receiptControl},measures});
+ assertDomainReview({env,review,judgment,session,originalBody:measures.originalBody,settings:{relation,requireResolution,requestRelation,unobservedContext,observedContext,observedProgress,throwingContext,httpTransport,operatingPolicy,lowConfidenceClause,unresolvedClause,sdkStream,receiptControl,expectedExecutions},measures});
+ if(singleCall&&relation==='permission'){
+  const programs=judgment.inspect().rootPrograms;
+  assert.equal(programs.length,1);
+  assert.equal(programs[0].groups.length,1);
+  assert.equal(programs[0].declaration.profile,'awaited-literal-single-call');
+  assert.ok(session.messages.some(message=>message.role==='toolResult'&&!message.isError&&message.content.some(part=>part.type==='text'&&part.text.includes('fixture child value'))),'The original single-call result must reach its consumer');
+ }
  if(approvedChange==='arguments')changeControl.verify({judgment,observations});
  if(nextDecision){
   if(observations.assessments!==2){
@@ -226,7 +235,7 @@ try{
    console.error(JSON.stringify({requests:observations.requests,assessments:observations.assessments,review:current.lastReview?.outcome,judgment:current.lastJudgment?.inspect(),messages:session.messages.slice(-3)}));
   }
   assert.equal(observations.assessments,2,'Each original decision gets one assessment');
-  assert.equal(observations.executions,3,'Later received instructions must prevent the next operation from executing');
+  assert.equal(observations.executions,expectedExecutions,'Later received instructions must prevent the next operation from executing');
   assert.ok(observations.nextInputQuestions>0,'The second assessment must select the later instruction');
   const sources=current.lastReview.inputs.instructionSources.map(function originalText(view){return view.source.content;});
   for(const text of [nextInput,nextResult])assert.ok(sources.some(function retainedText(content){return content.includes(text);}),text);
