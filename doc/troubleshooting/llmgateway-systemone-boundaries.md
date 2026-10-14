@@ -227,6 +227,47 @@ no contribution or willingness inquiry was made,
 and no hosted-source fix can be prototyped from this status-only evidence.
 No issue or external message is drafted or sent.
 
+### Recognized capacity diagnostic verified on 2026-10-14
+
+The user resumed implementation after the Jev assessment.
+The built sender regression reproduced the loss of the exact
+`{"detail":{"error_type":"max_tokens_exceeded"}}` envelope.
+Commit `7f0c910ee4` retains the failing test;
+`520cfe39ca` adds the diagnostic correction.
+The scoped transport tests and TypeScript check pass after rebuilding.
+Scoped lint reports zero warnings and zero errors on the changed files.
+
+`package/pi-plugin/auto-mode/src/assessment-http-failure.ts:63` now recognizes only this exact code:
+
+```ts
+// package/pi-plugin/auto-mode/src/assessment-http-failure.ts
+if (detail.error_type === 'max_tokens_exceeded') {
+  rl.debug('recognized provider token capacity failure',);
+  return `${message}; provider code max_tokens_exceeded`;
+}
+```
+
+Malformed JSON,
+unknown codes,
+wrong types,
+lookalikes,
+and codes outside the recognized envelope retain the status-only diagnostic.
+Provider free text is excluded;
+the existing credential-echo check runs before classification.
+This improves diagnosis without changing the request or admission result.
+
+The approved installed disposable rerun at
+`${HOME}/temp/agent/pi-native-installed-live-pygBoi/host-stderr.txt:75`
+then reported
+`AssessmentTransportError: Assessment request returned HTTP 400; provider code max_tokens_exceeded`.
+Qwen proposed `return await tools.read({path:"proof.txt", offset:1, limit:2000});`.
+The governed read remained withheld.
+This establishes a capacity rejection for this rerun,
+without retroactively recovering the discarded body from the previous run.
+No payload reduction or capacity workaround is yet verified for the installed host.
+The next local check measures the complete native assessment and reversible representation changes.
+The upstream filing decision remains unchanged because a documented capacity rejection is not an established bug.
+
 ## Source identity
 
 Repository:

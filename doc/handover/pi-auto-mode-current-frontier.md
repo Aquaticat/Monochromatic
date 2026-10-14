@@ -110,6 +110,22 @@ That is maintenance evidence,
 not an explanation for the observed HTTP 400 or a tested capacity workaround.
 No new provider request or product change follows from this deliberation request.
 
+The user subsequently said to keep working.
+The transport now preserves the recognized `max_tokens_exceeded` code while excluding upstream free text.
+Its regression failed before the fix and passes after rebuilding;
+the transport suite,
+package types,
+and scoped changed-file lint pass.
+The approved installed rerun at `${HOME}/temp/agent/pi-native-installed-live-pygBoi`
+reached Jev with Qwen's supported literal read and returned
+`Assessment request returned HTTP 400; provider code max_tokens_exceeded`.
+The governed read did not execute successfully.
+The next step is local measurement of the complete native assessment and lossless encoding opportunities;
+the adopted provider,
+policy,
+source membership,
+and admission cutoff remain unchanged.
+
 ## Restart checkpoint after installing automatic Codex shell limits
 
 The user restarted the session and resumed work on 2026-10-13.
