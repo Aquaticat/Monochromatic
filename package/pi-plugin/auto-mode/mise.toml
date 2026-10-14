@@ -98,6 +98,15 @@ run = [
 [tasks."test:native:sdk-stream"]
 run = "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-batch/domain-frontier.test.mjs permission --require-resolution --sdk-stream"
 
+[tasks."test:native:approval-context"]
+description = "Exercise Pi's native extension context before and after reload with fixture UI responses"
+run = [
+  "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-batch/approval-domain.test.mjs allow --native-context",
+  "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-batch/approval-domain.test.mjs deny --native-context",
+  "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-batch/approval-domain.test.mjs stop --native-context",
+  "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-batch/approval-domain.test.mjs allow --native-context --reload-context",
+]
+
 [tasks."native:cli"]
 description = "Run the candidate owned native host; semantic admission remains unconfigured"
 run = "node dist/native/cli.mjs"

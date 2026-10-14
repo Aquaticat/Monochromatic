@@ -1,5 +1,5 @@
 import {assessAndDecide} from './index.mjs';
-import {captureApprovalHost,finishWithApproval} from './approval.mjs';
+import {captureApprovalHostSource,finishWithApproval} from './approval.mjs';
 import {capturePolicyInputs} from './inputs.mjs';
 import {captureAuthorizationInputs} from './authorization-inputs.mjs';
 import {compileBoundClauseProgram} from './compiler.mjs';
@@ -58,9 +58,9 @@ export function createBoundPolicyEvaluator({semanticAdmissionPolicy,requestMater
  const requestPolicy=captureRequestMaterialAdmissionPolicy(requestMaterialAdmissionPolicy);
  const headingPolicy=captureHeadingContextAdmissionPolicy(headingContextAdmissionPolicy);
  const unitPolicy=captureUnitAdoptionAdmissionPolicy(unitAdoptionAdmissionPolicy);
- const host=captureApprovalHost(approvalHost);
+ const captureHost=captureApprovalHostSource(approvalHost);
  return async function evaluate({judgment,effectOwnerFor,authorizationOwnerFor,sourceContext}){
-  return await evaluateOriginalPolicy({judgment,effectOwnerFor,authorizationOwnerFor,sourceContext,policy,requestPolicy,headingPolicy,unitPolicy,approvalHost:host});
+  return await evaluateOriginalPolicy({judgment,effectOwnerFor,authorizationOwnerFor,sourceContext,policy,requestPolicy,headingPolicy,unitPolicy,approvalHost:captureHost()});
  };
 }
 

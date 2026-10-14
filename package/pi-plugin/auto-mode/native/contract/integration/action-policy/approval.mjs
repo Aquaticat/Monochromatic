@@ -26,6 +26,20 @@ export function captureApprovalHost(input){
 }
 
 /**
+ * Fix the presentation source at bootstrap and capture native capabilities for each original review.
+ * Reloaded runners issue new contexts; a retained old context must never stand in for the active one.
+ * The source receives no request, judgment, authority or semantic inputs.
+ */
+export function captureApprovalHostSource(input){
+ if(typeof input==='function'){
+  if(isProxy(input))throw new PolicyApprovalError('Native approval capability source must be an original bootstrap function');
+  return function captureCurrentApprovalHost(){return captureApprovalHost(input());};
+ }
+ const host=captureApprovalHost(input);
+ return function captureFixedApprovalHost(){return host;};
+}
+
+/**
  * Route only an established approval requirement to the existing original-group TUI.
  * Bootstrap supplies native context capabilities; this module selects the existing binder.
  * Unknown or instruction-free policy never becomes an approval request implicitly.
