@@ -5,7 +5,8 @@ import {
 import {readHandlerPayloadPublication} from '../../collector/run-prompt-custody-v3/handler-publication.mjs';
 import {
   streamSimple,
-  readNativeSerializedPayload
+  readNativeSerializedPayload,
+  readNativeSystemPayload
 } from "./generated/openai-stream.mjs";
 
 export class NativeSourceAssociationError extends Error {}
@@ -398,7 +399,13 @@ export function prepareNativeSourceAssociation({
   if(originalPayload&&dataRecord(payload)
     &&denseArray(payload.messages)){
    const original=payload.messages[0];
+   const systemSerialization=readNativeSystemPayload(original);
+   const originalSystem=(systemSerialization!==undefined)
+     &&(systemSerialization.messages===origin.normalizedMessages)
+     &&(systemSerialization.text===original?.content);
+   if(origins&&!originalSystem)payloadOriginFailure??='System content lacks its original native rendering and message emission';
    if(origins&&dataRecord(original)
+     &&originalSystem
      &&((typeof original.content)==='string')
      &&[
        'system',
@@ -409,6 +416,7 @@ export function prepareNativeSourceAssociation({
       content:original.content,
       role:original.role,
       associations:origins,
+      serialization:systemSerialization,
       system:true
     });
    }
@@ -481,6 +489,7 @@ export function prepareNativeSourceAssociation({
        content:candidate.content
      }),
      associations:candidate.associations,
+     serialization:candidate.serialization,
      system:candidate.system
    });
   }
@@ -510,7 +519,8 @@ export function prepareNativeSourceAssociation({
   function append({
     ordinal,
     associations,
-    why
+    why,
+    serialization
   }){
    const location=Object.freeze({
      field:'messages',
@@ -521,6 +531,7 @@ export function prepareNativeSourceAssociation({
      contribution:Object.freeze({}),
      location,
      association,
+     ...(serialization?{serialization}:{}),
      reason:why,
      coverage:'partial-original-prompt-input-contribution',
      permission:false
@@ -543,6 +554,7 @@ export function prepareNativeSourceAssociation({
    append({
      ordinal:systemOrdinal,
      associations:associated?system.associations:[undefined],
+     serialization:associated?system.serialization:undefined,
      why:associated?undefined:payloadOriginFailure??reason
        ??'The payload callback replaced or changed the original native contribution'
    });
