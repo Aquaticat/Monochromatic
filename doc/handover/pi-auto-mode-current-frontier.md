@@ -194,7 +194,39 @@ Private `402e47ac` emits separate version-specific staging trees.
 The current read-only source tag is `v1.1.0`,
 commit `abe508e1b89912adde45528136c3221eb69acdd7`.
 Earlier 1.2.0 test results retain that version boundary.
-Current native acceptance must complete before claiming the rebuilt maintained path is verified.
+Current Pi 1.1.0 acceptance now passes with the maintained authorization collector.
+Authorization-input rejection controls,
+domain resolution,
+unobserved-callback and potential-request gaps,
+and retained run history all pass.
+The native approval cases cover Allow,
+Deny,
+Stop,
+missing or unsupported facts,
+unknown satisfaction,
+satisfied requirements,
+bare prerequisites,
+independent prohibition,
+and evidence retirement during selection.
+The first unknown-satisfaction run reached `JudgmentDeadlineError` while package lint was also running.
+Three unchanged repetitions after stopping that lint process passed.
+This records the observed difference without attributing its cause.
+The authorization binding guard also failed its omission control and passed after restoration.
+No provider call or genuine human approval was used in these fixtures.
+
+Maintained delivery is now the active work item.
+The runtime still imports private integration modules,
+and the CLI uses `createAgentSessionFromServices` through a runtime factory.
+Its session managers originate before the SDK session constructor.
+The maintained host must preserve that original constructor custody across resume,
+new session,
+and fork operations;
+an SDK-only replacement does not establish CLI coverage.
+The measured runtime graph contains 100 owned modules plus 11 earlier generated owned inputs.
+The build graph and dynamic provider imports still require explicit accounting.
+The full package lint was stopped after 528 seconds without output;
+the changed authorization files pass their scoped lint.
+No full-package lint success or installed-host completion is claimed.
 
 The first approved native dispatch failed because the inherited test loader derived dependency paths
 from the codemode worker's disposable home.
