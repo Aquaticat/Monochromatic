@@ -5,11 +5,24 @@
  */
 import { describe, expect, it } from '@monochromatic-dev/module-test/ts';
 import { parse } from 'yuku-parser';
+import type {
+  NativeImportBuildError as SourceImportBuildError,
+  rewriteNativeImports as sourceRewriteNativeImports,
+} from '../native/contract/integration/native-batch/build-imports.ts';
 
 /**
  Runtime uses the built artifact while the maintained source provides its TypeScript contract.
  */
-const built: typeof import('../native/contract/integration/native-batch/build-imports.ts') = await import(new URL('../dist/native/contract/integration/native-batch/build-imports.ts', import.meta.url).href);
+const built: {
+  /**
+   Built error class must retain the maintained constructor contract.
+   */
+  readonly NativeImportBuildError: typeof SourceImportBuildError;
+  /**
+   Built transformation must retain the maintained resolver contract.
+   */
+  readonly rewriteNativeImports: typeof sourceRewriteNativeImports;
+} = await import(new URL('../dist/native/contract/integration/native-batch/build-imports.ts', import.meta.url).href);
 /**
  Native build exports are exercised from the copied artifact, not the source module.
  */
@@ -86,8 +99,12 @@ await describe({
          Original quoting, comments, and source escapes remain byte-for-byte unchanged.
          */
         const source = "import value from './a\\x2emjs';\n// retained\nexport { value };\n";
-        expect(rewriteNativeImports({ source, path: 'unchanged.mjs', select: function preserve({ specifier }) { return specifier; } })).toBe(source);
-        expect(rewriteNativeImports({ source: 'export const value = 1;', path: 'empty.mjs', select: function unused({ specifier }) { return specifier; } })).toBe('export const value = 1;');
+        expect(rewriteNativeImports({ source, path: 'unchanged.mjs', select: function preserve({ specifier }) {
+          return specifier;
+        } })).toBe(source);
+        expect(rewriteNativeImports({ source: 'export const value = 1;', path: 'empty.mjs', select: function unused({ specifier }) {
+          return specifier;
+        } })).toBe('export const value = 1;');
       },
     }),
     it({
@@ -98,7 +115,9 @@ await describe({
          */
         const calls: string[] = [];
         expect(function invalidImport() {
-          rewriteNativeImports({ source: 'import {', path: 'broken.mjs', select: function record({ specifier }) { calls.push(specifier); return specifier; } });
+          rewriteNativeImports({ source: 'import {', path: 'broken.mjs', select: function record({ specifier }) {
+          calls.push(specifier);
+          return specifier; } });
         }).toThrow(NativeImportBuildError);
         expect(calls).toEqual([]);
       },
@@ -110,10 +129,10 @@ await describe({
 
     ...[
       "./quote'\".mjs",
-      './backslash\\file.mjs',
+      String.raw`./backslash\file.mjs`,
       './line\nreturn\rseparator\u2028paragraph\u2029.mjs',
       './`;globalThis.injected=true;//.mjs',
-      './${globalThis.injected=true}.mjs',
+      `./\${globalThis.injected=true}.mjs`,
       '../parent/../../module.mjs',
       './nul\u0000.mjs',
       './rocket-🚀.mjs',
@@ -128,7 +147,9 @@ await describe({
           /**
            Resolver receives the decoded specifier rather than its original spelling.
            */
-          const rewritten = rewriteNativeImports({ source, path: 'boundary.mjs', select: function replace({ specifier }) { expect(specifier).toBe('./source.mjs'); return target; } });
+          const rewritten = rewriteNativeImports({ source, path: 'boundary.mjs', select: function replace({ specifier }) {
+          expect(specifier).toBe('./source.mjs');
+          return target; } });
           /**
            Reparse the emitted JavaScript to detect any injected executable structure.
            */
