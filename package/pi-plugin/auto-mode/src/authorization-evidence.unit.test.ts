@@ -71,10 +71,12 @@ await describe({
             name: `retains unknown prerequisite facts for ${mode}`,
             fn: async function checkAbsence() {
               const f = createAuthorizationEvidenceFixture();
-              const { instructionCandidates, ...legacyInputs } = f.inputs;
+              const inputs = { ...f.inputs, };
+              if (mode === 'legacy-candidates')
+                Reflect.deleteProperty(inputs, 'instructionCandidates',);
               const captured = await captureAuthorizationInputs({
                 judgment: f.judgment,
-                inputs: mode === 'legacy-candidates' ? legacyInputs : { ...legacyInputs, instructionCandidates, },
+                inputs,
                 ...(mode === 'absent-factory' ? {} : { ownerFor: function absentOwner() { return undefined; }, }),
               },);
               expect(captured.forClause(f.rule,),).toBe(MISSING_AUTHORIZATION_EVIDENCE,);
