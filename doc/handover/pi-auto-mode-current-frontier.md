@@ -187,6 +187,26 @@ network-guard regressions,
 and real CLI process check pass.
 The rendered troubleshooting record retains the failing and passing evidence.
 
+The native semantic-policy forwarding is now TypeScript and consumes the maintained consumer's original types.
+`action-policy/assessment-model.ts` supplies the unchanged fixed model to both the wire and scope selector.
+Absent configuration stays at bootstrap selection;
+the typed copier receives present configuration only.
+The measured bridge scope changed from 11 warnings to zero warnings and zero errors,
+and package types pass.
+The rebuilt operating-policy and domain suites pass with authored responses and no provider requests.
+The unconfigured-policy SDK control reaches an unresolved review with all four consumers unconfigured,
+zero assessments,
+and zero tool executions.
+A process-local omission of the bootstrap absence guard fails at the expected policy-copier diagnostic;
+`${HOME}/temp/agent/pi-native-policy-absence-omission-second-20261014.log`
+retains the result and the harness verifies unchanged maintained artifact bytes.
+The first omission log lacked the final diagnostic after retaining 65,934 bytes;
+it was not accepted as a verified omission result.
+The second capture records the original exception before Node prints the bundled source context.
+No classifier definition,
+operating cutoff,
+or instruction-source membership changed.
+
 ## Restart checkpoint after installing automatic Codex shell limits
 
 The user restarted the session and resumed work on 2026-10-13.

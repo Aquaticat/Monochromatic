@@ -74,6 +74,11 @@ Gateway-internal retries remain separate from client attempt accounting.
 prohibition,
 unspecified policy,
 and abstention through original SDK requests and maintained HTTP transport using authored replies.
+The typed `action-policy/semantic-policy.ts` forwards original configuration and scope inputs
+to the maintained consumer without replacing its validation.
+Both the wire and native scope selector import their fixed serving model from `action-policy/assessment-model.ts`.
+`test:native:unconfigured-policy` verifies unresolved native review without assessment or execution
+when every semantic consumer is absent.
 Bootstrap construction makes no provider calls.
 The native lifecycle fixtures exercise actual CLI manager selection,
 services,
