@@ -1128,6 +1128,34 @@ commit `06a466935536f8c9bcacb2d5efc0fc021be1bdff`.
 Emission now replaces each owned generated package tree before compiling,
 so obsolete dependency links and source files cannot survive a release change.
 The original migration qualification must pass on that graph before resuming the extension check.
+The full `1.2.0` build,
+package types,
+original host lifecycle,
+actual Qwen CLI,
+semantic operating-policy,
+context-receipt,
+and native approval-context checks now pass.
+Scoped lint of the changed release and emission files reports no diagnostics.
+Read-only resolution found 18 configured packages and 22 enabled extension entries after legacy auto-mode exclusion.
+Automatic approval review rejected an ordinary subprocess test of those extensions because their side effects
+were not contained by a disposable home and rejecting `fetch` alone.
+The replacement fixture uses Bubblewrap `0.12.0` with isolated user,
+network,
+PID,
+IPC,
+UTS,
+and cgroup namespaces;
+read-only code and dependency mounts;
+no host credentials or Git metadata;
+and a writable disposable tmpfs home.
+Its preflight proves host code writes fail and only loopback is visible.
+Automatic review accepted that isolated execution.
+The isolated fixture loads all 22 extension entries and observes their registered event kinds.
+Synthetic's public model-catalog lookup is blocked and retained as an expected exact URL;
+no provider inference is dispatched.
+The consumer assertion remains under investigation.
+The fixture and logs are `${HOME}/temp/agent/pi-extension-isolation-20261014.test.ts`
+and `${HOME}/temp/agent/pi-configured-extensions-isolated-20261014.log`.
 Independent maintained bootstrap quality work also continues.
 Its scoped lint reports `no-restricted-syntax/no-sync` for `statSync`
 and `no-restricted-syntax/no-regex` for trailing-slash removal,

@@ -15,7 +15,7 @@ their original generators and historical results are not retroactively changed.
 The `input` directories preserve those snapshots separately from newly generated Pi modules.
 Imports were relocated to this package graph without changing policy decisions.
 
-The maintained build emits the qualified Pi 1.1.0 source and owned transformations to `dist/native`.
+The maintained build emits the qualified Pi 1.2.0 source and owned transformations to `dist/native`.
 The package `build` task builds maintained exports before building this native artifact.
 `mise run //package/pi-plugin/auto-mode:build:native` builds that artifact;
 `build:native:owned` rebuilds the owned transformations against an existing source emission.
