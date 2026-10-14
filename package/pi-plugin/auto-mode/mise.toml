@@ -343,7 +343,7 @@ await spawn('mise', ['run', '//package/pi-plugin/auto-mode:install:native'], { e
 assert.deepEqual(JSON.parse(await readFile(settingsPath, 'utf8')), expected)
 assert.equal(await readlink(join(fixture, '.local/bin/pi')), join(packageRoot, 'native/command.ts'))
 const version = await spawn(join(fixture, '.local/bin/pi'), ['--version'], { env })
-assert.match(version.stdout, /1\.2\.0/)
+assert.equal(version.stdout.trim(), '1.2.0')
 await spawn('mise', ['run', '//package/pi-plugin/auto-mode:install:native'], { env, stdio: 'inherit' })
 assert.deepEqual(JSON.parse(await readFile(settingsPath, 'utf8')), expected)
 const rejectedHome = await mkdtemp(join(scratch, 'pi-native-install-rejected-'))
