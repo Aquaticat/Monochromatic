@@ -284,15 +284,26 @@ and the decisions D106 to D119 at the end of `package/music-player/design/decisi
   `Choreographer.doFrame` (44 to 45% of main samples), recomposition (19%), `mediaButton` (9 to 14%) and `getState`
   (8%); whether it depends on the queue length or on the page that shows the big list was not separated.
   What a platform controller sees (`dumpsys media_session` after cold start, Next, Next, pause, resume, Previous; and
-  `funcdiff.ts`): state, speed, the actions mask 21426 (21428 while paused), metadata title and the notification
-  actions (previous, pause or play, next) are the same before and after; `queueTitle` is null in both; the queue size
-  is 10 000 before and 0 after at every step, also during the first 90 s of a cold start (the notification controller
-  connects before the library loads, so the full queue is never published). `activeQueueItemId` still reports the item
-  index in the after variant although no queue is published. A 120 s invented tone showed the same wavy progress
-  card and moved the same way when the scrubber in the notification shade was tapped or dragged in both variants
-  (the first interaction after a cold start moved the position in 1 of 5 before and 1 of 4 after attempts, every later
-  one did; the driver was not reliable, so seeking from the shade is checked in both variants, not shown identical
-  on every attempt). No screen lock is set on the emulator, so the lock screen card was not seen.
+  `funcdiff.ts`): the playback state, speed, the actions mask 21426 (21428 while paused) and the notification's
+  actions (previous, pause or play, next; `funcdiff.ts` prints 6 for both variants because its pattern also counts the
+  three compact-action indices) are the same before and after; `queueTitle` is null in both; the queue size is 10 000
+  before and 0 after at every step, also during the first 90 s of a cold start (the notification controller connects
+  before the library loads, so the full queue is never published). Titles cannot be compared across runs, because the
+  invented tracks last under a second and advance by themselves; in both variants the session's metadata title follows
+  the playing item and the notification title sometimes trails it by one item. `activeQueueItemId` still reports the
+  item index in the after variant although no queue is published.
+  Transport on a folder of three 120 s invented tones (media key and the notification shade card's buttons, state read
+  from `dumpsys` after each step, second relaunch): Next and Previous by key, Next and Previous by the shade card,
+  pause and play by the card gave the same sequence of active items (0, 1, 1, 1, 1, 2, 0, 2, 2, 0, 1, 1, 1, 1, 1, 1) and the
+  same states (PLAYING, then PAUSED with actions 21428, then PLAYING) in both variants; the queue was 3 before and 0
+  after. A Previous pressed after 5 s and a second one at once left the item at 1 in both variants. The position
+  field of `dumpsys` is the value at the last update, not extrapolated, so positions are compared only as
+  magnitudes. On the 120 s tone of the 10 003-track library, a scrubber drag in the shade moved the position from about
+  9 s to 61.8 s in the after variant and a tap from about 9 s to 62.0 s in the before variant; the other taps and drags
+  right after a cold start left it unmoved in both variants, and the later tap probes read the same sequence of
+  positions in both (60.6, 60.1, 62.2 and 78.1 s before; 67.8, 61.7, 61.9 and 78.0 s after) that does not match the
+  tapped positions, so the scrubber driver was unreliable and a scrubber seek is shown to work in each variant but not
+  to behave identically on every attempt. No screen lock is set on the emulator, so the lock screen card was not seen.
   What this removes for other apps (not testable here, derived from the source): every controller that reads the
   platform queue (`MediaControllerCompat.getQueue`, `MediaController.getQueue`) gets none. Android Auto and Wear OS
   media

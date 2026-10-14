@@ -426,7 +426,8 @@ copy (the `pm clear`, install and cold start of a second variant); the stack was
 `TextureResize::TextureResize` under `EmulationGl::createColorBuffer`, the core 1.3 GB, and the journal showed
 `glGenTextures ... error null ctx` lines from the backend two minutes earlier.
 The relaunch from a fresh copy then ran about 1 hour 40 minutes (a 10 003-file push, 17 interleaved play windows, four
-simpleperf runs and the controller checks) without a crash and shut down gracefully.
+simpleperf runs and the controller checks) without a crash and shut down gracefully, and a third launch from another
+fresh copy (three invented tones, transport checks) also ended without a crash.
 
 Two facts about the owned AVD copy found in the same session: the sdcard of the owned AVD already holds
 `/sdcard/Music/RealAppTest` (private names), so delete it before pushing a library and before the volume scan, not
