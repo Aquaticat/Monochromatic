@@ -1,0 +1,192 @@
+# Drex 2.0 compatibility with native auto-mode input
+
+## Metadata
+
+- Status: in progress; release compatibility gate.
+- Started and last updated: 2026-10-13.
+- Owner: current Pi auto-mode migration session.
+- Governing skill commit: `37117e36397e30233062828581a5e38217da9458`.
+- Governing skill SHA-256: `552ac9955299b65a9f921a4e836b60a3fabc15d3477eeb8ec2bfb3f400647f9b`.
+- Compatibility fingerprint: `e87ef0d6a50564d8638a4e544f0c22cf8b3cdeb689578170a86f9401e76e0bb0`.
+- Prior compatible report: none; the release has a distinct serving-context constraint.
+
+Fingerprint input uses sorted object keys,
+ASCII strings,
+and de-duplicated sorted set arrays:
+
+```json
+{
+  "baseCategories": [
+    "managed-service"
+  ],
+  "deployment": {
+    "host": "Linux x86_64",
+    "interface": "HTTPS System One",
+    "runtime": "existing owned Node fetch adapter"
+  },
+  "hardConstraints": [
+    "Complete current policy retained",
+    "Exact serving-model attribution",
+    "Five-second assessment budget",
+    "Models estimate; code decides",
+    "No account mutation or rented compute",
+    "Original host input domain remains unchanged"
+  ],
+  "incumbent": "typesafe/jev-1.13.0 via LLM Gateway",
+  "overlays": [
+    "incumbent-replacement",
+    "sensitive-data"
+  ],
+  "schemaVersion": 1,
+  "scope": "Drex 2.0 release compatibility for the existing full-policy native assessor",
+  "subject": "Pi auto-mode Drex 2 release",
+  "trustBoundary": "Remote semantic estimates; no model-authenticated authority or final decision"
+}
+```
+
+## Task and decision boundary
+
+The user reported Drex 2.0 and delegated the choice of next action on 2026-10-13.
+The ongoing target remains a working Pi auto-mode migration.
+This release check must not restart an open-ended provider survey or defer native integration indefinitely.
+Model assessment remains separate from original-source accounting,
+authority,
+authorization-channel evidence,
+and human confirmation.
+The original Qwen choice still applies to the Pi coding agent;
+Drex is an assessor candidate.
+
+The selected initial gate is exact serving-model compatibility with the actual complete native input.
+No model-quality score or production threshold is inferred from the release announcement.
+If this gate fails,
+there is no full finalist score or production adoption from this phase.
+
+## Sources and discovery ledger
+
+- Official registry: authenticated `GET https://console.nace.ai/v1/models` returned 200.
+  It lists `drex-v2.0` with release date 2026-10-06 and `alias_for: null`.
+  The alias `drex-latest` points to that version.
+- Official [models reference](https://console.nace.ai/docs/drex/reference/models):
+  Drex 2.0 serves states up to 8,192 tokens and rows up to 16,384 tokens;
+  larger accepted requests are answered by Drex 1.5.
+- Official [pricing reference](https://console.nace.ai/docs/drex/reference/pricing):
+  2.0 bills 60 nano-USD per input token;
+  fallback billing uses the reported serving version.
+- Official [quickstart](https://console.nace.ai/docs/drex/quickstart):
+  the current base endpoint is `https://console.nace.ai/v1/systemone`.
+- Web searches executed: `site:nace.ai Drex 2.0`,
+  `site:docs.nace.ai drex-v2`,
+  and `site:github.com nace-ai drex 2.0`.
+  Search-provider relevance order,
+  first returned page,
+  no negative filter;
+  these discover documentation and do not claim ecosystem saturation.
+- Repository incumbents: the native wire pins `typesafe/jev-1.13.0`.
+  Historical matched Drex 1.5 and Jev evidence lives in
+  [the prior release recheck](../planning/pi-auto-mode-drex-1-5-recheck.md).
+
+### Candidate ledger
+
+#### Drex 2.0 direct API
+
+Managed service candidate,
+with incumbent-replacement and sensitive-data overlays.
+Screening is pending the native request probe.
+The public model page and exact account registry identify the candidate.
+
+#### Drex 1.5 direct API
+
+Managed service comparison and documented fallback destination.
+It is not silently counted as a successful Drex 2.0 run.
+Its prior semantic measurements retain their historical input scope.
+
+#### Jev 1.13.0 through LLM Gateway
+
+Current native wire model identity.
+Keeping it avoids an unqualified model change while native integration is completed.
+Current native tests use authored transport fixtures,
+so their success is not current Jev accuracy evidence.
+
+The initial gate can exclude a release before a full vendor or finalist audit.
+No source-code install,
+self-hosted weights,
+or native executable is proposed in this phase.
+Local-code platform and native-artifact gates therefore do not apply to these HTTP probes.
+Broader SaaS and replacement scoring remains unperformed unless a serving-compatible candidate proceeds.
+
+## Frozen execution schedule
+
+The no-network native capture completed before live inference.
+It contains 244 questions,
+663,405 serialized request bytes,
+and 301,368 serialized state bytes.
+The complete current policy is 32,553 bytes with SHA-256
+`62faf8d90fcc04553d4949ceabbb29c7310d4ea0563e5c4efd4341438d9bb280`.
+The capture executed no protected child call and sent no provider inference.
+
+Run these fixed probes once each,
+without retries or score-dependent rewording:
+
+1.  Public constant-state API control,
+    requesting `drex-v2.0`,
+    to verify that the account can receive that exact version.
+    This is an API control,
+    not a policy assessment or qualification example.
+2.  The complete current policy once,
+    with the existing fixed rule-prerequisite question and its exact selected clause.
+    This checks the lower boundary before native source/request duplication.
+3.  The original complete native wire,
+    changing only the requested model to `drex-v2.0`.
+    Retain the original provider request text,
+    all sources,
+    every question,
+    and all original source locations.
+
+Each probe has a five-second deadline,
+a one-MiB request bound,
+a two-MiB response bound,
+explicit response-model recording,
+and no transport retry.
+All results remain retained,
+including fallback,
+errors,
+and timeouts.
+The schedule does not repeat a failed authorization request or release a protected action.
+The API control has no expected semantic score;
+the policy probes establish serving compatibility only.
+
+If the native request is answered by 1.5,
+this is a failed direct-2.0 compatibility gate for the existing input.
+Do not delete policy,
+filter governing sources,
+or relabel fallback output to obtain a nominal upgrade.
+If all serving gates pass,
+freeze a separate unchanged-input repeat and semantic comparison before using any result for adoption.
+
+## Execution boundary
+
+The owned runner uses Node's existing HTTPS fetch,
+not a downloaded SDK or CLI.
+Only the named existing Nace credential reaches the documented Nace endpoint.
+It is neither printed nor persisted.
+The current automatic worker cgroup supplies 4 GiB memory,
+zero swap,
+200% CPU,
+and 256 tasks;
+Node is additionally limited to a 256 MiB heap.
+These are HTTP and serialization probes,
+not model training or local inference.
+No billing settings,
+credit purchase,
+account settings,
+or provider package installation occurs.
+
+Private evidence is `contract/research/drex-2.0-recheck` in the existing local qualification repository.
+It has no configured Git remote or push destination,
+verified with `git remote --verbose` and `git config --local --list`.
+
+## Results and disposition
+
+Pending the frozen probes.
+Scores and sensitivity are not applicable before the serving-model hard gate.
+No release recommendation is made yet.
