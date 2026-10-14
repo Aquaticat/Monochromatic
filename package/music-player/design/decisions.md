@@ -3338,6 +3338,9 @@ Android, played it at once.
 - A click, a tap or Enter on the current track toggles play and pause, whether it is playing or paused.
   Android calls the deck's `togglePlay`, so a current track that was restored from the saved session and never started
   starts, and a current track whose load failed is loaded again on the next tap.
+  Desktop differs on a failed load: its `load_current` skips an unreadable file and reports it, so selecting such a row
+  moves the selection to the next playable file (pinned by a controller test); whether desktop should keep the
+  unreadable row selected like Android is an open question.
   Android's `PlayerController.activateRow` holds the whole rule, and the host only forwards the tap.
 - The Play item of the track menu keeps starting a track at once (desktop `play_row_now`, Android `playIndex`);
   it is an explicit Play, not a row click.

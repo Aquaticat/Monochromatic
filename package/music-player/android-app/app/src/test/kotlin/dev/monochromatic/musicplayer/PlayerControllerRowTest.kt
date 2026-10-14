@@ -84,6 +84,20 @@ class PlayerControllerRowTest {
         assertEquals(listOf(uriAt(4)), reported)
     }
 
+    /** A row tapped while the first library load still runs stays the selected row, paused, when the load finishes. */
+    @Test
+    fun aRowSelectedDuringTheFirstLoadSurvivesFinishLoad() {
+        /** The three invented tracks of the folder. */
+        val tracks: List<Track> = (0 until 3).map { number -> trackOf("Alpha", number) }
+        controller.beginLoad()
+        controller.reconcileLibrary(tracks.take(2))
+        controller.activateRow(0)
+        controller.finishLoad(tracks = tracks, session = Session(selected = uriAt(1)))
+        assertEquals(0, controller.uiState.currentIndex)
+        assertFalse(controller.uiState.playing)
+        assertEquals(1, engine.loads.size)
+    }
+
     /** The playing row pauses on a tap and keeps its place, with no new load. */
     @Test
     fun thePlayingRowPausesOnATap() {
