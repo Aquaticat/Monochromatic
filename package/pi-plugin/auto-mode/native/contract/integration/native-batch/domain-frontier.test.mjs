@@ -212,6 +212,7 @@ try{
  const measures=first?.measures??observations;
  assertDomainReview({env,review,judgment,session,originalBody:measures.originalBody,settings:{relation,requireResolution,requestRelation,unobservedContext,observedContext,observedProgress,throwingContext,httpTransport,operatingPolicy,lowConfidenceClause,unresolvedClause,sdkStream,receiptControl},measures});
  if(nextDecision){
+  if(observations.assessments!==2)console.error(JSON.stringify({requests:observations.requests,assessments:observations.assessments,review:current.lastReview?.outcome,judgment:current.lastJudgment?.inspect(),messages:session.messages.slice(-3)}));
   assert.equal(observations.assessments,2,'Each original decision gets one assessment');
   assert.equal(observations.executions,3,'Later received instructions must prevent the next operation from executing');
   assert.ok(observations.nextInputQuestions>0,'The second assessment must select the later instruction');

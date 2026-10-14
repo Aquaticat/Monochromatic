@@ -1263,6 +1263,16 @@ cancellation,
 and execution or result identity must still invalidate execution.
 The next implementation step is to distinguish authenticated appended receipts from changed selected dependencies,
 then exercise both outcomes through native consumers.
+The initial approved-source implementation in `05f6276bff` exposed a second snapshot in the dependency facade.
+The retained diagnostic confirmed that this independently captured snapshot still rejected the progress receipt.
+Commit `1149f50605` makes the dependency facade retain the same assessed collection.
+The unchanged progress consumer now passes with three child calls,
+seven progress callbacks,
+and one authored assessment;
+the package type check passes.
+The following-decision receipt control in `80f877e998` completes the first operation,
+but reaches only one assessment instead of the expected two.
+Its next diagnostic must identify the second decision's stopping boundary before claiming receipt delivery works.
 The malformed traversal controls pass,
 including omitted positions and forged observation identity.
 Removing either of those guards in a disposable in-memory module causes its control to fail.
