@@ -1,5 +1,15 @@
 # Decision-model trial priorities
 
+## Adopted direction
+
+The user subsequently excluded Perplexity and selected Luna on October 14,
+2026.
+The user then accepted a `0.80` operating cutoff to reduce manual judgment burden.
+The ranking retained in this document is historical;
+it does not authorize further Perplexity trials.
+The [current admission decision](../decision/pi-auto-mode-semantic-admission.md#current-luna-decision)
+governs implementation and Luna-specific verification.
+
 ## Purpose
 
 The user asked which other decision models to try on October 14,

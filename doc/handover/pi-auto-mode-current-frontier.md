@@ -7,6 +7,23 @@ This current summary complements the
 [historical evidence ledger](pi-auto-mode-axiom-evaluation.md).
 Updated 2026-10-14.
 
+## Adopted Luna migration
+
+The user selected `gpt-6-luna-decisions`,
+excluded Perplexity,
+and accepted scores of `0.80` or higher to reduce manual request judgment.
+The agent's earlier `0.99` heuristic was Jev-specific and uncalibrated;
+it must not be imposed as an unchanged Luna requirement.
+The [updated decision](../decision/pi-auto-mode-semantic-admission.md#current-luna-decision)
+preserves unique-leading supported meanings and independent source and authorization guards.
+Only four of the retained 84 Luna answers reach `0.80`,
+including the primary permission answer at `0.83`.
+The migration therefore includes the serving adapter,
+fixed model binding,
+cutoff tests,
+and bounded question-format experiments retaining all input.
+No new provider trial has run since this choice.
+
 ## Original native RPC approval verification
 
 The disposable harness in `${HOME}/temp/agent/pi-native-rpc-human-20261014/`
@@ -37,13 +54,21 @@ but failed the controller's unconditional empty-stderr assertion.
 The source trace identifies deliberate request cancellation during assessment,
 which the existing approval-domain test already expects as a handler failure.
 This is not evidence of a disposal failure.
-The controller is being corrected to capture execution and disposal stderr separately,
-retain both without filtering,
-and require empty disposal output.
-Cancellation,
-delayed Allow,
-and an unrelated response identifier remain pending.
+The corrected controller captured every stderr byte with its execution or disposal phase,
+without filtering output.
+Stop's 10,467 diagnostic bytes belong to execution;
+disposal output is empty.
+Stop,
+cancellation,
+Allow after 6,007 ms,
+and an unrelated response identifier followed by Deny now pass.
+The unrelated identifier leaves the original native request pending.
+Every completed control uses one assessment,
+zero provider requests,
+and exit zero.
+Only Allow executes the inert tool.
 No genuine human response has been supplied yet.
+That human boundary remains queued while the user's Luna migration takes priority.
 
 ## Typed native session construction
 
