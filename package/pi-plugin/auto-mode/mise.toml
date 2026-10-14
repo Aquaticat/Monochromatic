@@ -113,6 +113,10 @@ run = "node src/native-build-imports.unit.test.ts"
 description = "Verify native Markdown qualification against installed and disposable parser packages"
 run = "node src/native-parser.unit.test.ts"
 
+[tasks."test:native:state-assignments"]
+description = "Verify native message assignment guards against original executable syntax"
+run = "node src/native-state-assignments.unit.test.ts"
+
 [tasks."test:native:approval"]
 description = "Verify original approval routing and independent prerequisite evidence with fixture presentation"
 run = [
