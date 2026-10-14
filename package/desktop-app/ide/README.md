@@ -2143,6 +2143,124 @@ by `selected_rows_use_the_ink_chosen_from_the_fill_with_measured_contrast`:
 `inspect:theme-guards` removes the ink choice and reverses the tint in a disposable copy
 and checks that the test fails.
 
+## Markdown and MDX highlighting
+
+Files ending in `.md` and `.mdx` are read as the Helix language `markdown`,
+because the pinned registry lists `mdx` as a Markdown file type.
+The block grammar `markdown` paints headings,
+quotes,
+list markers,
+and fences,
+and injects three more grammars:
+`markdown_inline` into every paragraph and table cell,
+`yaml` into frontmatter between `---` lines
+(`toml` between `+++` lines),
+and the language a fence's info string names
+(`rust`,
+`js`,
+`json`,
+`sh`,
+`toml` and every other bundled language).
+An HTML block or inline tag is painted by the `html` grammar.
+
+### What the palette maps
+
+The palette (`syntax::SCOPES`) had no `markup` entry,
+so every `markup.*` capture was dropped and only the frontmatter strings were colored.
+On a copy of `.agents/skills/choosing-technology/SKILL.md` the language,
+the grammars,
+and the injections were all working:
+357 spans,
+2 of them colored before,
+872 spans,
+517 colored after.
+The measured counts of the other samples are
+33 spans and 9 colored before and 43 and 19 after for an `.mdx` file,
+and 138 and 39 before and 170 and 71 after for a file with fences in five languages.
+
+Each Markdown role takes one of the six existing hues and a second channel,
+so color is never the only mark.
+The glyph painter draws glyph runs only,
+so underline and strikethrough are not available,
+and the second channel is a weight or the real italic face of JetBrains Mono.
+
+- `markup.heading` (marker included):
+  blue,
+  bold (the source weight plus 300).
+- `markup.bold`:
+  yellow,
+  bold.
+- `markup.italic`:
+  purple,
+  italic face.
+- `markup.strikethrough`:
+  gray,
+  light (the source weight minus 100),
+  because the line itself cannot be drawn.
+- `markup.raw.inline`:
+  green;
+  the backticks, which stay in the default ink, mark the boundary.
+- `markup.link` (text and reference labels):
+  blue,
+  semibold (plus 200).
+- `markup.link.url`:
+  orange,
+  italic face,
+  because underline is not available.
+- `markup.list` (markers):
+  orange,
+  bold.
+- `markup.quote`:
+  gray,
+  italic face.
+
+The hues are the ones the other languages use,
+so they keep the contrast already measured for them:
+at least 6.6:1 in both schemes against an assumed near black and white background
+(`markdown_roles_are_painted_in_their_hue_in_both_schemes` prints each ratio).
+
+### What stays plain
+
+- Delimiters (`*`,
+  `**`,
+  `~~`,
+  backticks,
+  `>`,
+  table pipes,
+  `---`) are `punctuation` captures, which paint in the default ink in every language.
+- The text of a fenced block has no block color:
+  a block color would show through every token its own language leaves unpainted.
+  A fence in a language without a bundled grammar and an indented code block stay in the default ink.
+- The info string after the opening fence is a `label` capture,
+  which the palette leaves out because Rust and JavaScript use `label` for loop labels.
+- `latex` blocks have no bundled grammar.
+- Only the innermost capture paints:
+  a code span inside a heading takes the code color and the regular weight,
+  and bold inside a quote is upright.
+- The other languages that emit `markup` captures change too:
+  `<b>`,
+  `<em>` and `<a>` in HTML,
+  and Rust `///` documentation comments (the `markdown-rustdoc` language).
+  A measured Rust file with documentation comments went from 41 to 45 spans and 21 to 25 colored.
+
+### MDX
+
+Helix has no JSX-aware MDX language and none is added,
+so an `.mdx` file is Markdown.
+A JSX element is painted by the `html` grammar only where CommonMark reads it as HTML:
+a `<div className="box">` block shows its tag in purple,
+its attribute name in yellow,
+and its string in green (measured in the nested compositor in both color schemes),
+and the text inside the block is not read as Markdown.
+`<Chart data={[1, 2, 3]} />` is not valid HTML,
+because an unquoted attribute value cannot hold spaces,
+so it is a Markdown paragraph and `[1, 2, 3]` is painted as a link.
+`import` and `export` lines are Markdown paragraphs too:
+they show no JavaScript highlighting.
+A fenced `js` block is painted as JavaScript.
+No measured way to do better exists without a JSX-aware grammar,
+which Helix does not have and this package does not add.
+
 ## Source view keys
 
 The source view is read-only:
