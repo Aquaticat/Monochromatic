@@ -223,7 +223,7 @@ Single-run durations do not establish reliable latency or comparative performanc
 
 ### Measured state-length boundary
 
-`mise run probe state` kept one short question fixed and varied only the string state `x `.repeat(n).
+`mise run probe state` kept one short question fixed and varied only `state = 'x '.repeat(n)`.
 Repetition counts 8,192,
 65,536,
 and 131,070 returned HTTP 200 with `model: drex-v2.0` and the original answer.
@@ -240,6 +240,35 @@ That reported usage is not the state-only limit counter:
 it exceeds the named state limit even though this request was accepted.
 Do not substitute billing usage or a repetition count for the server's state-token accounting.
 Every request in this phase completed within five seconds in its individual observation.
+
+### Measured state-plus-longest-question boundary
+
+The hosted backend contradicts the published 262,144-token row limit.
+With the fixed short state and 262,100 repetitions of `x ` in one question's instructions,
+HTTP 422 reported
+`question requires 262122 branch tokens; backend row limit is 139264 including state`.
+Larger probes reached the separately worded 262,144-token validation error.
+These distinct responses establish different observed validation boundaries;
+they do not establish the hosted deployment's source-level cause.
+
+Targeted adjacent probes kept every other byte fixed:
+139,236 repetitions returned HTTP 200,
+`model: drex-v2.0`,
+one original answer,
+and 139,264 reported input tokens.
+The request took 4,419.861 ms.
+139,237 repetitions returned HTTP 422 with `Request schema or context limit is invalid`.
+The observed adjacent boundary agrees with the backend's named 139,264-token row limit.
+The generic adjacent error alone would not establish that number;
+the larger request's explicit backend diagnostic supplies it.
+
+The initial schedule and adjacent controls consumed 20 requests.
+The remaining bounded investigation adds three combined cases:
+244 questions with state repetition counts 8,192,
+65,536,
+and 131,070.
+These retain synthetic inputs and measure whether independent accepted boundaries combine.
+They make no claim about current native input fidelity or semantic quality.
 
 [models]: https://console.nace.ai/docs/drex/reference/models
 [limits]: https://console.nace.ai/docs/drex/reference/limits
