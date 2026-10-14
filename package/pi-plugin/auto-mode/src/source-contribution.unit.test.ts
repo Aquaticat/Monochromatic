@@ -63,7 +63,9 @@ await describe({
           { ...f.inputs, requestSourceContributions: [...f.observation.sourceContributions,], },
           { ...f.inputs, instructionSources: [{ ...f.view, request: { ...f.observation, }, },], },
         ]) {
-          expect(function invoke() { consumeSourceAssociations(input,); },).toThrow(PolicyInputBindingError,);
+          expect(function invoke() {
+            consumeSourceAssociations(input);
+          }).toThrow(PolicyInputBindingError);
         }
       },
     },),
@@ -81,7 +83,9 @@ await describe({
           instructionCarriers: [first.carrier, second.carrier,],
           runInstructionCarriers: [first.runCarrier, second.runCarrier,],
         },);
-        expect(result.uses.map(function state(use,) { return use.state; },),).toEqual(['accounted', 'accounted',],);
+        expect(result.uses.map(function state(use) {
+          return use.state;
+        })).toEqual(['accounted', 'accounted']);
         expect(result.uses[0]?.sourceOccurrence,).not.toBe(result.uses[1]?.sourceOccurrence,);
         expect(result.uses[0]?.contribution,).not.toBe(result.uses[1]?.contribution,);
       },
@@ -91,9 +95,16 @@ await describe({
         name: `preserves exact original request reader failure ${index}`,
         fn: async function checkReader() {
           const f = createContributionFixture('base',);
-          const inputs = { ...f.inputs, get requestObservation(): never { throwNativeValue(original,);
-          throw new Error('Native throw must not return',); }, };
-          const failures = thrownValues(function invoke() { consumeSourceAssociations(inputs,); },);
+          const inputs = {
+            ...f.inputs,
+            get requestObservation(): never {
+              throwNativeValue(original);
+              throw new Error('Native throw must not return');
+            }
+          };
+          const failures = thrownValues(function invoke() {
+            consumeSourceAssociations(inputs);
+          });
           expect(failures.length,).toBe(1,);
           expect(failures[0],).toBe(original,);
         },
