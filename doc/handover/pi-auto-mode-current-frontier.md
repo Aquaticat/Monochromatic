@@ -1296,8 +1296,21 @@ preserving the resource-local 64-receipt cap and every byte bound.
 Automatic approval review rejected its commit because this resource and policy-boundary change requires
 explicit user authorization.
 The user explicitly approved the prepared increase to 128 receipts on 2026-10-14.
-Commit and rebuild the approved change,
-then verify the configured consumer without the diagnostic hook.
+Commit `b45783436f` records the approved change.
+Both maintained exports and the owned native runtime rebuild successfully.
+The original isolated configured-extension runner passes without the diagnostic hook:
+22 extensions load,
+three child calls execute,
+and one authored assessment completes with zero provider requests.
+The log is `${HOME}/temp/agent/pi-approved-capacity-configured-20261014.log`.
+The 128/129 native receipt boundary,
+combined count and byte unit controls,
+next-decision receipts,
+selected-policy changes,
+cancellation,
+and immutable assessed arguments pass against this build.
+Package types and scoped receipt-accounting lint pass with zero lint diagnostics.
+Continue maintained host activation and remaining package quality checks.
 The original assessment budget,
 resource-local 64-receipt cap,
 and byte bounds remain unchanged.

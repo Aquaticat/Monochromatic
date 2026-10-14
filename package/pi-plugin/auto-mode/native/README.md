@@ -196,6 +196,10 @@ cancellation,
 and immutable assessed arguments during approved execution.
 The adopted receipt timing and measured contrasts are recorded in
 `doc/planning/pi-auto-mode-governing-domain-closure.md` and `doc/troubleshooting/pi-sdk-staging.md`.
+The approved combined and session receipt capacity is 128;
+resource-local capture remains limited to 64 receipts and all byte bounds remain unchanged.
+The isolated consumer with all 22 configured extensions passes through three child calls and cleanup.
+Its assessment uses authored replies and makes no provider requests.
 Complete lint verification,
 installed host activation,
 and genuine human approval remain outstanding.
