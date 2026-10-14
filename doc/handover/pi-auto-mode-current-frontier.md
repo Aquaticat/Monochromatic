@@ -1113,9 +1113,18 @@ cancellation,
 Allow after resource reload,
 and the separate Qwen CLI process also pass.
 These use fixture responses with zero provider requests and zero genuine human approvals.
-Remaining final checks are the changed TypeScript integration files,
-native syntax,
-and rendered documentation.
+All seven changed TypeScript integration and test files pass scoped lint with no diagnostics.
+All 194 maintained native modules pass syntax checking.
+The native README and resource-reload checkpoint were checked in rendered output.
+Native resource construction now lives in `resources.ts`,
+renamed from `resources.mjs` on 2026-10-14.
+Its static dependency bridge retains original generated constructors and observation readers.
+The full CLI resource record has explicit policy-input,
+cleanup,
+and API-publication interfaces;
+reload-only registrations still use the narrower shared contract.
+Construction verification is next,
+followed by the remaining host session/disposal owner.
 
 The first approved native dispatch failed because the inherited test loader derived dependency paths
 from the codemode worker's disposable home.
