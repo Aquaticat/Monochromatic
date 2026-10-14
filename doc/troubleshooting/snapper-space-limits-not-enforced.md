@@ -364,8 +364,10 @@ Catalog of readings that are not:
   because it is `qgroup_usage.exclusive` per `snapper/Snapshot.cc:187`.
 - `btrfs qgroup show` reports `WARNING: qgroup data inconsistent` and returns numbers that
   contradict `btrfs filesystem usage`.
-  It reported `home` at 336.00 KiB and later 49.85 GiB
-  while the subvolume held roughly 580 GiB.
+  It reported `home` at 336.00 KiB,
+  then 49.85 GiB,
+  then 101.01 GiB across successive reads,
+  while the subvolume held roughly 600 GiB.
 - `btrfs quota rescan --wait <path>` prints `quota rescan started` and returns while the scan
   is only paused.
   `btrfs quota rescan --status <path>` then reports `no rescan operation in
@@ -440,7 +442,7 @@ than migrating it.
 ## What does not work
 
 `btrfs quota rescan --wait /var/home` did not clear the flag.
-Three attempts returned
+Four attempts returned
 `quota rescan started` with exit status 0,
 and `btrfs quota status` still reported
 `Inconsistent: yes (rescan needed)` after each.
@@ -451,6 +453,11 @@ which fell inside the
 00:00 to 01:23 run of `snapper-cleanup.service`,
 so quiet system activity does not explain
 why that one completed and these did not.
+All four ran while container and build activity was ongoing on the same filesystem:
+a `cargo-mutants` container,
+`podman` pulls,
+and rootless container storage churn.
+An idle window is the untried variable.
 The difference is not established.
 
 Raising `FREE_LIMIT` alone does not help while cleanup stays daily,
