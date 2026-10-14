@@ -15,7 +15,7 @@ await describe({
       return it({
         name: `rejects unsupported constructor record ${ordinal}`,
         fn: async function invalidOptions() {
-          expect(function copyInvalidOptions() { nativeResourceInput.copyOptions(value); }).toThrow('Loader options requires an ordinary record');
+          expect(function copyInvalidOptions() { nativeResourceInput.copyOptions(value); }).toThrow('Loader options require an ordinary record');
         },
       });
     }),

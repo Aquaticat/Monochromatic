@@ -21,6 +21,9 @@ await describe({
         expect(snapshot).toEqual(source);
         expect(snapshot).not.toBe(source);
         expect(Object.isFrozen(snapshot)).toBe(true);
+        if (((typeof snapshot) !== 'object') || (snapshot === null) || (!('agentsFiles' in snapshot)) || (!Array.isArray(snapshot.agentsFiles))) throw new Error('Expected copied context file list');
+        expect(Object.isFrozen(snapshot.agentsFiles)).toBe(true);
+        expect(Object.isFrozen(snapshot.agentsFiles[0])).toBe(true);
         expect(Object.isFrozen(source)).toBe(false);
         expect(Object.isFrozen(source.agentsFiles)).toBe(false);
         expect(Object.isFrozen(source.agentsFiles[0])).toBe(false);

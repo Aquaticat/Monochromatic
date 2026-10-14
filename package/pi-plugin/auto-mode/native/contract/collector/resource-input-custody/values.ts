@@ -224,7 +224,7 @@ export function copyOptions(options: unknown): Record<string, unknown> {
    */
   const record = requireInputRecord({
     value: options,
-    label: 'Loader options'
+    message: 'Loader options require an ordinary record'
   });
   /**
    This new object owns every selected field without freezing borrowed dependencies.

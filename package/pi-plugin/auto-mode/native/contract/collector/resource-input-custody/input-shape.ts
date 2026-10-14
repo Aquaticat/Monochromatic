@@ -29,7 +29,7 @@ function isRecord(value: unknown): value is Readonly<Record<string, unknown>> {
 
  @param value - original value supplied by the native loader
 
- @param label - input named in rejection diagnostics
+ @param message - original input-specific diagnostic for an unsupported record
 
  @returns checked record whose fields remain unknown
 
@@ -37,17 +37,17 @@ function isRecord(value: unknown): value is Readonly<Record<string, unknown>> {
 
  @example
  ```ts
- requireInputRecord({ value: { path: 'AGENTS.md' }, label: 'Context file' });
+ requireInputRecord({ value: { path: 'AGENTS.md' }, message: 'Context file requires an ordinary record' });
  ```
  */
 export function requireInputRecord({
   value,
-  label
+  message
 }: {
   readonly value: unknown;
-  readonly label: string;
+  readonly message: string;
 }): Readonly<Record<string, unknown>> {
-  if (!isRecord(value)) throw new SourceCollectionError(`${label} requires an ordinary record`);
+  if (!isRecord(value)) throw new SourceCollectionError(message);
   return value;
 }
 
@@ -124,7 +124,7 @@ export function requireInputFields({
    */
   const record = requireInputRecord({
     value,
-    label
+    message: `${label} requires an ordinary record`
   });
   /**
    Symbols and hidden fields remain part of exact schema membership.
