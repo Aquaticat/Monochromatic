@@ -851,7 +851,21 @@ parent retirement,
 copied outcomes,
 prepared-member completion,
 and synchronous or asynchronous native failures.
-Additional rejection and staging controls remain in progress.
+The rejection and staging controls subsequently passed,
+and plain lint reported zero warnings and zero errors across all 13 changed typed files.
+The normal SDK stream and native permission,
+prohibition,
+and unspecified-policy contrasts also passed.
+Disposable omissions demonstrated the original return guards and parsed-import guards independently.
+
+Required-red commit `f14fc78e8d` then exposed a scheduling regression introduced by this port:
+the extra asynchronous completion helper allowed a later queued result mutation to precede conversion.
+Its generated-consumer assertion received `later queued mutation` instead of `original text`.
+Commit `b80cb3cd8a` moves synchronous return retention directly after the original native await.
+The changed source passes scoped lint,
+package types,
+and the owned native build;
+final consumer verification of that correction is next.
 This checkpoint is not full-package lint success or production activation.
 
 The first approved native dispatch failed because the inherited test loader derived dependency paths

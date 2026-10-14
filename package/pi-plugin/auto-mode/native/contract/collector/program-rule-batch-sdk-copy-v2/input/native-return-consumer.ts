@@ -72,14 +72,31 @@ function isNativeReturn(value: unknown): value is NativeReturnOutcome {
 
  @throws NativeReturnContractError when the native return shape or call association is invalid
  */
-function retainNativeReturn({ invocation, outcome }: {
+function retainNativeReturn({
+  invocation,
+  outcome
+}: {
   readonly invocation: NativeReturnInvocation;
   readonly outcome: unknown;
 }): NativeReturnOutcome {
-  /** Captured state transitions have their own diagnostic boundary. */
-  const rl = tagged({ tag: retainNativeReturn.name, l });
-  if (!isNativeReturn(outcome) || (outcome.toolCall.id !== invocation.call.id) || (outcome.toolCall.name !== invocation.call.name)) {
-    /** Invalid returns remain inspectable without claiming native conversion succeeded. */
+  /**
+   Captured state transitions have their own diagnostic boundary.
+   */
+  const rl = tagged({
+    tag: retainNativeReturn.name,
+    l
+  });
+  if ((!isNativeReturn(outcome)) || (outcome.toolCall
+    .id
+    !== invocation.call
+    .id)
+    || (outcome.toolCall
+      .name
+      !== invocation.call
+      .name)) {
+    /**
+     Invalid returns remain inspectable without claiming native conversion succeeded.
+     */
     const error = new NativeReturnContractError('Native pipeline returned an outcome for a different call or shape');
     invocation.state = 'invalid-return';
     invocation.failure = error;
@@ -89,15 +106,32 @@ function retainNativeReturn({ invocation, outcome }: {
   invocation.state = 'returned';
   invocation.conversionCount++;
   try {
-    /** Original native conversion runs synchronously before another microtask can alter the result. */
-    const value: unknown = toScriptValue(invocation.tool, outcome);
-    invocation.conversion = typeof value === 'string'
-      ? Object.freeze({ status: 'string', value, bytes: Buffer.byteLength(value) })
-      : Object.freeze({ status: 'unsupported', kind: value === null ? 'null' : typeof value });
+    /**
+     Original native conversion runs synchronously before another microtask can alter the result.
+     */
+    const value: unknown = toScriptValue(
+      invocation.tool,
+      outcome
+    );
+    invocation.conversion = (typeof value) === 'string'
+      ? Object.freeze({
+        status: 'string',
+        value,
+        bytes: Buffer.byteLength(value)
+      })
+      : Object.freeze({
+        status: 'unsupported',
+        kind: value === null ? 'null' : typeof value
+      });
   } catch (error) {
-    invocation.conversion = Object.freeze({ status: 'threw', error, messageAtCapture: caughtValueText(error) });
+    invocation.conversion = Object.freeze({
+      status: 'threw',
+      error,
+      messageAtCapture: caughtValueText(error)
+    });
   }
-  rl.debug(`retained native return with conversion ${invocation.conversion.status}`);
+  rl.debug(`retained native return with conversion ${invocation.conversion
+    .status}`);
   return outcome;
 }
 
@@ -262,9 +296,14 @@ export function createNativeReturnConsumer(owner: NativeReturnOwner): NativeRetu
     } = reserve(input);
     il.debug('reserved original native invocation');
     try {
-      /** Retain completion directly after the original native await, even if the parent retired. */
+      /**
+       Retain completion directly after the original native await, even if the parent retired.
+       */
       const outcome: unknown = await pending;
-      return retainNativeReturn({ invocation, outcome });
+      return retainNativeReturn({
+        invocation,
+        outcome
+      });
     } catch (error) {
       if (invocation.state === 'running') {
         invocation.state = 'threw';
