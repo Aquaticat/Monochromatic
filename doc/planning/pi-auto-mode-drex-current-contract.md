@@ -185,6 +185,26 @@ or service-capacity failure.
 The existing worker bounds are 4 GiB memory and two CPUs;
 the Node heap is additionally limited to 128 MiB.
 
+### Measured question-count boundary
+
+`mise run probe questions` in `${HOME}/temp/agent/drex-request-limits-20261014`
+completed every frozen question-count case without retries.
+Counts 32,
+128,
+244,
+and 512 returned HTTP 200,
+`model: drex-v2.0`,
+and exactly the original typed answer sets.
+The 513-question request returned HTTP 422 with
+`questions: at most 512 questions allowed`.
+The 512-question request took 1,596.205 ms for the synthetic short state;
+this is not a measurement of a complete native request with 512 questions.
+
+The accepted 512 and rejected 513 establish the hosted question-count boundary for the observed route and time.
+The historical 16-question failure no longer excludes this route on question count alone.
+The deciding historical hosted implementation remains unavailable,
+so this result does not identify when or why that behavior changed.
+
 [models]: https://console.nace.ai/docs/drex/reference/models
 [limits]: https://console.nace.ai/docs/drex/reference/limits
 [evaluate]: https://console.nace.ai/docs/drex/api-reference/systemone
