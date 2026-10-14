@@ -111,6 +111,41 @@ The retained explicit-rubric responses provide a positive control for detecting 
 Question batching is rejected as a compensation for the uncertainty observed in this input.
 The maintained single-call sender remains appropriate for these measured results.
 
+## Readable selected-text experiment
+
+The next frozen diagnostic repeats each clause's exact selected text as readable source data
+beside its unchanged original JSON question binding.
+The shared input,
+definitions,
+choices,
+question membership,
+and source bytes remain intact.
+The added framing explicitly treats the repeated text as evidence to assess;
+it supplies no authority or new instruction.
+This tests presentation of nested escaped text,
+not a new interpretation rubric or permission policy.
+
+The current [OpenAI guide][openai-decisions-guide] recommends distinct questions and observable criteria.
+That guidance does not establish a remedy for this input's uncertainty.
+The retained candidate has 84 questions and measures 827,607 bytes with SHA-256
+`c078a29a3c3eb26f768d5a92d57255ce9ac735e6bdcf8ca8ae7d018b7206e728`.
+The offline preparation checks unchanged shared input,
+exact original question bindings,
+and every original choice.
+Artifacts live in `${HOME}/temp/agent/pi-luna-readable-selection-20261014/`.
+
+The user's standing Luna-call authorization covers three sequential observations,
+each with one request,
+the original five-second deadline,
+no retry,
+and no represented tool execution.
+A failure or invalid response ends the schedule.
+Compare full answer data with the measured baseline and retain independent confidence.
+An increased admission count alone cannot establish correctness or justify adoption.
+Dispatch is pending.
+
+[openai-decisions-guide]: https://developers.openai.com/api/docs/guides/decisions
+
 ## Historical initial scope and authorization
 
 On October 14,
