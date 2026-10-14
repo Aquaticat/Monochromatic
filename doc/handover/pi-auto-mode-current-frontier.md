@@ -148,6 +148,7 @@ and fails the native assertion;
 `${HOME}/temp/agent/pi-serialization-controls-20261014/verification.json`
 records the unchanged artifact hash.
 Scoped TypeScript lint and package types pass.
+The actual isolated Qwen CLI process also passes with zero provider requests and clean shutdown.
 The next original-owner link is from serialized tools to their host input receipts:
 the new serializer receipt identifies actual declaration objects,
 but those objects do not yet carry their original source occurrences through native declaration copying.
