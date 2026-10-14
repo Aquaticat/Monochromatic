@@ -1074,7 +1074,24 @@ All 196 maintained native modules pass parser checking.
 The native README,
 current handover,
 and admission decision were checked in rendered output.
-The remaining maintained host session/disposal interface work resumes next.
+The admission decision's initial sentence incorrectly described unresolved evidence as an automatic approval request.
+It is corrected against the original approval router and guard-outcome implementation:
+unknown or unspecified policy blocks execution;
+only otherwise established permission with an eligible authorization requirement reaches native approval.
+No runtime fallback was changed.
+The native construction and disposal owner now lives in `host.ts`,
+renamed from `host.mjs` on 2026-10-14.
+Its original static generated dependencies,
+SDK result fields,
+retirement tokens,
+and cleanup-retry state remain intact.
+The host's membership registry now retains the already-created original resource record beside its loader key;
+no replacement policy owner or source registry is introduced.
+Package types,
+the owned native build,
+original host lifecycle checks,
+and scoped lint of all six changed TypeScript interfaces pass.
+Final native approval and separate-process CLI checks are next.
 Independent maintained bootstrap quality work also continues.
 Its scoped lint reports `no-restricted-syntax/no-sync` for `statSync`
 and `no-restricted-syntax/no-regex` for trailing-slash removal,

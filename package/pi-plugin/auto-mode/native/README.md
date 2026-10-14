@@ -22,6 +22,10 @@ The package `build` task builds maintained exports before building this native a
 Rebuilds replace the copied `dist/native/contract` tree so retired source modules cannot survive beside replacements.
 The candidate CLI entry is `dist/native/cli.mjs`.
 Its TypeScript bootstrap retains the original SDK session interfaces and forwards native owners unchanged.
+The TypeScript host owner retains original session construction,
+resource membership,
+and disposal retry state.
+Its static bridges preserve original generated constructor and reader identities.
 The generated session dependency stays static through `native-host/session-disposal.mjs`;
 awaiting its dynamic import during bootstrap prevented the native lifecycle module graph from settling.
 Declaration companions describe the retained JavaScript owner interfaces without replacing their runtime checks.
