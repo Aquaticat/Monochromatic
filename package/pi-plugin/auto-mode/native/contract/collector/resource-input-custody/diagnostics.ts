@@ -15,7 +15,12 @@ const l = tagged({ tag: 'auto-mode-native-resource-input' });
 /**
  Fixed categories bound diagnostic storage independently of the number of freshness checks.
  */
-const counts = { context: 0, system: 0, append: 0, unknown: 0 };
+const counts = {
+  context: 0,
+  system: 0,
+  append: 0,
+  unknown: 0
+};
 
 /**
  One pending microtask owns each synchronous batch of attempted snapshots.
@@ -38,7 +43,10 @@ function flushResourceInputDiagnostics(): void {
   /**
    The flush boundary identifies aggregated diagnostics without changing snapshot validation.
    */
-  const rl = tagged({ tag: flushResourceInputDiagnostics.name, l });
+  const rl = tagged({
+    tag: flushResourceInputDiagnostics.name,
+    l
+  });
   rl.debug(`native resource snapshot attempts: ${JSON.stringify(batch)}`);
 }
 
@@ -56,7 +64,8 @@ export function recordResourceInputCopy(kind: string): void {
   /**
    Invalid input labels share one category while ordinary kinds retain separate counts.
    */
-  const category = (kind === 'context') || (kind === 'system') || (kind === 'append') ? kind : 'unknown';
+  const category = (kind === 'context') || (kind === 'system')
+    || (kind === 'append') ? kind : 'unknown';
   counts[category]++;
   if (state.pending) return;
   state.pending = true;
