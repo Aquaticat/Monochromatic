@@ -6222,7 +6222,29 @@ and repeated completed disposal.
 These are owned integration corrections,
 not evidence of upstream Pi defects.
 
-The actual CLI bootstrap,
+The candidate CLI bootstrap now exists in the maintained native graph.
+Its first relocated import emitted Node's `ERR_MODULE_NOT_FOUND` for `chalk`.
+The original `main.js` imports `chalk` from its package dependency root;
+the relocated `host-main.mjs` had no corresponding dependency location.
+The host source transformation now resolves that import from the original emitted Pi package.
+The next import exposed a separate owned staging omission:
+Node reported that `./core/sdk.js` did not export `AgentSessionRuntime`.
+The earlier isolated SDK transform had removed its runtime re-export.
+The complete host graph retains that native export and routes it through the owned runtime module.
+Neither failure changes installed Pi source or demonstrates an upstream defect.
+
+`mise run //package/pi-plugin/auto-mode:test:native:host-lifecycle` passed actual CLI manager selection,
+service creation,
+resource reload,
+cancelled replacement,
+new session,
+in-memory fork,
+persisted resume,
+and completed cleanup retry.
+Its initial resource reload calls the original trust resolver through the policy owner.
+The fixture makes no external provider request.
+Direct CLI process verification,
 complete package lint,
+production semantic admission,
 and genuine human approval remain separate delivery checks.
 No upstream issue or patch is warranted by the verified local staging corrections.

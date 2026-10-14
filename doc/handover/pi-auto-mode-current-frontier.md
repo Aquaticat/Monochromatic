@@ -261,9 +261,33 @@ Required-red `90cd721a44` proved that the earlier direct-stream identity check o
 Commits `ed7c9688c5` and `a603ce5343` bind the payload at its native serializer occurrence,
 retaining the original serializer input before Pi creates a normalized message array.
 The package type check also passes.
-The actual host entry,
-lint completion,
-and installed human approval remain outstanding.
+The candidate CLI entry is now `package/pi-plugin/auto-mode/dist/native/cli.mjs`.
+Maintained transformations route Pi's original manager selection,
+service creation,
+session creation,
+runtime replacement,
+and disposal through the same constructor owner.
+Native resource reload now forwards the original project-trust callback through policy capture.
+The CLI graph required retaining the native SDK's runtime exports
+and rebasing its original `chalk` dependency after relocation.
+Commits `36dbdb4526` and `b4028644ff` correct those owned staging failures.
+
+`test:native:host-lifecycle` passes native reload,
+cancelled replacement,
+new session,
+in-memory fork,
+persisted resume,
+and disposal retry.
+The verified case constructed four sessions and invoked the original trust callback four times,
+with no external provider request.
+The extended incomplete-cleanup admission control is being verified separately.
+The normal SDK permission case still passes with five accounted contributions and all prepared children executed.
+Copied-payload and copied-transcript controls are being added to the native serializer receipt regression.
+The candidate CLI has no adopted semantic admission policy.
+Direct CLI process verification,
+complete lint,
+installed activation,
+and genuine human approval remain outstanding.
 
 The first approved native dispatch failed because the inherited test loader derived dependency paths
 from the codemode worker's disposable home.
