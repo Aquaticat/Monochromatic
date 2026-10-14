@@ -119,8 +119,9 @@ They cover the Compose call sites that no pure function can reach:
 - that a track added to the shown folder gets its row and supporting line, and a folder change opens its page,
 - that the next measure pass starts at the first visible track, seen through a recording content provider.
 
-Each case waits with `waitUntil` and a wall-clock limit, and each `@Test` has a `timeout`,
-so a mutant that stops a scroll or a frame fails fast instead of hanging the run.
+The waits for a scroll or for a background measure pass use `waitUntil` with a wall-clock limit,
+and every `@Test` has a `timeout`,
+so a mutant that stops a scroll or a frame should fail fast instead of hanging the run.
 `app/src/test/resources/robolectric.properties` selects API 36 (the app's `targetSdk`) and a bare `Application`.
 Robolectric loads its framework jar for that API from `app/build/robolectric-runtime`,
 which Gradle fills from the `robolectricRuntime` configuration (`org.robolectric:android-all-instrumented`),

@@ -238,16 +238,18 @@ and the decisions D106 to D119 at the end of `package/music-player/design/decisi
   that a track change alone never scrolls, what a reveal and a folder reveal scroll to, a track added to the shown
   folder (row and supporting line), a folder change, and, through a recording content provider, that a new measure
   pass starts at the first visible track. The unit suite went from 1129 to 1149 tests with no failures; the test
-  task costs about 8 s more (42.8 s to 50.5 s per container run, 28.2 s to 36.4 s of summed test time, means of three
-  runs after a warm-up). The mutation pass (21 mutants of these sites and their siblings, one at a time, full suite
-  each) killed 17; the four that survive are output-equivalent or need a flow no test drives: the folder title key and
-  the playing-index key and argument of the `rowEntries` `remember` (the rows are built from the entries alone, and
-  `rowWithPlayingFlag` overwrites any flag they carry, so only the cost of rebuilding changes), and the template key of
-  the `rowLines` `remember` (a template changes only through the Settings editor, which no wiring test opens).
+  task costs about 8 s more (Gradle `BUILD SUCCESSFUL in` 40, 42, 42 s before and 50, 48, 50 s after, test task only
+  rerun in a container after a warm-up; summed test time from the XML 28.2 s to 36.4 s, means of three runs).
+  The mutation pass (21 mutants of these sites and their siblings, one at a time, full suite each) killed 17; the
+  four that survive are output-equivalent or need a flow no test drives: the folder title key and the playing-index
+  key and argument of the `rowEntries` `remember` (the rows are built from the entries alone, and
+  `rowWithPlayingFlag` overwrites any flag they carry, so only the cost of rebuilding changes), and the template key
+  of the `rowLines` `remember` (a template changes only through the Settings editor, which no wiring test opens).
   Robolectric needs the API 36 framework jar: Gradle resolves it as `robolectricRuntime` and copies it to
   `app/build/robolectric-runtime`, read through `robolectric.dependency.dir`, so a warm Gradle cache runs offline.
-  The podman runner's Java could not resolve names (the host `/usr` mount breaks the `nss-resolve` module without
-  `/run/systemd/resolve`), so new dependencies were fetched with a host Gradle run into the shared Gradle home.
+  The podman runner's Java could not reach Maven Central or Google Maven (names resolve only with
+  `/run/systemd/resolve` mounted, and connections from the container's Java then still fail, cause not found), so new
+  dependencies were fetched with a host Gradle run into the shared Gradle home and the container runs offline.
   Still open: the fourth cost below; the 435 ms `loadTemplate` violation did not
   reproduce, so the template cache in `SessionStore.warmUp` is unproven; the old ANRs did not reproduce in 23 play
   windows (cause unknown); the sweep-under-load case was not exercised; release build not measured.

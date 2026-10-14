@@ -8,11 +8,12 @@ or, once names resolve, hangs in `NioSocketImpl.timedFinishConnect` for as long 
 `getent hosts` and `curl` inside the same container work.
 Runs whose dependencies are all cached never notice.
 
-## Cause
+## Observed
 
-The host `nsswitch.conf` lists `resolve [!UNAVAIL=return]`, and the container has no `/run/systemd/resolve`,
-so Java's `getaddrinfo` fails (probe: a `Probe.java` run with the mise JDK inside the container).
-Mounting `/run/systemd/resolve:/run/systemd/resolve:ro` fixes the names.
+The host `nsswitch.conf` lists `resolve [!UNAVAIL=return]`, and the container has no `/run/systemd/resolve`.
+A `Probe.java` run with the mise JDK inside the container failed every lookup while `getent hosts` succeeded,
+so the missing socket is the suspect for the Java failure, not an established cause.
+Mounting `/run/systemd/resolve:/run/systemd/resolve:ro` made the Java lookups succeed.
 Connections from the container's Java then still time out (IPv4) or abort (IPv6) to Maven Central and Google Maven,
 while host Java and in-container `curl` connect; the cause was not found.
 
