@@ -88,9 +88,18 @@ export const nativeContext: ContextModule = built;
  @returns original thrown value
 
  @throws Error when the operation did not throw
+
+ @example
+ ```ts
+ const error=contextFailure(function fail(){throw new Error('original');});
+ ```
  */
 export function contextFailure(run: () => unknown): unknown {
-  try { run(); } catch(error) { return error; }
+  try {
+    run();
+  } catch(error) {
+    return error;
+  }
   throw new Error('Expected native context operation to throw');
 }
 /**
@@ -122,6 +131,12 @@ type ContextFixture={
  @param capture - optional original manager failure boundary
 
  @returns independent observer and original native positions
+
+ @example
+ ```ts
+ const fixture=contextFixture();
+ fixture.observer.begin({kind:'context',snapshot:fixture.snapshot});
+ ```
  */
 export function contextFixture(capture?: (input: ContextInput) => void): ContextFixture {
   /**
@@ -135,7 +150,9 @@ export function contextFixture(capture?: (input: ContextInput) => void): Context
   /**
    Only identity is consumed by the observer; native dispatch owns invocation.
    */
-  function handler(): void {throw new Error(`Observer must not call ${extension.path}`);}
+  function handler(): void {
+    throw new Error(`Observer must not call ${extension.path}`);
+  }
   /**
    Exact event remains mutable through native callback settlement.
    */
@@ -153,7 +170,9 @@ export function contextFixture(capture?: (input: ContextInput) => void): Context
   /**
    Copies are made at capture time, as the existing manager source pool does.
    */
-  const observer = nativeContext.createNativeContextObserver(capture??function retain(input): void { records.push(structuredClone(input)); });
+  const observer = nativeContext.createNativeContextObserver(capture??function retain(input): void {
+    records.push(structuredClone(input));
+  });
   return {
     observer,
     records,
@@ -178,6 +197,14 @@ export function contextFixture(capture?: (input: ContextInput) => void): Context
  @param observer - original observer ready for context_with_system
 
  @returns original immutable completion receipt
+
+ @example
+ ```ts
+ const fixture=contextFixture();
+ fixture.observer.begin({kind:'context',snapshot:[]});
+ fixture.observer.end('context');
+ const receipt=completeContext(fixture.observer);
+ ```
  */
 export function completeContext(observer: ContextObserver): ReturnType<ContextObserver['complete']> {
   observer.begin({
