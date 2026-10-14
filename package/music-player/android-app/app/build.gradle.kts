@@ -51,6 +51,14 @@ android {
         compose = true
     }
 
+    // Robolectric needs the merged manifest and resources on the unit-test classpath, and ui-test-manifest (below)
+    // adds the empty ComponentActivity that createComposeRule launches; without this the rule finds no activity.
+    testOptions {
+        unitTests {
+            isIncludeAndroidResources = true
+        }
+    }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
@@ -96,6 +104,17 @@ dependencies {
     // Host JVM unit tests for the pure-logic `core` package (ported from the
     // desktop's `_tests.rs` vectors). These run via testDebugUnitTest with no device.
     testImplementation("junit:junit:4.13.2")
+
+    // Host JVM Compose wiring tests (src/test/.../wiring): the real track list pane and player host rendered
+    // under Robolectric with the Compose test rule, so the Compose-boundary wiring that no pure function can
+    // reach is tested without an emulator. Robolectric is pinned to 4.17, the newest release, because its
+    // `DefaultSdkProvider.java` (tag robolectric-4.17) maps API 36, the app's targetSdk, to the runtime jar
+    // android-all-instrumented 16-robolectric-13921718-i7 (JDK 21 or newer) and API 37, the compileSdk, to its sibling.
+    // The Compose test artifacts take their version from the BOM above; ui-test-manifest is debug-only because it
+    // adds a test activity to the manifest that the release APK must not carry.
+    testImplementation("org.robolectric:robolectric:4.17")
+    testImplementation("androidx.compose.ui:ui-test-junit4")
+    debugImplementation("androidx.compose.ui:ui-test-manifest")
 
     // On-device instrumented tests (the RustEngine and the native decode/true-peak
     // bridge drive real MediaStore content and the native .so, which only exist on a
