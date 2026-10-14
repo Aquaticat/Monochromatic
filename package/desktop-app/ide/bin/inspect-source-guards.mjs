@@ -152,6 +152,7 @@ const cases = [
   // worker, and a stale picture is never shown.
   { name: 'minimap-key-has-no-scroll', file: 'src/native/minimap.rs', before: 'size: (width.to_bits(), height.to_bits()),', after: 'size: (width.to_bits(), (height + current.offset).to_bits()),', native: true, test: 'scrolling_posts_no_request_and_sets_no_picture', failure: 'a scroll posted a minimap request' },
   { name: 'minimap-built-on-worker', file: 'src/native/minimap_build.rs', before: '.name(THREAD_NAME.to_string())', after: '.name("window".to_string())', native: true, test: 'the_picture_is_built_on_the_worker_and_stays_inside_its_bounds', failure: 'a picture was built off the worker' },
+  { name: 'minimap-follows-measurement', file: 'src/native/minimap.rs', before: 'let wait = if rows_only {', after: 'let wait = if false && rows_only {', native: true, test: 'the_picture_follows_the_measurement_at_a_steady_pace', failure: 'the picture waited for the measurement to end' },
   { name: 'minimap-stale-text', file: 'src/native/minimap.rs', before: '&& reply.key.stamp == displayed(&current);', after: '&& true;', native: true, test: 'a_stale_picture_is_dropped_and_a_current_one_is_shown', failure: 'a stale picture was set' },
   { name: 'minimap-older-request', file: 'src/native/minimap.rs', before: 'let fresh = reply.id >= current.minimap.shown_id &&', after: 'let fresh = true &&', native: true, test: 'a_stale_picture_is_dropped_and_a_current_one_is_shown', failure: 'a stale picture was set' },
 ];

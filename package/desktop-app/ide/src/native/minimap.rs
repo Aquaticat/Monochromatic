@@ -28,7 +28,12 @@ use ide_app::shaped_text::line_work;
 use ide_app::wrap::has_wrap_width;
 /// Toolkit images, weak handles, and the timers.
 use slint::{ComponentHandle, Image, Timer, TimerMode};
-use std::{cell::RefCell, rc::Rc, sync::Arc, time::Duration};
+use std::{
+    cell::RefCell,
+    rc::Rc,
+    sync::Arc,
+    time::{Duration, Instant},
+};
 
 /// What:
 ///  Quiet time after the last change of what the picture is valid for before a new request is posted.
@@ -41,6 +46,19 @@ use std::{cell::RefCell, rc::Rc, sync::Arc, time::Duration};
 /// const DEBOUNCE_MS = 120;
 /// ```
 const DEBOUNCE: Duration = Duration::from_millis(120);
+
+/// What:
+///  Longest time the picture may fall behind while only the vertical mapping changes.
+/// Why:
+///  The measurement of a long text changes the mapping for as long as it runs (a second or two for fifty thousand
+///  lines); a picture that waited for it to end would stay as it was drawn before the first measurement.
+///  One request each period, with the newest wins rule of the worker, keeps the picture following it at a bounded cost.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// const THROTTLE_MS = 250;
+/// ```
+const THROTTLE: Duration = Duration::from_millis(250);
 
 /// Poll period of the worker's replies, the same as the other background pollers.
 const POLL: Duration = Duration::from_millis(20);
@@ -83,6 +101,8 @@ pub(super) struct MinimapState {
     debounce: Timer,
     /// What the newest request was for.
     pub(super) posted: Option<Key>,
+    /// When the newest request was posted.
+    last_post: Option<Instant>,
     /// What the picture on screen is valid for.
     pub(super) shown: Option<Key>,
     /// Number of the last request posted.
@@ -117,6 +137,7 @@ impl MinimapState {
             poll: Timer::default(),
             debounce: Timer::default(),
             posted: None,
+            last_post: None,
             shown: None,
             next_id: 0,
             shown_id: 0,
@@ -218,6 +239,7 @@ fn post(window: &AppWindow, state: &Rc<RefCell<State>>, current: &mut State, key
         return;
     }
     current.minimap.posted = Some(key);
+    current.minimap.last_post = Some(Instant::now());
     current.minimap.awaited = id;
     #[cfg(debug_assertions)]
     {
@@ -247,6 +269,7 @@ fn flush(window: &AppWindow, state: &Rc<RefCell<State>>) {
 /// What:
 ///  Called after every render and when the minimap is resized:
 ///  post a request at once for the first picture of a file and for a new palette or scale,
+///  at a steady pace while only the vertical mapping changes,
 ///  and after the quiet time for every other change.
 ///  A step that changes nothing the picture depends on costs a comparison of a few words.
 /// Why:
@@ -289,12 +312,37 @@ pub(super) fn note(window: &AppWindow, state: &Rc<RefCell<State>>) {
         post(window, state, &mut current, key);
         return;
     }
+    // Only the vertical mapping changed: the measurement of the text is arriving, and the picture follows it at a steady
+    // pace instead of waiting for it to end.
+    let rows_only = current.minimap.posted.is_some_and(|previous| {
+        return Key {
+            rows: key.rows,
+            ..previous
+        } == key;
+    });
+    let wait = if rows_only {
+        let since = current
+            .minimap
+            .last_post
+            .map_or(THROTTLE, |at| return at.elapsed());
+        if since >= THROTTLE {
+            current.minimap.debounce.stop();
+            post(window, state, &mut current, key);
+            return;
+        }
+        if current.minimap.debounce.running() {
+            return;
+        }
+        THROTTLE - since
+    } else {
+        DEBOUNCE
+    };
     let weak_window = window.as_weak();
     let weak_state = Rc::downgrade(state);
     current
         .minimap
         .debounce
-        .start(TimerMode::SingleShot, DEBOUNCE, move || {
+        .start(TimerMode::SingleShot, wait, move || {
             let (Some(active), Some(shared)) = (weak_window.upgrade(), weak_state.upgrade()) else {
                 return;
             };

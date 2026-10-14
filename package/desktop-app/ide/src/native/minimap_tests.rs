@@ -15,6 +15,7 @@ use super::{
     minimap_build::{MINIMAP_GATE, OFF_WORKER_BUILDS, Reply},
     overscan_tile_tests::{scroll_to, settle_tile},
     theme_tests::switch,
+    tile_build::PASS_GATE,
 };
 /// Library types that give the expected values.
 use ide_app::minimap::{FULL_WORK, Geometry};
@@ -723,5 +724,43 @@ fn fifty_thousand_lines_give_a_bounded_picture_without_blocking_the_window() {
     assert!(stats.lines <= stats.pixel_rows);
     assert!(stats.work <= FULL_WORK);
     assert_eq!(OFF_WORKER_BUILDS.load(Ordering::SeqCst), 0);
+    window.hide().expect("close minimap window");
+}
+
+/// While the measurement of a long text changes the vertical mapping, the picture follows it at a steady pace: a request
+///  for about each quarter second, never one for each chunk of the measurement, and none on the window thread.
+#[test]
+fn the_picture_follows_the_measurement_at_a_steady_pace() {
+    let (release, gate) = std::sync::mpsc::channel();
+    *PASS_GATE.lock().expect("pass gate") = Some(gate);
+    let (_project, opened) = open(&long_text(6000));
+    let window = &opened.window;
+    picture_shown(&opened);
+    let before = opened.source.borrow().minimap.posts;
+    let started = Instant::now();
+    let mut chunks = 0;
+    while started.elapsed() < Duration::from_millis(1600) {
+        let _ = release.send(());
+        chunks += 1;
+        for _ in 0..12 {
+            update_timers_and_animations();
+            std::thread::sleep(Duration::from_millis(5));
+        }
+    }
+    let posts = opened.source.borrow().minimap.posts - before;
+    assert!(
+        chunks >= 20,
+        "the measurement was released in {chunks} chunks"
+    );
+    assert!(
+        posts >= 3,
+        "{posts} requests in a second and a half of changing rows: the picture waited for the measurement to end"
+    );
+    assert!(
+        posts <= 10,
+        "{posts} requests for {chunks} chunks: the pace is not bounded"
+    );
+    assert_eq!(OFF_WORKER_BUILDS.load(Ordering::SeqCst), 0);
+    drop(release);
     window.hide().expect("close minimap window");
 }
