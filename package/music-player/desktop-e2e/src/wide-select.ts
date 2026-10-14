@@ -282,18 +282,16 @@ export async function checkSelectOnly(
       const broken = join(context.library, BROKEN_NAME,);
       await writeFile(broken, 'not audio',);
       try {
-        /**
-         The track that was current before the unreadable one was chosen.
-         */
-        const before = await session.last();
         const selected = await openResultFor({
           session,
           query: BROKEN_QUERY,
           until: function brokenSelected(state: UiState,): boolean {
-            return (state.route === 'Player') && (state.current_index !== NO_INDEX)
-              && (state.current_index !== before.current_index) && !state.playing;
+            // Nothing is loaded for the unreadable row, so its length is zero; its library index may equal the one the
+            // playing track had before the new file shifted the queue, so the index cannot tell the two apart.
+            return (state.route === 'Player') && (state.current_index !== NO_INDEX) && !state.playing
+              && (state.duration === 0);
           },
-          what: 'the unreadable file selected from its Search result',
+          what: 'the unreadable file selected from its Search result with nothing loaded',
         });
         await session.shot('unreadable-selected',);
         await wait(STAYS_MS,);

@@ -153,6 +153,10 @@ export async function runWideSession(context: RunContext,): Promise<void> {
     context,
     session,
   },);
+  await checkSelectOnly({
+    context,
+    session,
+  },);
   await checkDoubleShift({
     context,
     session,
@@ -166,10 +170,6 @@ export async function runWideSession(context: RunContext,): Promise<void> {
     session,
   },);
   await checkClickThrough({
-    context,
-    session,
-  },);
-  await checkSelectOnly({
     context,
     session,
   },);
