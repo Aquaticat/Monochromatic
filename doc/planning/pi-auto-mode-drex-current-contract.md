@@ -1,0 +1,120 @@
+# Drex hosted contract recheck
+
+## Scope and result
+
+Checked on 2026-10-14 after the user reiterated that `drex.nace.ai` looks promising.
+This is a public documentation and source recheck,
+not a model-adoption decision or an inference experiment.
+No provider assessment,
+account mutation,
+or external message was sent.
+
+The published Drex 2.0 context contract has changed materially since the
+[release audit](../audit/tech-pi-auto-mode-drex-2-release-vet-2026-10-13.md).
+The observed 16-question rejection remains unresolved.
+The public source does not expose its deciding hosted guard.
+There is no demonstrated hosted batching alternative preserving the complete assessment within three calls.
+
+## Current hosted documentation
+
+The [model reference][models] now specifies `drex-v2.0` limits of 131,072 state tokens
+and 262,144 tokens for state plus longest question.
+It explicitly says Drex 2.0 never delegates to another model;
+over-limit requests are rejected.
+The release audit recorded an 8,192-token state boundary,
+a 16,384-token row boundary,
+and fallback to Drex 1.5.
+The new publication changes the documented contract;
+it does not prove when the hosted deployment changed or which model would answer our complete request.
+
+The [limits reference][limits] still specifies 512 questions and 4,194,304 bytes
+for serialized `state` plus `questions`.
+It names `at most 512 questions allowed` as the excess-question diagnostic.
+The historical corrected native request retained 244 questions and occupied 692,952 bytes overall,
+but returned `too many questions (244); limit is 16`.
+Its observed rejection therefore still conflicts with the published question boundary.
+The documented 55-second upstream timeout does not establish compliance with our five-second assessment budget.
+
+The [evaluation schema][evaluate] requires one `state` and a `questions` map.
+It documents answers under the original question IDs and ignores unknown top-level keys.
+The [question guide][questions] continues to require text instructions and explicitly describes batching
+up to 512 questions sharing one state.
+Its `choice` type selects one label;
+that does not supply independent binary probabilities for arbitrary combinations of policy findings.
+Replacing independent questions with one choice is therefore an unqualified semantic redesign,
+not an established encoding workaround.
+
+## Public source and batching boundary
+
+GitHub's current default-branch commit is still `be8ba7c8157241b9393862e9fcec104d0dc5caff`,
+dated 2026-10-13T04:31:14Z,
+as returned by the public repository commits API.
+The current [runtime schema][runtime] allows structured instructions and declares
+`questions: dict[str, Question] = Field(min_length=1)`.
+Those differences from the hosted contract prevent treating this runtime as the hosted validator.
+
+The [local request-format documentation][local-batch] describes a `requests` array
+containing up to 1,024 decisions,
+with ordered `results`.
+`serve.py:74` checks that limit.
+This establishes a local-runtime feature only.
+The [hosted TypeScript SDK reference][sdk] describes `systemOne` with required `state` and `questions`;
+it gives no corresponding hosted `requests` envelope.
+Neither an SDK change nor nesting the existing requests has a source-backed claim to bypass the hosted rejection.
+
+An uncapped,
+hidden and ignored-file-inclusive `rg` search of the current public checkout inspected
+`too many questions`,
+`limit is 16`,
+`max_questions`,
+`MAX_QUESTIONS`,
+`512`,
+`1024`,
+and `SystemOneBatchRequest`.
+It found local batch guards and context constants,
+but no matching hosted question guard.
+The source commit matches the prior inspection;
+no explanation of account-specific,
+route-specific,
+or model-specific enforcement can be established from it.
+
+## Consequences and next evidence
+
+Under the observed 16-question boundary,
+244 independent questions require `ceil(244 / 16) = 16` calls.
+Three calls carry at most 48 such questions.
+Keeping the complete policy and receipt evidence while dropping question coverage does not preserve the assessment.
+Keeping every question and using the published 512-question envelope would fit one call in question count,
+but actual acceptance,
+token fit,
+returned model,
+deadline compliance,
+and semantic quality remain separate unverified gates.
+
+The next discriminating evidence is a separately authorized public synthetic boundary test:
+the same constant state and text-only binary question repeated under distinct IDs,
+first with 16 questions as a positive control,
+then with 17 questions as the boundary control.
+Pin `drex-v2.0`,
+use no retries,
+retain raw errors and returned model identity,
+and preserve the accepted deadline and call ceiling.
+This separates the question boundary from private payload size and semantic quality.
+Acceptance at 17 would disprove a universal 16-question cap for that exact route and time;
+it would not establish complete native-request compatibility.
+
+A later complete-input assessment would still need current policy,
+source and receipt records,
+original question IDs,
+all independent questions,
+and text instructions with verified round-trip preservation.
+Neither boundary acceptance nor complete-request acceptance alone establishes semantic qualification.
+No provider dispatch is authorized by this document.
+
+[models]: https://console.nace.ai/docs/drex/reference/models
+[limits]: https://console.nace.ai/docs/drex/reference/limits
+[evaluate]: https://console.nace.ai/docs/drex/api-reference/systemone
+[questions]: https://console.nace.ai/docs/drex/guides/questions
+[runtime]: https://github.com/nace-ai/drex-decision-models/blob/be8ba7c8157241b9393862e9fcec104d0dc5caff/kev/api.py
+[local-batch]: https://github.com/nace-ai/drex-decision-models/blob/be8ba7c8157241b9393862e9fcec104d0dc5caff/docs/request-format.md
+[sdk]: https://console.nace.ai/docs/developer-tools/typescript
