@@ -8,7 +8,10 @@ export class NativeHostResourceError extends Error {}
 export function registerHostResource(input) {
   const { loader } = input;
   if (owners.has(loader)) throw new NativeHostResourceError('Resource loader already has a native host owner');
-  owners.set(loader, Object.freeze(input));
+  owners.set(
+    loader,
+    Object.freeze(input)
+  );
 }
 
 /** Require the host's original record when constructing its session. */
@@ -19,9 +22,13 @@ export function readHostResource(loader) {
 }
 
 /** Standalone SDK loaders retain native behavior without acquiring a host policy binding. */
-export async function reloadHostResource(loader, options) {
+export async function reloadHostResource(
+  loader,
+  options
+) {
   const input = owners.get(loader);
-  return input ? await input.policyInput.reload(options) : await loader.reload(options);
+  return input ? await input.policyInput
+    .reload(options) : await loader.reload(options);
 }
 
 //endregion

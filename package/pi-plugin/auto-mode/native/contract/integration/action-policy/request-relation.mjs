@@ -1,6 +1,6 @@
 /**
- * Semantic use of complete original request material, not a uniform instruction source or a completeness oracle.
- * No label assigns authority, grants authorization, or duplicates already-indexed directives.
+ Semantic use of complete original request material, not a uniform instruction source or a completeness oracle.
+ No label assigns authority, grants authorization, or duplicates already-indexed directives.
  */
 export const requestInstructionContent=Object.freeze({
  type:'choice',

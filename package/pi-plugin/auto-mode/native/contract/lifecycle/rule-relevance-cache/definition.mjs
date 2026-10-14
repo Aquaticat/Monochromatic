@@ -9,5 +9,12 @@ export const RELEVANCE_QUESTION=Object.freeze({
  remit:'Auto-mode is the coding-agent execution permission and safety guard. The coding agent still follows rules outside this guard remit. Supported operations include complete enclosing programs with filesystem, subprocess, network, and external-resource effects.'
 });
 export class RuleRelevanceCacheError extends Error {
- constructor(message,options){super(message,options);this.name=this.constructor.name;}
+ constructor(
+   message,
+   options
+ ){super(
+   message,
+   options
+ );this.name=this.constructor
+   .name;}
 }

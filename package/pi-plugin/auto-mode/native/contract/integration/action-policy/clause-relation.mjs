@@ -1,12 +1,12 @@
 //region Operation-bound clause semantics, never overall policy or source-authority classification.
 /**
- * Experimental typed question for the information the policy consumer lacks.
- * Every label and probability remains unqualified evidence. In particular,
- * an authorization prerequisite is not a conditional permission or proof that
- * the incumbent Allow channel can satisfy it. Unknown and unsupported answers
- * cannot be narrowed to the resolver's supported-effect uncertainty by default.
- * Inspected-form effects may be estimated under Q13 B; external runtime facts
- * still require supplied code evidence. Code, not this estimator, owns admission.
+ Experimental typed question for the information the policy consumer lacks.
+ Every label and probability remains unqualified evidence. In particular,
+ an authorization prerequisite is not a conditional permission or proof that
+ the incumbent Allow channel can satisfy it. Unknown and unsupported answers
+ cannot be narrowed to the resolver's supported-effect uncertainty by default.
+ Inspected-form effects may be estimated under Q13 B; external runtime facts
+ still require supplied code evidence. Code, not this estimator, owns admission.
  */
 export const clauseOperationRelation=Object.freeze({
  type:'choice',

@@ -2,24 +2,37 @@ import {bindRegisteredPolicy} from '../policy-source/registered-authority.mjs';
 import {inspectNativeSourceDomain} from '../policy-source/source-domain.mjs';
 
 import {PolicyInputBindingError} from '../maintained-policy.mjs';
+
 export {PolicyInputBindingError} from '../maintained-policy.mjs';
 
 /**
- * Read clauses and implementation facts from the original judgment's existing owners.
- * Fact scope is retained verbatim: member-level absence never implies complete
- * enclosing-program coverage, and indexing never establishes instruction authority.
+ Read clauses and implementation facts from the original judgment's existing owners.
+ Fact scope is retained verbatim: member-level absence never implies complete
+ enclosing-program coverage, and indexing never establishes instruction authority.
  */
-export async function capturePolicyInputs({judgment,effectOwnerFor,sourceContext}){
+export async function capturePolicyInputs({
+  judgment,
+  effectOwnerFor,
+  sourceContext
+}){
  judgment.assertDependenciesCurrent();
  judgment.checkpoint();
- const sourceBinding=sourceContext===undefined?undefined:bindRegisteredPolicy({...sourceContext,judgment});
- const sources=sourceBinding?[sourceBinding,...sourceBinding.additionalSources]:[];
+ const sourceBinding=sourceContext===undefined?undefined:bindRegisteredPolicy({
+   ...sourceContext,
+   judgment
+ });
+ const sources=sourceBinding?[
+   sourceBinding,
+   ...sourceBinding.additionalSources
+ ]:[];
  const instructionSources=Object.freeze(sources.map(source=>source.view));
  const instructionCarriers=sourceBinding?.instructionCarriers??Object.freeze([]);
- const requestObservation=sourceBinding?.view.request;
+ const requestObservation=sourceBinding?.view
+   .request;
  const requestSourceContributions=requestObservation?.sourceContributions??Object.freeze([]);
  const runInstructionCarriers=sourceBinding?.runInstructionCarriers??Object.freeze([]);
- const instructionAuthorities=Object.freeze(sources.filter(source=>source.authority).map(source=>source.authority));
+ const instructionAuthorities=Object.freeze(sources.filter(source=>source.authority)
+   .map(source=>source.authority));
  const candidates=judgment.indexedRuleCandidates();
  const instructionCandidates=judgment.indexedInstructionCandidates?.()??candidates;
  const headingContextCandidates=judgment.indexedHeadingContextCandidates?.()??Object.freeze([]);
@@ -30,37 +43,66 @@ export async function capturePolicyInputs({judgment,effectOwnerFor,sourceContext
   const rule=readRule(handle);
   for(const source of sources){
    source.assertCurrent(source.view);
-   if(rule.sourceOccurrence===source.view.sourceOccurrence)return source.view;
+   if(rule.sourceOccurrence
+     ===source.view
+     .sourceOccurrence)return source.view;
   }
-  return Object.freeze({kind:'unresolved-instruction-source',permission:false});
+  return Object.freeze({
+    kind:'unresolved-instruction-source',
+    permission:false
+  });
  }
  function authorityFor(handle){
   const rule=readRule(handle);
   for(const source of sources){
    if(!source.authority)continue;
    source.assertAuthorityCurrent(source.authority);
-   if(rule.sourceOccurrence===source.authority.sourceOccurrence)return source.authority;
+   if(rule.sourceOccurrence
+     ===source.authority
+     .sourceOccurrence)return source.authority;
   }
-  return Object.freeze({kind:'unresolved-instruction-authority',permission:false});
+  return Object.freeze({
+    kind:'unresolved-instruction-authority',
+    permission:false
+  });
  }
- const states=judgment.inspect().memberExecutions;
+ const states=judgment.inspect()
+   .memberExecutions;
  if(states.some(value=>value.state!=='unentered'))throw new PolicyInputBindingError('Policy facts must be captured before the prepared group starts');
  const members=[];
  for(const {id} of states){
-  const member=judgment.memberFor(id),prepared=judgment.preparedMemberFor(member).prepared;
+  const member=judgment.memberFor(id);
+  const {prepared} = judgment.preparedMemberFor(member);
   const programInspection=judgment.preparedProgramFor?.(member);
-  const owner=effectOwnerFor({judgment,member,prepared});
+  const owner=effectOwnerFor({
+    judgment,
+    member,
+    prepared
+  });
   const evidence=owner
    ?await owner.capture(member)
-   :Object.freeze({kind:'unresolved-effect',reason:'No implementation fact provider for this prepared member',permission:false});
+   :Object.freeze({
+     kind:'unresolved-effect',
+     reason:'No implementation fact provider for this prepared member',
+     permission:false
+   });
   if(owner)owner.assertCurrent(evidence);
-  members.push(Object.freeze({member,prepared,owner,evidence,programInspection}));
+  members.push(Object.freeze({
+    member,
+    prepared,
+    owner,
+    evidence,
+    programInspection
+  }));
   judgment.assertDependenciesCurrent();
   judgment.checkpoint();
  }
  const effects=Object.freeze(members);let failure;
  function assertCurrent(){
-  if(failure)throw new PolicyInputBindingError('Original policy inputs lost eligibility',{cause:failure.cause});
+  if(failure)throw new PolicyInputBindingError(
+    'Original policy inputs lost eligibility',
+    {cause:failure.cause}
+  );
   try{
    judgment.assertDependenciesCurrent();
    for(const source of sources){
@@ -68,14 +110,23 @@ export async function capturePolicyInputs({judgment,effectOwnerFor,sourceContext
     if(source.authority)source.assertAuthorityCurrent(source.authority);
    }
    // Closed judgments retain dependency checks, but cannot reopen candidate selection.
-   if(!judgment.inspect().finalRecord){
+   if(!judgment.inspect()
+     .finalRecord){
     if(judgment.indexedRuleCandidates()!==candidates)throw new PolicyInputBindingError('Original instruction candidates changed');
     if((judgment.indexedInstructionCandidates?.()??candidates)!==instructionCandidates)throw new PolicyInputBindingError('Original retained instruction candidates changed');
     if((judgment.indexedHeadingContextCandidates?.()??headingContextCandidates)!==headingContextCandidates)throw new PolicyInputBindingError('Original heading-context candidates changed');
     if((judgment.indexedUnitAdoptionPairs?.()??unitAdoptionPairs)!==unitAdoptionPairs)throw new PolicyInputBindingError('Original unit-adoption pairs changed');
    }
-   for(const {member,prepared,owner,evidence,programInspection} of effects){
-    if(judgment.preparedMemberFor(member).prepared!==prepared)throw new PolicyInputBindingError('Original prepared effect input changed');
+   for(const {
+     member,
+     prepared,
+     owner,
+     evidence,
+     programInspection
+   } of effects){
+    if(judgment.preparedMemberFor(member)
+      .prepared
+      !==prepared)throw new PolicyInputBindingError('Original prepared effect input changed');
     if(judgment.preparedProgramFor?.(member)!==programInspection)throw new PolicyInputBindingError('Original prepared program inspection changed');
     if(owner)owner.assertCurrent(evidence);
    }
@@ -84,8 +135,31 @@ export async function capturePolicyInputs({judgment,effectOwnerFor,sourceContext
  function inspectSourceDomain(){
   assertCurrent();
   if(!sourceBinding)return undefined;
-  return inspectNativeSourceDomain({snapshot:sourceBinding.view.sources,instructionSources,sourceCoverage:ruleSourceCoverage});
+  return inspectNativeSourceDomain({
+    snapshot:sourceBinding.view
+      .sources,
+    instructionSources,
+    sourceCoverage:ruleSourceCoverage
+  });
  }
  assertCurrent();
- return Object.freeze({inspectSourceDomain,ruleCandidates:candidates,instructionCandidates,headingContextCandidates,unitAdoptionPairs,ruleSourceCoverage,readRule,sourceViewFor,authorityFor,instructionSources,instructionCarriers,requestObservation,requestSourceContributions,runInstructionCarriers,instructionAuthorities,effects,assertCurrent});
+ return Object.freeze({
+   inspectSourceDomain,
+   ruleCandidates:candidates,
+   instructionCandidates,
+   headingContextCandidates,
+   unitAdoptionPairs,
+   ruleSourceCoverage,
+   readRule,
+   sourceViewFor,
+   authorityFor,
+   instructionSources,
+   instructionCarriers,
+   requestObservation,
+   requestSourceContributions,
+   runInstructionCarriers,
+   instructionAuthorities,
+   effects,
+   assertCurrent
+ });
 }

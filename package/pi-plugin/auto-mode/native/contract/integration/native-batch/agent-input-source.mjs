@@ -2,11 +2,24 @@ import assert from 'node:assert/strict';
 
 /** Observe original Agent input frames without changing borrowed constructor options. */
 export function agentInputSource(source){
- function replace({before,after}){
-  assert.equal(source.split(before).length,2,'Native Agent input edit: '+before);
-  source=source.replace(before,after);
+ function replace({
+   before,
+   after
+ }){
+  assert.equal(
+    source.split(before)
+      .length,
+    2,
+    `Native Agent input edit: ${before}`
+  );
+  source=source.replace(
+    before,
+    after
+  );
  }
- replace({before:'export class Agent {',after:`let attachInputObserver, assertStateAssignment;
+ replace({
+   before:'export class Agent {',
+   after:`let attachInputObserver, assertStateAssignment;
 export class NativeAgentInputAttachmentError extends Error {
  constructor(message){super(message);this.name=this.constructor.name;}
 }
@@ -24,11 +37,21 @@ export class Agent {
         assertStateAssignment=({agent,assignment})=>{
             if(typeof assignment!=="function"||agent.#inputObserver===undefined||assignment!==agent.#nativeStateAssignment)throw new NativeAgentInputAttachmentError("Native state assignment requires this Agent's original attached function");
         };
-    }`});
- for(const method of ['steer','followUp']){
-  const entry='    '+method+'(message) {\n';
-  replace({before:entry,after:entry+'        this.#inputObserver?.({frame:arguments,method:'+JSON.stringify(method)+'});\n'});
+    }`
+ });
+ for(const method of [
+   'steer',
+   'followUp'
+ ]){
+  const entry=`    ${method}(message) {\n`;
+  replace({
+    before:entry,
+    after:`${entry}        this.#inputObserver?.({frame:arguments,method:${JSON.stringify(method)}});\n`
+  });
  }
- replace({before:'    async prompt(input, images) {\n',after:'    async prompt(input, images) {\n        this.#inputObserver?.({frame:arguments,method:"prompt"});\n'});
+ replace({
+   before:'    async prompt(input, images) {\n',
+   after:'    async prompt(input, images) {\n        this.#inputObserver?.({frame:arguments,method:"prompt"});\n'
+ });
  return source;
 }

@@ -1,6 +1,6 @@
 /**
- * Estimate express incorporation, not instruction authority or a decision.
- * The complete adopter must be represented by this one unmodified, scoped adoption.
+ Estimate express incorporation, not instruction authority or a decision.
+ The complete adopter must be represented by this one unmodified, scoped adoption.
  */
 export const unitAdoptionRelation=Object.freeze({
  type:'choice',
