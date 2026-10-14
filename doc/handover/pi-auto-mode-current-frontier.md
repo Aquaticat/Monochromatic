@@ -133,13 +133,42 @@ The worktree was inspected and removed without deleting shared fixture targets.
 Original approval-request routing and maintained integration are next.
 
 The approval trace found a separate concrete gap:
-`compileBoundClauseProgram` lowers prerequisite relations without authorization satisfaction or channel facts.
-The pure resolver therefore preserves uncertainty,
-and the original approval binder has no eligible native request to present.
-Passing presentation-double tests do not fill this gap.
-The next approval increment must connect independent original authorization evidence,
-preserve otherwise-required permission,
-and keep external or unknown authorization channels unresolved.
+`compileBoundClauseProgram` omitted independent authorization satisfaction and channel facts.
+Required-red private `99bd9818` reached the canonical native handler but opened no selector.
+Private `5d266c33` connects a fixed bootstrap authorization-owner factory,
+binding each original evidence record to its judgment,
+clause,
+source,
+and request.
+The owner supplies independent prerequisite facts;
+it supplies no clause meaning or final decision.
+Private `f22d8db0` keeps standalone evaluation from accepting that factory as a per-call override.
+Redundant full-source scans initially exhausted the unchanged five-second judgment deadline.
+Private `76eeac39` reuses captured source bindings while retaining checks around asynchronous evidence capture
+and before release.
+
+Private `d66e8250` adds the rejection and native approval contrasts.
+`mise run test:authorization-inputs` and `mise run test:approval-domain` now pass.
+The canonical native Allow path calls the maintained `askUser`,
+writes through Pi's actual extension API into its original session manager,
+and executes all three prepared children.
+Deny and Stop write native verdicts and execute no child.
+Missing evidence,
+unknown satisfaction,
+unsupported channels,
+a bare prerequisite without permission,
+and an independent prohibition execute no child and open no selector.
+Evidence retired during selection prevents execution even after an Allow entry is written.
+A satisfied independent requirement permits execution only with separately established permission.
+These controls use authored independent facts and a fixture selector,
+with zero external provider requests and zero genuine human approvals.
+They establish canonical routing,
+not generic prose authorization,
+production semantic qualification,
+or installed human confirmation.
+Affected consumer regressions,
+a targeted authorization-binding omission,
+and maintained integration are next.
 
 The first approved native dispatch failed because the inherited test loader derived dependency paths
 from the codemode worker's disposable home.
