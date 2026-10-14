@@ -642,7 +642,7 @@ async function importBrowserslist(): Promise<BrowserslistResolver> {
  ```
  */
 function selectBrowserslistQueries(
-  { config, }: { readonly config: Readonly<Record<string, readonly string[]>>; },
+  { config, }: { readonly config: Readonly<Record<string, readonly string[] | undefined>>; },
 ): readonly string[] {
   return config[BROWSERSLIST_CONFIG_ENVIRONMENT]
     ?? config['defaults']
