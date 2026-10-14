@@ -16,6 +16,24 @@ import type {
 const l = tagged({ tag: 'auto-mode-semantic-admission-scope', },);
 
 /**
+ Match exact profiles or the fixed set adopted for the native host.
+
+ @param configured - captured bootstrap profile identifier
+ @param inspected - original decoder profile identifier
+ @returns whether the original profile belongs to the configured scope
+ */
+export function matchesSemanticProgramProfile({ configured, inspected, }: {
+  readonly configured: string;
+  readonly inspected: string | undefined;
+},): boolean {
+  if (configured === 'native-inspected-programs-v2') {
+    return inspected === 'awaited-literal-single-call'
+      || inspected === 'awaited-string-result-then-literal-parallel';
+  }
+  return inspected === configured;
+}
+
+/**
  Determine whether the existing original inspections have a configured semantic consumer.
  The native adapter fixes expectedModel from its actual wire contract, never from action input.
  Shape alone authenticates no owner; native callers keep original identity and currentness checks.
@@ -76,10 +94,10 @@ export function inspectSemanticAdmissionScope(
     === 0)
     || inputs.effects
     .some(function incomplete(effect,) {
-    return effect.programInspection
-      ?.declaration
-      .profile
-      !== policy.programProfile;
+    return !matchesSemanticProgramProfile({
+      configured: policy.programProfile,
+      inspected: effect.programInspection?.declaration.profile,
+    },);
   },)) {
     return Object.freeze({
       state: 'out-of-profile',
