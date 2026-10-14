@@ -9,6 +9,7 @@ import {nativeOpenAIStream} from './source-association.mjs';
 import {fixtureResponse} from './fixture-response.mjs';
 import {ruleAssessmentModel} from '../action-policy/wire.mjs';
 import {inspectNativeSourceDomain} from '../policy-source/source-domain.mjs';
+import {assertNativeSessionInputCapture} from './generated/session-manager.mjs';
 import {createAssessmentSender,createNativeSemanticOperatingPolicies} from '../maintained-policy.mjs';
 
 const relation=process.argv[2]??'prohibition',
@@ -183,6 +184,8 @@ try{
    lastJudgment:judgment
  }=runtime.inspect();
  if(!review){
+  try{assertNativeSessionInputCapture(env.readActiveSessionManager(session));}
+  catch(error){console.error(inspect(error,{depth:6,maxStringLength:2048}));}
   try{env.readActiveSessionRunComposition(session);}
   catch(error){console.error(inspect(error,{depth:6,maxStringLength:2048}));}
  }
