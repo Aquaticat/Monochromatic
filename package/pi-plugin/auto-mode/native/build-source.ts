@@ -1,84 +1,109 @@
-import { execFileSync, } from 'node:child_process';
-import { cpSync, existsSync, mkdirSync, readFileSync, readdirSync, realpathSync, symlinkSync, writeFileSync, } from 'node:fs';
+/**
+ Emit the qualified upstream graph inside the maintained native artifact.
+
+ @module
+ */
+import { cp, mkdir, realpath, symlink, writeFile, } from 'node:fs/promises';
 import { createRequire, } from 'node:module';
-import { homedir, } from 'node:os';
 import { basename, dirname, join, } from 'node:path';
+import spawn from 'nano-spawn';
+import { tagged, } from '@monochromatic-dev/module-logger/ts';
+import { copyAssets, } from './build-assets.ts';
+import { NativeSourceBuildError, nativeBuildLog, qualifiedRelease, } from './build-contract.ts';
+import { packageVersion, sourceCheckout, } from './build-input.ts';
 
 //region Qualified upstream source is a build input, never an installed source edit.
 
-/** Native source transformations are verified against this exact release commit. */
-const qualifiedRelease = { version: '1.1.0', commit: 'abe508e1b89912adde45528136c3221eb69acdd7', } as const;
+/**
+ Create a dependency link or verify the existing artifact retains the same target.
 
-/** Reject source or dependency drift before generating a native host. */
-export class NativeSourceBuildError extends Error {}
+ @param target - dependency directory inside the emitted upstream package
 
-/** Read the declared version before admitting a source package. */
-function packageVersion(directory: string): string {
-  const metadata: unknown = JSON.parse(readFileSync(join(directory, 'package.json',), 'utf8',),);
-  if (typeof metadata !== 'object' || metadata === null || !('version' in metadata)
-    || typeof metadata.version !== 'string') {
-    throw new NativeSourceBuildError(`Package version is unavailable: ${directory}`,);
+ @param source - installed dependency directory selected by the qualified package
+
+ @throws NativeSourceBuildError when an existing dependency link targets another installation
+ */
+async function linkDependencies({ target, source, }: { readonly target: string; readonly source: string; },): Promise<void> {
+  try {
+    await symlink(source, target, 'dir',);
   }
-  return metadata.version;
-}
-
-/** Retain the source checkout as a read-only build input after validating its immutable revision. */
-function sourceCheckout(packageRoot: string): string {
-  const scratch = join(homedir(), 'temp/agent',);
-  mkdirSync(scratch, { recursive: true, mode: 0o700, },);
-  const sourceRoot = process.env.PI_AUTO_MODE_SOURCE ?? join(scratch, `auto-mode-pi-source-${qualifiedRelease.version}`,);
-  if (!existsSync(sourceRoot,)) {
-    execFileSync('gh', ['repo', 'clone', 'earendil-works/pi', sourceRoot, '--', '--depth', '1',
-      '--branch', `v${qualifiedRelease.version}`,], { cwd: packageRoot, stdio: 'inherit', },);
-  }
-  const commit = execFileSync('git', ['-C', sourceRoot, 'rev-parse', 'HEAD',], { encoding: 'utf8', },).trim();
-  if (commit !== qualifiedRelease.commit)
-    throw new NativeSourceBuildError(`Pi source revision differs from the qualified release: ${commit}`,);
-  return sourceRoot;
-}
-
-/** Copy non-TypeScript assets alongside emitted modules without replacing emitted JavaScript. */
-function copyAssets({ source, target, }: { source: string; target: string; }): void {
-  const pending = [{ source, target, },];
-  while (pending.length > 0) {
-    const current = pending.pop();
-    if (current === undefined) throw new NativeSourceBuildError('Asset traversal lost its pending directory',);
-    mkdirSync(current.target, { recursive: true, },);
-    for (const item of readdirSync(current.source, { withFileTypes: true, },)) {
-      const sourcePath = join(current.source, item.name,), targetPath = join(current.target, item.name,);
-      if (item.isDirectory()) pending.push({ source: sourcePath, target: targetPath, },);
-      else if (!item.name.endsWith('.ts',)) cpSync(sourcePath, targetPath,);
-    }
+  catch (error) {
+    if ((typeof error !== 'object') || (error === null) || !('code' in error) || (error.code !== 'EEXIST'))
+      throw error;
+    if (await realpath(target,) !== await realpath(source,))
+      throw new NativeSourceBuildError(`Emitted dependency link targets another installation: ${target}`, { cause: error, },);
   }
 }
 
-/** Emit the upstream module graph with the installed compiler and matching release dependencies. */
-export function buildPiSource({ packageRoot, output, }: { packageRoot: string; output: string; }): void {
-  const installedSdk = realpathSync(join(packageRoot, 'node_modules/@earendil-works/pi-coding-agent',),);
-  if (packageVersion(installedSdk,) !== qualifiedRelease.version)
+/**
+ Build upstream modules and metadata without editing an installed Pi package.
+
+ @param packageRoot - maintained package owning output and installed dependencies
+
+ @param output - native artifact directory receiving the upstream graph
+
+ @throws NativeSourceBuildError when source or installed dependencies leave the qualified release
+ */
+export async function buildPiSource({ packageRoot, output, }: { readonly packageRoot: string; readonly output: string; },): Promise<void> {
+  /**
+   Track source emission separately from owned transformations.
+   */
+  const rl = tagged({ tag: buildPiSource.name, l: nativeBuildLog, },);
+  /**
+   Resolve the actual installed package independently of symlink spelling.
+   */
+  const installedSdk = await realpath(join(packageRoot, 'node_modules/@earendil-works/pi-coding-agent',),);
+  if (await packageVersion(installedSdk,) !== qualifiedRelease.version)
     throw new NativeSourceBuildError('Installed Pi differs from the qualified native source release',);
-  const sourceRoot = sourceCheckout(packageRoot,);
+  /**
+   Verified checkout supplies build input only.
+   */
+  const sourceRoot = await sourceCheckout(packageRoot,);
+  /**
+   Resolve the compiler relative to the maintained package's dependency boundary.
+   */
   const require = createRequire(join(packageRoot, 'package.json',),);
+  /**
+   Compiler metadata supplies the artifact's recorded compiler version.
+   */
   const compilerMetadata = require.resolve('typescript/package.json',);
+  /**
+   Invoke the selected compiler's executable through the current Node runtime.
+   */
   const compiler = join(dirname(compilerMetadata,), 'bin/tsc',);
+  /**
+   Host, Agent, and AI source share the qualified upstream revision.
+   */
   const specifications = [
     { folder: 'agent', name: '@earendil-works/pi-agent-core', },
     { folder: 'ai', name: '@earendil-works/pi-ai', },
     { folder: 'coding-agent', name: '@earendil-works/pi-coding-agent', },
-  ];
+  ] as const;
+  rl.debug('emitting the qualified native source graph',);
   for (const specification of specifications) {
-    const installed = realpathSync(join(dirname(installedSdk,), basename(specification.name,),),);
+    /**
+     Match each source package to its installed dependency tree.
+     */
+    const installed = await realpath(join(dirname(installedSdk,), basename(specification.name,),),);
+    /**
+     Original package source inside the verified checkout.
+     */
     const upstream = join(sourceRoot, 'packages', specification.folder,);
-    if (packageVersion(upstream,) !== packageVersion(installed,))
+    if (await packageVersion(upstream,) !== await packageVersion(installed,))
       throw new NativeSourceBuildError(`Source and installed package versions differ: ${specification.name}`,);
+    /**
+     Emit each upstream package with its own module and dependency boundary.
+     */
     const target = join(output, 'pi', specification.folder,);
-    mkdirSync(target, { recursive: true, },);
-    cpSync(join(upstream, 'src',), join(target, 'src',), { recursive: true, },);
-    cpSync(join(upstream, 'package.json',), join(target, 'package.json',),);
-    const dependencyDirectory = join(target, 'node_modules',);
-    if (!existsSync(dependencyDirectory,)) symlinkSync(dirname(dirname(installed,),), dependencyDirectory, 'dir',);
+    await mkdir(target, { recursive: true, },);
+    await cp(join(upstream, 'src',), join(target, 'src',), { recursive: true, },);
+    await cp(join(upstream, 'package.json',), join(target, 'package.json',),);
+    await linkDependencies({ target: join(target, 'node_modules',), source: dirname(dirname(installed,),), },);
+    /**
+     Emission preserves native module syntax without rechecking upstream source.
+     */
     const configuration = join(target, 'tsconfig.stage.json',);
-    writeFileSync(configuration, JSON.stringify({
+    await writeFile(configuration, JSON.stringify({
       compilerOptions: {
         target: 'ES2024', module: 'NodeNext', moduleResolution: 'NodeNext', rootDir: 'src', outDir: 'dist',
         noCheck: true, noResolve: true, declaration: false, sourceMap: false, verbatimModuleSyntax: true,
@@ -86,16 +111,17 @@ export function buildPiSource({ packageRoot, output, }: { packageRoot: string; o
       },
       include: ['src/**/*.ts',], exclude: ['src/experimental',],
     }, null, 2,),);
-    execFileSync(process.execPath, [compiler, '--project', configuration,], { cwd: packageRoot, stdio: 'inherit', },);
-    copyAssets({ source: join(target, 'src',), target: join(target, 'dist',), },);
+    await spawn(process.execPath, [compiler, '--project', configuration,], { cwd: packageRoot, stdio: 'inherit', },);
+    await copyAssets({ source: join(target, 'src',), target: join(target, 'dist',), },);
     if (specification.folder === 'ai')
-      cpSync(join(installed, 'dist/providers/data',), join(target, 'dist/providers/data',), { recursive: true, },);
+      await cp(join(installed, 'dist/providers/data',), join(target, 'dist/providers/data',), { recursive: true, },);
     console.log(JSON.stringify({ emitted: specification.name, version: qualifiedRelease.version, },),);
   }
-  cpSync(join(sourceRoot, 'LICENSE',), join(output, 'PI-LICENSE.txt',),);
-  writeFileSync(join(output, 'source-manifest.json',), JSON.stringify({
-    ...qualifiedRelease, compilerVersion: packageVersion(dirname(compilerMetadata,),),
+  await cp(join(sourceRoot, 'LICENSE',), join(output, 'PI-LICENSE.txt',),);
+  await writeFile(join(output, 'source-manifest.json',), JSON.stringify({
+    ...qualifiedRelease, compilerVersion: await packageVersion(dirname(compilerMetadata,),),
   }, null, 2,),);
+  rl.debug('qualified native source emission completed',);
 }
 
 //endregion
