@@ -867,17 +867,28 @@ const client = async () => {
     '',
   ].join('\n'))
   // WAYLAND_DEBUG makes the client's Wayland library print every request and event with a
-  // monotonic millisecond timestamp, so one clock orders the configure and the callbacks.
+  // wall clock timestamp to the microsecond, so one clock orders the configure and the callbacks.
   const viewer = spawn('slint-viewer', [scene], {
     stdio: ['ignore', 'ignore', 'pipe'], env: { ...process.env, WAYLAND_DEBUG: 'client' },
   })
   const protocol = []
   viewer.stderr.on('data', chunk => protocol.push(chunk))
+  // A line reads [HH:MM:SS.microseconds], an optional {queue name}, an arrow for requests, then the call.
   const lines = () => Buffer.concat(protocol).toString().split('\n').flatMap(line => {
-    const match = /^\[\s*(\d+\.\d+)\]\s+(->\s+)?(.*)$/.exec(line)
-    return match ? [{ time: Number(match[1]), request: match[2] !== undefined, text: match[3] }] : []
+    const match = /^\[(\d+):(\d+):(\d+\.\d+)\]\s+(?:\{[^}]*\}\s+)?(->\s+)?(.*)$/.exec(line)
+    const time = match ? (Number(match[1]) * 3600 + Number(match[2]) * 60 + Number(match[3])) * 1000 : 0
+    return match ? [{ time, request: match[4] !== undefined, text: match[5] }] : []
   })
-  const dones = () => lines().filter(line => !line.request && /^wl_callback[@#]\d+\.done\(/.test(line.text))
+  // The done events of frame callbacks only: wl_display.sync callbacks answer in the same way.
+  const dones = () => {
+    const frameCallbacks = new Set()
+    return lines().filter(line => {
+      const request = /^wl_surface[@#]\d+\.frame\(new id wl_callback[@#](\d+)\)/.exec(line.text)
+      const done = /^wl_callback[@#](\d+)\.done\(/.exec(line.text)
+      if (line.request && request) frameCallbacks.add(request[1])
+      return !line.request && done !== null && frameCallbacks.has(done[1])
+    })
+  }
   const configures = () => lines().flatMap(line => {
     const match = /^xdg_toplevel[@#]\d+\.configure\((\d+), (\d+),/.exec(line.text)
     return !line.request && match ? [{ time: line.time, size: [Number(match[1]), Number(match[2])] }] : []
@@ -895,16 +906,22 @@ const client = async () => {
   }
   // Every frame request is answered by exactly one done event, and a done event only ever answers a request.
   const callbackAccounting = () => {
+    // Callback ids are reused, so each request decides whether its id is a frame callback or a sync.
     const pending = new Set()
+    const frameIds = new Set()
     const problems = []
     for (const line of lines()) {
-      const request = /^wl_surface[@#]\d+\.frame\(new id wl_callback[@#](\d+)\)/.exec(line.text)
+      const request = /^(\w+)[@#]\d+\.(\w+)\(new id wl_callback[@#](\d+)\)/.exec(line.text)
       const done = /^wl_callback[@#](\d+)\.done\(/.exec(line.text)
       if (line.request && request) {
-        if (pending.has(request[1])) problems.push('callback ' + request[1] + ' requested again before it was answered')
-        pending.add(request[1])
-      } else if (!line.request && done) {
-        if (!pending.has(done[1])) problems.push('callback ' + done[1] + ' answered without a request, or twice')
+        frameIds.delete(request[3])
+        if (request[1] === 'wl_surface' && request[2] === 'frame') {
+          if (pending.has(request[3])) problems.push('callback ' + request[3] + ' requested again before it was answered')
+          pending.add(request[3])
+          frameIds.add(request[3])
+        }
+      } else if (!line.request && done && frameIds.has(done[1])) {
+        if (!pending.has(done[1])) problems.push('callback ' + done[1] + ' answered twice')
         pending.delete(done[1])
       }
     }
