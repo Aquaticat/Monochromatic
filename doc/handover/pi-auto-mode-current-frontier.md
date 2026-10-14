@@ -712,6 +712,22 @@ The separate `git push origin main` completed successfully,
 publishing the saved documentation commit.
 Continue lint verification through an explicit complete source manifest in sequential groups,
 preserving the rules and worker limits.
+That manifest check now covers all 319 source files with unchanged final source hashes:
+14,477 warnings and 495 errors remain.
+The retained results combine completed file groups with individual checks for the final groups.
+This is complete failing coverage,
+not package lint success.
+`source-contribution-test-fixture.ts` completed after Oxlint reported 396.2 seconds.
+A bounded CPU profile identified repeated `expressionResultSites` and `reachableValueSources`
+traversal in the repository-owned readonly-analysis plugin.
+The isolated completion removes the need to repair that plugin before continuing this migration.
+No linter source or rule was changed.
+A brief duplicate continuation was stopped;
+overlapping timings are not used for comparison.
+The [worker record](../troubleshooting/codex-shell-worker-limits.md#task-pressure-during-pi-package-lint)
+retains the separation between incomplete runs,
+the completed source manifest,
+and the earlier push failure.
 
 The first approved native dispatch failed because the inherited test loader derived dependency paths
 from the codemode worker's disposable home.

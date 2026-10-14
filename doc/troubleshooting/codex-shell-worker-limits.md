@@ -172,6 +172,46 @@ The source manifest and each group's result must be retained before claiming com
 This approach trades a single invocation for separately auditable results;
 the interrupted invocation supplies no completed lint evidence.
 
+The explicit manifest eventually covered all 319 files with unchanged final source hashes.
+Completed groups and individual-file invocations reported 14,477 warnings and 495 errors in total.
+An individual invocation of `src/source-contribution-test-fixture.ts` reported
+`Finished in 396.2s on 1 file with 486 rules using 1 threads.`
+It produced 49 warnings and no errors.
+This establishes completed failing coverage,
+not a passed package check.
+The complete logs and source hashes are retained under
+`~/temp/agent/pi-lint-groups-20261014-zO6k2A/`.
+
+A trial `GOMAXPROCS=2` invocation observed eight threads in the active TypeScript worker,
+compared with 38 in the earlier snapshot.
+The group still had not completed when it was stopped.
+The [Go runtime documentation](https://go.dev/src/runtime/extern.go)
+defines this setting as a bound on simultaneously executing Go threads,
+not a bound on all operating-system threads.
+No timing improvement or permanent task setting is claimed.
+
+The isolated fixture's ten-second Node CPU profile contained 9,448 samples.
+The inclusive `expressionResultSites` stack appeared in 9,403 samples,
+with nested calls through `reachableValueSources`.
+The deciding local source is
+`package/oxlint-plugin/prefer-readonly-parameter-type/src/prefer-readonly-parameter-types/effect-result-binding.ts:131`:
+
+```ts
+// effect-result-binding.ts:131,146; enclosing callback preserves every reached source
+reachableValueSources({ project, node: root })
+  .forEach(function collectSource(source): void {
+    if (source === root) return;
+    expressionResultSites({ project, resultSitesBySymbolId, node: source })
+      .forEach(function collectSite(found): void { reached.add(found); });
+  });
+```
+
+This profile identifies work performed by the repository-owned linter.
+It does not establish an upstream defect,
+connect that traversal to the automatic push failure,
+or prove that a proposed traversal change preserves every effect result.
+No linter implementation was changed during the migration check.
+
 ### Upstream filing decision for the task-pressure incident
 
 1.  Upstream fault:
