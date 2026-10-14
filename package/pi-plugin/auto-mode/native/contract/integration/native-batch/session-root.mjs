@@ -1,4 +1,4 @@
-import {createManagerConstructorOwner} from '../../lifecycle/runtime-custody/manager-owner.mjs';
+import {createManagerConstructorOwner} from '../../lifecycle/runtime-custody/manager-owner.ts';
 import {createNativeManagerRegistry} from '../../lifecycle/root-lifecycle-retirement-entry/registry.mjs';
 import {createSessionRootReader} from '../../lifecycle/root-lifecycle-retirement-entry/root-reader.mjs';
 import {createRuntimeFactoryScopes} from '../../lifecycle/runtime-factory-scopes/scopes.mjs';

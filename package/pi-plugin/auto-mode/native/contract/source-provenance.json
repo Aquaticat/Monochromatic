@@ -874,6 +874,8 @@
     {
       "original": "lifecycle/runtime-custody/manager-owner.mjs",
       "maintained": "lifecycle/runtime-custody/manager-owner.mjs",
+      "currentMaintained": "lifecycle/runtime-custody/manager-owner.ts",
+      "movedOn": "2026-10-14",
       "sha256": "6f61cc2be10c287ca293a62febcf091a66d236a5513fc28647d192ea4c9b1580",
       "origin": "authored-source",
       "relocatedLiterals": 0
@@ -895,6 +897,9 @@
     {
       "original": "lifecycle/runtime-root-lifecycle/lifecycle.mjs",
       "maintained": "lifecycle/runtime-root-lifecycle/lifecycle.mjs",
+      "currentMaintained": "lifecycle/runtime-root-lifecycle/errors.ts",
+      "movedOn": "2026-10-14",
+      "currentScope": "Constructor error classes only; unused earlier lifecycle implementation removed",
       "sha256": "842bd2ca16da2fd5353ef7f00d675128af61c6ec086e21db5b0dfa457526bfa7",
       "origin": "authored-source",
       "relocatedLiterals": 0
