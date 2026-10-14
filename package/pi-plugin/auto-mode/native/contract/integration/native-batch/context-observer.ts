@@ -89,7 +89,8 @@ export function createNativeContextObserver(capture: (input: NativeContextInput)
     tagged({
       tag:record.name,
       l:rl
-    }).debug('retaining original context source value');
+    })
+      .debug('retaining original context source value');
     /**
      Only the original active event can settle or receive source capture.
      */
@@ -119,7 +120,8 @@ export function createNativeContextObserver(capture: (input: NativeContextInput)
     tagged({
       tag:settle.name,
       l:rl
-    }).debug('retaining settled original callback input');
+    })
+      .debug('retaining settled original callback input');
     /**
      Only the original active event can settle or receive source capture.
      */

@@ -971,7 +971,9 @@ and disposal retry.
 Those logs are `${HOME}/temp/agent/pi-native-context-syntax-20261014.log`,
 `${HOME}/temp/agent/pi-native-context-approval-20261014.log`,
 and `${HOME}/temp/agent/pi-native-context-host-20261014.log`.
-Complete package-unit regression and the rendered documentation check are next.
+The complete package unit task also passes after the final context diagnostics were built;
+its log is `${HOME}/temp/agent/pi-auto-mode-unit-after-context-20261014.log`.
+The rendered documentation check is next.
 This work adopts no production semantic policy,
 raises no budget,
 and does not activate the installed plugin.
