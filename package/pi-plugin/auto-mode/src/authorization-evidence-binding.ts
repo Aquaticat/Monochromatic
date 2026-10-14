@@ -39,6 +39,11 @@ const l = tagged({ tag: 'auto-mode-authorization-evidence-binding', },);
  @throws AuthorizationEvidenceError for mismatched or changed original evidence
  
  @throws original failure from source or evidence owners
+ @example
+ ```ts
+ const binding = await captureOriginalAuthorizationBinding({ context, inputs, owner });
+ binding.current();
+ ```
  */
 export async function captureOriginalAuthorizationBinding(
   {

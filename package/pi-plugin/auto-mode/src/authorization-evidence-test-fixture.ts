@@ -6,11 +6,9 @@
 import {
   AuthorizationEvidenceError,
   captureAuthorizationInputs,
+  type AuthorizationInputSources,
+  type AuthorizationSourceView,
 } from '../dist/final/node/index.mjs';
-import type {
-  AuthorizationInputSources,
-  AuthorizationSourceView,
-} from './authorization-evidence-types.ts';
 
 /**
  Mutable fixture condition vocabulary intentionally permits invalid test values.
@@ -35,7 +33,7 @@ type FixtureEvidence = {
  Borrowed methods retain mutable identities for lifecycle tests.
  */
 type FixtureOwner = {
-  capture: () => Promise<unknown>;
+  capture: () => unknown;
   assertCurrent: (value: unknown) => void;
 };
 
@@ -67,14 +65,21 @@ type AuthorizationEvidenceFixture = {
  Construct original reference identities and independently mutable owner controls.
 
  @returns fresh fixture without shared session or policy state
+ @example
+ ```ts
+ const fixture = createAuthorizationEvidenceFixture();
+ const captured = await captureAuthorizationInputs(fixture.options);
+ ```
  */
 export function createAuthorizationEvidenceFixture(): AuthorizationEvidenceFixture {
   /**
    Each candidate and judgment has its own opaque identity.
    */
   const rule = {};
-    const request = {};
-    const judgment = {};
+  /** Original request identity is independent of candidate identity. */
+  const request = {};
+  /** Prepared judgment identity cannot be replaced with a matching source. */
+  const judgment = {};
   /**
    This source view belongs to this request only.
    */
@@ -129,7 +134,7 @@ export function createAuthorizationEvidenceFixture(): AuthorizationEvidenceFixtu
    Borrowed methods can change independently of the retained evidence values.
    */
   const owner = {
-    async capture(): Promise<unknown> {
+    capture(): unknown {
       controls.captures++;
       return evidence;
     },
@@ -146,7 +151,9 @@ export function createAuthorizationEvidenceFixture(): AuthorizationEvidenceFixtu
   const options = {
     judgment,
     inputs,
-    ownerFor() { return owner; },
+    ownerFor(): FixtureOwner {
+      return owner;
+    },
   };
   return {
     rule,
@@ -168,6 +175,11 @@ export function createAuthorizationEvidenceFixture(): AuthorizationEvidenceFixtu
  @param options - fixture invocation for the built implementation
  
  @returns original rejected values, empty when capture succeeds
+ @example
+ ```ts
+ const failures = await authorizationCaptureFailures(fixture.options);
+ expect(failures).toHaveLength(1);
+ ```
  */
 export async function authorizationCaptureFailures(
   options: Parameters<typeof captureAuthorizationInputs>[0],
