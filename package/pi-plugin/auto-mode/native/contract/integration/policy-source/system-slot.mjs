@@ -349,8 +349,8 @@ function createPolicyLoader({
      represented:runMessageInputs
    });
    const governingSources=Object.freeze([
-     ...(retainedRunInputs??[]).map(function readHistoricalRunSource(origin) { return (origin.source); }),
      input.source,
+     ...(retainedRunInputs??[]).map(function readHistoricalRunSource(origin) { return (origin.source); }),
      ...input.resourceReceiptInputs,
      ...(hostPrompt?[hostPrompt]:[]),
      ...(input.resourceSystemInput?[input.resourceSystemInput]:[]),
