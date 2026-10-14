@@ -236,7 +236,7 @@ function createInputPool({
  }
  function retain({
    carrier,
-   systemTools,
+   systemInput,
    value,
    metadata,
    ordinal,
@@ -272,7 +272,7 @@ function createInputPool({
   });
   bytes+=Buffer.byteLength(JSON.stringify(source));
   if(bytes+pendingEventBytes>maximumSnapshotBytes)throw new SourceCollectionError('Loaded session source observations exceed the original snapshot byte bound');
-  const publisher=createInputOnlyPublication(source,systemTools);publisher.capture(carrier);
+  const publisher=createInputOnlyPublication(source,systemInput);publisher.capture(carrier);
   const origin=Object.freeze({
     source,
     publication:publisher.view,
@@ -354,7 +354,7 @@ function createInputPool({
      retainConstructedInput({
        ...input,
        value:inputFields.length===1?value.content:value,
-       ...(value.toolsAdded===undefined?{}:{systemTools:{message,expected:value.toolsAdded}}),
+       systemInput:{message,expected:value},
        metadata:{
          role,
          method,

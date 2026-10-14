@@ -1,10 +1,8 @@
 /**
  Extend original manager input publications through observed native message copies. @module
  */
-import {
-  isDeepStrictEqual,
-  types
-} from 'node:util';
+import { isDeepStrictEqual } from 'node:util';
+import { readSystemInputFields, type SystemInputFields } from './system-input-fields.ts';
 import { tagged } from '@monochromatic-dev/module-logger/ts';
 import type {
   SystemToolAlias,
@@ -20,37 +18,7 @@ const l = tagged({ tag: 'auto-mode-system-tool-publication' });
 //region Native input identity and captured declaration integrity are separate checks
 
 /**
- Read ordinary data fields without invoking caller accessors.
- 
- @param value - borrowed native message or declaration
- 
- @param key - selected field at the native processing boundary
- 
- @returns data value when the record has the supported shape
- */
-function data({
-  value,
-  key
-}: {
-  readonly value: object;
-  readonly key: string
-}): unknown {
-  if (types.isProxy(value) || (Object.getPrototypeOf(value) !== Object.prototype)) return undefined;
-  /**
-   Selected data descriptor excludes accessor execution.
-   */
-  const descriptor = Object.getOwnPropertyDescriptor(
-    value,
-    key
-  );
-  return (descriptor?.enumerable === true) && Object.hasOwn(
-    descriptor,
-    'value'
-  ) ? descriptor.value : undefined;
-}
-
-/**
- Bind tools from an already captured manager input to its existing publication.
+ Bind system fields and tools from an already captured manager input to its existing publication.
  Only original host copy observations can extend this membership.
  
  @param aliases - incumbent message publication alias index
@@ -59,7 +27,7 @@ function data({
  
  @param message - original manager input message
  
- @param expected - owned declaration data already charged to the original input budget
+ @param expected - owned system data already charged to the original input budget
  
  @param copyInput - incumbent bounded data copier supplied by the publication owner
  
@@ -83,7 +51,7 @@ export function publishSystemToolInput({
   readonly aliases: WeakMap<object, SystemToolAlias>;
   readonly publication: object;
   readonly message: object;
-  readonly expected: readonly object[];
+  readonly expected: SystemInputFields;
   readonly copyInput: (value: unknown) => unknown;
   readonly InputError: new (message: string) => Error;
 }): void {
@@ -129,7 +97,7 @@ export function publishSystemToolInput({
    
    @throws SourceCollectionError when declarations differ from the captured original input
    */
-  function toolsFor(value: object): readonly object[] {
+  function toolsFor(value: object): readonly object[] | undefined {
     /**
      Data-profile checks have a distinct diagnostic boundary.
      */
@@ -140,21 +108,15 @@ export function publishSystemToolInput({
     /**
      The copier validates descriptors before any array elements are consumed.
      */
-    const tools: unknown = data({
-      value,
-      key: 'toolsAdded'
-    });
-    if ((data({
-      value,
-      key: 'role'
-    }) !== 'system') || (!Array.isArray(tools))
-      || (!isDeepStrictEqual(
-        copyInput(tools),
-        expected
-      ))) {
-      tl.debug('system declaration data differs from its captured input');
-      throw new InputError('Native system tool declarations differ from their captured manager input');
+    const selected = readSystemInputFields({value, InputError});
+    if (!isDeepStrictEqual(copyInput(selected), expected)) {
+      tl.debug('system data differs from its captured input');
+      throw new InputError('Native system fields differ from their captured manager input');
     }
+    /** Tool absence is an original input state, not an empty replacement array. */
+    const tools = selected.toolsAdded;
+    if (tools === undefined) return undefined;
+    if (!Array.isArray(tools)) throw new InputError('Native system tools require their original declaration array');
     /**
      Explicit narrowing preserves the borrowed array identity without an unsafe element type.
      */
@@ -194,14 +156,18 @@ export function publishSystemToolInput({
      The root and declaration must share the same publication owner.
      */
     const messageAlias = aliases.get(root);
-    if ((messageAlias?.owner !== owner) || (messageAlias.kind !== 'input-only')) return false;
+    if ((messageAlias?.owner !== owner) || (messageAlias.kind !== 'system-input')) return false;
     try {
       /**
        Captured data equality checks integrity only after identity membership.
        */
       const tools = toolsFor(root);
       if (tools !== messageAlias.tools) return retire('Original system tool declaration array was replaced');
-      for (const [ordinal, tool] of tools.entries()) {
+      const selected = readSystemInputFields({value: root, InputError});
+      if ((selected.content !== messageAlias.content) || (selected.sections !== messageAlias.sections)
+        || (selected.toolsRemoved !== messageAlias.toolsRemoved))
+        return retire('Original system field identity was replaced');
+      for (const [ordinal, tool] of (tools ?? []).entries()) {
         /**
          Position and container identities reject equal replacement objects.
          */
@@ -211,9 +177,9 @@ export function publishSystemToolInput({
           || (alias.ordinal !== ordinal))
           return retire('Original system tool declaration occurrence was replaced');
       }
-      return (known.kind === 'input-only')
+      return (known.kind === 'system-input')
         || ((known.kind === 'tool-declaration') && (known.ordinal !== undefined)
-          && (tools[known.ordinal] === value));
+          && (tools?.[known.ordinal] === value));
     } catch (error) {
       cl.debug(String(error));
       return retire('Original system tool input no longer has its captured data profile');
@@ -243,7 +209,7 @@ export function publishSystemToolInput({
      Validate the entire native copy before occupying any alias slot.
      */
     const tools = toolsFor(value);
-    if ((new Set(tools).size !== tools.length) || tools.some(function alreadyPublished(tool) {
+    if ((new Set(tools).size !== (tools?.length ?? 0)) || tools?.some(function alreadyPublished(tool) {
       return aliases.has(tool);
     }))
       return retire('Native tool declaration already belongs to another original input or position');
@@ -251,11 +217,12 @@ export function publishSystemToolInput({
       value,
       {
         owner,
-        kind: 'input-only',
-        tools
+        kind: 'system-input',
+        tools,
+        ...readSystemInputFields({value, InputError})
       }
     );
-    for (const [ordinal, tool] of tools.entries())
+    for (const [ordinal, tool] of (tools ?? []).entries())
       aliases.set(
         tool,
         {
