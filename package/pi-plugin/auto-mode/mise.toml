@@ -326,7 +326,7 @@ run = """
 const assert = (await import('node:assert/strict')).default
 const { mkdir, mkdtemp, readFile, readlink, writeFile } = await import('node:fs/promises')
 const { homedir } = await import('node:os')
-const { join } = await import('node:path')
+const { dirname, join } = await import('node:path')
 const { default: spawn } = await import('nano-spawn')
 const scratch = join(homedir(), 'temp/agent')
 await mkdir(scratch, { recursive: true, mode: 0o700 })
@@ -338,7 +338,7 @@ const before = { packages: [packageRoot, 'npm:unrelated-fixture-extension'], def
 const expected = { ...before, packages: ['npm:unrelated-fixture-extension'] }
 const settingsPath = join(agentDir, 'settings.json')
 await writeFile(settingsPath, JSON.stringify(before))
-const env = { ...process.env, HOME: fixture, PI_CODING_AGENT_DIR: agentDir, PI_OFFLINE: '1' }
+const env = { ...process.env, HOME: fixture, PI_CODING_AGENT_DIR: agentDir, PI_OFFLINE: '1', PATH: [dirname(process.execPath), process.env.PATH].join(':') }
 await spawn('mise', ['--no-env', '--no-hooks', 'run', '--skip-tools', '//package/pi-plugin/auto-mode:install:native'], { env, stdio: 'inherit' })
 assert.deepEqual(JSON.parse(await readFile(settingsPath, 'utf8')), expected)
 assert.equal(await readlink(join(fixture, '.local/bin/pi')), join(packageRoot, 'native/command.ts'))
