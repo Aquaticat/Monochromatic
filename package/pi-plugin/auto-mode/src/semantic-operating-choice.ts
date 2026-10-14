@@ -56,7 +56,11 @@ function readScores({
   /**
    Accumulate the bounded vocabulary without exposing mutable bindings to later checks.
    */
-  const total = labels.reduce(function addScore(sum, label,) {
+  const total = labels.reduce(
+    function addScore(
+      sum,
+      label,
+    ) {
     /**
      Missing members fail the same numeric check as malformed scores.
      */
@@ -67,7 +71,9 @@ function readScores({
       throw new SemanticAdmissionPolicyError('Semantic admission requires every configured score between zero and one',);
     scores[label] = score;
     return sum + score;
-  }, 0,);
+  },
+    0,
+  );
   if (Math.abs(total - 1,) > distributionTolerance)
     throw new SemanticAdmissionPolicyError('Semantic admission requires a complete normalized distribution',);
   return Object.freeze(scores,);
