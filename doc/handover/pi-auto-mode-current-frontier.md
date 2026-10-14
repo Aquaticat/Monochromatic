@@ -141,6 +141,27 @@ The user then renewed standing authorization to send anything needed to Drex and
 The next diagnostic observes complete-request completion beyond the production deadline;
 late results cannot authorize an action.
 
+The longer complete-input observation returned `drex-v2.0` with 84 answers,
+then failed local distribution validation at 48,528.415 ms.
+It reported 2,418,163 input tokens.
+The four-decimal probabilities explain a separate precision mismatch with the consumer's `0.000001` sum tolerance;
+no validator was loosened.
+None of the selected scores reaches `0.99`.
+The primary explicit permission clause received `none` at `0.3586`.
+
+The completed clause-isolation study preserves the complete state and selects only the primary clause.
+Unchanged baselines give identical permission probability `0.7748`
+at 2,254.570 ms and 1,342.972 ms.
+Inlining the same definition and rubrics gives permission `0.3473` at 1,338.757 ms.
+It is not a verified remedy.
+A further full-batch repeat returned HTTP 529 `overloaded` after 26,134.675 ms;
+its frozen stop condition prevented the planned two-question control.
+All provider jobs have finished.
+The next local inspection concerns possible model confusion from the wire's pre-assessment
+`permission: false` and `authority: "not-established"` fields.
+This remains a hypothesis,
+and no production semantics or provider choice has changed.
+
 ## Restart checkpoint after installing automatic Codex shell limits
 
 The user restarted the session and resumed work on 2026-10-13.

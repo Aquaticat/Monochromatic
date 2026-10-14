@@ -378,6 +378,42 @@ no retries,
 and no production admission or tool execution.
 This diagnostic subset is not a replacement for complete source interpretation.
 
+All three clause-isolation requests returned HTTP 200.
+The unchanged baselines completed in 2,254.570 ms and 1,342.972 ms,
+with server evaluation times of 331.013 ms and 320.696 ms.
+Both returned the identical permission probability `0.7748` and usage of 15,671 input tokens.
+The inline-definition request completed in 1,338.757 ms,
+reported 20,607 input tokens,
+and returned permission probability `0.3473`.
+The direct-definition variant is not a verified improvement.
+Its latency difference from the second baseline is inside the observed unchanged-input spread.
+None of these results reaches `0.99`.
+
+The primary question and complete state are unchanged between the isolated baseline and full batch,
+but the observed primary-clause distributions differ.
+That is a batch-sensitivity hypothesis,
+not an established hosted mechanism or proof of cross-question attention.
+A frozen full-repeat and two-question control were prepared at
+`${HOME}/temp/agent/pi-drex-batch-isolation-20261014`.
+The unchanged full-repeat returned HTTP 529 `overloaded` after 26,134.675 ms.
+The schedule stopped without retry,
+so the two-question control was not dispatched.
+The public source describes isolated branches and separate row chunks;
+its relationship to hosted behavior is unverified.
+
+The next local inspection distinguishes evidence from injected assessment-status fields.
+The current wire includes `permission: false`,
+`authority: "not-established"`,
+and `semanticQualification: "not-established"` before interpretation.
+Those values describe the guard's current status,
+not the permission meaning of the selected clause.
+Whether they confuse the model is untested;
+their mere presence does not prove the cause of the observed estimates.
+No production payload,
+cutoff,
+provider,
+or deadline changes follow from this inspection.
+
 [models]: https://console.nace.ai/docs/drex/reference/models
 [limits]: https://console.nace.ai/docs/drex/reference/limits
 [evaluate]: https://console.nace.ai/docs/drex/api-reference/systemone
