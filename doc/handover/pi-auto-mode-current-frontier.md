@@ -187,6 +187,11 @@ removing that owned snapshot makes the changed-description control fail.
 `${HOME}/temp/agent/pi-tool-publication-controls-20261014/emission-verification.json`
 retains the unchanged artifact hash.
 The next boundary is complete system-message derivation and original request governing-use consumption.
+The consolidated built contribution regression also passes the base,
+run,
+message,
+publication,
+and tool membership cases through `test:source-contribution`.
 The current tool records remain partial contributions;
 they do not remove `request-material-instruction-use`.
 Complete system and tool governing-use accounting is still required before removing the independent obligation.
