@@ -53,6 +53,22 @@ await describe({ name: '', children: [
     expect(rejected).toHaveProperty('name', 'NativeScriptValueGuardError');
     expect(fixture.state.memberChecks).toBe(0);
   } }),
+  it({ name: 'captures native conversion before a later queued result mutation', fn: async function nativeCompletionOrder() {
+    /** Original native completion is independently controlled by this fixture. */
+    const deferred = Promise.withResolvers<unknown>();
+    /** The consumer must convert in its first continuation after native settlement. */
+    const fixture = nativeReturnFixture({ runNative: function pendingNative() {
+      return deferred.promise;
+    } });
+    /** Native settlement queues the consumer before the later mutation. */
+    const pending = fixture.consumer.invoke({ slot: fixture.handle, call: fixture.call, options: fixture.options });
+    deferred.resolve(fixture.outcome);
+    queueMicrotask(function mutateAfterNativeSettlement() {
+      fixture.outcome.result.content = [{ type: 'text', text: 'later queued mutation' }];
+    });
+    await pending;
+    expect(fixture.consumer.valueFor({ slot: fixture.handle, outcome: fixture.outcome })).toBe('original text');
+  } }),
   it({ name: 'rejects copied outcomes and incomplete prepared members independently', fn: async function originalMembership() {
     /** The positive control uses the same original return as both rejection controls. */
     const fixture = nativeReturnFixture();
