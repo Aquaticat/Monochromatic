@@ -302,6 +302,23 @@ The frozen schedule stopped without retry.
 The correction must leave each question envelope unchanged and encode only its instruction payload;
 a preflight must reject the captured malformed input before accepting the corrected one.
 
+The corrected offline prototype at `${HOME}/temp/agent/pi-jev-structure-envelope-20261014`
+preserves every question field except its encoded instructions.
+The captured malformed input fails the new envelope check;
+all corrected candidates pass envelope equality and exact original reconstruction.
+The corrected combined candidate is 87,989 state bytes and 117,254 complete request bytes,
+with SHA-256 `e405fcf07f905b2a069f7f287d7d876c49a3475ffac19a1c54b70c28cac3408d`.
+The frozen `${HOME}/temp/agent/pi-jev-envelope-fit-20261014` schedule sends that complete candidate once,
+with all 84 questions,
+a five-second deadline,
+and no retry.
+
+The corrected envelope request returned HTTP 400 `max_tokens_exceeded` in 997.329 ms.
+The negative wire-schema control and corrected preflight passed before dispatch.
+This is now a valid capacity rejection of the corrected representation,
+separate from the malformed earlier candidate.
+No answers or model-quality evidence were returned.
+
 Automatic approval review again rejected the documentation commit's existing cgroup attachment.
 The user renewed authorization for that attachment with unchanged limits;
 commit `07987fab66` then completed.

@@ -582,6 +582,8 @@
     {
       "original": "integration/native-batch/session-root.mjs",
       "maintained": "integration/native-batch/session-root.mjs",
+      "currentMaintained": "integration/native-batch/session-root.ts",
+      "movedOn": "2026-10-14",
       "sha256": "f096ec0b421dff2a3798d6976b815f0df0660d58cc1ca6f656ba275230b808f4",
       "origin": "authored-source",
       "relocatedLiterals": 0
@@ -920,7 +922,8 @@
     },
     {
       "original": "lifecycle/runtime-factory-scopes/scopes.mjs",
-      "maintained": "lifecycle/runtime-factory-scopes/scopes.mjs",
+      "maintained": "lifecycle/runtime-factory-scopes/scopes.ts",
+      "movedOn": "2026-10-14",
       "sha256": "da525f1538d2fe2d005fc623652634d573563df74ec74c178e0bfd4b66d180cf",
       "origin": "authored-source",
       "relocatedLiterals": 0

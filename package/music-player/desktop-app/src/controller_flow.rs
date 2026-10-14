@@ -100,8 +100,8 @@ impl Controller {
     ///      `pub(crate) fn report_unplayable(&self, failed: Vec<PathBuf>)`.
     ///  Tell the window which files could not be opened, if any, and has not been told about already.
     /// Why:
-    ///       D83: a failure is explained, not silent (PB1). One update carries every file of one load, so the window
-    ///  shows one message with a count (D9) and not one per file; D113: each file is told once, however often it is tried.
+    ///       D83: a failure is explained, not silent (PB1). One update carries every file of one load, so the report is
+    ///  one notification with a count (D9, D122) and not one per file; D113: each file is told once, however often it is tried.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -115,7 +115,7 @@ impl Controller {
     ///      `pub(crate) fn emit_unplayable(&self, failed: Vec<PathBuf>)`.
     ///  Sends one update that names the files that could not be played.
     /// Why:
-    ///       The window marks the rows and shows one message for the whole list; callers have already left out the files
+    ///       The window marks the rows and the desktop gets one notification for the whole list (D122); callers have already left out the files
     ///  the person was told about.
     ///
     /// In TS you'd write (pseudocode):

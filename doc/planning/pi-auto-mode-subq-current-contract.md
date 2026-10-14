@@ -16,7 +16,17 @@ The documented authenticated `GET https://api.subq.ai/v1/models` returned HTTP 2
 and only `subq-snap-preview`,
 named `SubQ Snap Preview`,
 owned by `subquadratic`.
-This verifies the supplied resource before further evaluation.
+Correction on October 14:
+that call sent the encrypted SOPS value rather than the decrypted credential.
+Its HTTP 200 therefore does not verify the supplied key.
+The later 16-question and one-question probes returned HTTP 403 `permission_error`
+using the same incorrectly loaded value.
+Neither result establishes account access or model capability.
+The user suggested mise might explain the failure;
+inspection confirmed an owned credential-loading mistake.
+`mise env --json` now resolves the real key in memory without printing it.
+The original frozen control was repeated in a separate directory with the decrypted key
+and a guard rejecting `ENC[` values before dispatch.
 
 ## Candidate and incumbent boundaries
 
@@ -38,7 +48,8 @@ This narrow named-provider check makes no technology ranking or adoption recomme
 
 The [models page][models] lists `subq-snap-preview` for Decisions
 and a separate early-access `subq-preview` for generated chat.
-Only the decision model appeared in this account's authenticated listing.
+Only the decision model appeared in the listing;
+the ciphertext-bearing models request did not establish account authentication.
 The [Decisions contract][decisions] uses `POST /v1/systemone`,
 structured state,
 and named typed questions with structured instructions and criteria.
@@ -85,6 +96,25 @@ timeout,
 or invalid response ends the schedule.
 Acceptance of 17 would justify a separately frozen complete-input test;
 it would not prove all 84 questions fit or establish semantic quality.
+
+## Resolved-key boundary result
+
+`${HOME}/temp/agent/pi-subq-boundary-resolved-20261014` retains both requests and results.
+The synthetic encrypted credential was rejected before dispatch or a started marker.
+The resolved-key control returned HTTP 200 with model `subq-snap-preview`
+and all 16 expected Noul answers in 845.179 ms.
+Their probabilities ranged from 0.9669985771179199 to 0.9682185649871826;
+usage was 749 input tokens and zero output tokens.
+The 17-question request returned HTTP 422 `validation_error` in 182.896 ms:
+`questions: must NOT have more than 16 properties`.
+The frozen schedule stopped without retry.
+
+This confirms the documented question limit for the tested route and account.
+Three calls carry at most 48 questions,
+which cannot cover this assessment's 84 questions.
+The compatibility gate therefore fails without changing the adopted assessment contract.
+The result does not establish poor general model quality.
+The initial authentication-based dismissal was wrong.
 
 [models]: https://docs.subq.ai/using-the-api/models/
 [decisions]: https://docs.subq.ai/endpoints/decisions-api/

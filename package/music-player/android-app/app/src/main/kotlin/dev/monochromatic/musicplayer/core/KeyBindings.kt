@@ -53,7 +53,7 @@ data class KeyMoveList(
     val move: ListMove,
 ) : ListKeyCommand
 
-/** Activates the entry under the focus ring: plays the row, or scrolls the names to the rail cell. */
+/** Activates the entry under the focus ring: selects the row or toggles play, or scrolls to the rail cell. */
 data object KeyActivateRow : ListKeyCommand
 
 /** Moves the focus ring of the rail to the first cell whose label starts with a typed character. */

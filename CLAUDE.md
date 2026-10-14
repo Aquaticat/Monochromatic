@@ -282,8 +282,10 @@ DVP:
  external sources only explain probe results or fill gaps.
 
 QAB:
- Predicting a change's (or revert's) effect from unchanged code is inference:
- apply it in a fork,
+ Predicting a change's (or revert's) effect,
+ or saying current behavior already matches a request,
+ from reading code is inference:
+ run the built app or apply it in a fork,
  measure,
  then conclude.
 

@@ -4,7 +4,7 @@
  @module
  */
 import {
-  createAssessmentSender,
+  createAssessmentHttpSender,
   type AssessmentTransportInput,
 } from '@monochromatic-dev/pi-plugin-auto-mode';
 
@@ -76,8 +76,8 @@ export function assessmentSender({
   readonly fetchImpl: typeof fetch;
   readonly now?: () => number;
   readonly readCredential?: () => unknown;
-}): ReturnType<typeof createAssessmentSender> {
-  return createAssessmentSender({
+}): ReturnType<typeof createAssessmentHttpSender> {
+  return createAssessmentHttpSender({
     fetchImpl,
     now,
     readCredential,

@@ -127,7 +127,7 @@ Robolectric loads its framework jar for that API from `app/build/robolectric-run
 which Gradle fills from the `robolectricRuntime` configuration (`org.robolectric:android-all-instrumented`),
 so a run needs the network only once, to fill the Gradle cache, and works with `--offline` afterwards.
 The test JVM also gets Robolectric's documented `--add-opens` flags (see `app/build.gradle.kts`).
-The wiring cases add about 8 s to the 1,149-test run.
+The wiring cases add about 8 s to the 1,167-test run.
 
 ## Lint and clean
 
@@ -282,6 +282,18 @@ and `T` for Move to trash.
 The letter is underlined in the label,
 and pressing it with a hardware keyboard while the menu is open runs the row and closes the menu.
 File details has no key of its own outside the menu.
+
+## Tapping a track row (D124)
+
+A tap, or `Enter` on the row under the focus ring, goes through `PlayerController.activateRow`.
+On a row that is not the current track it only selects the row:
+`selectIndex` makes it current, pauses the engine, and loads the track paused, so the deck shows it and nothing plays.
+On the current track, playing or paused, it toggles play and pause through `togglePlay`, the call of the deck's Play
+button, so a track restored from the saved session starts, and a track whose last load failed is loaded again.
+The explicit Play row of the track menu and a Search result still start a track that is not current at once
+(`playIndex`; D73).
+The desktop app follows the same rule.
+`PlayerControllerRowTest`, `PlayerControllerRowFailureTest` and `wiring/RowTapWiringTest` pin it.
 
 ## The library and the analysis follow the files
 

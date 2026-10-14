@@ -263,3 +263,41 @@ fn a_library_with_one_top_level_folder_keeps_the_folder_in_every_name_it_sends()
         library.updates(),
     );
 }
+
+#[test]
+fn a_restored_selected_track_starts_on_the_toggle_the_row_click_sends() {
+    let library = Library::new("restored-toggle", &["A/1.flac", "A/2.flac"]);
+    let mut controller = library.controller();
+    controller.handle_command(Command::OpenRoot { root: library.root.clone(), select: Some(library.root.join("A/2.flac")), play: false });
+    assert_eq!(controller.queue.current_index(), Some(1), "the saved track is the current one");
+    assert!(!controller.playing, "a restored track waits paused");
+    controller.handle_command(Command::TogglePlay);
+    assert!(controller.playing, "the toggle a click on the current row sends starts it");
+    assert_eq!(controller.queue.current_index(), Some(1), "and keeps the track");
+}
+
+#[test]
+fn selecting_a_row_loads_it_paused_and_stops_the_playing_track() {
+    let library = Library::new("select-pauses", &["A/1.flac", "A/2.flac", "A/3.flac"]);
+    let mut controller = library.controller();
+    open(&mut controller, &library);
+    controller.handle_command(Command::SelectIndex(0));
+    controller.handle_command(Command::Play);
+    assert!(controller.playing);
+    controller.handle_command(Command::SelectIndex(2));
+    assert_eq!(controller.queue.current_index(), Some(2), "the clicked row is current");
+    assert!(!controller.playing, "selecting never starts playback and stops the playing track");
+    assert!(controller.source.is_some(), "the selected track is loaded, so the next toggle resumes it");
+}
+
+#[test]
+fn selecting_a_row_that_cannot_be_opened_is_reported_and_the_current_track_is_recorded() {
+    let library = Library::new("select-unreadable", &["A/1.flac", "A/2.wav", "A/3.flac"]);
+    let mut controller = library.controller();
+    open(&mut controller, &library);
+    controller.handle_command(Command::SelectIndex(1));
+    assert!(!controller.playing, "nothing plays after the select");
+    assert!(library.updates().iter().any(|text| return text.starts_with("unplayable ")), "the file is named as unplayable: {:?}", library.updates());
+    // What the window shows as current after a select of an unreadable row is the controller's choice, written down here.
+    assert_eq!(controller.queue.current_index(), Some(2), "load_current skips the unreadable file to the next playable one");
+}

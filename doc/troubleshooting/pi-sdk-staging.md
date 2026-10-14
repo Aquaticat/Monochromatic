@@ -1,5 +1,97 @@
 # Pi 0.87.1 nominal dependency inventory rejects the configured workspace graph
 
+## Pi 1.2.0 native RPC Stop exposes an overbroad fixture stderr assertion
+
+### Symptom and corrected interpretation
+
+The October 14 disposable original-RPC fixture initially required empty stderr for every response.
+Allow and Deny passed.
+Stop recorded `user-deny`,
+executed no tool,
+and exited zero,
+but failed `AssertionError [ERR_ASSERTION]: Native child cleanup must not emit stderr`.
+Its retained output contained `RequestObservationStaleError: Observed request was cancelled`
+and `PreparedBatchExecutionError: Prepared batch retained lifecycle failures`.
+The assertion incorrectly treated all execution diagnostics as cleanup diagnostics.
+
+### Source trace
+
+The maintained approval wrapper forwards the original Stop capability:
+
+```js
+// package/pi-plugin/auto-mode/native/contract/lifecycle/incumbent-tui-group/approval.mjs:100
+abort(){trace('tui-stop');return Reflect.apply(
+  abort,
+  ctx,
+  []
+);},
+```
+
+The completed semantic review still requires its original inputs to remain current:
+
+```js
+// package/pi-plugin/auto-mode/native/contract/integration/action-policy/evaluate.mjs:140
+function assertCurrent(){inputs.assertCurrent();authorizationInputs.assertCurrent();result.assertCurrent();}
+assertCurrent();
+```
+
+The request observer rejects a cancelled original request:
+
+```js
+// package/pi-plugin/auto-mode/native/contract/lifecycle/root-lifecycle-retirement-entry/observer.mjs:79
+if(scope.signal
+  ?.aborted)throw new RequestObservationStaleError(
+  'Observed request was cancelled',
+  {cause:scope.signal
+    .reason}
+);
+```
+
+The existing `native-batch/approval-domain.test.mjs` explicitly expects a handler failure for Stop.
+No source guard was removed to satisfy the new fixture.
+
+### Verification and rejected workaround
+
+`${HOME}/temp/agent/pi-native-rpc-human-20261014/`
+retains the child,
+controller,
+complete RPC transcripts,
+original verdict entries,
+and unfiltered stderr.
+The corrected child forwards every original stderr write unchanged while recording its lifecycle phase.
+The controller proves that concatenating captured writes reproduces every stderr byte.
+Stop has 10,467 execution-diagnostic bytes and zero disposal-diagnostic bytes.
+Cancellation,
+Allow after 6,007 ms,
+and an unrelated identifier followed by Deny also pass.
+Each uses one assessment,
+zero provider requests,
+and exit zero.
+Only Allow executes the inert tool.
+No genuine human response is claimed.
+
+Do not suppress cancellation logs or remove currentness checks to obtain empty stderr.
+The corrected measurement distinguishes expected execution retirement from disposal failures;
+it does not establish production authorization-owner integration.
+
+The first scratch invocation also emitted Mise 2026.10.0 path-trust diagnostics
+and `deprecated [tera_template_task_args]` before completing its Allow control.
+Subsequent invocations use the existing repository `usage` convention,
+non-login shell startup,
+and the exact inspected config path through `MISE_TRUSTED_CONFIG_PATHS`.
+This follows the [recorded temporary-config workaround](mise-untrusted-temporary-worktree-shell.md).
+
+### Upstream filing decision
+
+The failed assertion belongs to the owned fixture.
+No upstream defect is established;
+an upstream fix,
+unsupported use-case claim,
+contribution assessment,
+or maintainer willingness claim is therefore inapplicable.
+The local correction has the retained controls and changes no runtime behavior.
+No upstream draft or message is warranted.
+
 ## Pi 1.1.0 dispatcher replaces a fetch override installed before module loading
 
 The disposable offline native-host capture initially produced Pi's `Connection error.`
@@ -6516,6 +6608,80 @@ or attributing the delay to load without an emitting-process trace would not res
 There is nothing to file upstream from this observation.
 
 ## Overlapping native verification and Oxlint 1.87.0 stop before completing checks
+
+### Session-construction port verification on 2026-10-14
+
+Final repository inspection encountered a separate Git LFS bookkeeping failure in the default sandbox:
+`Error cleaning Git LFS object`,
+`read-only file system`,
+and `clean filter 'lfs' failed` for a music-player README image.
+The command returned status 128 before printing repository status.
+A subsequent escalated `git status --short` restricted to this task's package and documentation paths succeeded
+and reported those paths clean.
+That result establishes task-path cleanliness only;
+it neither diagnoses the unrelated asset nor supplies evidence about the compiler failure.
+
+The subsequent factory-scope port type-check attempt stopped in TypeScript Go with:
+
+```text
+# pi-factory-scopes-types-20261014.log
+runtime: failed to create new OS thread (have 140 already; errno=11)
+runtime: may need to increase max user processes (ulimit -u)
+fatal error: newosproc
+```
+
+The source formatter was also running.
+No immediately preceding task-counter sample attributes the failure to that overlap.
+The wrapper returned exit zero despite retaining this panic;
+this is not a successful type check.
+The separate log is `${HOME}/temp/agent/pi-factory-scopes-types-20261014.log`.
+The retry ran serially with `TSC_SINGLE_THREADED=1` and `GOMAXPROCS=2`.
+These controls reduce compiler concurrency without changing TypeScript checks or resource ceilings.
+The complete log at `${HOME}/temp/agent/pi-factory-scopes-types-final-20261014.log`
+contains the successful build-info emission and no fatal compiler diagnostic.
+The final scoped lint separately reports zero warnings and zero errors across ten changed files.
+The owned rebuild,
+factory-scope tests,
+actual SDK host lifecycle,
+manager constructors,
+and isolated Qwen CLI process pass.
+This establishes bounded verification recovery,
+not a diagnosis of the original thread allocation failure.
+
+The incorrect wrapper exit result has a separate owned source explanation:
+`package/dev-script/task-util/src/tsc-filter.ts:203`
+sets a failure code only for recognized retained TypeScript errors:
+
+```ts
+// package/dev-script/task-util/src/tsc-filter.ts
+if (stdoutResult.hasRemainingErrors || stderrResult.hasRemainingErrors)
+  process.exitCode = subprocessError.exitCode ?? 1;
+```
+
+The Go panic is retained as ordinary output without a recognized TypeScript error header.
+The independent signal branch does not cover a compiler that exits with code two.
+This wrapper behavior was subsequently repaired and verified separately.
+The [owned wrapper incident](typescript.md#task-tsc-002-converted-compiler-process-failures-into-successful-checks)
+retains failing-before process fixtures and passing-after evidence.
+The successful serial type-check retry alone did not fix it.
+
+After the typed session-construction port,
+the approval-context `allow` case failed with
+`JudgmentDeadlineError: Judgment preparation and assessment deadline expired`.
+The final assertion was `ERR_ASSERTION: 0 !== 1` for original selector reach.
+The CLI process check and result-test formatter were also running.
+That overlap is an observed condition,
+not an established cause.
+
+The unchanged isolated approval sequence then passed Allow,
+Deny,
+Stop,
+cancellation,
+and Allow after reload.
+Its complete log is `${HOME}/temp/agent/pi-session-root-approval-isolated-20261014.log`.
+Every completed mode reports zero provider calls and zero genuine human approvals.
+The isolated repeat did not change the five-second deadline or prove a permanent timing remedy.
+This is distinct from the earlier SIGABRT and Go thread-creation failures in this incident record.
 
 ### Symptoms and separate incident boundaries
 

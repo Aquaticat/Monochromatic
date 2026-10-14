@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 import {createEnvironment} from './environment.mjs';
-import {createRootSessionFactory} from './session-root.mjs';
+import {createRootSessionFactory} from './session-root.ts';
 import {bindNativePolicyRuntime} from './runtime.mjs';
 import {createOwnedCodemodeDefinition} from "./generated/program-definition.mjs";
 import {nativeOpenAIStream} from './source-association.mjs';
@@ -162,7 +162,7 @@ function authoredWireAnswer({body}){
    const laterInstruction=nextDecision&&[nextInput,nextResult].some(function receivedLater(text){return question.instructions.selectedRule?.text.includes(text);});
    if(laterInstruction){assert.equal(observations.assessments,2,'Later receipts must not revise the first assessment');observations.nextInputQuestions++;}
    const choice=laterInstruction?'prohibition':question.instructions.selectedMaterial==='originalRequestBody'?requestRelation:selectedClause?(unresolvedClause??relation):'none';
-   const score=operatingPolicy?(selectedClause&&lowConfidenceClause?0.989999:choice==='unknown'||choice==='unsupported'?1:0.99):1;
+   const score=operatingPolicy?(selectedClause&&lowConfidenceClause?0.799999:choice==='unknown'||choice==='unsupported'?1:0.8):1;
    assert(Object.hasOwn(question.criteria,choice));
    return [slot,{type:'choice',choice,probabilities:Object.fromEntries(Object.keys(question.criteria).map(function scoreAuthoredDomainChoice(label) { return ([label,label===choice?score:label==='unknown'?1-score:0]); }))}];
   }));
@@ -173,12 +173,15 @@ const sendAssessment=httpTransport?createAssessmentSender({
  readCredential:function fixtureAssessmentCredential(){return 'native-http-fixture-key';},
  async fetchImpl(url,options){
   observations.httpCalls++;
-  assert.equal(url,'https://api.llmgateway.io/v1/systemone');
+  assert.equal(url,'https://api.llmgateway.io/v1/decisions');
   assert.equal(options.method,'POST');
   assert.equal(options.redirect,'error');
   assert.equal(options.headers.authorization,'Bearer native-http-fixture-key');
   assert.equal(options.signal.aborted,false);
-  return new Response(authoredWireAnswer({body:options.body}));
+  const decisionRequest=JSON.parse(options.body);
+  const nativeRequest={model:decisionRequest.model,state:JSON.parse(decisionRequest.input),questions:Object.fromEntries(decisionRequest.questions.map(function originalQuestion(question){return [question.name,{type:question.type,instructions:JSON.parse(question.instructions),criteria:Object.fromEntries(question.choices.map(function originalCriterion(choice){return [choice.value,choice.description??null];}))}];}))};
+  const nativeResponse=JSON.parse(authoredWireAnswer({body:JSON.stringify(nativeRequest)}));
+  return new Response(JSON.stringify({model:nativeResponse.model,usage:nativeResponse.usage,answers:Object.entries(nativeResponse.answers).map(function providerAnswer([name,answer]){return {type:'choice',name,choice:answer.choice,confidence:0.6,probabilities:Object.entries(answer.probabilities).map(function providerProbability([value,probability]){return {value,probability};})};})}));
  }
 }):authoredWireAnswer;
 const runtime=bindNativePolicyRuntime({

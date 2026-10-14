@@ -888,7 +888,8 @@ fun playerHost(
         onOpen = onChooseFolder,
         onSettings = { go(PlayerRoute.Settings) },
         onPlay = { index ->
-            controller.playIndex(index)
+            Log.i(LOG_TAG, "player host row activated index=$index current=${controller.uiState.currentIndex}")
+            controller.activateRow(index)
             returnFocusToPlayback()
         },
         deck = deckActions,

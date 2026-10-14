@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import {createEnvironment} from './environment.mjs';
-import {createRootSessionFactory} from './session-root.mjs';
+import {createRootSessionFactory} from './session-root.ts';
 import {attachNativeContextCopies} from './generated/session-manager.mjs';
 
 const env=await createEnvironment();
