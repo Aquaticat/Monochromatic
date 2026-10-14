@@ -39,6 +39,9 @@ pub mod line_rows;
 /// The one mapping between vertical pixels and source lines,
 ///  with blocks of virtual rows above annotated lines.
 pub mod row_map;
+/// The minimap that scrolls the source view:
+///  its geometry and the picture of the whole text it shows.
+pub mod minimap;
 
 /// One shaped row with its caret,
 ///  hit-test,

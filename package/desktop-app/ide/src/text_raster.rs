@@ -73,8 +73,9 @@ impl Default for TextRaster {
     }
 }
 
-/// Translate semantic paint roles into the selected system-theme palette.
-fn ink(role: u32, colors: CodeColors) -> [u8; 4] {
+/// Translate semantic paint roles into the selected system-theme palette;
+///  the minimap's picture takes its glyph colors from the same function.
+pub fn ink(role: u32, colors: CodeColors) -> [u8; 4] {
     if role == 64 {
         return colors.selected;
     }

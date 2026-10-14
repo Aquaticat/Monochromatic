@@ -239,6 +239,14 @@ runCargo(['test', '--no-default-features', '--lib', 'wrap::'])
 runCargo(['test', '--no-default-features', '--test', 'wrap', '--test', 'wrap_rows', '--test', 'row_map', '--test', 'wrap_keys', '--test', 'vertical_motion'])
 """
 
+[tasks."test:minimap"]
+description = "Run the minimap geometry and picture tests in the bounded container"
+shell = "node --input-type=module-typescript -e"
+run = """
+{{vars.cargo}}
+runCargo(['test', '--no-default-features', '--test', 'minimap'])
+"""
+
 [tasks."test:native"]
 depends = ["runtime", "notices"]
 description = "Exercise native window events and fonts in process-isolated headless tests"
