@@ -48,6 +48,9 @@ function assertPublicationModule(value: unknown): asserts value is PublicationMo
   }
 }
 
+// Enter through the same original SDK module as the native integration fixtures before inspecting its manager.
+await import(new URL('../dist/native/contract/integration/native-batch/generated/sdk.mjs', import.meta.url).href);
+
 /** Native staging emits these exact modules for the host and serializer. */
 const managerNamespace: unknown = await import(new URL(
   '../dist/native/contract/integration/native-batch/generated/session-manager.mjs', import.meta.url,
