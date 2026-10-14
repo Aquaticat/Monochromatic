@@ -42,6 +42,15 @@ pub mod appearance_portal;
 /// ```
 pub mod backend;
 
+/// Output and dmabuf construction shared by both render backends.
+pub mod backend_parts;
+
+/// Surfaceless EGL initialisation for the opt-in headless mode.
+pub mod backend_headless;
+
+/// The nested window and surfaceless renderers behind one handle.
+pub mod render_backend;
+
 /// Which render backend a session uses:
 ///  the nested window by default,
 ///  headless only when asked.

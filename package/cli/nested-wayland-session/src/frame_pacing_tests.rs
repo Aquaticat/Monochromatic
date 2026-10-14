@@ -60,3 +60,49 @@ fn frame_interval_matches_the_advertised_refresh() {
     assert_eq!(FRAME_INTERVAL, Duration::from_nanos(16_666_666));
     assert!(STALL_THRESHOLD >= FRAME_INTERVAL * 2);
 }
+
+/// Headless has no parent presentation,
+///  so a callback is due on every tick from the first one,
+///  with no stall threshold and for any amount of elapsed time.
+#[test]
+fn headless_sends_callbacks_on_every_tick_from_the_start() {
+    assert!(callbacks_due(BackendKind::Headless, false, Duration::ZERO));
+    assert!(callbacks_due(BackendKind::Headless, false, FRAME_INTERVAL));
+    assert!(callbacks_due(BackendKind::Headless, false, Duration::from_secs(3600)));
+    let start = Instant::now();
+    let mut pacing = FramePacing::for_backend(BackendKind::Headless, start);
+    assert!(pacing.fallback_due(false, start));
+    assert!(pacing.fallback_due(false, start + FRAME_INTERVAL));
+}
+
+/// While recording,
+///  the recorder's timer is the only source in headless mode too.
+#[test]
+fn headless_leaves_the_cadence_to_the_recorder_while_recording() {
+    assert!(!callbacks_due(BackendKind::Headless, true, Duration::ZERO));
+    assert!(!callbacks_due(BackendKind::Headless, true, Duration::from_secs(3600)));
+    let start = Instant::now();
+    let mut pacing = FramePacing::for_backend(BackendKind::Headless, start);
+    assert!(!pacing.fallback_due(true, start + STALL_THRESHOLD));
+    assert!(pacing.fallback_due(false, start + STALL_THRESHOLD));
+}
+
+/// The nested window keeps today's decision exactly:
+///  due only once the parent has been silent for the threshold.
+#[test]
+fn nested_window_pacing_is_unchanged() {
+    for recording in [false, true] {
+        for millis in [0, 16, 49, 50, 51, 3_600_000] {
+            let since = Duration::from_millis(millis);
+            assert_eq!(
+                callbacks_due(BackendKind::NestedWinit, recording, since),
+                parent_stalled(recording, since),
+                "recording={recording} since={millis}ms",
+            );
+        }
+    }
+    let start = Instant::now();
+    let mut nested = FramePacing::for_backend(BackendKind::NestedWinit, start);
+    assert!(!nested.fallback_due(false, start));
+    assert!(nested.fallback_due(false, start + STALL_THRESHOLD));
+}
