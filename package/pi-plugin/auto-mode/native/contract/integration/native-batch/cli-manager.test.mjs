@@ -1,0 +1,33 @@
+import assert from 'node:assert/strict';
+import {createEnvironment} from './environment.mjs';
+import {createRootSessionFactory} from './session-root.mjs';
+
+const env=await createEnvironment();
+let registrations=0;
+const factory=createRootSessionFactory({...env,onSessionRegistered({session,manager,lifecycle}){
+ registrations++;
+ lifecycle.assertActive(lifecycle.capture({session,manager}));
+}});
+const foreignManager=env.SessionManager.inMemory(env.options.cwd);
+await assert.rejects(()=>factory.createFromManager({options:env.options,manager:foreignManager}),/not returned by this declared constructor owner/);
+assert.equal(registrations,0);
+const manager=factory.managers.inMemory(env.options.cwd);
+const first=await factory.createFromManager({options:env.options,manager});
+assert.equal(first.manager,manager);
+assert.equal(registrations,1);
+const oldLease=factory.lifecycle.capture(first.root);
+const transition=factory.lifecycle.begin(oldLease);
+factory.lifecycle.markMutation(transition);
+first.session.dispose();
+assert.equal(env.readSessionDisposalState(first.session).completed,true);
+factory.lifecycle.completeRetirement(transition);
+assert.throws(()=>factory.lifecycle.assertActive(oldLease));
+manager.newSession();
+const second=await factory.createFromManager({options:env.options,manager});
+assert.equal(second.manager,manager);
+assert.notEqual(second.session,first.session);
+assert.equal(registrations,2);
+factory.lifecycle.assertActive(factory.lifecycle.capture(second.root));
+second.session.dispose();
+await env.drain();
+console.log(JSON.stringify({complete:true,originalManagers:1,sessionConstructions:2,foreignManagersRejected:1,retiredLeaseRejected:true,providerRequests:0}));
