@@ -248,7 +248,8 @@ class PlayerHostModelTest {
     }
 
     // What:     `fun trackResultIndexNamesTheSameTrack()` checks that a track result's index is its load index.
-    // Why:      Activating a track result plays the track at that index, so the index must name the same track.
+    // Why:      Activating a track result selects the track at that index (D127), so the index must name the same
+    //           track.
     //
     // In TS you'd write (pseudocode):
     // ```ts
