@@ -426,7 +426,8 @@ function createPolicyLoader({
   /** Bind one current governing snapshot after proving preservation of the owned emitted material. */
   function captureJudgmentSources({
     original,
-    signal
+    signal,
+    extend=false
   }){
    const saved=snapshots.get(original);
    if(!saved)throw new PolicySlotBindingError('Judgment source handoff requires this collector original snapshot');
@@ -441,7 +442,7 @@ function createPolicyLoader({
    saved.capturingJudgment=true;
    try{
     assertCurrent(saved.input);
-    if(saved.judgmentSources!==undefined){
+    if(saved.judgmentSources!==undefined&&(!extend||domainEvents()?.observation===saved.judgmentSources.nativeDomainEventObservation)){
      assertObservedFresh(saved.judgmentSources);
      if(saved.failure)throw new PolicySlotBindingError(
        'Original governing snapshot lost eligibility',
@@ -449,15 +450,20 @@ function createPolicyLoader({
      );
      return saved.judgmentSources;
     }
+    const previous=saved.judgmentSources===undefined?saved:snapshots.get(saved.judgmentSources);
+    const previousSnapshot=saved.judgmentSources??original;
     const current=capture({signal}); const next=snapshots.get(current);
     if(next.input!==saved.input)throw new PolicySlotBindingError('Judgment source handoff cannot replace its original policy binding');
     if(next.nativeResourceToolInputs!==saved.nativeResourceToolInputs)throw new PolicySlotBindingError('Manager-only judgment handoff cannot adopt new extension tool receipts');
+    if(JSON.stringify(current.nativeDomainEventKinds)!==JSON.stringify(previousSnapshot.nativeDomainEventKinds)
+      ||current.nativeDomainEventObservation?.occurrence!==previousSnapshot.nativeDomainEventObservation?.occurrence)
+      throw new PolicySlotBindingError('Judgment source handoff cannot replace native event membership or its original runner');
     assertCollectedManagerGrowth({
-      before:saved.original,
+      before:previous.original,
       after:next.original
     });
     assertManagerOriginsAppended({
-      before:saved.nativeConstructedInputs,
+      before:previous.nativeConstructedInputs,
       after:next.nativeConstructedInputs
     });
     assertObservedFresh(current);
