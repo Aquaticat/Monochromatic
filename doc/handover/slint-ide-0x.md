@@ -8,8 +8,7 @@ then authorized implementation.
 A checkpoint is not a pause:
 continue the queue without asking the user to say “continue”.
 The application remains an incomplete read-only workspace reader.
-The user paused this session to hand the work to another agent;
-resume the queue on request without waiting for a second authorization.
+The user paused this session once for a CPU change and then resumed it; continue the queue.
 
 Current boundary:
 combined search and in-file find are complete;
@@ -303,27 +302,33 @@ the items after it are the record of 2026-10-05 and older.
     Resize decision (settled, no question to the user: open decisions follow IntelliJ, which re-wraps at once): a width
     change re-wraps and paints the visible rows on the window thread within a counted allowance, and the worker keeps
     the whole-file re-break. The user also said twice that questions IntelliJ already answers must not be asked.
-    PAUSED, not landed: branch `feat/ide-soft-wrap` (worktree `.claude/worktrees/ide-wrap`) holds the work at
-    `ee20bacec8` (IDE tree `95f8d5f12b`), 12 commits after the landed merge, written by a Sonnet subagent that was
-    stopped mid run when the user asked to pause for a CPU change, so its final report never arrived and nothing it
-    claims is verified. What is known: the worktree is clean; the commits add the window-thread re-wrap
-    (`cbefca99f7`), guards for it and a rewrite of the old `resize-stays-on-worker` guard, README and plan text,
-    and a measurement bundle at `~/temp/agent/ide-wrap-s5/bundles/resize-now`. Gate state at that tip: a first gate
-    series (label `final1`, logs in `~/temp/agent/ide-wrap-s6/logs/`) ended with `inspect:annotation-guards` status 1
-    before later commits; a second series (`final2`) was stopped after lint:rustfmt, lint:slint, lint:clippy and
-    lint:release started or finished (their logs show no failure), and test, test:cli, test:native, bundle, the bundle
-    checks and every guard task have not run on `ee20bacec8`. Nothing was measured on the frames yet.
-    To resume: merge main into the branch, rerun the full gate (`gate.mjs` in `~/temp/agent/ide-wrap-s6/` or
-    `gate-args.mjs` in `~/temp/agent/ide-coordinator/`; guard tasks need a plain copy of a Cargo target dir, the
-    copies are `~/temp/agent/ide-wrap-s6/guard-cache` and `cargo-copy`), read the failing annotation guard of
-    `final1-inspect-annotation-guards.log`, confirm each new guard was seen failing (the commit messages name
-    them; reproduce, do not trust), then measure the resize condition against the recorded `final` numbers by load
-    band with the harness in `~/temp/agent/ide-wrap-s5/` (`plan.mjs`, `measure.mjs`, `summarize.mjs`), and land
-    through `.claude/worktrees/ide-land2` (merge, verify tree, fast forward main from the root checkout,
-    `git push origin main`).
+    Landed 2026-10-13: the window-thread re-wrap (IDE tree `589a2d3b4e`, 17 commits on `feat/ide-soft-wrap`, written
+    by a Sonnet subagent and verified by the coordinator). A width change re-breaks and shapes the lines of the
+    requested tile on the window thread within an allowance of 384 lines, 24,000 work units and a 32 MiB raster
+    (`src/native/rewrap.rs`); anything over a bound goes to the worker, which keeps the whole-file re-break. Gate on
+    that tree: all 15 tasks status 0 (logs `fE-*` and `fF-*` in `~/temp/agent/ide-wrap-s6/logs/`), source guards
+    84 of 84, annotation guards 65 of 65, `test:native` 178 passed 4 times on the tree (3 by the agent, 1 by the
+    coordinator in `c-native.log`). Two native failures found on the new CPU were test races, not product bugs:
+    the stale-height test compared the map before the 200 ms scroll quiet time ended (it now moves the scroll rule's
+    clock and waits until the map is due), and `rows_above_the_view_changing_height_move_no_visible_pixel` installed
+    its pass gate after the window opened (failed 5 of 5 on the pre-branch tree on this CPU; now installed first).
+    Both passed 20 of 20 repeats. The `wrapped-tile-holds` guard now expects "the source tile worker did not finish
+    the re-center", which matches any hang of that kind, so it separates less than before; under its mutation the
+    branch hangs at open (`scroll_wanted` never cleared) where the old tree failed with "entered render", and the
+    reason was not found.
+    Measured (release bundle, nested compositor 0.4.0, recorder 60 fps, load below 20 only): in the requested 16 ms
+    drag the longest gap (17 to 18 ms) and the count of frames not fitting (74 to 77 against 76 to 82) did not change
+    from the `final` bundle; in a slower 100 ms drag the count fell to 0, 8 and 19 of about 265 against 44, 42 and 50.
+    A frame drawn right after a size event is wrapped to the new width in the headless backend (198 rows run to the
+    edge with the step off), but in the real compositor each new size still shows the previous step's content for one
+    frame, and where that delay comes from (compositor configure and commit, or the toolkit's redraw scheduling) is
+    not determined. The window-thread step took a median 3 to 7 ms and at most 15 ms at low load; on the earlier CPU
+    it reached 91 ms once, so the allowance bounds counted work and not wall time.
+    Open: find the source of the one-step delay in the compositor; the load band 20 to 100 was not measured.
     Other pending small items: remove the worktrees `ide-wrap` and `ide-land2` after landing; delete the large
     scratch caches `~/temp/agent/ide-wrap-s4/guard-cache`, `ide-wrap-s6/guard-cache`, `ide-wrap-s5/bundles` when done.
-    Open: the installed single file at `~/.local/bin/monochromatic-ide` predates stages 1, 2 and soft wrap.
+    Open: the installed single file at `~/.local/bin/monochromatic-ide` predates stages 1, 2, soft wrap and this
+    change; reinstalling it changes the real home and needs the user's approval.
     Both flaky tests of the guard runs were fixed in this work: the scroll quiet-time test reads a clock a test can
     hold, and find reveal measures its own line first (it failed 3 of 16 runs at baseline).
   - The IDE checks used compositor builds inside each worktree's `target` directory, which were 0.1.1 (no minimized

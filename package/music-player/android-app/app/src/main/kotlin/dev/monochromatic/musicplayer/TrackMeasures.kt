@@ -166,18 +166,21 @@ object TrackMeasures {
      * Reads the tracks of one page that still lack a measure, batch by batch, handing each batch to [publish].
      *
      * @param known returns the measures already published, read again before each batch
+     * @param startAt returns the position in [tracks] to read from, read again before each batch, so the tracks on
+     *     screen are read first and the rest of the page follows
      * @param publish receives the measures of one batch
      */
     suspend fun refreshPage(
         context: Context,
         tracks: List<Track>,
         known: () -> Map<String, TrackMeasure>,
+        startAt: () -> Int = { 0 },
         publish: (Map<String, TrackMeasure>) -> Unit,
     ) {
         /** URIs already read in this pass, so a track without a peak is not read twice in one pass. */
         val attempted: MutableSet<String> = mutableSetOf()
         while (true) {
-            /** Next tracks to read in this pass, in page order. */
+            /** Next tracks to read in this pass, in page order from the position the page is shown at. */
             // The choice scans the whole page, so it runs off the main thread: a page of thousands of tracks would
             // otherwise cost the main thread a full scan per batch.
             val batch: List<Track> = withContext(Dispatchers.Default) {
@@ -186,6 +189,7 @@ object TrackMeasures {
                     known = known(),
                     attempted = attempted,
                     batchSize = MEASURE_BATCH_SIZE,
+                    startAt = startAt(),
                 )
             }
             if (batch.isEmpty()) {

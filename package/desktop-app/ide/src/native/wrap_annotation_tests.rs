@@ -15,12 +15,17 @@ use super::caret_tests::position;
 use super::find_tests::Reader;
 /// The counters of the window thread's work.
 use super::overscan_tile_tests::{counts, reset};
+/// The most lines the window thread brings in for one new width.
+use super::rewrap::REWRAP_LINES;
 /// Window sizing for exact text widths.
 use super::sidebar_tests::{TEXT_LEFT, resize};
+/// The worker's build gate.
+use super::tile_build::{BUILD_GATE, PASS_GATE};
 /// Wrapped fixtures, the open reader, and bounded waits.
-use super::wrap_tests::{long_text, open, settled, until};
+use super::wrap_tests::{long_text, open, settled, tabbed_text, until};
 /// Snapshot records exactly as the Language module builds them.
 use ide_app::{
+    document::{ReadingAffinity, ReadingPosition},
     language::{
         diagnostics::{DiagnosticsSnapshot, Severity, SourceGroup},
         hints::HintsSnapshot,
@@ -240,14 +245,14 @@ fn a_new_window_width_breaks_the_block_again() {
         return opened.source.borrow().width < wide;
     });
     settled(&opened);
-    // The blocks follow the width at once, but the window thread builds no tile for it: the worker's tile is swapped in.
+    // The blocks follow the width at once, and so does the tile: the window thread paints it once, within its allowance.
     let [_, tiles, rows, images] = counts(&opened.source);
-    assert_eq!(tiles, 0, "the window thread painted a tile for the resize");
-    assert_eq!(rows, 0, "the window thread shaped lines for the resize");
-    assert_eq!(
-        images, 1,
-        "the worker's tile for the new width is swapped in once"
+    assert_eq!(tiles, 1, "the window thread paints the tile for the resize");
+    assert!(
+        rows <= REWRAP_LINES as u64,
+        "the window thread shaped {rows} lines for the resize"
     );
+    assert_eq!(images, 1, "the tile for the new width is set once");
     let repacked = opened.source.borrow().annotations.work().packed - packed;
     assert!(
         (1..=3).contains(&repacked),
@@ -288,6 +293,126 @@ fn a_new_window_width_breaks_the_block_again() {
         before.0,
         "a wide area restores the rows"
     );
+    window.hide().expect("close wrap window");
+}
+
+/// A width the window thread's allowance does not cover is left to the worker although the blocks changed with it: the
+///  window thread paints no tile for it, and the tile that arrives holds the blocks broken for the new width.
+#[test]
+fn a_new_width_left_to_the_worker_keeps_the_displayed_tile_until_the_workers_tile_arrives() {
+    let (_project, opened) = open(&tabbed_text(60));
+    settled(&opened);
+    annotate_line(&opened);
+    settled(&opened);
+    let window = &opened.window;
+    let wide = opened.source.borrow().width;
+    let before = block(&opened, LINE).expect("block").messages.len();
+    reset(&opened.source);
+    opened.source.borrow_mut().rewrap_deferred = 0;
+    resize(window, TEXT_LEFT + 300.0, 660.0);
+    until("the narrow width did not reach the state", || {
+        return opened.source.borrow().width < wide;
+    });
+    until("the worker's tile did not arrive", || {
+        let current = opened.source.borrow();
+        return current.tile_job.is_none()
+            && current.scroll_wanted.is_none()
+            && current.shown.width == current.width;
+    });
+    settled(&opened);
+    let [_, tiles, _, _] = counts(&opened.source);
+    assert_eq!(tiles, 0, "the window thread painted a tile for the resize");
+    assert!(
+        opened.source.borrow().rewrap_deferred >= 1,
+        "the change of width was not left to the worker"
+    );
+    let narrow = block(&opened, LINE).expect("block").messages.len();
+    assert!(
+        narrow > before,
+        "the message is {narrow} rows at the narrow width and {before} at the wide one"
+    );
+    window.hide().expect("close wrap window");
+}
+
+/// Wait until the worker has taken the held build from the gate slot.
+fn until_build_started(message: &str) {
+    until(message, || {
+        return BUILD_GATE.lock().expect("build gate").is_none();
+    });
+}
+
+/// Short lines with a tab, so many that a tile of them is more work than the window thread's allowance covers, and
+///  short enough that no line changes its rows when the width changes a little.
+fn short_tabbed_text(count: usize) -> String {
+    let mut text = String::new();
+    for number in 0..count {
+        text.push_str(&format!(
+            "\tlet value_{number} = compute_total(first_item, second_item, third_item);\n"
+        ));
+    }
+    return text;
+}
+
+/// A tile the worker builds for a new width goes stale when the text on screen changes during its build, and the window
+///  asks for another tile at once, because the displayed tile stays on screen meanwhile and no later event is certain
+///  to ask. No line changes its rows at the new width, so the discard moves nothing and only the wanted tile calls for
+///  a render; the change is made in the state directly so that nothing else renders.
+#[test]
+fn a_tile_discarded_while_the_window_waits_for_one_is_asked_for_again() {
+    let (_project, opened) = open(&short_tabbed_text(300));
+    settled(&opened);
+    let window = &opened.window;
+    let wide = opened.source.borrow().width;
+    // The measurement of the new width is held back: its output would render the window and so ask for the tile.
+    let (hold_the_pass, pass_gate) = std::sync::mpsc::channel();
+    *PASS_GATE.lock().expect("pass gate") = Some(pass_gate);
+    let (release, gate) = std::sync::mpsc::channel();
+    *BUILD_GATE.lock().expect("build gate") = Some(gate);
+    resize(window, TEXT_LEFT + 700.0, 660.0);
+    until_build_started("the worker did not start the held build");
+    assert!(
+        opened.source.borrow().width < wide,
+        "the window did not get narrower"
+    );
+    {
+        let mut current = opened.source.borrow_mut();
+        assert!(
+            current.scroll_wanted.is_some(),
+            "the window waits for a tile"
+        );
+        let viewport = current.document.position().viewport;
+        current.document.select(ReadingPosition {
+            anchor: 1,
+            head: 5,
+            viewport,
+            affinity: ReadingAffinity::Downstream,
+        });
+    }
+    release
+        .send(())
+        .expect("the build is waiting for its release");
+    until("the stale tile was not discarded", || {
+        return opened.source.borrow().tiles_discarded >= 1;
+    });
+    let start = std::time::Instant::now();
+    loop {
+        update_timers_and_animations();
+        {
+            let current = opened.source.borrow();
+            if current.shown.width == current.width
+                && current.tile_job.is_none()
+                && current.scroll_wanted.is_none()
+            {
+                break;
+            }
+        }
+        assert!(
+            start.elapsed() < std::time::Duration::from_secs(15),
+            "the discarded tile was not asked for again"
+        );
+        std::thread::sleep(std::time::Duration::from_millis(2));
+    }
+    drop(hold_the_pass);
     window.hide().expect("close wrap window");
 }
 

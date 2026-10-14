@@ -55,7 +55,7 @@ mod view;
 /// Whole-file passes: bringing rows into the cache for a wrap width,
 ///  and breaking kept rows again at a new width.
 mod pass;
-pub use pass::{Ensured, Measured};
+pub use pass::{Budget, Ensured, LINE_WORK, Measured, line_work};
 
 /// What:
 ///  `pub const` exports a compile-time value;

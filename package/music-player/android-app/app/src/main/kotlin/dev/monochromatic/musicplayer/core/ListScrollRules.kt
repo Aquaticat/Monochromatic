@@ -95,21 +95,28 @@ internal fun isSamePageUpdate(previous: List<String>?, next: List<String>): Bool
     return isSubsequence(previous, next) || isSubsequence(next, previous)
 }
 
-// What:     `internal fun currentPositionOf(entries: List<TrackListEntry>): Int?` finds the playing row's position.
+// What:     `internal fun currentPositionOf(entries: List<TrackListEntry>, playingIndex: Int?): Int?` finds the playing
+//           row's position.
 // Why:      The reveal and page scrolls need the list position of the playing row, and a list without one has none.
+//           The playing row is named by its library index, so the entries stay the same list while the playing track
+//           changes (rebuilding thousands of rows for each track change cost a visible stall).
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// const currentPositionOf = (entries: TrackListEntry[]): number | null => {
-//   const position = entries.findIndex((e) => e.kind === "row" && e.row.isCurrent);
+// const currentPositionOf = (entries: TrackListEntry[], playingIndex: number | null): number | null => {
+//   if (playingIndex === null) return null;
+//   const position = entries.findIndex((e) => e.kind === "row" && e.row.indexInLibrary === playingIndex);
 //   return position < 0 ? null : position;
 // };
 // ```
-/** Position of the current track row among the entries, or null when no row is current. */
-internal fun currentPositionOf(entries: List<TrackListEntry>): Int? {
-    /** Index of the first current row, or a negative value when no row is current. */
+/** Position among the entries of the row whose library index is [playingIndex], or null when none is. */
+internal fun currentPositionOf(entries: List<TrackListEntry>, playingIndex: Int?): Int? {
+    if (playingIndex == null) {
+        return null
+    }
+    /** Index of the first row with the playing library index, or a negative value when no row has it. */
     val position: Int = entries.indexOfFirst { entry ->
-        entry is TrackListEntry.RowEntry && entry.row.isCurrent
+        entry is TrackListEntry.RowEntry && entry.row.indexInLibrary == playingIndex
     }
     if (position < 0) {
         return null
@@ -117,12 +124,51 @@ internal fun currentPositionOf(entries: List<TrackListEntry>): Int? {
     return position
 }
 
-// What:     `internal fun pageEntryScrollTarget(entries: List<TrackListEntry>): Int` gives the item a page scrolls to.
+// What:     `internal fun pageEntryScrollTarget(entries: List<TrackListEntry>, playingIndex: Int?): Int` gives the item
+//           a page scrolls to.
 // Why:      A page that holds the playing row starts at that row, and any other page starts at its top.
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// const pageEntryScrollTarget = (entries: TrackListEntry[]): number => currentPositionOf(entries) ?? 0;
+// const pageEntryScrollTarget = (entries: TrackListEntry[], playingIndex: number | null): number =>
+//   currentPositionOf(entries, playingIndex) ?? 0;
 // ```
 /** Item the list scrolls to when a page appears or changes: the playing row, or the top when no row is playing. */
-internal fun pageEntryScrollTarget(entries: List<TrackListEntry>): Int = currentPositionOf(entries) ?: 0
+internal fun pageEntryScrollTarget(entries: List<TrackListEntry>, playingIndex: Int?): Int =
+    currentPositionOf(entries, playingIndex) ?: 0
+
+// What:     `internal fun libraryIndexNear(entries: List<TrackListEntry>, position: Int): Int?` names the track that a
+//           list position shows, or the closest track when the position holds a subfolder header.
+// Why:      The measure refresh starts reading at the first visible track, and the list reports its first visible
+//           position, which can be a header with no library index of its own.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// const libraryIndexNear = (entries: TrackListEntry[], position: number): number | null => {
+//   const at = Math.max(0, position);
+//   const after = entries.slice(at).find((e) => e.kind === "row");
+//   if (after) return after.row.indexInLibrary;
+//   const before = entries.slice(0, at).reverse().find((e) => e.kind === "row");
+//   return before ? before.row.indexInLibrary : null;
+// };
+// ```
+/** Library index of the first row at or after [position], else of the last row before it, or null without rows. */
+internal fun libraryIndexNear(entries: List<TrackListEntry>, position: Int): Int? {
+    /** First position to look at, kept inside the list. */
+    val from: Int = position.coerceIn(0, entries.size)
+    for (at in from until entries.size) {
+        /** Entry at this position. */
+        val entry: TrackListEntry = entries[at]
+        if (entry is TrackListEntry.RowEntry) {
+            return entry.row.indexInLibrary
+        }
+    }
+    for (at in from - 1 downTo 0) {
+        /** Entry at this position, looked at from the position backwards. */
+        val entry: TrackListEntry = entries[at]
+        if (entry is TrackListEntry.RowEntry) {
+            return entry.row.indexInLibrary
+        }
+    }
+    return null
+}

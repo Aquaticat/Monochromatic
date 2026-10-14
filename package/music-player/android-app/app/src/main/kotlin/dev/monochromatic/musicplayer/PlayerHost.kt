@@ -107,8 +107,10 @@ import androidx.compose.runtime.saveable.rememberSaveable
 // ```
 import android.net.Uri
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.MutableIntState
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import dev.monochromatic.musicplayer.core.CreaseState
@@ -192,10 +194,12 @@ import dev.monochromatic.musicplayer.core.HostKeyLayout
 import dev.monochromatic.musicplayer.core.HostKeyZone
 import dev.monochromatic.musicplayer.core.adjacentFolderLabel
 import dev.monochromatic.musicplayer.core.rightPaneClearance
+import dev.monochromatic.musicplayer.core.runPassPerStep
 import dev.monochromatic.musicplayer.core.seekTargetSec
 import dev.monochromatic.musicplayer.core.MenuAnchorRect
 import dev.monochromatic.musicplayer.core.PlayingPlace
-import dev.monochromatic.musicplayer.core.playingPlaceOf
+import dev.monochromatic.musicplayer.core.playingPlaceIn
+import dev.monochromatic.musicplayer.core.playingRowOrderOf
 import androidx.compose.ui.platform.LocalConfiguration
 import dev.monochromatic.musicplayer.core.HostKeyRoute
 import dev.monochromatic.musicplayer.core.PlaybackMode
@@ -520,29 +524,31 @@ fun playerHost(
     val pageFolderTitle: String = state.pageLabels.getOrNull(state.selectedPage).orEmpty()
     // What:     `remember(keys) { ... }` keeps the built rows until one of its keys changes.
     // Why:      The progress tick recomposes this host several times a second; rebuilding every row on each tick pinned
-    //           the main thread for a 1,000-row folder (S2). Rows depend on the page, the playing row and the folder
-    //           title, never on the position and never on the measures: the analysis publishes measures many times a
-    //           second, and rebuilding 10,000 rows for each of them was an ANR. Each visible row reads its own measure
-    //           through `rowLines` instead.
+    //           the main thread for a 1,000-row folder (S2). Rows depend on the page and the folder title, never on
+    //           the position, the measures or the playing row: the analysis publishes measures many times a second,
+    //           and rebuilding 10,000 rows for each of them was an ANR, and for each track change a stall of tens of
+    //           milliseconds. Each visible row reads its own measure through `rowLines` and its own playing flag
+    //           through `LocalPlayingIndex` instead.
     //
     // In TS you'd write (pseudocode):
     // ```ts
-    // const rowEntries = useMemo(() => rowEntriesFor(...), [pageItems, currentIndex, title]);
+    // const rowEntries = useMemo(() => rowEntriesFor(...), [pageItems, title]);
     // ```
-    /** Rows of the selected page without supporting lines, rebuilt only when the page or the playing row changes. */
+    /** Rows of the selected page without supporting lines or a playing flag, rebuilt only when the page changes. */
     val rowEntries: List<TrackListEntry> = remember(
         state.pageItems,
-        state.currentIndex,
         pageFolderTitle,
     ) {
         PlayerHostModel.rowEntriesFor(
             folderTitle = pageFolderTitle,
             pageItems = state.pageItems,
-            currentIndex = state.currentIndex,
+            currentIndex = null,
             trackRowsTemplate = trackRowsTemplate,
             withSupportingLines = false,
         )
     }
+    /** Library index of the first track on screen, which the measure refresh reads first, or the none value. */
+    val firstVisibleTrack: MutableIntState = remember { mutableIntStateOf(NO_VISIBLE_TRACK) }
     /** Source of each visible row's supporting line, which reads that row's own measure when the row is drawn. */
     val rowLines: TrackRowLineSource = remember(state.pageItems, trackRowsTemplate, controller) {
         TrackRowLineSource.forPage(
@@ -553,16 +559,18 @@ fun playerHost(
     }
     /** Rail built from the page names, rebuilt only when a page appears, disappears or is renamed. */
     val railSections: List<RailSection> = remember(state.pageLabels) { railFor(state.pageLabels) }
-    /** Playing track and its place in its own folder, which the deck reads even when that folder is not on screen. */
-    val playingPlace: PlayingPlace = remember(
-        state.playingPageIndex,
-        state.pageLabels,
-        state.playingItems,
-        state.currentIndex,
-    ) {
-        playingPlaceOf(
+    /** Track rows of the playing folder in list order, built once per folder and not again for each track change. */
+    val playingRowOrder: List<Int> = remember(state.playingPageIndex, state.pageLabels, state.playingItems) {
+        playingRowOrderOf(
             folderTitle = state.playingPageIndex?.let { index -> state.pageLabels.getOrNull(index) }.orEmpty(),
             playingItems = state.playingItems,
+        )
+    }
+    /** Playing track and its place in its own folder, which the deck reads even when that folder is not on screen. */
+    val playingPlace: PlayingPlace = remember(playingRowOrder, state.playingItems, state.currentIndex) {
+        playingPlaceIn(
+            playingItems = state.playingItems,
+            rowOrder = playingRowOrder,
             currentIndex = state.currentIndex,
         )
     }
@@ -589,24 +597,37 @@ fun playerHost(
             controller.uriAt(entry.index)?.let { uri -> Track(uri = uri, displayPath = entry.name) }
         }
     }
-    // What:     `LaunchedEffect(pageTracks, SweepProgress.snapshot.done)` reads the page's unmeasured tracks.
-    // Why:      A new page or a sweep step (the sweep reports every few tracks) re-checks the peaks shown on the page,
-    //           and the batches land on screen as each one is read.
+    // What:     `LaunchedEffect(staleMeasures, pageTracks)` reads the page's unmeasured tracks, a pass per sweep step.
+    // Why:      A new page or an invalidated measure restarts the reading. A sweep step (the sweep reports every few
+    //           tracks) only asks for another pass after the running one, because restarting at every step cancelled
+    //           the batch in flight and began again at the top, so the rows of a 10,000 track page got their
+    //           measures only after the sweep had ended.
     //
     // In TS you'd write (pseudocode):
     // ```ts
-    // useEffect(() => { refreshPage(pageTracks, () => measures, publish); }, [pageTracks, sweepDone]);
+    // useEffect(() => {
+    //   const ctl = new AbortController();
+    //   runPassPerStep(sweepDoneChanges(), () => refreshPage(pageTracks, () => measures, publish), ctl.signal);
+    //   return () => ctl.abort();
+    // }, [pageTracks, stale]);
     // ```
     /** Tracks the analysis measured again, whose shown measures are stale (D113). */
     val staleMeasures: Set<String> = MeasureInvalidation.pending
-    LaunchedEffect(staleMeasures, pageTracks, SweepProgress.snapshot.done) {
+    LaunchedEffect(staleMeasures, pageTracks) {
         controller.dropMeasures(MeasureInvalidation.take())
-        TrackMeasures.refreshPage(
-            context = context,
-            tracks = pageTracks,
-            known = { controller.uiState.measures },
-            publish = { updates -> controller.mergeMeasures(updates) },
-        )
+        runPassPerStep(steps = snapshotFlow { SweepProgress.snapshot.done }) {
+            TrackMeasures.refreshPage(
+                context = context,
+                tracks = pageTracks,
+                known = { controller.uiState.measures },
+                startAt = {
+                    /** URI of the first track on screen, or null when the list has not reported one. */
+                    val firstUri: String? = controller.uriAt(firstVisibleTrack.intValue)
+                    pageTracks.indexOfFirst { track -> track.uri == firstUri }
+                },
+                publish = { updates -> controller.mergeMeasures(updates) },
+            )
+        }
     }
     /** Measure of the playing track, read from the library-wide measures so the deck shows it on any folder. */
     val playingMeasure: TrackMeasure? = state.currentIndex
@@ -1757,6 +1778,8 @@ fun playerHost(
                             CompositionLocalProvider(
                                 LocalTrackRowMenuOpener provides { index, anchor -> openMenu(index, anchor) },
                                 LocalTrackRowLines provides rowLines,
+                                LocalPlayingIndex provides state.currentIndex,
+                                LocalFirstVisibleTrack provides firstVisibleTrack,
                             ) {
                                 playerContent(
                                     model = model,

@@ -50,6 +50,28 @@ data class TrackRowModel(
     val isCurrent: Boolean,
 )
 
+// What:     `fun rowWithPlayingFlag(row: TrackRowModel, playingIndex: Int?): TrackRowModel` sets a row's current flag
+//           from the playing track's library index.
+// Why:      The host builds the rows of a page once and does not rebuild them when the playing track changes, so each
+//           visible row learns whether it is playing from this one comparison when it is drawn.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// const rowWithPlayingFlag = (row: TrackRowModel, playingIndex: number | null): TrackRowModel => {
+//   const isCurrent = row.indexInLibrary === playingIndex;
+//   return isCurrent === row.isCurrent ? row : { ...row, isCurrent };
+// };
+// ```
+/** Returns the row flagged current exactly when its library index is [playingIndex], the row itself when unchanged. */
+fun rowWithPlayingFlag(row: TrackRowModel, playingIndex: Int?): TrackRowModel {
+    /** Whether this row is the playing track. */
+    val isCurrent: Boolean = row.indexInLibrary == playingIndex
+    if (isCurrent == row.isCurrent) {
+        return row
+    }
+    return row.copy(isCurrent = isCurrent)
+}
+
 // What:     `sealed interface TrackListEntry` is one entry of a folder's flat track list. Its two variants are a
 //           track row and a subfolder header.
 // Why:      A sealed type lets the pane render both entry kinds exhaustively, as the folder index does.

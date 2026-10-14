@@ -7,7 +7,203 @@ This current summary complements the
 [historical evidence ledger](pi-auto-mode-axiom-evaluation.md).
 Updated 2026-10-13.
 
+## Drex 2.0 release check
+
+The user requested the best next action after reporting Drex 2.0.
+The bounded [compatibility audit](../audit/tech-pi-auto-mode-drex-2-release-vet-2026-10-13.md)
+retains the completed authorized provider evidence.
+Both the constant-state control and complete-policy-once request returned `drex-v2.0`.
+The complete native request failed first on structured question instructions,
+then,
+after lossless JSON-text conversion,
+with `too many questions (244); limit is 16`.
+The original policy,
+sources,
+question membership,
+and three-call assessment ceiling remain unchanged.
+Keep the incumbent route and continue native integration;
+this is a failed replacement compatibility gate,
+not a semantic quality comparison.
+The [troubleshooting record](../troubleshooting/drex-model-route-label.md)
+separates the owned schema mismatch from the unexplained hosted question limit.
+
 ## Restart checkpoint after installing automatic Codex shell limits
+
+The user restarted the session and resumed work on 2026-10-13.
+The first default sandboxed `cat /proc/self/cgroup` returned
+`0::/user.slice/user-1000.slice/user@1000.service/piwork3285273.slice/codex`.
+The parent controls returned `memory.max=4294967296`,
+`memory.swap.max=0`,
+`cpu.max=200000 100000`,
+and `pids.max=256`.
+Automatic attachment is now verified in the ordinary sandbox.
+The agent supplies ordinary commands;
+the installed native hook supplies the attachment prefix.
+Historical manual worker wrappers in this document are superseded for Codex Bash calls.
+The Pi host remains outside the worker slice.
+
+Native RPC reopened session `01a0dc52-0955-77f6-ae77-68a6e15bb12b`
+with `qwen-token-plan-individual/qwen3.8-flash`.
+`get_state` returned the expected session identity,
+no streaming or compaction,
+and no pending messages.
+Closing stdin completed shutdown with exit zero.
+No model prompt was sent.
+
+The next domain-resolution acceptance stopped during preparation:
+Node reported `ERR_MODULE_NOT_FOUND` for the retired `yuku-parser@0.17.0` path.
+The installed parser is now 0.19.0 and Pi is 1.2.0.
+Pi's installed coding-agent package no longer has the expected unbundled JavaScript files.
+The current native integration therefore needs adaptation before its prior results describe the current host.
+The read-only upstream source checkout is Pi tag `v1.2.0`,
+commit `06a466935536f8c9bcacb2d5efc0fc021be1bdff`.
+
+Private `contract/integration/current-sdk` now emits separate Agent,
+AI,
+and coding-agent JavaScript using the existing TypeScript 7.0.2 compiler.
+Staging passed without changing installed sources or installing dependencies.
+Commits `2699da6e`,
+`2edd3014`,
+and `52cced2f` retain the staging source and fixture connection.
+The first native patch check reached the changed `emitBeforeAgentStart` call:
+Pi 1.2.0 takes a run trigger and prepares user or custom runs in `_prepareRun`.
+Private commits `dfdbb616` and `1e7824bb` adapt that native boundary.
+`mise run native:prepare` now passes against Pi 1.2.0 and copies 13 instrumented modules.
+The staging loader uses native package export resolution,
+including wildcard subpaths,
+and the source build retains generated model catalogs from the exact installed release.
+The domain acceptance then found that its historical Markdown parser owner,
+`package/cli/markdown-lint`,
+was removed by the repository's Rust linter migration.
+Private `f411f9da` declares the previously qualified `satteri@0.10.5` directly in the fixture workspace.
+Its installation uses `pnpm install --ignore-scripts`.
+Private `ba4ecadd` records the generated parser lockfile.
+The current acceptance reaches the native policy reviewer with zero provider calls.
+Pi 1.2.0's `reachesTools` callback initially produced an unsupported tool-metadata gap.
+Required-red `2fe40907` and correction `27d713a7` establish its executable-field handling;
+the metadata owner controls pass.
+That intermediate permission case reported only `request-source-domain`
+and failed its required closure assertion with 26 original sources.
+Required-red `dab689bd` then demonstrated that an original resource input,
+already retained before a suppressing callback,
+was absent from governing-source collection.
+Private `9ebc722c` and `0cbee730` connect those original receipts and their native source locations.
+The suppressed-input control passes.
+
+Private `5d69e8cb` adds structural domain accounting through the original native publications.
+Unaccounted native event types remain named gaps;
+the current supported callback path is `before_agent_start`.
+Source membership,
+source indexing,
+resource receipts,
+and resource/base/run links are checked independently of semantic answers.
+The current authored native contrasts pass with 33 original sources:
+permission approves and executes all three child calls,
+prohibition denies with zero child calls,
+and no applicable instruction stays unspecified with zero child calls.
+No external provider call or production semantic policy adoption follows.
+The missing-evidence controls now pass:
+removing source membership,
+request-bound views,
+source indexing,
+resource receipts,
+or native event inspection leaves a gap.
+An actual unaccounted `context` callback keeps execution unresolved.
+Potential request instructions retain their independent interpretation obligation after structural domain accounting.
+
+Required-red `cab88eb3` found that a prior run's mapped prompt source lost its original occurrence
+when a later run omitted that field.
+Private `c0a3910b` and syntax correction `22e1e4f4` retain original prompt sources
+through the existing run owner's history,
+scoped to the same native root.
+The native history control passes,
+and the permission,
+prohibition,
+unspecified,
+unobserved-callback,
+and potential-request-instruction contrasts still pass.
+Private `b8a8d705` also charges resource receipt records to the shared input count and byte budget.
+Historical comparison controls read retained immutable evidence;
+they do not reopen live eligibility after the provider request advances.
+The targeted guard omission check also passed:
+removing only the unobserved-native-event guard in a disposable worktree made the real `context` callback
+case fail its required-domain-gap assertion.
+Restoring the guard made both domain-gap cases pass.
+The worktree was inspected and removed without deleting shared fixture targets.
+Original approval-request routing and maintained integration are next.
+
+The approval trace found a separate concrete gap:
+`compileBoundClauseProgram` omitted independent authorization satisfaction and channel facts.
+Required-red private `99bd9818` reached the canonical native handler but opened no selector.
+Private `5d266c33` connects a fixed bootstrap authorization-owner factory,
+binding each original evidence record to its judgment,
+clause,
+source,
+and request.
+The owner supplies independent prerequisite facts;
+it supplies no clause meaning or final decision.
+Private `f22d8db0` keeps standalone evaluation from accepting that factory as a per-call override.
+Redundant full-source scans initially exhausted the unchanged five-second judgment deadline.
+Private `76eeac39` reuses captured source bindings while retaining checks around asynchronous evidence capture
+and before release.
+
+Private `d66e8250` adds the rejection and native approval contrasts.
+`mise run test:authorization-inputs` and `mise run test:approval-domain` now pass.
+The canonical native Allow path calls the maintained `askUser`,
+writes through Pi's actual extension API into its original session manager,
+and executes all three prepared children.
+Deny and Stop write native verdicts and execute no child.
+Missing evidence,
+unknown satisfaction,
+unsupported channels,
+a bare prerequisite without permission,
+and an independent prohibition execute no child and open no selector.
+Evidence retired during selection prevents execution even after an Allow entry is written.
+A satisfied independent requirement permits execution only with separately established permission.
+These controls use authored independent facts and a fixture selector,
+with zero external provider requests and zero genuine human approvals.
+They establish canonical routing,
+not generic prose authorization,
+production semantic qualification,
+or installed human confirmation.
+Affected consumer regressions,
+a targeted authorization-binding omission,
+and maintained integration are next.
+
+The prerequisite evidence collector is now maintained in
+`package/pi-plugin/auto-mode/src/authorization-evidence.ts`
+and its sibling contract,
+capture,
+record,
+and binding modules.
+Private `dfb0082f` replaces the native collector copy with maintained exports.
+Missing facts have an explicit `MISSING_AUTHORIZATION_EVIDENCE` result;
+the compiler preserves the unresolved prerequisite.
+The first package build,
+type check,
+and unit suite passed.
+Lint corrections and final native verification remain in progress.
+
+Native preparation then found missing external dependency paths.
+The fixture now owns the same `yuku-parser@0.19.0` release directly,
+recorded in private `f0627729` and generated lockfile `f18a93f9`.
+The current `pi --version` returns 1.1.0,
+matching the repository lock;
+the previous staged build and dependency symlinks targeted 1.2.0.
+Private `402e47ac` emits separate version-specific staging trees.
+The current read-only source tag is `v1.1.0`,
+commit `abe508e1b89912adde45528136c3221eb69acdd7`.
+Earlier 1.2.0 test results retain that version boundary.
+Current native acceptance must complete before claiming the rebuilt maintained path is verified.
+
+The first approved native dispatch failed because the inherited test loader derived dependency paths
+from the codemode worker's disposable home.
+Private `f3d40d82` retains the measured repository dependency root in the staging manifest;
+the repeated native execution passed.
+The strict TypeScript check for the source staging helper also passes.
+Domain closure,
+maintained delivery,
+and installed approval verification remain unfinished.
 
 The user resumed this handover on 2026-10-13,
 then prioritized automatic Codex Bash resource limits before further Pi implementation.
