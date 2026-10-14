@@ -88,6 +88,12 @@ the production judgment still owns its original attempt accounting,
 and no hidden subrequests have been added to the maintained sender.
 Higher admission counts alone cannot establish greater accuracy.
 
+Automatic approval review rejected dispatch before execution
+because the prior approval covered the six-call comparison,
+not this new nine-call schedule for the assessment data.
+Explicit approval for this prepared schedule is now pending.
+No request from this experiment has run.
+
 ## Historical initial scope and authorization
 
 On October 14,

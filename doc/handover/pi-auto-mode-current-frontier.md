@@ -83,6 +83,10 @@ retains the complete comparison result.
 No new provider request was needed for this check.
 The [next frozen compensation experiment](../planning/pi-auto-mode-gateway-decisions-current-contract.md#question-batch-compensation-experiment)
 partitions the same questions under a shared deadline while preserving complete input.
+Automatic approval review rejected the new nine-call schedule before dispatch;
+the earlier six-call authorization does not cover it according to that review.
+The specific approval question is pending,
+and no new experiment call has run.
 The original native dialog is also pending a genuine human response;
 no automatic answer is permitted.
 
