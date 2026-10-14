@@ -42,7 +42,8 @@ The operating instructions live in `doc/runbook/claude-cpu-cap.md`.
   The thread count is read from `~/.config/claude-cpu-cap/threads` every 2 seconds
   (28 now, lowered from 30 at 20:15:53 after the 95.3 degree alert).
 - The watcher alerts on CPU pressure 40, memory pressure 10, scheduler lag 250 ms and thermal throttling (300 MHz).
-  The limit is `CPU_WATCH_LIMIT_THROTTLE_MHZ`, default 300 in `cpu-watch.ts`. The user asked for a better value after
+  The limit is `CPU_WATCH_LIMIT_THROTTLE_MHZ`, default 300 in
+  `package/dev-script/claude-cpu-cap/src/cpu-watch.ts`. The user asked for a better value after
   100 MHz flapped. Among 125 samples at Tctl 95 or more (an 8 minute plateau at 133 W) the shortfall was median 83,
   p95 183, p99 221, max 255 MHz, and 0 percent reached 300, so 300 sits above normal regulation.
   The pressure limit of 40 was a first guess and is uncalibrated.
@@ -675,7 +676,7 @@ The day-one checks under "Checks before buying" still decide it.
 ## Next actions
 
 1. No monitor and no 4-hour check (ended by the user). Read alerts from the journal only when the user asks.
-2. When a session has run sustained load, run `node ~/.local/share/claude-cpu-cap/summarize-samples.ts 1`.
+2. When a session has run sustained load, run `node package/dev-script/claude-cpu-cap/src/summarize-samples.ts 1`.
    It still needs a chiplet comparison and a (Tctl minus probe) per watt figure.
 3. The service stays running; stop it only if the user asks.
 4. Record every user decision and measurement in this file as the session continues.
@@ -684,7 +685,8 @@ The day-one checks under "Checks before buying" still decide it.
    Baseline before the reapply (MX-4 cross, 2 fans, cap 28, 20:16 to 20:25 EDT): Tctl 95.4, average of the two CCD
    temperatures about 91.7, package power 133 W, clock 4407 MHz median, probe 26 degrees, so about 0.49 degrees per
    watt over ambient; Noctua's lab figure for the same heatsink and chip is about 0.26. Compare degrees per watt, not
-   raw temperature, because the load will differ. `~/temp/agent/analyze-episode.ts <from> <to>` prints the medians.
+   raw temperature, because the load will differ.
+   `node package/dev-script/claude-cpu-cap/src/analyze-episode.ts <from> <to>` prints the medians.
    The NT-H2 AM5 Edition includes the NA-TPG1 paste guard and 3 cleaning wipes; Noctua's AM5 pattern is five small
    dots (four of about 2 mm near the corners, one of 3 to 4 mm in the centre) with no manual spreading, and the paste
    needs no cure time (NT-H2 AM5 Edition manual and product page, fetched 2026-10-13). The reseat also resets the
