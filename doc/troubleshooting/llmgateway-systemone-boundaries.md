@@ -300,6 +300,17 @@ Dropping source occurrences,
 relaxing the adopted cutoff,
 or assuming byte reduction proves token fit remains unjustified.
 
+The separate state-fit diagnostic at `${HOME}/temp/agent/pi-jev-shared-state-fit-20261014`
+first passed a literal-label serving control with HTTP 200.
+The identical shared state with only one original question then returned HTTP 400 `max_tokens_exceeded`
+in 731.176 ms.
+That failure rules out splitting the unchanged shared-state request as a sufficient remedy.
+The server did not identify a tokenizer count or which limit fired.
+The next local candidate moves all original question instructions back to their respective question entries;
+exact reconstruction passes for the original state and every original question.
+Its state is 105,339 bytes and the complete request is 140,618 bytes.
+Provider acceptance and semantic behavior remain unverified for this candidate.
+
 ## Source identity
 
 Repository:

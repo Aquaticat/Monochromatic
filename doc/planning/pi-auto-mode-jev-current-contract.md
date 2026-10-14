@@ -224,6 +224,22 @@ while preserving the complete governing state and shared-content dictionary.
 It must round-trip exactly before any separate provider experiment.
 This is not permission to remove questions or source occurrences.
 
+The placement candidate now passes exact reconstruction of the original state and all 84 questions,
+including every one of the 73 source occurrences.
+Its shared dictionary is unchanged.
+The state measures 105,339 bytes;
+the complete request measures 140,618 bytes with SHA-256
+`342c62860872a1f084157f700a34d7bf27bbf95ffae3a2eb81c6cb057897853e`.
+The frozen private schedule at `${HOME}/temp/agent/pi-jev-question-placement-20261014`
+first sends that complete batch with a five-second deadline.
+Only HTTP 400 with recognized `max_tokens_exceeded` permits the separate single-question capacity control.
+That control retains the candidate's entire shared state,
+measures 105,761 bytes,
+and has SHA-256 `9bc4ef519973fd9d05c7e69e57690a5e6d615de97c2f6ff0bbed3ea6c517bd05`.
+There are at most two calls,
+no retries,
+and no production admission.
+
 [models]: https://docs.typesafe.ai/models
 [api]: https://docs.typesafe.ai/api
 [limitations]: https://docs.typesafe.ai/model-jaggedness/jev-1.13
