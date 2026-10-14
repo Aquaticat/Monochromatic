@@ -21,15 +21,16 @@ function fixture({kind,handlers}){
 
 function traversalFixture(){
  const phases=[];
- const observer=createNativeEventObserver(function captureFactory(){return {capture(input){phases.push(input.phase);},complete(){}};});
+ const observer=createNativeEventObserver(function captureFactory(){return {capture(input){phases.push(input.phase);},complete(){return undefined;}};});
  const extension={path:'fixture'};
- function handler(){}
+ function handler(){return undefined;}
  const traversal=observer.begin({kind:'turn_start',snapshot:[{ext:extension,handlers:[handler]}]});
  const input={extension,handler,event:{type:'turn_start'}};
  return {phases,observer,traversal,input};
 }
 
-try{
+await using cleanup={async [Symbol.asyncDispose](){await env.drain();}};
+{
  // More callback phases than the source count allowance still form one bounded emission.
  const original={type:'turn_start',text:'original'};
  const grouped=fixture({kind:'turn_start',handlers:Array.from({length:30},function handlerAt(_,ordinal){return function retainPhase(event){event.text=`mutation-${ordinal}`;return {unused:`output-${ordinal}`};};})});
@@ -132,7 +133,7 @@ try{
  const invalidTraversals=[
   function omittedPosition({traversal}){traversal.end();},
   function foreignExtension({traversal,input}){traversal.before({...input,extension:{...input.extension}});},
-  function foreignHandler({traversal,input}){traversal.before({...input,handler:function copiedHandler(){}});},
+  function foreignHandler({traversal,input}){traversal.before({...input,handler:function copiedHandler(){return undefined;}});},
   function missingInvocation({traversal}){traversal.returned(undefined);},
   function overlappingInvocation({traversal,input}){traversal.before(input);traversal.before(input);},
   function unsettledEnd({traversal,input}){traversal.before(input);traversal.end();},
@@ -142,14 +143,14 @@ try{
  for(const violate of invalidTraversals){
   const native=traversalFixture();
   let wrapped;
-  assert.throws(function requireOriginalTraversal(){try{violate(native);}catch(error){wrapped=error;throw error;}},/Original native event source capture failed/u);
+  assert.throws(function requireOriginalTraversal(){try{violate(native);}catch(error){wrapped=error;throw error;}},{message:'Original native event source capture failed'});
   assert.throws(function retainContractFailure(){native.traversal.aborted(wrapped);},function originalContract(error){return error.name==='NativeEventContractError';});
   assert.equal(native.observer.read(['turn_start']).failed,true);
   assert.equal(native.observer.read(['turn_start']).pending,0);
  }
 
  // Emissions split into bounded sources while preserving every original callback phase.
- const chunked=fixture({kind:'turn_start',handlers:Array.from({length:24},function noResult(){return function observe(){};})});
+ const chunked=fixture({kind:'turn_start',handlers:Array.from({length:24},function noResult(){return function observe(){return undefined;};})});
  await chunked.runner.emit({type:'turn_start',text:'x'.repeat(8192)});
  const chunks=chunked.records();
  assert.ok(chunks.length>1);
@@ -158,25 +159,25 @@ try{
  assert.equal(readNativeSessionInputUsage(chunked.manager).count,chunks.length);
 
  // Existing source byte and count limits still reject oversized original observations.
- const oversized=fixture({kind:'turn_start',handlers:[function observe(){}]});
+ const oversized=fixture({kind:'turn_start',handlers:[function observe(){return undefined;}]});
  await oversized.runner.emit({type:'turn_start',text:'x'.repeat(65_536)});
- assert.throws(function requireCompleteCapture(){assertNativeSessionInputCapture(oversized.manager);},/supported source capture profile/u);
- const exhausted=fixture({kind:'turn_start',handlers:[function observe(){}]});
+ assert.throws(function requireCompleteCapture(){assertNativeSessionInputCapture(oversized.manager);},function captureProfile(error){return error.message.includes('supported source capture profile');});
+ const exhausted=fixture({kind:'turn_start',handlers:[function observe(){return undefined;}]});
  for(let ordinal=0;ordinal<65;ordinal++)await exhausted.runner.emit({type:'turn_start',ordinal});
- assert.throws(function requireCountBound(){assertNativeSessionInputCapture(exhausted.manager);},/supported source capture profile/u);
+ assert.throws(function requireCountBound(){assertNativeSessionInputCapture(exhausted.manager);},function captureProfile(error){return error.message.includes('supported source capture profile');});
 
  // Capture never invokes a result accessor to discover its apparent data.
  let accessorCalls=0;
  const accessor=fixture({kind:'turn_start',handlers:[function unsupportedResult(){return {get unused(){accessorCalls++;return 'not data';}};}]});
  await accessor.runner.emit({type:'turn_start'});
  assert.equal(accessorCalls,0);
- assert.throws(function requireOrdinaryValues(){assertNativeSessionInputCapture(accessor.manager);},/supported source capture profile/u);
+ assert.throws(function requireOrdinaryValues(){assertNativeSessionInputCapture(accessor.manager);},function captureProfile(error){return error.message.includes('supported source capture profile');});
 
  // Native observation failures preserve even nullish thrown values after retirement.
  for(const originalFailure of [undefined,null,'failure',new Error('fixture capture failure')]){
-  const observer=createNativeEventObserver(function captureFactory(){return {capture(){throw originalFailure;},complete(){}};});
+  const observer=createNativeEventObserver(function captureFactory(){return {capture(){throw originalFailure;},complete(){return undefined;}};});
   const extension={path:'fixture'};
-  function handler(){}
+  function handler(){return undefined;}
   const traversal=observer.begin({kind:'turn_start',snapshot:[{ext:extension,handlers:[handler]}]});
   let wrapped;
   try{traversal.before({extension,handler,event:{type:'turn_start'}});}catch(error){wrapped=error;}
@@ -187,9 +188,9 @@ try{
   assert.equal(observer.read(['turn_start']).pending,0);
  }
  const completionFailure=new Error('fixture completion failure');
- const completion=createNativeEventObserver(function captureFactory(){return {capture(){},complete(){throw completionFailure;}};});
+ const completion=createNativeEventObserver(function captureFactory(){return {capture(){return undefined;},complete(){throw completionFailure;}};});
  const extension={path:'fixture'};
- function handler(){}
+ function handler(){return undefined;}
  const traversal=completion.begin({kind:'turn_start',snapshot:[{ext:extension,handlers:[handler]}]});
  traversal.before({extension,handler,event:{type:'turn_start'}});
  traversal.returned(undefined);
@@ -199,4 +200,4 @@ try{
  assert.equal(completion.read(['turn_start']).pending,0);
  assert.equal(completion.read(['turn_start']).failed,true);
  console.log(JSON.stringify({complete:true,nativeEventMethods:6,groupedCallbackPhases:90,groupedSources:1}));
-}finally{await env.drain();}
+}

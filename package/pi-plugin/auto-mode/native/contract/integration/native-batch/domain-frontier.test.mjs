@@ -1,6 +1,5 @@
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
-import {inspect} from 'node:util';
 import {createEnvironment} from './environment.mjs';
 import {createRootSessionFactory} from './session-root.mjs';
 import {bindNativePolicyRuntime} from './runtime.mjs';
@@ -8,10 +7,14 @@ import {createOwnedCodemodeDefinition} from "./generated/program-definition.mjs"
 import {nativeOpenAIStream} from './source-association.mjs';
 import {fixtureResponse} from './fixture-response.mjs';
 import {ruleAssessmentModel} from '../action-policy/wire.mjs';
-import {inspectNativeSourceDomain} from '../policy-source/source-domain.mjs';
-import {assertNativeSessionInputCapture} from './generated/session-manager.mjs';
 import {createAssessmentSender,createNativeSemanticOperatingPolicies} from '../maintained-policy.mjs';
 
+import {assertDomainReview} from './domain-frontier-assertions.mjs';
+
+//region Native fixture lifetime owns its counters and disposable session
+
+/** Run one original native decision with the selected authored contrast. */
+async function runDomainFrontier(){
 const relation=process.argv[2]??'prohibition',
   requireResolution=process.argv
   .includes('--require-resolution'),requestRelation=process.argv
@@ -112,7 +115,7 @@ const code='const value = await tools.fixture_value({path:"seed"});\nreturn awai
 function policy(definitionId) { return {model:ruleAssessmentModel,definitionId,programProfile,accepts:function acceptAuthoredDomainRelation() { return (true); }}; }
 const originalSdkStream=session.agent
   .streamFunction;
-function controlledSdkStream(
+const controlledSdkStream=function controlledSdkStream(
   model,
   context,
   options
@@ -134,7 +137,7 @@ function controlledSdkStream(
    context,
    options
  );
-}
+};
 function authoredWireAnswer({body}){
   assessments++;const wire=JSON.parse(body);assert.equal(wire.state.originalRequestBody,originalBody);
   const answers=Object.fromEntries(Object.entries(wire.questions).map(function answerAuthoredDomainQuestion([slot,question]) {
@@ -170,7 +173,7 @@ const runtime=bindNativePolicyRuntime({
   files:[],
   wrapToolDefinition:env.wrapToolDefinition,
   readSessionDisposalState:env.readSessionDisposalState,
-  trace(){},
+  trace(){return undefined;},
   ...(operatingPolicy?createNativeSemanticOperatingPolicies():{
    semanticAdmissionPolicy:policy('clause_operation_relation'),
    requestMaterialAdmissionPolicy:policy('request_instruction_content'),
@@ -181,213 +184,17 @@ const runtime=bindNativePolicyRuntime({
   originalStream:sdkStream?controlledSdkStream:nativeOpenAIStream,
   async terminalFetch(input,init){requests++;if(requests===1)originalBody=init.body;return fixtureResponse({proposal:requests===1,code});}
 });
+await using cleanup={async [Symbol.asyncDispose](){session.dispose();await session.agent.waitForIdle();runtime.detach();await env.drain();}};
 try{
  await session.prompt('Exercise the original request-specific policy domain.');
  const {
    lastReview:review,
    lastJudgment:judgment
  }=runtime.inspect();
- if(!review){
-  try{assertNativeSessionInputCapture(env.readActiveSessionManager(session));}
-  catch(error){console.error(inspect(error,{depth:6,maxStringLength:2048}));}
-  try{env.readActiveSessionRunComposition(session);}
-  catch(error){console.error(inspect(error,{depth:6,maxStringLength:2048}));}
- }
- assert.ok(review,inspect(
-   {requests,assessments,executions,progressCalls,message:session.messages.at(-1),toolErrors:session.messages.filter(function failedTool(message){return message.role==='toolResult'&&message.isError;}),judgment:judgment?.inspect()},
-   {depth:4}
- ));
- assert.equal(
-   review.inputs.requestObservation.request.body,
-   originalBody
- );
- assert.equal(
-   review.requestMaterialInterpretation.admission,
-   'admitted'
- );assert.equal(
-   review.requestMaterialInterpretation.relation,
-   requestRelation
- );
- const clauseAbstention=lowConfidenceClause||unresolvedClause!==undefined;
- if(clauseAbstention){
-  assert.equal(review.clauseInterpretations.filter(function abstained(clause){return clause.admission==='abstained';}).length,1);
- }else assert.ok(review.clauseInterpretations
-   .every(function isAdmittedClause(clause) { return (clause.admission==='admitted'); }));
- assert.ok(review.headingContextInterpretations
-   .every(function isAdmittedNonInstructionHeading(heading) { return (heading.admission==='admitted'&&heading.relation==='none'); }));
- if(sdkStream){
-  assert.ok(review.requestSourceAssociationUses
-    .length
-    >0,'The normal SDK route must retain original native serializer contributions');
-  assert.ok(review.requestSourceAssociationUses
-    .every(function matchesExpectedContributionState(use) { return (use.state===(receiptControl?'unresolved':'accounted')); }),inspect(
-    review.requestSourceAssociationUses,
-    {depth:3}
-  ));
- }
- const issues=review.premiseIssues
-   .map(function describeUnresolvedIssue(issue) { return (({premise:issue.premise,kind:issue.kind,reason:issue.reason})); });
- const result={
-   complete:true,
-   relation,
-   requestRelation,
-   outcome:review.outcome,
-   issues,
-   sources:review.inputs.instructionSources.length,
-   clauses:review.clauseInterpretations.length,
-   requestUses:review.requestSourceAssociationUses.map(function readContributionState(use) { return (use.state); }),
-   requests,
-   assessments,
-   httpCalls,
-   executions,
-   progressCalls,
-   providerRequests:0,
-   productionPolicyAdopted:operatingPolicy,
-   empiricalQualificationEstablished:false,
-   clauseAbstention
- };
- assert.equal(httpCalls,httpTransport?assessments:0);
- const domainIssue=review.premiseIssues
-   .find(function isNativeDomainIssue(issue) { return (issue.kind==='request-source-domain'); });
- if(unobservedContext){
-  assert.ok(contextCalls>0,'The native context callback must actually run');
-  assert.ok(domainIssue?.sourceDomain
-    .gaps
-    .some(function namesUnobservedContext(gap) { return (gap.reason.includes('"input"')); }));
-  assert.equal(
-    review.outcome.state,
-    'unresolved'
-  );
-  assert.equal(
-    executions,
-    0
-  );
- }else{
-  assert.ok(
-    domainIssue===undefined,
-    `Original native event accounting is incomplete: ${JSON.stringify(domainIssue?.sourceDomain?.gaps)}`
-  );
-  if(observedContext){
-   assert.ok(contextCalls>=3,'Original native context and context_with_system callbacks must run');
-   const receipts=review.inputs.instructionSources.map(function readContextSource(view) { return view.source; })
-    .filter(function isContextReceipt(source) { return source.inputOrigin==='native-context-handler'; });
-   assert.equal(receipts.length,throwingContext?7:8,'Every original callback input, mutated input, and defined result needs its own retained source');
-   assert.ok(receipts.some(function retainsInPlaceInput(source) { return source.content.includes('Original in-place context input'); }));
-   if(throwingContext)assert.ok(receipts.some(function retainsInputBeforeFailure(source){return source.content.includes('Original input mutation before context failure');}));
-   else{
-    assert.ok(lateContextMutations>0,'The later queued native result mutation must actually run');
-    assert.ok(receipts.some(function retainsUnusedResult(source) { return source.content.includes('Original unselected context result'); }));
-   }
-   assert.ok(receipts.some(function retainsUnusedSystemResult(source) { return source.content.includes('Original unselected system context result'); }));
-   assert.ok(receipts.every(function leavesContextAuthorityUnestablished(source) { return source.permission===false&&source.registration===undefined; }));
-   const snapshot=review.inputs.instructionSources[0].sources;
-   const input={snapshot,instructionSources:review.inputs.instructionSources,sourceCoverage:review.inputs.ruleSourceCoverage};
-   for(const receipt of [undefined,{...snapshot.nativeRunComposition.contextHandlerReceipt,runOccurrence:Object.freeze({})}]){
-    const gaps=inspectNativeSourceDomain({...input,snapshot:{...snapshot,nativeRunComposition:{...snapshot.nativeRunComposition,contextHandlerReceipt:receipt}}}).gaps;
-    assert.ok(gaps.some(function missingOriginalCompletion(gap){return gap.reason.includes('"context"');}),'Missing or substituted original context completion must keep the source domain unresolved');
-   }
-  }
-  if(receiptControl){
-   assert.equal(
-     review.outcome.state,
-     'unresolved'
-   );assert.equal(
-     executions,
-     0
-   );
-   assert.ok(review.inputs
-     .requestObservation
-     .sourceContributions
-     .every(function namesMissingSerializerOccurrence(value) { return (value.reason?.includes('original native serializer occurrence')); }),inspect(
-     review.inputs.requestObservation.sourceContributions,
-     {depth:3}
-   ));
-  }else if(clauseAbstention){
-   assert.equal(review.outcome.state,'unresolved');
-   assert.equal(executions,0);
-   assert.ok(review.premiseIssues.some(function unresolvedMeaning(issue){return issue.premise==='qualified-rule-interpretation';}));
-  }else if(requestRelation!=='none'){
-   assert.equal(
-     review.outcome.state,
-     'unresolved'
-   );assert.equal(
-     executions,
-     0
-   );
-   assert.ok(review.premiseIssues
-     .some(function isRequestInstructionIssue(issue) { return (issue.kind==='request-material-instruction-use'); }));
-  }else{
-   assert.equal(
-     review.outcome.state,
-     relation==='none'?'unspecified':'resolved'
-   );
-   if(relation!=='none')assert.equal(
-     review.outcome.verdict,
-     relation==='permission'?'approve':'deny'
-   );
-   if(executions!==(relation==='permission'?3:0))console.log(inspect(
-     {toolResults:session.messages.filter(function isToolResultMessage(message) { return (message.role==='toolResult'); }),judgment:judgment?.inspect()},
-     {depth:6}
-   ));
-   assert.equal(
-     executions,
-     relation==='permission'?3:0
-   );
-  }
-  if(requireResolution){
-   // Audit retained immutable evidence; the completed request is no longer eligible for live use.
-   const input={
-     snapshot:review.inputs.instructionSources[0].sources,
-     instructionSources:review.inputs.instructionSources,
-     sourceCoverage:review.inputs.ruleSourceCoverage
-   };
-   assert.equal(
-     inspectNativeSourceDomain(input).gaps.length,
-     0
-   );
-   const altered=[
-    {
-      ...input,
-      snapshot:{...input.snapshot,governingSources:input.snapshot.governingSources.slice(1)}
-    },
-    {
-      ...input,
-      instructionSources:input.instructionSources.slice(1)
-    },
-    {
-      ...input,
-      sourceCoverage:input.sourceCoverage.slice(1)
-    },
-    {
-      ...input,
-      snapshot:{...input.snapshot,resourceReceiptInputs:[]}
-    },
-    {
-      ...input,
-      snapshot:{...input.snapshot,nativeDomainEventKinds:undefined}
-    },
-    {
-      ...input,
-      snapshot:{...input.snapshot,nativeDomainEventKinds:['turn_start']}
-    }
-   ];
-   for(const incomplete of altered)assert.ok(inspectNativeSourceDomain(incomplete)
-     .gaps
-     .length
-     >0,'Removing original receipt or membership evidence must keep the domain unresolved');
-  }
-  if(observedProgress)assert.ok(progressCalls>0,'The original progress callback must run at the native execution boundary');
- }
- console.log(JSON.stringify({
-   ...result,
-   unobservedContext,
-   observedContext,
-   throwingContext,
-   lateContextMutations,
-   contextCalls,
-   sdkStream,
-   receiptControl
- }));
+ assertDomainReview({env,review,judgment,session,originalBody,settings:{relation,requireResolution,requestRelation,unobservedContext,observedContext,observedProgress,throwingContext,httpTransport,operatingPolicy,lowConfidenceClause,unresolvedClause,sdkStream,receiptControl},measures:{assessments,executions,requests,httpCalls,contextCalls,lateContextMutations,progressCalls}});
+}catch(error){console.error(error);throw error;}
+}
 
-}catch(error){console.error(error);throw error;}finally{session.dispose();await session.agent
-  .waitForIdle();runtime.detach();await env.drain();}
+await runDomainFrontier();
+
+//endregion Native fixture lifetime owns its counters and disposable session
