@@ -95,7 +95,15 @@ fn configure_child_environment(
     command: &mut Command,
     socket_name: &OsStr,
     session_bus_address: Option<&str>,
+    gpu_variables: &[(&str, Option<&str>)],
 ) {
+    // Keep the child on the compositor's device: variables Mesa reads in the client (headless GPU choice only).
+    for (name, value) in gpu_variables {
+        match value {
+            Some(text) => command.env(name, text),
+            None => command.env_remove(name),
+        };
+    }
     command.env("WAYLAND_DISPLAY", socket_name);
     command.env_remove("WAYLAND_SOCKET");
     // Do not let a clipboard library or child GUI fall back to the host X11 display.
@@ -149,10 +157,16 @@ pub fn spawn_child(
     let mut cmd = crate::systemd::build_child_command(program, &command[1..], isolation);
 
     // Point child at nested Wayland and optional private appearance portal only.
+    let gpu_variables = state
+        .backend
+        .child_gpu_environment()
+        .map(crate::gpu_choice::child_variables)
+        .unwrap_or_default();
     configure_child_environment(
         &mut cmd,
         state.socket_name.as_os_str(),
         session_bus_address,
+        &gpu_variables,
     );
 
     // What:     `let child = cmd.spawn().with_context(|| format!("failed to spawn {program}"))?;`.

@@ -222,6 +222,24 @@ Delivered in 0.5.0 (issue #273, closed) as `--headless`, with these decisions:
   (325 format and modifier pairs on that host),
   which removes the risk named below for this host.
   A Slint client using femtovg and one using skia both had their dmabuf buffers imported.
+- **GPU choice.**
+  A later addition (the next version after 0.5.0) gives headless a `--gpu auto|software|NODE` option and
+  `--list-gpus`.
+  Smithay's `EGLDevice::enumerate` lists the EGL devices,
+  `EGLDisplay::new` on a device (`EGL_EXT_platform_device`) opens a chosen render node,
+  and the `EGL_MESA_device_software` device is Mesa's `llvmpipe`.
+  Measured on the development host:
+  both render nodes (`renderD128`, PCI `1002:7480`, and `renderD129`, PCI `1002:164e`) rendered offscreen and
+  imported a Slint client's dmabufs,
+  and `llvmpipe` rendered the same client through `wl_shm` buffers,
+  because a software device has no render node to put in the dmabuf version 4 feedback.
+  Mesa's surfaceless platform answers with `llvmpipe` when it can use no render node,
+  so `auto` treats that answer as "no default GPU" and tries the other nodes before accepting software.
+  An explicit choice never falls back,
+  and only `auto` does,
+  so a script that names a GPU never silently renders on another device or on the CPU.
+  Details and the environment the hosted child gets are in the package README
+  (`Choosing the GPU`) and in `doc/troubleshooting/nested-wayland-headless-gpu-choice.md`.
 - **Frame pacing.**
   With no parent that presents,
   the compositor's own timer sends frame callbacks at the output refresh rate from the first tick

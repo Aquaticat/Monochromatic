@@ -36,6 +36,9 @@ use tracing::debug;
 
 /// The mode tag `kind()` returns.
 use crate::backend_select::BackendKind;
+/// What the session reports about its device,
+/// and the variables the hosted child needs to match it.
+use crate::gpu_choice::{ChildGpuEnvironment, GpuReport};
 
 /// The surfaceless renderer and the framebuffer size the screen currently has.
 ///
@@ -54,19 +57,28 @@ pub struct HeadlessBackend {
     /// Physical framebuffer size,
     /// the logical screen size times the output scale.
     size: Cell<Size<i32, Physical>>,
+    /// The device the renderer runs on.
+    gpu: GpuReport,
+    /// The variables the hosted child needs to render on the same device.
+    child_gpu: ChildGpuEnvironment,
 }
 
 /// Construction of the headless backend.
 impl HeadlessBackend {
-    /// Wrap a renderer with its starting framebuffer size.
+    /// Wrap a renderer with its starting framebuffer size and the device it runs on.
     ///
     /// What:
-    ///      `pub fn new(renderer: GlesRenderer, size: Size<i32, Physical>) -> Self`.
+    ///      `pub fn new(renderer, size, gpu, child_gpu) -> Self`.
     /// Why:
     ///       The caller builds the EGL display and renderer;
     /// this only owns them.
-    pub fn new(renderer: GlesRenderer, size: Size<i32, Physical>) -> Self {
-        return Self { renderer, size: Cell::new(size) }
+    pub fn new(
+        renderer: GlesRenderer,
+        size: Size<i32, Physical>,
+        gpu: GpuReport,
+        child_gpu: ChildGpuEnvironment,
+    ) -> Self {
+        return Self { renderer, size: Cell::new(size), gpu, child_gpu }
     }
 }
 
@@ -217,6 +229,36 @@ impl RenderBackend {
         return match self {
             Self::Winit(winit) => HostWindow::Winit(winit.window()),
             Self::Headless(headless) => HostWindow::Headless(&headless.size),
+        }
+    }
+
+    /// The device a headless session renders on,
+    /// or `None` for the nested window,
+    /// which renders on its parent's device.
+    ///
+    /// What:
+    ///      `pub fn gpu_report(&self) -> Option<&GpuReport>`.
+    /// Why:
+    ///       The `gpu` control command answers it.
+    pub fn gpu_report(&self) -> Option<&GpuReport> {
+        return match self {
+            Self::Winit(_) => None,
+            Self::Headless(headless) => Some(&headless.gpu),
+        }
+    }
+
+    /// The variables the hosted child needs to render on the compositor's device.
+    ///
+    /// What:
+    ///      `pub fn child_gpu_environment(&self) -> Option<ChildGpuEnvironment>`.
+    ///  `None` for the nested window,
+    /// whose child environment is unchanged.
+    /// Why:
+    ///       The child's client libraries choose a device on their own otherwise.
+    pub fn child_gpu_environment(&self) -> Option<ChildGpuEnvironment> {
+        return match self {
+            Self::Winit(_) => None,
+            Self::Headless(headless) => Some(headless.child_gpu),
         }
     }
 
