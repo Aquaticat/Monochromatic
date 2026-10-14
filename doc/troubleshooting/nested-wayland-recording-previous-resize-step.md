@@ -1,5 +1,14 @@
 # nested-wayland-session 0.4.0: recorded frames of a resize drag show the previous step's content
 
+## Status
+
+The compositor now sends the hosted clients' frame callbacks right after the new configure and scale of a `resize` or
+`scale` that is made while recording (the section "Improvement: callbacks right after the configure" has the change and
+its measured effect).
+That roughly halves the stale captures of the 16 ms drag (from about 90 to about 50 percent); the remaining ones were
+not analyzed further, and the application's own work against a 16.7 ms tick is a part of them.
+The sections up to "What the application contributes" describe the behavior of 0.4.0 and the cause.
+
 ## Symptom
 
 On 2026-10-13, the 60 fps recorder of the nested compositor ran over a continuous resize drag of the read-only Slint IDE
@@ -27,6 +36,10 @@ Four facts decide it (paths under `package/cli/nested-wayland-session/` are iden
 - winit 0.30.13, `src/platform_impl/linux/wayland/event_loop/mod.rs:486`: a `RedrawRequested` event is withheld while
   the window's frame callback state is `Requested`, which Slint's renderer sets before every swap through
   `pre_present_notify` (`i-slint-backend-winit` 1.18.1, `renderer/femtovg/glcontext.rs:33`).
+
+Line numbers in this section are those of 0.4.0.
+After the change below, the `set_mode` call of `apply` is at `src/screen.rs:215`, `tell_surfaces_scale` is at
+`src/screen.rs:220`, and the early callbacks are at `src/screen.rs:241`.
 
 So a size that reaches the application between two ticks is drawn right after the next tick's capture
 (a median of 0.4 ms after the callbacks), committed a few milliseconds later, and first captured one tick later.
@@ -101,6 +114,73 @@ With the gate open the step is about half of a latency that still leaves more th
 Nothing the application can set removes the delay: the gate is inside winit, and the mismatch between canvas and buffer
 is created by the compositor's `set_mode` at command time.
 
+## Improvement: callbacks right after the configure
+
+`screen::apply` (`package/cli/nested-wayland-session/src/screen.rs`) now calls `render::send_frame_callbacks` and
+flushes the clients when a recording runs and the size or scale changed.
+It does so after `set_mode`, `reconfigure_fullscreen` and `tell_surfaces_scale`, which is the placement the
+counterfactual probe used.
+The reasons, from the code:
+
+- The configure, the preferred scale and the callbacks are queued in that order and written by one flush, so the client
+  has the new size before its redraw gate opens.
+  Callbacks sent before `reconfigure_fullscreen` could let the client draw at the old size.
+- The block sits in `apply`, not in `resize`, so `scale` and a parent-initiated resize (both end in `apply`) get
+  it too.
+  A scale change changes the output mode in the same call, and the toolkit's redraw for it waits on the same winit
+  gate by the source named above, so it can have the same stale captures; that was not measured.
+  A command that leaves the geometry as it was sends nothing, and outside a recording the live redraw path already
+  sends callbacks after every presentation.
+- Smithay 0.7.0 drains a surface's committed callbacks when it sends them (`send_frames_surface_tree`,
+  `src/desktop/wayland/utils.rs`), so a request is answered once.
+  The tick after a resize finds nothing until the client asks again.
+  The client therefore draws once more per resize command than the tick alone would make it, which is the whole cost.
+- The capture cadence, the drop accounting and the order inside a tick are unchanged.
+
+Guards:
+
+- `mise run //package/cli/nested-wayland-session:inspect:resize-callbacks` hosts an animating Slint scene, records at 2
+  fps, resizes 150 ms after a tick, and reads the client's `WAYLAND_DEBUG` log.
+  On the unchanged compositor it failed with
+  `600x340: the frame callback came 337.5 ms after the configure, not at once`
+  and the first frame recorded after each resize had green 64 (shrinking) or 25 (growing, the compositor's clear color)
+  at the right edge instead of the strip's 192.
+  With the change the first callback comes 0.0 ms after the configure in all four resizes, two callbacks (by the queue
+  names in the log, one requested by the toolkit and one through Mesa's EGL surface queue) are answered together with
+  none after them in the next 100 ms, and the
+  first recorded frame has the strip.
+- `frame_pacing::tests::early_callbacks_follow_a_geometry_change_while_recording` covers the decision and failed
+  with `assertion failed: resize_needs_early_callbacks(true, true)` when the function was made to return false.
+
+Measured effect, 16 ms drag (`resize W 660` every 16 ms, 1100 to 600 to 1100 pixels, two sweeps), the project's drag
+harness, instrumented copies of the tree before and after the change (the same probe lines as above, no environment
+switch), interleaved before and after in the same window of time, 60 fps recording.
+A run counts when it has no dropped frame and the one-minute load at its start is below 20; every run listed counts.
+The window of captures is from the first command to 100 ms after the last reply (82 to 84 captures per run), so the
+percentages differ a little from the earlier ones.
+In every run the frames that did not fit were exactly the captures with a held buffer width that differs from the
+output mode width.
+
+- Series with the IDE bundle `trace-rewrap` of the verification (8 runs per side, load at start 4.77 to 14.7):
+  stale captures before the change 88.1 to 92.7 percent (mean 90.3), after it 45.2 to 56.0 percent in 7 runs (mean 49.5)
+  and 91.5 percent in one run.
+  The median delay from a command to the commit of its width fell from 11 to 13 ms to 6 to 7 ms in the same runs.
+- Series with the current bundle `package/desktop-app/ide/dist/monochromatic-ide` (4 runs per side, load at start
+  8.3 to 11.4): stale captures before 90.5 to 91.7 percent, after 42.9 to 46.4 percent,
+  commit delay median 11.5 to 13 ms before and 6 to 7 ms after.
+- Two runs show a slow application: before-r7 (92.7 percent stale, commit delay median 47 ms) and the 91.5 percent run
+  after the change (commit delay median 34 ms).
+  Both recorded 141 frames instead of 143 and neither dropped one.
+  The cause of the slowness was not determined, so they stay in the lists.
+  The 91.5 percent run is the reason the after list has a range and a count instead of one number.
+- The earlier counterfactual probe gave 55.6 to 60.5 percent after.
+  The runs now give 45.2 to 56.0 percent; the differing capture window and the host's load at the time are known
+  differences, and no further cause was measured.
+
+The application's own work (the earlier medians were a re-wrap of about 4 ms and a draw of about 3.5 ms) against the
+16.7 ms period is the part that this compositor cannot remove; how the remaining stale captures split between that work
+and the phase of the commands against the ticks was not analyzed.
+
 ## Reading recorded resize frames
 
 - A frame whose held buffer differs from the output mode is not evidence about the application's wrapping.
@@ -108,11 +188,17 @@ is created by the compositor's `set_mode` at command time.
 - A drag slower than the tick period leaves at most one such frame per step, and a 100 ms drag had 15, 19, and 28 of
   243 captures in three runs without a stop.
   That number moves with the phase of the commands against the ticks.
+- After the improvement above, a frame whose held buffer differs from the output mode is rarer but still not evidence
+  about the application's wrapping.
 - A recorder that sends the callbacks before the capture and captures a few milliseconds later, or an output mode that
-  follows the committed buffer instead of the command, would remove the mismatch.
+  follows the committed buffer instead of the command, would remove the remaining mismatch.
   Neither was built; this document does not ask for either.
 
 ## What was not measured
 
-The live path of the compositor (no recording, parent redraw events) was not measured.
+The live path of the compositor (no recording, parent redraw events) was not measured, before or after the change; the
+change does not run there.
 A host with a load above 20 was not measured.
+A scale change while recording has the inspect task `inspect:scale` (frames recorded after a switch have the new size
+and the client's drawing) but no before and after count of stale captures.
+Drags slower than 16 ms were not measured after the change.
