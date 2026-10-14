@@ -396,7 +396,22 @@ The owned rebuild and permission,
 prohibition,
 and unspecified-policy cases pass after correction.
 The formatter's 573-error result included parse failures and is not a complete remaining lint count.
-Native approval and CLI regressions are running before further source changes.
+The first approval-context run expired at the existing five-second judgment deadline.
+An unchanged isolated run then passed Allow,
+Deny,
+Stop,
+cancellation,
+and Allow after reload.
+This records recurrence behavior without establishing the deadline failure's cause.
+Copied-payload and copied-transcript controls still rejected execution,
+and the separate CLI process passed with empty child stderr.
+Commit `ff0a34feaf` names 407 callbacks across 74 maintained modules.
+The preparatory parser comparison preserved all comments and normalized executable syntax,
+apart from converting the arrow declarations to named functions.
+It rejected lexical-binding hazards and avoided introducing names that shadow existing identifiers.
+The Node parser,
+owned rebuild,
+and complete native lint count are being rerun on that change.
 
 The first approved native dispatch failed because the inherited test loader derived dependency paths
 from the codemode worker's disposable home.
